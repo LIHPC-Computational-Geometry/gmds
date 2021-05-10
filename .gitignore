@@ -1,0 +1,24 @@
+# editor config or temporary files
+.idea/
+*~
+*.swp
+\#*\#
+*.icloud
+
+# OS junk files
+[Tt]humbs.db
+*.DS_Store
+cmake-build-*/
+
+# Thumbnails
+._*
+
+
+# external: 
+# WARNING: one should only add projects in external or switch to a newer version of a project,
+# other modifications should be carefully considered.
+# comment when necessary
+external/
+
+# spack files when dev-build
+spack-*
