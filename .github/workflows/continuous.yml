@@ -21,13 +21,13 @@ jobs:
         include:
           - os: macos-latest
             name: macOS
-            script_name: ./env_macos.sh
+            script_name: ./.github/workflows/env_linux.sh
           - os: ubuntu-latest
             name: Linux
             script_name: ./.github/workflows/env_linux.sh
           - os: windows-latest
             name: Windows
-            script_name: ./env_win.cmd
+            script_name: ./.github/workflows/env_win.cmd
     steps:
     - uses: actions/checkout@v2
       with:
@@ -59,7 +59,7 @@ jobs:
       run: cmake --build . --config ${{ matrix.config }}
 
     - name: Test-release
-      if: ${{ matrix.config }} == 'Release'
+      if: matrix.config == 'Release'
       working-directory: ${{github.workspace}}/build
       shell: bash
       # Execute tests defined by the CMake configuration.
@@ -67,7 +67,7 @@ jobs:
       run: make test    
       
     - name: Test-debug
-      if: ${{ matrix.config }} == 'Debug'
+      if: matrix.config == 'Debug'
       working-directory: ${{github.workspace}}/build
       shell: bash
       # Execute tests defined by the CMake configuration.
