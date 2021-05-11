@@ -24,7 +24,7 @@ jobs:
             script_name: ./env_macos.sh
           - os: ubuntu-latest
             name: Linux
-            script_name: ./env_linux.sh
+            script_name: ./.github/workflows/env_linux.sh
           - os: windows-latest
             name: Windows
             script_name: ./env_win.cmd
@@ -34,7 +34,7 @@ jobs:
         submodules: recursive
 
     - name: Initialize the dev environement
-      run: ${{ matrix.script_name }} --target=restore-nuget-packages --verbosity=verbose
+      run: ${{ matrix.script_name }} 
     
     - name: Create Build Environment
       # We create a subdirectory that will stand as our working directory for all 
