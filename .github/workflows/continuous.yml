@@ -21,18 +21,25 @@ jobs:
         include:
           - os: macos-latest
             name: macOS
+            script_name: ./env_macos.sh
           - os: ubuntu-latest
             name: Linux
+            script_name: ./env_linux.sh
           - os: windows-latest
             name: Windows
+            script_name: ./env_win.cmd
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
 
+    - name: Initialize the dev environement
+      run: ${{ matrix.script_name }} --target=restore-nuget-packages --verbosity=verbose
+    
     - name: Create Build Environment
       # We create a subdirectory that will stand as our working directory for all 
       # subsequent commands
+      
       run: cmake -E make_directory ${{github.workspace}}/build
 
     - name: Configure CMake
