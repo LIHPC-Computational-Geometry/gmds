@@ -5,6 +5,4 @@ sed -i 's#"${ARCHITECTURE}/${COMPILERNAME}-${COMPILERVER}/${PACKAGE}-${VERSION}-
 . ./spack/share/spack/setup-env.sh
 spack external find cmake
 spack install lcov
-spack install autoconf
-spack install libtool
 spack install kokkos+openmp
