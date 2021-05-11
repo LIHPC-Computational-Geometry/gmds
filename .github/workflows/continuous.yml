@@ -59,7 +59,7 @@ jobs:
       run: cmake --build . --config ${{ matrix.config }}
 
     - name: Test-release
-      if: matrix.config. == 'Release'
+      if: ${{ matrix.config }} == 'Release'
       working-directory: ${{github.workspace}}/build/tests
       shell: bash
       # Execute tests defined by the CMake configuration.
@@ -67,7 +67,7 @@ jobs:
       run: make test    
       
     - name: Test-debug
-      if: matrix.config. == 'Debug'
+      if: ${{ matrix.config }} == 'Debug'
       working-directory: ${{github.workspace}}/build/tests
       shell: bash
       # Execute tests defined by the CMake configuration.
