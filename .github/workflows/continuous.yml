@@ -34,7 +34,7 @@ jobs:
         submodules: recursive
 
     - name: Initialize the dev environement
-      run: ${{ matrix.script_name }} 
+      run : chmod +x ${{ matrix.script_name }}; ${{ matrix.script_name }} 
     
     - name: Create Build Environment
       # We create a subdirectory that will stand as our working directory for all 
