@@ -21,7 +21,7 @@ jobs:
         include:
           - os: macos-latest
             name: macOS
-            script_name: ./.github/workflows/env_linux.sh
+            script_name: ./.github/workflows/env_macos.sh
           - os: ubuntu-latest
             name: Linux
             script_name: ./.github/workflows/env_linux.sh
