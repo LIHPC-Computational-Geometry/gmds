@@ -2,6 +2,8 @@
 #include <gmds/hybridMeshAdapt/SimplicesCell.h>
 #include <gmds/hybridMeshAdapt/SimplexMesh.h>
 /*----------------------------------------------------------------------------*/
+#include <chrono>
+/*----------------------------------------------------------------------------*/
 using namespace gmds;
 using namespace hybrid;
 using namespace simplicesNode;
@@ -11,7 +13,7 @@ SimplicesCell::SimplicesCell(SimplexMesh* simplexMesh, const TSimplexID simplexI
 {
     m_simplex_mesh = simplexMesh;
     m_simplexId    = simplexId;
-
+    math::Orientation::initialize();
     if(m_simplex_mesh->m_tet_ids[m_simplexId] == 0)
     {
       /*TODO exeption le node d'existe pas ... le creer avant de poouvoir l'utiliser*/
@@ -31,11 +33,12 @@ SimplicesCell::SimplicesCell(SimplicesCell&& simplicesCell)
 /*----------------------------------------------------------------------------*/
 SimplicesCell::~SimplicesCell()
 {
+  math::Orientation::finalize();
 }
 /*----------------------------------------------------------------------------*/
-std::vector<TSimplexID> SimplicesCell::getNodes() const
+std::vector<TInt> SimplicesCell::getNodes() const
 {
-  std::vector<TSimplexID> v{};
+  std::vector<TInt> v{};
   if(m_simplex_mesh != nullptr)
   {
     v.resize(4);
@@ -48,10 +51,11 @@ std::vector<TSimplexID> SimplicesCell::getNodes() const
   return std::move(v);
 }
 /*----------------------------------------------------------------------------*/
-double SimplicesCell::getVolumeOfCell()
+double SimplicesCell::getVolumeOfCell() const
 {
   if(m_simplexId > m_simplex_mesh->m_tet_nodes.size() || m_simplexId < 0)
   {
+    //todo exception
     return 0.0;
   }
   if(m_simplex_mesh != nullptr)
@@ -74,8 +78,8 @@ double SimplicesCell::getVolumeOfCell()
     const Eigen::Vector3d v2(e2[0], e2[1], e2[2]);
     const Eigen::Vector3d v3(e3[0], e3[1], e3[2]);
 
-    Eigen::Matrix3d m;
-    m.col(0) = v1; m.col(1) = v2; m.col(2) = v3;
+    //Eigen::Matrix3d m;
+    //m.col(0) = v1; m.col(1) = v2; m.col(2) = v3;
 
     return 1.0 / 6.0 *(v3.dot(v1.cross(v2)));
   }
@@ -91,6 +95,7 @@ std::vector<TSimplexID> SimplicesCell::neighborTetra(const TInt indexNodeGlobal,
   TInt sizeTabIndex = 4;
   TSimplexID errorId = std::numeric_limits<int>::min();
   unsigned int cmptBoundaries = 0;
+
   if(m_simplex_mesh != nullptr)
   {
     for(int i = 0; i < sizeTabIndex; i++)
@@ -98,7 +103,8 @@ std::vector<TSimplexID> SimplicesCell::neighborTetra(const TInt indexNodeGlobal,
       TSimplexID indexGlobalInTetra = m_simplex_mesh->m_tet_nodes[m_simplexId][i];
       if(indexGlobalInTetra != indexNodeGlobal)
       {
-        TInt tetraAdj =  m_simplex_mesh->getOppositeCell(indexGlobalInTetra, m_simplexId);
+        TSimplexID tetraAdj =  m_simplex_mesh->getOppositeCell(indexGlobalInTetra, m_simplexId);
+
         if(tetraAdj == errorId)
         {
           cmptBoundaries++;
@@ -108,6 +114,7 @@ std::vector<TSimplexID> SimplicesCell::neighborTetra(const TInt indexNodeGlobal,
           //cette boucle if permet de gerer en plus les triangle adjacent aux faces...
           if(tetraAdj < 0)
           {
+            /*
             TSimplexID triAdj = tetraAdj;
             bool flag0 = (std::find(v.begin(), v.end(), m_simplex_mesh->m_tri_nodes[-triAdj][3]) == v.end()
                           && m_simplex_mesh->m_tri_nodes[-triAdj][3] != m_simplexId);
@@ -121,15 +128,24 @@ std::vector<TSimplexID> SimplicesCell::neighborTetra(const TInt indexNodeGlobal,
 
             if(flag0 ==true && tetraAdj0 != errorId){v.push_back(tetraAdj0);}
             if(flag1 ==true && tetraAdj1 != errorId){v.push_back(tetraAdj1);}
+            */
+            if(m_simplex_mesh->m_tri_ids[-tetraAdj] != 0)
+            {
+                v.push_back(tetraAdj);
+            }
           }
           else //tetraAdj >= 0
           {
-              v.push_back(tetraAdj);
+            if(m_simplex_mesh->m_tet_ids[tetraAdj] != 0)
+            {
+                v.push_back(tetraAdj);
+            }
           }
         }
       }
     }
   }
+
   if(boundariesAccepted && cmptBoundaries > 0)
   {
     v.push_back(errorId);
@@ -169,12 +185,16 @@ std::vector<TSimplexID> SimplicesCell::neighborTri(const TInt indexNodeGlobal) c
 /******************************************************************************/
 std::vector<TSimplexID> SimplicesCell::neighborTri(const SimplicesNode& simpliceNode) const
 {
+  std::vector<TSimplexID> res{};
   neighborTri(simpliceNode.getGlobalNode());
+
+  return res;
 }
 /*----------------------------------------------------------------------------*/
 std::vector<TSimplexID> SimplicesCell::neighborTri() const
 {
-
+  std::vector<TSimplexID> res{};
+  return res;
 }
 /*----------------------------------------------------------------------------*/
 bool SimplicesCell::containNode(const simplicesNode::SimplicesNode& simplicesNode) const
@@ -185,14 +205,12 @@ bool SimplicesCell::containNode(const simplicesNode::SimplicesNode& simplicesNod
 
   if(m_simplex_mesh != nullptr)
   {
-    //changer le 4 pour quand il y'aura autre chose que simplement des tetra....
-
     for(int i = 0; i < sizeTabIndexCell ; i++)
     {
       flag = (simplicesNode.getGlobalNode() == m_simplex_mesh->m_tet_nodes[m_simplexId][i])?true:false;
       if(flag)
       {
-        return flag;
+        break;;
       }
     }
   }
@@ -241,35 +259,24 @@ void SimplicesCell::reorientTet()
   }
 }
 /*----------------------------------------------------------------------------*/
-double SimplicesCell::signedBarycentricNormalized(const TInt index, const gmds::math::Point& pt)
+double SimplicesCell::signedBarycentricNormalized(const TInt index, const gmds::math::Point& pt) const
 {
   double signedBarNormalized = 0.0;
   double volumeCell          = std::fabs(getVolumeOfCell());
   if(m_simplex_mesh->m_tet_ids[m_simplexId] != 0)
   {
-    if(!(volumeCell <= 0))
+    if((volumeCell != 0.0))
     {
         signedBarNormalized  = signedBarycentric(index, pt) / volumeCell;
-    }
-    else
-    {
-      /*THROW*/
     }
   }
 
   return signedBarNormalized;
 }
 /*----------------------------------------------------------------------------*/
-double SimplicesCell::signedBarycentric(const TInt index, const gmds::math::Point& pt)
+double SimplicesCell::signedBarycentric(const TInt index, const gmds::math::Point& pt) const
 {
   /*extract the orientation of the face seen by index*/
-  int FacesOrientation[4][3] = {
-    {1, 3, 2},
-    {0, 2, 3},
-    {1, 0, 3},
-    {0, 1, 2},
-  };
-
   double signedBar = 0.0;
   if(!(index < 0 || index > 3))
   {
@@ -287,14 +294,18 @@ double SimplicesCell::signedBarycentric(const TInt index, const gmds::math::Poin
     const Eigen::Vector3d v1(e0[0], e0[1], e0[2]);
     const Eigen::Vector3d v2(e1[0], e1[1], e1[2]);
 
-    const Eigen::Vector3d normalTet = v1.cross(v2);
+    Eigen::Vector3d normalTet = v1.cross(v2);
+    normalTet.normalize();
 
-    const Eigen::Vector3d v3(pt[0] - pt0[0], pt[1] - pt0[1], pt[2] - pt0[2]);
-    signedBar =  normalTet.dot(v3) * 1.0 / 6.0;
-
-    /*std::cout << "v3 --> " << v3[0] <<" " << v3[1] <<" " << v3[2] <<" " << std::endl;
-    std::cout << "normalTet --> " << normalTet[0] <<" " << normalTet[1] <<" " << normalTet[2] <<" " << std::endl;
-    std::cout << std::endl;*/
+    Eigen::Vector3d v3(pt[0] - pt0[0], pt[1] - pt0[1], pt[2] - pt0[2]);
+    //if(pt == pt0 || pt == pt1 || pt == pt2)
+    {
+        //signedBar =  10E-19;
+    }
+    //else
+    {
+        signedBar =  normalTet.dot(v3) * 1.0 / 6.0;
+    }
   }
   else
   {
@@ -303,7 +314,34 @@ double SimplicesCell::signedBarycentric(const TInt index, const gmds::math::Poin
   return signedBar;
 }
 /*----------------------------------------------------------------------------*/
-math::Vector3d SimplicesCell::normalOfFace(const std::vector<TInt>& nodes)
+math::Orientation::Sign SimplicesCell::orientation(const TInt faceIdx, const gmds::math::Point& pt, bool inverseOrientation) const
+{
+  math::Orientation::Sign sign;
+  if(!(faceIdx < 0 || faceIdx > 3))
+  {
+    const TInt Node0 = m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[faceIdx][0]];
+    const TInt Node1 = m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[faceIdx][1]];
+    const TInt Node2 = m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[faceIdx][2]];
+
+
+    const math::Point pt0 = m_simplex_mesh->m_coords[Node0];
+    const math::Point pt1 = m_simplex_mesh->m_coords[Node1];
+    const math::Point pt2 = m_simplex_mesh->m_coords[Node2];
+    if(inverseOrientation)
+    {
+      sign = math::Orientation::orient3d(pt0, pt2, pt1, pt);
+
+    }
+    else
+    {
+      sign = math::Orientation::orient3d(pt0, pt1, pt2, pt);
+    }
+  }
+  /*TODO assertion if faceIdx <0 | faceIdx >3*/
+  return sign;
+}
+/*----------------------------------------------------------------------------*/
+math::Vector3d SimplicesCell::normalOfFace(const std::vector<TInt>& nodes) const
 {
   math::Vector3d normal(0.0, 0.0, 0.0);
   if(nodes.size() != 3)
@@ -328,6 +366,7 @@ math::Vector3d SimplicesCell::normalOfFace(const std::vector<TInt>& nodes)
       math::Vector3d vec1 = math::Vector3d(pt1.X() - pt0.X(), pt1.Y() - pt0.Y(), pt1.Z() - pt0.Z());
 
       normal = vec0.cross(vec1);
+
       std::vector<TInt>&& otherNode = getOtherNodeInSimplex(nodes);
       if(otherNode.size() != 1)
       {
@@ -361,6 +400,23 @@ math::Vector3d SimplicesCell::normalOfFace(const std::vector<TInt>& nodes)
       return normal;
     }
   }
+
+  return normal;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<math::Vector3d> SimplicesCell::normalOfFaces(const std::vector<std::vector<TInt>>& FacesNodes)
+{
+  std::vector<math::Vector3d> normalFaces;
+  if(m_simplex_mesh != nullptr)
+  {
+    for(auto const & FaceNodes : FacesNodes)
+    {
+      math::Vector3d normalFace = normalOfFace(FaceNodes);
+      normalFaces.push_back(normalFace);
+    }
+  }
+
+  return std::move(normalFaces);
 }
 /*----------------------------------------------------------------------------*/
 bool SimplicesCell::correspondance(const TInt localIndex, const TInt generalIndex) const
@@ -397,21 +453,25 @@ TInt SimplicesCell::getLocalNode(const TInt generalIndex) const
 TSimplexID SimplicesCell::oppositeTetraIdx(const simplicesNode::SimplicesNode& simplicesNode) const
 {
   size_t sizeLocalIndex = 4;
-  int errorId = std::numeric_limits<int>::min();
-  TSimplexID oppositeSimplex;
+  int border = std::numeric_limits<int>::min();
+  TSimplexID oppositeSimplex = border;
 
-  if(containNode(simplicesNode) && m_simplex_mesh->m_node_ids[simplicesNode.getGlobalNode()])
+  if(containNode(simplicesNode) && m_simplex_mesh->m_node_ids[simplicesNode.getGlobalNode()] != 0)
   {
     for(TInt localIndex = 0; localIndex < sizeLocalIndex; localIndex++)
     {
       if(correspondance(localIndex, simplicesNode.getGlobalNode()))
       {
-          oppositeSimplex = m_simplex_mesh->m_tet_adj[m_simplexId][localIndex];
+        oppositeSimplex = m_simplex_mesh->m_tet_adj[m_simplexId][localIndex];
+        if(oppositeSimplex != border)
+        {
+          oppositeSimplex = (m_simplex_mesh->m_tet_ids[oppositeSimplex] != 0 )? oppositeSimplex : border;
+        }
       }
     }
   }
 
-  if(oppositeSimplex < 0 && oppositeSimplex != errorId)
+  if(oppositeSimplex < 0 && oppositeSimplex != border)
   {
     oppositeSimplex = (m_simplexId == m_simplex_mesh->m_tri_nodes[-oppositeSimplex][3])?m_simplex_mesh-> m_tri_adj[-oppositeSimplex][3]: m_simplex_mesh->m_tri_nodes[-oppositeSimplex][3];
   }
@@ -421,9 +481,29 @@ TSimplexID SimplicesCell::oppositeTetraIdx(const simplicesNode::SimplicesNode& s
 TSimplexID SimplicesCell::oppositeTetraIdx(const TInt indexLocal) const
 {
   TSimplexID oppositeSimplex;
+  TSimplexID border = std::numeric_limits<TSimplexID>::min();
+  oppositeSimplex = border;
+
   if(!(indexLocal < 0 || indexLocal > 3))
   {
-      oppositeSimplex = m_simplex_mesh->m_tet_adj[m_simplexId][indexLocal];
+    oppositeSimplex = m_simplex_mesh->m_tet_adj[m_simplexId][indexLocal];
+    if(oppositeSimplex != border)
+    {
+      if(oppositeSimplex >= 0)
+      {
+        if(m_simplex_mesh->m_tet_ids[oppositeSimplex] != 1)
+        {
+          oppositeSimplex = border;
+        }
+      }
+      else
+      {
+        if(m_simplex_mesh->m_tri_ids[-oppositeSimplex] != 1)
+        {
+          oppositeSimplex = border;
+        }
+      }
+    }
   }
   else
   {
@@ -432,6 +512,24 @@ TSimplexID SimplicesCell::oppositeTetraIdx(const TInt indexLocal) const
 
   return oppositeSimplex;
 
+}
+/******************************************************************************/
+std::vector<TInt> SimplicesCell::getOrderedFace(const TInt indexFace) const
+{
+  std::vector<TInt> v{};
+  if(!(indexFace < 0 || indexFace > 3))
+  {
+    v.reserve(3);
+    v.push_back(m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[indexFace][0]]);
+    v.push_back(m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[indexFace][1]]);
+    v.push_back(m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[indexFace][2]]);
+  }
+  else
+  {
+    /*TODO assertion...*/
+  }
+
+  return std::move(v);
 }
 /******************************************************************************/
 std::vector<TSimplexID> SimplicesCell::oppositeTetraVectorPrivated(const SimplicesNode& simplicesNode) const
@@ -456,15 +554,32 @@ std::vector<TSimplexID> SimplicesCell::oppositeTetraVectorPrivated(const Simplic
 
 }
 /******************************************************************************/
-std::vector<TSimplexID> SimplicesCell::adjacentTetra()
+std::vector<TSimplexID> SimplicesCell::adjacentTetra() const
 {
-  std::vector<TSimplexID> v{};
-  v.resize(4);
+  TInt border = std::numeric_limits<int>::min();
+  std::vector<TSimplexID> v{border, border, border, border};
   unsigned int nodeLocalSize = 4;
 
   for(unsigned int nodeLocal = 0; nodeLocal < nodeLocalSize; nodeLocal++)
   {
-    v[nodeLocal] = m_simplex_mesh->m_tet_adj[m_simplexId][nodeLocal];
+    TSimplexID adjTet = m_simplex_mesh->m_tet_adj[m_simplexId][nodeLocal];
+    if(adjTet != border)
+    {
+      if(adjTet >= 0)
+      {
+        if(m_simplex_mesh->m_tet_ids[adjTet] != 0)
+        {
+          v[nodeLocal] = adjTet;
+        }
+      }
+      else
+      {
+        if(m_simplex_mesh->m_tri_ids[-adjTet] != 0)
+        {
+          v[nodeLocal] = adjTet;
+        }
+      }
+    }
   }
 
   return std::move(v);
@@ -475,19 +590,31 @@ std::vector<TInt> SimplicesCell::intersectionNodes(const SimplicesCell& simplice
   std::vector<TInt> v{};
   if(m_simplex_mesh != nullptr)
   {
+    //std::cout << "std::vector<TInt> nodesT0" << std::endl;
     std::vector<TInt> nodesT0{
       getNode(0).getGlobalNode(),
       getNode(1).getGlobalNode(),
       getNode(2).getGlobalNode(),
-      getNode(3).getGlobalNode()};
+      getNode(3).getGlobalNode()
+    };
+
+    std::vector<TInt> nodesT1{
+      simplicesCell.getNode(0).getGlobalNode(),
+      simplicesCell.getNode(1).getGlobalNode(),
+      simplicesCell.getNode(2).getGlobalNode(),
+      simplicesCell.getNode(3).getGlobalNode()
+    };
+
+
 
     for(unsigned int nodeLocalT0 = 0; nodeLocalT0 < nodesT0.size(); nodeLocalT0++)
     {
-      for(unsigned int nodeLocalT1 = 0; nodeLocalT1 < nodesT0.size(); nodeLocalT1++)
+      for(unsigned int nodeLocalT1 = 0; nodeLocalT1 < nodesT1.size(); nodeLocalT1++)
       {
-        if(nodesT0[nodeLocalT0] == simplicesCell.getNode(nodeLocalT1).getGlobalNode())
+        if(nodesT0[nodeLocalT0] == nodesT1[nodeLocalT1])
         {
           v.push_back(nodesT0[nodeLocalT0]);
+          break;
         }
       }
     }
@@ -499,6 +626,91 @@ std::vector<TInt> SimplicesCell::intersectionNodes(const SimplicesCell& simplice
 
   return std::move(v);
 }
+/******************************************************************************/
+void SimplicesCell::intersectionSimplexFacesForUnbuildStruct(const SimplicesCell& simplicesCell, std::vector<TSimplexID>& intersectionNodes)
+{
+  if(m_simplex_mesh != nullptr)
+  {
+    std::vector<TInt> nodesT0{
+      getNode(0).getGlobalNode(),
+      getNode(1).getGlobalNode(),
+      getNode(2).getGlobalNode(),
+      getNode(3).getGlobalNode()
+    };
+
+    std::vector<TInt> nodesT1{
+      simplicesCell.getNode(0).getGlobalNode(),
+      simplicesCell.getNode(1).getGlobalNode(),
+      simplicesCell.getNode(2).getGlobalNode(),
+      simplicesCell.getNode(3).getGlobalNode()
+    };
+
+    unsigned int cpt = 0;
+    for(unsigned int nodeLocalT0 = 0; nodeLocalT0 < nodesT0.size(); nodeLocalT0++)
+    {
+      unsigned int sizeV = intersectionNodes.size();
+      for(unsigned int nodeLocalT1 = 0; nodeLocalT1 < nodesT1.size(); nodeLocalT1++)
+      {
+        if(nodesT0[nodeLocalT0] == nodesT1[nodeLocalT1])
+        {
+          intersectionNodes.push_back(nodesT0[nodeLocalT0]);
+          break;
+        }
+      }
+
+      if(intersectionNodes.size() == sizeV)
+      {
+        cpt++;
+        if(cpt > 1)
+        {
+          break;
+        }
+      }
+    }
+  }
+  else
+  {
+      /*TODO exeption*/
+  }
+
+}
+/*----------------------------------------------------------------------------*/
+bool SimplicesCell::intersectionSimplexFaces(const SimplicesCell& simplicesCell, std::vector<TInt>& simplicesNodeLocal)
+{
+  if(m_simplex_mesh != nullptr)
+  {
+    unsigned int nodeLocalNbr = 4;
+    std::vector<TInt> nodesT0{
+      getNode(0).getGlobalNode(),
+      getNode(1).getGlobalNode(),
+      getNode(2).getGlobalNode(),
+      getNode(3).getGlobalNode()
+    };
+
+    for(unsigned int nodeLocal = 0; nodeLocal < nodeLocalNbr ; nodeLocal++)
+    {
+      TSimplexID oppositeCell  = oppositeTetraIdx(nodeLocal);
+      if(oppositeCell == simplicesCell.simplexId())
+      {
+        simplicesNodeLocal.reserve(2);
+        simplicesNodeLocal.push_back(nodeLocal);
+        for(unsigned int nodeLocalBis = 0 ; nodeLocalBis < nodeLocalNbr ; nodeLocalBis++)
+        {
+          if(simplicesCell.oppositeTetraIdx(nodeLocalBis) == m_simplexId)
+          {
+            simplicesNodeLocal.push_back(nodeLocalBis);
+            return true;
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+      /*TODO exeption*/
+  }
+  return false;
+}
 /*----------------------------------------------------------------------------*/
 SimplicesNode  SimplicesCell::getNode(const TInt indexLocal) const
 {
@@ -509,12 +721,10 @@ std::vector<unsigned int> SimplicesCell::nodes() const
 {
     std::vector<unsigned int> v{};
     v.resize(4);
-
     v[0] = (unsigned int)m_simplex_mesh->m_tet_nodes[m_simplexId][0];
     v[1] = (unsigned int)m_simplex_mesh->m_tet_nodes[m_simplexId][1];
     v[2] = (unsigned int)m_simplex_mesh->m_tet_nodes[m_simplexId][2];
     v[3] = (unsigned int)m_simplex_mesh->m_tet_nodes[m_simplexId][3];
-
     return std::move(v);
 }
 /*----------------------------------------------------------------------------*/
@@ -576,7 +786,7 @@ bool SimplicesCell::containAtLeast(TInt N, const std::vector<simplicesNode::Simp
   return (cmpt >= N)? true : false;
 }
 /*----------------------------------------------------------------------------*/
-double SimplicesCell::signedBarycentric(const gmds::math::Point& pt, const std::vector<SimplicesNode>& nodes)
+double SimplicesCell::signedBarycentric(const gmds::math::Point& pt, const std::vector<SimplicesNode>& nodes) const
 {
   if(nodes.size() > 3)
   {
@@ -685,8 +895,72 @@ std::vector<TInt> SimplicesCell::getOtherNodeInSimplex(const std::vector<TSimple
       }
     }
 
-    return std::move(res);
+  }
+  return std::move(res);
+
+}
+/*----------------------------------------------------------------------------*/
+bool SimplicesCell::isPointInSimplex(const math::Point& pt) const
+{
+  bool flag = false;
+  double u = signedBarycentric(0,pt);
+  double v = signedBarycentric(1,pt);
+  double w = signedBarycentric(2,pt);
+  double t = signedBarycentric(3,pt);
+
+
+  double epsilon = 0.0;
+  if(u >= epsilon && v >= epsilon && w >= epsilon && t >= epsilon)
+  {
+    flag = true;
+  }
+  return flag;
+}
+/*----------------------------------------------------------------------------*/
+bool SimplicesCell::isPointInSimplices(const math::Point& pt, double& u, double& v, double& w, double& t) const
+{
+  bool flag = false;
+  u = signedBarycentric(0,pt);
+  v = signedBarycentric(1,pt);
+  w = signedBarycentric(2,pt);
+  t = signedBarycentric(3,pt);
+
+  double epsilon = 0.0;
+  if(u >= epsilon && v >= epsilon && w >= epsilon && t >= epsilon)
+  {
+    flag = true;
+  }
+  return flag;
+}
+/*----------------------------------------------------------------------------*/
+unsigned int SimplicesCell::checkFaceNbrVisibility(std::vector<std::vector<TInt>>& facesId, const SimplicesNode & simpliceNode)
+{
+  facesId.clear();
+  unsigned int nbrFaceNotVisible = 0;
+  std::vector<TInt> nodes = getNodes();
+  if(nodes.size() == 4)
+  {
+    std::vector<std::vector<TInt>> faces{{nodes[0], nodes[1], nodes[2]}, {nodes[0], nodes[1], nodes[3]},
+                                         {nodes[0], nodes[2], nodes[3]}, {nodes[1], nodes[2], nodes[3]}};
+    std::vector<math::Vector3d> normals = normalOfFaces(faces);
+
+    for(unsigned int iter = 0; iter < faces.size(); iter ++)
+    {
+      TInt nodeIdFace        = faces[iter][0];
+      SimplicesNode nodeFace = SimplicesNode(m_simplex_mesh, nodeIdFace);
+      math::Vector3d vec     = simpliceNode.getCoords() - nodeFace.getCoords();
+      if(vec.dot(normals[iter]) < 0.0)
+      {
+        facesId.push_back(faces[iter]);
+        nbrFaceNotVisible++;
+      }
+    }
+  }
+  else
+  {
+    //TODO exception
+    std::cout << "nodes.size() != 4" << std::endl;
   }
 
-
+  return nbrFaceNotVisible;
 }
