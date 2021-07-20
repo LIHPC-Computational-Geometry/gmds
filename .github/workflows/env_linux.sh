@@ -6,3 +6,4 @@ sed -i 's#"${ARCHITECTURE}/${COMPILERNAME}-${COMPILERVER}/${PACKAGE}-${VERSION}-
 spack external find cmake
 spack install lcov
 spack install kokkos+openmp
+spack install glpk
