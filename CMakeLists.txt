@@ -284,7 +284,9 @@ if( (NOT IS_ABSOLUTE ${GLPK_LIB}) OR
     set(GLPK_INC ${CMAKE_BINARY_DIR}/glpk/include)
 endif()
 
-
+    message(STATUS "============= GLPK  ===============")
+    message(STATUS "lib path= ${GLPK_LIB}")
+    message(STATUS "inc path = ${GLPK_INC}")
 #==============================================================================
 # PROJECT STRUCTURE
 #==============================================================================
