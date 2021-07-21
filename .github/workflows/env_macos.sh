@@ -1,5 +1,7 @@
 #!/bin/bash
 
+brew install autoconf automake libtool
+
 git clone --depth=1 https://github.com/spack/spack.git
 . ./spack/share/spack/setup-env.sh
 
@@ -10,5 +12,4 @@ cp /Users/runner/work/gmds/gmds/.github/workflows/misc/config.yaml /Users/runner
 . ./spack/share/spack/setup-env.sh
 spack external find cmake
 spack install lcov
-spack install automake
 spack install glpk
