@@ -10,5 +10,5 @@ cp /Users/runner/work/gmds/gmds/.github/workflows/misc/config.yaml /Users/runner
 . ./spack/share/spack/setup-env.sh
 spack external find cmake
 spack install lcov
-spack install autoconf
+spack install automake
 spack install glpk
