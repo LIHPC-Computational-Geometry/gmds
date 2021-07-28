@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]#windows-latest]
         config: [Release, Debug]
         include:
           - os: macos-latest
@@ -55,18 +55,23 @@ jobs:
     - name: Build
       working-directory: ${{github.workspace}}/build
       shell: bash
-      # Execute the build.  You can specify a specific target with "--target <NAME>"
-      run: cmake --build . --config ${{ matrix.config }}
+      # Execute the buld.  You can specify a specific target with "--target <NAME>"
+      run: cmake --ld . --config ${{ matrix.config }}
 
-    - name: Test
+    - name: Test-release
       working-directory: ${{github.workspace}}/build
       shell: bash
-      run: |
-        if [ ${{ matrix.config }} = 'Release']; then
-          if [ ${{ matrix.os }} = 'macos-latest']; then
-            ctest -E SingGraphBuilder2DTest.halfDisk
-          else
-            ctest --rerun-failed --output-on-failure
-        else
-         make code_cover_gmds
-        fi
+      if: (${{ matrix.config }} = 'Release' && !${{ matrix.os }} = 'macos-latest')
+      run: ctest --rerun-failed --output-on-failure
+        
+    - name: Test-debug
+      working-directory: ${{github.workspace}}/build
+      shell: bash
+      if: ${{ matrix.config }} = 'Debug' 
+      run: make code_cover_gmds
+      
+    - name: Test-release-macos
+      working-directory: ${{github.workspace}}/build
+      shell: bash
+      if: (${{ matrix.config }} = 'Release' && ${{ matrix.os }} = 'macos-latest')
+      run: ctest -E SingGraphBuilder2DTest.halfDisk
