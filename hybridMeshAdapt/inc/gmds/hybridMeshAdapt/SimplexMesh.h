@@ -18,6 +18,7 @@
 #include <gmds/hybridMeshAdapt/DelaunayPointInsertion.h>
 #include <gmds/hybridMeshAdapt/PointInsertion.h>
 #include <gmds/hybridMeshAdapt/CavityOperator.h>
+#include <gmds/hybridMeshAdapt/Octree.h>
 /*----------------------------------------------------------------------------*/
 #include <gmds/math/Orientation.h>
 /*----------------------------------------------------------------------------*/
@@ -35,6 +36,7 @@
  namespace gmds{
    namespace hybrid{
 
+     class Octree;
 class EXPORT_GMDS SimplexMesh
 {
  public:
@@ -112,12 +114,11 @@ class EXPORT_GMDS SimplexMesh
 
   bool checkSimplexContenaing(const gmds::math::Point& pt, TSimplexID& tetraContainingPt);
 
-  bool checkSimplicesContenaing(const gmds::math::Point& pt, std::vector<TSimplexID>& tetraContainingPt);
+  bool checkSimplicesContenaing(const gmds::math::Point& pt, std::vector<TSimplexID>& tetraContainingPt, TSimplexID simplexToCheckFirst = std::numeric_limits<TSimplexID>::min());
 
   TSimplexID nextSimplexToCheck(const TSimplexID currentSimplex, const math::Point& pt, double& u, double& v, double& w, double& t, BitVector& cyclingCheck, closestSimplex& closerSimplexInfo);
 
   TSimplexID nextSimplexToCheckOrientation(const TSimplexID currentSimplex, const math::Point& pt, std::vector<math::Orientation::Sign>& uvwt, BitVector& cyclingCheck);
-
 
   /*return true if pt is in the tetra.. if not false*/
   bool isInSimplex(TSimplexID& tetra, const gmds::math::Point& pt);
@@ -159,6 +160,8 @@ class EXPORT_GMDS SimplexMesh
   /* Return the triangle adjacente face of ATriID by the noed ANodeID*/
   TSimplexID getOppositeFace      (const TInt ANodeID, const TSimplexID ATriID);
 
+  TSimplexID getSimplexFromBase   (const TInt ANodeID);
+
   /*adding some point to the mesh*/
   TInt addNode(const math::Point&& pt);
 
@@ -170,7 +173,7 @@ class EXPORT_GMDS SimplexMesh
 
 
   /*adding some point to the mesh and check if  this point already exist*/
-  TInt addNodeAndcheck(const math::Point& pt, std::vector<TSimplexID>& tetraContainingPt, bool& alreadyAdd);
+  TInt addNodeAndcheck(const math::Point& pt, std::vector<TSimplexID>& tetraContainingPt, bool& alreadyAdd, TSimplexID checkSimplicesContenaing = std::numeric_limits<TSimplexID>::min());
 
   /*return true if the node deleting passed well*/
   bool deleteNode(const TInt indexNode, bool eraseNode = true);
@@ -289,6 +292,8 @@ class EXPORT_GMDS SimplexMesh
   /*delete All the tetra but tetra in arg*/
   void deleteAllSimplicesBut(const std::vector<TSimplexID> & simplices);
 
+  void deleteAllTrianglesBut(const std::vector<TSimplexID> & triangles);
+
   void deleteAllTriangle();
 
   void clear();
@@ -321,7 +326,7 @@ class EXPORT_GMDS SimplexMesh
 
   void rebuildCavity(operators::CavityOperator::CavityIO& cavityIO, const TInt nodeToConnect);
 
-  void pointsLabeling(const std::vector<math::Point> &points, std::vector<int>& pointsLabeling, std::vector<int>& topoIndex);
+  void pointsLabeling(const std::vector<math::Point> &points, std::vector<int>& pointsLabeling, std::vector<int>& topoIndex, std::vector<TInt>& nearNodes);
 
   void fillBNDVariable();
 
@@ -363,6 +368,9 @@ class EXPORT_GMDS SimplexMesh
     return os;
   }
 
+  void setOctree(Octree* octree){m_octree = octree;}
+
+  Octree* getOctree(){return m_octree;}
 
 private:
 
@@ -384,6 +392,7 @@ private:
   std::vector<std::vector<TInt>> m_tri_nodes; //3 sommets et 1 index du tetra voisin positif
   std::vector<std::vector<TInt>> m_tri_adj; //3 faces et 1 index du tetra voisin negatif
 
+  Octree* m_octree = nullptr;
   std::map<unsigned int, std::pair<unsigned int, unsigned int>> edgeTianglesIndices{};
 
 

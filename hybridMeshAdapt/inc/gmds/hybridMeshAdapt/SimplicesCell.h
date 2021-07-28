@@ -81,6 +81,8 @@ namespace gmds
 
         bool intersectionSimplexFaces(const SimplicesCell& simplicesCell, std::vector<TInt>& simplicesNodeLocal);
 
+        std::vector<TInt> intersectionFaces(const std::vector<TInt>& localFaces) const;
+
         /*Reorient the Tetra (the normal is out of the Tetra ) if the normal is inside the Tetra*/
         void reorientTet();
 

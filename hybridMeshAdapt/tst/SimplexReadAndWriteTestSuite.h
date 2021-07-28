@@ -11,6 +11,7 @@
 #include <gmds/hybridMeshAdapt/ISimplexMeshIOService.h>
 #include <gmds/hybridMeshAdapt/EdgeInsertion.h>
 #include <gmds/hybridMeshAdapt/DelaunayPointInsertion.h>
+#include <gmds/hybridMeshAdapt/Octree.h>
 #include <gmds/io/VTKReader.h>
 #include <gmds/io/VTKWriter.h>
 #include <unit_test_config.h>
@@ -42,6 +43,19 @@ TEST(SimplexReadAndWriteTestClass, test_write_simple_triangle)
   vtkWriter.write("simple_triangle.vtk");
 }
 /*----------------------------------------------------------------------------*/
+TEST(SimplexReadAndWriteTestClass, test)
+{
+  gmds::hybrid::SimplexMesh simplexMesh;
+
+  simplexMesh.addNode(math::Point(-10.6112, -5, -10.0744)); //0
+
+
+  gmds::ISimplexMeshIOService ioService(&simplexMesh);
+  gmds::VTKWriter vtkWriter(&ioService);
+  vtkWriter.setCellOptions(gmds::N|gmds::F);
+  vtkWriter.write("simple_.vtk");
+}
+/*----------------------------------------------------------------------------*/
 TEST(SimplexReadAndWriteTestClass, test_write_simple_triangles)
 {
   gmds::hybrid::SimplexMesh simplexMesh;
@@ -67,21 +81,34 @@ TEST(SimplexReadAndWriteTestClass, test_write_simple_triangles)
   simplexMesh.addTriangle(1, 2, 3); //-5
 
   simplexMesh.addTetraedre(1, 3 , 2, 6); // Tetra 4*/
-
+  Octree oc(&simplexMesh, 1);
   gmds::ISimplexMeshIOService ioService(&simplexMesh);
   gmds::VTKWriter vtkWriter(&ioService);
   vtkWriter.setCellOptions(gmds::N|gmds::F|gmds::R);
   vtkWriter.write("simple_triangles.vtk");
 }
 /*----------------------------------------------------------------------------*/
+TEST(MeshClass, test_volume)
+{
+  gmds::hybrid::SimplexMesh simplexMesh;
+  simplexMesh.addNode(math::Point(0.0, 0.0, 0.0)); // Node 0
+  simplexMesh.addNode(math::Point(2.0, 0.0, 0.0)); // Node 1
+  simplexMesh.addNode(math::Point(0.0, 0.0, 2.0)); // Node 2
+  simplexMesh.addNode(math::Point(0.0, 2.0, 0.0)); // Node 3
+
+  simplexMesh.addTetraedre(0, 1 , 2, 3); // Tetra 0
+
+  SimplicesCell cell = SimplicesCell(&simplexMesh, 0);
+  double volumeCell = cell.getVolumeOfCell();
+}
 TEST(MeshClass, test_write_hull_of_simpleCube)
-{/*
-    gmds::hybrid::SimplexMesh simplexMesh;
+{
+    /*gmds::hybrid::SimplexMesh simplexMesh;
 
     std::string dir(TEST_SAMPLES_DIR);
     gmds::ISimplexMeshIOService ioService(&simplexMesh);
     //std::string vtk_file = dir+"/simpleCube.vtk";
-    std::string vtk_file = dir+"/halfCylinder/HalfCylinder.vtk";
+    std::string vtk_file = dir+"/ModeleEnS/ModeleEnS.vtk";
     gmds::VTKReader vtkReader(&ioService);
     vtkReader.setCellOptions(gmds::R|gmds::N);
     vtkReader.setDataOptions(gmds::N);
@@ -93,14 +120,20 @@ TEST(MeshClass, test_write_hull_of_simpleCube)
     gmds::VTKWriter vtkWriter(&ioService);
     vtkWriter.setCellOptions(gmds::N|gmds::F);
     vtkWriter.setDataOptions(gmds::F);
-    vtkWriter.write("halfCylinder_Hull.vtk");*/
+    vtkWriter.write("ModeleEnS_Hull.vtk");*/
 }
 /*----------------------------------------------------------------------------*/
 TEST(SimplexMeshTestClass, test_nodes_labeling)
-{
+{/*
   SimplexMesh simplexMesh = SimplexMesh();
   std::string dir(TEST_SAMPLES_DIR);
-  std::string vtk_file = dir+"/halfCylinder/HalfCylinder.vtk";
+  //std::string vtk_file = dir+"/halfCylinder/HalfCylinder.vtk";
+  //std::string vtk_file = dir+"/Dome/Dome.vtk";
+  //std::string vtk_file = dir+"/ModeleEnS/ModeleEnS.vtk";
+  //std::string vtk_file = dir+"/CylindreTordu/CylindreTordu.vtk";
+  //std::string vtk_file = dir+"/ModeleCAD1/ModeleCAD1.vtk";
+  std::string vtk_file = dir+"/ModeleCAD2/ModeleCAD2.vtk";
+
   gmds::ISimplexMeshIOService ioService(&simplexMesh);
   gmds::VTKReader vtkReader(&ioService);
   vtkReader.setCellOptions(gmds::R|gmds::N);
@@ -109,9 +142,18 @@ TEST(SimplexMeshTestClass, test_nodes_labeling)
   simplexMesh.buildAdjInfoGlobal();
   simplexMesh.buildSimplexHull();
 
+  Octree oc(&simplexMesh, 50);
+  simplexMesh.setOctree(&oc);
+
   std::vector<math::Point> points{};
   std::ifstream input;
-  std::string filename = dir+"/halfCylinder/HalfCylinder_points_2147.txt";
+  //std::string filename = dir+"/halfCylinder/HalfCylinder_points_2147.txt";
+  //std::string filename = dir+"/Dome/Dome_generated_2922.txt";
+  //std::string filename = dir+"/ModeleEnS/GeneratedPoints4466.txt";
+  //std::string filename = dir+"/CylindreTordu/CylindreTordu_generated_5686.txt";
+  //std::string filename = dir+"/ModeleCAD1/ModeleCAD1_generated_3033.txt"; <--- probleme avec les indices des surface de base
+  std::string filename = dir+"/ModeleCAD2/ModeleCAD2_generated_5199.txt";
+
   input.open(filename.c_str());
   double x,y,z;
   char ch;
@@ -136,8 +178,8 @@ TEST(SimplexMeshTestClass, test_nodes_labeling)
   SimplexMesh simplexMeshNodes = SimplexMesh();
   std::vector<int> labelPoints{};
   std::vector<int> topoIndex{};
-  simplexMesh.pointsLabeling(points, labelPoints, topoIndex);
-
+  std::vector<TSimplexID> nearCell{};
+  simplexMesh.pointsLabeling(points, labelPoints, topoIndex, nearCell);
   for(auto const & point : points)
   {
     TInt node = simplexMeshNodes.addNode(point);
@@ -170,7 +212,7 @@ TEST(SimplexMeshTestClass, test_nodes_labeling)
   gmds::VTKWriter vtkWriter(&ioServiceNodes);
   vtkWriter.setCellOptions(gmds::N|gmds::R);
   vtkWriter.setDataOptions(gmds::N|gmds::R);
-  vtkWriter.write("NodesLabeling_2147Bis.vtk");
+  vtkWriter.write("ModeleCAD2_5199_NodesLabellingOCTREE.vtk");*/
 }
 /*----------------------------------------------------------------------------*/
 TEST(SimplexMeshTestClass, test_DelaunayInsertion_With_Labelized_Nodes)
@@ -257,7 +299,14 @@ TEST(SimplexMeshTestClass, test_DelaunayInsertion_With_Labelized_Nodes_With_Edge
 {
   SimplexMesh simplexMesh = SimplexMesh();
   std::string dir(TEST_SAMPLES_DIR);
-  std::string vtk_file = dir+"/halfCylinder/HalfCylinder.vtk";
+  //std::string vtk_file = dir+"/halfCylinder/HalfCylinder.vtk";
+  //std::string vtk_file = dir+"/Dome/Dome.vtk";
+  //std::string vtk_file = dir+"/ModeleEnS/ModeleEnS.vtk";
+  //std::string vtk_file = dir+"/CylindreTordu/CylindreTordu.vtk";
+  //std::string vtk_file = dir+"/ModeleCAD1/ModeleCAD1.vtk";
+  std::string vtk_file = dir+"/ModeleCAD2/ModeleCAD2.vtk";
+
+
   gmds::ISimplexMeshIOService ioService(&simplexMesh);
   gmds::VTKReader vtkReader(&ioService);
   vtkReader.setCellOptions(gmds::R|gmds::N);
@@ -266,9 +315,18 @@ TEST(SimplexMeshTestClass, test_DelaunayInsertion_With_Labelized_Nodes_With_Edge
   simplexMesh.buildAdjInfoGlobal();
   simplexMesh.buildSimplexHull();
 
+  Octree oc(&simplexMesh, 50);
+  simplexMesh.setOctree(&oc);
+
   std::vector<math::Point> points{};
   std::ifstream input;
-  std::string filename = dir+"/halfCylinder/HalfCylinder_points_2147.txt";
+  //std::string filename = dir+"/halfCylinder/HalfCylinder_points_6683.txt";
+  //std::string filename = dir+"/Dome/Dome_generated_2922.txt";
+  //std::string filename = dir+"/ModeleEnS/GeneratedPoints4466.txt";
+  //std::string filename = dir+"/CylindreTordu/CylindreTordu_generated_5686.txt";
+  //std::string filename = dir+"/ModeleCAD1/ModeleCAD1_generated_3033.txt";
+  std::string filename = dir+"/ModeleCAD2/ModeleCAD2_generated_5199.txt";
+
   input.open(filename.c_str());
   double x,y,z;
   char ch;
@@ -292,7 +350,16 @@ TEST(SimplexMeshTestClass, test_DelaunayInsertion_With_Labelized_Nodes_With_Edge
   //start points labeling
   std::vector<int> labelPoints{};
   std::vector<int> topoIndex{};
-  simplexMesh.pointsLabeling(points, labelPoints, topoIndex);
+  std::vector<TSimplexID> nearCells{};
+  std::map<TSimplexID, std::vector<unsigned int>> indexMap{};
+  simplexMesh.pointsLabeling(points, labelPoints, topoIndex, nearCells);
+  for(unsigned int index = 0 ; index < nearCells.size() ; index++)
+  {
+    TSimplexID simplex = nearCells[index];
+    indexMap[simplex].push_back(index);
+  }
+
+
   gmds::Variable<int>* BND_NODES_TOPO = simplexMesh.newVariable<int, SimplicesNode>("BND_NODES_TOPO");
   gmds::Variable<int>* BND_NODES_INDICES = simplexMesh.newVariable<int, SimplicesNode>("BND_NODES_INDICES");
   if(labelPoints.size() != topoIndex.size())
@@ -312,15 +379,20 @@ TEST(SimplexMeshTestClass, test_DelaunayInsertion_With_Labelized_Nodes_With_Edge
   m <<  1.0, 0.0, .0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0;
   var->setValuesTo(m);
   CriterionRAIS criterionRAIS(new VolumeCriterion());
-  gmds::BitVector nodesAdded(points.size());
-
-
-  for(unsigned int idxPt = 0 ; idxPt < points.size() ;idxPt++)
+  gmds::BitVector nodesAdded(simplexMesh.nodesCapacity());
+  for(unsigned int idxPt = 0 ; idxPt < points.size() ; idxPt++)
   {
+    const gmds::BitVector & triIds   = simplexMesh.getBitVectorTri();
+    const gmds::BitVector & nodesIds = simplexMesh.getBitVectorNodes();
+
     math::Point point = points[idxPt];
+    TSimplexID nearCell = nearCells[idxPt];
+    std::vector<unsigned int> indices = indexMap[nearCell];
+
+
     bool alreadyAdd = false;
     std::vector<TSimplexID> tetraContenaingPt{};
-    TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
+    TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd, nearCell);
 
     if(labelPoints[idxPt]      == SimplexMesh::topo::CORNER)  {BND_VERTEX_COLOR->set(node, topoIndex[idxPt]);}
     else if(labelPoints[idxPt] == SimplexMesh::topo::RIDGE)   {BND_CURVE_COLOR->set(node, topoIndex[idxPt]);}
@@ -329,25 +401,58 @@ TEST(SimplexMeshTestClass, test_DelaunayInsertion_With_Labelized_Nodes_With_Edge
     if(!alreadyAdd)
     {
       simplexMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("metric")->value(node) = m;
-      bool status = false;
-      DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, tetraContenaingPt, status, nodesAdded);
-      if(status)
+      if(labelPoints[idxPt] != SimplexMesh::topo::CORNER)
       {
-        nodesAdded.assign(node);
+        bool status = false;
+        std::vector<TSimplexID> deletedSimplex{};
+        DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, tetraContenaingPt, status, nodesAdded, deletedSimplex);
+        if(status)
+        {
+          TSimplexID nearCell = simplexMesh.getSimplexFromBase(node);
+          for(auto const index : indices)
+          {
+            nearCells[index] = nearCell;
+          }
+
+          if(nodesAdded.capacity() != nodesIds.capacity())
+          {
+            nodesAdded.resize(nodesIds.capacity());
+          }
+          nodesAdded.assign(node);
+        }
       }
+    }
+    else
+    {
+      if(nodesAdded.capacity() != nodesIds.capacity())
+      {
+        nodesAdded.resize(nodesIds.capacity());
+      }
+      nodesAdded.assign(node);
     }
   }
 
-
+  gmds::VTKWriter vtkWriterDI(&ioService);
+  vtkWriterDI.setCellOptions(gmds::N|gmds::F|gmds::R);
+  vtkWriterDI.setDataOptions(gmds::N|gmds::F|gmds::R);
+  vtkWriterDI.write("ModeleCAD2_DI_5199.vtk");
   //////////////////////////////////////////////////////////////////////////////
   //simplexMesh.fillBNDVariable();
   //////////////////////////////////////////////////////////////////////////////
+  std::cout << "edgesRemove start" << std::endl;
   simplexMesh.edgesRemove(nodesAdded);
+  std::cout << "edgesRemove end" << std::endl;
 
   gmds::VTKWriter vtkWriter(&ioService);
   vtkWriter.setCellOptions(gmds::N|gmds::F|gmds::R);
   vtkWriter.setDataOptions(gmds::N|gmds::F|gmds::R);
-  vtkWriter.write("edgeCollapse_6683_ESV_ref.vtk");
+  //vtkWriter.write("Dome_ER_2922.vtk");
+  //vtkWriter.write("HalfCylinder_ER_6683.vtk");
+  //vtkWriter.write("ModeleEnS_ER_4466.vtk");
+  //vtkWriter.write("CylindreTordu_ER_5686.vtk");
+  //vtkWriter.write("ModeleCAD_ER_5686.vtk");
+  vtkWriter.write("ModeleCAD2_ER_5199.vtk");
+  std::cout << "write" << std::endl;
 }
 /*----------------------------------------------------------------------------*/
 TEST(SimplexMeshTestClass, test02_point_insertion_on_two_tetra)

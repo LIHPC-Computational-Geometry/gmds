@@ -153,6 +153,9 @@ const std::vector<TInt>& CavityOperator::CavityIO::CavityIO::nodeInCavity()
   //////////////////////////////////////////////////////////////////////////////
   borderNodesBitvector.clear();
   nodesBitvector.clear();
+  borderNodesBitvector.resize(m_simplex_mesh->nodesCapacity());
+  nodesBitvector.resize(m_simplex_mesh->nodesCapacity());
+
   std::vector<std::vector<unsigned int>> localsBorderNodeSurface{};
 
   std::vector<TInt> allNodeInSurface{};
@@ -174,7 +177,6 @@ const std::vector<TInt>& CavityOperator::CavityIO::CavityIO::nodeInCavity()
       }
     }
   }
-
 
   for(auto const & tri : getTrianglesConnectedToPInCavity())
   {
@@ -203,9 +205,8 @@ const std::vector<TInt>& CavityOperator::CavityIO::CavityIO::nodeInCavity()
     }
   }
 
-
   //now we extract the interior nodes of the cavity with the help of allNodes & borderNodesBitvector
-  std::copy_if(allNodeInSurface.begin(), allNodeInSurface.end(), std::back_inserter(m_nodeInCavity), [&](const TInt node)
+  std::copy_if(allNodeInSurface.begin(), allNodeInSurface.end(), std::back_inserter(m_surfaceNodeInCavity), [&](const TInt node)
   {
     return (borderNodesBitvector[node] == 0);
   });

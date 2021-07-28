@@ -50,6 +50,8 @@ namespace gmds
 
             const std::vector<TInt> &            getNodeInCavity(){return m_nodeInCavity;}
 
+            const std::vector<TInt> &            getSurfaceNodeInCavity(){return m_surfaceNodeInCavity;}
+
             void addNodeInCavity           (const TInt node){m_nodeInCavity.push_back(node);}
 
             const std::vector<TSimplexID>  &  cellInCavity() const {return m_cavityCellIn;}
@@ -106,6 +108,8 @@ namespace gmds
             std::vector<std::vector<TInt>> m_borderSurfaceNode;
 
             std::vector<TInt> m_nodeInCavity;
+
+            std::vector<TInt> m_surfaceNodeInCavity;
 
             SimplexMesh*      m_simplex_mesh   = nullptr;
           };

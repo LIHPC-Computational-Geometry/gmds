@@ -60,7 +60,7 @@ double SimplicesCell::getVolumeOfCell() const
   }
   if(m_simplex_mesh != nullptr)
   {
-    const TInt Id1 =  m_simplex_mesh->m_tet_nodes[m_simplexId][0];
+    /*const TInt Id1 =  m_simplex_mesh->m_tet_nodes[m_simplexId][0];
     const TInt Id2 =  m_simplex_mesh->m_tet_nodes[m_simplexId][1];
     const TInt Id3 =  m_simplex_mesh->m_tet_nodes[m_simplexId][2];
     const TInt Id4 =  m_simplex_mesh->m_tet_nodes[m_simplexId][3];
@@ -81,7 +81,33 @@ double SimplicesCell::getVolumeOfCell() const
     //Eigen::Matrix3d m;
     //m.col(0) = v1; m.col(1) = v2; m.col(2) = v3;
 
-    return 1.0 / 6.0 *(v3.dot(v1.cross(v2)));
+    return 1.0 / 6.0 *(v3.dot(v1.cross(v2)));*/
+
+
+    const TInt Node0 = m_simplex_mesh->m_tet_nodes[m_simplexId][0]; //1
+    const TInt Node1 = m_simplex_mesh->m_tet_nodes[m_simplexId][1]; //3
+    const TInt Node2 = m_simplex_mesh->m_tet_nodes[m_simplexId][2]; //2
+    const TInt Node3 = m_simplex_mesh->m_tet_nodes[m_simplexId][3];
+
+    const math::Point pt0 = m_simplex_mesh->m_coords[Node0];
+    const math::Point pt1 = m_simplex_mesh->m_coords[Node1];
+    const math::Point pt2 = m_simplex_mesh->m_coords[Node2];
+    const math::Point pt3 = m_simplex_mesh->m_coords[Node3];
+
+    const math::VectorND<3, double> e0(pt1 - pt0);
+    const math::VectorND<3, double> e1(pt2 - pt0);
+    const math::VectorND<3, double> e2(pt3 - pt0);
+
+    const Eigen::Vector3d v1(e0[0], e0[1], e0[2]);
+    const Eigen::Vector3d v2(e1[0], e1[1], e1[2]);
+    const Eigen::Vector3d v3(e2[0], e2[1], e2[2]);
+
+    Eigen::Matrix3d mat;
+    mat.col(0) = v1;
+    mat.col(1) = v2;
+    mat.col(2) = v3;
+
+    return 1.0/ 6.0 * mat.determinant();
   }
   else
   {
@@ -280,9 +306,9 @@ double SimplicesCell::signedBarycentric(const TInt index, const gmds::math::Poin
   double signedBar = 0.0;
   if(!(index < 0 || index > 3))
   {
-    const TInt Node0 = m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[index][0]];
-    const TInt Node1 = m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[index][1]];
-    const TInt Node2 = m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[index][2]];
+    const TInt Node0 = m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[index][0]]; //1
+    const TInt Node1 = m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[index][1]]; //3
+    const TInt Node2 = m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[index][2]]; //2
 
     const math::Point pt0 = m_simplex_mesh->m_coords[Node0];
     const math::Point pt1 = m_simplex_mesh->m_coords[Node1];
@@ -295,17 +321,10 @@ double SimplicesCell::signedBarycentric(const TInt index, const gmds::math::Poin
     const Eigen::Vector3d v2(e1[0], e1[1], e1[2]);
 
     Eigen::Vector3d normalTet = v1.cross(v2);
-    normalTet.normalize();
+    //normalTet.normalize();
 
     Eigen::Vector3d v3(pt[0] - pt0[0], pt[1] - pt0[1], pt[2] - pt0[2]);
-    //if(pt == pt0 || pt == pt1 || pt == pt2)
-    {
-        //signedBar =  10E-19;
-    }
-    //else
-    {
-        signedBar =  normalTet.dot(v3) * 1.0 / 6.0;
-    }
+    signedBar =  normalTet.dot(v3) * 1.0 / 6.0;
   }
   else
   {
@@ -583,6 +602,40 @@ std::vector<TSimplexID> SimplicesCell::adjacentTetra() const
   }
 
   return std::move(v);
+}
+/******************************************************************************/
+std::vector<TInt> SimplicesCell::intersectionFaces(const std::vector<TInt>& localFaces) const
+{
+  std::vector<TInt> res{};
+  if(localFaces.size() > 0)
+  {
+    if(localFaces.size() == 1)
+    {
+      res = getOrderedFace(localFaces.front());
+    }
+    else
+    {
+      std::vector<std::vector<TInt>> facesNodes{};
+      for(auto const face : localFaces)
+      {
+        std::vector<TInt> orderedFaces = getOrderedFace(face);
+        std::sort(orderedFaces.begin(), orderedFaces.end());
+        facesNodes.push_back(orderedFaces);
+      }
+
+      if(localFaces.size() == 2)
+      {
+        std::set_intersection(facesNodes.front().begin(), facesNodes.front().end(), facesNodes.back().begin(), facesNodes.back().end(), std::back_inserter(res));
+      }
+      else if(localFaces.size() == 3)
+      {
+        std::vector<TInt> tmp;
+        std::set_intersection(facesNodes[0].begin(), facesNodes[0].end(), facesNodes[1].begin(), facesNodes[1].end(), std::back_inserter(tmp));
+        std::set_intersection(tmp.begin(), tmp.end(), facesNodes[2].begin(), facesNodes[2].end(), std::back_inserter(res));
+      }
+    }
+  }
+  return res;
 }
 /******************************************************************************/
 std::vector<TInt> SimplicesCell::intersectionNodes(const SimplicesCell& simplicesCell)

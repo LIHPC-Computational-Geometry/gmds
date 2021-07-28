@@ -200,7 +200,7 @@ std::vector<TSimplexID> SimplicesNode::shell(const SimplicesNode& simplicesNode)
   std::sort(ballOf_vector0.begin(), ballOf_vector0.end());
   std::sort(ballOf_vector1.begin(), ballOf_vector1.end());
   std::set_intersection(ballOf_vector0.begin(), ballOf_vector0.end(), ballOf_vector1.begin(), ballOf_vector1.end(), std::back_inserter(v));
-  
+
   return std::move(v);
 }
 /******************************************************************************/
