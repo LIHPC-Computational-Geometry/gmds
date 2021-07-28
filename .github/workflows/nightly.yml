@@ -1,13 +1,11 @@
-name: nightly
+name: Nightly
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-    
+  schedule:
+    - cron:  '0 4 * * *'
+
 jobs:
-  Continuous:
+  OnNight:
     name: ${{ matrix.name }} (${{ matrix.config }})
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Linux, Windows or Mac. 
@@ -16,7 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
+        #windows-latest]
         config: [Release, Debug]
         include:
           - os: macos-latest
@@ -25,9 +24,9 @@ jobs:
           - os: ubuntu-latest
             name: Linux
             script_name: ./.github/workflows/env_linux.sh
-          - os: windows-latest
-            name: Windows
-            script_name: ./.github/workflows/env_win.cmd
+        #  - os: windows-latest
+        #    name: Windows
+        #    script_name: ./.github/workflows/env_win.cmd
     steps:
     - uses: actions/checkout@v2
       with:
@@ -39,7 +38,6 @@ jobs:
     - name: Create Build Environment
       # We create a subdirectory that will stand as our working directory for all 
       # subsequent commands
-      
       run: cmake -E make_directory ${{github.workspace}}/build
 
     - name: Configure CMake
@@ -53,17 +51,29 @@ jobs:
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DWITH_CODE_COVERAGE=ON -DCMAKE_PREFIX_PATH=${{github.workspace}}/spack/opt/spack/lcov -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
 
     - name: Build
+      # Use a bash shell so we can use the same syntax for environment variable
+      # access regardless of the host operating system
+      shell: bash
+      working-directory: ${{github.workspace}}/build
+      # Note the current convention is to use the -S and -B options here to specify source
+      # and build directories, but this is only available with CMake 3.13 and higher.
+      # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+      run: make 
+      
+    - name: Test-release
       working-directory: ${{github.workspace}}/build
       shell: bash
-      # Execute the build.  You can specify a specific target with "--target <NAME>"
-      run: cmake --build . --config ${{ matrix.config }}
-
-    - name: Test
+      if: (${{ matrix.config }} = 'Release' && !${{ matrix.os }} = 'macos-latest')
+      run: ctest --rerun-failed --output-on-failure
+        
+    - name: Test-debug
       working-directory: ${{github.workspace}}/build
       shell: bash
-      run: |
-        if [ ${{ matrix.config }} = 'Release']; then
-          ctest --rerun-failed --output-on-failure    
-        else
-         make code_cover_gmds
-        fi
+      if: ${{ matrix.config }} = 'Debug' 
+      run: make code_cover_gmds
+      
+    - name: Test-release-macos
+      working-directory: ${{github.workspace}}/build
+      shell: bash
+      if: (${{ matrix.config }} = 'Release' && ${{ matrix.os }} = 'macos-latest')
+      run: ctest -E SingGraphBuilder2DTest.halfDisk
