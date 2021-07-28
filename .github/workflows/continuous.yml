@@ -62,10 +62,16 @@ jobs:
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: make 
       
+    - name: Test-release-macos
+      working-directory: ${{github.workspace}}/build
+      shell: bash
+      if: (${{ matrix.config }} = 'Release' && ${{ matrix.os }} = 'macos-latest')
+      run: ctest -E SingGraphBuilder2DTest.halfDisk
+      
     - name: Test-release
       working-directory: ${{github.workspace}}/build
       shell: bash
-      if: (${{ matrix.config }} = 'Release' && !${{ matrix.os }} = 'macos-latest')
+      if: (${{ matrix.config }} = 'Release' && ${{ matrix.os }} != 'macos-latest')
       run: ctest --rerun-failed --output-on-failure
         
     - name: Test-debug
@@ -74,8 +80,3 @@ jobs:
       if: ${{ matrix.config }} = 'Debug' 
       run: make code_cover_gmds
       
-    - name: Test-release-macos
-      working-directory: ${{github.workspace}}/build
-      shell: bash
-      if: (${{ matrix.config }} = 'Release' && ${{ matrix.os }} = 'macos-latest')
-      run: ctest -E SingGraphBuilder2DTest.halfDisk
