@@ -65,18 +65,18 @@ jobs:
     - name: Test-release-macos
       working-directory: ${{github.workspace}}/build
       shell: bash
-      if: (${{ matrix.config }} = 'Release' && ${{ matrix.os }} = 'macos-latest')
+      if: (${{ matrix.config }} == 'Release') && (${{ matrix.os }} == 'macos-latest')
       run: ctest -E SingGraphBuilder2DTest.halfDisk
       
     - name: Test-release
       working-directory: ${{github.workspace}}/build
       shell: bash
-      if: (${{ matrix.config }} = 'Release' && ${{ matrix.os }} != 'macos-latest')
+      if: (${{ matrix.config }} == 'Release') && (${{ matrix.os }} != 'macos-latest')
       run: ctest --rerun-failed --output-on-failure
         
     - name: Test-debug
       working-directory: ${{github.workspace}}/build
       shell: bash
-      if: ${{ matrix.config }} = 'Debug' 
+      if: ${{ matrix.config }} == 'Debug' 
       run: make code_cover_gmds
       
