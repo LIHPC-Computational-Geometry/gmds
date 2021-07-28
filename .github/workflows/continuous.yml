@@ -16,7 +16,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]#windows-latest]
+        os: [ubuntu-latest, macos-latest]
+        #windows-latest]
         config: [Release, Debug]
         include:
           - os: macos-latest
@@ -25,9 +26,9 @@ jobs:
           - os: ubuntu-latest
             name: Linux
             script_name: ./.github/workflows/env_linux.sh
-          - os: windows-latest
-            name: Windows
-            script_name: ./.github/workflows/env_win.cmd
+        #  - os: windows-latest
+        #    name: Windows
+        #    script_name: ./.github/workflows/env_win.cmd
     steps:
     - uses: actions/checkout@v2
       with:
