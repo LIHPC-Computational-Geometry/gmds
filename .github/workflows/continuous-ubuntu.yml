@@ -8,7 +8,7 @@ on:
     
 jobs:
   Continuous:
-    name: ${{ matrix.config }
+    name: ${{ matrix.config }}
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Linux, Windows or Mac. 
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
