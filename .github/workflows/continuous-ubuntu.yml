@@ -52,12 +52,12 @@ jobs:
     - name: Test-release
       working-directory: ${{github.workspace}}/build
       shell: bash
-      if: matrix.config == 'Release'
+      if:  ${{ matrix.config == 'Release'}}
       run: ctest -C $BUILD_TYPE
 
     - name: Test-debug
       working-directory: ${{github.workspace}}/build
       shell: bash
-      if: matrix.config == 'Debug'
+      if:  ${{ matrix.config == 'Debug'}}
       run: make code_cover_gmds
       
