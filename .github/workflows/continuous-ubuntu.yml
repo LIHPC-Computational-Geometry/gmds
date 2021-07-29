@@ -49,15 +49,13 @@ jobs:
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config ${{ matrix.config }}
 
-    - name: Test-release
+    - name: Test
       working-directory: ${{github.workspace}}/build
       shell: bash
-      if:  ${{ matrix.config == 'Release'}}
-      run: ctest -C $BUILD_TYPE
-
-    - name: Test-debug
-      working-directory: ${{github.workspace}}/build
-      shell: bash
-      if:  ${{ matrix.config == 'Debug'}}
-      run: make code_cover_gmds
+      run: |
+          if ${{ matrix.config == 'Release'}}; then
+              ctest -C $BUILD_TYPE
+          else
+              make code_cover_gmds
+          fi
       
