@@ -12,11 +12,13 @@ jobs:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Linux, Windows or Mac. 
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-latest
+    runs-on:  ${{ matrix.os }}
     strategy:
       fail-fast: false
-      matrix:
-        config: [Release, Debug]
+    matrix:
+      os: [ubuntu-latest]
+      config: [Release, Debug]
+    
     steps:
     - uses: actions/checkout@v2
       with:
