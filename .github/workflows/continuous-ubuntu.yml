@@ -1,4 +1,4 @@
-name: continuous
+name: continuous-ubuntu
 
 on:
   push:
