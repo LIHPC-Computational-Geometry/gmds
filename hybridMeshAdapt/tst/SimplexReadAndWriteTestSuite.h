@@ -813,7 +813,7 @@ TEST(SimplexMeshTestClass, insertion_of_quadTet_in_TestMesh)
   vtkWriter.write("test.vtk");*/
 }
 /*----------------------------------------------------------------------------*/
-TEST(SimplexMeshTestClass, insertion_nodes_in_mesh)
+TEST(SimplexMeshTestClass, DISABLED_insertion_nodes_in_mesh)
 {
   /*test that would verify if the detection of the cavity initial by projection in the faces &
     the insertion by delaunay is valid or not
