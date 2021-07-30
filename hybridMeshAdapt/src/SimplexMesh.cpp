@@ -200,6 +200,17 @@ void SimplexMesh::deleteAllSimplicesBut(const std::vector<TSimplexID> & simplice
   }*/
 }
 /*****************************************************************************/
+void SimplexMesh::deleteAllTrianglesBut(const std::vector<TSimplexID> & triangles)
+{
+  for(unsigned int tri = 0 ; tri < m_tri_ids.capacity(); tri++)
+  {
+    if(std::find(triangles.begin(), triangles.end(), tri) == triangles.end())
+    {
+      m_tri_ids.unselect(tri);
+    }
+  }
+}
+/*****************************************************************************/
 void SimplexMesh::deleteAllTriangle()
 {
   for(unsigned int tri = 1 ; tri < m_tri_ids.capacity(); tri++)
@@ -326,13 +337,21 @@ TSimplexID SimplexMesh::getOppositeCell(const TInt ANodeID, const TSimplexID ATe
     }
   }
 }
-
 /*---------------------------------------------------------------------------*/
-TInt SimplexMesh::addNodeAndcheck(const math::Point& pt, std::vector<TSimplexID>& tetraContainingPt, bool& alreadyAdd)
+TSimplexID SimplexMesh::getSimplexFromBase(const TInt ANodeID)
 {
+  return m_base[ANodeID];
+}
+/*---------------------------------------------------------------------------*/
+TInt SimplexMesh::addNodeAndcheck(const math::Point& pt, std::vector<TSimplexID>& tetraContainingPt, bool& alreadyAdd, TSimplexID simplexToCheckFirst)
+{
+  bool flag = false;
   //check if the point pt is on any other node already in the mesh;
+  if(tetraContainingPt.size() == 0)
+  {
+    flag = checkSimplicesContenaing(pt, tetraContainingPt, simplexToCheckFirst);
+  }
 
-  bool flag = checkSimplicesContenaing(pt, tetraContainingPt);
 
   if(flag)
   {
@@ -2823,27 +2842,48 @@ bool SimplexMesh::simplexContaining(const Point& pt, TSimplexID& tetraContaining
 
 }
 /*---------------------------------------------------------------------------*/
-bool SimplexMesh::checkSimplicesContenaing(const gmds::math::Point& pt, std::vector<TSimplexID>& tetraContainingPt)
+bool SimplexMesh::checkSimplicesContenaing(const gmds::math::Point& pt, std::vector<TSimplexID>& tetraContainingPt, TSimplexID simplexToCheckFirst)
 {
   TSimplexID border = std::numeric_limits<int>::min();
-  double nextTet;
+  TSimplexID nextTet = border;
   bool flag = false;
   double u = 0.0 ; double v = 0.0 ; double w = 0.0 ; double t = 0.0 ;
   closestSimplex closestSimplex;
   std::vector<math::Orientation::Sign> uvwt;
   uvwt.reserve(4);
 
-  for(TSimplexID tet = 0; tet < m_tet_ids.capacity(); tet++)
+  /*for(TSimplexID tet = 0; tet < m_tet_ids.capacity(); tet++)
   {
-    if(m_tet_ids[tet] != 0)
+    if(m_tet_ids[tet] != 0)      
     {
         closestSimplex.closeSimplex = tet;
         break;
     }
+  }*/
+
+  TSimplexID simplexNextToPt = (simplexToCheckFirst == border)?m_octree->findSimplexNextTo(pt):simplexToCheckFirst;
+  BitVector cyclingCheck(getBitVectorTet().capacity());
+  nextTet = nextSimplexToCheckOrientation(simplexNextToPt, pt, uvwt, cyclingCheck);
+  if(nextTet >= 0)
+  {
+    tetraContainingPt.push_back(nextTet);
   }
 
+
+  /*const std::vector<TInt> nodesNextToPt = m_octree->findNodesNextTo(pt);
   BitVector cyclingCheck(getBitVectorTet().capacity());
-  for(TSimplexID tet = 0; tet < m_tet_ids.capacity(); tet++)
+  for(auto const & node : nodesNextToPt)
+  {
+    TSimplexID simplexNextToPt = getSimplexFromBase(node);
+    nextTet = nextSimplexToCheckOrientation(simplexNextToPt, pt, uvwt, cyclingCheck);
+    if(nextTet >= 0)
+    {
+      tetraContainingPt.push_back(nextTet);
+      break;
+    }
+  }*/
+
+  /*for(TSimplexID tet = 0; tet < m_tet_ids.capacity(); tet++)
   {
     if(m_tet_ids[tet] != 0)
     {
@@ -2862,6 +2902,7 @@ bool SimplexMesh::checkSimplicesContenaing(const gmds::math::Point& pt, std::vec
       }
     }
   }
+  */
 
 
   /*if the node did not find a simplex contenaing it, we find the minimal projection
@@ -2870,30 +2911,27 @@ bool SimplexMesh::checkSimplicesContenaing(const gmds::math::Point& pt, std::vec
   {
     double distance = std::numeric_limits<double>::max();
     tetraContainingPt.resize(1);
-    for(TSimplexID tet = 0; tet < m_tet_ids.capacity(); tet++)
+
+    for(TSimplexID tri = 1; tri < m_tri_ids.capacity(); tri++)
     {
-      if(m_tet_ids[tet] != 0)
+      if(m_tri_ids[tri] != 0)
       {
-        SimplicesCell currentSimplex(this, tet);
-        for(unsigned int faceIdx = 0 ; faceIdx < 4 ; faceIdx++)
+        double minProj = 0.0;
+        math::Point projectedPoint;
+
+        SimplicesTriangle triangle = SimplicesTriangle(this, tri);
+        std::vector<TInt> nodes = triangle.getNodes();
+        math::Point pt0 = SimplicesNode(this, nodes[0]).getCoords();
+        math::Point pt1 = SimplicesNode(this, nodes[1]).getCoords();
+        math::Point pt2 = SimplicesNode(this, nodes[2]).getCoords();
+
+        if(pointInTriangle(pt, pt0, pt1, pt2, minProj, projectedPoint))
         {
-          if(currentSimplex.oppositeTetraIdx(faceIdx) < 0)
+          minProj = std::fabs(minProj);
+          if(minProj < distance)
           {
-            const std::vector<TInt>&& faceNodes = currentSimplex.getOrderedFace(faceIdx);
-            if(faceNodes.size() == 3)
-            {
-              double minProj = 0.0;
-              math::Point projectedPoint;
-              if(pointInTriangle(pt, SimplicesNode(this,faceNodes[0]).getCoords(), SimplicesNode(this,faceNodes[1]).getCoords(), SimplicesNode(this,faceNodes[2]).getCoords(),minProj, projectedPoint))
-              {
-                if(minProj < distance)
-                {
-                  tetraContainingPt[0] = tet;
-                  distance = minProj;
-                  break;
-                }
-              }
-            }
+            tetraContainingPt[0] = m_tri_nodes[tri][3];
+            distance = minProj;
           }
         }
       }
@@ -3807,6 +3845,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
 
   for(auto const& face : pointsToConnect)
   {
+
     TSimplexID neighborSimplex         = extSimplexBorder[faceIter];
 
     if(neighborSimplex != border)
@@ -3853,7 +3892,6 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
       }
     }
 
-
     for(unsigned int lN = 0 ; lN < sizeFace ; lN++)
     {
       unsigned int localNodeforTriangle  = localsInfoForTriangles[faceIter][lN];
@@ -3863,9 +3901,11 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
       {
         TInt nodeB = face[(localNodeforTriangle + 1) % sizeFace];
         TInt nodeA = face[(localNodeforTriangle + 2) % sizeFace];
+
         TInt triangle = -addTriangle(nodeA, nodeB, nodeToConnect, false);
         triangles.push_back(triangle);
         (*BND_TRIANGLES)[-triangle] = trianglesIndices[faceIter][lN];
+
         m_tri_nodes[-triangle][3] = simplex;
         m_tet_adj[simplex][localNodeforTriangle] = triangle;
         std::vector<TInt> oppoNode = SimplicesTriangle(this, oppositeTriangle).getOtherNodeInSimplex(std::vector<TInt>{nodeA, nodeB});
@@ -3898,9 +3938,9 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
     }
     faceIter++;
   }
+
   /////Triangle reconnection//////
   ////////////////////////////////
-
   for(auto const & pair : hash_edge)
   {
     TInt node = pair.first;
@@ -3933,7 +3973,6 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
     }
   }
 
-
   ////////////////////////////////
   std::vector<std::pair<TInt, TInt>> pairToDelete{};
   std::pair <std::multimap<std::pair<TInt, TInt>, TSimplexID>::iterator, std::multimap<std::pair<TInt, TInt>, TSimplexID>::iterator> pair_it;
@@ -3954,7 +3993,6 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
 
   std::vector<std::vector<TInt>> pointsToConnectCopy = pointsToConnect;
   std::vector<TSimplexID> tetIdToBuildInfoCopy = tetIdToBuildInfo;
-
   while(!hash_face.empty())
   {
     if(tetIdToBuildInfoCopy.size() == 0 && pointsToConnectCopy.size() == 0)
@@ -4060,6 +4098,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
       }
     }
   }
+
   for(unsigned int triangleIdx = 0 ; triangleIdx < triangles.size() ; triangleIdx++)
   {
     const TSimplexID simplex       =  triangles[triangleIdx];
@@ -4117,16 +4156,18 @@ void SimplexMesh::fillBNDVariable()
   }
 }
 /******************************************************************************/
-void SimplexMesh::pointsLabeling(const std::vector<math::Point> &points, std::vector<int>& pointsLabeling, std::vector<int>& topoIndex)
+void SimplexMesh::pointsLabeling(const std::vector<math::Point> &points, std::vector<int>& pointsLabeling, std::vector<int>& topoIndex, std::vector<TSimplexID>& nearNodes)
 {
   pointsLabeling.reserve(points.size());
   topoIndex.reserve(points.size());
+  nearNodes.reserve(points.size());
 
   int border = std::numeric_limits<int>::min();
   Variable<int>* BND_VERTEX_COLOR = getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
   Variable<int>* BND_CURVE_COLOR = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
   Variable<int>* BND_SURFACE_COLOR = getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
 
+  int cpt = 0;
   for(auto const & point : points)
   {
     std::vector<TSimplexID> tetraContainingPt{};
@@ -4135,131 +4176,181 @@ void SimplexMesh::pointsLabeling(const std::vector<math::Point> &points, std::ve
 
     if(flag)
     {
-      //on trie les tétraèdre dans tetraContenaingPt de sorte a voir ceux qui sont aux bord du maillage en premier si ils existent
-      std::sort(tetraContainingPt.begin(), tetraContainingPt.end(), [&](const TSimplexID simplexA, const TSimplexID simplexB)
+      TSimplexID simplex = tetraContainingPt.front();
+      bool flag = false;
+      for(auto const currentSimplex : tetraContainingPt)
       {
-        const SimplicesCell cellA = SimplicesCell(this, simplexA);
-        bool hasBorderA = false;
-
+        SimplicesCell cell = SimplicesCell(this, currentSimplex);
         for(unsigned int face = 0 ; face < 4 ; face++)
         {
-          const TSimplexID oppositeSimplexA = cellA.oppositeTetraIdx(face);
-          if(oppositeSimplexA < 0){hasBorderA = true; break;}
+          const TSimplexID oppositeSimplex = cell.oppositeTetraIdx(face);
+          if(oppositeSimplex < 0)
+          {
+            simplex = currentSimplex;
+            flag = true;
+            break;
+          }
         }
-
-        return hasBorderA;
-      });
-
-      TSimplexID simplex = tetraContainingPt.front();
-      SimplicesCell cell = SimplicesCell(this, simplex);
-      double minLenght = std::numeric_limits<double>::max();
-      double lenght = minLenght;
-      unsigned int face = 0;
-      math::Point projectedPoint;
-      for(unsigned int faceId = 0 ; faceId < 4 ; faceId++)
-      {
-        std::vector<TInt> orderedNodesFace = cell.getOrderedFace(faceId);
-        const math::Point p0 = SimplicesNode(this, orderedNodesFace[0]).getCoords();
-        const math::Point p1 = SimplicesNode(this, orderedNodesFace[1]).getCoords();
-        const math::Point p2 = SimplicesNode(this, orderedNodesFace[2]).getCoords();
-
-        math::Point projectedPointTmp;
-        pointInTriangle(point, p0, p1, p2, lenght, projectedPointTmp);
-        if(lenght < minLenght)
+        if(flag)
         {
-          minLenght = lenght;
-          face = faceId;
-          projectedPoint = projectedPointTmp;
+          break;
         }
       }
 
-      std::vector<TInt> orderedNodesFace = cell.getOrderedFace(face);
-      TInt node0 = orderedNodesFace[0];
-      TInt node1 = orderedNodesFace[1];
-      TInt node2 = orderedNodesFace[2];
+      //on trie les tétraèdre dans tetraContenaingPt de sorte a voir ceux qui sont aux bord du maillage en premier si ils existent
+      /*std::sort(tetraContainingPt.begin(), tetraContainingPt.end(), [=](const TSimplexID simplexA, const TSimplexID simplexB)
+      {
+        std::cout << "simplexA ---> " << simplexA << std::endl;
+        const SimplicesCell cellA = SimplicesCell(this, simplexA);
+        bool hasBorderA = false;
+        std::cout << cellA << std::endl;
+        const SimplicesCell cellB = SimplicesCell(this, simplexA);
+        std::cout << cellB << std::endl;
+
+        for(unsigned int face = 0 ; face < 4 ; face++)
+        {
+          std::cout << "face -> " << face << std::endl;
+          const TSimplexID oppositeSimplexA = cellA.oppositeTetraIdx(face);
+          std::cout << "oppositeSimplexA -> " << oppositeSimplexA << std::endl;
+          if(oppositeSimplexA < 0){hasBorderA = true; break;}
+        }
+        return hasBorderA;
+      });*/
+
+      //TSimplexID simplex = tetraContainingPt.front();
+      nearNodes.push_back(simplex);
+      SimplicesCell cell = SimplicesCell(this, simplex);
+      double minLenght = std::numeric_limits<double>::max();
+      unsigned int face = 0;
+
+      std::vector<TInt> facesId{};
+      double volTmp = std::numeric_limits<double>::max();
+      double volTot = 0.0;
+      for(unsigned int faceId = 0 ; faceId < 4 ; faceId++)
+      {
+          double bar = cell.signedBarycentricNormalized(faceId, point) ;
+          volTot += bar;
+          if(bar < 0.04)
+          {
+            facesId.push_back(faceId);
+          }
+
+          if(bar < volTmp)
+          {
+            face = faceId;
+            volTmp = bar;
+          }
+      }
 
 
+      unsigned int dimMax;
+      unsigned int dimMin;
+      TInt node0 ;
+      TInt node1 ;
+      TInt node2 ;
+      unsigned int dim0;
+      unsigned int dim1;
+      unsigned int dim2;
 
-      unsigned int dim0 = ((*BND_VERTEX_COLOR)[node0] != 0)? CORNER : ((*BND_CURVE_COLOR)[node0] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[node0] != 0)? SURFACE : VOLUME;
-      unsigned int dim1 = ((*BND_VERTEX_COLOR)[node1] != 0)? CORNER : ((*BND_CURVE_COLOR)[node1] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[node1] != 0)? SURFACE : VOLUME;
-      unsigned int dim2 = ((*BND_VERTEX_COLOR)[node2] != 0)? CORNER : ((*BND_CURVE_COLOR)[node2] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[node2] != 0)? SURFACE : VOLUME;
+      if(facesId.size() > 1)
+      {
+        std::vector<TInt> intersectionVec = cell.intersectionFaces(facesId);
+        if(intersectionVec.size() == 1)
+        {
+          TInt node = intersectionVec.front();
+          unsigned int dim = ((*BND_VERTEX_COLOR)[node] != 0)? CORNER : ((*BND_CURVE_COLOR)[node] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[node] != 0)? SURFACE : VOLUME;
+          pointsLabeling.push_back(dim);
+          if(dim == CORNER){topoIndex.push_back((*BND_VERTEX_COLOR)[node]);}
+          else if(dim == RIDGE){topoIndex.push_back((*BND_CURVE_COLOR)[node]);}
+          else if(dim == SURFACE){topoIndex.push_back((*BND_SURFACE_COLOR)[node]);}
+          else {topoIndex.push_back(0);}
+          continue;
+        }
+        else //intersectionVec.size() == 2
+        {
+          TInt node0 = intersectionVec.front();
+          TInt node1 = intersectionVec.back();
 
-      unsigned int dimMax = std::max(dim0, std::max(dim1, dim2));
-      unsigned int dimMin = std::min(dim0, std::min(dim1, dim2));
+          dim0 = ((*BND_VERTEX_COLOR)[node0] != 0)? CORNER : ((*BND_CURVE_COLOR)[node0] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[node0] != 0)? SURFACE : VOLUME;
+          dim1 = ((*BND_VERTEX_COLOR)[node1] != 0)? CORNER : ((*BND_CURVE_COLOR)[node1] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[node1] != 0)? SURFACE : VOLUME;
+
+          dimMax = std::max(dim0, dim1);
+          dimMin = std::min(dim0, dim1);
+        }
+      }
+      else
+      {
+        std::vector<TInt> orderedNodesFace = cell.getOrderedFace(face);
+
+        node0 = orderedNodesFace[0];
+        node1 = orderedNodesFace[1];
+        node2 = orderedNodesFace[2];
+
+        dim0 = ((*BND_VERTEX_COLOR)[node0] != 0)? CORNER : ((*BND_CURVE_COLOR)[node0] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[node0] != 0)? SURFACE : VOLUME;
+        dim1 = ((*BND_VERTEX_COLOR)[node1] != 0)? CORNER : ((*BND_CURVE_COLOR)[node1] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[node1] != 0)? SURFACE : VOLUME;
+        dim2 = ((*BND_VERTEX_COLOR)[node2] != 0)? CORNER : ((*BND_CURVE_COLOR)[node2] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[node2] != 0)? SURFACE : VOLUME;
+
+        dimMax = std::max(dim0, std::max(dim1, dim2));
+        dimMin = std::min(dim0, std::min(dim1, dim2));
+      }
 
 
-      if(dimMin == VOLUME)
+      if(dimMax == VOLUME)
       {
         pointsLabeling.push_back(VOLUME);
       }
       else
       {
-        if(dimMin == SURFACE && dimMax == SURFACE)
+        if(dimMax == SURFACE)
         {
-          pointsLabeling.push_back(SURFACE);
-        }
-        else
-        {
-          math::Point A = SimplicesNode(this, node0).getCoords();
-          math::Point B = SimplicesNode(this, node1).getCoords();
-          math::Point C = SimplicesNode(this, node2).getCoords();
-
-          math::Vector3d v0 = B - A, v1 = C - A, v2 = projectedPoint - A;
-          double d00 = v0.dot(v0);
-          double d01 = v0.dot(v1);
-          double d11 = v1.dot(v1);
-          double d20 = v2.dot(v0);
-          double d21 = v2.dot(v1);
-          double volumeTri = d00 * d11 - d01 * d01;
-
-          double v = (d11 * d20 - d01 * d21) / volumeTri; // ---> correspond to B
-          double w = (d00 * d21 - d01 * d20) / volumeTri; // ---> correspond to C
-          double u = 1.0 - v - w; // ---> correspond to A
-          double epsilon = 0.05 * volumeTri;
-
-          std::vector<TInt> closerNodes{};
-          std::vector<TInt> otherNodes{};
-
-          gmds::BitVector nodesIds = getBitVectorNodes();
-
-          if(u < epsilon){closerNodes.push_back(node0); nodesIds.unselect(node0); }
-          if(v < epsilon){closerNodes.push_back(node1); nodesIds.unselect(node1); }
-          if(w < epsilon){closerNodes.push_back(node2); nodesIds.unselect(node2); }
-
-          if(nodesIds[node0] == 1){otherNodes.push_back(node0);}
-          if(nodesIds[node1] == 1){otherNodes.push_back(node1);}
-          if(nodesIds[node2] == 1){otherNodes.push_back(node2);}
-
-          if(closerNodes.size() == 0)
+          if(facesId.size() == 1)
           {
-            if(dimMax == VOLUME){pointsLabeling.push_back(VOLUME);}
-            else if(dimMax == SURFACE || dimMax == RIDGE){pointsLabeling.push_back(SURFACE);}
-          }
-          else if(closerNodes.size() == 1)
-          {
-            TInt otherNode_0 = otherNodes.front();
-            TInt otherNode_1 = otherNodes.back();
-            TInt node        = closerNodes.front();
-
-            unsigned int dim0 = ((*BND_VERTEX_COLOR)[otherNode_0] != 0)? CORNER : ((*BND_CURVE_COLOR)[otherNode_0] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[otherNode_0] != 0)? SURFACE : VOLUME;
-            unsigned int dim1 = ((*BND_VERTEX_COLOR)[otherNode_1] != 0)? CORNER : ((*BND_CURVE_COLOR)[otherNode_1] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[otherNode_1] != 0)? SURFACE : VOLUME;
-            unsigned int dimNode = ((*BND_VERTEX_COLOR)[node] != 0)? CORNER : ((*BND_CURVE_COLOR)[node] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[node] != 0)? SURFACE : VOLUME;
-
-            unsigned int dimMax = std::max(dim0, dim1);
-            if(dim0 == dim1 && dim0 == RIDGE && dimNode == CORNER){pointsLabeling.push_back(SURFACE);}
-            else{pointsLabeling.push_back(dimMax);};
-          }
-          else if(closerNodes.size() == 2)
-          {
-            TInt otherNode_0 = otherNodes.front();
-            unsigned int dim0 = ((*BND_VERTEX_COLOR)[otherNode_0] != 0)? CORNER : ((*BND_CURVE_COLOR)[otherNode_0] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[otherNode_0] != 0)? SURFACE : VOLUME;
-            pointsLabeling.push_back(dim0);
+            if((dim0 == SURFACE && (dim0 == dim1)))
+            {
+              if((*BND_SURFACE_COLOR)[node0] != (*BND_SURFACE_COLOR)[node1] )
+              {
+                pointsLabeling.push_back(VOLUME);
+              }
+              else
+              {
+                pointsLabeling.push_back(SURFACE);
+              }
+            }
+            else if((dim1 == SURFACE && (dim1 == dim2)))
+            {
+              if((*BND_SURFACE_COLOR)[node1] != (*BND_SURFACE_COLOR)[node2] )
+              {
+                pointsLabeling.push_back(VOLUME);
+              }
+              else
+              {
+                pointsLabeling.push_back(SURFACE);
+              }
+            }
+            else if((dim2 == SURFACE && (dim2 == dim0)))
+            {
+              if((*BND_SURFACE_COLOR)[node2] != (*BND_SURFACE_COLOR)[node0] )
+              {
+                pointsLabeling.push_back(VOLUME);
+              }
+              else
+              {
+                pointsLabeling.push_back(SURFACE);
+              }
+            }
+            else
+            {
+              pointsLabeling.push_back(SURFACE);
+            }
           }
           else
           {
-            std::cout << "closerNodes.size() > 2 " << std::endl;
-            break;
+            pointsLabeling.push_back(SURFACE);
           }
+        }
+        else if(dimMax == RIDGE)
+        {
+          pointsLabeling.push_back(RIDGE);
         }
       }
 
@@ -4358,6 +4449,7 @@ void SimplexMesh::pointsLabeling(const std::vector<math::Point> &points, std::ve
             //face0 & face1
             std::vector<TInt> face0 = cell.getOrderedFace(facesInfo[0].face);
             std::vector<TInt> face1 = cell.getOrderedFace(facesInfo[1].face);
+
             std::vector<TInt> intersectionNodes{};
             std::sort(face0.begin(), face0.end());
             std::sort(face1.begin(), face1.end());
@@ -4368,6 +4460,7 @@ void SimplexMesh::pointsLabeling(const std::vector<math::Point> &points, std::ve
               TInt node1 = intersectionNodes[1];
               unsigned int dim0 = ((*BND_VERTEX_COLOR)[node0] != 0)? CORNER : ((*BND_CURVE_COLOR)[node0] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[node0] != 0)? SURFACE : VOLUME;
               unsigned int dim1 = ((*BND_VERTEX_COLOR)[node1] != 0)? CORNER : ((*BND_CURVE_COLOR)[node1] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[node1] != 0)? SURFACE : VOLUME;
+
               unsigned int dimMax = std::max(dim0, dim1);
               if(dimMax == RIDGE)
               {
@@ -4430,6 +4523,7 @@ void SimplexMesh::pointsLabeling(const std::vector<math::Point> &points, std::ve
 /******************************************************************************/
 void SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector)
 {
+  gmds::ISimplexMeshIOService ioService(this);
   unsigned int cpt = 0;
   TInt border = std::numeric_limits<TInt>::min();
   Variable<int>* BND_VERTEX_COLOR = getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
@@ -4441,6 +4535,7 @@ void SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector)
   //Dimension node boundary vertex --> 0 / node on curve --> 1 / node on surface --> 2 / node on the mesh --> 3
   for(TInt node = 0; node < m_node_ids.capacity(); node++)
   {
+    //std::cout << "node -> " << node << std::endl;
     //Collapsing Ni --> Nj
     int dim_Ni = 0;
     int index_Ni = 0;
@@ -4486,6 +4581,8 @@ void SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector)
           //2 choix --> on trie cette fois si les longueur e ne gardant que les node donnant nodeToInsert.checkStar(ball, criterionRAIS) vrai
           auto cmp = [](const double& lenghtNodeA, const double& lenghtNodeB){return lenghtNodeA < lenghtNodeB;};
           std::map<double, dataNode, decltype(cmp)> adjacentNodesInfo{cmp};
+          std::map<double, dataNode, decltype(cmp)> adjacentNodesInfoTmp{cmp};
+          std::vector< std::pair<double, dataNode>> concattedAdjNodes;
           if(nodes.size() != 0)
           {
             const math::Point&& pt = simpliceNode.getCoords();
@@ -4497,34 +4594,59 @@ void SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector)
               dataNode nodeInfo;
               nodeInfo.node = cellNode;
               nodeInfo.lenght = lenght;
-              if      ((*BND_VERTEX_COLOR)[cellNode] != 0){nodeInfo.dim_Nj = 0; nodeInfo.index_Nj = (*BND_VERTEX_COLOR)[cellNode];}
+              if      ((*BND_VERTEX_COLOR)[cellNode] != 0){continue;/*nodeInfo.dim_Nj = 0; nodeInfo.index_Nj = (*BND_VERTEX_COLOR)[cellNode];*/}
               else if ((*BND_CURVE_COLOR)[cellNode] != 0){nodeInfo.dim_Nj = 1; nodeInfo.index_Nj = (*BND_CURVE_COLOR)[cellNode];}
               else if ((*BND_SURFACE_COLOR)[cellNode] != 0){nodeInfo.dim_Nj = 2; nodeInfo.index_Nj = (*BND_SURFACE_COLOR)[cellNode];}
               else    {nodeInfo.dim_Nj = 4;}
-              if(nodeBitVector[cellNode] == 1)
+              //if(nodeBitVector[cellNode] == 1)
               {
                 adjacentNodesInfo.insert( std::pair<double, dataNode>(lenght, nodeInfo));
               }
+              /*else
+              {
+                adjacentNodesInfoTmp.insert( std::pair<double, dataNode>(lenght, nodeInfo));
+              }*/
             }
+            //concatenation of adjacentNodesInfo & adjacentNodesInfoTMP
+            std::copy(adjacentNodesInfo.begin(), adjacentNodesInfo.end(), std::back_inserter(concattedAdjNodes));
+            //std::copy(adjacentNodesInfoTmp.begin(), adjacentNodesInfoTmp.end(), std::back_inserter(concattedAdjNodes));
           }
           bool cavityFound  = false;
-          for(auto const & dataInfo : adjacentNodesInfo)
+          for(auto const & dataInfo : concattedAdjNodes)
           {
             dataNode data = dataInfo.second;
             if(data.dim_Nj <= dim_Ni)
             {
               if(data.dim_Nj == dim_Ni)
               {
-                if(!(data.index_Nj == index_Ni))
+                if(data.index_Nj != index_Ni)
                 {
                   continue;
                 }
               }
               SimplicesNode nodeToInsert(this, data.node);
               bool status = false;
-              PointInsertion(this, nodeToInsert, criterionRAIS, status, ball, nodeBitVector);
+              std::cout << "NODE TO INSERT : " << data.node << " | dimension : " << data.dim_Nj << " | index : " << data.index_Nj<<  std::endl;
+              std::cout << "FROM NODE      : " << node << " | dimension : " << dim_Ni << " | index : " << index_Ni <<  std::endl;
+              if(dim_Ni == 4 && (data.dim_Nj == 1 || data.dim_Nj == 2)){break;}
+              std::vector<TSimplexID> deletedSimplex{};
+              PointInsertion(this, nodeToInsert, criterionRAIS, status, ball, nodeBitVector, deletedSimplex);
               if(status)
               {
+
+                std::cout << "iteration --->   " << cpt << std::endl;
+                //if(cpt > 14000)
+                {
+                  /*gmds::VTKWriter vtkWriter(&ioService);
+                  vtkWriter.setCellOptions(gmds::N|gmds::F|gmds::R);
+                  vtkWriter.setDataOptions(gmds::N|gmds::F|gmds::R);
+                  vtkWriter.write("ModeleCAD2_OCTREE_" + std::to_string(cpt) + ".vtk");*/
+                  //return;
+                }
+                std::cout << std::endl;
+                std::cout << std::endl;
+                cpt++;
+
                 break;
               }
             }
@@ -4542,6 +4664,7 @@ bool SimplexMesh::pointInTriangle(const math::Point& query_point,
                      double& distance,
                      math::Point& projectedPoint)
 {
+  double epsilon = 10E-4;
     // u=P2−P1
     math::Vector3d u = triangle_vertex_1 - triangle_vertex_0;
     // v=P3−P1
@@ -4563,9 +4686,9 @@ bool SimplexMesh::pointInTriangle(const math::Point& query_point,
     normal.normalize();
     distance = w.dot(normal);
     // The point P′ lies inside T if:
-    return ((0 <= alpha) && (alpha <= 1) &&
-            (0 <= beta)  && (beta  <= 1) &&
-            (0 <= gamma) && (gamma <= 1));
+    return ((-epsilon <= alpha) && (alpha <= 1.0 + epsilon) &&
+            (-epsilon <= beta)  && (beta  <= 1.0 + epsilon) &&
+            (-epsilon <= gamma) && (gamma <= 1.0 + epsilon));
 }
 /******************************************************************************/
 std::vector<TSimplexID> SimplexMesh::cavityIntersectedByEdge(SimplicesNode& simpliceNodeA, SimplicesNode& simpliceNodeB)

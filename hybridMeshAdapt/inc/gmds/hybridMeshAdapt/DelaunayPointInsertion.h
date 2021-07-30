@@ -26,7 +26,7 @@ namespace gmds
       public:
         DelaunayPointInsertion() = delete;
 
-        DelaunayPointInsertion(SimplexMesh* simplexMesh, const simplicesNode::SimplicesNode& simpliceNode, const CriterionRAIS& criterion, std::vector<TSimplexID>& initialCavity, bool& status, const gmds::BitVector& markedNodes /*= gmds::BitVector{}*/, std::vector<TSimplexID> markedSimplex = std::vector<TSimplexID>{});
+        DelaunayPointInsertion(SimplexMesh* simplexMesh, const simplicesNode::SimplicesNode& simpliceNode, const CriterionRAIS& criterion, std::vector<TSimplexID>& initialCavity, bool& status, const gmds::BitVector& markedNodes, std::vector<TSimplexID>& deletedSimplex, std::vector<TSimplexID> markedSimplex = std::vector<TSimplexID>{});
 
         ~DelaunayPointInsertion(){};
 

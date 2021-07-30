@@ -18,7 +18,7 @@ PointInsertion::PointInsertion()
 
 }
 /******************************************************************************/
-PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& simpliceNode, const CriterionRAIS& criterion, bool& status, const std::vector<TSimplexID>& initialCavity, const gmds::BitVector& markedNodes, std::vector<TSimplexID> markedSimplex, CavityReduction cavReduction)
+PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& simpliceNode, const CriterionRAIS& criterion, bool& status, const std::vector<TSimplexID>& initialCavity, const gmds::BitVector& markedNodes, std::vector<TSimplexID>& deletedSimplex, std::vector<TSimplexID> markedSimplex)
 {
     if(simplexMesh != nullptr)
     {
@@ -71,14 +71,9 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
         });
 
         CavityOperator::CavityIO cavityIO(simplexMesh);
-        if(cavReduction.cavInitial.size() == 0)
-        {
-          cavOp.cavityEnlargement(cavityIO, initialCavityCell, initialCavityTriangle, simpliceNode, criterion, markedSimplex);
-        }
-        else
-        {
-          cavOp.cavityReduction(cavityIO, initCavity, simpliceNode, criterion, cavReduction, markedSimplex);
-        }
+        cavOp.cavityEnlargement(cavityIO, initialCavityCell, initialCavityTriangle, simpliceNode, criterion, markedSimplex);
+        //cavOp.cavityReduction(cavityIO, initCavity, simpliceNode, criterion, cavReduction, markedSimplex);
+
         ////////////////////////////////////////////////////////////////////////////////
         ///////////////////////finding the node inside the cavity///////////////////////
         ////////////////////////////////////////////////////////////////////////////////
@@ -88,7 +83,16 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
         //check if node in nodsIncavity are marked
         for(auto const & nodeInCavity : cavityIO.getNodeInCavity())
         {
-          if(markedNodes[nodeInCavity] == 1)
+          if(markedNodes[nodeInCavity] == 1 && nodeInCavity != simpliceNode.getGlobalNode())
+          {
+            status = false;
+            return;
+          }
+        }
+
+        for(auto const & surfaceNodeInCavity : cavityIO.getSurfaceNodeInCavity())
+        {
+          if(markedNodes[surfaceNodeInCavity] == 1 && surfaceNodeInCavity != simpliceNode.getGlobalNode())
           {
             status = false;
             return;
@@ -103,19 +107,14 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             return;
           }
           simplexMesh->deleteTetra(simplexInCavity);
+          deletedSimplex.push_back(simplexInCavity);
         }
 
         //delete the surface triangle connected to simpliceNode
         for(auto const & triangleConnectedToP : cavityIO.getTrianglesConnectedToPInCavity())
         {
           simplexMesh->deleteTriangle(triangleConnectedToP);
-
-        }
-
-        //delete the node inside the cavity
-        for(auto const & nodeInCavity : cavityIO.getNodeInCavity())
-        {
-          //simplexMesh->deleteNode(nodeInCavity);
+          //deletedSimplex.push_back(triangleConnectedToP);
         }
 
         simplexMesh->rebuildCavity(cavityIO, simpliceNode.getGlobalNode());
