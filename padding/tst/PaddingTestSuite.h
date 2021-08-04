@@ -50,5 +50,5 @@ TEST(PaddingTestClass, testSBP1)
             nb_padded_faces++;
         }
     }
-    ASSERT_EQ(6, nb_padded_faces);
+    ASSERT_EQ(4, nb_padded_faces);
 }

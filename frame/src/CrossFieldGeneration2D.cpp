@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*/
 #include <iostream>
 /*---------------------------------------------------------------------------*/
-#include <gmds/igalgo/BoundaryOperator.h>
+#include <gmds/igalgo/BoundaryOperator2D.h>
 //#include <GMDS/Algo/DistanceFieldBuilder2D.h>
 /*---------------------------------------------------------------------------*/
 #include <gmds/io/VTKWriter.h>
@@ -213,7 +213,7 @@ void CrossFieldGeneration2D::initMarks()
 /*---------------------------------------------------------------------------*/
 void CrossFieldGeneration2D::markBoundaryCells()
 {
-  BoundaryOperator boundaryOp(m_mesh);
+  BoundaryOperator2D boundaryOp(m_mesh);
   if (!boundaryOp.isValid())
     {
       std::cout << "Invalid model for boundary operations" << std::endl;
@@ -223,9 +223,7 @@ void CrossFieldGeneration2D::markBoundaryCells()
   int mark_edge_on_surf = m_mesh->newMark<Edge>();
   int mark_node_on_surf = m_mesh->newMark<Node>();
  
-  boundaryOp.markCellOnGeometry(m_markFace,
-				mark_edge_on_surf,
-				mark_node_on_surf,
+  boundaryOp.markCellOnGeometry(
 				m_markEdgeOnCurv, 
 				m_markNodeOnCurv, 
 				m_markNodeOnPnt,
