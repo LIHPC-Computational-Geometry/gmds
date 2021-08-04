@@ -1,21 +1,22 @@
 /*----------------------------------------------------------------------------*/
-#ifndef GMDS_MEDIATORDUBLOPOLICY_H
-#define GMDS_MEDIATORDUBLOPOLICY_H
+#ifndef GMDS_MEDIATORGEOMPOLICY_H
+#define GMDS_MEDIATORGEOMPOLICY_H
 /*----------------------------------------------------------------------------*/
 #include <medusa/control/MediatorPolicyItf.h>
 /*----------------------------------------------------------------------------*/
+
 namespace medusa {
-    class MediatorDubloPolicy: public MediatorPolicyItf {
+    class MediatorGeomPolicy: public MediatorPolicyItf {
 
     public:
-        MediatorDubloPolicy();
-        virtual ~MediatorDubloPolicy();
+        MediatorGeomPolicy();
+        virtual ~MediatorGeomPolicy();
 
         /*
-         * Pick a cell to start the dual sheet creation
+         * Pick a geom surface
          */
         int selectVTKCell(GraphicView* AView,
-                           const int ADim, const vtkIdType AID, int AAxis);
+                          const int ADim, const vtkIdType AID, int AAxis);
         int selectVTKCell(TextView* AView,
                           const int ADim, const vtkIdType AID);
         void help(TextView* AView);
@@ -23,43 +24,55 @@ namespace medusa {
         void remove(GraphicView *AView);
 
         /*
-         * First, generate the dual structure, if the dual structure is already generated, generate the block structure instead
+         * Will generate the frame field if there is no one, will generate the geom cut otherwise.
          */
         void generate(GraphicView *AView);
         void generate(TextView *AView);
 
         /*
-         * Remove a dual sheet of ID AsheetID
+         * Remove the last geom surface selected
          */
         void removeItem(int ASheetID, GraphicView *AView);
         void removeItem(int ASheetID, TextView *AView);
 
+        //----------------------------------------------
         /*
-         * Show the 3 frame field direction at the cell of ID ACellID in the graphic view AView
+         * Do nothing for now
          */
         void showAxis(GraphicView *AView, vtkIdType ACellID);
 
-        /*
-         * Toggle the surface mode for the dual sheet, instead of viewing tetras, only the plane used to create the sheet is shown
-         */
         void surfaceMode(GraphicView *AView);
+        //----------------------------------------------
 
         /*
-         * Undo the last generate action done
+         * Undo the last "generate" action done
          */
         void undoGenerate(GraphicView *AView);
 
         void singularityGraphToggle(GraphicView *AView);
 
+        /*
+         * Calling this method switch the opacity of the cutted zone alternatively between transparent to hided to opaque
+         */
         void opacity(GraphicView *AView);
 
+        /*
+         * toggle the geom surfaces colors
+         */
         void color(GraphicView *AView);
 
     protected:
+
+        /*
+         * 0 = input mode : Frame field not generated
+         * 1 = frame mode : Frame field generated, can do all frame operations
+         * 2 = geom mode  : can do all geom operation
+         */
         int m_mode = 0;
+
     };
 
 }
-/*----------------------------------------------------------------------------*/
-#endif //GMDS_MEDIATORDUBLOPOLICY_H
-/*----------------------------------------------------------------------------*/
+
+
+#endif //GMDS_MEDIATORGEOMPOLICY_H

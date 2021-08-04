@@ -16,24 +16,25 @@ namespace medusa {
                           const int ADim, const vtkIdType AID);
         void help(TextView* AView);
 
-        void remove(int ASheetID);
+        void remove(GraphicView *AView);
 
-        void generateDual(GraphicView *AView);
-        void generateDual(TextView *AView);
-        void generateMesh(GraphicView *AView);
+        void removeItem(int ASheetID, GraphicView *AView);
+        void removeItem(int ASheetID, TextView *AView);
+
+        void generate(GraphicView *AView);
+        void generate(TextView *AView);
 
         void showAxis(GraphicView *AView, vtkIdType ACellID);
 
-        void generateBlocks(GraphicView *AView);
-
         void surfaceMode(GraphicView *AView);
 
-        void resetDual(GraphicView *AView);
-        void resetBlock(GraphicView *AView);
-        void resetBlockSmoothing(GraphicView *AView);
-        void smoothBlocks(GraphicView *AView);
+        void undoGenerate(GraphicView *AView);
 
         void singularityGraphToggle(GraphicView *AView);
+
+        void opacity(GraphicView *AView);
+
+        void color(GraphicView *AView);
     };
 
 }

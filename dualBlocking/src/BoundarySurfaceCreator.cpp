@@ -77,7 +77,9 @@ bool BoundarySurfaceCreator::execute() {
 
                 if(good) {
                     (*m_propagation_round)[r] = 0;
-                    surface.emplace(r, v);
+                    std::vector<math::Vector3d> vec;
+                    vec.push_back(v);
+                    surface.emplace(r, vec);
 
                     std::vector<Edge> edges = tet.get<Edge>();
                     for (auto const &e : edges) {
@@ -89,7 +91,7 @@ bool BoundarySurfaceCreator::execute() {
     }
 
 
-    std::map<gmds::TCellID,gmds::math::Vector3d> surface_tmp;
+    std::map<gmds::TCellID,std::vector<gmds::math::Vector3d>> surface_tmp;
 
     std::set<TCellID> wave_tet, next_tet;
     std::vector<TCellID> wave_vec;

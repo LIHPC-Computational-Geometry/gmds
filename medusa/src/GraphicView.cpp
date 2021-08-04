@@ -18,6 +18,7 @@
 #include <vtkScalarBarActor.h>
 #include <vtkLookupTable.h>
 #include <vtkLine.h>
+#include <vtkSphereSource.h>
 /*----------------------------------------------------------------------------*/
 using namespace medusa;
 /*----------------------------------------------------------------------------*/
@@ -48,10 +49,21 @@ GraphicView::GraphicView(const std::string& AName, GraphicView::ViewType AType)
     selectedMapper = vtkSmartPointer<vtkDataSetMapper>::New();
     selectedActor  = vtkSmartPointer<vtkActor>::New();
 
+    m_vtk_cut_actor = vtkSmartPointer<vtkActor>::New();
+
+    m_vtk_tets_set = vtkSmartPointer<vtkActor>::New();
+    m_vtk_renderer->AddActor(m_vtk_tets_set);
+
     m_mapper_dual = vtkDataSetMapper::New();
     m_mapper_dual->CreateDefaultLookupTable();
 
     m_mapper_dual->GetLookupTable()->Build();
+
+    m_textActor = vtkSmartPointer<vtkTextActor>::New();
+    m_textActor->SetPosition2 ( 10, 40 );
+    m_textActor->GetTextProperty()->SetFontSize ( 24 );
+    m_textActor->GetTextProperty()->SetColor ( 1.0, 0.0, 0.0 );
+    m_vtk_renderer->AddActor2D ( m_textActor );
 
 }
 /*----------------------------------------------------------------------------*/
@@ -127,28 +139,54 @@ void GraphicView::update() {
     //expected actors
 
     //clean current actors
-    for(auto a: m_vtk_actors)
+    for(auto a: m_vtk_actors) {
+        m_vtk_renderer->RemoveActor(a);
         a->Delete();
+    }
+    if(m_vtk_actors.size() > 2) {
+        m_vtk_actors.erase(m_vtk_actors.begin());
+        std::cout << "test1" << std::endl;
+        m_vtk_actors.erase(m_vtk_actors.begin());
+        std::cout << "test2" << std::endl;
+
+    }
+
+    m_vtk_cut_actor->VisibilityOff();
+    m_vtk_cut_actor->PickableOff();
+
+    std::cout<<"nb actors left "<<m_vtk_actors.size()<<std::endl;
 
     m_vtk_actors.clear();
     std::vector<MedusaGrid*> grids = MedusaBackend::getInstance()->grids();
     m_vtk_actors.resize(grids.size());
     int i =0;
     for(auto g:grids) {
+        std::cout<<"View: grid name = "<<g->name<<std::endl;
         vtkDataSetMapper *mapper = vtkDataSetMapper::New();
         mapper->SetInputData(g->grid());
         vtkSmartPointer<vtkActor> actor = vtkActor::New();
         actor->SetMapper(mapper);
         actor->GetProperty()->SetDiffuseColor(0.5,0.5,0.5);
+        actor->VisibilityOff();
         m_vtk_actors[i++]=actor;
         m_vtk_renderer->AddActor(actor);
     }
 
-
+    m_vtk_actors[0]->VisibilityOn();
     m_vtk_actors[0]->GetProperty()->EdgeVisibilityOn();
     m_vtk_actors[0]->GetProperty()->SetLineWidth(0.15);
 
-    buildSingGraph(MedusaBackend::getInstance()->getSingGraph());
+    if(test == 1){
+        m_vtk_renderer->RemoveActor(m_vtk_cut_actor);
+        //m_vtk_cut_actor->Delete();
+    }
+    test = 1;
+
+    if(m_sinGraph_visibility == -1) {
+    //    buildSingGraph(MedusaBackend::getInstance()->getSingGraph());
+    }
+    textMode(0);
+    m_vtk_renderer->Render();
 }
 /*----------------------------------------------------------------------------*/
 void GraphicView::updateMesh(){
@@ -227,12 +265,18 @@ void GraphicView::updateDual(int ANbZones) {
 
     m_nb_zones = ANbZones;
 
-    MedusaBackend::getInstance()->grids()[0]->grid()->GetCellData()->SetScalars(MedusaBackend::getInstance()->grids()[0]->grid()->GetCellData()->GetArray(1));
 
+    vtkDataArray *array = MedusaBackend::getInstance()->grids()[0]->grid()->GetCellData()->GetArray("blocks");
+    MedusaBackend::getInstance()->grids()[0]->grid()->GetCellData()->SetScalars(array);
 
     vtkSmartPointer<vtkThreshold> threshold_zone = vtkThreshold::New();
-    threshold_zone->AddInputData(MedusaBackend::getInstance()->grids()[0]->grid());
-    threshold_zone->ThresholdByUpper(0);
+    threshold_zone->SetInputData(MedusaBackend::getInstance()->grids()[0]->grid());
+    if(ANbZones == -2){
+        threshold_zone->ThresholdByLower(-2);
+
+    }else{
+        threshold_zone->ThresholdByUpper(1);
+    }
     threshold_zone->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "blocks");
     threshold_zone->Update();
     vtkUnstructuredGrid* thresholdedPolydata = threshold_zone->GetOutput();
@@ -241,25 +285,73 @@ void GraphicView::updateDual(int ANbZones) {
     m_mapper_dual->SetInputData(thresholdedPolydata);
     m_mapper_dual->SetScalarModeToUseCellData();
     m_mapper_dual->SetColorModeToMapScalars();
+
     m_mapper_dual->ScalarVisibilityOn();
-    m_mapper_dual->SetScalarRange(-1,m_nb_zones-1);
+    m_mapper_dual->SetScalarRange(-2,10);
+    m_mapper_dual->Update();
 
-    /*mapper_threshold->GetLookupTable()->SetRange(-1,2);
-    mapper_threshold->GetLookupTable()->*/
 
-    vtkSmartPointer<vtkScalarBarActor> scalarBar =
-            vtkSmartPointer<vtkScalarBarActor>::New();
-    scalarBar->SetLookupTable(m_mapper_dual->GetLookupTable());
-    scalarBar->SetTitle("Title");
-    scalarBar->SetNumberOfLabels(4);
+    m_vtk_actors[0]->SetMapper(m_mapper_dual);
 
-    solid();
+    for(auto a : m_vtk_tets_actors){
+        a.first->VisibilityOff();
+    }
 
-    //opacity();
+    m_vtk_renderer->Render();
+}
+/*----------------------------------------------------------------------------*/
+void GraphicView::updateCut() {
 
-    setModeDual();
+    vtkDataArray *array = MedusaBackend::getInstance()->grids()[0]->grid()->GetCellData()->GetArray("cut");
 
-    setDualVisibilityOFF();
+    MedusaBackend::getInstance()->grids()[0]->grid()->GetCellData()->SetScalars(array);
+
+
+    vtkSmartPointer<vtkThreshold> threshold_zone = vtkThreshold::New();
+    threshold_zone->AddInputData(MedusaBackend::getInstance()->grids()[0]->grid());
+    threshold_zone->ThresholdByLower(1);
+    threshold_zone->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "cut");
+    threshold_zone->Update();
+    vtkUnstructuredGrid* thresholdedPolydata = threshold_zone->GetOutput();
+
+    vtkDataSetMapper *m_mapper_cut = vtkDataSetMapper::New();
+    m_mapper_cut->SetInputData(thresholdedPolydata);
+    m_mapper_cut->SetScalarModeToUseCellData();
+    m_mapper_cut->SetColorModeToDefault();
+    m_mapper_cut->ScalarVisibilityOff();
+    m_mapper_cut->SetScalarRange(0,1);
+
+
+    m_vtk_actors[0]->SetMapper(m_mapper_cut);
+    //m_vtk_actors[0]->GetProperty()->SetColor(0,0,0);
+
+    removeSelection();
+
+    //En fait c'est l'acteur pour les parties coupés
+    vtkSmartPointer<vtkThreshold> threshold_cut = vtkThreshold::New();
+    threshold_cut->AddInputData(MedusaBackend::getInstance()->grids()[0]->grid());
+    threshold_cut->ThresholdByUpper(2);
+    threshold_cut->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "cut");
+    threshold_cut->Update();
+    vtkUnstructuredGrid* thresholdedPolydata_cut = threshold_cut->GetOutput();
+
+    vtkDataSetMapper *mapper = vtkDataSetMapper::New();
+    mapper->SetInputData(thresholdedPolydata_cut);
+    mapper->SetScalarModeToUseCellData();
+    mapper->SetColorModeToMapScalars();
+    mapper->ScalarVisibilityOn();
+    mapper->SetScalarRange(1,2);
+
+    m_vtk_cut_actor->SetMapper(mapper);
+    //Attention on a changé l'opacité ici
+    m_vtk_cut_actor->VisibilityOff();
+    m_vtk_cut_actor->GetProperty()->SetOpacity(0.5);
+
+    m_vtk_renderer->AddActor(m_vtk_cut_actor);
+
+
+
+    m_vtk_window->Render();
 }
 /*----------------------------------------------------------------------------*/
 void GraphicView::setDualVisibilityON() {
@@ -339,7 +431,7 @@ void GraphicView::solid(){
 /*----------------------------------------------------------------------------*/
 void GraphicView::opacity(){
 
-    if(m_opicity){
+    if(m_opacity){
         setOpacityOFF();
     }else{
         setOpacityON();
@@ -354,7 +446,7 @@ void GraphicView::setOpacityON(){
     }else{
         setDualVisibilityOFF();
     }
-    m_opicity = true;
+    m_opacity = true;
 }
 /*----------------------------------------------------------------------------*/
 void GraphicView::setOpacityOFF(){
@@ -363,11 +455,24 @@ void GraphicView::setOpacityOFF(){
     }else{
         setDualVisibilityON();
     }
-    m_opicity = false;
+    m_opacity = false;
+}
+/*----------------------------------------------------------------------------*/
+void GraphicView::toggleCutOpacity(){
+    if(m_op_cut == 2){
+        m_vtk_cut_actor->GetProperty()->SetOpacity(0);
+        m_op_cut = 0;
+    }else if(m_op_cut == 0){
+        m_vtk_cut_actor->GetProperty()->SetOpacity(0.5);
+        m_op_cut = 1;
+    }else{
+        m_vtk_cut_actor->GetProperty()->SetOpacity(1);
+        m_op_cut = 2;
+    }
 }
 /*----------------------------------------------------------------------------*/
 // Maybe not necessary
-void GraphicView::remove(){
+void GraphicView::unlockSheet(){
     if(surface_mode == 0) {
         for (auto a:m_vtk_tets_actors) {
             a.first->PickableOn();
@@ -378,6 +483,96 @@ void GraphicView::remove(){
         }
     }
     m_vtk_actors[0]->PickableOff();
+}
+/*----------------------------------------------------------------------------*/
+// Maybe not necessary
+void GraphicView::unlockLines(){
+
+    for (auto a:m_vtk_sing_actors) {
+        std::cout<<a.first<<std::endl;
+        a.first->PickableOn();
+    }
+
+    m_vtk_actors[0]->PickableOff();
+}
+/*----------------------------------------------------------------------------*/
+int GraphicView::selectLine(const vtkSmartPointer<vtkActor> ADeletedActor){
+
+    ADeletedActor->GetProperty()->SetDiffuseColor(0,0,1);
+    for(auto const &line : m_vtk_sing_actors){
+        if(ADeletedActor == line.first){
+            return line.second;
+        }
+    }
+}
+/*----------------------------------------------------------------------------*/
+void GraphicView::showSetOfTets(std::vector<vtkIdType> AIDs){
+
+    vtkSmartPointer<vtkIdTypeArray> ids =
+            vtkSmartPointer<vtkIdTypeArray>::New();
+    ids->SetNumberOfComponents(1);
+    for(auto id:AIDs)
+        ids->InsertNextValue(id);
+
+
+    vtkSmartPointer<vtkSelectionNode> selectionNode =
+            vtkSmartPointer<vtkSelectionNode>::New();
+    selectionNode->SetFieldType(vtkSelectionNode::CELL);
+    selectionNode->SetContentType(vtkSelectionNode::INDICES);
+    selectionNode->SetSelectionList(ids);
+
+
+    vtkSmartPointer<vtkSelection> selection =
+            vtkSmartPointer<vtkSelection>::New();
+    selection->AddNode(selectionNode);
+
+
+    vtkSmartPointer<vtkExtractSelection> extractSelection =
+            vtkSmartPointer<vtkExtractSelection>::New();
+    extractSelection->SetInputData(0, MedusaBackend::getInstance()->grids()[0]->grid());
+    extractSelection->SetInputData(1, selection);
+    extractSelection->Update();
+
+    // In selection
+    vtkSmartPointer<vtkUnstructuredGrid> selected =
+            vtkSmartPointer<vtkUnstructuredGrid>::New();
+    selected->ShallowCopy(extractSelection->GetOutput());
+
+
+    vtkSmartPointer<vtkDataSetMapper> mapper = vtkDataSetMapper::New();
+    mapper->SetInputData(selected);
+    mapper->ScalarVisibilityOff();
+
+    m_vtk_tets_set->SetMapper(mapper);
+    m_vtk_tets_set->VisibilityOn();
+    m_vtk_tets_set->GetProperty()->EdgeVisibilityOff();
+    m_vtk_tets_set->GetProperty()->SetColor(1,0,0);
+    m_vtk_tets_set->GetProperty()->SetLineWidth(5);
+    m_vtk_tets_set->GetProperty()->SetPointSize(5);
+    m_vtk_tets_set->PickableOff();
+
+
+    m_vtk_window->Render();
+}
+/*----------------------------------------------------------------------------*/
+void GraphicView::addTetSetActor(){
+    vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(m_vtk_tets_set->GetMapper());
+    m_vtk_sets_actors.emplace_back(actor);
+}
+/*----------------------------------------------------------------------------*/
+void GraphicView::removeLastSelection(){
+    auto actor = m_vtk_selection_actors.back();
+    m_vtk_selection_actors.pop_back();
+    m_vtk_renderer->RemoveActor(actor);
+    actor->Delete();
+}
+/*----------------------------------------------------------------------------*/
+void GraphicView::removeSelection(){
+    for(int i = 0; i<m_vtk_selection_actors.size();i++){
+        m_vtk_renderer->RemoveActor(m_vtk_selection_actors[i]);
+        m_vtk_selection_actors[i]->Delete();
+    }
 }
 /*----------------------------------------------------------------------------*/
 int GraphicView::removeActor(const vtkSmartPointer<vtkActor> ADeletedActor){
@@ -426,19 +621,6 @@ void GraphicView::removeActor(int ADeletedID){
         if(a.second == ADeletedID){
             vtkSmartPointer<vtkActor> actor = a.first;
             m_vtk_renderer->RemoveActor(actor);
-            /*auto find_pos=-1;
-            for(auto i_a=0;i_a<m_vtk_actors.size() && find_pos==-1;i_a++){
-                if(m_vtk_actors[i_a]==actor){
-                    find_pos=i_a;
-                }
-            }
-            if(find_pos==-1){
-                throw gmds::GMDSException("Warning, actor error!");
-            }
-            if(find_pos!=m_vtk_actors.size()-1){
-                m_vtk_actors[find_pos]= m_vtk_actors[m_vtk_actors.size()-1];
-            }
-            m_vtk_actors.pop_back();*/
             a.first->Delete();
         }
     }
@@ -446,19 +628,6 @@ void GraphicView::removeActor(int ADeletedID){
         if(a.second == ADeletedID){
             vtkSmartPointer<vtkActor> actor = a.first;
             m_vtk_renderer->RemoveActor(actor);
-            /*auto find_pos=-1;
-            for(auto i_a=0;i_a<m_vtk_actors.size() && find_pos==-1;i_a++){
-                if(m_vtk_actors[i_a]==actor){
-                    find_pos=i_a;
-                }
-            }
-            if(find_pos==-1){
-                throw gmds::GMDSException("Warning, actor error!");
-            }
-            if(find_pos!=m_vtk_actors.size()-1){
-                m_vtk_actors[find_pos]= m_vtk_actors[m_vtk_actors.size()-1];
-            }
-            m_vtk_actors.pop_back();*/
             a.first->Delete();
         }
     }
@@ -584,6 +753,10 @@ void GraphicView::viewBlocks() {
     m_vtk_actors[0]->GetMapper()->SetColorModeToMapScalars();
     m_vtk_actors[0]->GetMapper()->ScalarVisibilityOn();
 
+    for(auto a : m_vtk_actors){
+        a->VisibilityOff();
+    }
+
     m_vtk_actors[1]->VisibilityOn();
     m_vtk_actors[1]->GetProperty()->SetRepresentationToSurface();
     m_vtk_actors[1]->GetProperty()->EdgeVisibilityOn();
@@ -654,7 +827,11 @@ void GraphicView::toggleBlocks() {
 /*----------------------------------------------------------------------------*/
 void GraphicView::buildSingGraph(std::vector<vtkIdType> AIDs){
 
-    m_sinGraph_visibility = true;
+    if(AIDs.empty()) {
+        return;
+    }
+
+    m_sinGraph_visibility = 1;
 
     vtkSmartPointer<vtkNamedColors> colors =
             vtkSmartPointer<vtkNamedColors>::New();
@@ -711,6 +888,69 @@ void GraphicView::buildSingGraph(std::vector<vtkIdType> AIDs){
     m_vtk_window->Render();
 }
 /*----------------------------------------------------------------------------*/
+void GraphicView::resetSingLine(){
+    for(auto line : m_vtk_sing_actors){
+        m_vtk_renderer->RemoveActor(line.first);
+        line.first->Delete();
+    }
+    m_vtk_sing_actors.clear();
+}
+/*----------------------------------------------------------------------------*/
+void GraphicView::buildSingLine(int AID, std::vector<vtkIdType> AIDs) {
+
+    vtkSmartPointer<vtkNamedColors> colors =
+            vtkSmartPointer<vtkNamedColors>::New();
+
+    vtkSmartPointer<vtkIdTypeArray> ids =
+            vtkSmartPointer<vtkIdTypeArray>::New();
+    ids->SetNumberOfComponents(1);
+    for(auto id:AIDs)
+        ids->InsertNextValue(id);
+
+    vtkSmartPointer<vtkSelectionNode> selectionNode =
+            vtkSmartPointer<vtkSelectionNode>::New();
+    selectionNode->SetFieldType(vtkSelectionNode::CELL);
+    selectionNode->SetContentType(vtkSelectionNode::INDICES);
+    selectionNode->SetSelectionList(ids);
+
+
+    vtkSmartPointer<vtkSelection> selection =
+            vtkSmartPointer<vtkSelection>::New();
+    selection->AddNode(selectionNode);
+
+
+    vtkSmartPointer<vtkExtractSelection> extractSelection =
+            vtkSmartPointer<vtkExtractSelection>::New();
+    extractSelection->SetInputData(0, MedusaBackend::getInstance()->grids()[0]->grid());
+    extractSelection->SetInputData(1, selection);
+    extractSelection->Update();
+
+    // In selection
+    vtkSmartPointer<vtkUnstructuredGrid> selected =
+            vtkSmartPointer<vtkUnstructuredGrid>::New();
+    selected->ShallowCopy(extractSelection->GetOutput());
+
+
+
+    vtkDataSetMapper *mapper_selection = vtkDataSetMapper::New();
+    mapper_selection->SetInputData(selected);
+    vtkSmartPointer<vtkActor> actor_selection = vtkActor::New();
+    actor_selection->SetMapper(mapper_selection);
+    actor_selection->GetProperty()->EdgeVisibilityOff();
+    actor_selection->GetProperty()->SetColor(colors->GetColor3d("Red").GetData());
+
+    actor_selection->GetProperty()->SetLineWidth(5);
+    actor_selection->GetProperty()->SetPointSize(5);
+    actor_selection->PickableOff();
+
+
+
+    m_vtk_sing_actors.emplace(actor_selection, AID);
+    m_vtk_renderer->AddActor(actor_selection);
+
+    m_vtk_window->Render();
+}
+/*----------------------------------------------------------------------------*/
 void GraphicView::toggleSingGraph(){
 
     if(m_sinGraph_visibility){
@@ -720,4 +960,159 @@ void GraphicView::toggleSingGraph(){
         m_singGraph->VisibilityOn();
         m_sinGraph_visibility = true;
     }
+}
+/*----------------------------------------------------------------------------*/
+void GraphicView::surfacePicked(std::vector<vtkIdType> AIDs) {
+    vtkSmartPointer<vtkNamedColors> colors =
+            vtkSmartPointer<vtkNamedColors>::New();
+
+
+    vtkSmartPointer<vtkIdTypeArray> ids =
+            vtkSmartPointer<vtkIdTypeArray>::New();
+    ids->SetNumberOfComponents(1);
+    for(auto id:AIDs)
+        ids->InsertNextValue(id);
+
+
+    vtkSmartPointer<vtkSelectionNode> selectionNode =
+            vtkSmartPointer<vtkSelectionNode>::New();
+    selectionNode->SetFieldType(vtkSelectionNode::CELL);
+    selectionNode->SetContentType(vtkSelectionNode::INDICES);
+    selectionNode->SetSelectionList(ids);
+
+
+    vtkSmartPointer<vtkSelection> selection =
+            vtkSmartPointer<vtkSelection>::New();
+    selection->AddNode(selectionNode);
+
+
+    vtkSmartPointer<vtkExtractSelection> extractSelection =
+            vtkSmartPointer<vtkExtractSelection>::New();
+    extractSelection->SetInputData(0, MedusaBackend::getInstance()->grids()[0]->grid());
+    extractSelection->SetInputData(1, selection);
+    extractSelection->Update();
+
+    // In selection
+    vtkSmartPointer<vtkUnstructuredGrid> selected =
+            vtkSmartPointer<vtkUnstructuredGrid>::New();
+    selected->ShallowCopy(extractSelection->GetOutput());
+
+
+
+    vtkDataSetMapper *mapper_selection = vtkDataSetMapper::New();
+    mapper_selection->SetInputData(selected);
+    vtkSmartPointer<vtkActor> actor_selection = vtkActor::New();
+    actor_selection->SetMapper(mapper_selection);
+    actor_selection->GetProperty()->EdgeVisibilityOff();
+    actor_selection->GetProperty()->SetColor(colors->GetColor3d("Red").GetData());
+
+    actor_selection->GetProperty()->SetLineWidth(5);
+    actor_selection->GetProperty()->SetPointSize(5);
+    actor_selection->PickableOff();
+
+    m_vtk_selection_actors.push_back(actor_selection);
+
+    m_vtk_renderer->AddActor(actor_selection);
+
+    m_vtk_window->Render();
+
+}
+/*----------------------------------------------------------------------------*/
+void GraphicView::toggleBRep(){
+    //m_vtk_actors[0]->VisibilityOff();
+    m_vtk_actors[1]->VisibilityOn();
+    m_vtk_actors[1]->PickableOff();
+    //m_vtk_actors[0]->PickableOn();
+
+    MedusaGrid* g = MedusaBackend::getInstance()->grids()[1];
+
+
+    vtkDataArray *array = g->grid()->GetCellData()->GetArray("BND_Color");
+
+    MedusaBackend::getInstance()->grids()[1]->grid()->GetCellData()->SetScalars(array);
+
+    int nbSurfaces = MedusaBackend::getInstance()->grids()[1]->getNbGeomSurfs();
+
+    vtkDataSetMapper *mapper = vtkDataSetMapper::New();
+    mapper->SetInputData(g->grid());
+    mapper->SetScalarModeToUseCellData();
+    mapper->SetColorModeToMapScalars();
+    mapper->ScalarVisibilityOn();
+    mapper->SetScalarRange(0,nbSurfaces);
+
+    mapper->Update();
+
+    m_vtk_actors[1]->SetMapper(mapper);
+
+}
+/*----------------------------------------------------------------------------*/
+void GraphicView::textMode(int AMode){
+    // Setup the text and add it to the renderer
+
+    switch (AMode){
+        case 0:
+            m_textActor->SetInput ( "Input mode" );
+            break;
+        case 1:
+            m_textActor->SetInput ( "Frame mode" );
+            break;
+        case 2:
+            m_textActor->SetInput ( "Geom mode" );
+            break;
+        case 3:
+            m_textActor->SetInput ( "Dublo mode" );
+            break;
+    }
+    m_vtk_window->Render();
+}
+/*----------------------------------------------------------------------------*/
+void GraphicView::hideSetOfTets() {
+    m_vtk_tets_set->VisibilityOff();
+}
+/*----------------------------------------------------------------------------*/
+void GraphicView::showPoints(std::vector<std::vector<double>> coords){
+    vtkSmartPointer<vtkNamedColors> colors =
+            vtkSmartPointer<vtkNamedColors>::New();
+
+    for(auto coord : coords){
+        vtkSmartPointer<vtkSphereSource> sphereSource =
+                vtkSmartPointer<vtkSphereSource>::New();
+        sphereSource->SetCenter(coord[0],coord[1],coord[2]);
+        sphereSource->SetRadius(0.25);
+
+
+        vtkSmartPointer<vtkPolyDataMapper> mapper =
+                vtkSmartPointer<vtkPolyDataMapper>::New();
+
+        mapper->SetInputConnection(sphereSource->GetOutputPort());
+        vtkSmartPointer<vtkActor> actor =
+                vtkActor::New();
+        actor->SetMapper(mapper);
+        actor->GetProperty()->SetColor(colors->GetColor3d("Red").GetData());
+
+        m_vtk_renderer->AddActor(actor);
+        m_vtk_actors.push_back(actor);
+    }
+
+    m_vtk_window->Render();
+
+
+
+}
+/*----------------------------------------------------------------------------*/
+void GraphicView::resetDual() {
+    for(auto a : m_vtk_tets_actors){
+        m_vtk_renderer->RemoveActor(a.first);
+        a.first->Delete();
+    }
+
+    m_vtk_tets_actors.clear();
+
+    for(auto a : m_vtk_surface_actors){
+        m_vtk_renderer->RemoveActor(a.first);
+        a.first->Delete();
+    }
+
+    m_vtk_surface_actors.clear();
+
 }

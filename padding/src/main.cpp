@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
     Variable<double>* quality_var = m.newVariable<double, GMDS_REGION>("GMDS_Quality");
     Variable<int>* hard = m.newVariable<int, GMDS_FACE>("GMDS_HARD");
 
-    for(auto cell_id:m.regions()) {
+    /*for(auto cell_id:m.regions()) {
         Region r = m.get<Region>(cell_id);
         double qi = r.computeScaledJacobian();
         (*quality_var)[cell_id]= qi;
@@ -67,7 +67,25 @@ int main(int argc, char* argv[])
                 }
             }
         }
-    }
+    }*/
+
+    //hexa.vtk
+    //hard->set(20,1);
+    //hard->set(23,1);
+
+    //test_padding.vtk
+    hard->set(0,1);
+    hard->set(1,1);
+    hard->set(6,1);
+    hard->set(7,1);
+    hard->set(11,1);
+    hard->set(12,1);
+    hard->set(16,1);
+    hard->set(17,1);
+    hard->set(21,1);
+    hard->set(22,1);
+
+
     //==================================================================
     // SELECTIVE PADDING ALGORITHM
     //==================================================================

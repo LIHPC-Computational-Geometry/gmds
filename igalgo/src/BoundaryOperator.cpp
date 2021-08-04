@@ -6,12 +6,20 @@
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
-BoundaryOperator::BoundaryOperator(Mesh* AMesh)
-        :m_mesh(AMesh)
+BoundaryOperator::BoundaryOperator(Mesh* AMesh, const double AAngle)
+        :m_mesh(AMesh), m_surface_angle_dot(AAngle)
 {}
 /*----------------------------------------------------------------------------*/
 BoundaryOperator::~BoundaryOperator()
 {}
+/*----------------------------------------------------------------------------*/
+void BoundaryOperator::setSurfaceAngleDot(const double AD) {
+    m_surface_angle_dot=AD;
+}
+/*----------------------------------------------------------------------------*/
+double BoundaryOperator::getSurfaceAngleDot() {
+    return m_surface_angle_dot;
+}
 /*----------------------------------------------------------------------------*/
 bool BoundaryOperator::isValid() const
 {
@@ -178,13 +186,13 @@ markCellsOnCurves(const int AMarkBF,  //mark for faces on surfaces //IN
                 Face f1 = boundary_adj_faces[1];
 
                 //LA SUITE DES VECTEURS A CONSTRUIRE A BASE DE POINTS
-                math::Vector3d n0 = f0.normal();//getOutputNormalOfABoundaryFace(f0);
-                math::Vector3d n1 = f1.normal();//getOutputNormalOfABoundaryFace(f1);
+                math::Vector3d n0 = /*f0.normal();*/getOutputNormalOfABoundaryFace(f0);
+                math::Vector3d n1 = /*f1.normal();*/getOutputNormalOfABoundaryFace(f1);
 
 
-                double dotProduct = fabs(n0.dot(n1));
+                double dotProduct = n0.dot(n1);
 
-                if (dotProduct < 0.72)//(sqrt(2.0) / 2.0))
+                if (dotProduct < m_surface_angle_dot)//(sqrt(2.0) / 2.0))
                 {
                     cpt2++;
                     m_mesh->mark(e, AMarkCE);

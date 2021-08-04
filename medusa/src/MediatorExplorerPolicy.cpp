@@ -24,15 +24,27 @@ void MediatorExplorerPolicy::
 help(TextView *AView)
 {AView->help();}
 /*----------------------------------------------------------------------------*/
-void MediatorExplorerPolicy::remove(int ASheetID) {
+void MediatorExplorerPolicy::remove(GraphicView *AView) {
     std::cout<<"Not implemented yet"<<std::endl;
 }
 /*----------------------------------------------------------------------------*/
-void MediatorExplorerPolicy::generateDual(GraphicView *AView) {
+void MediatorExplorerPolicy::removeItem(int AID, GraphicView *AView) {
     std::cout<<"Not implemented yet"<<std::endl;
 }
 /*----------------------------------------------------------------------------*/
-void MediatorExplorerPolicy::generateDual(TextView *AView) {
+void MediatorExplorerPolicy::removeItem(int AID, TextView *AView) {
+    std::cout<<"Not implemented yet"<<std::endl;
+}
+/*----------------------------------------------------------------------------*/
+void MediatorExplorerPolicy::generate(GraphicView *AView) {
+    std::cout<<"Not implemented yet"<<std::endl;
+}
+/*----------------------------------------------------------------------------*/
+void MediatorExplorerPolicy::generate(TextView *AView) {
+    std::cout<<"Not implemented yet"<<std::endl;
+}
+/*----------------------------------------------------------------------------*/
+void MediatorExplorerPolicy::undoGenerate(GraphicView *AView) {
     std::cout<<"Not implemented yet"<<std::endl;
 }
 /*----------------------------------------------------------------------------*/
@@ -40,30 +52,18 @@ void MediatorExplorerPolicy::showAxis(GraphicView *AView, vtkIdType ACellID) {
     std::cout<<"Not implemented yet"<<std::endl;
 }
 /*----------------------------------------------------------------------------*/
-void MediatorExplorerPolicy::generateBlocks(medusa::GraphicView *AView) {
-    std::cout<<"Not implemented yet"<<std::endl;
-}
-/*----------------------------------------------------------------------------*/
-void MediatorExplorerPolicy::smoothBlocks(medusa::GraphicView *AView) {
-    std::cout<<"Not implemented yet"<<std::endl;
-}
-/*----------------------------------------------------------------------------*/
-void MediatorExplorerPolicy::surfaceMode(GraphicView *AView){
-    std::cout<<"Not implemented yet"<<std::endl;
-}
-/*----------------------------------------------------------------------------*/
-void MediatorExplorerPolicy::resetDual(GraphicView *AView) {
-    std::cout<<"Not implemented yet"<<std::endl;
-}
-/*----------------------------------------------------------------------------*/
-void MediatorExplorerPolicy::resetBlock(GraphicView *AView) {
-    std::cout<<"Not implemented yet"<<std::endl;
-}
-/*----------------------------------------------------------------------------*/
-void MediatorExplorerPolicy::resetBlockSmoothing(medusa::GraphicView *AView) {
+void MediatorExplorerPolicy::surfaceMode(medusa::GraphicView *AView) {
     std::cout<<"Not implemented yet"<<std::endl;
 }
 /*----------------------------------------------------------------------------*/
 void MediatorExplorerPolicy::singularityGraphToggle(GraphicView *AView) {
+    std::cout<<"Not implemented yet"<<std::endl;
+}
+/*----------------------------------------------------------------------------*/
+void MediatorExplorerPolicy::opacity(GraphicView *AView) {
+    std::cout<<"Not implemented yet"<<std::endl;
+}
+/*----------------------------------------------------------------------------*/
+void MediatorExplorerPolicy::color(GraphicView *AView) {
     std::cout<<"Not implemented yet"<<std::endl;
 }

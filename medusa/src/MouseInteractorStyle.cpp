@@ -26,11 +26,6 @@ void MouseInteractorStyle::OnChar() {
             wireframe();
             break;
 
-        case 's':
-        case 'S':
-            solid();
-            break;
-
         case 'o':
         case 'O':
             opacity();
@@ -43,7 +38,7 @@ void MouseInteractorStyle::OnChar() {
 
         case 'g':
         case 'G':
-            generateDual();
+            generate();
             break;
 
         case 'd':
@@ -51,14 +46,14 @@ void MouseInteractorStyle::OnChar() {
             viewDual();
             break;
 
+        case 's':
+        case 'S':
+            singularityGraph();
+            break;
+
         case 'r':
         case 'R':
             remove();
-            break;
-
-        case 'b':
-        case 'B':
-            generateBlocks();
             break;
 
         case 'v':
@@ -71,10 +66,16 @@ void MouseInteractorStyle::OnChar() {
             undo();
             break;
 
+        case 'c':
+        case 'C':
+            color();
+            break;
+
         case 'm':
         case 'M':
-            finalMesh();
+            mode();
             break;
+
     }
 }
 //----------------------------------------------------------------------------
@@ -92,6 +93,8 @@ void MouseInteractorStyle::pick() {
 
     double *worldPosition = picker->GetPickPosition();
 
+
+
     if (picker->GetCellId() != -1){
         MediatorControl::getInstance()->select(3, picker->GetCellId());
     }
@@ -108,10 +111,6 @@ void MouseInteractorStyle::wireframe(){
     MediatorControl::getInstance()->wireframe();
 }
 /*----------------------------------------------------------------------------*/
-void MouseInteractorStyle::solid(){
-    MediatorControl::getInstance()->solid();
-}
-/*----------------------------------------------------------------------------*/
 void MouseInteractorStyle::opacity(){
     MediatorControl::getInstance()->opacity();
 }
@@ -120,8 +119,8 @@ void MouseInteractorStyle::help(){
     MediatorControl::getInstance()->help();
 }
 /*----------------------------------------------------------------------------*/
-void MouseInteractorStyle::generateDual(){
-    MediatorControl::getInstance()->generateDual();
+void MouseInteractorStyle::generate(){
+    MediatorControl::getInstance()->generate();
 }
 /*----------------------------------------------------------------------------*/
 void MouseInteractorStyle::viewDual(){
@@ -140,25 +139,18 @@ void MouseInteractorStyle::remove(){
     // Pick from this location.
     picker->Pick(pos[0], pos[1], 0, this->GetDefaultRenderer());
 
+    vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
     if (picker->GetCellId() != -1){
 
         std::cout<<"Picker cell id "<<picker->GetCellId()<<std::endl;
 
-        MediatorControl::getInstance()->removeSheet(MediatorControl::getInstance()->removeActor(picker->GetActor()));
+        MediatorControl::getInstance()->removeItem(MediatorControl::getInstance()->removeActor(picker->GetActor()));
     }
-    vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
-}
-/*----------------------------------------------------------------------------*/
-void MouseInteractorStyle::generateBlocks() {
-    MediatorControl::getInstance()->generateBlocks();
+
 }
 /*----------------------------------------------------------------------------*/
 void MouseInteractorStyle::surfaceMode() {
     MediatorControl::getInstance()->surfaceMode();
-}
-/*----------------------------------------------------------------------------*/
-void MouseInteractorStyle::finalMesh()  {
-    MediatorControl::getInstance()->finalMesh();
 }
 /*----------------------------------------------------------------------------*/
 void MouseInteractorStyle::undo() {
@@ -169,3 +161,10 @@ void MouseInteractorStyle::singularityGraph() {
     MediatorControl::getInstance()->singularityGraphToggle();
 }
 /*----------------------------------------------------------------------------*/
+void MouseInteractorStyle::color() {
+    MediatorControl::getInstance()->color();
+}
+/*----------------------------------------------------------------------------*/
+void MouseInteractorStyle::mode() {
+    MediatorControl::getInstance()->changePolicy();
+}

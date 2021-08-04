@@ -4,6 +4,7 @@
 #include <medusa/view/GraphicView.h>
 #include <medusa/control/MediatorExplorerPolicy.h>
 #include <medusa/control/MediatorDuBloPolicy.h>
+#include <medusa/control/MediatorGeomPolicy.h>
 /*----------------------------------------------------------------------------*/
 #include <vtkDataSetMapper.h>
 #include <vtkRenderWindow.h>
@@ -40,6 +41,8 @@ void Medusa::setMode(const Medusa::Mode AMode) {
         policy = new MediatorDubloPolicy();
     else if(AMode==Medusa::EXPLORATION)
         policy  = new MediatorExplorerPolicy();
+    else if(AMode==Medusa::GEOMETRY)
+        policy  = new MediatorGeomPolicy();
     else
         throw GMDSException("Medusa Error: unknown mode!");
 
@@ -53,6 +56,7 @@ void Medusa::launch() {
 }
 /*----------------------------------------------------------------------------*/
 void Medusa::load(const std::string &AFileName) {
+    //MedusaBackend::getInstance()->loadVTK(AFileName);
     MedusaBackend::getInstance()->loadVTK(AFileName);
 }
 /*----------------------------------------------------------------------------*/

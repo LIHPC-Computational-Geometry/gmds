@@ -18,11 +18,9 @@ set(GMDS_INC
         inc/medusa/control/MouseInteractorStyle.h
         inc/medusa/Medusa.h
         inc/medusa/control/MedusaCommand.h
-        inc/medusa/control/MedusaCommandSheet.h
-        inc/medusa/control/MedusaCommandDual.h
-        inc/medusa/control/MedusaCommandBlock.h
-        inc/medusa/control/MedusaCommandBlockSmoothing.h
-        )
+        inc/medusa/control/MedusaCommandPick.h
+        inc/medusa/control/MedusaCommandGenerate.h
+        inc/medusa/control/MediatorGeomPolicy.h)
 set(GMDS_SRC
         src/Medusa.cpp
         src/MediatorControl.cpp
@@ -35,10 +33,9 @@ set(GMDS_SRC
         src/MouseInteractorStyle.cpp
         src/TextView.cpp
         src/View.cpp
-        src/MedusaCommandSheet.cpp
-        src/MedusaCommandDual.cpp
-        src/MedusaCommandBlock.cpp
-        src/MedusaCommandBlockSmoothing.cpp)
+        src/MedusaCommandPick.cpp
+        src/MedusaCommandGenerate.cpp
+        src/MediatorGeomPolicy.cpp)
 
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
@@ -55,6 +52,8 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_IG}
         ${LIB_GMDS_IO}
         ${LIB_GMDS_DUAL_BLOCKING}
+        ${LIB_GMDS_GRAPH}
+        ${LIB_GMDS_FRAME_3D}
         ${VTK_LIBRARIES}
         )
 # CPP INTERFACE TO EXPORT
