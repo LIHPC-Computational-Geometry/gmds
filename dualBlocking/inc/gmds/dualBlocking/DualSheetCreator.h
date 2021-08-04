@@ -68,7 +68,7 @@ namespace db {
          *
          * \return Vector of tetra ID
          */
-        std::map<gmds::TCellID,gmds::math::Vector3d> getSurface();
+        std::map<gmds::TCellID,std::vector<gmds::math::Vector3d>> getSurface();
 
         /*------------------------------------------------------------------------*/
         /** \brief Get the sheet ID
@@ -105,20 +105,21 @@ namespace db {
 
         virtual ~DualSheetCreator();
     protected:
+        bool propagation_loop(const gmds::TCellID &ATet_ID, gmds::math::Vector3d start_norm);
 
-        bool propagation_loop(std::set<gmds::TCellID> ATet_list);
+        bool propagation_loop(const std::set<gmds::TCellID> &ATet_list);
 
         /*------------------------------------------------------------------------*/
         /** \brief Find the closest vector of a chart defined at point APoint in the tetra ATet
          */
-        const gmds::math::Vector3d findNormal(gmds::math::Point& APoint,
+        gmds::math::Vector3d findNormal(gmds::math::Point& APoint,
                                               const gmds::math::Vector3d& AV,
                                               gmds::Region& ATet);
 
         /*------------------------------------------------------------------------*/
         /** \brief Find the closest vector of a chart defined at point APoint in the edge AEdge
          */
-        const gmds::math::Vector3d findNormal(gmds::math::Point& APoint,
+        gmds::math::Vector3d findNormal(gmds::math::Point& APoint,
                                               const gmds::math::Vector3d& AV,
                                               gmds::Edge& AEdge);
 
@@ -138,19 +139,19 @@ namespace db {
         /*------------------------------------------------------------------------*/
         /** \brief Find the closest vector of \p AV in the chart \AChart
          */
-        const gmds::math::Vector3d closestComponentVector(const gmds::math::Vector3d& AV,
+        gmds::math::Vector3d closestComponentVector(const gmds::math::Vector3d& AV,
                                                           gmds::math::Chart& AChart);
 
 
         /*------------------------------------------------------------------------*/
         /** \brief compute the mean vector of the list of vectors AVectors
          */
-        const gmds::math::Vector3d meanVector(std::vector<gmds::math::Vector3d> AVectors);
+        gmds::math::Vector3d meanVector(std::vector<gmds::math::Vector3d> AVectors);
 
         /*------------------------------------------------------------------------*/
         /** \brief compute the mean point of the list of points APoints
          */
-        const gmds::math::Point meanPoints(std::vector<gmds::math::Point> const &APoints);
+        gmds::math::Point meanPoints(std::vector<gmds::math::Point> const &APoints);
 
 
         /*------------------------------------------------------------------------*/
@@ -193,7 +194,7 @@ namespace db {
         //The id of the starting tet
         gmds::TCellID tetID;
         //A map used to list all tet id of the surface and their normal vector of the surface in the tet
-        std::map<gmds::TCellID,gmds::math::Vector3d> surface;
+        std::map<gmds::TCellID,std::vector<gmds::math::Vector3d>> surface;
         //-----------------------------------------------
 
 
@@ -235,6 +236,13 @@ namespace db {
         gmds::Variable<int>* wave_id;
         gmds::Variable<int>* edge_Gdim;
         gmds::Variable<int>* node_Gdim;
+
+        gmds::Variable<int>* m_part;
+
+
+
+        int test_mark;
+
     };
 }
 

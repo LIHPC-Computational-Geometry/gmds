@@ -36,6 +36,17 @@ DualSurfaceCreator::DualSurfaceCreator(Mesh *AMesh,
     wave_id = m_smesh.newVariable<int, GMDS_FACE>("wave");
     edge_Gdim = m_smesh.newVariable<int, GMDS_EDGE>("edge_dim");
     node_Gdim = m_smesh.newVariable<int, GMDS_NODE>("node_dim");
+
+    try {
+        m_part = m_mesh->getVariable<int,GMDS_REGION>("CUT_tet");
+    }catch (GMDSException e){
+
+        m_part = m_mesh->newVariable<int,GMDS_REGION>("CUT_tet");
+        for(auto r : m_mesh->regions()){
+            m_part->set(r,1);
+        }
+    }
+
 }
 /*----------------------------------------------------------------------------*/
 
@@ -64,6 +75,10 @@ bool DualSurfaceCreator::execute() {
         (*m_propagation_round)[r] = -1;
     }
 
+
+    //bool result = propagation_loop(tetID, start_norm);
+    //return result;
+
     //============================================================
     //Initialisation step
     //============================================================
@@ -77,7 +92,9 @@ bool DualSurfaceCreator::execute() {
     plane_point = current_region.center();
 
     norm = findNormal(plane_point, start_norm, current_region);
-    surface.emplace(std::pair<TCellID, math::Vector3d>(tetID, norm));
+    std::vector<math::Vector3d> norm_vec;
+    norm_vec.push_back(norm);
+    surface.emplace(std::pair<TCellID, std::vector<math::Vector3d>>(tetID, norm_vec));
 
     (*m_propagation_round)[tetID] = 0;
 
@@ -155,10 +172,11 @@ bool DualSurfaceCreator::execute() {
         std::vector<TCellID> tets = m_mesh->get<Edge>(iI.e).getIDs<Region>();
         for (auto t : tets) {
             if ((*m_propagation_round)[t] == -1) {
-                if (!isAxisSingularity(t, iI.v)) {
+                if (!isAxisSingularity(t, iI.v) && m_part->value(t) <= 1) {
                     wave_tet.insert(t);
                     (*m_propagation_round)[t] = propagation_round;
                 } else {
+                    std::cout<<"Return 2?"<<std::endl;
                     return false;
                 }
             }
@@ -170,9 +188,10 @@ bool DualSurfaceCreator::execute() {
 
     bool result = propagation_loop(wave_tet);
 
+
     std::cout<<"Surface size = "<<surface.size()<<std::endl;
     if(!result){
-        surface.clear();
+        //surface.clear();
     }
 
     //clear();
@@ -443,7 +462,8 @@ gmds::Mesh* DualSurfaceCreator::buildSurfaceSheet() {
             int i_manifold = -1;
 
             while(next){
-                std::cout<<"nb it "<<cpt_it++<<std::endl;
+                //std::cout<<"nb it "<<cpt_it++<<std::endl;
+                cpt_it++;
                 next = false;
                 closed = false;
                 in_loop.push_back(current_e);
@@ -473,7 +493,7 @@ gmds::Mesh* DualSurfaceCreator::buildSurfaceSheet() {
                     next = false;
                 }
             }
-            std::cout<<"Loop terminée de taille "<<in_loop.size()<<std::endl;
+            //std::cout<<"Loop terminée de taille "<<in_loop.size()<<std::endl;
             if(in_loop.size() > 2){
 
                 math::Point center = math::Point::massCenter(points);

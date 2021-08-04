@@ -9,7 +9,7 @@
 namespace medusa {
     class Medusa {
     public:
-        enum Mode{DUAL_BLOCKING, EXPLORATION};
+        enum Mode{DUAL_BLOCKING, EXPLORATION, GEOMETRY};
         Medusa(const Mode AMode);
         void setMode(const Mode AMode);
 

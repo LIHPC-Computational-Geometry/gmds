@@ -16,6 +16,8 @@
 #include <gmds/cad/FACManager.h>
 #include <gmds/cad/GeomMeshLinker.h>
 
+#include "EdgeDiscrAlgo.h"
+
 
 namespace db {
     class DualBlockingSession {
@@ -26,7 +28,7 @@ namespace db {
          *
          * \param[in] AMesh background tetrahedral mesh we start from
          */
-        DualBlockingSession(gmds::Mesh* AMesh, gmds::Mesh* AHMesh);
+        DualBlockingSession(gmds::Mesh* AMesh, gmds::Mesh* AHMesh, gmds::cad::FACManager &AManager, gmds::cad::GeomMeshLinker &ALinker);
 
         virtual ~DualBlockingSession();
 
@@ -81,14 +83,21 @@ namespace db {
 
         int getSheetOfTet(gmds::TCellID AID);
 
-        void getFrameAxis(double result[][3],gmds::TCellID AID);
+        bool getFrameAxis(double result[][3],gmds::TCellID AID);
 
         gmds::Mesh* getSurfaceMesh(int ASheetID);
 
         /*------------------------------------------------------------------------*/
-        /** \brief Uncolor every tet and clean the block structure mesh
+        /** \brief Clean the dual region by reseting to 0 the value of the dual region variable in the tet but keeping the dual sheets
+         *  and clean the block structure mesh
          */
         void resetDual();
+
+        /*------------------------------------------------------------------------*/
+        /** \brief Reset to 0 the value of the dual region variable in every tet of the mesh and clean the block structure mesh
+         */
+        void hardResetDual();
+
 
         /*------------------------------------------------------------------------*/
         /** \brief Clean the block structure, deleting the regions of the mesh but not the vertices
@@ -99,6 +108,26 @@ namespace db {
         /** \brief Get the singular graph of the tet mesh as a list of tet id
          */
         std::vector<gmds::TCellID> getSingularGraph();
+
+        /*------------------------------------------------------------------------*/
+        /** \brief Check the dual region to find if at least one of them is not valid, ie, a dual zone that contains no
+         *  geometric point or multiple geometric points
+         */
+        bool checkDualRegionsValidity();
+
+        /*------------------------------------------------------------------------*/
+        /** \brief Make the tets of the wrong dual regions unusable for the block generation algorithm
+         */
+        int removeWrongDualRegions();
+
+        /*------------------------------------------------------------------------*/
+        /** \brief Recolor the dual regions that were marked as wrong to fit the first dual generation
+         */
+        int recolorDual();
+
+
+        void testLissageSheet();
+
 
 
     protected:
@@ -148,19 +177,25 @@ namespace db {
                         const std::vector<gmds::math::Triangle>&ATri,
                         gmds::math::Vector3d&                   AToDir);
 
-        void classifyEdges();
+        void classifyEdges(int AMode);
 
         void uncolorTet(gmds::TCellID ATetID, int ASheetID);
 
         gmds::Mesh* getBlocks();
 
+        void colorWrongDualRegions();
+
+        void classifyBlockFaces();
+
 
     protected:
 
+        //Tet mesh
         gmds::Mesh* m_mesh;
 
         gmds::Mesh* m_imesh;
 
+        //Block mesh
         gmds::Mesh* m_hmesh;
 
         //std::vector<db::DualSurfaceCreator> dual_sheet;
@@ -175,6 +210,7 @@ namespace db {
         //A map used to store the dual zones of the mesh, <id,block node>
         std::map<int,gmds::Node> m_dual_zones;
         std::map<int,std::vector<int>> m_zone_border;
+        std::map<int,std::vector<std::pair<int,int>>> m_dual_zones_classifications;
 
         gmds::Variable<gmds::math::Chart>* m_tetra_chart;
         gmds::Variable<gmds::math::Chart>* m_vertex_chart;
@@ -197,6 +233,10 @@ namespace db {
 
         gmds::Variable<int>* m_block_id;
 
+        gmds::Variable<int>* m_part;
+
+        std::map<int,gmds::TCellID> m_wrong_dual_regions;
+
         int mark_ghost;
 
 
@@ -216,6 +256,10 @@ namespace db {
         gmds::Variable<int>* m_X;
         gmds::Variable<int>* m_Y;
         gmds::Variable<int>* m_Z;
+
+        void correctionBlockEdgesClassification();
+
+        double distance;
 
     };
 }

@@ -62,6 +62,11 @@ int main(int argc, char** argv)
     math::Vector3d y(0,1,0);
     math::Vector3d z(0,0,1);
 
+    cad::FACManager manager;
+    cad::GeomMeshLinker linker;
+
+    manager.initAndLinkFrom3DMesh(&mesh,&linker);
+
 
     for(auto n_id: mesh.nodes()){
         Node n = mesh.get<Node>(n_id);
@@ -73,7 +78,7 @@ int main(int argc, char** argv)
     }
 
 
-    DualBlockingSession session(&mesh,&hmesh);
+    DualBlockingSession session(&mesh,&hmesh,manager,linker);
     //session.init();
 
     //auto_intersect

@@ -23,7 +23,7 @@ namespace db {
         /** \brief Fill the surface vector
          */
         void setSurface(std::vector<gmds::TCellID> ASurface);
-        void setSurface(std::map<gmds::TCellID,gmds::math::Vector3d> ASurface);
+        void setSurface(std::map<gmds::TCellID,std::vector<gmds::math::Vector3d>> ASurface);
 
         /*------------------------------------------------------------------------*/
         /** \brief Get a vector that contains the id of the tet in the sheet

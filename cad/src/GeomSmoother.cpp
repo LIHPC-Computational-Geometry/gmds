@@ -1,8 +1,4 @@
 /*----------------------------------------------------------------------------*/
-//
-// Created by totoro on 2019-04-13.
-//
-/*----------------------------------------------------------------------------*/
 #include "gmds/cad/GeomSmoother.h"
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
@@ -19,14 +15,14 @@ bool GeomSmoother::isValid() const
     bool valid_input=true;
     MeshModel model = m_linker->mesh()->getModel();
     if (!model.has(R)   ||
-        !model.has(F)   ||
-        !model.has(E)   ||
-        !model.has(N)   ||
-        !model.has(R2N) ||
-        !model.has(F2N) ||
-        !model.has(E2N) ||
-        !model.has(N2E) ||
-        !model.has(N2F) )
+    !model.has(F)   ||
+    !model.has(E)   ||
+    !model.has(N)   ||
+    !model.has(R2N) ||
+    !model.has(F2N) ||
+    !model.has(E2N) ||
+    !model.has(N2E) ||
+    !model.has(N2F) )
         valid_input= false;
 
     if(!valid_input)
@@ -45,6 +41,7 @@ void GeomSmoother::init() {
     Mesh *m = m_linker->mesh();
     for (auto n_id:m->nodes()) {
         auto geom_info = m_linker->getGeomInfo<Node>(n_id);
+
         if (geom_info.first == GeomMeshLinker::LINK_CURVE) {
             //Means on a curve
             m_c2n[geom_info.second].push_back(n_id);
@@ -52,10 +49,11 @@ void GeomSmoother::init() {
             //Means on a surface
             m_s2n[geom_info.second].push_back(n_id);
         } else if (geom_info.first == GeomMeshLinker::NO_LINK ||
-                   geom_info.first == GeomMeshLinker::LINK_VOLUME) {
+        geom_info.first == GeomMeshLinker::LINK_VOLUME) {
             //Means in a volume
             m_v2n[geom_info.second].push_back(n_id);
         }
+
     }
 
     //Now we build the local N2N connection that is useful for the smoothing
@@ -70,7 +68,7 @@ void GeomSmoother::init() {
 
             for (auto e:edges) {
                 if (m_linker->getGeomDim(e) == GeomMeshLinker::LINK_CURVE &&
-                    m_linker->getGeomId(e) == geom_id) {
+                m_linker->getGeomId(e) == geom_id) {
                     //Edge e is linked to the same curve as n_id
                     std::vector<TCellID> nids = e.getIDs<Node>();
                     if (nids[0] == n_id) {
@@ -86,7 +84,7 @@ void GeomSmoother::init() {
 
             for (auto f:faces) {
                 if (m_linker->getGeomDim(f) == GeomMeshLinker::LINK_SURFACE &&
-                    m_linker->getGeomId(f) == geom_id) {
+                m_linker->getGeomId(f) == geom_id) {
                     //Face f is linked to the same surface as n_id
                     std::vector<TCellID> nids = f.getIDs<Node>();
                     for (auto ni:nids) {
@@ -97,7 +95,7 @@ void GeomSmoother::init() {
                 }
             }
         } else if (geom_dim == GeomMeshLinker::NO_LINK ||
-                   geom_dim == GeomMeshLinker::LINK_VOLUME) {
+        geom_dim == GeomMeshLinker::LINK_VOLUME) {
             //Means in a volume
             std::vector<Region> regions = m->get<Node>(n_id).get<Region>();
 
@@ -133,6 +131,7 @@ void GeomSmoother::smoothCurves(const int ANbIterations) {
                     pi = pi + pj;
                 }
                 pi = pi * (1.0 / adj_n.size());
+
                 c->project(pi);
                 ni.setPoint(pi);
             }

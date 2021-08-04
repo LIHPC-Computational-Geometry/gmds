@@ -46,13 +46,11 @@ namespace medusa {
 
         void help();
 
-        void generateDual();
+        void generate();
 
         void viewDual();
 
         void remove();
-
-        void generateBlocks();
 
         void surfaceMode();
 
@@ -60,7 +58,11 @@ namespace medusa {
 
         void undo();
 
+        void color();
+
         void singularityGraph();
+
+        void mode();
     };
 
 }

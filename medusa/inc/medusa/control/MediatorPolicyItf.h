@@ -15,25 +15,27 @@ namespace medusa {
                                    const int ADim, const vtkIdType AID, int AAxis)=0;
         virtual int selectVTKCell(TextView* AView,
                                   const int ADim, const vtkIdType AID)=0;
+
         virtual void help(TextView* AView) = 0;
-        virtual void remove(int ASheetID) = 0;
-        virtual void generateDual(GraphicView *AView) = 0;
-        virtual void generateDual(TextView *AView) = 0;
+
+        virtual void remove(GraphicView *AView)=0;
+
+        virtual void removeItem(int AID, GraphicView *AView) = 0;
+        virtual void removeItem(int AID, TextView *AView) = 0;
+
+        virtual void generate(GraphicView *AView) = 0;
+        virtual void generate(TextView *AView) = 0;
+        virtual void undoGenerate(GraphicView *AView) = 0;
 
         virtual void showAxis(GraphicView *AView, vtkIdType ACellID) = 0;
 
-        virtual void generateBlocks(GraphicView *AView) = 0;
-
         virtual void surfaceMode(GraphicView *AView) = 0;
 
-        virtual void resetDual(GraphicView *AView) = 0;
-
-        virtual void resetBlock(GraphicView *AView) = 0;
-
-        virtual void smoothBlocks(GraphicView *AView) = 0;
-        virtual void resetBlockSmoothing(GraphicView *AView) = 0;
-
         virtual void singularityGraphToggle(GraphicView *AView) = 0;
+
+        virtual void opacity(GraphicView *AView) = 0;
+
+        virtual void color(GraphicView *AView) = 0;
     };
 /*----------------------------------------------------------------------------*/
 }

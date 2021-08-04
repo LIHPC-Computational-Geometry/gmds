@@ -7,9 +7,8 @@
 #include <iostream>
 /*----------------------------------------------------------------------------*/
 #include <gmds/utils/Exception.h>
-#include <medusa/control/MedusaCommandDual.h>
-#include <medusa/control/MedusaCommandBlock.h>
-#include <medusa/control/MedusaCommandBlockSmoothing.h>
+#include <medusa/control/MedusaCommandGenerate.h>
+#include <medusa/control/MediatorDuBloPolicy.h>
 /*----------------------------------------------------------------------------*/
 using namespace medusa;
 using namespace gmds;
@@ -50,13 +49,12 @@ void MediatorControl::select(int ADIm, vtkIdType ACellID) {
     //if(MedusaBackend::getInstance()->grids().size()!=1)
     //throw GMDSException("Warning, picking is only available for a single mesh");
 
-    MedusaCommandSheet* c = new MedusaCommandSheet(m_policy, m_graphic_collaborator[0],m_text_collaborator[0],ADIm, ACellID);
+    MedusaCommandPick* c = new MedusaCommandPick(m_policy, m_graphic_collaborator[0],m_text_collaborator[0],ADIm, ACellID);
     MedusaCommand::State sc = c->execute();
     if(sc == MedusaCommand::SUCCES) {
-        std::cout << "SUCCEED to create dual sheet" << std::endl;
         m_commands.push_back(c);
     }else{
-        std::cout << "FAILED to create dual sheet" << std::endl;
+        std::cout << "FAILED command : [pick]" << std::endl;
     }
 
 }
@@ -67,11 +65,14 @@ void MediatorControl::help() {
     }
 }
 /*----------------------------------------------------------------------------*/
-void MediatorControl::generateDual() {
-    MedusaCommandDual* c = new MedusaCommandDual(m_policy, m_graphic_collaborator[0],m_text_collaborator[0]);
+void MediatorControl::generate() {
+    MedusaCommandGenerate *c = new MedusaCommandGenerate(m_policy, m_graphic_collaborator[0], m_text_collaborator[0]);
     MedusaCommand::State sc = c->execute();
-    if(sc == MedusaCommand::SUCCES)
+    if (sc == MedusaCommand::SUCCES){
         m_commands.push_back(c);
+    }else{
+        std::cout << "FAILED command : [generate]" << std::endl;
+    }
 }
 /*----------------------------------------------------------------------------*/
 void MediatorControl::toggleDual() {
@@ -93,45 +94,28 @@ void MediatorControl::wireframe(){
     }
 }
 /*----------------------------------------------------------------------------*/
-void MediatorControl::solid(){
-    for(auto v:m_graphic_collaborator){
-        v->solid();
-    }
-}
-/*----------------------------------------------------------------------------*/
 void MediatorControl::opacity(){
-    for(auto v:m_graphic_collaborator){
-        v->opacity();
-    }
+    m_policy->opacity(m_graphic_collaborator[0]);
 }
 /*----------------------------------------------------------------------------*/
 void MediatorControl::remove(){
-    m_graphic_collaborator[0]->remove();
+    m_policy->remove(m_graphic_collaborator[0]);
 }
 /*----------------------------------------------------------------------------*/
 int MediatorControl::removeActor(vtkSmartPointer<vtkActor> ADeletedActor){
+
+
+    //=========================================================================
+    //Ici il faut descendre l'appel aux policy
+    //=========================================================================
+
+    return m_graphic_collaborator[0]->selectLine(ADeletedActor);
     return m_graphic_collaborator[0]->removeActor(ADeletedActor);
 }
 /*----------------------------------------------------------------------------*/
-void MediatorControl::removeSheet(int ASheetID){
-    m_text_collaborator[0]->remove(ASheetID);
-    m_policy->remove(ASheetID);
-}
-/*----------------------------------------------------------------------------*/
-void MediatorControl::generateBlocks() {
-    MedusaCommandBlock* c = new MedusaCommandBlock(m_policy, m_graphic_collaborator[0],m_text_collaborator[0]);
-    MedusaCommand::State sc = c->execute();
-    if(sc == MedusaCommand::SUCCES) {
-        m_commands.push_back(c);
-    }
-}
-/*----------------------------------------------------------------------------*/
-void MediatorControl::finalMesh() {
-    MedusaCommandBlockSmoothing* c = new MedusaCommandBlockSmoothing(m_policy, m_graphic_collaborator[0], m_text_collaborator[0]);
-    MedusaCommand::State sc = c->execute();
-    if(sc == MedusaCommand::SUCCES) {
-        m_commands.push_back(c);
-    }
+void MediatorControl::removeItem(int AItemID){
+    m_text_collaborator[0]->remove(AItemID);
+    m_policy->removeItem(AItemID, m_graphic_collaborator[0]);
 }
 /*----------------------------------------------------------------------------*/
 void MediatorControl::surfaceMode() {
@@ -148,5 +132,17 @@ void MediatorControl::undo() {
 /*----------------------------------------------------------------------------*/
 void MediatorControl::singularityGraphToggle() {
     m_policy->singularityGraphToggle(m_graphic_collaborator[0]);
+}
+/*----------------------------------------------------------------------------*/
+void MediatorControl::color() {
+    m_policy->color(m_graphic_collaborator[0]);
+}
+/*----------------------------------------------------------------------------*/
+void MediatorControl::changePolicy() {
+
+    m_policy = new medusa::MediatorDubloPolicy;
+    MedusaBackend::getInstance()->modeBlocks();
+    m_graphic_collaborator[0]->textMode(3);
+    //m_graphic_collaborator[0]->updateCut();
 }
 /*----------------------------------------------------------------------------*/

@@ -20,18 +20,58 @@ selectVTKCell(TextView *AView, const int ADim, const vtkIdType AID)
 int MediatorDubloPolicy::
 selectVTKCell(GraphicView *AView, const int ADim, const vtkIdType AID, int AAxis)
 {
-    AView->removeAxis();
-    std::vector<vtkIdType> surf;
+    double coords[3][3];
     int sheet_ID = 0;
-    if(AAxis == 3){
-        surf = MedusaBackend::getInstance()->createBoundary(ADim, AID, sheet_ID);
-        AView->updateMesh();
-    } else{
-        surf = MedusaBackend::getInstance()->createSurface(ADim, AID, sheet_ID, AAxis);
+    if(MedusaBackend::getInstance()->getFrameAxis(coords,AID)) {
+
+        AView->showAxis(coords);
+        char axis = '0';
+        int axis_index = 0;
+        bool wrong_answer = true;
+        while (wrong_answer) {
+            std::cout
+                    << "Select dual surface normal direction : '1' for red, '2' for green or '3' to create a boundary surface"
+                    << std::endl;
+            cin >> axis;
+            switch (axis) {
+                case '1':
+                    wrong_answer = false;
+                    axis_index = 1;
+                    break;
+                case '2':
+                    wrong_answer = false;
+                    axis_index = 2;
+                    break;
+                case '3':
+                    wrong_answer = false;
+                    axis_index = 3;
+                    break;
+                case 'q':
+                    wrong_answer = false;
+                    axis_index = 0;
+                    break;
+                default:
+                    std::cout << "Wrong input, please retry." << std::endl;
+                    cin.clear();
+            }
+        }
+        std::cout << "Test" << std::endl;
+        AView->removeAxis();
+        std::vector<vtkIdType> surf;
+
+        if (axis_index == 3) {
+            surf = MedusaBackend::getInstance()->createBoundary(ADim, AID, sheet_ID);
+            AView->updateMesh();
+        } else {
+            surf = MedusaBackend::getInstance()->createSurface(ADim, AID, sheet_ID, axis_index);
+        }
+        if (sheet_ID != -1) {
+            AView->createSurface(surf, sheet_ID);
+            AView->createPlanSurface(sheet_ID, MedusaBackend::getInstance()->grids().back());
+        }
     }
-    if(sheet_ID != -1) {
-        AView->createSurface(surf, sheet_ID);
-        AView->createPlanSurface(sheet_ID, MedusaBackend::getInstance()->grids().back());
+    else{
+        sheet_ID = -1;
     }
 
     return sheet_ID;
@@ -42,23 +82,44 @@ help(TextView *AView)
 {AView->help();}
 /*----------------------------------------------------------------------------*/
 void MediatorDubloPolicy::
-generateDual(GraphicView *AView)
-{AView->updateDual(MedusaBackend::getInstance()->generateDual());}
-/*----------------------------------------------------------------------------*/
-void MediatorDubloPolicy::
-generateDual(TextView *AView)
-{AView->generateDual();}
-/*----------------------------------------------------------------------------*/
-void MediatorDubloPolicy::
-remove(int ASheetID)
-{MedusaBackend::getInstance()->removeSheet(ASheetID);}
-/*----------------------------------------------------------------------------*/
-/*void MediatorDubloPolicy::
-remove(GraphicView *AView, int ASheetID)
+generate(GraphicView *AView)
 {
-  MedusaBackend::getInstance()->removeSheet(ASheetID);
-    AView->remove(ASheetID);
-}*/
+    if(m_mode == 0) {
+        AView->updateDual(MedusaBackend::getInstance()->generateDual());
+        m_mode = 1;
+    } else if(m_mode == 1){
+        MedusaBackend::getInstance()->generateBlocks();
+        AView->viewBlocks();
+        m_mode = 2;
+    }
+}
+/*----------------------------------------------------------------------------*/
+void MediatorDubloPolicy::
+generate(TextView *AView)
+{
+    if(m_mode == 0) {
+        AView->generateDual();
+        //m_mode = 1;
+    } else if(m_mode == 1){
+        //m_mode = 2;
+    } else if(m_mode == 2){
+        std::cout<<"Blocks already generated"<<std::endl;
+    }
+}
+/*----------------------------------------------------------------------------*/
+void MediatorDubloPolicy::remove(GraphicView *AView) {
+    AView->unlockSheet();
+}
+/*----------------------------------------------------------------------------*/
+void MediatorDubloPolicy::
+removeItem(int AID, GraphicView *AView){
+    MedusaBackend::getInstance()->removeSheet(AID);
+    AView->removeActor(AID);
+}
+/*----------------------------------------------------------------------------*/
+void MediatorDubloPolicy::
+removeItem(int AID, TextView *AView)
+{MedusaBackend::getInstance()->removeSheet(AID);}
 /*----------------------------------------------------------------------------*/
 void MediatorDubloPolicy::
 showAxis(GraphicView *AView, vtkIdType ACellID)
@@ -70,35 +131,48 @@ showAxis(GraphicView *AView, vtkIdType ACellID)
     AView->showAxis(coords);
 }
 /*----------------------------------------------------------------------------*/
-void MediatorDubloPolicy::generateBlocks(GraphicView *AView) {
-    MedusaBackend::getInstance()->generateBlocks();
-    AView->viewBlocks();
-}
-/*----------------------------------------------------------------------------*/
-void MediatorDubloPolicy::smoothBlocks(medusa::GraphicView *AView) {
-    MedusaBackend::getInstance()->smoothBlocks();
-    AView->viewBlocks();
-}
-/*----------------------------------------------------------------------------*/
 void MediatorDubloPolicy::surfaceMode(GraphicView *AView) {
     AView->viewSurface();
 }
 /*----------------------------------------------------------------------------*/
-void MediatorDubloPolicy::resetDual(GraphicView *AView) {
-    MedusaBackend::getInstance()->resetDual();
-    AView->setModeDomain();
-}
-/*----------------------------------------------------------------------------*/
-void MediatorDubloPolicy::resetBlock(GraphicView *AView) {
-    MedusaBackend::getInstance()->resetBlock();
-    AView->toggleBlocks();
-}
-/*----------------------------------------------------------------------------*/
-void MediatorDubloPolicy::resetBlockSmoothing(medusa::GraphicView *AView) {
-    MedusaBackend::getInstance()->resetBlockSmoothing();
-    AView->toggleBlocks();
+void MediatorDubloPolicy::undoGenerate(GraphicView *AView) {
+    if(m_mode == 1) {
+        MedusaBackend::getInstance()->resetDual();
+        AView->resetDual();
+        AView->setModeDomain();
+        m_mode = 0;
+    } else if(m_mode == 2){
+        MedusaBackend::getInstance()->resetBlock();
+        AView->toggleBlocks();
+        m_mode = 1;
+    }
 }
 /*----------------------------------------------------------------------------*/
 void MediatorDubloPolicy::singularityGraphToggle(GraphicView *AView) {
     AView->toggleSingGraph();
+}
+/*----------------------------------------------------------------------------*/
+void MediatorDubloPolicy::opacity(GraphicView *AView) {
+    AView->opacity();
+}
+/*----------------------------------------------------------------------------*/
+void MediatorDubloPolicy::color(GraphicView *AView) {
+    if(m_mode == 1) {
+        int nbZones;
+        std::cout<<"Press \"e\" to erase wrong dual regions or \"c\" to continue with this dual structure"<<std::endl;
+        char input;
+        cin>>input;
+        if(input == 'e'){
+            nbZones = MedusaBackend::getInstance()->correctDualRegions();
+            AView->updateDual(nbZones);
+        }else if (input == 'c') {
+            nbZones = MedusaBackend::getInstance()->reGenerateDual();
+        } else{
+
+            throw std::string("Error! wrong input");
+        }
+
+        AView->updateDual(nbZones);
+        cin.clear();
+    }
 }

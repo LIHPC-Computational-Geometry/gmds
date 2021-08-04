@@ -35,7 +35,7 @@ DualSheet::~DualSheet(){
 
 }
 /*------------------------------------------------------------------------*/
-void DualSheet::setSurface(std::map<gmds::TCellID,gmds::math::Vector3d> ASurface){
+void DualSheet::setSurface(std::map<gmds::TCellID,std::vector<gmds::math::Vector3d>> ASurface){
   for(auto id : ASurface){
     m_surface.push_back(id.first);
   }
