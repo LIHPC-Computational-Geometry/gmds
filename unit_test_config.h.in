@@ -1,0 +1,2 @@
+#cmakedefine WITH_TEST
+#cmakedefine TEST_SAMPLES_DIR "@TEST_SAMPLES_DIR@"

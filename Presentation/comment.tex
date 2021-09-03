@@ -1,0 +1,311 @@
+\documentclass[parskip=false, DIV=8, headings=normal, pagesize=auto]{artikel3}%{scrartcl}
+
+\usepackage{fixltx2e}
+\usepackage{etex}
+\usepackage{xspace}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{microtype}
+\usepackage[unicode=true]{hyperref}
+
+\newenvironment*{noverb}{%
+  \flushleft
+  \vskip\parskip
+  \parskip=0pt\relax
+}{%
+  \endflushleft
+}
+
+\newcommand*{\mail}[1]{\href{mailto:#1}{\texttt{#1}}}
+\newcommand*{\pkg}[1]{\textsf{#1}}
+\newcommand*{\cs}[1]{\texttt{\textbackslash#1}}
+\makeatletter
+\newcommand*{\cmd}[1]{\cs{\expandafter\@gobble\string#1}}
+\makeatother
+\newcommand*{\env}[1]{\texttt{#1}}
+\newcommand*{\meta}[1]{\textlangle\textsl{#1}\textrangle}
+\newcommand*{\marg}[1]{\texttt{\{}\meta{#1}\texttt{\}}}
+
+%\addtokomafont{title}{\rmfamily}
+
+\title{The \pkg{comment} package\thanks{This manual corresponds to
+    \pkg{comment}~v3.8 of July 2016.}}
+%
+\author{Victor Eijkhout\\\mail{victor@eijkhout.net}} \date{August 2016}
+
+
+\begin{document}
+
+\maketitle
+
+\section{Purpose:}
+
+Selectively in/exclude pieces of text: the user can define new
+comment versions, and each is controlled separately.
+Special comments can be defined where the user specifies the
+action that is to be taken with each comment line.
+
+Plain \TeX\ support has been phased out.
+
+As of 3.8 the package will increasingly use e\TeX\ features, for
+instance to solve Unicode support issues.
+
+\section{Usage:}
+
+The `\env{comment}' environment is defined by default:
+all text included between
+%
+\begin{verbatim}
+\begin{comment}
+ ... 
+\end{comment}
+\end{verbatim}
+%
+is discarded. 
+
+The opening and closing commands should appear on a line
+of their own. No starting spaces, nothing after it.
+This environment should work with arbitrary amounts
+of comment, and the comment can be arbitrary text.
+
+Other `\env{comment}' environments are defined by
+and are selected/deselected with
+%
+\begin{verbatim}
+\includecomment{versiona}
+\excludecoment{versionb}
+\end{verbatim}
+%
+These environments are used as
+%
+\begin{verbatim}
+\begin{versiona}
+ ... 
+\end{versiona}
+\end{verbatim}
+%
+with the opening and closing commands again on a line of 
+their own.
+
+Note: for an included comment, the
+\cmd{\begin} and \cmd{\end} lines act as if they don't exist.
+In particular, they don't imply grouping, so assignments 
+\&c are not local.
+
+Trick for short in/exclude macros (such as \verb+\maybe{this snippet}+):
+%
+\begin{verbatim}
+\includecomment{cond}
+\newcommand{\maybe}[1]{}
+\begin{cond}
+\renewcommand{\maybe}[1]{#1}
+\end{cond}
+\end{verbatim}
+
+\section{Special comments}
+
+It is possible to make highly customized versions of the comment environment.
+Special comments are defined as
+%
+\begin{noverb}
+\cmd{\specialcomment}\marg{name}\marg{before commands}\marg{after commands}
+\end{noverb}
+%
+where the second and third arguments are executed before
+and after each comment block. You can use this for global
+formatting commands.
+
+To keep definitions \&c local, you can include \cmd{\begingroup}
+in the `\meta{before commands}' and \cmd{\endgroup} in the `\meta{after commands}'.
+
+Example:
+%
+\begin{verbatim}
+\specialcomment{smalltt}
+    {\begingroup\ttfamily\footnotesize}{\endgroup}
+\end{verbatim}
+%
+Special comments are automatically included.
+
+The comment environments use two auxiliary commands. You can get
+nifty special effects by redefining them.
+
+\subsection{The cutfile}
+
+The commented text is written to an external file, the `cutfile'. Default definition:
+\begin{verbatim}
+  \def\CommentCutFile{comment.cut}
+\end{verbatim}
+
+Included comments are processed like this:
+\begin{verbatim}
+  \def\ProcessCutFile{\input{\CommentCutFile}\relax}
+\end{verbatim}
+  and excluded files have
+\begin{verbatim}
+  \def\ProcessCutFile{}
+\end{verbatim}
+
+\begin{itemize}
+\item By redefining the name of the cutfile, the value of the macro
+  \cmd{CommentCutFile}, it becomes possible to have nested comment environments.
+\item If you are writing a textbook, you could have the answers to
+  exercises in your source, but write them to file rather than
+  formatting them:
+\begin{verbatim}
+\generalcomment{answer}
+  {\begingroup
+   \edef\tmp{\def\noexpand\CommentCutFile
+                 {answers/\chapshortname-an\noexpand\arabic{excounter}.tex}}\tmp
+   \def\ProcessCutFile{}}
+  {\ifIncludeAnswers \begin{quote}
+   \leavevmode
+   \hbox{\kern-\unitindent 
+         \textbf Solution to exercise \arabic{chapter}.\arabic{excounter}.\hspace{1em}}%
+     \ignorespaces\it
+   \input{\CommentCutFile}
+   \end{quote}\fi
+   \endgroup}
+\end{verbatim}
+\end{itemize}
+
+\subsection{Comment inclusion}
+
+The inclusion of the comment is done
+by \cmd{\ProcessCutFile}, so you can redefine that:
+\begin{verbatim}
+  \specialcomment
+    {mathexamplewithcode}
+    {\begingroup\def\ProcessCutFile{}} % arg1
+    {\verbatiminput{\CommentCutFile}   % arg2
+     \endgroup
+     This gives:
+     \begin{equation} \input{\CommentCutFile} \end{equation}
+    }
+\end{verbatim}
+The idea here is to disable inclusion of the file,
+but include it in the after commands, in display math.
+
+\subsection{Processing each line}
+
+You can also apply processing to each line.
+By defining a control sequence 
+\begin{verbatim}
+  \def\Thiscomment##1{...}
+\end{verbatim}
+in the before commands the user can
+specify what is to be done with each comment line. If something 
+needs to be written to file, use \verb+\WriteCommentLine{the stuff}+
+Example:
+\begin{verbatim}
+  \specialcomment
+    {underlinecomment}
+    {\def\ThisComment##1{\WriteCommentLine{\underline{##1}\par}}
+     \par}
+    {\par}
+\end{verbatim}
+
+\subsection{More examples}
+
+\begin{verbatim}
+\newcount\comlines
+\specialcomment{countedcomment}
+ {\comlines=0\relax \def\ProcessCutFile{}%
+  \def\ThisComment##1{\global\advance\comlines1\relax}}
+ {**Comment: \number\comlines\ line(s) removed**}
+\end{verbatim}
+
+\begin{verbatim}
+\specialcomment
+    {underlinecomment}
+    {%
+      \def\ProcessCutFile{\input{\CommentCutFile}\relax}
+      \def\ThisComment##1{\WriteCommentLine{u: \underline{##1}\par}}
+      \par
+    }
+    {\par}
+\end{verbatim}
+
+\section{Unicode support}
+
+Unicode support works if you use e\TeX, which is for instance the case
+if you use pdflatex. You need the following lines:
+\begin{verbatim}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\end{verbatim}
+in your preamble.
+
+\section{Change log}
+
+\subsection{Changes in version 3.1}
+
+\begin{itemize}
+\item updated author's address
+\item cleaned up some code
+\item trailing contents on \cmd{\begin}\marg{env} line is always discarded
+    even if you've done \cmd{\includecomment}\marg{env}
+\item comments no longer define grouping!! you can even
+  % 
+\begin{verbatim}
+\includecomment{env}
+\begin{env}
+\begin{itemize}
+\end{env}
+\end{verbatim}
+  % 
+  Isn't that something\ldots
+\item included comments are written to file and input again.
+\end{itemize}
+
+
+\subsection{Changes in 3.2}
+
+\begin{itemize}
+\item \cmd{\specialcomment} brought up to date (thanks to Ivo Welch).
+\end{itemize}
+
+
+\subsection{Changes in 3.3}
+
+\begin{itemize}
+\item updated author's address again
+\item parametrised \cmd{\CommentCutFile}
+\end{itemize}
+
+
+\subsection{Changes in 3.4}
+
+\begin{itemize}
+\item added GNU public license
+\item added \cmd{\processcomment}, because Ivo's fix (above) brought an
+  inconsistency to light.
+\end{itemize}
+
+  
+\subsection{Changes in 3.5}
+
+\begin{itemize}
+\item corrected typo in header.
+\item changed author email
+\item corrected \cmd{\specialcomment} yet again.
+\item fixed excludecomment of an earlier defined environment.
+\end{itemize}
+
+
+\subsection{Changes in 3.6}
+
+\begin{itemize}
+\item The `cut' file is now written more verbatim, using \cmd{\meaning};
+  some people reported having trouble with ISO~latin~1, or \texttt{umlaute.sty}.
+\item removed some \cmd{\newif} statements.
+  Has this suddenly become \cmd{\outer} again?
+\end{itemize}
+
+
+\subsection{Changes in 3.8}
+
+T1 font encoding is now supported. See t1test.tex.
+
+\end{document}

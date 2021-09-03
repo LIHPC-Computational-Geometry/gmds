@@ -1,0 +1,2 @@
+/usr/bin/ar qc libPredicates_psm.a  CMakeFiles/Predicates_psm.dir/Predicates_psm.cpp.o
+/usr/bin/ranlib libPredicates_psm.a

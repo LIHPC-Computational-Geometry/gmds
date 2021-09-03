@@ -1,0 +1,98 @@
+!!!!!!
+//rajouter une classe SimplexTriangle en ami a la classe SimplexMesh ..; pour bien decoupler
+------------------------>FAIT
+
+!!!!!rajouter des test sur les  constructions de base des précédant test ....!!!!!
++
+
+
+/*******************************************************************************************/
+/*******************************************************************************************/
+/*******************************************************************************************/
+/*******************************************************************************************/
+!!PERMET DE VOIR LES NODE 2 TETRA
+/*std::cout << "start of the print " << std::endl;
+for(auto const & indexNode : IndexNodes2Tet)
+{
+  for(auto const & tet : indexNode )
+  {
+    std::cout << "node : " << iter << " index of tetra " << tet << std::endl;;
+  }
+  iter++;
+  std::cout << std::endl;
+}
+iter = 0;
+*/
+
+
+!!!PERMET DE VOIR LES TRIANGLE POINTER PAR LES NODE
+/*std::cout << "start of the print " << std::endl;
+for(auto const& val : m_base)
+{
+  std::cout << "node : " << iter << "   point : "<< m_coords[iter] << " ------> tetra : " << val <<std::endl;
+  iter++;
+}*/
+std::cout << std::endl;
+std::cout << std::endl;
+std::cout << std::endl;
+/*******************************************************************************************/
+/*******************************************************************************************/
+/*******************************************************************************************/
+/*******************************************************************************************/
+/*******************************************************************************************/
+
+
+
+
+!!!
+a voir si il faut que je passe mes bitvector de ma classe Simplex mesh en ptr car la ils sont en copie de la class ....
+
+
+!!!!
+penser a rajouter les variable !!! add node ... et les initialiser dans le constructeur ??
+
+
+
+!!!!!
+destruction de ce qui est alloué en m&émoire !!!!! super important !!!!!!
+
+!!!!!!ranger les triangle aussi dans adj Tet
+
+
+
+!!!!mettre des comparetur aux index dans cell et triangle et node pour voir si on est bien dans les bornes souhaité et pas a l'exterieur
+
+
+
+!!!!!trouver une solution pour ranger error Id qqpart de logique comme common info et aussi le passser en int 64 bits..!!!!!²
+
+
+!!!!ranger les tetra et les triangle dans le bon sens!!!!!
+
+
+!!!!function check a faire ---> verification topologique
+
+
+!!! rendre le marquage de tetra pour la fonction ContenaingSimplex un peu plus Obj......!!!
+
+!!!!!TODO mettre de exception!!!!+
+
+
+
+
+!!!!!rajouter des const aux fonctions const ....;
+
+
+
+
+!!!!finir d'implementer la classe fille ISimplexMeshIOService dans la bibliothèque IO...
+
+!!!!!!setDataOptions a completer dans la class IReader quand il faudra mettre des proprieté liée au nodes, ou tetra ..... quand on utiliserra les new variable .....
+
+
+!!!!!!
+Passer en construction de base local dans les delete de tetra / nodes et dans les ajouts tetra/ nodes
+
+
+!!!!!On va gerer le systeme de update de m_base localement lors d'une suppression (permettra de gerer les nodes qui ne sont plus relié a aucun tetra ) dans deleteTera pas utile dans delete NODE (PEUT ETRE PLUS TARD)
+!!!!!!BUILD BASE VECTOR A REFAIRE CAR NE GERE PAS LES NODE QUI NE SONT PAS LIée A UN TETRA(pour l'instant on gere ca localement dans deleteTetra)
