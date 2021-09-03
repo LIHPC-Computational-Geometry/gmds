@@ -156,8 +156,8 @@ GMDS_ADD_COMPONENT(
         hybridMeshAdapt
         GMDSHybridMeshAdapt
         "Hybrid remeshing component"
-        ON
-        ON                                 # must be covered
+        OFF
+        OFF                                 # must be covered
 )
 
 GMDS_ADD_COMPONENT(
@@ -165,8 +165,8 @@ GMDS_ADD_COMPONENT(
         padding
         GMDSPadding
         "Smart Padding/Pillowing algorithm"
-        ON
-        ON                                # must be covered
+        OFF
+        OFF                                # must be covered
 )
 
 GMDS_ADD_COMPONENT(
@@ -174,8 +174,8 @@ GMDS_ADD_COMPONENT(
         polyblock
         GMDSPolyblock
         "Polycube_like algorithms for hexahedral blocking"
-        ON
-        ON                                # must be covered
+        OFF
+        OFF                                # must be covered
 )
 #==============================================================================
 #mettre les find package uniquement ou necessaire
@@ -336,3 +336,4 @@ install(FILES
         ${CMAKE_CURRENT_BINARY_DIR}/gmdsConfig.cmake
 #       ${CMAKE_CURRENT_BINARY_DIR}/gmdsConfigVersion.cmake
         DESTINATION ${LIB_INSTALL_DIR}/gmds/cmake
+)
