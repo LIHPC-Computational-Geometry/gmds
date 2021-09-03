@@ -66,4 +66,3 @@ add_executable(frameExe src/main.cpp)
 target_link_libraries(frameExe PRIVATE ${GMDS_LIB})
 target_compile_features(frameExe PUBLIC cxx_std_14)
 install(TARGETS frameExe
-        DESTINATION ${CMAKE_INSTALL_BINDIR})

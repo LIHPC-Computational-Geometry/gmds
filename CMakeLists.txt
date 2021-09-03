@@ -152,9 +152,9 @@ GMDS_ADD_COMPONENT(
 )
 
 GMDS_ADD_COMPONENT(
-        SOFIANE
-        Sofiane
-        GMDSSofiane
+        HYBRIDMESHADAPT
+        hybridMeshAdapt
+        GMDSHybridMeshAdapt
         "Hybrid remeshing component"
         ON
         ON                                 # must be covered
@@ -336,4 +336,3 @@ install(FILES
         ${CMAKE_CURRENT_BINARY_DIR}/gmdsConfig.cmake
 #       ${CMAKE_CURRENT_BINARY_DIR}/gmdsConfigVersion.cmake
         DESTINATION ${LIB_INSTALL_DIR}/gmds/cmake
-        )

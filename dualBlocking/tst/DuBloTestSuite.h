@@ -23,7 +23,6 @@ TEST(DuBloTestClass, test1)
     gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::R|gmds::F|gmds::N));
 
     std::string vtk_file = ("test_samples/B1_tet.vtk");
-    //std::string vtk_file = ("/ccc/home/cont001/ocre/calderans/Dev/gmds/test_samples/B1_tet.vtk");
     gmds::IGMeshIOService ioService(&m);
     gmds::VTKReader vtkReader(&ioService);
     vtkReader.setCellOptions(gmds::N|gmds::R);
@@ -95,8 +94,7 @@ TEST(DuBloTestClass, test_B10)
     vtkReader.setDataOptions(gmds::N|gmds::R);
     vtkReader.read(param_file);
 
-    MeshDoctor doc(&mesh);
-    doc.buildFacesAndR2F();
+    MeshDoctor doc(&mesh);doc.buildFacesAndR2F();
     doc.buildEdgesAndX2E();
     doc.updateUpwardConnectivity();
 

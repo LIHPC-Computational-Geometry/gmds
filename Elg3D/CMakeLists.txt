@@ -183,12 +183,13 @@ target_link_libraries(run_pixelVF2d elg3d kmds Kokkos::kokkoscore)
 target_link_libraries(run_pixelVF3d elg3d kmds Kokkos::kokkoscore)
 
 target_link_libraries(run_exodusreader2d elg3d kmds Kokkos::kokkoscore)
-target_link_libraries(run_exodus_pixelVF2d elg3d kmds Kokkos::kokkoscore)
+target_link_libraries(run_exodus_pixelVF2d elg3d kmds kokkos dl)
 target_link_libraries(run_exodus_compare2d elg3d kmds Kokkos::kokkoscore)
 target_link_libraries(run_exodusreader3d elg3d kmds Kokkos::kokkoscore)
-target_link_libraries(run_exodus_pixelVF3d elg3d kmds Kokkos::kokkoscore)
+target_link_libraries(run_exodus_pixelVF3d elg3d kmds kokkos dl)
 target_link_libraries(run_exodus_compare3d elg3d kmds Kokkos::kokkoscore)
 
+#target_link_libraries(run_elg2d_imr2019 elg3d kmds kokkos dl)
 target_link_libraries(run_elg3d_imr2019 elg3d kmds Kokkos::kokkoscore)
 
 target_link_libraries(run_elg2d_imr2019 elg3d kmds Kokkos::kokkoscore)
