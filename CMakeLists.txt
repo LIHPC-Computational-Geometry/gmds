@@ -156,8 +156,8 @@ GMDS_ADD_COMPONENT(
         hybridMeshAdapt
         GMDSHybridMeshAdapt
         "Hybrid remeshing component"
-        OFF
-        OFF                                 # must be covered
+        ON
+        ON                                 # must be covered
 )
 
 GMDS_ADD_COMPONENT(
@@ -165,8 +165,8 @@ GMDS_ADD_COMPONENT(
         padding
         GMDSPadding
         "Smart Padding/Pillowing algorithm"
-        OFF
-        OFF                                # must be covered
+        ON
+        ON                                # must be covered
 )
 
 GMDS_ADD_COMPONENT(
@@ -174,8 +174,8 @@ GMDS_ADD_COMPONENT(
         polyblock
         GMDSPolyblock
         "Polycube_like algorithms for hexahedral blocking"
-        OFF
-        OFF                                # must be covered
+        ON
+        ON                                # must be covered
 )
 #==============================================================================
 #mettre les find package uniquement ou necessaire
