@@ -4,12 +4,13 @@
 *.swp
 \#*\#
 *.icloud
-build*/
-.vs
+
 # OS junk files
 [Tt]humbs.db
 *.DS_Store
 cmake-build-*/
+build*/
+.vs
 
 # Thumbnails
 ._*
@@ -19,7 +20,7 @@ cmake-build-*/
 # WARNING: one should only add projects in external or switch to a newer version of a project,
 # other modifications should be carefully considered.
 # comment when necessary
-external/*
+external/
 
 # temp authorisation
 !external/glpk

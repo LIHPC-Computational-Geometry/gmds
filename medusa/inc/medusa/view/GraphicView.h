@@ -11,6 +11,9 @@
 #include <vtkDataSetMapper.h>
 #include <map>
 #include <medusa/model/MedusaGrid.h>
+#include <vtkTextActor.h>
+#include <vtkTextProperty.h>
+#include <vtkSelection.h>
 
 /*----------------------------------------------------------------------------*/
 class vtkRenderer;
@@ -40,12 +43,11 @@ namespace medusa{
         void setVisibleOFF();
         void start();
 
-        void createSurface(std::vector<vtkIdType> AIDs, int ASheetID);
+        void textMode(int AMode);
 
-        void updateDual(int ANbZones);
-        void setDualVisibilityON();
-        void setDualVisibilityOFF();
+        void showSetOfTets(std::vector<vtkIdType> AIDs);
 
+        //Visualization operations
         void wireframe();
         void solid();
 
@@ -53,7 +55,28 @@ namespace medusa{
         void setOpacityON();
         void setOpacityOFF();
 
-        void remove();
+
+        //FF operations
+        void toggleSingGraph();
+        void buildSingGraph(std::vector<vtkIdType> AIDs);
+        void buildSingLine(int AID, std::vector<vtkIdType> AIDs);
+        void resetSingLine();
+
+        void unlockLines();
+        int selectLine(const vtkSmartPointer<vtkActor> ADeletedActor);
+
+
+        //Dual operations
+        void createSurface(std::vector<vtkIdType> AIDs, int ASheetID);
+        void createPlanSurface(int ASheetID, MedusaGrid* ASurf);
+
+        void viewSurface();
+
+        void updateDual(int ANbZones);
+        void setDualVisibilityON();
+        void setDualVisibilityOFF();
+
+        void unlockSheet();
 
         int removeActor(vtkSmartPointer<vtkActor> ADeletedActor);
         void removeActor(int ADeletedID);
@@ -62,21 +85,33 @@ namespace medusa{
         void removeAxis();
 
         void setModeDomain();
-
         void setModeDual();
-
-        void viewBlocks();
 
         void updateMesh();
 
-        void viewSurface();
-
-        void createPlanSurface(int ASheetID, MedusaGrid* ASurf);
-
+        void viewBlocks();
         void toggleBlocks();
 
-        void toggleSingGraph();
 
+        //Geom operation
+        void surfacePicked(std::vector<vtkIdType> AIDs);
+        void removeLastSelection();
+        void removeSelection();
+
+
+        void updateCut();
+        void toggleCutOpacity();
+
+        void toggleBRep();
+
+
+        void hideSetOfTets();
+        void addTetSetActor();
+
+        void showPoints(std::vector<std::vector<double>> coords);
+
+
+        void resetDual();
 
     private:
         std::string m_name;
@@ -89,20 +124,33 @@ namespace medusa{
         std::vector<vtkSmartPointer<vtkActor> > m_vtk_actors;
         std::map<vtkSmartPointer<vtkActor>,int> m_vtk_surface_actors;
         std::map<vtkSmartPointer<vtkActor>,int> m_vtk_tets_actors;
+        std::map<vtkSmartPointer<vtkActor>,int> m_vtk_sing_actors;
+
+        vtkSmartPointer<vtkActor> m_vtk_tets_set;
+        std::vector<vtkSmartPointer<vtkActor> > m_vtk_sets_actors;
+
+        vtkSmartPointer<vtkActor> m_vtk_cut_actor;
+        std::vector<vtkSmartPointer<vtkActor>> m_vtk_selection_actors;
 
         vtkSmartPointer<vtkDataSetMapper> selectedMapper;
         vtkSmartPointer<vtkActor> selectedActor;
         vtkDataSetMapper *m_mapper_dual;
         vtkSmartPointer<vtkActor> m_singGraph;
 
+        vtkSmartPointer<vtkTextActor> m_textActor;
+
         std::map<int, std::vector<double>> m_surf_to_colors;
 
 
         void wireframeAll();
 
-        bool m_opicity = true;
+        bool m_opacity = true;
+
+        int m_op_cut = 1;
 
         int m_nb_zones = 0;
+
+        int m_nb_surfaces = 0;
 
 
         //The mode of the view:
@@ -115,9 +163,12 @@ namespace medusa{
 
         bool m_block_mode = false;
 
-        bool m_sinGraph_visibility = false;
+        /*
+         * -1 not initialized, 0 hidden, 1 visible
+         */
+        int m_sinGraph_visibility = -1;
 
-        void buildSingGraph(std::vector<vtkIdType>);
+        int test = 0;
 
     };
 }

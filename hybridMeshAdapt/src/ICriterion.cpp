@@ -1,5 +1,7 @@
 /******************************************************************/
+#include <gmds/hybridMeshAdapt/SimplexMesh.h>
 #include <gmds/hybridMeshAdapt/ICriterion.h>
+#include <gmds/hybridMeshAdapt/SimplicesCell.h>
 /******************************************************************/
 using namespace gmds;
 using namespace hybrid;
@@ -7,12 +9,17 @@ using namespace operators;
 using namespace simplicesCell;
 using namespace simplicesNode;
 /******************************************************************/
-#define EPSILON 10E-20
+#define EPSILON  10E-10
+#define EPSILON_VOLUME 0.0//10E-8
 /******************************************************************/
 bool VolumeCriterion::execute(SimplexMesh* m_simplex_mesh,const TSimplexID simplexId, const TInt nodeIndexLocal,const gmds::math::Point& nextPt) const
 {
   bool flag = false;
-  flag = (SimplicesCell(m_simplex_mesh, simplexId).signedBarycentric(nodeIndexLocal, nextPt) <= EPSILON)? true:false;
+  math::Orientation::Sign orientation = SimplicesCell(m_simplex_mesh, simplexId).orientation(nodeIndexLocal, nextPt);
+  flag = (orientation < 1)? true:false;
+  //double signedBar = SimplicesCell(m_simplex_mesh, simplexId).signedBarycentricNormalized(nodeIndexLocal, nextPt);
+  //flag = (signedBar < EPSILON)? true:false;
+
   return flag;
 }
 /******************************************************************/
@@ -30,7 +37,7 @@ CriterionRAIS::~CriterionRAIS()
   else
   {
     /*TODO* exeption criterion* deja supprimé*/
-    std::cout << "EXEPTION LEvé dans le destructeur CriterionRAIS" << std::endl;
+    std::cout << "EXEPTION levée dans le destructeur CriterionRAIS" << std::endl;
   }
 }
 /******************************************************************/

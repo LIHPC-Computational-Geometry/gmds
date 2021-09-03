@@ -376,10 +376,10 @@ TEST(SimplexMeshTestClass, test_ball_of_eight_tetra)
   ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 1))[3], 3);
 
   ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 3)).size(), 4);
-  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 3))[0], 7);
-  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 3))[1], 0);
-  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 3))[2], 3);
-  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 3))[3], 4);
+  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 3))[0], 0);
+  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 3))[1], 3);
+  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 3))[2], 4);
+  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 3))[3], 7);
 
   ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 4)).size(), 4);
   ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 4))[0], 1);
@@ -388,10 +388,10 @@ TEST(SimplexMeshTestClass, test_ball_of_eight_tetra)
   ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 4))[3], 6);
 
   ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 2)).size(), 4);
-  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 2))[0], 7);
-  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 2))[1], 0);
-  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 2))[2], 1);
-  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 2))[3], 6);
+  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 2))[0], 0);
+  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 2))[1], 1);
+  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 2))[2], 6);
+  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 2))[3], 7);
 
 
   ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 5)).size(), 4);
@@ -401,10 +401,10 @@ TEST(SimplexMeshTestClass, test_ball_of_eight_tetra)
   ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 5))[3], 5);
 
   ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 6)).size(), 4);
-  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 6))[0], 7);
-  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 6))[1], 4);
-  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 6))[2], 5);
-  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 6))[3], 6);
+  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 6))[0], 4);
+  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 6))[1], 5);
+  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 6))[2], 6);
+  ASSERT_EQ(simplicesNode0.shell(SimplicesNode(&mesh, 6))[3], 7);
 
 
 
@@ -432,8 +432,8 @@ TEST(SimplexMeshTestClass, test_ball_of_eight_tetra)
   ASSERT_EQ(SimplicesNode(&mesh, 6).shell(SimplicesNode(&mesh, 3))[1], 7);
 
   ASSERT_EQ(SimplicesNode(&mesh, 6).shell(SimplicesNode(&mesh, 4)).size(), 2);
-  ASSERT_EQ(SimplicesNode(&mesh, 6).shell(SimplicesNode(&mesh, 4))[0], 6);
-  ASSERT_EQ(SimplicesNode(&mesh, 6).shell(SimplicesNode(&mesh, 4))[1], 5);
+  ASSERT_EQ(SimplicesNode(&mesh, 6).shell(SimplicesNode(&mesh, 4))[0], 5);
+  ASSERT_EQ(SimplicesNode(&mesh, 6).shell(SimplicesNode(&mesh, 4))[1], 6);
 
   ASSERT_EQ(SimplicesNode(&mesh, 2).shell(SimplicesNode(&mesh, 3)).size(), 2);
   ASSERT_EQ(SimplicesNode(&mesh, 2).shell(SimplicesNode(&mesh, 3))[0], 0);
@@ -639,14 +639,14 @@ TEST(SimplexMeshTestClass, test_ball_of_four_tetra_with_triangles_between_2_of_t
 
   //shell
   ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 1)).size(),4);
-  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 1))[0],3);
-  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 1))[1],0);
-  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 1))[2],1);
-  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 1))[3],2);
+  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 1))[0],0);
+  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 1))[1],1);
+  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 1))[2],2);
+  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 1))[3],3);
 
   ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 3)).size(),2);
-  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 3))[0],3);
-  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 3))[1],0);
+  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 3))[0],0);
+  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 3))[1],3);
 
 
   ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 4)).size(),2);
@@ -654,8 +654,8 @@ TEST(SimplexMeshTestClass, test_ball_of_four_tetra_with_triangles_between_2_of_t
   ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 4))[1],2);
 
   ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 5)).size(),2);
-  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 5))[0],3);
-  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 5))[1],2);
+  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 5))[0],2);
+  ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 5))[1],3);
 
   ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 2)).size(),2);
   ASSERT_EQ(SimplicesNode(&mesh, 0).shell(SimplicesNode(&mesh, 2))[0],0);

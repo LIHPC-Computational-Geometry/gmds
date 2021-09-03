@@ -57,6 +57,10 @@ namespace  gmds{
         /** \brief Contains the problem construction and execution using GLPK.
          */
         void buildAndSolveSBP();
+
+        void buildAndSolveSBP_pasE1H();
+
+        void buildAndSolveSBP_test();
     private:
 
         /** Background triangular mesh */
@@ -70,6 +74,9 @@ namespace  gmds{
         bool m_cplex_with_output;
         /** name of the cplex output file*/
         std::string m_cplex_file_name;
+
+        std::vector<TCellID> E1H, E2H, E3H, E4H;
+
 
     };
 /*----------------------------------------------------------------------------*/

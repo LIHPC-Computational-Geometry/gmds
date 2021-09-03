@@ -24,11 +24,21 @@ namespace gmds{
          *
          *  @param AMesh the mesh where sheet operations are performed.
          */
-        BoundaryOperator(Mesh* AMesh);
+        BoundaryOperator(Mesh* AMesh,const double AAngle=0.72);
 
         /*------------------------------------------------------------------------*/
         /** @brief  Destructor.	*/
         virtual ~BoundaryOperator();
+
+        /*------------------------------------------------------------------------*/
+        /** @brief  Setter to the angle value used to determine if an edge is sharp
+         *          enough to separate two surfaces*/
+        void setSurfaceAngleDot(const double AD);
+
+        /*------------------------------------------------------------------------*/
+        /** @brief  Getter to the angle value used to determine if an edge is sharp
+         *          enough to separate two surfaces*/
+        double getSurfaceAngleDot();
 
 
         bool isValid() const;
@@ -167,6 +177,8 @@ namespace gmds{
     protected:
         /* a mesh */
         Mesh* m_mesh;
+
+        double m_surface_angle_dot;
     };
     /*----------------------------------------------------------------------------*/
 }

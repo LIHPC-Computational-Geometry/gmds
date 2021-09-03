@@ -3,7 +3,7 @@
 #==============================================================================
 # Nommer tout en GMDS_MODULE_NAME, GMDS_SRC, ... dans les composants
 set(GMDS_LIB ${LIB_GMDS_HYBRIDMESHADAPT})
-set(GMDS_LIB_PREFIX gmds/hybridMeshAdapt)
+set(GMDS_LIB_PREFIX gmds/hybridMeshAdapt/)
 
 set(GMDS_INC
         inc/gmds/hybridMeshAdapt/SimplicesNode.h
@@ -17,7 +17,11 @@ set(GMDS_INC
         inc/gmds/hybridMeshAdapt/PointInsertion.h
         inc/gmds/hybridMeshAdapt/PointSmoothing.h
         inc/gmds/hybridMeshAdapt/EdgeCollapse.h
+        inc/gmds/hybridMeshAdapt/EdgeInsertion.h
         inc/gmds/hybridMeshAdapt/StructuredGrid.h
+        inc/gmds/hybridMeshAdapt/DelaunayPointInsertion.h
+        inc/gmds/hybridMeshAdapt/Metric.h
+        inc/gmds/hybridMeshAdapt/Octree.h
         )
 
 set(GMDS_SRC
@@ -34,7 +38,11 @@ set(GMDS_SRC
         src/PointInsertion.cpp
         src/PointSmoothing.cpp
         src/EdgeCollapse.cpp
+        src/EdgeInsertion.cpp
         src/StructuredGrid.cpp
+        src/DelaunayPointInsertion.cpp
+        src/Metric.cpp
+        src/Octree.cpp
         )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})

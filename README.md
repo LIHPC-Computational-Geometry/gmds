@@ -1,5 +1,3 @@
-[![pipeline status](https://gitlab.com/franck.ledoux/gmds/badges/master/pipeline.svg)](https://gitlab.com/franck.ledoux/gmds/commits/master) [![coverage report](https://gitlab.com/franck.ledoux/gmds/badges/master/coverage.svg)](https://gitlab.com/franck.ledoux/gmds/commits/master)
-
 # A C++ library for writing meshing algorithms
 
 **GMDS**, for **G**eneric **M**esh **D**ata & **S**ervices,  is a C++ library written to provide mesh data structures and algorithms to developers that intend to design meshing algorithms and build pipelines of those algorithms.

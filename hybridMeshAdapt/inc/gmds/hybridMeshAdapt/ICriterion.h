@@ -1,15 +1,16 @@
 #ifndef CRITERION_H_
 #define CRITERION_H_
 /******************************************************************************/
-#include <gmds/hybridMeshAdapt/SimplexMesh.h>
-#include <gmds/hybridMeshAdapt/SimplicesNode.h>
-#include <gmds/hybridMeshAdapt/SimplicesCell.h>
+#include <gmds/hybridMeshAdapt/CommonInfo.h>
+#include <gmds/math/Orientation.h>
 /******************************************************************************/
-
 namespace gmds
 {
     namespace hybrid
     {
+
+      class SimplexMesh;
+
       namespace operators
       {
         class ICriterion

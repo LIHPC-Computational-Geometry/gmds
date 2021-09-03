@@ -14,7 +14,7 @@ project(gmds VERSION 1.0 LANGUAGES CXX)
 # Compilation options mainly for testing purpose
 #==============================================================================
 option(WITH_DOC "Build documentation"                                                   OFF)
-option(WITH_TEST "Build test"                                                           ON)
+option(WITH_TEST "Build test"                                                           OFF)
 option(WITH_CODE_COVERAGE "Perform code coverage with avail. test suites"               OFF)
 option(WITH_CODE_COVERAGE_HTML_REPORT "Activate html reporting during code covering"    OFF)
 option(BUILD_SHARED_LIBS ""                                                             OFF)

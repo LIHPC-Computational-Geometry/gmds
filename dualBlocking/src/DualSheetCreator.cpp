@@ -48,7 +48,16 @@ DualSheetCreator::DualSheetCreator(Mesh *AMesh,
 
     mark_wave_tet = wave_tet_mark;
 
+    try {
+        m_part = m_mesh->getVariable<int,GMDS_REGION>("CUT_tet");
+    }catch (GMDSException e){
+        m_part = m_mesh->newVariable<int,GMDS_REGION>("CUT_tet");
+        for(auto r : m_mesh->regions()){
+            m_part->set(r,1);
+        }
+    }
 
+    test_mark = m_mesh->newMark<Region>();
 }
 /*----------------------------------------------------------------------------*/
 
@@ -73,12 +82,245 @@ int DualSheetCreator::getID(){
 }
 /*----------------------------------------------------------------------------*/
 
-std::map<gmds::TCellID,gmds::math::Vector3d> DualSheetCreator::getSurface(){
+std::map<gmds::TCellID,std::vector<gmds::math::Vector3d>> DualSheetCreator::getSurface(){
     return surface;
 }
 /*----------------------------------------------------------------------------*/
+bool DualSheetCreator::propagation_loop(const TCellID &ATet_ID, math::Vector3d start_norm) {
 
-bool DualSheetCreator::propagation_loop(std::set<TCellID> ATet_list) {
+    m_mesh->unmarkAll<Face>(face_treated);
+
+    m_mesh->unmarkAll<Edge>(wave_precedent);
+
+    std::vector<Edge> edges_to_treat;
+    std::vector<Edge> next_edges;
+
+    Region origin = m_mesh->get<Region>(ATet_ID);
+
+    Edge current_edge;
+    math::Vector3d norm;
+
+    math::Point plane_point;
+
+    plane_point = origin.center();
+
+    norm = findNormal(plane_point, start_norm, origin);
+    std::vector<math::Vector3d> vec;
+    vec.push_back(norm);
+    surface.emplace(std::pair<TCellID, std::vector<math::Vector3d>>(tetID, vec));
+
+    (*m_propagation_round)[tetID] = 0;
+
+    math::Plane plane(plane_point, norm);
+
+    std::cout << "norm = " << norm.X() << "," << norm.Y() << "," << norm.Z() << std::endl;
+
+    bool moved_node_init = false;
+    TCellID moved_node_id_init = NullID;
+    std::vector<intersectInfo> infos = intersect(tetID, plane, moved_node_init, moved_node_id_init);
+
+    while (moved_node_init) {
+
+        //If the plan in tetID is on node, we randomly move the node and repeat
+
+        moved_node_init = false;
+
+        Node node_moved = m_mesh->get<Node>(moved_node_id_init);
+
+        std::vector<Edge> adj_edges = node_moved.get<Edge>();
+        double d = 10000;
+        for (auto const &a: adj_edges) {
+            std::vector<Node> a_nodes = a.get<Node>();
+            Node opp_node = (a_nodes[0].id() == moved_node_id_init) ? a_nodes[1] : a_nodes[0];
+            double ad = opp_node.getPoint().distance(node_moved.getPoint());
+            if (ad < d)
+                d = ad;
+        }
+
+        d = d / (5 * sqrt(3));
+        double dx = drand48() * d;
+        double dy = drand48() * d;
+        double dz = drand48() * d;
+
+        math::Point new_loc(node_moved.getPoint().X() + dx,
+                            node_moved.getPoint().Y() + dy,
+                            node_moved.getPoint().Z() + dz);
+        node_moved.setPoint(new_loc);
+
+
+        infos = intersect(tetID, plane, moved_node_init, moved_node_id_init);
+
+    }
+    moved_node_init = false;
+    std::vector<math::Vector3d> infos_vectors;
+
+
+    for (unsigned int i = 0; i < infos.size(); i++) {
+        infos_vectors.push_back(infos[i].v);
+    }
+
+
+    //recomputing the normal plan and repeating the cut
+    norm = meanVector(infos_vectors);
+    plane.set(plane_point, norm);
+
+    infos.clear();
+    infos = intersect(tetID, plane, moved_node_init, moved_node_id_init);
+    if (moved_node_init) {
+        infos = intersect(tetID, plane, moved_node_init, moved_node_id_init);
+    }
+
+    //mark the edges of the first tet intersected as previous edges
+    for (auto const &i : infos) {
+        (*var_info)[i.e].push_back(i);
+        m_mesh->mark(m_mesh->get<Edge>(i.e), wave_precedent);
+        edges_to_treat.push_back(m_mesh->get<Edge>(i.e));
+    }
+
+    for(auto f : origin.get<Face>()){
+        m_mesh->mark(f, face_treated);
+    }
+
+
+    int it = 0;
+    while(!edges_to_treat.empty()){
+        std::cout<<"it : "<<it++<<std::endl;
+        bool moved;
+        std::set<TCellID> moved_nodes_id;
+        do {
+            moved = false;
+            for (auto current_e : edges_to_treat) {
+                intersectInfo info = var_info->value(current_e.id())[0];
+                for (auto f : current_e.get<Face>()) {
+                    if (!m_mesh->isMarked(f, face_treated)){
+                        m_mesh->mark(f, face_treated);
+                        TCellID moved_node_id;
+                        intersectInfo new_info = RK_4(f, info, moved, moved_node_id);
+
+                        if(moved){
+                            moved_nodes_id.insert(moved_node_id);
+                        }
+                        if(new_info.wave != -1) {
+                            if (!m_mesh->isMarked<Edge>(new_info.e, wave_precedent)) {
+                                m_mesh->mark<Edge>(new_info.e, wave_precedent);
+                                next_edges.push_back(m_mesh->get<Edge>(new_info.e));
+                                var_info->value(new_info.e).push_back(new_info);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Si une coupe passe sur au moins un noeud, alors on le déplace aléatoirement et on refait la vague
+            if(moved) {
+
+                // On va déplacer tous les noeuds porblématiques
+                for (auto n : moved_nodes_id) {
+
+                    if(n == 0 ){
+                        std::cout<<"erreur"<<std::endl;
+                    }
+                    Node node_moved = m_mesh->get<Node>(n);
+
+                    std::vector<Edge> adj_edges = node_moved.get<Edge>();
+                    double d = 10000;
+                    for (auto const &a: adj_edges) {
+                        std::vector<Node> a_nodes = a.get<Node>();
+                        Node opp_node = (a_nodes[0].id() == n) ? a_nodes[1] : a_nodes[0];
+                        double ad = opp_node.getPoint().distance(node_moved.getPoint());
+                        if (ad < d)
+                            d = ad;
+                    }
+
+                    d = d / (5 * sqrt(3));
+                    double dx = drand48() * d;
+                    double dy = drand48() * d;
+                    double dz = drand48() * d;
+
+                    math::Point new_loc(node_moved.getPoint().X() + dx,
+                                        node_moved.getPoint().Y() + dy,
+                                        node_moved.getPoint().Z() + dz);
+                    node_moved.setPoint(new_loc);
+                }
+
+                // Réinitialiser la vague
+                for(auto e : next_edges){
+
+                    // On supprime son info d'intersection + unmark
+                    std::vector<intersectInfo> infos_temp;
+                    for(int x = 0; x<var_info->value(e.id()).size(); x++){
+                        if(!(var_info->value(e.id())[x].wave >= propagation_round-5)){
+                            infos_temp.push_back(var_info->value(e.id())[x]);
+                        }
+                    }
+                    var_info->set(e.id(),infos_temp);
+                    m_mesh->unmark(e, wave_precedent);
+
+                    // On unmark toutes les faces incidentes car si elle a été traitée durant cette vague ces faces
+                    // incidentes ont aussi forcément été traitées cette vague
+                    // ============ A VERIFIER ============
+                    for(auto f : e.get<Face>()){
+                        m_mesh->unmark(f,face_treated);
+                    }
+
+                }
+                // On clear next_edges pour remettre tout a 0 et recommencer la vague proprement
+                next_edges.clear();
+            }
+
+        }while(moved);
+
+
+        for(auto r : m_mesh->regions()) {
+            if (!m_mesh->isMarked<Region>(r, mark_wave_tet)) {
+
+                Region tet = m_mesh->get<Region>(r);
+
+                std::vector<math::Vector3d> vecs;
+                int min_wave = propagation_round + 1;
+                for (auto e : tet.get<Edge>()) {
+                    if (!var_info->value(e.id()).empty()) {
+                        vecs.push_back(var_info->value(e.id())[0].v);
+                        if (var_info->value(e.id())[0].wave < min_wave)
+                            min_wave = var_info->value(e.id())[0].wave;
+                    }
+                }
+
+                if (vecs.size() > 2) {
+                    m_propagation_round->set(r,propagation_round);
+                    m_mesh->mark<Region>(r, mark_wave_tet);
+                    math::Vector3d mean_vec = meanVector(vecs);
+                    std::vector<math::Vector3d> r_vecs;
+                    r_vecs.push_back(mean_vec);
+                    surface.emplace(r, r_vecs);
+                }
+            }
+        }
+
+        propagation_round++;
+
+        // On va donc passer à la prochaine vague et donc remplacer les aretes à traiter par les nouvelles aretes
+        // trouvées.
+        edges_to_treat = next_edges;
+        next_edges.clear();
+        //break;
+
+    }
+
+
+
+
+    IGMeshIOService ioService_m(m_mesh);
+    VTKWriter vtkWriter_m(&ioService_m);
+    vtkWriter_m.setCellOptions(gmds::N|gmds::R);
+    vtkWriter_m.setDataOptions(gmds::N|gmds::R);
+    vtkWriter_m.write("/home/simon/Data/Results_debug/test.vtk");
+
+    return true;
+}
+
+
+bool DualSheetCreator::propagation_loop(const std::set<TCellID> &ATet_list) {
 
 
     IGMeshIOService m_ioService(m_mesh);
@@ -128,14 +370,15 @@ bool DualSheetCreator::propagation_loop(std::set<TCellID> ATet_list) {
 
                 for (auto i_tet = 0; i_tet < wave_tet_vec.size(); i_tet++) {
 
-
                     //To list the intersection points created in the tet for out put
                     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                     std::vector<intersectInfo> for_output;
                     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
                     TCellID t = wave_tet_vec[i_tet];
-
+                    if(m_mesh->isMarked<Region>(t,test_mark)){
+                        std::cout<<"crossing in tet "<<t<<std::endl;
+                    }
 
                     m_mesh->mark<Region>(t, mark_wave_tet);
 
@@ -144,8 +387,10 @@ bool DualSheetCreator::propagation_loop(std::set<TCellID> ATet_list) {
                     for (auto const &e : tmp_edge) {
                         if (m_mesh->isMarked(e, wave_precedent)) {// we only make plan from previous wave edge
                             std::vector<intersectInfo> e_info = (*var_info)[e.id()];
-                            if (!e_info.empty()) {
-                                from_cut.insert(from_cut.end(), e_info.begin(), e_info.end());
+                            for(auto info : e_info){
+                                if(info.wave == propagation_round-1){
+                                    from_cut.insert(from_cut.end(), info);
+                                }
                             }
                         }
                     }
@@ -158,19 +403,25 @@ bool DualSheetCreator::propagation_loop(std::set<TCellID> ATet_list) {
                     std::vector<intersectInfo> out_cut;
                     out_cut = face_cut(t, from_cut, moved_node, moved_node_id);
 
+                    if(m_mesh->isMarked<Region>(t,test_mark)){
+                        std::cout<<"from last cut "<<from_cut.size()<<std::endl;
+                        std::cout<<"output cut "<<out_cut.size()<<std::endl;
+                        for(auto c : out_cut){
+                            Node n = imesh.newNode(c.p);
+                            Face tri = imesh.newTriangle(n,n,n);
+                        }
+                    }
+
                     if (moved_node) {
                         //The point has not been moved, we only know that it should be to avoid issue
                         //But it must be done by taking care of all the tets around the edge we look at
                         nodes_to_move.insert(moved_node_id);
-                        //std::cout<<"Node moved"<<std::endl;
 
                     } else {
                         //We update output edge infos
                         for (auto cut2 : out_cut) {
                             if (!m_mesh->isMarked<Edge>(cut2.e, wave_precedent)) {
-                                //std::cout<<"Test 1 "<<2201<<":"<<linker.getGeomDim<Face>(2201)<<std::endl;
                                 (*var_info)[cut2.e].push_back(cut2);
-                                //std::cout<<"Test 2 "<<2201<<":"<<linker.getGeomDim<Face>(2201)<<std::endl;
                             }
                         }
                     }
@@ -179,7 +430,7 @@ bool DualSheetCreator::propagation_loop(std::set<TCellID> ATet_list) {
                 wave_tet_vec.clear();
                 //CORRECTION FOR NODE MOVEMENT
                 for (auto n_id:nodes_to_move) {
-                    //std::cout << "NODE TO MOVE: " << n_id << std::endl;
+                    std::cout << "NODE TO MOVE: " << n_id << std::endl;
 
                     restart_wave_for_node_intersection = true;
                     //we restart only some tets
@@ -248,6 +499,35 @@ bool DualSheetCreator::propagation_loop(std::set<TCellID> ATet_list) {
         }while (restart_wave_for_plane_issue);
 
         std::set<TCellID > to_erase;
+        std::set<TCellID > intersected_tet;
+
+        //TEST DU NOMBRE THEORIQUE DE TET A COUPER A LA PROCHAINE VAGUE
+        int cpt_ed = 0;
+        if(propagation_round == 181){
+            std::set<TCellID> ids;
+            for(auto e : m_mesh->edges()){
+                if(!var_info->value(e).empty()){
+                    for(auto info : var_info->value(e)){
+                        if(info.wave == 181){
+                            cpt_ed++;
+                            Edge edge = m_mesh->get<Edge>(e);
+                            for(auto r : edge.getIDs<Region>()){
+                                if(m_propagation_round->value(r) < propagation_round -5){
+                                    ids.insert(r);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            std::cout<<"tet théoriques :"<<std::endl;
+            for(auto id : ids){
+                std::cout<<id<<",";
+            }
+            std::cout<<std::endl;
+        }
+
+
 
         for(auto t : wave_tet){
 
@@ -260,8 +540,10 @@ bool DualSheetCreator::propagation_loop(std::set<TCellID> ATet_list) {
 
                 if (!(*var_info)[e.id()].empty()) {
                     //std::cout<<(*var_info)[e.getID()][0].wave<<std::endl;
-                    if ((*var_info)[e.id()][0].wave >= propagation_round - 2) {
-                        vecs.push_back((*var_info)[e.id()][0].v);
+                    for(auto info : (*var_info)[e.id()]) {
+                        if (info.wave >= propagation_round - 2) {
+                            vecs.push_back(info.v);
+                        }
                     }
                 }
             }
@@ -273,13 +555,31 @@ bool DualSheetCreator::propagation_loop(std::set<TCellID> ATet_list) {
                 for (auto const &edge : t_edges) {
                     std::vector<TCellID> neighbors = edge.getIDs<Region>();
                     for (auto n : neighbors) {
-                        if ((*m_propagation_round)[n] < (*m_propagation_round)[t] - 2 &&
+                        std::vector<intersectInfo> infos_n;
+                        Region r_n = m_mesh->get<Region>(n);
+                        if ((*m_propagation_round)[n] < (*m_propagation_round)[t] - 5 &&
                             (*m_propagation_round)[n] != -1) {
-
                             //now we verify if the neighbour is "parallel" to the tet (used to auto intersecting sheets)
-                            if(surface[n].dot(mean_vec) > 0.75) {
+                            if(surface[n][0].dot(mean_vec) > 0.75) {
                                 //std::cout<<"delete tetra "<<t<<" with round "<<(*m_propagation_round)[t]<<" adjacent to "<<n<<" with round "<<(*m_propagation_round)[n]<<std::endl;
+                                std::cout<<"erase0"<<std::endl;
                                 to_erase.insert(t);
+                            }
+                            else{
+                                //theoriquement on est dans le cas d'auto intersection
+                               for(auto e_r:r_n.getIDs<Edge>()){
+                                   if(!var_info->value(e_r).empty()){
+                                       if(var_info->value(e_r)[0].wave >= m_propagation_round->value(t) - 5){
+                                           m_mesh->unmark<Edge>(e_r,wave_precedent);
+                                       }
+                                   }
+                               }/*
+                               //m_propagation_round->set(n,-1);
+                               for(auto f : r_n.getIDs<Face>()){
+                                   m_mesh->unmark<Face>(f,face_treated);
+                               }
+                               m_mesh->unmark<Region>(n,mark_wave_tet);
+                               intersected_tet.insert(n);*/
                             }
                         }
                     }
@@ -287,12 +587,18 @@ bool DualSheetCreator::propagation_loop(std::set<TCellID> ATet_list) {
             }
             else{
                 //No new point in the tet
+                std::cout<<"erase1"<<std::endl;
                 to_erase.insert(t);
             }
         }
 
 
         for (auto t : wave_tet) {
+
+            if(propagation_round == 180){
+                std::cout<<t<<",";
+            }
+
             std::vector<Edge> tet_edge = m_mesh->get<Region>(t).get<Edge>();
             for (auto const &e : tet_edge) {
                 if (!m_mesh->isMarked(e, wave_precedent)) {
@@ -302,15 +608,25 @@ bool DualSheetCreator::propagation_loop(std::set<TCellID> ATet_list) {
                     std::vector<intersectInfo> e_info = (*var_info)[e.id()];
                     //if 1 point nothing to do
                     if (e_info.size() > 1) {
-
+                        std::vector<intersectInfo> infos_temp;
+                        for(auto info : e_info) {
+                            if(info.wave >= propagation_round - 5) {
+                                infos_temp.push_back(info);
+                            }
+                        }
                         intersectInfo average_e_info;
-                        averageInfo(e_info, average_e_info);
+                        averageInfo(infos_temp, average_e_info);
                         average_e_info.tet = e_info[0].tet;
                         math::Segment s(e.get<Node>()[0].getPoint(), e.get<Node>()[1].getPoint());
+                        infos_temp.clear();
+                        for(auto info : (*var_info)[e.id()]){
+                            if(info.wave <= propagation_round - 5){
+                                infos_temp.push_back(info);
+                            }
+                        }
+                        infos_temp.push_back(average_e_info);
 
-                        (*var_info)[e.id()].clear();
-                        (*var_info)[e.id()].push_back(
-                                average_e_info);//we set the intersection info to the average intersection info
+                        (*var_info)[e.id()] = infos_temp;//we set the intersection info to the average intersection info
                     }
                 }
             }
@@ -326,22 +642,43 @@ bool DualSheetCreator::propagation_loop(std::set<TCellID> ATet_list) {
             for (auto const &e : tmp_edge) {
 
                 if (!(*var_info)[e.id()].empty()) {
-                    if ((*var_info)[e.id()][0].wave >= propagation_round - 2) {
-                        vecs.push_back((*var_info)[e.id()][0].v);
+                    for(auto v : var_info->value(e.id())){
+                        if (v.wave >= propagation_round - 2) {
+                            vecs.push_back(v.v);
+                        }
                     }
                 }
             }
 
-            if(vecs.empty()){std::cout<<"ERROR: not point in tet"<<std::endl;return false;}
+            if(vecs.empty()){std::cout<<"ERROR: not point in tet "<<t<<std::endl;
+
+                IGMeshIOService ioService_m(m_mesh);
+                VTKWriter vtkWriter_m(&ioService_m);
+                vtkWriter_m.setCellOptions(gmds::N|gmds::R);
+                vtkWriter_m.setDataOptions(gmds::N|gmds::R);
+                vtkWriter_m.write("/home/simon/Data/Results_debug/test.vtk");
+
+            return false;}
 
             mean_vec = meanVector(vecs);
+            std::vector<math::Vector3d> t_norm;
+            t_norm.push_back(mean_vec);
 
-            surface.emplace(t,mean_vec);
+            if(surface.count(t) > 0){
+                surface[t].push_back(mean_vec);
+            } else{
+                surface.emplace(t,t_norm);
+            }
         }
 
         //erase tet with issues so it doesnt impact the sheet later
         for(auto t : to_erase){
             wave_tet.erase(t);
+            std::cout<<"tet to erase "<<t<<std::endl;
+            m_blocks->set(t, -2);
+        }
+        for(auto t: intersected_tet){
+           //m_propagation_round->set(t,-2);
         }
 
         boundary_edges.clear();
@@ -354,7 +691,7 @@ bool DualSheetCreator::propagation_loop(std::set<TCellID> ATet_list) {
 
                 std::vector<TCellID> tmp_tet = e.getIDs<Region>();
                 for (auto tet : tmp_tet) {
-                    if ((*m_propagation_round)[tet] == -1) {
+                    if ((*m_propagation_round)[tet] == -1 || (*m_propagation_round)[tet] <= propagation_round - 10) {
                         boundary_edges.insert(e.id());
                     }else if(!(*var_info)[e.id()].empty()){
 
@@ -369,7 +706,34 @@ bool DualSheetCreator::propagation_loop(std::set<TCellID> ATet_list) {
             }
         }
 
+        std::cout<<"nb edge trouvee "<<cpt_ed<<std::endl;
+        std::cout<<"nb boundary edges "<<boundary_edges.size()<<std::endl;
+
         wave_tet.clear();
+
+        if(propagation_round == 181){
+            std::set<TCellID> ids;
+            for(auto e : m_mesh->edges()){
+                if(!var_info->value(e).empty()){
+                    for(auto info : var_info->value(e)){
+                        if(info.wave == 181){
+                            cpt_ed++;
+                            Edge edge = m_mesh->get<Edge>(e);
+                            for(auto r : edge.getIDs<Region>()){
+                                if(m_propagation_round->value(r) < propagation_round -5){
+                                    ids.insert(r);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            std::cout<<"tet théoriques 2 :"<<std::endl;
+            for(auto id : ids){
+                std::cout<<id<<",";
+            }
+            std::cout<<std::endl;
+        }
 
         propagation_round++;
 
@@ -378,160 +742,152 @@ bool DualSheetCreator::propagation_loop(std::set<TCellID> ATet_list) {
         }*/
 
 
+
         for (auto e : boundary_edges) {
 
             Edge edge = m_mesh->get<Edge>(e);
-            if ((*var_info)[e].size() == 1) {
-
-                std::vector<TCellID> tmp_tet = edge.getIDs<Region>();
-                for (auto t : tmp_tet) {
-
-                    if ((*m_propagation_round)[t] == -1) {
-                        if(!isAxisSingularity(t,(*var_info)[e][0].v)) {
-                            wave_tet.insert(t);
-                            (*m_propagation_round)[t] = propagation_round;
-                            /* if(propagation_round == 8){
-                              Node n1 = imesh.newNode(edge.get<Node>()[0].getPoint());
-                              Node n2 = imesh.newNode(edge.get<Node>()[0].getPoint());
-                              Node n3 = imesh.newNode(edge.get<Node>()[1].getPoint());
-
-                              std::vector<Node> nodes;
-                              nodes.push_back(n1);
-                              nodes.push_back(n2);
-                              nodes.push_back(n3);
-
-                              imesh.newFace(nodes);
-                              }*/
-                        }
-                        else{
-                            return false;
-                        }
-                    }else if((*m_propagation_round)[t] != propagation_round){
-                        //for auto intersect
-                        //----------------------------------------------
-                        /*
-                        if((*var_info)[e][0].v.dot(surface[t]) < 0.70){
-
-                            //std::cout<<"var info "<<std::endl;
-                            //std::cout<<(*var_info)[e][0].v.X()<<", "<<(*var_info)[e][0].v.Y()<<", "<<(*var_info)[e][0].v.Z()<<std::endl;
-                            std::cout<<"crossed in tet "<<t<<std::endl;
-                            std::cout<<"propagation in tet "<<(*m_propagation_round)[t]<<std::endl;
-                            std::cout<<surface[t].X()<<", "<<surface[t].Y()<<", "<<surface[t].Z()<<std::endl;
+            for(auto info : var_info->value(e)) {
+                if (info.wave == propagation_round-1) {
+                    Node n = imesh.newNode(info.p);
+                    Face tri = imesh.newTriangle(n,n,n);
 
 
-                            wave_tet.insert(t);
-                            std::vector<TCellID> edges_id = m_mesh->get<Region>(t).getIDs<Edge>();
-                            for(auto eid : edges_id){
-                                if(!(*var_info)[eid].empty()){
-                                    if((*var_info)[eid][0].v.dot(surface[t]) < 0.70){
-                                        (*var_info)[eid].clear();
-                                    }
+                    std::vector<TCellID> tmp_tet = edge.getIDs<Region>();
+                    for (auto t : tmp_tet) {
+
+                        if ((*m_propagation_round)[t] == -1) {
+                            if (!isAxisSingularity(t, (*var_info)[e][0].v)) {
+                                if (m_part->value(t) <= 1) {
+                                    wave_tet.insert(t);
+                                    m_propagation_round->set(t, propagation_round);
                                 }
+                            } else {
+                                std::cout << "Return 1" << std::endl;
+                                return false;
                             }
-                            std::vector<Face> faces= m_mesh->get<Region>(t).get<Face>();
-                            for(auto f : faces){
-                                m_mesh->unmark(f,face_treated);
+                        } else if ((*m_propagation_round)[t] <= propagation_round-5 && (*m_propagation_round)[t] != -1) {
+                            //for auto intersect
+                            //----------------------------------------------
+
+                            if (true /*(*var_info)[e][0].v.dot(surface[t][0]) < 0.70*/) {
+
+                                //std::cout<<"var info "<<std::endl;
+                                //std::cout<<(*var_info)[e][0].v.X()<<", "<<(*var_info)[e][0].v.Y()<<", "<<(*var_info)[e][0].v.Z()<<std::endl;
+                                std::cout << "tet " << t << " will be cross in next wave" << std::endl;
+                                //std::cout << "propagation in tet " << (*m_propagation_round)[t] << std::endl;
+                                //std::cout << surface[t][0].X() << ", " << surface[t][0].Y() << ", " << surface[t][0].Z()
+                                          //<< std::endl;
+
+
+                                wave_tet.insert(t);
+                                std::vector<TCellID> edges_id = m_mesh->get<Region>(t).getIDs<Edge>();
+                                for (auto eid : edges_id) {
+                                    m_mesh->unmark<Edge>(eid, wave_precedent);
+                                }
+                                std::vector<Face> faces = m_mesh->get<Region>(t).get<Face>();
+                                for (auto f : faces) {
+                                    m_mesh->unmark(f, face_treated);
+                                }
+                                (*m_propagation_round)[t] = propagation_round;
+                                m_mesh->mark<Region>(t, test_mark);
                             }
-                            (*m_propagation_round)[t] = propagation_round;
-                        }*/
+                        }
                     }
-                }
 
-                m_mesh->mark(edge, wave_precedent);
+                    m_mesh->mark(edge, wave_precedent);
 
-            } else if ((*var_info)[e].size() > 1) {
-                Edge edge_fail = m_mesh->get<Edge>(e);
-                std::cout<<"More than one point on edge "<<e<<" "<<edge_fail.getIDs<Node>()[0]<<","<<edge_fail.getIDs<Node>()[1]<<
-                         " in tet "<<(*var_info)[e][0].tet <<std::endl;
-                for(auto inf : (*var_info)[e]){
-                    std::cout<<"info in tet "<<inf.tet<<", point ("<<inf.p.X()<<", "<<inf.p.Y()<<", "<<inf.p.Z()<<std::endl;
-                }
-                exit(12);
+                }/* else if ((*var_info)[e].size() > 1) {
+
+                    for(auto v : (*var_info)[e]){
+                        std::cout<<v.wave<<std::endl;
+                    }
+
+
+                    Edge edge_fail = m_mesh->get<Edge>(e);
+                    std::cout << "More than one point on edge " << e << " " << edge_fail.getIDs<Node>()[0] << ","
+                              << edge_fail.getIDs<Node>()[1] <<
+                              " in tet " << (*var_info)[e][0].tet << std::endl;
+                    for (auto inf : (*var_info)[e]) {
+                        std::cout << "info in tet " << inf.tet << ", point (" << inf.p.X() << ", " << inf.p.Y() << ", "
+                                  << inf.p.Z() << std::endl;
+                    }
+                    IGMeshIOService ioService_m(m_mesh);
+                    VTKWriter vtkWriter_m(&ioService_m);
+                    vtkWriter_m.setCellOptions(gmds::N|gmds::R);
+                    vtkWriter_m.setDataOptions(gmds::N|gmds::R);
+                    vtkWriter_m.write("/home/simon/Data/Results_debug/test.vtk");
+                    exit(12);
+                }*/
             }
         }
 
+
+if(propagation_round-1 == 181){
+    for(auto t : wave_tet){
+        std::cout<<t<<",";
+    }
+    std::cout<<std::endl;
+}
 
 
         m_mesh->unmarkAll<Region>(mark_wave_tet);
 
-        /*gmds::VTKWriter m_vtkWriter(&m_ioService);
-        m_vtkWriter.setCellOptions(gmds::N|gmds::R);
-        m_vtkWriter.setDataOptions(gmds::N|gmds::R);
-        m_vtkWriter.write("/ccc/temp/cont001/ocre/calderans/Results_debug/block_iterations"+std::to_string(i)+".vtk");*/
-        //std::cout<<std::endl;
     }
-    /*
+
     for(auto e : m_mesh->edges()){
-      bool wave_8 = false;
-      bool wave_7 = false;
-      Edge edge = m_mesh->get<Edge>(e);
-      std::vector<TCellID> colors = edge.getIDs<Region>();
-      for(auto r : colors){
-	if ((*m_propagation_round)[r] == 7) {
-	  wave_7 = true;
-	}
-	if ((*m_propagation_round)[r] == 8) {
-	  wave_8 = true;
-	}
-      }
-      if(wave_7 && wave_8){
-	Node n1 = imesh.newNode(edge.get<Node>()[0].getPoint());
-	Node n2 = imesh.newNode(edge.get<Node>()[0].getPoint());
-	Node n3 = imesh.newNode(edge.get<Node>()[1].getPoint());
+        if(var_info->value(e).size() > 1){
+            std::cout<<"e = "<<e<<std::endl;
+        }
+    }
 
-	std::vector<Node> nodes;
-	nodes.push_back(n1);
-	nodes.push_back(n2);
-	nodes.push_back(n3);
+    for(auto r : m_mesh->regions()){
+        Region region = m_mesh->get<Region>(r);
+        int cpt = 0;
+        std::vector<intersectInfo> infos;
+        bool found = false;
+        for(auto e : region.getIDs<Edge>()){
+            if(!var_info->value(e).empty()){
+                infos.push_back(var_info->value(e)[0]);
+                cpt++;
+            }
+        }
 
-	imesh.newFace(nodes);
-      }
-      }*/
 
-    //IGMeshIOService i_ioService(&imesh);
-    //gmds::VTKWriter i_vtkWriter(&i_ioService);
-    //i_vtkWriter.setCellOptions(gmds::N|gmds::F);
-    //i_vtkWriter.setDataOptions(gmds::N|gmds::F);
-    // i_vtkWriter.write("/ccc/temp/cont001/ocre/calderans/Results_debug/points.vtk");
-    /*Mesh imesh(MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N |
-                         R2F | F2R | F2E | E2R | E2F | R2E | N2R | N2F | N2E));
-
-    MeshDoctor doci(&imesh);
-    doci.buildFacesAndR2F();
-    doci.buildEdgesAndX2E();
-    doci.updateUpwardConnectivity();
-
-    for(auto tet : surface){
-        std::vector<Edge> edges =m_mesh->get<Region>(tet.first).get<Edge>();
-        for(auto e : edges){
-            if(!(*var_info)[e.id()].empty()){
-                Node n1 = imesh.newNode(e.get<Node>()[0].getPoint());
-                Node n2 = imesh.newNode(e.get<Node>()[0].getPoint());
-                Node n3 = imesh.newNode(e.get<Node>()[1].getPoint());
-
-                std::vector<Node> nodes;
-                nodes.push_back(n1);
-                nodes.push_back(n2);
-                nodes.push_back(n3);
-
-                imesh.newFace(nodes);
+        if(cpt > 1){
+            int max = 0;
+            for(auto i : infos){
+                if(i.wave > max){
+                    max = i.wave;
+                }
+            }
+            for(auto i : infos){
+                if(i.wave <= max - 5){
+                    found = true;
+                }
             }
         }
     }
 
-    IGMeshIOService ioService(&imesh);
-    gmds::VTKWriter vtkWriter(&ioService);
-    vtkWriter.setCellOptions(gmds::N|gmds::F);
-    vtkWriter.setDataOptions(gmds::N|gmds::F);
-    vtkWriter.write("/ccc/temp/cont001/ocre/calderans/Results_debug/edges.vtk");*/
 
+
+    IGMeshIOService ioService2(&imesh);
+    VTKWriter vtkWriter2(&ioService2);
+    vtkWriter2.setCellOptions(gmds::N|gmds::F);
+    vtkWriter2.setDataOptions(gmds::N|gmds::F);
+    vtkWriter2.write("/home/simon/Data/Results_debug/points.vtk");
+
+    IGMeshIOService ioService_m(m_mesh);
+    VTKWriter vtkWriter_m(&ioService_m);
+    vtkWriter_m.setCellOptions(gmds::N|gmds::R);
+    vtkWriter_m.setDataOptions(gmds::N|gmds::R);
+    vtkWriter_m.write("/home/simon/Data/Results_debug/test.vtk");
 
 
     return true;
 }
 /*----------------------------------------------------------------------------*/
 
-const math::Vector3d DualSheetCreator::findNormal(math::Point& APoint, const math::Vector3d& AV, Region& ATet)
+math::Vector3d DualSheetCreator::findNormal(math::Point& APoint, const math::Vector3d& AV, Region& ATet)
 {
     //std::cout<<" ================= Finding normal ================= "<<std::endl;
 
@@ -567,7 +923,7 @@ const math::Vector3d DualSheetCreator::findNormal(math::Point& APoint, const mat
 }
 /*----------------------------------------------------------------------------*/
 
-const math::Vector3d DualSheetCreator::findNormal(math::Point& APoint, const math::Vector3d& AV, Edge& AEdge)
+math::Vector3d DualSheetCreator::findNormal(math::Point& APoint, const math::Vector3d& AV, Edge& AEdge)
 {
     //std::cout<<" ================= Finding normal ================= "<<std::endl;
 
@@ -601,7 +957,7 @@ const math::Vector3d DualSheetCreator::findNormal(math::Point& APoint, const mat
 }
 /*----------------------------------------------------------------------------*/
 
-const math::Vector3d DualSheetCreator::closestComponentVector(const math::Vector3d& AV,
+math::Vector3d DualSheetCreator::closestComponentVector(const math::Vector3d& AV,
                                                               math::Chart& AChart)
 {
     //std::cout<<" ================= Finding closest component vector ================= "<<std::endl;
@@ -639,10 +995,10 @@ DualSheetCreator::intersect(TCellID ATetra, math::Plane APlane,
 
     for (int i = 0; i < 6; i++) {
 
-        if(!AMovedNodeID == 9999){
+        /*if(AMovedNodeID != 9999){
             std::cout<<"Continue"<<std::endl;
             if(!(*var_info)[edges[i].id()].empty()) continue;
-        }
+        }*/
         intersectInfo iI;
         iI.wave = propagation_round;
         iI.tet = ATetra;
@@ -658,7 +1014,12 @@ DualSheetCreator::intersect(TCellID ATetra, math::Plane APlane,
             math::Plane plane(iI.p, iI.v);
 
             math::Point proj = plane.project(APlane.getPoint());
-            math::Vector3d vec(proj, iI.p);
+            //math::Vector3d vec(proj, iI.p);
+            math::Vector3d vec(tet.center(),iI.p);
+            vec.normalize();
+
+            //std::cout<<"origin direction prop "<<vec.X()<<","<<vec.Y()<<","<<vec.Z()<<std::endl;
+
             iI.d = vec;
 
             infos.push_back(iI);
@@ -809,7 +1170,7 @@ bool DualSheetCreator::onVertexCorrection(Node &ANode) {
 }
 /*----------------------------------------------------------------------------*/
 
-const math::Vector3d DualSheetCreator::meanVector(std::vector<gmds::math::Vector3d> AVectors)
+math::Vector3d DualSheetCreator::meanVector(std::vector<gmds::math::Vector3d> AVectors)
 {
 
     math::Vector3d Vfinal = AVectors[0];
@@ -826,7 +1187,7 @@ const math::Vector3d DualSheetCreator::meanVector(std::vector<gmds::math::Vector
 }
 /*----------------------------------------------------------------------------*/
 
-const math::Point DualSheetCreator::meanPoints(std::vector<math::Point> const &APoints){
+math::Point DualSheetCreator::meanPoints(std::vector<math::Point> const &APoints){
 
     return math::Point::massCenter(APoints);
 }
@@ -886,7 +1247,8 @@ DualSheetCreator::face_cut(TCellID ATetra, std::vector<intersectInfo> const &AIn
                     int nb_inter_points = 0;
                     for (auto const &e : edges) {
                         if (!(*var_info)[e.id()].empty()) {
-                            nb_inter_points++;
+                            if(var_info->value(e.id())[0].wave >= info.wave-5)
+                                nb_inter_points++;
                         }
                     }
 
@@ -976,6 +1338,11 @@ DualSheetCreator::RK_4(const Face &ATriangle, intersectInfo Ainfo, bool &move_no
                                                     math::Vector3d propagation_direction(Ainfo.p,result);
                                                     propagation_direction.normalize();
                                                     Ainfo.d.normalize();
+
+                                                    //std::cout<<"Direction prop "<<Ainfo.d.X()<<","<<Ainfo.d.Y()<<","<<Ainfo.d.Z()<<std::endl;
+                                                    //std::cout<<"Direction intern "<<propagation_direction.X()<<","<<propagation_direction.Y()<<","<<propagation_direction.Z()<<std::endl;
+
+
                                                     double scalar = propagation_direction.dot(Ainfo.d);
 
                                                     if(scalar > 0) {
@@ -997,6 +1364,9 @@ DualSheetCreator::RK_4(const Face &ATriangle, intersectInfo Ainfo, bool &move_no
 
                                                     }else {
                                                         result_info.wave = -1;
+                                                        //std::cout<<"sortie -1"<<std::endl;
+
+                                                        //std::cout<<"Face "<<ATriangle.id()<<std::endl;
                                                         //exit(40);
                                                     }
                                                     return result_info;
@@ -1004,6 +1374,7 @@ DualSheetCreator::RK_4(const Face &ATriangle, intersectInfo Ainfo, bool &move_no
                                                 } else if (intersect == -1) {
                                                     move_node = true;
                                                     moved_id = eC.get<Node>()[0].id();
+
                                                     return result_info;
                                                 } else if (intersect == -2) {
                                                     move_node = true;
@@ -1133,6 +1504,26 @@ void DualSheetCreator::clear() {
 
 void DualSheetCreator::sheet_cleaning() {
 
+    for(auto r : m_mesh->regions()){
+        if(m_propagation_round->value(r) == -1) {
+            bool tet_to_add = false;
+            Region tet = m_mesh->get<Region>(r);
+            std::vector<math::Vector3d> vecs;
+            for (auto e : tet.getIDs<Edge>()) {
+                if(!var_info->value(e).empty()){
+                    tet_to_add = true;
+                    vecs.push_back(var_info->value(e)[0].v);
+                }
+            }
+            if(tet_to_add) {
+                std::vector<math::Vector3d> new_norm;
+                new_norm.push_back(meanVector(vecs));
+                surface.emplace(r, new_norm);
+                m_propagation_round->set(r, propagation_round);
+            }
+        }
+    }
+
     clear();
 
     //for(auto f : m_mesh->faces()){
@@ -1145,12 +1536,46 @@ void DualSheetCreator::sheet_cleaning() {
 
     std::cout<<"=============== Cleaning sheet =============== "<<std::endl;
 
-    std::map<gmds::TCellID,gmds::math::Vector3d> surface_it = surface;
+    std::map<gmds::TCellID,std::vector<gmds::math::Vector3d>> surface_it = surface;
     std::map<gmds::TCellID,gmds::math::Vector3d> surface_tmp;
 
-    bool modification = false;
 
-    do {
+
+    /*for(auto t : surface){
+        Region r = m_mesh->get<Region>(t.first);
+        int cpt = 0;
+        int min_wave = propagation_round+1;
+        intersectInfo min_intersect;
+        std::vector<Edge> edges = r.get<Edge>();
+        for(auto e : edges){
+            if(!var_info->value(e.id()).empty()){
+                if(var_info->value(e.id())[0].wave < min_wave) {
+                    min_intersect = var_info->value(e.id())[0];
+                    min_wave = min_intersect.wave;
+                }
+                cpt++;
+            }
+        }
+        if(cpt > 0){
+
+            math::Plane cut_plane(min_intersect.p,t.second);
+            bool moved = false;
+            TCellID moved_id;
+
+            std::vector<intersectInfo> infos = intersect(t.first,cut_plane,moved,moved_id);
+            for(auto e : edges){
+                for(auto r_e : e.getIDs<Region>()){
+                    if(m_propagation_round->value(r_e) == -1){
+                        m_propagation_round->set(r_e, propagation_round);
+                        //surface.emplace(r_e, t.second);
+                    }
+                }
+            }
+        }
+
+    }*/
+
+    /*do {
 
         m_mesh->unmarkAll<Edge>(wave_precedent);
         m_mesh->unmarkAll<Region>(mark_wave_tet);
@@ -1164,7 +1589,7 @@ void DualSheetCreator::sheet_cleaning() {
                 int color;
                 if (!m_mesh->isMarked(e, wave_precedent)) {
                     std::vector<Region> tets = e.get<Region>();
-                    Region tet;
+                    Region tet = tets[0];
                     if (linker.getGeomDim(e) == 3) {
                         bool breaker = false;
                         for (auto const &tet_bounder : tets) {
@@ -1253,7 +1678,7 @@ void DualSheetCreator::sheet_cleaning() {
             }
         }
         surface_it = surface_tmp;
-    }while(modification);
+    }while(modification);*/
 
     std::cout<<"End cleaning"<<std::endl;
 }

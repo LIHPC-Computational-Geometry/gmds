@@ -11,6 +11,7 @@ set(GMDS_INC
         inc/gmds/dualBlocking/BoundarySurfaceCreator.h
         inc/gmds/dualBlocking/DualSheetCreator.h
         inc/gmds/dualBlocking/DualSheet.h
+        inc/gmds/dualBlocking/EdgeDiscrAlgo.h
         )
 set(GMDS_SRC
         src/DualSheetCreator.cpp
@@ -18,7 +19,7 @@ set(GMDS_SRC
         src/DualBlockingSession.cpp
         src/DualSurfaceCreator.cpp
         src/BoundarySurfaceCreator.cpp
-        )
+        src/EdgeDiscrAlgo.cpp )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
@@ -26,13 +27,17 @@ add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
 include(GNUInstallDirs)
 
+link_directories(${GLPK_LIB})
+include_directories(${GLPK_INC})
+
 #LIBRARY TO INSTALL
 target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_IG}
         ${LIB_GMDS_IG_ALGO}
         ${LIB_GMDS_IO}
         ${LIB_GMDS_CAD}
-        Predicates_psm)
+        Predicates_psm
+        INTERFACE glpk)
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)
 
@@ -43,11 +48,11 @@ target_include_directories(${GMDS_LIB} PUBLIC
         )
 set_target_properties(${GMDS_LIB} PROPERTIES PUBLIC_HEADER "${GMDS_INC}")
 
-install(TARGETS ${GMDS_LIB}
-        EXPORT GMDS_SUITE
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${GMDS_LIB_PREFIX}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gmds
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gmds)
+#install(TARGETS ${GMDS_LIB}
+    #    EXPORT GMDS_SUITE
+    #    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${GMDS_LIB_PREFIX}
+    #    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gmds
+    #    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gmds)
 
 
 

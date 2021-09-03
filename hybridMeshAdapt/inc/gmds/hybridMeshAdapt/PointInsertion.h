@@ -1,9 +1,12 @@
 #ifndef POINT_INSERTION_H_
 #define POINT_INSERTION_H_
 /******************************************************************/
-#include "gmds/hybridMeshAdapt/CavityOperator.h"
 #include "gmds/hybridMeshAdapt/SimplicesNode.h"
 #include "gmds/hybridMeshAdapt/SimplicesCell.h"
+
+#include <gmds/hybridMeshAdapt/ISimplexMeshIOService.h>
+#include <gmds/io/VTKWriter.h>
+
 /******************************************************************/
 namespace gmds
 {
@@ -15,13 +18,18 @@ namespace gmds
     {
           class CriterionRAIS;
 
+          struct CavityReduction
+          {
+            std::vector<TSimplexID> cavInitial{};
+          };
+
           class PointInsertion
           {
             public :
+              PointInsertion();
 
-              PointInsertion() = delete;
-
-              PointInsertion(SimplexMesh* simplexMesh, const simplicesNode::SimplicesNode& simpliceNode, const CriterionRAIS& criterion, std::vector<TSimplexID> initialCavity = std::vector<TSimplexID>{}, std::vector<TSimplexID> markedSimplex = std::vector<TSimplexID>{});
+              PointInsertion(SimplexMesh* simplexMesh, const simplicesNode::SimplicesNode& simpliceNode, const CriterionRAIS& criterion, bool& status,const  std::vector<TSimplexID>& initialCavity,const gmds::BitVector& markedNodes,
+                  std::vector<TSimplexID>& deletedSimplex, std::vector<TSimplexID> markedSimplex = {});
 
               ~PointInsertion(){};
           };

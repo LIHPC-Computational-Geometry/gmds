@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------------*/
 #include <vtkType.h>
 #include "MedusaCommand.h"
-#include "MedusaCommandSheet.h"
+#include "MedusaCommandPick.h"
 /*----------------------------------------------------------------------------*/
 namespace medusa{
     class MediatorControl:public MedusaObserver{
@@ -27,12 +27,10 @@ namespace medusa{
         void select(int ADIm, vtkIdType ACellID);
         void help();
 
-        void generateDual();
+        void generate();
         void toggleDual();
 
         void wireframe();
-
-        void solid();
 
         void opacity();
 
@@ -40,15 +38,17 @@ namespace medusa{
 
         int removeActor(vtkSmartPointer<vtkActor> ADeletedActor);
 
-        void removeSheet(int ASheetID);
-
-        void generateBlocks();
+        void removeItem(int AItemID);
 
         void surfaceMode();
         void finalMesh();
         void undo();
 
+        void color();
+
         void singularityGraphToggle();
+
+        void changePolicy();
 
     protected:
 
