@@ -20,6 +20,10 @@ jobs:
       with:
         cmake-version: '3.16.x'
     
+    - name: List files in workspace
+      run: |
+        ls ${{ github.workspace }}
+          
     - name: Compile glpk    
       working-directory: ${{github.workspace}}\external\glpk\src\glpk\w64"
       run: .\Build_GLPK_with_VC17_DLL.exe
