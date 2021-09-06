@@ -21,4 +21,15 @@ jobs:
         cmake-version: '3.16.x'
 
     - name: Create Build Environment    
-      run: cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -Ax64
+      run: > 
+        cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -Ax64 
+        -DWITH_TEST="ON"
+        -DENABLE_ELG3D="OFF"
+        -DENABLE_HYBRIDMESHADAPT="OFF"
+        -DENABLE_PADDING="OFF"
+        -DENABLE_POLYBLOCK="OFF"
+        
+    - name: Build Environment 
+      run: cmake --build ${{github.workspace}}/build
+
+
