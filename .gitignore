@@ -23,8 +23,8 @@ build*/
 
 !external/glpk/src/glpk/w64
 external/glpk/src/glpk/w64/*
-!external/glpk/src/glpk/w64/Build_GLPK_with_VC17_DLL.bat
-!external/glpk/src/glpk/w64/Build_GLPK_with_VC17.bat
+!external/glpk/src/glpk/w64/glpk_4_65.dll
+!external/glpk/src/glpk/w64/glpk_4_65.lib
 external/glpk/src/glpk/src/*
 external/glpk/src/glpk/examples/*
 
