@@ -19,13 +19,6 @@ jobs:
       uses: jwlawson/actions-setup-cmake@v1.9
       with:
         cmake-version: '3.16.x'
-    
-    - name: Compile glpk  
-      run: copy $GLPK_PATH/config_VC $GLPK_PATH/config.h && $VCVARSALL_PATH/vcvarsall.bat x64 && $NMAKE_PATH/nmake.exe Makefile_VC_DLL
-      env:
-        GLPK_PATH : "${{github.workspace}}/external/glpk/src/glpk/w64"
-        VCVARSALL_PATH : "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary"
-        NMAKE_PATH : "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.16.27023/bin/Hostx64/x64"
 
     - name: Create Build Environment    
       run: cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -Ax64
