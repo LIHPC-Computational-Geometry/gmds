@@ -19,6 +19,10 @@ jobs:
       uses: jwlawson/actions-setup-cmake@v1.9
       with:
         cmake-version: '3.16.x'
-        
+    
+    - name: Compile glpk    
+      run: cd glpkScript && Build_GLPK_with_VC17_DLL.bat
+      env: glpkScript="${{github.workspace}}/external/glpk/src/glpk/w64/"
+      
     - name: Create Build Environment    
       run: cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -Ax64
