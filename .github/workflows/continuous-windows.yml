@@ -21,9 +21,8 @@ jobs:
         cmake-version: '3.16.x'
     
     - name: Compile glpk    
-      run: cd $GLPK_SCRIPTS && dir && Build_GLPK_with_VC17_DLL.bat
-      env: 
-        GLPK_SCRIPTS : "${{github.workspace}}/external/glpk/src/glpk/w64/"
+      working-directory: ${{github.workspace}}\external\glpk\src\glpk\w64"
+      run: .\Build_GLPK_with_VC17_DLL.exe
       
     - name: Create Build Environment    
       run: cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -Ax64
