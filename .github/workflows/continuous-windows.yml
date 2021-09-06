@@ -20,8 +20,19 @@ jobs:
       with:
         cmake-version: '3.16.x'
     
+    - name: replace vcvarsall (https://github.com/marketplace/actions/visual-studio-shell)
+      uses: egor-tensin/vs-shell@v2
+      with:
+        arch: x64          
+
+    - name: place nmake into PATH (https://github.com/ilammy/msvc-dev-cmd)
+      uses: ilammy/msvc-dev-cmd@v1
+    
+    - name: glpk config
+      run: cd ${{github.workspace}}\external\glpk\src\glpk\w64 && copy config_VC config.h
+      
     - name: Compile glpk    
-      run: cd ${{github.workspace}}\external\glpk\src\glpk\w64 && ${{github.workspace}}\external\glpk\src\glpk\w64\Build_GLPK_with_VC17_DLL.bat
+      run: nmake /f ${{github.workspace}}\external\glpk\src\glpk\w64\Makefile_VC_DLL
       
     - name: Create Build Environment    
       run: cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -Ax64
