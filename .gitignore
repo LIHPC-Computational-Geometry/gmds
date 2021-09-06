@@ -20,12 +20,14 @@ build*/
 # WARNING: one should only add projects in external or switch to a newer version of a project,
 # other modifications should be carefully considered.
 # comment when necessary
-external/
 
-# temp authorisation
-!external/glpk
-external/glpk/*
-!external/glpk/CMakeLists.txt 
+!external/glpk/src/glpk/w64
+external/glpk/src/glpk/w64/*
+!external/glpk/src/glpk/w64/Build_GLPK_with_VC17_DLL.bat
+!external/glpk/src/glpk/w64/Build_GLPK_with_VC17.bat
+external/glpk/src/glpk/src/*
+external/glpk/src/glpk/examples/*
+
 
 # spack files when dev-build
 spack-*
