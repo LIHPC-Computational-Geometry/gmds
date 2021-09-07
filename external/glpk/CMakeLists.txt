@@ -22,12 +22,14 @@ if(WIN32)
                  INTERFACE_INCLUDE_DIRECTORIES ${GLPK_INC})
     install(FILES "${GLPK_LIB}/glpk_4_65.dll" DESTINATION  ${CMAKE_INSTALL_BINDIR})
     install(FILES "${GLPK_LIB}/glpk_4_65.lib" DESTINATION  ${CMAKE_INSTALL_LIBDIR})
+    install(FILES "${GLPK_INC}/glpk.h" DESTINATION  ${CMAKE_INSTALL_INCLUDEDIR})
 
 else() # unix
 
     # Issue to compile on MacOS so give the path to lib and inc
-    set(GLPK_LIB ${CMAKE_BINARY_DIR}/glpk/lib/libglpk.so CACHE PATH "Glpk lib location")  
-    if(NOT EXISTS "${GLPK_LIB}")
+    set(GLPK_LIB "NOT_DEFINED" CACHE PATH "Glpk lib location")
+    set(GLPK_INC "NOT_DEFINED" CACHE PATH "Glpk headers location")
+    if( (NOT IS_ABSOLUTE ${GLPK_LIB}) OR (NOT IS_ABSOLUTE ${GLPK_INC}))
         MESSAGE(STATUS "GLPK NOT DEFINED > require to build it as an external project")
         ExternalProject_Add(buildGlpk
                 PREFIX ${CMAKE_BINARY_DIR}/external/glpk
@@ -42,12 +44,15 @@ else() # unix
                 ${SHARED_LIB_CONFIG_COMMAND}
                 BUILD_COMMAND make V=0
                 INSTALL_COMMAND make install)
-    endif()
-    add_dependencies(glpk buildGlpk)
-    set_target_properties(glpk PROPERTIES
-             IMPORTED_LOCATION ${GLPK_LIB}
-             INTERFACE_INCLUDE_DIRECTORIES ${GLPK_INC})
-    install(FILES ${GLPK_LIB} DESTINATION  ${CMAKE_INSTALL_BINDIR})
-endif()
+        add_dependencies(glpk buildGlpk)
 
-install(FILES "${GLPK_INC}/glpk.h" DESTINATION  ${CMAKE_INSTALL_INCLUDEDIR})
+    endif() # from spack fro example
+    
+    set_target_properties(glpk PROPERTIES
+             IMPORTED_LOCATION ${GLPK_LIB}/libglpk.so
+             INTERFACE_INCLUDE_DIRECTORIES ${GLPK_INC})    
+
+    message(STATUS "============= GLPK  ===============")
+    message(STATUS "lib path = ${GLPK_LIB}")
+    message(STATUS "inc path = ${GLPK_INC}")  
+endif()
