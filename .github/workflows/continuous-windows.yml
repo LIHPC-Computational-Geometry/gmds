@@ -32,4 +32,11 @@ jobs:
     - name: Build Environment 
       run: cmake --build ${{github.workspace}}/build
 
+    - name: Run tests
+      run: cmake --build build --target RUN_TESTS
+      
+    - name: Install
+      run: cmake --install build --prefix ${{github.workspace}}/buildinstall
+      
+      
 
