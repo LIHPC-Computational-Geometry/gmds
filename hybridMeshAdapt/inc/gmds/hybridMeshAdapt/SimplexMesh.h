@@ -37,7 +37,7 @@
    namespace hybrid{
 
      class Octree;
-class EXPORT_GMDS SimplexMesh
+class SimplexMesh
 {
  public:
 
