@@ -14,6 +14,7 @@ if(WIN32)
 
     file(COPY "${GLPK_LIB}/glpk_4_65.dll" DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug)
     file(COPY "${GLPK_LIB}/glpk_4_65.dll" DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release)
+    file(COPY "${GLPK_LIB}/glpk_4_65.dll" DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo)
 
     add_dependencies(glpk buildGlpkMSVC)
     set_target_properties(glpk PROPERTIES
