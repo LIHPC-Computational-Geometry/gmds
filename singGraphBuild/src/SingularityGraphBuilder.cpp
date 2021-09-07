@@ -1389,8 +1389,8 @@ SingularityGraphBuilder::buildInfoAlongEdge(const int &AFaceMark,
 	}
 	Node Node1Tmp = ANode1;
 	Node Node2Tmp = ANode2;
-	for (int i = 0; i < Node1Tmp.nbFAces(); i++) {
-		for (int j = 0; j < Node2Tmp.nbFAces(); j++) {
+	for (int i = 0; i < Node1Tmp.nbFaces(); i++) {
+		for (int j = 0; j < Node2Tmp.nbFaces(); j++) {
 			if ((Node1Tmp.get<Face>()[i].id() == Node2Tmp.get<Face>()[j].id()) && (Node1Tmp.get<Face>()[i].id() != AFace.id())
 			    && (m_mesh->isMarked(Node1Tmp.get<Face>()[i], AFaceMark))) {
 				sepInFaceID.push_back(Node1Tmp.get<Face>()[i].id());
@@ -1544,7 +1544,7 @@ SingularityGraphBuilder::createVolumeSingularityPoints()
 			while (!stopAlready) {
 				stopAlready = 1;
 				for (unsigned int i = 0; i < vecRegions.size(); i++) {
-					for (int j = 0; j < vecRegions[i].nbFAces(); j++) {
+					for (int j = 0; j < vecRegions[i].nbFaces(); j++) {
 						Region ROpposite;
 						if (vecRegions[i].get<Face>()[j].get<Region>()[0].id() == vecRegions[i].id()) {
 							ROpposite = vecRegions[i].get<Face>()[j].get<Region>()[1];
