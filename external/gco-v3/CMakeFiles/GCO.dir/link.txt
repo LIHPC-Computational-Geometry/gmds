@@ -1,0 +1,2 @@
+/usr/bin/ar qc libGCO.a  CMakeFiles/GCO.dir/inc/GCoptimization.cpp.o CMakeFiles/GCO.dir/inc/graph.cpp.o CMakeFiles/GCO.dir/inc/LinkedBlockList.cpp.o CMakeFiles/GCO.dir/inc/maxflow.cpp.o
+/usr/bin/ranlib libGCO.a

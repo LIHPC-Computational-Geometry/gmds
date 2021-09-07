@@ -1,0 +1,43 @@
+
+name: continuous-windows
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    
+jobs:
+  Continuous:
+    runs-on: windows-latest
+    steps:
+  
+    - name: Check out repository code
+      uses: actions/checkout@v2
+        
+    - name: Setup cmake
+      uses: jwlawson/actions-setup-cmake@v1.9
+      with:
+        cmake-version: '3.16.x'
+
+    - name: Create Build Environment
+      run: > 
+        cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -Ax64 
+        -DWITH_TEST="ON"
+        -DENABLE_ELG3D="OFF"
+        -DENABLE_HYBRIDMESHADAPT="OFF"
+        -DENABLE_PADDING="OFF"
+        -DENABLE_POLYBLOCK="OFF"
+        -DBUILD_SHARED_LIBS="ON"
+        
+    - name: Build Environment 
+      run: cmake --build ${{github.workspace}}/build --config Release
+
+    - name: Run tests
+      run: cmake --build build --target RUN_TESTS --config Release
+      
+    - name: Install
+      run: cmake --install build --prefix ${{github.workspace}}/buildinstall --config Release
+      
+      
+
