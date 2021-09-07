@@ -3,7 +3,7 @@
  * SingularityGraph.cpp
  *
  *  Created on: 13 juil. 2014
- *      Author: bibi
+ *      Author: F. Ledoux
  */
 /*---------------------------------------------------------------------------*/
 #include <gmds/singGraphBuild/SingularityGraph.h>
@@ -28,6 +28,8 @@ SingularityGraph::~SingularityGraph()
 		delete m_points[i];
 	for (unsigned int i = 0; i < m_lines.size(); i++)
 		delete m_lines[i];
+	for (unsigned int i = 0; i < m_patchs.size(); i++)
+		delete m_patchs[i];
 }
 /*---------------------------------------------------------------------------*/
 std::vector<SingularityPoint *> &

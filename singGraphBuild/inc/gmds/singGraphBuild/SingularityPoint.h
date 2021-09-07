@@ -3,7 +3,7 @@
  * SingularityPoint.h
  *
  *  Created on: 13 juil. 2014
- *      Author: bibi
+ *      Author: F. Ledoux
  */
 /*----------------------------------------------------------------------------*/
 #ifndef SINGULARITYPOINT_H_

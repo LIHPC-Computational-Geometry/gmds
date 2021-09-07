@@ -3,7 +3,7 @@
  * SingularityPoint.cpp
  *
  *  Created on: 13 juil. 2014
- *      Author: bibi
+ *      Author: F. Ledoux
  */
 /*----------------------------------------------------------------------------*/
 #include <gmds/math/Numerics.h>

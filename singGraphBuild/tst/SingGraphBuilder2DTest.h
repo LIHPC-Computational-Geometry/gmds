@@ -40,8 +40,9 @@ TEST(SingGraphBuilder2DTest, halfDisk)
 	std::string dir(TEST_SAMPLES_DIR);
 	// std::string vtk_file = "C:/Temp/frameOut3.vtk";
 	////std::string vtk_file = "C:/Temp/update/frame_out.vtk";
-	std::string vtk_file = "D:/gmds-DanielD/build2/frame/tst/frame2d_unit_test.vtk";
-	// std::string vtk_file = "C:/Temp/shmTest_frameOut.vtk";
+	// std::string vtk_file = "D:/gmds-DanielD/build2/frame/tst/frame2d_unit_test.vtk";
+	std::string vtk_file = "D:/singGraphBenchmark/output_16.08.2021_14.58.40/output_0/elementSize_0.30/outframe.vtk";
+	//std::string vtk_file = "C:/Temp/shmTest_frameOut.vtk";
 	// std::string vtk_file = "C:/Temp/outframe.vtk";
 	// std::string vtk_file = dir + "/half_disk.vtk";
 	gmds::IGMeshIOService ioService(&mesh);
