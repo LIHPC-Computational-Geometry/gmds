@@ -2,9 +2,9 @@ name: continuous-ubuntu
 
 on:
   push:
-    branches: [ cmake-portage-windows ]
+    branches: [ main ]
   pull_request:
-    branches: [ cmake-portage-windows ]
+    branches: [ main ]
     
 jobs:
   Continuous:
@@ -45,11 +45,6 @@ jobs:
         -DCMAKE_PREFIX_PATH=${{github.workspace}}/spack/opt/spack/lcov 
         -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib 
         -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
-        -DENABLE_ELG3D="OFF"
-        -DENABLE_HYBRIDMESHADAPT="OFF"
-        -DENABLE_PADDING="OFF"
-        -DENABLE_POLYBLOCK="OFF"
-        -DENABLE_FRAME_3D="OFF"
 
     - name: Build
       # Use a bash shell so we can use the same syntax for environment variable
