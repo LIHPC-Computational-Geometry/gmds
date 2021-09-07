@@ -20,7 +20,7 @@ jobs:
       with:
         cmake-version: '3.16.x'
 
-    - name: Create Build Environment    
+    - name: Create Build Environment
       run: > 
         cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -Ax64 
         -DWITH_TEST="ON"
@@ -28,15 +28,16 @@ jobs:
         -DENABLE_HYBRIDMESHADAPT="OFF"
         -DENABLE_PADDING="OFF"
         -DENABLE_POLYBLOCK="OFF"
+        -DBUILD_SHARED_LIBS="ON"
         
     - name: Build Environment 
-      run: cmake --build ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build --config Release
 
     - name: Run tests
-      run: cmake --build build --target RUN_TESTS
+      run: cmake --build build --target RUN_TESTS --config Release
       
     - name: Install
-      run: cmake --install build --prefix ${{github.workspace}}/buildinstall
+      run: cmake --install build --prefix ${{github.workspace}}/buildinstall --config Release
       
       
 
