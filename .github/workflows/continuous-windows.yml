@@ -3,9 +3,9 @@ name: continuous-windows
 
 on:
   push:
-    branches: [ cmake-portage-windows ]
+    branches: [ main ]
   pull_request:
-    branches: [ cmake-portage-windows ]
+    branches: [ main ]
     
 jobs:
   Continuous:
