@@ -372,7 +372,7 @@ SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number
 	m_mesh->freeMark<Face>(m_mark_faces_with_sing_point);
 	m_mesh->freeMark<Face>(m_mark_faces_with_sing_line);
 
-	std::cout << "\t --> Nb generated faces: " << m_graph.getNbSurfacePatches() << std::endl;
+	std::cout << "--> Nb generated faces: " << m_graph.getNbSurfacePatches() << std::endl;
 	std::cout << "========================================" << std::endl;
 }
 

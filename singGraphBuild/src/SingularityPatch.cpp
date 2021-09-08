@@ -86,7 +86,7 @@ SingularityPatch::checkValidityAnReorder()
 	for (unsigned int i = 0; i < m_lines.size(); i++) {
 
 		SingularityLine *li = m_lines[i];
-		std::vector<SingularityPoint *> &li_points = li->getEndPoints();
+		std::vector<SingularityPoint *> li_points = li->getEndPoints();
 
 		for (unsigned int j = 0; j < li_points.size(); j++) {
 

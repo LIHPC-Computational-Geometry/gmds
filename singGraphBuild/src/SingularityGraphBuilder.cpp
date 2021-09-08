@@ -2142,7 +2142,7 @@ SingularityGraphBuilder::addGeometryToSingularitGraph()
 		gmds::math::Point pi_point = pi->getLocation();
 		for (unsigned int j = 0; j < added_geom_lines.size(); j++) {
 			SingularityLine *lj = added_geom_lines[j];
-			std::vector<SingularityPoint *> &lj_points = lj->getEndPoints();
+			std::vector<SingularityPoint *> lj_points = lj->getEndPoints();
 			if (lj_points.size() == 2) continue;     // the line is connected to its both end points
 
 			std::vector<gmds::math::Point> &lj_discretization = lj->getDiscretizationPoints();

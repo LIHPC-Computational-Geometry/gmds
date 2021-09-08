@@ -58,7 +58,7 @@ struct DijkstraCellParam
 
 class Timer
 {
-	using Clock = std::chrono::high_resolution_clock;
+	using Clock = std::chrono::system_clock;
 
  public:
 	Timer(const std::string &name)
@@ -74,7 +74,7 @@ class Timer
 
  private:
 	std::string m_name;
-	std::chrono::time_point<std::chrono::steady_clock> m_t0;
+	std::chrono::system_clock::time_point m_t0;
 };
 
 void
@@ -302,6 +302,7 @@ SingGraphBuilder2DShortestPath::computeFaceNeighboursInfo()
 									}
 								}
 							}
+							return true;
 						}();
 					}
 					if (validNeigh) {
