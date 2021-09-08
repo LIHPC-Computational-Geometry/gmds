@@ -17,6 +17,16 @@ option(WITH_DOC "Build documentation"                                           
 option(WITH_TEST "Build test"                                                           OFF)
 option(WITH_CODE_COVERAGE "Perform code coverage with avail. test suites"               OFF)
 option(WITH_CODE_COVERAGE_HTML_REPORT "Activate html reporting during code covering"    OFF)
+option(BUILD_SHARED_LIBS ""                                                             OFF)
+#==============================================================================
+if(BUILD_SHARED_LIBS)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+  # set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+elseif(WIN32)
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+endif()
 #==============================================================================
 if (WITH_CODE_COVERAGE_HTML_REPORT)
     set(WITH_CODE_COVERAGE ON)
@@ -28,6 +38,10 @@ endif()
 # Location of cmake modules
 #==============================================================================
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMakeModules)
+#==============================================================================
+# Location of exports headers
+#==============================================================================
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/exports)
 #==============================================================================
 #Tester avec External project, qui build en configure et projet à part (pas de redeploiement)
 # Fait un projet dont on depend et pas inclus
@@ -42,6 +56,7 @@ if(WITH_TEST)
             unit_test_config.h
             @ONLY)
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
+    set(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll" ) # windows issue with gtest
 endif(WITH_TEST)
 #==============================================================================
 # Commmand to add a new component in GMDS
@@ -255,38 +270,8 @@ add_subdirectory(external/Predicates_psm)
 add_subdirectory(external/inih)
 add_subdirectory(external/OpenNL)
 add_subdirectory(external/gco-v3)
+add_subdirectory(external/glpk)
 
-
-
-################################################################
-# External: GLPK
-################################################################
-# Issue to compile on MacOS so give the path to lib and inc
-set(GLPK_LIB "NOT_DEFINED" CACHE PATH "Glpk lib location")
-set(GLPK_INC "NOT_DEFINED" CACHE PATH "Glpk headers location")
-if( (NOT IS_ABSOLUTE ${GLPK_LIB}) OR
-(NOT IS_ABSOLUTE ${GLPK_INC}))
-    MESSAGE(STATUS "GLPK NOT DEFINED > require to build it as an external project")
-    ExternalProject_Add(glpk
-            PREFIX ${CMAKE_CURRENT_BINARY_DIR}/external/glpk
-            URL ${CMAKE_SOURCE_DIR}/external/glpk-4.65.tar.gz
-            PATCH_COMMAND autoreconf -if
-            CONFIGURE_COMMAND /${CMAKE_CURRENT_BINARY_DIR}/external/glpk/src/glpk/configure --enable-silent-rules
-            CC=${CMAKE_C_COMPILER}
-            CXX=${CMAKE_CXX_COMPILER}
-            "CXXFLAGS=${EXTERNAL_CXX_FLAGS}"
-            "LDFLAGS=${EXTERNAL_LD_FLAGS}"
-            --prefix=${CMAKE_CURRENT_BINARY_DIR}/glpk
-            ${SHARED_LIB_CONFIG_COMMAND}
-            BUILD_COMMAND make V=0
-            INSTALL_COMMAND make install)
-    set(GLPK_LIB ${CMAKE_BINARY_DIR}/glpk/lib)
-    set(GLPK_INC ${CMAKE_BINARY_DIR}/glpk/include)
-endif()
-
-    message(STATUS "============= GLPK  ===============")
-    message(STATUS "lib path= ${GLPK_LIB}")
-    message(STATUS "inc path = ${GLPK_INC}")
 #==============================================================================
 # PROJECT STRUCTURE
 #==============================================================================
@@ -350,4 +335,5 @@ write_basic_package_version_file(
 install(FILES
         ${CMAKE_CURRENT_BINARY_DIR}/gmdsConfig.cmake
 #       ${CMAKE_CURRENT_BINARY_DIR}/gmdsConfigVersion.cmake
-        DESTINATION ${LIB_INSTALL_DIR}/gmds/cmake)
+        DESTINATION ${LIB_INSTALL_DIR}/gmds/cmake
+)

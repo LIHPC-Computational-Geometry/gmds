@@ -9,6 +9,7 @@
 #include <map>
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
+#include "GMDSIg_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -17,7 +18,7 @@ namespace gmds{
  *  \brief this class provides algorithm to clean, check and modify a mesh.
  *
  */
-    class EXPORT_GMDS MeshDoctor
+    class GMDSIg_API MeshDoctor
     {
     public:
 

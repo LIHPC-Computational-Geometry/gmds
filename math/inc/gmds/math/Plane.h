@@ -10,6 +10,7 @@
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/math/Point.h>
 #include <gmds/math/Vector.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -22,7 +23,7 @@ class Triangle;
  *  \brief template class implementing a geometrical plane in space
  */
 /*----------------------------------------------------------------------------*/
-	class EXPORT_GMDS Plane
+	class GMDSMath_API Plane
 {
 
 public:

@@ -14,6 +14,7 @@
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/math/Point.h>
 #include <gmds/math/Vector.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -27,7 +28,7 @@ class Plane;
  *  \brief Defines a 3D point
  */
 /*----------------------------------------------------------------------------*/
-	class EXPORT_GMDS Triangle
+	class GMDSMath_API Triangle
 {
 
 public:

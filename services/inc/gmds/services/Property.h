@@ -5,6 +5,8 @@
 /*----------------------------------------------------------------------------*/
 #ifndef GMDS_PROPERTY_H
 #define GMDS_PROPERTY_H
+
+#include "GMDSServices_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 
@@ -14,7 +16,7 @@ namespace gmds{
      *
      * \brief Interface that must be extended by any property
      *
-     */class Property {
+     */class GMDSServices_API Property {
     public:
 
         /*------------------------------------------------------------------------*/

@@ -8,12 +8,14 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
 #include <gmds/math/Cross2D.h>
+
+#include "LIB_GMDS_FRAME_export.h"
 /*----------------------------------------------------------------------------*/
 /** \class  LevelSetCross2D
  *  \brief  Propagate a cross field from crosses defined on the boundary 
  *          into the mesh
  */
-class EXPORT_GMDS LevelSetCross2D
+class LIB_GMDS_FRAME_API LevelSetCross2D
 {
  public:
 

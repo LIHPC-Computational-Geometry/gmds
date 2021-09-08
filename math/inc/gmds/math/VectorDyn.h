@@ -14,6 +14,7 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/math/Vector.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -25,7 +26,7 @@ namespace math{
    *
    */
   /*----------------------------------------------------------------------------*/
-  class  EXPORT_GMDS VectorDyn {
+  class GMDSMath_API VectorDyn {
   public:
     /*------------------------------------------------------------------------*/
     /** \brief  Default constructor. In this case, the vector has no

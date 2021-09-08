@@ -41,50 +41,59 @@ void GridBuilder::build2D(const gmds::TInt AXNb,
                           const gmds::TInt AYNb,
                           const gmds::TCoord AYStep)
 {
-    TCellID  node_ids[AXNb][AYNb];
-    for(auto x=0;x<AXNb;x++){
-        for(auto y=0;y<AYNb;y++){
-            node_ids[x][y]=m_mesh->newNode(x*AXStep,y*AYStep,0).id();
-        }
-    }
-    for(auto x=0;x<AXNb-1;x++){
-        for(auto y=0;y<AYNb-1;y++){
-            m_mesh->newQuad(node_ids[x][y],
-                            node_ids[x+1][y],
-                            node_ids[x+1][y+1],
-                            node_ids[x][y+1]);
-        }
-    }
+	std::vector<TCellID> node_ids = std::vector<TCellID>();
+	const gmds::TInt N = AXNb * AYNb;
+	node_ids.reserve(N);
+
+	for (auto x = 0; x < AXNb; x++) {
+		for (auto y = 0; y < AYNb; y++) {
+			Node n = m_mesh->newNode(x*AXStep, y*AYStep, 0);
+			node_ids.push_back(n.id());
+		}
+	}
+	for (auto k = 0; k < N - AYNb; k++) {
+		if ((k + 1) % AYNb == 0) {
+			continue;
+		}
+
+		m_mesh->newQuad(node_ids.at(k),
+			node_ids.at(k + AYNb),			// [x + 1][y],
+			node_ids.at(k + AYNb + 1),		// [x + 1][y + 1],
+			node_ids.at(k + 1));			// [x][y + 1],
+	}
 }
 /*----------------------------------------------------------------------------*/
 void GridBuilder::build3D(const gmds::TInt AXNb,
-                          const gmds::TCoord AXStep,
-                          const gmds::TInt AYNb,
-                          const gmds::TCoord AYStep,
-                          const gmds::TInt AZNb,
-                          const gmds::TCoord AZStep)
+	const gmds::TCoord AXStep,
+	const gmds::TInt AYNb,
+	const gmds::TCoord AYStep,
+	const gmds::TInt AZNb,
+	const gmds::TCoord AZStep)
 {
-    TCellID  node_ids[AXNb][AYNb][AZNb];
-    for(auto x=0;x<AXNb;x++){
-        for(auto y=0;y<AYNb;y++){
-            for(auto z=0;z<AZNb;z++){
-                Node n = m_mesh->newNode(x*AXStep,y*AYStep,z*AZStep);
-                node_ids[x][y][z]=n.id();
-            }
-        }
-    }
-    for(auto x=0;x<AXNb-1;x++){
-        for(auto y=0;y<AYNb-1;y++){
-            for(auto z=0;z<AZNb-1;z++){
-                m_mesh->newHex(node_ids[x][y][z],
-                               node_ids[x+1][y][z],
-                               node_ids[x+1][y+1][z],
-                               node_ids[x][y+1][z],
-                               node_ids[x][y][z+1],
-                               node_ids[x+1][y][z+1],
-                               node_ids[x+1][y+1][z+1],
-                               node_ids[x][y+1][z+1]);
-            }
-        }
-    }
+	std::vector<TCellID> node_ids = std::vector<TCellID>();
+	const gmds::TInt N = AXNb * AYNb * AZNb;
+	node_ids.reserve(N);
+
+	for (auto x = 0; x < AXNb; x++) {
+		for (auto y = 0; y < AYNb; y++) {
+			for (auto z = 0; z < AZNb; z++) {
+				Node n = m_mesh->newNode(x*AXStep, y*AYStep, z*AZStep);
+				node_ids.push_back(n.id());
+			}
+		}
+	}
+	gmds::TInt AZYNb = AYNb * AZNb;
+	for (auto k = 0; k < N - AZYNb - AZNb; k++) {
+		if (((k + 1) % (AZNb) == 0) || (k%AZYNb >= AZYNb - AZNb)) {
+			continue;
+		}
+		m_mesh->newHex(node_ids.at(k),
+			node_ids.at(k + AZYNb),				// [x + 1][y][z],
+			node_ids.at(k + AZYNb + AZNb),		// [x + 1][y + 1][z],
+			node_ids.at(k + AZNb),				// [x][y + 1][z],
+			node_ids.at(k + 1),					// [x][y][z + 1],
+			node_ids.at(k + AZYNb + 1),			// [x + 1][y][z + 1],
+			node_ids.at(k + AZYNb + AZNb + 1),	// [x + 1][y + 1][z + 1],
+			node_ids.at(k + AZNb + 1));			// [x][y + 1][z + 1]);
+	}
 }

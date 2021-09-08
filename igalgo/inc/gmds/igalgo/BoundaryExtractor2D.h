@@ -3,6 +3,7 @@
 #define GMDS_BOUNDARYEXTRACTOR_2D_H
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
+#include "GMDSIgAlgo_export.h"
 /*----------------------------------------------------------------------------*/
 #include <vector>
 #include <map>
@@ -13,7 +14,7 @@ namespace gmds{
     /** @class  BoundaryExtractor2D
      *  @brief  Class that extracts the boundary of a 2D mesh.
      */
-    class EXPORT_GMDS BoundaryExtractor2D
+    class GMDSIgAlgo_API BoundaryExtractor2D
     {
     public:
 

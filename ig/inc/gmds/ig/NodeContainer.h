@@ -11,6 +11,7 @@
 /*----------------------------------------------------------------------------*/
 #include "Node.h"
 #include "Face.h"
+#include "GMDSIg_export.h"
 #include <gmds/utils/BitVector.h>
 #include <gmds/utils/IndexedVector.h>
 
@@ -19,7 +20,7 @@ namespace gmds{
 /*----------------------------------------------------------------------------*/
 	class Mesh;
 /*----------------------------------------------------------------------------*/
-	class EXPORT_GMDS NodeContainer {
+	class GMDSIg_API NodeContainer {
 
 		friend class Node;
 		friend class Edge;
@@ -69,7 +70,7 @@ namespace gmds{
 		TCellID getMaxID()   const {return m_node_ids.top()-1;}
 
 
-        class EXPORT_GMDS iterator {
+        class GMDSIg_API iterator {
         public:
 
 

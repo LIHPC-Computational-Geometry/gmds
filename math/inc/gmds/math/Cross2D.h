@@ -11,8 +11,9 @@
 /*-----------------------------------------------------------------*/
 #include "gmds/math/Quaternion.h"
 #include "gmds/math/Chart.h"
-#include <cmath>
+#include "GMDSMath_export.h"
 /*-----------------------------------------------------------------*/
+#include <cmath>
 #include <iostream>
 /*-----------------------------------------------------------------*/
 using namespace std;
@@ -21,7 +22,7 @@ namespace gmds {
     /*-------------------------------------------------------------*/
     namespace math {
         /*---------------------------------------------------------*/
-        class EXPORT_GMDS Cross2D
+        class GMDSMath_API Cross2D
         {
 
         public:
@@ -109,7 +110,7 @@ namespace gmds {
             /*-----------------------------------------------------*/
             /** \brief  Overloaded operator+ to create a new point from 2 points
              */
-            friend EXPORT_GMDS Cross2D operator+(const Cross2D&, const Cross2D&);
+            friend GMDSMath_API Cross2D operator+(const Cross2D&, const Cross2D&);
 
             /*-----------------------------------------------------*/
             /** \brief A pondered mean
@@ -119,14 +120,14 @@ namespace gmds {
              * \param Aweights weights associated to each cross in the mean computation
              * \param ANbSteps the max number of step to converge (default = 5)
              */
-            static EXPORT_GMDS Cross2D mean(const vector<Cross2D> & ACrosses,
+            static  Cross2D mean(const vector<Cross2D> & ACrosses,
                                             const vector<TCoord> & AWeights,
                                             const TInt ANbSteps=5);
-            static EXPORT_GMDS Cross2D mean(const Cross2D & AC1,
+            static  Cross2D mean(const Cross2D & AC1,
                                             const TCoord& AW1,
                                             const Cross2D & AC2,
                                             const TCoord& AW2);
-		  static EXPORT_GMDS Cross2D meanNotMedian(const vector<Cross2D> & ACrosses,
+		  static  Cross2D meanNotMedian(const vector<Cross2D> & ACrosses,
                                             const vector<TCoord> & AWeights,
                                             const TInt ANbSteps=5);
         private:
@@ -143,7 +144,7 @@ namespace gmds {
         };
 
 
-        EXPORT_GMDS ostream & operator << (ostream & AStr,
+        GMDSMath_API ostream & operator << (ostream & AStr,
                                            const Cross2D & AC);
     }//namespace math
     /*-----------------------------------------------------------------*/

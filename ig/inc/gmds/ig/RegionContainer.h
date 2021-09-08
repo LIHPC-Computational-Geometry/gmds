@@ -13,6 +13,7 @@
 #include "Edge.h"
 #include "Face.h"
 #include "Region.h"
+#include "GMDSIg_export.h"
 /*----------------------------------------------------------------------------*/
 #include <gmds/utils/BitVector.h>
 #include <gmds/utils/IndexedVector.h>
@@ -26,7 +27,7 @@ namespace gmds{
  *
  *  \brief A region container manages the storage of regions for a mesh object
  */
-	class EXPORT_GMDS RegionContainer {
+	class GMDSIg_API RegionContainer {
 
 	public:
 
@@ -130,7 +131,7 @@ namespace gmds{
 		TCellID getMaxID()const {return m_region_ids.top()-1;}
 
 
-		class EXPORT_GMDS iterator {
+		class GMDSIg_API iterator {
 		public:
 
 

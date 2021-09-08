@@ -14,6 +14,7 @@
 #include <gmds/cad/GeomSurface.h>
 #include <gmds/ig/Face.h>
 #include <gmds/math/Triangle.h>
+#include "GMDSCad_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -29,7 +30,7 @@ namespace gmds{
  *  \param TCoord the data type used to store geometrical data
  */
 /*----------------------------------------------------------------------------*/
-        class EXPORT_GMDS FACSurface : public GeomSurface {
+        class GMDSCad_API FACSurface : public GeomSurface {
 
         public:
 

@@ -17,6 +17,7 @@
 #include "gmds/ig/Node.h"
 #include "gmds/math/Point.h"
 #include "gmds/math/Vector.h"
+#include "GMDSCad_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -29,7 +30,7 @@ class FACSurface;
  *  	   mesh to the geometrical model.
  */
 /*----------------------------------------------------------------------------*/
-class EXPORT_GMDS FACCurve: public GeomCurve {
+class GMDSCad_API FACCurve: public GeomCurve {
 
 public:
 	/*------------------------------------------------------------------------*/

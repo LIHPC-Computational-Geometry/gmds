@@ -14,6 +14,7 @@
 #include "Variable.h"
 #include "CommonTypes.h"
 #include "Exception.h"
+#include "GMDSUtils_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 	/*----------------------------------------------------------------------------*/
@@ -22,7 +23,7 @@ namespace gmds{
 	 *  	   variable is defined as a set of discrete values associated to a key.
 	 *  	   Few holes are in the key numerotation.
 	 */
-	class EXPORT_GMDS VariableManager{
+	class GMDSUtils_API VariableManager{
 
 	public:
 		/*------------------------------------------------------------------------*/
@@ -50,7 +51,7 @@ namespace gmds{
 		/*------------------------------------------------------------------------*/
 		/** \brief  Access to a variable.
 		*/
-		template<typename T> EXPORT_GMDS Variable<T>* getVariable(const std::string& AName);
+		template<typename T> Variable<T>* getVariable(const std::string& AName);
 
 		/*------------------------------------------------------------------------*/
 		/** \brief  suppression of a variable. the memory used in the stack is free.

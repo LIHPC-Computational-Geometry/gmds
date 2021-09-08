@@ -8,6 +8,7 @@
 /*----------------------------------------------------------------------------*/
 // GMDS header files
 #include <gmds/utils/CommonTypes.h>
+#include "GMDSIo_export.h"
 /*----------------------------------------------------------------------------*/
 #include "IMeshIOService.h"
 /*----------------------------------------------------------------------------*/
@@ -17,7 +18,7 @@ namespace gmds {
       *
       * @brief writer functions to implement
       */
-    class IWriter {
+    class  GMDSIo_API IWriter {
 
     public:
 

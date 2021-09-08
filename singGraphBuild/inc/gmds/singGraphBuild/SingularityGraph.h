@@ -13,8 +13,9 @@
 #include <gmds/singGraphBuild/SingularityPatch.h>
 #include <gmds/singGraphBuild/SingularityPoint.h>
 #include <gmds/singGraphBuild/SingularityLine.h>
+#include "LIB_GMDS_SINGGRAPHBUILD_export.h"
 /*----------------------------------------------------------------------------*/
-class EXPORT_GMDS SingularityGraph
+class LIB_GMDS_SINGGRAPHBUILD_API SingularityGraph
 {
 public:
 	SingularityGraph(gmds::Mesh* AMesh);

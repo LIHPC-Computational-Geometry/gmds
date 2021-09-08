@@ -9,6 +9,7 @@
 #include <set>
 #include <map>
 #include <vector>
+#include "GMDSServices_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
     class Property;
@@ -20,7 +21,7 @@ namespace gmds {
      *        GMDS
      *
      */
-    class AbstractService {
+    class GMDSServices_API AbstractService {
     public:
 
         /*--------------------------------------------------------------------*/

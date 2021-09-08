@@ -11,6 +11,7 @@
 #include <gmds/math/Chart.h>
 #include <gmds/math/SHarmonicL4.h>
 #include <gmds/math/AxisAngleRotation.h>
+#include "LIB_GMDS_FRAME_3D_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*---------------------------------------------------------------------------*/
@@ -21,7 +22,7 @@ namespace gmds{
  *          FieldGenerator cslass in order to build a 2D or 3D frame field
  *          (based on Spherical harmonics)
  */
-class EXPORT_GMDS FieldSolverStrategyItf{
+class LIB_GMDS_FRAME_3D_API FieldSolverStrategyItf{
 
 public:
     

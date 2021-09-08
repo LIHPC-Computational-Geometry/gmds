@@ -19,6 +19,7 @@
 /*----------------------------------------------------------------------------*/
 #include "CommonFlags.h"
 #include "Exception.h"
+#include "GMDSUtils_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
     /*------------------------------------------------------------------------*/
@@ -73,7 +74,7 @@ namespace gmds{
     } EMeshDefinition;
 
     /*----------------------------------------------------------------------------*/
-    class EXPORT_GMDS MeshModel{
+    class GMDSUtils_API MeshModel{
     public:
         MeshModel(const int meshDef):m_meshDef(meshDef){;}
         
@@ -230,7 +231,7 @@ namespace gmds{
         size_8 = 8,
     }TabSize;
     /*----------------------------------------------------------------------------*/
-    template<int N> struct EXPORT_GMDS TabCellID {
+    template<int N> struct TabCellID {
     private:
         TCellID val[N];
         
@@ -297,7 +298,7 @@ namespace gmds{
     };
     
     /*----------------------------------------------------------------------------*/
-    template<> struct EXPORT_GMDS TabCellID<size_undef> {
+    template<> struct GMDSUtils_API TabCellID<size_undef> {
         
     private:
         //TCellID *val;
@@ -398,12 +399,8 @@ namespace gmds{
         
     };
     /*----------------------------------------------------------------------------*/
-    template<int N> EXPORT_GMDS
-    std::ostream & operator << (std::ostream & AStream, const TabCellID<N> & ATab){
-        for(int i=0;i<ATab.size();i++)
-            AStream<<ATab[i]<<" ";
-        return AStream;
-    }
+	template<int N> GMDSUtils_API
+		std::ostream & operator << (std::ostream & AStream, const TabCellID<N> & ATab);
     /*----------------------------------------------------------------------------*/
     /*----------------------------------------------------------------------------*/
     /** \brief Function that returns the ids that are both in AS1 and AS2 but ABut
@@ -413,7 +410,7 @@ namespace gmds{
      * @param ABut An ID to avoid
      * @return the set of ids that are both in AS1 and AS2 but not equal to ABut
      */
-    std::vector<TCellID> EXPORT_GMDS getCommonBut(const std::vector<TCellID>& AS1,
+    std::vector<TCellID> GMDSUtils_API getCommonBut(const std::vector<TCellID>& AS1,
                                                   const std::vector<TCellID>& AS2,
                                                   const TCellID ABut);
     /*----------------------------------------------------------------------------*/
@@ -425,7 +422,7 @@ namespace gmds{
      * @return A vector containing the elements of ASet having at least ANb
      * 		   occurrences in ASet
      */
-    std::vector<TCellID>  EXPORT_GMDS keepFilter(const std::vector<TCellID>& ASet,
+    std::vector<TCellID>  GMDSUtils_API keepFilter(const std::vector<TCellID>& ASet,
             const TInt ANb);
     /*----------------------------------------------------------------------------*/
     /** \class VirtualEdge
@@ -434,7 +431,7 @@ namespace gmds{
      *  	   The node order is given starting from the lowest node id, N1.
      *
      */
-    class EXPORT_GMDS VirtualEdge{
+    class GMDSUtils_API VirtualEdge{
         
     public:
         /*-----------------------------------------------------------------------*/
@@ -547,7 +544,7 @@ namespace gmds{
      *		   This order can be inverted on purpose.
      *
      */
-    class EXPORT_GMDS VirtualFace{
+    class GMDSUtils_API VirtualFace{
 
     public:
 

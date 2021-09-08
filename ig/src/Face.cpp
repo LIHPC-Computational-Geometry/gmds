@@ -376,7 +376,7 @@ namespace gmds {
 #ifdef _DEBUG
                     std::cout << "Index error" << std::endl;
                         for (int i = 0; i < 3; i++)
-                                std::cout << ATab[i] << " ";
+                                std::cout << nodes[i] << " ";
                         std::cout << "<- " << ANode1 << std::endl;
 #endif  //_DEBUG
                     throw GMDSException("getAdjacentNodes: node 1 is not adjacent to the face");

@@ -15,6 +15,7 @@
 #include "gmds/cad/GeomCurve.h"
 #include "gmds/cad/GeomSurface.h"
 #include "gmds/cad/GeomVolume.h"
+#include "GMDSCad_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -28,7 +29,7 @@ namespace cad{
  *  \param TBase the basic type used to store geometric coordinates.
  */
 /*----------------------------------------------------------------------------*/
-	class EXPORT_GMDS GeomManager {
+	class GMDSCad_API GeomManager {
 
 public:
 

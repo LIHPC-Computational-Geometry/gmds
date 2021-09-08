@@ -12,6 +12,7 @@
 #include <set>
 /*----------------------------------------------------------------------------*/
 #include "Cell.h"
+#include "GMDSIg_export.h"
 #include <gmds/math/Point.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds{
@@ -27,7 +28,7 @@ class FaceContainer;
  *  	   the data representing a mesh region (3-cell).
  *
  */
-class EXPORT_GMDS Region : public Cell{
+class GMDSIg_API Region : public Cell{
 public:
 
 	/*------------------------------------------------------------------------*/

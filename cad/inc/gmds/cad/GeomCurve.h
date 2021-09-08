@@ -13,6 +13,7 @@
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/cad/GeomEntity.h>
 #include <gmds/math/Segment.h>
+#include "GMDSCad_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -27,7 +28,7 @@ namespace gmds{
  *  	   contains query methods.
  */
 /*----------------------------------------------------------------------------*/
-		class EXPORT_GMDS GeomCurve : public GeomEntity {
+		class GMDSCad_API GeomCurve : public GeomEntity {
         public:
 
             /*---------------------------------------------------------------*/

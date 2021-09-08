@@ -9,12 +9,13 @@
 #include <map>
 /*----------------------------------------------------------------------------*/
 #include "IMeshIOService.h"
+#include "GMDSIo_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 
-    class Mesh;
+    class GMDSIo_API Mesh;
 
-    class IGMeshIOService : public IMeshIOService {
+    class GMDSIo_API IGMeshIOService : public IMeshIOService {
     public:
         IGMeshIOService(Mesh *AMesh);
 

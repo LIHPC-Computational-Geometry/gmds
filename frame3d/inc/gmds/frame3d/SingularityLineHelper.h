@@ -11,7 +11,7 @@
 #include <gmds/frame3d/Params.h>
 #include <gmds/math/AxisAngleRotation.h>
 #include <gmds/math/Triangle.h>
-
+#include "LIB_GMDS_FRAME_3D_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -23,7 +23,7 @@ namespace gmds {
  *          around them, and finally modify the initial mesh to be the same
  *          but without new hexahedral regions.
  */
-        class EXPORT_GMDS SingularityLineHelper {
+        class LIB_GMDS_FRAME_3D_API SingularityLineHelper {
         public:
 
             struct PointVolumetricData{

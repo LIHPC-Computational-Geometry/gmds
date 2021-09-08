@@ -17,6 +17,8 @@
 #include <vector>
 /*---------------------------------------------------------------------------*/
 #include "LogStream.h"
+#include "CommonTypes.h"
+#include "GMDSUtils_export.h"
 /*---------------------------------------------------------------------------*/
 namespace gmds {
     /*-----------------------------------------------------------------------*/
@@ -25,7 +27,7 @@ namespace gmds {
      *  \brief Class defining a log manager
      */
     /*-----------------------------------------------------------------------*/
-    class Log{
+    class GMDSUtils_API Log {
         
     public:
         

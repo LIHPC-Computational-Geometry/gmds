@@ -10,6 +10,7 @@
 #include <gmds/ig/Mesh.h>
 #include <gmds/math/Chart.h>
 #include <gmds/math/AxisAngleRotation.h>
+#include "LIB_GMDS_FRAME_3D_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -17,7 +18,7 @@ namespace gmds {
  *  \brief  Starting from a frame field, this algorithm smooth the frame following
  *          the algorithm described in Lui's paper
  */
-    class EXPORT_GMDS FieldSmoother{
+    class LIB_GMDS_FRAME_3D_API FieldSmoother{
 
             public:
             /*------------------------------------------------------------------------*/

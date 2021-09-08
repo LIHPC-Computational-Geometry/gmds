@@ -3,6 +3,7 @@
 #define GMDS_SHEET_SELECTOR_2D_H
 /*----------------------------------------------------------------------------*/
 #include <gmds/sheet/Operator2D.h>
+#include "GMDSSheet_export.h"
 /*----------------------------------------------------------------------------*/
 #include <map>
 #include <vector>
@@ -15,7 +16,7 @@ namespace gmds{
      *          The mesh we work on  must have F and N and the F2N fields and no
      *          regions
      */
-    class EXPORT_GMDS Selector2D: public Operator2D
+    class GMDSSheet_API Selector2D: public Operator2D
     {
     public:
 

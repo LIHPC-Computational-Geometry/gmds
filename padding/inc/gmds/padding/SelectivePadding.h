@@ -9,7 +9,7 @@ namespace  gmds{
 /** \class  SelectivePadding
  *  \brief  ???
  */
-    class EXPORT_GMDS SelectivePadding
+    class  SelectivePadding
     {
     public:
 

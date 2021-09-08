@@ -124,35 +124,35 @@ template<> void Cell::getAllIDs<Region>(std::vector<TCellID>& ACells) const {
         delegateGetAllRegionIDs(ACells);
 }
 /*----------------------------------------------------------------------------*/
-template<> void Cell::set<Node>(const std::vector<TCellID>& ACells)  {
+template<> GMDSIg_API void Cell::set<Node>(const std::vector<TCellID>& ACells)  {
 	delegateSetNodeIDs(ACells);
 }
 /*----------------------------------------------------------------------------*/
-template<> void Cell::set<Edge>(const std::vector<TCellID>& ACells)  {
+template<> GMDSIg_API void Cell::set<Edge>(const std::vector<TCellID>& ACells)  {
 	delegateSetEdgeIDs(ACells);
 }
 /*----------------------------------------------------------------------------*/
-template<> void Cell::set<Face>(const std::vector<TCellID>& ACells)  {
+template<> GMDSIg_API void Cell::set<Face>(const std::vector<TCellID>& ACells)  {
 	delegateSetFaceIDs(ACells);
 }
 /*----------------------------------------------------------------------------*/
-template<> void Cell::set<Region>(const std::vector<TCellID>& ACells)  {
+template<> GMDSIg_API void Cell::set<Region>(const std::vector<TCellID>& ACells)  {
 	delegateSetRegionIDs(ACells);
 }
 /*----------------------------------------------------------------------------*/
-template<> void Cell::set<Node>(const std::vector<Node>& ACells)  {
+template<> GMDSIg_API void Cell::set<Node>(const std::vector<Node>& ACells)  {
 	delegateSetNodeIDs(convertCellToID<Node>(ACells));
 }
 /*----------------------------------------------------------------------------*/
-template<> void Cell::set<Edge>(const std::vector<Edge>& ACells)  {
+template<> GMDSIg_API void Cell::set<Edge>(const std::vector<Edge>& ACells)  {
 	delegateSetEdgeIDs(convertCellToID<Edge>(ACells));
 }
 /*----------------------------------------------------------------------------*/
-template<> void Cell::set<Face>(const std::vector<Face>& ACells)  {
+template<> GMDSIg_API void Cell::set<Face>(const std::vector<Face>& ACells)  {
 	delegateSetFaceIDs(convertCellToID<Face>(ACells));
 }
 /*----------------------------------------------------------------------------*/
-template<> void Cell::set<Region>(const std::vector<Region>& ACells)  {
+template<> GMDSIg_API void Cell::set<Region>(const std::vector<Region>& ACells)  {
 	delegateSetRegionIDs(convertCellToID<Region>(ACells));
 }
 

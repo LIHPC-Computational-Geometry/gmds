@@ -30,7 +30,7 @@
 #include "gmds/ig/MeshDoctor.h"
 #include "gmds/ig/Mesh.h"
 #include "GeomMeshLinker.h"
-
+#include "GMDSCad_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -43,7 +43,7 @@ namespace gmds{
  *
  */
 /*----------------------------------------------------------------------------*/
-        class  EXPORT_GMDS FACManager :
+        class  GMDSCad_API FACManager :
                 public GeomManager
         {
 

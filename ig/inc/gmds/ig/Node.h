@@ -11,6 +11,7 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/math/Point.h>
 #include "Cell.h"
+#include "GMDSIg_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -25,7 +26,7 @@ class NodeContainer;
  *  	   the data representing a mesh node.
  *
  */
-class EXPORT_GMDS Node : public Cell{
+class GMDSIg_API Node : public Cell{
 public:
 	/*------------------------------------------------------------------------*/
 	/** \brief Default constructor. Used for stl container initialization
@@ -175,7 +176,7 @@ public:
 	void setZ(const TCoord AVal);
 	void setXYZ(const TCoord AX, const TCoord AY, const TCoord AZ);
 
-	friend std::ostream& operator<<(std::ostream& AStream, const Node& AN);
+	GMDSIg_API friend std::ostream& operator<<(std::ostream& AStream, const Node& AN);
 
 protected:
 

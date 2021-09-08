@@ -17,6 +17,7 @@
 #include <gmds/math/Vector.h>
 #include <gmds/math/Chart.h>
 #include <gmds/math/Matrix.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 using namespace std;
 /*----------------------------------------------------------------------------*/
@@ -27,7 +28,7 @@ namespace gmds {
         /** \class Quaternion
          *  \brief Define a 4D vector, i.e. a quaternion
          */
-        class EXPORT_GMDS Quaternion {
+        class GMDSMath_API Quaternion {
             
             
         public:
@@ -247,7 +248,7 @@ namespace gmds {
              * \param Aweights weights associated to each cross in the mean computation
              * \param ARef     a reference used to compute the closest image
              */
-            static EXPORT_GMDS Quaternion simpleMean(const vector<Quaternion> & AQuats,
+            static  Quaternion simpleMean(const vector<Quaternion> & AQuats,
                                                      const vector<TCoord> & AWeights,
                                                      const Quaternion & ARef);
             
@@ -262,20 +263,20 @@ namespace gmds {
              * \param AQuats   quaternions we want to compute the mean
              * \param Aweights weights associated to each cross in the mean computation
              */
-            static EXPORT_GMDS Quaternion mean(const vector<Quaternion> & AQuats,
+            static  Quaternion mean(const vector<Quaternion> & AQuats,
                                                const vector<TCoord> & AWeights);
-            static EXPORT_GMDS Quaternion mean(const Quaternion& AQ1, 
+            static  Quaternion mean(const Quaternion& AQ1, 
                                                const TCoord& AC1, 
                                                const Quaternion& AQ2, 
                                                const TCoord& AC2);
             
-            static EXPORT_GMDS Quaternion getAleat();
+            static  Quaternion getAleat();
             
             
             /*------------------------------------------------------------------------*/
             /** \brief Check consistency between 4 Quaternions
              */
-            static EXPORT_GMDS int testSingularity(Quaternion& q1,
+            static  int testSingularity(Quaternion& q1,
                                                    Quaternion& q2,
                                                    Quaternion& q3,
                                                    Quaternion& q4);
@@ -283,7 +284,7 @@ namespace gmds {
             /*------------------------------------------------------------------------*/
             /** \brief Check consistency between 3 Quaternions
              */
-            static EXPORT_GMDS int testSingularity(Quaternion& q1,
+            static  int testSingularity(Quaternion& q1,
                                                    Quaternion& q2,
                                                    Quaternion& q3);
             
@@ -348,7 +349,7 @@ namespace gmds {
             static const Quaternion img[24];
         }; 
         /*--------------------------------------------------------------------*/
-        EXPORT_GMDS ostream & operator << (ostream & AStr,
+        GMDSMath_API ostream & operator << (ostream & AStr,
                                            const Quaternion & AQ);
         /*--------------------------------------------------------------------*/
   }

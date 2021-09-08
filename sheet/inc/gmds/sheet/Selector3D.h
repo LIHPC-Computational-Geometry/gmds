@@ -3,6 +3,7 @@
 #define GMDS_SHEET_SELECTOR_3D_H
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
+#include "GMDSSheet_export.h"
 /*----------------------------------------------------------------------------*/
 #include <map>
 #include <vector>
@@ -14,7 +15,7 @@ namespace gmds{
      *  @brief  Class that allows to select a sheet in a hex mesh
      *          The mesh we work on  must have R and N and the R2N fields
      */
-    class EXPORT_GMDS Selector3D
+    class GMDSSheet_API Selector3D
     {
     public:
 

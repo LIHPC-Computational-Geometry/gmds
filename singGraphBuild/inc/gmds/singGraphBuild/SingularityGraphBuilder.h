@@ -18,8 +18,9 @@
 #include <gmds/math/Quaternion.h>
 /*----------------------------------------------------------------------------*/
 #include <gmds/singGraphBuild/SingularityGraph.h>
+#include "LIB_GMDS_SINGGRAPHBUILD_export.h"
 /*----------------------------------------------------------------------------*/
-class EXPORT_GMDS SingularityGraphBuilder
+class LIB_GMDS_SINGGRAPHBUILD_API SingularityGraphBuilder
 {
  public:
   //	static const int mask=DIM3|R|N|F|R2N|F2N|N2F|N2R|R2F|F2R;
@@ -356,7 +357,7 @@ private:
 		//point de depart de la sepline
 		double dirXStart, double dirYStart, double dirZStart,
 		double xSing, double ySing,double zSing,
-		// xSing, ySing et zSing sont les coordonn�es de la singularit� d'ou l'on part,
+		// xSing, ySing et zSing sont les coordonn?es de la singularit? d'ou l'on part,
 		int FaceStartID, int FaceNextID,
 		std::vector<double>& listePointX,
 		std::vector<double>& listePointY,

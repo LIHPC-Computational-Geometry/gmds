@@ -13,7 +13,7 @@
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
-    template<typename T>  class EXPORT_GMDS SmartVector{
+    template<typename T> class SmartVector{
 
     public:
         typedef int size_type;

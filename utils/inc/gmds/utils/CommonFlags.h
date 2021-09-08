@@ -11,13 +11,10 @@
 #define GMDS_COMMON_FLAGS_H_
 /*----------------------------------------------------------------------------*/
 #ifdef WIN32
-#ifdef DLLEXPORT
-#define EXPORT_GMDS __declspec(dllexport)
-#else
-#define EXPORT_GMDS __declspec(dllimport)
-#endif //DLLEXPORT
-#else
-#define EXPORT_GMDS
+#define _USE_MATH_DEFINES
+#ifndef M_PI
+	#define M_PI 3.14159265358979323846
+#endif
 #endif //WIN32
 /*----------------------------------------------------------------------------*/
 /**

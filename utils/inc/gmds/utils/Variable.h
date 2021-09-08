@@ -10,6 +10,7 @@
 /*----------------------------------------------------------------------------*/
 #include "CommonTypes.h"
 #include "SmartVector.h"
+#include "GMDSUtils_export.h"
 /*----------------------------------------------------------------------------*/
 #include <iostream>
 #include <vector>
@@ -20,7 +21,7 @@ namespace gmds{
 /** \class VariableItf
  *  \brief Defines the API of a mesh variable.
  */
-    class EXPORT_GMDS VariableItf{
+    class GMDSUtils_API VariableItf{
     public:
 
         VariableItf() {;}
@@ -76,7 +77,7 @@ namespace gmds{
  *  \param T  type of the variable
  */
     template <typename T>
-    class EXPORT_GMDS Variable : public VariableItf {
+    class Variable : public VariableItf {
     public:
 /*------------------------------------------------------------------------*/
 /** \brief  Constructor. Every variable has a name

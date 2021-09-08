@@ -12,10 +12,11 @@
 // headers of GMDS files
 #include <gmds/io/IWriter.h>
 #include <gmds/utils/CommonTypes.h>
+#include "GMDSIo_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 
-    class VTKWriter : public IWriter {
+    class GMDSIo_API VTKWriter : public IWriter {
     public:
 
 

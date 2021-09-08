@@ -3,6 +3,7 @@
 #define GMDS_GRID_BUILDER_H
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
+#include "GMDSIgAlgo_export.h"
 /*----------------------------------------------------------------------------*/
 #include <map>
 #include <vector>
@@ -13,7 +14,7 @@ namespace gmds{
     /** @class  GridBuilder
      *  @brief  Class that provides a way to create a structured grid
      */
-    class EXPORT_GMDS GridBuilder
+    class GMDSIgAlgo_API GridBuilder
     {
     public:
 

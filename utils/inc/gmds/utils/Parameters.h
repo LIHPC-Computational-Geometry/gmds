@@ -12,10 +12,13 @@
 // STL Headers
 #include <string>
 #include <vector>
+
+#include "CommonTypes.h"
+#include "GMDSUtils_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
     /*------------------------------------------------------------------------*/
-    class Parameters {
+    class GMDSUtils_API Parameters {
         
     public:
         /*--------------------------------------------------------------------*/

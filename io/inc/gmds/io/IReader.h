@@ -9,6 +9,7 @@
 /*----------------------------------------------------------------------------*/
 // GMDS header files
 #include <gmds/utils/CommonTypes.h>
+#include "GMDSIo_export.h"
 /*----------------------------------------------------------------------------*/
 #include "IMeshIOService.h"
 #include <fstream>
@@ -20,7 +21,7 @@ namespace gmds {
      * @brief Reader functions to implement
      *
      */
-    class IReader {
+    class GMDSIo_API IReader {
     public:
 
         /*------------------------------------------------------------------------*/

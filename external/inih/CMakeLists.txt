@@ -1,5 +1,5 @@
 #==============================================================================
-add_library(INIH
+add_library(INIH STATIC
         inc/dictionary.h
         inc/iniparser.h
         src/dictionary.cpp

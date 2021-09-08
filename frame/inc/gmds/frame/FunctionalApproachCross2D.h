@@ -8,6 +8,8 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
 #include <gmds/math/Cross2D.h>
+
+#include "LIB_GMDS_FRAME_export.h"
 /*---------------------------------------------------------------------------*/
 // Usage of the Eigen Template library
 #include <Eigen/Sparse>
@@ -19,7 +21,7 @@ class CrossFieldGeneration2D;
  *          simple Laplace equation via FEM but with a functional approach
  *          where frames are represented into a Fourier function basis.
  */
-class EXPORT_GMDS FunctionalApproachCross2D
+class LIB_GMDS_FRAME_API FunctionalApproachCross2D
 {
 public:
     

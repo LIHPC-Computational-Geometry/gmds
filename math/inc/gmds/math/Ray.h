@@ -13,6 +13,7 @@
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/math/Point.h>
 #include <gmds/math/Vector.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -26,7 +27,7 @@ class Triangle;
  *  \brief template class implementing a geometrical ray in space
  */
 /*----------------------------------------------------------------------------*/
-	class EXPORT_GMDS Ray
+	class GMDSMath_API Ray
 {
 public:
 
@@ -73,7 +74,7 @@ public:
 	/*------------------------------------------------------------------------*/
         /** \brief  Overloaded operator<< for output
          */
-        friend EXPORT_GMDS std::ostream& operator<<(std::ostream&, const Ray&);
+        friend GMDSMath_API std::ostream& operator<<(std::ostream&, const Ray&);
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Getter for the plane point

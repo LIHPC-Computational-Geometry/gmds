@@ -13,6 +13,7 @@
 /*-----------------------------------------------------------------*/
 #include <gmds/math/Vector.h>
 #include <gmds/math/Matrix.h>
+#include "GMDSMath_export.h"
 /*-----------------------------------------------------------------*/
 #include <iostream>
 /*-----------------------------------------------------------------*/
@@ -24,7 +25,7 @@ namespace gmds{
         /* \class Chart
          * \brief A char is a right-handed basis in R3
          */
-        class EXPORT_GMDS Chart
+        class GMDSMath_API Chart
         {
         public:
             /*------------------------------------------------------------*/
@@ -110,7 +111,7 @@ namespace gmds{
              *          indicates which vectors of C2 corresponds to each
              *          vector of C1
              */
-            class Mapping {
+            class GMDSMath_API Mapping {
             public:
                 /*-------------------------------------------------------*/
                 /** \brief Default constructor providing the identity
@@ -192,7 +193,7 @@ namespace gmds{
             
         };
         /*-----------------------------------------------------------------*/
-        EXPORT_GMDS  std::ostream & operator<<(std::ostream & op_g,
+        GMDSMath_API  std::ostream & operator<<(std::ostream & op_g,
                                                const Chart & op_d);
         /*-----------------------------------------------------------------*/
     }

@@ -3,6 +3,7 @@
 #define GMDS_SHEET_OPERATOR_2D_H
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
+#include "GMDSSheet_export.h"
 /*----------------------------------------------------------------------------*/
 #include <map>
 #include <vector>
@@ -16,7 +17,7 @@ namespace gmds{
      *
      *          The mesh we work on  must have F and N and the F2N fields and not R
      */
-    class EXPORT_GMDS Operator2D
+    class GMDSSheet_API Operator2D
     {
     public:
 

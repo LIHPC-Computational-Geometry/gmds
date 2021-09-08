@@ -8,6 +8,7 @@
 // gmds File Headers
 #include <gmds/ig/Mesh.h>
 #include <gmds/utils/Parameters.h>
+#include "LIB_GMDS_FRAME_3D_export.h"
 /*----------------------------------------------------------------------------*/
 /** \brief This file gathers all the parameter structures used in the FHeDo
  *         component.
@@ -20,7 +21,7 @@ namespace gmds {
  *  \brief  structure that gathers FHeDo boolean marks used during the
  *          different algorithms
  */
-    struct EXPORT_GMDS ParamsMark
+    struct LIB_GMDS_FRAME_3D_API ParamsMark
     {
         /** node mark for nodes classified on surfaces */
         int mark_node_on_surf;
@@ -46,7 +47,7 @@ namespace gmds {
 /** \struct ParamsGlobal
  *  \brief  structure that gathers FHeDo global parameters
  */
-    struct EXPORT_GMDS ParamsGlobal
+    struct LIB_GMDS_FRAME_3D_API ParamsGlobal
     {
         enum AlgoChoice
         {
@@ -84,7 +85,7 @@ namespace gmds {
 /** \struct ParamsFrameField
  *  \brief  structure that gathers parameters of the Frame Field generation
  */
-    struct EXPORT_GMDS ParamsFrameField
+    struct LIB_GMDS_FRAME_3D_API ParamsFrameField
     {
         enum SolverType
         {

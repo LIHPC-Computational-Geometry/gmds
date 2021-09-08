@@ -14,8 +14,9 @@
  *  \tparam TType type of elements stored in the matrix
  */
 /*----------------------------------------------------------------------------*/
+#include "Matrix.h"
 template <int TLin, int TCol, typename TType>
-class EXPORT_GMDS Matrix {
+class Matrix {
 public:
 
     /** type of matrix components */

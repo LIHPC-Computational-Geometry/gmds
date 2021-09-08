@@ -21,11 +21,12 @@
 #include <gmds/math/Triangle.h>
 #include <gmds/math/Segment.h>
 #include <gmds/math/AxisAngleRotation.h>
+#include "LIB_GMDS_SINGGRAPHBUILD_export.h"
 /*----------------------------------------------------------------------------*/
 /* \class This class gathers elementary algorithms used for different purposes
  *        by the main algorithms provided in FRAME.
  */
-class EXPORT_GMDS Tools
+class LIB_GMDS_SINGGRAPHBUILD_API Tools
 {
 public:
     

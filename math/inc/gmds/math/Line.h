@@ -12,6 +12,7 @@
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/math/Point.h>
 #include <gmds/math/Vector.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -25,7 +26,7 @@ class Triangle;
          *  \brief Geometrical class implementing a line defining by 2 points
          */
         /*----------------------------------------------------------------------------*/
-        class EXPORT_GMDS Line
+        class GMDSMath_API Line
         {
         public:
             

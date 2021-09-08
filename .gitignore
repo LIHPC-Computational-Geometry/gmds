@@ -9,6 +9,8 @@
 [Tt]humbs.db
 *.DS_Store
 cmake-build-*/
+build*/
+.vs
 
 # Thumbnails
 ._*
@@ -18,7 +20,14 @@ cmake-build-*/
 # WARNING: one should only add projects in external or switch to a newer version of a project,
 # other modifications should be carefully considered.
 # comment when necessary
-external/
+
+!external/glpk/src/glpk/w64
+external/glpk/src/glpk/w64/*
+!external/glpk/src/glpk/w64/glpk_4_65.dll
+!external/glpk/src/glpk/w64/glpk_4_65.lib
+external/glpk/src/glpk/src/*
+external/glpk/src/glpk/examples/*
+
 
 # spack files when dev-build
 spack-*

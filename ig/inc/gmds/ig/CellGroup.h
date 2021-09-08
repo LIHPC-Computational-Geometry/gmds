@@ -28,7 +28,7 @@ namespace gmds {
  */
 /*----------------------------------------------------------------------------*/
 	template<typename TCellType>
-	class EXPORT_GMDS CellGroup{
+	class CellGroup{
 	public:
 
 		/*--------------------------------------------------------------------*/

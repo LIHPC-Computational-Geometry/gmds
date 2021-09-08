@@ -10,7 +10,7 @@
 #define GMDS_EDGE_H_
 /*----------------------------------------------------------------------------*/
 #include "Cell.h"
-
+#include "GMDSIg_export.h"
 #include <gmds/math/Point.h>
 #include <gmds/math/Segment.h>
 /*----------------------------------------------------------------------------*/
@@ -26,7 +26,7 @@ class FaceContainer;
  *  	   the data representing a mesh edge.
  *
  */
-class EXPORT_GMDS Edge : public Cell{
+class GMDSIg_API Edge : public Cell{
 public:
 
 	/*------------------------------------------------------------------------*/

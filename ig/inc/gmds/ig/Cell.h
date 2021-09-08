@@ -11,6 +11,7 @@
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/utils/Exception.h>
 #include <gmds/math/Point.h>
+#include "GMDSIg_export.h"
 /*----------------------------------------------------------------------------*/
 // STL file headers
 #include <vector>
@@ -29,7 +30,7 @@ namespace gmds{
    *  	   edges, faces, regions) in an Incidence Graph Representation.
    */
   /*----------------------------------------------------------------------------*/
-  class EXPORT_GMDS Cell
+  class GMDSIg_API Cell
   {
   public:
       /*------------------------------------------------------------------------*/
@@ -91,8 +92,8 @@ namespace gmds{
      *
      * 			T can be Node, Edge, Face or Region
      */
-    template<class T> EXPORT_GMDS std::vector<T> get() const;
-    template<class T> EXPORT_GMDS void get(std::vector<T>&) const;
+    template<class T> std::vector<T> get() const;
+    template<class T> void get(std::vector<T>&) const;
 
     /*------------------------------------------------------------------------*/
     /** \brief  Accessor to the ids of the incident cells.
@@ -100,68 +101,68 @@ namespace gmds{
      *
      * 			T can be Node, Edge, Face or Region
      */
-    template<class T> EXPORT_GMDS std::vector<TCellID> getIDs() const;
-    template<class T> EXPORT_GMDS void getIDs(std::vector<TCellID>&) const;
+    template<class T> std::vector<TCellID> getIDs() const;
+    template<class T> void getIDs(std::vector<TCellID>&) const;
 
     /*------------------------------------------------------------------------*/
     /** \brief  Accessor to the incident nodes including null cells. In this case
      * 			cells are provided in the storage order
      */
-    template<class T> EXPORT_GMDS std::vector<T> getAll() const;
-    template<class T> EXPORT_GMDS void getAll(std::vector<T>&) const;
+    template<class T> std::vector<T> getAll() const;
+    template<class T> void getAll(std::vector<T>&) const;
 
     /*------------------------------------------------------------------------*/
     /** \brief  Accessor to the ids of incident nodes including null cells. In this case
      * 			cells are provided in the storage order
      */
-    template<class T> EXPORT_GMDS std::vector<TCellID> getAllIDs() const;
-    template<class T> EXPORT_GMDS void getAllIDs(std::vector<TCellID>&) const;
+    template<class T> std::vector<TCellID> getAllIDs() const;
+    template<class T> void getAllIDs(std::vector<TCellID>&) const;
 
 
     /*------------------------------------------------------------------------*/
     /** \brief  update adjacency of type T to be equal to ACells.
      *  \param ACells cells to be added
      */
-    template<class T> EXPORT_GMDS bool has(TCellID AId);
-    template<class T> EXPORT_GMDS bool has(T& AElt);
+    template<class T> bool has(TCellID AId);
+    template<class T> bool has(T& AElt);
 
   /*------------------------------------------------------------------------*/
     /** \brief  update adjacency of type T to be equal to ACells.
      *  \param ACells cells to be added
      */
-    template<class T> EXPORT_GMDS void set(const std::vector<T>& ACells);
+    template<class T> void set(const std::vector<T>& ACells);
 
 
-    template<class T> EXPORT_GMDS void set(const std::vector<TCellID>& ACells);
+    template<class T> void set(const std::vector<TCellID>& ACells);
     /*------------------------------------------------------------------------*/
     /** \brief  update adjacency of type T to insert the new element AElt.
      *  \param AElt the element to be added
      */
-    template<class T> EXPORT_GMDS void add(T& AElt);
+    template<class T> void add(T& AElt);
 
     /*------------------------------------------------------------------------*/
     /** \brief  update adjacency of type T to insert the new element AElt.
      *  \param AElt the element to be added
      */
-    template<class T> EXPORT_GMDS void add(TCellID AElt);
+    template<class T> void add(TCellID AElt);
 
     /*------------------------------------------------------------------------*/
     /** \brief  update adjacency of type T to remove the element AElt.
      *          Does nothing if the element is not here
      *  \param AElt the element to be removed
      */
-    template<class T> EXPORT_GMDS  void remove(T& AElt);
+    template<class T>  void remove(T& AElt);
 
     /*------------------------------------------------------------------------*/
     /** \brief  update adjacency of type T to remove the element AElt.
      *  \param AElt the element to be removed
      */
-    template<class T> EXPORT_GMDS void remove(TCellID AElt);
+    template<class T> void remove(TCellID AElt);
 
     /*------------------------------------------------------------------------*/
     /** \brief  update adjacency of type T to remove all the elements of type T
      */
-    template<class T> EXPORT_GMDS  void removeAll();
+    template<class T>  void removeAll();
 
     /*------------------------------------------------------------------------*/
     /** \brief  replace an incident T-typed cell AC1 by cell AC2 in the
@@ -170,7 +171,7 @@ namespace gmds{
      *  \param AC1 the cell to be replaced
      *  \param AC2 the new cell
      */
-    template<class T>  EXPORT_GMDS void replace(T& AC1, T& AC2);
+    template<class T>  void replace(T& AC1, T& AC2);
 
     /*------------------------------------------------------------------------*/
     /** \brief  replace the incident T-typed cell of ID AID11 by AID2 in the
@@ -179,7 +180,7 @@ namespace gmds{
      *  \param AID1 the id of the cell to be replaced
      *  \param AID2 the id of the new cell
      */
-    template<class T>  EXPORT_GMDS void replace(TCellID AC1, TCellID AC2);
+    template<class T>  void replace(TCellID AC1, TCellID AC2);
 
 #ifdef GMDS_PARALLEL
     /*------------------------------------------------------------------------*/
@@ -258,7 +259,7 @@ namespace gmds{
     virtual void delegateFaceReplace(TCellID AID1, TCellID AID2) = 0;
     virtual void delegateRegionReplace(TCellID AID1, TCellID AID2) = 0;
 
-    template<class T> EXPORT_GMDS std::vector<TCellID> convertCellToID(const std::vector<T>& ACells);
+    template<class T> std::vector<TCellID> convertCellToID(const std::vector<T>& ACells);
   protected:
 
     /** mesh containing *this*/
@@ -359,35 +360,35 @@ namespace gmds{
       return cellIDs;
     }
 
-  template<> EXPORT_GMDS void Cell::set<Node>(const std::vector<Node>& ACells);
-  template<> EXPORT_GMDS void Cell::set<Edge>(const std::vector<Edge>& ACells);
-  template<> EXPORT_GMDS void Cell::set<Face>(const std::vector<Face>& ACells);
-  template<> EXPORT_GMDS void Cell::set<Region>(const std::vector<Region>& ACells);
+  template<> GMDSIg_API void Cell::set<Node>(const std::vector<Node>& ACells);
+  template<> GMDSIg_API void Cell::set<Edge>(const std::vector<Edge>& ACells);
+  template<> GMDSIg_API void Cell::set<Face>(const std::vector<Face>& ACells);
+  template<> GMDSIg_API void Cell::set<Region>(const std::vector<Region>& ACells);
 
-  template<> EXPORT_GMDS void Cell::getIDs<Node>(std::vector<TCellID>& ACells) const;
-  template<> EXPORT_GMDS void Cell::getIDs<Edge>(std::vector<TCellID>& ACells) const;
-  template<> EXPORT_GMDS void Cell::getIDs<Face>(std::vector<TCellID>& ACells) const;
-  template<> EXPORT_GMDS void Cell::getIDs<Region>(std::vector<TCellID>& ACells) const;
+  template<> GMDSIg_API void Cell::getIDs<Node>(std::vector<TCellID>& ACells) const;
+  template<> GMDSIg_API void Cell::getIDs<Edge>(std::vector<TCellID>& ACells) const;
+  template<> GMDSIg_API void Cell::getIDs<Face>(std::vector<TCellID>& ACells) const;
+  template<> GMDSIg_API void Cell::getIDs<Region>(std::vector<TCellID>& ACells) const;
 
-  template<> EXPORT_GMDS void Cell::getAllIDs<Node>(std::vector<TCellID>& ACells) const;
-  template<> EXPORT_GMDS void Cell::getAllIDs<Edge>(std::vector<TCellID>& ACells) const;
-  template<> EXPORT_GMDS void Cell::getAllIDs<Face>(std::vector<TCellID>& ACells) const;
-  template<> EXPORT_GMDS void Cell::getAllIDs<Region>(std::vector<TCellID>& ACells) const;
+  template<> GMDSIg_API void Cell::getAllIDs<Node>(std::vector<TCellID>& ACells) const;
+  template<> GMDSIg_API void Cell::getAllIDs<Edge>(std::vector<TCellID>& ACells) const;
+  template<> GMDSIg_API void Cell::getAllIDs<Face>(std::vector<TCellID>& ACells) const;
+  template<> GMDSIg_API void Cell::getAllIDs<Region>(std::vector<TCellID>& ACells) const;
 
-  template<> EXPORT_GMDS void Cell::add<Node>(TCellID AElt);
-  template<> EXPORT_GMDS void Cell::add<Edge>(TCellID AElt);
-  template<> EXPORT_GMDS void Cell::add<Face>(TCellID AElt);
-  template<> EXPORT_GMDS void Cell::add<Region>(TCellID AElt);
+  template<> GMDSIg_API void Cell::add<Node>(TCellID AElt);
+  template<> GMDSIg_API void Cell::add<Edge>(TCellID AElt);
+  template<> GMDSIg_API void Cell::add<Face>(TCellID AElt);
+  template<> GMDSIg_API void Cell::add<Region>(TCellID AElt);
 
-  template<> EXPORT_GMDS void Cell::remove<Node>(TCellID AElt);
-  template<> EXPORT_GMDS void Cell::remove<Edge>(TCellID AElt);
-  template<> EXPORT_GMDS void Cell::remove<Face>(TCellID AElt);
-  template<> EXPORT_GMDS void Cell::remove<Region>(TCellID AElt);
+  template<> GMDSIg_API void Cell::remove<Node>(TCellID AElt);
+  template<> GMDSIg_API void Cell::remove<Edge>(TCellID AElt);
+  template<> GMDSIg_API void Cell::remove<Face>(TCellID AElt);
+  template<> GMDSIg_API void Cell::remove<Region>(TCellID AElt);
 
-  template<> EXPORT_GMDS void Cell::replace<Node>(TCellID AID1, TCellID AID2);
-  template<> EXPORT_GMDS void Cell::replace<Edge>(TCellID AID1, TCellID AID2);
-  template<> EXPORT_GMDS void Cell::replace<Face>(TCellID AID1, TCellID AID2);
-  template<> EXPORT_GMDS void Cell::replace<Region>(TCellID AID1, TCellID AID2);
+  template<> GMDSIg_API void Cell::replace<Node>(TCellID AID1, TCellID AID2);
+  template<> GMDSIg_API void Cell::replace<Edge>(TCellID AID1, TCellID AID2);
+  template<> GMDSIg_API void Cell::replace<Face>(TCellID AID1, TCellID AID2);
+  template<> GMDSIg_API void Cell::replace<Region>(TCellID AID1, TCellID AID2);
 
   /*----------------------------------------------------------------------------*/
 } // namespace gmds

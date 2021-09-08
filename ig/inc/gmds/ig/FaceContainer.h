@@ -11,10 +11,10 @@
 /*----------------------------------------------------------------------------*/
 #include "Node.h"
 #include "Face.h"
+#include "GMDSIg_export.h"
 #include <gmds/utils/BitVector.h>
 #include <gmds/utils/IndexedVector.h>
 #include <gmds/utils/SmartVector.h>
-
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -24,7 +24,7 @@ namespace gmds{
  *
  *  \brief A face container manages the storage of faces for a mesh object
  */
-	class EXPORT_GMDS FaceContainer {
+	class GMDSIg_API FaceContainer {
 
 	public:
 
@@ -110,7 +110,7 @@ namespace gmds{
 		TCellID getMaxID()const {return m_face_ids.top()-1;}
 
 
-		class EXPORT_GMDS iterator {
+		class GMDSIg_API iterator {
 		public:
 
 

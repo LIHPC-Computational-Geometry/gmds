@@ -10,10 +10,11 @@
 // headers of GMDS files
 #include <gmds/io/IReader.h>
 #include <gmds/utils/CommonTypes.h>
+#include "GMDSIo_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 
-	class VTKReader : public IReader {
+	class GMDSIo_API VTKReader : public IReader {
 	public:
 
 

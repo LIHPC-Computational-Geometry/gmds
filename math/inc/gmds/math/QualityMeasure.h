@@ -14,6 +14,7 @@
 #include <gmds/math/Point.h>
 #include <gmds/math/Triangle.h>
 #include <gmds/utils/CommonTypes.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -22,7 +23,7 @@ namespace math {
 /** \class QualityMeasure
  *  \brief Defines a QualityMeasure
  **/
-class EXPORT_GMDS QualityMeasure
+class GMDSMath_API QualityMeasure
 {
 public:
         /*------------------------------------------------------------------------*/

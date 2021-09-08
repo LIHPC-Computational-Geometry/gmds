@@ -14,6 +14,7 @@
 #include <gmds/math/Matrix.h>
 #include <gmds/math/Vector.h>
 #include <gmds/math/Point.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 #include<cmath>
 #include<string.h>
@@ -45,7 +46,7 @@ namespace gmds {
                                         const Point& AP2,
                                         const Point& AP3);
         };
-        class TetrahedronP1{
+        class GMDSMath_API TetrahedronP1{
         public:
             static Matrix<4,4,double> stiffnessMatrix(const Point& AP1,
                                                       const Point& AP2,

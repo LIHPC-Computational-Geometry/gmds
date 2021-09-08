@@ -10,8 +10,9 @@
 #define SINGULARITYLINE_H_
 /*----------------------------------------------------------------------------*/
 #include <gmds/singGraphBuild/SingularityPoint.h>
+#include "LIB_GMDS_SINGGRAPHBUILD_export.h"
 /*----------------------------------------------------------------------------*/
-class EXPORT_GMDS SingularityLine
+class LIB_GMDS_SINGGRAPHBUILD_API SingularityLine
 {
  public:
 

@@ -9,6 +9,7 @@
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/cad/GeomMeshLinker.h>
 #include <gmds/cad/FACManager.h>
+#include "GMDSCad_export.h"
 /*----------------------------------------------------------------------------*/
 #ifndef GMDS_GEOMSMOOTHER_H
 #define GMDS_GEOMSMOOTHER_H
@@ -23,7 +24,7 @@ namespace gmds{
  *  	   contains query methods.
  */
 /*----------------------------------------------------------------------------*/
-        class EXPORT_GMDS GeomSmoother {
+        class GMDSCad_API GeomSmoother {
         public:
             GeomSmoother(GeomMeshLinker* ALinker);
             void smoothCurves(const int ANbIterations=1);

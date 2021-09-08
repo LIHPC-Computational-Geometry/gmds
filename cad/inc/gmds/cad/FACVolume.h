@@ -13,6 +13,7 @@
 /*----------------------------------------------------------------------------*/
 #include "gmds/cad/GeomVolume.h"
 #include "gmds/cad/FACSurface.h"
+#include "GMDSCad_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -24,7 +25,7 @@ namespace gmds{
  *  \param TCoord the data type used to store geometrical data
  */
 /*----------------------------------------------------------------------------*/
-        class EXPORT_GMDS FACVolume : public GeomVolume {
+        class GMDSCad_API FACVolume : public GeomVolume {
 
         public:
             /*------------------------------------------------------------------------*/

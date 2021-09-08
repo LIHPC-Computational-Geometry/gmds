@@ -21,6 +21,7 @@
 #include <gmds/ig/FaceContainer.h>
 #include <gmds/ig/RegionContainer.h>
 #include <gmds/ig/CellGroup.h>
+#include "GMDSIg_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
     /*------------------------------------------------------------------------*/
@@ -34,7 +35,7 @@ namespace gmds{
     *   \brief  this class represents meshes as general incidence graphs. It is
     *           possible to select the cells and connectivities.
     */
-    class EXPORT_GMDS Mesh
+    class GMDSIg_API Mesh
     {
         friend class IGMeshIOService;
     public:
@@ -131,21 +132,21 @@ namespace gmds{
          *
          * \param AID the id of the cell we look for
          */
-        template<typename T> EXPORT_GMDS T get(const TCellID& AID) const;
+        template<typename T> GMDSIg_API T get(const TCellID& AID) const;
 
         /*------------------------------------------------------------------------*/
         /** \brief provdes a STL vector containing all the T-type cells of the mesh
          *
          * \param AVec the vector of cells
          */
-        template<typename T> EXPORT_GMDS void getAll(std::vector<T>& AVec) const;
+        template<typename T> GMDSIg_API void getAll(std::vector<T>& AVec) const;
 
         /*------------------------------------------------------------------------*/
         /** \brief Tell if there is a T-type cell having id AID
          *
          * \param AID the id of the cell we look for
          */
-        template<typename T>  EXPORT_GMDS bool has(const TCellID& AID) const;
+        template<typename T>  GMDSIg_API bool has(const TCellID& AID) const;
 
         /*------------------------------------------------------------------------*/
         /** \brief Factory method to create a node
@@ -379,14 +380,14 @@ namespace gmds{
          *
          *  \return A mark number
          */
-        template<typename T> EXPORT_GMDS TInt newMark();
+        template<typename T> GMDSIg_API TInt newMark();
 
         /*------------------------------------------------------------------------*/
         /** \brief Get the marks of a cell
          *
          *  \return A mark
          */
-        template<typename T> EXPORT_GMDS Marks32 getMarks(const T& ACell) const;
+        template<typename T> GMDSIg_API Marks32 getMarks(const T& ACell) const;
 
         /*------------------------------------------------------------------------*/
         /** \brief  Free mark AMarkNumber which was previously reserved with
@@ -394,7 +395,7 @@ namespace gmds{
          *
          *  \param AMarkNumber  A mark number
          */
-        template<typename T> EXPORT_GMDS void freeMark(const TInt AMarkNumber);
+        template<typename T> GMDSIg_API void freeMark(const TInt AMarkNumber);
 
         /*------------------------------------------------------------------------*/
         /** \brief  Invert the mark value for all the cell in the mesh in O(1). This
@@ -403,7 +404,7 @@ namespace gmds{
          *
          *  \param AMarkNumber A mark number
          */
-        template<typename T> EXPORT_GMDS void negateMaskMark(const TInt AMarkNumber);
+        template<typename T> GMDSIg_API void negateMaskMark(const TInt AMarkNumber);
 
         /*------------------------------------------------------------------------*/
         /** \brief  Invert the mark value for all the cell in the mesh in O(n) where
@@ -412,7 +413,7 @@ namespace gmds{
          *
          *  \param AMarkNumber A mark number
          */
-        template<typename T> EXPORT_GMDS void unmarkAll(const TInt AMarkNumber);
+        template<typename T> GMDSIg_API void unmarkAll(const TInt AMarkNumber);
 
         /*------------------------------------------------------------------------*/
         /** \brief  Test if ACell is marked with mark AMarkNumber.
@@ -426,7 +427,7 @@ namespace gmds{
         bool isMarked(const Edge& ACell, int AMarkNumber) const;
         bool isMarked(const Face& ACell, int AMarkNumber) const;
         bool isMarked(const Region& ACell, int AMarkNumber) const;
-        template<typename T> EXPORT_GMDS bool isMarked(const TCellID& ACellID, int AMarkNumber) const;
+        template<typename T> GMDSIg_API bool isMarked(const TCellID& ACellID, int AMarkNumber) const;
 
         /*------------------------------------------------------------------------*/
         /** \brief  Update value of mark AMarkNumber for cell ACell.
@@ -439,7 +440,7 @@ namespace gmds{
         void markTo(const Edge& ACell, int AMarkNumber, bool AState);
         void markTo(const Face& ACell, int AMarkNumber, bool AState);
         void markTo(const Region& ACell, int AMarkNumber, bool AState);
-        template<typename T>  EXPORT_GMDS void markTo(const TCellID& ACellID, int AMarkNumber, bool AState);
+        template<typename T>  GMDSIg_API void markTo(const TCellID& ACellID, int AMarkNumber, bool AState);
 
         /*------------------------------------------------------------------------*/
         /** \brief  Mark cell ACell with mark AMarkNumber.
@@ -452,7 +453,7 @@ namespace gmds{
         void mark(const Edge& ACell, int AMarkNumber);
         void mark(const Face& ACell, int AMarkNumber);
         void mark(const Region& ACell, int AMarkNumber);
-        template<typename T> EXPORT_GMDS void mark(const TCellID& ACellID, int AMarkNumber);
+        template<typename T> GMDSIg_API void mark(const TCellID& ACellID, int AMarkNumber);
         /*------------------------------------------------------------------------*/
         /** \brief  Unmark cell ACell with mark AMarkNumber.
          * 			Equivalent to markTo(ADart, AMarkNumber, false).
@@ -464,7 +465,7 @@ namespace gmds{
         void unmark(const Edge& ACell, int AMarkNumber);
         void unmark(const Face& ACell, int AMarkNumber);
         void unmark(const Region& ACell, int AMarkNumber);
-        template<typename T> EXPORT_GMDS void unmark(const TCellID& ACellID, int AMarkNumber);
+        template<typename T> GMDSIg_API void unmark(const TCellID& ACellID, int AMarkNumber);
 
         /*------------------------------------------------------------------------*/
         /** \brief  Create a new variable attached to a generic cell type
@@ -477,7 +478,7 @@ namespace gmds{
          *
          *  \return A pointer on the variable
          */
-        template<typename T, ECellType E> EXPORT_GMDS Variable<T>* newVariable(const std::string& AName);
+        template<typename T, ECellType E> Variable<T>* newVariable(const std::string& AName);
 
         /*------------------------------------------------------------------------*/
         /** \brief  Returns whether the variable attached to a generic cell type
@@ -503,7 +504,7 @@ namespace gmds{
          *  \return A pointer on the variable. This pointer can be null if the
          *  		specified type is wrong
          */
-        template<typename T, ECellType E> EXPORT_GMDS Variable<T>* getVariable(const std::string& AName) const;
+        template<typename T, ECellType E> Variable<T>* getVariable(const std::string& AName) const;
 
         /*------------------------------------------------------------------------*/
         /** \brief  Access to variable attached to a generic cell type
@@ -517,7 +518,7 @@ namespace gmds{
          *  \return A pointer on the variable. This pointer can be null if the
          *  		specified type is wrong
          */
-        template<typename T, ECellType E> EXPORT_GMDS Variable<T>* getOrCreateVariable(const std::string& AName);
+        template<typename T, ECellType E> Variable<T>* getOrCreateVariable(const std::string& AName);
 
         /*------------------------------------------------------------------------*/
         /** \brief  Access to variable attached to a generic cell type
@@ -1349,118 +1350,118 @@ namespace gmds{
         return v;
     }
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS CellGroup<Node>* Mesh::newGroup<Node>(const std::string& AName);
-    template<> EXPORT_GMDS CellGroup<Edge>* Mesh::newGroup<Edge>(const std::string& AName);
-    template<> EXPORT_GMDS CellGroup<Face>* Mesh::newGroup<Face>(const std::string& AName);
-    template<> EXPORT_GMDS CellGroup<Region>* Mesh::newGroup<Region>(const std::string& AName);
+    template<> GMDSIg_API CellGroup<Node>* Mesh::newGroup<Node>(const std::string& AName);
+    template<> GMDSIg_API CellGroup<Edge>* Mesh::newGroup<Edge>(const std::string& AName);
+    template<> GMDSIg_API CellGroup<Face>* Mesh::newGroup<Face>(const std::string& AName);
+    template<> GMDSIg_API CellGroup<Region>* Mesh::newGroup<Region>(const std::string& AName);
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS void Mesh::deleteGroup<Node>(CellGroup<Node>* ACloud);
-    template<> EXPORT_GMDS void Mesh::deleteGroup<Edge>(CellGroup<Edge>* ACloud);
-    template<> EXPORT_GMDS void Mesh::deleteGroup<Face>(CellGroup<Face>* ACloud);
-    template<> EXPORT_GMDS void Mesh::deleteGroup<Region>(CellGroup<Region>* ACloud);
+    template<> GMDSIg_API void Mesh::deleteGroup<Node>(CellGroup<Node>* ACloud);
+    template<> GMDSIg_API void Mesh::deleteGroup<Edge>(CellGroup<Edge>* ACloud);
+    template<> GMDSIg_API void Mesh::deleteGroup<Face>(CellGroup<Face>* ACloud);
+    template<> GMDSIg_API void Mesh::deleteGroup<Region>(CellGroup<Region>* ACloud);
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS CellGroup<Node>* Mesh::getGroup<Node>(const std::string& AName);
-    template<> EXPORT_GMDS CellGroup<Edge>* Mesh::getGroup<Edge>(const std::string& AName);
-    template<> EXPORT_GMDS CellGroup<Face>* Mesh::getGroup<Face>(const std::string& AName);
-    template<> EXPORT_GMDS CellGroup<Region>* Mesh::getGroup<Region>(const std::string& AName);
+    template<> GMDSIg_API CellGroup<Node>* Mesh::getGroup<Node>(const std::string& AName);
+    template<> GMDSIg_API CellGroup<Edge>* Mesh::getGroup<Edge>(const std::string& AName);
+    template<> GMDSIg_API CellGroup<Face>* Mesh::getGroup<Face>(const std::string& AName);
+    template<> GMDSIg_API CellGroup<Region>* Mesh::getGroup<Region>(const std::string& AName);
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS CellGroup<Node>* Mesh::getGroup<Node>(const unsigned int AIndex);
-    template<> EXPORT_GMDS CellGroup<Edge>* Mesh::getGroup<Edge>(const unsigned int AIndex);
-    template<> EXPORT_GMDS CellGroup<Face>* Mesh::getGroup<Face>(const unsigned int AIndex);
-    template<> EXPORT_GMDS CellGroup<Region>* Mesh::getGroup<Region>(const unsigned int AIndex);
+    template<> GMDSIg_API CellGroup<Node>* Mesh::getGroup<Node>(const unsigned int AIndex);
+    template<> GMDSIg_API CellGroup<Edge>* Mesh::getGroup<Edge>(const unsigned int AIndex);
+    template<> GMDSIg_API CellGroup<Face>* Mesh::getGroup<Face>(const unsigned int AIndex);
+    template<> GMDSIg_API CellGroup<Region>* Mesh::getGroup<Region>(const unsigned int AIndex);
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS unsigned int Mesh::getNbGroups<Node>() const;
-    template<> EXPORT_GMDS unsigned int Mesh::getNbGroups<Edge>() const;
-    template<> EXPORT_GMDS unsigned int Mesh::getNbGroups<Face>() const;
-    template<> EXPORT_GMDS unsigned int Mesh::getNbGroups<Region>() const;
+    template<> GMDSIg_API unsigned int Mesh::getNbGroups<Node>() const;
+    template<> GMDSIg_API unsigned int Mesh::getNbGroups<Edge>() const;
+    template<> GMDSIg_API unsigned int Mesh::getNbGroups<Face>() const;
+    template<> GMDSIg_API unsigned int Mesh::getNbGroups<Region>() const;
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS Mesh::group_iterator<Node> Mesh::groups_begin<Node>();
-    template<> EXPORT_GMDS Mesh::group_iterator<Edge> Mesh::groups_begin<Edge>();
-    template<> EXPORT_GMDS Mesh::group_iterator<Face> Mesh::groups_begin<Face>();
-    template<> EXPORT_GMDS Mesh::group_iterator<Region> Mesh::groups_begin<Region>();
+    template<> GMDSIg_API Mesh::group_iterator<Node> Mesh::groups_begin<Node>();
+    template<> GMDSIg_API Mesh::group_iterator<Edge> Mesh::groups_begin<Edge>();
+    template<> GMDSIg_API Mesh::group_iterator<Face> Mesh::groups_begin<Face>();
+    template<> GMDSIg_API Mesh::group_iterator<Region> Mesh::groups_begin<Region>();
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS Mesh::group_iterator<Node> Mesh::groups_end<Node>();
-    template<> EXPORT_GMDS Mesh::group_iterator<Edge> Mesh::groups_end<Edge>();
-    template<> EXPORT_GMDS Mesh::group_iterator<Face> Mesh::groups_end<Face>();
-    template<> EXPORT_GMDS Mesh::group_iterator<Region> Mesh::groups_end<Region>();
+    template<> GMDSIg_API Mesh::group_iterator<Node> Mesh::groups_end<Node>();
+    template<> GMDSIg_API Mesh::group_iterator<Edge> Mesh::groups_end<Edge>();
+    template<> GMDSIg_API Mesh::group_iterator<Face> Mesh::groups_end<Face>();
+    template<> GMDSIg_API Mesh::group_iterator<Region> Mesh::groups_end<Region>();
 
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS void Mesh::getAll<Node>(std::vector<Node>& AVec) const;
+    template<> GMDSIg_API void Mesh::getAll<Node>(std::vector<Node>& AVec) const;
 
-    template<> EXPORT_GMDS void Mesh::getAll<Edge>(std::vector<Edge>& AVec) const;
+    template<> GMDSIg_API void Mesh::getAll<Edge>(std::vector<Edge>& AVec) const;
 
-    template<> EXPORT_GMDS void Mesh::getAll<Face>(std::vector<Face>& AVec) const;
+    template<> GMDSIg_API void Mesh::getAll<Face>(std::vector<Face>& AVec) const;
 
-    template<> EXPORT_GMDS void Mesh::getAll<Region>(std::vector<Region>& AVec) const;
-
-    /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS bool Mesh::has<Node>(const TCellID& AID) const;
-    template<> EXPORT_GMDS bool Mesh::has<Edge>(const TCellID& AID) const;
-    template<> EXPORT_GMDS bool Mesh::has<Face>(const TCellID& AID) const;
-    template<> EXPORT_GMDS bool Mesh::has<Region>(const TCellID& AID) const;
-    /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS Node Mesh::get<Node>(const TCellID& AID) const;
-    template<> EXPORT_GMDS Edge Mesh::get<Edge>(const TCellID& AID) const;
-    template<> EXPORT_GMDS Face Mesh::get<Face>(const TCellID& AID) const;
-    template<> EXPORT_GMDS Region Mesh::get<Region>(const TCellID& AID) const;
+    template<> GMDSIg_API void Mesh::getAll<Region>(std::vector<Region>& AVec) const;
 
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS void Mesh::freeMark<Node>(int AMarkNumber);
-    template<> EXPORT_GMDS void Mesh::freeMark<Edge>(int AMarkNumber);
-    template<> EXPORT_GMDS void Mesh::freeMark<Face>(int AMarkNumber);
-    template<> EXPORT_GMDS void Mesh::freeMark<Region>(int AMarkNumber);
+    template<> GMDSIg_API bool Mesh::has<Node>(const TCellID& AID) const;
+    template<> GMDSIg_API bool Mesh::has<Edge>(const TCellID& AID) const;
+    template<> GMDSIg_API bool Mesh::has<Face>(const TCellID& AID) const;
+    template<> GMDSIg_API bool Mesh::has<Region>(const TCellID& AID) const;
+    /*----------------------------------------------------------------------------*/
+    template<> GMDSIg_API Node Mesh::get<Node>(const TCellID& AID) const;
+    template<> GMDSIg_API Edge Mesh::get<Edge>(const TCellID& AID) const;
+    template<> GMDSIg_API Face Mesh::get<Face>(const TCellID& AID) const;
+    template<> GMDSIg_API Region Mesh::get<Region>(const TCellID& AID) const;
 
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS void Mesh::unmarkAll<Node>(const TInt AMarkNumber);
-    template<> EXPORT_GMDS void Mesh::unmarkAll<Edge>(const TInt AMarkNumber);
-    template<> EXPORT_GMDS void Mesh::unmarkAll<Face>(const TInt AMarkNumber);
-    template<> EXPORT_GMDS void Mesh::unmarkAll<Region>(const TInt AMarkNumber);
+    template<> GMDSIg_API void Mesh::freeMark<Node>(int AMarkNumber);
+    template<> GMDSIg_API void Mesh::freeMark<Edge>(int AMarkNumber);
+    template<> GMDSIg_API void Mesh::freeMark<Face>(int AMarkNumber);
+    template<> GMDSIg_API void Mesh::freeMark<Region>(int AMarkNumber);
 
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS void Mesh::unmark<Node>(const TCellID& ACellID, int AMarkNumber);
-    template<> EXPORT_GMDS void Mesh::unmark<Edge>(const TCellID& ACellID, int AMarkNumber);
-    template<> EXPORT_GMDS void Mesh::unmark<Face>(const TCellID& ACellID, int AMarkNumber);
-    template<> EXPORT_GMDS void Mesh::unmark<Region>(const TCellID& ACellID, int AMarkNumber);
+    template<> GMDSIg_API void Mesh::unmarkAll<Node>(const TInt AMarkNumber);
+    template<> GMDSIg_API void Mesh::unmarkAll<Edge>(const TInt AMarkNumber);
+    template<> GMDSIg_API void Mesh::unmarkAll<Face>(const TInt AMarkNumber);
+    template<> GMDSIg_API void Mesh::unmarkAll<Region>(const TInt AMarkNumber);
 
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS void Mesh::mark<Node>(const TCellID& ACellID, int AMarkNumber);
-    template<> EXPORT_GMDS void Mesh::mark<Edge>(const TCellID& ACellID, int AMarkNumber);
-    template<> EXPORT_GMDS void Mesh::mark<Face>(const TCellID& ACellID, int AMarkNumber);
-    template<> EXPORT_GMDS void Mesh::mark<Region>(const TCellID& ACellID, int AMarkNumber);
+    template<> GMDSIg_API void Mesh::unmark<Node>(const TCellID& ACellID, int AMarkNumber);
+    template<> GMDSIg_API void Mesh::unmark<Edge>(const TCellID& ACellID, int AMarkNumber);
+    template<> GMDSIg_API void Mesh::unmark<Face>(const TCellID& ACellID, int AMarkNumber);
+    template<> GMDSIg_API void Mesh::unmark<Region>(const TCellID& ACellID, int AMarkNumber);
+
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS void Mesh::
+    template<> GMDSIg_API void Mesh::mark<Node>(const TCellID& ACellID, int AMarkNumber);
+    template<> GMDSIg_API void Mesh::mark<Edge>(const TCellID& ACellID, int AMarkNumber);
+    template<> GMDSIg_API void Mesh::mark<Face>(const TCellID& ACellID, int AMarkNumber);
+    template<> GMDSIg_API void Mesh::mark<Region>(const TCellID& ACellID, int AMarkNumber);
+    /*----------------------------------------------------------------------------*/
+    template<> GMDSIg_API void Mesh::
     markTo<Node>(const TCellID& ACellID, int AMarkNumber, bool AState);
-    template<> EXPORT_GMDS void Mesh::
+    template<> GMDSIg_API void Mesh::
     markTo<Edge>(const TCellID& ACellID, int AMarkNumber, bool AState);
-    template<> EXPORT_GMDS void Mesh::
+    template<> GMDSIg_API void Mesh::
     markTo<Face>(const TCellID& ACellID, int AMarkNumber, bool AState);
-    template<> EXPORT_GMDS void Mesh::
+    template<> GMDSIg_API void Mesh::
     markTo<Region>(const TCellID& ACellID, int AMarkNumber, bool AState);
 
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS
+    template<> GMDSIg_API
     bool Mesh::isMarked<Node>(const TCellID& ACellID, int AMarkNumber) const;
-    template<> EXPORT_GMDS
+    template<> GMDSIg_API
     bool Mesh::isMarked<Edge>(const TCellID& ACellID, int AMarkNumber) const;
-    template<> EXPORT_GMDS
+    template<> GMDSIg_API
     bool Mesh::isMarked<Face>(const TCellID& ACellID, int AMarkNumber) const;
-    template<> EXPORT_GMDS
+    template<> GMDSIg_API
     bool Mesh::isMarked<Region>(const TCellID& ACellID, int AMarkNumber) const;
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS void Mesh::negateMaskMark<Node>(const TInt AMarkNumber);
-    template<> EXPORT_GMDS void Mesh::negateMaskMark<Edge>(const TInt AMarkNumber);
-    template<> EXPORT_GMDS void Mesh::negateMaskMark<Face>(const TInt AMarkNumber);
-    template<> EXPORT_GMDS void Mesh::negateMaskMark<Region>(const TInt AMarkNumber);
+    template<> GMDSIg_API void Mesh::negateMaskMark<Node>(const TInt AMarkNumber);
+    template<> GMDSIg_API void Mesh::negateMaskMark<Edge>(const TInt AMarkNumber);
+    template<> GMDSIg_API void Mesh::negateMaskMark<Face>(const TInt AMarkNumber);
+    template<> GMDSIg_API void Mesh::negateMaskMark<Region>(const TInt AMarkNumber);
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS TInt Mesh::newMark<Node>();
-    template<> EXPORT_GMDS TInt Mesh::newMark<Edge>();
-    template<> EXPORT_GMDS TInt Mesh::newMark<Face>();
-    template<> EXPORT_GMDS TInt Mesh::newMark<Region>();
+    template<> GMDSIg_API TInt Mesh::newMark<Node>();
+    template<> GMDSIg_API TInt Mesh::newMark<Edge>();
+    template<> GMDSIg_API TInt Mesh::newMark<Face>();
+    template<> GMDSIg_API TInt Mesh::newMark<Region>();
     /*----------------------------------------------------------------------------*/
-    template<> EXPORT_GMDS Marks32 Mesh::getMarks<Node>(const Node& ACell) const;
-    template<> EXPORT_GMDS Marks32 Mesh::getMarks<Edge>(const Edge& ACell) const;
-    template<> EXPORT_GMDS Marks32 Mesh::getMarks<Face>(const Face& ACell) const;
-    template<> EXPORT_GMDS Marks32 Mesh::getMarks<Region>(const Region& ACell) const;
+    template<> GMDSIg_API Marks32 Mesh::getMarks<Node>(const Node& ACell) const;
+    template<> GMDSIg_API Marks32 Mesh::getMarks<Edge>(const Edge& ACell) const;
+    template<> GMDSIg_API Marks32 Mesh::getMarks<Face>(const Face& ACell) const;
+    template<> GMDSIg_API Marks32 Mesh::getMarks<Region>(const Region& ACell) const;
     /*----------------------------------------------------------------------------*/
 } // namespace gmds
 /*----------------------------------------------------------------------------*/

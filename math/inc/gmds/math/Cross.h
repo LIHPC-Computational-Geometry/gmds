@@ -11,6 +11,7 @@
 #include <gmds/math/Vector.h>
 #include <gmds/math/Quaternion.h>
 #include <cmath>
+#include "GMDSMath_export.h"
 /*-----------------------------------------------------------------*/
 #include <iostream>
 /*-----------------------------------------------------------------*/
@@ -18,7 +19,7 @@ using namespace std;
 namespace gmds {
   namespace math {
     /*-----------------------------------------------------------------*/
-    class EXPORT_GMDS Cross
+    class GMDSMath_API Cross
     {
     private:
       /// A cross is represented by two orthogonal vectors. 
@@ -73,7 +74,7 @@ namespace gmds {
     };
 
 
-    EXPORT_GMDS ostream & operator << (ostream & op_g, const Cross & op_d);
+    GMDSMath_API ostream & operator << (ostream & op_g, const Cross & op_d);
   }
   /*-----------------------------------------------------------------*/
 }

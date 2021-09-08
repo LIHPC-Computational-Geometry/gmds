@@ -11,6 +11,7 @@
 #include <gmds/math/Matrix.h>
 #include <gmds/math/Chart.h>
 #include <gmds/math/AxisAngleRotation.h>
+#include "GMDSMath_export.h"
 /*------------------------------------------------------------------------*/
 // STL Headers
 #include <iostream>
@@ -185,7 +186,7 @@ namespace gmds{
          *  \brief Represents a 3D SHarmonicL4 as a function on the 3D sphere
          *         in hthe L4 spherical harmonics basis.
          */
-        class EXPORT_GMDS SHarmonicL4: public Vector9d{
+        class GMDSMath_API SHarmonicL4: public Vector9d{
             
         public:
             /*------------------------------------------------------------*/

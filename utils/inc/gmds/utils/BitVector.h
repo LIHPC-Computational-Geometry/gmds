@@ -14,10 +14,11 @@
 #include <cassert>
 /*----------------------------------------------------------------------------*/
 #include "CommonTypes.h"
+#include "GMDSUtils_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 
-    class BitVector
+    class GMDSUtils_API BitVector
     {
     public:
 

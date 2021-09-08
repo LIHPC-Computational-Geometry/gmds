@@ -6,6 +6,7 @@ set(GMDS_LIB ${LIB_GMDS_FRAME_3D})
 set(GMDS_LIB_PREFIX gmds/frame3d)
 
 set(GMDS_INC
+        ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/frame3d/PGPComputing.h
         inc/gmds/frame3d/PGPStructPointExtraction.h
         inc/gmds/frame3d/EigenFieldSolverStrategy.h
@@ -32,6 +33,11 @@ set(GMDS_SRC
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
+include(GenerateExportHeader)
+generate_export_header(${GMDS_LIB} 
+    EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
+    EXPORT_MACRO_NAME ${GMDS_LIB}_API)
+#==============================================================================
 # TARGET DEFINITION
 #==============================================================================
 include(GNUInstallDirs)
@@ -55,7 +61,8 @@ install(TARGETS ${GMDS_LIB}
         EXPORT GMDS_SUITE
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${GMDS_LIB_PREFIX}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 #==============================================================================
 if(WITH_TEST)
     add_subdirectory(tst)

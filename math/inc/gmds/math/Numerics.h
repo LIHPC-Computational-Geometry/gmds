@@ -13,29 +13,30 @@
 #include <gmds/math/Constants.h>
 #include <gmds/math/Point.h>
 #include <gmds/math/Matrix.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
   /*----------------------------------------------------------------------------*/
   namespace math{
       /*----------------------------------------------------------------------------*/
-      bool EXPORT_GMDS isZero(const TCoord a, const TCoord AEpsilon = Constants::EPSILON);
+      bool GMDSMath_API isZero(const TCoord a, const TCoord AEpsilon = Constants::EPSILON);
 	 
 	  bool isZero2ndMethod(const TCoord a);
 
-      bool EXPORT_GMDS areEquals(const TCoord a, const TCoord b, const TCoord AEpsilon = Constants::EPSILON);
+      bool GMDSMath_API areEquals(const TCoord a, const TCoord b, const TCoord AEpsilon = Constants::EPSILON);
 
     /*------------------------------------------------------------------------*/
     /** \brief Compute AVal modulo AMod
      */
-    TCoord modulo(const TCoord AVal, const TCoord AMod);
+    TCoord GMDSMath_API modulo(const TCoord AVal, const TCoord AMod);
     /*------------------------------------------------------------------------*/
     /** \brief Compute AVal modulo 2xPI
      */
-    TCoord modulo2PI(const TCoord AVal); 
+    TCoord GMDSMath_API modulo2PI(const TCoord AVal);
     /*------------------------------------------------------------------------*/
     /** \brief Returns the min value between AV1, AV2 and AV3
      */
-    TCoord min3(const TCoord AV1, const TCoord AV2, const TCoord AV3);
+    TCoord GMDSMath_API min3(const TCoord AV1, const TCoord AV2, const TCoord AV3);
     /*------------------------------------------------------------------------*/
     /** \brief Returns the max value between AV1, AV2 and AV3
      */
@@ -67,7 +68,7 @@ namespace gmds{
     /*------------------------------------------------------------------------*/
     /** \brief Returns true if AV1==AV2 [AEpsilon]
      */
-    bool near(const TCoord AV1, TCoord AV2, const TCoord AEpsilon = Constants::EPSILON);
+    bool GMDSMath_API near(const TCoord AV1, TCoord AV2, const TCoord AEpsilon = Constants::EPSILON);
 
       /*------------------------------------------------------------------------*/
       /** \brief Returns the stiffness matrix for the triangle elment defined by
@@ -81,7 +82,7 @@ namespace gmds{
        *
        * \return A 3x3 the stiffness matrix of (AP1,AP2,AP3)
        */
-      Matrix<3,3,double> stiffnessMatrix2D(const Point& AP1,
+	  GMDSMath_API Matrix<3,3,double> stiffnessMatrix2D(const Point& AP1,
                                            const Point& AP2,
                                            const Point& AP3);
       
@@ -108,7 +109,7 @@ namespace gmds{
        *
        * \return the number of real solutions (0, 1 or 2)
        */
-      int solve2ndDegreePolynomial( const double& AA,
+	  GMDSMath_API int solve2ndDegreePolynomial( const double& AA,
                                    const double& AB,
                                    const double& AC,
                                    std::vector<double>& AX);

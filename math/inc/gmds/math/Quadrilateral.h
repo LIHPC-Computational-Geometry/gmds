@@ -14,6 +14,7 @@
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/math/Point.h>
 #include <gmds/math/Matrix.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -23,7 +24,7 @@ namespace math{
  *  \brief Defines a quadrilateral
  */
 /*----------------------------------------------------------------------------*/
-	class EXPORT_GMDS Quadrilateral
+	class GMDSMath_API Quadrilateral
 {
 
 public:

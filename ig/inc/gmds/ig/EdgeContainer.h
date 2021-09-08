@@ -15,12 +15,13 @@
 #include "Node.h"
 #include "Edge.h"
 #include "Face.h"
+#include "GMDSIg_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
     class Mesh;
 /*----------------------------------------------------------------------------*/
-    class EXPORT_GMDS EdgeContainer {
+    class GMDSIg_API EdgeContainer {
 
         friend class Node;
         friend class Edge;
@@ -73,7 +74,7 @@ namespace gmds{
         TInt getNbElements() const {return m_edge_ids.size();}
         TCellID getMaxID()   const {return m_edge_ids.top()-1;}
 
-        class EXPORT_GMDS iterator {
+        class iterator {
         public:
 
 

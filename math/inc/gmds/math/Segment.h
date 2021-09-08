@@ -13,6 +13,7 @@
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/math/Point.h>
 #include <gmds/math/Vector.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -24,7 +25,7 @@ class Plane;
  *  \brief class implementing a geometrical segment
  */
 /*----------------------------------------------------------------------------*/
-class EXPORT_GMDS Segment
+class GMDSMath_API Segment
 {
 	private:
 
@@ -224,7 +225,7 @@ class EXPORT_GMDS Segment
 	/*------------------------------------------------------------------------*/
         /** \brief  Overloaded operator<< for output
          */
-        friend EXPORT_GMDS std::ostream& operator<<(std::ostream&, const Segment&);
+        friend GMDSMath_API std::ostream& operator<<(std::ostream&, const Segment&);
 };
 /*----------------------------------------------------------------------------*/
 } // namespace math

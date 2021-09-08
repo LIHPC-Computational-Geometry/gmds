@@ -27,11 +27,11 @@ namespace gmds {
      *
      *  \param[in] AMode the assertion mode
      */
-    void EXPORT_GMDS setAssertMode(AssertionMode AMode);
+    void GMDSUtils_API setAssertMode(AssertionMode AMode);
     /*------------------------------------------------------------------------*/
     /** \brief Returns the current assertion mode
      */
-    AssertionMode EXPORT_GMDS getAssertMode();
+    AssertionMode GMDSUtils_API getAssertMode();
 
     /*------------------------------------------------------------------------*/
     /**
@@ -43,7 +43,7 @@ namespace gmds {
      * \param[in] AFileName  Name of the file where the assertion is raised
      * \param[in] ALineNum   Number Line where the assertion is raised
      */
-    void EXPORT_GMDS assertFailed(const std::string& ACondition,
+    void GMDSUtils_API assertFailed(const std::string& ACondition,
                                   const std::string& AFileName,
                                   int ALineNum);
     
@@ -58,7 +58,7 @@ namespace gmds {
      * \param[in] AFileName Name of the file where the assertion is raised
      * \param[in] ALineNum  Number Line where the assertion is raised     
      */
-    void EXPORT_GMDS assertRangeFailed(const double& AVal,
+    void GMDSUtils_API assertRangeFailed(const double& AVal,
                                        const double& AMin,
                                        const double& AMax,
                                        const std::string& AFileName,

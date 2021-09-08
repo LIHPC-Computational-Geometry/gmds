@@ -29,9 +29,11 @@ BezierTriangle::BezierTriangle(const Point &AP1, const Point &AP2, const Point &
                                const Vector3d &AN2, const Vector3d &AN3) {}
 /*----------------------------------------------------------------------------*/
 Point BezierTriangle::operator()(const double AU, const double AV) const {
+	return Point();
 }
 /*----------------------------------------------------------------------------*/
 Vector3d BezierTriangle::normal(const double AU, const double AV) const {
+	return Vector3d();
 }
 /*----------------------------------------------------------------------------*/
 void BezierTriangle::geomInfo(const double AU, const double AV, Point &AP, Vector3d &AN, Vector3d &ADU,

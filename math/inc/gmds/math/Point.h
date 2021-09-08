@@ -11,6 +11,7 @@
 /*----------------------------------------------------------------------------*/
 // gmds file headers
 #include <gmds/utils/CommonTypes.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
     /*----------------------------------------------------------------------------*/
@@ -20,7 +21,7 @@ namespace gmds{
          *  \brief Defines a 3D point
          */
         /*----------------------------------------------------------------------------*/
-        class EXPORT_GMDS Point
+        class GMDSMath_API Point
         {
             
         public:
@@ -125,22 +126,22 @@ namespace gmds{
             /*------------------------------------------------------------------------*/
             /** \brief  Overloaded operator+ to create a new point from 2 points
              */
-            friend EXPORT_GMDS Point operator+(const Point&, const Point&);
+            friend GMDSMath_API Point operator+(const Point&, const Point&);
             
             /*------------------------------------------------------------------------*/
             /** \brief  Overloaded operator- to create a new point from 2 points
              */
-            friend EXPORT_GMDS Point operator-(const Point&, const Point&);
+            friend GMDSMath_API Point operator-(const Point&, const Point&);
             
             /*------------------------------------------------------------------------*/
             /** \brief  Overloaded operator* to create a new point
              */
-            friend EXPORT_GMDS Point operator*(const TCoord&, const Point&);
-            friend EXPORT_GMDS Point operator*(const Point&, const TCoord&);
+            friend GMDSMath_API Point operator*(const TCoord&, const Point&);
+            friend GMDSMath_API Point operator*(const Point&, const TCoord&);
             /*------------------------------------------------------------------------*/
             /** \brief  Overloaded operator<< for output
              */
-            friend EXPORT_GMDS std::ostream& operator<<(std::ostream&, const Point&);
+            friend GMDSMath_API std::ostream& operator<<(std::ostream&, const Point&);
             
             static void computeBarycentric(const math::Point& AT1,
                                            const math::Point& AT2,

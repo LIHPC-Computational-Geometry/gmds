@@ -14,6 +14,7 @@
 #include <gmds/math/Matrix.h>
 #include <gmds/math/Quaternion.h>
 #include <gmds/math/Chart.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 #include<cmath>
 #include<string.h>
@@ -25,7 +26,7 @@ namespace gmds{
         /** \class Vector
          *  \brief Defines a 3D Vector
          */
-        class EXPORT_GMDS AxisAngleRotation {
+        class GMDSMath_API AxisAngleRotation {
         public:
             
             /*---------------------------------------------------------------*/
@@ -138,9 +139,9 @@ namespace gmds{
             Vector3d m_axis;
         };
         
-        Vector3d operator*(const AxisAngleRotation& AR,
+        GMDSMath_API Vector3d operator*(const AxisAngleRotation& AR,
                            const Vector3d &AV);
-        AxisAngleRotation operator*(const AxisAngleRotation& AR0,
+		GMDSMath_API AxisAngleRotation operator*(const AxisAngleRotation& AR0,
                                     const AxisAngleRotation& AR1);
         /*----------------------------------------------------------------------------*/
     } // namespace math

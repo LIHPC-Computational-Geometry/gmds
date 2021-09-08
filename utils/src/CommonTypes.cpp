@@ -101,6 +101,12 @@ std::ostream& operator<<(std::ostream& stream, const MeshModel& model) {
 
 	return stream;
 }
+template<int N>
+std::ostream & operator << (std::ostream & AStream, const TabCellID<N> & ATab) {
+	for (int i = 0; i < ATab.size(); i++)
+		AStream << ATab[i] << " ";
+	return AStream;
+}
 /*----------------------------------------------------------------------------*/
 } // namespace gmds
 /*----------------------------------------------------------------------------*/

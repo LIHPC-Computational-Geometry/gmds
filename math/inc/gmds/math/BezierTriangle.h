@@ -15,6 +15,7 @@
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/math/Point.h>
 #include <gmds/math/Vector.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
     /*--------------------------------------------------------------------------*/
@@ -24,7 +25,7 @@ namespace gmds {
          *  \brief Defines a Bezier curve in 3D. Underlying computations are based
          *         on the simple de Casteljau algorithm
          */
-        class EXPORT_GMDS BezierTriangle {
+        class GMDSMath_API BezierTriangle {
 
 
         public:

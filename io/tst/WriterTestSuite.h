@@ -99,7 +99,7 @@ TEST(MeshClass, testWriterVTK_NR)
 
     gmds::Variable<gmds::math::Vector3d>* v_nv = m.newVariable<gmds::math::Vector3d,gmds::GMDS_NODE>("val_vec");
     gmds::Variable<gmds::math::Vector3d>* v_fv = m.newVariable<gmds::math::Vector3d,gmds::GMDS_REGION>("val_vec");
-    int nb_nodes = 5;
+    const int nb_nodes = 5;
     gmds::TCellID n[nb_nodes][nb_nodes][nb_nodes];
     for(auto i=0;i<nb_nodes;i++) {
         for (auto j = 0; j < nb_nodes; j++) {

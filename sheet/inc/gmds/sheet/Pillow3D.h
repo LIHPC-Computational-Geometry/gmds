@@ -3,6 +3,7 @@
 #define GMDS_PILLOW3D_H
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
+#include "GMDSSheet_export.h"
 /*----------------------------------------------------------------------------*/
 #include <map>
 #include <vector>
@@ -17,7 +18,7 @@ namespace gmds{
      *          The mesh that is transformed must have R and N and the R2N
      *          fields. Geometric classification is not handled yet.
      */
-    class EXPORT_GMDS Pillow3D
+    class GMDSSheet_API Pillow3D
     {
     public:
 

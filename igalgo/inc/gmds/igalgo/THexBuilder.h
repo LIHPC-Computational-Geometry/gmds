@@ -3,6 +3,7 @@
 #define GMDS_THEXBUILDER_H
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
+#include "GMDSIgAlgo_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 
@@ -15,7 +16,7 @@ namespace gmds{
      *          fields
      *          Geometric classification is not handled yet.
      */
-    class EXPORT_GMDS THexBuilder
+    class GMDSIgAlgo_API THexBuilder
     {
     public:
 

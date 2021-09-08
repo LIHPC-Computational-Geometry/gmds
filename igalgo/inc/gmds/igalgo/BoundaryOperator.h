@@ -3,6 +3,7 @@
 #define GMDS_BOUNDARY_OPERATOR_H_
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
+#include "GMDSIgAlgo_export.h"
 /*----------------------------------------------------------------------------*/
 #include <vector>
 #include <map>
@@ -14,7 +15,7 @@ namespace gmds{
      *  @brief  Class gathering operations used to get and mark the cells that
      belongs to the boundary of a 2D, 3D mesh
      */
-    class EXPORT_GMDS BoundaryOperator
+    class GMDSIgAlgo_API BoundaryOperator
     {
     public:
 

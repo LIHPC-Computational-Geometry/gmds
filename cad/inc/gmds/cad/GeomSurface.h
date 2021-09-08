@@ -12,6 +12,7 @@
 #include "gmds/utils/Exception.h"
 #include "gmds/utils/CommonTypes.h"
 #include "gmds/cad/GeomEntity.h"
+#include "GMDSCad_export.h"
 #include "gmds/math/Point.h"
 #include "gmds/math/Vector.h"
 /*----------------------------------------------------------------------------*/
@@ -28,7 +29,7 @@ namespace gmds{
  *  	   contains query methods.
  */
 /*----------------------------------------------------------------------------*/
-        class EXPORT_GMDS GeomSurface : public GeomEntity {
+        class GMDSCad_API GeomSurface : public GeomEntity {
 
         public:
 

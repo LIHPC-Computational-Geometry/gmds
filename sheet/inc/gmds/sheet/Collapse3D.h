@@ -3,6 +3,7 @@
 #define GMDS_SHEET_COLLAPSE_3D_H
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
+#include "GMDSSheet_export.h"
 /*----------------------------------------------------------------------------*/
 #include <map>
 #include <vector>
@@ -16,7 +17,7 @@ namespace gmds{
      *
      *          The mesh we work on  must have R and N and the R2N fields
      */
-    class EXPORT_GMDS Collapse3D
+    class GMDSSheet_API Collapse3D
     {
     public:
 

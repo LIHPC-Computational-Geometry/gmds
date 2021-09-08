@@ -4,7 +4,6 @@
 
 /*----------------------------------------------------------------------------*/
 #include <cstdlib>
-#include <dirent.h>
 #include <gtest/gtest.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -14,7 +13,11 @@
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/frame/CrossFieldGeneration2D.h>
 #include <iostream>
-
+#ifdef _WIN32
+#include <io.h>
+#else
+#include <dirent.h>
+#endif // _WIN32
 #include <unit_test_config.h>
 /*----------------------------------------------------------------------------*/
 TEST(Frame2dTestClass, test1)

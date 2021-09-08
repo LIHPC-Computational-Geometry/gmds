@@ -10,6 +10,7 @@
 #include <string>
 /*----------------------------------------------------------------------------*/
 #include "gmds/services/AbstractService.h"
+#include "GMDSServices_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 
@@ -20,7 +21,7 @@ namespace gmds {
      *        class
      *
      */
-    class AbstractData {
+    class GMDSServices_API AbstractData {
 
 
     public:

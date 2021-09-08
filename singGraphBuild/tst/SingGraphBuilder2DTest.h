@@ -14,7 +14,9 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 typedef std::chrono::high_resolution_clock Clock;
 /*----------------------------------------------------------------------------*/
 using namespace gmds;

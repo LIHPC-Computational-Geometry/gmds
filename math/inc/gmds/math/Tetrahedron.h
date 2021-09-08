@@ -16,6 +16,7 @@
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/math/Point.h>
 #include <gmds/math/Matrix.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -27,7 +28,7 @@ class Triangle;
  *  \brief Defines a tetrahedron
  */
 /*----------------------------------------------------------------------------*/
-	class EXPORT_GMDS Tetrahedron
+	class GMDSMath_API Tetrahedron
 {
 
 public:

@@ -1,5 +1,5 @@
 #==============================================================================
-add_library(Predicates_psm
+add_library(Predicates_psm STATIC
         Predicates_psm.h
         Predicates_psm.cpp)
 #==============================================================================

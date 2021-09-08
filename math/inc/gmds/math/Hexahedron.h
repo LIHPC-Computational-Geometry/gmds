@@ -17,6 +17,7 @@
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/math/Point.h>
 #include <gmds/math/Matrix.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -28,7 +29,7 @@ class Triangle;
  *  \brief Defines a hexahedron
  */
 /*----------------------------------------------------------------------------*/
-	class EXPORT_GMDS Hexahedron
+	class GMDSMath_API Hexahedron
 {
         typedef enum {
             BOTTOM,

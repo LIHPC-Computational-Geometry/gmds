@@ -10,6 +10,7 @@
 #define GMDS_FACE_H_
 /*----------------------------------------------------------------------------*/
 #include "Cell.h"
+#include "GMDSIg_export.h"
 #include <gmds/math/Vector.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds{
@@ -23,7 +24,7 @@ namespace gmds{
 	 *  	   the data representing a mesh face.
 	 *
 	 */
-	class EXPORT_GMDS Face : public Cell{
+	class GMDSIg_API Face : public Cell{
 	public:
 
 		/*------------------------------------------------------------------------*/
@@ -184,7 +185,7 @@ namespace gmds{
 		virtual void delegateGetAll(std::vector<Face>&   ACells) const;
 		virtual void delegateGetAll(std::vector<Region>& ACells) const;
 
-	virtual void delegateGetAllNodeIDs  (std::vector<TCellID>& ACells) const;
+		virtual void delegateGetAllNodeIDs  (std::vector<TCellID>& ACells) const;
         virtual void delegateGetAllEdgeIDs  (std::vector<TCellID>& ACells) const;
         virtual void delegateGetAllFaceIDs  (std::vector<TCellID>& ACells) const;
         virtual void delegateGetAllRegionIDs(std::vector<TCellID>& ACells) const;
@@ -209,7 +210,7 @@ namespace gmds{
 		virtual void delegateFaceReplace(TCellID AID1, TCellID AID2);
 		virtual void delegateRegionReplace(TCellID AID1, TCellID AID2);
 
-		friend std::ostream & operator << (std::ostream & AStream, const Face& AN);
+		GMDSIg_API friend std::ostream & operator << (std::ostream & AStream, const Face& AN);
 
 	protected:
 

@@ -9,10 +9,11 @@
 /*----------------------------------------------------------------------------*/
 // headers of GMDS files
 #include <gmds/io/IReader.h>
+#include "GMDSIo_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 
-	class MeditReader : public IReader{
+	class GMDSIo_API MeditReader : public IReader{
 	public:
 
 

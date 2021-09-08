@@ -15,6 +15,7 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/math/Point.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -26,7 +27,7 @@ class Triangle;
  *  \brief Defines a pyramid
  */
 /*----------------------------------------------------------------------------*/
-	class EXPORT_GMDS Pyramid
+	class GMDSMath_API Pyramid
 {
 
 public:

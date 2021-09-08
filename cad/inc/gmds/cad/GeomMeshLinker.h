@@ -22,12 +22,12 @@
 #include "gmds/cad/FACSurface.h"
 #include "gmds/cad/FACCurve.h"
 #include "gmds/cad/FACPoint.h"
+#include "GMDSCad_export.h"
 
 #include "gmds/ig/Edge.h"
 #include "gmds/ig/Node.h"
 #include "gmds/ig/MeshDoctor.h"
 #include "gmds/ig/Mesh.h"
-
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -42,7 +42,7 @@ namespace gmds{
  *
  */
 /*----------------------------------------------------------------------------*/
-        class  EXPORT_GMDS GeomMeshLinker
+        class  GMDSCad_API GeomMeshLinker
         {
 
         public:
@@ -188,14 +188,14 @@ namespace gmds{
              * @param AN a node id
              * @return the dimension of the geom entity AN is classified on
              */
-            template<typename T> EXPORT_GMDS ELink getGeomDim(const TCellID& AN);
+            template<typename T> GMDSCad_API ELink getGeomDim(const TCellID& AN);
             /*------------------------------------------------------------------------*/
             /**@ brief accessor on the id of the geom entity AN is classified on.
              *
              * @param AN a node id
              * @return the dimension of the geom entity AN is classified on
              */
-            template<typename T> EXPORT_GMDS int getGeomId(const TCellID& AN);
+            template<typename T> GMDSCad_API int getGeomId(const TCellID& AN);
 
             /*------------------------------------------------------------------------*/
             /**@ brief accessor on the dimension and id of the geom entity AN is
@@ -215,7 +215,7 @@ namespace gmds{
              * @param AN a node id
              * @return the (dim, id) of the geom entity AN is classified on
              */
-            template<typename T> EXPORT_GMDS  std::pair<ELink,int> getGeomInfo(const TCellID& AN);
+            template<typename T> GMDSCad_API  std::pair<ELink,int> getGeomInfo(const TCellID& AN);
 
         private:
 

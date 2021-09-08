@@ -16,6 +16,7 @@
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/math/Point.h>
 #include <gmds/math/Matrix.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -27,7 +28,7 @@ class Triangle;
  *  \brief Defines a prism3
  */
 /*----------------------------------------------------------------------------*/
-	class EXPORT_GMDS Prism3
+	class GMDSMath_API Prism3
 {
 
 public:

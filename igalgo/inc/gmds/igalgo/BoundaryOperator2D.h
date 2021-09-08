@@ -3,6 +3,7 @@
 #define GMDS_BOUNDARY_OPERATOR_2D_H_
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
+#include "GMDSIgAlgo_export.h"
 /*----------------------------------------------------------------------------*/
 #include <vector>
 #include <map>
@@ -16,7 +17,7 @@ namespace gmds{
      *          having F2N and N2F connections. If edges and E2N is available,
      *          some extra operations are possible.
      */
-    class EXPORT_GMDS BoundaryOperator2D
+    class GMDSIgAlgo_API BoundaryOperator2D
     {
     public:
 

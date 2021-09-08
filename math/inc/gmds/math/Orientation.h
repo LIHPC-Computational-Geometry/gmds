@@ -6,6 +6,7 @@
 #include <gmds/math/Constants.h>
 #include <gmds/math/Point.h>
 #include <gmds/math/Matrix.h>
+#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -14,7 +15,7 @@ namespace gmds {
          *        exact predicate designed by B. Levy, INRIA.
          *
          */
-        class Orientation {
+        class GMDSMath_API Orientation {
         public:
             enum Sign {
                 NEGATIVE = -1,  /*!< Negative value */

@@ -1,5 +1,5 @@
 #==============================================================================
-add_library(ANN
+add_library(ANN STATIC
         include/ANN/ANN.h
         include/ANN/ANNperf.h
         include/ANN/ANNx.h

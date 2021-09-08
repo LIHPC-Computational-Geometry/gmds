@@ -3,6 +3,7 @@
 #define GMDS_PILLOW2D_H
 /*----------------------------------------------------------------------------*/
 #include <gmds/sheet/Operator2D.h>
+#include "GMDSSheet_export.h"
 /*----------------------------------------------------------------------------*/
 #include <map>
 #include <vector>
@@ -19,7 +20,7 @@ namespace gmds{
      *          be well-oriented (ce MeshDoctor::orient2D)
      *
      */
-    class EXPORT_GMDS Pillow2D : public Operator2D
+    class GMDSSheet_API Pillow2D : public Operator2D
     {
     public:
 

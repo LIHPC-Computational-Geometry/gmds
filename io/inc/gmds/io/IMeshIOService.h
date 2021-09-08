@@ -11,6 +11,7 @@
 #include <gmds/math/Point.h>
 #include <gmds/math/Vector.h>
 #include <gmds/utils/Variable.h>
+#include "GMDSIo_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 

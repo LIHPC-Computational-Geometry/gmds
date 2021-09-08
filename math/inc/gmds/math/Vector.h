@@ -16,6 +16,7 @@
 // GMDS Headers
 #include <gmds/math/Constants.h>
 #include <gmds/math/Point.h>
+#include "GMDSMath_export.h"
 /*------------------------------------------------------------------------*/
 namespace gmds{
     /*--------------------------------------------------------------------*/

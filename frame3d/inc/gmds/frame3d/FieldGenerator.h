@@ -15,6 +15,7 @@
 // Frame File Headers
 #include <gmds/frame3d/FieldSolverStrategyItf.h>
 #include <gmds/frame3d/Params.h>
+#include "LIB_GMDS_FRAME_3D_export.h"
 /*---------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -23,7 +24,7 @@ namespace gmds{
  *          where a linear system is solved and frames are represented by
  *          Spherical Harmonics (SH)
  */
-class EXPORT_GMDS FieldGenerator{
+class LIB_GMDS_FRAME_3D_API FieldGenerator{
     
 public:
     /*------------------------------------------------------------------------*/
