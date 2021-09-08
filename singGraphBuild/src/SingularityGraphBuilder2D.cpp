@@ -3278,16 +3278,15 @@ LineRelaxator::getWorstAngle()
 void
 LineRelaxator::run()
 {
+	std::cout << "Relax mesh to optimize edge ratios (gmsh output): "<< std::endl;
+	std::cout << "	worst angle/ratio before relaxation : " << getWorstAngle() << ", " << getWorstEdgeRatio() << std::endl;
+	
 	computeMeanEdgeLengthByGroup();
 	for (int i = 0; i < 50; i++) {
 		// if (i % 2 == 0) computeMeanEdgeLengthByGroup();
 		// computeMeanEdgeLengthByGroup();
 		applySpringForceOnPoints();
-		movePoints();
-		std::cout << "# " << i << ": " << getWorstAngle() << ", " << getWorstEdgeRatio() << std::endl;
-		// std::cout << "worst angle : " << getWorstAngle() << std::endl;
-		// std::cout << "worst ratio : " << getWorstEdgeRatio() << std::endl;
-		writeQuadMesh("C:/Users/DD265623/Documents/temp/testRelax/gmshPath2_" + std::to_string(i) + ".msh", m_graph->getPoints(), m_graph->getSurfacePatchs());
+		movePoints();		
 	}
-	// m_builder->writeOutputPatches("patchs2");
+	std::cout << "	worst angle/ratio after  relaxation : " << getWorstAngle() << ", " << getWorstEdgeRatio() << std::endl;
 }

@@ -38,13 +38,8 @@ TEST(SingGraphBuilder2DTest, halfDisk)
 	// MESH READING
 	//==================================================================
 	std::string dir(TEST_SAMPLES_DIR);
-	// std::string vtk_file = "C:/Temp/frameOut3.vtk";
-	////std::string vtk_file = "C:/Temp/update/frame_out.vtk";
-	// std::string vtk_file = "D:/gmds-DanielD/build2/frame/tst/frame2d_unit_test.vtk";
-	std::string vtk_file = "D:/singGraphBenchmark/output_16.08.2021_14.58.40/output_0/elementSize_0.30/outframe.vtk";
-	//std::string vtk_file = "C:/Temp/shmTest_frameOut.vtk";
-	// std::string vtk_file = "C:/Temp/outframe.vtk";
-	// std::string vtk_file = dir + "/half_disk.vtk";
+	std::string vtk_file = dir + "/singGraphBuilderTest.vtk";
+
 	gmds::IGMeshIOService ioService(&mesh);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N | gmds::F);
@@ -71,6 +66,7 @@ TEST(SingGraphBuilder2DTest, halfDisk)
 	int node_point_mark = mesh.newMark<gmds::Node>();
 
 	BoundaryOperator boundaryOp(&mesh);
+	boundaryOp.setSurfaceAngleDot(0.86);     // pi/6
 	boundaryOp.markCellsOnCurves(edge_curve_mark, node_curve_mark);
 	boundaryOp.markNodesOnPoint(edge_curve_mark, node_curve_mark, node_point_mark);
 
@@ -94,7 +90,7 @@ TEST(SingGraphBuilder2DTest, halfDisk)
 
 	SingularityGraphBuilder2D::Strategy strat = SingularityGraphBuilder2D::shortestPaths;
 	auto algo = SingGraphBuilder2DShortestPath(&mesh, field, BuildGeomSing);
-	algo.setDebugPrefix("HalfDisk");
+	algo.setDebugPrefix("singGraphBuilderTest");
 	algo.initMarks(node_point_mark, node_curve_mark, edge_curve_mark);
 
 	// User must choose the number of control Points for the Bezier curve computation (last step)
@@ -117,12 +113,8 @@ TEST(SingGraphBuilder2DTest, halfDisk)
 	mesh.freeMark<Edge>(edge_curve_mark);
 
 	const ::SingularityGraph &g = algo.graph();
-	ASSERT_EQ(g.getNbPoints(), 8);
-	ASSERT_EQ(g.getNbSurfacePoints(), 2);
-	ASSERT_EQ(g.getNbCurvePoints(), 4);
-	ASSERT_EQ(g.getNbVertexPoints(), 2);
-	ASSERT_EQ(g.getNbLines(), 11);
-	ASSERT_EQ(g.getNbSurfaceLines(), 5);
-	ASSERT_EQ(g.getNbCurveLines(), 6);
-	ASSERT_EQ(g.getNbSurfacePatches(), 4);
+	ASSERT_EQ(g.getNbPoints(), 80);
+	ASSERT_EQ(g.getNbLines(), 141);
+	ASSERT_EQ(g.getNbSurfacePatches(), 58);
+	ASSERT_EQ(g.getNLinkedEdgeGroup(), 26);
 }
