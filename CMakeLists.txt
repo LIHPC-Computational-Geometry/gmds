@@ -90,6 +90,14 @@ GMDS_ADD_COMPONENT(
         ON
         ON                                 # must be covered
 )
+GMDS_ADD_COMPONENT(
+        GEOD_HONEY_COMB
+        geodHoneyComb
+        GMDSGeodHoneyComb
+        "Generation of honeycomb meshes for spherical 3D objects"
+        ON
+        ON                                 # must be covered
+)
 
 GMDS_ADD_COMPONENT(
         SINGGRAPHBUILD
