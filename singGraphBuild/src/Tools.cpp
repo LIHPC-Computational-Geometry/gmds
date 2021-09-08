@@ -1278,43 +1278,27 @@ bool
 Tools::computeOutVectorFromRayAndEdge(
    const Edge &AEdge, const math::Point &AINPnt, const math::Vector3d &AINVec, math::Point &AOUTPnt, math::Vector3d &AOUTVec, double &deviation)
 {
-	double temp_epsilon = (double) math::Constants::EPSILON;
-
-	math::Vector3d AINVecn = AINVec.getNormalize();
-	math::Segment seg(AEdge.get<Node>()[0].getPoint(), AEdge.get<Node>()[1].getPoint());
-
-	math::Point pnt_intersection;
-	double param_intersection = 0.0;
-
-	math::Ray ray(AINPnt, AINVec);
-	bool intersectEdge = ray.SecondMetIntersect2D(seg, pnt_intersection, param_intersection, temp_epsilon);
-	if (!intersectEdge) return false;
-
-	AOUTPnt = pnt_intersection;
+	double epsilon = (double) math::Constants::EPSILON;
 
 	Node n0 = AEdge.get<Node>()[0];
 	Node n1 = AEdge.get<Node>()[1];
+	math::Segment seg(n0.getPoint(), n1.getPoint());
+
+	math::Point pnt_intersection;
+	double param_intersection = 0.0;
+	math::Ray ray(AINPnt, AINVec);
+	bool intersectEdge = ray.SecondMetIntersect2D(seg, pnt_intersection, param_intersection, epsilon);
+	if (!intersectEdge) return false;
 
 	math::Cross2D c0 = (*m_field)[n0.id()];
 	math::Cross2D c1 = (*m_field)[n1.id()];
+	math::Cross2D meanCross = math::Cross2D::mean(c0, 1 - param_intersection, c1, param_intersection);
 
-	math::Cross2D c = math::Cross2D::mean(c0, 1 - param_intersection, c1, param_intersection);
-	std::vector<math::Vector3d> c_vectors = c.componentVectors();
-
-	int ref_index = 0;
-	double ref_dot_product = AINVec.dot(c_vectors[0]);
-	for (int i = 1; i < 4; i++) {
-		double dot_product_i = AINVec.dot(c_vectors[i]);
-		if (dot_product_i > ref_dot_product) {
-			ref_dot_product = dot_product_i;
-			ref_index = i;
-		}
-	}
-	AOUTVec = c_vectors[ref_index];
-
-	// deviation in and out
+	AOUTVec = meanCross.closestComponentVector(AINVec);
+	AOUTPnt = pnt_intersection;
 
 	return true;
+
 }
 
 /*----------------------------------------------------------------------------*/

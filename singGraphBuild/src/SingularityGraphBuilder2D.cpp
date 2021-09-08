@@ -260,7 +260,7 @@ SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number
 	//==================================================================
 
 	if (m_mesh->hasVariable(GMDS_FACE, "index"))
-		m_index = m_mesh->getVariable<int, GMDS_FACE>("index");		
+		m_index = m_mesh->getVariable<int, GMDS_FACE>("index");
 	else
 		m_index = m_mesh->newVariable<int, GMDS_FACE>("index");
 
@@ -304,6 +304,12 @@ SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number
 		buildGeometricSlots();
 	}
 
+	m_mean_edge_length = 0.0;
+	for (auto e_id : m_mesh->edges()) {
+		m_mean_edge_length += m_mesh->get<Edge>(e_id).length();
+	}
+	m_mean_edge_length /= m_mesh->getNbEdges();
+
 	writeSingularityPointsAndSlots();
 
 	// computeFace2FaceInfo();
@@ -314,12 +320,6 @@ SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number
 	//========================================================================
 	// STEP 3 - Singularity line building
 	//========================================================================
-
-	m_mean_edge_length = 0.0;
-	for (auto e_id : m_mesh->edges()) {
-		m_mean_edge_length += m_mesh->get<Edge>(e_id).length();
-	}
-	m_mean_edge_length /= m_mesh->getNbEdges();
 	m_temp_epsilon = 0.003 * m_mean_edge_length;
 
 	auto t4 = Clock::now();
@@ -373,7 +373,6 @@ SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number
 
 	std::cout << "\t --> Nb generated faces: " << m_graph.getNbSurfacePatches() << std::endl;
 	std::cout << "========================================" << std::endl;
-
 }
 
 /*----------------------------------------------------------------------------*/
@@ -964,23 +963,19 @@ SingularityGraphBuilder2D::addGeometryToSingularityGraph(vector<CurveSingularity
 			//------------------------------------------------------------------------------------
 			// creating the curveSingline : [ reversedLeftNodes..., currentNode, rightNodes...]
 			CurveSingularityLine *new_line = m_graph.newCurveLine();
-			std::vector<Node> curve_nodes;
 
 			for (unsigned int i = 0; i < listOfNodesInSingLeft.size(); i++) {
 
 				Node nodeOnLeft = m_mesh->get<Node>(listOfNodesInSingLeft[listOfNodesInSingLeft.size() - 1 - i]);
 				new_line->addDiscretizationPoint(nodeOnLeft.getPoint());
-				curve_nodes.push_back(nodeOnLeft);
 			}
 
 			new_line->addDiscretizationPoint(currentNode.getPoint());
-			curve_nodes.push_back(currentNode);
 
 			for (unsigned int i = 0; i < listOfNodesInSingRight.size(); i++) {
 
 				Node nodeOnRight = m_mesh->get<Node>(listOfNodesInSingRight[i]);
 				new_line->addDiscretizationPoint(nodeOnRight.getPoint());
-				curve_nodes.push_back(nodeOnRight);
 			}
 
 			std::vector<Edge> curve_edges;
@@ -1012,7 +1007,7 @@ SingularityGraphBuilder2D::addGeometryToSingularityGraph(vector<CurveSingularity
 		}
 	}
 	//============================================================================
-	// GEOM SINGULARITY POINTS AND GEOM SINGULARITY LINES MUST BE CONNECTED
+	// Connection of singularity lines to singularity points
 	//============================================================================
 	std::vector<VertexSingularityPoint *> geom_points = m_graph.getVertexPoints();
 
@@ -1064,10 +1059,9 @@ SingularityGraphBuilder2D::addGeometryToSingularityGraph(vector<CurveSingularity
 			}
 		}
 	}
-	std::cout << "CYCLE GEOMETRIC CURVE WILL NOT BE CONNECTED TO GEOM POINT. WE CREATE SUCH" << std::endl;
 	//============================================================================
-	// CYCLE GEOMETRIC CURVE WILL NOT BE CONNECTED TO GEOM POINT. WE CREATE SUCH
-	// POINT IN AN ARTIFICAL WAY
+	// Cycling boundary curves need to be connected to a singularity point.
+	// Those will be created as "articial" and deleted at the end.
 	//============================================================================
 	std::vector<CurveSingularityLine *> geom_curves = m_graph.getCurveLines();
 
@@ -1349,28 +1343,26 @@ void
 SingularityGraphBuilder2D::writeSingularityPointsAndSlots()
 {
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::F2N));
-	std::vector<SingularityPoint *> points = m_graph.getPoints();
-	std::vector<SingularityPoint *>::iterator it = points.begin();
-	for (; it != points.end(); it++) {
-		SingularityPoint *sing = *it;
-		math::Point loc = sing->getLocation();
-		gmds::Node center = m.newNode(loc.X(), loc.Y(), loc.Z());
-		std::vector<SingularityPoint::Slot *> &slots = sing->getSlots();
+	auto slotIDs = m.newVariable<int, GMDS_FACE>("slotIDs");
 
-		for (unsigned int i = 0; i < slots.size(); i++) {
+	int singID = 0;
+	for (auto sing : m_graph.getPoints()) {
+		int slotID = 0;
+		for (auto slot : sing->getSlots()) {
 
-			SingularityPoint::Slot *si = slots[i];
+			gmds::Node n0 = m.newNode(sing->getLocation());
+			gmds::Node n1 = m.newNode(slot->location);
+			gmds::Node n2 = m.newNode(slot->location + slot->direction.normalize() * m_mean_edge_length);
 
-			math::Point si_loc = si->location;
-			math::Vector3d si_dir = si->direction;
-			si_dir.normalize();
-			double kappa = 10;
-			gmds::Node si_departure = m.newNode(si_loc.X(), si_loc.Y(), si_loc.Z());
-			gmds::Node si_end = m.newNode(si_loc.X() + si_dir.X() / kappa, si_loc.Y() + si_dir.Y() / kappa, si_loc.Z() + si_dir.Z() / kappa);
+			auto f1 = m.newTriangle(n0, n1, n1);
+			auto f2 = m.newTriangle(n1, n2, n2);
 
-			m.newTriangle(center, si_departure, si_departure);
-			m.newTriangle(si_end, si_departure, si_departure);
+			int id = 5 * singID + slotID;
+			(*slotIDs)[f1.id()] = id;
+			(*slotIDs)[f2.id()] = id;
+			++slotID;
 		}
+		++singID;
 	}
 
 	gmds::IGMeshIOService meshIoServ(&m);
@@ -1378,9 +1370,7 @@ SingularityGraphBuilder2D::writeSingularityPointsAndSlots()
 	writer.setCellOptions(gmds::N | gmds::F);
 	writer.setDataOptions(gmds::N | gmds::F);
 
-	std::stringstream file_name;
-	file_name << m_output_directory_name << "-points_and_slots.vtk";
-	writer.write(file_name.str());
+	writer.write(m_output_directory_name + "-points_and_slots.vtk");
 }
 
 /*----------------------------------------------------------------------------*/

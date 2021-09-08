@@ -780,7 +780,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 			const math::Vector3d closestToPrevCross = crossV.closestComponentVector(sourceDirection);
 			cellCosts[source].orientedCost = 0;
 			cellCosts[source].absoluteCost = directionnalAngle + sourceDirection.angle(closestToPrevCross);
-			cellCosts[source].penalty = directionnalAngle > math::Constants::PIDIV4 ? turnPenalizationTerm : 0.0;
+			cellCosts[source].penalty = directionnalAngle > math::Constants::PIDIV4 ? turnPenalizationTerm : 0.0;			
 			previousCrossDirection[source] = closestToPrevCross;
 			vertex_queue.insert(std::make_pair(cellCosts[source].getFullCost(), source));
 		}
@@ -802,6 +802,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 				const math::Vector3d closestToPrevCross = crossV.closestComponentVector(sourceDirection);
 				cellCosts[v_id].orientedCost = 0;
 				cellCosts[v_id].absoluteCost = directionnalAngle + sourceDirection.angle(closestToPrevCross);
+				cellCosts[v_id].penalty += m_singOrGeomFaces[v_id] ? turnPenalizationTerm : 0.0;
 				// cellCosts[v_id].penalty = directionnalAngle > math::Constants::PIDIV4 ? turnPenalizationTerm : 0.0;
 				previousCrossDirection[v_id] = closestToPrevCross;
 				vertex_queue.insert(std::make_pair(cellCosts[v_id].getFullCost(), v_id));
@@ -869,7 +870,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 
 				retraceShortestPath(u_id, previousFaceID, m_original_faces_number, retracedPath);
 				for (const auto &faceId : retracedPath)
-					if (m_singOrGeomFaces[faceId]) newCost += turnPenalizationTerm / 2;
+					if (m_singOrGeomFaces[faceId]) newCost += 2 * turnPenalizationTerm;
 
 				bool addNewBoundary = false;
 				unsigned int bdryLocalId;
@@ -941,7 +942,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 		}
 	}
 
-	if (m_visualizeCost) writeCostPerSlot(m_mesh, m_output_directory_name + " -slotCost_" + std::to_string(contSource) + ".vtk", cellCosts);
+	if (m_visualizeCost) writeCostPerSlot(m_mesh, m_output_directory_name + " -slotCost_" + std::to_string(contSource) + ".vtk", cellCosts);	
 }
 
 std::vector<std::pair<unsigned int, unsigned int>>
