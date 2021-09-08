@@ -88,4 +88,5 @@ install(TARGETS singGraphBuilder
 add_custom_command(TARGET singGraphBuilder PRE_LINK                
     COMMAND ${CMAKE_COMMAND} -E copy_if_different                            
         "${PROJECT_SOURCE_DIR}/external/glpk/src/glpk/w64/glpk_4_65.dll"      
-)
+        $<TARGET_FILE_DIR:singGraphBuilder>
+)  
