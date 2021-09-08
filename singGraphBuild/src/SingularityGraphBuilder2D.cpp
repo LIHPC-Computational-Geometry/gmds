@@ -247,6 +247,8 @@ SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number
 {
 	std::cout << "========================================" << std::endl;
 	std::cout << "Start singularity graph generation " << std::endl;
+	
+	m_graph = SingularityGraph(m_mesh); // new fresh graph
 	//==================================================================
 	// Boolean marks initialization
 	//==================================================================
@@ -369,7 +371,6 @@ SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number
 	m_mesh->unmarkAll<Face>(m_mark_faces_with_sing_line);
 	m_mesh->freeMark<Face>(m_mark_faces_with_sing_point);
 	m_mesh->freeMark<Face>(m_mark_faces_with_sing_line);
-	m_graph = SingularityGraph(m_mesh);
 
 	std::cout << "\t --> Nb generated faces: " << m_graph.getNbSurfacePatches() << std::endl;
 	std::cout << "========================================" << std::endl;

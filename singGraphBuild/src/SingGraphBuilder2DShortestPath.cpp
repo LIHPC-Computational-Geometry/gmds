@@ -813,7 +813,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 	while (!vertex_queue.empty()) {
 
 		const TCellID u_id = vertex_queue.begin()->second;
-		const auto previousCostParam = cellCosts[u_id];
+		auto previousCostParam = cellCosts[u_id];
 
 		vertex_queue.erase(vertex_queue.begin());
 		visitedFaces[u_id] = true;
@@ -847,6 +847,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 					if (validTargetReached.size() >= m_maxNValidSurfaceTarget) return;
 				}
 			}
+			previousCostParam.penalty += turnPenalizationTerm / 100; // passing nearby a target incurs a small penalty
 		}
 
 		// search for boundary
