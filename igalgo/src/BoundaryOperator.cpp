@@ -273,7 +273,7 @@ void BoundaryOperator::markNodesOnPoint(const int AMarkCE,// edge on curve IN
                 v1.normalize();
                 double dotProduct = v0.dot(v1);
                 // if we have a brutal normal change
-                if (dotProduct > (-sqrt(2.0) / 2.0)){
+                if (dotProduct > -m_surface_angle_dot){
                     m_mesh->mark(n, AMarkPN);
                     cpt2++;
                 }

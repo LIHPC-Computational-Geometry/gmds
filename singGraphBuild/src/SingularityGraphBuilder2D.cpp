@@ -1142,7 +1142,6 @@ SingularityGraphBuilder2D::buildGeometricSlots()
 			createLineFrom(singularity, single_line_angle, 3);
 		}
 		else if (angle_deg > 180) {
-			// -> the angle here is necessarly at least 225°, because singularities are not created below 45°
 			int nb_lines = 2;
 			double single_line_angle = angle_rad / (nb_lines + 1);
 			createLineFrom(singularity, single_line_angle, 2);
@@ -1249,10 +1248,14 @@ SingularityGraphBuilder2D::createLineFrom(VertexSingularityPoint *AFrom, const d
 	if (baseSlots.size() != ANbLines) {
 		throw GMDSException("unable to create the required number of slot," + std::to_string(baseSlots.size()) + " instead of " + std::to_string(ANbLines));
 	}
-	if (ANbLines == 3) {     // building 3 slots might have been a mistake if the cross field is grid like:
+	if (ANbLines == 3) {     // building 3 slots might have been a mistake if the cross field is grid like: (at least two slots with close directions)
 		bool recompute = baseSlots[0].direction.angle(baseSlots[1].direction) < M_PI_4     //
 		                 || baseSlots[1].direction.angle(baseSlots[2].direction) < M_PI_4;
-		if (recompute) return createLineFrom(AFrom, AAngle * 4 / 3, 2);     // create 2 line instead
+		if (recompute) return createLineFrom(AFrom, AAngle * 4 / 3, 2);     // create 2 slots instead
+	}
+	else if (ANbLines == 2) {     // building 2 slots might also have been a mistake (close slots directions)
+		bool recompute = baseSlots[0].direction.angle(baseSlots[1].direction) < M_PI_4;
+		if (recompute) return createLineFrom(AFrom, AAngle * 3 / 2, 1);     // create 1 slot instead. Might actually be 0 slot here.
 	}
 	for (const auto baseSlot : baseSlots)
 		AFrom->newSlot(baseSlot.location, baseSlot.direction, baseSlot.cellId, baseSlot.cellDim, false);
