@@ -3,13 +3,15 @@
 #define GMDS_GEODHEXMESHER_H
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
+#include "LIB_GMDS_GEOD_HONEY_COMB_export.h"
+
 /*----------------------------------------------------------------------------*/
 namespace gmds{
     /*------------------------------------------------------------------------*/
     /** @class This class gathers some basic algorithm to build a honeycomb
      *          mesh of a spherical domain
      */
-    class GeodHexMesher{
+    class LIB_GMDS_GEOD_HONEY_COMB_API GeodHexMesher{
     public:
         typedef enum {
             GEOD_SUCCESS,

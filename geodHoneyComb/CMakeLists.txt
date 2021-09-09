@@ -6,11 +6,18 @@ set(GMDS_LIB ${LIB_GMDS_GEOD_HONEY_COMB})
 set(GMDS_LIB_PREFIX gmds/geodHoneyComb)
 
 set(GMDS_INC
+        ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/geodHoneyComb/GeodHexMesher.h)
 set(GMDS_SRC
         src/GeodHexMesher.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
+
+#==============================================================================
+include(GenerateExportHeader)
+generate_export_header(${GMDS_LIB}
+        EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
+        EXPORT_MACRO_NAME ${GMDS_LIB}_API)
 #==============================================================================
 # TARGET DEFINITION
 #==============================================================================
