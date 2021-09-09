@@ -77,6 +77,11 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingularityPatch
    */
   bool checkValidityAnReorder();
 
+  /*------------------------------------------------------------------------*/
+  /** \brief Get opposed line (line after two turn from AOpposedLine)
+	*/
+  SingularityLine *computeOpposedLine(SingularityLine *AOpposedLine);
+
  protected:
 
   /** flag indicating if the patch is safely oriented*/

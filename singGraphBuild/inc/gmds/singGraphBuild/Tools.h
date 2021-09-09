@@ -258,10 +258,10 @@ public:
                gmds::math::Point&        AOUTPnt,
                gmds::math::Vector3d&       AOUTVec,
                double&              deviation,
-               double&              stepSize,	
-			bool& AEndOnBdry,
-			std::vector<gmds::TCellID>&     ATriangles,
-			int&                            AToCellDim,
+               const double&              stepSize,	
+			   bool& AEndOnBdry,
+			   std::vector<gmds::TCellID>&     ATriangles,
+			   int&                            AToCellDim,
                gmds::TCellID&                  AToCellID);
 
     /*------------------------------------------------------------------------*/
@@ -435,7 +435,9 @@ public:
               const gmds::Face& ATri,
               bool& AOnEdge0, bool& AOnEdge1, bool& AOnEdge2, double& lambda1,
 			  double& lambda2);
-    
+
+	 /* same without extra information */
+	bool isPntInTri(const gmds::math::Point &APnt, const gmds::Face &ATri);
     
       /*------------------------------------------------------------------------*/
     /** \brief computes the next RK4 vector at a \p point_1 inside face \p AFace 
@@ -481,6 +483,20 @@ public:
                				   gmds::TCellID&                  AToCellID,
 							   bool& isFinal,
 							   vector<gmds::TCellID>& previousVisitedFaces);
+
+	static gmds::Node getOpposedNodeOnEdge(const gmds::Node &ANode, const gmds::Edge &Edge);
+
+	static gmds::Face getNextFace(const gmds::TCellID &ANodeID, const gmds::TCellID &AFaceID, gmds::Edge &Edge);
+
+	static gmds::Node getCommonNode(const gmds::Edge &AEdge1, const gmds::Edge &AEdge2);
+
+	static gmds::Node getCommonNode(const gmds::Face &AFace1, const gmds::Face &AFace2);
+
+	static gmds::Edge getCommonEdge(const gmds::Face &AFace1, const gmds::Face &AFace2);
+
+	bool isAdjacency(const gmds::TCellID &AFace1, const gmds::TCellID &AFace2);
+
+	bool isAdjacency(const gmds::Face &AFace1, const gmds::Face &AFace2);
 
 private:
     

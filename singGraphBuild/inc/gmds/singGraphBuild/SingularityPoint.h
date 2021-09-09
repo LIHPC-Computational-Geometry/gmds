@@ -3,7 +3,7 @@
  * SingularityPoint.h
  *
  *  Created on: 13 juil. 2014
- *      Author: bibi
+ *      Author: F. Ledoux
  */
 /*----------------------------------------------------------------------------*/
 #ifndef SINGULARITYPOINT_H_
@@ -149,11 +149,11 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingularityPoint
   /*------------------------------------------------------------------------*/
   /** \brief Connect a singularity line to (*this). Warning, when we add a line,
    *         the connection is well performed only if the line discretization is
-   *         already known.
+   *         already known. Return the new created slot
    *
    * \param  ALine the line to connect with
    */
-  virtual void addLine(SingularityLine* ALine);
+  virtual SingularityPoint::Slot * addLine(SingularityLine* ALine);
 
   /*------------------------------------------------------------------------*/
   /** \brief Creates a new slot
@@ -178,7 +178,8 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingularityPoint
    *         the connected curves. The curve->point connection is not updated
    */
   void clearSlots();
-
+   /* \brief Sort slot by angle with X axis */
+  void sortSlots();
   /*------------------------------------------------------------------------*/
   /** \brief Get the list of all slots
    */
@@ -216,12 +217,16 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingularityPoint
    */
   SingularityLine* nextLine(SingularityLine* ALine);
 
+  void setNumber(int n) {m_number = n;}
+  int getNumber() {return m_number;}
+
   void addMeshNode(const gmds::Node& ANode);
   void addMeshEdge(const gmds::Edge& AEdge);
-  void addMeshFace(gmds::Face& AFace);
+  void addMeshFace(const gmds::Face& AFace);
   void addMeshRegion(gmds::Region& ARegion);
  protected:
 
+  int m_number;
   /** background mesh the point is assigned to */
   gmds::Mesh* m_mesh; 
   

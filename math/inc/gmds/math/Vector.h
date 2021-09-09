@@ -214,13 +214,14 @@ namespace gmds{
             /*-----------------------------------------------------------*/
             /** \brief Normalizes this vector if its norm is not zero
              */
-            void normalize() {
+            vector_type& normalize() {
                 value_type n = norm();
                 if(n>1e-24) {
                     for(int i = 0; i < dimension; i++) {
                         m_data[i] /= n;
                     }
                 }
+		        return *this;
             }
             vector_type getNormalize() const
             {

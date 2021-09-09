@@ -35,13 +35,14 @@ void VTKWriter::writeNodes() {
     m_mesh_service->getNodes(nodes_info);
     *m_stream  << "POINTS " << nodes_info.size() << " float\n";
 
+	(*m_stream).precision(15);
     auto vtk_node_id=0;
     for (auto info : nodes_info) {
         math::Point p = info.point;
         *m_stream << p.X() << " " << p.Y() << " " << p.Z() << "\n";
         m_node_ids_mapping[info.id] = vtk_node_id++;
     }
-
+	(*m_stream).precision(6);
 }
 /*----------------------------------------------------------------------------*/
 void VTKWriter::writeEdges() {

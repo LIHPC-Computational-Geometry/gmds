@@ -3,7 +3,7 @@
  * SingularityGraph.h
  *
  *  Created on: 13 juil. 2014
- *      Author: bibi
+ *      Author: F. Ledoux
  */
 /*----------------------------------------------------------------------------*/
 #ifndef SINGULARITYGRAPH_H_
@@ -98,10 +98,18 @@ public:
 	 * \param APnt the singularity point
 	 * \param ALine the singularity line
 	 */
-	void splitSurfaceLine(SurfaceSingularityPoint*& APnt,
-			      SurfaceSingularityLine*& ALine);
+	void splitSurfaceLine(SurfaceSingularityPoint* APnt,
+			      SurfaceSingularityLine* ALine);
 	
-
+	/*------------------------------------------------------------------------*/
+	/* \brief This operation splits a surface sing. line by inserting a sing
+	 *        point. Unlike splitSurfaceLine, it dooes not recompute traversed tri.       
+	 *
+	 * \param APnt the singularity point
+	 * \param ALine the singularity line
+	 * \param APrevPointID the ID of the point within the line discretization located just before the singPoint
+	 */
+	void splitSurfaceLineSimple(SurfaceSingularityPoint *APnt, SurfaceSingularityLine *ALine, unsigned int APrevPointID);
 	/*------------------------------------------------------------------------*/
 	/* \brief Removes the line ALine from the singularity graph. Connected singularity
 	 *        points are updated too.
@@ -150,12 +158,17 @@ public:
         
      void createVTKOutputFile(const std::string& AFileName, bool &curvePatches) const;
 
+	 // compute group of linked edges (singularity lines)
+	 void computeLinkedEdges();
+
+	 size_t getNLinkedEdgeGroup() const { return m_nGroupLinkedEdges; };
 private:
 
 	gmds::Mesh* m_mesh;
 	std::vector<SingularityPatch*> m_patchs;
 	std::vector<SingularityLine*> m_lines;
 	std::vector<SingularityPoint*> m_points;
+	size_t m_nGroupLinkedEdges = 0;
 
 };
 /*----------------------------------------------------------------------------*/

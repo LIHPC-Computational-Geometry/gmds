@@ -20,4 +20,4 @@ gtest_discover_tests(GMDS_SING_GRAPH_BUILD_TEST
 add_custom_command(TARGET GMDS_SING_GRAPH_BUILD_TEST PRE_LINK       		 
     COMMAND ${CMAKE_COMMAND} -E copy_if_different 							 
         "${PROJECT_SOURCE_DIR}/external/glpk/src/glpk/w64/glpk_4_65.dll"      
-        $<TARGET_FILE_DIR:GMDS_SING_GRAPH_BUILD_TEST>)      
+        $<TARGET_FILE_DIR:GMDS_SING_GRAPH_BUILD_TEST>)     

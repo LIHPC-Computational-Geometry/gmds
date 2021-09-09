@@ -219,9 +219,9 @@ class GMDSMath_API Segment
 
 	   bool SecondMetIntersect2D(const Segment& AS, Point& AP, double& AParam, double& tempEpsilon) const;
 	    
-    	   bool intersect3D(const Segment& AS, Point& AP, double& AParamSeg,
-                     double& AParamThis) const;
-    
+    	bool intersect3D(const Segment& AS, Point& AP, double& AParamSeg, double& AParamThis) const;
+
+		bool intersect3D(const Segment &AS, Point &AP, double &AParamSeg, double &AParamThis, double &tempEpsilon) const;
 	/*------------------------------------------------------------------------*/
         /** \brief  Overloaded operator<< for output
          */

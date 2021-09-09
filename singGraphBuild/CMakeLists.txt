@@ -14,6 +14,10 @@ set(GMDS_INC
         inc/gmds/singGraphBuild/SingularityGraph.h
         inc/gmds/singGraphBuild/SingularityGraphBuilder.h
         inc/gmds/singGraphBuild/SingularityGraphBuilder2D.h
+        inc/gmds/singGraphBuild/SingGraphBuilder2DOriginal.h
+        inc/gmds/singGraphBuild/SingGraphBuilder2DShortestPath.h
+        inc/gmds/singGraphBuild/SingGraphBuilder2DSimultStartHeun.h
+        inc/gmds/singGraphBuild/SingGraphBuilder2DSimultStartRK4.h
         )
 set(GMDS_SRC
         src/Tools.cpp
@@ -23,6 +27,10 @@ set(GMDS_SRC
         src/SingularityGraph.cpp
         src/SingularityGraphBuilder.cpp
         src/SingularityGraphBuilder2D.cpp
+        src/SingGraphBuilder2DOriginal.cpp
+        src/SingGraphBuilder2DShortestPath.cpp
+        src/SingGraphBuilder2DSimultStartHeun.cpp
+        src/SingGraphBuilder2DSimultStartRK4.cpp
         )
 
 #==============================================================================
@@ -80,4 +88,5 @@ install(TARGETS singGraphBuilder
 add_custom_command(TARGET singGraphBuilder PRE_LINK                
     COMMAND ${CMAKE_COMMAND} -E copy_if_different                            
         "${PROJECT_SOURCE_DIR}/external/glpk/src/glpk/w64/glpk_4_65.dll"      
-        $<TARGET_FILE_DIR:singGraphBuilder>)  
+        $<TARGET_FILE_DIR:singGraphBuilder>
+)  

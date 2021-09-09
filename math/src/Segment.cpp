@@ -264,7 +264,44 @@ Segment::intersect2D(const Segment& ASeg, const bool AProper) const
         return false;
         
     }
+/*----------------------------------------------------------------------------*/
+bool
+Segment::intersect3D(const Segment &AS, Point &AP, double &AParamSeg, double &AParamThis, double &tempEpsilon) const
+{
+	// see details in http://www.lucidarme.me/?p=1872
+	AParamSeg = -1;
+	AParamThis = -1;
+	Point p1 = AS.getPoint(0);
+	Point p2 = AS.getPoint(1);
 
+	Point p3 = pnts_[0];
+	Point p4 = pnts_[1];
+
+	Vector3d v13(p1, p3);
+	Vector3d v12(p1, p2);
+	Vector3d v34(p3, p4);
+
+	double tol = 0.01;
+
+	if (v12.isColinear(v34)) {
+		return false;     // No intersection
+	}
+
+	double coplanar = std::abs(v13.dot(v12.cross(v34)));
+
+	if (coplanar < tol) {     // Coplanar
+		Vector3d v12_c_v34 = v12.cross(v34);
+		double t = (v13.cross(v34)).dot(v12_c_v34) / (v12_c_v34.dot(v12_c_v34));
+		double s = (v13.cross(v12)).dot(v12_c_v34) / (v12_c_v34.dot(v12_c_v34));
+		if (-tempEpsilon <= t && t <= 1 + tempEpsilon && -tempEpsilon <= s && s <= 1 + tempEpsilon) {
+			AParamSeg = t;
+			AParamThis = s;
+			AP = p1 + t * v12;
+			return true;
+		}
+	}
+	return false;
+}
 /*----------------------------------------------------------------------------*/
 bool Segment::intersect2D(const Segment& ASeg, Point& APnt) const
 {

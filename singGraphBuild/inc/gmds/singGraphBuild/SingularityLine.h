@@ -12,6 +12,7 @@
 #include <gmds/singGraphBuild/SingularityPoint.h>
 #include "LIB_GMDS_SINGGRAPHBUILD_export.h"
 /*----------------------------------------------------------------------------*/
+class SingularityPatch;
 class LIB_GMDS_SINGGRAPHBUILD_API SingularityLine
 {
  public:
@@ -89,19 +90,21 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingularityLine
    *         internal data). Ex: only one end point.
    */
   virtual bool healOrientation();
-  /*------------------------------------------------------------------------*/
-  /** \brief Add a end point, which is a singularity point. A line can be 
-   *         connected to 2 end points at most.
-   *
-   *  \param APnt a new end point of (*this)
-   */
-  void addSingularityPoint(SingularityPoint* APnt); 
-  /*------------------------------------------------------------------------*/
-  /** \brief Remove the last added end point
-   *
-   *  \return the removed end point
-   */
-  SingularityPoint* removeSingularityPoint();
+	/*------------------------------------------------------------------------*/
+	/** \brief Add a end point, which is a singularity point. A line can be
+		*         connected to 2 end points at most.
+		*
+		*  \param APnt a new end point of (*this)
+		*/
+	void addSlot(SingularityPoint::Slot *ASlot);
+	void addSingularityPoint(SingularityPoint *ASing);
+
+	/*------------------------------------------------------------------------*/
+	/** \brief Remove the last added end point
+		*
+		*  \return the removed end point
+		*/
+	SingularityPoint::Slot *removeSlot();
   /*------------------------------------------------------------------------*/
   /** \brief Remove all connection to singularity points
    */
@@ -131,13 +134,31 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingularityLine
    *
    *  \return a vector of singularity points
    */
-  std::vector<SingularityPoint* >& getEndPoints();
+  std::vector<SingularityPoint* > getEndPoints() const;
+  std::vector<SingularityPoint::Slot* >& getSlots();
+  /*------------------------------------------------------------------------*/
+  /** \brief Return the slot from the end point of (*this) at a specific location
+	*         points
+	*
+	*  \param APointID index of slotLocation in the line discretization
+	*  
+	*  \return the slot at the given location
+	*/
+  SingularityPoint::Slot *getSlotAtLocation(const unsigned int &APointID);
+
+	void setLinkedEdgeID(const int groupID) { m_linkedEdgeID = groupID;};
+	int getLinkedEdgeID() { return m_linkedEdgeID;};
+
+	void addPatch(SingularityPatch *patch) { m_patchs.push_back(patch);};
+	std::vector<SingularityPatch *> getPatchs() { return m_patchs;};
 
  protected:
   ESingularityGeomLineType m_type;
-  std::vector<SingularityPoint*> m_points;
+  std::vector<SingularityPoint::Slot*> m_slots;
+  std::vector<SingularityPatch *> m_patchs;
   std::vector<gmds::math::Point > m_discretization_points;
   int m_number;
+  int m_linkedEdgeID = -1;
 
 };
 /*----------------------------------------------------------------------------*/
