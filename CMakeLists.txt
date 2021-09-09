@@ -177,6 +177,16 @@ GMDS_ADD_COMPONENT(
         ON
         ON                                # must be covered
 )
+GMDS_ADD_COMPONENT(
+        GEOD_HONEY_COMB
+        geodHoneyComb
+        GMDSGeodHoneyComb
+        "Algorithms to create honeycomb like meshes for spherical geometries"
+        ON
+        ON                                # must be covered
+)
+
+
 #==============================================================================
 #mettre les find package uniquement ou necessaire
 # faire pareil en dessous avec External project
