@@ -115,17 +115,16 @@ void PointConnectionBuilder::execute()
     //======================================================================
     // STEP 4 - Correction of the oriented-edges to create edges
     //======================================================================
-    std::vector<std::vector<OrientedEdge> > oriented_edges;
-    buildEdges(oriented_edges_init,oriented_edges);
+    buildEdges(oriented_edges_init,m_edges);
     
 
     if(m_with_debug_info)
-        writeEdges(oriented_edges, m_output_dir+"/EDGES_GLOBAL");
+        writeEdges(m_edges, m_output_dir+"/EDGES_GLOBAL");
 
     //======================================================================
     // STEP 5 - For each stable point compute and store its hex-corners
     //======================================================================
-    buildHexCorners(oriented_edges);
+    buildHexCorners(m_edges);
 
     //======================================================================
     // STEP 6 - Build stable hexahedral elts
@@ -1035,6 +1034,20 @@ buildOrientedEdges(std::vector<std::vector<OrientedEdge> >& AEdges)
         } //for(auto axis=0; axis<3; axis++)
         AEdges[i]=edges_i;
         
+    }
+}
+/*---------------------------------------------------------------------------*/
+void PointConnectionBuilder::
+getEdges(std::map<int, int> &AEdges) {
+    for(auto edge_set:m_edges){
+        for(auto e : edge_set){
+            auto i = e.first;
+            auto j = e.second;
+            if(i<j)
+                AEdges[i]=j;
+            else
+                AEdges[j]=i;
+        }
     }
 }
 /*---------------------------------------------------------------------------*/

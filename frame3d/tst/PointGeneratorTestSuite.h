@@ -13,6 +13,7 @@
 #include <gmds/frame3d/PointGenerator.h>
 #include <gmds/frame3d/PGPComputing.h>
 #include <gmds/frame3d/PGPStructPointExtraction.h>
+#include <gmds/frame3d/PointConnectionBuilder.h>
 /*----------------------------------------------------------------------------*/
 #include <iostream>
 #include <gmds/io/VTKWriter.h>
@@ -185,8 +186,8 @@ TEST(PointGeneratorTestSuite, test_point_generator)
     LogStream ls(&std::cout);
     Log::mng().addStream(ls);
     Mesh m(MeshModel(DIM3 | R | F | E | N |
-                     R2N | F2N | E2N | R2F | F2R |
-                     F2E | E2F | R2E | N2R | N2F | N2E));
+    R2N | F2N | E2N | R2F | F2R |
+    F2E | E2F | R2E | N2R | N2F | N2E));
     std::string dir(TEST_SAMPLES_DIR);
     std::string vtk_file = dir+"/B0.vtk";
 
@@ -220,7 +221,6 @@ TEST(PointGeneratorTestSuite, test_point_generator)
     ptg.execute();
 
     std::cout<<"NB POINTS = "<<ptg.points().size()<<std::endl;
-    //    writePoints(ptg->points());
 
     MeshModel model(DIM3 | R  | N | R2N );
     Mesh point_mesh(model);
@@ -236,6 +236,62 @@ TEST(PointGeneratorTestSuite, test_point_generator)
     writer2.write("GeneratedPoints.vtk");
     ASSERT_EQ(ptg.points().size(),372);
     tear_down_point_generation_tests(&m, &pm);
+}
+/*----------------------------------------------------------------------------*/
+TEST(PointGeneratorTestSuite, test_hex_extraction)
+{
+    Log::mng().clear();
+    LogStream ls(&std::cout);
+    Log::mng().addStream(ls);
+    Mesh m(MeshModel(DIM3 | R | F | E | N |
+    R2N | F2N | E2N | R2F | F2R |
+    F2E | E2F | R2E | N2R | N2F | N2E));
+    std::string dir(TEST_SAMPLES_DIR);
+    std::string vtk_file = dir+"/B0.vtk";
+
+    ParamsGlobal pg;
+    ParamsFrameField pf;
+    ParamsMark pm;
+    std::map<gmds::TCellID, gmds::math::Vector3d> bnd_normals;
+
+    setup_point_generation_tests(vtk_file,&m,&pg,&pf, &pm, bnd_normals);
+
+
+    OpenNLFieldSolverStrategy* solver = new OpenNLFieldSolverStrategy();
+    FieldGenerator ffg(solver, &m, pg, pf, pm);
+    ffg.execute();
+
+    Variable<math::Chart>* ch = m.getVariable<math::Chart, GMDS_NODE>( "SHChart" );
+    Variable<math::AxisAngleRotation>* axis_angle = m.newVariable<math::AxisAngleRotation, GMDS_NODE>("rotation_field");
+    for(auto n_id:m.nodes()){
+        math::AxisAngleRotation aar(ch->value(n_id));
+        axis_angle->set(n_id, aar);
+    }
+    //==================================================================
+    //We call the point generation algorithm
+    PointGenerator ptg (&m,
+                        pg,
+                        bnd_normals,
+                        pm,
+                        1,
+                        0.35);
+
+    ptg.execute();
+
+    std::cout<<"NB POINTS = "<<ptg.points().size()<<std::endl;
+
+    PointConnectionBuilder pcb(&m,
+                               ptg.points(),
+                               ptg.charts(),
+                               ptg.pointMeshData(),
+                               ptg.pointTypes(),
+                               ptg.pointClassification(),
+                               ptg.pointCurveNumbering(),
+                               ptg.pointSurfaceNumbering(),
+                               ptg.pointSurfaceNormal());
+    pcb.setDebugInfo(true);
+    pcb.execute();
+
 }
 /*----------------------------------------------------------------------------*/
 TEST(PointGeneratorTestSuite, test_PGP)
