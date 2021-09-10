@@ -66,7 +66,7 @@ public:
      *
      * @param[out] AEdges built edges.
      */
-    void getEdges(std:map<int,int >& AEdges);
+    void getEdges(std::map<int,int >& AEdges);
 
     /*------------------------------------------------------------------------*/
     /** \brief Access to the generated mesh
