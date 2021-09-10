@@ -59,7 +59,15 @@ public:
     /** \brief Function to be called for generating the mesh
      */
     void execute();
-    
+    /*------------------------------------------------------------------------*/
+    /** \brief Returns edge info. Once performed the algorithm, we can acces to
+     *         edges which are defined by the point index int the vector of
+     *         point given when constructing *this
+     *
+     * @param[out] AEdges built edges.
+     */
+    void getEdges(std::map<int,int >& AEdges);
+
     /*------------------------------------------------------------------------*/
     /** \brief Access to the generated mesh
      * 
@@ -74,6 +82,15 @@ public:
      */
     void setDebugInfo(const bool& AWithDebug,
                       const std::string& AOutputDir=".");
+
+    /*------------------------------------------------------------------------*/
+    /** @brief In order to minimise some spatial research a spacing parameter
+     *         is used in the code. Its setting is not obvious, so we can change
+     *         it by this way for experiments
+     *
+     * @param ASpacing spacing value used in spatial search
+     */
+    void setSpacing(const double ASize=1.0){m_spacing=ASize;}
 protected:
     
     enum EPointClassification{
@@ -554,8 +571,8 @@ protected:
     /** the expected spacing between points */
     double m_spacing;
     double m_dot_tolerance;
-    
-
+    /** we store computed edges in this variable */
+    std::vector<std::vector<OrientedEdge> > m_edges;
     /** mapping from each point to the number of hex corner it must be in*/
     std::map<int, std::vector<HexCorner> > m_hc_mapping;
     std::map<int, gmds::Node> m_node_mapping;
