@@ -16,6 +16,7 @@ set(GMDS_INC
         inc/gmds/utils/Log.h
         inc/gmds/utils/LogStream.h
         inc/gmds/utils/Marks32.h
+        inc/gmds/utils/OrientedGraph.h
         inc/gmds/utils/Parameters.h
         inc/gmds/utils/SmartVector.h
         inc/gmds/utils/Variable.h
@@ -30,6 +31,7 @@ set(GMDS_SRC
         src/VariableManager.cpp
         src/FileSystem.cpp
         src/LocalCellTopology.cpp
+        src/OrientedGraph.cpp
         src/Parameters.cpp
         src/RandomGenerator.cpp
         )

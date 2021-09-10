@@ -14,6 +14,7 @@ set(GMDS_INC
         inc/gmds/frame3d/FieldGenerator.h
         inc/gmds/frame3d/FieldSolverStrategyItf.h
         inc/gmds/frame3d/FrameFieldLaplacianSmoothing.h
+        inc/gmds/frame3d/PointConnectionBuilder.h
         inc/gmds/frame3d/OpenNLFieldSolverStrategy.h
         inc/gmds/frame3d/PointGenerator.h
         inc/gmds/frame3d/Params.h
@@ -26,6 +27,7 @@ set(GMDS_SRC
         src/FEMSolverStrategy.cpp
         src/EigenFieldSolverStrategy.cpp
         src/FrameFieldLaplacianSmoothing.cpp
+        src/PointConnectionBuilder.cpp
         src/OpenNLFieldSolverStrategy.cpp
         src/PointGenerator.cpp
         src/SingularityLineHelper.cpp
