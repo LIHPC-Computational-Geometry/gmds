@@ -110,7 +110,7 @@ void PointConnectionBuilder::execute()
 
     
     if(m_with_debug_info) {
-        writeEdges(oriented_edges_init, m_output_dir + "/EDGES_LOCAL");
+        writeEdges(oriented_edges_init, m_output_dir + "/EDGES_LOCAL.vtk");
     }
     //======================================================================
     // STEP 4 - Correction of the oriented-edges to create edges
@@ -119,7 +119,7 @@ void PointConnectionBuilder::execute()
     
 
     if(m_with_debug_info)
-        writeEdges(m_edges, m_output_dir+"/EDGES_GLOBAL");
+        writeEdges(m_edges, m_output_dir+"/EDGES_GLOBAL.vtk");
 
     //======================================================================
     // STEP 5 - For each stable point compute and store its hex-corners
@@ -1635,11 +1635,10 @@ void PointConnectionBuilder::writeInput()
         (*var_surf)[r.id()] = m_surface[i];
         (*var_used)[r.id()] = m_used[i];
     }
-    static int nb_file=0;
     std::string file_pnts, file_charts;
-    file_pnts=m_output_dir+"/PCB_INPUT_PNTS_"+to_string(nb_file);
-    file_charts=m_output_dir+"/PCB_INPUT_CHARTS_"+to_string(nb_file);
-    nb_file++;
+    file_pnts=m_output_dir+"/PCB_INPUT_PNTS.vtk";
+    file_charts=m_output_dir+"/PCB_INPUT_CHARTS.vtk";
+
 
     IGMeshIOService ioService(&mesh_pnts);
     VTKWriter vtkWriter(&ioService);
@@ -1690,7 +1689,7 @@ void PointConnectionBuilder::writeHexes() {
     VTKWriter vtkWriter(&ioService);
     vtkWriter.setCellOptions(N | F | R);
     vtkWriter.setDataOptions(N | F | R);
-    std::string file_name = m_output_dir + "/EXTRACTED_HEX";
+    std::string file_name = m_output_dir + "/EXTRACTED_HEX.vtk";
     vtkWriter.write(file_name);
 }
 /*----------------------------------------------------------------------------*/

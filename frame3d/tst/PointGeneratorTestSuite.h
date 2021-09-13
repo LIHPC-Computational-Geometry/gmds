@@ -290,6 +290,7 @@ TEST(PointGeneratorTestSuite, test_hex_extraction)
                                ptg.pointSurfaceNumbering(),
                                ptg.pointSurfaceNormal());
     pcb.setDebugInfo(true);
+    pcb.setDebugInfo(0.3);
     pcb.execute();
 
 }
