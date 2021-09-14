@@ -108,9 +108,11 @@ public:
 	* \param AMarkNodePnt mark for nodes classified on points
 	* \param AMarkNodeCrv mark for nodes classified on curves
 	* \param AMarkEdgeCrv mark for edges classified on curves
+	* \param AMarkNodeForbiddenBdry mark for nodes on "forbidden curve" : 
+				curves on which no singularity will be created
 	*/
 	void initMarks(const int AMarkNodePnt, const int AMarkNodeCrv,
-	               const int AMarkEdgeCrv);
+	               const int AMarkEdgeCrv, const int AMarkNodeForbiddenBdry);
 
 	/*----------------------------------------------------------------------------------------------------*/
     
@@ -473,16 +475,30 @@ protected:
     
 	/** flag that indicates if geometric singularity points must be built */
 	bool m_build_geometric_singularities;
-	/** mark for nodes classified on geometric points */
+
+	// @ { input marks provided by user
+	/* mark for nodes classified on geometric points */
 	int m_mark_nodes_on_point;
-	/** mark for nodes classified on geometric curves */
+	/* mark for nodes classified on geometric curves */
 	int m_mark_nodes_on_curve;
-	/** mark for edges classified on geometric curves */
+	/* mark for edges classified on geometric curves */
 	int m_mark_edges_on_curve;
-    
+	 /* mark for forbidden boundary node */
+	int m_mark_forbiddenBdryNode;
+	// @ } 
+
+	// @ {  internal marks
+    /* mark on forbidden boundary edge*/
+	int m_mark_forbiddenBdryEdge;
+	/* mark for faces containing a singularity point of the cross field*/
+	int m_mark_faces_with_sing_point;
+	/* mark for faces traversed by a singularity line of the cross field*/
+	int m_mark_faces_with_sing_line;
+    // @ } 
+
 	/**the obtained singularity graph*/
 	SingularityGraph m_graph;
-    
+
 	/** radius of the bounding box containing m_mesh. */
 	double m_mesh_radius;
 	/** confusing distance used for connecting graph lines and points in the original strategy*/
@@ -510,12 +526,7 @@ protected:
 	std::list<gmds::Face> m_singularities_3;
 	/** list of faces containing a 5-valent singularity point */
 	std::list<gmds::Face> m_singularities_5;
-    
-	/** mark for faces containing a singularity point of the cross field*/
-	int m_mark_faces_with_sing_point;
-	/** mark for faces traversed by a singularity line of the cross field*/
-	int m_mark_faces_with_sing_line;
-    
+        
 	/** map used by the confusing ball. For faces, edges and nodes that are not
      located into a singularity, maps return value 0. */
 	std::map<gmds::TCellID, SingularityPoint*> m_faces_to_singularity_on_surf;

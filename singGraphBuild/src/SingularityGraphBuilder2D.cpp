@@ -116,7 +116,8 @@ class Timer
 		stop();
 		start(name);
 	}
-	void start(const std::string &name) {
+	void start(const std::string &name)
+	{
 		m_name = name;
 		m_t0 = Clock::now();
 	}
@@ -275,14 +276,14 @@ SingularityGraphBuilder2D::getQuadMesh()
 	return mesh;
 }
 
-SingularityGraphBuilder2D& 
+SingularityGraphBuilder2D &
 SingularityGraphBuilder2D::setQuadMeshSmoothingEnable(bool enableSmoothing)
 {
 	m_enableQuadMeshSmoothing = enableSmoothing;
 	return *this;
 }
 
-SingularityGraphBuilder2D& 
+SingularityGraphBuilder2D &
 SingularityGraphBuilder2D::setDebugFilesWritingEnable(bool enableDebugFilesWriting)
 {
 	m_enableDebugFilesWriting = enableDebugFilesWriting;
@@ -311,6 +312,7 @@ SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number
 	//==================================================================
 	m_mark_faces_with_sing_point = m_mesh->newMark<Face>();
 	m_mark_faces_with_sing_line = m_mesh->newMark<Face>();
+	m_mark_forbiddenBdryEdge = m_mesh->newMark<Edge>();
 
 	m_original_faces_number = m_mesh->getNbFaces();
 	m_original_nodes_number = m_mesh->getNbNodes();
@@ -409,8 +411,10 @@ SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number
 	//========================================================================
 	m_mesh->unmarkAll<Face>(m_mark_faces_with_sing_point);
 	m_mesh->unmarkAll<Face>(m_mark_faces_with_sing_line);
+	m_mesh->unmarkAll<Edge>(m_mark_forbiddenBdryEdge);
 	m_mesh->freeMark<Face>(m_mark_faces_with_sing_point);
 	m_mesh->freeMark<Face>(m_mark_faces_with_sing_line);
+	m_mesh->freeMark<Edge>(m_mark_forbiddenBdryEdge);
 
 	std::cout << "--> Nb generated faces: " << m_graph.getNbSurfacePatches() << std::endl;
 	std::cout << "========================================" << std::endl;
@@ -683,11 +687,12 @@ SingularityGraphBuilder2D::detectSingularTriangles()
 /*---------------------------------------------------------------------------*/
 
 void
-SingularityGraphBuilder2D::initMarks(const int AMarkNodePnt, const int AMarkNodeCrv, const int AMarkEdgeCrv)
+SingularityGraphBuilder2D::initMarks(const int AMarkNodePnt, const int AMarkNodeCrv, const int AMarkEdgeCrv, const int AMarkNodeForbiddenBdry)
 {
 	m_mark_nodes_on_point = AMarkNodePnt;
 	m_mark_nodes_on_curve = AMarkNodeCrv;
 	m_mark_edges_on_curve = AMarkEdgeCrv;
+	m_mark_forbiddenBdryNode = AMarkNodeForbiddenBdry;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1000,27 +1005,38 @@ SingularityGraphBuilder2D::addGeometryToSingularityGraph(vector<CurveSingularity
 				listOfNodesInSingRight.push_back(NodeRight.id());
 			}
 			//------------------------------------------------------------------------------------
-			// creating the curveSingline : [ reversedLeftNodes..., currentNode, rightNodes...]
-			CurveSingularityLine *new_line = m_graph.newCurveLine();
+			// create the singularity line
+			//------------------------------------------------------------------------------------
+			CurveSingularityLine *new_line = m_graph.newCurveLine(); //  [ reversedLeftNodes..., currentNode, rightNodes...]
 
-			for (unsigned int i = 0; i < listOfNodesInSingLeft.size(); i++) {
-
-				Node nodeOnLeft = m_mesh->get<Node>(listOfNodesInSingLeft[listOfNodesInSingLeft.size() - 1 - i]);
-				new_line->addDiscretizationPoint(nodeOnLeft.getPoint());
-			}
-
-			new_line->addDiscretizationPoint(currentNode.getPoint());
-
-			for (unsigned int i = 0; i < listOfNodesInSingRight.size(); i++) {
-
-				Node nodeOnRight = m_mesh->get<Node>(listOfNodesInSingRight[i]);
-				new_line->addDiscretizationPoint(nodeOnRight.getPoint());
-			}
-
+			// add all edges
 			std::vector<Edge> curve_edges;
 			curve_edges.insert(curve_edges.end(), edgesLeft.rbegin(), edgesLeft.rend());
 			curve_edges.insert(curve_edges.end(), edgesRight.begin(), edgesRight.end());
 			new_line->setMeshEdges(curve_edges);
+
+			// put all nodes into one vector
+			std::vector<TCellID> curve_nodes;
+			curve_nodes.insert(curve_nodes.end(), listOfNodesInSingLeft.rbegin(), listOfNodesInSingLeft.rend());
+			curve_nodes.emplace_back(currentNode.id());
+			curve_nodes.insert(curve_nodes.end(), listOfNodesInSingRight.begin(), listOfNodesInSingRight.end());
+
+			// mark forbidden edges
+			for (int i = 0; i < curve_nodes.size() - 1; ++i) {
+				const TCellID id1 = curve_nodes[i];
+				const TCellID id2 = curve_nodes[i + 1];
+				if (m_mesh->isMarked<Node>(id1, m_mark_forbiddenBdryNode) && m_mesh->isMarked<Node>(id2, m_mark_forbiddenBdryNode)) {
+					const TCellID edge = curve_edges[i].id();
+					m_mesh->mark<Edge>(edge, m_mark_forbiddenBdryEdge);
+				}
+			}
+
+			// add to node location to line discretization
+			for (const TCellID id : curve_nodes) {
+				Node node = m_mesh->get<Node>(id);
+				new_line->addDiscretizationPoint(node.getPoint());
+			}
+
 			added_geom_lines.push_back(new_line);
 		}
 	}
@@ -1042,6 +1058,10 @@ SingularityGraphBuilder2D::addGeometryToSingularityGraph(vector<CurveSingularity
 				new_line->addDiscretizationPoint(n1.getPoint());
 				new_line->addDiscretizationPoint(n2.getPoint());
 				added_geom_lines.push_back(new_line);
+
+				if (m_mesh->isMarked(n1, m_mark_forbiddenBdryNode) && m_mesh->isMarked(n2, m_mark_forbiddenBdryNode)) {
+					m_mesh->mark<Edge>(e_id, m_mark_forbiddenBdryEdge);
+				}
 			}
 		}
 	}

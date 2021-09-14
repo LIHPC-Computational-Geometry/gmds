@@ -75,6 +75,7 @@ main(int argc, char *argv[])
 		int edge_curve_mark = mesh.newMark<gmds::Edge>();
 		int node_curve_mark = mesh.newMark<gmds::Node>();
 		int node_point_mark = mesh.newMark<gmds::Node>();
+		int node_forbiddenBdry_mark = mesh.newMark<gmds::Node>();
 
 		BoundaryOperator boundaryOp(&mesh);
 		boundaryOp.markCellsOnCurves(edge_curve_mark, node_curve_mark);
@@ -93,7 +94,7 @@ main(int argc, char *argv[])
 			math::Vector3d vx = (*field_X)[n.id()];
 			(*field)[n.id()] = math::Cross2D(4 * vx.angle(OX));
 		}
-
+	
 		auto t1 = Clock::now();
 		std::cout << "topology preparation " << std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count() << " milliseconds" << std::endl;
 		//==================================================================
@@ -112,7 +113,7 @@ main(int argc, char *argv[])
 		}
 
 		algo->setDebugPrefix(outDir + "/sgb");
-		algo->initMarks(node_point_mark, node_curve_mark, edge_curve_mark);
+		algo->initMarks(node_point_mark, node_curve_mark, edge_curve_mark, node_forbiddenBdry_mark);
 		// User must choose the number of control Points for the Bezier curve computation (last step)
 		// WARNING if the number chosen exceeds the original number of points for the curve, the latter will be chosen
 
@@ -125,9 +126,11 @@ main(int argc, char *argv[])
 		mesh.unmarkAll<Node>(node_curve_mark);
 		mesh.unmarkAll<Node>(node_point_mark);
 		mesh.unmarkAll<Edge>(edge_curve_mark);
+		mesh.unmarkAll<Node>(node_forbiddenBdry_mark);
 		mesh.freeMark<Node>(node_curve_mark);
 		mesh.freeMark<Node>(node_point_mark);
 		mesh.freeMark<Edge>(edge_curve_mark);
+		mesh.freeMark<Node>(node_forbiddenBdry_mark);
 	}
 	catch (exception &e) {
 		std::cout << e.what();

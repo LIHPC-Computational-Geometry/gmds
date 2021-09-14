@@ -65,6 +65,7 @@ TEST(SingGraphBuilder2DTest, halfDisk)
 	int edge_curve_mark = mesh.newMark<gmds::Edge>();
 	int node_curve_mark = mesh.newMark<gmds::Node>();
 	int node_point_mark = mesh.newMark<gmds::Node>();
+	int node_forbiddenBdry_mark = mesh.newMark<gmds::Node>();
 
 	BoundaryOperator boundaryOp(&mesh);
 	boundaryOp.setSurfaceAngleDot(0.86);     // pi/6
@@ -92,7 +93,7 @@ TEST(SingGraphBuilder2DTest, halfDisk)
 	SingularityGraphBuilder2D::Strategy strat = SingularityGraphBuilder2D::shortestPaths;
 	auto algo = SingGraphBuilder2DShortestPath(&mesh, field, BuildGeomSing);
 	algo.setDebugPrefix("singGraphBuilderTest");
-	algo.initMarks(node_point_mark, node_curve_mark, edge_curve_mark);
+	algo.initMarks(node_point_mark, node_curve_mark, edge_curve_mark, node_forbiddenBdry_mark);
 	algo.setQuadMeshSmoothingEnable(true);
 	algo.setDebugFilesWritingEnable(true);
 
@@ -112,9 +113,11 @@ TEST(SingGraphBuilder2DTest, halfDisk)
 	mesh.unmarkAll<Node>(node_curve_mark);
 	mesh.unmarkAll<Node>(node_point_mark);
 	mesh.unmarkAll<Edge>(edge_curve_mark);
+	mesh.unmarkAll<Node>(node_forbiddenBdry_mark);
 	mesh.freeMark<Node>(node_curve_mark);
 	mesh.freeMark<Node>(node_point_mark);
 	mesh.freeMark<Edge>(edge_curve_mark);
+	mesh.freeMark<Node>(node_forbiddenBdry_mark);
 
 	const ::SingularityGraph &g = algo.graph();
 	ASSERT_EQ(g.getNbPoints(), 80);

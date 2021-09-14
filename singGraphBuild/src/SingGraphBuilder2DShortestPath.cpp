@@ -343,6 +343,7 @@ SingGraphBuilder2DShortestPath::setGLPKTimeLimit(int glpkTimeLimit)
 {
 	m_glpkTimeLimit = glpkTimeLimit;
 }
+
 /*----------------------------------------------------------------------------------------------------*/
 /*----------------------    Graph building functions     ---------------------------------------------*/
 /*----------------------------------------------------------------------------------------------------*/
@@ -487,7 +488,7 @@ SingGraphBuilder2DShortestPath::findBoundary(const math::Ray &ray, const TCellID
 
 	const Face &u = m_mesh->get<Face>(currentFace);
 	for (const Edge &currentEdge : u.get<Edge>()) {
-		if (m_mesh->isMarked(currentEdge, m_mark_edges_on_curve)) {
+		if (m_mesh->isMarked(currentEdge, m_mark_edges_on_curve) && !m_mesh->isMarked(currentEdge, m_mark_forbiddenBdryEdge)) {
 
 			hasBdryEdge = true;
 			if (ray.SecondMetIntersect2D(currentEdge.segment(), endPoint, intersectionParam, m_temp_epsilon)) {
@@ -509,7 +510,7 @@ SingGraphBuilder2DShortestPath::findBoundary(const math::Ray &ray, const TCellID
 			if (m_mesh->isMarked(currentNode, m_mark_nodes_on_point) || m_mesh->isMarked(currentNode, m_mark_nodes_on_curve)) {
 
 				for (const Edge &currentEdge : currentNode.get<Edge>()) {
-					if (m_mesh->isMarked(currentEdge, m_mark_edges_on_curve)) {
+					if (m_mesh->isMarked(currentEdge, m_mark_edges_on_curve) && !m_mesh->isMarked(currentEdge, m_mark_forbiddenBdryEdge)) {
 
 						if (ray.SecondMetIntersect2D(currentEdge.segment(), endPoint, intersectionParam, m_temp_epsilon)) {
 
@@ -556,8 +557,7 @@ SingGraphBuilder2DShortestPath::createSingularityLines()
 	// build singularityLines from shortest paths
 	createSolvedSingularityLines();
 
-	if (m_enableDebugFilesWriting)
-		writeShortestPathMesh(m_graph.getSurfaceLines(), std::string(m_output_directory_name + "-ShortestPaths_result.vtk"));
+	if (m_enableDebugFilesWriting) writeShortestPathMesh(m_graph.getSurfaceLines(), std::string(m_output_directory_name + "-ShortestPaths_result.vtk"));
 }
 
 void
@@ -753,7 +753,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 			const math::Vector3d closestToPrevCross = crossV.closestComponentVector(sourceDirection);
 			cellCosts[source].orientedCost = 0;
 			cellCosts[source].absoluteCost = directionnalAngle + sourceDirection.angle(closestToPrevCross);
-			cellCosts[source].penalty = directionnalAngle > math::Constants::PIDIV4 ? turnPenalizationTerm : 0.0;			
+			cellCosts[source].penalty = directionnalAngle > math::Constants::PIDIV4 ? turnPenalizationTerm : 0.0;
 			previousCrossDirection[source] = closestToPrevCross;
 			vertex_queue.insert(std::make_pair(cellCosts[source].getFullCost(), source));
 		}
@@ -820,7 +820,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 					if (validTargetReached.size() >= m_maxNValidSurfaceTarget) return;
 				}
 			}
-			previousCostParam.penalty += turnPenalizationTerm / 100; // passing nearby a target incurs a small penalty
+			previousCostParam.penalty += turnPenalizationTerm / 100;     // passing nearby a target incurs a small penalty
 		}
 
 		// search for boundary
@@ -916,7 +916,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 		}
 	}
 
-	if (m_visualizeCost) writeCostPerSlot(m_mesh, m_output_directory_name + " -slotCost_" + std::to_string(contSource) + ".vtk", cellCosts);	
+	if (m_visualizeCost) writeCostPerSlot(m_mesh, m_output_directory_name + " -slotCost_" + std::to_string(contSource) + ".vtk", cellCosts);
 }
 
 std::vector<std::pair<unsigned int, unsigned int>>
@@ -1579,7 +1579,7 @@ SingGraphBuilder2DShortestPath::LineIntersectionDetector::detectAndCreateInterse
 		m_graphBuilder->m_graph.splitSurfaceLineSimple(intersection.singPoint, intersection.singLine, intersection.prevPointID);
 	}
 
-	if(m_graphBuilder->m_enableDebugFilesWriting)		
+	if (m_graphBuilder->m_enableDebugFilesWriting)
 		writeGraphPoint(m_graphBuilder->m_graph.getPoints(), m_graphBuilder->m_output_directory_name + std::string("gaphPointsAfterLineIntersection.vtk"));
 }
 
