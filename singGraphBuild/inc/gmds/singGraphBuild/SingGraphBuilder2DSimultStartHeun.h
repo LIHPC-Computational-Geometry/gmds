@@ -13,11 +13,12 @@
 #include <gmds/singGraphBuild/SingularityGraphBuilder2D.h>
 #include <gmds/singGraphBuild/Tools.h>
 /*----------------------------------------------------------------------------*/
+namespace gmds {
 
 class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DSimultStartHeun : public SingularityGraphBuilder2D
 {
  public:
-	SingGraphBuilder2DSimultStartHeun(gmds::Mesh *AMesh, gmds::Variable<gmds::math::Cross2D> *AField, const bool ABuildGeomSing = true);
+	SingGraphBuilder2DSimultStartHeun(Mesh *AMesh, Variable<math::Cross2D> *AField, const bool ABuildGeomSing = true);
 
 	/*----------------------------------------------------------------------------------------------------*/
 	/** \brief Creation of singularity lines starting simultaneously from all singularities
@@ -26,3 +27,4 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DSimultStartHeun : public Sin
 	 */
 	void createSingularityLines();
 };
+}

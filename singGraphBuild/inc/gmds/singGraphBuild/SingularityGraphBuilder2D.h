@@ -14,6 +14,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <memory>
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
 #include <gmds/math/Quaternion.h>
@@ -28,6 +29,8 @@
 /** \brief Class providing an algorithm to build a 2D singularity graph from
  *         a triangular mesh and a 2D cross field defined on this mesh
  */
+namespace gmds {
+
 class LIB_GMDS_SINGGRAPHBUILD_API SingularityGraphBuilder2D
 {
 public:
@@ -79,6 +82,15 @@ public:
 	/** \brief Execution of the algorithm with the chosen AStrategy
 	*/
 	void execute(const Strategy AStrategy, unsigned int number_of_control_points);
+	/*----------------------------------------------------------------------------------------------------*/
+	/* \brief Returns a unique ptr of the mesh extracted fom the singularity graph 	*/
+	std::unique_ptr<Mesh> getQuadMesh();
+	/*----------------------------------------------------------------------------------------------------*/
+	/* \brief Allows to optimize the final quad mesh : bring edge ratio to closer to 1.0 as well as angle closer to 90° */
+	SingularityGraphBuilder2D& setQuadMeshSmoothingEnable(bool enableQuadMeshSmoothing);
+	/*----------------------------------------------------------------------------------------------------*/
+	/* \brief Optimizes the edges Ratio to be closed to 1 as well as angle close to 90° */
+	SingularityGraphBuilder2D& setDebugFilesWritingEnable(bool enableDebugFilesWriting);
     /*----------------------------------------------------------------------------------------------------*/
     /** \brief gives acces to the build graph
     */
@@ -103,8 +115,6 @@ public:
 	/*----------------------------------------------------------------------------------------------------*/
     
 protected:
-	void colorFaces(const int markF, const int markE);
-    
 	/*----------------------------------------------------------------------------------------------------*/
 	/** \brief  Detect the triangles that contain singularity points
 	*/
@@ -428,123 +438,6 @@ protected:
 	                             std::vector<gmds::TCellID>&     ATriangles,                 
 	                             double&                         streamlineDeviation);
 	
-	/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-	/** \brief get the shortest path between a singular face and all other singular faces by 'walking from face center to face center' in the new local mesh
-	*
-	* \param[in] source    the singular face from which we start
-	* \param[in] targets   all the other singular face
-	* \param[out] min_distance    min_distance[i] - minimum distance between source and face "i" - 
-	* 						first - total distance
-	* 						second - number of crossed faces to get to "i" from source
-	* 						this distance is a combination between the matching numbers between 2 faces and the 
-	* deviation of the cross field (across the centers of all visited faces)
-	* \param[out] previous     the id of the previous visited face
-	* \param[out] found        the first singularity face we arrive into
-	* \param[in] face2FaceNeighboursByVerts     the neighbours of a face (considered as the adjacent faces to the 3 vertices of the current face)
-	* \param[in] face2FaceTransport     the matching number between a face and its neighbours (same order as face2FaceNeighbours) 
-	* \param[in] face2FaceDeviation     the deviation between a face and its neighbours (same order as face2FaceNeighbours) (calculated as the deviation of the cross field in between triangle centers)
-	* \param[in] isBdryFace       boolean value indicating if the face is on the boundary  
-	* \param[in] prevDir          previous direction
-	* \param[in] prevDirCross     previous direction and previous cross (dictated by the previous triangle in which we were)
-	* \param[in] targetDirCross   target (opposite) direction and cross (dictated by the triangle in which we want to arrive)
-	* \param[in] targetBdry boolean value indicating if our target is the boundary
-	* \param[in] startPoint last added point (using RK4) for the begining slot; it is located inside face \param[in] source
-	* \param[in] endPoint last added point (using RK4) for the enfing slot; it is located inside face \param[in] targets[0];
-	* \param[out] endPoint last added point on the boundary
-	* \param[in] maxDist  minimum weight for penalizing a path which switched the cross component direction 
-	*/
-	void getShortestPathBtwFacesOptimizedNewLocalMesh(gmds::TCellID&                                                              source,
-	                                                  vector<unsigned int>&                                                       targets,
-	                                                  vector<pair<double, unsigned int>>&                                         min_distance,
-	                                                  vector<int>&                                                                previous, 
-	                                                  int&                                                                        found,
-	                                                  vector<vector<double>>&                                                     face2FaceMatch, 
-	                                                  vector<vector<unsigned int>>&                                               face2FaceDeviation,
-	                                                  pair<gmds::math::Vector3d, gmds::math::Vector3d>&                           prevDirCross,
-	                                                  vector<pair<gmds::math::Vector3d, gmds::math::Vector3d>>&                   targetDirCross,
-	                                                  bool&                                                                       targetBdry,
-	                                                  vector<bool>&                                                               is_bdry_face,
-	                                                  gmds::math::Point&                                                          startPoint,
-	                                                  gmds::math::Point&                                                          endPoint,
-	                                                  double&                                                                     maxDist,
-	                                                  int&                                                                        to_cell_dim, 
-	                                                  gmds::TCellID&                                                              to_cell_id,
-	                                                  gmds::TCellID&                                                              lastVisTri,
-	                                                  unsigned int&                                                               contSource,
-	                                                  unsigned int&                                                               colNo,
-	                                                  unsigned int&                                                               totalNumberOfSlots,
-	                                                  vector<unsigned int>&                                                       faceNo2Cont,
-	                                                  vector<vector<vector<gmds::math::Point>>>&                                  line_discretization,
-	                                                  vector<vector<vector<gmds::TCellID>>>&                                      line_triangles,
-	                                                  vector<vector<pair<vector<gmds::math::Point>, vector<gmds::math::Point>>>>& pointPaths,
-	                                                  vector<vector<vector<gmds::TCellID>>>&                                      finalPaths,
-	                                                  vector<vector<vector<gmds::math::Point>>>&                                  finalCenterPoints,
-	                                                  vector<vector<vector<gmds::TCellID>>>&                                      traversedSPTris,
-	                                                  vector<vector<double>>&                                                     distances,
-	                                                  vector<pair<unsigned int, unsigned int>>&                                   IllegalCross,
-	                                                  vector<pair<vector<unsigned int>, vector<unsigned int >>>&                  isTraversedFace,
-	                                                  vector<pair<unsigned int, unsigned int>>&                                   contSourceToSingularity,
-	                                                  vector<bool>&                                                               singOrGeomFaces,
-	                                                  gmds::Mesh*                                                                 newLocalMesh,
-	                                                  vector<gmds::TCellID>&                                                      newLocalMesh_id_to_mesh_id_node,
-	                                                  vector<gmds::TCellID>&                                                      mesh_id_to_newLocalMesh_id_node,
-	                                                  vector<gmds::TCellID>&                                                      newLocalMesh_id_to_mesh_id_face,
-	                                                  vector<gmds::TCellID>&                                                      mesh_id_to_newLocalMesh_id_face,
-	                                                  gmds::Variable<gmds::math::Cross2D>*                                        newMesh_cross_field_2D,
-	                                                  vector<bool>&                                                               trianglesToRemeshBool,
-	                                                  vector<gmds::math::Vector3d>&                                               newBdryEdgeNormals,
-	                                                  vector<gmds::math::Vector3d>&                                               newBdryNodeNormals,
-	                                                  vector<bool>&                                                               isCurveEdge,
-	                                                  vector<bool>&                                                               isCurveNode,
-	                                                  vector<gmds::math::Point>&                                                  newTriangleCenters, 
-	                                                  vector<gmds::math::Cross2D>&                                                newTriangleCenterCrosses);
-	/*----------------------------------------------------------------------------------------------------*/
-    
-	/** \brief get the shortest path between a singular face and all other singular faces by walking through a 
-	* mesh whose nodes are the nodes of the original triangles + the centers of the original triangles;
-	* the ids for the new mesh are as follows: the first ids correspond to the original nodes and the following 
-	* are in the interval[m_mesh->getNbNodes(), m_mesh->getNbNodes() + m_mesh->getNbFaces()], in the order of the face ids
-	*
-	* \param[in] numberOfNewNodes     total number of nodes in the new mesh (m_mesh->getNbFaces() + m_mesh->getNbNodes())
-	* \param[in] source    the singular nodes from which we start (the center of a slot face)
-	* \param[in] targets   all the other singular nodes (the centers of all the other slot faces - except the slots of the source slot singularity)
-	* \param[out] min_distance    min_distance[i] - minimum distance between source and node "i" - 
-	* 						first - total distance
-	* 						second - number of crossed noed to get to "i" from source
-	* 						this distance is a combination between the matching numbers between 2 faces and the 
-	* deviation of the cross field (across the centers of all visited faces)
-	* \param[out] previous     the id of the previous visited node
-	* \param[out] found        the first singularity node we arrive into
-	* \param[in] newNode2NewNodeNeighbours   the neighbours of a new node:
-	*                          -  neigh(originalNode) - its original adjacent nodes + the new nodes corresponding 
-	*						to the centers of its original adjacent faces
-	* 					  -  neigh(newNode) - the original nodes of the face (whose center is the newNode)  + the new 
-	* 						nodes corresponding to the centers of the original adjacent(be egde) faces 
-	* \param[in] face2FaceTransport     the matching number between a face and its neighbours (same order as face2FaceNeighbours) 
-	* \param[in] face2FaceDeviation     the deviation between a face and its neighbours (same order as face2FaceNeighbours) (calculated as the deviation of the cross field in between triangle centers)
-	* \param[in] isBdryNode       boolean value indicating if the node is on the boundary  
-	* \param[in] prevDir          previous direction
-	* \param[in] prevDirCross     previous direction and previous cross (dictated by the previous node)
-	* \param[in] targetDirCross   target (opposite) direction and cross (dictated by the node in which we want to arrive)
-	* \param[in] forbiddenNodes boolean value indicating if we are allowed to pass through a node (we shouldn't be allowed to pass through other slot faces or singularity faces, except the source and target)
-    	*/
-	int getShortestPathBtwNewNodes(unsigned int&                                             numberOfNewNodes, 
-	                               gmds::TCellID&                                            source,
-	                               vector<unsigned int>&                                     targets,                                            
-	                               vector<pair<double, unsigned int>>&                       min_distance,
-	                               vector<int>&                                              previous, 
-	                               int&                                                      found,
-	                               vector<vector<gmds::TCellID>>&                            newNode2NewNodeNeighbours,
-	                               vector<vector<double>>&                                   face2FaceTransport, 
-	                               vector<vector<unsigned int>>&                             face2FaceDeviation,
-	                               pair<gmds::math::Vector3d, gmds::math::Vector3d>&         prevDirCross,
-	                               vector<pair<gmds::math::Vector3d, gmds::math::Vector3d>>& targetDirCross,
-	                               vector<bool>&                                             forbiddenFaces,
-	                               bool&                                                     targetBdry,
-	                               gmds::math::Point&                                        startPoint,
-	                               gmds::math::Point&                                        endPoint,
-	                               double&                                                   maxDist);
-	
 	/*----------------------------------------------------------------------------*/
 	/** \brief computes the info in between 2 faces
 	*/
@@ -564,16 +457,15 @@ protected:
 	void visualizeCrossVectors();
 	/*----------------------------------------------------------------------------------------------------*/
 	void deleteArtificialNodes(vector<CurveSingularityPoint *> &artificialSingPointsCreated);
+	/*----------------------------------------------------------------------------------------------------*/
+	double computeMeanEdgeLength();
 
-	friend class LineRelaxator;
  protected:
     
 	/** Mesh we start from */
 	gmds::Mesh* m_mesh;
 	/* Cross field we start from*/
 	gmds::Variable<gmds::math::Cross2D>* m_field;
-	/** DEBUG variable which stores the index of every single triangle of m_mesh */
-	gmds::Variable<int> *m_index;
 
 	Tools m_tool;
 	/**directory where debug files will be written*/
@@ -605,6 +497,9 @@ protected:
     
 	unsigned int m_original_nodes_number;
         
+	bool m_enableQuadMeshSmoothing = false;
+	bool m_enableDebugFilesWriting = false;
+
 	bool m_withGlobalComments = false;
     
 	/* \param m_ATolerance the tolerance used to connect singularity lines and
@@ -632,40 +527,8 @@ protected:
 	vector<gmds::math::Cross2D> m_triangle_centers_cross; /*  the crosses associated to the centers of all the triangles */
 };
 
-// Manipulate Singularity Point locations from a grapgh in order to optimize the ratio of linked edges
-class LineRelaxator
-{
- public:
-	LineRelaxator(SingularityGraph *graph, const double meanEdgeLength);
 
-	void run();
-	double getWorstAngle();
-	double getWorstEdgeRatio();
-
- private:
-
-	void computeFixedGroupAndFixedLine();
-	void computeMeanEdgeLengthByGroup();
-	void applySpringForceOnPoints();
-	void movePoints();
-	void MoveIfNewLocationIsWorthTheAnglePenalty(SingularityPoint *singPoint, const gmds::math::Point newLocation);
-
-	SingularityGraph *m_graph;
-
-	double m_step;
-	std::vector<double> m_lineSpringLenght;
-	std::vector<double> m_minLengthByGroup;
-	std::vector<double> m_maxLengthByGroup;
-	std::vector<SingularityLine *> m_minLineByGroup;
-	std::vector<SingularityLine *> m_maxLineByGroup;
-
-	std::vector<size_t> m_numberOfLinePerGroup;
-	std::vector<bool> m_groupIsFixed;
-	std::map<size_t, bool> m_lineIsfixed;
-	std::map<size_t, gmds::math::Vector3d> m_directions;
-
-	std::map < size_t, std::vector<double>> m_angleAtSingularity;
-};
+}
 /*----------------------------------------------------------------------------*/
 #endif /* SINGULARITYGRAPHBUILDER_H_ */
 /*----------------------------------------------------------------------------*/

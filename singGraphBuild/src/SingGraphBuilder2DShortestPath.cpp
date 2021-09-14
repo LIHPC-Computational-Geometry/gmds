@@ -179,34 +179,6 @@ SingGraphBuilder2DShortestPath::SingGraphBuilder2DShortestPath(Mesh *AMesh, Vari
 }
 
 void
-SingGraphBuilder2DShortestPath::writeCrossCenterTri()
-{
-	Mesh m(MeshModel(DIM3 | F | N | F2N));
-
-	for (int i = 0; i < m_triangle_centers_cross.size(); i++) {
-
-		const auto &componentVectors = m_triangle_centers_cross[i].componentVectors();
-		const auto &faceCenter = m_triangle_centers[i];
-		const Node nodeCenter = m.newNode(faceCenter);
-
-		for (const auto &vect : componentVectors) {
-
-			const auto p = faceCenter + vect * m_mean_edge_length * 0.7;
-			Node node = m.newNode(p);
-			m.newTriangle(nodeCenter, nodeCenter, node);
-		}
-	}
-	IGMeshIOService meshIoServ(&m);
-	VTKWriter writer(&meshIoServ);
-	writer.setCellOptions(N | F);
-	writer.setDataOptions(N | F);
-
-	std::stringstream file_name;
-	file_name << m_output_directory_name << "-CrossCenterTri.vtk";
-	writer.write(file_name.str());
-}
-
-void
 SingGraphBuilder2DShortestPath::initializeFieldsValue()
 {
 	m_singOrGeomFaces = std::vector<bool>(m_original_faces_number, false);
@@ -567,7 +539,6 @@ SingGraphBuilder2DShortestPath::createSingularityLines()
 	// initialize variables
 	computeFaceNeighboursInfo();
 	initializeFieldsValue();
-	writeCrossCenterTri();
 
 	// begin the line discretization (first two points of each line)
 	computeStreamLineFirstPoints();
@@ -585,7 +556,8 @@ SingGraphBuilder2DShortestPath::createSingularityLines()
 	// build singularityLines from shortest paths
 	createSolvedSingularityLines();
 
-	writeShortestPathMesh(m_graph.getSurfaceLines(), std::string(m_output_directory_name + "-ShortestPaths_result.vtk"));
+	if (m_enableDebugFilesWriting)
+		writeShortestPathMesh(m_graph.getSurfaceLines(), std::string(m_output_directory_name + "-ShortestPaths_result.vtk"));
 }
 
 void
@@ -1607,7 +1579,8 @@ SingGraphBuilder2DShortestPath::LineIntersectionDetector::detectAndCreateInterse
 		m_graphBuilder->m_graph.splitSurfaceLineSimple(intersection.singPoint, intersection.singLine, intersection.prevPointID);
 	}
 
-	writeGraphPoint(m_graphBuilder->m_graph.getPoints(), m_graphBuilder->m_output_directory_name + std::string("gaphPointsAfterLineIntersection.vtk"));
+	if(m_graphBuilder->m_enableDebugFilesWriting)		
+		writeGraphPoint(m_graphBuilder->m_graph.getPoints(), m_graphBuilder->m_output_directory_name + std::string("gaphPointsAfterLineIntersection.vtk"));
 }
 
 }     // namespace gmds

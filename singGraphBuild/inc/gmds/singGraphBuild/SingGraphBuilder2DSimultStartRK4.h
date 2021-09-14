@@ -14,16 +14,18 @@
 #include <gmds/singGraphBuild/Tools.h>
 /*----------------------------------------------------------------------------*/
 
+namespace gmds {
+
 class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DSimultStartRK4 : public SingularityGraphBuilder2D
 {
  public:
-	SingGraphBuilder2DSimultStartRK4(gmds::Mesh *AMesh, gmds::Variable<gmds::math::Cross2D> *AField,
-	                                  const bool ABuildGeomSing = true);
+	SingGraphBuilder2DSimultStartRK4(Mesh *AMesh, Variable<math::Cross2D> *AField, const bool ABuildGeomSing = true);
 
 	/*----------------------------------------------------------------------------------------------------*/
-	/** \brief Creation of singularity lines starting simultaneously from all singularities 
-	*	(using RK4 computation)
-	*   formely SingularityGraphBuilder2D::createSingularityLinesSimultaneousStartRK4
-	*/
+	/** \brief Creation of singularity lines starting simultaneously from all singularities
+	 *	(using RK4 computation)
+	 *   formely SingularityGraphBuilder2D::createSingularityLinesSimultaneousStartRK4
+	 */
 	void createSingularityLines();
 };
+}     // namespace gmds

@@ -106,7 +106,6 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DShortestPath : public Singul
 	void computeFaceNeighboursInfo();
 	void initializeFieldsValue();
 	bool targetIsBoundary(const TargetID &contTarget) const;
-	void writeCrossCenterTri();
 	bool findBoundary(const math::Ray &ray, const TCellID currentFace, BoundaryPathEndParam &bdryParam);
 
 	/*----------------------------------------------------------------------------------------------------*/

@@ -1,45 +1,9 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright: CEA
- * contributors: F. Ledoux (2015)
- *
- * franck.ledoux@cea.fr
- *
- * The FRAME software is a computer program whose purpose is to provide a set
- * of algorithms to build 2D and 3D meshes using frame field concept. The main
- * focus of these algorithms is quadrilateral and hexahedral meshing.
- *
- * This software is governed by the CeCILL-C license under French law and
- * abiding by the rules of distribution of free software.  You can  use,
- * modify and/ or redistribute the software under the terms of the CeCILL-C
- * license as circulated by CEA, CNRS and INRIA at the following URL
- * "http://www.cecill.info".
- *
- * As a counterpart to the access to the source code and  rights to copy,
- * modify and redistribute granted by the license, users are provided only
- * with a limited warranty  and the software's author,  the holder of the
- * economic rights,  and the successive licensors  have only  limited
- * liability.
- *
- * In this respect, the user's attention is drawn to the risks associated
- * with loading,  using,  modifying and/or developing or reproducing the
- * software by the user in light of its specific status of free software,
- * that may mean  that it is complicated to manipulate,  and  that  also
- * therefore means  that it is reserved for developers  and  experienced
- * professionals having in-depth computer knowledge. Users are therefore
- * encouraged to load and test the software's suitability as regards their
- * requirements in conditions enabling the security of their systems and/or
- * data to be ensured and,  more generally, to use and operate it in the
- * same conditions as regards security.
- *
- * The fact that you are presently reading this means that you have had
- * knowledge of the CeCILL-C license and that you accept its terms.
- */
-/*----------------------------------------------------------------------------*/
 /*
  * SingularityGraphBuilder2D.cpp
  *
  *  Created on: 13 juil. 2014
- *      Author: bibi
+ *      Author: F. Ledoux
  */
 /*----------------------------------------------------------------------------*/
 //#include <gmds/ig/IG.h>
@@ -74,33 +38,18 @@
 #include <vector>
 typedef std::chrono::high_resolution_clock Clock;
 /*----------------------------------------------------------------------------*/
-using namespace gmds;
+
 using namespace std;
 
+namespace gmds {
 namespace {
 
 void
-writeQuadMesh(const std::string &AFileName, const std::vector<SingularityPoint *> &ASingPoints, const std::vector<SingularityPatch *> &APatchs)
+writeQuadMesh(Mesh *mesh, const std::string &AFileName)
 {
-	Mesh mesh(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::F2N));
-
-	std::unordered_map<TCellID, TCellID> singID2NodeID;
-	singID2NodeID.reserve(ASingPoints.size());
-	for (const auto singPoint : ASingPoints) {
-		const auto newNode = mesh.newNode(singPoint->getLocation());
-		singID2NodeID[singPoint->getNumber()] = newNode.id();
-	}
-
-	std::vector<SingularityPoint *> nodeBuffer(4, nullptr);
-	for (const auto patch : APatchs) {
-		patch->getPoints(nodeBuffer);
-		mesh.newQuad(singID2NodeID[nodeBuffer[0]->getNumber()], singID2NodeID[nodeBuffer[1]->getNumber()],     //
-		             singID2NodeID[nodeBuffer[2]->getNumber()], singID2NodeID[nodeBuffer[3]->getNumber()]);
-	}
-
-	IGMeshIOService ioService(&mesh);
+	IGMeshIOService ioService(mesh);
 	GMSHWriter gmshWriter(&ioService);
-	gmshWriter.setCellOptions(gmds::N | gmds::F);
+	gmshWriter.setCellOptions(N | F);
 	gmshWriter.setDataOptions(0);
 	gmshWriter.write(AFileName);
 }
@@ -118,6 +67,69 @@ computeAngleAtSingularity(SingularityPoint *p)
 	angles.push_back(angle);
 	return angles;
 }
+
+// Manipulate Singularity Point locations from a grapgh in order to optimize the ratio of linked edges
+class LineRelaxator
+{
+ public:
+	LineRelaxator(SingularityGraph *graph, const double meanEdgeLength);
+
+	void run();
+	double getWorstAngle();
+	double getWorstEdgeRatio();
+
+ private:
+	void computeFixedGroupAndFixedLine();
+	void computeMeanEdgeLengthByGroup();
+	void applySpringForceOnPoints();
+	void movePoints();
+	void MoveIfNewLocationIsWorthTheAnglePenalty(SingularityPoint *singPoint, const gmds::math::Point newLocation);
+
+	SingularityGraph *m_graph;
+
+	double m_step;
+	std::vector<double> m_lineSpringLenght;
+	std::vector<double> m_minLengthByGroup;
+	std::vector<double> m_maxLengthByGroup;
+	std::vector<SingularityLine *> m_minLineByGroup;
+	std::vector<SingularityLine *> m_maxLineByGroup;
+
+	std::vector<size_t> m_numberOfLinePerGroup;
+	std::vector<bool> m_groupIsFixed;
+	std::map<size_t, bool> m_lineIsfixed;
+	std::map<size_t, gmds::math::Vector3d> m_directions;
+
+	std::map<size_t, std::vector<double>> m_angleAtSingularity;
+};
+
+class Timer
+{
+	using Clock = std::chrono::system_clock;
+
+ public:
+	Timer(const std::string &name)
+	{
+		start(name);
+	}
+	void stopAndRestart(const std::string &name)
+	{
+		stop();
+		start(name);
+	}
+	void start(const std::string &name) {
+		m_name = name;
+		m_t0 = Clock::now();
+	}
+	void stop()
+	{
+		const auto tfinal = Clock::now();
+		std::cout << m_name << " " << std::chrono::duration_cast<std::chrono::milliseconds>(tfinal - m_t0).count() << " milliseconds" << std::endl;
+	}
+
+ private:
+	std::string m_name;
+	std::chrono::system_clock::time_point m_t0;
+};
 
 }     // namespace
 
@@ -172,8 +184,8 @@ SingularityGraphBuilder2D::initTestPrescribedSing()
 	Face singularTri = m_mesh->get<Face>(4803);
 	m_singularities_3.push_back(singularTri);
 	m_mesh->mark(singularTri, m_mark_faces_with_sing_point);
-	gmds::math::Point singleCenterTri;
-	gmds::math::Cross2D singleCenterTriCross;
+	math::Point singleCenterTri;
+	math::Cross2D singleCenterTriCross;
 	constructOneCenterTriangleCross(singularTri, singleCenterTri, singleCenterTriCross);
 	std::vector<math::Point> slot_points(singularity_type);
 	std::vector<double> slot_param;
@@ -193,9 +205,9 @@ SingularityGraphBuilder2D::initTestPrescribedSing()
 	double intersectionParam;
 	for (unsigned int i = 0; i < singularity_type; i++) {
 		math::Ray from_ray(singleCenterTri, vectors_iNew[i]);
-		vector<gmds::Edge> currentEdges = singularTri.get<gmds::Edge>();
+		vector<Edge> currentEdges = singularTri.get<Edge>();
 		for (unsigned int tt = 0; tt < 3; tt++) {
-			vector<gmds::Node> currentNodes = currentEdges[tt].get<gmds::Node>();
+			vector<Node> currentNodes = currentEdges[tt].get<Node>();
 			math::Segment oppSeg(currentNodes[0].getPoint(), currentNodes[1].getPoint());
 			if (from_ray.SecondMetIntersect2D(oppSeg, intersectionPnt, intersectionParam, m_temp_epsilon)) {
 				slot_points[i] = intersectionParam * currentNodes[0].getPoint() + (1 - intersectionParam) * currentNodes[1].getPoint();
@@ -215,31 +227,76 @@ SingularityGraphBuilder2D::initTestPrescribedSing()
 void
 SingularityGraphBuilder2D::visualizeCrossVectors()
 {
-	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::F2N));
+	Mesh m(MeshModel(DIM3 | F | N | F2N));
 
-	for (auto n_id : m_mesh->nodes()) {
+	for (int i = 0; i < m_triangle_centers_cross.size(); i++) {
 
-		const auto &node = m_mesh->get<Node>(n_id);
-		const auto &nodeLocation = node.getPoint();
-		std::vector<math::Vector3d> componentVectors = (*m_field)[n_id].componentVectors();
-
-		const gmds::Node newNode = m.newNode(nodeLocation);
+		const auto &componentVectors = m_triangle_centers_cross[i].componentVectors();
+		const auto &faceCenter = m_triangle_centers[i];
+		const Node nodeCenter = m.newNode(faceCenter);
 
 		for (const auto &vect : componentVectors) {
 
-			const auto p = nodeLocation + vect * m_mean_edge_length * 0.7;
-			gmds::Node node = m.newNode(p);
-			m.newTriangle(newNode, newNode, node);
+			const auto p = faceCenter + vect * m_mean_edge_length * 0.7;
+			Node node = m.newNode(p);
+			m.newTriangle(nodeCenter, nodeCenter, node);
 		}
 	}
-	gmds::IGMeshIOService meshIoServ(&m);
-	gmds::VTKWriter writer(&meshIoServ);
-	writer.setCellOptions(gmds::N | gmds::F);
-	writer.setDataOptions(gmds::N | gmds::F);
+	IGMeshIOService meshIoServ(&m);
+	VTKWriter writer(&meshIoServ);
+	writer.setCellOptions(N | F);
+	writer.setDataOptions(N | F);
 
 	std::stringstream file_name;
-	file_name << m_output_directory_name << "-crossVectors.vtk";
+	file_name << m_output_directory_name << "-CrossCenterTri.vtk";
 	writer.write(file_name.str());
+}
+
+std::unique_ptr<Mesh>
+SingularityGraphBuilder2D::getQuadMesh()
+{
+	const auto singPoints = m_graph.getPoints();
+	const auto patchs = m_graph.getSurfacePatchs();
+	auto mesh = std::make_unique<Mesh>(MeshModel(DIM3 | F | N | F2N));
+
+	std::unordered_map<TCellID, TCellID> singID2NodeID;
+	singID2NodeID.reserve(singPoints.size());
+	for (const auto singPoint : singPoints) {
+		const auto newNode = mesh.get()->newNode(singPoint->getLocation());
+		singID2NodeID[singPoint->getNumber()] = newNode.id();
+	}
+
+	std::vector<SingularityPoint *> nodeBuffer(4, nullptr);
+	for (const auto patch : patchs) {
+		patch->getPoints(nodeBuffer);
+		mesh.get()->newQuad(singID2NodeID[nodeBuffer[0]->getNumber()], singID2NodeID[nodeBuffer[1]->getNumber()],     //
+		                    singID2NodeID[nodeBuffer[2]->getNumber()], singID2NodeID[nodeBuffer[3]->getNumber()]);
+	}
+	return mesh;
+}
+
+SingularityGraphBuilder2D& 
+SingularityGraphBuilder2D::setQuadMeshSmoothingEnable(bool enableSmoothing)
+{
+	m_enableQuadMeshSmoothing = enableSmoothing;
+	return *this;
+}
+
+SingularityGraphBuilder2D& 
+SingularityGraphBuilder2D::setDebugFilesWritingEnable(bool enableDebugFilesWriting)
+{
+	m_enableDebugFilesWriting = enableDebugFilesWriting;
+	return *this;
+}
+
+double
+SingularityGraphBuilder2D::computeMeanEdgeLength()
+{
+	double mean_edge_length = 0.0;
+	for (auto e_id : m_mesh->edges()) {
+		mean_edge_length += m_mesh->get<Edge>(e_id).length();
+	}
+	return mean_edge_length / m_mesh->getNbEdges();
 }
 
 void
@@ -247,8 +304,8 @@ SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number
 {
 	std::cout << "========================================" << std::endl;
 	std::cout << "Start singularity graph generation " << std::endl;
-	
-	m_graph = SingularityGraph(m_mesh); // new fresh graph
+
+	m_graph = SingularityGraph(m_mesh);     // new fresh graph
 	//==================================================================
 	// Boolean marks initialization
 	//==================================================================
@@ -257,14 +314,6 @@ SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number
 
 	m_original_faces_number = m_mesh->getNbFaces();
 	m_original_nodes_number = m_mesh->getNbNodes();
-	//==================================================================
-	// GEOMETRY VARIABLE FOR DEBUG
-	//==================================================================
-
-	if (m_mesh->hasVariable(GMDS_FACE, "index"))
-		m_index = m_mesh->getVariable<int, GMDS_FACE>("index");
-	else
-		m_index = m_mesh->newVariable<int, GMDS_FACE>("index");
 
 	//========================================================================
 	// STEP 1 - Detection of singularity and slot creation
@@ -275,30 +324,32 @@ SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number
 	- for each such singular triangle, the location of the singularity point is detected inside the triangle (for now
 	the location is at the center of the triangle) and also the direction of the slot directions is computed */
 
-	auto t0 = Clock::now();
+	auto timer = Timer("Singular triangle detection and slot creation");
+
 	detectSingularTriangles();
 
-	// For 3-valent singular points ...
 	for (const auto &currentFace : m_singularities_3)
 		createSingPointAndSlots(currentFace);
-	// ... and 5-valent singular points
+
 	for (const auto &currentFace : m_singularities_5)
 		createSingPointAndSlots(currentFace);
 
-	auto t1 = Clock::now();
-	std::cout << "Singularity detection " << std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count() << " milliseconds" << std::endl;
-
+	timer.stopAndRestart("Cross field interpolation");
 	constructCenterTriangleCrosses();
 
-	auto t2 = Clock::now();
-	std::cout << "Cross at Face center " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " milliseconds" << std::endl;
+	timer.stopAndRestart("Mean edge length computation");
+	m_mean_edge_length = computeMeanEdgeLength();
+	m_temp_epsilon = 0.003 * m_mean_edge_length;
 
 	//========================================================================
 	// STEP 2 - Geometrical features are added in the singularity graph
 	//========================================================================
-	/*for each interior boundary loop (if it exists), an artificial curve singularity point is created
-	 *(at a random location, one one mesh vertex); this artificial singularity point must be removed
+	timer.stopAndRestart("Geometric singularities creation");
+
+	/* for each interior boundary loop (if it exists), an artificial curve singularity point is created
+	 * (at a random location, one one mesh vertex); this artificial singularity point must be removed
 	 * after we have detected the singularity graph*/
+
 	vector<CurveSingularityPoint *> artificialSingPointsCreated;
 	addGeometryToSingularityGraph(artificialSingPointsCreated);
 
@@ -306,29 +357,15 @@ SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number
 		buildGeometricSlots();
 	}
 
-	m_mean_edge_length = 0.0;
-	for (auto e_id : m_mesh->edges()) {
-		m_mean_edge_length += m_mesh->get<Edge>(e_id).length();
+	if (m_enableDebugFilesWriting) {
+		writeSingularityPointsAndSlots();
+		visualizeCrossVectors();
 	}
-	m_mean_edge_length /= m_mesh->getNbEdges();
-
-	writeSingularityPointsAndSlots();
-
-	// computeFace2FaceInfo();
-
-	auto t3 = Clock::now();
-	std::cout << "Geometric singularity " << std::chrono::duration_cast<std::chrono::milliseconds>(t3 - t2).count() << " milliseconds" << std::endl;
 
 	//========================================================================
 	// STEP 3 - Singularity line building
 	//========================================================================
-	m_temp_epsilon = 0.003 * m_mean_edge_length;
-
-	auto t4 = Clock::now();
-	std::cout << "mean edge length " << std::chrono::duration_cast<std::chrono::milliseconds>(t4 - t3).count() << " milliseconds" << std::endl;
-	std::cout << "setup before line creation " << std::chrono::duration_cast<std::chrono::milliseconds>(t4 - t0).count() << " milliseconds" << std::endl;
-
-	// visualizeCrossVectors();
+	timer.stopAndRestart("Singularity lines creation");
 
 	createSingularityLines();
 
@@ -337,32 +374,35 @@ SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number
 	//========================================================================
 	std::cout << "STEP 6 - Detect singularity lines intersection and split them" << std::endl;
 
-	t0 = Clock::now();
+	timer.stopAndRestart("Line intersections");
 	detectLineIntersections();
-	t1 = Clock::now();
 
-	std::cout << "Line intersection detection " << std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count() << " milliseconds" << std::endl;
 	//========================================================================
 	// STEP 5 - Build surface patchs
 	//========================================================================
 
-	deleteArtificialNodes(artificialSingPointsCreated);
+	timer.stopAndRestart("Quad Mesh building");
 
-	writeOutputSingle("boundary_line_final");
+	deleteArtificialNodes(artificialSingPointsCreated);
+	if (m_enableDebugFilesWriting) {
+		writeOutputSingle("boundary_line_final");
+	}
 
 	m_graph.buildSurfacePatchs();
-
 	// m_graph.buildCurveSurfacePatchs(number_of_control_points);
-	writeQuadMesh(m_output_directory_name + "gmshPatch.msh", m_graph.getPoints(), m_graph.getSurfacePatchs());
-	writeOutputPatches("patchs");
 
-	t2 = Clock::now();
-	std::cout << "Patch " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " milliseconds" << std::endl;
-
-	LineRelaxator relaxator = LineRelaxator(&m_graph, m_mean_edge_length);
-	relaxator.run();
-	writeQuadMesh(m_output_directory_name + "gmshPatch2.msh", m_graph.getPoints(), m_graph.getSurfacePatchs());
-	writeOutputPatches("patchs2");
+	if (m_enableQuadMeshSmoothing) {
+		if (m_enableDebugFilesWriting) {
+			writeQuadMesh(getQuadMesh().get(), m_output_directory_name + "gmshPatch.msh");
+		}
+		timer.stopAndRestart("Graph Optimization");
+		LineRelaxator(&m_graph, m_mean_edge_length).run();
+		timer.stop();
+	}
+	if (m_enableDebugFilesWriting) {
+		writeOutputPatches("patchs");
+		writeQuadMesh(getQuadMesh().get(), m_output_directory_name + "gmshPatch2.msh");
+	}
 
 	//========================================================================
 	// cleaning
@@ -474,7 +514,7 @@ void
 SingularityGraphBuilder2D::createLineIntersection(SurfaceSingularityLine *ALine1,
                                                   SurfaceSingularityLine *ALine2,
                                                   Face &AFace,
-                                                  std::vector<gmds::math::Point> &AAddedPoints)
+                                                  std::vector<math::Point> &AAddedPoints)
 {
 	// make sure that lines are not sharing an end point
 	for (const auto &p1 : ALine1->getEndPoints())
@@ -498,7 +538,7 @@ SingularityGraphBuilder2D::createLineIntersection(SurfaceSingularityLine *ALine1
 
 	math::Point p;
 	if (l0->getIntersectionPoint(l1, face_center, face_radius, p)) {
-		gmds::math::Triangle triangle(face_nodes[0].getPoint(), face_nodes[1].getPoint(), face_nodes[2].getPoint());
+		math::Triangle triangle(face_nodes[0].getPoint(), face_nodes[1].getPoint(), face_nodes[2].getPoint());
 
 		if (triangle.isIn2ndMethod(p)) {
 			for (const auto &singPoint : m_graph.getSurfacePoints()) {
@@ -526,7 +566,7 @@ SingularityGraphBuilder2D::createLineIntersection(SurfaceSingularityLine *ALine1
 /*---------------------------------------------------------------------------*/
 
 void
-SingularityGraphBuilder2D::createLineIntersection(std::vector<SurfaceSingularityLine *> &ALines, Face &AFace, std::vector<gmds::math::Point> &AAddedPoints)
+SingularityGraphBuilder2D::createLineIntersection(std::vector<SurfaceSingularityLine *> &ALines, Face &AFace, std::vector<math::Point> &AAddedPoints)
 {
 	// We look for the geometrical intersection point of the curve lines
 	std::vector<Node> face_nodes = AFace.get<Node>();
@@ -547,7 +587,7 @@ SingularityGraphBuilder2D::createLineIntersection(std::vector<SurfaceSingularity
 			SurfaceSingularityLine *lj = ALines[j];
 			math::Point p;
 			if (li->getIntersectionPoint(lj, face_center, face_radius, p)) {
-				gmds::math::Triangle ATriangle(face_nodes[0].getPoint(), face_nodes[1].getPoint(), face_nodes[2].getPoint());
+				math::Triangle ATriangle(face_nodes[0].getPoint(), face_nodes[1].getPoint(), face_nodes[2].getPoint());
 				if (ATriangle.isIn2ndMethod(p)) {
 					bool already_added = false;
 					vector<SurfaceSingularityPoint *> allSingPoints = m_graph.getSurfacePoints();
@@ -588,9 +628,9 @@ SingularityGraphBuilder2D::createLineIntersection(std::vector<SurfaceSingularity
 			const auto intersectionPoint = otherPair.second->getLocation();
 			if (otherLine->getNumber() == lineID) {
 				// search on which of the two part the intersection is
-				const std::vector<gmds::math::Point> &pnts = newLine->getDiscretizationPoints();
+				const std::vector<math::Point> &pnts = newLine->getDiscretizationPoints();
 				for (unsigned int i = 0; i < pnts.size() - 1; i++) {
-					gmds::math::Segment sij(pnts[i], pnts[i + 1]);
+					math::Segment sij(pnts[i], pnts[i + 1]);
 					if (sij.isIn2ndMethod(intersectionPoint)) {
 						otherLine = dynamic_cast<SurfaceSingularityLine *>(newLine);
 						break;
@@ -628,8 +668,6 @@ SingularityGraphBuilder2D::detectSingularTriangles()
 		math::Cross2D c3 = (*m_field)[ID3];
 
 		int index = math::Cross2D::index(c1, c2, c3);
-
-		(*m_index)[current.id()] = index;
 
 		if (index == 1) {
 			m_singularities_5.push_back(current);
@@ -694,7 +732,7 @@ SingularityGraphBuilder2D::initConfusingBalls(SingularityPoint *APnt)
 		math::Point center = currentNode.getPoint();
 		if (center.distance(sing_location) < m_confusing_distance) {
 			m_nodes_to_singularity_on_surf[currentNode.id()] = APnt;
-			vector<gmds::Face> adjacent_triangles = currentNode.get<gmds::Face>();
+			vector<Face> adjacent_triangles = currentNode.get<Face>();
 			for (unsigned int i = 0; i < adjacent_triangles.size(); i++) {
 				math::Point centerFace = adjacent_triangles[i].center();
 				// if(centerFace.distance(sing_location)< m_confusing_distance_temp) {
@@ -1346,7 +1384,7 @@ SingularityGraphBuilder2D::writeOutputPatches(const std::string &AFileName)
 void
 SingularityGraphBuilder2D::writeSingularityPointsAndSlots()
 {
-	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::F2N));
+	Mesh m(MeshModel(DIM3 | F | N | F2N));
 	auto slotIDs = m.newVariable<int, GMDS_FACE>("slotIDs");
 
 	int singID = 0;
@@ -1354,9 +1392,9 @@ SingularityGraphBuilder2D::writeSingularityPointsAndSlots()
 		int slotID = 0;
 		for (auto slot : sing->getSlots()) {
 
-			gmds::Node n0 = m.newNode(sing->getLocation());
-			gmds::Node n1 = m.newNode(slot->location);
-			gmds::Node n2 = m.newNode(slot->location + slot->direction.normalize() * m_mean_edge_length);
+			Node n0 = m.newNode(sing->getLocation());
+			Node n1 = m.newNode(slot->location);
+			Node n2 = m.newNode(slot->location + slot->direction.normalize() * m_mean_edge_length);
 
 			auto f1 = m.newTriangle(n0, n1, n1);
 			auto f2 = m.newTriangle(n1, n2, n2);
@@ -1369,10 +1407,10 @@ SingularityGraphBuilder2D::writeSingularityPointsAndSlots()
 		++singID;
 	}
 
-	gmds::IGMeshIOService meshIoServ(&m);
-	gmds::VTKWriter writer(&meshIoServ);
-	writer.setCellOptions(gmds::N | gmds::F);
-	writer.setDataOptions(gmds::N | gmds::F);
+	IGMeshIOService meshIoServ(&m);
+	VTKWriter writer(&meshIoServ);
+	writer.setCellOptions(N | F);
+	writer.setDataOptions(N | F);
 
 	writer.write(m_output_directory_name + "-points_and_slots.vtk");
 }
@@ -1393,10 +1431,10 @@ SingularityGraphBuilder2D::writeConfusingBalls()
 			(*ball_var)[f.id()] = sing->index();
 	}
 
-	gmds::IGMeshIOService meshIoServ(m_mesh);
-	gmds::VTKWriter writerB(&meshIoServ);
-	writerB.setCellOptions(gmds::N | gmds::F);
-	writerB.setDataOptions(gmds::N | gmds::F);
+	IGMeshIOService meshIoServ(m_mesh);
+	VTKWriter writerB(&meshIoServ);
+	writerB.setCellOptions(N | F);
+	writerB.setDataOptions(N | F);
 	std::stringstream file_name2;
 	file_name2 << m_output_directory_name << "-confusing_balls.vtk";
 	writerB.write(file_name2.str());
@@ -1406,7 +1444,7 @@ SingularityGraphBuilder2D::writeConfusingBalls()
 
 void
 SingularityGraphBuilder2D::redefineOneConfusingBall(SingularityPoint *APnt,
-                                                    vector<gmds::TCellID> &modifiedFaces,
+                                                    vector<TCellID> &modifiedFaces,
                                                     double &previousDist,
                                                     const double increaseRadiusScale)
 {
@@ -1421,11 +1459,11 @@ SingularityGraphBuilder2D::redefineOneConfusingBall(SingularityPoint *APnt,
 	math::Point sing_location = APnt->getLocation();
 	double newConfusingDistance = increaseRadiusScale * m_confusing_distance;
 
-	std::vector<gmds::Face> neighbouringFaces;
-	std::vector<gmds::Node> vertsToVisit;
+	std::vector<Face> neighbouringFaces;
+	std::vector<Node> vertsToVisit;
 	//  cout<<"APnt0>getNbMeshCells() "<<APnt->getNbMeshCells()<<endl;
 
-	vector<gmds::Face> AtriVectFace = APnt->getMesh<Face>();
+	vector<Face> AtriVectFace = APnt->getMesh<Face>();
 
 	if (AtriVectFace.size() != 0) {
 		Face Atri = AtriVectFace[0];
@@ -1435,18 +1473,18 @@ SingularityGraphBuilder2D::redefineOneConfusingBall(SingularityPoint *APnt,
 			vertsToVisit.push_back(nodes[i]);
 	}
 	else {     // geom point
-		vector<gmds::Node> AtriVectNode = APnt->getMesh<Node>();
+		vector<Node> AtriVectNode = APnt->getMesh<Node>();
 
 		if (AtriVectNode.size() != 0) {
-			gmds::Node Atri = AtriVectNode[0];
+			Node Atri = AtriVectNode[0];
 			vertsToVisit.push_back(Atri);
 			if (m_withGlobalComments) cout << "node " << Atri.id() << endl;
 		}
 		else {
-			vector<gmds::Edge> AtriVectEdge = APnt->getMesh<Edge>();
+			vector<Edge> AtriVectEdge = APnt->getMesh<Edge>();
 
 			if (AtriVectEdge.size() != 0) {
-				gmds::Edge Atri = AtriVectEdge[0];
+				Edge Atri = AtriVectEdge[0];
 				std::vector<Node> nodes = Atri.get<Node>();
 				vertsToVisit.push_back(nodes[0]);
 				vertsToVisit.push_back(nodes[1]);
@@ -1459,7 +1497,7 @@ SingularityGraphBuilder2D::redefineOneConfusingBall(SingularityPoint *APnt,
 	/*
 	for(unsigned int i=0; i<originalConfusingBalls.size(); i++){
 	   visitedFaces[originalConfusingBalls[i]] = true;
-	   gmds::Face currentFace = m_mesh->get<Face> (originalConfusingBalls[i]);
+	   Face currentFace = m_mesh->get<Face> (originalConfusingBalls[i]);
 	   std::vector<Node> nodes = currentFace.get<Node>();
 	      for(unsigned int i=0; i<nodes.size(); i++){
 	      visitedVerts[nodes[i].id()] = true;
@@ -1472,7 +1510,7 @@ SingularityGraphBuilder2D::redefineOneConfusingBall(SingularityPoint *APnt,
 	}
 
 	while (!vertsToVisit.empty()) {
-		gmds::Node currentNode = vertsToVisit[vertsToVisit.size() - 1];
+		Node currentNode = vertsToVisit[vertsToVisit.size() - 1];
 		vertsToVisit.resize(vertsToVisit.size() - 1);
 		currentNode.get<Face>(neighbouringFaces);
 		for (unsigned int i = 0; i < neighbouringFaces.size(); i++) {
@@ -1484,7 +1522,7 @@ SingularityGraphBuilder2D::redefineOneConfusingBall(SingularityPoint *APnt,
 						modifiedFaces.push_back(neighbouringFaces[i].id());
 						m_faces_to_singularity_on_surf[neighbouringFaces[i].id()] = APnt;
 					}
-					vector<gmds::Node> currentFaceVerts;
+					vector<Node> currentFaceVerts;
 					neighbouringFaces[i].get<Node>(currentFaceVerts);     // std::vector<TCellID> currentFaceVerts = neighbouringFaces[i].getIDs<Node>();
 					for (unsigned int j = 0; j < currentFaceVerts.size(); j++) {
 						if (!visitedVerts[currentFaceVerts[j].id()]) {
@@ -1527,7 +1565,7 @@ SingularityGraphBuilder2D::removeSingularityLine(SingularityLine *ALine)
 
 				if (current_sp->getType() == 1) { /* geom singularity point created on boundary (on edge or on vert)
 					   if on vert, check its marked as NodeOnPoint (if so, we don't have to do anything)*/
-					vector<gmds::Node> firstNodes = current_sp->getMesh<gmds::Node>();
+					vector<Node> firstNodes = current_sp->getMesh<Node>();
 
 					if (firstNodes.size() > 0) {
 						// cout<<"the end point of the singularity line is a vertex"<<endl;
@@ -1561,10 +1599,10 @@ SingularityGraphBuilder2D::removeSingularityLine(SingularityLine *ALine)
 										// this is the second curveline that we find (as well as the number)
 										// keep the orientation of the first curve that we find
 										// singular point is always the 2nd on the 1st line
-										vector<gmds::math::Point> first_pnts = curve_lines[firstCurveLineIndex]->getDiscretizationPoints();
-										vector<gmds::Edge> first_curve_edges = curve_lines[firstCurveLineIndex]->getMeshEdges();
-										vector<gmds::math::Point> second_pnts = curve_lines[j]->getDiscretizationPoints();
-										vector<gmds::Edge> second_curve_edges = curve_lines[j]->getMeshEdges();
+										vector<math::Point> first_pnts = curve_lines[firstCurveLineIndex]->getDiscretizationPoints();
+										vector<Edge> first_curve_edges = curve_lines[firstCurveLineIndex]->getMeshEdges();
+										vector<math::Point> second_pnts = curve_lines[j]->getDiscretizationPoints();
+										vector<Edge> second_curve_edges = curve_lines[j]->getMeshEdges();
 
 										if (tt == 1) {
 											std::reverse(second_pnts.begin(), second_pnts.end());
@@ -1626,23 +1664,23 @@ SingularityGraphBuilder2D::constructCenterTriangleCrosses()
 		const auto &cross2 = (*m_field)[nodesTri[1].id()];
 		const auto &cross3 = (*m_field)[nodesTri[2].id()];
 
-		const gmds::math::Vector3d vect1 = cross1.componentVectors()[0];
-		const gmds::math::Vector3d vect2 = cross2.closestComponentVector(vect1);
-		const gmds::math::Vector3d vect3 = cross3.closestComponentVector(vect1);
+		const math::Vector3d vect1 = cross1.componentVectors()[0];
+		const math::Vector3d vect2 = cross2.closestComponentVector(vect1);
+		const math::Vector3d vect3 = cross3.closestComponentVector(vect1);
 
-		gmds::math::Vector3d center_vect = (vect1 + vect2 + vect3) / 3;
-		gmds::math::Vector3d center_vect_second = center_vect.getOneOrtho();
+		math::Vector3d center_vect = (vect1 + vect2 + vect3) / 3;
+		math::Vector3d center_vect_second = center_vect.getOneOrtho();
 
-		m_triangle_centers_cross.emplace_back(gmds::math::Cross2D(center_vect, center_vect_second));
+		m_triangle_centers_cross.emplace_back(math::Cross2D(center_vect, center_vect_second));
 	}
 }
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 void
-SingularityGraphBuilder2D::constructOneCenterTriangleCross(gmds::Face &ATriangle, gmds::math::Point &singleCenterTri, gmds::math::Cross2D &singleCenterTriCross)
+SingularityGraphBuilder2D::constructOneCenterTriangleCross(Face &ATriangle, math::Point &singleCenterTri, math::Cross2D &singleCenterTriCross)
 {
-	gmds::math::Point orig(0.0, 0.0, 0.0);
+	math::Point orig(0.0, 0.0, 0.0);
 
 	std::vector<math::Cross2D> Tricrosses;
 	vector<TCoord> AWeights(3, (double) 1 / 3);
@@ -1659,7 +1697,7 @@ SingularityGraphBuilder2D::constructOneCenterTriangleCross(gmds::Face &ATriangle
 
 	TCoord ref_angle = Tricrosses[0].referenceAngle();
 
-	gmds::math::Vector3d ref_vector = Tricrosses[0].referenceVector();
+	math::Vector3d ref_vector = Tricrosses[0].referenceVector();
 
 	TCoord pen_angle = 0.0;
 	for (unsigned int i = 0; i < 3; i++) {
@@ -1668,10 +1706,10 @@ SingularityGraphBuilder2D::constructOneCenterTriangleCross(gmds::Face &ATriangle
 	}
 	pen_angle /= Tricrosses.size();
 
-	ref_angle = gmds::math::modulo2PI(pen_angle);
-	ref_vector = gmds::math::Cross2D(ref_angle).referenceVector();
+	ref_angle = math::modulo2PI(pen_angle);
+	ref_vector = math::Cross2D(ref_angle).referenceVector();
 
-	singleCenterTriCross = gmds::math::Cross2D(ref_angle);
+	singleCenterTriCross = math::Cross2D(ref_angle);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1680,12 +1718,12 @@ SingularityGraphBuilder2D::growLine(SingularityPoint *AFromSingPnt,
                                     SingularityPoint::Slot *AFromSlot,
                                     SingularityPoint *&AToSingPnt,
                                     SingularityPoint::Slot *&AToSlot,
-                                    gmds::math::Point &AFromPnt,
-                                    gmds::math::Vector3d &AToDir,
-                                    std::vector<gmds::math::Point> &APoints,
-                                    std::vector<gmds::TCellID> &ATriangles,
+                                    math::Point &AFromPnt,
+                                    math::Vector3d &AToDir,
+                                    std::vector<math::Point> &APoints,
+                                    std::vector<TCellID> &ATriangles,
                                     int &AToCellDim,
-                                    gmds::TCellID &AToCellID,
+                                    TCellID &AToCellID,
                                     double &streamlineDeviation,
                                     double &accumulatedDistancePerSlotLine,
                                     double &currentSearchStep,
@@ -1943,12 +1981,12 @@ SingularityGraphBuilder2D::growLine(SingularityPoint *AFromSingPnt,
 void
 SingularityGraphBuilder2D::growLineRK4(const SingularityPoint::Slot *AFromSlot,
                                        SingularityPoint::Slot *&AToSlot,
-                                       const gmds::math::Point &AFromPnt,
-                                       gmds::math::Vector3d &AToDir,
-                                       std::vector<gmds::math::Point> &APoints,
-                                       std::vector<gmds::TCellID> &ATriangles,
+                                       const math::Point &AFromPnt,
+                                       math::Vector3d &AToDir,
+                                       std::vector<math::Point> &APoints,
+                                       std::vector<TCellID> &ATriangles,
                                        int &AToCellDim,
-                                       gmds::TCellID &AToCellID,
+                                       TCellID &AToCellID,
                                        double &streamlineDeviation,
                                        const double &stepSize,
                                        bool &AEndOnBnd,
@@ -1974,18 +2012,17 @@ SingularityGraphBuilder2D::growLineRK4(const SingularityPoint::Slot *AFromSlot,
 	TCellID start_cell_id = AToCellID;
 	int start_cell_dim = AToCellDim;
 
-	vector<gmds::Face> AFaces;
+	vector<Face> AFaces;
 
 	if (AToCellDim == 0) {
-		AFaces = m_mesh->get<gmds::Node>(AToCellID).get<gmds::Face>();
-		if (m_mesh->isMarked(m_mesh->get<gmds::Node>(AToCellID), m_mark_nodes_on_curve)
-		    || m_mesh->isMarked(m_mesh->get<gmds::Node>(AToCellID), m_mark_nodes_on_point)) {
+		AFaces = m_mesh->get<Node>(AToCellID).get<Face>();
+		if (m_mesh->isMarked(m_mesh->get<Node>(AToCellID), m_mark_nodes_on_curve) || m_mesh->isMarked(m_mesh->get<Node>(AToCellID), m_mark_nodes_on_point)) {
 
-			gmds::math::Point point_1 = start_pnt + start_dir * 2 * math::Constants::EPSILON;
+			math::Point point_1 = start_pnt + start_dir * 2 * math::Constants::EPSILON;
 			bool insideTri = false;
 			for (unsigned int i = 0; i < AFaces.size(); i++) {
 				std::vector<Node> f_nodes = AFaces[i].get<Node>();
-				gmds::math::Triangle ATriangle(f_nodes[0].getPoint(), f_nodes[1].getPoint(), f_nodes[2].getPoint());
+				math::Triangle ATriangle(f_nodes[0].getPoint(), f_nodes[1].getPoint(), f_nodes[2].getPoint());
 
 				if (ATriangle.isIn2ndMethod(point_1)) {
 					insideTri = true;
@@ -2000,13 +2037,13 @@ SingularityGraphBuilder2D::growLineRK4(const SingularityPoint::Slot *AFromSlot,
 	}
 	else {
 		if (AToCellDim == 1) {
-			AFaces = m_mesh->get<gmds::Edge>(AToCellID).get<gmds::Face>();
-			if (m_mesh->isMarked(m_mesh->get<gmds::Edge>(AToCellID), m_mark_edges_on_curve)) {
-				gmds::math::Point point_1 = start_pnt + start_dir * 2 * math::Constants::EPSILON;
+			AFaces = m_mesh->get<Edge>(AToCellID).get<Face>();
+			if (m_mesh->isMarked(m_mesh->get<Edge>(AToCellID), m_mark_edges_on_curve)) {
+				math::Point point_1 = start_pnt + start_dir * 2 * math::Constants::EPSILON;
 				bool insideTri = false;
 				for (unsigned int i = 0; i < AFaces.size(); i++) {
 					std::vector<Node> f_nodes = AFaces[i].get<Node>();
-					gmds::math::Triangle ATriangle(f_nodes[0].getPoint(), f_nodes[1].getPoint(), f_nodes[2].getPoint());
+					math::Triangle ATriangle(f_nodes[0].getPoint(), f_nodes[1].getPoint(), f_nodes[2].getPoint());
 
 					if (ATriangle.isIn2ndMethod(point_1)) {
 						insideTri = true;
@@ -2020,7 +2057,7 @@ SingularityGraphBuilder2D::growLineRK4(const SingularityPoint::Slot *AFromSlot,
 			}
 		}
 		else
-			AFaces.push_back(m_mesh->get<gmds::Face>(AToCellID));
+			AFaces.push_back(m_mesh->get<Face>(AToCellID));
 	}
 
 	if (!AEndOnBnd) {
@@ -2076,7 +2113,7 @@ SingularityGraphBuilder2D::growLineRK4(const SingularityPoint::Slot *AFromSlot,
 
 					math::Vector3d resultingVec(start_dirPnt, current_slot->location);
 
-					if (start_dir.angle(resultingVec) > gmds::math::Constants::PIDIV2) continue;
+					if (start_dir.angle(resultingVec) > math::Constants::PIDIV2) continue;
 
 					math::Vector3d slot_opp_dir = current_slot->direction.opp();
 					slot_opp_dir.normalize();
@@ -2163,114 +2200,114 @@ SingularityGraphBuilder2D::growLineRK4(const SingularityPoint::Slot *AFromSlot,
 /*---------------------------------------------------------------------------*/
 
 void
-SingularityGraphBuilder2D::writeTestMeshVerts(vector<gmds::Node> &ANodes, std::string &AFileName)
+SingularityGraphBuilder2D::writeTestMeshVerts(vector<Node> &ANodes, std::string &AFileName)
 {
-	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::F2N));
+	Mesh m(MeshModel(DIM3 | F | N | F2N));
 	math::Point APoint = ANodes[0].getPoint();
 	for (unsigned int j = 1; j < ANodes.size(); j++) {
 		math::Point prevPoint = APoint;
 		APoint = ANodes[j].getPoint();
-		gmds::Node n1 = m.newNode(prevPoint.X(), prevPoint.Y(), prevPoint.Z());
-		gmds::Node n2 = m.newNode(APoint.X(), APoint.Y(), APoint.Z());
-		gmds::Face f = m.newTriangle(n1, n1, n2);
+		Node n1 = m.newNode(prevPoint.X(), prevPoint.Y(), prevPoint.Z());
+		Node n2 = m.newNode(APoint.X(), APoint.Y(), APoint.Z());
+		Face f = m.newTriangle(n1, n1, n2);
 	}
-	gmds::IGMeshIOService ioService(&m);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N | gmds::F);
-	vtkWriter.setDataOptions(gmds::N | gmds::F);
+	IGMeshIOService ioService(&m);
+	VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(N | F);
+	vtkWriter.setDataOptions(N | F);
 	vtkWriter.write(AFileName);
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-SingularityGraphBuilder2D::writeTestPoints(vector<gmds::math::Point> &APoints, std::string &AFileName)
+SingularityGraphBuilder2D::writeTestPoints(vector<math::Point> &APoints, std::string &AFileName)
 {
-	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::F2N));
+	Mesh m(MeshModel(DIM3 | F | N | F2N));
 	math::Point APoint = APoints[0];
 	for (unsigned int j = 1; j < APoints.size(); j++) {
 		math::Point prevPoint = APoint;
 		APoint = APoints[j];
-		gmds::Node n1 = m.newNode(prevPoint.X(), prevPoint.Y(), prevPoint.Z());
-		gmds::Node n2 = m.newNode(APoint.X(), APoint.Y(), APoint.Z());
-		gmds::Face f = m.newTriangle(n1, n1, n2);
+		Node n1 = m.newNode(prevPoint.X(), prevPoint.Y(), prevPoint.Z());
+		Node n2 = m.newNode(APoint.X(), APoint.Y(), APoint.Z());
+		Face f = m.newTriangle(n1, n1, n2);
 	}
-	gmds::IGMeshIOService ioService(&m);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N | gmds::F);
-	vtkWriter.setDataOptions(gmds::N | gmds::F);
+	IGMeshIOService ioService(&m);
+	VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(N | F);
+	vtkWriter.setDataOptions(N | F);
 	vtkWriter.write(AFileName);
 }
 /*---------------------------------------------------------------------------*/
 
 void
-SingularityGraphBuilder2D::writeTestMeshTriangles(vector<gmds::Face> &ATriangles, std::string &AFileName)
+SingularityGraphBuilder2D::writeTestMeshTriangles(vector<Face> &ATriangles, std::string &AFileName)
 {
-	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::F2N));
+	Mesh m(MeshModel(DIM3 | F | N | F2N));
 
 	for (unsigned int j = 0; j < ATriangles.size(); j++) {
-		vector<gmds::Node> currentNodes = ATriangles[j].get<Node>();
+		vector<Node> currentNodes = ATriangles[j].get<Node>();
 		math::Point current_point1 = currentNodes[0].getPoint();
 		math::Point current_point2 = currentNodes[1].getPoint();
 		math::Point current_point3 = currentNodes[2].getPoint();
-		gmds::Node n1 = m.newNode(current_point1.X(), current_point1.Y(), current_point1.Z());
-		gmds::Node n2 = m.newNode(current_point2.X(), current_point2.Y(), current_point2.Z());
-		gmds::Node n3 = m.newNode(current_point3.X(), current_point3.Y(), current_point3.Z());
-		gmds::Face f = m.newTriangle(n1, n2, n3);
+		Node n1 = m.newNode(current_point1.X(), current_point1.Y(), current_point1.Z());
+		Node n2 = m.newNode(current_point2.X(), current_point2.Y(), current_point2.Z());
+		Node n3 = m.newNode(current_point3.X(), current_point3.Y(), current_point3.Z());
+		Face f = m.newTriangle(n1, n2, n3);
 	}
-	gmds::IGMeshIOService ioService(&m);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N | gmds::F);
-	vtkWriter.setDataOptions(gmds::N | gmds::F);
+	IGMeshIOService ioService(&m);
+	VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(N | F);
+	vtkWriter.setDataOptions(N | F);
 	vtkWriter.write(AFileName);
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-SingularityGraphBuilder2D::writeTestMeshTrianglesIds(vector<gmds::TCellID> &ATrianglesIds, std::string &AFileName)
+SingularityGraphBuilder2D::writeTestMeshTrianglesIds(vector<TCellID> &ATrianglesIds, std::string &AFileName)
 {
-	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::F2N));
+	Mesh m(MeshModel(DIM3 | F | N | F2N));
 
 	for (unsigned int j = 0; j < ATrianglesIds.size(); j++) {
-		vector<gmds::Node> currentNodes = (m_mesh->get<gmds::Face>(ATrianglesIds[j])).get<Node>();
+		vector<Node> currentNodes = (m_mesh->get<Face>(ATrianglesIds[j])).get<Node>();
 		math::Point current_point1 = currentNodes[0].getPoint();
 		math::Point current_point2 = currentNodes[1].getPoint();
 		math::Point current_point3 = currentNodes[2].getPoint();
-		gmds::Node n1 = m.newNode(current_point1.X(), current_point1.Y(), current_point1.Z());
-		gmds::Node n2 = m.newNode(current_point2.X(), current_point2.Y(), current_point2.Z());
-		gmds::Node n3 = m.newNode(current_point3.X(), current_point3.Y(), current_point3.Z());
-		gmds::Face f = m.newTriangle(n1, n2, n3);
+		Node n1 = m.newNode(current_point1.X(), current_point1.Y(), current_point1.Z());
+		Node n2 = m.newNode(current_point2.X(), current_point2.Y(), current_point2.Z());
+		Node n3 = m.newNode(current_point3.X(), current_point3.Y(), current_point3.Z());
+		Face f = m.newTriangle(n1, n2, n3);
 	}
-	gmds::IGMeshIOService ioService(&m);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N | gmds::F);
-	vtkWriter.setDataOptions(gmds::N | gmds::F);
+	IGMeshIOService ioService(&m);
+	VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(N | F);
+	vtkWriter.setDataOptions(N | F);
 	vtkWriter.write(AFileName);
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-SingularityGraphBuilder2D::remeshTriangles(gmds::Mesh *newLocalMesh,
-                                           vector<gmds::TCellID> &newLocalMesh_id_to_mesh_id_node,
-                                           gmds::Variable<gmds::math::Cross2D> *local_cross_field_2D,
-                                           vector<gmds::TCellID> &trianglesToRemesh)
+SingularityGraphBuilder2D::remeshTriangles(Mesh *newLocalMesh,
+                                           vector<TCellID> &newLocalMesh_id_to_mesh_id_node,
+                                           Variable<math::Cross2D> *local_cross_field_2D,
+                                           vector<TCellID> &trianglesToRemesh)
 {
 	/* remesh the triangles in trianglesToRemesh; assumes that the original mesh is consistently oriented*/
 
-	vector<gmds::TCellID> mesh_id_to_newLocalMesh_id_node(m_original_nodes_number);
+	vector<TCellID> mesh_id_to_newLocalMesh_id_node(m_original_nodes_number);
 	vector<bool> visitedVerts(m_original_nodes_number, false);
 
 	math::Point current_point1, current_point2, current_point3, current_point_center;
 	unsigned int NodeNumber = 0;
 	for (unsigned int i = 0; i < trianglesToRemesh.size(); i++) {
-		vector<gmds::Node> currentNodes = (m_mesh->get<gmds::Face>(trianglesToRemesh[i])).get<Node>();
+		vector<Node> currentNodes = (m_mesh->get<Face>(trianglesToRemesh[i])).get<Node>();
 		current_point1 = currentNodes[0].getPoint();
 		current_point2 = currentNodes[1].getPoint();
 		current_point3 = currentNodes[2].getPoint();
 
-		gmds::Node n1;
+		Node n1;
 		if (!visitedVerts[currentNodes[0].id()]) {
 			n1 = newLocalMesh->newNode(current_point1.X(), current_point1.Y(), current_point1.Z());
 			visitedVerts[currentNodes[0].id()] = true;
@@ -2279,9 +2316,9 @@ SingularityGraphBuilder2D::remeshTriangles(gmds::Mesh *newLocalMesh,
 			NodeNumber++;
 		}
 		else {
-			n1 = newLocalMesh->get<gmds::Node>(mesh_id_to_newLocalMesh_id_node[currentNodes[0].id()]);
+			n1 = newLocalMesh->get<Node>(mesh_id_to_newLocalMesh_id_node[currentNodes[0].id()]);
 		}
-		gmds::Node n2;
+		Node n2;
 		if (!visitedVerts[currentNodes[1].id()]) {
 			n2 = newLocalMesh->newNode(current_point2.X(), current_point2.Y(), current_point2.Z());
 			visitedVerts[currentNodes[1].id()] = true;
@@ -2290,9 +2327,9 @@ SingularityGraphBuilder2D::remeshTriangles(gmds::Mesh *newLocalMesh,
 			NodeNumber++;
 		}
 		else {
-			n2 = newLocalMesh->get<gmds::Node>(mesh_id_to_newLocalMesh_id_node[currentNodes[1].id()]);
+			n2 = newLocalMesh->get<Node>(mesh_id_to_newLocalMesh_id_node[currentNodes[1].id()]);
 		}
-		gmds::Node n3;
+		Node n3;
 		if (!visitedVerts[currentNodes[2].id()]) {
 			n3 = newLocalMesh->newNode(current_point3.X(), current_point3.Y(), current_point3.Z());
 			visitedVerts[currentNodes[2].id()] = true;
@@ -2301,37 +2338,37 @@ SingularityGraphBuilder2D::remeshTriangles(gmds::Mesh *newLocalMesh,
 			NodeNumber++;
 		}
 		else {
-			n3 = newLocalMesh->get<gmds::Node>(mesh_id_to_newLocalMesh_id_node[currentNodes[2].id()]);
+			n3 = newLocalMesh->get<Node>(mesh_id_to_newLocalMesh_id_node[currentNodes[2].id()]);
 		}
 
-		gmds::Node newn = newLocalMesh->newNode(m_triangle_centers[trianglesToRemesh[i]].X(), m_triangle_centers[trianglesToRemesh[i]].Y(),
-		                                        m_triangle_centers[trianglesToRemesh[i]].Z());
+		Node newn = newLocalMesh->newNode(m_triangle_centers[trianglesToRemesh[i]].X(), m_triangle_centers[trianglesToRemesh[i]].Y(),
+		                                  m_triangle_centers[trianglesToRemesh[i]].Z());
 		newLocalMesh_id_to_mesh_id_node.push_back(m_original_nodes_number + 1);
 		NodeNumber++;
-		gmds::Face f1 = newLocalMesh->newTriangle(n1, n2, newn);
-		gmds::Face f2 = newLocalMesh->newTriangle(n2, n3, newn);
-		gmds::Face f3 = newLocalMesh->newTriangle(n3, n1, newn);
+		Face f1 = newLocalMesh->newTriangle(n1, n2, newn);
+		Face f2 = newLocalMesh->newTriangle(n2, n3, newn);
+		Face f3 = newLocalMesh->newTriangle(n3, n1, newn);
 	}
 
-	gmds::IGMeshIOService ioService(newLocalMesh);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N | gmds::F);
-	vtkWriter.setDataOptions(gmds::N | gmds::F);
+	IGMeshIOService ioService(newLocalMesh);
+	VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(N | F);
+	vtkWriter.setDataOptions(N | F);
 	vtkWriter.write("localmesh.vtk");
 
-	gmds::MeshDoctor doc(newLocalMesh);
+	MeshDoctor doc(newLocalMesh);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
 
-	vector<gmds::Node> m_curve_nodes, m_surf_nodes;
+	vector<Node> m_curve_nodes, m_surf_nodes;
 	visitedVerts.clear();
 	visitedVerts.resize(newLocalMesh->getNbNodes(), false);
 
 	math::Vector3d OX(1, 0, 0);
 	for (auto e_id : newLocalMesh->edges()) {
-		gmds::Edge currentEdge = newLocalMesh->get<gmds::Edge>(e_id);
-		vector<gmds::Node> currentNodes = (newLocalMesh->get<gmds::Edge>(e_id)).get<gmds::Node>();
-		std::vector<gmds::Face> adj_faces = currentEdge.get<gmds::Face>();
+		Edge currentEdge = newLocalMesh->get<Edge>(e_id);
+		vector<Node> currentNodes = (newLocalMesh->get<Edge>(e_id)).get<Node>();
+		std::vector<Face> adj_faces = currentEdge.get<Face>();
 		if (adj_faces.size() == 1) {
 			if (!visitedVerts[currentNodes[0].id()]) {
 				m_curve_nodes.push_back(currentNodes[0]);
@@ -2348,7 +2385,7 @@ SingularityGraphBuilder2D::remeshTriangles(gmds::Mesh *newLocalMesh,
 	}
 
 	for (auto n_id : newLocalMesh->nodes()) {
-		if (!visitedVerts[n_id]) m_surf_nodes.push_back(newLocalMesh->get<gmds::Node>(n_id));
+		if (!visitedVerts[n_id]) m_surf_nodes.push_back(newLocalMesh->get<Node>(n_id));
 	}
 
 	/*visualize crossVect for newLocalMesh
@@ -2381,10 +2418,10 @@ SingularityGraphBuilder2D::remeshTriangles(gmds::Mesh *newLocalMesh,
 	}
 
 
-	gmds::IGMeshIOService meshIoServref(newLocalMesh);
-	gmds::VTKWriter writerref(&meshIoServref);
-	writerref.setCellOptions(gmds::N|gmds::F);
-	writerref.setDataOptions(gmds::N|gmds::F);
+	IGMeshIOService meshIoServref(newLocalMesh);
+	VTKWriter writerref(&meshIoServref);
+	writerref.setCellOptions(N|F);
+	writerref.setDataOptions(N|F);
 
 	std::stringstream file_nameref;
 	file_nameref <<"before-newLocalMesh-crossVectors.vtk";
@@ -2431,10 +2468,10 @@ SingularityGraphBuilder2D::remeshTriangles(gmds::Mesh *newLocalMesh,
 	}
 
 
-	gmds::IGMeshIOService meshIoServref(newLocalMesh);
-	gmds::VTKWriter writerref(&meshIoServref);
-	writerref.setCellOptions(gmds::N|gmds::F);
-	writerref.setDataOptions(gmds::N|gmds::F);
+	IGMeshIOService meshIoServref(newLocalMesh);
+	VTKWriter writerref(&meshIoServref);
+	writerref.setCellOptions(N|F);
+	writerref.setDataOptions(N|F);
 
 	std::stringstream file_nameref;
 	file_nameref <<"final-newLocalMesh-crossVectors.vtk";
@@ -2444,20 +2481,20 @@ SingularityGraphBuilder2D::remeshTriangles(gmds::Mesh *newLocalMesh,
 /*---------------------------------------------------------------------------*/
 
 void
-SingularityGraphBuilder2D::remeshTrianglesNewMesh(gmds::Mesh *newLocalMesh,
-                                                  gmds::Variable<gmds::math::Cross2D> *newMesh_cross_field_2D,
-                                                  vector<gmds::TCellID> &trianglesToRemesh,
+SingularityGraphBuilder2D::remeshTrianglesNewMesh(Mesh *newLocalMesh,
+                                                  Variable<math::Cross2D> *newMesh_cross_field_2D,
+                                                  vector<TCellID> &trianglesToRemesh,
                                                   vector<bool> &trianglesToRemeshBool,
-                                                  vector<gmds::math::Point> &newTriangleCenters,
-                                                  vector<gmds::math::Cross2D> &newTriangleCenterCrosses,
-                                                  vector<gmds::math::Vector3d> &newBdryEdgeNormals,
-                                                  vector<gmds::math::Vector3d> &newBdryNodeNormals,
+                                                  vector<math::Point> &newTriangleCenters,
+                                                  vector<math::Cross2D> &newTriangleCenterCrosses,
+                                                  vector<math::Vector3d> &newBdryEdgeNormals,
+                                                  vector<math::Vector3d> &newBdryNodeNormals,
                                                   vector<bool> &isCurveEdge,
                                                   vector<bool> &isCurveNode,
-                                                  vector<gmds::TCellID> &newLocalMesh_id_to_mesh_id_node,
-                                                  vector<gmds::TCellID> &mesh_id_to_newLocalMesh_id_node,
-                                                  vector<gmds::TCellID> &newLocalMesh_id_to_mesh_id_face,
-                                                  vector<gmds::TCellID> &mesh_id_to_newLocalMesh_id_face)
+                                                  vector<TCellID> &newLocalMesh_id_to_mesh_id_node,
+                                                  vector<TCellID> &mesh_id_to_newLocalMesh_id_node,
+                                                  vector<TCellID> &newLocalMesh_id_to_mesh_id_face,
+                                                  vector<TCellID> &mesh_id_to_newLocalMesh_id_face)
 {
 	/* function assumes that the original mesh is consistently oriented*/
 	/* Method I. Introduce one single vertex in the center of each triangle to remesh ->
@@ -2481,13 +2518,13 @@ SingularityGraphBuilder2D::remeshTrianglesNewMesh(gmds::Mesh *newLocalMesh,
 	unsigned int NodeNumber = 0;
 	unsigned int FaceNumber = 0;
 	unsigned int EdgeNumber = 0;
-	vector<gmds::TCellID> origEdge2NewPoint(m_mesh->getNbEdges());
+	vector<TCellID> origEdge2NewPoint(m_mesh->getNbEdges());
 	vector<bool> modifiedEdge(m_mesh->getNbEdges(), false);
-	vector<gmds::Node> NodesToAdd(6);
+	vector<Node> NodesToAdd(6);
 	vector<TCoord> edgeWeights(2, 0.5);
 	for (unsigned int i = 0; i < trianglesToRemesh.size(); i++) {
-		gmds::Face currentFace = m_mesh->get<gmds::Face>(trianglesToRemesh[i]);
-		vector<gmds::Node> currentNodes = currentFace.get<Node>();
+		Face currentFace = m_mesh->get<Face>(trianglesToRemesh[i]);
+		vector<Node> currentNodes = currentFace.get<Node>();
 		current_point1 = currentNodes[0].getPoint();
 		current_point2 = currentNodes[1].getPoint();
 		current_point3 = currentNodes[2].getPoint();
@@ -2501,7 +2538,7 @@ SingularityGraphBuilder2D::remeshTrianglesNewMesh(gmds::Mesh *newLocalMesh,
 			NodeNumber++;
 		}
 		else {
-			NodesToAdd[0] = newLocalMesh->get<gmds::Node>(mesh_id_to_newLocalMesh_id_node[currentNodes[0].id()]);
+			NodesToAdd[0] = newLocalMesh->get<Node>(mesh_id_to_newLocalMesh_id_node[currentNodes[0].id()]);
 		}
 
 		if (!visitedVerts[currentNodes[1].id()]) {
@@ -2513,7 +2550,7 @@ SingularityGraphBuilder2D::remeshTrianglesNewMesh(gmds::Mesh *newLocalMesh,
 			NodeNumber++;
 		}
 		else {
-			NodesToAdd[1] = newLocalMesh->get<gmds::Node>(mesh_id_to_newLocalMesh_id_node[currentNodes[1].id()]);
+			NodesToAdd[1] = newLocalMesh->get<Node>(mesh_id_to_newLocalMesh_id_node[currentNodes[1].id()]);
 		}
 
 		if (!visitedVerts[currentNodes[2].id()]) {
@@ -2525,41 +2562,41 @@ SingularityGraphBuilder2D::remeshTrianglesNewMesh(gmds::Mesh *newLocalMesh,
 			NodeNumber++;
 		}
 		else {
-			NodesToAdd[2] = newLocalMesh->get<gmds::Node>(mesh_id_to_newLocalMesh_id_node[currentNodes[2].id()]);
+			NodesToAdd[2] = newLocalMesh->get<Node>(mesh_id_to_newLocalMesh_id_node[currentNodes[2].id()]);
 		}
 
-		vector<gmds::Edge> currentEdges = currentFace.get<gmds::Edge>();
+		vector<Edge> currentEdges = currentFace.get<Edge>();
 		for (unsigned int k = 0; k < 3; k++) {
-			vector<gmds::Node> edge_nodes = currentEdges[k].get<gmds::Node>();
+			vector<Node> edge_nodes = currentEdges[k].get<Node>();
 			for (unsigned int j = 0; j < 3; j++) {     // get opposite node for each edge; put in this order
 				if ((edge_nodes[0] != NodesToAdd[j]) && (edge_nodes[1] != NodesToAdd[j])) {
 					if (!modifiedEdge[currentEdges[k].id()]) {
-						gmds::math::Point middle_point = currentEdges[k].center();
+						math::Point middle_point = currentEdges[k].center();
 						NodesToAdd[3 + fmod(j, 3)] = newLocalMesh->newNode(middle_point.X(), middle_point.Y(), middle_point.Z());
 
 						vector<math::Vector3d> c_vectors0 = ((*m_field)[edge_nodes[0].id()]).componentVectors();
 						vector<math::Vector3d> c_vectors1 = ((*m_field)[edge_nodes[1].id()]).componentVectors();
 
-						gmds::math::Vector3d second_closest_vect = (*m_field)[edge_nodes[1].id()].closestComponentVector(c_vectors0[0]);
-						gmds::math::Vector3d center_vect = c_vectors0[0] * edgeWeights[0] + second_closest_vect * edgeWeights[1];
-						gmds::math::Vector3d center_vect_second = center_vect.getOneOrtho();
+						math::Vector3d second_closest_vect = (*m_field)[edge_nodes[1].id()].closestComponentVector(c_vectors0[0]);
+						math::Vector3d center_vect = c_vectors0[0] * edgeWeights[0] + second_closest_vect * edgeWeights[1];
+						math::Vector3d center_vect_second = center_vect.getOneOrtho();
 
-						(*newMesh_cross_field_2D)[NodeNumber] = gmds::math::Cross2D(center_vect, center_vect_second);
+						(*newMesh_cross_field_2D)[NodeNumber] = math::Cross2D(center_vect, center_vect_second);
 						origEdge2NewPoint[currentEdges[k].id()] = EdgeNumber;
 						modifiedEdge[currentEdges[k].id()] = true;
 						EdgeNumber++;
 						NodeNumber++;
 					}
 					else {
-						NodesToAdd[3 + fmod(j, 3)] = newLocalMesh->get<gmds::Node>(origEdge2NewPoint[currentEdges[k].id()]);
+						NodesToAdd[3 + fmod(j, 3)] = newLocalMesh->get<Node>(origEdge2NewPoint[currentEdges[k].id()]);
 					}
 				}
 			}
 		}
-		gmds::Face f1 = newLocalMesh->newTriangle(NodesToAdd[3], NodesToAdd[4], NodesToAdd[5]);
-		gmds::Face f2 = newLocalMesh->newTriangle(NodesToAdd[0], NodesToAdd[5], NodesToAdd[4]);
-		gmds::Face f3 = newLocalMesh->newTriangle(NodesToAdd[1], NodesToAdd[3], NodesToAdd[5]);
-		gmds::Face f4 = newLocalMesh->newTriangle(NodesToAdd[2], NodesToAdd[4], NodesToAdd[3]);
+		Face f1 = newLocalMesh->newTriangle(NodesToAdd[3], NodesToAdd[4], NodesToAdd[5]);
+		Face f2 = newLocalMesh->newTriangle(NodesToAdd[0], NodesToAdd[5], NodesToAdd[4]);
+		Face f3 = newLocalMesh->newTriangle(NodesToAdd[1], NodesToAdd[3], NodesToAdd[5]);
+		Face f4 = newLocalMesh->newTriangle(NodesToAdd[2], NodesToAdd[4], NodesToAdd[3]);
 
 		newLocalMesh_id_to_mesh_id_face.push_back(currentFace.id());
 		newLocalMesh_id_to_mesh_id_face.push_back(currentFace.id());
@@ -2578,27 +2615,27 @@ SingularityGraphBuilder2D::remeshTrianglesNewMesh(gmds::Mesh *newLocalMesh,
 	vector<bool> remeshedAdjFaces(m_original_faces_number, false);
 
 	for (auto e_id : m_mesh->edges()) {
-		gmds::Edge currentEdge = m_mesh->get<gmds::Edge>(e_id);
+		Edge currentEdge = m_mesh->get<Edge>(e_id);
 
 		if (modifiedEdge[e_id]) {
-			vector<gmds::Face> adj_faces = currentEdge.get<gmds::Face>();
+			vector<Face> adj_faces = currentEdge.get<Face>();
 			for (unsigned int i = 0; i < adj_faces.size(); i++) {
 				if (!trianglesToRemeshBool[adj_faces[i].id()]) {
-					vector<gmds::Node> edge_nodes = currentEdge.get<gmds::Node>();
-					gmds::Node midNode = newLocalMesh->get<gmds::Node>(origEdge2NewPoint[currentEdge.id()]);
+					vector<Node> edge_nodes = currentEdge.get<Node>();
+					Node midNode = newLocalMesh->get<Node>(origEdge2NewPoint[currentEdge.id()]);
 					if (remeshedAdjFaces[adj_faces[i].id()]) {
 						// TODO
 					}
 					else {
-						vector<gmds::Node> face_nodes = adj_faces[i].get<gmds::Node>();
+						vector<Node> face_nodes = adj_faces[i].get<Node>();
 
 						for (unsigned int j = 0; j < 3; j++) {
 							if ((face_nodes[j] != edge_nodes[0]) && (face_nodes[j] != edge_nodes[1])) {
-								gmds::Node opposite_node = face_nodes[j];
-								gmds::Node opposite_node_local;     // TODO = does it exist? or to add?
+								Node opposite_node = face_nodes[j];
+								Node opposite_node_local;     // TODO = does it exist? or to add?
 								// same for face_nodes!!!TODO
-								gmds::Face f1 = newLocalMesh->newTriangle(opposite_node_local, face_nodes[fmod((j + 1), 3)], midNode);
-								gmds::Face f2 = newLocalMesh->newTriangle(opposite_node_local, midNode, face_nodes[fmod((j + 2), 3)]);
+								Face f1 = newLocalMesh->newTriangle(opposite_node_local, face_nodes[fmod((j + 1), 3)], midNode);
+								Face f2 = newLocalMesh->newTriangle(opposite_node_local, midNode, face_nodes[fmod((j + 2), 3)]);
 								break;
 							}
 						}
@@ -2609,27 +2646,27 @@ SingularityGraphBuilder2D::remeshTrianglesNewMesh(gmds::Mesh *newLocalMesh,
 			}
 		}
 	}
-	gmds::IGMeshIOService ioService(newLocalMesh);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N | gmds::F);
-	vtkWriter.setDataOptions(gmds::N | gmds::F);
+	IGMeshIOService ioService(newLocalMesh);
+	VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(N | F);
+	vtkWriter.setDataOptions(N | F);
 	vtkWriter.write("localmesh.vtk");
 
-	gmds::MeshDoctor doc(newLocalMesh);
+	MeshDoctor doc(newLocalMesh);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
 
 	isCurveEdge.resize(newLocalMesh->getNbEdges(), false);
 	isCurveNode.resize(newLocalMesh->getNbNodes(), false);
-	vector<gmds::Node> m_curve_nodes, m_surf_nodes;
+	vector<Node> m_curve_nodes, m_surf_nodes;
 	visitedVerts.clear();
 	visitedVerts.resize(newLocalMesh->getNbNodes(), false);
 
 	math::Vector3d OX(1, 0, 0);
 	for (auto e_id : newLocalMesh->edges()) {
-		gmds::Edge currentEdge = newLocalMesh->get<gmds::Edge>(e_id);
-		vector<gmds::Node> currentNodes = (newLocalMesh->get<gmds::Edge>(e_id)).get<gmds::Node>();
-		std::vector<gmds::Face> adj_faces = currentEdge.get<gmds::Face>();
+		Edge currentEdge = newLocalMesh->get<Edge>(e_id);
+		vector<Node> currentNodes = (newLocalMesh->get<Edge>(e_id)).get<Node>();
+		std::vector<Face> adj_faces = currentEdge.get<Face>();
 		if (adj_faces.size() == 1) {
 			isCurveEdge[e_id] = true;
 			if (!visitedVerts[currentNodes[0].id()]) {
@@ -2654,7 +2691,7 @@ SingularityGraphBuilder2D::remeshTrianglesNewMesh(gmds::Mesh *newLocalMesh,
 	vector<TCoord> AWeights(3, (double) 1 / 3);
 	for (auto f_id : newLocalMesh->faces()) {
 		std::vector<math::Cross2D> Tricrosses;
-		gmds::Face currentFace = newLocalMesh->get<Face>(f_id);
+		Face currentFace = newLocalMesh->get<Face>(f_id);
 		vector<Node> nodesTri = currentFace.get<Node>();
 		Tricrosses.push_back((*newMesh_cross_field_2D)[nodesTri[0].id()]);
 		Tricrosses.push_back((*newMesh_cross_field_2D)[nodesTri[1].id()]);
@@ -2663,35 +2700,35 @@ SingularityGraphBuilder2D::remeshTrianglesNewMesh(gmds::Mesh *newLocalMesh,
 		vector<math::Vector3d> c_vectors1 = Tricrosses[1].componentVectors();
 		vector<math::Vector3d> c_vectors2 = Tricrosses[2].componentVectors();
 
-		gmds::math::Vector3d second_closest_vect = Tricrosses[1].closestComponentVector(c_vectors0[0]);
-		gmds::math::Vector3d third_closest_vect = Tricrosses[2].closestComponentVector(c_vectors0[0]);
-		gmds::math::Vector3d center_vect = c_vectors0[0] * AWeights[0] + second_closest_vect * AWeights[1] + third_closest_vect * AWeights[2];
-		gmds::math::Vector3d center_vect_second = center_vect.getOneOrtho();
+		math::Vector3d second_closest_vect = Tricrosses[1].closestComponentVector(c_vectors0[0]);
+		math::Vector3d third_closest_vect = Tricrosses[2].closestComponentVector(c_vectors0[0]);
+		math::Vector3d center_vect = c_vectors0[0] * AWeights[0] + second_closest_vect * AWeights[1] + third_closest_vect * AWeights[2];
+		math::Vector3d center_vect_second = center_vect.getOneOrtho();
 
-		newTriangleCenterCrosses[f_id] = gmds::math::Cross2D(center_vect, center_vect_second);
+		newTriangleCenterCrosses[f_id] = math::Cross2D(center_vect, center_vect_second);
 	}
 
 	newBdryEdgeNormals.resize(newLocalMesh->getNbEdges());
-	gmds::math::Vector3d zeroVec(0.0, 0.0, 0.0);
+	math::Vector3d zeroVec(0.0, 0.0, 0.0);
 	newBdryNodeNormals.resize(newLocalMesh->getNbNodes(), zeroVec);
 
 	for (auto e_id : newLocalMesh->edges()) {
-		gmds::Edge currentEdge = newLocalMesh->get<gmds::Edge>(e_id);
+		Edge currentEdge = newLocalMesh->get<Edge>(e_id);
 		if (isCurveEdge[currentEdge.id()]) {
-			vector<gmds::Node> adjacent_nodes = currentEdge.get<gmds::Node>();
+			vector<Node> adjacent_nodes = currentEdge.get<Node>();
 			math::Point p1 = adjacent_nodes[0].getPoint();
 			math::Point p2 = adjacent_nodes[1].getPoint();
 			math::Vector3d v1 = math::Vector3d(p1, p2);
 			v1.normalize();
-			vector<gmds::Face> adjacent_faces = currentEdge.get<gmds::Face>();
+			vector<Face> adjacent_faces = currentEdge.get<Face>();
 			newBdryEdgeNormals[e_id] = v1.cross(adjacent_faces[0].normal());
 		}
 	}
 
 	for (auto n_id : newLocalMesh->nodes()) {
-		gmds::Node currentNode = newLocalMesh->get<gmds::Node>(n_id);
+		Node currentNode = newLocalMesh->get<Node>(n_id);
 		if (isCurveNode[currentNode.id()]) {
-			vector<gmds::Edge> currentEdges = currentNode.get<gmds::Edge>();
+			vector<Edge> currentEdges = currentNode.get<Edge>();
 			for (unsigned int i = 0; i < currentEdges.size(); i++) {
 				if (isCurveEdge[currentEdges[i].id()]) {
 					newBdryNodeNormals[n_id][0] = newBdryNodeNormals[n_id][0] + newBdryEdgeNormals[currentEdges[i].id()][0];
@@ -2841,8 +2878,8 @@ SingularityGraphBuilder2D::connectSingularityLines(math::Vector3d dir_slot_i,
 				TCellID out_cell_id, min_out_cell_id;
 				int out_cell_dim, min_out_cell_dim;
 
-				vector<gmds::Node> currentNodes = currentFace.get<gmds::Node>();
-				vector<gmds::Edge> currentEdges = currentFace.get<gmds::Edge>();
+				vector<Node> currentNodes = currentFace.get<Node>();
+				vector<Edge> currentEdges = currentFace.get<Edge>();
 
 				double min_value = 7.7;
 				bool found = false;
@@ -2938,16 +2975,16 @@ SingularityGraphBuilder2D::computeFace2FaceInfo()
 	// here we assume the mesh is manifold
 	*/
 
-	gmds::math::Vector3d zeroVec(0.0, 0.0, 0.0);
+	math::Vector3d zeroVec(0.0, 0.0, 0.0);
 	if (m_face_normals.size() == 0) m_face_normals.resize(m_original_faces_number);
 
 	// For every non-border edge
 	for (auto e_id : m_mesh->edges()) {
-		gmds::Edge currentEdge = m_mesh->get<gmds::Edge>(e_id);
+		Edge currentEdge = m_mesh->get<Edge>(e_id);
 
 		if (!m_mesh->isMarked(currentEdge, m_mark_edges_on_curve)) {
 
-			vector<gmds::Face> adjacent_triangles = currentEdge.get<gmds::Face>();
+			vector<Face> adjacent_triangles = currentEdge.get<Face>();
 			unsigned int fid0 = adjacent_triangles[0].id();
 			unsigned int fid1 = adjacent_triangles[1].id();
 
@@ -2956,30 +2993,30 @@ SingularityGraphBuilder2D::computeFace2FaceInfo()
 			// find common edge on triangle 0 and 1
 			int fid0_vc = -1;     // local id of common edge in f0 {0, 1 or 2}
 			int fid1_vc = -1;     // local id of common edge in f1
-			vector<gmds::Edge> currentEdges0 = adjacent_triangles[0].get<gmds::Edge>();
-			vector<gmds::Edge> currentEdges1 = adjacent_triangles[1].get<gmds::Edge>();
+			vector<Edge> currentEdges0 = adjacent_triangles[0].get<Edge>();
+			vector<Edge> currentEdges1 = adjacent_triangles[1].get<Edge>();
 			for (unsigned int i = 0; i < 3; i++) {
 				if (currentEdges0[i].id() == e_id) fid0_vc = i;
 				if (currentEdges1[i].id() == e_id) fid1_vc = i;
 			}
 
-			vector<gmds::Node> edge_nodes0 = currentEdges0[fid0_vc].get<gmds::Node>();
-			gmds::math::Vector3d common_edge(edge_nodes0[0].getPoint(), edge_nodes0[1].getPoint());
+			vector<Node> edge_nodes0 = currentEdges0[fid0_vc].get<Node>();
+			math::Vector3d common_edge(edge_nodes0[0].getPoint(), edge_nodes0[1].getPoint());
 			common_edge.normalize();
 
 			// Common local Basis (CLB) Map the two triangles in a new space where the common edge is the x axis and the N0
 			// the z axis
 
 			Eigen::MatrixXd CLB(3, 3);
-			gmds::math::Point commonOrig = edge_nodes0[0].getPoint();     // origin ; the first vert of common edge
-			gmds::math::Vector3d tmp = common_edge.cross(m_face_normals[fid0]);
+			math::Point commonOrig = edge_nodes0[0].getPoint();     // origin ; the first vert of common edge
+			math::Vector3d tmp = common_edge.cross(m_face_normals[fid0]);
 
 			for (unsigned int i = 0; i < 3; i++) {
 				CLB(0, i) = common_edge[i];
 				CLB(1, i) = tmp[i];
 				CLB(2, i) = m_face_normals[fid0][i];
 			}
-			vector<gmds::Node> face_nodes0 = adjacent_triangles[0].get<gmds::Node>();
+			vector<Node> face_nodes0 = adjacent_triangles[0].get<Node>();
 			Eigen::MatrixXd V0(3, 3);
 			for (unsigned int i = 0; i < 3; i++) {
 				V0(i, 0) = face_nodes0[i].X() - commonOrig.X();
@@ -2989,7 +3026,7 @@ SingularityGraphBuilder2D::computeFace2FaceInfo()
 
 			V0 = (CLB * V0.transpose()).transpose();
 
-			vector<gmds::Node> face_nodes1 = adjacent_triangles[1].get<gmds::Node>();
+			vector<Node> face_nodes1 = adjacent_triangles[1].get<Node>();
 			Eigen::MatrixXd V1(3, 3);
 
 			for (unsigned int i = 0; i < 3; i++) {
@@ -3079,7 +3116,7 @@ LineRelaxator::computeMeanEdgeLengthByGroup()
 	m_lineSpringLenght = std::vector<double>(m_graph->getNLinkedEdgeGroup(), 0.0);
 	for (const auto line : m_graph->getLines()) {
 		const auto points = line->getEndPoints();
-		const auto direction = gmds::math::Vector3d(points[0]->getLocation(), points[1]->getLocation());
+		const auto direction = math::Vector3d(points[0]->getLocation(), points[1]->getLocation());
 
 		if (!m_groupIsFixed[line->getLinkedEdgeID()]) {
 			const auto groupID = line->getLinkedEdgeID();
@@ -3120,13 +3157,13 @@ LineRelaxator::applySpringForceOnPoints()
 	m_maxLineByGroup.insert(m_maxLineByGroup.end(), m_minLineByGroup.begin(), m_minLineByGroup.end());
 
 	for (const auto point : m_graph->getPoints())
-		m_directions[point->getNumber()] = gmds::math::Vector3d();
+		m_directions[point->getNumber()] = math::Vector3d();
 
 	// stack forces from those critical line onto their respective points
 	for (const auto line : m_maxLineByGroup) {     // m_graph->getLines()
 
 		auto points = line->getEndPoints();
-		auto direction = gmds::math::Vector3d(points[0]->getLocation(), points[1]->getLocation());
+		auto direction = math::Vector3d(points[0]->getLocation(), points[1]->getLocation());
 
 		const auto length = direction.norm();
 		const auto L0 = m_lineSpringLenght[line->getLinkedEdgeID()];
@@ -3206,7 +3243,7 @@ LineRelaxator::movePoints()
 			if (!ref_line) throw GMDSException("curve singularity without curved line");
 
 			const auto &linePoints = ref_line->getEndPoints();
-			const gmds::math::Vector3d lineDir(linePoints[0]->getLocation(), linePoints[1]->getLocation());
+			const math::Vector3d lineDir(linePoints[0]->getLocation(), linePoints[1]->getLocation());
 			auto projectedDirection = m_directions[point->getNumber()].dot(lineDir) * lineDir / lineDir.norm2();
 			projectedDirection *= m_step;
 			constrainDirection(point, projectedDirection);
@@ -3278,15 +3315,17 @@ LineRelaxator::getWorstAngle()
 void
 LineRelaxator::run()
 {
-	std::cout << "Relax mesh to optimize edge ratios (gmsh output): "<< std::endl;
+	std::cout << "Relax mesh to optimize edge ratios (gmsh output): " << std::endl;
 	std::cout << "	worst angle/ratio before relaxation : " << getWorstAngle() << ", " << getWorstEdgeRatio() << std::endl;
-	
+
 	computeMeanEdgeLengthByGroup();
 	for (int i = 0; i < 50; i++) {
 		// if (i % 2 == 0) computeMeanEdgeLengthByGroup();
 		// computeMeanEdgeLengthByGroup();
 		applySpringForceOnPoints();
-		movePoints();		
+		movePoints();
 	}
 	std::cout << "	worst angle/ratio after  relaxation : " << getWorstAngle() << ", " << getWorstEdgeRatio() << std::endl;
 }
+
+}     // namespace gmds

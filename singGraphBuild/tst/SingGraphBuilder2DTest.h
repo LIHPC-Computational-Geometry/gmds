@@ -27,6 +27,7 @@ typedef std::chrono::high_resolution_clock Clock;
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
+
 TEST(SingGraphBuilder2DTest, halfDisk)
 {
 	auto t0 = Clock::now();
@@ -92,6 +93,8 @@ TEST(SingGraphBuilder2DTest, halfDisk)
 	auto algo = SingGraphBuilder2DShortestPath(&mesh, field, BuildGeomSing);
 	algo.setDebugPrefix("singGraphBuilderTest");
 	algo.initMarks(node_point_mark, node_curve_mark, edge_curve_mark);
+	algo.setQuadMeshSmoothingEnable(true);
+	algo.setDebugFilesWritingEnable(true);
 
 	// User must choose the number of control Points for the Bezier curve computation (last step)
 	// WARNING if the number chosen exceeds the original number of points for the curve, the latter will be chosen
@@ -102,6 +105,7 @@ TEST(SingGraphBuilder2DTest, halfDisk)
 	auto t2 = Clock::now();
 	std::cout << "execute ftc " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " milliseconds" << std::endl;
 	std::cout << "TOTAL   " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t0).count() << " milliseconds" << std::endl;
+
 	//==================================================================
 	// MARKS CLEANING
 	//==================================================================

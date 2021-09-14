@@ -13,6 +13,7 @@
 #include <gmds/singGraphBuild/SingularityGraphBuilder2D.h>
 #include <gmds/singGraphBuild/Tools.h>
 /*----------------------------------------------------------------------------*/
+namespace gmds {
 
 class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DOriginal : public SingularityGraphBuilder2D
 {
@@ -96,3 +97,4 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DOriginal : public Singularit
 	                              gmds::math::Vector3d &to_dir,
 	                              bool &foundBackTrackPath);
 };
+}
