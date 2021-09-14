@@ -31,6 +31,11 @@ CrossFieldGeneration2D::CrossFieldGeneration2D(Mesh* AMesh)
   m_debug_output = "";
 }
 /*---------------------------------------------------------------------------*/
+ void CrossFieldGeneration2D::setDebugEnable(bool ADebugEnable)
+{
+  m_debugEnable = ADebugEnable;
+}
+/*---------------------------------------------------------------------------*/
 void CrossFieldGeneration2D::setDebugPrefix(const std::string& AName)
 {
   m_debug_output = AName;
@@ -107,7 +112,8 @@ void CrossFieldGeneration2D::execute(const Strategy AStrategy)
   std::cout << "Initialization of crosses on points" << std::flush;
   initCrossesOnPoints(); 
   std::cout << "    DONE" << std::endl;
-  writeForDebug();  
+  if (m_debugEnable)
+	writeForDebug();  
   //==================================================================
   // Now, depending on the strategy, the algorithm changes
   //==================================================================
@@ -143,7 +149,8 @@ void CrossFieldGeneration2D::execute(const Strategy AStrategy)
   //==================================================================
   computeReferenceVectorDeviationPerFace();
   cleanMarks();
-  writeForDebug();  
+  if (m_debugEnable)
+	writeForDebug();  
 }
 
 /*---------------------------------------------------------------------------*/

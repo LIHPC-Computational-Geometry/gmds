@@ -39,6 +39,13 @@ class LIB_GMDS_FRAME_API CrossFieldGeneration2D {
    */
   void setDebugPrefix(const std::string& AName);
      
+   /*------------------------------------------------------------------------*/
+  /** \brief Enable to write debug files
+   *
+   *  \param ADebugEnable
+   */
+  void setDebugEnable(bool ADebugEnable);
+
   /*------------------------------------------------------------------------*/
   /** \brief Function to be called for executing a frame field generation 
    *		   algorithm. This function follows the template method DP. It
@@ -47,7 +54,7 @@ class LIB_GMDS_FRAME_API CrossFieldGeneration2D {
    */
   void execute(const Strategy AStrategy);
 
-    void writeForDebug(const std::string AFileName="");
+  void writeForDebug(const std::string AFileName="");
 
  private:
     
@@ -134,7 +141,7 @@ class LIB_GMDS_FRAME_API CrossFieldGeneration2D {
   /** Cross field that we build on the mesh (node association) */
   gmds::Variable<gmds::math::Cross2D>* m_cross_field_2D; 
 
-
+  bool m_debugEnable = true;
   std::string m_debug_output;
 
   /** mark for nodes on curves */
