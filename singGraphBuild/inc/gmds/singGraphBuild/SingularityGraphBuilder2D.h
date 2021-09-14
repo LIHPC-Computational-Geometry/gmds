@@ -74,14 +74,14 @@ public:
 	* \param AField the cross field associated to AMesh
 	* \param ABuildGeomSing flag to build the geometric singularity points.
 	*/
-	SingularityGraphBuilder2D(gmds::Mesh* AMesh,
-	                          gmds::Variable<gmds::math::Cross2D>* AField,
+	SingularityGraphBuilder2D(Mesh* AMesh,
+	                          Variable<math::Cross2D>* AField,
 	                          const bool ABuildGeomSing = true);
     
 	/*----------------------------------------------------------------------------------------------------*/
 	/** \brief Execution of the algorithm with the chosen AStrategy
 	*/
-	void execute(const Strategy AStrategy, unsigned int number_of_control_points);
+	void execute();
 	/*----------------------------------------------------------------------------------------------------*/
 	/* \brief Returns a unique ptr of the mesh extracted fom the singularity graph 	*/
 	std::unique_ptr<Mesh> getQuadMesh();
@@ -128,14 +128,14 @@ protected:
 	* \param[in] AFace    a singular face
 	* \param[out] APosSing the singularity point location
 	*/
-	void computeSingPointInfo(const gmds::Face&        AFace,
-	                          gmds::math::Point& APosSing);
+	void computeSingPointInfo(const Face&        AFace,
+	                          math::Point& APosSing);
     
 	/*----------------------------------------------------------------------------------------------------*/
 	/** \brief  For a a face AFace, which is singular, this method creates the
 	* the singularity point and the slots (cont - used for visualization purposes)
 	*/
-	void createSingPointAndSlots(const gmds::Face& AFace);
+	void createSingPointAndSlots(const Face& AFace);
     
 	/*----------------------------------------------------------------------------------------------------*/
 	/** \brief Add the boundary nodes and edges into the singularity graph.
@@ -172,21 +172,21 @@ protected:
 	/** \brief Write a new mesh named \param AFileName having as vertices some of the original mesh's vertices \param ANodes and zero-are triangles
 	* therefore writes a vtk file containing lines
 	*/
-	void writeTestMeshVerts(vector<gmds::Node>& ANodes, std::string& AFileName);
+	void writeTestMeshVerts(vector<Node>& ANodes, std::string& AFileName);
     
 	/*----------------------------------------------------------------------------------------------------*/
 	/** \brief Write a new mesh named \param AFileName having as vertices \param APoints
 	* and 'zero-area' triangles
 	*/
-	void writeTestPoints(vector<gmds::math::Point>& APoints, std::string& AFileName);
+	void writeTestPoints(vector<math::Point>& APoints, std::string& AFileName);
 	/*----------------------------------------------------------------------------------------------------*/
 	/** \brief Write a new mesh named \param AFileName having as triangles \param ATriangles
 	*/
-	void writeTestMeshTriangles(vector<gmds::Face>& ATriangles, std::string& AFileName);    
+	void writeTestMeshTriangles(vector<Face>& ATriangles, std::string& AFileName);    
 	/*----------------------------------------------------------------------------------------------------*/
 	/** \brief Write a new mesh named \param AFileName having as triangles a subset of the original mesh's triangles (\param ATrianglesIds), given as ids
 	*/
-	void writeTestMeshTrianglesIds(vector<gmds::TCellID>& ATrianglesIds, std::string& AFileName); 
+	void writeTestMeshTrianglesIds(vector<TCellID>& ATrianglesIds, std::string& AFileName); 
 	/*----------------------------------------------------------------------------------------------------*/
 	/* write a vtk file containing the confusing balls*/
 	void writeConfusingBalls();
@@ -233,12 +233,12 @@ protected:
 	              SingularityPoint::Slot*         AFromSlot,
 	              SingularityPoint*&              AToSingPnt,
 	              SingularityPoint::Slot*&        AToSlot,
-	              gmds::math::Point&              AFromPnt,
-	              gmds::math::Vector3d&           AToDir,
-	              std::vector<gmds::math::Point>& APoints,
-	              std::vector<gmds::TCellID>&     ATriangles,
+	              math::Point&              AFromPnt,
+	              math::Vector3d&           AToDir,
+	              std::vector<math::Point>& APoints,
+	              std::vector<TCellID>&     ATriangles,
 	              int&                            AToCellDim,
-	              gmds::TCellID&                  AToCellID,
+	              TCellID&                  AToCellID,
 	              double&                         streamlineDeviation,                  
 	              double&                         accumulatedDistancePerSlotLine,
 	              double&                         searchStep,
@@ -271,12 +271,12 @@ protected:
 	*/
 	void growLineRK4(const SingularityPoint::Slot*   AFromSlot,
 	                 SingularityPoint::Slot*&        AToSlot,
-	                 const gmds::math::Point&        AFromPnt,
-	                 gmds::math::Vector3d&           AToDir,
-	                 std::vector<gmds::math::Point>& APoints,
-	                 std::vector<gmds::TCellID>&     ATriangles,
+	                 const math::Point&        AFromPnt,
+	                 math::Vector3d&           AToDir,
+	                 std::vector<math::Point>& APoints,
+	                 std::vector<TCellID>&     ATriangles,
 	                 int&                            AToCellDim,
-	                 gmds::TCellID&                  AToCellID,
+	                 TCellID&                  AToCellID,
 	                 double&                         streamlineDeviation,   
 	                 const double&                   stepSize,
 	                 bool&                           AEndOnBnd,
@@ -300,7 +300,7 @@ protected:
 	*  \param increaseRadiusScale the amount by which we increase the previous radius
 	*/
     
-	void redefineOneConfusingBall(SingularityPoint* APnt, vector<gmds::TCellID>& modifiedFaces, double &previousRad, const double increaseRadiusScale = 1.5);
+	void redefineOneConfusingBall(SingularityPoint* APnt, vector<TCellID>& modifiedFaces, double &previousRad, const double increaseRadiusScale = 1.5);
     
 	/*----------------------------------------------------------------------------------------------------*/
 	/** \brief Creates a geometric singularity point.
@@ -312,10 +312,10 @@ protected:
 	* \param [out] APnt the created singularity point
 	* \param [out] ASlot the associated slot directed towards AInVec
 	*/
-	void createGeometricSingularityPoint(const gmds::math::Point&    AInPnt,
-	                                     const gmds::math::Vector3d& AInVec,
+	void createGeometricSingularityPoint(const math::Point&    AInPnt,
+	                                     const math::Vector3d& AInVec,
 	                                     const int                   ACellDim,
-	                                     const gmds::TCellID         ACellID,
+	                                     const TCellID         ACellID,
 	                                     SingularityPoint*&          APnt,
 	                                     SingularityPoint::Slot*&    ASlot);
     
@@ -325,7 +325,7 @@ protected:
 	* \param AFace a mesh face
 	* \return the singularity lines going through AFace
 	*/
-	std::vector<SurfaceSingularityLine*> getSingularityLinesIn(const gmds::Face& AFace);
+	std::vector<SurfaceSingularityLine*> getSingularityLinesIn(const Face& AFace);
     
 	/*----------------------------------------------------------------------------------------------------*/
 	/** \brief This operation detects line intersection in steady areas and
@@ -339,12 +339,12 @@ protected:
 	*/
 	void createLineIntersection(SurfaceSingularityLine*         ALine1,
 	                            SurfaceSingularityLine*         ALine2,
-	                            gmds::Face&                     AFace,
-	                            std::vector<gmds::math::Point>& AAddedPoints);
+	                            Face&                     AFace,
+	                            std::vector<math::Point>& AAddedPoints);
 	/*----------------------------------------------------------------------------------------------------*/
 	void createLineIntersection(std::vector<SurfaceSingularityLine*>& ALines,
-	                            gmds::Face&                           AFace,
-	                            std::vector<gmds::math::Point>&       AAddedPoints);    
+	                            Face&                           AFace,
+	                            std::vector<math::Point>&       AAddedPoints);    
     
 	/*----------------------------------------------------------------------------------------------------*/
 	/** \brief Computes the barycenters for all triangles in the mesh, 
@@ -355,9 +355,9 @@ protected:
 	/*----------------------------------------------------------------------------------------------------*/
 	/** \brief Computes the barycenter (\param centerTri) for triangle \param ATriangle, 
 	*as well as the cross associated to it (\param centerTriCross) */
-	void constructOneCenterTriangleCross(gmds::Face& ATriangle, 
-	                                     gmds::math::Point &centerTri, 
-	                                     gmds::math::Cross2D& centerTriCross);
+	void constructOneCenterTriangleCross(Face& ATriangle, 
+	                                     math::Point &centerTri, 
+	                                     math::Cross2D& centerTriCross);
     
 	/*----------------------------------------------------------------------------------------------------*/
      
@@ -369,10 +369,10 @@ protected:
 	* \param local_cross_field_2D cross field of the \param newLocalMesh
 	* \param trianglesToRemesh the ids of the triangles of the original mesh that we want to remesh
 	*/
-	void remeshTriangles(gmds::Mesh*                          newLocalMesh,  
-	                     vector<gmds::TCellID>&               newLocalMesh_id_to_mesh_id_node, 
-	                     gmds::Variable<gmds::math::Cross2D>* local_cross_field_2D, 
-	                     vector<gmds::TCellID>&               trianglesToRemesh);
+	void remeshTriangles(Mesh*                          newLocalMesh,  
+	                     vector<TCellID>&               newLocalMesh_id_to_mesh_id_node, 
+	                     Variable<math::Cross2D>* local_cross_field_2D, 
+	                     vector<TCellID>&               trianglesToRemesh);
      
      
 	/*----------------------------------------------------------------------------------------------------*/
@@ -394,20 +394,20 @@ protected:
 	* \param newLocalMesh_id_to_mesh_id_face in this vector at the position corresponding the Face id of the \param newLocalMesh (except newly introduced Face) it is stored the id of the corresponding Face in the original mesh 
 	* \param mesh_id_to_newLocalMesh_id_face in this vector at the position corresponding the Face id of original mesh it is stored the id of the corresponding Face in the \param newLocalMesh
 	*/
-	void remeshTrianglesNewMesh(gmds::Mesh*                          newLocalMesh,   
-	                            gmds::Variable<gmds::math::Cross2D>* newMesh_cross_field_2D, 
-	                            vector<gmds::TCellID>&               trianglesToRemesh,
+	void remeshTrianglesNewMesh(Mesh*                          newLocalMesh,   
+	                            Variable<math::Cross2D>* newMesh_cross_field_2D, 
+	                            vector<TCellID>&               trianglesToRemesh,
 	                            vector<bool>&                        remeshedTriangles,
-	                            vector<gmds::math::Point>&           newTriangleCenters, 
-	                            vector<gmds::math::Cross2D>&         newTriangleCenterCrosses, 
-	                            vector<gmds::math::Vector3d>&        newBdryEdgeNormals,
-	                            vector<gmds::math::Vector3d>&        newBdryNodeNormals,
+	                            vector<math::Point>&           newTriangleCenters, 
+	                            vector<math::Cross2D>&         newTriangleCenterCrosses, 
+	                            vector<math::Vector3d>&        newBdryEdgeNormals,
+	                            vector<math::Vector3d>&        newBdryNodeNormals,
 	                            vector<bool>&                        isCurveEdge,
 	                            vector<bool>&                        isCurveNode,
-	                            vector<gmds::TCellID>&               newLocalMesh_id_to_mesh_id_node,
-	                            vector<gmds::TCellID>&               mesh_id_to_newLocalMesh_id_node,
-	                            vector<gmds::TCellID>&               newLocalMesh_id_to_mesh_id_face,
-	                            vector<gmds::TCellID>&               mesh_id_to_newLocalMesh_id_face);
+	                            vector<TCellID>&               newLocalMesh_id_to_mesh_id_node,
+	                            vector<TCellID>&               mesh_id_to_newLocalMesh_id_node,
+	                            vector<TCellID>&               newLocalMesh_id_to_mesh_id_face,
+	                            vector<TCellID>&               mesh_id_to_newLocalMesh_id_face);
     
 	/*----------------------------------------------------------------------------------------------------*/
 	/** \brief Connect two singularity lines if they are within the given threshold distance; 
@@ -427,17 +427,17 @@ protected:
 	* \param[out] streamlineDeviation     the deviation of the computed streamline
 	*/
      
-	void connectSingularityLines(gmds::math::Vector3d            dir_slot_i,  
-	                             gmds::math::Vector3d            dir_slot_j,
-	                             gmds::math::Vector3d            connection_dir,
-	                             gmds::math::Point               start_pnt1,// start_pnt = line_discretization[0]; //starting point
-	                             gmds::math::Point               start_pnt2, 
-	                             gmds::TCellID                   start_cell_id1,
-	                             gmds::TCellID                   start_cell_id2,
+	void connectSingularityLines(math::Vector3d            dir_slot_i,  
+	                             math::Vector3d            dir_slot_j,
+	                             math::Vector3d            connection_dir,
+	                             math::Point               start_pnt1,// start_pnt = line_discretization[0]; //starting point
+	                             math::Point               start_pnt2, 
+	                             TCellID                   start_cell_id1,
+	                             TCellID                   start_cell_id2,
 	                             int                             start_cell_dim1, 
 	                             int                             start_cell_dim2,
-	                             std::vector<gmds::math::Point>& APoints,
-	                             std::vector<gmds::TCellID>&     ATriangles,                 
+	                             std::vector<math::Point>& APoints,
+	                             std::vector<TCellID>&     ATriangles,                 
 	                             double&                         streamlineDeviation);
 	
 	/*----------------------------------------------------------------------------*/
@@ -465,9 +465,9 @@ protected:
  protected:
     
 	/** Mesh we start from */
-	gmds::Mesh* m_mesh;
+	Mesh* m_mesh;
 	/* Cross field we start from*/
-	gmds::Variable<gmds::math::Cross2D>* m_field;
+	Variable<math::Cross2D>* m_field;
 
 	Tools m_tool;
 	/**directory where debug files will be written*/
@@ -523,19 +523,19 @@ protected:
 	double m_ATolerance = 0.01; //default 0.01
     
 	/** list of faces containing a 3-valent singularity point */
-	std::list<gmds::Face> m_singularities_3;
+	std::list<Face> m_singularities_3;
 	/** list of faces containing a 5-valent singularity point */
-	std::list<gmds::Face> m_singularities_5;
+	std::list<Face> m_singularities_5;
         
 	/** map used by the confusing ball. For faces, edges and nodes that are not
      located into a singularity, maps return value 0. */
-	std::map<gmds::TCellID, SingularityPoint*> m_faces_to_singularity_on_surf;
-	std::map<gmds::TCellID, SingularityPoint*> m_edges_to_singularity_on_surf;
-	std::map<gmds::TCellID, SingularityPoint*> m_nodes_to_singularity_on_surf;   
+	std::map<TCellID, SingularityPoint*> m_faces_to_singularity_on_surf;
+	std::map<TCellID, SingularityPoint*> m_edges_to_singularity_on_surf;
+	std::map<TCellID, SingularityPoint*> m_nodes_to_singularity_on_surf;   
 
-	vector<gmds::math::Vector3d> m_face_normals;	
-	vector<gmds::math::Point> m_triangle_centers; /* the points associated to the centers of all the triangles */
-	vector<gmds::math::Cross2D> m_triangle_centers_cross; /*  the crosses associated to the centers of all the triangles */
+	vector<math::Vector3d> m_face_normals;	
+	vector<math::Point> m_triangle_centers; /* the points associated to the centers of all the triangles */
+	vector<math::Cross2D> m_triangle_centers_cross; /*  the crosses associated to the centers of all the triangles */
 };
 
 

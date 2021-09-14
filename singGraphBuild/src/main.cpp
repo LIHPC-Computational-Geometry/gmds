@@ -117,8 +117,7 @@ main(int argc, char *argv[])
 		// User must choose the number of control Points for the Bezier curve computation (last step)
 		// WARNING if the number chosen exceeds the original number of points for the curve, the latter will be chosen
 
-		unsigned int number_of_control_points = 8;
-		algo->execute(strategy, number_of_control_points);
+		algo->execute();
 
 		//==================================================================
 		// MARKS CLEANING

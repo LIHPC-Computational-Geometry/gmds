@@ -97,12 +97,9 @@ TEST(SingGraphBuilder2DTest, halfDisk)
 	algo.setQuadMeshSmoothingEnable(true);
 	algo.setDebugFilesWritingEnable(true);
 
-	// User must choose the number of control Points for the Bezier curve computation (last step)
-	// WARNING if the number chosen exceeds the original number of points for the curve, the latter will be chosen
-	unsigned int number_of_control_points = 8;
 	auto t1 = Clock::now();
 	std::cout << "Before execute() " << std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count() << " milliseconds" << std::endl;
-	algo.execute(SingularityGraphBuilder2D::shortestPaths, number_of_control_points);
+	algo.execute();
 	auto t2 = Clock::now();
 	std::cout << "execute ftc " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " milliseconds" << std::endl;
 	std::cout << "TOTAL   " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t0).count() << " milliseconds" << std::endl;

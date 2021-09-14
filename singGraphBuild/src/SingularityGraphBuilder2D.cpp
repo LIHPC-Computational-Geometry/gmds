@@ -301,7 +301,7 @@ SingularityGraphBuilder2D::computeMeanEdgeLength()
 }
 
 void
-SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number_of_control_points)
+SingularityGraphBuilder2D::execute()
 {
 	std::cout << "========================================" << std::endl;
 	std::cout << "Start singularity graph generation " << std::endl;
@@ -391,7 +391,6 @@ SingularityGraphBuilder2D::execute(const Strategy AStrategy, unsigned int number
 	}
 
 	m_graph.buildSurfacePatchs();
-	// m_graph.buildCurveSurfacePatchs(number_of_control_points);
 
 	if (m_enableQuadMeshSmoothing) {
 		if (m_enableDebugFilesWriting) {
