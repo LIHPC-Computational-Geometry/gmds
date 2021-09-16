@@ -132,7 +132,7 @@ TEST(GeomSmootherTestSuite, test3)
 }
 
 /*----------------------------------------------------------------------------*/
-TEST(GeomSmootherTestSuite, test_notch_refined)
+TEST(GeomSmootherTestSuite, test_notch_refined_DISABLED)
 {
     std::string dir(TEST_SAMPLES_DIR);
     std::string file_geom = dir+"/Notch/notch_tet.vtk";
