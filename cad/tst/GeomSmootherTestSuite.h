@@ -364,11 +364,6 @@ TEST(GeomSmootherTestSuite, test_notch_refined)
     // PERFORM THE MESH SMOOTHING NOW
     //==================================================================
     cad::GeomSmoother smoother(&linker);
-    if(!smoother.isValid())
-    {
-        std::cout<<"INVALID MODEL"<<std::endl;
-        exit(1);
-    }
     smoother.smoothCurves(nb_iterations);
     smoother.smoothSurfaces(nb_iterations);
     smoother.smoothVolumes(nb_iterations);
