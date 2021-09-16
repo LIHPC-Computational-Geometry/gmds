@@ -73,6 +73,20 @@ namespace gmds{
             GeomManager* geometry() {return m_geometry;}
             void setMesh(Mesh* AMesh);
 
+            /*------------------------------------------------------------------------*/
+            /**@brief For debug purpose, we write an output mesh with only the
+             *        classified cells (nodes, edge, faces) that are linked to points,
+             *        curves or surfaces. Each cell type will have two exported data
+             *        variable, which are classif_entity_dim and classify_entity_id.
+             *
+             *        As the exported mesh is an extraction of the initial mesh, we also
+             *        keep the reference id of each cell
+             *        Warning, the file must be a vtk file (.vtk)
+             *
+             * @param AFileName filename to store the mesh in vtk format
+             */
+            void writeVTKDebugMesh(const std::string AFileName);
+
             void setGeometry(GeomManager* AGeometry);
 
             /*------------------------------------------------------------------------*/

@@ -37,11 +37,9 @@ void GeomSmoother::init() {
     //NO I NEED EDGE ON CURVE AND FACE ON SURFACE. OTHERWISE, I CANNOT DO SOMETHING
     //GOOD FOR THIN AREA, WHICH WILL OCCUR VERY OFTEN IN FACT
 
-
     Mesh *m = m_linker->mesh();
     for (auto n_id:m->nodes()) {
         auto geom_info = m_linker->getGeomInfo<Node>(n_id);
-
         if (geom_info.first == GeomMeshLinker::LINK_CURVE) {
             //Means on a curve
             m_c2n[geom_info.second].push_back(n_id);
@@ -62,13 +60,12 @@ void GeomSmoother::init() {
         auto geom_id = m_linker->getGeomId<Node>(n_id);
 
         if (geom_dim == GeomMeshLinker::LINK_CURVE) {
-
             //Means on a curve
             std::vector<Edge> edges = m->get<Node>(n_id).get<Edge>();
 
             for (auto e:edges) {
                 if (m_linker->getGeomDim(e) == GeomMeshLinker::LINK_CURVE &&
-                m_linker->getGeomId(e) == geom_id) {
+                    m_linker->getGeomId(e) == geom_id) {
                     //Edge e is linked to the same curve as n_id
                     std::vector<TCellID> nids = e.getIDs<Node>();
                     if (nids[0] == n_id) {
@@ -130,10 +127,11 @@ void GeomSmoother::smoothCurves(const int ANbIterations) {
                     math::Point pj = m->get<Node>(adj_id).getPoint();
                     pi = pi + pj;
                 }
-                pi = pi * (1.0 / adj_n.size());
-
-                c->project(pi);
-                ni.setPoint(pi);
+                if(adj_n.size()!=0){
+                    pi = pi * (1.0 / adj_n.size());
+                    c->project(pi);
+                    ni.setPoint(pi);
+                }
             }
         }
     }
@@ -160,7 +158,11 @@ void GeomSmoother::smoothSurfaces(const int ANbIterations) {
                     pi = pi + pj;
                 }
                 pi = pi * (1.0 / adj_n.size());
-                s->project(pi);
+                try{
+                    s->project(pi);
+
+                }
+                catch(GMDSException& e){;}
                 ni.setPoint(pi);
             }
         }

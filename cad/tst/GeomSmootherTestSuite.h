@@ -85,9 +85,9 @@ TEST(GeomSmootherTestSuite, tet_in_cube)
 TEST(GeomSmootherTestSuite, test3)
 {
     Mesh m_vol(gmds::MeshModel(DIM3|R|F|E|N|
-                               R2N|R2F|R2E|
-                               F2N|F2R|F2E|
-                               E2F|E2N|N2E|N2R|N2F));
+    R2N|R2F|R2E|
+    F2N|F2R|F2E|
+    E2F|E2N|N2E|N2R|N2F));
     std::string dir(TEST_SAMPLES_DIR);
     std::string vtk_file = dir+"/hexa.vtk";
 
@@ -125,7 +125,52 @@ TEST(GeomSmootherTestSuite, test3)
 
     VTKWriter vtkWriter(&ioService);
     vtkWriter.setCellOptions(gmds::N|gmds::R);
-   // vtkWriter.setDataOptions(gmds::N|gmds::R);
+    // vtkWriter.setDataOptions(gmds::N|gmds::R);
+    vtkWriter.write(vtk_file2);
+    ASSERT_TRUE(true);
+}
+
+/*----------------------------------------------------------------------------*/
+TEST(GeomSmootherTestSuite, test_notch_refined)
+{
+    //====================================================================
+    // STEP 1 - We extract the geometry from a 3D tet mesh
+    Mesh m_geometry(gmds::MeshModel(DIM3 | R | F | E | N |
+                                    R2N | R2F | R2E |
+                                    F2N | F2R | F2E |
+                                    E2F | E2N | N2E | N2R | N2F));
+    std::string dir(TEST_SAMPLES_DIR);
+    std::string vtk_file = dir+"/Notch/notch_tet.vtk";
+
+    IGMeshIOService ioService(&m_geometry);
+
+    VTKReader vtkReader(&ioService);
+    vtkReader.setCellOptions(gmds::N|gmds::R);
+    vtkReader.read(vtk_file);
+
+    MeshDoctor doc(&m_geometry);
+    doc.buildFacesAndR2F();
+    doc.buildEdgesAndX2E();
+    doc.updateUpwardConnectivity();
+
+    cad::FACManager manager;
+
+    manager.initFrom3DMesh(&m_geometry);
+
+
+   cad::GeomMeshLinker linker;
+
+    cad::GeomSmoother smoother(&linker);
+
+    smoother.smoothCurves(10);
+    smoother.smoothSurfaces(10);
+    smoother.smoothVolumes(10);
+
+    std::string vtk_file2 = ("toto.vtk");
+
+    VTKWriter vtkWriter(&ioService);
+    vtkWriter.setCellOptions(gmds::N|gmds::F|gmds::R);
+    vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
     vtkWriter.write(vtk_file2);
     ASSERT_TRUE(true);
 }
