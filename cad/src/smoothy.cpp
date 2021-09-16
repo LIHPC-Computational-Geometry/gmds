@@ -301,11 +301,19 @@ int main(int argc, char* argv[])
     std::cout<<"  - start volume smoothing ("<<nb_iterations<<" iterations)"<<std::endl;
     smoother.smoothVolumes(nb_iterations);
 
+    //==================================================================
+    // COMPUTE FINAL QUALITY
+    //==================================================================
+    Variable<double>* var_quality = m.newVariable<double,gmds::GMDS_REGION>("GMDS_Scaled_Jacobian");
+    for(auto r_id:m.regions()){
+        Region r = m.get<Region>(r_id);
+        var_quality->value(r_id)=fabs(r.computeScaledJacobian());
+    }
     std::cout<<"> Write output mesh in: "<<file_out<<std::endl;
     IGMeshIOService ioService3(linker.mesh());
     VTKWriter vtkWriter(&ioService3);
-    vtkWriter.setCellOptions(N|F|R);
-    vtkWriter.setDataOptions(N|F|R);
+    vtkWriter.setCellOptions(N|R);
+    vtkWriter.setDataOptions(N|R);
     vtkWriter.write(file_out);
     std::cout << "======== Task done by Smoothy =========" << std::endl;
 }
