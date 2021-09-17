@@ -4,6 +4,8 @@
 //
 /*----------------------------------------------------------------------------*/
 #include <gmds/cad/GeomMeshLinker.h>
+#include <gmds/io/IGMeshIOService.h>
+#include <gmds/io/VTKWriter.h>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 using namespace gmds::cad;
@@ -144,6 +146,74 @@ std::pair<GeomMeshLinker::ELink,int>  GeomMeshLinker::getGeomInfo(const Edge& AN
 /*----------------------------------------------------------------------------*/
 std::pair<GeomMeshLinker::ELink,int>  GeomMeshLinker::getGeomInfo(const Face& AN){
     return getGeomInfo<Face>(AN.id());
+}
+/*----------------------------------------------------------------------------*/
+void GeomMeshLinker::writeVTKDebugMesh(const std::string AFileName){
+    Mesh m(MeshModel(DIM3 | F | E | N | F2N | E2N));
+    std::map<TCellID ,TCellID > n2n;
+
+    Variable<TCellID>* var_node_id = m.newVariable<TCellID , GMDS_NODE>("REF_ID");
+    Variable<TCellID>* var_edge_id = m.newVariable<TCellID , GMDS_EDGE>("REF_ID");
+    Variable<TCellID>* var_face_id = m.newVariable<TCellID , GMDS_FACE>("REF_ID");
+
+    Variable<int>* var_node_geom_dim = m.newVariable<int , GMDS_NODE>("classif_dim");
+    Variable<int>* var_node_geom_id  = m.newVariable<int , GMDS_NODE>("classif_id");
+
+    Variable<int>* var_edge_geom_dim = m.newVariable<int , GMDS_EDGE>("classif_dim");
+    Variable<int>* var_edge_geom_id  = m.newVariable<int , GMDS_EDGE>("classif_id");
+
+    Variable<int>* var_face_geom_dim = m.newVariable<int , GMDS_FACE>("classif_dim");
+    Variable<int>* var_face_geom_id  = m.newVariable<int , GMDS_FACE>("classif_id");
+
+    for(auto n_id: m_mesh->nodes()){
+        if(m_node_classification_dim->value(n_id)==GeomMeshLinker::LINK_SURFACE ||
+           m_node_classification_dim->value(n_id)==GeomMeshLinker::LINK_CURVE ||
+           m_node_classification_dim->value(n_id)==GeomMeshLinker::LINK_POINT ){
+            //so a node classified on the boundary
+            Node from_node = m_mesh->get<Node>(n_id);
+            Node to_node = m.newNode(from_node.getPoint());
+            n2n[n_id]= to_node.id();
+            var_node_id->value(to_node.id())=n_id;
+
+            var_node_geom_dim->value(to_node.id())=m_node_classification_dim->value(n_id)-1;
+            var_node_geom_id->value(to_node.id())=m_node_classification_id->value(n_id);
+        }
+    }
+    for(auto e_id: m_mesh->edges()){
+        if(m_edge_classification_dim->value(e_id)<4 &&
+           m_edge_classification_dim->value(e_id)>1){
+            //so an edge classified on the boundary
+            Edge from_edge = m_mesh->get<Edge>(e_id);
+            std::vector<TCellID> end_points = from_edge.getIDs<Node>();
+            Edge to_edge = m.newEdge(n2n[end_points[0]], n2n[end_points[1]]);
+            var_edge_id->value(to_edge.id())=e_id;
+            var_edge_geom_dim->value(to_edge.id())=m_edge_classification_dim->value(e_id)-1;
+            var_edge_geom_id->value(to_edge.id())=m_edge_classification_id->value(e_id);
+        }
+    }
+    for(auto f_id: m_mesh->faces()){
+        if(m_face_classification_dim->value(f_id)==GeomMeshLinker::LINK_SURFACE){
+            //so an edge classified on the boundary
+            Face from_face = m_mesh->get<Face>(f_id);
+            std::vector<TCellID> from_node_ids = from_face.getIDs<Node>();
+            std::vector<TCellID> to_node_ids;
+            to_node_ids.resize(from_node_ids.size());
+            for(auto i = 0 ; i<from_node_ids.size(); i++)
+                to_node_ids[i]= n2n[from_node_ids[i]];
+            Face to_face = m.newFace(to_node_ids);
+            var_face_id->value(to_face.id())=f_id;
+            var_face_geom_dim->value(to_face.id())=m_face_classification_dim->value(f_id)-1;
+            var_face_geom_id->value(to_face.id())=m_face_classification_id->value(f_id);
+        }
+    }
+
+    IGMeshIOService ios(&m);
+
+    VTKWriter vtkWriter(&ios);
+    vtkWriter.setCellOptions(N|F|E);
+    vtkWriter.setDataOptions(N|E|F);
+    vtkWriter.write(AFileName);
+
 }
 /*----------------------------------------------------------------------------*/
 template <> GMDSCad_API GeomMeshLinker::ELink GeomMeshLinker::getGeomDim<Node>(const TCellID &AN){

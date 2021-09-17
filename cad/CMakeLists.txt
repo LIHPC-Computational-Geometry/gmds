@@ -71,3 +71,10 @@ if(WITH_TEST)
 endif(WITH_TEST)
 #==============================================================================
 
+#==============================================================================
+# EXECUTABLE
+#==============================================================================
+add_executable(smoothy src/smoothy.cpp)
+target_link_libraries(smoothy PRIVATE ${GMDS_LIB})
+target_compile_features(smoothy PUBLIC cxx_std_14)
+
