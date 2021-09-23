@@ -931,7 +931,7 @@ SingularityGraphBuilder2D::addGeometryToSingularityGraph(vector<CurveSingularity
 			std::vector<int> listOfNodesInSingRight;
 			std::vector<Edge> edgesLeft;
 			std::vector<Edge> edgesRight;
-			Edge lastEdge;
+
 			m_mesh->mark(currentNode, mark_geom_edges);
 			Node NodeLeft;
 			Node NodeRight;

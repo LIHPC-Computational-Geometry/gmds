@@ -296,9 +296,16 @@ SingGraphBuilder2DShortestPath::computeFaceNeighboursInfo()
 			const vector<Node> adjacent_nodes = currentEdge.get<Node>();
 			const math::Point p1 = adjacent_nodes[0].getPoint();
 			const math::Point p2 = adjacent_nodes[1].getPoint();
-			const math::Vector3d v1 = math::Vector3d(p1, p2).normalize();
-			const vector<Face> adjacent_faces = currentEdge.get<Face>();
-			m_bdry_edge_normals[e_id] = v1.cross(adjacent_faces[0].normal());
+			const auto v1 = math::Vector3d(p1, p2).normalize();
+
+			const Face adjacentFace = currentEdge.get<Face>()[0];
+			auto bdryNormal = v1.cross(adjacentFace.normal());
+
+			const auto bdryWellOrientedVector = math::Vector3d(m_triangle_centers[adjacentFace.id()], p2);
+			if (bdryWellOrientedVector.dot(bdryNormal) < 0.0) {
+				bdryNormal = -bdryNormal;
+			}
+			m_bdry_edge_normals[e_id] = bdryNormal;
 		}
 	}
 }

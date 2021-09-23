@@ -410,7 +410,6 @@ namespace gmds{
                     v_ortho[1] =-m_data[0];
                 }
                 else if (TDim==3){
-                    vector_type v_ortho;
                     v_ortho[0] = m_data[2]-m_data[1];
                     v_ortho[1] = m_data[0]-m_data[2];
                     v_ortho[2] = m_data[1]-m_data[0];
