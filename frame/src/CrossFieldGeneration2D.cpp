@@ -19,11 +19,11 @@ using namespace gmds;
 CrossFieldGeneration2D::CrossFieldGeneration2D(Mesh* AMesh)
   : m_mesh(AMesh)
 {
-  try{
-    m_cross_field_2D = m_mesh->getVariable<math::Cross2D,GMDS_NODE>("cross");
+  if (m_mesh->hasVariable(GMDS_NODE, "cross")){
+	m_cross_field_2D = m_mesh->getVariable<math::Cross2D,GMDS_NODE>("cross");
+	m_cross_field_2D->clear();
   }
-  catch (GMDSException& e){
-    std::cout << e.what() << std::endl;
+  else {
     std::cout << "\t -> generation of the cross variable on nodes"<<std::endl;
     m_cross_field_2D = m_mesh->newVariable<math::Cross2D,GMDS_NODE>("cross");
   }

@@ -1204,6 +1204,11 @@ SingularityGraphBuilder2D::buildGeometricSlots()
 			double single_line_angle = angle_rad / (nb_lines + 1);
 			createLineFrom(singularity, single_line_angle, 2);
 		}
+		else if (angle_deg > 155) { // for nodes marked as singularity by user
+			int nb_lines = 1;
+			double single_line_angle = angle_rad / (nb_lines + 1);
+			createLineFrom(singularity, single_line_angle, 1);
+		}
 	}
 }
 
