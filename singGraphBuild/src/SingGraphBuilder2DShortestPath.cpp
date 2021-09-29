@@ -222,6 +222,7 @@ SingGraphBuilder2DShortestPath::initializeFieldsValue()
 	}
 	m_distances = vector<vector<double>>(m_totalNumberOfSlots, vector<double>(m_totalNumberOfVariables, M_MAXDIST));
 	m_bdryPathEndParam.clear();
+	m_fixedVariables.clear();
 }
 
 void
