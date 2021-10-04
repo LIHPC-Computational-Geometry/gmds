@@ -63,6 +63,8 @@ namespace gmds
 
         TSimplexID simplexId() const {return m_simplexId;}
 
+        math::Orientation::Sign orientation(const gmds::math::Point& pt, bool inverseOrientation = false) const;
+
         friend std::ostream&  operator<<(std::ostream& os, const SimplicesTriangle& simplicesTriangle)
         {
           std::vector<TInt > nodes = simplicesTriangle.getNodes();

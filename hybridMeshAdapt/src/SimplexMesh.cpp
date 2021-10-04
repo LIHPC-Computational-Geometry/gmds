@@ -355,7 +355,7 @@ TInt SimplexMesh::addNodeAndcheck(const math::Point& pt, std::vector<TSimplexID>
 
   if(flag)
   {
-    double epsilon = 0.0;
+    double epsilon = 10E-4;
     for(auto const & tet : tetraContainingPt)
     {
       const std::vector<TInt>& nodesOfTet = SimplicesCell(this, tet).getNodes();
@@ -1366,6 +1366,24 @@ void SimplexMesh::buildSimplexHull()
       }
     }
 
+    for(unsigned int tri = 1 ; tri < m_tri_ids.capacity() ; tri++)
+    {
+      if(m_tri_ids[tri] == 1)
+      {
+        if((*BND_TRIANGLES)[tri] == 0)
+        {
+          gmds::BitVector cyclingCheck(m_tri_ids.capacity());
+          cyclingCheck.assign(tri);
+          TInt idx = 0;
+          do {
+            idx = findRemainTriangleIdx(tri, cyclingCheck);
+          } while(idx == 0 || idx > 150);
+
+
+          (*BND_TRIANGLES)[tri] = idx;
+        }
+      }
+    }
     //filling edgeTianglesIndices
     Variable<int>* BND_CURVE_COLOR = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
     for(unsigned int nodeIdx = 0 ; nodeIdx < m_node_ids.capacity() ; nodeIdx++)
@@ -1399,8 +1417,46 @@ void SimplexMesh::buildSimplexHull()
             }
             else
             {
-              std::cout << "trianglesIndices.size() != 2" << std::endl;
+              std::cout << "trianglesIndices.size() != 2 --> " << trianglesIndices.size() << " for node : "<< nodeIdx << " of index : " << indiceNode <<  std::endl;
             }
+          }
+        }
+      }
+    }
+  }
+}
+/******************************************************************************/
+TInt SimplexMesh::findRemainTriangleIdx(const TInt tri, gmds::BitVector& cyclingCheck)
+{
+  TInt max = std::numeric_limits<TInt>::max();
+  unsigned int sizeFace = 3;
+  std::vector<TInt> nodes = SimplicesTriangle(this, tri).getNodes();
+  Variable<int>* BND_CURVE_COLOR = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+  Variable<int>* BND_TRIANGLES   = getVariable<int,SimplicesTriangle>("BND_TRIANGLES");
+
+
+  for(unsigned int local = 0 ; local < sizeFace ; local++)
+  {
+    TInt nodeA = nodes[local];
+    TInt nodeB = nodes[(local + 1) % sizeFace];
+
+    if((*BND_CURVE_COLOR)[nodeA] != 0 && (*BND_CURVE_COLOR)[nodeB] != 0)
+    {
+      if((*BND_CURVE_COLOR)[nodeA] != (*BND_CURVE_COLOR)[nodeB])
+      {
+        TInt nodeC_Local = (local + 2) % sizeFace;
+        TInt adjTriangle = m_tri_adj[tri][nodeC_Local];
+        if(cyclingCheck[adjTriangle] == 0)
+        {
+          cyclingCheck.assign(adjTriangle);
+          if((*BND_TRIANGLES)[adjTriangle] != 0)
+          {
+            return (*BND_TRIANGLES)[adjTriangle];
+          }
+          else
+          {
+            TInt ii = findRemainTriangleIdx(adjTriangle, cyclingCheck);
+            return ii;
           }
         }
       }
@@ -2854,7 +2910,7 @@ bool SimplexMesh::checkSimplicesContenaing(const gmds::math::Point& pt, std::vec
 
   /*for(TSimplexID tet = 0; tet < m_tet_ids.capacity(); tet++)
   {
-    if(m_tet_ids[tet] != 0)      
+    if(m_tet_ids[tet] != 0)
     {
         closestSimplex.closeSimplex = tet;
         break;
@@ -4544,11 +4600,12 @@ void SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector)
       //check if the node is one of the boundaries of the mesh
       if(nodeBitVector[node] == 0)
       {
-
         if((*BND_VERTEX_COLOR)[node] != 0){dim_Ni = 0; index_Ni = (*BND_VERTEX_COLOR)[node];}
         else if((*BND_CURVE_COLOR)[node] != 0){dim_Ni = 1; index_Ni = (*BND_CURVE_COLOR)[node];}
         else if((*BND_SURFACE_COLOR)[node] != 0){dim_Ni = 2; index_Ni = (*BND_SURFACE_COLOR)[node];}
         else{dim_Ni = 4;}
+
+        //if(dim_Ni == 4){continue;}
 
         if(dim_Ni != 0)
         {
@@ -4600,7 +4657,15 @@ void SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector)
               else    {nodeInfo.dim_Nj = 4;}
               //if(nodeBitVector[cellNode] == 1)
               {
-                adjacentNodesInfo.insert( std::pair<double, dataNode>(lenght, nodeInfo));
+                std::vector<TSimplexID> ballOnlyTet{};
+                std::copy_if(ball.begin(), ball.end(),std::back_inserter(ballOnlyTet),[&](TInt simplex){
+                  return (simplex >= 0);
+                });
+
+                //if(nodeTet.checkStar(ballOnlyTet, criterionRAIS))
+                {
+                  adjacentNodesInfo.insert( std::pair<double, dataNode>(lenght, nodeInfo));
+                }
               }
               /*else
               {
@@ -4626,25 +4691,40 @@ void SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector)
               }
               SimplicesNode nodeToInsert(this, data.node);
               bool status = false;
-              std::cout << "NODE TO INSERT : " << data.node << " | dimension : " << data.dim_Nj << " | index : " << data.index_Nj<<  std::endl;
-              std::cout << "FROM NODE      : " << node << " | dimension : " << dim_Ni << " | index : " << index_Ni <<  std::endl;
+              //std::cout << "NODE TO INSERT : " << data.node << " | dimension : " << data.dim_Nj << " | index : " << data.index_Nj<<  std::endl;
+              //std::cout << "FROM NODE      : " << node << " | dimension : " << dim_Ni << " | index : " << index_Ni <<  std::endl;
               if(dim_Ni == 4 && (data.dim_Nj == 1 || data.dim_Nj == 2)){break;}
+              if(dim_Ni == 2 && (data.dim_Nj == 1 || data.dim_Nj == 0)){break;}
               std::vector<TSimplexID> deletedSimplex{};
               PointInsertion(this, nodeToInsert, criterionRAIS, status, ball, nodeBitVector, deletedSimplex);
               if(status)
               {
 
-                std::cout << "iteration --->   " << cpt << std::endl;
-                //if(cpt > 14000)
+                //std::cout << "iteration --->   " << cpt << std::endl;
+                //std::vector<TSimplexID> v =  SimplicesNode(this, 584).ballOf();
+                //std::cout << "SIZE BALL OF 584---> " << v.size() << std::endl;
+
+                //if(cpt > 540)
                 {
-                  /*gmds::VTKWriter vtkWriter(&ioService);
-                  vtkWriter.setCellOptions(gmds::N|gmds::F|gmds::R);
-                  vtkWriter.setDataOptions(gmds::N|gmds::F|gmds::R);
-                  vtkWriter.write("ModeleCAD2_OCTREE_" + std::to_string(cpt) + ".vtk");*/
-                  //return;
+                  //gmds::VTKWriter vtkWriter(&ioService);
+                  //vtkWriter.setCellOptions(gmds::N|gmds::F|gmds::R);
+                  //vtkWriter.setDataOptions(gmds::N|gmds::F|gmds::R);
+                  //vtkWriter.write("ModeleCAD5_iteration_" + std::to_string(cpt) + ".vtk");
+                  //vtkWriter.write("ModeleCAD5_iteration_BIS_" + std::to_string(cpt) + ".vtk");
+                  //vtkWriter.write("ModeleCAD5_iteration_" + std::to_string(cpt) + ".vtk");
+                  //vtkWriter.write("ModeleCAD5_CAV_" + std::to_string(cpt) + ".vtk");
+                  /*SimplicesTriangle triangleTest = SimplicesTriangle(this,6563);
+                  std::cout << "triangleTest ---> " << triangleTest << std::endl;
+                  if(m_tri_adj[6563][2] == border)
+                  {
+                    std::cout << "triangleTest -> " << triangleTest << std::endl;
+                    std::cout << "ITERATION -> " << cpt << std::endl;
+                    return;
+                  }*/
+                  //if(cpt == 549){return;}
                 }
-                std::cout << std::endl;
-                std::cout << std::endl;
+                //std::cout << std::endl;
+                //std::cout << std::endl;
                 cpt++;
 
                 break;

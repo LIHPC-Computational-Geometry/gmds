@@ -320,3 +320,25 @@ std::vector<TInt> SimplicesTriangle::getOtherNodeInSimplex(const std::vector<TIn
     }
     return v;
   }
+  /*---------------------------------------------------------------------------*/
+  math::Orientation::Sign SimplicesTriangle::orientation(const gmds::math::Point& pt, bool inverseOrientation) const
+  {
+    math::Orientation::Sign sign;
+    const TInt Node0 = m_simplex_mesh->m_tri_nodes[m_simplexId][0];
+    const TInt Node1 = m_simplex_mesh->m_tri_nodes[m_simplexId][1];
+    const TInt Node2 = m_simplex_mesh->m_tri_nodes[m_simplexId][2];
+
+    const math::Point pt0 = m_simplex_mesh->m_coords[Node0];
+    const math::Point pt1 = m_simplex_mesh->m_coords[Node1];
+    const math::Point pt2 = m_simplex_mesh->m_coords[Node2];
+    if(inverseOrientation)
+    {
+      sign = math::Orientation::orient3d(pt0, pt2, pt1, pt);
+    }
+    else
+    {
+      sign = math::Orientation::orient3d(pt0, pt1, pt2, pt);
+    }
+
+    return sign;
+  }

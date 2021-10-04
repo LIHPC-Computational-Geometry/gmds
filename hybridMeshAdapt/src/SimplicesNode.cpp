@@ -548,7 +548,6 @@ std::vector<TSimplexID> SimplicesNode::simplicesIntersectedbyRayAndCheckVisibili
 /******************************************************************************/
 bool SimplicesNode::checkStar(const std::vector<TSimplexID>& cavity, const CriterionRAIS& criterion) const
 {
-  bool flag = true;
   int border = std::numeric_limits<int>::min();
   struct tetAndNode{
     TSimplexID tet;
@@ -587,29 +586,14 @@ bool SimplicesNode::checkStar(const std::vector<TSimplexID>& cavity, const Crite
             continue;
         }
 
-
-        math::Vector3d&& normalFace =  cell.normalOfFace(faceNodes);
-        math::Vector3d vec = getCoords() - SimplicesNode(m_simplex_mesh, faceNodes[0]).getCoords();
-        vec.normalize();
-        normalFace.normalize();
-        double epsilonTheta = M_PI / 2.0  - M_PI* 2.0 / 180.0;
-        double epsilonLenght = 0.0;//cos(epsilonTheta);
-        if(vec.dot(normalFace) >= epsilonLenght)
-        {
-
-        }
-        else
-        {
-          /*std::cout << "vec.dot(normalFace) : " << vec.dot(normalFace) << std::endl;
-          std::cout << "faces node [" << faceNodes[0] << " : " << faceNodes[1] << " : " << faceNodes[2] << "]" << std::endl;
-          std::cout << "normal Face : " << normalFace << std::endl;
-          std::cout << "vec : " << vec << std::endl;*/
-          return false;
-        }
-        /*if(vec.dot(normalFace) < 0.0)
+        //bool flag = criterion.execute(m_simplex_mesh, dataBorderTet.tet, nodeLocal, getCoords());
+        bool flag = false;
+        math::Orientation::Sign orientation = SimplicesCell(m_simplex_mesh, dataBorderTet.tet).orientation(nodeLocal, getCoords());
+        flag = (orientation < 0)? true:false;
+        if(flag == true)
         {
           return false;
-        }*/
+        }
       }
     }
   }

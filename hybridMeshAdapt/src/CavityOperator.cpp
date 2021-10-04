@@ -572,10 +572,26 @@ void CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
           const std::pair<unsigned int, unsigned int>& trianglesIndices = mapEdgeTriangleIndices.at(indexNode);
           unsigned int triangle0 = trianglesIndices.first;
           unsigned int triangle1 = trianglesIndices.second;
+          const std::vector<TInt> nodes = SimplicesTriangle(m_simplex_mesh, tri).getNodes();
+          const TInt nodeA = nodes[0]; const TInt nodeB = nodes[1]; const TInt nodeC = nodes[2];
+          TInt indexNodeCurveA = (*BND_CURVE_COLOR)[nodeA];
+          TInt indexNodeCurveB = (*BND_CURVE_COLOR)[nodeB];
+          TInt indexNodeCurveC = (*BND_CURVE_COLOR)[nodeC];
 
           if(indexTri == triangle0 || indexTri == triangle1)
           {
-            trianglesConnectedToP.push_back(tri);
+            if(indexNodeCurveA == indexNode || indexNodeCurveB == indexNode || indexNodeCurveC == indexNode)
+            {
+                trianglesConnectedToP.push_back(tri);
+            }
+            else if(indexNodeCurveA == 0 && indexNodeCurveB == 0 && indexNodeCurveC == 0)
+            {
+              trianglesConnectedToP.push_back(tri);
+            }
+            else
+            {
+                trianglesNotConnectedToP.push_back(tri);
+            }
           }
           else
           {
@@ -585,6 +601,33 @@ void CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       }
     }
 
+    std::vector<TSimplexID> triangleToRemoveFromVec{};
+    for(auto const triNotCo : trianglesNotConnectedToP)
+    {
+      const std::vector<TSimplexID> neighborTriNotCo = SimplicesTriangle(m_simplex_mesh, triNotCo).adjacentTriangle();
+      TSimplexID neighborTriA = neighborTriNotCo[0];
+      TSimplexID neighborTriB = neighborTriNotCo[1];
+      TSimplexID neighborTriC = neighborTriNotCo[2];
+
+      TInt indexA = (*BND_TRIANGLES)[neighborTriA];
+      TInt indexB = (*BND_TRIANGLES)[neighborTriB];
+      TInt indexC = (*BND_TRIANGLES)[neighborTriC];
+      TInt index = (*BND_TRIANGLES)[-triNotCo];
+
+      for(auto const triCo : trianglesConnectedToP)
+      {
+        if((neighborTriA == -triCo && indexA == index) || (neighborTriB == -triCo && indexB == index)|| (neighborTriC == -triCo && indexC == index))
+        {
+          triangleToRemoveFromVec.push_back(triNotCo);
+        }
+      }
+    }
+
+    for(auto const tri : triangleToRemoveFromVec)
+    {
+      trianglesNotConnectedToP.erase(std::remove(trianglesNotConnectedToP.begin(), trianglesNotConnectedToP.end(), tri), trianglesNotConnectedToP.end());
+      trianglesConnectedToP.push_back(tri);
+    }
     //TODO check if all face of trianglesNotConnectedToP (i) produce a valide tetraedron
     //TRIANGLE EXPANSION
     for(TInt idx = 0 ; idx < trianglesConnectedToP.size() ; idx++)

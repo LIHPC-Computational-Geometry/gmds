@@ -221,6 +221,8 @@ class SimplexMesh
 
   void buildSimplexHull() ;
 
+  TInt findRemainTriangleIdx(const TInt tri, gmds::BitVector& cyclingCheck);
+
   SimplexMesh& buildRobustLayerMesh(const unsigned int nbrLayer);
 
   SimplexMesh& buildRobustLayerMeshOrderedNode(const unsigned int nbrLayer);
