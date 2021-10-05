@@ -116,20 +116,42 @@ void GeomSmoother::smoothCurves(const int ANbIterations) {
 
     for(auto i=0;i<ANbIterations;i++) {
         for (auto c:curves) {
+
             //We get all the nodes of the curve
             auto ids_of_nodes_on_curve = m_c2n[c->id()];
+std::cout<<"Curve "<<c->id()<<" has nb nodes :"<<ids_of_nodes_on_curve.size()<<std::endl;
+if(c->id()==24){
+    std::cout<<"start smoothing"<<std::endl;
+}
             //We smooth each node in a naive way
             for (auto nid: ids_of_nodes_on_curve) {
                 Node ni = m->get<Node>(nid);
+                math::Point pi = ni.getPoint();
+                if(c->id()==24){
+                    std::cout<<"> node "<<nid<<std::endl;
+                }
                 std::vector<TCellID> adj_n = m_n2n[nid];
-                math::Point pi(0, 0, 0);
+                math::Point pnew(0, 0, 0);
+                if(adj_n.size()>2) {
+                    throw GMDSException("GeomSmoother error: a node on curve has more that 2 neighhbors.");
+                }
                 for (auto adj_id : adj_n) {
                     math::Point pj = m->get<Node>(adj_id).getPoint();
-                    pi = pi + pj;
+                    if(c->id()==24){
+                        std::cout<<"\t node "<<adj_id<<": "<<pj<<std::endl;
+                    }
+                    pnew = pnew+ pj;
                 }
                 if(adj_n.size()!=0){
-                    pi = pi * (1.0 / adj_n.size());
+                    pnew =(1.0 / adj_n.size())*pnew;
+                    pi = 0.75*pi+0.25*pnew;
+                    if(c->id()==24){
+                        std::cout<<"\t new position  "<<pi<<std::endl;
+                    }
                     c->project(pi);
+                    if(c->id()==24){
+                        std::cout<<"\t after proj  "<<pi<<std::endl;
+                    }
                     ni.setPoint(pi);
                 }
             }

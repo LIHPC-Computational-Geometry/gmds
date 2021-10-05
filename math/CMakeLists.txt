@@ -33,6 +33,7 @@ set(GMDS_INC
         inc/gmds/math/SHFrame.h
         inc/gmds/math/Tetrahedron.h
         inc/gmds/math/Triangle.h
+        inc/gmds/math/TransfiniteInterpolation.h
         inc/gmds/math/Vector.h
         inc/gmds/math/VectorDyn.h
         inc/gmds/math/StreamComputation.h
@@ -62,7 +63,9 @@ set(GMDS_SRC
         src/Tetrahedron.cpp
         src/Triangle.cpp
         src/StreamComputation.cpp
-        src/VectorDyn.cpp src/Orientation.cpp inc/gmds/math/Orientation.h)
+        src/VectorDyn.cpp
+        src/Orientation.cpp
+        src/TransfiniteInterpolation.cpp )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

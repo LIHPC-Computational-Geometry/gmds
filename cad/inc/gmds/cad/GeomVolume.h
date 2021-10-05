@@ -41,7 +41,7 @@ namespace gmds{
             /*------------------------------------------------------------------------*/
             /** \brief  provides the dimension of the geometrical entity.
              */
-            int getDim() const {return 3;}
+            int dim() const {return 3;}
 
             /*------------------------------------------------------------------------*/
             /** \brief Project the point AP unto the geometric entity.

@@ -10,7 +10,10 @@
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
-VariableManager::VariableManager(){;}
+VariableManager::VariableManager()
+{
+    m_variables.clear();
+}
 /*----------------------------------------------------------------------------*/
 VariableManager::~VariableManager()
 {
@@ -35,7 +38,7 @@ void VariableManager::deleteVariable(const std::string& AName){
 }
 /*----------------------------------------------------------------------------*/
 void VariableManager::deleteVariable(VariableItf* AVar){
-	for(unsigned int k=0;k<m_variables.size();k++)
+    for(unsigned int k=0;k<m_variables.size();k++)
 	{
 		if (m_variables[k]==AVar){
 			VariableItf *v =m_variables[k];

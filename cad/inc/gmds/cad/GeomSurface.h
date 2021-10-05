@@ -43,7 +43,7 @@ namespace gmds{
             /*------------------------------------------------------------------------*/
             /** \brief  provides the dimension of the geometrical entity.
              */
-            int getDim() const {return 2;}
+            int dim() const {return 2;}
 
             /** \brief Move a point AP near the surface to the closest point on the
              * 		   surface.

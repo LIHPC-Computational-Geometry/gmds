@@ -38,12 +38,12 @@ namespace gmds{
 			/*------------------------------------------------------------------------*/
 			/** \brief  provides the name f the geometrical entity.
              */
-			std::string getName() const {return name_;}
+			std::string name() const {return name_;}
 
 			/*------------------------------------------------------------------------*/
 			/** \brief  provides the dimension of the geometrical entity.
              */
-			virtual int getDim() const=0;
+			virtual int dim() const=0;
 
 			/*------------------------------------------------------------------------*/
 			/** \brief  computes the area of the entity.

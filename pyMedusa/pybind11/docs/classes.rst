@@ -152,7 +152,7 @@ the setter and getter functions:
 
         py::class_<Pet>(m, "Pet")
             .def(py::init<const std::string &>())
-            .def_property("name", &Pet::getName, &Pet::setName)
+            .def_property("name", &Pet::name, &Pet::setName)
             // ... remainder ...
 
 .. seealso::
