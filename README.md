@@ -1,5 +1,8 @@
 # A C++ library for writing meshing algorithms
 
+[![GitHub issues](https://img.shields.io/github/issues/LIHPC-Computational-Geometry/gmds)](https://github.com/LIHPC-Computational-Geometry/gmds/issues)
+[![GitHub license](https://img.shields.io/github/license/LIHPC-Computational-Geometry/gmds)](https://github.com/LIHPC-Computational-Geometry/gmds/blob/main/LICENSE)
+
 **GMDS**, for **G**eneric **M**esh **D**ata & **S**ervices,  is a C++ library written to provide mesh data structures and algorithms to developers that intend to design meshing algorithms and build pipelines of those algorithms.
 
 The development of this library started a few years ago to provide a generic way of designing data structures representing unstructured 2D and 3D meshes. Such meshes are defined as collections of cells that are topologically connected. Cells can be:
