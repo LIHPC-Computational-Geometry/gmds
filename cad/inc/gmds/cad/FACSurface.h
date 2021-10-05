@@ -156,6 +156,9 @@ namespace gmds{
             void invertAllFaces();
             void invertFace(Face AFace);
 
+            /**@brief Reset the global id counter to 1.
+             */
+            static void resetIdCounter();
         private:
 
             /**@brief Build a ANN tree data structure to accelerate retrieval information

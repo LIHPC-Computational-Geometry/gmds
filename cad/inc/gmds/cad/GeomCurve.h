@@ -52,7 +52,7 @@ namespace gmds{
 			/*------------------------------------------------------------------------*/
 			/** @brief  provides the dimension of the geometrical entity.
              */
-			int getDim() const {return 1;}
+			int dim() const {return 1;}
 
 			/*------------------------------------------------------------------------*/
 			/** @brief  Length of the curve

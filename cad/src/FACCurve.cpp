@@ -22,6 +22,8 @@ namespace gmds{
 /*----------------------------------------------------------------------------*/
         int FACCurve::m_next_id=1;
 /*----------------------------------------------------------------------------*/
+        void FACCurve::resetIdCounter() {m_next_id=1;}
+/*----------------------------------------------------------------------------*/
         FACCurve::FACCurve(Mesh* AMeshSupport)
                 : m_support(AMeshSupport), m_id(m_next_id)
         {

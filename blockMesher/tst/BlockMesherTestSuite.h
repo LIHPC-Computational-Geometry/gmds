@@ -29,13 +29,6 @@ TEST(BlockMesherTestClass, test_1_block_non_classified)
     doc.buildEdgesAndX2E();
     BlockMesher bm(&blocking,NULL);
     ASSERT_EQ(BlockMesher::SUCCESS,bm.execute(4));
-
-    IGMeshIOService ioService(bm.mesh());
-
-    VTKWriter vtkWriter(&ioService);
-    vtkWriter.setCellOptions(gmds::N|gmds::F);
-    vtkWriter.setDataOptions(gmds::N|gmds::F);
-    vtkWriter.write("block1_mesh.vtk");
 }
 /*----------------------------------------------------------------------------*/
 TEST(BlockMesherTestClass, test_2_blocks_non_classified)
@@ -61,13 +54,6 @@ TEST(BlockMesherTestClass, test_2_blocks_non_classified)
     doc.buildEdgesAndX2E();
     BlockMesher bm(&blocking,NULL);
     ASSERT_EQ(BlockMesher::SUCCESS,bm.execute(4));
-
-    IGMeshIOService ioService(bm.mesh());
-
-    VTKWriter vtkWriter(&ioService);
-    vtkWriter.setCellOptions(gmds::N|gmds::F);
-    vtkWriter.setDataOptions(gmds::N|gmds::F);
-    vtkWriter.write("block2_mesh.vtk");
 
 }
 /*----------------------------------------------------------------------------*/

@@ -17,6 +17,8 @@ namespace gmds{
 /*----------------------------------------------------------------------------*/
 		int FACPoint::m_next_id=0;
 /*----------------------------------------------------------------------------*/
+        void FACPoint::resetIdCounter() {m_next_id=1;}
+/*----------------------------------------------------------------------------*/
 		FACPoint::FACPoint(Mesh* AMesh)
 				: m_id(m_next_id++), m_support(AMesh), isMultiNodes_(false)
 		{

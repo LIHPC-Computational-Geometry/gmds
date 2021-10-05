@@ -23,7 +23,13 @@ namespace gmds{
 /*----------------------------------------------------------------------------*/
         FACManager::FACManager()
                 :m_mesh(DIM3|N|E|F|F2N|N2F|E2N|E2F|F2E|N2E)
-        {}
+        {
+            FACPoint::resetIdCounter();
+            FACCurve::resetIdCounter();
+            FACSurface::resetIdCounter();
+            FACVolume::resetIdCounter();
+        }
+
 /*----------------------------------------------------------------------------*/
         FACManager::~FACManager()
         {

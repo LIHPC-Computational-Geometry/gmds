@@ -39,7 +39,7 @@ namespace gmds{
             /*------------------------------------------------------------------------*/
             /** \brief  provides the dimension of the geometrical entity.
              */
-            int getDim() const {return 0;}
+            int dim() const {return 0;}
 
             /*------------------------------------------------------------------------*/
             /** \brief  Access to X coordinate

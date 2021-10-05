@@ -10,7 +10,7 @@ BlockMesher::BlockMesher(Mesh *ABlocks, cad::GeomMeshLinker *ALinker) :
         m_linker(ALinker)
 {
     m_with_geometry=(ALinker!=NULL);
-    if(ALinker->mesh()!=ABlocks)
+    if(ALinker!=NULL && ALinker->mesh()!=ABlocks)
         throw GMDSException("Invalid linker provided to a BlockMesher instance");
     m_nb_edges_in_discretization=0;
     m_mesh = new Mesh(MeshModel(DIM3|R|N|E|F|R2N|F2N|E2N));
