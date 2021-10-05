@@ -131,21 +131,11 @@ namespace gmds{
             TCellID  min_id = NullID;
             for(auto e_id: m_mesh_edges){
                 Edge e = m_support->get<Edge>(e_id);
-                std::vector<Node> e_nodes = e.get<Node>();
-                math::Vector3d v1(e_nodes[0].getPoint(), e_nodes[1].getPoint());
-                math::Vector3d v2(e_nodes[0].getPoint(), AP);
-                double norm1 =v1.norm();
-                v1.normalize();
-                TCoord a = v1.dot(v2);
-                //if((0<= a) && (a <=norm1)){
-                    math::Segment s01(e_nodes[0].getPoint(),e_nodes[1].getPoint());
-                    double dist01= AP.distance(s01.project(AP));
-                    if(dist01<min_dist) {
-                        min_dist=dist01;
-                        min_id = e_id;
-                    }
-                //}
-
+                math:math::Point c= e.center();
+                if(AP.distance2(c)<min_dist){
+                    min_id = e_id;
+                    min_dist = AP.distance2(c);
+                }
             }
 
             //Warning, we could be unable to project
@@ -155,8 +145,16 @@ namespace gmds{
 
             Edge e = m_support->get<Edge>(min_id);
             std::vector<Node> e_nodes = e.get<Node>();
-            math::Segment s(e_nodes[0].getPoint(),e_nodes[1].getPoint());
-            return s.project(AP);
+            math::Point closest = e.center();
+            double d= AP.distance2(closest);
+            if(AP.distance2(e_nodes[0].getPoint())<d){
+                closest = e_nodes[0].getPoint();
+                d = AP.distance2(e_nodes[0].getPoint());
+            }
+            if (AP.distance2(e_nodes[1].getPoint())<d){
+                closest = e_nodes[1].getPoint();
+            }
+            return closest;
         }
 /*----------------------------------------------------------------------------*/
         void FACCurve::project(math::Point& AP, math::Vector3d& AV) const {

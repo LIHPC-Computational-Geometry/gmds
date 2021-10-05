@@ -76,6 +76,7 @@ macro(GMDS_ADD_COMPONENT COMP_NAME DIR_NAME LIB_NAME  MESSAGE ACTIVATE COVER)
     if (ENABLE_${COMP_NAME})
         list(APPEND GMDS_ACTIVE_COMPONENTS  ${COMP_NAME})
         list(APPEND GMDS_ACTIVE_LIBS  LIB_GMDS_${COMP_NAME})
+        list(APPEND GMDS_ACTIVE_LIB_NAMES  ${LIB_NAME})
         list(APPEND GMDS_ACTIVE_DIRS ${DIR_NAME})
         message(STATUS "Component ${LIB_NAME} is activated")
     else()
@@ -88,6 +89,15 @@ endmacro()
 #==============================================================================
 # OPTIONAL COMPONENTS
 #==============================================================================
+GMDS_ADD_COMPONENT(
+        BLOCK_MESHER                       # cmake variable
+        blockMesher                        # src subdirectory name
+        GMDSBlockMesher                    # name of the generated library
+        "Provide the mesh of a block structure classified on a CAD geometry"  # description
+        ON                                 # is activated
+        ON                                 # must be covered
+)
+
 GMDS_ADD_COMPONENT(
         FRAME                               # cmake variable
         frame                               # src subdirectory name

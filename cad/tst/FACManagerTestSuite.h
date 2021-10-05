@@ -10,6 +10,7 @@
 #include <gmds/cad/FACSurface.h>
 #include <gmds/cad/FACVolume.h>
 #include <gmds/io/VTKReader.h>
+#include <gmds/io/VTKWriter.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <unit_test_config.h>
 /*----------------------------------------------------------------------------*/
@@ -24,7 +25,7 @@ TEST(FacManagerTestSuite, fromSurfMesh)
                                      E2F|E2N|N2E));
     std::string dir(TEST_SAMPLES_DIR);
     std::string vtk_file = dir+"/tet_in_box.vtk";
-    
+
     gmds::IGMeshIOService ioService(&m_vol);
 
     gmds::VTKReader vtkReader(&ioService);
@@ -69,4 +70,42 @@ TEST(FacManagerTestSuite, fromSurfMesh)
         math::Point c(0,0,0);
         ASSERT_NEAR(c.distance(p->point()),8.66,0.01);
     }
+}
+/*----------------------------------------------------------------------------*/
+TEST(FacManagerTestSuite, surf_projection)
+{
+    // WE WRITE
+    gmds::Mesh m_vol(gmds::MeshModel(DIM3|R|F|E|N|
+                                     R2N|R2F|R2E|
+                                     F2N|F2R|F2E|
+                                     E2F|E2N|N2E));
+    std::string dir(TEST_SAMPLES_DIR);
+    std::string vtk_file = dir+"/S24_CAD_test.vtk";
+
+    gmds::IGMeshIOService ioService(&m_vol);
+
+    gmds::VTKReader vtkReader(&ioService);
+    vtkReader.setCellOptions(gmds::N|gmds::R);
+    vtkReader.read(vtk_file);
+
+    gmds::MeshDoctor doc(&m_vol);
+    doc.buildFacesAndR2F();
+    doc.buildEdgesAndX2E();
+    doc.updateUpwardConnectivity();
+
+
+    cad::FACManager manager;
+    manager.initFrom3DMesh(&m_vol);
+
+    cad::GeomSurface* s1 = manager.getSurface(1);
+
+    TCoord min_s1[3];
+    TCoord max_s1[3];
+    s1->computeBoundingBox(min_s1,max_s1);
+
+    math::Point p(-10.6674, 24.1967, 109.342);
+
+    s1->project(p);
+
+
 }

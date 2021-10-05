@@ -6,6 +6,7 @@ add_executable(GMDS_MATH_TEST
         PointTestSuite.h
         QuaternionTestSuite.h
         OrientationTestSuite.h
+        TransfiniteInterpolationTestSuite.h
         main_test.cpp)
 
 target_link_libraries(GMDS_MATH_TEST PUBLIC

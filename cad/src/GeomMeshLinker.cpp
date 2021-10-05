@@ -17,7 +17,7 @@ GeomMeshLinker::GeomMeshLinker()
 {}
 /*----------------------------------------------------------------------------*/
 GeomMeshLinker::GeomMeshLinker(Mesh* AMesh, GeomManager* AGeometry)
-:m_link_id(m_global_link_id++)
+:m_link_id(m_global_link_id++),m_mesh(NULL),m_geometry(NULL)
 {
 setMesh(AMesh);
 setGeometry(AGeometry);
@@ -152,9 +152,9 @@ void GeomMeshLinker::writeVTKDebugMesh(const std::string AFileName){
     Mesh m(MeshModel(DIM3 | F | E | N | F2N | E2N));
     std::map<TCellID ,TCellID > n2n;
 
-    Variable<TCellID>* var_node_id = m.newVariable<TCellID , GMDS_NODE>("REF_ID");
-    Variable<TCellID>* var_edge_id = m.newVariable<TCellID , GMDS_EDGE>("REF_ID");
-    Variable<TCellID>* var_face_id = m.newVariable<TCellID , GMDS_FACE>("REF_ID");
+    Variable<int>* var_node_id = m.newVariable<int , GMDS_NODE>("REF_ID");
+    Variable<int>* var_edge_id = m.newVariable<int , GMDS_EDGE>("REF_ID");
+    Variable<int>* var_face_id = m.newVariable<int , GMDS_FACE>("REF_ID");
 
     Variable<int>* var_node_geom_dim = m.newVariable<int , GMDS_NODE>("classif_dim");
     Variable<int>* var_node_geom_id  = m.newVariable<int , GMDS_NODE>("classif_id");
