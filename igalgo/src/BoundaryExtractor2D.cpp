@@ -140,7 +140,7 @@ void BoundaryExtractor2D::execute()
         if(m_from_mesh->isMarked<Node>(n_id,mark_node_on_curv)||
            m_from_mesh->isMarked<Node>(n_id,mark_node_on_pnt)){
             Node from_n = m_from_mesh->get<Node>(n_id);
-            Node to_n   = m_to_mesh->newNode(from_n.getPoint());
+            Node to_n   = m_to_mesh->newNode(from_n.point());
             if(m_with_mapping){
                 (*m_node_map)[n_id] = to_n.id();
                 (*m_node_map_inv)[to_n.id()] = n_id;

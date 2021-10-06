@@ -8,11 +8,12 @@
 #include <gmds/cad/GeomPoint.h>
 #include <gmds/cad/GeomCurve.h>
 #include <gmds/cad/GeomSurface.h>
-#include <gmds/cad/GeomSmoother.h>
+#include <gmds/smoothy/LaplacianSmoother.h>
+#include <gmds/igalgo/BoundaryOperator.h>
 /*----------------------------------------------------------------------------*/
 #include <iostream>
-#include <gmds/igalgo/BoundaryOperator.h>
 
+/*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
 int main(int argc, char* argv[])
@@ -192,8 +193,8 @@ int main(int argc, char* argv[])
             else{
                 //it must be an edge classified on curves
                 //we look for the closest curve now
-                math::Point p0 = e_nodes[0].getPoint();
-                math::Point p1 = e_nodes[1].getPoint();
+                math::Point p0 = e_nodes[0].point();
+                math::Point p1 = e_nodes[1].point();
                 math::Point p = 0.5*(p0+p1);
 
                 double min_dist = 100000;
@@ -223,7 +224,7 @@ int main(int argc, char* argv[])
            m.isMarked(n, mark_node_on_crv) ||
            m.isMarked(n, mark_node_on_srf) ){
             //we've got a boundary node
-            math::Point node_loc = n.getPoint();
+            math::Point node_loc = n.point();
             double min_dist = 100000;
             int min_entity_dim=-1;
             int min_entity_id = -1;
@@ -288,7 +289,7 @@ int main(int argc, char* argv[])
     // PERFORM THE MESH SMOOTHING NOW
     //==================================================================
     std::cout<<"> Start smoothing"<<std::endl;
-    cad::GeomSmoother smoother(&linker);
+    smoothy::LaplacianSmoother smoother(&linker);
     if(!smoother.isValid())
     {
         std::cout<<"INVALID MODEL"<<std::endl;

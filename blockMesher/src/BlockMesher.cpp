@@ -52,7 +52,7 @@ BlockMesher::STATUS BlockMesher::execute(const double AEdgeTargetSize) {
 bool BlockMesher::meshVertices() {
     for (auto v_id : m_blocks->nodes()){
         Node v = m_blocks->get<Node>(v_id);
-        Node n = m_mesh->newNode(v.getPoint());
+        Node n = m_mesh->newNode(v.point());
         m_blockV_to_meshN[v.id()]=n.id();
         if(m_with_geometry){
             Cell::Data d(0, m_linker->getGeomId(v));
@@ -85,8 +85,8 @@ bool BlockMesher::meshEdges() {
         }
         Node mesh_n0 = m_mesh->get<Node>(m_blockV_to_meshN[id_node_0]);
         Node mesh_n1 = m_mesh->get<Node>(m_blockV_to_meshN[id_node_1]);
-        math::Point p0 = mesh_n0.getPoint();
-        math::Point p1 = mesh_n1.getPoint();
+        math::Point p0 = mesh_n0.point();
+        math::Point p1 = mesh_n1.point();
         auto N = m_nb_edges_in_discretization;
         std::vector<TCellID> discretization_ids;
         discretization_ids.resize(m_nb_edges_in_discretization + 1);
@@ -196,10 +196,10 @@ bool BlockMesher::meshFaces()  {
         discretization_ids[N-1][0  ]= n1.id();
         discretization_ids[N-1][N-1]= n2.id();
         discretization_ids[0  ][N-1]= n3.id();
-        discretization_pnts[0  ][0  ]= n0.getPoint();
-        discretization_pnts[N-1][0  ]= n1.getPoint();
-        discretization_pnts[N-1][N-1]= n2.getPoint();
-        discretization_pnts[0  ][N-1]= n3.getPoint();
+        discretization_pnts[0  ][0  ]= n0.point();
+        discretization_pnts[N-1][0  ]= n1.point();
+        discretization_pnts[N-1][N-1]= n2.point();
+        discretization_pnts[0  ][N-1]= n3.point();
 
         //Boundary edges point retrieval for edge 01
         std::vector<TCellID> edge_disc = m_blockE_to_meshN[e01.id()];
@@ -208,7 +208,7 @@ bool BlockMesher::meshFaces()  {
            std::reverse(edge_disc.begin(), edge_disc.end());
         for(auto i=1; i<N-1;i++){
             discretization_ids[i][0]= edge_disc[i];
-            discretization_pnts[i][0]=m_mesh->get<Node>(edge_disc[i]).getPoint();
+            discretization_pnts[i][0]= m_mesh->get<Node>(edge_disc[i]).point();
         }
         //Boundary edges point retrieval for edge 01
         edge_disc = m_blockE_to_meshN[e12.id()];
@@ -217,7 +217,7 @@ bool BlockMesher::meshFaces()  {
 
         for(auto i=1; i<N-1;i++){
             discretization_ids[N-1][i]= edge_disc[i];
-            discretization_pnts[N-1][i]=m_mesh->get<Node>(edge_disc[i]).getPoint();
+            discretization_pnts[N-1][i]= m_mesh->get<Node>(edge_disc[i]).point();
         }
         //Boundary edges point retrieval for edge 32
         edge_disc = m_blockE_to_meshN[e32.id()];
@@ -225,7 +225,7 @@ bool BlockMesher::meshFaces()  {
             std::reverse(edge_disc.begin(), edge_disc.end());
         for(auto i=1; i<N-1;i++){
             discretization_ids[i][N-1]= edge_disc[i];
-            discretization_pnts[i][N-1]=m_mesh->get<Node>(edge_disc[i]).getPoint();
+            discretization_pnts[i][N-1]= m_mesh->get<Node>(edge_disc[i]).point();
         }
         //Boundary edges point retrieval for edge 01
         edge_disc = m_blockE_to_meshN[e03.id()];
@@ -233,7 +233,7 @@ bool BlockMesher::meshFaces()  {
             std::reverse(edge_disc.begin(), edge_disc.end());
         for(auto i=1; i<N-1;i++){
             discretization_ids[0][i]= edge_disc[i];
-            discretization_pnts[0][i]=m_mesh->get<Node>(edge_disc[i]).getPoint();
+            discretization_pnts[0][i]= m_mesh->get<Node>(edge_disc[i]).point();
         }
         //compute the points location and create node
         math::TransfiniteInterpolation::compute(discretization_pnts);

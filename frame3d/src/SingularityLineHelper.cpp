@@ -54,7 +54,7 @@ SingularityLineHelper::execute()
         m_sing_bnd_seps[f_id] = defineBoundarySlotsViaVectors(f, f.center());
         Node origin = lines.newNode(f.center());
         for(auto s:m_sing_bnd_seps[f_id]){
-            Node to = lines.newNode(origin.getPoint()+s);
+            Node to = lines.newNode(origin.point() + s);
             lines.newTriangle(origin,to,to);
         }
     }
@@ -174,7 +174,7 @@ int SingularityLineHelper::computeSingularityIndex(Face& AF)
     std::vector<math::Vector3d> ref_vectors;
     ref_vectors.resize(3);
     //We take the first edge of the triangle as the OX axis
-    math::Vector3d OX(nodes[0].getPoint(),nodes[1].getPoint());
+    math::Vector3d OX(nodes[0].point(), nodes[1].point());
     OX.normalize();
 
     for(auto i = 0; i < 3; i++) {
@@ -338,7 +338,7 @@ moveBoundarySingularity(TCellID AFrom, TCellID ATo)
     std::vector<Node> to_nodes = to_face.get<Node>();
 
     // we build an orthonormal basis local to to_face.
-    math::Vector3d v1(to_nodes[0].getPoint(),to_nodes[1].getPoint());
+    math::Vector3d v1(to_nodes[0].point(), to_nodes[1].point());
     Region to_r = to_face.get<Region>()[0];
     math::Vector3d v3 = getInputNormal(to_face,to_r);
     math::Vector3d v2 = v1.cross(v3);
@@ -358,7 +358,7 @@ moveBoundarySingularity(TCellID AFrom, TCellID ATo)
     //By this way, we define new values at the corners of to_face
     for(auto ni:to_nodes){
         //We compute for node ni, its angle into the local chart
-        math::Point pi = ni.getPoint();
+        math::Point pi = ni.point();
         math::Point ref_point = to_face.center();
 
 
@@ -515,9 +515,9 @@ closestBndFace(const TCellID ATetID, math::Vector3d AV, TCellID& ABndFaceID)
         t.resize(4);
         for(unsigned int i=0; i<4; i++){
             std::vector<Node> cn = cf[i].get<Node>();
-            t[i]= math::Triangle(cn[0].getPoint(),
-                                 cn[1].getPoint(),
-                                 cn[2].getPoint());
+            t[i]= math::Triangle(cn[0].point(),
+                                 cn[1].point(),
+                                 cn[2].point());
         }
         //================================================
         // PHASE 1
@@ -610,7 +610,7 @@ bool SingularityLineHelper::followFlow(const Face AFromFace,
     }
     // We build the reference chart to propagate singularity line directions
     std::vector<Node> from_nodes = from_face.get<Node>();
-    math::Vector3d v1(from_nodes[0].getPoint(),from_nodes[1].getPoint());
+    math::Vector3d v1(from_nodes[0].point(), from_nodes[1].point());
     math::Vector3d v3(AData.dir);
     math::Vector3d v2 = v1.cross(v3);
     math::Chart from_chart(v1,v2,v3);
@@ -657,15 +657,15 @@ bool SingularityLineHelper::followFlow(const Face AFromFace,
         t.resize(4);
         for(unsigned int i=0; i<4; i++){
             std::vector<Node> cn = cf[i].get<Node>();
-            t[i]= math::Triangle(cn[0].getPoint(),
-                                 cn[1].getPoint(),
-                                 cn[2].getPoint());
+            t[i]= math::Triangle(cn[0].point(),
+                                 cn[1].point(),
+                                 cn[2].point());
 
             if(cf[i].id()==from_face.id()){
                 for(auto n:cn){
                     (*propag_direction)[n.id()]=from_direction;
 
-                    math::Plane plane(n.getPoint(),from_direction);
+                    math::Plane plane(n.point(), from_direction);
                     (*propag_intersection)[n.id()]=plane.project(from_point);
                     Node origin = lines.newNode((*propag_intersection)[n.id()]);
 
@@ -677,7 +677,7 @@ bool SingularityLineHelper::followFlow(const Face AFromFace,
 
                     for(auto angle:sep_angles){
                         math::Vector3d sep = math::AxisAngleRotation(to_chart.Z(),angle)*to_chart.X();
-                        Node to = lines.newNode(origin.getPoint()+sep);
+                        Node to = lines.newNode(origin.point() + sep);
                         lines.newTriangle(origin,to,to);
                     }
                     m_mesh->mark(n,mark_node_assigned);
@@ -803,7 +803,7 @@ bool SingularityLineHelper::followFlow(const Face AFromFace,
         math::Point plane_point     = (*propag_intersection)[current_node.id()];
 
 
-        math::Vector3d n_vec(plane_point,current_node.getPoint());
+        math::Vector3d n_vec(plane_point, current_node.point());
         double n_angle = plane_chart.X().orientedAngle(n_vec,plane_chart.Z());
 
         bool found_interval=false;
@@ -919,9 +919,9 @@ computeFuzzyHeuns(const math::Point&                 AFromPnt,
             //at the infinity almost due to almost parallel ray and plane
             std::vector<Node> n = AFaces[i].get<Node>();
             math::Point pn[3] ={
-                    n[0].getPoint(),
-                    n[1].getPoint(),
-                    n[2].getPoint()};
+                    n[0].point(),
+                    n[1].point(),
+                    n[2].point()};
             //We compute the barycentric coords.
             bool on_edge[3]={false,false,false};
             if(!isIn(p[i],AFaces[i], on_edge[0],on_edge[1],on_edge[2])){
@@ -982,9 +982,9 @@ math::Chart SingularityLineHelper::computeChartIn(const math::Point& APnt,
     //===================================================================
     double coeff[3]={0, 0, 0};
 
-    math::Point::computeBarycentric(n[0].getPoint(),n[1].getPoint(),
-                                    n[2].getPoint(), APnt,
-                                    coeff[0],coeff[1], coeff[2]);
+    math::Point::computeBarycentric(n[0].point(), n[1].point(),
+                                    n[2].point(), APnt,
+                                    coeff[0], coeff[1], coeff[2]);
 
     //===================================================================
     //STEP 2 - We extract the quaternion representation of each frame  at
@@ -1030,9 +1030,9 @@ bool SingularityLineHelper::isIn(const math::Point& AP,
     std::vector<Node> n = ATri.get<Node>();
 
     math::Point pnt[3] = {
-            n[0].getPoint(),
-            n[1].getPoint(),
-            n[2].getPoint()
+            n[0].point(),
+            n[1].point(),
+            n[2].point()
     };
     math::Plane plane(pnt[0],pnt[1],pnt[2]);
     math::Point p = plane.project(AP);
@@ -1078,7 +1078,7 @@ SingularityLineHelper::getOutputNormal(const Face& AF, const Region& AR)
         if (n != f_nodes[0] && n != f_nodes[1] && n != f_nodes[2]) {
             // n is the node opposite to the face AF
             math::Vector3d normal = AF.normal();
-            math::Vector3d in_vector(f_nodes[0].getPoint(), n.getPoint());
+            math::Vector3d in_vector(f_nodes[0].point(), n.point());
             if (normal.dot(in_vector) > 0.0) {
                 return math::Vector3d(-normal.X(), -normal.Y(),
                                       -normal.Z());
@@ -1128,7 +1128,7 @@ defineBoundarySlotsViaAngles(const Face& ABndFace,
     // We compute the singularity index (+1 or -1)
     //=====================================================================
     // We compute reference angle in the face plane using Palacio technique
-    math::Vector3d ref(nodes[0].getPoint(), nodes[1].getPoint());
+    math::Vector3d ref(nodes[0].point(), nodes[1].point());
 
     ref.normalize();
 
@@ -1164,8 +1164,8 @@ defineBoundarySlotsViaAngles(const Face& ABndFace,
     math::Vector3d first_sepa;
     for (auto i = 0; i < 3 && !found_first_separatrix; i++) {
         const auto j = (i + 1) % 3;
-        math::Point pi = nodes[i].getPoint();
-        math::Point pj = nodes[j].getPoint();
+        math::Point pi = nodes[i].point();
+        math::Point pj = nodes[j].point();
         //        std::cout<<"From "<<nodes[i].getID()<<" to "<<nodes[j].getID()<<std::endl;
         // we work along the edge [i,j]
         math::Vector3d vij(pi, pj);
@@ -1305,8 +1305,8 @@ defineBoundarySlotsViaVectors(const Face& ABndFace,
         int j = (i + 1) % nodes.size();
         Node ni = nodes[i];
         Node nj = nodes[j];
-        math::Point pi = ni.getPoint();
-        math::Point pj = nj.getPoint();
+        math::Point pi = ni.point();
+        math::Point pj = nj.point();
         double pix = pi.X();
         double piy = pi.Y();
         double piz = pi.Z();

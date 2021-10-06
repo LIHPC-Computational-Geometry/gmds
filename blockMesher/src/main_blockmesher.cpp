@@ -8,7 +8,7 @@
 #include <gmds/cad/GeomPoint.h>
 #include <gmds/cad/GeomCurve.h>
 #include <gmds/cad/GeomSurface.h>
-#include <gmds/cad/GeomSmoother.h>
+#include "../../smoothy/inc/gmds/smoothy/LaplacianSmoother.h"
 /*----------------------------------------------------------------------------*/
 #include <iostream>
 #include <gmds/igalgo/BoundaryOperator.h>
@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
                             std::vector<Node> corners = f.get<Node>();
                             std::vector<math::Point> corner_pnts;
                             for(auto c:corners){
-                                corner_pnts.push_back(0.1*p+0.9*c.getPoint());
+                                corner_pnts.push_back(0.1*p+0.9* c.point());
                             }
                             std::set<int> corner_surf;
                             for(auto cp:corner_pnts) {
@@ -388,7 +388,7 @@ int main(int argc, char* argv[])
             }
             else if(bnd_surfaces.size()==2){
                 //on a curve or a point that is connected to a single curve
-                math::Point node_loc = n.getPoint();
+                math::Point node_loc = n.point();
                 for(auto p:points){
                     math::Point closest_pnt=node_loc;
                     double dist = node_loc.distance(p->point());
@@ -415,7 +415,7 @@ int main(int argc, char* argv[])
 
             } else{
                 //On a point!!
-                math::Point node_loc = n.getPoint();
+                math::Point node_loc = n.point();
                 for(auto p:points){
                     math::Point closest_pnt=node_loc;
                     double dist = node_loc.distance(p->point());
@@ -455,7 +455,7 @@ int main(int argc, char* argv[])
 // PERFORM THE BLOCK SMOOTHING NOW
 //==================================================================
     std::cout<<"> Start block smoothing"<<std::endl;
-    cad::GeomSmoother smoother(&linker);
+    cad::LaplacianSmoother smoother(&linker);
     if(!smoother.isValid())
     {
         std::cout<<"INVALID MODEL"<<std::endl;
@@ -523,7 +523,7 @@ int main(int argc, char* argv[])
         if(info.second.dim==2)
             linker_final.linkFaceToSurface(f.id(),info.second.id);
     }
-    cad::GeomSmoother smoother_final(&linker_final);
+    cad::LaplacianSmoother smoother_final(&linker_final);
     if(!smoother_final.isValid())
     {
         std::cout<<"INVALID MODEL"<<std::endl;

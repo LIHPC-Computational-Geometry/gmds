@@ -137,7 +137,7 @@ int main(int argc, char* argv[]){
         }
         //Nodes are now written as they are stored in the vec
         for(auto c:all_point_corners) {
-            math::Point pc = mesh_test.get<Node>(c).getPoint();
+            math::Point pc = mesh_test.get<Node>(c).point();
             std::cout << "create node "<<vec_position[c]<< " at location " << pc.X()<<" "<<pc.Y()<<" "<<pc.Z() << std::endl;
         }
         //and now each face
@@ -164,9 +164,9 @@ int main(int argc, char* argv[]){
             Face f = mesh.get<Face>(f_id);
             if(f.get<Region>().size()==1){
                 std::vector<Node> nf = f.get<Node>();
-                Node n0 = bnd_mesh.newNode(nf[0].getPoint());
-                Node n1 = bnd_mesh.newNode(nf[1].getPoint());
-                Node n2 = bnd_mesh.newNode(nf[2].getPoint());
+                Node n0 = bnd_mesh.newNode(nf[0].point());
+                Node n1 = bnd_mesh.newNode(nf[1].point());
+                Node n2 = bnd_mesh.newNode(nf[2].point());
                 bnd_mesh.newTriangle(n0,n1,n2);
             }
         }

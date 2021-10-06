@@ -25,7 +25,7 @@ Mesh m(model);
 
 for(auto node_id: m->nodes()){
     Node n = m.get<Node>(node_id);
-    Point p = n.getPoint();
+    Point p = n.point();
 }
 ```
 ## Algorithms for quad and hex meshing

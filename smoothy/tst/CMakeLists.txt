@@ -1,19 +1,18 @@
-add_executable(GMDS_CAD_TEST
-        FACManagerTestSuite.h
-        GeomLinkerTestSuite.h
-        GeomTopologyTestSuite.h
+add_executable(GMDS_SMOOTHY_TEST
+        LaplacianSmootherTestSuite.h
+        AngleBasedQuadSmootherTestSuite.h
         main_test.cpp)
 
-target_link_libraries(GMDS_CAD_TEST PUBLIC
+target_link_libraries(GMDS_SMOOTHY_TEST PUBLIC
         ${GMDS_LIB}
         gtest)
 
-target_include_directories(GMDS_CAD_TEST PRIVATE .)
+target_include_directories(GMDS_SMOOTHY_TEST PRIVATE .)
 
-set_target_properties(GMDS_CAD_TEST PROPERTIES
+set_target_properties(GMDS_SMOOTHY_TEST PROPERTIES
         CXX_STANDARD 14
         CXX_STANDARD_REQUIRED YES)
 #==============================================================================
-gtest_discover_tests(GMDS_CAD_TEST
+gtest_discover_tests(GMDS_SMOOTHY_TEST
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 #==============================================================================

@@ -110,8 +110,8 @@ CurveSingularityLine::healOrientation()
 	return true;
 	bool parent_result = SingularityLine::healOrientation();
 
-	gmds::math::Point p1 = m_ordered_mesh_edges[0].get<gmds::Node>()[0].getPoint();
-	gmds::math::Point p2 = m_ordered_mesh_edges[m_ordered_mesh_edges.size() - 1].get<gmds::Node>()[0].getPoint();
+	gmds::math::Point p1 = m_ordered_mesh_edges[0].get<gmds::Node>()[0].point();
+	gmds::math::Point p2 = m_ordered_mesh_edges[m_ordered_mesh_edges.size() - 1].get<gmds::Node>()[0].point();
 	gmds::math::Point first_end = m_slots[0]->from_point->getLocation();
 	double d1 = first_end.distance(p1);
 	double d2 = first_end.distance(p2);

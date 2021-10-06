@@ -101,9 +101,9 @@ namespace gmds{
                     math::Vector3d v1 = adj_faces[1].normal();
                     math::Point c1  = adj_faces[1].center();
                     bool convex=true;
-                    if(math::Orientation::orient3d(c1,ns0[0].getPoint(),
-                                                   ns0[1].getPoint(),
-                                                   ns0[2].getPoint())==math::Orientation::NEGATIVE){
+                    if(math::Orientation::orient3d(c1, ns0[0].point(),
+                                                   ns0[1].point(),
+                                                   ns0[2].point()) == math::Orientation::NEGATIVE){
                         //its non-convex
                         convex=false;
                     }
@@ -147,16 +147,10 @@ namespace gmds{
 
             Edge e = m_support->get<Edge>(min_id);
             std::vector<Node> e_nodes = e.get<Node>();
-            math::Point closest = e.center();
-            double d= AP.distance2(closest);
-            if(AP.distance2(e_nodes[0].getPoint())<d){
-                closest = e_nodes[0].getPoint();
-                d = AP.distance2(e_nodes[0].getPoint());
-            }
-            if (AP.distance2(e_nodes[1].getPoint())<d){
-                closest = e_nodes[1].getPoint();
-            }
-            return closest;
+            math::Segment seg(e_nodes[0].point(),e_nodes[1].point());
+
+
+            return seg.project(AP);
         }
 /*----------------------------------------------------------------------------*/
         void FACCurve::project(math::Point& AP, math::Vector3d& AV) const {
@@ -166,7 +160,7 @@ namespace gmds{
             for (auto e_id : m_mesh_edges) {
                 Edge e = m_support->get<Edge>(e_id);
                 std::vector<Node> e_nodes = e.get<Node>();
-                math::Segment s(e_nodes[0].getPoint(), e_nodes[1].getPoint());
+                math::Segment s(e_nodes[0].point(), e_nodes[1].point());
                 double dist = s.distance(AP);
                 if (dist < min_dist) {
                     min_dist = dist;
@@ -175,9 +169,9 @@ namespace gmds{
             }
             Edge e = m_support->get<Edge>(min_id);
             std::vector<Node> e_nodes = e.get<Node>();
-            math::Segment s(e_nodes[0].getPoint(), e_nodes[1].getPoint());
+            math::Segment s(e_nodes[0].point(), e_nodes[1].point());
             AP = s.project(AP);
-            AV = math::Vector3d(e_nodes[0].getPoint(), e_nodes[1].getPoint());
+            AV = math::Vector3d(e_nodes[0].point(), e_nodes[1].point());
         }
 /*----------------------------------------------------------------------------*/
         TCoord FACCurve::computeArea() const
@@ -189,7 +183,7 @@ namespace gmds{
         {
             std::vector<math::Point > pnts;
             for(auto n_id:m_mesh_nodes){
-                pnts.push_back(m_support->get<Node>(n_id).getPoint());
+                pnts.push_back(m_support->get<Node>(n_id).point());
             }
             math::Point pi = pnts[0];
             minXYZ[0]=pi.X();

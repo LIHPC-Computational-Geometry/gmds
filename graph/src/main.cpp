@@ -11,7 +11,7 @@
 
 #include "gmds/graph/MinCut.h"
 
-#include <gmds/cad/GeomSmoother.h>
+#include "../../smoothy/inc/gmds/smoothy/LaplacianSmoother.h"
 
 using namespace gmds;
 using namespace graph;

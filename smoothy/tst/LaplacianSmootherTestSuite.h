@@ -7,7 +7,7 @@
 #include <gmds/ig/Mesh.h>
 #include <gmds/cad/FACManager.h>
 #include <gmds/cad/GeomMeshLinker.h>
-#include <gmds/cad/GeomSmoother.h>
+#include <gmds/smoothy/LaplacianSmoother.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKReader.h>
 #include <gmds/io/VTKWriter.h>
@@ -43,7 +43,7 @@ TEST(GeomSmootherTestSuite, tet_in_cube)
 
     manager.initAndLinkFrom3DMesh(&m_vol,&linker);
 
-    cad::GeomSmoother smoother(&linker);
+    smoothy::LaplacianSmoother smoother(&linker);
 
     //We perturb mesh node locations to test the smoothing algorithm
     for(auto n_id:m_vol.nodes()){
@@ -62,22 +62,32 @@ TEST(GeomSmootherTestSuite, tet_in_cube)
     }
 
 
+    std::string vtk_file2 = ("TOTO_moved.vtk");
 
-    smoother.smoothCurves();
+    VTKWriter vtkWriter(&ioService);
+    vtkWriter.setCellOptions(gmds::N|gmds::R);
+    vtkWriter.setDataOptions(gmds::N|gmds::R);
+    vtkWriter.write(vtk_file2);
 
-    ASSERT_NEAR(m_vol.get<Node>(8).getPoint().Y(), 0, 0.01);
-    ASSERT_NEAR(m_vol.get<Node>(10).getPoint().Y(), 0, 0.01);
+    smoother.smoothCurves(100);
+
+    std::string vtk_file3 = ("TOTO_smooth.vtk");
+
+    vtkWriter.write(vtk_file3);
+
+    ASSERT_NEAR(m_vol.get<Node>(8).point().Y(), 0, 0.01);
+    ASSERT_NEAR(m_vol.get<Node>(10).point().Y(), 0, 0.01);
 
     smoother.smoothSurfaces();
 
-    ASSERT_NEAR(m_vol.get<Node>(20).getPoint().X(), -1, 0.01);
-    ASSERT_NEAR(m_vol.get<Node>(20).getPoint().Y(),  1, 0.01);
+    ASSERT_NEAR(m_vol.get<Node>(20).point().X(), -1, 0.01);
+    ASSERT_NEAR(m_vol.get<Node>(20).point().Y(), 1, 0.01);
 
     smoother.smoothVolumes();
 
-    ASSERT_NEAR(m_vol.get<Node>(28).getPoint().X(),  2.08, 0.01);
-    ASSERT_NEAR(m_vol.get<Node>(28).getPoint().Y(),  0.64, 0.01);
-    ASSERT_NEAR(m_vol.get<Node>(28).getPoint().Z(),  1.97, 0.01);
+    ASSERT_NEAR(m_vol.get<Node>(28).point().X(), 2.08, 0.01);
+    ASSERT_NEAR(m_vol.get<Node>(28).point().Y(), 0.64, 0.01);
+    ASSERT_NEAR(m_vol.get<Node>(28).point().Z(), 1.97, 0.01);
 
 
 }
@@ -113,7 +123,7 @@ TEST(GeomSmootherTestSuite, test3)
 
     manager.initAndLinkFrom3DMesh(&m_vol,&linker);
 
-    cad::GeomSmoother smoother(&linker);
+    smoothy::LaplacianSmoother smoother(&linker);
 
 
     smoother.smoothCurves(10);
@@ -274,8 +284,8 @@ TEST(GeomSmootherTestSuite, DISABLED_test_notch_refined)
             else{
                 //it must be an edge classified on curves
                 //we look for the closest curve now
-                math::Point p0 = e_nodes[0].getPoint();
-                math::Point p1 = e_nodes[1].getPoint();
+                math::Point p0 = e_nodes[0].point();
+                math::Point p1 = e_nodes[1].point();
                 math::Point p = 0.5*(p0+p1);
 
                 double min_dist = 100000;
@@ -304,7 +314,7 @@ TEST(GeomSmootherTestSuite, DISABLED_test_notch_refined)
         m.isMarked(n, mark_node_on_crv) ||
         m.isMarked(n, mark_node_on_srf) ){
             //we've got a boundary node
-            math::Point node_loc = n.getPoint();
+            math::Point node_loc = n.point();
             double min_dist = 100000;
             int min_entity_dim=-1;
             int min_entity_id = -1;
@@ -363,7 +373,7 @@ TEST(GeomSmootherTestSuite, DISABLED_test_notch_refined)
     //==================================================================
     // PERFORM THE MESH SMOOTHING NOW
     //==================================================================
-    cad::GeomSmoother smoother(&linker);
+    smoothy::LaplacianSmoother smoother(&linker);
     smoother.smoothCurves(nb_iterations);
     smoother.smoothSurfaces(nb_iterations);
     smoother.smoothVolumes(nb_iterations);

@@ -374,7 +374,7 @@ void Node::delegateRegionReplace(TCellID AID1, TCellID AID2)
 	(*m_nodes_container->m_N2R)[m_id].replace(AID1, AID2);
 }
 /*----------------------------------------------------------------------------*/
-math::Point Node::getPoint() const
+math::Point Node::point() const
 {
 	return  m_nodes_container->m_node_coords[m_id];
 }
@@ -436,10 +436,10 @@ void Node::setXYZ(const TCoord AX, const TCoord AY,const TCoord AZ)
 /*----------------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& AStream, const Node& AN)
 {
-        AStream<<"Node "<< AN.id()<<" ("
-                        <<AN.getPoint().X()<<", "
-                        <<AN.getPoint().Y()<<", "
-                        <<AN.getPoint().Z()<<")";
+        AStream << "Node " << AN.id() << " ("
+                << AN.point().X() << ", "
+                << AN.point().Y() << ", "
+                << AN.point().Z() << ")";
         return AStream;
 }
 /*----------------------------------------------------------------------------*/

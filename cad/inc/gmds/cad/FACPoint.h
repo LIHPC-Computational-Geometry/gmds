@@ -137,7 +137,7 @@ namespace gmds{
                     gmds::math::Point pt_res(AP);
 
                     for(int i_p=0; i_p<pnts_.size(); i_p++) {
-                        gmds::math::Point pt_tmp = m_support->get<gmds::Node>(pnts_[i_p]).getPoint();
+                        gmds::math::Point pt_tmp = m_support->get<gmds::Node>(pnts_[i_p]).point();
 
                         double dist2 = AP.distance2(pt_tmp);
                         if(dist2 < dist2_max) {

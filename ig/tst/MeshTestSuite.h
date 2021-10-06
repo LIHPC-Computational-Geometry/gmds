@@ -8,7 +8,7 @@ TEST(MeshClass, testMeshNode) {
     gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::F2N));
 
     gmds::Node n0 = m.newNode(0, 0, 0);
-    ASSERT_EQ(n0.getPoint(),gmds::math::Point(0,0,0));
+    ASSERT_EQ(n0.point(), gmds::math::Point(0, 0, 0));
     n0.setX(1);
     ASSERT_EQ(n0.X(),1);
     n0.setY(2);
@@ -16,9 +16,9 @@ TEST(MeshClass, testMeshNode) {
     n0.setZ(3);
     ASSERT_EQ(n0.Z(),3);
     n0.setXYZ(4,5,6);
-    ASSERT_EQ(n0.getPoint(),gmds::math::Point(4,5,6));
+    ASSERT_EQ(n0.point(), gmds::math::Point(4, 5, 6));
     n0.setPoint(gmds::math::Point(1,1,1));
-    ASSERT_EQ(n0.getPoint(),gmds::math::Point(1,1,1));
+    ASSERT_EQ(n0.point(), gmds::math::Point(1, 1, 1));
 
 }
 /*----------------------------------------------------------------------------*/
@@ -483,7 +483,7 @@ TEST(MeshClass, testCellCenter) {
 
 
     gmds::math::Point p = n0.center();
-    ASSERT_EQ(p,n0.getPoint());
+    ASSERT_EQ(p, n0.point());
 
     gmds::Edge e = m.newEdge(n0,n1);
     ASSERT_EQ(e.center(),gmds::math::Point(0,0.5,0));
