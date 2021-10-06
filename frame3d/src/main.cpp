@@ -11,6 +11,7 @@
 #include <gmds/frame3d/FieldGenerator.h>
 #include <gmds/frame3d/OpenNLFieldSolverStrategy.h>
 #include <gmds/frame3d/PointGenerator.h>
+#include <gmds/frame3d/PointConnectionBuilder.h>
 /*----------------------------------------------------------------------------*/
 #include <iostream>
 #include <gmds/io/VTKWriter.h>
@@ -211,17 +212,72 @@ int main(int argc, char* argv[])
     std::cout<<"NB POINTS = "<<ptg.points().size()<<std::endl;
     //    writePoints(ptg->points());
 
-    MeshModel model(DIM3 | R  | N | R2N );
+    //extraction of the edges
+    PointConnectionBuilder pcb(&m,
+                               ptg.points(),
+                               ptg.charts(),
+                               ptg.pointMeshData(),
+                               ptg.pointTypes(),
+                               ptg.pointClassification(),
+                               ptg.pointCurveNumbering(),
+                               ptg.pointSurfaceNumbering(),
+                               ptg.pointSurfaceNormal());
+    pcb.setDebugInfo(true);
+    pcb.execute();
+
+
+
+    ////////
+    MeshModel model(DIM3 | R  | F | N | R2N | F2N);
     Mesh point_mesh(model);
+
+    std::map<int, int> AEdges;
+    pcb.getEdges(AEdges);
+
+
+
+    Variable<int>* node_on_pnt = point_mesh.newVariable<int, GMDS_NODE>("BND_VERTEX_COLOR"  );
+    Variable<int>* node_on_crv = point_mesh.newVariable<int, GMDS_NODE>("BND_CURVE_COLOR"  );
+    Variable<int>* node_on_srf = point_mesh.newVariable<int, GMDS_NODE>("BND_SURFACE_COLOR");
+
+    node_on_pnt->setValuesTo(-1);
+    node_on_crv->setValuesTo(-1);
+    node_on_srf->setValuesTo(-1);
+
+
+    const std::vector<int>& pointClassification   = ptg.pointClassification();
+    const std::vector<int>& pointCurveNumbering   = ptg.pointCurveNumbering();
+    const std::vector<int>& pointSurfaceNumbering = ptg.pointSurfaceNumbering();
+
+    unsigned int cpt = 0;
     for(auto pi:ptg.points()){
+
+        if(pointClassification[cpt] == 0)
+        {
+          node_on_pnt->set(cpt, 0);
+        }
+        else if(pointClassification[cpt] == 1)
+        {
+          node_on_crv->set(cpt, pointCurveNumbering[cpt]);
+        }
+        else if(pointClassification[cpt] == 2)
+        {
+          node_on_srf->set(cpt, pointSurfaceNumbering[cpt]);
+        }
         Node ni = point_mesh.newNode(pi);
         point_mesh.newTet(ni,ni,ni,ni);
+        cpt++;
     }
 
+    for(auto const e : AEdges)
+    {
+      point_mesh.newTriangle(e.first, e.second, e.second);
+    }
 
     IGMeshIOService ioService2(&point_mesh);
     VTKWriter writer2(&ioService2);
-    writer2.setCellOptions(gmds::N|gmds::R);
+    writer2.setCellOptions(gmds::N|gmds::R|gmds::F);
+    writer2.setDataOptions(gmds::N|gmds::R|gmds::F);
     writer2.write("GeneratedPoints.vtk");
 
     m.unmarkAll<Node>(pm.mark_node_on_surf );

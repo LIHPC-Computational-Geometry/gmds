@@ -81,6 +81,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           math::Orientation::Sign orientation =  triangle.orientation(simpliceNode.getCoords());
           if(orientation < 0)
           {
+            std::cout << "orientation false" << std::endl;
             status = false;
             return;
           }
@@ -96,6 +97,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
         {
           if(markedNodes[nodeInCavity] == 1 && nodeInCavity != simpliceNode.getGlobalNode())
           {
+            std::cout << "markedNodes in cavity" << std::endl;
             status = false;
             return;
           }
@@ -105,6 +107,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
         {
           if(markedNodes[surfaceNodeInCavity] == 1 && surfaceNodeInCavity != simpliceNode.getGlobalNode())
           {
+            std::cout << "markedNodes in surfaceNodeInCavity" << std::endl;
             status = false;
             return;
           }
@@ -115,6 +118,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
         {
           if(std::find(markedSimplex.begin(), markedSimplex.end(), simplexInCavity) != markedSimplex.end())
           {
+            std::cout << "deleteThe simplexin the cavity" << std::endl;
             return;
           }
           simplexMesh->deleteTetra(simplexInCavity);

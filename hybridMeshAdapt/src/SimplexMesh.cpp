@@ -4737,6 +4737,91 @@ void SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector)
   }
 }
 /******************************************************************************/
+void SimplexMesh::buildEdges(const std::vector<std::vector<TInt>>& AEdges, const gmds::BitVector& nodeBitVector)
+{
+  const TInt border = std::numeric_limits<TInt>::min();
+  const gmds::BitVector& bitNodes = getBitVectorNodes();
+  for(auto const & edge : AEdges)
+  {
+    if(edge.size() == 2)
+    {
+      TInt nodeAidx = edge.front();
+      TInt nodeBidx = edge.back();
+      std::cout << "bitNodes.capacity() --> " << bitNodes.capacity() << std::endl;
+      std::cout << "nodeAidx --> " << nodeAidx << std::endl;
+      std::cout << "nodeBidx --> " << nodeBidx << std::endl;
+      if(bitNodes[nodeAidx] != 0 && bitNodes[nodeBidx] != 0)
+      {
+        SimplicesNode nodeA = SimplicesNode(this, nodeAidx);
+        SimplicesNode nodeB = SimplicesNode(this, nodeBidx);
+        if(nodeA.shell(nodeB).size() == 0)
+        {
+
+          std::cout << nodeA << std::endl;
+          std::cout << nodeB << std::endl;
+          std::vector<TSimplexID> cavityTmp{};
+          std::vector<TSimplexID> ballA = nodeA.ballOf();
+          math::Vector3d vec = nodeB.getCoords() - nodeA.getCoords();
+          math::Vector3d u = math::Vector3d(vec.Y(), - vec.X(), 0.0);
+          math::Vector3d v = vec.cross(u);
+          u.normalize(); v.normalize();
+
+          math::Point pt1 = nodeA.getCoords();
+          math::Point pt2 = pt1 + u;
+          math::Point pt3 = pt1 + v;
+          std::vector<TInt> nodes{};
+
+          std::cout << "ballA.size() -> " << ballA.size() << std::endl;
+          for(auto const & simplex : ballA)
+          {
+            std::cout << "simplex -> " << simplex << std::endl;
+            if(simplex >= 0){nodes=  SimplicesCell(this, simplex).getNodes();}
+            else if(simplex < 0 && simplex != border){ nodes = SimplicesTriangle(this, -simplex).getNodes();}
+
+            for(auto const node : nodes)
+            {
+              const math::Point pt0 = SimplicesNode(this,node).getCoords();
+              math::Orientation::Sign sign = math::Orientation::orient3d(pt0, pt1, pt2, pt3);
+              if(sign == 1)
+              {
+                cavityTmp.push_back(simplex);
+                break;
+              }
+            }
+          }
+          CriterionRAIS criterionRAIS(new VolumeCriterion());
+          bool status = false;
+          std::vector<TSimplexID> deletedSimplex{};
+          std::vector<TSimplexID> cavity{};
+          if(cavityTmp.size() != 0)
+          {
+              for(auto const & simplex : cavityTmp)
+              {
+                if(simplex >= 0)
+                {
+                  cavity.push_back(cavityTmp.front());
+                  break;
+                }
+              }
+              std::cout << "PointInsertion" << std::endl;
+              PointInsertion(this, nodeB, criterionRAIS, status, cavity, nodeBitVector, deletedSimplex);
+          }
+          if(!status)
+          {
+            std::cout << "edge [" << nodeAidx << " ; " << nodeBidx << "] was not built " << std::endl;
+          }
+          std::cout << std::endl;
+          std::cout << std::endl;
+        }
+        else
+        {
+          std::cout << "edge [" << nodeAidx << " ; " << nodeBidx << "] is already built ! " << std::endl;
+        }
+      }
+    }
+  }
+}
+/******************************************************************************/
 bool SimplexMesh::pointInTriangle(const math::Point& query_point,
                      const math::Point& triangle_vertex_0,
                      const math::Point& triangle_vertex_1,

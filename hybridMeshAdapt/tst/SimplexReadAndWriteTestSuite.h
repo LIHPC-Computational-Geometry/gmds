@@ -144,12 +144,14 @@ TEST(SimplexMeshTestClass, test_hexa_generation_on_modelCAD5)
   //std::string vtk_node = dir+"/ModeleCAD5/ModeleCAD5_generatedPoints_2585.vtk";
   //std::string vtk_node = dir+"/ModeleCAD6/ModeleCAD6_generatedPoints_4601.vtk";
   //std::string vtk_node = dir+"/ModeleCAD7/ModeleCAD7_generatedPoints_2128.vtk";
-  std::string vtk_node = dir+"/ModeleCAD5/ModeleCAD5_generatedPoints_8396.vtk";
+  //std::string vtk_node = dir+"/ModeleCAD5/ModeleCAD5_generatedPoints_8396.vtk";
+  //std::string vtk_node = dir+"/ModeleCAD5/ModeleCAD5_edge_generatedPoints_8396.vtk";
+  std::string vtk_node = dir+"/ModeleCAD5/ModeleCAD5_edge_generatedPoints_15701.vtk";
 
   SimplexMesh simplexNodes = SimplexMesh();
   gmds::ISimplexMeshIOService ioServiceNodes(&simplexNodes);
   gmds::VTKReader vtkReaderNodes(&ioServiceNodes);
-  vtkReaderNodes.setCellOptions(gmds::R|gmds::N);
+  vtkReaderNodes.setCellOptions(gmds::R|gmds::N|gmds::F);
   vtkReaderNodes.setDataOptions(gmds::N);
   vtkReaderNodes.read(vtk_node);
   Variable<int>* BND_CURVE_COLOR_NODES   = simplexNodes.getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
@@ -159,6 +161,20 @@ TEST(SimplexMeshTestClass, test_hexa_generation_on_modelCAD5)
 
   CriterionRAIS criterionRAIS(new VolumeCriterion());
   gmds::BitVector nodesAdded(simplexMesh.nodesCapacity());
+
+  std::vector<std::vector<TInt>> edges{};
+  const gmds::BitVector triIdx = simplexNodes.getBitVectorTri();
+  for(unsigned int tri = 1 ; tri < triIdx.capacity() ; tri++)
+  {
+    if(triIdx[tri] != 0)
+    {
+      std::vector<TInt> nodes = SimplicesTriangle(&simplexNodes,tri).getNodes();
+      std::vector<TInt> edge{nodes[0], nodes[1]};
+      edges.push_back(edge);
+    }
+  }
+
+
   for(unsigned int idx = 0 ; idx < nodesToAddIds.capacity() ; idx++)
   {
     if(nodesToAddIds[idx] != 0)
@@ -172,18 +188,23 @@ TEST(SimplexMeshTestClass, test_hexa_generation_on_modelCAD5)
 
       if(!alreadyAdd)
       {
+        for(auto & edge : edges)
+        {
+          if(edge[0] == idx){edge[0] = node;}
+          if(edge[1] == idx){edge[1] = node;}
+        }
         if((*BND_CURVE_COLOR_NODES)[idx] != 0) {BND_CURVE_COLOR->set(node, (*BND_CURVE_COLOR_NODES)[idx]);}
         else if((*BND_SURFACE_COLOR_NODES)[idx] != 0) {BND_SURFACE_COLOR->set(node, (*BND_SURFACE_COLOR_NODES)[idx]);}
 
-        //forcage de node a cause d'une mauvaise labelisation dans fram3D pour le model M5
-        if(node == 10506)
+        //forcage de node a cause d'une mauvaise labelisation dans fram3D pour le model M5 et les 8396 points 
+        /*if(node == 10506)
         {
           BND_SURFACE_COLOR->set(node, 9);
         }
         else if(node == 8448)
         {
           BND_SURFACE_COLOR->set(node, 5);
-        }
+        }*/
 
         simplexMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("metric")->value(node) = m;
         bool status = false;
@@ -212,27 +233,39 @@ TEST(SimplexMeshTestClass, test_hexa_generation_on_modelCAD5)
     }
   }
 
+
   gmds::VTKWriter vtkWriterDI(&ioService);
   vtkWriterDI.setCellOptions(gmds::N|gmds::F|gmds::R);
   vtkWriterDI.setDataOptions(gmds::N|gmds::F|gmds::R);
-  vtkWriterDI.write("ModeleCAD5_DI_8396.vtk");
+  //vtkWriterDI.write("ModeleCAD5_DI_8396.vtk");
+  vtkWriterDI.write("ModeleCAD5_DI_15701.vtk");
 
   simplexMesh.edgesRemove(nodesAdded);
 
-  //std::vector<TSimplexID> v = SimplicesNode(&simplexMesh, 605).ballOf();
-  //simplexMesh.deleteAllSimplicesBut(v);
-  gmds::VTKWriter vtkWriter(&ioService);
-  vtkWriter.setCellOptions(gmds::N|gmds::R);
-  vtkWriter.setDataOptions(gmds::N|gmds::R);
-  //vtkWriter.write("Dome_ER_2922.vtk");
-  //vtkWriter.write("HalfCylinder_ER_6683.vtk");
-  //vtkWriter.write("ModeleEnS_ER_4466.vtk");
-  //vtkWriter.write("CylindreTordu_ER_5686.vtk");
-  //vtkWriter.write("ModeleCAD_ER_5686.vtk");
-  //vtkWriter.write("ModeleCAD2_ER_5199.vtk");
-  //vtkWriter.write("ModeleCAD3_ER_5853.vtk");
-  //vtkWriter.write("ModeleCAD5_ER_2585.vtk");
-  //vtkWriter.write("ModeleCAD7_ER_2128_SCV.vtk");
-  vtkWriter.write("ModeleCAD5_ER_8396_SCV.vtk");
+  gmds::VTKWriter vtkWriterER(&ioService);
+  vtkWriterER.setCellOptions(gmds::N|gmds::R);
+  vtkWriterER.setDataOptions(gmds::N|gmds::R);
+  //vtkWriterER.write("Dome_ER_2922.vtk");
+  //vtkWriterER.write("HalfCylinder_ER_6683.vtk");
+  //vtkWriterER.write("ModeleEnS_ER_4466.vtk");
+  //vtkWriterER.write("CylindreTordu_ER_5686.vtk");
+  //vtkWriterER.write("ModeleCAD_ER_5686.vtk");
+  //vtkWriterER.write("ModeleCAD2_ER_5199.vtk");
+  //vtkWriterER.write("ModeleCAD3_ER_5853.vtk");
+  //vtkWriterER.write("ModeleCAD5_ER_2585.vtk");
+  //vtkWriterER.write("ModeleCAD7_ER_2128_SCV.vtk");
+  //vtkWriterER.write("ModeleCAD5_ER_8396_SCV.vtk");
+  vtkWriterER.write("ModeleCAD5_ER_15701_SCV.vtk");
+  std::cout << "vtkWriterER done !" << std::endl;
+
+  std::cout << "buildEdges start !" << std::endl;
+  simplexMesh.buildEdges(edges, nodesAdded);
+  std::cout << "buildEdges done !" << std::endl;
+
+  gmds::VTKWriter vtkWriterEB(&ioService);
+  vtkWriterEB.setCellOptions(gmds::N|gmds::R);
+  vtkWriterEB.setDataOptions(gmds::N|gmds::R);
+  //vtkWriterEB.write("ModeleCAD5_EB_8396_SCV.vtk");
+  vtkWriterEB.write("ModeleCAD5_EB_15701_SCV.vtk");
 
 }

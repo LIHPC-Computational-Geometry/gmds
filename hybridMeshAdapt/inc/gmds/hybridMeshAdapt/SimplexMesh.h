@@ -334,6 +334,8 @@ class SimplexMesh
 
   void edgesRemove(const gmds::BitVector& nodeBitVector);
 
+  void buildEdges(const std::vector<std::vector<TInt>>& AEdges, const gmds::BitVector& nodeBitVector);
+
   bool pointInTriangle(const math::Point& query_point,
                        const math::Point& triangle_vertex_0,
                        const math::Point& triangle_vertex_1,
