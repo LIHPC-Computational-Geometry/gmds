@@ -151,6 +151,17 @@ namespace gmds{
 
 
             return seg.project(AP);
+
+/*            math::Point closest = e.center();
+            double d= AP.distance2(closest);
+            if(AP.distance2(e_nodes[0].point()) < d){
+                closest = e_nodes[0].point();
+                d = AP.distance2(e_nodes[0].point());
+            }
+            if (AP.distance2(e_nodes[1].point()) < d){
+                closest = e_nodes[1].point();
+            }
+            return closest;*/
         }
 /*----------------------------------------------------------------------------*/
         void FACCurve::project(math::Point& AP, math::Vector3d& AV) const {

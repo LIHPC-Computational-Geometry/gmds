@@ -8,6 +8,7 @@
 #include <gmds/cad/GeomPoint.h>
 #include <gmds/cad/GeomCurve.h>
 #include <gmds/cad/GeomSurface.h>
+#include <gmds/smoothy/AngleBasedQuadSmoother.h>
 #include <gmds/smoothy/LaplacianSmoother.h>
 /*----------------------------------------------------------------------------*/
 #include <iostream>
@@ -461,12 +462,11 @@ int main(int argc, char* argv[])
         std::cout<<"INVALID MODEL"<<std::endl;
         exit(1);
     }
-    std::cout<<"  - start curve smoothing ("<<nb_curve_smooth_iterations<<" iterations)"<<std::endl;
+    std::cout<<"  - start  smoothing ("<<nb_curve_smooth_iterations<<" iterations)"<<std::endl;
     smoother.smoothCurves(nb_curve_smooth_iterations);
-    std::cout<<"  - start surface smoothing ("<<nb_surface_smooth_iterations<<" iterations)"<<std::endl;
     smoother.smoothSurfaces(nb_surface_smooth_iterations);
-    std::cout<<"  - start volume smoothing ("<<nb_volume_smooth_iterations<<" iterations)"<<std::endl;
-    smoother.smoothVolumes(nb_volume_smooth_iterations);
+   // std::cout<<"  - start volume smoothing ("<<nb_volume_smooth_iterations<<" iterations)"<<std::endl;
+   // smoother.smoothVolumes(nb_volume_smooth_iterations);
 
 //==================================================================
 // COMPUTE BLOCK QUALITY
@@ -529,12 +529,9 @@ int main(int argc, char* argv[])
         std::cout<<"INVALID MODEL"<<std::endl;
         exit(1);
     }
-    std::cout<<"  - start curve smoothing ("<<nb_curve_smooth_iterations<<" iterations)"<<std::endl;
+    std::cout<<"  - start smoothing ("<<nb_curve_smooth_iterations<<" iterations)"<<std::endl;
     smoother_final.smoothCurves(nb_curve_smooth_iterations);
-    std::cout<<"  - start surface smoothing ("<<nb_surface_smooth_iterations<<" iterations)"<<std::endl;
     smoother_final.smoothSurfaces(nb_surface_smooth_iterations);
-    //std::cout<<"  - start volume smoothing ("<<nb_iterations<<" iterations)"<<std::endl;
-    //smoother.smoothVolumes(nb_iterations);
     std::cout<<"> Start final mesh writing"<<std::endl;
     IGMeshIOService ioService_mesh(bm.mesh());
     VTKWriter vtkWriter_mesh(&ioService_mesh);

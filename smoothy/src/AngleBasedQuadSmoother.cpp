@@ -46,6 +46,11 @@ void AngleBasedQuadSmoother::smoothCurves() {
             math::Point pi = ni.point();
             std::vector<TCellID> adj_n = m_n2n[nid];
             if(adj_n.size()!=2) {
+                std::cout<<"Smoother error. Node "<<ni.id()<<" located at "<<ni.point()<<" has the following neighbours ";
+                for(auto a : adj_n){
+                    std::cout<< a<<" ";
+                }
+                std::cout<<std::endl;
                 throw GMDSException("Smoother error: a node on curve has more that 2 neighhbors.");
             }
             //we compute the location we would like for the curve only
