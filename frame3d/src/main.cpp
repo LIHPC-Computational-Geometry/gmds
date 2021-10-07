@@ -11,6 +11,7 @@
 #include <gmds/frame3d/FieldGenerator.h>
 #include <gmds/frame3d/OpenNLFieldSolverStrategy.h>
 #include <gmds/frame3d/PointGenerator.h>
+#include <gmds/frame3d/PointConnectionBuilder.h>
 /*----------------------------------------------------------------------------*/
 #include <iostream>
 #include <gmds/io/VTKWriter.h>
@@ -209,7 +210,7 @@ int main(int argc, char* argv[])
     ptg.execute();
 
     std::cout<<"NB POINTS = "<<ptg.points().size()<<std::endl;
-    //    writePoints(ptg->points());
+    //  writePoints(ptg->points());
 
     MeshModel model(DIM3 | R  | N | R2N );
     Mesh point_mesh(model);
@@ -224,6 +225,23 @@ int main(int argc, char* argv[])
     writer2.setCellOptions(gmds::N|gmds::R);
     writer2.write("GeneratedPoints.vtk");
 
+
+
+    PointConnectionBuilder pcb(&m,
+                               ptg.points(),
+                               ptg.charts(),
+                               ptg.pointMeshData(),
+                               ptg.pointTypes(),
+                               ptg.pointClassification(),
+                               ptg.pointCurveNumbering(),
+                               ptg.pointSurfaceNumbering(),
+                               ptg.pointSurfaceNormal());
+    pcb.setDebugInfo(true);
+    pcb.execute();
+
+    std::vector<std::pair<int,int> > edge_ids;
+    pcb.getEdges(edge_ids);
+    std::cout<<"NB EDGES = "<<edge_ids.size();
     m.unmarkAll<Node>(pm.mark_node_on_surf );
     m.unmarkAll<Node>(pm.mark_node_on_curv );
     m.unmarkAll<Node>(pm.mark_node_on_pnt  );

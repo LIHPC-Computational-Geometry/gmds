@@ -110,7 +110,7 @@ void PointConnectionBuilder::execute()
 
     
     if(m_with_debug_info) {
-        writeEdges(oriented_edges_init, m_output_dir + "/EDGES_LOCAL");
+        writeEdges(oriented_edges_init, m_output_dir + "/EDGES_LOCAL.vtk");
     }
     //======================================================================
     // STEP 4 - Correction of the oriented-edges to create edges
@@ -119,7 +119,7 @@ void PointConnectionBuilder::execute()
     
 
     if(m_with_debug_info)
-        writeEdges(m_edges, m_output_dir+"/EDGES_GLOBAL");
+        writeEdges(m_edges, m_output_dir+"/EDGES_GLOBAL.vtk");
 
     //======================================================================
     // STEP 5 - For each stable point compute and store its hex-corners
@@ -1038,15 +1038,10 @@ buildOrientedEdges(std::vector<std::vector<OrientedEdge> >& AEdges)
 }
 /*---------------------------------------------------------------------------*/
 void PointConnectionBuilder::
-getEdges(std::map<int, int> &AEdges) {
+getEdges(std::vector<std::pair<int,int > >& AEdges) {
     for(auto edge_set:m_edges){
         for(auto e : edge_set){
-            auto i = e.first;
-            auto j = e.second;
-            if(i<j)
-                AEdges[i]=j;
-            else
-                AEdges[j]=i;
+            AEdges.push_back(std::make_pair(e.first,e.second));
         }
     }
 }
@@ -1637,8 +1632,8 @@ void PointConnectionBuilder::writeInput()
     }
     static int nb_file=0;
     std::string file_pnts, file_charts;
-    file_pnts=m_output_dir+"/PCB_INPUT_PNTS_"+to_string(nb_file);
-    file_charts=m_output_dir+"/PCB_INPUT_CHARTS_"+to_string(nb_file);
+    file_pnts=m_output_dir+"/PCB_INPUT_PNTS_"+to_string(nb_file)+".vtk";
+    file_charts=m_output_dir+"/PCB_INPUT_CHARTS_"+to_string(nb_file)+".vtk";
     nb_file++;
 
     IGMeshIOService ioService(&mesh_pnts);
@@ -1662,10 +1657,10 @@ writeEdges(std::vector<std::vector<OrientedEdge> >& AEdges,
 {
     MeshModel model(DIM3 | F  | N | F2N );
     Mesh mesh_edges  (model);
-    
     for(unsigned int i=0; i<m_pnt.size();i++){
 
         std::vector<OrientedEdge> edges_i = AEdges[i];
+
         for(unsigned int j=0; j<edges_i.size(); j++){
             math::Point p0 = m_pnt[edges_i[j].first];
             math::Point p1 = m_pnt[edges_i[j].second];
@@ -1675,7 +1670,6 @@ writeEdges(std::vector<std::vector<OrientedEdge> >& AEdges,
             
         }
     }
-
     IGMeshIOService ioService(&mesh_edges);
     VTKWriter vtkWriter(&ioService);
     vtkWriter.setCellOptions(gmds::N|gmds::F);
@@ -1690,7 +1684,7 @@ void PointConnectionBuilder::writeHexes() {
     VTKWriter vtkWriter(&ioService);
     vtkWriter.setCellOptions(N | F | R);
     vtkWriter.setDataOptions(N | F | R);
-    std::string file_name = m_output_dir + "/EXTRACTED_HEX";
+    std::string file_name = m_output_dir + "/EXTRACTED_HEX.vtk";
     vtkWriter.write(file_name);
 }
 /*----------------------------------------------------------------------------*/

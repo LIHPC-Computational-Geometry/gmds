@@ -29,7 +29,8 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_IG}
         ${LIB_GMDS_CAD}
         ${LIB_GMDS_IG_ALGO}
-        ${LIB_GMDS_IO})
+        ${LIB_GMDS_IO}
+        ${LIB_GMDS_SMOOTHY})
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)
 

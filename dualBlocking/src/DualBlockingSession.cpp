@@ -7,7 +7,7 @@
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>
 #include <gmds/cad/GeomSurface.h>
-#include "../../smoothy/inc/gmds/smoothy/LaplacianSmoother.h"
+#include <gmds/smoothy/LaplacianSmoother.h>
 #include <gmds/math/Line.h>
 #include <ctime>
 #include <gmds/math/Orientation.h>

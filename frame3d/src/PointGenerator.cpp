@@ -1,9 +1,7 @@
 /*---------------------------------------------------------------------------*/
 // GMDS File Headers
 #include <gmds/io/VTKWriter.h>
-#include <gmds/math/Matrix.h>
 #include <gmds/math/Plane.h>
-#include <gmds/math/Segment.h>
 #include <gmds/math/Triangle.h>
 #include <gmds/utils/Log.h>
 
@@ -21,7 +19,6 @@
 #include <set>
 #include <algorithm>
 #include <queue>
-#include <gmds/math/Tetrahedron.h>
 #include <gmds/io/IGMeshIOService.h>
 /*---------------------------------------------------------------------------*/
 using namespace gmds;
@@ -32,20 +29,6 @@ struct SPointData{
     int type;
     int index;
 } ;
-/*---------------------------------------------------------------------------*/
-// \brief Structure to sort points stored in a std::vector
-struct SPointDataStrictWeakOrder{
-    bool operator()(SPointData AP1, SPointData AP2) {
-        return AP1.classification < AP2.classification;
-    }
-} pointDataStrictWeakOrder;
-/*---------------------------------------------------------------------------*/
-// \brief Structure to sort points stored in a std::vector
-struct SPointStrictWeakOrder{
-    bool operator()(math::Point AP1, math::Point AP2) {
-        return AP1 < AP2;
-    }
-};
 /*---------------------------------------------------------------------------*/
 PointGenerator::
 PointGenerator(Mesh* AMesh,
@@ -1695,10 +1678,8 @@ void PointGenerator::writeOutput(){
     gmds::VTKWriter writer(&ioService);
     writer.setCellOptions(gmds::N| gmds::F| gmds::R);
     writer.setDataOptions(gmds::N| gmds::F| gmds::R);
-    std::string file_name=m_param_gl.output_dir+ "/PG_DEBUG_"+ to_string(nb_file);
-    std::cout<<"WRITE "<<file_name<<std::endl;
+    std::string file_name=m_param_gl.output_dir+ "/PG_DEBUG_"+ to_string(nb_file)+".vtk";
     writer.write(file_name);
-    std::cout<<"done"<<std::endl;
     nb_file++;
 
 }

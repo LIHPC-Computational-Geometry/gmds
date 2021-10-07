@@ -11,7 +11,7 @@
 #include <gmds/io/MeditReader.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <iostream>
-#include "../../smoothy/inc/gmds/smoothy/LaplacianSmoother.h"
+#include <smoothy/inc/gmds/smoothy/LaplacianSmoother.h>
 #include <gmds/dualBlocking/DualBlockingSession.h>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
