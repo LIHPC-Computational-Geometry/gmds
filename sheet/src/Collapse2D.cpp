@@ -188,8 +188,8 @@ collapseAndReconnect(const std::map<TCellID , std::vector<TCellID> >& AToCollaps
                     // 2. dim 2 same surface
                     to_keep = n1_id;
                     to_erase = n2_id;
-                    math::Point p1= n1.getPoint();
-                    math::Point p2= n2.getPoint();
+                    math::Point p1= n1.point();
+                    math::Point p2= n2.point();
 
                     if(geo_dim1==cad::GeomMeshLinker::LINK_CURVE){
                         //On the same curve, same dim

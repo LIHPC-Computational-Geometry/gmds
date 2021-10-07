@@ -171,7 +171,7 @@ void GeomMeshLinker::writeVTKDebugMesh(const std::string AFileName){
            m_node_classification_dim->value(n_id)==GeomMeshLinker::LINK_POINT ){
             //so a node classified on the boundary
             Node from_node = m_mesh->get<Node>(n_id);
-            Node to_node = m.newNode(from_node.getPoint());
+            Node to_node = m.newNode(from_node.point());
             n2n[n_id]= to_node.id();
             var_node_id->value(to_node.id())=n_id;
 

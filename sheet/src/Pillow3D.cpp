@@ -360,9 +360,9 @@ bool Pillow3D::execute(std::vector<VirtualFace>& AFaces, bool AWithCheck){
             bool must_inverse = false;
             TCellID adj_hex_id = getAdjacentRegions(AFaces[i])[0];
 
-            math::Point p0 = m_mesh->get<Node>(AFaces[i].node_ids()[0]).getPoint();
-            math::Point p1 = m_mesh->get<Node>(AFaces[i].node_ids()[1]).getPoint();
-            math::Point p2 = m_mesh->get<Node>(AFaces[i].node_ids()[2]).getPoint();
+            math::Point p0 = m_mesh->get<Node>(AFaces[i].node_ids()[0]).point();
+            math::Point p1 = m_mesh->get<Node>(AFaces[i].node_ids()[1]).point();
+            math::Point p2 = m_mesh->get<Node>(AFaces[i].node_ids()[2]).point();
             math::Triangle p012(p0,p1,p2);
             math::Vector3d to_hex(p0,m_mesh->get<Region>(adj_hex_id).center());
             if(p012.getNormal().dot(to_hex)<0){
@@ -392,9 +392,9 @@ bool Pillow3D::execute(std::vector<VirtualFace>& AFaces, bool AWithCheck){
         }
         else if(adj_hex_ids.size()==2){
             TCellID  adj_hex_id = adj_hex_ids[0];
-            math::Point p0 = m_mesh->get<Node>(AFaces[i].oriented_node_ids()[0]).getPoint();
-            math::Point p1 = m_mesh->get<Node>(AFaces[i].oriented_node_ids()[1]).getPoint();
-            math::Point p2 = m_mesh->get<Node>(AFaces[i].oriented_node_ids()[2]).getPoint();
+            math::Point p0 = m_mesh->get<Node>(AFaces[i].oriented_node_ids()[0]).point();
+            math::Point p1 = m_mesh->get<Node>(AFaces[i].oriented_node_ids()[1]).point();
+            math::Point p2 = m_mesh->get<Node>(AFaces[i].oriented_node_ids()[2]).point();
             math::Triangle p012(p0,p1,p2);
             math::Vector3d to_hex(p0,m_mesh->get<Region>(adj_hex_id).center());
             if(p012.getNormal().dot(to_hex)<0){
@@ -467,7 +467,7 @@ bool Pillow3D::execute(std::vector<VirtualFace>& AFaces, bool AWithCheck){
     // (2.1) For each boundary node, we build its twin to be connected to
     std::map<TCellID ,TCellID > n2n;
     for(auto n_id:shrink_nodes){
-        math::Point p = m_mesh->get<Node>(n_id).getPoint();
+        math::Point p = m_mesh->get<Node>(n_id).point();
         Node sibling = m_mesh->newNode(p);
         // We change node positions now
         //For that, we need to know if the node is on the mesh boundary, and
@@ -555,15 +555,15 @@ bool Pillow3D::execute(std::vector<VirtualFace>& AFaces, bool AWithCheck){
 
             math::Point c(0, 0, 0);
             if(single_edge){
-                c = 0.5 * (m_mesh->get<Node>(single_edge_id1).getPoint() +
-                           m_mesh->get<Node>(single_edge_id2).getPoint());
+                c = 0.5 * (m_mesh->get<Node>(single_edge_id1).point() +
+                           m_mesh->get<Node>(single_edge_id2).point());
             }
             else {
                 for (auto i = 0; i < adj_bnd_faces[0].size(); i++) {
-                    math::Point face_center = 0.25 * (m_mesh->get<Node>(adj_bnd_faces[0][i]).getPoint() +
-                                                      m_mesh->get<Node>(adj_bnd_faces[1][i]).getPoint() +
-                                                      m_mesh->get<Node>(adj_bnd_faces[2][i]).getPoint() +
-                                                      m_mesh->get<Node>(adj_bnd_faces[3][i]).getPoint());
+                    math::Point face_center = 0.25 * (m_mesh->get<Node>(adj_bnd_faces[0][i]).point() +
+                                                      m_mesh->get<Node>(adj_bnd_faces[1][i]).point() +
+                                                      m_mesh->get<Node>(adj_bnd_faces[2][i]).point() +
+                                                      m_mesh->get<Node>(adj_bnd_faces[3][i]).point());
                     c = c + face_center;
                 }
                 c = (1.0 / adj_bnd_faces[0].size()) * c;

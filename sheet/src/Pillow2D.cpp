@@ -266,8 +266,8 @@ bool Pillow2D::execute(std::vector<VirtualEdge>& AEdges, bool AWithCheck){
             bool must_inverse = false;
             TCellID adj_quad_id = getAdjacentFaces(AEdges[i])[0];
 
-            math::Point p0 = m_mesh->get<Node>(AEdges[i].node_ids()[0]).getPoint();
-            math::Point p1 = m_mesh->get<Node>(AEdges[i].node_ids()[1]).getPoint();
+            math::Point p0 = m_mesh->get<Node>(AEdges[i].node_ids()[0]).point();
+            math::Point p1 = m_mesh->get<Node>(AEdges[i].node_ids()[1]).point();
             Face adj_quad = m_mesh->get<Face>(adj_quad_id);
             math::Vector3d quad_normal = adj_quad.normal();
             math::Vector3d to_quad(p0,adj_quad.center());
@@ -300,8 +300,8 @@ bool Pillow2D::execute(std::vector<VirtualEdge>& AEdges, bool AWithCheck){
         else if(adj_quad_ids.size()==2){
             TCellID  adj_quad_id = adj_quad_ids[0];
             Face adj_quad = m_mesh->get<Face>(adj_quad_id);
-            math::Point p0 = m_mesh->get<Node>(AEdges[i].oriented_node_ids()[0]).getPoint();
-            math::Point p1 = m_mesh->get<Node>(AEdges[i].oriented_node_ids()[1]).getPoint();
+            math::Point p0 = m_mesh->get<Node>(AEdges[i].oriented_node_ids()[0]).point();
+            math::Point p1 = m_mesh->get<Node>(AEdges[i].oriented_node_ids()[1]).point();
             math::Vector3d quad_normal = adj_quad.normal();
             math::Vector3d to_quad(p0,adj_quad.center());
             math::Vector v01_normal = math::Vector3d(p0,p1).cross(quad_normal);
@@ -373,7 +373,7 @@ bool Pillow2D::execute(std::vector<VirtualEdge>& AEdges, bool AWithCheck){
     // (2.1) For each boundary node, we build its twin to be connected to
     std::map<TCellID ,TCellID > n2n;
     for(auto n_id:shrink_nodes){
-        math::Point p = m_mesh->get<Node>(n_id).getPoint();
+        math::Point p = m_mesh->get<Node>(n_id).point();
         Node sibling = m_mesh->newNode(p);
         // We change node positions now
         //For that, we need to know if the node is on the mesh boundary, and
@@ -413,8 +413,8 @@ bool Pillow2D::execute(std::vector<VirtualEdge>& AEdges, bool AWithCheck){
 
             math::Point c(0, 0, 0);
             for (auto i = 0; i < adj_bnd_edges[0].size(); i++) {
-                math::Point face_center = 0.25 * (m_mesh->get<Node>(adj_bnd_edges[0][i]).getPoint() +
-                                                  m_mesh->get<Node>(adj_bnd_edges[1][i]).getPoint());
+                math::Point face_center = 0.25 * (m_mesh->get<Node>(adj_bnd_edges[0][i]).point() +
+                                                  m_mesh->get<Node>(adj_bnd_edges[1][i]).point());
                 c = c + face_center;
             }
             c = (1.0 / adj_bnd_edges[0].size()) * c;

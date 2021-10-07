@@ -3,9 +3,8 @@
 /*----------------------------------------------------------------------------*/
 // Files containing the different test suites to launch
 
-#include "FACManagerTestSuite.h"
-#include "GeomLinkerTestSuite.h"
-#include "GeomTopologyTestSuite.h"
+#include "LaplacianSmootherTestSuite.h"
+#include "AngleBasedQuadSmootherTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

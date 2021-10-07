@@ -58,7 +58,7 @@ namespace gmds{
 		void
 		FACPoint::XYZ(TCoord ACoordinates[3]) const
 		{
-			math::Point p = m_support->get<Node>(m_node_id).getPoint();
+			math::Point p = m_support->get<Node>(m_node_id).point();
 			ACoordinates[0] = p.X();
 			ACoordinates[1] = p.Y();
 			ACoordinates[2] = p.Z();
@@ -73,7 +73,7 @@ namespace gmds{
 		void
 		FACPoint::computeBoundingBox(TCoord minXYZ[3], TCoord maxXYZ[3]) const
 		{
-			math::Point p = m_support->get<Node>(m_node_id).getPoint();
+			math::Point p = m_support->get<Node>(m_node_id).point();
 
 			minXYZ[0]=p.X(); maxXYZ[0]=p.X();
 			minXYZ[1]=p.Y(); maxXYZ[1]=p.Y();
@@ -83,7 +83,7 @@ namespace gmds{
 		gmds::math::Point
 		FACPoint::point() const
 		{
-			return m_support->get<Node>(m_node_id).getPoint();
+			return m_support->get<Node>(m_node_id).point();
 		}
 /*----------------------------------------------------------------------------*/
 		void

@@ -127,10 +127,10 @@ FEMSolverStrategy::buildStiffnessMatrix(Eigen::SparseMatrix<double>& AM,
         Region r = m_mesh->get<Region>(r_id);
         std::vector<Node> current_nodes;
         r.get<Node>(current_nodes);
-        math::Point p1 = current_nodes[0].getPoint();
-        math::Point p2 = current_nodes[1].getPoint();
-        math::Point p3 = current_nodes[2].getPoint();
-        math::Point p4 = current_nodes[3].getPoint();
+        math::Point p1 = current_nodes[0].point();
+        math::Point p2 = current_nodes[1].point();
+        math::Point p3 = current_nodes[2].point();
+        math::Point p4 = current_nodes[3].point();
         math::Matrix<4, 4, double> s = math::TetrahedronP1::stiffnessMatrix(p1,p2,p3,p4);
         // Second loop on the internal  nodes
         // with i,j their index locally to the face, and I,J the index global
@@ -186,10 +186,10 @@ FEMSolverStrategy::buildRightHandDirichlet(Eigen::VectorXd& AB, const int AI)
                     }
                 }
                 if (is_boundary_region) {
-                    math::Point pi = nodes_of_r[0].getPoint();
-                    math::Point pj = nodes_of_r[1].getPoint();
-                    math::Point pk = nodes_of_r[2].getPoint();
-                    math::Point pl = nodes_of_r[3].getPoint();
+                    math::Point pi = nodes_of_r[0].point();
+                    math::Point pj = nodes_of_r[1].point();
+                    math::Point pk = nodes_of_r[2].point();
+                    math::Point pl = nodes_of_r[3].point();
                     math::Matrix<4, 4, double> s = math::TetrahedronP1::stiffnessMatrix(pi, pj, pk,pl);
 
                     // Ud is build

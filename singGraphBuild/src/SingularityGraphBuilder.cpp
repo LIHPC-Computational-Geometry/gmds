@@ -552,7 +552,7 @@ SingularityGraphBuilder::initConfusionBallOfASurfaceSingularityPoint(SurfaceSing
 	Face f = ASingPoint->getMeshFace();
 	std::vector<Node> current_nodes = f.get<Node>();
 
-	math::Point current_point = current_nodes[0].getPoint();
+	math::Point current_point = current_nodes[0].point();
 
 	double max_d = (*m_var_distance)[current_nodes[0].id()];
 
@@ -1854,7 +1854,7 @@ SingularityGraphBuilder::addGeometryToSingularitGraph()
 				else
 					other_node = edge_nodes[0];
 
-				math::Vector3d vec(current_node.getPoint(), other_node.getPoint());
+				math::Vector3d vec(current_node.point(), other_node.point());
 				vec.normalize();
 
 				// Maintenant on va regarder pour toutes les faces adjacentes
@@ -2072,16 +2072,16 @@ SingularityGraphBuilder::addGeometryToSingularitGraph()
 			std::vector<Node> curve_nodes;
 			for (unsigned int i = 0; i < listOfNodesInSingLeft.size(); i++) {
 				Node NAtThisPoint = m_mesh->get<Node>(listOfNodesInSingLeft[listOfNodesInSingLeft.size() - 1 - i]);
-				new_line->addDiscretizationPoint(NAtThisPoint.getPoint());
+				new_line->addDiscretizationPoint(NAtThisPoint.point());
 				curve_nodes.push_back(NAtThisPoint);
 			}
 
-			new_line->addDiscretizationPoint(current_node.getPoint());
+			new_line->addDiscretizationPoint(current_node.point());
 			curve_nodes.push_back(current_node);
 
 			for (unsigned int i = 0; i < listOfNodesInSingRight.size(); i++) {
 				Node NAtThisPoint = m_mesh->get<Node>(listOfNodesInSingRight[i]);
-				new_line->addDiscretizationPoint(NAtThisPoint.getPoint());
+				new_line->addDiscretizationPoint(NAtThisPoint.point());
 				curve_nodes.push_back(NAtThisPoint);
 			}
 
@@ -2127,8 +2127,8 @@ SingularityGraphBuilder::addGeometryToSingularitGraph()
 				SingularityLine *new_line = m_graph.newCurveLine();
 				new_line->setNumber(m_graph.getNbLines());
 
-				new_line->addDiscretizationPoint(n1.getPoint());
-				new_line->addDiscretizationPoint(n2.getPoint());
+				new_line->addDiscretizationPoint(n1.point());
+				new_line->addDiscretizationPoint(n2.point());
 				added_geom_lines.push_back(new_line);
 			}
 		}
@@ -2184,12 +2184,12 @@ SingularityGraphBuilder::isIn(const math::Point &APnt, Edge &AEdge)
 {
 	std::vector<Node> n = AEdge.get<Node>();
 	std::cout << APnt << " in ?" << std::endl;
-	std::cout << "\t " << n[0].getPoint() << std::endl;
-	std::cout << "\t " << n[1].getPoint() << std::endl;
+	std::cout << "\t " << n[0].point() << std::endl;
+	std::cout << "\t " << n[1].point() << std::endl;
 
 	math::Point p = APnt;
-	math::Point p0 = n[0].getPoint();
-	math::Point p1 = n[1].getPoint();
+	math::Point p0 = n[0].point();
+	math::Point p1 = n[1].point();
 	// first, we look if the p is colinear with p0,p1
 	math::Vector3d v01(p0, p1);
 	math::Vector3d v0(p0, p);
@@ -2236,7 +2236,7 @@ SingularityGraphBuilder::isInside(const math::Point &APnt, const math::Vector3d 
 	}
 	if (opp_node.id() == NullID) throw GMDSException("isInside(): Error, no opposite node");
 
-	math::Point opp_pnt = opp_node.getPoint();
+	math::Point opp_pnt = opp_node.point();
 	math::Vector3d v_test(APnt, opp_pnt);
 
 	return (AVec.dot(v_test) >= 0.0);
@@ -2252,8 +2252,8 @@ SingularityGraphBuilder::tryToconnectToExistingCurveSingularity(int m_markBordNo
 {
 	std::cout << "In tryToconnectToExistingCurveSingularity" << std::endl;
 	std::vector<Node> edge_nodes = AEdge.get<Node>();
-	math::Point p0 = edge_nodes[0].getPoint();
-	math::Point p1 = edge_nodes[1].getPoint();
+	math::Point p0 = edge_nodes[0].point();
+	math::Point p1 = edge_nodes[1].point();
 
 	std::vector<CurveSingularityPoint *> candidates = m_graph.getCurvePoints();
 
@@ -2561,8 +2561,8 @@ SingularityGraphBuilder::computeIntersection(
 	std::vector<Node> edge_nodes = AEdge.get<Node>();
 
 	math::Point q0 = APnt;
-	math::Point p0 = edge_nodes[0].getPoint();
-	math::Point p1 = edge_nodes[1].getPoint();
+	math::Point p0 = edge_nodes[0].point();
+	math::Point p1 = edge_nodes[1].point();
 
 	math::Vector3d q0q1(AVec);
 	math::Vector3d q0p0(q0, p0);
@@ -2685,12 +2685,12 @@ SingularityGraphBuilder::computeOutDataOnTheSurface(const gmds::math::Vector3d &
 	std::cout << "\t Edge candidate1: " << AINEdge1.get<Node>()[0].id() << ",  " << AINEdge1.get<Node>()[1].id() << std::endl;
 	std::cout << "\t Edge candidate2: " << AINEdge2.get<Node>()[0].id() << ",  " << AINEdge2.get<Node>()[1].id() << std::endl;
 
-	std::cout << "Node " << AINNode1.id() << " - " << AINNode1.getPoint() << std::endl;
-	std::cout << "Node " << AINNode2.id() << " - " << AINNode2.getPoint() << std::endl;
-	std::cout << "Node " << AINNode3.id() << " - " << AINNode3.getPoint() << std::endl;
+	std::cout << "Node " << AINNode1.id() << " - " << AINNode1.point() << std::endl;
+	std::cout << "Node " << AINNode2.id() << " - " << AINNode2.point() << std::endl;
+	std::cout << "Node " << AINNode3.id() << " - " << AINNode3.point() << std::endl;
 	math::Vector3d v_in = AINVec;
 	v_in.normalize();
-	math::Point node_loc = AINNode1.getPoint();
+	math::Point node_loc = AINNode1.point();
 	math::Vector3d v1(AINPnt, node_loc);
 	v1.normalize();
 	math::Quaternion q;
@@ -2741,13 +2741,13 @@ SingularityGraphBuilder::computeOutDataOnTheSurface(const gmds::math::Vector3d &
 				// We use nodes of curve 2
 				if (fabs(param2) < 0.2) {
 					// we are close to the first edge point
-					math::Point node_loc = e_nodes[0].getPoint();
+					math::Point node_loc = e_nodes[0].point();
 					AOUTPnt = node_loc;
 					nodeID = e_nodes[0].id();
 				}
 				else {
 					// we are close to the first edge point
-					math::Point node_loc = e_nodes[1].getPoint();
+					math::Point node_loc = e_nodes[1].point();
 					AOUTPnt = node_loc;
 					nodeID = e_nodes[1].id();
 				}
@@ -2757,13 +2757,13 @@ SingularityGraphBuilder::computeOutDataOnTheSurface(const gmds::math::Vector3d &
 				// We use nodes of curve 1
 				if (fabs(param1) < 0.2) {
 					// we are close to the first edge point
-					math::Point node_loc = e_nodes[0].getPoint();
+					math::Point node_loc = e_nodes[0].point();
 					AOUTPnt = node_loc;
 					nodeID = e_nodes[0].id();
 				}
 				else {
 					// we are close to the first edge point
-					math::Point node_loc = e_nodes[0].getPoint();
+					math::Point node_loc = e_nodes[0].point();
 					AOUTPnt = node_loc;
 					nodeID = e_nodes[1].id();
 				}
@@ -2909,7 +2909,7 @@ SingularityGraphBuilder::computeOutTriangleOnTheSurface(gmds::Face &ACurrentFace
 			std::vector<Node> nei = ei.get<Node>();
 			for (unsigned int j = 0; j < nei.size(); j++) {
 				Node nj = nei[j];
-				std::cout << "    -> " << nj.getPoint() << std::endl;
+				std::cout << "    -> " << nj.point() << std::endl;
 			}
 		}
 		throw GMDSException("ERROR in SingularityGraphBuilder::computeOutTriangle - No edge contains AINPnt");
@@ -3025,8 +3025,8 @@ SingularityGraphBuilder::computeOutTriangleOnTheSurface(gmds::Face &ACurrentFace
 				}
 			}
 		}
-		math::Vector3d v0(out_node.getPoint(), other_nodes[0].getPoint());
-		math::Vector3d v1(out_node.getPoint(), other_nodes[1].getPoint());
+		math::Vector3d v0(out_node.point(), other_nodes[0].point());
+		math::Vector3d v1(out_node.point(), other_nodes[1].point());
 
 		math::Vector3d normal = AOUTFace.normal();
 		// cross c(out_q, AOUTFace.normal());
@@ -3214,7 +3214,7 @@ SingularityGraphBuilder::getOutputNormal(Face &AFace, Region &ARegion)
 			Node n1 = face_nodes[1];
 			Node n2 = face_nodes[2];
 			math::Vector3d normal_to_face = AFace.normal();
-			math::Vector3d in_vector(n0.getPoint(), n.getPoint());
+			math::Vector3d in_vector(n0.point(), n.point());
 			if (normal_to_face.dot(in_vector) > 0.0) {
 				return math::Vector3d(-normal_to_face[0], -normal_to_face[1], -normal_to_face[2]);
 				/*return math::Vector3d(-normal_to_face.get(0),
@@ -3281,8 +3281,8 @@ SingularityGraphBuilder::computeLinearQuaternion(gmds::math::Point &APnt, gmds::
 	int ID1 = n1.id();
 	int ID2 = n2.id();
 
-	math::Point p1 = n1.getPoint();
-	math::Point p2 = n2.getPoint();
+	math::Point p1 = n1.point();
+	math::Point p2 = n2.point();
 
 	// ration pour l'interpolation lineaire
 	double edge_length = p1.distance(p2);

@@ -218,7 +218,7 @@ TEST(Frame3dTestClass, test_B0_free_boundary)
         int curv_color =color_nc->value(n_id);
         int surf_color = color_nf->value(n_id);
         if(surf_color==1 || curv_color==1 || curv_color==6 || curv_color==13 || curv_color==14) {
-            math::Point p = m.get<Node>(n_id).getPoint();
+            math::Point p = m.get<Node>(n_id).point();
             if(p.X()<=0)
                 free_bnd->set(n_id, 1);
         }
@@ -271,7 +271,7 @@ TEST(Frame3dTestClass, test_B48_free_boundary)
         if(m.isMarked<Node>(n_id,pm.mark_node_on_surf) ||
            m.isMarked<Node>(n_id,pm.mark_node_on_curv)||
            m.isMarked<Node>(n_id,pm.mark_node_on_pnt)) {
-            math::Point p = m.get<Node>(n_id).getPoint();
+            math::Point p = m.get<Node>(n_id).point();
             if(p.X()>x_min && p.X()<x_max &&
                p.Y()>y_min && p.Y()<y_max &&
                p.Z()>z_min && p.Z()<z_max)
@@ -289,7 +289,7 @@ TEST(Frame3dTestClass, test_B48_free_boundary)
         if(m.isMarked<Node>(n_id,pm.mark_node_on_surf) ||
            m.isMarked<Node>(n_id,pm.mark_node_on_curv)||
            m.isMarked<Node>(n_id,pm.mark_node_on_pnt)) {
-            math::Point p = m.get<Node>(n_id).getPoint();
+            math::Point p = m.get<Node>(n_id).point();
             if(p.X()>x_min && p.X()<x_max &&
                p.Y()>y_min && p.Y()<y_max &&
                p.Z()>z_min && p.Z()<z_max)

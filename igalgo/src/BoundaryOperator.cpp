@@ -267,8 +267,8 @@ void BoundaryOperator::markNodesOnPoint(const int AMarkCE,// edge on curve IN
                 Node n0 = connected_nodes[0];
                 Node n1 = connected_nodes[1];
 
-                math::Vector3d v0(n.getPoint(), n0.getPoint());
-                math::Vector3d v1(n.getPoint(), n1.getPoint());
+                math::Vector3d v0(n.point(), n0.point());
+                math::Vector3d v1(n.point(), n1.point());
                 v0.normalize();
                 v1.normalize();
                 double dotProduct = v0.dot(v1);

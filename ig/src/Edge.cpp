@@ -79,21 +79,21 @@ TCoord Edge::length() const
 {
 	std::vector<Node> nodes;
 	get<Node>(nodes);
-	return math::Vector3d(nodes[0].getPoint(),nodes[1].getPoint()).norm();
+	return math::Vector3d(nodes[0].point(), nodes[1].point()).norm();
 }
 /*----------------------------------------------------------------------------*/
 math::Point Edge::center() const
 {
 	std::vector<Node> nodes;
 	get<Node>(nodes);
-	return 0.5*nodes[0].getPoint()+0.5*nodes[1].getPoint();
+	return 0.5* nodes[0].point() + 0.5 * nodes[1].point();
 }
 /*----------------------------------------------------------------------------*/
 math::Segment Edge::segment() const
 {
     std::vector<Node> nodes;
     get<Node>(nodes);
-    return math::Segment(nodes[0].getPoint(), nodes[1].getPoint());
+    return math::Segment(nodes[0].point(), nodes[1].point());
 }
 /*----------------------------------------------------------------------------*/
 void Edge::delegateGet(std::vector<Node>&   ACells) const

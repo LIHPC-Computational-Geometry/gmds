@@ -1,9 +1,7 @@
 /*---------------------------------------------------------------------------*/
 // GMDS File Headers
 #include <gmds/io/VTKWriter.h>
-#include <gmds/math/Matrix.h>
 #include <gmds/math/Plane.h>
-#include <gmds/math/Segment.h>
 #include <gmds/math/Triangle.h>
 #include <gmds/utils/Log.h>
 
@@ -21,7 +19,6 @@
 #include <set>
 #include <algorithm>
 #include <queue>
-#include <gmds/math/Tetrahedron.h>
 #include <gmds/io/IGMeshIOService.h>
 /*---------------------------------------------------------------------------*/
 using namespace gmds;
@@ -32,20 +29,6 @@ struct SPointData{
     int type;
     int index;
 } ;
-/*---------------------------------------------------------------------------*/
-// \brief Structure to sort points stored in a std::vector
-struct SPointDataStrictWeakOrder{
-    bool operator()(SPointData AP1, SPointData AP2) {
-        return AP1.classification < AP2.classification;
-    }
-} pointDataStrictWeakOrder;
-/*---------------------------------------------------------------------------*/
-// \brief Structure to sort points stored in a std::vector
-struct SPointStrictWeakOrder{
-    bool operator()(math::Point AP1, math::Point AP2) {
-        return AP1 < AP2;
-    }
-};
 /*---------------------------------------------------------------------------*/
 PointGenerator::
 PointGenerator(Mesh* AMesh,
@@ -109,7 +92,7 @@ math::Vector3d PointGenerator::computeGij(OrientedEdge& AE)  {
     math::Chart::Mapping r_ij = getRij(i,j);
     
     //vector from pi to pj
-    math::Vector3d xij(ni.getPoint(), nj.getPoint());
+    math::Vector3d xij(ni.point(), nj.point());
     
     math::Vector3d gij_component[3];
     for (int d = 0; d<3; d++) {
@@ -949,7 +932,7 @@ extractPoints(const Region&                         ATet,
     // init from stored
     for (int i=0; i<4; i++){
         n_id  [i] = n[i].id();
-        lX    [i] = n[i].getPoint();
+        lX    [i] = n[i].point();
         lU    [i] = m_Ui[n_id[i]];
         lChart[i] = (*m_rotation_field)[n[i].id()].toChart();
     }
@@ -1377,7 +1360,7 @@ getOutputNormal(Face& AFace, Region& ARegion)
             Node n1 = face_nodes[1];
             Node n2 = face_nodes[2];
             math::Vector normal_to_face = AFace.normal();
-            math::Vector in_vector(n0.getPoint(), n.getPoint());
+            math::Vector in_vector(n0.point(), n.point());
             if (normal_to_face.dot(in_vector)>0.0)
             {
                 return math::Vector3d(-normal_to_face.get(0),
@@ -1695,10 +1678,8 @@ void PointGenerator::writeOutput(){
     gmds::VTKWriter writer(&ioService);
     writer.setCellOptions(gmds::N| gmds::F| gmds::R);
     writer.setDataOptions(gmds::N| gmds::F| gmds::R);
-    std::string file_name=m_param_gl.output_dir+ "/PG_DEBUG_"+ to_string(nb_file);
-    std::cout<<"WRITE "<<file_name<<std::endl;
+    std::string file_name=m_param_gl.output_dir+ "/PG_DEBUG_"+ to_string(nb_file)+".vtk";
     writer.write(file_name);
-    std::cout<<"done"<<std::endl;
     nb_file++;
 
 }

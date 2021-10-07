@@ -414,7 +414,8 @@ SingGraphBuilder2DSimultStartHeun::createSingularityLines()
 													vector<gmds::Edge> currentEdges = currentFace.get<gmds::Edge>();
 													for (unsigned int tt = 0; tt < 3; tt++) {
 														vector<gmds::Node> currentNodes = currentEdges[tt].get<gmds::Node>();
-														math::Segment oppSeg(currentNodes[0].getPoint(), currentNodes[1].getPoint());
+														math::Segment oppSeg(currentNodes[0].point(),
+                                                                             currentNodes[1].point());
 														math::Point intersectionPnt;
 														double intersectionParam;
 														if (seg1.SecondMetIntersect2D(oppSeg, intersectionPnt, intersectionParam, m_temp_epsilon)) {
