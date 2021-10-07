@@ -130,6 +130,7 @@ void PointConnectionBuilder::execute()
     // STEP 6 - Build stable hexahedral elts
     //======================================================================
     buildHexahedral();
+    std::cout<<"Nb created hexes: "<<m_hexes.getNbHexahedra()<<std::endl;
     if(m_with_debug_info) {
         writeHexes();
     }
@@ -139,7 +140,7 @@ void PointConnectionBuilder::execute()
 /*---------------------------------------------------------------------------*/
 void PointConnectionBuilder::createDistanceFilter()
 {
-    double max_distance = 2*m_spacing;
+    double max_distance = 5*m_spacing;
     
     for(auto i=0; i<m_pnt.size(); i++){
         math::Point pi = m_pnt[i];
@@ -1378,11 +1379,11 @@ bool PointConnectionBuilder::isCorner(const HexCorner& AC,
 }
 /*---------------------------------------------------------------------------*/
 bool PointConnectionBuilder::findCommmonLastCorner(const HexCorner& ACorner1,
-                                            const HexCorner& ACorner2,
-                                            const HexCorner& ACorner3,
-                                            HexCorner&       ACornerOut)
+                                                   const HexCorner& ACorner2,
+                                                   const HexCorner& ACorner3,
+                                                   HexCorner&       ACornerOut)
 {
-    //We look for the point shared bu ACorner1, ACorner2 and ACorner3
+    //We look for the point shared by ACorner1, ACorner2 and ACorner3
     int common_pnt_12[2]={-1,-1};
     int i_12=0;
     for(int i1=0; i1<3; i1++){
@@ -1392,11 +1393,12 @@ bool PointConnectionBuilder::findCommmonLastCorner(const HexCorner& ACorner1,
                 common_pnt_12[i_12++]=adj1;
             }
         }
-    }//for(int i1=0; i1<3; i1++){
+    }//for(int i1=0; i1<3; i1++)
+
     int common_pnt=-1;
     for(int i3=0; i3<3; i3++){
         int adj3= ACorner3.adj[i3];
-        for(int i12=0; i12<3; i12++){
+        for(int i12=0; i12<2; i12++){
             if(adj3 == common_pnt_12[i12]){
                 common_pnt =adj3;
             }
@@ -1448,7 +1450,9 @@ void PointConnectionBuilder::buildHexahedral()
         
         for(unsigned int j=0; j<corners_i.size();j++){
             HexCorner cj = corners_i[j];
-            
+            if(cj.p==33){
+               std::cout<<"here"<<std::endl; ;//look for 275,209 on surf and 29 inside
+            }
             if(!cj.free) //this corner is already used for a hex
                 continue;
             //=====================================================
@@ -1545,7 +1549,7 @@ void PointConnectionBuilder::buildHexahedral()
             
         }//for(unsigned j=0; j<corners_i.size();j++)
         
-    }//for(unsigned int i=0; i<m_pnt.size(); i++)
+    }//for(unsigned int i=0; i<m_pnt.size(); i++
 }
 /*---------------------------------------------------------------------------*/
 bool PointConnectionBuilder::computeVolumePointFrom(const int APntIndex,
