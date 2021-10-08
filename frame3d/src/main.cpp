@@ -242,6 +242,9 @@ int main(int argc, char* argv[])
     std::vector<std::pair<int,int> > edge_ids;
     pcb.getEdges(edge_ids);
     std::cout<<"NB EDGES = "<<edge_ids.size();
+
+    std::vector<TabCellID<8> > hexas;
+
     m.unmarkAll<Node>(pm.mark_node_on_surf );
     m.unmarkAll<Node>(pm.mark_node_on_curv );
     m.unmarkAll<Node>(pm.mark_node_on_pnt  );

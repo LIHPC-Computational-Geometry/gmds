@@ -1047,6 +1047,21 @@ getEdges(std::vector<std::pair<int,int > >& AEdges) {
     }
 }
 /*---------------------------------------------------------------------------*/
+void PointConnectionBuilder::getHexes(std::vector<std::vector<int> > &AHexes)
+{
+    Variable<int>* var_id = m_hexes.getVariable<int,GMDS_NODE>("HD_ID");
+
+    for(auto h_id:m_hexes.regions()){
+        std::vector<TCellID> node_ids = m_hexes.get<Region>(h_id).getIDs<Node>();
+        std::vector<int> ids;
+        ids.resize(8);
+        for(auto i=0;i<8;i++) {
+            ids[i]= var_id->value(node_ids[i]);
+        }
+        AHexes.push_back(ids);
+    }
+}
+/*---------------------------------------------------------------------------*/
 void PointConnectionBuilder::
 buildHexCorners(std::vector<std::vector<OrientedEdge> >& AEdges)
 {
@@ -1450,9 +1465,7 @@ void PointConnectionBuilder::buildHexahedral()
         
         for(unsigned int j=0; j<corners_i.size();j++){
             HexCorner cj = corners_i[j];
-            if(cj.p==33){
-               std::cout<<"here"<<std::endl; ;//look for 275,209 on surf and 29 inside
-            }
+
             if(!cj.free) //this corner is already used for a hex
                 continue;
             //=====================================================
