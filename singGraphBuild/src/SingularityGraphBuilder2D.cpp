@@ -39,8 +39,6 @@
 typedef std::chrono::high_resolution_clock Clock;
 /*----------------------------------------------------------------------------*/
 
-using namespace std;
-
 namespace gmds {
 namespace {
 
@@ -96,10 +94,10 @@ class LineRelaxator
 
 	std::vector<size_t> m_numberOfLinePerGroup;
 	std::vector<bool> m_groupIsFixed;
-	std::map<size_t, bool> m_lineIsfixed;
-	std::map<size_t, gmds::math::Vector3d> m_directions;
+	std::unordered_map<size_t, bool> m_lineIsfixed;
+	std::unordered_map<size_t, gmds::math::Vector3d> m_directions;
 
-	std::map<size_t, std::vector<double>> m_angleAtSingularity;
+	std::unordered_map<size_t, std::vector<double>> m_angleAtSingularity;
 };
 
 class Timer
@@ -356,7 +354,7 @@ SingularityGraphBuilder2D::execute()
 	addGeometryToSingularityGraph(artificialSingPointsCreated);
 
 	if (m_build_geometric_singularities) {
-		buildGeometricSlots();
+		buildSurfaceSlots();
 	}
 
 	if (m_enableDebugFilesWriting) {
@@ -431,8 +429,8 @@ SingularityGraphBuilder2D::deleteArtificialNodes(vector<CurveSingularityPoint *>
 		auto slots = artificialSingPoint->getSlots();
 		if (slots.size() > 2) continue;
 
-		auto line1 = dynamic_cast<CurveSingularityLine *>(slots[0]->line);
-		auto line2 = dynamic_cast<CurveSingularityLine *>(slots[1]->line);
+		auto line1 = static_cast<CurveSingularityLine *>(slots[0]->line);
+		auto line2 = static_cast<CurveSingularityLine *>(slots[1]->line);
 
 		auto &points1 = line1->getDiscretizationPoints();
 		auto &edges1 = line1->getMeshEdges();
@@ -1006,7 +1004,7 @@ SingularityGraphBuilder2D::addGeometryToSingularityGraph(vector<CurveSingularity
 			//------------------------------------------------------------------------------------
 			// create the singularity line
 			//------------------------------------------------------------------------------------
-			CurveSingularityLine *new_line = m_graph.newCurveLine(); //  [ reversedLeftNodes..., currentNode, rightNodes...]
+			CurveSingularityLine *new_line = m_graph.newCurveLine();     //  [ reversedLeftNodes..., currentNode, rightNodes...]
 
 			// add all edges
 			std::vector<Edge> curve_edges;
@@ -1165,26 +1163,46 @@ SingularityGraphBuilder2D::addGeometryToSingularityGraph(vector<CurveSingularity
 /*----------------------------------------------------------------------------*/
 
 void
-SingularityGraphBuilder2D::buildGeometricSlots()
+SingularityGraphBuilder2D::buildSurfaceSlots()
 {
 	//================================================================================
-	// WE TRAVERSE GEOM SING POINTS (ASSIGNED TO GEOMETRIC CORNERS) TO DEFINE THEIR
-	// SLOTS AT NON-CONVEX AREAS
-	//================================================================================
+	// Create the surface slots of vertex singularities (boundary singularity)
+	//================================================================================)
+	// Consider the boundaries of this potential rectangular trimesh, with a hole
+	// and a pointy deformation at the bottom.
+	//
+	//  A##########################B
+	//  #						 \__#     The nodes ABCDEFGHIJKL have all been marked as singularities.
+	//	#   G######H           90°  #     They all have at least two boundary slots.
+	//	#   #      #      			L	  (Here for example, the nodes ABCDEFGHIJK could have been marked
+	//	#   # hole #     			#	   with gmds::BoundaryOperator class, and the node L manually)
+	//	#   #	   #	    K		#
+	//	#   I######J	   # #		#     To know how many slots they need, we need to compute the
+	//  #                  # #		#	  solid angle made by the boundary at their location.
+	//  C#################E   F####D
+	//
+	// - the nodes ABCDE, and F have a "solid angle" ~= 90° -> they are corners of the cross field,
+	//	 no surface slot will be created for them
+	// - GHIJ solid angles are ~= 270°, they need at least two surface slots to respect the cross field
+	// - the node K is a spike on the boundary, its angle solid angle is high an it needs 3 slots
+	// - the node L, surely marked by user, is on a flat boundary, and need only 1 surface slot
+	//
+	// However, we can't always be sure about the precise number of slots. Their validity will be check
+	// right after they creation.
 
 	for (VertexSingularityPoint *singularity : m_graph.getVertexPoints()) {
 
 		Node currentNode = singularity->getMeshNode();
 		math::Point currentPoint = currentNode.getPoint();
-		//=========================================================
-		// First, we compute the solid angle around currentNode
+
+		// compute the solid angle around currentNode
 		double angle_rad = 0;
 		std::vector<math::Point> opposedPoint(2);
 		for (const auto &cur_face : currentNode.get<Face>()) {
 
 			int pointID = 0;
 			for (const auto &ni : cur_face.get<Node>()) {
-				if (ni != currentNode) {
+				if (ni.id() != currentNode.id()) {
 					opposedPoint[pointID++] = ni.getPoint();
 				}
 			}
@@ -1194,20 +1212,22 @@ SingularityGraphBuilder2D::buildGeometricSlots()
 		}
 		double angle_deg = angle_rad * 180 / math::Constants::PI;
 
-		if (angle_deg > 280) {     // might be better to use 270° here, to catch all possible config
+		// build slots. If the built slots appear to not respect the cross field,
+		// buildSurfaceSlotsOfVertexSingularity() will call itself recursively, with 1 slot less to build.
+		if (angle_deg > 275) {
 			int nb_lines = 3;
 			double single_line_angle = angle_rad / (nb_lines + 1);
-			createLineFrom(singularity, single_line_angle, 3);
+			buildSurfaceSlotsOfVertexSingularity(singularity, single_line_angle, nb_lines);
 		}
 		else if (angle_deg > 180) {
 			int nb_lines = 2;
 			double single_line_angle = angle_rad / (nb_lines + 1);
-			createLineFrom(singularity, single_line_angle, 2);
+			buildSurfaceSlotsOfVertexSingularity(singularity, single_line_angle, nb_lines);
 		}
-		else if (angle_deg > 155) { // for nodes marked as singularity by user
+		else if (angle_deg > 125) {
 			int nb_lines = 1;
 			double single_line_angle = angle_rad / (nb_lines + 1);
-			createLineFrom(singularity, single_line_angle, 1);
+			buildSurfaceSlotsOfVertexSingularity(singularity, single_line_angle, nb_lines);
 		}
 	}
 }
@@ -1215,94 +1235,86 @@ SingularityGraphBuilder2D::buildGeometricSlots()
 /*----------------------------------------------------------------------------*/
 
 void
-SingularityGraphBuilder2D::createLineFrom(VertexSingularityPoint *AFrom, const double AAngle, const int ANbLines)
+SingularityGraphBuilder2D::buildSurfaceSlotsOfVertexSingularity(VertexSingularityPoint *AFrom, const double AAngle, const int ANbLines)
 {
 	const Node currentNode = AFrom->getMeshNode();
 
 	// We get a first edge to start from
-	Edge first_edge;
-	for (const auto &edge : currentNode.get<Edge>()) {
-		if (m_mesh->isMarked(edge, m_mark_edges_on_curve)) {
-			first_edge = edge;
-			break;
-		}
-	}
-	const Node bdryNode = Tools::getOpposedNodeOnEdge(currentNode, first_edge);
-	Node surfNode;
-	const Face first_face = first_edge.get<Face>()[0];
-	for (const auto &node : first_face.get<Node>()) {
-		if (node.id() != currentNode.id() && node.id() != bdryNode.id()) {
-			surfNode = node;
-		}
-	}
-	const auto v_bnd = math::Vector3d(currentNode.getPoint(), bdryNode.getPoint()).normalize();
-	const auto v_to = math::Vector3d(currentNode.getPoint(), surfNode.getPoint()).normalize();
-	const auto axis = v_bnd.cross(v_to).normalize();
+	const Edge firstBdryEdge = [&]() {
+		for (const Edge &edge : currentNode.get<Edge>())
+			if (m_mesh->isMarked(edge, m_mark_edges_on_curve)) return edge;
+		throw std::runtime_error("unable to find boundary edge");
+	}();
+
+	const Node bdryNode = Tools::getOpposedNodeOnEdge(currentNode, firstBdryEdge);
+	const Node surfNode = [&]() {
+		const Face first_face = firstBdryEdge.get<Face>()[0];
+		for (const Node &node : first_face.get<Node>())
+			if (node.id() != currentNode.id() && node.id() != bdryNode.id()) return node;
+		throw std::runtime_error("unable to find surface node");
+	}();
+
+	const auto firstBdryVector = math::Vector3d(currentNode.getPoint(), bdryNode.getPoint()).normalize();
+	const auto surfaceVector = math::Vector3d(currentNode.getPoint(), surfNode.getPoint()).normalize();
+	const auto axis = firstBdryVector.cross(surfaceVector).normalize();
 
 	struct BaseSlot
 	{
 		math::Point location;
 		math::Vector3d direction;
 		TCellID cellId;
-		int cellDim;
+		int cellDim;     // a slot can be on a node or an edge
 	};
 	std::vector<BaseSlot> baseSlots;
 	for (int i_line = 0; i_line < ANbLines && baseSlots.size() != ANbLines; i_line++) {
 
-		// std::cout << i_line;
-		const double line_angle = AAngle * (i_line + 1);
-		const math::AxisAngleRotation R(axis, line_angle);
-		const math::Vector3d line_dir = (R * v_bnd).normalize();
+		const double lineAngle = AAngle * (i_line + 1);
+		const math::AxisAngleRotation R(axis, lineAngle);
+		const math::Vector3d lineDirection = (R * firstBdryVector).normalize();
 
-		// Now for each face adjacent to currentNode, we look for one intersected by vec
+		// Now for each face adjacent to currentNode, we look for an intersection with lineDirection
 		for (const auto &currentFace : currentNode.get<Face>()) {
-			//=====================================================================
-			// We look for the opposite edge
-			//=====================================================================
-			Edge opposite_edge;
-			for (const auto &edge : currentFace.get<Edge>()) {
 
-				const std::vector<Node> nodes = edge.get<Node>();
-				if (currentNode != nodes[0] && currentNode != nodes[1]) {
-					opposite_edge = edge;
-					break;
+			const Edge oppositEdge = [&]() {
+				for (const Edge &edge : currentFace.get<Edge>()) {
+					const auto nodes = edge.get<Node>();
+					if (currentNode != nodes[0] && currentNode != nodes[1]) return edge;
 				}
-			}
+				throw std::runtime_error("unable to find opposite edge");
+			}();
 
-			math::Vector3d out_vec;
-			//===========================================================
-			// Go through the first opposite node if it is not on a curve ?
-			//===========================================================
-			const std::vector<Node> other_nodes = opposite_edge.get<Node>();
+			math::Vector3d slotDirection;     // = direction imposed by the local cross field
+
+			// The slot might be right on one of the oppositeEdge nodes location:
+			// @ {
+			const auto other_nodes = oppositEdge.get<Node>();
 			if (!m_mesh->isMarked(other_nodes[0], m_mark_nodes_on_curve)) {
 
-				const math::Point opp_node_loc1 = other_nodes[0].getPoint();
+				const auto opp_node_loc1 = other_nodes[0].getPoint();
 				const auto v_opp1 = math::Vector3d(currentNode.getPoint(), opp_node_loc1).normalize();
-				if (math::near(v_opp1.dot(line_dir) - 1, 0)) {
-					m_tool.computeOutVectorAtPoint(other_nodes[0], line_dir, out_vec);
-					baseSlots.push_back({opp_node_loc1, out_vec, other_nodes[0].id(), 0});
+				if (math::near(v_opp1.dot(lineDirection) - 1, 0)) {
+					m_tool.computeOutVectorAtPoint(other_nodes[0], lineDirection, slotDirection);
+					baseSlots.push_back({opp_node_loc1, slotDirection, other_nodes[0].id(), 0});
 					break;
 				}
 			}
 			if (!m_mesh->isMarked(other_nodes[1], m_mark_nodes_on_curve)) {
 
-				math::Point opp_node_loc2 = other_nodes[1].getPoint();
+				const auto opp_node_loc2 = other_nodes[1].getPoint();
 				const auto v_opp2 = math::Vector3d(currentNode.getPoint(), opp_node_loc2).normalize();
-				if (math::near(v_opp2.dot(line_dir) - 1, 0)) {
-					m_tool.computeOutVectorAtPoint(other_nodes[1], line_dir, out_vec);
-					baseSlots.push_back({opp_node_loc2, out_vec, other_nodes[1].id(), 0});
+				if (math::near(v_opp2.dot(lineDirection) - 1, 0)) {
+					m_tool.computeOutVectorAtPoint(other_nodes[1], lineDirection, slotDirection);
+					baseSlots.push_back({opp_node_loc2, slotDirection, other_nodes[1].id(), 0});
 					break;
 				}
 			}
-			//================================================
-			// Go through the opposite edge
-			// And not through one of its end points due to
-			// previous tests.
-			//================================================
+			// @ }
+
+			// search for an intersection with the opposite edge
 			double deviation = 0;
-			math::Point out_pnt;
-			if (m_tool.computeOutVectorFromRayAndEdge(opposite_edge, currentNode.getPoint(), line_dir, out_pnt, out_vec, deviation)) {
-				baseSlots.push_back({out_pnt, out_vec, opposite_edge.id(), 1});
+			math::Point slotPoint;
+			if (m_tool.computeOutVectorFromRayAndEdge(oppositEdge, currentNode.getPoint(), lineDirection, slotPoint, slotDirection, deviation)) {
+				baseSlots.push_back({slotPoint, slotDirection, oppositEdge.id(), 1});
 				break;
 			}
 		}
@@ -1314,14 +1326,20 @@ SingularityGraphBuilder2D::createLineFrom(VertexSingularityPoint *AFrom, const d
 	if (ANbLines == 3) {     // building 3 slots might have been a mistake if the cross field is grid like: (at least two slots with close directions)
 		bool recompute = baseSlots[0].direction.angle(baseSlots[1].direction) < M_PI_4     //
 		                 || baseSlots[1].direction.angle(baseSlots[2].direction) < M_PI_4;
-		if (recompute) return createLineFrom(AFrom, AAngle * 4 / 3, 2);     // create 2 slots instead
+		if (recompute) return buildSurfaceSlotsOfVertexSingularity(AFrom, AAngle * 4 / 3, 2);     // create 2 slots instead
 	}
 	else if (ANbLines == 2) {     // building 2 slots might also have been a mistake (close slots directions)
 		bool recompute = baseSlots[0].direction.angle(baseSlots[1].direction) < M_PI_4;
-		if (recompute) return createLineFrom(AFrom, AAngle * 3 / 2, 1);     // create 1 slot instead. Might actually be 0 slot here.
+		if (recompute) return buildSurfaceSlotsOfVertexSingularity(AFrom, AAngle * 3 / 2, 1);
+	}
+	else if (ANbLines == 1) {     // same for bulding only 1 slot: the singularity might be a corner of the cross field
+		const math::AxisAngleRotation R(axis, 2 * AAngle);
+		const math::Vector3d secondBdryVector = (R * firstBdryVector).normalize();
+		bool doNotBuildSlot = baseSlots[0].direction.angle(firstBdryVector) < M_PI_4 || baseSlots[0].direction.angle(secondBdryVector) < M_PI_4;
+		if (doNotBuildSlot) return;
 	}
 	for (const auto baseSlot : baseSlots)
-		AFrom->newSlot(baseSlot.location, baseSlot.direction, baseSlot.cellId, baseSlot.cellDim, false);
+		AFrom->newSlot(baseSlot.location, baseSlot.direction, baseSlot.cellId, baseSlot.cellDim, true);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -3184,7 +3202,7 @@ LineRelaxator::applySpringForceOnPoints()
 		m_directions[point->getNumber()] = math::Vector3d();
 
 	// stack forces from those critical line onto their respective points
-	for (const auto line : m_maxLineByGroup) {     // m_graph->getLines()
+	for (const auto line : m_graph->getLines()) {     // m_graph->getLines()
 
 		auto points = line->getEndPoints();
 		auto direction = math::Vector3d(points[0]->getLocation(), points[1]->getLocation());
@@ -3212,11 +3230,15 @@ LineRelaxator::MoveIfNewLocationIsWorthTheAnglePenalty(SingularityPoint *singPoi
 		lineSlots[0]->line_direction = direction;
 		lineSlots[1]->line_direction = direction;
 	}
+
+	// 4 slots : 20°, 3 slots : 45°; 5 slots : 40°
+	const double maxGap = slots.size() == 4 ? 0.34906 : (slots.size() == 3 ? 0.785398 : 0.69813);
+
 	const auto newAngles = computeAngleAtSingularity(singPoint);
 	const auto &oldAngles = m_angleAtSingularity[singPoint->getNumber()];
 	for (int i = 0; i < newAngles.size(); ++i) {
 		const double newGap = fabs(M_PI_2 - newAngles[i]);
-		if (newGap > 0.349065) {     // 20°
+		if (newGap > maxGap) {     // 20°
 			const double oldGap = fabs(M_PI_2 - oldAngles[i]) + 1e-8;
 			if (newGap > oldGap) {
 				// the move is cancel
@@ -3339,13 +3361,15 @@ LineRelaxator::getWorstAngle()
 void
 LineRelaxator::run()
 {
-	std::cout << "Relax mesh to optimize edge ratios (gmsh output): " << std::endl;
+	std::cout << "Relax mesh to optimize edge ratios: " << std::endl;
 	std::cout << "	worst angle/ratio before relaxation : " << getWorstAngle() << ", " << getWorstEdgeRatio() << std::endl;
 
 	computeMeanEdgeLengthByGroup();
-	for (int i = 0; i < 50; i++) {
-		// if (i % 2 == 0) computeMeanEdgeLengthByGroup();
-		// computeMeanEdgeLengthByGroup();
+	for (int i = 0; i < 99; i++) {
+		if ((i - 1) % 20 == 0) {
+			computeMeanEdgeLengthByGroup();
+			m_step *= 0.75;
+		}
 		applySpringForceOnPoints();
 		movePoints();
 	}
