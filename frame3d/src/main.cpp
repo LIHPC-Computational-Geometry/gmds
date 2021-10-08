@@ -243,7 +243,8 @@ int main(int argc, char* argv[])
     pcb.getEdges(edge_ids);
     std::cout<<"NB EDGES = "<<edge_ids.size();
 
-    std::vector<TabCellID<8> > hexas;
+    std::vector<std::vector<int> > hexes;
+    pcb.getHexes(hexes);
 
     m.unmarkAll<Node>(pm.mark_node_on_surf );
     m.unmarkAll<Node>(pm.mark_node_on_curv );
