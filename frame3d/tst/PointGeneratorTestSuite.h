@@ -292,6 +292,8 @@ TEST(PointGeneratorTestSuite, test_hex_extraction)
     pcb.setDebugInfo(true);
     pcb.execute();
 
+
+
 }
 /*----------------------------------------------------------------------------*/
 TEST(PointGeneratorTestSuite, test_PGP)
