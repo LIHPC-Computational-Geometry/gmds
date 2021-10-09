@@ -467,13 +467,11 @@ namespace gmds {
             math::Chart::Mapping m20(c[2],c[0]);
 
             if((m20*m12*m01).isIdentity()==false){
-                std::cout<<"here 1"<<std::endl;
                 sing_type++;
             }
             math::Chart::Mapping m13(c[1],c[3]);
             math::Chart::Mapping m30(c[3],c[0]);
             if((m30*m13*m01).isIdentity()==false){
-                std::cout<<"here 2"<<std::endl;
                 sing_type++;
             }
 
@@ -481,13 +479,11 @@ namespace gmds {
             math::Chart::Mapping m02(c[0],c[2]);
             math::Chart::Mapping m23(c[2],c[3]);
             if((m30*m23*m02).isIdentity()==false){
-                std::cout<<"here 3"<<std::endl;
                 sing_type++;}
 
             //FACE 123
             math::Chart::Mapping m31(c[3],c[1]);
             if((m31*m23*m12).isIdentity()==false){
-                std::cout<<"here 4"<<std::endl;
                 sing_type++;};
 
 

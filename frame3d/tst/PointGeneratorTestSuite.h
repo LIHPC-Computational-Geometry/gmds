@@ -291,9 +291,10 @@ TEST(PointGeneratorTestSuite, test_hex_extraction)
                                ptg.pointSurfaceNormal());
     pcb.setDebugInfo(true);
     pcb.execute();
+    std::vector<std::vector<int> > hexes;
+    pcb.getHexes(hexes);
 
-
-
+    ASSERT_EQ(200, hexes.size());
 }
 /*----------------------------------------------------------------------------*/
 TEST(PointGeneratorTestSuite, test_PGP)
