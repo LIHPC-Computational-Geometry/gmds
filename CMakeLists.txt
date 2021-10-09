@@ -249,7 +249,7 @@ if (WITH_CODE_COVERAGE)
     set(CMAKE_C_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage")
     set(COVERAGE_LCOV_EXCLUDES
             '/usr/*'
-            '${CMAKE_SOURCE_DIR}/doc/*'
+            '${CMAKE_SOURCE_DIR}/docs/*'
             '${CMAKE_SOURCE_DIR}/test_samples/*'
             '${CMAKE_SOURCE_DIR}/external/*'
             '${CMAKE_SOURCE_DIR}/*/tst/*'
@@ -328,7 +328,7 @@ endforeach()
 # DOCUMENTATION
 #==============================================================================
 if (WITH_DOC)
-    add_subdirectory(doc)
+    add_subdirectory(docs)
 endif (WITH_DOC)
 #==============================================================================
 # Mise en place pour l'install avec les export
