@@ -336,6 +336,10 @@ class SimplexMesh
 
   void buildEdges(const std::vector<std::vector<TInt>>& AEdges, const gmds::BitVector& nodeBitVector);
 
+  bool isHexaEdgeBuild(const std::vector<std::vector<TInt>>& ANodesFaces);
+
+  std::vector<TSimplexID> hex2tet(const std::vector<TInt>& ANodesHex);
+
   bool pointInTriangle(const math::Point& query_point,
                        const math::Point& triangle_vertex_0,
                        const math::Point& triangle_vertex_1,

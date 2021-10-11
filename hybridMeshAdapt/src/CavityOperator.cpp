@@ -601,6 +601,15 @@ void CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       }
     }
 
+    for(auto const triNotCo : trianglesNotConnectedToP)
+    {
+      std::cout << "triNotCo Before --> " << triNotCo << std::endl;
+    }
+    for(auto const triNotCo : trianglesConnectedToP)
+    {
+      std::cout << "tri Co Before --> " << triNotCo << std::endl;
+    }
+
     std::vector<TSimplexID> triangleToRemoveFromVec{};
     for(auto const triNotCo : trianglesNotConnectedToP)
     {

@@ -22,7 +22,7 @@ namespace gmds{
  *          is connected to.
  */
 class LIB_GMDS_FRAME_3D_API PointConnectionBuilder{
-    
+
 public:
     /*------------------------------------------------------------------------*/
     /** \brief Constructor.
@@ -54,7 +54,7 @@ public:
                     const std::vector<int>&               ACurv,
                     const std::vector<int>&               ASurf,
                     const std::map<int, gmds::math::Vector3d>& ANormal);
-    
+
     /*------------------------------------------------------------------------*/
     /** \brief Function to be called for generating the mesh
      */
@@ -66,11 +66,11 @@ public:
      *
      * @param[out] AEdges built edges.
      */
-    void getEdges(std::map<int,int >& AEdges);
+    void getEdges(std::vector<std::pair<int,int>>& AEdges);
 
     /*------------------------------------------------------------------------*/
     /** \brief Access to the generated mesh
-     * 
+     *
      * \return the hexahedral cells we are able to generate
      */
     const gmds::Mesh& mesh() const { return m_hexes; }
@@ -92,25 +92,25 @@ public:
      */
     void setSpacing(const double ASize=1.0){m_spacing=ASize;}
 protected:
-    
+
     enum EPointClassification{
         ON_VERTEX =0,
         ON_CURVE  =1,
         ON_SURFACE=2,
         IN_VOLUME =3
     };
-    
+
     enum EPointType{
         REGULAR    =0,
         PARAM_SING =1,
         FRAME_SING =2
     };
-    
+
     /*------------------------------------------------------------------------*/
     /** \struct HexCorner
      * \brief Local Structure to store hex corner data for each input point. A
      *        corner data is made of the index of the current point (p), the
-     *        index of the 3 points helping to form the corner (adj). Each 
+     *        index of the 3 points helping to form the corner (adj). Each
      *        "edge" [p,adj[i]] is geometrically defined by vec[i].
      *
      *        The free field indicates if the corner is already used for a hex.
@@ -127,7 +127,7 @@ protected:
     };
     /*------------------------------------------------------------------------*/
     /** \struct OrientedEdge
-     * \brief Local Structure to store an oriented edge made of the index of 
+     * \brief Local Structure to store an oriented edge made of the index of
      *        the first and second points and the chart data used in the first
      *        point to select this OrientedEdge. A chart data (-1,-1) means
      *        that the selected end point finally do not correspond to a chart
@@ -150,43 +150,43 @@ protected:
         }
         bool isInvalid() const{
             return (first==-1 && second==-1);
-            
+
         }
-        
+
         bool isInverse(OrientedEdge& AE) const{
             return (AE.first==second && AE.second==first);
         }
         bool isEqual(OrientedEdge& AE) const{
             return (AE.first==first && AE.second==second);
         }
-        
+
         /*--------------------------------------------------------------------*/
         /** \brief Weak equality (equal or inv) between  *this and \p AE
          *
          * \param[in] AE an oriented edge bo be compared with
          *
-         * \return true if \p AE is the same or the inverse edge of *this, 
+         * \return true if \p AE is the same or the inverse edge of *this,
          *         false otherwise.
          */
 
         bool operator==(OrientedEdge& AE) const{
             return isEqual(AE) || isInverse(AE);
         }
-        
+
     };
-    
+
     /*------------------------------------------------------------------------*/
     /** \brief Build for each point a list of close points to be compared with
      *         during edge creation.
      */
     void createDistanceFilter();
-    
-    
+
+
     /*------------------------------------------------------------------------*/
     /** \brief Associate each point to a mesh cell
      */
     void computeMeshAssociation();
-    
+
 
     /*------------------------------------------------------------------------*/
     /** \brief Build oriented edges from each point to its neighbor points in a
@@ -196,7 +196,7 @@ protected:
      * \param[out] AEdges the list of oriented edges that will be created.
      */
     void buildOrientedEdges(std::vector<std::vector<OrientedEdge> >& AEdges);
-    
+
     /*------------------------------------------------------------------------*/
     /** \brief Build oriented edges for the point \p APntId which is located
      *         into the volume. The input point is necessary REGULAR.
@@ -212,7 +212,7 @@ protected:
                                     gmds::math::Point          APnt[][2],
                                     int                        AIndex[][2],
                                     bool                       AFound[][2]);
-    
+
     /*------------------------------------------------------------------------*/
     /** \brief Build oriented edges for the point \p APntId which is located
      *         onto a surface. The input point is necessary REGULAR.
@@ -246,7 +246,7 @@ protected:
                                    int                        AIndex[][2],
                                    bool                       AFound[][2]);
 
-    
+
     /*------------------------------------------------------------------------*/
     /** \brief Select among different point which is the bes aligned and/or
      *         at a good distance to build an oriented edge
@@ -291,13 +291,13 @@ protected:
      * \param[in]  AEdgeSet A set of oriented edges
      * \param[out] AOutEdge The edge from \p AFrom to \p ATo if it exists
      *
-     * \return true if an edge going from \p AFrom to \p ATo exists in 
+     * \return true if an edge going from \p AFrom to \p ATo exists in
      *         \p AEdgeSet, false otherwise.
      */
     bool isIn(const int AFrom, const int ATo,
               const std::vector<OrientedEdge>& AEdgeSet,
               OrientedEdge& AOutEdge) const;
-    
+
     /*------------------------------------------------------------------------*/
     /** \brief Fill the m_hc_mapping attribute for each stable points. Such a
      *         point should be the corner of 1, 2, 4 or 8 hexahedral elts
@@ -305,15 +305,15 @@ protected:
      *         surface or volume.
      */
     void buildHexCorners(std::vector<std::vector<OrientedEdge> >& AEdges);
-    
+
     /*------------------------------------------------------------------------*/
     /** \brief Build hexahedral elements
      */
     void buildHexahedral();
 
     /*------------------------------------------------------------------------*/
-    /** \brief Find among the free corners of \p AI and \p AJ an end point 
-     *         which is different of \p AFrom but both in a free corner of 
+    /** \brief Find among the free corners of \p AI and \p AJ an end point
+     *         which is different of \p AFrom but both in a free corner of
      *         \p AI and \p AJ
      *
      * \param[in] AFrom point that must be appeared in \p AI and \p AJ corners
@@ -356,9 +356,9 @@ protected:
      */
     bool getCorner(const int AOrigin, const int AI, const int AJ,
                    const int AK, HexCorner& AOut);
-    
+
     /*------------------------------------------------------------------------*/
-    /** \brief Check if \p AC is a corner corresponding to (\p AOrigin, \p AI, 
+    /** \brief Check if \p AC is a corner corresponding to (\p AOrigin, \p AI,
      *         \p AJ, \p AK)
      *
      * \param[in] AC      the found hex corner if it exists
@@ -371,7 +371,7 @@ protected:
      */
     bool isCorner(const HexCorner& AC, const int AOrigin,
                   const int AI, const int AJ, const int AK);
-    
+
     /*------------------------------------------------------------------------*/
     /** \brief Find among the corners in \p AIn those having \p AFrom as an
      *         adjacent point.
@@ -385,7 +385,7 @@ protected:
     int findFreeCorners(const std::vector<HexCorner>& AIn,
                         const int AFrom,
                         std::vector<HexCorner>& AOut);
-    
+
     /*------------------------------------------------------------------------*/
     /** \brief Return the free corners of \p AOrigin with \p AI and \p AI as
      *         end points
@@ -399,7 +399,7 @@ protected:
     std::vector<PointConnectionBuilder::HexCorner>
     findFreeCorners(const std::vector<int>& AOrigin,
                     const int AI, const int AJ);
-    
+
     /*------------------------------------------------------------------------*/
     /** \brief Add a corner data to the point with index \p AIndex
      *
@@ -415,7 +415,7 @@ protected:
                    const int AIndex1, const gmds::math::Vector3d& AV1,
                    const int AIndex2, const gmds::math::Vector3d& AV2,
                    const int AIndex3, const gmds::math::Vector3d& AV3);
-    
+
     /*------------------------------------------------------------------------*/
     /** \brief Build all the corners associated to \p AOrigin by considering
      *         existing edges \p AEdges. This construction is based on geom.
@@ -426,8 +426,8 @@ protected:
      */
     void buildCornersAsSolidAngles(const int AOrigin,
                                    std::vector<OrientedEdge>& AEdges);
-    
-    
+
+
     /*------------------------------------------------------------------------*/
     /** \brief Compute the mesh association for point AID. This computation is
      *         performed knowing how the point is classified (0,1,2 or 3) and
@@ -460,7 +460,7 @@ protected:
                                                const gmds::TCellID ATetID,
                                                const double ADistance,
                                                const int ASurfID);
-    
+
     /*------------------------------------------------------------------------*/
     /** \brief Return the edge information (dim=2, id) of the boundary edge that
      *         contains \p APnt.
@@ -486,7 +486,7 @@ protected:
      * \return the ids of the tetrahedra that contains points at the specified
      *         distance
      */
-    
+
     std::set<gmds::TCellID>
     getCloseRegionsFrom(const gmds::math::Point& AFromPnt,
                         const gmds::Region& AFromTet,
@@ -509,7 +509,7 @@ protected:
      * \param[in] AR     a region
      * \param[in] ANI    a node id
      * \param[in] ANJ    a node id
-     *  
+     *
      * \return the expected face
      */
 
@@ -517,7 +517,7 @@ protected:
                        const gmds::Region& AR,
                        const gmds::TCellID ANI,
                        const gmds::TCellID ANJ);
-    
+
 
     gmds::math::Vector3d getOutputNormal(gmds::Face& AFace, gmds::Region& ARegion);
 
@@ -531,14 +531,14 @@ protected:
      * \return true if \p AI is in \p AV, false otherwise
      */
     static bool isIn( gmds::TCellID AI, const std::vector<gmds::TCellID>& AV) ;
-    
+
     static std::vector<gmds::TCellID> getFaces(const gmds::Node& ANI, const gmds::Node& ANJ) ;
-    
+
     //The point is moved during this process
     gmds::Face closestFace(gmds::math::Point& AP, int ASurfID);
     gmds::Edge closestEdge(gmds::math::Point& AP,  int ACurvID);
-    
-    
+
+
     void writeInput();
     void writeHexes();
     void writeEdges(std::vector<std::vector<OrientedEdge> >& AInEdges,
@@ -576,7 +576,7 @@ protected:
     /** mapping from each point to the number of hex corner it must be in*/
     std::map<int, std::vector<HexCorner> > m_hc_mapping;
     std::map<int, gmds::Node> m_node_mapping;
-    
+
     std::map<int,std::vector<int> > m_filter;
 
     bool m_with_debug_info;

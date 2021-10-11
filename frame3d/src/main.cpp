@@ -231,8 +231,10 @@ int main(int argc, char* argv[])
     MeshModel model(DIM3 | R  | F | N | R2N | F2N);
     Mesh point_mesh(model);
 
-    std::map<int, int> AEdges;
+    std::vector<std::pair<int, int>> AEdges;
     pcb.getEdges(AEdges);
+
+    std::cout << "AEdges.size() --> " << AEdges.size() << std::endl;
 
 
 
@@ -268,6 +270,7 @@ int main(int argc, char* argv[])
         point_mesh.newTet(ni,ni,ni,ni);
         cpt++;
     }
+
 
     for(auto const e : AEdges)
     {

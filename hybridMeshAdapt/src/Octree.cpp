@@ -164,12 +164,11 @@ TSimplexID Octree::findSimplexNextTo(const math::Point& pt)
       {
         if(nodesVector[node] != 0)
         {
-          return m_simplexMesh->getSimplexFromBase(node);;
+          return m_simplexMesh->getSimplexFromBase(node);
         }
       }
     }
   }
-
   return simplex;
 }
 /******************************************************************************/
