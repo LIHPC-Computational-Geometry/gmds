@@ -147,10 +147,10 @@ protected:
 	/** \brief Build geometric slots. As a consequence, it means the resulting
 	* domain will be split and  made of 4-sided patches only.
 	*/
-	void buildSurfaceSlots();
+	void buildSlotsOfBoundarySingularities();
 	
 	/*----------------------------------------------------------------------------------------------------*/
-	void buildSurfaceSlotsOfVertexSingularity(VertexSingularityPoint* AFrom, 
+	void buildSlotsOfBoundarySingularity(VertexSingularityPoint* AFrom, 
 	                    const double            AAngle,
 	                    const int               ANbLines);
 	/*----------------------------------------------------------------------------------------------------*/
