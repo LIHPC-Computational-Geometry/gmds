@@ -222,7 +222,6 @@ SingGraphBuilder2DShortestPath::initializeFieldsValue()
 	}
 	m_distances = vector<vector<double>>(m_totalNumberOfSlots, vector<double>(m_totalNumberOfVariables, M_MAXDIST));
 	m_bdryPathEndParam.clear();
-	m_fixedVariables.clear();
 }
 
 void
@@ -355,93 +354,9 @@ SingGraphBuilder2DShortestPath::setGLPKTimeLimit(int glpkTimeLimit)
 /*----------------------------------------------------------------------------------------------------*/
 /*----------------------    Graph building functions     ---------------------------------------------*/
 /*----------------------------------------------------------------------------------------------------*/
-void
-SingGraphBuilder2DShortestPath::tryEarlySlotsConnection()
-{
-	// store faces close to target
-	vector<set<TargetID>> neighboringTarget(m_original_faces_number);
-	for (SourceID contSource = 0; contSource < m_totalNumberOfSlots; contSource++) {
-		const TCellID slotFace = m_slotFaces[contSource];
-		if (slotFace < m_original_faces_number) {
-			neighboringTarget[slotFace].insert(contSource);
-
-			// add all incident faces to the slot nodes
-			std::vector<Node> slotNodes;
-			if (m_targets[contSource]->starting_cell_dim == 1)
-				slotNodes = m_mesh->get<Edge>(m_targets[contSource]->starting_cell_id).get<Node>();
-			else
-				slotNodes = {m_mesh->get<Node>(m_targets[contSource]->starting_cell_id)};
-			for (const Node &slotNode : slotNodes) {
-				for (const TCellID &neighborFaceID : slotNode.getIDs<Face>()) {
-					neighboringTarget[neighborFaceID].insert(contSource);
-				}
-			}
-		}
-	}
-
-	// try an early connection between close slots
-	for (SourceID contSource = 0; contSource < m_totalNumberOfSlots; contSource++) {
-		const Slot *target = m_targets[contSource];
-		if (target && !target->isFreeze) {
-			const TCellID slotFace = m_slotFaces[contSource];
-			for (const TargetID &contTarget : neighboringTarget[slotFace]) {
-				if (tryEarlySlot2SlotConnection(contSource, contTarget)) {
-					break;
-				}
-			}
-		}
-	}
-
-	// try an early connection between a slot and a close boundary
-	for (SourceID contSource = 0; contSource < m_totalNumberOfSlots; contSource++) {
-		const Slot *slot = m_targets[contSource];
-		if (slot && !slot->isFreeze) {
-
-			TCellID slotFace = m_slotFaces[contSource];
-			if (m_is_bdry_face[slotFace]) {
-
-				const math::Vector3d prevDir = m_targets[contSource]->direction;
-				const math::Ray ray(m_targets[contSource]->location, m_targets[contSource]->location + prevDir);
-				BoundaryPathEndParam bdryParam;
-
-				if (findBoundary(ray, slotFace, bdryParam)) {
-
-					m_targets[contSource]->isFreeze = true;
-					m_bdryPathEndParam[contSource].emplace_back(bdryParam);
-					m_fixedVariables.push_back(make_pair(contSource, contSource));
-					m_distances[contSource][m_totalNumberOfSlots] = 0;
-				}
-			}
-		}
-	}
-}
-
-bool
-SingGraphBuilder2DShortestPath::tryEarlySlot2SlotConnection(const SourceID contSource, const TargetID contTarget)
-{
-	Slot *sourceSlot = m_targets[contSource];
-	Slot *targetSlot = m_targets[contTarget];
-	if (targetSlot->isFreeze || sourceSlot->from_point == targetSlot->from_point) return false;
-
-	const auto &sourcePoint = sourceSlot->from_point->getLocation();
-	const auto &targetPoint = targetSlot->from_point->getLocation();
-
-	const auto linkVector = math::Vector3d(sourcePoint, targetPoint);
-	if ((linkVector.angle(sourceSlot->direction) < 0.523598) && (linkVector.angle(targetSlot->direction.opp()) < 0.523598)) {     // pi/6
-
-		sourceSlot->isFreeze = true;
-		targetSlot->isFreeze = true;
-		sourceSlot->line_direction = linkVector;
-		targetSlot->line_direction = linkVector.opp();
-		m_distances[contSource][contTarget] = 0;
-		m_fixedVariables.push_back(make_pair(contSource, contTarget));
-		return true;
-	}
-	return false;
-}
 
 void
-SingGraphBuilder2DShortestPath::computeStreamLineFirstPoints()
+SingGraphBuilder2DShortestPath::computeDijkstraStartingFaces()
 {
 	m_slotFaces = vector<TCellID>(m_totalNumberOfSlots, m_original_faces_number);
 
@@ -451,7 +366,7 @@ SingGraphBuilder2DShortestPath::computeStreamLineFirstPoints()
 
 		if (!slot || slot->isFreeze) continue;
 
-		if (slot->starting_cell_dim == 0) {     // the slot is located right on a node (rare case)
+		if (slot->starting_cell_dim == 0) {     // the slot is located right on a node
 
 			const Node &node = m_mesh->get<Node>(slot->starting_cell_id);
 			TCellID bestFace = 0;
@@ -543,33 +458,22 @@ SingGraphBuilder2DShortestPath::findBoundary(const math::Ray &ray, const TCellID
 void
 SingGraphBuilder2DShortestPath::createSingularityLines()
 {
-	std::cout << "createSingularityLiesShortestPaths" << std::endl;
-
-	// initialize variables
 	computeFaceNeighboursInfo();
 	initializeFieldsValue();
 
-	// begin the line discretization (first two points of each line)
-	computeStreamLineFirstPoints();
-	tryEarlySlotsConnection();
-
-	// find shortest paths
 	computeDijkstra();
 
-	// check all illegal pair of line
 	computeIllegalOverlappingPaths();
 
-	// solve
 	m_solutions = glpkSolve();
 
-	// build singularityLines from shortest paths
-	createSolvedSingularityLines();
+	createSolvedSingularityLinesInGraph();
 
 	if (m_enableDebugFilesWriting) writeShortestPathMesh(m_graph.getSurfaceLines(), std::string(m_output_directory_name + "-ShortestPaths_result.vtk"));
 }
 
 void
-SingGraphBuilder2DShortestPath::createSolvedSingularityLines()
+SingGraphBuilder2DShortestPath::createSolvedSingularityLinesInGraph()
 {
 	for (const auto &solution : m_solutions) {
 
@@ -671,6 +575,8 @@ SingGraphBuilder2DShortestPath::computeDijkstra()
 {
 	auto timer = Timer("graph construction");
 
+	computeDijkstraStartingFaces();
+
 	using TCellID2DMatrix = vector<vector<TCellID>>;
 	m_finalPaths = vector<TCellID2DMatrix>(m_totalNumberOfSlots, TCellID2DMatrix(m_totalNumberOfVariables, vector<TCellID>()));
 
@@ -738,7 +644,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 
 	// boundary lines set up
 	std::priority_queue<std::pair<double, unsigned int>> boundaryQueue;
-	std::vector<int> bdryFacesId;
+	std::vector<TCellID> bdryFacesId;
 
 	// search for nearby target, if found, only the singularities locations will be used,
 	// similar as in tryEarlySlot2SlotConnection(), but less strict on angle
@@ -747,7 +653,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 		const auto targetOwnDirection = m_targets[contTarget]->direction.opp();
 		const double srcAngle = linkVector.angle(sourceDirection);
 		const double tgtAngle = linkVector.angle(targetOwnDirection);
-		if (srcAngle < M_PI_4 && tgtAngle < M_PI_4) m_distances[contSource][contTarget] = srcAngle + tgtAngle;
+		if (srcAngle < M_PI_4 && tgtAngle < M_PI_4) m_distances[contSource][contTarget] = 0.5 * (srcAngle + tgtAngle);
 	}
 
 	// check if the slot face is actually a good candidate
@@ -984,20 +890,6 @@ SingGraphBuilder2DShortestPath::glpkSolve()
 		}
 	}
 
-	// fix variable
-	vector<pair<unsigned int, unsigned int>> fixedVariables(m_fixedVariables.size());
-	for (unsigned int l1 = 0; l1 < m_fixedVariables.size(); l1++) {
-
-		if (m_fixedVariables[l1].first == m_fixedVariables[l1].second) {
-			fixedVariables[l1].first = m_fixedVariables[l1].first * m_totalNumberOfVariables + m_totalNumberOfSlots;
-			fixedVariables[l1].second = fixedVariables[l1].first;
-		}
-		else {
-			fixedVariables[l1].first = m_fixedVariables[l1].first * m_totalNumberOfVariables + m_fixedVariables[l1].second;
-			fixedVariables[l1].second = m_fixedVariables[l1].second * m_totalNumberOfVariables + m_fixedVariables[l1].first;
-		}
-	}
-
 	vector<double> w(m_totalNumberOfSlots * m_totalNumberOfVariables);
 	for (unsigned int i = 0; i < m_distances.size(); i++) {
 		for (unsigned int j = 0; j < m_distances[i].size(); j++) {
@@ -1005,29 +897,13 @@ SingGraphBuilder2DShortestPath::glpkSolve()
 		}
 	}
 
-	vector<bool> setFixedVars(fixedVariables.size(), false);
 	for (unsigned int i = 0; i < m_totalNumberOfSlots * m_totalNumberOfVariables; i++) {
-		bool setVal = false;
-
-		for (unsigned int j = 0; j < fixedVariables.size(); j++) {
-			if ((fixedVariables[j].first == i) || (fixedVariables[j].second == i)) {
-				setVal = true;
-				if (!setFixedVars[j]) {
-					setFixedVars[j] = true;
-					glp_set_col_bnds(lp, fixedVariables[j].first + 1, GLP_FX, 1.0, 1.0);
-					glp_set_obj_coef(lp, fixedVariables[j].first + 1, 0.0001);
-				}
-			}
+		if (w[i] == M_MAXDIST) {
+			glp_set_col_bnds(lp, i + 1, GLP_FX, 0.0, 0.0);
 		}
-
-		if (!setVal) {
-			if (w[i] == M_MAXDIST) {
-				glp_set_col_bnds(lp, i + 1, GLP_FX, 0.0, 0.0);
-			}
-			else {
-				glp_set_col_kind(lp, i + 1, GLP_BV);     // GLP_IV - integer, but in our case we want binary
-				glp_set_obj_coef(lp, i + 1, w[i]);
-			}
+		else {
+			glp_set_col_kind(lp, i + 1, GLP_BV);     // GLP_IV - integer, but in our case we want binary
+			glp_set_obj_coef(lp, i + 1, w[i]);
 		}
 	}
 
@@ -1106,19 +982,13 @@ SingGraphBuilder2DShortestPath::glpkSolve()
 	}
 	// glp_print_sol(lp, "SingGraphBuildOpt.txt");
 
-	// for (unsigned int i = 0; i < varNumber; i++) {
-	//	if (glp_mip_col_val(lp, i + 1) != 0) {
-	//		std::cout << (int) (i / m_totalNumberOfVariables) << " " << fmod(i, m_totalNumberOfVariables) << std::endl;
-	//	}
-	//}
-
 	// write solution
 	solutions.reserve(m_totalNumberOfSlots);
 
 	for (unsigned int i = 0; i < varNumber; i++) {
 		if (glp_mip_col_val(lp, i + 1) != 0) {
-			unsigned int contSource = (int) (i / m_totalNumberOfVariables);
-			unsigned int contTarget = fmod(i, m_totalNumberOfVariables);
+			SourceID contSource = i / m_totalNumberOfVariables;
+			TargetID contTarget = i % m_totalNumberOfVariables;
 			solutions.emplace_back(std::make_pair(contSource, contTarget));
 		}
 	}
@@ -1184,7 +1054,8 @@ SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerOneLineSegmen
 	const vector<TCellID> &facePath = m_graphBuilder->m_finalPaths[contSource][contTarget];
 
 	if (facePath.empty()) {     // -> fixed variable
-		const auto &p1 = m_graphBuilder->m_targets[contSource]->from_point->getLocation();
+		const Slot *srcSlot = m_graphBuilder->m_targets[contSource];
+		const auto &p1 = srcSlot->from_point->getLocation() + srcSlot->direction * 0.001;
 		math::Point p2;
 		const int boundaryID = contTarget - m_graphBuilder->m_totalNumberOfSlots;
 		if (boundaryID >= 0)
@@ -1204,20 +1075,20 @@ SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerOneLineSegmen
 		return;
 	}
 
-	// faces btw source slot and first face of the path
-	registerLineSegmentBetweenTwoFaces(startFace, facePath[0], startPnt, m_graphBuilder->m_triangle_centers[facePath[0]], contSource, contTarget);
+	// node source slot and first face of the path
+	registerLineSegmentOnCommonNode(startFace, facePath[0], startPnt, m_graphBuilder->m_triangle_centers[facePath[0]], contSource, contTarget);
 
-	// faces btw face path faces
+	// node btw path faces
 	for (int i = 0; i < facePath.size() - 1; i++) {
 		const TCellID f1 = facePath[i];
 		const TCellID f2 = facePath[i + 1];
 		const math::Point &p1 = m_graphBuilder->m_triangle_centers[f1];
 		const math::Point &p2 = m_graphBuilder->m_triangle_centers[f2];
-		registerLineSegmentBetweenTwoFaces(f1, f2, p1, p2, contSource, contTarget);
+		registerLineSegmentOnCommonNode(f1, f2, p1, p2, contSource, contTarget);
 	}
 
-	// faces btw last path face and target
-	registerLineSegmentBetweenTwoFaces(facePath.back(), endFace, m_graphBuilder->m_triangle_centers[facePath.back()], endPnt, contSource, contTarget);
+	// node btw last path face and target
+	registerLineSegmentOnCommonNode(facePath.back(), endFace, m_graphBuilder->m_triangle_centers[facePath.back()], endPnt, contSource, contTarget);
 
 	// add surrounding faces for face on the path
 	math::Segment firstSegment;
@@ -1270,7 +1141,7 @@ SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerOneLineSegmen
 }
 
 void
-SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerLineSegmentBetweenTwoFaces(
+SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerLineSegmentOnCommonNode(
    const TCellID &f1Id, const TCellID &f2Id, const math::Point &p1, const math::Point &p2, const SourceID &contSource, const TargetID &contTarget)
 {
 	if (f1Id != f2Id || !m_graphBuilder->m_tool.isAdjacency(f1Id, f2Id)) {

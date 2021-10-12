@@ -86,19 +86,12 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DShortestPath : public Singul
 
 	std::vector<std::pair<unsigned int, unsigned int>>
 	   m_illegalOverlappingPaths;     // pairs of mutually excluding shortest paths (that shouldn't co-exist in the final graph)
-	std::vector<std::pair<SourceID, TargetID>>
-	   m_fixedVariables;     // pairs of singularity lines whose fate has already been decided before solving shortest paths
 
 	/*----------------------------------------------------------------------------------------------------*/
 	/*----------------------    Graph building functions     ---------------------------------------------*/
 	/*----------------------------------------------------------------------------------------------------*/
-
 	void createSingularityLines() override;
-
-	void computeStreamLineFirstPoints();
-	bool tryEarlySlot2SlotConnection(const SourceID contSource, const TargetID contTarget);
-	void tryEarlySlotsConnection();
-	void createSolvedSingularityLines();
+	void createSolvedSingularityLinesInGraph();
 
 	/*----------------------------------------------------------------------------------------------------*/
 	/*----------------------    initialization/util functions     ----------------------------------------*/
@@ -107,6 +100,7 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DShortestPath : public Singul
 	void initializeFieldsValue();
 	bool targetIsBoundary(const TargetID &contTarget) const;
 	bool findBoundary(const math::Ray &ray, const TCellID currentFace, BoundaryPathEndParam &bdryParam);
+	void computeDijkstraStartingFaces();
 
 	/*----------------------------------------------------------------------------------------------------*/
 	/*----------------------    Shortest path system functions     ---------------------------------------*/
@@ -154,7 +148,7 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DShortestPath : public Singul
 		                            const TCellID &endFace,
 		                            const SourceID &contSource,
 		                            const TargetID &contTarget);
-		void registerLineSegmentBetweenTwoFaces(
+		void registerLineSegmentOnCommonNode(
 		   const TCellID &f1Id, const TCellID &f2Id, const math::Point &p1, const math::Point &p2, const SourceID &contSource, const TargetID &contTarget);
 	};
 	/*----------------------------------------------------------------------------------------------------*/

@@ -56,13 +56,17 @@ std::vector<double>
 computeAngleAtSingularity(SingularityPoint *p)
 {
 	std::vector<double> angles;
+	auto addAngle = [&angles](const SingularityPoint::Slot *slotA, const SingularityPoint::Slot *slotB) {
+		if (slotA->isOnSurface || slotB->isOnSurface) {     // only angle with surface slot
+			const double angle = slotA->line_direction.angle(slotB->line_direction);
+			angles.push_back(angle);
+		}
+	};
 	const auto slots = p->getSlots();
 	for (int i = 0; i < slots.size() - 1; ++i) {
-		const double angle = slots[i]->line_direction.angle(slots[i + 1]->line_direction);
-		angles.push_back(angle);
+		addAngle(slots[i], slots[i + 1]);
 	}
-	const double angle = slots[slots.size() - 1]->line_direction.angle(slots[0]->line_direction);
-	angles.push_back(angle);
+	addAngle(slots.back(), slots.front());
 	return angles;
 }
 
@@ -1285,14 +1289,14 @@ SingularityGraphBuilder2D::buildSurfaceSlotsOfVertexSingularity(VertexSingularit
 
 			math::Vector3d slotDirection;     // = direction imposed by the local cross field
 
-			// The slot might be right on one of the oppositeEdge nodes location:
+			// When really close to a node, its better to place the slot right on it rather than the edge
 			// @ {
 			const auto other_nodes = oppositEdge.get<Node>();
 			if (!m_mesh->isMarked(other_nodes[0], m_mark_nodes_on_curve)) {
 
 				const auto opp_node_loc1 = other_nodes[0].getPoint();
 				const auto v_opp1 = math::Vector3d(currentNode.getPoint(), opp_node_loc1).normalize();
-				if (math::near(v_opp1.dot(lineDirection) - 1, 0)) {
+				if (v_opp1.dot(lineDirection) > 0.99) {     // 8°
 					m_tool.computeOutVectorAtPoint(other_nodes[0], lineDirection, slotDirection);
 					baseSlots.push_back({opp_node_loc1, slotDirection, other_nodes[0].id(), 0});
 					break;
@@ -1302,7 +1306,7 @@ SingularityGraphBuilder2D::buildSurfaceSlotsOfVertexSingularity(VertexSingularit
 
 				const auto opp_node_loc2 = other_nodes[1].getPoint();
 				const auto v_opp2 = math::Vector3d(currentNode.getPoint(), opp_node_loc2).normalize();
-				if (math::near(v_opp2.dot(lineDirection) - 1, 0)) {
+				if (v_opp2.dot(lineDirection) > 0.99) {     // 8°
 					m_tool.computeOutVectorAtPoint(other_nodes[1], lineDirection, slotDirection);
 					baseSlots.push_back({opp_node_loc2, slotDirection, other_nodes[1].id(), 0});
 					break;
@@ -3170,7 +3174,7 @@ LineRelaxator::computeMeanEdgeLengthByGroup()
 		}
 	};
 	for (int groupID = 0; groupID < m_graph->getNLinkedEdgeGroup(); groupID++) {
-		m_lineSpringLenght[groupID] /= (double) m_numberOfLinePerGroup[groupID];
+		m_lineSpringLenght[groupID] /= static_cast<double>(m_numberOfLinePerGroup[groupID]);
 	};
 }
 
@@ -3231,8 +3235,9 @@ LineRelaxator::MoveIfNewLocationIsWorthTheAnglePenalty(SingularityPoint *singPoi
 		lineSlots[1]->line_direction = direction;
 	}
 
+	const bool isBdry = singPoint->getGeomType() != SingularityPoint::SURFACE;
 	// 4 slots : 20°, 3 slots : 45°; 5 slots : 40°
-	const double maxGap = slots.size() == 4 ? 0.34906 : (slots.size() == 3 ? 0.785398 : 0.69813);
+	const double maxGap = slots.size() || isBdry == 4 ? 0.34906 : (slots.size() == 3 ? 0.785398 : 0.69813);
 
 	const auto newAngles = computeAngleAtSingularity(singPoint);
 	const auto &oldAngles = m_angleAtSingularity[singPoint->getNumber()];
