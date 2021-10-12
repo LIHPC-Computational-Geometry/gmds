@@ -358,7 +358,7 @@ SingularityGraphBuilder2D::execute()
 	addGeometryToSingularityGraph(artificialSingPointsCreated);
 
 	if (m_build_geometric_singularities) {
-		buildSurfaceSlots();
+		buildSlotsOfBoundarySingularities();
 	}
 
 	if (m_enableDebugFilesWriting) {
@@ -1167,7 +1167,7 @@ SingularityGraphBuilder2D::addGeometryToSingularityGraph(vector<CurveSingularity
 /*----------------------------------------------------------------------------*/
 
 void
-SingularityGraphBuilder2D::buildSurfaceSlots()
+SingularityGraphBuilder2D::buildSlotsOfBoundarySingularities()
 {
 	//================================================================================
 	// Create the surface slots of vertex singularities (boundary singularity)
@@ -1221,17 +1221,17 @@ SingularityGraphBuilder2D::buildSurfaceSlots()
 		if (angle_deg > 275) {
 			int nb_lines = 3;
 			double single_line_angle = angle_rad / (nb_lines + 1);
-			buildSurfaceSlotsOfVertexSingularity(singularity, single_line_angle, nb_lines);
+			buildSlotsOfBoundarySingularity(singularity, single_line_angle, nb_lines);
 		}
 		else if (angle_deg > 180) {
 			int nb_lines = 2;
 			double single_line_angle = angle_rad / (nb_lines + 1);
-			buildSurfaceSlotsOfVertexSingularity(singularity, single_line_angle, nb_lines);
+			buildSlotsOfBoundarySingularity(singularity, single_line_angle, nb_lines);
 		}
 		else if (angle_deg > 125) {
 			int nb_lines = 1;
 			double single_line_angle = angle_rad / (nb_lines + 1);
-			buildSurfaceSlotsOfVertexSingularity(singularity, single_line_angle, nb_lines);
+			buildSlotsOfBoundarySingularity(singularity, single_line_angle, nb_lines);
 		}
 	}
 }
@@ -1239,7 +1239,7 @@ SingularityGraphBuilder2D::buildSurfaceSlots()
 /*----------------------------------------------------------------------------*/
 
 void
-SingularityGraphBuilder2D::buildSurfaceSlotsOfVertexSingularity(VertexSingularityPoint *AFrom, const double AAngle, const int ANbLines)
+SingularityGraphBuilder2D::buildSlotsOfBoundarySingularity(VertexSingularityPoint *AFrom, const double AAngle, const int ANbLines)
 {
 	const Node currentNode = AFrom->getMeshNode();
 
@@ -1330,11 +1330,11 @@ SingularityGraphBuilder2D::buildSurfaceSlotsOfVertexSingularity(VertexSingularit
 	if (ANbLines == 3) {     // building 3 slots might have been a mistake if the cross field is grid like: (at least two slots with close directions)
 		bool recompute = baseSlots[0].direction.angle(baseSlots[1].direction) < M_PI_4     //
 		                 || baseSlots[1].direction.angle(baseSlots[2].direction) < M_PI_4;
-		if (recompute) return buildSurfaceSlotsOfVertexSingularity(AFrom, AAngle * 4 / 3, 2);     // create 2 slots instead
+		if (recompute) return buildSlotsOfBoundarySingularity(AFrom, AAngle * 4 / 3, 2);     // create 2 slots instead
 	}
 	else if (ANbLines == 2) {     // building 2 slots might also have been a mistake (close slots directions)
 		bool recompute = baseSlots[0].direction.angle(baseSlots[1].direction) < M_PI_4;
-		if (recompute) return buildSurfaceSlotsOfVertexSingularity(AFrom, AAngle * 3 / 2, 1);
+		if (recompute) return buildSlotsOfBoundarySingularity(AFrom, AAngle * 3 / 2, 1);
 	}
 	else if (ANbLines == 1) {     // same for bulding only 1 slot: the singularity might be a corner of the cross field
 		const math::AxisAngleRotation R(axis, 2 * AAngle);
