@@ -2,6 +2,7 @@
 
 [![GitHub issues](https://img.shields.io/github/issues/LIHPC-Computational-Geometry/gmds)](https://github.com/LIHPC-Computational-Geometry/gmds/issues)
 [![GitHub license](https://img.shields.io/github/license/LIHPC-Computational-Geometry/gmds)](https://github.com/LIHPC-Computational-Geometry/gmds/blob/main/LICENSE)
+[![codecov](https://codecov.io/gh/LIHPC-Computational-Geometry/gmds/branch/main/graph/badge.svg?token=QA3AS0MLDN)](https://codecov.io/gh/LIHPC-Computational-Geometry/gmds)
 
 **GMDS**, for **G**eneric **M**esh **D**ata & **S**ervices,  is a C++ library written to provide mesh data structures and algorithms to developers that intend to design meshing algorithms and build pipelines of those algorithms.
 
