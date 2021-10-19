@@ -178,7 +178,7 @@ SingGraphBuilder2DOriginal::computeSingularityLine(SingularityPoint *AFromPoint,
 	   vector<gmds::Node> currentTriNodes = m_mesh->get<Face>(line_triangles[t]).get<Node>();
 	   std::cout<<"currentTriNodes,isze() "<<currentTriNodes.size()<<std::endl;
 	   gmds::Node mySing1 = meshSing.newNode(currentTriNodes[0].getPoint());
-	   gmds::Node mySing2 = meshSing.newNode(currentTriNodes[1].getPoint());
+	   gmds::Node mySing2 = meshSing.newNode(currentTriNodes[1].point());
 	   gmds::Node mySing3 = meshSing.newNode(currentTriNodes[2].point());
 	   meshSing.newTriangle(mySing1, mySing2, mySing3);
 	}

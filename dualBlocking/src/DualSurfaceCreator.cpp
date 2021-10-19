@@ -119,7 +119,7 @@ bool DualSurfaceCreator::execute() {
         for (auto const &a: adj_edges) {
             std::vector<Node> a_nodes = a.get<Node>();
             Node opp_node = (a_nodes[0].id() == moved_node_id_init) ? a_nodes[1] : a_nodes[0];
-            double ad = opp_node.getPoint().distance(node_moved.getPoint());
+            double ad = opp_node.point().distance(node_moved.point());
             if (ad < d)
                 d = ad;
         }
@@ -129,9 +129,9 @@ bool DualSurfaceCreator::execute() {
         double dy = drand48() * d;
         double dz = drand48() * d;
 
-        math::Point new_loc(node_moved.getPoint().X() + dx,
-                            node_moved.getPoint().Y() + dy,
-                            node_moved.getPoint().Z() + dz);
+        math::Point new_loc(node_moved.point().X() + dx,
+                            node_moved.point().Y() + dy,
+                            node_moved.point().Z() + dz);
         node_moved.setPoint(new_loc);
 
 
@@ -231,8 +231,8 @@ gmds::Mesh* DualSurfaceCreator::buildSurfaceSheet() {
 
         if(nodes.size() > 2){
             if(nodes.size() == 4){
-                math::Triangle tri1(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint());
-                math::Triangle tri2(nodes[0].getPoint(),nodes[2].getPoint(),nodes[3].getPoint());
+                math::Triangle tri1(nodes[0].point(),nodes[1].point(),nodes[2].point());
+                math::Triangle tri2(nodes[0].point(),nodes[2].point(),nodes[3].point());
 
                 math::Vector3d vec1 = tri1.getNormal();
                 math::Vector3d vec2 = tri2.getNormal();
@@ -242,8 +242,8 @@ gmds::Mesh* DualSurfaceCreator::buildSurfaceSheet() {
                     nodes[3] = nodes[2];
                     nodes[2] = tmp;
                 }
-                math::Triangle tri3(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint());
-                math::Triangle tri4(nodes[0].getPoint(),nodes[2].getPoint(),nodes[3].getPoint());
+                math::Triangle tri3(nodes[0].point(),nodes[1].point(),nodes[2].point());
+                math::Triangle tri4(nodes[0].point(),nodes[2].point(),nodes[3].point());
 
                 math::Vector3d vec3 = tri3.getNormal();
                 math::Vector3d vec4 = tri4.getNormal();
@@ -469,7 +469,7 @@ gmds::Mesh* DualSurfaceCreator::buildSurfaceSheet() {
                 in_loop.push_back(current_e);
                 Node n = current_e.getIDs<Node>()[0] != prev_n ? current_e.get<Node>()[0]: current_e.get<Node>()[1];
                 loop_nodes.push_back(n);
-                points.push_back(n.getPoint());
+                points.push_back(n.point());
                 for(auto n_e : n.get<Edge>()){
                     if((*edge_Gdim)[n_e.id()] == 0 && n_e.get<Face>().size() == 1 && n_e.id() != current_e.id()){
                         //if(!closed){

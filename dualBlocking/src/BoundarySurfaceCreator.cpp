@@ -189,7 +189,7 @@ bool BoundarySurfaceCreator::execute() {
             for (auto const &a : adj_edges) {
                 std::vector<Node> a_nodes = a.get<Node>();
                 Node opp_node = (a_nodes[0].id() == n) ? a_nodes[1] : a_nodes[0];
-                double ad = opp_node.getPoint().distance(node_moved.getPoint());
+                double ad = opp_node.point().distance(node_moved.point());
                 if (ad < d)
                     d = ad;
             }
@@ -198,11 +198,11 @@ bool BoundarySurfaceCreator::execute() {
             double dx = drand48() * d;
             double dy = drand48() * d;
             double dz = drand48() * d;
-            //std::cout << " \t from: " << node_moved.getPoint() << std::endl;
+            //std::cout << " \t from: " << node_moved.point() << std::endl;
 
-            math::Point new_loc(node_moved.getPoint().X() + dx,
-                                node_moved.getPoint().Y() + dy,
-                                node_moved.getPoint().Z() + dz);
+            math::Point new_loc(node_moved.point().X() + dx,
+                                node_moved.point().Y() + dy,
+                                node_moved.point().Z() + dz);
             //std::cout << " \t to new location: " << new_loc << std::endl;
             node_moved.setPoint(new_loc);
             //std::cout << "node moved = " << node_moved.id() << std::endl;
@@ -288,7 +288,7 @@ int cpt_faces = 0;
     }
     for(auto n : nodes_set){
         Node node = m_mesh->get<Node>(n);
-        Node n_new = m_smesh.newNode(node.getPoint());
+        Node n_new = m_smesh.newNode(node.point());
         node_mesh_to_smesh[n] = n_new;
             (*node_Gdim)[n_new.id()] = linker.getGeomDim<Node>(n);
     }

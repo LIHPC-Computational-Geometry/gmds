@@ -491,7 +491,7 @@ math::Chart DualBlockingSession::computeChart(std::vector<Node> ANodes, math::Po
     std::vector<math::Point> points;
     points.resize(4);
     for(int i = 0; i<ANodes.size(); i++){
-        points[i] = ANodes[i].getPoint();
+        points[i] = ANodes[i].point();
         charts[i] = (*m_vertex_chart)[ANodes[i].id()];
     }
 
@@ -786,13 +786,13 @@ bool DualBlockingSession::colorDual(int &ANbZones) {
                         std::cout << sing_id << std::endl;
                         //return false;
                     }
-                    vertex = nodes_vec[0].getPoint();
+                    vertex = nodes_vec[0].point();
 
                     block_node = m_hmesh->newNode(vertex);
                     std::cout << "Node id in hmesh " << block_node.id() << std::endl;
                     linkerH_G.linkToPoint(block_node, linkerG_T.getGeomId<Node>(nodes_vec[0].id()));
                     //m_hmesh->newTriangle(block_node.id(), block_node.id(), block_node.id());
-                    //std::cout << "Corner point created at "<<block_node.getPoint() << std::endl;
+                    //std::cout << "Corner point created at "<<block_node.point() << std::endl;
 
 
                 } else if (type == 2) {
@@ -814,7 +814,7 @@ bool DualBlockingSession::colorDual(int &ANbZones) {
                     block_node = m_hmesh->newNode(vertex);
                     linkerH_G.linkToSurface(block_node, linkerG_T.getGeomId<Node>(nodes_vec[0].id()));
                     m_hmesh->newTriangle(block_node.id(), block_node.id(), block_node.id());
-                    std::cout << "Edge sing point created at " << block_node.getPoint() << std::endl;
+                    std::cout << "Edge sing point created at " << block_node.point() << std::endl;
 
                     //singularite dans la zone au bord
                     //ERROR
@@ -824,11 +824,11 @@ bool DualBlockingSession::colorDual(int &ANbZones) {
 
                     //std::cout << "Nb nodes " << nodes_vec.size() << std::endl;
 
-                    vertex = nodes_vec[0].getPoint();
+                    vertex = nodes_vec[0].point();
                     for (int i = 1; i < nodes_vec.size(); i++) {
-                        vertex.setXYZ(vertex.X() + nodes_vec[i].getPoint().X(),
-                                      vertex.Y() + nodes_vec[i].getPoint().Y(),
-                                      vertex.Z() + nodes_vec[i].getPoint().Z());
+                        vertex.setXYZ(vertex.X() + nodes_vec[i].point().X(),
+                                      vertex.Y() + nodes_vec[i].point().Y(),
+                                      vertex.Z() + nodes_vec[i].point().Z());
                     }
                     vertex.setXYZ(vertex.X() / nodes_vec.size(),
                                   vertex.Y() / nodes_vec.size(),
@@ -849,7 +849,7 @@ bool DualBlockingSession::colorDual(int &ANbZones) {
                     block_node = m_hmesh->newNode(vertex);
                     linkerH_G.linkToCurve(block_node, linkerG_T.getGeomId<Node>(nodes_vec[0].id()));
                     //m_hmesh->newTriangle(block_node.id(), block_node.id(), block_node.id());
-                    //std::cout << "Edge point created at " << block_node.getPoint() << std::endl;
+                    //std::cout << "Edge point created at " << block_node.point() << std::endl;
                     //}
 
                 } else if (type == 3) {
@@ -873,17 +873,17 @@ bool DualBlockingSession::colorDual(int &ANbZones) {
                         block_node = m_hmesh->newNode(vertex);
                         linkerH_G.linkToSurface(block_node, linkerG_T.getGeomId<Node>(nodes_vec[0].id()));
                         //m_hmesh->newTriangle(block_node.id(), block_node.id(), block_node.id());
-                        //std::cout << "Face sing point created at " << block_node.getPoint() << std::endl;
+                        //std::cout << "Face sing point created at " << block_node.point() << std::endl;
 
 
 
                     } else {
 
-                        vertex = nodes_vec[0].getPoint();
+                        vertex = nodes_vec[0].point();
                         for (int i = 1; i < nodes_vec.size(); i++) {
-                            vertex.setXYZ(vertex.X() + nodes_vec[i].getPoint().X(),
-                                          vertex.Y() + nodes_vec[i].getPoint().Y(),
-                                          vertex.Z() + nodes_vec[i].getPoint().Z());
+                            vertex.setXYZ(vertex.X() + nodes_vec[i].point().X(),
+                                          vertex.Y() + nodes_vec[i].point().Y(),
+                                          vertex.Z() + nodes_vec[i].point().Z());
                         }
                         vertex.setXYZ(vertex.X() / nodes_vec.size(),
                                       vertex.Y() / nodes_vec.size(),
@@ -901,7 +901,7 @@ bool DualBlockingSession::colorDual(int &ANbZones) {
                         linkerH_G.linkToSurface(block_node, linkerG_T.getGeomId<Node>(nodes_vec[0].id()));
 
                         //m_hmesh->newTriangle(block_node.id(), block_node.id(), block_node.id());
-                        //std::cout << "Face point created at " << block_node.getPoint() << std::endl;
+                        //std::cout << "Face point created at " << block_node.point() << std::endl;
                     }
 
                 } else if (type == 4) {
@@ -915,17 +915,17 @@ bool DualBlockingSession::colorDual(int &ANbZones) {
                         block_node = m_hmesh->newNode(vertex);
                         //m_hmesh->newTriangle(block_node.id(), block_node.id(), block_node.id());
 
-                        //std::cout << "Volume sing point created at " << block_node.getPoint() << std::endl;
+                        //std::cout << "Volume sing point created at " << block_node.point() << std::endl;
                     } else {
                         vertex = math::Point(0, 0, 0);
 
                         for (auto v:nodes_vec) {
-                            vertex = vertex + v.getPoint();
+                            vertex = vertex + v.point();
                         }
                         vertex = (1.0 / (double) nodes_vec.size()) * vertex;
                         block_node = m_hmesh->newNode(vertex);
                         //m_hmesh->newTriangle(block_node.id(), block_node.id(), block_node.id());
-                        //std::cout << "Volume point created at " << block_node.getPoint() << std::endl;
+                        //std::cout << "Volume point created at " << block_node.point() << std::endl;
                     }
                 } else {
                     std::cout << "ERROR: zone " << zone_id << " of type " << type << std::endl;
@@ -939,7 +939,7 @@ bool DualBlockingSession::colorDual(int &ANbZones) {
                         if (borders.size() == 3) {
                             good_zone = true;
                         } else {
-                            //std::cout<<"ERROR: Point zone "<<zone_id<<" touch "<<borders.size()<<" dual sheets instead of 3"<<std::endl;
+                            //std::cout<<"ERROR: point zone "<<zone_id<<" touch "<<borders.size()<<" dual sheets instead of 3"<<std::endl;
                             good_zone = true;
                         }
                         break;
@@ -1640,7 +1640,7 @@ void DualBlockingSession::smoothBlocks(){
         Node node = m_hmesh->get<Node>(n);
         std::cout<<"Node dim = "<<linkerH_G.getGeomDim<Node>(n)<<" id "<<linkerH_G.getGeomId<Node>(n)<<std::endl;
         std::cout<<"Nb edges for the node "<<node.nbEdges()<<std::endl;
-        std::cout<<"Nb faces for the node "<<node.nbFAces()<<std::endl;
+        std::cout<<"Nb faces for the node "<<node.nbFaces()<<std::endl;
         std::cout<<"Nb regions for the node"<<node.nbRegions()<<std::endl;
 
     }
@@ -1653,9 +1653,9 @@ void DualBlockingSession::smoothBlocks(){
                 std::vector<math::Point> points;
                 for (auto e : n.get<Edge>()) {
                     if (e.getIDs<Node>()[0] == n_id) {
-                        points.push_back(e.get<Node>()[1].getPoint());
+                        points.push_back(e.get<Node>()[1].point());
                     } else {
-                        points.push_back(e.get<Node>()[0].getPoint());
+                        points.push_back(e.get<Node>()[0].point());
                     }
                 }
                 math::Point p_n = math::Point::massCenter(points);
@@ -1673,7 +1673,7 @@ void DualBlockingSession::smoothBlocks(){
         }
     }*/
 
-    cad::GeomSmoother smoother(&linkerH_G);
+    smoothy::LaplacianSmoother smoother(&linkerH_G);
 
     //smoother.smoothCurves(10);
     std::cout<<"curves"<<std::endl;
@@ -1791,7 +1791,7 @@ void DualBlockingSession::interpolationV2(int Ait){
     double iteration = Ait;
 
     for(auto n : m_hmesh->nodes()){
-        Node node = t_mesh.newNode(m_hmesh->get<Node>(n).getPoint());
+        Node node = t_mesh.newNode(m_hmesh->get<Node>(n).point());
         if(linkerH_G.getGeomDim<Node>(n) == 1){
             linker_hexa.linkToPoint(node,linkerH_G.getGeomId<Node>(n));
         } else if (linkerH_G.getGeomDim<Node>(n) == 2){
@@ -1917,7 +1917,7 @@ void DualBlockingSession::interpolationV2(int Ait){
                     int gp2 = geom_id_e2;
 
                     std::vector<cad::GeomPoint *> points;
-                    manager.getPoints(points);
+                    manager.points(points);
 
                     cad::GeomPoint *GP1;
                     cad::GeomPoint *GP2;
@@ -1945,7 +1945,7 @@ void DualBlockingSession::interpolationV2(int Ait){
 
                     int gp1 = geom_id_e1;
                     std::vector<cad::GeomPoint *> points;
-                    manager.getPoints(points);
+                    manager.points(points);
 
                     cad::GeomPoint *GP1;
 
@@ -2065,14 +2065,14 @@ void DualBlockingSession::interpolationV2(int Ait){
 
 
         if(first.id() < second.id()){
-            p_first = first.getPoint();
-            p_second = second.getPoint();
+            p_first = first.point();
+            p_second = second.point();
 
             edge_discr[e][0] = first.id();
             edge_discr[e][edges_sub[e]] = second.id();
         }else{
-            p_first = second.getPoint();
-            p_second = first.getPoint();
+            p_first = second.point();
+            p_second = first.point();
             edge_discr[e][0] = second.id();
             edge_discr[e][edges_sub[e]] = first.id();
         }
@@ -2090,7 +2090,7 @@ void DualBlockingSession::interpolationV2(int Ait){
             //math::Point point(p1+mini_vec*i);
             math::Point point;
             point = (p_second * (double(i) / edges_sub[e]) + p_first * (1 - (double(i) / edges_sub[e])));
-            //std::cout<<"Point: "<<point<<std::endl;
+            //std::cout<<"point: "<<point<<std::endl;
             //std::cout<<"point:"<<point<<std::endl;
             //std::cout<<"vector Y: "<<vector.Y()<<std::endl;
             if (type == 2) {
@@ -2302,10 +2302,10 @@ void DualBlockingSession::interpolationV2(int Ait){
                     bool non_valid_edge = false;
                     for(int i = 1; i<edges_sub[e]; i++) {
                         Node node = t_mesh.get<Node>(edge_discr[e][i]);
-                        math::Point project_surf(node.getPoint().X(), node.getPoint().Y(), node.getPoint().Z());
+                        math::Point project_surf(node.point().X(), node.point().Y(), node.point().Z());
                         surface->project(project_surf);
                         for(auto c : curves){
-                            math::Point point(node.getPoint());
+                            math::Point point(node.point());
                             c->project(point);
 
                             //std::cout<<"distance "<<project_surf.distance(point)<<std::endl;
@@ -2331,18 +2331,18 @@ void DualBlockingSession::interpolationV2(int Ait){
             math::Point p_second;
 
             if (edge.get<Node>()[0].id() < edge.get<Node>()[1].id()) {
-                p_first = edge.get<Node>()[0].getPoint();
-                p_second = edge.get<Node>()[1].getPoint();
+                p_first = edge.get<Node>()[0].point();
+                p_second = edge.get<Node>()[1].point();
             } else {
-                p_first = edge.get<Node>()[1].getPoint();
-                p_second = edge.get<Node>()[0].getPoint();
+                p_first = edge.get<Node>()[1].point();
+                p_second = edge.get<Node>()[0].point();
             }
 
             for (int i_p = 1; i_p < edges_sub[e]; i_p++) {
                 //std::cout << "node on e " << edge_discr[e][i_p] << std::endl;
                 math::Point new_p = ((1. - (1. / i_p)) * p_first) + ((1. / i_p) * p_second);
                 std::vector<math::Point> points;
-                points.push_back(t_mesh.get<Node>(edge_discr[e][i_p]).getPoint());
+                points.push_back(t_mesh.get<Node>(edge_discr[e][i_p]).point());
                 for (auto f : edge.get<Face>()) {
                     if ((f.get<Region>().size() == 1 && linkerH_G.getGeomDim<Edge>(e) == 3) ||
                         (f.get<Region>().size() == 2 && linkerH_G.getGeomDim<Edge>(e) == 0)) {
@@ -2377,7 +2377,7 @@ void DualBlockingSession::interpolationV2(int Ait){
                             j_target = 0;
                         }
 
-                        points.push_back(t_mesh.get<Node>(face_discr[f.id()][i_target][j_target]).getPoint());
+                        points.push_back(t_mesh.get<Node>(face_discr[f.id()][i_target][j_target]).point());
 
 
                     }
@@ -2397,10 +2397,10 @@ void DualBlockingSession::interpolationV2(int Ait){
         int nb_div_i = face_discr[f].size()-1;
         int nb_div_j = face_discr[f][0].size()-1;
         //Transfinite interpolation to fill the interior of the face matrix
-        math::Point p_first = face.get<Node>()[0].getPoint();
-        math::Point p_second = face.get<Node>()[1].getPoint();
-        math::Point p_ter = face.get<Node>()[2].getPoint();
-        math::Point p_qua = face.get<Node>()[3].getPoint();
+        math::Point p_first = face.get<Node>()[0].point();
+        math::Point p_second = face.get<Node>()[1].point();
+        math::Point p_ter = face.get<Node>()[2].point();
+        math::Point p_qua = face.get<Node>()[3].point();
 
 
         for (double j = 1; j < nb_div_j; j++) {
@@ -2412,11 +2412,11 @@ void DualBlockingSession::interpolationV2(int Ait){
                 Node face_node = t_mesh.newNode(point);
                 face_id->set(face_node.id(),f);
                 //std::cout<<face_discr[f][int(i)][0]<<","<<face_discr[f][int(i)][int(iteration)]<<","<<face_discr[f][0][int(j)]<<","<<face_discr[f][int(iteration)][int(j)]<<std::endl;
-                point = ((1-(i / nb_div_i))*(t_mesh.get<Node>(face_discr[f][0][int(j)]).getPoint()) + (i / nb_div_i)*(t_mesh.get<Node>(face_discr[f][int(nb_div_i)][int(j)]).getPoint())
-                         + (1-(j / nb_div_j))*(t_mesh.get<Node>(face_discr[f][int(i)][0]).getPoint()) + (j / nb_div_j)*(t_mesh.get<Node>(face_discr[f][int(i)][int(nb_div_j)]).getPoint()))- point;
+                point = ((1-(i / nb_div_i))*(t_mesh.get<Node>(face_discr[f][0][int(j)]).point()) + (i / nb_div_i)*(t_mesh.get<Node>(face_discr[f][int(nb_div_i)][int(j)]).point())
+                         + (1-(j / nb_div_j))*(t_mesh.get<Node>(face_discr[f][int(i)][0]).point()) + (j / nb_div_j)*(t_mesh.get<Node>(face_discr[f][int(i)][int(nb_div_j)]).point()))- point;
                 face_discr[f][int(i)][int(j)] = face_node.id();
                 face_node.setPoint(point);
-                //std::cout<<"Point : "<<point<<std::endl;
+                //std::cout<<"point : "<<point<<std::endl;
                 //m_hmesh->newTriangle(face_node,face_node,face_node);
                 if(linkerH_G.getGeomDim<Face>(f) == 3){
                     linker_hexa.linkNodeToSurface(face_node.id(),linkerH_G.getGeomId<Face>(f));
@@ -2950,21 +2950,21 @@ void DualBlockingSession::interpolationV2(int Ait){
 
                     math::Point p_new;
 
-                    math::Point pf0 = t_mesh.get<Node>(block_discr[int(x)][int(y)][0]).getPoint();
-                    math::Point pf1 = t_mesh.get<Node>(block_discr[int(x)][0][int(z)]).getPoint();
-                    math::Point pf2 = t_mesh.get<Node>(block_discr[subx][int(y)][int(z)]).getPoint();
-                    math::Point pf3 = t_mesh.get<Node>(block_discr[int(x)][suby][int(z)]).getPoint();
-                    math::Point pf4 = t_mesh.get<Node>(block_discr[0][int(y)][int(z)]).getPoint();
-                    math::Point pf5 = t_mesh.get<Node>(block_discr[int(x)][int(y)][subz]).getPoint();
+                    math::Point pf0 = t_mesh.get<Node>(block_discr[int(x)][int(y)][0]).point();
+                    math::Point pf1 = t_mesh.get<Node>(block_discr[int(x)][0][int(z)]).point();
+                    math::Point pf2 = t_mesh.get<Node>(block_discr[subx][int(y)][int(z)]).point();
+                    math::Point pf3 = t_mesh.get<Node>(block_discr[int(x)][suby][int(z)]).point();
+                    math::Point pf4 = t_mesh.get<Node>(block_discr[0][int(y)][int(z)]).point();
+                    math::Point pf5 = t_mesh.get<Node>(block_discr[int(x)][int(y)][subz]).point();
 
-                    math::Point p0 = nodes[0].getPoint();
-                    math::Point p1 = nodes[1].getPoint();
-                    math::Point p2 = nodes[2].getPoint();
-                    math::Point p3 = nodes[3].getPoint();
-                    math::Point p4 = nodes[4].getPoint();
-                    math::Point p5 = nodes[5].getPoint();
-                    math::Point p6 = nodes[6].getPoint();
-                    math::Point p7 = nodes[7].getPoint();
+                    math::Point p0 = nodes[0].point();
+                    math::Point p1 = nodes[1].point();
+                    math::Point p2 = nodes[2].point();
+                    math::Point p3 = nodes[3].point();
+                    math::Point p4 = nodes[4].point();
+                    math::Point p5 = nodes[5].point();
+                    math::Point p6 = nodes[6].point();
+                    math::Point p7 = nodes[7].point();
 
                     std::vector<math::Point> points;
                     points.push_back(pf0);
@@ -3095,7 +3095,7 @@ void DualBlockingSession::interpolationV2(int Ait){
     vtkWriter.setDataOptions(gmds::N|gmds::R);
     vtkWriter.write("/home/simon/Data/Results_debug/inter.vtk");
 
-    cad::GeomSmoother smoother(&linker_hexa);
+    smoothy::LaplacianSmoother smoother(&linker_hexa);
     smoother.smoothCurves(10);
     std::cout<<"curves"<<std::endl;
     smoother.smoothSurfaces(10);
@@ -3134,7 +3134,7 @@ void DualBlockingSession::interpolation(int Ait) {
         std::cout << std::endl;
 
         tab[0][0][0] = nodes[0].id();
-        math::Point p0 = nodes[0].getPoint();
+        math::Point p0 = nodes[0].point();
 
         //DEBUG
         (*m_X)[nodes[0].id()] = 0;
@@ -3142,7 +3142,7 @@ void DualBlockingSession::interpolation(int Ait) {
         (*m_Z)[nodes[0].id()] = 0;
 
         tab[int(iteration)][0][0] = nodes[1].id();
-        math::Point p1 = nodes[1].getPoint();
+        math::Point p1 = nodes[1].point();
 
         //DEBUG
         (*m_X)[nodes[1].id()] = int(iteration);
@@ -3150,7 +3150,7 @@ void DualBlockingSession::interpolation(int Ait) {
         (*m_Z)[nodes[1].id()] = 0;
 
         tab[int(iteration)][int(iteration)][0] = nodes[2].id();
-        math::Point p2 = nodes[2].getPoint();
+        math::Point p2 = nodes[2].point();
 
         //DEBUG
         (*m_X)[nodes[2].id()] = int(iteration);
@@ -3158,7 +3158,7 @@ void DualBlockingSession::interpolation(int Ait) {
         (*m_Z)[nodes[2].id()] = 0;
 
         tab[0][int(iteration)][0] = nodes[3].id();
-        math::Point p3 = nodes[3].getPoint();
+        math::Point p3 = nodes[3].point();
 
         //DEBUG
         (*m_X)[nodes[3].id()] = 0;
@@ -3166,7 +3166,7 @@ void DualBlockingSession::interpolation(int Ait) {
         (*m_Z)[nodes[3].id()] = 0;
 
         tab[0][0][int(iteration)] = nodes[4].id();
-        math::Point p4 = nodes[4].getPoint();
+        math::Point p4 = nodes[4].point();
 
         //DEBUG
         (*m_X)[nodes[4].id()] = 0;
@@ -3174,7 +3174,7 @@ void DualBlockingSession::interpolation(int Ait) {
         (*m_Z)[nodes[4].id()] = int(iteration);
 
         tab[int(iteration)][0][int(iteration)] = nodes[5].id();
-        math::Point p5 = nodes[5].getPoint();
+        math::Point p5 = nodes[5].point();
 
         //DEBUG
         (*m_X)[nodes[5].id()] = int(iteration);
@@ -3182,7 +3182,7 @@ void DualBlockingSession::interpolation(int Ait) {
         (*m_Z)[nodes[5].id()] = int(iteration);
 
         tab[int(iteration)][int(iteration)][int(iteration)] = nodes[6].id();
-        math::Point p6 = nodes[6].getPoint();
+        math::Point p6 = nodes[6].point();
 
         //DEBUG
         (*m_X)[nodes[6].id()] = int(iteration);
@@ -3190,7 +3190,7 @@ void DualBlockingSession::interpolation(int Ait) {
         (*m_Z)[nodes[6].id()] = int(iteration);
 
         tab[0][int(iteration)][int(iteration)] = nodes[7].id();
-        math::Point p7 = nodes[7].getPoint();
+        math::Point p7 = nodes[7].point();
 
         //DEBUG
         (*m_X)[nodes[7].id()] = 0;
@@ -3448,8 +3448,8 @@ void DualBlockingSession::interpolation(int Ait) {
             }
             type_edges[it_edge] = type;
 
-            math::Point p_first = edge.first.getPoint();
-            math::Point p_second = edge.second.getPoint();
+            math::Point p_first = edge.first.point();
+            math::Point p_second = edge.second.point();
 
             math::Vector3d vector(p_first, p_second);
             math::Vector3d mini_vec = vector / 10;
@@ -3561,10 +3561,10 @@ void DualBlockingSession::interpolation(int Ait) {
             std::cout<<"FACE : "<<face.getIDs<Node>()[0]<<","<<face.getIDs<Node>()[1]<<","<<face.getIDs<Node>()[2]<<","<<face.getIDs<Node>()[3]<<" Type : "<<type<<std::endl;
 
 
-            math::Point p_first = face.get<Node>()[0].getPoint();
-            math::Point p_second = face.get<Node>()[1].getPoint();
-            math::Point p_ter = face.get<Node>()[2].getPoint();
-            math::Point p_qua = face.get<Node>()[3].getPoint();
+            math::Point p_first = face.get<Node>()[0].point();
+            math::Point p_second = face.get<Node>()[1].point();
+            math::Point p_ter = face.get<Node>()[2].point();
+            math::Point p_qua = face.get<Node>()[3].point();
 
 
             for (double j = 1; j < iteration; j++) {
@@ -3582,39 +3582,39 @@ void DualBlockingSession::interpolation(int Ait) {
                     }
                     switch (it_faces) {
                         case 0 :
-                            point = ((1-(i / iteration))*(m_hmesh->get<Node>(tab[int(j)][0][0]).getPoint()) + (i / iteration)*(m_hmesh->get<Node>(tab[int(j)][int(iteration)][0]).getPoint())
-                                     + (1-(j / iteration))*(m_hmesh->get<Node>(tab[0][int(i)][0]).getPoint()) + (j / iteration)*(m_hmesh->get<Node>(tab[int(iteration)][int(i)][0]).getPoint()))- point;
+                            point = ((1-(i / iteration))*(m_hmesh->get<Node>(tab[int(j)][0][0]).point()) + (i / iteration)*(m_hmesh->get<Node>(tab[int(j)][int(iteration)][0]).point())
+                                     + (1-(j / iteration))*(m_hmesh->get<Node>(tab[0][int(i)][0]).point()) + (j / iteration)*(m_hmesh->get<Node>(tab[int(iteration)][int(i)][0]).point()))- point;
                             tab[int(j)][int(i)][0] = face_node.id();
                             face_node.setPoint(point);
 
                             break;
                         case 1 :
-                            point = ((1-(i / iteration))*(m_hmesh->get<Node>(tab[0][0][int(j)]).getPoint()) + (i / iteration)*(m_hmesh->get<Node>(tab[int(iteration)][0][int(j)]).getPoint())
-                                     + (1-(j / iteration))*(m_hmesh->get<Node>(tab[int(i)][0][0]).getPoint()) + (j / iteration)*(m_hmesh->get<Node>(tab[int(i)][0][int(iteration)]).getPoint()))- point;
+                            point = ((1-(i / iteration))*(m_hmesh->get<Node>(tab[0][0][int(j)]).point()) + (i / iteration)*(m_hmesh->get<Node>(tab[int(iteration)][0][int(j)]).point())
+                                     + (1-(j / iteration))*(m_hmesh->get<Node>(tab[int(i)][0][0]).point()) + (j / iteration)*(m_hmesh->get<Node>(tab[int(i)][0][int(iteration)]).point()))- point;
                             tab[int(i)][0][int(j)] = face_node.id();
                             face_node.setPoint(point);
                             break;
                         case 2 :
-                            point = ((1-(i / iteration))*(m_hmesh->get<Node>(tab[int(iteration)][0][int(j)]).getPoint()) + (i / iteration)*(m_hmesh->get<Node>(tab[int(iteration)][int(iteration)][int(j)]).getPoint())
-                                     + (1-(j / iteration))*(m_hmesh->get<Node>(tab[int(iteration)][int(i)][0]).getPoint()) + (j / iteration)*(m_hmesh->get<Node>(tab[int(iteration)][int(i)][int(iteration)]).getPoint()))- point;
+                            point = ((1-(i / iteration))*(m_hmesh->get<Node>(tab[int(iteration)][0][int(j)]).point()) + (i / iteration)*(m_hmesh->get<Node>(tab[int(iteration)][int(iteration)][int(j)]).point())
+                                     + (1-(j / iteration))*(m_hmesh->get<Node>(tab[int(iteration)][int(i)][0]).point()) + (j / iteration)*(m_hmesh->get<Node>(tab[int(iteration)][int(i)][int(iteration)]).point()))- point;
                             tab[int(iteration)][int(i)][int(j)] = face_node.id();
                             face_node.setPoint(point);
                             break;
                         case 3 :
-                            point = ((1-(i / iteration))*(m_hmesh->get<Node>(tab[int(iteration)][int(iteration)][int(j)]).getPoint()) + (i / iteration)*(m_hmesh->get<Node>(tab[0][int(iteration)][int(j)]).getPoint())
-                                     + (1-(j / iteration))*(m_hmesh->get<Node>(tab[int(iteration)-int(i)][int(iteration)][0]).getPoint()) + (j / iteration)*(m_hmesh->get<Node>(tab[int(iteration)-int(i)][int(iteration)][int(iteration)]).getPoint()))- point;
+                            point = ((1-(i / iteration))*(m_hmesh->get<Node>(tab[int(iteration)][int(iteration)][int(j)]).point()) + (i / iteration)*(m_hmesh->get<Node>(tab[0][int(iteration)][int(j)]).point())
+                                     + (1-(j / iteration))*(m_hmesh->get<Node>(tab[int(iteration)-int(i)][int(iteration)][0]).point()) + (j / iteration)*(m_hmesh->get<Node>(tab[int(iteration)-int(i)][int(iteration)][int(iteration)]).point()))- point;
                             tab[int(iteration)-int(i)][int(iteration)][int(j)] = face_node.id();
                             face_node.setPoint(point);
                             break;
                         case 4 :
-                            point = ((1-(i / iteration))*(m_hmesh->get<Node>(tab[0][int(j)][0]).getPoint()) + (i / iteration)*(m_hmesh->get<Node>(tab[0][int(j)][int(iteration)]).getPoint())
-                                     + (1-(j / iteration))*(m_hmesh->get<Node>(tab[0][0][int(i)]).getPoint()) + (j / iteration)*(m_hmesh->get<Node>(tab[0][int(iteration)][int(i)]).getPoint()))- point;
+                            point = ((1-(i / iteration))*(m_hmesh->get<Node>(tab[0][int(j)][0]).point()) + (i / iteration)*(m_hmesh->get<Node>(tab[0][int(j)][int(iteration)]).point())
+                                     + (1-(j / iteration))*(m_hmesh->get<Node>(tab[0][0][int(i)]).point()) + (j / iteration)*(m_hmesh->get<Node>(tab[0][int(iteration)][int(i)]).point()))- point;
                             tab[0][int(j)][int(i)] = face_node.id();
                             face_node.setPoint(point);
                             break;
                         case 5 :
-                            point = ((1-(i / iteration))*(m_hmesh->get<Node>(tab[0][int(j)][int(iteration)]).getPoint()) + (i / iteration)*(m_hmesh->get<Node>(tab[int(iteration)][int(j)][int(iteration)]).getPoint())
-                                     + (1-(j / iteration))*(m_hmesh->get<Node>(tab[int(i)][0][int(iteration)]).getPoint()) + (j / iteration)*(m_hmesh->get<Node>(tab[int(i)][int(iteration)][int(iteration)]).getPoint()))- point;
+                            point = ((1-(i / iteration))*(m_hmesh->get<Node>(tab[0][int(j)][int(iteration)]).point()) + (i / iteration)*(m_hmesh->get<Node>(tab[int(iteration)][int(j)][int(iteration)]).point())
+                                     + (1-(j / iteration))*(m_hmesh->get<Node>(tab[int(i)][0][int(iteration)]).point()) + (j / iteration)*(m_hmesh->get<Node>(tab[int(i)][int(iteration)][int(iteration)]).point()))- point;
                             tab[int(i)][int(j)][int(iteration)] = face_node.id();
                             face_node.setPoint(point);
                             break;
@@ -4156,9 +4156,9 @@ void DualBlockingSession::classifyEdges(int AMode) {
             int geom_Dim_n1 = linkerH_G.getGeomDim<Node>(edge.getIDs<Node>()[1]);
 
             if(geom_Dim_n0 == cad::GeomMeshLinker::LINK_POINT){
-                cad::GeomPoint* p0 = manager.getPoint(geom_ID_n0);
+                cad::GeomPoint* p0 = manager.point(geom_ID_n0);
                 if(geom_Dim_n1 == cad::GeomMeshLinker::LINK_POINT){
-                    cad::GeomPoint* p1 = manager.getPoint(geom_ID_n1);
+                    cad::GeomPoint* p1 = manager.point(geom_ID_n1);
                     //NN
                     int common_edge = manager.getCommonCurve(p0,p1);
                     int common_face = manager.getCommonSurface(p0,p1);
@@ -4218,7 +4218,7 @@ void DualBlockingSession::classifyEdges(int AMode) {
             }else if(geom_Dim_n0 == cad::GeomMeshLinker::LINK_CURVE){
                 cad::GeomCurve* c0 = manager.getCurve(geom_ID_n0);
                 if(geom_Dim_n1 == cad::GeomMeshLinker::LINK_POINT){
-                    cad::GeomPoint* p1 = manager.getPoint(geom_ID_n1);
+                    cad::GeomPoint* p1 = manager.point(geom_ID_n1);
                     //EN
                     bool edge_found = false;
                     //On cherche si N1 est une extremité de C0
@@ -4276,7 +4276,7 @@ void DualBlockingSession::classifyEdges(int AMode) {
                 cad::GeomSurface* s0 = manager.getSurface(geom_ID_n1);
                 if(geom_Dim_n1 == cad::GeomMeshLinker::LINK_POINT){
                     //FN
-                    cad::GeomPoint* p1 = manager.getPoint(geom_ID_n1);
+                    cad::GeomPoint* p1 = manager.point(geom_ID_n1);
 
                     for(auto s : p1->surfaces()){
                         if(s->id() == geom_ID_n0){
@@ -4908,9 +4908,9 @@ void DualBlockingSession::correctionBlockEdgesClassification(){
             math::Vector3d v2 = f2.normal();
             math::Point c2  = f2.center();
             bool convex=true;
-            if(math::Orientation::orient3d(c2,ns1[0].getPoint(),
-                                           ns1[1].getPoint(),
-                                           ns1[2].getPoint())==math::Orientation::NEGATIVE){
+            if(math::Orientation::orient3d(c2,ns1[0].point(),
+                                           ns1[1].point(),
+                                           ns1[2].point())==math::Orientation::NEGATIVE){
                 //its non-convex
                 convex=false;
             }
@@ -4968,7 +4968,7 @@ void DualBlockingSession::testLissageSheet(){
                                 std::vector<math::Point> points;
                                 points.reserve(neighbors.size());
                                 for (auto node : neighbors) {
-                                    points.push_back(node.getPoint());
+                                    points.push_back(node.point());
                                 }
                                 math::Point center = math::Point::massCenter(points);
 
@@ -4981,12 +4981,12 @@ void DualBlockingSession::testLissageSheet(){
                                     norm = m_tetra_chart->value(t)[2];
                                 }
 
-                                math::Plane plane(n.getPoint(), norm);
+                                math::Plane plane(n.point(), norm);
                                 math::Point project = plane.project(center);
                                 math::Vector3d vec(project, center);
 
-                                math::Point new_point(n.getPoint().X() + vec.X(), n.getPoint().Y() + vec.Y(),
-                                                      n.getPoint().Z() + vec.Z());
+                                math::Point new_point(n.point().X() + vec.X(), n.point().Y() + vec.Y(),
+                                                      n.point().Z() + vec.Z());
 
                                 m_mesh->mark<Node>(n.id(),mark_node_done);
                                 if(linkerG_T.getGeomDim(n) == 2){

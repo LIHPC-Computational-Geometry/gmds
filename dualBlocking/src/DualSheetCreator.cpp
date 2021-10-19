@@ -132,7 +132,7 @@ bool DualSheetCreator::propagation_loop(const TCellID &ATet_ID, math::Vector3d s
         for (auto const &a: adj_edges) {
             std::vector<Node> a_nodes = a.get<Node>();
             Node opp_node = (a_nodes[0].id() == moved_node_id_init) ? a_nodes[1] : a_nodes[0];
-            double ad = opp_node.getPoint().distance(node_moved.getPoint());
+            double ad = opp_node.point().distance(node_moved.point());
             if (ad < d)
                 d = ad;
         }
@@ -142,9 +142,9 @@ bool DualSheetCreator::propagation_loop(const TCellID &ATet_ID, math::Vector3d s
         double dy = drand48() * d;
         double dz = drand48() * d;
 
-        math::Point new_loc(node_moved.getPoint().X() + dx,
-                            node_moved.getPoint().Y() + dy,
-                            node_moved.getPoint().Z() + dz);
+        math::Point new_loc(node_moved.point().X() + dx,
+                            node_moved.point().Y() + dy,
+                            node_moved.point().Z() + dz);
         node_moved.setPoint(new_loc);
 
 
@@ -227,7 +227,7 @@ bool DualSheetCreator::propagation_loop(const TCellID &ATet_ID, math::Vector3d s
                     for (auto const &a: adj_edges) {
                         std::vector<Node> a_nodes = a.get<Node>();
                         Node opp_node = (a_nodes[0].id() == n) ? a_nodes[1] : a_nodes[0];
-                        double ad = opp_node.getPoint().distance(node_moved.getPoint());
+                        double ad = opp_node.point().distance(node_moved.point());
                         if (ad < d)
                             d = ad;
                     }
@@ -237,9 +237,9 @@ bool DualSheetCreator::propagation_loop(const TCellID &ATet_ID, math::Vector3d s
                     double dy = drand48() * d;
                     double dz = drand48() * d;
 
-                    math::Point new_loc(node_moved.getPoint().X() + dx,
-                                        node_moved.getPoint().Y() + dy,
-                                        node_moved.getPoint().Z() + dz);
+                    math::Point new_loc(node_moved.point().X() + dx,
+                                        node_moved.point().Y() + dy,
+                                        node_moved.point().Z() + dz);
                     node_moved.setPoint(new_loc);
                 }
 
@@ -476,7 +476,7 @@ bool DualSheetCreator::propagation_loop(const std::set<TCellID> &ATet_list) {
                     for (auto const &a: adj_edges) {
                         std::vector<Node> a_nodes = a.get<Node>();
                         Node opp_node = (a_nodes[0].id() == n_id) ? a_nodes[1] : a_nodes[0];
-                        double ad = opp_node.getPoint().distance(node_moved.getPoint());
+                        double ad = opp_node.point().distance(node_moved.point());
                         if (ad < d)
                             d = ad;
                     }
@@ -485,11 +485,11 @@ bool DualSheetCreator::propagation_loop(const std::set<TCellID> &ATet_list) {
                     double dx = drand48() * d;
                     double dy = drand48() * d;
                     double dz = drand48() * d;
-                    //std::cout << " \t from: " << node_moved.getPoint() << std::endl;
+                    //std::cout << " \t from: " << node_moved.point() << std::endl;
 
-                    math::Point new_loc(node_moved.getPoint().X() + dx,
-                                        node_moved.getPoint().Y() + dy,
-                                        node_moved.getPoint().Z() + dz);
+                    math::Point new_loc(node_moved.point().X() + dx,
+                                        node_moved.point().Y() + dy,
+                                        node_moved.point().Z() + dz);
                     //std::cout << " \t to new location: " << new_loc << std::endl;
                     node_moved.setPoint(new_loc);
                 }
@@ -617,7 +617,7 @@ bool DualSheetCreator::propagation_loop(const std::set<TCellID> &ATet_list) {
                         intersectInfo average_e_info;
                         averageInfo(infos_temp, average_e_info);
                         average_e_info.tet = e_info[0].tet;
-                        math::Segment s(e.get<Node>()[0].getPoint(), e.get<Node>()[1].getPoint());
+                        math::Segment s(e.get<Node>()[0].point(), e.get<Node>()[1].point());
                         infos_temp.clear();
                         for(auto info : (*var_info)[e.id()]){
                             if(info.wave <= propagation_round - 5){
@@ -905,7 +905,7 @@ math::Vector3d DualSheetCreator::findNormal(math::Point& APoint, const math::Vec
 
 
         closest_chart_vectors[i] = closestComponentVector(AV, c);
-        points[i] = n.getPoint();
+        points[i] = n.point();
     }
     TCoord coords[4];
     math::Point::computeBarycentric(points[0], points[1], points[2], points[3], APoint,
@@ -939,7 +939,7 @@ math::Vector3d DualSheetCreator::findNormal(math::Point& APoint, const math::Vec
         Node n = nodes[i];
         math::Chart c = (*m_vertex_chart)[n.id()];
         closest_chart_vectors[i] = closestComponentVector(AV, c);
-        points[i] = n.getPoint();
+        points[i] = n.point();
     }
 
     math::Vector3d xp(points[0],APoint);
@@ -1013,7 +1013,7 @@ DualSheetCreator::intersect(TCellID ATetra, math::Plane APlane,
             iI.v = findNormal(PI, APlane.getNormal(), edges[i]);
             math::Plane plane(iI.p, iI.v);
 
-            math::Point proj = plane.project(APlane.getPoint());
+            math::Point proj = plane.project(APlane.point());
             //math::Vector3d vec(proj, iI.p);
             math::Vector3d vec(tet.center(),iI.p);
             vec.normalize();
@@ -1050,20 +1050,20 @@ int DualSheetCreator::intersectEdge(math::Plane& APl, math::Point& PI,
     //By default, we do not expect to move a node of the tet
 
     std::vector<Node> nodes = AE.get<Node>();
-    math::Point p1 = nodes[0].getPoint();
-    math::Point p2 = nodes[1].getPoint();
+    math::Point p1 = nodes[0].point();
+    math::Point p2 = nodes[1].point();
 
 
     double pnt1[3] = {p1.X(), p1.Y(), p1.Z()};
     double pnt2[3] = {p2.X(), p2.Y(), p2.Z()};
 
-    double plan0[3] = {APl.getPoint().X(), APl.getPoint().Y(), APl.getPoint().Z()};
+    double plan0[3] = {APl.point().X(), APl.point().Y(), APl.point().Z()};
     math::Vector3d const &pl_normal = APl.getNormal();
     math::Vector3d pl_e1(pl_normal.Z()-pl_normal.Y(),pl_normal.X()-pl_normal.Z(),pl_normal.Y()-pl_normal.X());
     math::Vector3d pl_e2 = pl_normal.cross(pl_e1);
-    math::Point p1_simon = APl.getPoint()+(pl_e1);
+    math::Point p1_simon = APl.point()+(pl_e1);
     double plan1_simon[3] = {p1_simon.X(),p1_simon.Y(),p1_simon.Z()};
-    math::Point p2_simon = APl.getPoint()+(pl_e2);
+    math::Point p2_simon = APl.point()+(pl_e2);
     double plan2_simon[3] = {p2_simon.X(),p2_simon.Y(),p2_simon.Z()};
 
 

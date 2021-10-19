@@ -18,7 +18,8 @@ set(GMDS_INC
         inc/gmds/cad/GeomPoint.h
         inc/gmds/cad/GeomSurface.h
         inc/gmds/cad/GeomMeshLinker.h
-        inc/gmds/cad/GeomVolume.h        )
+        inc/gmds/cad/GeomVolume.h
+        )
 set(GMDS_SRC
         src/FACCurve.cpp
         src/FACManager.cpp

@@ -46,7 +46,7 @@ namespace gmds{
             m_normal.normalize();
         }
         /*----------------------------------------------------------------------------*/
-        const Point& Plane::getPoint() const
+        const Point& Plane::point() const
         {
             return m_pnt;
         }
@@ -59,7 +59,7 @@ namespace gmds{
             if (APlane == *this) {
                 return *this;
             }
-            set(APlane.getPoint(), APlane.getNormal());
+            set(APlane.point(), APlane.getNormal());
             return *this;
         }
         /*----------------------------------------------------------------------------*/
@@ -67,7 +67,7 @@ namespace gmds{
             if (&AP == this) {
                 return true;
             }
-            return (AP.getPoint()  == getPoint() &&
+            return (AP.point() == point() &&
                     AP.getNormal() == getNormal() );
         }
         /*----------------------------------------------------------------------------*/
@@ -75,8 +75,8 @@ namespace gmds{
             if (&AP == this) {
                 return false;
             }
-            return AP.getPoint() != getPoint() ||
-            (AP.getNormal() != getNormal());
+            return AP.point() != point() ||
+                   (AP.getNormal() != getNormal());
         }
         /*----------------------------------------------------------------------------*/
         bool  Plane::isIn(const Point& AP) const

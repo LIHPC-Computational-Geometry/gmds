@@ -79,7 +79,7 @@ bool Line::intersect3D(const Plane& APlane, Point& AP, double& AParam) const
     Vector3d dir(m_p1, m_p2);
 
     Vector3d normal = APlane.getNormal();
-    Vector3d w0(APlane.getPoint(),src);
+    Vector3d w0(APlane.point(), src);
 
 	double a = - normal.dot(w0);
 	double b = normal.dot(dir);

@@ -10,6 +10,7 @@ if(APPLE)
 endif()
 #==============================================================================
 project(gmds VERSION 1.0 LANGUAGES CXX)
+
 #==============================================================================
 # Compilation options mainly for testing purpose
 #==============================================================================
@@ -104,7 +105,7 @@ GMDS_ADD_COMPONENT(
         GMDSFrame                           # name of the generated library
         "Frame field generation component"  # description
         ON                                  # is activated
-        ON                                 # must be covered
+        ON                                # must be covered
 )
 
 GMDS_ADD_COMPONENT(
@@ -113,7 +114,7 @@ GMDS_ADD_COMPONENT(
         GMDSFrame3d
         "3D Frame field generation component"
         ON
-        ON                                 # must be covered
+        ON                                # must be covered
 )
 
 GMDS_ADD_COMPONENT(
@@ -122,7 +123,7 @@ GMDS_ADD_COMPONENT(
         GMDSSingGraphBuild
         "Singularity graph building component"
         ON
-        ON                                 # must be covered
+        ON                                # must be covered
 )
 
 GMDS_ADD_COMPONENT(
@@ -231,7 +232,7 @@ if (WITH_CODE_COVERAGE)
     message(STATUS "============ COVERED COMPONENTS ============")
     message(STATUS "============================================")
     foreach(c IN LISTS GMDS_COVER_COMPONENTS)
-        set(ENABLE_${c} ON)
+        set(ENABLE_${c} OFF)
         message(STATUS "COMPONENT  : ${c}")
     endforeach()
     message(STATUS "============================================")
@@ -284,13 +285,12 @@ endif(WITH_CODE_COVERAGE)
 #==============================================================================
 include(ExternalProject)
 include(GNUInstallDirs)
-
+#==============================================================================
 add_subdirectory(external/ANN)
 add_subdirectory(external/Predicates_psm)
 add_subdirectory(external/inih)
 add_subdirectory(external/OpenNL)
 add_subdirectory(external/gco-v3)
-add_subdirectory(external/glpk)
 
 #==============================================================================
 # PROJECT STRUCTURE

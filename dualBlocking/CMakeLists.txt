@@ -26,7 +26,9 @@ add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 # TARGET DEFINITION
 #==============================================================================
 include(GNUInstallDirs)
-
+if(${GLPK_LIB} STREQUAL "" OR ${GLPK_INC} STREQUAL "")
+    message(FATAL_ERROR "Dual BLocking module requires GLPK")
+endif()
 link_directories(${GLPK_LIB})
 include_directories(${GLPK_INC})
 
@@ -36,6 +38,7 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_IG_ALGO}
         ${LIB_GMDS_IO}
         ${LIB_GMDS_CAD}
+        ${LIB_GMDS_SMOOTHY}
         Predicates_psm
         INTERFACE glpk)
 

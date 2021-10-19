@@ -66,7 +66,7 @@ void DualSheet::buildSurface(gmds::Mesh* AMesh) {
 
     for(auto n : AMesh->nodes()){
         Node node = AMesh->get<Node>(n);
-        Node surface_node = m_mesh_surface->newNode(node.getPoint());
+        Node surface_node = m_mesh_surface->newNode(node.point());
         amesh_to_surface.emplace(n,surface_node.id());
     }
 

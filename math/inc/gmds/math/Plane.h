@@ -198,7 +198,7 @@ public:
 	 *
 	 * \return a point
 	 */
-	const Point& getPoint() const;
+	const Point& point() const;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Getter for the plane normal

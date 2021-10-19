@@ -72,7 +72,7 @@ int main(int argc, char** argv)
         Node n = mesh.get<Node>(n_id);
         if(n.getIDs<Edge>().size()==0){
             std::cout<<"HERE MAIN 2) One node "<<n_id<<" has no incident edges!!"<<std::endl;
-            std::cout<<n.getPoint()<<std::endl;
+            std::cout<<n.point()<<std::endl;
             //exit(0);
         }
     }

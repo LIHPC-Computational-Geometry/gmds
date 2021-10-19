@@ -268,7 +268,7 @@ Tools::computeFuzzyHeuns(const math::Point &AFromPnt,
 			std::vector<Node> n = AFaces[i].get<Node>();
 			/* math::Point pn[3] ={
 			    n[0].getPoint(),
-			    n[1].getPoint(),
+			    n[1].point(),
 			    n[2].point()};*/
 			// We compute the barycentric coords.
 			bool on_edge[3] = {false, false, false};

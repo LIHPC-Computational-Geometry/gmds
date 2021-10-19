@@ -30,8 +30,8 @@ for(auto node_id: m->nodes()){
 ```
 ## Algorithms for quad and hex meshing
 GMDS is our main framework for developing new algorithms and our current interest is about structured quadrilateral and hexahedral meshing. To generate such meshes, we focus on the following *technologies*:
-- [Frame fields](https://gitlab.com/franck.ledoux/gmds/wikis/wiki_doc/Frame_Module). In particular, the **frame** module provides algorithms based on frame fields.
-- [Overlay grids algorithms](https://gitlab.com/franck.ledoux/gmds/wikis/wiki_doc/OGrid_Module).
+- [Frame fields](frame/README.md). In particular, the **frame** module provides algorithms based on frame fields.
+- [Overlay grids algorithms](Elg3D/README.md).
 - [Sheet operations](sheet/README.md). This module provides sheet operations for quad and hex meshes.
 ## A service-based approach
 In order to build and prototype secure pipeline algorithms, we propose a **service** module to assemble our algorithms into a verified and dynamically-secured pipeline. We strongly believe that a main drawback of research but also production codes is that they're are written by researchers in mathematics, physics or computer science who focuses on the application "business" without taking care of "software engineering". This is quite usual and understandable but such a behaviour has 2 main consequences:
@@ -42,7 +42,9 @@ The **service** module is an answer to this issue. Input and output of each serv
 
 ## User and developer documentation
 
-All the documentation is currently available in the [GMDS Wiki](https://gitlab.com/franck.ledoux/gmds/wikis/GMDS-Wiki) that is modified asap.
+All the documentation is currently available at the next locations:
+- for users who wants to write new algorithms using gms, go to [gmds user guide](docs/markdown/user_module.md).
+- for developers who want to add a new module in gmds, go to [gmds developer guide](docs/markdown/dev_module.md).
 
 ### Git usage
 In order to add a complete repository in the external repo, which contains external libraries use the *git add -f* option
