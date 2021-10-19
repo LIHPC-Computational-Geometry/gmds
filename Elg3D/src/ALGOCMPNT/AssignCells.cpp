@@ -312,6 +312,177 @@ struct AssignCells_GetMajorityFracPres
                                  });
         }  // while(checkAssign)
     }
+
+    /*----------------------------------------------------------------------------*/
+    void
+    assignCells_refeaturing_XD(const kmds::GrowingView<kmds::TCellID>* ACellIDs,
+                               const elg3d::FracPres* Afp,
+                               const elg3d::MaterialAssignment* Ama,
+                               const kmds::Connectivity* AC_C2C_byN,
+                               kmds::GrowingView<kmds::TCellID>* ACellsList)
+    {
+        struct assignCells_refeaturing_isolated
+        {
+            const kmds::GrowingView<kmds::TCellID>* selection;
+            const kmds::Connectivity* c_C2C_byN;
+            const elg3d::MaterialAssignment* Ama;
+            kmds::GrowingView<kmds::TCellID>* cells2Change;
+
+
+            assignCells_refeaturing_isolated(
+                    const kmds::GrowingView<kmds::TCellID>* Selection_,
+                    const kmds::Connectivity* c_C2C_byN_,
+                    const elg3d::MaterialAssignment* Ama_,
+                    kmds::GrowingView<kmds::TCellID>* cells2Change_
+            )
+                    : selection(Selection_)
+                    , c_C2C_byN(c_C2C_byN_)
+                    , Ama(Ama_)
+                    , cells2Change(cells2Change_)
+            {
+            }
+
+            KOKKOS_INLINE_FUNCTION
+            void
+            operator()(size_t i) const {
+                const kmds::TCellID cid = selection->get(i);
+                const int mat = Ama->getMaterial(cid);
+
+                int nbCellsOtherMat = 0;
+
+                Kokkos::View<kmds::TCellID *> cids;
+                c_C2C_byN->get(cid, cids);
+
+                for (auto i_c = 0; i_c < cids.size(); i_c++) {
+                    if (mat != Ama->getMaterial(cids[i_c])) {
+                        nbCellsOtherMat++;
+                    }
+                }
+
+                if ((double) nbCellsOtherMat / (double) cids.size() > 0.70) {
+                    cells2Change->push_back(cid);
+                }
+            }
+        };
+
+        struct assignCells_refeaturing_noassign
+        {
+            const kmds::GrowingView<kmds::TCellID>* selection;
+            const kmds::Connectivity* c_C2C_byN;
+            const elg3d::FracPres* Afp;
+            const elg3d::MaterialAssignment* Ama;
+            const int nbMat;
+            kmds::GrowingView<kmds::TCellID>* cells2Change;
+
+
+            assignCells_refeaturing_noassign(
+                    const kmds::GrowingView<kmds::TCellID>* Selection_,
+                    const kmds::Connectivity* c_C2C_byN_,
+                    const elg3d::FracPres* Afp_,
+                    const elg3d::MaterialAssignment* Ama_,
+                    const int nbMat_,
+                    kmds::GrowingView<kmds::TCellID>* cells2Change_
+            )
+                    : selection(Selection_)
+                    , c_C2C_byN(c_C2C_byN_)
+                    , Afp(Afp_)
+                    , Ama(Ama_)
+                    , nbMat(nbMat_)
+                    , cells2Change(cells2Change_)
+            {
+            }
+
+            KOKKOS_INLINE_FUNCTION
+            void
+            operator()(size_t i) const {
+                const kmds::TCellID cid = selection->get(i);
+                const int mat = Ama->getMaterial(cid);
+
+                Kokkos::View<kmds::TCellID *> cids;
+                c_C2C_byN->get(cid, cids);
+
+                for(int imat=0; imat<nbMat; imat++) {
+                    if(Afp->getFracPres(imat, cid) > 0.) {
+                        bool found = false;
+                        if(mat == imat) {
+                            found = true;
+                        } else {
+                            for (auto i_c = 0; i_c < cids.size(); i_c++) {
+                                if (imat == Ama->getMaterial(cids[i_c])) {
+                                    found = true;
+                                }
+                            }
+                        }
+                        if(!found) {
+                            cells2Change->push_back(cid);
+                            return;
+                        }
+                    }
+                }
+
+            }
+        };
+
+        const kmds::TCellID nbCells = ACellIDs->getNbElems();
+
+        kmds::GrowingView<kmds::TCellID> cellIDs2Change("CELLS", nbCells);
+
+        cellIDs2Change.clear();
+
+        Kokkos::parallel_for(nbCells,
+                             assignCells_refeaturing_isolated(ACellIDs,
+                                                              AC_C2C_byN,
+                                                              Ama,
+                                                              &cellIDs2Change));
+
+        kmds::TCellID nbCellIDs2sChange = cellIDs2Change.getNbElems();
+        std::cout<<"nbCellIDs2sChange isolated_components "<<nbCellIDs2sChange<<std::endl;
+
+        for(int icell=0; icell<nbCellIDs2sChange; icell++) {
+            std::cout<<"cid "<<cellIDs2Change.get(icell)<<std::endl;
+        }
+
+        const int nbMat = Afp->getNbMaterials();
+        Kokkos::parallel_for(nbCells,
+                             assignCells_refeaturing_noassign(ACellIDs,
+                                                              AC_C2C_byN,
+                                                              Afp,
+                                                              Ama,
+                                                              nbMat,
+                                                              &cellIDs2Change));
+
+        nbCellIDs2sChange = cellIDs2Change.getNbElems();
+        std::cout<<"nbCellIDs2sChange noassign "<<cellIDs2Change.getNbElems()<<std::endl;
+
+        for(int icell=0; icell<nbCellIDs2sChange; icell++) {
+            std::cout<<"cid "<<cellIDs2Change.get(icell)<<std::endl;
+        }
+
+        Kokkos::UnorderedMap<kmds::TCellID, void> kmap(nbCells);
+
+        Kokkos::parallel_for(nbCellIDs2sChange, KOKKOS_LAMBDA(const int i) {
+            const kmds::TCellID cid = cellIDs2Change.get(i);
+            Kokkos::UnorderedMapInsertResult res = kmap.insert(cid);
+
+            if (res.success()) {
+                ACellsList->push_back(cid);
+            }
+
+            Kokkos::View<kmds::TCellID *> cids;
+            AC_C2C_byN->get(cid, cids);
+
+            for (auto i_c = 0; i_c < cids.size(); i_c++) {
+                Kokkos::UnorderedMapInsertResult res = kmap.insert(cids[i_c]);
+                if (res.success()) {
+                    ACellsList->push_back(cids[i_c]);
+                }
+            }
+
+        });
+
+        std::cout<<"ACellsList "<<ACellsList->getNbElems()<<std::endl;
+    }
+
     /*----------------------------------------------------------------------------*/
     void
     assignCellsCorrection_2D(kmds::Mesh* AMesh, const kmds::Connectivity* c_N2F, elg3d::FracPres* Afp, elg3d::MaterialAssignment* Ama)
