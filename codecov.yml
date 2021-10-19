@@ -1,0 +1,7 @@
+ignore:
+  - "external" 
+  - "CMakeModules"     
+  - "Test_pvsm"        
+  - "docs"
+  - "spack_repo"
+  - "**/tst"
