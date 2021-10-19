@@ -1,5 +1,6 @@
 # A C++ library for writing meshing algorithms
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/6812888e69b348239217c607f514f024)](https://app.codacy.com/gh/LIHPC-Computational-Geometry/gmds?utm_source=github.com&utm_medium=referral&utm_content=LIHPC-Computational-Geometry/gmds&utm_campaign=Badge_Grade_Settings)
 [![GitHub issues](https://img.shields.io/github/issues/LIHPC-Computational-Geometry/gmds)](https://github.com/LIHPC-Computational-Geometry/gmds/issues)
 [![GitHub license](https://img.shields.io/github/license/LIHPC-Computational-Geometry/gmds)](https://github.com/LIHPC-Computational-Geometry/gmds/blob/main/LICENSE)
 [![codecov](https://codecov.io/gh/LIHPC-Computational-Geometry/gmds/branch/main/graph/badge.svg?token=QA3AS0MLDN)](https://codecov.io/gh/LIHPC-Computational-Geometry/gmds)
