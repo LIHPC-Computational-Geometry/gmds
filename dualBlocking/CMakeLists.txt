@@ -26,7 +26,7 @@ add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 # TARGET DEFINITION
 #==============================================================================
 include(GNUInstallDirs)
-if(${GLPK_LIB} STREQUAL "" OR ${GLPK_INC} STREQUAL "")
+if((${GLPK_LIB} STREQUAL "") OR (${GLPK_INC} STREQUAL ""))
     message(FATAL_ERROR "Dual BLocking module requires GLPK")
 endif()
 link_directories(${GLPK_LIB})

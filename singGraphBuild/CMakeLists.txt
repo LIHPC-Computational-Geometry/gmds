@@ -5,7 +5,7 @@
 set(GMDS_LIB ${LIB_GMDS_SINGGRAPHBUILD})
 set(GMDS_LIB_PREFIX gmds/singGraphBuild)
 
-if(${GLPK_LIB} STREQUAL "" OR ${GLPK_INC} STREQUAL "")
+if((${GLPK_LIB} STREQUAL "") OR (${GLPK_INC} STREQUAL ""))
     message(FATAL_ERROR "SinggraphBuild module requires GLPK")
 endif()
 link_directories(${GLPK_LIB})
