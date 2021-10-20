@@ -1,0 +1,1 @@
+cmd='//home/simon/Dev/gmds/external/glpk/src/glpk/configure;CC=;CXX=/usr/bin/c++;CXXFLAGS=;LDFLAGS=;--prefix=/home/simon/Dev/gmds/glpk'
