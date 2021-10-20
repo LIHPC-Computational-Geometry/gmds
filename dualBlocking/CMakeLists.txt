@@ -27,9 +27,6 @@ add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
 include(GNUInstallDirs)
 
-link_directories(${GLPK_LIB})
-include_directories(${GLPK_INC})
-
 #LIBRARY TO INSTALL
 target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_IG}
@@ -37,7 +34,7 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_IO}
         ${LIB_GMDS_CAD}
         Predicates_psm
-        INTERFACE glpk)
+        glpk)
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)
 
