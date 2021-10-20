@@ -50,7 +50,7 @@ else() # unix
     endif() # from spack fro example
     
     set_target_properties(glpk PROPERTIES
-             IMPORTED_LOCATION ${GLPK_LIB}/libglpk.so
+             IMPORTED_LOCATION ${GLPK_LIB}/libglpk.a
              INTERFACE_INCLUDE_DIRECTORIES ${GLPK_INC})    
 
     message(STATUS "============= GLPK  ===============")
