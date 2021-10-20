@@ -26,11 +26,13 @@ add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 # TARGET DEFINITION
 #==============================================================================
 include(GNUInstallDirs)
-if((NOT DEFINED GLPK_LIB) OR (NOT DEFINED GLPK_INC))
-    message(FATAL_ERROR "Dual BLocking module requires GLPK")
+
+
+if(NOT WIN32)
+    if((NOT DEFINED GLPK_LIB) OR (NOT DEFINED GLPK_INC))
+        message(FATAL_ERROR "SinggraphBuild module requires GLPK")
+    endif()
 endif()
-link_directories(${GLPK_LIB})
-include_directories(${GLPK_INC})
 
 #LIBRARY TO INSTALL
 target_link_libraries(${GMDS_LIB} PUBLIC

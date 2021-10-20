@@ -5,12 +5,11 @@
 set(GMDS_LIB ${LIB_GMDS_SINGGRAPHBUILD})
 set(GMDS_LIB_PREFIX gmds/singGraphBuild)
 
-
-if((NOT DEFINED GLPK_LIB) OR (NOT DEFINED GLPK_INC))
-    message(FATAL_ERROR "SinggraphBuild module requires GLPK")
+if(NOT WIN32)
+    if((NOT DEFINED GLPK_LIB) OR (NOT DEFINED GLPK_INC))
+        message(FATAL_ERROR "SinggraphBuild module requires GLPK")
+    endif()
 endif()
-link_directories(${GLPK_LIB})
-include_directories(${GLPK_INC})
 
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
