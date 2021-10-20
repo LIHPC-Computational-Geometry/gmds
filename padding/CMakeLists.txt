@@ -23,6 +23,8 @@ if(NOT WIN32)
     if((NOT DEFINED GLPK_LIB) OR (NOT DEFINED GLPK_INC))
         message(FATAL_ERROR "SinggraphBuild module requires GLPK")
     endif()
+    link_directories(${GLPK_LIB})
+    include_directories(${GLPK_INC})
 endif()
 
 #LIBRARY TO INSTALL
