@@ -18,7 +18,8 @@ add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
 include(GNUInstallDirs)
 
-if(${GLPK_LIB} STREQUAL "" OR ${GLPK_INC} STREQUAL "")
+
+if((NOT DEFINED GLPK_LIB) OR (NOT DEFINED GLPK_INC))
     message(FATAL_ERROR "Padding module requires GLPK")
 endif()
 link_directories(${GLPK_LIB})
