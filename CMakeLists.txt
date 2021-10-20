@@ -232,7 +232,7 @@ if (WITH_CODE_COVERAGE)
     message(STATUS "============ COVERED COMPONENTS ============")
     message(STATUS "============================================")
     foreach(c IN LISTS GMDS_COVER_COMPONENTS)
-        set(ENABLE_${c} OFF)
+        set(ENABLE_${c} ON)
         message(STATUS "COMPONENT  : ${c}")
     endforeach()
     message(STATUS "============================================")
@@ -291,6 +291,7 @@ add_subdirectory(external/Predicates_psm)
 add_subdirectory(external/inih)
 add_subdirectory(external/OpenNL)
 add_subdirectory(external/gco-v3)
+add_subdirectory(external/glpk)
 
 #==============================================================================
 # PROJECT STRUCTURE
