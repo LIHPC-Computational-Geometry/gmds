@@ -15,11 +15,12 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: prepare environment
-      - run: brew install doxygen
-        && brew install sphinx-doc
-        && pip3 install sphinx-rtd-theme
-        && pip3 install breathe
-        && pip3 install sphinx-sitemap
+      - run: >
+          brew install doxygen
+          brew install sphinx-doc
+          pip3 install sphinx-rtd-theme
+          pip3 install breathe
+          pip3 install sphinx-sitemap
       - name: Checkout repo
         uses: actions/checkout@1.0.0
 
@@ -34,10 +35,11 @@ jobs:
         && make doxygen
       - name: Build sphinx
         working-directory: ${{github.workspace}}/build
-        run: cd docs/sphinx
-          && make html
-          && cd _build/html
-          && touch .nojekyll
+        run: >
+          cd docs/sphinx
+          make html
+          cd _build/html
+          touch .nojekyll
       - name: Deploy
         uses: LIHPC-ComputationalGeometry/github-pages-deploy-action@releases/v3
         with:
