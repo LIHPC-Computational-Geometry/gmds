@@ -6,6 +6,7 @@ set(GMDS_LIB ${LIB_GMDS_CLAIRE})
 set(GMDS_LIB_PREFIX gmds/claire)
 
 set(GMDS_INC
+		${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
 		inc/gmds/claire/Smooth2D.h
 		)
 set(GMDS_SRC
@@ -14,6 +15,11 @@ set(GMDS_SRC
 		)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
+#==============================================================================
+include(GenerateExportHeader)
+generate_export_header(${GMDS_LIB}
+		EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
+		EXPORT_MACRO_NAME ${GMDS_LIB}_API)
 #==============================================================================
 # TARGET DEFINITION
 #==============================================================================
