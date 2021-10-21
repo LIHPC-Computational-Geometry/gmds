@@ -1,0 +1,46 @@
+name: Docs
+
+on:
+  #push:
+  #  branches-ignore:
+  #    - '**'
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+    steps:
+      - name: prepare environment
+      - run: brew install doxygen
+        && brew install sphinx-doc
+        && pip3 install sphinx-rtd-theme
+        && pip3 install breathe
+        && pip3 install sphinx-sitemap
+      - name: Checkout repo
+        uses: actions/checkout@1.0.0
+
+      - name: Build doxygen doc
+      # Use a bash shell so we can use the same syntax for environment variable
+      # access regardless of the host operating system
+      working-directory: ${{github.workspace}}/build
+      # Note the current convention is to use the -S and -B options here to specify source
+      # and build directories, but this is only available with CMake 3.13 and higher.
+      # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+      run:  cmake $GITHUB_WORKSPACE -DWITH_DOC=true
+        && make doxygen
+      - name: Build sphinx
+        working-directory: ${{github.workspace}}/build
+        run: cd docs/sphinx
+          && make html
+          && cd _build/html
+          && touch .nojekyll
+      - name: Deploy
+        uses: LIHPC-ComputationalGeometry/github-pages-deploy-action@releases/v3
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages # The branch the action should deploy to.
+          FOLDER: docs/sphinx/_build/html # The folder the action should deploy.
