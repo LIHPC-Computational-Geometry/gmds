@@ -1,0 +1,46 @@
+name: Docs
+
+on:
+  #push:
+  #  branches-ignore:
+  #    - '**'
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: prepare environment
+        run: >
+          brew install doxygen
+          brew install sphinx-doc
+          pip3 install sphinx-rtd-theme
+          pip3 install breathe
+          pip3 install sphinx-sitemap
+
+      - name: Build doxygen doc
+        working-directory: ${{github.workspace}}/build
+        run:  >
+          cmake $GITHUB_WORKSPACE -DWITH_DOC=true
+          make doxygen
+      - name: Build sphinx
+        working-directory: ${{github.workspace}}/build
+        run: >
+          cd docs/sphinx
+          make html
+          cd _build/html
+          touch .nojekyll
+      - name: Deploy
+        uses: LIHPC-ComputationalGeometry/github-pages-deploy-action@releases/v3
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages # The branch the action should deploy to.
+          FOLDER: docs/sphinx/_build/html # The folder the action should deploy.

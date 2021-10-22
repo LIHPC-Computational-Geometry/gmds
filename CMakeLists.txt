@@ -90,6 +90,15 @@ endmacro()
 # OPTIONAL COMPONENTS
 #==============================================================================
 GMDS_ADD_COMPONENT(
+        CLAIRE                       # cmake variable
+        claire                        # src subdirectory name
+        GMDSClaire                    # name of the generated library
+        " "  # description
+        ON                                 # is activated
+        ON                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
         BLOCK_MESHER                       # cmake variable
         blockMesher                        # src subdirectory name
         GMDSBlockMesher                    # name of the generated library
