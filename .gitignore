@@ -28,7 +28,6 @@ external/glpk/src/glpk/w64/*
 external/glpk/src/glpk/src/*
 external/glpk/src/glpk/examples/*
 
-docs/sphinx
 
 # spack files when dev-build
 spack-*
