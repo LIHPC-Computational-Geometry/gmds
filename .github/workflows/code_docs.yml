@@ -1,46 +1,34 @@
-name: Docs
+name: Doxygen
 
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
 on:
-  #push:
-  #  branches-ignore:
-  #    - '**'
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
 
+
 jobs:
   build:
-
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: prepare environment
-        run: >
-          brew install doxygen
-          brew install sphinx-doc
-          pip3 install sphinx-rtd-theme
-          pip3 install breathe
-          pip3 install sphinx-sitemap
 
-      - name: Build doxygen doc
-        working-directory: ${{github.workspace}}/build
-        run:  >
-          cmake $GITHUB_WORKSPACE -DWITH_DOC=true
-          make doxygen
-      - name: Build sphinx
-        working-directory: ${{github.workspace}}/build
-        run: >
-          cd docs/sphinx
-          make html
-          cd _build/html
-          touch .nojekyll
-      - name: Deploy
-        uses: LIHPC-ComputationalGeometry/github-pages-deploy-action@releases/v3
+      - name: Doxygen Action
+        uses: mattnotmitt/doxygen-action@v1.1.0
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages # The branch the action should deploy to.
-          FOLDER: docs/sphinx/_build/html # The folder the action should deploy.
+          # Path to Doxyfile
+          doxyfile-path: ./docs/doxygen/Doxifile.in
+          # Working directory
+          working-directory: "." # default is .
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Default Doxyfile build documentation to html directory.
+          # Change the directory if changes in Doxyfile
+          publish_dir: ./docs/doxygen/html

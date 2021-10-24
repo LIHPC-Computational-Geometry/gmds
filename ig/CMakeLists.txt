@@ -7,6 +7,7 @@ set(GMDS_LIB_PREFIX gmds/ig)
 
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
+        inc/gmds/ig/Blocking2D.h
         inc/gmds/ig/Cell.h
         inc/gmds/ig/CellGroup.h
         inc/gmds/ig/Edge.h
@@ -21,6 +22,7 @@ set(GMDS_INC
         inc/gmds/ig/MeshDoctor.h)
 
 set(GMDS_SRC
+        src/Blocking2D.cpp
         src/Cell.cpp
         src/Edge.cpp
         src/EdgeContainer.cpp
@@ -32,7 +34,7 @@ set(GMDS_SRC
         src/NodeContainer.cpp
         src/Region.cpp
         src/RegionContainer.cpp
-        )
+        inc/gmds/ig/Blocking2D.h src/Blocking2D.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
