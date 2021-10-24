@@ -25,7 +25,7 @@ jobs:
           # Path to Doxyfile
           doxyfile-path: docs/doxygen/Doxyfile.in
           # Working directory
-          working-directory: .
+          working-directory: /home/runner/work/gmds/gmds
           #${{github.workspace}}
 
       - name: Deploy
