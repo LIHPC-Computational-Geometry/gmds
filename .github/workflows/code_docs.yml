@@ -19,19 +19,37 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Doxygen Action
-        uses: mattnotmitt/doxygen-action@v1.1.0
-        with:
-          # Path to Doxyfile
-          doxyfile-path: docs/doxygen/Doxyfile.in
-          # Working directory
-          working-directory: /home/runner/work/gmds/gmds
-          #${{github.workspace}}
+      - name: Initialize the dpc environement
+        shell: bash
+        run : >
+          chmod +x ./.github/workflows/env_linux.sh;
+          ./.github/workflows/env_linux.sh
+          apt-get install -y doxygen
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          # Default Doxyfile build documentation to html directory.
-          # Change the directory if changes in Doxyfile
-          publish_dir: docs/doxygen/html
+      - name: Create Build Environment
+        # We create a subdirectory that will stand as our working directory for all
+        # subsequent commands
+        run: cmake -E make_directory ${{github.workspace}}/build
+
+      - name: Configure CMake
+        # Use a bash shell so we can use the same syntax for environment variable
+        # access regardless of the host operating system
+        shell: bash
+        working-directory: ${{github.workspace}}/build
+        # Note the current convention is to use the -S and -B options here to specify source
+        # and build directories, but this is only available with CMake 3.13 and higher.
+        # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+        run: >
+          cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+          -DWITH_DOC=ON
+          -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib
+          -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
+
+      - name: Build doc
+      # Use a bash shell so we can use the same syntax for environment variable
+      # access regardless of the host operating system
+        shell: bash
+        working-directory: ${{github.workspace}}/build
+       # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: make doc
+        
