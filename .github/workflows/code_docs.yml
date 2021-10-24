@@ -24,7 +24,6 @@ jobs:
         run : >
           chmod +x ./.github/workflows/env_linux.sh;
           ./.github/workflows/env_linux.sh
-          apt-get install -y doxygen
 
       - name: Create Build Environment
         # We create a subdirectory that will stand as our working directory for all

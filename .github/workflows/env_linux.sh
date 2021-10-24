@@ -7,3 +7,4 @@ spack external find cmake
 spack install lcov
 spack install kokkos+openmp
 spack install glpk
+spack install doxygen
