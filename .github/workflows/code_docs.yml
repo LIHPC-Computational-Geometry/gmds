@@ -16,14 +16,17 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       - name: Doxygen Action
         uses: mattnotmitt/doxygen-action@v1.1.0
         with:
           # Path to Doxyfile
-          doxyfile-path: ./docs/doxygen/Doxyfile.in
+          doxyfile-path: docs/doxygen/Doxyfile.in
           # Working directory
-          working-directory: ${{github.workspace}}
+          working-directory: .
+          #${{github.workspace}}
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
@@ -31,4 +34,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           # Default Doxyfile build documentation to html directory.
           # Change the directory if changes in Doxyfile
-          publish_dir: ./docs/doxygen/html
+          publish_dir: docs/doxygen/html
