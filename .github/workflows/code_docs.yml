@@ -41,6 +41,7 @@ jobs:
         # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
         run: >
           cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+          -DWITH_TEST=ON
           -DWITH_DOC=ON
           -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib
           -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
@@ -51,4 +52,4 @@ jobs:
         shell: bash
         working-directory: ${{github.workspace}}/build
        # Execute the build.  You can specify a specific target with "--target <NAME>"
-        run: make doxygen
+        run: cmake --build . --target doxygen
