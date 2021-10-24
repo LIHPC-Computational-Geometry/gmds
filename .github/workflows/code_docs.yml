@@ -22,9 +22,9 @@ jobs:
       - name: Initialize the dpc environement
         shell: bash
         run : >
-          export DEBIAN_FRONTEND=noninteractive;
-          apt-get update;
-          apt-get install -y doxygen;
+          sudo export DEBIAN_FRONTEND=noninteractive;
+          sudo apt-get update;
+          sudo apt-get install -y doxygen;
           chmod +x ./.github/workflows/env_linux.sh;
           ./.github/workflows/env_linux.sh
 
