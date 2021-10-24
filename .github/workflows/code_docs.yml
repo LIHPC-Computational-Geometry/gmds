@@ -51,5 +51,4 @@ jobs:
         shell: bash
         working-directory: ${{github.workspace}}/build
        # Execute the build.  You can specify a specific target with "--target <NAME>"
-        run: make doc
-        
+        run: make doxygen
