@@ -22,6 +22,7 @@ jobs:
       - name: Initialize the dpc environement
         shell: bash
         run : >
+          apt-get install doxygen;
           chmod +x ./.github/workflows/env_linux.sh;
           ./.github/workflows/env_linux.sh
 
