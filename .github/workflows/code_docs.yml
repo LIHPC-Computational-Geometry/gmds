@@ -22,7 +22,6 @@ jobs:
       - name: Initialize the dpc environement
         shell: bash
         run : >
-        #sudo is mandatory in github action
           sudo apt-get update;
           sudo apt-get install -y doxygen;
           chmod +x ./.github/workflows/env_linux.sh;
