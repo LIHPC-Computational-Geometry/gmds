@@ -23,7 +23,7 @@ jobs:
           # Path to Doxyfile
           doxyfile-path: ./docs/doxygen/Doxyfile.in
           # Working directory
-          working-directory: "." # default is .
+          working-directory: ${{github.workspace}}
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
