@@ -13,8 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+
+      - name: Checkout repo
+        uses: actions/checkout@v2
 
       - name: Initialize the environment to generate documentatioN
         shell: bash
@@ -57,9 +58,13 @@ jobs:
         run: |
           mkdir ${{github.workspace}}/docs/doxygen;
           cp -r build/docs/doxygen_output/html/index.html ${{github.workspace}}/docs/doxygen;
-          git config user.name ${{ secrets.GH_USER }}
-          git config user.email "${{ secrets.GH_MAIL }}"
-          git remote add gh-token "https://${{ secrets.GH_TOKEN}}@github.com/LIHPC-Computational-Geometry/gmds.git"
+          git config --local user.email "12991298+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"}}"
           git add docs/doxygen/*;
-          git commit -am "Automated doxygen upate";
-          git push;
+          git commit -m "Automated doxygen upate";
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: $
+          branch: $
