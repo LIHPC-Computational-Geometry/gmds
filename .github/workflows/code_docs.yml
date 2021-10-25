@@ -59,7 +59,7 @@ jobs:
       - name: Commit doxygen documentation
         working-directory: ${{github.workspace}}/
         run: |
-          mkdir ${{github.workspace}}/docs/doxygen
+          mkdir -p ${{github.workspace}}/docs/doxygen
           cp -r build/docs/doxygen_output/html/* ${{github.workspace}}/docs/doxygen
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
