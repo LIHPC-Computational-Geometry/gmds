@@ -15,8 +15,6 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Initialize the environment to generate documentatioN
         shell: bash
@@ -59,8 +57,9 @@ jobs:
         run: |
           mkdir ${{github.workspace}}/docs/doxygen;
           cp -r build/docs/doxygen_output/html/index.html ${{github.workspace}}/docs/doxygen;
-          git config --global user.name 'franck.ledoux';
-          git config --global user.email 'franck.ledoux@users.noreply.github.com';
+          git config user.name ${{ secrets.GH_USER }}
+          git config user.email "${{ secrets.GH_MAIL }}"
+          git remote add gh-token "https://${{ secrets.GH_TOKEN}}@github.com/:user/:repo.git"
           git add docs/doxygen/*;
           git commit -am "Automated doxygen upate";
           git push;
