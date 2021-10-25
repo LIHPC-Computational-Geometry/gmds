@@ -2,7 +2,10 @@ add_executable(GMDS_SIMPLEX_TEST
         SimplexMeshTestAdd_NTt.h
         SimplexMeshTestSuite.h
         SimplexMeshTestReorient.h
-        SimplexReadAndWriteTestSuite.h
+        #ModeleCAD5.h
+        #ModeleCAD9.h
+        #ModeleCAD10.h
+        ModeleCAD11.h
         main_test.cpp)
 
 target_link_libraries(GMDS_SIMPLEX_TEST PUBLIC

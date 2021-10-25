@@ -234,7 +234,8 @@ int main(int argc, char* argv[])
     std::vector<std::pair<int, int>> AEdges;
     pcb.getEdges(AEdges);
 
-    std::cout << "AEdges.size() --> " << AEdges.size() << std::endl;
+    std::vector<std::vector<int>> AHexes;
+    pcb.getHexes(AHexes);
 
 
 
@@ -275,6 +276,11 @@ int main(int argc, char* argv[])
     for(auto const e : AEdges)
     {
       point_mesh.newTriangle(e.first, e.second, e.second);
+    }
+
+    for(auto const h : AHexes)
+    {
+      point_mesh.newHex(h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7]);
     }
 
     IGMeshIOService ioService2(&point_mesh);

@@ -41,6 +41,11 @@ void ISimplexMeshIOService::createTet(const TCellID& AID1,
   m_simplex_mesh->addTetraedre(AID1, AID2, AID3, AID4, false);
 }
 
+void ISimplexMeshIOService::createHex(const TCellID &AID1,const TCellID &AID2,const TCellID &AID3,const TCellID &AID4,
+              const TCellID &AID5,const TCellID &AID6,const TCellID &AID7,const TCellID &AID8)
+{
+  m_simplex_mesh->fillHexahedron(AID1, AID2, AID3, AID4, AID5, AID6, AID7, AID8);
+}
 
 void ISimplexMeshIOService::getNodes(std::vector<IMeshIOService::NodeInfo>& AInfo)
 {
@@ -88,19 +93,51 @@ void ISimplexMeshIOService::getFaces(std::vector<IMeshIOService::CellInfo>& AInf
 void ISimplexMeshIOService::getRegions(std::vector<IMeshIOService::CellInfo>& AInfo)
 {
   const gmds::BitVector& tetVector = m_simplex_mesh->getBitVectorTet();
+  const gmds::BitVector& markedTet = m_simplex_mesh->getMarkedTet();
   AInfo.clear();
   AInfo.reserve(tetVector.size());
+  std::cout << "markedTet.size() --> " << markedTet.size() << std::endl;
   for(unsigned int tet = 0 ; tet < tetVector.capacity() ; tet ++)
   {
     if(tetVector[tet] != 0)
     {
-      IMeshIOService::CellInfo info;
-      info.id = tet;
-      info.type = GMDS_TETRA;
-      info.node_ids = SimplicesCell(m_simplex_mesh, tet).nodes();
-      AInfo.push_back(info);
+      if(markedTet.size() == 0)
+      {
+        IMeshIOService::CellInfo info;
+        info.id = tet;
+        info.type = GMDS_TETRA;
+        info.node_ids = SimplicesCell(m_simplex_mesh, tet).nodes();
+        AInfo.push_back(info);
+      }
+      else if(markedTet[tet] == 0)
+      {
+        IMeshIOService::CellInfo info;
+        info.id = tet;
+        info.type = GMDS_TETRA;
+        info.node_ids = SimplicesCell(m_simplex_mesh, tet).nodes();
+        AInfo.push_back(info);
+      }
     }
   }
+
+  //////////////////////////////////////////////////////////////////////////////
+  const std::vector<std::vector<TSimplexID>>& hexData = m_simplex_mesh->getHexadronData();
+  if(hexData.size() != 0)
+  {
+    unsigned int cpt = 0;
+    for(auto const hex : hexData)
+    {
+      IMeshIOService::CellInfo info;
+      info.id = cpt;
+      info.type = GMDS_HEX;
+      TCellID n0 = hex[0]; TCellID n1 = hex[1]; TCellID n2 = hex[2]; TCellID n3 = hex[3];
+      TCellID n4 = hex[4]; TCellID n5 = hex[5]; TCellID n6 = hex[6]; TCellID n7 = hex[7];
+      info.node_ids = std::vector<TCellID>{n0, n1, n2, n3, n4, n5, n6, n7};
+      AInfo.push_back(info);
+      cpt++;
+    }
+  }
+  //////////////////////////////////////////////////////////////////////////////
 }
 
 

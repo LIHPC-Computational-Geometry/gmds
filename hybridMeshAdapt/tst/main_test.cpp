@@ -7,7 +7,10 @@
 //#include "SimplexMeshTestAdd_NTt.h"
 //#include "SimplexMeshTestReorient.h"
 //#include "SimplexMeshTestDelete_NTt.h"
-#include "SimplexReadAndWriteTestSuite.h"
+//#include "ModeleCAD5.h"
+//#include "ModeleCAD9.h"
+//#include "ModeleCAD10.h"
+#include "ModeleCAD11.h"
 
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {

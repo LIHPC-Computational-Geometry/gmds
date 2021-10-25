@@ -57,7 +57,7 @@ m_curve(ACurv),
 m_surface(ASurf),
 m_normal(ANormal),
 m_hexes(Mesh(MeshModel(DIM3 | R | F | N | R2N | R2F | F2N | F2R | N2F))),
-m_dot_tolerance(0.7),
+m_dot_tolerance(0.75),
 m_spacing(1)
 {
     if(m_pnt.size()!=m_chart.size() ||
@@ -130,6 +130,7 @@ void PointConnectionBuilder::execute()
     // STEP 6 - Build stable hexahedral elts
     //======================================================================
     buildHexahedral();
+    std::cout<<"Nb created hexes: "<<m_hexes.getNbHexahedra()<<std::endl;
     if(m_with_debug_info) {
         writeHexes();
     }
@@ -139,7 +140,7 @@ void PointConnectionBuilder::execute()
 /*---------------------------------------------------------------------------*/
 void PointConnectionBuilder::createDistanceFilter()
 {
-    double max_distance = 2*m_spacing;
+    double max_distance = 5*m_spacing;
 
     for(auto i=0; i<m_pnt.size(); i++){
         math::Point pi = m_pnt[i];
@@ -315,8 +316,8 @@ Cell::Data PointConnectionBuilder::getRegionContaining(const math::Point& APnt,
     while(true){
         std::vector<Node> n = current_r.get<Node>();
         math::Point p[4] ={
-            n[0].getPoint(), n[1].getPoint(),
-            n[2].getPoint(), n[3].getPoint()
+                n[0].getPoint(), n[1].getPoint(),
+                n[2].getPoint(), n[3].getPoint()
         };
 
         double coeff[4]={0, 0, 0, 0};
@@ -702,7 +703,7 @@ buildOrientedEdgesInVolume(const int            APntID,
 
     // Means the point is in a stable area. So it is connected to 6 other
     // points if it is far way from a singularity area.
-    double tol = m_dot_tolerance;
+    double tol = 0.8;
 
     //======================================================================
     // STEP 1 - WE DETECT THE POSSIBLE POINTS
@@ -782,7 +783,7 @@ buildOrientedEdgesOnSurface(const int            APntID,
 
     // Means the point is in a stable area. So it is connected to 6 other
     // points if it is far way from a singularity area.
-    double tol = m_dot_tolerance;
+    double tol = 0.8;
 
     //We are on a surface, we must take care of points outside of the domain
     math::Vector3d n=m_normal[i];
@@ -904,7 +905,7 @@ buildOrientedEdgesOnCurve(const int            APntID,
 //    std::cout<<"ORIENTED EDGES FROM "<<APntID<<" ON CURVE"<<std::endl;
     // Means the point is in a stable area. So it is connected to 6 other
     // points if it is far way from a singularity area.
-    double tol = m_dot_tolerance;
+    double tol = 0.9;
 
     //======================================================================
     // STEP 1 - WE DETECT THE POSSIBLE POINTS, WHICH ARE RESTRICTED TO BE ON
@@ -1038,19 +1039,26 @@ buildOrientedEdges(std::vector<std::vector<OrientedEdge> >& AEdges)
 }
 /*---------------------------------------------------------------------------*/
 void PointConnectionBuilder::
-getEdges(std::vector<std::pair<int, int>>& AEdges) {
+getEdges(std::vector<std::pair<int,int > >& AEdges) {
     for(auto edge_set:m_edges){
         for(auto e : edge_set){
-            std::pair<int, int> p;
-            auto i = e.first;
-            auto j = e.second;
-            if(i<j)
-                p = std::make_pair(i,j);
-            else
-                p = std::make_pair(j,i);
-
-            AEdges.push_back(p);
+            AEdges.push_back(std::make_pair(e.first,e.second));
         }
+    }
+}
+/*---------------------------------------------------------------------------*/
+void PointConnectionBuilder::getHexes(std::vector<std::vector<int> > &AHexes)
+{
+    Variable<int>* var_id = m_hexes.getVariable<int,GMDS_NODE>("HD_ID");
+
+    for(auto h_id:m_hexes.regions()){
+        std::vector<TCellID> node_ids = m_hexes.get<Region>(h_id).getIDs<Node>();
+        std::vector<int> ids;
+        ids.resize(8);
+        for(auto i=0;i<8;i++) {
+            ids[i]= var_id->value(node_ids[i]);
+        }
+        AHexes.push_back(ids);
     }
 }
 /*---------------------------------------------------------------------------*/
@@ -1386,11 +1394,11 @@ bool PointConnectionBuilder::isCorner(const HexCorner& AC,
 }
 /*---------------------------------------------------------------------------*/
 bool PointConnectionBuilder::findCommmonLastCorner(const HexCorner& ACorner1,
-                                            const HexCorner& ACorner2,
-                                            const HexCorner& ACorner3,
-                                            HexCorner&       ACornerOut)
+                                                   const HexCorner& ACorner2,
+                                                   const HexCorner& ACorner3,
+                                                   HexCorner&       ACornerOut)
 {
-    //We look for the point shared bu ACorner1, ACorner2 and ACorner3
+    //We look for the point shared by ACorner1, ACorner2 and ACorner3
     int common_pnt_12[2]={-1,-1};
     int i_12=0;
     for(int i1=0; i1<3; i1++){
@@ -1400,11 +1408,12 @@ bool PointConnectionBuilder::findCommmonLastCorner(const HexCorner& ACorner1,
                 common_pnt_12[i_12++]=adj1;
             }
         }
-    }//for(int i1=0; i1<3; i1++){
+    }//for(int i1=0; i1<3; i1++)
+
     int common_pnt=-1;
     for(int i3=0; i3<3; i3++){
         int adj3= ACorner3.adj[i3];
-        for(int i12=0; i12<3; i12++){
+        for(int i12=0; i12<2; i12++){
             if(adj3 == common_pnt_12[i12]){
                 common_pnt =adj3;
             }
@@ -1553,7 +1562,7 @@ void PointConnectionBuilder::buildHexahedral()
 
         }//for(unsigned j=0; j<corners_i.size();j++)
 
-    }//for(unsigned int i=0; i<m_pnt.size(); i++)
+    }//for(unsigned int i=0; i<m_pnt.size(); i++
 }
 /*---------------------------------------------------------------------------*/
 bool PointConnectionBuilder::computeVolumePointFrom(const int APntIndex,
@@ -1640,8 +1649,8 @@ void PointConnectionBuilder::writeInput()
     }
     static int nb_file=0;
     std::string file_pnts, file_charts;
-    file_pnts=m_output_dir+"/PCB_INPUT_PNTS_"+to_string(nb_file);
-    file_charts=m_output_dir+"/PCB_INPUT_CHARTS_"+to_string(nb_file);
+    file_pnts=m_output_dir+"/PCB_INPUT_PNTS_"+to_string(nb_file)+".vtk";
+    file_charts=m_output_dir+"/PCB_INPUT_CHARTS_"+to_string(nb_file)+".vtk";
     nb_file++;
 
     IGMeshIOService ioService(&mesh_pnts);
@@ -1665,10 +1674,10 @@ writeEdges(std::vector<std::vector<OrientedEdge> >& AEdges,
 {
     MeshModel model(DIM3 | F  | N | F2N );
     Mesh mesh_edges  (model);
-
     for(unsigned int i=0; i<m_pnt.size();i++){
 
         std::vector<OrientedEdge> edges_i = AEdges[i];
+
         for(unsigned int j=0; j<edges_i.size(); j++){
             math::Point p0 = m_pnt[edges_i[j].first];
             math::Point p1 = m_pnt[edges_i[j].second];
@@ -1678,7 +1687,6 @@ writeEdges(std::vector<std::vector<OrientedEdge> >& AEdges,
 
         }
     }
-
     IGMeshIOService ioService(&mesh_edges);
     VTKWriter vtkWriter(&ioService);
     vtkWriter.setCellOptions(gmds::N|gmds::F);
@@ -1693,7 +1701,7 @@ void PointConnectionBuilder::writeHexes() {
     VTKWriter vtkWriter(&ioService);
     vtkWriter.setCellOptions(N | F | R);
     vtkWriter.setDataOptions(N | F | R);
-    std::string file_name = m_output_dir + "/EXTRACTED_HEX";
+    std::string file_name = m_output_dir + "/EXTRACTED_HEX.vtk";
     vtkWriter.write(file_name);
 }
 /*----------------------------------------------------------------------------*/

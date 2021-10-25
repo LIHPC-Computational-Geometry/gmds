@@ -18,7 +18,7 @@ PointInsertion::PointInsertion()
 
 }
 /******************************************************************************/
-PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& simpliceNode, const CriterionRAIS& criterion, bool& status, const std::vector<TSimplexID>& initialCavity, const gmds::BitVector& markedNodes, std::vector<TSimplexID>& deletedSimplex, std::vector<TSimplexID> markedSimplex)
+PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& simpliceNode, const CriterionRAIS& criterion, bool& status, const std::vector<TSimplexID>& initialCavity, const gmds::BitVector& markedNodes, std::vector<TInt>& deletedNodes, std::vector<TSimplexID> markedSimplex)
 {
     if(simplexMesh != nullptr)
     {
@@ -57,7 +57,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
         CavityOperator cavOp(simplexMesh);
         std::vector<TSimplexID> initialCavityCell{};
         std::vector<TSimplexID> initialCavityTriangle{};
-        std::copy_if(initialCavity.begin(), initialCavity.end(), std::back_inserter(initialCavityCell), [&](const TSimplexID simplex){
+        std::copy_if(/*initialCavity*/initCavity.begin(), /*initialCavity*/initCavity.end(), std::back_inserter(initialCavityCell), [&](const TSimplexID simplex){
           bool flag = false;
           if(simplex >= 0)
           {
@@ -71,24 +71,25 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
         });
 
         CavityOperator::CavityIO cavityIO(simplexMesh);
+        //std::cout << "cavityEnlargement start ..." << std::endl;
         cavOp.cavityEnlargement(cavityIO, initialCavityCell, initialCavityTriangle, simpliceNode, criterion, markedSimplex);
+        //std::cout << "cavityEnlargement end " << std::endl;
         //cavOp.cavityReduction(cavityIO, initCavity, simpliceNode, criterion, cavReduction, markedSimplex);
-
         //if(simpliceNode.getGlobalNode() == 15810)
         {
           for(auto const tet : cavityIO.cellInCavity())
           {
-            std::cout << "tet --> " << tet << std::endl;
+            //std::cout << "tet --> " << tet << std::endl;
           }
-          std::cout << std::endl;
+          //std::cout << std::endl;
           for(auto const tri : cavityIO.getTrianglesNotConnectedToPInCavity())
           {
-            std::cout << "tri not Co --> " << tri << std::endl;
+            //std::cout << "tri not Co --> " << tri << std::endl;
           }
-          std::cout << std::endl;
+          //std::cout << std::endl;
           for(auto const tri : cavityIO.getTrianglesConnectedToPInCavity())
           {
-            std::cout << "tri Co --> " << tri << std::endl;
+            //std::cout << "tri Co --> " << SimplicesTriangle(simplexMesh, std::abs(tri)) << std::endl;
           }
         }
         //test sur les triangles non connecté a P pour ne pas créer de retournement topologique
@@ -118,6 +119,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           }
         }
 
+
         for(auto const & surfaceNodeInCavity : cavityIO.getSurfaceNodeInCavity())
         {
           if(markedNodes[surfaceNodeInCavity] == 1 && surfaceNodeInCavity != simpliceNode.getGlobalNode())
@@ -126,6 +128,22 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             return;
           }
         }
+        ////deletedNode insertion
+        for(auto const & nodeInCavity : cavityIO.getNodeInCavity())
+        {
+          if(nodeInCavity != simpliceNode.getGlobalNode())
+          {
+            deletedNodes.push_back(nodeInCavity);
+          }
+        }
+        for(auto const & surfaceNodeInCavity : cavityIO.getSurfaceNodeInCavity())
+        {
+          if(surfaceNodeInCavity != simpliceNode.getGlobalNode())
+          {
+            deletedNodes.push_back(surfaceNodeInCavity);
+          }
+        }
+        //
 
         //deleteThe simplexin the cavity
         for(auto const & simplexInCavity : cavityIO.cellInCavity())
@@ -135,14 +153,13 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             return;
           }
           simplexMesh->deleteTetra(simplexInCavity);
-          deletedSimplex.push_back(simplexInCavity);
+          //deletedSimplex.push_back(simplexInCavity);
         }
 
         //delete the surface triangle connected to simpliceNode
         for(auto const & triangleConnectedToP : cavityIO.getTrianglesConnectedToPInCavity())
         {
           simplexMesh->deleteTriangle(triangleConnectedToP);
-          //deletedSimplex.push_back(triangleConnectedToP);
         }
 
         simplexMesh->rebuildCavity(cavityIO, simpliceNode.getGlobalNode());

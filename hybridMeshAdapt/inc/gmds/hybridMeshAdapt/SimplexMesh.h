@@ -21,6 +21,8 @@
 #include <gmds/hybridMeshAdapt/Octree.h>
 /*----------------------------------------------------------------------------*/
 #include <gmds/math/Orientation.h>
+#include <gmds/math/Plane.h>
+#include <gmds/math/Ray.h>
 /*----------------------------------------------------------------------------*/
 #include <type_traits>
 #include <map>
@@ -210,6 +212,16 @@ class SimplexMesh
                           const TInt AIndexPoint2,
                           const TInt AIndexPoint3,
                           const bool rebuildAdjinfo = true);
+  void fillHexahedron(const TInt ANode0, const TInt ANode1, const TInt ANode2, const TInt ANode3,
+                      const TInt ANode4, const TInt ANode5, const TInt ANode6, const TInt ANode7);
+
+  const std::vector<std::vector<TInt>>& getHexadronData(){return m_hexahedronData;}
+
+  void setHexadronData(std::vector<std::vector<TInt>>& hexahedronData){m_hexahedronData = hexahedronData;}
+
+  const gmds::BitVector& getMarkedTet(){return m_markedTet;}
+
+  void setMarkedTet(const gmds::BitVector& markedTet){m_markedTet = markedTet;}
 
   bool checkMesh();
 
@@ -332,13 +344,17 @@ class SimplexMesh
 
   void fillBNDVariable();
 
-  void edgesRemove(const gmds::BitVector& nodeBitVector);
+  unsigned int edgesRemove(const gmds::BitVector& nodeBitVector, std::vector<TSimplexID>& deletedNodes);
 
-  void buildEdges(const std::vector<std::vector<TInt>>& AEdges, const gmds::BitVector& nodeBitVector);
+  void buildEdges(const std::multimap<TInt, TInt>& AEdges, const gmds::BitVector& nodeBitVector);
 
   bool isHexaEdgeBuild(const std::vector<std::vector<TInt>>& ANodesFaces);
 
   std::vector<TSimplexID> hex2tet(const std::vector<TInt>& ANodesHex);
+
+  std::vector<TSimplexID> initializeCavityWith(const TInt nodeA, const TInt nodeB);
+
+  bool buildFace(const std::vector<TInt>& nodes, const gmds::BitVector& nodeAdded);
 
   bool pointInTriangle(const math::Point& query_point,
                        const math::Point& triangle_vertex_0,
@@ -403,6 +419,10 @@ private:
   Octree* m_octree = nullptr;
   std::map<unsigned int, std::pair<unsigned int, unsigned int>> edgeTianglesIndices{};
 
+  //hexahedron data for tet extraction..
+  std::vector<std::vector<TInt>> m_hexahedronData;
+
+  gmds::BitVector m_markedTet;
 
   //VariableManager Node
   VariableManager* m_node_variable_manager     = nullptr;
