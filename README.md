@@ -54,3 +54,5 @@ The **service** module is an answer to this issue. Input and output of each serv
 Documentation is under construction. we just start to write it. It is split between:
 - [Users documentation](docs/mkd/users_doc.md), which is dedicated to people who want to use **gmds** as a set of libraries but do not expect to contribute to it.
 - [Developers documentation](docs/mkd/developers_doc.md), which is dedicated to developers who would like to create a new *gmds* module for instance. In particular, we explain the [git workflow](docs/mkd/git_workflow.md) that we adopted.
+- Gitub pages are under construction and available [here](https://lihpc-computational-geometry.github.io/gmds).
+- The associated doygen documenation is [here](https://lihpc-computational-geometry.github.io/gmds/doxygen/index.html).
