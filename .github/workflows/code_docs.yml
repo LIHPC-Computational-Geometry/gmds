@@ -56,12 +56,12 @@ jobs:
       - name: Commit doxygen documentation
         working-directory: ${{github.workspace}}/
         run: |
-          mkdir ${{github.workspace}}/docs/doxygen;
-          cp -r build/docs/doxygen_output/html/index.html ${{github.workspace}}/docs/doxygen;
-          git config --local user.email "12991298+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"}}"
-          git add docs/doxygen/*;
-          git commit -m "Automated doxygen upate";
+          mkdir ${{github.workspace}}/docs/doxygen
+          cp -r build/docs/doxygen_output/html/index.html ${{github.workspace}}/docs/doxygen
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add docs/doxygen
+          git commit -m "Automated doxygen upate"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
