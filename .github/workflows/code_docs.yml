@@ -58,9 +58,9 @@ jobs:
         working-directory: ${{github.workspace}}/
         run: |
           mkdir ${{github.workspace}}/docs/doxygen;
-          cp -r build/docs/doxygen_output/html/* ${{github.workspace}}/docs/doxygen;
+          cp -r build/docs/doxygen_output/html/class* ${{github.workspace}}/docs/doxygen;
           git config --global user.name 'franck.ledoux';
           git config --global user.email 'franck.ledoux@users.noreply.github.com';
-          git add docs/*;
+          git add docs/doxygen/*;
           git commit -am "Automated doxygen upate";
           git push;
