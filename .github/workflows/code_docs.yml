@@ -57,7 +57,7 @@ jobs:
       - name: Commit doxygen documentation
         working-directory: ${{github.workspace}}/
         run: |
-          cp -r build/doxygen_output/* docs/doxygen/
+          cp -r build/docs/doxygen_output/* docs/doxygen/
           git config --global user.name 'franck.ledoux';
           git config --global user.email 'franck.ledoux@users.noreply.github.com';
           git add docs/*;
