@@ -59,7 +59,7 @@ jobs:
           cp -r build/docs/doxygen_output/html/index.html ${{github.workspace}}/docs/doxygen;
           git config user.name ${{ secrets.GH_USER }}
           git config user.email "${{ secrets.GH_MAIL }}"
-          git remote add gh-token "https://${{ secrets.GH_TOKEN}}@github.com/:user/:repo.git"
+          git remote add gh-token "https://${{ secrets.GH_TOKEN}}@github.com/LIHPC-Computational-Geometry/gmds.git"
           git add docs/doxygen/*;
           git commit -am "Automated doxygen upate";
           git push;
