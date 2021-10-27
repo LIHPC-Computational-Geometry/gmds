@@ -18,7 +18,6 @@ Smooth2D::Smooth2D(Mesh *AMesh,
 void Smooth2D::setNbIterations(const int ANbIterations)
 {
 	m_nb_max_iterations=ANbIterations;
-
 }
 /*------------------------------------------------------------------------*/
 Smooth2D::STATUS Smooth2D::execute()
@@ -33,7 +32,29 @@ Smooth2D::STATUS Smooth2D::execute()
     //for all free nodes, we build and store stencils locally
     buildStencils();
 
-	return Smooth2D::SUCCESS;
+
+	 /*
+	 std::cout << "TEST 1 :" << std::endl ;
+	 math::Point A(0,0,0);
+	 math::Point B(1,0,0);
+	 math::Point C(3,0,0);
+	 math::Point Test_Mid ;
+	 Test_Mid = FindMidBranche(A, B, C) ;
+
+	 std::cout << "----------------------" << std::endl ;
+	 std::cout << "TEST 2 :" << std::endl ;
+	 A = (0,0,0);
+	 B = (0,1,0);
+	 B.X() = 0,
+	 B.Y() = 1;
+	 B.Z() = 0;
+	 C.X() = 2;
+	 C.Y() = 1;
+	 C.Z() = 0;
+	 Test_Mid = FindMidBranche(A, B, C) ;
+	  */
+
+	    return Smooth2D::SUCCESS;
 }
 /*------------------------------------------------------------------------*/
 void Smooth2D::buildStencils() {
@@ -136,6 +157,8 @@ void Smooth2D::buildStencils() {
         }
 
         m_stencil.insert(std::make_pair(n_id, current_stencil));
+		  // Affichage du stencil pour chaque noeud intérieur
+		  /*
         std::cout<<"Node "<<n_id<<std::endl;
         for(auto i=0;i<3;i++){
             for(auto j=0;j<3;j++){
@@ -143,6 +166,64 @@ void Smooth2D::buildStencils() {
             }
             std::cout<<std::endl;
         }
+        */
     }
+}
+/*------------------------------------------------------------------------*/
+
+
+/*
+void Smooth2D::PerturbationMaillage(const Variable<int>* var_bnd, const double dx, const double dy) {
+	// ------------ PERTURBATION ALEATOIRE DU MAILLAGE ------------
+	// Initialisation de la variable n qui est un noeud et n_coords qui récupère les coordonnées du noeud
+	Node n = m_mesh->get<Node>(1);
+	math::Point n_coords = n.point();
+	double c1 = 0.0;
+	double c2 = 0.0;
+	for(auto id:m_mesh->nodes()){
+		if(var_bnd->value(id)==0){
+			n = m_mesh->get<Node>(id);
+			n_coords = n.point();
+			c1 = rand()/ double(RAND_MAX) ;
+			c2 = rand()/ double(RAND_MAX) ;
+			//std::cout << "Numéro node :" << n << std::endl ;
+			//std::cout << "Nombre aléatoire c1 =" << c1 << std::endl ;
+			n.setX( n_coords.X() + (2.0*c1-1.0) * dx);
+			n.setY( n_coords.Y() + (2.0*c2-1.0) * dy);
+		}
+	}
+	// ---------------------------------------------------------------
+}
+ */
+
+
+
+
+
+/*------------------------------------------------------------------------*/
+// Fonction FindMidBranche : Si on considère une branche composée de 3 points, cette fonction retourne le point
+//                            positionné au milieu de cette branche
+// En entrée : A, B, C -> 3 points
+// En sortie : le point milieu
+math::Point Smooth2D::FindMidBranche(const math::Point A, const math::Point B, const math::Point C) {
+	math::Point Point_Milieu ;
+	double norme_1 = sqrt( pow((A.X()-B.X()),2) + pow(A.Y()-B.Y(),2) ) ;
+	double norme_2 = sqrt( pow((B.X()-C.X()),2) + pow(B.Y()-C.Y(),2) ) ;
+	double norme_branche = norme_1 + norme_2 ;
+	double norme_milieu = norme_branche / 2.0 ;
+
+	if (norme_milieu <= norme_1){
+		math::Vector3d Vec( B.X()-A.X(), B.Y()-A.Y(), 0 ) ;
+		Vec.normalize();
+		Point_Milieu = A + norme_milieu*Vec ;
+	}
+	else if (norme_milieu > norme_1){
+		math::Vector3d Vec( B.X()-C.X(), B.Y()-C.Y(), 0 ) ;
+		Vec.normalize();
+		Point_Milieu = C + norme_milieu*Vec ;
+	}
+
+	std::cout << "Point milieu :" << Point_Milieu << std::endl ;
+	return Point_Milieu;
 }
 /*------------------------------------------------------------------------*/
