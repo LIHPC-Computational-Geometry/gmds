@@ -48,7 +48,7 @@ namespace gmds {
         void buildStencils();
 	     //void PerturbationMaillage(const Variable<int>* var_bnd, const double dx, const double dy);
 	     math::Point FindMidBranche(const math::Point A, const math::Point B, const math::Point C);
-	     bool IntersectionSegments2D(const math::Point A, const math::Point B, const math::Point C, const math::Point D);
+	     //bool IntersectionSegments2D(const math::Point A, const math::Point B, const math::Point C, const math::Point D);
     private:
         /** mesh we work on */
         Mesh *m_mesh;
