@@ -5,12 +5,18 @@ name: Doxygen
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  # disabled until further discussion because if run at all, it should be run on only select pull_request types
+  # ex : types: [ready_for_review]
+  #pull_request:
+  #  branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # failure is allowed because the "git commit" can fail if there is no staged files to commit
+    # we could also conditionally execute the git commands after a "git status --porcelain docs/doxygen/" check
+    continue-on-error: true
 
     steps:
 
