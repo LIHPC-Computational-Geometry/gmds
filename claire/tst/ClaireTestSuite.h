@@ -116,7 +116,7 @@ TEST(ClaireTestClass, testGrid2D_Perturbation_1)
 	}
 	// ---------------------------------------------------------------
 
-	Smooth2D smoother(&m,var_bnd);
+	Smooth2D smoother(&m,var_bnd, 200);
 	Smooth2D::STATUS result = smoother.execute();
 
 
