@@ -32,115 +32,100 @@ Smooth2D::STATUS Smooth2D::execute()
     //for all free nodes, we build and store stencils locally
     buildStencils();
 
-	 math::Point H1, H2, H3;
-	 math::Point V1, V2, V3;
-	 math::Point A, B, C;
-	 Node noeud_voisin;
-	 for(auto n_id:m_free_nodes){
-		 std::cout << "Noeud :" << n_id << std::endl ;
-		 // Noeuds de la première branche (verticale)
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
-		 A = noeud_voisin.point();
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][0]);
-		 B = noeud_voisin.point();
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][0]);
-		 C = noeud_voisin.point();
-		 V1 = FindMidBranche(A, B, C);
+	for (int iteration=1; iteration<=m_nb_max_iterations; iteration++) {
+		Mesh *new_mesh = m_mesh;
+		Node n_new;
+		for (auto n_id : m_free_nodes) {
+			math::Point H1, H2, H3;
+			math::Point V1, V2, V3;
+			math::Point A, B, C;
+			Node noeud_voisin;
+			//std::cout << "Noeud :" << n_id << std::endl;
 
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][1]);
-		 A = noeud_voisin.point();
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][1]);
-		 B = noeud_voisin.point();
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][1]);
-		 C = noeud_voisin.point();
-		 V2 = FindMidBranche(A, B, C);
+			// Noeuds de la première branche (verticale)
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
+			A = noeud_voisin.point();
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][0]);
+			B = noeud_voisin.point();
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][0]);
+			C = noeud_voisin.point();
+			V1 = FindMidBranche(A, B, C);
 
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][2]);
-		 A = noeud_voisin.point();
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][2]);
-		 B = noeud_voisin.point();
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][2]);
-		 C = noeud_voisin.point();
-		 V3 = FindMidBranche(A, B, C);
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][1]);
+			A = noeud_voisin.point();
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][1]);
+			B = noeud_voisin.point();
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][1]);
+			C = noeud_voisin.point();
+			V2 = FindMidBranche(A, B, C);
 
-		 // Noeuds de la seconde branche (horizontale)
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
-		 A = noeud_voisin.point();
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][1]);
-		 B = noeud_voisin.point();
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][2]);
-		 C = noeud_voisin.point();
-		 H1 = FindMidBranche(A, B, C);
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][2]);
+			A = noeud_voisin.point();
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][2]);
+			B = noeud_voisin.point();
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][2]);
+			C = noeud_voisin.point();
+			V3 = FindMidBranche(A, B, C);
 
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][0]);
-		 A = noeud_voisin.point();
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][1]);
-		 B = noeud_voisin.point();
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][2]);
-		 C = noeud_voisin.point();
-		 H2 = FindMidBranche(A, B, C);
+			// Noeuds de la seconde branche (horizontale)
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
+			A = noeud_voisin.point();
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][1]);
+			B = noeud_voisin.point();
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][2]);
+			C = noeud_voisin.point();
+			H1 = FindMidBranche(A, B, C);
 
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][0]);
-		 A = noeud_voisin.point();
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][1]);
-		 B = noeud_voisin.point();
-		 noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][2]);
-		 C = noeud_voisin.point();
-		 H3 = FindMidBranche(A, B, C);
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][0]);
+			A = noeud_voisin.point();
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][1]);
+			B = noeud_voisin.point();
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][2]);
+			C = noeud_voisin.point();
+			H2 = FindMidBranche(A, B, C);
+
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][0]);
+			A = noeud_voisin.point();
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][1]);
+			B = noeud_voisin.point();
+			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][2]);
+			C = noeud_voisin.point();
+			H3 = FindMidBranche(A, B, C);
+
+			// Recherche de l'intersection entre les 4 segments
+			bool intersection_trouvee(false);
+			math::Point M(0, 0, 0);
+			math::Segment Seg_Vert_1(V1, V2);
+			math::Segment Seg_Vert_2(V2, V3);
+			math::Segment Seg_Hori_1(H1, H2);
+			math::Segment Seg_Hori_2(H2, H3);
+
+			intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_1, M);
+			if (!intersection_trouvee) {
+				intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_2, M);
+			}
+			if (!intersection_trouvee) {
+				intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_2, M);
+			}
+			if (!intersection_trouvee) {
+				intersection_trouvee = Seg_Vert_2.intersect2D(Seg_Hori_2, M);
+			}
+			if (!intersection_trouvee) {
+				intersection_trouvee = Seg_Vert_2.intersect2D(Seg_Hori_2, M);
+			}
+
+			std::cout << "--------------------------------" << std::endl ;
+			std::cout << "Iterations :" << iteration << std::endl ;
+			std::cout << "Intersection trouvee ?" << intersection_trouvee << std::endl ;
+
+			n_new = new_mesh->get<Node>(n_id);
+			if (intersection_trouvee) {
+				n_new.setPoint(M);
+			}
+		}
+
+		 m_mesh = new_mesh;
 	 }
-
-	 /*
-	 std::cout << "TEST 1 :" << std::endl ;
-	 math::Point A(0,0,0);
-	 math::Point B(1,0,0);
-	 math::Point C(3,0,0);
-	 math::Point Test_Mid ;
-	 Test_Mid = FindMidBranche(A, B, C) ;
-
-	 std::cout << "----------------------" << std::endl ;
-	 std::cout << "TEST 2 :" << std::endl ;
-	 A = (0,0,0);
-	 B = (0,1,0);
-	 B.X() = 0,
-	 B.Y() = 1;
-	 B.Z() = 0;
-	 C.X() = 2;
-	 C.Y() = 1;
-	 C.Z() = 0;
-	 Test_Mid = FindMidBranche(A, B, C) ;
-	  */
-
-	 bool intersection ;
-	 std::cout << " TESTS D'INTERSECTIONS " << std::endl ;
-	 std::cout << "TEST 1 :" << std::endl ;
-	 math::Point Test_A(0,0,0);
-	 math::Point Test_B(2,0,0);
-	 math::Point Test_C(1,1,0);
-	 math::Point Test_D(1,-1,0);
-	 intersection = IntersectionSegments2D( Test_A, Test_B, Test_C, Test_D) ;
-	 std::cout << "Intersection ?" << intersection << std::endl ;
-
-	 // Intersection non trouvée (et pourtant, elle existe)
-	 std::cout << "TEST 2 :" << std::endl ;
-	 Test_A.X() = 0;
-	 Test_A.Y() = 0;
-	 Test_A.Z() = 0;
-	 Test_B.X() = 2,
-	 Test_B.Y() = 0;
-	 Test_B.Z() = 0;
-	 Test_C.X() = 2;
-	 Test_C.Y() = 0;
-	 Test_C.Z() = 0;
-	 Test_D.X() = 2;
-	 Test_D.Y() = -2;
-	 Test_D.Z() = 0;
-
-	 std::cout << "Point D" << Test_D << std::endl ;
-	 intersection = IntersectionSegments2D( Test_A, Test_B, Test_C, Test_D) ;
-	 std::cout << "Intersection ?" << intersection << std::endl ;
-
-
-
 
 	    return Smooth2D::SUCCESS;
 }
@@ -295,29 +280,27 @@ void Smooth2D::PerturbationMaillage(const Variable<int>* var_bnd, const double d
 // En sortie : le point milieu
 math::Point Smooth2D::FindMidBranche(const math::Point A, const math::Point B, const math::Point C) {
 	math::Point Point_Milieu ;
-	double norme_1 = sqrt( pow((A.X()-B.X()),2) + pow(A.Y()-B.Y(),2) ) ;
-	double norme_2 = sqrt( pow((B.X()-C.X()),2) + pow(B.Y()-C.Y(),2) ) ;
+	math::Vector3d Vec_AB = B-A ;
+	math::Vector3d Vec_BC = C-B ;
+	double norme_1 = Vec_AB.norm() ;
+	double norme_2 = Vec_BC.norm() ;
 	double norme_branche = norme_1 + norme_2 ;
 	double norme_milieu = norme_branche / 2.0 ;
 
 	if (norme_milieu <= norme_1){
-		math::Vector3d Vec( B.X()-A.X(), B.Y()-A.Y(), 0 ) ;
-		Vec.normalize();
-		Point_Milieu = A + norme_milieu*Vec ;
+		Vec_AB.normalize();
+		Point_Milieu = A + norme_milieu*Vec_AB ;
 	}
 	else if (norme_milieu > norme_1){
-		math::Vector3d Vec( B.X()-C.X(), B.Y()-C.Y(), 0 ) ;
-		Vec.normalize();
-		Point_Milieu = C + norme_milieu*Vec ;
+		math::Vector3d Vec_CB = - Vec_BC ;
+		Vec_CB.normalize();
+		Point_Milieu = C + norme_milieu*Vec_CB ;
 	}
 
 	/*
-	std::cout << "Point A :" << A << std::endl;
-	std::cout << "Point B :" << B << std::endl;
-	std::cout << "Point C :" << C << std::endl;
-	 */
 	std::cout << "Point milieu :" << Point_Milieu << std::endl ;
 	std::cout << "--------------------------------------" << std::endl;
+	 */
 	return Point_Milieu;
 }
 /*------------------------------------------------------------------------*/
@@ -329,6 +312,7 @@ math::Point Smooth2D::FindMidBranche(const math::Point A, const math::Point B, c
 
 
 /*------------------------------------------------------------------------*/
+/*
 // Fonction IntersectionSegments2D : Regarde si deux segments se coupent
 // En entrée : A, B, C, D -> 4 points, A et B forment le premier segment, C et D forment le deuxième segment
 // En sortie : intersection -> bool, false si il n'y a pas d'intersection, true sinon
@@ -381,4 +365,5 @@ bool Smooth2D::IntersectionSegments2D(const math::Point A, const math::Point B, 
 	}
 	return intersection;
 }
+*/
 /*------------------------------------------------------------------------*/
