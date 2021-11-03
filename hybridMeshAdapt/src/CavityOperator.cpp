@@ -477,7 +477,9 @@ bool CavityOperator::CavityIO::isTetragonalizableFrom(const TInt nodeToInsert)
   return flag;
 }
 /******************************************************************************/
-void CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexID>& initCavityCell, std::vector<TSimplexID>& initCavityTriangle, const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const std::vector<TSimplexID> markedSimplex)
+bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexID>& initCavityCell, std::vector<TSimplexID>& initCavityTriangle,
+                                        const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt,
+                                         const std::vector<TSimplexID> markedSimplex)
 {
   //std::cout << "CavityEnlargement  START..." << std::endl;
   std::vector<TSimplexID> trianglesConnectedToP{};
@@ -537,6 +539,18 @@ void CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
               TSimplexID nextSimplexToAdd = cell.oppositeTetraIdx(nodeIndexLocal);
               if(nextSimplexToAdd != errorId)
               {
+                std::vector<TInt> face = cell.getOrderedFace(nodeIndexLocal);
+                std::sort(face.begin(), face.end());
+
+                auto it = facesAlreadyBuilt.find(face.front());
+                if(it != facesAlreadyBuilt.end())
+                {
+                  if(it->second.first == face[1] && it->second.second == face[2]) // face can not be pass throught
+                  {
+                    std::cout << "face  -> " << it->first << " | " << it->second.first << " | " << it->second.second << " already built" << std::endl;
+                    return false;
+                  }
+                }
                 if(nextSimplexToAdd >= 0)
                 {
                   if(criterion.execute(m_simplex_mesh, simplexId, nodeIndexLocal, nextPt))
@@ -690,6 +704,7 @@ void CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
     }
   }
   cavityIO.setSimplexCavity(cavityCell, trianglesConnectedToP, trianglesNotConnectedToP);
+  return true;
 }
 /**********************************************************************/
 void CavityOperator::cavityReduction(CavityIO& cavityIO, std::vector<TSimplexID>& initCavity, const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const CavityReduction& cavityReduction, const std::vector<TSimplexID> v)
