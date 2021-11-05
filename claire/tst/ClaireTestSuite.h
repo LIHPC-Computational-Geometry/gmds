@@ -237,3 +237,99 @@ TEST(ClaireTestClass, testGrid2D_Quart_Cylindre)
 
 	ASSERT_EQ(Smooth2D::SUCCESS, result);
 }
+
+
+
+TEST(ClaireTestClass, testGrid2D_Plaque_Plane)
+{
+	Mesh m(MeshModel(DIM3 | R | F | N | F2N | N2F));
+
+	int Nx = 50;								// Nombre de noeuds dans la direction x
+	int Ny = 50;								// Nombre de noeuds dans la direction y
+	double Lx = 1.0;						// Longueur du domaine dans la direction x
+	double Ly = 1.0;						// Longueur du domaine dans la direction y
+	double dx = Lx/(Nx-1);				// Pas d'espace suivant l'axe x
+	double dy = Ly/(Ny-1);				// Pas d'espace suivant l'axe y
+
+	GridBuilder gb(&m,2);
+	gb.execute(Nx, dx, Ny, dy);
+
+	ASSERT_EQ(m.getNbNodes(),Nx*Ny);
+	ASSERT_EQ(m.getNbFaces(),(Nx-1)*(Ny-1));
+
+	//==================================================================
+	// MESH PREPARATION
+	//==================================================================
+	MeshDoctor doctor(&m);
+	doctor.updateUpwardConnectivity();
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(&m);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+	int Nbr_BoundaryNodes = 2*Nx + 2*(Ny-2);								// Nombre de noeuds sur les bords
+	ASSERT_EQ(Nbr_BoundaryNodes, bnd_node_ids.size());			// Vérification : est-ce qu'on a tous les noeuds des bords
+
+	Variable<int>* var_bnd = m.newVariable<int,GMDS_NODE>("constraint");
+	for(auto id:bnd_node_ids){
+		var_bnd->value(id)=1;								// Les noeuds des bords sont marqués par l'entier 1
+	}
+
+
+	// ------------ REDEFINITION DES BORDS DU MAILLAGE ------------
+	Node n = m.get<Node>(1);
+	math::Point n_coords = n.point();
+	// On parcours les noeuds du bord pour les replacer et former un domaine
+	// plaque plane.
+	// ATTENTION : ne fonctionne que grace à l'observation de la manière dont
+	// sont numérotés les noeuds lors de la génération du maillage avec
+	// GridBuilder
+	for(auto id:bnd_node_ids){
+		n = m.get<Node>(id);
+		n_coords = n.point();
+		// "Bord gauche" du domaine carré
+		if (id <= Ny-1) {
+			n.setX( 0.0 );
+			n.setY( double(id)/(Ny-1.0)*200.0 );
+		}
+		// "Bord droit" du domaine carré
+		else if (id >= (Ny-1)*Nx) {
+			n.setX( 1000.0 );
+			n.setY( ((double(id)-(Nx-1.0)*Ny)/(Ny-1.0))*400.0 );
+		}
+		// "Bord bas et haut" du domaine carré
+		else {
+			// "Bord bas" du domaine carré
+			if ( id%Ny == 0 ) {
+				int k = id / Ny;
+				n.setX( (double(k) / (Nx - 1.0))*1000.0 );
+				n.setY(0.0 );
+			}
+			// "Bord haut" du domaine carré
+			else {
+				int k = ( (id+1) / Ny) - 1;
+				n.setX( (double(k) / (Nx - 1.0))*1000.0 );
+				n_coords = n.point();
+				n.setY(0.2*n_coords.X() + 200.0 );
+			}
+		}
+	}
+	// ---------------------------------------------------------------
+
+	IGMeshIOService ioService_geom_init(&m);
+	VTKWriter writer_geom_init(&ioService_geom_init);
+	writer_geom_init.setCellOptions(N|F);
+	writer_geom_init.setDataOptions(N|F);
+	writer_geom_init.write("smooth2D_test_plaque_plane_init.vtk");
+
+	Smooth2D smoother(&m,var_bnd, 2000);
+	Smooth2D::STATUS result = smoother.execute();
+
+	IGMeshIOService ioService_geom(&m);
+	VTKWriter writer_geom(&ioService_geom);
+	writer_geom.setCellOptions(N|F);
+	writer_geom.setDataOptions(N|F);
+	writer_geom.write("smooth2D_test_plaque_plane_result.vtk");
+
+	ASSERT_EQ(Smooth2D::SUCCESS, result);
+}
