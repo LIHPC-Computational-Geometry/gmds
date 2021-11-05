@@ -18,6 +18,7 @@ Smooth2D::Smooth2D(Mesh *AMesh,
 void Smooth2D::setNbIterations(const int ANbIterations)
 {
 	m_nb_max_iterations=ANbIterations;
+
 }
 /*------------------------------------------------------------------------*/
 Smooth2D::STATUS Smooth2D::execute()
