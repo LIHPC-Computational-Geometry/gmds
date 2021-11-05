@@ -49,7 +49,6 @@ TEST(ClaireTestClass, testGrid2D_1)
 	Smooth2D smoother(&m,var_bnd);
 	Smooth2D::STATUS result = smoother.execute();
 
-
 	IGMeshIOService ioService_geom(&m);
 	VTKWriter writer_geom(&ioService_geom);
 	writer_geom.setCellOptions(N|F);
@@ -116,22 +115,23 @@ TEST(ClaireTestClass, testGrid2D_Perturbation_1)
 	}
 	// ---------------------------------------------------------------
 
+	IGMeshIOService ioService_geom_init(&m);
+	VTKWriter writer_geom_init(&ioService_geom_init);
+	writer_geom_init.setCellOptions(N|F);
+	writer_geom_init.setDataOptions(N|F);
+	writer_geom_init.write("smooth2D_Perturbation_1_init.vtk");
+
 	Smooth2D smoother(&m,var_bnd, 20);
 	Smooth2D::STATUS result = smoother.execute();
-
 
 	IGMeshIOService ioService_geom(&m);
 	VTKWriter writer_geom(&ioService_geom);
 	writer_geom.setCellOptions(N|F);
 	writer_geom.setDataOptions(N|F);
-	writer_geom.write("smooth2D_test_2_result.vtk");
+	writer_geom.write("smooth2D_Perturbation_1_result.vtk");
 
 	ASSERT_EQ(Smooth2D::SUCCESS, result);
 }
-
-
-
-
 
 
 
@@ -139,8 +139,8 @@ TEST(ClaireTestClass, testGrid2D_Quart_Cylindre)
 {
 	Mesh m(MeshModel(DIM3 | R | F | N | F2N | N2F));
 
-	int Nx = 10;								// Nombre de noeuds dans la direction x
-	int Ny = 10;								// Nombre de noeuds dans la direction y
+	int Nx = 30;								// Nombre de noeuds dans la direction x
+	int Ny = 30;								// Nombre de noeuds dans la direction y
 	double Lx = 1.0;						// Longueur du domaine dans la direction x
 	double Ly = 1.0;						// Longueur du domaine dans la direction y
 	double dx = Lx/(Nx-1);				// Pas d'espace suivant l'axe x
@@ -220,9 +220,14 @@ TEST(ClaireTestClass, testGrid2D_Quart_Cylindre)
 	}
 	// ---------------------------------------------------------------
 
-	Smooth2D smoother(&m,var_bnd, 100);
-	Smooth2D::STATUS result = smoother.execute();
+	IGMeshIOService ioService_geom_init(&m);
+	VTKWriter writer_geom_init(&ioService_geom_init);
+	writer_geom_init.setCellOptions(N|F);
+	writer_geom_init.setDataOptions(N|F);
+	writer_geom_init.write("smooth2D_test_quart_cylindre_init.vtk");
 
+	Smooth2D smoother(&m,var_bnd, 1000);
+	Smooth2D::STATUS result = smoother.execute();
 
 	IGMeshIOService ioService_geom(&m);
 	VTKWriter writer_geom(&ioService_geom);
