@@ -255,8 +255,8 @@ void Smooth2D::buildStencils() {
 
 
 /*
+// ------------ PERTURBATION ALEATOIRE DU MAILLAGE ------------
 void Smooth2D::PerturbationMaillage(const Variable<int>* var_bnd, const double dx, const double dy) {
-	// ------------ PERTURBATION ALEATOIRE DU MAILLAGE ------------
 	// Initialisation de la variable n qui est un noeud et n_coords qui récupère les coordonnées du noeud
 	Node n = m_mesh->get<Node>(1);
 	math::Point n_coords = n.point();
@@ -276,8 +276,7 @@ void Smooth2D::PerturbationMaillage(const Variable<int>* var_bnd, const double d
 	}
 	// ---------------------------------------------------------------
 }
- */
-
+*/
 
 
 
