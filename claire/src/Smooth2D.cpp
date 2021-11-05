@@ -39,8 +39,10 @@ Smooth2D::STATUS Smooth2D::execute()
 			math::Point H1, H2, H3;
 			math::Point V1, V2, V3;
 			math::Point A, B, C;
+			Node noeud_traite;
 			Node noeud_voisin;
 			//std::cout << "Noeud :" << n_id << std::endl;
+			noeud_traite = m_mesh->get<Node>(n_id);
 
 			// Noeuds de la première branche (verticale)
 			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
@@ -105,18 +107,24 @@ Smooth2D::STATUS Smooth2D::execute()
 				intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_2, M);
 			}
 			if (!intersection_trouvee) {
-				intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_2, M);
-			}
-			if (!intersection_trouvee) {
-				intersection_trouvee = Seg_Vert_2.intersect2D(Seg_Hori_2, M);
+				intersection_trouvee = Seg_Vert_2.intersect2D(Seg_Hori_1, M);
 			}
 			if (!intersection_trouvee) {
 				intersection_trouvee = Seg_Vert_2.intersect2D(Seg_Hori_2, M);
 			}
 
-			std::cout << "--------------------------------" << std::endl ;
-			std::cout << "Iterations :" << iteration << std::endl ;
-			std::cout << "Intersection trouvee ?" << intersection_trouvee << std::endl ;
+			/*
+			// PRINT POUR DEBUG
+			if (iteration==m_nb_max_iterations) {
+				std::cout << "--------------------------------" << std::endl;
+				std::cout << "Iterations :" << iteration << std::endl;
+				std::cout << "Noeud :" << n_id << std::endl;
+				std::cout << "Intersection trouvee ?" << intersection_trouvee << std::endl;
+				std::cout << "Pos actuelle :" << noeud_traite.point() << std::endl;
+				std::cout << "Nouvelle position :" << M << std::endl;
+			}
+			// FIN DES PRINT POUR DEBUG
+			*/
 
 			n_new = new_mesh->get<Node>(n_id);
 			if (intersection_trouvee) {
