@@ -31,6 +31,7 @@ namespace gmds{
          */
         OpResult execute();
 
+
     private:
         double m_radius;
 
