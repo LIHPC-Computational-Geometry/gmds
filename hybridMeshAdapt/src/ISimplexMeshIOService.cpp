@@ -107,7 +107,7 @@ void ISimplexMeshIOService::getRegions(std::vector<IMeshIOService::CellInfo>& AI
         info.id = tet;
         info.type = GMDS_TETRA;
         info.node_ids = SimplicesCell(m_simplex_mesh, tet).nodes();
-        AInfo.push_back(info);
+        //AInfo.push_back(info);
       }
       else if(markedTet[tet] == 0)
       {
@@ -115,7 +115,7 @@ void ISimplexMeshIOService::getRegions(std::vector<IMeshIOService::CellInfo>& AI
         info.id = tet;
         info.type = GMDS_TETRA;
         info.node_ids = SimplicesCell(m_simplex_mesh, tet).nodes();
-        AInfo.push_back(info);
+        //AInfo.push_back(info);
       }
     }
   }

@@ -4802,6 +4802,8 @@ void SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, const gmds
   unsigned int cpt_EdgeAlreadyBuild = 0;
   double cpt_EdgeBuilt = 0.0;
   double sizeEdge = AEdges.size();
+  std::vector<TInt> allDeletedNodes{};
+
   for(auto const & edge : AEdges)
   {
     TInt nodeAidx = edge.first;
@@ -4812,6 +4814,8 @@ void SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, const gmds
       {
         SimplicesNode nodeA = SimplicesNode(this, nodeAidx);
         SimplicesNode nodeB = SimplicesNode(this, nodeBidx);
+        //std::cout << "nodeA.getGlobalNode() ---> " << nodeA << std::endl;
+        //std::cout << "nodeB.getGlobalNode() ---> " << nodeB << std::endl;
         if(nodeA.shell(nodeB).size() == 0)
         {
           std::vector<TInt> cavity = initializeCavityWith(nodeA.getGlobalNode(), nodeB.getGlobalNode());
@@ -4823,18 +4827,16 @@ void SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, const gmds
 
           if(!status)
           {
-            std::cout << "edge [" << nodeAidx << " ; " << nodeBidx << "] was not built " << std::endl;
+            //std::cout << "edge [" << nodeAidx << " ; " << nodeBidx << "] was not built " << std::endl;
           }
           else
           {
-            cpt_EdgeBuilt = cpt_EdgeBuilt + 1.0;;
-            //std::cout << "edge [" << nodeAidx << " ; " << nodeBidx << "] was built " << std::endl;
+            cpt_EdgeBuilt = cpt_EdgeBuilt + 1.0;
           }
         }
         else
         {
           cpt_EdgeAlreadyBuild = cpt_EdgeAlreadyBuild + 1.0;
-          //std::cout << "edge [" << nodeAidx << " ; " << nodeBidx << "] is already built ! " << std::endl;
         }
       }
     }
@@ -5030,7 +5032,7 @@ bool SimplexMesh::buildFace(const std::vector<TInt>& nodes, const gmds::BitVecto
     }
     else
     {
-      std::cout << "One of the edge was not built : e01 | e12 | e23 | e30 => " << node0.getGlobalNode() << "-" << node1.getGlobalNode() << " | "<< node1.getGlobalNode() << "-" << node2.getGlobalNode() << " | "<< node2.getGlobalNode() << "-" << node3.getGlobalNode() << " | "<< node3.getGlobalNode() << "-" << node0.getGlobalNode() << std::endl;
+      //std::cout << "One of the edge was not built : e01 | e12 | e23 | e30 => " << node0.getGlobalNode() << "-" << node1.getGlobalNode() << " | "<< node1.getGlobalNode() << "-" << node2.getGlobalNode() << " | "<< node2.getGlobalNode() << "-" << node3.getGlobalNode() << " | "<< node3.getGlobalNode() << "-" << node0.getGlobalNode() << std::endl;
       return false;
     }
   }

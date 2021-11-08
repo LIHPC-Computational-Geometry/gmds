@@ -578,7 +578,8 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       }
     }
 
-    //for(auto const simplex : cavityCell){std::cout << "initCavCellBIS -> " << simplex << std::endl;}
+
+    //for(auto const simplex : cavityCell){std::cout << "initCavCell -> " << simplex << std::endl;}
     //set type for the triangle see the paper : Robust Boundary Layer Mesh Generation
     for(auto const tri : initCavityTriangle)
     {

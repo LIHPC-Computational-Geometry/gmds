@@ -140,7 +140,7 @@ void PointConnectionBuilder::execute()
 /*---------------------------------------------------------------------------*/
 void PointConnectionBuilder::createDistanceFilter()
 {
-    double max_distance = 5*m_spacing;
+    double max_distance = 2*m_spacing;
 
     for(auto i=0; i<m_pnt.size(); i++){
         math::Point pi = m_pnt[i];
