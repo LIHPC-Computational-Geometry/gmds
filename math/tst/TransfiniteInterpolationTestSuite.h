@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 #include <gmds/math/TransfiniteInterpolation.h>
+
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -79,7 +80,7 @@ TEST(TransfiniteInterpolationTest, testUnitSquare2) {
 /*----------------------------------------------------------------------------*/
 TEST(TransfiniteInterpolationTest, testUnitTriangle) {
     auto N = 5;
-    Array2D<math::Point> P(N, N);
+    TriArray<math::Point> P(N);
 
     for (auto i = 0; i < N; i++) {
         P(i, 0) = math::Point(i, 0, 0);
@@ -94,8 +95,38 @@ TEST(TransfiniteInterpolationTest, testUnitTriangle) {
 
     math::TransfiniteInterpolation::computeTri(P);
 
-    EXPECT_EQ(P(1, 1), math::Point(1, 0.75, 0));
-    EXPECT_EQ(P(1, 2), math::Point(1, 1.25, 0));
-    EXPECT_EQ(P(2, 1), math::Point(2, 0.75, 0));
+    EXPECT_EQ(P(1, 1), math::Point(1, 1, 0));
+    EXPECT_EQ(P(1, 2), math::Point(1, 2, 0));
+    EXPECT_EQ(P(2, 1), math::Point(2, 1, 0));
+
+    EXPECT_EQ(P(2, 1, 1), math::Point(1, 1, 0));
+    EXPECT_EQ(P(1, 2, 1), math::Point(1, 2, 0));
+    EXPECT_EQ(P(1, 1, 2), math::Point(2, 1, 0));
 }
+
 /*----------------------------------------------------------------------------*/
+TEST(TransfiniteInterpolationTest, testIcosehdronFaceTriangle) {
+    auto N = 5;
+    TriArray<math::Point> P(N);
+
+    P(0,0) =math::Point(0.525731, -0.850651, 0);
+    P(0,1) =math::Point(0.681718, -0.716567, -0.147621);
+    P(0,2) =math::Point(0.809017, -0.5, -0.309017);
+    P(0,3) =math::Point(0.864188, -0.238856, -0.442863);
+    P(0,4) =math::Point(0.850651, 0, -0.525731);
+
+    P(1,0) =math::Point(0.442863, -0.864188, -0.238856);
+    P(2,0) =math::Point(0.309017, -0.809017, -0.5);
+    P(3,0) =math::Point (0.147621, -0.681718, -0.716567);
+    P(4,0) =math::Point (0, -0.525731, -0.850651);
+
+    P(1,3)=math::Point(0.716567, -0.147621, -0.681718);
+    P(2,2)=math::Point(0.5, -0.309017, -0.809017);
+    P(3,1)=math::Point(0.238856, -0.442863, -0.864188);
+
+    math::TransfiniteInterpolation::computeTri(P);
+    EXPECT_TRUE(P(2, 1, 1).distance(math::Point(0.605127, -0.708494, -0.437874))<1e-4);
+    EXPECT_TRUE(P(1, 2, 1).distance(math::Point(0.708494, -0.437874, -0.605127))<1e-4);
+    EXPECT_TRUE(P(1, 1, 2).distance(math::Point(0.437874, -0.605127, -0.708494))<1e-4);
+
+}

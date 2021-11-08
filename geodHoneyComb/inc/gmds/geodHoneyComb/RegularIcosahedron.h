@@ -30,16 +30,13 @@ namespace gmds{
                            const TCoord ARadius=1,
                            const int ANBSubdivision=1);
 
-        /** @brief Destructor
-         */
+        /** @brief Destructor */
         virtual ~RegularIcosahedron();
 
-        /** @brief Create the dual icosahedron with each face splitted in quads
-         */
+        /** @brief Create the dual icosahedron with each face splitted in quads */
         void performQuadDualization();
 
-        /** @brief Gives access to the mesh representation of the icosahedron
-         */
+        /** @brief Gives access to the mesh representation of the icosahedron */
         std::unique_ptr<Mesh> getRepresentation();
 
     private:

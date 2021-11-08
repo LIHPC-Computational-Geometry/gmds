@@ -34,7 +34,7 @@ namespace gmds{
              *          points.
              * \param[in/out] AGrid the points we compute It must be initialized with values
              *                      on the grid boundary */
-            static bool computeTri(Array2D<Point>& AGrid);
+            static bool computeTri(TriArray<Point>& AGrid);
 
             /** Transfinite volume meshes
              *   - the faces have to be meshed previously by a grid

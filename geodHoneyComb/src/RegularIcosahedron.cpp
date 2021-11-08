@@ -1,6 +1,8 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/geodHoneyComb/RegularIcosahedron.h>
 #include <gmds/ig/MeshDoctor.h>
+#include <gmds/utils/Array.h>
+#include <gmds/math/TransfiniteInterpolation.h>
 #include <map>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
@@ -94,7 +96,7 @@ void RegularIcosahedron::subdivide() {
             Node nj = f_nodes[(i+1)%3];
             Node n_from = (ni.id()<nj.id())?ni:nj;
             Node n_to   = (ni.id()>nj.id())?ni:nj;
-            if(e2dn.find(std::make_pair(ni.id(),nj.id()))==e2dn.end()){
+            if(e2dn.find(std::make_pair(n_from.id(),n_to.id()))==e2dn.end()){
                 //not yet inserted
                 std::vector<TCellID> edge_nodes;
 
@@ -106,7 +108,7 @@ void RegularIcosahedron::subdivide() {
                     Node nij = m_representation->newNode(pij);
                     edge_nodes.push_back(nij.id());
                 }
-                e2dn[std::make_pair(ni.id(),nj.id())]= edge_nodes;
+                e2dn[std::make_pair(n_from.id(),n_to.id())]= edge_nodes;
             }
         }
     }
@@ -119,7 +121,83 @@ void RegularIcosahedron::subdivide() {
         Node n0 = f_nodes[0];
         Node n1 = f_nodes[1];
         Node n2 = f_nodes[2];
-        //we build a
+        //We use an full 2D rectangular array while only a triangular one should
+        // be better to use.
+        TriArray<math::Point> grid(m_subdivision+1);
+        TriArray<TCellID> ids(m_subdivision+1);
+        //==================================================================
+        //nO to n1 on the first line
+        Node n_from = (n0.id()<n1.id())?n0:n1;
+        Node n_to   = (n0.id()>n1.id())?n0:n1;
+        bool invert =(n0.id()>n1.id());
+        std::vector<TCellID> subdiv = e2dn[std::make_pair(n_from.id(), n_to.id())];
+        if(invert)
+            std::reverse(subdiv.begin(),subdiv.end());
+
+        grid(0,0) = n0.point();
+        grid(m_subdivision,0) = n1.point();
+        for(auto i=1; i<m_subdivision;i++){
+            grid(i,0)=m_representation->get<Node>(subdiv[i-1]).point();
+        }
+
+        ids(0,0) = n0.id();
+        ids(m_subdivision,0) = n1.id();
+        for(auto i=1; i<m_subdivision;i++){
+            ids(i,0)=m_representation->get<Node>(subdiv[i-1]).id();
+        }
+        //==================================================================
+        //nO to n2 on the first column
+        n_from = (n0.id()<n2.id())?n0:n2;
+        n_to   = (n0.id()>n2.id())?n0:n2;
+        invert =(n0.id()>n2.id());
+        subdiv = e2dn[std::make_pair(n_from.id(), n_to.id())];
+        if(invert)
+            std::reverse(subdiv.begin(),subdiv.end());
+
+        grid(0,m_subdivision) = n2.point();
+        for(auto i=1; i<m_subdivision;i++){
+            grid(0,i)=m_representation->get<Node>(subdiv[i-1]).point();
+        }
+        ids(0,m_subdivision) = n2.id();
+        for(auto i=1; i<m_subdivision;i++){
+            ids(0,i)=m_representation->get<Node>(subdiv[i-1]).id();
+        }
+        //==================================================================
+        //n2 to n1 on the first column
+        n_from = (n2.id()<n1.id())?n2:n1;
+        n_to   = (n2.id()>n1.id())?n2:n1;
+        invert =(n2.id()>n1.id());
+        subdiv = e2dn[std::make_pair(n_from.id(), n_to.id())];
+        if(invert)
+            std::reverse(subdiv.begin(),subdiv.end());
+
+        for(auto i=1; i<m_subdivision;i++){
+            grid(i,m_subdivision-i)=m_representation->get<Node>(subdiv[i-1]).point();
+        }
+        for(auto i=1; i<m_subdivision;i++){
+            ids(i,m_subdivision-i)=m_representation->get<Node>(subdiv[i-1]).id();
+        }
+        std::cout<<"===================================================="<<std::endl;
+        for(auto i=0; i<m_subdivision+1;i++) {
+            for (auto j = 0; j < m_subdivision-i+1; j++) {
+                std::cout<<grid(i,j)<<" ";
+            }
+            std::cout<<std::endl;
+        }
+        std::cout<<std::endl;
+        for(auto i=0; i<m_subdivision+1;i++) {
+            for (auto j = 0; j < m_subdivision-i+1; j++) {
+                std::cout<<ids(i,j)<<" ";
+            }
+            std::cout<<std::endl;
+        }
+        math::TransfiniteInterpolation::computeTri(grid);
+        for(auto i=1;i<m_subdivision;i++){
+            for(auto j=1;j<m_subdivision-i;j++){
+                math::Point pij = projectOnSphere(grid(i,j));
+                m_representation->newNode(pij);
+            }
+        }
     }
 }
 /*----------------------------------------------------------------------------*/

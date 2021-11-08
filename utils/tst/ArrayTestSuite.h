@@ -25,5 +25,27 @@ TEST(ArrayTestSuite, test_double3D){
     ASSERT_EQ(array(1,1,1),1);
 }
 /*----------------------------------------------------------------------------*/
+TEST(ArrayTestSuite, test_TryArray){
+    TriArray<double> a(3);
+    ASSERT_EQ(a.nbElements(),6);
+    ASSERT_EQ(a.size(),3);
+    a(0,0)=1;
+    a(0,1)=2;
+    a(0,2)=3;
+
+    a(1,0)=4;
+    a(1,1)=5;
+    a(2,0)=6;
+
+    ASSERT_EQ(a(2,0,0),1);
+    ASSERT_EQ(a(0,2,0),3);
+    ASSERT_EQ(a(0,0,2),6);
+
+    ASSERT_EQ(a(1,1,0),2);
+    ASSERT_EQ(a(1,0,1),4);
+    ASSERT_EQ(a(0,1,1),5);
+
+}
+/*----------------------------------------------------------------------------*/
 #endif //GMDS_ARRAY_TESTSUITE_H
 /*----------------------------------------------------------------------------*/

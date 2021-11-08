@@ -66,44 +66,35 @@ computeQuad(Array2D<Point> &AG) {
     return true;
 }
 /*------------------------------------------------------------------------*/
-/* s4 +-----c3-----+ s3
-      |            |
-      |            |
-     c4            c2
-      |            |
-      |            |
-   s1 +-----c1-----+ s2
-   For the triangular case, s1=s4=c4,
-   and we have the transfinite interpolation defined as
-        tfi_triangle(c1, c2, c3, s1, s2, s3, u, v) =
-        u *c2 + (1. - v) * c1 + v *c3 - (u * (1. - v) * s2 + u * v * s3)
-*/
-/*------------------------------------------------------------------------*/
-bool TransfiniteInterpolation::computeTri(Array2D<Point> &AGrid) {
+bool TransfiniteInterpolation::computeTri(TriArray<Point> &AGrid) {
     // the transfinite interpolation is given by formulation in
     // https://www.ljll.math.upmc.fr/perronnet/transfini/transfini.html
     // we also check how gmsh does the transfinite interpolation
     //first side = first line
-    int dim = AGrid.nbLines();
-    int dim_2 = AGrid.nbColumns();
+    int dim = AGrid.size();
+    int n = dim-1;
 
-    //transfinite interpolation is only available for square data
-    if(dim!=dim_2)
-        return false;
+    math::Point p100 = AGrid(n,0,0);
+    math::Point p010 = AGrid(0,n,0);
+    math::Point p001 = AGrid(0,0,n);
 
-    math::Point s2 = AGrid(0,0);
-    math::Point s1 = AGrid(dim-1,0);
-    math::Point s3 = AGrid(0,dim-1);
-
-    for(auto i=1; i<dim-1; i++){
-        for(auto j=1; j<dim-1-i; j++){
-            TCoord u = (double)j/(double)(dim-1);
-            TCoord v = (double)i/(double)(dim-1);
-            math::Point c2 = AGrid(0,j);
-            math::Point c1 = AGrid(i,0);
-            math::Point c3 = AGrid(i,dim-1-i);
-            AGrid(i,j)= u *c2 + (1. - v) * c1 + v *c3
-                        - (u * (1. - v) * s2 + u * v * s3);
+    for(auto i=1; i<n-1; i++){
+        for(auto j=1; j<n-i; j++){
+            //i and j are parametric coordinate in a discrete way
+            //corresponding barycentric weights are
+            TCoord s = (double)i/(double)(n);
+            TCoord t = (double)j/(double)(n);
+            TCoord a1 = s;
+            TCoord a2 = t;
+            TCoord a3 = 1-s-t;
+            auto b1 = i;
+            auto b2 = j;
+            auto b3 = n-b1-b2;
+            auto k=n-i-j;
+            AGrid(i,j,k)=
+                    a1*((AGrid(n-b2,b2,0)+AGrid(n-b3,0,b3))-p100)+
+                    a2*((AGrid(0,n-b3,b3)+AGrid(b1,n-b1,0))-p010)+
+                    a3*((AGrid(b1,0,n-b1)+AGrid(0,b2,n-b2))-p001);
         }
     }
     return true;
