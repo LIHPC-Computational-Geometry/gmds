@@ -6,7 +6,9 @@
 #ifndef GMDS_IMESHIOSERVICE_H
 #define GMDS_IMESHIOSERVICE_H
 /*----------------------------------------------------------------------------*/
+#include <map>
 #include <vector>
+/*----------------------------------------------------------------------------*/
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/math/Point.h>
 #include <gmds/math/Vector.h>
@@ -47,21 +49,21 @@ namespace gmds{
 
         struct DataInt{
             std::string name;
-            std::vector<int> values;
+            std::map<TCellID ,int> values;
         };
 
         struct DataID{
-            std::vector<TCellID> values;
+            std::map<TCellID ,TCellID> values;
         };
 
         struct DataReal{
             std::string name;
-            std::vector<double> values;
+            std::map<TCellID ,double> values;
         };
 
         struct DataVector{
             std::string name;
-            std::vector<math::Vector3d> values;
+            std::map<TCellID ,math::Vector3d> values;
         };
 
         static EVariableType getType(const VariableItf* AVar);

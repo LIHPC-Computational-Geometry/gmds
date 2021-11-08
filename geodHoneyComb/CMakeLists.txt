@@ -9,7 +9,7 @@ set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/geodHoneyComb/GeodHexMesher.h)
 set(GMDS_SRC
-        src/GeodHexMesher.cpp)
+        src/GeodHexMesher.cpp src/RegularIcosahedron.cpp inc/gmds/geodHoneyComb/RegularIcosahedron.h)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 

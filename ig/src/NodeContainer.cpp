@@ -42,6 +42,11 @@ NodeContainer::~NodeContainer()
 		delete m_N2F;
 	if(m_N2R)
 		delete m_N2R;
+
+    m_N2N=NULL;
+    m_N2E=NULL;
+    m_N2F=NULL;
+    m_N2R=NULL;
 }
 /*----------------------------------------------------------------------------*/
 Node NodeContainer::add(const TCoord& AX, const TCoord& AY, const TCoord& AZ)

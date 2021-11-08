@@ -69,6 +69,7 @@ namespace gmds{
          */
         Mesh(MeshModel model);
 
+    public:
         NodeContainer& nodes() const{ return *m_nodes_container;}
         EdgeContainer& edges() const{ return *m_edges_container;}
         FaceContainer& faces() const{ return *m_faces_container;}

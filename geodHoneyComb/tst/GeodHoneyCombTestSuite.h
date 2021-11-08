@@ -11,7 +11,7 @@ using namespace gmds;
 /*----------------------------------------------------------------------------*/
 TEST(GeodHoneyCombestClass, test_geode1)
 {
-    GeodHexMesher ghm(2);
+    GeodHexMesher ghm(1);
     ASSERT_EQ(GeodHexMesher::GEOD_FAILURE, ghm.execute());
 
 }
