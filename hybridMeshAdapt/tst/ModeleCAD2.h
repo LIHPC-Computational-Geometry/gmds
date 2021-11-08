@@ -31,12 +31,12 @@ using namespace simplicesNode;
 using namespace simplicesTriangle;
 using namespace simplicesCell;
 /*----------------------------------------------------------------------------*/
-TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD11)
+TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD0)
 {
   TInt border = std::numeric_limits<TInt>::min();
   SimplexMesh simplexMesh = SimplexMesh();
   std::string dir(TEST_SAMPLES_DIR);
-  std::string vtk_mesh = dir+"/ModeleCAD11/ModeleCAD11.vtk";
+  std::string vtk_mesh = dir+"/ModeleCAD2/ModeleCAD2.vtk";
 
   gmds::ISimplexMeshIOService ioService(&simplexMesh);
   gmds::VTKReader vtkReader(&ioService);
@@ -61,7 +61,7 @@ TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD11)
   var->setValuesTo(m);
   //////////////////////////////////////////////////////////////////////////////
 
-  std::string vtk_node = dir+"/ModeleCAD11/ModeleCAD11_hexa_generatedPoints_646.vtk";
+  std::string vtk_node = dir+"/ModeleCAD2/ModeleCAD2_hexa_generatedPoints_2463.vtk";
   SimplexMesh simplexNodes = SimplexMesh();
   gmds::ISimplexMeshIOService ioServiceNodes(&simplexNodes);
   gmds::VTKReader vtkReaderNodes(&ioServiceNodes);
@@ -130,11 +130,11 @@ TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD11)
 
   std::cout << "INSERTION FINISH..." << std::endl;
   std::cout << "NODE SIZE IN MESH AFTER DI --> " << nodePresentInMesh.size() << std::endl;
-  std::cout << "inserted node --> " << nodesAdded.size() << " | ~ " << (double)nodesAdded.size() / 646.0 << std::endl;
+  std::cout << "inserted node --> " << nodesAdded.size() << " | ~ " << (double)nodesAdded.size() / 2463.0 << std::endl;
   gmds::VTKWriter vtkWriterDI(&ioService);
   vtkWriterDI.setCellOptions(gmds::N|gmds::F|gmds::R);
   vtkWriterDI.setDataOptions(gmds::N|gmds::F|gmds::R);
-  vtkWriterDI.write("ModeleCAD11_DI_646.vtk");
+  vtkWriterDI.write("ModeleCAD2_DI_2463.vtk");
 
 
   std::cout << "edgesRemove start" << std::endl;
@@ -143,7 +143,7 @@ TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD11)
   gmds::VTKWriter vtkWriterER(&ioService);
   vtkWriterER.setCellOptions(gmds::N|gmds::R);
   vtkWriterER.setDataOptions(gmds::N|gmds::R);
-  vtkWriterER.write("ModeleCAD11_ER_646.vtk");
+  vtkWriterER.write("ModeleCAD2_ER_2463.vtk");
 
   unsigned int nodeSize = 0;
   unsigned int nodeReinsertedSize = 0;
@@ -176,7 +176,7 @@ TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD11)
   gmds::VTKWriter vtkWriterDI2(&ioService);
   vtkWriterDI2.setCellOptions(gmds::N|gmds::R);
   vtkWriterDI2.setDataOptions(gmds::N|gmds::R);
-  vtkWriterDI2.write("ModeleCAD11_DI_BIS_646.vtk");
+  vtkWriterDI2.write("ModeleCAD2_DI_BIS_2463.vtk");
 
   ///////////////////////////EDGE BUILDER START HERE///////////////////////////
   std::multimap<TInt, TInt> edges{};
@@ -264,9 +264,9 @@ TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD11)
   std::cout << "hexBuiltCpt -> " << hexBuiltCpt << std::endl;
   std::cout << "hexesNodes.size() --> " << nodesHex.size() << std::endl;
   //////////////////
-  ASSERT_EQ(hexBuiltCpt, 421);
-  return;
 
+  ASSERT_EQ(hexBuiltCpt, 1582);
+  return;
 
   simplexMesh.setHexadronData(hexesNodes);
   simplexMesh.setMarkedTet(markedTet);
@@ -276,5 +276,5 @@ TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD11)
   gmds::VTKWriter vtkWriterHT(&ioService);
   vtkWriterHT.setCellOptions(gmds::N|gmds::R);
   vtkWriterHT.setDataOptions(gmds::N|gmds::R);
-  vtkWriterHT.write("ModeleCAD11_HEX_TET0_BISBF.vtk");
+  vtkWriterHT.write("ModeleCAD2_HEX_iter3.vtk");
 }

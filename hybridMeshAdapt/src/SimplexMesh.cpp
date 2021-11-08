@@ -3911,7 +3911,8 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
 
   for(auto const& face : pointsToConnect)
   {
-
+    //std::cout << "faceIter --> " << faceIter << std::endl;
+    //std::cout << "face[0,1,2] --> " << face[0] << " | " << face[1] << " | " << face[2] << " | " << std::endl;
     TSimplexID neighborSimplex         = extSimplexBorder[faceIter];
 
     if(neighborSimplex != border)
@@ -3929,6 +3930,11 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
 
     //std::cout << "tetrahedre created -> " << face[0] << " | " << face[1] << " | " << face[2] << " | " << nodeToConnect << std::endl;
     TSimplexID simplex = addTetraedre(face[0], face[1], face[2], nodeToConnect, false);
+    //if(simplex == 2326)
+    {
+      //std::cout << "simplex -> " << simplex << std::endl;
+      //std::cout << "neighborSimplex -> " << neighborSimplex << std::endl;
+    }
     SimplicesCell cell0(this, simplex);
     std::vector<TSimplexID> vecAdj{border, border, border, border};
     m_tet_adj[simplex] = vecAdj;
@@ -4803,6 +4809,7 @@ void SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, const gmds
   double cpt_EdgeBuilt = 0.0;
   double sizeEdge = AEdges.size();
   std::vector<TInt> allDeletedNodes{};
+  gmds::ISimplexMeshIOService ioService(this);
 
   for(auto const & edge : AEdges)
   {
@@ -4814,11 +4821,39 @@ void SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, const gmds
       {
         SimplicesNode nodeA = SimplicesNode(this, nodeAidx);
         SimplicesNode nodeB = SimplicesNode(this, nodeBidx);
-        //std::cout << "nodeA.getGlobalNode() ---> " << nodeA << std::endl;
-        //std::cout << "nodeB.getGlobalNode() ---> " << nodeB << std::endl;
+        /*std::cout << "nodeA.getGlobalNode() ---> " << nodeA << std::endl;
+        std::cout << "nodeB.getGlobalNode() ---> " << nodeB << std::endl;
+        std::cout << "nodeA.shell(nodeB).size() -> " << nodeA.shell(nodeB).size() << std::endl;*/
+
         if(nodeA.shell(nodeB).size() == 0)
         {
+          static int cpt = 0;
+          //if(nodeA.getGlobalNode() == 5818 && nodeB.getGlobalNode() == 6081)
+          {
+            /*std::vector<TSimplexID> ballA = nodeA.ballOf();
+            std::vector<TSimplexID> ballB = nodeB.ballOf();
+
+            for(auto const simplex : ballA)
+            {
+              std::cout << "BALL A ---> " << simplex << std::endl;
+            }*/
+            //std::vector<TSimplexID> ball = SimplicesNode(this, 5818).ballOf();
+            //for(auto const simplex : ball)
+            {
+              //std::cout << "BALL ---> " << simplex << std::endl;
+            }
+            //std::cout << "CPT --> " << cpt << std::endl;
+            //if(cpt == 25){return;}
+            //gmds::VTKWriter vtkWriterTEST(&ioService);
+            //vtkWriterTEST.setCellOptions(gmds::N|gmds::R);
+            //vtkWriterTEST.setDataOptions(gmds::N|gmds::R);
+            //vtkWriterTEST.write("ModeleCAD2_CPT_" + std::to_string(cpt) + ".vtk");
+            cpt++;
+            ///
+            //return;
+          }
           std::vector<TInt> cavity = initializeCavityWith(nodeA.getGlobalNode(), nodeB.getGlobalNode());
+          //std::cout << "cavity.size() -> " << cavity.size() << std::endl;
           CriterionRAIS criterionRAIS(new VolumeCriterion());
           bool status = false;
           std::vector<TInt> deletedNodes{};
