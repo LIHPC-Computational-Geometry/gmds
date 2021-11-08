@@ -84,6 +84,12 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:aed5900c85f8dc4e6cfe59b88cb05b813"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgmds_1_1math_1_1_transfinite_interpolation.html#aed5900c85f8dc4e6cfe59b88cb05b813">compute</a> (std::vector&lt; std::vector&lt; <a class="el" href="classgmds_1_1math_1_1_point.html">Point</a> &gt; &gt; &amp;AGrid)</td></tr>
 <tr class="memdesc:aed5900c85f8dc4e6cfe59b88cb05b813"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute a transfinite interpolation from a grid of points.  <a href="classgmds_1_1math_1_1_transfinite_interpolation.html#aed5900c85f8dc4e6cfe59b88cb05b813">More...</a><br /></td></tr>
 <tr class="separator:aed5900c85f8dc4e6cfe59b88cb05b813"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8670facdb88cd9277dc7386d0a510623"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgmds_1_1math_1_1_transfinite_interpolation.html#a8670facdb88cd9277dc7386d0a510623">computeQuad</a> (<a class="el" href="classgmds_1_1_array2_d.html">Array2D</a>&lt; <a class="el" href="classgmds_1_1math_1_1_point.html">Point</a> &gt; &amp;AGrid)</td></tr>
+<tr class="memdesc:a8670facdb88cd9277dc7386d0a510623"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute a transfinite interpolation from a grid of points.  <a href="classgmds_1_1math_1_1_transfinite_interpolation.html#a8670facdb88cd9277dc7386d0a510623">More...</a><br /></td></tr>
+<tr class="separator:a8670facdb88cd9277dc7386d0a510623"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1922f71fb560efb1994b3b46eb0c791e"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgmds_1_1math_1_1_transfinite_interpolation.html#a1922f71fb560efb1994b3b46eb0c791e">computeTri</a> (<a class="el" href="classgmds_1_1_tri_array.html">TriArray</a>&lt; <a class="el" href="classgmds_1_1math_1_1_point.html">Point</a> &gt; &amp;AGrid)</td></tr>
+<tr class="memdesc:a1922f71fb560efb1994b3b46eb0c791e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute a transfinite interpolation from a triangular grid of points.  <a href="classgmds_1_1math_1_1_transfinite_interpolation.html#a1922f71fb560efb1994b3b46eb0c791e">More...</a><br /></td></tr>
+<tr class="separator:a1922f71fb560efb1994b3b46eb0c791e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae0af98be92e3361c2ac8634151fee36a"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgmds_1_1math_1_1_transfinite_interpolation.html#ae0af98be92e3361c2ac8634151fee36a">compute</a> (std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="classgmds_1_1math_1_1_point.html">Point</a> &gt;&gt;&gt; &amp;AGrid)</td></tr>
 <tr class="separator:ae0af98be92e3361c2ac8634151fee36a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -147,17 +153,83 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Transfinite volume meshes </p><pre class="fragment">               a0   s0 s1  f0  s0 s1 s5 s4
-</pre><p> s7 s6 a1 s1 s2 f1 s1 s2 s6 s5 ----&mdash;* a2 s3 s2 f2 s3 s2 s6 s7 |\s4 |\ a3 s0 s3 f3 s0 s3 s7 s4 | <em>----&mdash;</em> s5 a4 s4 s5 f4 s0 s1 s2 s3 | | s2| | a5 s5 s6 f5 s4 s5 s6 s7 s3 <em>-|--&mdash;</em> | a6 s7 s6 | | a7 s4 s7 ----&mdash;* a8 s0 s4 s0 s1 a9 s1 s5 a10 s2 s6 a11 s3 s7</p>
-<ul>
-<li>onlvolume right now</li>
+<p>Transfinite volume meshes</p><ul>
 <li>the faces have to be meshed previously by a grid </li>
 </ul>
 
 </div>
 </div>
-<hr/>The documentation for this class was generated from the following file:<ul>
+<a id="a8670facdb88cd9277dc7386d0a510623"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8670facdb88cd9277dc7386d0a510623">&#9670;&nbsp;</a></span>computeQuad()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool TransfiniteInterpolation::computeQuad </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgmds_1_1_array2_d.html">Array2D</a>&lt; <a class="el" href="classgmds_1_1math_1_1_point.html">Point</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>AGrid</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute a transfinite interpolation from a grid of points. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">[in/out]</td><td>AGrid the points we compute It must be initialized with values on the grid boundary </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a1922f71fb560efb1994b3b46eb0c791e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1922f71fb560efb1994b3b46eb0c791e">&#9670;&nbsp;</a></span>computeTri()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool TransfiniteInterpolation::computeTri </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgmds_1_1_tri_array.html">TriArray</a>&lt; <a class="el" href="classgmds_1_1math_1_1_point.html">Point</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>AGrid</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute a transfinite interpolation from a triangular grid of points. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">[in/out]</td><td>AGrid the points we compute It must be initialized with values on the grid boundary </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following files:<ul>
 <li>/home/runner/work/gmds/gmds/math/inc/gmds/math/TransfiniteInterpolation.h</li>
+<li>/home/runner/work/gmds/gmds/math/src/TransfiniteInterpolation.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

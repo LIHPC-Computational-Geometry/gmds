@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['algochoice_3522',['AlgoChoice',['../structgmds_1_1_params_global.html#a44ab3cbdc8f3f6d0e1429ce75e4ff937',1,'gmds::ParamsGlobal']]],
-  ['algophasetype_3523',['AlgoPhaseType',['../structgmds_1_1_params_global.html#aa0b1ef9b19e2a7e3f2647154a0f60b08',1,'gmds::ParamsGlobal']]]
+  ['algochoice_3558',['AlgoChoice',['../structgmds_1_1_params_global.html#a44ab3cbdc8f3f6d0e1429ce75e4ff937',1,'gmds::ParamsGlobal']]],
+  ['algophasetype_3559',['AlgoPhaseType',['../structgmds_1_1_params_global.html#aa0b1ef9b19e2a7e3f2647154a0f60b08',1,'gmds::ParamsGlobal']]]
 ];

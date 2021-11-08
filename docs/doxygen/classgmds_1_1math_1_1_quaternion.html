@@ -184,10 +184,10 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:a2662c62fd6de635479deb04d763880ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the spherical interpolation between two Quaternions (SLERP)  <a href="classgmds_1_1math_1_1_quaternion.html#a2662c62fd6de635479deb04d763880ee">More...</a><br /></td></tr>
 <tr class="separator:a2662c62fd6de635479deb04d763880ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a22b9219ae6433ae46adb650db095a314"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classgmds_1_1math_1_1_quaternion.html">Quaternion</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgmds_1_1math_1_1_quaternion.html#a22b9219ae6433ae46adb650db095a314">simpleMean</a> (const vector&lt; <a class="el" href="classgmds_1_1math_1_1_quaternion.html">Quaternion</a> &gt; &amp;AQuats, const vector&lt; TCoord &gt; &amp;AWeights, const <a class="el" href="classgmds_1_1math_1_1_quaternion.html">Quaternion</a> &amp;ARef)</td></tr>
-<tr class="memdesc:a22b9219ae6433ae46adb650db095a314"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple pondered mean.  <a href="classgmds_1_1math_1_1_quaternion.html#a22b9219ae6433ae46adb650db095a314">More...</a><br /></td></tr>
+<tr class="memdesc:a22b9219ae6433ae46adb650db095a314"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_a.html">A</a> simple pondered mean.  <a href="classgmds_1_1math_1_1_quaternion.html#a22b9219ae6433ae46adb650db095a314">More...</a><br /></td></tr>
 <tr class="separator:a22b9219ae6433ae46adb650db095a314"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a42bc9a5c9f055423c430c47887530935"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classgmds_1_1math_1_1_quaternion.html">Quaternion</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgmds_1_1math_1_1_quaternion.html#a42bc9a5c9f055423c430c47887530935">mean</a> (const vector&lt; <a class="el" href="classgmds_1_1math_1_1_quaternion.html">Quaternion</a> &gt; &amp;AQuats, const vector&lt; TCoord &gt; &amp;AWeights)</td></tr>
-<tr class="memdesc:a42bc9a5c9f055423c430c47887530935"><td class="mdescLeft">&#160;</td><td class="mdescRight">A multi-pass mean.  <a href="classgmds_1_1math_1_1_quaternion.html#a42bc9a5c9f055423c430c47887530935">More...</a><br /></td></tr>
+<tr class="memdesc:a42bc9a5c9f055423c430c47887530935"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_a.html">A</a> multi-pass mean.  <a href="classgmds_1_1math_1_1_quaternion.html#a42bc9a5c9f055423c430c47887530935">More...</a><br /></td></tr>
 <tr class="separator:a42bc9a5c9f055423c430c47887530935"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc533443db6564092e64e8d5c6868490"><td class="memItemLeft" align="right" valign="top"><a id="acc533443db6564092e64e8d5c6868490"></a>
 static <a class="el" href="classgmds_1_1math_1_1_quaternion.html">Quaternion</a>&#160;</td><td class="memItemRight" valign="bottom"><b>mean</b> (const <a class="el" href="classgmds_1_1math_1_1_quaternion.html">Quaternion</a> &amp;AQ1, const TCoord &amp;AC1, const <a class="el" href="classgmds_1_1math_1_1_quaternion.html">Quaternion</a> &amp;AQ2, const TCoord &amp;AC2)</td></tr>
@@ -293,7 +293,7 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 <p>Copy constructor. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">AQ</td><td>A quaternion to be copied </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">AQ</td><td><a class="el" href="class_a.html">A</a> quaternion to be copied </td></tr>
   </table>
   </dd>
 </dl>
@@ -456,7 +456,7 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 </table>
 </div><div class="memdoc">
 
-<p>A multi-pass mean. </p>
+<p><a class="el" href="class_a.html">A</a> multi-pass mean. </p>
 <p><a class="el" href="class_this.html">This</a> method implement a multi-pass mean. It is intended for first definition of quaternions, when no reference is available. It uses internally simpleMeanQuat multiples times to converge towards a stable mean.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -710,7 +710,7 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 </table>
 </div><div class="memdoc">
 
-<p>A simple pondered mean. </p>
+<p><a class="el" href="class_a.html">A</a> simple pondered mean. </p>
 <p><a class="el" href="class_this.html">This</a> methods implement a one-pass direct mean pondered by the weights. Please note that the elements of AQuats are not used directly to compute the mean. Instead it is their image closest to ref which is used.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

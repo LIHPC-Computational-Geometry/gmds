@@ -83,19 +83,19 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="unionr2d__rvec2.html">r2d_rvec2</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A 2-vector.  <a href="unionr2d__rvec2.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_a.html">A</a> 2-vector.  <a href="unionr2d__rvec2.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="unionr2d__dvec2.html">r2d_dvec2</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An integer 2-vector for grid indexing.  <a href="unionr2d__dvec2.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structr2d__plane.html">r2d_plane</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A plane.  <a href="structr2d__plane.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_a.html">A</a> plane.  <a href="structr2d__plane.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structr2d__vertex.html">r2d_vertex</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A doubly-linked vertex.  <a href="structr2d__vertex.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_a.html">A</a> doubly-linked vertex.  <a href="structr2d__vertex.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structr2d__poly.html">r2d_poly</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A polygon. Can be convex, nonconvex, even multiply-connected.  <a href="structr2d__poly.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_a.html">A</a> polygon. Can be convex, nonconvex, even multiply-connected.  <a href="structr2d__poly.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
@@ -195,7 +195,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>r2d_reduce</b> (<a cl
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">poly</td><td>The polygon over which to integrate.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">polyorder</td><td>Order of the polynomial density field. 0 for constant (1 moment), 1 for linear (4 moments), 2 for quadratic (10 moments), etc.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">moments</td><td>Array to be filled with the integration results, up to the specified <code>polyorder</code>. Must be at least <code>(polyorder+1)*(polyorder+2)/2</code> long. A conventient macro, <code><a class="el" href="r2d_8h.html#abb06105c9ba90a0af19b4a5104c8ccc0" title="Integrate a polynomial density over a polygon using simplicial decomposition. Uses the fast recursive...">R2D_NUM_MOMENTS()</a></code> is provided to compute the number of moments for a given order. Order of moments is row-major, i.e. <code>1</code>, <code>x</code>, <code>y</code>, <code>x^2</code>, <code>x*y</code>, <code>y^2</code>, <code>x^3</code>, <code>x^2*y</code>... </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">moments</td><td>Array to be filled with the integration results, up to the specified <code>polyorder</code>. Must be at least <code>(polyorder+1)*(polyorder+2)/2</code> long. <a class="el" href="class_a.html">A</a> conventient macro, <code><a class="el" href="r2d_8h.html#abb06105c9ba90a0af19b4a5104c8ccc0" title="Integrate a polynomial density over a polygon using simplicial decomposition. Uses the fast recursive...">R2D_NUM_MOMENTS()</a></code> is provided to compute the number of moments for a given order. Order of moments is row-major, i.e. <code>1</code>, <code>x</code>, <code>y</code>, <code>x^2</code>, <code>x*y</code>, <code>y^2</code>, <code>x^3</code>, <code>x^2*y</code>... </td></tr>
   </table>
   </dd>
 </dl>

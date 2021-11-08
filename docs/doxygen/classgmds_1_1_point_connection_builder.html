@@ -79,7 +79,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p><a class="el" href="class_this.html">This</a> class provides an algorithm to connect a set of points that are defined on tetrahedral mesh where a frame field lives on. A frame is defined for each point to connect. The output is a set of "connection" information indicating for each frame field direction where a point is connected to.  
+<p><a class="el" href="class_this.html">This</a> class provides an algorithm to connect a set of points that are defined on tetrahedral mesh where a frame field lives on. <a class="el" href="class_a.html">A</a> frame is defined for each point to connect. The output is a set of "connection" information indicating for each frame field direction where a point is connected to.  
  <a href="classgmds_1_1_point_connection_builder.html#details">More...</a></p>
 
 <p><code>#include &lt;PointConnectionBuilder.h&gt;</code></p>
@@ -87,10 +87,10 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgmds_1_1_point_connection_builder_1_1_hex_corner.html">HexCorner</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Local Structure to store hex corner data for each input point. A corner data is made of the index of the current point (p), the index of the 3 points helping to form the corner (adj). Each "edge" [p,adj[i]] is geometrically defined by vec[i].  <a href="structgmds_1_1_point_connection_builder_1_1_hex_corner.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Local Structure to store hex corner data for each input point. <a class="el" href="class_a.html">A</a> corner data is made of the index of the current point (p), the index of the 3 points helping to form the corner (adj). Each "edge" [p,adj[i]] is geometrically defined by vec[i].  <a href="structgmds_1_1_point_connection_builder_1_1_hex_corner.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgmds_1_1_point_connection_builder_1_1_oriented_edge.html">OrientedEdge</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Local Structure to store an oriented edge made of the index of the first and second points and the chart data used in the first point to select this <a class="el" href="structgmds_1_1_point_connection_builder_1_1_oriented_edge.html" title="Local Structure to store an oriented edge made of the index of the first and second points and the ch...">OrientedEdge</a>. A chart data (-1,-1) means that the selected end point finally do not correspond to a chart alignment (will happen for boundary points for instance)  <a href="structgmds_1_1_point_connection_builder_1_1_oriented_edge.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Local Structure to store an oriented edge made of the index of the first and second points and the chart data used in the first point to select this <a class="el" href="structgmds_1_1_point_connection_builder_1_1_oriented_edge.html" title="Local Structure to store an oriented edge made of the index of the first and second points and the ch...">OrientedEdge</a>. <a class="el" href="class_a.html">A</a> chart data (-1,-1) means that the selected end point finally do not correspond to a chart alignment (will happen for boundary points for instance)  <a href="structgmds_1_1_point_connection_builder_1_1_oriented_edge.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -310,7 +310,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>m_output_dir</
 <tr class="separator:a0333eeb59081a07182e08300f8e67de1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p><a class="el" href="class_this.html">This</a> class provides an algorithm to connect a set of points that are defined on tetrahedral mesh where a frame field lives on. A frame is defined for each point to connect. The output is a set of "connection" information indicating for each frame field direction where a point is connected to. </p>
+<div class="textblock"><p><a class="el" href="class_this.html">This</a> class provides an algorithm to connect a set of points that are defined on tetrahedral mesh where a frame field lives on. <a class="el" href="class_a.html">A</a> frame is defined for each point to connect. The output is a set of "connection" information indicating for each frame field direction where a point is connected to. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a47c383c790b65e001f98f2a1bc97d8eb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a47c383c790b65e001f98f2a1bc97d8eb">&#9670;&nbsp;</a></span>PointConnectionBuilder()</h2>
@@ -1618,9 +1618,9 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>m_output_dir</
 <p>Check if an oriented edge going from <code>AFrom</code> to <code>ATo</code> exists in <code>AEdgeSet</code>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">AFrom</td><td>A first point index </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ATo</td><td>A second point index </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">AEdgeSet</td><td>A set of oriented edges </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">AFrom</td><td><a class="el" href="class_a.html">A</a> first point index </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ATo</td><td><a class="el" href="class_a.html">A</a> second point index </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">AEdgeSet</td><td><a class="el" href="class_a.html">A</a> set of oriented edges </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">AOutEdge</td><td>The edge from <code>AFrom</code> to <code>ATo</code> if it exists</td></tr>
   </table>
   </dd>
