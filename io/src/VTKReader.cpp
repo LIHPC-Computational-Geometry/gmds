@@ -304,7 +304,6 @@ void VTKReader::readDataNodes(){
                 if (scalar_type == "int"){
                     IMeshIOService::DataInt d;
                     d.name = scalar_name;
-                    d.values.resize(nb_values);
 
                     for (int i = 0; i < nb_values; i++){
                         int val;
@@ -316,7 +315,6 @@ void VTKReader::readDataNodes(){
                 else if (scalar_type == "float"){
                     IMeshIOService::DataReal d;
                     d.name = scalar_name;
-                    d.values.resize(nb_values);
 
                     for (int i = 0; i < nb_values; i++){
                         double val;
@@ -339,7 +337,6 @@ void VTKReader::readDataNodes(){
 
             IMeshIOService::DataVector d;
             d.name = vector_name;
-            d.values.resize(nb_values);
 
             for (int i = 0; i < nb_values; i++){
                 double x, y, z;
@@ -401,7 +398,6 @@ void VTKReader::readDataEdges(){
                     if(!only_null) {
                         IMeshIOService::DataInt d;
                         d.name = scalar_name;
-                        d.values.resize(nb_true_cells);
                         for(int i_cell = 0; i_cell<nb_true_cells;i_cell++){
                             d.values[i_cell]=tmp_val[i_cell];
                         }
@@ -429,7 +425,6 @@ void VTKReader::readDataEdges(){
                     if(!only_null) {
                         IMeshIOService::DataReal d;
                         d.name = scalar_name;
-                        d.values.resize(nb_true_cells);
                         for(int i_cell = 0; i_cell<nb_true_cells;i_cell++){
                             d.values[i_cell]=tmp_val[i_cell];
                         }
@@ -466,7 +461,6 @@ void VTKReader::readDataEdges(){
             if(!only_null) {
                 IMeshIOService::DataVector d;
                 d.name = vector_name;
-                d.values.resize(nb_true_cells);
                 for(int i_cell = 0; i_cell<nb_true_cells;i_cell++){
                     d.values[i_cell]=tmp_val[i_cell];
                 }
@@ -527,7 +521,6 @@ void VTKReader::readDataFaces(){
                     if(!only_null) {
                         IMeshIOService::DataInt d;
                         d.name = scalar_name;
-                        d.values.resize(nb_true_cells);
                         for(int i_cell = 0; i_cell<nb_true_cells;i_cell++){
                             d.values[i_cell]=tmp_val[i_cell];
                         }
@@ -557,7 +550,6 @@ void VTKReader::readDataFaces(){
                     if(!only_null) {
                         IMeshIOService::DataReal d;
                         d.name = scalar_name;
-                        d.values.resize(nb_true_cells);
                         for(int i_cell = 0; i_cell<nb_true_cells;i_cell++){
                             d.values[i_cell]=tmp_val[i_cell];
                         }
@@ -596,7 +588,6 @@ void VTKReader::readDataFaces(){
             if(!only_null) {
                 IMeshIOService::DataVector d;
                 d.name = vector_name;
-                d.values.resize(nb_true_cells);
                 for(int i_cell = 0; i_cell<nb_true_cells;i_cell++){
                     d.values[i_cell]=tmp_val[i_cell];
                 }
@@ -659,7 +650,6 @@ void VTKReader::readDataRegions(){
                     if(!only_null) {
                         IMeshIOService::DataInt d;
                         d.name = scalar_name;
-                        d.values.resize(nb_true_cells);
                         for(int i_cell = 0; i_cell<nb_true_cells;i_cell++){
                             d.values[i_cell]=tmp_val[i_cell];
                         }
@@ -690,7 +680,6 @@ void VTKReader::readDataRegions(){
                     if(!only_null) {
                         IMeshIOService::DataReal d;
                         d.name = scalar_name;
-                        d.values.resize(nb_true_cells);
                         for(int i_cell = 0; i_cell<nb_true_cells;i_cell++){
                             d.values[i_cell]=tmp_val[i_cell];
                         }
@@ -731,7 +720,6 @@ void VTKReader::readDataRegions(){
             if(!only_null) {
                 IMeshIOService::DataVector d;
                 d.name = vector_name;
-                d.values.resize(nb_true_cells);
                 for(int i_cell = 0; i_cell<nb_true_cells;i_cell++){
                     d.values[i_cell]=tmp_val[i_cell];
                 }

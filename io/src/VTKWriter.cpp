@@ -80,7 +80,7 @@ void VTKWriter::writeDataNodes() {
     m_data_node_stream<< "LOOKUP_TABLE default\n";
 
     for (auto i: data_id.values){
-        m_data_node_stream<< i<<" ";
+        m_data_node_stream<< i.second<<" ";
     }
     m_data_node_stream<<"\n";
 
@@ -89,7 +89,7 @@ void VTKWriter::writeDataNodes() {
         m_data_node_stream<< "SCALARS " << d.name.c_str() << " int 1\n";
         m_data_node_stream<< "LOOKUP_TABLE default\n";
         for (auto id : d.values)
-            m_data_node_stream << id<<" ";
+            m_data_node_stream << id.second<<" ";
 
         m_data_node_stream << "\n";
     }
@@ -98,7 +98,7 @@ void VTKWriter::writeDataNodes() {
         m_data_node_stream<< "SCALARS " << d.name.c_str() << " float 1\n";
         m_data_node_stream << "LOOKUP_TABLE default\n";
         for (auto id : d.values)
-            m_data_node_stream << id<<" ";
+            m_data_node_stream << id.second<<" ";
 
         m_data_node_stream << "\n";
     }
@@ -106,7 +106,7 @@ void VTKWriter::writeDataNodes() {
 
         m_data_node_stream<< "VECTORS "<< d.name.c_str() << " float\n";
         for (auto v : d.values)
-            m_data_node_stream << v.X()<<" "<< v.Y()<<" "<< v.Z()<<" ";
+            m_data_node_stream << v.second.X()<<" "<< v.second.Y()<<" "<< v.second.Z()<<" ";
 
         m_data_node_stream << "\n";
     }
@@ -172,7 +172,7 @@ void VTKWriter::finalize() {
     for(auto info:m_faces_info){
         *m_stream << info.node_ids.size()<<" ";
         for(auto nid : info.node_ids){
-            *m_stream << m_node_ids_mapping[nid] << " ";
+            *m_stream<< m_node_ids_mapping[nid] << " ";
         }
         *m_stream << "\n";
         m_cell_ids_mapping[info.id] = vtk_cell_id++;
@@ -232,7 +232,7 @@ void VTKWriter::finalize() {
     *m_stream << "LOOKUP_TABLE default\n";
     for(auto dim=0; dim<3; dim++)
         for (auto i:m_cell_id[dim].values){
-            *m_stream << i << " ";
+            *m_stream << i.second << " ";
         }
      *m_stream<<"\n\n";
 
@@ -244,7 +244,7 @@ void VTKWriter::finalize() {
         *m_stream<< "LOOKUP_TABLE default\n";
 
         for (auto id : d.values)
-            *m_stream << id<<" ";
+            *m_stream << id.second<<" ";
 
         for(unsigned int idle=0; idle<nb_faces+nb_regions;idle++)
             *m_stream<<"-1 ";
@@ -257,7 +257,7 @@ void VTKWriter::finalize() {
         *m_stream << "LOOKUP_TABLE default\n";
 
         for (auto id : d.values)
-            *m_stream << id<<" ";
+            *m_stream << id.second<<" ";
 
         for(unsigned int idle=0; idle<nb_faces+nb_regions;idle++)
             *m_stream<<"-1.0 ";
@@ -269,7 +269,7 @@ void VTKWriter::finalize() {
 
         *m_stream<< "VECTORS " << d.name.c_str() << " float\n";
         for (auto v : d.values)
-            *m_stream << v.X()<<" "<< v.Y()<<" "<< v.Z()<<"\n";
+            *m_stream << v.second.X()<<" "<< v.second.Y()<<" "<< v.second.Z()<<"\n";
 
         for(unsigned int idle=0; idle<nb_faces+nb_regions;idle++)
             *m_stream<<"0 0 0\n";
@@ -286,7 +286,7 @@ void VTKWriter::finalize() {
             *m_stream<<"-1 ";
 
         for (auto id : d.values)
-            *m_stream << id<<" ";
+            *m_stream << id.second<<" ";
 
         for(unsigned int idle=0; idle<nb_regions;idle++)
             *m_stream<<"-1 ";
@@ -302,7 +302,7 @@ void VTKWriter::finalize() {
             *m_stream<<"-1.0 ";
 
         for (auto id : d.values)
-            *m_stream << id<<" ";
+            *m_stream << id.second<<" ";
 
         for(unsigned int idle=0; idle<nb_regions;idle++)
             *m_stream<<"-1.0 ";
@@ -316,7 +316,7 @@ void VTKWriter::finalize() {
             *m_stream<<"0 0 0\n";
 
         for (auto v : d.values)
-            *m_stream << v.X()<<" "<< v.Y()<<" "<< v.Z()<<"\n";
+            *m_stream << v.second.X()<<" "<< v.second.Y()<<" "<< v.second.Z()<<"\n";
 
         for(unsigned int idle=0; idle<nb_regions;idle++)
             *m_stream<<"0 0 0\n";
@@ -335,7 +335,7 @@ void VTKWriter::finalize() {
             *m_stream<<"-1 ";
 
         for (auto id : d.values)
-            *m_stream << id<<" ";
+            *m_stream << id.second<<" ";
 
 
         *m_stream<<"\n\n";
@@ -349,7 +349,7 @@ void VTKWriter::finalize() {
             *m_stream<<"-1.0 ";
 
         for (auto id : d.values)
-            *m_stream << id<<" ";
+            *m_stream << id.second<<" ";
 
         *m_stream<<"\n\n";
     }
@@ -360,7 +360,7 @@ void VTKWriter::finalize() {
             *m_stream<<"0 0 0\n";
 
         for (auto v : d.values)
-            *m_stream << v.X()<<" "<< v.Y()<<" "<< v.Z()<<"\n";
+            *m_stream << v.second.X()<<" "<< v.second.Y()<<" "<< v.second.Z()<<"\n";
 
         *m_stream<<"\n\n";
     }

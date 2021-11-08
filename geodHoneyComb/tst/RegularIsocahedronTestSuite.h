@@ -93,7 +93,7 @@ TEST(RegularIcosahedronTestClass, test_icosahedron_length_2_center555)
 TEST(RegularIcosahedronTestClass, test_icosahedron_length_2_center555_dualized)
 {
     math::Point center(5,5,5);
-    RegularIcosahedron ico(center,2);
+    RegularIcosahedron ico(center,2,10);
     ico.performQuadDualization();
     std::unique_ptr<Mesh> m = ico.getRepresentation();
 
@@ -108,10 +108,7 @@ TEST(RegularIcosahedronTestClass, test_icosahedron_length_2_center555_dualized)
 
     ASSERT_FLOAT_EQ(0,center.distance(0.5*(p1+p2)));
 
-    IGMeshIOService ioService(m.get());
-    VTKWriter writer(&ioService);
-    writer.setCellOptions(N|F);
-    writer.setDataOptions(N|F);
-    writer.write("icosahedron.vtk");
+    ASSERT_EQ(6000, m->getNbFaces());
+    ASSERT_EQ(6002, m->getNbNodes());
 }
 /*----------------------------------------------------------------------------*/
