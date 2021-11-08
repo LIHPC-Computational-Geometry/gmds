@@ -32,16 +32,16 @@ TEST(RegularIcosahedronTestClass, test_unit_icosahedron)
 TEST(RegularIcosahedronTestClass, test_unit_icosahedron_subdivide)
 {
     math::Point center(0,0,0);
-    RegularIcosahedron ico(center,1,20);
+    RegularIcosahedron ico(center,1,5);
     std::unique_ptr<Mesh> m = ico.getRepresentation();
 
 
-//    ASSERT_EQ(12, m->getNbNodes());
-    ASSERT_EQ(20, m->getNbFaces());
+    ASSERT_EQ(252, m->getNbNodes());
+    ASSERT_EQ(500, m->getNbFaces());
 
     for(auto n_id:m->nodes()){
         math::Point p = m->get<Node>(n_id).point();
-    //    ASSERT_FLOAT_EQ(1,p.distance(center));
+        ASSERT_FLOAT_EQ(1,p.distance(center));
     }
 
     IGMeshIOService ioService(m.get());

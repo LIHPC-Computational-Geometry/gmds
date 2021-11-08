@@ -85,7 +85,7 @@ RegularIcosahedron::~RegularIcosahedron() {
 void RegularIcosahedron::subdivide() {
     //we compute the location of new nodes on the edges.
 
-    // new nodes per edge. They are compute from the edge end point with the
+    // new nodes per edge. They are computed from the edge end point with the
     // lowest id
     std::map<std::pair<TCellID ,TCellID >, std::vector<TCellID> > e2dn;
     for(auto f_id:m_representation->faces()){
@@ -135,15 +135,12 @@ void RegularIcosahedron::subdivide() {
             std::reverse(subdiv.begin(),subdiv.end());
 
         grid(0,0) = n0.point();
-        grid(m_subdivision,0) = n1.point();
-        for(auto i=1; i<m_subdivision;i++){
-            grid(i,0)=m_representation->get<Node>(subdiv[i-1]).point();
-        }
-
         ids(0,0) = n0.id();
+        grid(m_subdivision,0) = n1.point();
         ids(m_subdivision,0) = n1.id();
         for(auto i=1; i<m_subdivision;i++){
-            ids(i,0)=m_representation->get<Node>(subdiv[i-1]).id();
+            grid(i,0)= m_representation->get<Node>(subdiv[i-1]).point();
+            ids(i,0) = m_representation->get<Node>(subdiv[i-1]).id();
         }
         //==================================================================
         //nO to n2 on the first column
@@ -155,12 +152,10 @@ void RegularIcosahedron::subdivide() {
             std::reverse(subdiv.begin(),subdiv.end());
 
         grid(0,m_subdivision) = n2.point();
-        for(auto i=1; i<m_subdivision;i++){
-            grid(0,i)=m_representation->get<Node>(subdiv[i-1]).point();
-        }
         ids(0,m_subdivision) = n2.id();
         for(auto i=1; i<m_subdivision;i++){
-            ids(0,i)=m_representation->get<Node>(subdiv[i-1]).id();
+            grid(0,i)= m_representation->get<Node>(subdiv[i-1]).point();
+            ids(0,i) = m_representation->get<Node>(subdiv[i-1]).id();
         }
         //==================================================================
         //n2 to n1 on the first column
@@ -172,30 +167,29 @@ void RegularIcosahedron::subdivide() {
             std::reverse(subdiv.begin(),subdiv.end());
 
         for(auto i=1; i<m_subdivision;i++){
-            grid(i,m_subdivision-i)=m_representation->get<Node>(subdiv[i-1]).point();
-        }
-        for(auto i=1; i<m_subdivision;i++){
-            ids(i,m_subdivision-i)=m_representation->get<Node>(subdiv[i-1]).id();
-        }
-        std::cout<<"===================================================="<<std::endl;
-        for(auto i=0; i<m_subdivision+1;i++) {
-            for (auto j = 0; j < m_subdivision-i+1; j++) {
-                std::cout<<grid(i,j)<<" ";
-            }
-            std::cout<<std::endl;
-        }
-        std::cout<<std::endl;
-        for(auto i=0; i<m_subdivision+1;i++) {
-            for (auto j = 0; j < m_subdivision-i+1; j++) {
-                std::cout<<ids(i,j)<<" ";
-            }
-            std::cout<<std::endl;
+            grid(i,m_subdivision-i)= m_representation->get<Node>(subdiv[i-1]).point();
+            ids(i,m_subdivision-i) = m_representation->get<Node>(subdiv[i-1]).id();
         }
         math::TransfiniteInterpolation::computeTri(grid);
         for(auto i=1;i<m_subdivision;i++){
             for(auto j=1;j<m_subdivision-i;j++){
-                math::Point pij = projectOnSphere(grid(i,j));
-                m_representation->newNode(pij);
+                auto k = m_subdivision-i-j;
+                math::Point pijk = projectOnSphere(grid(i,j,k));
+                Node nijk = m_representation->newNode(pijk);
+                ids(i,j,k) = nijk.id();
+            }
+        }
+        m_representation->deleteFace(f_id);
+        for(auto i=0;i<m_subdivision;i++){
+            for(auto j=0;j<m_subdivision-i;j++){
+                auto k = m_subdivision-i-j;
+                m_representation->newTriangle(ids(i,j,k),
+                                              ids(i+1,j,k-1),
+                                              ids(i,j+1,k-1));
+                if(k>1)
+                    m_representation->newTriangle(ids(i+1,j+1,k-2),
+                                                  ids(i+1,j,k-1),
+                                                  ids(i,j+1,k-1));
             }
         }
     }
