@@ -17,7 +17,7 @@ namespace gmds{
      */
     /*----------------------------------------------------------------------------*/
     template<typename  T>
-    class GMDSUtils_API Array2D {
+    class Array2D {
     public:
         /*------------------------------------------------------------------------*/
         /** @brief  Default constructor with @p AI lines and @p AJ columns. A
@@ -110,7 +110,7 @@ namespace gmds{
      */
     /*----------------------------------------------------------------------------*/
     template<typename  T>
-    class GMDSUtils_API TriArray {
+    class  TriArray {
     public:
         /*------------------------------------------------------------------------*/
         /** @brief  Default constructor with @p AN the triangular size
@@ -229,7 +229,7 @@ namespace gmds{
      */
     /*----------------------------------------------------------------------------*/
     template<typename  T>
-    class GMDSUtils_API Array3D {
+    class  Array3D {
     public:
         /*------------------------------------------------------------------------*/
         /** @brief  Default constructor with @p AI, @p AJ and @p AK dimension. A
