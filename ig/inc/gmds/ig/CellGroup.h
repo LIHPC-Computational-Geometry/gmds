@@ -17,16 +17,15 @@
 #include <gmds/ig/Cell.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
-    /*----------------------------------------------------------------------------*/
-/** \class CellGroup
- *  \brief Define a group of cells having the same dimension (nodes, edges,
- *  	   faces, regions). These groups are used as containers for node clouds,
- *  	   lines, surfaces by the mesh class.
- *
- *  	   WARNING: if a cell contained in the cell group is removed, the group
- *  			    keep pointing on it (can induce an invalid pointer).
- */
-/*----------------------------------------------------------------------------*/
+    /** \class CellGroup
+     *  \brief Define a group of cells having the same dimension (nodes, edges,
+     *  	   faces, regions). These groups are used as containers for node clouds,
+     *  	   lines, surfaces by the mesh class.
+     *
+     *   	   WARNING: if a cell contained in the cell group is removed by the owner
+     *  	            mesh class, the cell group keeps pointing on it (
+     *  	            can induce an invalid pointer).
+     */
 	template<typename TCellType>
 	class CellGroup{
 	public:

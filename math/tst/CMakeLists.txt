@@ -2,6 +2,7 @@ add_executable(GMDS_MATH_TEST
         ChartTestSuite.h
         CrossTestSuite.h
         Cross2DTestSuite.h
+        DiscretizationScheme1DTestSuite.h
         MathTestSuite.h
         PointTestSuite.h
         QuaternionTestSuite.h
