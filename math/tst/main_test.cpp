@@ -6,6 +6,7 @@
 #include <ChartTestSuite.h>
 #include <Cross2DTestSuite.h>
 #include <CrossTestSuite.h>
+#include <DiscretizationScheme1DTestSuite.h>
 #include <MathTestSuite.h>
 #include <PointTestSuite.h>
 #include <QuaternionTestSuite.h>
