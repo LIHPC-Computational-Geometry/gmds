@@ -67,7 +67,34 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>#GeodHoneyComb module</p>
-<p><a class="el" href="class_this.html">This</a> module provides algorithsm to generate hexahedral meshes for spherical shapes using a pattern based on honeycombs. </p>
+<p><a class="el" href="class_this.html">This</a> module provides algorithsm to generate hexahedral meshes for spherical shapes using a pattern based on honeycombs.</p>
+<p>The usage is depicted by the unit tests given in unit test files (see <b>geodHoneyComb/tst/GeodHoneyCombTestSuite.h</b> for examples). In the following code snippet, we use the class <b>GeodHexMesher</b> to generate a sphere with 3 layers of of cells. The sphere is centered at origin and is radius values 1. We use a uniform discretization for all layers including the central one which contains pyramidal cells in the center.</p>
+<div class="fragment"><div class="line"><span class="comment">//creation of the meshing algorithm</span></div>
+<div class="line">GeodHexMesher ghm;</div>
+<div class="line">ghm.setCenter(math::Point(0,0,0));</div>
+<div class="line">ghm.setRadius(1);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">//layers are created with a uniform discretization for all of them</span></div>
+<div class="line">math::DiscretizationScheme1DUniform d(math::Point(0,0,0), math::Point(1,0,0), 10);</div>
+<div class="line"><span class="keyword">auto</span> layer0 = std::make_pair(0., &amp;d); <span class="comment">//inner radius being at 0 means we will have a whole sphere</span></div>
+<div class="line"><span class="keyword">auto</span> layer1 = std::make_pair(0.5, &amp;d);</div>
+<div class="line"><span class="keyword">auto</span> layer2 = std::make_pair(0.8,&amp;d);</div>
+<div class="line"><span class="keyword">auto</span> layer3 = std::make_pair(0.9,&amp;d);</div>
+<div class="line">std::map&lt;double, math::DiscretizationScheme1D*&gt; layers;</div>
+<div class="line">layers.insert(layer1);</div>
+<div class="line">layers.insert(layer2);</div>
+<div class="line">layers.insert(layer3);</div>
+<div class="line">layers.insert(layer0);</div>
+<div class="line">ghm.setLayerData(layers);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// execution of the algorithm</span></div>
+<div class="line">GeodHexMesher::OpResult res = ghm.execute();</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">//if the algorithm succeeded, we can access to the produced mesh</span></div>
+<div class="line"><span class="keywordflow">if</span>(res == GeodHexMesher::GEOD_SUCCESS)</div>
+<div class="line">    std::unique_ptr&lt;Mesh&gt; m = ghm.getMesh();</div>
+</div><!-- fragment --><p>We get the following resulting mesh with one color per layer.</p>
+<p><img src="..//docs/img/honeycomb.png" alt="image info" class="inline"/> </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->

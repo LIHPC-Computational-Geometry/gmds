@@ -77,24 +77,51 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:ab40da68cbf193dd3730a6ac5c35ad46a"><td class="memItemLeft" align="right" valign="top"><a id="ab40da68cbf193dd3730a6ac5c35ad46a"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>OpResult</b> { <b>GEOD_SUCCESS</b>, 
-<b>GEOD_FAILURE</b>
+<tr class="memitem:ab40da68cbf193dd3730a6ac5c35ad46a"><td class="memItemLeft" align="right" valign="top"><a id="ab40da68cbf193dd3730a6ac5c35ad46a"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>OpResult</b> { <br />
+&#160;&#160;<b>GEOD_SUCCESS</b>, 
+<b>GEOD_FAILURE</b>, 
+<b>GEOD_FAILURE_WRONG_RADIUS</b>, 
+<b>GEOD_FAILURE_LAYER_RADIUS_NEGATIVE</b>, 
+<br />
+&#160;&#160;<b>GEOD_FAILURE_LAYER_RADIUS_GREATER_THAN_SPHERE_RADIUS</b>
+<br />
  }</td></tr>
 <tr class="separator:ab40da68cbf193dd3730a6ac5c35ad46a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a720385dbeeb6ff75cf70f3883192ed"><td class="memItemLeft" align="right" valign="top"><a id="a1a720385dbeeb6ff75cf70f3883192ed"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>geodType</b> { <b>GEOD_NOT_DEFINED</b>, 
+<b>GEOD_SHELL</b>, 
+<b>GEOD_SPHERE</b>
+ }</td></tr>
+<tr class="separator:a1a720385dbeeb6ff75cf70f3883192ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ab46d208c628a6ca80a18a5af7b2e3f5e"><td class="memItemLeft" align="right" valign="top"><a id="ab46d208c628a6ca80a18a5af7b2e3f5e"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgmds_1_1_geod_hex_mesher.html#ab46d208c628a6ca80a18a5af7b2e3f5e">GeodHexMesher</a> (const double radius=1.0)</td></tr>
-<tr class="memdesc:ab46d208c628a6ca80a18a5af7b2e3f5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor. <br /></td></tr>
-<tr class="separator:ab46d208c628a6ca80a18a5af7b2e3f5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0408c318a2899a9004bc64862f035e5"><td class="memItemLeft" align="right" valign="top"><a id="af0408c318a2899a9004bc64862f035e5"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgmds_1_1_geod_hex_mesher.html#af0408c318a2899a9004bc64862f035e5">GeodHexMesher</a> ()</td></tr>
+<tr class="memdesc:af0408c318a2899a9004bc64862f035e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor. <br /></td></tr>
+<tr class="separator:af0408c318a2899a9004bc64862f035e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad7edaf0795a7f2b08d7ee1be9a4561ed"><td class="memItemLeft" align="right" valign="top"><a id="ad7edaf0795a7f2b08d7ee1be9a4561ed"></a>
 virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgmds_1_1_geod_hex_mesher.html#ad7edaf0795a7f2b08d7ee1be9a4561ed">~GeodHexMesher</a> ()</td></tr>
 <tr class="memdesc:ad7edaf0795a7f2b08d7ee1be9a4561ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor. <br /></td></tr>
 <tr class="separator:ad7edaf0795a7f2b08d7ee1be9a4561ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7e2ba727a8e0fbbdd7474ff5f97ade1"><td class="memItemLeft" align="right" valign="top"><a id="ae7e2ba727a8e0fbbdd7474ff5f97ade1"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setRadius</b> (const double AR)</td></tr>
+<tr class="separator:ae7e2ba727a8e0fbbdd7474ff5f97ade1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8b33b1e9edef030fa08f80e41989ba8"><td class="memItemLeft" align="right" valign="top"><a id="ab8b33b1e9edef030fa08f80e41989ba8"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setCenter</b> (const <a class="el" href="classgmds_1_1math_1_1_point.html">math::Point</a> &amp;AP)</td></tr>
+<tr class="separator:ab8b33b1e9edef030fa08f80e41989ba8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c8ff00724ad7e8bac337c3eef1bdbcf"><td class="memItemLeft" align="right" valign="top"><a id="a5c8ff00724ad7e8bac337c3eef1bdbcf"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>checkValidity</b> () const</td></tr>
+<tr class="separator:a5c8ff00724ad7e8bac337c3eef1bdbcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a0ceaa7fefbba520e7d8bc70ed2ece4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgmds_1_1_geod_hex_mesher.html#a4a0ceaa7fefbba520e7d8bc70ed2ece4">setLayerData</a> (std::map&lt; double, <a class="el" href="classgmds_1_1math_1_1_discretization_scheme1_d.html">math::DiscretizationScheme1D</a> * &gt; &amp;ALayerData)</td></tr>
+<tr class="memdesc:a4a0ceaa7fefbba520e7d8bc70ed2ece4"><td class="mdescLeft">&#160;</td><td class="mdescRight">set the layer data info.  <a href="classgmds_1_1_geod_hex_mesher.html#a4a0ceaa7fefbba520e7d8bc70ed2ece4">More...</a><br /></td></tr>
+<tr class="separator:a4a0ceaa7fefbba520e7d8bc70ed2ece4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed6c7e46c7c529679ee81bbddce3aec5"><td class="memItemLeft" align="right" valign="top">OpResult&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgmds_1_1_geod_hex_mesher.html#aed6c7e46c7c529679ee81bbddce3aec5">execute</a> ()</td></tr>
 <tr class="memdesc:aed6c7e46c7c529679ee81bbddce3aec5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Execute the algorithm to get the final mesh.  <a href="classgmds_1_1_geod_hex_mesher.html#aed6c7e46c7c529679ee81bbddce3aec5">More...</a><br /></td></tr>
 <tr class="separator:aed6c7e46c7c529679ee81bbddce3aec5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9514db53a974f9d3416295900a87b04a"><td class="memItemLeft" align="right" valign="top"><a id="a9514db53a974f9d3416295900a87b04a"></a>
+std::unique_ptr&lt; <a class="el" href="classgmds_1_1_mesh.html">Mesh</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgmds_1_1_geod_hex_mesher.html#a9514db53a974f9d3416295900a87b04a">getMesh</a> ()</td></tr>
+<tr class="memdesc:a9514db53a974f9d3416295900a87b04a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gives access to the final mesh representation. <br /></td></tr>
+<tr class="separator:a9514db53a974f9d3416295900a87b04a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="aed6c7e46c7c529679ee81bbddce3aec5"></a>
@@ -114,6 +141,34 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 
 <p>Execute the algorithm to get the final mesh. </p>
 <dl class="section return"><dt>Returns</dt><dd>The result of the operation (success or failure) </dd></dl>
+
+</div>
+</div>
+<a id="a4a0ceaa7fefbba520e7d8bc70ed2ece4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a0ceaa7fefbba520e7d8bc70ed2ece4">&#9670;&nbsp;</a></span>setLayerData()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void GeodHexMesher::setLayerData </td>
+          <td>(</td>
+          <td class="paramtype">std::map&lt; double, <a class="el" href="classgmds_1_1math_1_1_discretization_scheme1_d.html">math::DiscretizationScheme1D</a> * &gt; &amp;&#160;</td>
+          <td class="paramname"><em>ALayerData</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>set the layer data info. </p>
+<p>Layers radius must be enclosed between 0 and outer radius, both excluded If provided layers are not give as expected, an exception is raised. If the smallest radius is 0, we will generate a sphere, otherwise a shell. the discretization associated to a radius corresponds to the discretization scheme applied between this radius value to the next upper radius value.</p>
+<p>The highest layer radius must be &lt; m_radius</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ALayerData</td><td>couples of radius, discretization data </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
