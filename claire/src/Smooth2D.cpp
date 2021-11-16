@@ -30,111 +30,117 @@ Smooth2D::STATUS Smooth2D::execute()
 			m_free_nodes.push_back(n_id);
 		}
 	}
-    //for all free nodes, we build and store stencils locally
-    buildStencils();
 
-	for (int iteration=1; iteration<=m_nb_max_iterations; iteration++) {
-		Mesh *new_mesh = m_mesh;
-		Node n_new;
-		for (auto n_id : m_free_nodes) {
-			math::Point H1, H2, H3;
-			math::Point V1, V2, V3;
-			math::Point A, B, C;
-			Node noeud_traite;
-			Node noeud_voisin;
-			//std::cout << "Noeud :" << n_id << std::endl;
-			noeud_traite = m_mesh->get<Node>(n_id);
+	// Vérification : est-ce que le maillage est structuré ?
+	bool CheckMesh = CheckStructuredMesh();
 
-			// Noeuds de la première branche (verticale)
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
-			A = noeud_voisin.point();
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][0]);
-			B = noeud_voisin.point();
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][0]);
-			C = noeud_voisin.point();
-			V1 = FindMidBranche(A, B, C);
+	if (CheckMesh) {
+		// for all free nodes, we build and store stencils locally
+		buildStencils();
 
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][1]);
-			A = noeud_voisin.point();
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][1]);
-			B = noeud_voisin.point();
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][1]);
-			C = noeud_voisin.point();
-			V2 = FindMidBranche(A, B, C);
+		for (int iteration = 1; iteration <= m_nb_max_iterations; iteration++) {
+			Mesh *new_mesh = m_mesh;
+			Node n_new;
+			for (auto n_id : m_free_nodes) {
+				math::Point H1, H2, H3;
+				math::Point V1, V2, V3;
+				math::Point A, B, C;
+				Node noeud_traite;
+				Node noeud_voisin;
+				// std::cout << "Noeud :" << n_id << std::endl;
+				noeud_traite = m_mesh->get<Node>(n_id);
 
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][2]);
-			A = noeud_voisin.point();
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][2]);
-			B = noeud_voisin.point();
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][2]);
-			C = noeud_voisin.point();
-			V3 = FindMidBranche(A, B, C);
+				// Noeuds de la première branche (verticale)
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
+				A = noeud_voisin.point();
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][0]);
+				B = noeud_voisin.point();
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][0]);
+				C = noeud_voisin.point();
+				V1 = FindMidBranche(A, B, C);
 
-			// Noeuds de la seconde branche (horizontale)
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
-			A = noeud_voisin.point();
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][1]);
-			B = noeud_voisin.point();
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][2]);
-			C = noeud_voisin.point();
-			H1 = FindMidBranche(A, B, C);
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][1]);
+				A = noeud_voisin.point();
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][1]);
+				B = noeud_voisin.point();
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][1]);
+				C = noeud_voisin.point();
+				V2 = FindMidBranche(A, B, C);
 
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][0]);
-			A = noeud_voisin.point();
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][1]);
-			B = noeud_voisin.point();
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][2]);
-			C = noeud_voisin.point();
-			H2 = FindMidBranche(A, B, C);
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][2]);
+				A = noeud_voisin.point();
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][2]);
+				B = noeud_voisin.point();
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][2]);
+				C = noeud_voisin.point();
+				V3 = FindMidBranche(A, B, C);
 
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][0]);
-			A = noeud_voisin.point();
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][1]);
-			B = noeud_voisin.point();
-			noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][2]);
-			C = noeud_voisin.point();
-			H3 = FindMidBranche(A, B, C);
+				// Noeuds de la seconde branche (horizontale)
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
+				A = noeud_voisin.point();
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][1]);
+				B = noeud_voisin.point();
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][2]);
+				C = noeud_voisin.point();
+				H1 = FindMidBranche(A, B, C);
 
-			// Recherche de l'intersection entre les 4 segments
-			bool intersection_trouvee(false);
-			math::Point M(0, 0, 0);
-			math::Segment Seg_Vert_1(V1, V2);
-			math::Segment Seg_Vert_2(V2, V3);
-			math::Segment Seg_Hori_1(H1, H2);
-			math::Segment Seg_Hori_2(H2, H3);
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][0]);
+				A = noeud_voisin.point();
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][1]);
+				B = noeud_voisin.point();
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][2]);
+				C = noeud_voisin.point();
+				H2 = FindMidBranche(A, B, C);
 
-			intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_1, M);
-			if (!intersection_trouvee) {
-				intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_2, M);
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][0]);
+				A = noeud_voisin.point();
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][1]);
+				B = noeud_voisin.point();
+				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][2]);
+				C = noeud_voisin.point();
+				H3 = FindMidBranche(A, B, C);
+
+				// Recherche de l'intersection entre les 4 segments
+				bool intersection_trouvee(false);
+				math::Point M(0, 0, 0);
+				math::Segment Seg_Vert_1(V1, V2);
+				math::Segment Seg_Vert_2(V2, V3);
+				math::Segment Seg_Hori_1(H1, H2);
+				math::Segment Seg_Hori_2(H2, H3);
+
+				intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_1, M);
+				if (!intersection_trouvee) {
+					intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_2, M);
+				}
+				if (!intersection_trouvee) {
+					intersection_trouvee = Seg_Vert_2.intersect2D(Seg_Hori_1, M);
+				}
+				if (!intersection_trouvee) {
+					intersection_trouvee = Seg_Vert_2.intersect2D(Seg_Hori_2, M);
+				}
+
+				/*
+				// PRINT POUR DEBUG
+				if (iteration==m_nb_max_iterations) {
+				   std::cout << "--------------------------------" << std::endl;
+				   std::cout << "Iterations :" << iteration << std::endl;
+				   std::cout << "Noeud :" << n_id << std::endl;
+				   std::cout << "Intersection trouvee ?" << intersection_trouvee << std::endl;
+				   std::cout << "Pos actuelle :" << noeud_traite.point() << std::endl;
+				   std::cout << "Nouvelle position :" << M << std::endl;
+				}
+				// FIN DES PRINT POUR DEBUG
+				*/
+
+				n_new = new_mesh->get<Node>(n_id);
+				if (intersection_trouvee) {
+					n_new.setPoint(M);
+				}
 			}
-			if (!intersection_trouvee) {
-				intersection_trouvee = Seg_Vert_2.intersect2D(Seg_Hori_1, M);
-			}
-			if (!intersection_trouvee) {
-				intersection_trouvee = Seg_Vert_2.intersect2D(Seg_Hori_2, M);
-			}
 
-			/*
-			// PRINT POUR DEBUG
-			if (iteration==m_nb_max_iterations) {
-				std::cout << "--------------------------------" << std::endl;
-				std::cout << "Iterations :" << iteration << std::endl;
-				std::cout << "Noeud :" << n_id << std::endl;
-				std::cout << "Intersection trouvee ?" << intersection_trouvee << std::endl;
-				std::cout << "Pos actuelle :" << noeud_traite.point() << std::endl;
-				std::cout << "Nouvelle position :" << M << std::endl;
-			}
-			// FIN DES PRINT POUR DEBUG
-			*/
-
-			n_new = new_mesh->get<Node>(n_id);
-			if (intersection_trouvee) {
-				n_new.setPoint(M);
-			}
+			m_mesh = new_mesh;
 		}
-
-		 m_mesh = new_mesh;
-	 }
+	}
 
 	    return Smooth2D::SUCCESS;
 }
@@ -319,59 +325,48 @@ math::Point Smooth2D::FindMidBranche(const math::Point A, const math::Point B, c
 
 
 
+
+
+
 /*------------------------------------------------------------------------*/
-/*
-// Fonction IntersectionSegments2D : Regarde si deux segments se coupent
-// En entrée : A, B, C, D -> 4 points, A et B forment le premier segment, C et D forment le deuxième segment
-// En sortie : intersection -> bool, false si il n'y a pas d'intersection, true sinon
-bool Smooth2D::IntersectionSegments2D(const math::Point A, const math::Point B, const math::Point C, const math::Point D) {
-	bool intersection(false);
-	math::Vector3d Vect_1( B.X()-A.X(), B.Y()-A.Y(), 0 );
-	math::Vector3d Vect_2( D.X()-C.X(), D.Y()-C.Y(), 0 );
-	Vect_1.normalize();
-	Vect_2.normalize();
-	if ( (Vect_1 != Vect_2) && (Vect_1 != -Vect_2)){
-		math::Point Point_intersection(0,0,0);
-		bool M_sur_seg1(false);
-		bool M_sur_seg2(false);
-		// Calcul de l'intersection des deux droites
-		// Résolution d'un système 2x2
-		// ATTENTION : ERREUR DANS LE CALCUL DU POINT D'INTERSECTION
-		Point_intersection.X() = A.X() + ( -Vect_2.Y()*( C.X()-A.X() ) + Vect_2.X()*( C.Y()-A.Y() ) )*Vect_1.X() ;
-		Point_intersection.Y() = A.Y() + ( -Vect_2.Y()*( C.X()-A.X() ) + Vect_2.X()*( C.Y()-A.Y() ) )*Vect_1.Y() ;
-		std::cout << "HELLO" << std::endl ;
-		std::cout << "M :" << Point_intersection << std::endl ;
-		// Est-ce que le point d'intersection appartient aux deux segments ?
-		// On note que le point d'intersection est appelé M dans la suite pour alléger les notations
-		// -> Test segment 1 [A,B]
-		double norme_AB = sqrt( pow((A.X()-B.X()),2) + pow(A.Y()-B.Y(),2) );
-		double norme_AM = sqrt( pow((A.X()-Point_intersection.X()),2) + pow(A.Y()-Point_intersection.Y(),2) ) ;
-		if (norme_AM <= norme_AB){
-			math::Vector3d Vect_AB( B.X()-A.X(), B.Y()-A.Y(), 0 );
-			math::Vector3d Vect_AM( Point_intersection.X()-A.X(), Point_intersection.Y()-A.Y(), 0 );
-			Vect_AB.normalize();
-			Vect_AM.normalize();
-			if (Vect_AB == Vect_AM){
-				M_sur_seg1 = true ;
-			}
-		}
-		// -> Test segment 2 [C,D] si M est bien sur le premier segment
-		if (M_sur_seg1){
-			double norme_CD = sqrt( pow((C.X()-D.X()),2) + pow(C.Y()-D.Y(),2) );
-			double norme_CM = sqrt( pow((C.X()-Point_intersection.X()),2) + pow(C.Y()-Point_intersection.Y(),2) ) ;
-			if (norme_CM <= norme_CD){
-				math::Vector3d Vect_CD( D.X()-C.X(), D.Y()-C.Y(), 0 );
-				math::Vector3d Vect_CM( Point_intersection.X()-C.X(), Point_intersection.Y()-C.Y(), 0 );
-				Vect_CD.normalize();
-				Vect_CM.normalize();
-				if (Vect_CD == Vect_CM){
-					M_sur_seg2 = true ;
-					intersection = true ;
-				}
+// Fonction CheckStructuredMesh : Prend un maillage en entrée et vérifie si il est structuré ou non
+// En entrée :
+// En sortie :
+bool Smooth2D::CheckStructuredMesh() {
+	bool checkmesh(true);
+	// Vérifie que chaque noeud intérieur a bien 4 faces adjacentes
+	for(auto n_id:m_free_nodes) {
+		if (checkmesh) {
+			Node current_node = m_mesh->get<Node>(n_id);
+			std::vector<Face> current_faces = current_node.get<Face>();
+			std::cout << "Current faces :" << current_faces[0] << std::endl;
+			int Nbr_Faces = current_faces.size();
+			if (Nbr_Faces != 4) {
+				checkmesh = false;
+				std::cout << "Numéro du noeud : " << n_id << std::endl;
+				std::cout << "Nbr de faces : " << Nbr_Faces << std::endl;
+				std::cout << "-----------" << std::endl;
 			}
 		}
 	}
-	return intersection;
+
+	// Vérifie que chaque face est un quad
+	for(auto n_id:m_mesh->faces()){
+		if (checkmesh) {
+			std::cout << "Numéro de la face : " << n_id << std::endl;
+			Face current_face = m_mesh->get<Face>(n_id);
+			std::vector<Node> current_nodes = current_face.get<Node>();
+			std::cout << "Current nodes :" << current_nodes[0] << std::endl;
+			int Nbr_Noeuds = current_nodes.size();
+			if (Nbr_Noeuds != 4) {
+				checkmesh = false;
+				std::cout << "Nbr de noeuds : " << Nbr_Noeuds << std::endl;
+				std::cout << "-----------" << std::endl;
+			}
+		}
+	}
+
+	std::cout << "Maillage structuré ? " << checkmesh << std::endl ;
+	return checkmesh;
 }
-*/
 /*------------------------------------------------------------------------*/
