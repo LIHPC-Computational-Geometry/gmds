@@ -8,6 +8,7 @@
 #include <string>
 #include <map>
 /*----------------------------------------------------------------------------*/
+#include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
     class LIB_GMDS_CLAIRE_API Smooth2D {
@@ -49,6 +50,11 @@ namespace gmds {
 	     //void PerturbationMaillage(const Variable<int>* var_bnd, const double dx, const double dy);
 	     math::Point FindMidBranche(const math::Point A, const math::Point B, const math::Point C);
 	     bool CheckStructuredMesh();
+	     void write_debug_txt(int n_id,
+	                          math::Point H1, math::Point H2, math::Point H3,
+	                          math::Point V1, math::Point V2, math::Point V3,
+	                          math::Point Point_Intersection,
+	                          std::string AFileName);
     private:
         /** mesh we work on */
         Mesh *m_mesh;
