@@ -136,6 +136,12 @@ Smooth2D::STATUS Smooth2D::execute()
 				if (intersection_trouvee) {
 					n_new.setPoint(M);
 				}
+
+				if ( (n_id == 7) && (iteration == 1) ) {
+					std::cout << "HELLOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOW" << std::endl ;
+					write_debug_txt(n_id, H1, H2, H3, V1, V2, V3, n_new.point(), "test.txt");
+				}
+
 			}
 
 			m_mesh = new_mesh;
@@ -324,10 +330,6 @@ math::Point Smooth2D::FindMidBranche(const math::Point A, const math::Point B, c
 
 
 
-
-
-
-
 /*------------------------------------------------------------------------*/
 // Fonction CheckStructuredMesh : Prend un maillage en entrée et vérifie si il est structuré ou non
 // En entrée :
@@ -370,3 +372,132 @@ bool Smooth2D::CheckStructuredMesh() {
 	return checkmesh;
 }
 /*------------------------------------------------------------------------*/
+
+
+
+/*------------------------------------------------------------------------*/
+/*
+void Smooth2D::write_debug_txt(int n_id, std::string AFileName){
+	//===============================================================
+	// First, we create the file where we are going to store the info
+	std::ofstream stream= new std::ofstream(AFileName, std::ios::out);
+	//set the numerical precision (number of digits)
+	(stream).precision(15);
+	//Header indicating which type of file it is
+	stream << "# Claire PHD Debug Version 1.0\n\n";
+
+	//Write the id of the node
+	stream << "# NODE " << n_id << "\n";
+
+	// then, for each node, I write the coordinates of the stencil
+	for(auto i=0;i<3;i++){
+		for(auto j=0;j<3;j++){
+			stream << m_stencil[n_id].val[i][j] << "\n";
+		}
+		stream << "\n" ;
+	}
+
+
+	//Write the number of nodes in the mesh
+	stream << "NODES " << AMesh->getNbNodes() << "\n";
+	// then, for each node, I write the node id, then the coordinates.
+	for(auto n_id:AMesh->nodes()){
+		Node n = AMesh->get<Node>(n_id);
+		math::Point p=n.point();
+		stream <<n.id()<<" "<<p.X()<<" "<<p.Y()<<" "<<p.Z()<< "\n";
+	}
+	//Write the number of faces in the mesh
+	stream << "\nFACES " << AMesh->getNbFaces() << "\n";
+	// then, for each face, I write the face id, then its node ids
+	for(auto f_id:AMesh->faces()){
+		Face f = AMesh->get<Face>(f_id);
+		std::vector<TCellID> node_ids = f.getIDs<Node>();
+		stream <<f.id()<<" ";
+		for(auto n_id : node_ids){
+			stream <<n_id<<" ";
+		}
+		stream<< "\n";
+	}
+
+
+	stream->close();
+	delete stream;
+}
+ */
+/*------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+void Smooth2D::write_debug_txt(int n_id,
+                          math::Point H1, math::Point H2, math::Point H3,
+                          math::Point V1, math::Point V2, math::Point V3,
+                          math::Point Point_Intersection,
+                          std::string AFileName){
+	//===============================================================
+	// First, we create the file where we are going to store the info
+	std::ofstream stream= std::ofstream(AFileName, std::ios::out);
+	//set the numerical precision (number of digits)
+	stream.precision(15);
+	//Header indicating which type of file it is
+	stream << "# Claire PHD Debug Version 1.0\n\n";
+
+	//Write the id of the node
+	stream << "# NODE " << n_id << "\n";
+
+	// For each node, I write the coordinates of the stencil
+	stream << "# COORDINATES OF THE STENCIL " << "\n";
+	for(auto i=0;i<3;i++){
+		for(auto j=0;j<3;j++){
+			Node n_local = m_mesh->get<Node>(m_stencil[n_id].val[i][j]);
+			math::Point point_local = n_local.point();
+			stream << point_local.X() << " " << point_local.Y() << " " << point_local.Z() << "\n";
+		}
+		stream << "\n" ;
+	}
+
+	for(auto j=0;j<3;j++){
+		for(auto i=0;i<3;i++){
+			Node n_local = m_mesh->get<Node>(m_stencil[n_id].val[i][j]);
+			math::Point point_local = n_local.point();
+			stream << point_local.X() << " " << point_local.Y() << " " << point_local.Z() << "\n";
+		}
+		stream << "\n" ;
+	}
+	stream << "\n" ;
+
+	// Write the 6 nodes for the Line-Sweeping algorithm
+	stream << "# FIRST BRANCH OF MID POINTS " << "\n";
+	stream << H1.X() << " " << H1.Y() << " " << H1.Z() << "\n";
+	stream << H2.X() << " " << H2.Y() << " " << H2.Z() << "\n";
+	stream << H3.X() << " " << H3.Y() << " " << H3.Z() << "\n";
+	stream << "\n";
+	stream << "\n";
+
+	stream << "# SECOND BRANCH OF MID POINTS " << "\n";
+	stream << V1.X() << " " << V1.Y() << " " << V1.Z() << "\n";
+	stream << V2.X() << " " << V2.Y() << " " << V2.Z() << "\n";
+	stream << V3.X() << " " << V3.Y() << " " << V3.Z() << "\n";
+	stream << "\n";
+	stream << "\n";
+
+	// Write the intersection point
+	stream << "# INTERSECTION POINT " << "\n";
+	stream << Point_Intersection.X() << " " << Point_Intersection.Y() << " " << Point_Intersection.Z() << "\n";
+	stream << "\n";
+	stream << "\n";
+
+	stream << "# FOR GNUPLOT :" << "\n";
+	stream << "plot 'test.txt' index 0 w lp linecolor rgb 'black' title 'stencil' " << "\n";
+	stream << "replot 'test.txt' index 1 w lp linecolor rgb 'red' title 'first mid branch' " << "\n";
+	stream << "replot 'test.txt' index 2 w lp linecolor rgb 'green' title 'second mid branch' " << "\n";
+	stream << "replot 'test.txt' index 3 w lp linecolor rgb 'pink' title 'intersection point' " << "\n";
+	stream << "\n";
+
+
+	stream.close();
+}
