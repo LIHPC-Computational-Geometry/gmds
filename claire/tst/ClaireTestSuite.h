@@ -333,3 +333,85 @@ TEST(ClaireTestClass, testGrid2D_Plaque_Plane)
 
 	ASSERT_EQ(Smooth2D::SUCCESS, result);
 }
+
+
+
+TEST(ClaireTestClass, testUnstructuredMesh)
+{
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::F2N | gmds::N2F));
+
+	gmds::Node n0 = m.newNode(0,0,0);
+	gmds::Node n1 = m.newNode(1,0,0);
+	gmds::Node n2 = m.newNode(0,1,0);
+	gmds::Node n3 = m.newNode(0.2,0.2,0);
+
+	m.newTriangle(n0,n1,n3);
+	m.newTriangle(n0,n3,n2);
+	m.newTriangle(n1,n2,n3);
+
+	gmds::MeshDoctor doc(&m);
+	doc.updateUpwardConnectivity();
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(&m);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	Variable<int>* var_bnd = m.newVariable<int,GMDS_NODE>("constraint");
+	for(auto id:bnd_node_ids){
+		var_bnd->value(id)=1;
+	}
+
+	Smooth2D smoother(&m,var_bnd);
+	Smooth2D::STATUS result = smoother.execute();
+
+	IGMeshIOService ioService_geom(&m);
+	VTKWriter writer_geom(&ioService_geom);
+	writer_geom.setCellOptions(N|F);
+	writer_geom.setDataOptions(N|F);
+	writer_geom.write("smooth2D_UnstructuredMesh.vtk");
+
+	ASSERT_EQ(Smooth2D::SUCCESS, result);
+}
+
+
+
+TEST(ClaireTestClass, testUnstructuredMesh_2)
+{
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::F2N | gmds::N2F));
+
+	gmds::Node n0 = m.newNode(0,0,0);
+	gmds::Node n1 = m.newNode(1,0,0);
+	gmds::Node n2 = m.newNode(0,1,0);
+	gmds::Node n3 = m.newNode(0.2,0.2,0);
+	gmds::Node n4 = m.newNode(1, 1, 0);
+
+	m.newTriangle(n0,n1,n3);
+	m.newTriangle(n0,n3,n2);
+	m.newTriangle(n1,n3,n4);
+	m.newTriangle(n2,n3,n4);
+
+	gmds::MeshDoctor doc(&m);
+	doc.updateUpwardConnectivity();
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(&m);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	Variable<int>* var_bnd = m.newVariable<int,GMDS_NODE>("constraint");
+	for(auto id:bnd_node_ids){
+		var_bnd->value(id)=1;
+	}
+
+	Smooth2D smoother(&m,var_bnd);
+	Smooth2D::STATUS result = smoother.execute();
+
+	IGMeshIOService ioService_geom(&m);
+	VTKWriter writer_geom(&ioService_geom);
+	writer_geom.setCellOptions(N|F);
+	writer_geom.setDataOptions(N|F);
+	writer_geom.write("smooth2D_UnstructuredMesh_2.vtk");
+
+	ASSERT_EQ(Smooth2D::SUCCESS, result);
+}
