@@ -89,7 +89,6 @@ Smooth2D::STATUS Smooth2D::execute()
 
 				// Noeuds de la première branche (verticale)
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
-				std::cout << "NOEUD NOEUD :" << noeud_voisin << std::endl ;
 				//A = noeud_voisin.point();
 				A = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][0]);
