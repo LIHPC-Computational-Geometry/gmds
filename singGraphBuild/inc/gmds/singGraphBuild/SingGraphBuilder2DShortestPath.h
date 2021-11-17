@@ -63,7 +63,6 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DShortestPath : public Singul
 	vector<vector<vector<TCellID>>> m_finalPaths;      // all cells indexes by which lines will be discretize
 	vector<SingularityPoint::Slot *> m_targets;        // all slots in a flat vector
 	vector<vector<double>> m_distances;                // costs of the detected paths
-	vector<bool> m_possibleVariablesSlotsLaunched;     // TODO: explain (use only for glpk, may be completly useless)
 	vector<TCellID> m_slotFaces;                       // initial face index of each line
 
 	// @ { aliases to specify slots IDs

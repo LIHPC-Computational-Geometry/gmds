@@ -213,13 +213,6 @@ SingGraphBuilder2DShortestPath::initializeFieldsValue()
 		}
 	}
 
-	m_possibleVariablesSlotsLaunched = vector<bool>(m_totalNumberOfSlots, false);
-	for (SourceID contSource = 0; contSource < m_totalNumberOfSlots; contSource++) {
-		const Slot *slot = m_targets[contSource];
-		if (slot && !slot->isLaunched) {
-			m_possibleVariablesSlotsLaunched[contSource] = true;
-		}
-	}
 	m_distances = vector<vector<double>>(m_totalNumberOfSlots, vector<double>(m_totalNumberOfVariables, M_MAXDIST));
 	m_bdryPathEndParam.clear();
 }
@@ -836,126 +829,119 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 std::vector<std::pair<unsigned int, unsigned int>>
 SingGraphBuilder2DShortestPath::glpkSolve()
 {
-	std::vector<std::pair<SourceID, TargetID>> solutions;
 	auto timer = Timer("glpk");
+
+	using glpkVarID = unsigned int;
+	using ActiveSlotID = unsigned int;
+	using Path = std::pair<SourceID, TargetID>;
+
+	std::vector<Path> glpkID_to_pathID;
+	std::unordered_map<int, int> pathID_to_glpkID;
+	std::vector<double> glpkCosts;
+
+	// active slot = slot present in the problem definition
+	unsigned int nActiveSlots = 0;
+	std::vector<int> pathsPerActiveSlots;     // count how many potential paths a slot have
+	std::unordered_map<TargetID, ActiveSlotID> targetID_to_activeSlotID;
+
+	int countPathsToAddAsGLPKConstraint = 0;
+	for (SourceID i = 0; i < m_totalNumberOfSlots; i++) {
+		int currentPathsPerSlot = 0;
+
+		for (TargetID j = 0; j < m_totalNumberOfVariables; j++) {
+			const double cost = m_distances[i][j];
+
+			if (cost < M_MAXDIST) {     // fixed variable are also taken into account here, as their cost is 0
+				glpkCosts.push_back(cost);
+				glpkID_to_pathID.push_back({i, j});
+				pathID_to_glpkID[i * m_totalNumberOfVariables + j] = glpkCosts.size();
+				++currentPathsPerSlot;
+			}
+		}
+		if (currentPathsPerSlot != 0) {
+			targetID_to_activeSlotID[i] = nActiveSlots++;
+			pathsPerActiveSlots.push_back(currentPathsPerSlot);
+			countPathsToAddAsGLPKConstraint += currentPathsPerSlot;
+		}
+	}
+
+	const unsigned int nGLPKvariables = glpkCosts.size();
+
+	std::vector<std::vector<glpkVarID>> pathsEndingOnSlot(m_totalNumberOfSlots);
+	for (glpkVarID i = 0; i < nGLPKvariables; ++i) {
+		TargetID contTarget = glpkID_to_pathID[i].second;
+		if (!targetIsBoundary(contTarget)) {
+			const ActiveSlotID activeSlotID = targetID_to_activeSlotID[contTarget];
+			pathsEndingOnSlot[activeSlotID].push_back(i);
+			++countPathsToAddAsGLPKConstraint;
+		}
+	}
+
 	glp_prob *lp = glp_create_prob();
-
-	int *ia, *ja;
-	double *ar;
-
 	glp_set_prob_name(lp, "SingGraphBuildOpt");
 	glp_set_obj_dir(lp, GLP_MIN);
 
-	// objective function //WARNING TODO if non launched slots -> their sum should be 0, not 2; or dont put condition
-	unsigned int varNumber = m_totalNumberOfSlots * m_totalNumberOfVariables;
-	glp_add_cols(lp, varNumber);
+	glp_add_cols(lp, nGLPKvariables);
 
-	vector<bool> fixedZeroVars(varNumber, false);
-
-	for (unsigned int i = 0; i < m_singPointNo; i++) {
-		for (unsigned int j = 0; j < 5; j++) {
-			if (!m_possibleVariablesSlotsLaunched[5 * i + j]) {
-				// entire lines fixed to 0
-				for (unsigned int k = 0; k < m_totalNumberOfVariables; k++) {
-					unsigned int tempVar = (5 * i + j) * m_totalNumberOfVariables + k;
-					if (!fixedZeroVars[tempVar]) {
-
-						fixedZeroVars[tempVar] = true;
-						glp_set_col_bnds(lp, tempVar + 1, GLP_FX, 0.0, 0.0);
-						glp_set_obj_coef(lp, tempVar + 1, 0);
-					}
-				}
-				// columns fixed to 0
-				for (unsigned int k = 0; k < m_totalNumberOfSlots; k++) {
-					unsigned int tempVar = m_totalNumberOfVariables * k + (5 * i + j);
-					if (!fixedZeroVars[tempVar]) {
-						fixedZeroVars[tempVar] = true;
-						glp_set_col_bnds(lp, tempVar + 1, GLP_FX, 0.0, 0.0);
-						glp_set_obj_coef(lp, tempVar + 1, 0);
-					}
-				}
-			}
-		}
+	// add all variable with their coeeficient
+	for (glpkVarID i = 0; i < nGLPKvariables; ++i) {
+		glp_set_col_kind(lp, i + 1, GLP_BV);     // GLP_IV = integer, but in our case we want binary
+		glp_set_obj_coef(lp, i + 1, glpkCosts[i]);
 	}
 
-	// CONDITION: slots corresponding to same singularity are not allowed to be connected in between themselves    ; however this condition should be removed
-	for (unsigned int i = 0; i < m_totalNumberOfSlots; i++) {
-		for (unsigned int j = 0; j < 5; j++) {
-			unsigned int tempVar = m_totalNumberOfVariables * i + j;
-			if (!fixedZeroVars[tempVar]) {
-				fixedZeroVars[tempVar] = true;
-				glp_set_col_bnds(lp, tempVar + 1, GLP_FX, 0.0, 0.0);
-				glp_set_obj_coef(lp, tempVar + 1, 0);
-			}
-		}
+	const auto nConstraints = nActiveSlots + m_illegalOverlappingPaths.size();
+	glp_add_rows(lp, nConstraints);
+
+	// first equality constraints: all valid slots must have exactly 1 singularity line
+	for (unsigned int i = 0; i < nActiveSlots; ++i) {
+		glp_set_row_bnds(lp, i + 1, GLP_FX, 1, 1);
 	}
-
-	vector<double> w(m_totalNumberOfSlots * m_totalNumberOfVariables);
-	for (unsigned int i = 0; i < m_distances.size(); i++) {
-		for (unsigned int j = 0; j < m_distances[i].size(); j++) {
-			w[i * m_totalNumberOfVariables + j] = m_distances[i][j];
-		}
-	}
-
-	for (unsigned int i = 0; i < m_totalNumberOfSlots * m_totalNumberOfVariables; i++) {
-		if (w[i] == M_MAXDIST) {
-			glp_set_col_bnds(lp, i + 1, GLP_FX, 0.0, 0.0);
-		}
-		else {
-			glp_set_col_kind(lp, i + 1, GLP_BV);     // GLP_IV - integer, but in our case we want binary
-			glp_set_obj_coef(lp, i + 1, w[i]);
-		}
-	}
-
-	glp_add_rows(lp, m_totalNumberOfSlots + m_illegalOverlappingPaths.size());     //!!!!!!!!!!!
-
-	// first equality constraints: all valid slots must have exactly 1 singularity line associated
-	for (unsigned int i = 0; i < m_totalNumberOfSlots; i++) {
-		if (m_possibleVariablesSlotsLaunched[i]) {
-			glp_set_row_bnds(lp, i + 1, GLP_FX, 1, 1);
-		}
-		else
-			glp_set_row_bnds(lp, i + 1, GLP_FX, 0, 0);
-	}
-
 	// second equality constraints: all IllegalCross pairs must have a maximum sum of 1 (at most 1 of them should be present in the final solution)
-	for (unsigned int i = m_totalNumberOfSlots; i < m_totalNumberOfSlots + m_illegalOverlappingPaths.size(); i++) {
+	for (unsigned int i = nActiveSlots; i < nConstraints; i++) {
+		// glp_set_row_bnds(lp, i + 1, GLP_DB, 0, 1);
 		glp_set_row_bnds(lp, i + 1, GLP_LO, 0.0, 0);
 		glp_set_row_bnds(lp, i + 1, GLP_UP, 0.0, 1);
 	}
 
 	// dynamic allocation of the matrix where ia represents the row index, ja the col index and ar the entry
-	ia = (int *) calloc(2 + (2 * varNumber + m_illegalOverlappingPaths.size() * 2), sizeof(int));
-	ja = (int *) calloc(2 + (2 * varNumber + m_illegalOverlappingPaths.size() * 2), sizeof(int));
-	ar = (double *) calloc(2 + (2 * varNumber + m_illegalOverlappingPaths.size() * 2), sizeof(double));
+	const int nMatrixAlloc = 1 + countPathsToAddAsGLPKConstraint + 2 * m_illegalOverlappingPaths.size();
+	int *ia = (int *) calloc(nMatrixAlloc, sizeof(int));
+	int *ja = (int *) calloc(nMatrixAlloc, sizeof(int));
+	double *ar = (double *) calloc(nMatrixAlloc, sizeof(double));
 
 	unsigned int count = 1;
+	glpkVarID iGLPKvariable = 1;
 
-	for (unsigned int i = 0; i < m_totalNumberOfSlots; i++) {
-		for (unsigned int j = 0; j < m_totalNumberOfVariables; j++) {
-			ia[count] = i + 1;
-			ja[count] = m_totalNumberOfVariables * i + j + 1;
+	// first equality constraints
+	for (int iSlot = 0; iSlot < nActiveSlots; ++iSlot) {
+		for (int iPath = 0; iPath < pathsPerActiveSlots[iSlot]; ++iPath) {
+			ia[count] = iSlot + 1;           // equation id
+			ja[count] = iGLPKvariable++;     // variable id
+			ar[count] = 1;                   // coefficient
+			++count;
+		}
+		for (const auto connectedVar : pathsEndingOnSlot[iSlot]) {
+			ia[count] = iSlot + 1;
+			ja[count] = connectedVar + 1;
 			ar[count] = 1;
-			count++;
-			if ((j < m_totalNumberOfSlots) && (i != j)) {
-				ia[count] = j + 1;
-				ja[count] = m_totalNumberOfVariables * i + j + 1;
-				ar[count] = 1;
-				count++;
-			}
+			++count;
 		}
 	}
 
+	// second equality constraints
 	for (unsigned int i = 0; i < m_illegalOverlappingPaths.size(); i++) {
-		ia[count] = m_totalNumberOfSlots + i + 1;
-		ja[count] = m_illegalOverlappingPaths[i].first + 1;
-		ar[count] = 1;
-		count++;
 
-		ia[count] = m_totalNumberOfSlots + i + 1;
-		ja[count] = m_illegalOverlappingPaths[i].second + 1;
+		const auto overlappingPaths = m_illegalOverlappingPaths[i];
+
+		ia[count] = nActiveSlots + i + 1;
+		ja[count] = pathID_to_glpkID[overlappingPaths.first];
 		ar[count] = 1;
-		count++;
+		++count;
+
+		ia[count] = nActiveSlots + i + 1;
+		ja[count] = pathID_to_glpkID[overlappingPaths.second];
+		ar[count] = 1;
+		++count;
 	}
 
 	glp_load_matrix(lp, count - 1, ia, ja, ar);
@@ -967,7 +953,8 @@ SingGraphBuilder2DShortestPath::glpkSolve()
 	glpParams.tm_lim = m_glpkTimeLimit;
 	glpParams.presolve = GLP_ON;
 
-	// glp_write_lp(lp, NULL, "checkMe0.txt");
+	if(m_enableDebugFilesWriting)
+		glp_write_lp(lp, NULL, "checkMe0.txt");
 
 	switch (glp_intopt(lp, &glpParams)) {
 	case GLP_ETMLIM:
@@ -980,18 +967,17 @@ SingGraphBuilder2DShortestPath::glpkSolve()
 	case 0: throw GMDSException("SingularityGraphBuilder2D::SingGraphBuildOpt pb solving in GLPK.");
 	default: std::cout << "MIP OK" << std::endl; break;
 	}
-	// glp_print_sol(lp, "SingGraphBuildOpt.txt");
 
-	// write solution
+	std::vector<Path> solutions;
+	std::vector<unsigned int> solutionsIDs;
 	solutions.reserve(m_totalNumberOfSlots);
-
-	for (unsigned int i = 0; i < varNumber; i++) {
+	for (unsigned int i = 0; i < iGLPKvariable - 1; i++) {
 		if (glp_mip_col_val(lp, i + 1) != 0) {
-			SourceID contSource = i / m_totalNumberOfVariables;
-			TargetID contTarget = i % m_totalNumberOfVariables;
-			solutions.emplace_back(std::make_pair(contSource, contTarget));
+			solutions.emplace_back(glpkID_to_pathID[i]);
+			solutionsIDs.push_back(i);
 		}
 	}
+
 	free(ia);
 	free(ja);
 	free(ar);
