@@ -383,7 +383,7 @@ namespace elg3d {
 
             gmds::cad::GeomEntity *ge_pixels = reinterpret_cast<gmds::cad::GeomEntity *> (ge_pixels_ptr);
 
-            switch(ge_pixels->getDim()) {
+            switch(ge_pixels->dim()) {
                 case 0 : {
                     gmds::cad::FACPoint *vert = reinterpret_cast<gmds::cad::FACPoint *> (ge_pixels);
                     vert->project(pt);
@@ -433,7 +433,7 @@ namespace elg3d {
 
                 gmds::cad::GeomEntity *ge_pixels = reinterpret_cast<gmds::cad::GeomEntity *> (ge_pixels_ptr);
 
-                switch(ge_pixels->getDim()) {
+                switch(ge_pixels->dim()) {
                     case 0 : {
                         gmds::cad::FACPoint *vert = reinterpret_cast<gmds::cad::FACPoint *> (ge_pixels);
                         vert->project(pt_tmp);
