@@ -953,8 +953,7 @@ SingGraphBuilder2DShortestPath::glpkSolve()
 	glpParams.tm_lim = m_glpkTimeLimit;
 	glpParams.presolve = GLP_ON;
 
-	if(m_enableDebugFilesWriting)
-		glp_write_lp(lp, NULL, "checkMe0.txt");
+	if (m_enableDebugFilesWriting) glp_write_lp(lp, NULL, "checkMe0.txt");
 
 	switch (glp_intopt(lp, &glpParams)) {
 	case GLP_ETMLIM:
@@ -1240,6 +1239,12 @@ SingGraphBuilder2DShortestPath::LineIntersectionDetector::registerOneSingularity
 		registerLineOnNodesNearSlots(singLine, startFace, facePath.front(), 1, 0, false);
 		registerLineOnFacesNearSlots(singLine, 1, 0, false);
 	}
+	else if (singLine->getSlots()[0]->starting_cell_dim == 0) {     // TODO: divide this fuction into 2: for node slot and edge slot
+		size_t registrationID = singLine->getSlots()[0]->starting_cell_id + m_nFaces;
+		m_traversedCellsByLine[registrationID].emplace_back(0, singLine);
+		m_traversedCellsByLine[registrationID].emplace_back(1, singLine);
+	}
+
 	// faces btw face path faces
 	for (int i = 0; i < facePath.size() - 1; i++) {
 		const TCellID &f1 = facePath[i];
@@ -1255,6 +1260,11 @@ SingGraphBuilder2DShortestPath::LineIntersectionDetector::registerOneSingularity
 	if (facePath.back() != endFace) {
 		registerLineOnNodesNearSlots(singLine, endFace, facePath.back(), slotDiscPointID, slotDiscPointID + 1, isBoundary);
 		registerLineOnFacesNearSlots(singLine, slotDiscPointID, slotDiscPointID + 1, isBoundary);
+	}
+	else if (singLine->getSlots()[1]->starting_cell_dim == 0) {     // TODO: divide this fuction into 2: for node slot and edge slot
+		size_t registrationID = singLine->getSlots()[1]->starting_cell_id + m_nFaces;
+		m_traversedCellsByLine[registrationID].emplace_back(slotDiscPointID - 1, singLine);
+		m_traversedCellsByLine[registrationID].emplace_back(slotDiscPointID, singLine);
 	}
 }
 

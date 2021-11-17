@@ -909,7 +909,7 @@ SingularityGraph::buildSurfacePatchs()
 
 			patch->getLines(checkingLines);
 			if (checkingLines.size() != 4) {
-				throw GMDSException("Error during patch building, patch does not have 4 lines ");
+				throw GMDSException("Error during patch building, patch does not have 4 lines, line ID : " + std::to_string(current_line->getNumber()));
 			}
 		}
 		else if (!reverse[li[i]]) {
@@ -953,7 +953,7 @@ SingularityGraph::buildSurfacePatchs()
 			}
 			patch->getLines(checkingLines);
 			if (checkingLines.size() != 4) {
-				throw GMDSException("Error during patch building, patch does not have 4 lines ");
+				throw GMDSException("Error during patch building, patch does not have 4 lines, line ID : " + std::to_string(current_line->getNumber()));
 			}
 		}
 	}
