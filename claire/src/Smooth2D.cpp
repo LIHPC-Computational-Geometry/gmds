@@ -31,7 +31,7 @@ Smooth2D::STATUS Smooth2D::execute()
 		}
 	}
 
-	// Vérification : est-ce que le maillage est structuré ?
+	// Check if the mesh is structured or not
 	bool CheckMesh = CheckStructuredMesh();
 
 	if (CheckMesh) {
@@ -138,7 +138,7 @@ Smooth2D::STATUS Smooth2D::execute()
 				}
 
 				if ( (n_id == 7) && (iteration == 1) ) {
-					std::cout << "HELLOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOW" << std::endl ;
+					// std::cout << "HELLOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOW" << std::endl ;
 					write_debug_txt(n_id, H1, H2, H3, V1, V2, V3, n_new.point(), "test.txt");
 				}
 
@@ -317,10 +317,6 @@ math::Point Smooth2D::FindMidBranche(const math::Point A, const math::Point B, c
 		Point_Milieu = C + norme_milieu*Vec_CB ;
 	}
 
-	/*
-	std::cout << "Point milieu :" << Point_Milieu << std::endl ;
-	std::cout << "--------------------------------------" << std::endl;
-	 */
 	return Point_Milieu;
 }
 /*------------------------------------------------------------------------*/
@@ -336,103 +332,42 @@ math::Point Smooth2D::FindMidBranche(const math::Point A, const math::Point B, c
 // En sortie :
 bool Smooth2D::CheckStructuredMesh() {
 	bool checkmesh(true);
-	// Vérifie que chaque noeud intérieur a bien 4 faces adjacentes
+	// Check if each inner node have 4 adjacent faces
 	for(auto n_id:m_free_nodes) {
 		if (checkmesh) {
 			Node current_node = m_mesh->get<Node>(n_id);
 			std::vector<Face> current_faces = current_node.get<Face>();
-			std::cout << "Current faces :" << current_faces[0] << std::endl;
 			int Nbr_Faces = current_faces.size();
 			if (Nbr_Faces != 4) {
 				checkmesh = false;
-				std::cout << "Numéro du noeud : " << n_id << std::endl;
-				std::cout << "Nbr de faces : " << Nbr_Faces << std::endl;
-				std::cout << "-----------" << std::endl;
 			}
 		}
 	}
 
-	// Vérifie que chaque face est un quad
+	// Check if each face is a quad
 	for(auto n_id:m_mesh->faces()){
 		if (checkmesh) {
-			std::cout << "Numéro de la face : " << n_id << std::endl;
 			Face current_face = m_mesh->get<Face>(n_id);
 			std::vector<Node> current_nodes = current_face.get<Node>();
-			std::cout << "Current nodes :" << current_nodes[0] << std::endl;
 			int Nbr_Noeuds = current_nodes.size();
 			if (Nbr_Noeuds != 4) {
 				checkmesh = false;
-				std::cout << "Nbr de noeuds : " << Nbr_Noeuds << std::endl;
-				std::cout << "-----------" << std::endl;
 			}
 		}
 	}
 
-	std::cout << "Maillage structuré ? " << checkmesh << std::endl ;
+	//std::cout << "Maillage structuré ? " << checkmesh << std::endl ;
 	return checkmesh;
 }
 /*------------------------------------------------------------------------*/
 
 
 
+
+
+
+
 /*------------------------------------------------------------------------*/
-/*
-void Smooth2D::write_debug_txt(int n_id, std::string AFileName){
-	//===============================================================
-	// First, we create the file where we are going to store the info
-	std::ofstream stream= new std::ofstream(AFileName, std::ios::out);
-	//set the numerical precision (number of digits)
-	(stream).precision(15);
-	//Header indicating which type of file it is
-	stream << "# Claire PHD Debug Version 1.0\n\n";
-
-	//Write the id of the node
-	stream << "# NODE " << n_id << "\n";
-
-	// then, for each node, I write the coordinates of the stencil
-	for(auto i=0;i<3;i++){
-		for(auto j=0;j<3;j++){
-			stream << m_stencil[n_id].val[i][j] << "\n";
-		}
-		stream << "\n" ;
-	}
-
-
-	//Write the number of nodes in the mesh
-	stream << "NODES " << AMesh->getNbNodes() << "\n";
-	// then, for each node, I write the node id, then the coordinates.
-	for(auto n_id:AMesh->nodes()){
-		Node n = AMesh->get<Node>(n_id);
-		math::Point p=n.point();
-		stream <<n.id()<<" "<<p.X()<<" "<<p.Y()<<" "<<p.Z()<< "\n";
-	}
-	//Write the number of faces in the mesh
-	stream << "\nFACES " << AMesh->getNbFaces() << "\n";
-	// then, for each face, I write the face id, then its node ids
-	for(auto f_id:AMesh->faces()){
-		Face f = AMesh->get<Face>(f_id);
-		std::vector<TCellID> node_ids = f.getIDs<Node>();
-		stream <<f.id()<<" ";
-		for(auto n_id : node_ids){
-			stream <<n_id<<" ";
-		}
-		stream<< "\n";
-	}
-
-
-	stream->close();
-	delete stream;
-}
- */
-/*------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
 void Smooth2D::write_debug_txt(int n_id,
                           math::Point H1, math::Point H2, math::Point H3,
                           math::Point V1, math::Point V2, math::Point V3,
@@ -501,3 +436,4 @@ void Smooth2D::write_debug_txt(int n_id,
 
 	stream.close();
 }
+/*------------------------------------------------------------------------*/
