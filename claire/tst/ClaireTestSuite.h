@@ -46,7 +46,7 @@ TEST(ClaireTestClass, testGrid2D_1)
 	math::Point p5_new(p5.X()+0.2,p5.Y()+0.3,p5.Z());
 	n5.setPoint(p5_new);
 
-	Smooth2D smoother(&m,var_bnd);
+	Smooth2D smoother(&m,var_bnd,1);
 	Smooth2D::STATUS result = smoother.execute();
 
 	IGMeshIOService ioService_geom(&m);
@@ -57,7 +57,6 @@ TEST(ClaireTestClass, testGrid2D_1)
 
 	ASSERT_EQ(Smooth2D::SUCCESS, result);
 }
-
 
 
 TEST(ClaireTestClass, testGrid2D_Perturbation_1)
@@ -132,7 +131,6 @@ TEST(ClaireTestClass, testGrid2D_Perturbation_1)
 
 	ASSERT_EQ(Smooth2D::SUCCESS, result);
 }
-
 
 
 TEST(ClaireTestClass, testGrid2D_Quart_Cylindre)
@@ -239,7 +237,6 @@ TEST(ClaireTestClass, testGrid2D_Quart_Cylindre)
 }
 
 
-
 TEST(ClaireTestClass, testGrid2D_Plaque_Plane)
 {
 	Mesh m(MeshModel(DIM3 | R | F | N | F2N | N2F));
@@ -335,7 +332,6 @@ TEST(ClaireTestClass, testGrid2D_Plaque_Plane)
 }
 
 
-
 TEST(ClaireTestClass, testUnstructuredMesh)
 {
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::F2N | gmds::N2F));
@@ -373,7 +369,6 @@ TEST(ClaireTestClass, testUnstructuredMesh)
 
 	ASSERT_EQ(Smooth2D::SUCCESS, result);
 }
-
 
 
 TEST(ClaireTestClass, testUnstructuredMesh_2)
