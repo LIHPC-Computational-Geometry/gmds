@@ -17,7 +17,6 @@
 using namespace gmds;
 using namespace Eigen;
 /*--------------------------------------------------------------------------*/
-typedef Matrix<double,3,3> Matrix3;
 typedef SparseMatrix<double> SpMat;
 /*--------------------------------------------------------------------------*/
 // MATHMECA
@@ -139,7 +138,7 @@ PolycubeToolbox::PolycubeToolbox(Mesh *mesh)
 
 	point_normals       = mesh->newVariable<math::Vector      ,GMDS_NODE>("normal");
 	point_chosenNormal  = mesh->newVariable<math::Vector      ,GMDS_NODE>("ChosenNormal");
-	point_rotationMatrix= mesh->newVariable<Matrix3           ,GMDS_NODE>("rotationMatrix");
+	point_rotationMatrix= mesh->newVariable<Eigen::Matrix3d          ,GMDS_NODE>("rotationMatrix");
 	point_quaternion    = mesh->newVariable<Quaternion<double>,GMDS_NODE>("Quaternion");
 
 	mesh->deleteVariable(GMDS_NODE, "updatedX");
@@ -1004,7 +1003,7 @@ void PolycubeToolbox::gregson2011Iteration(){
 				std::vector<TCellID> nodes = (mesh->get<Edge>(e)).getIDs<Node>();
 				for (auto e_n : nodes) {
 					if (!(e_n == n.id())){
-						Matrix3 m = ((*point_rotationMatrix)[n.id()]+(*point_rotationMatrix)[e_n])/2;
+						Eigen::Matrix3d m = ((*point_rotationMatrix)[n.id()]+(*point_rotationMatrix)[e_n])/2;
 						scnd_member.row(n.id()) += m *Vector3d(n.X() - (mesh->get<Node>(e_n)).X(),
 						n.Y() - (mesh->get<Node>(e_n)).Y(),
 						n.Z() - (mesh->get<Node>(e_n)).Z());
