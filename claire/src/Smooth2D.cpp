@@ -13,6 +13,7 @@ Smooth2D::Smooth2D(Mesh *AMesh,
 	m_mesh = AMesh;
 	m_node_constrained = AVarBnd;
 	m_nb_max_iterations = ANbIterations;
+
 }
 /*------------------------------------------------------------------------*/
 void Smooth2D::setNbIterations(const int ANbIterations)
@@ -38,9 +39,45 @@ Smooth2D::STATUS Smooth2D::execute()
 		// for all free nodes, we build and store stencils locally
 		buildStencils();
 
+		// Un noeud a un point, une position géométrique
+		// Variable est un grand tableau qui permet de stocker une valeur à chaque noeud du maillage
+		// Ici, la valeur stockée est de type math::Point
+		// On définit un objet math::Point pour chaque sommet du maillage
+		// On accède aux valeurs en utilisant les numéros des id
+		Variable<math::Point> *old_coords = NULL;
+		// Ici, le tableau est alloué directement avec le nombre de sommets du maillage.
+		// Attention : si un élément est supprimé, sa case n'est pas supprimée
+		old_coords = m_mesh->newVariable<math::Point,GMDS_NODE>("old_coords") ;
+		// Exemple : How to access to elements
+		//math::Point test_point = old_coords->value(0) ;
+
 		for (int iteration = 1; iteration <= m_nb_max_iterations; iteration++) {
+			// ATTENTION : a local copy of the mesh is needed to compute the position of each node at the iteration n+1
+			// on the positions of the nodes at the iteration n
+
+			// Idée 1 :
+			// Mesh old_mesh ; // NE FONCTIONNE PAS
+			// old_mesh = *m_mesh ;
+
+			// Idée 2 :
+			// Mesh *old_mesh ; // old_mesh est un pointeur vers un maillage
+			// *old_mesh = *m_mesh ; // Ne fonctionne pas
+			// |-----> Je souhaite que le contenu de la case pointée par old_mesh prenne la même
+			// valeur que le contenu de la case pointée par m_mesh
+
+			// Idée 3 :
+			// Mesh old_mesh(MeshModel(DIM3 | R | F | N | F2N | N2F)) ; // On créé un maillage nommé old_mesh
+			// old_mesh = *m_mesh ; // NE FONCTIONNE PAS !
+			// |----> Je souhaite que old_mesh prenne la même valeur que la case pointée par m_mesh
+
+			// Boucle sur l'ensemble du maillage pour stocker les coordonnées de chaque noeud
+			for(auto n_id:m_mesh->nodes()) {
+				old_coords->set(n_id, m_mesh->get<Node>(n_id).point());
+			}
+
 			Mesh *new_mesh = m_mesh;
 			Node n_new;
+			// PENSER A REMPLACER DANS CETTE BOUCLE POUR CALCULER AVEC LES COORDS DU TABLEAU OLD COORDS
 			for (auto n_id : m_free_nodes) {
 				math::Point H1, H2, H3;
 				math::Point V1, V2, V3;
@@ -52,52 +89,71 @@ Smooth2D::STATUS Smooth2D::execute()
 
 				// Noeuds de la première branche (verticale)
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
-				A = noeud_voisin.point();
+				std::cout << "NOEUD NOEUD :" << noeud_voisin << std::endl ;
+				//A = noeud_voisin.point();
+				A = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][0]);
-				B = noeud_voisin.point();
+				//B = noeud_voisin.point();
+				B = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][0]);
-				C = noeud_voisin.point();
+				//C = noeud_voisin.point();
+				C = old_coords->value(noeud_voisin.id()) ;
 				V1 = FindMidBranche(A, B, C);
 
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][1]);
-				A = noeud_voisin.point();
+				//A = noeud_voisin.point();
+				A = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][1]);
-				B = noeud_voisin.point();
+				//B = noeud_voisin.point();
+				B = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][1]);
-				C = noeud_voisin.point();
+				//C = noeud_voisin.point();
+				C = old_coords->value(noeud_voisin.id()) ;
 				V2 = FindMidBranche(A, B, C);
 
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][2]);
-				A = noeud_voisin.point();
+				//A = noeud_voisin.point();
+				A = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][2]);
-				B = noeud_voisin.point();
+				//B = noeud_voisin.point();
+				B = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][2]);
-				C = noeud_voisin.point();
+				//C = noeud_voisin.point();
+				C = old_coords->value(noeud_voisin.id()) ;
 				V3 = FindMidBranche(A, B, C);
 
 				// Noeuds de la seconde branche (horizontale)
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
-				A = noeud_voisin.point();
+				//A = noeud_voisin.point();
+				A = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][1]);
-				B = noeud_voisin.point();
+				//B = noeud_voisin.point();
+				B = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][2]);
-				C = noeud_voisin.point();
+				//C = noeud_voisin.point();
+				C = old_coords->value(noeud_voisin.id()) ;
 				H1 = FindMidBranche(A, B, C);
 
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][0]);
-				A = noeud_voisin.point();
+				//A = noeud_voisin.point();
+				A = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][1]);
-				B = noeud_voisin.point();
+				//B = noeud_voisin.point();
+				B = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][2]);
-				C = noeud_voisin.point();
+				//C = noeud_voisin.point();
+				C = old_coords->value(noeud_voisin.id()) ;
 				H2 = FindMidBranche(A, B, C);
 
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][0]);
-				A = noeud_voisin.point();
+				//A = noeud_voisin.point();
+				A = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][1]);
-				B = noeud_voisin.point();
+				//B = noeud_voisin.point();
+				B = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][2]);
-				C = noeud_voisin.point();
+				//C = noeud_voisin.point();
+				C = old_coords->value(noeud_voisin.id()) ;
 				H3 = FindMidBranche(A, B, C);
 
 				// Recherche de l'intersection entre les 4 segments
@@ -133,20 +189,24 @@ Smooth2D::STATUS Smooth2D::execute()
 				*/
 
 				n_new = new_mesh->get<Node>(n_id);
+				// Stocker l'ancienne position dans la variable old_coords avant de changer sa position
+				// old_coords->set(n_id, n_new.point());
 				if (intersection_trouvee) {
 					n_new.setPoint(M);
 				}
 
-				if ( (n_id == 7) && (iteration == 1) ) {
+				if ( (n_id == 5) && (iteration == 1) ) {
 					// std::cout << "HELLOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOW" << std::endl ;
-					write_debug_txt(n_id, H1, H2, H3, V1, V2, V3, n_new.point(), "test.txt");
+					write_debug_txt(n_id, old_coords, H1, H2, H3, V1, V2, V3, n_new.point(), "test.txt");
 				}
 
 			}
 
+			m_mesh->deleteVariable(GMDS_NODE, old_coords);
 			m_mesh = new_mesh;
 		}
 	}
+
 
 	    return Smooth2D::SUCCESS;
 }
@@ -368,7 +428,7 @@ bool Smooth2D::CheckStructuredMesh() {
 
 
 /*------------------------------------------------------------------------*/
-void Smooth2D::write_debug_txt(int n_id,
+void Smooth2D::write_debug_txt(int n_id, const Variable<math::Point> *old_coords,
                           math::Point H1, math::Point H2, math::Point H3,
                           math::Point V1, math::Point V2, math::Point V3,
                           math::Point Point_Intersection,
@@ -389,7 +449,8 @@ void Smooth2D::write_debug_txt(int n_id,
 	for(auto i=0;i<3;i++){
 		for(auto j=0;j<3;j++){
 			Node n_local = m_mesh->get<Node>(m_stencil[n_id].val[i][j]);
-			math::Point point_local = n_local.point();
+			//math::Point point_local = n_local.point();
+			math::Point point_local = old_coords->value(n_local.id()) ;
 			stream << point_local.X() << " " << point_local.Y() << " " << point_local.Z() << "\n";
 		}
 		stream << "\n" ;
@@ -398,7 +459,8 @@ void Smooth2D::write_debug_txt(int n_id,
 	for(auto j=0;j<3;j++){
 		for(auto i=0;i<3;i++){
 			Node n_local = m_mesh->get<Node>(m_stencil[n_id].val[i][j]);
-			math::Point point_local = n_local.point();
+			//math::Point point_local = n_local.point();
+			math::Point point_local = old_coords->value(n_local.id()) ;
 			stream << point_local.X() << " " << point_local.Y() << " " << point_local.Z() << "\n";
 		}
 		stream << "\n" ;
