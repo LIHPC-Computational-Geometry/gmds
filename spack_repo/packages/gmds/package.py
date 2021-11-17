@@ -34,8 +34,15 @@ class Gmds(CMakePackage):
     variant('kmds', default=False, description='Build with Kokkos')
     variant('elg3d', default=False, description='Build Elg3D')
 
+    depends_on('glpk')
+    # necessary to build the internal glpk
+    depends_on('libtool', type='build')
+    depends_on('eigen')
+
     depends_on('kokkos', when='+kmds')
     depends_on('gts', when='+elg3d')
+    # necessary to find gts
+    depends_on('pkg-config', type='build', when='+elg3d')
     depends_on('exodusii', when='+elg3d')
 
     conflicts('+elg3d', when='~kmds',
