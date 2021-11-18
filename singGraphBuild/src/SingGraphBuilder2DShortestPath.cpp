@@ -1108,7 +1108,6 @@ SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerOneLineSegmen
 	const auto lastSegment = math::Segment(lastCenterFace, endPnt);
 
 	if (facePath.back() != endFace) {
-		m_traversedFacesByLine[endFace].emplace_back(contSource, contTarget, math::Segment(lastCenterFace, endPnt));
 
 		if (!m_graphBuilder->m_tool.isAdjacency(facePath.back(), endFace)) {
 			const Node &n = Tools::getCommonNode(m_graphBuilder->m_mesh->get<Face>(facePath.back()), m_graphBuilder->m_mesh->get<Face>(endFace));
@@ -1312,11 +1311,14 @@ SingGraphBuilder2DShortestPath::LineIntersectionDetector::registerLineOnNodesNea
                                                                                        const unsigned int &singDiscPointID,
                                                                                        const bool isBoundary)
 {
+	const auto slot = singDiscPointID == 0 ? singLine->getSlots()[0] : singLine->getSlots()[1];
+	const int offset = singDiscPointID == 0 ? 0 : 1;     // when going from source to target
 	if (isBoundary) {
-		registerLineBetweenTwoFaces(singLine, finalPathFace, slotFace, slotDiscPointID - 1);
+		for (const auto &nodeID : m_graphBuilder->m_mesh->get<Edge>(slot->starting_cell_id).getIDs<Node>()) {
+			m_traversedCellsByLine[nodeID + m_nFaces].emplace_back(slotDiscPointID - offset, singLine);
+		}
 		return;
 	}
-	const int offset = singDiscPointID == 0 ? 0 : 1;     // when going from source to target
 	if (!m_graphBuilder->m_tool.isAdjacency(slotFace, finalPathFace)) {
 		const Node &n = Tools::getCommonNode(m_graphBuilder->m_mesh->get<Face>(slotFace), m_graphBuilder->m_mesh->get<Face>(finalPathFace));
 		const auto &faces = n.getIDs<Face>();
@@ -1324,8 +1326,7 @@ SingGraphBuilder2DShortestPath::LineIntersectionDetector::registerLineOnNodesNea
 			m_traversedCellsByLine[f].emplace_back(slotDiscPointID - offset, singLine);
 		m_traversedCellsByLine[n.id() + m_nFaces].emplace_back(slotDiscPointID - offset, singLine);     // normal registered node at 1
 	}
-	// register slot nodes at 0 and 1
-	const auto slot = singDiscPointID == 0 ? singLine->getSlots()[0] : singLine->getSlots()[1];
+	// register slot nodes at 0 and 1	
 	if (slot->starting_cell_dim == 1) {     // edge
 		for (const auto &nodeID : m_graphBuilder->m_mesh->get<Edge>(slot->starting_cell_id).getIDs<Node>()) {
 			m_traversedCellsByLine[nodeID + m_nFaces].emplace_back(singDiscPointID - offset, singLine);
