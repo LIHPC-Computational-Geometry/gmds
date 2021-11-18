@@ -815,11 +815,15 @@ SingularityGraphBuilder2D::createSingPointAndSlots(const Face &AFace)
 	//=========================================================================
 	// for each detected slot, we store its location, its direction, its out cell
 	// id and the dimension of this out cell.
-	std::vector<math::Point> slot_points;
-	std::vector<double> slot_param;
-	std::vector<math::Vector3d> slot_dirs;
-	std::vector<int> slot_cell_dim;
-	std::vector<TCellID> slot_cell_id;
+	struct BaseSlot
+	{
+		math::Point location;
+		math::Vector3d direction;
+		int cellDim;     // a slot can be on a node or an edge
+		TCellID cellId;
+	};
+	std::vector<BaseSlot> slots;
+
 	std::vector<Edge> edges = AFace.get<Edge>();
 	for (int i = 0; i < 3; i++) {     // we walk along each edge of AFace
 		Edge ei = edges[i];
@@ -862,26 +866,19 @@ SingularityGraphBuilder2D::createSingPointAndSlots(const Face &AFace)
 			std::vector<double> solutions;
 			math::solve2ndDegreePolynomial(a, b, c, solutions);
 			for (unsigned int i_sol = 0; i_sol < solutions.size(); i_sol++) {
+
 				double alpha = solutions[i_sol];
 				if (alpha > 1 || alpha < 0.0) continue;
-				math::Point p = alpha * pi + (1 - alpha) * pj;
 
-				slot_param.push_back(alpha);
-				slot_points.push_back(p);
-
-				slot_dirs.push_back(math::Vector3d(s, p));
-
-				if (alpha == 0) {     // we go out from a node
-					slot_cell_dim.push_back(0);
-					slot_cell_id.push_back(ni.id());
+				if (alpha < 0.1) {     // we go out from a node
+					slots.push_back({pj, math::Vector3d(s, pj), 0, nj.id()});
 				}
-				else if (alpha == 0) {     // we go out from a node
-					slot_cell_dim.push_back(0);
-					slot_cell_id.push_back(nj.id());
+				else if (alpha > 0.9) {     // we go out from a node
+					slots.push_back({pi, math::Vector3d(s, pi), 0, ni.id()});
 				}
 				else {     // general case, the edge
-					slot_cell_dim.push_back(1);
-					slot_cell_id.push_back(ei.id());
+					const auto location = alpha * pi + (1 - alpha) * pj;
+					slots.push_back({location, math::Vector3d(s, location), 1, ei.id()});
 				}
 			}
 		}     // for(int k=0;k<2;k++)
@@ -891,8 +888,8 @@ SingularityGraphBuilder2D::createSingPointAndSlots(const Face &AFace)
 	SurfaceSingularityPoint *singularity = m_graph.newSurfacePoint();
 	singularity->setLocation(s);
 	singularity->addMeshFace(AFace);
-	for (unsigned int i = 0; i < slot_points.size(); i++) {
-		singularity->newSlot(slot_points[i], slot_dirs[i], slot_cell_id[i], slot_cell_dim[i], true, 0);
+	for (const auto &slot : slots) {
+		singularity->newSlot(slot.location, slot.direction, slot.cellId, slot.cellDim, true, 0);
 	}
 }
 
