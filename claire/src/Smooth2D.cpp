@@ -39,25 +39,17 @@ Smooth2D::STATUS Smooth2D::execute()
 		// for all free nodes, we build and store stencils locally
 		buildStencils();
 
-		// Un noeud a un point, une position géométrique
-		// Variable est un grand tableau qui permet de stocker une valeur à chaque noeud du maillage
-		// Ici, la valeur stockée est de type math::Point
-		// On définit un objet math::Point pour chaque sommet du maillage
-		// On accède aux valeurs en utilisant les numéros des id
+		// Initialization of a pointer to a variable to store the old coordinates of each node
 		Variable<math::Point> *old_coords = nullptr;
-		// Ici, le tableau est alloué directement avec le nombre de sommets du maillage.
-		// Attention : si un élément est supprimé, sa case n'est pas supprimée
 		old_coords = m_mesh->newVariable<math::Point,GMDS_NODE>("old_coords") ;
-		// Exemple : How to access to elements
+		// Now, old_coords point to a new table created as an attritube from m_mesh
+		// In this table, there is a math::Point for each node (GMDS_NODE)
+		// Exemple to access to elements
 		//math::Point test_point = old_coords->value(0) ;
 
 		for (int iteration = 1; iteration <= m_nb_max_iterations; iteration++) {
-			// ATTENTION : a local copy of the mesh is needed to compute the position of each node at the iteration n+1
-			// on the positions of the nodes at the iteration n
-
-			// Boucle sur l'ensemble du maillage pour stocker les coordonnées de chaque noeud
+			// Loop on the node ids of the mesh to store the coordinates of each node
 			for(auto n_id:m_mesh->nodes()) {
-				// Il semblerait qu'on puisse initialiser les valeurs comme ça, mais à l'itération 2, segfault
 				old_coords->set(n_id, m_mesh->get<Node>(n_id).point());
 			}
 
@@ -70,7 +62,7 @@ Smooth2D::STATUS Smooth2D::execute()
 				// std::cout << "Noeud :" << n_id << std::endl;
 				noeud_traite = m_mesh->get<Node>(n_id);
 
-				// Noeuds de la première branche (verticale)
+				// Computation of the 3 mid-points from the first branch (verticale)
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
 				A = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][0]);
@@ -95,7 +87,7 @@ Smooth2D::STATUS Smooth2D::execute()
 				C = old_coords->value(noeud_voisin.id()) ;
 				V3 = FindMidBranche(A, B, C);
 
-				// Noeuds de la seconde branche (horizontale)
+				// Computation of the 3 mid-points from the second branch (horizontale)
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
 				A = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][1]);
@@ -121,7 +113,7 @@ Smooth2D::STATUS Smooth2D::execute()
 				C = old_coords->value(noeud_voisin.id()) ;
 				H3 = FindMidBranche(A, B, C);
 
-				// Recherche de l'intersection entre les 4 segments
+				// Finding the intersection between the 4 segments
 				bool intersection_trouvee(false);
 				math::Point M(0, 0, 0);
 				math::Segment Seg_Vert_1(V1, V2);
@@ -377,7 +369,6 @@ bool Smooth2D::CheckStructuredMesh() {
 		}
 	}
 
-	//std::cout << "Maillage structuré ? " << checkmesh << std::endl ;
 	return checkmesh;
 }
 /*------------------------------------------------------------------------*/
@@ -394,7 +385,7 @@ void Smooth2D::write_debug_txt(int n_id, const Variable<math::Point> *old_coords
                           math::Point V1, math::Point V2, math::Point V3,
                           math::Point Point_Intersection,
                           std::string AFileName){
-	//===============================================================
+
 	// First, we create the file where we are going to store the info
 	std::ofstream stream= std::ofstream(AFileName, std::ios::out);
 	//set the numerical precision (number of digits)
@@ -410,7 +401,6 @@ void Smooth2D::write_debug_txt(int n_id, const Variable<math::Point> *old_coords
 	for(auto i=0;i<3;i++){
 		for(auto j=0;j<3;j++){
 			Node n_local = m_mesh->get<Node>(m_stencil[n_id].val[i][j]);
-			//math::Point point_local = n_local.point();
 			math::Point point_local = old_coords->value(n_local.id()) ;
 			stream << point_local.X() << " " << point_local.Y() << " " << point_local.Z() << "\n";
 		}
@@ -420,7 +410,6 @@ void Smooth2D::write_debug_txt(int n_id, const Variable<math::Point> *old_coords
 	for(auto j=0;j<3;j++){
 		for(auto i=0;i<3;i++){
 			Node n_local = m_mesh->get<Node>(m_stencil[n_id].val[i][j]);
-			//math::Point point_local = n_local.point();
 			math::Point point_local = old_coords->value(n_local.id()) ;
 			stream << point_local.X() << " " << point_local.Y() << " " << point_local.Z() << "\n";
 		}
