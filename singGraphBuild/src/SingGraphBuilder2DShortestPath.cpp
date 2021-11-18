@@ -452,6 +452,7 @@ void
 SingGraphBuilder2DShortestPath::createSingularityLines()
 {
 	computeFaceNeighboursInfo();
+
 	initializeFieldsValue();
 
 	computeDijkstra();
@@ -640,7 +641,6 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 	std::vector<TCellID> bdryFacesId;
 
 	// search for nearby target, if found, only the singularities locations will be used,
-	// similar as in tryEarlySlot2SlotConnection(), but less strict on angle
 	for (const TargetID contTarget : neighbouringTarget[source]) {
 		const auto linkVector = math::Vector3d(m_targets[contSource]->from_point->getLocation(), m_targets[contTarget]->from_point->getLocation());
 		const auto targetOwnDirection = m_targets[contTarget]->direction.opp();
@@ -851,7 +851,7 @@ SingGraphBuilder2DShortestPath::glpkSolve()
 		for (TargetID j = 0; j < m_totalNumberOfVariables; j++) {
 			const double cost = m_distances[i][j];
 
-			if (cost < M_MAXDIST) {     // fixed variable are also taken into account here, as their cost is 0
+			if (cost < M_MAXDIST) {
 				glpkCosts.push_back(cost);
 				glpkID_to_pathID.push_back({i, j});
 				pathID_to_glpkID[i * m_totalNumberOfVariables + j] = glpkCosts.size();
@@ -1054,6 +1054,7 @@ SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerOneLineSegmen
 			cellsToRegister.push_back(f.id());
 		for (const Face &f : m_graphBuilder->m_face2Face_neighbours_by_verts[endFace])
 			cellsToRegister.push_back(f.id());
+		std::sort( cellsToRegister.begin(), cellsToRegister.end() );
 		cellsToRegister.erase(unique(cellsToRegister.begin(), cellsToRegister.end()), cellsToRegister.end());
 		for (const TCellID faceID : cellsToRegister)
 			m_traversedFacesByLine[faceID].emplace_back(contSource, contTarget, segment);
@@ -1076,14 +1077,8 @@ SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerOneLineSegmen
 	registerLineSegmentOnCommonNode(facePath.back(), endFace, m_graphBuilder->m_triangle_centers[facePath.back()], endPnt, contSource, contTarget);
 
 	// add surrounding faces for face on the path
-	math::Segment firstSegment;
-	if (facePath.size() == 1)
-		firstSegment = math::Segment(startPnt, endPnt);
-	else
-		firstSegment = math::Segment(startPnt, m_graphBuilder->m_triangle_centers[facePath[1]]);
-
 	if (facePath.front() != startFace) {
-		firstSegment = math::Segment(startPnt, m_graphBuilder->m_triangle_centers[facePath[0]]);
+		const auto firstSegment = math::Segment(startPnt, m_graphBuilder->m_triangle_centers[facePath[0]]);
 		if (!m_graphBuilder->m_tool.isAdjacency(facePath.front(), startFace)) {
 			const Node &n = Tools::getCommonNode(m_graphBuilder->m_mesh->get<Face>(facePath.front()), m_graphBuilder->m_mesh->get<Face>(startFace));
 			for (const auto f : n.getIDs<Face>())     // only faces between f1 & f2 are needed in reality
@@ -1095,8 +1090,12 @@ SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerOneLineSegmen
 		}
 	}
 	else {
+		const auto nextPnt = facePath.size() == 1 ? endPnt : m_graphBuilder->m_triangle_centers[facePath[1]];
+		const auto firstSegment = math::Segment(startPnt, nextPnt);
 		m_traversedFacesByLine[startFace].emplace_back(contSource, contTarget, firstSegment);
 	}
+
+	if (facePath.size() == 1) return;
 
 	for (int i = 1; i < facePath.size() - 1; i++) {
 		const math::Point &p1 = m_graphBuilder->m_triangle_centers[facePath[i - 1]];
