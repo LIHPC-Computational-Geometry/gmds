@@ -1139,7 +1139,10 @@ std::vector<std::pair<unsigned int, unsigned int>>
 SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::getIllegalOverlappingPaths()
 {
 	auto timer = Timer("illegal crossing");
-	vector<pair<unsigned int, unsigned int>> illegalOverlappingPaths;
+	std::vector<pair<unsigned int, unsigned int>> illegalOverlappingPaths;
+
+	// Also check for potential self crossing lines and eliminate them. Even those who are actually not crossing for now
+	std::set<SourceID> selfCrossingLines;     // TODO check unordered set vs set perf
 
 	// make pair of potential illegal intersection
 	vector<std::tuple<TCellID, const LineSegmentOnCell *, const LineSegmentOnCell *>> candidateFaceByPair;
@@ -1163,19 +1166,27 @@ SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::getIllegalOverlapping
 						candidateFaceByPair.emplace_back(candidate.first, line_i, line_j);
 					}
 				}
+				else if (ctgt_i == ctgt_j) {
+					const auto lineID = csrc_i * m_graphBuilder->m_totalNumberOfVariables + ctgt_i;
+					selfCrossingLines.insert(lineID);
+					m_graphBuilder->m_distances[csrc_i][ctgt_i] = M_MAXDIST;
+				}
 			}
 		}
 	}
+
 	// check illegal crossing among pair of intersection
-	std::set<std::pair<unsigned int, unsigned int>> addedPair;
+	std::set<std::pair<unsigned int, unsigned int>> addedPair;     // TODO check unordered set vs set perf
 	for (const auto &lines : candidateFaceByPair) {
 
 		const LineSegmentOnCell *line1 = std::get<1>(lines);
 		const LineSegmentOnCell *line2 = std::get<2>(lines);
 		const unsigned int line1ID = line1->contSource * m_graphBuilder->m_totalNumberOfVariables + line1->contTarget;
 		const unsigned int line2ID = line2->contSource * m_graphBuilder->m_totalNumberOfVariables + line2->contTarget;
-		const auto pairId = std::make_pair(line1ID, line2ID);
 
+		if (selfCrossingLines.find(line1ID) != selfCrossingLines.end() || selfCrossingLines.find(line2ID) != selfCrossingLines.end()) continue;
+
+		const auto pairId = std::make_pair(line1ID, line2ID);
 		if (addedPair.find(pairId) == addedPair.end()) {
 
 			const TCellID cellID = std::get<0>(lines);
@@ -1326,7 +1337,7 @@ SingGraphBuilder2DShortestPath::LineIntersectionDetector::registerLineOnNodesNea
 			m_traversedCellsByLine[f].emplace_back(slotDiscPointID - offset, singLine);
 		m_traversedCellsByLine[n.id() + m_nFaces].emplace_back(slotDiscPointID - offset, singLine);     // normal registered node at 1
 	}
-	// register slot nodes at 0 and 1	
+	// register slot nodes at 0 and 1
 	if (slot->starting_cell_dim == 1) {     // edge
 		for (const auto &nodeID : m_graphBuilder->m_mesh->get<Edge>(slot->starting_cell_id).getIDs<Node>()) {
 			m_traversedCellsByLine[nodeID + m_nFaces].emplace_back(singDiscPointID - offset, singLine);
