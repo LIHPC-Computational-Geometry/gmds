@@ -44,7 +44,7 @@ Smooth2D::STATUS Smooth2D::execute()
 		// Ici, la valeur stockée est de type math::Point
 		// On définit un objet math::Point pour chaque sommet du maillage
 		// On accède aux valeurs en utilisant les numéros des id
-		Variable<math::Point> *old_coords = NULL;
+		Variable<math::Point> *old_coords = nullptr;
 		// Ici, le tableau est alloué directement avec le nombre de sommets du maillage.
 		// Attention : si un élément est supprimé, sa case n'est pas supprimée
 		old_coords = m_mesh->newVariable<math::Point,GMDS_NODE>("old_coords") ;
@@ -55,29 +55,12 @@ Smooth2D::STATUS Smooth2D::execute()
 			// ATTENTION : a local copy of the mesh is needed to compute the position of each node at the iteration n+1
 			// on the positions of the nodes at the iteration n
 
-			// Idée 1 :
-			// Mesh old_mesh ; // NE FONCTIONNE PAS
-			// old_mesh = *m_mesh ;
-
-			// Idée 2 :
-			// Mesh *old_mesh ; // old_mesh est un pointeur vers un maillage
-			// *old_mesh = *m_mesh ; // Ne fonctionne pas
-			// |-----> Je souhaite que le contenu de la case pointée par old_mesh prenne la même
-			// valeur que le contenu de la case pointée par m_mesh
-
-			// Idée 3 :
-			// Mesh old_mesh(MeshModel(DIM3 | R | F | N | F2N | N2F)) ; // On créé un maillage nommé old_mesh
-			// old_mesh = *m_mesh ; // NE FONCTIONNE PAS !
-			// |----> Je souhaite que old_mesh prenne la même valeur que la case pointée par m_mesh
-
 			// Boucle sur l'ensemble du maillage pour stocker les coordonnées de chaque noeud
 			for(auto n_id:m_mesh->nodes()) {
+				// Il semblerait qu'on puisse initialiser les valeurs comme ça, mais à l'itération 2, segfault
 				old_coords->set(n_id, m_mesh->get<Node>(n_id).point());
 			}
 
-			Mesh *new_mesh = m_mesh;
-			Node n_new;
-			// PENSER A REMPLACER DANS CETTE BOUCLE POUR CALCULER AVEC LES COORDS DU TABLEAU OLD COORDS
 			for (auto n_id : m_free_nodes) {
 				math::Point H1, H2, H3;
 				math::Point V1, V2, V3;
@@ -89,66 +72,49 @@ Smooth2D::STATUS Smooth2D::execute()
 
 				// Noeuds de la première branche (verticale)
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
-				//A = noeud_voisin.point();
 				A = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][0]);
-				//B = noeud_voisin.point();
 				B = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][0]);
-				//C = noeud_voisin.point();
 				C = old_coords->value(noeud_voisin.id()) ;
 				V1 = FindMidBranche(A, B, C);
 
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][1]);
-				//A = noeud_voisin.point();
 				A = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][1]);
-				//B = noeud_voisin.point();
 				B = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][1]);
-				//C = noeud_voisin.point();
 				C = old_coords->value(noeud_voisin.id()) ;
 				V2 = FindMidBranche(A, B, C);
 
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][2]);
-				//A = noeud_voisin.point();
 				A = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][2]);
-				//B = noeud_voisin.point();
 				B = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][2]);
-				//C = noeud_voisin.point();
 				C = old_coords->value(noeud_voisin.id()) ;
 				V3 = FindMidBranche(A, B, C);
 
 				// Noeuds de la seconde branche (horizontale)
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][0]);
-				//A = noeud_voisin.point();
 				A = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][1]);
-				//B = noeud_voisin.point();
 				B = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[0][2]);
-				//C = noeud_voisin.point();
 				C = old_coords->value(noeud_voisin.id()) ;
 				H1 = FindMidBranche(A, B, C);
 
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][0]);
-				//A = noeud_voisin.point();
 				A = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][1]);
-				//B = noeud_voisin.point();
 				B = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[1][2]);
-				//C = noeud_voisin.point();
 				C = old_coords->value(noeud_voisin.id()) ;
 				H2 = FindMidBranche(A, B, C);
 
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][0]);
-				//A = noeud_voisin.point();
 				A = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][1]);
-				//B = noeud_voisin.point();
 				B = old_coords->value(noeud_voisin.id()) ;
 				noeud_voisin = m_mesh->get<Node>(m_stencil[n_id].val[2][2]);
 				//C = noeud_voisin.point();
@@ -175,7 +141,7 @@ Smooth2D::STATUS Smooth2D::execute()
 				}
 
 				/*
-				// PRINT POUR DEBUG
+				// PRINT FOR DEBUG
 				if (iteration==m_nb_max_iterations) {
 				   std::cout << "--------------------------------" << std::endl;
 				   std::cout << "Iterations :" << iteration << std::endl;
@@ -184,26 +150,22 @@ Smooth2D::STATUS Smooth2D::execute()
 				   std::cout << "Pos actuelle :" << noeud_traite.point() << std::endl;
 				   std::cout << "Nouvelle position :" << M << std::endl;
 				}
-				// FIN DES PRINT POUR DEBUG
+				// END OF PRINTS FOR DEBUG
 				*/
 
-				n_new = new_mesh->get<Node>(n_id);
-				// Stocker l'ancienne position dans la variable old_coords avant de changer sa position
-				// old_coords->set(n_id, n_new.point());
 				if (intersection_trouvee) {
-					n_new.setPoint(M);
+					noeud_traite.setPoint(M);
 				}
 
+				// A .txt file is writen to plot with gluplot
 				if ( (n_id == 5) && (iteration == 1) ) {
-					// std::cout << "HELLOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOW" << std::endl ;
-					write_debug_txt(n_id, old_coords, H1, H2, H3, V1, V2, V3, n_new.point(), "test.txt");
+					write_debug_txt(n_id, old_coords, H1, H2, H3, V1, V2, V3, noeud_traite.point(), "test.txt");
 				}
 
 			}
 
-			m_mesh->deleteVariable(GMDS_NODE, old_coords);
-			m_mesh = new_mesh;
 		}
+		m_mesh->deleteVariable(GMDS_NODE, old_coords);
 	}
 
 
