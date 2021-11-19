@@ -1054,7 +1054,7 @@ SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerOneLineSegmen
 			cellsToRegister.push_back(f.id());
 		for (const Face &f : m_graphBuilder->m_face2Face_neighbours_by_verts[endFace])
 			cellsToRegister.push_back(f.id());
-		std::sort( cellsToRegister.begin(), cellsToRegister.end() );
+		std::sort(cellsToRegister.begin(), cellsToRegister.end());
 		cellsToRegister.erase(unique(cellsToRegister.begin(), cellsToRegister.end()), cellsToRegister.end());
 		for (const TCellID faceID : cellsToRegister)
 			m_traversedFacesByLine[faceID].emplace_back(contSource, contTarget, segment);
@@ -1127,7 +1127,7 @@ void
 SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerLineSegmentOnCommonNode(
    const TCellID &f1Id, const TCellID &f2Id, const math::Point &p1, const math::Point &p2, const SourceID &contSource, const TargetID &contTarget)
 {
-	if (f1Id != f2Id || !m_graphBuilder->m_tool.isAdjacency(f1Id, f2Id)) {
+	if (f1Id != f2Id && !m_graphBuilder->m_tool.isAdjacency(f1Id, f2Id)) {
 		const Node &n = Tools::getCommonNode(m_graphBuilder->m_mesh->get<Face>(f1Id), m_graphBuilder->m_mesh->get<Face>(f2Id));
 		const auto cellId = m_graphBuilder->m_original_faces_number + n.id();
 		m_traversedFacesByLine[cellId].emplace_back(contSource, contTarget, math::Segment(p1, p2));
