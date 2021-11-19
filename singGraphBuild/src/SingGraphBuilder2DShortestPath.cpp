@@ -1137,36 +1137,74 @@ SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerLineSegmentOn
 std::vector<std::pair<unsigned int, unsigned int>>
 SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::getIllegalOverlappingPaths()
 {
+	/// check illegal crossing among pair of intersection
 	auto timer = Timer("illegal crossing");
-	std::vector<pair<unsigned int, unsigned int>> illegalOverlappingPaths;
+	using PathID = unsigned int;
+	struct pair_hash
+	{
+		inline std::size_t operator()(const std::pair<PathID, PathID> &v) const
+		{
+			return v.first * 31 + v.second;
+		}
+	};
 
-	// Also check for potential self crossing lines and eliminate them. Even those who are actually not crossing for now
-	std::set<SourceID> selfCrossingLines;     // TODO check unordered set vs set perf
+	std::unordered_set<std::pair<PathID, PathID>, pair_hash> addedPair;
+	std::vector<pair<PathID, PathID>> illegalOverlappingPaths;
+	std::unordered_set<SourceID> selfCrossingLines;
 
-	// make pair of potential illegal intersection
-	vector<std::tuple<TCellID, const LineSegmentOnCell *, const LineSegmentOnCell *>> candidateFaceByPair;
 	for (const auto &candidate : m_traversedFacesByLine) {
 
 		for (int i = 0; i < candidate.second.size() - 1; i++) {
-			const LineSegmentOnCell *line_i = &candidate.second[i];
-			const SourceID csrc_i = line_i->contSource;
-			const TargetID ctgt_i = line_i->contTarget;
+			const LineSegmentOnCell &line_i = candidate.second[i];
+			const SourceID csrc_i = line_i.contSource;
+			const TargetID ctgt_i = line_i.contTarget;
 
 			for (int j = i + 1; j < candidate.second.size(); j++) {
-				const LineSegmentOnCell *line_j = &candidate.second[j];
-				const SourceID csrc_j = line_j->contSource;
-				const TargetID ctgt_j = line_j->contTarget;
+				const LineSegmentOnCell &line_j = candidate.second[j];
+				const SourceID csrc_j = line_j.contSource;
+				const TargetID ctgt_j = line_j.contTarget;
 
 				if (csrc_i != csrc_j)     // only different src
 				{
 					if ((csrc_i != ctgt_j && ctgt_i != csrc_j && ctgt_i != ctgt_j)                                    // only different target
 					    || (m_graphBuilder->targetIsBoundary(ctgt_i) && m_graphBuilder->targetIsBoundary(ctgt_j))     // or both targets on a boudary
 					) {
-						candidateFaceByPair.emplace_back(candidate.first, line_i, line_j);
+						const PathID line1ID = csrc_i * m_graphBuilder->m_totalNumberOfVariables + ctgt_i;
+						const PathID line2ID = csrc_j * m_graphBuilder->m_totalNumberOfVariables + ctgt_j;
+
+						const auto pairId = std::make_pair(line1ID, line2ID);
+						if (addedPair.find(pairId) == addedPair.end()) {
+
+							const TCellID cellID = candidate.first;
+							const auto &seg1 = line_i.segment;
+							const auto &seg2 = line_j.segment;
+
+							math::Vector3d crossDir1, crossDir2;
+							if (cellID > m_graphBuilder->m_original_faces_number) {
+								crossDir1 = (*m_graphBuilder->m_field)[cellID - m_graphBuilder->m_original_faces_number].closestComponentVector(seg1.getDir());
+								crossDir2 = (*m_graphBuilder->m_field)[cellID - m_graphBuilder->m_original_faces_number].closestComponentVector(seg2.getDir());
+							}
+							else {
+								crossDir1 = m_graphBuilder->m_triangle_centers_cross[cellID].closestComponentVector(seg1.getDir());
+								crossDir2 = m_graphBuilder->m_triangle_centers_cross[cellID].closestComponentVector(seg2.getDir());
+							}
+
+							if (math::near(std::fabs(crossDir1.dot(crossDir2)), 1.0)) {
+								// check if paths are intersecting
+								double intersectionParam;
+								math::Point intersectionPnt;
+								if (segmentsOverlap(seg1, seg2)
+								    || seg1.SecondMetIntersect2D(seg2, intersectionPnt, intersectionParam, m_graphBuilder->m_temp_epsilon)) {
+									illegalOverlappingPaths.push_back(pairId);
+									addedPair.insert(pairId);
+								}
+							}
+						}
 					}
 				}
 				else if (ctgt_i == ctgt_j) {
-					const auto lineID = csrc_i * m_graphBuilder->m_totalNumberOfVariables + ctgt_i;
+					// check for potential self crossing lines and eliminate them. Even those who are actually not crossing for now
+					const PathID lineID = csrc_i * m_graphBuilder->m_totalNumberOfVariables + ctgt_i;
 					selfCrossingLines.insert(lineID);
 					m_graphBuilder->m_distances[csrc_i][ctgt_i] = M_MAXDIST;
 				}
@@ -1174,45 +1212,16 @@ SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::getIllegalOverlapping
 		}
 	}
 
-	// check illegal crossing among pair of intersection
-	std::set<std::pair<unsigned int, unsigned int>> addedPair;     // TODO check unordered set vs set perf
-	for (const auto &lines : candidateFaceByPair) {
-
-		const LineSegmentOnCell *line1 = std::get<1>(lines);
-		const LineSegmentOnCell *line2 = std::get<2>(lines);
-		const unsigned int line1ID = line1->contSource * m_graphBuilder->m_totalNumberOfVariables + line1->contTarget;
-		const unsigned int line2ID = line2->contSource * m_graphBuilder->m_totalNumberOfVariables + line2->contTarget;
-
-		if (selfCrossingLines.find(line1ID) != selfCrossingLines.end() || selfCrossingLines.find(line2ID) != selfCrossingLines.end()) continue;
-
-		const auto pairId = std::make_pair(line1ID, line2ID);
-		if (addedPair.find(pairId) == addedPair.end()) {
-
-			const TCellID cellID = std::get<0>(lines);
-			const math::Segment &seg1 = line1->segment;
-			const math::Segment &seg2 = line2->segment;
-			math::Vector3d crossDir1, crossDir2;
-			if (cellID > m_graphBuilder->m_original_faces_number) {
-				crossDir1 = (*m_graphBuilder->m_field)[cellID - m_graphBuilder->m_original_faces_number].closestComponentVector(seg1.getDir());
-				crossDir2 = (*m_graphBuilder->m_field)[cellID - m_graphBuilder->m_original_faces_number].closestComponentVector(seg2.getDir());
-			}
-			else {
-				crossDir1 = m_graphBuilder->m_triangle_centers_cross[cellID].closestComponentVector(seg1.getDir());
-				crossDir2 = m_graphBuilder->m_triangle_centers_cross[cellID].closestComponentVector(seg2.getDir());
-			}
-
-			if (math::near(std::fabs(crossDir1.dot(crossDir2)), 1.0)) {
-				// check if paths are intersecting
-				double intersectionParam;
-				math::Point intersectionPnt;
-				if (segmentsOverlap(seg1, seg2) || seg1.SecondMetIntersect2D(seg2, intersectionPnt, intersectionParam, m_graphBuilder->m_temp_epsilon)) {
-					illegalOverlappingPaths.push_back(pairId);
-					addedPair.insert(pairId);
-				}
-			}
+	// remove pair including a self crossing line
+	std::vector<pair<PathID, PathID>> illegalOverlappingPathsClean;
+	illegalOverlappingPathsClean.reserve(illegalOverlappingPaths.size());
+	for (const auto &pair : illegalOverlappingPaths) {
+		if (selfCrossingLines.find(pair.first) != selfCrossingLines.end() || selfCrossingLines.find(pair.second) != selfCrossingLines.end()) {
+			continue;
 		}
+		illegalOverlappingPathsClean.emplace_back(pair);
 	}
-	return illegalOverlappingPaths;
+	return illegalOverlappingPathsClean;
 }
 
 /*----------------------------------------------------------------------------------------------------*/
