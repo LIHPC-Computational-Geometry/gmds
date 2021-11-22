@@ -36,7 +36,7 @@ namespace gmds {
     class GMDSIg_API Blocking2D: public Mesh{
     public:
 
-        class Block{
+        class GMDSIg_API Block{
         public:
             friend class Blocking2D;
             /**
