@@ -51,7 +51,7 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief  Overloaded operator =
         */
-        Array2D& GMDSUtils_API operator=(const Array2D& A){
+        Array2D&  operator=(const Array2D& A){
             m_i = A.m_i;
             m_j = A.m_j;
             m_tab.resize(m_i);
@@ -144,7 +144,7 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief  Overloaded operator =
         */
-        TriArray& GMDSUtils_API operator=(const TriArray& A){
+        TriArray& operator=(const TriArray& A){
             m_tab.resize(A.m_tab.size());
             for(auto i=0; i<A.m_tab.size();i++){
                 m_tab[i]=A.m_tab[i];
