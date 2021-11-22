@@ -72,7 +72,7 @@ $(function() {
 <li><b>Sheet collapse</b>. Giving 2 nodes, or an edge, it removes the corresponding sheet from the mesh.</li>
 <li><b>Sheet pillow</b>. Giving a path of edges or a convex set of cells, it inserts a sheet inside the mesh.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md8"></a>
+<h1><a class="anchor" id="autotoc_md9"></a>
 Requirements</h1>
 <p>Sheet collapse and pillow are operations that modify the mesh. They are quite easy to implement if you only consider the mesh structure but taking geometric classification makes it more tricky to handle.</p>
 <p>Geometric classification requires to handle a few special cases where faces (in 3D) and edges (in 2D) are required along the mesh boundary. It means that we restrict our implementation to mesh where:</p><ul>

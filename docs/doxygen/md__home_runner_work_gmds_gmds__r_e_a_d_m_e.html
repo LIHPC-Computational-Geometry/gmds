@@ -77,7 +77,7 @@ $(function() {
 </ul>
 <p>Depending on the meshing algorithm a developer has to write, he must decide which cells are mandatory and which topological connections. Indeed, for an algorithm you may need to store edges and/or faces with the relation from nodes to edges and to faces and vice-versa, while for another you may require regions and the topological relation from faces to regions. GMDS provide flexible mechanisms to handle a huge variety of models and type of cells (triangles, quadrilaterals, tetrahedra, ...).</p>
 <p>As we are mainly concerned about structured meshes in our team, most of proposed algorithms are dedicated to quadrilateral and hexahedral meshes.</p>
-<h1><a class="anchor" id="autotoc_md3"></a>
+<h1><a class="anchor" id="autotoc_md4"></a>
 A Generic mesh data structure</h1>
 <p>The data structures we provide are based onto the definition of a mesh model, which describes the available cells and connections in the mesh. For instance, in the next example code, a model is defined with flags DIM3|F|E|N|F2N|E2N|N2F. It means that the mesh is a 3D one (DIM3) made of faces (F), edges (E) and nodes (N) and connections from faces to nodes (F2N), edges to nodes (E2N) and nodes to faces (N2F) are explicitly stored. </p><div class="fragment"><div class="line">MeshModel model(DIM3|F|E|N|F2N|E2N|N2F);</div>
 <div class="line">Mesh m(model);</div>
@@ -87,7 +87,7 @@ A Generic mesh data structure</h1>
 <div class="line">    Node n = m.get&lt;Node&gt;(node_id);</div>
 <div class="line">    Point p = n.point();</div>
 <div class="line">}</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md4"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md5"></a>
 Algorithms for quad and hex meshing</h1>
 <p>GMDS is our main framework for developing new algorithms and our current interest is about structured quadrilateral and hexahedral meshing. To generate such meshes, we focus on the following <em>technologies</em>:</p><ul>
 <li><b>Frame Fields</b>. 3 modules are currenly dedicated to the usage of frame fields fo meshing<ul>
@@ -99,14 +99,14 @@ Algorithms for quad and hex meshing</h1>
 <li>Overlay grids algorithms.</li>
 <li>Sheet operations. <a class="el" href="class_this.html">This</a> module provides sheet operations for quad and hex meshes. </li>
 </ul>
-<h1><a class="anchor" id="autotoc_md5"></a>
+<h1><a class="anchor" id="autotoc_md6"></a>
 A service-based approach</h1>
 <p>In order to build and prototype secure pipeline algorithms, we propose a <b>service</b> module to assemble our algorithms into a verified and dynamically-secured pipeline. We strongly believe that a main drawback of research but also production codes is that they're are written by researchers in mathematics, physics or computer science who focuses on the application "business" without taking care of "software engineering". <a class="el" href="class_this.html">This</a> is quite usual and understandable but such a behaviour has 2 main consequences:</p><ol type="1">
 <li>Codes are not robust enough because the specification of their input and output are often fuzzy, only known by the main developer;</li>
 <li>It is difficult to reuse an algorithm written by someone else.</li>
 </ol>
 <p>The <b>service</b> module is an answer to this issue. Input and output of each service must be totally specified using a constraint system that is dynamically checked at execution time.</p>
-<h1><a class="anchor" id="autotoc_md6"></a>
+<h1><a class="anchor" id="autotoc_md7"></a>
 Users and developers documentation</h1>
 <p>Documentation is under construction. we just start to write it. It is split between:</p><ul>
 <li>Users documentation, which is dedicated to people who want to use <b>gmds</b> as a set of libraries but do not expect to contribute to it.</li>
