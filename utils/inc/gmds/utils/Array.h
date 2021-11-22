@@ -17,7 +17,7 @@ namespace gmds{
      */
     /*----------------------------------------------------------------------------*/
     template<typename  T>
-    class GMDSUtils_API Array2D {
+    class Array2D {
     public:
         /*------------------------------------------------------------------------*/
         /** @brief  Default constructor with @p AI lines and @p AJ columns. A
@@ -26,7 +26,7 @@ namespace gmds{
          * @param AI number of lines
          * @param AJ number of columns
          */
-        Array2D(const int AI, const int AJ) {
+        GMDSUtils_API Array2D(const int AI, const int AJ) {
             m_i = AI; m_j = AJ;
             m_tab.resize(m_i);
             for(auto i=0;i<m_i; i++){
@@ -37,7 +37,7 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief  Copy constructor
          */
-        Array2D(const Array2D& A) {
+        GMDSUtils_API Array2D(const Array2D& A) {
             m_i = A.m_i;
             m_j = A.m_j;
             m_tab.resize(m_i);
@@ -51,7 +51,7 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief  Overloaded operator =
         */
-        Array2D& operator=(const Array2D& A){
+        Array2D& GMDSUtils_API operator=(const Array2D& A){
             m_i = A.m_i;
             m_j = A.m_j;
             m_tab.resize(m_i);
@@ -65,27 +65,27 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief Destructor
         */
-        virtual ~Array2D(){;}
+        virtual GMDSUtils_API ~Array2D(){;}
 
         /*------------------------------------------------------------------------*/
         /** \brief give the number of lines
         */
-        TInt nbLines() const {return m_i;}
+        TInt GMDSUtils_API nbLines() const {return m_i;}
         /*------------------------------------------------------------------------*/
         /** \brief give the number of columns
         */
-        TInt nbColumns() const {return m_j;}
+        TInt GMDSUtils_API nbColumns() const {return m_j;}
 
         /*------------------------------------------------------------------------*/
         /** \brief  Access to  @p AI th line of the array
         *       \return the line contain
         *       \exception if i<0 or i>size()
         */
-        inline T const& operator()(const TInt AI ,const TInt AJ ) const{
+        inline GMDSUtils_API T const& operator()(const TInt AI ,const TInt AJ ) const{
             return m_tab[AI][AJ];
         }
 
-        inline T& operator()(const TInt AI ,const TInt AJ ) {
+        inline GMDSUtils_API T& operator()(const TInt AI ,const TInt AJ ) {
             return m_tab[AI][AJ];
         }
 
@@ -110,7 +110,7 @@ namespace gmds{
      */
     /*----------------------------------------------------------------------------*/
     template<typename  T>
-    class  GMDSUtils_API TriArray {
+    class  TriArray {
     public:
         /*------------------------------------------------------------------------*/
         /** @brief  Default constructor with @p AN the triangular size
@@ -118,7 +118,7 @@ namespace gmds{
          * @param AN triangular side size
          *
          */
-        TriArray(const int AN) {
+        GMDSUtils_API TriArray(const int AN) {
             m_N=AN;
             /* the value are stored in a 1-dim array containing the N elements of
              * the 1st line, then the N-1 of the second line then ... the single
@@ -135,7 +135,7 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief  Copy constructor
          */
-        TriArray(const TriArray& A): m_N(A.m_N) {
+        GMDSUtils_API TriArray(const TriArray& A): m_N(A.m_N) {
             m_tab.resize(A.m_tab.size());
             for(auto i=0; i<A.m_tab.size();i++){
                 m_tab[i]=A.m_tab[i];
@@ -144,7 +144,7 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief  Overloaded operator =
         */
-        TriArray& operator=(const TriArray& A){
+        TriArray& GMDSUtils_API operator=(const TriArray& A){
             m_tab.resize(A.m_tab.size());
             for(auto i=0; i<A.m_tab.size();i++){
                 m_tab[i]=A.m_tab[i];
@@ -153,35 +153,35 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief Destructor
         */
-        virtual ~TriArray(){;}
+        virtual GMDSUtils_API ~TriArray(){;}
 
         /*------------------------------------------------------------------------*/
         /** \brief give the number of lines
         */
-        TInt size() const {return m_N;}
+        TInt GMDSUtils_API size() const {return m_N;}
 
-        TInt nbElements() const {return m_tab.size();}
+        TInt GMDSUtils_API nbElements() const {return m_tab.size();}
         /*------------------------------------------------------------------------*/
         /** \brief  Access to  @p AI th line of the array
         *       \return the line contain
         *       \exception if i<0 or i>size()
         */
-        inline T const& operator()(const TInt AI ,const TInt AJ ) const{
+        inline GMDSUtils_API T const& operator()(const TInt AI ,const TInt AJ ) const{
             return m_tab[compute1DIndexFromIJ(AI,AJ)];
         }
 
-        inline T& operator()(const TInt AI ,const TInt AJ) {
+        inline GMDSUtils_API T& operator()(const TInt AI ,const TInt AJ) {
             return m_tab[compute1DIndexFromIJ(AI,AJ)];
         }
-        inline T const& operator()(const TInt AI ,const TInt AJ, const TInt AK) const{
+        inline GMDSUtils_API T const& operator()(const TInt AI ,const TInt AJ, const TInt AK) const{
             return m_tab[compute1DIndexFromIJK(AI,AJ,AK)];
         }
 
-        inline T& operator()(const TInt AI ,const TInt AJ, const TInt AK) {
+        inline GMDSUtils_API T& operator()(const TInt AI ,const TInt AJ, const TInt AK) {
             return m_tab[compute1DIndexFromIJK(AI,AJ,AK)];
         }
 
-        void print(){
+        void GMDSUtils_API print(){
             for(auto i:m_tab){
                 std::cout<<i<<" ";
             }
@@ -229,7 +229,7 @@ namespace gmds{
      */
     /*----------------------------------------------------------------------------*/
     template<typename  T>
-    class GMDSUtils_API Array3D {
+    class Array3D {
     public:
         /*------------------------------------------------------------------------*/
         /** @brief  Default constructor with @p AI, @p AJ and @p AK dimension. A
@@ -239,7 +239,7 @@ namespace gmds{
          * @param AJ dimension 2
          * @param AK dimension 3
          */
-        Array3D(const int AI, const int AJ, const int AK) {
+        GMDSUtils_API Array3D(const int AI, const int AJ, const int AK) {
             m_dim[0] = AI;
             m_dim[1] = AJ;
             m_dim[2] = AK;
@@ -255,7 +255,7 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief  Copy constructor
          */
-        Array3D(const Array3D& A) {
+        GMDSUtils_API Array3D(const Array3D& A) {
             m_dim[0] = A.m_dim[0];
             m_dim[1] = A.m_dim[1];
             m_dim[2] = A.m_dim[2];
@@ -273,7 +273,7 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief  Overloaded operator =
         */
-        Array3D& operator=(const Array3D& A){
+        GMDSUtils_API Array3D& operator=(const Array3D& A){
             m_dim[0] = A.m_dim[0];
             m_dim[1] = A.m_dim[1];
             m_dim[2] = A.m_dim[2];
@@ -291,24 +291,24 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief Destructor
         */
-        virtual ~Array3D(){;}
+        virtual GMDSUtils_API ~Array3D(){;}
 
         /*------------------------------------------------------------------------*/
         /** \brief give the number of elements for dim @p ADim
         */
-        TInt nbElements(const int ADim) const {return m_dim[ADim];}
+        TInt GMDSUtils_API nbElements(const int ADim) const {return m_dim[ADim];}
 
         /*------------------------------------------------------------------------*/
         /** \brief  Access to  @p AI th line of the array
         *       \return the line contain
         *       \exception if i<0 or i>size()
         */
-        inline T const& operator()(const TInt AI ,const TInt AJ ,
+        inline GMDSUtils_API T const& operator()(const TInt AI ,const TInt AJ ,
                 const TInt AK) const{
             return m_tab[AI][AJ][AK];
         }
 
-        inline T& operator()(const TInt AI ,const TInt AJ,const TInt AK ) {
+        inline GMDSUtils_API T& operator()(const TInt AI ,const TInt AJ,const TInt AK ) {
             return m_tab[AI][AJ][AK];
         }
 
