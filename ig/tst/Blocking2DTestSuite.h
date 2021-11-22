@@ -37,6 +37,8 @@ TEST(Blocking2DTestSuite, test_blocking2D_1)
     ASSERT_EQ(b0.getNbDiscretizationI(),11);
     ASSERT_EQ(b0.getNbDiscretizationJ(),11);
 
+    m.initializeGridPoints();
+    b0 = m.block(0);
     math::Point p00 = b0(0,0).point();
     ASSERT_FLOAT_EQ(p00.X(),0);
     ASSERT_FLOAT_EQ(p00.Y(),0);
