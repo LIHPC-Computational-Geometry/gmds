@@ -1,11 +1,13 @@
 add_executable(GMDS_IG_TEST
         BooleanMarkTestSuite.h
+        Blocking2DTestSuite.h
         MeshTestSuite.h
         MeshDoctorTestSuite.h
         main_test.cpp)
 
 target_link_libraries(GMDS_IG_TEST PUBLIC
         ${GMDS_LIB}
+        ${LIB_GMDS_IO}
         gtest)
 
 target_include_directories(GMDS_IG_TEST
