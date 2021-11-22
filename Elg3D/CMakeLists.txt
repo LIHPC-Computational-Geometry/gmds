@@ -35,7 +35,8 @@ endif()
 #==============================================================================
 # GTS
 #==============================================================================
-include(FindPkgConfig)
+#include(FindPkgConfig)
+find_package(PkgConfig REQUIRED)
 #pkg_check_modules(glib-2.0 REQUIRED glib-2.0)
 #find_path(GLIB_INCLUDE_DIR glib.h PATH_SUFFIXES glib-2.0)
 #include_directories(${GLIB_INCLUDE_DIR})
