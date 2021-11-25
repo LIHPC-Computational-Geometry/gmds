@@ -603,7 +603,7 @@ SingGraphBuilder2DShortestPath::computeDijkstra()
 }
 
 void
-SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TCellID> &targets, const SourceID &contSource)
+SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TCellID> &targets, const SourceID contSource)
 {
 
 	/*Description: get the shortest path between a singular triangle \param[in] source
@@ -1029,12 +1029,8 @@ SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerAllLineSegmen
 }
 
 void
-SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerOneLineSegment(const math::Point &startPnt,
-                                                                                  const math::Point &endPnt,
-                                                                                  const TCellID &startFace,
-                                                                                  const TCellID &endFace,
-                                                                                  const SourceID &contSource,
-                                                                                  const TargetID &contTarget)
+SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerOneLineSegment(
+   const math::Point &startPnt, const math::Point &endPnt, const TCellID startFace, const TCellID endFace, const SourceID contSource, const TargetID contTarget)
 {
 	const vector<TCellID> &facePath = m_graphBuilder->m_finalPaths[contSource][contTarget];
 
@@ -1125,7 +1121,7 @@ SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerOneLineSegmen
 
 void
 SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerLineSegmentOnCommonNode(
-   const TCellID &f1Id, const TCellID &f2Id, const math::Point &p1, const math::Point &p2, const SourceID &contSource, const TargetID &contTarget)
+   const TCellID f1Id, const TCellID f2Id, const math::Point &p1, const math::Point &p2, const SourceID contSource, const TargetID contTarget)
 {
 	if (f1Id != f2Id && !m_graphBuilder->m_tool.isAdjacency(f1Id, f2Id)) {
 		const Node &n = Tools::getCommonNode(m_graphBuilder->m_mesh->get<Face>(f1Id), m_graphBuilder->m_mesh->get<Face>(f2Id));
@@ -1238,7 +1234,7 @@ SingGraphBuilder2DShortestPath::detectLineIntersections()
 
 void
 SingGraphBuilder2DShortestPath::LineIntersectionDetector::registerOneSingularityLine(
-   SurfaceSingularityLine *singLine, const TCellID &startFace, const TCellID &endFace, const vector<TCellID> &facePath, const bool isBoundary)
+   SurfaceSingularityLine *singLine, const TCellID startFace, const TCellID endFace, const vector<TCellID> &facePath, const bool isBoundary)
 {
 	if (facePath.empty()) {     // -> fixed variable
 		std::vector<TCellID> cellsToRegister {startFace};
@@ -1288,9 +1284,9 @@ SingGraphBuilder2DShortestPath::LineIntersectionDetector::registerOneSingularity
 
 void
 SingGraphBuilder2DShortestPath::LineIntersectionDetector::registerLineBetweenTwoFaces(SurfaceSingularityLine *singLine,
-                                                                                      const TCellID &f1Id,
-                                                                                      const TCellID &f2Id,
-                                                                                      const unsigned int &prevDiscId)
+                                                                                      const TCellID f1Id,
+                                                                                      const TCellID f2Id,
+                                                                                      const unsigned int prevDiscId)
 {
 	if (!m_graphBuilder->m_tool.isAdjacency(f1Id, f2Id)) {
 		const Node &n = Tools::getCommonNode(m_graphBuilder->m_mesh->get<Face>(f1Id), m_graphBuilder->m_mesh->get<Face>(f2Id));
@@ -1301,8 +1297,8 @@ SingGraphBuilder2DShortestPath::LineIntersectionDetector::registerLineBetweenTwo
 
 void
 SingGraphBuilder2DShortestPath::LineIntersectionDetector::registerLineOnFacesNearSlots(SurfaceSingularityLine *singLine,
-                                                                                       const unsigned int &slotDiscPointID,
-                                                                                       const unsigned int &singDiscPointID,
+                                                                                       const unsigned int slotDiscPointID,
+                                                                                       const unsigned int singDiscPointID,
                                                                                        const bool isBoundary)
 {
 	if (isBoundary) return;
@@ -1324,10 +1320,10 @@ SingGraphBuilder2DShortestPath::LineIntersectionDetector::registerLineOnFacesNea
 }
 void
 SingGraphBuilder2DShortestPath::LineIntersectionDetector::registerLineOnNodesNearSlots(SurfaceSingularityLine *singLine,
-                                                                                       const TCellID &slotFace,
-                                                                                       const TCellID &finalPathFace,
-                                                                                       const unsigned int &slotDiscPointID,
-                                                                                       const unsigned int &singDiscPointID,
+                                                                                       const TCellID slotFace,
+                                                                                       const TCellID finalPathFace,
+                                                                                       const unsigned int slotDiscPointID,
+                                                                                       const unsigned int singDiscPointID,
                                                                                        const bool isBoundary)
 {
 	const auto slot = singDiscPointID == 0 ? singLine->getSlots()[0] : singLine->getSlots()[1];

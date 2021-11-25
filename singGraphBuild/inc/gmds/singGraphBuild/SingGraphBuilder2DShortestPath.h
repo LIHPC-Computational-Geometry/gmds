@@ -42,10 +42,11 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DShortestPath : public Singul
 	bool m_visualizeCost = false;
 	bool m_visualizeShortestPaths = false;
 
-	// @ { Both of those parameters allows to reduce the number of potential path found in dijkstra algo, and thus reduce the difficulty for the GLPK solver.
-	//     GLPK will struggle due to a very high number of constraints between potential paths (illegal line crossing)
-	//      -> the less path, the less constrain, the less time
-	//		-> with too low parameters, it may however hinder GLPK from finding the best solution, or even only one.
+	// @ {
+	// Both of those parameters allows to reduce the number of potential path found in dijkstra algo, and thus reduce the difficulty for the GLPK solver.
+	// GLPK will struggle due to a very high number of constraints between potential paths (illegal line crossing)
+	//  -> the less path, the less constrain, the less time
+	//	-> with too low parameters, it may however hinder GLPK from finding the best solution, or even only one.
 	unsigned int m_maxNBoundaryTarget = 6;         // dijkstra algorithm will keep the the N best paths ending on boundaries
 	unsigned int m_maxNValidSurfaceTarget = 5;     // dijkstra algorithm will stop after having found N potential VALID surfaces target (valid = without penalty)
 	// @ }
@@ -60,10 +61,10 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DShortestPath : public Singul
 	vector<bool> m_is_bdry_face;                              // vector of boolean values indicating whether a triangle is situated along a boundary
 	vector<bool> m_singOrGeomFaces;                           // indicates if a face is in a singularity
 
-	vector<vector<vector<TCellID>>> m_finalPaths;      // all cells indexes by which lines will be discretize
-	vector<SingularityPoint::Slot *> m_targets;        // all slots in a flat vector
-	vector<vector<double>> m_distances;                // costs of the detected paths
-	vector<TCellID> m_slotFaces;                       // initial face index of each line
+	vector<vector<vector<TCellID>>> m_finalPaths;     // all cells indexes by which lines will be discretize
+	vector<SingularityPoint::Slot *> m_targets;       // all slots in a flat vector
+	vector<vector<double>> m_distances;               // costs of the detected paths
+	vector<TCellID> m_slotFaces;                      // initial face index of each line
 
 	// @ { aliases to specify slots IDs
 	using SourceID = unsigned int;
@@ -111,7 +112,7 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DShortestPath : public Singul
 	   \param[in] contSource : value indicating the "order" of the source -> contSource = 5*i+j, where i represents
 	                     the singularity point number and j represents the number of the slot (j<=5)
 	*/
-	void getShortestPathBtwFacesOptimized(const vector<TCellID> &targets, const SourceID &contSource);
+	void getShortestPathBtwFacesOptimized(const vector<TCellID> &targets, const SourceID contSource);
 
 	std::vector<std::pair<SourceID, TargetID>> glpkSolve();
 
@@ -143,12 +144,12 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DShortestPath : public Singul
 		std::unordered_map<TCellID, vector<LineSegmentOnCell>> m_traversedFacesByLine;     // store line segments on each cells
 		void registerOneLineSegment(const math::Point &startPnt,
 		                            const math::Point &endPnt,
-		                            const TCellID &startFace,
-		                            const TCellID &endFace,
-		                            const SourceID &contSource,
-		                            const TargetID &contTarget);
+		                            const TCellID startFace,
+		                            const TCellID endFace,
+		                            const SourceID contSource,
+		                            const TargetID contTarget);
 		void registerLineSegmentOnCommonNode(
-		   const TCellID &f1Id, const TCellID &f2Id, const math::Point &p1, const math::Point &p2, const SourceID &contSource, const TargetID &contTarget);
+		   const TCellID f1Id, const TCellID f2Id, const math::Point &p1, const math::Point &p2, const SourceID contSource, const TargetID contTarget);
 	};
 	/*----------------------------------------------------------------------------------------------------*/
 	/*----------------------    line intersections functions     -----------------------------------------*/
@@ -177,17 +178,17 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DShortestPath : public Singul
 		std::unordered_map<TCellID, vector<TraversedCell>> m_traversedCellsByLine;
 
 		void registerOneSingularityLine(
-		   SurfaceSingularityLine *singline, const TCellID &startFace, const TCellID &endFace, const vector<TCellID> &facePath, const bool isBoundary);
-		void registerLineBetweenTwoFaces(SurfaceSingularityLine *singLine, const TCellID &f1Id, const TCellID &f2Id, const unsigned int &prevDiscId);
+		   SurfaceSingularityLine *singline, const TCellID startFace, const TCellID endFace, const vector<TCellID> &facePath, const bool isBoundary);
+		void registerLineBetweenTwoFaces(SurfaceSingularityLine *singLine, const TCellID f1Id, const TCellID f2Id, const unsigned int prevDiscId);
 		void registerLineOnNodesNearSlots(SurfaceSingularityLine *singLine,
-		                                  const TCellID &slotFace,
-		                                  const TCellID &finalPathFace,
-		                                  const unsigned int &slotDiscPointID,
-		                                  const unsigned int &singDiscPointID,
+		                                  const TCellID slotFace,
+		                                  const TCellID finalPathFace,
+		                                  const unsigned int slotDiscPointID,
+		                                  const unsigned int singDiscPointID,
 		                                  const bool isBoundary);
 		void registerLineOnFacesNearSlots(SurfaceSingularityLine *singLine,
-		                                  const unsigned int &slotDiscPointID,
-		                                  const unsigned int &singDiscPointID,
+		                                  const unsigned int slotDiscPointID,
+		                                  const unsigned int singDiscPointID,
 		                                  const bool isBoundary);
 	};
 };
