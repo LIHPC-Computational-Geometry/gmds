@@ -843,49 +843,38 @@ void
 SingularityGraph::buildSurfacePatchs()
 {
 	//========================================================================
-	// We start from a set of lines and points that must be connected
-	// in an acceptable configuration. Wrong configurations will not
-	// be detected leading to a wrong patch decomposition.
-	//========================================================================
-
-	const vector<SingularityLine *> &li = m_lines;
-
-	// We store an integer for each curve to indicate how much time it has
-	// been traversed. It must be 1 (on the boundary) or 2 (inside). To detect
-	// if a curve is on the boundary, we check if it classified onto a curve.
-	std::map<SingularityLine *, bool> direct, reverse;
-	for (unsigned int i = 0; i < li.size(); i++) {
-		direct[li[i]] = false;
-		reverse[li[i]] = false;
-	}
-
-	//========================================================================
 	// LOOP to build patches from lines
 	//========================================================================
-	std::vector<SingularityLine *> checkingLines;
-	for (unsigned int i = 0; i < li.size(); i++) {
+	// First, create all patch from surface singularity lines.
+	// From each surface singularity lines, two patchs are created, one following the line direction, the other in reverse.
 
-		if (!direct[li[i]]) {     // first time at least one patch to build
-			// We never work with curve line as first
-			if (li[i]->getType() == SingularityLine::CURVE) continue;
-			//=====================================================
-			// First traversal
-			//=====================================================
-			direct[li[i]] = true;
+	std::map<SingularityLine *, bool> direct, reverse;
+	for (const auto line : m_lines) {
+		direct[line] = false;
+		reverse[line] = false;
+	}
+
+	std::vector<SingularityLine *> checkingLines;
+	for (const auto initialLine : m_lines) {
+
+		if (initialLine->getType() == SingularityLine::CURVE) continue;
+
+		if (!direct[initialLine]) {     // First traversal
+			direct[initialLine] = true;
 
 			// A patch is created
 			SingularityPatch *patch = newSurfacePatch();
-			li[i]->addPatch(patch);
-			std::vector<SingularityPoint *> points = li[i]->getEndPoints();
+			initialLine->addPatch(patch);
+			std::vector<SingularityPoint *> points = initialLine->getEndPoints();
 
 			SingularityPoint *first_point = points[0];
 
 			patch->addPoint(first_point);
-			patch->addLine(li[i]);
+			patch->addLine(initialLine);
 			SingularityPoint *current_point = points[1];
-			SingularityLine *current_line = current_point->nextLine(li[i]);
+			SingularityLine *current_line = current_point->nextLine(initialLine);
 
-			while (current_line->getNumber() != li[i]->getNumber()) {
+			while (current_line->getNumber() != initialLine->getNumber()) {
 
 				current_line->addPatch(patch);
 				patch->addPoint(current_point);
@@ -903,37 +892,26 @@ SingularityGraph::buildSurfacePatchs()
 
 				current_line = current_point->nextLine(current_line);
 			}
-
-			// we decrement the index to traverse it again
-			i--;
 
 			patch->getLines(checkingLines);
 			if (checkingLines.size() != 4) {
 				throw GMDSException("Error during patch building, patch does not have 4 lines, line ID : " + std::to_string(current_line->getNumber()));
 			}
 		}
-		else if (!reverse[li[i]]) {
-			//=====================================================
-			// Second traversal
-			//=====================================================
-			// second time, a patch can be built if the curve is not on the boundary.
-			// Second time we go from the 2nd end point towards the 1st one A patch is
-			// created
-			if (li[i]->getType() == SingularityLine::CURVE) continue;
+		if (!reverse[initialLine]) {     // Second traversal
 
 			SingularityPatch *patch = newSurfacePatch();
-			li[i]->addPatch(patch);
-			std::vector<SingularityPoint *> points = li[i]->getEndPoints();
+			initialLine->addPatch(patch);
+			std::vector<SingularityPoint *> points = initialLine->getEndPoints();
 
 			SingularityPoint *first_point = points[1];
 
 			patch->addPoint(first_point);
-			patch->addLine(li[i]);
-
+			patch->addLine(initialLine);
 			SingularityPoint *current_point = points[0];
-			SingularityLine *current_line = current_point->nextLine(li[i]);
+			SingularityLine *current_line = current_point->nextLine(initialLine);
 
-			while (current_line->getNumber() != li[i]->getNumber()) {
+			while (current_line->getNumber() != initialLine->getNumber()) {
 
 				current_line->addPatch(patch);
 				patch->addPoint(current_point);
@@ -954,6 +932,43 @@ SingularityGraph::buildSurfacePatchs()
 			patch->getLines(checkingLines);
 			if (checkingLines.size() != 4) {
 				throw GMDSException("Error during patch building, patch does not have 4 lines, line ID : " + std::to_string(current_line->getNumber()));
+			}
+		}
+	}
+	// At this point, isolated parts of the mesh containing no surface singularity lines may remain.
+	// This time, the corresponding patch are build from the boundary lines.
+	for (const auto initialLine : m_lines) {
+		if (!direct[initialLine] && !reverse[initialLine]) {
+			direct[initialLine] = true;
+
+			SingularityPatch *patch = newSurfacePatch();
+			initialLine->addPatch(patch);
+
+			auto singPoints = initialLine->getEndPoints();
+			const auto firstPoint = singPoints.front();
+			auto nextPoint = singPoints.back();
+
+			patch->addLine(initialLine);
+			patch->addPoint(nextPoint);
+
+			auto nextLine = initialLine;
+			for (size_t i = 0; i < 3; ++i) {
+				const auto slots = nextPoint->getSlots();
+				if (slots.size() != 2) {
+					throw GMDSException("Error during patch building, bdry Singularity have more than 2 slot, sing ID : " + std::to_string(nextPoint->getNumber()));
+				}
+
+				nextLine = slots.front()->line == nextLine ? slots.back()->line : slots.front()->line;
+				singPoints = nextLine->getEndPoints();
+				nextPoint = singPoints.front() == nextPoint ? singPoints.back() : singPoints.front();
+
+				nextLine->addPatch(patch);
+				patch->addLine(nextLine);
+				patch->addPoint(nextPoint);
+				direct[nextLine] = true;
+			}
+			if (nextPoint != firstPoint) {
+				throw GMDSException("Error during patch building, patch does not have 4 lines, line ID : " + std::to_string(nextLine->getNumber()));
 			}
 		}
 	}
