@@ -148,9 +148,10 @@ void CrossFieldGeneration2D::execute(const Strategy AStrategy)
   // CLEANING - Boolean marks are cleaned
   //==================================================================
   cleanMarks();
-  if (m_debugEnable)
-	computeReferenceVectorDeviationPerFace();
+  if (m_debugEnable) {
 	writeForDebug();  
+	computeReferenceVectorDeviationPerFace();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
