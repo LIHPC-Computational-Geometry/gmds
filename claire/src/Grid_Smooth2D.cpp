@@ -33,63 +33,61 @@ Grid_Smooth2D::STATUS Grid_Smooth2D::execute()
 			old_coords->set(n_id, m_mesh->get<Node>(n_id).point());
 		}
 
-		// Loop on the blocks of the mesh
-		for (auto f_id : m_mesh->faces()) {
-			Blocking2D::Block bi = m_mesh->block(f_id) ;
-			int Nx = bi.getNbDiscretizationI();
-			int Ny = bi.getNbDiscretizationJ();
-			std::cout << "Nx = " << Nx << std::endl;
-			std::cout << "Ny = " << Ny << std::endl;
+		// we traverse all the nodes of the whole mesh
+		Blocking2D::Block b0 = m_mesh->block(0);
+		int Nx = b0.getNbDiscretizationI();
+		int Ny = b0.getNbDiscretizationJ();
+		std::cout << "Nx = " << Nx << std::endl;
+		std::cout << "Ny = " << Ny << std::endl;
 
-			// Loop on the inner nodes of the bi block
-			for (int i = 1; i < Nx - 1; i++) {
-				for (int j = 1; j < Ny - 1; j++) {
+		// Boucle sur les noeuds internes du bloc b0
+		for (int i = 1; i < Nx - 1; i++) {
+			for (int j = 1; j < Ny - 1; j++) {
 
-					// Get the stencil points
-					math::Point p00 = bi(i - 1, j - 1).point();
-					math::Point p01 = bi(i - 1, j).point();
-					math::Point p02 = bi(i - 1, j + 1).point();
-					math::Point p10 = bi(i, j - 1).point();
-					math::Point p11 = bi(i, j).point();
-					math::Point p12 = bi(i, j + 1).point();
-					math::Point p20 = bi(i + 1, j - 1).point();
-					math::Point p21 = bi(i + 1, j).point();
-					math::Point p22 = bi(i + 1, j + 1).point();
+				// Get the stencil points
+				math::Point p00 = b0(i - 1, j - 1).point();
+				math::Point p01 = b0(i - 1, j).point();
+				math::Point p02 = b0(i - 1, j + 1).point();
+				math::Point p10 = b0(i, j - 1).point();
+				math::Point p11 = b0(i, j).point();
+				math::Point p12 = b0(i, j + 1).point();
+				math::Point p20 = b0(i + 1, j - 1).point();
+				math::Point p21 = b0(i + 1, j).point();
+				math::Point p22 = b0(i + 1, j + 1).point();
 
-					// Compute the 6 points for the Yao Smoother
-					math::Point V1 = FindMidBranche(p00, p01, p02);
-					math::Point V2 = FindMidBranche(p10, p11, p12);
-					math::Point V3 = FindMidBranche(p20, p21, p22);
+				// Compute the 6 points for the Yao Smoother
+				math::Point V1 = FindMidBranche(p00, p01, p02);
+				math::Point V2 = FindMidBranche(p10, p11, p12);
+				math::Point V3 = FindMidBranche(p20, p21, p22);
 
-					math::Point H1 = FindMidBranche(p00, p10, p20);
-					math::Point H2 = FindMidBranche(p01, p11, p21);
-					math::Point H3 = FindMidBranche(p02, p12, p22);
+				math::Point H1 = FindMidBranche(p00, p10, p20);
+				math::Point H2 = FindMidBranche(p01, p11, p21);
+				math::Point H3 = FindMidBranche(p02, p12, p22);
 
-					// Finding the intersection between the 4 segments
-					bool intersection_trouvee(false);
-					math::Point M(0, 0, 0);
-					math::Segment Seg_Vert_1(V1, V2);
-					math::Segment Seg_Vert_2(V2, V3);
-					math::Segment Seg_Hori_1(H1, H2);
-					math::Segment Seg_Hori_2(H2, H3);
+				// Finding the intersection between the 4 segments
+				bool intersection_trouvee(false);
+				math::Point M(0, 0, 0);
+				math::Segment Seg_Vert_1(V1, V2);
+				math::Segment Seg_Vert_2(V2, V3);
+				math::Segment Seg_Hori_1(H1, H2);
+				math::Segment Seg_Hori_2(H2, H3);
 
-					intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_1, M);
-					if (!intersection_trouvee) {
-						intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_2, M);
-					}
-					if (!intersection_trouvee) {
-						intersection_trouvee = Seg_Vert_2.intersect2D(Seg_Hori_1, M);
-					}
-					if (!intersection_trouvee) {
-						intersection_trouvee = Seg_Vert_2.intersect2D(Seg_Hori_2, M);
-					}
+				intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_1, M);
+				if (!intersection_trouvee) {
+					intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_2, M);
+				}
+				if (!intersection_trouvee) {
+					intersection_trouvee = Seg_Vert_2.intersect2D(Seg_Hori_1, M);
+				}
+				if (!intersection_trouvee) {
+					intersection_trouvee = Seg_Vert_2.intersect2D(Seg_Hori_2, M);
+				}
 
-					if (intersection_trouvee) {
-						bi(i, j).setPoint(M);
-					}
+				if (intersection_trouvee) {
+					b0(i, j).setPoint(M);
 				}
 			}
-	}
+		}
 
 	}
 
