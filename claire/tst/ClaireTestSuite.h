@@ -3,6 +3,7 @@
 //
 /*----------------------------------------------------------------------------*/
 #include <gmds/claire/Smooth2D.h>
+#include <gmds/claire/Grid_Smooth2D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
@@ -409,4 +410,57 @@ TEST(ClaireTestClass, testUnstructuredMesh_2)
 	writer_geom.write("smooth2D_UnstructuredMesh_2.vtk");
 
 	ASSERT_EQ(Smooth2D::SUCCESS, result);
+}
+
+
+
+
+TEST(ClaireTestClass, testGrid_Smooth2D_1)
+{
+	Blocking2D m;
+	Node n1 = m.newBlockCorner(0,0);
+	Node n2 = m.newBlockCorner(1,0);
+	Node n3 = m.newBlockCorner(1,1);
+	Node n4=  m.newBlockCorner(0,1);
+
+	Blocking2D::Block b1 = m.newBlock(n1,n2,n3,n4);
+
+	Node n5 = m.newBlockCorner(2,0,0);
+	Node n6 = m.newBlockCorner(2,1.5,0);
+	Blocking2D::Block b2 = m.newBlock(n2,n5,n6,n3);
+	b1.seNbDiscretizationI(10);
+	b1.seNbDiscretizationJ(10);
+	b2.seNbDiscretizationI(10);
+	b2.seNbDiscretizationJ(10);
+
+	m.initializeGridPoints();
+
+	b1 = m.block(0);
+	int Nx = b1.getNbDiscretizationI();
+	int Ny = b1.getNbDiscretizationJ();
+
+	// Perturbation of the mesh
+	// Boucle sur les noeuds internes du bloc b0
+	for (int i=1; i<Nx-1; i++) {
+		for (int j=1; j<Ny-1; j++) {
+			b1(i,j).setX(0.0);
+			b1(i,j).setY(0.0);
+		}
+	}
+
+	IGMeshIOService ios(&m);
+	VTKWriter writer(&ios);
+	writer.setCellOptions(N|F);
+	writer.setDataOptions(N|F);
+	writer.write("testGrid_Smooth2D_1_init.vtk");
+
+	Grid_Smooth2D smoother(&m);
+	Grid_Smooth2D::STATUS result = smoother.execute();
+
+	IGMeshIOService ioService_geom(&m);
+	VTKWriter writer_geom(&ioService_geom);
+	writer_geom.setCellOptions(N|F);
+	writer_geom.setDataOptions(N|F);
+	writer_geom.write("testGrid_Smooth2D_1_result.vtk");
+
 }
