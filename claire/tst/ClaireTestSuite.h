@@ -448,6 +448,19 @@ TEST(ClaireTestClass, testGrid_Smooth2D_1)
 		}
 	}
 
+	b1 = m.block(1);
+	Nx = b1.getNbDiscretizationI();
+	Ny = b1.getNbDiscretizationJ();
+
+	// Perturbation of the mesh
+	// Boucle sur les noeuds internes du bloc b1
+	for (int i=1; i<Nx-1; i++) {
+		for (int j=1; j<Ny-1; j++) {
+			b1(i,j).setX(0.0);
+			b1(i,j).setY(0.0);
+		}
+	}
+
 	IGMeshIOService ios(&m);
 	VTKWriter writer(&ios);
 	writer.setCellOptions(N|F);
