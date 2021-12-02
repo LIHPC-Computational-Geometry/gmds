@@ -1,8 +1,7 @@
 add_library(glpk SHARED IMPORTED GLOBAL)
 
-set(GLPK_INC ${CMAKE_SOURCE_DIR}/external/glpk/src/glpk/src CACHE PATH "Glpk headers location")
-
 if(WIN32)
+    set(GLPK_INC ${CMAKE_SOURCE_DIR}/external/glpk/src/glpk/src CACHE PATH "Glpk headers location")
     set(GLPK_LIB ${CMAKE_SOURCE_DIR}/external/glpk/src/glpk/w64)
     if(NOT EXISTS "${GLPK_LIB}/glpk_4_65.dll")
         ADD_CUSTOM_TARGET(
@@ -47,6 +46,8 @@ else() # unix
                 INSTALL_COMMAND make install)
         add_dependencies(glpk buildGlpk)
 
+        set(GLPK_INC ${CMAKE_SOURCE_DIR}/external/glpk/src/glpk/src CACHE PATH "Glpk headers location" FORCE)
+        set(GLPK_LIB ${CMAKE_BINARY_DIR}/glpk/lib CACHE PATH "Glpk lib location" FORCE)        
     endif() # from spack fro example
     
     set_target_properties(glpk PROPERTIES
