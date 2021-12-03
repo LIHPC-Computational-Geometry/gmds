@@ -1,8 +1,12 @@
 add_library(glpk SHARED IMPORTED GLOBAL)
 
-if(WIN32)
-    set(GLPK_INC ${CMAKE_SOURCE_DIR}/external/glpk/src/glpk/src CACHE PATH "Glpk headers location")
+# CMake doesn't allow to install IMPORTED libraries as TARGETS
+# -> https://stackoverflow.com/questions/41175354/can-i-install-shared-imported-library
+
+if(WIN32) # always build shared on windows for now
+    set(GLPK_INC ${CMAKE_SOURCE_DIR}/external/glpk/src/glpk/src)
     set(GLPK_LIB ${CMAKE_SOURCE_DIR}/external/glpk/src/glpk/w64)
+
     if(NOT EXISTS "${GLPK_LIB}/glpk_4_65.dll")
         ADD_CUSTOM_TARGET(
             buildGlpkMSVC
@@ -47,12 +51,22 @@ else() # unix
         add_dependencies(glpk buildGlpk)
 
         set(GLPK_INC ${CMAKE_SOURCE_DIR}/external/glpk/src/glpk/src CACHE PATH "Glpk headers location" FORCE)
-        set(GLPK_LIB ${CMAKE_BINARY_DIR}/glpk/lib CACHE PATH "Glpk lib location" FORCE)        
-    endif() # from spack fro example
+        set(GLPK_LIB ${CMAKE_BINARY_DIR}/glpk/lib CACHE PATH "Glpk lib location" FORCE)  
+           
+    endif()
     
+    if(BUILD_SHARED_LIBS)
+        set(GLPK_LIBNAME "libglpk.so")
+    else()        
+        set(GLPK_LIBNAME "libglpk.a")
+    endif()
+
     set_target_properties(glpk PROPERTIES
-             IMPORTED_LOCATION ${GLPK_LIB}/libglpk.a
+             IMPORTED_LOCATION ${GLPK_LIB}/${GLPK_LIBNAME}
              INTERFACE_INCLUDE_DIRECTORIES ${GLPK_INC})    
+
+    install(FILES ${GLPK_LIB}/${GLPK_LIBNAME} DESTINATION  ${CMAKE_INSTALL_LIBDIR})
+    install(FILES "${GLPK_INC}/glpk.h" DESTINATION  ${CMAKE_INSTALL_INCLUDEDIR})
 
     message(STATUS "============= GLPK  ===============")
     message(STATUS "lib path = ${GLPK_LIB}")
