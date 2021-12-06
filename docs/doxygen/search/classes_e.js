@@ -24,7 +24,7 @@ var searchData=
   ['pointinsertion_2058',['PointInsertion',['../classgmds_1_1hybrid_1_1operators_1_1_point_insertion.html',1,'gmds::hybrid::operators']]],
   ['pointsmoothing_2059',['PointSmoothing',['../classgmds_1_1hybrid_1_1operators_1_1_point_smoothing.html',1,'gmds::hybrid::operators']]],
   ['pointsurfacicdata_2060',['PointSurfacicData',['../struct_tools_1_1_point_surfacic_data.html',1,'Tools']]],
-  ['pointvolumetricdata_2061',['PointVolumetricData',['../struct_tools_1_1_point_volumetric_data.html',1,'Tools::PointVolumetricData'],['../structgmds_1_1frame3d_1_1_singularity_line_helper_1_1_point_volumetric_data.html',1,'gmds::frame3d::SingularityLineHelper::PointVolumetricData']]],
+  ['pointvolumetricdata_2061',['PointVolumetricData',['../structgmds_1_1frame3d_1_1_singularity_line_helper_1_1_point_volumetric_data.html',1,'gmds::frame3d::SingularityLineHelper::PointVolumetricData'],['../struct_tools_1_1_point_volumetric_data.html',1,'Tools::PointVolumetricData']]],
   ['polycubetoolbox_2062',['PolycubeToolbox',['../classgmds_1_1_polycube_toolbox.html',1,'gmds']]],
   ['praccessor_2063',['PrAccessor',['../structgmds_1_1_region_container_1_1_pr_accessor.html',1,'gmds::RegionContainer']]],
   ['prism3_2064',['Prism3',['../classgmds_1_1math_1_1_prism3.html',1,'gmds::math']]],

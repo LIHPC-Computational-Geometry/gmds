@@ -2,7 +2,7 @@ var searchData=
 [
   ['scaledjacobian_3192',['scaledJacobian',['../structkmds_1_1_face.html#a40ccc0dba937345a90e5056cc2470644',1,'kmds::Face::scaledJacobian()'],['../structkmds_1_1_region.html#a98c451c48abc3f18145770738d9f5407',1,'kmds::Region::scaledJacobian()']]],
   ['scaledjacobianat_3193',['scaledJacobianAt',['../structkmds_1_1_face.html#af6d50b34f423e0bd61028c17d411f3bc',1,'kmds::Face::scaledJacobianAt()'],['../structkmds_1_1_region.html#a2baab031efe7c6fe9dbd63ac13799dd6',1,'kmds::Region::scaledJacobianAt()']]],
-  ['segment_3194',['Segment',['../classgmds_1_1math_1_1_segment.html#a705253b5e36321311048f91df4709458',1,'gmds::math::Segment::Segment()'],['../classgmds_1_1math_1_1_segment.html#adc026f633c31d1acb979f2d12e8c25b9',1,'gmds::math::Segment::Segment(const Point &amp;AP1, const Point &amp;AP2)'],['../classgmds_1_1_edge.html#a7628e6e388b2aebafff5bbfd3bb75e5a',1,'gmds::Edge::segment()']]],
+  ['segment_3194',['segment',['../classgmds_1_1_edge.html#a7628e6e388b2aebafff5bbfd3bb75e5a',1,'gmds::Edge::segment()'],['../classgmds_1_1math_1_1_segment.html#a705253b5e36321311048f91df4709458',1,'gmds::math::Segment::Segment()'],['../classgmds_1_1math_1_1_segment.html#adc026f633c31d1acb979f2d12e8c25b9',1,'gmds::math::Segment::Segment(const Point &amp;AP1, const Point &amp;AP2)']]],
   ['selectivepadding_3195',['SelectivePadding',['../classgmds_1_1_selective_padding.html#adfeb67b69e1938577dbfaca8608a047d',1,'gmds::SelectivePadding']]],
   ['selectnewbit_3196',['selectNewBit',['../classgmds_1_1_bit_vector.html#adb5147d1036c589d6dd0edfcc3b88deb',1,'gmds::BitVector']]],
   ['selectnewindex_3197',['selectNewIndex',['../classgmds_1_1_smart_vector.html#a9f8e6c7b37a892a8367ddcd27a6abd3f',1,'gmds::SmartVector']]],
