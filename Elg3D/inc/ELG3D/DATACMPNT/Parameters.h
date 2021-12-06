@@ -194,7 +194,7 @@ struct Parameters{
     template<int TSize>
     class compare_tableMarkedNodes {
     public :
-        bool operator()(const tableMarkedNodes<TSize>& ATableMarkedNodes1, const tableMarkedNodes<TSize>& ATableMarkedNodes2) {
+        bool operator()(const tableMarkedNodes<TSize>& ATableMarkedNodes1, const tableMarkedNodes<TSize>& ATableMarkedNodes2) const {
             return (ATableMarkedNodes1<ATableMarkedNodes2);
         }
     };
