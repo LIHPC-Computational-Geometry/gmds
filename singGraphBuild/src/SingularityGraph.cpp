@@ -955,7 +955,7 @@ SingularityGraph::buildSurfacePatchs()
 			for (size_t i = 0; i < 3; ++i) {
 				const auto slots = nextPoint->getSlots();
 				if (slots.size() != 2) {
-					throw GMDSException("Error during patch building, bdry Singularity have more than 2 slot, sing ID : " + std::to_string(nextPoint->getNumber()));
+					throw GMDSException("Error during patch building, bdry Singularity have more than 2 slots, sing ID : " + std::to_string(nextPoint->getNumber()));
 				}
 
 				nextLine = slots.front()->line == nextLine ? slots.back()->line : slots.front()->line;

@@ -374,7 +374,7 @@ SingGraphBuilder2DShortestPath::computeDijkstraStartingFaces()
 			}
 			m_slotFaces[contSource] = bestFace;
 		}
-		else {     // the slot is located right on an edge
+		else {     // the slot is located on an edge
 			const Edge &currentEdge = m_mesh->get<Edge>(slot->starting_cell_id);
 			const auto &adjFaceIDs = currentEdge.getIDs<Face>();
 			const bool singPointIsInfirstFace = m_tool.isPntInTri(slot->from_point->getLocation(), m_mesh->get<Face>(adjFaceIDs[0]));
@@ -416,6 +416,7 @@ SingGraphBuilder2DShortestPath::findBoundary(const math::Ray &ray, const TCellID
 					bdryParam.cellId = currentEdge.id();
 					bdryParam.dim = 1;
 					bdryParam.point = endPoint;
+					bdryParam.angle = std::acos(cosAngle);
 					return true;
 				}
 			}
@@ -437,6 +438,7 @@ SingGraphBuilder2DShortestPath::findBoundary(const math::Ray &ray, const TCellID
 								bdryParam.cellId = currentEdge.id();
 								bdryParam.dim = 1;
 								bdryParam.point = endPoint;
+								bdryParam.angle = std::acos(cosAngle);
 								return true;
 							}
 						}
@@ -582,7 +584,7 @@ SingGraphBuilder2DShortestPath::computeDijkstra()
 	for (unsigned int i = 0; i < m_singPointNo; i++) {
 		for (unsigned int j = 0; j < 5; j++) {
 
-			unsigned int contSource = 5 * i + j;
+			SourceID contSource = 5 * i + j;
 			if (m_targets[contSource] && !m_targets[contSource]->isFreeze) {
 
 				// prevent slot from connecting to a slot belonging to the same singularity
@@ -647,6 +649,16 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 		const double srcAngle = linkVector.angle(sourceDirection);
 		const double tgtAngle = linkVector.angle(targetOwnDirection);
 		if (srcAngle < M_PI_4 && tgtAngle < M_PI_4) m_distances[contSource][contTarget] = 0.5 * (srcAngle + tgtAngle);
+	}
+	if (m_is_bdry_face[source]) {     // same for boundary
+		math::Ray ray(startPoint, sourceDirection);
+		BoundaryPathEndParam bdryParam;
+		if (findBoundary(ray, source, bdryParam)) {
+			boundaryQueue.emplace(0, 0);
+			bdryFacesId.push_back(bdryParam.finalFace);
+			m_bdryPathEndParam[contSource].push_back(bdryParam);
+			m_distances[contSource][m_totalNumberOfSlots] = bdryParam.angle;
+		}
 	}
 
 	// check if the slot face is actually a good candidate
@@ -735,19 +747,12 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 
 			math::Ray ray(m_triangle_centers[u_id], prevCross_u);
 			BoundaryPathEndParam bdryParam;
-			bool reachedValidBdry = findBoundary(ray, u_id, bdryParam);
+			bool reachedValidBdry = findBoundary(ray, u_id, bdryParam)     //
+			                        && std::none_of(bdryFacesId.begin(), bdryFacesId.end(), [=](TCellID faceID) { return faceID == bdryParam.finalFace; });
 
 			if (reachedValidBdry) {
-				const bool faceIsAlreadyEndOfAnotherLine = false;
-				for (const auto face : bdryFacesId)
-					if (bdryParam.finalFace == face) {
-						reachedValidBdry = false;
-						break;
-					}
-			}
-			if (reachedValidBdry) {
 
-				double newCost = previousCostParam.getFullCost();
+				double newCost = previousCostParam.getFullCost() + bdryParam.angle / previousCostParam.nVisitedCellsBefore;
 
 				retraceShortestPath(u_id, previousFaceID, m_original_faces_number, retracedPath);
 				for (const auto &faceId : retracedPath)
@@ -866,6 +871,7 @@ SingGraphBuilder2DShortestPath::glpkSolve()
 	}
 
 	const unsigned int nGLPKvariables = glpkCosts.size();
+	if (glpkCosts.empty()) return {};
 
 	std::vector<std::vector<glpkVarID>> pathsEndingOnSlot(m_totalNumberOfSlots);
 	for (glpkVarID i = 0; i < nGLPKvariables; ++i) {

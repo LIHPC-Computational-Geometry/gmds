@@ -28,7 +28,7 @@ typedef std::chrono::high_resolution_clock Clock;
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
 
-TEST(SingGraphBuilder2DTest, halfDisk)
+TEST(SingGraphBuilder2DTest, folkGeometry)
 {
 	auto t0 = Clock::now();
 

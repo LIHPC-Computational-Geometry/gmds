@@ -1265,6 +1265,7 @@ SingularityGraphBuilder2D::buildSlotsOfBoundarySingularity(VertexSingularityPoin
 		math::Vector3d direction;
 		TCellID cellId;
 		int cellDim;     // a slot can be on a node or an edge
+		bool isOnSurface = true;
 	};
 	std::vector<BaseSlot> baseSlots;
 	for (int i_line = 0; i_line < ANbLines && baseSlots.size() != ANbLines; i_line++) {
@@ -1315,7 +1316,8 @@ SingularityGraphBuilder2D::buildSlotsOfBoundarySingularity(VertexSingularityPoin
 			double deviation = 0;
 			math::Point slotPoint;
 			if (m_tool.computeOutVectorFromRayAndEdge(oppositEdge, currentNode.getPoint(), lineDirection, slotPoint, slotDirection, deviation)) {
-				baseSlots.push_back({slotPoint, slotDirection, oppositEdge.id(), 1});
+				bool isOnSurface = m_mesh->isMarked<Edge>(oppositEdge.id(), m_mark_edges_on_curve) ? false : true;
+				baseSlots.push_back({slotPoint, slotDirection, oppositEdge.id(), 1, isOnSurface});
 				break;
 			}
 		}
@@ -1339,8 +1341,9 @@ SingularityGraphBuilder2D::buildSlotsOfBoundarySingularity(VertexSingularityPoin
 		bool doNotBuildSlot = baseSlots[0].direction.angle(firstBdryVector) < M_PI_4 || baseSlots[0].direction.angle(secondBdryVector) < M_PI_4;
 		if (doNotBuildSlot) return;
 	}
-	for (const auto baseSlot : baseSlots)
-		AFrom->newSlot(baseSlot.location, baseSlot.direction, baseSlot.cellId, baseSlot.cellDim, true);
+	for (const auto baseSlot : baseSlots) {
+		AFrom->newSlot(baseSlot.location, baseSlot.direction, baseSlot.cellId, baseSlot.cellDim, baseSlot.isOnSurface);
+	}
 }
 
 /*----------------------------------------------------------------------------*/

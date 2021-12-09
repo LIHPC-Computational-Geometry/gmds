@@ -80,6 +80,7 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DShortestPath : public Singul
 		TCellID cellId = 0;
 		math::Point point;
 		TCellID finalFace = 0;
+		double angle;
 	};
 
 	std::unordered_map<SourceID, std::vector<BoundaryPathEndParam>> m_bdryPathEndParam;     // data about all shortest path to ending on a boundary
