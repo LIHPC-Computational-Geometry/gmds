@@ -44,6 +44,9 @@ namespace gmds
 
         std::vector<TInt> getNodes() const;
 
+        /*triangles's normal are oriented outside the mesh*/
+        math::Vector3d    getNormal()  const;
+
         std::vector<TSimplexID> neighborSimplex   () const ;
 
         std::vector<TInt> otherNodesInTriangle                  (const SimplicesTriangle& simpliceTriangle) const ;

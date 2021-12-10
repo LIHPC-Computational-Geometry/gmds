@@ -219,7 +219,6 @@ class SimplexMesh
 
   void setHexadronData(std::vector<std::vector<TInt>>& hexahedronData){m_hexahedronData = hexahedronData;}
 
-  const gmds::BitVector& getMarkedTet(){return m_markedTet;}
 
   void setMarkedTet(const gmds::BitVector& markedTet){m_markedTet = markedTet;}
 
@@ -296,6 +295,8 @@ class SimplexMesh
 
   const gmds::BitVector& getBitVectorTet() const {return m_tet_ids;}
 
+  const gmds::BitVector& getMarkedTet() const {return m_markedTet;}
+
   const gmds::BitVector& getBitVectorTri() const {return m_tri_ids;}
 
   const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& getEdgeTianglesIndices() const {return edgeTianglesIndices;}
@@ -348,7 +349,7 @@ class SimplexMesh
 
 
 
-  void buildEdges(const std::multimap<TInt, TInt>& AEdges, const gmds::BitVector& nodeBitVector);
+  unsigned int buildEdges(const std::multimap<TInt, TInt>& AEdges, const gmds::BitVector& nodeBitVector);
 
   bool isHexaEdgeBuild(const std::vector<std::vector<TInt>>& ANodesFaces);
 
@@ -399,6 +400,8 @@ class SimplexMesh
   void setOctree(Octree* octree){m_octree = octree;}
 
   Octree* getOctree(){return m_octree;}
+
+  double subSurfaceFactor(const std::vector<std::vector<TInt>>& faces);
 
 private:
 

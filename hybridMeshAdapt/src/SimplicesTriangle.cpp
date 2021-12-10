@@ -106,7 +106,22 @@ std::vector<TInt> SimplicesTriangle::getNodes() const
 
   return std::move(v);
 }
+/*---------------------------------------------------------------------------*/
+math::Vector3d SimplicesTriangle::getNormal()  const
+{
+  const TInt Node0 = m_simplex_mesh->m_tri_nodes[m_simplexId][0];
+  const TInt Node1 = m_simplex_mesh->m_tri_nodes[m_simplexId][1];
+  const TInt Node2 = m_simplex_mesh->m_tri_nodes[m_simplexId][2];
 
+  const math::Point pt0 = m_simplex_mesh->m_coords[Node0];
+  const math::Point pt1 = m_simplex_mesh->m_coords[Node1];
+  const math::Point pt2 = m_simplex_mesh->m_coords[Node2];
+
+  const math::Vector3d vec0 = pt1 - pt0;
+  const math::Vector3d vec1 = pt2 - pt1;
+
+  return vec1.cross(vec0);
+}
 /*---------------------------------------------------------------------------*/
 std::vector<TSimplexID> SimplicesTriangle::neighborSimplex() const
 {
@@ -218,6 +233,7 @@ std::vector<TSimplexID> SimplicesTriangle::findclockWiseTrianglesbyShell(const T
     }
     v.push_back(nextSimplex);
     std::vector<TInt> otherNodes = SimplicesTriangle(m_simplex_mesh, nextSimplex).otherNodesInTriangle(cell);
+
     if(otherNodes.size() == 1)
     {
       firstNode = otherNodes.front();

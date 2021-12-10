@@ -96,29 +96,39 @@ void ISimplexMeshIOService::getRegions(std::vector<IMeshIOService::CellInfo>& AI
   const gmds::BitVector& markedTet = m_simplex_mesh->getMarkedTet();
   AInfo.clear();
   AInfo.reserve(tetVector.size());
-  std::cout << "markedTet.size() --> " << markedTet.size() << std::endl;
-  for(unsigned int tet = 0 ; tet < tetVector.capacity() ; tet ++)
+
+  std::cout << "markedTet.empty() ->  " << markedTet.empty() << std::endl;
+  if(markedTet.empty() == 1)
   {
-    if(tetVector[tet] != 0)
+    for(unsigned int tet = 0 ; tet < tetVector.capacity() ; tet++)
     {
-      if(markedTet.size() == 0)
+      if(tetVector[tet] != 0)
       {
-        IMeshIOService::CellInfo info;
-        info.id = tet;
-        info.type = GMDS_TETRA;
-        info.node_ids = SimplicesCell(m_simplex_mesh, tet).nodes();
-        //AInfo.push_back(info);
-      }
-      else if(markedTet[tet] == 0)
-      {
-        IMeshIOService::CellInfo info;
-        info.id = tet;
-        info.type = GMDS_TETRA;
-        info.node_ids = SimplicesCell(m_simplex_mesh, tet).nodes();
-        //AInfo.push_back(info);
+
+          IMeshIOService::CellInfo info;
+          info.id = tet;
+          info.type = GMDS_TETRA;
+          info.node_ids = SimplicesCell(m_simplex_mesh, tet).nodes();
+          AInfo.push_back(info);
       }
     }
   }
+  else
+  {
+    for(unsigned int tet = 0 ; tet < markedTet.capacity() ; tet++)
+    {
+      if(markedTet[tet] != 0)
+      {
+
+          IMeshIOService::CellInfo info;
+          info.id = tet;
+          info.type = GMDS_TETRA;
+          info.node_ids = SimplicesCell(m_simplex_mesh, tet).nodes();
+          AInfo.push_back(info);
+      }
+    }
+  }
+
 
   //////////////////////////////////////////////////////////////////////////////
   const std::vector<std::vector<TSimplexID>>& hexData = m_simplex_mesh->getHexadronData();

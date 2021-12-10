@@ -31,7 +31,7 @@ using namespace simplicesNode;
 using namespace simplicesTriangle;
 using namespace simplicesCell;
 /*----------------------------------------------------------------------------*/
-TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD0)
+TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD2)
 {
   TInt border = std::numeric_limits<TInt>::min();
   SimplexMesh simplexMesh = SimplexMesh();
@@ -216,30 +216,44 @@ TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD0)
 
   std::vector<std::vector<TSimplexID>> hexesNodes{};
   std::vector<std::vector<TInt>> nodesHex = simplexNodes.getHexadronData();
-  gmds::BitVector markedTet(simplexMesh.getBitVectorTet().capacity());
+  gmds::BitVector markedTet;
+
   double hexBuiltCpt = 0;
-  unsigned int iterMax = 4;
-  for(unsigned int iter = 0 ; iter < iterMax ; iter++)
+  unsigned int faceBuildCpt = 0;
+  unsigned int iter = 0;
+  for(;;)
   {
-    markedTet.clear();
+    std::cout << "ITERATION -> " << iter++ << std::endl;
     hexBuiltCpt = 0;
     hexesNodes.clear();
-    simplexMesh.buildEdges(edges, nodesAdded);
-    simplexMesh.buildEdges(edges, nodesAdded);
-    simplexMesh.buildEdges(edges, nodesAdded);
-    simplexMesh.buildEdges(edges, nodesAdded);
-    std::cout << "BUILD EDGE FINISH..." << std::endl;
+    unsigned int tmp = 0;
+    for(;;)
+    {
+      unsigned int edgeBuild = simplexMesh.buildEdges(edges, nodesAdded);
+      if(edgeBuild == tmp || edgeBuild == 0)
+      {
+        break;
+      }
+      tmp = edgeBuild;
+    }
+    //std::cout << "BUILD EDGE FINISH..." << std::endl;
 
     /////////////////////HEXA'S FACES BUILDER START HERE /////////////////////////
     std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
+    unsigned int faceBuiltTmp = 0;
     for(auto const h : nodesHex)
     {
       TInt n0 = nodes[h[0]]; TInt n1 = nodes[h[1]]; TInt n2 = nodes[h[2]]; TInt n3 = nodes[h[3]];
       TInt n4 = nodes[h[4]]; TInt n5 = nodes[h[5]]; TInt n6 = nodes[h[6]]; TInt n7 = nodes[h[7]];
       std::vector<TInt> hexeNodes{n0, n1, n2, n3, n4, n5, n6, n7};
-      //std::cout << "n0,1,2,3,4,5,6,7 -> " << n0 << " | " << n1 << " | " << n2 << " | " << n3 << " | " << n4 << " | " << n5 << " | " << n6 << " | " << n7 << " | " << std::endl;
-      simplexMesh.buildFace(hexeNodes, nodesAdded, facesAlreadyBuilt);
+      if(simplexMesh.buildFace(hexeNodes, nodesAdded, facesAlreadyBuilt))
+      {
+        faceBuiltTmp++;
+      }
     }
+    markedTet = simplexMesh.getBitVectorTet();
+    std::cout << "HEXNODE SIZE -> " << hexesNodes.size() << std::endl;
+    std::cout << "markedTet ->    " << markedTet.size() << std::endl;
 
     for(auto const h : nodesHex)
     {
@@ -249,16 +263,20 @@ TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD0)
       std::vector<TSimplexID> simplices = simplexMesh.hex2tet(hexeNodes);
       if(simplices.size() != 0)
       {
-        for(auto const simplex : simplices){markedTet.assign(simplex);}
+        for(auto const simplex : simplices){ markedTet.unselect(simplex);}
         hexBuiltCpt = hexBuiltCpt + 1.0;
         hexesNodes.push_back(hexeNodes);
       }
-      else
-      {
-        std::cout << "HEX NOT BUILT" << std::endl;
-      }
     }
+    std::cout << "HEXNODE SIZE -> " << hexesNodes.size() << std::endl;
+    std::cout << "markedTet ->    " << markedTet.size() << std::endl;
+    if(faceBuiltTmp == faceBuildCpt || faceBuiltTmp == 0)
+    {
+      break;
+    }
+    faceBuildCpt = faceBuiltTmp;
   }
+
 
   std::cout << "hex build % -> " << hexBuiltCpt / (double)nodesHex.size() << std::endl;
   std::cout << "hexBuiltCpt -> " << hexBuiltCpt << std::endl;
@@ -266,7 +284,6 @@ TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD0)
   //////////////////
 
   ASSERT_EQ(hexBuiltCpt, 1582);
-  return;
 
   simplexMesh.setHexadronData(hexesNodes);
   simplexMesh.setMarkedTet(markedTet);
@@ -276,5 +293,5 @@ TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD0)
   gmds::VTKWriter vtkWriterHT(&ioService);
   vtkWriterHT.setCellOptions(gmds::N|gmds::R);
   vtkWriterHT.setDataOptions(gmds::N|gmds::R);
-  vtkWriterHT.write("ModeleCAD2_HEX_iter3.vtk");
+  vtkWriterHT.write("ModeleCAD2_HEX.vtk");
 }

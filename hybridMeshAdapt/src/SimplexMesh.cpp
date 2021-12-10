@@ -1306,7 +1306,7 @@ void SimplexMesh::buildSimplexHull()
     {
       for(unsigned int localNode = 0 ; localNode < 4 ; localNode++)
       {
-        TSimplexID oppositeSimplex = m_tet_adj[tet][localNode];//SimplicesCell(this, tet).oppositeTetraIdx(localNode);
+        TSimplexID oppositeSimplex = m_tet_adj[tet][localNode]; //SimplicesCell(this, tet).oppositeTetraIdx(localNode);
         if(oppositeSimplex == border)
         {
           TInt node0 = m_tet_nodes[tet][(localNode + 1) % 4];
@@ -1338,6 +1338,7 @@ void SimplexMesh::buildSimplexHull()
   if(!(BND_VERTEX_COLOR == nullptr || BND_CURVE_COLOR == nullptr || BND_SURFACE_COLOR == nullptr))
   {
     gmds::Variable<int>* BND_TRIANGLES = newVariable<int, SimplicesTriangle>("BND_TRIANGLES");
+    std::vector<TInt> notIndexedCornerTriangle{};
     for(unsigned int tri = 1 ; tri < m_tri_ids.capacity() ; tri++)
     {
       if(m_tri_ids[tri] == 1)
@@ -1376,11 +1377,55 @@ void SimplexMesh::buildSimplexHull()
               {
                 (*BND_TRIANGLES)[tri] = index;
               }
+              else
+              {
+                notIndexedCornerTriangle.push_back(tri);
+              }
             }
           }
         }
       }
     }
+
+    for(auto const triangle : notIndexedCornerTriangle)
+    {
+      int index;
+      TSimplexID tri = triangle;
+      unsigned int sizeFace = 3;
+      gmds::BitVector cyclingCheck(m_tri_ids.capacity());
+      cyclingCheck.assign(tri);
+      for(;;)
+      {
+        if((*BND_TRIANGLES)[tri] != 0)
+        {
+          index = (*BND_TRIANGLES)[tri];
+          break;
+        }
+        std::vector<TInt> nodes{m_tri_nodes[tri][0], m_tri_nodes[tri][1], m_tri_nodes[tri][2]};
+        for(unsigned int local = 0 ; local < sizeFace ; local++)
+        {
+          TInt nodeA = nodes[local];
+          TInt nodeB = nodes[(local + 1) % sizeFace];
+
+          if((*BND_CURVE_COLOR)[nodeA] != 0 && (*BND_CURVE_COLOR)[nodeB] != 0)
+          {
+            if((*BND_CURVE_COLOR)[nodeA] != (*BND_CURVE_COLOR)[nodeB])
+            {
+              TInt nodeC_Local = (local + 2) % sizeFace;
+              TInt adjTriangle = m_tri_adj[tri][nodeC_Local];
+              if(cyclingCheck[adjTriangle] == 0)
+              {
+                cyclingCheck.assign(adjTriangle);
+                tri = adjTriangle;
+                break;
+              }
+            }
+          }
+        }
+      }
+      (*BND_TRIANGLES)[triangle] = index;
+    }
+
     for(unsigned int tri = 1 ; tri < m_tri_ids.capacity() ; tri++)
     {
       if(m_tri_ids[tri] == 1)
@@ -1394,11 +1439,11 @@ void SimplexMesh::buildSimplexHull()
             idx = findRemainTriangleIdx(tri, cyclingCheck);
           } while(idx == 0 || idx > 150);
 
-
           (*BND_TRIANGLES)[tri] = idx;
         }
       }
     }
+
     //filling edgeTianglesIndices
     Variable<int>* BND_CURVE_COLOR = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
     for(unsigned int nodeIdx = 0 ; nodeIdx < m_node_ids.capacity() ; nodeIdx++)
@@ -1443,6 +1488,7 @@ void SimplexMesh::buildSimplexHull()
 /******************************************************************************/
 TInt SimplexMesh::findRemainTriangleIdx(const TInt tri, gmds::BitVector& cyclingCheck)
 {
+
   TInt max = std::numeric_limits<TInt>::max();
   unsigned int sizeFace = 3;
   std::vector<TInt> nodes = SimplicesTriangle(this, tri).getNodes();
@@ -3854,7 +3900,6 @@ bool SimplexMesh::isFaceBuild(const std::vector<TInt>& nodes)
     std::vector<std::vector<TSimplexID>> bal230{{ball2}, {ball3}, {ball0}};
     std::vector<TSimplexID>&& inter012  = intersectionSimplex(bal012);
     std::vector<TSimplexID>&& inter230  = intersectionSimplex(bal230);
-
     std::vector<std::vector<TSimplexID>> bal013{{ball0}, {ball1}, {ball3}};
     std::vector<std::vector<TSimplexID>> bal321{{ball3}, {ball2}, {ball1}};
     std::vector<TSimplexID>&& inter013  = intersectionSimplex(bal013);
@@ -3874,6 +3919,7 @@ bool SimplexMesh::isFaceBuild(const std::vector<TInt>& nodes)
 /******************************************************************************/
 void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt nodeToConnect)
 {
+  Variable<int>* BND_CURVE_COLOR    = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
   const std::vector<std::vector<TInt>>&         pointsToConnect          = cavityIO.getNodesToReconnect();
   const std::vector<TSimplexID>&                extSimplexBorder         = cavityIO.getOppositesSimplex();
   const std::vector<TSimplexID>&                trianglesConnectedToP    = cavityIO.getTrianglesConnectedToPInCavity();
@@ -3908,12 +3954,16 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
   std::map<TInt, std::vector<TSimplexID>> hash_edge; // map  for the reconnection of the surface triangle
 
   unsigned int faceIter = 0;
+  /*for(auto const& face : pointsToConnect)
+  {
+    std::cout << "face[0,1,2] --> " << face[0] << " | " << face[1] << " | " << face[2] << " | " << std::endl;
+  }*/
 
   for(auto const& face : pointsToConnect)
   {
     //std::cout << "faceIter --> " << faceIter << std::endl;
     //std::cout << "face[0,1,2] --> " << face[0] << " | " << face[1] << " | " << face[2] << " | " << std::endl;
-    TSimplexID neighborSimplex         = extSimplexBorder[faceIter];
+    TSimplexID neighborSimplex = extSimplexBorder[faceIter];
 
     if(neighborSimplex != border)
     {
@@ -3928,13 +3978,8 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
       }
     }
 
-    //std::cout << "tetrahedre created -> " << face[0] << " | " << face[1] << " | " << face[2] << " | " << nodeToConnect << std::endl;
     TSimplexID simplex = addTetraedre(face[0], face[1], face[2], nodeToConnect, false);
-    //if(simplex == 2326)
-    {
-      //std::cout << "simplex -> " << simplex << std::endl;
-      //std::cout << "neighborSimplex -> " << neighborSimplex << std::endl;
-    }
+
     SimplicesCell cell0(this, simplex);
     std::vector<TSimplexID> vecAdj{border, border, border, border};
     m_tet_adj[simplex] = vecAdj;
@@ -3965,7 +4010,6 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
       }
     }
 
-    //std::cout << "for " << std::endl;
     for(unsigned int lN = 0 ; lN < sizeFace ; lN++)
     {
       unsigned int localNodeforTriangle  = localsInfoForTriangles[faceIter][lN];
@@ -4017,17 +4061,10 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
   }
   /////Triangle reconnection//////
   ////////////////////////////////
-
   for(auto const & pair : hash_edge)
   {
     TInt node = pair.first;
     std::vector<TInt> commonEdge{node, nodeToConnect};
-    //std::cout << "commonEdge{node, nodeToConnect} -> " << node << " ; " << nodeToConnect << std::endl;
-    //std::cout << "p.size -> " << pair.second.size() << std::endl;
-    //std::cout << "simplex --> ";
-    //for(auto const simplex : pair.second){ std::cout << simplex << " ";}
-    //std::cout << std::endl;
-    //std::cout << std::endl;
     if(pair.second.size() == 2)
     {
       TSimplexID idxTriangleA = pair.second.front();
@@ -4607,6 +4644,7 @@ void SimplexMesh::pointsLabeling(const std::vector<math::Point> &points, std::ve
 unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std::vector<TInt>& deletedNodes)
 {
   gmds::ISimplexMeshIOService ioService(this);
+  static int cpt = 0;
   unsigned int edgesRemovedNbr = 0;
   TInt border = std::numeric_limits<TInt>::min();
   Variable<int>* BND_VERTEX_COLOR = getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
@@ -4626,7 +4664,7 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
       }
     }
   }
-
+  double duration;
   //Dimension node boundary vertex --> 0 / node on curve --> 1 / node on surface --> 2 / node on the mesh --> 3
   for(TInt node = 0; node < m_node_ids.capacity(); node++)
   {
@@ -4645,6 +4683,7 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
 
         if(dim_Ni != 0)
         {
+
           SimplicesNode simpliceNode(this, node);
           std::vector<TSimplexID>&& ball = simpliceNode.ballOf();
 
@@ -4718,15 +4757,23 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
                 }
               }
               SimplicesNode nodeToInsert(this, data.node);
-              //std::cout << "NODE TO INSERT : " << data.node << " | dimension : " << data.dim_Nj << " | index : " << data.index_Nj<<  std::endl;
-              //std::cout << "FROM NODE      : " << node << " | dimension : " << dim_Ni << " | index : " << index_Ni <<  std::endl;
+              std::cout << "NODE TO INSERT : " << data.node << " | dimension : " << data.dim_Nj << " | index : " << data.index_Nj<<  std::endl;
+              std::cout << "FROM NODE      : " << node << " | dimension : " << dim_Ni << " | index : " << index_Ni <<  std::endl;
+              std::cout << std::endl;
               if(dim_Ni == 4 && (data.dim_Nj == 0 || data.dim_Nj == 1 || data.dim_Nj == 2)){continue;}
-              //if(dim_Ni == 2 && (data.dim_Nj == 1 || data.dim_Nj == 0)){break;}
-              //PointInsertion(this, nodeToInsert, criterionRAIS, status, ball, nodeBitVector, deletedSimplex);
               const std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
-              PointInsertion(this, nodeToInsert, criterionRAIS, status, ball, surfaceNodesAdded/*nodeBitVector*/, deletedNodes, facesAlreadyBuilt);
+              std::clock_t start = std::clock();
+              PointInsertion(this, nodeToInsert, criterionRAIS, status, ball, surfaceNodesAdded, deletedNodes, facesAlreadyBuilt);
+              duration += (std::clock()-start)/(double)CLOCKS_PER_SEC;
+
               if(status)
               {
+                /*gmds::VTKWriter vtkWriterDI(&ioService);
+                vtkWriterDI.setCellOptions(gmds::N|gmds::F|gmds::R);
+                vtkWriterDI.setDataOptions(gmds::N|gmds::F|gmds::R);
+                vtkWriterDI.write("ModeleCAD5_ER_ITER_TEST_" + std::to_string(cpt) + ".vtk");
+                std::cout << "cpt --> " << cpt << std::endl;
+                cpt++;*/
                 edgesRemovedNbr++;
                 break;
               }
@@ -4740,9 +4787,11 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
       }
     }
   }
-  std::cout << "deletedNodes.size() -> " << deletedNodes.size() << std::endl;
-  std::cout << "nodeNotInserted -> " << nodeNotInserted << std::endl;
-  std::cout << "edgesRemovedNbr -> " << edgesRemovedNbr << std::endl;
+
+  std::cout << "PointInsertion total duration -> " << duration << std::endl;
+  //std::cout << "deletedNodes.size() -> " << deletedNodes.size() << std::endl;
+  //std::cout << "nodeNotInserted -> " << nodeNotInserted << std::endl;
+  //std::cout << "edgesRemovedNbr -> " << edgesRemovedNbr << std::endl;
   return edgesRemovedNbr;
 }
 /******************************************************************************/
@@ -4801,7 +4850,7 @@ std::vector<TSimplexID> SimplexMesh::initializeCavityWith(const TInt nodeAidx, c
 
 }
 /******************************************************************************/
-void SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, const gmds::BitVector& nodeBitVector)
+unsigned int SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, const gmds::BitVector& nodeBitVector)
 {
   const TInt border = std::numeric_limits<TInt>::min();
   const gmds::BitVector& bitNodes = getBitVectorNodes();
@@ -4811,6 +4860,7 @@ void SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, const gmds
   std::vector<TInt> allDeletedNodes{};
   gmds::ISimplexMeshIOService ioService(this);
 
+  unsigned int cpt = 0;
   for(auto const & edge : AEdges)
   {
     TInt nodeAidx = edge.first;
@@ -4821,45 +4871,34 @@ void SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, const gmds
       {
         SimplicesNode nodeA = SimplicesNode(this, nodeAidx);
         SimplicesNode nodeB = SimplicesNode(this, nodeBidx);
-        /*std::cout << "nodeA.getGlobalNode() ---> " << nodeA << std::endl;
+
+        std::cout << "nodeA.getGlobalNode() ---> " << nodeA << std::endl;
         std::cout << "nodeB.getGlobalNode() ---> " << nodeB << std::endl;
-        std::cout << "nodeA.shell(nodeB).size() -> " << nodeA.shell(nodeB).size() << std::endl;*/
+        if(nodeA.getGlobalNode() == 40976 && nodeB.getGlobalNode() == 109947)
+        {
+          /*std::vector<TSimplexID> v{641237, 641235, 432998, 225926, 273567,
+                                   343196, 602436, 708940, 291426, 639006, 679973, 639030, 598039, 534301, 381313, 559549, 653713, 407728
+                                  , 598019, 639028, 653709, 407966, 225965, 679979
+                                  , 369586, 621700, 343283, 639027, 598016, 407726
+                                  , 671497, 343195, 30235, 381300, 234262, 602435
+                                  , 626381, 671500, 80546, 276165,671499,238544};
+
+                                  deleteAllSimplicesBut(v);
+                                  gmds::VTKWriter vtkWriterBE(&ioService);
+                                  vtkWriterBE.setCellOptions(gmds::N|gmds::R);
+                                  vtkWriterBE.setDataOptions(gmds::N|gmds::R);
+                                  vtkWriterBE.write("ModeleCAD5_BE_TEST_CAVITY.vtk");
+                                  return 16;*/
+        }
 
         if(nodeA.shell(nodeB).size() == 0)
         {
-          static int cpt = 0;
-          //if(nodeA.getGlobalNode() == 5818 && nodeB.getGlobalNode() == 6081)
-          {
-            /*std::vector<TSimplexID> ballA = nodeA.ballOf();
-            std::vector<TSimplexID> ballB = nodeB.ballOf();
-
-            for(auto const simplex : ballA)
-            {
-              std::cout << "BALL A ---> " << simplex << std::endl;
-            }*/
-            //std::vector<TSimplexID> ball = SimplicesNode(this, 5818).ballOf();
-            //for(auto const simplex : ball)
-            {
-              //std::cout << "BALL ---> " << simplex << std::endl;
-            }
-            //std::cout << "CPT --> " << cpt << std::endl;
-            //if(cpt == 25){return;}
-            //gmds::VTKWriter vtkWriterTEST(&ioService);
-            //vtkWriterTEST.setCellOptions(gmds::N|gmds::R);
-            //vtkWriterTEST.setDataOptions(gmds::N|gmds::R);
-            //vtkWriterTEST.write("ModeleCAD2_CPT_" + std::to_string(cpt) + ".vtk");
-            cpt++;
-            ///
-            //return;
-          }
           std::vector<TInt> cavity = initializeCavityWith(nodeA.getGlobalNode(), nodeB.getGlobalNode());
-          //std::cout << "cavity.size() -> " << cavity.size() << std::endl;
           CriterionRAIS criterionRAIS(new VolumeCriterion());
           bool status = false;
           std::vector<TInt> deletedNodes{};
           const std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
           PointInsertion(this, nodeB, criterionRAIS, status, cavity, nodeBitVector, deletedNodes, facesAlreadyBuilt);
-
           if(!status)
           {
             //std::cout << "edge [" << nodeAidx << " ; " << nodeBidx << "] was not built " << std::endl;
@@ -4877,15 +4916,18 @@ void SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, const gmds
     }
   }
 
-  std::cout << "TOTAL EDGES -->  " << sizeEdge << std::endl;;
-  std::cout << "EDGE BUILT -->  " << cpt_EdgeBuilt << " ~ "<<  cpt_EdgeBuilt / sizeEdge << std::endl;;
-  std::cout << "EDGE ALREADY BUILT --> " << cpt_EdgeAlreadyBuild << " ~ " << cpt_EdgeAlreadyBuild / sizeEdge << std::endl;
+  //std::cout << "TOTAL EDGES -->  " << sizeEdge << std::endl;;
+  //std::cout << "EDGE BUILT -->  " << cpt_EdgeBuilt << " ~ "<<  cpt_EdgeBuilt / sizeEdge << std::endl;;
+  //std::cout << "EDGE ALREADY BUILT --> " << cpt_EdgeAlreadyBuild << " ~ " << cpt_EdgeAlreadyBuild / sizeEdge << std::endl;
+
+  return cpt_EdgeBuilt;
 }
 /******************************************************************************/
 bool SimplexMesh::isHexaEdgeBuild(const std::vector<std::vector<TInt>>& ANodesFaces)
 {
   for(auto const & face : ANodesFaces)
   {
+    //std::cout <<  "   face -> " << face[0] << " | " << face[1] << " | " << face[2] << " | " << face[3] << std::endl;
     if(!isFaceBuild(face))
     {
       return false;
@@ -4952,15 +4994,15 @@ bool SimplexMesh::buildFace(const std::vector<TInt>& nodes, const gmds::BitVecto
     std::vector<TSimplexID> e23 = node2.shell(node3);
     std::vector<TSimplexID> e30 = node3.shell(node0);
 
-    //std::cout << "face --> " << face[0] << " | " << face[1] << " | " << face[2] << " | " << face[3] << std::endl;
+    std::cout << "face --> " << face[0] << " | " << face[1] << " | " << face[2] << " | " << face[3] << std::endl;
     if(e01.size() != 0 && e12.size() != 0 && e23.size() != 0 && e30.size() != 0)
     {
       //check for the diagonale
       std::vector<TSimplexID> e02 = node0.shell(node2);
       std::vector<TSimplexID> e13 = node1.shell(node3);
 
-      //std::cout << " nodes --> " << node0.getGlobalNode()  << " : " << node2.getGlobalNode() << " || e02.size() --> " << e02.size() << std::endl;
-      //std::cout << " nodes --> " << node1.getGlobalNode()  << " : " << node3.getGlobalNode() << " || e13.size() --> " << e13.size() << std::endl;
+      std::cout << " nodes --> " << node0.getGlobalNode()  << " : " << node2.getGlobalNode() << " || e02.size() --> " << e02.size() << std::endl;
+      std::cout << " nodes --> " << node1.getGlobalNode()  << " : " << node3.getGlobalNode() << " || e13.size() --> " << e13.size() << std::endl;
 
       if(e02.size() == 0 && e13.size() == 0)
       {
@@ -4972,10 +5014,11 @@ bool SimplexMesh::buildFace(const std::vector<TInt>& nodes, const gmds::BitVecto
           CriterionRAIS criterionRAIS(new VolumeCriterion());
           std::vector<TSimplexID> deletedNodes{};
           bool status = false;
-
+          std::cout << "PointInsertion" << std::endl;
           PointInsertion(this, SimplicesNode(this, nodeB), criterionRAIS, status, cavity, nodeAdded, deletedNodes, facesAlreadyBuilt);
           if(!status)
           {
+            std::cout << "!status" << std::endl;
             std::vector<TSimplexID> cavity = initializeCavityWith(nodeB, nodeA);
             PointInsertion(this, SimplicesNode(this, nodeA), criterionRAIS, status, cavity, nodeAdded, deletedNodes, facesAlreadyBuilt);
           }
@@ -5067,7 +5110,7 @@ bool SimplexMesh::buildFace(const std::vector<TInt>& nodes, const gmds::BitVecto
     }
     else
     {
-      //std::cout << "One of the edge was not built : e01 | e12 | e23 | e30 => " << node0.getGlobalNode() << "-" << node1.getGlobalNode() << " | "<< node1.getGlobalNode() << "-" << node2.getGlobalNode() << " | "<< node2.getGlobalNode() << "-" << node3.getGlobalNode() << " | "<< node3.getGlobalNode() << "-" << node0.getGlobalNode() << std::endl;
+      std::cout << "One of the edge was not built : e01 | e12 | e23 | e30 => " << node0.getGlobalNode() << "-" << node1.getGlobalNode() << " | "<< node1.getGlobalNode() << "-" << node2.getGlobalNode() << " | "<< node2.getGlobalNode() << "-" << node3.getGlobalNode() << " | "<< node3.getGlobalNode() << "-" << node0.getGlobalNode() << std::endl;
       return false;
     }
   }
@@ -5175,6 +5218,7 @@ bool SimplexMesh::buildFace(const std::vector<TInt>& nodes, const gmds::BitVecto
 /******************************************************************************/
 std::vector<TSimplexID> SimplexMesh::hex2tet(const std::vector<TInt>& ANodesHex)
 {
+  std::cout << "hex2tet " << std::endl;
   //use is hexa build before..
   //intialisation of the tet..
   std::vector<TSimplexID> res{};
@@ -5182,17 +5226,75 @@ std::vector<TSimplexID> SimplexMesh::hex2tet(const std::vector<TInt>& ANodesHex)
   {
     TInt n0 = ANodesHex[0] ; TInt n1 = ANodesHex[1] ; TInt n2 = ANodesHex[2] ; TInt n3 = ANodesHex[3] ;
     TInt n4 = ANodesHex[4] ; TInt n5 = ANodesHex[5] ; TInt n6 = ANodesHex[6] ; TInt n7 = ANodesHex[7] ;
+    std::cout << "nodes hexa -> " << n0 << " | " << n1 << " | " << n2 << " | " << n3 << " | " << n4  << " | " << n5 << " | " << n6 << " | " << n7 << std::endl;
 
-    std::vector<TInt> face0{n0, n1, n2, n3}; std::vector<TInt> face3{n2, n6, n7, n3};
-    std::vector<TInt> face1{n4, n5, n6, n7}; std::vector<TInt> face4{n1, n5, n6, n2};
+    std::vector<TInt> face0{n0, n3, n2, n1}; std::vector<TInt> face3{n2, n3, n7, n6};
+    std::vector<TInt> face1{n4, n5, n6, n7}; std::vector<TInt> face4{n1, n2, n6, n5};
     std::vector<TInt> face2{n0, n1, n5, n4}; std::vector<TInt> face5{n0, n4, n7, n3};
-    std::vector<std::vector<TInt>> faces{face0, face1, face2, face3, face4, face5};
 
+    /*std::vector<TInt> face0{n0, n1, n2, n3}; std::vector<TInt> face3{n2, n6, n7, n3};
+    std::vector<TInt> face1{n7, n6, n5, n4}; std::vector<TInt> face4{n1, n5, n6, n2};
+    std::vector<TInt> face2{n4, n5, n1, n0}; std::vector<TInt> face5{n0, n3, n7, n4};*/
+
+    std::vector<std::vector<TInt>> faces{face0, face1, face2, face3, face4, face5};
     if(!isHexaEdgeBuild(faces)) //check if hex faces are built
     {
       return res;
     }
 
+    struct faceDataInfo{
+      std::vector<math::Vector3d> normals;
+      math::Point barycentreFace;
+    };
+    std::vector<faceDataInfo> facesDataInfo;
+    for(auto const & face : faces)
+    {
+      std::cout << "face nodes -> " << face[0] << " | " << face[1] << " | " << face[2] << " | " << face[3] << std::endl;
+      faceDataInfo faceInfo;
+      math::Point p0 = SimplicesNode(this, face[0]).getCoords();
+      math::Point p1 = SimplicesNode(this, face[1]).getCoords();
+      math::Point p2 = SimplicesNode(this, face[2]).getCoords();
+      math::Point p3 = SimplicesNode(this, face[3]).getCoords();
+
+      if(SimplicesNode(this, face[0]).shell(SimplicesNode(this, face[2])).size() > 0)
+      {
+        faceInfo.barycentreFace = 0.5 * (p0 + p2);
+      }
+      else if(SimplicesNode(this, face[1]).shell(SimplicesNode(this, face[3])).size() > 0)
+      {
+        faceInfo.barycentreFace = 0.5 * (p1 + p3);
+      }
+      else
+      {
+        std::cout << "faceInfo.barycentreFace shell size null" << std::endl;
+        return res;
+      }
+
+
+      math::Vector3d vec0B = p0 - faceInfo.barycentreFace;
+      math::Vector3d vec10 = p1 - p0;
+      math::Vector3d vec0  = vec0B.cross(vec10); vec0.normalize();
+
+      math::Vector3d vec1B = p1 - faceInfo.barycentreFace;
+      math::Vector3d vec21 = p2 - p1;
+      math::Vector3d vec1  = vec1B.cross(vec21); vec1.normalize();
+
+      math::Vector3d vec2B = p2 - faceInfo.barycentreFace;
+      math::Vector3d vec32 = p3 - p2;
+      math::Vector3d vec2  = vec2B.cross(vec32); vec2.normalize();
+
+      math::Vector3d vec3B = p3 - faceInfo.barycentreFace;
+      math::Vector3d vec03 = p0 - p3;
+      math::Vector3d vec3  = vec3B.cross(vec03); vec3.normalize();
+
+      faceInfo.normals.push_back(vec0); faceInfo.normals.push_back(vec1);
+      faceInfo.normals.push_back(vec2); faceInfo.normals.push_back(vec3);
+      std::cout << "normal sub face 0 -> " << vec0 << std::endl;
+      std::cout << "normal sub face 1 -> " << vec1 << std::endl;
+      std::cout << "normal sub face 2 -> " << vec2 << std::endl;
+      std::cout << "normal sub face 3 -> " << vec3 << std::endl;
+      facesDataInfo.push_back(faceInfo);
+    }
 
     TInt border = std::numeric_limits<TInt>::min();
     TSimplexID initTet = border;
@@ -5212,26 +5314,6 @@ std::vector<TSimplexID> SimplexMesh::hex2tet(const std::vector<TInt>& ANodesHex)
     std::vector<std::vector<TSimplexID>> balls{{ball0}, {ball1}, {ball2}, {ball3}};
     std::vector<TSimplexID>&& inter  = intersectionSimplex(balls);
     if(inter.size()){initTet = inter.front();}
-
-
-    //create a cube boxe to look if a node is inside this box
-    math::Point pt0 = SimplicesNode(this, n0).getCoords();
-    math::Point pt1 = SimplicesNode(this, n1).getCoords();
-    math::Point pt2 = SimplicesNode(this, n2).getCoords();
-    math::Point pt3 = SimplicesNode(this, n3).getCoords();
-    math::Point pt4 = SimplicesNode(this, n4).getCoords();
-    math::Point pt5 = SimplicesNode(this, n5).getCoords();
-    math::Point pt6 = SimplicesNode(this, n6).getCoords();
-    math::Point pt7 = SimplicesNode(this, n7).getCoords();
-
-    double xmin = std::min(std::min(std::min(pt0[0], pt1[0]), std::min(pt2[0], pt3[0])), std::min(std::min(pt4[0], pt5[0]), std::min(pt6[0], pt7[0])));
-    double ymin = std::min(std::min(std::min(pt0[1], pt1[1]), std::min(pt2[1], pt3[1])), std::min(std::min(pt4[1], pt5[1]), std::min(pt6[1], pt7[1])));
-    double zmin = std::min(std::min(std::min(pt0[2], pt1[2]), std::min(pt2[2], pt3[2])), std::min(std::min(pt4[2], pt5[2]), std::min(pt6[2], pt7[2])));
-
-    double xmax = std::max(std::max(std::max(pt0[0], pt1[0]), std::max(pt2[0], pt3[0])), std::max(std::max(pt4[0], pt5[0]), std::max(pt6[0], pt7[0])));
-    double ymax = std::max(std::max(std::max(pt0[1], pt1[1]), std::max(pt2[1], pt3[1])), std::max(std::max(pt4[1], pt5[1]), std::max(pt6[1], pt7[1])));
-    double zmax = std::max(std::max(std::max(pt0[2], pt1[2]), std::max(pt2[2], pt3[2])), std::max(std::max(pt4[2], pt5[2]), std::max(pt6[2], pt7[2])));
-
 
     if(initTet == border)
     {
@@ -5258,18 +5340,25 @@ std::vector<TSimplexID> SimplexMesh::hex2tet(const std::vector<TInt>& ANodesHex)
           }
           else
           {
-            const math::Point pt         = SimplicesNode(this,currentNode).getCoords();
-            double x = pt.X() ; double y = pt.Y() ; double z = pt.Z() ;
-            if(x >= xmin && x <= xmax)
+            const math::Point pt = SimplicesNode(this,currentNode).getCoords();
+            bool insideCell = true;
+            for(auto const & faceDataInfo : facesDataInfo)
             {
-              if(y >= ymin && y <= ymax)
+              math::Vector3d vec    = pt - faceDataInfo.barycentreFace;
+              for(auto const & normalSubFace : faceDataInfo.normals)
               {
-                if(z >= zmin && z <= zmax)
+                math::Vector3d normal = normalSubFace;
+                if(normal.dot(vec) > 0.0)
                 {
-                  initTet = simplex;
+                  insideCell = false;
                   break;
                 }
               }
+            }
+            if(insideCell)
+            {
+              initTet = simplex;
+              break;
             }
           }
         }
@@ -5287,6 +5376,7 @@ std::vector<TSimplexID> SimplexMesh::hex2tet(const std::vector<TInt>& ANodesHex)
     gmds::BitVector markedTet(getBitVectorTet().capacity());
 
 
+    std::cout << "initTet -> " << initTet << std::endl;
     while(!to_do.empty())
     {
       TSimplexID t = to_do.back();
@@ -5303,6 +5393,7 @@ std::vector<TSimplexID> SimplexMesh::hex2tet(const std::vector<TInt>& ANodesHex)
             markedTet.assign(simplex);
             std::vector<TInt> nodes = SimplicesCell(this, simplex).getNodes();
             unsigned int cpt = 0;
+            std::cout << "SIMPLEX TEST -> " << simplex << std::endl;
             for(unsigned int idx = 0 ; idx < nodes.size() ; idx++)
             {
               TInt node = nodes[idx];
@@ -5310,18 +5401,39 @@ std::vector<TSimplexID> SimplexMesh::hex2tet(const std::vector<TInt>& ANodesHex)
                 node == n4 || node == n5 || node == n6 || node == n7))
                 {
                   math::Point pt = SimplicesNode(this, node).getCoords();
-
-                  double x = pt.X() ; double y = pt.Y() ; double z = pt.Z() ;
-                  if(x >= xmin && x <= xmax)
+                  bool insideCell = true;
+                  std::cout << "node -> " << node << std::endl;
+                  unsigned int faceNbr = 0;
+                  for(auto const & faceDataInfo : facesDataInfo)
                   {
-                    if(y >= ymin && y <= ymax)
+                    std::cout << "face nbr -> " << faceNbr << std::endl;
+                    math::Vector3d vec = pt - faceDataInfo.barycentreFace;
+                    for(auto const & normalSubFace : faceDataInfo.normals)
                     {
-                      if(z >= zmin && z <= zmax)
+                      math::Vector3d normal = normalSubFace;
+                      std::cout << "barycentreFace -> " << faceDataInfo.barycentreFace << std::endl;
+                      std::cout << "normal -> " << normal << std::endl;
+                      std::cout << "vec -> "  << vec << std::endl;
+                      std::cout << "normal.dot(vec) -> " << normal.dot(vec) << std::endl;
+                      if(normal.dot(vec) > 0.0)
                       {
-                        to_do.push_back(simplex);
+                        insideCell = false;
                         break;
                       }
                     }
+                    if(insideCell == false)
+                    {
+                      break;
+                    }
+                    faceNbr++;
+                  }
+                  if(insideCell)
+                  {
+                    cpt++;
+                  }
+                  else
+                  {
+                    break;
                   }
                 }
                 else
@@ -5329,7 +5441,6 @@ std::vector<TSimplexID> SimplexMesh::hex2tet(const std::vector<TInt>& ANodesHex)
                   cpt++;
                 }
             }
-
             if(cpt == 4)
             {
               to_do.push_back(simplex);
@@ -5343,6 +5454,42 @@ std::vector<TSimplexID> SimplexMesh::hex2tet(const std::vector<TInt>& ANodesHex)
   {
     std::cout << "ANodesHex.size() != 4" << std::endl;
   }
+
+  std::cout << "CELL INSIDE -> ";
+  for(auto const & tet : res){std::cout << tet << " | ";}
+  std::cout << std::endl;
+  std::cout << std::endl;
+  return res;
+}
+/******************************************************************************/
+double SimplexMesh::subSurfaceFactor(const std::vector<std::vector<TInt>>& faces)
+{
+  double res = std::numeric_limits<double>::max();
+  for(auto const & face : faces)
+  {
+    if(face.size() == 3)
+    {
+      //compute face's normal
+      math::Vector3d n0 = SimplicesNode(this, face[0]).getNormal();
+      math::Vector3d n1 = SimplicesNode(this, face[1]).getNormal();
+      math::Vector3d n2 = SimplicesNode(this, face[2]).getNormal();
+      n0.normalize() ; n1.normalize() ; n2.normalize() ;
+
+      math::Vector3d normalFace = (n0 + n1).normalize() + n2 / 3.0;
+      normalFace.normalize();
+      double epsilon = std::min(n0.dot(normalFace), std::min(n1.dot(normalFace), n2.dot(normalFace)));
+      if(epsilon < res)
+      {
+        res = epsilon;
+      }
+    }
+    else
+    {
+      std::cout << "face.size() != 3" << std::endl;
+      return res;
+    }
+  }
+
   return res;
 }
 /******************************************************************************/

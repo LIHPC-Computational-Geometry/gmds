@@ -2,7 +2,6 @@
 #include <chrono>
 /******************************************************************************/
 #include <gmds/hybridMeshAdapt/PointInsertion.h>
-#include <gmds/hybridMeshAdapt/CavityOperator.h>
 #include <gmds/hybridMeshAdapt/SimplexMesh.h>
 #include <gmds/hybridMeshAdapt/ICriterion.h>
 /******************************************************************************/
@@ -23,6 +22,9 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
 {
     if(simplexMesh != nullptr)
     {
+      Variable<int>* BND_SURFACE_COLOR = simplexMesh->getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+      Variable<int>* BND_TRIANGLES     = simplexMesh->getVariable<int,SimplicesTriangle>("BND_TRIANGLES");
+
       int border = std::numeric_limits<int>::min();
       /*Si simpliceNode n'est pas a linterrieur de simplexMeshon ne fait rien*/
       std::vector<TSimplexID> initCavity;
@@ -73,27 +75,34 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
 
         CavityOperator::CavityIO cavityIO(simplexMesh);
         //std::cout << "cavityEnlargement start ..." << std::endl;
+        //std::clock_t start = std::clock();
+        double duration_CAVENLAR = 0.0;
         if(cavOp.cavityEnlargement(cavityIO, initialCavityCell, initialCavityTriangle, simpliceNode, criterion, facesAlreadyBuilt, markedSimplex))
         {
+          //duration_CAVENLAR = (std::clock()-start)/(double)CLOCKS_PER_SEC;
+          //std::cout << "cavityEnlargementduration --> " << duration_CAVENLAR << std::endl;
+
           //std::cout << "cavityEnlargement end " << std::endl;
           //cavOp.cavityReduction(cavityIO, initCavity, simpliceNode, criterion, cavReduction, markedSimplex);
-          //if(simpliceNode.getGlobalNode() == 15810)
+          if(simpliceNode.getGlobalNode() == 109947)
           {
             for(auto const tet : cavityIO.cellInCavity())
             {
-              //std::cout << "tet --> " << tet << std::endl;
+              std::cout << "tet --> " << tet << std::endl;
             }
-            //std::cout << std::endl;
+            std::cout << std::endl;
             for(auto const tri : cavityIO.getTrianglesNotConnectedToPInCavity())
             {
-              //std::cout << "tri not Co --> " << tri << std::endl;
+              std::cout << "tri not Co --> " << tri << " | surface_bnd : " << (*BND_TRIANGLES)[-tri] << std::endl;
             }
-            //std::cout << std::endl;
+            std::cout << std::endl;
             for(auto const tri : cavityIO.getTrianglesConnectedToPInCavity())
             {
-              //std::cout << "tri Co --> " << SimplicesTriangle(simplexMesh, std::abs(tri)) << std::endl;
+              std::cout << "tri Co --> " << tri << " | surface_bnd : " << (*BND_TRIANGLES)[-tri] << std::endl;
             }
           }
+
+          std::cout << std::endl;
           //test sur les triangles non connecté a P pour ne pas créer de retournement topologique
           for(auto const triNotCo : cavityIO.getTrianglesNotConnectedToPInCavity())
           {
@@ -108,9 +117,99 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           ////////////////////////////////////////////////////////////////////////////////
           ///////////////////////finding the node inside the cavity///////////////////////
           ////////////////////////////////////////////////////////////////////////////////
+          //double duration2;
+          //start = std::clock();
           const std::vector<TInt>& nodesInsideCavity = cavityIO.nodeInCavity();
-          cavityIO.nodesReconnection();
+          //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
+          //std::cout << "nodeInCavity duration --> " << duration2 << std::endl;
 
+          //start = std::clock();
+          cavityIO.nodesReconnection();
+          //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
+          //std::cout << "nodesReconnection duration --> " << duration2 << std::endl;
+          ////////////////////////////ADRIEN IDEA///////////////////////////////////////
+          //this section is here in order to optimize the futurs normals of the created
+          //surface for the edgeRemove algorithm
+          /*if((*BND_SURFACE_COLOR)[simpliceNode.getGlobalNode()] != 0)
+          {
+            std::vector<TSimplexID> ball = simpliceNode.ballOf();
+            if(ball.size() != 0)
+            {
+              std::vector<std::vector<TInt>> facesPatchIdx{};
+              std::vector<TSimplexID> surfaceCell{};
+              std::vector<std::vector<TInt>> surfaceIdx{};
+
+              facesIdxPatch(simplexMesh, cavityIO, facesPatchIdx, simpliceNode);
+              std::copy_if(ball.begin(), ball.end(), std::back_inserter(surfaceCell), [&](TSimplexID cellIdx){
+                return (cellIdx < 0);
+              });
+
+              for(auto const idx : surfaceCell)
+              {
+                const SimplicesTriangle triange = SimplicesTriangle(simplexMesh, idx);
+                std::vector<TInt> nodes         = triange.getNodes();
+                surfaceIdx.push_back(nodes);
+              }
+
+              double eps0 = simplexMesh->subSurfaceFactor(surfaceIdx);
+              double eps1 = simplexMesh->subSurfaceFactor(facesPatchIdx);
+
+              std::cout << "eps0 -> " << eps0 << std::endl;
+              std::cout << "eps1 -> " << eps1 << std::endl;
+              if(eps1 < eps0 * 0.99)
+              {
+                return;
+              }
+
+            }
+          }*/
+          ////////////////////////////////////////////////////////////////////////////////
+          ////////////////////////////////////////////////////////////////////////////////
+          ////////////////////////////////////////////////////////////////////////////////
+
+          ///////////////////////////FRANK IDEA///////////////////////////////////////
+          //this section is here in order to optimize the futurs normals of the created
+          //surface for the edgeRemove algorithm
+          if((*BND_SURFACE_COLOR)[simpliceNode.getGlobalNode()] != 0)
+          {
+            std::vector<TSimplexID> ball = simpliceNode.ballOf();
+            if(ball.size() != 0)
+            {
+              math::Vector3d interpolationNormal{};
+              std::vector<math::Vector3d> normals{};
+              normalsPatch(simplexMesh, cavityIO, normals, simpliceNode);
+
+              //on teste la forme de la futur surface qui va être reconstruire et on la compare a l'ancienne
+              //pour éviter une mauvaise reconstruction surfacique...
+              if(normals.size() != 0)
+              {
+                unsigned int triangleNbr = 0;
+                for(auto const simplex : ball)
+                {
+                  if(simplex < 0 && simplex != border)
+                  {
+                    triangleNbr++;
+                    math::Vector3d n = SimplicesTriangle(simplexMesh, -simplex).getNormal();
+                    n.normalize();
+                    interpolationNormal = n + interpolationNormal;
+                    interpolationNormal.normalize();
+                  }
+                }
+              }
+
+              double minDot = 0.5;
+              for(auto const n : normals)
+              {
+                if(n.dot(interpolationNormal) < minDot)
+                {
+                  return;
+                }
+              }
+            }
+          }
+          ////////////////////////////////////////////////////////////////////////////////
+          ////////////////////////////////////////////////////////////////////////////////
+          ////////////////////////////////////////////////////////////////////////////////
           //check if node in nodsIncavity are marked
           for(auto const & nodeInCavity : cavityIO.getNodeInCavity())
           {
@@ -161,13 +260,114 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           //delete the surface triangle connected to simpliceNode
           for(auto const & triangleConnectedToP : cavityIO.getTrianglesConnectedToPInCavity())
           {
+            //std::cout << "triangleConnectedToP to delete --> " << SimplicesTriangle(simplexMesh, -triangleConnectedToP) << std::endl;
             simplexMesh->deleteTriangle(triangleConnectedToP);
           }
-
+          //double duration3;
+          //start = std::clock();
           simplexMesh->rebuildCavity(cavityIO, simpliceNode.getGlobalNode());
+          //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
+          //std::cout << "rebuildCavity duration --> " << duration2 << std::endl;
           status = true;
         }
       }
     }
 }
 /******************************************************************************/
+void PointInsertion::facesIdxPatch(SimplexMesh* simplexMesh, CavityOperator::CavityIO& cavityIO, std::vector<std::vector<TInt>>& facesIdx, const SimplicesNode & node) const
+{
+  facesIdx.clear();
+  const std::vector<std::vector<TInt>>& borderEdges = cavityIO.getBorderEdges();
+  const std::vector<TInt>&     triangleConnectedToP = cavityIO.getTrianglesConnectedToPInCavity();
+  if(triangleConnectedToP.size() != 0)
+  {
+    for(auto const edge : borderEdges)
+    {
+      TInt nodeA = edge.front();
+      TInt nodeB = edge.back();
+
+      std::vector<TInt> faceIdx{node.getGlobalNode(), nodeA, nodeB};
+      facesIdx.push_back(faceIdx);
+    }
+  }
+}
+/******************************************************************************/
+void PointInsertion::normalsPatch(SimplexMesh* simplexMesh, CavityOperator::CavityIO& cavityIO, std::vector<math::Vector3d>& normals, const SimplicesNode & node) const
+{
+  normals.clear();
+  const std::vector<std::vector<TInt>>& borderEdges = cavityIO.getBorderEdges();
+  const std::vector<TInt>&     triangleConnectedToP = cavityIO.getTrianglesConnectedToPInCavity();
+  if(triangleConnectedToP.size() != 0)
+  {
+    for(auto const edge : borderEdges)
+    {
+      TInt nodeA = edge.front();
+      TInt nodeB = edge.back();
+
+      math::Point nodeACoord = SimplicesNode(simplexMesh, nodeA).getCoords();
+      math::Point nodeBCoord = SimplicesNode(simplexMesh, nodeB).getCoords();
+      math::Point nodeCoord  = node.getCoords();
+
+      math::Vector3d vec0 = nodeACoord - nodeCoord;
+      math::Vector3d vec1 = nodeBCoord - nodeACoord;
+
+      math::Vector3d n = vec1.cross(vec0);
+      n.normalize();
+      normals.push_back(n);
+    }
+  }
+}
+/******************************************************************************/
+////////////////////////////////////////////////////////////////////////////////
+//this section is here in order to optimize the futurs normals of the created
+//surface for the edgeRemove algorithm
+/*if((*BND_SURFACE_COLOR)[simpliceNode.getGlobalNode()] != 0)
+{
+  std::vector<TSimplexID> ball = simpliceNode.ballOf();
+  if(ball.size() != 0)
+  {
+    math::Vector3d interpolationNormal{};
+    std::vector<math::Vector3d> normals{};
+    normalsPatch(simplexMesh, cavityIO, normals, simpliceNode);
+
+    //on teste la forme de la futur surface qui va être reconstruire et on la compare a l'ancienne
+    //pour éviter une mauvaise reconstruction surfacique...
+    if(normals.size() != 0)
+    {
+      unsigned int triangleNbr = 0;
+      for(auto const simplex : ball)
+      {
+        if(simplex < 0 && simplex != border)
+        {
+          triangleNbr++;
+          math::Vector3d n = SimplicesTriangle(simplexMesh, -simplex).getNormal();
+          n.normalize();
+          interpolationNormal += n;
+        }
+      }
+      interpolationNormal.normalize();
+      if(triangleNbr != 0)
+      {
+        interpolationNormal = interpolationNormal / triangleNbr;
+      }
+      else
+      {
+        std::cout << "triangleNbr == 0" << std::endl;
+        return;
+      }
+    }
+
+    double minDot = 0.15;
+    for(auto const n : normals)
+    {
+      if(n.dot(interpolationNormal) < minDot)
+      {
+        std::cout << "n.dot(interpolationNormal) < minDot --> " << n.dot(interpolationNormal) << std::endl;
+        return;
+      }
+    }
+  }
+}*/
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////

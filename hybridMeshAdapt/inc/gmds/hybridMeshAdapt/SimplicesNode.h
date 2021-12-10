@@ -50,7 +50,9 @@ namespace gmds
 
           TInt getGlobalNode                       () const {return m_indexPoint;}
 
-          math::Point getCoords                    () const;
+          math::Point    getCoords                    () const;
+
+          math::Vector3d getNormal                    () const;
 
           std::vector<hybrid::TSimplexID> linksTri () const;
 

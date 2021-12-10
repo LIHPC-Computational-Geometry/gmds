@@ -41,6 +41,8 @@ bool SimplicesNode::checkExistance()
 /******************************************************************************/
 std::vector<TSimplexID> SimplicesNode::ballOf(bool boundariesAccepted) const
 {
+  //std::cout << "ballOf(bool boundariesAccepted)" << std::endl;
+  //std::cout << "m_indexPoint -> " << m_indexPoint << std::endl;
   std::vector<TSimplexID> v{};
   std::vector<TSimplexID> to_do{};
   int border = std::numeric_limits<int>::min();
@@ -57,23 +59,30 @@ std::vector<TSimplexID> SimplicesNode::ballOf(bool boundariesAccepted) const
         BitVector flagTri = m_simplex_mesh->m_tri_ids;
 
         to_do.push_back(m_simplex_mesh->m_base[m_indexPoint]);
+        //std::cout << "m_simplex_mesh->m_base[m_indexPoint] -> " << m_simplex_mesh->m_base[m_indexPoint] << std::endl;
+        //std::cout << "flagTet.capacity() -> " << flagTet.capacity() << std::endl;
+        //flagTet.unselect(m_simplex_mesh->m_base[m_indexPoint]);
         while(!to_do.empty())
         {
           TSimplexID tetraId =  to_do.back();
+          //std::cout << "tetraId --> " << tetraId << std::endl;
           if(tetraId != border)
           {
             /*contain tet(>= 0) and triangle( < 0)*/
             std::vector<TSimplexID> neighborTetras;
             if(tetraId >=0)
             {
+              if(flagTet[tetraId] == 0){to_do.pop_back(); continue;}
               neighborTetras = SimplicesCell(m_simplex_mesh, tetraId).neighborTetra(m_indexPoint, boundariesAccepted);
             }
             else
             {
+              if(flagTri[-tetraId] == 0){to_do.pop_back(); continue;}
               neighborTetras = SimplicesTriangle(m_simplex_mesh, -tetraId).neighborTetra();
             }
-
+            //std::cout << "tetraId -> "<< tetraId << std::endl;
             to_do.pop_back();
+
             if(tetraId >= 0) /*tetraId is a Tet*/
             {
               if(m_simplex_mesh->m_tet_ids[tetraId] != 0)
@@ -96,20 +105,22 @@ std::vector<TSimplexID> SimplicesNode::ballOf(bool boundariesAccepted) const
                 }
               }
             }
+
+
             for(auto const & val : neighborTetras)
             {
               if(val != border)
               {
                 if(val >= 0)
                 {
-                  if(flagTet[val] != 0 )
+                  if(flagTet[val] != 0)
                   {
                     to_do.push_back(val);
                   }
                 }
                 else
                 {
-                  if(flagTri[-val] != 0 )
+                  if(flagTri[-val] != 0)
                   {
                     to_do.push_back(val);
                   }
@@ -212,6 +223,35 @@ Point SimplicesNode::getCoords() const
     p = m_simplex_mesh->m_coords[m_indexPoint];
   }
   return std::move(p);
+}
+/******************************************************************************/
+math::Vector3d SimplicesNode::getNormal() const
+{
+  unsigned int border = std::numeric_limits<TInt>::min();
+  std::vector<TSimplexID> ball = ballOf();
+  math::Vector3d interpolateNormal{};
+  unsigned int triangleNbr = 0;
+  for(auto const simplex : ball)
+  {
+    if(simplex < 0 && simplex != border)
+    {
+      triangleNbr++;
+      math::Vector3d n = SimplicesTriangle(m_simplex_mesh, -simplex).getNormal();
+      n.normalize();
+      interpolateNormal = interpolateNormal + n;
+    }
+  }
+
+  if(triangleNbr)
+  {
+      interpolateNormal = interpolateNormal / triangleNbr;
+  }
+  else
+  {
+    std::cout << "triangleNbr == 0" << std::endl;
+  }
+
+  return interpolateNormal;
 }
 /******************************************************************************/
 bool SimplicesNode::isInBorder() const

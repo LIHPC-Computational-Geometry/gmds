@@ -5,6 +5,9 @@ add_executable(GMDS_SIMPLEX_TEST
         ModeleCAD1.h
         ModeleCAD0.h
         ModeleCAD2.h
+        ModeleCAD3.h
+        ModeleCAD4.h
+        ModeleCAD5.h
         main_test.cpp)
 
 target_link_libraries(GMDS_SIMPLEX_TEST PUBLIC
