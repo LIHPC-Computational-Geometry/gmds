@@ -40,11 +40,18 @@ class LIB_GMDS_FRAME_API CrossFieldGeneration2D {
   void setDebugPrefix(const std::string& AName);
      
    /*------------------------------------------------------------------------*/
-  /** \brief Enable to write debug files
+   /** \brief Enable to write debug files, default = true
    *
    *  \param ADebugEnable
    */
   void setDebugEnable(bool ADebugEnable);
+
+   /*------------------------------------------------------------------------*/
+   /** \brief Enable logging, default = true
+   *
+   *  \param ALogEnable
+   */
+   void setLogEnable(bool ALogEnable);
 
   /*------------------------------------------------------------------------*/
   /** \brief Function to be called for executing a frame field generation 
@@ -142,6 +149,7 @@ class LIB_GMDS_FRAME_API CrossFieldGeneration2D {
   gmds::Variable<gmds::math::Cross2D>* m_cross_field_2D; 
 
   bool m_debugEnable = true;
+  bool m_logEnable = true;
   std::string m_debug_output;
 
   /** mark for nodes on curves */

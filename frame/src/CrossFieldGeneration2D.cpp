@@ -16,6 +16,26 @@
 /*---------------------------------------------------------------------------*/
 using namespace gmds;
 /*---------------------------------------------------------------------------*/
+namespace {
+class FrameLogger
+{
+ public:
+	FrameLogger(bool silent) : m_silent(silent) {}
+	enum class LogEnd {EndLine, Flush, None};
+	void log(const std::string &message, LogEnd logend = LogEnd::EndLine)
+	{
+		switch (logend) {
+		case LogEnd::EndLine: std::cout << message << std::endl; break;
+		case LogEnd::Flush:   std::cout << message << std::flush; break;
+		case LogEnd::None:    std::cout << message; break;
+		default: break; }
+	}
+
+ private:
+	bool m_silent;
+};
+}     // namespace
+/*---------------------------------------------------------------------------*/
 CrossFieldGeneration2D::CrossFieldGeneration2D(Mesh* AMesh)
   : m_mesh(AMesh)
 {
@@ -24,7 +44,6 @@ CrossFieldGeneration2D::CrossFieldGeneration2D(Mesh* AMesh)
 	m_cross_field_2D->clear();
   }
   else {
-    std::cout << "\t -> generation of the cross variable on nodes"<<std::endl;
     m_cross_field_2D = m_mesh->newVariable<math::Cross2D,GMDS_NODE>("cross");
   }
 
@@ -34,6 +53,10 @@ CrossFieldGeneration2D::CrossFieldGeneration2D(Mesh* AMesh)
  void CrossFieldGeneration2D::setDebugEnable(bool ADebugEnable)
 {
   m_debugEnable = ADebugEnable;
+}/*---------------------------------------------------------------------------*/
+ void CrossFieldGeneration2D::setLogEnable(bool ALogEnable)
+{
+  m_logEnable = ALogEnable;
 }
 /*---------------------------------------------------------------------------*/
 void CrossFieldGeneration2D::setDebugPrefix(const std::string& AName)
@@ -43,20 +66,21 @@ void CrossFieldGeneration2D::setDebugPrefix(const std::string& AName)
 /*---------------------------------------------------------------------------*/
 void CrossFieldGeneration2D::execute(const Strategy AStrategy)
 {
-  std::cout << "======================================"<< std::endl;
-  std::cout<<" Starting 2D cross field generation " <<std::endl;
-  std::cout << "======================================"<< std::endl;
-  std::cout << "Boolean Marks' initialization " << std::endl;  
-    
+  auto logger = FrameLogger(m_logEnable);
+  logger.log("======================================");
+  logger.log(" Starting 2D cross field generation ");
+  logger.log("======================================");
+  logger.log("Boolean Marks' initialization ");
+
   initMarks(); 
-  std::cout << "  -->  DONE" << std::endl;
+  logger.log("  -->  DONE");
 
   //==================================================================
   //STEP 1 - We mark all the nodes, edges, faces classified on
   // boundary entities (points, curves, surfaces)
   //==================================================================
-  std::cout << "======================================"<< std::endl;
-  std::cout << "Mark boundary cells" << std::endl;
+  logger.log("======================================");
+  logger.log("Mark boundary cells");
   /* for(auto f_id:m_mesh->faces()){
      std::vector<Node> triangle_verts;
       Face aface = m_mesh->get<Face>(f_id);   
@@ -64,31 +88,32 @@ void CrossFieldGeneration2D::execute(const Strategy AStrategy)
       cout<<"Triangle["<<f_id<<"]= "<<triangle_verts[0].id()<<" "<<triangle_verts[1].id()<<" "<<triangle_verts[2].id()<<endl;  
    }*/
   markBoundaryCells();
-  std::cout << "  -->  DONE" << std::endl;
+  logger.log("  -->  DONE");
     
   //==================================================================
   //STEP 2 - We store all the nodes classified on curves and surfaces
   // in STL vectors
   //=================================================================
-  std::cout << "======================================"<< std::endl;
-  std::cout << " Storage of nodes classified on curves " << std::endl;
+  logger.log("======================================");
+  logger.log(" Storage of nodes classified on curves ");
   //Mesh::node_iterator it_nodes = m_mesh->nodes_begin();
   m_curve_nodes.clear();
   m_surf_nodes.clear();
-  int c=0;
  
   for(auto n_id:m_mesh->nodes()){
     Node n = m_mesh->get<Node>(n_id);   
-    c++;
+
     if (m_mesh->isMarked(n, m_markNodeOnCurv)) 
       m_curve_nodes.push_back(n);
     else if (!m_mesh->isMarked(n, m_markIsolated) &&
 	     !m_mesh->isMarked(n, m_markNodeOnPnt) )
       m_surf_nodes.push_back(n);
   }
-  std::cout<<"nodes on curves  : "<<m_curve_nodes.size()<<std::endl;
-  std::cout<<"nodes on surfaces: "<<m_surf_nodes.size()<<std::endl;
-  std::cout<<"total nb. nodes  : "<<m_mesh->getNbNodes()<<" / "<<c<<std::endl;
+
+  logger.log("nodes on curves   : " + std::to_string(m_curve_nodes.size()));
+  logger.log("nodes on surfaces : " + std::to_string(m_surf_nodes.size()));
+  logger.log("total nb. nodes  : " + std::to_string(m_mesh->getNbNodes()));
+  logger.log("    DONE");
 
   std::cout << "    DONE" << std::endl;
 
@@ -96,22 +121,24 @@ void CrossFieldGeneration2D::execute(const Strategy AStrategy)
   //STEP 2 - For nodes on curves, we compute crosses from the 
   // geometric information we have
   //==================================================================
-  std::cout << "======================================"<< std::endl;
+  logger.log("======================================");
+  logger.log("Initialization of crosses along curves", FrameLogger::LogEnd::Flush);
 
-  std::cout << "Initialization of crosses along curves" << std::flush;
   initCrossesOnCurves(); 
 
-  std::cout << "    DONE" << std::endl;  
+  logger.log("    DONE");
   
   //==================================================================
   //STEP 3 - A cross is associated to each node classified on 
   // a geometric point
   //==================================================================
-  std::cout << "======================================"<< std::endl;
+  logger.log("======================================");
+  logger.log("Initialization of crosses on points", FrameLogger::LogEnd::Flush);
 
-  std::cout << "Initialization of crosses on points" << std::flush;
   initCrossesOnPoints(); 
-  std::cout << "    DONE" << std::endl;
+
+  logger.log("    DONE");
+
   if (m_debugEnable)
 	writeForDebug();  
   //==================================================================

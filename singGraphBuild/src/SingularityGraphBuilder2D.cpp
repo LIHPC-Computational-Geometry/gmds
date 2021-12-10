@@ -74,7 +74,7 @@ computeAngleAtSingularity(SingularityPoint *p)
 class LineRelaxator
 {
  public:
-	LineRelaxator(SingularityGraph *graph, const double meanEdgeLength);
+	LineRelaxator(SingularityGraph *graph, const double meanEdgeLength, bool logEnable);
 
 	void run();
 	double getWorstAngle();
@@ -88,6 +88,7 @@ class LineRelaxator
 	void MoveIfNewLocationIsWorthTheAnglePenalty(SingularityPoint *singPoint, const gmds::math::Point newLocation);
 
 	SingularityGraph *m_graph;
+	bool m_logEnable;
 
 	double m_step;
 	std::vector<double> m_lineSpringLenght;
@@ -109,7 +110,7 @@ class Timer
 	using Clock = std::chrono::system_clock;
 
  public:
-	Timer(const std::string &name)
+	Timer(const std::string &name, bool active) : m_active(active)
 	{
 		start(name);
 	}
@@ -126,14 +127,32 @@ class Timer
 	void stop()
 	{
 		const auto tfinal = Clock::now();
-		std::cout << m_name << " " << std::chrono::duration_cast<std::chrono::milliseconds>(tfinal - m_t0).count() << " milliseconds" << std::endl;
+		if (m_active) std::cout << m_name << " " << std::chrono::duration_cast<std::chrono::milliseconds>(tfinal - m_t0).count() << " milliseconds" << std::endl;
 	}
 
  private:
+	bool m_active;
 	std::string m_name;
 	std::chrono::system_clock::time_point m_t0;
 };
+class SingGraphLogger
+{
+ public:
+	SingGraphLogger(bool active) : m_active(active) {}
+	enum class LogEnd { EndLine, Flush, None };
+	void log(const std::string &message, LogEnd logEnd = LogEnd::EndLine)
+	{
+		if (m_active) switch (logEnd) {
+			case LogEnd::EndLine: std::cout << message << std::endl; break;
+			case LogEnd::Flush: std::cout << message << std::flush; break;
+			case LogEnd::None: std::cout << message; break;
+			default: break;
+			}
+	}
 
+ private:
+	bool m_active;
+};
 }     // namespace
 
 SingularityGraphBuilder2D::SingularityGraphBuilder2D(Mesh *AMesh, Variable<math::Cross2D> *AField, const bool ABuildGeomSing) :
@@ -174,57 +193,6 @@ SingularityGraphBuilder2D::SingularityGraphBuilder2D(Mesh *AMesh, Variable<math:
 	math::Point p_max(x_max, y_max, z_max);
 	m_mesh_radius = p_min.distance(p_max);
 	m_confusing_distance = m_ATolerance * m_mesh_radius;
-}
-
-void
-SingularityGraphBuilder2D::initTestPrescribedSing()
-{
-	if (m_withGlobalComments) std::cout << "testPrescribedSing" << testPrescribedSing << std::endl;
-	unsigned int singularity_type = 3;
-	m_singularities_3.clear();
-	m_singularities_5.clear();
-
-	Face singularTri = m_mesh->get<Face>(4803);
-	m_singularities_3.push_back(singularTri);
-	m_mesh->mark(singularTri, m_mark_faces_with_sing_point);
-	math::Point singleCenterTri;
-	math::Cross2D singleCenterTriCross;
-	constructOneCenterTriangleCross(singularTri, singleCenterTri, singleCenterTriCross);
-	std::vector<math::Point> slot_points(singularity_type);
-	std::vector<double> slot_param;
-	std::vector<int> slot_cell_dim(singularity_type);
-	std::vector<TCellID> slot_cell_id(singularity_type);
-	// SINGULARITY POINT CREATION
-	SurfaceSingularityPoint *singularity = m_graph.newSurfacePoint();
-	singularity->setLocation(singleCenterTri);
-	singularity->addMeshFace(singularTri);
-	std::vector<math::Vector3d> vectors_i = singleCenterTriCross.componentVectors();
-	vector<math::Vector3d> vectors_iNew(3);
-	vectors_iNew[0] = vectors_i[0];
-	vectors_iNew[1] = vectors_i[1];
-	vectors_iNew[2] = vectors_i[3];
-
-	math::Point intersectionPnt;
-	double intersectionParam;
-	for (unsigned int i = 0; i < singularity_type; i++) {
-		math::Ray from_ray(singleCenterTri, vectors_iNew[i]);
-		vector<Edge> currentEdges = singularTri.get<Edge>();
-		for (unsigned int tt = 0; tt < 3; tt++) {
-			vector<Node> currentNodes = currentEdges[tt].get<Node>();
-			math::Segment oppSeg(currentNodes[0].getPoint(), currentNodes[1].getPoint());
-			if (from_ray.SecondMetIntersect2D(oppSeg, intersectionPnt, intersectionParam, m_temp_epsilon)) {
-				slot_points[i] = intersectionParam * currentNodes[0].getPoint() + (1 - intersectionParam) * currentNodes[1].getPoint();
-				slot_cell_dim[i] = 1;
-				slot_cell_id[i] = currentEdges[tt].id();
-			}
-		}
-	}
-
-	for (unsigned int i = 0; i < singularity_type; i++) {
-		singularity->newSlot(slot_points[i], vectors_iNew[i], slot_cell_id[i], slot_cell_dim[i], true, 0);
-	}
-
-	visualizeCrossVectors();
 }
 
 void
@@ -292,6 +260,13 @@ SingularityGraphBuilder2D::setDebugFilesWritingEnable(bool enableDebugFilesWriti
 	return *this;
 }
 
+SingularityGraphBuilder2D &
+SingularityGraphBuilder2D::setLogEnable(bool logEnable)
+{
+	m_withGlobalComments = logEnable;
+	return *this;
+}
+
 double
 SingularityGraphBuilder2D::computeMeanEdgeLength()
 {
@@ -305,8 +280,10 @@ SingularityGraphBuilder2D::computeMeanEdgeLength()
 void
 SingularityGraphBuilder2D::execute()
 {
-	std::cout << "========================================" << std::endl;
-	std::cout << "Start singularity graph generation " << std::endl;
+	auto logger = SingGraphLogger(m_withGlobalComments);
+
+	logger.log("========================================");
+	logger.log("Start singularity graph generation");
 
 	m_graph = SingularityGraph(m_mesh);     // new fresh graph
 	//==================================================================
@@ -323,12 +300,7 @@ SingularityGraphBuilder2D::execute()
 	// STEP 1 - Detection of singularity and slot creation
 	//========================================================================
 
-	/* We proceed as follows:
-	- first the singular triangles are detected, having as input the frame/cross field for the mesh;
-	- for each such singular triangle, the location of the singularity point is detected inside the triangle (for now
-	the location is at the center of the triangle) and also the direction of the slot directions is computed */
-
-	auto timer = Timer("Singular triangle detection and slot creation");
+	auto timer = Timer("Singular triangle detection and slot creation", m_withGlobalComments);
 
 	detectSingularTriangles();
 
@@ -341,7 +313,6 @@ SingularityGraphBuilder2D::execute()
 	timer.stopAndRestart("Cross field interpolation");
 	constructCenterTriangleCrosses();
 
-	timer.stopAndRestart("Mean edge length computation");
 	m_mean_edge_length = computeMeanEdgeLength();
 	m_temp_epsilon = 0.003 * m_mean_edge_length;
 
@@ -376,15 +347,13 @@ SingularityGraphBuilder2D::execute()
 	//========================================================================
 	// STEP 4 - Detect singularity lines intersection and split them
 	//========================================================================
-	std::cout << "STEP 6 - Detect singularity lines intersection and split them" << std::endl;
-
 	timer.stopAndRestart("Line intersections");
+
 	detectLineIntersections();
 
 	//========================================================================
 	// STEP 5 - Build surface patchs
 	//========================================================================
-
 	timer.stopAndRestart("Quad Mesh building");
 
 	deleteArtificialNodes(artificialSingPointsCreated);
@@ -399,7 +368,7 @@ SingularityGraphBuilder2D::execute()
 			writeQuadMesh(getQuadMesh().get(), m_output_directory_name + "gmshPatch.msh");
 		}
 		timer.stopAndRestart("Graph Optimization");
-		LineRelaxator(&m_graph, m_mean_edge_length).run();
+		LineRelaxator(&m_graph, m_mean_edge_length, m_withGlobalComments).run();
 		timer.stop();
 	}
 	if (m_enableDebugFilesWriting) {
@@ -417,8 +386,8 @@ SingularityGraphBuilder2D::execute()
 	m_mesh->freeMark<Face>(m_mark_faces_with_sing_line);
 	m_mesh->freeMark<Edge>(m_mark_forbiddenBdryEdge);
 
-	std::cout << "--> Nb generated faces: " << m_graph.getNbSurfacePatches() << std::endl;
-	std::cout << "========================================" << std::endl;
+	logger.log("--> Nb generated faces: " + std::to_string(m_graph.getNbSurfacePatches()));
+	logger.log("========================================");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -3114,8 +3083,9 @@ SingularityGraphBuilder2D::computeFace2FaceInfo()
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-LineRelaxator::LineRelaxator(SingularityGraph *graph, const double meanEdgeLength)
+LineRelaxator::LineRelaxator(SingularityGraph *graph, const double meanEdgeLength, bool logEnable)
 {
+	m_logEnable = logEnable;
 	m_graph = graph;
 	m_step = meanEdgeLength / 2;
 	m_graph->computeLinkedEdges();
@@ -3366,8 +3336,9 @@ LineRelaxator::getWorstAngle()
 void
 LineRelaxator::run()
 {
-	std::cout << "Relax mesh to optimize edge ratios: " << std::endl;
-	std::cout << "	worst angle/ratio before relaxation : " << getWorstAngle() << ", " << getWorstEdgeRatio() << std::endl;
+	auto logger = SingGraphLogger(m_logEnable);
+	logger.log("Relax mesh to optimize edge ratios: ");
+	logger.log("	worst angle/ratio before relaxation : " + std::to_string(getWorstAngle()) + ", " + std::to_string(getWorstEdgeRatio()));
 
 	computeMeanEdgeLengthByGroup();
 	for (int i = 0; i < 99; i++) {
@@ -3378,7 +3349,8 @@ LineRelaxator::run()
 		applySpringForceOnPoints();
 		movePoints();
 	}
-	std::cout << "	worst angle/ratio after  relaxation : " << getWorstAngle() << ", " << getWorstEdgeRatio() << std::endl;
+
+	logger.log("	worst angle/ratio after relaxation  : " + std::to_string(getWorstAngle()) + ", " + std::to_string(getWorstEdgeRatio()));
 }
 
 }     // namespace gmds

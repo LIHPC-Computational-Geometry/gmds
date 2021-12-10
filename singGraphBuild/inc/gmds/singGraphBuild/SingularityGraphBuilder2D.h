@@ -89,8 +89,11 @@ public:
 	/* \brief Allows to optimize the final quad mesh : bring edge ratio to closer to 1.0 as well as angle closer to 90° */
 	SingularityGraphBuilder2D& setQuadMeshSmoothingEnable(bool enableQuadMeshSmoothing);
 	/*----------------------------------------------------------------------------------------------------*/
-	/* \brief Optimizes the edges Ratio to be closed to 1 as well as angle close to 90° */
+	/* \brief Enable to write debug files, default = true */
 	SingularityGraphBuilder2D& setDebugFilesWritingEnable(bool enableDebugFilesWriting);
+	/*----------------------------------------------------------------------------------------------------*/
+	/* \brief Enable to log out, default = true */
+	SingularityGraphBuilder2D& setLogEnable(bool logEnable);
     /*----------------------------------------------------------------------------------------------------*/
     /** \brief gives acces to the build graph
     */
@@ -448,14 +451,6 @@ protected:
 	/* write a vtk file containing the singularity point locations and the slots*/
 	void writeSingularityPointsAndSlots();
 	/*----------------------------------------------------------------------------------------------------*/
-	/*this strategy assumes that here we will impose the singularity triangles by providing their ID: Face singularTri
-	   = m_mesh->get<Face>(triangle id); this has been implemented with the main scope of testing (ex for a cane-shaped
-	   mesh, where the singular triangle is either not detected or detected in a different location that needed for
-	   testing; note: the detection is highly dependent on the computation of the frame field; this strategy could also
-	   be used if the user would have available a visualization platform and could simply click on a triangle -> it's ID
-	   could be parsed directly)*/
-	void initTestPrescribedSing();
-	/*----------------------------------------------------------------------------------------------------*/
 	void visualizeCrossVectors();
 	/*----------------------------------------------------------------------------------------------------*/
 	void deleteArtificialNodes(vector<CurveSingularityPoint *> &artificialSingPointsCreated);
@@ -516,7 +511,7 @@ protected:
 	bool m_enableQuadMeshSmoothing = false;
 	bool m_enableDebugFilesWriting = false;
 
-	bool m_withGlobalComments = false;
+	bool m_withGlobalComments = true;
     
 	/* \param m_ATolerance the tolerance used to connect singularity lines and
 	* points. It is a % of the bounding box diagonal. It must be set in [0.01,0.1] */

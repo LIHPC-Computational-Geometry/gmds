@@ -40,6 +40,7 @@ TEST(SingGraphBuilder2DTest, folkGeometry)
 	//==================================================================
 	std::string dir(TEST_SAMPLES_DIR);
 	std::string vtk_file = dir + "/singGraphBuilderTest.vtk";
+	//std::string vtk_file = "C:/Temp/outframe4.vtk";
 
 	gmds::IGMeshIOService ioService(&mesh);
 	gmds::VTKReader vtkReader(&ioService);
@@ -96,12 +97,12 @@ TEST(SingGraphBuilder2DTest, folkGeometry)
 	algo.initMarks(node_point_mark, node_curve_mark, edge_curve_mark, node_forbiddenBdry_mark);
 	algo.setQuadMeshSmoothingEnable(true);
 	algo.setDebugFilesWritingEnable(true);
+	algo.setLogEnable(true);
+	//algo.setRobustness(6, 5);
 
 	auto t1 = Clock::now();
-	std::cout << "Before execute() " << std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count() << " milliseconds" << std::endl;
 	algo.execute();
 	auto t2 = Clock::now();
-	std::cout << "execute ftc " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << " milliseconds" << std::endl;
 	std::cout << "TOTAL   " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t0).count() << " milliseconds" << std::endl;
 
 	//==================================================================

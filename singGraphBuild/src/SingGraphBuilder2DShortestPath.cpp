@@ -61,18 +61,20 @@ class Timer
 	using Clock = std::chrono::system_clock;
 
  public:
-	Timer(const std::string &name)
+	Timer(const std::string &name, bool active)
 	{
+		m_silent = !active;
 		m_name = name;
 		m_t0 = Clock::now();
 	}
 	~Timer()
 	{
 		const auto tfinal = Clock::now();
-		std::cout << m_name << " " << std::chrono::duration_cast<std::chrono::milliseconds>(tfinal - m_t0).count() << " milliseconds" << std::endl;
+		if (!m_silent) std::cout << m_name << " " << std::chrono::duration_cast<std::chrono::milliseconds>(tfinal - m_t0).count() << " milliseconds" << std::endl;
 	}
 
  private:
+	bool m_silent;
 	std::string m_name;
 	std::chrono::system_clock::time_point m_t0;
 };
@@ -220,7 +222,7 @@ SingGraphBuilder2DShortestPath::initializeFieldsValue()
 void
 SingGraphBuilder2DShortestPath::computeFaceNeighboursInfo()
 {
-	auto timer = Timer("computeFaceNeighborsInfo");
+	auto timer = Timer("computeFaceNeighborsInfo", m_withGlobalComments);
 	m_face2Face_neighbours_by_verts.clear();
 	m_face2Face_neighbours_by_verts.resize(m_original_faces_number);
 	m_is_bdry_face.clear();
@@ -569,7 +571,7 @@ SingGraphBuilder2DShortestPath::createSolvedSingularityLinesInGraph()
 void
 SingGraphBuilder2DShortestPath::computeDijkstra()
 {
-	auto timer = Timer("graph construction");
+	auto timer = Timer("graph construction", m_withGlobalComments);
 
 	computeDijkstraStartingFaces();
 
@@ -827,14 +829,13 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 			}
 		}
 	}
-
 	if (m_visualizeCost) writeCostPerSlot(m_mesh, m_output_directory_name + " -slotCost_" + std::to_string(contSource) + ".vtk", cellCosts);
 }
 
 std::vector<std::pair<unsigned int, unsigned int>>
 SingGraphBuilder2DShortestPath::glpkSolve()
 {
-	auto timer = Timer("glpk");
+	auto timer = Timer("glpk", m_withGlobalComments);
 
 	using glpkVarID = unsigned int;
 	using ActiveSlotID = unsigned int;
@@ -958,19 +959,19 @@ SingGraphBuilder2DShortestPath::glpkSolve()
 	glp_init_iocp(&glpParams);
 	glpParams.tm_lim = m_glpkTimeLimit;
 	glpParams.presolve = GLP_ON;
-
+	glpParams.msg_lev = m_withGlobalComments ? GLP_MSG_ON : GLP_MSG_OFF;
 	if (m_enableDebugFilesWriting) glp_write_lp(lp, NULL, "checkMe0.txt");
 
 	switch (glp_intopt(lp, &glpParams)) {
 	case GLP_ETMLIM:
-	case 0: std::cout << "GLP OPT OK" << std::endl; break;
+	case 0: break;
 	default: throw GMDSException("SingularityGraphBuilder2D::SingGraphBuildOpt pb solving in GLPK.");
 	}
 	switch (glp_mip_status(lp)) {
 	case GLP_UNDEF:
 	case GLP_NOFEAS:
 	case 0: throw GMDSException("SingularityGraphBuilder2D::SingGraphBuildOpt pb solving in GLPK.");
-	default: std::cout << "MIP OK" << std::endl; break;
+	default: break;
 	}
 
 	std::vector<Path> solutions;
@@ -1000,13 +1001,13 @@ SingGraphBuilder2DShortestPath::computeIllegalOverlappingPaths()
 	auto illegalLineCrossingFinder = IllegalLineCrossingFinder(this);
 	illegalLineCrossingFinder.registerAllLineSegmentsOnCells();
 	m_illegalOverlappingPaths = illegalLineCrossingFinder.getIllegalOverlappingPaths();
-	std::cout << "Number of illegal cross : " << m_illegalOverlappingPaths.size() << std::endl;
+	if (m_withGlobalComments) std::cout << "Number of illegal cross : " << m_illegalOverlappingPaths.size() << std::endl;
 }
 
 void
 SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::registerAllLineSegmentsOnCells()
 {
-	auto timer = Timer("traversed faces");
+	auto timer = Timer("traversed faces", m_graphBuilder->m_withGlobalComments);
 
 	for (SourceID contSource = 0; contSource < m_graphBuilder->m_totalNumberOfSlots; contSource++) {
 
@@ -1140,7 +1141,7 @@ std::vector<std::pair<unsigned int, unsigned int>>
 SingGraphBuilder2DShortestPath::IllegalLineCrossingFinder::getIllegalOverlappingPaths()
 {
 	/// check illegal crossing among pair of intersection
-	auto timer = Timer("illegal crossing");
+	auto timer = Timer("illegal crossing", m_graphBuilder->m_withGlobalComments);
 	using PathID = unsigned int;
 	struct pair_hash
 	{

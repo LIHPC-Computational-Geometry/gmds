@@ -158,7 +158,6 @@ namespace gmds{
             double det = b*b - 4*a*c;
             
             if (det < 0.0) {
-                std::cout << "No solution for: "<<a<<" X2 + "<<b<<" X + "<<c <<" with Det= "<<det<< std::endl;
                 nb_solutions = 0;
             }
             else if (det==0) {
