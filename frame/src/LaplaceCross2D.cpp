@@ -86,7 +86,7 @@ void LaplaceCross2D::execute()
   //==================================================================
   // STEP 1 / Matrix assembly  
   //==================================================================
-  std::cout<<"System assembly"<<std::endl;
+  //std::cout<<"System assembly"<<std::endl;
   Eigen::SparseMatrix<double> Acos(nb_unknowns,nb_unknowns); 
   Eigen::VectorXd             bcos(nb_unknowns); 
   Eigen::SparseMatrix<double> Asin(nb_unknowns,nb_unknowns); 
@@ -110,7 +110,7 @@ void LaplaceCross2D::execute()
   //==================================================================
   // STEP 2 / System Solving
   //==================================================================
-  std::cout<<"System solving for cosinus"<<std::endl;
+  //std::cout<<"System solving for cosinus"<<std::endl;
   Eigen::VectorXd   xcos(nb_unknowns);
   Eigen::SimplicialCholesky<Eigen::SparseMatrix<double> > cholcos(Acos);
   xcos = cholcos.solve(bcos);
@@ -120,7 +120,7 @@ void LaplaceCross2D::execute()
   xcos = cg_cos.solve(bcos);
   */
 
-  std::cout<<"System solving for sinus"<<std::endl;
+  //std::cout<<"System solving for sinus"<<std::endl;
   Eigen::VectorXd   xsin(nb_unknowns);
   Eigen::SimplicialCholesky<Eigen::SparseMatrix<double> > cholsin(Asin);
   xsin = cholsin.solve(bsin);
@@ -131,7 +131,7 @@ void LaplaceCross2D::execute()
   //==================================================================
   // STEP 3 / Assign the value onto the mesh nodes
   //==================================================================
-  std::cout<<"Value assignment to mesh node"<<std::endl; 
+  //std::cout<<"Value assignment to mesh node"<<std::endl; 
   for(unsigned int i=0; i<m_to_nodes.size();i++) {
     Node    n_i = m_to_nodes[i];
     TCellID n_gmds_id = n_i.id();

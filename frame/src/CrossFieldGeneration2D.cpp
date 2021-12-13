@@ -20,15 +20,17 @@ namespace {
 class FrameLogger
 {
  public:
-	FrameLogger(bool silent) : m_silent(silent) {}
+	FrameLogger(bool logEnable) : m_silent(!logEnable) {}
 	enum class LogEnd {EndLine, Flush, None};
 	void log(const std::string &message, LogEnd logend = LogEnd::EndLine)
 	{
-		switch (logend) {
-		case LogEnd::EndLine: std::cout << message << std::endl; break;
-		case LogEnd::Flush:   std::cout << message << std::flush; break;
-		case LogEnd::None:    std::cout << message; break;
-		default: break; }
+		if (!m_silent) {
+			switch (logend) {
+			case LogEnd::EndLine: std::cout << message << std::endl; break;
+			case LogEnd::Flush:   std::cout << message << std::flush; break;
+			case LogEnd::None:    std::cout << message; break;
+			default: break; }
+		}
 	}
 
  private:
@@ -114,8 +116,6 @@ void CrossFieldGeneration2D::execute(const Strategy AStrategy)
   logger.log("nodes on surfaces : " + std::to_string(m_surf_nodes.size()));
   logger.log("total nb. nodes  : " + std::to_string(m_mesh->getNbNodes()));
   logger.log("    DONE");
-
-  std::cout << "    DONE" << std::endl;
 
   //==================================================================
   //STEP 2 - For nodes on curves, we compute crosses from the 
