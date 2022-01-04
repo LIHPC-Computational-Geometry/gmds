@@ -217,9 +217,9 @@ Face PointConnectionBuilder::closestFace(math::Point& AP, const int ASurfID)
         Face f = m_mesh->get<Face>(f_id);
         if((*color)[f.id()]==ASurfID){
             std::vector<Node> f_nodes = f.get<Node>();
-            math::Triangle t(f_nodes[0].getPoint(),
-                             f_nodes[1].getPoint(),
-                             f_nodes[2].getPoint());
+            math::Triangle t(f_nodes[0].point(),
+                             f_nodes[1].point(),
+                             f_nodes[2].point());
             math::Point p = t.project(AP);
             if(p.distance2(AP)<closest_dist){
                 closest_dist=p.distance2(AP);
@@ -230,9 +230,9 @@ Face PointConnectionBuilder::closestFace(math::Point& AP, const int ASurfID)
     // The point is moved too!!
 
     std::vector<Node> closest_nodes = closest_face.get<Node>();
-    math::Triangle t(closest_nodes[0].getPoint(),
-                     closest_nodes[1].getPoint(),
-                     closest_nodes[2].getPoint());
+    math::Triangle t(closest_nodes[0].point(),
+                     closest_nodes[1].point(),
+                     closest_nodes[2].point());
 
     AP = t.project(AP);
     return closest_face;
@@ -249,8 +249,8 @@ Edge PointConnectionBuilder::closestEdge(math::Point& AP, const int ACurvID)
         Edge e = m_mesh->get<Edge>(e_id);
         if((*color)[e.id()]==ACurvID){
             std::vector<Node> e_nodes = e.get<Node>();
-            math::Segment s(e_nodes[0].getPoint(),
-                            e_nodes[1].getPoint());
+            math::Segment s(e_nodes[0].point(),
+                            e_nodes[1].point());
             math::Point p = s.project(AP);
             if(p.distance2(AP)<closest_dist){
                 closest_dist=p.distance2(AP);
@@ -260,8 +260,8 @@ Edge PointConnectionBuilder::closestEdge(math::Point& AP, const int ACurvID)
     }
     // The point is moved too!!
     std::vector<Node> closest_nodes = closest_edge.get<Node>();
-    math::Segment s(closest_nodes[0].getPoint(),
-                    closest_nodes[1].getPoint());
+    math::Segment s(closest_nodes[0].point(),
+                    closest_nodes[1].point());
 
     AP = s.project(AP);
     return closest_edge;
@@ -316,8 +316,8 @@ Cell::Data PointConnectionBuilder::getRegionContaining(const math::Point& APnt,
     while(true){
         std::vector<Node> n = current_r.get<Node>();
         math::Point p[4] ={
-                n[0].getPoint(), n[1].getPoint(),
-                n[2].getPoint(), n[3].getPoint()
+                n[0].point(), n[1].point(),
+                n[2].point(), n[3].point()
         };
 
         double coeff[4]={0, 0, 0, 0};
@@ -376,9 +376,9 @@ getBoundaryFaceContaining(math::Point&  AP,
     for(auto i:close_bnd_faces){
         Face f = m_mesh->get<Face>(i);
         std::vector<Node> f_nodes = f.get<Node>();
-        math::Triangle t(f_nodes[0].getPoint(),
-                         f_nodes[1].getPoint(),
-                         f_nodes[2].getPoint());
+        math::Triangle t(f_nodes[0].point(),
+                         f_nodes[1].point(),
+                         f_nodes[2].point());
         math::Point p = t.project(AP);
         if(p.distance2(AP)<closest_dist){
             closest_dist=p.distance2(AP);
@@ -388,9 +388,9 @@ getBoundaryFaceContaining(math::Point&  AP,
     // The point is moved too!!
 
     std::vector<Node> closest_nodes = closest_face.get<Node>();
-    math::Triangle t(closest_nodes[0].getPoint(),
-                     closest_nodes[1].getPoint(),
-                     closest_nodes[2].getPoint());
+    math::Triangle t(closest_nodes[0].point(),
+                     closest_nodes[1].point(),
+                     closest_nodes[2].point());
 
     AP = t.project(AP);
     return Cell::Data(2,closest_face.id());
@@ -424,8 +424,8 @@ getBoundaryEdgeContaining(math::Point&  AP,
     for(auto i:close_bnd_edges){
         Edge e = m_mesh->get<Edge>(i);
         std::vector<Node> e_nodes = e.get<Node>();
-        math::Segment s(e_nodes[0].getPoint(),
-                        e_nodes[1].getPoint());
+        math::Segment s(e_nodes[0].point(),
+                        e_nodes[1].point());
         math::Point p = s.project(AP);
         if(p.distance2(AP)<closest_dist){
             closest_dist=p.distance2(AP);
@@ -434,8 +434,8 @@ getBoundaryEdgeContaining(math::Point&  AP,
     }
 
     std::vector<Node> closest_nodes = closest_edge.get<Node>();
-    math::Segment s(closest_nodes[0].getPoint(),
-                    closest_nodes[1].getPoint());
+    math::Segment s(closest_nodes[0].point(),
+                    closest_nodes[1].point());
 
     // The point is moved too!!
     AP = s.project(AP);
@@ -466,9 +466,9 @@ PointConnectionBuilder::getCloseRegionsFrom(const math::Point& AFromPnt,
         std::vector<Face> fs = c.get<Face>();
         for(const auto & f:fs){
             std::vector<Node> n = f.get<Node>();
-            math::Plane pl(n[0].getPoint(),
-                           n[1].getPoint(),
-                           n[2].getPoint());
+            math::Plane pl(n[0].point(),
+                           n[1].point(),
+                           n[2].point());
             if(pl.project(AFromPnt).distance(AFromPnt)<AEpsilon){
                 //means close to this face
 
@@ -1044,6 +1044,21 @@ getEdges(std::vector<std::pair<int,int > >& AEdges) {
         for(auto e : edge_set){
             AEdges.push_back(std::make_pair(e.first,e.second));
         }
+    }
+}
+/*---------------------------------------------------------------------------*/
+void PointConnectionBuilder::getHexes(std::vector<std::vector<int> > &AHexes)
+{
+    Variable<int>* var_id = m_hexes.getVariable<int,GMDS_NODE>("HD_ID");
+
+    for(auto h_id:m_hexes.regions()){
+        std::vector<TCellID> node_ids = m_hexes.get<Region>(h_id).getIDs<Node>();
+        std::vector<int> ids;
+        ids.resize(8);
+        for(auto i=0;i<8;i++) {
+            ids[i]= var_id->value(node_ids[i]);
+        }
+        AHexes.push_back(ids);
     }
 }
 /*---------------------------------------------------------------------------*/

@@ -74,6 +74,10 @@ namespace gmds{
              * @return surfaces that are adjacent to this point
              */
             virtual std::vector<GeomSurface*>& surfaces();
+
+            /**@brief Reset the global id counter to 1.
+             */
+             static void resetIdCounter();
         private:
 
             int m_id;

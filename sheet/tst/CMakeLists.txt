@@ -5,7 +5,7 @@ add_executable(GMDS_SHEET_TEST
         main_test.cpp)
 
 target_link_libraries(GMDS_SHEET_TEST PUBLIC
-        ${GMDS_LIB} ${LIB_GMDS_IO}
+        ${GMDS_LIB} ${LIB_GMDS_IO} ${LIB_GMDS_SMOOTHY}
         gtest)
 
 target_include_directories(GMDS_SHEET_TEST PRIVATE .)

@@ -481,22 +481,30 @@ Mesh::Mesh(MeshModel model)
 /*----------------------------------------------------------------------------*/
 Mesh::~Mesh()
 {
-    if(m_nodes_container)
-		delete m_nodes_container;
-	if(m_edges_container)
-		delete m_edges_container;
-	if(m_faces_container)
-		delete m_faces_container;
-	if(m_regions_container)
-		delete m_regions_container;
-    if(m_node_variable_manager)
+    if(m_nodes_container) {
+        delete m_nodes_container;
+    }
+	if(m_edges_container) {
+        delete m_edges_container;
+    }
+	if(m_faces_container) {
+        delete m_faces_container;
+    }
+	if(m_regions_container) {
+        delete m_regions_container;
+    }
+    if(m_node_variable_manager) {
         delete m_node_variable_manager;
-    if(m_edge_variable_manager)
+    }
+    if(m_edge_variable_manager) {
         delete m_edge_variable_manager;
-    if(m_face_variable_manager)
+    }
+    if(m_face_variable_manager) {
         delete m_face_variable_manager;
-    if(m_region_variable_manager)
+    }
+    if(m_region_variable_manager) {
         delete m_region_variable_manager;
+    }
 
     for(auto g:m_clouds){
         delete g;

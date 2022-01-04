@@ -5,7 +5,8 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-    
+env:
+  CODECOV_TOKEN: 'a6611bcf-89ee-410d-acfa-d4f130b31365'
 jobs:
   Continuous:
     name: ${{ matrix.config }}
@@ -41,8 +42,9 @@ jobs:
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: >
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.config }} 
-        -DWITH_CODE_COVERAGE=ON 
-        -DCMAKE_PREFIX_PATH=${{github.workspace}}/spack/opt/spack/lcov 
+        -DWITH_CODE_COVERAGE=ON
+        -DENABLE_KMDS=true
+        -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/kokkos"
         -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib 
         -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
 
@@ -61,6 +63,10 @@ jobs:
           if ${{ matrix.config == 'Release'}}; then
               ctest -C $BUILD_TYPE
           else
+              export CODACY_PROJECT_TOKEN=6812888e69b348239217c607f514f024
               make code_cover_gmds
+              bash <(curl -s https://codecov.io/bash)
+              bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r code_cover_gmds.info
+
           fi
       

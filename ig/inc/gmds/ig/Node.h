@@ -156,7 +156,7 @@ public:
 	/*------------------------------------------------------------------------*/
     /** \brief  Accesor to the cell point location.
      */
-	math::Point getPoint() const;
+	math::Point point() const;
 
 	/*------------------------------------------------------------------------*/
     /** \brief  Accesor to the cell point location.

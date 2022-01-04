@@ -76,6 +76,7 @@ macro(GMDS_ADD_COMPONENT COMP_NAME DIR_NAME LIB_NAME  MESSAGE ACTIVATE COVER)
     if (ENABLE_${COMP_NAME})
         list(APPEND GMDS_ACTIVE_COMPONENTS  ${COMP_NAME})
         list(APPEND GMDS_ACTIVE_LIBS  LIB_GMDS_${COMP_NAME})
+        list(APPEND GMDS_ACTIVE_LIB_NAMES  ${LIB_NAME})
         list(APPEND GMDS_ACTIVE_DIRS ${DIR_NAME})
         message(STATUS "Component ${LIB_NAME} is activated")
     else()
@@ -88,6 +89,24 @@ endmacro()
 #==============================================================================
 # OPTIONAL COMPONENTS
 #==============================================================================
+GMDS_ADD_COMPONENT(
+        CLAIRE                       # cmake variable
+        claire                        # src subdirectory name
+        GMDSClaire                    # name of the generated library
+        " "  # description
+        ON                                 # is activated
+        ON                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
+        BLOCK_MESHER                       # cmake variable
+        blockMesher                        # src subdirectory name
+        GMDSBlockMesher                    # name of the generated library
+        "Provide the mesh of a block structure classified on a CAD geometry"  # description
+        ON                                 # is activated
+        ON                                 # must be covered
+)
+
 GMDS_ADD_COMPONENT(
         FRAME                               # cmake variable
         frame                               # src subdirectory name
@@ -239,7 +258,7 @@ if (WITH_CODE_COVERAGE)
     set(CMAKE_C_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage")
     set(COVERAGE_LCOV_EXCLUDES
             '/usr/*'
-            '${CMAKE_SOURCE_DIR}/doc/*'
+            '${CMAKE_SOURCE_DIR}/docs/*'
             '${CMAKE_SOURCE_DIR}/test_samples/*'
             '${CMAKE_SOURCE_DIR}/external/*'
             '${CMAKE_SOURCE_DIR}/*/tst/*'
@@ -298,6 +317,8 @@ set(LIB_GMDS_IG_ALGO GMDSIgAlgo)
 add_subdirectory(igalgo)
 set(LIB_GMDS_CAD GMDSCad)
 add_subdirectory(cad)
+set(LIB_GMDS_SMOOTHY GMDSSmoothy)
+add_subdirectory(smoothy)
 set(LIB_GMDS_IG_SHEET GMDSSheet)
 add_subdirectory(sheet)
 set(LIB_GMDS_SERVICES GMDSServices)
@@ -316,7 +337,7 @@ endforeach()
 # DOCUMENTATION
 #==============================================================================
 if (WITH_DOC)
-    add_subdirectory(doc)
+    add_subdirectory(docs)
 endif (WITH_DOC)
 #==============================================================================
 # Mise en place pour l'install avec les export

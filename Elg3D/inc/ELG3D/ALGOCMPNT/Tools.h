@@ -35,18 +35,18 @@ namespace elg3d {
     /*----------------------------------------------------------------------------*/
     void
     Tools_computeMidPointVar_2D(const kmds::GrowingView<kmds::TCellID>* ASelectionCells,
-                                kmds::Mesh* AMesh,
+                                const kmds::Mesh* AMesh,
                                 kmds::Variable<gmds::math::Point>* AVarMidpoints);
 
     /*----------------------------------------------------------------------------*/
     void
     Tools_computeMidPointVar_3D(const kmds::GrowingView<kmds::TCellID>* ASelectionCells,
-                                kmds::Mesh* AMesh,
+                                const kmds::Mesh* AMesh,
                                 kmds::Variable<gmds::math::Point>* AVarMidpoints);
 
     /*----------------------------------------------------------------------------*/
     void
-    Tools_storeNodePos_xD(kmds::Mesh* AMesh,
+    Tools_storeNodePos_xD(const kmds::Mesh* AMesh,
                           kmds::Variable<gmds::math::Point>* AVarNodePos);
 
     /*----------------------------------------------------------------------------*/

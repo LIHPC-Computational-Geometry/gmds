@@ -90,7 +90,7 @@ getNodes(std::vector<IMeshIOService::NodeInfo> &AInfo) {
         Node n = m_mesh->get<Node>(node_id);
         IMeshIOService::NodeInfo info;
         info.id = node_id;
-        info.point = n.getPoint();
+        info.point = n.point();
         AInfo.push_back(info);
     }
 }
@@ -160,7 +160,6 @@ template <typename TCellContainer, ECellType TCellType> struct GetDataPolicy{
         ADataVec.reserve(ANbCells);
 
         ADataID.values.clear();
-        ADataID.values.resize(ANbCells);
 
         for(auto i_node : ACells) {
             ADataID.values[i_node] = i_node;
@@ -174,7 +173,6 @@ template <typename TCellContainer, ECellType TCellType> struct GetDataPolicy{
                     Variable<int>* v_int = dynamic_cast<Variable<int>*> (current_var);
                     IMeshIOService::DataInt data;
                     data.name = v_int->getName();
-                    data.values.resize(ANbCells);
                     for(auto i_node : ACells) {
                         data.values[i_node] = (*v_int)[i_node];
                     }
@@ -187,7 +185,6 @@ template <typename TCellContainer, ECellType TCellType> struct GetDataPolicy{
                     Variable<double>* v_double = dynamic_cast<Variable<double>*> (current_var);
                     IMeshIOService::DataReal data;
                     data.name = v_double->getName();
-                    data.values.resize(ANbCells);
                     for(auto i_node : ACells) {
                         data.values[i_node] = (*v_double)[i_node];
                     }
@@ -199,7 +196,6 @@ template <typename TCellContainer, ECellType TCellType> struct GetDataPolicy{
                     Variable<math::Vector3d>* v_vec = dynamic_cast<Variable<math::Vector3d>*> (current_var);
                     IMeshIOService::DataVector data;
                     data.name = v_vec->getName();
-                    data.values.resize(ANbCells);
                     for(auto i_node : ACells) {
                         data.values[i_node] = (*v_vec)[i_node];
                     }

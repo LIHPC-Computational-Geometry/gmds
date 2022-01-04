@@ -112,13 +112,13 @@ namespace elg3d {
         std::map<std::string, std::uintptr_t> name2Curves;
         std::map<std::string, std::uintptr_t> name2Surfaces;
         for (auto v: vertices) {
-            name2Points[v->getName()] = reinterpret_cast<std::uintptr_t> (v);
+            name2Points[v->name()] = reinterpret_cast<std::uintptr_t> (v);
         }
         for (auto c: curves) {
-            name2Curves[c->getName()] = reinterpret_cast<std::uintptr_t> (c);
+            name2Curves[c->name()] = reinterpret_cast<std::uintptr_t> (c);
         }
         for (auto s: surfaces) {
-            name2Surfaces[s->getName()] = reinterpret_cast<std::uintptr_t> (s);
+            name2Surfaces[s->name()] = reinterpret_cast<std::uintptr_t> (s);
         }
 
         double tol = gmds::math::Point(minXYZ[0], minXYZ[1], minXYZ[2]).distance(
@@ -330,13 +330,13 @@ BoundingBoxGeomAssociation_init_3D(kmds::Mesh* AMesh,
         std::map<std::string, std::uintptr_t> name2Curves;
         std::map<std::string, std::uintptr_t> name2Surfaces;
         for(auto v: vertices) {
-            name2Points[v->getName()] = reinterpret_cast<std::uintptr_t> (v);
+            name2Points[v->name()] = reinterpret_cast<std::uintptr_t> (v);
         }
         for(auto c: curves) {
-            name2Curves[c->getName()] = reinterpret_cast<std::uintptr_t> (c);
+            name2Curves[c->name()] = reinterpret_cast<std::uintptr_t> (c);
         }
         for(auto s: surfaces) {
-            name2Surfaces[s->getName()] = reinterpret_cast<std::uintptr_t> (s);
+            name2Surfaces[s->name()] = reinterpret_cast<std::uintptr_t> (s);
         }
 
         double tol = gmds::math::Point(minXYZ[0],minXYZ[1],minXYZ[2]).distance(gmds::math::Point(maxXYZ[0],maxXYZ[1],maxXYZ[2])) * 10e-14;
@@ -611,13 +611,13 @@ BoundingBoxGeomAssociation_init_3D(kmds::Mesh* AMesh,
         std::map<std::string, std::uintptr_t> name2Curves;
         std::map<std::string, std::uintptr_t> name2Surfaces;
         for(auto v: vertices) {
-            name2Points[v->getName()] = reinterpret_cast<std::uintptr_t> (v);
+            name2Points[v->name()] = reinterpret_cast<std::uintptr_t> (v);
         }
         for(auto c: curves) {
-            name2Curves[c->getName()] = reinterpret_cast<std::uintptr_t> (c);
+            name2Curves[c->name()] = reinterpret_cast<std::uintptr_t> (c);
         }
         for(auto s: surfaces) {
-            name2Surfaces[s->getName()] = reinterpret_cast<std::uintptr_t> (s);
+            name2Surfaces[s->name()] = reinterpret_cast<std::uintptr_t> (s);
         }
 
         double tol = gmds::math::Point(minXYZ[0],minXYZ[1],minXYZ[2]).distance(gmds::math::Point(maxXYZ[0],maxXYZ[1],maxXYZ[2])) * 10e-14;

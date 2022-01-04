@@ -287,18 +287,18 @@ void OpenNLFieldSolverStrategy::addBoundaryConstraints(){
 //        Node ni = it_n.value();
 //        int local_i = (*m_ordering)[ni.id()];
 //        
-//        math::Point pi = ni.getPoint();
+//        math::Point pi = ni.point();
 //        if((!m_mesh->isMarked(ni, m_markNodeLocked)) &&
 //           (!m_mesh->isMarked(ni, m_markNodeOnSurf)))
 //        {
 //            
 //            //inner node so
 //            Node closest_bnd_node =(*m_surface_nodes)[0];
-//            double closest_dist = pi.distance(closest_bnd_node.getPoint());
+//            double closest_dist = pi.distance(closest_bnd_node.point());
 //            
 //            for(unsigned int i=1; i<m_surface_nodes->size(); i++){
 //                Node bndi = (*m_surface_nodes)[i];
-//                double di = pi.distance(bndi.getPoint());
+//                double di = pi.distance(bndi.point());
 //                if(di<closest_dist){
 //                    closest_dist=di;
 //                    closest_bnd_node=bndi;

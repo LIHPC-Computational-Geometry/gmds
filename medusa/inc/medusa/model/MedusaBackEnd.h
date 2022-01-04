@@ -12,7 +12,7 @@
 #include <gmds/igalgo/BoundaryOperator.h>
 #include <gmds/graph/TopologyGraph.h>
 #include <gmds/frame3d/Params.h>
-#include <gmds/cad/GeomSmoother.h>
+#include <gmds/smoothy/LaplacianSmoother.h>
 /*----------------------------------------------------------------------------*/
 
 namespace medusa{

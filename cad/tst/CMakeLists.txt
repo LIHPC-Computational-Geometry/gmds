@@ -1,7 +1,6 @@
 add_executable(GMDS_CAD_TEST
         FACManagerTestSuite.h
         GeomLinkerTestSuite.h
-        GeomSmootherTestSuite.h
         GeomTopologyTestSuite.h
         main_test.cpp)
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*
- * Numerics.cpp
- *
- *  Created on: March 01, 2015
- *      Author: ledouxf
- */
-/*----------------------------------------------------------------------------*/
 // GMDS header files
 #include <gmds/math/Constants.h>
 #include <gmds/math/Segment.h>

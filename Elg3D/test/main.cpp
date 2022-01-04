@@ -26,6 +26,7 @@
 #include "Refinement.h"
 #include "SmartLaplacianTest.h"
 #include "SubsetProblemTest.h"
+#include "ToolsTest.h"
 
 #include <Eigen/Core>
 /*----------------------------------------------------------------------------*/

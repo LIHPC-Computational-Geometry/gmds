@@ -5,7 +5,6 @@
 
 #include "FACManagerTestSuite.h"
 #include "GeomLinkerTestSuite.h"
-#include "GeomSmootherTestSuite.h"
 #include "GeomTopologyTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {

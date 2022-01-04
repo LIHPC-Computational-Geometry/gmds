@@ -39,6 +39,10 @@ TEST(GeomLinkerTestSuite, fromSurfMesh)
     cad::GeomMeshLinker linker;
 
     manager.initAndLinkFrom3DMesh(&m_vol,&linker);
+    VTKWriter vtkW(&ioService);
+    vtkW.setCellOptions(gmds::N|gmds::R);
+    vtkW.setDataOptions(gmds::N|gmds::R);
+    vtkW.write("toto_link.vtk");
 
     ASSERT_EQ(cad::GeomMeshLinker::LINK_POINT, linker.getGeomDim<Node>(1));
     ASSERT_EQ(cad::GeomMeshLinker::LINK_POINT, linker.getGeomDim<Node>(2));
@@ -55,10 +59,10 @@ TEST(GeomLinkerTestSuite, fromSurfMesh)
     ASSERT_EQ(cad::GeomMeshLinker::LINK_SURFACE, linker.getGeomDim<Node>(24));
 
 
-    ASSERT_EQ(1, linker.getGeomId<Node>(1));
-    ASSERT_EQ(2, linker.getGeomId<Node>(2));
-    ASSERT_EQ(4, linker.getGeomId<Node>(4));
-    ASSERT_EQ(7, linker.getGeomId<Node>(7));
+    ASSERT_EQ(2, linker.getGeomId<Node>(1));
+    ASSERT_EQ(3, linker.getGeomId<Node>(2));
+    ASSERT_EQ(5, linker.getGeomId<Node>(4));
+    ASSERT_EQ(8, linker.getGeomId<Node>(7));
 
     ASSERT_EQ(4, linker.getGeomId<Node>(9));
     ASSERT_EQ(9, linker.getGeomId<Node>(15));
@@ -71,12 +75,12 @@ TEST(GeomLinkerTestSuite, fromSurfMesh)
     ASSERT_EQ(cad::GeomMeshLinker::LINK_POINT  , linker.getGeomInfo<Node>(4). first);
     ASSERT_EQ(cad::GeomMeshLinker::LINK_CURVE  , linker.getGeomInfo<Node>(18).first);
     ASSERT_EQ(cad::GeomMeshLinker::LINK_SURFACE, linker.getGeomInfo<Node>(24).first);
-    ASSERT_EQ(4 , linker.getGeomInfo<Node>(4). second);
+    ASSERT_EQ(5 , linker.getGeomInfo<Node>(4). second);
     ASSERT_EQ(11, linker.getGeomInfo<Node>(18).second);
     ASSERT_EQ(3 , linker.getGeomInfo<Node>(24).second);
 
     Node n1 = m_vol.get<Node>(1);
     ASSERT_EQ(cad::GeomMeshLinker::LINK_POINT, linker.getGeomDim(n1));
-    ASSERT_EQ(1, linker.getGeomId(n1));
+    ASSERT_EQ(2, linker.getGeomId(n1));
 
 }

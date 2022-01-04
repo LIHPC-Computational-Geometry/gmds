@@ -474,6 +474,9 @@ Connectivity::getName(const EMeshDefinition AD)
         case (F2F):
                 s = "F2F";
                 break;
+        case (F2F_byN):
+                s = "F2F_byN";
+                break;
         case (F2R):
                 s = "F2R";
                 break;

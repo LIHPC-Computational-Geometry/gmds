@@ -7,6 +7,9 @@
 #include <map>
 #include <set>
 /*----------------------------------------------------------------------------*/
+// ANN File Headers
+#include "ANN/ANN.h"
+/*----------------------------------------------------------------------------*/
 #include "gmds/cad/FACSurface.h"
 /*----------------------------------------------------------------------------*/
 #include <gmds/cad/FACManager.h>
@@ -24,8 +27,10 @@ namespace gmds{
 /*----------------------------------------------------------------------------*/
         int FACSurface::m_next_id=1;
 /*----------------------------------------------------------------------------*/
+        void FACSurface::resetIdCounter() {m_next_id=1;}
+/*----------------------------------------------------------------------------*/
         FACSurface::FACSurface(Mesh* AMesh)
-                : m_support(AMesh)
+                : m_support(AMesh), m_kd_tree(NULL)
         {}
 /*----------------------------------------------------------------------------*/
 
@@ -33,19 +38,21 @@ namespace gmds{
         FACSurface(Mesh* AMesh,
                    std::vector<TCellID >& ADiscret,
                    const std::string& AName)
-                :GeomSurface(AName),m_support(AMesh),m_id(m_next_id++), m_mesh_faces(ADiscret)
+                :GeomSurface(AName),m_support(AMesh),m_id(m_next_id++),
+                m_mesh_faces(ADiscret),m_kd_tree(NULL)
         {
-            for(auto f_id : m_mesh_faces){
-                std::vector<Node> nodes_fi;
-                m_support->get<Face>(f_id).get<Node>(nodes_fi);
-
-            }
+            buildANNTree();
         }
 /*----------------------------------------------------------------------------*/
 
         FACSurface::
         ~FACSurface()
-        {}
+        {
+            //got to clean some technical attributes used by ANN
+            delete m_kd_tree;
+            annClose();									// done with ANN
+
+        }
 /*----------------------------------------------------------------------------*/
         TCoord FACSurface::computeArea() const
         {
@@ -62,6 +69,7 @@ namespace gmds{
         void FACSurface::
         computeBoundingBox(TCoord minXYZ[3], TCoord maxXYZ[3]) const
         {
+
             std::set<TCellID> node_ids;
             for(unsigned int i=0;i<m_mesh_faces.size();i++){
 
@@ -70,7 +78,7 @@ namespace gmds{
             }
 
             // too many comparisons (3 factor)
-            math::Point pi = m_support->get<Node>(*node_ids.begin()).getPoint();
+            math::Point pi = m_support->get<Node>(*node_ids.begin()).point();
             minXYZ[0]=pi.X();
             maxXYZ[0]=pi.X();
             minXYZ[1]=pi.Y();
@@ -78,7 +86,7 @@ namespace gmds{
             minXYZ[2]=pi.Z();
             maxXYZ[2]=pi.Z();
             for(auto i:node_ids){
-                math::Point pi = m_support->get<Node>(i).getPoint();
+                math::Point pi = m_support->get<Node>(i).point();
                 if (pi.X()<minXYZ[0])
                     minXYZ[0]=pi.X();
                 else if (pi.X()>maxXYZ[0])
@@ -117,17 +125,29 @@ namespace gmds{
         math::Point FACSurface::
         closestPoint(const math::Point& AP) const
         {
-            Face f0 = m_support->get<Face>(m_mesh_faces[0]);
+            Variable<int>* var_surf = m_support->getVariable<int, GMDS_FACE>("on_surface");
+
+            Face seed = m_support->get<Face>(getANNClosestTriangle(AP));
+            std::set<TCellID> face_ids;
+            std::vector<Node> ns = seed.get<Node>();
+            for(auto n:ns){
+                std::vector<TCellID> f_ids = n.getIDs<Face>();
+                for(auto i:f_ids)
+                    if(var_surf->value(i)==this->id())
+                        face_ids.insert(i);
+            }
+
+            Face f0 = m_support->get<Face>(*face_ids.begin());
             TCoord min_dist = f0.distance(AP);
-            TCellID index = 0;
-            for(unsigned int i=1;i<m_mesh_faces.size();i++){
-                TCoord dist = m_support->get<Face>(m_mesh_faces[i]).distance(AP);
+            TCellID closest_face_id = f0.id();
+            for(auto f_id:face_ids){
+                TCoord dist = m_support->get<Face>(f_id).distance(AP);
                 if(dist<min_dist){
                     min_dist=dist;
-                    index = i;
+                    closest_face_id = f_id;
                 }
             }
-            return m_support->get<Face>(m_mesh_faces[index]).project(AP);
+            return m_support->get<Face>(closest_face_id).project(AP);
 
         }
 /*----------------------------------------------------------------------------*/
@@ -145,6 +165,11 @@ namespace gmds{
             for(unsigned int i=0; i<AFaces.size(); i++) {
                 m_mesh_faces[i] = AFaces[i].id();
             }
+
+            if(m_kd_tree!=NULL)
+                delete m_kd_tree;
+
+            buildANNTree();
         }
 /*----------------------------------------------------------------------------*/
         void FACSurface::
@@ -165,7 +190,7 @@ namespace gmds{
             {
                 gmds::Face current = m_support->get<gmds::Face>(m_mesh_faces[i]);
                 std::vector<Node> nodes = current.get<Node>();
-                ATri[i]=math::Triangle(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint());
+                ATri[i]=math::Triangle(nodes[0].point(), nodes[1].point(), nodes[2].point());
             }
         }
 /*----------------------------------------------------------------------------*/
@@ -239,6 +264,65 @@ namespace gmds{
 /*----------------------------------------------------------------------------*/
         std::vector<GeomVolume*>& FACSurface::volumes() {
             return m_adjacent_volumes;
+        }
+        /*---------------------------------------------------------------------------*/
+        void FACSurface::buildANNTree() {
+
+            int dim = 3;                         // dimension
+            int maxPts = m_mesh_faces.size();    // maximum number of data points
+            ANNpointArray dataPts;               // data points
+            dataPts = annAllocPts(maxPts, dim);  // allocate data points
+
+            //========================================================
+            // (1) Fill in the  ANN structure for storing points
+            // Important: Points in APnts and dataPnts are stored with
+            // same index.
+            //========================================================
+            int nPts=0;  // actual number of data points
+
+            while (nPts < maxPts) {
+                math::Point p = m_support->get<Face>(m_mesh_faces[nPts]).center();
+                dataPts[nPts][0] = p.X();
+                dataPts[nPts][1] = p.Y();
+                dataPts[nPts][2] = p.Z();
+                nPts++;
+            };
+            //========================================================
+            // (2) Build the search structure
+            //========================================================
+            if (m_kd_tree != NULL)
+                throw GMDSException("FACSurface Issue: the kd tree structure was previously initialized");
+            m_kd_tree = new ANNkd_tree(dataPts,// the data points
+                                       nPts,   // number of points
+                                       dim);   // dimension of space
+        }
+        /*---------------------------------------------------------------------------*/
+        TCellID FACSurface::getANNClosestTriangle(const math::Point& AP) const {
+            int k = 1;      // max number of nearest neighbors
+            int dim = 3;       // dimension
+
+            ANNpoint queryPt;           // query point
+            ANNidxArray nnIdx;          // near neighbor indices
+            ANNdistArray dists;         // near neighbor distances
+            queryPt = annAllocPt(dim);  // allocate 1 query point
+            nnIdx = new ANNidx[k];      // allocate near neigh indices
+            dists = new ANNdist[k];     // allocate near neighbor dists
+
+            queryPt[0] = AP.X();
+            queryPt[1] = AP.Y();
+            queryPt[2] = AP.Z();
+
+            m_kd_tree->annkSearch(	// search
+                    queryPt,// query point
+                    k,
+                    nnIdx,
+                    dists,
+                    0.01);
+            int idx = nnIdx[0];
+            delete [] nnIdx;
+            delete [] dists;
+
+            return m_mesh_faces[idx];
         }
 /*----------------------------------------------------------------------------*/
     } // namespace cad

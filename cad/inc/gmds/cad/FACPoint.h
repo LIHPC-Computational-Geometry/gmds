@@ -137,7 +137,7 @@ namespace gmds{
                     gmds::math::Point pt_res(AP);
 
                     for(int i_p=0; i_p<pnts_.size(); i_p++) {
-                        gmds::math::Point pt_tmp = m_support->get<gmds::Node>(pnts_[i_p]).getPoint();
+                        gmds::math::Point pt_tmp = m_support->get<gmds::Node>(pnts_[i_p]).point();
 
                         double dist2 = AP.distance2(pt_tmp);
                         if(dist2 < dist2_max) {
@@ -169,6 +169,9 @@ namespace gmds{
              */
             virtual std::vector<GeomVolume*>& volumes();
 
+            /**@brief Reset the global id counter to 1.
+             */
+            static void resetIdCounter();
         private:
 
             int m_id;
@@ -189,6 +192,8 @@ namespace gmds{
             std::vector<GeomSurface*> m_adjacent_surfaces;
             /** adjacent geometric volumes*/
             std::vector<GeomVolume*> m_adjacent_volumes;
+
+
         };
 /*----------------------------------------------------------------------------*/
     } // namespace cad

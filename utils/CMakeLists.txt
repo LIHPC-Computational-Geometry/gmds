@@ -25,6 +25,7 @@ set(GMDS_INC
         inc/gmds/utils/RandomGenerator.h
         )
 set(GMDS_SRC
+        inc/gmds/utils/Array.h
         src/CommonTypes.cpp
         src/Log.cpp
         src/BitVector.cpp
@@ -33,8 +34,7 @@ set(GMDS_SRC
         src/LocalCellTopology.cpp
         src/OrientedGraph.cpp
         src/Parameters.cpp
-        src/RandomGenerator.cpp
-        )
+        src/RandomGenerator.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

@@ -169,7 +169,6 @@ void ISimplexMeshIOService::getDataNodes(DataID& ADataID,
   ADataVec.reserve(ANbCells);
 
   ADataID.values.clear();
-  ADataID.values.resize(ANbCells);
   unsigned int cpt = 0;
 
   for(unsigned int nodeId = 0; nodeId < bitVecNode.capacity() ; nodeId++)
@@ -189,7 +188,6 @@ void ISimplexMeshIOService::getDataNodes(DataID& ADataID,
               Variable<math::Vector3d>* v_vec = dynamic_cast<Variable<math::Vector3d>*> (current_var);
               IMeshIOService::DataVector data;
               data.name = v_vec->getName();
-              data.values.resize(ANbCells);
               for(auto i_node : bitVecNode) {
                   data.values[i_node] = (*v_vec)[i_node];
               }
@@ -201,7 +199,6 @@ void ISimplexMeshIOService::getDataNodes(DataID& ADataID,
             Variable<double>* v_vec = dynamic_cast<Variable<double>*> (current_var);
             IMeshIOService::DataReal data;
             data.name = v_vec->getName();
-            data.values.resize(ANbCells);
             for(auto i_node : bitVecNode) {
                 data.values[i_node] = (*v_vec)[i_node];
             }
@@ -213,7 +210,6 @@ void ISimplexMeshIOService::getDataNodes(DataID& ADataID,
             Variable<int>* v_vec = dynamic_cast<Variable<int>*> (current_var);
             IMeshIOService::DataInt data;
             data.name = v_vec->getName();
-            data.values.resize(ANbCells);
             for(auto i_node : bitVecNode) {
                 data.values[i_node] = (*v_vec)[i_node];
             }
@@ -249,7 +245,6 @@ void ISimplexMeshIOService::getDataFaces(DataID& ADataID,
   ADataVec.reserve(ANbFaces);
 
   ADataID.values.clear();
-  ADataID.values.resize(ANbFaces);
   unsigned int cpt = 0;
 
   for(unsigned int triId = 1; triId < bitVecTri.capacity() ; triId++)
@@ -293,7 +288,7 @@ void ISimplexMeshIOService::getDataFaces(DataID& ADataID,
             std::cout << "var_int" << std::endl;
             Variable<int>* v_vec = dynamic_cast<Variable<int>*> (current_var);
             IMeshIOService::DataInt data;
-            data.name = v_vec->getName();
+            data.name = v_vec->name();
             data.values.resize(ANbFaces);
             for(unsigned int tri = 1 ; tri < bitVecTri.capacity() ; tri++)
             {
@@ -331,7 +326,6 @@ void ISimplexMeshIOService::getDataRegions(DataID& ADataID,
   ADataVec.reserve(ANbCells);
 
   ADataID.values.clear();
-  ADataID.values.resize(ANbCells);
 
   unsigned int cpt = 0;
   for(unsigned int tetId = 0; tetId < bitVecTet.capacity() ; tetId++)
@@ -362,7 +356,7 @@ void ISimplexMeshIOService::getDataRegions(DataID& ADataID,
           {
             Variable<double>* v_vec = dynamic_cast<Variable<double>*> (current_var);
             IMeshIOService::DataReal data;
-            data.name = v_vec->getName();
+            data.name = v_vec->name();
             data.values.resize(ANbCells);
             for(auto i_node : bitVecNode) {
                 data.values[i_node] = (*v_vec)[i_node];
