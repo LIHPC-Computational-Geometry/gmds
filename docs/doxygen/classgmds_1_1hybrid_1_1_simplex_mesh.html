@@ -219,6 +219,18 @@ TSimplexID&#160;</td><td class="memItemRight" valign="bottom"><b>addTetraedre</b
 <tr class="memitem:a2d04e60d950dc1ee86922ae3056fd8d7"><td class="memItemLeft" align="right" valign="top"><a id="a2d04e60d950dc1ee86922ae3056fd8d7"></a>
 TSimplexID&#160;</td><td class="memItemRight" valign="bottom"><b>addTetraedre</b> (const TInt AIndexPoint0, const TInt AIndexPoint1, const TInt AIndexPoint2, const TInt AIndexPoint3, const bool rebuildAdjinfo=true)</td></tr>
 <tr class="separator:a2d04e60d950dc1ee86922ae3056fd8d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7873123ebb8e2c6d17925fbcb7f5876"><td class="memItemLeft" align="right" valign="top"><a id="ae7873123ebb8e2c6d17925fbcb7f5876"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>fillHexahedron</b> (const TInt ANode0, const TInt ANode1, const TInt ANode2, const TInt ANode3, const TInt ANode4, const TInt ANode5, const TInt ANode6, const TInt ANode7)</td></tr>
+<tr class="separator:ae7873123ebb8e2c6d17925fbcb7f5876"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4d399795f74101e350a0db6dd5a45ee"><td class="memItemLeft" align="right" valign="top"><a id="af4d399795f74101e350a0db6dd5a45ee"></a>
+const std::vector&lt; std::vector&lt; TInt &gt; &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getHexadronData</b> ()</td></tr>
+<tr class="separator:af4d399795f74101e350a0db6dd5a45ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a639d9656bd087b64c6b475f920b41a3e"><td class="memItemLeft" align="right" valign="top"><a id="a639d9656bd087b64c6b475f920b41a3e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setHexadronData</b> (std::vector&lt; std::vector&lt; TInt &gt;&gt; &amp;hexahedronData)</td></tr>
+<tr class="separator:a639d9656bd087b64c6b475f920b41a3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7535fbac6e43901aa388bc403e517e4"><td class="memItemLeft" align="right" valign="top"><a id="aa7535fbac6e43901aa388bc403e517e4"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setMarkedTet</b> (const <a class="el" href="classgmds_1_1_bit_vector.html">gmds::BitVector</a> &amp;markedTet)</td></tr>
+<tr class="separator:aa7535fbac6e43901aa388bc403e517e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a64da78119d43903b06a805e60e5f29d0"><td class="memItemLeft" align="right" valign="top"><a id="a64da78119d43903b06a805e60e5f29d0"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>checkMesh</b> ()</td></tr>
 <tr class="separator:a64da78119d43903b06a805e60e5f29d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -234,6 +246,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>doNodeExist</b> (cons
 <tr class="memitem:a86c223373fdc62de4c40243a9da44c59"><td class="memItemLeft" align="right" valign="top"><a id="a86c223373fdc62de4c40243a9da44c59"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>buildSimplexHull</b> ()</td></tr>
 <tr class="separator:a86c223373fdc62de4c40243a9da44c59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9ba26914bab3928661f8aa82a19331f"><td class="memItemLeft" align="right" valign="top"><a id="ac9ba26914bab3928661f8aa82a19331f"></a>
+TInt&#160;</td><td class="memItemRight" valign="bottom"><b>findRemainTriangleIdx</b> (const TInt tri, <a class="el" href="classgmds_1_1_bit_vector.html">gmds::BitVector</a> &amp;cyclingCheck)</td></tr>
+<tr class="separator:ac9ba26914bab3928661f8aa82a19331f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3a33a7479f1b19772d228836f2aa0614"><td class="memItemLeft" align="right" valign="top"><a id="a3a33a7479f1b19772d228836f2aa0614"></a>
 <a class="el" href="classgmds_1_1hybrid_1_1_simplex_mesh.html">SimplexMesh</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>buildRobustLayerMesh</b> (const unsigned int nbrLayer)</td></tr>
 <tr class="separator:a3a33a7479f1b19772d228836f2aa0614"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -309,6 +324,9 @@ const <a class="el" href="classgmds_1_1_bit_vector.html">gmds::BitVector</a> &am
 <tr class="memitem:a057c9f4974763035e0a1906b0743193c"><td class="memItemLeft" align="right" valign="top"><a id="a057c9f4974763035e0a1906b0743193c"></a>
 const <a class="el" href="classgmds_1_1_bit_vector.html">gmds::BitVector</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getBitVectorTet</b> () const</td></tr>
 <tr class="separator:a057c9f4974763035e0a1906b0743193c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9995aa08278fde04d0cb3ee34daebd77"><td class="memItemLeft" align="right" valign="top"><a id="a9995aa08278fde04d0cb3ee34daebd77"></a>
+const <a class="el" href="classgmds_1_1_bit_vector.html">gmds::BitVector</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getMarkedTet</b> () const</td></tr>
+<tr class="separator:a9995aa08278fde04d0cb3ee34daebd77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d5514a2b261ed64f3293c67ccd60617"><td class="memItemLeft" align="right" valign="top"><a id="a6d5514a2b261ed64f3293c67ccd60617"></a>
 const <a class="el" href="classgmds_1_1_bit_vector.html">gmds::BitVector</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getBitVectorTri</b> () const</td></tr>
 <tr class="separator:a6d5514a2b261ed64f3293c67ccd60617"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -377,9 +395,27 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>pointsLabeling</b> (c
 <tr class="memitem:a28d536c96d941bd57cc7878ed6b4bff6"><td class="memItemLeft" align="right" valign="top"><a id="a28d536c96d941bd57cc7878ed6b4bff6"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>fillBNDVariable</b> ()</td></tr>
 <tr class="separator:a28d536c96d941bd57cc7878ed6b4bff6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abc1dc2c27f89f8fd163d26f55bca17bb"><td class="memItemLeft" align="right" valign="top"><a id="abc1dc2c27f89f8fd163d26f55bca17bb"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>edgesRemove</b> (const <a class="el" href="classgmds_1_1_bit_vector.html">gmds::BitVector</a> &amp;nodeBitVector)</td></tr>
-<tr class="separator:abc1dc2c27f89f8fd163d26f55bca17bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f4ceb44747c9c767a95bd5e7a17feee"><td class="memItemLeft" align="right" valign="top"><a id="a1f4ceb44747c9c767a95bd5e7a17feee"></a>
+unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>edgesRemove</b> (const <a class="el" href="classgmds_1_1_bit_vector.html">gmds::BitVector</a> &amp;nodeBitVector, std::vector&lt; TSimplexID &gt; &amp;deletedNodes)</td></tr>
+<tr class="separator:a1f4ceb44747c9c767a95bd5e7a17feee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73939441d87c3af551f7fa76277042d7"><td class="memItemLeft" align="right" valign="top"><a id="a73939441d87c3af551f7fa76277042d7"></a>
+unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>buildEdges</b> (const std::multimap&lt; TInt, TInt &gt; &amp;AEdges, const <a class="el" href="classgmds_1_1_bit_vector.html">gmds::BitVector</a> &amp;nodeBitVector)</td></tr>
+<tr class="separator:a73939441d87c3af551f7fa76277042d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74ae41f2b80924327e72f20bf71f7543"><td class="memItemLeft" align="right" valign="top"><a id="a74ae41f2b80924327e72f20bf71f7543"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>isHexaEdgeBuild</b> (const std::vector&lt; std::vector&lt; TInt &gt;&gt; &amp;ANodesFaces)</td></tr>
+<tr class="separator:a74ae41f2b80924327e72f20bf71f7543"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd2e0cf1d1c7455c639ef86846447fae"><td class="memItemLeft" align="right" valign="top"><a id="acd2e0cf1d1c7455c639ef86846447fae"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>whatFaceIsBuilt</b> (const std::vector&lt; std::vector&lt; TInt &gt;&gt; &amp;ANodesFaces, std::multimap&lt; TInt, std::pair&lt; TInt, TInt &gt;&gt; &amp;facesAlreadyBuilt)</td></tr>
+<tr class="separator:acd2e0cf1d1c7455c639ef86846447fae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a024f0501310906b8157be5faedc4f717"><td class="memItemLeft" align="right" valign="top"><a id="a024f0501310906b8157be5faedc4f717"></a>
+std::vector&lt; TSimplexID &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>hex2tet</b> (const std::vector&lt; TInt &gt; &amp;ANodesHex)</td></tr>
+<tr class="separator:a024f0501310906b8157be5faedc4f717"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b2679cab86e19f48418ca0eee1a3c71"><td class="memItemLeft" align="right" valign="top"><a id="a3b2679cab86e19f48418ca0eee1a3c71"></a>
+std::vector&lt; TSimplexID &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>initializeCavityWith</b> (const TInt nodeA, const TInt nodeB)</td></tr>
+<tr class="separator:a3b2679cab86e19f48418ca0eee1a3c71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67c60eeadb5ffa7c4e076804763b53a4"><td class="memItemLeft" align="right" valign="top"><a id="a67c60eeadb5ffa7c4e076804763b53a4"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>buildFace</b> (const std::vector&lt; TInt &gt; &amp;nodes, const <a class="el" href="classgmds_1_1_bit_vector.html">gmds::BitVector</a> &amp;nodeAdded, const std::multimap&lt; TInt, std::pair&lt; TInt, TInt &gt;&gt; &amp;facesAlreadyBuilt)</td></tr>
+<tr class="separator:a67c60eeadb5ffa7c4e076804763b53a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a504060c7189304aff7b0ff42f1eab718"><td class="memItemLeft" align="right" valign="top"><a id="a504060c7189304aff7b0ff42f1eab718"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>pointInTriangle</b> (const <a class="el" href="classgmds_1_1math_1_1_point.html">math::Point</a> &amp;query_point, const <a class="el" href="classgmds_1_1math_1_1_point.html">math::Point</a> &amp;triangle_vertex_0, const <a class="el" href="classgmds_1_1math_1_1_point.html">math::Point</a> &amp;triangle_vertex_1, const <a class="el" href="classgmds_1_1math_1_1_point.html">math::Point</a> &amp;triangle_vertex_2, double &amp;distance, <a class="el" href="classgmds_1_1math_1_1_point.html">math::Point</a> &amp;projectedPoint)</td></tr>
 <tr class="separator:a504060c7189304aff7b0ff42f1eab718"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -400,6 +436,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>setOctree</b> (<a cla
 <tr class="memitem:aedd623fe536b9afe4e7598706329992c"><td class="memItemLeft" align="right" valign="top"><a id="aedd623fe536b9afe4e7598706329992c"></a>
 <a class="el" href="classgmds_1_1hybrid_1_1_octree.html">Octree</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>getOctree</b> ()</td></tr>
 <tr class="separator:aedd623fe536b9afe4e7598706329992c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3881a678eef57087a5f4c93858ba0562"><td class="memItemLeft" align="right" valign="top"><a id="a3881a678eef57087a5f4c93858ba0562"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>subSurfaceFactor</b> (const std::vector&lt; std::vector&lt; TInt &gt;&gt; &amp;faces)</td></tr>
+<tr class="separator:a3881a678eef57087a5f4c93858ba0562"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
