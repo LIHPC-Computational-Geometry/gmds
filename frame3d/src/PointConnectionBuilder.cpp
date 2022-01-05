@@ -1062,23 +1062,7 @@ void PointConnectionBuilder::getHexes(std::vector<std::vector<int> > &AHexes)
     }
 }
 /*---------------------------------------------------------------------------*/
-void PointConnectionBuilder::getHexes(std::vector<std::vector<int> > &AHexes)
-{
-    Variable<int>* var_id = m_hexes.getVariable<int,GMDS_NODE>("HD_ID");
-
-    for(auto h_id:m_hexes.regions()){
-        std::vector<TCellID> node_ids = m_hexes.get<Region>(h_id).getIDs<Node>();
-        std::vector<int> ids;
-        ids.resize(8);
-        for(auto i=0;i<8;i++) {
-            ids[i]= var_id->value(node_ids[i]);
-        }
-        AHexes.push_back(ids);
-    }
-}
-/*---------------------------------------------------------------------------*/
-void PointConnectionBuilder::
-buildHexCorners(std::vector<std::vector<OrientedEdge> >& AEdges)
+void PointConnectionBuilder::buildHexCorners(std::vector<std::vector<OrientedEdge> >& AEdges)
 {
     for(unsigned int i=0; i<m_pnt.size(); i++){
         math::Point pi = m_pnt[i];
