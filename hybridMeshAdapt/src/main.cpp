@@ -23,9 +23,5 @@ using namespace hybrid::simplicesNode;
 /*----------------------------------------------------------------------------*/
 int main(int argc, char* argv[])
 {
-    std::cout << "==== SOFIANE ====" << std::endl;
-
-    std::cout << "limite min : " << std::numeric_limits<int64_t>::min() << std::endl;
-    std::cout << "limite max : " << std::numeric_limits<int32_t>::max() << std::endl;
-
+  
 }
