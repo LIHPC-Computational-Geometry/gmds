@@ -5493,6 +5493,22 @@ double SimplexMesh::subSurfaceFactor(const std::vector<std::vector<TInt>>& faces
   return res;
 }
 /******************************************************************************/
+void SimplexMesh::changeNodeCoord(const unsigned int nodeId, const math::Point& point)
+{
+  if(nodeId < m_node_ids.capacity())
+  {
+    //todo put a throw here
+    if(m_node_ids[nodeId] == 1)
+    {
+        m_coords[nodeId] = point;
+    }
+  }
+  else
+  {
+    std::cout << "nodeId > m_node_ids.capacity()" << std::endl;
+  }
+}
+/******************************************************************************/
 bool SimplexMesh::pointInTriangle(const math::Point& query_point,
                      const math::Point& triangle_vertex_0,
                      const math::Point& triangle_vertex_1,

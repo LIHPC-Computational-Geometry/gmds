@@ -83,6 +83,8 @@ namespace gmds
           /*adding some point to the mesh and check if  this point already exist*/
           void detectType(const nodeNeighborInfo& nodeInfo) const;
 
+          std::vector<TInt> getNeighboorNodes();
+
           SimplicesNode& operator=                         (const SimplicesNode& simpliceNodeA)
           {
             this->m_simplex_mesh = simpliceNodeA.m_simplex_mesh;

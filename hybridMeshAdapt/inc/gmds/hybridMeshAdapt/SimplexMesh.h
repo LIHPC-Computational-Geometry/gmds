@@ -403,6 +403,8 @@ class SimplexMesh
 
   double subSurfaceFactor(const std::vector<std::vector<TInt>>& faces);
 
+  void changeNodeCoord(const unsigned int nodeId, const math::Point& point);
+
 private:
 
   //node coordinates with bitvector

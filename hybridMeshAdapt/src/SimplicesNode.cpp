@@ -801,3 +801,24 @@ void SimplicesNode::detectType(const nodeNeighborInfo& nodeInfo) const
   }
 }
 /******************************************************************************/
+std::vector<TInt> SimplicesNode::getNeighboorNodes()
+{
+  std::vector<TInt> res;
+  std::set<TInt> s;
+  const std::vector<TInt>&& ball = ballOf();
+
+  for(auto const & tet : ball)
+  {
+    if(tet >= 0)
+    {
+      const std::vector<TInt>&& nodes = SimplicesCell(m_simplex_mesh, tet).getNodes();
+      for(auto const node : nodes)
+      {
+        s.insert(node);
+      }
+    }
+  }
+
+  std::copy(s.begin(), s.end(), std::back_inserter(res));
+  return res;
+}

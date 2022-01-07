@@ -8,6 +8,7 @@ add_executable(GMDS_SIMPLEX_TEST
         ModeleCAD3.h
         ModeleCAD4.h
         ModeleCAD5.h
+        MeshTransformationTest.h
         main_test.cpp)
 
 target_link_libraries(GMDS_SIMPLEX_TEST PUBLIC
