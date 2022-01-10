@@ -48,21 +48,10 @@ int main(int argc, char* argv[])
     vtkReader.setCellOptions(gmds::N | gmds::R);
     vtkReader.read(fIn);
 
-
     MeshDoctor doctor(&m);
     doctor.buildFacesAndR2F();
     doctor.buildEdgesAndX2E();
     doctor.updateUpwardConnectivity();
-
-
-    ParamsGlobal pg;
-    pg.algo_choice=ParamsGlobal::STABLE_HEX_GENERATION;
-    pg.start_from=ParamsGlobal::FF_GEN;
-    pg.stop_at=ParamsGlobal::FF_SMOOTH;
-    pg.with_debug_files=true;
-    pg.with_quad_bnd_constraint=false;
-    pg.mesh_file=fIn;
-    pg.output_dir=fOut;
 
     ParamsMark pm;
     pm.mark_node_on_surf = m.newMark<Node>();
