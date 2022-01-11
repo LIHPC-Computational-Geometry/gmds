@@ -281,11 +281,11 @@ void MeshTransformation::resolveSystemByIterativeGradient()
       }
     }
 
-    gmds::ISimplexMeshIOService ioService(m_simplexMesh);
+    /*gmds::ISimplexMeshIOService ioService(m_simplexMesh);
     gmds::VTKWriter vtkWriter(&ioService);
     vtkWriter.setCellOptions(gmds::N|gmds::R);
     std::string name = "TRANSFORMATION_CUBE_" + std::to_string(cpt) + ".vtk";
-    vtkWriter.write(name);
+    vtkWriter.write(name);*/
   }
 }
 /******************************************************************************/

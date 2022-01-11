@@ -1,3 +1,11 @@
+add_executable(GMDS_SIMPLEX_METRIC_TRANSFORMATION
+        main_METRIC_BASED_TRANSFORMATION.cpp)
+
+target_link_libraries(GMDS_SIMPLEX_METRIC_TRANSFORMATION PUBLIC
+        ${GMDS_LIB}
+        ${LIB_GMDS_IO}
+        )
+
 add_executable(GMDS_SIMPLEX_TEST
         SimplexMeshTestAdd_NTt.h
         SimplexMeshTestSuite.h
