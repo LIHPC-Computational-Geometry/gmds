@@ -12,7 +12,6 @@
 #include <iostream>
 #include <gmds/io/VTKWriter.h>
 /*----------------------------------------------------------------------------*/
-#include <gtest/gtest.h>
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
 int main(int argc, char* argv[])
