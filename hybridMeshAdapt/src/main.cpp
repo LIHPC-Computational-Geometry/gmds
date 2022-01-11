@@ -23,5 +23,5 @@ using namespace hybrid::simplicesNode;
 /*----------------------------------------------------------------------------*/
 int main(int argc, char* argv[])
 {
-  
+
 }
