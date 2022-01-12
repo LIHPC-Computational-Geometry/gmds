@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*/
-#ifndef GMDS_SMOOTH2D_H
-#define GMDS_SMOOTH2D_H
+#ifndef GMDS_CLAIRE_SMOOTH2D_H
+#define GMDS_CLAIRE_SMOOTH2D_H
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/ig/Mesh.h>
@@ -8,6 +8,7 @@
 #include <string>
 #include <map>
 /*----------------------------------------------------------------------------*/
+#include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
     class LIB_GMDS_CLAIRE_API Smooth2D {
@@ -46,6 +47,14 @@ namespace gmds {
          *         corresponding stencils
          */
         void buildStencils();
+	     //void PerturbationMaillage(const Variable<int>* var_bnd, const double dx, const double dy);
+	     math::Point FindMidBranche(const math::Point A, const math::Point B, const math::Point C);
+	     bool CheckStructuredMesh();
+	     void write_debug_txt(int n_id, const Variable<math::Point> *old_coords,
+	                          math::Point H1, math::Point H2, math::Point H3,
+	                          math::Point V1, math::Point V2, math::Point V3,
+	                          math::Point Point_Intersection,
+	                          std::string AFileName);
     private:
         /** mesh we work on */
         Mesh *m_mesh;
@@ -64,5 +73,5 @@ namespace gmds {
 /*----------------------------------------------------------------------------*/
 }     // namespace gmds
 /*----------------------------------------------------------------------------*/
-#endif     // GMDS_SMOOTH2D_H
+#endif     // GMDS_CLAIRE_SMOOTH2D_H
 /*----------------------------------------------------------------------------*/

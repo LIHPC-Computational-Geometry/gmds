@@ -12,7 +12,7 @@ set(GMDS_INC
 set(GMDS_SRC
 		src/main.cpp
 		src/Smooth2D.cpp
-		)
+        inc/gmds/claire/Grid_Smooth2D.h src/Grid_Smooth2D.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
