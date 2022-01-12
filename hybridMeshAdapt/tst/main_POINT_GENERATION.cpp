@@ -160,7 +160,7 @@ int main(int argc, char* argv[])
         std::cout<<"NB POINTS = "<<ptg.points().size()<<std::endl;
         //  writePoints(ptg->points());
         //extraction of the edges
-        /*PointConnectionBuilder pcb(&m,
+        PointConnectionBuilder pcb(&m,
                                    ptg.points(),
                                    ptg.charts(),
                                    ptg.pointMeshData(),
@@ -171,18 +171,18 @@ int main(int argc, char* argv[])
                                    ptg.pointSurfaceNormal());
         pcb.setDebugInfo(true);
         pcb.execute();
-        std::cout << "pcb.execute(); done " << std::endl;*/
+        std::cout << "pcb.execute(); done " << std::endl;
 
 
         ////////
         MeshModel model(DIM3 | R  | F | N | R2N | F2N);
         Mesh point_mesh(model);
 
-        /*std::vector<std::pair<int, int>> AEdges;
+        std::vector<std::pair<int, int>> AEdges;
         pcb.getEdges(AEdges);
 
         std::vector<std::vector<int>> AHexes;
-        pcb.getHexes(AHexes);*/
+        pcb.getHexes(AHexes);
 
 
 
@@ -198,10 +198,6 @@ int main(int argc, char* argv[])
         const std::vector<int>& pointClassification   = ptg.pointClassification();
         const std::vector<int>& pointCurveNumbering   = ptg.pointCurveNumbering();
         const std::vector<int>& pointSurfaceNumbering = ptg.pointSurfaceNumbering();
-
-        std::cout << "pointClassification.size() --> " << pointClassification.size() << std::endl;
-        std::cout << "pointCurveNumbering.size() --> " << pointCurveNumbering.size() << std::endl;
-        std::cout << "pointSurfaceNumbering.size() --> " << pointSurfaceNumbering.size() << std::endl;
 
         unsigned int cpt = 0;
         for(auto pi:ptg.points()){
@@ -227,10 +223,10 @@ int main(int argc, char* argv[])
         writer3.setCellOptions(gmds::N | gmds::R);
         writer3.setDataOptions(gmds::N | gmds::R);
         writer3.write("POINT_GENERATED.vtk");
-        return 0 ;
 
 
-        /*for(auto const e : AEdges)
+
+        for(auto const e : AEdges)
         {
           point_mesh.newTriangle(e.first, e.second, e.second);
         }
@@ -244,7 +240,7 @@ int main(int argc, char* argv[])
         VTKWriter writer2(&ioService2);
         writer2.setCellOptions(gmds::N|gmds::R|gmds::F);
         writer2.setDataOptions(gmds::N|gmds::R|gmds::F);
-        writer2.write("CUBE_TRANSFORED_POINT_GENERATED.vtk");*/
+        writer2.write("CUBE_TRANSFORED_POINT_GENERATED.vtk");
 
 
         m.unmarkAll<Node>(pm.mark_node_on_surf );

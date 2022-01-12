@@ -155,7 +155,7 @@ markCellsOnCurves(const int AMarkBF,  //mark for faces on surfaces //IN
 
     int cpt1 = 0, cpt2 = 0;
     Variable<int>* CURVE_NODE = m_mesh->getVariable<int, GMDS_NODE>("BND_CURVE_COLOR"  );
-    Variable<int>* VERTEX_NODE = m_mesh->getVariable<int, GMDS_NODE>("BND_VETEX_COLOR"  );
+    Variable<int>* VERTEX_NODE = m_mesh->getVariable<int, GMDS_NODE>("BND_VERTEX_COLOR"  );
 
     if(CURVE_NODE == nullptr)
     {
@@ -263,7 +263,7 @@ void BoundaryOperator::markNodesOnPoint(const int AMarkCE,// edge on curve IN
                                         const int AMarkPN)// node on vertex OUT
 {
     int cpt1=0, cpt2=0;
-    Variable<int>* VERTEX_NODE = m_mesh->getVariable<int, GMDS_NODE>("BND_VETEX_COLOR"  );
+    Variable<int>* VERTEX_NODE = m_mesh->getVariable<int, GMDS_NODE>("BND_VERTEX_COLOR"  );
 
     if(VERTEX_NODE == nullptr)
     {
