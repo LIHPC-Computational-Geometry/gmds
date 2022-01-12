@@ -154,55 +154,87 @@ markCellsOnCurves(const int AMarkBF,  //mark for faces on surfaces //IN
 {
 
     int cpt1 = 0, cpt2 = 0;
-    for (auto e_id: m_mesh->edges())  {
+    Variable<int>* CURVE_NODE = m_mesh->getVariable<int, GMDS_NODE>("BND_CURVE_COLOR"  );
+    Variable<int>* VERTEX_NODE = m_mesh->getVariable<int, GMDS_NODE>("BND_VETEX_COLOR"  );
 
+    if(CURVE_NODE == nullptr)
+    {
+      for (auto e_id: m_mesh->edges())  {
+
+          if (m_mesh->isMarked<Edge>(e_id, AMarkBE)) {
+              Edge e = m_mesh->get<Edge>(e_id);
+              cpt1++;
+              // We compute normals to the adjacent boundary faces and their
+              // scalar products
+              std::vector<Face> adj_faces = e.get<Face>();
+              if(adj_faces.size()==1) {
+                  //2D boundary edge
+                  m_mesh->mark(e, AMarkCE);
+                  std::vector<Node> e_nodes = e.get<Node>();
+                  m_mesh->mark(e_nodes[0], AMarkCN);
+                  m_mesh->mark(e_nodes[1], AMarkCN);
+              } // if(adj_faces.size()==1) {
+              else{
+                  std::vector<Face> boundary_adj_faces;
+
+                  for (unsigned int i = 0; i < adj_faces.size(); i++) {
+                      Face current_face = adj_faces[i];
+                      if (m_mesh->isMarked(current_face, AMarkBF))
+                          boundary_adj_faces.push_back(current_face);
+                  }
+
+                  if (boundary_adj_faces.size() != 2){
+                      throw GMDSException("a boundary edge should be adjacent to 2 boundary faces!!!");
+                  }
+
+                  Face f0 = boundary_adj_faces[0];
+                  Face f1 = boundary_adj_faces[1];
+
+                  //LA SUITE DES VECTEURS A CONSTRUIRE A BASE DE POINTS
+                  math::Vector3d n0 = /*f0.normal();*/getOutputNormalOfABoundaryFace(f0);
+                  math::Vector3d n1 = /*f1.normal();*/getOutputNormalOfABoundaryFace(f1);
+
+
+                  double dotProduct = n0.dot(n1);
+
+                  if (dotProduct < m_surface_angle_dot)//(sqrt(2.0) / 2.0))
+                  {
+                      cpt2++;
+                      m_mesh->mark(e, AMarkCE);
+                      std::vector<TCellID > e_nodes = e.getIDs<Node>();
+                      m_mesh->mark<Node>(e_nodes[0], AMarkCN);
+                      m_mesh->mark<Node>(e_nodes[1], AMarkCN);
+                  }
+              }
+          }//else{
+      } //for (; !it.isDone(); it.next())  {
+    }
+    else
+    {
+      for (auto e_id: m_mesh->edges())  {
         if (m_mesh->isMarked<Edge>(e_id, AMarkBE)) {
             Edge e = m_mesh->get<Edge>(e_id);
-            cpt1++;
-            // We compute normals to the adjacent boundary faces and their
-            // scalar products
-            std::vector<Face> adj_faces = e.get<Face>();
-            if(adj_faces.size()==1) {
-                //2D boundary edge
-                m_mesh->mark(e, AMarkCE);
-                std::vector<Node> e_nodes = e.get<Node>();
-                m_mesh->mark(e_nodes[0], AMarkCN);
-                m_mesh->mark(e_nodes[1], AMarkCN);
-            } // if(adj_faces.size()==1) {
-            else{
-                std::vector<Face> boundary_adj_faces;
+            std::vector<Node> e_nodes = e.get<Node>();
 
-                for (unsigned int i = 0; i < adj_faces.size(); i++) {
-                    Face current_face = adj_faces[i];
-                    if (m_mesh->isMarked(current_face, AMarkBF))
-                        boundary_adj_faces.push_back(current_face);
-                }
-
-                if (boundary_adj_faces.size() != 2){
-                    throw GMDSException("a boundary edge should be adjacent to 2 boundary faces!!!");
-                }
-
-                Face f0 = boundary_adj_faces[0];
-                Face f1 = boundary_adj_faces[1];
-
-                //LA SUITE DES VECTEURS A CONSTRUIRE A BASE DE POINTS
-                math::Vector3d n0 = /*f0.normal();*/getOutputNormalOfABoundaryFace(f0);
-                math::Vector3d n1 = /*f1.normal();*/getOutputNormalOfABoundaryFace(f1);
-
-
-                double dotProduct = n0.dot(n1);
-
-                if (dotProduct < m_surface_angle_dot)//(sqrt(2.0) / 2.0))
+            if((*CURVE_NODE)[e_nodes.front().id()] != 0 || (*CURVE_NODE)[e_nodes.back().id()] != 0)
+            {
+              if(((*CURVE_NODE)[e_nodes.front().id()] == (*CURVE_NODE)[e_nodes.back().id()]) ||
+                (((*VERTEX_NODE)[e_nodes.front().id()]) != 0 || (*VERTEX_NODE)[e_nodes.back().id()] != 0))
                 {
-                    cpt2++;
                     m_mesh->mark(e, AMarkCE);
-                    std::vector<TCellID > e_nodes = e.getIDs<Node>();
-                    m_mesh->mark<Node>(e_nodes[0], AMarkCN);
-                    m_mesh->mark<Node>(e_nodes[1], AMarkCN);
+                    m_mesh->mark(e_nodes.front(), AMarkCN);
+                    m_mesh->mark(e_nodes.back(), AMarkCN);
                 }
             }
-        }//else{
-    } //for (; !it.isDone(); it.next())  {
+            else if((*VERTEX_NODE)[e_nodes.front().id()] != 0 && (*VERTEX_NODE)[e_nodes.back().id()] != 0)
+            {
+              m_mesh->mark(e, AMarkCE);
+              m_mesh->mark(e_nodes.front(), AMarkCN);
+              m_mesh->mark(e_nodes.back(), AMarkCN);
+            }
+          }
+      }
+    }
 }
 /*----------------------------------------------------------------------------*/
 void BoundaryOperator::
@@ -231,55 +263,69 @@ void BoundaryOperator::markNodesOnPoint(const int AMarkCE,// edge on curve IN
                                         const int AMarkPN)// node on vertex OUT
 {
     int cpt1=0, cpt2=0;
+    Variable<int>* VERTEX_NODE = m_mesh->getVariable<int, GMDS_NODE>("BND_VETEX_COLOR"  );
 
-    for (auto n_id:m_mesh->nodes()) {
-        cpt1++;
-        if (m_mesh->isMarked<Node>(n_id, AMarkCN)){
-            Node n = m_mesh->get<Node>(n_id);
-            //We have a node on curve
-            std::vector<Edge> adj_edges = n.get<Edge>();
-            int cpt_tmp = 0;
-            for (auto ei:adj_edges){
-                if (m_mesh->isMarked(ei, AMarkCE))
-                    cpt_tmp++;
-            }
-            if (cpt_tmp > 2) {
-                m_mesh->mark(n, AMarkPN);
-                cpt2++;
-            }
-            else if (cpt_tmp == 2){
-                //check if we have a brutal normal change
+    if(VERTEX_NODE == nullptr)
+    {
+      for (auto n_id:m_mesh->nodes()) {
+          cpt1++;
+          if (m_mesh->isMarked<Node>(n_id, AMarkCN)){
+              Node n = m_mesh->get<Node>(n_id);
+              //We have a node on curve
+              std::vector<Edge> adj_edges = n.get<Edge>();
+              int cpt_tmp = 0;
+              for (auto ei:adj_edges){
+                  if (m_mesh->isMarked(ei, AMarkCE))
+                      cpt_tmp++;
+              }
+              if (cpt_tmp > 2) {
+                  m_mesh->mark(n, AMarkPN);
+                  cpt2++;
+              }
+              else if (cpt_tmp == 2){
+                  //check if we have a brutal normal change
 
-                //First we get all the nodes connected to n by a
-                // boundary edge
-                std::vector<Node> connected_nodes;
+                  //First we get all the nodes connected to n by a
+                  // boundary edge
+                  std::vector<Node> connected_nodes;
 
-                for (auto ei:adj_edges){
-                    if (m_mesh->isMarked(ei, AMarkCE)){
-                        std::vector<Node> edge_nodes = ei.get<Node>();
-                        for (auto nj:edge_nodes){
-                            if (nj != n)
-                                connected_nodes.push_back(nj);
-                        }
-                    }
-                }
+                  for (auto ei:adj_edges){
+                      if (m_mesh->isMarked(ei, AMarkCE)){
+                          std::vector<Node> edge_nodes = ei.get<Node>();
+                          for (auto nj:edge_nodes){
+                              if (nj != n)
+                                  connected_nodes.push_back(nj);
+                          }
+                      }
+                  }
 
-                Node n0 = connected_nodes[0];
-                Node n1 = connected_nodes[1];
+                  Node n0 = connected_nodes[0];
+                  Node n1 = connected_nodes[1];
 
-                math::Vector3d v0(n.point(), n0.point());
-                math::Vector3d v1(n.point(), n1.point());
-                v0.normalize();
-                v1.normalize();
-                double dotProduct = v0.dot(v1);
-                // if we have a brutal normal change
-                if (dotProduct > -m_surface_angle_dot){
-                    m_mesh->mark(n, AMarkPN);
-                    cpt2++;
-                }
+                  math::Vector3d v0(n.point(), n0.point());
+                  math::Vector3d v1(n.point(), n1.point());
+                  v0.normalize();
+                  v1.normalize();
+                  double dotProduct = v0.dot(v1);
+                  // if we have a brutal normal change
+                  if (dotProduct > -m_surface_angle_dot){
+                      m_mesh->mark(n, AMarkPN);
+                      cpt2++;
+                  }
 
-            }
+              }
+          }
+      }
+    }
+    else
+    {
+      for (auto n_id:m_mesh->nodes()) {
+        if((*VERTEX_NODE)[n_id] != 0)
+        {
+          Node n = m_mesh->get<Node>(n_id);
+          m_mesh->mark(n, AMarkPN);
         }
+      }
     }
 }
 /*----------------------------------------------------------------------------*/
