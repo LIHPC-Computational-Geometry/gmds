@@ -17,6 +17,7 @@ using namespace gmds;
 /*----------------------------------------------------------------------------*/
 TEST(ClaireTestClass, testGrid2D_1)
 {
+	// Test
 	Mesh m(MeshModel(DIM3 | R | F | N | F2N | N2F));
 
 	GridBuilder gb(&m,2);
