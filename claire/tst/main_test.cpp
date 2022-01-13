@@ -4,6 +4,7 @@
 // Files containing the different test suites to launch
 
 #include "ClaireTestSuite.h"
+#include "LevelSet2DTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

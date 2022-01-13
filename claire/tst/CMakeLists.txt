@@ -1,6 +1,7 @@
 add_executable(GMDS_CLAIRE_TEST
         ClaireTestSuite.h
-        main_test.cpp)
+        LevelSet2DTestSuite.h
+        main_test.cpp )
 
 target_link_libraries(GMDS_CLAIRE_TEST PUBLIC
         ${GMDS_LIB}
