@@ -29,8 +29,11 @@ class LIB_GMDS_CLAIRE_API LevelSet2D {
 	/** @brief Constructor.
          *  @param AMesh the mesh where we work on
 	 */
-	LevelSet2D(Mesh *AMesh);
-	//LevelSet2D(Mesh *AMesh,const Variable<int> *AFrontIds);
+
+	// OPTION 1
+	LevelSet2D(Mesh *AMesh, std::vector<TCellID> Afront_nodes_Ids);
+	// OPTION 2
+	//LevelSet2D(Mesh *AMesh, Variable<int> *Afront_nodes_Ids);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -40,6 +43,11 @@ class LIB_GMDS_CLAIRE_API LevelSet2D {
  private:
 	/** mesh we work on */
 	Mesh *m_mesh;
+	/** ids of the nodes on the front to advance */
+	// OPTION 1
+	std::vector<TCellID> m_front_nodes_Ids;
+	// OPTION 2
+	//Variable<int>* m_front_nodes_Ids;
 	/** carte des distances par rapport au front concerné */
 	Variable<double>* m_distance;
 
