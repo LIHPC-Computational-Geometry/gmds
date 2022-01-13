@@ -30,6 +30,7 @@ class LIB_GMDS_CLAIRE_API LevelSet2D {
          *  @param AMesh the mesh where we work on
 	 */
 	LevelSet2D(Mesh *AMesh);
+	//LevelSet2D(Mesh *AMesh,const Variable<int> *AFrontIds);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -39,6 +40,7 @@ class LIB_GMDS_CLAIRE_API LevelSet2D {
  private:
 	/** mesh we work on */
 	Mesh *m_mesh;
+	/** carte des distances par rapport au front concerné */
 	Variable<double>* m_distance;
 
 };
