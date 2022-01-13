@@ -27,10 +27,34 @@ LevelSet2D::LevelSet2D(Mesh *AMesh, Variable<int> *Afront_nodes_Ids) {
 /*------------------------------------------------------------------------*/
 LevelSet2D::STATUS LevelSet2D::execute()
 {
-	std::cout<<"HELLO"<<std::endl;
+	// Initialisation du champs de distances
+	InitialisationDistances();
 
 	return LevelSet2D::SUCCESS;
 }
 /*------------------------------------------------------------------------*/
 
 
+
+
+/*------------------------------------------------------------------------*/
+// Fonction InitialisationDistances : Permet d'itialiser les valeurs du champs de distances.
+// Je décide ici de mettre à -1 les distances à l'initialisation, et à 0 les distances des noeuds sur le front regardé.
+// En entrée :
+// En sortie :
+void LevelSet2D::InitialisationDistances() {
+
+	for(auto id:m_mesh->nodes()){
+		m_distance->value(id)=-1;
+	}
+
+	for(auto id:m_front_nodes_Ids){
+		m_distance->value(id)=0;
+	}
+
+	// REMARQUE : Si on avait choisi l'option 2, alors on n'aurait pas eu à réitérer
+	// sur les id des noeuds dans le vecteur front, on aurait pu tout initialiser
+	// en un coup.
+
+}
+/*------------------------------------------------------------------------*/
