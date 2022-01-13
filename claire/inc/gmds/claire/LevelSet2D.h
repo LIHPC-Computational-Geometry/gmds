@@ -41,6 +41,14 @@ class LIB_GMDS_CLAIRE_API LevelSet2D {
 	STATUS execute();
 
  private:
+	/*-------------------------------------------------------------------*/
+	/** @brief Initialize the distances field
+	 */
+	void InitialisationDistances();
+
+	/*-------------------------------------------------------------------*/
+
+ private:
 	/** mesh we work on */
 	Mesh *m_mesh;
 	/** ids of the nodes on the front to advance */
