@@ -88,7 +88,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test2)
 	std::vector<TCellID> bnd_node_ids;
 	bnd_op.getBoundaryNodes(bnd_node_ids);
 
-
+	/*
 	// Seeking the ids on the front we want to advance
 	// OPTION 1 : on stocke les id des noeuds du front dans un vecteur dynamique
 	// Mais je ne sais pas pourquoi, ça ne fonctionne pas
@@ -102,9 +102,9 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test2)
 			std::cout << "Noeud sur le front à avancé :" << id << std::endl;
 		}
 	}
+	*/
 
 
-	/*
 	// OPTION 2 : j'aime moins parce qu'au lieu de stocker uniquement les id qu'on souhaite dans un vecteur, on a un entier
 	// défini à chaque noeud
 	Variable<int>* front_nodes_Ids = m.newVariable<int,GMDS_NODE>("constraint");
@@ -117,7 +117,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test2)
 			std::cout << "Noeud sur le front à avancé :" << id << std::endl;
 		}
 	}
-	 */
+
 
 	LevelSet2D ls(&m, front_nodes_Ids);
 	ls.execute();
