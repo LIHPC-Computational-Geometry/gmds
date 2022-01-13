@@ -31,9 +31,9 @@ class LIB_GMDS_CLAIRE_API LevelSet2D {
 	 */
 
 	// OPTION 1
-	LevelSet2D(Mesh *AMesh, std::vector<TCellID> Afront_nodes_Ids);
+	//LevelSet2D(Mesh *AMesh, std::vector<TCellID> Afront_nodes_Ids);
 	// OPTION 2
-	//LevelSet2D(Mesh *AMesh, Variable<int> *Afront_nodes_Ids);
+	LevelSet2D(Mesh *AMesh, Variable<int> *Afront_nodes_Ids);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -44,7 +44,8 @@ class LIB_GMDS_CLAIRE_API LevelSet2D {
 	/*-------------------------------------------------------------------*/
 	/** @brief Initialize the distances field
 	 */
-	void InitialisationDistances();
+	//void InitialisationDistances();
+	void InitialisationNodeMinHeap();
 
 	/*-------------------------------------------------------------------*/
 
@@ -53,9 +54,11 @@ class LIB_GMDS_CLAIRE_API LevelSet2D {
 	Mesh *m_mesh;
 	/** ids of the nodes on the front to advance */
 	// OPTION 1
-	std::vector<TCellID> m_front_nodes_Ids;
+	//std::vector<TCellID> m_front_nodes_Ids;
 	// OPTION 2
-	//Variable<int>* m_front_nodes_Ids;
+	Variable<int>* m_front_nodes_Ids;
+	/** Tas des couple (distance provisoire, liste d'id) */
+	std::map<double, std::vector<TCellID>> m_NodeMinHeap;
 	/** carte des distances par rapport au front concerné */
 	Variable<double>* m_distance;
 
