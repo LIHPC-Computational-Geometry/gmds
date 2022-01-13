@@ -19,6 +19,7 @@
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
+/*
 TEST(LevelSet2DTestClass, LevelSet2D_Test1)
 {
 	Mesh m(MeshModel(DIM3 | R | F | N | F2N | N2F));
@@ -62,7 +63,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test1)
 
 	ASSERT_EQ(LevelSet2D::SUCCESS, result);
 }
-
+*/
 
 TEST(LevelSet2DTestClass, LevelSet2D_Test2)
 {
@@ -87,21 +88,38 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test2)
 	std::vector<TCellID> bnd_node_ids;
 	bnd_op.getBoundaryNodes(bnd_node_ids);
 
+
 	// Seeking the ids on the front we want to advance
+	// OPTION 1 : on stocke les id des noeuds du front dans un vecteur dynamique
+	// Mais je ne sais pas pourquoi, ça ne fonctionne pas
 	std::vector<TCellID> front_nodes_Ids;
-	//Variable<int>* frontIds = m.newVariable<int,GMDS_NODE>("front");
 	for(auto id:bnd_node_ids){
 		Node n = m.get<Node>(id);
 		double coord_y = n.Y() ;
 		if (coord_y == 0) {
 			// For the square test case, the front to advance is the boundary where y=0
-			//frontIds->value(id) = 1;
-			front_nodes_Ids.push_back(id);
+			front_nodes_Ids.push_back(n.id());
 			std::cout << "Noeud sur le front à avancé :" << id << std::endl;
 		}
 	}
 
-	LevelSet2D ls(&m);
+
+	/*
+	// OPTION 2 : j'aime moins parce qu'au lieu de stocker uniquement les id qu'on souhaite dans un vecteur, on a un entier
+	// défini à chaque noeud
+	Variable<int>* front_nodes_Ids = m.newVariable<int,GMDS_NODE>("constraint");
+	for(auto id:bnd_node_ids){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		if (coord_y == 0) {
+			// For the square test case, the front to advance is the boundary where y=0
+			front_nodes_Ids->value(id) = 1;
+			std::cout << "Noeud sur le front à avancé :" << id << std::endl;
+		}
+	}
+	 */
+
+	LevelSet2D ls(&m, front_nodes_Ids);
 	ls.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
