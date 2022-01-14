@@ -58,6 +58,10 @@ void DistanceMap::getAndRemoveFirst(double &AMinDist, TCellID &AMinId){
 /*-------------------------------------------------------------------*/
 void DistanceMap::update(double v0_old, double v0_new, TCellID n_id){
 
+	// L'ancien élèment de la map est enlevé
+	remove(v0_old, n_id);
+	// Le nouvel élèment dans la map est ajouté
+	add(v0_new, n_id);
 
 };
 /*-------------------------------------------------------------------*/
@@ -65,9 +69,52 @@ void DistanceMap::update(double v0_old, double v0_new, TCellID n_id){
 
 /*-------------------------------------------------------------------*/
 bool DistanceMap::check(){
+	bool test(true);
+	// Ce parcours n'est pas optimisé. Il vaudrait mieux ajouter un
+	// while true, comme ça, à la détection du premier pb (si il
+	// y en a un), on arrête d'itérer.
+	for(auto val:m_map){
+		for(auto id:val.second) {
+			int compteur = 0;
+			for(auto val_2:m_map){
+				for(auto id_2:val.second) {
+					if (id==id_2){
+						compteur +=1;
+					}
+				}
+			}
+			if (compteur!=1){
+				test = false;
+			}
+		}
+	}
 
+	return test;
 };
 /*-------------------------------------------------------------------*/
+
+
+
+/*-------------------------------------------------------------------*/
+void DistanceMap::getNbrIds(double v0, int &nbr){
+	// Si la clé existe
+	if (m_map.find(v0) != m_map.end()) {
+		nbr = m_map[v0].size();
+	}
+	else{
+		nbr = 0;
+	}
+};
+/*-------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
 namespace  gmds{
 	std::ostream& operator<<(std::ostream& AOS, const DistanceMap& ADM){
 	   for(auto val:ADM.m_map){

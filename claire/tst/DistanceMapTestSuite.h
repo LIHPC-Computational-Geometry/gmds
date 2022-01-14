@@ -19,7 +19,6 @@ using namespace gmds;
 
 TEST(DistanceMapTestClass, DistanceMap_Test1)
 {
-
 	DistanceMap distmap ;
 	distmap.add(0,1);
 	distmap.add(2,2);
@@ -28,6 +27,10 @@ TEST(DistanceMapTestClass, DistanceMap_Test1)
 	distmap.add(1.2,5);
 	std::cout<<distmap<<std::endl;
 	ASSERT_EQ(distmap(0).size(), 2);
+
+	int nbr_ids;
+	distmap.getNbrIds(0, nbr_ids);
+	ASSERT_EQ(nbr_ids, 2);
 }
 
 
