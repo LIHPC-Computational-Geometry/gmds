@@ -57,8 +57,10 @@ void LevelSet2D::initialisationDistances(){
 			m_distance->set(id, 0);
 		}
 		else{
-			m_DistanceMap.add(std::numeric_limits<double>::max(), id);
-			m_distance->set(id, std::numeric_limits<double>::max());
+			//m_DistanceMap.add(std::numeric_limits<double>::max(), id);
+			//m_distance->set(id, std::numeric_limits<double>::max());
+			m_DistanceMap.add(1000, id);
+			m_distance->set(id, 1000);
 		}
 	}
 };
