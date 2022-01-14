@@ -171,7 +171,6 @@ int main(int argc, char* argv[])
                                    ptg.pointSurfaceNormal());
         pcb.setDebugInfo(true);
         pcb.execute();
-        std::cout << "pcb.execute(); done " << std::endl;
 
 
         ////////
@@ -218,13 +217,6 @@ int main(int argc, char* argv[])
             point_mesh.newTet(ni,ni,ni,ni);
             cpt++;
         }
-        IGMeshIOService ioService3(&point_mesh);
-        VTKWriter writer3(&ioService3);
-        writer3.setCellOptions(gmds::N | gmds::R);
-        writer3.setDataOptions(gmds::N | gmds::R);
-        writer3.write("POINT_GENERATED.vtk");
-
-
 
         for(auto const e : AEdges)
         {
