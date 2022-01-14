@@ -18,6 +18,7 @@ SimplicesCell::SimplicesCell(SimplexMesh* simplexMesh, const TSimplexID simplexI
     {
       /*TODO exeption le node d'existe pas ... le creer avant de poouvoir l'utiliser*/
       std::cout << "Creer la cellule " << m_simplexId <<  " avant de l'utiliser !!" << std::endl;
+      GMDSException("ERREUR CELLULE INEXISTANTE");
     }
 }
 /*----------------------------------------------------------------------------*/

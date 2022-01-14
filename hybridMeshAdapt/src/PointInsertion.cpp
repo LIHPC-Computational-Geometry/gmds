@@ -84,7 +84,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
 
           //std::cout << "cavityEnlargement end " << std::endl;
           //cavOp.cavityReduction(cavityIO, initCavity, simpliceNode, criterion, cavReduction, markedSimplex);
-          if(simpliceNode.getGlobalNode() == 109947)
+          /*if(simpliceNode.getGlobalNode() == 109947)
           {
             for(auto const tet : cavityIO.cellInCavity())
             {
@@ -100,9 +100,8 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             {
               std::cout << "tri Co --> " << tri << " | surface_bnd : " << (*BND_TRIANGLES)[-tri] << std::endl;
             }
-          }
+          }*/
 
-          std::cout << std::endl;
           //test sur les triangles non connecté a P pour ne pas créer de retournement topologique
           for(auto const triNotCo : cavityIO.getTrianglesNotConnectedToPInCavity())
           {

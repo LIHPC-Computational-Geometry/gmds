@@ -21,6 +21,7 @@ SimplicesNode::SimplicesNode(SimplexMesh* simplexMesh, const TInt indexPoint)
   {
     /*TODO exeption le node d'existe pas ... le creer avant de poouvoir l'utiliser*/
     std::cout << "Creer le node " << m_indexPoint <<  " avant de l'utiliser !!" << std::endl;
+    GMDSException("ERREUR NODE INEXISTANTE");
   }
 }
 /******************************************************************************/

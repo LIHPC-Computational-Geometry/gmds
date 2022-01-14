@@ -8,6 +8,7 @@
 #include <gmds/hybridMeshAdapt/ISimplexMeshIOService.h>
 #include <gmds/hybridMeshAdapt/DelaunayPointInsertion.h>
 #include <gmds/hybridMeshAdapt/Octree.h>
+#include <gmds/hybridMeshAdapt/MetricAdaptation.h>
 /*----------------------------------------------------------------------------*/
 #include <iostream>
 /*----------------------------------------------------------------------------*/
@@ -39,7 +40,7 @@ int main(int argc, char* argv[])
     std::cout << "Reading " << std::endl;
     std::string extansion(".vtk");
     std::size_t position = fIn.find(extansion);
-    fOut = fIn.substr(0,position) + "_INDEXED.vtk";
+    fOut = fIn.substr(0,position) + "_ADAPTED.vtk";
     std::cout << "INPUT FILE: " << fIn << std::endl;
     std::cout << "OUTPUT FILE: " << fOut << std::endl;
 
@@ -56,22 +57,39 @@ int main(int argc, char* argv[])
     //return;
     Octree oc(&simplexMesh, 50);
     simplexMesh.setOctree(&oc);
-    Variable<int>* BND_VERTEX_COLOR  = simplexMesh.getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
-    Variable<int>* BND_CURVE_COLOR   = simplexMesh.getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
-    Variable<int>* BND_SURFACE_COLOR = simplexMesh.getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
     //Variable<int>* BND_METRIC = simplexMesh.getVariable<Eigen::Matrix3d,SimplicesNode>("metric");
 
     //==================================================================
     // MODIFICATION OF THE INPUT MESH'S METRIC
     //==================================================================
-    Variable<Eigen::Matrix3d>* var = simplexMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("metric");
+    Variable<Eigen::Matrix3d>* metricNode = simplexMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
     Eigen::Matrix3d m =  Eigen::MatrixXd::Identity(3, 3);
     m <<  1.0, 0.0, .0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0;
-    var->setValuesTo(m);
-    //////////////////////////////////////////////////////////////////////////////
+    metricNode->setValuesTo(m);
     const gmds::BitVector& meshNode = simplexMesh.getBitVectorNodes();
+    double metricMin = 0.05;
+    double metricMax = 0.18;
+    for(unsigned int nodeId = 0 ; nodeId < meshNode.capacity() ; nodeId++)
+    {
+      if(meshNode[nodeId] == 1)
+      {
+        double x = SimplicesNode(&simplexMesh, nodeId).getCoords()[0];
+        double metric = (1.0 - x)*metricMin + x*metricMax;
+        (*metricNode)[nodeId](0,0) = 0.05;//metric;
+        (*metricNode)[nodeId](1,1) = 0.05;//metric;
+        (*metricNode)[nodeId](2,2) = 0.05;//metric;
+      }
+    }
+    //////////////////////////////////////////////////////////////////////////////
     std::cout << "INITIAL NODE SIZE IN MESH --> " << meshNode.size() << std::endl;
+    MetricAdaptation mA(&simplexMesh);
+    mA.execute();
+    std::cout << "NODE SIZE IN MESH AFTER METRIC ADAPTATION--> " << meshNode.size() << std::endl;
 
+    gmds::VTKWriter vtkWriterMA(&ioService);
+    vtkWriterMA.setCellOptions(gmds::N|gmds::R);
+    vtkWriterMA.setDataOptions(gmds::N|gmds::R);
+    vtkWriterMA.write(fOut);
 }
 
 /*----------------------------------------------------------------------------*/
