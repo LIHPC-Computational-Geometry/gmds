@@ -8,6 +8,7 @@
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/ig/Mesh.h>
+#include <iostream>
 /*----------------------------------------------------------------------------*/
 #include <string>
 #include <map>
@@ -26,18 +27,10 @@ class LIB_GMDS_CLAIRE_API DistanceMap {
 	} STATUS;
 
 	/*-------------------------------------------------------------------*/
-	/** @brief Constructor.
-         *  @param AMesh the mesh where we work on
-	 */
 
 	DistanceMap();
 
-	/*-------------------------------------------------------------------*/
-	/** @brief Execute the algorithm
-	 */
-	STATUS execute();
-
- private:
+ public:
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Ajoute un élément dans la map
@@ -60,7 +53,9 @@ class LIB_GMDS_CLAIRE_API DistanceMap {
 	 */
 	bool check();
 	/*-------------------------------------------------------------------*/
+	friend  std::ostream& operator<<(std::ostream&, const DistanceMap&);
 
+	std::vector<TCellID> operator()(const double AI) {return m_map[AI];}
  private:
 	/** Tas des couples (distance provisoire, liste d'ids) */
 	std::map<double, std::vector<TCellID>> m_map;
