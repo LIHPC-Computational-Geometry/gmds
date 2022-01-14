@@ -8,11 +8,14 @@ set(GMDS_LIB_PREFIX gmds/claire)
 set(GMDS_INC
 		${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
 		inc/gmds/claire/Smooth2D.h
+		inc/gmds/claire/Grid_Smooth2D.h
+		inc/gmds/claire/LevelSet2D.h
+		inc/gmds/claire/DistanceMap.h
 		)
 set(GMDS_SRC
 		src/main.cpp
 		src/Smooth2D.cpp
-        inc/gmds/claire/Grid_Smooth2D.h src/Grid_Smooth2D.cpp inc/gmds/claire/LevelSet2D.h src/LevelSet2D.cpp)
+        src/Grid_Smooth2D.cpp  src/LevelSet2D.cpp src/DistanceMap.cpp )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

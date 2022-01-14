@@ -2,9 +2,6 @@
 // Created by rochec on 13/01/2022.
 //
 
-#ifndef GMDS_LEVELSET2DTESTSUITE_H
-#define GMDS_LEVELSET2DTESTSUITE_H
-
 #include <gmds/claire/LevelSet2D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -129,5 +126,3 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test2)
 
 	ASSERT_TRUE(true);
 }
-
-#endif     // GMDS_LEVELSET2DTESTSUITE_H
