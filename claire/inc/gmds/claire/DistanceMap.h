@@ -53,9 +53,18 @@ class LIB_GMDS_CLAIRE_API DistanceMap {
 	 */
 	bool check();
 	/*-------------------------------------------------------------------*/
+	/** @brief Donne le nombre d'éléments dans le vecteur associé à la clé
+	 */
+	void getNbrIds(double v0, int &nbr);
+	/*-------------------------------------------------------------------*/
+	/** @brief Surcharge de l'opérateur << pour l'affichaque des maps
+	 */
 	friend  std::ostream& operator<<(std::ostream&, const DistanceMap&);
-
+	/*-------------------------------------------------------------------*/
+	/** @brief Surcharge de l'opérateur ()
+	 */
 	std::vector<TCellID> operator()(const double AI) {return m_map[AI];}
+	/*-------------------------------------------------------------------*/
  private:
 	/** Tas des couples (distance provisoire, liste d'ids) */
 	std::map<double, std::vector<TCellID>> m_map;
