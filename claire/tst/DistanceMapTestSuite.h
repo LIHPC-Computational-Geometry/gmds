@@ -21,9 +21,13 @@ TEST(DistanceMapTestClass, DistanceMap_Test1)
 {
 
 	DistanceMap distmap ;
-	DistanceMap::STATUS result = distmap.execute();
-
-	ASSERT_EQ(DistanceMap::SUCCESS, result);
+	distmap.add(0,1);
+	distmap.add(2,2);
+	distmap.add(0,3);
+	distmap.add(1,4);
+	distmap.add(1.2,5);
+	std::cout<<distmap<<std::endl;
+	ASSERT_EQ(distmap(0).size(), 2);
 }
 
 
