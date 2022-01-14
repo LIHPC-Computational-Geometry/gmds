@@ -1,3 +1,6 @@
+add_executable(GMDS_SIMPLEX_METRIC_BASED_ADAPTATION
+        main_METRIC_BASED_ADAPTATION.cpp)
+
 add_executable(GMDS_SIMPLEX_INDEXING
         main_indexing_SURFACE_CURVE_CORNER.cpp)
 
@@ -13,7 +16,9 @@ add_executable(GMDS_SIMPLEX_TEST
         ModeleCAD5.h
         main_test.cpp)
 
-
+target_link_libraries(GMDS_SIMPLEX_METRIC_BASED_ADAPTATION PUBLIC
+        ${GMDS_LIB}
+        ${LIB_GMDS_IO})
 
 target_link_libraries(GMDS_SIMPLEX_TEST PUBLIC
         ${GMDS_LIB}

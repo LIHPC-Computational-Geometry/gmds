@@ -666,6 +666,29 @@ bool SimplicesNode::isAttachToSimplex() const
   return (simplex != border);
 }
 /******************************************************************************/
+std::vector<TInt> SimplicesNode::directNeighboorNodeId() const
+{
+  std::vector<TInt> res{};
+  std::set<TInt> s{};
+  const std::vector<TInt>&& ball = ballOf();
+
+  for(auto const simplex : ball)
+  {
+    if(simplex > 0)
+    {
+      SimplicesCell cell(m_simplex_mesh, simplex);
+      const std::vector<TInt>&& directNodes = cell.getNodes();
+      std::copy(directNodes.begin(), directNodes.end(), std::inserter(s, s.begin()));
+    }
+  }
+
+  std::copy_if(s.begin(), s.end(), std::back_inserter(res), [&](const TInt currentNode){
+    return (currentNode != m_indexPoint);
+  });
+
+  return res;
+}
+/******************************************************************************/
 void SimplicesNode::detectType(const nodeNeighborInfo& nodeInfo) const
 {
   TInt border = std::numeric_limits<int>::min();

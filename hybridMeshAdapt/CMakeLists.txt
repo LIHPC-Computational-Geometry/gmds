@@ -22,6 +22,7 @@ set(GMDS_INC
         inc/gmds/hybridMeshAdapt/DelaunayPointInsertion.h
         inc/gmds/hybridMeshAdapt/Metric.h
         inc/gmds/hybridMeshAdapt/Octree.h
+        inc/gmds/hybridMeshAdapt/MetricAdaptation.h
         )
 
 set(GMDS_SRC
@@ -43,6 +44,7 @@ set(GMDS_SRC
         src/DelaunayPointInsertion.cpp
         src/Metric.cpp
         src/Octree.cpp
+        src/MetricAdaptation.cpp
         )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
