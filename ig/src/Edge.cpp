@@ -377,3 +377,24 @@ std::ostream & operator << (std::ostream & AStream, const Edge & AN)
 	return AStream;
 }
 /*----------------------------------------------------------------------------*/
+Node Edge::getOppositeNode(const Node &ANode) const
+{
+	 return  m_owner->get<Node>(getOppositeNodeId(ANode.id()));
+}
+/*----------------------------------------------------------------------------*/
+Node Edge::getOppositeNode(const TCellID &ANodeID) const
+{
+	return m_owner->get<Node>(getOppositeNodeId(ANodeID));
+
+}
+/*----------------------------------------------------------------------------*/
+TCellID Edge::getOppositeNodeId(const Node &ANode) const
+{
+	return getOppositeNodeId(ANode.id());
+}
+/*----------------------------------------------------------------------------*/
+TCellID Edge::getOppositeNodeId(const TCellID &AID) const
+{
+	std::vector<TCellID> node_ids = getIDs<Node>();
+	return (node_ids[0]==AID)?node_ids[1]:node_ids[0];
+}

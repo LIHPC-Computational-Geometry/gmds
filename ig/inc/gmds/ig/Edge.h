@@ -96,6 +96,13 @@ public:
      */
 	TCoord length() const;
 
+		/*------------------------------------------------------------------------*/
+		/** \brief Get the opposite node
+		 */
+		Node getOppositeNode(const Node& ANode) const;
+		Node getOppositeNode(const TCellID& ANodeID) const;
+	   TCellID getOppositeNodeId(const Node& ANode)const;
+	   TCellID getOppositeNodeId(const TCellID& ANodeID)const;
 	/*------------------------------------------------------------------------*/
     /** \brief Provides the middle point
      */
