@@ -8,6 +8,7 @@
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/ig/Mesh.h>
+#include <gmds/claire/DistanceMap.h>
 /*----------------------------------------------------------------------------*/
 #include <string>
 #include <map>
@@ -29,11 +30,7 @@ class LIB_GMDS_CLAIRE_API LevelSet2D {
 	/** @brief Constructor.
          *  @param AMesh the mesh where we work on
 	 */
-
-	// OPTION 1
-	//LevelSet2D(Mesh *AMesh, std::vector<TCellID> Afront_nodes_Ids);
-	// OPTION 2
-	LevelSet2D(Mesh *AMesh, Variable<int> *Afront_nodes_Ids);
+	LevelSet2D(Mesh *AMesh, int AmarkFrontNodes);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -42,23 +39,26 @@ class LIB_GMDS_CLAIRE_API LevelSet2D {
 
  private:
 	/*-------------------------------------------------------------------*/
-	/** @brief Initialize the distances field
+	/** @brief Initialize the DistanceMap
 	 */
-	//void InitialisationDistances();
-	void InitialisationNodeMinHeap();
-
+	void initialisationDistances();
+	/*-------------------------------------------------------------------*/
+	/** @brief Obtient la distance pour un noeud
+	 */
+	void getValue(TCellID n_id, double &v0);
+	/*-------------------------------------------------------------------*/
+	/** @brief Défini la distance pour un noeud
+	 */
+	void setValue(TCellID n_id, double v0);
 	/*-------------------------------------------------------------------*/
 
  private:
 	/** mesh we work on */
 	Mesh *m_mesh;
 	/** ids of the nodes on the front to advance */
-	// OPTION 1
-	//std::vector<TCellID> m_front_nodes_Ids;
-	// OPTION 2
-	Variable<int>* m_front_nodes_Ids;
+	int m_markFrontNodes;
 	/** Tas des couple (distance provisoire, liste d'id) */
-	std::map<double, std::vector<TCellID>> m_NodeMinHeap;
+	DistanceMap m_DistanceMap;
 	/** carte des distances par rapport au front concerné */
 	Variable<double>* m_distance;
 
