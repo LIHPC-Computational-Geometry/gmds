@@ -22,6 +22,13 @@ LevelSet2D::STATUS LevelSet2D::execute()
 {
 	initialisationDistances();
 
+	// Tant qu'il y a des noeuds dans la map
+	while(!m_DistanceMap.isEmpty()){
+		TCellID n0_id;
+		double v0;
+		m_DistanceMap.getAndRemoveFirst(v0, n0_id);
+	}
+
 	return LevelSet2D::SUCCESS;
 }
 /*------------------------------------------------------------------------*/

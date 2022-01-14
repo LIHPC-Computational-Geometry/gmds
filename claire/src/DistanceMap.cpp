@@ -135,6 +135,30 @@ void DistanceMap::getNbrIds(double v0, int &nbr){
 
 
 
+/*-------------------------------------------------------------------*/
+void DistanceMap::getNbrIdsTotal(int &nbr){
+   nbr = 0;
+	int nbr_local = 0;
+	double v0;
+	for (auto paire:m_map){
+		v0 = paire.first ;
+		getNbrIds(v0, nbr_local);
+		nbr += nbr_local;
+	}
+
+
+};
+
+/*-------------------------------------------------------------------*/
+
+
+
+/*-------------------------------------------------------------------*/
+bool DistanceMap::isEmpty(){
+	return m_map.empty() ;
+};
+/*-------------------------------------------------------------------*/
+
 
 
 namespace  gmds{
