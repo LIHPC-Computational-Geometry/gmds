@@ -38,10 +38,27 @@ class LIB_GMDS_CLAIRE_API DistanceMap {
 	STATUS execute();
 
  private:
-	/*-------------------------------------------------------------------*/
-	/** @brief Initialize the distances field
-	 */
 
+	/*-------------------------------------------------------------------*/
+	/** @brief Ajoute un élément dans la map
+	 */
+	void add(double v0, TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Récupère le premier élément de la map et l'enlève de celle ci
+	 */
+	void getAndRemoveFirst(double &AMinDist, TCellID &AMinId);
+	/*-------------------------------------------------------------------*/
+	/** @brief Récupère un élément dans la map et l'enlève de celle ci
+	 */
+	void remove(double v0, TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Met à jour la clé d'un id dans la map
+	 */
+	void update(double v0_old, double v0_new, TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Vérifie que chaque id est bien présent une seule fois
+	 */
+	bool check();
 	/*-------------------------------------------------------------------*/
 
  private:
