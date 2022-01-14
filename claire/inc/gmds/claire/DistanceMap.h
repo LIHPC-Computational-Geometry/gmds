@@ -57,6 +57,14 @@ class LIB_GMDS_CLAIRE_API DistanceMap {
 	 */
 	void getNbrIds(double v0, int &nbr);
 	/*-------------------------------------------------------------------*/
+	/** @brief Donne le nombre d'éléments dans le tas
+	 */
+	void getNbrIdsTotal(int &nbr);
+	/*-------------------------------------------------------------------*/
+	/** @brief Dit si la map est vide ou non
+	 */
+	bool isEmpty();
+	/*-------------------------------------------------------------------*/
 	/** @brief Surcharge de l'opérateur << pour l'affichaque des maps
 	 */
 	friend  std::ostream& operator<<(std::ostream&, const DistanceMap&);

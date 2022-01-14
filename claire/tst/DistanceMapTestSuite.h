@@ -64,6 +64,13 @@ TEST(DistanceMapTestClass, DistanceMap_Test1)
 	std::cout<<distmap<<std::endl;
 	distmap.getNbrIds(1.2, nbr_ids);
 	ASSERT_EQ(nbr_ids, 2);
+
+	// Test des méthodes .getNbrIdsTotal
+	distmap.getNbrIdsTotal(nbr_ids);
+	ASSERT_EQ(nbr_ids, 3);
+
+	// Test de la méthode .isEmpty
+	ASSERT_EQ(distmap.isEmpty(), false);
 }
 
 
