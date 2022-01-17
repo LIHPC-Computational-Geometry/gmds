@@ -631,7 +631,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         else if(dimNode == SimplexMesh::topo::CORNER)
         {
           //corner node
-          trianglesConnectedToP.push_back(tri);
+          trianglesConnectedToP.push_back(tri); //create an map that remernber every triangle label connected to every corner vertex of the mesh and push only tri that are connected to the current corner node
         }
       }
     }
