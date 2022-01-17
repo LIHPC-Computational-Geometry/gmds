@@ -68,16 +68,16 @@ int main(int argc, char* argv[])
     metricNode->setValuesTo(m);
     const gmds::BitVector& meshNode = simplexMesh.getBitVectorNodes();
     double metricMin = 0.05;
-    double metricMax = 0.18;
+    double metricMax = 2;
     for(unsigned int nodeId = 0 ; nodeId < meshNode.capacity() ; nodeId++)
     {
       if(meshNode[nodeId] == 1)
       {
         double x = SimplicesNode(&simplexMesh, nodeId).getCoords()[0];
         double metric = (1.0 - x)*metricMin + x*metricMax;
-        (*metricNode)[nodeId](0,0) = 0.05;//metric;
-        (*metricNode)[nodeId](1,1) = 0.05;//metric;
-        (*metricNode)[nodeId](2,2) = 0.05;//metric;
+        (*metricNode)[nodeId](0,0) = metric;
+        (*metricNode)[nodeId](1,1) = metric;
+        (*metricNode)[nodeId](2,2) = metric;
       }
     }
     //////////////////////////////////////////////////////////////////////////////

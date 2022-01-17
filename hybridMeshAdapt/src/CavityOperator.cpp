@@ -628,6 +628,11 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
             trianglesNotConnectedToP.push_back(tri);
           }
         }
+        else if(dimNode == SimplexMesh::topo::CORNER)
+        {
+          //corner node
+          trianglesConnectedToP.push_back(tri);
+        }
       }
     }
     /*

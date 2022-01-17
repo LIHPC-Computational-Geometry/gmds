@@ -18,8 +18,12 @@ namespace gmds{
         //compute the new mesh
         void execute();
 
+        void buildEdgesMap();
+
       private:
         SimplexMesh* m_simplexMesh = nullptr;
+
+        std::multimap<TInt, TInt> m_edgesMap;
     };
   }
 }
