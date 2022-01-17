@@ -87,8 +87,8 @@ int main(int argc, char* argv[])
     std::cout << "NODE SIZE IN MESH AFTER METRIC ADAPTATION--> " << meshNode.size() << std::endl;
 
     gmds::VTKWriter vtkWriterMA(&ioService);
-    vtkWriterMA.setCellOptions(gmds::N|gmds::R);
-    vtkWriterMA.setDataOptions(gmds::N|gmds::R);
+    vtkWriterMA.setCellOptions(gmds::N|gmds::R|gmds::F);
+    vtkWriterMA.setDataOptions(gmds::N|gmds::R|gmds::F);
     vtkWriterMA.write(fOut);
 }
 

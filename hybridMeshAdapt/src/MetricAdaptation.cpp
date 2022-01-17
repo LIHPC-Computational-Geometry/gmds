@@ -39,22 +39,24 @@ void MetricAdaptation::execute()
   }
   else
   {
+    Variable<int>* BND_VERTEX_COLOR  = m_simplexMesh->getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+    Variable<int>* BND_CURVE_COLOR   = m_simplexMesh->getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+    Variable<int>* BND_SURFACE_COLOR = m_simplexMesh->getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+
     CriterionRAIS criterionRAIS(new VolumeCriterion());
     const gmds::BitVector& meshNode = m_simplexMesh->getBitVectorNodes();
     for(unsigned int nodeId = 0 ; nodeId < meshNode.capacity() ; nodeId++)
     {
       if(meshNode[nodeId] != 0)
       {
-        if(nodeId == 1342){return;}
+        nodesAlreadyDone.resize(meshNode.capacity());
         SimplicesNode node(m_simplexMesh, nodeId);
-        std::cout << node << std::endl;
         const std::vector<TInt> && directNodes = node.directNeighboorNodeId();
         math::Point nodeCoord = node.getCoords();
         Metric<Eigen::Matrix3d> M0 = Metric<Eigen::Matrix3d>((*metric)[nodeId]);
         for(auto const directNode : directNodes)
         {
           SimplicesNode dNode(m_simplexMesh, directNode);
-          //std::cout << dNode << std::endl;
           math::Point dNodeCoord = dNode.getCoords();
           Metric<Eigen::Matrix3d> M1 = Metric<Eigen::Matrix3d>((*metric)[directNode]);
           double metricLenght  = M0.metricDist(nodeCoord, dNodeCoord, M1);
@@ -68,7 +70,6 @@ void MetricAdaptation::execute()
           std::vector<TInt> deletedNodes{};
           const std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
 
-          //std::cout << "lenght_l2 | metricLenght -> " <<  lenght_l2 << " | " << metricLenght << std::endl;
           if(lenght_l2 < metricLenght)
           {
             //lenght_l2 < metricLenght  mean vec is too small so we build anew edge taller than vec
@@ -76,6 +77,7 @@ void MetricAdaptation::execute()
             PointInsertion pi(m_simplexMesh, node, criterionRAIS, status, ball, markedNodes, deletedNodes, facesAlreadyBuilt);
             if(status)
             {
+              nodesAlreadyDone.assign(node.getGlobalNode());
               //break;
             }
           }
@@ -87,6 +89,72 @@ void MetricAdaptation::execute()
             bool alreadyAdd = false;
             const Point pt = 0.5 * (dNodeCoord + nodeCoord);
             TInt newNodeId = m_simplexMesh->addNodeAndcheck(pt, tetraContenaingPt, alreadyAdd);
+
+            unsigned int nodeDim = ((*BND_VERTEX_COLOR)[nodeId] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[nodeId] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[nodeId] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
+            unsigned int nodeLabel = ((*BND_VERTEX_COLOR)[nodeId] != 0)?(*BND_VERTEX_COLOR)[nodeId]:((*BND_CURVE_COLOR)[nodeId] != 0)?(*BND_CURVE_COLOR)[nodeId]:((*BND_SURFACE_COLOR)[nodeId] != 0)?(*BND_SURFACE_COLOR)[nodeId]:0;
+            unsigned int directNodeDim = ((*BND_VERTEX_COLOR)[directNode] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[directNode] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[directNode] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
+            unsigned int directNodeLabel = ((*BND_VERTEX_COLOR)[directNode] != 0)?(*BND_VERTEX_COLOR)[directNode]:((*BND_CURVE_COLOR)[directNode] != 0)?(*BND_CURVE_COLOR)[directNode]:((*BND_SURFACE_COLOR)[directNode] != 0)?(*BND_SURFACE_COLOR)[directNode]:0;
+
+            unsigned int newNodeDim    = std::max(nodeDim, directNodeDim);
+
+            //labelization of the node being inserted
+            if(newNodeDim == SimplexMesh::topo::CORNER)
+            {
+              //TODO
+              //define a new curve color...
+              //BND_CURVE_COLOR->set(newNodeId, newColorToDefine)
+              break;
+            }
+            else if(newNodeDim == SimplexMesh::topo::RIDGE)
+            {
+              if(nodeDim == directNodeDim)
+              {
+                if(nodeLabel != directNodeLabel)
+                {
+                  //node sur la surface...
+                  break;
+                }
+                else
+                {
+                  BND_CURVE_COLOR->set(newNodeId, nodeLabel);
+                }
+              }
+              else if(nodeDim != directNodeDim)
+              {
+                if(nodeDim > directNodeDim)
+                {
+                  BND_CURVE_COLOR->set(newNodeId, nodeLabel);
+                }
+                else
+                {
+                  BND_CURVE_COLOR->set(newNodeId, directNodeLabel);
+                }
+              }
+            }
+            else if(newNodeDim == SimplexMesh::topo::SURFACE)
+            {
+              if(nodeDim == directNodeDim)
+              {
+                if(nodeLabel == directNodeLabel)
+                {
+                  BND_SURFACE_COLOR->set(newNodeId, nodeLabel);
+                }
+                //node dans le volume donc RAF sinon
+              }
+              else if(nodeDim != directNodeDim)
+              {
+                if(nodeDim > directNodeDim)
+                {
+                  BND_SURFACE_COLOR->set(newNodeId, nodeLabel);
+                }
+                else
+                {
+                  BND_SURFACE_COLOR->set(newNodeId, directNodeLabel);
+                }
+              }
+            }
+
+            //BND_CURVE_COLOR->set(node, (*BND_CURVE_COLOR_NODES)[idx])
             const std::vector<TSimplexID>&& shell = node.shell(dNode);
             PointInsertion pi(m_simplexMesh, SimplicesNode(m_simplexMesh, newNodeId), criterionRAIS, status, shell, markedNodes, deletedNodes, facesAlreadyBuilt);
             if(status)
