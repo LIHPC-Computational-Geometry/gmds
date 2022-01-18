@@ -40,6 +40,7 @@ LevelSet2D::STATUS LevelSet2D::execute()
 				m_DistanceMap.update(ve, ve_new, ne_id);
 			}
 
+
 			/*
 			// On regarde les noeuds à 2 edges d'écart
 			Node ne = m_mesh->get<Node>(ne_id);
@@ -60,7 +61,7 @@ LevelSet2D::STATUS LevelSet2D::execute()
 				}
 			}
 			//
-			 */
+			*/
 
 
 		}
