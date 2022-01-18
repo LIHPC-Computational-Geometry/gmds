@@ -65,17 +65,14 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test1)
 }
 
 
-
-
-
-TEST(LevelSet2DTestClass, LevelSet2D_Test1_Refined_1)
+TEST(LevelSet2DTestClass, LevelSet2D_Test2)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
 	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Carre_Refined_1.vtk";
+	std::string vtk_file = dir+"/Carre_maxsize_0.01.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -92,14 +89,18 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test1_Refined_1)
 	bnd_op.getBoundaryNodes(bnd_node_ids);
 
 	int markFrontNodes = m.newMark<gmds::Node>();
+
+	// Source ponctuelle
 	for(auto id:bnd_node_ids){
 		Node n = m.get<Node>(id);
+		double coord_x = n.X() ;
 		double coord_y = n.Y() ;
-		if (coord_y == 0) {
+		if (coord_y == 0 && coord_x == 0) {
 			// For the square test case, the front to advance is the boundary where y=0
 			m.mark<Node>(id,markFrontNodes);
 		}
 	}
+
 
 	LevelSet2D ls(&m, markFrontNodes);
 	ls.execute();
@@ -110,22 +111,20 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test1_Refined_1)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet2D_Test1_Refined_1_Result.vtk");
+	vtkWriter.write("LevelSet2D_Test2_Result.vtk");
 
 	ASSERT_TRUE(true);
 }
 
 
-
-
-TEST(LevelSet2DTestClass, LevelSet2D_Test2)
+TEST(LevelSet2DTestClass, LevelSet2D_Test3)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
 	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Carre_Quart_Cylindre.vtk";
+	std::string vtk_file = dir+"/Carre_Quart_Cylindre_maxsize_0.1.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -178,22 +177,20 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test2)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet2D_Test2_Result.vtk");
+	vtkWriter.write("LevelSet2D_Test3_Result.vtk");
 
 	ASSERT_TRUE(true);
 }
 
 
-
-
-TEST(LevelSet2DTestClass, LevelSet2D_Test3)
+TEST(LevelSet2DTestClass, LevelSet2D_Test4)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
 	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Carre_Quart_Cylindre.vtk";
+	std::string vtk_file = dir+"/Carre_Quart_Cylindre_maxsize_0.01.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -246,7 +243,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test3)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet2D_Test3_Result.vtk");
+	vtkWriter.write("LevelSet2D_Test4_Result.vtk");
 
 	ASSERT_TRUE(true);
 }
