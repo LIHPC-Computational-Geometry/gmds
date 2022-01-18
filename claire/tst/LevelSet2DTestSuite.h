@@ -186,9 +186,6 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test2)
 
 
 
-
-
-
 TEST(LevelSet2DTestClass, LevelSet2D_Test3)
 {
 	// WE READ
