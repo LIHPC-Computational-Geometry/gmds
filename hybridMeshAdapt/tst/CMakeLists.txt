@@ -1,3 +1,6 @@
+add_executable(GMDS_SIMPLEX_POINT_GENERATION
+        main_POINT_GENERATION.cpp)
+
 add_executable(GMDS_SIMPLEX_INDEXING
         main_indexing_SURFACE_CURVE_CORNER.cpp)
 
@@ -24,7 +27,14 @@ target_link_libraries(GMDS_SIMPLEX_INDEXING PUBLIC
       ${GMDS_LIB}
       ${LIB_GMDS_IO}
       ${LIB_GMDS_FRAME_3D}
-      gtest)
+      )
+
+target_link_libraries(GMDS_SIMPLEX_POINT_GENERATION PUBLIC
+      ${GMDS_LIB}
+      ${LIB_GMDS_IO}
+      ${LIB_GMDS_FRAME_3D}
+      )
+
 
 target_include_directories(GMDS_SIMPLEX_TEST PRIVATE .)
 
