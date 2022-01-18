@@ -70,7 +70,8 @@ void MetricAdaptation::execute()
     {
       const TInt node0 = edges.first;
       const TInt node1 = edges.second;
-      if(meshNode[node0] != 0 && meshNode[node1])
+
+      if(meshNode[node0] != 0 && meshNode[node1] != 0)
       {
         SimplicesNode sNode0(m_simplexMesh, node0);
         SimplicesNode sNode1(m_simplexMesh, node1);
@@ -95,9 +96,13 @@ void MetricAdaptation::execute()
         {
           //lenght_l2 < metricLenght  mean vec is too small so we build anew edge taller than vec
           const std::vector<TSimplexID>&& ball = sNode1.ballOf();
-          //SimplicesNode node10(m_simplexMesh, 10);
           PointInsertion pi(m_simplexMesh, sNode0, criterionRAIS, status, ball, markedNodes, deletedNodes, facesAlreadyBuilt);
-          //return;
+          if(status){
+            if(sNode1.ballOf().size() == 0)
+            {
+                m_simplexMesh->deleteNode(sNode1.getGlobalNode(), true);
+            }
+          }
         }
         else
         {
@@ -107,7 +112,6 @@ void MetricAdaptation::execute()
           bool alreadyAdd = false;
           const Point pt = 0.5 * (nodeCoord0 + nodeCoord1);
           TInt newNodeId = m_simplexMesh->addNodeAndcheck(pt, tetraContenaingPt, alreadyAdd);
-
           unsigned int nodeDim = ((*BND_VERTEX_COLOR)[node0] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[node0] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[node0] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
           unsigned int nodeLabel = ((*BND_VERTEX_COLOR)[node0] != 0)?(*BND_VERTEX_COLOR)[node0]:((*BND_CURVE_COLOR)[node0] != 0)?(*BND_CURVE_COLOR)[node0]:((*BND_SURFACE_COLOR)[node0] != 0)?(*BND_SURFACE_COLOR)[node0]:0;
           unsigned int directNodeDim = ((*BND_VERTEX_COLOR)[node1] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[node1] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[node1] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
