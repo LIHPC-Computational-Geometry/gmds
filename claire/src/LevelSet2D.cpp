@@ -39,6 +39,30 @@ LevelSet2D::STATUS LevelSet2D::execute()
 				setValue(ne_id, ve_new);
 				m_DistanceMap.update(ve, ve_new, ne_id);
 			}
+
+			/*
+			// On regarde les noeuds à 2 edges d'écart
+			Node ne = m_mesh->get<Node>(ne_id);
+			std::vector<Edge> adjacent_edges_2 = ne.get<Edge>() ;
+			for(auto e2:adjacent_edges_2) {
+				TCellID ne2_id = e2.getOppositeNodeId(ne);
+				Node ne2 = m_mesh->get<Node>(ne2_id);
+				math::Point p0 = n0.point();
+				math::Point pe2 = ne2.point();
+				math::Vector3d Vec = pe2-p0 ;
+				double le2 = Vec.norm();
+				double ve;
+				getValue(ne2_id, ve);
+				double ve_new = v0 + le2;
+				if (ve_new < ve) {
+					setValue(ne2_id, ve_new);
+					m_DistanceMap.update(ve, ve_new, ne2_id);
+				}
+			}
+			//
+			 */
+
+
 		}
 	}
 
