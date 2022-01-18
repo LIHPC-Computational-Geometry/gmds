@@ -154,10 +154,8 @@ markCellsOnCurves(const int AMarkBF,  //mark for faces on surfaces //IN
 {
 
     int cpt1 = 0, cpt2 = 0;
-    Variable<int>* CURVE_NODE = m_mesh->getVariable<int, GMDS_NODE>("BND_CURVE_COLOR"  );
-    Variable<int>* VERTEX_NODE = m_mesh->getVariable<int, GMDS_NODE>("BND_VERTEX_COLOR"  );
 
-    if(CURVE_NODE == nullptr)
+    if(!m_mesh->hasVariable(GMDS_NODE, "BND_CURVE_COLOR") || !m_mesh->hasVariable(GMDS_NODE, "BND_VERTEX_COLOR"))
     {
       for (auto e_id: m_mesh->edges())  {
 
@@ -211,6 +209,9 @@ markCellsOnCurves(const int AMarkBF,  //mark for faces on surfaces //IN
     }
     else
     {
+      Variable<int>* VERTEX_NODE = m_mesh->getVariable<int, GMDS_NODE>("BND_VERTEX_COLOR"  );
+      Variable<int>* CURVE_NODE  = m_mesh->getVariable<int, GMDS_NODE>("BND_CURVE_COLOR"  );
+
       for (auto e_id: m_mesh->edges())  {
         if (m_mesh->isMarked<Edge>(e_id, AMarkBE)) {
             Edge e = m_mesh->get<Edge>(e_id);
@@ -263,9 +264,8 @@ void BoundaryOperator::markNodesOnPoint(const int AMarkCE,// edge on curve IN
                                         const int AMarkPN)// node on vertex OUT
 {
     int cpt1=0, cpt2=0;
-    Variable<int>* VERTEX_NODE = m_mesh->getVariable<int, GMDS_NODE>("BND_VERTEX_COLOR"  );
 
-    if(VERTEX_NODE == nullptr)
+    if(!m_mesh->hasVariable(GMDS_NODE, "BND_VERTEX_COLOR"))
     {
       for (auto n_id:m_mesh->nodes()) {
           cpt1++;
@@ -319,6 +319,8 @@ void BoundaryOperator::markNodesOnPoint(const int AMarkCE,// edge on curve IN
     }
     else
     {
+      Variable<int>* VERTEX_NODE = m_mesh->getVariable<int, GMDS_NODE>("BND_VERTEX_COLOR"  );
+
       for (auto n_id:m_mesh->nodes()) {
         if((*VERTEX_NODE)[n_id] != 0)
         {
