@@ -111,7 +111,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test2)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet2D_Test2_Result.vtk");
+	vtkWriter.write("LevelSet2D_Test2_Result_Methode2.vtk");
 
 	ASSERT_TRUE(true);
 }
@@ -190,7 +190,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test4)
 	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Carre_Quart_Cylindre_maxsize_0.01.vtk";
+	std::string vtk_file = dir+"/Carre_Quart_Cylindre_maxsize_0.1.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
