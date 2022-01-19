@@ -2,7 +2,7 @@ add_executable(GMDS_CLAIRE_TEST
         ClaireTestSuite.h
         LevelSet2DTestSuite.h
         DistanceMapTestSuite.h
-        main_test.cpp)
+        main_test.cpp ../inc/gmds/claire/LevelSet2DFromIntToOut.h)
 
 target_link_libraries(GMDS_CLAIRE_TEST PUBLIC
         ${GMDS_LIB}
