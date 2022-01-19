@@ -356,7 +356,7 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test1)
 }
 
 
-/*
+
 TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test2)
 {
 	// WE READ
@@ -364,7 +364,7 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test2)
 	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Carre_Quart_Cylindre.vtk";
+	std::string vtk_file = dir+"/Carre_Quart_Cylindre_maxsize_0.1.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -374,6 +374,10 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test2)
 	gmds::MeshDoctor doc(&m);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
+
+	// Noeud détruit car n'appartient pas au maillage ni à la géométrie.
+	// Il apparaît à cause de la façon dont a été généré le cas test avec GMSH.
+	m.deleteNode(5);
 
 	//Get the boundary node ids
 	BoundaryOperator2D bnd_op(&m);
@@ -390,7 +394,7 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test2)
 			// For this test case, the front to advance is the boundary where x²+y²=1
 			m.mark<Node>(id,markFrontNodesInt);
 		}
-		else if (coord_x == -2 && coord_y == 2) {
+		else if (coord_x == -2 || coord_y == 2) {
 			m.mark<Node>(id,markFrontNodesOut);
 		}
 	}
@@ -410,4 +414,3 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test2)
 
 	ASSERT_TRUE(true);
 }
- */
