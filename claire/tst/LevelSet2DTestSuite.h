@@ -247,3 +247,54 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test4)
 
 	ASSERT_TRUE(true);
 }
+
+
+
+TEST(LevelSet2DTestClass, LevelSet2D_Test5)
+{
+	// WE READ
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Pont_maxsize_0.1.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(&m);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	int markFrontNodes = m.newMark<gmds::Node>();
+	for(auto id:bnd_node_ids){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		double coord_x = n.X() ;
+		if ( coord_x == 0 && coord_y == 0 ) {
+			// For this test case, the front to advance is the boundary where x²+y²=1
+			m.mark<Node>(id,markFrontNodes);
+			//std::cout << "Noeud marqué :" << id << std::endl;
+		}
+	}
+
+	LevelSet2D ls(&m, markFrontNodes);
+	ls.execute();
+
+	m.unmarkAll<Node>(markFrontNodes);
+	m.freeMark<Node>(markFrontNodes);
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("LevelSet2D_Test5_Result.vtk");
+
+	ASSERT_TRUE(true);
+}

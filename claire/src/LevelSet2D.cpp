@@ -42,7 +42,7 @@ LevelSet2D::STATUS LevelSet2D::execute()
 
 
 			/*
-			// On regarde les noeuds à 2 edges d'écart
+			// --- MODIFICATION NAIVE : On regarde les noeuds à 2 edges d'écart ---
 			Node ne = m_mesh->get<Node>(ne_id);
 			std::vector<Edge> adjacent_edges_2 = ne.get<Edge>() ;
 			for(auto e2:adjacent_edges_2) {
@@ -60,8 +60,9 @@ LevelSet2D::STATUS LevelSet2D::execute()
 					m_DistanceMap.update(ve, ve_new, ne2_id);
 				}
 			}
-			//
+			// --- FIN MODIFICATION NAIVE ---
 			*/
+
 
 
 		}
