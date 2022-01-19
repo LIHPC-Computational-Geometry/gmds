@@ -3,6 +3,7 @@
 //
 
 #include <gmds/claire/LevelSet2D.h>
+#include <gmds/claire/LevelSet2DFromIntToOut.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
@@ -298,3 +299,115 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test5)
 
 	ASSERT_TRUE(true);
 }
+
+
+
+TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test1)
+{
+	// WE READ
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Carre_maxsize_0.01.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(&m);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	int markFrontNodesInt = m.newMark<gmds::Node>();
+	int markFrontNodesOut = m.newMark<gmds::Node>();
+	for(auto id:bnd_node_ids){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		if (coord_y == 0) {
+			// For the square test case, the front to advance is the boundary where y=0
+			m.mark<Node>(id,markFrontNodesInt);
+		}
+		else if (coord_y == 1) {
+			m.mark<Node>(id,markFrontNodesOut);
+		}
+	}
+
+	LevelSet2DFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	lsCombined.execute();
+
+	m.unmarkAll<Node>(markFrontNodesInt);
+	m.freeMark<Node>(markFrontNodesInt);
+	m.unmarkAll<Node>(markFrontNodesOut);
+	m.freeMark<Node>(markFrontNodesOut);
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("LevelSet2DFromIntToOut_Test1_Result_Methode2.vtk");
+
+	ASSERT_TRUE(true);
+}
+
+
+/*
+TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test2)
+{
+	// WE READ
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Carre_Quart_Cylindre.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(&m);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	int markFrontNodesInt = m.newMark<gmds::Node>();
+	int markFrontNodesOut = m.newMark<gmds::Node>();
+	for(auto id:bnd_node_ids){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		double coord_x = n.X() ;
+		if ( ( pow(coord_x,2) + pow(coord_y,2)) == 1) {
+			// For this test case, the front to advance is the boundary where x²+y²=1
+			m.mark<Node>(id,markFrontNodesInt);
+		}
+		else if (coord_x == -2 && coord_y == 2) {
+			m.mark<Node>(id,markFrontNodesOut);
+		}
+	}
+
+	LevelSet2DFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	lsCombined.execute();
+
+	m.unmarkAll<Node>(markFrontNodesInt);
+	m.freeMark<Node>(markFrontNodesInt);
+	m.unmarkAll<Node>(markFrontNodesOut);
+	m.freeMark<Node>(markFrontNodesOut);
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("LevelSet2DFromIntToOut_Test2_Result.vtk");
+
+	ASSERT_TRUE(true);
+}
+ */

@@ -8,7 +8,8 @@
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include "gmds/ig/Mesh.h"
-#include "DistanceMap.h"
+//#include "DistanceMap.h"
+#include "LevelSet2D.h"
 /*----------------------------------------------------------------------------*/
 #include <string>
 #include <map>
@@ -29,6 +30,8 @@ class LIB_GMDS_CLAIRE_API LevelSet2DFromIntToOut {
 	/*-------------------------------------------------------------------*/
 	/** @brief Constructor.
          *  @param AMesh the mesh where we work on
+         *  @param AmarkFrontNodesInt the nodes on the interior front to advance
+         *  @param AmarkFrontNodesOut the nodes on the exterior front to advance
 	 */
 	LevelSet2DFromIntToOut(Mesh *AMesh, int AmarkFrontNodesInt, int AmarkFrontNodesOut);
 
@@ -36,6 +39,32 @@ class LIB_GMDS_CLAIRE_API LevelSet2DFromIntToOut {
 	/** @brief Execute the algorithm
 	 */
 	STATUS execute();
+
+ private:
+	/*-------------------------------------------------------------------*/
+	/** @brief
+         *  @param
+	 */
+	void combineDistanceFields();
+
+	/*-------------------------------------------------------------------*/
+	/** @brief Initialisation des distances au front intérieur
+         *  @param
+	 */
+	void initialisationDistancesInt();
+
+	/*-------------------------------------------------------------------*/
+	/** @brief Initialisation des distances au front extérieur
+         *  @param
+	 */
+	void initialisationDistancesOut();
+
+	/*-------------------------------------------------------------------*/
+	/** @brief Défini la distance pour un noeud
+	 */
+	void setValue(TCellID n_id, double v0);
+
+	/*-------------------------------------------------------------------*/
 
  private:
 	/** mesh we work on */
@@ -46,6 +75,10 @@ class LIB_GMDS_CLAIRE_API LevelSet2DFromIntToOut {
 	int m_markFrontNodesOut;
 	/** carte des distances par rapport au front concerné */
 	Variable<double>* m_distance;
+	/** carte des distances par rapport au front concerné */
+	Variable<double>* m_distance_Int;
+	/** carte des distances par rapport au front concerné */
+	Variable<double>* m_distance_Out;
 
 
 };
