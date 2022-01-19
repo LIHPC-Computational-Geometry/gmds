@@ -43,13 +43,16 @@ class LIB_GMDS_CLAIRE_API LevelSet2D {
 	 */
 	void initialisationDistances();
 	/*-------------------------------------------------------------------*/
-	/** @brief Obtient la distance pour un noeud
-	 */
-	void getValue(TCellID n_id, double &v0);
-	/*-------------------------------------------------------------------*/
 	/** @brief Défini la distance pour un noeud
 	 */
 	void setValue(TCellID n_id, double v0);
+	/*-------------------------------------------------------------------*/
+
+ public:
+	/*-------------------------------------------------------------------*/
+	/** @brief Obtient la distance pour un noeud
+	 */
+	void getValue(TCellID n_id, double &v0);
 	/*-------------------------------------------------------------------*/
 
  private:
