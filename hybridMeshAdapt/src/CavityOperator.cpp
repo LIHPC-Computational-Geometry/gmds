@@ -630,14 +630,16 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         }
       }
     }
-    /*
-    for(auto const triNotCo : trianglesNotConnectedToP)
+    /*if(node.getGlobalNode() == 2188)
     {
-      std::cout << "triNotCo Before --> " << triNotCo << std::endl;
-    }
-    for(auto const triNotCo : trianglesConnectedToP)
-    {
-      std::cout << "tri Co Before --> " << triNotCo << std::endl;
+      for(auto const triNotCo : trianglesNotConnectedToP)
+      {
+        std::cout << "triNotCo Before --> " << triNotCo << std::endl;
+      }
+      for(auto const triNotCo : trianglesConnectedToP)
+      {
+        std::cout << "tri Co Before --> " << triNotCo << std::endl;
+      }
     }*/
 
     std::vector<TSimplexID> triangleToRemoveFromVec{};
@@ -699,7 +701,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
 
     //we check if the cavity do not pocess any curve discontinuity
     if((*BND_CURVE_COLOR)[node.getGlobalNode()] != 0)
-    {
+    {/*
       gmds::BitVector triConnectedToPBitVector(m_simplex_mesh->triCapacity());
       for(auto const triangle : trianglesConnectedToP)
       {
@@ -716,11 +718,12 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
           {
             if(triConnectedToPBitVector[adjTriangle] == 0)
             {
+              std::cout << "false" << std::endl;
               return false;
             }
           }
         }
-      }
+      }*/
     }
   }
   cavityIO.setSimplexCavity(cavityCell, trianglesConnectedToP, trianglesNotConnectedToP);

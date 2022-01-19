@@ -73,36 +73,32 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           return flag;
         });
 
+
         CavityOperator::CavityIO cavityIO(simplexMesh);
         //std::cout << "cavityEnlargement start ..." << std::endl;
-        //std::clock_t start = std::clock();
-        double duration_CAVENLAR = 0.0;
+        std::cout << "simpliceNode.getGlobalNode() --> " << simpliceNode.getGlobalNode() << std::endl;
+        if(simpliceNode.getGlobalNode() == 72416)
+        {
+          std::cout << "initialCavityCell.size() BEFORE --> " << initialCavityCell.size() << std::endl;
+          std::cout << "initialCavityTriangle.size() BEFORE --> " << initialCavityTriangle.size() << std::endl;
+          for(auto const & simplex : initialCavityCell){std::cout << "simplex --> " << simplex << std::endl;}
+          for(auto const & triangle : initialCavityTriangle){std::cout << "triangle --> " << triangle << std::endl;}
+          std::cout << std::endl;
+        }
         if(cavOp.cavityEnlargement(cavityIO, initialCavityCell, initialCavityTriangle, simpliceNode, criterion, facesAlreadyBuilt, markedSimplex))
         {
-          //duration_CAVENLAR = (std::clock()-start)/(double)CLOCKS_PER_SEC;
-          //std::cout << "cavityEnlargementduration --> " << duration_CAVENLAR << std::endl;
-
-          //std::cout << "cavityEnlargement end " << std::endl;
-          //cavOp.cavityReduction(cavityIO, initCavity, simpliceNode, criterion, cavReduction, markedSimplex);
-          if(simpliceNode.getGlobalNode() == 109947)
+          /*if(simpliceNode.getGlobalNode() == 72416)
           {
-            for(auto const tet : cavityIO.cellInCavity())
-            {
-              std::cout << "tet --> " << tet << std::endl;
-            }
-            std::cout << std::endl;
-            for(auto const tri : cavityIO.getTrianglesNotConnectedToPInCavity())
-            {
-              std::cout << "tri not Co --> " << tri << " | surface_bnd : " << (*BND_TRIANGLES)[-tri] << std::endl;
-            }
-            std::cout << std::endl;
-            for(auto const tri : cavityIO.getTrianglesConnectedToPInCavity())
-            {
-              std::cout << "tri Co --> " << tri << " | surface_bnd : " << (*BND_TRIANGLES)[-tri] << std::endl;
-            }
+            std::cout << "initialCavityCell.size() AFTER --> " << initialCavityCell.size() << std::endl;
+            std::cout << "initialCavityTriangle.size() AFTER --> " << initialCavityTriangle.size() << std::endl;
+            for(auto const & simplex : initialCavityCell){std::cout << "simplex --> " << simplex << std::endl;}
+            for(auto const & triangle : initialCavityTriangle){std::cout << "triangle --> " << triangle << std::endl;}
+          }*/
+          if(simpliceNode.getGlobalNode() == 72416)
+          {
+            for(auto const & triangle : cavityIO.getTrianglesNotConnectedToPInCavity()){std::cout << "triangle Not Connected to P --> " << triangle << std::endl;}
+            for(auto const & triangle : cavityIO.getTrianglesConnectedToPInCavity()){std::cout << "triangle Connected to P --> " << triangle << std::endl;}
           }
-
-          std::cout << std::endl;
           //test sur les triangles non connecté a P pour ne pas créer de retournement topologique
           for(auto const triNotCo : cavityIO.getTrianglesNotConnectedToPInCavity())
           {
