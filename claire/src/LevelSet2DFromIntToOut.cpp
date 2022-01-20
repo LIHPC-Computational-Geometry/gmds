@@ -57,7 +57,7 @@ void LevelSet2DFromIntToOut::combineDistanceFields() {
 			setValue(id, -1 );
 		}
 		else {
-			setValue(id, distOut / (distInt + distOut));     // Attention, pas de barrière si distInt+dOut =0 (c'est à dire si les deux fronts ont un noeud commun)
+			setValue(id, distInt / (distInt + distOut));     // Attention, pas de barrière si distInt+dOut =0 (c'est à dire si les deux fronts ont un noeud commun)
 		}
 	}
 };
