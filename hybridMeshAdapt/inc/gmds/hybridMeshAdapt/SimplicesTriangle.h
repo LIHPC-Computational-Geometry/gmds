@@ -22,17 +22,31 @@ namespace gmds
       {
         public :
           TreeTrianglePath();
-          
+
           TreeTrianglePath(SimplexMesh* simplexmesh, BitVector& trianglesAlreadyInTree, TSimplexID currentTriangle, TSimplexID triangleToStop);
 
           ~TreeTrianglePath();
 
+          /*return a vector of the easiest (short) way through m_currentTriangle --> triangleToStop (in reverse)*/
+          TreeTrianglePath* findLeafContaining(const TSimplexID triangleToStop) const;
+
+          std::vector<TSimplexID> pathToTriangle(const TSimplexID triangleToStop) const ;
+
+          /*return true if the path between triangleToStop and m_currentTriangle pass through a different topo indexed by indexCurve*/
+          /*In order to find if a triangle is really connected to a Point being inserted*/
+          bool isValidPath(const int indexCurve, const TSimplexID triangleToStop) const ;
+
         private:
+
           SimplexMesh* m_simplex_mesh;
 
-          TSimplexID m_currentTriangle;
+          TSimplexID   m_currentTriangle;
 
-          std::vector<TreeTrianglePath*> m_adjTriangle;
+          TInt         m_localIndex;
+
+          TreeTrianglePath* m_root;
+
+          std::vector<TreeTrianglePath*> m_leafs;
 
 
       };
@@ -108,8 +122,6 @@ namespace gmds
         SimplexMesh* m_simplex_mesh          = nullptr;
 
         TSimplexID  m_simplexId             = -1;
-
-        TreeTrianglePath treePath;
       };
     }
   }

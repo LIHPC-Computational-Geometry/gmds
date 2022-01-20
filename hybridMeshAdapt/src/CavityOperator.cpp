@@ -477,9 +477,6 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
                                         const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt,
                                          const std::vector<TSimplexID> markedSimplex)
 {
-  /*std::cout << "CavityEnlargement  START..." << std::endl;
-  std::cout << "CELL -> " << SimplicesCell(m_simplex_mesh, 24181) << std::endl;*/
-
   std::vector<TSimplexID> trianglesConnectedToP{};
   std::vector<TSimplexID> trianglesNotConnectedToP{};
 
@@ -585,6 +582,10 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       else
       {
         int indexTri = (*BND_TRIANGLES)[-tri];
+        BitVector trianglesAlreadyInTree(m_simplex_mesh->getBitVectorTri().capacity());
+        TSimplexID triangleContainingP = -1;
+        TreeTrianglePath treePath = TreeTrianglePath(m_simplex_mesh, trianglesAlreadyInTree, tri, triangleContainingP);
+
         if(dimNode == SimplexMesh::topo::SURFACE)
         {
           if(indexTri == indexNode)
@@ -630,16 +631,14 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         }
       }
     }
-    /*if(node.getGlobalNode() == 2188)
+
+    /*for(auto const triNotCo : trianglesNotConnectedToP)
     {
-      for(auto const triNotCo : trianglesNotConnectedToP)
-      {
-        std::cout << "triNotCo Before --> " << triNotCo << std::endl;
-      }
-      for(auto const triNotCo : trianglesConnectedToP)
-      {
-        std::cout << "tri Co Before --> " << triNotCo << std::endl;
-      }
+      std::cout << "triNotCo Before --> " << triNotCo << std::endl;
+    }
+    for(auto const triNotCo : trianglesConnectedToP)
+    {
+      std::cout << "tri Co Before --> " << triNotCo << std::endl;
     }*/
 
     std::vector<TSimplexID> triangleToRemoveFromVec{};
