@@ -73,7 +73,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test2)
 	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Carre_maxsize_0.01.vtk";
+	std::string vtk_file = dir+"/Carre.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -112,7 +112,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test2)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet2D_Test2_Result_Methode2.vtk");
+	vtkWriter.write("LevelSet2D_Test2_Result.vtk");
 
 	ASSERT_TRUE(true);
 }
@@ -153,7 +153,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test3)
 		if ( ( pow(coord_y,2) + pow(coord_x,2)) == 1) {
 			// For this test case, the front to advance is the boundary where x²+y²=1
 			m.mark<Node>(id,markFrontNodes);
-			std::cout << "Noeud marqué :" << id << std::endl;
+			//std::cout << "Noeud marqué :" << id << std::endl;
 		}
 	}
 
@@ -258,7 +258,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test5)
 	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Pont_maxsize_0.1.vtk";
+	std::string vtk_file = dir+"/Pont.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -350,7 +350,7 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test1)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet2DFromIntToOut_Test1_Result_Methode2.vtk");
+	vtkWriter.write("LevelSet2DFromIntToOut_Test1_Result.vtk");
 
 	ASSERT_TRUE(true);
 }
