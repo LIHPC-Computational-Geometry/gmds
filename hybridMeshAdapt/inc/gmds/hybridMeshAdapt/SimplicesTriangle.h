@@ -17,6 +17,26 @@ namespace gmds
 
     namespace simplicesTriangle
     {
+
+      class TreeTrianglePath
+      {
+        public :
+          TreeTrianglePath();
+          
+          TreeTrianglePath(SimplexMesh* simplexmesh, BitVector& trianglesAlreadyInTree, TSimplexID currentTriangle, TSimplexID triangleToStop);
+
+          ~TreeTrianglePath();
+
+        private:
+          SimplexMesh* m_simplex_mesh;
+
+          TSimplexID m_currentTriangle;
+
+          std::vector<TreeTrianglePath*> m_adjTriangle;
+
+
+      };
+
       class SimplicesTriangle
       {
       public:
@@ -89,6 +109,7 @@ namespace gmds
 
         TSimplexID  m_simplexId             = -1;
 
+        TreeTrianglePath treePath;
       };
     }
   }
