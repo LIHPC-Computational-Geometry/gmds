@@ -6,18 +6,50 @@ using namespace hybrid;
 using namespace math;
 using namespace simplicesCell;
 using namespace simplicesTriangle;
+/*---------------------------------------------------------------------------*/
+TreeTrianglePath::TreeTrianglePath()
+{
 
+}
+/*---------------------------------------------------------------------------*/
+TreeTrianglePath::TreeTrianglePath(SimplexMesh* simplexMesh, BitVector& trianglesAlreadyInTree, TSimplexID currentTriangle, TSimplexID triangleToStop):m_currentTriangle(currentTriangle), m_simplex_mesh(simplexMesh)
+{
+  const std::vector<TSimplexID> adjSimplices = SimplicesTriangle(m_simplex_mesh, currentTriangle).adjacentTriangle();
+  for(auto const adjSimplex : adjSimplices)
+  {
+    if(trianglesAlreadyInTree[triangleToStop] != 1)
+    {
+      if(trianglesAlreadyInTree[adjSimplex] == 0)
+      {
+        trianglesAlreadyInTree.assign(adjSimplex);
+        TreeTrianglePath* treePath = new TreeTrianglePath(simplexMesh, trianglesAlreadyInTree, adjSimplex, triangleToStop);
+        m_adjTriangle.push_back(treePath);
+      }
+    }
+  }
+}
+/*---------------------------------------------------------------------------*/
+TreeTrianglePath::~TreeTrianglePath()
+{
+  for(auto const tree : m_adjTriangle)
+  {
+    if(tree != nullptr)
+    {
+      delete tree;
+    }
+  }
+}
 /*---------------------------------------------------------------------------*/
 SimplicesTriangle::SimplicesTriangle()
 {
 
 }
-
+/*---------------------------------------------------------------------------*/
 SimplicesTriangle::~SimplicesTriangle()
 {
 
 }
-
+/*---------------------------------------------------------------------------*/
 SimplicesTriangle::SimplicesTriangle(SimplexMesh* simplexMesh, const TSimplexID indexTriangle)
 {
   if(simplexMesh->m_tri_ids[std::abs(indexTriangle)] != 0)
