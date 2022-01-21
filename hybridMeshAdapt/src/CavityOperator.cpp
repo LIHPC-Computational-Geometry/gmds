@@ -572,6 +572,83 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       }
     }
 
+
+    if(dimNode == SimplexMesh::topo::RIDGE)
+    {
+      std::cout << "dimNode == SimplexMesh::topo::RIDGE" << std::endl;
+      struct Edge{
+        TInt node0;
+        TInt node1;
+      };
+
+      const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& mapEdgeTriangleIndices =  m_simplex_mesh->getEdgeTianglesIndices();
+      const std::pair<unsigned int, unsigned int>& trianglesIndices = mapEdgeTriangleIndices.at(indexNode);
+      unsigned int index0 = trianglesIndices.first;
+      unsigned int index1 = trianglesIndices.second;
+
+      BitVector trianglesindexedByIndex0(m_simplex_mesh->getBitVectorTri().capacity());
+      BitVector trianglesindexedByIndex1(m_simplex_mesh->getBitVectorTri().capacity());
+      for(auto const tri : initCavityTriangle)
+      {
+        int indexTri = (*BND_TRIANGLES)[-tri];
+        if(indexTri == index0){trianglesindexedByIndex0.assign(-tri);}
+        else if(indexTri == index1){trianglesindexedByIndex1.assign(-tri);}
+      }
+
+      std::vector<Edge> edges{};
+      std::cout << "trianglesindexedByIndex0.size() --> " << trianglesindexedByIndex0.size() << std::endl;
+      std::cout << "trianglesindexedByIndex1.size() --> " << trianglesindexedByIndex1.size() << std::endl;
+
+      for(unsigned int triangleIndex0ID = 0 ; triangleIndex0ID < trianglesindexedByIndex0.capacity() ; triangleIndex0ID++)
+      {
+        if(trianglesindexedByIndex0[triangleIndex0ID] == 1)
+        {
+          std::cout << "triangleIndex0ID --> " << triangleIndex0ID << std::endl;
+
+          SimplicesTriangle triangle(m_simplex_mesh, triangleIndex0ID);
+          for(unsigned int edgeLocal = 0 ; edgeLocal < 3 ; edgeLocal++)
+          {
+            TSimplexID adjTriangle = triangle.neighborTriangle(edgeLocal);
+            if(trianglesindexedByIndex1[adjTriangle] == 1)
+            {
+              std::vector<TInt> edgeNode = triangle.getOppositeEdge(edgeLocal);
+              Edge edge;
+              edge.node0 = edgeNode.front();
+              edge.node1 = edgeNode.back();
+              edges.push_back(edge);
+            }
+          }
+        }
+      }
+
+      std::cout << "edges.size() --> " << edges.size() << std::endl;
+      double epsilon = 1E-3;
+      math::Point pC = node.getCoords();
+      Edge e;
+      for(auto const & edge : edges)
+      {
+        math::Point pA = SimplicesNode(m_simplex_mesh, edge.node0).getCoords();
+        math::Point pB = SimplicesNode(m_simplex_mesh, edge.node1).getCoords();
+
+        math::Vector3d vecAB = pB - pA ;
+        math::Vector3d vecAC = pC - pA ;
+
+        if((vecAB.cross(vecAC)).norm() < epsilon)
+        {
+          double K_AC = vecAB.dot(vecAC);
+          double K_AB = vecAB.dot(vecAB);
+
+          if(K_AC >= 0 && K_AC <= K_AB)
+          {
+            e.node0 = edge.node0;
+            e.node1 = edge.node1;
+          }
+        }
+      }
+
+      std::cout << "EDGE --> " << e.node0 << " | " << e.node1 << std::endl;
+    }
+
     //set type for the triangle see the paper : Robust Boundary Layer Mesh Generation
     for(auto const tri : initCavityTriangle)
     {
@@ -582,10 +659,6 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       else
       {
         int indexTri = (*BND_TRIANGLES)[-tri];
-        BitVector trianglesAlreadyInTree(m_simplex_mesh->getBitVectorTri().capacity());
-        TSimplexID triangleContainingP = -1;
-        TreeTrianglePath treePath = TreeTrianglePath(m_simplex_mesh, trianglesAlreadyInTree, tri, triangleContainingP);
-
         if(dimNode == SimplexMesh::topo::SURFACE)
         {
           if(indexTri == indexNode)
@@ -599,6 +672,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         }
         else if(dimNode == SimplexMesh::topo::RIDGE)
         {
+
           const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& mapEdgeTriangleIndices =  m_simplex_mesh->getEdgeTianglesIndices();
           const std::pair<unsigned int, unsigned int>& trianglesIndices = mapEdgeTriangleIndices.at(indexNode);
           unsigned int triangle0 = trianglesIndices.first;

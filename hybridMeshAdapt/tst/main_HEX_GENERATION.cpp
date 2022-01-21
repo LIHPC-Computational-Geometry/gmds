@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 
   std::string extansion(".vtk");
   std::size_t position = fIn.find(extansion);
-  fDI = fIn.substr(0,position) +  "_DELAUNAY_INSERTION_test.vtk";
+  fDI = fIn.substr(0,position) +  "_DELAUNAY_INSERTION_test3.vtk";
   fER = fIn.substr(0,position) +  "_EDGES_REMOVE.vtk";
   fHEX = fIn.substr(0,position) + "_HEX_DOMINANT.vtk";
 
@@ -146,17 +146,19 @@ int main(int argc, char* argv[])
         nodesAdded.assign(node);
       }
     }
+    std::cout << std::endl;
+    std::cout << std::endl;
   }
-  return 0;
-  std::vector<TSimplexID> cells{51669,398533,398535,88958,297004,398536,67695,100832,101154,297003,88985,301633};
-  simplexMesh.deleteAllSimplicesBut(cells);
+
+  //std::vector<TSimplexID> cells{51669,398533,398535,88958,297004,398536,67695,100832,101154,297003,88985,301633};
+  //simplexMesh.deleteAllSimplicesBut(cells);
   duration = (std::clock()-start)/(double)CLOCKS_PER_SEC;
   std::cout << "DELAUNAY INSERTION DONE IN " << duration << std::endl;
   std::cout << "  % NODE ADDED --> ~ "  << (double)nodesAdded.size() / (double)nodesToAddIds.size() << std::endl;
   std::cout << std::endl;
   gmds::VTKWriter vtkWriterDI(&ioService);
-  vtkWriterDI.setCellOptions(gmds::N|gmds::R);
-  vtkWriterDI.setDataOptions(gmds::N|gmds::R);
+  vtkWriterDI.setCellOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriterDI.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterDI.write(fDI);
   return 0;
 
