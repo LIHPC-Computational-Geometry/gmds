@@ -36,7 +36,11 @@ class LIB_GMDS_CLAIRE_API GradientComputation3D {
 	STATUS execute();
 
  private:
-
+	/*-------------------------------------------------------------------*/
+	/** @brief Donne le vecteur gradient sur une région
+	 */
+	math::Vector3d computeGradientOnSimpleRegion(TCellID region_id);
+	/*-------------------------------------------------------------------*/
 
  private:
 	/** mesh we work on */

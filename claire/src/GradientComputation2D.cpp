@@ -60,7 +60,7 @@ math::Vector3d GradientComputation2D::computeGradientOnSimpleFace(TCellID face_i
 	dist_n0 = m_distance->value(face_nodes_ids[0]) ;
 	dist_n1 = m_distance->value(face_nodes_ids[1]) ;
 	dist_n2 = m_distance->value(face_nodes_ids[2]) ;
-	double At = getFaceArea(face_id);
+	double At = face.area();
 
 	math::Vector3d Vect_20_ortho = getNormalVector(face_nodes_ids[2], face_nodes_ids[0]) ;
 	math::Vector3d Vect_01_ortho = getNormalVector(face_nodes_ids[0], face_nodes_ids[1]) ;
@@ -73,6 +73,7 @@ math::Vector3d GradientComputation2D::computeGradientOnSimpleFace(TCellID face_i
 
 
 /*------------------------------------------------------------------------*/
+/*
 double GradientComputation2D::getFaceArea(TCellID face_id){
 	double At ;
 	Face face = m_mesh->get<Face>(face_id);
@@ -87,4 +88,5 @@ double GradientComputation2D::getFaceArea(TCellID face_id){
 
 	return At;
 }
+ */
 /*------------------------------------------------------------------------*/

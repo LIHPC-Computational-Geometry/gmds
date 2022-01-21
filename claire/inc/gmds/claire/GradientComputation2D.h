@@ -47,7 +47,7 @@ class LIB_GMDS_CLAIRE_API GradientComputation2D {
 	/*-------------------------------------------------------------------*/
 	/** @brief Retourne l'aire d'une face par la formule de Héron
 	 */
-	double getFaceArea(TCellID face_id);
+	//double getFaceArea(TCellID face_id);
 	/*-------------------------------------------------------------------*/
 
  private:
