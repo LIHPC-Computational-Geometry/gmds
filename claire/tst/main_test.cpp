@@ -6,6 +6,7 @@
 #include "ClaireTestSuite.h"
 #include "LevelSet2DTestSuite.h"
 #include "DistanceMapTestSuite.h"
+#include "GradientComputation2DTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

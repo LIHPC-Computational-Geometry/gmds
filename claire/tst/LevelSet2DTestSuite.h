@@ -4,6 +4,7 @@
 
 #include <gmds/claire/LevelSet2D.h>
 #include <gmds/claire/LevelSet2DFromIntToOut.h>
+#include <gmds/claire/GradientComputation2D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
@@ -56,6 +57,9 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test1)
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
+
+	//GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	//grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
