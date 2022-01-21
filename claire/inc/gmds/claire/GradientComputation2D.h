@@ -57,7 +57,6 @@ class LIB_GMDS_CLAIRE_API GradientComputation2D {
 	Variable<double>* m_distance;
 	/** champ de gradient défini sur chaque face */
 	Variable<math::Vector3d>* m_gradient2D;
-
 };
 /*----------------------------------------------------------------------------*/
 }     // namespace gmds
