@@ -22,7 +22,7 @@ set(GMDS_SRC
 		src/DistanceMap.cpp
 		src/LevelSet2DFromIntToOut.cpp
 		src/GradientComputation2D.cpp
-		)
+        inc/gmds/claire/GradientComputation3D.h src/GradientComputation3D.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
