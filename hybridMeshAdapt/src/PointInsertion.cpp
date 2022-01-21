@@ -87,13 +87,6 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
         }
         if(cavOp.cavityEnlargement(cavityIO, initialCavityCell, initialCavityTriangle, simpliceNode, criterion, facesAlreadyBuilt, markedSimplex))
         {
-          /*if(simpliceNode.getGlobalNode() == 72416)
-          {
-            std::cout << "initialCavityCell.size() AFTER --> " << initialCavityCell.size() << std::endl;
-            std::cout << "initialCavityTriangle.size() AFTER --> " << initialCavityTriangle.size() << std::endl;
-            for(auto const & simplex : initialCavityCell){std::cout << "simplex --> " << simplex << std::endl;}
-            for(auto const & triangle : initialCavityTriangle){std::cout << "triangle --> " << triangle << std::endl;}
-          }*/
           if(simpliceNode.getGlobalNode() == 72416)
           {
             for(auto const & triangle : cavityIO.getTrianglesNotConnectedToPInCavity()){std::cout << "triangle Not Connected to P --> " << triangle << std::endl;}

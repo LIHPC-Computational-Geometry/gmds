@@ -16,6 +16,7 @@ TreeTrianglePath::TreeTrianglePath()
 TreeTrianglePath::TreeTrianglePath(SimplexMesh* simplexMesh, BitVector& trianglesAlreadyInTree, TSimplexID currentTriangle, TSimplexID triangleToStop):m_currentTriangle(currentTriangle), m_simplex_mesh(simplexMesh)
 {
   const std::vector<TSimplexID> adjSimplices = SimplicesTriangle(m_simplex_mesh, currentTriangle).adjacentTriangle();
+  unsigned int cpt = 0;
   for(auto const adjSimplex : adjSimplices)
   {
     if(trianglesAlreadyInTree[triangleToStop] != 1)
@@ -26,7 +27,8 @@ TreeTrianglePath::TreeTrianglePath(SimplexMesh* simplexMesh, BitVector& triangle
         trianglesAlreadyInTree.assign(adjSimplex);
         TreeTrianglePath* treePath = new TreeTrianglePath(simplexMesh, trianglesAlreadyInTree, adjSimplex, triangleToStop);
         treePath->m_root = this;
-        m_leafs.push_back(treePath);
+        m_leafs[cpt] = treePath;
+        cpt++;
       }
     }
   }
@@ -53,35 +55,33 @@ TreeTrianglePath* TreeTrianglePath::findLeafContaining(const TSimplexID triangle
       {
         return leaf;
       }
-      return leaf->findLeafContaining(triangleToStop);
+      leaf->findLeafContaining(triangleToStop);
     }
   }
+  return nullptr;
 }
 /*---------------------------------------------------------------------------*/
 std::vector<TSimplexID> TreeTrianglePath::pathToTriangle(const TSimplexID triangleToStop) const
 {
   std::vector<TSimplexID> path{};
   TreeTrianglePath* treePath = findLeafContaining(triangleToStop);
+  std::cout << "findLeafContaining -> " << triangleToStop << std::endl;
 
   if(treePath != nullptr)
   {
-    for(;;)
+    while(treePath != nullptr)
     {
-      if(treePath != nullptr)
-      {
-        path.push_back(treePath->m_currentTriangle);
-        treePath = treePath->m_root;
-        if(treePath == nullptr)
-        {
-          break;
-        }
-      }
+      path.push_back(treePath->m_currentTriangle);
+      treePath = treePath->m_root;
     }
   }
   else
   {
     GMDSException("treePath != nullptr, the triangleToStop was not found...");
   }
+
+  std::cout << "PATH --> " << std::endl;
+  for(auto const triangle : path){std::cout << triangle << " "; }
 
   return std::move(path);
 }
@@ -90,7 +90,6 @@ bool TreeTrianglePath::isValidPath(const int indexCurve, const TSimplexID triang
 {
   const std::vector<TSimplexID>&& path = pathToTriangle(triangleToStop);
   unsigned int sizeEdges = 3;
-
   Variable<int>* BND_CURVE_COLOR      = m_simplex_mesh->getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
 
   for(unsigned int iter = path.size() -1 ; iter == 1 ; iter--)

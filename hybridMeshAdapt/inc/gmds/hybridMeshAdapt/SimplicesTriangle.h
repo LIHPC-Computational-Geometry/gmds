@@ -40,13 +40,13 @@ namespace gmds
 
           SimplexMesh* m_simplex_mesh;
 
-          TSimplexID   m_currentTriangle;
+          TSimplexID   m_currentTriangle = 0;
 
           TInt         m_localIndex;
 
-          TreeTrianglePath* m_root;
+          TreeTrianglePath* m_root = nullptr;
 
-          std::vector<TreeTrianglePath*> m_leafs;
+          std::vector<TreeTrianglePath*> m_leafs{nullptr, nullptr, nullptr};
 
 
       };
@@ -65,7 +65,7 @@ namespace gmds
 
         double getAreaOfCell                      ();
 
-        TSimplexID neighborTriangle  (const TInt indexNodeLocal) const ;
+        TSimplexID neighborTriangle               (const TInt indexNodeLocal) const ;
 
         std::vector<TSimplexID> adjacentTriangle  () const ;
 
@@ -76,14 +76,14 @@ namespace gmds
 
         std::vector<unsigned int> nodes           () const;
 
-        std::vector<TInt> getNodes() const;
+        std::vector<TInt> getNodes                () const;
 
         /*triangles's normal are oriented outside the mesh*/
-        math::Vector3d    getNormal()  const;
+        math::Vector3d    getNormal               ()  const;
 
         std::vector<TSimplexID> neighborSimplex   () const ;
 
-        std::vector<TInt> otherNodesInTriangle                  (const SimplicesTriangle& simpliceTriangle) const ;
+        std::vector<TInt> otherNodesInTriangle    (const SimplicesTriangle& simpliceTriangle) const ;
 
         std::vector<TInt> getOtherNodeInSimplex   (const std::vector<TInt>& v) const;
 

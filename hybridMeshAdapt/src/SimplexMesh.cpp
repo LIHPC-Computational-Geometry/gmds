@@ -509,7 +509,7 @@ bool SimplexMesh::deleteNode(const TInt indexNode, bool eraseNode)
       if(eraseNode)
       {
         m_node_ids.unselect(indexNode);
-        //m_node_variable_manager->removeEntry(indexNode);
+        m_node_variable_manager->removeEntry(indexNode);
       }
       flag = true;
     }
