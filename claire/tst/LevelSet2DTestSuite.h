@@ -150,7 +150,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test3)
 		Node n = m.get<Node>(id);
 		double coord_y = n.Y() ;
 		double coord_x = n.X() ;
-		if ( ( pow(coord_y,2) + pow(coord_x,2)) == 1) {
+		if ( sqrt( pow(coord_y,2) + pow(coord_x,2)) == 1) {
 			// For this test case, the front to advance is the boundary where x²+y²=1
 			m.mark<Node>(id,markFrontNodes);
 			//std::cout << "Noeud marqué :" << id << std::endl;
@@ -250,7 +250,6 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test4)
 }
 
 
-
 TEST(LevelSet2DTestClass, LevelSet2D_Test5)
 {
 	// WE READ
@@ -299,7 +298,6 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test5)
 
 	ASSERT_TRUE(true);
 }
-
 
 
 TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test1)
@@ -356,7 +354,6 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test1)
 }
 
 
-
 TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test2)
 {
 	// WE READ
@@ -390,7 +387,7 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test2)
 		Node n = m.get<Node>(id);
 		double coord_y = n.Y() ;
 		double coord_x = n.X() ;
-		if ( ( pow(coord_x,2) + pow(coord_y,2)) == 1) {
+		if ( sqrt( pow(coord_x,2) + pow(coord_y,2)) == 1) {
 			// For this test case, the front to advance is the boundary where x²+y²=1
 			m.mark<Node>(id,markFrontNodesInt);
 		}
@@ -413,4 +410,128 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test2)
 	vtkWriter.write("LevelSet2DFromIntToOut_Test2_Result.vtk");
 
 	ASSERT_TRUE(true);
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TEST(LevelSet2DTestClass, LevelSet2D_3D_Test1)
+{
+	Mesh m(MeshModel(DIM3 | R | F | E | N |
+	                 R2N | F2N | E2N | R2F | F2R |
+	                 F2E | E2F | R2E | N2R | N2F | N2E));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/B0.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::R);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doctor(&m);
+	doctor.buildFacesAndR2F();
+	doctor.buildEdgesAndX2E();
+	doctor.updateUpwardConnectivity();
+
+	int markFrontNodes = m.newMark<gmds::Node>();
+
+	// Test avec une source ponctuelle
+	m.mark<Node>(10,markFrontNodes);
+
+	LevelSet2D ls(&m, markFrontNodes);
+	ls.execute();
+
+	m.unmarkAll<Node>(markFrontNodes);
+	m.freeMark<Node>(markFrontNodes);
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("LevelSet2D_3D_Test1_Result.vtk");
+
+	ASSERT_TRUE(true);
+
+}
+
+
+
+
+TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_3D_Test1)
+{
+	Mesh m(MeshModel(DIM3 | R | F | E | N |
+	                 R2N | F2N | E2N | R2F | F2R |
+	                 F2E | E2F | R2E | N2R | N2F | N2E));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/B0.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::R);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doctor(&m);
+	doctor.buildFacesAndR2F();
+	doctor.buildEdgesAndX2E();
+	doctor.updateUpwardConnectivity();
+
+	int markFrontNodesInt = m.newMark<gmds::Node>();
+	int markFrontNodesOut = m.newMark<gmds::Node>();
+
+	for(auto id:m.nodes()){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		double coord_x = n.X() ;
+		double rayon;
+		rayon = sqrt( (pow(coord_x, 2) + pow(coord_y + 2.5, 2)) ) ;
+		if ( (rayon - 2.5) < pow(10,-3)) {
+			// For this test case, the front to advance is the boundary where x²+y²=2.5
+			m.mark<Node>(id,markFrontNodesInt);
+		}
+		else if (coord_x == -5 || coord_x == 5 || coord_y == 2.5) {
+			m.mark<Node>(id,markFrontNodesOut);
+		}
+	}
+
+	std::cout << "Fin de l'initialisation des marques" << std::endl ;
+
+
+	LevelSet2DFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	lsCombined.execute();
+
+	m.unmarkAll<Node>(markFrontNodesInt);
+	m.freeMark<Node>(markFrontNodesInt);
+	m.unmarkAll<Node>(markFrontNodesOut);
+	m.freeMark<Node>(markFrontNodesOut);
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("LevelSet2DFromIntToOut_3D_Test1_Result.vtk");
+
+	ASSERT_TRUE(true);
+
+}
+
+
