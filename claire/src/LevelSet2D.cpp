@@ -29,6 +29,7 @@ LevelSet2D::STATUS LevelSet2D::execute()
 		m_DistanceMap.getAndRemoveFirst(v0, n0_id);
 		Node n0 = m_mesh->get<Node>(n0_id);
 		std::vector<Edge> adjacent_edges = n0.get<Edge>() ;
+		//std::cout << "Nombre d'edges adjacentes : " << adjacent_edges.size() << std::endl ;
 		for(auto e:adjacent_edges){
 			double le =e.length();
 			TCellID ne_id = e.getOppositeNodeId(n0);
@@ -85,10 +86,10 @@ void LevelSet2D::initialisationDistances(){
 			m_distance->set(id, 0);
 		}
 		else{
-			m_DistanceMap.add(std::numeric_limits<double>::max(), id);
-			m_distance->set(id, std::numeric_limits<double>::max());
-			//m_DistanceMap.add(1000, id);
-			//m_distance->set(id, 1000);
+			//m_DistanceMap.add(std::numeric_limits<double>::max(), id);
+			//m_distance->set(id, std::numeric_limits<double>::max());
+			m_DistanceMap.add(1000, id);
+			m_distance->set(id, 1000);
 		}
 	}
 };
