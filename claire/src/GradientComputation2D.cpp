@@ -20,6 +20,11 @@ GradientComputation2D::GradientComputation2D(Mesh *AMesh, Variable<double> *Adis
 GradientComputation2D::STATUS GradientComputation2D::execute()
 {
 
+	for(auto face_id:m_mesh->faces()) {
+		double At ;
+		Face face = m_mesh->get<Face>(face_id);
+		std::vector<TCellID> face_nodes_ids = face.getIDs<Node>();
+	}
 
 	return GradientComputation2D::SUCCESS;
 }
@@ -43,5 +48,33 @@ math::Vector3d GradientComputation2D::getNormalVector(TCellID n0_id, TCellID n1_
 
 	return Vecteur_Normal ;
 
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+math::Vector3d GradientComputation2D::computeGradientOnSimpleFace(TCellID n0_id, TCellID n1_id, TCellID n2_id){
+	math::Vector3d Gradient ;
+	Face f;
+	return Gradient;
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+double GradientComputation2D::getFaceArea(TCellID face_id){
+	double At ;
+	Face face = m_mesh->get<Face>(face_id);
+	//std::vector<TCellID> face_nodes_ids = face.getIDs<Node>();
+	std::vector<Edge> face_edges = face.get<Edge>() ;
+
+	double a, b, c, p;
+	a = face_edges[0].length();
+	b = face_edges[1].length();
+	c = face_edges[2].length();
+	p = (a+b+c)/2.0;
+	At = sqrt(p*(p-a)*(p-b)*(p-c));
+
+	return At;
 }
 /*------------------------------------------------------------------------*/
