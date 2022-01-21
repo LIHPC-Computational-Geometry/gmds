@@ -645,8 +645,15 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
           }
         }
       }
-
       std::cout << "EDGE --> " << e.node0 << " | " << e.node1 << std::endl;
+      const std::vector<TSimplexID> shell = SimplicesNode(m_simplex_mesh, e.node0).shell(m_simplex_mesh, e.node1);
+      std::vector<TSimplexID> firstTriangles{};
+      for(auto const simplex : shell){if(simplex < 0){firstTriangles.push_back(simplex);}}
+
+      gmds::BitVector trianglesIndex0{m_simplex_mesh->getBitVectorTri().capacity();}
+      for(auto const & triangle : firstTriangles)
+      int indexTri = (*BND_TRIANGLES)[-tri];
+
     }
 
     //set type for the triangle see the paper : Robust Boundary Layer Mesh Generation
