@@ -12,11 +12,17 @@ set(GMDS_INC
 		inc/gmds/claire/LevelSet2D.h
 		inc/gmds/claire/DistanceMap.h
 		inc/gmds/claire/LevelSet2DFromIntToOut.h
+		inc/gmds/claire/GradientComputation2D.h
 		)
 set(GMDS_SRC
 		src/main.cpp
 		src/Smooth2D.cpp
-        src/Grid_Smooth2D.cpp  src/LevelSet2D.cpp src/DistanceMap.cpp src/LevelSet2DFromIntToOut.cpp inc/gmds/claire/GradientComputation2D.h src/GradientComputation2D.cpp)
+        src/Grid_Smooth2D.cpp
+		src/LevelSet2D.cpp
+		src/DistanceMap.cpp
+		src/LevelSet2DFromIntToOut.cpp
+		src/GradientComputation2D.cpp
+		)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

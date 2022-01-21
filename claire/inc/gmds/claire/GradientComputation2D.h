@@ -28,7 +28,7 @@ class LIB_GMDS_CLAIRE_API GradientComputation2D {
 	/** @brief Constructor.
          *  @param AMesh the mesh where we work on
 	 */
-	GradientComputation2D(Mesh *AMesh, Variable<double> *Adistance);
+	GradientComputation2D(Mesh *AMesh, Variable<double>* Adistance);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm

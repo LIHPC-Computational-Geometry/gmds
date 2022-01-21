@@ -9,7 +9,7 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 
-GradientComputation2D::GradientComputation2D(Mesh *AMesh, Variable<double> *Adistance) {
+GradientComputation2D::GradientComputation2D(Mesh *AMesh, Variable<double>* Adistance) {
 	m_mesh = AMesh;
 	m_distance = Adistance;
 	m_gradient2D = m_mesh->newVariable<math::Vector3d ,GMDS_FACE>("gradient 2D");
