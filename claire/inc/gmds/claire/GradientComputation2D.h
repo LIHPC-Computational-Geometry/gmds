@@ -43,7 +43,7 @@ class LIB_GMDS_CLAIRE_API GradientComputation2D {
 	/*-------------------------------------------------------------------*/
 	/** @brief Donne le vecteur gradient sur une face
 	 */
-	math::Vector3d computeGradientOnSimpleFace(TCellID n0_id, TCellID n1_id, TCellID n2_id);
+	math::Vector3d computeGradientOnSimpleFace(TCellID face_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Retourne l'aire d'une face par la formule de Héron
 	 */
