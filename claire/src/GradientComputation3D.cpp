@@ -33,42 +33,38 @@ GradientComputation3D::STATUS GradientComputation3D::execute()
 
 /*------------------------------------------------------------------------*/
 math::Vector3d GradientComputation3D::computeGradientOnSimpleRegion(TCellID region_id){
-	math::Vector3d Gradient ;
+	math::Vector3d Gradient(0,0,0) ;
 	Region reg = m_mesh->get<Region>(region_id);
 	std::vector<TCellID> region_nodes_ids = reg.getIDs<Node>();
 
-	double dist_n0 = m_distance->value(region_nodes_ids[0]) ;
-	double dist_n1 = m_distance->value(region_nodes_ids[1]) ;
-	double dist_n2 = m_distance->value(region_nodes_ids[2]) ;
-	double dist_n3 = m_distance->value(region_nodes_ids[3]) ;
+	double di = m_distance->value(region_nodes_ids[0]) ;
+	double dj = m_distance->value(region_nodes_ids[1]) ;
+	double dk = m_distance->value(region_nodes_ids[2]) ;
+	double dh = m_distance->value(region_nodes_ids[3]) ;
 	double Vt = reg.volume();
 
-	Node n0 = m_mesh->get<Node>(region_nodes_ids[0]);
-	Node n1 = m_mesh->get<Node>(region_nodes_ids[1]);
-	Node n2 = m_mesh->get<Node>(region_nodes_ids[2]);
-	Node n3 = m_mesh->get<Node>(region_nodes_ids[3]);
+	Node ni = m_mesh->get<Node>(region_nodes_ids[0]);
+	Node nj = m_mesh->get<Node>(region_nodes_ids[1]);
+	Node nk = m_mesh->get<Node>(region_nodes_ids[2]);
+	Node nh = m_mesh->get<Node>(region_nodes_ids[3]);
 
-	math::Point p0 = n0.point();
-	math::Point p1 = n1.point();
-	math::Point p2 = n2.point();
-	math::Point p3 = n3.point();
+	math::Point pi = ni.point();
+	math::Point pj = nj.point();
+	math::Point pk = nk.point();
+	math::Point ph = nh.point();
 
-	math::Vector3d Vec_loc_1;
-	math::Vector3d Vec_loc_2;
+	math::Vector3d vki = pk-pi ;
+	math::Vector3d vkh = pk-ph ;
+	math::Vector3d vhi = ph-pi ;
+	math::Vector3d vhj = ph-pj ;
+	math::Vector3d vik = pk-pi ;
+	math::Vector3d vji = pj-pi ;
 
-	Vec_loc_1 = p0-p2 ;
-	Vec_loc_2 = p3-p2 ;
-	math::Vector3d Vec_1 = Vec_loc_2.cross(Vec_loc_1);
+	math::Vector3d Vec_1 = vki.cross(vkh);
+	math::Vector3d Vec_2 = vhi.cross(vhj);
+	math::Vector3d Vec_3 = vik.cross(vji);
 
-	Vec_loc_1 = p0-p3 ;
-	Vec_loc_2 = p1-p3 ;
-	math::Vector3d Vec_2 = Vec_loc_2.cross(Vec_loc_1);
-
-	Vec_loc_1 = p2-p0 ;
-	Vec_loc_2 = p1-p0 ;
-	math::Vector3d Vec_3 = Vec_loc_2.cross(Vec_loc_1);
-
-	Gradient = Vec_1*(dist_n1-dist_n0)/(2.0*Vt) + Vec_2*(dist_n2-dist_n0)/(2.0*Vt) + Vec_3*(dist_n3-dist_n0)/(2.0*Vt) ;
+	Gradient = (Vec_1*(dj-di)/(2.0*Vt) + Vec_2*(dk-di)/(2.0*Vt) + Vec_3*(dh-di)/(2.0*Vt)) ;
 
 	/*
 	std::cout << "----------------------------------" << std::endl ;
