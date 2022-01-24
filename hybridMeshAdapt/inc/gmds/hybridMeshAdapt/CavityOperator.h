@@ -129,6 +129,8 @@ namespace gmds
 
           //void cavityReduction(CavityIO& cavityIO, std::vector<TSimplexID>& initCavity, const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const CavityReduction& cavityReduction, const std::vector<TSimplexID> v = std::vector<TSimplexID>{});
 
+          void selectConnexTriangle(const TSimplexID& firstTriangle, const gmds::BitVector& triangleInCav, gmds::BitVector& connexTriangle);
+
           void fillSelectedIds(const std::vector<TSimplexID>& cavity);
 
           void clearSelectedIds();

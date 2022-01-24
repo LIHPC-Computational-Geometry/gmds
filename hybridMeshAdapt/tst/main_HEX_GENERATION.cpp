@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 
   std::string extansion(".vtk");
   std::size_t position = fIn.find(extansion);
-  fDI = fIn.substr(0,position) +  "_DELAUNAY_INSERTION_test3.vtk";
+  fDI = fIn.substr(0,position) +  "_DELAUNAY_INSERTION.vtk";
   fER = fIn.substr(0,position) +  "_EDGES_REMOVE.vtk";
   fHEX = fIn.substr(0,position) + "_HEX_DOMINANT.vtk";
 
@@ -120,7 +120,6 @@ int main(int argc, char* argv[])
         bool status = false;
         std::vector<TSimplexID> deletedSimplex{};
         const std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
-        std::cout << "POINT BEING ADDED --> " << idx << std::endl;
         DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, tetraContenaingPt, status, nodesAdded, deletedSimplex, facesAlreadyBuilt);
         if(status)
         {
@@ -146,12 +145,8 @@ int main(int argc, char* argv[])
         nodesAdded.assign(node);
       }
     }
-    std::cout << std::endl;
-    std::cout << std::endl;
   }
 
-  //std::vector<TSimplexID> cells{51669,398533,398535,88958,297004,398536,67695,100832,101154,297003,88985,301633};
-  //simplexMesh.deleteAllSimplicesBut(cells);
   duration = (std::clock()-start)/(double)CLOCKS_PER_SEC;
   std::cout << "DELAUNAY INSERTION DONE IN " << duration << std::endl;
   std::cout << "  % NODE ADDED --> ~ "  << (double)nodesAdded.size() / (double)nodesToAddIds.size() << std::endl;
@@ -160,7 +155,6 @@ int main(int argc, char* argv[])
   vtkWriterDI.setCellOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterDI.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterDI.write(fDI);
-  return 0;
 
   std::cout << "EDGES REMOVE START" << std::endl;
   start = std::clock();
@@ -176,7 +170,7 @@ int main(int argc, char* argv[])
     }
     tmp = edgesRemoved;
   }
-
+  std::cout << "edge REMOVING reinsertion " << std::endl;
   unsigned int nodeSize = 0;
   unsigned int nodeReinsertedSize = 0;
   gmds::BitVector nBV(nodesAdded.capacity());
@@ -260,6 +254,7 @@ int main(int argc, char* argv[])
     unsigned int ITER_MAX = 10;
     for(unsigned int iter = 0; iter < ITER_MAX ; iter++)
     {
+      std::cout << "iter -> " << iter << std::endl;
       unsigned int edgeBuild = simplexMesh.buildEdges(edges, nodesAdded);
       if(edgeBuild == tmp || edgeBuild == 0)
       {
@@ -267,6 +262,7 @@ int main(int argc, char* argv[])
       }
       tmp = edgeBuild;
     }
+    std::cout << "BUILD EDGE DONE " << std::endl;
 
     /////////////////////HEXA'S FACES BUILDER START HERE /////////////////////////
     std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
@@ -282,6 +278,7 @@ int main(int argc, char* argv[])
       }
     }
     markedTet = simplexMesh.getBitVectorTet();
+    std::cout << "BUILD FACE DONE " << std::endl;
 
     for(auto const h : nodesHex)
     {
@@ -296,6 +293,8 @@ int main(int argc, char* argv[])
         hexesNodes.push_back(hexeNodes);
       }
     }
+    std::cout << "HEX 2 TET DONE " << std::endl;
+
     if(faceBuiltTmp == faceBuildCpt || faceBuiltTmp == 0)
     {
       break;

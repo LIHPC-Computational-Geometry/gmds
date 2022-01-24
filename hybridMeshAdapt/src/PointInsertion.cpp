@@ -73,25 +73,9 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           return flag;
         });
 
-
         CavityOperator::CavityIO cavityIO(simplexMesh);
-        //std::cout << "cavityEnlargement start ..." << std::endl;
-        std::cout << "simpliceNode.getGlobalNode() --> " << simpliceNode.getGlobalNode() << std::endl;
-        if(simpliceNode.getGlobalNode() == 72416)
-        {
-          std::cout << "initialCavityCell.size() BEFORE --> " << initialCavityCell.size() << std::endl;
-          std::cout << "initialCavityTriangle.size() BEFORE --> " << initialCavityTriangle.size() << std::endl;
-          for(auto const & simplex : initialCavityCell){std::cout << "simplex --> " << simplex << std::endl;}
-          for(auto const & triangle : initialCavityTriangle){std::cout << "triangle --> " << triangle << std::endl;}
-          std::cout << std::endl;
-        }
         if(cavOp.cavityEnlargement(cavityIO, initialCavityCell, initialCavityTriangle, simpliceNode, criterion, facesAlreadyBuilt, markedSimplex))
         {
-          if(simpliceNode.getGlobalNode() == 72416)
-          {
-            for(auto const & triangle : cavityIO.getTrianglesNotConnectedToPInCavity()){std::cout << "triangle Not Connected to P --> " << triangle << std::endl;}
-            for(auto const & triangle : cavityIO.getTrianglesConnectedToPInCavity()){std::cout << "triangle Connected to P --> " << triangle << std::endl;}
-          }
           //test sur les triangles non connecté a P pour ne pas créer de retournement topologique
           for(auto const triNotCo : cavityIO.getTrianglesNotConnectedToPInCavity())
           {
@@ -254,7 +238,9 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           }
           //double duration3;
           //start = std::clock();
+          std::cout << " rebuildCavity start " << std::endl;
           simplexMesh->rebuildCavity(cavityIO, simpliceNode.getGlobalNode());
+          std::cout << " rebuildCavity done " << std::endl;
           //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
           //std::cout << "rebuildCavity duration --> " << duration2 << std::endl;
           status = true;
