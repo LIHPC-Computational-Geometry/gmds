@@ -500,6 +500,12 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_3D_Test1)
 	doctor.buildEdgesAndX2E();
 	doctor.updateUpwardConnectivity();
 
+	std::cout << "TEST" << std::endl;
+	math::Point p0(0,0,0);
+	math::Point p1(1, 1, 1);
+	math::Vector3d Vecteur = p1-p0;
+	std::cout << "Vecteur :" << Vecteur << std::endl;
+
 	int markFrontNodesInt = m.newMark<gmds::Node>();
 	int markFrontNodesOut = m.newMark<gmds::Node>();
 
