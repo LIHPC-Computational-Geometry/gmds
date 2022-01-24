@@ -4041,12 +4041,12 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
           }
           else
           {
-              std::cout << "localnode >= 3" << std::endl;
+            GMDSException("localnode >= 3");
           }
         }
         else
         {
-          std::cout << "oppoNode.size() != 1 --> "<<  oppoNode.size() << std::endl;
+          GMDSException("oppoNode.size() != 1");
         }
 
         hash_edge[nodeA].push_back(-triangle);
@@ -4089,7 +4089,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
     }
     else
     {
-      std::cout << "pair.second.size() != 2" << std::endl;
+      GMDSException("pair.second.size() != 2");
     }
   }
 
@@ -4192,7 +4192,8 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
             }
             else
             {
-              std::cout << "othersNode0.size() != 1 || othersNode1.size() == 1" << std::endl;
+              GMDSException("othersNode0.size() != 1 || othersNode1.size() == 1");
+
             }
           }
           else
@@ -4208,7 +4209,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
               }
               else
               {
-                std::cout << "othersNode.size() != 1" << std::endl;
+                GMDSException("othersNode.size() != 1");
               }
             }
           }
@@ -4247,7 +4248,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
           }
           else
           {
-            std::cout << "othersNode0.size() != 1 || othersNode1.size() == 1" << std::endl;
+            GMDSException("othersNode0.size() != 1 || othersNode1.size() == 1");
           }
           m_tri_ids.unselect(-simplex);
         }
@@ -4757,6 +4758,10 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
                 }
               }
               SimplicesNode nodeToInsert(this, data.node);
+
+              //std::cout << "node being inserted --> " << data.node << " Of dimension -> " <<  data.dim_Nj << " and label -> " << data.index_Nj << std::endl;
+              //std::cout << "from node --> " << node << " Of dimension -> " <<  dim_Ni << " and label -> " << index_Ni << std::endl;
+
               if(dim_Ni == 4 && (data.dim_Nj == 0 || data.dim_Nj == 1 || data.dim_Nj == 2)){continue;}
               const std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
               PointInsertion(this, nodeToInsert, criterionRAIS, status, ball, surfaceNodesAdded, deletedNodes, facesAlreadyBuilt);
@@ -4857,13 +4862,13 @@ unsigned int SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, co
   {
     TInt nodeAidx = edge.first;
     TInt nodeBidx = edge.second;
+
     if(nodeAidx != border && nodeBidx != border)
     {
       if(bitNodes[nodeAidx] != 0 && bitNodes[nodeBidx] != 0)
       {
         SimplicesNode nodeA = SimplicesNode(this, nodeAidx);
         SimplicesNode nodeB = SimplicesNode(this, nodeBidx);
-
 
         if(nodeA.shell(nodeB).size() == 0)
         {
@@ -4889,10 +4894,6 @@ unsigned int SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, co
       }
     }
   }
-
-  //std::cout << "TOTAL EDGES -->  " << sizeEdge << std::endl;;
-  //std::cout << "EDGE BUILT -->  " << cpt_EdgeBuilt << " ~ "<<  cpt_EdgeBuilt / sizeEdge << std::endl;;
-  //std::cout << "EDGE ALREADY BUILT --> " << cpt_EdgeAlreadyBuild << " ~ " << cpt_EdgeAlreadyBuild / sizeEdge << std::endl;
 
   return cpt_EdgeBuilt;
 }
