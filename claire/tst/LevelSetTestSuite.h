@@ -3,6 +3,7 @@
 //
 
 #include <gmds/claire/LevelSet.h>
+#include <gmds/claire/LevelSetNaif.h>
 #include <gmds/claire/LevelSetFromIntToOut.h>
 #include <gmds/claire/GradientComputation2D.h>
 #include <gmds/ig/Mesh.h>
@@ -295,6 +296,54 @@ TEST(LevelSetTestClass, LevelSet_Test5)
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("LevelSet_Test5_Result.vtk");
+
+	ASSERT_TRUE(true);
+}
+
+
+TEST(LevelSetTestClass, LevelSetNaif_Test1)
+{
+	// WE READ
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Carre.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(&m);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	int markFrontNodes = m.newMark<gmds::Node>();
+	for(auto id:bnd_node_ids){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		if (coord_y == 0) {
+			// For the square test case, the front to advance is the boundary where y=0
+			m.mark<Node>(id,markFrontNodes);
+		}
+	}
+
+	LevelSetNaif ls(&m, markFrontNodes);
+	ls.execute();
+
+	m.unmarkAll<Node>(markFrontNodes);
+	m.freeMark<Node>(markFrontNodes);
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("LevelSetNaif_Test1_Result.vtk");
 
 	ASSERT_TRUE(true);
 }
