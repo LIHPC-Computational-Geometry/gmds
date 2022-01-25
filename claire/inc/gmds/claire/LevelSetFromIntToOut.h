@@ -9,7 +9,7 @@
 #include "LIB_GMDS_CLAIRE_export.h"
 #include "gmds/ig/Mesh.h"
 //#include "DistanceMap.h"
-#include "LevelSet.h"
+#include "LevelSetNaif.h"
 /*----------------------------------------------------------------------------*/
 #include <string>
 #include <map>
