@@ -1,10 +1,10 @@
 add_executable(GMDS_CLAIRE_TEST
         ClaireTestSuite.h
-        LevelSet2DTestSuite.h
+        LevelSetTestSuite.h
         DistanceMapTestSuite.h
         GradientComputation2DTestSuite.h
         GradientComputation3DTestSuite.h
-        main_test.cpp ../inc/gmds/claire/LevelSet2DFromIntToOut.h )
+        main_test.cpp ../inc/gmds/claire/LevelSetFromIntToOut.h)
 
 target_link_libraries(GMDS_CLAIRE_TEST PUBLIC
         ${GMDS_LIB}

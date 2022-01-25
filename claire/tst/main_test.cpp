@@ -4,7 +4,7 @@
 // Files containing the different test suites to launch
 
 #include "ClaireTestSuite.h"
-#include "LevelSet2DTestSuite.h"
+#include "LevelSetTestSuite.h"
 #include "DistanceMapTestSuite.h"
 #include "GradientComputation2DTestSuite.h"
 #include "GradientComputation3DTestSuite.h"

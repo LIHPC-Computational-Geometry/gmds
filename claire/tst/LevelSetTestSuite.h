@@ -2,8 +2,8 @@
 // Created by rochec on 13/01/2022.
 //
 
-#include <gmds/claire/LevelSet2D.h>
-#include <gmds/claire/LevelSet2DFromIntToOut.h>
+#include <gmds/claire/LevelSet.h>
+#include <gmds/claire/LevelSetFromIntToOut.h>
 #include <gmds/claire/GradientComputation2D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -19,7 +19,7 @@
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
 
-TEST(LevelSet2DTestClass, LevelSet2D_Test1)
+TEST(LevelSetTestClass, LevelSet_Test1)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -52,25 +52,22 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test1)
 		}
 	}
 
-	LevelSet2D ls(&m, markFrontNodes);
+	LevelSet ls(&m, markFrontNodes);
 	ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	//GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
-	//grad2D.execute();
-
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet2D_Test1_Result.vtk");
+	vtkWriter.write("LevelSet_Test1_Result.vtk");
 
 	ASSERT_TRUE(true);
 }
 
 
-TEST(LevelSet2DTestClass, LevelSet2D_Test2)
+TEST(LevelSetTestClass, LevelSet_Test2)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -106,8 +103,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test2)
 		}
 	}
 
-
-	LevelSet2D ls(&m, markFrontNodes);
+	LevelSet ls(&m, markFrontNodes);
 	ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
@@ -116,13 +112,13 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test2)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet2D_Test2_Result.vtk");
+	vtkWriter.write("LevelSet_Test2_Result.vtk");
 
 	ASSERT_TRUE(true);
 }
 
 
-TEST(LevelSet2DTestClass, LevelSet2D_Test3)
+TEST(LevelSetTestClass, LevelSet_Test3)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -161,7 +157,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test3)
 		}
 	}
 
-	LevelSet2D ls(&m, markFrontNodes);
+	LevelSet ls(&m, markFrontNodes);
 	ls.execute();
 
 	// Affichage de débug
@@ -182,13 +178,13 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test3)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet2D_Test3_Result.vtk");
+	vtkWriter.write("LevelSet_Test3_Result.vtk");
 
 	ASSERT_TRUE(true);
 }
 
 
-TEST(LevelSet2DTestClass, LevelSet2D_Test4)
+TEST(LevelSetTestClass, LevelSet_Test4)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -227,7 +223,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test4)
 		}
 	}
 
-	LevelSet2D ls(&m, markFrontNodes);
+	LevelSet ls(&m, markFrontNodes);
 	ls.execute();
 
 	// Affichage de débug
@@ -248,13 +244,13 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test4)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet2D_Test4_Result.vtk");
+	vtkWriter.write("LevelSet_Test4_Result.vtk");
 
 	ASSERT_TRUE(true);
 }
 
 
-TEST(LevelSet2DTestClass, LevelSet2D_Test5)
+TEST(LevelSetTestClass, LevelSet_Test5)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -289,7 +285,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test5)
 		}
 	}
 
-	LevelSet2D ls(&m, markFrontNodes);
+	LevelSet ls(&m, markFrontNodes);
 	ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
@@ -298,13 +294,13 @@ TEST(LevelSet2DTestClass, LevelSet2D_Test5)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet2D_Test5_Result.vtk");
+	vtkWriter.write("LevelSet_Test5_Result.vtk");
 
 	ASSERT_TRUE(true);
 }
 
 
-TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test1)
+TEST(LevelSetTestClass, LevelSetFromIntToOut_Test1)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -341,7 +337,7 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test1)
 		}
 	}
 
-	LevelSet2DFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	LevelSetFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
 	lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);
@@ -352,13 +348,13 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test1)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet2DFromIntToOut_Test1_Result.vtk");
+	vtkWriter.write("LevelSetFromIntToOut_Test1_Result.vtk");
 
 	ASSERT_TRUE(true);
 }
 
 
-TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test2)
+TEST(LevelSetTestClass, LevelSetFromIntToOut_Test2)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -400,7 +396,7 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test2)
 		}
 	}
 
-	LevelSet2DFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	LevelSetFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
 	lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);
@@ -411,7 +407,7 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_Test2)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet2DFromIntToOut_Test2_Result.vtk");
+	vtkWriter.write("LevelSetFromIntToOut_Test2_Result.vtk");
 
 	ASSERT_TRUE(true);
 
@@ -464,7 +460,7 @@ TEST(LevelSet2DTestClass, LevelSet2D_3D_Test1)
 	// Test avec une source ponctuelle
 	m.mark<Node>(10,markFrontNodes);
 
-	LevelSet2D ls(&m, markFrontNodes);
+	LevelSet ls(&m, markFrontNodes);
 	ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
@@ -526,8 +522,7 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_3D_Test1)
 
 	std::cout << "Fin de l'initialisation des marques" << std::endl ;
 
-
-	LevelSet2DFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	LevelSetFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
 	lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);

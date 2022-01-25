@@ -2,8 +2,8 @@
 // Created by rochec on 24/01/2022.
 //
 
-#include <gmds/claire/LevelSet2D.h>
-#include <gmds/claire/LevelSet2DFromIntToOut.h>
+#include <gmds/claire/LevelSet.h>
+#include <gmds/claire/LevelSetFromIntToOut.h>
 #include <gmds/claire/GradientComputation3D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -58,8 +58,7 @@ TEST(GradientComputation3DTestClass, GradientComputation3D_Test1)
 
 	std::cout << "Fin de l'initialisation des marques" << std::endl ;
 
-
-	LevelSet2D ls(&m, markFrontNodesInt);
+	LevelSet ls(&m, markFrontNodesInt);
 	ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);

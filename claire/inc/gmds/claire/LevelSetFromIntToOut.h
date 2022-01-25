@@ -2,14 +2,14 @@
 // Created by rochec on 19/01/2022.
 //
 
-#ifndef GMDS_LEVELSET2DFROMINTTOOUT_H
-#define GMDS_LEVELSET2DFROMINTTOOUT_H
+#ifndef GMDS_LEVELSETFROMINTTOOUT_H
+#define GMDS_LEVELSETFROMINTTOOUT_H
 
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include "gmds/ig/Mesh.h"
 //#include "DistanceMap.h"
-#include "LevelSet2D.h"
+#include "LevelSet.h"
 /*----------------------------------------------------------------------------*/
 #include <string>
 #include <map>
@@ -17,7 +17,8 @@
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_CLAIRE_API LevelSet2DFromIntToOut {
+class LIB_GMDS_CLAIRE_API LevelSetFromIntToOut
+{
  public:
 	/*--------------------------------------------------------------------*/
 	/** @enum  Status code for executing algorithms
@@ -33,7 +34,7 @@ class LIB_GMDS_CLAIRE_API LevelSet2DFromIntToOut {
          *  @param AmarkFrontNodesInt the nodes on the interior front to advance
          *  @param AmarkFrontNodesOut the nodes on the exterior front to advance
 	 */
-	LevelSet2DFromIntToOut(Mesh *AMesh, int AmarkFrontNodesInt, int AmarkFrontNodesOut);
+	LevelSetFromIntToOut(Mesh *AMesh, int AmarkFrontNodesInt, int AmarkFrontNodesOut);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -85,4 +86,4 @@ class LIB_GMDS_CLAIRE_API LevelSet2DFromIntToOut {
 /*----------------------------------------------------------------------------*/
 }     // namespace gmds
 
-#endif     // GMDS_LEVELSET2DFROMINTTOOUT_H
+#endif     // GMDS_LEVELSETFROMINTTOOUT_H

@@ -3,14 +3,13 @@
 //
 
 /*------------------------------------------------------------------------*/
-#include <gmds/claire/LevelSet2DFromIntToOut.h>
+#include <gmds/claire/LevelSetFromIntToOut.h>
 //#include <limits>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-
-LevelSet2DFromIntToOut::LevelSet2DFromIntToOut(Mesh *AMesh, int AmarkFrontNodesInt, int AmarkFrontNodesOut) {
+LevelSetFromIntToOut::LevelSetFromIntToOut(Mesh *AMesh, int AmarkFrontNodesInt, int AmarkFrontNodesOut) {
 	m_mesh = AMesh;
 	m_markFrontNodesInt = AmarkFrontNodesInt;
 	m_markFrontNodesOut = AmarkFrontNodesOut;
@@ -25,21 +24,23 @@ LevelSet2DFromIntToOut::LevelSet2DFromIntToOut(Mesh *AMesh, int AmarkFrontNodesI
 
 
 /*------------------------------------------------------------------------*/
-LevelSet2DFromIntToOut::STATUS LevelSet2DFromIntToOut::execute()
+LevelSetFromIntToOut::STATUS
+LevelSetFromIntToOut::execute()
 {
 	initialisationDistancesInt();
 	initialisationDistancesOut();
 
 	combineDistanceFields();
 
-	return LevelSet2DFromIntToOut::SUCCESS;
+	return LevelSetFromIntToOut::SUCCESS;
 }
 /*------------------------------------------------------------------------*/
 
 
 
 /*-------------------------------------------------------------------*/
-void LevelSet2DFromIntToOut::setValue(TCellID n_id, double v0){
+void
+LevelSetFromIntToOut::setValue(TCellID n_id, double v0){
 	m_distance->value(n_id) = v0 ;
 };
 /*-------------------------------------------------------------------*/
@@ -47,7 +48,8 @@ void LevelSet2DFromIntToOut::setValue(TCellID n_id, double v0){
 
 
 /*-------------------------------------------------------------------*/
-void LevelSet2DFromIntToOut::combineDistanceFields() {
+void
+LevelSetFromIntToOut::combineDistanceFields() {
 	double distInt;
 	double distOut;
 	for (auto id:m_mesh->nodes()){
@@ -66,8 +68,9 @@ void LevelSet2DFromIntToOut::combineDistanceFields() {
 
 
 /*-------------------------------------------------------------------*/
-void LevelSet2DFromIntToOut::initialisationDistancesInt() {
-	LevelSet2D lsInt(m_mesh, m_markFrontNodesInt);
+void
+LevelSetFromIntToOut::initialisationDistancesInt() {
+	LevelSet lsInt(m_mesh, m_markFrontNodesInt);
 	lsInt.execute();
 	double distInt;
 	for (auto id:m_mesh->nodes()){
@@ -81,8 +84,9 @@ void LevelSet2DFromIntToOut::initialisationDistancesInt() {
 
 
 /*-------------------------------------------------------------------*/
-void LevelSet2DFromIntToOut::initialisationDistancesOut() {
-	LevelSet2D lsOut(m_mesh, m_markFrontNodesOut);
+void
+LevelSetFromIntToOut::initialisationDistancesOut() {
+	LevelSet lsOut(m_mesh, m_markFrontNodesOut);
 	lsOut.execute();
 	double distOut;
 	for (auto id:m_mesh->nodes()){

@@ -2,8 +2,8 @@
 // Created by rochec on 21/01/2022.
 //
 
-#include <gmds/claire/LevelSet2D.h>
-#include <gmds/claire/LevelSet2DFromIntToOut.h>
+#include <gmds/claire/LevelSet.h>
+#include <gmds/claire/LevelSetFromIntToOut.h>
 #include <gmds/claire/GradientComputation2D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -52,7 +52,7 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test1)
 		}
 	}
 
-	LevelSet2D ls(&m, markFrontNodes);
+	LevelSet ls(&m, markFrontNodes);
 	ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
@@ -109,7 +109,7 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test2)
 		}
 	}
 
-	LevelSet2D ls(&m, markFrontNodes);
+	LevelSet ls(&m, markFrontNodes);
 	ls.execute();
 
 	// Affichage de débug
