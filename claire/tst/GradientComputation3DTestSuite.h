@@ -52,7 +52,9 @@ TEST(GradientComputation3DTestClass, GradientComputation3D_Test1)
 	std::cout << "Fin de l'initialisation des marques" << std::endl ;
 
 	LevelSetNaif ls(&m, markFrontNodes);
-	ls.execute();
+	LevelSetNaif::STATUS result_ls = ls.execute();
+
+	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -87,8 +89,7 @@ TEST(GradientComputation3DTestClass, GradientComputation3D_Test2)
 	doctor.buildEdgesAndX2E();
 	doctor.updateUpwardConnectivity();
 
-	int markFrontNodesInt = m.newMark<gmds::Node>();
-	int markFrontNodesOut = m.newMark<gmds::Node>();
+	int markFrontNodes = m.newMark<gmds::Node>();
 
 	// Initialisation des marques sur les bords internes et externes pour noter quels fronts sont à avancer
 	for(auto id:m.nodes()){
@@ -99,22 +100,19 @@ TEST(GradientComputation3DTestClass, GradientComputation3D_Test2)
 		rayon = sqrt( (pow(coord_x, 2) + pow(coord_y + 2.5, 2)) ) ;
 		if ( (rayon - 2.5) < pow(10,-3)) {
 			// For this test case, the front to advance is the boundary where x²+y²=2.5
-			m.mark<Node>(id,markFrontNodesInt);
-		}
-		else if (coord_x == -5 || coord_x == 5 || coord_y == 2.5) {
-			m.mark<Node>(id,markFrontNodesOut);
+			m.mark<Node>(id,markFrontNodes);
 		}
 	}
 
 	std::cout << "Fin de l'initialisation des marques" << std::endl ;
 
-	LevelSet ls(&m, markFrontNodesInt);
-	ls.execute();
+	LevelSetNaif ls(&m, markFrontNodes);
+	LevelSetNaif::STATUS result_ls = ls.execute();
 
-	m.unmarkAll<Node>(markFrontNodesInt);
-	m.freeMark<Node>(markFrontNodesInt);
-	m.unmarkAll<Node>(markFrontNodesOut);
-	m.freeMark<Node>(markFrontNodesOut);
+	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+
+	m.unmarkAll<Node>(markFrontNodes);
+	m.freeMark<Node>(markFrontNodes);
 
 	GradientComputation3D grad3D(&m, m.getVariable<double,GMDS_NODE>("distance"));
 	GradientComputation3D::STATUS result = grad3D.execute();

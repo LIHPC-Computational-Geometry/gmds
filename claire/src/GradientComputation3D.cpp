@@ -66,13 +66,14 @@ math::Vector3d GradientComputation3D::computeGradientOnSimpleRegion(TCellID regi
 
 	Gradient = (Vec_1*(dj-di)/(2.0*Vt) + Vec_2*(dk-di)/(2.0*Vt) + Vec_3*(dh-di)/(2.0*Vt)) ;
 
-
+	/*
 	std::cout << "----------------------------------" << std::endl ;
 	std::cout << "ID région traitée : " << region_id << std::endl;
 	//std::cout << "Produit vectoriel 1 :" << Vec_1 << std::endl;
 	//std::cout << "Produit vectoriel 2 :" << Vec_2 << std::endl;
 	//std::cout << "Produit vectoriel 3 :" << Vec_3 << std::endl;
 	std::cout << "Gradient :" << Gradient << std::endl;
+	*/
 
 
 	return Gradient;
