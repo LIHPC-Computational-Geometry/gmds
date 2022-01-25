@@ -66,7 +66,7 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test1)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("GradientComputation2D_Test1_Result.vtk");
+	vtkWriter.write("GradientComputation2D_Test1_Sens2_Result.vtk");
 
 	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
 }

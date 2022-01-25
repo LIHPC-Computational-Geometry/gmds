@@ -37,16 +37,21 @@ math::Vector3d GradientComputation3D::computeGradientOnSimpleRegion(TCellID regi
 	Region reg = m_mesh->get<Region>(region_id);
 	std::vector<TCellID> region_nodes_ids = reg.getIDs<Node>();
 
-	double di = m_distance->value(region_nodes_ids[0]) ;
-	double dj = m_distance->value(region_nodes_ids[1]) ;
-	double dk = m_distance->value(region_nodes_ids[2]) ;
-	double dh = m_distance->value(region_nodes_ids[3]) ;
+	TCellID vi_id = region_nodes_ids[0];
+	TCellID vj_id = region_nodes_ids[2];
+	TCellID vk_id = region_nodes_ids[3];
+	TCellID vh_id = region_nodes_ids[1];
+
+	double di = m_distance->value(vi_id) ;
+	double dj = m_distance->value(vj_id) ;
+	double dk = m_distance->value(vk_id) ;
+	double dh = m_distance->value(vh_id) ;
 	double Vt = reg.volume();
 
-	Node ni = m_mesh->get<Node>(region_nodes_ids[0]);
-	Node nj = m_mesh->get<Node>(region_nodes_ids[1]);
-	Node nk = m_mesh->get<Node>(region_nodes_ids[2]);
-	Node nh = m_mesh->get<Node>(region_nodes_ids[3]);
+	Node ni = m_mesh->get<Node>(vi_id);
+	Node nj = m_mesh->get<Node>(vj_id);
+	Node nk = m_mesh->get<Node>(vk_id);
+	Node nh = m_mesh->get<Node>(vh_id);
 
 	math::Point pi = ni.point();
 	math::Point pj = nj.point();
