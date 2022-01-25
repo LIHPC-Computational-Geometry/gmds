@@ -42,7 +42,7 @@ LevelSet::execute()
 			}
 
 
-
+			/*
 			// --- MODIFICATION NAIVE : On regarde les noeuds à 2 edges d'écart ---
 			Node ne = m_mesh->get<Node>(ne_id);
 			std::vector<Edge> adjacent_edges_2 = ne.get<Edge>() ;
@@ -62,7 +62,7 @@ LevelSet::execute()
 				}
 			}
 			// --- FIN MODIFICATION NAIVE ---
-
+			*/
 
 
 
