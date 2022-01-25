@@ -34,11 +34,11 @@ void ex(Mesh &mesh){
 Mesh meshloader(string AFileName){
     Mesh mesh(MeshModel(DIM3|R|F|E|N|
                                 R2N|R2F|F2R|R2E|F2N|E2N|E2F|F2E|E2R|N2F|N2E|N2R));
-	std::cout << "read mesh file: " << AFileName << std::endl;
+	std::cout << "read vtk mesh file: " << AFileName << std::endl;
   	IGMeshIOService ioService(&mesh);
-    MeditReader reader(&ioService);
+    VTKReader reader(&ioService);
     reader.setCellOptions(N|R);
-    reader.setDataOptions(N|R);
+   // reader.setDataOptions(N|R);
   	reader.read(AFileName);
 
   	std::cout<<"Updating and completing mesh info ...";
@@ -56,11 +56,11 @@ Mesh meshloader(string AFileName){
 Mesh meshloader2D(string AFileName){
   	Mesh mesh(MeshModel(DIM3|F|E|N|
   						  F2N|E2N|E2F|F2E|N2F|N2E));
-	std::cout << "read mesh file: " << AFileName << std::endl;
+	std::cout << "Read vtk mesh file: " << AFileName << std::endl;
   	IGMeshIOService ioService(&mesh);
-  	MeditReader reader(&ioService);
+  	VTKReader reader(&ioService);
     reader.setCellOptions(N|F);
-    reader.setDataOptions(N|F);
+  //  reader.setDataOptions(N|F);
     reader.read(AFileName);
   	std::cout<<"Updating and completing mesh info ...";
     std::cout.flush();
@@ -84,13 +84,13 @@ int main(int argc, char* argv[]){
             IGMeshIOService ioService(&mesh2D);
             VTKWriter w_2D(&ioService);
             w_2D.setCellOptions(N|E|F);
-            w_2D.setDataOptions(N|E|F);
+         //   w_2D.setDataOptions(N|E|F);
             w_2D.write("result0_2D.vtk");
 
             Gregson2011_2D *algo2D = new Gregson2011_2D(&mesh2D);
             algo2D->transformMeshToPolycube();
 
-            w_2D.write("result2D_final");
+            w_2D.write("result2D_final.vtk");
         }
     }
     else {
@@ -102,10 +102,10 @@ int main(int argc, char* argv[]){
         w.write("result0_3D.vtk");
 
         std::cout<<"Mesh info :"<<std::endl;
-        std::cout<<"-Nb regions= "<<mesh.getNbRegions()<<std::endl;
-        std::cout<<"-Nb faces  = "<<mesh.getNbFaces()<<std::endl;
-        std::cout<<"-Nb edges  = "<<mesh.getNbEdges()<<std::endl;
-        std::cout<<"-Nb nodes  = "<<mesh.getNbNodes()<<std::endl;
+        std::cout<<"- Nb regions= "<<mesh.getNbRegions()<<std::endl;
+        std::cout<<"- Nb faces  = "<<mesh.getNbFaces()<<std::endl;
+        std::cout<<"- Nb edges  = "<<mesh.getNbEdges()<<std::endl;
+        std::cout<<"- Nb nodes  = "<<mesh.getNbNodes()<<std::endl;
 
 
         PolycubeToolbox *algo = new PolycubeToolbox(&mesh);
@@ -138,25 +138,19 @@ int main(int argc, char* argv[]){
         //Nodes are now written as they are stored in the vec
         for(auto c:all_point_corners) {
             math::Point pc = mesh_test.get<Node>(c).point();
-            std::cout << "create node "<<vec_position[c]<< " at location " << pc.X()<<" "<<pc.Y()<<" "<<pc.Z() << std::endl;
         }
         //and now each face
         for (auto c : corners /* this give use a vector of corner for each chart*/){
-            std::cout << "create face node ";
             std::set<TCellID> only1;
             for (auto p : c /* this give use the TCellID of the point */){
                 only1.insert(p);
             }
-            for (auto p : only1 /* this give use the TCellID of the point */){
-                std::cout<<vec_position[p]<<" ";
-            }
-            std::cout<<std::endl;
         }
         IGMeshIOService ioService2(&mesh_test);
         VTKWriter w2(&ioService2);
         w2.setCellOptions(N|F);
         w2.setDataOptions(N|F);
-        w2.write("DISPLAY_OF_CORNERS");
+        w2.write("gregson2011_display_corners.vtk");
 
 
         Mesh bnd_mesh(MeshModel(DIM3|F|N|F2N));
@@ -175,7 +169,7 @@ int main(int argc, char* argv[]){
         VTKWriter bw(&ioServiceBnd);
         bw.setCellOptions(N|F);
         bw.setDataOptions(N|F);
-        bw.write("bnd_final");
+        bw.write("gregson2011_bnd_final.vtk");
     }
 
     return 0;
