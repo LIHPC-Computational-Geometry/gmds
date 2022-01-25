@@ -20,6 +20,8 @@
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
 
+/* CAS TEST CLASSE LevelSet */
+
 TEST(LevelSetTestClass, LevelSet_Test1)
 {
 	// WE READ
@@ -301,6 +303,8 @@ TEST(LevelSetTestClass, LevelSet_Test5)
 }
 
 
+/* CAS TEST CLASSE LevelSetNaif */
+
 TEST(LevelSetTestClass, LevelSetNaif_Test1)
 {
 	// WE READ
@@ -348,6 +352,8 @@ TEST(LevelSetTestClass, LevelSetNaif_Test1)
 	ASSERT_TRUE(true);
 }
 
+
+/* CAS TEST CLASSE LevelSetFromIntToOut */
 
 TEST(LevelSetTestClass, LevelSetFromIntToOut_Test1)
 {
