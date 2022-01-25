@@ -56,7 +56,7 @@ TEST(LevelSetTestClass, LevelSet_Test1)
 	}
 
 	LevelSet ls(&m, markFrontNodes);
-	ls.execute();
+	LevelSet::STATUS result = ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -66,7 +66,7 @@ TEST(LevelSetTestClass, LevelSet_Test1)
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("LevelSet_Test1_Result.vtk");
 
-	ASSERT_TRUE(true);
+	ASSERT_EQ(LevelSet::SUCCESS, result);
 }
 
 
@@ -107,7 +107,7 @@ TEST(LevelSetTestClass, LevelSet_Test2)
 	}
 
 	LevelSet ls(&m, markFrontNodes);
-	ls.execute();
+	LevelSet::STATUS result = ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -117,7 +117,7 @@ TEST(LevelSetTestClass, LevelSet_Test2)
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("LevelSet_Test2_Result.vtk");
 
-	ASSERT_TRUE(true);
+	ASSERT_EQ(LevelSet::SUCCESS, result);
 }
 
 
@@ -161,19 +161,7 @@ TEST(LevelSetTestClass, LevelSet_Test3)
 	}
 
 	LevelSet ls(&m, markFrontNodes);
-	ls.execute();
-
-	// Affichage de débug
-	/*
-	Node n0 = m.get<Node>(5);
-	std::vector<Edge> adjacent_edges = n0.get<Edge>() ;
-	std::cout<< "Pour le noeud 5, il y a " << adjacent_edges.size() << " arête(s) adjacentes." << std::endl;
-
-	Variable<double> *var = m.getVariable<double,GMDS_NODE>("distance");
-	for(auto n_id:m.nodes()){
-		std::cout<<"End with "<<n_id<<" to val: "<<var->value(n_id)<<std::endl;
-	}
-	 */
+	LevelSet::STATUS result = ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -183,7 +171,7 @@ TEST(LevelSetTestClass, LevelSet_Test3)
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("LevelSet_Test3_Result.vtk");
 
-	ASSERT_TRUE(true);
+	ASSERT_EQ(LevelSet::SUCCESS, result);
 }
 
 
@@ -222,24 +210,11 @@ TEST(LevelSetTestClass, LevelSet_Test4)
 		if ( coord_x == 0 || coord_y == 0 ) {
 			// For this test case, the front to advance is the boundary where x²+y²=1
 			m.mark<Node>(id,markFrontNodes);
-			std::cout << "Noeud marqué :" << id << std::endl;
 		}
 	}
 
 	LevelSet ls(&m, markFrontNodes);
-	ls.execute();
-
-	// Affichage de débug
-	/*
-	Node n0 = m.get<Node>(5);
-	std::vector<Edge> adjacent_edges = n0.get<Edge>() ;
-	std::cout<< "Pour le noeud 5, il y a " << adjacent_edges.size() << " arête(s) adjacentes." << std::endl;
-
-	Variable<double> *var = m.getVariable<double,GMDS_NODE>("distance");
-	for(auto n_id:m.nodes()){
-	   std::cout<<"End with "<<n_id<<" to val: "<<var->value(n_id)<<std::endl;
-	}
-	 */
+	LevelSet::STATUS result = ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -249,7 +224,7 @@ TEST(LevelSetTestClass, LevelSet_Test4)
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("LevelSet_Test4_Result.vtk");
 
-	ASSERT_TRUE(true);
+	ASSERT_EQ(LevelSet::SUCCESS, result);
 }
 
 
@@ -284,12 +259,11 @@ TEST(LevelSetTestClass, LevelSet_Test5)
 		if ( coord_x == 0 && coord_y == 0 ) {
 			// For this test case, the front to advance is the boundary where x²+y²=1
 			m.mark<Node>(id,markFrontNodes);
-			//std::cout << "Noeud marqué :" << id << std::endl;
 		}
 	}
 
 	LevelSet ls(&m, markFrontNodes);
-	ls.execute();
+	LevelSet::STATUS result = ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -299,7 +273,7 @@ TEST(LevelSetTestClass, LevelSet_Test5)
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("LevelSet_Test5_Result.vtk");
 
-	ASSERT_TRUE(true);
+	ASSERT_EQ(LevelSet::SUCCESS, result);
 }
 
 
@@ -339,7 +313,7 @@ TEST(LevelSetTestClass, LevelSetNaif_Test1)
 	}
 
 	LevelSetNaif ls(&m, markFrontNodes);
-	ls.execute();
+	LevelSetNaif::STATUS result = ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -349,7 +323,7 @@ TEST(LevelSetTestClass, LevelSetNaif_Test1)
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("LevelSetNaif_Test1_Result.vtk");
 
-	ASSERT_TRUE(true);
+	ASSERT_EQ(LevelSetNaif::SUCCESS, result);
 }
 
 
@@ -393,7 +367,7 @@ TEST(LevelSetTestClass, LevelSetFromIntToOut_Test1)
 	}
 
 	LevelSetFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
-	lsCombined.execute();
+	LevelSetFromIntToOut::STATUS result = lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);
 	m.freeMark<Node>(markFrontNodesInt);
@@ -405,7 +379,7 @@ TEST(LevelSetTestClass, LevelSetFromIntToOut_Test1)
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("LevelSetFromIntToOut_Test1_Result.vtk");
 
-	ASSERT_TRUE(true);
+	ASSERT_EQ(LevelSetFromIntToOut::SUCCESS, result);
 }
 
 
@@ -452,7 +426,7 @@ TEST(LevelSetTestClass, LevelSetFromIntToOut_Test2)
 	}
 
 	LevelSetFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
-	lsCombined.execute();
+	LevelSetFromIntToOut::STATUS result = lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);
 	m.freeMark<Node>(markFrontNodesInt);
@@ -464,7 +438,7 @@ TEST(LevelSetTestClass, LevelSetFromIntToOut_Test2)
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("LevelSetFromIntToOut_Test2_Result.vtk");
 
-	ASSERT_TRUE(true);
+	ASSERT_EQ(LevelSetFromIntToOut::SUCCESS, result);
 
 }
 

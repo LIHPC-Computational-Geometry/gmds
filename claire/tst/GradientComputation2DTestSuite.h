@@ -53,20 +53,22 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test1)
 	}
 
 	LevelSetNaif ls(&m, markFrontNodes);
-	ls.execute();
+	LevelSetNaif::STATUS result_ls = ls.execute();
+
+	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
 	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
-	grad2D.execute();
+	GradientComputation2D::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("GradientComputation2D_Test1_Result.vtk");
 
-	ASSERT_TRUE(true);
+	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
 }
 
 
@@ -110,20 +112,22 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test2)
 	}
 
 	LevelSetNaif ls(&m, markFrontNodes);
-	ls.execute();
+	LevelSetNaif::STATUS result_ls = ls.execute();
+
+	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
 	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
-	grad2D.execute();
+	GradientComputation2D::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("GradientComputation2D_Test2_Result.vtk");
 
-	ASSERT_TRUE(true);
+	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
 }
 
 
@@ -171,7 +175,9 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test3)
 	}
 
 	LevelSetFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
-	lsCombined.execute();
+	LevelSetFromIntToOut::STATUS result_ls = lsCombined.execute();
+
+	ASSERT_EQ(LevelSetFromIntToOut::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodesInt);
 	m.freeMark<Node>(markFrontNodesInt);
@@ -179,12 +185,12 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test3)
 	m.freeMark<Node>(markFrontNodesOut);
 
 	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("distance_combined"));
-	grad2D.execute();
+	GradientComputation2D::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("GradientComputation2D_Test3_Result.vtk");
 
-	ASSERT_TRUE(true);
+	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
 }
