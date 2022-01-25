@@ -70,7 +70,7 @@ LevelSetFromIntToOut::combineDistanceFields() {
 /*-------------------------------------------------------------------*/
 void
 LevelSetFromIntToOut::initialisationDistancesInt() {
-	LevelSet lsInt(m_mesh, m_markFrontNodesInt);
+	LevelSetNaif lsInt(m_mesh, m_markFrontNodesInt);
 	lsInt.execute();
 	double distInt;
 	for (auto id:m_mesh->nodes()){
@@ -86,7 +86,7 @@ LevelSetFromIntToOut::initialisationDistancesInt() {
 /*-------------------------------------------------------------------*/
 void
 LevelSetFromIntToOut::initialisationDistancesOut() {
-	LevelSet lsOut(m_mesh, m_markFrontNodesOut);
+	LevelSetNaif lsOut(m_mesh, m_markFrontNodesOut);
 	lsOut.execute();
 	double distOut;
 	for (auto id:m_mesh->nodes()){

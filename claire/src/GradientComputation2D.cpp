@@ -67,7 +67,7 @@ math::Vector3d GradientComputation2D::computeGradientOnSimpleFace(TCellID face_i
 
 	Gradient = vki_ortho*(dj-di)/(2.0*At) + vij_ortho*(dk-di)/(2.0*At) ;
 
-	std::cout << "Gradient : " << Gradient << std::endl;
+	//std::cout << "Gradient : " << Gradient << std::endl;
 
 	return Gradient;
 }

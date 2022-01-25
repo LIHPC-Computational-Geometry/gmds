@@ -442,7 +442,7 @@ TEST(LevelSetTestClass, LevelSetFromIntToOut_Test2)
 		Node n = m.get<Node>(id);
 		double coord_y = n.Y() ;
 		double coord_x = n.X() ;
-		if ( sqrt( pow(coord_x,2) + pow(coord_y,2)) == 1) {
+		if ( ( sqrt( pow(coord_x,2) + pow(coord_y,2)) - 1 ) <= pow(10,-6)) {
 			// For this test case, the front to advance is the boundary where x²+y²=1
 			m.mark<Node>(id,markFrontNodesInt);
 		}
