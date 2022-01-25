@@ -2,8 +2,8 @@
 // Created by rochec on 13/01/2022.
 //
 
-#ifndef GMDS_LEVELSET2D_H
-#define GMDS_LEVELSET2D_H
+#ifndef GMDS_LEVELSET_H
+#define GMDS_LEVELSET_H
 
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
@@ -16,7 +16,8 @@
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_CLAIRE_API LevelSet2D {
+class LIB_GMDS_CLAIRE_API LevelSet
+{
  public:
 	/*--------------------------------------------------------------------*/
 	/** @enum  Status code for executing algorithms
@@ -30,7 +31,7 @@ class LIB_GMDS_CLAIRE_API LevelSet2D {
 	/** @brief Constructor.
          *  @param AMesh the mesh where we work on
 	 */
-	LevelSet2D(Mesh *AMesh, int AmarkFrontNodes);
+	LevelSet(Mesh *AMesh, int AmarkFrontNodes);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -70,4 +71,4 @@ class LIB_GMDS_CLAIRE_API LevelSet2D {
 }     // namespace gmds
 
 
-#endif     // GMDS_LEVELSET2D_H
+#endif     // GMDS_LEVELSET_H

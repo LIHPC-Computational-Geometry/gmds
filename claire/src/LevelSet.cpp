@@ -2,14 +2,13 @@
 // Created by rochec on 13/01/2022.
 //
 /*------------------------------------------------------------------------*/
-#include <gmds/claire/LevelSet2D.h>
+#include <gmds/claire/LevelSet.h>
 #include <limits>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-
-LevelSet2D::LevelSet2D(Mesh *AMesh, int AmarkFrontNodes) {
+LevelSet::LevelSet(Mesh *AMesh, int AmarkFrontNodes) {
 	m_mesh = AMesh;
 	m_markFrontNodes = AmarkFrontNodes;
 	m_distance = m_mesh->newVariable<double,GMDS_NODE>("distance");
@@ -18,7 +17,8 @@ LevelSet2D::LevelSet2D(Mesh *AMesh, int AmarkFrontNodes) {
 
 
 /*------------------------------------------------------------------------*/
-LevelSet2D::STATUS LevelSet2D::execute()
+LevelSet::STATUS
+LevelSet::execute()
 {
 	initialisationDistances();
 
@@ -71,7 +71,7 @@ LevelSet2D::STATUS LevelSet2D::execute()
 		}
 	}
 
-	return LevelSet2D::SUCCESS;
+	return LevelSet::SUCCESS;
 }
 /*------------------------------------------------------------------------*/
 
@@ -79,7 +79,8 @@ LevelSet2D::STATUS LevelSet2D::execute()
 
 
 /*-------------------------------------------------------------------*/
-void LevelSet2D::initialisationDistances(){
+void
+LevelSet::initialisationDistances(){
 	for (auto id:m_mesh->nodes()){
 		if(m_mesh->isMarked<Node>(id, m_markFrontNodes)){
 			m_DistanceMap.add(0, id);
@@ -100,14 +101,16 @@ void LevelSet2D::initialisationDistances(){
 
 
 /*-------------------------------------------------------------------*/
-void LevelSet2D::getValue(TCellID n_id, double &v0){
+void
+LevelSet::getValue(TCellID n_id, double &v0){
 	v0 = m_distance->value(n_id);
 };
 /*-------------------------------------------------------------------*/
 
 
 /*-------------------------------------------------------------------*/
-void LevelSet2D::setValue(TCellID n_id, double v0){
+void
+LevelSet::setValue(TCellID n_id, double v0){
 	m_distance->value(n_id) = v0 ;
 };
 /*-------------------------------------------------------------------*/
