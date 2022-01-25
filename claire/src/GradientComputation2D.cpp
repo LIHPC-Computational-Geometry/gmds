@@ -37,8 +37,7 @@ math::Vector3d GradientComputation2D::getNormalVector(TCellID n0_id, TCellID n1_
 	math::Point p0 = n0.point();
 	math::Point p1 = n1.point();
 
-	math::Vector3d Vecteur;
-	Vecteur = p1-p0;
+	math::Vector3d Vecteur = p1-p0;
 
 	math::Vector3d Vecteur_Normal;
 	Vecteur_Normal.setX( - Vecteur.Y() ) ;
