@@ -56,16 +56,18 @@ math::Vector3d GradientComputation2D::computeGradientOnSimpleFace(TCellID face_i
 	math::Vector3d Gradient ;
 	Face face = m_mesh->get<Face>(face_id);
 	std::vector<TCellID> face_nodes_ids = face.getIDs<Node>();
-	double dist_n0, dist_n1, dist_n2;
-	dist_n0 = m_distance->value(face_nodes_ids[0]) ;
-	dist_n1 = m_distance->value(face_nodes_ids[1]) ;
-	dist_n2 = m_distance->value(face_nodes_ids[2]) ;
+	double di, dj, dk;
+	di = m_distance->value(face_nodes_ids[0]) ;
+	dj = m_distance->value(face_nodes_ids[1]) ;
+	dk = m_distance->value(face_nodes_ids[2]) ;
 	double At = face.area();
 
-	math::Vector3d Vect_20_ortho = getNormalVector(face_nodes_ids[2], face_nodes_ids[0]) ;
-	math::Vector3d Vect_01_ortho = getNormalVector(face_nodes_ids[0], face_nodes_ids[1]) ;
+	math::Vector3d vki_ortho = getNormalVector(face_nodes_ids[2], face_nodes_ids[0]) ;
+	math::Vector3d vij_ortho = getNormalVector(face_nodes_ids[0], face_nodes_ids[1]) ;
 
-	Gradient = Vect_20_ortho*(dist_n1-dist_n0)/(2.0*At) + Vect_01_ortho*(dist_n2-dist_n0)/(2.0*At) ;
+	Gradient = vki_ortho*(dj-di)/(2.0*At) + vij_ortho*(dk-di)/(2.0*At) ;
+
+	std::cout << "Gradient : " << Gradient << std::endl;
 
 	return Gradient;
 }
