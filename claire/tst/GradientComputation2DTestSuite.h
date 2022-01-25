@@ -68,3 +68,72 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test1)
 
 	ASSERT_TRUE(true);
 }
+
+
+TEST(GradientComputation2DTestClass, GradientComputation2D_Test2)
+{
+	// WE READ
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Carre_Quart_Cylindre_maxsize_0.1.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	// Noeud détruit car n'appartient pas au maillage ni à la géométrie.
+	// Il apparaît à cause de la façon dont a été généré le cas test avec GMSH.
+	m.deleteNode(5);
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(&m);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	int markFrontNodes = m.newMark<gmds::Node>();
+	for(auto id:bnd_node_ids){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		double coord_x = n.X() ;
+		if ( sqrt( pow(coord_y,2) + pow(coord_x,2)) == 1) {
+			// For this test case, the front to advance is the boundary where x²+y²=1
+			m.mark<Node>(id,markFrontNodes);
+			//std::cout << "Noeud marqué :" << id << std::endl;
+		}
+	}
+
+	LevelSet2D ls(&m, markFrontNodes);
+	ls.execute();
+
+	// Affichage de débug
+	/*
+	Node n0 = m.get<Node>(5);
+	std::vector<Edge> adjacent_edges = n0.get<Edge>() ;
+	std::cout<< "Pour le noeud 5, il y a " << adjacent_edges.size() << " arête(s) adjacentes." << std::endl;
+
+	Variable<double> *var = m.getVariable<double,GMDS_NODE>("distance");
+	for(auto n_id:m.nodes()){
+	   std::cout<<"End with "<<n_id<<" to val: "<<var->value(n_id)<<std::endl;
+	}
+	 */
+
+	m.unmarkAll<Node>(markFrontNodes);
+	m.freeMark<Node>(markFrontNodes);
+
+	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	grad2D.execute();
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("GradientComputation2D_Test2_Result.vtk");
+
+	ASSERT_TRUE(true);
+}
