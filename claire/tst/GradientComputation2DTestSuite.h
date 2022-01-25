@@ -52,7 +52,7 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test1)
 		}
 	}
 
-	LevelSet ls(&m, markFrontNodes);
+	LevelSetNaif ls(&m, markFrontNodes);
 	ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
@@ -102,27 +102,15 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test2)
 		Node n = m.get<Node>(id);
 		double coord_y = n.Y() ;
 		double coord_x = n.X() ;
-		if ( sqrt( pow(coord_y,2) + pow(coord_x,2)) == 1) {
+		if ( (sqrt( pow(coord_y,2) + pow(coord_x,2)) - 1) <= pow(10,-6) ) {
 			// For this test case, the front to advance is the boundary where x²+y²=1
 			m.mark<Node>(id,markFrontNodes);
 			//std::cout << "Noeud marqué :" << id << std::endl;
 		}
 	}
 
-	LevelSet ls(&m, markFrontNodes);
+	LevelSetNaif ls(&m, markFrontNodes);
 	ls.execute();
-
-	// Affichage de débug
-	/*
-	Node n0 = m.get<Node>(5);
-	std::vector<Edge> adjacent_edges = n0.get<Edge>() ;
-	std::cout<< "Pour le noeud 5, il y a " << adjacent_edges.size() << " arête(s) adjacentes." << std::endl;
-
-	Variable<double> *var = m.getVariable<double,GMDS_NODE>("distance");
-	for(auto n_id:m.nodes()){
-	   std::cout<<"End with "<<n_id<<" to val: "<<var->value(n_id)<<std::endl;
-	}
-	 */
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -146,7 +134,8 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test3)
 	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Carre_Quart_Cylindre_maxsize_0.1.vtk";
+	//std::string vtk_file = dir+"/Carre_Quart_Cylindre_maxsize_0.1.vtk";
+	std::string vtk_file = dir+"/Carre_Quart_Cylindre.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
