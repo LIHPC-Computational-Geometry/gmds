@@ -55,14 +55,18 @@ math::Vector3d GradientComputation2D::computeGradientOnSimpleFace(TCellID face_i
 	math::Vector3d Gradient ;
 	Face face = m_mesh->get<Face>(face_id);
 	std::vector<TCellID> face_nodes_ids = face.getIDs<Node>();
+	TCellID vi_id, vj_id, vk_id;
+	vi_id = face_nodes_ids[2];
+	vj_id = face_nodes_ids[1];
+	vk_id = face_nodes_ids[0];
 	double di, dj, dk;
-	di = m_distance->value(face_nodes_ids[0]) ;
-	dj = m_distance->value(face_nodes_ids[1]) ;
-	dk = m_distance->value(face_nodes_ids[2]) ;
+	di = m_distance->value(vi_id) ;
+	dj = m_distance->value(vj_id) ;
+	dk = m_distance->value(vk_id) ;
 	double At = face.area();
 
-	math::Vector3d vki_ortho = getNormalVector(face_nodes_ids[2], face_nodes_ids[0]) ;
-	math::Vector3d vij_ortho = getNormalVector(face_nodes_ids[0], face_nodes_ids[1]) ;
+	math::Vector3d vki_ortho = getNormalVector(vk_id, vi_id) ;
+	math::Vector3d vij_ortho = getNormalVector(vi_id, vj_id) ;
 
 	Gradient = vki_ortho*(dj-di)/(2.0*At) + vij_ortho*(dk-di)/(2.0*At) ;
 
