@@ -53,27 +53,27 @@ math::Vector3d GradientComputation3D::computeGradientOnSimpleRegion(TCellID regi
 	math::Point pk = nk.point();
 	math::Point ph = nh.point();
 
-	math::Vector3d vki = pk-pi ;
-	math::Vector3d vkh = pk-ph ;
-	math::Vector3d vhi = ph-pi ;
-	math::Vector3d vhj = ph-pj ;
+	math::Vector3d vki = pi-pk ;
+	math::Vector3d vkh = ph-pk ;
+	math::Vector3d vhi = pi-ph ;
+	math::Vector3d vhj = pj-ph ;
 	math::Vector3d vik = pk-pi ;
-	math::Vector3d vji = pj-pi ;
+	math::Vector3d vij = pj-pi ;
 
 	math::Vector3d Vec_1 = vki.cross(vkh);
 	math::Vector3d Vec_2 = vhi.cross(vhj);
-	math::Vector3d Vec_3 = vik.cross(vji);
+	math::Vector3d Vec_3 = vik.cross(vij);
 
 	Gradient = (Vec_1*(dj-di)/(2.0*Vt) + Vec_2*(dk-di)/(2.0*Vt) + Vec_3*(dh-di)/(2.0*Vt)) ;
 
-	/*
+
 	std::cout << "----------------------------------" << std::endl ;
 	std::cout << "ID région traitée : " << region_id << std::endl;
-	std::cout << "Produit vectoriel 1 :" << Vec_1 << std::endl;
-	std::cout << "Produit vectoriel 2 :" << Vec_2 << std::endl;
-	std::cout << "Produit vectoriel 3 :" << Vec_3 << std::endl;
+	//std::cout << "Produit vectoriel 1 :" << Vec_1 << std::endl;
+	//std::cout << "Produit vectoriel 2 :" << Vec_2 << std::endl;
+	//std::cout << "Produit vectoriel 3 :" << Vec_3 << std::endl;
 	std::cout << "Gradient :" << Gradient << std::endl;
-	*/
+
 
 	return Gradient;
 }
