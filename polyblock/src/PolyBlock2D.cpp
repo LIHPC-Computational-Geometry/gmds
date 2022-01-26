@@ -305,20 +305,14 @@ void PolyBlock2D::solveUV() {
     for (auto f_id:m_mesh->faces()) {
         Face f = m_mesh->get<Face>(f_id);
         std::vector<TCellID> nodes = f.getIDs<Node>();
+        math::Point zi, zj, zk;
+        projectInUV(f_id,zi,zj,zk);
         TCellID i = nodes[0];
         TCellID j = nodes[1];
         TCellID k = nodes[2];
-        math::Point p1 = m_mesh->get<Node>(i).point();
-        math::Point p2 = m_mesh->get<Node>(j).point();
-        math::Point p3 = m_mesh->get<Node>(k).point();
-        double x1 = p1.X();
-        double y1 = p1.Y();
-        double x2 = p2.X();
-        double y2 = p2.Y();
-        double x3 = p3.X();
-        double y3 = p3.Y();
-        //twice the area
-        double dT = (x1*y2-y1*x2) + (x2*y3-y2*x3) + (x3*y1 - y3*x1);
+        math::Vector3d ejk(zj,zk);
+        math::Vector3d eki(zk,zi);
+        math::Vector3d eij(zi,zj);
 
         nlBegin(NL_ROW);
         nlCoefficient(i, ejk.X());
