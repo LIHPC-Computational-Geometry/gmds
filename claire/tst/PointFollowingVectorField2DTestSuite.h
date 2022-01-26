@@ -28,7 +28,8 @@ TEST(PointFollowingVectorField2DTestClass, PointFollowingVectorField2D_Test1)
 	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Carre_maxsize_0.01.vtk";
+	//std::string vtk_file = dir+"/Carre.vtk";
+	std::string vtk_file = dir+"/Carre_maxsize_0.01.vtk";		// Same geo but refined mesh
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
