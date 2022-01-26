@@ -40,8 +40,6 @@ TEST(PointFollowingVectorField2DTestClass, PointFollowingVectorField2D_Test1)
 	doc.updateUpwardConnectivity();
 	doc.orient2DFaces();
 
-	math::Point P;
-
 	//Get the boundary node ids
 	BoundaryOperator2D bnd_op(&m);
 	std::vector<TCellID> bnd_node_ids;
@@ -69,7 +67,7 @@ TEST(PointFollowingVectorField2DTestClass, PointFollowingVectorField2D_Test1)
 	GradientComputation2D::STATUS result_grad = grad2D.execute();
 	ASSERT_EQ(GradientComputation2D::SUCCESS, result_grad);
 
-	math::Point M = (0.5, 0.5, 0.0);
+	math::Point M(0.5, 0.5, 0.0);
 	double distance = 0.3;
 
 	PointFollowingVectorField2D pfvf2D(&m, M, distance, m.getVariable<math::Vector3d ,GMDS_FACE>("gradient_2D"));
