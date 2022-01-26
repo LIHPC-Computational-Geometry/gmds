@@ -45,6 +45,10 @@ class LIB_GMDS_CLAIRE_API PointFollowingVectorField2D
 	 */
 	TCellID inWhichTriangle(math::Point M);
 	/*-------------------------------------------------------------------*/
+	/** @brief Compute the minimal edge's lenght
+	 */
+	double minEdgeLenght();
+	/*-------------------------------------------------------------------*/
 
  private:
 	/** mesh we work on */
