@@ -4820,7 +4820,10 @@ std::vector<TSimplexID> SimplexMesh::initializeCavityWith(const TInt nodeAidx, c
     math::Plane P(p0, p1, p2);
     math::Ray r(nodeA.getCoords(), vec);
     math::Point p;
-    if(r.intersect3D(P,p))
+
+    //math::Point barFace = 1.0 / 3.0 * (p0 + p1 + p2);
+    //math::Vector3d vecTest = barFace - nodeA.getCoords();
+    if(r.intersect3D(P,p) /*&& vecTest.dot(vec) >= 0.0*/)
     {
       math::Vector3d v = p - nodeA.getCoords();
       distance.push_back(v.norm());
@@ -4873,11 +4876,24 @@ unsigned int SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, co
         if(nodeA.shell(nodeB).size() == 0)
         {
           std::vector<TInt> cavity = initializeCavityWith(nodeA.getGlobalNode(), nodeB.getGlobalNode());
+          //for(auto const & tet : cavity){std::cout << "tet in cav -> " << tet << std::endl;}
           CriterionRAIS criterionRAIS(new VolumeCriterion());
           bool status = false;
           std::vector<TInt> deletedNodes{};
           const std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
+          //std::cout << SimplicesNode(this, edge.first) << std::endl;
+          //std::cout << SimplicesNode(this, edge.second) << std::endl;
+          //if(cpt > 500)
+          {
+
+            //gmds::VTKWriter vtkWriterTEST(&ioService);
+            //vtkWriterTEST.setCellOptions(gmds::N|gmds::R|gmds::F);
+            //vtkWriterTEST.setDataOptions(gmds::N|gmds::R|gmds::F);
+            //vtkWriterTEST.write("testEdge4_CPT_" + std::to_string(cpt) +  ".vtk");
+            //std::cout << "CPT -> " << cpt << std::endl;
+          }
           PointInsertion(this, nodeB, criterionRAIS, status, cavity, nodeBitVector, deletedNodes, facesAlreadyBuilt);
+          //cpt++;
           if(!status)
           {
             //std::cout << "edge [" << nodeAidx << " ; " << nodeBidx << "] was not built " << std::endl;
