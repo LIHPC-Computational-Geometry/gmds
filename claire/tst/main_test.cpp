@@ -8,6 +8,7 @@
 #include "DistanceMapTestSuite.h"
 #include "GradientComputation2DTestSuite.h"
 #include "GradientComputation3DTestSuite.h"
+#include "PointFollowingVectorField2DTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
