@@ -118,7 +118,6 @@ int main(int argc, char* argv[])
         Node n = m.get<Node>(n_id);
         if (m.isMarked(n, pm.mark_node_on_surf)) {
         math::Vector3d nv = boundaryOp.getOutputNormalOfABoundaryNode(n);
-        std::cout << nv << std::endl;
         bnd_normals[n.id()] = math::Vector3d(nv.X(), nv.Y(), nv.Z());
         }
     }
@@ -232,7 +231,7 @@ int main(int argc, char* argv[])
         VTKWriter writer2(&ioService2);
         writer2.setCellOptions(gmds::N|gmds::R|gmds::F);
         writer2.setDataOptions(gmds::N|gmds::R|gmds::F);
-        writer2.write("CUBE_TRANSFORED_POINT_GENERATED.vtk");
+        writer2.write(fOut);
 
 
         m.unmarkAll<Node>(pm.mark_node_on_surf );
