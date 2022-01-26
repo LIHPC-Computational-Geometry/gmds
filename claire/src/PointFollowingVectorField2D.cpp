@@ -19,6 +19,7 @@ PointFollowingVectorField2D::PointFollowingVectorField2D(Mesh *AMesh, math::Poin
 /*------------------------------------------------------------------------*/
 PointFollowingVectorField2D::STATUS PointFollowingVectorField2D::execute()
 {
+	/*
 	math::Point P(0.5, 0.5, 0.0);
 	TCellID face_id = inWhichTriangle(P);
 	std::cout << "Le point P " << P << " appartient au triangle d'id : " << face_id << std::endl;
@@ -26,6 +27,24 @@ PointFollowingVectorField2D::STATUS PointFollowingVectorField2D::execute()
 	P.setXYZ(0.3, 0.3, 0.0);
 	face_id = inWhichTriangle(P);
 	std::cout << "Le point P " << P << " appartient au triangle d'id : " << face_id << std::endl;
+	 */
+
+	m_Pend = m_Pstart;
+
+	while (m_distance != 0){
+		TCellID pointFace_id = inWhichTriangle(m_Pend) ;
+		math::Vector3d Grad_local = m_gradient2D->value(pointFace_id) ;
+		if (m_distance >= Grad_local.norm()){
+			m_Pend = m_Pend + Grad_local;
+			m_distance = m_distance - Grad_local.norm();
+		}
+		else{
+			m_Pend = m_Pend + m_distance*Grad_local;
+			m_distance = 0;
+		}
+	}
+
+	std::cout << "Point final : " << m_Pend << std::endl;
 
 	return PointFollowingVectorField2D::SUCCESS;
 }
