@@ -45,7 +45,7 @@ namespace gmds
 
 
             /*return a vector of node that are in the cavity*/
-            const std::vector<TInt> &             nodeInCavity();
+            bool                                 nodeInCavity(const TInt node);
 
             const std::vector<TInt> &            getNodeInCavity(){return m_nodeInCavity;}
 

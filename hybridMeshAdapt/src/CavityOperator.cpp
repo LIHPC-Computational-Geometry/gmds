@@ -62,7 +62,7 @@ CavityOperator::CavityIO& CavityOperator::CavityIO::CavityIO::operator=(CavityIO
   return *this;
 }
 /******************************************************************/
-const std::vector<TInt>& CavityOperator::CavityIO::CavityIO::nodeInCavity()
+bool CavityOperator::CavityIO::CavityIO::nodeInCavity(const TInt node)
 {
   m_nodeInCavity.clear();
   m_nodesToReconnect.clear();
@@ -183,7 +183,11 @@ const std::vector<TInt>& CavityOperator::CavityIO::CavityIO::nodeInCavity()
     }
   }
 
-  Variable<int>* BND_TRIANGLES = m_simplex_mesh->getVariable<int,SimplicesTriangle>("BND_TRIANGLES");
+  Variable<int>* BND_TRIANGLES      = m_simplex_mesh->getVariable<int,SimplicesTriangle>("BND_TRIANGLES");
+  Variable<int>* BND_VERTEX_COLOR   = m_simplex_mesh->getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+  Variable<int>* BND_CURVE_COLOR    = m_simplex_mesh->getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+  Variable<int>* BND_SURFACE_COLOR  = m_simplex_mesh->getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+
   for(auto const & tri : getTrianglesConnectedToPInCavity())
   {
     SimplicesTriangle triangle = SimplicesTriangle(m_simplex_mesh, -tri);
@@ -198,6 +202,12 @@ const std::vector<TInt>& CavityOperator::CavityIO::CavityIO::nodeInCavity()
         {
           //fill m_borderSurfaceNode
           std::vector<TInt> borderEdge = triangle.getOppositeEdge(localIndex);
+
+          //condition to look if an indesirable triangle will be built during the cavity's rebuilding
+          if((*BND_CURVE_COLOR)[node] != 0 && ((*BND_CURVE_COLOR)[borderEdge.front()] == (*BND_CURVE_COLOR)[node]) && ((*BND_CURVE_COLOR)[borderEdge.front()] == (*BND_CURVE_COLOR)[borderEdge.back()]))
+          {
+            return false;
+          }
           for(auto const node : borderEdge)
           {
             if(borderNodesBitvector[node] == 0)
@@ -219,7 +229,7 @@ const std::vector<TInt>& CavityOperator::CavityIO::CavityIO::nodeInCavity()
   //////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////
-  return m_nodeInCavity;
+  return true;
 }
 /******************************************************************************/
 void CavityOperator::CavityIO::CavityIO::nodesReconnection()
@@ -256,7 +266,7 @@ void CavityOperator::CavityIO::CavityIO::nodesReconnection()
     TInt node0 = nodes[0];
     TInt nodeA = nodes[1];
     TInt nodeB = nodes[2];
-    //std::cout << "nodes to reconnect : " << node0 << " | " << nodeA << " | " << nodeB << std::endl;
+
     for(int localNode = 0 ; localNode < sizeFace ; localNode++)
     {
       TInt node0 = nodes[localNode];
@@ -443,7 +453,7 @@ bool CavityOperator::CavityIO::isTetragonalizableFrom(const TInt nodeToInsert)
   std::set<TSimplexID> complementarySimplex{};
   std::vector<TSimplexID> cellOfPointToConnect{};
   std::vector<TSimplexID> nodeNotConnected{};
-  const std::vector<TInt>& nodesInsideCavity = nodeInCavity();
+  const std::vector<TInt>/*&*/ nodesInsideCavity;// = nodeInCavity(nodeToInsert);
   std::vector<std::vector<TInt>>&& pointsToConnect  = pointToConnect(extSimplexBorder, complementarySimplex, nodesInsideCavity, cellOfPointToConnect, nodeNotConnected, nodeToInsert);
 
   //if(pointsToConnect.size() > 0)
@@ -512,12 +522,9 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
   else if(dimNode == SimplexMesh::topo::SURFACE){  indexNode =  (*BND_SURFACE_COLOR)[node.getGlobalNode()] ; }
   else                                          {  indexNode =  0;}
 
-  std::cout << "dimNode -> " << dimNode << std::endl;
-
   bool flag = true;
   //CELL EXPANSION
   //for(auto const simplex : cavityCell){std::cout << "initCavCell -> " << simplex << std::endl;}
-  std::cout << "before expansion" << std::endl;
   while(flag)
   {
     flag = false;
@@ -574,11 +581,19 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         }
       }
     }
-std::cout << "after expansion" << std::endl;
+
     gmds::BitVector indexedTriangle(m_simplex_mesh->getBitVectorTri().capacity());
     if(dimNode == SimplexMesh::topo::RIDGE)
     {
-      std::cout << "SimplexMesh::topo::RIDGE" << std::endl;
+      /*std::cout << "SimplexMesh::topo::RIDGE | labelNode--> " << indexNode <<std::endl;
+      for(auto const tri : initCavityTriangle)
+      {
+        std::cout << "triangle --> " << tri <<std::endl;
+      }
+      for(auto const tet : cavityCell)
+      {
+        std::cout << "tetra --> " << tet <<std::endl;
+      }*/
       struct Edge{
         TInt node0;
         TInt node1;
@@ -618,14 +633,14 @@ std::cout << "after expansion" << std::endl;
           }
         }
       }
-
+      //std::cout << "edges.size() --> " << edges.size() << std::endl;
       double epsilon = 1E-3;
       math::Point pC = node.getCoords();
       Edge e;
 
       if(edges.size() == 0)
       {
-        GMDSException("edges.size() == 0, node edges was found for the ridge node being inserted...");
+        throw GMDSException("edges.size() == 0, node edges was found for the ridge node being inserted...");
       }
       else if(edges.size() == 1)
       {
@@ -661,11 +676,10 @@ std::cout << "after expansion" << std::endl;
       for(auto const simplex : shell){if(simplex < 0){firstTriangles.push_back(-simplex);}}
 
       if(firstTriangles.size() != 2){
-        GMDSException("firstTriangles.size() != 2, the surface mesh is broken ...");
+        throw GMDSException("firstTriangles.size() != 2, the surface mesh is broken ...");
       }
 
       for(auto const & triangle : firstTriangles){
-        //std::cout << "triangle -> " << triangle << std::endl;
         selectConnexTriangle(triangle, triBitVector, indexedTriangle);
       }
     }
@@ -700,35 +714,6 @@ std::cout << "after expansion" << std::endl;
           {
             trianglesNotConnectedToP.push_back(tri);
           }
-          /*const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& mapEdgeTriangleIndices =  m_simplex_mesh->getEdgeTianglesIndices();
-          const std::pair<unsigned int, unsigned int>& trianglesIndices = mapEdgeTriangleIndices.at(indexNode);
-          unsigned int triangle0 = trianglesIndices.first;
-          unsigned int triangle1 = trianglesIndices.second;
-          const std::vector<TInt> nodes = SimplicesTriangle(m_simplex_mesh, tri).getNodes();
-          const TInt nodeA = nodes[0]; const TInt nodeB = nodes[1]; const TInt nodeC = nodes[2];
-          TInt indexNodeCurveA = (*BND_CURVE_COLOR)[nodeA];
-          TInt indexNodeCurveB = (*BND_CURVE_COLOR)[nodeB];
-          TInt indexNodeCurveC = (*BND_CURVE_COLOR)[nodeC];
-
-          if(indexTri == triangle0 || indexTri == triangle1)
-          {
-            if(indexNodeCurveA == indexNode || indexNodeCurveB == indexNode || indexNodeCurveC == indexNode)
-            {
-                trianglesConnectedToP.push_back(tri);
-            }
-            else if(indexNodeCurveA == 0 && indexNodeCurveB == 0 && indexNodeCurveC == 0)
-            {
-              trianglesConnectedToP.push_back(tri);
-            }
-            else
-            {
-                trianglesNotConnectedToP.push_back(tri);
-            }
-          }
-          else
-          {
-            trianglesNotConnectedToP.push_back(tri);
-          }*/
         }
       }
     }
