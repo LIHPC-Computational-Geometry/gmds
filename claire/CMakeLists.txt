@@ -23,7 +23,7 @@ set(GMDS_SRC
 		src/DistanceMap.cpp
         src/LevelSetFromIntToOut.cpp
 		src/GradientComputation2D.cpp
-		src/GradientComputation3D.cpp inc/gmds/claire/LevelSetNaif.h src/LevelSetNaif.cpp)
+		src/GradientComputation3D.cpp inc/gmds/claire/LevelSetNaif.h src/LevelSetNaif.cpp inc/gmds/claire/PointFollowingVectorField2D.h src/PointFollowingVectorField2D.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

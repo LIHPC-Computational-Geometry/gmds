@@ -36,8 +36,9 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test1)
 	gmds::MeshDoctor doc(&m);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
-
 	doc.orient2DFaces();
+
+	math::Point P;
 
 	//Get the boundary node ids
 	BoundaryOperator2D bnd_op(&m);
@@ -153,6 +154,7 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test3)
 	gmds::MeshDoctor doc(&m);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
+	doc.orient2DFaces();
 
 	// Noeud détruit car n'appartient pas au maillage ni à la géométrie.
 	// Il apparaît à cause de la façon dont a été généré le cas test avec GMSH.
@@ -217,7 +219,6 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test4)
 	gmds::MeshDoctor doc(&m);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
-
 	doc.orient2DFaces();
 
 	//Get the boundary node ids
