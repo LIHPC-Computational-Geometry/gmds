@@ -30,18 +30,22 @@ PointFollowingVectorField2D::STATUS PointFollowingVectorField2D::execute()
 	 */
 
 	m_Pend = m_Pstart;
+	double minLenght = minEdgeLenght();
+	std::cout << "min : " << minLenght << std::endl;
 
 	while (m_distance != 0){
 		TCellID pointFace_id = inWhichTriangle(m_Pend) ;
 		math::Vector3d Grad_local = m_gradient2D->value(pointFace_id) ;
-		if (m_distance >= Grad_local.norm()){
-			m_Pend = m_Pend + Grad_local;
-			m_distance = m_distance - Grad_local.norm();
+		if (m_distance >= minLenght){
+			m_Pend = m_Pend + minLenght*Grad_local;
+			//m_distance = m_distance - Grad_local.norm();
+			m_distance = m_distance - minLenght;
 		}
 		else{
 			m_Pend = m_Pend + m_distance*Grad_local;
 			m_distance = 0;
 		}
+		//std::cout << "Point intermédiaire : " << m_Pend << std::endl;
 	}
 
 	std::cout << "Point final : " << m_Pend << std::endl;
@@ -105,5 +109,25 @@ TCellID PointFollowingVectorField2D::inWhichTriangle(math::Point M){
 		}
 	}
 	return face_id;
+}
+/*------------------------------------------------------------------------*/
+
+
+
+
+/*------------------------------------------------------------------------*/
+double PointFollowingVectorField2D::minEdgeLenght(){
+	// Initialisation avec une arête prise au hasard. Pb : si l'arête 0 a été
+	// retirée
+	Edge edge_0 = m_mesh->get<Edge>(0);
+	double minLenght(edge_0.length());
+	for (auto edge_id:m_mesh->edges()){
+		Edge edge = m_mesh->get<Edge>(edge_id);
+		if(edge.length() < minLenght){
+			minLenght = edge.length() ;
+			//std::cout << "Edge id : " << edge_id << ", Taille : " << minLenght << std::endl;
+		}
+	}
+	return minLenght;
 }
 /*------------------------------------------------------------------------*/

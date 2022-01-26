@@ -28,7 +28,7 @@ TEST(PointFollowingVectorField2DTestClass, PointFollowingVectorField2D_Test1)
 	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Carre.vtk";
+	std::string vtk_file = dir+"/Carre_maxsize_0.01.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -69,9 +69,13 @@ TEST(PointFollowingVectorField2DTestClass, PointFollowingVectorField2D_Test1)
 
 	math::Point M(0.5, 0.5, 0.0);
 	double distance = 0.3;
-
 	PointFollowingVectorField2D pfvf2D(&m, M, distance, m.getVariable<math::Vector3d ,GMDS_FACE>("gradient_2D"));
 	PointFollowingVectorField2D::STATUS result = pfvf2D.execute();
+
+	M.setXYZ(0.3, 0.3, 0.0);
+	distance = 0.5;
+	pfvf2D = PointFollowingVectorField2D(&m, M, distance, m.getVariable<math::Vector3d ,GMDS_FACE>("gradient_2D"));
+	result = pfvf2D.execute();
 
 	IGMeshIOService ioService_geom(&m);
 	VTKWriter writer_geom(&ioService_geom);
