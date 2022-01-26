@@ -8,7 +8,6 @@
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/ig/Mesh.h>
-#include <gmds/claire/DistanceMap.h>
 #include <string>
 #include <map>
 #include <fstream>
@@ -29,7 +28,7 @@ class LIB_GMDS_CLAIRE_API PointFollowingVectorField2D
 	/** @brief Constructor.
          *  @param AMesh the mesh where we work on
 	 */
-	PointFollowingVectorField2D(Mesh *AMesh);
+	PointFollowingVectorField2D(Mesh *AMesh, math::Point A_Pstart, double A_distance, Variable<math::Vector3d>* A_gradient2D);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -37,11 +36,27 @@ class LIB_GMDS_CLAIRE_API PointFollowingVectorField2D
 	STATUS execute();
 
  private:
-
+	/*-------------------------------------------------------------------*/
+	/** @brief Return true if the point M is in the triangle
+	 */
+	bool isInTriangle(TCellID face_id, math::Point M);
+	/*-------------------------------------------------------------------*/
+	/** @brief Return in which triangle M is
+	 */
+	TCellID inWhichTriangle(math::Point M);
+	/*-------------------------------------------------------------------*/
 
  private:
 	/** mesh we work on */
 	Mesh *m_mesh;
+	/** starting point */
+	math::Point m_Pstart ;
+	/** ending point */
+	math::Point m_Pend ;
+	/** the distance */
+	double m_distance ;
+	/** the vector field to follow */
+	Variable<math::Vector3d>* m_gradient2D ;
 
 };
 /*----------------------------------------------------------------------------*/
