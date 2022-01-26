@@ -38,9 +38,9 @@ math::Vector3d GradientComputation3D::computeGradientOnSimpleRegion(TCellID regi
 	std::vector<TCellID> region_nodes_ids = reg.getIDs<Node>();
 
 	TCellID vi_id = region_nodes_ids[0];
-	TCellID vj_id = region_nodes_ids[2];
+	TCellID vj_id = region_nodes_ids[1];
 	TCellID vk_id = region_nodes_ids[3];
-	TCellID vh_id = region_nodes_ids[1];
+	TCellID vh_id = region_nodes_ids[2];
 
 	double di = m_distance->value(vi_id) ;
 	double dj = m_distance->value(vj_id) ;

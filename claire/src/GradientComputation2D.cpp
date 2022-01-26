@@ -56,9 +56,9 @@ math::Vector3d GradientComputation2D::computeGradientOnSimpleFace(TCellID face_i
 	Face face = m_mesh->get<Face>(face_id);
 	std::vector<TCellID> face_nodes_ids = face.getIDs<Node>();
 	TCellID vi_id, vj_id, vk_id;
-	vi_id = face_nodes_ids[2];
-	vj_id = face_nodes_ids[1];
-	vk_id = face_nodes_ids[0];
+	vi_id = face_nodes_ids[0];
+	vj_id = face_nodes_ids[2];
+	vk_id = face_nodes_ids[1];
 	double di, dj, dk;
 	di = m_distance->value(vi_id) ;
 	dj = m_distance->value(vj_id) ;
