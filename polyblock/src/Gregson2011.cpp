@@ -266,7 +266,7 @@ void Gregson2011_2D::transformMeshToPolycube(){
         gmds::VTKWriter w_2D(&ioService);
         w_2D.setCellOptions(gmds::N|gmds::E|gmds::F);
         w_2D.setDataOptions(gmds::N|gmds::E|gmds::F);
- 		w_2D.write("result2D_"+to_string(iteration+1));
+ 		w_2D.write("result2D_"+to_string(iteration+1)+".vtk");
 
 		// modifier la position des points avec le system de poisson
 

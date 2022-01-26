@@ -1,11 +1,4 @@
 /*----------------------------------------------------------------------------*/
-/*
- * CommonTypes.h
- *
- *  Created on: 6 janv. 2014
- *      Author: ledouxf
- */
-/*----------------------------------------------------------------------------*/
 #ifndef GMDS_COMMONTYPES_H_
 #define GMDS_COMMONTYPES_H_
 /*----------------------------------------------------------------------------*/
@@ -89,6 +82,8 @@ namespace gmds{
             else
                 return 0;
         }
+        static const int Full2D;
+
         bool operator==(const MeshModel& AModel){return m_meshDef==AModel.m_meshDef;}
         
         bool has(const EMeshDefinition& e) const {return ((m_meshDef|e)==m_meshDef);}
@@ -703,6 +698,7 @@ namespace gmds{
     };
     /*----------------------------------------------------------------------------*/
     /*----------------------------------------------------------------------------*/
+
 }
 /*----------------------------------------------------------------------------*/
 //std::ostream& operator<<(std::ostream& stream, const gmds::MeshModel& model);
