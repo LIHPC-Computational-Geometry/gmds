@@ -70,8 +70,8 @@ PYBIND11_MODULE(pygmds, m) {
     py::class_<gmds::VTKReader>(m, "VTKReader")
             .def(py::init<gmds::IMeshIOService*>())
             .def("read", &gmds::VTKReader::read)
-            .def("setCellOption",&gmds::VTKReader::setCellOptions)
-            .def("setDataOption",&gmds::VTKReader::setDataOptions);
+            .def("setCellOptions",&gmds::VTKReader::setCellOptions)
+            .def("setDataOptions",&gmds::VTKReader::setDataOptions);
 
     m.attr("__version__") = "dev";
 }
