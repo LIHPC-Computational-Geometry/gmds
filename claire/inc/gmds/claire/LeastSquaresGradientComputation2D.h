@@ -12,6 +12,7 @@
 #include <string>
 #include <map>
 #include <fstream>
+#include <Eigen/Sparse>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
 class LIB_GMDS_CLAIRE_API LeastSquaresGradientComputation2D {
@@ -36,6 +37,11 @@ class LIB_GMDS_CLAIRE_API LeastSquaresGradientComputation2D {
 	STATUS execute();
 
  private:
+	/*-------------------------------------------------------------------*/
+	/** @brief Construit les matrices pour la résolution du système
+	 */
+	void buildMatrix(TCellID n_id, Eigen::SparseMatrix<double> M, Eigen::VectorXd b);
+	/*-------------------------------------------------------------------*/
 
  private:
 	/** mesh we work on */
