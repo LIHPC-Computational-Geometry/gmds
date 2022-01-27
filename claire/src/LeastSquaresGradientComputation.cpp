@@ -3,13 +3,12 @@
 //
 
 /*------------------------------------------------------------------------*/
-#include <gmds/claire/LeastSquaresGradientComputation2D.h>
+#include <gmds/claire/LeastSquaresGradientComputation.h>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-
-LeastSquaresGradientComputation2D::LeastSquaresGradientComputation2D(Mesh *AMesh, Variable<double>* Adistance) {
+LeastSquaresGradientComputation::LeastSquaresGradientComputation(Mesh *AMesh, Variable<double>* Adistance) {
 	m_mesh = AMesh;
 	m_distance = Adistance;
 	m_gradient2D = m_mesh->newVariable<math::Vector3d, GMDS_NODE>("gradient_2D");
@@ -17,7 +16,8 @@ LeastSquaresGradientComputation2D::LeastSquaresGradientComputation2D(Mesh *AMesh
 
 
 /*------------------------------------------------------------------------*/
-LeastSquaresGradientComputation2D::STATUS LeastSquaresGradientComputation2D::execute()
+LeastSquaresGradientComputation::STATUS
+LeastSquaresGradientComputation::execute()
 {
 
 	for(auto node_id:m_mesh->nodes()) {
@@ -27,7 +27,7 @@ LeastSquaresGradientComputation2D::STATUS LeastSquaresGradientComputation2D::exe
 		m_gradient2D->set(node_id, Gradient) ;
 	}
 
-	return LeastSquaresGradientComputation2D::SUCCESS;
+	return LeastSquaresGradientComputation::SUCCESS;
 }
 /*------------------------------------------------------------------------*/
 
@@ -35,7 +35,8 @@ LeastSquaresGradientComputation2D::STATUS LeastSquaresGradientComputation2D::exe
 
 
 /*------------------------------------------------------------------------*/
-math::Vector3d LeastSquaresGradientComputation2D::computeGradientOnSimpleVertex(TCellID node_id){
+math::Vector3d
+LeastSquaresGradientComputation::computeGradientOnSimpleVertex(TCellID node_id){
 
 	math::Vector3d Gradient;
 
@@ -65,7 +66,8 @@ math::Vector3d LeastSquaresGradientComputation2D::computeGradientOnSimpleVertex(
 
 
 /*------------------------------------------------------------------------*/
-void LeastSquaresGradientComputation2D::buildMatrix(TCellID n_id, Eigen::SparseMatrix<double> &M, Eigen::VectorXd &b){
+void
+LeastSquaresGradientComputation::buildMatrix(TCellID n_id, Eigen::SparseMatrix<double> &M, Eigen::VectorXd &b){
 
 	// Dimensions des matrices
 	int dim=3;

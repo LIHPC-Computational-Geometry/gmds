@@ -2,8 +2,8 @@
 // Created by rochec on 27/01/2022.
 //
 
-#ifndef GMDS_LEASTSQUARESGRADIENTCOMPUTATION2D_H
-#define GMDS_LEASTSQUARESGRADIENTCOMPUTATION2D_H
+#ifndef GMDS_LEASTSQUARESGRADIENTCOMPUTATION_H
+#define GMDS_LEASTSQUARESGRADIENTCOMPUTATION_H
 
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
@@ -15,7 +15,8 @@
 #include <Eigen/Sparse>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_CLAIRE_API LeastSquaresGradientComputation2D {
+class LIB_GMDS_CLAIRE_API LeastSquaresGradientComputation
+{
  public:
 	/*--------------------------------------------------------------------*/
 	/** @enum  Status code for executing algorithms
@@ -29,7 +30,7 @@ class LIB_GMDS_CLAIRE_API LeastSquaresGradientComputation2D {
 	/** @brief Constructor.
          *  @param AMesh the mesh where we work on
 	 */
-	LeastSquaresGradientComputation2D(Mesh *AMesh, Variable<double>* Adistance);
+	LeastSquaresGradientComputation(Mesh *AMesh, Variable<double>* Adistance);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -58,4 +59,4 @@ class LIB_GMDS_CLAIRE_API LeastSquaresGradientComputation2D {
 /*----------------------------------------------------------------------------*/
 }     // namespace gmds
 
-#endif     // GMDS_LEASTSQUARESGRADIENTCOMPUTATION2D_H
+#endif     // GMDS_LEASTSQUARESGRADIENTCOMPUTATION_H
