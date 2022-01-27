@@ -89,9 +89,8 @@ TEST(GradientComputation3DTestClass, GradientComputation3D_Test2)
 	doctor.buildEdgesAndX2E();
 	doctor.updateUpwardConnectivity();
 
-	int markFrontNodes = m.newMark<gmds::Node>();
-
 	// Initialisation des marques sur les bords internes et externes pour noter quels fronts sont à avancer
+	int markFrontNodes = m.newMark<gmds::Node>();
 	for(auto id:m.nodes()){
 		Node n = m.get<Node>(id);
 		double coord_y = n.Y() ;
@@ -104,11 +103,9 @@ TEST(GradientComputation3DTestClass, GradientComputation3D_Test2)
 		}
 	}
 
-	std::cout << "Fin de l'initialisation des marques" << std::endl ;
 
 	LevelSetNaif ls(&m, markFrontNodes);
 	LevelSetNaif::STATUS result_ls = ls.execute();
-
 	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
