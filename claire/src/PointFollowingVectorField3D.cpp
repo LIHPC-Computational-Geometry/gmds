@@ -19,33 +19,22 @@ PointFollowingVectorField3D::PointFollowingVectorField3D(Mesh *AMesh, math::Poin
 /*------------------------------------------------------------------------*/
 PointFollowingVectorField3D::STATUS PointFollowingVectorField3D::execute()
 {
-	/*
-	math::Point P(0.5, 0.5, 0.0);
-	TCellID face_id = inWhichTriangle(P);
-	std::cout << "Le point P " << P << " appartient au triangle d'id : " << face_id << std::endl;
-
-	P.setXYZ(0.3, 0.3, 0.0);
-	face_id = inWhichTriangle(P);
-	std::cout << "Le point P " << P << " appartient au triangle d'id : " << face_id << std::endl;
-	 */
-
 	m_Pend = m_Pstart;
 	double minLenght = minEdgeLenght();
 	std::cout << "min : " << minLenght << std::endl;
 
 	while (m_distance != 0){
-		TCellID pointFace_id = inWhichTriangle(m_Pend) ;
+		TCellID pointFace_id = inWhichTetra(m_Pend) ;
 		math::Vector3d Grad_local = m_gradient3D->value(pointFace_id) ;
 		if (m_distance >= minLenght){
 			m_Pend = m_Pend + minLenght*Grad_local;
-			//m_distance = m_distance - Grad_local.norm();
 			m_distance = m_distance - minLenght;
 		}
 		else{
 			m_Pend = m_Pend + m_distance*Grad_local;
 			m_distance = 0;
 		}
-		//std::cout << "Point intermédiaire : " << m_Pend << std::endl;
+		std::cout << "Point intermédiaire : " << m_Pend << std::endl;
 	}
 
 	std::cout << "Point final : " << m_Pend << std::endl;
@@ -55,41 +44,27 @@ PointFollowingVectorField3D::STATUS PointFollowingVectorField3D::execute()
 /*------------------------------------------------------------------------*/
 
 
-
-
-
 /*------------------------------------------------------------------------*/
-bool PointFollowingVectorField3D::isInTriangle(TCellID face_id, math::Point M){
-	bool isInFace(false);
-	Face face = m_mesh->get<Face>(face_id);
-	std::vector<TCellID> face_nodes_ids = face.getIDs<Node>();
-	TCellID vi_id = face_nodes_ids[0];
-	TCellID vj_id = face_nodes_ids[2];
-	TCellID vk_id = face_nodes_ids[1];
+bool PointFollowingVectorField3D::sameSide(math::Point v1, math::Point v2, math::Point v3, math::Point v4, math::Point p){
 
-	Node vi = m_mesh->get<Node>(vi_id);
-	Node vj = m_mesh->get<Node>(vj_id);
-	Node vk = m_mesh->get<Node>(vk_id);
+	bool isOnSameSide(false);
 
-	math::Point vi_coord = vi.point();
-	math::Point vj_coord = vj.point();
-	math::Point vk_coord = vk.point();
+	math::Vector3d vec_12 = v2-v1;
+	math::Vector3d vec_13 = v3-v1;
+	math::Vector3d vec_14 = v4-v1;
+	math::Vector3d vec_1p = p-v1;
 
-	math::Vector3d vij = vj_coord-vi_coord ;
-	math::Vector3d vjk = vk_coord-vj_coord ;
-	math::Vector3d vki = vi_coord-vk_coord ;
-	math::Vector3d viM = M-vi_coord ;
-	math::Vector3d vjM = M-vj_coord ;
-	math::Vector3d vkM = M-vk_coord ;
+	math::Vector3d normal = vec_12.cross(vec_13);
 
-	double d1 = ( vij.cross(viM) ).dot( viM.cross(-vki) ) ;
-	double d2 = ( -vij.cross(vjM) ).dot( vjM.cross(vjk) ) ;
-	double d3 = ( vki.cross(vkM) ).dot( vkM.cross(-vjk) ) ;
+	double dotv4 = normal.dot(vec_14);
+	double dotP = normal.dot(vec_1p);
+	double signe = dotv4*dotP;
 
-	if (d1 >= 0 && d2 >= 0 && d3 >= 0) {
-		isInFace = true;
+	if (signe >= 0){
+		isOnSameSide = true;
 	}
-	return isInFace;
+
+	return isOnSameSide;
 }
 /*------------------------------------------------------------------------*/
 
@@ -97,18 +72,56 @@ bool PointFollowingVectorField3D::isInTriangle(TCellID face_id, math::Point M){
 
 
 /*------------------------------------------------------------------------*/
-TCellID PointFollowingVectorField3D::inWhichTriangle(math::Point M){
-	TCellID face_id;
-	bool isInFace(false);
-	for (auto f_id:m_mesh->faces()){
-		if(!isInFace){
-			isInFace = isInTriangle(f_id, M);
-			if(isInFace){
-				face_id = f_id;
+bool PointFollowingVectorField3D::isInTetra(TCellID region_id, math::Point M){
+
+	bool isInRegion(false);
+
+	Region region = m_mesh->get<Region>(region_id);
+	std::vector<TCellID> region_nodes_ids = region.getIDs<Node>();
+	TCellID vi_id = region_nodes_ids[0];
+	TCellID vj_id = region_nodes_ids[1];
+	TCellID vk_id = region_nodes_ids[2];
+	TCellID vh_id = region_nodes_ids[3];
+
+	Node vi = m_mesh->get<Node>(vi_id);
+	Node vj = m_mesh->get<Node>(vj_id);
+	Node vk = m_mesh->get<Node>(vk_id);
+	Node vh = m_mesh->get<Node>(vh_id);
+
+	math::Point vi_coord = vi.point();
+	math::Point vj_coord = vj.point();
+	math::Point vk_coord = vk.point();
+	math::Point vh_coord = vh.point();
+
+	bool sameSide1 = sameSide(vi_coord, vj_coord, vk_coord, vh_coord, M);
+	bool sameSide2 = sameSide(vj_coord, vk_coord, vh_coord, vi_coord, M);
+	bool sameSide3 = sameSide(vk_coord, vh_coord, vi_coord, vj_coord, M);
+	bool sameSide4 = sameSide(vh_coord, vi_coord, vj_coord, vk_coord, M);
+
+	if (sameSide1 && sameSide2 && sameSide3 && sameSide4) {
+		isInRegion = true;
+	}
+
+	return isInRegion;
+}
+/*------------------------------------------------------------------------*/
+
+
+
+
+/*------------------------------------------------------------------------*/
+TCellID PointFollowingVectorField3D::inWhichTetra(math::Point M){
+	TCellID region_id;
+	bool isInRegion(false);
+	for (auto reg_id:m_mesh->regions()){
+		if(!isInRegion){
+			isInRegion = isInTetra(reg_id, M);
+			if(isInRegion){
+				region_id = reg_id;
 			}
 		}
 	}
-	return face_id;
+	return region_id;
 }
 /*------------------------------------------------------------------------*/
 
