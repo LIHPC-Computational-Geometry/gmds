@@ -37,13 +37,17 @@ class LIB_GMDS_CLAIRE_API PointFollowingVectorField3D
 
  private:
 	/*-------------------------------------------------------------------*/
+	/** @brief Return true if v4 and p are on the same side from the face v1,v2,v3
+	 */
+	bool sameSide(math::Point v1, math::Point v2, math::Point v3, math::Point v4, math::Point p);
+	/*-------------------------------------------------------------------*/
 	/** @brief Return true if the point M is in the triangle
 	 */
-	bool isInTriangle(TCellID face_id, math::Point M);
+	bool isInTetra(TCellID region_id, math::Point M);
 	/*-------------------------------------------------------------------*/
 	/** @brief Return in which triangle M is
 	 */
-	TCellID inWhichTriangle(math::Point M);
+	TCellID inWhichTetra(math::Point M);
 	/*-------------------------------------------------------------------*/
 	/** @brief Compute the minimal edge's lenght
 	 */
