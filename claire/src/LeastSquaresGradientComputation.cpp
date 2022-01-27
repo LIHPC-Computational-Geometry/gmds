@@ -41,11 +41,10 @@ LeastSquaresGradientComputation::computeGradientOnSimpleVertex(TCellID node_id){
 	math::Vector3d Gradient;
 
 	int dim=3;
-
+	// Construction de la matrice et des vecteurs
 	Eigen::SparseMatrix<double> A(dim,dim);
 	Eigen::VectorXd x(dim);
 	Eigen::VectorXd b(dim);
-
 	buildMatrix(node_id, A, b);
 
 	// Résolution du système avec gradient conjugué
@@ -54,8 +53,6 @@ LeastSquaresGradientComputation::computeGradientOnSimpleVertex(TCellID node_id){
 	x = cg.solve(b);
 	std::cout << "#iterations:     " << cg.iterations() << std::endl;
 	std::cout << "estimated error: " << cg.error()      << std::endl;
-	// update b, and solve again
-	//x = cg.solve(b);
 
 	Gradient.setXYZ( x[0], x[1], x[2] );
 
