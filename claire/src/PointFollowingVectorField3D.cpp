@@ -26,6 +26,7 @@ PointFollowingVectorField3D::STATUS PointFollowingVectorField3D::execute()
 	while (m_distance != 0){
 		TCellID pointFace_id = inWhichTetra(m_Pend) ;
 		math::Vector3d Grad_local = m_gradient3D->value(pointFace_id) ;
+		Grad_local.normalize();
 		if (m_distance >= minLenght){
 			m_Pend = m_Pend + minLenght*Grad_local;
 			m_distance = m_distance - minLenght;

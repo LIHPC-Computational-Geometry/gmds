@@ -120,8 +120,8 @@ TEST(PointFollowingVectorField3DTestClass, PointFollowingVectorField3D_Test1)
 	// Initialisation de la marque pour noter quels fronts sont à avancer
 	for(auto id:m.nodes()){
 		Node n = m.get<Node>(id);
-		double coord_x = n.X() ;
-		if ( abs(coord_x) <= pow(10,-6) ) {
+		double coord_y = n.Y() ;
+		if ( abs(coord_y) <= pow(10,-6) ) {
 			// For this test case, the front to advance is the boundary where x=0
 			m.mark<Node>(id,markFrontNodes);
 		}
