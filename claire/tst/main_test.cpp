@@ -6,8 +6,7 @@
 #include "ClaireTestSuite.h"
 #include "LevelSetTestSuite.h"
 #include "DistanceMapTestSuite.h"
-#include "GradientComputation2DTestSuite.h"
-#include "GradientComputation3DTestSuite.h"
+#include "GradientComputationTestSuite.h"
 #include "PointFollowingVectorField2DTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
