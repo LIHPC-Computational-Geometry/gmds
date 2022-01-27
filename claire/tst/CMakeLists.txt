@@ -2,8 +2,7 @@ add_executable(GMDS_CLAIRE_TEST
         ClaireTestSuite.h
         LevelSetTestSuite.h
         DistanceMapTestSuite.h
-        GradientComputation2DTestSuite.h
-        GradientComputation3DTestSuite.h
+        GradientComputationTestSuite.h
         PointFollowingVectorField2DTestSuite.h
         main_test.cpp ../inc/gmds/claire/LevelSetFromIntToOut.h)
 
