@@ -46,6 +46,7 @@ TEST(PointFollowingVectorField2DTestClass, PointFollowingVectorField2D_Test1)
 	std::vector<TCellID> bnd_node_ids;
 	bnd_op.getBoundaryNodes(bnd_node_ids);
 
+	// Initialisation des marques sur le front à avancer
 	int markFrontNodes = m.newMark<gmds::Node>();
 	for(auto id:bnd_node_ids){
 		Node n = m.get<Node>(id);
@@ -56,23 +57,26 @@ TEST(PointFollowingVectorField2DTestClass, PointFollowingVectorField2D_Test1)
 		}
 	}
 
+	// Calcul des Level Set
 	LevelSetNaif ls(&m, markFrontNodes);
 	LevelSetNaif::STATUS result_ls = ls.execute();
-
 	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
+	// Calcul du gradient du champ de Level Set
 	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
 	GradientComputation2D::STATUS result_grad = grad2D.execute();
 	ASSERT_EQ(GradientComputation2D::SUCCESS, result_grad);
 
+	// Placement du point P à la distance souhaitée suivant le champ de gradient
 	math::Point M(0.5, 0.5, 0.0);
 	double distance = 0.3;
 	PointFollowingVectorField2D pfvf2D(&m, M, distance, m.getVariable<math::Vector3d ,GMDS_FACE>("gradient_2D"));
 	PointFollowingVectorField2D::STATUS result = pfvf2D.execute();
 
+	// Placement du point P à la distance souhaitée suivant le champ de gradient
 	M.setXYZ(0.3, 0.3, 0.0);
 	distance = 0.5;
 	pfvf2D = PointFollowingVectorField2D(&m, M, distance, m.getVariable<math::Vector3d ,GMDS_FACE>("gradient_2D"));
