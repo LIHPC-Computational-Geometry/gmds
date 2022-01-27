@@ -20,7 +20,7 @@
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
 
-/* CAS TEST CLASSE LevelSet */
+/* CAS TEST 2D CLASSE LevelSet 2D */
 
 TEST(LevelSetTestClass, LevelSet_Test1)
 {
@@ -325,6 +325,56 @@ TEST(LevelSetTestClass, LevelSetNaif_Test1)
 
 	ASSERT_EQ(LevelSetNaif::SUCCESS, result);
 }
+
+
+/* CAS TEST 3D CLASSE LevelSetNaif */
+
+TEST(LevelSetTestClass, LavelSetNaif_3D_Test1)
+{
+	Mesh m(MeshModel(DIM3 | R | F | E | N |
+	                 R2N | F2N | E2N | R2F | F2R |
+	                 F2E | E2F | R2E | N2R | N2F | N2E));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Cube.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::R);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doctor(&m);
+	doctor.buildFacesAndR2F();
+	doctor.buildEdgesAndX2E();
+	doctor.updateUpwardConnectivity();
+
+	// Initialisation de la marque pour noter quels fronts sont à avancer
+	int markFrontNodes = m.newMark<gmds::Node>();
+	for(auto id:m.nodes()){
+		Node n = m.get<Node>(id);
+		double coord_x = n.X() ;
+		if ( abs(coord_x) <= pow(10,-6) ) {
+			// For this test case, the front to advance is the boundary where x=0
+			m.mark<Node>(id,markFrontNodes);
+		}
+	}
+
+	// Calcul des Level Set
+	LevelSetNaif ls(&m, markFrontNodes);
+	LevelSetNaif::STATUS result_ls = ls.execute();
+
+	m.unmarkAll<Node>(markFrontNodes);
+	m.freeMark<Node>(markFrontNodes);
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("GradientComputation3D_Test1_Result.vtk");
+
+	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+}
+
+
+
 
 
 /* CAS TEST CLASSE LevelSetFromIntToOut */

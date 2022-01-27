@@ -55,14 +55,12 @@ math::Vector3d GradientComputation2D::computeGradientOnSimpleFace(TCellID face_i
 	math::Vector3d Gradient ;
 	Face face = m_mesh->get<Face>(face_id);
 	std::vector<TCellID> face_nodes_ids = face.getIDs<Node>();
-	TCellID vi_id, vj_id, vk_id;
-	vi_id = face_nodes_ids[0];
-	vj_id = face_nodes_ids[2];
-	vk_id = face_nodes_ids[1];
-	double di, dj, dk;
-	di = m_distance->value(vi_id) ;
-	dj = m_distance->value(vj_id) ;
-	dk = m_distance->value(vk_id) ;
+	TCellID vi_id = face_nodes_ids[0];
+	TCellID vj_id = face_nodes_ids[2];
+	TCellID vk_id = face_nodes_ids[1];
+	double di = m_distance->value(vi_id) ;
+	double dj = m_distance->value(vj_id) ;
+	double dk = m_distance->value(vk_id) ;
 	double At = face.area();
 
 	math::Vector3d vki_ortho = getNormalVector(vk_id, vi_id) ;
@@ -78,7 +76,8 @@ math::Vector3d GradientComputation2D::computeGradientOnSimpleFace(TCellID face_i
 
 
 /*------------------------------------------------------------------------*/
-/*
+/* Méthode pour calculer l'aire d'un triangle : existe déjà.
+ * Pour une face, utiliser face.aera().
 double GradientComputation2D::getFaceArea(TCellID face_id){
 	double At ;
 	Face face = m_mesh->get<Face>(face_id);
