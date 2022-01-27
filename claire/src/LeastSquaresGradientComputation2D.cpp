@@ -12,7 +12,7 @@ using namespace gmds;
 LeastSquaresGradientComputation2D::LeastSquaresGradientComputation2D(Mesh *AMesh, Variable<double>* Adistance) {
 	m_mesh = AMesh;
 	m_distance = Adistance;
-	m_gradient2D = m_mesh->newVariable<math::Vector3d ,GMDS_FACE>("gradient_2D");
+	m_gradient2D = m_mesh->newVariable<math::Vector3d, GMDS_NODE>("gradient_2D");
 }
 
 
@@ -20,9 +20,11 @@ LeastSquaresGradientComputation2D::LeastSquaresGradientComputation2D(Mesh *AMesh
 LeastSquaresGradientComputation2D::STATUS LeastSquaresGradientComputation2D::execute()
 {
 
-	for(auto face_id:m_mesh->faces()) {
-		//math::Vector3d Gradient = computeGradientOnSimpleFace(face_id);
-		//m_gradient2D->set(face_id, Gradient) ;
+	for(auto node_id:m_mesh->nodes()) {
+		std::cout << "------------------------" << std::endl;
+		std::cout << "NOEUD TRAITé : " << node_id << std::endl;
+		math::Vector3d Gradient = computeGradientOnSimpleVertex(node_id);
+		m_gradient2D->set(node_id, Gradient) ;
 	}
 
 	return LeastSquaresGradientComputation2D::SUCCESS;
@@ -31,13 +33,43 @@ LeastSquaresGradientComputation2D::STATUS LeastSquaresGradientComputation2D::exe
 
 
 
-/*------------------------------------------------------------------------*/
-void LeastSquaresGradientComputation2D::buildMatrix(TCellID n_id, Eigen::SparseMatrix<double> M, Eigen::VectorXd b){
 
-	Eigen::VectorXd Di;
-	Eigen::SparseMatrix<double> Wi;
-	Eigen::SparseMatrix<double> Ai;
-	Eigen::SparseMatrix<double> AiT;
+/*------------------------------------------------------------------------*/
+math::Vector3d LeastSquaresGradientComputation2D::computeGradientOnSimpleVertex(TCellID node_id){
+
+	math::Vector3d Gradient;
+
+	int dim=3;
+
+	Eigen::SparseMatrix<double> A(dim,dim);
+	Eigen::VectorXd x(dim);
+	Eigen::VectorXd b(dim);
+
+	buildMatrix(node_id, A, b);
+
+	// Résolution du système avec gradient conjugué
+	Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
+	cg.compute(A);
+	x = cg.solve(b);
+	std::cout << "#iterations:     " << cg.iterations() << std::endl;
+	std::cout << "estimated error: " << cg.error()      << std::endl;
+	// update b, and solve again
+	//x = cg.solve(b);
+
+	Gradient.setXYZ( x[0], x[1], x[2] );
+
+	return Gradient;
+}
+/*------------------------------------------------------------------------*/
+
+
+
+/*------------------------------------------------------------------------*/
+void LeastSquaresGradientComputation2D::buildMatrix(TCellID n_id, Eigen::SparseMatrix<double> &M, Eigen::VectorXd &b){
+
+	// Dimensions des matrices
+	int dim=3;
+	int ki;
 
 	Node n = m_mesh->get<Node>(n_id);
 	math::Point p_i = n.point() ;
@@ -52,8 +84,15 @@ void LeastSquaresGradientComputation2D::buildMatrix(TCellID n_id, Eigen::SparseM
 	}
 	// Normalement, de cette manière, l'arête stockée à l'indice j dans adjacent_edges
 	// est celle qui correspond au noeud opposé dans le vecteur adjacent_nodes.
+	ki = adjacent_nodes.size();
 
-	for (int j=0; j < adjacent_nodes.size(); j++){
+	// Initialisation des matrices
+	Eigen::VectorXd Di (ki);
+	Eigen::SparseMatrix<double> Wi(ki,ki);
+	Eigen::SparseMatrix<double> Ai(ki, dim);
+	Eigen::SparseMatrix<double> AiT(dim, ki);
+
+	for (int j=0; j < ki; j++){
 		// Initialisation de la matrice A
 		Ai.coeffRef(j, 0) = adjacent_points[j].X() - p_i.X();
 		Ai.coeffRef(j, 1) = adjacent_points[j].Y() - p_i.Y();

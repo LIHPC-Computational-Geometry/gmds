@@ -40,7 +40,11 @@ class LIB_GMDS_CLAIRE_API LeastSquaresGradientComputation2D {
 	/*-------------------------------------------------------------------*/
 	/** @brief Construit les matrices pour la résolution du système
 	 */
-	void buildMatrix(TCellID n_id, Eigen::SparseMatrix<double> M, Eigen::VectorXd b);
+	void buildMatrix(TCellID n_id, Eigen::SparseMatrix<double> &M, Eigen::VectorXd &b);
+	/*-------------------------------------------------------------------*/
+	/** @brief Donne le vecteur gradient sur un sommet
+	 */
+	math::Vector3d computeGradientOnSimpleVertex(TCellID node_id);
 	/*-------------------------------------------------------------------*/
 
  private:

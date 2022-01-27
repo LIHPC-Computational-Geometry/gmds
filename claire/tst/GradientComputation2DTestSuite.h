@@ -5,6 +5,7 @@
 #include <gmds/claire/LevelSet.h>
 #include <gmds/claire/LevelSetFromIntToOut.h>
 #include <gmds/claire/GradientComputation2D.h>
+#include <gmds/claire/LeastSquaresGradientComputation2D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
@@ -254,4 +255,179 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test4)
 	vtkWriter.write("GradientComputation2D_Test4_Result.vtk");
 
 	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
+}
+
+
+
+
+
+
+
+
+TEST(GradientComputation2DTestClass, LeastSquaresGradientComputation2D_Test1)
+{
+	// WE READ
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Carre.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+	doc.orient2DFaces();
+
+	math::Point P;
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(&m);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	int markFrontNodes = m.newMark<gmds::Node>();
+	for(auto id:bnd_node_ids){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		if (coord_y == 0) {
+			// For the square test case, the front to advance is the boundary where y=0
+			m.mark<Node>(id,markFrontNodes);
+		}
+	}
+
+	LevelSetNaif ls(&m, markFrontNodes);
+	LevelSetNaif::STATUS result_ls = ls.execute();
+	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+
+	m.unmarkAll<Node>(markFrontNodes);
+	m.freeMark<Node>(markFrontNodes);
+
+	LeastSquaresGradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	LeastSquaresGradientComputation2D::STATUS result = grad2D.execute();
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("LeastSquaresGradientComputation2D_Test1_Result.vtk");
+
+	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
+}
+
+
+TEST(GradientComputation2DTestClass, LeastSquaresGradientComputation2D_Test2)
+{
+	// WE READ
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Carre_Quart_Cylindre_maxsize_0.1.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	doc.orient2DFaces();
+
+	// Noeud détruit car n'appartient pas au maillage ni à la géométrie.
+	// Il apparaît à cause de la façon dont a été généré le cas test avec GMSH.
+	m.deleteNode(5);
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(&m);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	int markFrontNodes = m.newMark<gmds::Node>();
+	for(auto id:bnd_node_ids){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		double coord_x = n.X() ;
+		if ( (sqrt( pow(coord_y,2) + pow(coord_x,2)) - 1) <= pow(10,-6) ) {
+			// For this test case, the front to advance is the boundary where x²+y²=1
+			m.mark<Node>(id,markFrontNodes);
+			//std::cout << "Noeud marqué :" << id << std::endl;
+		}
+	}
+
+	LevelSetNaif ls(&m, markFrontNodes);
+	LevelSetNaif::STATUS result_ls = ls.execute();
+	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+
+	m.unmarkAll<Node>(markFrontNodes);
+	m.freeMark<Node>(markFrontNodes);
+
+	LeastSquaresGradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	LeastSquaresGradientComputation2D::STATUS result = grad2D.execute();
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("LeastSquaresGradientComputation2D_Test2_Result.vtk");
+
+	ASSERT_EQ(LeastSquaresGradientComputation2D::SUCCESS, result);
+}
+
+
+
+
+TEST(GradientComputation3DTestClass, LeastSquaresGradientComputation2D_3D_Test1)
+{
+	Mesh m(MeshModel(DIM3 | R | F | E | N |
+	                 R2N | F2N | E2N | R2F | F2R |
+	                 F2E | E2F | R2E | N2R | N2F | N2E));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Cube.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::R);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doctor(&m);
+	doctor.buildFacesAndR2F();
+	doctor.buildEdgesAndX2E();
+	doctor.updateUpwardConnectivity();
+
+	int markFrontNodes = m.newMark<gmds::Node>();
+
+	// Initialisation de la marque pour noter quels fronts sont à avancer
+	for(auto id:m.nodes()){
+		Node n = m.get<Node>(id);
+		double coord_x = n.X() ;
+		if ( abs(coord_x) <= pow(10,-6) ) {
+			// For this test case, the front to advance is the boundary where x=0
+			m.mark<Node>(id,markFrontNodes);
+		}
+	}
+
+	std::cout << "Fin de l'initialisation des marques" << std::endl ;
+
+	LevelSetNaif ls(&m, markFrontNodes);
+	LevelSetNaif::STATUS result_ls = ls.execute();
+
+	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+
+	m.unmarkAll<Node>(markFrontNodes);
+	m.freeMark<Node>(markFrontNodes);
+
+	LeastSquaresGradientComputation2D grad3D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	LeastSquaresGradientComputation2D::STATUS result = grad3D.execute();
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("LeastSquaresGradientComputation2D_3D_Test1_Result.vtk");
+
+	ASSERT_EQ(LeastSquaresGradientComputation2D::SUCCESS, result);
 }
