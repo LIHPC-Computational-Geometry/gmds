@@ -38,6 +38,7 @@ class LIB_GMDS_CLAIRE_API GradientComputation2D {
  private:
 	/*-------------------------------------------------------------------*/
 	/** @brief Retourne le vecteur orthogonal (rotation de pi/2 dans le sens trigo)
+	 * au vecteur v0v1
 	 */
 	math::Vector3d getNormalVector(TCellID n0_id, TCellID n1_id);
 	/*-------------------------------------------------------------------*/
