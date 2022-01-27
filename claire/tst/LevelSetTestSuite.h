@@ -351,8 +351,8 @@ TEST(LevelSetTestClass, LavelSetNaif_3D_Test1)
 	int markFrontNodes = m.newMark<gmds::Node>();
 	for(auto id:m.nodes()){
 		Node n = m.get<Node>(id);
-		double coord_x = n.X() ;
-		if ( abs(coord_x) <= pow(10,-6) ) {
+		double coord_y = n.Y() ;
+		if ( abs(coord_y) <= pow(10,-6) ) {
 			// For this test case, the front to advance is the boundary where x=0
 			m.mark<Node>(id,markFrontNodes);
 		}
@@ -368,7 +368,7 @@ TEST(LevelSetTestClass, LavelSetNaif_3D_Test1)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::R);
 	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("GradientComputation3D_Test1_Result.vtk");
+	vtkWriter.write("LevelSetNaif_3D_Test1_Result.vtk");
 
 	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
 }
