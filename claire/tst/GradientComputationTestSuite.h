@@ -570,7 +570,7 @@ TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2
 }
 
 
-TEST(LeastSquaresGradientComputationTestClass, GLeastSquaresGradientComputation_2D_Test3)
+TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2D_Test3)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
