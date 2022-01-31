@@ -684,4 +684,55 @@ TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test1)
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result);
 }
 
+TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test2)
+{
+	Mesh m(MeshModel(DIM3 | R | F | E | N |
+	                 R2N | F2N | E2N | R2F | F2R |
+	                 F2E | E2F | R2E | N2R | N2F | N2E));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/B0.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::R);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doctor(&m);
+	doctor.buildFacesAndR2F();
+	doctor.buildEdgesAndX2E();
+	doctor.updateUpwardConnectivity();
+
+	// Initialisation des marques sur les bords internes et externes pour noter quels fronts sont à avancer
+	int markFrontNodes = m.newMark<gmds::Node>();
+	for(auto id:m.nodes()){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		double coord_x = n.X() ;
+		double rayon;
+		rayon = sqrt( (pow(coord_x, 2) + pow(coord_y + 2.5, 2)) ) ;
+		if ( (rayon - 2.5) < pow(10,-3)) {
+			// For this test case, the front to advance is the boundary where x²+y²=2.5
+			m.mark<Node>(id,markFrontNodes);
+		}
+	}
+
+
+	LevelSetNaif ls(&m, markFrontNodes);
+	LevelSetNaif::STATUS result_ls = ls.execute();
+	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+
+	m.unmarkAll<Node>(markFrontNodes);
+	m.freeMark<Node>(markFrontNodes);
+
+	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	LeastSquaresGradientComputation::STATUS result = grad3D.execute();
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("LeastSquaresGradientComputation_3D_Test2_Result.vtk");
+
+	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result);
+}
+
 /*----------------------------------------------------------------------------*/
