@@ -10,10 +10,15 @@ set(GMDS_INC
 		inc/gmds/claire/Smooth2D.h
 		inc/gmds/claire/Grid_Smooth2D.h
         inc/gmds/claire/LevelSet.h
+		inc/gmds/claire/LevelSetNaif.h
 		inc/gmds/claire/DistanceMap.h
         inc/gmds/claire/LevelSetFromIntToOut.h
 		inc/gmds/claire/GradientComputation2D.h
 		inc/gmds/claire/GradientComputation3D.h
+		inc/gmds/claire/PointFollowingVectorField2D.h
+		inc/gmds/claire/PointFollowingVectorField3D.h
+		inc/gmds/claire/LeastSquaresGradientComputation.h
+		inc/gmds/claire/PointFollowingVectorFieldOnNodes.h
 		)
 set(GMDS_SRC
 		src/main.cpp
@@ -23,7 +28,13 @@ set(GMDS_SRC
 		src/DistanceMap.cpp
         src/LevelSetFromIntToOut.cpp
 		src/GradientComputation2D.cpp
-		src/GradientComputation3D.cpp inc/gmds/claire/LevelSetNaif.h src/LevelSetNaif.cpp inc/gmds/claire/PointFollowingVectorField2D.h src/PointFollowingVectorField2D.cpp inc/gmds/claire/PointFollowingVectorField3D.h src/PointFollowingVectorField3D.cpp inc/gmds/claire/LeastSquaresGradientComputation.h src/LeastSquaresGradientComputation.cpp)
+		src/GradientComputation3D.cpp
+		src/LevelSetNaif.cpp
+		src/PointFollowingVectorField2D.cpp
+		src/PointFollowingVectorField3D.cpp
+		src/LeastSquaresGradientComputation.cpp
+		src/PointFollowingVectorFieldOnNodes.cpp
+		)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
