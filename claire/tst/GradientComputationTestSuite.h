@@ -472,9 +472,6 @@ TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2
 	gmds::MeshDoctor doc(&m);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
-	doc.orient2DFaces();
-
-	math::Point P;
 
 	//Get the boundary node ids
 	BoundaryOperator2D bnd_op(&m);
@@ -733,6 +730,64 @@ TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test2)
 	vtkWriter.write("LeastSquaresGradientComputation_3D_Test2_Result.vtk");
 
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result);
+}
+
+TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test3)
+{
+	Mesh m(MeshModel(DIM3 | R | F | E | N |
+	                 R2N | F2N | E2N | R2F | F2R |
+	                 F2E | E2F | R2E | N2R | N2F | N2E));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/B0.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::R);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doctor(&m);
+	doctor.buildFacesAndR2F();
+	doctor.buildEdgesAndX2E();
+	doctor.updateUpwardConnectivity();
+
+	int markFrontNodesInt = m.newMark<gmds::Node>();
+	int markFrontNodesOut = m.newMark<gmds::Node>();
+
+	for(auto id:m.nodes()){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		double coord_x = n.X() ;
+		double rayon;
+		rayon = sqrt( (pow(coord_x, 2) + pow(coord_y + 2.5, 2)) ) ;
+		if ( (rayon - 2.5) < pow(10,-3)) {
+			// For this test case, the front to advance is the boundary where x²+y²=2.5
+			m.mark<Node>(id,markFrontNodesInt);
+		}
+		else if (coord_x == -5 || coord_x == 5 || coord_y == 2.5) {
+			m.mark<Node>(id,markFrontNodesOut);
+		}
+	}
+
+	std::cout << "Fin de l'initialisation des marques" << std::endl ;
+
+	LevelSetFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	LevelSetFromIntToOut::STATUS result_ls = lsCombined.execute();
+
+	m.unmarkAll<Node>(markFrontNodesInt);
+	m.freeMark<Node>(markFrontNodesInt);
+	m.unmarkAll<Node>(markFrontNodesOut);
+	m.freeMark<Node>(markFrontNodesOut);
+
+	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("distance_combined"));
+	LeastSquaresGradientComputation::STATUS result = grad3D.execute();
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("LeastSquaresGradientComputation_3D_Test3_Result.vtk");
+
+	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result);
+
 }
 
 /*----------------------------------------------------------------------------*/
