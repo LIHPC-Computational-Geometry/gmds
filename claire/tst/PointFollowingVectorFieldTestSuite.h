@@ -141,8 +141,8 @@ TEST(PointFollowingVectorField3DTestClass, PointFollowingVectorField3D_Test1)
 	ASSERT_EQ(GradientComputation3D::SUCCESS, result_grad);
 
 	// Placement du point P à la distance souhaitée suivant le champ de gradient
-	math::Point M(0.2, 0.2, 0.0);
-	double distance = 0.3;
+	math::Point M(0.1, 0.0, 0.3);
+	double distance = 0.8;
 	PointFollowingVectorField3D pfvf3D(&m, M, distance, m.getVariable<math::Vector3d ,GMDS_REGION>("gradient_3D"));
 	PointFollowingVectorField3D::STATUS result = pfvf3D.execute();
 

@@ -3,7 +3,7 @@ add_executable(GMDS_CLAIRE_TEST
         LevelSetTestSuite.h
         DistanceMapTestSuite.h
         GradientComputationTestSuite.h
-        PointFollowingVectorField2DTestSuite.h
+        PointFollowingVectorFieldTestSuite.h
         main_test.cpp ../inc/gmds/claire/LevelSetFromIntToOut.h)
 
 target_link_libraries(GMDS_CLAIRE_TEST PUBLIC

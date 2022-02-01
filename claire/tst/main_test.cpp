@@ -7,7 +7,7 @@
 #include "LevelSetTestSuite.h"
 #include "DistanceMapTestSuite.h"
 #include "GradientComputationTestSuite.h"
-#include "PointFollowingVectorField2DTestSuite.h"
+#include "PointFollowingVectorFieldTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
