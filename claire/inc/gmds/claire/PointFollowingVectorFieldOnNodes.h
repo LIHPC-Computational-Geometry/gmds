@@ -28,7 +28,7 @@ class LIB_GMDS_CLAIRE_API PointFollowingVectorFieldOnNodes
 	/** @brief Constructor.
          *  @param AMesh the mesh where we work on
 	 */
-	PointFollowingVectorFieldOnNodes(Mesh *AMesh, math::Point A_Pstart, double A_distance, Variable<math::Vector3d>* A_gradient);
+	PointFollowingVectorFieldOnNodes(Mesh *AMesh, math::Point A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -58,7 +58,9 @@ class LIB_GMDS_CLAIRE_API PointFollowingVectorFieldOnNodes
 	/** ending point */
 	math::Point m_Pend ;
 	/** the distance */
-	double m_distance ;
+	double m_d0 ;
+	/** carte des distances */
+	Variable<double> *m_distance;
 	/** the vector field to follow */
 	Variable<math::Vector3d>* m_gradient ;
 	/** liste des points intermédiaires */
