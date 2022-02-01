@@ -3,7 +3,7 @@
 //
 
 #include <gmds/claire/LevelSet.h>
-#include <gmds/claire/LevelSetFromIntToOut.h>
+#include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/GradientComputation2D.h>
 #include <gmds/claire/PointFollowingVectorField2D.h>
 #include <gmds/claire/PointFollowingVectorField3D.h>
@@ -234,7 +234,7 @@ TEST(PointFollowingVectorFieldOnNodesTestClass, PointFollowingVectorFieldOnNodes
 
 TEST(PointFollowingVectorFieldOnNodesTestClass, PointFollowingVectorFieldOnNodes_3D_Test1)
 {
-	// Cas test B0 (3D) avec Level Set calculé par la méthode LevelSetFromIntToOut
+	// Cas test B0 (3D) avec Level Set calculé par la méthode LevelSetCombined
 	// LS sont calculés, une de l'intérieur vers l'extérieur, une de l'extérieur
 	//vers l'intérieur puis elles sont combinées.
 
@@ -274,8 +274,8 @@ TEST(PointFollowingVectorFieldOnNodesTestClass, PointFollowingVectorFieldOnNodes
 
 	std::cout << "Fin de l'initialisation des marques" << std::endl ;
 
-	LevelSetFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
-	LevelSetFromIntToOut::STATUS result_ls = lsCombined.execute();
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	LevelSetCombined::STATUS result_ls = lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);
 	m.freeMark<Node>(markFrontNodesInt);

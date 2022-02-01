@@ -12,7 +12,7 @@ set(GMDS_INC
         inc/gmds/claire/LevelSet.h
 		inc/gmds/claire/LevelSetNaif.h
 		inc/gmds/claire/DistanceMap.h
-        inc/gmds/claire/LevelSetFromIntToOut.h
+        inc/gmds/claire/LevelSetCombined.h
 		inc/gmds/claire/GradientComputation2D.h
 		inc/gmds/claire/GradientComputation3D.h
 		inc/gmds/claire/PointFollowingVectorField2D.h
@@ -26,7 +26,7 @@ set(GMDS_SRC
         src/Grid_Smooth2D.cpp
         src/LevelSet.cpp
 		src/DistanceMap.cpp
-        src/LevelSetFromIntToOut.cpp
+        src/LevelSetCombined.cpp
 		src/GradientComputation2D.cpp
 		src/GradientComputation3D.cpp
 		src/LevelSetNaif.cpp

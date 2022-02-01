@@ -4,7 +4,7 @@
 
 #include <gmds/claire/LevelSet.h>
 #include <gmds/claire/LevelSetNaif.h>
-#include <gmds/claire/LevelSetFromIntToOut.h>
+#include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/GradientComputation2D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -426,10 +426,10 @@ TEST(LevelSetTestClass, LavelSetNaif_3D_Test1)
 
 
 /*----------------------------------------------------------------------------*/
-/*                  CAS TEST 2D CLASSE LevelSetFromIntToOut                   */
+/*                    CAS TEST 2D CLASSE LevelSetCombined                     */
 /*----------------------------------------------------------------------------*/
 
-TEST(LevelSetTestClass, LevelSetFromIntToOut_2D_Test1)
+TEST(LevelSetTestClass, LevelSetCombined_2D_Test1)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -466,8 +466,8 @@ TEST(LevelSetTestClass, LevelSetFromIntToOut_2D_Test1)
 		}
 	}
 
-	LevelSetFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
-	LevelSetFromIntToOut::STATUS result = lsCombined.execute();
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	LevelSetCombined::STATUS result = lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);
 	m.freeMark<Node>(markFrontNodesInt);
@@ -477,13 +477,13 @@ TEST(LevelSetTestClass, LevelSetFromIntToOut_2D_Test1)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSetFromIntToOut_2D_Test1_Result.vtk");
+	vtkWriter.write("LevelSetCombined_2D_Test1_Result.vtk");
 
-	ASSERT_EQ(LevelSetFromIntToOut::SUCCESS, result);
+	ASSERT_EQ(LevelSetCombined::SUCCESS, result);
 }
 
 
-TEST(LevelSetTestClass, LevelSetFromIntToOut_2D_Test2)
+TEST(LevelSetTestClass, LevelSetCombined_2D_Test2)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -525,8 +525,8 @@ TEST(LevelSetTestClass, LevelSetFromIntToOut_2D_Test2)
 		}
 	}
 
-	LevelSetFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
-	LevelSetFromIntToOut::STATUS result = lsCombined.execute();
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	LevelSetCombined::STATUS result = lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);
 	m.freeMark<Node>(markFrontNodesInt);
@@ -536,19 +536,19 @@ TEST(LevelSetTestClass, LevelSetFromIntToOut_2D_Test2)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSetFromIntToOut_2D_Test2_Result.vtk");
+	vtkWriter.write("LevelSetCombined_2D_Test2_Result.vtk");
 
-	ASSERT_EQ(LevelSetFromIntToOut::SUCCESS, result);
+	ASSERT_EQ(LevelSetCombined::SUCCESS, result);
 
 }
 
 
 
 /*----------------------------------------------------------------------------*/
-/*                  CAS TEST 3D CLASSE LevelSetFromIntToOut                   */
+/*                    CAS TEST 3D CLASSE LevelSetCombined                     */
 /*----------------------------------------------------------------------------*/
 
-TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_3D_Test1)
+TEST(LevelSet2DTestClass, LevelSetCombined_3D_Test1)
 {
 	Mesh m(MeshModel(DIM3 | R | F | E | N |
 	                 R2N | F2N | E2N | R2F | F2R |
@@ -586,7 +586,7 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_3D_Test1)
 
 	std::cout << "Fin de l'initialisation des marques" << std::endl ;
 
-	LevelSetFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
 	lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);
@@ -597,7 +597,7 @@ TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_3D_Test1)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::R);
 	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("LevelSet2DFromIntToOut_3D_Test1_Result.vtk");
+	vtkWriter.write("LevelSetCombined_3D_Test1_Result.vtk");
 
 	ASSERT_TRUE(true);
 
