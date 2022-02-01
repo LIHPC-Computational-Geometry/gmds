@@ -20,9 +20,11 @@
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
 
-/* CAS TEST 2D CLASSE LevelSet 2D */
+/*----------------------------------------------------------------------------*/
+/*                       CAS TEST 2D CLASSE LevelSet                          */
+/*----------------------------------------------------------------------------*/
 
-TEST(LevelSetTestClass, LevelSet_Test1)
+TEST(LevelSetTestClass, LevelSet_2D_Test1)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -64,13 +66,13 @@ TEST(LevelSetTestClass, LevelSet_Test1)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet_Test1_Result.vtk");
+	vtkWriter.write("LevelSet_2D_Test1_Result.vtk");
 
 	ASSERT_EQ(LevelSet::SUCCESS, result);
 }
 
 
-TEST(LevelSetTestClass, LevelSet_Test2)
+TEST(LevelSetTestClass, LevelSet_2D_Test2)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -115,13 +117,13 @@ TEST(LevelSetTestClass, LevelSet_Test2)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet_Test2_Result.vtk");
+	vtkWriter.write("LevelSet_2D_Test2_Result.vtk");
 
 	ASSERT_EQ(LevelSet::SUCCESS, result);
 }
 
 
-TEST(LevelSetTestClass, LevelSet_Test3)
+TEST(LevelSetTestClass, LevelSet_2D_Test3)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -169,13 +171,13 @@ TEST(LevelSetTestClass, LevelSet_Test3)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet_Test3_Result.vtk");
+	vtkWriter.write("LevelSet_2D_Test3_Result.vtk");
 
 	ASSERT_EQ(LevelSet::SUCCESS, result);
 }
 
 
-TEST(LevelSetTestClass, LevelSet_Test4)
+TEST(LevelSetTestClass, LevelSet_2D_Test4)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -222,13 +224,13 @@ TEST(LevelSetTestClass, LevelSet_Test4)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet_Test4_Result.vtk");
+	vtkWriter.write("LevelSet_2D_Test4_Result.vtk");
 
 	ASSERT_EQ(LevelSet::SUCCESS, result);
 }
 
 
-TEST(LevelSetTestClass, LevelSet_Test5)
+TEST(LevelSetTestClass, LevelSet_2D_Test5)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -271,15 +273,61 @@ TEST(LevelSetTestClass, LevelSet_Test5)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet_Test5_Result.vtk");
+	vtkWriter.write("LevelSet_2D_Test5_Result.vtk");
 
 	ASSERT_EQ(LevelSet::SUCCESS, result);
 }
 
 
-/* CAS TEST CLASSE LevelSetNaif */
+/*----------------------------------------------------------------------------*/
+/*                       CAS TEST 3D CLASSE LevelSet                          */
+/*----------------------------------------------------------------------------*/
 
-TEST(LevelSetTestClass, LevelSetNaif_Test1)
+TEST(LevelSet2DTestClass, LevelSet_3D_Test1)
+{
+	Mesh m(MeshModel(DIM3 | R | F | E | N |
+	                 R2N | F2N | E2N | R2F | F2R |
+	                 F2E | E2F | R2E | N2R | N2F | N2E));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/B0.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::R);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doctor(&m);
+	doctor.buildFacesAndR2F();
+	doctor.buildEdgesAndX2E();
+	doctor.updateUpwardConnectivity();
+
+	int markFrontNodes = m.newMark<gmds::Node>();
+
+	// Test avec une source ponctuelle
+	m.mark<Node>(10,markFrontNodes);
+
+	LevelSet ls(&m, markFrontNodes);
+	ls.execute();
+
+	m.unmarkAll<Node>(markFrontNodes);
+	m.freeMark<Node>(markFrontNodes);
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("LevelSet_3D_Test1_Result.vtk");
+
+	ASSERT_TRUE(true);
+
+}
+
+
+
+/*----------------------------------------------------------------------------*/
+/*                     CAS TEST 2D CLASSE LevelSetNaif                        */
+/*----------------------------------------------------------------------------*/
+
+TEST(LevelSetTestClass, LevelSetNaif_2D_Test1)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -321,13 +369,15 @@ TEST(LevelSetTestClass, LevelSetNaif_Test1)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSetNaif_Test1_Result.vtk");
+	vtkWriter.write("LevelSetNaif_2D_Test1_Result.vtk");
 
 	ASSERT_EQ(LevelSetNaif::SUCCESS, result);
 }
 
 
-/* CAS TEST 3D CLASSE LevelSetNaif */
+/*----------------------------------------------------------------------------*/
+/*                     CAS TEST 3D CLASSE LevelSetNaif                        */
+/*----------------------------------------------------------------------------*/
 
 TEST(LevelSetTestClass, LavelSetNaif_3D_Test1)
 {
@@ -375,11 +425,11 @@ TEST(LevelSetTestClass, LavelSetNaif_3D_Test1)
 
 
 
+/*----------------------------------------------------------------------------*/
+/*                  CAS TEST 2D CLASSE LevelSetFromIntToOut                   */
+/*----------------------------------------------------------------------------*/
 
-
-/* CAS TEST CLASSE LevelSetFromIntToOut */
-
-TEST(LevelSetTestClass, LevelSetFromIntToOut_Test1)
+TEST(LevelSetTestClass, LevelSetFromIntToOut_2D_Test1)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -427,13 +477,13 @@ TEST(LevelSetTestClass, LevelSetFromIntToOut_Test1)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSetFromIntToOut_Test1_Result.vtk");
+	vtkWriter.write("LevelSetFromIntToOut_2D_Test1_Result.vtk");
 
 	ASSERT_EQ(LevelSetFromIntToOut::SUCCESS, result);
 }
 
 
-TEST(LevelSetTestClass, LevelSetFromIntToOut_Test2)
+TEST(LevelSetTestClass, LevelSetFromIntToOut_2D_Test2)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -486,7 +536,7 @@ TEST(LevelSetTestClass, LevelSetFromIntToOut_Test2)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSetFromIntToOut_Test2_Result.vtk");
+	vtkWriter.write("LevelSetFromIntToOut_2D_Test2_Result.vtk");
 
 	ASSERT_EQ(LevelSetFromIntToOut::SUCCESS, result);
 
@@ -494,68 +544,9 @@ TEST(LevelSetTestClass, LevelSetFromIntToOut_Test2)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-TEST(LevelSet2DTestClass, LevelSet2D_3D_Test1)
-{
-	Mesh m(MeshModel(DIM3 | R | F | E | N |
-	                 R2N | F2N | E2N | R2F | F2R |
-	                 F2E | E2F | R2E | N2R | N2F | N2E));
-	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/B0.vtk";
-
-	gmds::IGMeshIOService ioService(&m);
-	gmds::VTKReader vtkReader(&ioService);
-	vtkReader.setCellOptions(gmds::N|gmds::R);
-	vtkReader.read(vtk_file);
-
-	gmds::MeshDoctor doctor(&m);
-	doctor.buildFacesAndR2F();
-	doctor.buildEdgesAndX2E();
-	doctor.updateUpwardConnectivity();
-
-	int markFrontNodes = m.newMark<gmds::Node>();
-
-	// Test avec une source ponctuelle
-	m.mark<Node>(10,markFrontNodes);
-
-	LevelSet ls(&m, markFrontNodes);
-	ls.execute();
-
-	m.unmarkAll<Node>(markFrontNodes);
-	m.freeMark<Node>(markFrontNodes);
-
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::F);
-	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet2D_3D_Test1_Result.vtk");
-
-	ASSERT_TRUE(true);
-
-}
-
-
-
+/*----------------------------------------------------------------------------*/
+/*                  CAS TEST 3D CLASSE LevelSetFromIntToOut                   */
+/*----------------------------------------------------------------------------*/
 
 TEST(LevelSet2DTestClass, LevelSet2DFromIntToOut_3D_Test1)
 {
