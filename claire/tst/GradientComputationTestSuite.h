@@ -3,7 +3,7 @@
 //
 
 #include <gmds/claire/LevelSet.h>
-#include <gmds/claire/LevelSetFromIntToOut.h>
+#include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/GradientComputation2D.h>
 #include <gmds/claire/GradientComputation3D.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
@@ -187,10 +187,10 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test3)
 		}
 	}
 
-	LevelSetFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
-	LevelSetFromIntToOut::STATUS result_ls = lsCombined.execute();
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	LevelSetCombined::STATUS result_ls = lsCombined.execute();
 
-	ASSERT_EQ(LevelSetFromIntToOut::SUCCESS, result_ls);
+	ASSERT_EQ(LevelSetCombined::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodesInt);
 	m.freeMark<Node>(markFrontNodesInt);
@@ -423,15 +423,15 @@ TEST(GradientComputation3DTestClass, GradientComputation3D_Test3)
 		}
 	}
 
-	LevelSetFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
-	LevelSetFromIntToOut::STATUS result_lscombined = lsCombined.execute();
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	LevelSetCombined::STATUS result_lscombined = lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);
 	m.freeMark<Node>(markFrontNodesInt);
 	m.unmarkAll<Node>(markFrontNodesOut);
 	m.freeMark<Node>(markFrontNodesOut);
 
-	ASSERT_EQ(LevelSetFromIntToOut::SUCCESS, result_lscombined);
+	ASSERT_EQ(LevelSetCombined::SUCCESS, result_lscombined);
 
 	GradientComputation3D grad3D(&m, m.getVariable<double,GMDS_NODE>("distance_combined"));
 	GradientComputation3D::STATUS result = grad3D.execute();
@@ -732,7 +732,7 @@ TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test2)
 
 TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test3)
 {
-	/* Cas test B0 (3D) avec Level Set calculé par la méthode LevelSetFromIntToOut
+	/* Cas test B0 (3D) avec Level Set calculé par la méthode LevelSetCombined
 	 * 2 LS sont calculés, une de l'intérieur vers l'extérieur, une de l'extérieur
 	 * vers l'intérieur puis elles sont combinées.
 	 */
@@ -772,8 +772,8 @@ TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test3)
 
 	std::cout << "Fin de l'initialisation des marques" << std::endl ;
 
-	LevelSetFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
-	LevelSetFromIntToOut::STATUS result_ls = lsCombined.execute();
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	LevelSetCombined::STATUS result_ls = lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);
 	m.freeMark<Node>(markFrontNodesInt);

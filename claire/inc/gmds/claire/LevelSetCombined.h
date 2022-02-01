@@ -2,8 +2,8 @@
 // Created by rochec on 19/01/2022.
 //
 
-#ifndef GMDS_LEVELSETFROMINTTOOUT_H
-#define GMDS_LEVELSETFROMINTTOOUT_H
+#ifndef GMDS_LEVELSETCOMBINED_H
+#define GMDS_LEVELSETCOMBINED_H
 
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
@@ -17,7 +17,7 @@
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_CLAIRE_API LevelSetFromIntToOut
+class LIB_GMDS_CLAIRE_API LevelSetCombined
 {
  public:
 	/*--------------------------------------------------------------------*/
@@ -34,7 +34,7 @@ class LIB_GMDS_CLAIRE_API LevelSetFromIntToOut
          *  @param AmarkFrontNodesInt the nodes on the interior front to advance
          *  @param AmarkFrontNodesOut the nodes on the exterior front to advance
 	 */
-	LevelSetFromIntToOut(Mesh *AMesh, int AmarkFrontNodesInt, int AmarkFrontNodesOut);
+	LevelSetCombined(Mesh *AMesh, int AmarkFrontNodesInt, int AmarkFrontNodesOut);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -86,4 +86,4 @@ class LIB_GMDS_CLAIRE_API LevelSetFromIntToOut
 /*----------------------------------------------------------------------------*/
 }     // namespace gmds
 
-#endif     // GMDS_LEVELSETFROMINTTOOUT_H
+#endif     // GMDS_LEVELSETCOMBINED_H
