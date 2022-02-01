@@ -9,9 +9,12 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-PointFollowingVectorFieldOnNodes::PointFollowingVectorFieldOnNodes(Mesh *AMesh, math::Point A_Pstart, double A_distance, Variable<math::Vector3d>* A_gradient) {
+PointFollowingVectorFieldOnNodes::PointFollowingVectorFieldOnNodes(Mesh *AMesh, math::Point A_Pstart, double A_d0,
+                                                                   Variable<double> *A_distance,
+                                                                   Variable<math::Vector3d>* A_gradient) {
 	m_mesh = AMesh;
 	m_Pstart = A_Pstart;
+	m_d0 = A_d0;
 	m_distance = A_distance;
 	m_gradient = A_gradient;
 	m_discrete_path.push_back(m_Pstart);
@@ -25,20 +28,16 @@ PointFollowingVectorFieldOnNodes::STATUS PointFollowingVectorFieldOnNodes::execu
 	double minLenght = minEdgeLenght();
 	std::cout << "min : " << minLenght << std::endl;
 
-	while (m_distance != 0){
-		//TCellID pointFace_id = inWhichTriangle(m_Pend) ;
-		TCellID closest_node_id = closestNode(m_Pend);
+	TCellID closest_node_id = closestNode(m_Pend);
+	double d_closest_node = m_distance->value(closest_node_id);
+
+	while (d_closest_node < m_d0){
 		math::Vector3d Grad_local = m_gradient->value(closest_node_id) ;
-		if (m_distance >= minLenght){
-			m_Pend = m_Pend + minLenght*Grad_local;
-			//m_distance = m_distance - Grad_local.norm();
-			m_distance = m_distance - minLenght;
-		}
-		else{
-			m_Pend = m_Pend + m_distance*Grad_local;
-			m_distance = 0;
-		}
-		//std::cout << "Point intermédiaire : " << m_Pend << std::endl;
+		m_Pend = m_Pend + minLenght*Grad_local.normalize();
+		closest_node_id = closestNode(m_Pend);
+		d_closest_node = m_distance->value(closest_node_id);
+
+		std::cout << "Point intermédiaire : " << m_Pend << std::endl;
 		m_discrete_path.push_back(m_Pend);
 	}
 

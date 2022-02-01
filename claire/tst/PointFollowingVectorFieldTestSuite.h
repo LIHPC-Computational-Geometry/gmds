@@ -210,9 +210,10 @@ TEST(PointFollowingVectorFieldOnNodesTestClass, PointFollowingVectorFieldOnNodes
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad2D);
 
 	// Placement du point P à la distance souhaitée suivant le champ de gradient
-	math::Point M(0.5, 0.5, 0.0);
-	double distance = 0.3;
-	PointFollowingVectorFieldOnNodes pfvf2D(&m, M, distance, m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
+	math::Point M(0.5, 0.0, 0.0);
+	double distance = 0.8;
+	PointFollowingVectorFieldOnNodes pfvf2D(&m, M, distance, m.getVariable<double,GMDS_NODE>("distance"),
+	   m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
 	PointFollowingVectorFieldOnNodes::STATUS result = pfvf2D.execute();
 
 	IGMeshIOService ioService_geom(&m);
@@ -220,6 +221,82 @@ TEST(PointFollowingVectorFieldOnNodesTestClass, PointFollowingVectorFieldOnNodes
 	writer_geom.setCellOptions(N|F);
 	writer_geom.setDataOptions(N|F);
 	writer_geom.write("PointFollowingVectorFieldOnNodes_2D_Test1_Result.vtk");
+
+	ASSERT_EQ(PointFollowingVectorFieldOnNodes::SUCCESS, result);
+}
+
+
+
+/*----------------------------------------------------------------------------*/
+/*             CAS TEST 3D CLASSE PointFollowingVectorFieldOnNodes            */
+/*----------------------------------------------------------------------------*/
+
+
+TEST(PointFollowingVectorFieldOnNodesTestClass, PointFollowingVectorFieldOnNodes_3D_Test1)
+{
+	// Cas test B0 (3D) avec Level Set calculé par la méthode LevelSetFromIntToOut
+	// LS sont calculés, une de l'intérieur vers l'extérieur, une de l'extérieur
+	//vers l'intérieur puis elles sont combinées.
+
+	Mesh m(MeshModel(DIM3 | R | F | E | N |
+	                 R2N | F2N | E2N | R2F | F2R |
+	                 F2E | E2F | R2E | N2R | N2F | N2E));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/B0.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::R);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doctor(&m);
+	doctor.buildFacesAndR2F();
+	doctor.buildEdgesAndX2E();
+	doctor.updateUpwardConnectivity();
+
+	int markFrontNodesInt = m.newMark<gmds::Node>();
+	int markFrontNodesOut = m.newMark<gmds::Node>();
+
+	for(auto id:m.nodes()){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		double coord_x = n.X() ;
+		double rayon;
+		rayon = sqrt( (pow(coord_x, 2) + pow(coord_y + 2.5, 2)) ) ;
+		if ( (rayon - 2.5) < pow(10,-3)) {
+			// For this test case, the front to advance is the boundary where x²+y²=2.5
+			m.mark<Node>(id,markFrontNodesInt);
+		}
+		else if (coord_x == -5 || coord_x == 5 || coord_y == 2.5) {
+			m.mark<Node>(id,markFrontNodesOut);
+		}
+	}
+
+	std::cout << "Fin de l'initialisation des marques" << std::endl ;
+
+	LevelSetFromIntToOut lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	LevelSetFromIntToOut::STATUS result_ls = lsCombined.execute();
+
+	m.unmarkAll<Node>(markFrontNodesInt);
+	m.freeMark<Node>(markFrontNodesInt);
+	m.unmarkAll<Node>(markFrontNodesOut);
+	m.freeMark<Node>(markFrontNodesOut);
+
+	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("distance_combined"));
+	LeastSquaresGradientComputation::STATUS result_grad = grad3D.execute();
+	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
+
+	// Placement du point P à la distance souhaitée suivant le champ de gradient
+	math::Point M(2.5*cos(M_PI/4), -2.5 + 2.5*sin(M_PI/4), 0.0);
+	double distance = 1.0;
+	PointFollowingVectorFieldOnNodes pfvf2D(&m, M, distance, m.getVariable<double,GMDS_NODE>("distance_combined"),
+	   m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
+	PointFollowingVectorFieldOnNodes::STATUS result = pfvf2D.execute();
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("PointFollowingVectorFieldOnNodes_3D_Test1_Result.vtk");
 
 	ASSERT_EQ(PointFollowingVectorFieldOnNodes::SUCCESS, result);
 }
