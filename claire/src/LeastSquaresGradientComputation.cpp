@@ -11,7 +11,7 @@ using namespace gmds;
 LeastSquaresGradientComputation::LeastSquaresGradientComputation(Mesh *AMesh, Variable<double>* Adistance) {
 	m_mesh = AMesh;
 	m_distance = Adistance;
-	m_gradient2D = m_mesh->newVariable<math::Vector3d, GMDS_NODE>("gradient_2D");
+	m_gradient2D = m_mesh->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
 }
 
 

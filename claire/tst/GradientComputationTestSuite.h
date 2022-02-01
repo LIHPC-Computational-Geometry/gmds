@@ -506,7 +506,6 @@ TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2
 	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
 }
 
-
 TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2D_Test2)
 {
 	// WE READ
@@ -565,7 +564,6 @@ TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2
 
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result);
 }
-
 
 TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2D_Test3)
 {
@@ -734,6 +732,10 @@ TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test2)
 
 TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test3)
 {
+	/* Cas test B0 (3D) avec Level Set calculé par la méthode LevelSetFromIntToOut
+	 * 2 LS sont calculés, une de l'intérieur vers l'extérieur, une de l'extérieur
+	 * vers l'intérieur puis elles sont combinées.
+	 */
 	Mesh m(MeshModel(DIM3 | R | F | E | N |
 	                 R2N | F2N | E2N | R2F | F2R |
 	                 F2E | E2F | R2E | N2R | N2F | N2E));
