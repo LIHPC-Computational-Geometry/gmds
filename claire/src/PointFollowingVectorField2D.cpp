@@ -13,6 +13,7 @@ PointFollowingVectorField2D::PointFollowingVectorField2D(Mesh *AMesh, math::Poin
 	m_Pstart = A_Pstart;
 	m_distance = A_distance;
 	m_gradient2D = A_gradient2D;
+	m_discrete_path.push_back(m_Pstart);
 }
 
 
@@ -46,9 +47,12 @@ PointFollowingVectorField2D::STATUS PointFollowingVectorField2D::execute()
 			m_distance = 0;
 		}
 		//std::cout << "Point intermédiaire : " << m_Pend << std::endl;
+		m_discrete_path.push_back(m_Pend);
 	}
 
 	std::cout << "Point final : " << m_Pend << std::endl;
+
+	writeDiscretePathInVTK();
 
 	return PointFollowingVectorField2D::SUCCESS;
 }
@@ -129,5 +133,45 @@ double PointFollowingVectorField2D::minEdgeLenght(){
 		}
 	}
 	return minLenght;
+}
+/*------------------------------------------------------------------------*/
+
+
+
+
+
+/*------------------------------------------------------------------------*/
+void PointFollowingVectorField2D::writeDiscretePathInVTK(){
+
+	// First, we create the file where we are going to store the info
+	std::ofstream stream= std::ofstream("GMDS_discrete_path.vtk", std::ios::out);
+	//set the numerical precision (number of digits)
+	stream.precision(15);
+	//Header indicating which type of file it is
+	//stream << "# Claire PHD Debug Version 1.0\n\n";
+
+	stream << "# vtk DataFile Version 2.0\n";
+	stream << "Test moche écriture VTK\n";
+	stream << "ASCII\n\n";
+
+	stream << "DATASET UNSTRUCTURED_GRID\n\n";
+
+	stream << "POINTS ";
+	stream << m_discrete_path.size() ;
+	stream << " float\n";
+	for (int i=0; i< m_discrete_path.size(); i++){
+		stream << m_discrete_path[i].X() << " " << m_discrete_path[i].Y() << " " << m_discrete_path[i].Z() << "\n";
+	}
+
+	stream << "\n";
+
+	stream << "POINT_DATA " << m_discrete_path.size() << "\n" ;
+	stream << "SCALARS GMDS_discrete_path float 1\n";
+	stream << "LOOKUP_TABLE default\n";
+	for (int i=0; i< m_discrete_path.size(); i++){
+		stream << 1.0 << "\n";
+	}
+
+	stream.close();
 }
 /*------------------------------------------------------------------------*/
