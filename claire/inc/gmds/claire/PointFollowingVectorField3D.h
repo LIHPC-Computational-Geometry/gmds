@@ -53,6 +53,10 @@ class LIB_GMDS_CLAIRE_API PointFollowingVectorField3D
 	 */
 	double minEdgeLenght();
 	/*-------------------------------------------------------------------*/
+	/** @brief Write the discrete path in a vtk field
+	 */
+	void writeDiscretePathInVTK();
+	/*-------------------------------------------------------------------*/
 
  private:
 	/** mesh we work on */
@@ -65,6 +69,8 @@ class LIB_GMDS_CLAIRE_API PointFollowingVectorField3D
 	double m_distance ;
 	/** the vector field to follow */
 	Variable<math::Vector3d>* m_gradient3D ;
+	/** liste des points intermédiaires */
+	std::vector<math::Vector3d> m_discrete_path;
 
 };
 /*----------------------------------------------------------------------------*/
