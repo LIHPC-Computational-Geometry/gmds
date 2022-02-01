@@ -12,7 +12,7 @@ using namespace gmds;
 GradientComputation3D::GradientComputation3D(Mesh *AMesh, Variable<double>* Adistance) {
 	m_mesh = AMesh;
 	m_distance = Adistance;
-	m_gradient3D = m_mesh->newVariable<math::Vector3d,GMDS_REGION>("gradient_3D");
+	m_gradient3D = m_mesh->newVariable<math::Vector3d,GMDS_REGION>("GMDS_Gradient_3D");
 }
 
 

@@ -71,7 +71,6 @@ TEST(LevelSetTestClass, LevelSet_2D_Test1)
 	ASSERT_EQ(LevelSet::SUCCESS, result);
 }
 
-
 TEST(LevelSetTestClass, LevelSet_2D_Test2)
 {
 	// WE READ
@@ -121,7 +120,6 @@ TEST(LevelSetTestClass, LevelSet_2D_Test2)
 
 	ASSERT_EQ(LevelSet::SUCCESS, result);
 }
-
 
 TEST(LevelSetTestClass, LevelSet_2D_Test3)
 {
@@ -176,7 +174,6 @@ TEST(LevelSetTestClass, LevelSet_2D_Test3)
 	ASSERT_EQ(LevelSet::SUCCESS, result);
 }
 
-
 TEST(LevelSetTestClass, LevelSet_2D_Test4)
 {
 	// WE READ
@@ -229,7 +226,6 @@ TEST(LevelSetTestClass, LevelSet_2D_Test4)
 	ASSERT_EQ(LevelSet::SUCCESS, result);
 }
 
-
 TEST(LevelSetTestClass, LevelSet_2D_Test5)
 {
 	// WE READ
@@ -278,12 +274,16 @@ TEST(LevelSetTestClass, LevelSet_2D_Test5)
 	ASSERT_EQ(LevelSet::SUCCESS, result);
 }
 
+/*----------------------------------------------------------------------------*/
+
+
+
 
 /*----------------------------------------------------------------------------*/
 /*                       CAS TEST 3D CLASSE LevelSet                          */
 /*----------------------------------------------------------------------------*/
 
-TEST(LevelSet2DTestClass, LevelSet_3D_Test1)
+TEST(LevelSetTestClass, LevelSet_3D_Test1)
 {
 	Mesh m(MeshModel(DIM3 | R | F | E | N |
 	                 R2N | F2N | E2N | R2F | F2R |
@@ -320,6 +320,9 @@ TEST(LevelSet2DTestClass, LevelSet_3D_Test1)
 	ASSERT_TRUE(true);
 
 }
+
+/*----------------------------------------------------------------------------*/
+
 
 
 
@@ -374,6 +377,10 @@ TEST(LevelSetTestClass, LevelSetNaif_2D_Test1)
 	ASSERT_EQ(LevelSetNaif::SUCCESS, result);
 }
 
+/*----------------------------------------------------------------------------*/
+
+
+
 
 /*----------------------------------------------------------------------------*/
 /*                     CAS TEST 3D CLASSE LevelSetNaif                        */
@@ -422,6 +429,9 @@ TEST(LevelSetTestClass, LavelSetNaif_3D_Test1)
 
 	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
 }
+
+/*----------------------------------------------------------------------------*/
+
 
 
 
@@ -482,7 +492,6 @@ TEST(LevelSetTestClass, LevelSetCombined_2D_Test1)
 	ASSERT_EQ(LevelSetCombined::SUCCESS, result);
 }
 
-
 TEST(LevelSetTestClass, LevelSetCombined_2D_Test2)
 {
 	// WE READ
@@ -542,13 +551,16 @@ TEST(LevelSetTestClass, LevelSetCombined_2D_Test2)
 
 }
 
+/*----------------------------------------------------------------------------*/
+
+
 
 
 /*----------------------------------------------------------------------------*/
 /*                    CAS TEST 3D CLASSE LevelSetCombined                     */
 /*----------------------------------------------------------------------------*/
 
-TEST(LevelSet2DTestClass, LevelSetCombined_3D_Test1)
+TEST(LevelSetTestClass, LevelSetCombined_3D_Test1)
 {
 	Mesh m(MeshModel(DIM3 | R | F | E | N |
 	                 R2N | F2N | E2N | R2F | F2R |
@@ -602,5 +614,7 @@ TEST(LevelSet2DTestClass, LevelSetCombined_3D_Test1)
 	ASSERT_TRUE(true);
 
 }
+
+/*----------------------------------------------------------------------------*/
 
 

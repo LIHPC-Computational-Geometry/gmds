@@ -26,7 +26,7 @@ using namespace gmds;
 /*                  CAS TEST CLASSE GradientComputation2D                     */
 /*----------------------------------------------------------------------------*/
 
-TEST(GradientComputation2DTestClass, GradientComputation2D_Test1)
+TEST(GradientComputationTestClass, GradientComputation2D_Test1)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -70,7 +70,7 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test1)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	GradientComputation2D::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -81,8 +81,7 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test1)
 	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
 }
 
-
-TEST(GradientComputation2DTestClass, GradientComputation2D_Test2)
+TEST(GradientComputationTestClass, GradientComputation2D_Test2)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -131,7 +130,7 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test2)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	GradientComputation2D::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -142,8 +141,7 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test2)
 	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
 }
 
-
-TEST(GradientComputation2DTestClass, GradientComputation2D_Test3)
+TEST(GradientComputationTestClass, GradientComputation2D_Test3)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -197,7 +195,7 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test3)
 	m.unmarkAll<Node>(markFrontNodesOut);
 	m.freeMark<Node>(markFrontNodesOut);
 
-	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("distance_combined"));
+	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
 	GradientComputation2D::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -208,8 +206,7 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test3)
 	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
 }
 
-
-TEST(GradientComputation2DTestClass, GradientComputation2D_Test4)
+TEST(GradientComputationTestClass, GradientComputation2D_Test4)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -252,7 +249,7 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test4)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	GradientComputation2D::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -263,9 +260,7 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test4)
 	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
 }
 
-
 /*----------------------------------------------------------------------------*/
-
 
 
 
@@ -274,7 +269,7 @@ TEST(GradientComputation2DTestClass, GradientComputation2D_Test4)
 /*                  CAS TEST CLASSE GradientComputation3D                     */
 /*----------------------------------------------------------------------------*/
 
-TEST(GradientComputation3DTestClass, GradientComputation3D_Test1)
+TEST(GradientComputationTestClass, GradientComputation3D_Test1)
 {
 	Mesh m(MeshModel(DIM3 | R | F | E | N |
 	                 R2N | F2N | E2N | R2F | F2R |
@@ -314,7 +309,7 @@ TEST(GradientComputation3DTestClass, GradientComputation3D_Test1)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	GradientComputation3D grad3D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	GradientComputation3D grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	GradientComputation3D::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -325,8 +320,7 @@ TEST(GradientComputation3DTestClass, GradientComputation3D_Test1)
 	ASSERT_EQ(GradientComputation3D::SUCCESS, result);
 }
 
-
-TEST(GradientComputation3DTestClass, GradientComputation3D_Test2)
+TEST(GradientComputationTestClass, GradientComputation3D_Test2)
 {
 	Mesh m(MeshModel(DIM3 | R | F | E | N |
 	                 R2N | F2N | E2N | R2F | F2R |
@@ -366,7 +360,7 @@ TEST(GradientComputation3DTestClass, GradientComputation3D_Test2)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	GradientComputation3D grad3D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	GradientComputation3D grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	GradientComputation3D::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -377,8 +371,7 @@ TEST(GradientComputation3DTestClass, GradientComputation3D_Test2)
 	ASSERT_EQ(GradientComputation3D::SUCCESS, result);
 }
 
-
-TEST(GradientComputation3DTestClass, GradientComputation3D_Test3)
+TEST(GradientComputationTestClass, GradientComputation3D_Test3)
 {
 	/*-----------------------------------------------------------*/
 	// Cas test sur la géométrie B0. Les Level Sets sont calculés
@@ -413,13 +406,6 @@ TEST(GradientComputation3DTestClass, GradientComputation3D_Test3)
 		}
 		else if ( abs(coord_x+5) < pow(10,-6) || abs(coord_x-5) < pow(10,-6) || abs(coord_y-2.5) < pow(10,-6) ) {
 			m.mark<Node>(id,markFrontNodesOut);
-			/*
-			std::cout << "--------------------------------" << std::endl;
-			std::cout << "Point out marqué : " << n.point() << std::endl ;
-			std::cout << "Test 1 : " << (coord_x+5) << std::endl ;
-			std::cout << "Test 2 : " << (coord_x-5) << std::endl ;
-			std::cout << "Test 3 : " << (coord_y-2.5) << std::endl ;
-			 */
 		}
 	}
 
@@ -433,7 +419,7 @@ TEST(GradientComputation3DTestClass, GradientComputation3D_Test3)
 
 	ASSERT_EQ(LevelSetCombined::SUCCESS, result_lscombined);
 
-	GradientComputation3D grad3D(&m, m.getVariable<double,GMDS_NODE>("distance_combined"));
+	GradientComputation3D grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
 	GradientComputation3D::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -449,13 +435,11 @@ TEST(GradientComputation3DTestClass, GradientComputation3D_Test3)
 
 
 
-
-
 /*----------------------------------------------------------------------------*/
 /*             CAS TEST 2D CLASSE LeastSquaresGradientComputation             */
 /*----------------------------------------------------------------------------*/
 
-TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2D_Test1)
+TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test1)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -495,7 +479,7 @@ TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	LeastSquaresGradientComputation::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -506,7 +490,7 @@ TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2
 	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
 }
 
-TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2D_Test2)
+TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test2)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -554,7 +538,7 @@ TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	LeastSquaresGradientComputation::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -565,7 +549,7 @@ TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result);
 }
 
-TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2D_Test3)
+TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test3)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -608,7 +592,7 @@ TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	LeastSquaresGradientComputation::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -628,7 +612,7 @@ TEST(LeastSquaresGradientComputationTestClass, LeastSquaresGradientComputation_2
 /*             CAS TEST 3D CLASSE LeastSquaresGradientComputation             */
 /*----------------------------------------------------------------------------*/
 
-TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test1)
+TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test1)
 {
 	Mesh m(MeshModel(DIM3 | R | F | E | N |
 	                 R2N | F2N | E2N | R2F | F2R |
@@ -668,7 +652,7 @@ TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test1)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	LeastSquaresGradientComputation::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -679,7 +663,7 @@ TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test1)
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result);
 }
 
-TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test2)
+TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test2)
 {
 	Mesh m(MeshModel(DIM3 | R | F | E | N |
 	                 R2N | F2N | E2N | R2F | F2R |
@@ -719,7 +703,7 @@ TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test2)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	LeastSquaresGradientComputation::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -730,7 +714,7 @@ TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test2)
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result);
 }
 
-TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test3)
+TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test3)
 {
 	/* Cas test B0 (3D) avec Level Set calculé par la méthode LevelSetCombined
 	 * 2 LS sont calculés, une de l'intérieur vers l'extérieur, une de l'extérieur
@@ -780,7 +764,7 @@ TEST(LeastSquaresGradientComputation, LeastSquaresGradientComputation_3D_Test3)
 	m.unmarkAll<Node>(markFrontNodesOut);
 	m.freeMark<Node>(markFrontNodesOut);
 
-	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("distance_combined"));
+	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
 	LeastSquaresGradientComputation::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
