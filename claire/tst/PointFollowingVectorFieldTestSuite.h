@@ -22,9 +22,11 @@
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
 
-/* CAS TEST CLASSE PointFollowingVectorField2D */
+/*----------------------------------------------------------------------------*/
+/*             CAS TEST 2D CLASSE PointFollowingVectorField2D                 */
+/*----------------------------------------------------------------------------*/
 
-TEST(PointFollowingVectorField2DTestClass, PointFollowingVectorField2D_Test1)
+TEST(PointFollowingVectorFieldTestClass, PointFollowingVectorField2D_Test1)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -69,20 +71,20 @@ TEST(PointFollowingVectorField2DTestClass, PointFollowingVectorField2D_Test1)
 	m.freeMark<Node>(markFrontNodes);
 
 	// Calcul du gradient du champ de Level Set
-	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	GradientComputation2D::STATUS result_grad = grad2D.execute();
 	ASSERT_EQ(GradientComputation2D::SUCCESS, result_grad);
 
 	// Placement du point P à la distance souhaitée suivant le champ de gradient
 	math::Point M(0.5, 0.5, 0.0);
 	double distance = 0.3;
-	PointFollowingVectorField2D pfvf2D(&m, M, distance, m.getVariable<math::Vector3d ,GMDS_FACE>("gradient_2D"));
+	PointFollowingVectorField2D pfvf2D(&m, M, distance, m.getVariable<math::Vector3d ,GMDS_FACE>("GMDS_Gradient_2D"));
 	PointFollowingVectorField2D::STATUS result = pfvf2D.execute();
 
 	// Placement du point P à la distance souhaitée suivant le champ de gradient
 	M.setXYZ(0.3, 0.3, 0.0);
 	distance = 0.5;
-	pfvf2D = PointFollowingVectorField2D(&m, M, distance, m.getVariable<math::Vector3d ,GMDS_FACE>("gradient_2D"));
+	pfvf2D = PointFollowingVectorField2D(&m, M, distance, m.getVariable<math::Vector3d ,GMDS_FACE>("GMDS_Gradient_2D"));
 	result = pfvf2D.execute();
 
 	IGMeshIOService ioService_geom(&m);
@@ -94,11 +96,16 @@ TEST(PointFollowingVectorField2DTestClass, PointFollowingVectorField2D_Test1)
 	ASSERT_EQ(PointFollowingVectorField2D::SUCCESS, result);
 }
 
+/*----------------------------------------------------------------------------*/
 
 
-/* CAS TEST CLASSE PointFollowingVectorField3D */
 
-TEST(PointFollowingVectorField3DTestClass, PointFollowingVectorField3D_Test1)
+
+/*----------------------------------------------------------------------------*/
+/*             CAS TEST 3D CLASSE PointFollowingVectorField3D                 */
+/*----------------------------------------------------------------------------*/
+
+TEST(PointFollowingVectorFieldTestClass, PointFollowingVectorField3D_Test1)
 {
 	Mesh m(MeshModel(DIM3 | R | F | E | N |
 	                 R2N | F2N | E2N | R2F | F2R |
@@ -137,14 +144,14 @@ TEST(PointFollowingVectorField3DTestClass, PointFollowingVectorField3D_Test1)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	GradientComputation3D grad3D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	GradientComputation3D grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	GradientComputation3D::STATUS result_grad = grad3D.execute();
 	ASSERT_EQ(GradientComputation3D::SUCCESS, result_grad);
 
 	// Placement du point P à la distance souhaitée suivant le champ de gradient
 	math::Point M(0.1, 0.0, 0.3);
 	double distance = 0.8;
-	PointFollowingVectorField3D pfvf3D(&m, M, distance, m.getVariable<math::Vector3d ,GMDS_REGION>("gradient_3D"));
+	PointFollowingVectorField3D pfvf3D(&m, M, distance, m.getVariable<math::Vector3d ,GMDS_REGION>("GMDS_Gradient_3D"));
 	PointFollowingVectorField3D::STATUS result = pfvf3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -155,12 +162,16 @@ TEST(PointFollowingVectorField3DTestClass, PointFollowingVectorField3D_Test1)
 	ASSERT_EQ(PointFollowingVectorField3D::SUCCESS, result);
 }
 
+/*----------------------------------------------------------------------------*/
+
+
+
 
 /*----------------------------------------------------------------------------*/
 /*             CAS TEST 2D CLASSE PointFollowingVectorFieldOnNodes            */
 /*----------------------------------------------------------------------------*/
 
-TEST(PointFollowingVectorFieldOnNodesTestClass, PointFollowingVectorFieldOnNodes_2D_Test1)
+TEST(PointFollowingVectorFieldTestClass, PointFollowingVectorFieldOnNodes_2D_Test1)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -205,14 +216,14 @@ TEST(PointFollowingVectorFieldOnNodesTestClass, PointFollowingVectorFieldOnNodes
 	m.freeMark<Node>(markFrontNodes);
 
 	// Calcul du gradient du champ de Level Set
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("distance"));
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	LeastSquaresGradientComputation::STATUS result_grad2D = grad2D.execute();
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad2D);
 
 	// Placement du point P à la distance souhaitée suivant le champ de gradient
 	math::Point M(0.5, 0.0, 0.0);
 	double distance = 0.8;
-	PointFollowingVectorFieldOnNodes pfvf2D(&m, M, distance, m.getVariable<double,GMDS_NODE>("distance"),
+	PointFollowingVectorFieldOnNodes pfvf2D(&m, M, distance, m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
 	   m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
 	PointFollowingVectorFieldOnNodes::STATUS result = pfvf2D.execute();
 
@@ -225,14 +236,16 @@ TEST(PointFollowingVectorFieldOnNodesTestClass, PointFollowingVectorFieldOnNodes
 	ASSERT_EQ(PointFollowingVectorFieldOnNodes::SUCCESS, result);
 }
 
+/*----------------------------------------------------------------------------*/
+
+
 
 
 /*----------------------------------------------------------------------------*/
 /*             CAS TEST 3D CLASSE PointFollowingVectorFieldOnNodes            */
 /*----------------------------------------------------------------------------*/
 
-
-TEST(PointFollowingVectorFieldOnNodesTestClass, PointFollowingVectorFieldOnNodes_3D_Test1)
+TEST(PointFollowingVectorFieldTestClass, PointFollowingVectorFieldOnNodes_3D_Test1)
 {
 	// Cas test B0 (3D) avec Level Set calculé par la méthode LevelSetCombined
 	// LS sont calculés, une de l'intérieur vers l'extérieur, une de l'extérieur
@@ -282,14 +295,14 @@ TEST(PointFollowingVectorFieldOnNodesTestClass, PointFollowingVectorFieldOnNodes
 	m.unmarkAll<Node>(markFrontNodesOut);
 	m.freeMark<Node>(markFrontNodesOut);
 
-	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("distance_combined"));
+	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
 	LeastSquaresGradientComputation::STATUS result_grad = grad3D.execute();
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
 
 	// Placement du point P à la distance souhaitée suivant le champ de gradient
 	math::Point M(2.5*cos(M_PI/4), -2.5 + 2.5*sin(M_PI/4), 0.0);
 	double distance = 1.0;
-	PointFollowingVectorFieldOnNodes pfvf2D(&m, M, distance, m.getVariable<double,GMDS_NODE>("distance_combined"),
+	PointFollowingVectorFieldOnNodes pfvf2D(&m, M, distance, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"),
 	   m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
 	PointFollowingVectorFieldOnNodes::STATUS result = pfvf2D.execute();
 
@@ -300,3 +313,5 @@ TEST(PointFollowingVectorFieldOnNodesTestClass, PointFollowingVectorFieldOnNodes
 
 	ASSERT_EQ(PointFollowingVectorFieldOnNodes::SUCCESS, result);
 }
+
+/*----------------------------------------------------------------------------*/

@@ -12,7 +12,7 @@ using namespace gmds;
 LevelSetNaif::LevelSetNaif(Mesh *AMesh, int AmarkFrontNodes) {
 	m_mesh = AMesh;
 	m_markFrontNodes = AmarkFrontNodes;
-	m_distance = m_mesh->newVariable<double,GMDS_NODE>("distance");
+	m_distance = m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance");
 
 }
 

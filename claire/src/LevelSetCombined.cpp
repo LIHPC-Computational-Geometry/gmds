@@ -13,9 +13,9 @@ LevelSetCombined::LevelSetCombined(Mesh *AMesh, int AmarkFrontNodesInt, int Amar
 	m_mesh = AMesh;
 	m_markFrontNodesInt = AmarkFrontNodesInt;
 	m_markFrontNodesOut = AmarkFrontNodesOut;
-	m_distance = m_mesh->newVariable<double,GMDS_NODE>("distance_combined");
-	m_distance_Int = m_mesh->newVariable<double,GMDS_NODE>("distance_int");
-	m_distance_Out = m_mesh->newVariable<double,GMDS_NODE>("distance_out");
+	m_distance = m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Combined");
+	m_distance_Int = m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	m_distance_Out = m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
 
 }
 
@@ -77,7 +77,7 @@ LevelSetCombined::initialisationDistancesInt() {
 		lsInt.getValue(id, distInt);
 		m_distance_Int->set(id, distInt);
 	}
-	m_mesh->deleteVariable(GMDS_NODE, "distance");
+	m_mesh->deleteVariable(GMDS_NODE, "GMDS_Distance");
 };
 /*-------------------------------------------------------------------*/
 
@@ -93,6 +93,6 @@ LevelSetCombined::initialisationDistancesOut() {
 		lsOut.getValue(id, distOut);
 		m_distance_Out->set(id, distOut);
 	}
-	m_mesh->deleteVariable(GMDS_NODE, "distance");
+	m_mesh->deleteVariable(GMDS_NODE, "GMDS_Distance");
 };
 /*-------------------------------------------------------------------*/
