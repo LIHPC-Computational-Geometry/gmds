@@ -26,7 +26,7 @@ PointFollowingVectorFieldOnNodes::STATUS PointFollowingVectorFieldOnNodes::execu
 {
 	m_Pend = m_Pstart;
 	double minLenght = minEdgeLenght();
-	std::cout << "min : " << minLenght << std::endl;
+	//std::cout << "min : " << minLenght << std::endl;
 
 	TCellID closest_node_id = closestNode(m_Pend);
 	double d_closest_node = m_distance->value(closest_node_id);
@@ -37,11 +37,12 @@ PointFollowingVectorFieldOnNodes::STATUS PointFollowingVectorFieldOnNodes::execu
 		closest_node_id = closestNode(m_Pend);
 		d_closest_node = m_distance->value(closest_node_id);
 
-		std::cout << "Point intermédiaire : " << m_Pend << std::endl;
+		//std::cout << "Point intermédiaire : " << m_Pend << std::endl;
+		//std::cout << "Distance : " << d_closest_node << std::endl;
 		m_discrete_path.push_back(m_Pend);
 	}
 
-	std::cout << "Point final : " << m_Pend << std::endl;
+	//std::cout << "Point final : " << m_Pend << std::endl;
 
 	// Ecriture du chemin suivi
 	writeDiscretePathInVTK();

@@ -21,8 +21,8 @@ LeastSquaresGradientComputation::execute()
 {
 
 	for(auto node_id:m_mesh->nodes()) {
-		std::cout << "------------------------" << std::endl;
-		std::cout << "NOEUD TRAITé : " << node_id << std::endl;
+		//std::cout << "------------------------" << std::endl;
+		//std::cout << "NOEUD TRAITé : " << node_id << std::endl;
 		math::Vector3d Gradient = computeGradientOnSimpleVertex(node_id);
 		m_gradient2D->set(node_id, Gradient) ;
 	}
@@ -51,8 +51,8 @@ LeastSquaresGradientComputation::computeGradientOnSimpleVertex(TCellID node_id){
 	Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
 	cg.compute(A);
 	x = cg.solve(b);
-	std::cout << "#iterations:     " << cg.iterations() << std::endl;
-	std::cout << "estimated error: " << cg.error()      << std::endl;
+	//std::cout << "#iterations:     " << cg.iterations() << std::endl;
+	//std::cout << "estimated error: " << cg.error()      << std::endl;
 
 	Gradient.setXYZ( x[0], x[1], x[2] );
 
