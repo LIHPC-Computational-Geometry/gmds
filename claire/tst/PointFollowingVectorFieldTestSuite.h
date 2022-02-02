@@ -295,7 +295,8 @@ TEST(PointFollowingVectorFieldTestClass, PointFollowingVectorFieldOnNodes_2D_Tes
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
 
 	// Placement du point P à la distance souhaitée suivant le champ de gradient
-	math::Point M(-cos(M_PI/4), sin(M_PI/4), 0.0);
+	double ang(M_PI/4);
+	math::Point M(-cos(ang), sin(ang), 0.0);
 	double distance = 1.0;
 	PointFollowingVectorFieldOnNodes pfvf2D(&m, M, distance, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"),
 	                                        m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
