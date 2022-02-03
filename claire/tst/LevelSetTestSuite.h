@@ -8,6 +8,7 @@
 #include <gmds/claire/GradientComputation2D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
+#include <gmds/igalgo/BoundaryOperator.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
 #include <gmds/igalgo/GridBuilder.h>
 #include <gmds/io/IGMeshIOService.h>
@@ -615,6 +616,69 @@ TEST(LevelSetTestClass, LevelSetCombined_3D_Test1)
 
 }
 
+/*
+TEST(LevelSetTestClass, LevelSetCombined_3D_Test2)
+{
+	// Cas test bicone.
+
+	Mesh m(MeshModel(DIM3 | R | F | E | N |
+	                 R2N | F2N | E2N | R2F | F2R |
+	                 F2E | E2F | R2E | N2R | N2F | N2E));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/biconique.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::R);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doctor(&m);
+	doctor.buildFacesAndR2F();
+	doctor.buildEdgesAndX2E();
+	doctor.updateUpwardConnectivity();
+
+	//Get the boundary node ids
+	BoundaryOperator bnd_op(&m);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	int markFrontNodesInt = m.newMark<gmds::Node>();
+	int markFrontNodesOut = m.newMark<gmds::Node>();
+
+	for(auto id:bnd_node_ids){
+		Node n = m.get<Node>(id);
+		double coord_x = n.X() ;
+		double coord_y = n.Y() ;
+		double coord_z = n.Z() ;
+		double rayon;
+		rayon = sqrt( (pow(coord_x, 2) + pow(coord_y, 2) + pow(coord_z - 500.0, 2)) ) ;
+		if ( abs(rayon - 1000.0) < pow(10,-3)) {
+			// Pour ce cas test, le front extérieur est sur la sphère englobante
+			m.mark<Node>(id,markFrontNodesOut);
+		}
+		else {
+			m.mark<Node>(id,markFrontNodesInt);
+		}
+	}
+
+	std::cout << "Fin de l'initialisation des marques" << std::endl ;
+
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	LevelSetCombined::STATUS result_ls = lsCombined.execute();
+
+	m.unmarkAll<Node>(markFrontNodesInt);
+	m.freeMark<Node>(markFrontNodesInt);
+	m.unmarkAll<Node>(markFrontNodesOut);
+	m.freeMark<Node>(markFrontNodesOut);
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("LevelSetCombined_3D_Test2_Result.vtk");
+
+	ASSERT_EQ(LevelSetCombined::SUCCESS, result_ls);
+}
+*/
 /*----------------------------------------------------------------------------*/
 
 
