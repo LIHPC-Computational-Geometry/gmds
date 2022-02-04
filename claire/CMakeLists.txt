@@ -34,7 +34,7 @@ set(GMDS_SRC
 		src/PointFollowingVectorField3D.cpp
 		src/LeastSquaresGradientComputation.cpp
 		src/PointFollowingVectorFieldOnNodes.cpp
-        inc/gmds/claire/AdvectedPointRK4_2D.h src/AdvectedPointRK4_2D.cpp)
+        inc/gmds/claire/AdvectedPointRK4_2D.h src/AdvectedPointRK4_2D.cpp inc/gmds/claire/ResLU.h src/ResLU.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

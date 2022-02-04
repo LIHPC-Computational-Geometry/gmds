@@ -4,6 +4,7 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/claire/Smooth2D.h>
 #include <gmds/claire/Grid_Smooth2D.h>
+#include <gmds/claire/ResLU.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
@@ -476,6 +477,51 @@ TEST(ClaireTestClass, testGrid_Smooth2D_1)
 	writer_geom.setCellOptions(N|F);
 	writer_geom.setDataOptions(N|F);
 	writer_geom.write("testGrid_Smooth2D_1_result.vtk");
+
+}
+
+
+
+
+
+
+
+
+
+
+TEST(ClaireTestClass, ResLU_Test1)
+{
+	Eigen::SparseMatrix<double> A(3,3);
+	Eigen::VectorXd b(3);
+
+	A.coeffRef(0,0) = 2 ;
+	A.coeffRef(0,1) = -1 ;
+	A.coeffRef(0,2) = 0 ;
+	A.coeffRef(1,0) = -1 ;
+	A.coeffRef(1,1) = 2 ;
+	A.coeffRef(1,2) = -1 ;
+	A.coeffRef(2,0) = 0 ;
+	A.coeffRef(2,1) = -1 ;
+	A.coeffRef(2,2) = 2 ;
+
+	b[0] = 1;
+	b[1] = 1;
+	b[2] = 1;
+
+	ResLU reslu(A, b);
+	ResLU::STATUS resultat = reslu.execute();
+
+	Eigen::SparseMatrix<double> LU = reslu.getLU();
+
+	ASSERT_EQ(LU.coeffRef(0,0),2);
+	ASSERT_EQ(LU.coeffRef(0,1),-1);
+	ASSERT_EQ(LU.coeffRef(0,2),0);
+	ASSERT_EQ(LU.coeffRef(1,0),-0.5);
+	ASSERT_EQ(LU.coeffRef(1,1),3.0/2.0);
+	ASSERT_EQ(LU.coeffRef(1,2),-1);
+	ASSERT_EQ(LU.coeffRef(2,0),0);
+	ASSERT_EQ(LU.coeffRef(2,1),-2.0/3.0);
+	//ASSERT_EQ(LU.coeffRef(2,2),4.0/3.0);
 
 }
 
