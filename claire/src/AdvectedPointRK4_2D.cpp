@@ -4,6 +4,7 @@
 
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/AdvectedPointRK4_2D.h>
+#include <gmds/claire/ResLU.h>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -24,27 +25,43 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 	double minLenght = minEdgeLenght();
 	std::cout << "min : " << minLenght << std::endl;
 
+	m_Pend = m_Pstart;
 	math::Point M = m_Pstart;
 	double dist_M ;
 	math::Vector3d Grad_M;
 	computeInterpolatedDistanceAndGrad(M, dist_M, Grad_M);
 
-	double dt = 0.9*minLenght;
+	double dt = 0.99*minLenght;
 
-	while ( abs(dist_M-m_d0) > pow(10,-6) ) {
+	int iterations=0;
+
+	while ( (abs(dist_M-m_d0) > pow(10,-6)) && iterations < 10000 ) {
+		std::cout << "-------- ITERATION " << iterations << " ---------" << std::endl;
+		M = m_Pend;
 		computeInterpolatedDistanceAndGrad(M, dist_M, Grad_M);
 		if(dist_M < m_d0){
 			// Si la distance ciblée n'est pas atteinte, on continue d'avancer
-			M = RungeKutta4(M, Grad_M, dt);
+			M = RungeKutta4(M, Grad_M.normalize(), dt);
+		}
+		/*
+		else{
+			// Si on a dépassé la distance ciblée
+			M = RungeKutta4(M, -Grad_M.normalize(), dt);
+		}
+		 */
+
+		computeInterpolatedDistanceAndGrad(M, dist_M, Grad_M);
+		// Si on a dépassé la distance fixée, dans un sens ou l'autre, on raffine le pas de temps
+		if (dist_M < m_d0 && abs(dist_M-m_d0) > pow(10,-6)) {
+			m_Pend = M;
 			m_discrete_path.push_back(M);
 		}
-		else{
-			// Si on a dépassé la distance ciblée,
-			// on revient en arrière et on raffine le pas de temps
-			M = RungeKutta4(M, -Grad_M, dt);
-			dt = dt/2.0;
+		else if (dist_M > m_d0 && abs(dist_M-m_d0) > pow(10,-6)) {
+			dt = 0.95*dt;
 		}
-		computeInterpolatedDistanceAndGrad(M, dist_M, Grad_M);
+
+		iterations +=1;
+		std::cout << "pas de temps : " << dt << std::endl;
 	}
 
 	m_Pend = M;
@@ -96,8 +113,6 @@ bool AdvectedPointRK4_2D::isInTriangle(TCellID face_id, math::Point M){
 /*------------------------------------------------------------------------*/
 
 
-
-
 /*------------------------------------------------------------------------*/
 TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M){
 	TCellID face_id;
@@ -113,8 +128,6 @@ TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M){
 	return face_id;
 }
 /*------------------------------------------------------------------------*/
-
-
 
 
 /*------------------------------------------------------------------------*/
@@ -188,6 +201,7 @@ void AdvectedPointRK4_2D::computeInterpolatedDistanceAndGrad(math::Point M, doub
 
 	// On commence par chercher dans quel élément (face) est le point M.
 	TCellID face_id = inWhichTriangle(M) ;
+	std::cout << "Noeud dans le triangle : " << face_id << std::endl;
 
 	// En 2D, résolution de 3 systèmes 3x3. Un pour la distance, et deux pour le gradient (un pour chaque composante)
 	// Assemblage de la matrice A commune aux 3 systèmes
@@ -204,25 +218,39 @@ void AdvectedPointRK4_2D::computeInterpolatedDistanceAndGrad(math::Point M, doub
 
 	// Définition de la distance exacte au point M
 	// Résolution du système avec gradient conjugué
+	/*
 	Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
 	cg.compute(A);
 	inc_dist = cg.solve(dist);
-	//std::cout << "#iterations:     " << cg.iterations() << std::endl;
-	//std::cout << "estimated error: " << cg.error()      << std::endl;
+	*/
+	ResLU resolutionlu(A, dist);
+	resolutionlu.execute();
+	inc_dist = resolutionlu.getSolution();
+
 	int_dist = inc_dist[0]*M.X() + inc_dist[1]*M.Y() + inc_dist[2] ;
+	std::cout << "---------------" << std::endl;
+	std::cout << "Point M : " << M << std::endl ;
+	std::cout << "distance exacte : " << int_dist << std::endl;
 
 	// Définition du gradient exact dans la direction x au point M
+	/*
 	cg.compute(A);
 	inc_grad_x = cg.solve(grad_x);
-	//std::cout << "#iterations:     " << cg.iterations() << std::endl;
-	//std::cout << "estimated error: " << cg.error()      << std::endl;
+	*/
+	resolutionlu = ResLU(A, grad_x);
+	resolutionlu.execute();
+	inc_grad_x = resolutionlu.getSolution();
 	int_Grad.setX(inc_grad_x[0]*M.X() + inc_grad_x[1]*M.Y() + inc_grad_x[2]) ;
 
+
 	// Définition du gradient exact dans la direction y au point M
+	/*
 	cg.compute(A);
 	inc_grad_y = cg.solve(grad_y);
-	//std::cout << "#iterations:     " << cg.iterations() << std::endl;
-	//std::cout << "estimated error: " << cg.error()      << std::endl;
+	*/
+	resolutionlu = ResLU(A, grad_y);
+	resolutionlu.execute();
+	inc_grad_y = resolutionlu.getSolution();
 	int_Grad.setY(inc_grad_y[0]*M.X() + inc_grad_y[1]*M.Y() + inc_grad_y[2]) ;
 
 	// Définition du gradient exact dans la direction z au point M
@@ -232,6 +260,7 @@ void AdvectedPointRK4_2D::computeInterpolatedDistanceAndGrad(math::Point M, doub
 /*------------------------------------------------------------------------*/
 
 
+/*------------------------------------------------------------------------*/
 math::Point AdvectedPointRK4_2D::RungeKutta4(math::Point yn, math::Vector3d grad_yn, double dt){
 	math::Point ynew;
 
@@ -244,6 +273,7 @@ math::Point AdvectedPointRK4_2D::RungeKutta4(math::Point yn, math::Vector3d grad
 
 	return ynew;
 }
+/*------------------------------------------------------------------------*/
 
 
 /*------------------------------------------------------------------------*/

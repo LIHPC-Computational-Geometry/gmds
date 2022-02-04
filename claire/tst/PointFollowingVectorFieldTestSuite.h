@@ -5,9 +5,11 @@
 #include <gmds/claire/LevelSet.h>
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/GradientComputation2D.h>
+#include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/claire/PointFollowingVectorField2D.h>
 #include <gmds/claire/PointFollowingVectorField3D.h>
 #include <gmds/claire/PointFollowingVectorFieldOnNodes.h>
+#include <gmds/claire/AdvectedPointRK4_2D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
@@ -485,5 +487,78 @@ TEST(PointFollowingVectorFieldTestClass, PointFollowingVectorFieldOnNodes_3D_Tes
 	ASSERT_EQ(PointFollowingVectorFieldOnNodes::SUCCESS, result);
 }
 */
+
+/*----------------------------------------------------------------------------*/
+
+
+
+
+/*----------------------------------------------------------------------------*/
+/*                 CAS TEST 2D CLASSE AdvectedPointRK4_2D                     */
+/*----------------------------------------------------------------------------*/
+
+TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test1)
+{
+	// WE READ
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Carre.vtk";
+	//std::string vtk_file = dir+"/Carre_maxsize_0.01.vtk";		// Same geo but refined mesh
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+	doc.orient2DFaces();
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(&m);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	// Initialisation des marques sur le front à avancer
+	int markFrontNodes = m.newMark<gmds::Node>();
+	for(auto id:bnd_node_ids){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		if (coord_y == 0) {
+			// For the square test case, the front to advance is the boundary where y=0
+			m.mark<Node>(id,markFrontNodes);
+		}
+	}
+
+	// Calcul des Level Set
+	LevelSetNaif ls(&m, markFrontNodes);
+	LevelSetNaif::STATUS result_ls = ls.execute();
+	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+
+	m.unmarkAll<Node>(markFrontNodes);
+	m.freeMark<Node>(markFrontNodes);
+
+	// Calcul du gradient du champ de Level Set
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	LeastSquaresGradientComputation::STATUS result_grad = grad2D.execute();
+	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
+
+	// Placement du point P à la distance souhaitée suivant le champ de gradient
+	math::Point M(0.5, 0.0, 0.0);
+	double distance = 0.3;
+	AdvectedPointRK4_2D advpoint(&m, M, distance, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
+	AdvectedPointRK4_2D::STATUS result = advpoint.execute();
+
+	IGMeshIOService ioService_geom(&m);
+	VTKWriter writer_geom(&ioService_geom);
+	writer_geom.setCellOptions(N|F);
+	writer_geom.setDataOptions(N|F);
+	writer_geom.write("PointFollowingVectorField2D_Test1_Result.vtk");
+
+	ASSERT_EQ(AdvectedPointRK4_2D::SUCCESS, result);
+}
 
 /*----------------------------------------------------------------------------*/
