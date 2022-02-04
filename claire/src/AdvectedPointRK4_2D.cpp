@@ -177,10 +177,9 @@ void AdvectedPointRK4_2D::buildSystemMatrix(TCellID face_id, Eigen::SparseMatrix
 	A.coeffRef(2,2) = 1.0 ;
 
 	// Initialisation du vecteur des distances aux noeuds
-	Variable<double>* m_carte_distances = m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance");	// Je n'arrivais pas à récupérer directement sur m_mesh les valeurs sans repasser par ce pointeur
-	b1[0] = m_carte_distances->value(n0_id)  ;
-	b1[1] = m_carte_distances->value(n1_id)  ;
-	b1[2] = m_carte_distances->value(n2_id)  ;
+	b1[0] = m_distance->value(n0_id)  ;
+	b1[1] = m_distance->value(n1_id)  ;
+	b1[2] = m_distance->value(n2_id)  ;
 
 	//Initialisation du vecteur des composantes du grad dans la direction x
 	b2[0] = m_gradient2D->value(n0_id).X()  ;
@@ -197,7 +196,7 @@ void AdvectedPointRK4_2D::buildSystemMatrix(TCellID face_id, Eigen::SparseMatrix
 
 
 /*------------------------------------------------------------------------*/
-void AdvectedPointRK4_2D::computeInterpolatedDistanceAndGrad(math::Point M, double &int_dist, math::Vector3d &int_Grad){
+void AdvectedPointRK4_2D::computeInterpolatedDistanceAndGrad(math::Point M, double &distance_M, math::Vector3d &Grad_M){
 
 	// On commence par chercher dans quel élément (face) est le point M.
 	TCellID face_id = inWhichTriangle(M) ;
@@ -211,51 +210,54 @@ void AdvectedPointRK4_2D::computeInterpolatedDistanceAndGrad(math::Point M, doub
 	Eigen::VectorXd grad_y(3);	// Vecteur des gradients aux trois noeuds dans la direction y
 	buildSystemMatrix(face_id, A, dist, grad_x, grad_y);
 
-	// Vecteurs d'inconnues
-	Eigen::VectorXd inc_dist(3);	// Vecteurs des composantes (a,b,c) de notre fonction distance : d = ax + by + c
-	Eigen::VectorXd inc_grad_x(3);	// Vecteurs des composantes (a,b,c) de notre fonction gradient dans la direction x : grad_x = ax + by + c
-	Eigen::VectorXd inc_grad_y(3);	// Vecteurs des composantes (a,b,c) de notre fonction gradient dans la direction y : grad_y = ax + by + c
-
 	// Définition de la distance exacte au point M
-	// Résolution du système avec gradient conjugué
-	/*
-	Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
-	cg.compute(A);
-	inc_dist = cg.solve(dist);
-	*/
-	ResLU resolutionlu(A, dist);
-	resolutionlu.execute();
-	inc_dist = resolutionlu.getSolution();
-
-	int_dist = inc_dist[0]*M.X() + inc_dist[1]*M.Y() + inc_dist[2] ;
-	std::cout << "---------------" << std::endl;
+	distance_M = interpolationDistance(A, dist, M);
 	std::cout << "Point M : " << M << std::endl ;
-	std::cout << "distance exacte : " << int_dist << std::endl;
+	std::cout << "distance exacte : " << distance_M << std::endl;
+
+	// Calcul du gradient exact par interpolation sur la face
+	Grad_M = interpolationGradient(A, grad_x, grad_y, M);
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+double AdvectedPointRK4_2D::interpolationDistance(Eigen::SparseMatrix<double> A, Eigen::VectorXd b, math::Point M){
+	double dist_interpolee;
+
+	ResLU resolutionlu(A, b);
+	resolutionlu.execute();
+	Eigen::VectorXd coeff = resolutionlu.getSolution();
+
+	dist_interpolee = coeff[0]*M.X() + coeff[1]*M.Y() + coeff[2] ;
+
+	return dist_interpolee;
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+math::Vector3d AdvectedPointRK4_2D::interpolationGradient(Eigen::SparseMatrix<double> A, Eigen::VectorXd bx, Eigen::VectorXd by, math::Point M){
+	math::Vector3d Gradient_M;
 
 	// Définition du gradient exact dans la direction x au point M
-	/*
-	cg.compute(A);
-	inc_grad_x = cg.solve(grad_x);
-	*/
-	resolutionlu = ResLU(A, grad_x);
+	ResLU resolutionlu(A, bx);
 	resolutionlu.execute();
-	inc_grad_x = resolutionlu.getSolution();
-	int_Grad.setX(inc_grad_x[0]*M.X() + inc_grad_x[1]*M.Y() + inc_grad_x[2]) ;
+	Eigen::VectorXd coeff_grad_x = resolutionlu.getSolution();
+	Gradient_M.setX(coeff_grad_x[0]*M.X() + coeff_grad_x[1]*M.Y() + coeff_grad_x[2]) ;
 
 
 	// Définition du gradient exact dans la direction y au point M
-	/*
-	cg.compute(A);
-	inc_grad_y = cg.solve(grad_y);
-	*/
-	resolutionlu = ResLU(A, grad_y);
+	resolutionlu = ResLU(A, by);
 	resolutionlu.execute();
-	inc_grad_y = resolutionlu.getSolution();
-	int_Grad.setY(inc_grad_y[0]*M.X() + inc_grad_y[1]*M.Y() + inc_grad_y[2]) ;
+	Eigen::VectorXd coeff_grad_y = resolutionlu.getSolution();
+	Gradient_M.setY(coeff_grad_y[0]*M.X() + coeff_grad_y[1]*M.Y() + coeff_grad_y[2]) ;
 
 	// Définition du gradient exact dans la direction z au point M
-	int_Grad.setZ(0.0);
+	Gradient_M.setZ(0.0);
 
+	return Gradient_M;
 }
 /*------------------------------------------------------------------------*/
 
