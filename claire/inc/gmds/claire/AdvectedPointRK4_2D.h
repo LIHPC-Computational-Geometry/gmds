@@ -59,6 +59,14 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_2D
 	void buildSystemMatrix(TCellID face_id, Eigen::SparseMatrix<double> &A, Eigen::VectorXd &b1,
 	                       Eigen::VectorXd &b2, Eigen::VectorXd &b3);
 	/*-------------------------------------------------------------------*/
+	/** @brief Interpolation de la distance au point M
+	 */
+	double interpolationDistance(Eigen::SparseMatrix<double> A, Eigen::VectorXd b, math::Point M);
+	/*-------------------------------------------------------------------*/
+	/** @brief Interpolation du gradient au point M
+	 */
+	math::Vector3d interpolationGradient(Eigen::SparseMatrix<double> A, Eigen::VectorXd bx, Eigen::VectorXd by, math::Point M);
+	/*-------------------------------------------------------------------*/
 	/** @brief Applique le schéma Runge Kutta d'ordre 4 pour résoudre dx/dt = grad
 	 */
 	math::Point RungeKutta4(math::Point yn, math::Vector3d grad_yn, double dt);
