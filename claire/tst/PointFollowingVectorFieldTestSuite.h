@@ -561,4 +561,78 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test1)
 	ASSERT_EQ(AdvectedPointRK4_2D::SUCCESS, result);
 }
 
+TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test2)
+{
+	// WE READ
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Carre_Quart_Cylindre_maxsize_0.1.vtk";
+	//std::string vtk_file = dir+"/Carre_Quart_Cylindre_maxsize_0.01.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	doc.orient2DFaces();
+
+	// Noeud détruit car n'appartient pas au maillage ni à la géométrie.
+	// Il apparaît à cause de la façon dont a été généré le cas test avec GMSH.
+	m.deleteNode(5);
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(&m);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	int markFrontNodesInt = m.newMark<gmds::Node>();
+	int markFrontNodesOut = m.newMark<gmds::Node>();
+	for(auto id:bnd_node_ids){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		double coord_x = n.X() ;
+		if ( ( sqrt( pow(coord_x,2) + pow(coord_y,2)) - 1 ) <= pow(10,-6)) {
+			// For this test case, the front to advance is the boundary where x²+y²=1
+			m.mark<Node>(id,markFrontNodesInt);
+		}
+		else if (coord_x == -2 || coord_y == 2) {
+			m.mark<Node>(id,markFrontNodesOut);
+		}
+	}
+
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	LevelSetCombined::STATUS result_ls = lsCombined.execute();
+	ASSERT_EQ(LevelSetCombined::SUCCESS, result_ls);
+
+	m.unmarkAll<Node>(markFrontNodesInt);
+	m.freeMark<Node>(markFrontNodesInt);
+	m.unmarkAll<Node>(markFrontNodesOut);
+	m.freeMark<Node>(markFrontNodesOut);
+
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
+	LeastSquaresGradientComputation::STATUS result_grad = grad2D.execute();
+	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
+
+	// Placement du point P à la distance souhaitée suivant le champ de gradient
+	double ang(M_PI/4);
+	math::Point M(-cos(ang), sin(ang), 0.0);
+	double distance = 0.9;
+	AdvectedPointRK4_2D advpoint(&m, M, distance, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"), m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
+	AdvectedPointRK4_2D::STATUS result = advpoint.execute();
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("AdvectedPointRK4_2D_Test2_Result.vtk");
+
+	ASSERT_EQ(AdvectedPointRK4_2D::SUCCESS, result);
+
+}
+
 /*----------------------------------------------------------------------------*/
