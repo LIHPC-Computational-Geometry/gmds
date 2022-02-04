@@ -12,6 +12,7 @@ using namespace gmds;
 AdvectedPointRK4_2D::AdvectedPointRK4_2D(Mesh *AMesh, math::Point A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D) {
 	m_mesh = AMesh;
 	m_Pstart = A_Pstart;
+	m_Pend = A_Pstart;
 	m_d0 = A_d0;
 	m_distance = A_distance;
 	m_gradient2D = A_gradient2D;
@@ -25,30 +26,53 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 	double minLenght = minEdgeLenght();
 	std::cout << "min : " << minLenght << std::endl;
 
+	double dt = 0.9*minLenght;
+	int iterations=0;
+	int max_iterations=10000;
+
+	double dist(0);
+	math::Vector3d Grad;
+	computeInterpolatedDistanceAndGrad(m_Pstart, dist, Grad);
 	m_Pend = m_Pstart;
+
+	while ( (abs(dist-m_d0) > pow(10,-6)) && iterations < max_iterations ) {
+		std::cout << "-------- ITERATION " << iterations << " ---------" << std::endl;
+		math::Point M = RungeKutta4(m_Pend, Grad.normalize(), dt);
+		double dist_M;
+		math::Vector3d Grad_M;
+		computeInterpolatedDistanceAndGrad(M, dist_M, Grad_M);
+		if ( dist_M < m_d0){
+			m_Pend = M;
+			Grad = Grad_M;
+			dist = dist_M;
+			std::cout << "distance : " << dist << std::endl;
+		}
+		else{
+			// Alors on a dépassé la distance souhaitée, m_Pend n'est pas mis à jour, on retranche le pas de temps
+			// et on continue la boucle
+			dt = 0.95*dt;
+		}
+		iterations += 1;
+	}
+
+	/*
 	math::Point M = m_Pstart;
 	double dist_M ;
 	math::Vector3d Grad_M;
 	computeInterpolatedDistanceAndGrad(M, dist_M, Grad_M);
-
-	double dt = 0.99*minLenght;
-
-	int iterations=0;
-
-	while ( (abs(dist_M-m_d0) > pow(10,-6)) && iterations < 10000 ) {
+	while ( (abs(dist_M-m_d0) > pow(10,-6)) && iterations < max_iterations ) {
 		std::cout << "-------- ITERATION " << iterations << " ---------" << std::endl;
+		std::cout << "pas de temps : " << dt << std::endl;
+
+		M = RungeKutta4(M, Grad_M.normalize(), dt);
+
+
 		M = m_Pend;
 		computeInterpolatedDistanceAndGrad(M, dist_M, Grad_M);
 		if(dist_M < m_d0){
 			// Si la distance ciblée n'est pas atteinte, on continue d'avancer
 			M = RungeKutta4(M, Grad_M.normalize(), dt);
 		}
-		/*
-		else{
-			// Si on a dépassé la distance ciblée
-			M = RungeKutta4(M, -Grad_M.normalize(), dt);
-		}
-		 */
 
 		computeInterpolatedDistanceAndGrad(M, dist_M, Grad_M);
 		// Si on a dépassé la distance fixée, dans un sens ou l'autre, on raffine le pas de temps
@@ -60,12 +84,15 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 			dt = 0.95*dt;
 		}
 
-		iterations +=1;
-		std::cout << "pas de temps : " << dt << std::endl;
-	}
 
-	m_Pend = M;
+		iterations +=1;
+	}
+	*/
+
+	computeInterpolatedDistanceAndGrad(m_Pend, dist, Grad);
+	std::cout << "----------------------------------" << std::endl;
 	std::cout << "Point final : " << m_Pend << std::endl;
+	std::cout << "Distance finale : " << dist << std::endl;
 
 	writeDiscretePathInVTK();
 
@@ -212,8 +239,6 @@ void AdvectedPointRK4_2D::computeInterpolatedDistanceAndGrad(math::Point M, doub
 
 	// Définition de la distance exacte au point M
 	distance_M = interpolationDistance(A, dist, M);
-	std::cout << "Point M : " << M << std::endl ;
-	std::cout << "distance exacte : " << distance_M << std::endl;
 
 	// Calcul du gradient exact par interpolation sur la face
 	Grad_M = interpolationGradient(A, grad_x, grad_y, M);
