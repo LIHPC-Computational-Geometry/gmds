@@ -5,6 +5,7 @@
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/AdvectedPointRK4_2D.h>
 #include <gmds/claire/ResLU.h>
+#include <limits>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -32,65 +33,42 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 
 	double dist(0);
 	math::Vector3d Grad;
-	computeInterpolatedDistanceAndGrad(m_Pstart, dist, Grad);
+	TCellID face_id_P = inWhichTriangle(m_Pstart) ;
+	computeInterpolatedDistanceAndGrad(m_Pstart, face_id_P, dist, Grad);
 	m_Pend = m_Pstart;
+	std::cout << "distance initiale : " << dist << std::endl;
+	std::cout << "gradient initial : " << Grad << std::endl;
 
 	while ( (abs(dist-m_d0) > pow(10,-6)) && iterations < max_iterations ) {
 		std::cout << "-------- ITERATION " << iterations << " ---------" << std::endl;
 		math::Point M = RungeKutta4(m_Pend, Grad.normalize(), dt);
 		double dist_M;
 		math::Vector3d Grad_M;
-		computeInterpolatedDistanceAndGrad(M, dist_M, Grad_M);
-		if ( dist_M < m_d0){
-			m_Pend = M;
-			Grad = Grad_M;
-			dist = dist_M;
-			std::cout << "distance : " << dist << std::endl;
-			m_discrete_path.push_back(m_Pend);
+		TCellID face_id = inWhichTriangle(M) ;
+		if(face_id != NullID) {
+			computeInterpolatedDistanceAndGrad(M, face_id, dist_M, Grad_M);
+			// Rajouter condition comme ça : inWhichTriangle(M) != std::numeric_limits<int>::max()
+			if ((dist_M < m_d0)) {
+				m_Pend = M;
+				Grad = Grad_M;
+				dist = dist_M;
+				std::cout << "distance : " << dist << std::endl;
+				m_discrete_path.push_back(m_Pend);
+			}
+			else {
+				// Alors on a dépassé la distance souhaitée, m_Pend n'est pas mis à jour, on retranche le pas de temps
+				// et on continue la boucle
+				dt = 0.95 * dt;
+			}
 		}
 		else{
-			// Alors on a dépassé la distance souhaitée, m_Pend n'est pas mis à jour, on retranche le pas de temps
-			// et on continue la boucle
-			dt = 0.95*dt;
+			dt = 0.95 * dt;
 		}
 		iterations += 1;
 	}
 
-	/*
-	math::Point M = m_Pstart;
-	double dist_M ;
-	math::Vector3d Grad_M;
-	computeInterpolatedDistanceAndGrad(M, dist_M, Grad_M);
-	while ( (abs(dist_M-m_d0) > pow(10,-6)) && iterations < max_iterations ) {
-		std::cout << "-------- ITERATION " << iterations << " ---------" << std::endl;
-		std::cout << "pas de temps : " << dt << std::endl;
-
-		M = RungeKutta4(M, Grad_M.normalize(), dt);
-
-
-		M = m_Pend;
-		computeInterpolatedDistanceAndGrad(M, dist_M, Grad_M);
-		if(dist_M < m_d0){
-			// Si la distance ciblée n'est pas atteinte, on continue d'avancer
-			M = RungeKutta4(M, Grad_M.normalize(), dt);
-		}
-
-		computeInterpolatedDistanceAndGrad(M, dist_M, Grad_M);
-		// Si on a dépassé la distance fixée, dans un sens ou l'autre, on raffine le pas de temps
-		if (dist_M < m_d0 && abs(dist_M-m_d0) > pow(10,-6)) {
-			m_Pend = M;
-			m_discrete_path.push_back(M);
-		}
-		else if (dist_M > m_d0 && abs(dist_M-m_d0) > pow(10,-6)) {
-			dt = 0.95*dt;
-		}
-
-
-		iterations +=1;
-	}
-	*/
-
-	computeInterpolatedDistanceAndGrad(m_Pend, dist, Grad);
+	face_id_P = inWhichTriangle(m_Pend) ;
+	computeInterpolatedDistanceAndGrad(m_Pend, face_id_P, dist, Grad);
 	std::cout << "----------------------------------" << std::endl;
 	std::cout << "Point final : " << m_Pend << std::endl;
 	std::cout << "Distance finale : " << dist << std::endl;
@@ -145,6 +123,14 @@ bool AdvectedPointRK4_2D::isInTriangle(TCellID face_id, math::Point M){
 TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M){
 	TCellID face_id;
 	bool isInFace(false);
+	/*
+	bool found_item=false;
+	for(auto f_it = m_mesh->faces_begin(); f_it!= m_mesh->faces_end() && !found_item;++f_it){
+		TCellID f_id = *f_it;
+		found_item=true;
+	}
+	 */
+
 	for (auto f_id:m_mesh->faces()){
 		if(!isInFace){
 			isInFace = isInTriangle(f_id, M);
@@ -152,6 +138,10 @@ TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M){
 				face_id = f_id;
 			}
 		}
+	}
+	if (!isInFace){
+		face_id = NullID;
+		std::cout << "triangle : " << face_id << std::endl;
 	}
 	return face_id;
 }
@@ -224,10 +214,10 @@ void AdvectedPointRK4_2D::buildSystemMatrix(TCellID face_id, Eigen::SparseMatrix
 
 
 /*------------------------------------------------------------------------*/
-void AdvectedPointRK4_2D::computeInterpolatedDistanceAndGrad(math::Point M, double &distance_M, math::Vector3d &Grad_M){
+void AdvectedPointRK4_2D::computeInterpolatedDistanceAndGrad(math::Point M, TCellID face_id, double &distance_M, math::Vector3d &Grad_M){
 
 	// On commence par chercher dans quel élément (face) est le point M.
-	TCellID face_id = inWhichTriangle(M) ;
+	//TCellID face_id = inWhichTriangle(M) ;
 	std::cout << "Noeud dans le triangle : " << face_id << std::endl;
 
 	// En 2D, résolution de 3 systèmes 3x3. Un pour la distance, et deux pour le gradient (un pour chaque composante)
