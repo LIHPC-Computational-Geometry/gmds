@@ -52,7 +52,7 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_2D
 	/*-------------------------------------------------------------------*/
 	/** @brief Compute the interpolated value of distance and grad for the point M
 	 */
-	void computeInterpolatedDistanceAndGrad(math::Point M, double &int_dist, math::Vector3d &int_Grad);
+	void computeInterpolatedDistanceAndGrad(math::Point M, TCellID face_id, double &int_dist, math::Vector3d &int_Grad);
 	/*-------------------------------------------------------------------*/
 	/** @brief Assemble la matrice et les vecteurs pour la résolution du système
 	 */
