@@ -37,8 +37,14 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	/*-------------------------------------------------------------------*/
 
  protected:
+	/** mesh we work on */
 	Mesh* m_mesh;
+	/** parameters for the algorithm */
 	ParamsAero m_params;
+	/** Marque sur les noeuds de la paroi */
+	int m_markFrontNodesParoi;
+	/** Marque sur les noeuds de la frontière ext */
+	int m_markFrontNodesExt;
 
 };
 /*----------------------------------------------------------------------------*/

@@ -9,5 +9,6 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 AbstractAeroPipeline::AbstractAeroPipeline() {
-
+	m_markFrontNodesParoi = m_mesh->newMark<gmds::Node>();
+	m_markFrontNodesExt = m_mesh->newMark<gmds::Node>();
 }
