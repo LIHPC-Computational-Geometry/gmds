@@ -39,7 +39,7 @@ set(GMDS_SRC
 		src/PointFollowingVectorFieldOnNodes.cpp
 		src/AdvectedPointRK4_2D.cpp
 		src/ResLU.cpp
-		inc/gmds/claire/AbstractAeroPipeline.h src/AbstractAeroPipeline.cpp)
+		inc/gmds/claire/AbstractAeroPipeline.h src/AbstractAeroPipeline.cpp inc/gmds/claire/AeroPipeline2D.h src/AeroPipeline2D.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
