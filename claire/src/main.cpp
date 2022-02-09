@@ -1,6 +1,9 @@
 /*------------------------------------------------------------------------*/
 // Created by Claire Roche on 21/10/2021.
 /*------------------------------------------------------------------------*/
+#include <gmds/claire/AbstractAeroPipeline.h>
+#include <gmds/claire/AeroPipeline2D.h>
+#include <gmds/claire/AeroPipeline3D.h>
 #include <gmds/claire/Params.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/io/IGMeshIOService.h>
@@ -12,7 +15,7 @@ using namespace gmds;
 int main(int argc, char* argv[])
 {
 	std::cout << "=== CLAIRE ALGO ====" << std::endl;
-	/*
+
 	ParamsAero params;
 	params.dim=ParamsAero::DIM_2D;
 	params.input_file="...";
@@ -31,5 +34,5 @@ int main(int argc, char* argv[])
 	algo->execute();
 
 	delete algo;
-	 */
+
 }
