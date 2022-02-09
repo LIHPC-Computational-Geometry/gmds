@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/ig/Mesh.h>
-#include <gmds/claire/DistanceMap.h>
+#include <gmds/claire/Params.h>
 #include <string>
 #include <map>
 #include <fstream>
@@ -38,6 +38,7 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 
  protected:
 	Mesh* m_mesh;
+	ParamsAero m_params;
 
 };
 /*----------------------------------------------------------------------------*/

@@ -8,6 +8,7 @@
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/claire/AbstractAeroPipeline.h>
+#include <gmds/claire/Params.h>
 /*----------------------------------------------------------------------------*/
 namespace  gmds {
 /*----------------------------------------------------------------------------*/
@@ -20,7 +21,7 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	/*------------------------------------------------------------------------*/
 	/** \brief Default constructor
 	 */
-	AeroPipeline2D();
+	AeroPipeline2D(ParamsAero Aparams);
 
 	/*------------------------------------------------------------------------*/
 	/** \brief Function to be called for mesh generation

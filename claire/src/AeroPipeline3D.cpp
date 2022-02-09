@@ -8,8 +8,8 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AeroPipeline3D::AeroPipeline3D() {
-
+AeroPipeline3D::AeroPipeline3D(ParamsAero Aparams) {
+	m_params = Aparams;
 }
 
 
