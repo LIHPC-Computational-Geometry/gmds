@@ -27,10 +27,18 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	/** \brief Function to be called for mesh generation
 	 */
 	virtual void execute();
-	/*-------------------------------------------------------------------*/
+	/*------------------------------------------------------------------------*/
 
  private:
-
+	/*----------------------------------------------------------------------------*/
+	/** @brief Lecture du fichier de maillage au format .vtk
+	 */
+	void LectureMaillage();
+	/*----------------------------------------------------------------------------*/
+	/** @brief Initialisation des marques sur les fronts
+	 */
+	void InitialisationFronts();
+	/*----------------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/
