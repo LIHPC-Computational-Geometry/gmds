@@ -11,3 +11,7 @@ using namespace gmds;
 AeroPipeline2D::AeroPipeline2D() {
 
 }
+
+void AeroPipeline2D::execute(){
+
+}
