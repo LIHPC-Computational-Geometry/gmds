@@ -31,6 +31,10 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	AbstractAeroPipeline();
 
 	/*-------------------------------------------------------------------*/
+	/** \brief Function to be called for mesh generation
+	 */
+	virtual void execute()=0;
+	/*-------------------------------------------------------------------*/
 
  protected:
 	Mesh* m_mesh;

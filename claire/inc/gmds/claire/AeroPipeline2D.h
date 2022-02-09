@@ -22,6 +22,12 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	 */
 	AeroPipeline2D();
 
+	/*------------------------------------------------------------------------*/
+	/** \brief Function to be called for mesh generation
+	 */
+	virtual void execute();
+	/*-------------------------------------------------------------------*/
+
  private:
 
 
