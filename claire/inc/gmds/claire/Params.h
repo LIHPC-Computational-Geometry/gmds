@@ -21,16 +21,16 @@ namespace gmds {
     {
         enum Dimension
         {
-            DIM_2D = 0,
-            DIM_3D = 1 /** .... */
+            DIM_2D = 0, /** Maillage de dimension 2 */
+            DIM_3D = 1  /** Maillage de dimension 3 */
         };
 
         enum AlgoPhaseType
         {
-            INIT = 0,    /** Frame field generation                  */
-            DISTANCE_GEN = 1, /** Frame field smoothing                   */
-            GRADIENT_GEN = 2, /** Point field generation                  */
-            BLOCKING = 3   	/** Conformization via pyramid insertion    */
+            INIT = 0,    		/** Initialisation du maillage              */
+            DISTANCE_GEN = 1, 	/** Calcul du champ distance                */
+            GRADIENT_GEN = 2, 	/** Calcul du champ gradient                */
+            BLOCKING = 3   		/** Conformization via pyramid insertion    */
         };
 
         /** algo type */
