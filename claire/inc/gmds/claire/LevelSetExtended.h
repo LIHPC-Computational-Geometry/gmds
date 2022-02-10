@@ -2,8 +2,8 @@
 // Created by rochec on 10/02/2022.
 //
 
-#ifndef GMDS_LEVELSETELOI_H
-#define GMDS_LEVELSETELOI_H
+#ifndef GMDS_LEVELSETEXTENDED_H
+#define GMDS_LEVELSETEXTENDED_H
 
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
@@ -11,16 +11,16 @@
 /*----------------------------------------------------------------------------*/
 namespace  gmds {
 /*----------------------------------------------------------------------------*/
-/** \class  LevelSetEloi
+/** \class  LevelSetExtended
  *  \brief
  */
-class LIB_GMDS_CLAIRE_API LevelSetEloi: public AbstractLevelSet {
+class LIB_GMDS_CLAIRE_API LevelSetExtended: public AbstractLevelSet {
  public:
 
 	/*------------------------------------------------------------------------*/
 	/** \brief Default constructor
 	 */
-	LevelSetEloi(Mesh *AMesh, int AmarkFrontNodes, Variable<double>* Adistance);
+	LevelSetExtended(Mesh *AMesh, int AmarkFrontNodes, Variable<double>* Adistance);
 
 	/*------------------------------------------------------------------------*/
 
@@ -37,4 +37,4 @@ class LIB_GMDS_CLAIRE_API LevelSetEloi: public AbstractLevelSet {
 }
 /*----------------------------------------------------------------------------*/
 
-#endif     // GMDS_LEVELSETELOI_H
+#endif     // GMDS_LEVELSETEXTENDED_H
