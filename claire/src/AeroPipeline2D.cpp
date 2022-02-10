@@ -6,6 +6,7 @@
 #include <gmds/claire/AeroPipeline2D.h>
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/LevelSetNaif.h>
+#include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
@@ -38,8 +39,13 @@ void AeroPipeline2D::execute(){
 	LectureMaillage();
 	InitialisationFronts();
 
+	// Calcul du level set
 	LevelSetCombined lsCombined(m_mesh, m_markFrontNodesParoi, m_markFrontNodesExt);
-	LevelSetCombined::STATUS result = lsCombined.execute();
+	lsCombined.execute();
+
+	// Calcul du gradient du champ de Level Set
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
+	LeastSquaresGradientComputation::STATUS result_grad2D = grad2D.execute();
 
 	EcritureMaillage();
 
