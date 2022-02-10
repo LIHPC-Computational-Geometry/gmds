@@ -35,6 +35,10 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	 */
 	void LectureMaillage();
 	/*----------------------------------------------------------------------------*/
+	/** @brief Retire les noeuds qui ne sont connectés à rien
+	 */
+	void MeshCleaner();
+	/*----------------------------------------------------------------------------*/
 	/** @brief Ecriture du fichier de maillage au format .vtk
 	 */
 	void EcritureMaillage();

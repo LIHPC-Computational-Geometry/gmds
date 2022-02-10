@@ -4,6 +4,8 @@
 
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/AeroPipeline2D.h>
+#include <gmds/claire/LevelSetCombined.h>
+#include <gmds/claire/LevelSetNaif.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
@@ -35,6 +37,10 @@ void AeroPipeline2D::execute(){
 
 	LectureMaillage();
 	InitialisationFronts();
+
+	LevelSetCombined lsCombined(m_mesh, m_markFrontNodesParoi, m_markFrontNodesExt);
+	LevelSetCombined::STATUS result = lsCombined.execute();
+
 	EcritureMaillage();
 
 	m_isOver = true;
@@ -45,22 +51,34 @@ void AeroPipeline2D::execute(){
 /*------------------------------------------------------------------------*/
 void AeroPipeline2D::LectureMaillage(){
 
-	std::cout << "-> Lecture du maillage ..." << std::endl;
-
 	// Lecture du maillage
-
-	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Carre.vtk";
+	std::cout << "-> Lecture du maillage ..." << std::endl;
 
 	gmds::IGMeshIOService ioService(m_mesh);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N|gmds::F);
-	vtkReader.read(vtk_file);
+	vtkReader.read(m_params.input_file);
 
 	gmds::MeshDoctor doc(m_mesh);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
 
+	MeshCleaner();
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void AeroPipeline2D::MeshCleaner(){
+	for (auto n_id:m_mesh->nodes())
+	{
+		Node n = m_mesh->get<Node>(n_id);
+		if (n.get<Face>().empty()) {
+			//std::cout << "Noeud isolé : " << n_id << std::endl;
+			m_mesh->deleteNode(n_id);
+		}
+	}
 }
 /*------------------------------------------------------------------------*/
 
@@ -88,7 +106,7 @@ void AeroPipeline2D::InitialisationFronts(){
 
 	// Marques sur les deux fronts d'intérêt pour l'aéro :
 	// Paroi -> Noeuds sur la paroi
-	// Ext -> Noeuds sur la frontière extérieur
+	// Ext -> Noeuds sur la frontière extérieure
 	m_markFrontNodesParoi = m_mesh->newMark<gmds::Node>();
 	m_markFrontNodesExt = m_mesh->newMark<gmds::Node>();
 
@@ -159,7 +177,10 @@ void AeroPipeline2D::InitialisationFronts(){
 			}
 
 		}
+	}
 
+	if (color < 2){
+		std::cout << "Attention : il n'y a pas deux bords minimum." << std::endl;
 	}
 
 	m_mesh->unmarkAll<Node>(markBoundaryNodes);
@@ -169,18 +190,68 @@ void AeroPipeline2D::InitialisationFronts(){
 	m_mesh->freeMark<Node>(markTreated);
 
 
+	// Calcul des boites englobantes
+	std::vector<double> x_min(color,0.0);
+	std::vector<double> y_min(color,0.0);
+	std::vector<double> x_max(color,0.0);
+	std::vector<double> y_max(color,0.0);
 
-
-	/*
-	int markFrontNodes = m.newMark<gmds::Node>();
-	for(auto id:bnd_node_ids){
-		Node n = m.get<Node>(id);
-		double coord_y = n.Y() ;
-		if (coord_y == 0) {
-			// For the square test case, the front to advance is the boundary where y=0
-			m.mark<Node>(id,markFrontNodes);
+	for (auto n_id:bnd_node_ids ) {
+		Node n = m_mesh->get<Node>(n_id);
+		math::Point p = n.point();
+		// A quel bord appartient le noeud n_id
+		int couleur = var_color_bords->value(n_id);
+		if(p.X() < x_min[couleur-1]){
+			x_min[couleur-1] = p.X();
+		}
+		if(p.X() > x_max[couleur-1]){
+			x_max[couleur-1] = p.X();
+		}
+		if(p.Y() < y_min[couleur-1]){
+			y_min[couleur-1] = p.Y();
+		}
+		if(p.Y() > y_max[couleur-1]){
+			y_max[couleur-1] = p.Y();
 		}
 	}
-	 */
+
+	// On recherche la plus grosse boite englobante
+	int bigest_color = 1;
+	for(int i=2;i<=color;i++){
+		// On compte le nombre de boites que la couleur i englobe
+		int nbr_boite_englobe = 0;
+		for (int j=1;j<=color;j++){
+			if (i != j){
+				if ( (x_min[i-1] < x_min[j-1]) &&
+				    (y_min[i-1] < y_min[j-1]) &&
+				    (x_max[j-1] < x_max[i-1]) &&
+				    (y_max[j-1] < x_max[i-1]) ) {
+					nbr_boite_englobe += 1;
+				}
+			}
+		}
+		if(nbr_boite_englobe == color-1){
+			bigest_color = i;
+		}
+	}
+	std::cout << "Boite englobante : " << bigest_color << std::endl;
+
+
+	// On marque les fronts paroi et extérieur
+	// Variable qui contient la couleur du bord
+	Variable<int>* var_color_paroi ;
+	var_color_paroi = m_mesh->newVariable<int, GMDS_NODE>("COLOR_PAROI");
+	for (auto n_id:bnd_node_ids){
+		int couleur = var_color_bords->value(n_id);
+		if(couleur == bigest_color){
+			m_mesh->mark<Node>(n_id,m_markFrontNodesExt);
+			(*var_color_paroi)[n_id] = 1;
+		}
+		else{
+			m_mesh->mark<Node>(n_id,m_markFrontNodesParoi);
+			(*var_color_paroi)[n_id] = 2;
+		}
+	}
+
 }
 /*------------------------------------------------------------------------*/
