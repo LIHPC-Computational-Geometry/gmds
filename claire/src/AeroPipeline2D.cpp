@@ -242,7 +242,6 @@ void AeroPipeline2D::InitialisationFronts(){
 	}
 	//std::cout << "Boite englobante : " << bigest_color << std::endl;
 
-
 	// On marque les fronts paroi et extérieur
 	// Variable qui contient la couleur du bord
 	Variable<int>* var_color_paroi ;
