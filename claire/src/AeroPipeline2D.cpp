@@ -45,7 +45,7 @@ void AeroPipeline2D::execute(){
 
 	// Calcul du gradient du champ de Level Set
 	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
-	LeastSquaresGradientComputation::STATUS result_grad2D = grad2D.execute();
+	grad2D.execute();
 
 	EcritureMaillage();
 
@@ -240,7 +240,7 @@ void AeroPipeline2D::InitialisationFronts(){
 			bigest_color = i;
 		}
 	}
-	std::cout << "Boite englobante : " << bigest_color << std::endl;
+	//std::cout << "Boite englobante : " << bigest_color << std::endl;
 
 
 	// On marque les fronts paroi et extérieur
