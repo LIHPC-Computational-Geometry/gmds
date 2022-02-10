@@ -9,9 +9,11 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 AeroPipeline3D::AeroPipeline3D(ParamsAero Aparams) {
+	/*
 	m_params = Aparams;
 	m_markFrontNodesParoi = m_mesh->newMark<gmds::Node>();
 	m_markFrontNodesExt = m_mesh->newMark<gmds::Node>();
+	 */
 }
 
 

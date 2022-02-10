@@ -43,6 +43,8 @@ namespace gmds {
         bool with_debug_files;
         /** Input mesh file name */
         std::string input_file;
+	     /** Output mesh file name */
+        std::string output_file;
         /** Output directory */
         std::string output_dir;
     };
