@@ -35,6 +35,10 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	 */
 	void LectureMaillage();
 	/*----------------------------------------------------------------------------*/
+	/** @brief Ecriture du fichier de maillage au format .vtk
+	 */
+	void EcritureMaillage();
+	/*----------------------------------------------------------------------------*/
 	/** @brief Initialisation des marques sur les fronts
 	 */
 	void InitialisationFronts();

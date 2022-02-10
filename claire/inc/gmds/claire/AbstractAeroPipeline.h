@@ -35,6 +35,10 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	 */
 	virtual void execute()=0;
 	/*-------------------------------------------------------------------*/
+	/** \brief Function pour savoir si le pipeline s'est terminé
+	 */
+	bool getIsOver();
+	/*-------------------------------------------------------------------*/
 
  protected:
 	/** mesh we work on */
@@ -45,6 +49,8 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	int m_markFrontNodesParoi;
 	/** Marque sur les noeuds de la frontière ext */
 	int m_markFrontNodesExt;
+	/** Est-ce que le code s'est bien terminé */
+	bool m_isOver ;
 
 };
 /*----------------------------------------------------------------------------*/

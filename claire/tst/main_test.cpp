@@ -8,6 +8,7 @@
 #include "DistanceMapTestSuite.h"
 #include "GradientComputationTestSuite.h"
 #include "PointFollowingVectorFieldTestSuite.h"
+#include "AeroPipelineTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

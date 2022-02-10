@@ -4,6 +4,7 @@ add_executable(GMDS_CLAIRE_TEST
         DistanceMapTestSuite.h
         GradientComputationTestSuite.h
         PointFollowingVectorFieldTestSuite.h
+        AeroPipelineTestSuite.h
         main_test.cpp ../inc/gmds/claire/LevelSetCombined.h)
 
 target_link_libraries(GMDS_CLAIRE_TEST PUBLIC

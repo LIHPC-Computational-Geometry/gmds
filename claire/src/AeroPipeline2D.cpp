@@ -17,11 +17,9 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 AeroPipeline2D::AeroPipeline2D(ParamsAero Aparams) {
-	*m_mesh = gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
-	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F);
+	m_mesh = NULL;
 	m_params = Aparams;
-	m_markFrontNodesParoi = m_mesh->newMark<gmds::Node>();
-	m_markFrontNodesExt = m_mesh->newMark<gmds::Node>();
+	m_isOver = false;
 }
 /*------------------------------------------------------------------------*/
 
@@ -29,12 +27,25 @@ AeroPipeline2D::AeroPipeline2D(ParamsAero Aparams) {
 /*------------------------------------------------------------------------*/
 void AeroPipeline2D::execute(){
 
+	// Je n'ai pas trouvé d'autre façon de faire pour initialiser le maillage
+	// pour l'instant...
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
+	m_mesh = &m;
+
+	LectureMaillage();
+	InitialisationFronts();
+	EcritureMaillage();
+
+	m_isOver = true;
 }
 /*------------------------------------------------------------------------*/
 
 
 /*------------------------------------------------------------------------*/
 void AeroPipeline2D::LectureMaillage(){
+
+	std::cout << "-> Lecture du maillage ..." << std::endl;
 
 	// Lecture du maillage
 
@@ -55,7 +66,31 @@ void AeroPipeline2D::LectureMaillage(){
 
 
 /*------------------------------------------------------------------------*/
+void AeroPipeline2D::EcritureMaillage(){
+
+	std::cout << "-> Ecriture du maillage ..." << std::endl;
+
+	gmds::IGMeshIOService ioService(m_mesh);
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	std::string dir(TEST_SAMPLES_DIR);
+	vtkWriter.write(m_params.output_file);
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
 void AeroPipeline2D::InitialisationFronts(){
+
+	std::cout << "-> Initialisation des fronts" << std::endl;
+
+	// Marques sur les deux fronts d'intérêt pour l'aéro :
+	// Paroi -> Noeuds sur la paroi
+	// Ext -> Noeuds sur la frontière extérieur
+	m_markFrontNodesParoi = m_mesh->newMark<gmds::Node>();
+	m_markFrontNodesExt = m_mesh->newMark<gmds::Node>();
 
 	//Get the boundary node ids
 	BoundaryOperator2D bnd_op(m_mesh);
@@ -132,6 +167,9 @@ void AeroPipeline2D::InitialisationFronts(){
 
 	m_mesh->unmarkAll<Node>(markTreated);
 	m_mesh->freeMark<Node>(markTreated);
+
+
+
 
 	/*
 	int markFrontNodes = m.newMark<gmds::Node>();
