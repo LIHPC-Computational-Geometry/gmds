@@ -4,6 +4,7 @@
 
 #include <gmds/claire/AbstractLevelSet.h>
 #include <gmds/claire/LevelSetEloi.h>
+#include <gmds/claire/LevelSetExtended.h>
 #include <gmds/claire/LevelSet.h>
 #include <gmds/claire/LevelSetNaif.h>
 #include <gmds/claire/LevelSetCombined.h>
@@ -741,6 +742,55 @@ TEST(LevelSetTestClass, LevelSetEloi_2D_Test1)
 	vtkWriter.write("AbstractLevelSet_Eloi_2D_Test1_Result.vtk");
 
    ASSERT_TRUE(true);
+}
+
+TEST(LevelSetTestClass, LevelSetExtended_2D_Test1)
+{
+	// WE READ
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Carre.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(&m);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	int markFrontNodes = m.newMark<gmds::Node>();
+	for(auto id:bnd_node_ids){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		if (coord_y == 0) {
+			// For the square test case, the front to advance is the boundary where y=0
+			m.mark<Node>(id,markFrontNodes);
+		}
+	}
+
+	m.newVariable<double, GMDS_NODE>("GMDS_Distance");
+	AbstractLevelSet* algo_ls = NULL;
+	algo_ls = new LevelSetExtended(&m, markFrontNodes, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	algo_ls->execute();
+
+	m.unmarkAll<Node>(markFrontNodes);
+	m.freeMark<Node>(markFrontNodes);
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("AbstractLevelSet_Extended_2D_Test1_Result.vtk");
+
+	ASSERT_TRUE(true);
 }
 
 
