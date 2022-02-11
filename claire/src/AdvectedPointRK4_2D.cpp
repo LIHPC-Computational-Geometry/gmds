@@ -123,22 +123,15 @@ bool AdvectedPointRK4_2D::isInTriangle(TCellID face_id, math::Point M){
 TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M){
 	TCellID face_id;
 	bool isInFace(false);
-	/*
-	bool found_item=false;
-	for(auto f_it = m_mesh->faces_begin(); f_it!= m_mesh->faces_end() && !found_item;++f_it){
-		TCellID f_id = *f_it;
-		found_item=true;
-	}
-	 */
 
-	for (auto f_id:m_mesh->faces()){
-		if(!isInFace){
-			isInFace = isInTriangle(f_id, M);
-			if(isInFace){
-				face_id = f_id;
-			}
+	for(auto f_it = m_mesh->faces_begin(); f_it!= m_mesh->faces_end() && !isInFace;++f_it){
+		TCellID f_id = *f_it;
+		isInFace = isInTriangle(f_id, M);
+		if(isInFace){
+			face_id = f_id;
 		}
 	}
+
 	if (!isInFace){
 		face_id = NullID;
 		std::cout << "triangle : " << face_id << std::endl;
