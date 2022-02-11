@@ -9,10 +9,10 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-LevelSetEloi::LevelSetEloi(Mesh *AMesh, int AmarkFrontNodes, Variable<double>* Adistance) {
-	m_mesh = AMesh;
-	m_markFrontNodes = AmarkFrontNodes;
-	m_distance = Adistance;
+LevelSetEloi::LevelSetEloi(Mesh *AMesh, int AmarkFrontNodes, Variable<double> *Adistance) :
+  AbstractLevelSet(AMesh,AmarkFrontNodes, Adistance)
+{
+
 }
 /*------------------------------------------------------------------------*/
 

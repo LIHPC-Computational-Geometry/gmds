@@ -32,7 +32,7 @@ class LIB_GMDS_CLAIRE_API AbstractLevelSet{
 	/** @brief Constructor.
          *  @param
 	 */
-	AbstractLevelSet();
+	AbstractLevelSet(Mesh *AMesh, int AmarkFrontNodes, Variable<double>* Adistance);
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
 	 */

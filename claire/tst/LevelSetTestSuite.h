@@ -730,7 +730,7 @@ TEST(LevelSetTestClass, LevelSetEloi_2D_Test1)
 
 	m.newVariable<double, GMDS_NODE>("GMDS_Distance");
 	AbstractLevelSet* algo_ls = NULL;
-	algo_ls = new LevelSetEloi(&m, markFrontNodes, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	algo_ls = new LevelSetEloi(&m, markFrontNodes, m.getVariable<double, GMDS_NODE>("GMDS_Distance"));
 	algo_ls->execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
@@ -781,6 +781,8 @@ TEST(LevelSetTestClass, LevelSetExtended_2D_Test1)
 	AbstractLevelSet* algo_ls = NULL;
 	algo_ls = new LevelSetExtended(&m, markFrontNodes, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	algo_ls->execute();
+
+	//LevelSetEloi algo(&m, markFrontNodes, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
