@@ -251,7 +251,7 @@ TEST(PointGeneratorTestSuite, test_hex_extraction)
     R2N | F2N | E2N | R2F | F2R |
     F2E | E2F | R2E | N2R | N2F | N2E));
     std::string dir(TEST_SAMPLES_DIR);
-    std::string vtk_file = dir+"/S24_CAD_test.vtk";//B0.vtk";
+    std::string vtk_file = dir+"/B0.vtk";
 
     ParamsGlobal pg;
     ParamsFrameField pf;
