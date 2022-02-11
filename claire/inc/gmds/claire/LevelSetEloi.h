@@ -20,7 +20,7 @@ class LIB_GMDS_CLAIRE_API LevelSetEloi: public AbstractLevelSet {
 	/*------------------------------------------------------------------------*/
 	/** \brief Default constructor
 	 */
-	LevelSetEloi(Mesh *AMesh, int AmarkFrontNodes, Variable<double>* Adistance);
+	LevelSetEloi(Mesh *AMesh, int AmarkFrontNodes, Variable<double> *Adistance);
 
 	/*------------------------------------------------------------------------*/
 

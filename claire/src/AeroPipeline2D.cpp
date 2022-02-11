@@ -19,10 +19,11 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AeroPipeline2D::AeroPipeline2D(ParamsAero Aparams) {
-	m_mesh = NULL;
-	m_params = Aparams;
-	m_isOver = false;
+AeroPipeline2D::AeroPipeline2D(ParamsAero Aparams) :
+  AbstractAeroPipeline(Aparams, gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+                                       gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F))
+{
+
 }
 /*------------------------------------------------------------------------*/
 
@@ -32,19 +33,19 @@ void AeroPipeline2D::execute(){
 
 	// Je n'ai pas trouvé d'autre façon de faire pour initialiser le maillage
 	// pour l'instant...
-	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
-	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
-	m_mesh = &m;
+	//gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+	//                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
+	//m_mesh = &m;
 
 	LectureMaillage();
 	InitialisationFronts();
 
 	// Calcul du level set
-	LevelSetCombined lsCombined(m_mesh, m_markFrontNodesParoi, m_markFrontNodesExt);
+	LevelSetCombined lsCombined(&m_m, m_markFrontNodesParoi, m_markFrontNodesExt);
 	lsCombined.execute();
 
 	// Calcul du gradient du champ de Level Set
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
+	LeastSquaresGradientComputation grad2D(&m_m, m_m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
 	grad2D.execute();
 
 	EcritureMaillage();

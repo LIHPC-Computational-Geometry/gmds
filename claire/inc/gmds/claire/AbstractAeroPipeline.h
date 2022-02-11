@@ -28,7 +28,7 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	/** @brief Constructor.
          *  @param
 	 */
-	AbstractAeroPipeline();
+	AbstractAeroPipeline(ParamsAero Aparams, gmds::Mesh && Am);
 
 	/*-------------------------------------------------------------------*/
 	/** \brief Function to be called for mesh generation
@@ -42,6 +42,8 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 
  protected:
 	/** mesh we work on */
+	Mesh m_m;
+	/** pointer to mesh we work on */
 	Mesh* m_mesh;
 	/** parameters for the algorithm */
 	ParamsAero m_params;

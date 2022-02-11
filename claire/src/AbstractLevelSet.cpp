@@ -8,8 +8,10 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AbstractLevelSet::AbstractLevelSet() {
-
+AbstractLevelSet::AbstractLevelSet(Mesh *AMesh, int AmarkFrontNodes, Variable<double>* Adistance) {
+	m_mesh = AMesh;
+	m_markFrontNodes = AmarkFrontNodes;
+	m_distance = Adistance;
 }
 /*------------------------------------------------------------------------*/
 
