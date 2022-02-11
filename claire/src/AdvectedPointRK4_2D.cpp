@@ -10,6 +10,7 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
+/*------------------------------------------------------------------------*/
 AdvectedPointRK4_2D::AdvectedPointRK4_2D(Mesh *AMesh, math::Point A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D) {
 	m_mesh = AMesh;
 	m_Pstart = A_Pstart;
@@ -19,6 +20,7 @@ AdvectedPointRK4_2D::AdvectedPointRK4_2D(Mesh *AMesh, math::Point A_Pstart, doub
 	m_gradient2D = A_gradient2D;
 	m_discrete_path.push_back(m_Pstart);
 }
+/*------------------------------------------------------------------------*/
 
 
 /*------------------------------------------------------------------------*/
@@ -78,9 +80,6 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 	return AdvectedPointRK4_2D::SUCCESS;
 }
 /*------------------------------------------------------------------------*/
-
-
-
 
 
 /*------------------------------------------------------------------------*/
