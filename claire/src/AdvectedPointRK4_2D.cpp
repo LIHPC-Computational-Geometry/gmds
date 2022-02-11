@@ -30,29 +30,44 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 	std::cout << "min : " << minLenght << std::endl;
 
 	double dt = 0.9*minLenght;
-	int iterations=0;
+	double err = pow(10,-6);
 	int max_iterations=10000;
 
+	int iterations=0;
 	double dist(0);
 	math::Vector3d Grad;
-	TCellID face_id_P = inWhichTriangle(m_Pstart) ;
-	computeInterpolatedDistanceAndGrad(m_Pstart, face_id_P, dist, Grad);
-	m_Pend = m_Pstart;
-	std::cout << "distance initiale : " << dist << std::endl;
-	std::cout << "gradient initial : " << Grad << std::endl;
+	Eigen::Matrix3d Mat_A_Inv;
 
-	while ( (abs(dist-m_d0) > pow(10,-6)) && iterations < max_iterations ) {
+	// Initialisation
+	TCellID face_id = inWhichTriangle(m_Pstart) ;		// Dans quel triangle est le point de départ
+	Mat_A_Inv = getInvMatrixA(face_id);
+	dist = interpolationDistance(face_id, Mat_A_Inv, m_Pstart);	// A quelle distance est le point de départ
+	Grad = interpolationGradient(face_id, Mat_A_Inv, m_Pstart);	// Quel est le gradient à ce point
+
+	std::cout << "distance initiale : " << dist << std::endl;
+	std::cout << "gradient initial  : " << Grad << std::endl;
+	std::cout << "Noeud dans le triangle : " << face_id << std::endl;
+
+	while ( (abs(dist-m_d0) > err) && iterations < max_iterations ) {
 		std::cout << "-------- ITERATION " << iterations << " ---------" << std::endl;
-		math::Point M = RungeKutta4(m_Pend, Grad.normalize(), dt);
-		double dist_M;
-		math::Vector3d Grad_M;
-		TCellID face_id = inWhichTriangle(M) ;
+		math::Point M = RungeKutta4(m_Pend, Grad.normalize(), dt);	// Calcule la position du point à l'itération n+1 avec un RK4
+		// On vérifie ensuite si cette position est "valide"
+		face_id = inWhichTriangle(M) ;
+
+		// Si le noeud M calculé est bien dans le maillage,
+		// alors on regarde la distance et le gradient.
+		// Sinon, on retranche le pas de temps et on recommence.
 		if(face_id != NullID) {
-			computeInterpolatedDistanceAndGrad(M, face_id, dist_M, Grad_M);
-			// Rajouter condition comme ça : inWhichTriangle(M) != std::numeric_limits<int>::max()
+			Mat_A_Inv = getInvMatrixA(face_id);		// Calcul la matrice inverse à A pour résoudre le système Ax=b
+			double dist_M = interpolationDistance(face_id, Mat_A_Inv, M);	// A quelle distance est le point M
+
+			// Si la distance du point M est plus petite que celle souhaitée,
+			// alors on met à jour la valeur du gradient et on continue le RK4
+			// Sinon, on retranche le pas de temps et on recommence
 			if ((dist_M < m_d0)) {
+				std::cout << "Triangle : " << face_id << std::endl;
 				m_Pend = M;
-				Grad = Grad_M;
+				Grad = interpolationGradient(face_id, Mat_A_Inv, M);	// Mise à jour du gradient
 				dist = dist_M;
 				std::cout << "distance : " << dist << std::endl;
 				m_discrete_path.push_back(m_Pend);
@@ -62,6 +77,7 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 				// et on continue la boucle
 				dt = 0.95 * dt;
 			}
+
 		}
 		else{
 			dt = 0.95 * dt;
@@ -69,8 +85,11 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 		iterations += 1;
 	}
 
-	face_id_P = inWhichTriangle(m_Pend) ;
-	computeInterpolatedDistanceAndGrad(m_Pend, face_id_P, dist, Grad);
+	// Pour le noeud Pend, calcule de la distance finale.
+	// Normalement, il n'y en a pas besoin, mais c'est pour l'affichage.
+	face_id = inWhichTriangle(m_Pend) ;
+	Mat_A_Inv = getInvMatrixA(face_id);
+	dist = interpolationDistance(face_id, Mat_A_Inv, m_Pend);
 	std::cout << "----------------------------------" << std::endl;
 	std::cout << "Point final : " << m_Pend << std::endl;
 	std::cout << "Distance finale : " << dist << std::endl;
@@ -133,7 +152,6 @@ TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M){
 
 	if (!isInFace){
 		face_id = NullID;
-		std::cout << "triangle : " << face_id << std::endl;
 	}
 	return face_id;
 }
@@ -159,8 +177,9 @@ double AdvectedPointRK4_2D::minEdgeLenght(){
 
 
 /*------------------------------------------------------------------------*/
-void AdvectedPointRK4_2D::buildSystemMatrix(TCellID face_id, Eigen::SparseMatrix<double> &A, Eigen::VectorXd &b1,
-                                       Eigen::VectorXd &b2, Eigen::VectorXd &b3){
+Eigen::Matrix3d AdvectedPointRK4_2D::getInvMatrixA(TCellID face_id){
+
+	Eigen::Matrix3d Mat_A;
 
 	Face f = m_mesh->get<Face>(face_id);
 	std::vector<Node> nodes = f.get<Node>() ;
@@ -172,73 +191,45 @@ void AdvectedPointRK4_2D::buildSystemMatrix(TCellID face_id, Eigen::SparseMatrix
 	TCellID n1_id = nodes[1].id();
 	TCellID n2_id = nodes[2].id();
 
-	// Assemble la matrice composée des coordonnées des points des noeuds de la face
 	// x1 y1 1
 	// x2 y2 1
 	// x3 y3 1
-	A.coeffRef(0,0) = p0.X() ;
-	A.coeffRef(0,1) = p0.Y() ;
-	A.coeffRef(0,2) = 1.0 ;
-	A.coeffRef(1,0) = p1.X() ;
-	A.coeffRef(1,1) = p1.Y() ;
-	A.coeffRef(1,2) = 1.0 ;
-	A.coeffRef(2,0) = p2.X() ;
-	A.coeffRef(2,1) = p2.Y() ;
-	A.coeffRef(2,2) = 1.0 ;
+	// Remplissage de la matrice A du système Ax=b
+	Mat_A(0,0) = p0.X() ;
+	Mat_A(0,1) = p0.Y() ;
+	Mat_A(0,2) = 1.0 ;
+	Mat_A(1,0) = p1.X() ;
+	Mat_A(1,1) = p1.Y() ;
+	Mat_A(1,2) = 1.0 ;
+	Mat_A(2,0) = p2.X() ;
+	Mat_A(2,1) = p2.Y() ;
+	Mat_A(2,2) = 1.0 ;
 
-	// Initialisation du vecteur des distances aux noeuds
-	b1[0] = m_distance->value(n0_id)  ;
-	b1[1] = m_distance->value(n1_id)  ;
-	b1[2] = m_distance->value(n2_id)  ;
-
-	//Initialisation du vecteur des composantes du grad dans la direction x
-	b2[0] = m_gradient2D->value(n0_id).X()  ;
-	b2[1] = m_gradient2D->value(n1_id).X()  ;
-	b2[2] = m_gradient2D->value(n2_id).X()  ;
-
-	//Initialisation du vecteur des composantes du grad dans la direction y
-	b3[0] = m_gradient2D->value(n0_id).Y()  ;
-	b3[1] = m_gradient2D->value(n1_id).Y()  ;
-	b3[2] = m_gradient2D->value(n2_id).Y()  ;
+	return Mat_A.inverse();
 
 }
 /*------------------------------------------------------------------------*/
 
 
 /*------------------------------------------------------------------------*/
-void AdvectedPointRK4_2D::computeInterpolatedDistanceAndGrad(math::Point M, TCellID face_id, double &distance_M, math::Vector3d &Grad_M){
-
-	// On commence par chercher dans quel élément (face) est le point M.
-	//TCellID face_id = inWhichTriangle(M) ;
-	std::cout << "Noeud dans le triangle : " << face_id << std::endl;
-
-	// En 2D, résolution de 3 systèmes 3x3. Un pour la distance, et deux pour le gradient (un pour chaque composante)
-	// Assemblage de la matrice A commune aux 3 systèmes
-	Eigen::SparseMatrix<double> A(3,3);
-	Eigen::VectorXd dist(3);	// Vecteur des distances aux trois noeuds
-	Eigen::VectorXd grad_x(3);	// Vecteur des gradients aux trois noeuds dans la direction x
-	Eigen::VectorXd grad_y(3);	// Vecteur des gradients aux trois noeuds dans la direction y
-	buildSystemMatrix(face_id, A, dist, grad_x, grad_y);
-
-	// Définition de la distance exacte au point M
-	distance_M = interpolationDistance(A, dist, M);
-
-	// Calcul du gradient exact par interpolation sur la face
-	Grad_M = interpolationGradient(A, grad_x, grad_y, M);
-
-}
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
-double AdvectedPointRK4_2D::interpolationDistance(Eigen::SparseMatrix<double> A, Eigen::VectorXd b, math::Point M){
+double AdvectedPointRK4_2D::interpolationDistance(TCellID face_id, Eigen::Matrix3d Mat_A_Inv, math::Point M){
 	double dist_interpolee;
 
-	ResLU resolutionlu(A, b);
-	resolutionlu.execute();
-	Eigen::VectorXd coeff = resolutionlu.getSolution();
+	Face f = m_mesh->get<Face>(face_id);
+	std::vector<Node> nodes = f.get<Node>() ;
 
-	dist_interpolee = coeff[0]*M.X() + coeff[1]*M.Y() + coeff[2] ;
+	TCellID n0_id = nodes[0].id();
+	TCellID n1_id = nodes[1].id();
+	TCellID n2_id = nodes[2].id();
+
+	// Initialisation du vecteur des distances aux noeuds
+	Eigen::Vector3d b;
+	b[0] = m_distance->value(n0_id)  ;
+	b[1] = m_distance->value(n1_id)  ;
+	b[2] = m_distance->value(n2_id)  ;
+
+	Eigen::Vector3d coef = Mat_A_Inv * b;
+	dist_interpolee = coef[0]*M.X() + coef[1]*M.Y() + coef[2] ;
 
 	return dist_interpolee;
 }
@@ -246,20 +237,34 @@ double AdvectedPointRK4_2D::interpolationDistance(Eigen::SparseMatrix<double> A,
 
 
 /*------------------------------------------------------------------------*/
-math::Vector3d AdvectedPointRK4_2D::interpolationGradient(Eigen::SparseMatrix<double> A, Eigen::VectorXd bx, Eigen::VectorXd by, math::Point M){
+math::Vector3d AdvectedPointRK4_2D::interpolationGradient(TCellID face_id, Eigen::Matrix3d Mat_A_Inv, math::Point M){
 	math::Vector3d Gradient_M;
 
+	Face f = m_mesh->get<Face>(face_id);
+	std::vector<Node> nodes = f.get<Node>() ;
+
+	TCellID n0_id = nodes[0].id();
+	TCellID n1_id = nodes[1].id();
+	TCellID n2_id = nodes[2].id();
+
+	// Initialisation du vecteur des distances aux noeuds
+	Eigen::Vector3d bx, by;
+	//Initialisation du vecteur des composantes du grad dans la direction x
+	bx[0] = m_gradient2D->value(n0_id).X()  ;
+	bx[1] = m_gradient2D->value(n1_id).X()  ;
+	bx[2] = m_gradient2D->value(n2_id).X()  ;
+
+	//Initialisation du vecteur des composantes du grad dans la direction y
+	by[0] = m_gradient2D->value(n0_id).Y()  ;
+	by[1] = m_gradient2D->value(n1_id).Y()  ;
+	by[2] = m_gradient2D->value(n2_id).Y()  ;
+
 	// Définition du gradient exact dans la direction x au point M
-	ResLU resolutionlu(A, bx);
-	resolutionlu.execute();
-	Eigen::VectorXd coeff_grad_x = resolutionlu.getSolution();
+	Eigen::Vector3d coeff_grad_x = Mat_A_Inv * bx;
 	Gradient_M.setX(coeff_grad_x[0]*M.X() + coeff_grad_x[1]*M.Y() + coeff_grad_x[2]) ;
 
-
 	// Définition du gradient exact dans la direction y au point M
-	resolutionlu = ResLU(A, by);
-	resolutionlu.execute();
-	Eigen::VectorXd coeff_grad_y = resolutionlu.getSolution();
+	Eigen::Vector3d coeff_grad_y = Mat_A_Inv * by;
 	Gradient_M.setY(coeff_grad_y[0]*M.X() + coeff_grad_y[1]*M.Y() + coeff_grad_y[2]) ;
 
 	// Définition du gradient exact dans la direction z au point M
