@@ -46,7 +46,6 @@ math::Chart::Mapping PGPStructPointExtraction::getRij(const TCellID AFrom,
     math::Chart chart_to    = rotation_to.toChart();
 
     return math::Chart::Mapping(chart_from,chart_to);
-
 }
 /*---------------------------------------------------------------------------*/
 math::Chart::Mapping PGPStructPointExtraction::getRij(const Node& AFrom,

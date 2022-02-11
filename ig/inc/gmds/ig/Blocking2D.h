@@ -16,7 +16,7 @@ namespace gmds {
      *         exist at the macro level, or block level. Nodes are block corners
      *         but also inner-block nodes.
      *
-     *         Each node knows it is a corner-block (block level) or an inner-node
+     p)*         Each node knows it is a corner-block (block level) or an inner-node
      *         using the node on-node variable called "embedding". An embedding is
      *         a Cell::Data that corresponds to the block entity the node is
      *         embedded in. It is made of a dim and an id.
