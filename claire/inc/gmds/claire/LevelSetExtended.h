@@ -19,6 +19,9 @@ class LIB_GMDS_CLAIRE_API LevelSetExtended: public AbstractLevelSet {
 
 	/*------------------------------------------------------------------------*/
 	/** \brief Default constructor
+	 *	 @param AMesh pointeur vers un maillage
+	 *	 @param AmarkFrontNodes marque sur les noeuds sur front
+	 *	 @param Adistance variable distance
 	 */
 	LevelSetExtended(Mesh *AMesh, int AmarkFrontNodes, Variable<double>* Adistance);
 
@@ -28,7 +31,7 @@ class LIB_GMDS_CLAIRE_API LevelSetExtended: public AbstractLevelSet {
 	/** \brief Construit un vecteur des noeuds du voisinage
 	 *
 	 * @param n
-	 * @return
+	 * @return a vector of nodes
 	 */
 	virtual std::vector<Node> getNeighbors(Node n);
 
