@@ -12,6 +12,7 @@
 #include <map>
 #include <fstream>
 #include <Eigen/Sparse>
+#include <Eigen/Eigen>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
 class LIB_GMDS_CLAIRE_API AdvectedPointRK4_2D
@@ -50,22 +51,17 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_2D
 	 */
 	double minEdgeLenght();
 	/*-------------------------------------------------------------------*/
-	/** @brief Compute the interpolated value of distance and grad for the point M
+	/** @brief Retourne la matrice inverse de A sur la face face_id
 	 */
-	void computeInterpolatedDistanceAndGrad(math::Point M, TCellID face_id, double &int_dist, math::Vector3d &int_Grad);
-	/*-------------------------------------------------------------------*/
-	/** @brief Assemble la matrice et les vecteurs pour la résolution du système
-	 */
-	void buildSystemMatrix(TCellID face_id, Eigen::SparseMatrix<double> &A, Eigen::VectorXd &b1,
-	                       Eigen::VectorXd &b2, Eigen::VectorXd &b3);
+	Eigen::Matrix3d getInvMatrixA(TCellID face_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Interpolation de la distance au point M
 	 */
-	double interpolationDistance(Eigen::SparseMatrix<double> A, Eigen::VectorXd b, math::Point M);
+	double interpolationDistance(TCellID face_id, Eigen::Matrix3d Mat_A_Inv, math::Point M);
 	/*-------------------------------------------------------------------*/
 	/** @brief Interpolation du gradient au point M
 	 */
-	math::Vector3d interpolationGradient(Eigen::SparseMatrix<double> A, Eigen::VectorXd bx, Eigen::VectorXd by, math::Point M);
+	math::Vector3d interpolationGradient(TCellID face_id, Eigen::Matrix3d Mat_A_Inv, math::Point M);
 	/*-------------------------------------------------------------------*/
 	/** @brief Applique le schéma Runge Kutta d'ordre 4 pour résoudre dx/dt = grad
 	 */

@@ -767,7 +767,7 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test4)
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
 
 	// Placement du point P à la distance souhaitée suivant le champ de gradient
-	math::Point M(-2,1, 0.0);
+	math::Point M(-1,1, 0.0);
 	double distance = 1.0;
 	AdvectedPointRK4_2D advpoint(&m, M, distance, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"), m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
 	AdvectedPointRK4_2D::STATUS result = advpoint.execute();
