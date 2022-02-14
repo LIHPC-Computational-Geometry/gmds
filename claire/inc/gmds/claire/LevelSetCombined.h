@@ -8,12 +8,8 @@
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include "gmds/ig/Mesh.h"
-//#include "DistanceMap.h"
-#include "LevelSetNaif.h"
-/*----------------------------------------------------------------------------*/
 #include <string>
 #include <map>
-/*----------------------------------------------------------------------------*/
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -34,8 +30,12 @@ class LIB_GMDS_CLAIRE_API LevelSetCombined
          *  @param AmarkFrontNodesInt the nodes on the interior front to advance
          *  @param AmarkFrontNodesOut the nodes on the exterior front to advance
 	 */
-	LevelSetCombined(Mesh *AMesh, int AmarkFrontNodesInt, int AmarkFrontNodesOut,
-	                 Variable<double>* Adistance, Variable<double>* Adistance_Int, Variable<double>* Adistance_Out);
+	LevelSetCombined(Mesh *AMesh,
+	                 int AmarkFrontNodesInt,
+	                 int AmarkFrontNodesOut,
+	                 Variable<double>* Adistance,
+	                 Variable<double>* Adistance_Int,
+	                 Variable<double>* Adistance_Out);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -43,24 +43,6 @@ class LIB_GMDS_CLAIRE_API LevelSetCombined
 	STATUS execute();
 
  private:
-	/*-------------------------------------------------------------------*/
-	/** @brief
-         *  @param
-	 */
-	void combineDistanceFields();
-
-	/*-------------------------------------------------------------------*/
-	/** @brief Initialisation des distances au front intérieur
-         *  @param
-	 */
-	void initialisationDistancesInt();
-
-	/*-------------------------------------------------------------------*/
-	/** @brief Initialisation des distances au front extérieur
-         *  @param
-	 */
-	void initialisationDistancesOut();
-
 	/*-------------------------------------------------------------------*/
 	/** @brief Défini la distance pour un noeud
 	 */
