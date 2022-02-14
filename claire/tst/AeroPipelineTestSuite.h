@@ -28,11 +28,16 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.output_file="AeroPipeline2D_Test1_Result.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
 
+	/*
 	AbstractAeroPipeline* algo_aero2D = NULL;
 	algo_aero2D = new AeroPipeline2D(params_aero);
 	algo_aero2D->execute();
+	 */
 
-	bool isOver = algo_aero2D->getIsOver();
+	AeroPipeline2D algo_aero2D(params_aero);
+	algo_aero2D.execute();
+
+	bool isOver = algo_aero2D.getIsOver();
 
 	ASSERT_EQ(isOver, true);
 

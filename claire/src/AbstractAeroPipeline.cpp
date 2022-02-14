@@ -8,11 +8,20 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
+/*
 AbstractAeroPipeline::AbstractAeroPipeline(ParamsAero Aparams, gmds::Mesh && Am) :
   m_params(Aparams),
   m_m(std::move(Am))
 {
 	m_mesh = &m_m;
+	m_isOver = false;
+}
+ */
+/*------------------------------------------------------------------------*/
+AbstractAeroPipeline::AbstractAeroPipeline(ParamsAero Aparams) :
+  m_params(Aparams)
+{
+	//m_mesh = &m_m;
 	m_isOver = false;
 }
 /*------------------------------------------------------------------------*/
