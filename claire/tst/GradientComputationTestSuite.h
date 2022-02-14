@@ -2,7 +2,8 @@
 // Created by rochec on 21/01/2022.
 //
 
-#include <gmds/claire/LevelSet.h>
+#include <gmds/claire/LevelSetExtended.h>
+#include <gmds/claire/LevelSetEloi.h>
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/GradientComputation2D.h>
 #include <gmds/claire/GradientComputation3D.h>
@@ -62,10 +63,11 @@ TEST(GradientComputationTestClass, GradientComputation2D_Test1)
 		}
 	}
 
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result_ls = ls.execute();
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result_ls = ls.execute();
 
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -122,10 +124,11 @@ TEST(GradientComputationTestClass, GradientComputation2D_Test2)
 		}
 	}
 
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result_ls = ls.execute();
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result_ls = ls.execute();
 
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -247,10 +250,9 @@ TEST(GradientComputationTestClass, GradientComputation2D_Test4)
 		}
 	}
 
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result_ls = ls.execute();
-
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result_ls = ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -307,10 +309,11 @@ TEST(GradientComputationTestClass, GradientComputation3D_Test1)
 
 	std::cout << "Fin de l'initialisation des marques" << std::endl ;
 
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result_ls = ls.execute();
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result_ls = ls.execute();
 
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -359,9 +362,10 @@ TEST(GradientComputationTestClass, GradientComputation3D_Test2)
 	}
 
 
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result_ls = ls.execute();
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result_ls = ls.execute();
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -484,16 +488,17 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test1)
 		}
 	}
 
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result_ls = ls.execute();
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result_ls = ls.execute();
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
 	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
 
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d,GMDS_NODE>("GMDS_Gradient"));
+	LeastSquaresGradientComputation grad2D(&m, var_dist, m.getVariable<math::Vector3d,GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -545,16 +550,17 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test2)
 		}
 	}
 
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result_ls = ls.execute();
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetExtended ls(&m, markFrontNodes, var_dist);
+	LevelSetExtended::STATUS result_ls = ls.execute();
+	ASSERT_EQ(LevelSetExtended::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
 	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
 
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	LeastSquaresGradientComputation grad2D(&m, var_dist, m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -600,16 +606,15 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test3)
 		}
 	}
 
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result_ls = ls.execute();
-
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result_ls = ls.execute();
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
 	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-
 	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result = grad2D.execute();
 
@@ -662,17 +667,17 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test1)
 
 	std::cout << "Fin de l'initialisation des marques" << std::endl ;
 
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result_ls = ls.execute();
-
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result_ls = ls.execute();
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
 	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
 
-	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	LeastSquaresGradientComputation grad3D(&m, var_dist, m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -716,16 +721,17 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test2)
 	}
 
 
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result_ls = ls.execute();
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result_ls = ls.execute();
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
 	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
 
-	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	LeastSquaresGradientComputation grad3D(&m, var_dist, m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);

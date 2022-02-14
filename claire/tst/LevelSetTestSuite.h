@@ -5,8 +5,6 @@
 #include <gmds/claire/AbstractLevelSet.h>
 #include <gmds/claire/LevelSetEloi.h>
 #include <gmds/claire/LevelSetExtended.h>
-#include <gmds/claire/LevelSet.h>
-#include <gmds/claire/LevelSetNaif.h>
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/GradientComputation2D.h>
 #include <gmds/ig/Mesh.h>
@@ -25,10 +23,10 @@ using namespace gmds;
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/*                       CAS TEST 2D CLASSE LevelSet                          */
+/*                   CAS TEST 2D CLASSE LevelSetEloi                          */
 /*----------------------------------------------------------------------------*/
 
-TEST(LevelSetTestClass, LevelSet_2D_Test1)
+TEST(LevelSetTestClass, LevelSetEloi_2D_Test1)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -61,8 +59,9 @@ TEST(LevelSetTestClass, LevelSet_2D_Test1)
 		}
 	}
 
-	LevelSet ls(&m, markFrontNodes);
-	LevelSet::STATUS result = ls.execute();
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result = ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -70,12 +69,12 @@ TEST(LevelSetTestClass, LevelSet_2D_Test1)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet_2D_Test1_Result.vtk");
+	vtkWriter.write("LevelSetEloi_2D_Test1_Result.vtk");
 
-	ASSERT_EQ(LevelSet::SUCCESS, result);
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result);
 }
 
-TEST(LevelSetTestClass, LevelSet_2D_Test2)
+TEST(LevelSetTestClass, LevelSetEloi_2D_Test2)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -111,8 +110,9 @@ TEST(LevelSetTestClass, LevelSet_2D_Test2)
 		}
 	}
 
-	LevelSet ls(&m, markFrontNodes);
-	LevelSet::STATUS result = ls.execute();
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result = ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -120,12 +120,12 @@ TEST(LevelSetTestClass, LevelSet_2D_Test2)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet_2D_Test2_Result.vtk");
+	vtkWriter.write("LevelSetEloi_2D_Test2_Result.vtk");
 
-	ASSERT_EQ(LevelSet::SUCCESS, result);
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result);
 }
 
-TEST(LevelSetTestClass, LevelSet_2D_Test3)
+TEST(LevelSetTestClass, LevelSetEloi_2D_Test3)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -164,8 +164,9 @@ TEST(LevelSetTestClass, LevelSet_2D_Test3)
 		}
 	}
 
-	LevelSet ls(&m, markFrontNodes);
-	LevelSet::STATUS result = ls.execute();
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result = ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -173,12 +174,12 @@ TEST(LevelSetTestClass, LevelSet_2D_Test3)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet_2D_Test3_Result.vtk");
+	vtkWriter.write("LevelSetEloi_2D_Test3_Result.vtk");
 
-	ASSERT_EQ(LevelSet::SUCCESS, result);
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result);
 }
 
-TEST(LevelSetTestClass, LevelSet_2D_Test4)
+TEST(LevelSetTestClass, LevelSetEloi_2D_Test4)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -216,8 +217,9 @@ TEST(LevelSetTestClass, LevelSet_2D_Test4)
 		}
 	}
 
-	LevelSet ls(&m, markFrontNodes);
-	LevelSet::STATUS result = ls.execute();
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result = ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -225,12 +227,12 @@ TEST(LevelSetTestClass, LevelSet_2D_Test4)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet_2D_Test4_Result.vtk");
+	vtkWriter.write("LevelSetEloi_2D_Test4_Result.vtk");
 
-	ASSERT_EQ(LevelSet::SUCCESS, result);
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result);
 }
 
-TEST(LevelSetTestClass, LevelSet_2D_Test5)
+TEST(LevelSetTestClass, LevelSetEloi_2D_Test5)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -264,8 +266,9 @@ TEST(LevelSetTestClass, LevelSet_2D_Test5)
 		}
 	}
 
-	LevelSet ls(&m, markFrontNodes);
-	LevelSet::STATUS result = ls.execute();
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result = ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -273,9 +276,9 @@ TEST(LevelSetTestClass, LevelSet_2D_Test5)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet_2D_Test5_Result.vtk");
+	vtkWriter.write("LevelSetEloi_2D_Test5_Result.vtk");
 
-	ASSERT_EQ(LevelSet::SUCCESS, result);
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -284,10 +287,10 @@ TEST(LevelSetTestClass, LevelSet_2D_Test5)
 
 
 /*----------------------------------------------------------------------------*/
-/*                       CAS TEST 3D CLASSE LevelSet                          */
+/*                   CAS TEST 3D CLASSE LevelSetEloi                          */
 /*----------------------------------------------------------------------------*/
 
-TEST(LevelSetTestClass, LevelSet_3D_Test1)
+TEST(LevelSetTestClass, LevelSetEloi_3D_Test1)
 {
 	Mesh m(MeshModel(DIM3 | R | F | E | N |
 	                 R2N | F2N | E2N | R2F | F2R |
@@ -310,16 +313,17 @@ TEST(LevelSetTestClass, LevelSet_3D_Test1)
 	// Test avec une source ponctuelle
 	m.mark<Node>(10,markFrontNodes);
 
-	LevelSet ls(&m, markFrontNodes);
-	ls.execute();
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result = ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
 	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::F);
-	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSet_3D_Test1_Result.vtk");
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("LevelSetEloi_3D_Test1_Result.vtk");
 
 	ASSERT_TRUE(true);
 
@@ -331,10 +335,10 @@ TEST(LevelSetTestClass, LevelSet_3D_Test1)
 
 
 /*----------------------------------------------------------------------------*/
-/*                     CAS TEST 2D CLASSE LevelSetNaif                        */
+/*                   CAS TEST 2D CLASSE LevelSetExtended                      */
 /*----------------------------------------------------------------------------*/
 
-TEST(LevelSetTestClass, LevelSetNaif_2D_Test1)
+TEST(LevelSetTestClass, LevelSetExtended_2D_Test1)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -367,8 +371,9 @@ TEST(LevelSetTestClass, LevelSetNaif_2D_Test1)
 		}
 	}
 
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result = ls.execute();
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetExtended ls(&m, markFrontNodes, var_dist);
+	LevelSetExtended::STATUS result = ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -376,9 +381,9 @@ TEST(LevelSetTestClass, LevelSetNaif_2D_Test1)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("LevelSetNaif_2D_Test1_Result.vtk");
+	vtkWriter.write("LevelSetExtended_2D_Test1_Result.vtk");
 
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result);
+	ASSERT_EQ(LevelSetExtended::SUCCESS, result);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -387,10 +392,10 @@ TEST(LevelSetTestClass, LevelSetNaif_2D_Test1)
 
 
 /*----------------------------------------------------------------------------*/
-/*                     CAS TEST 3D CLASSE LevelSetNaif                        */
+/*                   CAS TEST 3D CLASSE LevelSetExtended                      */
 /*----------------------------------------------------------------------------*/
 
-TEST(LevelSetTestClass, LavelSetNaif_3D_Test1)
+TEST(LevelSetTestClass, LavelSetExtended_3D_Test1)
 {
 	Mesh m(MeshModel(DIM3 | R | F | E | N |
 	                 R2N | F2N | E2N | R2F | F2R |
@@ -420,8 +425,9 @@ TEST(LevelSetTestClass, LavelSetNaif_3D_Test1)
 	}
 
 	// Calcul des Level Set
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result_ls = ls.execute();
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetExtended ls(&m, markFrontNodes, var_dist);
+	LevelSetExtended::STATUS result = ls.execute();
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -429,9 +435,9 @@ TEST(LevelSetTestClass, LavelSetNaif_3D_Test1)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::R);
 	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("LevelSetNaif_3D_Test1_Result.vtk");
+	vtkWriter.write("LevelSetExtended_3D_Test1_Result.vtk");
 
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+	ASSERT_EQ(LevelSetExtended::SUCCESS, result);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -637,181 +643,9 @@ TEST(LevelSetTestClass, LevelSetCombined_3D_Test1)
 
 }
 
-/*
-TEST(LevelSetTestClass, LevelSetCombined_3D_Test2)
-{
-	// Cas test bicone.
-
-	Mesh m(MeshModel(DIM3 | R | F | E | N |
-	                 R2N | F2N | E2N | R2F | F2R |
-	                 F2E | E2F | R2E | N2R | N2F | N2E));
-	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/biconique.vtk";
-
-	gmds::IGMeshIOService ioService(&m);
-	gmds::VTKReader vtkReader(&ioService);
-	vtkReader.setCellOptions(gmds::N|gmds::R);
-	vtkReader.read(vtk_file);
-
-	gmds::MeshDoctor doctor(&m);
-	doctor.buildFacesAndR2F();
-	doctor.buildEdgesAndX2E();
-	doctor.updateUpwardConnectivity();
-
-	//Get the boundary node ids
-	BoundaryOperator bnd_op(&m);
-	std::vector<TCellID> bnd_node_ids;
-	bnd_op.getBoundaryNodes(bnd_node_ids);
-
-	int markFrontNodesInt = m.newMark<gmds::Node>();
-	int markFrontNodesOut = m.newMark<gmds::Node>();
-
-	for(auto id:bnd_node_ids){
-		Node n = m.get<Node>(id);
-		double coord_x = n.X() ;
-		double coord_y = n.Y() ;
-		double coord_z = n.Z() ;
-		double rayon;
-		rayon = sqrt( (pow(coord_x, 2) + pow(coord_y, 2) + pow(coord_z - 500.0, 2)) ) ;
-		if ( abs(rayon - 1000.0) < pow(10,-3)) {
-			// Pour ce cas test, le front extérieur est sur la sphère englobante
-			m.mark<Node>(id,markFrontNodesOut);
-		}
-		else {
-			m.mark<Node>(id,markFrontNodesInt);
-		}
-	}
-
-	std::cout << "Fin de l'initialisation des marques" << std::endl ;
-
-	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
-	LevelSetCombined::STATUS result_ls = lsCombined.execute();
-
-	m.unmarkAll<Node>(markFrontNodesInt);
-	m.freeMark<Node>(markFrontNodesInt);
-	m.unmarkAll<Node>(markFrontNodesOut);
-	m.freeMark<Node>(markFrontNodesOut);
-
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::R);
-	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("LevelSetCombined_3D_Test2_Result.vtk");
-
-	ASSERT_EQ(LevelSetCombined::SUCCESS, result_ls);
-}
-*/
 /*----------------------------------------------------------------------------*/
 
 
-
-
-
-
-
-/*----------------------------------------------------------------------------*/
-/*                   CAS TEST 2D CLASSE AbstractLevelSet                      */
-/*----------------------------------------------------------------------------*/
-
-
-TEST(LevelSetTestClass, LevelSetEloi_2D_Test1)
-{
-	// WE READ
-	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
-	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
-
-	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Carre.vtk";
-
-	gmds::IGMeshIOService ioService(&m);
-	gmds::VTKReader vtkReader(&ioService);
-	vtkReader.setCellOptions(gmds::N|gmds::F);
-	vtkReader.read(vtk_file);
-
-	gmds::MeshDoctor doc(&m);
-	doc.buildEdgesAndX2E();
-	doc.updateUpwardConnectivity();
-
-	//Get the boundary node ids
-	BoundaryOperator2D bnd_op(&m);
-	std::vector<TCellID> bnd_node_ids;
-	bnd_op.getBoundaryNodes(bnd_node_ids);
-
-	int markFrontNodes = m.newMark<gmds::Node>();
-	for(auto id:bnd_node_ids){
-		Node n = m.get<Node>(id);
-		double coord_y = n.Y() ;
-		if (coord_y == 0) {
-			// For the square test case, the front to advance is the boundary where y=0
-			m.mark<Node>(id,markFrontNodes);
-		}
-	}
-
-	m.newVariable<double, GMDS_NODE>("GMDS_Distance");
-	AbstractLevelSet* algo_ls = NULL;
-	algo_ls = new LevelSetEloi(&m, markFrontNodes, m.getVariable<double, GMDS_NODE>("GMDS_Distance"));
-	algo_ls->execute();
-
-	m.unmarkAll<Node>(markFrontNodes);
-	m.freeMark<Node>(markFrontNodes);
-
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::F);
-	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("AbstractLevelSet_Eloi_2D_Test1_Result.vtk");
-
-   ASSERT_TRUE(true);
-}
-
-TEST(LevelSetTestClass, LevelSetExtended_2D_Test1)
-{
-	// WE READ
-	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
-	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
-
-	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Carre.vtk";
-
-	gmds::IGMeshIOService ioService(&m);
-	gmds::VTKReader vtkReader(&ioService);
-	vtkReader.setCellOptions(gmds::N|gmds::F);
-	vtkReader.read(vtk_file);
-
-	gmds::MeshDoctor doc(&m);
-	doc.buildEdgesAndX2E();
-	doc.updateUpwardConnectivity();
-
-	//Get the boundary node ids
-	BoundaryOperator2D bnd_op(&m);
-	std::vector<TCellID> bnd_node_ids;
-	bnd_op.getBoundaryNodes(bnd_node_ids);
-
-	int markFrontNodes = m.newMark<gmds::Node>();
-	for(auto id:bnd_node_ids){
-		Node n = m.get<Node>(id);
-		double coord_y = n.Y() ;
-		if (coord_y == 0) {
-			// For the square test case, the front to advance is the boundary where y=0
-			m.mark<Node>(id,markFrontNodes);
-		}
-	}
-
-	m.newVariable<double, GMDS_NODE>("GMDS_Distance");
-	AbstractLevelSet* algo_ls = NULL;
-	algo_ls = new LevelSetExtended(&m, markFrontNodes, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
-	algo_ls->execute();
-
-	//LevelSetEloi algo(&m, markFrontNodes, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
-
-	m.unmarkAll<Node>(markFrontNodes);
-	m.freeMark<Node>(markFrontNodes);
-
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::F);
-	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("AbstractLevelSet_Extended_2D_Test1_Result.vtk");
-
-	ASSERT_TRUE(true);
-}
 
 
 
