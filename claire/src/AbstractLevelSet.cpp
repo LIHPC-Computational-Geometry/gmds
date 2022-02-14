@@ -28,9 +28,7 @@ AbstractLevelSet::STATUS AbstractLevelSet::execute()
 		m_DistanceMap.getAndRemoveFirst(v0, n0_id);
 		Node n0 = m_mesh->get<Node>(n0_id);
 		math::Point p0 = n0.point();
-		//std::vector<Edge> adjacent_edges = n0.get<Edge>() ;
 		std::vector<Node> Neighbors_Nodes = getNeighbors(n0);
-		//std::cout << "Nombre d'edges adjacentes : " << adjacent_edges.size() << std::endl ;
 		for(auto n:Neighbors_Nodes){
 			TCellID n_id = n.id();
 			math::Point p = n.point();

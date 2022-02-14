@@ -25,6 +25,14 @@ namespace gmds{
 class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 
  public:
+	/*--------------------------------------------------------------------*/
+	/** @enum  Status code for executing algorithms
+	 */
+	typedef enum {
+		FAIL,
+		SUCCESS
+	} STATUS;
+	/*--------------------------------------------------------------------*/
 	/** @brief Constructor.
          *  @param
 	 */
