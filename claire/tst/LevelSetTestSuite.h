@@ -480,7 +480,13 @@ TEST(LevelSetTestClass, LevelSetCombined_2D_Test1)
 		}
 	}
 
-	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut,
+	                            	m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
 	LevelSetCombined::STATUS result = lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);
@@ -538,7 +544,13 @@ TEST(LevelSetTestClass, LevelSetCombined_2D_Test2)
 		}
 	}
 
-	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut,
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
 	LevelSetCombined::STATUS result = lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);
@@ -602,7 +614,13 @@ TEST(LevelSetTestClass, LevelSetCombined_3D_Test1)
 
 	std::cout << "Fin de l'initialisation des marques" << std::endl ;
 
-	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut,
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distanc"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
 	lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);

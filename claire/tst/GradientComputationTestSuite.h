@@ -185,7 +185,13 @@ TEST(GradientComputationTestClass, GradientComputation2D_Test3)
 		}
 	}
 
-	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut,
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
 	LevelSetCombined::STATUS result_ls = lsCombined.execute();
 
 	ASSERT_EQ(LevelSetCombined::SUCCESS, result_ls);
@@ -195,7 +201,7 @@ TEST(GradientComputationTestClass, GradientComputation2D_Test3)
 	m.unmarkAll<Node>(markFrontNodesOut);
 	m.freeMark<Node>(markFrontNodesOut);
 
-	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
+	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	GradientComputation2D::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -409,7 +415,13 @@ TEST(GradientComputationTestClass, GradientComputation3D_Test3)
 		}
 	}
 
-	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut,
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
 	LevelSetCombined::STATUS result_lscombined = lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);
@@ -419,7 +431,7 @@ TEST(GradientComputationTestClass, GradientComputation3D_Test3)
 
 	ASSERT_EQ(LevelSetCombined::SUCCESS, result_lscombined);
 
-	GradientComputation3D grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
+	GradientComputation3D grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	GradientComputation3D::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -766,7 +778,13 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test3)
 
 	std::cout << "Fin de l'initialisation des marques" << std::endl ;
 
-	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut);
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut,
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
 	LevelSetCombined::STATUS result_ls = lsCombined.execute();
 
 	m.unmarkAll<Node>(markFrontNodesInt);
@@ -775,8 +793,8 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test3)
 	m.freeMark<Node>(markFrontNodesOut);
 
 	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-
-	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	   m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);

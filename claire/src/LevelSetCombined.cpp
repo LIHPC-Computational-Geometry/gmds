@@ -4,18 +4,20 @@
 
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/LevelSetCombined.h>
+#include <gmds/claire/LevelSetExtended.h>
 //#include <limits>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-LevelSetCombined::LevelSetCombined(Mesh *AMesh, int AmarkFrontNodesInt, int AmarkFrontNodesOut) {
+LevelSetCombined::LevelSetCombined(Mesh *AMesh, int AmarkFrontNodesInt, int AmarkFrontNodesOut,
+                                   Variable<double>* Adistance, Variable<double>* Adistance_Int, Variable<double>* Adistance_Out) {
 	m_mesh = AMesh;
 	m_markFrontNodesInt = AmarkFrontNodesInt;
 	m_markFrontNodesOut = AmarkFrontNodesOut;
-	m_distance = m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Combined");
-	m_distance_Int = m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
-	m_distance_Out = m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+	m_distance = Adistance;
+	m_distance_Int = Adistance_Int;
+	m_distance_Out = Adistance_Out;
 
 }
 
@@ -70,14 +72,14 @@ LevelSetCombined::combineDistanceFields() {
 /*-------------------------------------------------------------------*/
 void
 LevelSetCombined::initialisationDistancesInt() {
-	LevelSetNaif lsInt(m_mesh, m_markFrontNodesInt);
+	LevelSetExtended lsInt(m_mesh, m_markFrontNodesInt, m_distance_Int);
 	lsInt.execute();
 	double distInt;
 	for (auto id:m_mesh->nodes()){
 		lsInt.getValue(id, distInt);
 		m_distance_Int->set(id, distInt);
 	}
-	m_mesh->deleteVariable(GMDS_NODE, "GMDS_Distance");
+	//m_mesh->deleteVariable(GMDS_NODE, "GMDS_Distance");
 };
 /*-------------------------------------------------------------------*/
 
@@ -86,13 +88,13 @@ LevelSetCombined::initialisationDistancesInt() {
 /*-------------------------------------------------------------------*/
 void
 LevelSetCombined::initialisationDistancesOut() {
-	LevelSetNaif lsOut(m_mesh, m_markFrontNodesOut);
+	LevelSetExtended lsOut(m_mesh, m_markFrontNodesOut, m_distance_Out);
 	lsOut.execute();
 	double distOut;
 	for (auto id:m_mesh->nodes()){
 		lsOut.getValue(id, distOut);
 		m_distance_Out->set(id, distOut);
 	}
-	m_mesh->deleteVariable(GMDS_NODE, "GMDS_Distance");
+	//m_mesh->deleteVariable(GMDS_NODE, "GMDS_Distance");
 };
 /*-------------------------------------------------------------------*/

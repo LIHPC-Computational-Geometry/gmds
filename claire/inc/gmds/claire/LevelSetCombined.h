@@ -34,7 +34,8 @@ class LIB_GMDS_CLAIRE_API LevelSetCombined
          *  @param AmarkFrontNodesInt the nodes on the interior front to advance
          *  @param AmarkFrontNodesOut the nodes on the exterior front to advance
 	 */
-	LevelSetCombined(Mesh *AMesh, int AmarkFrontNodesInt, int AmarkFrontNodesOut);
+	LevelSetCombined(Mesh *AMesh, int AmarkFrontNodesInt, int AmarkFrontNodesOut,
+	                 Variable<double>* Adistance, Variable<double>* Adistance_Int, Variable<double>* Adistance_Out);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
