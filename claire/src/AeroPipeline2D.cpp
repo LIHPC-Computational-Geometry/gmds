@@ -20,7 +20,8 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 AeroPipeline2D::AeroPipeline2D(ParamsAero Aparams) :
-  AbstractAeroPipeline(Aparams, gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+  AbstractAeroPipeline(Aparams),
+  m_m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
                                        gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F))
 {
 
@@ -33,26 +34,25 @@ void AeroPipeline2D::execute(){
 
 	// Je n'ai pas trouvé d'autre façon de faire pour initialiser le maillage
 	// pour l'instant...
-	//gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
-	//                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
-	//m_mesh = &m;
+	m_mesh = &m_m;
 
 	LectureMaillage();
 	InitialisationFronts();
 
 	// Calcul du level set
-	m_m.newVariable<double,GMDS_NODE>("GMDS_Distance");
-	m_m.newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
-	m_m.newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
-	LevelSetCombined lsCombined(&m_m, m_markFrontNodesParoi, m_markFrontNodesExt,
-	                            m_m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
-	                            m_m.getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
-	                            m_m.getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
+	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance");
+	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+	LevelSetCombined lsCombined(m_mesh, m_markFrontNodesParoi, m_markFrontNodesExt,
+	                            m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                            m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	                            m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
 	lsCombined.execute();
 
 	// Calcul du gradient du champ de Level Set
-	m_m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-	LeastSquaresGradientComputation grad2D(&m_m, m_m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"), m_m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	m_mesh->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	LeastSquaresGradientComputation grad2D(m_mesh, m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                                       m_mesh->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	grad2D.execute();
 
 	EcritureMaillage();

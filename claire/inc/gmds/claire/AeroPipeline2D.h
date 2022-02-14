@@ -47,6 +47,9 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	 */
 	void InitialisationFronts();
 	/*----------------------------------------------------------------------------*/
+ protected:
+	/** mesh we work on */
+	Mesh m_m;
 
 };
 /*----------------------------------------------------------------------------*/

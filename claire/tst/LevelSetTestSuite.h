@@ -618,7 +618,7 @@ TEST(LevelSetTestClass, LevelSetCombined_3D_Test1)
 	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
 	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
 	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut,
-	                            m.getVariable<double,GMDS_NODE>("GMDS_Distanc"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
 	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
 	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
 	lsCombined.execute();
