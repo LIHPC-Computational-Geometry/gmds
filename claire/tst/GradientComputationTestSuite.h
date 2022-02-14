@@ -479,7 +479,9 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test1)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d,GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -538,7 +540,9 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test2)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -592,7 +596,9 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test3)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -652,7 +658,9 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test1)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+
+	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -703,7 +711,9 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test2)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+
+	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -764,7 +774,9 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test3)
 	m.unmarkAll<Node>(markFrontNodesOut);
 	m.freeMark<Node>(markFrontNodesOut);
 
-	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
+	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+
+	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);

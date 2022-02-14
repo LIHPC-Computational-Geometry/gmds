@@ -30,7 +30,7 @@ class LIB_GMDS_CLAIRE_API LeastSquaresGradientComputation
 	/** @brief Constructor.
          *  @param AMesh the mesh where we work on
 	 */
-	LeastSquaresGradientComputation(Mesh *AMesh, Variable<double>* Adistance);
+	LeastSquaresGradientComputation(Mesh *AMesh, Variable<double>* Adistance, Variable<math::Vector3d>* Agradient2D);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
