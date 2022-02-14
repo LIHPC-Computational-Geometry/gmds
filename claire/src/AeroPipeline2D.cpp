@@ -5,7 +5,6 @@
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/AeroPipeline2D.h>
 #include <gmds/claire/LevelSetCombined.h>
-#include <gmds/claire/LevelSetNaif.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>

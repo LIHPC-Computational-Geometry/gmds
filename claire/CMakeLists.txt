@@ -9,8 +9,6 @@ set(GMDS_INC
 		${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
 		inc/gmds/claire/Smooth2D.h
 		inc/gmds/claire/Grid_Smooth2D.h
-        inc/gmds/claire/LevelSet.h
-		inc/gmds/claire/LevelSetNaif.h
 		inc/gmds/claire/DistanceMap.h
         inc/gmds/claire/LevelSetCombined.h
 		inc/gmds/claire/GradientComputation2D.h
@@ -29,12 +27,10 @@ set(GMDS_SRC
 		src/main.cpp
 		src/Smooth2D.cpp
         src/Grid_Smooth2D.cpp
-        src/LevelSet.cpp
 		src/DistanceMap.cpp
         src/LevelSetCombined.cpp
 		src/GradientComputation2D.cpp
 		src/GradientComputation3D.cpp
-		src/LevelSetNaif.cpp
 		src/PointFollowingVectorField2D.cpp
 		src/PointFollowingVectorField3D.cpp
 		src/LeastSquaresGradientComputation.cpp

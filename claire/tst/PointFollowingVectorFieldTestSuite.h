@@ -2,8 +2,9 @@
 // Created by rochec on 26/01/2022.
 //
 
-#include <gmds/claire/LevelSet.h>
 #include <gmds/claire/LevelSetCombined.h>
+#include <gmds/claire/LevelSetEloi.h>
+#include <gmds/claire/LevelSetExtended.h>
 #include <gmds/claire/GradientComputation2D.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/claire/PointFollowingVectorField2D.h>
@@ -65,9 +66,10 @@ TEST(PointFollowingVectorFieldTestClass, PointFollowingVectorField2D_Test1)
 	}
 
 	// Calcul des Level Set
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result_ls = ls.execute();
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result_ls = ls.execute();
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -139,9 +141,10 @@ TEST(PointFollowingVectorFieldTestClass, PointFollowingVectorField3D_Test1)
 
 	std::cout << "Fin de l'initialisation des marques" << std::endl ;
 
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result_ls = ls.execute();
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetExtended ls(&m, markFrontNodes, var_dist);
+	LevelSetExtended::STATUS result_ls = ls.execute();
+	ASSERT_EQ(LevelSetExtended::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -210,9 +213,10 @@ TEST(PointFollowingVectorFieldTestClass, PointFollowingVectorFieldOnNodes_2D_Tes
 	}
 
 	// Calcul des Level Set
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result_ls = ls.execute();
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetEloi ls(&m, markFrontNodes, var_dist);
+	LevelSetEloi::STATUS result_ls = ls.execute();
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
@@ -407,110 +411,6 @@ TEST(PointFollowingVectorFieldTestClass, PointFollowingVectorFieldOnNodes_3D_Tes
 	ASSERT_EQ(PointFollowingVectorFieldOnNodes::SUCCESS, result);
 }
 
-/*
-TEST(PointFollowingVectorFieldTestClass, PointFollowingVectorFieldOnNodes_3D_Test2)
-{
-	// Cas test bicone.
-
-	// --- Lecture du maillage du bicone 3D ---
-	Mesh m(MeshModel(DIM3 | R | F | E | N |
-	                 R2N | F2N | E2N | R2F | F2R |
-	                 F2E | E2F | R2E | N2R | N2F | N2E));
-	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/biconique.vtk";
-
-	gmds::IGMeshIOService ioService(&m);
-	gmds::VTKReader vtkReader(&ioService);
-	vtkReader.setCellOptions(gmds::N|gmds::R);
-	vtkReader.read(vtk_file);
-
-	gmds::MeshDoctor doctor(&m);
-	doctor.buildFacesAndR2F();
-	doctor.buildEdgesAndX2E();
-	doctor.updateUpwardConnectivity();
-	// -------------------------------------------
-
-	// --- Lecture du maillage de la peau du maillage ---
-	Mesh m_peau_int(MeshModel(DIM3 | R | F | E | N |
-	                 R2N | F2N | E2N | R2F | F2R |
-	                 F2E | E2F | R2E | N2R | N2F | N2E));
-	std::string dir_2(TEST_SAMPLES_DIR);
-	std::string vtk_file_2 = dir+"/biconique_peau_int.vtk";
-
-	gmds::IGMeshIOService ioService_2(&m_peau_int);
-	gmds::VTKReader vtkReader_2(&ioService_2);
-	vtkReader_2.setCellOptions(gmds::N|gmds::R);
-	vtkReader_2.read(vtk_file_2);
-
-	gmds::MeshDoctor doctor_2(&m_peau_int);
-	doctor_2.buildFacesAndR2F();
-	doctor_2.buildEdgesAndX2E();
-	doctor_2.updateUpwardConnectivity();
-	// ---------------------------------------------------
-
-	int markFrontNodesInt = m.newMark<gmds::Node>();
-	int markFrontNodesOut = m.newMark<gmds::Node>();
-
-	for(auto id:m.nodes()){
-		Node n = m.get<Node>(id);
-		double coord_x = n.X() ;
-		double coord_y = n.Y() ;
-		double coord_z = n.Z() ;
-		double rayon;
-		rayon = sqrt( (pow(coord_x, 2) + pow(coord_y, 2) + pow(coord_z - 500.0, 2)) ) ;
-		if ( (rayon - 1000.0) < pow(10,-6)) {
-			// Pour ce cas test, le front extérieur est sur la sphère englobante
-			m.mark<Node>(id,markFrontNodesOut);
-		}
-		// Marquage des noeuds du front intérieur
-		// Comparaison avec le maillage de peau pour savoir quel noeud est dessus
-		for (auto id_peau:m_peau_int.nodes()){
-			Node n_peau = m_peau_int.get<Node>(id_peau);
-			math::Vector3d Vec(n_peau.point()-n.point());
-			if ( Vec.norm() < pow(10,-6) ){
-				m.mark<Node>(id,markFrontNodesInt);
-			}
-		}
-	}
-
-	std::cout << "Fin de l'initialisation des marques" << std::endl ;
-
- 	m.newVariable<double,GMDS_NODE>("GMDS_Distance");
-	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
-   m.newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
-	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut,
-   m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
-   m.getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
-   m.getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
-	LevelSetCombined::STATUS result_ls = lsCombined.execute();
-	ASSERT_EQ(LevelSetCombined::SUCCESS, result_ls);
-
-	m.unmarkAll<Node>(markFrontNodesInt);
-	m.freeMark<Node>(markFrontNodesInt);
-	m.unmarkAll<Node>(markFrontNodesOut);
-	m.freeMark<Node>(markFrontNodesOut);
-
-   m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	LeastSquaresGradientComputation::STATUS result_grad = grad3D.execute();
-	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
-
-	// Placement du point P à la distance souhaitée suivant le champ de gradient
-	math::Point M(2.5*cos(M_PI/4), -2.5 + 2.5*sin(M_PI/4), 0.0);
-	double distance = 1.0;
-	PointFollowingVectorFieldOnNodes pfvf2D(&m, M, distance, m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
-	                                        m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
-	PointFollowingVectorFieldOnNodes::STATUS result = pfvf2D.execute();
-
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::R);
-	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("PointFollowingVectorFieldOnNodes_3D_Test1_Result.vtk");
-
-	ASSERT_EQ(PointFollowingVectorFieldOnNodes::SUCCESS, result);
-}
-*/
-
 /*----------------------------------------------------------------------------*/
 
 
@@ -557,23 +457,24 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test1)
 	}
 
 	// Calcul des Level Set
-	LevelSetNaif ls(&m, markFrontNodes);
-	LevelSetNaif::STATUS result_ls = ls.execute();
-	ASSERT_EQ(LevelSetNaif::SUCCESS, result_ls);
+	Variable<double> *var_dist = m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	LevelSetExtended ls(&m, markFrontNodes, var_dist);
+	LevelSetExtended::STATUS result_ls = ls.execute();
+	ASSERT_EQ(LevelSetExtended::SUCCESS, result_ls);
 
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
 	// Calcul du gradient du champ de Level Set
 	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	LeastSquaresGradientComputation grad2D(&m, var_dist, m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result_grad = grad2D.execute();
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
 
 	// Placement du point P à la distance souhaitée suivant le champ de gradient
 	math::Point M(0.5, 0.0, 0.0);
 	double distance = 0.3;
-	AdvectedPointRK4_2D advpoint(&m, M, distance, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
+	AdvectedPointRK4_2D advpoint(&m, M, distance, var_dist, m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
 	AdvectedPointRK4_2D::STATUS result = advpoint.execute();
 
 	IGMeshIOService ioService_geom(&m);
