@@ -45,7 +45,8 @@ void AeroPipeline2D::execute(){
 	lsCombined.execute();
 
 	// Calcul du gradient du champ de Level Set
-	LeastSquaresGradientComputation grad2D(&m_m, m_m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
+	m_m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	LeastSquaresGradientComputation grad2D(&m_m, m_m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"), m_m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	grad2D.execute();
 
 	EcritureMaillage();

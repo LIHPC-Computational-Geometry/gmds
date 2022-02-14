@@ -218,7 +218,8 @@ TEST(PointFollowingVectorFieldTestClass, PointFollowingVectorFieldOnNodes_2D_Tes
 	m.freeMark<Node>(markFrontNodes);
 
 	// Calcul du gradient du champ de Level Set
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result_grad2D = grad2D.execute();
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad2D);
 
@@ -292,7 +293,8 @@ TEST(PointFollowingVectorFieldTestClass, PointFollowingVectorFieldOnNodes_2D_Tes
 	m.unmarkAll<Node>(markFrontNodesOut);
 	m.freeMark<Node>(markFrontNodesOut);
 
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
+	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result_grad = grad2D.execute();
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
 
@@ -372,7 +374,8 @@ TEST(PointFollowingVectorFieldTestClass, PointFollowingVectorFieldOnNodes_3D_Tes
 	m.unmarkAll<Node>(markFrontNodesOut);
 	m.freeMark<Node>(markFrontNodesOut);
 
-	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
+	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result_grad = grad3D.execute();
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
 
@@ -468,7 +471,8 @@ TEST(PointFollowingVectorFieldTestClass, PointFollowingVectorFieldOnNodes_3D_Tes
 	m.unmarkAll<Node>(markFrontNodesOut);
 	m.freeMark<Node>(markFrontNodesOut);
 
-	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
+   m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	LeastSquaresGradientComputation grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result_grad = grad3D.execute();
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
 
@@ -542,7 +546,8 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test1)
 	m.freeMark<Node>(markFrontNodes);
 
 	// Calcul du gradient du champ de Level Set
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result_grad = grad2D.execute();
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
 
@@ -615,7 +620,8 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test2)
 	m.unmarkAll<Node>(markFrontNodesOut);
 	m.freeMark<Node>(markFrontNodesOut);
 
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
+	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result_grad = grad2D.execute();
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
 
@@ -689,7 +695,8 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test3)
 	m.unmarkAll<Node>(markFrontNodesOut);
 	m.freeMark<Node>(markFrontNodesOut);
 
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
+	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result_grad = grad2D.execute();
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
 
@@ -762,7 +769,8 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test4)
 	m.unmarkAll<Node>(markFrontNodesOut);
 	m.freeMark<Node>(markFrontNodesOut);
 
-	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"));
+	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance_Combined"), m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	LeastSquaresGradientComputation::STATUS result_grad = grad2D.execute();
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
 
