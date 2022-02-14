@@ -22,41 +22,29 @@ LevelSetCombined::LevelSetCombined(Mesh *AMesh, int AmarkFrontNodesInt, int Amar
 }
 
 
-
-
-
 /*------------------------------------------------------------------------*/
 LevelSetCombined::STATUS
 LevelSetCombined::execute()
 {
-	initialisationDistancesInt();
-	initialisationDistancesOut();
-
-	combineDistanceFields();
-
-	return LevelSetCombined::SUCCESS;
-}
-/*------------------------------------------------------------------------*/
-
-
-
-/*-------------------------------------------------------------------*/
-void
-LevelSetCombined::setValue(TCellID n_id, double v0){
-	m_distance->value(n_id) = v0 ;
-};
-/*-------------------------------------------------------------------*/
-
-
-
-/*-------------------------------------------------------------------*/
-void
-LevelSetCombined::combineDistanceFields() {
 	double distInt;
 	double distOut;
+
+	// Calcul du level set de l'intérieur vers l'extérieur
+	LevelSetExtended lsInt(m_mesh, m_markFrontNodesInt, m_distance_Int);
+	lsInt.execute();
+
+	// Calcul du level set de l'extérieur vers l'intérieur
+	LevelSetExtended lsOut(m_mesh, m_markFrontNodesOut, m_distance_Out);
+	lsOut.execute();
+
 	for (auto id:m_mesh->nodes()){
-		distInt = m_distance_Int->value(id);
-		distOut = m_distance_Out->value(id);
+
+		lsInt.getValue(id, distInt);
+		m_distance_Int->set(id, distInt);
+
+		lsOut.getValue(id, distOut);
+		m_distance_Out->set(id, distOut);
+
 		if (distInt+distOut == 0) {
 			setValue(id, -1 );
 		}
@@ -64,37 +52,15 @@ LevelSetCombined::combineDistanceFields() {
 			setValue(id, distInt / (distInt + distOut));     // Attention, pas de barrière si distInt+dOut =0 (c'est à dire si les deux fronts ont un noeud commun)
 		}
 	}
-};
-/*-------------------------------------------------------------------*/
 
-
-
-/*-------------------------------------------------------------------*/
-void
-LevelSetCombined::initialisationDistancesInt() {
-	LevelSetExtended lsInt(m_mesh, m_markFrontNodesInt, m_distance_Int);
-	lsInt.execute();
-	double distInt;
-	for (auto id:m_mesh->nodes()){
-		lsInt.getValue(id, distInt);
-		m_distance_Int->set(id, distInt);
-	}
-	//m_mesh->deleteVariable(GMDS_NODE, "GMDS_Distance");
-};
-/*-------------------------------------------------------------------*/
-
+	return LevelSetCombined::SUCCESS;
+}
+/*------------------------------------------------------------------------*/
 
 
 /*-------------------------------------------------------------------*/
 void
-LevelSetCombined::initialisationDistancesOut() {
-	LevelSetExtended lsOut(m_mesh, m_markFrontNodesOut, m_distance_Out);
-	lsOut.execute();
-	double distOut;
-	for (auto id:m_mesh->nodes()){
-		lsOut.getValue(id, distOut);
-		m_distance_Out->set(id, distOut);
-	}
-	//m_mesh->deleteVariable(GMDS_NODE, "GMDS_Distance");
+LevelSetCombined::setValue(TCellID n_id, double v0){
+	m_distance->value(n_id) = v0 ;
 };
 /*-------------------------------------------------------------------*/
