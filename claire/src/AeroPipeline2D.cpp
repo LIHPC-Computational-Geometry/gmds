@@ -41,7 +41,13 @@ void AeroPipeline2D::execute(){
 	InitialisationFronts();
 
 	// Calcul du level set
-	LevelSetCombined lsCombined(&m_m, m_markFrontNodesParoi, m_markFrontNodesExt);
+	m_m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	m_m.newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	m_m.newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+	LevelSetCombined lsCombined(&m_m, m_markFrontNodesParoi, m_markFrontNodesExt,
+	                            m_m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                            m_m.getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	                            m_m.getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
 	lsCombined.execute();
 
 	// Calcul du gradient du champ de Level Set
