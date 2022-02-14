@@ -29,6 +29,11 @@ class LIB_GMDS_CLAIRE_API AeroPipeline3D: public AbstractAeroPipeline {
 
  private:
 
+ protected:
+ protected:
+	/** mesh we work on */
+	Mesh m_m;
+
 
 };
 /*----------------------------------------------------------------------------*/
