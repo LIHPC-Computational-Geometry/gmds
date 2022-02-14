@@ -4,7 +4,6 @@
 
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/AdvectedPointRK4_2D.h>
-#include <gmds/claire/ResLU.h>
 #include <limits>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
