@@ -20,8 +20,7 @@ set(GMDS_INC
 		inc/gmds/claire/LeastSquaresGradientComputation.h
 		inc/gmds/claire/PointFollowingVectorFieldOnNodes.h
 		inc/gmds/claire/AdvectedPointRK4_2D.h
-		inc/gmds/claire/ResLU.h
-		inc/gmds/claire/Params.h
+        inc/gmds/claire/Params.h
 		inc/gmds/claire/AbstractAeroPipeline.h
 		inc/gmds/claire/AeroPipeline2D.h
 		inc/gmds/claire/AeroPipeline3D.h
@@ -41,8 +40,7 @@ set(GMDS_SRC
 		src/LeastSquaresGradientComputation.cpp
 		src/PointFollowingVectorFieldOnNodes.cpp
 		src/AdvectedPointRK4_2D.cpp
-		src/ResLU.cpp
-		src/AbstractAeroPipeline.cpp
+        src/AbstractAeroPipeline.cpp
 		src/AeroPipeline2D.cpp
 		src/AeroPipeline3D.cpp
         inc/gmds/claire/AbstractLevelSet.h src/AbstractLevelSet.cpp inc/gmds/claire/LevelSetEloi.h src/LevelSetEloi.cpp inc/gmds/claire/LevelSetExtended.h src/LevelSetExtended.cpp)
