@@ -24,15 +24,9 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	// le temps de mettre en place un fichier .ini
 	params_aero.dim=ParamsAero::DIM_2D;
 	std::string dir(TEST_SAMPLES_DIR);
-	params_aero.input_file=dir+"/Aero/C1_2D_0.1.vtk";
+	params_aero.input_file=dir+"/Aero/C7_2D_0.1.vtk";
 	params_aero.output_file="AeroPipeline2D_Test1_Result.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
-
-	/*
-	AbstractAeroPipeline* algo_aero2D = NULL;
-	algo_aero2D = new AeroPipeline2D(params_aero);
-	algo_aero2D->execute();
-	 */
 
 	AeroPipeline2D algo_aero2D(params_aero);
 	algo_aero2D.execute();
