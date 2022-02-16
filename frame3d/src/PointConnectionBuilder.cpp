@@ -143,78 +143,76 @@ void PointConnectionBuilder::execute()
 /*---------------------------------------------------------------------------*/
 void PointConnectionBuilder::createDistanceFilter()
 {
-    double max_distance = 2*m_spacing;
+  double max_distance = 2*m_spacing;
 
-    int nb_pnts = m_pnt.size();
-    int	k		= 20;      // max number of nearest neighbors
-    int	dim		= 3;       // dimension
-    int	maxPts	= nb_pnts; // maximum number of data points
+  int nb_pnts = m_pnt.size();
+  int	k		= 20;      // max number of nearest neighbors
+  int	dim		= 3;       // dimension
+  int	maxPts	= nb_pnts; // maximum number of data points
 
-    int					nPts;					// actual number of data points
-    ANNpointArray		dataPts;				// data points
-    ANNpoint			queryPt;				// query point
-    ANNidxArray			nnIdx;					// near neighbor indices
-    ANNdistArray		dists;					// near neighbor distances
-    ANNkd_tree*			kdTree;					// search structure
+  int					nPts;					// actual number of data points
+  ANNpointArray		dataPts;				// data points
+  ANNpoint			queryPt;				// query point
+  ANNidxArray			nnIdx;					// near neighbor indices
+  ANNdistArray		dists;					// near neighbor distances
+  ANNkd_tree*			kdTree;					// search structure
 
-    queryPt = annAllocPt(dim);					// allocate 1 query point
-    dataPts = annAllocPts(maxPts, dim);			// allocate data points
-    nnIdx = new ANNidx[k];						// allocate near neigh indices
-    dists = new ANNdist[k];						// allocate near neighbor dists
+  queryPt = annAllocPt(dim);					// allocate 1 query point
+  dataPts = annAllocPts(maxPts, dim);			// allocate data points
+  nnIdx = new ANNidx[k];						// allocate near neigh indices
+  dists = new ANNdist[k];						// allocate near neighbor dists
 
-    //========================================================
-    // (1) Fill in the  ANN structure for storing points
-    //
-    // Important: Points in m_pnts and dataPnts are stored with
-    // same index.
-    //========================================================
-    nPts = 0;
-    while (nPts < maxPts) {
-        math::Point p = m_pnt[nPts];
-        dataPts[nPts][0] = p.X();
-        dataPts[nPts][1] = p.Y();
-        dataPts[nPts][2] = p.Z();
-        nPts++;
-    };
-    //========================================================
-    // (2) Build the search structure
-    //========================================================
-    kdTree = new ANNkd_tree(dataPts,	// the data points
-                            nPts,		// number of points
-                            dim);		// dimension of space
+  //========================================================
+  // (1) Fill in the  ANN structure for storing points
+  //
+  // Important: Points in m_pnts and dataPnts are stored with
+  // same index.
+  //========================================================
+  nPts = 0;
+  while (nPts < maxPts) {
+      math::Point p = m_pnt[nPts];
+      dataPts[nPts][0] = p.X();
+      dataPts[nPts][1] = p.Y();
+      dataPts[nPts][2] = p.Z();
+      nPts++;
+  };
+  //========================================================
+  // (2) Build the search structure
+  //========================================================
+  kdTree = new ANNkd_tree(dataPts,	// the data points
+                          nPts,		// number of points
+                          dim);		// dimension of space
 
-    //========================================================
-    // (2) Search
-    //========================================================
-    for(auto i=0; i<m_pnt.size(); i++){
-        math::Point pi = m_pnt[i];
-        if(m_type[i]!=FRAME_SING){
-            math::Point pi = m_pnt[i];
-            queryPt = dataPts[i];
+  //========================================================
+  // (2) Search
+  //========================================================
+  for(auto i=0; i<m_pnt.size(); i++){
+      math::Point pi = m_pnt[i];
+      if(m_type[i]!=FRAME_SING){
+          math::Point pi = m_pnt[i];
+          queryPt = dataPts[i];
 
-            kdTree->annkSearch(		// search
-                    queryPt,// query point
-                    k,
-                    nnIdx,
-                    dists,
-                    0.1);
-
-
-            std::vector<int> close_pi;
-            bool stop = false;
-            for(int i_c=0; i_c<k && !stop; i_c++){
-                if(dists[i_c]<max_distance){
-                    m_filter[i].push_back(nnIdx[i_c]);
-                }
-            }
-        }
-    }
-    delete [] nnIdx;							// clean things up
-    delete [] dists;
-    delete kdTree;
-    annClose();									// done with ANN
+          kdTree->annkSearch(		// search
+                  queryPt,// query point
+                  k,
+                  nnIdx,
+                  dists,
+                  0.1);
 
 
+          std::vector<int> close_pi;
+          bool stop = false;
+          for(int i_c=0; i_c<k && !stop; i_c++){
+              if(dists[i_c]<max_distance){
+                  m_filter[i].push_back(nnIdx[i_c]);
+              }
+          }
+      }
+  }
+  delete [] nnIdx;							// clean things up
+  delete [] dists;
+  delete kdTree;
+  annClose();									// done with ANN
 }
 
 /*---------------------------------------------------------------------------*/

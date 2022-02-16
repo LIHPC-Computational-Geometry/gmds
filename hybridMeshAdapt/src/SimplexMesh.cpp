@@ -2967,7 +2967,7 @@ bool SimplexMesh::checkSimplicesContenaing(const gmds::math::Point& pt, std::vec
   double u = 0.0 ; double v = 0.0 ; double w = 0.0 ; double t = 0.0 ;
   closestSimplex closestSimplex;
   std::vector<math::Orientation::Sign> uvwt;
-  uvwt.reserve(4);
+  //uvwt.reserve(4);
 
 
 
@@ -3264,51 +3264,77 @@ TSimplexID SimplexMesh::nextSimplexToCheck(const TSimplexID currentSimplex, cons
 /*---------------------------------------------------------------------------*/
 TSimplexID SimplexMesh::nextSimplexToCheckOrientation(const TSimplexID currentSimplex, const math::Point& pt, std::vector<math::Orientation::Sign>& uvwt, BitVector& cyclingCheck)
 {
-  TSimplexID cycling = std::numeric_limits<int>::min();
-  TSimplexID border  = cycling;
-  TSimplexID nextTet = currentSimplex;
-  uvwt[0] = SimplicesCell(this, currentSimplex).orientation(0, pt);
-  uvwt[1] = SimplicesCell(this, currentSimplex).orientation(1, pt);
-  uvwt[2] = SimplicesCell(this, currentSimplex).orientation(2, pt);
-  uvwt[3] = SimplicesCell(this, currentSimplex).orientation(3, pt);
+  //std::cout << "  currentSimplex -> " << SimplicesCell(this,currentSimplex) << std::endl;
+ TSimplexID cycling = std::numeric_limits<int>::min();
+ TSimplexID border  = cycling;
+ TSimplexID nextTet = currentSimplex;
 
-  if(cyclingCheck[currentSimplex] == 0)
-  {
-    if(uvwt[0] > 0  && uvwt[1]  > 0 && uvwt[2]  > 0 && uvwt[3]  > 0)
-    {
-      return currentSimplex;
-    }
-    else if(uvwt[0] < 0)
-    {
-      nextTet = SimplicesCell(this, currentSimplex).oppositeTetraIdx(0);
-    }
-    else if(uvwt[1] < 0)
-    {
-      nextTet = SimplicesCell(this, currentSimplex).oppositeTetraIdx(1);
-    }
-    else if(uvwt[2] < 0)
-    {
-      nextTet = SimplicesCell(this, currentSimplex).oppositeTetraIdx(2);
-    }
-    else if(uvwt[3] < 0)
-    {
-      nextTet = SimplicesCell(this, currentSimplex).oppositeTetraIdx(3);
-    }
+ uvwt.clear();
+ uvwt.push_back(SimplicesCell(this, currentSimplex).orientation(0, pt));
+ uvwt.push_back(SimplicesCell(this, currentSimplex).orientation(1, pt));
+ uvwt.push_back(SimplicesCell(this, currentSimplex).orientation(2, pt));
+ uvwt.push_back(SimplicesCell(this, currentSimplex).orientation(3, pt));
+ //std::cout << "  uvwt -> " << uvwt[0] << " | " << uvwt[1] << " | " << uvwt[2] << " | " << uvwt[3] << " | " << std::endl;
 
-    cyclingCheck.assign(currentSimplex);
-    if(nextTet < 0)
-    {
-      return nextTet;
-    }
-  }
-  else
-  {
-    return cycling;
-  }
+ std::vector<TInt> nodes = SimplicesCell(this, currentSimplex).getNodes();
+
+ if(cyclingCheck[currentSimplex] == 0)
+ {
+   if(uvwt[0] > 0  && uvwt[1]  > 0 && uvwt[2]  > 0 && uvwt[3]  > 0)
+   {
+     return currentSimplex;
+   }
+
+   unsigned int cpt = 0;
+   std::vector<unsigned int> adjTetra{};
+   std::vector<unsigned int> adjTri{};
+   SimplicesCell cell = SimplicesCell(this, currentSimplex);
+   for(unsigned int idx = 0; idx < uvwt.size() ; idx++)
+   {
+     math::Orientation::Sign bar = uvwt[idx];
+     if(bar < 0)
+     {
+       TSimplexID adjCell = cell.oppositeTetraIdx(idx);
+       if(adjCell >= 0)
+       {
+         adjTetra.push_back(adjCell);
+       }
+       else
+       {
+         adjTri.push_back(adjCell);
+       }
+     }
+   }
+
+   if(adjTetra.size() != 0)
+   {
+     nextTet = adjTetra.front();
+   }
+   else
+   {
+     if(adjTri.size() != 0)
+     {
+       nextTet = adjTri.front();
+     }
+     else
+     {
+       //std::cout << "adjTri.size() == 0" << std::endl;
+     }
+   }
+   cyclingCheck.assign(currentSimplex);
+   if(nextTet < 0)
+   {
+     return nextTet;
+   }
+ }
+ else
+ {
+   return cycling;
+ }
 
 
 
-  return nextSimplexToCheckOrientation(nextTet, pt, uvwt, cyclingCheck);
+ return nextSimplexToCheckOrientation(nextTet, pt, uvwt, cyclingCheck);
 }
 /*---------------------------------------------------------------------------*/
 TSimplexID SimplexMesh::firstBitTo1(const std::vector<bool>& vec)

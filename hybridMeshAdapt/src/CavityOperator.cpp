@@ -637,10 +637,12 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       double epsilon = 1E-3;
       math::Point pC = node.getCoords();
       Edge e;
-
+      e.node0 = errorId;
+      e.node1 = errorId;
       if(edges.size() == 0)
       {
-        throw GMDSException("edges.size() == 0, node edges was found for the ridge node being inserted...");
+        return false;
+        //throw GMDSException("edges.size() == 0, node edges was found for the ridge node being inserted...");
       }
       else if(edges.size() == 1)
       {
@@ -671,6 +673,10 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         }
       }
 
+      if(e.node0 == errorId || e.node1 == errorId)
+      {
+        return false;
+      }
       const std::vector<TSimplexID> shell = SimplicesNode(m_simplex_mesh, e.node0).shell(SimplicesNode(m_simplex_mesh, e.node1));
       std::vector<TSimplexID> firstTriangles{};
       for(auto const simplex : shell){if(simplex < 0){firstTriangles.push_back(-simplex);}}
