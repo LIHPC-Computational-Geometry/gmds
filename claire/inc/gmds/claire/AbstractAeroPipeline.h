@@ -53,12 +53,16 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	//Mesh m_m;
 	/** pointer to mesh we work on */
 	Mesh* m_mesh;
+	/** pointer to mesh we generate */
+	Mesh* m_meshGen;
 	/** parameters for the algorithm */
 	ParamsAero m_params;
 	/** Marque sur les noeuds de la paroi */
 	int m_markFrontNodesParoi;
 	/** Marque sur les noeuds de la frontière ext */
 	int m_markFrontNodesExt;
+	/** Variable sur le nouveau maillage, indique à quelle couche appartient un noeud */
+	Variable<int>* m_couche_id;
 	/** Est-ce que le code s'est bien terminé */
 	bool m_isOver ;
 

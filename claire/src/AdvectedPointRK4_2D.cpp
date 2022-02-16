@@ -48,7 +48,7 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 	std::cout << "Noeud dans le triangle : " << face_id << std::endl;
 
 	while ( (abs(dist-m_d0) > err) && iterations < max_iterations ) {
-		std::cout << "-------- ITERATION " << iterations << " ---------" << std::endl;
+		//std::cout << "-------- ITERATION " << iterations << " ---------" << std::endl;
 		math::Point M = RungeKutta4(m_Pend, Grad.normalize(), dt);	// Calcule la position du point à l'itération n+1 avec un RK4
 		// On vérifie ensuite si cette position est "valide"
 		face_id = inWhichTriangle(M) ;
@@ -64,11 +64,11 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 			// alors on met à jour la valeur du gradient et on continue le RK4
 			// Sinon, on retranche le pas de temps et on recommence
 			if ((dist_M < m_d0)) {
-				std::cout << "Triangle : " << face_id << std::endl;
+				//std::cout << "Triangle : " << face_id << std::endl;
 				m_Pend = M;
 				Grad = interpolationGradient(face_id, Mat_A_Inv, M);	// Mise à jour du gradient
 				dist = dist_M;
-				std::cout << "distance : " << dist << std::endl;
+				//std::cout << "distance : " << dist << std::endl;
 				m_discrete_path.push_back(m_Pend);
 			}
 			else {
@@ -325,3 +325,10 @@ void AdvectedPointRK4_2D::writeDiscretePathInVTK(){
 	stream.close();
 }
 /*------------------------------------------------------------------------*/
+
+
+/*-------------------------------------------------------------------*/
+math::Point AdvectedPointRK4_2D::getPend(){
+	return m_Pend;
+}
+/*-------------------------------------------------------------------*/

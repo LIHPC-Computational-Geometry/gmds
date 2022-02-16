@@ -36,6 +36,10 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_2D
 	/** @brief Execute the algorithm
 	 */
 	STATUS execute();
+	/*-------------------------------------------------------------------*/
+	/** @brief Donne le point final
+	 */
+	math::Point getPend();
 
  private:
 	/*-------------------------------------------------------------------*/
