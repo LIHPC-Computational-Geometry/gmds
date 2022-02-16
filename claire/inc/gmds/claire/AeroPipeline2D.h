@@ -41,15 +41,25 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	/*----------------------------------------------------------------------------*/
 	/** @brief Ecriture du fichier de maillage au format .vtk
 	 */
-	void EcritureMaillage();
+	void EcritureMaillage(Mesh* p_mesh);
 	/*----------------------------------------------------------------------------*/
 	/** @brief Initialisation des marques sur les fronts
 	 */
 	void InitialisationFronts();
 	/*----------------------------------------------------------------------------*/
+	/** @brief Initialisation du maillage quad généré
+	 */
+	void InitialisationMeshGen();
+	/*----------------------------------------------------------------------------*/
+	/** @brief Génère une couche de noeuds du maillage
+	 */
+	void GenerationCouche(int couche_id, double dist);
+	/*----------------------------------------------------------------------------*/
  protected:
 	/** mesh we work on */
 	Mesh m_m;
+	/** mesh quad generated */
+	Mesh m_mGen;
 
 };
 /*----------------------------------------------------------------------------*/

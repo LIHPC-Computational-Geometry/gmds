@@ -6,6 +6,7 @@
 #include <gmds/claire/AeroPipeline2D.h>
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
+#include <gmds/claire/AdvectedPointRK4_2D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
@@ -21,9 +22,11 @@ using namespace gmds;
 AeroPipeline2D::AeroPipeline2D(ParamsAero Aparams) :
   AbstractAeroPipeline(Aparams),
   m_m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+                                       gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F)),
+  m_mGen(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
                                        gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F))
 {
-
+	m_couche_id = m_mGen.newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 }
 /*------------------------------------------------------------------------*/
 
@@ -34,6 +37,7 @@ void AeroPipeline2D::execute(){
 	// Je n'ai pas trouvé d'autre façon de faire pour initialiser le maillage
 	// pour l'instant...
 	m_mesh = &m_m;
+	m_meshGen = &m_mGen;
 
 	LectureMaillage();
 	InitialisationFronts();
@@ -54,7 +58,12 @@ void AeroPipeline2D::execute(){
 	                                       m_mesh->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	grad2D.execute();
 
-	EcritureMaillage();
+	InitialisationMeshGen();
+
+	GenerationCouche(1, 0.5);
+	GenerationCouche(1, 1);
+
+	EcritureMaillage(m_meshGen);
 
 	m_isOver = true;
 }
@@ -97,11 +106,11 @@ void AeroPipeline2D::MeshCleaner(){
 
 
 /*------------------------------------------------------------------------*/
-void AeroPipeline2D::EcritureMaillage(){
+void AeroPipeline2D::EcritureMaillage(Mesh* p_mesh){
 
 	std::cout << "-> Ecriture du maillage ..." << std::endl;
 
-	gmds::IGMeshIOService ioService(m_mesh);
+	gmds::IGMeshIOService ioService(p_mesh);
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
@@ -262,6 +271,150 @@ void AeroPipeline2D::InitialisationFronts(){
 		else{
 			m_mesh->mark<Node>(n_id,m_markFrontNodesParoi);
 			(*var_color_paroi)[n_id] = 2;
+		}
+	}
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void AeroPipeline2D::InitialisationMeshGen(){
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(m_mesh);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	Variable<double> *var_newID = m_mesh->newVariable<double, GMDS_NODE>("GMDS_NewID");
+	for (auto n_id:m_mesh->nodes()){
+		var_newID->set(n_id, NullID);
+	}
+
+	double err=pow(10,-6);
+
+	// Ajout des noeuds de la frontière intérieure au maillage à généré
+	for (auto n_id:bnd_node_ids){
+		Node n = m_mesh->get<Node>(n_id);
+		math::Point p = n.point();
+		//std::cout << "node : " << n << std::endl;
+		if ( m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) ){
+			Node n_new = m_meshGen->newNode(p);
+			m_couche_id->set(n_new.id(), 0);
+			var_newID->set(n_id, n_new.id());	// On stocke l'indice du noeud n dans le nouveau maillage sur l'ancien maillage
+			/*
+			for(auto n_new_id:m_meshGen->nodes()){
+				Node n_new = m_meshGen->get<Node>(n_new_id);
+				math::Point p_new = n_new.point();
+				math::Vector3d vec = p-p_new;
+				if(vec.norm() < err){
+					var_newID->set(n_id, n_new_id);
+				}
+			}
+			 */
+		}
+	}
+
+	// Ajout des arêtes
+	for (auto e_id:m_mesh->edges()){
+		Edge e = m_mesh->get<Edge>(e_id);
+		std::vector<Node> adj_nodes = e.get<Node>();
+		TCellID n0_id = adj_nodes[0].id();
+		TCellID n1_id = adj_nodes[1].id();
+		if ( m_mesh->isMarked<Node>(n0_id, m_markFrontNodesParoi) &&
+		   m_mesh->isMarked<Node>(n1_id, m_markFrontNodesParoi)){
+			TCellID n0_id_new = var_newID->value(n0_id) ;
+			TCellID n1_id_new = var_newID->value(n1_id) ;
+			Edge e_new = m_meshGen->newEdge(n0_id_new, n1_id_new);
+			Node n0 = m_meshGen->get<Node>(n0_id_new);
+			Node n1 = m_meshGen->get<Node>(n1_id_new);
+			n0.add<Edge>(e_new);
+			n1.add<Edge>(e_new);
+		}
+	}
+
+	gmds::MeshDoctor doc(m_meshGen);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	m_mesh->deleteVariable(GMDS_NODE, "GMDS_NewID");
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void AeroPipeline2D::GenerationCouche(int couche_id, double dist){
+
+	// Création des nouveaux noeuds de la couche couche_id naïvement
+	// + aretes entre la couche couche_id-1 et couche_id
+	for (auto n_id:m_meshGen->nodes()){
+		if (m_couche_id->value(n_id) == couche_id-1){
+			// Placement du point P à la distance souhaitée suivant le champ de gradient
+			Node n = m_meshGen->get<Node>(n_id);
+			math::Point M = n.point();
+			AdvectedPointRK4_2D advpoint(m_mesh, M, dist, m_m.getVariable<double, GMDS_NODE>("GMDS_Distance"),
+			   m_m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
+			advpoint.execute();
+			math::Point P = advpoint.getPend();
+
+			// Nouveau noeud dans le maillage
+			Node n_new = m_mGen.newNode(P);
+			m_couche_id->set(n_new.id(),couche_id);
+
+			// Création de l'arête pour relier le noeud à la couche n-1
+			Edge e_new = m_mGen.newEdge(n, n_new);
+			n_new.add<Edge>(e_new);	// Ajout de la connectivité N -> E
+			n.add<Edge>(e_new);	// Ajout de la connectivité N -> E
+
+		}
+	}
+
+	for (auto n_id:m_meshGen->nodes()){
+		if(m_couche_id->value(n_id) == couche_id){
+			Node n0 = m_meshGen->get<Node>(n_id);
+			Node n1;
+			std::vector<Edge> adj_edges = n0.get<Edge>() ;
+			for (auto e:adj_edges){
+				Node n_opp = e.getOppositeNode(n0);
+				if (m_couche_id->value(n_opp.id()) == couche_id-1){
+					n1 = n_opp;
+				}
+			}
+
+			adj_edges = n1.get<Edge>();
+			std::vector<Node> adj_nodes_n1;	// Normalement, ce vecteur contiendra 2 noeuds
+			for (auto e:adj_edges){
+				Node n3 = e.getOppositeNode(n1);
+				if(m_couche_id->value(n3.id()) == couche_id-1){
+					adj_nodes_n1.push_back(n3);
+				}
+			}
+
+			// Création des deux faces adjacentes de la couche 1 pour le noeud n0
+			for (auto n_adj:adj_nodes_n1){
+				std::vector<Edge> adj_edges_adj_nodes = n_adj.get<Edge>() ;
+				Node n3 ;
+				for (auto e:adj_edges_adj_nodes){
+					Node n_opp = e.getOppositeNode(n_adj);
+					if (m_couche_id->value(n_opp.id()) == couche_id){
+						n3 = n_opp;
+					}
+				}
+
+				// Création de l'arete pour relier les doeux noeuds de la couche i
+				Edge e3 = m_mGen.newEdge(n0, n3);
+				n0.add<Edge>(e3);
+				n1.add<Edge>(e3);
+
+				// Création de la face
+				Face f = m_mGen.newQuad(n0, n1, n_adj, n3) ;
+				n0.add<Face>(f);	// Connectivités N -> F
+				n1.add<Face>(f);
+				n_adj.add<Face>(f);
+				n3.add<Face>(f);
+				f.add<Edge>(e3); // Connectivités F -> E
+			}
 		}
 	}
 
