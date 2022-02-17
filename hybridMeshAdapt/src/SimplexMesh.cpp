@@ -4789,7 +4789,7 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
               //std::cout << "from node --> " << node << " Of dimension -> " <<  dim_Ni << " and label -> " << index_Ni << std::endl;
 
               if(dim_Ni == 4 && (data.dim_Nj == 0 || data.dim_Nj == 1 || data.dim_Nj == 2)){continue;}
-              const std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
+              const std::multimap<TInt, TInt> facesAlreadyBuilt{};
               PointInsertion(this, nodeToInsert, criterionRAIS, status, ball, surfaceNodesAdded, deletedNodes, facesAlreadyBuilt);
               if(status)
               {
@@ -4906,7 +4906,7 @@ unsigned int SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, co
           CriterionRAIS criterionRAIS(new VolumeCriterion());
           bool status = false;
           std::vector<TInt> deletedNodes{};
-          const std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
+          const std::multimap<TInt, TInt> facesAlreadyBuilt{};
           //std::cout << SimplicesNode(this, edge.first) << std::endl;
           //std::cout << SimplicesNode(this, edge.second) << std::endl;
           //if(cpt > 500)
@@ -4953,7 +4953,7 @@ bool SimplexMesh::isHexaEdgeBuild(const std::vector<std::vector<TInt>>& ANodesFa
   return true;
 }
 /******************************************************************************/
-void SimplexMesh::whatFaceIsBuilt(const std::vector<std::vector<TInt>>& ANodesFaces, std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt)
+void SimplexMesh::whatFaceIsBuilt(const std::vector<std::vector<TInt>>& ANodesFaces, std::multimap<TInt, TInt>& facesAlreadyBuilt)
 {
   std::vector<bool> res{};
   if(ANodesFaces.size() == 6)
@@ -4971,8 +4971,8 @@ void SimplexMesh::whatFaceIsBuilt(const std::vector<std::vector<TInt>>& ANodesFa
 
         std::pair<TInt, TInt> p0{subFace0[1], subFace0[2]};
         std::pair<TInt, TInt> p1{subFace1[1], subFace1[2]};
-        facesAlreadyBuilt.insert(std::make_pair(subFace0[0], p0));
-        facesAlreadyBuilt.insert(std::make_pair(subFace1[0], p1));
+        //facesAlreadyBuilt.insert(std::make_pair(subFace0[0], p0));
+        //facesAlreadyBuilt.insert(std::make_pair(subFace1[0], p1));
       }
     }
   }
@@ -4984,7 +4984,7 @@ void SimplexMesh::whatFaceIsBuilt(const std::vector<std::vector<TInt>>& ANodesFa
 }
 /******************************************************************************/
 static int faceAdded = 0;
-bool SimplexMesh::buildFace(const std::vector<TInt>& nodes, const gmds::BitVector& nodeAdded, const std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt)
+bool SimplexMesh::buildFace(const std::vector<TInt>& nodes, const gmds::BitVector& nodeAdded, const std::multimap<TInt, TInt>& facesAlreadyBuilt)
 {
   TInt n0 = nodes[0] ; TInt n1 = nodes[1] ; TInt n2 = nodes[2] ; TInt n3 = nodes[3] ;
   TInt n4 = nodes[4] ; TInt n5 = nodes[5] ; TInt n6 = nodes[6] ; TInt n7 = nodes[7] ;

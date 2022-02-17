@@ -502,6 +502,31 @@ TSimplexID SimplicesNode::directSimplex(const math::Vector3d& vector) const
 
 }
 /******************************************************************************/
+std::vector<TInt> SimplicesNode::neighborNodes()
+{
+  std::vector<TSimplexID> ball = ballOf();
+  std::set<TInt> s{};
+  std::vector<TInt> res{};
+
+  for(auto const simplex : ball)
+  {
+    if(simplex >= 0)
+    {
+      std::vector<TInt> nodes = SimplicesCell(m_simplex_mesh, simplex).getNodes();
+      for(auto const node : nodes)
+      {
+        if(node >= 0 && node != m_indexPoint)
+        {
+          s.insert(node);
+        }
+      }
+    }
+  }
+
+  std::copy(s.begin(), s.end(), std::back_inserter(res));
+  return res;
+}
+/******************************************************************************/
 std::vector<TSimplexID> SimplicesNode::simplicesIntersectedbyRay(const SimplicesNode& simpliceNodeB) const
 {
   std::vector<TSimplexID> v;

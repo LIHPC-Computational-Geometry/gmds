@@ -13,7 +13,7 @@ using namespace math;
 /******************************************************************/
 DelaunayPointInsertion::DelaunayPointInsertion(SimplexMesh* simplexMesh, const simplicesNode::SimplicesNode& simpliceNode, const CriterionRAIS& criterion,
                                               std::vector<TSimplexID>& initialCavity, bool& status, const gmds::BitVector& markedNodes,std::vector<TSimplexID>& deletedSimplex,
-                                              const std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt, std::vector<TSimplexID> markedSimplex)
+                                              const std::multimap<TInt, TInt>& facesAlreadyBuilt, std::vector<TSimplexID> markedSimplex)
 {
   if(simplexMesh != nullptr)
   {
