@@ -60,8 +60,10 @@ void AeroPipeline2D::execute(){
 
 	InitialisationMeshGen();
 
-	GenerationCouche(1, 0.5);
-	GenerationCouche(1, 1);
+	GenerationCouche(1, 0.25);
+	GenerationCouche(2, 0.5);
+	GenerationCouche(3, 0.75);
+	GenerationCouche(4, 1);
 
 	EcritureMaillage(m_meshGen);
 
@@ -281,6 +283,8 @@ void AeroPipeline2D::InitialisationFronts(){
 /*------------------------------------------------------------------------*/
 void AeroPipeline2D::InitialisationMeshGen(){
 
+	std::cout << "-> Discrétisation du front int du maillage quad" << std::endl;
+
 	//Get the boundary node ids
 	BoundaryOperator2D bnd_op(m_mesh);
 	std::vector<TCellID> bnd_node_ids;
@@ -345,6 +349,8 @@ void AeroPipeline2D::InitialisationMeshGen(){
 
 /*------------------------------------------------------------------------*/
 void AeroPipeline2D::GenerationCouche(int couche_id, double dist){
+
+	std::cout << "-> Génération de la couche " << couche_id << std::endl ;
 
 	// Création des nouveaux noeuds de la couche couche_id naïvement
 	// + aretes entre la couche couche_id-1 et couche_id
