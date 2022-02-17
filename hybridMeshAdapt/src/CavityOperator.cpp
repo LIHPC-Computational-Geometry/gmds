@@ -582,6 +582,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
   else if(dimNode == SimplexMesh::topo::SURFACE){  indexNode =  (*BND_SURFACE_COLOR)[node.getGlobalNode()] ; }
   else                                          {  indexNode =  0;}
 
+  //std::cout << "CELL EXPANSION" << std::endl;
   bool flag = true;
   //CELL EXPANSION
   //for(auto const simplex : cavityCell){std::cout << "initCavCell -> " << simplex << std::endl;}
@@ -643,7 +644,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       }
     }
 
-
+    //std::cout << "CELL EXPANSION END" << std::endl;
 
     gmds::BitVector indexedTriangle(m_simplex_mesh->getBitVectorTri().capacity());
     if(dimNode == SimplexMesh::topo::RIDGE)
@@ -752,6 +753,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         selectConnexTriangle(triangle, triBitVector, indexedTriangle);
       }
     }
+    //std::cout << "SETTING THE TRIANGLE " << std::endl;
 
     //set type for the triangle see the paper : Robust Boundary Layer Mesh Generation
     for(auto const tri : initCavityTriangle)
@@ -786,23 +788,29 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         }
       }
     }
-
-    /*for(auto const triNotCo : trianglesNotConnectedToP)
+    /*
+    for(auto const triNotCo : trianglesNotConnectedToP)
     {
       std::cout << "triNotCo Before --> " << triNotCo << std::endl;
     }
     for(auto const triNotCo : trianglesConnectedToP)
     {
       std::cout << "tri Co Before --> " << triNotCo << std::endl;
-    }*/
+    }
+    std::cout << "node dimension -> " << dimNode << std::endl;*/
 
     std::vector<TSimplexID> triangleToRemoveFromVec{};
     for(auto const triNotCo : trianglesNotConnectedToP)
     {
+      //std::cout << "triNotCo -> " << triNotCo << std::endl;
       const std::vector<TSimplexID> neighborTriNotCo = SimplicesTriangle(m_simplex_mesh, triNotCo).adjacentTriangle();
+      //std::cout << "triNotCo -> " << SimplicesTriangle(m_simplex_mesh, triNotCo) << std::endl;
       TSimplexID neighborTriA = neighborTriNotCo[0];
       TSimplexID neighborTriB = neighborTriNotCo[1];
       TSimplexID neighborTriC = neighborTriNotCo[2];
+      //std::cout << "neighborTriA -> " << neighborTriC << std::endl;
+      //std::cout << "neighborTriB -> " << neighborTriB << std::endl;
+      //std::cout << "neighborTriC -> " << neighborTriC << std::endl;
       TInt indexA = (*BND_TRIANGLES)[neighborTriA];
       TInt indexB = (*BND_TRIANGLES)[neighborTriB];
       TInt indexC = (*BND_TRIANGLES)[neighborTriC];
@@ -815,6 +823,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         }
       }
     }
+    //std::cout << "SETTING THE TRIANGLE 0" << std::endl;
 
     for(auto const tri : triangleToRemoveFromVec)
     {
@@ -852,6 +861,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         }
       }
     }
+    //std::cout << "SETTING THE TRIANGLE 1" << std::endl;
 
     //we check if the cavity do not pocess any curve discontinuity
     if((*BND_CURVE_COLOR)[node.getGlobalNode()] != 0)
