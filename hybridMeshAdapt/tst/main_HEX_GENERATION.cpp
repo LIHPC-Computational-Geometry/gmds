@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
         simplexMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("metric")->value(node) = m;
         bool status = false;
         std::vector<TSimplexID> deletedSimplex{};
-        const std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
+        const std::multimap<TInt, TInt> facesAlreadyBuilt{};
         DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, tetraContenaingPt, status, nodesAdded, deletedSimplex, facesAlreadyBuilt);
         if(status)
         {
@@ -183,7 +183,7 @@ int main(int argc, char* argv[])
       bool alreadyAdd = false;
       std::vector<TSimplexID> tetraContenaingPt{};
       std::vector<TInt> deletedNodes{};
-      const std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
+      const std::multimap<TInt, TInt> facesAlreadyBuilt{};
       bool status = false;
       PointInsertion(&simplexMesh, SimplicesNode(&simplexMesh, deletedNode), criterionRAIS, status, tetraContenaingPt, nodesAdded, deletedNodes, facesAlreadyBuilt);
       if(status)
@@ -249,6 +249,20 @@ int main(int argc, char* argv[])
   unsigned int iter = 0;
   start = std::clock();
   std::cout << "HEX GENERATION START " << std::endl;
+  std::multimap<TInt, TInt> facesAlreadyBuilt{};
+  //fillfacesAlreadyBuilt
+  for(auto const edge : edges)
+  {
+    const TInt node0 = edge.first;
+    const TInt node1 = edge.first;
+
+    if(SimplicesNode(&simplexMesh,node0).shell(SimplicesNode(&simplexMesh, node1)).size() > 0)
+    {
+      facesAlreadyBuilt.insert(edge);
+    }
+  }
+  std::cout << "facesAlreadyBuilt.size() -> " << facesAlreadyBuilt.size() << std::endl;
+
   for(;;)
   {
     hexBuiltCpt = 0;
@@ -267,7 +281,8 @@ int main(int argc, char* argv[])
     std::cout << "BUILD EDGE DONE " << std::endl;
 
     /////////////////////HEXA'S FACES BUILDER START HERE /////////////////////////
-    std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
+
+
     unsigned int faceBuiltTmp = 0;
     std::cout << "FACE BUILDING START " << std::endl;
     for(auto const h : nodesHex)

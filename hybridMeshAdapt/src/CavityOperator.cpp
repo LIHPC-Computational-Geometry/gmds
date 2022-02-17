@@ -221,6 +221,66 @@ bool CavityOperator::CavityIO::CavityIO::nodeInCavity(const TInt node)
     }
   }
 
+  /////////////////////////
+  //comute the inner edge of the cavity
+  m_nodesToReconnect
+  borderEdge
+  std::multimap<TInt, TInt> cavEdges{};
+  std::multimap<TInt, TInt> borderEdges{};
+  for(auto const cell : cellInCavity())
+  {
+    std::vector<TInt> nodes = SimplicesCell(m_simplex_mesh, cell).getNodes();
+    std::vector<std::pair<TInt, TInt>> edgeCell{};
+    std::pair<TInt, TInt> e0{std::min(nodes[0], nodes[1]), std::max(nodes[0], nodes[1])} ;
+    std::pair<TInt, TInt> e1{std::min(nodes[1], nodes[2]), std::max(nodes[1], nodes[2])} ;
+    std::pair<TInt, TInt> e2{std::min(nodes[2], nodes[3]), std::max(nodes[2], nodes[3])} ;
+    std::pair<TInt, TInt> e3{std::min(nodes[0], nodes[2]), std::max(nodes[0], nodes[2])} ;
+    std::pair<TInt, TInt> e4{std::min(nodes[0], nodes[3]), std::max(nodes[0], nodes[3])} ;
+    std::pair<TInt, TInt> e5{std::min(nodes[3], nodes[1]), std::max(nodes[3], nodes[1])} ;
+    cavEdges.insert(e0) ; cavEdges.insert(e1) ; cavEdges.insert(e2) ;
+    cavEdges.insert(e3) ; cavEdges.insert(e4) ; cavEdges.insert(e5) ;
+  }
+
+  for(auto const cell : cellInCavity())
+  {
+    for(unsigned int idx = 0 ; idx < sizeCell ; idx++)
+    {
+      const TSimplexID oppositeCell = SimplicesCell(m_simplex_mesh, cell).getOppositeCell(idx);
+      if(oppositeCell >= 0)
+      {
+        if(cellBitvector[oppositeCell] == 0)
+        {
+          const TSimplexID face = SimplicesCell(m_simplex_mesh, cell).getOppositeCell(idx);
+          std::pair<TInt, TInt> e0{std::min(face[0], face[1]), std::max(face[0], face[1])} ;
+          std::pair<TInt, TInt> e1{std::min(face[1], face[2]), std::max(face[1], face[2])} ;
+          std::pair<TInt, TInt> e2{std::min(face[2], face[0]), std::max(face[2], face[0])} ;
+          borderEdges.insert(e0) ; borderEdges.insert(e1) ; borderEdges.insert(e2) ;
+        }
+      }
+      else
+      {
+        const TSimplexID face = SimplicesCell(m_simplex_mesh, cell).getOppositeCell(idx);
+        std::pair<TInt, TInt> e0{std::min(face[0], face[1]), std::max(face[0], face[1])} ;
+        std::pair<TInt, TInt> e1{std::min(face[1], face[2]), std::max(face[1], face[2])} ;
+        std::pair<TInt, TInt> e2{std::min(face[2], face[0]), std::max(face[2], face[0])} ;
+        borderEdges.insert(e0) ; borderEdges.insert(e1) ; borderEdges.insert(e2) ;
+      }
+    }
+  }
+
+
+  for(auto const edgeAlreadyBuilt : edgesAlreadyBuilt)
+  {
+    for(auto const cavEdge : cavEdges)
+    {
+      if(cavEdge.first == edgeAlreadyBuilt.first && cavEdge.second == edgeAlreadyBuilt.second)
+      {
+        if
+      }
+    }
+  }
+  /////////////////////////
+
   //now we extract the interior nodes of the cavity with the help of allNodes & borderNodesBitvector
   std::copy_if(allNodeInSurface.begin(), allNodeInSurface.end(), std::back_inserter(m_surfaceNodeInCavity), [&](const TInt node)
   {
@@ -484,7 +544,7 @@ bool CavityOperator::CavityIO::isTetragonalizableFrom(const TInt nodeToInsert)
 }
 /******************************************************************************/
 bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexID>& initCavityCell, std::vector<TSimplexID>& initCavityTriangle,
-                                        const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt,
+                                        const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const std::multimap<TInt, TInt>& facesAlreadyBuilt,
                                          const std::vector<TSimplexID> markedSimplex)
 {
   std::vector<TSimplexID> trianglesConnectedToP{};
@@ -542,7 +602,8 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
               TSimplexID nextSimplexToAdd = cell.oppositeTetraIdx(nodeIndexLocal);
               if(nextSimplexToAdd != errorId)
               {
-                std::vector<TInt> face = cell.getOrderedFace(nodeIndexLocal);
+                //to recode to add cell constraints
+                /*std::vector<TInt> face = cell.getOrderedFace(nodeIndexLocal);
                 std::sort(face.begin(), face.end());
 
                 auto it = facesAlreadyBuilt.find(face.front());
@@ -553,7 +614,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
                     std::cout << "face  -> " << it->first << " | " << it->second.first << " | " << it->second.second << " already built" << std::endl;
                     return false;
                   }
-                }
+                }*/
 
                 if(nextSimplexToAdd >= 0)
                 {
@@ -581,6 +642,8 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         }
       }
     }
+
+
 
     gmds::BitVector indexedTriangle(m_simplex_mesh->getBitVectorTri().capacity());
     if(dimNode == SimplexMesh::topo::RIDGE)

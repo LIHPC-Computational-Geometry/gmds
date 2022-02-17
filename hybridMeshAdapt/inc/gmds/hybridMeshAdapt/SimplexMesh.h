@@ -353,13 +353,13 @@ class SimplexMesh
 
   bool isHexaEdgeBuild(const std::vector<std::vector<TInt>>& ANodesFaces);
 
-  void whatFaceIsBuilt(const std::vector<std::vector<TInt>>& ANodesFaces, std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt);
+  void whatFaceIsBuilt(const std::vector<std::vector<TInt>>& ANodesFaces, std::multimap<TInt, TInt>& facesAlreadyBuilt);
 
   std::vector<TSimplexID> hex2tet(const std::vector<TInt>& ANodesHex);
 
   std::vector<TSimplexID> initializeCavityWith(const TInt nodeA, const TInt nodeB);
 
-  bool buildFace(const std::vector<TInt>& nodes, const gmds::BitVector& nodeAdded, const std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt);
+  bool buildFace(const std::vector<TInt>& nodes, const gmds::BitVector& nodeAdded, const std::multimap<TInt, TInt>& facesAlreadyBuilt);
 
   bool pointInTriangle(const math::Point& query_point,
                        const math::Point& triangle_vertex_0,
