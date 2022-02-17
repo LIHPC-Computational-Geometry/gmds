@@ -29,7 +29,7 @@ using namespace simplicesCell;
 /*----------------------------------------------------------------------------*/
 int main(int argc, char* argv[])
 {
-  std::string fIn, pIn, fDI, fER, fHEX;
+  std::string fIn, pIn, fDI, fER, fHEX, fFF, fEI;
   if(argc != 3)
   {
       throw gmds::GMDSException("NO INPUT FILE : <mesh_file> <point_file>");
@@ -49,6 +49,8 @@ int main(int argc, char* argv[])
   fDI = fIn.substr(0,position) +  "_DELAUNAY_INSERTION.vtk";
   fER = fIn.substr(0,position) +  "_EDGES_REMOVE.vtk";
   fHEX = fIn.substr(0,position) + "_HEX_DOMINANT.vtk";
+  fFF = fIn.substr(0,position) + "_FORCE_FACE.vtk";
+  fEI = fIn.substr(0,position) + "_EDGE_INSERTION.vtk";
 
   //==================================================================
   // MESH FILE READING
@@ -108,7 +110,9 @@ int main(int argc, char* argv[])
 
       bool alreadyAdd = false;
       std::vector<TSimplexID> tetraContenaingPt{};
+      std::cout << "idx-> " << idx << std::endl;
       TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
+      std::cout << "node -> " << node<< std::endl;
       if(!alreadyAdd)
       {
         if((*BND_CURVE_COLOR_NODES)[idx] != 0) {BND_CURVE_COLOR->set(node, (*BND_CURVE_COLOR_NODES)[idx]);}
@@ -169,7 +173,7 @@ int main(int argc, char* argv[])
     }
     tmp = edgesRemoved;
   }
-
+  std::cout << "deletedNodes.size() --> " << deletedNodes.size() << std::endl;
   std::cout << "EDGE REMOVING REINSERTION " << std::endl;
   unsigned int nodeSize = 0;
   unsigned int nodeReinsertedSize = 0;
@@ -266,7 +270,10 @@ int main(int argc, char* argv[])
       tmp = edgeBuild;
     }
     std::cout << "BUILD EDGE DONE " << std::endl;
-
+    gmds::VTKWriter vtkWriterEI(&ioService);
+    vtkWriterEI.setCellOptions(gmds::N|gmds::R);
+    vtkWriterEI.setDataOptions(gmds::N|gmds::R);
+    vtkWriterEI.write(fEI);
     /////////////////////HEXA'S FACES BUILDER START HERE /////////////////////////
 
 
@@ -281,12 +288,17 @@ int main(int argc, char* argv[])
       {
         if(simplexMesh.buildFace(hexeNodes, nodesAdded, edgeAlreadyBuilt))
         {
+
           faceBuiltTmp++;
         }
       }
     }
-    markedTet = simplexMesh.getBitVectorTet();
+    gmds::VTKWriter vtkWriterFF(&ioService);
+    vtkWriterFF.setCellOptions(gmds::N|gmds::R);
+    vtkWriterFF.setDataOptions(gmds::N|gmds::R);
+    vtkWriterFF.write(fFF);
     std::cout << "BUILD FACE DONE " << std::endl;
+    markedTet = simplexMesh.getBitVectorTet();
 
     for(auto const h : nodesHex)
     {

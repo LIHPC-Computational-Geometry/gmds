@@ -4143,7 +4143,8 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
   {
     if(tetIdToBuildInfoCopy.size() == 0 && pointsToConnectCopy.size() == 0)
     {
-      return;
+      break;
+      //return;
     }
 
     TSimplexID simplexId   = tetIdToBuildInfoCopy.back();
@@ -5016,6 +5017,7 @@ bool SimplexMesh::buildFace(const std::vector<TInt>& nodes, const gmds::BitVecto
       //check for the diagonale
       std::vector<TSimplexID> e02 = node0.shell(node2);
       std::vector<TSimplexID> e13 = node1.shell(node3);
+
 
       if(e02.size() == 0 && e13.size() == 0)
       {
