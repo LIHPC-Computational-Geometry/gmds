@@ -125,7 +125,7 @@ namespace gmds
           ~CavityOperator                    (){};
 
           bool cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexID>& initCavityCell, std::vector<TSimplexID>& initCavityTriangle, const simplicesNode::SimplicesNode& node,
-                                  const CriterionRAIS& criterion, const std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt, const std::vector<TSimplexID> markedSimplex);
+                                  const CriterionRAIS& criterion, const std::multimap<TInt, TInt>& facesAlreadyBuilt, const std::vector<TSimplexID> markedSimplex);
 
           //void cavityReduction(CavityIO& cavityIO, std::vector<TSimplexID>& initCavity, const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const CavityReduction& cavityReduction, const std::vector<TSimplexID> v = std::vector<TSimplexID>{});
 

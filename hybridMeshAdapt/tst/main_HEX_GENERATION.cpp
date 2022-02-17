@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
         simplexMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("metric")->value(node) = m;
         bool status = false;
         std::vector<TSimplexID> deletedSimplex{};
-        const std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
+        const std::multimap<TInt, TInt> facesAlreadyBuilt{};
         DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, tetraContenaingPt, status, nodesAdded, deletedSimplex, facesAlreadyBuilt);
         if(status)
         {
@@ -183,7 +183,7 @@ int main(int argc, char* argv[])
       bool alreadyAdd = false;
       std::vector<TSimplexID> tetraContenaingPt{};
       std::vector<TInt> deletedNodes{};
-      const std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
+      const std::multimap<TInt, TInt> facesAlreadyBuilt{};
       bool status = false;
       PointInsertion(&simplexMesh, SimplicesNode(&simplexMesh, deletedNode), criterionRAIS, status, tetraContenaingPt, nodesAdded, deletedNodes, facesAlreadyBuilt);
       if(status)
@@ -249,6 +249,7 @@ int main(int argc, char* argv[])
   unsigned int iter = 0;
   start = std::clock();
   std::cout << "HEX GENERATION START " << std::endl;
+  std::multimap<TInt, TInt> edgeAlreadyBuilt{};
   for(;;)
   {
     hexBuiltCpt = 0;
@@ -267,7 +268,8 @@ int main(int argc, char* argv[])
     std::cout << "BUILD EDGE DONE " << std::endl;
 
     /////////////////////HEXA'S FACES BUILDER START HERE /////////////////////////
-    std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
+
+
     unsigned int faceBuiltTmp = 0;
     std::cout << "FACE BUILDING START " << std::endl;
     for(auto const h : nodesHex)
@@ -277,7 +279,7 @@ int main(int argc, char* argv[])
       std::vector<TInt> hexeNodes{n0, n1, n2, n3, n4, n5, n6, n7};
       if(n0 != -1 && n1 != -1 && n2 != -1 && n3 != -1 && n4 != -1 && n5 != -1 && n6 != -1 && n7 != -1)
       {
-        if(simplexMesh.buildFace(hexeNodes, nodesAdded, facesAlreadyBuilt))
+        if(simplexMesh.buildFace(hexeNodes, nodesAdded, edgeAlreadyBuilt))
         {
           faceBuiltTmp++;
         }
