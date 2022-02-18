@@ -17,7 +17,7 @@ option(WITH_DOC "Build documentation"                                           
 option(WITH_TEST "Build test"                                                           OFF)
 option(WITH_CODE_COVERAGE "Perform code coverage with avail. test suites"               OFF)
 option(WITH_CODE_COVERAGE_HTML_REPORT "Activate html reporting during code covering"    OFF)
-option(BUILD_SHARED_LIBS ""                                                             OFF)
+option(BUILD_SHARED_LIBS ""                                                             ON)
 #==============================================================================
 if(BUILD_SHARED_LIBS)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
@@ -323,6 +323,8 @@ set(LIB_GMDS_IG_SHEET GMDSSheet)
 add_subdirectory(sheet)
 set(LIB_GMDS_SERVICES GMDSServices)
 add_subdirectory(services)
+
+add_subdirectory(pygmds)
 #==============================================================================
 list(LENGTH GMDS_ACTIVE_COMPONENTS count)
 math(EXPR count "${count}-1")

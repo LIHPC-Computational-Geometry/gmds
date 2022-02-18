@@ -1,6 +1,3 @@
-//
-// Created by ledouxf on 1/22/19.
-//
 /*----------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 #include <gmds/ig/Mesh.h>
@@ -10,7 +7,7 @@
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
-TEST(PaddingTestClass, testSBP1)
+TEST(PolyBlockTestSuite, testSBP1)
 {
     ASSERT_EQ(1,1);
 }
