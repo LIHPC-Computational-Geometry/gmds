@@ -110,9 +110,7 @@ int main(int argc, char* argv[])
 
       bool alreadyAdd = false;
       std::vector<TSimplexID> tetraContenaingPt{};
-      std::cout << "idx-> " << idx << std::endl;
       TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
-      std::cout << "node -> " << node<< std::endl;
       if(!alreadyAdd)
       {
         if((*BND_CURVE_COLOR_NODES)[idx] != 0) {BND_CURVE_COLOR->set(node, (*BND_CURVE_COLOR_NODES)[idx]);}

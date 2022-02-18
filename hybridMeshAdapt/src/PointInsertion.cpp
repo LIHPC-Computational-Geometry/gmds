@@ -248,7 +248,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           //double duration3;
           //start = std::clock();
           //std::cout << "rebuildCavity START " << std::endl;
-          //simplexMesh->rebuildCavity(cavityIO, simpliceNode.getGlobalNode());
+          simplexMesh->rebuildCavity(cavityIO, simpliceNode.getGlobalNode());
           //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
           //std::cout << "rebuildCavity duration --> " << duration2 << std::endl;
           status = true;
