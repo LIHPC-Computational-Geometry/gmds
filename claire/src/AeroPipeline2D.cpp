@@ -57,12 +57,8 @@ void AeroPipeline2D::execute(){
 
 	InitialisationMeshGen();
 
-	GenerationCouche(1, 0.025);
-	GenerationCouche(2, 0.05);
-	GenerationCouche(3, 0.25);
-	GenerationCouche(4, 0.5);
-	GenerationCouche(5, 0.75);
-	GenerationCouche(6, 1);
+	GenerationCouche(1, 0.5);
+	GenerationCouche(2, 1);
 
 	EcritureMaillage(m_meshGen);
 
@@ -377,7 +373,7 @@ void AeroPipeline2D::GenerationCouche(int couche_id, double dist){
 	}
 
 	// Création des faces de la couche
-	for (auto n0:nodes_couche_id){
+	/* for (auto n0:nodes_couche_id){
 		Node n1;
 		std::vector<Edge> adj_edges = n0.get<Edge>() ;
 		for (auto e:adj_edges){
@@ -420,7 +416,162 @@ void AeroPipeline2D::GenerationCouche(int couche_id, double dist){
 			n3.add<Face>(f);
 			f.add<Edge>(e3); // Connectivités F -> E
 		}
+	} */
+
+	// TEST
+	// Création des faces de la couche
+	for (auto n0:nodes_couche_id){
+		std::vector<Face> n0_faces = n0.get<Face>() ;
+		int Nbr_faces = n0_faces.size() ;
+		if(n0.id() == 69){
+			std::cout << "Nbr de faces : " << Nbr_faces << std::endl;
+		}
+
+		Node n1 = AnteriorNode(n0);
+		std::vector<Node> adj_nodes_n1_in_anterior_layer = AdjNodesInLayer(n1, couche_id-1);
+		// Première face, on regarde si elle existe, si elle n'existe pas, on la créé
+		bool exist = isQuadCreated(n0, n1, adj_nodes_n1_in_anterior_layer[0]);
+		if (!exist){
+			CreateQuadAndConnectivities(n0, n1, adj_nodes_n1_in_anterior_layer[0]);
+		}
+		// Deuxième face, on regarde si elle existe, si elle n'existe pas, on la créé
+		exist = isQuadCreated(n0, n1, adj_nodes_n1_in_anterior_layer[1]);
+		if (!exist){
+			CreateQuadAndConnectivities(n0, n1, adj_nodes_n1_in_anterior_layer[1]);
+		}
+
+		/*
+		if (Nbr_faces == 0){
+			// On construit les deux faces
+			Node n1 = AnteriorNode(n0);
+			std::vector<Node> adj_nodes_n1_in_anterior_layer = AdjNodesInLayer(n1, couche_id-1);	// Récupère les noeuds adj à n1 dans la même couche
+			// Créé la première face de type quad
+			CreateQuadAndConnectivities(n0, n1, adj_nodes_n1_in_anterior_layer[0]);
+			// Créé la seconde face de type quad
+			CreateQuadAndConnectivities(n0, n1, adj_nodes_n1_in_anterior_layer[1]);
+		}
+		else if (Nbr_faces == 1){
+			// On construit une unique face, en identifiant celle déjà créée
+			// On construit les deux faces
+			Node n1 = AnteriorNode(n0);
+			std::vector<Node> adj_nodes_n1_in_anterior_layer = AdjNodesInLayer(n1, couche_id-1);	// Récupère les noeuds adj à n1 dans la même couche
+			bool exist = isQuadCreated(n0, n1, adj_nodes_n1_in_anterior_layer[0]);
+			if (exist){
+				CreateQuadAndConnectivities(n0, n1, adj_nodes_n1_in_anterior_layer[1]);
+				if(n0.id() == 69){
+					std::cout << "Noeud face existante : " << adj_nodes_n1_in_anterior_layer[0] << std::endl;
+				}
+			}
+			else{
+				CreateQuadAndConnectivities(n0, n1, adj_nodes_n1_in_anterior_layer[0]);
+				if(n0.id() == 69){
+					std::cout << "Noeud face existante : " << adj_nodes_n1_in_anterior_layer[1] << std::endl;
+				}
+			}
+		}
+		else if (Nbr_faces == 2){
+			// On ne fait rien
+		}
+		 */
 	}
 
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+Node AeroPipeline2D::SuccessorNode(Node n0){
+	Node n;
+	int couche_i = m_couche_id->value(n0.id());
+	std::vector<Edge> adj_edges = n0.get<Edge>() ;
+	for (auto e:adj_edges){
+		Node n_opp = e.getOppositeNode(n0);
+		if (m_couche_id->value(n_opp.id()) == couche_i+1){
+			n = n_opp;
+		}
+	}
+	return n;
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+Node AeroPipeline2D::AnteriorNode(Node n0){
+	Node n;
+	int couche_i = m_couche_id->value(n0.id());
+	std::vector<Edge> adj_edges = n0.get<Edge>() ;
+	for (auto e:adj_edges){
+		Node n_opp = e.getOppositeNode(n0);
+		if (m_couche_id->value(n_opp.id()) == couche_i-1){
+			n = n_opp;
+		}
+	}
+	return n;
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+std::vector<Node> AeroPipeline2D::AdjNodesInLayer(Node n0, int couche_i){
+	std::vector<Node> adj_nodes_in_layer ;
+	std::vector<Edge> adj_edges = n0.get<Edge>() ; // Ensemble des arêtes adjacentes au noeud n0
+	for (auto e:adj_edges){
+		Node n_opp = e.getOppositeNode(n0);
+		if (m_couche_id->value(n_opp.id()) == couche_i){
+			adj_nodes_in_layer.push_back(n_opp);
+		}
+	}
+	return adj_nodes_in_layer;
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void AeroPipeline2D::CreateQuadAndConnectivities(Node n0, Node n1, Node n2){
+
+	Node n3 = SuccessorNode(n2);	// On récupère le noeud n3, 4ème noeud du quad, dans la couche i
+
+	// Création de l'arête pour relier les doeux noeuds de la couche i
+	Edge e3 = m_mGen.newEdge(n0, n3);
+	n0.add<Edge>(e3);	// Connectivités N->E
+	n1.add<Edge>(e3);
+
+	// Création de la face de type quad
+	Face f = m_mGen.newQuad(n0, n1, n2, n3) ;
+	n0.add<Face>(f);	// Connectivités N -> F
+	n1.add<Face>(f);
+	n2.add<Face>(f);
+	n3.add<Face>(f);
+	f.add<Edge>(e3); // Connectivité F -> E
+	e3.add<Face>(f); // Connectivité E -> F
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+bool AeroPipeline2D::isQuadCreated(Node n0, Node n1, Node n2){
+	bool exist(false);
+
+	// On regarde si l'arête entre les noeuds n0 et n3 est construite
+	Node n3 = SuccessorNode(n2) ;
+	TCellID n3_id = n3.id();
+	std::vector<Edge> adj_edges = n0.get<Edge>() ;
+
+	for (auto e:adj_edges){
+		Node n_opp = e.getOppositeNode(n0);
+		if (n_opp.id() == n3_id){
+			exist = true;
+		}
+	}
+
+	if(n0.id() == 69){
+		std::cout << "Noeud 1 : " << n1.id() << std::endl;
+		std::cout << "Noeud 2 : " << n2.id() << std::endl;
+		std::cout << "Noeud 3 : " << n3.id() << std::endl;
+		std::cout << "Est-ce que la face existe ? " << exist << std::endl;
+	}
+
+	return exist;
 }
 /*------------------------------------------------------------------------*/
