@@ -373,59 +373,7 @@ void AeroPipeline2D::GenerationCouche(int couche_id, double dist){
 	}
 
 	// Création des faces de la couche
-	/* for (auto n0:nodes_couche_id){
-		Node n1;
-		std::vector<Edge> adj_edges = n0.get<Edge>() ;
-		for (auto e:adj_edges){
-			Node n_opp = e.getOppositeNode(n0);
-			if (m_couche_id->value(n_opp.id()) == couche_id-1){
-				n1 = n_opp;
-			}
-		}
-
-		adj_edges = n1.get<Edge>();
-		std::vector<Node> adj_nodes_n1;	// Normalement, ce vecteur contiendra 2 noeuds
-		for (auto e:adj_edges){
-			Node n3 = e.getOppositeNode(n1);
-			if(m_couche_id->value(n3.id()) == couche_id-1){
-				adj_nodes_n1.push_back(n3);
-			}
-		}
-
-		// Création des deux faces adjacentes de la couche 1 pour le noeud n0
-		for (auto n_adj:adj_nodes_n1){
-			std::vector<Edge> adj_edges_adj_nodes = n_adj.get<Edge>() ;
-			Node n3 ;
-			for (auto e:adj_edges_adj_nodes){
-				Node n_opp = e.getOppositeNode(n_adj);
-				if (m_couche_id->value(n_opp.id()) == couche_id){
-					n3 = n_opp;
-				}
-			}
-
-			// Création de l'arete pour relier les doeux noeuds de la couche i
-			Edge e3 = m_mGen.newEdge(n0, n3);
-			n0.add<Edge>(e3);
-			n1.add<Edge>(e3);
-
-			// Création de la face
-			Face f = m_mGen.newQuad(n0, n1, n_adj, n3) ;
-			n0.add<Face>(f);	// Connectivités N -> F
-			n1.add<Face>(f);
-			n_adj.add<Face>(f);
-			n3.add<Face>(f);
-			f.add<Edge>(e3); // Connectivités F -> E
-		}
-	} */
-
-	// TEST
-	// Création des faces de la couche
 	for (auto n0:nodes_couche_id){
-		std::vector<Face> n0_faces = n0.get<Face>() ;
-		int Nbr_faces = n0_faces.size() ;
-		if(n0.id() == 69){
-			std::cout << "Nbr de faces : " << Nbr_faces << std::endl;
-		}
 
 		Node n1 = AnteriorNode(n0);
 		std::vector<Node> adj_nodes_n1_in_anterior_layer = AdjNodesInLayer(n1, couche_id-1);
@@ -440,39 +388,6 @@ void AeroPipeline2D::GenerationCouche(int couche_id, double dist){
 			CreateQuadAndConnectivities(n0, n1, adj_nodes_n1_in_anterior_layer[1]);
 		}
 
-		/*
-		if (Nbr_faces == 0){
-			// On construit les deux faces
-			Node n1 = AnteriorNode(n0);
-			std::vector<Node> adj_nodes_n1_in_anterior_layer = AdjNodesInLayer(n1, couche_id-1);	// Récupère les noeuds adj à n1 dans la même couche
-			// Créé la première face de type quad
-			CreateQuadAndConnectivities(n0, n1, adj_nodes_n1_in_anterior_layer[0]);
-			// Créé la seconde face de type quad
-			CreateQuadAndConnectivities(n0, n1, adj_nodes_n1_in_anterior_layer[1]);
-		}
-		else if (Nbr_faces == 1){
-			// On construit une unique face, en identifiant celle déjà créée
-			// On construit les deux faces
-			Node n1 = AnteriorNode(n0);
-			std::vector<Node> adj_nodes_n1_in_anterior_layer = AdjNodesInLayer(n1, couche_id-1);	// Récupère les noeuds adj à n1 dans la même couche
-			bool exist = isQuadCreated(n0, n1, adj_nodes_n1_in_anterior_layer[0]);
-			if (exist){
-				CreateQuadAndConnectivities(n0, n1, adj_nodes_n1_in_anterior_layer[1]);
-				if(n0.id() == 69){
-					std::cout << "Noeud face existante : " << adj_nodes_n1_in_anterior_layer[0] << std::endl;
-				}
-			}
-			else{
-				CreateQuadAndConnectivities(n0, n1, adj_nodes_n1_in_anterior_layer[0]);
-				if(n0.id() == 69){
-					std::cout << "Noeud face existante : " << adj_nodes_n1_in_anterior_layer[1] << std::endl;
-				}
-			}
-		}
-		else if (Nbr_faces == 2){
-			// On ne fait rien
-		}
-		 */
 	}
 
 }
@@ -534,7 +449,7 @@ void AeroPipeline2D::CreateQuadAndConnectivities(Node n0, Node n1, Node n2){
 	// Création de l'arête pour relier les doeux noeuds de la couche i
 	Edge e3 = m_mGen.newEdge(n0, n3);
 	n0.add<Edge>(e3);	// Connectivités N->E
-	n1.add<Edge>(e3);
+	n3.add<Edge>(e3);
 
 	// Création de la face de type quad
 	Face f = m_mGen.newQuad(n0, n1, n2, n3) ;
@@ -563,13 +478,6 @@ bool AeroPipeline2D::isQuadCreated(Node n0, Node n1, Node n2){
 		if (n_opp.id() == n3_id){
 			exist = true;
 		}
-	}
-
-	if(n0.id() == 69){
-		std::cout << "Noeud 1 : " << n1.id() << std::endl;
-		std::cout << "Noeud 2 : " << n2.id() << std::endl;
-		std::cout << "Noeud 3 : " << n3.id() << std::endl;
-		std::cout << "Est-ce que la face existe ? " << exist << std::endl;
 	}
 
 	return exist;
