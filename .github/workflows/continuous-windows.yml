@@ -9,9 +9,7 @@ on:
     
 jobs:
   Continuous:
-# this is commented because this CI no longer works with windows server 2022
-#    runs-on: windows-latest
-    runs-on: windows-2019
+    runs-on: windows-latest
     steps:
   
     - name: Check out repository code
@@ -20,7 +18,7 @@ jobs:
     - name: Setup cmake
       uses: jwlawson/actions-setup-cmake@v1.9
       with:
-        cmake-version: '3.16.x'
+        cmake-version: '3.21.x'
 
     - name: Create Build Environment
       run: >
