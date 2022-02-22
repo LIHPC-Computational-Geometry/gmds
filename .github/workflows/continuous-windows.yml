@@ -9,7 +9,9 @@ on:
     
 jobs:
   Continuous:
-    runs-on: windows-latest
+# this is commented because this CI no longer works with windows server 2022
+#    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
   
     - name: Check out repository code
@@ -21,7 +23,7 @@ jobs:
         cmake-version: '3.16.x'
 
     - name: Create Build Environment
-      run: > 
+      run: >
         cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -Ax64 
         -DWITH_TEST="ON"
         -DENABLE_ELG3D="OFF"
