@@ -1,5 +1,6 @@
 add_executable(GMDS_POLYBLOCK_TEST
         PolyBlockTestSuite.h
+        PolyBlock2DTestSuite.h
         main_test.cpp)
 
 target_link_libraries(GMDS_POLYBLOCK_TEST PUBLIC

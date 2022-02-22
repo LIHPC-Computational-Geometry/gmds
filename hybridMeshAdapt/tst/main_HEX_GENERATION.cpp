@@ -29,7 +29,7 @@ using namespace simplicesCell;
 /*----------------------------------------------------------------------------*/
 int main(int argc, char* argv[])
 {
-  std::string fIn, pIn, fDI, fER, fHEX;
+  std::string fIn, pIn, fDI, fER, fHEX, fFF, fEI;
   if(argc != 3)
   {
       throw gmds::GMDSException("NO INPUT FILE : <mesh_file> <point_file>");
@@ -49,6 +49,8 @@ int main(int argc, char* argv[])
   fDI = fIn.substr(0,position) +  "_DELAUNAY_INSERTION.vtk";
   fER = fIn.substr(0,position) +  "_EDGES_REMOVE.vtk";
   fHEX = fIn.substr(0,position) + "_HEX_DOMINANT.vtk";
+  fFF = fIn.substr(0,position) + "_FORCE_FACE.vtk";
+  fEI = fIn.substr(0,position) + "_EDGE_INSERTION.vtk";
 
   //==================================================================
   // MESH FILE READING
@@ -169,7 +171,7 @@ int main(int argc, char* argv[])
     }
     tmp = edgesRemoved;
   }
-
+  std::cout << "deletedNodes.size() --> " << deletedNodes.size() << std::endl;
   std::cout << "EDGE REMOVING REINSERTION " << std::endl;
   unsigned int nodeSize = 0;
   unsigned int nodeReinsertedSize = 0;
@@ -249,20 +251,7 @@ int main(int argc, char* argv[])
   unsigned int iter = 0;
   start = std::clock();
   std::cout << "HEX GENERATION START " << std::endl;
-  std::multimap<TInt, TInt> facesAlreadyBuilt{};
-  //fillfacesAlreadyBuilt
-  for(auto const edge : edges)
-  {
-    const TInt node0 = edge.first;
-    const TInt node1 = edge.first;
-
-    if(SimplicesNode(&simplexMesh,node0).shell(SimplicesNode(&simplexMesh, node1)).size() > 0)
-    {
-      facesAlreadyBuilt.insert(edge);
-    }
-  }
-  std::cout << "facesAlreadyBuilt.size() -> " << facesAlreadyBuilt.size() << std::endl;
-
+  std::multimap<TInt, TInt> edgeAlreadyBuilt{};
   for(;;)
   {
     hexBuiltCpt = 0;
@@ -279,7 +268,10 @@ int main(int argc, char* argv[])
       tmp = edgeBuild;
     }
     std::cout << "BUILD EDGE DONE " << std::endl;
-
+    gmds::VTKWriter vtkWriterEI(&ioService);
+    vtkWriterEI.setCellOptions(gmds::N|gmds::R);
+    vtkWriterEI.setDataOptions(gmds::N|gmds::R);
+    vtkWriterEI.write(fEI);
     /////////////////////HEXA'S FACES BUILDER START HERE /////////////////////////
 
 
@@ -292,14 +284,19 @@ int main(int argc, char* argv[])
       std::vector<TInt> hexeNodes{n0, n1, n2, n3, n4, n5, n6, n7};
       if(n0 != -1 && n1 != -1 && n2 != -1 && n3 != -1 && n4 != -1 && n5 != -1 && n6 != -1 && n7 != -1)
       {
-        if(simplexMesh.buildFace(hexeNodes, nodesAdded, facesAlreadyBuilt))
+        if(simplexMesh.buildFace(hexeNodes, nodesAdded, edgeAlreadyBuilt))
         {
+
           faceBuiltTmp++;
         }
       }
     }
-    markedTet = simplexMesh.getBitVectorTet();
+    gmds::VTKWriter vtkWriterFF(&ioService);
+    vtkWriterFF.setCellOptions(gmds::N|gmds::R);
+    vtkWriterFF.setDataOptions(gmds::N|gmds::R);
+    vtkWriterFF.write(fFF);
     std::cout << "BUILD FACE DONE " << std::endl;
+    markedTet = simplexMesh.getBitVectorTet();
 
     for(auto const h : nodesHex)
     {

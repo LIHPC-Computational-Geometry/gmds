@@ -75,9 +75,10 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
 
         CavityOperator::CavityIO cavityIO(simplexMesh);
 
-
+        //std::cout << "CavityEnlargment START " <<std::endl;
         if(cavOp.cavityEnlargement(cavityIO, initialCavityCell, initialCavityTriangle, simpliceNode, criterion, facesAlreadyBuilt, markedSimplex))
         {
+
           //test sur les triangles non connecté a P pour ne pas créer de retournement topologique
           for(auto const triNotCo : cavityIO.getTrianglesNotConnectedToPInCavity())
           {
@@ -94,6 +95,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           ////////////////////////////////////////////////////////////////////////////////
           //double duration2;
           //start = std::clock();
+          //std::cout << "nodeIncavity START " <<std::endl;
           if(!cavityIO.nodeInCavity(simpliceNode.getGlobalNode())){
             status = false;
             return;
@@ -103,6 +105,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           //std::cout << "nodeInCavity duration --> " << duration2 << std::endl;
 
           //start = std::clock();
+          //std::cout << "nodeReconnection START " <<std::endl;
           cavityIO.nodesReconnection();
           //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
           //std::cout << "nodesReconnection duration --> " << duration2 << std::endl;
@@ -244,6 +247,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           }
           //double duration3;
           //start = std::clock();
+          //std::cout << "rebuildCavity START " << std::endl;
           simplexMesh->rebuildCavity(cavityIO, simpliceNode.getGlobalNode());
           //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
           //std::cout << "rebuildCavity duration --> " << duration2 << std::endl;

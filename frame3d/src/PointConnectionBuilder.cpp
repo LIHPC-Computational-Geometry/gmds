@@ -213,24 +213,6 @@ void PointConnectionBuilder::createDistanceFilter()
   delete [] dists;
   delete kdTree;
   annClose();									// done with ANN
-
-
-    /*double max_distance = 2*m_spacing;
-
-    for(auto i=0; i<m_pnt.size(); i++){
-        math::Point pi = m_pnt[i];
-        if(m_type[i]!=FRAME_SING){
-            for(unsigned int j=i+1; j<m_pnt.size(); j++){
-                math::Point pj = m_pnt[j];
-                if(m_type[j]!=FRAME_SING){
-                    if(pi.distance(pj)<max_distance){
-                        m_filter[i].push_back(j);
-                        m_filter[j].push_back(i);
-                    }
-                }
-            }
-        }
-    }*/
 }
 
 /*---------------------------------------------------------------------------*/

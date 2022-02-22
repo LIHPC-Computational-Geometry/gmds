@@ -4,12 +4,12 @@
 # Nommer tout en GMDS_MODULE_NAME, GMDS_SRC, ... dans les composants
 set(GMDS_LIB ${LIB_GMDS_HYBRIDMESHADAPT})
 set(GMDS_LIB_PREFIX gmds/hybridMeshAdapt/)
-
+  
 set(GMDS_INC
         inc/gmds/hybridMeshAdapt/SimplicesNode.h
         inc/gmds/hybridMeshAdapt/SimplexMesh.h
         inc/gmds/hybridMeshAdapt/SimplicesCell.h
-        inc/gmds/hybridMeshAdapt/AccessBehavior.h
+        #inc/gmds/hybridMeshAdapt/AccessBehavior.h
         inc/gmds/hybridMeshAdapt/CommonInfo.h
         inc/gmds/hybridMeshAdapt/SimplicesTriangle.h
         inc/gmds/hybridMeshAdapt/CavityOperator.h
@@ -29,7 +29,7 @@ set(GMDS_SRC
         src/SimplexMesh.cpp
         src/SimplicesNode.cpp
         src/SimplicesCell.cpp
-        src/AccessBehavior.cpp
+        #src/AccessBehavior.cpp
         #src/CommonInfo.cpp
         src/SimplicesTriangle.cpp
         src/ISimplexMeshIOService.cpp

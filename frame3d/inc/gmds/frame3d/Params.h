@@ -87,13 +87,11 @@ namespace gmds {
  */
     struct LIB_GMDS_FRAME_3D_API ParamsFrameField
     {
-        enum SolverType
-        {
+        enum SolverType {
             OPENNL = 0,
             EIGEN = 1
         };
-        enum SmoothingType
-        {
+        enum SmoothingType {
             RAY = 0,
             LIU = 1
         };
