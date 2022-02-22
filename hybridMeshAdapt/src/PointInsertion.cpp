@@ -18,7 +18,7 @@ PointInsertion::PointInsertion()
 }
 /******************************************************************************/
 PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& simpliceNode, const CriterionRAIS& criterion, bool& status, const std::vector<TSimplexID>& initialCavity,
-                               const gmds::BitVector& markedNodes, std::vector<TInt>& deletedNodes, const std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt, std::vector<TSimplexID> markedSimplex)
+                               const gmds::BitVector& markedNodes, std::vector<TInt>& deletedNodes, const std::multimap<TInt, TInt>& facesAlreadyBuilt, std::vector<TSimplexID> markedSimplex)
 {
     if(simplexMesh != nullptr)
     {
@@ -74,35 +74,11 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
         });
 
         CavityOperator::CavityIO cavityIO(simplexMesh);
-        //std::cout << "cavityEnlargement start ..." << std::endl;
-        //std::clock_t start = std::clock();
-        double duration_CAVENLAR = 0.0;
+
+        //std::cout << "CavityEnlargment START " <<std::endl;
         if(cavOp.cavityEnlargement(cavityIO, initialCavityCell, initialCavityTriangle, simpliceNode, criterion, facesAlreadyBuilt, markedSimplex))
         {
-          //duration_CAVENLAR = (std::clock()-start)/(double)CLOCKS_PER_SEC;
-          //std::cout << "cavityEnlargementduration --> " << duration_CAVENLAR << std::endl;
 
-          //std::cout << "cavityEnlargement end " << std::endl;
-          //cavOp.cavityReduction(cavityIO, initCavity, simpliceNode, criterion, cavReduction, markedSimplex);
-          if(simpliceNode.getGlobalNode() == 109947)
-          {
-            for(auto const tet : cavityIO.cellInCavity())
-            {
-              std::cout << "tet --> " << tet << std::endl;
-            }
-            std::cout << std::endl;
-            for(auto const tri : cavityIO.getTrianglesNotConnectedToPInCavity())
-            {
-              std::cout << "tri not Co --> " << tri << " | surface_bnd : " << (*BND_TRIANGLES)[-tri] << std::endl;
-            }
-            std::cout << std::endl;
-            for(auto const tri : cavityIO.getTrianglesConnectedToPInCavity())
-            {
-              std::cout << "tri Co --> " << tri << " | surface_bnd : " << (*BND_TRIANGLES)[-tri] << std::endl;
-            }
-          }
-
-          std::cout << std::endl;
           //test sur les triangles non connecté a P pour ne pas créer de retournement topologique
           for(auto const triNotCo : cavityIO.getTrianglesNotConnectedToPInCavity())
           {
@@ -119,11 +95,17 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           ////////////////////////////////////////////////////////////////////////////////
           //double duration2;
           //start = std::clock();
-          const std::vector<TInt>& nodesInsideCavity = cavityIO.nodeInCavity();
+          //std::cout << "nodeIncavity START " <<std::endl;
+          if(!cavityIO.nodeInCavity(simpliceNode.getGlobalNode())){
+            status = false;
+            return;
+          }
+          const std::vector<TInt>& nodesInsideCavity = cavityIO.getNodeInCavity();
           //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
           //std::cout << "nodeInCavity duration --> " << duration2 << std::endl;
 
           //start = std::clock();
+          //std::cout << "nodeReconnection START " <<std::endl;
           cavityIO.nodesReconnection();
           //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
           //std::cout << "nodesReconnection duration --> " << duration2 << std::endl;
@@ -265,6 +247,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           }
           //double duration3;
           //start = std::clock();
+          //std::cout << "rebuildCavity START " << std::endl;
           simplexMesh->rebuildCavity(cavityIO, simpliceNode.getGlobalNode());
           //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
           //std::cout << "rebuildCavity duration --> " << duration2 << std::endl;
