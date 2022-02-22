@@ -1010,6 +1010,64 @@ void SimplexMesh::buildAdjInfoGlobal()
     }
 }
 /******************************************************************************/
+void SimplexMesh::initializeEdgeStructure()
+{
+  Variable<TInt>* BND_CURVE_COLOR = nullptr;
+  try {
+    BND_CURVE_COLOR = getVariable<TInt,SimplicesNode>("BND_CURVE_COLOR");
+  }catch (GMDSException e) {
+    throw gmds::GMDSException(e);
+  }
+
+  std::multimap<TInt, std::vector<TInt>> labels2Nodes{};
+  for(unsigned int nodeIdx = 0 ; nodeIdx < m_node_ids.capacity() ; nodeIdx++)
+  {
+    if(m_node_ids[nodeIdx] != 0)
+    {
+      TInt label = (*BND_CURVE_COLOR)[nodeIdx];
+      if((*BND_CURVE_COLOR)[nodeIdx] != 0)
+      {
+        auto iter = labels2Nodes.find(label);
+        if(iter != labels2Nodes.end())
+        {
+          iter->second.push_back(nodeIdx);
+        }
+        else
+        {
+          std::vector<TInt> v{};
+          labels2Nodes.insert(std::make_pair(label,v));
+        }
+      }
+    }
+  }
+
+  for(auto const data : labels2Nodes)
+  {
+    for(auto const node0 : data.second)
+    {
+      if(data.first == 1){std::cout << "node0 -> " << node0 << std::endl;}
+      const SimplicesNode sNode0 = SimplicesNode(this, node0);
+      for(auto const node1 : data.second)
+      {
+        if(node0 != node1)
+        {
+          const SimplicesNode sNode1 = SimplicesNode(this, node1);
+          if(sNode0.shell(sNode1).size() != 0)
+          {
+            std::pair<TInt, TInt> p{std::min(node0, node1), std::max(node0, node1)};
+            m_edgesStructure.insert(std::make_pair(data.first, p));
+          }
+        }
+      }
+    }
+  }
+
+  for(auto const data : m_edgesStructure)
+  {
+    std::cout << "data --> " << data.first << " | [" << data.second.first << " : " << data.second.second << "]" << std::endl;
+  }
+}
+/******************************************************************************/
 void SimplexMesh::buildOppFaces(const TSimplexID idxTri)
 {
   TInt triIdx = -idxTri;
