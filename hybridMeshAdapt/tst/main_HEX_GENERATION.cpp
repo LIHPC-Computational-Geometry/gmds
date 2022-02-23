@@ -63,8 +63,8 @@ int main(int argc, char* argv[])
   vtkReader.read(fIn);
   simplexMesh.buildAdjInfoGlobal();
   simplexMesh.initializeEdgeStructure();
-  return 0;
   simplexMesh.buildSimplexHull();
+  //return 0;
 
   Octree oc(&simplexMesh, 50);
   simplexMesh.setOctree(&oc);
