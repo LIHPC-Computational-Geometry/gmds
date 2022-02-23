@@ -88,7 +88,7 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test1)
 	VTKWriter writer_geom(&ioService_geom);
 	writer_geom.setCellOptions(N|F);
 	writer_geom.setDataOptions(N|F);
-	writer_geom.write("PointFollowingVectorField2D_Test1_Result.vtk");
+	writer_geom.write("AdvectedPointRK4_2D_Test1_Result.vtk");
 
 	ASSERT_EQ(AdvectedPointRK4_2D::SUCCESS, result);
 }
