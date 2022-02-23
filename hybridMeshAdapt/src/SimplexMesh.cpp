@@ -1013,29 +1013,58 @@ void SimplexMesh::buildAdjInfoGlobal()
 void SimplexMesh::initializeEdgeStructure()
 {
   Variable<TInt>* BND_CURVE_COLOR = nullptr;
+  Variable<TInt>* BND_VERTEX_COLOR = nullptr;
   try {
     BND_CURVE_COLOR = getVariable<TInt,SimplicesNode>("BND_CURVE_COLOR");
+    BND_VERTEX_COLOR = getVariable<TInt,SimplicesNode>("BND_VERTEX_COLOR");
   }catch (GMDSException e) {
     throw gmds::GMDSException(e);
   }
 
   std::multimap<TInt, std::vector<TInt>> labels2Nodes{};
-  for(unsigned int nodeIdx = 0 ; nodeIdx < m_node_ids.capacity() ; nodeIdx++)
+  std::multimap<TInt, std::vector<TInt>> corner2label{};
+
+  for(TInt nodeIdx = 0 ; nodeIdx < m_node_ids.capacity() ; nodeIdx++)
   {
     if(m_node_ids[nodeIdx] != 0)
     {
-      TInt label = (*BND_CURVE_COLOR)[nodeIdx];
-      if((*BND_CURVE_COLOR)[nodeIdx] != 0)
+      TInt labelCurve = (*BND_CURVE_COLOR)[nodeIdx];
+      TInt labelCorner = (*BND_VERTEX_COLOR)[nodeIdx];
+      if(labelCurve != 0)
       {
-        auto iter = labels2Nodes.find(label);
+        auto iter = labels2Nodes.find(labelCurve);
         if(iter != labels2Nodes.end())
         {
           iter->second.push_back(nodeIdx);
         }
         else
         {
-          std::vector<TInt> v{};
-          labels2Nodes.insert(std::make_pair(label,v));
+          std::vector<TInt> v{nodeIdx};
+          labels2Nodes.insert(std::make_pair(labelCurve,v));
+        }
+      }
+      else if(labelCorner != 0)
+      {
+        const std::vector<TInt> nodes = SimplicesNode(this, nodeIdx).neighborNodes();
+        auto iter = corner2label.find(nodeIdx);
+        std::vector<TInt> v{};
+        if(iter == corner2label.end())
+        {
+          for(auto const node : nodes)
+          {
+            if(m_node_ids[node] != 0)
+            {
+              if((*BND_CURVE_COLOR)[node] != 0)
+              {
+                v.push_back(node);
+              }
+            }
+            else
+            {
+              throw gmds::GMDSException("m_node_ids[node] == 0");
+            }
+          }
+          corner2label.insert(std::make_pair(nodeIdx, v));
         }
       }
     }
@@ -1045,7 +1074,6 @@ void SimplexMesh::initializeEdgeStructure()
   {
     for(auto const node0 : data.second)
     {
-      if(data.first == 1){std::cout << "node0 -> " << node0 << std::endl;}
       const SimplicesNode sNode0 = SimplicesNode(this, node0);
       for(auto const node1 : data.second)
       {
@@ -1062,10 +1090,24 @@ void SimplexMesh::initializeEdgeStructure()
     }
   }
 
-  for(auto const data : m_edgesStructure)
+  //Curve nodes have been connected together
+  //Connection to corner node with curve node
+  for(auto const c2n : corner2label)
+  {
+    TInt corner = c2n.first;
+    for(auto const curveNode : c2n.second)
+    {
+      TInt labelCurve = (*BND_CURVE_COLOR)[curveNode];
+      std::pair<TInt, TInt> p{std::min(corner, curveNode), std::max(corner, curveNode)};
+      m_edgesStructure.insert(std::make_pair(labelCurve, p));
+    }
+  }
+  
+  /*for(auto const data : m_edgesStructure)
   {
     std::cout << "data --> " << data.first << " | [" << data.second.first << " : " << data.second.second << "]" << std::endl;
-  }
+  }*/
+
 }
 /******************************************************************************/
 void SimplexMesh::buildOppFaces(const TSimplexID idxTri)
