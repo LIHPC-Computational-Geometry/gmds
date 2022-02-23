@@ -582,10 +582,8 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
   else if(dimNode == SimplexMesh::topo::SURFACE){  indexNode =  (*BND_SURFACE_COLOR)[node.getGlobalNode()] ; }
   else                                          {  indexNode =  0;}
 
-  //std::cout << "CELL EXPANSION" << std::endl;
   bool flag = true;
-  //CELL EXPANSION
-  //for(auto const simplex : cavityCell){std::cout << "initCavCell -> " << simplex << std::endl;}
+  //CELL EXPANSION START
   while(flag)
   {
     flag = false;
@@ -596,143 +594,84 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         if(tetBitVector[simplexId] != 0)
         {
           SimplicesCell cell = SimplicesCell(m_simplex_mesh, simplexId);
-          //if(!cell.containNode(node))
+          for(TInt nodeIndexLocal = 0; nodeIndexLocal < sizeLocalNodeCell; nodeIndexLocal++)
           {
-            for(TInt nodeIndexLocal = 0; nodeIndexLocal < sizeLocalNodeCell; nodeIndexLocal++)
+            TSimplexID nextSimplexToAdd = cell.oppositeTetraIdx(nodeIndexLocal);
+            if(nextSimplexToAdd != errorId)
             {
-              TSimplexID nextSimplexToAdd = cell.oppositeTetraIdx(nodeIndexLocal);
-              if(nextSimplexToAdd != errorId)
+              if(nextSimplexToAdd >= 0)
               {
-                //to recode to add cell constraints
-                /*std::vector<TInt> face = cell.getOrderedFace(nodeIndexLocal);
-                std::sort(face.begin(), face.end());
-
-                auto it = facesAlreadyBuilt.find(face.front());
-                if(it != facesAlreadyBuilt.end())
+                if(criterion.execute(m_simplex_mesh, simplexId, nodeIndexLocal, nextPt))
                 {
-                  if(it->second.first == face[1] && it->second.second == face[2]) // face can not be pass throught
+                  if(bitCellInCavity[nextSimplexToAdd] == 0 && bitMarkedCell[nextSimplexToAdd] == 0)
                   {
-                    std::cout << "face  -> " << it->first << " | " << it->second.first << " | " << it->second.second << " already built" << std::endl;
-                    return false;
-                  }
-                }*/
-
-                if(nextSimplexToAdd >= 0)
-                {
-                  if(criterion.execute(m_simplex_mesh, simplexId, nodeIndexLocal, nextPt))
-                  {
-                    if(bitCellInCavity[nextSimplexToAdd] == 0 && bitMarkedCell[nextSimplexToAdd] == 0)
-                    {
-                      cavityCell.resize(cavityCell.size() + 1);
-                      cavityCell[cavityCell.size() - 1] = nextSimplexToAdd;
-                      bitCellInCavity.assign(nextSimplexToAdd);
-                    }
+                    cavityCell.resize(cavityCell.size() + 1);
+                    cavityCell[cavityCell.size() - 1] = nextSimplexToAdd;
+                    bitCellInCavity.assign(nextSimplexToAdd);
                   }
                 }
-                else
+              }
+              else
+              {
+                if(triBitVector[-nextSimplexToAdd] == 0)
                 {
-                  if(triBitVector[-nextSimplexToAdd] == 0)
-                  {
-                    initCavityTriangle.push_back(nextSimplexToAdd);
-                    triBitVector.assign(-nextSimplexToAdd);
-                  }
+                  initCavityTriangle.push_back(nextSimplexToAdd);
+                  triBitVector.assign(-nextSimplexToAdd);
                 }
               }
             }
           }
         }
+        else
+        {
+          std::cout << "tetBitVector[ " << simplexId << "] == 0" << std::endl;
+          throw gmds::GMDSException("unvalid simplex in cavity");
+        }
       }
     }
+    //CELL EXPANSION END
 
-    //std::cout << "CELL EXPANSION END" << std::endl;
+
+
+
+
 
     gmds::BitVector indexedTriangle(m_simplex_mesh->getBitVectorTri().capacity());
     if(dimNode == SimplexMesh::topo::RIDGE)
     {
-      /*std::cout << "SimplexMesh::topo::RIDGE | labelNode--> " << indexNode <<std::endl;
-      for(auto const tri : initCavityTriangle)
-      {
-        std::cout << "triangle --> " << tri <<std::endl;
-      }
-      for(auto const tet : cavityCell)
-      {
-        std::cout << "tetra --> " << tet <<std::endl;
-      }*/
       struct Edge{
         TInt node0;
         TInt node1;
       };
-
-      const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& mapEdgeTriangleIndices =  m_simplex_mesh->getEdgeTianglesIndices();
-      const std::pair<unsigned int, unsigned int>& trianglesIndices = mapEdgeTriangleIndices.at(indexNode);
-      unsigned int index0 = trianglesIndices.first;
-      unsigned int index1 = trianglesIndices.second;
-
-      BitVector trianglesindexedByIndex0(m_simplex_mesh->getBitVectorTri().capacity());
-      BitVector trianglesindexedByIndex1(m_simplex_mesh->getBitVectorTri().capacity());
-      for(auto const tri : initCavityTriangle)
-      {
-        int indexTri = (*BND_TRIANGLES)[-tri];
-        if(indexTri == index0){trianglesindexedByIndex0.assign(-tri);}
-        else if(indexTri == index1){trianglesindexedByIndex1.assign(-tri);}
-      }
-
-      std::vector<Edge> edges{};
-      for(unsigned int triangleIndex0ID = 0 ; triangleIndex0ID < trianglesindexedByIndex0.capacity() ; triangleIndex0ID++)
-      {
-        if(trianglesindexedByIndex0[triangleIndex0ID] == 1)
-        {
-          SimplicesTriangle triangle(m_simplex_mesh, triangleIndex0ID);
-          for(unsigned int edgeLocal = 0 ; edgeLocal < 3 ; edgeLocal++)
-          {
-            TSimplexID adjTriangle = triangle.neighborTriangle(edgeLocal);
-            if(trianglesindexedByIndex1[adjTriangle] == 1)
-            {
-              std::vector<TInt> edgeNode = triangle.getOppositeEdge(edgeLocal);
-              Edge edge;
-              edge.node0 = edgeNode.front();
-              edge.node1 = edgeNode.back();
-              edges.push_back(edge);
-            }
-          }
-        }
-      }
-      //std::cout << "edges.size() --> " << edges.size() << std::endl;
-      double epsilon = 1E-3;
-      math::Point pC = node.getCoords();
       Edge e;
       e.node0 = errorId;
       e.node1 = errorId;
-      if(edges.size() == 0)
+
+      const std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure =  m_simplex_mesh->getEdgeStructure();
+      auto it = edgeStructure.equal_range(indexNode);
+
+      double epsilon = 1E-3;
+      math::Point pC = node.getCoords();
+
+      for(auto itr = it.first ; itr != it.second ; itr++)
       {
-        return false;
-        //throw GMDSException("edges.size() == 0, node edges was found for the ridge node being inserted...");
-      }
-      else if(edges.size() == 1)
-      {
-        e.node0 = edges.front().node0;
-        e.node1 = edges.front().node1;
-      }
-      else
-      {
-        for(auto const & edge : edges)
+        std::cout << "itr.first ->  " << itr->second.first << std::endl;
+        std::cout << "itr.second -> " << itr->second.second << std::endl;
+        math::Point pA = SimplicesNode(m_simplex_mesh, itr->second.first).getCoords();
+        math::Point pB = SimplicesNode(m_simplex_mesh, itr->second.second).getCoords();
+
+        math::Vector3d vecAB = pB - pA ;
+        math::Vector3d vecAC = pC - pA ;
+
+        if((vecAB.cross(vecAC)).norm() < epsilon)
         {
-          math::Point pA = SimplicesNode(m_simplex_mesh, edge.node0).getCoords();
-          math::Point pB = SimplicesNode(m_simplex_mesh, edge.node1).getCoords();
+          double K_AC = vecAB.dot(vecAC);
+          double K_AB = vecAB.dot(vecAB);
 
-          math::Vector3d vecAB = pB - pA ;
-          math::Vector3d vecAC = pC - pA ;
-
-          if((vecAB.cross(vecAC)).norm() < epsilon)
+          if(K_AC >= 0 && K_AC <= K_AB)
           {
-            double K_AC = vecAB.dot(vecAC);
-            double K_AB = vecAB.dot(vecAB);
-
-            if(K_AC >= 0 && K_AC <= K_AB)
-            {
-              e.node0 = edge.node0;
-              e.node1 = edge.node1;
-            }
+            e.node0 = std::min(itr->second.first, itr->second.second);
+            e.node1 = std::max(itr->second.first, itr->second.second);
           }
         }
       }
