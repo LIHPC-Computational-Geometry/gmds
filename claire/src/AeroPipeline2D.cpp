@@ -57,8 +57,11 @@ void AeroPipeline2D::execute(){
 
 	InitialisationMeshGen();
 
-	GenerationCouche(1, 0.5);
-	GenerationCouche(2, 1);
+	GenerationCouche(1, 0.025);
+	GenerationCouche(2, 0.25);
+	GenerationCouche(3, 0.5);
+	GenerationCouche(4, 0.75);
+	GenerationCouche(5, 1);
 
 	EcritureMaillage(m_meshGen);
 
