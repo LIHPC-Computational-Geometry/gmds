@@ -1070,23 +1070,28 @@ void SimplexMesh::initializeEdgeStructure()
     }
   }
 
+  gmds::BitVector nodeCycling(m_node_ids.capacity());
   for(auto const data : labels2Nodes)
   {
     for(auto const node0 : data.second)
     {
-      const SimplicesNode sNode0 = SimplicesNode(this, node0);
-      for(auto const node1 : data.second)
-      {
-        if(node0 != node1)
+        const SimplicesNode sNode0 = SimplicesNode(this, node0);
+        for(auto const node1 : data.second)
         {
-          const SimplicesNode sNode1 = SimplicesNode(this, node1);
-          if(sNode0.shell(sNode1).size() != 0)
+          if(nodeCycling[node1] == 0)
           {
-            std::pair<TInt, TInt> p{std::min(node0, node1), std::max(node0, node1)};
-            m_edgesStructure.insert(std::make_pair(data.first, p));
+            if(node0 != node1)
+            {
+              std::pair<TInt, TInt> p{std::min(node0, node1), std::max(node0, node1)};
+              const SimplicesNode sNode1 = SimplicesNode(this, node1);
+              if(sNode0.shell(sNode1).size() != 0)
+              {
+                m_edgesStructure.insert(std::make_pair(data.first, p));
+              }
+            }
           }
         }
-      }
+        nodeCycling.assign(node0);
     }
   }
 
@@ -1103,10 +1108,12 @@ void SimplexMesh::initializeEdgeStructure()
     }
   }
 
-  /*for(auto const data : m_edgesStructure)
+  /*
+  for(auto const data : m_edgesStructure)
   {
     std::cout << "data --> " << data.first << " | [" << data.second.first << " : " << data.second.second << "]" << std::endl;
-  }*/
+  }
+  std::cout << "INITIALISATION EDGE STRUCTURE END" << std::endl;*/
 
 }
 /******************************************************************************/
@@ -4901,19 +4908,21 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
               //std::cout << "node being inserted --> " << data.node << " Of dimension -> " <<  data.dim_Nj << " and label -> " << data.index_Nj << std::endl;
               //std::cout << "from node --> " << node << " Of dimension -> " <<  dim_Ni << " and label -> " << index_Ni << std::endl;
 
-              if(dim_Ni == 4 && (data.dim_Nj == 0 || data.dim_Nj == 1 || data.dim_Nj == 2)){continue;}
+              //if(dim_Ni == 4 && (data.dim_Nj == 0 || data.dim_Nj == 1 || data.dim_Nj == 2)){continue;}
               const std::multimap<TInt, TInt> facesAlreadyBuilt{};
               PointInsertion(this, nodeToInsert, criterionRAIS, status, ball, surfaceNodesAdded, deletedNodes, facesAlreadyBuilt);
               if(status)
               {
 
-                //std::cout << "status --> " << status << std::endl;
-                /*gmds::VTKWriter vtkWriterDI(&ioService);
-                vtkWriterDI.setCellOptions(gmds::N|gmds::F|gmds::R);
-                vtkWriterDI.setDataOptions(gmds::N|gmds::F|gmds::R);
-                vtkWriterDI.write("ModeleCAD5_ER_ITER_TEST_" + std::to_string(cpt) + ".vtk");
-                std::cout << "cpt --> " << cpt << std::endl;
-                cpt++;*/
+                if(cpt > 200)
+                {
+                  gmds::VTKWriter vtkWriterDI(&ioService);
+                  vtkWriterDI.setCellOptions(gmds::N|gmds::F|gmds::R);
+                  vtkWriterDI.setDataOptions(gmds::N|gmds::F|gmds::R);
+                  //vtkWriterDI.write("TEST_EDGESTRUCTURE_" + std::to_string(cpt) + ".vtk");
+                  //std::cout << "cpt --> " << cpt << std::endl;
+                }
+                cpt++;
                 edgesRemovedNbr++;
                 break;
               }

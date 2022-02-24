@@ -204,8 +204,8 @@ int main(int argc, char* argv[])
   vtkWriterER.setCellOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterER.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterER.write(fER);
-
-
+  //return 0;
+  
   ///////////////////////////EDGE BUILDER START HERE///////////////////////////
   std::multimap<TInt, TInt> edges{};
   const gmds::BitVector triIdx = simplexNodes.getBitVectorTri();

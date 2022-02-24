@@ -22,9 +22,11 @@ m_simplex_mesh(simplexMesh)
 CavityOperator::CavityIO::CavityIO(SimplexMesh* simplexMesh, const std::vector<TSimplexID>& cavityIn, const std::vector<TSimplexID>& cavityTriangleConnectedToP, const std::vector<TSimplexID>& cavityTriangleNotConnectedToP):
 m_simplex_mesh(simplexMesh)
 {
+  TInt border = std::numeric_limits<TInt>::min();
   m_cavityCellIn = cavityIn;
   m_cavityTriangleConnectedToP = cavityTriangleConnectedToP;
   m_cavityTriangleNotConnectedToP = cavityTriangleNotConnectedToP;
+  m_edgeContainingNode = std::make_pair(border, border);
   //cavityIn.clear();
 }
 /******************************************************************/
@@ -647,7 +649,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       e.node0 = errorId;
       e.node1 = errorId;
 
-      const std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure =  m_simplex_mesh->getEdgeStructure();
+      const std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure =  m_simplex_mesh->getConstEdgeStructure();
       auto it = edgeStructure.equal_range(indexNode);
 
       double epsilon = 1E-3;
@@ -655,8 +657,8 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
 
       for(auto itr = it.first ; itr != it.second ; itr++)
       {
-        std::cout << "itr.first ->  " << itr->second.first << std::endl;
-        std::cout << "itr.second -> " << itr->second.second << std::endl;
+        //std::cout << "itr.first ->  " << itr->second.first << std::endl;
+        //std::cout << "itr.second -> " << itr->second.second << std::endl;
         math::Point pA = SimplicesNode(m_simplex_mesh, itr->second.first).getCoords();
         math::Point pB = SimplicesNode(m_simplex_mesh, itr->second.second).getCoords();
 
@@ -672,12 +674,20 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
           {
             e.node0 = std::min(itr->second.first, itr->second.second);
             e.node1 = std::max(itr->second.first, itr->second.second);
+            cavityIO.setEdgeContainingNode(e.node0, e.node1);
+            break;
           }
         }
       }
-
+      /*
+      std::cout << "edge -> [" << e.node0 << " : " << e.node1 << "]" << std::endl;
+      std::cout << "indexNode -> " << indexNode << std::endl;
+      std::cout << "node -> " << node.getGlobalNode() << std::endl;
+      std::cout << "node Coord-> " << node.getCoords() << std::endl;*/
+      //std::cout << std::endl;
       if(e.node0 == errorId || e.node1 == errorId)
       {
+        //the node is not on a curve
         return false;
       }
       const std::vector<TSimplexID> shell = SimplicesNode(m_simplex_mesh, e.node0).shell(SimplicesNode(m_simplex_mesh, e.node1));

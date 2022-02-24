@@ -142,7 +142,9 @@ class SimplexMesh
 
   void initializeEdgeStructure();
 
-  const std::multimap<TInt, std::pair<TInt,TInt>> & getEdgeStructure() {return m_edgesStructure;}
+  const std::multimap<TInt, std::pair<TInt,TInt>> & getConstEdgeStructure() {return m_edgesStructure;}
+
+  std::multimap<TInt, std::pair<TInt,TInt>> & getEdgeStructure() {return m_edgesStructure;}
 
   void buildBaseLocal(const TSimplexID& tetIndx);
 
