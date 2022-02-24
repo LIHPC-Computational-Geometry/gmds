@@ -38,6 +38,7 @@ void AeroPipeline3D::execute(){
 	InitialisationFronts();
 
 	// Calcul du level set
+	std::cout << "-> Calcul des Level Sets" << std::endl;
 	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance");
 	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
 	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
@@ -48,6 +49,7 @@ void AeroPipeline3D::execute(){
 	lsCombined.execute();
 
 	// Calcul du gradient du champ de Level Set
+	std::cout << "-> Calcul du gradient du champ des Level Sets" << std::endl;
 	m_mesh->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
 	LeastSquaresGradientComputation grad2D(m_mesh, m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance"),
 	                                       m_mesh->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
