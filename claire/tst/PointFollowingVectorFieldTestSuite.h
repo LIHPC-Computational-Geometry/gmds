@@ -8,6 +8,7 @@
 #include <gmds/claire/GradientComputation2D.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/claire/AdvectedPointRK4_2D.h>
+#include <gmds/claire/AdvectedPointRK4_3D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
@@ -336,6 +337,88 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test4)
 
 	ASSERT_EQ(AdvectedPointRK4_2D::SUCCESS, result);
 
+}
+
+/*----------------------------------------------------------------------------*/
+
+
+/*----------------------------------------------------------------------------*/
+/*                 CAS TEST 2D CLASSE AdvectedPointRK4_3D                     */
+/*----------------------------------------------------------------------------*/
+
+TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_3D_Test1)
+{
+	// WE READ
+	Mesh m(MeshModel(DIM3 | R | F | E | N |
+	                 R2N | F2N | E2N | R2F | F2R |
+	                 F2E | E2F | R2E | N2R | N2F | N2E));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Aero/3D/C1_3D.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::R);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doctor(&m);
+	doctor.buildFacesAndR2F();
+	doctor.buildEdgesAndX2E();
+	doctor.updateUpwardConnectivity();
+
+	// Initialisation des marques sur le front à avancer
+	int markFrontNodesInt = m.newMark<gmds::Node>();
+	int markFrontNodesOut = m.newMark<gmds::Node>();
+	for (auto n_id:m.nodes()){
+		Node n = m.get<Node>(n_id);
+		double coord_x = n.X() ;
+		double coord_y = n.Y() ;
+		double coord_z = n.Z() ;
+		double rayon = sqrt( pow(coord_x, 2) + pow(coord_y, 2) + pow(coord_z, 2));
+		if ( abs( rayon - 0.5) < pow(10,-6)) {
+			// For the square test case, the front to advance is the boundary where y=0
+			m.mark<Node>(n_id,markFrontNodesInt);
+		}
+		if ( abs( rayon - 2) < pow(10,-6)) {
+			// For the square test case, the front to advance is the boundary where y=0
+			m.mark<Node>(n_id,markFrontNodesOut);
+		}
+	}
+
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance");
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	m.newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut,
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
+	LevelSetCombined::STATUS result_ls = lsCombined.execute();
+	ASSERT_EQ(LevelSetCombined::SUCCESS, result_ls);
+
+	m.unmarkAll<Node>(markFrontNodesInt);
+	m.freeMark<Node>(markFrontNodesInt);
+	m.unmarkAll<Node>(markFrontNodesOut);
+	m.freeMark<Node>(markFrontNodesOut);
+
+	m.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	LeastSquaresGradientComputation grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                                       m.getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	LeastSquaresGradientComputation::STATUS result_grad = grad2D.execute();
+	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
+
+	// Placement du point P à la distance souhaitée suivant le champ de gradient
+	double ang(M_PI/4);
+	math::Point M(0.5*cos(ang), 0.5*sin(ang), 0.0);
+	double distance = 1.0;
+	AdvectedPointRK4_3D advpoint(&m, M, distance, m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                             m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
+	AdvectedPointRK4_3D::STATUS result = advpoint.execute();
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("AdvectedPointRK4_3D_Test1_Result.vtk");
+
+	ASSERT_EQ(AdvectedPointRK4_3D::SUCCESS, result);
 }
 
 /*----------------------------------------------------------------------------*/
