@@ -31,3 +31,19 @@ bool AbstractAeroPipeline::getIsOver(){
 	return m_isOver;
 }
 /*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+std::vector<Node> AbstractAeroPipeline::AdjacentNodes(Node n){
+
+	std::vector<Edge> adjacent_edges = n.get<Edge>() ;
+	std::vector<Node> adjacent_nodes;
+	for (auto e:adjacent_edges){
+		TCellID ne_id = e.getOppositeNodeId(n);
+		Node ne = m_mesh->get<Node>(ne_id);
+		adjacent_nodes.push_back(ne);
+	}
+
+	return adjacent_nodes;
+}
+/*------------------------------------------------------------------------*/

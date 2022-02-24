@@ -49,6 +49,13 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	/*-------------------------------------------------------------------*/
 
  protected:
+	/*----------------------------------------------------------------------------*/
+	/** @brief Donne le vecteur des noeuds adjacents à n.
+	 */
+	std::vector<Node> AdjacentNodes(Node n);
+	/*----------------------------------------------------------------------------*/
+
+ protected:
 	/** pointer to mesh we work on */
 	Mesh* m_mesh;
 	/** pointer to mesh we generate */
