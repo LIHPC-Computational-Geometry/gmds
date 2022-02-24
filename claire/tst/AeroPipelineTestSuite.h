@@ -4,6 +4,7 @@
 
 #include <gmds/claire/AbstractAeroPipeline.h>
 #include <gmds/claire/AeroPipeline2D.h>
+#include <gmds/claire/AeroPipeline3D.h>
 #include <gmds/claire/Params.h>
 #include <gtest/gtest.h>
 #include <iostream>
@@ -24,7 +25,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	// le temps de mettre en place un fichier .ini
 	params_aero.dim=ParamsAero::DIM_2D;
 	std::string dir(TEST_SAMPLES_DIR);
-	params_aero.input_file=dir+"/Aero/C4_2D_0.1.vtk";
+	params_aero.input_file=dir+"/Aero/C5_2D_0.5.vtk";
 	params_aero.output_file="AeroPipeline2D_Test1_Result.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
 
@@ -32,6 +33,33 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	algo_aero2D.execute();
 
 	bool isOver = algo_aero2D.getIsOver();
+
+	ASSERT_EQ(isOver, true);
+
+}
+
+
+
+/*----------------------------------------------------------------------------*/
+/*                       CAS TEST 3D CLASSE LevelSet                          */
+/*----------------------------------------------------------------------------*/
+
+TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
+{
+	ParamsAero params_aero;
+
+	// Définition en dur des paramètres pour l'aéro
+	// le temps de mettre en place un fichier .ini
+	params_aero.dim=ParamsAero::DIM_3D;
+	std::string dir(TEST_SAMPLES_DIR);
+	params_aero.input_file=dir+"/B0.vtk";
+	params_aero.output_file="AeroPipeline3D_Test1_Result.vtk";
+	params_aero.output_dir="gmds/claire/tst/";
+
+	AeroPipeline3D algo_aero3D(params_aero);
+	algo_aero3D.execute();
+
+	bool isOver = algo_aero3D.getIsOver();
 
 	ASSERT_EQ(isOver, true);
 

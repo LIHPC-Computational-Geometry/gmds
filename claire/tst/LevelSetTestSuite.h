@@ -784,12 +784,17 @@ TEST(LevelSetTestClass, LevelSet_Cvg_2D_Test2)
 	std::string dir(TEST_SAMPLES_DIR);
 
 	std::vector<std::string> liste_fichiers_vtk;
-	//liste_fichiers_vtk.push_back(dir+"/Aero/Poubelle/Carre_0.1.vtk");
+	liste_fichiers_vtk.push_back(dir+"/Aero/Poubelle/Carre_0.1.vtk");
+	//liste_fichiers_vtk.push_back(dir+"/Aero/Poubelle/Carre_0.075.vtk");
+	//liste_fichiers_vtk.push_back(dir+"/Aero/Poubelle/Carre_0.06.vtk");
 	//liste_fichiers_vtk.push_back(dir+"/Aero/Poubelle/Carre_0.05.vtk");
-	//liste_fichiers_vtk.push_back(dir+"/Aero/Poubelle/Carre_0.01.vtk");
+	//liste_fichiers_vtk.push_back(dir+"/Aero/Poubelle/Carre_0.04.vtk");
 	//liste_fichiers_vtk.push_back(dir+"/Aero/Poubelle/Carre_0.02.vtk");
+	//liste_fichiers_vtk.push_back(dir+"/Aero/Poubelle/Carre_0.015.vtk");
+	//liste_fichiers_vtk.push_back(dir+"/Aero/Poubelle/Carre_0.01.vtk");
+	//liste_fichiers_vtk.push_back(dir+"/Aero/Poubelle/Carre_0.009.vtk");
 	//liste_fichiers_vtk.push_back(dir+"/Aero/Poubelle/Carre_0.008.vtk");
-	liste_fichiers_vtk.push_back(dir+"/Aero/Poubelle/Carre_0.005.vtk");
+	//liste_fichiers_vtk.push_back(dir+"/Aero/Poubelle/Carre_0.005.vtk");
 
 	// First, we create the file where we are going to store the info
 	std::ofstream stream= std::ofstream("LevelSet_Etude_Convergence.table", std::ios::out);
