@@ -254,7 +254,7 @@ void AeroPipeline2D::InitialisationFronts(){
 				if ( (x_min[i-1] < x_min[j-1]) &&
 				    (y_min[i-1] < y_min[j-1]) &&
 				    (x_max[j-1] < x_max[i-1]) &&
-				    (y_max[j-1] < x_max[i-1]) ) {
+				    (y_max[j-1] < y_max[i-1]) ) {
 					nbr_boite_englobe += 1;
 				}
 			}

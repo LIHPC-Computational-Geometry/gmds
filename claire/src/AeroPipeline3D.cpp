@@ -35,6 +35,24 @@ AeroPipeline3D::AeroPipeline3D(ParamsAero Aparams) :
 /*------------------------------------------------------------------------*/
 void AeroPipeline3D::execute(){
 	LectureMaillage();
+	InitialisationFronts();
+
+	// Calcul du level set
+	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance");
+	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+	LevelSetCombined lsCombined(m_mesh, m_markFrontNodesParoi, m_markFrontNodesExt,
+	                            m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                            m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	                            m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
+	lsCombined.execute();
+
+	// Calcul du gradient du champ de Level Set
+	m_mesh->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	LeastSquaresGradientComputation grad2D(m_mesh, m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                                       m_mesh->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	grad2D.execute();
+
 	EcritureMaillage();
 	m_isOver = true;
 }
@@ -97,9 +115,8 @@ void AeroPipeline3D::InitialisationFronts(){
 	m_markFrontNodesExt = m_mesh->newMark<gmds::Node>();
 
 	//Get the boundary node ids
-	BoundaryOperator bnd_op(m_mesh);
 	std::vector<TCellID> bnd_node_ids;
-	bnd_op.getBoundaryNodes(bnd_node_ids);
+	bnd_node_ids = getBndNodes();
 
 	int markBoundaryNodes = m_mesh->newMark<Node>();
 
@@ -113,6 +130,7 @@ void AeroPipeline3D::InitialisationFronts(){
 	Variable<int>* var_color_bords ;
 	var_color_bords = m_mesh->newVariable<int, GMDS_NODE>("COLOR_BORDS");
 
+	// ----- Marque chaque bord avec une couleur différente -----
 	int color = 0; //Default value is 0
 	int markTreated = m_mesh->newMark<Node>();
 
@@ -159,5 +177,115 @@ void AeroPipeline3D::InitialisationFronts(){
 		}
 	}
 
+	// ----- Fin de marquage des différents bords -----
+
+	if (color < 2){
+		std::cout << "Attention : il n'y a pas deux bords minimum." << std::endl;
+	}
+
+	m_mesh->unmarkAll<Node>(markBoundaryNodes);
+	m_mesh->freeMark<Node>(markBoundaryNodes);
+
+	m_mesh->unmarkAll<Node>(markTreated);
+	m_mesh->freeMark<Node>(markTreated);
+
+
+	// ----- Initialisation quel bord est le front ext, les autres bords sont paroi -----
+	// Calcul des boites englobantes
+	std::vector<double> x_min(color,0.0);
+	std::vector<double> y_min(color,0.0);
+	std::vector<double> z_min(color,0.0);
+	std::vector<double> x_max(color,0.0);
+	std::vector<double> y_max(color,0.0);
+	std::vector<double> z_max(color,0.0);
+
+	for (auto n_id:bnd_node_ids ) {
+		Node n = m_mesh->get<Node>(n_id);
+		math::Point p = n.point();
+		// A quel bord appartient le noeud n_id
+		int couleur = var_color_bords->value(n_id);
+		if(p.X() < x_min[couleur-1]){
+			x_min[couleur-1] = p.X();
+		}
+		if(p.X() > x_max[couleur-1]){
+			x_max[couleur-1] = p.X();
+		}
+		if(p.Y() < y_min[couleur-1]){
+			y_min[couleur-1] = p.Y();
+		}
+		if(p.Y() > y_max[couleur-1]){
+			y_max[couleur-1] = p.Y();
+		}
+		if(p.Z() < z_min[couleur-1]){
+			z_min[couleur-1] = p.Z();
+		}
+		if(p.Z() > z_max[couleur-1]){
+			z_max[couleur-1] = p.Z();
+		}
+	}
+
+	// On recherche la plus grosse boite englobante
+	int bigest_color = 1;
+	for(int i=2;i<=color;i++){
+		// On compte le nombre de boites que la couleur i englobe
+		int nbr_boite_englobe = 0;
+		for (int j=1;j<=color;j++){
+			if (i != j){
+				if ( (x_min[i-1] < x_min[j-1]) &&
+				    (y_min[i-1] < y_min[j-1]) &&
+				    (z_min[i-1] < z_min[j-1]) &&
+				    (x_max[j-1] < x_max[i-1]) &&
+				    (y_max[j-1] < y_max[i-1]) &&
+				    (z_max[j-1] < z_max[i-1]) ) {
+					nbr_boite_englobe += 1;
+				}
+			}
+		}
+		if(nbr_boite_englobe == color-1){
+			bigest_color = i;
+		}
+	}
+	//std::cout << "Boite englobante : " << bigest_color << std::endl;
+
+	// On marque les fronts paroi et extérieur
+	// Variable qui contient la couleur du bord
+	Variable<int>* var_color_paroi ;
+	var_color_paroi = m_mesh->newVariable<int, GMDS_NODE>("COLOR_PAROI");
+	for (auto n_id:bnd_node_ids){
+		int couleur = var_color_bords->value(n_id);
+		if(couleur == bigest_color){
+			m_mesh->mark<Node>(n_id,m_markFrontNodesExt);
+			(*var_color_paroi)[n_id] = 1;
+		}
+		else{
+			m_mesh->mark<Node>(n_id,m_markFrontNodesParoi);
+			(*var_color_paroi)[n_id] = 2;
+		}
+	}
+
+	// ----- Fin initialisation des bords -----
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+std::vector<TCellID> AeroPipeline3D::getBndNodes(){
+	std::vector<TCellID> bnd_nodes;
+
+	for (auto f_id:m_mesh->faces())
+	{
+		Face f = m_mesh->get<Face>(f_id);
+
+		if (f.get<Region>().size() == 1)
+		{
+			std::vector<Node> face_nodes = f.get<Node>() ;
+			for (auto n:face_nodes){
+				bnd_nodes.push_back(n.id());
+			}
+		}
+	}
+
+	return bnd_nodes;
 }
 /*------------------------------------------------------------------------*/

@@ -41,6 +41,10 @@ class LIB_GMDS_CLAIRE_API AeroPipeline3D: public AbstractAeroPipeline {
 	 */
 	void InitialisationFronts();
 	/*------------------------------------------------------------------------*/
+	/** @brief Retourne le vecteur des ID des noeuds sur le bord
+	 */
+	std::vector<TCellID> getBndNodes();
+	/*------------------------------------------------------------------------*/
 
  protected:
 	/** mesh we work on */
