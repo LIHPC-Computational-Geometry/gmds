@@ -47,9 +47,9 @@ class LIB_GMDS_CLAIRE_API AeroPipeline3D: public AbstractAeroPipeline {
 	/*------------------------------------------------------------------------*/
 
  protected:
-	/** mesh we work on */
+	/** Tetra mesh we work on */
 	Mesh m_mTetra;
-	/** mesh quad generated */
+	/** Hexa mesh generated */
 	Mesh m_mHexa;
 
 
