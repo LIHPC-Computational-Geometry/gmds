@@ -49,8 +49,6 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	/*-------------------------------------------------------------------*/
 
  protected:
-	/** mesh we work on */
-	//Mesh m_m;
 	/** pointer to mesh we work on */
 	Mesh* m_mesh;
 	/** pointer to mesh we generate */

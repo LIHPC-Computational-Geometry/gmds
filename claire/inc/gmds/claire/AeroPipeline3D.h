@@ -25,14 +25,28 @@ class LIB_GMDS_CLAIRE_API AeroPipeline3D: public AbstractAeroPipeline {
 	/** \brief Function to be called for mesh generation
 	 */
 	virtual void execute();
-	/*-------------------------------------------------------------------*/
+	/*------------------------------------------------------------------------*/
 
  private:
+	/*------------------------------------------------------------------------*/
+	/** \brief Function to read the initial mesh
+	 */
+	void LectureMaillage();
+	/*------------------------------------------------------------------------*/
+	/** \brief Function to write the hex mesh and the tetra mesh
+	 */
+	void EcritureMaillage();
+	/*------------------------------------------------------------------------*/
+	/** @brief Initialisation des marques sur les fronts
+	 */
+	void InitialisationFronts();
+	/*------------------------------------------------------------------------*/
 
  protected:
- protected:
 	/** mesh we work on */
-	Mesh m_m;
+	Mesh m_mTetra;
+	/** mesh quad generated */
+	Mesh m_mHexa;
 
 
 };
