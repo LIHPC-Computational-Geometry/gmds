@@ -5,6 +5,7 @@
 
 #include "BooleanMarkTestSuite.h"
 #include "Blocking2DTestSuite.h"
+#include "EdgeTestSuite.h"
 #include "MeshDoctorTestSuite.h"
 #include "MeshTestSuite.h"
 /*----------------------------------------------------------------------------*/
