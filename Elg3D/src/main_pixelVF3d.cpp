@@ -592,7 +592,7 @@ int main(int argc, char* argv[]) {
 
             for(auto surf_pixels: surfaces_pixels) {
 
-                if(surf_bis->getName() == surf_pixels->getName()) {
+                if(surf_bis->name() == surf_pixels->name()) {
                     geom_bis2pixels[reinterpret_cast<std::uintptr_t> (surf_bis)] = reinterpret_cast<std::uintptr_t> (surf_pixels);
                     found = true;
                 }
@@ -610,14 +610,14 @@ int main(int argc, char* argv[]) {
 
             for(auto curv_pixels: curves_pixels) {
 
-                if(curv_bis->getName() == curv_pixels->getName()) {
+                if(curv_bis->name() == curv_pixels->name()) {
                     geom_bis2pixels[reinterpret_cast<std::uintptr_t> (curv_bis)] = reinterpret_cast<std::uintptr_t> (curv_pixels);
                     found = true;
                 }
             }
 
             if(!found) {
-                std::cout<<"CURVE MAPPING NOT FOUND "<<curv_bis->getName()<<std::endl;
+                std::cout<<"CURVE MAPPING NOT FOUND "<<curv_bis->name()<<std::endl;
                 geom_bis2pixels[reinterpret_cast<std::uintptr_t> (curv_bis)] = reinterpret_cast<std::uintptr_t> (nullptr);
             }
         }
@@ -628,7 +628,7 @@ int main(int argc, char* argv[]) {
 
             for(auto vert_pixels: vertices_pixels) {
 
-                if(vert_bis->getName() == vert_pixels->getName()) {
+                if(vert_bis->name() == vert_pixels->name()) {
                     geom_bis2pixels[reinterpret_cast<std::uintptr_t> (vert_bis)] = reinterpret_cast<std::uintptr_t> (vert_pixels);
                     found = true;
                 }
@@ -748,10 +748,10 @@ for(int i=0; i<nbFaces_interface; i++)
                                  const gmds::cad::GeomEntity* geomEntity = reinterpret_cast<gmds::cad::GeomEntity *> ((*geomassoc_interface_pixels)[nid]);
 
                                  // if it is on a surface we keep all the nodes as being adjacent
-                                 if(geomEntity->getDim() != 2) {
+                                 if(geomEntity->dim() != 2) {
 
                                      // if a vertex keep no neighbors
-                                     if(geomEntity->getDim() == 0) {
+                                     if(geomEntity->dim() == 0) {
 
                                          kmds::TCellID nids[1];
                                          c_N2N_interface->set(nid, nids, 0);
@@ -768,7 +768,7 @@ for(int i=0; i<nbFaces_interface; i++)
 
                                              const gmds::cad::GeomEntity* geomEntity_n = reinterpret_cast<gmds::cad::GeomEntity *> ((*geomassoc_interface_pixels)[nids[i_n]]);
 
-                                             if((geomEntity->getName() == geomEntity_n->getName()) || (geomEntity_n->getDim() == 0)) {
+                                             if((geomEntity->name() == geomEntity_n->name()) || (geomEntity_n->dim() == 0)) {
                                                  nids_n[index] = nids[i_n];
                                                  index++;
                                              }
@@ -846,7 +846,7 @@ for(int i=0; i<nbFaces_interface; i++)
 
                                      gmds::cad::GeomEntity *ge_pixels = reinterpret_cast<gmds::cad::GeomEntity *> (ge_pixels_ptr);
 
-                                     switch(ge_pixels->getDim()) {
+                                     switch(ge_pixels->dim()) {
                                          case 0 : {
                                              gmds::cad::FACPoint *vert = reinterpret_cast<gmds::cad::FACPoint *> (ge_pixels);
                                              vert->project(pt);

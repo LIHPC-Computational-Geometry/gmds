@@ -17,7 +17,7 @@
 /*----------------------------------------------------------------------------*/
 // GMDS File Headers
 /*----------------------------------------------------------------------------*/
-#include <GMDS/CAD/FacetedGeomManager.h>
+#include <gmds/cad/FACManager.h>
 #include <KM/DS/Mesh.h>
 
 #include <KM/IO/VTKWriter.h>
