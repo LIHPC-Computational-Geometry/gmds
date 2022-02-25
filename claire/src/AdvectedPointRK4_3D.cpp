@@ -53,7 +53,7 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 		//std::cout << "-------- ITERATION " << iterations << " ---------" << std::endl;
 		math::Point M = RungeKutta4(m_Pend, Grad.normalize(), dt);	// Calcule la position du point à l'itération n+1 avec un RK4
 		// On vérifie ensuite si cette position est "valide"
-		region_id = inWhichTetra(M) ;
+		region_id = inWhichTetra(M, region_id) ;
 
 		// Si le noeud M calculé est bien dans le maillage,
 		// alors on regarde la distance et le gradient.
@@ -88,7 +88,7 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 
 	// Pour le noeud Pend, calcule de la distance finale.
 	// Normalement, il n'y en a pas besoin, mais c'est pour l'affichage.
-	region_id = inWhichTetra(m_Pend) ;
+	region_id = inWhichTetra(m_Pend, region_id) ;
 	Mat_A_Inv = getInvMatrixA(region_id);
 	dist = interpolationDistance(region_id, Mat_A_Inv, m_Pend);
 	/*
@@ -152,9 +152,41 @@ bool AdvectedPointRK4_3D::isInTetra(TCellID region_id, math::Point M){
 
 
 /*------------------------------------------------------------------------*/
-TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point M){
+TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point M, TCellID r0_id){
 	TCellID region_id;
 	bool isInRegion(false);
+
+	// Si un r0_id a été donné en entrée, on regarde dans les tétras voisins à
+	// celui ci si M y est, avant de regarder sur la totalité du maillage
+	if (r0_id != NullID){
+		// On regarde quels sont les régions voisines de la région r0_id
+		std::vector<TCellID> adjacent_regions;
+		Region r0 = m_mesh->get<Region>(r0_id);
+		std::vector<Node> region_nodes = r0.get<Node>();
+		for (auto n:region_nodes){
+			std::vector<Region> node_regions = n.get<Region>();
+			for (auto r1:node_regions){
+				bool alreadyinvector(false);
+				for (auto rv_id:adjacent_regions){
+					if(r1.id() == rv_id){
+						alreadyinvector = true;
+					}
+				}
+				if (!alreadyinvector) {
+					adjacent_regions.push_back(r1.id());
+				}
+			}
+		}
+		// On regarde si le point M est dans un des tétra
+		for (auto r_adj_id:adjacent_regions){
+			if(!isInRegion){
+				isInRegion = isInTetra(r_adj_id, M);
+	         if(isInRegion){
+					region_id = r_adj_id;
+				}
+			}
+		}
+	}
 
 	for(auto r_it = m_mesh->regions_begin(); r_it!= m_mesh->regions_end() && !isInRegion;++r_it){
 		TCellID r_id = *r_it;
@@ -167,6 +199,10 @@ TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point M){
 	if (!isInRegion){
 		region_id = NullID;
 	}
+
+	//std::cout << "Dans quelle région : " << region_id << std::endl;
+	//std::cout << "Nul ID : " << NullID << std::endl;
+
 	return region_id;
 }
 /*------------------------------------------------------------------------*/

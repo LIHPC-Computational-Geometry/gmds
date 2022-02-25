@@ -19,6 +19,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <unit_test_config.h>
+#include <ctime>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -353,7 +354,7 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_3D_Test1)
 	                 R2N | F2N | E2N | R2F | F2R |
 	                 F2E | E2F | R2E | N2R | N2F | N2E));
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Aero/3D/C1_3D.vtk";
+	std::string vtk_file = dir+"/Aero/3D/C1_3D_0.5.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -406,12 +407,18 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_3D_Test1)
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
 
 	// Placement du point P à la distance souhaitée suivant le champ de gradient
+	std::cout << " -> Calcul de trajectoire d'un point " << std::endl;
 	double ang(M_PI/4);
 	math::Point M(0.5*cos(ang), 0.5*sin(ang), 0.0);
 	double distance = 1.0;
+	time_t t1;
+	t1 = time(NULL);
 	AdvectedPointRK4_3D advpoint(&m, M, distance, m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
 	                             m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
 	AdvectedPointRK4_3D::STATUS result = advpoint.execute();
+	time_t t2;
+	t2 = time(NULL);
+	std::cout << "Temps AdvectedPointRK4_3D : " << t2-t1 << std::endl;
 
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
