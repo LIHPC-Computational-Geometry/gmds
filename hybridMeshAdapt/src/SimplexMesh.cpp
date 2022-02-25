@@ -1108,8 +1108,8 @@ void SimplexMesh::initializeEdgeStructure()
     }
   }
 
-  /*
-  for(auto const data : m_edgesStructure)
+
+  /*for(auto const data : m_edgesStructure)
   {
     std::cout << "data --> " << data.first << " | [" << data.second.first << " : " << data.second.second << "]" << std::endl;
   }
@@ -5014,6 +5014,15 @@ unsigned int SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, co
     TInt nodeAidx = edge.first;
     TInt nodeBidx = edge.second;
 
+    /*std::cout << "nodeAidx -> " << nodeAidx << std::endl;
+    std::cout << "nodeBidx -> " << nodeBidx << std::endl;
+    if(nodeAidx == 23517 && nodeBidx == 72468)
+    {
+      gmds::VTKWriter vtkWriter(&ioService);
+      vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
+      vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
+      vtkWriter.write("TEST.vtk");
+    }*/
     if(nodeAidx != border && nodeBidx != border)
     {
       if(bitNodes[nodeAidx] != 0 && bitNodes[nodeBidx] != 0)

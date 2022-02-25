@@ -241,7 +241,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
 
 
 
-
+          //SimplexMesh beforeBugMesh = *simplexMesh;
           //deleteThe simplexin the cavity
           for(auto const & simplexInCavity : cavityIO.cellInCavity())
           {
@@ -265,6 +265,8 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           if(label != 0)
           {
             std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure = simplexMesh->getEdgeStructure();
+            std::multimap<TInt, std::pair<TInt,TInt>> edgeStructureCopy = edgeStructure;
+
             /*std::cout <<"NODE -> " << simpliceNode.getGlobalNode() << std::endl;
             std::cout <<"label -> " << label << std::endl;
             for(auto const node : curveNodeToDel)
@@ -276,18 +278,45 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             if(curveNodeToDel.size() == 0)
             {
               const std::pair<TInt, TInt> edge = cavityIO.getEdgeContainingNode();
-              //std::cout << "edge -> " << edge.first << " | " << edge.second << std::endl;
               //deletion of the edge in edgestructure
+              std::pair<TInt, TInt> newEdge0{};
+              std::pair<TInt, TInt> newEdge1{};
               for(auto itr = it.first ; itr != it.second ; itr++)
               {
                 if(itr->second.first == edge.first && itr->second.second == edge.second)
                 {
                   edgeStructure.erase(itr);
-                  std::pair<TInt, TInt> newEdge0{std::min(simpliceNode.getGlobalNode(), edge.first), std::max(simpliceNode.getGlobalNode(), edge.first)};
-                  std::pair<TInt, TInt> newEdge1{std::min(simpliceNode.getGlobalNode(), edge.second), std::max(simpliceNode.getGlobalNode(), edge.second)};
-                  edgeStructure.insert(std::make_pair(label, newEdge0));
-                  edgeStructure.insert(std::make_pair(label, newEdge1));
+                  newEdge0 = std::make_pair(std::min(simpliceNode.getGlobalNode(), edge.first), std::max(simpliceNode.getGlobalNode(), edge.first));
+                  newEdge1 = std::make_pair(std::min(simpliceNode.getGlobalNode(), edge.second), std::max(simpliceNode.getGlobalNode(), edge.second));
+                  if(newEdge0.first != newEdge0.second){edgeStructure.insert(std::make_pair(label, newEdge0));}
+                  if(newEdge1.first != newEdge1.second){edgeStructure.insert(std::make_pair(label, newEdge1));}
+                  //edgeStructure.insert(std::make_pair(label, newEdge0));
+                  //edgeStructure.insert(std::make_pair(label, newEdge1));
                   break;
+                }
+              }
+              for(auto const data : edgeStructure)
+              {
+                if(data.second.first == data.second.second)
+                {
+                  std::cout << "EDGE STRUCTURE BEFORE MODIFICATION" << std::endl;
+                  for(auto const dataBis : edgeStructureCopy)
+                  {
+                    std::cout << "data --> " << dataBis.first << " | [" << dataBis.second.first << " : " << dataBis.second.second << "]" << std::endl;
+                  }
+                  std::cout << std::endl;
+                  std::cout << "edge being deleted -> " << edge.first << " | " << edge.second << std::endl;
+                  std::cout << "NEW EDGE CREATED -> " << newEdge0.first << " | " << newEdge0.second << std::endl;
+                  std::cout << "NEW EDGE CREATED -> " << newEdge1.first << " | " << newEdge1.second << std::endl;
+                  std::cout << "DATA TROUBLE | label --> " << data.first << " | [" << data.second.first << " : " << data.second.second << "]" << std::endl;
+
+                    gmds::ISimplexMeshIOService ioService(simplexMesh);
+                    gmds::VTKWriter vtkWriter(&ioService);
+                    vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
+                    vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
+                    vtkWriter.write("EDGE_STRUCTURE_MODIFICATION_BUG_" + std::to_string(simpliceNode.getGlobalNode()) + ".vtk");
+
+                  throw gmds::GMDSException("data.second.first == data.second.second");
                 }
               }
             }
@@ -354,15 +383,20 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
                     TInt maxNode = std::max(simpliceNode.getGlobalNode(), itr->second.second);
                     itr->second.first  = minNode;
                     itr->second.second = maxNode;
+                    if(minNode == maxNode){iteratorsToErase.push_back(itr);}
                 }
               }
               for(auto itr : iteratorsToErase){edgeStructure.erase(itr);}
 
 
-              /*for(auto const data : edgeStructure)
+              for(auto const data : edgeStructure)
               {
-                std::cout << "data --> " << data.first << " | [" << data.second.first << " : " << data.second.second << "]" << std::endl;
-              }*/
+                if(data.second.first == data.second.second)
+                {
+                  std::cout << "data --> " << data.first << " | [" << data.second.first << " : " << data.second.second << "]" << std::endl;
+                  throw gmds::GMDSException("data.second.first == data.second.second");
+                }
+              }
             }
           }
 

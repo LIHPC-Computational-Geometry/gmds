@@ -122,6 +122,9 @@ int main(int argc, char* argv[])
         bool status = false;
         std::vector<TSimplexID> deletedSimplex{};
         const std::multimap<TInt, TInt> facesAlreadyBuilt{};
+        //std::cout << "IDX -> " << idx << std::endl;
+        //std::cout << "NODE BEING INSERTED -> " << node << std::endl;
+        //std::cout << "BND_SURFACE_COLOR -> " << (*BND_SURFACE_COLOR)[node] << std::endl;
         DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, tetraContenaingPt, status, nodesAdded, deletedSimplex, facesAlreadyBuilt);
         if(status)
         {
@@ -154,6 +157,7 @@ int main(int argc, char* argv[])
   duration = (std::clock()-start)/(double)CLOCKS_PER_SEC;
   std::cout << "DELAUNAY INSERTION DONE IN " << duration << std::endl;
   std::cout << "  INSERTED NODE -> "  << (double)nodesAdded.size() / (double)nodesToAddIds.size() * 100.0 << "% " << std::endl;
+  std::cout << "  NODE NOT INSERTED -> "  << nodesToAddIds.size() - nodesAdded.size() << std::endl;
   std::cout << std::endl;
   gmds::VTKWriter vtkWriterDI(&ioService);
   vtkWriterDI.setCellOptions(gmds::N|gmds::R|gmds::F);
@@ -205,7 +209,7 @@ int main(int argc, char* argv[])
   vtkWriterER.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterER.write(fER);
   //return 0;
-  
+
   ///////////////////////////EDGE BUILDER START HERE///////////////////////////
   std::multimap<TInt, TInt> edges{};
   const gmds::BitVector triIdx = simplexNodes.getBitVectorTri();
