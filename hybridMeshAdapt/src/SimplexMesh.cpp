@@ -5647,6 +5647,7 @@ bool SimplexMesh::pointInTriangle(const math::Point& query_point,
     normal.normalize();
     distance = w.dot(normal);
     // The point P′ lies inside T if:
+    //std::cout << "ABG -> " << alpha << " | " << beta << " | " << gamma << std::endl;
     return ((-epsilon <= alpha) && (alpha <= 1.0 + epsilon) &&
             (-epsilon <= beta)  && (beta  <= 1.0 + epsilon) &&
             (-epsilon <= gamma) && (gamma <= 1.0 + epsilon));

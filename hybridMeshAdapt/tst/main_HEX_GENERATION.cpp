@@ -29,7 +29,7 @@ using namespace simplicesCell;
 /*----------------------------------------------------------------------------*/
 int main(int argc, char* argv[])
 {
-  std::string fIn, pIn, fDI, fER, fHEX, fFF, fEI;
+  std::string fIn, pIn, fDI, fER, fHEX, fFF, fEI, fTest;
   if(argc != 3)
   {
       throw gmds::GMDSException("NO INPUT FILE : <mesh_file> <point_file>");
@@ -51,6 +51,7 @@ int main(int argc, char* argv[])
   fHEX = fIn.substr(0,position) + "_HEX_DOMINANT.vtk";
   fFF = fIn.substr(0,position) + "_FORCE_FACE.vtk";
   fEI = fIn.substr(0,position) + "_EDGE_INSERTION.vtk";
+  fTest = fIn.substr(0,position) + "_TEST.vtk";
 
   //==================================================================
   // MESH FILE READING
@@ -112,6 +113,7 @@ int main(int argc, char* argv[])
 
       bool alreadyAdd = false;
       std::vector<TSimplexID> tetraContenaingPt{};
+      //if((*BND_SURFACE_COLOR_NODES)[idx] == 0){continue;}
       TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
       if(!alreadyAdd)
       {
@@ -122,9 +124,6 @@ int main(int argc, char* argv[])
         bool status = false;
         std::vector<TSimplexID> deletedSimplex{};
         const std::multimap<TInt, TInt> facesAlreadyBuilt{};
-        //std::cout << "IDX -> " << idx << std::endl;
-        //std::cout << "NODE BEING INSERTED -> " << node << std::endl;
-        //std::cout << "BND_SURFACE_COLOR -> " << (*BND_SURFACE_COLOR)[node] << std::endl;
         DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, tetraContenaingPt, status, nodesAdded, deletedSimplex, facesAlreadyBuilt);
         if(status)
         {
@@ -163,7 +162,7 @@ int main(int argc, char* argv[])
   vtkWriterDI.setCellOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterDI.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterDI.write(fDI);
-
+  
   start = std::clock();
   std::vector<TInt> deletedNodes{};
   unsigned int tmp = 0;

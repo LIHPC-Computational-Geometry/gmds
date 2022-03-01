@@ -728,21 +728,25 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
     }
     else if(dimNode == SimplexMesh::topo::SURFACE)
     {
+
       std::vector<TSimplexID> firstTriangles{};
       double distance = 0.0;
       math::Point projectedPoint;
       for(auto const tri : initCavityTriangle)
       {
-        const SimplicesTriangle triangle(m_simplex_mesh, -tri);
-        const std::vector<TInt> nodes = triangle.getNodes();
-        const math::Point coord0 = SimplicesNode(m_simplex_mesh, nodes[0]).getCoords();
-        const math::Point coord1 = SimplicesNode(m_simplex_mesh, nodes[1]).getCoords();
-        const math::Point coord2 = SimplicesNode(m_simplex_mesh, nodes[2]).getCoords();
-
-        if(m_simplex_mesh->pointInTriangle(node.getCoords(), coord0, coord1, coord2, distance, projectedPoint))
+        if(indexNode == (*BND_TRIANGLES)[-tri])
         {
-          firstTriangles.push_back(-tri);
-          break;
+          const SimplicesTriangle triangle(m_simplex_mesh, -tri);
+          const std::vector<TInt> nodes = triangle.getNodes();
+          const math::Point coord0 = SimplicesNode(m_simplex_mesh, nodes[0]).getCoords();
+          const math::Point coord1 = SimplicesNode(m_simplex_mesh, nodes[1]).getCoords();
+          const math::Point coord2 = SimplicesNode(m_simplex_mesh, nodes[2]).getCoords();
+
+          if(m_simplex_mesh->pointInTriangle(node.getCoords(), coord0, coord1, coord2, distance, projectedPoint))
+          {
+            firstTriangles.push_back(-tri);
+            break;
+          }
         }
       }
 
@@ -765,7 +769,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
     }
     else if(dimNode == SimplexMesh::topo::SURFACE)
     {
-      for(auto const tri : initCavityTriangle)
+      /*for(auto const tri : initCavityTriangle)
       {
         int indexTri = (*BND_TRIANGLES)[-tri];
         if(indexTri == indexNode)
@@ -776,8 +780,8 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         {
           trianglesNotConnectedToP.push_back(tri);
         }
-      }
-      /*for(auto const tri : initCavityTriangle)
+      }*/
+      for(auto const tri : initCavityTriangle)
       {
         if(indexedTriangle[-tri] == 1){
           trianglesConnectedToP.push_back(tri);
@@ -786,7 +790,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         {
           trianglesNotConnectedToP.push_back(tri);
         }
-      }*/
+      }
     }
     else if(dimNode == SimplexMesh::topo::RIDGE)
     {
@@ -802,7 +806,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       }
     }
 
-    std::vector<TSimplexID> triangleToRemoveFromVec{};
+    /*std::vector<TSimplexID> triangleToRemoveFromVec{};
     for(auto const triNotCo : trianglesNotConnectedToP)
     {
 
@@ -829,7 +833,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
     {
       trianglesNotConnectedToP.erase(std::remove(trianglesNotConnectedToP.begin(), trianglesNotConnectedToP.end(), tri), trianglesNotConnectedToP.end());
       trianglesConnectedToP.push_back(tri);
-    }
+    }*/
 
   }
   cavityIO.setSimplexCavity(cavityCell, trianglesConnectedToP, trianglesNotConnectedToP);
