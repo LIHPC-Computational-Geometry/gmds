@@ -102,22 +102,14 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           ////////////////////////////////////////////////////////////////////////////////
           ///////////////////////finding the node inside the cavity///////////////////////
           ////////////////////////////////////////////////////////////////////////////////
-          //double duration2;
-          //start = std::clock();
-          //std::cout << "nodeIncavity START " <<std::endl;
           if(!cavityIO.nodeInCavity(simpliceNode.getGlobalNode())){
             status = false;
             return;
           }
           const std::vector<TInt>& nodesInsideCavity = cavityIO.getNodeInCavity();
-          //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
-          //std::cout << "nodeInCavity duration --> " << duration2 << std::endl;
 
-          //start = std::clock();
-          //std::cout << "nodeReconnection START " <<std::endl;
           cavityIO.nodesReconnection();
-          //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
-          //std::cout << "nodesReconnection duration --> " << duration2 << std::endl;
+
           ////////////////////////////ADRIEN IDEA///////////////////////////////////////
           //this section is here in order to optimize the futurs normals of the created
           //surface for the edgeRemove algorithm
@@ -267,13 +259,6 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure = simplexMesh->getEdgeStructure();
             std::multimap<TInt, std::pair<TInt,TInt>> edgeStructureCopy = edgeStructure;
 
-            /*std::cout <<"NODE -> " << simpliceNode.getGlobalNode() << std::endl;
-            std::cout <<"label -> " << label << std::endl;
-            for(auto const node : curveNodeToDel)
-            {
-              std::cout << "deleted node -> " << node << std::endl;
-            }*/
-
             auto it = edgeStructure.equal_range(label);
             if(curveNodeToDel.size() == 0)
             {
@@ -290,8 +275,6 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
                   newEdge1 = std::make_pair(std::min(simpliceNode.getGlobalNode(), edge.second), std::max(simpliceNode.getGlobalNode(), edge.second));
                   if(newEdge0.first != newEdge0.second){edgeStructure.insert(std::make_pair(label, newEdge0));}
                   if(newEdge1.first != newEdge1.second){edgeStructure.insert(std::make_pair(label, newEdge1));}
-                  //edgeStructure.insert(std::make_pair(label, newEdge0));
-                  //edgeStructure.insert(std::make_pair(label, newEdge1));
                   break;
                 }
               }
@@ -299,7 +282,8 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
               {
                 if(data.second.first == data.second.second)
                 {
-                  std::cout << "EDGE STRUCTURE BEFORE MODIFICATION" << std::endl;
+                  //if DEBUG
+                  std::cout << "EDGE STRUCTURE BEFORE MODIFICATION FAILED" << std::endl;
                   for(auto const dataBis : edgeStructureCopy)
                   {
                     std::cout << "data --> " << dataBis.first << " | [" << dataBis.second.first << " : " << dataBis.second.second << "]" << std::endl;
@@ -322,13 +306,6 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             }
             else
             {
-              /*for(auto const data : edgeStructure)
-              {
-                std::cout << "data --> " << data.first << " | [" << data.second.first << " : " << data.second.second << "]" << std::endl;
-              }
-              std::cout << "||||||||||||||||||||||||||||||||||" << std::endl;
-              std::cout << "||||||||||||||||||||||||||||||||||" << std::endl;
-              std::cout << "||||||||||||||||||||||||||||||||||" << std::endl;*/
               std::vector<std::multimap<TInt, std::pair<TInt,TInt>>::iterator> iteratorsToErase{};
               std::vector<std::multimap<TInt, std::pair<TInt,TInt>>::iterator> iteratorsToReconnect{};
 
@@ -400,13 +377,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             }
           }
 
-
-          //double duration3;
-          //start = std::clock();
-          //std::cout << "rebuildCavity START " << std::endl;
           simplexMesh->rebuildCavity(cavityIO, simpliceNode.getGlobalNode());
-          //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
-          //std::cout << "rebuildCavity duration --> " << duration2 << std::endl;
           status = true;
         }
       }

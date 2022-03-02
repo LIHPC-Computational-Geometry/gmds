@@ -4099,15 +4099,8 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
   std::map<TInt, std::vector<TSimplexID>> hash_edge; // map  for the reconnection of the surface triangle
 
   unsigned int faceIter = 0;
-  /*for(auto const& face : pointsToConnect)
-  {
-    std::cout << "face[0,1,2] --> " << face[0] << " | " << face[1] << " | " << face[2] << " | " << std::endl;
-  }*/
-
   for(auto const& face : pointsToConnect)
   {
-    //std::cout << "faceIter --> " << faceIter << std::endl;
-    //std::cout << "face[0,1,2] --> " << face[0] << " | " << face[1] << " | " << face[2] << " | " << std::endl;
     TSimplexID neighborSimplex = extSimplexBorder[faceIter];
 
     if(neighborSimplex != border)

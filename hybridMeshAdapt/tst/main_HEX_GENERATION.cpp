@@ -29,7 +29,7 @@ using namespace simplicesCell;
 /*----------------------------------------------------------------------------*/
 int main(int argc, char* argv[])
 {
-  std::string fIn, pIn, fDI, fER, fHEX, fFF, fEI, fTest;
+  std::string fIn, pIn, fDI, fER, fHEX, fFF, fEI;
   if(argc != 3)
   {
       throw gmds::GMDSException("NO INPUT FILE : <mesh_file> <point_file>");
@@ -51,7 +51,6 @@ int main(int argc, char* argv[])
   fHEX = fIn.substr(0,position) + "_HEX_DOMINANT.vtk";
   fFF = fIn.substr(0,position) + "_FORCE_FACE.vtk";
   fEI = fIn.substr(0,position) + "_EDGE_INSERTION.vtk";
-  fTest = fIn.substr(0,position) + "_TEST.vtk";
 
   //==================================================================
   // MESH FILE READING
@@ -162,7 +161,7 @@ int main(int argc, char* argv[])
   vtkWriterDI.setCellOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterDI.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterDI.write(fDI);
-  
+
   start = std::clock();
   std::vector<TInt> deletedNodes{};
   unsigned int tmp = 0;
