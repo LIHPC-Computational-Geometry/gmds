@@ -62,6 +62,12 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	Mesh* m_meshGen;
 	/** parameters for the algorithm */
 	ParamsAero m_params;
+	/** Nombre de bords distincts sur la paroi */
+	int m_nbrBordsParoi;
+	/** Couleur qui correspond au bord extérieur */
+	int m_bigest_color;
+	/** Coulorie chaque bord d'une couleur != */
+	Variable<int>* m_var_color_bords ;
 	/** Marque sur les noeuds de la paroi */
 	int m_markFrontNodesParoi;
 	/** Marque sur les noeuds de la frontière ext */

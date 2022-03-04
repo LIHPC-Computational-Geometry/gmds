@@ -51,6 +51,10 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	 */
 	void InitialisationMeshGen();
 	/*----------------------------------------------------------------------------*/
+	/** @brief Initialisation du maillage quad généré, test 2
+	 */
+	void InitialisationMeshParoi();
+	/*----------------------------------------------------------------------------*/
 	/** @brief Génère une couche de noeuds du maillage
 	 */
 	void GenerationCouche(int couche_id, double dist);

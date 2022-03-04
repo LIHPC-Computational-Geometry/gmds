@@ -27,6 +27,7 @@ AeroPipeline2D::AeroPipeline2D(ParamsAero Aparams) :
                                        gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F))
 {
 	m_couche_id = m_mGen.newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	m_var_color_bords = m_m.newVariable<int, GMDS_NODE>("COLOR_BORDS");
 	m_mesh = &m_m;
 	m_meshGen = &m_mGen;
 }
@@ -55,7 +56,8 @@ void AeroPipeline2D::execute(){
 	                                       m_mesh->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	grad2D.execute();
 
-	InitialisationMeshGen();
+	//InitialisationMeshGen();
+	InitialisationMeshParoi();
 
 	GenerationCouche(1, 0.05);
 	GenerationCouche(2, 1);
@@ -150,8 +152,8 @@ void AeroPipeline2D::InitialisationFronts(){
 	}
 
 	// Variable qui contient la couleur du bord
-	Variable<int>* var_color_bords ;
-	var_color_bords = m_mesh->newVariable<int, GMDS_NODE>("COLOR_BORDS");
+	//Variable<int>* var_color_bords ;
+	//var_color_bords = m_mesh->newVariable<int, GMDS_NODE>("COLOR_BORDS");
 
 	int color = 0; //Default value is 0
 	int markTreated = m_mesh->newMark<Node>();
@@ -166,7 +168,7 @@ void AeroPipeline2D::InitialisationFronts(){
 			// Nouveau bord, nouvelle couleur
 			color++;
 			m_mesh->mark(n, markTreated);
-			(*var_color_bords)[n_id] = color;
+			(*m_var_color_bords)[n_id] = color;
 
 			// Propagation à tous les noeuds connexes qui sont sur le bord
 			std::vector<Node> next;
@@ -193,7 +195,7 @@ void AeroPipeline2D::InitialisationFronts(){
 						// Si le noeud est sur le bord et qu'il n'a pas été traité
 						// On met à jour sa couleur et on le marque comme traité
 						m_mesh->mark(n_adj, markTreated);
-						(*var_color_bords)[n_adj_id] = color;
+						(*m_var_color_bords)[n_adj_id] = color;
 
 						// Ajout du noeud dans la liste des noeuds à proprager
 						next.push_back(n_adj);
@@ -207,6 +209,9 @@ void AeroPipeline2D::InitialisationFronts(){
 
 	if (color < 2){
 		std::cout << "Attention : il n'y a pas deux bords minimum." << std::endl;
+	}
+	else{
+		m_nbrBordsParoi = color-1 ;
 	}
 
 	m_mesh->unmarkAll<Node>(markBoundaryNodes);
@@ -226,7 +231,7 @@ void AeroPipeline2D::InitialisationFronts(){
 		Node n = m_mesh->get<Node>(n_id);
 		math::Point p = n.point();
 		// A quel bord appartient le noeud n_id
-		int couleur = var_color_bords->value(n_id);
+		int couleur = m_var_color_bords->value(n_id);
 		if(p.X() < x_min[couleur-1]){
 			x_min[couleur-1] = p.X();
 		}
@@ -242,7 +247,7 @@ void AeroPipeline2D::InitialisationFronts(){
 	}
 
 	// On recherche la plus grosse boite englobante
-	int bigest_color = 1;
+	m_bigest_color = 1;
 	for(int i=2;i<=color;i++){
 		// On compte le nombre de boites que la couleur i englobe
 		int nbr_boite_englobe = 0;
@@ -257,7 +262,7 @@ void AeroPipeline2D::InitialisationFronts(){
 			}
 		}
 		if(nbr_boite_englobe == color-1){
-			bigest_color = i;
+			m_bigest_color = i;
 		}
 	}
 	//std::cout << "Boite englobante : " << bigest_color << std::endl;
@@ -267,8 +272,8 @@ void AeroPipeline2D::InitialisationFronts(){
 	Variable<int>* var_color_paroi ;
 	var_color_paroi = m_mesh->newVariable<int, GMDS_NODE>("COLOR_PAROI");
 	for (auto n_id:bnd_node_ids){
-		int couleur = var_color_bords->value(n_id);
-		if(couleur == bigest_color){
+		int couleur = m_var_color_bords->value(n_id);
+		if(couleur == m_bigest_color){
 			m_mesh->mark<Node>(n_id,m_markFrontNodesExt);
 			(*var_color_paroi)[n_id] = 1;
 		}
@@ -335,6 +340,123 @@ void AeroPipeline2D::InitialisationMeshGen(){
 	doc.updateUpwardConnectivity();
 
 	m_mesh->deleteVariable(GMDS_NODE, "GMDS_NewID");
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void AeroPipeline2D::InitialisationMeshParoi(){
+
+	std::cout << "-> Discrétisation du front int du maillage quad" << std::endl;
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(m_mesh);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	int markCurveEdges = m_mesh->newMark<Edge>();
+	int markCurveNodes = m_mesh->newMark<Node>();
+	int markPointNodes = m_mesh->newMark<Node>();
+	int markAloneNodes = m_mesh->newMark<Node>();
+
+	bnd_op.markCellOnGeometry(markCurveEdges, markCurveNodes,
+	                 markPointNodes, markAloneNodes);
+
+	m_mesh->unmarkAll<Node>(markAloneNodes);
+	m_mesh->freeMark<Node>(markAloneNodes);
+
+
+
+	// Discrétisation pour un bord de paroi
+
+	// On récuère un noeud de ce bord qui est sur un sommet
+	TCellID n0_id = NullID ;
+	for(auto n_it = m_mesh->nodes_begin(); n_it!= m_mesh->nodes_end() && (n0_id == NullID);++n_it){
+		TCellID n_id = *n_it;
+		if ( m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) && m_mesh->isMarked<Node>(n_id, markPointNodes) ){
+			n0_id = n_id;
+		}
+	}
+
+	// Si le maillage ne comporte pas de sommet, alors, on prend un noeud au hasard
+	if (n0_id==NullID) {
+		for (auto n_it = m_mesh->nodes_begin(); n_it != m_mesh->nodes_end() && (n0_id == NullID); ++n_it) {
+			TCellID n_id = *n_it;
+			if (m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi)) {
+				n0_id = n_id;
+			}
+		}
+	}
+
+	// Initialisation des longueurs pour définir les sommets de blocs
+	double Lmax(0.5);
+	double l(0);
+
+	// Parcours du bord de proche en proche en passant par l'opposé
+	TCellID n1_id = n0_id;
+	TCellID n2_id = NullID;
+	Node n0 = m_mesh->get<Node>(n0_id);
+	std::vector<Edge> adj_edges = n0.get<Edge>();
+	for (auto e:adj_edges){
+		Node ne = e.getOppositeNode(n0);
+		if ( m_mesh->isMarked<Node>(ne.id(), m_markFrontNodesParoi) ){
+			n2_id = ne.id();
+		}
+	}
+
+	Node nstart_quad = m_meshGen->newNode(n0.point()); // Premier noeud du nouveau maillage
+	Node n0_quad = nstart_quad;
+	Node n1_quad;
+	TCellID nstart_quad_id = nstart_quad.id() ;
+	TCellID n0_quad_id = nstart_quad_id;
+	TCellID n1_quad_id = NullID;
+
+	while (n2_id != n0_id){
+
+		// Si le noeud est sur un sommet
+		if ( m_mesh->isMarked<Node>(n2_id, markPointNodes) || l > Lmax ){
+			Node n2 = m_mesh->get<Node>(n2_id);
+			n1_quad = m_meshGen->newNode(n2.point());
+			Edge e = m_meshGen->newEdge(n0_quad, n1_quad);
+			// Ajout des connectivités Node -> Edge
+			n0_quad.add<Edge>(e);
+			n1_quad.add<Edge>(e);
+			// Mise à jour du noeud n0
+			n0_quad = n1_quad;
+			n0_quad_id = n0_quad.id();
+			// On remet l à 0
+			l = 0;
+		}
+
+		// On cherche le prochain noeud
+		TCellID n_old_id = n1_id;
+		n1_id = n2_id;
+		Node n2 = m_mesh->get<Node>(n2_id);
+		adj_edges = n2.get<Edge>();
+		for (auto e:adj_edges){
+			Node ne = e.getOppositeNode(n2);
+			if ( m_mesh->isMarked<Node>(ne.id(), m_markFrontNodesParoi) && ne.id() != n_old_id ){
+				n2_id = ne.id();
+				l = l + e.length();
+			}
+		}
+	}
+
+	// Ajout de la dernière arête pour fermer le blocking du bord
+	Edge e = m_meshGen->newEdge(n1_quad, nstart_quad);
+	// Ajout des connectivités Node -> Edge
+	n1_quad.add<Edge>(e);
+	nstart_quad.add<Edge>(e);
+
+	m_mesh->unmarkAll<Node>(markCurveEdges);
+	m_mesh->freeMark<Node>(markCurveEdges);
+
+	m_mesh->unmarkAll<Node>(markCurveNodes);
+	m_mesh->freeMark<Node>(markCurveNodes);
+
+	m_mesh->unmarkAll<Node>(markPointNodes);
+	m_mesh->freeMark<Node>(markPointNodes);
 
 }
 /*------------------------------------------------------------------------*/
