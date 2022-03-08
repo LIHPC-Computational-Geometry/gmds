@@ -78,7 +78,7 @@ namespace gmds
             /*Tableau of node to connect in order to create tetraedre/triangle */
             std::vector<std::vector<TInt>> pointToConnect(std::vector<TSimplexID>& orderedAdjTet, std::set<TSimplexID>& complementarySimplex, const std::vector<TInt>& nodesInsideCavity, std::vector<TInt>& cellOfPointToConnect, std::vector<TInt>& nodeNotConnected, const TInt nodeToInsert) const ;
 
-            void nodesReconnection();
+            void nodesReconnection(const TInt node);
 
             void findExtSimplex(std::vector<TSimplexID>& extSimplex);
 

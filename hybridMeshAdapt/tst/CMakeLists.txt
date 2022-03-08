@@ -7,6 +7,9 @@ add_executable(GMDS_SIMPLEX_POINT_GENERATION
 add_executable(GMDS_SIMPLEX_INDEXING
         main_INDEXING_SURFACE_CURVE_CORNER.cpp)
 
+add_executable(GMDS_SIMPLEX_INDEXING_CORRECTION
+        main_INDEXING_CORRECTION.cpp)
+
 add_executable(GMDS_SIMPLEX_TEST
         SimplexMeshTestAdd_NTt.h
         SimplexMeshTestSuite.h
@@ -30,6 +33,11 @@ target_link_libraries(GMDS_SIMPLEX_INDEXING PUBLIC
       ${GMDS_LIB}
       ${LIB_GMDS_IO}
       ${LIB_GMDS_FRAME_3D}
+      )
+target_link_libraries(GMDS_SIMPLEX_INDEXING_CORRECTION PUBLIC
+${GMDS_LIB}
+${LIB_GMDS_IO}
+${LIB_GMDS_FRAME_3D}
       )
 
 target_link_libraries(GMDS_SIMPLEX_POINT_GENERATION PUBLIC

@@ -64,7 +64,6 @@ int main(int argc, char* argv[])
   simplexMesh.buildAdjInfoGlobal();
   simplexMesh.initializeEdgeStructure();
   simplexMesh.buildSimplexHull();
-  //return 0;
 
   Octree oc(&simplexMesh, 50);
   simplexMesh.setOctree(&oc);
@@ -112,7 +111,6 @@ int main(int argc, char* argv[])
 
       bool alreadyAdd = false;
       std::vector<TSimplexID> tetraContenaingPt{};
-      //if((*BND_SURFACE_COLOR_NODES)[idx] == 0){continue;}
       TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
       if(!alreadyAdd)
       {

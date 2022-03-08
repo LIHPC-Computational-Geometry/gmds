@@ -188,16 +188,13 @@ void SimplexMesh::deleteAllSimplicesBut(const std::vector<TSimplexID> & simplice
     }
   }
 
-  /*for(unsigned int tri = 1 ; tri < m_tri_ids.capacity(); tri++)
+  for(unsigned int tri = 1 ; tri < m_tri_ids.capacity(); tri++)
   {
-    if(m_tri_ids[tri] != 0)
+    if(std::find(simplices.begin(), simplices.end(), -tri) == simplices.end())
     {
-      if(std::find(simplices.begin(), simplices.end(), -tri) == simplices.end())
-      {
-        m_tri_ids.unselect(tri);
-      }
+      m_tri_ids.unselect(tri);
     }
-  }*/
+  }
 }
 /*****************************************************************************/
 void SimplexMesh::deleteAllTrianglesBut(const std::vector<TSimplexID> & triangles)
@@ -1597,7 +1594,7 @@ void SimplexMesh::buildSimplexHull()
           else
           {
             std::cout << "trianglesIndices.size() != 2 --> " << trianglesIndices.size() << " for node : "<< nodeIdx << " of index : " << indiceNode <<  std::endl;
-            throw GMDSException("problem with the mesh file (the edge is maybe not realy one)");
+            //throw GMDSException("problem with the mesh file (the edge is maybe not realy one)");
           }
         }
       }
@@ -4154,14 +4151,13 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
       TSimplexID oppositeTriangle        = -oppositeTriangles[faceIter][lN];
 
       //std::cout << "localNodeforTriangle -> " << localNodeforTriangle << std::endl;
-      //std::cout << "oppositeTriangle -> " << oppositeTriangle << std::endl;
+      //std::cout << "oppositeTrianle -> " << oppositeTriangle << std::endl;
       if(localNodeforTriangle != border)
       {
         TInt nodeB = face[(localNodeforTriangle + 1) % sizeFace];
         TInt nodeA = face[(localNodeforTriangle + 2) % sizeFace];
 
         TInt triangle = -addTriangle(nodeA, nodeB, nodeToConnect, false);
-        //std::cout << "triangle created --> " <<  triangle << " NODE -> " << nodeA  <<" | " << nodeB << " | " << nodeToConnect << " | "<< std::endl;
         triangles.push_back(triangle);
         (*BND_TRIANGLES)[-triangle] = trianglesIndices[faceIter][lN];
 
@@ -4197,6 +4193,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
     }
     faceIter++;
   }
+
   /////Triangle reconnection//////
   ////////////////////////////////
   for(auto const & pair : hash_edge)
@@ -4907,15 +4904,15 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
               if(status)
               {
 
-                if(cpt > 200)
-                {
-                  gmds::VTKWriter vtkWriterDI(&ioService);
-                  vtkWriterDI.setCellOptions(gmds::N|gmds::F|gmds::R);
-                  vtkWriterDI.setDataOptions(gmds::N|gmds::F|gmds::R);
+                //if(cpt > 200)
+                //{
+                  //gmds::VTKWriter vtkWriterDI(&ioService);
+                  //vtkWriterDI.setCellOptions(gmds::N|gmds::F|gmds::R);
+                  //vtkWriterDI.setDataOptions(gmds::N|gmds::F|gmds::R);
                   //vtkWriterDI.write("TEST_EDGESTRUCTURE_" + std::to_string(cpt) + ".vtk");
                   //std::cout << "cpt --> " << cpt << std::endl;
-                }
-                cpt++;
+                //}
+                //cpt++;
                 edgesRemovedNbr++;
                 break;
               }

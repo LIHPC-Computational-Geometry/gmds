@@ -108,7 +108,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           }
           const std::vector<TInt>& nodesInsideCavity = cavityIO.getNodeInCavity();
 
-          cavityIO.nodesReconnection();
+          cavityIO.nodesReconnection(simpliceNode.getGlobalNode());
 
           ////////////////////////////ADRIEN IDEA///////////////////////////////////////
           //this section is here in order to optimize the futurs normals of the created
