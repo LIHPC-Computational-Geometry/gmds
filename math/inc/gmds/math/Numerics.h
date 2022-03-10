@@ -71,7 +71,7 @@ namespace gmds{
     bool GMDSMath_API near(const TCoord AV1, TCoord AV2, const TCoord AEpsilon = Constants::EPSILON);
 
       /*------------------------------------------------------------------------*/
-      /** \brief Returns the stiffness matrix for the triangle elment defined by
+      /** \brief Returns the stiffness matrix for the triangle element defined by
        *         AP1, AP2 and AP3.
        *
        *    WARNING ONLY 2D!!!!! (x,y)

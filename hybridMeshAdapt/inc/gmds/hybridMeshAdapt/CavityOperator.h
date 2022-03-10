@@ -4,7 +4,6 @@
 #include "gmds/hybridMeshAdapt/SimplicesNode.h"
 #include "gmds/hybridMeshAdapt/SimplicesCell.h"
 #include "gmds/hybridMeshAdapt/SimplicesTriangle.h"
-#include "gmds/hybridMeshAdapt/PointInsertion.h"
 /******************************************************************/
 #include <set>
 /******************************************************************/
@@ -70,6 +69,8 @@ namespace gmds
 
             const std::vector<std::vector<TInt>>  &  getTriangleIndices           () const {return m_triangleIndices;}
 
+            const std::vector<std::vector<TInt>>  &  getBorderEdges               () const {return m_borderSurfaceNode;}
+
             /*Tableau of node to connect in order to create tetraedre/triangle */
             std::vector<std::vector<TInt>> pointToConnect(std::vector<TSimplexID>& orderedAdjTet, std::set<TSimplexID>& complementarySimplex, const std::vector<TInt>& nodesInsideCavity, std::vector<TInt>& cellOfPointToConnect, std::vector<TInt>& nodeNotConnected, const TInt nodeToInsert) const ;
 
@@ -123,9 +124,10 @@ namespace gmds
 
           ~CavityOperator                    (){};
 
-          void cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexID>& initCavityCell, std::vector<TSimplexID>& initCavityTriangle, const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const std::vector<TSimplexID> markedSimplex);
+          bool cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexID>& initCavityCell, std::vector<TSimplexID>& initCavityTriangle, const simplicesNode::SimplicesNode& node,
+                                  const CriterionRAIS& criterion, const std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt, const std::vector<TSimplexID> markedSimplex);
 
-          void cavityReduction(CavityIO& cavityIO, std::vector<TSimplexID>& initCavity, const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const CavityReduction& cavityReduction, const std::vector<TSimplexID> v = std::vector<TSimplexID>{});
+          //void cavityReduction(CavityIO& cavityIO, std::vector<TSimplexID>& initCavity, const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const CavityReduction& cavityReduction, const std::vector<TSimplexID> v = std::vector<TSimplexID>{});
 
           void fillSelectedIds(const std::vector<TSimplexID>& cavity);
 

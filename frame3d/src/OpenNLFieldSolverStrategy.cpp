@@ -215,7 +215,7 @@ void OpenNLFieldSolverStrategy::addLockedTerms() {
                 for (int k = 0; k < 9; k++) {
                     nlSetVariable(9 * local_i + k, sh[k]);
                     nlLockVariable(9 * local_i + k);
-                }
+                }m_surface_mode
 
             }//if(m_mesh->isMarked(ni,m_markNodeFixed ))
 

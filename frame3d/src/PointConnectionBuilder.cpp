@@ -66,7 +66,7 @@ m_spacing(1)
        m_pnt.size()!=m_surface.size()) {
         throw GMDSException("Incompatible size vector as input!");
     }
-    
+
     m_used.resize(m_pnt.size(), 0);
     m_with_debug_info=false;
     m_output_dir = ".";
@@ -82,7 +82,7 @@ setDebugInfo(const bool &AWithDebug, const std::string& AOutputDir)
 void PointConnectionBuilder::execute()
 {
 
-    
+
     //======================================================================
     // STEP 1 - PREFILTER ON THE POINT DISTANCE
     // SHOULD BE IMPROVED
@@ -108,7 +108,7 @@ void PointConnectionBuilder::execute()
     std::vector<std::vector<OrientedEdge> > oriented_edges_init;
     buildOrientedEdges(oriented_edges_init);
 
-    
+
     if(m_with_debug_info) {
         writeEdges(oriented_edges_init, m_output_dir + "/EDGES_LOCAL.vtk");
     }
@@ -116,7 +116,7 @@ void PointConnectionBuilder::execute()
     // STEP 4 - Correction of the oriented-edges to create edges
     //======================================================================
     buildEdges(oriented_edges_init,m_edges);
-    
+
 
     if(m_with_debug_info)
         writeEdges(m_edges, m_output_dir+"/EDGES_GLOBAL.vtk");
@@ -140,8 +140,8 @@ void PointConnectionBuilder::execute()
 /*---------------------------------------------------------------------------*/
 void PointConnectionBuilder::createDistanceFilter()
 {
-    double max_distance = 5*m_spacing;
-    
+    double max_distance = 2*m_spacing;
+
     for(auto i=0; i<m_pnt.size(); i++){
         math::Point pi = m_pnt[i];
         if(m_type[i]!=FRAME_SING){
@@ -171,7 +171,7 @@ void PointConnectionBuilder::computeMeshAssociation(const int AID)
     int geom_dim = m_classification[AID];
     TCellID start_tet_id = m_mesh_data[AID].id;
     double distance = m_spacing;
-    
+
     bool global_surface = false;
     if(geom_dim==3){
         m_mesh_data[AID] = getRegionContaining(m_pnt[AID],
@@ -188,7 +188,7 @@ void PointConnectionBuilder::computeMeshAssociation(const int AID)
                                                          distance,
                                                          surf_id);
         }
-        
+
     }
     else if (geom_dim==1){
         int curv_id = m_curve[AID];
@@ -201,7 +201,7 @@ void PointConnectionBuilder::computeMeshAssociation(const int AID)
                                                          distance,
                                                          curv_id);
         }
-        
+
     }
     // Otherwise we do nothing since it is useless for our algorithm
     // since oriented edges starting from points classified on curves and
@@ -228,15 +228,15 @@ Face PointConnectionBuilder::closestFace(math::Point& AP, const int ASurfID)
         }
     }
     // The point is moved too!!
-    
+
     std::vector<Node> closest_nodes = closest_face.get<Node>();
     math::Triangle t(closest_nodes[0].point(),
                      closest_nodes[1].point(),
                      closest_nodes[2].point());
-    
+
     AP = t.project(AP);
     return closest_face;
-    
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -262,10 +262,10 @@ Edge PointConnectionBuilder::closestEdge(math::Point& AP, const int ACurvID)
     std::vector<Node> closest_nodes = closest_edge.get<Node>();
     math::Segment s(closest_nodes[0].point(),
                     closest_nodes[1].point());
-    
+
     AP = s.project(AP);
     return closest_edge;
-    
+
 }
 /*---------------------------------------------------------------------------*/
 bool PointConnectionBuilder::getOppositeFace(const TCellID ANodeID,
@@ -275,12 +275,12 @@ bool PointConnectionBuilder::getOppositeFace(const TCellID ANodeID,
     std::vector<Face> fs = AR.get<Face>();
     for(const auto& f:fs){
         std::vector<TCellID> f_nids = f.getIDs<Node>();
-        
+
         if(f_nids[0]!=ANodeID && f_nids[1]!=ANodeID && f_nids[2]!=ANodeID){
             AOut = f;
             return true;
         }
-        
+
     }
     return false;
 }
@@ -304,7 +304,7 @@ bool PointConnectionBuilder::getOppositeRegion(const TCellID ANodeID,
             return true;
         }
     }
-    
+
     return false;
 }
 /*---------------------------------------------------------------------------*/
@@ -312,23 +312,23 @@ Cell::Data PointConnectionBuilder::getRegionContaining(const math::Point& APnt,
                                                 const TCellID      ARegionID)
 {
     gmds::Region current_r = m_mesh->get<Region>(ARegionID);
-    
+
     while(true){
         std::vector<Node> n = current_r.get<Node>();
         math::Point p[4] ={
                 n[0].point(), n[1].point(),
                 n[2].point(), n[3].point()
         };
-        
+
         double coeff[4]={0, 0, 0, 0};
-        
+
         math::Point::computeBarycentric(p[0], p[1], p[2], p[3], APnt,
                                         coeff[0],coeff[1],
                                         coeff[2],coeff[3]);
-        
+
         if(coeff[0]>=0 && coeff[1]>=0 && coeff[2]>=0 &&  coeff[3]>=0)
             return Cell::Data(3,current_r.id());
-        
+
         Region next_r;
         bool on_bnd;
         if(coeff[0]<0)
@@ -339,7 +339,7 @@ Cell::Data PointConnectionBuilder::getRegionContaining(const math::Point& APnt,
             on_bnd=getOppositeRegion(n[2].id(), current_r, next_r);
         else //(coeff[3]<0)
             on_bnd=getOppositeRegion(n[3].id(), current_r, next_r);
-        
+
         if(!on_bnd){
             current_r=next_r;
         }
@@ -356,10 +356,10 @@ getBoundaryFaceContaining(math::Point&  AP,
                           const int     ASurfID)
 {
     gmds::Region current_r = m_mesh->get<Region>(ATetID);
-    
+
     std::set<TCellID> close_reg = getCloseRegionsFrom(AP,current_r,ADistance);
     std::set<TCellID> close_bnd_faces;
-    
+
     Variable<int>* color = m_mesh->getVariable<int,GMDS_FACE>("BND_SURFACE_COLOR");
     for(auto i:close_reg){
         Region r = m_mesh->get<Region>(i);
@@ -370,7 +370,7 @@ getBoundaryFaceContaining(math::Point&  AP,
             }
         }
     }
-    
+
     Face closest_face;
     double closest_dist = 10000;
     for(auto i:close_bnd_faces){
@@ -386,12 +386,12 @@ getBoundaryFaceContaining(math::Point&  AP,
         }
     }
     // The point is moved too!!
-    
+
     std::vector<Node> closest_nodes = closest_face.get<Node>();
     math::Triangle t(closest_nodes[0].point(),
                      closest_nodes[1].point(),
                      closest_nodes[2].point());
-    
+
     AP = t.project(AP);
     return Cell::Data(2,closest_face.id());
 }
@@ -404,10 +404,10 @@ getBoundaryEdgeContaining(math::Point&  AP,
                           const int     ACurvID)
 {
     gmds::Region current_r = m_mesh->get<Region>(ATetID);
-    
+
     std::set<TCellID> close_reg = getCloseRegionsFrom(AP,current_r,ADistance);
     std::set<TCellID> close_bnd_edges;
-    
+
     Variable<int>* color = m_mesh->getVariable<int,GMDS_EDGE>("BND_CURVE_COLOR");
     for(auto i:close_reg){
         Region r = m_mesh->get<Region>(i);
@@ -418,7 +418,7 @@ getBoundaryEdgeContaining(math::Point&  AP,
             }
         }
     }
-    
+
     Edge closest_edge;
     double closest_dist = 10000;
     for(auto i:close_bnd_edges){
@@ -432,11 +432,11 @@ getBoundaryEdgeContaining(math::Point&  AP,
             closest_edge=e;
         }
     }
-    
+
     std::vector<Node> closest_nodes = closest_edge.get<Node>();
     math::Segment s(closest_nodes[0].point(),
                     closest_nodes[1].point());
-    
+
     // The point is moved too!!
     AP = s.project(AP);
 
@@ -449,20 +449,20 @@ PointConnectionBuilder::getCloseRegionsFrom(const math::Point& AFromPnt,
                                      const double AEpsilon)
 {
     std::set<TCellID> region_ids;
-    
+
     //starting from AFromTet, we look for all tet t such that the distance
     //to one face of t is < to AEpsilon
     std::vector<Region> candidates;
     candidates.push_back(AFromTet);
     std::set<TCellID> done;
-    
-    
+
+
     while(!candidates.empty()){
         Region c = candidates.back();
         candidates.pop_back();
-        
+
         done.insert(c.id());
-        
+
         std::vector<Face> fs = c.get<Face>();
         for(const auto & f:fs){
             std::vector<Node> n = f.get<Node>();
@@ -471,10 +471,10 @@ PointConnectionBuilder::getCloseRegionsFrom(const math::Point& AFromPnt,
                            n[2].point());
             if(pl.project(AFromPnt).distance(AFromPnt)<AEpsilon){
                 //means close to this face
-                
+
                 //Add the region
                 region_ids.insert(c.id());
-                
+
                 //test to add the opposite region
                 std::vector<TCellID> f_regs = f.getIDs<Region>();
                 if(f_regs.size()>1){
@@ -556,21 +556,21 @@ buildEdges(std::vector<std::vector<OrientedEdge> >& AInEdges,
            std::vector<std::vector<OrientedEdge> >& AOutEdges)
 {
     int nb_points = m_pnt.size();
-    
+
     AOutEdges.clear();
     AOutEdges.resize(nb_points);
     std::vector<int> on_curves;
-    
+
     //======================================================================
     // STEP 1 - BUILD GLOBAL EDGES
     //======================================================================
     for(int i=0; i<nb_points; i++){
-        
+
         if(m_classification[i]==ON_CURVE)
             on_curves.push_back(i);
-        
+
         std::vector<OrientedEdge> orient_edges = AInEdges[i];
-        
+
         for(auto e:orient_edges){
             int from = e.first;
             int to   = e.second;
@@ -585,7 +585,7 @@ buildEdges(std::vector<std::vector<OrientedEdge> >& AInEdges,
                 // Wse build the edge systematically
                 // And the edge can be kept as the opposite
                 AOutEdges[from].push_back(e);
-                
+
                 OrientedEdge e_inv(to,from);
                 AOutEdges[to].push_back(e_inv);
             }
@@ -600,7 +600,7 @@ buildEdges(std::vector<std::vector<OrientedEdge> >& AInEdges,
                 }
             }
         }//for(unsigned int j=0; j<oriented_edges_i.size(); j++)
-        
+
     }//for(int i=0; i<nb_points; i++)
     //======================================================================
     // STEP 2 - CLEAN SOME EDGES
@@ -611,7 +611,7 @@ buildEdges(std::vector<std::vector<OrientedEdge> >& AInEdges,
         std::vector<OrientedEdge> final_edges;
         for(auto j=0; j<edges.size(); j++){
             OrientedEdge ej = edges[j];
-            
+
             if(m_classification[ej.second]==ON_CURVE ||
                m_classification[ej.second]==ON_VERTEX ){
                 //Another edge connected to a surface can be a better choice
@@ -641,10 +641,10 @@ buildEdges(std::vector<std::vector<OrientedEdge> >& AInEdges,
                 final_edges.push_back(ej);
             }
         }//for(auto j=0; j<edges.size(); j++)
-        
+
         //The cleaned set of edges is assigned to i
         AOutEdges[i]=final_edges;
-        
+
     }
 }
 /*---------------------------------------------------------------------------*/
@@ -667,17 +667,17 @@ filterPointsForBuildingOrientedEdge(const std::vector<int>& AID,
     //Then we check if a closer one is in a reasonable angle tolerance
     int            ref_id     = best_candidate_id;
     double         ref_dist   = ADist[ref_id];
-    
+
    // std::cout<<"\t best aligned: "<<best_candidate_id<<std::endl;
-    
+
     int    new_best_id   = ref_id;
     double new_best_dist = ref_dist;
-    
+
     for(unsigned int i_c=0; i_c<AID.size();i_c++){
         //Only closer point deserve to be checked
         if(i_c==ref_id || ADist[i_c]>=new_best_dist)
             continue;
-        
+
         double dot_prod = abs(best_dot-ADot[i_c]);
         if((dot_prod<0.045) ||//5 degree of diff, we switch to this one,
            //we are quite close in angle
@@ -687,7 +687,7 @@ filterPointsForBuildingOrientedEdge(const std::vector<int>& AID,
             new_best_id = i_c;
         }
     }//for(unsigned int i_c=0; i_c<final_candidates.size();i_c++)
-    
+
     return new_best_id;
 }
 /*---------------------------------------------------------------------------*/
@@ -700,21 +700,21 @@ buildOrientedEdgesInVolume(const int            APntID,
 {
     int i = APntID;
     math::Point pi = m_pnt[i];
-    
+
     // Means the point is in a stable area. So it is connected to 6 other
     // points if it is far way from a singularity area.
     double tol = 0.8;
-    
+
     //======================================================================
     // STEP 1 - WE DETECT THE POSSIBLE POINTS
     //======================================================================
     for(int axis=0; axis<3; axis++){
-        
+
         for(int dir=0; dir<2; dir++){
-            
+
             math::Vector3d v_axis=AVec[axis][dir];
             v_axis.normalize(); //likely useless
-            
+
             math::Point next_pi;
             if(!computeVolumePointFrom(i, v_axis,next_pi)){
                 continue; //means we reached a FF-singular area
@@ -724,15 +724,15 @@ buildOrientedEdgesInVolume(const int            APntID,
             math::Point pw(pi.X()+v.X(),
                            pi.Y()+v.Y(),
                            pi.Z()+v.Z());
-            
+
             v.normalize();
-            
+
             std::vector<int>            final_candidates;
             std::vector<double>         final_candidates_dot;
             std::vector<double>         final_candidates_dist;
-            
+
             for(unsigned int j=0; j<candidates.size(); j++){
-                
+
                 math::Point pj = m_pnt[candidates[j]];
                 math::Vector3d vij(pi,pj);
                 vij.normalize();
@@ -741,11 +741,11 @@ buildOrientedEdgesInVolume(const int            APntID,
                     final_candidates.push_back(candidates[j]);
                     final_candidates_dot.push_back(v.dot(vij));
                     final_candidates_dist.push_back(pi.distance(pj));
-                    
+
                 }//if(v.dot(vij)>m_dot_tolerance)
-                
+
             }//for(unsigned int j=0; j<candidates.size(); j++)
-            
+
             //=========================================================
             // Now, we have to parse candidates to find the best one.
             // We start from the best aligned one, and we decrease while satisfying
@@ -756,18 +756,18 @@ buildOrientedEdgesInVolume(const int            APntID,
                 //We don't have found a candidate point
                 continue;
             }
-            
+
             int j = filterPointsForBuildingOrientedEdge(final_candidates,
                                                         final_candidates_dot,
                                                         final_candidates_dist);
-            
-            
+
+
             APnt  [axis][dir] = m_pnt[final_candidates[j]];
             AFound[axis][dir] = true;
             AIndex[axis][dir] = final_candidates[j];
-            
+
         }//for(int dir=0;dir<2;dir++)
-        
+
     }//for(int axis=0; axis<3; axis++)
 }
 /*---------------------------------------------------------------------------*/
@@ -784,26 +784,26 @@ buildOrientedEdgesOnSurface(const int            APntID,
     // Means the point is in a stable area. So it is connected to 6 other
     // points if it is far way from a singularity area.
     double tol = 0.8;
-    
+
     //We are on a surface, we must take care of points outside of the domain
     math::Vector3d n=m_normal[i];
     n.normalize();
     int surf_id = m_surface[i];
-    
+
     // as the point is on the boundary, the classification process assigned
     // it to a starting triangle
     if(m_mesh_data[i].dim!=2)
         throw GMDSException("No face in buildOrientedEdgesOnSurface");
     gmds::Face t = m_mesh->get<Face>(m_mesh_data[i].id);
-    
+
     //======================================================================
     // STEP 1 - WE DETECT THE POSSIBLE POINTS, WHICH ARE RESTRICTED TO BE ON
     //          THE BOUNDARY
     //======================================================================
     for(auto axis=0; axis<3; axis++){
-        
+
         for(auto dir=0; dir<2; dir++){
-            
+
             math::Vector3d v_axis=AVec[axis][dir];
             v_axis.normalize(); //likely useless
             math::Vector3d v;
@@ -832,26 +832,26 @@ buildOrientedEdgesOnSurface(const int            APntID,
                            pi.Y()+v.Y(),
                            pi.Z()+v.Z());
             std::vector<int> candidates = m_filter[i];
-            
+
             v.normalize();
-            
+
             std::vector<int>            final_candidates;
             std::vector<double>         final_candidates_dot;
             std::vector<double>         final_candidates_dist;
-            
-            
+
+
             for(unsigned int j=0; j<candidates.size(); j++){
                 math::Point pj = m_pnt[candidates[j]];
                 math::Vector3d vij(pi,pj);
                 vij.normalize();
-                
+
                 //only volume and boundary well-aligned points are added
                 if(v.dot(vij)>tol){
-                    
+
                     if(m_classification[candidates[j]]==ON_SURFACE){
                         //if the point is on a surface it must be
                         // on the same surface! No it can be a thin layer
-                        
+
                         if ( m_surface[candidates[j]]==surf_id){
                             //If they are on the same surface, we must discard
                             //configuration with cylinder shapes.
@@ -860,13 +860,13 @@ buildOrientedEdgesOnSurface(const int            APntID,
                                 continue;
                         }
                     }
-                    
+
                     //pj is candidate so
                     final_candidates.push_back(candidates[j]);
                     final_candidates_dot.push_back(v.dot(vij));
                     final_candidates_dist.push_back(pi.distance(pj));
                 }//if(v.dot(vij)>m_dot_tolerance)
-                
+
             }//for(unsigned int j=0; j<candidates.size(); j++)
             //=========================================================
             // Now, we have to parse candidates to find the best one.
@@ -878,18 +878,18 @@ buildOrientedEdgesOnSurface(const int            APntID,
                 //We don't have found a candidate point
                 continue;
             }
-            
+
             int j = filterPointsForBuildingOrientedEdge(final_candidates,
                                                         final_candidates_dot,
                                                         final_candidates_dist);
-            
+
             APnt  [axis][dir] = m_pnt[final_candidates[j]];
             AFound[axis][dir] = true;
             AIndex[axis][dir] = final_candidates[j];
         }//for(int dir=0;dir<2;dir++)
-        
+
     }//for(int axis=0; axis<3; axis++)
-    
+
 }
 /*---------------------------------------------------------------------------*/
 void PointConnectionBuilder::
@@ -906,18 +906,18 @@ buildOrientedEdgesOnCurve(const int            APntID,
     // Means the point is in a stable area. So it is connected to 6 other
     // points if it is far way from a singularity area.
     double tol = 0.9;
-    
+
     //======================================================================
     // STEP 1 - WE DETECT THE POSSIBLE POINTS, WHICH ARE RESTRICTED TO BE ON
     //          THE BOUNDARY
     //======================================================================
     for(int axis=0; axis<3; axis++){
-        
+
         for(int dir=0; dir<2; dir++){
-            
+
             math::Vector3d v=AVec[axis][dir];
             v.normalize(); //likely useless
-            
+
             std::vector<int>            candidates = m_filter[i];
             std::vector<int>            final_candidates;
             std::vector<double>         final_candidates_dot;
@@ -927,20 +927,20 @@ buildOrientedEdgesOnCurve(const int            APntID,
                 math::Point pj = m_pnt[candidates[j]];
                 math::Vector3d vij(pi,pj);
                 vij.normalize();
-                
+
                 //only point well-aligned and on the boundary are taken
                 //into account
                 if(v.dot(vij)>tol &&
                    (m_classification[candidates[j]]==ON_CURVE  ||
                     m_classification[candidates[j]]==ON_VERTEX)){
-                       
-                       
+
+
                        //pj is candidate so
                        final_candidates.push_back(candidates[j]);
                        final_candidates_dot.push_back(v.dot(vij));
                        final_candidates_dist.push_back(pi.distance(pj));
                    }//if(v.dot(vij)>m_dot_tolerance)
-                
+
             }//for(unsigned int j=0; j<candidates.size(); j++)
             //=========================================================
             // Now, we have to parse candidates to find the best one.
@@ -961,7 +961,7 @@ buildOrientedEdgesOnCurve(const int            APntID,
             AIndex[axis][dir] = final_candidates[j];
 
         }//for(int dir=0;dir<2;dir++)
-        
+
     }//for(int axis=0; axis<3; axis++)
 }
 /*---------------------------------------------------------------------------*/
@@ -971,13 +971,13 @@ buildOrientedEdges(std::vector<std::vector<OrientedEdge> >& AEdges)
     //One vector of edges per point. This vector can be empty so.
     AEdges.clear();
     AEdges.resize(m_pnt.size());
-    
+
     //We go through all the points and we store for each of them the list of
     // oriented edges
     for(auto i=0; i<m_pnt.size(); i++){
 
         math::Point pi = m_pnt[i];
-        
+
         if(m_type[i]==FRAME_SING){
             //only regular and param sing points are considered for
             //hex formation
@@ -991,7 +991,7 @@ buildOrientedEdges(std::vector<std::vector<OrientedEdge> >& AEdges)
             {ci.Y(), -ci.Y()},
             {ci.Z(), -ci.Z()}
         };
-        
+
         //==================================================================
         // 6 corresponding points in directions x [0], y[1] and z[2]
         // the point in [0] is in positive direction
@@ -1001,7 +1001,7 @@ buildOrientedEdges(std::vector<std::vector<OrientedEdge> >& AEdges)
         int         p_index[3][2];
         bool        p_found[3][2]={{false,false},{false,false},{false,false}};
 
-        
+
         if(m_classification[i]==IN_VOLUME){
             buildOrientedEdgesInVolume(i, ci_vectors, p, p_index, p_found);
         }
@@ -1011,7 +1011,7 @@ buildOrientedEdges(std::vector<std::vector<OrientedEdge> >& AEdges)
         else if(m_classification[i]==ON_CURVE){
             buildOrientedEdgesOnCurve(i, ci_vectors, p, p_index, p_found);
         }
-        
+
         //======================================================================
         // STEP 2 - ORIENTED EDGES ARE NOW CREATED
         //======================================================================
@@ -1020,21 +1020,21 @@ buildOrientedEdges(std::vector<std::vector<OrientedEdge> >& AEdges)
             for(auto dir=0; dir<2; dir++){
                 if(p_found[axis][dir]==false)
                     continue;
-                
+
                 //We have an edge to create
                 OrientedEdge e(i,                 // first point index
                                p_index[axis][dir],// second point index
                                axis,              // used chart axis in i
                                dir                // used chart direction in i
                                );
-                
+
                 edges_i.push_back(e);
-            
+
             } //for(int dir=0;dir<2;dir++)
-            
+
         } //for(auto axis=0; axis<3; axis++)
         AEdges[i]=edges_i;
-        
+
     }
 }
 /*---------------------------------------------------------------------------*/
@@ -1062,8 +1062,7 @@ void PointConnectionBuilder::getHexes(std::vector<std::vector<int> > &AHexes)
     }
 }
 /*---------------------------------------------------------------------------*/
-void PointConnectionBuilder::
-buildHexCorners(std::vector<std::vector<OrientedEdge> >& AEdges)
+void PointConnectionBuilder::buildHexCorners(std::vector<std::vector<OrientedEdge> >& AEdges)
 {
     for(unsigned int i=0; i<m_pnt.size(); i++){
         math::Point pi = m_pnt[i];
@@ -1075,7 +1074,7 @@ buildHexCorners(std::vector<std::vector<OrientedEdge> >& AEdges)
             {ci.Y(), -ci.Y()},
             {ci.Z(), -ci.Z()}
         };
-        
+
         int  p_index[3][2];
         bool p_found[3][2]= {
             {false,false},
@@ -1166,7 +1165,7 @@ void PointConnectionBuilder::
 buildCornersAsSolidAngles(const int AOrigin,
                           std::vector<OrientedEdge> & AEdges)
 {
-    
+
     int origin_id = AOrigin;
 
     //=====================================================================
@@ -1188,35 +1187,35 @@ buildCornersAsSolidAngles(const int AOrigin,
             m_pnt[AEdges[ti[1]].second],
             m_pnt[AEdges[ti[2]].second]
         };
-        
+
         // Points in p were only selected on a combinatorial way. If they
         // are geometrically lying on the same plan, they do not define a
         // valid corner
-        
+
         math::Vector3d v12(origin_pnt,p[0]);
         math::Vector3d v13(origin_pnt,p[1]);
         math::Vector3d v14(origin_pnt,p[2]);
 
-        
+
 //      if (origin_pnt.areCoplanar(p[0], p[1], p[2])){
       if (fabs(v12.dot(v13.cross(v14)))<1e-11){
             continue;
         }
-        
+
         bool valid = true;
-        
+
         for(unsigned int j=0; j<AEdges.size() && valid; j++){
-            
+
             int j_index = AEdges[j].second;
-            
+
             //We don't check the vectors of the current basis
             if(j_index==AEdges[ti[0]].second ||
                j_index==AEdges[ti[1]].second ||
                j_index==AEdges[ti[2]].second)
                 continue;
-            
+
             math::Point pj =m_pnt[j_index];
-            
+
             double coord[4];
             try {
                 math::Point::computeBarycentric(origin_pnt,
@@ -1228,11 +1227,11 @@ buildCornersAsSolidAngles(const int AOrigin,
             }
             if(coord[1]>0 && coord[2]>0 && coord[3]>0)
                 valid=false;
-            
+
             //Find where is vj comparing to v[0], v[1] and v[2]
         }
         if(valid){
-            
+
             //So we can build a hex corner from this set of edges
             math::Vector3d v[3] = {
                 math::Vector3d(origin_pnt,p[0]),
@@ -1245,9 +1244,9 @@ buildCornersAsSolidAngles(const int AOrigin,
                       AEdges[ti[2]].second, v[2]);
         }
     }
-    
-    
-    
+
+
+
 }
 /*---------------------------------------------------------------------------*/
 void PointConnectionBuilder::
@@ -1260,16 +1259,16 @@ addCorner(const int AIndex,
     corner.p = AIndex;
     corner.index =m_hc_mapping[AIndex].size();
     corner.free=true;
-    
+
     corner.adj[0] = AIndex1;
     corner.vec[0] = AV1;
-    
+
     corner.adj[1] = AIndex2;
     corner.vec[1] = AV2;
-    
+
     corner.adj[2] = AIndex3;
     corner.vec[2] = AV3;
-    
+
     m_hc_mapping[AIndex].push_back(corner);
 }
 /*---------------------------------------------------------------------------*/
@@ -1303,19 +1302,19 @@ std::vector<int> PointConnectionBuilder::findCommonPoints(const int AFrom,
     std::vector<HexCorner> corners_i, corners_j;
     findFreeCorners(m_hc_mapping[AI], AFrom, corners_i);
     findFreeCorners(m_hc_mapping[AJ], AFrom, corners_j);
-    
+
     std::vector<int> common;
-    
+
     for(auto ci:corners_i){
         for(auto cj:corners_j){
-            
+
             for(int i=0; i<3; i++) {
                 if(ci.adj[i]==AFrom)
                     continue;
                 for(int j=0; j<3; j++) {
                     if(cj.adj[j]==AFrom)
                         continue;
-                    
+
                     if(ci.adj[i]==cj.adj[j])
                         common.push_back(ci.adj[i]);
                 }
@@ -1332,14 +1331,14 @@ PointConnectionBuilder::findFreeCorners(const std::vector<int>& AOrigin,
                                  const int AJ)
 {
     std::vector<HexCorner>   out;
-    
+
     for(auto& org: AOrigin){
         std::vector<HexCorner> corners_i;
         findFreeCorners(m_hc_mapping[org], AI, corners_i);
         for(auto ci:corners_i) {
-            
+
             bool found = false;
-            
+
             for(int i=0; i<3; i++) {
                 if(ci.adj[i]==AJ)
                     found =true;
@@ -1381,7 +1380,7 @@ bool PointConnectionBuilder::isCorner(const HexCorner& AC,
 {
     if(AC.p!=AOrigin)
         return false;
-    
+
     if((AC.adj[0]==AI && AC.adj[1]==AJ && AC.adj[2]==AK) ||
        (AC.adj[0]==AI && AC.adj[2]==AJ && AC.adj[1]==AK) ||
        (AC.adj[1]==AI && AC.adj[0]==AJ && AC.adj[2]==AK) ||
@@ -1419,11 +1418,11 @@ bool PointConnectionBuilder::findCommmonLastCorner(const HexCorner& ACorner1,
             }
         }
     }//for(int i1=0; i1<3; i1++){
-    
+
     if(common_pnt==-1){
         return false;
     }
-    
+
     // Among all corner, we need the one pointing to ACorner1, ACorner2 and
     // ACorner3
     std::vector<HexCorner> candidates = m_hc_mapping[common_pnt];
@@ -1437,7 +1436,7 @@ bool PointConnectionBuilder::findCommmonLastCorner(const HexCorner& ACorner1,
                ci.adj[j]==ACorner2.p ||
                ci.adj[j]==ACorner3.p )
                 nb_same++;
-            
+
         }
         if(nb_same==3){
             ACornerOut = ci;
@@ -1454,15 +1453,15 @@ void PointConnectionBuilder::buildHexahedral()
     Variable<int>* var_cl = m_hexes.newVariable<int,GMDS_NODE>("classification");
     Variable<int>* var_surf = m_hexes.newVariable<int,GMDS_NODE>("surface_id");
     Variable<int>* var_curv = m_hexes.newVariable<int,GMDS_NODE>("curve_id");
-    
+
     /* We go trought all the points and we build hexahedral elements
      * for each associated free corner */
     for(unsigned int i=0; i<m_pnt.size(); i++){
-        
+
         math::Point pi = m_pnt[i];
         std::vector<HexCorner> corners_i = m_hc_mapping[i];
         //Now we go throught the associated corners
-        
+
         for(unsigned int j=0; j<corners_i.size();j++){
             HexCorner cj = corners_i[j];
 
@@ -1475,26 +1474,26 @@ void PointConnectionBuilder::buildHexahedral()
             std::vector<int> common_01 =findCommonPoints(cj.p,cj.adj[0],cj.adj[1]);
             std::vector<int> common_02 =findCommonPoints(cj.p,cj.adj[0],cj.adj[2]);
             std::vector<int> common_12 =findCommonPoints(cj.p,cj.adj[1],cj.adj[2]);
-            
+
             if(common_01.empty() || common_02.empty() || common_12.empty())
                 continue;
-            
+
             std::vector<HexCorner> corners_01 = findFreeCorners(common_01, cj.adj[0],cj.adj[1]);
             std::vector<HexCorner> corners_02 = findFreeCorners(common_02, cj.adj[0],cj.adj[2]);
             std::vector<HexCorner> corners_12 = findFreeCorners(common_12, cj.adj[1],cj.adj[2]);
-            
+
             if(corners_01.empty()|| corners_02.empty()|| corners_12.empty())
                 continue;
-            
+
             bool found_last_corner = false;
-            
+
             HexCorner final_01, final_02, final_12, final_012;
             for(auto c_01:corners_01){
                 for(auto c_02:corners_02){
                     for(auto c_12:corners_12){
                         if(c_01.p==c_02.p || c_01.p==c_12.p ||c_02.p==c_12.p)
                             continue;
-                        
+
                         HexCorner c_012;
                         if(findCommmonLastCorner(c_01,c_02,c_12,c_012)){
                             found_last_corner=true;
@@ -1515,7 +1514,7 @@ void PointConnectionBuilder::buildHexahedral()
                !getCorner(cj.adj[1], cj.p,final_01.p,final_12.p, final_1) ||
                !getCorner(cj.adj[2], cj.p,final_02.p,final_12.p, final_2))
                 continue;
-          
+
             //Now we have the 8 corners, we can build the hexahedron
             int idx[8] = {static_cast<int>(i),
                 final_0.p,
@@ -1526,7 +1525,7 @@ void PointConnectionBuilder::buildHexahedral()
                 final_012.p,
                 final_12.p
             };
-            
+
             Node n[8];
             for(int i_n=0; i_n<8; i_n++){
                 int index=idx[i_n];
@@ -1546,7 +1545,7 @@ void PointConnectionBuilder::buildHexahedral()
                     n[i_n] = it->second;
                 }
             }
-            
+
             Region r = m_hexes.newHex(n[0], n[1], n[2], n[3],
                                        n[4], n[5], n[6], n[7]);
             (*var_type)[r.id()]=GMDS_HEX;
@@ -1559,9 +1558,9 @@ void PointConnectionBuilder::buildHexahedral()
             m_hc_mapping[final_01.p][final_01.index].free=false;
             m_hc_mapping[final_02.p][final_02.index].free=false;
             m_hc_mapping[final_012.p][final_012.index].free=false;
-            
+
         }//for(unsigned j=0; j<corners_i.size();j++)
-        
+
     }//for(unsigned int i=0; i<m_pnt.size(); i++
 }
 /*---------------------------------------------------------------------------*/
@@ -1604,19 +1603,19 @@ void PointConnectionBuilder::writeInput()
     Variable<int>* var_surf = mesh_charts.newVariable<int,GMDS_REGION>("surf_number");
     Variable<int>* var_used = mesh_charts.newVariable<int,GMDS_REGION>("used");
 
-    
+
     double cube_size = m_spacing/5.0;
-    
+
     for(unsigned int i=0; i<m_pnt.size();i++){
         math::Point pi = m_pnt[i];
         math::Chart ci = m_chart[i];
         int ti = m_type[i];
-        
+
         //POINT OUTPUT
         Node   ni  = mesh_pnts.newNode(pi);
         Region ri = mesh_pnts.newTet(ni,ni,ni,ni);
         (*var_pnts)[ri.id()]= ti;
-        
+
         //CHART OUTPUT
         math::Vector vx = ci.X();
         math::Vector vy = ci.Y();
@@ -1630,7 +1629,7 @@ void PointConnectionBuilder::writeInput()
         Node n3 = mesh_charts.newNode(p3);
         math::Point p4 = center + (vy - vx - vz)*cube_size;
         Node n4 = mesh_charts.newNode(p4);
-        
+
         math::Point p5 = center + (vx + vy + vz)*cube_size;
         Node n5 = mesh_charts.newNode(p5);
         math::Point p6 = center + (vx - vy + vz)*cube_size;
@@ -1684,7 +1683,7 @@ writeEdges(std::vector<std::vector<OrientedEdge> >& AEdges,
             Node   n0 = mesh_edges.newNode(p0);
             Node   n1 = mesh_edges.newNode(p1);
             mesh_edges.newTriangle(n0,n1,n1);
-            
+
         }
     }
     IGMeshIOService ioService(&mesh_edges);
@@ -1710,16 +1709,15 @@ getOutputNormal(Face& AFace, Region& ARegion)
 {
     std::vector<Node> region_nodes = ARegion.get<Node>();
     std::vector<Node> face_nodes = AFace.get<Node>();
-    
+
     math::Point  reg_center  = ARegion.center();
     math::Point  face_center = AFace.center();
     math::Vector face_normal = AFace.normal();
     math::Vector v_ref(face_center, reg_center);
-    
+
     if(face_normal.dot(v_ref)>0)
         return math::Vector3d(-face_normal.X(), -face_normal.Y(), -face_normal.Z());
-    
+
     return math::Vector3d(face_normal.X(), face_normal.Y(), face_normal.Z());
 
 }
-

@@ -11,7 +11,9 @@ using namespace simplicesTriangle;
 using namespace simplicesNode;
 using namespace math;
 /******************************************************************/
-DelaunayPointInsertion::DelaunayPointInsertion(SimplexMesh* simplexMesh, const simplicesNode::SimplicesNode& simpliceNode, const CriterionRAIS& criterion, std::vector<TSimplexID>& initialCavity, bool& status, const gmds::BitVector& markedNodes,std::vector<TSimplexID>& deletedSimplex, std::vector<TSimplexID> markedSimplex)
+DelaunayPointInsertion::DelaunayPointInsertion(SimplexMesh* simplexMesh, const simplicesNode::SimplicesNode& simpliceNode, const CriterionRAIS& criterion,
+                                              std::vector<TSimplexID>& initialCavity, bool& status, const gmds::BitVector& markedNodes,std::vector<TSimplexID>& deletedSimplex,
+                                              const std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt, std::vector<TSimplexID> markedSimplex)
 {
   if(simplexMesh != nullptr)
   {
@@ -80,7 +82,7 @@ DelaunayPointInsertion::DelaunayPointInsertion(SimplexMesh* simplexMesh, const s
           }
         }
       }
-      PointInsertion pi(simplexMesh, simpliceNode, criterion, status, cavity, markedNodes, deletedSimplex, markedSimplex/*, cavReduction*/);
+      PointInsertion pi(simplexMesh, simpliceNode, criterion, status, cavity, markedNodes, deletedSimplex, facesAlreadyBuilt, markedSimplex/*, cavReduction*/);
     }
   }
   else

@@ -3,7 +3,8 @@
 /*----------------------------------------------------------------------------*/
 // Files containing the different test suites to launch
 
-#include "PolyBlockTestSuite.h"
+#include <PolyBlockTestSuite.h>
+#include <PolyBlock2DTestSuite.h>
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

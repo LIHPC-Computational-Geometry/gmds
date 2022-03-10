@@ -4,6 +4,7 @@
 // Files containing the different test suites to launch
 
 #include "BooleanMarkTestSuite.h"
+#include "Blocking2DTestSuite.h"
 #include "MeshDoctorTestSuite.h"
 #include "MeshTestSuite.h"
 /*----------------------------------------------------------------------------*/

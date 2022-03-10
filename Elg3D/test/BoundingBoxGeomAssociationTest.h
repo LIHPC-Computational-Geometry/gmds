@@ -101,11 +101,11 @@ TEST_F(BoundingBoxGeomAssociationTest, createData_3x3_2D)
             nbNonAssociatedNodes++;
         } else {
 
-            if ((reinterpret_cast<gmds::cad::GeomEntity *>((*v)[nid])->getName() == std::string("curve_bottom"))) {
+            if ((reinterpret_cast<gmds::cad::GeomEntity *>((*v)[nid])->name() == std::string("curve_bottom"))) {
                 nbAssociatedNodesCurveBottom++;
             }
 
-            if ((reinterpret_cast<gmds::cad::GeomEntity *>((*v)[nid])->getName() == std::string("corner_0"))) {
+            if ((reinterpret_cast<gmds::cad::GeomEntity *>((*v)[nid])->name() == std::string("corner_0"))) {
                 nbAssociatedNodesCorner00++;
             }
         }
@@ -181,11 +181,11 @@ TEST_F(BoundingBoxGeomAssociationTest, createData_3x3x3_3D)
             nbNonAssociatedNodes++;
         } else {
 
-            if ((reinterpret_cast<gmds::cad::GeomEntity *>((*v)[nid])->getName() == std::string("surf_bottom"))) {
+            if ((reinterpret_cast<gmds::cad::GeomEntity *>((*v)[nid])->name() == std::string("surf_bottom"))) {
                 nbAssociatedNodesBottom++;
             }
 
-            if ((reinterpret_cast<gmds::cad::GeomEntity *>((*v)[nid])->getName() == std::string("curve_0"))) {
+            if ((reinterpret_cast<gmds::cad::GeomEntity *>((*v)[nid])->name() == std::string("curve_0"))) {
                 nbAssociatedNodesCurve00++;
             }
         }

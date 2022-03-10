@@ -13,12 +13,12 @@
 #include <iostream>
 #include <gmds/io/IGMeshIOService.h>
 #include <unit_test_config.h>
+using namespace gmds;
 /*----------------------------------------------------------------------------*/
 TEST(BoundaryOpClass, testBoundary2D)
 {
     // WE WRITE
-    gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|
-    gmds::F2N|gmds::N2F|gmds::E|gmds::E2N));
+    Mesh m(MeshModel(DIM3|F|N|F2N|N2F|E|E2N));
 
     std::string dir(TEST_SAMPLES_DIR);
     std::string vtk_file = dir+"/triangulated_quad.vtk";

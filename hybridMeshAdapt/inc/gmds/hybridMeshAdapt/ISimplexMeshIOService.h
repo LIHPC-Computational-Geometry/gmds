@@ -49,7 +49,7 @@ namespace gmds
                              const TCellID& AID5,
                              const TCellID& AID6,
                              const TCellID& AID7,
-                             const TCellID& AID8){}
+                             const TCellID& AID8);
 
        void createPyramid(const TCellID& AID1,
                                  const TCellID& AID2,

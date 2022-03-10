@@ -44,6 +44,9 @@ namespace gmds
 
         std::vector<TInt> getNodes() const;
 
+        /*triangles's normal are oriented outside the mesh*/
+        math::Vector3d    getNormal()  const;
+
         std::vector<TSimplexID> neighborSimplex   () const ;
 
         std::vector<TInt> otherNodesInTriangle                  (const SimplicesTriangle& simpliceTriangle) const ;
@@ -62,6 +65,8 @@ namespace gmds
         std::vector<TSimplexID> findclockWiseTrianglesbyShell(const TInt nodeA, const TInt nodeB, const TInt nodeC) const ;
 
         TSimplexID simplexId() const {return m_simplexId;}
+
+        math::Orientation::Sign orientation(const gmds::math::Point& pt, bool inverseOrientation = false) const;
 
         friend std::ostream&  operator<<(std::ostream& os, const SimplicesTriangle& simplicesTriangle)
         {

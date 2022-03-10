@@ -11,7 +11,9 @@
 #include <set>
 /*----------------------------------------------------------------------------*/
 namespace gmds{
-/*----------------------------------------------------------------------------*/
+ const int MeshModel::Full2D =  DIM3 | F | E | N | F2N | E2N | E2F | F2E | N2F;
+
+    /*----------------------------------------------------------------------------*/
 std::vector<TCellID>
 getCommonBut(const std::vector<TCellID>& AS1,const std::vector<TCellID>& AS2, const TCellID ABut)
 {

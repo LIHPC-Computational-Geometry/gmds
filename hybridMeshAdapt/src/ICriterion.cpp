@@ -7,6 +7,7 @@ using namespace gmds;
 using namespace hybrid;
 using namespace operators;
 using namespace simplicesCell;
+using namespace simplicesTriangle;
 using namespace simplicesNode;
 /******************************************************************/
 #define EPSILON  10E-10
@@ -15,10 +16,19 @@ using namespace simplicesNode;
 bool VolumeCriterion::execute(SimplexMesh* m_simplex_mesh,const TSimplexID simplexId, const TInt nodeIndexLocal,const gmds::math::Point& nextPt) const
 {
   bool flag = false;
-  math::Orientation::Sign orientation = SimplicesCell(m_simplex_mesh, simplexId).orientation(nodeIndexLocal, nextPt);
+  TInt border = std::numeric_limits<TInt>::min();
+  math::Orientation::Sign orientation;
+
+  if(simplexId >= 0)
+  {
+      orientation = SimplicesCell(m_simplex_mesh, simplexId).orientation(nodeIndexLocal, nextPt);
+  }
+  else
+  {
+    std::cout << "SimplexId < 0 in VolumeCriterion" << std::endl;
+  }
+
   flag = (orientation < 1)? true:false;
-  //double signedBar = SimplicesCell(m_simplex_mesh, simplexId).signedBarycentricNormalized(nodeIndexLocal, nextPt);
-  //flag = (signedBar < EPSILON)? true:false;
 
   return flag;
 }

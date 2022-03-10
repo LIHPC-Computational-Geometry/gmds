@@ -75,17 +75,11 @@ void IWriter::write(const std::string &AFileName)
 
 
     if(m_cell_model.has(E)) {writeEdges();}
-
     if(m_cell_model.has(F)) {writeFaces();}
-
     if(m_cell_model.has(R)) {writeRegions();}
-
     if(m_data_model.has(N)) {writeDataNodes();}
-
     if(m_data_model.has(E)) {writeDataEdges();}
-
     if(m_data_model.has(F)) {writeDataFaces();}
-
     if(m_data_model.has(R)) {writeDataRegions();}
 
     finalize();

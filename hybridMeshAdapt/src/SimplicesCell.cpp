@@ -129,7 +129,8 @@ std::vector<TSimplexID> SimplicesCell::neighborTetra(const TInt indexNodeGlobal,
       TSimplexID indexGlobalInTetra = m_simplex_mesh->m_tet_nodes[m_simplexId][i];
       if(indexGlobalInTetra != indexNodeGlobal)
       {
-        TSimplexID tetraAdj =  m_simplex_mesh->getOppositeCell(indexGlobalInTetra, m_simplexId);
+        //TSimplexID tetraAdj =  m_simplex_mesh->getOppositeCell(indexGlobalInTetra, m_simplexId);
+        TSimplexID tetraAdj =  oppositeTetraIdx(i);
 
         if(tetraAdj == errorId)
         {
@@ -140,21 +141,6 @@ std::vector<TSimplexID> SimplicesCell::neighborTetra(const TInt indexNodeGlobal,
           //cette boucle if permet de gerer en plus les triangle adjacent aux faces...
           if(tetraAdj < 0)
           {
-            /*
-            TSimplexID triAdj = tetraAdj;
-            bool flag0 = (std::find(v.begin(), v.end(), m_simplex_mesh->m_tri_nodes[-triAdj][3]) == v.end()
-                          && m_simplex_mesh->m_tri_nodes[-triAdj][3] != m_simplexId);
-
-            TSimplexID tetraAdj0  = m_simplex_mesh->m_tri_nodes[-triAdj][3];
-
-            bool flag1 = (std::find(v.begin(), v.end(), m_simplex_mesh->m_tri_adj[-triAdj][3]) == v.end()
-                          && m_simplexId != m_simplex_mesh->m_tri_adj[-triAdj][3]);
-
-            TSimplexID tetraAdj1  = m_simplex_mesh->m_tri_adj[-triAdj][3];
-
-            if(flag0 ==true && tetraAdj0 != errorId){v.push_back(tetraAdj0);}
-            if(flag1 ==true && tetraAdj1 != errorId){v.push_back(tetraAdj1);}
-            */
             if(m_simplex_mesh->m_tri_ids[-tetraAdj] != 0)
             {
                 v.push_back(tetraAdj);

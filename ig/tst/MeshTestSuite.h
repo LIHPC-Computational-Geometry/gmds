@@ -6,7 +6,6 @@
 /*----------------------------------------------------------------------------*/
 TEST(MeshClass, testMeshNode) {
     gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::F2N));
-
     gmds::Node n0 = m.newNode(0, 0, 0);
     ASSERT_EQ(n0.point(), gmds::math::Point(0, 0, 0));
     n0.setX(1);

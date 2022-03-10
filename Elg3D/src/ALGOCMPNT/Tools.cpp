@@ -1308,7 +1308,7 @@ maxDist);
             for(int i_gmds=0; i_gmds<cells.size(); i_gmds++) {
                 gmds::Face c = AgmdsMesh->get<gmds::Face>(cells[i_gmds]);
                 std::vector<gmds::Node> n = c.get<gmds::Node>();
-                gmds::math::Triangle tri(n[0].getPoint(), n[1].getPoint(), n[2].getPoint());
+                gmds::math::Triangle tri(n[0].point(), n[1].point(), n[2].point());
 
                 double xyz_min[3];
                 double xyz_max[3];
@@ -1510,7 +1510,7 @@ maxDist);
 
                 gmds::Region c = AgmdsMesh->get<gmds::Region>(cells[i_gmds]);
                 std::vector<gmds::Node> n = c.get<gmds::Node>();
-                gmds::math::Tetrahedron tet(n[0].getPoint(), n[1].getPoint(), n[2].getPoint(), n[3].getPoint());
+                gmds::math::Tetrahedron tet(n[0].point(), n[1].point(), n[2].point(), n[3].point());
 
                 double xyz_min_tet[3];
                 double xyz_max_tet[3];

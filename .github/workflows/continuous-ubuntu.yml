@@ -42,8 +42,9 @@ jobs:
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: >
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.config }} 
-        -DWITH_CODE_COVERAGE=ON 
-        -DCMAKE_PREFIX_PATH=${{github.workspace}}/spack/opt/spack/lcov 
+        -DWITH_CODE_COVERAGE=ON
+        -DENABLE_KMDS=true
+        -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/kokkos"
         -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib 
         -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
 

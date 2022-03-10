@@ -41,6 +41,11 @@ void ISimplexMeshIOService::createTet(const TCellID& AID1,
   m_simplex_mesh->addTetraedre(AID1, AID2, AID3, AID4, false);
 }
 
+void ISimplexMeshIOService::createHex(const TCellID &AID1,const TCellID &AID2,const TCellID &AID3,const TCellID &AID4,
+              const TCellID &AID5,const TCellID &AID6,const TCellID &AID7,const TCellID &AID8)
+{
+  m_simplex_mesh->fillHexahedron(AID1, AID2, AID3, AID4, AID5, AID6, AID7, AID8);
+}
 
 void ISimplexMeshIOService::getNodes(std::vector<IMeshIOService::NodeInfo>& AInfo)
 {
@@ -88,19 +93,61 @@ void ISimplexMeshIOService::getFaces(std::vector<IMeshIOService::CellInfo>& AInf
 void ISimplexMeshIOService::getRegions(std::vector<IMeshIOService::CellInfo>& AInfo)
 {
   const gmds::BitVector& tetVector = m_simplex_mesh->getBitVectorTet();
+  const gmds::BitVector& markedTet = m_simplex_mesh->getMarkedTet();
   AInfo.clear();
   AInfo.reserve(tetVector.size());
-  for(unsigned int tet = 0 ; tet < tetVector.capacity() ; tet ++)
+
+  std::cout << "markedTet.empty() ->  " << markedTet.empty() << std::endl;
+  if(markedTet.empty() == 1)
   {
-    if(tetVector[tet] != 0)
+    for(unsigned int tet = 0 ; tet < tetVector.capacity() ; tet++)
     {
-      IMeshIOService::CellInfo info;
-      info.id = tet;
-      info.type = GMDS_TETRA;
-      info.node_ids = SimplicesCell(m_simplex_mesh, tet).nodes();
-      AInfo.push_back(info);
+      if(tetVector[tet] != 0)
+      {
+
+          IMeshIOService::CellInfo info;
+          info.id = tet;
+          info.type = GMDS_TETRA;
+          info.node_ids = SimplicesCell(m_simplex_mesh, tet).nodes();
+          AInfo.push_back(info);
+      }
     }
   }
+  else
+  {
+    for(unsigned int tet = 0 ; tet < markedTet.capacity() ; tet++)
+    {
+      if(markedTet[tet] != 0)
+      {
+
+          IMeshIOService::CellInfo info;
+          info.id = tet;
+          info.type = GMDS_TETRA;
+          info.node_ids = SimplicesCell(m_simplex_mesh, tet).nodes();
+          AInfo.push_back(info);
+      }
+    }
+  }
+
+
+  //////////////////////////////////////////////////////////////////////////////
+  const std::vector<std::vector<TSimplexID>>& hexData = m_simplex_mesh->getHexadronData();
+  if(hexData.size() != 0)
+  {
+    unsigned int cpt = 0;
+    for(auto const hex : hexData)
+    {
+      IMeshIOService::CellInfo info;
+      info.id = cpt;
+      info.type = GMDS_HEX;
+      TCellID n0 = hex[0]; TCellID n1 = hex[1]; TCellID n2 = hex[2]; TCellID n3 = hex[3];
+      TCellID n4 = hex[4]; TCellID n5 = hex[5]; TCellID n6 = hex[6]; TCellID n7 = hex[7];
+      info.node_ids = std::vector<TCellID>{n0, n1, n2, n3, n4, n5, n6, n7};
+      AInfo.push_back(info);
+      cpt++;
+    }
+  }
+  //////////////////////////////////////////////////////////////////////////////
 }
 
 
@@ -122,7 +169,6 @@ void ISimplexMeshIOService::getDataNodes(DataID& ADataID,
   ADataVec.reserve(ANbCells);
 
   ADataID.values.clear();
-  ADataID.values.resize(ANbCells);
   unsigned int cpt = 0;
 
   for(unsigned int nodeId = 0; nodeId < bitVecNode.capacity() ; nodeId++)
@@ -142,7 +188,6 @@ void ISimplexMeshIOService::getDataNodes(DataID& ADataID,
               Variable<math::Vector3d>* v_vec = dynamic_cast<Variable<math::Vector3d>*> (current_var);
               IMeshIOService::DataVector data;
               data.name = v_vec->getName();
-              data.values.resize(ANbCells);
               for(auto i_node : bitVecNode) {
                   data.values[i_node] = (*v_vec)[i_node];
               }
@@ -154,7 +199,6 @@ void ISimplexMeshIOService::getDataNodes(DataID& ADataID,
             Variable<double>* v_vec = dynamic_cast<Variable<double>*> (current_var);
             IMeshIOService::DataReal data;
             data.name = v_vec->getName();
-            data.values.resize(ANbCells);
             for(auto i_node : bitVecNode) {
                 data.values[i_node] = (*v_vec)[i_node];
             }
@@ -166,7 +210,6 @@ void ISimplexMeshIOService::getDataNodes(DataID& ADataID,
             Variable<int>* v_vec = dynamic_cast<Variable<int>*> (current_var);
             IMeshIOService::DataInt data;
             data.name = v_vec->getName();
-            data.values.resize(ANbCells);
             for(auto i_node : bitVecNode) {
                 data.values[i_node] = (*v_vec)[i_node];
             }
@@ -202,7 +245,6 @@ void ISimplexMeshIOService::getDataFaces(DataID& ADataID,
   ADataVec.reserve(ANbFaces);
 
   ADataID.values.clear();
-  ADataID.values.resize(ANbFaces);
   unsigned int cpt = 0;
 
   for(unsigned int triId = 1; triId < bitVecTri.capacity() ; triId++)
@@ -284,7 +326,6 @@ void ISimplexMeshIOService::getDataRegions(DataID& ADataID,
   ADataVec.reserve(ANbCells);
 
   ADataID.values.clear();
-  ADataID.values.resize(ANbCells);
 
   unsigned int cpt = 0;
   for(unsigned int tetId = 0; tetId < bitVecTet.capacity() ; tetId++)

@@ -1,46 +1,79 @@
-name: Docs
+name: Doxygen
 
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
 on:
-  #push:
-  #  branches-ignore:
-  #    - '**'
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches: [ main ]
+  # disabled until further discussion because if run at all, it should be run on only select pull_request types
+  # ex : types: [ready_for_review]
+  #pull_request:
+  #  branches: [ main ]
 
 jobs:
   build:
+    runs-on: ubuntu-latest
 
-    runs-on: macos-latest
+    # failure is allowed because the "git commit" can fail if there is no staged files to commit
+    # we could also conditionally execute the git commands after a "git status --porcelain docs/doxygen/" check
+    continue-on-error: true
 
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: prepare environment
-        run: >
-          brew install doxygen
-          brew install sphinx-doc
-          pip3 install sphinx-rtd-theme
-          pip3 install breathe
-          pip3 install sphinx-sitemap
 
-      - name: Build doxygen doc
-        working-directory: ${{github.workspace}}/build
-        run:  >
-          cmake $GITHUB_WORKSPACE -DWITH_DOC=true
-          make doxygen
-      - name: Build sphinx
-        working-directory: ${{github.workspace}}/build
-        run: >
-          cd docs/sphinx
-          make html
-          cd _build/html
-          touch .nojekyll
-      - name: Deploy
-        uses: LIHPC-ComputationalGeometry/github-pages-deploy-action@releases/v3
+      - name: Checkout repo
+        uses: actions/checkout@v2
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages # The branch the action should deploy to.
-          FOLDER: docs/sphinx/_build/html # The folder the action should deploy.
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+          fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+
+      - name: Initialize the environment to generate documentatioN
+        shell: bash
+        run : >
+          sudo apt-get update;
+          sudo apt-get install -y doxygen;
+          chmod +x ./.github/workflows/env_linux.sh;
+          ./.github/workflows/env_linux.sh
+
+      - name: Create Build Environment
+        # We create a subdirectory that will stand as our working directory for all
+        # subsequent commands
+        run: cmake -E make_directory ${{github.workspace}}/build
+
+      - name: Configure CMake
+        # Use a bash shell so we can use the same syntax for environment variable
+        # access regardless of the host operating system
+        shell: bash
+        working-directory: ${{github.workspace}}/build
+        # Note the current convention is to use the -S and -B options here to specify source
+        # and build directories, but this is only available with CMake 3.13 and higher.
+        # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+        run: >
+          cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Release
+          -DWITH_TEST=ON
+          -DWITH_DOC=ON
+          -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib
+          -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
+
+      - name: Build doc
+      # Use a bash shell so we can use the same syntax for environment variable
+      # access regardless of the host operating system
+        shell: bash
+        working-directory: ${{github.workspace}}/build
+       # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: cmake --build . --target doxygen
+
+      - name: Commit doxygen documentation
+        working-directory: ${{github.workspace}}/
+        run: |
+          mkdir -p ${{github.workspace}}/docs/doxygen
+          cp -r build/docs/doxygen_output/html/* ${{github.workspace}}/docs/doxygen
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add docs/doxygen
+          git commit -m "Automated doxygen upate"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main

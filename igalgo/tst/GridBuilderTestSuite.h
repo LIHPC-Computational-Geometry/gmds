@@ -1,7 +1,10 @@
 /*----------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 #include <gmds/ig/Mesh.h>
+#include <gmds/ig/Blocking2D.h>
 #include <gmds/igalgo/GridBuilder.h>
+#include <gmds/io/IGMeshIOService.h>
+#include <gmds/io/VTKWriter.h>
 /*----------------------------------------------------------------------------*/
 TEST(GridBuildOpClass, test2D)
 {
@@ -30,6 +33,34 @@ TEST(GridBuildOpClass, test3D)
 
     ASSERT_EQ(m.getNbNodes(),36);
     ASSERT_EQ(m.getNbRegions(),12);
+
+}
+/*----------------------------------------------------------------------------*/
+TEST(GridTestSuite, test_blocking2D_output)
+{
+    Blocking2D m;
+    Node n1 = m.newBlockCorner(0,0);
+    Node n2 = m.newBlockCorner(1,0);
+    Node n3 = m.newBlockCorner(1,1);
+    Node n4=  m.newBlockCorner(0,1);
+
+    Blocking2D::Block b1 = m.newBlock(n1,n2,n3,n4);
+
+    Node n5 = m.newBlockCorner(2,0,0);
+    Node n6 = m.newBlockCorner(2,1.5,0);
+    Blocking2D::Block b2 = m.newBlock(n2,n5,n6,n3);
+    b1.seNbDiscretizationI(10);
+    b1.seNbDiscretizationJ(10);
+    b2.seNbDiscretizationI(10);
+    b2.seNbDiscretizationJ(10);
+
+    m.initializeGridPoints();
+
+    IGMeshIOService ios(&m);
+    VTKWriter writer(&ios);
+    writer.setCellOptions(N|F);
+    writer.setDataOptions(N|F);
+    writer.write("blocking2D_sample.vtk");
 
 }
 /*----------------------------------------------------------------------------*/
