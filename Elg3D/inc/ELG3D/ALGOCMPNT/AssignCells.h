@@ -95,6 +95,19 @@ namespace elg3d {
                                     elg3d::MaterialAssignment* Ama);
 
     /*------------------------------------------------------------------------*/
+    /** \brief  Refeaturing
+     *
+     *  \param[in]  AMesh the mesh
+     *  \param[in]  AC_C2C cell to cell connectivity
+     *  \param[in,out]  Ama the material assignment for the cells of AMesh
+     */
+    void assignCells_refeaturing_XD(const kmds::GrowingView<kmds::TCellID>* ACellIDs,
+                                    const elg3d::FracPres* Afp,
+                                    const elg3d::MaterialAssignment* Ama,
+                                    const kmds::Connectivity* AC_C2C_byN,
+                                    kmds::GrowingView<kmds::TCellID>* ACellsList);
+
+    /*------------------------------------------------------------------------*/
     /** \brief  Corrects the assignment of cells based on manifold, defeaturing, ...
      *
      *  \param[in]  AMesh the mesh

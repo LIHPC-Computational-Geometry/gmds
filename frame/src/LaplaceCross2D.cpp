@@ -159,9 +159,9 @@ void LaplaceCross2D::buildStiffnessMatrix(Eigen::SparseMatrix<double>& AM)
   for(unsigned int k=0; k < m_faces.size(); k++){
       std::vector<Node> current_nodes;
       m_faces[k].get<Node>(current_nodes);
-      math::Point p1 = current_nodes[0].getPoint();
-      math::Point p2 = current_nodes[1].getPoint();
-      math::Point p3 = current_nodes[2].getPoint();
+      math::Point p1 = current_nodes[0].point();
+      math::Point p2 = current_nodes[1].point();
+      math::Point p3 = current_nodes[2].point();
       math::Matrix<3,3,double> s = math::stiffnessMatrix2D(p1,p2,p3);
       
       // Second loop on the internal  nodes
@@ -226,9 +226,9 @@ void LaplaceCross2D::buildRightHandDirichlet(Eigen::VectorXd& ABCos,
 	}
       }
       if(is_boundary_face){
-	math::Point pi = nodes_of_f_j[0].getPoint();
-	math::Point pj = nodes_of_f_j[1].getPoint();
-	math::Point pk = nodes_of_f_j[2].getPoint();
+	math::Point pi = nodes_of_f_j[0].point();
+	math::Point pj = nodes_of_f_j[1].point();
+	math::Point pk = nodes_of_f_j[2].point();
 	math::Matrix<3,3,double> s = math::stiffnessMatrix2D(pi,pj,pk);
 
 	//Ud is build

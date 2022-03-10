@@ -665,8 +665,8 @@ void FieldGenerator::initHarmonicOnCurve(const Node &ANode)
         Node node2 = current_node;
         
         //we build the direction vector of the current edge
-        math::Point p1 = node1.getPoint();
-        math::Point p2 = node2.getPoint();
+        math::Point p1 = node1.point();
+        math::Point p2 = node2.point();
         v1 = math::Vector3d( p1, p2);
         v1.normalize();
         //We retrieve adjacent boundary faces and we get their normal vectors
@@ -695,8 +695,8 @@ void FieldGenerator::initHarmonicOnCurve(const Node &ANode)
         Node node1 = getNeighboorOn(current_node, edge1);
         Node node2 = getNeighboorOn(current_node, edge2);
         //we build the direction vector linking the two adjacent nodes
-        math::Point p1 = node1.getPoint();
-        math::Point p2 = node2.getPoint();
+        math::Point p1 = node1.point();
+        math::Point p2 = node2.point();
         v1 = math::Vector3d( p1, p2);
         v1.normalize();
         
@@ -881,7 +881,7 @@ void FieldGenerator::writeSolution(){
     for (auto n_id: m_mesh->nodes())
     {
         Node n = m_mesh->get<Node>(n_id);
-        math::Point p = n.getPoint();
+        math::Point p = n.point();
         if (p.X() < x_min)
             x_min = p.X();
         if (p.X() > x_max)
@@ -922,7 +922,7 @@ void FieldGenerator::writeSolution(){
     for (auto n_id:m_mesh->nodes())
     {
         Node n = m_mesh->get<Node>(n_id);
-        math::Point center = n.getPoint();
+        math::Point center = n.point();
         
         math::Chart c = (*m_chart_field)[n.id()];
 

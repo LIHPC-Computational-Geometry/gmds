@@ -9,7 +9,7 @@
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/sheet/Pillow2D.h>
 #include <gmds/cad/FACManager.h>
-#include <gmds/cad/GeomSmoother.h>
+#include <gmds/smoothy/LaplacianSmoother.h>
 
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -315,7 +315,7 @@ TEST(PillowOpClass, test_pillow3D_with_geom)
 
     manager.initAndLinkFrom3DMesh(&m_vol,&linker);
 
-    cad::GeomSmoother smoother(&linker);
+    smoothy::LaplacianSmoother smoother(&linker);
     smoother.smoothCurves(10);
     smoother.smoothSurfaces(10);
     smoother.smoothVolumes(10);

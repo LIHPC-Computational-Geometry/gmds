@@ -90,7 +90,7 @@ getNodes(std::vector<IMeshIOService::NodeInfo> &AInfo) {
         Node n = m_mesh->get<Node>(node_id);
         IMeshIOService::NodeInfo info;
         info.id = node_id;
-        info.point = n.getPoint();
+        info.point = n.point();
         AInfo.push_back(info);
     }
 }

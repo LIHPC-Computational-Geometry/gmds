@@ -170,7 +170,7 @@ void BoundaryExtractor3D::execute(const double AAngle) {
     for (auto n_id: m_from_mesh->nodes()) {
         if (m_from_mesh->isMarked<Node>(n_id, mark_node_on_surf)) {
             Node from_n = m_from_mesh->get<Node>(n_id);
-            Node to_n = m_to_mesh->newNode(from_n.getPoint());
+            Node to_n = m_to_mesh->newNode(from_n.point());
             if (m_with_mapping) {
                 (*m_node_map)[n_id] = to_n.id();
                 (*m_node_map_inv)[to_n.id()] = n_id;
@@ -245,10 +245,10 @@ void BoundaryExtractor3D::execute(const double AAngle) {
                 if (!found)
                     opposite_id = adj_n;
             }
-            math::Point opp_point = m_from_mesh->get<Node>(opposite_id).getPoint();
-            math::Point p0 = m_from_mesh->get<Node>(from_ns[0]).getPoint();
-            math::Point p1 = m_from_mesh->get<Node>(from_ns[1]).getPoint();
-            math::Point p2 = m_from_mesh->get<Node>(from_ns[2]).getPoint();
+            math::Point opp_point = m_from_mesh->get<Node>(opposite_id).point();
+            math::Point p0 = m_from_mesh->get<Node>(from_ns[0]).point();
+            math::Point p1 = m_from_mesh->get<Node>(from_ns[1]).point();
+            math::Point p2 = m_from_mesh->get<Node>(from_ns[2]).point();
             if (math::Orientation::orient3d(opp_point, p0, p1, p2) == math::Orientation::NEGATIVE) {
                 std::vector<TCellID> temp_ns = from_ns;
                 from_ns[1] = temp_ns[temp_ns.size() - 1];

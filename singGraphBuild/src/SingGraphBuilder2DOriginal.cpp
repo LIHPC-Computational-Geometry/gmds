@@ -179,7 +179,7 @@ SingGraphBuilder2DOriginal::computeSingularityLine(SingularityPoint *AFromPoint,
 	   std::cout<<"currentTriNodes,isze() "<<currentTriNodes.size()<<std::endl;
 	   gmds::Node mySing1 = meshSing.newNode(currentTriNodes[0].getPoint());
 	   gmds::Node mySing2 = meshSing.newNode(currentTriNodes[1].getPoint());
-	   gmds::Node mySing3 = meshSing.newNode(currentTriNodes[2].getPoint());
+	   gmds::Node mySing3 = meshSing.newNode(currentTriNodes[2].point());
 	   meshSing.newTriangle(mySing1, mySing2, mySing3);
 	}
 	gmds::IGMeshIOService ioServiceSing(&meshSing);
@@ -518,8 +518,8 @@ SingGraphBuilder2DOriginal::computeStreamLine(SingularityPoint *AFromPnt,
 			ATriangles.insert(ATriangles.end(), adj_faces.begin(), adj_faces.end());
 
 			std::vector<Node> currentNodes = currentEdge.get<Node>();
-			math::Vector3d v0(start_pnt, currentNodes[0].getPoint());
-			math::Vector3d v1(start_pnt, currentNodes[1].getPoint());
+			math::Vector3d v0(start_pnt, currentNodes[0].point());
+			math::Vector3d v1(start_pnt, currentNodes[1].point());
 			Node next_node;
 			if (math::near(v0.norm(), 0.0))
 				next_node = currentNodes[1];
@@ -531,7 +531,7 @@ SingGraphBuilder2DOriginal::computeStreamLine(SingularityPoint *AFromPnt,
 				next_node = currentNodes[1];
 
 			math::Vector3d next_dir;
-			math::Vector3d devVect(start_pnt, next_node.getPoint());
+			math::Vector3d devVect(start_pnt, next_node.point());
 			devVect.normalize();
 			m_tool.computeOutVectorAtPoint(next_node, start_dir, next_dir);
 			start_dir.normalize();
@@ -539,7 +539,7 @@ SingGraphBuilder2DOriginal::computeStreamLine(SingularityPoint *AFromPnt,
 
 			// We assign the new value for the next step
 			start_dir = next_dir;
-			start_pnt = next_node.getPoint();
+			start_pnt = next_node.point();
 			start_cell_dim = 0;
 			start_cell_id = next_node.id();
 			find_end = false;
@@ -911,7 +911,7 @@ SingGraphBuilder2DOriginal::backtrackSingularityLine(SurfaceSingularityLine *ALi
 		for (std::set<TCellID>::iterator it = candidates.begin(); it != candidates.end(); it++) {
 			Face f = m_mesh->get<Face>(*it);
 			std::vector<Node> f_nodes = f.get<Node>();
-			math::Triangle t(f_nodes[0].getPoint(), f_nodes[1].getPoint(), f_nodes[2].getPoint());
+			math::Triangle t(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point());
 			bool found_pnt = false;
 			for (unsigned int j = 0; j < new_pnts.size() && !found_pnt; j++) {
 				math::Point pj = new_pnts[j];

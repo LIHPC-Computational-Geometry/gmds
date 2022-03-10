@@ -78,7 +78,7 @@ namespace gmds{
             }
 
             // too many comparisons (3 factor)
-            math::Point pi = m_support->get<Node>(*node_ids.begin()).getPoint();
+            math::Point pi = m_support->get<Node>(*node_ids.begin()).point();
             minXYZ[0]=pi.X();
             maxXYZ[0]=pi.X();
             minXYZ[1]=pi.Y();
@@ -86,7 +86,7 @@ namespace gmds{
             minXYZ[2]=pi.Z();
             maxXYZ[2]=pi.Z();
             for(auto i:node_ids){
-                math::Point pi = m_support->get<Node>(i).getPoint();
+                math::Point pi = m_support->get<Node>(i).point();
                 if (pi.X()<minXYZ[0])
                     minXYZ[0]=pi.X();
                 else if (pi.X()>maxXYZ[0])
@@ -190,7 +190,7 @@ namespace gmds{
             {
                 gmds::Face current = m_support->get<gmds::Face>(m_mesh_faces[i]);
                 std::vector<Node> nodes = current.get<Node>();
-                ATri[i]=math::Triangle(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint());
+                ATri[i]=math::Triangle(nodes[0].point(), nodes[1].point(), nodes[2].point());
             }
         }
 /*----------------------------------------------------------------------------*/

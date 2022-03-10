@@ -493,15 +493,15 @@ SingularityGraph::splitCurveLine(
 
 			Node common_node = Tools::getCommonNode(current_edge, next_edge);
 
-			prev_pnt = common_node.getPoint();
+			prev_pnt = common_node.point();
 			new_discretization.push_back(prev_pnt);
 		}
 		else {     // initial sing. point on a mesh edge
 			gmds::Edge current_edge = first_part[0];
 			std::vector<Node> current_nodes = current_edge.get<Node>();
 
-			gmds::math::Point p0 = current_nodes[0].getPoint();
-			gmds::math::Point p1 = current_nodes[1].getPoint();
+			gmds::math::Point p0 = current_nodes[0].point();
+			gmds::math::Point p1 = current_nodes[1].point();
 
 			double d0 = prev_pnt.distance2(p0);
 			double d1 = prev_pnt.distance2(p1);
@@ -520,8 +520,8 @@ SingularityGraph::splitCurveLine(
 			Edge current_edge = first_part[i];
 			std::vector<Node> current_nodes = current_edge.get<Node>();
 
-			gmds::math::Point p0 = current_nodes[0].getPoint();
-			gmds::math::Point p1 = current_nodes[1].getPoint();
+			gmds::math::Point p0 = current_nodes[0].point();
+			gmds::math::Point p1 = current_nodes[1].point();
 
 			double d0 = prev_pnt.distance2(p0);
 			double d1 = prev_pnt.distance2(p1);
@@ -563,15 +563,15 @@ SingularityGraph::splitCurveLine(
 
 			Node common_node = Tools::getCommonNode(current_edge, next_edge);
 
-			prev_pnt = common_node.getPoint();
+			prev_pnt = common_node.point();
 			new_discretization.push_back(prev_pnt);
 		}
 		else {     // initial sing. point on a mesh edge
 			Edge current_edge = second_part[0];
 			std::vector<Node> current_nodes = current_edge.get<Node>();
 
-			gmds::math::Point p0 = current_nodes[0].getPoint();
-			gmds::math::Point p1 = current_nodes[1].getPoint();
+			gmds::math::Point p0 = current_nodes[0].point();
+			gmds::math::Point p1 = current_nodes[1].point();
 
 			double d0 = prev_pnt.distance2(p0);
 			double d1 = prev_pnt.distance2(p1);
@@ -589,8 +589,8 @@ SingularityGraph::splitCurveLine(
 			Edge current_edge = second_part[i];
 			std::vector<Node> current_nodes = current_edge.get<Node>();
 
-			gmds::math::Point p0 = current_nodes[0].getPoint();
-			gmds::math::Point p1 = current_nodes[1].getPoint();
+			gmds::math::Point p0 = current_nodes[0].point();
+			gmds::math::Point p1 = current_nodes[1].point();
 
 			double d0 = prev_pnt.distance2(p0);
 			double d1 = prev_pnt.distance2(p1);
@@ -738,7 +738,7 @@ SingularityGraph::splitSurfaceLine(SurfaceSingularityPoint *APnt, SurfaceSingula
 	for (unsigned int i = 0; i < prev_faces.size(); i++) {
 		Face f = m_mesh->get<Face>(prev_faces[i]);
 		std::vector<Node> f_nodes = f.get<Node>();
-		math::Triangle t(f_nodes[0].getPoint(), f_nodes[1].getPoint(), f_nodes[2].getPoint());
+		math::Triangle t(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point());
 		bool found = false;
 		for (unsigned int j = 1; !found && j < first_part.size(); j++) {
 			math::Point pj = first_part[j];

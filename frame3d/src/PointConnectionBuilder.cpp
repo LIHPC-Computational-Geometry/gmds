@@ -110,7 +110,7 @@ void PointConnectionBuilder::execute()
 
     
     if(m_with_debug_info) {
-        writeEdges(oriented_edges_init, m_output_dir + "/EDGES_LOCAL");
+        writeEdges(oriented_edges_init, m_output_dir + "/EDGES_LOCAL.vtk");
     }
     //======================================================================
     // STEP 4 - Correction of the oriented-edges to create edges
@@ -119,7 +119,7 @@ void PointConnectionBuilder::execute()
     
 
     if(m_with_debug_info)
-        writeEdges(m_edges, m_output_dir+"/EDGES_GLOBAL");
+        writeEdges(m_edges, m_output_dir+"/EDGES_GLOBAL.vtk");
 
     //======================================================================
     // STEP 5 - For each stable point compute and store its hex-corners
@@ -130,6 +130,7 @@ void PointConnectionBuilder::execute()
     // STEP 6 - Build stable hexahedral elts
     //======================================================================
     buildHexahedral();
+    std::cout<<"Nb created hexes: "<<m_hexes.getNbHexahedra()<<std::endl;
     if(m_with_debug_info) {
         writeHexes();
     }
@@ -139,7 +140,7 @@ void PointConnectionBuilder::execute()
 /*---------------------------------------------------------------------------*/
 void PointConnectionBuilder::createDistanceFilter()
 {
-    double max_distance = 2*m_spacing;
+    double max_distance = 5*m_spacing;
     
     for(auto i=0; i<m_pnt.size(); i++){
         math::Point pi = m_pnt[i];
@@ -216,9 +217,9 @@ Face PointConnectionBuilder::closestFace(math::Point& AP, const int ASurfID)
         Face f = m_mesh->get<Face>(f_id);
         if((*color)[f.id()]==ASurfID){
             std::vector<Node> f_nodes = f.get<Node>();
-            math::Triangle t(f_nodes[0].getPoint(),
-                             f_nodes[1].getPoint(),
-                             f_nodes[2].getPoint());
+            math::Triangle t(f_nodes[0].point(),
+                             f_nodes[1].point(),
+                             f_nodes[2].point());
             math::Point p = t.project(AP);
             if(p.distance2(AP)<closest_dist){
                 closest_dist=p.distance2(AP);
@@ -229,9 +230,9 @@ Face PointConnectionBuilder::closestFace(math::Point& AP, const int ASurfID)
     // The point is moved too!!
     
     std::vector<Node> closest_nodes = closest_face.get<Node>();
-    math::Triangle t(closest_nodes[0].getPoint(),
-                     closest_nodes[1].getPoint(),
-                     closest_nodes[2].getPoint());
+    math::Triangle t(closest_nodes[0].point(),
+                     closest_nodes[1].point(),
+                     closest_nodes[2].point());
     
     AP = t.project(AP);
     return closest_face;
@@ -248,8 +249,8 @@ Edge PointConnectionBuilder::closestEdge(math::Point& AP, const int ACurvID)
         Edge e = m_mesh->get<Edge>(e_id);
         if((*color)[e.id()]==ACurvID){
             std::vector<Node> e_nodes = e.get<Node>();
-            math::Segment s(e_nodes[0].getPoint(),
-                            e_nodes[1].getPoint());
+            math::Segment s(e_nodes[0].point(),
+                            e_nodes[1].point());
             math::Point p = s.project(AP);
             if(p.distance2(AP)<closest_dist){
                 closest_dist=p.distance2(AP);
@@ -259,8 +260,8 @@ Edge PointConnectionBuilder::closestEdge(math::Point& AP, const int ACurvID)
     }
     // The point is moved too!!
     std::vector<Node> closest_nodes = closest_edge.get<Node>();
-    math::Segment s(closest_nodes[0].getPoint(),
-                    closest_nodes[1].getPoint());
+    math::Segment s(closest_nodes[0].point(),
+                    closest_nodes[1].point());
     
     AP = s.project(AP);
     return closest_edge;
@@ -315,8 +316,8 @@ Cell::Data PointConnectionBuilder::getRegionContaining(const math::Point& APnt,
     while(true){
         std::vector<Node> n = current_r.get<Node>();
         math::Point p[4] ={
-            n[0].getPoint(), n[1].getPoint(),
-            n[2].getPoint(), n[3].getPoint()
+                n[0].point(), n[1].point(),
+                n[2].point(), n[3].point()
         };
         
         double coeff[4]={0, 0, 0, 0};
@@ -375,9 +376,9 @@ getBoundaryFaceContaining(math::Point&  AP,
     for(auto i:close_bnd_faces){
         Face f = m_mesh->get<Face>(i);
         std::vector<Node> f_nodes = f.get<Node>();
-        math::Triangle t(f_nodes[0].getPoint(),
-                         f_nodes[1].getPoint(),
-                         f_nodes[2].getPoint());
+        math::Triangle t(f_nodes[0].point(),
+                         f_nodes[1].point(),
+                         f_nodes[2].point());
         math::Point p = t.project(AP);
         if(p.distance2(AP)<closest_dist){
             closest_dist=p.distance2(AP);
@@ -387,9 +388,9 @@ getBoundaryFaceContaining(math::Point&  AP,
     // The point is moved too!!
     
     std::vector<Node> closest_nodes = closest_face.get<Node>();
-    math::Triangle t(closest_nodes[0].getPoint(),
-                     closest_nodes[1].getPoint(),
-                     closest_nodes[2].getPoint());
+    math::Triangle t(closest_nodes[0].point(),
+                     closest_nodes[1].point(),
+                     closest_nodes[2].point());
     
     AP = t.project(AP);
     return Cell::Data(2,closest_face.id());
@@ -423,8 +424,8 @@ getBoundaryEdgeContaining(math::Point&  AP,
     for(auto i:close_bnd_edges){
         Edge e = m_mesh->get<Edge>(i);
         std::vector<Node> e_nodes = e.get<Node>();
-        math::Segment s(e_nodes[0].getPoint(),
-                        e_nodes[1].getPoint());
+        math::Segment s(e_nodes[0].point(),
+                        e_nodes[1].point());
         math::Point p = s.project(AP);
         if(p.distance2(AP)<closest_dist){
             closest_dist=p.distance2(AP);
@@ -433,8 +434,8 @@ getBoundaryEdgeContaining(math::Point&  AP,
     }
     
     std::vector<Node> closest_nodes = closest_edge.get<Node>();
-    math::Segment s(closest_nodes[0].getPoint(),
-                    closest_nodes[1].getPoint());
+    math::Segment s(closest_nodes[0].point(),
+                    closest_nodes[1].point());
     
     // The point is moved too!!
     AP = s.project(AP);
@@ -465,9 +466,9 @@ PointConnectionBuilder::getCloseRegionsFrom(const math::Point& AFromPnt,
         std::vector<Face> fs = c.get<Face>();
         for(const auto & f:fs){
             std::vector<Node> n = f.get<Node>();
-            math::Plane pl(n[0].getPoint(),
-                           n[1].getPoint(),
-                           n[2].getPoint());
+            math::Plane pl(n[0].point(),
+                           n[1].point(),
+                           n[2].point());
             if(pl.project(AFromPnt).distance(AFromPnt)<AEpsilon){
                 //means close to this face
                 
@@ -1038,16 +1039,26 @@ buildOrientedEdges(std::vector<std::vector<OrientedEdge> >& AEdges)
 }
 /*---------------------------------------------------------------------------*/
 void PointConnectionBuilder::
-getEdges(std::map<int, int> &AEdges) {
+getEdges(std::vector<std::pair<int,int > >& AEdges) {
     for(auto edge_set:m_edges){
         for(auto e : edge_set){
-            auto i = e.first;
-            auto j = e.second;
-            if(i<j)
-                AEdges[i]=j;
-            else
-                AEdges[j]=i;
+            AEdges.push_back(std::make_pair(e.first,e.second));
         }
+    }
+}
+/*---------------------------------------------------------------------------*/
+void PointConnectionBuilder::getHexes(std::vector<std::vector<int> > &AHexes)
+{
+    Variable<int>* var_id = m_hexes.getVariable<int,GMDS_NODE>("HD_ID");
+
+    for(auto h_id:m_hexes.regions()){
+        std::vector<TCellID> node_ids = m_hexes.get<Region>(h_id).getIDs<Node>();
+        std::vector<int> ids;
+        ids.resize(8);
+        for(auto i=0;i<8;i++) {
+            ids[i]= var_id->value(node_ids[i]);
+        }
+        AHexes.push_back(ids);
     }
 }
 /*---------------------------------------------------------------------------*/
@@ -1383,11 +1394,11 @@ bool PointConnectionBuilder::isCorner(const HexCorner& AC,
 }
 /*---------------------------------------------------------------------------*/
 bool PointConnectionBuilder::findCommmonLastCorner(const HexCorner& ACorner1,
-                                            const HexCorner& ACorner2,
-                                            const HexCorner& ACorner3,
-                                            HexCorner&       ACornerOut)
+                                                   const HexCorner& ACorner2,
+                                                   const HexCorner& ACorner3,
+                                                   HexCorner&       ACornerOut)
 {
-    //We look for the point shared bu ACorner1, ACorner2 and ACorner3
+    //We look for the point shared by ACorner1, ACorner2 and ACorner3
     int common_pnt_12[2]={-1,-1};
     int i_12=0;
     for(int i1=0; i1<3; i1++){
@@ -1397,11 +1408,12 @@ bool PointConnectionBuilder::findCommmonLastCorner(const HexCorner& ACorner1,
                 common_pnt_12[i_12++]=adj1;
             }
         }
-    }//for(int i1=0; i1<3; i1++){
+    }//for(int i1=0; i1<3; i1++)
+
     int common_pnt=-1;
     for(int i3=0; i3<3; i3++){
         int adj3= ACorner3.adj[i3];
-        for(int i12=0; i12<3; i12++){
+        for(int i12=0; i12<2; i12++){
             if(adj3 == common_pnt_12[i12]){
                 common_pnt =adj3;
             }
@@ -1453,7 +1465,7 @@ void PointConnectionBuilder::buildHexahedral()
         
         for(unsigned int j=0; j<corners_i.size();j++){
             HexCorner cj = corners_i[j];
-            
+
             if(!cj.free) //this corner is already used for a hex
                 continue;
             //=====================================================
@@ -1550,7 +1562,7 @@ void PointConnectionBuilder::buildHexahedral()
             
         }//for(unsigned j=0; j<corners_i.size();j++)
         
-    }//for(unsigned int i=0; i<m_pnt.size(); i++)
+    }//for(unsigned int i=0; i<m_pnt.size(); i++
 }
 /*---------------------------------------------------------------------------*/
 bool PointConnectionBuilder::computeVolumePointFrom(const int APntIndex,
@@ -1637,8 +1649,8 @@ void PointConnectionBuilder::writeInput()
     }
     static int nb_file=0;
     std::string file_pnts, file_charts;
-    file_pnts=m_output_dir+"/PCB_INPUT_PNTS_"+to_string(nb_file);
-    file_charts=m_output_dir+"/PCB_INPUT_CHARTS_"+to_string(nb_file);
+    file_pnts=m_output_dir+"/PCB_INPUT_PNTS_"+to_string(nb_file)+".vtk";
+    file_charts=m_output_dir+"/PCB_INPUT_CHARTS_"+to_string(nb_file)+".vtk";
     nb_file++;
 
     IGMeshIOService ioService(&mesh_pnts);
@@ -1662,10 +1674,10 @@ writeEdges(std::vector<std::vector<OrientedEdge> >& AEdges,
 {
     MeshModel model(DIM3 | F  | N | F2N );
     Mesh mesh_edges  (model);
-    
     for(unsigned int i=0; i<m_pnt.size();i++){
 
         std::vector<OrientedEdge> edges_i = AEdges[i];
+
         for(unsigned int j=0; j<edges_i.size(); j++){
             math::Point p0 = m_pnt[edges_i[j].first];
             math::Point p1 = m_pnt[edges_i[j].second];
@@ -1675,7 +1687,6 @@ writeEdges(std::vector<std::vector<OrientedEdge> >& AEdges,
             
         }
     }
-
     IGMeshIOService ioService(&mesh_edges);
     VTKWriter vtkWriter(&ioService);
     vtkWriter.setCellOptions(gmds::N|gmds::F);
@@ -1690,7 +1701,7 @@ void PointConnectionBuilder::writeHexes() {
     VTKWriter vtkWriter(&ioService);
     vtkWriter.setCellOptions(N | F | R);
     vtkWriter.setDataOptions(N | F | R);
-    std::string file_name = m_output_dir + "/EXTRACTED_HEX";
+    std::string file_name = m_output_dir + "/EXTRACTED_HEX.vtk";
     vtkWriter.write(file_name);
 }
 /*----------------------------------------------------------------------------*/

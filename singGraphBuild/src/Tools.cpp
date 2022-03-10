@@ -100,12 +100,12 @@ Tools::removeBoundarySlivers(Mesh *AMesh)
 		}
 		if (!found_opp) throw GMDSException("Topological error in bnd sliver deletion");
 
-		math::Point p = n_opp.getPoint();
-		math::Plane pl(n[0].getPoint(), n[1].getPoint(), n[2].getPoint());
+		math::Point p = n_opp.point();
+		math::Plane pl(n[0].point(), n[1].point(), n[2].point());
 		math::Point pr = pl.project(p);
-		math::Vector3d v01(n[0].getPoint(), n[1].getPoint());
-		math::Vector3d v02(n[0].getPoint(), n[2].getPoint());
-		math::Vector3d v12(n[1].getPoint(), n[2].getPoint());
+		math::Vector3d v01(n[0].point(), n[1].point());
+		math::Vector3d v02(n[0].point(), n[2].point());
+		math::Vector3d v12(n[1].point(), n[2].point());
 
 		double min_dist = math::min3(v01.norm(), v02.norm(), v12.norm());
 
@@ -154,7 +154,7 @@ Tools::computeChartIn(const math::Point &APnt, const Face &AFace)
 	//===================================================================
 	double coeff[3] = {0, 0, 0};
 
-	math::Point::computeBarycentric(n[0].getPoint(), n[1].getPoint(), n[2].getPoint(), APnt, coeff[0], coeff[1], coeff[2]);
+	math::Point::computeBarycentric(n[0].point(), n[1].point(), n[2].point(), APnt, coeff[0], coeff[1], coeff[2]);
 
 	//===================================================================
 	// STEP 2 - We extract the quaternion representation of each frame  at
@@ -193,7 +193,7 @@ Tools::isPntInTri(const math::Point &AP, const Face &ATri, bool &AOnEdge0, bool 
 {
 	std::vector<Node> n = ATri.get<Node>();
 
-	math::Point pnt[3] = {n[0].getPoint(), n[1].getPoint(), n[2].getPoint()};
+	math::Point pnt[3] = {n[0].point(), n[1].point(), n[2].point()};
 
 	math::Plane plane(pnt[0], pnt[1], pnt[2]);
 	math::Point p = plane.project(AP);
@@ -221,7 +221,7 @@ Tools::isPntInTri(const math::Point &AP, const Face &ATri)
 {
 	std::vector<Node> n = ATri.get<Node>();
 
-	math::Point pnt[3] = {n[0].getPoint(), n[1].getPoint(), n[2].getPoint()};
+	math::Point pnt[3] = {n[0].point(), n[1].point(), n[2].point()};
 
 	math::Plane plane(pnt[0], pnt[1], pnt[2]);
 	math::Point p = plane.project(AP);
@@ -269,7 +269,7 @@ Tools::computeFuzzyHeuns(const math::Point &AFromPnt,
 			/* math::Point pn[3] ={
 			    n[0].getPoint(),
 			    n[1].getPoint(),
-			    n[2].getPoint()};*/
+			    n[2].point()};*/
 			// We compute the barycentric coords.
 			bool on_edge[3] = {false, false, false};
 			if (!isPntInTri(p[i], AFaces[i], on_edge[0], on_edge[1], on_edge[2], temp, temp)) {
@@ -451,7 +451,7 @@ Tools::followFlow(const PointVolumetricData &AData, const double AMaxDist, math:
 		t.resize(4);
 		for (unsigned int i = 0; i < 4; i++) {
 			std::vector<Node> cn = cf[i].get<Node>();
-			t[i] = math::Triangle(cn[0].getPoint(), cn[1].getPoint(), cn[2].getPoint());
+			t[i] = math::Triangle(cn[0].point(), cn[1].point(), cn[2].point());
 		}
 		//================================================
 		// PHASE 1
@@ -566,7 +566,7 @@ Tools::followFlow(const PointSurfacicData &AData, const double AMaxDist, const i
 		// dir must live in the plan of the next face, now current_cell
 		math::Point p(from.X() + dir.X(), from.Y() + dir.Y(), from.Z() + dir.Z());
 		std::vector<Node> cur_nodes = current_cell.get<Node>();
-		math::Plane pl(cur_nodes[0].getPoint(), cur_nodes[1].getPoint(), cur_nodes[2].getPoint());
+		math::Plane pl(cur_nodes[0].point(), cur_nodes[1].point(), cur_nodes[2].point());
 		math::Point proj = pl.project(p);
 		dir = math::Vector3d(from, proj);
 
@@ -582,7 +582,7 @@ Tools::followFlow(const PointSurfacicData &AData, const double AMaxDist, const i
 		s.resize(3);
 		for (unsigned int i = 0; i < 3; i++) {
 			std::vector<Node> cn = cf[i].get<Node>();
-			s[i] = math::Segment(cn[0].getPoint(), cn[1].getPoint());
+			s[i] = math::Segment(cn[0].point(), cn[1].point());
 		}
 		//================================================
 		// PHASE 1
@@ -905,9 +905,9 @@ Tools::heunsComputation(     // const Edge&         AINEdge,
 	// std::cout << "\t Edge candidate2: "
 	// 	    << AOUTEdge2.get<Node>()[0].id() << ",  "
 	// 	    << AOUTEdge2.get<Node>()[1].id() << std::endl;
-	// std::cout << "Node " << AOPPNode.id() << " - " << AOPPNode.getPoint() << std::endl;
-	// std::cout << "Node " << AINNode1.id() << " - " << AINNode1.getPoint() << std::endl;
-	// std::cout << "Node " << AINNode2.id() << " - " << AINNode2.getPoint() << std::endl;
+	// std::cout << "Node " << AOPPNode.id() << " - " << AOPPNode.point() << std::endl;
+	// std::cout << "Node " << AINNode1.id() << " - " << AINNode1.point() << std::endl;
+	// std::cout << "Node " << AINNode2.id() << " - " << AINNode2.point() << std::endl;
 
 	math::Vector3d v_in = AINVec;
 	v_in.normalize();
@@ -915,7 +915,7 @@ Tools::heunsComputation(     // const Edge&         AINEdge,
 	//================================================
 	// Go through the opposite node AOPPNode???
 	//================================================
-	math::Point opp_node_loc = AOPPNode.getPoint();
+	math::Point opp_node_loc = AOPPNode.point();
 	math::Vector3d v_opp(AINPnt, opp_node_loc);
 	v_opp.normalize();
 
@@ -930,7 +930,7 @@ Tools::heunsComputation(     // const Edge&         AINEdge,
 	//================================================
 	// Go through AINNode1???
 	//================================================
-	math::Point node1_loc = AINNode1.getPoint();
+	math::Point node1_loc = AINNode1.point();
 	math::Vector3d v1(AINPnt, node1_loc);
 	v1.normalize();
 
@@ -945,7 +945,7 @@ Tools::heunsComputation(     // const Edge&         AINEdge,
 	//================================================
 	// Go through AINNode2???
 	//================================================
-	math::Point node2_loc = AINNode2.getPoint();
+	math::Point node2_loc = AINNode2.point();
 	math::Vector3d v2(AINPnt, node2_loc);
 	v2.normalize();
 
@@ -1037,7 +1037,7 @@ Tools::heunsComputation(     // const Node&         AFROMNode,
 	//================================================
 	// Go through the opposite node AOPPNode1???
 	//================================================
-	math::Point opp_node_loc1 = AOPPNode1.getPoint();
+	math::Point opp_node_loc1 = AOPPNode1.point();
 	math::Vector3d v_opp1(AINPnt, opp_node_loc1);
 	v_opp1.normalize();
 
@@ -1052,7 +1052,7 @@ Tools::heunsComputation(     // const Node&         AFROMNode,
 	//================================================
 	// Go through the opposite node AOPPNode1???
 	//================================================
-	math::Point opp_node_loc2 = AOPPNode2.getPoint();
+	math::Point opp_node_loc2 = AOPPNode2.point();
 	math::Vector3d v_opp2(AINPnt, opp_node_loc2);
 	v_opp2.normalize();
 
@@ -1246,7 +1246,7 @@ Tools::computeOutVectorFromRayAndEdge(
 
 	Node n0 = AEdge.get<Node>()[0];
 	Node n1 = AEdge.get<Node>()[1];
-	math::Segment seg(n0.getPoint(), n1.getPoint());
+	math::Segment seg(n0.point(), n1.point());
 
 	math::Point pnt_intersection;
 	double param_intersection = 0.0;
@@ -1359,7 +1359,7 @@ Tools::isGoingInto(const math::Point &APnt, const math::Vector3d &AVec, const No
 	if (other_nodes.size() != 2) throw GMDSException("isGoingInto(): Error, I don't find 2 opposite nodes");
 
 	math::Ray from_ray(APnt, AVec);
-	math::Segment opp_seg(other_nodes[0].getPoint(), other_nodes[1].getPoint());
+	math::Segment opp_seg(other_nodes[0].point(), other_nodes[1].point());
 	math::Point intersection_pnt;
 	double intersection_param;
 	return from_ray.SecondMetIntersect2D(opp_seg, intersection_pnt, intersection_param, temp_epsilon);
@@ -1379,9 +1379,9 @@ Tools::isGoingInto(const math::Point &APnt, const math::Vector3d &AVec, const Ed
 	}
 	if (opp_node.id() == NullID) throw GMDSException("isGoingInto(): Error, no opposite node");
 
-	math::Point opp_pnt = opp_node.getPoint();
-	math::Vector3d edge_vector(from_nodes[0].getPoint(), from_nodes[1].getPoint());
-	math::Vector3d edge_witness(from_nodes[0].getPoint(), opp_pnt);
+	math::Point opp_pnt = opp_node.point();
+	math::Vector3d edge_vector(from_nodes[0].point(), from_nodes[1].point());
+	math::Vector3d edge_witness(from_nodes[0].point(), opp_pnt);
 	math::Vector3d edge_ortho = edge_vector.cross(math::Vector3d(0, 0, 1));
 
 	if (edge_ortho.dot(edge_witness) < 0) edge_ortho = edge_ortho.opp();
@@ -1405,7 +1405,7 @@ Tools::isAlong(const math::Vector3d &AVec, const Node &AFromNode, Edge &AEdge)
 	}
 	if (!found_origin) return false;
 
-	math::Vector3d v_edge(AFromNode.getPoint(), other_node.getPoint());
+	math::Vector3d v_edge(AFromNode.point(), other_node.point());
 	v_edge.normalize();
 
 	math::Vector3d v_dir = AVec;
@@ -1537,7 +1537,8 @@ Tools::findTriangleAndNextVectorRK4(const gmds::math::Point &AInPnt,
 
 				for (unsigned int i = 0; i < 3; i++) {
 					if (!visited_edges[current_edges[i].id()]) {
-						math::Segment seg(current_edges[i].get<Node>()[0].getPoint(), current_edges[i].get<Node>()[1].getPoint());
+						math::Segment seg(current_edges[i].get<Node>()[0].point(),
+                                          current_edges[i].get<Node>()[1].point());
 						if (withComments) {
 							cout << "?is ray " << AInPnt << " -> " << point_x << " intersecting any edge of " << current_face.id() << endl;
 						}
@@ -1558,13 +1559,13 @@ Tools::findTriangleAndNextVectorRK4(const gmds::math::Point &AInPnt,
 								if (param_intersection < math::Constants::EPSILON) {
 									AToCellDim = 0;     // point
 									AToCellID = current_edges[i].get<Node>()[0].id();
-									point_x = current_edges[i].get<Node>()[0].getPoint();
+									point_x = current_edges[i].get<Node>()[0].point();
 								}
 								else {
 									if (param_intersection > (1.0 - math::Constants::EPSILON)) {
 										AToCellDim = 0;     // point
 										AToCellID = current_edges[i].get<Node>()[1].id();
-										point_x = current_edges[i].get<Node>()[1].getPoint();
+										point_x = current_edges[i].get<Node>()[1].point();
 									}
 									else {
 										AToCellDim = 1;

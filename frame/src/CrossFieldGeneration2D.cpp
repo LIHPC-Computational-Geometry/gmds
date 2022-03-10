@@ -318,8 +318,8 @@ void  CrossFieldGeneration2D::initCrossesOnCurves()
 	  Node node2 = current_node;
 
 	  //we build the direction vector of the current edge
-	  math::Point p1 = node1.getPoint();
-	  math::Point p2 = node2.getPoint();
+	  math::Point p1 = node1.point();
+	  math::Point p2 = node2.point();
 	  math::Vector3d v1 = math::Vector3d(p1, p2);
 	  v1.normalize();
 
@@ -335,9 +335,9 @@ void  CrossFieldGeneration2D::initCrossesOnCurves()
 	  Node node2 = getNeighboorOn(current_node, edge2);
 
 	  //we build the average between adjacent edges
-	  math::Point  p1 = node1.getPoint();
-	  math::Point  p  = current_node.getPoint();
-	  math::Point  p2 = node2.getPoint();
+	  math::Point  p1 = node1.point();
+	  math::Point  p  = current_node.point();
+	  math::Point  p2 = node2.point();
 	  math::Vector3d v1 = math::Vector3d(p1, p);
 	  math::Vector3d v2 = math::Vector3d(p, p2);
 	  v1.normalize();
@@ -526,7 +526,7 @@ void CrossFieldGeneration2D::writeForDebug(const std::string AFileName)
   
   for(auto n_id:m_mesh->nodes()){
     Node n = m_mesh->get<Node>(n_id);    
-      math::Point p = n.getPoint();
+      math::Point p = n.point();
       if (p.X() < x_min)
 	x_min = p.X();
       if (p.X() > x_max)
@@ -557,7 +557,7 @@ void CrossFieldGeneration2D::writeForDebug(const std::string AFileName)
   
   for(auto n_id:m_mesh->nodes()){
     Node n = m_mesh->get<Node>(n_id);
-      math::Point center = n.getPoint();
+      math::Point center = n.point();
       //      if (m_mesh->isMarked(n, m_mark_alive))
 {
 	math::Cross2D current_cross = (*m_cross_field_2D)[n.id()];

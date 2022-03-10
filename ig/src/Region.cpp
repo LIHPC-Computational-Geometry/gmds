@@ -174,35 +174,35 @@ namespace gmds{
         TCoord vol=0.0;
         std::vector<Node> n = this->get<Node>();
         if(this->type()==GMDS_TETRA){
-            vol = math::Tetrahedron(n[0].getPoint(),
-                                    n[1].getPoint(),
-                                    n[2].getPoint(),
-                                    n[3].getPoint()).getVolume();
+            vol = math::Tetrahedron(n[0].point(),
+                                    n[1].point(),
+                                    n[2].point(),
+                                    n[3].point()).getVolume();
         }
         else if(this->type()==GMDS_HEX){
-            vol = math::Hexahedron(n[0].getPoint(),
-                                   n[1].getPoint(),
-                                   n[2].getPoint(),
-				   n[3].getPoint(),
-				   n[4].getPoint(),
-				   n[5].getPoint(),
-				   n[6].getPoint(),
-                                   n[7].getPoint()).getVolume();
+            vol = math::Hexahedron(n[0].point(),
+                                   n[1].point(),
+                                   n[2].point(),
+                                   n[3].point(),
+                                   n[4].point(),
+                                   n[5].point(),
+                                   n[6].point(),
+                                   n[7].point()).getVolume();
 	}
         else if(this->type()==GMDS_PYRAMID){
-            vol = math::Pyramid(n[0].getPoint(),
-                                n[1].getPoint(),
-                                n[2].getPoint(),
-				n[3].getPoint(),
-                                n[4].getPoint()).getVolume();
+            vol = math::Pyramid(n[0].point(),
+                                n[1].point(),
+                                n[2].point(),
+                                n[3].point(),
+                                n[4].point()).getVolume();
         }
         else if(this->type()==GMDS_PRISM3){
-            vol = math::Prism3(n[0].getPoint(),
-                               n[1].getPoint(),
-                               n[2].getPoint(),
-			       n[3].getPoint(),
-			       n[4].getPoint(),
-			       n[5].getPoint()).getVolume();
+            vol = math::Prism3(n[0].point(),
+                               n[1].point(),
+                               n[2].point(),
+                               n[3].point(),
+                               n[4].point(),
+                               n[5].point()).getVolume();
         }
 	else {
 	  throw GMDSException("Region::volume can not be computed for this value type.");
@@ -229,7 +229,7 @@ namespace gmds{
                 gmds::math::Point p[8];
                 for(unsigned int iNode=0; iNode<nodes.size(); iNode++)
                 {
-                    p[iNode] = nodes[iNode].getPoint();
+                    p[iNode] = nodes[iNode].point();
                 }
                 // Now we build an inner grid of  27 points
                 
@@ -291,19 +291,19 @@ namespace gmds{
             case GMDS_TETRA:
                 for(unsigned int iNode=0; iNode<nodes.size(); iNode++)
                 {
-                    points.push_back(nodes[iNode].getPoint());
+                    points.push_back(nodes[iNode].point());
                 }
                 break;
             case GMDS_PYRAMID:
                 for(unsigned int iNode=0; iNode<nodes.size(); iNode++)
                 {
-                    points.push_back(nodes[iNode].getPoint());
+                    points.push_back(nodes[iNode].point());
                 }
                 break;
             case GMDS_PRISM3:
                 for(unsigned int iNode=0; iNode<nodes.size(); iNode++)
                 {
-                    points.push_back(nodes[iNode].getPoint());
+                    points.push_back(nodes[iNode].point());
                 }
                 break;
             default:
@@ -322,27 +322,28 @@ namespace gmds{
         switch(this->type()) {
             case GMDS_HEX:
             {
-                math::Hexahedron hex(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint(),nodes[3].getPoint(),
-                                     nodes[4].getPoint(),nodes[5].getPoint(),nodes[6].getPoint(),nodes[7].getPoint());
+                math::Hexahedron hex(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point(),
+                                     nodes[4].point(), nodes[5].point(), nodes[6].point(), nodes[7].point());
                 return hex.computeScaledJacobian();
             }
                 break;
             case GMDS_TETRA:
             {
-                math::Tetrahedron tet(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint(),nodes[3].getPoint());
+                math::Tetrahedron tet(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
                 return tet.computeScaledJacobian();
             }
                 break;
             case GMDS_PYRAMID:
 	    {
-		math::Pyramid pyr(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint(),nodes[3].getPoint(),nodes[4].getPoint());
+		math::Pyramid pyr(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point(),
+                          nodes[4].point());
 		return pyr.computeScaledJacobian();
 	    }
                 break;
             case GMDS_PRISM3:
             {
-                math::Prism3 prism(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint(),
-                                   nodes[3].getPoint(),nodes[4].getPoint(),nodes[5].getPoint());
+                math::Prism3 prism(nodes[0].point(), nodes[1].point(), nodes[2].point(),
+                                   nodes[3].point(), nodes[4].point(), nodes[5].point());
                 return prism.computeScaledJacobian();
             }
                 break;
@@ -361,27 +362,28 @@ return 0;
         switch(this->type()) {
             case GMDS_HEX:
             {
-                math::Hexahedron hex(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint(),nodes[3].getPoint(),
-                                     nodes[4].getPoint(),nodes[5].getPoint(),nodes[6].getPoint(),nodes[7].getPoint());
+                math::Hexahedron hex(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point(),
+                                     nodes[4].point(), nodes[5].point(), nodes[6].point(), nodes[7].point());
                 return hex.computeNormalizedScaledJacobian();
             }
                 break;
             case GMDS_TETRA:
             {
-                math::Tetrahedron tet(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint(),nodes[3].getPoint());
+                math::Tetrahedron tet(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
                 return tet.computeNormalizedScaledJacobian();
             }
                 break;
             case GMDS_PYRAMID:
             {
-                math::Pyramid pyr(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint(),nodes[3].getPoint(),nodes[4].getPoint());
+                math::Pyramid pyr(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point(),
+                                  nodes[4].point());
                 return pyr.computeNormalizedScaledJacobian();
             }
                 break;
             case GMDS_PRISM3:
             {
-                math::Prism3 prism(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint(),
-                                   nodes[3].getPoint(),nodes[4].getPoint(),nodes[5].getPoint());
+                math::Prism3 prism(nodes[0].point(), nodes[1].point(), nodes[2].point(),
+                                   nodes[3].point(), nodes[4].point(), nodes[5].point());
                 return prism.computeNormalizedScaledJacobian();
             }
                 break;
@@ -400,27 +402,28 @@ return 0;
         switch(this->type()) {
             case GMDS_HEX:
             {
-                math::Hexahedron hex(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint(),nodes[3].getPoint(),
-                                     nodes[4].getPoint(),nodes[5].getPoint(),nodes[6].getPoint(),nodes[7].getPoint());
+                math::Hexahedron hex(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point(),
+                                     nodes[4].point(), nodes[5].point(), nodes[6].point(), nodes[7].point());
                 return hex.computeMeanRatio();
             }
                 break;
             case GMDS_TETRA:
             {
-                math::Tetrahedron tet(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint(),nodes[3].getPoint());
+                math::Tetrahedron tet(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
                 return tet.computeMeanRatio();
             }
                 break;
             case GMDS_PYRAMID:
 	    {
-		math::Pyramid pyr(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint(),nodes[3].getPoint(),nodes[4].getPoint());
+		math::Pyramid pyr(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point(),
+                          nodes[4].point());
 		return pyr.computeMeanRatio();
 	    }
                 break;
             case GMDS_PRISM3:
             {
-                math::Prism3 prism(nodes[0].getPoint(),nodes[1].getPoint(),nodes[2].getPoint(),
-                                   nodes[3].getPoint(),nodes[4].getPoint(),nodes[5].getPoint());
+                math::Prism3 prism(nodes[0].point(), nodes[1].point(), nodes[2].point(),
+                                   nodes[3].point(), nodes[4].point(), nodes[5].point());
                 return prism.computeMeanRatio();
             }
                 break;
@@ -970,7 +973,7 @@ return 0;
         std::vector<gmds::math::Point> points(8);
         for(unsigned int i=0; i<nodes.size(); i++) {
             nodeID2localID[nodes[i].id()] = i;
-            points[i] = nodes[i].getPoint();
+            points[i] = nodes[i].point();
         }
 
         std::vector<bool> isNodeFree(nodes.size(),false);
@@ -1647,7 +1650,7 @@ return 0;
                     std::cout<<"Face: "<<c_id<<std::endl;
                     std::vector<Node> fn =f.get<Node>();
                     for(auto ni:fn){
-                        std::cout<<"\t Node "<< ni.id()<<": "<<ni.getPoint()<<"\n";
+                        std::cout << "\t Node " << ni.id() << ": " << ni.point() << "\n";
                     }
                 }
                 throw GMDSException("Invalid number of adj. entities");

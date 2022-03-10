@@ -67,9 +67,9 @@ namespace gmds {
             int nb_nodes = nodes.size();
 
             if (nb_nodes == 3) {
-                    math::Point p1 = nodes[0].getPoint();
-                    math::Point p2 = nodes[1].getPoint();
-                    math::Point p3 = nodes[2].getPoint();
+                    math::Point p1 = nodes[0].point();
+                    math::Point p2 = nodes[1].point();
+                    math::Point p3 = nodes[2].point();
 
                     math::Vector3d v1(p1, p2);
                     math::Vector3d v3(p1, p3);
@@ -80,8 +80,8 @@ namespace gmds {
                     math::Point p = center();
                     math::Vector3d n_temp(0, 0, 0);
                     for (auto i = 0; i < nb_nodes; i++) {
-                            math::Point pi = nodes[i].getPoint();
-                            math::Point pj = nodes[(i + 1) % nb_nodes].getPoint();
+                            math::Point pi = nodes[i].point();
+                            math::Point pj = nodes[(i + 1) % nb_nodes].point();
                             math::Vector3d vi(p, pi);
                             math::Vector3d vj(p, pj);
                             math::Vector3d nij = vi.cross(vj);
@@ -145,10 +145,10 @@ namespace gmds {
 
                     return 0.5 * n.norm();
             } else if (nb_nodes == 4) {
-                    math::Point p1 = nodes[0].getPoint();
-                    math::Point p2 = nodes[1].getPoint();
-                    math::Point p3 = nodes[2].getPoint();
-                    math::Point p4 = nodes[3].getPoint();
+                    math::Point p1 = nodes[0].point();
+                    math::Point p2 = nodes[1].point();
+                    math::Point p3 = nodes[2].point();
+                    math::Point p4 = nodes[3].point();
                     math::Point c = center();
                     math::Triangle t1(p1,p2,c);
                     math::Triangle t2(p2,p3,c);
@@ -196,8 +196,8 @@ namespace gmds {
                             throw GMDSException("Region::computeScaledJacobian2D not implemented yet for triangles.");
                     break;
                     case GMDS_QUAD: {
-                            gmds::math::Quadrilateral quad(nodes[0].getPoint(), nodes[1].getPoint(), nodes[2].getPoint(),
-                                                           nodes[3].getPoint());
+                            gmds::math::Quadrilateral quad(nodes[0].point(), nodes[1].point(), nodes[2].point(),
+                                                           nodes[3].point());
                             return quad.computeScaledJacobian2D();
                     } break;
                     default:
@@ -216,9 +216,9 @@ namespace gmds {
             std::vector<math::Triangle> ts;
             if (m_type == GMDS_TRIANGLE){
                 std::vector<Node> nodes = this->get<Node>();
-                math::Point p0 = nodes[0].getPoint();
-                math::Point p1 = nodes[1].getPoint();
-                math::Point p2 = nodes[2].getPoint();
+                math::Point p0 = nodes[0].point();
+                math::Point p1 = nodes[1].point();
+                math::Point p2 = nodes[2].point();
                 // we value the projected point
                 math::Point X = math::Plane(p0, p1, p2).project(AP);
 
@@ -247,10 +247,10 @@ namespace gmds {
             }
             else {
                 std::vector<Node> nodes = this->get<Node>();
-                math::Point p0 = nodes[0].getPoint();
-                math::Point p1 = nodes[1].getPoint();
-                math::Point p2 = nodes[2].getPoint();
-                math::Point p3 = nodes[3].getPoint();
+                math::Point p0 = nodes[0].point();
+                math::Point p1 = nodes[1].point();
+                math::Point p2 = nodes[2].point();
+                math::Point p3 = nodes[3].point();
                 ts.push_back(math::Triangle(p0,p1,p2));
                 ts.push_back(math::Triangle(p0,p2,p3));
                 bool found_project=false;

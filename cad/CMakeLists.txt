@@ -18,9 +18,7 @@ set(GMDS_INC
         inc/gmds/cad/GeomPoint.h
         inc/gmds/cad/GeomSurface.h
         inc/gmds/cad/GeomMeshLinker.h
-        inc/gmds/cad/GeomVolume.h
-        inc/gmds/cad/GeomSmoother.h
-        )
+        inc/gmds/cad/GeomVolume.h        )
 set(GMDS_SRC
         src/FACCurve.cpp
         src/FACManager.cpp
@@ -28,7 +26,6 @@ set(GMDS_SRC
         src/FACSurface.cpp
         src/FACVolume.cpp
         src/GeomSurface.cpp
-        src/GeomSmoother.cpp
         src/GeomMeshLinker.cpp
         )
 #==============================================================================
@@ -70,11 +67,4 @@ if(WITH_TEST)
     add_subdirectory(tst)
 endif(WITH_TEST)
 #==============================================================================
-
-#==============================================================================
-# EXECUTABLE
-#==============================================================================
-add_executable(smoothy src/smoothy.cpp)
-target_link_libraries(smoothy PRIVATE ${GMDS_LIB})
-target_compile_features(smoothy PUBLIC cxx_std_14)
 

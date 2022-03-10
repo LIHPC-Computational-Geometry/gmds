@@ -66,7 +66,14 @@ public:
      *
      * @param[out] AEdges built edges.
      */
-    void getEdges(std::map<int,int >& AEdges);
+    void getEdges(std::vector<std::pair<int,int > >& AEdges);
+    /*------------------------------------------------------------------------*/
+    /** \brief Returns hexa info. Once performed the algorithm, we can acces to
+     *         all the hexahedral cells that can be created
+     *
+     * @param[out] AHex built hexes
+     */
+    void getHexes(std::vector<std::vector<int> >& AHexes);
 
     /*------------------------------------------------------------------------*/
     /** \brief Access to the generated mesh

@@ -73,7 +73,7 @@ math::Vector3d PGPStructPointExtraction::computeGij(OrientedEdge& AE)  {
     math::Chart::Mapping r_ij = getRij(i,j);
     
     //vector from pi to pj
-    math::Vector3d xij(ni.getPoint(), nj.getPoint());
+    math::Vector3d xij(ni.point(), nj.point());
     
     math::Vector3d gij_component[3];
     for (int d = 0; d<3; d++) {
@@ -227,7 +227,7 @@ extractPoints(const Region&                         ATet,
     // init from stored
     for (int i=0; i<4; i++){
         n_id  [i] = n[i].id();
-        lX    [i] = n[i].getPoint();
+        lX    [i] = n[i].point();
         lU    [i] = m_Ui[n_id[i]];
         lChart[i] = (*m_rotation_field)[n[i].id()].toChart();
     }
