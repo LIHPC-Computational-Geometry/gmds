@@ -98,7 +98,7 @@ writeCostPerSlot(const Mesh *const mesh, std::string fileName, const vector<Dijk
 
 	for (const TCellID n_id : mesh->nodes()) {
 		const auto &n = mesh->get<Node>(n_id);
-		m.newNode(n.getPoint());
+		m.newNode(n.point());
 	}
 
 	Variable<double> *cost = m.newVariable<double, GMDS_FACE>("cost");
@@ -289,8 +289,8 @@ SingGraphBuilder2DShortestPath::computeFaceNeighboursInfo()
 		if (m_mesh->isMarked(currentEdge, m_mark_edges_on_curve)) {
 
 			const vector<Node> adjacent_nodes = currentEdge.get<Node>();
-			const math::Point p1 = adjacent_nodes[0].getPoint();
-			const math::Point p2 = adjacent_nodes[1].getPoint();
+			const math::Point p1 = adjacent_nodes[0].point();
+			const math::Point p2 = adjacent_nodes[1].point();
 			const auto v1 = math::Vector3d(p1, p2).normalize();
 
 			const Face adjacentFace = currentEdge.get<Face>()[0];
