@@ -127,26 +127,32 @@ namespace gmds{
         math::Point FACCurve::closestPoint(const math::Point &AP) const
         {
 
-            double min_dist = 10000;
+            double min_dist = 1000000;
             TCellID  min_id = NullID;
-            for(unsigned int i=0; i<m_mesh_edges.size(); i++){
-                Edge e = m_support->get<Edge>(m_mesh_edges[i]);
+            for(auto e_id: m_mesh_edges){
+                Edge e = m_support->get<Edge>(e_id);
                 std::vector<Node> e_nodes = e.get<Node>();
                 math::Vector3d v1(e_nodes[0].getPoint(), e_nodes[1].getPoint());
                 math::Vector3d v2(e_nodes[0].getPoint(), AP);
                 double norm1 =v1.norm();
                 v1.normalize();
                 TCoord a = v1.dot(v2);
-                if((0<= a) && (a <=norm1)){
+                //if((0<= a) && (a <=norm1)){
                     math::Segment s01(e_nodes[0].getPoint(),e_nodes[1].getPoint());
                     double dist01= AP.distance(s01.project(AP));
                     if(dist01<min_dist) {
                         min_dist=dist01;
-                        min_id = m_mesh_edges[i];
+                        min_id = e_id;
                     }
-                }
+                //}
 
             }
+
+            //Warning, we could be unable to project
+            if(min_id==NullID){
+                return AP;
+            }
+
             Edge e = m_support->get<Edge>(min_id);
             std::vector<Node> e_nodes = e.get<Node>();
             math::Segment s(e_nodes[0].getPoint(),e_nodes[1].getPoint());

@@ -73,6 +73,20 @@ namespace gmds{
             GeomManager* geometry() {return m_geometry;}
             void setMesh(Mesh* AMesh);
 
+            /*------------------------------------------------------------------------*/
+            /**@brief For debug purpose, we write an output mesh with only the
+             *        classified cells (nodes, edge, faces) that are linked to points,
+             *        curves or surfaces. Each cell type will have two exported data
+             *        variable, which are classif_entity_dim and classify_entity_id.
+             *
+             *        As the exported mesh is an extraction of the initial mesh, we also
+             *        keep the reference id of each cell
+             *        Warning, the file must be a vtk file (.vtk)
+             *
+             * @param AFileName filename to store the mesh in vtk format
+             */
+            void writeVTKDebugMesh(const std::string AFileName);
+
             void setGeometry(GeomManager* AGeometry);
 
             /*------------------------------------------------------------------------*/
@@ -241,17 +255,17 @@ namespace gmds{
             Variable<int>* m_face_classification_id;
         };
 
-        template <> GeomMeshLinker::ELink GeomMeshLinker::getGeomDim<Node>(const TCellID &AN);
-        template <> GeomMeshLinker::ELink GeomMeshLinker::getGeomDim<Edge>(const TCellID &AN);
-        template <> GeomMeshLinker::ELink GeomMeshLinker::getGeomDim<Face>(const TCellID &AN);
+        template <> GMDSCad_API GeomMeshLinker::ELink GeomMeshLinker::getGeomDim<Node>(const TCellID &AN);
+        template <> GMDSCad_API GeomMeshLinker::ELink GeomMeshLinker::getGeomDim<Edge>(const TCellID &AN);
+        template <> GMDSCad_API GeomMeshLinker::ELink GeomMeshLinker::getGeomDim<Face>(const TCellID &AN);
 
-        template <> int GeomMeshLinker::getGeomId<Edge>(const TCellID &AN);
-        template <> int GeomMeshLinker::getGeomId<Node>(const TCellID &AN);
-        template <> int GeomMeshLinker::getGeomId<Face>(const TCellID &AN);
+        template <> GMDSCad_API int GeomMeshLinker::getGeomId<Edge>(const TCellID &AN);
+        template <> GMDSCad_API int GeomMeshLinker::getGeomId<Node>(const TCellID &AN);
+        template <> GMDSCad_API int GeomMeshLinker::getGeomId<Face>(const TCellID &AN);
 
-        template <> std::pair<GeomMeshLinker::ELink,int> GeomMeshLinker::getGeomInfo<Node>(const TCellID& AN);
-        template <> std::pair<GeomMeshLinker::ELink,int> GeomMeshLinker::getGeomInfo<Edge>(const TCellID& AN);
-        template <> std::pair<GeomMeshLinker::ELink,int> GeomMeshLinker::getGeomInfo<Face>(const TCellID& AN);
+        template <> GMDSCad_API std::pair<GeomMeshLinker::ELink,int> GeomMeshLinker::getGeomInfo<Node>(const TCellID& AN);
+        template <> GMDSCad_API std::pair<GeomMeshLinker::ELink,int> GeomMeshLinker::getGeomInfo<Edge>(const TCellID& AN);
+        template <> GMDSCad_API std::pair<GeomMeshLinker::ELink,int> GeomMeshLinker::getGeomInfo<Face>(const TCellID& AN);
 
 /*----------------------------------------------------------------------------*/
     } // namespace cad

@@ -771,10 +771,14 @@ void PointGenerator::extractPoints(){
     }
 
     Log::mng()<<"\t "<<m_points.size()
-    <<" points after filtering (eps="<<eps<<")"
-    <<" with spacing: "<<m_spacing<<" done\n";
+              <<" points after filtering (eps="<<eps<<")"
+              <<" with spacing: "<<m_spacing<<"and nb charts:"<<m_charts.size()<<" done\n";
     Log::mng().flush();
-    
+    std::cout<<"\t "<<m_points.size()
+              <<" points after filtering (eps="<<eps<<")"
+              <<" with spacing: "<<m_spacing<<"and nb charts:"<<m_charts.size()<<" done\n";
+    std::cout.flush();
+
 }
 /*---------------------------------------------------------------------------*/
 std::vector<Region>
