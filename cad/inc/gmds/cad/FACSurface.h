@@ -16,6 +16,8 @@
 #include <gmds/math/Triangle.h>
 #include "GMDSCad_export.h"
 /*----------------------------------------------------------------------------*/
+class ANNkd_tree;
+/*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
     namespace cad{
@@ -154,6 +156,18 @@ namespace gmds{
             void invertAllFaces();
             void invertFace(Face AFace);
 
+            /**@brief Reset the global id counter to 1.
+             */
+            static void resetIdCounter();
+        private:
+
+            /**@brief Build a ANN tree data structure to accelerate retrieval information
+             *        in the surface.
+             */
+            void buildANNTree();
+            TCellID getANNClosestTriangle(const math::Point& AP) const;
+
+
         private:
 
             /** the global mesh the surface is built on*/
@@ -171,6 +185,9 @@ namespace gmds{
             std::vector<GeomCurve*> m_adjacent_curves;
             /** volumes adjacent to this surface*/
             std::vector<GeomVolume*> m_adjacent_volumes;
+
+            /** kd tree structure used to make geometric queries faster*/
+            ANNkd_tree* m_kd_tree;
         };
 /*----------------------------------------------------------------------------*/
     } // namespace cad

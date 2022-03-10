@@ -246,7 +246,7 @@ void ISimplexMeshIOService::getDataFaces(DataID& ADataID,
             std::cout << "var_int" << std::endl;
             Variable<int>* v_vec = dynamic_cast<Variable<int>*> (current_var);
             IMeshIOService::DataInt data;
-            data.name = v_vec->getName();
+            data.name = v_vec->name();
             data.values.resize(ANbFaces);
             for(unsigned int tri = 1 ; tri < bitVecTri.capacity() ; tri++)
             {
@@ -315,7 +315,7 @@ void ISimplexMeshIOService::getDataRegions(DataID& ADataID,
           {
             Variable<double>* v_vec = dynamic_cast<Variable<double>*> (current_var);
             IMeshIOService::DataReal data;
-            data.name = v_vec->getName();
+            data.name = v_vec->name();
             data.values.resize(ANbCells);
             for(auto i_node : bitVecNode) {
                 data.values[i_node] = (*v_vec)[i_node];

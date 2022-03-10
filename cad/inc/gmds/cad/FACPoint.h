@@ -169,6 +169,9 @@ namespace gmds{
              */
             virtual std::vector<GeomVolume*>& volumes();
 
+            /**@brief Reset the global id counter to 1.
+             */
+            static void resetIdCounter();
         private:
 
             int m_id;
@@ -189,6 +192,8 @@ namespace gmds{
             std::vector<GeomSurface*> m_adjacent_surfaces;
             /** adjacent geometric volumes*/
             std::vector<GeomVolume*> m_adjacent_volumes;
+
+
         };
 /*----------------------------------------------------------------------------*/
     } // namespace cad

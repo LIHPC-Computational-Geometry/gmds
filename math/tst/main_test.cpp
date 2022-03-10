@@ -10,6 +10,7 @@
 #include <PointTestSuite.h>
 #include <QuaternionTestSuite.h>
 #include <OrientationTestSuite.h>
+#include <TransfiniteInterpolationTestSuite.h>
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

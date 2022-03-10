@@ -187,6 +187,10 @@ public:
      * @return volumes that are adjacent to this point
      */
     virtual std::vector<GeomVolume*>& volumes();
+
+    /**@brief Reset the global id counter to 1.
+     */
+    static void resetIdCounter();
 private:
 
     Mesh* m_support;
