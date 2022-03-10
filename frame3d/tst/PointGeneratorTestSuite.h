@@ -19,6 +19,10 @@
 #include <gmds/io/VTKWriter.h>
 #include <gmds/utils/Log.h>
 #include <unit_test_config.h>
+#include <chrono>
+using namespace std::chrono;
+
+
 using namespace gmds;
 
 
@@ -290,9 +294,14 @@ TEST(PointGeneratorTestSuite, test_hex_extraction)
                                ptg.pointSurfaceNumbering(),
                                ptg.pointSurfaceNormal());
     pcb.setDebugInfo(true);
+    auto start = high_resolution_clock::now();
     pcb.execute();
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    std::cout << "Hex structure: "<<duration.count() << std::endl;
     std::vector<std::vector<int> > hexes;
     pcb.getHexes(hexes);
+    std::cout<<"NB HEXES = "<<hexes.size()<<std::endl;
 
     ASSERT_EQ(200, hexes.size());
 }

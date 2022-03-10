@@ -45,7 +45,7 @@ namespace gmds
 
 
             /*return a vector of node that are in the cavity*/
-            const std::vector<TInt> &             nodeInCavity();
+            bool                                 nodeInCavity(const TInt node);
 
             const std::vector<TInt> &            getNodeInCavity(){return m_nodeInCavity;}
 
@@ -125,9 +125,11 @@ namespace gmds
           ~CavityOperator                    (){};
 
           bool cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexID>& initCavityCell, std::vector<TSimplexID>& initCavityTriangle, const simplicesNode::SimplicesNode& node,
-                                  const CriterionRAIS& criterion, const std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt, const std::vector<TSimplexID> markedSimplex);
+                                  const CriterionRAIS& criterion, const std::multimap<TInt, TInt>& facesAlreadyBuilt, const std::vector<TSimplexID> markedSimplex);
 
           //void cavityReduction(CavityIO& cavityIO, std::vector<TSimplexID>& initCavity, const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const CavityReduction& cavityReduction, const std::vector<TSimplexID> v = std::vector<TSimplexID>{});
+
+          void selectConnexTriangle(const TSimplexID& firstTriangle, const gmds::BitVector& triangleInCav, gmds::BitVector& connexTriangle);
 
           void fillSelectedIds(const std::vector<TSimplexID>& cavity);
 

@@ -6,18 +6,18 @@ using namespace hybrid;
 using namespace math;
 using namespace simplicesCell;
 using namespace simplicesTriangle;
-
+using namespace simplicesNode;
 /*---------------------------------------------------------------------------*/
 SimplicesTriangle::SimplicesTriangle()
 {
 
 }
-
+/*---------------------------------------------------------------------------*/
 SimplicesTriangle::~SimplicesTriangle()
 {
 
 }
-
+/*---------------------------------------------------------------------------*/
 SimplicesTriangle::SimplicesTriangle(SimplexMesh* simplexMesh, const TSimplexID indexTriangle)
 {
   if(simplexMesh->m_tri_ids[std::abs(indexTriangle)] != 0)

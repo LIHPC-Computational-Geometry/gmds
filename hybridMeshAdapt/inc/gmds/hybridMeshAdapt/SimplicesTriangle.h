@@ -17,6 +17,7 @@ namespace gmds
 
     namespace simplicesTriangle
     {
+
       class SimplicesTriangle
       {
       public:
@@ -31,7 +32,7 @@ namespace gmds
 
         double getAreaOfCell                      ();
 
-        TSimplexID neighborTriangle  (const TInt indexNodeLocal) const ;
+        TSimplexID neighborTriangle               (const TInt indexNodeLocal) const ;
 
         std::vector<TSimplexID> adjacentTriangle  () const ;
 
@@ -42,14 +43,14 @@ namespace gmds
 
         std::vector<unsigned int> nodes           () const;
 
-        std::vector<TInt> getNodes() const;
+        std::vector<TInt> getNodes                () const;
 
         /*triangles's normal are oriented outside the mesh*/
-        math::Vector3d    getNormal()  const;
+        math::Vector3d    getNormal               ()  const;
 
         std::vector<TSimplexID> neighborSimplex   () const ;
 
-        std::vector<TInt> otherNodesInTriangle                  (const SimplicesTriangle& simpliceTriangle) const ;
+        std::vector<TInt> otherNodesInTriangle    (const SimplicesTriangle& simpliceTriangle) const ;
 
         std::vector<TInt> getOtherNodeInSimplex   (const std::vector<TInt>& v) const;
 
@@ -88,7 +89,6 @@ namespace gmds
         SimplexMesh* m_simplex_mesh          = nullptr;
 
         TSimplexID  m_simplexId             = -1;
-
       };
     }
   }

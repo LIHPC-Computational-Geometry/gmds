@@ -31,7 +31,7 @@ namespace gmds
           PointInsertion();
 
           PointInsertion(SimplexMesh* simplexMesh, const simplicesNode::SimplicesNode& simpliceNode, const CriterionRAIS& criterion, bool& status,const  std::vector<TSimplexID>& initialCavity,const gmds::BitVector& markedNodes,
-                         std::vector<TInt>& deletedNodes, const std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt, std::vector<TSimplexID> markedSimplex = {});
+                         std::vector<TInt>& deletedNodes, const std::multimap<TInt, TInt>& facesAlreadyBuilt, std::vector<TSimplexID> markedSimplex = {});
 
           ~PointInsertion(){};
 

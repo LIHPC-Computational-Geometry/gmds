@@ -51,7 +51,7 @@ if(WITH_TEST)
     include(GoogleTest)
     set(TEST_SAMPLES_DIR "${CMAKE_SOURCE_DIR}/test_samples")
 
-    configure_file( 
+    configure_file(
             unit_test_config.h.in
             unit_test_config.h
             @ONLY)
@@ -324,7 +324,7 @@ add_subdirectory(sheet)
 set(LIB_GMDS_SERVICES GMDSServices)
 add_subdirectory(services)
 
-add_subdirectory(pygmds)
+#add_subdirectory(pygmds)
 #==============================================================================
 list(LENGTH GMDS_ACTIVE_COMPONENTS count)
 math(EXPR count "${count}-1")

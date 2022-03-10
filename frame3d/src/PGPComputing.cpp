@@ -14,9 +14,6 @@
 // OpenNL File Headers
 #include "OpenNL_psm.h"
 /*----------------------------------------------------------------------------*/
-// ANN File Headers
-#include "ANN/ANN.h"
-/*----------------------------------------------------------------------------*/
 // STL File Headers
 #include <set>
 #include <algorithm>
