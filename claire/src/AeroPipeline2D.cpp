@@ -423,7 +423,6 @@ void AeroPipeline2D::InitialisationMeshParoi(){
 
 		// Si le noeud est sur un sommet
 		if ( m_mesh->isMarked<Node>(n2_id, markPointNodes) || l >= Lmax ){
-			std::cout << "test " << l << std::endl;
 			Node n2 = m_mesh->get<Node>(n2_id);
 			n1_quad = m_meshGen->newNode(n2.point());
 			Edge e = m_meshGen->newEdge(n0_quad, n1_quad);
