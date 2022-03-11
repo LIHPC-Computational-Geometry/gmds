@@ -86,6 +86,11 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	 */
 	bool isQuadCreated(Node n0, Node n1, Node n2);
 	/*----------------------------------------------------------------------------*/
+	/** @brief Retourne la longueur d'un bord (périmètre) à partir d'un noeud au
+	 * hasard
+	 */
+	double computeBoundaryLength(Node n0);
+	/*----------------------------------------------------------------------------*/
  protected:
 	/** mesh we work on */
 	Mesh m_m;

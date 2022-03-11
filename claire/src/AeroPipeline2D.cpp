@@ -59,8 +59,7 @@ void AeroPipeline2D::execute(){
 	//InitialisationMeshGen();
 	InitialisationMeshParoi();
 
-	GenerationCouche(1, 0.05);
-	GenerationCouche(2, 1);
+	GenerationCouche(1, 1);
 
 	EcritureMaillage(m_meshGen);
 
@@ -390,18 +389,24 @@ void AeroPipeline2D::InitialisationMeshParoi(){
 	}
 
 	// Initialisation des longueurs pour définir les sommets de blocs
-	double Lmax(0.5);
+	Node n0 = m_mesh->get<Node>(n0_id);
+	double perim = computeBoundaryLength(n0);		// Calcul du périmètre du bord regardé
+	int NbrSommetsBloc(8);
+	double Lmax = perim/NbrSommetsBloc;
 	double l(0);
+	std::cout << "Périmètre : " << perim << std::endl ;
+	std::cout << "Limite taille bloc : " << Lmax << std::endl;
+
 
 	// Parcours du bord de proche en proche en passant par l'opposé
 	TCellID n1_id = n0_id;
 	TCellID n2_id = NullID;
-	Node n0 = m_mesh->get<Node>(n0_id);
 	std::vector<Edge> adj_edges = n0.get<Edge>();
 	for (auto e:adj_edges){
 		Node ne = e.getOppositeNode(n0);
 		if ( m_mesh->isMarked<Node>(ne.id(), m_markFrontNodesParoi) ){
 			n2_id = ne.id();
+			l = e.length();
 		}
 	}
 
@@ -412,10 +417,13 @@ void AeroPipeline2D::InitialisationMeshParoi(){
 	TCellID n0_quad_id = nstart_quad_id;
 	TCellID n1_quad_id = NullID;
 
+	std::cout << "First node : " << n0_quad.point() << std::endl ;
+
 	while (n2_id != n0_id){
 
 		// Si le noeud est sur un sommet
-		if ( m_mesh->isMarked<Node>(n2_id, markPointNodes) || l > Lmax ){
+		if ( m_mesh->isMarked<Node>(n2_id, markPointNodes) || l >= Lmax ){
+			std::cout << "test " << l << std::endl;
 			Node n2 = m_mesh->get<Node>(n2_id);
 			n1_quad = m_meshGen->newNode(n2.point());
 			Edge e = m_meshGen->newEdge(n0_quad, n1_quad);
@@ -424,9 +432,11 @@ void AeroPipeline2D::InitialisationMeshParoi(){
 			n1_quad.add<Edge>(e);
 			// Mise à jour du noeud n0
 			n0_quad = n1_quad;
-			n0_quad_id = n0_quad.id();
-			// On remet l à 0
-			l = 0;
+			n0_quad_id = n1_quad.id();
+			std::cout << "l = " << l << std::endl;
+			std::cout << "pos : " << n2.point() << std::endl;
+			std::cout << "pos quad : " << n1_quad.point() << std::endl;
+			l = 0;	// On remet l à 0
 		}
 
 		// On cherche le prochain noeud
@@ -441,6 +451,7 @@ void AeroPipeline2D::InitialisationMeshParoi(){
 				l = l + e.length();
 			}
 		}
+		//std::cout << "l = " << l << std::endl;
 	}
 
 	// Ajout de la dernière arête pour fermer le blocking du bord
@@ -603,5 +614,45 @@ bool AeroPipeline2D::isQuadCreated(Node n0, Node n1, Node n2){
 	}
 
 	return exist;
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+double AeroPipeline2D::computeBoundaryLength(Node n0){
+	double length(0.0);
+
+	// Parcours du bord de proche en proche en passant par l'opposé
+	TCellID n0_id = n0.id();
+	TCellID n1_id = n0_id;
+	TCellID n2_id = NullID;
+	std::vector<Edge> adj_edges = n0.get<Edge>();
+	bool oppfind(false);
+	for (auto e:adj_edges){
+		Node ne = e.getOppositeNode(n0);
+		if ( m_mesh->isMarked<Node>(ne.id(), m_markFrontNodesParoi) && !oppfind ){
+			oppfind = true;
+			length += e.length();
+			n2_id = ne.id();
+		}
+	}
+
+	while (n2_id != n0_id){
+
+		// On cherche le prochain noeud
+		TCellID n_old_id = n1_id;
+		n1_id = n2_id;
+		Node n2 = m_mesh->get<Node>(n2_id);
+		adj_edges = n2.get<Edge>();
+		for (auto e:adj_edges){
+			Node ne = e.getOppositeNode(n2);
+			if ( m_mesh->isMarked<Node>(ne.id(), m_markFrontNodesParoi) && ne.id() != n_old_id ){
+				n2_id = ne.id();
+				length += e.length();
+			}
+		}
+	}
+
+	return length;
 }
 /*------------------------------------------------------------------------*/

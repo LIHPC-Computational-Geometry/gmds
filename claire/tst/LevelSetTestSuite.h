@@ -1032,3 +1032,125 @@ TEST(LevelSetTestClass, LevelSet_Cvg_2D_Test3)
 	stream.close();
 
 }
+
+TEST(LevelSetTestClass, LevelSet_Cvg_2D_Test4)
+{
+	std::string dir(TEST_SAMPLES_DIR);
+
+	std::vector<std::string> liste_fichiers_vtk;
+	liste_fichiers_vtk.push_back(dir+"/Aero/C1_2D_0.5.vtk");
+	liste_fichiers_vtk.push_back(dir+"/Aero/C1_2D_0.25.vtk");
+	liste_fichiers_vtk.push_back(dir+"/Aero/C1_2D_0.15.vtk");
+	liste_fichiers_vtk.push_back(dir+"/Aero/C1_2D_0.1.vtk");
+	liste_fichiers_vtk.push_back(dir+"/Aero/C1_2D_0.075.vtk");
+	liste_fichiers_vtk.push_back(dir+"/Aero/C1_2D_0.05.vtk");
+	liste_fichiers_vtk.push_back(dir+"/Aero/C1_2D_0.025.vtk");	// Trop fin
+	//liste_fichiers_vtk.push_back(dir+"/Aero/C1_2D_0.01.vtk"); // Trop fin
+
+	// First, we create the file where we are going to store the info
+	std::ofstream stream= std::ofstream("LSCombinedCvC12D.table", std::ios::out);
+	//set the numerical precision (number of digits)
+	stream.precision(15);
+	//Header indicating which type of file it is
+	stream << "SqrtNbrNoeuds NbrNoeuds ExtendedL2 \n";
+
+	for(int i=0;i<liste_fichiers_vtk.size();i++) {
+		std::cout << "-----------------------------" << std::endl;
+		std::cout << "-----------------------------" << std::endl;
+		std::cout << "|         Maillage : " << i+1 << "      |" << std::endl;
+		std::cout << "-----------------------------" << std::endl;
+
+		// WE READ
+		gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+		                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
+
+		std::string vtk_file = liste_fichiers_vtk[i];
+
+		gmds::IGMeshIOService ioService(&m);
+		gmds::VTKReader vtkReader(&ioService);
+		vtkReader.setCellOptions(gmds::N | gmds::F);
+		vtkReader.read(vtk_file);
+
+		gmds::MeshDoctor doc(&m);
+		doc.buildEdgesAndX2E();
+		doc.updateUpwardConnectivity();
+
+		// Get the boundary node ids
+		BoundaryOperator2D bnd_op(&m);
+		std::vector<TCellID> bnd_node_ids;
+		bnd_op.getBoundaryNodes(bnd_node_ids);
+
+		double err = pow(10, -6);
+		Variable<double> *var_dist_Comb = m.newVariable<double, GMDS_NODE>("GMDS_Distance");
+		Variable<double> *var_dist_Int = m.newVariable<double, GMDS_NODE>("GMDS_Distance_Int");
+		Variable<double> *var_dist_Out = m.newVariable<double, GMDS_NODE>("GMDS_Distance_Out");
+		Variable<double> *var_dist_Exacte = m.newVariable<double, GMDS_NODE>("GMDS_Distance_Exacte");
+
+		int markFrontNodesInt = m.newMark<gmds::Node>();
+		int markFrontNodesOut = m.newMark<gmds::Node>();
+		double rayon_int(0.5);
+		double rayon_ext(2.0);
+		for (auto id : bnd_node_ids) {
+			Node n = m.get<Node>(id);
+			double coord_y = n.Y();
+			double coord_x = n.X();
+			if (abs(sqrt(pow(coord_x, 2) + pow(coord_y, 2)) - rayon_ext) < err) {
+				m.mark<Node>(id, markFrontNodesOut);
+			}
+			if (abs(sqrt(pow(coord_x, 2) + pow(coord_y, 2)) - rayon_int) < err) {
+				m.mark<Node>(id, markFrontNodesInt);
+			}
+		}
+		std::cout << "-> Fin initialisation bords" << std::endl;
+
+		LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut,
+		                            m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
+		                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+		                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
+		LevelSetCombined::STATUS result = lsCombined.execute();
+
+		double err_nL1(0);
+		double err_nL2(0);
+		double err_max(0);
+
+		double sum_dist_exacte(0);
+		int nbr_noeuds(0);
+		for (auto n_id : m.nodes()) {
+			Node n = m.get<Node>(n_id);
+			math::Point P = n.point();
+			double dist_exacte_int =	sqrt(pow(P.X(), 2) + pow(P.Y(), 2)) - rayon_int ;
+			double dist_exacte_ext = rayon_ext - sqrt(pow(P.X(), 2) + pow(P.Y(), 2)) ;
+			double dist_exacte = dist_exacte_int/(dist_exacte_int + dist_exacte_ext);
+			var_dist_Exacte->set(n_id, dist_exacte);
+			sum_dist_exacte += pow(dist_exacte, 2);
+			// Erreur en norme L2
+			err_nL2 += pow(dist_exacte - var_dist_Comb->value(n_id), 2);
+			// Erreur max
+			double err_loc = abs(dist_exacte - var_dist_Comb->value(n_id)) / abs(dist_exacte);
+			if (err_loc > err_max && (var_dist_Comb->value(n_id) > err)) {
+				err_max = err_loc;
+			}
+			nbr_noeuds++;
+		}
+		err_nL2 = sqrt(err_nL2 / sum_dist_exacte);
+
+		// Ecriture des erreurs dans le fichier
+		stream << sqrt(nbr_noeuds) << " " << nbr_noeuds << " " <<  err_nL2 << "\n";
+
+		m.unmarkAll<Node>(markFrontNodesInt);
+		m.freeMark<Node>(markFrontNodesInt);
+		m.unmarkAll<Node>(markFrontNodesOut);
+		m.freeMark<Node>(markFrontNodesOut);
+
+		gmds::VTKWriter vtkWriter(&ioService);
+		vtkWriter.setCellOptions(gmds::N | gmds::F);
+		vtkWriter.setDataOptions(gmds::N | gmds::F);
+		vtkWriter.write("LevelSet_Cvg_2D_Test2_Result.vtk");
+
+		ASSERT_EQ(LevelSetCombined::SUCCESS, result);
+
+	}
+
+	stream.close();
+
+}
