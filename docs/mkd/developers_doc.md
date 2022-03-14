@@ -1,4 +1,4 @@
-#Developer documentation
+# Developer documentation
 
 Once a component created, we use a [github workflow](git_workflow.md) in order to structure the code development. 
 We also intensively use [unit tests](unit_testing.md) to valid our codes and also to perform code coverage when we merge developments.
