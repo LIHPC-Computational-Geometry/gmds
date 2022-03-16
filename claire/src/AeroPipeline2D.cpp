@@ -379,8 +379,8 @@ void AeroPipeline2D::InitialisationMeshParoi(){
 	}
 
 	// Si le maillage ne comporte pas de sommet, alors, on prend un noeud au hasard
+	double x_min = std::numeric_limits<double>::max();
 	if (n0_id==NullID) {
-		double x_min = std::numeric_limits<double>::max();
 		for (auto n_it = m_mesh->nodes_begin(); n_it != m_mesh->nodes_end() && (n0_id == NullID); ++n_it) {
 			TCellID n_id = *n_it;
 			Node n = m_mesh->get<Node>(n_id);
@@ -424,8 +424,11 @@ void AeroPipeline2D::InitialisationMeshParoi(){
 
 	while (n2_id != n0_id){
 
+		Node n_test = m_mesh->get<Node>(n2_id);
+		math::Point p2 = n_test.point();
+
 		// Si le noeud est sur un sommet
-		if ( m_mesh->isMarked<Node>(n2_id, markPointNodes) || l >= Lmax || abs(l-Lmax) <= pow(10,-6) ){
+		if ( m_mesh->isMarked<Node>(n2_id, markPointNodes) || l >= Lmax || abs(l-Lmax) <= pow(10,-6) || abs(p2.X() - x_min) <= pow(10,-6) ){
 			Node n2 = m_mesh->get<Node>(n2_id);
 			n1_quad = m_meshGen->newNode(n2.point());
 			Edge e = m_meshGen->newEdge(n0_quad, n1_quad);
