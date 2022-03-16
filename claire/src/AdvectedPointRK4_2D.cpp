@@ -38,7 +38,7 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 	Eigen::Matrix3d Mat_A_Inv;
 
 	// Initialisation
-	TCellID face_id = inWhichTriangle(m_Pstart) ;		// Dans quel triangle est le point de départ
+	TCellID face_id = inWhichTriangle(m_Pstart, NullID) ;		// Dans quel triangle est le point de départ
 	Mat_A_Inv = getInvMatrixA(face_id);
 	dist = interpolationDistance(face_id, Mat_A_Inv, m_Pstart);	// A quelle distance est le point de départ
 	Grad = interpolationGradient(face_id, Mat_A_Inv, m_Pstart);	// Quel est le gradient à ce point
@@ -53,7 +53,7 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 		//std::cout << "-------- ITERATION " << iterations << " ---------" << std::endl;
 		math::Point M = RungeKutta4(m_Pend, Grad.normalize(), dt);	// Calcule la position du point à l'itération n+1 avec un RK4
 		// On vérifie ensuite si cette position est "valide"
-		face_id = inWhichTriangle(M) ;
+		face_id = inWhichTriangle(M, face_id) ;
 
 		// Si le noeud M calculé est bien dans le maillage,
 		// alors on regarde la distance et le gradient.
@@ -88,7 +88,7 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 
 	// Pour le noeud Pend, calcule de la distance finale.
 	// Normalement, il n'y en a pas besoin, mais c'est pour l'affichage.
-	face_id = inWhichTriangle(m_Pend) ;
+	face_id = inWhichTriangle(m_Pend, face_id) ;
 	Mat_A_Inv = getInvMatrixA(face_id);
 	dist = interpolationDistance(face_id, Mat_A_Inv, m_Pend);
 	/*
@@ -141,9 +141,43 @@ bool AdvectedPointRK4_2D::isInTriangle(TCellID face_id, math::Point M){
 
 
 /*------------------------------------------------------------------------*/
-TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M){
+TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M, TCellID f0_id){
 	TCellID face_id;
 	bool isInFace(false);
+
+	// Si un f0_id a été donné en entrée, on regarde dans les triangles voisins à
+	// celui ci si M y est, avant de regarder sur la totalité du maillage
+	if (f0_id != NullID){
+		// On regarde quels sont les faces voisines de la face r0_id
+		std::vector<TCellID> adjacent_faces;
+		Face f0 = m_mesh->get<Face>(f0_id);
+		std::vector<Node> face_nodes = f0.get<Node>();
+		for (auto n:face_nodes){
+			std::vector<Face> node_faces = n.get<Face>();
+			for (auto f1:node_faces){
+				bool alreadyinvector(false);
+				for (auto fv_id:adjacent_faces){
+					if(f1.id() == fv_id){
+						alreadyinvector = true;
+					}
+				}
+				if (!alreadyinvector) {
+					adjacent_faces.push_back(f1.id());
+				}
+			}
+		}
+		// On regarde si le point M est dans un des triangles
+		for (auto f_adj_id:adjacent_faces){
+			if(!isInFace){
+				isInFace = isInTriangle(f_adj_id, M);
+				if(isInFace){
+					face_id = f_adj_id;
+				}
+			}
+		}
+	}
+
+
 
 	for(auto f_it = m_mesh->faces_begin(); f_it!= m_mesh->faces_end() && !isInFace;++f_it){
 		TCellID f_id = *f_it;

@@ -49,7 +49,7 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_2D
 	/*-------------------------------------------------------------------*/
 	/** @brief Return in which triangle M is
 	 */
-	TCellID inWhichTriangle(math::Point M);
+	TCellID inWhichTriangle(math::Point M, TCellID f0_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Compute the minimal edge's lenght
 	 */

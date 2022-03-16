@@ -159,7 +159,7 @@ TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point M, TCellID r0_id){
 	// Si un r0_id a été donné en entrée, on regarde dans les tétras voisins à
 	// celui ci si M y est, avant de regarder sur la totalité du maillage
 	if (r0_id != NullID){
-		// On regarde quels sont les régions voisines de la région r0_id
+		// On regarde quelles sont les régions voisines de la région r0_id
 		std::vector<TCellID> adjacent_regions;
 		Region r0 = m_mesh->get<Region>(r0_id);
 		std::vector<Node> region_nodes = r0.get<Node>();
