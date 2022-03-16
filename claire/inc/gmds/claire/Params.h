@@ -47,6 +47,8 @@ namespace gmds {
         std::string output_file;
         /** Output directory */
         std::string output_dir;
+	     /** Nombre mini de blocs */
+        int nbrMinBloc;
     };
 /*------------------------------------------------------------------------*/
 }
