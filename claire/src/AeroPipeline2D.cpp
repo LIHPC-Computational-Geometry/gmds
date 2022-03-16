@@ -52,7 +52,7 @@ void AeroPipeline2D::execute(){
 
 	// Calcul du gradient du champ de Level Set
 	m_mesh->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-	LeastSquaresGradientComputation grad2D(m_mesh, m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	LeastSquaresGradientComputation grad2D(m_mesh, m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
 	                                       m_mesh->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	grad2D.execute();
 
@@ -120,7 +120,7 @@ void AeroPipeline2D::EcritureMaillage(Mesh* p_mesh){
 	gmds::VTKWriter vtkWriter2(&ioService);
 	vtkWriter2.setCellOptions(gmds::N|gmds::F);
 	vtkWriter2.setDataOptions(gmds::N|gmds::F);
-	vtkWriter2.write("AeroPipeline2D_Test1_Triangles.vtk");
+	vtkWriter2.write("AeroPipeline2D_Triangles.vtk");
 
 }
 /*------------------------------------------------------------------------*/
@@ -380,10 +380,14 @@ void AeroPipeline2D::InitialisationMeshParoi(){
 
 	// Si le maillage ne comporte pas de sommet, alors, on prend un noeud au hasard
 	if (n0_id==NullID) {
+		double x_min = std::numeric_limits<double>::max();
 		for (auto n_it = m_mesh->nodes_begin(); n_it != m_mesh->nodes_end() && (n0_id == NullID); ++n_it) {
 			TCellID n_id = *n_it;
-			if (m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi)) {
+			Node n = m_mesh->get<Node>(n_id);
+			math::Point p = n.point();
+			if (m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) && p.X() < x_min ) {
 				n0_id = n_id;
+				x_min = p.X();
 			}
 		}
 	}
@@ -391,8 +395,7 @@ void AeroPipeline2D::InitialisationMeshParoi(){
 	// Initialisation des longueurs pour définir les sommets de blocs
 	Node n0 = m_mesh->get<Node>(n0_id);
 	double perim = computeBoundaryLength(n0);		// Calcul du périmètre du bord regardé
-	int NbrSommetsBloc(8);
-	double Lmax = perim/NbrSommetsBloc;
+	double Lmax = perim/ m_params.nbrMinBloc ;
 	double l(0);
 	std::cout << "Périmètre : " << perim << std::endl ;
 	std::cout << "Limite taille bloc : " << Lmax << std::endl;
@@ -422,7 +425,7 @@ void AeroPipeline2D::InitialisationMeshParoi(){
 	while (n2_id != n0_id){
 
 		// Si le noeud est sur un sommet
-		if ( m_mesh->isMarked<Node>(n2_id, markPointNodes) || l >= Lmax ){
+		if ( m_mesh->isMarked<Node>(n2_id, markPointNodes) || l >= Lmax || abs(l-Lmax) <= pow(10,-6) ){
 			Node n2 = m_mesh->get<Node>(n2_id);
 			n1_quad = m_meshGen->newNode(n2.point());
 			Edge e = m_meshGen->newEdge(n0_quad, n1_quad);
@@ -432,9 +435,9 @@ void AeroPipeline2D::InitialisationMeshParoi(){
 			// Mise à jour du noeud n0
 			n0_quad = n1_quad;
 			n0_quad_id = n1_quad.id();
-			std::cout << "l = " << l << std::endl;
-			std::cout << "pos : " << n2.point() << std::endl;
-			std::cout << "pos quad : " << n1_quad.point() << std::endl;
+			//std::cout << "l = " << l << std::endl;
+			//std::cout << "pos : " << n2.point() << std::endl;
+			//std::cout << "pos quad : " << n1_quad.point() << std::endl;
 			l = 0;	// On remet l à 0
 		}
 
