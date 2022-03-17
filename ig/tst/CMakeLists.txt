@@ -1,6 +1,7 @@
 add_executable(GMDS_IG_TEST
         BooleanMarkTestSuite.h
         Blocking2DTestSuite.h
+        EdgeTestSuite.h
         MeshTestSuite.h
         MeshDoctorTestSuite.h
         main_test.cpp)
