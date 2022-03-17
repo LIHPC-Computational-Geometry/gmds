@@ -232,7 +232,23 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           }
 
 
-
+          /*if(simpliceNode.getGlobalNode() == 271729){
+            //simplexMesh->deleteAllSimplicesBut(cavityIO.cellInCavity());
+            for(auto const & triangleConnectedToP : cavityIO.getTrianglesConnectedToPInCavity())
+            {
+              std::cout << "triangleConnectedToP to delete --> " << SimplicesTriangle(simplexMesh, -triangleConnectedToP) << std::endl;
+            }
+            for(auto const & triangleNotConnectedToP : cavityIO.getTrianglesNotConnectedToPInCavity())
+            {
+              std::cout << "triangleNotConnectedToP --> " << SimplicesTriangle(simplexMesh, -triangleNotConnectedToP) << std::endl;
+            }
+            gmds::ISimplexMeshIOService ioService0(simplexMesh);
+            gmds::VTKWriter vtkWriter0(&ioService0);
+            vtkWriter0.setCellOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriter0.setDataOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriter0.write("MESH_BUG_" + std::to_string(simpliceNode.getGlobalNode()) + ".vtk");
+            throw gmds::GMDSException("OKOK");
+          }*/
           //SimplexMesh beforeBugMesh = *simplexMesh;
           //deleteThe simplexin the cavity
           for(auto const & simplexInCavity : cavityIO.cellInCavity())
@@ -251,6 +267,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             //std::cout << "triangleConnectedToP to delete --> " << SimplicesTriangle(simplexMesh, -triangleConnectedToP) << std::endl;
             simplexMesh->deleteTriangle(triangleConnectedToP);
           }
+
 
           //If the node is on ridge update edgeStructure
           unsigned int label = (*BND_CURVE_COLOR)[simpliceNode.getGlobalNode()];
@@ -348,7 +365,30 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
 
               if(iteratorsToReconnect.size() == 1 || iteratorsToReconnect.size() > 2)
               {
-                throw gmds::GMDSException("iteratorsToReconnect.size() PROBLEM");
+                //Problem de structure invalide mais impossible aprevoir (voir node 286 mesh S23.vtk) 
+                //if DEBUG
+                /*std::cout << "EDGE STRUCTURE BEFORE MODIFICATION FAILED" << std::endl;
+                for(auto const dataBis : edgeStructureCopy)
+                {
+                  std::cout << "data --> " << dataBis.first << " | [" << dataBis.second.first << " : " << dataBis.second.second << "]" << std::endl;
+                }
+                for(auto const itr : iteratorsToReconnect)
+                {
+                  std::cout << "iteratorsToReconnect --> " << itr->second.first << " | " << itr->second.second << std::endl;
+                }
+                std::cout << std::endl;
+
+                SimplexMesh nodeMesh = SimplexMesh();
+                nodeMesh.addNode(simpliceNode.getCoords()[0], simpliceNode.getCoords()[1], simpliceNode.getCoords()[2]);
+                nodeMesh.addTetraedre(0, 0, 0, 0);
+                gmds::ISimplexMeshIOService ioService(&nodeMesh);
+                gmds::VTKWriter vtkWriter(&ioService);
+                vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
+                vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
+                vtkWriter.write("NODE_" + std::to_string(simpliceNode.getGlobalNode()) + ".vtk");
+
+                std::cout << "iteratorsToReconnect.size() -- > " << iteratorsToReconnect.size() << std::endl;
+                throw gmds::GMDSException("iteratorsToReconnect.size() PROBLEM");*/
               }
               else
               {

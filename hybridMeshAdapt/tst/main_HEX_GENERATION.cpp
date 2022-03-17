@@ -317,7 +317,6 @@ int main(int argc, char* argv[])
       }
     }
     std::cout << "HEX 2 TET DONE " << std::endl;
-
     if(faceBuiltTmp == faceBuildCpt || faceBuiltTmp == 0)
     {
       break;

@@ -307,17 +307,32 @@ void CavityOperator::CavityIO::CavityIO::nodesReconnection(const TInt node)
 
           if(!flag)
           {
-            //if DEBUG
             for(auto const borderSurface : m_borderSurfaceNode)
             {
-              bool flag = false ;
               TInt tmpNodeA = borderSurface.front();
               TInt tmpNodeB = borderSurface.back();
               std::cout << "tmpNodeA -> " << tmpNodeA << std::endl;
               std::cout << "tmpNodeB -> " << tmpNodeB << std::endl;
+              const std::vector<TSimplexID>&& shell = SimplicesNode(m_simplex_mesh, tmpNodeA).shell(SimplicesNode(m_simplex_mesh, tmpNodeB));
+              for(auto const simplex : shell)
+              {
+                  if(simplex < 0)
+                  {
+                    std::cout << "triangle -> " << simplex << std::endl;
+                    std::cout << SimplicesTriangle(m_simplex_mesh, -simplex) << std::endl;
+
+                  }
+              }
               std::cout << std::endl;
             }
-            m_simplex_mesh->deleteAllSimplicesBut(/*shell*/m_cavityCellIn);
+
+            gmds::ISimplexMeshIOService ioService0(m_simplex_mesh);
+            gmds::VTKWriter vtkWriter0(&ioService0);
+            vtkWriter0.setCellOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriter0.setDataOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriter0.write("MESH_BUG_" + std::to_string(node) + ".vtk");
+
+            m_simplex_mesh->deleteAllSimplicesBut(m_cavityCellIn);
             gmds::ISimplexMeshIOService ioService(m_simplex_mesh);
             gmds::VTKWriter vtkWriter(&ioService);
             vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
@@ -662,7 +677,9 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       const std::vector<TSimplexID> shell = SimplicesNode(m_simplex_mesh, e.node0).shell(SimplicesNode(m_simplex_mesh, e.node1));
       std::vector<TSimplexID> firstTriangles{};
       for(auto const simplex : shell){if(simplex < 0){firstTriangles.push_back(-simplex);}}
+      /////////////////////////
 
+      ///////////////////////////
       if(firstTriangles.size() != 2){
 
         for(auto const data : edgeStructure)
@@ -733,9 +750,11 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         firstTriangles.push_back(selectedTriangle);
       }
 
+
       if(firstTriangles.size() == 0){
         return false; //the node was not find on any triangle surface (due to epsilon)
       }
+
       for(auto const & triangle : firstTriangles){
         selectConnexTriangle(triangle, triBitVector, indexedTriangle);
       }
@@ -782,9 +801,13 @@ void CavityOperator::selectConnexTriangle(const TSimplexID& firstTriangle, const
     connexTriangle.assign(firstTriangle);
     Variable<int>* BND_TRIANGLES = nullptr;
     Variable<int>* BND_CURVE_COLOR = nullptr;
+    Variable<int>* BND_VERTEX_COLOR = nullptr;
+    Variable<int>* BND_SURFACE_COLOR = nullptr;
     try{
         BND_TRIANGLES = m_simplex_mesh->getVariable<int,SimplicesTriangle>("BND_TRIANGLES");
         BND_CURVE_COLOR = m_simplex_mesh->getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+        BND_VERTEX_COLOR = m_simplex_mesh->getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+        BND_SURFACE_COLOR = m_simplex_mesh->getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
     }catch(gmds::GMDSException e)
     {
       throw gmds::GMDSException(e);
@@ -807,7 +830,8 @@ void CavityOperator::selectConnexTriangle(const TSimplexID& firstTriangle, const
       {
         if(edge.front() != border && edge.back() != border)
         {
-          if(!((*BND_CURVE_COLOR)[edge.front()] != 0 && (*BND_CURVE_COLOR)[edge.back()] != 0 && (*BND_CURVE_COLOR)[edge.front()] == (*BND_CURVE_COLOR)[edge.back()]))
+          if(((*BND_SURFACE_COLOR)[edge.front()] != 0 || (*BND_SURFACE_COLOR)[edge.back()] != 0) ||
+            ((*BND_CURVE_COLOR)[edge.front()] != (*BND_CURVE_COLOR)[edge.back()] && (*BND_CURVE_COLOR)[edge.front()] != 0 && (*BND_CURVE_COLOR)[edge.back()] != 0))
           {
             const TSimplexID triangle = adjSimplex[idx];
             if(indexTriangle == (*BND_TRIANGLES)[triangle] && triangleInCav[triangle] == 1)

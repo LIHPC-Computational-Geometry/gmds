@@ -1499,6 +1499,7 @@ void SimplexMesh::buildSimplexHull()
       }
       else
       {
+        std::cout << "nodes --> " << nodes[0] << " | " << nodes[1] << " | " << nodes[2] << " | " << std::endl;
         throw gmds::GMDSException("dimMax == VOLUME, triangle is inside the volume");
       }
     }
@@ -4150,8 +4151,6 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
       unsigned int localNodeforTriangle  = localsInfoForTriangles[faceIter][lN];
       TSimplexID oppositeTriangle        = -oppositeTriangles[faceIter][lN];
 
-      //std::cout << "localNodeforTriangle -> " << localNodeforTriangle << std::endl;
-      //std::cout << "oppositeTrianle -> " << oppositeTriangle << std::endl;
       if(localNodeforTriangle != border)
       {
         TInt nodeB = face[(localNodeforTriangle + 1) % sizeFace];
@@ -4175,12 +4174,12 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
           }
           else
           {
-            GMDSException("localnode >= 3");
+            throw GMDSException("localnode >= 3");
           }
         }
         else
         {
-          GMDSException("oppoNode.size() != 1");
+          throw GMDSException("oppoNode.size() != 1");
         }
 
         hash_edge[nodeA].push_back(-triangle);
@@ -4224,7 +4223,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
     }
     else
     {
-      GMDSException("pair.second.size() != 2");
+      throw GMDSException("pair.second.size() != 2");
     }
   }
 
@@ -4265,7 +4264,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
     if(simplexId == border){continue;}
     if(face.size() == 0)
     {
-      return;
+      throw gmds::GMDSException("face.size() == 0");
     }
 
     for(unsigned int node = 0 ; node < face.size(); node++)
@@ -4296,7 +4295,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
     }
   }
 
-  //correction of the cavity if plane tetraedron is was build by reinsertion of node for example
+  //correction of the cavity if plane tetraedron  was build by reinsertion of node for example
   for(unsigned int cellIdx = 0 ; cellIdx < tetIdToBuildInfo.size() ; cellIdx++)
   {
     const TSimplexID simplex      =  tetIdToBuildInfo[cellIdx];
@@ -4328,8 +4327,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
             }
             else
             {
-              GMDSException("othersNode0.size() != 1 || othersNode1.size() == 1");
-
+              throw GMDSException("othersNode0.size() != 1 || othersNode1.size() == 1");
             }
           }
           else
@@ -4345,7 +4343,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
               }
               else
               {
-                GMDSException("othersNode.size() != 1");
+                throw GMDSException("othersNode.size() != 1");
               }
             }
           }
@@ -4384,7 +4382,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
           }
           else
           {
-            GMDSException("othersNode0.size() != 1 || othersNode1.size() == 1");
+            throw GMDSException("othersNode0.size() != 1 || othersNode1.size() == 1");
           }
           m_tri_ids.unselect(-simplex);
         }
