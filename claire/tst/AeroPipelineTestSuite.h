@@ -28,7 +28,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.input_file=dir+"/Aero/C11_2D_0.01.vtk";
 	params_aero.output_file="AeroPipeline2D_Quad.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
-	params_aero.nbrMinBloc=8;
+	params_aero.nbrMinBloc=16;
 
 	AeroPipeline2D algo_aero2D(params_aero);
 	algo_aero2D.execute();

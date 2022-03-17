@@ -1154,3 +1154,436 @@ TEST(LevelSetTestClass, LevelSet_Cvg_2D_Test4)
 	stream.close();
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*----------------------------------------------------------------------------*/
+/*                               TESTS UNITAIRES                              */
+/*----------------------------------------------------------------------------*/
+
+TEST(LevelSetTestClass, LevelSetEloi_Test_Unit)
+{
+	// WE READ
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir + "/Carre.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N | gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	// Get the boundary node ids
+	BoundaryOperator2D bnd_op(&m);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	int markFrontNodesInt = m.newMark<gmds::Node>();
+	int markFrontNodesOut = m.newMark<gmds::Node>();
+	for(auto id:bnd_node_ids){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		if (coord_y == 0) {
+			// For the square test case, the front to advance is the boundary where y=0
+			m.mark<Node>(id,markFrontNodesInt);
+		}
+		else if (coord_y == 1) {
+			m.mark<Node>(id,markFrontNodesOut);
+		}
+	}
+
+
+	Variable<double> *var_dist = m.newVariable<double, GMDS_NODE>("GMDS_Distance");
+	Variable<double> *var_dist_int = m.newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	Variable<double> *var_dist_out = m.newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+
+	LevelSetEloi ls(&m, markFrontNodesInt, var_dist);
+	LevelSetEloi::STATUS result = ls.execute();
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result);
+
+	double eps = pow(10, -6);
+	double eps_2 = pow(10, -3);
+
+	{
+	ASSERT_TRUE(abs(var_dist->value(0) - 0) < eps);
+	ASSERT_TRUE(abs(var_dist->value(1) - 0) < eps);
+	ASSERT_TRUE(abs(var_dist->value(2) - 1) < eps);
+	ASSERT_TRUE(abs(var_dist->value(3) - 1) < eps);
+	ASSERT_TRUE(abs(var_dist->value(4) - 0) < eps);
+	ASSERT_TRUE(abs(var_dist->value(5) - 0) < eps);
+	ASSERT_TRUE(abs(var_dist->value(6) - 0) < eps);
+	ASSERT_TRUE(abs(var_dist->value(7) - 0) < eps);
+	ASSERT_TRUE(abs(var_dist->value(8) - 0) < eps);
+	ASSERT_TRUE(abs(var_dist->value(9) - 0) < eps);
+	ASSERT_TRUE(abs(var_dist->value(10) - 0) < eps);
+	ASSERT_TRUE(abs(var_dist->value(11) - 0.125) < eps);
+	ASSERT_TRUE(abs(var_dist->value(12) - 0.25) < eps);
+	ASSERT_TRUE(abs(var_dist->value(13) - 0.375) < eps);
+	ASSERT_TRUE(abs(var_dist->value(14) - 0.5) < eps);
+	ASSERT_TRUE(abs(var_dist->value(15) - 0.625) < eps);
+	ASSERT_TRUE(abs(var_dist->value(16) - 0.75) < eps);
+	ASSERT_TRUE(abs(var_dist->value(17) - 0.875) < eps);
+	ASSERT_TRUE(abs(var_dist->value(18) - 1.03176) < eps_2);
+	ASSERT_TRUE(abs(var_dist->value(19) - 1.06903) < eps_2);
+	ASSERT_TRUE(abs(var_dist->value(20) - 1.0895) < eps);
+	ASSERT_TRUE(abs(var_dist->value(21) - 1.10972) < eps_2);
+	ASSERT_TRUE(abs(var_dist->value(22) - 1.08348) < eps_2);
+	ASSERT_TRUE(abs(var_dist->value(23) - 1.06808) < eps_2);
+	ASSERT_TRUE(abs(var_dist->value(24) - 1.02271) < eps_2);
+	ASSERT_TRUE(abs(var_dist->value(25) - 0.875) < eps);
+	ASSERT_TRUE(abs(var_dist->value(26) - 0.75) < eps);
+	ASSERT_TRUE(abs(var_dist->value(27) - 0.625) < eps);
+	ASSERT_TRUE(abs(var_dist->value(28) - 0.5) < eps);
+	ASSERT_TRUE(abs(var_dist->value(29) - 0.375) < eps);
+	ASSERT_TRUE(abs(var_dist->value(30) - 0.25) < eps);
+	ASSERT_TRUE(abs(var_dist->value(31) - 0.125) < eps);
+	ASSERT_TRUE(abs(var_dist->value(32) - 0.998903) < eps);
+	ASSERT_TRUE(abs(var_dist->value(33) - 0.442778) < eps);
+	ASSERT_TRUE(abs(var_dist->value(34) - 0.125) < eps);
+	ASSERT_TRUE(abs(var_dist->value(35) - 0.579409) < eps);
+	ASSERT_TRUE(abs(var_dist->value(36) - 0.703389) < eps);
+	ASSERT_TRUE(abs(var_dist->value(37) - 0.964234) < eps);
+	ASSERT_TRUE(abs(var_dist->value(38) - 0.121599) < eps);
+	ASSERT_TRUE(abs(var_dist->value(39) - 0.338205) < eps);
+	ASSERT_TRUE(abs(var_dist->value(40) - 0.821044) < eps);
+	ASSERT_TRUE(abs(var_dist->value(41) - 0.945425) < eps);
+	ASSERT_TRUE(abs(var_dist->value(42) - 0.125) < eps);
+	ASSERT_TRUE(abs(var_dist->value(43) - 0.197234) < eps);
+	ASSERT_TRUE(abs(var_dist->value(44) - 0.95887) < eps);
+	ASSERT_TRUE(abs(var_dist->value(45) - 0.876705) < eps);
+	ASSERT_TRUE(abs(var_dist->value(46) - 0.879217) < eps);
+	ASSERT_TRUE(abs(var_dist->value(47) - 0.788033) < eps);
+	ASSERT_TRUE(abs(var_dist->value(48) - 0.754264) < eps);
+	ASSERT_TRUE(abs(var_dist->value(49) - 0.669756) < eps);
+	ASSERT_TRUE(abs(var_dist->value(50) - 0.665699) < eps);
+	ASSERT_TRUE(abs(var_dist->value(51) - 0.552643) < eps);
+	ASSERT_TRUE(abs(var_dist->value(52) - 0.544019) < eps);
+	ASSERT_TRUE(abs(var_dist->value(53) - 0.432382) < eps);
+	ASSERT_TRUE(abs(var_dist->value(54) - 0.426745) < eps);
+	ASSERT_TRUE(abs(var_dist->value(55) - 0.419651) < eps);
+	ASSERT_TRUE(abs(var_dist->value(56) - 0.504019) < eps);
+	ASSERT_TRUE(abs(var_dist->value(57) - 0.30741) < eps);
+	ASSERT_TRUE(abs(var_dist->value(58) - 0.379157) < eps);
+	ASSERT_TRUE(abs(var_dist->value(59) - 0.299818) < eps);
+	ASSERT_TRUE(abs(var_dist->value(60) - 0.308527) < eps);
+	ASSERT_TRUE(abs(var_dist->value(61) - 0.41078) < eps);
+	ASSERT_TRUE(abs(var_dist->value(62) - 0.480459) < eps);
+	ASSERT_TRUE(abs(var_dist->value(63) - 0.60867) < eps);
+	ASSERT_TRUE(abs(var_dist->value(64) - 0.710588) < eps);
+	ASSERT_TRUE(abs(var_dist->value(65) - 0.734787) < eps);
+	ASSERT_TRUE(abs(var_dist->value(66) - 0.835822) < eps);
+	ASSERT_TRUE(abs(var_dist->value(67) - 0.81513) < eps);
+	ASSERT_TRUE(abs(var_dist->value(68) - 0.323446) < eps);
+	ASSERT_TRUE(abs(var_dist->value(69) - 0.528492) < eps);
+	ASSERT_TRUE(abs(var_dist->value(70) - 0.574415) < eps);
+	ASSERT_TRUE(abs(var_dist->value(71) - 0.697732) < eps);
+	ASSERT_TRUE(abs(var_dist->value(72) - 0.859325) < eps);
+	ASSERT_TRUE(abs(var_dist->value(73) - 0.125) < eps);
+	ASSERT_TRUE(abs(var_dist->value(74) - 0.125) < eps);
+	ASSERT_TRUE(abs(var_dist->value(75) - 0.984645) < eps);
+	ASSERT_TRUE(abs(var_dist->value(76) - 0.629131) < eps);
+	ASSERT_TRUE(abs(var_dist->value(77) - 0.308233) < eps);
+	ASSERT_TRUE(abs(var_dist->value(78) - 0.828026) < eps);
+	ASSERT_TRUE(abs(var_dist->value(79) - 0.109618) < eps);
+	ASSERT_TRUE(abs(var_dist->value(80) - 0.199993) < eps);
+	ASSERT_TRUE(abs(var_dist->value(81) - 0.950542) < eps);
+	ASSERT_TRUE(abs(var_dist->value(82) - 0.302962) < eps);
+	ASSERT_TRUE(abs(var_dist->value(83) - 0.26747) < eps);
+	ASSERT_TRUE(abs(var_dist->value(84) - 0.757383) < eps);
+	ASSERT_TRUE(abs(var_dist->value(85) - 0.450133) < eps);
+	ASSERT_TRUE(abs(var_dist->value(86) - 0.541353) < eps);
+	ASSERT_TRUE(abs(var_dist->value(87) - 0.70725) < eps);
+	ASSERT_TRUE(abs(var_dist->value(88) - 0.925271) < eps);
+	ASSERT_TRUE(abs(var_dist->value(89) - 0.934315) < eps);
+	ASSERT_TRUE(abs(var_dist->value(90) - 0.0974435) < eps);
+	ASSERT_TRUE(abs(var_dist->value(91) - 0.0974435) < eps);
+	ASSERT_TRUE(abs(var_dist->value(92) - 0.631916) < eps);
+	ASSERT_TRUE(abs(var_dist->value(93) - 0.216616) < eps);
+	ASSERT_TRUE(abs(var_dist->value(94) - 0.216616) < eps);
+	ASSERT_TRUE(abs(var_dist->value(95) - 0.215794) < eps);
+	ASSERT_TRUE(abs(var_dist->value(96) - 0.210062) < eps);
+	ASSERT_TRUE(abs(var_dist->value(97) - 0.210517) < eps);
+}
+
+	/*
+	for(auto id:m.nodes()){
+		std::cout << "ASSERT_TRUE(abs(var_dist->value( " << id << ") -  " << var_dist->value(id) << ") < eps);" << std::endl;
+	}
+	 */
+
+
+	LevelSetExtended lsExtended(&m, markFrontNodesInt, var_dist);
+	LevelSetExtended::STATUS resultExtended = lsExtended.execute();
+	ASSERT_EQ(LevelSetExtended::SUCCESS, resultExtended);
+
+	{
+		ASSERT_TRUE(abs(var_dist->value(0) - 0) < eps);
+		ASSERT_TRUE(abs(var_dist->value(1) - 0) < eps);
+		ASSERT_TRUE(abs(var_dist->value(2) - 1) < eps);
+		ASSERT_TRUE(abs(var_dist->value(3) - 1) < eps);
+		ASSERT_TRUE(abs(var_dist->value(4) - 0) < eps);
+		ASSERT_TRUE(abs(var_dist->value(5) - 0) < eps);
+		ASSERT_TRUE(abs(var_dist->value(6) - 0) < eps);
+		ASSERT_TRUE(abs(var_dist->value(7) - 0) < eps);
+		ASSERT_TRUE(abs(var_dist->value(8) - 0) < eps);
+		ASSERT_TRUE(abs(var_dist->value(9) - 0) < eps);
+		ASSERT_TRUE(abs(var_dist->value(10) - 0) < eps);
+		ASSERT_TRUE(abs(var_dist->value(11) - 0.125) < eps);
+		ASSERT_TRUE(abs(var_dist->value(12) - 0.25) < eps);
+		ASSERT_TRUE(abs(var_dist->value(13) - 0.375) < eps);
+		ASSERT_TRUE(abs(var_dist->value(14) - 0.5) < eps);
+		ASSERT_TRUE(abs(var_dist->value(15) - 0.625) < eps);
+		ASSERT_TRUE(abs(var_dist->value(16) - 0.75) < eps);
+		ASSERT_TRUE(abs(var_dist->value(17) - 0.875) < eps);
+		ASSERT_TRUE(abs(var_dist->value(18) - 1.00272) < eps_2);
+		ASSERT_TRUE(abs(var_dist->value(19) - 1.0013) < eps_2);
+		ASSERT_TRUE(abs(var_dist->value(20) - 1.00004) < eps_2);
+		ASSERT_TRUE(abs(var_dist->value(21) - 1) < eps_2);
+		ASSERT_TRUE(abs(var_dist->value(22) - 1.0004) < eps_2);
+		ASSERT_TRUE(abs(var_dist->value(23) - 1.00393) < eps_2);
+		ASSERT_TRUE(abs(var_dist->value(24) - 1.00161) < eps_2);
+		ASSERT_TRUE(abs(var_dist->value(25) - 0.875) < eps);
+		ASSERT_TRUE(abs(var_dist->value(26) - 0.75) < eps);
+		ASSERT_TRUE(abs(var_dist->value(27) - 0.625) < eps);
+		ASSERT_TRUE(abs(var_dist->value(28) - 0.5) < eps);
+		ASSERT_TRUE(abs(var_dist->value(29) - 0.375) < eps);
+		ASSERT_TRUE(abs(var_dist->value(30) - 0.25) < eps);
+		ASSERT_TRUE(abs(var_dist->value(31) - 0.125) < eps);
+		ASSERT_TRUE(abs(var_dist->value(32) - 0.904442) < eps);
+		ASSERT_TRUE(abs(var_dist->value(33) - 0.43117) < eps);
+		ASSERT_TRUE(abs(var_dist->value(34) - 0.125) < eps);
+		ASSERT_TRUE(abs(var_dist->value(35) - 0.566217) < eps);
+		ASSERT_TRUE(abs(var_dist->value(36) - 0.687878) < eps);
+		ASSERT_TRUE(abs(var_dist->value(37) - 0.904728) < eps);
+		ASSERT_TRUE(abs(var_dist->value(38) - 0.121599) < eps);
+		ASSERT_TRUE(abs(var_dist->value(39) - 0.332775) < eps);
+		ASSERT_TRUE(abs(var_dist->value(40) - 0.798784) < eps);
+		ASSERT_TRUE(abs(var_dist->value(41) - 0.898221) < eps);
+		ASSERT_TRUE(abs(var_dist->value(42) - 0.125) < eps);
+		ASSERT_TRUE(abs(var_dist->value(43) - 0.186957) < eps);
+		ASSERT_TRUE(abs(var_dist->value(44) - 0.904085) < eps);
+		ASSERT_TRUE(abs(var_dist->value(45) - 0.785524) < eps);
+		ASSERT_TRUE(abs(var_dist->value(46) - 0.783773) < eps);
+		ASSERT_TRUE(abs(var_dist->value(47) - 0.689818) < eps);
+		ASSERT_TRUE(abs(var_dist->value(48) - 0.693098) < eps);
+		ASSERT_TRUE(abs(var_dist->value(49) - 0.567282) < eps);
+		ASSERT_TRUE(abs(var_dist->value(50) - 0.567484) < eps);
+		ASSERT_TRUE(abs(var_dist->value(51) - 0.47163) < eps);
+		ASSERT_TRUE(abs(var_dist->value(52) - 0.474811) < eps);
+		ASSERT_TRUE(abs(var_dist->value(53) - 0.350126) < eps);
+		ASSERT_TRUE(abs(var_dist->value(54) - 0.348181) < eps);
+		ASSERT_TRUE(abs(var_dist->value(55) - 0.350443) < eps);
+		ASSERT_TRUE(abs(var_dist->value(56) - 0.475435) < eps);
+		ASSERT_TRUE(abs(var_dist->value(57) - 0.258975) < eps);
+		ASSERT_TRUE(abs(var_dist->value(58) - 0.35107) < eps);
+		ASSERT_TRUE(abs(var_dist->value(59) - 0.264378) < eps);
+		ASSERT_TRUE(abs(var_dist->value(60) - 0.266767) < eps);
+		ASSERT_TRUE(abs(var_dist->value(61) - 0.357867) < eps);
+		ASSERT_TRUE(abs(var_dist->value(62) - 0.460186) < eps);
+		ASSERT_TRUE(abs(var_dist->value(63) - 0.567576) < eps);
+		ASSERT_TRUE(abs(var_dist->value(64) - 0.682182) < eps);
+		ASSERT_TRUE(abs(var_dist->value(65) - 0.693693) < eps);
+		ASSERT_TRUE(abs(var_dist->value(66) - 0.787817) < eps);
+		ASSERT_TRUE(abs(var_dist->value(67) - 0.774394) < eps);
+		ASSERT_TRUE(abs(var_dist->value(68) - 0.31317) < eps);
+		ASSERT_TRUE(abs(var_dist->value(69) - 0.475579) < eps);
+		ASSERT_TRUE(abs(var_dist->value(70) - 0.562806) < eps);
+		ASSERT_TRUE(abs(var_dist->value(71) - 0.656996) < eps);
+		ASSERT_TRUE(abs(var_dist->value(72) - 0.78509) < eps);
+		ASSERT_TRUE(abs(var_dist->value(73) - 0.125) < eps);
+		ASSERT_TRUE(abs(var_dist->value(74) - 0.125) < eps);
+		ASSERT_TRUE(abs(var_dist->value(75) - 0.908469) < eps);
+		ASSERT_TRUE(abs(var_dist->value(76) - 0.568394) < eps);
+		ASSERT_TRUE(abs(var_dist->value(77) - 0.258975) < eps);
+		ASSERT_TRUE(abs(var_dist->value(78) - 0.812515) < eps);
+		ASSERT_TRUE(abs(var_dist->value(79) - 0.109618) < eps);
+		ASSERT_TRUE(abs(var_dist->value(80) - 0.194563) < eps);
+		ASSERT_TRUE(abs(var_dist->value(81) - 0.902967) < eps);
+		ASSERT_TRUE(abs(var_dist->value(82) - 0.267093) < eps);
+		ASSERT_TRUE(abs(var_dist->value(83) - 0.254812) < eps);
+		ASSERT_TRUE(abs(var_dist->value(84) - 0.689115) < eps);
+		ASSERT_TRUE(abs(var_dist->value(85) - 0.43943) < eps);
+		ASSERT_TRUE(abs(var_dist->value(86) - 0.469229) < eps);
+		ASSERT_TRUE(abs(var_dist->value(87) - 0.689533) < eps);
+		ASSERT_TRUE(abs(var_dist->value(88) - 0.909505) < eps);
+		ASSERT_TRUE(abs(var_dist->value(89) - 0.910981) < eps);
+		ASSERT_TRUE(abs(var_dist->value(90) - 0.0974435) < eps);
+		ASSERT_TRUE(abs(var_dist->value(91) - 0.0974435) < eps);
+		ASSERT_TRUE(abs(var_dist->value(92) - 0.567154) < eps);
+		ASSERT_TRUE(abs(var_dist->value(93) - 0.17524) < eps);
+		ASSERT_TRUE(abs(var_dist->value(94) - 0.17524) < eps);
+		ASSERT_TRUE(abs(var_dist->value(95) - 0.17524) < eps);
+		ASSERT_TRUE(abs(var_dist->value(96) - 0.175601) < eps);
+		ASSERT_TRUE(abs(var_dist->value(97) - 0.174648) < eps);
+	}
+
+	/*
+	for(auto id:m.nodes()){
+		std::cout << "ASSERT_TRUE(abs(var_dist->value( " << id << ") -  " << var_dist->value(id) << ") < eps);" << std::endl;
+	}
+	*/
+
+
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut,
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	                            m.getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
+	LevelSetCombined::STATUS resultComb = lsCombined.execute();
+	ASSERT_EQ(LevelSetCombined::SUCCESS, resultComb);
+
+	{
+		ASSERT_TRUE(abs(var_dist->value( 0) -  0) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 1) -  0) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 2) -  1) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 3) -  1) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 4) -  0) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 5) -  0) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 6) -  0) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 7) -  0) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 8) -  0) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 9) -  0) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 10) -  0) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 11) -  0.125) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 12) -  0.25) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 13) -  0.375) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 14) -  0.5) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 15) -  0.625) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 16) -  0.75) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 17) -  0.875) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 18) -  1) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 19) -  1) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 20) -  1) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 21) -  1) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 22) -  1) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 23) -  1) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 24) -  1) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 25) -  0.875) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 26) -  0.75) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 27) -  0.625) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 28) -  0.5) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 29) -  0.375) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 30) -  0.25) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 31) -  0.125) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 32) -  0.878575) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 33) -  0.430478) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 34) -  0.121006) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 35) -  0.564683) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 36) -  0.686775) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 37) -  0.880632) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 38) -  0.118127) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 39) -  0.331873) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 40) -  0.796619) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 41) -  0.879855) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 42) -  0.121904) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 43) -  0.186657) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 44) -  0.878867) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 45) -  0.785214) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 46) -  0.78377) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 47) -  0.670876) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 48) -  0.67111) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 49) -  0.567279) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 50) -  0.567259) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 51) -  0.458602) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 52) -  0.459748) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 53) -  0.350124) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 54) -  0.348044) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 55) -  0.350428) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 56) -  0.460605) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 57) -  0.251323) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 58) -  0.350613) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 59) -  0.256132) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 60) -  0.259151) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 61) -  0.356467) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 62) -  0.450765) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 63) -  0.566838) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 64) -  0.668215) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 65) -  0.675217) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 66) -  0.786792) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 67) -  0.771363) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 68) -  0.312252) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 69) -  0.473718) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 70) -  0.560376) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 71) -  0.654425) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 72) -  0.785057) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 73) -  0.121101) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 74) -  0.121307) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 75) -  0.879649) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 76) -  0.56837) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 77) -  0.250701) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 78) -  0.811212) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 79) -  0.107494) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 80) -  0.194036) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 81) -  0.884004) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 82) -  0.263636) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 83) -  0.250619) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 84) -  0.673419) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 85) -  0.437155) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 86) -  0.458541) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 87) -  0.684564) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 88) -  0.903229) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 89) -  0.903371) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 90) -  0.0965897) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 91) -  0.0966563) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 92) -  0.564303) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 93) -  0.175233) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 94) -  0.17524) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 95) -  0.175171) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 96) -  0.175373) < eps);
+		ASSERT_TRUE(abs(var_dist->value( 97) -  0.173965) < eps);
+	}
+
+	/*
+	for(auto id:m.nodes()){
+		std::cout << "ASSERT_TRUE(abs(var_dist->value( " << id << ") -  " << var_dist->value(id) << ") < eps);" << std::endl;
+	}
+	 */
+
+	m.unmarkAll<Node>(markFrontNodesInt);
+	m.freeMark<Node>(markFrontNodesInt);
+	m.unmarkAll<Node>(markFrontNodesOut);
+	m.freeMark<Node>(markFrontNodesOut);
+
+}
+
+
+/*----------------------------------------------------------------------------*/

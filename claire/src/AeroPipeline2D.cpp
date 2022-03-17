@@ -287,64 +287,6 @@ void AeroPipeline2D::InitialisationFronts(){
 
 
 /*------------------------------------------------------------------------*/
-void AeroPipeline2D::InitialisationMeshGen(){
-
-	std::cout << "-> Discrétisation du front int du maillage quad" << std::endl;
-
-	//Get the boundary node ids
-	BoundaryOperator2D bnd_op(m_mesh);
-	std::vector<TCellID> bnd_node_ids;
-	bnd_op.getBoundaryNodes(bnd_node_ids);
-
-	Variable<double> *var_newID = m_mesh->newVariable<double, GMDS_NODE>("GMDS_NewID");
-	for (auto n_id:m_mesh->nodes()){
-		var_newID->set(n_id, NullID);
-	}
-
-	double err=pow(10,-6);
-
-	// Ajout des noeuds de la frontière intérieure au maillage à généré
-	for (auto n_id:bnd_node_ids){
-		Node n = m_mesh->get<Node>(n_id);
-		math::Point p = n.point();
-		//std::cout << "node : " << n << std::endl;
-		if ( m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) ){
-			Node n_new = m_meshGen->newNode(p);
-			m_couche_id->set(n_new.id(), 0);
-			var_newID->set(n_id, n_new.id());	// On stocke l'indice du noeud n dans le nouveau maillage sur l'ancien maillage
-		}
-	}
-
-	// Ajout des arêtes
-	for (auto e_id:m_mesh->edges()){
-		Edge e = m_mesh->get<Edge>(e_id);
-		std::vector<Node> adj_nodes = e.get<Node>();
-		TCellID n0_id = adj_nodes[0].id();
-		TCellID n1_id = adj_nodes[1].id();
-		if ( m_mesh->isMarked<Node>(n0_id, m_markFrontNodesParoi) &&
-		   m_mesh->isMarked<Node>(n1_id, m_markFrontNodesParoi)){
-			TCellID n0_id_new = var_newID->value(n0_id) ;
-			TCellID n1_id_new = var_newID->value(n1_id) ;
-			Edge e_new = m_meshGen->newEdge(n0_id_new, n1_id_new);
-			// Ajout des connectivités Node -> Edge
-			Node n0 = m_meshGen->get<Node>(n0_id_new);
-			Node n1 = m_meshGen->get<Node>(n1_id_new);
-			n0.add<Edge>(e_new);
-			n1.add<Edge>(e_new);
-		}
-	}
-
-	gmds::MeshDoctor doc(m_meshGen);
-	doc.buildEdgesAndX2E();
-	doc.updateUpwardConnectivity();
-
-	m_mesh->deleteVariable(GMDS_NODE, "GMDS_NewID");
-
-}
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 void AeroPipeline2D::InitialisationMeshParoi(){
 
 	std::cout << "-> Discrétisation du front int du maillage quad" << std::endl;
@@ -380,6 +322,7 @@ void AeroPipeline2D::InitialisationMeshParoi(){
 
 	// Si le maillage ne comporte pas de sommet, alors, on prend un noeud au hasard
 	double x_min = std::numeric_limits<double>::max();
+	/*
 	if (n0_id==NullID) {
 		for (auto n_it = m_mesh->nodes_begin(); n_it != m_mesh->nodes_end() && (n0_id == NullID); ++n_it) {
 			TCellID n_id = *n_it;
@@ -391,9 +334,13 @@ void AeroPipeline2D::InitialisationMeshParoi(){
 			}
 		}
 	}
+	*/
+
+	n0_id = getPointArret();
 
 	// Initialisation des longueurs pour définir les sommets de blocs
 	Node n0 = m_mesh->get<Node>(n0_id);
+	x_min = n0.X();
 	double perim = computeBoundaryLength(n0);		// Calcul du périmètre du bord regardé
 	double Lmax = perim/ m_params.nbrMinBloc ;
 	double l(0);
@@ -659,5 +606,98 @@ double AeroPipeline2D::computeBoundaryLength(Node n0){
 	}
 
 	return length;
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+TCellID AeroPipeline2D::getPointArret(){
+	TCellID n_arret_id;
+	double x_min = std::numeric_limits<double>::max();
+	for (auto n_it = m_mesh->nodes_begin(); n_it != m_mesh->nodes_end() ; ++n_it) {
+		TCellID n_id = *n_it;
+		Node n = m_mesh->get<Node>(n_id);
+		math::Point p = n.point();
+		if (m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) && p.X() < x_min ) {
+			n_arret_id = n_id;
+			x_min = p.X();
+		}
+	}
+	return n_arret_id;
+}
+/*------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*------------------------------------------------------------------------*/
+void AeroPipeline2D::InitialisationMeshGen(){
+
+	std::cout << "-> Discrétisation du front int du maillage quad" << std::endl;
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(m_mesh);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	Variable<double> *var_newID = m_mesh->newVariable<double, GMDS_NODE>("GMDS_NewID");
+	for (auto n_id:m_mesh->nodes()){
+		var_newID->set(n_id, NullID);
+	}
+
+	double err=pow(10,-6);
+
+	// Ajout des noeuds de la frontière intérieure au maillage à généré
+	for (auto n_id:bnd_node_ids){
+		Node n = m_mesh->get<Node>(n_id);
+		math::Point p = n.point();
+		//std::cout << "node : " << n << std::endl;
+		if ( m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) ){
+			Node n_new = m_meshGen->newNode(p);
+			m_couche_id->set(n_new.id(), 0);
+			var_newID->set(n_id, n_new.id());	// On stocke l'indice du noeud n dans le nouveau maillage sur l'ancien maillage
+		}
+	}
+
+	// Ajout des arêtes
+	for (auto e_id:m_mesh->edges()){
+		Edge e = m_mesh->get<Edge>(e_id);
+		std::vector<Node> adj_nodes = e.get<Node>();
+		TCellID n0_id = adj_nodes[0].id();
+		TCellID n1_id = adj_nodes[1].id();
+		if ( m_mesh->isMarked<Node>(n0_id, m_markFrontNodesParoi) &&
+		    m_mesh->isMarked<Node>(n1_id, m_markFrontNodesParoi)){
+			TCellID n0_id_new = var_newID->value(n0_id) ;
+			TCellID n1_id_new = var_newID->value(n1_id) ;
+			Edge e_new = m_meshGen->newEdge(n0_id_new, n1_id_new);
+			// Ajout des connectivités Node -> Edge
+			Node n0 = m_meshGen->get<Node>(n0_id_new);
+			Node n1 = m_meshGen->get<Node>(n1_id_new);
+			n0.add<Edge>(e_new);
+			n1.add<Edge>(e_new);
+		}
+	}
+
+	gmds::MeshDoctor doc(m_meshGen);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	m_mesh->deleteVariable(GMDS_NODE, "GMDS_NewID");
+
 }
 /*------------------------------------------------------------------------*/

@@ -69,6 +69,11 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	 */
 	Node AnteriorNode(Node n0);
 	/*----------------------------------------------------------------------------*/
+	/** @brief Donne l'id d'un noeud "le plus à gauche", correspondant en aéro au
+	 * point d'arrêt.
+	 */
+	TCellID getPointArret();
+	/*----------------------------------------------------------------------------*/
 	/** @brief Donne le vecteur des noeuds adjacents à n0 qui sont dans la couche i.
 	 */
 	std::vector<Node> AdjNodesInLayer(Node n0, int couche_i);
