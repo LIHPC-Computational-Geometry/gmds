@@ -1156,7 +1156,7 @@ TEST(LevelSetTestClass, LevelSet_Cvg_2D_Test4)
 }
 
 
-
+/*----------------------------------------------------------------------------*/
 
 
 
@@ -1196,7 +1196,7 @@ TEST(LevelSetTestClass, LevelSet_Cvg_2D_Test4)
 /*                               TESTS UNITAIRES                              */
 /*----------------------------------------------------------------------------*/
 
-TEST(LevelSetTestClass, LevelSetEloi_Test_Unit)
+TEST(LevelSetTestClass, LevelSet_Test_Unit)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
