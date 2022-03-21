@@ -57,7 +57,13 @@ void AeroPipeline2D::execute(){
 	grad2D.execute();
 
 	//InitialisationMeshGen();
-	DiscretisationBlocParoi();
+	//DiscretisationBlocParoi();
+
+	for (int i=1;i<=m_nbrBords;i++){
+		if(i != m_bigest_color){
+			DiscretisationBlocsBord(i);
+		}
+	}
 
 	GenerationCouche(1, 1);
 
@@ -213,6 +219,8 @@ void AeroPipeline2D::InitialisationFronts(){
 		m_nbrBordsParoi = color-1 ;
 	}
 
+	m_nbrBords = color;
+
 	m_mesh->unmarkAll<Node>(markBoundaryNodes);
 	m_mesh->freeMark<Node>(markBoundaryNodes);
 
@@ -310,6 +318,7 @@ void AeroPipeline2D::DiscretisationBlocParoi(){
 
 
 	// Discrétisation pour un bord de paroi
+	int color = 1;
 
 	// On récuère un noeud de ce bord qui est sur un sommet
 	TCellID n0_id = NullID ;
@@ -336,16 +345,15 @@ void AeroPipeline2D::DiscretisationBlocParoi(){
 	}
 	*/
 
-	n0_id = PointArret(1);
+	n0_id = PointArret(color);
 
 	// Initialisation des longueurs pour définir les sommets de blocs
 	Node n0 = m_mesh->get<Node>(n0_id);
 	x_min = n0.X();
-	double perim = computeBoundaryLength(n0);		// Calcul du périmètre du bord regardé
+	double perim = ComputeBoundaryLength(color);		// Calcul du périmètre du bord regardé
 	double Lmax = perim/ m_params.nbrMinBloc ;
 	double l(0);
 	std::cout << "Périmètre : " << perim << std::endl ;
-	std::cout << "Test : " << ComputeBoundaryLength(1) << std::endl;
 	//std::cout << "Limite taille bloc : " << Lmax << std::endl;
 
 
@@ -572,46 +580,6 @@ bool AeroPipeline2D::isQuadCreated(Node n0, Node n1, Node n2){
 
 
 /*------------------------------------------------------------------------*/
-double AeroPipeline2D::computeBoundaryLength(Node n0){
-	double length(0.0);
-
-	// Parcours du bord de proche en proche en passant par l'opposé
-	TCellID n0_id = n0.id();
-	TCellID n1_id = n0_id;
-	TCellID n2_id = NullID;
-	std::vector<Edge> adj_edges = n0.get<Edge>();
-	bool oppfind(false);
-	for (auto e:adj_edges){
-		Node ne = e.getOppositeNode(n0);
-		if ( m_mesh->isMarked<Node>(ne.id(), m_markFrontNodesParoi) && !oppfind ){
-			oppfind = true;
-			length += e.length();
-			n2_id = ne.id();
-		}
-	}
-
-	while (n2_id != n0_id){
-
-		// On cherche le prochain noeud
-		TCellID n_old_id = n1_id;
-		n1_id = n2_id;
-		Node n2 = m_mesh->get<Node>(n2_id);
-		adj_edges = n2.get<Edge>();
-		for (auto e:adj_edges){
-			Node ne = e.getOppositeNode(n2);
-			if ( m_mesh->isMarked<Node>(ne.id(), m_markFrontNodesParoi) && ne.id() != n_old_id ){
-				n2_id = ne.id();
-				length += e.length();
-			}
-		}
-	}
-
-	return length;
-}
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 double AeroPipeline2D::ComputeBoundaryLength(int color){
 
 	double length(0.0);
@@ -641,8 +609,10 @@ double AeroPipeline2D::ComputeBoundaryLength(int color){
 
 /*------------------------------------------------------------------------*/
 TCellID AeroPipeline2D::PointArret(int color){
-	TCellID n_arret_id;
+
+	TCellID n_arret_id(NullID);
 	double x_min = std::numeric_limits<double>::max();
+
 	for (auto n_it = m_mesh->nodes_begin(); n_it != m_mesh->nodes_end() ; ++n_it) {
 		TCellID n_id = *n_it;
 		Node n = m_mesh->get<Node>(n_id);
@@ -685,6 +655,7 @@ std::vector<TCellID> AeroPipeline2D::BndNodesOrdered(int color){
 	// STRATEGIE 1 : On récuère un noeud de ce bord qui est sur un sommet
 	for(auto n_it = m_mesh->nodes_begin(); n_it!= m_mesh->nodes_end() && (n0_id == NullID);++n_it){
 		TCellID n_id = *n_it;
+		//std::cout << "Test 1 : " << n_id << " " << m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) << std::endl;
 		if ( m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) &&
 		   m_var_color_bords->value(n_id) == color &&
 		   m_mesh->isMarked<Node>(n_id, markPointNodes) ){
@@ -692,8 +663,8 @@ std::vector<TCellID> AeroPipeline2D::BndNodesOrdered(int color){
 		}
 	}
 
-	m_mesh->unmarkAll<Node>(markCurveEdges);
-	m_mesh->freeMark<Node>(markCurveEdges);
+	m_mesh->unmarkAll<Edge>(markCurveEdges);
+	m_mesh->freeMark<Edge>(markCurveEdges);
 
 	m_mesh->unmarkAll<Node>(markCurveNodes);
 	m_mesh->freeMark<Node>(markCurveNodes);
@@ -762,6 +733,8 @@ std::vector<TCellID> AeroPipeline2D::BndNodesOrdered(int color){
 /*------------------------------------------------------------------------*/
 void AeroPipeline2D::DiscretisationBlocsBord(int color){
 
+	std::cout << "-> Discrétisation du bord de couleur " << color << std::endl;
+
 	std::vector<TCellID> bnd_nodes_id_ordered = BndNodesOrdered(color);
 
 	//Get the boundary node ids
@@ -780,78 +753,59 @@ void AeroPipeline2D::DiscretisationBlocsBord(int color){
 	m_mesh->unmarkAll<Node>(markAloneNodes);
 	m_mesh->freeMark<Node>(markAloneNodes);
 
+	// Calcul de la longueur max des arêtes de bloc
+	double perim = ComputeBoundaryLength(color);		// Calcul du périmètre du bord regardé
+	double Lmax = perim/ m_params.nbrMinBloc ;
+	double l(0);
 
-	// Parcours du bord de proche en proche en passant par l'opposé
-	/*
-	TCellID n0_id = bnd_nodes_id_ordered[0];
-	TCellID n1_id = n0_id;
-	TCellID n2_id = NullID;
+	// Calcul de la valeur min de x sur les noeuds du bord
+	TCellID n_arret_tri_id = PointArret(color);
+	Node n_arret_tri = m_mesh->get<Node>(n_arret_tri_id) ;
+	math::Point point_arret = n_arret_tri.point();
+	double x_min = point_arret.X() ;
 
-	Node nstart_quad = m_meshGen->newNode(n0.point()); // Premier noeud du nouveau maillage
-	Node n0_quad = nstart_quad;
-	Node n1_quad;
-	TCellID nstart_quad_id = nstart_quad.id() ;
-	TCellID n0_quad_id = nstart_quad_id;
-	TCellID n1_quad_id = NullID;
-	 */
+	Node n0_tri = m_mesh->get<Node>(bnd_nodes_id_ordered[0]) ;
+	Node n0_quad = m_meshGen->newNode(n0_tri.point()); // Premier noeud du nouveau maillage
 
-	//std::cout << "First node : " << n0_quad.point() << std::endl ;
+	Node n1_quad = n0_quad;
+	Node n2_quad = n0_quad;
 
-	for(int i=0;i<bnd_nodes_id_ordered.size();i++){
+	for(int i=1;i<bnd_nodes_id_ordered.size();i++){
 
-	}
+		Node n = m_mesh->get<Node>(bnd_nodes_id_ordered[i]);
+		math::Point p = n.point() ;
+		Node n_ant = m_mesh->get<Node>(bnd_nodes_id_ordered[i-1]);
+		math::Point p_ant = n_ant.point() ;
+		math::Vector3d v = p-p_ant;
+		l += v.norm() ;
 
-	/*
-	while (n2_id != n0_id){
+		if ( m_mesh->isMarked<Node>(bnd_nodes_id_ordered[i], markPointNodes)
+		    || l >= Lmax
+		    || abs(l-Lmax) <= pow(10,-6)
+		    || abs(p.X() - x_min) <= pow(10,-6) ){
 
-		Node n_test = m_mesh->get<Node>(n2_id);
-		math::Point p2 = n_test.point();
+			n1_quad = n2_quad;
+			n2_quad = m_meshGen->newNode(n.point());
+			Edge e = m_meshGen->newEdge(n1_quad, n2_quad);
 
-		// Si le noeud est sur un sommet
-		if ( m_mesh->isMarked<Node>(n2_id, markPointNodes) || l >= Lmax || abs(l-Lmax) <= pow(10,-6) || abs(p2.X() - x_min) <= pow(10,-6) ){
-			Node n2 = m_mesh->get<Node>(n2_id);
-			n1_quad = m_meshGen->newNode(n2.point());
-			Edge e = m_meshGen->newEdge(n0_quad, n1_quad);
 			// Ajout des connectivités Node -> Edge
-			n0_quad.add<Edge>(e);
 			n1_quad.add<Edge>(e);
-			// Mise à jour du noeud n0
-			n0_quad = n1_quad;
-			n0_quad_id = n1_quad.id();
-			//std::cout << "l = " << l << std::endl;
-			//std::cout << "pos : " << n2.point() << std::endl;
-			//std::cout << "pos quad : " << n1_quad.point() << std::endl;
+			n2_quad.add<Edge>(e);
+
 			l = 0;	// On remet l à 0
+
 		}
 
-		// On cherche le prochain noeud
-		TCellID n_old_id = n1_id;
-		n1_id = n2_id;
-		Node n2 = m_mesh->get<Node>(n2_id);
-		adj_edges = n2.get<Edge>();
-		for (auto e:adj_edges){
-			Node ne = e.getOppositeNode(n2);
-			if ( m_mesh->isMarked<Node>(ne.id(), m_markFrontNodesParoi) && ne.id() != n_old_id ){
-				n2_id = ne.id();
-				l = l + e.length();
-			}
-		}
-		//std::cout << "l = " << l << std::endl;
 	}
-	 */
 
-	/*
 	// Ajout de la dernière arête pour fermer le blocking du bord
-	Edge e = m_meshGen->newEdge(n1_quad, nstart_quad);
+	Edge e = m_meshGen->newEdge(n2_quad, n0_quad);
 	// Ajout des connectivités Node -> Edge
-	n1_quad.add<Edge>(e);
-	nstart_quad.add<Edge>(e);
-	 */
+	n2_quad.add<Edge>(e);
+	n0_quad.add<Edge>(e);
 
-
-
-	m_mesh->unmarkAll<Node>(markCurveEdges);
-	m_mesh->freeMark<Node>(markCurveEdges);
+	m_mesh->unmarkAll<Edge>(markCurveEdges);
+	m_mesh->freeMark<Edge>(markCurveEdges);
 
 	m_mesh->unmarkAll<Node>(markCurveNodes);
 	m_mesh->freeMark<Node>(markCurveNodes);
