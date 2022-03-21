@@ -39,21 +39,24 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	 */
 	void MeshCleaner();
 	/*----------------------------------------------------------------------------*/
-	/** @brief Ecriture du fichier de maillage au format .vtk
+	/** @brief Ecritures des fichiers de maillages triangulaires et quad au
+	 * format .vtk
 	 */
-	void EcritureMaillage(Mesh* p_mesh);
+	void EcritureMaillage();
 	/*----------------------------------------------------------------------------*/
 	/** @brief Initialisation des marques sur les fronts
 	 */
 	void InitialisationFronts();
 	/*----------------------------------------------------------------------------*/
-	/** @brief Initialisation du maillage quad généré
+	/** @brief Créé les sommets des blocs sur la paroi le maillage quad généré.
+	 * Dans cette fonction, on récupère tous les noeuds du maillage triangulaire et
+	 *
 	 */
 	void InitialisationMeshGen();
 	/*----------------------------------------------------------------------------*/
-	/** @brief Initialisation du maillage quad généré, test 2
+	/** @brief Créé les sommets des blocs sur la paroi pour le maillage quad généré
 	 */
-	void InitialisationMeshParoi();
+	void DiscretisationBlocParoi();
 	/*----------------------------------------------------------------------------*/
 	/** @brief Génère une couche de noeuds du maillage
 	 */
@@ -69,10 +72,10 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	 */
 	Node AnteriorNode(Node n0);
 	/*----------------------------------------------------------------------------*/
-	/** @brief Donne l'id d'un noeud "le plus à gauche", correspondant en aéro au
-	 * point d'arrêt.
+	/** @brief Donne l'id d'un noeud "le plus à gauche" sur le bord de couleur
+	 * color, correspondant en aéro au point d'arrêt.
 	 */
-	TCellID getPointArret();
+	TCellID PointArret(int color);
 	/*----------------------------------------------------------------------------*/
 	/** @brief Donne le vecteur des noeuds adjacents à n0 qui sont dans la couche i.
 	 */
@@ -95,6 +98,21 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	 * hasard
 	 */
 	double computeBoundaryLength(Node n0);
+	/*----------------------------------------------------------------------------*/
+	/** @brief Retourne la longueur d'un bord (périmètre) à partir de la couleur
+	 * color du bord.
+	 */
+	double ComputeBoundaryLength(int color);
+	/*----------------------------------------------------------------------------*/
+	/** @brief Retourne un vecteur ordonné des noeuds du bord correspondant à la
+	 * couleur color.
+	 */
+	std::vector<TCellID> BndNodesOrdered(int color);
+	/*----------------------------------------------------------------------------*/
+	/** @brief Créé les sommets des blocs sur le bord de couleur color pour le
+	 * maillage quad généré.
+	 */
+	void DiscretisationBlocsBord(int color);
 	/*----------------------------------------------------------------------------*/
  protected:
 	/** mesh we work on */
