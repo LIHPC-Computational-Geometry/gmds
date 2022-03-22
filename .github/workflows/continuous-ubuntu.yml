@@ -61,16 +61,15 @@ jobs:
       working-directory: ${{github.workspace}}/build
       shell: bash
       run: |
-          if ${{ matrix.config == 'Release'}}; then
-              ctest -C $BUILD_TYPE
-          else
-              export CODACY_PROJECT_TOKEN=6812888e69b348239217c607f514f024
-              make code_cover_gmds
-              bash <(curl -s https://codecov.io/bash)
-              bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r code_cover_gmds.info
-          fi
+        if ${{ matrix.config == 'Release'}}; then
+            ctest -C $BUILD_TYPE
+        else
+            export CODACY_PROJECT_TOKEN=6812888e69b348239217c607f514f024
+            make code_cover_gmds
+            bash <(curl -s https://codecov.io/bash)
+            bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r code_cover_gmds.info
+
+        fi
 
     - name: Install
       run: cmake --install build --prefix ${{github.workspace}}/buildinstall --config Release
-
-

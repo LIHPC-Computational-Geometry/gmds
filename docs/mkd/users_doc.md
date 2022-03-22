@@ -26,7 +26,7 @@ make install
 
 4. In the source directory there is a small example of how to link against GMDS in another program
 ```shell
- cd doc/example
+ cd docs/example
  cmake -DCMAKE_PREFIX_PATH=<path_to_gmds_install_dir> .
  make
  ./examplegmds
