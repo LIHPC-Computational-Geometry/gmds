@@ -97,7 +97,6 @@ void ISimplexMeshIOService::getRegions(std::vector<IMeshIOService::CellInfo>& AI
   AInfo.clear();
   AInfo.reserve(tetVector.size());
 
-  std::cout << "markedTet.empty() ->  " << markedTet.empty() << std::endl;
   if(markedTet.empty() == 1)
   {
     for(unsigned int tet = 0 ; tet < tetVector.capacity() ; tet++)

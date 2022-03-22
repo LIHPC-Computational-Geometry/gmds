@@ -62,6 +62,14 @@ TEST(FacManagerTestSuite, fromSurfMesh)
         ASSERT_EQ(c->length(),10);
         math::Point p(0,0,0);
         ASSERT_NEAR(p.distance(c->closestPoint(p)),7.07107,0.01);
+
+		  math::Point p_far(100000000,0,0);
+		  math::Point p_on = c->closestPoint(p_far);
+		  ASSERT_LT(p_on.distance(math::Point (0,0,0)), 10.);
+
+		  c->project(p_far);
+		  ASSERT_LT(p_far.distance(math::Point (0,0,0)), 10.);
+		  ASSERT_DOUBLE_EQ(p_on.distance(p_far), 0.);
     }
 
     std::vector<cad::GeomPoint*> pnts;

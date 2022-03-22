@@ -14,29 +14,29 @@ using namespace gmds;
 /*----------------------------------------------------------------------------*/
 Edge::
 Edge()
-: Cell(0,GMDS_EDGE,NullID)
+: Cell(nullptr,GMDS_EDGE,NullID)
 {
-	m_edges_container = 0;
+	m_edges_container = nullptr;
 }
 /*----------------------------------------------------------------------------*/
 Edge::
 Edge(Mesh* AMesh, const TCellID& AID)
 : Cell(AMesh,GMDS_EDGE,AID)
 {
-	if(AMesh!=0)
+	if(AMesh!=nullptr)
 		m_edges_container  = AMesh->m_edges_container;
 	else
-		m_edges_container  = 0;
+		m_edges_container  = nullptr;
 }
 /*----------------------------------------------------------------------------*/
 Edge::
 Edge(const Edge& AEdge)
 : Cell(AEdge.m_owner,GMDS_EDGE,AEdge.m_id)
 {
-	if(m_owner!=0)
+	if(m_owner!=nullptr)
 		m_edges_container = m_owner->m_edges_container;
 	else
-		m_edges_container = 0;
+		m_edges_container = nullptr;
 }
 /*----------------------------------------------------------------------------*/
 Edge::~Edge()

@@ -4,12 +4,12 @@ The build system is based on CMAKE (https://cmake.org) and unit tests are perfor
 
 In order to perform some linear algebra operations, we rely onto the Eigen library (http://eigen.tuxfamily.org/index.php?title=Main_Page) that provides us matrices, vectors, numerical solvers, and related algorithms.
 
-# How to compile and install GMDS
+# How to compile, install and link against GMDS
 GMDS build system is CMake. In order to build GMDS, the direct way consists in:
 1. Extracting GMDS from the gitlab repository by cloning it (best option if you want to contribute afterward) or copying it. Let us assume that it is extracted in */home/gmds* by cloning the gitlab repository.
 ```Shell
 cd /home/
-git clone https://gitlab.com/franck.ledoux/gmds.git
+git clone https://github.com/LIHPC-Computational-Geometry/gmds.git
 ```
 2. In the */home/$ directory, we create a directory where the project will be built. Let us name it *build*. We will then get into this subdirectory to prepare the project to be built using CMake.
 ```Shell
@@ -23,6 +23,16 @@ cmake ../gmds/
 make -j4
 make install
 ```
+
+4. In the source directory there is a small example of how to link against GMDS in another program
+```shell
+ cd docs/example
+ cmake -DCMAKE_PREFIX_PATH=<path_to_gmds_install_dir> .
+ make
+ ./examplegmds
+```
+
+
 # GMDS Project structure
 
 GMDS project is split into a set of "*modules*", which are connected each to others. Each module is structured as follows:

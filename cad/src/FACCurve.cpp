@@ -128,8 +128,7 @@ namespace gmds{
 /*----------------------------------------------------------------------------*/
         math::Point FACCurve::closestPoint(const math::Point &AP) const
         {
-
-            double min_dist = 1000000;
+            double min_dist = HUGE_VAL;
             TCellID  min_id = NullID;
             for(auto e_id: m_mesh_edges){
                 Edge e = m_support->get<Edge>(e_id);
@@ -164,8 +163,9 @@ namespace gmds{
             return closest;*/
         }
 /*----------------------------------------------------------------------------*/
-        void FACCurve::project(math::Point& AP, math::Vector3d& AV) const {
-            int min_dist = 100000;
+        void FACCurve::project(math::Point& AP, math::Vector3d& AV) const
+        {
+            double min_dist = HUGE_VAL;
             TCellID min_id = NullID;
 
             for (auto e_id : m_mesh_edges) {
