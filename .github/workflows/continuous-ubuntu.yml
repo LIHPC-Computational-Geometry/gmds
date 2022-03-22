@@ -78,6 +78,6 @@ jobs:
       run: |
         cmake -E make_directory ${{github.workspace}}/user_exe_build
         cd ${{github.workspace}}/user_exe_build/
-        cmake -DCMAKE_PREFIX_PATH=${{github.workspace}}/buildinstall ${{github.workspace}}/docs/example
+        cmake -DCMAKE_PREFIX_PATH="${{github.workspace}}/buildinstall;${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/kokkos" ${{github.workspace}}/docs/example
         make
         ./examplegmds
