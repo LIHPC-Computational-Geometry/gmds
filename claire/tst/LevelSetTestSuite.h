@@ -793,9 +793,7 @@ TEST(LevelSetTestClass, LevelSet_Test_Unit_C1_3D)
 	   }
 	}
 	 */
-
-<<<<<<< HEAD
-=======
+ 
 	{
 		ASSERT_NEAR(var_dist->value( 0),  0, eps);
 		ASSERT_NEAR(var_dist->value( 10),  1, eps);
@@ -942,7 +940,6 @@ TEST(LevelSetTestClass, LevelSet_Test_Unit_C1_3D)
 	}
 
 
->>>>>>> origin/issue-86-Structure_level_set_2D
 	m.unmarkAll<Node>(markFrontNodesInt);
 	m.freeMark<Node>(markFrontNodesInt);
 	m.unmarkAll<Node>(markFrontNodesOut);
