@@ -653,7 +653,7 @@ TEST(LevelSetTestClass, LevelSetCombined_3D_Test1)
 /*        Etude convergence en maillage LevelSetEloi/Extended                 */
 /*----------------------------------------------------------------------------*/
 
-
+/*
 TEST(LevelSetTestClass, LevelSet_Cvg_2D_Test1)
 {
 	std::string dir(TEST_SAMPLES_DIR);
@@ -1154,6 +1154,7 @@ TEST(LevelSetTestClass, LevelSet_Cvg_2D_Test4)
 	stream.close();
 
 }
+ */
 
 
 /*----------------------------------------------------------------------------*/
@@ -1196,7 +1197,7 @@ TEST(LevelSetTestClass, LevelSet_Cvg_2D_Test4)
 /*                               TESTS UNITAIRES                              */
 /*----------------------------------------------------------------------------*/
 
-TEST(LevelSetTestClass, LevelSet_Test_Unit)
+TEST(LevelSetTestClass, LevelSet_Test_Unit_Carre)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
@@ -1585,5 +1586,85 @@ TEST(LevelSetTestClass, LevelSet_Test_Unit)
 
 }
 
+TEST(LevelSetTestClass, LevelSet_Test_Unit_C1_3D)
+{
+	Mesh m(MeshModel(DIM3 | R | F | E | N |
+	                 R2N | F2N | E2N | R2F | F2R |
+	                 F2E | E2F | R2E | N2R | N2F | N2E));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Aero/3D/C1_3D_0.3.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::R);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doctor(&m);
+	doctor.buildFacesAndR2F();
+	doctor.buildEdgesAndX2E();
+	doctor.updateUpwardConnectivity();
+
+	double eps = pow(10, -6);
+	double eps_2 = pow(10, -3);
+
+	int markFrontNodesInt = m.newMark<gmds::Node>();
+	int markFrontNodesOut = m.newMark<gmds::Node>();
+
+	for(auto id:m.nodes()){
+		Node n = m.get<Node>(id);
+		double coord_y = n.Y() ;
+		double coord_x = n.X() ;
+		double coord_z = n.Z() ;
+		double rayon;
+		rayon = sqrt( (pow(coord_x, 2) + pow(coord_y, 2) + pow(coord_z,2) ) ) ;
+		if ( abs(rayon - 0.5) < pow(10,-3)) {
+			// For this test case, the front to advance is the boundary where x²+y²=0.5
+			m.mark<Node>(id,markFrontNodesInt);
+		}
+		else if (abs(rayon - 2.0) < pow(10,-3)) {
+			m.mark<Node>(id,markFrontNodesOut);
+		}
+	}
+
+	std::cout << "Fin de l'initialisation des marques" << std::endl ;
+
+	Variable<double> *var_dist = m.newVariable<double, GMDS_NODE>("GMDS_Distance");
+	Variable<double> *var_dist_int = m.newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	Variable<double> *var_dist_out = m.newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+
+	LevelSetEloi ls(&m, markFrontNodesInt, var_dist);
+	LevelSetEloi::STATUS result = ls.execute();
+	ASSERT_EQ(LevelSetEloi::SUCCESS, result);
+
+	/*
+	for(auto id:m.nodes()){
+	   std::cout << "ASSERT_NEAR(var_dist->value( " << id << "),  " << var_dist->value(id) << ", eps);" << std::endl;
+	}
+	 */
+
+	LevelSetExtended lsExtended(&m, markFrontNodesInt, var_dist);
+	LevelSetExtended::STATUS resultExtended = lsExtended.execute();
+	ASSERT_EQ(LevelSetExtended::SUCCESS, resultExtended);
+
+
+	LevelSetCombined lsCombined(&m, markFrontNodesInt, markFrontNodesOut,
+	                            var_dist,
+	                            var_dist_int,
+	                            var_dist_out);
+
+	LevelSetCombined::STATUS resultComb = lsCombined.execute();
+	ASSERT_EQ(LevelSetCombined::SUCCESS, resultComb);
+
+	m.unmarkAll<Node>(markFrontNodesInt);
+	m.freeMark<Node>(markFrontNodesInt);
+	m.unmarkAll<Node>(markFrontNodesOut);
+	m.freeMark<Node>(markFrontNodesOut);
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("LevelSet_C1_3D.vtk");
+
+}
 
 /*----------------------------------------------------------------------------*/
