@@ -90,22 +90,8 @@ void AeroPipeline2D::LectureMaillage(){
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
 
-	MeshCleaner();
+	math::Utils::MeshCleaner(m_mesh);
 
-}
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
-void AeroPipeline2D::MeshCleaner(){
-	for (auto n_id:m_mesh->nodes())
-	{
-		Node n = m_mesh->get<Node>(n_id);
-		if (n.get<Face>().empty()) {
-			//std::cout << "Noeud isolé : " << n_id << std::endl;
-			m_mesh->deleteNode(n_id);
-		}
-	}
 }
 /*------------------------------------------------------------------------*/
 
