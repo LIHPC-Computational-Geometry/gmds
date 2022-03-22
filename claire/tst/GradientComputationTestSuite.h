@@ -34,7 +34,7 @@ TEST(GradientComputationTestClass, GradientComputation2D_Test1)
 	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Carre.vtk";
+	std::string vtk_file = dir+"/Aero/Poubelle/Carre.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -83,6 +83,7 @@ TEST(GradientComputationTestClass, GradientComputation2D_Test1)
 	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
 }
 
+/*
 TEST(GradientComputationTestClass, GradientComputation2D_Test2)
 {
 	// WE READ
@@ -267,6 +268,7 @@ TEST(GradientComputationTestClass, GradientComputation2D_Test4)
 
 	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
 }
+ */
 
 /*----------------------------------------------------------------------------*/
 
@@ -328,7 +330,7 @@ TEST(GradientComputationTestClass, GradientComputation3D_Test1)
 
 	ASSERT_EQ(GradientComputation3D::SUCCESS, result);
 }
-
+/*
 TEST(GradientComputationTestClass, GradientComputation3D_Test2)
 {
 	Mesh m(MeshModel(DIM3 | R | F | E | N |
@@ -383,10 +385,6 @@ TEST(GradientComputationTestClass, GradientComputation3D_Test2)
 
 TEST(GradientComputationTestClass, GradientComputation3D_Test3)
 {
-	/*-----------------------------------------------------------*/
-	// Cas test sur la géométrie B0. Les Level Sets sont calculés
-	// en deux fois puis combinés de l'intérieur vers l'extérieur.
-	/*-----------------------------------------------------------*/
 	Mesh m(MeshModel(DIM3 | R | F | E | N |
 	                 R2N | F2N | E2N | R2F | F2R |
 	                 F2E | E2F | R2E | N2R | N2F | N2E));
@@ -445,7 +443,7 @@ TEST(GradientComputationTestClass, GradientComputation3D_Test3)
 
 	ASSERT_EQ(GradientComputation3D::SUCCESS, result);
 }
-
+ */
 /*----------------------------------------------------------------------------*/
 
 
@@ -462,7 +460,7 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test1)
 	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Carre.vtk";
+	std::string vtk_file = dir+"/Aero/Poubelle/Carre.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -508,7 +506,7 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test1)
 
 	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
 }
-
+/*
 TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test2)
 {
 	// WE READ
@@ -625,7 +623,7 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test3)
 
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result);
 }
-
+*/
 /*----------------------------------------------------------------------------*/
 
 
@@ -687,7 +685,7 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test1)
 
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result);
 }
-
+/*
 TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test2)
 {
 	Mesh m(MeshModel(DIM3 | R | F | E | N |
@@ -744,10 +742,6 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test2)
 
 TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test3)
 {
-	/* Cas test B0 (3D) avec Level Set calculé par la méthode LevelSetCombined
-	 * 2 LS sont calculés, une de l'intérieur vers l'extérieur, une de l'extérieur
-	 * vers l'intérieur puis elles sont combinées.
-	 */
 	Mesh m(MeshModel(DIM3 | R | F | E | N |
 	                 R2N | F2N | E2N | R2F | F2R |
 	                 F2E | E2F | R2E | N2R | N2F | N2E));
@@ -811,5 +805,5 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test3)
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result);
 
 }
-
+*/
 /*----------------------------------------------------------------------------*/
