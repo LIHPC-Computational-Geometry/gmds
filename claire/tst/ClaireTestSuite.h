@@ -321,7 +321,7 @@ TEST(ClaireTestClass, testGrid2D_Plaque_Plane)
 	writer_geom_init.setDataOptions(N|F);
 	writer_geom_init.write("smooth2D_test_plaque_plane_init.vtk");
 
-	Smooth2D smoother(&m,var_bnd, 2000);
+	Smooth2D smoother(&m,var_bnd, 200);
 	Smooth2D::STATUS result = smoother.execute();
 
 	IGMeshIOService ioService_geom(&m);
