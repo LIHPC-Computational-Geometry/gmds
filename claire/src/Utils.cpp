@@ -42,6 +42,18 @@ TCellID Utils::CommonEdge(Mesh *AMesh, TCellID n0_id, TCellID n1_id){
 /*------------------------------------------------------------------------*/
 
 
+/*------------------------------------------------------------------------*/
+void Utils::MeshCleaner(Mesh *AMesh){
+	for (auto n_id:AMesh->nodes())
+	{
+		Node n = AMesh->get<Node>(n_id);
+		if (n.get<Face>().empty()) {
+			//std::cout << "Noeud isolé : " << n_id << std::endl;
+			AMesh->deleteNode(n_id);
+		}
+	}
+}
+/*------------------------------------------------------------------------*/
 
 
 

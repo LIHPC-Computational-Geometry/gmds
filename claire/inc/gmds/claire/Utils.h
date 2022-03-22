@@ -42,6 +42,14 @@ class LIB_GMDS_CLAIRE_API Utils {
 	static TCellID CommonEdge(Mesh *AMesh, TCellID n0_id, TCellID n1_id);
 
 	/*------------------------------------------------------------------------*/
+	/** \brief  Retire les noeuds qui ne sont connectés à rien dans le maillage
+         *
+         * \param[in] AMesh the mesh
+         *
+         * \return  Nothing
+	 */
+	static void MeshCleaner(Mesh *AMesh);
+	/*------------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/
