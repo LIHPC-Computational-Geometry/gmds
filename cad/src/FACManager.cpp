@@ -34,19 +34,19 @@ namespace gmds{
         FACManager::~FACManager()
         {
             for(unsigned int i=0; i < m_volumes.size(); i++)
-                if(m_volumes[i] != 0)
+                if(m_volumes[i] != nullptr)
                     delete m_volumes[i];
 
             for(unsigned int i=0; i < m_surfaces.size(); i++)
-                if(m_surfaces[i] != 0)
+                if(m_surfaces[i] != nullptr)
                     delete m_surfaces[i];
 
             for(unsigned int i=0; i < m_curves.size(); i++)
-                if(m_curves[i] != 0)
+                if(m_curves[i] != nullptr)
                     delete m_curves[i];
 
             for(unsigned int i=0; i < m_points.size(); i++)
-                if(m_points[i] != 0)
+                if(m_points[i] != nullptr)
                     delete m_points[i];
 
         }
