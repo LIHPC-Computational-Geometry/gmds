@@ -6,6 +6,7 @@ add_executable(GMDS_MATH_TEST
         MathTestSuite.h
         PointTestSuite.h
         QuaternionTestSuite.h
+        QualityMeasureTestSuite.h
         OrientationTestSuite.h
         TransfiniteInterpolationTestSuite.h
         main_test.cpp)
