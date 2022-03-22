@@ -95,7 +95,7 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test1)
 	ASSERT_EQ(AdvectedPointRK4_2D::SUCCESS, result);
 }
 
-TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test2)
+TEST(PointFollowingVectorFieldTestClass, DISABLED_AdvectedPointRK4_2D_Test2)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -178,7 +178,7 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test2)
 
 }
 
-TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test3)
+TEST(PointFollowingVectorFieldTestClass, DISABLED_AdvectedPointRK4_2D_Test3)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -258,7 +258,7 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test3)
 
 }
 
-TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test4)
+TEST(PointFollowingVectorFieldTestClass, DISABLED_AdvectedPointRK4_2D_Test4)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
