@@ -13,7 +13,8 @@
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 
-    class GMDSIo_API Mesh;
+    //class GMDSIo_API Mesh;
+    class Mesh;
 
     class GMDSIo_API IGMeshIOService : public IMeshIOService {
     public:
