@@ -73,4 +73,3 @@ jobs:
 
     - name: Install
       run: cmake --install build --prefix ${{github.workspace}}/buildinstall --config Release
-
