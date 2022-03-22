@@ -68,6 +68,9 @@ jobs:
               make code_cover_gmds
               bash <(curl -s https://codecov.io/bash)
               bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r code_cover_gmds.info
-
           fi
-      
+
+    - name: Install
+      run: cmake --install build --prefix ${{github.workspace}}/buildinstall --config Release
+
+
