@@ -3,6 +3,7 @@
 //
 
 /*------------------------------------------------------------------------*/
+#include <gmds/claire/Utils.h>
 #include <gmds/claire/AeroPipeline2D.h>
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
@@ -774,10 +775,7 @@ void AeroPipeline2D::DiscretisationBlocsBord(int color){
 
 		Node n = m_mesh->get<Node>(bnd_nodes_id_ordered[i]);
 		math::Point p = n.point() ;
-		Node n_ant = m_mesh->get<Node>(bnd_nodes_id_ordered[i-1]);
-		math::Point p_ant = n_ant.point() ;
-		math::Vector3d v = p-p_ant;
-		l += v.norm() ;
+		l += math::Utils::distFromNodeIds(m_mesh, bnd_nodes_id_ordered[i], bnd_nodes_id_ordered[i-1]);
 
 		if ( m_mesh->isMarked<Node>(bnd_nodes_id_ordered[i], markPointNodes)
 		    || l >= Lmax
