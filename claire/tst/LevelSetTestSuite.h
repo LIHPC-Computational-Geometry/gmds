@@ -49,16 +49,18 @@ TEST(LevelSetTestClass, LevelSet_Test_Unit_Carre)
 	std::vector<TCellID> bnd_node_ids;
 	bnd_op.getBoundaryNodes(bnd_node_ids);
 
+	double tol(pow(10,-6));
+
 	int markFrontNodesInt = m.newMark<gmds::Node>();
 	int markFrontNodesOut = m.newMark<gmds::Node>();
 	for(auto id:bnd_node_ids){
 		Node n = m.get<Node>(id);
 		double coord_y = n.Y() ;
-		if (coord_y == 0) {
+		if ( abs(coord_y) < tol) {
 			// For the square test case, the front to advance is the boundary where y=0
 			m.mark<Node>(id,markFrontNodesInt);
 		}
-		else if (coord_y == 1) {
+		else if ( abs(coord_y-1.0) < tol) {
 			m.mark<Node>(id,markFrontNodesOut);
 		}
 	}
