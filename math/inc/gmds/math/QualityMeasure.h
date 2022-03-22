@@ -64,6 +64,7 @@ public:
     static void extremAngles(const Triangle& AT,
                              double& ASmallAngle, double& ALargeAngle);
 };
+}
 /*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/

@@ -327,6 +327,4 @@ TEST(PillowOpClass, test_pillow3D_with_geom)
     vtkWriter.setCellOptions(gmds::N|gmds::R);
     vtkWriter.setDataOptions(gmds::N|gmds::R);
     vtkWriter.write(vtk_file2);
-
-
 }
