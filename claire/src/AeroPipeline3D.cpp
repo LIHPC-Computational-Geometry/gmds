@@ -11,7 +11,6 @@
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>
 #include <gmds/io/VTKReader.h>
-#include <unit_test_config.h>
 #include <iostream>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
@@ -90,7 +89,6 @@ void AeroPipeline3D::EcritureMaillage(){
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	std::string dir(TEST_SAMPLES_DIR);
 	vtkWriter.write(m_params.output_file);
 
 	// Ecriture du maillage initial (tetra)
