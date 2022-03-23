@@ -12,5 +12,7 @@ using namespace gmds;
 AbstractAeroBoundaries::AbstractAeroBoundaries(Mesh *AMesh) :
   m_mesh(AMesh)
 {
+	m_markNodesParoi = m_mesh->newMark<gmds::Node>();
+	m_markNodesAmont = m_mesh->newMark<gmds::Node>();
 }
 /*------------------------------------------------------------------------*/

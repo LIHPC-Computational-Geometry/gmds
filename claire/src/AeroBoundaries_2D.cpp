@@ -19,7 +19,7 @@ AeroBoundaries_2D::AeroBoundaries_2D(Mesh *AMesh) :
 
 
 /*------------------------------------------------------------------------*/
-void AeroBoundaries_2D::execute(){
-
+AbstractAeroBoundaries::STATUS AeroBoundaries_2D::execute(){
+	return AbstractAeroBoundaries::SUCCESS;
 }
 /*------------------------------------------------------------------------*/

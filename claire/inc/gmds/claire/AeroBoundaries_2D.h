@@ -25,7 +25,7 @@ class LIB_GMDS_CLAIRE_API AeroBoundaries_2D: public AbstractAeroBoundaries {
 	/*------------------------------------------------------------------------*/
 	/** \brief Function to be called for mesh generation
 	 */
-	virtual void execute();
+	virtual AbstractAeroBoundaries::STATUS execute();
 	/*------------------------------------------------------------------------*/
 
 };

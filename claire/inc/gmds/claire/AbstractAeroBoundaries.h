@@ -38,7 +38,7 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	/*-------------------------------------------------------------------*/
 	/** \brief Function to be called for mesh generation
 	 */
-	virtual void execute()=0;
+	virtual AbstractAeroBoundaries::STATUS execute()=0;
 	/*-------------------------------------------------------------------*/
 
  protected:
@@ -53,9 +53,9 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	/** Colorie chaque bord d'une couleur != */
 	Variable<int>* m_var_color_bords ;
 	/** Marque sur les noeuds de la paroi */
-	int m_markFrontNodesParoi;
-	/** Marque sur les noeuds de la frontière ext */
-	int m_markFrontNodesExt;
+	int m_markNodesParoi;
+	/** Marque sur les noeuds de la frontière amont */
+	int m_markNodesAmont;
 
 };
 /*----------------------------------------------------------------------------*/

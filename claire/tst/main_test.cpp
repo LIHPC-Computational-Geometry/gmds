@@ -9,6 +9,7 @@
 #include "GradientComputationTestSuite.h"
 #include "PointFollowingVectorFieldTestSuite.h"
 #include "AeroPipelineTestSuite.h"
+#include "AeroBoundariesTestSuite.h"
 #include "UtilsTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
