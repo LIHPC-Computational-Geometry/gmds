@@ -140,6 +140,11 @@ class SimplexMesh
 
   void buildAdjInfoGlobal();
 
+  void initializeEdgeStructure();
+
+  const std::multimap<TInt, std::pair<TInt,TInt>> & getConstEdgeStructure() {return m_edgesStructure;}
+
+  std::multimap<TInt, std::pair<TInt,TInt>> & getEdgeStructure() {return m_edgesStructure;}
 
   void buildBaseLocal(const TSimplexID& tetIndx);
 
@@ -425,6 +430,9 @@ private:
 
   Octree* m_octree = nullptr;
   std::map<unsigned int, std::pair<unsigned int, unsigned int>> edgeTianglesIndices{};
+
+  //data for edge structure [labelCurve, (curveNodeX, curveNodeY)]...
+  std::multimap<TInt, std::pair<TInt,TInt>> m_edgesStructure {};
 
   //hexahedron data for tet extraction..
   std::vector<std::vector<TInt>> m_hexahedronData;

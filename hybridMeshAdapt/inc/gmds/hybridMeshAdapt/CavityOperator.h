@@ -71,10 +71,14 @@ namespace gmds
 
             const std::vector<std::vector<TInt>>  &  getBorderEdges               () const {return m_borderSurfaceNode;}
 
+            void setEdgeContainingNode                                   (const TInt node0, const TInt node1){m_edgeContainingNode = std::make_pair(node0, node1);};
+
+            const std::pair<TInt, TInt>  &  getEdgeContainingNode        () const {return m_edgeContainingNode;}
+
             /*Tableau of node to connect in order to create tetraedre/triangle */
             std::vector<std::vector<TInt>> pointToConnect(std::vector<TSimplexID>& orderedAdjTet, std::set<TSimplexID>& complementarySimplex, const std::vector<TInt>& nodesInsideCavity, std::vector<TInt>& cellOfPointToConnect, std::vector<TInt>& nodeNotConnected, const TInt nodeToInsert) const ;
 
-            void nodesReconnection();
+            void nodesReconnection(const TInt node);
 
             void findExtSimplex(std::vector<TSimplexID>& extSimplex);
 
@@ -111,6 +115,8 @@ namespace gmds
             std::vector<TInt> m_nodeInCavity;
 
             std::vector<TInt> m_surfaceNodeInCavity;
+
+            std::pair<TInt, TInt> m_edgeContainingNode{};
 
             SimplexMesh*      m_simplex_mesh   = nullptr;
           };

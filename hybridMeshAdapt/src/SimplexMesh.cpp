@@ -188,16 +188,13 @@ void SimplexMesh::deleteAllSimplicesBut(const std::vector<TSimplexID> & simplice
     }
   }
 
-  /*for(unsigned int tri = 1 ; tri < m_tri_ids.capacity(); tri++)
+  for(unsigned int tri = 1 ; tri < m_tri_ids.capacity(); tri++)
   {
-    if(m_tri_ids[tri] != 0)
+    if(std::find(simplices.begin(), simplices.end(), -tri) == simplices.end())
     {
-      if(std::find(simplices.begin(), simplices.end(), -tri) == simplices.end())
-      {
-        m_tri_ids.unselect(tri);
-      }
+      m_tri_ids.unselect(tri);
     }
-  }*/
+  }
 }
 /*****************************************************************************/
 void SimplexMesh::deleteAllTrianglesBut(const std::vector<TSimplexID> & triangles)
@@ -1010,6 +1007,113 @@ void SimplexMesh::buildAdjInfoGlobal()
     }
 }
 /******************************************************************************/
+void SimplexMesh::initializeEdgeStructure()
+{
+  Variable<TInt>* BND_CURVE_COLOR = nullptr;
+  Variable<TInt>* BND_VERTEX_COLOR = nullptr;
+  try {
+    BND_CURVE_COLOR = getVariable<TInt,SimplicesNode>("BND_CURVE_COLOR");
+    BND_VERTEX_COLOR = getVariable<TInt,SimplicesNode>("BND_VERTEX_COLOR");
+  }catch (GMDSException e) {
+    throw gmds::GMDSException(e);
+  }
+
+  std::multimap<TInt, std::vector<TInt>> labels2Nodes{};
+  std::multimap<TInt, std::vector<TInt>> corner2label{};
+
+  for(TInt nodeIdx = 0 ; nodeIdx < m_node_ids.capacity() ; nodeIdx++)
+  {
+    if(m_node_ids[nodeIdx] != 0)
+    {
+      TInt labelCurve = (*BND_CURVE_COLOR)[nodeIdx];
+      TInt labelCorner = (*BND_VERTEX_COLOR)[nodeIdx];
+      if(labelCurve != 0)
+      {
+        auto iter = labels2Nodes.find(labelCurve);
+        if(iter != labels2Nodes.end())
+        {
+          iter->second.push_back(nodeIdx);
+        }
+        else
+        {
+          std::vector<TInt> v{nodeIdx};
+          labels2Nodes.insert(std::make_pair(labelCurve,v));
+        }
+      }
+      else if(labelCorner != 0)
+      {
+        const std::vector<TInt> nodes = SimplicesNode(this, nodeIdx).neighborNodes();
+        auto iter = corner2label.find(nodeIdx);
+        std::vector<TInt> v{};
+        if(iter == corner2label.end())
+        {
+          for(auto const node : nodes)
+          {
+            if(m_node_ids[node] != 0)
+            {
+              if((*BND_CURVE_COLOR)[node] != 0)
+              {
+                v.push_back(node);
+              }
+            }
+            else
+            {
+              throw gmds::GMDSException("m_node_ids[node] == 0");
+            }
+          }
+          corner2label.insert(std::make_pair(nodeIdx, v));
+        }
+      }
+    }
+  }
+
+  gmds::BitVector nodeCycling(m_node_ids.capacity());
+  for(auto const data : labels2Nodes)
+  {
+    for(auto const node0 : data.second)
+    {
+        const SimplicesNode sNode0 = SimplicesNode(this, node0);
+        for(auto const node1 : data.second)
+        {
+          if(nodeCycling[node1] == 0)
+          {
+            if(node0 != node1)
+            {
+              std::pair<TInt, TInt> p{std::min(node0, node1), std::max(node0, node1)};
+              const SimplicesNode sNode1 = SimplicesNode(this, node1);
+              if(sNode0.shell(sNode1).size() != 0)
+              {
+                m_edgesStructure.insert(std::make_pair(data.first, p));
+              }
+            }
+          }
+        }
+        nodeCycling.assign(node0);
+    }
+  }
+
+  //Curve nodes have been connected together
+  //Connection to corner node with curve node
+  for(auto const c2n : corner2label)
+  {
+    TInt corner = c2n.first;
+    for(auto const curveNode : c2n.second)
+    {
+      TInt labelCurve = (*BND_CURVE_COLOR)[curveNode];
+      std::pair<TInt, TInt> p{std::min(corner, curveNode), std::max(corner, curveNode)};
+      m_edgesStructure.insert(std::make_pair(labelCurve, p));
+    }
+  }
+
+
+  /*for(auto const data : m_edgesStructure)
+  {
+    std::cout << "data --> " << data.first << " | [" << data.second.first << " : " << data.second.second << "]" << std::endl;
+  }
+  std::cout << "INITIALISATION EDGE STRUCTURE END" << std::endl;*/
+
+}
+/******************************************************************************/
 void SimplexMesh::buildOppFaces(const TSimplexID idxTri)
 {
   TInt triIdx = -idxTri;
@@ -1295,9 +1399,18 @@ void SimplexMesh::buildSimplexHull()
   };
   std::vector<borderSimplex> borderSimplices;
 
-  Variable<int>* BND_VERTEX_COLOR = getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
-  Variable<int>* BND_CURVE_COLOR = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
-  Variable<int>* BND_SURFACE_COLOR = getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+  Variable<int>* BND_VERTEX_COLOR  = nullptr;
+  Variable<int>* BND_CURVE_COLOR   = nullptr;
+  Variable<int>* BND_SURFACE_COLOR = nullptr;
+
+  try{
+    BND_VERTEX_COLOR  = getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+    BND_CURVE_COLOR   = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+    BND_SURFACE_COLOR = getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+  } catch(GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
 
   /*this loop find all the border tetraedron with the local node pointing the border of the mesh*/
   for(unsigned int tet = 0 ; tet < m_tet_ids.capacity() ; tet++)
@@ -1306,7 +1419,7 @@ void SimplexMesh::buildSimplexHull()
     {
       for(unsigned int localNode = 0 ; localNode < 4 ; localNode++)
       {
-        TSimplexID oppositeSimplex = m_tet_adj[tet][localNode]; //SimplicesCell(this, tet).oppositeTetraIdx(localNode);
+        TSimplexID oppositeSimplex = m_tet_adj[tet][localNode];
         if(oppositeSimplex == border)
         {
           TInt node0 = m_tet_nodes[tet][(localNode + 1) % 4];
@@ -1315,7 +1428,7 @@ void SimplexMesh::buildSimplexHull()
           //This condition won't build a null triangle on a curve (if a plate tetra exist in the mesh 's border)
           if((*BND_CURVE_COLOR)[node0] != 0 && (*BND_CURVE_COLOR)[node0] == (*BND_CURVE_COLOR)[node1]  && (*BND_CURVE_COLOR)[node0] == (*BND_CURVE_COLOR)[node2])
           {
-            continue;
+            //continue;
           }
           borderSimplex bS;
           bS.simplexId = tet;
@@ -1333,26 +1446,25 @@ void SimplexMesh::buildSimplexHull()
     TSimplexID triIdx = addTriangle(faceNodes[0], faceNodes[1], faceNodes[2]);
   }
 
-  //for(auto const tet : m_tet_ids){deleteTetra(tet);}
 
-  if(!(BND_VERTEX_COLOR == nullptr || BND_CURVE_COLOR == nullptr || BND_SURFACE_COLOR == nullptr))
+  gmds::Variable<int>* BND_TRIANGLES = newVariable<int, SimplicesTriangle>("BND_TRIANGLES");
+  std::vector<TInt> notIndexedCornerTriangle{};
+  for(unsigned int tri = 1 ; tri < m_tri_ids.capacity() ; tri++)
   {
-    gmds::Variable<int>* BND_TRIANGLES = newVariable<int, SimplicesTriangle>("BND_TRIANGLES");
-    std::vector<TInt> notIndexedCornerTriangle{};
-    for(unsigned int tri = 1 ; tri < m_tri_ids.capacity() ; tri++)
+    if(m_tri_ids[tri] == 1)
     {
-      if(m_tri_ids[tri] == 1)
+      std::vector<TInt> nodes = SimplicesTriangle(this, tri).getNodes();
+      //0 --> corner | 1 --> ridge | 2--> surface | 3 --> volume node
+      unsigned int dim0 = ((*BND_VERTEX_COLOR)[nodes[0]] != 0)? CORNER : ((*BND_CURVE_COLOR)[nodes[0]] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[nodes[0]] != 0)? SURFACE : VOLUME;
+      unsigned int dim1 = ((*BND_VERTEX_COLOR)[nodes[1]] != 0)? CORNER : ((*BND_CURVE_COLOR)[nodes[1]] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[nodes[1]] != 0)? SURFACE : VOLUME;
+      unsigned int dim2 = ((*BND_VERTEX_COLOR)[nodes[2]] != 0)? CORNER : ((*BND_CURVE_COLOR)[nodes[2]] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[nodes[2]] != 0)? SURFACE : VOLUME;
+      int index;
+
+      unsigned int dimMax = std::max(dim0, std::max(dim1, dim2));
+      unsigned int dimMin = std::min(dim0, std::min(dim1, dim2));
+
+      if(dimMax != VOLUME)
       {
-        std::vector<TInt> nodes = SimplicesTriangle(this, tri).getNodes();
-        //0 --> corner | 1 --> ridge | 2--> surface | 3 --> volume node
-        unsigned int dim0 = ((*BND_VERTEX_COLOR)[nodes[0]] != 0)? CORNER : ((*BND_CURVE_COLOR)[nodes[0]] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[nodes[0]] != 0)? SURFACE : VOLUME;
-        unsigned int dim1 = ((*BND_VERTEX_COLOR)[nodes[1]] != 0)? CORNER : ((*BND_CURVE_COLOR)[nodes[1]] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[nodes[1]] != 0)? SURFACE : VOLUME;
-        unsigned int dim2 = ((*BND_VERTEX_COLOR)[nodes[2]] != 0)? CORNER : ((*BND_CURVE_COLOR)[nodes[2]] != 0)?  RIDGE : ((*BND_SURFACE_COLOR)[nodes[2]] != 0)? SURFACE : VOLUME;
-        int index;
-
-        unsigned int dimMax = std::max(dim0, std::max(dim1, dim2));
-        unsigned int dimMin = std::min(dim0, std::min(dim1, dim2));
-
         if(dimMax == SURFACE)
         {
           TInt surfaceNode = (dimMax == dim0)? nodes[0] : (dimMax == dim1)? nodes[1] : nodes[2];
@@ -1366,7 +1478,7 @@ void SimplexMesh::buildSimplexHull()
             SimplicesTriangle triangle = SimplicesTriangle(this, tri);
             TInt cornerNode = (dimMin == dim0)? nodes[0] : (dimMin == dim1)? nodes[1] : nodes[2];
             TInt localNode   = triangle.getLocalNode(cornerNode);
-            /*look for the adjacent surface triangle ---> to change if some triangle will be added on the volume mesh*/
+            //look for the adjacent surface triangle ---> to change if some triangle will be added on the volume mesh
             TSimplexID adjTriangle = triangle.neighborTriangle(localNode);
             std::vector<TInt> nodesAdjTriangle = SimplicesTriangle(this, adjTriangle).otherNodesInTriangle(triangle);
             if(nodesAdjTriangle.size() == 1)
@@ -1385,100 +1497,105 @@ void SimplexMesh::buildSimplexHull()
           }
         }
       }
-    }
-
-    for(auto const triangle : notIndexedCornerTriangle)
-    {
-      int index;
-      TSimplexID tri = triangle;
-      unsigned int sizeFace = 3;
-      gmds::BitVector cyclingCheck(m_tri_ids.capacity());
-      cyclingCheck.assign(tri);
-      for(;;)
+      else
       {
-        if((*BND_TRIANGLES)[tri] != 0)
-        {
-          index = (*BND_TRIANGLES)[tri];
-          break;
-        }
-        std::vector<TInt> nodes{m_tri_nodes[tri][0], m_tri_nodes[tri][1], m_tri_nodes[tri][2]};
-        for(unsigned int local = 0 ; local < sizeFace ; local++)
-        {
-          TInt nodeA = nodes[local];
-          TInt nodeB = nodes[(local + 1) % sizeFace];
+        std::cout << "nodes --> " << nodes[0] << " | " << nodes[1] << " | " << nodes[2] << " | " << std::endl;
+        throw gmds::GMDSException("dimMax == VOLUME, triangle is inside the volume");
+      }
+    }
+  }
 
-          if((*BND_CURVE_COLOR)[nodeA] != 0 && (*BND_CURVE_COLOR)[nodeB] != 0)
+  for(auto const triangle : notIndexedCornerTriangle)
+  {
+    int index;
+    TSimplexID tri = triangle;
+    unsigned int sizeFace = 3;
+    gmds::BitVector cyclingCheck(m_tri_ids.capacity());
+    cyclingCheck.assign(tri);
+    for(;;)
+    {
+      if((*BND_TRIANGLES)[tri] != 0)
+      {
+        index = (*BND_TRIANGLES)[tri];
+        break;
+      }
+      std::vector<TInt> nodes{m_tri_nodes[tri][0], m_tri_nodes[tri][1], m_tri_nodes[tri][2]};
+      for(unsigned int local = 0 ; local < sizeFace ; local++)
+      {
+        TInt nodeA = nodes[local];
+        TInt nodeB = nodes[(local + 1) % sizeFace];
+
+        if((*BND_CURVE_COLOR)[nodeA] != 0 && (*BND_CURVE_COLOR)[nodeB] != 0)
+        {
+          if((*BND_CURVE_COLOR)[nodeA] != (*BND_CURVE_COLOR)[nodeB])
           {
-            if((*BND_CURVE_COLOR)[nodeA] != (*BND_CURVE_COLOR)[nodeB])
+            TInt nodeC_Local = (local + 2) % sizeFace;
+            TInt adjTriangle = m_tri_adj[tri][nodeC_Local];
+            if(cyclingCheck[adjTriangle] == 0)
             {
-              TInt nodeC_Local = (local + 2) % sizeFace;
-              TInt adjTriangle = m_tri_adj[tri][nodeC_Local];
-              if(cyclingCheck[adjTriangle] == 0)
-              {
-                cyclingCheck.assign(adjTriangle);
-                tri = adjTriangle;
-                break;
-              }
+              cyclingCheck.assign(adjTriangle);
+              tri = adjTriangle;
+              break;
             }
           }
         }
       }
-      (*BND_TRIANGLES)[triangle] = index;
     }
+    (*BND_TRIANGLES)[triangle] = index;
+  }
 
-    for(unsigned int tri = 1 ; tri < m_tri_ids.capacity() ; tri++)
+  for(unsigned int tri = 1 ; tri < m_tri_ids.capacity() ; tri++)
+  {
+    if(m_tri_ids[tri] == 1)
     {
-      if(m_tri_ids[tri] == 1)
+      if((*BND_TRIANGLES)[tri] == 0)
       {
-        if((*BND_TRIANGLES)[tri] == 0)
-        {
-          gmds::BitVector cyclingCheck(m_tri_ids.capacity());
-          cyclingCheck.assign(tri);
-          TInt idx = 0;
-          do {
-            idx = findRemainTriangleIdx(tri, cyclingCheck);
-          } while(idx == 0 || idx > 150);
+        gmds::BitVector cyclingCheck(m_tri_ids.capacity());
+        cyclingCheck.assign(tri);
+        TInt idx = 0;
+        do {
+          idx = findRemainTriangleIdx(tri, cyclingCheck);
+        } while(idx == 0 || idx > 200);
 
-          (*BND_TRIANGLES)[tri] = idx;
-        }
+        (*BND_TRIANGLES)[tri] = idx;
       }
     }
+  }
 
-    //filling edgeTianglesIndices
-    Variable<int>* BND_CURVE_COLOR = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
-    for(unsigned int nodeIdx = 0 ; nodeIdx < m_node_ids.capacity() ; nodeIdx++)
+  //filling edgeTianglesIndices
+  for(unsigned int nodeIdx = 0 ; nodeIdx < m_node_ids.capacity() ; nodeIdx++)
+  {
+    if(m_node_ids[nodeIdx] != 0)
     {
-      if(m_node_ids[nodeIdx] != 0)
+      if((*BND_CURVE_COLOR)[nodeIdx] != 0)
       {
-        if((*BND_CURVE_COLOR)[nodeIdx] != 0)
+        unsigned int indiceNode      = (*BND_CURVE_COLOR)[nodeIdx];
+        std::vector<TSimplexID> ball = SimplicesNode(this, nodeIdx).ballOf();
+        std::set<unsigned int> trianglesIndices{};
+        if(edgeTianglesIndices.find(indiceNode) == edgeTianglesIndices.end())
         {
-          unsigned int indiceNode      = (*BND_CURVE_COLOR)[nodeIdx];
-          std::vector<TSimplexID> ball = SimplicesNode(this, nodeIdx).ballOf();
-          std::set<unsigned int> trianglesIndices{};
-          if(edgeTianglesIndices.find(indiceNode) == edgeTianglesIndices.end())
+          for(auto const simplex : ball)
           {
-            for(auto const simplex : ball)
+            if(simplex < 0 && simplex != border)
             {
-              if(simplex < 0 && simplex != border)
-              {
-                unsigned int triangleIndice = (*BND_TRIANGLES)[-simplex];
-                trianglesIndices.insert(triangleIndice);
-              }
+              unsigned int triangleIndice = (*BND_TRIANGLES)[-simplex];
+              trianglesIndices.insert(triangleIndice);
             }
+          }
 
-            if(trianglesIndices.size() == 2)
-            {
-              std::set<unsigned int>::iterator it = trianglesIndices.begin();
-              unsigned int triangleId0 = *it;
-              std::advance(it, 1);
-              unsigned int triangleId1 = *it;
-              std::pair<unsigned int, unsigned int> pairTrianglesIndedices = std::make_pair(triangleId0, triangleId1);
-              edgeTianglesIndices[indiceNode] = pairTrianglesIndedices;
-            }
-            else
-            {
-              std::cout << "trianglesIndices.size() != 2 --> " << trianglesIndices.size() << " for node : "<< nodeIdx << " of index : " << indiceNode <<  std::endl;
-            }
+          if(trianglesIndices.size() == 2)
+          {
+            std::set<unsigned int>::iterator it = trianglesIndices.begin();
+            unsigned int triangleId0 = *it;
+            std::advance(it, 1);
+            unsigned int triangleId1 = *it;
+            std::pair<unsigned int, unsigned int> pairTrianglesIndedices = std::make_pair(triangleId0, triangleId1);
+            edgeTianglesIndices[indiceNode] = pairTrianglesIndedices;
+          }
+          else
+          {
+            std::cout << "trianglesIndices.size() != 2 --> " << trianglesIndices.size() << " for node : "<< nodeIdx << " of index : " << indiceNode <<  std::endl;
+            //throw GMDSException("problem with the mesh file (the edge is maybe not realy one)");
           }
         }
       }
@@ -3980,15 +4097,8 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
   std::map<TInt, std::vector<TSimplexID>> hash_edge; // map  for the reconnection of the surface triangle
 
   unsigned int faceIter = 0;
-  /*for(auto const& face : pointsToConnect)
-  {
-    std::cout << "face[0,1,2] --> " << face[0] << " | " << face[1] << " | " << face[2] << " | " << std::endl;
-  }*/
-
   for(auto const& face : pointsToConnect)
   {
-    //std::cout << "faceIter --> " << faceIter << std::endl;
-    //std::cout << "face[0,1,2] --> " << face[0] << " | " << face[1] << " | " << face[2] << " | " << std::endl;
     TSimplexID neighborSimplex = extSimplexBorder[faceIter];
 
     if(neighborSimplex != border)
@@ -4041,15 +4151,12 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
       unsigned int localNodeforTriangle  = localsInfoForTriangles[faceIter][lN];
       TSimplexID oppositeTriangle        = -oppositeTriangles[faceIter][lN];
 
-      //std::cout << "localNodeforTriangle -> " << localNodeforTriangle << std::endl;
-      //std::cout << "oppositeTriangle -> " << oppositeTriangle << std::endl;
       if(localNodeforTriangle != border)
       {
         TInt nodeB = face[(localNodeforTriangle + 1) % sizeFace];
         TInt nodeA = face[(localNodeforTriangle + 2) % sizeFace];
 
         TInt triangle = -addTriangle(nodeA, nodeB, nodeToConnect, false);
-        //std::cout << "triangle created --> " <<  triangle << " NODE -> " << nodeA  <<" | " << nodeB << " | " << nodeToConnect << " | "<< std::endl;
         triangles.push_back(triangle);
         (*BND_TRIANGLES)[-triangle] = trianglesIndices[faceIter][lN];
 
@@ -4067,12 +4174,12 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
           }
           else
           {
-            GMDSException("localnode >= 3");
+            throw GMDSException("localnode >= 3");
           }
         }
         else
         {
-          GMDSException("oppoNode.size() != 1");
+          throw GMDSException("oppoNode.size() != 1");
         }
 
         hash_edge[nodeA].push_back(-triangle);
@@ -4085,6 +4192,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
     }
     faceIter++;
   }
+
   /////Triangle reconnection//////
   ////////////////////////////////
   for(auto const & pair : hash_edge)
@@ -4115,7 +4223,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
     }
     else
     {
-      GMDSException("pair.second.size() != 2");
+      throw GMDSException("pair.second.size() != 2");
     }
   }
 
@@ -4156,7 +4264,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
     if(simplexId == border){continue;}
     if(face.size() == 0)
     {
-      return;
+      throw gmds::GMDSException("face.size() == 0");
     }
 
     for(unsigned int node = 0 ; node < face.size(); node++)
@@ -4187,7 +4295,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
     }
   }
 
-  //correction of the cavity if plane tetraedron is was build by reinsertion of node for example
+  //correction of the cavity if plane tetraedron  was build by reinsertion of node for example
   for(unsigned int cellIdx = 0 ; cellIdx < tetIdToBuildInfo.size() ; cellIdx++)
   {
     const TSimplexID simplex      =  tetIdToBuildInfo[cellIdx];
@@ -4219,8 +4327,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
             }
             else
             {
-              GMDSException("othersNode0.size() != 1 || othersNode1.size() == 1");
-
+              throw GMDSException("othersNode0.size() != 1 || othersNode1.size() == 1");
             }
           }
           else
@@ -4236,7 +4343,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
               }
               else
               {
-                GMDSException("othersNode.size() != 1");
+                throw GMDSException("othersNode.size() != 1");
               }
             }
           }
@@ -4275,7 +4382,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
           }
           else
           {
-            GMDSException("othersNode0.size() != 1 || othersNode1.size() == 1");
+            throw GMDSException("othersNode0.size() != 1 || othersNode1.size() == 1");
           }
           m_tri_ids.unselect(-simplex);
         }
@@ -4789,19 +4896,21 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
               //std::cout << "node being inserted --> " << data.node << " Of dimension -> " <<  data.dim_Nj << " and label -> " << data.index_Nj << std::endl;
               //std::cout << "from node --> " << node << " Of dimension -> " <<  dim_Ni << " and label -> " << index_Ni << std::endl;
 
-              if(dim_Ni == 4 && (data.dim_Nj == 0 || data.dim_Nj == 1 || data.dim_Nj == 2)){continue;}
+              //if(dim_Ni == 4 && (data.dim_Nj == 0 || data.dim_Nj == 1 || data.dim_Nj == 2)){continue;}
               const std::multimap<TInt, TInt> facesAlreadyBuilt{};
               PointInsertion(this, nodeToInsert, criterionRAIS, status, ball, surfaceNodesAdded, deletedNodes, facesAlreadyBuilt);
               if(status)
               {
 
-                //std::cout << "status --> " << status << std::endl;
-                /*gmds::VTKWriter vtkWriterDI(&ioService);
-                vtkWriterDI.setCellOptions(gmds::N|gmds::F|gmds::R);
-                vtkWriterDI.setDataOptions(gmds::N|gmds::F|gmds::R);
-                vtkWriterDI.write("ModeleCAD5_ER_ITER_TEST_" + std::to_string(cpt) + ".vtk");
-                std::cout << "cpt --> " << cpt << std::endl;
-                cpt++;*/
+                //if(cpt > 200)
+                //{
+                  //gmds::VTKWriter vtkWriterDI(&ioService);
+                  //vtkWriterDI.setCellOptions(gmds::N|gmds::F|gmds::R);
+                  //vtkWriterDI.setDataOptions(gmds::N|gmds::F|gmds::R);
+                  //vtkWriterDI.write("TEST_EDGESTRUCTURE_" + std::to_string(cpt) + ".vtk");
+                  //std::cout << "cpt --> " << cpt << std::endl;
+                //}
+                //cpt++;
                 edgesRemovedNbr++;
                 break;
               }
@@ -4893,6 +5002,15 @@ unsigned int SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, co
     TInt nodeAidx = edge.first;
     TInt nodeBidx = edge.second;
 
+    /*std::cout << "nodeAidx -> " << nodeAidx << std::endl;
+    std::cout << "nodeBidx -> " << nodeBidx << std::endl;
+    if(nodeAidx == 23517 && nodeBidx == 72468)
+    {
+      gmds::VTKWriter vtkWriter(&ioService);
+      vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
+      vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
+      vtkWriter.write("TEST.vtk");
+    }*/
     if(nodeAidx != border && nodeBidx != border)
     {
       if(bitNodes[nodeAidx] != 0 && bitNodes[nodeBidx] != 0)
@@ -5517,6 +5635,7 @@ bool SimplexMesh::pointInTriangle(const math::Point& query_point,
     normal.normalize();
     distance = w.dot(normal);
     // The point P′ lies inside T if:
+    //std::cout << "ABG -> " << alpha << " | " << beta << " | " << gamma << std::endl;
     return ((-epsilon <= alpha) && (alpha <= 1.0 + epsilon) &&
             (-epsilon <= beta)  && (beta  <= 1.0 + epsilon) &&
             (-epsilon <= gamma) && (gamma <= 1.0 + epsilon));
