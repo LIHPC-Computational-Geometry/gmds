@@ -94,7 +94,7 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test1)
 
 	ASSERT_EQ(AdvectedPointRK4_2D::SUCCESS, result);
 }
-
+/*
 TEST(PointFollowingVectorFieldTestClass, DISABLED_AdvectedPointRK4_2D_Test2)
 {
 	// WE READ
@@ -339,7 +339,7 @@ TEST(PointFollowingVectorFieldTestClass, DISABLED_AdvectedPointRK4_2D_Test4)
 	ASSERT_EQ(AdvectedPointRK4_2D::SUCCESS, result);
 
 }
-
+*/
 /*----------------------------------------------------------------------------*/
 
 
