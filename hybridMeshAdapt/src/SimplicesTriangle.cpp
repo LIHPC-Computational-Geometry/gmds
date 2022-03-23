@@ -315,6 +315,7 @@ std::vector<TInt> SimplicesTriangle::getOtherNodeInSimplex(const std::vector<TIn
       else
       {
         //todo exception
+        throw gmds::GMDSException("localNode < 0 || localNode > 2");
       }
     }
 

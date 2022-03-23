@@ -22,8 +22,17 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
 {
     if(simplexMesh != nullptr)
     {
-      Variable<int>* BND_SURFACE_COLOR = simplexMesh->getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
-      Variable<int>* BND_TRIANGLES     = simplexMesh->getVariable<int,SimplicesTriangle>("BND_TRIANGLES");
+        Variable<int>* BND_CURVE_COLOR   = nullptr;
+        Variable<int>* BND_SURFACE_COLOR = nullptr;
+        Variable<int>* BND_TRIANGLES     = nullptr;
+      try{
+        BND_CURVE_COLOR   = simplexMesh->getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+        BND_SURFACE_COLOR = simplexMesh->getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+        BND_TRIANGLES     = simplexMesh->getVariable<int,SimplicesTriangle>("BND_TRIANGLES");
+      } catch(gmds::GMDSException e)
+      {
+        throw gmds::GMDSException(e);
+      }
 
       int border = std::numeric_limits<int>::min();
       /*Si simpliceNode n'est pas a linterrieur de simplexMeshon ne fait rien*/
@@ -93,22 +102,14 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           ////////////////////////////////////////////////////////////////////////////////
           ///////////////////////finding the node inside the cavity///////////////////////
           ////////////////////////////////////////////////////////////////////////////////
-          //double duration2;
-          //start = std::clock();
-          //std::cout << "nodeIncavity START " <<std::endl;
           if(!cavityIO.nodeInCavity(simpliceNode.getGlobalNode())){
             status = false;
             return;
           }
           const std::vector<TInt>& nodesInsideCavity = cavityIO.getNodeInCavity();
-          //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
-          //std::cout << "nodeInCavity duration --> " << duration2 << std::endl;
 
-          //start = std::clock();
-          //std::cout << "nodeReconnection START " <<std::endl;
-          cavityIO.nodesReconnection();
-          //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
-          //std::cout << "nodesReconnection duration --> " << duration2 << std::endl;
+          cavityIO.nodesReconnection(simpliceNode.getGlobalNode());
+
           ////////////////////////////ADRIEN IDEA///////////////////////////////////////
           //this section is here in order to optimize the futurs normals of the created
           //surface for the edgeRemove algorithm
@@ -184,6 +185,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
               {
                 if(n.dot(interpolationNormal) < minDot)
                 {
+                  status = false;
                   return;
                 }
               }
@@ -212,6 +214,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             }
           }
           ////deletedNode insertion
+          std::vector<TInt> curveNodeToDel{};
           for(auto const & nodeInCavity : cavityIO.getNodeInCavity())
           {
             if(nodeInCavity != simpliceNode.getGlobalNode())
@@ -224,10 +227,29 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             if(surfaceNodeInCavity != simpliceNode.getGlobalNode())
             {
               deletedNodes.push_back(surfaceNodeInCavity);
+              curveNodeToDel.push_back(surfaceNodeInCavity);
             }
           }
-          //
 
+
+          /*if(simpliceNode.getGlobalNode() == 271729){
+            //simplexMesh->deleteAllSimplicesBut(cavityIO.cellInCavity());
+            for(auto const & triangleConnectedToP : cavityIO.getTrianglesConnectedToPInCavity())
+            {
+              std::cout << "triangleConnectedToP to delete --> " << SimplicesTriangle(simplexMesh, -triangleConnectedToP) << std::endl;
+            }
+            for(auto const & triangleNotConnectedToP : cavityIO.getTrianglesNotConnectedToPInCavity())
+            {
+              std::cout << "triangleNotConnectedToP --> " << SimplicesTriangle(simplexMesh, -triangleNotConnectedToP) << std::endl;
+            }
+            gmds::ISimplexMeshIOService ioService0(simplexMesh);
+            gmds::VTKWriter vtkWriter0(&ioService0);
+            vtkWriter0.setCellOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriter0.setDataOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriter0.write("MESH_BUG_" + std::to_string(simpliceNode.getGlobalNode()) + ".vtk");
+            throw gmds::GMDSException("OKOK");
+          }*/
+          //SimplexMesh beforeBugMesh = *simplexMesh;
           //deleteThe simplexin the cavity
           for(auto const & simplexInCavity : cavityIO.cellInCavity())
           {
@@ -245,12 +267,157 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             //std::cout << "triangleConnectedToP to delete --> " << SimplicesTriangle(simplexMesh, -triangleConnectedToP) << std::endl;
             simplexMesh->deleteTriangle(triangleConnectedToP);
           }
-          //double duration3;
-          //start = std::clock();
-          //std::cout << "rebuildCavity START " << std::endl;
+
+
+          //If the node is on ridge update edgeStructure
+          unsigned int label = (*BND_CURVE_COLOR)[simpliceNode.getGlobalNode()];
+          if(label != 0)
+          {
+            std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure = simplexMesh->getEdgeStructure();
+            std::multimap<TInt, std::pair<TInt,TInt>> edgeStructureCopy = edgeStructure;
+
+            auto it = edgeStructure.equal_range(label);
+            if(curveNodeToDel.size() == 0)
+            {
+              const std::pair<TInt, TInt> edge = cavityIO.getEdgeContainingNode();
+              //deletion of the edge in edgestructure
+              std::pair<TInt, TInt> newEdge0{};
+              std::pair<TInt, TInt> newEdge1{};
+              for(auto itr = it.first ; itr != it.second ; itr++)
+              {
+                if(itr->second.first == edge.first && itr->second.second == edge.second)
+                {
+                  edgeStructure.erase(itr);
+                  newEdge0 = std::make_pair(std::min(simpliceNode.getGlobalNode(), edge.first), std::max(simpliceNode.getGlobalNode(), edge.first));
+                  newEdge1 = std::make_pair(std::min(simpliceNode.getGlobalNode(), edge.second), std::max(simpliceNode.getGlobalNode(), edge.second));
+                  if(newEdge0.first != newEdge0.second){edgeStructure.insert(std::make_pair(label, newEdge0));}
+                  if(newEdge1.first != newEdge1.second){edgeStructure.insert(std::make_pair(label, newEdge1));}
+                  break;
+                }
+              }
+              for(auto const data : edgeStructure)
+              {
+                if(data.second.first == data.second.second)
+                {
+                  //if DEBUG
+                  std::cout << "EDGE STRUCTURE BEFORE MODIFICATION FAILED" << std::endl;
+                  for(auto const dataBis : edgeStructureCopy)
+                  {
+                    std::cout << "data --> " << dataBis.first << " | [" << dataBis.second.first << " : " << dataBis.second.second << "]" << std::endl;
+                  }
+                  std::cout << std::endl;
+                  std::cout << "edge being deleted -> " << edge.first << " | " << edge.second << std::endl;
+                  std::cout << "NEW EDGE CREATED -> " << newEdge0.first << " | " << newEdge0.second << std::endl;
+                  std::cout << "NEW EDGE CREATED -> " << newEdge1.first << " | " << newEdge1.second << std::endl;
+                  std::cout << "DATA TROUBLE | label --> " << data.first << " | [" << data.second.first << " : " << data.second.second << "]" << std::endl;
+
+                    gmds::ISimplexMeshIOService ioService(simplexMesh);
+                    gmds::VTKWriter vtkWriter(&ioService);
+                    vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
+                    vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
+                    vtkWriter.write("EDGE_STRUCTURE_MODIFICATION_BUG_" + std::to_string(simpliceNode.getGlobalNode()) + ".vtk");
+
+                  throw gmds::GMDSException("data.second.first == data.second.second");
+                }
+              }
+            }
+            else
+            {
+              std::vector<std::multimap<TInt, std::pair<TInt,TInt>>::iterator> iteratorsToErase{};
+              std::vector<std::multimap<TInt, std::pair<TInt,TInt>>::iterator> iteratorsToReconnect{};
+
+              const gmds::BitVector & nodes_ids = simplexMesh->getBitVectorNodes();
+              for(auto const node : curveNodeToDel)
+              {
+                if(nodes_ids[node] != 0)
+                {
+                  if(label == (*BND_CURVE_COLOR)[node])
+                  {
+                    for(auto itr = it.first ; itr != it.second ; itr++)
+                    {
+                      if(itr->second.first == node)
+                      {
+                        itr->second.first = border;
+                      }
+                      if(itr->second.second == node)
+                      {
+                        itr->second.second = border;
+                      }
+
+                      TInt minNode = std::min(itr->second.first, itr->second.second);
+                      TInt maxNode = std::max(itr->second.first, itr->second.second);
+
+                      itr->second.first  = minNode;
+                      itr->second.second = maxNode;
+
+                      if(itr->second.first == border && itr->second.second == border)
+                      {
+                        iteratorsToErase.push_back(itr);
+                      }
+                      else if(itr->second.first == border)
+                      {
+                        iteratorsToReconnect.push_back(itr);
+                      }
+                    }
+                  }
+                }
+              }
+
+              if(iteratorsToReconnect.size() == 1 || iteratorsToReconnect.size() > 2)
+              {
+                //Problem de structure invalide mais impossible aprevoir (voir node 286 mesh S23.vtk) 
+                //if DEBUG
+                /*std::cout << "EDGE STRUCTURE BEFORE MODIFICATION FAILED" << std::endl;
+                for(auto const dataBis : edgeStructureCopy)
+                {
+                  std::cout << "data --> " << dataBis.first << " | [" << dataBis.second.first << " : " << dataBis.second.second << "]" << std::endl;
+                }
+                for(auto const itr : iteratorsToReconnect)
+                {
+                  std::cout << "iteratorsToReconnect --> " << itr->second.first << " | " << itr->second.second << std::endl;
+                }
+                std::cout << std::endl;
+
+                SimplexMesh nodeMesh = SimplexMesh();
+                nodeMesh.addNode(simpliceNode.getCoords()[0], simpliceNode.getCoords()[1], simpliceNode.getCoords()[2]);
+                nodeMesh.addTetraedre(0, 0, 0, 0);
+                gmds::ISimplexMeshIOService ioService(&nodeMesh);
+                gmds::VTKWriter vtkWriter(&ioService);
+                vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
+                vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
+                vtkWriter.write("NODE_" + std::to_string(simpliceNode.getGlobalNode()) + ".vtk");
+
+                std::cout << "iteratorsToReconnect.size() -- > " << iteratorsToReconnect.size() << std::endl;
+                throw gmds::GMDSException("iteratorsToReconnect.size() PROBLEM");*/
+              }
+              else
+              {
+                for(auto itr : iteratorsToReconnect)
+                {
+                    TInt node = itr->second.second;
+                    if(node == simpliceNode.getGlobalNode()){iteratorsToErase.push_back(itr); continue;}
+                    TInt minNode = std::min(simpliceNode.getGlobalNode(), itr->second.second);
+                    TInt maxNode = std::max(simpliceNode.getGlobalNode(), itr->second.second);
+                    itr->second.first  = minNode;
+                    itr->second.second = maxNode;
+                    if(minNode == maxNode){iteratorsToErase.push_back(itr);}
+                }
+              }
+              for(auto itr : iteratorsToErase){edgeStructure.erase(itr);}
+
+
+              for(auto const data : edgeStructure)
+              {
+                if(data.second.first == data.second.second)
+                {
+                  std::cout << "data --> " << data.first << " | [" << data.second.first << " : " << data.second.second << "]" << std::endl;
+                  throw gmds::GMDSException("data.second.first == data.second.second");
+                }
+              }
+            }
+          }
+
           simplexMesh->rebuildCavity(cavityIO, simpliceNode.getGlobalNode());
-          //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
-          //std::cout << "rebuildCavity duration --> " << duration2 << std::endl;
           status = true;
         }
       }
