@@ -14,7 +14,6 @@
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>
 #include <gmds/io/VTKReader.h>
-#include <unit_test_config.h>
 #include <iostream>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
