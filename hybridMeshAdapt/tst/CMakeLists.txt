@@ -1,3 +1,6 @@
+add_executable(GMDS_SIMPLEX_FRONTAL_HEX_GENERATION
+        main_FRONTAL_HEX_GENERATION.cpp)
+
 add_executable(GMDS_SIMPLEX_HEX_GENERATION
         main_HEX_GENERATION.cpp)
 
@@ -47,6 +50,11 @@ target_link_libraries(GMDS_SIMPLEX_POINT_GENERATION PUBLIC
       )
 
 target_link_libraries(GMDS_SIMPLEX_HEX_GENERATION PUBLIC
+      ${GMDS_LIB}
+      ${LIB_GMDS_IO}
+      gtest)
+
+target_link_libraries(GMDS_SIMPLEX_FRONTAL_HEX_GENERATION PUBLIC
       ${GMDS_LIB}
       ${LIB_GMDS_IO}
       gtest)
