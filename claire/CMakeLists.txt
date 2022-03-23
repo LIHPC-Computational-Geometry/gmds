@@ -33,7 +33,7 @@ set(GMDS_SRC
         src/AbstractAeroPipeline.cpp
 		src/AeroPipeline2D.cpp
 		src/AeroPipeline3D.cpp
-        inc/gmds/claire/AbstractLevelSet.h src/AbstractLevelSet.cpp inc/gmds/claire/LevelSetEloi.h src/LevelSetEloi.cpp inc/gmds/claire/LevelSetExtended.h src/LevelSetExtended.cpp inc/gmds/claire/AdvectedPointRK4_3D.h src/AdvectedPointRK4_3D.cpp inc/gmds/claire/Utils.h src/Utils.cpp)
+        inc/gmds/claire/AbstractLevelSet.h src/AbstractLevelSet.cpp inc/gmds/claire/LevelSetEloi.h src/LevelSetEloi.cpp inc/gmds/claire/LevelSetExtended.h src/LevelSetExtended.cpp inc/gmds/claire/AdvectedPointRK4_3D.h src/AdvectedPointRK4_3D.cpp inc/gmds/claire/Utils.h src/Utils.cpp inc/gmds/claire/AbstractAeroBoundaries.h src/AbstractAeroBoundaries.cpp src/AeroBoundaries_2D.cpp inc/gmds/claire/AeroBoundaries_2D.h)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
