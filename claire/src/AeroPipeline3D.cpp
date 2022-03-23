@@ -8,7 +8,6 @@
 #include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
-#include <gmds/igalgo/BoundaryOperator.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>
 #include <gmds/io/VTKReader.h>

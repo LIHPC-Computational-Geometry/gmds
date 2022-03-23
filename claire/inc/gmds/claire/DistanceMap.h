@@ -12,6 +12,7 @@
 #include <string>
 #include <map>
 #include <fstream>
+/*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
 class LIB_GMDS_CLAIRE_API DistanceMap {
@@ -67,7 +68,7 @@ class LIB_GMDS_CLAIRE_API DistanceMap {
 	/*-------------------------------------------------------------------*/
 	/** @brief Surcharge de l'opérateur << pour l'affichaque des maps
 	 */
-	friend  std::ostream& operator<<(std::ostream&, const DistanceMap&);
+	friend LIB_GMDS_CLAIRE_API std::ostream& operator<<(std::ostream&, const DistanceMap&);
 	/*-------------------------------------------------------------------*/
 	/** @brief Surcharge de l'opérateur ()
 	 */

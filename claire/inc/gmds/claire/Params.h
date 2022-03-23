@@ -6,6 +6,8 @@
 #include <string>
 /*----------------------------------------------------------------------------*/
 // gmds File Headers
+#include "LIB_GMDS_CLAIRE_export.h"
+
 /*----------------------------------------------------------------------------*/
 /** \brief This file gathers all the parameter structures used in the FHeDo
  *         component.
@@ -17,7 +19,7 @@ namespace gmds {
 /** \struct ParamAero
  *  \brief  structure that gathers Aero global parameters
  */
-    struct  ParamsAero
+    struct  LIB_GMDS_CLAIRE_API ParamsAero
     {
         enum Dimension
         {
