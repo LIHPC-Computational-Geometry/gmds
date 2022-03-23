@@ -32,7 +32,7 @@ class LIB_GMDS_CLAIRE_API Utils {
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Return the common edge between 2 points if it exists, NullID
-	 		* otherwise
+	 		* otherwise (ou si la connectivité n'est pas renseignée)
          *
          * \param[in] n0_id first node id
          * \param[in] n1_id second node id

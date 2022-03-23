@@ -65,7 +65,8 @@ void AeroPipeline2D::execute(){
 		}
 	}
 
-	GenerationCouche(1, 1);
+	GenerationCouche(1, 0.25);
+	GenerationCouche(2, 1);
 
 	EcritureMaillage();
 
