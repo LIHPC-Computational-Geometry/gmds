@@ -25,8 +25,21 @@ class LIB_GMDS_CLAIRE_API AeroBoundaries_2D: public AbstractAeroBoundaries {
 	/*------------------------------------------------------------------------*/
 	/** \brief Function to be called for mesh generation
 	 */
-	virtual AbstractAeroBoundaries::STATUS execute();
+	AbstractAeroBoundaries::STATUS execute();
 	/*------------------------------------------------------------------------*/
+
+ protected:
+	/*-------------------------------------------------------------------*/
+	/** \brief Marque les noeuds sur les bords dans la marque
+	 * m_markBoundaryNodes
+	 */
+	void MarkBoundariesNodes();
+	/*-------------------------------------------------------------------*/
+	/** \brief Colorie les bords. Une couleur par bord connexe, 0 pour
+	 * l'intérieur du domaine. Couleurs stockées dans m_var_color_bords.
+	 */
+	void ColoriageBordsConnexes();
+	/*-------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/

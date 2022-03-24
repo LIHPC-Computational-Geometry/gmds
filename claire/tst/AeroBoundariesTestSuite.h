@@ -46,7 +46,9 @@ TEST(AeroBoundariesTestClass, AeroBoundaries2D_Test1)
 	bnd_op.getBoundaryNodes(bnd_node_ids);
 
 	AeroBoundaries_2D bnd_2D(&m);
-	bnd_2D.execute();
+	AbstractAeroBoundaries::STATUS bnd_2D_result = bnd_2D.execute();
+
+	ASSERT_EQ(bnd_2D_result, AbstractAeroBoundaries::SUCCESS);
 
 
 }
