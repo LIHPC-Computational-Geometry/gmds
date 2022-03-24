@@ -99,7 +99,7 @@ void AeroPipeline3D::EcritureMaillage(){
 	gmds::VTKWriter vtkWriter2(&ioService);
 	vtkWriter2.setCellOptions(gmds::N|gmds::F);
 	vtkWriter2.setDataOptions(gmds::N|gmds::F);
-	vtkWriter2.write("AeroPipeline3D_Test1_Tetra.vtk");
+	vtkWriter2.write("AeroPipeline3D_Tetra.vtk");
 
 }
 /*------------------------------------------------------------------------*/
