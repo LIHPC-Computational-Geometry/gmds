@@ -46,7 +46,7 @@ set(GMDS_SRC
 		src/AdvectedPointRK4_3D.cpp
 		src/Utils.cpp
 		src/AbstractAeroBoundaries.cpp
-		src/AeroBoundaries_2D.cpp)
+		src/AeroBoundaries_2D.cpp inc/gmds/claire/AeroBoundaries_3D.h src/AeroBoundaries_3D.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
