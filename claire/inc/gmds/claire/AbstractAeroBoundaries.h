@@ -57,7 +57,17 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	/** \brief Colorie les bords. Une couleur par bord connexe, 0 pour
 	 * l'intérieur du domaine. Couleurs stockées dans m_var_color_bords.
 	 */
-	virtual void ColoriageBordsConnexes()=0;
+	void ColoriageBordsConnexes();
+	/*-------------------------------------------------------------------*/
+	/** \brief Identifie de quelle couleur est le front Amont dans la
+	 * variable m_var_color_bords.
+	 */
+	virtual void WhichColorIsAmont()=0;
+	/*-------------------------------------------------------------------*/
+	/** \brief Marque les noeuds sur la paroi dans la marque m_markNodesParoi
+	 * et les noeuds sur la frontière amont dans la marque m_markNodesAmont.
+	 */
+	void MarkAmontAndParoiNodes();
 	/*-------------------------------------------------------------------*/
 
  protected:
@@ -73,6 +83,8 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	int m_color_Amont;
 	/** Colorie chaque bord d'une couleur != */
 	Variable<int>* m_var_color_bords ;
+	/** Vecteur des id des noeuds de bord */
+	std::vector<TCellID> m_bnd_nodes_ids ;
 	/** Marque les noeuds des bords */
 	int m_markBoundaryNodes;
 	/** Marque sur les noeuds de la paroi */

@@ -50,5 +50,10 @@ TEST(AeroBoundariesTestClass, AeroBoundaries2D_Test1)
 
 	ASSERT_EQ(bnd_2D_result, AbstractAeroBoundaries::SUCCESS);
 
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("AeroBoundaries_2D_Test1.vtk");
+
 
 }

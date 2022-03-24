@@ -23,6 +23,9 @@ AeroBoundaries_2D::AeroBoundaries_2D(Mesh *AMesh) :
 AbstractAeroBoundaries::STATUS AeroBoundaries_2D::execute(){
 
 	MarkBoundariesNodes();
+	ColoriageBordsConnexes();
+	WhichColorIsAmont();
+	MarkAmontAndParoiNodes();
 
 	return AbstractAeroBoundaries::SUCCESS;
 }
@@ -34,11 +37,11 @@ void AeroBoundaries_2D::MarkBoundariesNodes(){
 
 	//Get the boundary node ids
 	BoundaryOperator2D bnd_op(m_mesh);
-	std::vector<TCellID> bnd_node_ids;
-	bnd_op.getBoundaryNodes(bnd_node_ids);
+	//std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(m_bnd_nodes_ids);
 
 	// Initialise une marque sur les noeuds du bord
-	for (auto n_id:bnd_node_ids){
+	for (auto n_id:m_bnd_nodes_ids){
 		Node n = m_mesh->get<Node>(n_id);
 		m_mesh->mark(n, m_markBoundaryNodes);
 	}
@@ -48,69 +51,52 @@ void AeroBoundaries_2D::MarkBoundariesNodes(){
 
 
 /*------------------------------------------------------------------------*/
-void AeroBoundaries_2D::ColoriageBordsConnexes(){
+void AeroBoundaries_2D::WhichColorIsAmont(){
 
-	int color = 0; //Default value is 0
-	int markTreated = m_mesh->newMark<Node>();
+	// Calcul des boites englobantes
+	std::vector<double> x_min(m_nbrBords,0.0);
+	std::vector<double> y_min(m_nbrBords,0.0);
+	std::vector<double> x_max(m_nbrBords,0.0);
+	std::vector<double> y_max(m_nbrBords,0.0);
 
-	for (auto n_id:m_mesh->nodes())
-	{
-		// Si un noeud est marqué sur le bord et qu'il n'est pas encore traité
-		if (m_mesh->isMarked<Node>(n_id, m_markBoundaryNodes) &&
-		    !m_mesh->isMarked<Node>(n_id, markTreated)){
-			Node n = m_mesh->get<Node>(n_id);
-
-			// Nouveau bord, nouvelle couleur
-			color++;
-			m_mesh->mark(n, markTreated);
-			(*m_var_color_bords)[n_id] = color;
-
-			// Propagation à tous les noeuds connexes qui sont sur le bord
-			std::vector<Node> next;
-			next.push_back(n);
-
-			while (!next.empty()) {
-				// On récupère un noeud de la liste de noeuds next à traiter
-				Node current_node = next.back();
-				next.pop_back();
-
-				// On récupère les noeuds adjacents au noeud traité
-				std::vector<Edge> adjacent_edges = current_node.get<Edge>() ;
-				std::vector<Node> adjacent_nodes;
-				for (auto e:adjacent_edges){
-					TCellID ne_id = e.getOppositeNodeId(current_node);
-					Node ne = m_mesh->get<Node>(ne_id);
-					adjacent_nodes.push_back(ne);
-				}
-
-				for (auto n_adj: adjacent_nodes) {
-					TCellID n_adj_id = n_adj.id();
-					if(m_mesh->isMarked<Node>(n_adj_id, m_markBoundaryNodes) &&
-					    !m_mesh->isMarked<Node>(n_adj_id, markTreated)){
-						// Si le noeud est sur le bord et qu'il n'a pas été traité
-						// On met à jour sa couleur et on le marque comme traité
-						m_mesh->mark(n_adj, markTreated);
-						(*m_var_color_bords)[n_adj_id] = color;
-
-						// Ajout du noeud dans la liste des noeuds à proprager
-						next.push_back(n_adj);
-					}
-				}
-
-			}
-
+	for (auto n_id:m_bnd_nodes_ids ) {
+		Node n = m_mesh->get<Node>(n_id);
+		math::Point p = n.point();
+		// A quel bord appartient le noeud n_id
+		int couleur = m_var_color_bords->value(n_id);
+		if(p.X() < x_min[couleur-1]){
+			x_min[couleur-1] = p.X();
+		}
+		if(p.X() > x_max[couleur-1]){
+			x_max[couleur-1] = p.X();
+		}
+		if(p.Y() < y_min[couleur-1]){
+			y_min[couleur-1] = p.Y();
+		}
+		if(p.Y() > y_max[couleur-1]){
+			y_max[couleur-1] = p.Y();
 		}
 	}
 
-	m_nbrBords = color;
-	m_nbrBordsParoi = color-1;
-
-	if(color < 2){
-		m_isImmerged = false;
+	// On recherche la plus grosse boite englobante
+	m_color_Amont = 1;
+	for(int i=2;i<=m_nbrBords;i++){
+		// On compte le nombre de boites que la couleur i englobe
+		int nbr_boite_englobe = 0;
+		for (int j=1;j<=m_nbrBords;j++){
+			if (i != j){
+				if ( (x_min[i-1] < x_min[j-1]) &&
+				    (y_min[i-1] < y_min[j-1]) &&
+				    (x_max[j-1] < x_max[i-1]) &&
+				    (y_max[j-1] < y_max[i-1]) ) {
+					nbr_boite_englobe += 1;
+				}
+			}
+		}
+		if(nbr_boite_englobe == m_nbrBords-1){
+			m_color_Amont = i;
+		}
 	}
-
-	m_mesh->unmarkAll<Node>(markTreated);
-	m_mesh->freeMark<Node>(markTreated);
 
 }
 /*------------------------------------------------------------------------*/
