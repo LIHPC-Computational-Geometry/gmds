@@ -25,17 +25,15 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	// le temps de mettre en place un fichier .ini
 	params_aero.dim=ParamsAero::DIM_2D;
 	std::string dir(TEST_SAMPLES_DIR);
-	params_aero.input_file=dir+"/Aero/C1_2D_0.1.vtk";
+	params_aero.input_file=dir+"/Aero/C2_2D_0.1.vtk";
 	params_aero.output_file="AeroPipeline2D_Quad.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
 	params_aero.nbrMinBloc=4;
 
 	AeroPipeline2D algo_aero2D(params_aero);
-	algo_aero2D.execute();
+	AbstractAeroPipeline::STATUS aero2D_result = algo_aero2D.execute();
 
-	bool isOver = algo_aero2D.getIsOver();
-
-	ASSERT_EQ(isOver, true);
+	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero2D_result);
 
 }
 
@@ -58,10 +56,8 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 	params_aero.output_dir="gmds/claire/tst/";
 
 	AeroPipeline3D algo_aero3D(params_aero);
-	algo_aero3D.execute();
+	AbstractAeroPipeline::STATUS aero3D_result = algo_aero3D.execute();
 
-	bool isOver = algo_aero3D.getIsOver();
-
-	ASSERT_EQ(isOver, true);
+	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero3D_result);
 
 }

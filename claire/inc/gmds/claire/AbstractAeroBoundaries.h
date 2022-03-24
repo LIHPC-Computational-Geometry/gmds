@@ -78,6 +78,14 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	 */
 	int getNbrBords();
 	/*-------------------------------------------------------------------*/
+	/** \brief Retourne la couleur de la frontière amont
+	 */
+	int getColorAmont();
+	/*-------------------------------------------------------------------*/
+	/** \brief Retourne la couleur du noeud.
+	 */
+	int getNodeColor(TCellID n_id);
+	/*-------------------------------------------------------------------*/
 
  protected:
 	/*-------------------------------------------------------------------*/

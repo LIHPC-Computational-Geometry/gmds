@@ -24,7 +24,7 @@ class LIB_GMDS_CLAIRE_API AeroPipeline3D: public AbstractAeroPipeline {
 	/*------------------------------------------------------------------------*/
 	/** \brief Function to be called for mesh generation
 	 */
-	virtual void execute();
+	virtual AbstractAeroPipeline::STATUS execute();
 	/*------------------------------------------------------------------------*/
 
  private:

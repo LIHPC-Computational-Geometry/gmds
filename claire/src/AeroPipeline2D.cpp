@@ -5,6 +5,7 @@
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/Utils.h>
 #include <gmds/claire/AeroPipeline2D.h>
+#include <gmds/claire/AeroBoundaries_2D.h>
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/claire/AdvectedPointRK4_2D.h>
@@ -27,24 +28,26 @@ AeroPipeline2D::AeroPipeline2D(ParamsAero Aparams) :
                                        gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F))
 {
 	m_couche_id = m_mGen.newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-	m_var_color_bords = m_m.newVariable<int, GMDS_NODE>("COLOR_BORDS");
+	//m_var_color_bords = m_m.newVariable<int, GMDS_NODE>("COLOR_BORDS");
 	m_mesh = &m_m;
 	m_meshGen = &m_mGen;
+	m_Bnd = new AeroBoundaries_2D(m_mesh) ;
 }
 /*------------------------------------------------------------------------*/
 
 
 /*------------------------------------------------------------------------*/
-void AeroPipeline2D::execute(){
+AbstractAeroPipeline::STATUS AeroPipeline2D::execute(){
 
 	LectureMaillage();
+	m_Bnd->execute();
 	InitialisationFronts();
 
 	// Calcul du level set
 	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance");
 	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
 	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
-	LevelSetCombined lsCombined(m_mesh, m_markFrontNodesParoi, m_markFrontNodesExt,
+	LevelSetCombined lsCombined(m_mesh, m_Bnd->getMarkParoi(), m_Bnd->getMarkAmont(),
 	                            m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance"),
 	                            m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
 	                            m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
@@ -59,8 +62,8 @@ void AeroPipeline2D::execute(){
 	//InitialisationMeshGen();
 	//DiscretisationBlocParoi();
 
-	for (int i=1;i<=m_nbrBords;i++){
-		if(i != m_bigest_color){
+	for (int i=1;i<=m_Bnd->getNbrBords();i++){
+		if(i != m_Bnd->getColorAmont()){
 			DiscretisationBlocsBord(i);
 		}
 	}
@@ -68,9 +71,11 @@ void AeroPipeline2D::execute(){
 	GenerationCouche(1, 0.25);
 	GenerationCouche(2, 1);
 
+
 	EcritureMaillage();
 
-	m_isOver = true;
+	return AbstractAeroPipeline::SUCCESS;
+
 }
 /*------------------------------------------------------------------------*/
 
@@ -120,6 +125,7 @@ void AeroPipeline2D::EcritureMaillage(){
 
 
 /*------------------------------------------------------------------------*/
+
 void AeroPipeline2D::InitialisationFronts(){
 
 	std::cout << "-> Initialisation des fronts" << std::endl;
@@ -160,7 +166,7 @@ void AeroPipeline2D::InitialisationFronts(){
 			// Nouveau bord, nouvelle couleur
 			color++;
 			m_mesh->mark(n, markTreated);
-			(*m_var_color_bords)[n_id] = color;
+			//(*m_var_color_bords)[n_id] = color;
 
 			// Propagation à tous les noeuds connexes qui sont sur le bord
 			std::vector<Node> next;
@@ -187,7 +193,7 @@ void AeroPipeline2D::InitialisationFronts(){
 						// Si le noeud est sur le bord et qu'il n'a pas été traité
 						// On met à jour sa couleur et on le marque comme traité
 						m_mesh->mark(n_adj, markTreated);
-						(*m_var_color_bords)[n_adj_id] = color;
+						//(*m_var_color_bords)[n_adj_id] = color;
 
 						// Ajout du noeud dans la liste des noeuds à proprager
 						next.push_back(n_adj);
@@ -225,7 +231,8 @@ void AeroPipeline2D::InitialisationFronts(){
 		Node n = m_mesh->get<Node>(n_id);
 		math::Point p = n.point();
 		// A quel bord appartient le noeud n_id
-		int couleur = m_var_color_bords->value(n_id);
+		//int couleur = m_var_color_bords->value(n_id);
+		int couleur = m_Bnd->getNodeColor(n_id);
 		if(p.X() < x_min[couleur-1]){
 			x_min[couleur-1] = p.X();
 		}
@@ -266,7 +273,8 @@ void AeroPipeline2D::InitialisationFronts(){
 	Variable<int>* var_color_paroi ;
 	var_color_paroi = m_mesh->newVariable<int, GMDS_NODE>("COLOR_PAROI");
 	for (auto n_id:bnd_node_ids){
-		int couleur = m_var_color_bords->value(n_id);
+		//int couleur = m_var_color_bords->value(n_id);
+		int couleur = m_Bnd->getNodeColor(n_id);
 		if(couleur == m_bigest_color){
 			m_mesh->mark<Node>(n_id,m_markFrontNodesExt);
 			(*var_color_paroi)[n_id] = 1;
@@ -277,7 +285,9 @@ void AeroPipeline2D::InitialisationFronts(){
 		}
 	}
 
+
 }
+
 /*------------------------------------------------------------------------*/
 
 
@@ -604,8 +614,11 @@ TCellID AeroPipeline2D::PointArret(int color){
 		TCellID n_id = *n_it;
 		Node n = m_mesh->get<Node>(n_id);
 		math::Point p = n.point();
+		//if (m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) &&
+		//    m_var_color_bords->value(n_id) == color &&
+		//    p.X() < x_min ) {
 		if (m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) &&
-		    m_var_color_bords->value(n_id) == color &&
+		    m_Bnd->getNodeColor(n_id) == color &&
 		    p.X() < x_min ) {
 			n_arret_id = n_id;
 			x_min = p.X();
@@ -644,7 +657,7 @@ std::vector<TCellID> AeroPipeline2D::BndNodesOrdered(int color){
 		TCellID n_id = *n_it;
 		//std::cout << "Test 1 : " << n_id << " " << m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) << std::endl;
 		if ( m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) &&
-		   m_var_color_bords->value(n_id) == color &&
+		    m_Bnd->getNodeColor(n_id) == color &&
 		   m_mesh->isMarked<Node>(n_id, markPointNodes) ){
 			n0_id = n_id;
 		}

@@ -31,7 +31,7 @@ AeroPipeline3D::AeroPipeline3D(ParamsAero Aparams) :
 
 
 /*------------------------------------------------------------------------*/
-void AeroPipeline3D::execute(){
+AbstractAeroPipeline::STATUS AeroPipeline3D::execute(){
 	LectureMaillage();
 	InitialisationFronts();
 
@@ -54,7 +54,8 @@ void AeroPipeline3D::execute(){
 	grad2D.execute();
 
 	EcritureMaillage();
-	m_isOver = true;
+
+	return AbstractAeroPipeline::SUCCESS;
 }
 /*------------------------------------------------------------------------*/
 

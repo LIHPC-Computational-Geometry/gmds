@@ -9,6 +9,7 @@
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/claire/Params.h>
+#include <gmds/claire/AbstractAeroBoundaries.h>
 #include <string>
 #include <map>
 #include <fstream>
@@ -41,7 +42,7 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	/*-------------------------------------------------------------------*/
 	/** \brief Function to be called for mesh generation
 	 */
-	virtual void execute()=0;
+	virtual AbstractAeroPipeline::STATUS execute()=0;
 	/*-------------------------------------------------------------------*/
 	/** \brief Function pour savoir si le pipeline s'est terminé
 	 */
@@ -69,15 +70,15 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	/** Couleur qui correspond au bord extérieur */
 	int m_bigest_color;
 	/** Colorie chaque bord d'une couleur != */
-	Variable<int>* m_var_color_bords ;
+	//Variable<int>* m_var_color_bords ;
 	/** Marque sur les noeuds de la paroi */
 	int m_markFrontNodesParoi;
 	/** Marque sur les noeuds de la frontière ext */
 	int m_markFrontNodesExt;
 	/** Variable sur le nouveau maillage, indique à quelle couche appartient un noeud */
 	Variable<int>* m_couche_id;
-	/** Est-ce que le code s'est bien terminé */
-	bool m_isOver ;
+	/** Données des bords */
+	AbstractAeroBoundaries* m_Bnd ;
 
 };
 /*----------------------------------------------------------------------------*/
