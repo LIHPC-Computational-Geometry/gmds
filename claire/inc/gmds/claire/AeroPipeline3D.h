@@ -37,14 +37,6 @@ class LIB_GMDS_CLAIRE_API AeroPipeline3D: public AbstractAeroPipeline {
 	 */
 	void EcritureMaillage();
 	/*------------------------------------------------------------------------*/
-	/** @brief Initialisation des marques sur les fronts
-	 */
-	//void InitialisationFronts();
-	/*------------------------------------------------------------------------*/
-	/** @brief Retourne le vecteur des ID des noeuds sur le bord
-	 */
-	std::vector<TCellID> getBndNodes();
-	/*------------------------------------------------------------------------*/
 
  protected:
 	/** Tetra mesh we work on */

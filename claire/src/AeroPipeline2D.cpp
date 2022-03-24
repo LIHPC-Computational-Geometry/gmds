@@ -28,7 +28,6 @@ AeroPipeline2D::AeroPipeline2D(ParamsAero Aparams) :
                                        gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F))
 {
 	m_couche_id = m_mGen.newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-	//m_var_color_bords = m_m.newVariable<int, GMDS_NODE>("COLOR_BORDS");
 	m_mesh = &m_m;
 	m_meshGen = &m_mGen;
 	m_Bnd = new AeroBoundaries_2D(m_mesh) ;
@@ -41,7 +40,6 @@ AbstractAeroPipeline::STATUS AeroPipeline2D::execute(){
 
 	LectureMaillage();
 	m_Bnd->execute();
-	//InitialisationFronts();
 
 	// Calcul du level set
 	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance");
@@ -125,173 +123,6 @@ void AeroPipeline2D::EcritureMaillage(){
 
 
 /*------------------------------------------------------------------------*/
-/*
-void AeroPipeline2D::InitialisationFronts(){
-
-	std::cout << "-> Initialisation des fronts" << std::endl;
-
-	// Marques sur les deux fronts d'intérêt pour l'aéro :
-	// Paroi -> Noeuds sur la paroi
-	// Ext -> Noeuds sur la frontière extérieure
-	m_markFrontNodesParoi = m_mesh->newMark<gmds::Node>();
-	m_markFrontNodesExt = m_mesh->newMark<gmds::Node>();
-
-	//Get the boundary node ids
-	BoundaryOperator2D bnd_op(m_mesh);
-	std::vector<TCellID> bnd_node_ids;
-	bnd_op.getBoundaryNodes(bnd_node_ids);
-
-	int markBoundaryNodes = m_mesh->newMark<Node>();
-
-	// Initialise une marque sur les noeuds du bord
-	for (auto n_id:bnd_node_ids){
-		Node n = m_mesh->get<Node>(n_id);
-		m_mesh->mark(n, markBoundaryNodes);
-	}
-
-	// Variable qui contient la couleur du bord
-	//Variable<int>* var_color_bords ;
-	//var_color_bords = m_mesh->newVariable<int, GMDS_NODE>("COLOR_BORDS");
-
-	int color = 0; //Default value is 0
-	int markTreated = m_mesh->newMark<Node>();
-
-	for (auto n_id:m_mesh->nodes())
-	{
-		// Si un noeud est marqué sur le bord et qu'il n'est pas encore traité
-		if (m_mesh->isMarked<Node>(n_id, markBoundaryNodes) &&
-		    !m_mesh->isMarked<Node>(n_id, markTreated)){
-			Node n = m_mesh->get<Node>(n_id);
-
-			// Nouveau bord, nouvelle couleur
-			color++;
-			m_mesh->mark(n, markTreated);
-			//(*m_var_color_bords)[n_id] = color;
-
-			// Propagation à tous les noeuds connexes qui sont sur le bord
-			std::vector<Node> next;
-			next.push_back(n);
-
-			while (!next.empty()) {
-				// On récupère un noeud de la liste de noeuds next à traiter
-				Node current_node = next.back();
-				next.pop_back();
-
-				// On récupère les noeuds adjacents au noeud traité
-				std::vector<Edge> adjacent_edges = current_node.get<Edge>() ;
-				std::vector<Node> adjacent_nodes;
-				for (auto e:adjacent_edges){
-					TCellID ne_id = e.getOppositeNodeId(current_node);
-					Node ne = m_mesh->get<Node>(ne_id);
-					adjacent_nodes.push_back(ne);
-				}
-
-				for (auto n_adj: adjacent_nodes) {
-					TCellID n_adj_id = n_adj.id();
-					if(m_mesh->isMarked<Node>(n_adj_id, markBoundaryNodes) &&
-					    !m_mesh->isMarked<Node>(n_adj_id, markTreated)){
-						// Si le noeud est sur le bord et qu'il n'a pas été traité
-						// On met à jour sa couleur et on le marque comme traité
-						m_mesh->mark(n_adj, markTreated);
-						//(*m_var_color_bords)[n_adj_id] = color;
-
-						// Ajout du noeud dans la liste des noeuds à proprager
-						next.push_back(n_adj);
-					}
-				}
-
-			}
-
-		}
-	}
-
-	if (color < 2){
-		std::cout << "Attention : il n'y a pas deux bords minimum." << std::endl;
-	}
-	else{
-		m_nbrBordsParoi = color-1 ;
-	}
-
-	m_nbrBords = color;
-
-	m_mesh->unmarkAll<Node>(markBoundaryNodes);
-	m_mesh->freeMark<Node>(markBoundaryNodes);
-
-	m_mesh->unmarkAll<Node>(markTreated);
-	m_mesh->freeMark<Node>(markTreated);
-
-
-	// Calcul des boites englobantes
-	std::vector<double> x_min(color,0.0);
-	std::vector<double> y_min(color,0.0);
-	std::vector<double> x_max(color,0.0);
-	std::vector<double> y_max(color,0.0);
-
-	for (auto n_id:bnd_node_ids ) {
-		Node n = m_mesh->get<Node>(n_id);
-		math::Point p = n.point();
-		// A quel bord appartient le noeud n_id
-		//int couleur = m_var_color_bords->value(n_id);
-		int couleur = m_Bnd->getNodeColor(n_id);
-		if(p.X() < x_min[couleur-1]){
-			x_min[couleur-1] = p.X();
-		}
-		if(p.X() > x_max[couleur-1]){
-			x_max[couleur-1] = p.X();
-		}
-		if(p.Y() < y_min[couleur-1]){
-			y_min[couleur-1] = p.Y();
-		}
-		if(p.Y() > y_max[couleur-1]){
-			y_max[couleur-1] = p.Y();
-		}
-	}
-
-	// On recherche la plus grosse boite englobante
-	m_bigest_color = 1;
-	for(int i=2;i<=color;i++){
-		// On compte le nombre de boites que la couleur i englobe
-		int nbr_boite_englobe = 0;
-		for (int j=1;j<=color;j++){
-			if (i != j){
-				if ( (x_min[i-1] < x_min[j-1]) &&
-				    (y_min[i-1] < y_min[j-1]) &&
-				    (x_max[j-1] < x_max[i-1]) &&
-				    (y_max[j-1] < y_max[i-1]) ) {
-					nbr_boite_englobe += 1;
-				}
-			}
-		}
-		if(nbr_boite_englobe == color-1){
-			m_bigest_color = i;
-		}
-	}
-	//std::cout << "Boite englobante : " << bigest_color << std::endl;
-
-	// On marque les fronts paroi et extérieur
-	// Variable qui contient la couleur du bord
-	Variable<int>* var_color_paroi ;
-	var_color_paroi = m_mesh->newVariable<int, GMDS_NODE>("COLOR_PAROI");
-	for (auto n_id:bnd_node_ids){
-		//int couleur = m_var_color_bords->value(n_id);
-		int couleur = m_Bnd->getNodeColor(n_id);
-		if(couleur == m_bigest_color){
-			m_mesh->mark<Node>(n_id,m_markFrontNodesExt);
-			(*var_color_paroi)[n_id] = 1;
-		}
-		else{
-			m_mesh->mark<Node>(n_id,m_markFrontNodesParoi);
-			(*var_color_paroi)[n_id] = 2;
-		}
-	}
-
-
-}
-*/
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 void AeroPipeline2D::DiscretisationBlocParoi(){
 
 	std::cout << "-> Discrétisation du front int du maillage quad" << std::endl;
@@ -321,7 +152,8 @@ void AeroPipeline2D::DiscretisationBlocParoi(){
 	TCellID n0_id = NullID ;
 	for(auto n_it = m_mesh->nodes_begin(); n_it!= m_mesh->nodes_end() && (n0_id == NullID);++n_it){
 		TCellID n_id = *n_it;
-		if ( m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) && m_mesh->isMarked<Node>(n_id, markPointNodes) ){
+		if ( m_Bnd->isParoi(n_id) &&
+		    m_mesh->isMarked<Node>(n_id, markPointNodes) ){
 			n0_id = n_id;
 		}
 	}
@@ -360,7 +192,7 @@ void AeroPipeline2D::DiscretisationBlocParoi(){
 	std::vector<Edge> adj_edges = n0.get<Edge>();
 	for (auto e:adj_edges){
 		Node ne = e.getOppositeNode(n0);
-		if ( m_mesh->isMarked<Node>(ne.id(), m_markFrontNodesParoi) ){
+		if ( m_Bnd->isParoi(ne.id()) ){
 			n2_id = ne.id();
 			l = e.length();
 		}
@@ -404,7 +236,7 @@ void AeroPipeline2D::DiscretisationBlocParoi(){
 		adj_edges = n2.get<Edge>();
 		for (auto e:adj_edges){
 			Node ne = e.getOppositeNode(n2);
-			if ( m_mesh->isMarked<Node>(ne.id(), m_markFrontNodesParoi) && ne.id() != n_old_id ){
+			if ( m_Bnd->isParoi(ne.id()) && ne.id() != n_old_id ){
 				n2_id = ne.id();
 				l = l + e.length();
 			}
@@ -617,7 +449,7 @@ TCellID AeroPipeline2D::PointArret(int color){
 		//if (m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) &&
 		//    m_var_color_bords->value(n_id) == color &&
 		//    p.X() < x_min ) {
-		if (m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) &&
+		if (m_Bnd->isParoi(n_id) &&
 		    m_Bnd->getNodeColor(n_id) == color &&
 		    p.X() < x_min ) {
 			n_arret_id = n_id;
@@ -656,7 +488,7 @@ std::vector<TCellID> AeroPipeline2D::BndNodesOrdered(int color){
 	for(auto n_it = m_mesh->nodes_begin(); n_it!= m_mesh->nodes_end() && (n0_id == NullID);++n_it){
 		TCellID n_id = *n_it;
 		//std::cout << "Test 1 : " << n_id << " " << m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) << std::endl;
-		if ( m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) &&
+		if ( m_Bnd->isParoi(n_id) &&
 		    m_Bnd->getNodeColor(n_id) == color &&
 		   m_mesh->isMarked<Node>(n_id, markPointNodes) ){
 			n0_id = n_id;
@@ -681,8 +513,8 @@ std::vector<TCellID> AeroPipeline2D::BndNodesOrdered(int color){
 	/*
 	for (auto n_it = m_mesh->nodes_begin(); n_it != m_mesh->nodes_end() && (n0_id == NullID); ++n_it) {
 	   TCellID n_id = *n_it;
-	   if (m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) &&
-	      m_var_color_bords->value(n_id) == color) {
+	   if (m_Bnd->isParoi(n_id) &&
+	      m_Bnd->getNodeColor(n_id) == color) {
 	      n0_id = n_id;
 	   }
 	}
@@ -700,7 +532,7 @@ std::vector<TCellID> AeroPipeline2D::BndNodesOrdered(int color){
 	std::vector<Edge> adj_edges = n0.get<Edge>();
 	for (auto e:adj_edges){
 		Node ne = e.getOppositeNode(n0);
-		if ( m_mesh->isMarked<Node>(ne.id(), m_markFrontNodesParoi) ){
+		if ( m_Bnd->isParoi(ne.id()) ){
 			n3_id = ne.id();
 		}
 	}
@@ -716,7 +548,7 @@ std::vector<TCellID> AeroPipeline2D::BndNodesOrdered(int color){
 		adj_edges = n2.get<Edge>();
 		for (auto e:adj_edges){
 			Node ne = e.getOppositeNode(n2);
-			if ( m_mesh->isMarked<Node>(ne.id(), m_markFrontNodesParoi) &&
+			if ( m_Bnd->isParoi(ne.id()) &&
 			   ne.id() != n1_id ){
 				n3_id = ne.id();
 			}
@@ -850,7 +682,7 @@ void AeroPipeline2D::InitialisationMeshGen(){
 		Node n = m_mesh->get<Node>(n_id);
 		math::Point p = n.point();
 		//std::cout << "node : " << n << std::endl;
-		if ( m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) ){
+		if ( m_Bnd->isParoi(n_id) ){
 			Node n_new = m_meshGen->newNode(p);
 			m_couche_id->set(n_new.id(), 0);
 			var_newID->set(n_id, n_new.id());	// On stocke l'indice du noeud n dans le nouveau maillage sur l'ancien maillage
@@ -863,8 +695,8 @@ void AeroPipeline2D::InitialisationMeshGen(){
 		std::vector<Node> adj_nodes = e.get<Node>();
 		TCellID n0_id = adj_nodes[0].id();
 		TCellID n1_id = adj_nodes[1].id();
-		if ( m_mesh->isMarked<Node>(n0_id, m_markFrontNodesParoi) &&
-		    m_mesh->isMarked<Node>(n1_id, m_markFrontNodesParoi)){
+		if ( m_Bnd->isParoi(n0_id) &&
+		    m_Bnd->isParoi(n1_id)){
 			TCellID n0_id_new = var_newID->value(n0_id) ;
 			TCellID n1_id_new = var_newID->value(n1_id) ;
 			Edge e_new = m_meshGen->newEdge(n0_id_new, n1_id_new);
