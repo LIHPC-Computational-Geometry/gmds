@@ -4,6 +4,7 @@
 
 #include <gmds/claire/AbstractAeroBoundaries.h>
 #include <gmds/claire/AeroBoundaries_2D.h>
+#include <gmds/claire/AeroBoundaries_3D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator.h>
@@ -39,11 +40,6 @@ TEST(AeroBoundariesTestClass, AeroBoundaries2D_Test1)
 	gmds::MeshDoctor doc(&m);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
-
-	// Get the boundary node ids
-	BoundaryOperator2D bnd_op(&m);
-	std::vector<TCellID> bnd_node_ids;
-	bnd_op.getBoundaryNodes(bnd_node_ids);
 
 	AeroBoundaries_2D bnd_2D(&m);
 	AbstractAeroBoundaries::STATUS bnd_2D_result = bnd_2D.execute();
@@ -97,6 +93,71 @@ TEST(AeroBoundariesTestClass, AeroBoundaries2D_Test1)
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("AeroBoundaries_2D_Test1.vtk");
+
+
+}
+
+
+TEST(AeroBoundariesTestClass, AeroBoundaries3D_Test1)
+{
+	// WE READ
+	Mesh m(MeshModel(DIM3 | R | F | E | N |
+	                 R2N | F2N | E2N | R2F | F2R |
+	                 F2E | E2F | R2E | N2R | N2F | N2E));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir + "/Aero/3D/C1_3D_0.5.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::R);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doctor(&m);
+	doctor.buildFacesAndR2F();
+	doctor.buildEdgesAndX2E();
+	doctor.updateUpwardConnectivity();
+
+	AeroBoundaries_3D bnd_3D(&m);
+	AbstractAeroBoundaries::STATUS bnd_3D_result = bnd_3D.execute();
+
+	ASSERT_EQ(bnd_3D_result, AbstractAeroBoundaries::SUCCESS);
+
+	ASSERT_EQ(bnd_3D.isParoi(30), true);
+	ASSERT_EQ(bnd_3D.isParoi(36), true);
+	ASSERT_EQ(bnd_3D.isParoi(371), false);
+	ASSERT_EQ(bnd_3D.isParoi(419), false);
+
+	ASSERT_EQ(bnd_3D.isBnd(30), true);
+	ASSERT_EQ(bnd_3D.isBnd(36), true);
+	ASSERT_EQ(bnd_3D.isBnd(49), true);
+	ASSERT_EQ(bnd_3D.isBnd(68), true);
+	ASSERT_EQ(bnd_3D.isBnd(371), false);
+	ASSERT_EQ(bnd_3D.isBnd(419), false);
+
+	ASSERT_EQ(bnd_3D.isAmont(270), true);
+	ASSERT_EQ(bnd_3D.isAmont(11), true);
+	ASSERT_EQ(bnd_3D.isAmont(145), true);
+	ASSERT_EQ(bnd_3D.isAmont(112), true);
+	ASSERT_EQ(bnd_3D.isAmont(282), true);
+	ASSERT_EQ(bnd_3D.isAmont(7), true);
+	ASSERT_EQ(bnd_3D.isAmont(53), true);
+	ASSERT_EQ(bnd_3D.isAmont(13), true);
+	ASSERT_EQ(bnd_3D.isAmont(75), true);
+	ASSERT_EQ(bnd_3D.isAmont(411), false);
+	ASSERT_EQ(bnd_3D.isAmont(362), false);
+	ASSERT_EQ(bnd_3D.isAmont(313), false);
+	ASSERT_EQ(bnd_3D.isAmont(346), false);
+	ASSERT_EQ(bnd_3D.isAmont(422), false);
+	ASSERT_EQ(bnd_3D.isAmont(441), false);
+
+	ASSERT_EQ(bnd_3D.isImmerged(), true);
+	ASSERT_EQ(bnd_3D.getNbrBords(), 2);
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("AeroBoundaries_3D_Test1.vtk");
 
 
 }
