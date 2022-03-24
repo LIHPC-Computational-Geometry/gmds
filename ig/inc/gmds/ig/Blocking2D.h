@@ -56,8 +56,8 @@ namespace gmds {
             /**@brief Only uniform discretization is supported right now. It will be possible
              * to extend it easily in a short future. Default is 10.
              */
-            void seNbDiscretizationI(const int AN);
-            void seNbDiscretizationJ(const int AN);
+            void setNbDiscretizationI(const int AN);
+            void setNbDiscretizationJ(const int AN);
             int getNbDiscretizationI() const;
             int getNbDiscretizationJ() const;
 
@@ -92,6 +92,10 @@ namespace gmds {
         /** @brief Constructor
          */
         Blocking2D();
+
+	     /** @brief Constructor that take a mesh in input to create the blocks
+	      */
+	     Blocking2D(const Mesh& Amesh);
         /** @brief Destructor
          */
         virtual ~Blocking2D();
@@ -127,6 +131,13 @@ namespace gmds {
          * can not be modified anymore. We should check the conditions to allow it in the future.
          */
         void initializeGridPoints();
+
+	     /** Get the neighboring nodes id of node of id @p AId in +/-I, +/-J if they exist.
+	      *
+	      * @param AId node id
+	      * @return a collection of nodes ids
+	      */
+	     std::vector<TCellID> getNodeNeighbors(TCellID AId);
     private:
 
         /**
