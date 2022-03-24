@@ -16,6 +16,37 @@ Blocking2D::Blocking2D()
 
 }
 /*----------------------------------------------------------------------------*/
+Blocking2D::Blocking2D(const Mesh& AMesh): Mesh(MeshModel(AMesh.getModel())){
+
+	// for now we assume that the mesh hasnt already been used for a blocking
+
+	m_embedding_dim = newVariable<int, GMDS_NODE>("embedding_dim");
+	m_embedding_id = newVariable<TCellID , GMDS_NODE>("embedding_id");
+	m_discretization_I= newVariable<int, GMDS_FACE>("discretizationI");
+	m_discretization_J= newVariable<int, GMDS_FACE>("discretizationJ");
+	m_face_grids = newVariable<Array2D<TCellID>*, GMDS_FACE >("grid_ref");
+	m_edge_grids = newVariable<std::vector<TCellID>*, GMDS_EDGE >("grid_ref");
+
+	//Building the blocking from the mesh
+	// Maybe make an independent function for the building, with different types of discretization method etc..
+
+	//map the relation from mesh vertices to blocking vertices
+	std::map<TCellID,TCellID> n2n;
+	for (auto n : AMesh.nodes()) {
+		Node n_b = newBlockCorner(AMesh.get<Node>(n).point());
+		n2n[n] = n_b.id();
+	}
+	for (auto f : AMesh.faces()) {
+		Face face = AMesh.get<Face>(f);
+		std::vector<TCellID> f_nodes;
+		face.getIDs<Node>(f_nodes);
+		Block b = newBlock(n2n[f_nodes[0]],n2n[f_nodes[1]],n2n[f_nodes[2]],n2n[f_nodes[3]]);
+		b.setNbDiscretizationI(11); //Setting default discretization to 11 for all edges
+		b.setNbDiscretizationJ(11);
+	}
+
+}
+/*----------------------------------------------------------------------------*/
 Blocking2D::~Blocking2D() {
     //by deleting the mesh, we also delete the memory space pointed by m_embedding
     // but we need to delete explicitly allocated data
@@ -27,6 +58,8 @@ Blocking2D::~Blocking2D() {
         delete m_edge_grids->value(e_id);
         m_edge_grids->set(e_id,NULL);
     }
+
+
 }
 /*----------------------------------------------------------------------------*/
 Node Blocking2D::newBlockCorner(const math::Point &APnt) {
@@ -145,7 +178,7 @@ void Blocking2D::initializeGridPoints() {
     for(auto f_id:faces()){
         Block bi(f_id,this);
         auto nb_I = bi.getNbDiscretizationI();
-        auto nb_J = bi.getNbDiscretizationI();
+        auto nb_J = bi.getNbDiscretizationJ();
 
         Array2D<TCellID>* a = new Array2D<TCellID>(nb_I,nb_J);
         Array2D<math::Point> pnts(nb_I,nb_J);
@@ -276,14 +309,14 @@ Edge Blocking2D::Block::getEdge(const int AI, const int AJ)  {
     throw GMDSException("error no edge found!");
 }
 /*----------------------------------------------------------------------------*/
-void Blocking2D::Block::seNbDiscretizationI(const int AN) {
+void Blocking2D::Block::setNbDiscretizationI(const int AN) {
     if(AN<=0)
         throw GMDSException("discretization value must be strictly positive");
 
     m_support->m_discretization_I->set(m_face.id(),AN);
 }
 /*----------------------------------------------------------------------------*/
-void Blocking2D::Block::seNbDiscretizationJ(const int AN) {
+void Blocking2D::Block::setNbDiscretizationJ(const int AN) {
     if(AN<=0)
         throw GMDSException("discretization value must be strictly positive");
 
@@ -333,5 +366,10 @@ int Blocking2D::getNbDiscretization(const Face& AFace, const Edge &AEdge) const 
     }
     //otherwise, edge 1 or 3 so subdivision J
     return m_discretization_J->value(AFace.id());
+}
+/*----------------------------------------------------------------------------*/
+std::vector<TCellID> Blocking2D::getNodeNeighbors(TCellID AId){
+
+	return std::vector<TCellID>();
 }
 /*----------------------------------------------------------------------------*/
