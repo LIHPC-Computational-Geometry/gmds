@@ -20,19 +20,6 @@ AeroBoundaries_2D::AeroBoundaries_2D(Mesh *AMesh) :
 
 
 /*------------------------------------------------------------------------*/
-AbstractAeroBoundaries::STATUS AeroBoundaries_2D::execute(){
-
-	MarkBoundariesNodes();
-	ColoriageBordsConnexes();
-	WhichColorIsAmont();
-	MarkAmontAndParoiNodes();
-
-	return AbstractAeroBoundaries::SUCCESS;
-}
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 void AeroBoundaries_2D::MarkBoundariesNodes(){
 
 	//Get the boundary node ids

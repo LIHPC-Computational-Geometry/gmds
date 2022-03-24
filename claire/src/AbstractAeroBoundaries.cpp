@@ -95,7 +95,17 @@ int AbstractAeroBoundaries::getNbrBords(){
 
 
 
+/*------------------------------------------------------------------------*/
+AbstractAeroBoundaries::STATUS AbstractAeroBoundaries::execute(){
 
+	MarkBoundariesNodes();
+	ColoriageBordsConnexes();
+	WhichColorIsAmont();
+	MarkAmontAndParoiNodes();
+
+	return AbstractAeroBoundaries::SUCCESS;
+}
+/*------------------------------------------------------------------------*/
 
 
 /*------------------------------------------------------------------------*/

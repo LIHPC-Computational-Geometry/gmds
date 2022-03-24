@@ -44,7 +44,7 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	/** \brief Function to be called for initializing datas on the
 	 * boundaries
 	 */
-	virtual AbstractAeroBoundaries::STATUS execute()=0;
+	AbstractAeroBoundaries::STATUS execute();
 	/*-------------------------------------------------------------------*/
 	/** \brief Vérifie si un noeud est sur un bord.
 	 */

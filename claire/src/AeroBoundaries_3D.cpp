@@ -19,19 +19,6 @@ AeroBoundaries_3D::AeroBoundaries_3D(Mesh *AMesh) :
 
 
 /*------------------------------------------------------------------------*/
-AbstractAeroBoundaries::STATUS AeroBoundaries_3D::execute(){
-
-	MarkBoundariesNodes();
-	ColoriageBordsConnexes();
-	WhichColorIsAmont();
-	MarkAmontAndParoiNodes();
-
-	return AbstractAeroBoundaries::SUCCESS;
-}
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 void AeroBoundaries_3D::MarkBoundariesNodes(){
 
 	//Get the boundary node ids

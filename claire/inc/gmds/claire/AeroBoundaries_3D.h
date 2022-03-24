@@ -23,10 +23,6 @@ class LIB_GMDS_CLAIRE_API AeroBoundaries_3D: public AbstractAeroBoundaries {
 	AeroBoundaries_3D(Mesh *AMesh);
 
 	/*------------------------------------------------------------------------*/
-	/** \brief Function to be called for mesh generation
-	 */
-	AbstractAeroBoundaries::STATUS execute();
-	/*------------------------------------------------------------------------*/
 
  protected:
 	/*-------------------------------------------------------------------*/
