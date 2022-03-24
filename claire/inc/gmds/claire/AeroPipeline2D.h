@@ -42,7 +42,7 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	/*----------------------------------------------------------------------------*/
 	/** @brief Initialisation des marques sur les fronts
 	 */
-	void InitialisationFronts();
+	//void InitialisationFronts();
 	/*----------------------------------------------------------------------------*/
 	/** @brief Créé les sommets des blocs sur la paroi le maillage quad généré.
 	 * Dans cette fonction, on récupère tous les noeuds du maillage triangulaire et

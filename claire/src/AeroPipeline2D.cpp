@@ -41,7 +41,7 @@ AbstractAeroPipeline::STATUS AeroPipeline2D::execute(){
 
 	LectureMaillage();
 	m_Bnd->execute();
-	InitialisationFronts();
+	//InitialisationFronts();
 
 	// Calcul du level set
 	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance");
@@ -125,7 +125,7 @@ void AeroPipeline2D::EcritureMaillage(){
 
 
 /*------------------------------------------------------------------------*/
-
+/*
 void AeroPipeline2D::InitialisationFronts(){
 
 	std::cout << "-> Initialisation des fronts" << std::endl;
@@ -287,7 +287,7 @@ void AeroPipeline2D::InitialisationFronts(){
 
 
 }
-
+*/
 /*------------------------------------------------------------------------*/
 
 

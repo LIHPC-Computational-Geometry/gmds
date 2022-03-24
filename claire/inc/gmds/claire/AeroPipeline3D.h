@@ -39,7 +39,7 @@ class LIB_GMDS_CLAIRE_API AeroPipeline3D: public AbstractAeroPipeline {
 	/*------------------------------------------------------------------------*/
 	/** @brief Initialisation des marques sur les fronts
 	 */
-	void InitialisationFronts();
+	//void InitialisationFronts();
 	/*------------------------------------------------------------------------*/
 	/** @brief Retourne le vecteur des ID des noeuds sur le bord
 	 */

@@ -4,6 +4,7 @@
 
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/AeroPipeline3D.h>
+#include <gmds/claire/AeroBoundaries_3D.h>
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/ig/Mesh.h>
@@ -26,6 +27,7 @@ AeroPipeline3D::AeroPipeline3D(ParamsAero Aparams) :
 	m_couche_id = m_mHexa.newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	m_mesh = &m_mTetra;
 	m_meshGen = &m_mHexa;
+	m_Bnd = new AeroBoundaries_3D(m_mesh) ;
 }
 /*------------------------------------------------------------------------*/
 
@@ -33,14 +35,15 @@ AeroPipeline3D::AeroPipeline3D(ParamsAero Aparams) :
 /*------------------------------------------------------------------------*/
 AbstractAeroPipeline::STATUS AeroPipeline3D::execute(){
 	LectureMaillage();
-	InitialisationFronts();
+	m_Bnd->execute();
+	//InitialisationFronts();
 
 	// Calcul du level set
 	std::cout << "-> Calcul des Level Sets" << std::endl;
 	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance");
 	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
 	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
-	LevelSetCombined lsCombined(m_mesh, m_markFrontNodesParoi, m_markFrontNodesExt,
+	LevelSetCombined lsCombined(m_mesh, m_Bnd->getMarkParoi(), m_Bnd->getMarkAmont(),
 	                            m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance"),
 	                            m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
 	                            m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
@@ -49,9 +52,9 @@ AbstractAeroPipeline::STATUS AeroPipeline3D::execute(){
 	// Calcul du gradient du champ de Level Set
 	std::cout << "-> Calcul du gradient du champ des Level Sets" << std::endl;
 	m_mesh->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-	LeastSquaresGradientComputation grad2D(m_mesh, m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	LeastSquaresGradientComputation grad3D(m_mesh, m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance"),
 	                                       m_mesh->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	grad2D.execute();
+	grad3D.execute();
 
 	EcritureMaillage();
 
@@ -104,6 +107,7 @@ void AeroPipeline3D::EcritureMaillage(){
 
 
 /*------------------------------------------------------------------------*/
+/*
 void AeroPipeline3D::InitialisationFronts(){
 
 	std::cout << "-> Initialisation des fronts" << std::endl;
@@ -266,6 +270,7 @@ void AeroPipeline3D::InitialisationFronts(){
 	// ----- Fin initialisation des bords -----
 
 }
+ */
 /*------------------------------------------------------------------------*/
 
 

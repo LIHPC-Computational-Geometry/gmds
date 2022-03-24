@@ -21,14 +21,6 @@ AbstractAeroPipeline::AbstractAeroPipeline(ParamsAero Aparams, gmds::Mesh && Am)
 AbstractAeroPipeline::AbstractAeroPipeline(ParamsAero Aparams) :
   m_params(Aparams)
 {
-	m_isOver = false;
-}
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
-bool AbstractAeroPipeline::getIsOver(){
-	return m_isOver;
 }
 /*------------------------------------------------------------------------*/
 
