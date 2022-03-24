@@ -50,6 +50,49 @@ TEST(AeroBoundariesTestClass, AeroBoundaries2D_Test1)
 
 	ASSERT_EQ(bnd_2D_result, AbstractAeroBoundaries::SUCCESS);
 
+	ASSERT_EQ(bnd_2D.isParoi(6), true);
+	ASSERT_EQ(bnd_2D.isParoi(7), true);
+	ASSERT_EQ(bnd_2D.isParoi(8), true);
+	ASSERT_EQ(bnd_2D.isParoi(9), true);
+	ASSERT_EQ(bnd_2D.isParoi(10), true);
+	ASSERT_EQ(bnd_2D.isParoi(3), true);
+	ASSERT_EQ(bnd_2D.isParoi(32), true);
+	ASSERT_EQ(bnd_2D.isParoi(1281), false);
+	ASSERT_EQ(bnd_2D.isParoi(850), false);
+	ASSERT_EQ(bnd_2D.isParoi(872), false);
+
+	ASSERT_EQ(bnd_2D.isAmont(40), true);
+	ASSERT_EQ(bnd_2D.isAmont(43), true);
+	ASSERT_EQ(bnd_2D.isAmont(45), true);
+	ASSERT_EQ(bnd_2D.isAmont(108), true);
+	ASSERT_EQ(bnd_2D.isAmont(111), true);
+	ASSERT_EQ(bnd_2D.isAmont(105), true);
+	ASSERT_EQ(bnd_2D.isAmont(10), false);
+	ASSERT_EQ(bnd_2D.isAmont(3), false);
+	ASSERT_EQ(bnd_2D.isAmont(32), false);
+	ASSERT_EQ(bnd_2D.isAmont(1018), false);
+	ASSERT_EQ(bnd_2D.isAmont(550), false);
+
+	ASSERT_EQ(bnd_2D.isBnd(40), true);
+	ASSERT_EQ(bnd_2D.isBnd(43), true);
+	ASSERT_EQ(bnd_2D.isBnd(111), true);
+	ASSERT_EQ(bnd_2D.isBnd(29), true);
+	ASSERT_EQ(bnd_2D.isBnd(32), true);
+	ASSERT_EQ(bnd_2D.isBnd(13), true);
+	ASSERT_EQ(bnd_2D.isBnd(16), true);
+	ASSERT_EQ(bnd_2D.isBnd(17), true);
+	ASSERT_EQ(bnd_2D.isBnd(1502), false);
+	ASSERT_EQ(bnd_2D.isBnd(551), false);
+	ASSERT_EQ(bnd_2D.isBnd(888), false);
+	ASSERT_EQ(bnd_2D.isBnd(1361), false);
+	ASSERT_EQ(bnd_2D.isBnd(278), false);
+	ASSERT_EQ(bnd_2D.isBnd(400), false);
+	ASSERT_EQ(bnd_2D.isBnd(744), false);
+	ASSERT_EQ(bnd_2D.isBnd(418), false);
+
+	ASSERT_EQ(bnd_2D.isImmerged(), true);
+	ASSERT_EQ(bnd_2D.getNbrBords(), 2);
+
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);

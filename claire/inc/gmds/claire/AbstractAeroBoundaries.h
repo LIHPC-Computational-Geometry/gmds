@@ -46,6 +46,38 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	 */
 	virtual AbstractAeroBoundaries::STATUS execute()=0;
 	/*-------------------------------------------------------------------*/
+	/** \brief Vérifie si un noeud est sur un bord.
+	 */
+	bool isBnd(TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** \brief Vérifie si un noeud est sur la frontière amont ou non.
+	 */
+	bool isAmont(TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** \brief Vérifie si un noeud est sur la paroi ou non.
+	 */
+	bool isParoi(TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** \brief Récupère la marque sur les noeuds de bord.
+	 */
+	int getMarkBnd();
+	/*-------------------------------------------------------------------*/
+	/** \brief Récupère la marque sur les noeuds de la frontière amont.
+	 */
+	int getMarkAmont();
+	/*-------------------------------------------------------------------*/
+	/** \brief Récupère la marque sur les noeuds de la paroi.
+	 */
+	int getMarkParoi();
+	/*-------------------------------------------------------------------*/
+	/** \brief Vérifie si le/les objet/s sont immergés.
+	 */
+	bool isImmerged();
+	/*-------------------------------------------------------------------*/
+	/** \brief Retourne le nombre de bords.
+	 */
+	int getNbrBords();
+	/*-------------------------------------------------------------------*/
 
  protected:
 	/*-------------------------------------------------------------------*/
