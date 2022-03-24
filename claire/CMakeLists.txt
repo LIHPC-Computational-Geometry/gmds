@@ -87,3 +87,7 @@ endif(WITH_TEST)
 add_executable(Claire src/main.cpp)
 target_link_libraries(Claire PRIVATE ${GMDS_LIB})
 target_compile_features(Claire PUBLIC cxx_std_14)
+
+add_executable(Claire_dev src/main_dev.cpp)
+target_link_libraries(Claire_dev PRIVATE ${GMDS_LIB})
+target_compile_features(Claire_dev PUBLIC cxx_std_14)
