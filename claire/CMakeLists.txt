@@ -26,6 +26,7 @@ set(GMDS_INC
 		inc/gmds/claire/Utils.h
 		inc/gmds/claire/AbstractAeroBoundaries.h
 		inc/gmds/claire/AeroBoundaries_2D.h
+		inc/gmds/claire/AeroBoundaries_3D.h
 		)
 set(GMDS_SRC
 		src/main.cpp
@@ -46,7 +47,8 @@ set(GMDS_SRC
 		src/AdvectedPointRK4_3D.cpp
 		src/Utils.cpp
 		src/AbstractAeroBoundaries.cpp
-		src/AeroBoundaries_2D.cpp inc/gmds/claire/AeroBoundaries_3D.h src/AeroBoundaries_3D.cpp)
+		src/AeroBoundaries_2D.cpp
+		src/AeroBoundaries_3D.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
@@ -64,6 +66,7 @@ target_link_libraries(${GMDS_LIB} PUBLIC
 		${LIB_GMDS_IG}
 		${LIB_GMDS_IO}
 		${LIB_GMDS_IG_ALGO}
+		${LIB_GMDS_CAD}
 		)
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)

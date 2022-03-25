@@ -22,14 +22,14 @@ using namespace gmds;
 
 AeroPipeline2D::AeroPipeline2D(ParamsAero Aparams) :
   AbstractAeroPipeline(Aparams),
-  m_m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+  m_mTri(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
                                        gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F)),
-  m_mGen(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+  m_mQuad(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
                                        gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F))
 {
-	m_couche_id = m_mGen.newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-	m_mesh = &m_m;
-	m_meshGen = &m_mGen;
+	m_couche_id = m_mQuad.newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	m_mesh = &m_mTri;
+	m_meshGen = &m_mQuad;
 	m_Bnd = new AeroBoundaries_2D(m_mesh) ;
 }
 /*------------------------------------------------------------------------*/
@@ -40,6 +40,8 @@ AbstractAeroPipeline::STATUS AeroPipeline2D::execute(){
 
 	LectureMaillage();
 	m_Bnd->execute();
+
+	//m_manager.initAndLinkFrom2DMesh(&m_mTri,&m_linker_TG);
 
 	// Calcul du level set
 	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance");
@@ -57,18 +59,17 @@ AbstractAeroPipeline::STATUS AeroPipeline2D::execute(){
 	                                       m_mesh->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	grad2D.execute();
 
-	//InitialisationMeshGen();
-	//DiscretisationBlocParoi();
-
 	for (int i=1;i<=m_Bnd->getNbrBords();i++){
 		if(i != m_Bnd->getColorAmont()){
-			DiscretisationBlocsBord(i);
+			DiscretisationParoi(i);
 		}
 	}
 
+	//m_linker_QHG.setGeometry(&m_manager);
+	//m_linker_QHG.setMesh(&m_mQuad);
+
 	GenerationCouche(1, 0.25);
 	GenerationCouche(2, 1);
-
 
 	EcritureMaillage();
 
@@ -118,146 +119,7 @@ void AeroPipeline2D::EcritureMaillage(){
 	vtkWriter2.setDataOptions(gmds::N|gmds::F);
 	vtkWriter2.write("AeroPipeline2D_Triangles.vtk");
 
-}
-/*------------------------------------------------------------------------*/
 
-
-/*------------------------------------------------------------------------*/
-void AeroPipeline2D::DiscretisationBlocParoi(){
-
-	std::cout << "-> Discrétisation du front int du maillage quad" << std::endl;
-
-	//Get the boundary node ids
-	BoundaryOperator2D bnd_op(m_mesh);
-	std::vector<TCellID> bnd_node_ids;
-	bnd_op.getBoundaryNodes(bnd_node_ids);
-
-	int markCurveEdges = m_mesh->newMark<Edge>();
-	int markCurveNodes = m_mesh->newMark<Node>();
-	int markPointNodes = m_mesh->newMark<Node>();
-	int markAloneNodes = m_mesh->newMark<Node>();
-
-	bnd_op.markCellOnGeometry(markCurveEdges, markCurveNodes,
-	                 markPointNodes, markAloneNodes);
-
-	m_mesh->unmarkAll<Node>(markAloneNodes);
-	m_mesh->freeMark<Node>(markAloneNodes);
-
-
-
-	// Discrétisation pour un bord de paroi
-	int color = 1;
-
-	// On récuère un noeud de ce bord qui est sur un sommet
-	TCellID n0_id = NullID ;
-	for(auto n_it = m_mesh->nodes_begin(); n_it!= m_mesh->nodes_end() && (n0_id == NullID);++n_it){
-		TCellID n_id = *n_it;
-		if ( m_Bnd->isParoi(n_id) &&
-		    m_mesh->isMarked<Node>(n_id, markPointNodes) ){
-			n0_id = n_id;
-		}
-	}
-
-	// Si le maillage ne comporte pas de sommet, alors, on prend un noeud au hasard
-	double x_min = std::numeric_limits<double>::max();
-	/*
-	if (n0_id==NullID) {
-		for (auto n_it = m_mesh->nodes_begin(); n_it != m_mesh->nodes_end() && (n0_id == NullID); ++n_it) {
-			TCellID n_id = *n_it;
-			Node n = m_mesh->get<Node>(n_id);
-			math::Point p = n.point();
-			if (m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) && p.X() < x_min ) {
-				n0_id = n_id;
-				x_min = p.X();
-			}
-		}
-	}
-	*/
-
-	n0_id = m_Bnd->PointArret(color);
-
-	// Initialisation des longueurs pour définir les sommets de blocs
-	Node n0 = m_mesh->get<Node>(n0_id);
-	x_min = n0.X();
-	double perim = m_Bnd->ComputeBoundaryLength(color);		// Calcul du périmètre du bord regardé
-	double Lmax = perim/ m_params.nbrMinBloc ;
-	double l(0);
-	std::cout << "Périmètre : " << perim << std::endl ;
-	//std::cout << "Limite taille bloc : " << Lmax << std::endl;
-
-
-	// Parcours du bord de proche en proche en passant par l'opposé
-	TCellID n1_id = n0_id;
-	TCellID n2_id = NullID;
-	std::vector<Edge> adj_edges = n0.get<Edge>();
-	for (auto e:adj_edges){
-		Node ne = e.getOppositeNode(n0);
-		if ( m_Bnd->isParoi(ne.id()) ){
-			n2_id = ne.id();
-			l = e.length();
-		}
-	}
-
-	Node nstart_quad = m_meshGen->newNode(n0.point()); // Premier noeud du nouveau maillage
-	Node n0_quad = nstart_quad;
-	Node n1_quad;
-	TCellID nstart_quad_id = nstart_quad.id() ;
-	TCellID n0_quad_id = nstart_quad_id;
-	TCellID n1_quad_id = NullID;
-
-	//std::cout << "First node : " << n0_quad.point() << std::endl ;
-
-	while (n2_id != n0_id){
-
-		Node n_test = m_mesh->get<Node>(n2_id);
-		math::Point p2 = n_test.point();
-
-		// Si le noeud est sur un sommet
-		if ( m_mesh->isMarked<Node>(n2_id, markPointNodes) || l >= Lmax || abs(l-Lmax) <= pow(10,-6) || abs(p2.X() - x_min) <= pow(10,-6) ){
-			Node n2 = m_mesh->get<Node>(n2_id);
-			n1_quad = m_meshGen->newNode(n2.point());
-			Edge e = m_meshGen->newEdge(n0_quad, n1_quad);
-			// Ajout des connectivités Node -> Edge
-			n0_quad.add<Edge>(e);
-			n1_quad.add<Edge>(e);
-			// Mise à jour du noeud n0
-			n0_quad = n1_quad;
-			n0_quad_id = n1_quad.id();
-			//std::cout << "l = " << l << std::endl;
-			//std::cout << "pos : " << n2.point() << std::endl;
-			//std::cout << "pos quad : " << n1_quad.point() << std::endl;
-			l = 0;	// On remet l à 0
-		}
-
-		// On cherche le prochain noeud
-		TCellID n_old_id = n1_id;
-		n1_id = n2_id;
-		Node n2 = m_mesh->get<Node>(n2_id);
-		adj_edges = n2.get<Edge>();
-		for (auto e:adj_edges){
-			Node ne = e.getOppositeNode(n2);
-			if ( m_Bnd->isParoi(ne.id()) && ne.id() != n_old_id ){
-				n2_id = ne.id();
-				l = l + e.length();
-			}
-		}
-		//std::cout << "l = " << l << std::endl;
-	}
-
-	// Ajout de la dernière arête pour fermer le blocking du bord
-	Edge e = m_meshGen->newEdge(n1_quad, nstart_quad);
-	// Ajout des connectivités Node -> Edge
-	n1_quad.add<Edge>(e);
-	nstart_quad.add<Edge>(e);
-
-	m_mesh->unmarkAll<Node>(markCurveEdges);
-	m_mesh->freeMark<Node>(markCurveEdges);
-
-	m_mesh->unmarkAll<Node>(markCurveNodes);
-	m_mesh->freeMark<Node>(markCurveNodes);
-
-	m_mesh->unmarkAll<Node>(markPointNodes);
-	m_mesh->freeMark<Node>(markPointNodes);
 
 }
 /*------------------------------------------------------------------------*/
@@ -277,18 +139,18 @@ void AeroPipeline2D::GenerationCouche(int couche_id, double dist){
 			// Placement du point P à la distance souhaitée suivant le champ de gradient
 			Node n = m_meshGen->get<Node>(n_id);
 			math::Point M = n.point();
-			AdvectedPointRK4_2D advpoint(m_mesh, M, dist, m_m.getVariable<double, GMDS_NODE>("GMDS_Distance"),
-			   m_m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
+			AdvectedPointRK4_2D advpoint(m_mesh, M, dist, m_mTri.getVariable<double, GMDS_NODE>("GMDS_Distance"),
+			   m_mTri.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
 			advpoint.execute();
 			math::Point P = advpoint.getPend();
 
 			// Nouveau noeud dans le maillage
-			Node n_new = m_mGen.newNode(P);
+			Node n_new = m_mQuad.newNode(P);
 			m_couche_id->set(n_new.id(),couche_id);
 			nodes_couche_id.push_back(n_new);
 
 			// Création de l'arête pour relier le noeud à la couche n-1
-			Edge e_new = m_mGen.newEdge(n, n_new);
+			Edge e_new = m_mQuad.newEdge(n, n_new);
 			n_new.add<Edge>(e_new);	// Ajout de la connectivité N -> E
 			n.add<Edge>(e_new);	// Ajout de la connectivité N -> E
 
@@ -370,12 +232,12 @@ void AeroPipeline2D::CreateQuadAndConnectivities(Node n0, Node n1, Node n2){
 	Node n3 = SuccessorNode(n2);	// On récupère le noeud n3, 4ème noeud du quad, dans la couche i
 
 	// Création de l'arête pour relier les doeux noeuds de la couche i
-	Edge e3 = m_mGen.newEdge(n0, n3);
+	Edge e3 = m_mQuad.newEdge(n0, n3);
 	n0.add<Edge>(e3);	// Connectivités N->E
 	n3.add<Edge>(e3);
 
 	// Création de la face de type quad
-	Face f = m_mGen.newQuad(n0, n1, n2, n3) ;
+	Face f = m_mQuad.newQuad(n0, n1, n2, n3) ;
 	n0.add<Face>(f);	// Connectivités N -> F
 	n1.add<Face>(f);
 	n2.add<Face>(f);
@@ -409,27 +271,27 @@ bool AeroPipeline2D::isQuadCreated(Node n0, Node n1, Node n2){
 
 
 /*------------------------------------------------------------------------*/
-void AeroPipeline2D::DiscretisationBlocsBord(int color){
+void AeroPipeline2D::DiscretisationParoi(int color){
 
 	std::cout << "-> Discrétisation du bord de couleur " << color << std::endl;
 
-	std::vector<TCellID> bnd_nodes_id_ordered = m_Bnd->BndNodesOrdered(color);
-
-	//Get the boundary node ids
-	BoundaryOperator2D bnd_op(m_mesh);
-	std::vector<TCellID> bnd_node_ids;
-	bnd_op.getBoundaryNodes(bnd_node_ids);
+	std::vector<TCellID> bnd_nodes_id_ordered = m_Bnd->BndNodesOrdered(color);	// Tri les noeuds du bord concerné dans l'ordre
 
 	int markCurveEdges = m_mesh->newMark<Edge>();
 	int markCurveNodes = m_mesh->newMark<Node>();
 	int markPointNodes = m_mesh->newMark<Node>();
 	int markAloneNodes = m_mesh->newMark<Node>();
 
+	BoundaryOperator2D bnd_op(m_mesh);
 	bnd_op.markCellOnGeometry(markCurveEdges, markCurveNodes,
 	                          markPointNodes, markAloneNodes);
 
 	m_mesh->unmarkAll<Node>(markAloneNodes);
 	m_mesh->freeMark<Node>(markAloneNodes);
+	m_mesh->unmarkAll<Edge>(markCurveEdges);
+	m_mesh->freeMark<Edge>(markCurveEdges);
+	m_mesh->unmarkAll<Node>(markCurveNodes);
+	m_mesh->freeMark<Node>(markCurveNodes);
 
 	// Calcul de la longueur max des arêtes de bloc
 	double perim = m_Bnd->ComputeBoundaryLength(color);		// Calcul du périmètre du bord regardé
@@ -478,12 +340,6 @@ void AeroPipeline2D::DiscretisationBlocsBord(int color){
 	// Ajout des connectivités Node -> Edge
 	n2_quad.add<Edge>(e);
 	n0_quad.add<Edge>(e);
-
-	m_mesh->unmarkAll<Edge>(markCurveEdges);
-	m_mesh->freeMark<Edge>(markCurveEdges);
-
-	m_mesh->unmarkAll<Node>(markCurveNodes);
-	m_mesh->freeMark<Node>(markCurveNodes);
 
 	m_mesh->unmarkAll<Node>(markPointNodes);
 	m_mesh->freeMark<Node>(markPointNodes);

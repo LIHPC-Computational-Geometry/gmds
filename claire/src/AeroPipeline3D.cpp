@@ -36,6 +36,7 @@ AeroPipeline3D::AeroPipeline3D(ParamsAero Aparams) :
 AbstractAeroPipeline::STATUS AeroPipeline3D::execute(){
 	LectureMaillage();
 	m_Bnd->execute();
+	//m_manager.initAndLinkFrom3DMesh(&m_mTetra,&m_linker_TG);
 
 	// Calcul du level set
 	std::cout << "-> Calcul des Level Sets" << std::endl;

@@ -9,6 +9,7 @@
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/claire/AbstractAeroPipeline.h>
 #include <gmds/claire/AeroBoundaries_2D.h>
+#include <gmds/ig/Blocking2D.h>
 #include <gmds/claire/Params.h>
 /*----------------------------------------------------------------------------*/
 namespace  gmds {
@@ -40,10 +41,6 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	 * format .vtk
 	 */
 	void EcritureMaillage();
-	/*----------------------------------------------------------------------------*/
-	/** @brief Créé les sommets des blocs sur la paroi pour le maillage quad généré
-	 */
-	void DiscretisationBlocParoi();
 	/*----------------------------------------------------------------------------*/
 	/** @brief Génère une couche de noeuds du maillage
 	 */
@@ -79,15 +76,17 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	/** @brief Créé les sommets des blocs sur le bord de couleur color pour le
 	 * maillage quad généré.
 	 */
-	void DiscretisationBlocsBord(int color);
+	void DiscretisationParoi(int color);
 	/*----------------------------------------------------------------------------*/
  protected:
 	/** mesh we work on */
-	Mesh m_m;
+	Mesh m_mTri;
 	/** mesh quad generated */
-	Mesh m_mGen;
+	Mesh m_mQuad;
+	/** blocking 2D */
+	Blocking2D m_Blocking2D;
 	/** Données des bords */
-	AeroBoundaries_2D* m_Bnd ;
+	AeroBoundaries_2D* m_Bnd;
 
 };
 /*----------------------------------------------------------------------------*/

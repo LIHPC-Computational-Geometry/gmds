@@ -10,6 +10,7 @@
 #include <gmds/ig/Mesh.h>
 #include <gmds/claire/Params.h>
 #include <gmds/claire/AbstractAeroBoundaries.h>
+#include <gmds/cad/FACManager.h>
 #include <string>
 #include <map>
 #include <fstream>
@@ -60,6 +61,14 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	ParamsAero m_params;
 	/** Variable sur le nouveau maillage, indique à quelle couche appartient un noeud */
 	Variable<int>* m_couche_id;
+	/** Manager */
+	cad::FACManager m_manager;
+	/** Linker maillage T entrée à la géométrie */
+	cad::GeomMeshLinker m_linker_TG;
+	/** Linker maillage Q/H sortie à la géométrie */
+	//cad::GeomMeshLinker m_linker_QHG;
+	/** Linker Blocking à la géométrie */
+	//cad::GeomMeshLinker m_linker_BG;
 
 };
 /*----------------------------------------------------------------------------*/
