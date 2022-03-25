@@ -87,3 +87,132 @@ void AeroBoundaries_2D::WhichColorIsAmont(){
 
 }
 /*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+std::vector<TCellID> AeroBoundaries_2D::BndNodesOrdered(int color){
+
+	std::vector<TCellID> bnd_nodes_id_ordered;
+
+	//Get the boundary node ids
+	BoundaryOperator2D bnd_op(m_mesh);
+	std::vector<TCellID> bnd_node_ids;
+	bnd_op.getBoundaryNodes(bnd_node_ids);
+
+	int markCurveEdges = m_mesh->newMark<Edge>();
+	int markCurveNodes = m_mesh->newMark<Node>();
+	int markPointNodes = m_mesh->newMark<Node>();
+	int markAloneNodes = m_mesh->newMark<Node>();
+
+	bnd_op.markCellOnGeometry(markCurveEdges, markCurveNodes,
+	                          markPointNodes, markAloneNodes);
+
+	m_mesh->unmarkAll<Node>(markAloneNodes);
+	m_mesh->freeMark<Node>(markAloneNodes);
+
+	TCellID n0_id = NullID ; // Choix du noeud de départ
+
+	// STRATEGIE 1 : On récuère un noeud de ce bord qui est sur un sommet
+	for(auto n_it = m_mesh->nodes_begin(); n_it!= m_mesh->nodes_end() && (n0_id == NullID);++n_it){
+		TCellID n_id = *n_it;
+		//std::cout << "Test 1 : " << n_id << " " << m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) << std::endl;
+		if ( m_mesh->isMarked<Node>(n_id, m_markNodesParoi) &&
+		    m_var_color_bords->value(n_id) == color &&
+		    m_mesh->isMarked<Node>(n_id, markPointNodes) ){
+			n0_id = n_id;
+		}
+	}
+
+	m_mesh->unmarkAll<Edge>(markCurveEdges);
+	m_mesh->freeMark<Edge>(markCurveEdges);
+
+	m_mesh->unmarkAll<Node>(markCurveNodes);
+	m_mesh->freeMark<Node>(markCurveNodes);
+
+	m_mesh->unmarkAll<Node>(markPointNodes);
+	m_mesh->freeMark<Node>(markPointNodes);
+
+	// STRATEGIE 2 : On prend le point d'arrêt, positionné au x_min.
+	// Attention, plusieurs noeuds peuvent être au x_min. Cette méthode
+	// en retourne un au hasard.
+	n0_id = PointArret(color);
+
+	// STRATEGIE 3 : On sélectionne un noeud au hasard
+	/*
+	for (auto n_it = m_mesh->nodes_begin(); n_it != m_mesh->nodes_end() && (n0_id == NullID); ++n_it) {
+	   TCellID n_id = *n_it;
+	   if (m_Bnd->isParoi(n_id) &&
+	      m_Bnd->getNodeColor(n_id) == color) {
+	      n0_id = n_id;
+	   }
+	}
+	 */
+
+	// Initialisation de la première valeur du vecteur
+	bnd_nodes_id_ordered.push_back(n0_id);
+
+	// Initialisation des valeurs pour le parcours du bord
+	TCellID n1_id = n0_id;
+	TCellID n2_id = n0_id;
+	TCellID n3_id = n0_id;
+
+	Node n0 = m_mesh->get<Node>(n0_id);
+	std::vector<Edge> adj_edges = n0.get<Edge>();
+	for (auto e:adj_edges){
+		Node ne = e.getOppositeNode(n0);
+		if ( m_mesh->isMarked<Node>(ne.id(), m_markNodesParoi) ){
+			n3_id = ne.id();
+		}
+	}
+
+	while (n3_id != n0_id){
+
+		bnd_nodes_id_ordered.push_back(n3_id);		// On ajout l'id du noeud n3 au vecteur
+
+		// On cherche le prochain noeud
+		n1_id = n2_id;
+		n2_id = n3_id;
+		Node n2 = m_mesh->get<Node>(n2_id);
+		adj_edges = n2.get<Edge>();
+		for (auto e:adj_edges){
+			Node ne = e.getOppositeNode(n2);
+			if ( m_mesh->isMarked<Node>(ne.id(), m_markNodesParoi) &&
+			    ne.id() != n1_id ){
+				n3_id = ne.id();
+			}
+		}
+
+	}
+
+	return bnd_nodes_id_ordered;
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+double AeroBoundaries_2D::ComputeBoundaryLength(int color){
+
+	double length(0.0);
+	std::vector<TCellID> bnd_nodes_id_ordered = BndNodesOrdered(color);
+
+	for(int i=0;i<bnd_nodes_id_ordered.size()-1;i++){
+		Node n0 = m_mesh->get<Node>(bnd_nodes_id_ordered[i]);
+		Node n1 = m_mesh->get<Node>(bnd_nodes_id_ordered[i+1]);
+		math::Point p0 = n0.point();
+		math::Point p1 = n1.point();
+		math::Vector3d v = p1-p0;
+		length += v.norm();
+	}
+
+	// Ajout de la dernière longueur pour "fermer la boucle"
+	Node n0 = m_mesh->get<Node>(bnd_nodes_id_ordered[bnd_nodes_id_ordered.size()-1]);
+	Node n1 = m_mesh->get<Node>(bnd_nodes_id_ordered[0]);
+	math::Point p0 = n0.point();
+	math::Point p1 = n1.point();
+	math::Vector3d v = p1-p0;
+	length += v.norm();
+
+	return length;
+}
+/*------------------------------------------------------------------------*/

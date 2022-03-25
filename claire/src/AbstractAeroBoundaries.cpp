@@ -106,6 +106,28 @@ int AbstractAeroBoundaries::getNodeColor(TCellID n_id){
 /*------------------------------------------------------------------------*/
 
 
+/*------------------------------------------------------------------------*/
+TCellID AbstractAeroBoundaries::PointArret(int color){
+
+	TCellID n_arret_id(NullID);
+	double x_min = std::numeric_limits<double>::max();
+
+	for (auto n_it = m_mesh->nodes_begin(); n_it != m_mesh->nodes_end() ; ++n_it) {
+		TCellID n_id = *n_it;
+		Node n = m_mesh->get<Node>(n_id);
+		math::Point p = n.point();
+		if ( m_mesh->isMarked<Node>(n_id, m_markNodesParoi ) &&
+		    m_var_color_bords->value(n_id) == color &&
+		    p.X() < x_min ) {
+			n_arret_id = n_id;
+			x_min = p.X();
+		}
+	}
+	return n_arret_id;
+}
+/*------------------------------------------------------------------------*/
+
+
 
 /*------------------------------------------------------------------------*/
 AbstractAeroBoundaries::STATUS AbstractAeroBoundaries::execute(){

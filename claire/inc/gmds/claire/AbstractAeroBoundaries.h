@@ -86,6 +86,11 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	 */
 	int getNodeColor(TCellID n_id);
 	/*-------------------------------------------------------------------*/
+	/** @brief Donne l'id d'un noeud "le plus à gauche" sur le bord de couleur
+	 * color, correspondant en aéro au point d'arrêt.
+	 */
+	TCellID PointArret(int color);
+	/*----------------------------------------------------------------------------*/
 
  protected:
 	/*-------------------------------------------------------------------*/

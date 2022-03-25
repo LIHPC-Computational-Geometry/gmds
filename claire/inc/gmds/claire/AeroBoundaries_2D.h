@@ -23,6 +23,16 @@ class LIB_GMDS_CLAIRE_API AeroBoundaries_2D: public AbstractAeroBoundaries {
 	AeroBoundaries_2D(Mesh *AMesh);
 
 	/*------------------------------------------------------------------------*/
+	/** @brief Retourne un vecteur ordonné des id des noeuds du bord
+	 * correspondant à la couleur color.
+	 */
+	std::vector<TCellID> BndNodesOrdered(int color);
+	/*------------------------------------------------------------------------*/
+	/** @brief Retourne la longueur d'un bord (périmètre) à partir de la couleur
+	 * color du bord.
+	 */
+	double ComputeBoundaryLength(int color);
+	/*-----------------------------------------------------------------------*/
 
  protected:
 	/*-------------------------------------------------------------------*/

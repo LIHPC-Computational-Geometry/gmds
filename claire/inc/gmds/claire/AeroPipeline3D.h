@@ -8,6 +8,7 @@
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/claire/AbstractAeroPipeline.h>
+#include <gmds/claire/AeroBoundaries_3D.h>
 /*----------------------------------------------------------------------------*/
 namespace  gmds {
 /*----------------------------------------------------------------------------*/
@@ -43,6 +44,8 @@ class LIB_GMDS_CLAIRE_API AeroPipeline3D: public AbstractAeroPipeline {
 	Mesh m_mTetra;
 	/** Hexa mesh generated */
 	Mesh m_mHexa;
+	/** Données des bords */
+	AeroBoundaries_3D* m_Bnd ;
 
 
 };

@@ -8,6 +8,7 @@
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/claire/AbstractAeroPipeline.h>
+#include <gmds/claire/AeroBoundaries_2D.h>
 #include <gmds/claire/Params.h>
 /*----------------------------------------------------------------------------*/
 namespace  gmds {
@@ -58,11 +59,6 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	 */
 	Node AnteriorNode(Node n0);
 	/*----------------------------------------------------------------------------*/
-	/** @brief Donne l'id d'un noeud "le plus à gauche" sur le bord de couleur
-	 * color, correspondant en aéro au point d'arrêt.
-	 */
-	TCellID PointArret(int color);
-	/*----------------------------------------------------------------------------*/
 	/** @brief Donne le vecteur des noeuds adjacents à n0 qui sont dans la couche i.
 	 */
 	std::vector<Node> AdjNodesInLayer(Node n0, int couche_i);
@@ -80,16 +76,6 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	 */
 	bool isQuadCreated(Node n0, Node n1, Node n2);
 	/*----------------------------------------------------------------------------*/
-	/** @brief Retourne la longueur d'un bord (périmètre) à partir de la couleur
-	 * color du bord.
-	 */
-	double ComputeBoundaryLength(int color);
-	/*----------------------------------------------------------------------------*/
-	/** @brief Retourne un vecteur ordonné des noeuds du bord correspondant à la
-	 * couleur color.
-	 */
-	std::vector<TCellID> BndNodesOrdered(int color);
-	/*----------------------------------------------------------------------------*/
 	/** @brief Créé les sommets des blocs sur le bord de couleur color pour le
 	 * maillage quad généré.
 	 */
@@ -100,6 +86,8 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	Mesh m_m;
 	/** mesh quad generated */
 	Mesh m_mGen;
+	/** Données des bords */
+	AeroBoundaries_2D* m_Bnd ;
 
 };
 /*----------------------------------------------------------------------------*/

@@ -174,12 +174,12 @@ void AeroPipeline2D::DiscretisationBlocParoi(){
 	}
 	*/
 
-	n0_id = PointArret(color);
+	n0_id = m_Bnd->PointArret(color);
 
 	// Initialisation des longueurs pour définir les sommets de blocs
 	Node n0 = m_mesh->get<Node>(n0_id);
 	x_min = n0.X();
-	double perim = ComputeBoundaryLength(color);		// Calcul du périmètre du bord regardé
+	double perim = m_Bnd->ComputeBoundaryLength(color);		// Calcul du périmètre du bord regardé
 	double Lmax = perim/ m_params.nbrMinBloc ;
 	double l(0);
 	std::cout << "Périmètre : " << perim << std::endl ;
@@ -409,165 +409,11 @@ bool AeroPipeline2D::isQuadCreated(Node n0, Node n1, Node n2){
 
 
 /*------------------------------------------------------------------------*/
-double AeroPipeline2D::ComputeBoundaryLength(int color){
-
-	double length(0.0);
-	std::vector<TCellID> bnd_nodes_id_ordered = BndNodesOrdered(color);
-
-	for(int i=0;i<bnd_nodes_id_ordered.size()-1;i++){
-		Node n0 = m_mesh->get<Node>(bnd_nodes_id_ordered[i]);
-		Node n1 = m_mesh->get<Node>(bnd_nodes_id_ordered[i+1]);
-		math::Point p0 = n0.point();
-		math::Point p1 = n1.point();
-		math::Vector3d v = p1-p0;
-		length += v.norm();
-	}
-
-	// Ajout de la dernière longueur pour "fermer la boucle"
-	Node n0 = m_mesh->get<Node>(bnd_nodes_id_ordered[bnd_nodes_id_ordered.size()-1]);
-	Node n1 = m_mesh->get<Node>(bnd_nodes_id_ordered[0]);
-	math::Point p0 = n0.point();
-	math::Point p1 = n1.point();
-	math::Vector3d v = p1-p0;
-	length += v.norm();
-
-	return length;
-}
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
-TCellID AeroPipeline2D::PointArret(int color){
-
-	TCellID n_arret_id(NullID);
-	double x_min = std::numeric_limits<double>::max();
-
-	for (auto n_it = m_mesh->nodes_begin(); n_it != m_mesh->nodes_end() ; ++n_it) {
-		TCellID n_id = *n_it;
-		Node n = m_mesh->get<Node>(n_id);
-		math::Point p = n.point();
-		//if (m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) &&
-		//    m_var_color_bords->value(n_id) == color &&
-		//    p.X() < x_min ) {
-		if (m_Bnd->isParoi(n_id) &&
-		    m_Bnd->getNodeColor(n_id) == color &&
-		    p.X() < x_min ) {
-			n_arret_id = n_id;
-			x_min = p.X();
-		}
-	}
-	return n_arret_id;
-}
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
-std::vector<TCellID> AeroPipeline2D::BndNodesOrdered(int color){
-
-	std::vector<TCellID> bnd_nodes_id_ordered;
-
-	//Get the boundary node ids
-	BoundaryOperator2D bnd_op(m_mesh);
-	std::vector<TCellID> bnd_node_ids;
-	bnd_op.getBoundaryNodes(bnd_node_ids);
-
-	int markCurveEdges = m_mesh->newMark<Edge>();
-	int markCurveNodes = m_mesh->newMark<Node>();
-	int markPointNodes = m_mesh->newMark<Node>();
-	int markAloneNodes = m_mesh->newMark<Node>();
-
-	bnd_op.markCellOnGeometry(markCurveEdges, markCurveNodes,
-	                          markPointNodes, markAloneNodes);
-
-	m_mesh->unmarkAll<Node>(markAloneNodes);
-	m_mesh->freeMark<Node>(markAloneNodes);
-
-	TCellID n0_id = NullID ; // Choix du noeud de départ
-
-	// STRATEGIE 1 : On récuère un noeud de ce bord qui est sur un sommet
-	for(auto n_it = m_mesh->nodes_begin(); n_it!= m_mesh->nodes_end() && (n0_id == NullID);++n_it){
-		TCellID n_id = *n_it;
-		//std::cout << "Test 1 : " << n_id << " " << m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) << std::endl;
-		if ( m_Bnd->isParoi(n_id) &&
-		    m_Bnd->getNodeColor(n_id) == color &&
-		   m_mesh->isMarked<Node>(n_id, markPointNodes) ){
-			n0_id = n_id;
-		}
-	}
-
-	m_mesh->unmarkAll<Edge>(markCurveEdges);
-	m_mesh->freeMark<Edge>(markCurveEdges);
-
-	m_mesh->unmarkAll<Node>(markCurveNodes);
-	m_mesh->freeMark<Node>(markCurveNodes);
-
-	m_mesh->unmarkAll<Node>(markPointNodes);
-	m_mesh->freeMark<Node>(markPointNodes);
-
-	// STRATEGIE 2 : On prend le point d'arrêt, positionné au x_min.
-	// Attention, plusieurs noeuds peuvent être au x_min. Cette méthode
-	// en retourne un au hasard.
-	n0_id = PointArret(color);
-
-	// STRATEGIE 3 : On sélectionne un noeud au hasard
-	/*
-	for (auto n_it = m_mesh->nodes_begin(); n_it != m_mesh->nodes_end() && (n0_id == NullID); ++n_it) {
-	   TCellID n_id = *n_it;
-	   if (m_Bnd->isParoi(n_id) &&
-	      m_Bnd->getNodeColor(n_id) == color) {
-	      n0_id = n_id;
-	   }
-	}
-	 */
-
-	// Initialisation de la première valeur du vecteur
-	bnd_nodes_id_ordered.push_back(n0_id);
-
-	// Initialisation des valeurs pour le parcours du bord
-	TCellID n1_id = n0_id;
-	TCellID n2_id = n0_id;
-	TCellID n3_id = n0_id;
-
-	Node n0 = m_mesh->get<Node>(n0_id);
-	std::vector<Edge> adj_edges = n0.get<Edge>();
-	for (auto e:adj_edges){
-		Node ne = e.getOppositeNode(n0);
-		if ( m_Bnd->isParoi(ne.id()) ){
-			n3_id = ne.id();
-		}
-	}
-
-	while (n3_id != n0_id){
-
-		bnd_nodes_id_ordered.push_back(n3_id);		// On ajout l'id du noeud n3 au vecteur
-
-		// On cherche le prochain noeud
-		n1_id = n2_id;
-		n2_id = n3_id;
-		Node n2 = m_mesh->get<Node>(n2_id);
-		adj_edges = n2.get<Edge>();
-		for (auto e:adj_edges){
-			Node ne = e.getOppositeNode(n2);
-			if ( m_Bnd->isParoi(ne.id()) &&
-			   ne.id() != n1_id ){
-				n3_id = ne.id();
-			}
-		}
-
-	}
-
-	return bnd_nodes_id_ordered;
-
-}
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 void AeroPipeline2D::DiscretisationBlocsBord(int color){
 
 	std::cout << "-> Discrétisation du bord de couleur " << color << std::endl;
 
-	std::vector<TCellID> bnd_nodes_id_ordered = BndNodesOrdered(color);
+	std::vector<TCellID> bnd_nodes_id_ordered = m_Bnd->BndNodesOrdered(color);
 
 	//Get the boundary node ids
 	BoundaryOperator2D bnd_op(m_mesh);
@@ -586,12 +432,12 @@ void AeroPipeline2D::DiscretisationBlocsBord(int color){
 	m_mesh->freeMark<Node>(markAloneNodes);
 
 	// Calcul de la longueur max des arêtes de bloc
-	double perim = ComputeBoundaryLength(color);		// Calcul du périmètre du bord regardé
+	double perim = m_Bnd->ComputeBoundaryLength(color);		// Calcul du périmètre du bord regardé
 	double Lmax = perim/ m_params.nbrMinBloc ;
 	double l(0);
 
 	// Calcul de la valeur min de x sur les noeuds du bord
-	TCellID n_arret_tri_id = PointArret(color);
+	TCellID n_arret_tri_id = m_Bnd->PointArret(color);
 	Node n_arret_tri = m_mesh->get<Node>(n_arret_tri_id) ;
 	math::Point point_arret = n_arret_tri.point();
 	double x_min = point_arret.X() ;
