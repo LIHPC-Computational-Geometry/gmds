@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 2.8.10)
-
-
 set(UT_ELG3D_SRC_FILES
 
 		AssignCellsTest.h
