@@ -71,7 +71,12 @@ AbstractAeroPipeline::STATUS AeroPipeline2D::execute(){
 	GenerationCouche(1, 0.25);
 	GenerationCouche(2, 1);
 
+	ConvertisseurMeshToBlocking();
+
 	EcritureMaillage();
+
+	//std::cout << "Nbr faces : " << m_mQuad.getNbFaces() << std::endl;
+	//std::cout << "Nbr arêtes : " << m_mQuad.getNbEdges() << std::endl;
 
 	return AbstractAeroPipeline::SUCCESS;
 
@@ -105,7 +110,8 @@ void AeroPipeline2D::EcritureMaillage(){
 
 	std::cout << "-> Ecriture du maillage ..." << std::endl;
 
-	gmds::IGMeshIOService ioService(m_meshGen);
+	//gmds::IGMeshIOService ioService(m_meshGen);
+	gmds::IGMeshIOService ioService(&m_Blocking2D);
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
@@ -348,7 +354,29 @@ void AeroPipeline2D::DiscretisationParoi(int color){
 /*------------------------------------------------------------------------*/
 
 
+/*------------------------------------------------------------------------*/
+void AeroPipeline2D::ConvertisseurMeshToBlocking(){
 
+	Variable<TCellID>* var_new_id = m_mQuad.newVariable<TCellID,GMDS_NODE>("New_ID");
 
+	for (auto n_id:m_mQuad.nodes()){
+		Node n = m_mQuad.get<Node>(n_id);
+		Node n_blocking = m_Blocking2D.newBlockCorner(n.point());
+		var_new_id->set(n_id, n_blocking.id());
+	}
+
+	for (auto f_id:m_mQuad.faces()){
+		Face f = m_mQuad.get<Face>(f_id);
+		std::vector<Node> quad_nodes = f.get<Node>() ;
+		Blocking2D::Block B0 = m_Blocking2D.newBlock( var_new_id->value(quad_nodes[0].id()), var_new_id->value(quad_nodes[1].id()),
+		                      var_new_id->value(quad_nodes[2].id()), var_new_id->value(quad_nodes[3].id()));
+		B0.seNbDiscretizationI(10);
+		B0.seNbDiscretizationJ(10);
+	}
+
+	m_Blocking2D.initializeGridPoints();
+
+}
+/*------------------------------------------------------------------------*/
 
 

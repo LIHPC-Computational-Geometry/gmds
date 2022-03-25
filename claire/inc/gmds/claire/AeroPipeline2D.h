@@ -78,6 +78,10 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	 */
 	void DiscretisationParoi(int color);
 	/*----------------------------------------------------------------------------*/
+	/** @brief Convertisseur m_mQuad rempli des blocs à la structure Blocking2D.
+	 */
+	void ConvertisseurMeshToBlocking();
+	/*----------------------------------------------------------------------------*/
  protected:
 	/** mesh we work on */
 	Mesh m_mTri;
