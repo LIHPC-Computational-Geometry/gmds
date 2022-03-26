@@ -322,10 +322,30 @@ void AeroPipeline2D::DiscretisationParoi(int color){
 		math::Point p = n.point() ;
 		l += math::Utils::distFromNodeIds(m_mesh, bnd_nodes_id_ordered[i], bnd_nodes_id_ordered[i-1]);
 
+		Node n_gauche = m_mesh->get<Node>(bnd_nodes_id_ordered[i-1]);
+		Node n_droit;
+		if(i == bnd_nodes_id_ordered.size()-1) {
+			n_droit = m_mesh->get<Node>(bnd_nodes_id_ordered[0]);
+		}
+		else{
+			n_droit = m_mesh->get<Node>(bnd_nodes_id_ordered[i+1]);
+		}
+
+		bool isExtremum(false);
+		if ( (n.X() < n_gauche.X() && n.X() < n_droit.X() )
+		    || (n.X() > n_gauche.X() && n.X() > n_droit.X() )
+		    || (n.Y() < n_gauche.Y() && n.Y() < n_droit.Y() )
+		    || (n.Y() > n_gauche.Y() && n.Y() > n_droit.Y() )) {
+			isExtremum = true;
+		}
+
+
+
 		if ( m_mesh->isMarked<Node>(bnd_nodes_id_ordered[i], markPointNodes)
 		    || l >= Lmax
 		    || abs(l-Lmax) <= pow(10,-6)
-		    || abs(p.X() - x_min) <= pow(10,-6) ){
+		    || abs(p.X() - x_min) <= pow(10,-6)
+		    || isExtremum ){
 
 			n1_quad = n2_quad;
 			n2_quad = m_meshGen->newNode(n.point());
@@ -375,6 +395,8 @@ void AeroPipeline2D::ConvertisseurMeshToBlocking(){
 	}
 
 	m_Blocking2D.initializeGridPoints();
+
+	m_mQuad.deleteVariable(GMDS_NODE, "New_ID");
 
 }
 /*------------------------------------------------------------------------*/
