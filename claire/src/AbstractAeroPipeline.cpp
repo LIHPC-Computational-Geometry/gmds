@@ -21,6 +21,7 @@ AbstractAeroPipeline::AbstractAeroPipeline(ParamsAero Aparams, gmds::Mesh && Am)
 AbstractAeroPipeline::AbstractAeroPipeline(ParamsAero Aparams) :
   m_params(Aparams),
   m_mesh(nullptr),
+  m_meshGen(nullptr),
   m_manager(new cad::FACManager()),
   m_linker_TG(new cad::GeomMeshLinker())
 {

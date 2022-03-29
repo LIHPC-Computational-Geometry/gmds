@@ -18,15 +18,19 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 AeroPipeline3D::AeroPipeline3D(ParamsAero Aparams) :
-	AbstractAeroPipeline(Aparams),
-  m_mTetra(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
-                                        F2E | E2F | R2E | N2R | N2F | N2E)),
-  m_mHexa( gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
-                         F2E | E2F | R2E | N2R | N2F | N2E) )
+	AbstractAeroPipeline(Aparams)
+  //m_mTetra(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
+  //                                      F2E | E2F | R2E | N2R | N2F | N2E)),
+  //m_mHexa( gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
+  //                       F2E | E2F | R2E | N2R | N2F | N2E) )
 {
-	m_couche_id = m_mHexa.newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-	m_mesh = &m_mTetra;
-	m_meshGen = &m_mHexa;
+	m_mesh = new Mesh(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
+	                                  F2E | E2F | R2E | N2R | N2F | N2E));
+	m_meshGen = new Mesh(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
+	                                     F2E | E2F | R2E | N2R | N2F | N2E));
+	m_couche_id = m_meshGen->newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	//m_mesh = &m_mTetra;
+	//m_meshGen = &m_mHexa;
 	m_Bnd = new AeroBoundaries_3D(m_mesh) ;
 }
 /*------------------------------------------------------------------------*/
