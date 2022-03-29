@@ -19,19 +19,13 @@ using namespace gmds;
 
 AeroPipeline3D::AeroPipeline3D(ParamsAero Aparams) :
 	AbstractAeroPipeline(Aparams)
-  //m_mTetra(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
-  //                                      F2E | E2F | R2E | N2R | N2F | N2E)),
-  //m_mHexa( gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
-  //                       F2E | E2F | R2E | N2R | N2F | N2E) )
 {
-	m_mesh = new Mesh(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
+	m_meshTet = new Mesh(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
 	                                  F2E | E2F | R2E | N2R | N2F | N2E));
-	m_meshGen = new Mesh(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
+	m_meshHex = new Mesh(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
 	                                     F2E | E2F | R2E | N2R | N2F | N2E));
-	m_couche_id = m_meshGen->newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-	//m_mesh = &m_mTetra;
-	//m_meshGen = &m_mHexa;
-	m_Bnd = new AeroBoundaries_3D(m_mesh) ;
+	m_couche_id = m_meshHex->newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	m_Bnd = new AeroBoundaries_3D(m_meshTet) ;
 }
 /*------------------------------------------------------------------------*/
 
@@ -44,20 +38,20 @@ AbstractAeroPipeline::STATUS AeroPipeline3D::execute(){
 
 	// Calcul du level set
 	std::cout << "-> Calcul des Level Sets" << std::endl;
-	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance");
-	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
-	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
-	LevelSetCombined lsCombined(m_mesh, m_Bnd->getMarkParoi(), m_Bnd->getMarkAmont(),
-	                            m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance"),
-	                            m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
-	                            m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
+	m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance");
+	m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+	LevelSetCombined lsCombined(m_meshTet, m_Bnd->getMarkParoi(), m_Bnd->getMarkAmont(),
+	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
 	lsCombined.execute();
 
 	// Calcul du gradient du champ de Level Set
 	std::cout << "-> Calcul du gradient du champ des Level Sets" << std::endl;
-	m_mesh->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-	LeastSquaresGradientComputation grad3D(m_mesh, m_mesh->getVariable<double,GMDS_NODE>("GMDS_Distance"),
-	                                       m_mesh->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	LeastSquaresGradientComputation grad3D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	grad3D.execute();
 
 	EcritureMaillage();
@@ -73,12 +67,12 @@ void AeroPipeline3D::LectureMaillage(){
 	// Lecture du maillage
 	std::cout << "-> Lecture du maillage ..." << std::endl;
 
-	gmds::IGMeshIOService ioService(m_mesh);
+	gmds::IGMeshIOService ioService(m_meshTet);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N|gmds::R);
 	vtkReader.read(m_params.input_file);
 
-	gmds::MeshDoctor doctor(m_mesh);
+	gmds::MeshDoctor doctor(m_meshTet);
 	doctor.buildFacesAndR2F();
 	doctor.buildEdgesAndX2E();
 	doctor.updateUpwardConnectivity();
@@ -93,14 +87,14 @@ void AeroPipeline3D::EcritureMaillage(){
 	std::cout << "-> Ecriture du maillage ..." << std::endl;
 
 	// Ecriture du maillage généré
-	gmds::IGMeshIOService ioService(m_meshGen);
+	gmds::IGMeshIOService ioService(m_meshHex);
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write(m_params.output_file);
 
 	// Ecriture du maillage initial (tetra)
-	ioService = m_mesh;
+	ioService = m_meshTet;
 	gmds::VTKWriter vtkWriter2(&ioService);
 	vtkWriter2.setCellOptions(gmds::N|gmds::F);
 	vtkWriter2.setDataOptions(gmds::N|gmds::F);

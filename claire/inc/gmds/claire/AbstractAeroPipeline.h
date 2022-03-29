@@ -59,9 +59,9 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 
  protected:
 	/** pointer to mesh we work on */
-	Mesh* m_mesh;
+	Mesh* m_meshTet;
 	/** pointer to mesh we generate */
-	Mesh* m_meshGen;
+	Mesh* m_meshHex;
 	/** parameters for the algorithm */
 	ParamsAero m_params;
 	/** Variable sur le nouveau maillage, indique à quelle couche appartient un noeud */
