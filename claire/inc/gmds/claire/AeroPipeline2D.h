@@ -84,9 +84,9 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	/*----------------------------------------------------------------------------*/
  protected:
 	/** mesh we work on */
-	Mesh m_mTri;
+	//Mesh m_mTri;
 	/** mesh quad generated */
-	Mesh m_mQuad;
+	//Mesh m_mQuad;
 	/** blocking 2D */
 	Blocking2D m_Blocking2D;
 	/** Données des bords */

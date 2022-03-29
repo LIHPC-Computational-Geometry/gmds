@@ -21,16 +21,20 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 AeroPipeline2D::AeroPipeline2D(ParamsAero Aparams) :
-  AbstractAeroPipeline(Aparams),
-  m_mTri(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
-                                       gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F)),
-  m_mQuad(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
-                                       gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F))
+  AbstractAeroPipeline(Aparams)
+  //m_mTri(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+  //                                     gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F)),
+  //m_mQuad(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+  //                                     gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F))
 {
-	m_couche_id = m_mQuad.newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-	m_mesh = &m_mTri;
-	m_meshGen = &m_mQuad;
+	//m_mesh = &m_mTri;
+	m_mesh = new Mesh(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+                                       gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
+	m_meshGen = new Mesh(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
+                                       gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
+	//m_meshGen = &m_mQuad;
 	m_Bnd = new AeroBoundaries_2D(m_mesh) ;
+	m_couche_id = m_meshGen->newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 }
 /*------------------------------------------------------------------------*/
 
@@ -41,7 +45,7 @@ AbstractAeroPipeline::STATUS AeroPipeline2D::execute(){
 	LectureMaillage();
 	m_Bnd->execute();
 
-	//m_manager.initAndLinkFrom2DMesh(&m_mTri,&m_linker_TG);
+	m_manager->initAndLinkFrom2DMesh(m_mesh, m_linker_TG);
 
 	// Calcul du level set
 	m_mesh->newVariable<double,GMDS_NODE>("GMDS_Distance");
@@ -145,18 +149,18 @@ void AeroPipeline2D::GenerationCouche(int couche_id, double dist){
 			// Placement du point P à la distance souhaitée suivant le champ de gradient
 			Node n = m_meshGen->get<Node>(n_id);
 			math::Point M = n.point();
-			AdvectedPointRK4_2D advpoint(m_mesh, M, dist, m_mTri.getVariable<double, GMDS_NODE>("GMDS_Distance"),
-			   m_mTri.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
+			AdvectedPointRK4_2D advpoint(m_mesh, M, dist, m_mesh->getVariable<double, GMDS_NODE>("GMDS_Distance"),
+			   m_mesh->getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
 			advpoint.execute();
 			math::Point P = advpoint.getPend();
 
 			// Nouveau noeud dans le maillage
-			Node n_new = m_mQuad.newNode(P);
+			Node n_new = m_meshGen->newNode(P);
 			m_couche_id->set(n_new.id(),couche_id);
 			nodes_couche_id.push_back(n_new);
 
 			// Création de l'arête pour relier le noeud à la couche n-1
-			Edge e_new = m_mQuad.newEdge(n, n_new);
+			Edge e_new = m_meshGen->newEdge(n, n_new);
 			n_new.add<Edge>(e_new);	// Ajout de la connectivité N -> E
 			n.add<Edge>(e_new);	// Ajout de la connectivité N -> E
 
@@ -238,12 +242,12 @@ void AeroPipeline2D::CreateQuadAndConnectivities(Node n0, Node n1, Node n2){
 	Node n3 = SuccessorNode(n2);	// On récupère le noeud n3, 4ème noeud du quad, dans la couche i
 
 	// Création de l'arête pour relier les doeux noeuds de la couche i
-	Edge e3 = m_mQuad.newEdge(n0, n3);
+	Edge e3 = m_meshGen->newEdge(n0, n3);
 	n0.add<Edge>(e3);	// Connectivités N->E
 	n3.add<Edge>(e3);
 
 	// Création de la face de type quad
-	Face f = m_mQuad.newQuad(n0, n1, n2, n3) ;
+	Face f = m_meshGen->newQuad(n0, n1, n2, n3) ;
 	n0.add<Face>(f);	// Connectivités N -> F
 	n1.add<Face>(f);
 	n2.add<Face>(f);
@@ -377,16 +381,16 @@ void AeroPipeline2D::DiscretisationParoi(int color){
 /*------------------------------------------------------------------------*/
 void AeroPipeline2D::ConvertisseurMeshToBlocking(){
 
-	Variable<TCellID>* var_new_id = m_mQuad.newVariable<TCellID,GMDS_NODE>("New_ID");
+	Variable<TCellID>* var_new_id = m_meshGen->newVariable<TCellID,GMDS_NODE>("New_ID");
 
-	for (auto n_id:m_mQuad.nodes()){
-		Node n = m_mQuad.get<Node>(n_id);
+	for (auto n_id:m_meshGen->nodes()){
+		Node n = m_meshGen->get<Node>(n_id);
 		Node n_blocking = m_Blocking2D.newBlockCorner(n.point());
 		var_new_id->set(n_id, n_blocking.id());
 	}
 
-	for (auto f_id:m_mQuad.faces()){
-		Face f = m_mQuad.get<Face>(f_id);
+	for (auto f_id:m_meshGen->faces()){
+		Face f = m_meshGen->get<Face>(f_id);
 		std::vector<Node> quad_nodes = f.get<Node>() ;
 		Blocking2D::Block B0 = m_Blocking2D.newBlock( var_new_id->value(quad_nodes[0].id()), var_new_id->value(quad_nodes[1].id()),
 		                      var_new_id->value(quad_nodes[2].id()), var_new_id->value(quad_nodes[3].id()));
@@ -396,7 +400,7 @@ void AeroPipeline2D::ConvertisseurMeshToBlocking(){
 
 	m_Blocking2D.initializeGridPoints();
 
-	m_mQuad.deleteVariable(GMDS_NODE, "New_ID");
+	m_meshGen->deleteVariable(GMDS_NODE, "New_ID");
 
 }
 /*------------------------------------------------------------------------*/

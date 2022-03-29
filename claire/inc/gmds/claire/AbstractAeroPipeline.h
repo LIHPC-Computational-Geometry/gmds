@@ -39,6 +39,11 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
          *  @param
 	 */
 	AbstractAeroPipeline(ParamsAero Aparams);
+	/*--------------------------------------------------------------------*/
+	/** @brief Destructor.
+         *  @param
+	 */
+	~AbstractAeroPipeline();
 	/*-------------------------------------------------------------------*/
 	/** \brief Function to be called for mesh generation
 	 */
@@ -62,9 +67,9 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	/** Variable sur le nouveau maillage, indique à quelle couche appartient un noeud */
 	Variable<int>* m_couche_id;
 	/** Manager */
-	cad::FACManager m_manager;
+	cad::FACManager* m_manager;
 	/** Linker maillage T entrée à la géométrie */
-	cad::GeomMeshLinker m_linker_TG;
+	cad::GeomMeshLinker* m_linker_TG;
 	/** Linker maillage Q/H sortie à la géométrie */
 	//cad::GeomMeshLinker m_linker_QHG;
 	/** Linker Blocking à la géométrie */
