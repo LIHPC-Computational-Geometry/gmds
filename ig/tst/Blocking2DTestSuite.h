@@ -86,7 +86,7 @@ TEST(Blocking2DTestSuite, test_blocking2D_2)
 
 	mesh.newFace(nodes_for_face);
 
-	Blocking2D blocking(mesh);
+	Blocking2D blocking(mesh, 11);
 
 	int nbBlocks = blocking.allBlocks().size();
 
@@ -102,8 +102,8 @@ TEST(Blocking2DTestSuite, test_blocking2D_2)
 	ASSERT_FLOAT_EQ(b0.getUnitVectorJ().Y(),1.0);
 	ASSERT_FLOAT_EQ(b0.getUnitVectorJ().Z(),0.0);
 
-	ASSERT_EQ(b0.getNbDiscretizationI(),10);
-	ASSERT_EQ(b0.getNbDiscretizationJ(),10);
+	ASSERT_EQ(b0.getNbDiscretizationI(),11);
+	ASSERT_EQ(b0.getNbDiscretizationJ(),11);
 
 	blocking.initializeGridPoints();
 
