@@ -429,10 +429,10 @@ TEST(ClaireTestClass, testGrid_Smooth2D_1)
 	Node n5 = m.newBlockCorner(2,0,0);
 	Node n6 = m.newBlockCorner(2,1.5,0);
 	Blocking2D::Block b2 = m.newBlock(n2,n5,n6,n3);
-	b1.seNbDiscretizationI(10);
-	b1.seNbDiscretizationJ(10);
-	b2.seNbDiscretizationI(10);
-	b2.seNbDiscretizationJ(10);
+	b1.setNbDiscretizationI(10);
+	b1.setNbDiscretizationJ(10);
+	b2.setNbDiscretizationI(10);
+	b2.setNbDiscretizationJ(10);
 
 	m.initializeGridPoints();
 
@@ -476,5 +476,114 @@ TEST(ClaireTestClass, testGrid_Smooth2D_1)
 	writer_geom.setCellOptions(N|F);
 	writer_geom.setDataOptions(N|F);
 	writer_geom.write("testGrid_Smooth2D_1_result.vtk");
+
+}
+
+
+
+
+
+
+
+
+
+TEST(ClaireTestClass, testGrid_Smooth2D_2)
+{
+	Blocking2D m;
+
+	double rayon(2.0);
+
+	Node n1 = m.newBlockCorner(0,0);
+	Node n2 = m.newBlockCorner(1,0);
+	Node n3 = m.newBlockCorner(1,1);
+	Node n4=  m.newBlockCorner(0,1);
+
+	Blocking2D::Block b1 = m.newBlock(n1,n2,n3,n4);
+
+	Node n5 = m.newBlockCorner(rayon,0,0);
+	Node n6 = m.newBlockCorner(rayon*cos(M_PI/4.0), rayon*sin(M_PI/4.0),0);
+
+	Blocking2D::Block b2 = m.newBlock(n2,n5,n6,n3);
+
+	Node n7 = m.newBlockCorner(0, rayon, 0);
+
+	Blocking2D::Block b3 = m.newBlock(n3,n6,n7,n4);
+
+	b1.setNbDiscretizationI(10);
+	b1.setNbDiscretizationJ(10);
+	b2.setNbDiscretizationI(10);
+	b2.setNbDiscretizationJ(10);
+	b3.setNbDiscretizationI(10);
+	b3.setNbDiscretizationJ(10);
+
+	m.initializeGridPoints();
+
+	// Definition of the curved boundary on the first block
+	b2 = m.block(1);
+	int Nx = b2.getNbDiscretizationI();
+	int Ny = b2.getNbDiscretizationJ();
+	for (int j=1;j<Ny-1;j++){
+		double theta(0);
+		theta = j*(M_PI/(4.0*(Ny-1.0))) ;
+		Node n = b2(Nx-1, j);
+		n.setX( rayon*cos(theta) );
+		n.setY( rayon*sin(theta) );
+	}
+
+	// Definition of the curved boundary on the second block
+	b3 = m.block(2);
+	Nx = b3.getNbDiscretizationI();
+	Ny = b3.getNbDiscretizationJ();
+	for (int j=1;j<Ny-1;j++){
+		double theta(0);
+		theta = M_PI/4.0 + j*(M_PI/(4.0*(Ny-1.0))) ;
+		Node n = b3(Nx-1, j);
+		n.setX( rayon*cos(theta) );
+		n.setY( rayon*sin(theta) );
+	}
+
+	/*
+	b1 = m.block(0);
+	int Nx = b1.getNbDiscretizationI();
+	int Ny = b1.getNbDiscretizationJ();
+
+	// Perturbation of the mesh
+	// Boucle sur les noeuds internes du bloc b0
+	for (int i=1; i<Nx-1; i++) {
+		for (int j=1; j<Ny-1; j++) {
+			b1(i,j).setX(0.0);
+			b1(i,j).setY(0.0);
+		}
+	}
+
+	b1 = m.block(1);
+	Nx = b1.getNbDiscretizationI();
+	Ny = b1.getNbDiscretizationJ();
+
+	// Perturbation of the mesh
+	// Boucle sur les noeuds internes du bloc b1
+	for (int i=1; i<Nx-1; i++) {
+		for (int j=1; j<Ny-1; j++) {
+			b1(i,j).setX(0.0);
+			b1(i,j).setY(0.0);
+		}
+	}
+
+	 */
+
+	IGMeshIOService ios(&m);
+	VTKWriter writer(&ios);
+	writer.setCellOptions(N|F);
+	writer.setDataOptions(N|F);
+	writer.write("testGrid_Smooth2D_2_init.vtk");
+
+	Grid_Smooth2D smoother(&m);
+	Grid_Smooth2D::STATUS result = smoother.execute();
+
+	IGMeshIOService ioService_geom(&m);
+	VTKWriter writer_geom(&ioService_geom);
+	writer_geom.setCellOptions(N|F);
+	writer_geom.setDataOptions(N|F);
+	writer_geom.write("testGrid_Smooth2D_2_result.vtk");
 
 }
