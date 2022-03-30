@@ -166,6 +166,11 @@ TEST(Blocking2DTestSuite, test_blocking2D_3)
 	ASSERT_EQ(b0.getNbDiscretizationI(),11);
 	ASSERT_EQ(b0.getNbDiscretizationJ(),11);
 
+	std::vector<TCellID> neighbors = mesh.getNodeNeighbors(50);
+
+	ASSERT_EQ(mesh.getBlockingDim(7), 1);
+	ASSERT_EQ(mesh.getBlockingId(7), 0);
+
 }
 /*----------------------------------------------------------------------------*/
 
