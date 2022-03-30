@@ -71,9 +71,7 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	/** Linker maillage T entrée à la géométrie */
 	cad::GeomMeshLinker* m_linker_TG;
 	/** Linker maillage Q/H sortie à la géométrie */
-	//cad::GeomMeshLinker m_linker_QHG;
-	/** Linker Blocking à la géométrie */
-	//cad::GeomMeshLinker m_linker_BG;
+	cad::GeomMeshLinker* m_linker_HG;
 
 };
 /*----------------------------------------------------------------------------*/

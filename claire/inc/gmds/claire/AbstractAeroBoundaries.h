@@ -90,7 +90,22 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	 * color, correspondant en aéro au point d'arrêt.
 	 */
 	TCellID PointArret(int color);
-	/*----------------------------------------------------------------------------*/
+	/*-------------------------------------------------------------------*/
+	/** @brief Donne l'id du noeud le plus proche de n_id sur le bord
+	 * de couleur color.
+	 * @param color Couleur du bord regardé
+	 * @param p Point auquel on cherche le noeud le plus proche
+	 * @return Retourne l'id du noeud du bord color le plus proche du point
+	 * p
+	 */
+	TCellID ClosestNodeOnBnd(int color, math::Point p);
+	/*-------------------------------------------------------------------*/
+	/** @brief Donne l'id d'un noeud sur le bord de couleur color.
+	 * @param color Couleur du bord regardé
+	 * @return Retourne l'id d'un noeud sur le bord color
+	 */
+	TCellID RandomNodeOnBnd(int color);
+	/*-------------------------------------------------------------------*/
 
  protected:
 	/*-------------------------------------------------------------------*/

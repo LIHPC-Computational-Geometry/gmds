@@ -2,8 +2,8 @@
 // Created by Claire Roche on 21/10/2021.
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/AbstractAeroPipeline.h>
-#include <gmds/claire/AeroPipeline2D.h>
-#include <gmds/claire/AeroPipeline3D.h>
+#include <gmds/claire/AeroPipeline_2D.h>
+#include <gmds/claire/AeroPipeline_3D.h>
 #include <gmds/claire/Params.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/io/IGMeshIOService.h>
@@ -23,10 +23,10 @@ int main(int argc, char* argv[])
 
 	AbstractAeroPipeline* algo = NULL;
 	if(params.dim==ParamsAero::DIM_2D){
-		algo = new AeroPipeline2D(params);
+		algo = new AeroPipeline_2D(params);
 	}
 	else if(params.dim==ParamsAero::DIM_3D){
-		algo = new AeroPipeline3D(params);
+		algo = new AeroPipeline_3D(params);
 	}
 	else{
 		std::cout<<" Wrong dimension "<<std::endl;

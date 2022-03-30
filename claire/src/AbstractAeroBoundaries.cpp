@@ -229,3 +229,35 @@ void AbstractAeroBoundaries::MarkAmontAndParoiNodes(){
 	}
 }
 /*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+TCellID
+AbstractAeroBoundaries::ClosestNodeOnBnd(int color, math::Point p){
+	TCellID closest_node_id;
+	double min(std::numeric_limits<double>::max());
+
+	for (auto n_id:m_mesh->nodes()){
+		Node n = m_mesh->get<Node>(n_id);
+		math::Vector3d vec = p-n.point();
+		if ( m_var_color_bords->value(n_id) == color &&  vec.norm() < min ){
+			min = vec.norm();
+			closest_node_id = n_id;
+		}
+	}
+	return closest_node_id;
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+TCellID
+AbstractAeroBoundaries::RandomNodeOnBnd(int color){
+	for (auto n_id:m_mesh->nodes()){
+		if ( m_var_color_bords->value(n_id) == color){
+			return n_id;
+		}
+	}
+}
+/*------------------------------------------------------------------------*/

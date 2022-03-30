@@ -4,7 +4,7 @@
 
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/Utils.h>
-#include <gmds/claire/AeroPipeline2D.h>
+#include <gmds/claire/AeroPipeline_2D.h>
 #include <gmds/claire/AeroBoundaries_2D.h>
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
@@ -20,8 +20,9 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AeroPipeline2D::AeroPipeline2D(ParamsAero Aparams) :
-  AbstractAeroPipeline(Aparams)
+AeroPipeline_2D::AeroPipeline_2D(ParamsAero Aparams) :
+  AbstractAeroPipeline(Aparams),
+  m_linker_BG(new cad::GeomMeshLinker())
 {
 	m_meshTet = new Mesh(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
                                        gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
@@ -34,7 +35,8 @@ AeroPipeline2D::AeroPipeline2D(ParamsAero Aparams) :
 
 
 /*------------------------------------------------------------------------*/
-AbstractAeroPipeline::STATUS AeroPipeline2D::execute(){
+AbstractAeroPipeline::STATUS
+AeroPipeline_2D::execute(){
 
 	LectureMaillage();
 	m_Bnd->execute();
@@ -57,17 +59,17 @@ AbstractAeroPipeline::STATUS AeroPipeline2D::execute(){
 	                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	grad2D.execute();
 
+	m_linker_HG->setGeometry(m_manager);
+	m_linker_HG->setMesh(m_meshHex);
 	for (int i=1;i<=m_Bnd->getNbrBords();i++){
 		if(i != m_Bnd->getColorAmont()){
 			DiscretisationParoi(i);
 		}
 	}
 
-	//m_linker_QHG.setGeometry(&m_manager);
-	//m_linker_QHG.setMesh(&m_mQuad);
-
-	GenerationCouche(1, 0.25);
-	GenerationCouche(2, 1);
+	GenerationCouche(1, 1);
+	//GenerationCouche(2, 1);
+	UpdateLinkerLastLayer(1);
 
 	ConvertisseurMeshToBlocking();
 
@@ -83,7 +85,8 @@ AbstractAeroPipeline::STATUS AeroPipeline2D::execute(){
 
 
 /*------------------------------------------------------------------------*/
-void AeroPipeline2D::LectureMaillage(){
+void
+AeroPipeline_2D::LectureMaillage(){
 
 	// Lecture du maillage
 	std::cout << "-> Lecture du maillage ..." << std::endl;
@@ -104,7 +107,8 @@ void AeroPipeline2D::LectureMaillage(){
 
 
 /*------------------------------------------------------------------------*/
-void AeroPipeline2D::EcritureMaillage(){
+void
+AeroPipeline_2D::EcritureMaillage(){
 
 	std::cout << "-> Ecriture du maillage ..." << std::endl;
 
@@ -130,7 +134,8 @@ void AeroPipeline2D::EcritureMaillage(){
 
 
 /*------------------------------------------------------------------------*/
-void AeroPipeline2D::GenerationCouche(int couche_id, double dist){
+void
+AeroPipeline_2D::GenerationCouche(int couche_id, double dist){
 
 	std::cout << "-> Génération de la couche " << couche_id << std::endl ;
 
@@ -184,7 +189,8 @@ void AeroPipeline2D::GenerationCouche(int couche_id, double dist){
 
 
 /*------------------------------------------------------------------------*/
-Node AeroPipeline2D::SuccessorNode(Node n0){
+Node
+AeroPipeline_2D::SuccessorNode(Node n0){
 	Node n;
 	int couche_i = m_couche_id->value(n0.id());
 	std::vector<Edge> adj_edges = n0.get<Edge>() ;
@@ -200,7 +206,8 @@ Node AeroPipeline2D::SuccessorNode(Node n0){
 
 
 /*------------------------------------------------------------------------*/
-Node AeroPipeline2D::AnteriorNode(Node n0){
+Node
+AeroPipeline_2D::AnteriorNode(Node n0){
 	Node n;
 	int couche_i = m_couche_id->value(n0.id());
 	std::vector<Edge> adj_edges = n0.get<Edge>() ;
@@ -216,7 +223,8 @@ Node AeroPipeline2D::AnteriorNode(Node n0){
 
 
 /*------------------------------------------------------------------------*/
-std::vector<Node> AeroPipeline2D::AdjNodesInLayer(Node n0, int couche_i){
+std::vector<Node>
+AeroPipeline_2D::AdjNodesInLayer(Node n0, int couche_i){
 	std::vector<Node> adj_nodes_in_layer ;
 	std::vector<Edge> adj_edges = n0.get<Edge>() ; // Ensemble des arêtes adjacentes au noeud n0
 	for (auto e:adj_edges){
@@ -231,7 +239,8 @@ std::vector<Node> AeroPipeline2D::AdjNodesInLayer(Node n0, int couche_i){
 
 
 /*------------------------------------------------------------------------*/
-void AeroPipeline2D::CreateQuadAndConnectivities(Node n0, Node n1, Node n2){
+void
+AeroPipeline_2D::CreateQuadAndConnectivities(Node n0, Node n1, Node n2){
 
 	Node n3 = SuccessorNode(n2);	// On récupère le noeud n3, 4ème noeud du quad, dans la couche i
 
@@ -254,7 +263,8 @@ void AeroPipeline2D::CreateQuadAndConnectivities(Node n0, Node n1, Node n2){
 
 
 /*------------------------------------------------------------------------*/
-bool AeroPipeline2D::isQuadCreated(Node n0, Node n1, Node n2){
+bool
+AeroPipeline_2D::isQuadCreated(Node n0, Node n1, Node n2){
 	bool exist(false);
 
 	// On regarde si l'arête entre les noeuds n0 et n3 est construite
@@ -275,7 +285,8 @@ bool AeroPipeline2D::isQuadCreated(Node n0, Node n1, Node n2){
 
 
 /*------------------------------------------------------------------------*/
-void AeroPipeline2D::DiscretisationParoi(int color){
+void
+AeroPipeline_2D::DiscretisationParoi(int color){
 
 	std::cout << "-> Discrétisation du bord de couleur " << color << std::endl;
 
@@ -310,6 +321,8 @@ void AeroPipeline2D::DiscretisationParoi(int color){
 
 	Node n0_tri = m_meshTet->get<Node>(bnd_nodes_id_ordered[0]) ;
 	Node n0_quad = m_meshHex->newNode(n0_tri.point()); // Premier noeud du nouveau maillage
+
+	UpdateLinker(m_linker_TG, n0_tri, m_linker_HG, n0_quad);
 
 	Node n1_quad = n0_quad;
 	Node n2_quad = n0_quad;
@@ -347,6 +360,7 @@ void AeroPipeline2D::DiscretisationParoi(int color){
 
 			n1_quad = n2_quad;
 			n2_quad = m_meshHex->newNode(n.point());
+			UpdateLinker(m_linker_TG, n, m_linker_HG, n2_quad);
 			Edge e = m_meshHex->newEdge(n1_quad, n2_quad);
 
 			// Ajout des connectivités Node -> Edge
@@ -373,14 +387,20 @@ void AeroPipeline2D::DiscretisationParoi(int color){
 
 
 /*------------------------------------------------------------------------*/
-void AeroPipeline2D::ConvertisseurMeshToBlocking(){
+void
+AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 
 	Variable<TCellID>* var_new_id = m_meshHex->newVariable<TCellID,GMDS_NODE>("New_ID");
+
+	m_linker_BG->setGeometry(m_manager);
+	m_linker_BG->setMesh(&m_Blocking2D);
 
 	for (auto n_id:m_meshHex->nodes()){
 		Node n = m_meshHex->get<Node>(n_id);
 		Node n_blocking = m_Blocking2D.newBlockCorner(n.point());
 		var_new_id->set(n_id, n_blocking.id());
+
+		UpdateLinker(m_linker_HG, n, m_linker_BG, n_blocking); // Init linker_BG
 	}
 
 	for (auto f_id:m_meshHex->faces()){
@@ -400,3 +420,32 @@ void AeroPipeline2D::ConvertisseurMeshToBlocking(){
 /*------------------------------------------------------------------------*/
 
 
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_2D::UpdateLinker(cad::GeomMeshLinker* linker_1, Node n_1, cad::GeomMeshLinker* linker_2, Node n_2){
+	int geom_dim = linker_1->getGeomDim<Node>(n_1.id());
+	if(geom_dim == 1){
+		linker_2->linkNodeToPoint(n_2.id(), linker_1->getGeomId<Node>(n_1.id()));
+	}
+	else if(geom_dim==2){
+		linker_2->linkNodeToCurve(n_2.id(), linker_1->getGeomId<Node>(n_1.id()));
+	}
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_2D::UpdateLinkerLastLayer(int layer_id){
+
+	for (auto n_id:m_meshHex->nodes()){
+		if( m_couche_id->value(n_id) == layer_id ) {
+			Node n = m_meshHex->get<Node>(n_id);
+			math::Point p = n.point();
+			TCellID closest_n_id = m_Bnd->ClosestNodeOnBnd(m_Bnd->getColorAmont(), p);
+			UpdateLinker(m_linker_TG, m_meshTet->get<Node>(closest_n_id), m_linker_HG, n);
+		}
+	}
+
+}
+/*------------------------------------------------------------------------*/

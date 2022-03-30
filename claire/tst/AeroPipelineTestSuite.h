@@ -3,8 +3,8 @@
 //
 
 #include <gmds/claire/AbstractAeroPipeline.h>
-#include <gmds/claire/AeroPipeline2D.h>
-#include <gmds/claire/AeroPipeline3D.h>
+#include <gmds/claire/AeroPipeline_2D.h>
+#include <gmds/claire/AeroPipeline_3D.h>
 #include <gmds/claire/Params.h>
 #include <gtest/gtest.h>
 #include <iostream>
@@ -25,12 +25,12 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	// le temps de mettre en place un fichier .ini
 	params_aero.dim=ParamsAero::DIM_2D;
 	std::string dir(TEST_SAMPLES_DIR);
-	params_aero.input_file=dir+"/Aero/C1_2D_0.1.vtk";
+	params_aero.input_file=dir+"/Aero/C2_2D_0.1.vtk";
 	params_aero.output_file="AeroPipeline2D_Quad.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
 	params_aero.nbrMinBloc=2;
 
-	AeroPipeline2D algo_aero2D(params_aero);
+	AeroPipeline_2D algo_aero2D(params_aero);
 	AbstractAeroPipeline::STATUS aero2D_result = algo_aero2D.execute();
 
 	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero2D_result);
@@ -55,7 +55,7 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 	params_aero.output_file="AeroPipeline3D_Quad.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
 
-	AeroPipeline3D algo_aero3D(params_aero);
+	AeroPipeline_3D algo_aero3D(params_aero);
 	AbstractAeroPipeline::STATUS aero3D_result = algo_aero3D.execute();
 
 	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero3D_result);

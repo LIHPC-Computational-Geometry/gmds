@@ -3,7 +3,7 @@
 //
 
 /*------------------------------------------------------------------------*/
-#include <gmds/claire/AeroPipeline3D.h>
+#include <gmds/claire/AeroPipeline_3D.h>
 #include <gmds/claire/AeroBoundaries_3D.h>
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
@@ -17,7 +17,7 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AeroPipeline3D::AeroPipeline3D(ParamsAero Aparams) :
+AeroPipeline_3D::AeroPipeline_3D(ParamsAero Aparams) :
 	AbstractAeroPipeline(Aparams)
 {
 	m_meshTet = new Mesh(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
@@ -31,7 +31,8 @@ AeroPipeline3D::AeroPipeline3D(ParamsAero Aparams) :
 
 
 /*------------------------------------------------------------------------*/
-AbstractAeroPipeline::STATUS AeroPipeline3D::execute(){
+AbstractAeroPipeline::STATUS
+AeroPipeline_3D::execute(){
 	LectureMaillage();
 	m_Bnd->execute();
 	//m_manager.initAndLinkFrom3DMesh(&m_mTetra,&m_linker_TG);
@@ -62,7 +63,8 @@ AbstractAeroPipeline::STATUS AeroPipeline3D::execute(){
 
 
 /*------------------------------------------------------------------------*/
-void AeroPipeline3D::LectureMaillage(){
+void
+AeroPipeline_3D::LectureMaillage(){
 
 	// Lecture du maillage
 	std::cout << "-> Lecture du maillage ..." << std::endl;
@@ -82,7 +84,8 @@ void AeroPipeline3D::LectureMaillage(){
 
 
 /*------------------------------------------------------------------------*/
-void AeroPipeline3D::EcritureMaillage(){
+void
+AeroPipeline_3D::EcritureMaillage(){
 
 	std::cout << "-> Ecriture du maillage ..." << std::endl;
 

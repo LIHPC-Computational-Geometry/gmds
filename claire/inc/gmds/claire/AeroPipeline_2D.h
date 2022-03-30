@@ -2,8 +2,8 @@
 // Created by rochec on 09/02/2022.
 //
 
-#ifndef GMDS_AEROPIPELINE2D_H
-#define GMDS_AEROPIPELINE2D_H
+#ifndef GMDS_AEROPIPELINE_2D_H
+#define GMDS_AEROPIPELINE_2D_H
 
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
@@ -14,16 +14,16 @@
 /*----------------------------------------------------------------------------*/
 namespace  gmds {
 /*----------------------------------------------------------------------------*/
-/** \class  AeroPipeline2D
+/** \class  AeroPipeline_2D
  *  \brief  Pipeline de génération de maillages 2D pour l'aéro.
  */
-class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
+class LIB_GMDS_CLAIRE_API AeroPipeline_2D : public AbstractAeroPipeline {
  public:
 
 	/*------------------------------------------------------------------------*/
 	/** \brief Default constructor
 	 */
-	AeroPipeline2D(ParamsAero Aparams);
+	AeroPipeline_2D(ParamsAero Aparams);
 
 	/*------------------------------------------------------------------------*/
 	/** \brief Function to be called for mesh generation
@@ -82,15 +82,33 @@ class LIB_GMDS_CLAIRE_API AeroPipeline2D: public AbstractAeroPipeline {
 	 */
 	void ConvertisseurMeshToBlocking();
 	/*----------------------------------------------------------------------------*/
+	/** @brief Update the second linker at the node n2 with de datas of the first
+	 * linker.
+	 * @param linker_1 the reference linker
+	 * @param n_1 the node in the mesh on the linker_1
+	 * @param linker_2 the linker to update
+	 * @param n_2 the node in the second mesh to initialize the classification
+	 * @return void
+	 */
+	void UpdateLinker(cad::GeomMeshLinker* linker_1, Node n_1, cad::GeomMeshLinker* linker_2, Node n_2);
+	/*----------------------------------------------------------------------------*/
+	/** @brief Update the linker for the last layer (on amont boundary)
+	 * @param layer_id layer's id
+	 * @return void
+	 */
+	void UpdateLinkerLastLayer(int layer_id);
+	/*----------------------------------------------------------------------------*/
  protected:
 	/** blocking 2D */
 	Blocking2D m_Blocking2D;
 	/** Données des bords */
 	AeroBoundaries_2D* m_Bnd;
+	/** Linker Blocking à la géométrie */
+	cad::GeomMeshLinker* m_linker_BG;
 
 };
 /*----------------------------------------------------------------------------*/
 }
 /*----------------------------------------------------------------------------*/
 
-#endif     // GMDS_AEROPIPELINE2D_H
+#endif     // GMDS_AEROPIPELINE_2D_H

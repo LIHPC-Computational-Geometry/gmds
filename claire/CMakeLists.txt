@@ -17,8 +17,8 @@ set(GMDS_INC
         inc/gmds/claire/AdvectedPointRK4_2D.h
         inc/gmds/claire/Params.h
 		inc/gmds/claire/AbstractAeroPipeline.h
-		inc/gmds/claire/AeroPipeline2D.h
-		inc/gmds/claire/AeroPipeline3D.h
+        inc/gmds/claire/AeroPipeline_2D.h
+		inc/gmds/claire/AeroPipeline_3D.h
 		inc/gmds/claire/AbstractLevelSet.h
 		inc/gmds/claire/LevelSetEloi.h
 		inc/gmds/claire/LevelSetExtended.h
@@ -39,8 +39,8 @@ set(GMDS_SRC
         src/LeastSquaresGradientComputation.cpp
         src/AdvectedPointRK4_2D.cpp
         src/AbstractAeroPipeline.cpp
-		src/AeroPipeline2D.cpp
-		src/AeroPipeline3D.cpp
+        src/AeroPipeline_2D.cpp
+		src/AeroPipeline_3D.cpp
 		src/AbstractLevelSet.cpp
 		src/LevelSetEloi.cpp
 		src/LevelSetExtended.cpp
