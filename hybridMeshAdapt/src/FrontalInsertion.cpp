@@ -3,6 +3,7 @@
 #include "gmds/hybridMeshAdapt/SimplicesNode.h"
 #include "gmds/hybridMeshAdapt/ICriterion.h"
 #include "gmds/hybridMeshAdapt/FrontalInsertion.h"
+#include <gmds/io/VTKWriter.h>
 /******************************************************************************/
 #include <math.h>       /* sqrt */
 /******************************************************************************/
@@ -35,7 +36,7 @@ void FrontalInsertion::execute()
     {
         ridgesLabel.insert(map.first);
     }
-
+    unsigned int cpt = 0;
     for(auto const ridgeLabel : ridgesLabel)
     {
       bool status = false;
@@ -73,8 +74,19 @@ void FrontalInsertion::execute()
           PointInsertion(m_simplexMesh, SimplicesNode(m_simplexMesh, node), criterionRAIS, status, shell,nodesAdded, deletedNodes, facesAlreadyBuilt);
           var->set(node, (*var)[itr->second.first]);
           std::cout << "OKOK" << std::endl;
+          std::cout << "status -> " << status << std::endl;
           if(status){
             it = edgeStructure.equal_range(ridgeLabel);
+            itr = it.first;
+
+            //
+            gmds::ISimplexMeshIOService ioService(m_simplexMesh);
+            gmds::VTKWriter vtkWriterHT(&ioService);
+            vtkWriterHT.setCellOptions(gmds::N|gmds::R);
+            vtkWriterHT.setDataOptions(gmds::N|gmds::R);
+            vtkWriterHT.write("MESH_" + std::to_string(cpt) + ".vtk");
+            cpt++;
+            //
           }
         }
         else
