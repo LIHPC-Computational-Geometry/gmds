@@ -49,10 +49,10 @@ TEST(GridTestSuite, test_blocking2D_output)
     Node n5 = m.newBlockCorner(2,0,0);
     Node n6 = m.newBlockCorner(2,1.5,0);
     Blocking2D::Block b2 = m.newBlock(n2,n5,n6,n3);
-    b1.seNbDiscretizationI(10);
-    b1.seNbDiscretizationJ(10);
-    b2.seNbDiscretizationI(10);
-    b2.seNbDiscretizationJ(10);
+    b1.setNbDiscretizationI(10);
+    b1.setNbDiscretizationJ(10);
+    b2.setNbDiscretizationI(10);
+    b2.setNbDiscretizationJ(10);
 
     m.initializeGridPoints();
 
