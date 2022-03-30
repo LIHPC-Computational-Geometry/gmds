@@ -5,7 +5,7 @@
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
 Blocking2D::Blocking2D() 
-: Mesh(MeshModel(DIM3|F|E|N|F2N|E2N|F2E|E2F|N2E))
+: Mesh(MeshModel(DIM3|F|E|N|F2N|E2N|F2E|E2F|N2E|N2F))
 {
     m_embedding_dim = newVariable<int, GMDS_NODE>("embedding_dim");
     m_embedding_id = newVariable<TCellID , GMDS_NODE>("embedding_id");
@@ -16,9 +16,9 @@ Blocking2D::Blocking2D()
 
 }
 /*----------------------------------------------------------------------------*/
-Blocking2D::Blocking2D(const Mesh& AMesh): Mesh(MeshModel(AMesh.getModel())){
+Blocking2D::Blocking2D(const Mesh& AMesh, int AN): Mesh(AMesh.getModel()){
 
-	// for now we assume that the mesh hasnt already been used for a blocking
+	// for now, we assume that the mesh hasn't already been used for a blocking
 
 	m_embedding_dim = newVariable<int, GMDS_NODE>("embedding_dim");
 	m_embedding_id = newVariable<TCellID , GMDS_NODE>("embedding_id");
@@ -41,9 +41,11 @@ Blocking2D::Blocking2D(const Mesh& AMesh): Mesh(MeshModel(AMesh.getModel())){
 		std::vector<TCellID> f_nodes;
 		face.getIDs<Node>(f_nodes);
 		Block b = newBlock(n2n[f_nodes[0]],n2n[f_nodes[1]],n2n[f_nodes[2]],n2n[f_nodes[3]]);
-		b.setNbDiscretizationI(11); //Setting default discretization to 11 for all edges
-		b.setNbDiscretizationJ(11);
+		b.setNbDiscretizationI(AN);
+		b.setNbDiscretizationJ(AN);
 	}
+
+
 
 }
 /*----------------------------------------------------------------------------*/
@@ -58,7 +60,6 @@ Blocking2D::~Blocking2D() {
         delete m_edge_grids->value(e_id);
         m_edge_grids->set(e_id,NULL);
     }
-
 
 }
 /*----------------------------------------------------------------------------*/
@@ -88,6 +89,16 @@ Blocking2D::Block Blocking2D::newBlock(const TCellID AN1, const TCellID AN2,
     b.add(e3); e3.add(b);
     Edge e4 = get<Edge>(getEdge(AN4,AN1));
     b.add(e4); e4.add(b);
+
+	 Node n1 = get<Node>(AN1);
+	 n1.add(b);
+	 Node n2 = get<Node>(AN2);
+	 n2.add(b);
+	 Node n3 = get<Node>(AN3);
+	 n1.add(b);
+	 Node n4 = get<Node>(AN4);
+	 n4.add(b);
+
     return Block(b, this);
 }
 /*----------------------------------------------------------------------------*/
@@ -111,7 +122,7 @@ std::vector<Blocking2D::Block> Blocking2D::allBlocks() {
 TCellID Blocking2D::getEdge(const TCellID AN1, const TCellID AN2) {
     std::vector<TCellID> edges_1 = get<Node>(AN1).getIDs<Edge>();
     std::vector<TCellID> edges_2 = get<Node>(AN2).getIDs<Edge>();
-    bool found_common=false;
+
     for(auto e1:edges_1){
         for(auto e2:edges_2){
             if(e1==e2){
@@ -297,7 +308,7 @@ Edge Blocking2D::Block::getEdge(const int AI, const int AJ)  {
     std::vector<TCellID> nids = m_face.getIDs<Node>();
     std::vector<TCellID> edges_1 = m_support->get<Node>(nids[AI]).getIDs<Edge>();
     std::vector<TCellID> edges_2 = m_support->get<Node>(nids[AJ]).getIDs<Edge>();
-    bool found_common=false;
+
     for(auto e1:edges_1){
         for(auto e2:edges_2){
             if(e1==e2){
@@ -370,6 +381,198 @@ int Blocking2D::getNbDiscretization(const Face& AFace, const Edge &AEdge) const 
 /*----------------------------------------------------------------------------*/
 std::vector<TCellID> Blocking2D::getNodeNeighbors(TCellID AId){
 
-	return std::vector<TCellID>();
+	std::vector<TCellID> neighbors;
+
+	int dim = m_embedding_dim->value(AId);
+	TCellID id = m_embedding_id->value(AId);
+
+	if(dim == 0){
+
+		Node n = get<Node>(AId);
+
+		std::cout<<"Nb faces "<<n.get<Face>().size()<<std::endl;
+
+		if(n.nbFaces()%2 != 0){
+			throw GMDSException("Node is singular, cannot get neighboring nodes.");
+		}
+
+		for(auto const &f : n.get<Face>()){
+			int n_position = -1;
+			std::vector<TCellID> f_nids;
+			f.getIDs<Node>(f_nids);
+
+			for(int i = 0; i < 4 && n_position == -1; i++){
+				if(f_nids[i] == n.id()){
+					n_position = i;
+				}
+			}
+
+			Block b = block(f.id());
+
+			switch (n_position) {
+			case 0:
+				neighbors.push_back(b(1,1).id());
+				break;
+			case 1:
+				neighbors.push_back(b(b.getNbDiscretizationI()-2,1).id());
+				break;
+			case 2:
+				neighbors.push_back(b(b.getNbDiscretizationI()-2,b.getNbDiscretizationJ()-2).id());
+				break;
+			case 3:
+				neighbors.push_back(b(1,b.getNbDiscretizationJ()-2).id());
+				break;
+			default:
+				throw GMDSException("Error: node not adjacent to the face");
+			}
+		}
+
+		for(auto const &e : n.get<Edge>()){
+
+			std::vector<TCellID>* e_nids = m_edge_grids->value(e.id());
+
+			if((*e_nids)[0] == n.id()){
+				neighbors.push_back((*e_nids)[1]);
+			}
+			else if((*e_nids)[e_nids->size()-1] == n.id()){
+				neighbors.push_back((*e_nids)[e_nids->size()-2]);
+			}
+			else{
+				throw GMDSException("Error: node not adjacent to the edge");
+			}
+		}
+	}else if(dim == 1) {
+
+		Edge e = get<Edge>(id);
+
+		std::vector<TCellID> *edge_grid = m_edge_grids->value(id);
+
+		// used to store the starting point to get the neighborhood in the adjacent faces
+		int indice_on_edge;
+
+		for (int i = 1; i < edge_grid->size(); i++) {
+			if ((*edge_grid)[i] == AId) {
+				neighbors.push_back((*edge_grid)[i - 1]);
+				neighbors.push_back((*edge_grid)[i + 1]);
+				indice_on_edge = i;
+			}
+		}
+
+		for (auto const &f : e.get<Face>()) {
+
+			std::vector<TCellID> face_eids;
+			f.getIDs<Edge>(face_eids);
+
+			auto edge_position = -1;
+			for (auto i = 0; i < 4 && edge_position == -1; i++) {
+				if (face_eids[i] == id) {
+					edge_position = i;
+				}
+			}
+
+			Block b = Block(f, this);
+
+			switch (edge_position) {
+			case 0:     // Case edge (i,0)
+				neighbors.push_back(b(indice_on_edge - 1, 1).id());
+				neighbors.push_back(b(indice_on_edge, 1).id());
+				neighbors.push_back(b(indice_on_edge + 1, 1).id());
+				break;
+			case 1:     // Case edge (I,j)
+				neighbors.push_back(b(b.getNbDiscretizationI() - 2, indice_on_edge - 1).id());
+				neighbors.push_back(b(b.getNbDiscretizationI() - 2, indice_on_edge).id());
+				neighbors.push_back(b(b.getNbDiscretizationI() - 2, indice_on_edge + 1).id());
+				break;
+			case 2:     // Case edge (i,J)
+				neighbors.push_back(b(indice_on_edge - 1, b.getNbDiscretizationJ() - 2).id());
+				neighbors.push_back(b(indice_on_edge, b.getNbDiscretizationJ() - 2).id());
+				neighbors.push_back(b(indice_on_edge + 1, b.getNbDiscretizationJ() - 2).id());
+				break;
+			case 3:     // Case edge (0,j)
+				neighbors.push_back(b(1, indice_on_edge - 1).id());
+				neighbors.push_back(b(1, indice_on_edge).id());
+				neighbors.push_back(b(1, indice_on_edge + 1).id());
+				break;
+			default:
+				throw GMDSException("Error: edge not adjacent to the face");
+			}
+		}
+
+	}else if(dim == 2){
+		Block b = block(id);
+		int nbDiscrI = b.getNbDiscretizationI();
+		int nbDiscrJ = b.getNbDiscretizationJ();
+
+		//the interval is [1, nbDiscr-1] because we know the node is on a face and not an edge
+		bool found = false;
+		for(int i = 1; i<nbDiscrI-1 && !found; i++){
+			for(int j = 1; j<nbDiscrJ-1 && !found; j++){
+
+				if(b(i,j).id() == AId){
+
+					found = true;
+
+					for(int x = -1; x<=1; x++){
+						for(int y = -1; y<=1; y++){
+							if(x == 0 && y == 0) continue;
+
+							neighbors.push_back(b(i+x,j+y).id());
+						}
+					}
+				}
+			}
+		}
+
+	}else{
+		throw GMDSException("Wrong node dimension for 2D");
+	}
+
+	return neighbors;
 }
 /*----------------------------------------------------------------------------*/
+void Blocking2D::buildBlocks(const int AN){
+
+	for (auto n : nodes()) {
+
+		m_embedding_dim->set(n,0);
+		m_embedding_id->set(n,n);
+	}
+	for (auto f : faces()) {
+
+		std::vector<TCellID> nodes;
+		Face face = get<Face>(f);
+		face.getIDs<Node>(nodes);
+
+		Edge e1 = get<Edge>(getEdge(nodes[0],nodes[1]));
+		face.add(e1); e1.add(face);
+		Edge e2 = get<Edge>(getEdge(nodes[1],nodes[2]));
+		face.add(e2); e2.add(face);
+		Edge e3 = get<Edge>(getEdge(nodes[2],nodes[3]));
+		face.add(e3); e3.add(face);
+		Edge e4 = get<Edge>(getEdge(nodes[3],nodes[0]));
+		face.add(e4); e4.add(face);
+
+		Node n1 = get<Node>(nodes[0]);
+		n1.add(face);
+		Node n2 = get<Node>(nodes[1]);
+		n2.add(face);
+		Node n3 = get<Node>(nodes[2]);
+		n3.add(face);
+		Node n4 = get<Node>(nodes[3]);
+		n4.add(face);
+
+		Block b(f, this);
+		b.setNbDiscretizationI(AN);
+		b.setNbDiscretizationJ(AN);
+	}
+}
+/*----------------------------------------------------------------------------*/
+TCellID Blocking2D::getBlockingId(TCellID AId){
+	return m_embedding_id->value(AId);
+}
+/*----------------------------------------------------------------------------*/
+int Blocking2D::getBlockingDim(TCellID AId){
+	return m_embedding_dim->value(AId);
+}
+/*----------------------------------------------------------------------------*/
+
