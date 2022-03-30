@@ -59,7 +59,7 @@ TEST(Blocking2DTestSuite, test_blocking2D_1)
 /*----------------------------------------------------------------------------*/
 TEST(Blocking2DTestSuite, test_blocking2D_2)
 {
-	Mesh mesh(MeshModel(DIM3|F|E|N|F2N|E2N|F2E|E2F|N2E));
+	Mesh mesh(MeshModel(DIM3|F|E|N|F2N|E2N|F2E|E2F|N2E|N2F));
 
 	std::vector<TCellID> nodes_for_face;
 
@@ -102,8 +102,8 @@ TEST(Blocking2DTestSuite, test_blocking2D_2)
 	ASSERT_FLOAT_EQ(b0.getUnitVectorJ().Y(),1.0);
 	ASSERT_FLOAT_EQ(b0.getUnitVectorJ().Z(),0.0);
 
-	ASSERT_EQ(b0.getNbDiscretizationI(),11);
-	ASSERT_EQ(b0.getNbDiscretizationJ(),11);
+	ASSERT_EQ(b0.getNbDiscretizationI(),10);
+	ASSERT_EQ(b0.getNbDiscretizationJ(),10);
 
 	blocking.initializeGridPoints();
 
@@ -126,3 +126,65 @@ TEST(Blocking2DTestSuite, test_blocking2D_2)
 	ASSERT_FLOAT_EQ(p76.Y(),0.6);
 
 }
+/*----------------------------------------------------------------------------*/
+TEST(Blocking2DTestSuite, test_blocking2D_3)
+{
+	Blocking2D mesh;
+	std::vector<TCellID> nodes_for_face;
+
+	Node n1 = mesh.newNode(0,0);
+	Node n2 = mesh.newNode(1,0);
+	Node n3 = mesh.newNode(1,1);
+	Node n4 = mesh.newNode(0,1);
+
+	mesh.newQuad(n1.id(),n2.id(),n3.id(),n4.id());
+	nodes_for_face.clear();
+
+	Node n5 = mesh.newNode(2,0,0);
+	Node n6 = mesh.newNode(2,1.5,0);
+
+	nodes_for_face.push_back(n2.id());
+	nodes_for_face.push_back(n5.id());
+	nodes_for_face.push_back(n6.id());
+	nodes_for_face.push_back(n3.id());
+
+	mesh.newQuad(n2.id(),n5.id(),n6.id(),n3.id());
+
+	mesh.buildBlocks(11);
+	mesh.initializeGridPoints();
+
+	Blocking2D::Block b0 = mesh.block(0);
+
+	ASSERT_EQ(n1.id(),b0.origin());
+	ASSERT_FLOAT_EQ(b0.getUnitVectorI().X(),1.0);
+	ASSERT_FLOAT_EQ(b0.getUnitVectorI().Y(),0.0);
+	ASSERT_FLOAT_EQ(b0.getUnitVectorI().Z(),0.0);
+	ASSERT_FLOAT_EQ(b0.getUnitVectorJ().X(),0.0);
+	ASSERT_FLOAT_EQ(b0.getUnitVectorJ().Y(),1.0);
+	ASSERT_FLOAT_EQ(b0.getUnitVectorJ().Z(),0.0);
+
+	ASSERT_EQ(b0.getNbDiscretizationI(),11);
+	ASSERT_EQ(b0.getNbDiscretizationJ(),11);
+
+}
+/*----------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
