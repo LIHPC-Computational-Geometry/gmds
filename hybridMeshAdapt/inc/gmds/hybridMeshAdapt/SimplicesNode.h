@@ -80,6 +80,8 @@ namespace gmds
 
           bool isAttachToSimplex() const ;
 
+          std::vector<TInt> complentaryNodeShell (const SimplicesNode& simpliceNode) const;
+
           std::vector<TInt> directNeighboorNodeId() const ;
 
           /*adding some point to the mesh and check if  this point already exist*/

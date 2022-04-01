@@ -176,10 +176,11 @@ TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD5)
       nodeSize++;
       bool alreadyAdd = false;
       std::vector<TSimplexID> tetraContenaingPt{};
+      std::vector<TSimplexID> cellsCreated{};
       std::vector<TInt> deletedNodes{};
       const std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
       bool status = false;
-      PointInsertion(&simplexMesh, SimplicesNode(&simplexMesh, deletedNode), criterionRAIS, status, tetraContenaingPt, nodesAdded, deletedNodes, facesAlreadyBuilt);
+      PointInsertion(&simplexMesh, SimplicesNode(&simplexMesh, deletedNode), criterionRAIS, status, tetraContenaingPt, nodesAdded, deletedNodes, facesAlreadyBuilt, cellsCreated);
       if(status)
       {
         nodeReinsertedSize++;

@@ -18,7 +18,8 @@ PointInsertion::PointInsertion()
 }
 /******************************************************************************/
 PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& simpliceNode, const CriterionRAIS& criterion, bool& status, const std::vector<TSimplexID>& initialCavity,
-                               const gmds::BitVector& markedNodes, std::vector<TInt>& deletedNodes, const std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt, std::vector<TSimplexID> markedSimplex)
+                               const gmds::BitVector& markedNodes, std::vector<TInt>& deletedNodes, const std::multimap<TInt, std::pair<TInt, TInt>>& facesAlreadyBuilt,
+                               std::vector<TSimplexID>& cellsCreated, std::vector<TSimplexID> markedSimplex)
 {
     if(simplexMesh != nullptr)
     {
@@ -264,7 +265,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           }
           //double duration3;
           //start = std::clock();
-          simplexMesh->rebuildCavity(cavityIO, simpliceNode.getGlobalNode());
+          simplexMesh->rebuildCavity(cavityIO, simpliceNode.getGlobalNode(), cellsCreated);
           //duration2 = (std::clock()-start)/(double)CLOCKS_PER_SEC;
           //std::cout << "rebuildCavity duration --> " << duration2 << std::endl;
           status = true;

@@ -1,0 +1,1 @@
+cmd='//ccc/dsku/nfs-server/user/cont001/ocre/benzaits/ROOT/GITHUB/gmds/external/glpk/src/buildGlpk/configure;--enable-silent-rules;CC=;CXX=/ccc/home/cont001/ocre/benzaits/ROOT/utilitaireDev/gcc/bin/c++;CXXFLAGS=;LDFLAGS=;--prefix=/ccc/dsku/nfs-server/user/cont001/ocre/benzaits/ROOT/GITHUB/gmds/glpk'

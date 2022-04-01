@@ -14,9 +14,9 @@ namespace gmds
     class IBehavior
     {
     public:
-      IBehavior                                 ();
+      IBehavior                                 (){}
 
-      ~IBehavior                                ();
+      ~IBehavior                                (){}
 
       virtual const TInt neighborCellOf         (const TInt pointIndex, const TInt cellIndex) = 0;
 
@@ -44,7 +44,7 @@ namespace gmds
 
       virtual std::vector<TInt> ballOf    (const TInt pointIndex);
 
-      virtual void buildDatabehavior        (/*const gmds::Mesh mesh*/ );
+      virtual void buildDatabehavior        (/*const gmds::Mesh mesh*/ ){}
 
     private:
       //a voir pour mettre juste Eigen::SparseMatrix<TInt> sans le unique_ptr

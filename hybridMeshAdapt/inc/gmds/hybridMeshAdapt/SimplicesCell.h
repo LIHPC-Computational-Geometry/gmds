@@ -40,6 +40,8 @@ namespace gmds
 
         std::vector<TInt> getNodes            () const ;
 
+        std::vector<math::Point> getNodesCoords() const ;
+
         double getVolumeOfCell                () const ;
 
         std::vector<TSimplexID> neighborTetra (const TInt indexNodeGlobal, bool boundariesAccepted = false) const;

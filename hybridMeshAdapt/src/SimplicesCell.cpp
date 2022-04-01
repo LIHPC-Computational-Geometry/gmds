@@ -48,8 +48,19 @@ std::vector<TInt> SimplicesCell::getNodes() const
     v[2] = m_simplex_mesh->m_tet_nodes[m_simplexId][2];
     v[3] = m_simplex_mesh->m_tet_nodes[m_simplexId][3];
   }
-
   return std::move(v);
+}
+/*----------------------------------------------------------------------------*/
+std::vector<math::Point> SimplicesCell::getNodesCoords() const
+{
+  std::vector<math::Point> res{};
+  std::vector<TInt> nodes = getNodes();
+  for(auto const node : nodes)
+  {
+    res.push_back(SimplicesNode(m_simplex_mesh, node).getCoords());
+  }
+
+  return res;
 }
 /*----------------------------------------------------------------------------*/
 double SimplicesCell::getVolumeOfCell() const

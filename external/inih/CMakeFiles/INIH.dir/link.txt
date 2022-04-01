@@ -1,0 +1,2 @@
+/usr/bin/ar qc libINIH.a CMakeFiles/INIH.dir/src/dictionary.cpp.o CMakeFiles/INIH.dir/src/iniparser.cpp.o
+/usr/bin/ranlib libINIH.a

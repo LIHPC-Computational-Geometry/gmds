@@ -667,6 +667,24 @@ bool SimplicesNode::isAttachToSimplex() const
   return (simplex != border);
 }
 /******************************************************************************/
+std::vector<TInt> SimplicesNode::complentaryNodeShell(const SimplicesNode& simpliceNode) const
+{
+  std::set<TInt> s{};
+  std::vector<TInt> v{};
+  std::vector<TInt>nodeShell{this->getGlobalNode(), simpliceNode.getGlobalNode()};
+  std::vector<TSimplexID> shell = this->shell(simpliceNode);
+  for(auto const simplice : shell)
+  {
+    if(simplice >= 0)
+    {
+      std::vector<TInt> v = SimplicesCell(m_simplex_mesh, simplice).getOtherNodeInSimplex(nodeShell);
+      copy(v.begin(), v.end(),inserter(s, s.begin()));
+    }
+  }
+  std::copy(s.begin(), s.end(), std::back_inserter(v));
+  return v;
+}
+/******************************************************************************/
 std::vector<TInt> SimplicesNode::directNeighboorNodeId() const
 {
   std::vector<TInt> res{};

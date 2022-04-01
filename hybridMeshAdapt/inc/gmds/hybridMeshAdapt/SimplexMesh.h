@@ -339,7 +339,7 @@ class SimplexMesh
 
   bool isFaceBuild(const std::vector<TInt>& nodes);
 
-  void rebuildCavity(operators::CavityOperator::CavityIO& cavityIO, const TInt nodeToConnect);
+  void rebuildCavity(operators::CavityOperator::CavityIO& cavityIO, const TInt nodeToConnect, std::vector<TSimplexID>& cellsCreated);
 
   void pointsLabeling(const std::vector<math::Point> &points, std::vector<int>& pointsLabeling, std::vector<int>& topoIndex, std::vector<TInt>& nearNodes);
 
@@ -381,19 +381,10 @@ class SimplexMesh
   friend std::ostream&  operator<<(std::ostream& os, SimplexMesh& simplexMesh)
   {
 
-    for(unsigned int idx = 0; idx < simplexMesh.m_tet_ids.capacity() ; idx++)
-    {
-      if(simplexMesh.m_tet_ids[idx] != 0)
-      {
-        const TInt Node0 = simplicesCell::SimplicesCell(&simplexMesh, idx).getNode(0).getGlobalNode();
-        const TInt Node1 = simplicesCell::SimplicesCell(&simplexMesh, idx).getNode(1).getGlobalNode();
-        const TInt Node2 = simplicesCell::SimplicesCell(&simplexMesh, idx).getNode(2).getGlobalNode();
-        const TInt Node3 = simplicesCell::SimplicesCell(&simplexMesh, idx).getNode(3).getGlobalNode();
+    os << "node size ->  " << simplexMesh.getBitVectorNodes().size() << std::endl;
+    os << "tet size ->  " << simplexMesh.getBitVectorTet().size() << std::endl;
+    os << "tri size ->  " << simplexMesh.getBitVectorTri().size() << std::endl;
 
-        os << "cellId = " << idx << "| Node : " << Node0 << " " << Node1 << " " << Node2 << " " << Node3 << std::endl;
-
-      }
-    }
     return os;
   }
 
@@ -402,6 +393,8 @@ class SimplexMesh
   Octree* getOctree(){return m_octree;}
 
   double subSurfaceFactor(const std::vector<std::vector<TInt>>& faces);
+
+  double computeQualityElement(const TSimplexID simplex);
 
 private:
 

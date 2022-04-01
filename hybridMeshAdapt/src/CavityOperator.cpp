@@ -575,6 +575,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       }
     }
 
+    //std::cout << "CAVITY After enlargement -> " << cavityCell.size() << std::endl;
     //set type for the triangle see the paper : Robust Boundary Layer Mesh Generation
     for(auto const tri : initCavityTriangle)
     {

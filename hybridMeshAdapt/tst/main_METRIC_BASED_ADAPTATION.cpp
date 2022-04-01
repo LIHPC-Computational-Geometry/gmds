@@ -67,17 +67,20 @@ int main(int argc, char* argv[])
     m <<  1.0, 0.0, .0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0;
     metricNode->setValuesTo(m);
     const gmds::BitVector& meshNode = simplexMesh.getBitVectorNodes();
-    double metricMin = 0.05;
-    double metricMax = 2;
+    double metricMin = 0.5;
+    double metricMax = 0.5;
     for(unsigned int nodeId = 0 ; nodeId < meshNode.capacity() ; nodeId++)
     {
       if(meshNode[nodeId] == 1)
       {
         double x = SimplicesNode(&simplexMesh, nodeId).getCoords()[0];
-        double metric = (1.0 - x)*metricMin + x*metricMax;
-        (*metricNode)[nodeId](0,0) = metric;
-        (*metricNode)[nodeId](1,1) = metric;
-        (*metricNode)[nodeId](2,2) = metric;
+        //double metric = (1.0 - x)*metricMin + x*metricMax;
+        double metricX = 0.5;
+        double metricY = 0.1;
+        double metricZ = 0.1;
+        (*metricNode)[nodeId](0,0) = 1.0 / (metricX*metricX);
+        (*metricNode)[nodeId](1,1) = 1.0 / (metricY*metricY);
+        (*metricNode)[nodeId](2,2) = 1.0 / (metricZ*metricZ);
       }
     }
     //////////////////////////////////////////////////////////////////////////////

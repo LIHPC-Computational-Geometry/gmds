@@ -1,0 +1,2 @@
+/usr/bin/ar qc libOpenNL.a CMakeFiles/OpenNL.dir/OpenNL_psm.cpp.o
+/usr/bin/ranlib libOpenNL.a

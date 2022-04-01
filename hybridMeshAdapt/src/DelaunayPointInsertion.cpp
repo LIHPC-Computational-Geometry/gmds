@@ -82,7 +82,8 @@ DelaunayPointInsertion::DelaunayPointInsertion(SimplexMesh* simplexMesh, const s
           }
         }
       }
-      PointInsertion pi(simplexMesh, simpliceNode, criterion, status, cavity, markedNodes, deletedSimplex, facesAlreadyBuilt, markedSimplex/*, cavReduction*/);
+      std::vector<TSimplexID> cellsCreated{};
+      PointInsertion pi(simplexMesh, simpliceNode, criterion, status, cavity, markedNodes, deletedSimplex, facesAlreadyBuilt, cellsCreated, markedSimplex/*, cavReduction*/);
     }
   }
   else
