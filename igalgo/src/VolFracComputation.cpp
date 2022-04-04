@@ -3,6 +3,7 @@
 
 #include "gmds/igalgo/r2d.h"
 #include <gmds/math/Quadrilateral.h>
+#include <gmds/math/Triangle.h>
 /*----------------------------------------------------------------------------*/
 #include <string>
 #include <vector>
@@ -37,6 +38,31 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 
 	// check mesh orientation
 	// TODO
+	for(auto f_id: AMesh->faces()) {
+		gmds::Face f = AMesh->get<Face>(f_id);
+		std::vector<gmds::Node> n = f.get<gmds::Node>();
+
+		gmds::math::Quadrilateral quad(n[0].point(), n[1].point(), n[2].point(), n[3].point());
+		double sj = quad.computeScaledJacobian2D();
+		if(sj < 0) {
+			msg += std::string("AMesh has a bad cell.");
+			valid_input = false;
+			break;
+		}
+	}
+
+//	for(auto f_id: AImprintMesh->faces()) {
+//		gmds::Face f = AImprintMesh->get<Face>(f_id);
+//		std::vector<gmds::Node> n = f.get<gmds::Node>();
+//
+//		gmds::math::Triangle tri(n[0].point(), n[1].point(), n[2].point());
+//		double sj = tri.computeScaledJacobian2D();
+//		if(sj < 0) {
+//			msg += std::string("AImprintMesh has a bad cell.");
+//			valid_input = false;
+//			break;
+//		}
+//	}
 
 	if(!valid_input) {
 		throw gmds::GMDSException(msg);
@@ -49,10 +75,10 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 		r2d_rvec2 vertices[3];
 		vertices[0].x = n_tri[0].X();
 		vertices[0].y = n_tri[0].Y();
-		vertices[1].x = n_tri[1].X();
-		vertices[1].y = n_tri[1].Y();
-		vertices[2].x = n_tri[2].X();
-		vertices[2].y = n_tri[2].Y();
+		vertices[1].x = n_tri[2].X();
+		vertices[1].y = n_tri[2].Y();
+		vertices[2].x = n_tri[1].X();
+		vertices[2].y = n_tri[1].Y();
 		r2d_int numverts = 3;
 		r2d_plane planes[3];
 		r2d_poly_faces_from_verts(planes,  vertices, numverts);
@@ -103,7 +129,7 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 			r2d_reduce(&poly, om, POLY_ORDER);
 
 			double vf = AVolFrac->value(f_id);
-			std::cout<<"f_id "<<f_id<<" volsurf "<<volsurf<<" vf "<<vf<<" om "<<om[0]/volsurf<<std::endl;
+//			std::cout<<"f_id "<<f_id<<" volsurf "<<volsurf<<" vf "<<vf<<" om "<<om[0]/volsurf<<std::endl;
 			// add but do not forget to divide by cell area
 			AVolFrac->set(f_id, vf + om[0]/volsurf);
 		}
