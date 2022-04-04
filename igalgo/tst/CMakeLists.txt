@@ -2,7 +2,7 @@ add_executable(GMDS_IGALGO_TEST
         BoundaryOpTestSuite.h
         BoundaryExtractorTestSuite.h
         GridBuilderTestSuite.h
-        main_test.cpp)
+        main_test.cpp VolFracComputationTestSuite.h)
 
 target_link_libraries(GMDS_IGALGO_TEST PUBLIC
         ${GMDS_LIB} ${LIB_GMDS_IO}

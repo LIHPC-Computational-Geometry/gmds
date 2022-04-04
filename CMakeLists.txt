@@ -9,7 +9,7 @@ if(APPLE)
     set(CMAKE_OSX_ARCHITECTURES x86_64)
 endif()
 #==============================================================================
-project(gmds VERSION 1.0 LANGUAGES CXX)
+project(gmds VERSION 1.0 LANGUAGES C CXX)
 #==============================================================================
 # Compilation options mainly for testing purpose
 #==============================================================================
