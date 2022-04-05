@@ -135,6 +135,108 @@ AeroPipeline_2D::EcritureMaillage(){
 
 /*------------------------------------------------------------------------*/
 void
+AeroPipeline_2D::DiscretisationParoi(int color){
+
+	std::cout << "-> Discrétisation du bord de couleur " << color << std::endl;
+
+	std::vector<TCellID> bnd_nodes_id_ordered = m_Bnd->BndNodesOrdered(color);	// Tri les noeuds du bord concerné dans l'ordre
+
+	int markCurveEdges = m_meshTet->newMark<Edge>();
+	int markCurveNodes = m_meshTet->newMark<Node>();
+	int markPointNodes = m_meshTet->newMark<Node>();
+	int markAloneNodes = m_meshTet->newMark<Node>();
+
+	BoundaryOperator2D bnd_op(m_meshTet);
+	bnd_op.markCellOnGeometry(markCurveEdges, markCurveNodes,
+	                          markPointNodes, markAloneNodes);
+
+	m_meshTet->unmarkAll<Node>(markAloneNodes);
+	m_meshTet->freeMark<Node>(markAloneNodes);
+	m_meshTet->unmarkAll<Edge>(markCurveEdges);
+	m_meshTet->freeMark<Edge>(markCurveEdges);
+	m_meshTet->unmarkAll<Node>(markCurveNodes);
+	m_meshTet->freeMark<Node>(markCurveNodes);
+
+	// Calcul de la longueur max des arêtes de bloc
+	double perim = m_Bnd->ComputeBoundaryLength(color);		// Calcul du périmètre du bord regardé
+	double Lmax = perim/ m_params.nbrMinBloc ;
+	double l(0);
+
+	// Calcul de la valeur min de x sur les noeuds du bord
+	TCellID n_arret_tri_id = m_Bnd->PointArret(color);
+	Node n_arret_tri = m_meshTet->get<Node>(n_arret_tri_id) ;
+	math::Point point_arret = n_arret_tri.point();
+	double x_min = point_arret.X() ;
+
+	Node n0_tri = m_meshTet->get<Node>(bnd_nodes_id_ordered[0]) ;
+	Node n0_quad = m_meshHex->newNode(n0_tri.point()); // Premier noeud du nouveau maillage
+
+	UpdateLinker(m_linker_TG, n0_tri, m_linker_HG, n0_quad);
+
+	Node n1_quad = n0_quad;
+	Node n2_quad = n0_quad;
+
+	for(int i=1;i<bnd_nodes_id_ordered.size();i++){
+
+		Node n = m_meshTet->get<Node>(bnd_nodes_id_ordered[i]);
+		math::Point p = n.point() ;
+		l += math::Utils::distFromNodeIds(m_meshTet, bnd_nodes_id_ordered[i], bnd_nodes_id_ordered[i-1]);
+
+		Node n_gauche = m_meshTet->get<Node>(bnd_nodes_id_ordered[i-1]);
+		Node n_droit;
+		if(i == bnd_nodes_id_ordered.size()-1) {
+			n_droit = m_meshTet->get<Node>(bnd_nodes_id_ordered[0]);
+		}
+		else{
+			n_droit = m_meshTet->get<Node>(bnd_nodes_id_ordered[i+1]);
+		}
+
+		bool isExtremum(false);
+		if ( (n.X() < n_gauche.X() && n.X() < n_droit.X() )
+		    || (n.X() > n_gauche.X() && n.X() > n_droit.X() )
+		    || (n.Y() < n_gauche.Y() && n.Y() < n_droit.Y() )
+		    || (n.Y() > n_gauche.Y() && n.Y() > n_droit.Y() )) {
+			isExtremum = true;
+		}
+
+
+
+		if ( m_meshTet->isMarked<Node>(bnd_nodes_id_ordered[i], markPointNodes)
+		    || l >= Lmax
+		    || abs(l-Lmax) <= pow(10,-6)
+		    || abs(p.X() - x_min) <= pow(10,-6)
+		    || isExtremum ){
+
+			n1_quad = n2_quad;
+			n2_quad = m_meshHex->newNode(n.point());
+			UpdateLinker(m_linker_TG, n, m_linker_HG, n2_quad);
+			Edge e = m_meshHex->newEdge(n1_quad, n2_quad);
+
+			// Ajout des connectivités Node -> Edge
+			n1_quad.add<Edge>(e);
+			n2_quad.add<Edge>(e);
+
+			l = 0;	// On remet l à 0
+
+		}
+
+	}
+
+	// Ajout de la dernière arête pour fermer le blocking du bord
+	Edge e = m_meshHex->newEdge(n2_quad, n0_quad);
+	// Ajout des connectivités Node -> Edge
+	n2_quad.add<Edge>(e);
+	n0_quad.add<Edge>(e);
+
+	m_meshTet->unmarkAll<Node>(markPointNodes);
+	m_meshTet->freeMark<Node>(markPointNodes);
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void
 AeroPipeline_2D::GenerationCouche(int couche_id, double dist){
 
 	std::cout << "-> Génération de la couche " << couche_id << std::endl ;
@@ -286,108 +388,6 @@ AeroPipeline_2D::isQuadCreated(Node n0, Node n1, Node n2){
 
 /*------------------------------------------------------------------------*/
 void
-AeroPipeline_2D::DiscretisationParoi(int color){
-
-	std::cout << "-> Discrétisation du bord de couleur " << color << std::endl;
-
-	std::vector<TCellID> bnd_nodes_id_ordered = m_Bnd->BndNodesOrdered(color);	// Tri les noeuds du bord concerné dans l'ordre
-
-	int markCurveEdges = m_meshTet->newMark<Edge>();
-	int markCurveNodes = m_meshTet->newMark<Node>();
-	int markPointNodes = m_meshTet->newMark<Node>();
-	int markAloneNodes = m_meshTet->newMark<Node>();
-
-	BoundaryOperator2D bnd_op(m_meshTet);
-	bnd_op.markCellOnGeometry(markCurveEdges, markCurveNodes,
-	                          markPointNodes, markAloneNodes);
-
-	m_meshTet->unmarkAll<Node>(markAloneNodes);
-	m_meshTet->freeMark<Node>(markAloneNodes);
-	m_meshTet->unmarkAll<Edge>(markCurveEdges);
-	m_meshTet->freeMark<Edge>(markCurveEdges);
-	m_meshTet->unmarkAll<Node>(markCurveNodes);
-	m_meshTet->freeMark<Node>(markCurveNodes);
-
-	// Calcul de la longueur max des arêtes de bloc
-	double perim = m_Bnd->ComputeBoundaryLength(color);		// Calcul du périmètre du bord regardé
-	double Lmax = perim/ m_params.nbrMinBloc ;
-	double l(0);
-
-	// Calcul de la valeur min de x sur les noeuds du bord
-	TCellID n_arret_tri_id = m_Bnd->PointArret(color);
-	Node n_arret_tri = m_meshTet->get<Node>(n_arret_tri_id) ;
-	math::Point point_arret = n_arret_tri.point();
-	double x_min = point_arret.X() ;
-
-	Node n0_tri = m_meshTet->get<Node>(bnd_nodes_id_ordered[0]) ;
-	Node n0_quad = m_meshHex->newNode(n0_tri.point()); // Premier noeud du nouveau maillage
-
-	UpdateLinker(m_linker_TG, n0_tri, m_linker_HG, n0_quad);
-
-	Node n1_quad = n0_quad;
-	Node n2_quad = n0_quad;
-
-	for(int i=1;i<bnd_nodes_id_ordered.size();i++){
-
-		Node n = m_meshTet->get<Node>(bnd_nodes_id_ordered[i]);
-		math::Point p = n.point() ;
-		l += math::Utils::distFromNodeIds(m_meshTet, bnd_nodes_id_ordered[i], bnd_nodes_id_ordered[i-1]);
-
-		Node n_gauche = m_meshTet->get<Node>(bnd_nodes_id_ordered[i-1]);
-		Node n_droit;
-		if(i == bnd_nodes_id_ordered.size()-1) {
-			n_droit = m_meshTet->get<Node>(bnd_nodes_id_ordered[0]);
-		}
-		else{
-			n_droit = m_meshTet->get<Node>(bnd_nodes_id_ordered[i+1]);
-		}
-
-		bool isExtremum(false);
-		if ( (n.X() < n_gauche.X() && n.X() < n_droit.X() )
-		    || (n.X() > n_gauche.X() && n.X() > n_droit.X() )
-		    || (n.Y() < n_gauche.Y() && n.Y() < n_droit.Y() )
-		    || (n.Y() > n_gauche.Y() && n.Y() > n_droit.Y() )) {
-			isExtremum = true;
-		}
-
-
-
-		if ( m_meshTet->isMarked<Node>(bnd_nodes_id_ordered[i], markPointNodes)
-		    || l >= Lmax
-		    || abs(l-Lmax) <= pow(10,-6)
-		    || abs(p.X() - x_min) <= pow(10,-6)
-		    || isExtremum ){
-
-			n1_quad = n2_quad;
-			n2_quad = m_meshHex->newNode(n.point());
-			UpdateLinker(m_linker_TG, n, m_linker_HG, n2_quad);
-			Edge e = m_meshHex->newEdge(n1_quad, n2_quad);
-
-			// Ajout des connectivités Node -> Edge
-			n1_quad.add<Edge>(e);
-			n2_quad.add<Edge>(e);
-
-			l = 0;	// On remet l à 0
-
-		}
-
-	}
-
-	// Ajout de la dernière arête pour fermer le blocking du bord
-	Edge e = m_meshHex->newEdge(n2_quad, n0_quad);
-	// Ajout des connectivités Node -> Edge
-	n2_quad.add<Edge>(e);
-	n0_quad.add<Edge>(e);
-
-	m_meshTet->unmarkAll<Node>(markPointNodes);
-	m_meshTet->freeMark<Node>(markPointNodes);
-
-}
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
-void
 AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 
 	Variable<TCellID>* var_new_id = m_meshHex->newVariable<TCellID,GMDS_NODE>("New_ID");
@@ -412,7 +412,12 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 		B0.seNbDiscretizationJ(10);
 	}
 
-	m_Blocking2D.initializeGridPoints();
+	m_Blocking2D.initializeGridPoints();	// Maillage des blocs par transfinies
+
+	for (auto bloc:m_Blocking2D.allBlocks()){
+		int Nx = bloc.getNbDiscretizationI();
+		int Ny = bloc.getNbDiscretizationJ();
+	}
 
 	m_meshHex->deleteVariable(GMDS_NODE, "New_ID");
 
