@@ -16,7 +16,7 @@ namespace gmds{
       * @param AImprintMesh, the mesh to imprint onto the first mesh
       * @param AVolFrac the variable that will carry the volume fractions 
  */
-void volfraccomputation_2d(Mesh* AMesh, const Mesh* AImprintMesh, gmds::Variable<double>* AVolFrac);
+void GMDSIgAlgo_API volfraccomputation_2d(Mesh* AMesh, const Mesh* AImprintMesh, gmds::Variable<double>* AVolFrac);
 /*----------------------------------------------------------------------------*/
 //class GMDSIgAlgo_API GridBuilder
 }
