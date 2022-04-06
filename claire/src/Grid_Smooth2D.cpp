@@ -89,6 +89,27 @@ Grid_Smooth2D::STATUS Grid_Smooth2D::execute()
 					}
 				}
 			}
+
+
+			// Glissement des bords
+			for (int i=1;i<Nx-1;i++)
+			{
+				math::Point Mid = FindMidBranche(bi(i-1,0).point(), bi(i,0).point(), bi(i+1,0).point());
+				bi(i, 0).setPoint(Mid);
+
+				Mid = FindMidBranche(bi(i-1,Ny-1).point(), bi(i,Ny-1).point(), bi(i+1,Ny-1).point());
+				bi(i, Ny-1).setPoint(Mid);
+			}
+
+			for (int j=1;j<Ny-1;j++)
+			{
+				math::Point Mid = FindMidBranche(bi(0,j-1).point(), bi(0,j).point(), bi(0,j+1).point());
+				bi(0, j).setPoint(Mid);
+
+				Mid = FindMidBranche(bi(Nx-1,j-1).point(), bi(Nx-1,j).point(), bi(Nx-1,j+1).point());
+				bi(Nx-1, j).setPoint(Mid);
+			}
+
 	}
 
 	}
