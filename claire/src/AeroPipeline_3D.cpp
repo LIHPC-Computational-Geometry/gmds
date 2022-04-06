@@ -13,6 +13,7 @@
 #include <gmds/io/VTKWriter.h>
 #include <gmds/io/VTKReader.h>
 #include <iostream>
+#include <chrono>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -33,12 +34,20 @@ AeroPipeline_3D::AeroPipeline_3D(ParamsAero Aparams) :
 /*------------------------------------------------------------------------*/
 AbstractAeroPipeline::STATUS
 AeroPipeline_3D::execute(){
+
+	clock_t t_start, t_end;
+
 	LectureMaillage();
+
+	t_start = clock();
 	m_Bnd->execute();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	//m_manager.initAndLinkFrom3DMesh(&m_mTetra,&m_linker_TG);
 
 	// Calcul du level set
 	std::cout << "-> Calcul des Level Sets" << std::endl;
+	t_start = clock();
 	m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance");
 	m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
 	m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
@@ -47,13 +56,19 @@ AeroPipeline_3D::execute(){
 	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
 	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
 	lsCombined.execute();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+
 
 	// Calcul du gradient du champ de Level Set
 	std::cout << "-> Calcul du gradient du champ des Level Sets" << std::endl;
+	t_start = clock();
 	m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
 	LeastSquaresGradientComputation grad3D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
 	                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	grad3D.execute();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
 	EcritureMaillage();
 

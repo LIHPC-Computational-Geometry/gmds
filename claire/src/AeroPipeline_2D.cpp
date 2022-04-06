@@ -17,6 +17,7 @@
 #include <gmds/io/VTKWriter.h>
 #include <gmds/io/VTKReader.h>
 #include <iostream>
+#include <chrono>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -39,8 +40,15 @@ AeroPipeline_2D::AeroPipeline_2D(ParamsAero Aparams) :
 AbstractAeroPipeline::STATUS
 AeroPipeline_2D::execute(){
 
+	clock_t t_start, t_end;
+
 	LectureMaillage();
+
+	std::cout << "-> Analyse des bords" << std::endl;
+	t_start = clock();
 	m_Bnd->execute();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
 	m_manager->initAndLinkFrom2DMesh(m_meshTet, m_linker_TG);
 
@@ -62,24 +70,35 @@ AeroPipeline_2D::execute(){
 
 	m_linker_HG->setGeometry(m_manager);
 	m_linker_HG->setMesh(m_meshHex);
+
+	std::cout << "-> Discrétisation du bord" << std::endl;
+	t_start = clock();
 	for (int i=1;i<=m_Bnd->getNbrBords();i++){
 		if(i != m_Bnd->getColorAmont()){
 			DiscretisationParoi(i);
 		}
 	}
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
 	m_nbr_couches=1;
 	for(int couche=1;couche<=m_nbr_couches;couche++){
+		t_start = clock();
 		GenerationCouche(couche, 1.0/m_nbr_couches);
+		t_end = clock();
+		std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	}
 
-	//GenerationCouche(2, 1);
 	UpdateLinkerLastLayer(1);
 
 	ConvertisseurMeshToBlocking();
 
+	std::cout << "-> Lissage final" << std::endl;
+	t_start = clock();
 	Grid_Smooth2D smoother(&m_Blocking2D, 100);
 	smoother.execute();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
 	EcritureMaillage();
 
@@ -145,7 +164,7 @@ AeroPipeline_2D::EcritureMaillage(){
 void
 AeroPipeline_2D::DiscretisationParoi(int color){
 
-	std::cout << "-> Discrétisation du bord de couleur " << color << std::endl;
+	//std::cout << "-> Discrétisation du bord de couleur " << color << std::endl;
 
 	std::vector<TCellID> bnd_nodes_id_ordered = m_Bnd->BndNodesOrdered(color);	// Tri les noeuds du bord concerné dans l'ordre
 
@@ -397,6 +416,8 @@ AeroPipeline_2D::isQuadCreated(Node n0, Node n1, Node n2){
 /*------------------------------------------------------------------------*/
 void
 AeroPipeline_2D::ConvertisseurMeshToBlocking(){
+
+	std::cout << "-> Conversion Maillage en Blocking2D et connectivités" << std::endl;
 
 	Variable<TCellID>* var_new_id = m_meshHex->newVariable<TCellID,GMDS_NODE>("New_ID");
 
