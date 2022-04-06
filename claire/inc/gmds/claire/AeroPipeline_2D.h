@@ -98,6 +98,13 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_2D : public AbstractAeroPipeline {
 	 */
 	void UpdateLinkerLastLayer(int layer_id);
 	/*----------------------------------------------------------------------------*/
+	/** @brief Transmet la classification des noeuds de blocs aux noeuds intérieurs
+	 * aux blocs
+	 * @param
+	 * @return void
+	 */
+	void BlockingClassification();
+	/*----------------------------------------------------------------------------*/
  protected:
 	/** blocking 2D */
 	Blocking2D m_Blocking2D;

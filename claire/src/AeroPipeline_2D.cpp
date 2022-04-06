@@ -9,6 +9,7 @@
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/claire/AdvectedPointRK4_2D.h>
+#include <gmds/claire/Grid_Smooth2D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
@@ -67,11 +68,18 @@ AeroPipeline_2D::execute(){
 		}
 	}
 
-	GenerationCouche(1, 1);
+	m_nbr_couches=1;
+	for(int couche=1;couche<=m_nbr_couches;couche++){
+		GenerationCouche(couche, 1.0/m_nbr_couches);
+	}
+
 	//GenerationCouche(2, 1);
 	UpdateLinkerLastLayer(1);
 
 	ConvertisseurMeshToBlocking();
+
+	Grid_Smooth2D smoother(&m_Blocking2D, 100);
+	smoother.execute();
 
 	EcritureMaillage();
 
@@ -395,10 +403,13 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 	m_linker_BG->setGeometry(m_manager);
 	m_linker_BG->setMesh(&m_Blocking2D);
 
+	Variable<int>* var_couche = m_Blocking2D.newVariable<int, GMDS_NODE>("GMDS_Couche");
+
 	for (auto n_id:m_meshHex->nodes()){
 		Node n = m_meshHex->get<Node>(n_id);
 		Node n_blocking = m_Blocking2D.newBlockCorner(n.point());
 		var_new_id->set(n_id, n_blocking.id());
+		var_couche->set(n_blocking.id(), m_couche_id->value(n_id));
 
 		UpdateLinker(m_linker_HG, n, m_linker_BG, n_blocking); // Init linker_BG
 	}
@@ -414,12 +425,9 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 
 	m_Blocking2D.initializeGridPoints();	// Maillage des blocs par transfinies
 
-	for (auto bloc:m_Blocking2D.allBlocks()){
-		int Nx = bloc.getNbDiscretizationI();
-		int Ny = bloc.getNbDiscretizationJ();
-	}
-
 	m_meshHex->deleteVariable(GMDS_NODE, "New_ID");
+
+	BlockingClassification();
 
 }
 /*------------------------------------------------------------------------*/
@@ -449,7 +457,98 @@ AeroPipeline_2D::UpdateLinkerLastLayer(int layer_id){
 			math::Point p = n.point();
 			TCellID closest_n_id = m_Bnd->ClosestNodeOnBnd(m_Bnd->getColorAmont(), p);
 			UpdateLinker(m_linker_TG, m_meshTet->get<Node>(closest_n_id), m_linker_HG, n);
+			Node n_test = m_meshTet->get<Node>(closest_n_id);
 		}
+	}
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_2D::BlockingClassification(){
+
+	Variable<int>* var_couche = m_Blocking2D.getVariable<int, GMDS_NODE>("GMDS_Couche");
+
+	for (auto B0:m_Blocking2D.allBlocks()){
+		int Nx = B0.getNbDiscretizationI()-1;
+		int Ny = B0.getNbDiscretizationJ()-1;
+
+		if ( var_couche->value( B0(0,0).id() ) == var_couche->value( B0(Nx,0).id() ) ) {
+			int geom_id_corner_1 = m_linker_BG->getGeomId<Node>(B0(0,0).id()) ;
+			int geom_id_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,0).id()) ;
+			int dim_corner_1 = m_linker_BG->getGeomId<Node>(B0(0,0).id()) ;
+			int dim_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,0).id());
+			if( dim_corner_1 == dim_corner_2 && dim_corner_1 == 2 )
+			{
+				for (int i=1;i<Nx;i++){
+					Node n = B0(i,0);
+					m_linker_BG->linkNodeToCurve(n.id(), geom_id_corner_1);
+					cad::GeomCurve* curve = m_manager->getCurve(geom_id_corner_1);
+					math::Point p = n.point();
+					curve->project(p);
+					n.setPoint(p);
+				}
+			}
+		}
+
+		if ( var_couche->value( B0(0,0).id() ) == var_couche->value( B0(0,Ny).id() ) ) {
+			int geom_id_corner_1 = m_linker_BG->getGeomId<Node>(B0(0,0).id()) ;
+			int geom_id_corner_2 = m_linker_BG->getGeomId<Node>(B0(0,Ny).id()) ;
+			int dim_corner_1 = m_linker_BG->getGeomDim<Node>(B0(0,0).id()) ;
+			int dim_corner_2 = m_linker_BG->getGeomDim<Node>(B0(0,Ny).id());
+			//std::cout << "dim 1 : " << dim_corner_1 << std::endl;
+			//std::cout << "dim 2 : " << dim_corner_2 << std::endl;
+			if( dim_corner_1 == dim_corner_2 && dim_corner_1 == 2 )
+			{
+				for (int j=1;j<Ny;j++){
+					Node n = B0(0,j);
+					m_linker_BG->linkNodeToCurve(n.id(), geom_id_corner_1);
+					cad::GeomCurve* curve = m_manager->getCurve(geom_id_corner_1);
+					math::Point p = n.point();
+					curve->project(p);
+					n.setPoint(p);
+				}
+			}
+		}
+
+		if ( var_couche->value( B0(0,Ny).id() ) == var_couche->value( B0(Nx,Ny).id() ) ) {
+			int geom_id_corner_1 = m_linker_BG->getGeomId<Node>(B0(0,Ny).id()) ;
+			int geom_id_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,Ny).id()) ;
+			int dim_corner_1 = m_linker_BG->getGeomId<Node>(B0(0,Ny).id()) ;
+			int dim_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,Ny).id());
+			if( dim_corner_1 == dim_corner_2 && dim_corner_1 == 2 )
+			{
+				for (int i=1;i<Nx;i++){
+					Node n = B0(i,Ny);
+					m_linker_BG->linkNodeToCurve(n.id(), geom_id_corner_1);
+					cad::GeomCurve* curve = m_manager->getCurve(geom_id_corner_1);
+					math::Point p = n.point();
+					curve->project(p);
+					n.setPoint(p);
+				}
+			}
+		}
+
+		if ( var_couche->value( B0(Nx,0).id() ) == var_couche->value( B0(Nx,Ny).id() ) ) {
+			int geom_id_corner_1 = m_linker_BG->getGeomId<Node>(B0(Nx,0).id()) ;
+			int geom_id_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,Ny).id()) ;
+			int dim_corner_1 = m_linker_BG->getGeomId<Node>(B0(Nx,0).id()) ;
+			int dim_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,Ny).id());
+			if( dim_corner_1 == dim_corner_2 && dim_corner_1 == 2 )
+			{
+				for (int j=1;j<Ny;j++){
+					Node n = B0(Nx,j);
+					m_linker_BG->linkNodeToCurve(n.id(), geom_id_corner_1);
+					cad::GeomCurve* curve = m_manager->getCurve(geom_id_corner_1);
+					math::Point p = n.point();
+					curve->project(p);
+					n.setPoint(p);
+				}
+			}
+		}
+
 	}
 
 }
