@@ -72,7 +72,7 @@ jobs:
         fi
 
     - name: Install
-      run: cmake --install build --prefix ${{github.workspace}}/buildinstall --config Release
+      run: make install
 
     - name: Test lib install
       run: |

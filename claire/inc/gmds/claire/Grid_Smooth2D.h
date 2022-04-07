@@ -61,6 +61,7 @@ class LIB_GMDS_CLAIRE_API Grid_Smooth2D {
 	typedef struct {
 		unsigned int val[3][3];
 	} stencil;
+    /** stencil for each node id */
 	std::map<TCellID, stencil> m_stencil;
 };
 /*----------------------------------------------------------------------------*/

@@ -62,6 +62,7 @@ int main(int argc, char* argv[])
   vtkReader.setDataOptions(gmds::N);
   vtkReader.read(fIn);
   simplexMesh.buildAdjInfoGlobal();
+  simplexMesh.initializeEdgeStructure();
   simplexMesh.buildSimplexHull();
 
   Octree oc(&simplexMesh, 50);
@@ -152,6 +153,7 @@ int main(int argc, char* argv[])
   duration = (std::clock()-start)/(double)CLOCKS_PER_SEC;
   std::cout << "DELAUNAY INSERTION DONE IN " << duration << std::endl;
   std::cout << "  INSERTED NODE -> "  << (double)nodesAdded.size() / (double)nodesToAddIds.size() * 100.0 << "% " << std::endl;
+  std::cout << "  NODE NOT INSERTED -> "  << nodesToAddIds.size() - nodesAdded.size() << std::endl;
   std::cout << std::endl;
   gmds::VTKWriter vtkWriterDI(&ioService);
   vtkWriterDI.setCellOptions(gmds::N|gmds::R|gmds::F);
@@ -202,7 +204,7 @@ int main(int argc, char* argv[])
   vtkWriterER.setCellOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterER.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterER.write(fER);
-
+  //return 0;
 
   ///////////////////////////EDGE BUILDER START HERE///////////////////////////
   std::multimap<TInt, TInt> edges{};
@@ -315,7 +317,6 @@ int main(int argc, char* argv[])
       }
     }
     std::cout << "HEX 2 TET DONE " << std::endl;
-
     if(faceBuiltTmp == faceBuildCpt || faceBuiltTmp == 0)
     {
       break;

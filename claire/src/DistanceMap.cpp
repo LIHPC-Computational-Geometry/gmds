@@ -18,11 +18,6 @@ void DistanceMap::add(double v0, TCellID n_id){
 	m_map[v0].push_back(n_id);
 };
 /*-------------------------------------------------------------------*/
-
-
-
-
-/*-------------------------------------------------------------------*/
 void DistanceMap::remove(double v0, TCellID n_id){
 
 	// Cette manière n'a pas l'air de fonctionner

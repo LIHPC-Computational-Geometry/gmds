@@ -793,7 +793,6 @@ TEST(LevelSetTestClass, LevelSet_Test_Unit_C1_3D)
 	   }
 	}
 	 */
-
 	{
 		ASSERT_NEAR(var_dist->value( 0),  0, eps);
 		ASSERT_NEAR(var_dist->value( 10),  1, eps);

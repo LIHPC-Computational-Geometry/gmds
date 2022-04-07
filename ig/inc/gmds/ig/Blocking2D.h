@@ -56,10 +56,11 @@ namespace gmds {
             /**@brief Only uniform discretization is supported right now. It will be possible
              * to extend it easily in a short future. Default is 10.
              */
-            void seNbDiscretizationI(const int AN);
-            void seNbDiscretizationJ(const int AN);
+            void setNbDiscretizationI(const int AN);
+            void setNbDiscretizationJ(const int AN);
             int getNbDiscretizationI() const;
             int getNbDiscretizationJ() const;
+
 
 
          private:
@@ -92,6 +93,13 @@ namespace gmds {
         /** @brief Constructor
          */
         Blocking2D();
+
+	     /** @brief Constructor that take a mesh in input to create the blocks and set the I/J discretization value for the blocks to @p AN.
+	      *
+	      * @param AMesh a mesh with MeshModel (DIM3|F|E|N|F2N|E2N|F2E|E2F|N2E|N2F)
+	      * @param AN value of the I/J discretization, if not informed set by default to 10
+	      */
+	     Blocking2D(const Mesh& AMesh, int AN = 10);
         /** @brief Destructor
          */
         virtual ~Blocking2D();
@@ -127,6 +135,34 @@ namespace gmds {
          * can not be modified anymore. We should check the conditions to allow it in the future.
          */
         void initializeGridPoints();
+
+	     /** Get the neighboring nodes id of node of id @p AId in I+/-1, J+/-1 if they exist. Does not support singular node.
+	      *
+	      * @param AId node id
+	      * @return a collection of nodes ids
+	      */
+	     std::vector<TCellID> getNodeNeighbors(TCellID AId);
+
+	     /** Build the blocks from the cells of mesh's object then discretize the created blocks in I/J with the value of @p AN.
+	      *
+	      * @param AN the value of the discretization for the created blocks in I and J
+	      */
+	     void buildBlocks(const int AN);
+
+	     /** Get the id of the blocking entity (node, edge, face) on which the grid node @p AId is classified.
+	      *
+	      * @param AId id of the grid node
+	      * @return Id of the blocking entity
+	      */
+	     TCellID getBlockingId(TCellID AId);
+
+	     /** Get the dimension of the blocking entity (node, edge, face) on which the grid node @p AId is classified
+	      *
+	      * @param AId id of the grid node
+	      * @return Dimension of the blocking entity
+	      */
+	     int getBlockingDim(TCellID AId);
+
     private:
 
         /**
@@ -157,6 +193,7 @@ namespace gmds {
         /** variable associated to faces*/
         Variable<int>* m_discretization_I;
         Variable<int>* m_discretization_J;
+	     /** variables that store the grids nodes for blocks entities*/
         Variable<Array2D<TCellID>* >* m_face_grids;
         Variable<std::vector<TCellID>* >* m_edge_grids;
 
