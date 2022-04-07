@@ -10,6 +10,7 @@
 #include <MathTestSuite.h>
 #include <PointTestSuite.h>
 #include <QuaternionTestSuite.h>
+#include <QualityMeasureTestSuite.h>
 #include <OrientationTestSuite.h>
 #include <TransfiniteInterpolationTestSuite.h>
 /*----------------------------------------------------------------------------*/
