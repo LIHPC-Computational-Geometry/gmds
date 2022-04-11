@@ -230,20 +230,32 @@ void MetricAdaptation::execute()
       }
     }
 
-    return;
+
     //Swapping face
-    const gmds::BitVector tetBitVec = m_simplexMesh->getBitVectorTet();
+    std::cout << "SWAPPING FACE" << std::endl;
+    const gmds::BitVector& tetBitVec = m_simplexMesh->getBitVectorTet();
     unsigned int sizeFace = 4;
-    for(unsigned int tetId = 0 ; tetId < meshNode.capacity() ; tetId++)
+    for(TSimplexID tetId = 0 ; tetId < meshNode.capacity() ; tetId++)
     {
+      bool flag = false;
       if(tetBitVec[tetId] != 0)
       {
-        SimplicesCell cell0(m_simplexMesh, tetId);
-        std::cout << "cell0 -> " << cell0 << std::endl;
+        std::cout << "TET_ID -> " << tetId << std::endl;
         for(unsigned int face = 0 ; face < sizeFace ; face++)
         {
+          if(flag)
+          {
+            break;
+          }
+          SimplicesCell cell0(m_simplexMesh, tetId);
+          std::cout << "cell0 -> " << cell0 << std::endl;
           std::vector<TInt> nodesFace = cell0.getOrderedFace(face);
+          unsigned int nodeDim0 = ((*BND_VERTEX_COLOR)[nodesFace.front()] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[nodesFace.front()] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[nodesFace.front()] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
+          unsigned int nodeDim1 = ((*BND_VERTEX_COLOR)[nodesFace[1]] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[nodesFace[1]] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[nodesFace[1]] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
+          unsigned int nodeDim2 = ((*BND_VERTEX_COLOR)[nodesFace.back()] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[nodesFace.back()] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[nodesFace.back()] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
+
           TSimplexID oppositeTet = cell0.oppositeTetraIdx(face);
+          std::cout << "oppositeTet -> " << oppositeTet << std::endl;
           if(oppositeTet < 0)//it is a triangle
           {
             continue;
@@ -253,6 +265,8 @@ void MetricAdaptation::execute()
           std::vector<TInt> node_1 = cell1.getOtherNodeInSimplex(nodesFace);
           if(node_0.size() != 1 || node_1.size() != 1)
           {
+            std::cout << "node_0.size() -> " << node_0.size() << std::endl;
+            std::cout << "node_1.size() -> " << node_1.size() << std::endl;
             throw gmds::GMDSException("node_0.size() != 1 || node_1.size() != 1");
           }
           else
@@ -265,7 +279,6 @@ void MetricAdaptation::execute()
             std::vector<TInt> nodesToInsert{node_0.front(), node_1.front()};
             std::cout << "node_0.front() -> " << node_0.front() << std::endl;
             std::cout << "node_1.front() -> " << node_1.front() << std::endl;
-            std::vector<double> reinsertionWorstQualityElmnt{};
             for(auto const node : nodesToInsert)
             {
               //test to check if one of the inserted node formed a better quality mesh
@@ -275,20 +288,34 @@ void MetricAdaptation::execute()
               std::vector<TInt> deletedNodes{};
               const std::multimap<TInt, std::pair<TInt, TInt>> facesAlreadyBuilt{};
               std::vector<TSimplexID> cellsCreated{};
+              std::cout << "COPY" << std::endl;
               SimplexMesh simplexMeshCopy = *m_simplexMesh;
+              std::cout << "Pi" << std::endl;
               PointInsertion pi(&simplexMeshCopy, SimplicesNode(&simplexMeshCopy, node), criterionRAIS, status, cavity, markedNodes, deletedNodes, facesAlreadyBuilt, cellsCreated);
+              //PointInsertion pi(m_simplexMesh, SimplicesNode(m_simplexMesh, node), criterionRAIS, status, cavity, markedNodes, deletedNodes, facesAlreadyBuilt, cellsCreated);
               if(status && cellsCreated.size() != 0)
               {
+                std::cout << "status -> " << status << std::endl;
                 double qual = std::numeric_limits<double>::max();
                 for(auto const simplex : cellsCreated)
                 {
                   double quality = simplexMeshCopy.computeQualityElement(simplex);
+                  //double quality = m_simplexMesh->computeQualityElement(simplex);
                   if(quality < qual)
                   {
                     qual = quality;
                   }
                 }
-                reinsertionWorstQualityElmnt.push_back(qual);
+
+                std::cout << "qual -> " << qual << std::endl;
+                std::cout << "worstQuality -> " << worstQuality << std::endl;
+                if(qual > worstQuality)
+                {
+                  //do the reinsertion on the real mesh
+                  PointInsertion pi(m_simplexMesh, SimplicesNode(m_simplexMesh, node), criterionRAIS, status, cavity, markedNodes, deletedNodes, facesAlreadyBuilt, cellsCreated);
+                  flag = true;
+                }
+                break;
                 /*
                 std::cout << "worstQuality -> " << worstQuality << std::endl;
                 std::cout << "qual -> " << qual << std::endl;

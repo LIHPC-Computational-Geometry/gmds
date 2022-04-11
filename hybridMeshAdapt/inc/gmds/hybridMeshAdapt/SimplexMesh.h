@@ -431,7 +431,7 @@ private:
   VariableManager* m_tet_variable_manager      = nullptr;
 
   //Variablemanager triangle
-  VariableManager* m_tri_variable_manager = nullptr;
+  VariableManager* m_tri_variable_manager      = nullptr;
 };
 
 /******************************************************************************/

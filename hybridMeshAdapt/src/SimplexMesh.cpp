@@ -68,7 +68,7 @@ SimplexMesh::SimplexMesh(const SimplexMesh& simplexMesh)
   /*creer un operateur d'affectation dans variable manager?*/
   m_node_variable_manager     = simplexMesh.m_node_variable_manager;
   m_tet_variable_manager      = simplexMesh.m_tet_variable_manager;
-  m_tri_variable_manager = simplexMesh.m_tri_variable_manager;
+  m_tri_variable_manager      = simplexMesh.m_tri_variable_manager;
 }
 /*---------------------------------------------------------------------------*/
 SimplexMesh& SimplexMesh::operator=(const SimplexMesh& simplexMesh)
@@ -94,7 +94,7 @@ SimplexMesh& SimplexMesh::operator=(const SimplexMesh& simplexMesh)
     /*creer un operateur d'affectation dans variable manager?*/
     m_node_variable_manager     = simplexMesh.m_node_variable_manager;
     m_tet_variable_manager      = simplexMesh.m_tet_variable_manager;
-    m_tri_variable_manager = simplexMesh.m_tri_variable_manager;
+    m_tri_variable_manager      = simplexMesh.m_tri_variable_manager;
   }
   return *this;
 }
