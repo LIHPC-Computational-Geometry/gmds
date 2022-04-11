@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Face.h>
 #include <gmds/ig/FaceContainer.h>
-#include <gmds/ig/Mesh.h>
+	#include <gmds/ig/Mesh.h>
 #include <gmds/math/Plane.h>
 #include <gmds/math/Quadrilateral.h>
 #include <gmds/math/Segment.h>

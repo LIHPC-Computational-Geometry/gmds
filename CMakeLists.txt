@@ -99,6 +99,15 @@ GMDS_ADD_COMPONENT(
 )
 
 GMDS_ADD_COMPONENT(
+        PAUL                       # cmake variable
+        paul                        # src subdirectory name
+        GMDSPaul                    # name of the generated library
+        " "  # description
+        ON                                 # is activated
+        OFF                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
         BLOCK_MESHER                       # cmake variable
         blockMesher                        # src subdirectory name
         GMDSBlockMesher                    # name of the generated library

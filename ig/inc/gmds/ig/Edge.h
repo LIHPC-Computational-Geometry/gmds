@@ -26,7 +26,7 @@ class FaceContainer;
  *  	   the data representing a mesh edge.
  *
  */
-class GMDSIg_API Edge : public Cell{
+class GMDSIg_API 	Edge : public Cell{
 public:
 
 	/*------------------------------------------------------------------------*/

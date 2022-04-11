@@ -176,8 +176,8 @@ namespace GEO {
 
 #if defined(_MSC_VER)
 #  define GEO_COMPILER_MSVC
-#else
-#  error "Unsupported compiler"
+//#else
+//#  error "Unsupported compiler"
 #endif
 
 #if defined(_WIN64)
