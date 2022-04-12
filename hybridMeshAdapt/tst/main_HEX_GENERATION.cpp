@@ -188,8 +188,9 @@ int main(int argc, char* argv[])
       std::vector<TSimplexID> tetraContenaingPt{};
       std::vector<TInt> deletedNodes{};
       const std::multimap<TInt, TInt> facesAlreadyBuilt{};
+      std::vector<TSimplexID> createdCells{};
       bool status = false;
-      PointInsertion(&simplexMesh, SimplicesNode(&simplexMesh, deletedNode), criterionRAIS, status, tetraContenaingPt, nodesAdded, deletedNodes, facesAlreadyBuilt);
+      PointInsertion(&simplexMesh, SimplicesNode(&simplexMesh, deletedNode), criterionRAIS, status, tetraContenaingPt, nodesAdded, deletedNodes, facesAlreadyBuilt, createdCells);
       if(status)
       {
         nodeReinsertedSize++;

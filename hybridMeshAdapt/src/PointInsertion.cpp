@@ -18,7 +18,7 @@ PointInsertion::PointInsertion()
 }
 /******************************************************************************/
 PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& simpliceNode, const CriterionRAIS& criterion, bool& status, const std::vector<TSimplexID>& initialCavity,
-                               const gmds::BitVector& markedNodes, std::vector<TInt>& deletedNodes, const std::multimap<TInt, TInt>& facesAlreadyBuilt, std::vector<TSimplexID> markedSimplex)
+                               const gmds::BitVector& markedNodes, std::vector<TInt>& deletedNodes, const std::multimap<TInt, TInt>& facesAlreadyBuilt, std::vector<TSimplexID>& createdCells, std::vector<TSimplexID> markedSimplex)
 {
     if(simplexMesh != nullptr)
     {
@@ -365,7 +365,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
 
               if(iteratorsToReconnect.size() == 1 || iteratorsToReconnect.size() > 2)
               {
-                //Problem de structure invalide mais impossible aprevoir (voir node 286 mesh S23.vtk) 
+                //Problem de structure invalide mais impossible aprevoir (voir node 286 mesh S23.vtk)
                 //if DEBUG
                 /*std::cout << "EDGE STRUCTURE BEFORE MODIFICATION FAILED" << std::endl;
                 for(auto const dataBis : edgeStructureCopy)

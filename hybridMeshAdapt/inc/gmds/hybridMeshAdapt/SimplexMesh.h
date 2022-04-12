@@ -408,6 +408,8 @@ class SimplexMesh
 
   double subSurfaceFactor(const std::vector<std::vector<TInt>>& faces);
 
+  double computeQualityElement(const TSimplexID simplex);
+  
 private:
 
   //node coordinates with bitvector

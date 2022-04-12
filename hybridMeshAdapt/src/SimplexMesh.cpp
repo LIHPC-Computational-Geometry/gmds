@@ -4898,7 +4898,8 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
 
               //if(dim_Ni == 4 && (data.dim_Nj == 0 || data.dim_Nj == 1 || data.dim_Nj == 2)){continue;}
               const std::multimap<TInt, TInt> facesAlreadyBuilt{};
-              PointInsertion(this, nodeToInsert, criterionRAIS, status, ball, surfaceNodesAdded, deletedNodes, facesAlreadyBuilt);
+              std::vector<TSimplexID> cellsCreated{};
+              PointInsertion(this, nodeToInsert, criterionRAIS, status, ball, surfaceNodesAdded, deletedNodes, facesAlreadyBuilt, cellsCreated);
               if(status)
               {
 
@@ -5026,6 +5027,7 @@ unsigned int SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, co
           bool status = false;
           std::vector<TInt> deletedNodes{};
           const std::multimap<TInt, TInt> facesAlreadyBuilt{};
+          std::vector<TSimplexID> createdCells{};
           //std::cout << SimplicesNode(this, edge.first) << std::endl;
           //std::cout << SimplicesNode(this, edge.second) << std::endl;
           //if(cpt > 500)
@@ -5037,7 +5039,7 @@ unsigned int SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, co
             //vtkWriterTEST.write("testEdge4_CPT_" + std::to_string(cpt) +  ".vtk");
             //std::cout << "CPT -> " << cpt << std::endl;
           }
-          PointInsertion(this, nodeB, criterionRAIS, status, cavity, nodeBitVector, deletedNodes, facesAlreadyBuilt);
+          PointInsertion(this, nodeB, criterionRAIS, status, cavity, nodeBitVector, deletedNodes, facesAlreadyBuilt, createdCells);
           //cpt++;
           if(!status)
           {
@@ -5146,12 +5148,13 @@ bool SimplexMesh::buildFace(const std::vector<TInt>& nodes, const gmds::BitVecto
           std::vector<TSimplexID> cavity = initializeCavityWith(nodeA, nodeB);
           CriterionRAIS criterionRAIS(new VolumeCriterion());
           std::vector<TSimplexID> deletedNodes{};
+          std::vector<TSimplexID> createdCells{};
           bool status = false;
-          PointInsertion(this, SimplicesNode(this, nodeB), criterionRAIS, status, cavity, nodeAdded, deletedNodes, facesAlreadyBuilt);
+          PointInsertion(this, SimplicesNode(this, nodeB), criterionRAIS, status, cavity, nodeAdded, deletedNodes, facesAlreadyBuilt, createdCells);
           if(!status)
           {
             std::vector<TSimplexID> cavity = initializeCavityWith(nodeB, nodeA);
-            PointInsertion(this, SimplicesNode(this, nodeA), criterionRAIS, status, cavity, nodeAdded, deletedNodes, facesAlreadyBuilt);
+            PointInsertion(this, SimplicesNode(this, nodeA), criterionRAIS, status, cavity, nodeAdded, deletedNodes, facesAlreadyBuilt, createdCells);
           }
         }
       }
@@ -5209,8 +5212,9 @@ bool SimplexMesh::buildFace(const std::vector<TInt>& nodes, const gmds::BitVecto
               std::vector<TSimplexID> cavity = shellAB;
               CriterionRAIS criterionRAIS(new VolumeCriterion());
               std::vector<TSimplexID> deletedNodes{};
+              std::vector<TSimplexID> createdCells{};
               bool status = false;
-              PointInsertion(this, nodeToInsert, criterionRAIS, status, cavity, nodeAdded, deletedNodes, facesAlreadyBuilt);
+              PointInsertion(this, nodeToInsert, criterionRAIS, status, cavity, nodeAdded, deletedNodes, facesAlreadyBuilt, createdCells);
               if(status == true)
               {
                 break;
@@ -5223,12 +5227,13 @@ bool SimplexMesh::buildFace(const std::vector<TInt>& nodes, const gmds::BitVecto
               std::vector<TSimplexID> cavity = initializeCavityWith(nodeAidx, nodeBidx);
               CriterionRAIS criterionRAIS(new VolumeCriterion());
               std::vector<TSimplexID> deletedNodes{};
+              std::vector<TSimplexID> createdCells{};
               bool status = false;
-              PointInsertion(this, SimplicesNode(this, nodeBidx), criterionRAIS, status, cavity, nodeAdded, deletedNodes, facesAlreadyBuilt);
+              PointInsertion(this, SimplicesNode(this, nodeBidx), criterionRAIS, status, cavity, nodeAdded, deletedNodes, facesAlreadyBuilt, createdCells);
               if(!status)
               {
                 std::vector<TSimplexID> cavity = initializeCavityWith(nodeBidx, nodeAidx);
-                PointInsertion(this, SimplicesNode(this, nodeAidx), criterionRAIS, status, cavity, nodeAdded, deletedNodes, facesAlreadyBuilt);
+                PointInsertion(this, SimplicesNode(this, nodeAidx), criterionRAIS, status, cavity, nodeAdded, deletedNodes, facesAlreadyBuilt, createdCells);
                 if(status == true)
                 {
                   break;
@@ -5604,6 +5609,99 @@ double SimplexMesh::subSurfaceFactor(const std::vector<std::vector<TInt>>& faces
   }
 
   return res;
+}
+/******************************************************************************/
+double SimplexMesh::computeQualityElement(const TSimplexID simplex)
+{
+  if(m_tet_ids[simplex] != 0)
+  {
+    Variable<Eigen::Matrix3d>* metric = nullptr;
+    try{
+      metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    }catch (gmds::GMDSException e)
+    {
+      throw gmds::GMDSException(e);
+    }
+    //compute the mean of the metric for the current simplex in order to approximate a quality factor using mean metric
+    const std::vector<TInt> nodes = SimplicesCell(this, simplex).getNodes();
+    const double volumeK          = SimplicesCell(this, simplex).getVolumeOfCell();
+
+    if(nodes.size() == 4)
+    {
+      Eigen::Matrix3d M0 = (*metric)[nodes[0]];
+      Eigen::Matrix3d M1 = (*metric)[nodes[1]];
+      Eigen::Matrix3d M2 = (*metric)[nodes[2]];
+      Eigen::Matrix3d M3 = (*metric)[nodes[3]];
+
+      //https://pages.saclay.inria.fr/frederic.alauzet/download/George_Mesh%20generation%20and%20mesh%20adaptivity%20theory%20and%20techniques.pdf
+      //compute the qualité of simplex with each simplex's node metric and the quality of the simplex will be the worst quality previously computed
+      std::vector<double> qualities{};
+      std::vector<Eigen::Matrix3d> metrics{M0, M1, M2, M3};
+      math::Vector3d vec01 = SimplicesNode(this, nodes[1]).getCoords() - SimplicesNode(this, nodes[0]).getCoords();
+      math::Vector3d vec02 = SimplicesNode(this, nodes[2]).getCoords() - SimplicesNode(this, nodes[0]).getCoords();
+      math::Vector3d vec12 = SimplicesNode(this, nodes[2]).getCoords() - SimplicesNode(this, nodes[1]).getCoords();
+      math::Vector3d vec03 = SimplicesNode(this, nodes[3]).getCoords() - SimplicesNode(this, nodes[0]).getCoords();
+      math::Vector3d vec13 = SimplicesNode(this, nodes[3]).getCoords() - SimplicesNode(this, nodes[1]).getCoords();
+      math::Vector3d vec23 = SimplicesNode(this, nodes[3]).getCoords() - SimplicesNode(this, nodes[2]).getCoords();
+
+      Eigen::Vector3d e01 = Eigen::Vector3d(vec01.X(), vec01.Y(), vec01.Z());
+      Eigen::Vector3d e02 = Eigen::Vector3d(vec02.X(), vec02.Y(), vec02.Z());
+      Eigen::Vector3d e12 = Eigen::Vector3d(vec12.X(), vec12.Y(), vec12.Z());
+      Eigen::Vector3d e03 = Eigen::Vector3d(vec03.X(), vec03.Y(), vec03.Z());
+      Eigen::Vector3d e13 = Eigen::Vector3d(vec13.X(), vec13.Y(), vec13.Z());
+      Eigen::Vector3d e23 = Eigen::Vector3d(vec23.X(), vec23.Y(), vec23.Z());
+
+      std::vector<Eigen::Vector3d> edges{e01,e02,e12,e03,e13,e23};
+      double den = 0.0;
+      for(auto const metric : metrics)
+      {
+        for(auto const edge : edges)
+        {
+          den += (edge.dot(metric * edge) * edge.dot(metric * edge));
+        }
+        if(den == 0.0)
+        {
+          throw gmds::GMDSException("den == 0.0");
+          //qualities.push_back(std::numeric_limits<double>::max());
+        }
+        else
+        {
+          /*double maxlenghtEdge = std::max(std::max(e01.norm(),std::max(e02.norm(), e12.norm())), std::max(e03.norm(),std::max(e13.norm(), e23.norm())));
+          double v_regular = sqrt(2.0) / 12.0 * std::pow(maxlenghtEdge, 3);
+          double alpha = v_regular / (6.0*std::pow(maxlenghtEdge,2));*/
+          qualities.push_back(/*(1.0 / alpha) /*/ (sqrt(metric.determinant()) * volumeK) / den);
+        }
+      }
+
+      return std::min(std::min(qualities[0], qualities[1]), std::min(qualities[2], qualities[3]));
+      //https://tel.archives-ouvertes.fr/tel-00120327/document
+      //means of the simplex 's node metric ..other way to compute quality element
+      /*Eigen::Matrix3d M  = (M0.inverse() + M1.inverse() + M2.inverse() + M3.inverse());
+      M = 0.25 * M.inverse();
+      std::vector<Eigen::Vector3d> edges{e01,e02,e12,e03,e13,e23};
+      double num = 0.0;
+      for(auto const edge : edges)
+      {
+        num += edge.dot(M * edge);
+      }
+      if(volumeK == 0.0)
+      {
+        return std::numeric_limits<double>::max();
+      }
+      else
+      {
+        return (num * num * num) * (sqrt(M.determinant()) * volumeK);
+      }*/
+    }
+    else
+    {
+      throw gmds::GMDSException("nodes.size() == 4");
+    }
+  }
+  else
+  {
+    throw gmds::GMDSException("m_tet_ids[simplex] != 0");
+  }
 }
 /******************************************************************************/
 bool SimplexMesh::pointInTriangle(const math::Point& query_point,

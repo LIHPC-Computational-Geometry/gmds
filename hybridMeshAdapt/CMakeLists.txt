@@ -4,7 +4,7 @@
 # Nommer tout en GMDS_MODULE_NAME, GMDS_SRC, ... dans les composants
 set(GMDS_LIB ${LIB_GMDS_HYBRIDMESHADAPT})
 set(GMDS_LIB_PREFIX gmds/hybridMeshAdapt/)
-  
+
 set(GMDS_INC
         inc/gmds/hybridMeshAdapt/SimplicesNode.h
         inc/gmds/hybridMeshAdapt/SimplexMesh.h
@@ -22,6 +22,7 @@ set(GMDS_INC
         inc/gmds/hybridMeshAdapt/DelaunayPointInsertion.h
         inc/gmds/hybridMeshAdapt/Metric.h
         inc/gmds/hybridMeshAdapt/Octree.h
+        inc/gmds/hybridMeshAdapt/MetricAdaptation.h
         )
 
 set(GMDS_SRC
@@ -42,6 +43,7 @@ set(GMDS_SRC
         src/StructuredGrid.cpp
         src/DelaunayPointInsertion.cpp
         src/Metric.cpp
+        src/MetricAdaptation.cpp
         src/Octree.cpp
         )
 #==============================================================================

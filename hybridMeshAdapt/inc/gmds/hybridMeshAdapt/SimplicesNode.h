@@ -81,6 +81,10 @@ namespace gmds
           bool isFaceVisible(math::Vector3d& normalOfFace, math::Vector3d& vecFacePt) const;
 
           bool isAttachToSimplex() const ;
+          
+          std::vector<TInt> complentaryNodeShell (const SimplicesNode& simpliceNode) const;
+
+          std::vector<TInt> directNeighboorNodeId() const ;
 
           /*adding some point to the mesh and check if  this point already exist*/
           void detectType(const nodeNeighborInfo& nodeInfo) const;
