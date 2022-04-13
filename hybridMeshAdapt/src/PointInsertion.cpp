@@ -22,6 +22,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
 {
     if(simplexMesh != nullptr)
     {
+        createdCells.clear();
         Variable<int>* BND_CURVE_COLOR   = nullptr;
         Variable<int>* BND_SURFACE_COLOR = nullptr;
         Variable<int>* BND_TRIANGLES     = nullptr;
@@ -84,10 +85,8 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
 
         CavityOperator::CavityIO cavityIO(simplexMesh);
 
-        //std::cout << "CavityEnlargment START " <<std::endl;
         if(cavOp.cavityEnlargement(cavityIO, initialCavityCell, initialCavityTriangle, simpliceNode, criterion, facesAlreadyBuilt, markedSimplex))
         {
-
           //test sur les triangles non connecté a P pour ne pas créer de retournement topologique
           for(auto const triNotCo : cavityIO.getTrianglesNotConnectedToPInCavity())
           {
@@ -417,7 +416,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             }
           }
 
-          simplexMesh->rebuildCavity(cavityIO, simpliceNode.getGlobalNode());
+          simplexMesh->rebuildCavity(cavityIO, simpliceNode.getGlobalNode(), createdCells);
           status = true;
         }
       }

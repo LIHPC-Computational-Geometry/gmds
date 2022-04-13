@@ -52,6 +52,7 @@ int main(int argc, char* argv[])
     vtkReader.setDataOptions(gmds::N);
     vtkReader.read(fIn);
     simplexMesh.buildAdjInfoGlobal();
+    simplexMesh.initializeEdgeStructure();
     simplexMesh.buildSimplexHull();
 
     //return;
@@ -75,7 +76,7 @@ int main(int argc, char* argv[])
       {
         double x = SimplicesNode(&simplexMesh, nodeId).getCoords()[0];
         //double metric = (1.0 - x)*metricMin + x*metricMax;
-        double metricX = 0.5;
+        double metricX = 0.1;
         double metricY = 0.1;
         double metricZ = 0.1;
         (*metricNode)[nodeId](0,0) = 1.0 / (metricX*metricX);
@@ -90,8 +91,8 @@ int main(int argc, char* argv[])
     std::cout << "NODE SIZE IN MESH AFTER METRIC ADAPTATION--> " << meshNode.size() << std::endl;
 
     gmds::VTKWriter vtkWriterMA(&ioService);
-    vtkWriterMA.setCellOptions(gmds::N|gmds::R|gmds::F);
-    vtkWriterMA.setDataOptions(gmds::N|gmds::R|gmds::F);
+    vtkWriterMA.setCellOptions(gmds::N|gmds::R/*|gmds::F*/);
+    vtkWriterMA.setDataOptions(gmds::N|gmds::R/*|gmds::F*/);
     vtkWriterMA.write(fOut);
 }
 

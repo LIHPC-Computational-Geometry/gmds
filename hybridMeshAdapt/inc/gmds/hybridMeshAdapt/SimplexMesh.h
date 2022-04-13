@@ -344,7 +344,7 @@ class SimplexMesh
 
   bool isFaceBuild(const std::vector<TInt>& nodes);
 
-  void rebuildCavity(operators::CavityOperator::CavityIO& cavityIO, const TInt nodeToConnect);
+  void rebuildCavity(operators::CavityOperator::CavityIO& cavityIO, const TInt nodeToConnect, std::vector<TSimplexID>& createdCells);
 
   void pointsLabeling(const std::vector<math::Point> &points, std::vector<int>& pointsLabeling, std::vector<int>& topoIndex, std::vector<TInt>& nearNodes);
 
@@ -409,7 +409,7 @@ class SimplexMesh
   double subSurfaceFactor(const std::vector<std::vector<TInt>>& faces);
 
   double computeQualityElement(const TSimplexID simplex);
-  
+
 private:
 
   //node coordinates with bitvector

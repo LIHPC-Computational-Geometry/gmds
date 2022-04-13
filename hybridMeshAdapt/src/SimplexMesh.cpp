@@ -724,7 +724,6 @@ TSimplexID SimplexMesh::addTetraedre(const simplicesNode::SimplicesNode&& ANode0
 
   const TInt idx = m_tet_ids.getFreeIndex();
   m_tet_ids.assign(idx);
-
   /*Building the array of the tri_node before push it back to the m_tri_nodes*/
   std::vector<TSimplexID> tetra{ANode0.getGlobalNode(), ANode1.getGlobalNode(), ANode2.getGlobalNode(), ANode3.getGlobalNode()};
 
@@ -4060,7 +4059,7 @@ bool SimplexMesh::isFaceBuild(const std::vector<TInt>& nodes)
   return flag;
 }
 /******************************************************************************/
-void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt nodeToConnect)
+void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)
 {
   Variable<int>* BND_CURVE_COLOR    = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
   const std::vector<std::vector<TInt>>&         pointsToConnect          = cavityIO.getNodesToReconnect();
@@ -4115,6 +4114,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
     }
 
     TSimplexID simplex = addTetraedre(face[0], face[1], face[2], nodeToConnect, false);
+    createdCells.push_back(simplex);
 
     SimplicesCell cell0(this, simplex);
     std::vector<TSimplexID> vecAdj{border, border, border, border};
@@ -4348,6 +4348,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
             }
           }
           m_tet_ids.unselect(simplex);
+          createdCells.erase(std::find(createdCells.begin(), createdCells.end(), simplex));
           break;
         }
       }
@@ -4818,7 +4819,6 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
 
         //if(dim_Ni != 0)
         {
-
           SimplicesNode simpliceNode(this, node);
           std::vector<TSimplexID>&& ball = simpliceNode.ballOf();
 
@@ -4838,7 +4838,7 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
               {
                 if(m_node_ids[cellNode] != 0 && cellNode != node)
                 {
-                    nodes.insert(cellNode);
+                  nodes.insert(cellNode);
                 }
               }
             }
@@ -4892,7 +4892,6 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
                 }
               }
               SimplicesNode nodeToInsert(this, data.node);
-
               //std::cout << "node being inserted --> " << data.node << " Of dimension -> " <<  data.dim_Nj << " and label -> " << data.index_Nj << std::endl;
               //std::cout << "from node --> " << node << " Of dimension -> " <<  dim_Ni << " and label -> " << index_Ni << std::endl;
 
@@ -4902,16 +4901,6 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
               PointInsertion(this, nodeToInsert, criterionRAIS, status, ball, surfaceNodesAdded, deletedNodes, facesAlreadyBuilt, cellsCreated);
               if(status)
               {
-
-                //if(cpt > 200)
-                //{
-                  //gmds::VTKWriter vtkWriterDI(&ioService);
-                  //vtkWriterDI.setCellOptions(gmds::N|gmds::F|gmds::R);
-                  //vtkWriterDI.setDataOptions(gmds::N|gmds::F|gmds::R);
-                  //vtkWriterDI.write("TEST_EDGESTRUCTURE_" + std::to_string(cpt) + ".vtk");
-                  //std::cout << "cpt --> " << cpt << std::endl;
-                //}
-                //cpt++;
                 edgesRemovedNbr++;
                 break;
               }
@@ -5700,6 +5689,8 @@ double SimplexMesh::computeQualityElement(const TSimplexID simplex)
   }
   else
   {
+    std::cout << "simplex -> " << simplex << std::endl;
+    std::cout << SimplicesCell(this, simplex) << std::endl;
     throw gmds::GMDSException("m_tet_ids[simplex] != 0");
   }
 }
