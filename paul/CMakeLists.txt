@@ -11,7 +11,7 @@ set(GMDS_INC
         )
 
 set(GMDS_SRC
-        src/Grid.cpp src/main.cpp inc/gmds/paul/Actions_Agent.h src/Actions_Agent.cpp)
+        src/Grid.cpp src/main.cpp inc/gmds/paul/Actions_Agent.h src/Actions_Agent.cpp inc/gmds/paul/Tools.h src/Tools.cpp)
 
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})

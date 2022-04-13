@@ -4,9 +4,11 @@
 #include <iostream>
 #include "gmds/paul/Grid.h"
 #include "gmds/ig/Mesh.h"
+#include "gmds/igalgo/VolFracComputation.h"
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKWriter.h"
 #include "gmds/paul/Actions_Agent.h"
+#include "gmds/paul/Tools.h"
 
 using namespace gmds;
 
@@ -67,6 +69,13 @@ int main(){
 			//std::cout<<"Apres Print boucle for auto 2"<<std::endl;
 		}
 	}
+	//test VolFrac function create by nicolas legoff (pas possible pour le moment parce que pas bon type
+	// de maillage en entrée, besoin maillage tétraédrique je crois)
+	/*std::cout<<"=== Valeur Fraction ==="<<std::endl;
+	Variable<double> *volFrac = mT.newVariable<double,GMDS_FACE>("Valeur Fraction");
+	gmds::volfraccomputation_2d(&mT,&m,volFrac);
+	std::cout<<volFrac<<std::endl;*/
+
 	//Create the grid around the target (triangle in this case)
 	std::cout<<"=== Test Grid Builder ==="<<std::endl;
 	GridBuilderAround gba(&m,2);
@@ -74,7 +83,7 @@ int main(){
 	Actions action(&gba);
 	//Variable<int> *activate = m.newVariable<int,GMDS_FACE>("exist");
 
-		for(auto face_id:gba.m_mesh.faces()){
+	for(auto face_id:gba.m_mesh.faces()){
 		Face f =gba.m_mesh.get<Face>(face_id);
 		std::vector<Node>f_nodes = f.get<Node>();
 		//std::cout<<"Avant bool activate"<<std::endl;
@@ -89,11 +98,25 @@ int main(){
 		}
 	}
 
-	for(int id=0;id <7;id++) {
+	for(int id=0;id <2;id++) {
 		action.executeDeleteFace(id);
 	}
+	/*for (auto face_id : gba.m_mesh.faces()) {
+		std::cout << "Valeur Activate :" << action.getValueActivateFace(face_id)<<"\nFace_ID :"<<face_id << std::endl;
+	}*/
 
-
+	Tools tool(&gba);
+	/*for (auto nodes_id: gba.m_mesh.nodes()){
+		tool.getListFacesOfNode(nodes_id);
+	}*/
+	/*for (int i=0;i < 20;i++) {
+		int i1alea,i2alea;
+		i1alea = rand() % 16;
+		i2alea = rand() % 16;
+		std::cout<<"Noeud 1 :"<<i1alea<<"\nNoeud 2 :"<<i2alea<<std::endl;
+		tool.checkFollowIdNode(i1alea, i2alea);
+	}*/
+	tool.getFaceCommon(1,3);
 
 // Save Triangle Generation
 	IGMeshIOService ioService(&mT);
@@ -109,5 +132,7 @@ int main(){
 	vtkWriter2.setCellOptions(gmds::N|gmds::F);
 	vtkWriter2.setDataOptions(gmds::N|gmds::F);
 	vtkWriter2.write("toto.vtk");
+
+	exit(3);
 
 }

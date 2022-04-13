@@ -37,7 +37,7 @@ void GridBuilderAround::gridBuild2D(const gmds::TInt AXNb,
                      const gmds::TCoord AYStep)
 {
 
-	std::vector<TCellID> node_ids = std::vector<TCellID>();
+	std::vector<TCellID> node_ids;
 	const gmds::TInt N = AXNb * AYNb;
 	node_ids.reserve(N);
 
@@ -52,10 +52,14 @@ void GridBuilderAround::gridBuild2D(const gmds::TInt AXNb,
 			continue;
 		}
 
-		m_mesh.newQuad(node_ids.at(k),
-		                node_ids.at(k + AYNb),			// [x + 1][y],
-		                node_ids.at(k + AYNb + 1),		// [x + 1][y + 1],
-		                node_ids.at(k + 1));			// [x][y + 1],
+		Face q = m_mesh.newQuad(node_ids.at(k),
+										node_ids.at(k + AYNb),			// [x + 1][y],
+										node_ids.at(k + AYNb + 1),		// [x + 1][y + 1],
+										node_ids.at(k + 1));			// [x][y + 1],
+		m_mesh.get<Node>(node_ids.at(k)).add(q);
+		m_mesh.get<Node>(node_ids.at(k + AYNb)).add(q);
+		m_mesh.get<Node>(node_ids.at(k + AYNb + 1)).add(q);
+		m_mesh.get<Node>(node_ids.at(k + 1)).add(q);
 	}
 	//add variable activate at faces
 	for (auto face_id:m_mesh.faces()){
