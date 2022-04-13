@@ -126,7 +126,7 @@ void Tools::getIdNextNode(const int idNode, const int idFaceNode)
 		//std::cout<<"L'element i : "<< i <<" du vecteur est :"<<listNodeFace[i].id()<<std::endl;
 		//std::cout<<"Le dernier element du vec est "<<listNodeFace.back()<<std::endl;
 		if (listNodeFace[i].id() == idNode){
-			if(i == 3){
+			if(i == listNodeFace.size()-1){
 				std::cout << "Le noeud suivant est " << listNodeFace.front().id() << std::endl;
 			}
 			else {

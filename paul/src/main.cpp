@@ -117,7 +117,7 @@ int main(){
 		tool.checkFollowIdNode(i1alea, i2alea);
 	}*/
 	tool.getFaceCommon(1,2);
-	tool.getIdNextNode(7,5);
+	tool.getIdNextNode(11,8);
 
 // Save Triangle Generation
 	IGMeshIOService ioService(&mT);
