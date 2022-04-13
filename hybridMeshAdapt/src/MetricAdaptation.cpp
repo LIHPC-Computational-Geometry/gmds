@@ -255,18 +255,11 @@ void MetricAdaptation::execute()
       }
     }
 
-    gmds::ISimplexMeshIOService ioServiceMesh(m_simplexMesh);
-    gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
-    vtkWriterMesh.setCellOptions(gmds::N|gmds::R|gmds::F);
-    vtkWriterMesh.setDataOptions(gmds::N|gmds::R|gmds::F);
-    vtkWriterMesh.write("ADAPTAION_FIRST_STEP.vtk");
 
-    //continue;
     //Swapping face
     std::cout << "SWAPPING FACE" << std::endl;
     const gmds::BitVector& tetBitVec = m_simplexMesh->getBitVectorTet();
     unsigned int sizeFace = 4;
-    unsigned int cpt = 0;
     for(TSimplexID tetId = 0 ; tetId < meshNode.capacity() ; tetId++)
     {
       bool flag = false;
@@ -330,39 +323,152 @@ void MetricAdaptation::execute()
 
                 if(qual > worstQuality)
                 {
-                  flag = true;
                   //do the reinsertion on the real mesh
                   PointInsertion pi(m_simplexMesh, SimplicesNode(m_simplexMesh, node), criterionRAIS, status, cavity, markedNodes, deletedNodes, facesAlreadyBuilt, cellsCreated);
-                  gmds::ISimplexMeshIOService ioServiceMesh(m_simplexMesh);
+                  flag = true;
+                  /*gmds::ISimplexMeshIOService ioServiceMesh(m_simplexMesh);
                   gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
                   vtkWriterMesh.setCellOptions(gmds::N|gmds::R);
                   vtkWriterMesh.setDataOptions(gmds::N|gmds::R);
                   vtkWriterMesh.write("FACE_ADAPTAION_TEST_" + std::to_string(cpt) + ".vtk");
-                  cpt++;
+                  cpt++;*/
                 }
                 break;
-                /*
-                std::cout << "worstQuality -> " << worstQuality << std::endl;
-                std::cout << "qual -> " << qual << std::endl;
-                m_simplexMesh->deleteAllSimplicesBut(cavity);
-                simplexMeshCopy.deleteAllSimplicesBut(cellsCreated);
-                gmds::ISimplexMeshIOService ioServiceMesh(m_simplexMesh);
-                gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
-                vtkWriterMesh.setCellOptions(gmds::N|gmds::R);
-                vtkWriterMesh.setDataOptions(gmds::N|gmds::R);
-                vtkWriterMesh.write("TEST_tet_Before.vtk");
-
-                gmds::ISimplexMeshIOService ioServiceMeshCopy(&simplexMeshCopy);
-                gmds::VTKWriter vtkWriterMeshCopy(&ioServiceMeshCopy);
-                vtkWriterMeshCopy.setCellOptions(gmds::N|gmds::R);
-                vtkWriterMeshCopy.setDataOptions(gmds::N|gmds::R);
-                vtkWriterMeshCopy.write("TEST_tet_After.vtk");
-                return;*/
               }
             }
           }
         }
       }
     }
+
+    //BOUGE DE POINTS
+    std::cout << "BOUGE DE POINTS" << std::endl;
+    const gmds::BitVector& meshNode = m_simplexMesh->getBitVectorNodes();
+    const gmds::BitVector& meshTet  = m_simplexMesh->getBitVectorTet();
+    gmds::BitVector nodesAdded(meshNode.capacity());
+    unsigned int cptBouge = 0;
+    for(TInt nodeId = 0 ; nodeId < meshNode.capacity() ; nodeId++)
+    {
+      if(meshNode[nodeId] != 0 && nodesAdded[nodeId] == 0)
+      {
+        std::cout << "nodeId -> " << nodeId << std::endl;
+        unsigned int nodeIdDim = ((*BND_VERTEX_COLOR)[nodeId] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[nodeId] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[nodeId] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
+        /*if(!((*BND_VERTEX_COLOR)[nodeId] == 0 && (*BND_SURFACE_COLOR)[nodeId] == 0 && (*BND_CURVE_COLOR)[nodeId] == 0))
+        {
+          continue;
+        }*/
+        //computing the optimal position of P in order to have Lm(PPj) ~ 1
+        //https://tel.archives-ouvertes.fr/tel-00120327/document
+        Metric<Eigen::Matrix3d> M0 = Metric<Eigen::Matrix3d>((*metric)[nodeId]);
+        const SimplicesNode   node = SimplicesNode(m_simplexMesh, nodeId);
+        const math::Point        p = node.getCoords();
+        const std::vector<TSimplexID> ball = node.ballOf();
+        std::vector<math::Point> P_opti{};
+        if(ball.size() == 0){continue;}
+        for(auto const simplex : ball)
+        {
+          if(simplex >= 0)
+          {
+            if(meshTet[simplex] != 0)
+            {
+              const SimplicesCell cell = SimplicesCell(m_simplexMesh, simplex);
+              std::vector<TInt> nodes = cell.getNodes();
+              math::Point p_opti(0.0, 0.0, 0.0);
+              for(auto const node : nodes)
+              {
+                if(node != nodeId)
+                {
+                  if(meshNode[node] != 0)
+                  {
+                    unsigned int nodeDim = ((*BND_VERTEX_COLOR)[node] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[node] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[node] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
+                    if(nodeDim <=  nodeIdDim)
+                    {
+                      const SimplicesNode sNode   = SimplicesNode(m_simplexMesh, node);
+                      const math::Point pj        = sNode.getCoords();
+                      Metric<Eigen::Matrix3d> M1  = Metric<Eigen::Matrix3d>((*metric)[node]);
+                      double metricLenght         = M0.metricDist(p, pj, M1);
+
+                      if(metricLenght != 0.0)
+                      {
+                        math::Vector3d vec = sNode.getCoords() - p;
+                        p_opti = p_opti + (p + (vec) / metricLenght);
+                      }
+                      else
+                      {
+                        //DO SOMETHING ?
+                      }
+                    }
+                  }
+                  else
+                  {
+                    throw gmds::GMDSException("meshNode[node] == 0");
+                  }
+                }
+              }
+              P_opti.push_back(1.0 / 3.0 * p_opti);
+            }
+            else
+            {
+              throw gmds::GMDSException("meshTet[simplex] == 0");
+            }
+          }
+        }
+
+
+        math::Point new_P;
+        if(P_opti.size() != 0)
+        {
+          for(auto const p : P_opti)
+          {
+            new_P = new_P + p;
+          }
+          new_P = math::Point(new_P.X() / (double)P_opti.size(), new_P.Y() / (double)P_opti.size(), new_P.Z() / (double)P_opti.size());
+        }
+        else
+        {
+          throw gmds::GMDSException("P_opti.size() == 0");
+        }
+
+        bool status = false;
+        const gmds::BitVector markedNodes{};
+        std::vector<TSimplexID> deletedSimplex{};
+        std::vector<TInt> deletedNodes{};
+        const std::multimap<TInt, TInt>& facesAlreadyBuilt{};
+        std::vector<TSimplexID> cellsCreated{};
+        bool alreadyAdd = false;
+        std::vector<TSimplexID> tetraContenaingPt{};
+        TInt new_Node = m_simplexMesh->addNodeAndcheck(new_P, tetraContenaingPt, alreadyAdd);
+        if(nodesAdded.capacity() != meshNode.capacity())
+        {
+          nodesAdded.resize(meshNode.capacity());
+        }
+        nodesAdded.assign(new_Node);
+        if(!alreadyAdd)
+        {
+          PointInsertion pi(m_simplexMesh, SimplicesNode(m_simplexMesh, new_Node), criterionRAIS, status, ball, markedNodes, deletedNodes, facesAlreadyBuilt, cellsCreated);
+          if(status)
+          {
+            metric->set(new_Node, (*metric)[nodeId]);
+            if(nodeIdDim == SimplexMesh::topo::CORNER){BND_VERTEX_COLOR->set(new_Node, (*BND_VERTEX_COLOR)[nodeId]);}
+            else if(nodeIdDim == SimplexMesh::topo::SURFACE){BND_VERTEX_COLOR->set(new_Node, (*BND_SURFACE_COLOR)[nodeId]);}
+            else if(nodeIdDim == SimplexMesh::topo::RIDGE){BND_CURVE_COLOR->set(new_Node, (*BND_CURVE_COLOR)[nodeId]);}
+            m_simplexMesh->deleteNode(nodeId, true);
+            gmds::ISimplexMeshIOService ioServiceMesh(m_simplexMesh);
+            gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
+            vtkWriterMesh.setCellOptions(gmds::N|gmds::R);
+            vtkWriterMesh.setDataOptions(gmds::N|gmds::R);
+            vtkWriterMesh.write("BOUGE_" + std::to_string(cptBouge) + ".vtk");
+            cptBouge++;
+          }
+        }
+      }
+    }
+
+    gmds::ISimplexMeshIOService ioServiceMesh(m_simplexMesh);
+    gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
+    vtkWriterMesh.setCellOptions(gmds::N|gmds::R);
+    vtkWriterMesh.setDataOptions(gmds::N|gmds::R);
+    vtkWriterMesh.write("ADAPTAION_LOOP" + std::to_string(cpt) + ".vtk");
+    cpt++;
   }
 }
