@@ -71,9 +71,9 @@ std::vector<Face> Tools::getListFacesOfNode(const int nodeID)
 {
 	Node n =g_grid.m_mesh.get<Node>(nodeID);
 	std::vector<Face> list_faces = n.get<Face>();
-	/*for (auto n : list_faces){
+	for (auto n : list_faces){
 		std::cout<<"Le noeud " << nodeID << " avec les faces"<< n <<std::endl;
-	}*/
+	}
 	return list_faces;
 }
 
@@ -98,4 +98,40 @@ std::vector<Face> Tools::getFaceCommon(const int i1, const int i2)
 		std::cout<< f <<std::endl;
 	}
 	return list_Face_Common;
+}
+
+void Tools::getIdPreviousNode(const int idNode,const int idFaceNode)
+{
+	std::vector<Node> listNodeFace = Tools::getListNodesOfFace(idFaceNode);
+
+	for(int i = 0; i < listNodeFace.size();i++){
+		//std::cout<<"L'element i : "<< i <<" du vecteur est :"<<listNodeFace[i].id()<<std::endl;
+		//std::cout<<"Le dernier element du vec est "<<listNodeFace.back()<<std::endl;
+		if (listNodeFace[i].id() == idNode){
+			if(i == 0){
+				std::cout << "Le noeud precedent est " << listNodeFace.back().id() << std::endl;
+			}
+			else {
+				std::cout << "Le noeud precedent est " << listNodeFace[i - 1].id() << std::endl;
+			}
+		}
+	}
+}
+
+void Tools::getIdNextNode(const int idNode, const int idFaceNode)
+{
+	std::vector<Node> listNodeFace = Tools::getListNodesOfFace(idFaceNode);
+
+	for(int i = 0; i < listNodeFace.size();i++){
+		//std::cout<<"L'element i : "<< i <<" du vecteur est :"<<listNodeFace[i].id()<<std::endl;
+		//std::cout<<"Le dernier element du vec est "<<listNodeFace.back()<<std::endl;
+		if (listNodeFace[i].id() == idNode){
+			if(i == 3){
+				std::cout << "Le noeud suivant est " << listNodeFace.front().id() << std::endl;
+			}
+			else {
+				std::cout << "Le noeud suivant est " << listNodeFace[i + 1].id() << std::endl;
+			}
+		}
+	}
 }

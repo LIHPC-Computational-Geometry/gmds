@@ -116,7 +116,8 @@ int main(){
 		std::cout<<"Noeud 1 :"<<i1alea<<"\nNoeud 2 :"<<i2alea<<std::endl;
 		tool.checkFollowIdNode(i1alea, i2alea);
 	}*/
-	tool.getFaceCommon(1,3);
+	tool.getFaceCommon(1,2);
+	tool.getIdNextNode(7,5);
 
 // Save Triangle Generation
 	IGMeshIOService ioService(&mT);

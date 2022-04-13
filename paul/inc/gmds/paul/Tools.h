@@ -32,6 +32,10 @@ namespace gmds{
 
 	   std::vector<Face> getFaceCommon(const int i1, const int i2);
 
+	   void getIdPreviousNode(const int idNode, const int idFaceNode);
+
+	   void getIdNextNode(const int idNode, const int idFaceNode);
+
 	   gmds::GridBuilderAround g_grid;
 
    };
