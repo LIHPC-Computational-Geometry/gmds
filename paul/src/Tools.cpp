@@ -161,6 +161,7 @@ std::vector<Node> Tools::getOtherNodes(const int i1, const int i2)
 {
 	std::vector<Face> listFace = Tools::getFacesCommon(i1,i2);
 	std::vector<Node> listOtherNodes;
+	std::vector<int> listPairNodes;
 	for(auto f : listFace){
 		std::vector<Node> nodesFace = Tools::getListNodesOfFace(f.id());
 		for (auto n : nodesFace){
@@ -170,8 +171,29 @@ std::vector<Node> Tools::getOtherNodes(const int i1, const int i2)
 		}
 	}
 	for (auto n : listOtherNodes){
-		std::cout<<"Les noeuds autres : "<<n<<std::endl;
+		for(auto n1 : listOtherNodes){
+			if (n != n1 && Tools::checkCommonFace(n.id(),n1.id())){
+				if (std::any_of(listPairNodes.begin(),listPairNodes.end(),[&](const int& elem) { return elem == n.id(); })
+				    && std::any_of(listPairNodes.begin(),listPairNodes.end(),[&](const int& elem) { return elem == n1.id(); })){
+					std::cout<<"DEJA DANS LA LISTE :"<<n<< " & "<<n1<<std::endl;
+					for (auto i : listPairNodes){
+						std::cout<<"element dans list pair : "<<i<<std::endl;
+					}
+				}
+				else{
+					std::vector<int> pairNodes;
+					pairNodes.insert(pairNodes.end(),n.id());
+					pairNodes.insert(pairNodes.end(),n1.id());
+					listPairNodes.insert(std::end(listPairNodes),std::begin(pairNodes),std::end(pairNodes));
+				}
+			}
+		}
+	}
+	for (auto n : listPairNodes){
+		std::cout<<"============\n"<<"Elements list pair : "<<n<<"\n==========="<<std::endl;
 	}
 	return listOtherNodes;
 }
+
+
 
