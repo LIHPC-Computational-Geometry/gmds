@@ -48,7 +48,7 @@ set(GMDS_SRC
 		src/Utils.cpp
 		src/AbstractAeroBoundaries.cpp
 		src/AeroBoundaries_2D.cpp
-		src/AeroBoundaries_3D.cpp)
+		src/AeroBoundaries_3D.cpp inc/gmds/claire/AeroMeshQuality.h src/AeroMeshQuality.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

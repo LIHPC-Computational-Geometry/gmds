@@ -49,10 +49,13 @@ AeroPipeline_2D::execute(){
 	m_Bnd->execute();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
 
 	m_manager->initAndLinkFrom2DMesh(m_meshTet, m_linker_TG);
 
 	// Calcul du level set
+	std::cout << "-> Calcul Level Sets" << std::endl;
+	t_start = clock();
 	m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance");
 	m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
 	m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
@@ -61,12 +64,20 @@ AeroPipeline_2D::execute(){
 	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
 	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
 	lsCombined.execute();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
 
 	// Calcul du gradient du champ de Level Set
+	std::cout << "-> Calcul Gradient" << std::endl;
+	t_start = clock();
 	m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
 	LeastSquaresGradientComputation grad2D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
 	                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	grad2D.execute();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
 
 	m_linker_HG->setGeometry(m_manager);
 	m_linker_HG->setMesh(m_meshHex);
@@ -80,7 +91,9 @@ AeroPipeline_2D::execute(){
 	}
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
 
+	// Extrusion par couches
 	m_nbr_couches=1;
 	for(int couche=1;couche<=m_nbr_couches;couche++){
 		t_start = clock();
@@ -89,10 +102,13 @@ AeroPipeline_2D::execute(){
 		std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	}
 
+	// Mise à jour du linker pour la dernière couche de noeuds
 	UpdateLinkerLastLayer(1);
 
+	// Conversion structure maillage à blocking + maillage des blocs par transfinies
 	ConvertisseurMeshToBlocking();
 
+	// Lissage
 	std::cout << "-> Lissage final" << std::endl;
 	t_start = clock();
 	Grid_Smooth2D smoother(&m_Blocking2D, 100);
@@ -100,6 +116,8 @@ AeroPipeline_2D::execute(){
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
+
+	// Ecriture finale des maillages
 	EcritureMaillage();
 
 	//std::cout << "Nbr faces : " << m_mQuad.getNbFaces() << std::endl;
@@ -190,10 +208,10 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 	double l(0);
 
 	// Calcul de la valeur min de x sur les noeuds du bord
-	TCellID n_arret_tri_id = m_Bnd->PointArret(color);
-	Node n_arret_tri = m_meshTet->get<Node>(n_arret_tri_id) ;
-	math::Point point_arret = n_arret_tri.point();
-	double x_min = point_arret.X() ;
+	//TCellID n_arret_tri_id = m_Bnd->PointArret(color);
+	//Node n_arret_tri = m_meshTet->get<Node>(n_arret_tri_id) ;
+	//math::Point point_arret = n_arret_tri.point();
+	//double x_min = point_arret.X() ;
 
 	Node n0_tri = m_meshTet->get<Node>(bnd_nodes_id_ordered[0]) ;
 	Node n0_quad = m_meshHex->newNode(n0_tri.point()); // Premier noeud du nouveau maillage
@@ -231,7 +249,7 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 		if ( m_meshTet->isMarked<Node>(bnd_nodes_id_ordered[i], markPointNodes)
 		    || l >= Lmax
 		    || abs(l-Lmax) <= pow(10,-6)
-		    || abs(p.X() - x_min) <= pow(10,-6)
+		    //|| abs(p.X() - x_min) <= pow(10,-6)
 		    || isExtremum ){
 
 			n1_quad = n2_quad;
@@ -440,8 +458,8 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 		std::vector<Node> quad_nodes = f.get<Node>() ;
 		Blocking2D::Block B0 = m_Blocking2D.newBlock( var_new_id->value(quad_nodes[0].id()), var_new_id->value(quad_nodes[1].id()),
 		                      var_new_id->value(quad_nodes[2].id()), var_new_id->value(quad_nodes[3].id()));
-		B0.seNbDiscretizationI(10);
-		B0.seNbDiscretizationJ(10);
+		B0.setNbDiscretizationI(10);
+		B0.setNbDiscretizationJ(10);
 	}
 
 	m_Blocking2D.initializeGridPoints();	// Maillage des blocs par transfinies
