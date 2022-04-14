@@ -16,9 +16,9 @@ int Tools::getValueActivateFace(const int faceIDChecked)
 
 }
 
-bool Tools::checkExistEdge(const int i1, const int i2)
+bool Tools::checkExistEdge(const int i1, const int i2, const int faceID)
 {
-	if(Tools::checkFollowIdNode(i1,i2) && Tools::checkCommonFace(i1,i2)){
+	if(Tools::checkFollowIdNode(i1,i2,faceID) && Tools::checkCommonFace(i1,i2)){
 		std::cout<<"LES 2 NOEUDS ONT UNE ARETE !"<<std::endl;
 		return true;
 	}
@@ -45,9 +45,9 @@ bool Tools::checkCommonFace(const int i1, const int i2)
 	return false;
 }
 
-bool Tools::checkFollowIdNode(const int i1, const int i2)
+bool Tools::checkFollowIdNode(const int i1, const int i2,const int faceID)
 {
-	if (i1 + 1 == i2 || i2 + 1 == i1 || i1 - 4 == i2 || i2-4 == i1) {
+	if (i1 == Tools::getIdNextNode(i2,faceID) || i1 == Tools::getIdPreviousNode(i2,faceID)){
 		std::cout<<"LES 2 NOEUDS SE SUIVENT !"<<std::endl;
 		return true;
 	}
@@ -71,13 +71,13 @@ std::vector<Face> Tools::getListFacesOfNode(const int nodeID)
 {
 	Node n =g_grid.m_mesh.get<Node>(nodeID);
 	std::vector<Face> list_faces = n.get<Face>();
-	for (auto n : list_faces){
+	/*for (auto n : list_faces){
 		std::cout<<"Le noeud " << nodeID << " avec les faces"<< n <<std::endl;
-	}
+	}*/
 	return list_faces;
 }
 
-std::vector<Face> Tools::getFaceCommon(const int i1, const int i2)
+std::vector<Face> Tools::getFacesCommon(const int i1, const int i2)
 {
 	std::vector<Face> list_Face_Common;
 	std::vector<Face> list_f_i1 = Tools::getListFacesOfNode(i1);
@@ -100,7 +100,24 @@ std::vector<Face> Tools::getFaceCommon(const int i1, const int i2)
 	return list_Face_Common;
 }
 
-void Tools::getIdPreviousNode(const int idNode,const int idFaceNode)
+int Tools::getIdOneCommonFace(const int i1, const int i2)
+{
+	std::vector<Face> list_f= Tools::getListFacesOfNode(i1);
+	for (auto f : list_f){
+		std::vector<Node> list_n = Tools::getListNodesOfFace(f.id());
+		for (auto n : list_n){
+			if (n.id() == i2 ){
+				std::cout<<"LES 2 NOEUDS ONT UNE FACE COMMUNE"<<std::endl;
+				return f.id();
+			}
+		}
+	}
+	std::cout<<"LES 2 NOEUDS N'ONT PAS UNE FACE COMMUNE"<<std::endl;
+	return {};
+
+}
+
+int Tools::getIdPreviousNode(const int idNode,const int idFaceNode)
 {
 	std::vector<Node> listNodeFace = Tools::getListNodesOfFace(idFaceNode);
 
@@ -110,15 +127,17 @@ void Tools::getIdPreviousNode(const int idNode,const int idFaceNode)
 		if (listNodeFace[i].id() == idNode){
 			if(i == 0){
 				std::cout << "Le noeud precedent est " << listNodeFace.back().id() << std::endl;
+				return listNodeFace.back().id();
 			}
 			else {
 				std::cout << "Le noeud precedent est " << listNodeFace[i - 1].id() << std::endl;
+				return listNodeFace[i - 1].id();
 			}
 		}
 	}
 }
 
-void Tools::getIdNextNode(const int idNode, const int idFaceNode)
+int Tools::getIdNextNode(const int idNode, const int idFaceNode)
 {
 	std::vector<Node> listNodeFace = Tools::getListNodesOfFace(idFaceNode);
 
@@ -128,10 +147,18 @@ void Tools::getIdNextNode(const int idNode, const int idFaceNode)
 		if (listNodeFace[i].id() == idNode){
 			if(i == listNodeFace.size()-1){
 				std::cout << "Le noeud suivant est " << listNodeFace.front().id() << std::endl;
+				return listNodeFace.front().id();
 			}
 			else {
 				std::cout << "Le noeud suivant est " << listNodeFace[i + 1].id() << std::endl;
+				return listNodeFace[i + 1].id();
 			}
 		}
 	}
 }
+
+std::vector<Node> Tools::getOtherNodes(const int i1, const int i2)
+{
+
+}
+

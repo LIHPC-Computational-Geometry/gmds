@@ -109,15 +109,15 @@ int main(){
 	/*for (auto nodes_id: gba.m_mesh.nodes()){
 		tool.getListFacesOfNode(nodes_id);
 	}*/
-	/*for (int i=0;i < 20;i++) {
-		int i1alea,i2alea;
+	for (int i=0;i < 20;i++) {
+		int i1alea,i2alea,faceAlea;
 		i1alea = rand() % 16;
 		i2alea = rand() % 16;
-		std::cout<<"Noeud 1 :"<<i1alea<<"\nNoeud 2 :"<<i2alea<<std::endl;
-		tool.checkFollowIdNode(i1alea, i2alea);
-	}*/
-	tool.getFaceCommon(1,2);
-	tool.getIdNextNode(11,8);
+		faceAlea=rand() % 9;
+		std::cout<<"Noeud 1 :"<<i1alea<<"\nNoeud 2 :"<<i2alea<<"\nFace :"<<tool.getIdOneCommonFace(i1alea,i2alea)<<std::endl;
+		tool.checkExistEdge(i1alea,i2alea,tool.getIdOneCommonFace(i1alea,i2alea));
+	}
+	tool.getFacesCommon(1,2);
 
 // Save Triangle Generation
 	IGMeshIOService ioService(&mT);

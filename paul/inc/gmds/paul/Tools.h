@@ -20,21 +20,25 @@ namespace gmds{
 
 	   int getValueActivateFace(const int faceIDChecked);
 
-	   bool checkExistEdge(const int i1, const int i2);
+	   bool checkExistEdge(const int i1, const int i2,const int faceID);
 
 	   bool checkCommonFace(const int i1, const int i2);
 
-	   bool checkFollowIdNode(const int i1, const int i2);
+	   bool checkFollowIdNode(const int i1, const int i2,const int faceID);
 
 	   std::vector<Node> getListNodesOfFace(const int faceID);
 
 	   std::vector<Face> getListFacesOfNode(const int nodeID);
 
-	   std::vector<Face> getFaceCommon(const int i1, const int i2);
+	   std::vector<Face> getFacesCommon(const int i1, const int i2);
 
-	   void getIdPreviousNode(const int idNode, const int idFaceNode);
+	   int getIdOneCommonFace(const int i1, const int i2);
 
-	   void getIdNextNode(const int idNode, const int idFaceNode);
+	   int getIdPreviousNode(const int idNode, const int idFaceNode);
+
+	   int getIdNextNode(const int idNode, const int idFaceNode);
+
+	   std::vector<Node> getOtherNodes(const int i1, const int i2);
 
 	   gmds::GridBuilderAround g_grid;
 
