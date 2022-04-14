@@ -159,6 +159,19 @@ int Tools::getIdNextNode(const int idNode, const int idFaceNode)
 
 std::vector<Node> Tools::getOtherNodes(const int i1, const int i2)
 {
-
+	std::vector<Face> listFace = Tools::getFacesCommon(i1,i2);
+	std::vector<Node> listOtherNodes;
+	for(auto f : listFace){
+		std::vector<Node> nodesFace = Tools::getListNodesOfFace(f.id());
+		for (auto n : nodesFace){
+			if(n.id() != i1 && n.id() != i2){
+				listOtherNodes.insert(listOtherNodes.end(),n);
+			}
+		}
+	}
+	for (auto n : listOtherNodes){
+		std::cout<<"Les noeuds autres : "<<n<<std::endl;
+	}
+	return listOtherNodes;
 }
 
