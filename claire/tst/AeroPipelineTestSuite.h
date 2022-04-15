@@ -5,6 +5,7 @@
 #include <gmds/claire/AbstractAeroPipeline.h>
 #include <gmds/claire/AeroPipeline_2D.h>
 #include <gmds/claire/AeroPipeline_3D.h>
+#include <gmds/claire/AeroExtrusion_2D.h>
 #include <gmds/claire/Params.h>
 #include <gtest/gtest.h>
 #include <iostream>
@@ -60,4 +61,23 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 
 	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero3D_result);
 
+}
+/*----------------------------------------------------------------------------*/
+/*                       CAS TEST 3D CLASSE LevelSet                          */
+/*----------------------------------------------------------------------------*/
+
+TEST(AeroPipelineTestClass, AeroExtrusion_Test1)
+{
+	AeroExtrusion_2D extrusion2D(NULL);
+	try {
+		extrusion2D.execute();
+	}
+	catch (GMDSMathException& e) {
+
+		std::cout<<"Exception catched"<<std::endl;
+	}
+	catch (...){
+		std::cout<<"any exception"<<std::endl;
+	}
+	std::cout<<"here"<<std::endl;
 }

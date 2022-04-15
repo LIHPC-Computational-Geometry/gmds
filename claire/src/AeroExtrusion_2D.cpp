@@ -17,6 +17,8 @@ AeroExtrusion_2D::AeroExtrusion_2D(Mesh *AMesh) {
 AeroExtrusion_2D::STATUS
 AeroExtrusion_2D::execute()
 {
+	if(m_mesh==NULL)
+		throw GMDSException("ERROR: Invalid mesh pointer");
 
 	return AeroExtrusion_2D::SUCCESS;
 }
