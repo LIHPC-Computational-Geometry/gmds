@@ -84,7 +84,6 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
         });
 
         CavityOperator::CavityIO cavityIO(simplexMesh);
-
         if(cavOp.cavityEnlargement(cavityIO, initialCavityCell, initialCavityTriangle, simpliceNode, criterion, facesAlreadyBuilt, markedSimplex))
         {
           //test sur les triangles non connecté a P pour ne pas créer de retournement topologique

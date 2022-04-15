@@ -88,7 +88,7 @@ void MetricAdaptation::execute()
     throw gmds::GMDSException(e);
   }
 
-  unsigned int maxIterationAdaptation = 1;
+  unsigned int maxIterationAdaptation = 10;
   CriterionRAIS criterionRAIS(new VolumeCriterion());
   const gmds::BitVector& meshNode = m_simplexMesh->getBitVectorNodes();
   unsigned int cpt = 0;
@@ -341,6 +341,12 @@ void MetricAdaptation::execute()
       }
     }
 
+    gmds::ISimplexMeshIOService ioServiceMeshT(m_simplexMesh);
+    gmds::VTKWriter vtkWriterMeshT(&ioServiceMeshT);
+    vtkWriterMeshT.setCellOptions(gmds::N|gmds::R|gmds::F);
+    vtkWriterMeshT.setDataOptions(gmds::N|gmds::R|gmds::F);
+    vtkWriterMeshT.write("AFTER_SWAPPING.vtk");
+
     //BOUGE DE POINTS
     std::cout << "BOUGE DE POINTS" << std::endl;
     const gmds::BitVector& meshNode = m_simplexMesh->getBitVectorNodes();
@@ -351,12 +357,16 @@ void MetricAdaptation::execute()
     {
       if(meshNode[nodeId] != 0 && nodesAdded[nodeId] == 0)
       {
-        std::cout << "nodeId -> " << nodeId << std::endl;
-        unsigned int nodeIdDim = ((*BND_VERTEX_COLOR)[nodeId] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[nodeId] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[nodeId] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
-        /*if(!((*BND_VERTEX_COLOR)[nodeId] == 0 && (*BND_SURFACE_COLOR)[nodeId] == 0 && (*BND_CURVE_COLOR)[nodeId] == 0))
+        //std::cout << "nodeId -> " << nodeId << std::endl;
+        unsigned int nodeIdDim   = ((*BND_VERTEX_COLOR)[nodeId] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[nodeId] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[nodeId] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
+        unsigned int nodeIdLabel = (nodeIdDim == SimplexMesh::topo::CORNER)?(*BND_VERTEX_COLOR)[nodeId]:(nodeIdDim == SimplexMesh::topo::RIDGE)?(*BND_CURVE_COLOR)[nodeId]:(nodeIdDim == SimplexMesh::topo::SURFACE)?(*BND_SURFACE_COLOR)[nodeId]:0;
+
+        if(nodeIdDim == SimplexMesh::topo::VOLUME || nodeIdDim == SimplexMesh::topo::CORNER || nodeIdDim == SimplexMesh::topo::RIDGE)
         {
           continue;
-        }*/
+        }
+        //std::cout << "nodeIdDim -> " << nodeIdDim << std::endl;
+
         //computing the optimal position of P in order to have Lm(PPj) ~ 1
         //https://tel.archives-ouvertes.fr/tel-00120327/document
         Metric<Eigen::Matrix3d> M0 = Metric<Eigen::Matrix3d>((*metric)[nodeId]);
@@ -374,6 +384,7 @@ void MetricAdaptation::execute()
               const SimplicesCell cell = SimplicesCell(m_simplexMesh, simplex);
               std::vector<TInt> nodes = cell.getNodes();
               math::Point p_opti(0.0, 0.0, 0.0);
+              double factor = 0.0;
               for(auto const node : nodes)
               {
                 if(node != nodeId)
@@ -381,21 +392,35 @@ void MetricAdaptation::execute()
                   if(meshNode[node] != 0)
                   {
                     unsigned int nodeDim = ((*BND_VERTEX_COLOR)[node] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[node] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[node] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
-                    if(nodeDim <=  nodeIdDim)
+                    unsigned int nodeLabel = (nodeDim == SimplexMesh::topo::CORNER)?(*BND_VERTEX_COLOR)[node]:(nodeDim == SimplexMesh::topo::RIDGE)?(*BND_CURVE_COLOR)[node]:(nodeDim == SimplexMesh::topo::SURFACE)?(*BND_SURFACE_COLOR)[node]:0;
+                    if(nodeDim <= nodeIdDim)
                     {
-                      const SimplicesNode sNode   = SimplicesNode(m_simplexMesh, node);
-                      const math::Point pj        = sNode.getCoords();
-                      Metric<Eigen::Matrix3d> M1  = Metric<Eigen::Matrix3d>((*metric)[node]);
-                      double metricLenght         = M0.metricDist(p, pj, M1);
-
-                      if(metricLenght != 0.0)
+                      if(nodeDim == nodeIdDim)
                       {
-                        math::Vector3d vec = sNode.getCoords() - p;
-                        p_opti = p_opti + (p + (vec) / metricLenght);
+                        if(nodeLabel != nodeIdLabel)
+                        {
+                          continue;
+                        }
                       }
-                      else
+                      if(nodeDim <=  nodeIdDim)
                       {
-                        //DO SOMETHING ?
+                        //std::cout << "node -> " << node << std::endl;
+                        //std::cout << "nodeDim -> " << nodeDim << std::endl;
+                        //std::cout <<std::endl;
+                        const SimplicesNode sNode   = SimplicesNode(m_simplexMesh, node);
+                        const math::Point pj        = sNode.getCoords();
+                        Metric<Eigen::Matrix3d> M1  = Metric<Eigen::Matrix3d>((*metric)[node]);
+                        double metricLenght         = M0.metricDist(p, pj, M1);
+                        if(metricLenght != 0.0)
+                        {
+                          math::Vector3d vec = sNode.getCoords() - p;
+                          p_opti = p_opti + (p + (vec / metricLenght));
+                          factor += 1.0;
+                        }
+                        else
+                        {
+                          //DO SOMETHING ?
+                        }
                       }
                     }
                   }
@@ -405,7 +430,10 @@ void MetricAdaptation::execute()
                   }
                 }
               }
-              P_opti.push_back(1.0 / 3.0 * p_opti);
+              if(factor != 0 )
+              {
+                P_opti.push_back(1.0 / factor * p_opti);
+              }
             }
             else
             {
@@ -420,6 +448,7 @@ void MetricAdaptation::execute()
         {
           for(auto const p : P_opti)
           {
+            //std::cout << "p_opti -> " << p << std::endl;
             new_P = new_P + p;
           }
           new_P = math::Point(new_P.X() / (double)P_opti.size(), new_P.Y() / (double)P_opti.size(), new_P.Z() / (double)P_opti.size());
@@ -438,6 +467,13 @@ void MetricAdaptation::execute()
         bool alreadyAdd = false;
         std::vector<TSimplexID> tetraContenaingPt{};
         TInt new_Node = m_simplexMesh->addNodeAndcheck(new_P, tetraContenaingPt, alreadyAdd);
+        if(nodeIdDim == SimplexMesh::topo::CORNER){BND_VERTEX_COLOR->set(new_Node, (*BND_VERTEX_COLOR)[nodeId]);}
+        else if(nodeIdDim == SimplexMesh::topo::RIDGE){BND_CURVE_COLOR->set(new_Node, (*BND_CURVE_COLOR)[nodeId]);}
+        else if(nodeIdDim == SimplexMesh::topo::SURFACE){BND_SURFACE_COLOR->set(new_Node, (*BND_SURFACE_COLOR)[nodeId]);}
+        //std::cout << "new_Node -> " << new_Node << std::endl;
+        //std::cout << "new_P -> " << new_P << std::endl;
+
+
         if(nodesAdded.capacity() != meshNode.capacity())
         {
           nodesAdded.resize(meshNode.capacity());
@@ -445,20 +481,31 @@ void MetricAdaptation::execute()
         nodesAdded.assign(new_Node);
         if(!alreadyAdd)
         {
+          //std::cout << "POINT INSERTION" << std::endl;
           PointInsertion pi(m_simplexMesh, SimplicesNode(m_simplexMesh, new_Node), criterionRAIS, status, ball, markedNodes, deletedNodes, facesAlreadyBuilt, cellsCreated);
+
           if(status)
           {
+            //
+            SimplexMesh simplexMesh = SimplexMesh();
+            simplexMesh.addNode(new_P.X(), new_P.Y(), new_P.Z());
+            gmds::ISimplexMeshIOService ioServiceMeshS(&simplexMesh);
+            gmds::VTKWriter vtkWriterMeshS(&ioServiceMeshS);
+            vtkWriterMeshS.setCellOptions(gmds::N);
+            vtkWriterMeshS.setDataOptions(gmds::N);
+            vtkWriterMeshS.write("pointAdded_" + std::to_string(new_Node) + ".vtk");
+            //
+
+
             metric->set(new_Node, (*metric)[nodeId]);
-            if(nodeIdDim == SimplexMesh::topo::CORNER){BND_VERTEX_COLOR->set(new_Node, (*BND_VERTEX_COLOR)[nodeId]);}
-            else if(nodeIdDim == SimplexMesh::topo::SURFACE){BND_VERTEX_COLOR->set(new_Node, (*BND_SURFACE_COLOR)[nodeId]);}
-            else if(nodeIdDim == SimplexMesh::topo::RIDGE){BND_CURVE_COLOR->set(new_Node, (*BND_CURVE_COLOR)[nodeId]);}
             m_simplexMesh->deleteNode(nodeId, true);
             gmds::ISimplexMeshIOService ioServiceMesh(m_simplexMesh);
             gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
-            vtkWriterMesh.setCellOptions(gmds::N|gmds::R);
-            vtkWriterMesh.setDataOptions(gmds::N|gmds::R);
+            vtkWriterMesh.setCellOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriterMesh.setDataOptions(gmds::N|gmds::R|gmds::F);
             vtkWriterMesh.write("BOUGE_" + std::to_string(cptBouge) + ".vtk");
             cptBouge++;
+
           }
         }
       }
