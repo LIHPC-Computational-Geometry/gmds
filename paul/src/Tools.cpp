@@ -36,23 +36,23 @@ bool Tools::checkCommonFace(const int i1, const int i2)
 		std::vector<Node> list_n = Tools::getListNodesOfFace(f.id());
 		for (auto n : list_n){
 			if (n.id() == i2 ){
-				std::cout<<"LES 2 NOEUDS ONT UNE FACE COMMUNE"<<std::endl;
+				//std::cout<<"LES 2 NOEUDS ONT UNE FACE COMMUNE"<<std::endl;
 				return true;
 			}
 		}
 	}
-	std::cout<<"LES 2 NOEUDS N'ONT PAS UNE FACE COMMUNE"<<std::endl;
+	//std::cout<<"LES 2 NOEUDS N'ONT PAS UNE FACE COMMUNE"<<std::endl;
 	return false;
 }
 
 bool Tools::checkFollowIdNode(const int i1, const int i2,const int faceID)
 {
 	if (i1 == Tools::getIdNextNode(i2,faceID) || i1 == Tools::getIdPreviousNode(i2,faceID)){
-		std::cout<<"LES 2 NOEUDS SE SUIVENT !"<<std::endl;
+		//std::cout<<"LES 2 NOEUDS SE SUIVENT !"<<std::endl;
 		return true;
 	}
 	else{
-		std::cout<<"LES 2 NOEUDS NE SE SUIVENT PAS !"<<std::endl;
+		//std::cout<<"LES 2 NOEUDS NE SE SUIVENT PAS !"<<std::endl;
 		return false;
 	}
 }
@@ -93,10 +93,10 @@ std::vector<Face> Tools::getFacesCommon(const int i1, const int i2)
 		std::cout<<"Erreur, noeuds pas de face en commun "<<std::endl;
 		return {};
 	}
-	std::cout<<"List des faces en commun entre "<<i1<<" et "<<i2<<" :"<<std::endl;
+	/*std::cout<<"List des faces en commun entre "<<i1<<" et "<<i2<<" :"<<std::endl;
 	for (auto f : list_Face_Common){
 		std::cout<< f <<std::endl;
-	}
+	}*/
 	return list_Face_Common;
 }
 
@@ -107,12 +107,12 @@ int Tools::getIdOneCommonFace(const int i1, const int i2)
 		std::vector<Node> list_n = Tools::getListNodesOfFace(f.id());
 		for (auto n : list_n){
 			if (n.id() == i2 ){
-				std::cout<<"LES 2 NOEUDS ONT UNE FACE COMMUNE"<<std::endl;
+				//std::cout<<"LES 2 NOEUDS ONT UNE FACE COMMUNE"<<std::endl;
 				return f.id();
 			}
 		}
 	}
-	std::cout<<"LES 2 NOEUDS N'ONT PAS UNE FACE COMMUNE"<<std::endl;
+	//std::cout<<"LES 2 NOEUDS N'ONT PAS UNE FACE COMMUNE"<<std::endl;
 	return {};
 
 }
@@ -177,8 +177,8 @@ std::vector<std::vector<int>> Tools::getOtherNodes(const int i1, const int i2)
 		for(auto n1 : listOtherNodes){
 			if (n != n1 && Tools::checkCommonFace(n.id(),n1.id())){
 				if (std::any_of(listElementAdd.begin(),listElementAdd.end(),[&](const int& elem) { return elem == n.id(); })
-				    && std::any_of(listElementAdd.begin(),listElementAdd.end(),[&](const int& elem) { return elem == n1.id(); })){
-					std::cout<<"DEJA DANS LA LISTE :"<<n<< " & "<<n1<<std::endl;
+					 && std::any_of(listElementAdd.begin(),listElementAdd.end(),[&](const int& elem) { return elem == n1.id(); })){
+					//std::cout<<"DEJA DANS LA LISTE :"<<n<< " & "<<n1<<std::endl;
 				}
 				else{
 					std::vector<int> pairNodes;
@@ -191,12 +191,12 @@ std::vector<std::vector<int>> Tools::getOtherNodes(const int i1, const int i2)
 			}
 		}
 	}
-	for (auto n : listPairNodes){
+	/*for (auto n : listPairNodes){
 		std::cout<<"UNE PAIRE : "<<std::endl;
 		for(auto i : n) {
 			std::cout << "============"<< "Elements list pair : " << i << "===========" << std::endl;
 		}
-	}
+	}*/
 	return listPairNodes;
 }
 
@@ -204,23 +204,77 @@ std::vector<Face> Tools::getAllFacesChain(const int i1, const int i2)
 {
 	std::vector<Face> listAllFaces = Tools::getFacesCommon(i1,i2);
 	std::vector<std::vector<int>> listAllPairNodes = Tools::getOtherNodes(i1,i2);
-	auto copyListAllPairNodes = listAllPairNodes;
+	std::vector<int> nodeCheck = {i1,i2};
+	auto listPairToCheck = listAllPairNodes;
 
-	while(listAllPairNodes.empty() != 1){
-		for (auto p : listAllPairNodes){
+	while(listPairToCheck.empty() != 1){
+		auto listParcour = listPairToCheck;
+		for (auto p : listParcour){
+			std::cout<<"LES ID QUI SONT CHECK"<<std::endl;
+			for (auto n : p){
+				std::cout<<n<<std::endl;
+			}
+			if (*find(nodeCheck.begin(), nodeCheck.end(), p.front()) == p.front() ||
+			    *find(nodeCheck.begin(), nodeCheck.end(), p.back()) == p.back()) {
+				std::cout<<"Noeud DEJA Check"<<std::endl;
+
+			}
+			else{
+				nodeCheck.push_back(p.front());
+				nodeCheck.push_back(p.back());
+
+			}
+			std::cout<<"Noeuds Check :"<<std::endl;
+			for (auto j : nodeCheck){
+				std::cout<<j<<std::endl;
+			}
 			std::vector<std::vector<int>> otherNodes = Tools::getOtherNodes(p.front(),p.back());
-			copyListAllPairNodes.erase(std::remove(copyListAllPairNodes.begin(), copyListAllPairNodes.end(), p), copyListAllPairNodes.end());
-			for (auto n : copyListAllPairNodes){
+
+
+			/*for(auto f : Tools::getFacesCommon(p.front(),p.back())){
+				listAllFaces.push_back(f);
+				std::cout<<"Face ADD : "<<f<<std::endl;
+			}*/
+			for(auto n : otherNodes){
+				if (*find(nodeCheck.begin(), nodeCheck.end(), n.front()) == n.front() ||
+				    *find(nodeCheck.begin(), nodeCheck.end(), n.back()) == n.back()) {
+					std::cout<<"Other nodes deja check"<<std::endl;
+
+				}
+				else{
+					listPairToCheck.push_back(n);
+				}
+			}
+			auto newFaces = Tools::getFacesCommon(p.front(),p.back());
+			for (auto f : newFaces){
+
+				if (*find(listAllFaces.begin(), listAllFaces.end(),f) == f){
+					std::cout<<"Other nodes deja check"<<std::endl;
+				}
+				else{
+					listAllFaces.push_back(f);
+				}
+			}
+			listPairToCheck.erase(std::remove(listPairToCheck.begin(), listPairToCheck.end(), p), listPairToCheck.end());
+			for (auto n : listPairToCheck){
 				for (auto j : n){
-					std::cout<<"LIST EN COURS DE SUPP : "<<j<<std::endl;
+					//std::cout<<"LIST EN COURS DE SUPP : "<<j<<std::endl;
 				}
 			}
 
 		}
 	}
-
-
+	std::cout<<"LA LISTE DES FACES "<<std::endl;
+	for(auto f : listAllFaces){
+		std::cout<<f<<std::endl;
+	}
 	return listAllFaces;
+}
+
+std::vector<std::vector<Node>> Tools::getAllNodesChain(const int i1, const int i2)
+{
+	auto listAllFaces = Tools::getAllFacesChain(i1,i2);
+	std::vector<std::vector<Node>> listAllPairNodesChain;
 }
 
 
