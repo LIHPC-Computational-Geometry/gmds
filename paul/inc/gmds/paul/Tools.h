@@ -38,9 +38,9 @@ namespace gmds{
 
 	   int getIdNextNode(const int idNode, const int idFaceNode);
 
-	   std::vector<Node> getOtherNodes(const int i1, const int i2);
+	   std::vector<std::vector<int>> getOtherNodes(const int i1, const int i2);
 
-	   std::vector<Face> getOtherFaces(const int i1, const int i2);
+	   std::vector<Face> getAllFacesChain(const int i1, const int i2);
 
 	   gmds::GridBuilderAround g_grid;
 

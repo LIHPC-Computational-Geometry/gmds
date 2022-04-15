@@ -117,7 +117,7 @@ int main(){
 		std::cout<<"Noeud 1 :"<<i1alea<<"\nNoeud 2 :"<<i2alea<<"\nFace :"<<tool.getIdOneCommonFace(i1alea,i2alea)<<std::endl;
 		tool.checkExistEdge(i1alea,i2alea,tool.getIdOneCommonFace(i1alea,i2alea));
 	}*/
-	tool.getOtherNodes(5,6);
+	tool.getAllFacesChain(5,6);
 
 // Save Triangle Generation
 	IGMeshIOService ioService(&mT);
