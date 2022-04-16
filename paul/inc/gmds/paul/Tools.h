@@ -42,7 +42,7 @@ namespace gmds{
 
 	   std::vector<Face> getAllFacesChain(const int i1, const int i2);
 
-	   std::vector<std::vector<Node>> getAllNodesChain(const int i1, const int i2);
+	   std::vector<std::vector<int>> getAllNodesChain(const int i1, const int i2);
 
 	   gmds::GridBuilderAround g_grid;
 

@@ -215,7 +215,7 @@ std::vector<Face> Tools::getAllFacesChain(const int i1, const int i2)
 				std::cout<<n<<std::endl;
 			}
 			if (*find(nodeCheck.begin(), nodeCheck.end(), p.front()) == p.front() ||
-			    *find(nodeCheck.begin(), nodeCheck.end(), p.back()) == p.back()) {
+				 *find(nodeCheck.begin(), nodeCheck.end(), p.back()) == p.back()) {
 				std::cout<<"Noeud DEJA Check"<<std::endl;
 
 			}
@@ -237,7 +237,7 @@ std::vector<Face> Tools::getAllFacesChain(const int i1, const int i2)
 			}*/
 			for(auto n : otherNodes){
 				if (*find(nodeCheck.begin(), nodeCheck.end(), n.front()) == n.front() ||
-				    *find(nodeCheck.begin(), nodeCheck.end(), n.back()) == n.back()) {
+					 *find(nodeCheck.begin(), nodeCheck.end(), n.back()) == n.back()) {
 					std::cout<<"Other nodes deja check"<<std::endl;
 
 				}
@@ -271,11 +271,41 @@ std::vector<Face> Tools::getAllFacesChain(const int i1, const int i2)
 	return listAllFaces;
 }
 
-std::vector<std::vector<Node>> Tools::getAllNodesChain(const int i1, const int i2)
+std::vector<std::vector<int>> Tools::getAllNodesChain(const int i1, const int i2)
 {
-	auto listAllFaces = Tools::getAllFacesChain(i1,i2);
-	std::vector<std::vector<Node>> listAllPairNodesChain;
-}
+	//auto listAllFaces = Tools::getAllFacesChain(i1,i2);
+	std::vector<int> pairNodes={i1,i2};
+	auto nodeCheck = pairNodes;
+	std::vector<std::vector<int>> listAllPairNodesChain= {pairNodes};
+	std::vector<std::vector<int>> listPairToCheck = Tools::getOtherNodes(i1,i2);
+
+	while(listPairToCheck.empty()!=1) {
+		auto listParcour = listPairToCheck;
+		for (auto p : listParcour) {
+			listAllPairNodesChain.push_back(p);
+			pairNodes.push_back(p.front());
+			pairNodes.push_back(p.back());
+			auto newPairToAdd = Tools::getOtherNodes(p.front(), p.back());
+			for (auto n : newPairToAdd) {
+				if ((*find(pairNodes.begin(), pairNodes.end(), n.front()) == n.front()) || (*find(pairNodes.begin(), pairNodes.end(), n.back()) == n.back())) {
+					std::cout << "DEJA DANS LA LISTE DES NOEUDS " << n.front() << "" << n.back() << std::endl;
+				}
+				else {
+					listPairToCheck.push_back(n);
+				}
+				listPairToCheck.erase(std::remove(listPairToCheck.begin(), listPairToCheck.end(), p), listPairToCheck.end());
+			}
+		}
+	}
+
+		for (auto n : listAllPairNodesChain){
+			std::cout<<"\nUne Pair : "<<std::endl;
+			for (auto i : n){
+				std::cout<<i<<std::endl;
+			}
+		}
+		return listAllPairNodesChain;
+	}
 
 
 

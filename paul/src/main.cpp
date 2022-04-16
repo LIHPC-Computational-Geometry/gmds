@@ -77,7 +77,7 @@ int main(){
 	std::cout<<volFrac<<std::endl;*/
 
 	//Create the grid around the target (triangle in this case)
-	std::cout<<"=== Test Grid Builder ==="<<std::endl;
+	std::cout<<"=== Test Grid Builder Around ==="<<std::endl;
 	GridBuilderAround gba(&m,2);
 	gba.executeGrid2D(4,3,4,3);
 	Actions action(&gba);
@@ -117,7 +117,7 @@ int main(){
 		std::cout<<"Noeud 1 :"<<i1alea<<"\nNoeud 2 :"<<i2alea<<"\nFace :"<<tool.getIdOneCommonFace(i1alea,i2alea)<<std::endl;
 		tool.checkExistEdge(i1alea,i2alea,tool.getIdOneCommonFace(i1alea,i2alea));
 	}*/
-	tool.getAllFacesChain(1,5);
+	tool.getAllNodesChain(10,9);
 
 // Save Triangle Generation
 	IGMeshIOService ioService(&mT);
