@@ -191,12 +191,12 @@ std::vector<std::vector<int>> Tools::getOtherNodes(const int i1, const int i2)
 			}
 		}
 	}
-	/*for (auto n : listPairNodes){
-		std::cout<<"UNE PAIRE : "<<std::endl;
+	for (auto n : listPairNodes){
+		std::cout<<"UNE PAIRE de noeuds : "<<std::endl;
 		for(auto i : n) {
 			std::cout << "============"<< "Elements list pair : " << i << "===========" << std::endl;
 		}
-	}*/
+	}
 	return listPairNodes;
 }
 
@@ -288,7 +288,7 @@ std::vector<std::vector<int>> Tools::getAllNodesChain(const int i1, const int i2
 			auto newPairToAdd = Tools::getOtherNodes(p.front(), p.back());
 			for (auto n : newPairToAdd) {
 				if ((*find(pairNodes.begin(), pairNodes.end(), n.front()) == n.front()) || (*find(pairNodes.begin(), pairNodes.end(), n.back()) == n.back())) {
-					std::cout << "DEJA DANS LA LISTE DES NOEUDS " << n.front() << "" << n.back() << std::endl;
+					std::cout << "DEJA DANS LA LISTE DES NOEUDS " << n.front() << " " << n.back() << std::endl;
 				}
 				else {
 					listPairToCheck.push_back(n);

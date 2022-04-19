@@ -79,7 +79,7 @@ int main(){
 	//Create the grid around the target (triangle in this case)
 	std::cout<<"=== Test Grid Builder Around ==="<<std::endl;
 	GridBuilderAround gba(&m,2);
-	gba.executeGrid2D(4,3,4,3);
+	gba.executeGrid2D(5,3,5,3);
 	Actions action(&gba);
 	//Variable<int> *activate = m.newVariable<int,GMDS_FACE>("exist");
 
@@ -117,7 +117,8 @@ int main(){
 		std::cout<<"Noeud 1 :"<<i1alea<<"\nNoeud 2 :"<<i2alea<<"\nFace :"<<tool.getIdOneCommonFace(i1alea,i2alea)<<std::endl;
 		tool.checkExistEdge(i1alea,i2alea,tool.getIdOneCommonFace(i1alea,i2alea));
 	}*/
-	tool.getAllNodesChain(10,9);
+	//tool.getOtherNodes(2,7);
+	tool.getAllNodesChain(0,5);
 
 // Save Triangle Generation
 	IGMeshIOService ioService(&mT);
