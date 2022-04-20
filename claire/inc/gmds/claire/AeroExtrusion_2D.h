@@ -57,9 +57,9 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
    	* \param[in] A_distance the distance variable on the first mesh
 		* \param[in] dist_cible the distance wanted for the first layer
 		*
-		* \return  a map with (TCellID, math::Point) for ideal positions
+		* \return  a map with (TCellID, TCellID) for ideal positions
 	 */
-	std::map<TCellID, math::Point> ComputeIdealPositions(Front AFront, double dist_cible, Variable<double>* A_distance, Variable<math::Vector3d>* A_vectors);
+	std::map<TCellID, TCellID> ComputeIdealPositions(Front AFront, double dist_cible, Variable<double>* A_distance, Variable<math::Vector3d>* A_vectors);
 	/*-------------------------------------------------------------------*/
 
  private:

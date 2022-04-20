@@ -10,6 +10,8 @@
 #include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/claire/AdvectedPointRK4_2D.h>
 #include <gmds/claire/Grid_Smooth2D.h>
+#include <gmds/claire/AeroExtrusion_2D.h>
+
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
@@ -94,6 +96,7 @@ AeroPipeline_2D::execute(){
 	std::cout << " " << std::endl;
 
 	// Extrusion par couches
+	/*
 	m_nbr_couches=1;
 	for(int couche=1;couche<=m_nbr_couches;couche++){
 		t_start = clock();
@@ -101,6 +104,10 @@ AeroPipeline_2D::execute(){
 		t_end = clock();
 		std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	}
+	 */
+
+	AeroExtrusion_2D aero_extrusion(m_meshTet, m_meshHex);
+	aero_extrusion.execute();
 
 	// Mise à jour du linker pour la dernière couche de noeuds
 	UpdateLinkerLastLayer(1);
@@ -120,8 +127,10 @@ AeroPipeline_2D::execute(){
 	// Ecriture finale des maillages
 	EcritureMaillage();
 
-	//std::cout << "Nbr faces : " << m_mQuad.getNbFaces() << std::endl;
-	//std::cout << "Nbr arêtes : " << m_mQuad.getNbEdges() << std::endl;
+	std::cout << " " << std::endl;
+	std::cout << "INFORMATIONS COMPLEMENTAIRES :" << std::endl;
+	std::cout << "Nbr faces : " << m_meshHex->getNbFaces() << std::endl;
+	std::cout << "Nbr arêtes : " << m_meshHex->getNbEdges() << std::endl;
 
 	return AbstractAeroPipeline::SUCCESS;
 
