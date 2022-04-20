@@ -37,11 +37,16 @@ class LIB_GMDS_CLAIRE_API Front {
 	 */
 	std::vector<TCellID> getNodes();
 	/*-------------------------------------------------------------------*/
+	/** @brief Ajoute l'id du noeud au front
+	 * 	@param n_id id du noeud à ajouter
+	 */
+	void addNodeId(TCellID n_id);
+	/*-------------------------------------------------------------------*/
  private:
 	/** Liste d'id des noeuds du front */
-	std::vector<TCellID> m_nodes;
-	/** Tas des couples (distance provisoire, liste d'ids) */
-	//std::map<double, std::vector<TCellID>> m_map;
+	std::vector<TCellID> m_nodesId;
+	/** Tas des couples (node id, type du noeud) */
+	std::map<std::vector<TCellID>, int> m_NodeType;
 
 
 };
