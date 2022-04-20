@@ -64,9 +64,10 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 
 }
 /*----------------------------------------------------------------------------*/
-/*                       CAS TEST 3D CLASSE LevelSet                          */
+/*              CAS TEST 3D CLASSE LevelSet avec Exceptions                   */
 /*----------------------------------------------------------------------------*/
 
+/*
 TEST(AeroPipelineTestClass, AeroExtrusion_Test1)
 {
 	AeroExtrusion_2D extrusion2D(NULL);
@@ -82,3 +83,4 @@ TEST(AeroPipelineTestClass, AeroExtrusion_Test1)
 	}
 	std::cout<<"here"<<std::endl;
 }
+*/
