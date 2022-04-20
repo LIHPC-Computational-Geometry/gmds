@@ -273,7 +273,6 @@ std::vector<Face> Tools::getAllFacesChain(const int i1, const int i2)
 
 std::vector<std::vector<int>> Tools::getAllNodesChain(const int i1, const int i2)
 {
-	//auto listAllFaces = Tools::getAllFacesChain(i1,i2);
 	std::vector<int> pairNodes={i1,i2};
 	auto nodeCheck = pairNodes;
 	std::vector<std::vector<int>> listAllPairNodesChain= {pairNodes};
@@ -287,10 +286,17 @@ std::vector<std::vector<int>> Tools::getAllNodesChain(const int i1, const int i2
 			pairNodes.push_back(p.back());
 			auto newPairToAdd = Tools::getOtherNodes(p.front(), p.back());
 			for (auto n : newPairToAdd) {
-				if ((*find(pairNodes.begin(), pairNodes.end(), n.front()) == n.front()) || (*find(pairNodes.begin(), pairNodes.end(), n.back()) == n.back())) {
+				if ((*find(pairNodes.begin(), pairNodes.end(), n.front()) == n.front()) ||
+					 (*find(pairNodes.begin(), pairNodes.end(), n.back()) == n.back())) {
 					std::cout << "DEJA DANS LA LISTE DES NOEUDS " << n.front() << " " << n.back() << std::endl;
+					std::cout<<"Pair check :" <<std::endl;
+					for (auto i : pairNodes){
+						std::cout<<i<<std::endl;
+					}
 				}
 				else {
+
+					std::cout<<"Element ADD : "<<n.front()<<" "<<n.back()<<std::endl;
 					listPairToCheck.push_back(n);
 				}
 				listPairToCheck.erase(std::remove(listPairToCheck.begin(), listPairToCheck.end(), p), listPairToCheck.end());
@@ -298,14 +304,14 @@ std::vector<std::vector<int>> Tools::getAllNodesChain(const int i1, const int i2
 		}
 	}
 
-		for (auto n : listAllPairNodesChain){
-			std::cout<<"\nUne Pair : "<<std::endl;
-			for (auto i : n){
-				std::cout<<i<<std::endl;
-			}
+	for (auto n : listAllPairNodesChain){
+		std::cout<<"\nUne Pair : "<<std::endl;
+		for (auto i : n){
+			std::cout<<i<<std::endl;
 		}
-		return listAllPairNodesChain;
 	}
+	return listAllPairNodesChain;
+}
 
 
 

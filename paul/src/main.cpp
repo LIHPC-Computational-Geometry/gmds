@@ -118,7 +118,7 @@ int main(){
 		tool.checkExistEdge(i1alea,i2alea,tool.getIdOneCommonFace(i1alea,i2alea));
 	}*/
 	//tool.getOtherNodes(2,7);
-	tool.getAllNodesChain(0,5);
+	tool.getAllNodesChain(5,10);
 
 // Save Triangle Generation
 	IGMeshIOService ioService(&mT);

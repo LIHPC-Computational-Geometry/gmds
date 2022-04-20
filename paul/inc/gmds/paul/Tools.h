@@ -142,6 +142,8 @@ class Tools{
 
 	std::vector<std::vector<int>> getAllNodesChain(const int i1, const int i2);
 
+	void suppElementVector(const std::vector<int> vectorInt);
+
 	gmds::GridBuilderAround g_grid;
 
 };
