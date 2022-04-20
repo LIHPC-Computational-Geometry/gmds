@@ -3,6 +3,7 @@
 //
 
 /*------------------------------------------------------------------------*/
+#include <gmds/claire/AeroException.h>
 #include <gmds/claire/AeroExtrusion_2D.h>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
@@ -18,7 +19,7 @@ AeroExtrusion_2D::STATUS
 AeroExtrusion_2D::execute()
 {
 	if(m_mesh==NULL)
-		throw GMDSException("ERROR: Invalid mesh pointer");
+		throw AeroException("ERROR: Invalid mesh pointer");
 
 	return AeroExtrusion_2D::SUCCESS;
 }

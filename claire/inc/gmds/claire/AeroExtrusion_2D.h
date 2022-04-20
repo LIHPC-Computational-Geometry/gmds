@@ -8,6 +8,7 @@
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include "gmds/ig/Mesh.h"
+#include <gmds/claire/AeroException.h>
 #include <string>
 #include <map>
 #include <fstream>

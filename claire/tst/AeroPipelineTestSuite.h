@@ -6,6 +6,7 @@
 #include <gmds/claire/AeroPipeline_2D.h>
 #include <gmds/claire/AeroPipeline_3D.h>
 #include <gmds/claire/AeroExtrusion_2D.h>
+#include <gmds/claire/AeroException.h>
 #include <gmds/claire/Params.h>
 #include <gtest/gtest.h>
 #include <iostream>
@@ -72,7 +73,7 @@ TEST(AeroPipelineTestClass, AeroExtrusion_Test1)
 	try {
 		extrusion2D.execute();
 	}
-	catch (GMDSMathException& e) {
+	catch (AeroException& e) {
 
 		std::cout<<"Exception catched"<<std::endl;
 	}

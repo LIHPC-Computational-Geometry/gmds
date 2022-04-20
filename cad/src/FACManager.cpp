@@ -772,7 +772,7 @@ namespace gmds{
 //                }
 //            }
 
-#ifdef _DEBUG_	 edge [0, 1] gives 3
+#ifdef _DEBUG_	 //edge [0, 1] gives 3
 
             std::cout<<"We imported "<<std::endl;
 	        std::cout<<"nb vertices "<<this->getNbPoints()<<std::endl;
