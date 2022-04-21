@@ -207,7 +207,7 @@ std::vector<Face> Tools::getAllFacesChain(const int i1, const int i2)
 	std::vector<int> nodeCheck = {i1,i2};
 	auto listPairToCheck = listAllPairNodes;
 
-	while(listPairToCheck.empty() != 1){
+	while(!listPairToCheck.empty()){
 		auto listParcour = listPairToCheck;
 		for (auto p : listParcour){
 			std::cout<<"LES ID QUI SONT CHECK"<<std::endl;
@@ -255,7 +255,12 @@ std::vector<Face> Tools::getAllFacesChain(const int i1, const int i2)
 					listAllFaces.push_back(f);
 				}
 			}
-			listPairToCheck.erase(std::remove(listPairToCheck.begin(), listPairToCheck.end(), p), listPairToCheck.end());
+
+			//Old method to remove an element
+			// listPairToCheck.erase(std::remove(listPairToCheck.begin(), listPairToCheck.end(), p), listPairToCheck.end());
+
+			listPairToCheck.erase(std::find(listPairToCheck.begin(),listPairToCheck.end(),p));
+
 			for (auto n : listPairToCheck){
 				for (auto j : n){
 					//std::cout<<"LIST EN COURS DE SUPP : "<<j<<std::endl;
@@ -278,7 +283,7 @@ std::vector<std::vector<int>> Tools::getAllNodesChain(const int i1, const int i2
 	std::vector<std::vector<int>> listAllPairNodesChain= {pairNodes};
 	std::vector<std::vector<int>> listPairToCheck = Tools::getOtherNodes(i1,i2);
 
-	while(listPairToCheck.empty()!=1) {
+	while(!listPairToCheck.empty()) {
 		auto listParcour = listPairToCheck;
 		for (auto p : listParcour) {
 			listAllPairNodesChain.push_back(p);
@@ -300,7 +305,11 @@ std::vector<std::vector<int>> Tools::getAllNodesChain(const int i1, const int i2
 					listPairToCheck.push_back(n);
 				}
 			}
-			listPairToCheck.erase(std::remove(listPairToCheck.begin(), listPairToCheck.end(), p), listPairToCheck.end());
+			//Old method to remove the element
+			// listPairToCheck.erase(std::remove(listPairToCheck.begin(), listPairToCheck.end(), p), listPairToCheck.end());
+
+			listPairToCheck.erase(std::find(listPairToCheck.begin(),listPairToCheck.end(),p));
+
 		}
 	}
 
@@ -313,5 +322,121 @@ std::vector<std::vector<int>> Tools::getAllNodesChain(const int i1, const int i2
 	return listAllPairNodesChain;
 }
 
+std::vector<Node> Tools::nodesAroundANode(const int i1)
+{
+	std::vector<Node> listNodesAround={};
+	std::vector<Face> facesAround = Tools::getListFacesOfNode(i1);
 
+	for (auto f : facesAround){
+		auto listNodesFace = Tools::getListNodesOfFace(f.id());
+		for (auto n : listNodesFace){
+			if(Tools::checkExistEdge(i1,n.id(),f.id())){
+				if(std::find(listNodesAround.begin(),listNodesAround.end(),n)!=listNodesAround.end()){
+				}
+				else{
+					listNodesAround.push_back(n);
+				}
+			}
+		}
+	}
+	std::cout<<"List Node Around"<<std::endl;
+	for (auto n : listNodesAround){
+		std::cout<<n<<std::endl;
+	}
 
+	return listNodesAround;
+}
+
+std::vector<Node> Tools::getOppositeNodes(const int i1,const int i2)
+{
+	std::vector<Node> oppositeNodes={};
+	std::vector<Node> listAroundNode=Tools::nodesAroundANode(i1);
+	auto opositeEdge = Tools::getOtherNodes(i1,i2);
+
+	for (auto n : listAroundNode){
+		for(auto v : opositeEdge){
+			for(auto i : v){
+				if (n.id()== i){
+					if(std::find(oppositeNodes.begin(),oppositeNodes.end(),n)!=oppositeNodes.end()){
+					}
+					else{
+						oppositeNodes.push_back(n);
+					}
+				}
+			}
+		}
+	}
+	/*std::cout<<"List Node Opposite"<<std::endl;
+	for (auto n : oppositeNodes){
+		std::cout<<n<<std::endl;
+	}*/
+	return oppositeNodes;
+}
+
+std::vector<int> Tools::getListFirstNodesChain(const int i1, const int i2)
+{
+	std::vector<int> listIdFirstNodes = {i1};
+	auto listPairNodes = Tools::getAllNodesChain(i1,i2);
+	auto nodesToCheck = Tools::getOppositeNodes(i1,i2);
+
+	while(!nodesToCheck.empty()){
+		auto listNodeParcours = nodesToCheck;
+		for(auto n : listNodeParcours){
+			listIdFirstNodes.push_back(n.id());
+			for(auto v : listPairNodes){
+				if(v.front() == n.id()){
+					auto newNodeToAdd=Tools::getOppositeNodes(n.id(),v.back());
+					for(auto add : newNodeToAdd){
+						if(std::find(listIdFirstNodes.begin(),listIdFirstNodes.end(),add.id())!=listIdFirstNodes.end()){
+						}
+						else{
+							nodesToCheck.push_back(add);
+						}
+					}
+				}
+				if(v.back()==n.id()){
+					auto newNodeToAdd=Tools::getOppositeNodes(n.id(),v.front());
+					for(auto add : newNodeToAdd){
+						if(std::find(listIdFirstNodes.begin(),listIdFirstNodes.end(),add.id())!=listIdFirstNodes.end()){
+						}
+						else{
+							nodesToCheck.push_back(add);
+						}
+					}
+				}
+			}
+			//supp variable check
+			nodesToCheck.erase(std::find(nodesToCheck.begin(),nodesToCheck.end(),n));
+		}
+	}
+
+	/*std::cout<<"List Nodes First"<<std::endl;
+	for (auto n : listIdFirstNodes){
+		std::cout<<n<<std::endl;
+	}*/
+
+	return listIdFirstNodes;
+}
+
+std::vector<int> Tools::getListSecondNodesChain(const int i1, const int i2)
+{
+	auto listSecondNodesChain=Tools::getListFirstNodesChain(i2,i1);
+	std::cout<<"List Nodes First"<<std::endl;
+	/*for (auto n : listSecondNodesChain){
+		std::cout<<n<<std::endl;
+	}*/
+	return listSecondNodesChain;
+}
+
+Node Tools::creatMiddleNode(Node i1,Node i2)
+{
+	double newX = (i1.X()+i2.X())/2;
+	double newY=(i1.Y()+i2.Y())/2;
+	double newZ=(i1.Z()+i2.Z())/2;
+
+	Node newNode = g_grid.m_mesh.newNode(math::Point(newX,newY,newZ));
+
+	std::cout<<"Le new node : " <<newNode<<std::endl;
+
+	return newNode;
+}

@@ -142,7 +142,42 @@ class Tools{
 
 	std::vector<std::vector<int>> getAllNodesChain(const int i1, const int i2);
 
+	//en cours d'implé, par sur  necessaire pour le moment
 	void suppElementVector(const std::vector<int> vectorInt);
+
+	/** \brief get all nodes with a common edge for a specifiy node
+	 *
+	 * @param i1 id node
+	 * @return an vector of nodes
+	 */
+	std::vector<Node> nodesAroundANode(const int i1);
+
+	/** \brief get opposite nodes
+	 *
+	 * @param i1 id first node (node target)
+	 * @param i2 id second node (node to know the edge)
+	 * @return an vector of nodes
+	 */
+	std::vector<Node> getOppositeNodes(const int i1,const int i2);
+
+	/** \brief get list nodes on the same line of the first element
+	 *
+	 * @param i1 id first node (node target)
+	 * @param i2 id second node (other node to know the edge)
+	 * @return vector int
+	 */
+	std::vector<int> getListFirstNodesChain(const int i1, const int i2);
+
+	/** \brief get list nodes on the same line of the second element
+	 *
+	 * @param i1 id first node (other node to know the edge)
+	 * @param i2 id second node (node target)
+	 * @return vector int
+	 */
+
+	std::vector<int> getListSecondNodesChain(const int i1, const int i2);
+
+	Node creatMiddleNode(Node i1,Node i2);
 
 	gmds::GridBuilderAround g_grid;
 

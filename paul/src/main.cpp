@@ -118,7 +118,8 @@ int main(){
 		tool.checkExistEdge(i1alea,i2alea,tool.getIdOneCommonFace(i1alea,i2alea));
 	}*/
 	//tool.getOtherNodes(2,7);
-	tool.getAllNodesChain(0,5);
+	//tool.getListSecondNodesChain(11,16);
+	tool.creatMiddleNode(tool.g_grid.m_mesh.get<Node>(1),tool.g_grid.m_mesh.get<Node>(2));
 
 // Save Triangle Generation
 	IGMeshIOService ioService(&mT);
