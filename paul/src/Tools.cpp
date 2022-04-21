@@ -299,8 +299,8 @@ std::vector<std::vector<int>> Tools::getAllNodesChain(const int i1, const int i2
 					std::cout<<"Element ADD : "<<n.front()<<" "<<n.back()<<std::endl;
 					listPairToCheck.push_back(n);
 				}
-				listPairToCheck.erase(std::remove(listPairToCheck.begin(), listPairToCheck.end(), p), listPairToCheck.end());
 			}
+			listPairToCheck.erase(std::remove(listPairToCheck.begin(), listPairToCheck.end(), p), listPairToCheck.end());
 		}
 	}
 
