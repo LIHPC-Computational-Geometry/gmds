@@ -78,9 +78,17 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
 		*
 		* \return
 	 */
-	void getSingularNode(Front Front_IN, TCellID &n_id, int &type);
+	void getSingularNode(Front Front_IN, TCellID &node_id, int &type);
 	/*-------------------------------------------------------------------*/
-
+	/** @brief Insertion d'un bloc.
+	 	* \param[in] Front_IN the front
+   	* \param[in] n_id l'id du noeud concerné
+		* \param[in] Front_OUT front de sortie
+		*
+		* \return
+	 */
+	void Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT);
+	/*-------------------------------------------------------------------*/
  private:
 	/** triangular mesh we work on */
 	Mesh *m_meshT;

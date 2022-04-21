@@ -33,6 +33,7 @@ class LIB_GMDS_CLAIRE_API Front {
 
 	struct multiple_info{
 		TCellID     					n_id;
+		TCellID 							ideal_node_id;
 		int 								nodeType;
 		std::map<TCellID, TCellID> next_nodes;	// (e_id, next_n_id)
 	};
@@ -56,6 +57,14 @@ class LIB_GMDS_CLAIRE_API Front {
 	 * 	@param[in] n_id id du noeud concerné
 	 */
 	int getNodeType(TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Retourne le noeud dans la couche suivante pour la
+	 * 	construction du quad.
+	 * 	@param[in] n_id id du noeud concerné
+	 * 	@param[in] n_neighbors_id id du noeud voisin qui fait
+	 * 	partie du quad
+	 */
+	TCellID getNextNode(TCellID n_id, TCellID n_neighbors_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Ajoute l'id du noeud au front
 	 * 	@param n_id id du noeud à ajouter
@@ -92,12 +101,10 @@ class LIB_GMDS_CLAIRE_API Front {
 	std::vector<TCellID> m_nodesId;
 	/** Liste d'id des arêtes du front */
 	std::vector<TCellID> m_edgesId;
-	/** Tas des couples (node id, type du noeud) */
-	//std::map<TCellID, int> m_NodeType;
 	/** Infos sur les noeuds multiples et contractés */
 	std::map<TCellID, multiple_info> m_NodeInfo;
 	/** Noeuds voisins sur le front */
-	std::map<TCellID, std::vector<TCellID>> m_NodeNeighbors
+	std::map<TCellID, std::vector<TCellID>> m_NodeNeighbors;
 
 
 };

@@ -167,9 +167,12 @@ AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, dou
 	while (do_smooth){
 		do_smooth = false;
 		// A FAIRE : lissage de la couche
-		// (n, type) -> getSingularNode(?) -> énorme implicite sur ce que fait cette méthode. Elle choisit les singu prioritaires (mais comment ?)
-		//
+
+		TCellID node_id;
 		int type_node(0);
+
+		getSingularNode(Front_IN, node_id, type_node);
+
 		if (type_node == 1){
 			// Insertion
 		}
@@ -184,20 +187,40 @@ AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, dou
 
 
 /*------------------------------------------------------------------------*/
-void getSingularNode(Front Front_IN, TCellID &n_id, int &type){
+void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &type){
 
 	std::vector<TCellID> front_nodes = Front_IN.getNodes();
 	std::vector<TCellID> front_edges = Front_IN.getEdges();
 
+	node_id = NullID;
+	type = 0;
+
 	for (auto n_id:front_nodes){
 		// si le noeud est normal
 		if (Front_IN.getNodeType(n_id) == 0){
+			std::vector<TCellID> neighbors_nodes = Front_IN.getNeighbors(n_id);
 			// test premier quad
-
+			double r1 = math::AeroMeshQuality::oppositeedgeslenghtratio(m_meshT, n_id, neighbors_nodes[0],
+			                                                Front_IN.getNextNode(neighbors_nodes[0],n_id),
+			                                                Front_IN.getNextNode(n_id,neighbors_nodes[0]));
 			// test second quad
+			double r2 = math::AeroMeshQuality::oppositeedgeslenghtratio(m_meshT, n_id, neighbors_nodes[1],
+			                                                            Front_IN.getNextNode(neighbors_nodes[1],n_id),
+			                                                            Front_IN.getNextNode(n_id,neighbors_nodes[1]));
+			if (r1 < 0.8 || r2 < 0.8){
+				node_id = n_id;
+				type = 1;
+			}
 		}
 	}
 
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT){
 
 }
 /*------------------------------------------------------------------------*/
