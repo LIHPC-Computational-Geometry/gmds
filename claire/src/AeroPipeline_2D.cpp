@@ -106,8 +106,12 @@ AeroPipeline_2D::execute(){
 	}
 	 */
 
+	std::cout << "-> Extrusion" << std::endl;
+	t_start = clock();
 	AeroExtrusion_2D aero_extrusion(m_meshTet, m_meshHex);
 	aero_extrusion.execute();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
 	// Mise à jour du linker pour la dernière couche de noeuds
 	UpdateLinkerLastLayer(1);

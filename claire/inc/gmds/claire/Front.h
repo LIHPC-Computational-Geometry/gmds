@@ -40,6 +40,25 @@ class LIB_GMDS_CLAIRE_API Front {
 
  public:
 	/*-------------------------------------------------------------------*/
+	/** @brief Change le type d'un noeud pour le passer en multiple
+	 * 	@param[in] n_id id du noeud concerné
+	 */
+	void setMultipleNode(TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Change le type d'un noeud pour le passer en contracté
+	 * 	@param[in] n_id id du noeud concerné
+	 */
+	void setContractedNode(TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Met à jour le noeud dans la couche suivante pour la
+	 * 	construction du quad.
+	 * 	@param[in] n_id id du noeud concerné
+	 * 	@param[in] n_neighbor_id id du noeud voisin à n_id
+	 * 	@param[in] n_new_id id du noeud auquel le quad va devoir se
+	 * 	connecter
+	 */
+	void setNextNode(TCellID n_id, TCellID n_neighbor_id, TCellID n_new_id);
+	/*-------------------------------------------------------------------*/
 	/** @brief Retourne les id des noeuds du front dans un vecteur
 	 */
 	std::vector<TCellID> getNodes();
@@ -57,6 +76,12 @@ class LIB_GMDS_CLAIRE_API Front {
 	 * 	@param[in] n_id id du noeud concerné
 	 */
 	int getNodeType(TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Retourne l'id du noeud correspondant à la position idéale
+	 * à partir du noeud n.
+	 * 	@param[in] n_id id du noeud concerné
+	 */
+	TCellID getIdealNode(TCellID n_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Retourne le noeud dans la couche suivante pour la
 	 * 	construction du quad.

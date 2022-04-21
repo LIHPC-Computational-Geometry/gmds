@@ -56,20 +56,22 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
 	 	* les conditions sont particulières.
    	* \param[in] A_distance the distance variable on the first mesh
 		* \param[in] dist_cible the distance wanted for the first layer
+	 	* \param[in] A_vectors le champ de vecteurs à utiliser
 		*
 		* \return  the first front computed
 	 */
-	Front Compute1stLayer(Variable<double>* A_distance, double dist_cible);
+	Front Compute1stLayer(Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors);
 	/*-------------------------------------------------------------------*/
 	/** @brief Construit une couche de mailles à partir d'un front. Ici,
 	 	* des mailles peuvent être fusionnées ou insérées.
 	 	* \param[in] Front_IN the front before
    	* \param[in] A_distance the distance variable on the first mesh
 		* \param[in] dist_cible the distance wanted for the first layer
+	 	* \param[in] A_vectors le champ de vecteurs à utiliser
 		*
 		* \return  the front computed
 	 */
-	Front ComputeLayer(Front Front_IN, Variable<double>* A_distance, double dist_cible);
+	Front ComputeLayer(Front Front_IN, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors);
 	/*-------------------------------------------------------------------*/
 	/** @brief Retourne un noeud singulier du front.
 	 	* \param[in] Front_IN the front
@@ -87,7 +89,7 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
 		*
 		* \return
 	 */
-	void Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT);
+	void Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors);
 	/*-------------------------------------------------------------------*/
  private:
 	/** triangular mesh we work on */

@@ -27,7 +27,10 @@ AeroExtrusion_2D::execute()
 	//if(m_mesh==NULL)
 	//	throw AeroException("ERROR: Invalid mesh pointer");
 
-	Compute1stLayer(m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), 0.25);
+	Front Current_Front = Compute1stLayer(m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), 0.5,
+	                m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 1,
+	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 
 	return AeroExtrusion_2D::SUCCESS;
 }
@@ -58,15 +61,13 @@ std::map<TCellID, TCellID>
 
 /*------------------------------------------------------------------------*/
 Front
-AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cible){
+AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors){
 
 	Front Front_Paroi;
 	Front_Paroi.initializeFromLayerId(m_meshQ, 0);
 	Front First_Front;
 
-	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_Paroi, dist_cible,
-	                                                                 m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
-	                                                                 m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_Paroi, dist_cible, A_distance, A_vectors);
 
 	std::vector<TCellID> front_nodes = Front_Paroi.getNodes();
 	std::vector<TCellID> front_edges = Front_Paroi.getEdges();
@@ -149,12 +150,10 @@ AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cibl
 
 /*------------------------------------------------------------------------*/
 Front
-AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, double dist_cible){
+AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors){
 	Front Front_OUT;
 
-	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_IN, dist_cible,
-	                                                                 m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
-	                                                                 m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_IN, dist_cible, A_distance, A_vectors);
 
 	Front_IN.initializeNodeType(m_meshQ, map_new_nodes);
 
@@ -175,9 +174,13 @@ AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, dou
 
 		if (type_node == 1){
 			// Insertion
+			Insertion(Front_IN, node_id, Front_OUT,
+			          A_distance, dist_cible, A_vectors);
+			do_smooth = true;
 		}
 		else if (type_node == 2){
 			// Fusion
+			//do_smooth = true;
 		}
 	}
 
@@ -207,7 +210,8 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 			double r2 = math::AeroMeshQuality::oppositeedgeslenghtratio(m_meshT, n_id, neighbors_nodes[1],
 			                                                            Front_IN.getNextNode(neighbors_nodes[1],n_id),
 			                                                            Front_IN.getNextNode(n_id,neighbors_nodes[1]));
-			if (r1 < 0.8 || r2 < 0.8){
+			std::cout << "r1 et r2 : " << r1 << " " << r2 << std::endl;
+			if (r1 < 0.95 || r2 < 0.95){
 				node_id = n_id;
 				type = 1;
 			}
@@ -220,7 +224,80 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 
 
 /*------------------------------------------------------------------------*/
-void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT){
+void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT,
+                            Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors){
+
+	std::vector<TCellID> neighbors_nodes = Front_IN.getNeighbors(n_id);
+
+	// Contruction du premier noeud n1
+	Node n = m_meshQ->get<Node>(n_id);
+	Node n_neighbor = m_meshQ->get<Node>(neighbors_nodes[0]);
+	std::cout << "Premier point : " << n_neighbor.point() << " " << n_neighbor.id() << std::endl;
+	std::cout << "Second point : " << n.point() << " " << n.id() << std::endl;
+	math::Point P1_construction = n.point() + 0.3*(n_neighbor.point()-n.point()) ;
+	std::cout << "P1 : " << P1_construction << std::endl;
+	AdvectedPointRK4_2D advpoint_n1(m_meshT, P1_construction, dist_cible, A_distance, A_vectors);
+	advpoint_n1.execute();
+	Node n1 = m_meshQ->newNode(advpoint_n1.getPend());
+	// Contruction du premier noeud n2
+	n_neighbor = m_meshQ->get<Node>(neighbors_nodes[1]);
+	P1_construction = n.point() + 0.3*(n_neighbor.point()-n.point()) ;
+	AdvectedPointRK4_2D advpoint_n2(m_meshT, P1_construction, dist_cible, A_distance, A_vectors);
+	advpoint_n2.execute();
+	Node n2 = m_meshQ->newNode(advpoint_n2.getPend());
+
+	// Mise à jour du Front_IN
+	Front_IN.setMultipleNode(n_id);
+	Front_IN.setNextNode(neighbors_nodes[0], n_id, n1.id());
+	Front_IN.setNextNode(neighbors_nodes[1], n_id, n2.id());
+
+	// Création du quad
+	TCellID n0_id = Front_IN.getIdealNode(n_id);
+	Node n0 = m_meshQ->get<Node>(n0_id);
+
+	// On créé la face associée à l'arête
+	Face f = m_meshQ->newQuad(n, n1, n0, n2) ; // F->N (x4)
+	n.add<Face>(f);		// N->F
+	n0.add<Face>(f);		// N->F
+	n1.add<Face>(f);		// N->F
+	n2.add<Face>(f);		// N->F
+
+	// Création des arêtes
+	Edge e0 = m_meshQ->newEdge(n0, n1);	// E->N (x2)
+	n0.add<Edge>(e0);										// N->E
+	n1.add<Edge>(e0);										// N->E
+
+	Edge e1 = m_meshQ->newEdge(n, n1);		// E->N (x2)
+	n.add<Edge>(e1);										// N->E
+	n1.add<Edge>(e1);										// N->E
+
+	Edge e2 = m_meshQ->newEdge(n, n2);		// E->N (x2)
+	n.add<Edge>(e2);										// N->E
+	n2.add<Edge>(e2);										// N->E
+
+	Edge e3 = m_meshQ->newEdge(n0, n2);	// E->N (x2)
+	n0.add<Edge>(e3);										// N->E
+	n2.add<Edge>(e3);										// N->E
+
+	// Connectivités F->E
+	f.add<Edge>(e0);		// F->E
+	f.add<Edge>(e1);		// F->E
+	f.add<Edge>(e2);		// F->E
+	f.add<Edge>(e3);		// F->E
+
+	// Connectivités E->F
+	e0.add<Face>(f);		// E->F
+	e1.add<Face>(f);		// E->F
+	e2.add<Face>(f);		// E->F
+	e3.add<Face>(f);		// E->F
+
+
+	// Mise à jour du Front_OUT
+	Front_OUT.addEdgeId(e0.id());
+	Front_OUT.addEdgeId(e3.id());
+	Front_OUT.addNodeId(n0.id());
+	Front_OUT.addNodeId(n1.id());
+	Front_OUT.addNodeId(n2.id());
 
 }
 /*------------------------------------------------------------------------*/

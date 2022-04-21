@@ -30,7 +30,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.input_file=dir+"/Aero/C1_2D_0.1.vtk";
 	params_aero.output_file="AeroPipeline2D_Quad.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
-	params_aero.nbrMinBloc=2;
+	params_aero.nbrMinBloc=8;
 
 	AeroPipeline_2D algo_aero2D(params_aero);
 	AbstractAeroPipeline::STATUS aero2D_result = algo_aero2D.execute();
