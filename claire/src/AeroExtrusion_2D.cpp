@@ -8,6 +8,7 @@
 #include <gmds/claire/AeroException.h>
 #include <gmds/claire/AeroExtrusion_2D.h>
 #include <gmds/claire/AdvectedPointRK4_2D.h>
+#include <gmds/claire/AeroMeshQuality.h>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -155,9 +156,48 @@ AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, dou
 	                                                                 m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
 	                                                                 m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 
+	Front_IN.initializeNodeType(m_meshQ, map_new_nodes);
+
 	std::vector<TCellID> front_nodes = Front_IN.getNodes();
-	//std::vector<TCellID> front_edges = Front_IN.getEdges();
+	std::vector<TCellID> front_edges = Front_IN.getEdges();
+
+	// Boucle d'insertion d'éléments
+	bool do_smooth(true);
+
+	while (do_smooth){
+		do_smooth = false;
+		// A FAIRE : lissage de la couche
+		// (n, type) -> getSingularNode(?) -> énorme implicite sur ce que fait cette méthode. Elle choisit les singu prioritaires (mais comment ?)
+		//
+		int type_node(0);
+		if (type_node == 1){
+			// Insertion
+		}
+		else if (type_node == 2){
+			// Fusion
+		}
+	}
 
 	return Front_OUT;
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void getSingularNode(Front Front_IN, TCellID &n_id, int &type){
+
+	std::vector<TCellID> front_nodes = Front_IN.getNodes();
+	std::vector<TCellID> front_edges = Front_IN.getEdges();
+
+	for (auto n_id:front_nodes){
+		// si le noeud est normal
+		if (Front_IN.getNodeType(n_id) == 0){
+			// test premier quad
+
+			// test second quad
+		}
+	}
+
+
 }
 /*------------------------------------------------------------------------*/

@@ -12,15 +12,7 @@ namespace math {
 
 
 /*------------------------------------------------------------------------*/
-double AeroMeshQuality::oppositeedgeslenghtratio(Mesh *AMesh, TCellID f_id){
-
-	Face f = AMesh->get<Face>(f_id);
-	std::vector<Node> nodes = f.get<Node>() ;
-
-	TCellID n0_id = nodes[0].id();
-	TCellID n1_id = nodes[1].id();
-	TCellID n2_id = nodes[2].id();
-	TCellID n3_id = nodes[3].id();
+double AeroMeshQuality::oppositeedgeslenghtratio(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id){
 
 	double r1 = Utils::distFromNodeIds(AMesh, n0_id, n1_id)/Utils::distFromNodeIds(AMesh, n2_id, n3_id) ;
 	if(r1 >= 1){

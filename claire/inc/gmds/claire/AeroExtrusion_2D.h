@@ -71,6 +71,15 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
 	 */
 	Front ComputeLayer(Front Front_IN, Variable<double>* A_distance, double dist_cible);
 	/*-------------------------------------------------------------------*/
+	/** @brief Retourne un noeud singulier du front.
+	 	* \param[in] Front_IN the front
+   	* \param[out] n_id l'id du noeud singulier
+		* \param[out] type type de la singularité
+		*
+		* \return
+	 */
+	void getSingularNode(Front Front_IN, TCellID &n_id, int &type);
+	/*-------------------------------------------------------------------*/
 
  private:
 	/** triangular mesh we work on */

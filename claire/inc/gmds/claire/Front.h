@@ -31,6 +31,12 @@ class LIB_GMDS_CLAIRE_API Front {
 	Front();
 	/*-------------------------------------------------------------------*/
 
+	struct multiple_info{
+		TCellID     					n_id;
+		int 								nodeType;
+		std::map<TCellID, TCellID> next_nodes;	// (e_id, next_n_id)
+	};
+
  public:
 	/*-------------------------------------------------------------------*/
 	/** @brief Retourne les id des noeuds du front dans un vecteur
@@ -40,6 +46,16 @@ class LIB_GMDS_CLAIRE_API Front {
 	/** @brief Retourne les id des arêtes du front dans un vecteur
 	 */
 	std::vector<TCellID> getEdges();
+	/*-------------------------------------------------------------------*/
+	/** @brief Retourne les id des noeuds voisins sur le front
+	 * 	@param[in] n_id id du noeud concerné
+	 */
+	std::vector<TCellID> getNeighbors(TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Retourne le type du noeud d'id n_id
+	 * 	@param[in] n_id id du noeud concerné
+	 */
+	int getNodeType(TCellID n_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Ajoute l'id du noeud au front
 	 * 	@param n_id id du noeud à ajouter
@@ -52,9 +68,24 @@ class LIB_GMDS_CLAIRE_API Front {
 	void addEdgeId(TCellID e_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Initialise le Front à partir de l'ID de la couche souhaitée.
+	 * 	@param[in] m the mesh we work on
 	 * 	@param[in] layer_id id de la couche des noeuds
 	 */
 	void initializeFromLayerId(Mesh *m, int layer_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Initialise la map m_NodeInfo avec une map déjà existante.
+	 * 	Cette map fait correspondre à chaque noeud du front un noeud.
+	 * 	@param[in] m the mesh we work on
+	 * 	@param[in] map_idealpositions map contenant les ID des noeuds
+	 * 	créés à la position idéale.
+	 */
+	void initializeNodeType(Mesh *m, std::map<TCellID, TCellID> map_idealpositions);
+	/*-------------------------------------------------------------------*/
+	/** @brief Initialise la map m_NodeNeighbors des noeuds voisins à un noeud
+	 * 	sur un front.
+	 * 	@param[in] m the mesh we work on
+	 */
+	void initializeNodeNeighbors(Mesh *m);
 	/*-------------------------------------------------------------------*/
  private:
 	/** Liste d'id des noeuds du front */
@@ -62,7 +93,11 @@ class LIB_GMDS_CLAIRE_API Front {
 	/** Liste d'id des arêtes du front */
 	std::vector<TCellID> m_edgesId;
 	/** Tas des couples (node id, type du noeud) */
-	std::map<std::vector<TCellID>, int> m_NodeType;
+	//std::map<TCellID, int> m_NodeType;
+	/** Infos sur les noeuds multiples et contractés */
+	std::map<TCellID, multiple_info> m_NodeInfo;
+	/** Noeuds voisins sur le front */
+	std::map<TCellID, std::vector<TCellID>> m_NodeNeighbors
 
 
 };

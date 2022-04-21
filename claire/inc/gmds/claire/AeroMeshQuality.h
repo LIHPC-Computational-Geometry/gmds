@@ -23,11 +23,14 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	/*------------------------------------------------------------------------*/
 	/** \brief  Compute the distance between two nodes given the ids
          *
-         * \param[in] f_id quad id
+         * \param[in] n0_id first node id
+         * \param[in] n1_id second node id
+         * \param[in] n2_id third node id
+         * \param[in] n3_id fourth node id
          *
-         * \return  the min ratio between two opposite edges
+         * \return  the min ratio between two opposite edges (between 0 and 1)
 	 */
-	static double oppositeedgeslenghtratio(Mesh *AMesh, TCellID f_id);
+	static double oppositeedgeslenghtratio(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
 
 	/*------------------------------------------------------------------------*/
 
