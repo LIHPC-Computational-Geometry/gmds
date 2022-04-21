@@ -184,6 +184,17 @@ AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, dou
 		}
 	}
 
+	// Ajout des quad restants
+	for (auto e_id:front_edges){
+		Edge e = m_meshQ->get<Edge>(e_id);
+		std::vector<Node> nodes = e.get<Node>();
+		if (Front_IN.getNodeType(nodes[0].id()) != 2
+		    && Front_IN.getNodeType(nodes[1].id()) != 2 ){
+			CreatNormalQuad(e_id, Front_IN, Front_OUT);
+		}
+
+	}
+
 	return Front_OUT;
 }
 /*------------------------------------------------------------------------*/
@@ -210,7 +221,6 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 			double r2 = math::AeroMeshQuality::oppositeedgeslenghtratio(m_meshT, n_id, neighbors_nodes[1],
 			                                                            Front_IN.getNextNode(neighbors_nodes[1],n_id),
 			                                                            Front_IN.getNextNode(n_id,neighbors_nodes[1]));
-			std::cout << "r1 et r2 : " << r1 << " " << r2 << std::endl;
 			if (r1 < 0.95 || r2 < 0.95){
 				node_id = n_id;
 				type = 1;
@@ -232,10 +242,10 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT
 	// Contruction du premier noeud n1
 	Node n = m_meshQ->get<Node>(n_id);
 	Node n_neighbor = m_meshQ->get<Node>(neighbors_nodes[0]);
-	std::cout << "Premier point : " << n_neighbor.point() << " " << n_neighbor.id() << std::endl;
-	std::cout << "Second point : " << n.point() << " " << n.id() << std::endl;
+	//std::cout << "Premier point : " << n_neighbor.point() << " " << n_neighbor.id() << std::endl;
+	//std::cout << "Second point : " << n.point() << " " << n.id() << std::endl;
 	math::Point P1_construction = n.point() + 0.3*(n_neighbor.point()-n.point()) ;
-	std::cout << "P1 : " << P1_construction << std::endl;
+	//std::cout << "P1 : " << P1_construction << std::endl;
 	AdvectedPointRK4_2D advpoint_n1(m_meshT, P1_construction, dist_cible, A_distance, A_vectors);
 	advpoint_n1.execute();
 	Node n1 = m_meshQ->newNode(advpoint_n1.getPend());
@@ -298,6 +308,73 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT
 	Front_OUT.addNodeId(n0.id());
 	Front_OUT.addNodeId(n1.id());
 	Front_OUT.addNodeId(n2.id());
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void AeroExtrusion_2D::CreatNormalQuad(TCellID e_id, Front &Front_IN, Front &Front_OUT){
+
+	Edge e = m_meshQ->get<Edge>(e_id);
+	std::vector<Node> nodes = e.get<Node>();
+
+	TCellID n0_id = Front_IN.getNextNode(nodes[0].id(), nodes[1].id());
+	TCellID n1_id = Front_IN.getNextNode(nodes[1].id(), nodes[0].id());
+	Node n0 = m_meshQ->get<Node>(n0_id);
+	Node n1 = m_meshQ->get<Node>(n1_id);
+
+
+	// On créé la face associée à l'arête
+	Face f = m_meshQ->newQuad(nodes[0], nodes[1], n1, n0) ; // F->N (x4)
+	nodes[0].add<Face>(f);	// N->F
+	nodes[1].add<Face>(f);	// N->F
+	n0.add<Face>(f);			// N->F
+	n1.add<Face>(f);			// N->F
+
+	// Création de l'arête sur le nouveau front
+	Edge e_opp = m_meshQ->newEdge(n0, n1);	// E->N (x2)
+	n0.add<Edge>(e_opp);										// N->E
+	n1.add<Edge>(e_opp);										// N->E
+
+	TCellID e0_id = math::Utils::CommonEdge(m_meshQ, nodes[0].id(), n0.id());
+	TCellID e1_id = math::Utils::CommonEdge(m_meshQ, nodes[1].id(), n1.id());
+	Edge e0, e1;
+	if ( e0_id == NullID ){
+		// Si l'arête n'existe pas, on la créé et on initialise les connectivités N->E
+		e0 = m_meshQ->newEdge(nodes[0].id(), n0.id());		// E->N (x2)
+		nodes[0].add<Edge>(e0);												// N->E
+		n0.add<Edge>(e0);														// N->E
+	}
+	else{
+		e0 = m_meshQ->get<Edge>(e0_id);
+	}
+
+	// Idem pour l'arête e1
+	if ( e1_id == NullID ){
+		e1 = m_meshQ->newEdge(nodes[1].id(), n1.id());		// E->N (x2)
+		nodes[1].add<Edge>(e1);												// N->E
+		n1.add<Edge>(e1);														// N->E
+	}
+	else{
+		e1 = m_meshQ->get<Edge>(e1_id);
+	}
+
+	// Connectivités F->E
+	f.add<Edge>(e);		// F->E
+	f.add<Edge>(e0);		// F->E
+	f.add<Edge>(e1);		// F->E
+	f.add<Edge>(e_opp);	// F->E
+
+	// Connectivités E->F
+	e.add<Face>(f);		// E->F
+	e0.add<Face>(f);		// E->F
+	e1.add<Face>(f);		// E->F
+	e_opp.add<Face>(f);	// E->F
+
+
+	// Ajout de la nouvelle arête du front dans l'objet concerné
+	Front_OUT.addEdgeId(e_opp.id());
 
 }
 /*------------------------------------------------------------------------*/

@@ -16,6 +16,7 @@ double Utils::distFromNodeIds(Mesh *AMesh, TCellID n0_id, TCellID n1_id){
 	math::Point p0 = n0.point();
 	math::Point p1 = n1.point();
 	math::Vector3d v = p0-p1;
+	std::cout << "n0 : " << n0_id << ", n1 :" << n1_id << std::endl;
 	return v.norm();
 }
 /*------------------------------------------------------------------------*/

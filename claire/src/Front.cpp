@@ -73,7 +73,7 @@ TCellID Front::getIdealNode(TCellID n_id){
 
 /*-------------------------------------------------------------------*/
 TCellID Front::getNextNode(TCellID n_id, TCellID n_neighbors_id){
-	return m_NodeInfo[n_neighbors_id].next_nodes[n_id];
+	return m_NodeInfo[n_id].next_nodes[n_neighbors_id];
 }
 /*-------------------------------------------------------------------*/
 

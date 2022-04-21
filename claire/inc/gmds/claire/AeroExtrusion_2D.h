@@ -91,6 +91,15 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
 	 */
 	void Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors);
 	/*-------------------------------------------------------------------*/
+	/** @brief Créé un quad normal sur la couche à partir d'une arête
+	 	* \param[in] e_id l'arête concernée
+	 	* \param[in] Front_IN front en entrée
+	 	* \param[in] Front_OUT front à mettre à jour
+		*
+		* \return
+	 */
+	void CreatNormalQuad(TCellID e_id, Front &Front_IN, Front &Front_OUT);
+	/*-------------------------------------------------------------------*/
  private:
 	/** triangular mesh we work on */
 	Mesh *m_meshT;
