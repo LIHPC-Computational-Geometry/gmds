@@ -34,6 +34,28 @@ AeroExtrusion_2D::execute()
 
 
 /*------------------------------------------------------------------------*/
+std::map<TCellID, TCellID>
+   AeroExtrusion_2D::ComputeIdealPositions(Front AFront, double dist_cible, Variable<double>* A_distance, Variable<math::Vector3d>* A_vectors)
+{
+	std::map<TCellID, TCellID> map_optnexpoint;
+	std::vector<TCellID> front_nodes = AFront.getNodes();
+
+	for (auto n_id:front_nodes){
+		Node n = m_meshQ->get<Node>(n_id);
+		math::Point M = n.point();
+		AdvectedPointRK4_2D advpoint(m_meshT, M, dist_cible, A_distance, A_vectors);
+		advpoint.execute();
+		//math::Point P = advpoint.getPend();
+		Node n_new = m_meshQ->newNode(advpoint.getPend());
+		map_optnexpoint[n_id] = n_new.id() ;
+		}
+
+	return map_optnexpoint;
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
 Front
 AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cible){
 
@@ -43,13 +65,14 @@ AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cibl
 
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_Paroi, dist_cible,
 	                                                                 m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
-	                                                                    m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	                                                                 m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 
 	std::vector<TCellID> front_nodes = Front_Paroi.getNodes();
 	std::vector<TCellID> front_edges = Front_Paroi.getEdges();
 
 	Variable<int>* couche_id = m_meshQ->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 
+	// Remarque : on pourait initialiser les arêtes e0 et e1 qui relient les deux couches dans cette boucle.
 	for (auto n_id:front_nodes){
 		// Ajout de la nouvelle arête du front dans l'objet concerné
 		First_Front.addNodeId(map_new_nodes[n_id]);
@@ -124,22 +147,17 @@ AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cibl
 
 
 /*------------------------------------------------------------------------*/
-std::map<TCellID, TCellID>
-   AeroExtrusion_2D::ComputeIdealPositions(Front AFront, double dist_cible, Variable<double>* A_distance, Variable<math::Vector3d>* A_vectors)
-{
-	std::map<TCellID, TCellID> map_optnexpoint;
-	std::vector<TCellID> front_nodes = AFront.getNodes();
+Front
+AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, double dist_cible){
+	Front Front_OUT;
 
-	for (auto n_id:front_nodes){
-		Node n = m_meshQ->get<Node>(n_id);
-		math::Point M = n.point();
-		AdvectedPointRK4_2D advpoint(m_meshT, M, dist_cible, A_distance, A_vectors);
-		advpoint.execute();
-		//math::Point P = advpoint.getPend();
-		Node n_new = m_meshQ->newNode(advpoint.getPend());
-		map_optnexpoint[n_id] = n_new.id() ;
-		}
+	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_IN, dist_cible,
+	                                                                 m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	                                                                 m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 
-	return map_optnexpoint;
+	std::vector<TCellID> front_nodes = Front_IN.getNodes();
+	//std::vector<TCellID> front_edges = Front_IN.getEdges();
+
+	return Front_OUT;
 }
 /*------------------------------------------------------------------------*/

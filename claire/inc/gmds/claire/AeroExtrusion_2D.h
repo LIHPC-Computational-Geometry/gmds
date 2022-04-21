@@ -42,15 +42,6 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
 
  private:
 	/*-------------------------------------------------------------------*/
-	/** @brief Construit la première couche de blocs. Pour cette couche,
-	 	* les conditions sont particulières.
-   	* \param[in] A_distance the distance variable on the first mesh
-		* \param[in] dist_cible the distance wanted for the first layer
-		*
-		* \return  the first front computed
-	 */
-	Front Compute1stLayer(Variable<double>* A_distance, double dist_cible);
-	/*-------------------------------------------------------------------*/
 	/** @brief Calcule la position idéale du prochain noeud pour chaque
 	 	* noeud du front.
 	 	* \param[in] AFront the front
@@ -60,6 +51,25 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
 		* \return  a map with (TCellID, TCellID) for ideal positions
 	 */
 	std::map<TCellID, TCellID> ComputeIdealPositions(Front AFront, double dist_cible, Variable<double>* A_distance, Variable<math::Vector3d>* A_vectors);
+	/*-------------------------------------------------------------------*/
+	/** @brief Construit la première couche de blocs. Pour cette couche,
+	 	* les conditions sont particulières.
+   	* \param[in] A_distance the distance variable on the first mesh
+		* \param[in] dist_cible the distance wanted for the first layer
+		*
+		* \return  the first front computed
+	 */
+	Front Compute1stLayer(Variable<double>* A_distance, double dist_cible);
+	/*-------------------------------------------------------------------*/
+	/** @brief Construit une couche de mailles à partir d'un front. Ici,
+	 	* des mailles peuvent être fusionnées ou insérées.
+	 	* \param[in] Front_IN the front before
+   	* \param[in] A_distance the distance variable on the first mesh
+		* \param[in] dist_cible the distance wanted for the first layer
+		*
+		* \return  the front computed
+	 */
+	Front ComputeLayer(Front Front_IN, Variable<double>* A_distance, double dist_cible);
 	/*-------------------------------------------------------------------*/
 
  private:
