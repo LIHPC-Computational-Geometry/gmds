@@ -27,7 +27,7 @@ AeroExtrusion_2D::execute()
 	//if(m_mesh==NULL)
 	//	throw AeroException("ERROR: Invalid mesh pointer");
 
-	Front Current_Front = Compute1stLayer(m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), 0.5,
+	Front Current_Front = Compute1stLayer(m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.25,
 	                m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 1,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
@@ -174,12 +174,14 @@ AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, dou
 
 		if (type_node == 1){
 			// Insertion
+			std::cout << "INSERTION QUAD AU NOEUD : " << node_id << std::endl;
 			Insertion(Front_IN, node_id, Front_OUT,
 			          A_distance, dist_cible, A_vectors);
 			do_smooth = true;
 		}
 		else if (type_node == 2){
 			// Fusion
+			std::cout << "INSERTION QUAD AU NOEUD : " << node_id << std::endl;
 			//do_smooth = true;
 		}
 	}
@@ -190,7 +192,7 @@ AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, dou
 		std::vector<Node> nodes = e.get<Node>();
 		if (Front_IN.getNodeType(nodes[0].id()) != 2
 		    && Front_IN.getNodeType(nodes[1].id()) != 2 ){
-			CreatNormalQuad(e_id, Front_IN, Front_OUT);
+			CreateNormalQuad(e_id, Front_IN, Front_OUT);
 		}
 
 	}
@@ -206,6 +208,8 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 	std::vector<TCellID> front_nodes = Front_IN.getNodes();
 	std::vector<TCellID> front_edges = Front_IN.getEdges();
 
+	bool singu_not_found(true);
+
 	node_id = NullID;
 	type = 0;
 
@@ -213,18 +217,32 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 		// si le noeud est normal
 		if (Front_IN.getNodeType(n_id) == 0){
 			std::vector<TCellID> neighbors_nodes = Front_IN.getNeighbors(n_id);
-			// test premier quad
-			double r1 = math::AeroMeshQuality::oppositeedgeslenghtratio(m_meshT, n_id, neighbors_nodes[0],
-			                                                Front_IN.getNextNode(neighbors_nodes[0],n_id),
-			                                                Front_IN.getNextNode(n_id,neighbors_nodes[0]));
-			// test second quad
-			double r2 = math::AeroMeshQuality::oppositeedgeslenghtratio(m_meshT, n_id, neighbors_nodes[1],
-			                                                            Front_IN.getNextNode(neighbors_nodes[1],n_id),
-			                                                            Front_IN.getNextNode(n_id,neighbors_nodes[1]));
-			if (r1 < 0.95 || r2 < 0.95){
+
+			// test angles
+			double angle = math::AeroMeshQuality::angleouverture(m_meshQ, n_id,
+			                                                     Front_IN.getIdealNode(n_id),
+			                                                     neighbors_nodes[0], neighbors_nodes[1]) ;
+			std::cout << "angle : " << angle << std::endl;
+			if (singu_not_found
+			    && ( angle > 4.0*M_PI/3.0 )){
 				node_id = n_id;
 				type = 1;
 			}
+
+
+			// test premier quad
+			double r1 = math::AeroMeshQuality::oppositeedgeslenghtratio(m_meshQ, n_id, neighbors_nodes[0],
+			                                                Front_IN.getNextNode(neighbors_nodes[0],n_id),
+			                                                Front_IN.getNextNode(n_id,neighbors_nodes[0]));
+			// test second quad
+			double r2 = math::AeroMeshQuality::oppositeedgeslenghtratio(m_meshQ, n_id, neighbors_nodes[1],
+			                                                            Front_IN.getNextNode(neighbors_nodes[1],n_id),
+			                                                            Front_IN.getNextNode(n_id,neighbors_nodes[1]));
+			if (singu_not_found && (r1 < 0.3 || r2 < 0.3) ){
+				node_id = n_id;
+				type = 1;
+			}
+
 		}
 	}
 
@@ -238,17 +256,15 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT
                             Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors){
 
 	std::vector<TCellID> neighbors_nodes = Front_IN.getNeighbors(n_id);
+	Node n = m_meshQ->get<Node>(n_id);
 
 	// Contruction du premier noeud n1
-	Node n = m_meshQ->get<Node>(n_id);
 	Node n_neighbor = m_meshQ->get<Node>(neighbors_nodes[0]);
-	//std::cout << "Premier point : " << n_neighbor.point() << " " << n_neighbor.id() << std::endl;
-	//std::cout << "Second point : " << n.point() << " " << n.id() << std::endl;
 	math::Point P1_construction = n.point() + 0.3*(n_neighbor.point()-n.point()) ;
-	//std::cout << "P1 : " << P1_construction << std::endl;
 	AdvectedPointRK4_2D advpoint_n1(m_meshT, P1_construction, dist_cible, A_distance, A_vectors);
 	advpoint_n1.execute();
 	Node n1 = m_meshQ->newNode(advpoint_n1.getPend());
+
 	// Contruction du premier noeud n2
 	n_neighbor = m_meshQ->get<Node>(neighbors_nodes[1]);
 	P1_construction = n.point() + 0.3*(n_neighbor.point()-n.point()) ;
@@ -258,8 +274,8 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT
 
 	// Mise à jour du Front_IN
 	Front_IN.setMultipleNode(n_id);
-	Front_IN.setNextNode(neighbors_nodes[0], n_id, n1.id());
-	Front_IN.setNextNode(neighbors_nodes[1], n_id, n2.id());
+	Front_IN.setNextNode( n_id, neighbors_nodes[0], n1.id());
+	Front_IN.setNextNode( n_id, neighbors_nodes[1], n2.id());
 
 	// Création du quad
 	TCellID n0_id = Front_IN.getIdealNode(n_id);
@@ -314,7 +330,14 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT
 
 
 /*------------------------------------------------------------------------*/
-void AeroExtrusion_2D::CreatNormalQuad(TCellID e_id, Front &Front_IN, Front &Front_OUT){
+void Fusion(Front &Front_IN, TCellID n_id, Front &Front_OUT){
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void AeroExtrusion_2D::CreateNormalQuad(TCellID e_id, Front &Front_IN, Front &Front_OUT){
 
 	Edge e = m_meshQ->get<Edge>(e_id);
 	std::vector<Node> nodes = e.get<Node>();
