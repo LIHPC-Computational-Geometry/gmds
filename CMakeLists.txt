@@ -108,6 +108,15 @@ GMDS_ADD_COMPONENT(
 )
 
 GMDS_ADD_COMPONENT(
+        BAPTISTE                       # cmake variable
+        baptiste                        # src subdirectory name
+        GMDSBaptiste                    # name of the generated library
+        "Provide the mesh of a block structure classified on a CAD geometry"  # description
+        ON                                 # is activated
+        ON                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
         FRAME                               # cmake variable
         frame                               # src subdirectory name
         GMDSFrame                           # name of the generated library
