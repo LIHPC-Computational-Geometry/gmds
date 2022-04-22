@@ -472,10 +472,14 @@ TEST(ClaireTestClass, testGrid_Smooth2D_1)
 	Grid_Smooth2D::STATUS result = smoother.execute();
 
 	IGMeshIOService ioService_geom(&m);
-	VTKWriter writer_geom(&ioService_geom);
-	writer_geom.setCellOptions(N|F);
-	writer_geom.setDataOptions(N|F);
-	writer_geom.write("testGrid_Smooth2D_1_result.vtk");
+	//VTKWriter writer_geom(&ioService_geom);
+	VTKWriter vtkWriter(&ioService_geom);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	//writer_geom.setCellOptions(N|F);
+	//writer_geom.setDataOptions(N|F);
+	//writer_geom.write("testGrid_Smooth2D_1_result.vtk");
+	vtkWriter.write("toto.vtk");
 
 }
 

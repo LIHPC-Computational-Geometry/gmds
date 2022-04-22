@@ -67,7 +67,7 @@ set(GMDS_SRC
         src/StreamComputation.cpp
         src/VectorDyn.cpp
         src/Orientation.cpp
-        src/TransfiniteInterpolation.cpp )
+        src/TransfiniteInterpolation.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

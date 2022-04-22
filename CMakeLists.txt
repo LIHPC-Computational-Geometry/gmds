@@ -9,7 +9,7 @@ if(APPLE)
     set(CMAKE_OSX_ARCHITECTURES x86_64)
 endif()
 #==============================================================================
-project(gmds VERSION 1.0 LANGUAGES CXX)
+project(gmds VERSION 1.0 LANGUAGES C CXX)
 #==============================================================================
 # Compilation options mainly for testing purpose
 #==============================================================================
@@ -96,6 +96,15 @@ GMDS_ADD_COMPONENT(
         " "  # description
         ON                                 # is activated
         ON                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
+        PAUL                       # cmake variable
+        paul                        # src subdirectory name
+        GMDSPaul                    # name of the generated library
+        " "  # description
+        ON                                 # is activated
+        OFF                                 # must be covered
 )
 
 GMDS_ADD_COMPONENT(

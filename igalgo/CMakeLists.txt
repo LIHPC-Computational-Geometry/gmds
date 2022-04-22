@@ -12,14 +12,18 @@ set(GMDS_INC
         inc/gmds/igalgo/BoundaryOperator.h
         inc/gmds/igalgo/BoundaryOperator2D.h
         inc/gmds/igalgo/GridBuilder.h
-        inc/gmds/igalgo/THexBuilder.h)
+        inc/gmds/igalgo/r2d.h
+        inc/gmds/igalgo/THexBuilder.h
+        inc/gmds/igalgo/VolFracComputation.h)
 set(GMDS_SRC
         src/BoundaryExtractor3D.cpp
         src/BoundaryExtractor2D.cpp
         src/BoundaryOperator.cpp
         src/BoundaryOperator2D.cpp
         src/GridBuilder.cpp
-        src/THexBuilder.cpp)
+        src/r2d.c
+        src/THexBuilder.cpp
+        src/VolFracComputation.cpp inc/gmds/igalgo/VolFracComputation.h)
 
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
