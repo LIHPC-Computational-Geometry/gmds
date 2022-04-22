@@ -34,15 +34,15 @@ bool Tools::checkCommonFace(const int i1, const int i2)
 	std::vector<Face> list_f= Tools::getListFacesOfNode(i1);
 	for (auto f : list_f){
 		std::vector<Node> list_n = Tools::getListNodesOfFace(f.id());
+		for (auto n : list_n){
+			if (n.id() == i2 ){
+				//std::cout<<"LES 2 NOEUDS ONT UNE FACE COMMUNE"<<std::endl;
+				return true;
+			}
+		}
 	}
 	//std::cout<<"LES 2 NOEUDS N'ONT PAS UNE FACE COMMUNE"<<std::endl;
 	return false;
-	for (auto n : list_f){
-		if (n.id() == i2 ){
-			//std::cout<<"LES 2 NOEUDS ONT UNE FACE COMMUNE"<<std::endl;
-			return true;
-		}
-	}
 }
 
 bool Tools::checkFollowIdNode(const int i1, const int i2,const int faceID)
@@ -452,7 +452,7 @@ void Tools::createAllMiddlePoint(Node i1, Node i2)
 	}
 	for(auto p : listPair){
 		Node nodeToAdd = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(p.front()),g_grid.m_mesh.get<Node>(p.back()));
-		g_grid.m_mesh.newNode(nodeToAdd.X(),nodeToAdd.Y(),nodeToAdd.Z());
+		g_grid.m_mesh.newNode(math::Point(nodeToAdd.X(),nodeToAdd.Y(),nodeToAdd.Z()));
 		std::cout<<"Le nouveau NOEUD :"<<nodeToAdd<<std::endl;
 	}
 }
