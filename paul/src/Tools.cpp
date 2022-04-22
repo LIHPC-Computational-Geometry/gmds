@@ -34,15 +34,15 @@ bool Tools::checkCommonFace(const int i1, const int i2)
 	std::vector<Face> list_f= Tools::getListFacesOfNode(i1);
 	for (auto f : list_f){
 		std::vector<Node> list_n = Tools::getListNodesOfFace(f.id());
-		for (auto n : list_n){
-			if (n.id() == i2 ){
-				//std::cout<<"LES 2 NOEUDS ONT UNE FACE COMMUNE"<<std::endl;
-				return true;
-			}
-		}
 	}
 	//std::cout<<"LES 2 NOEUDS N'ONT PAS UNE FACE COMMUNE"<<std::endl;
 	return false;
+	for (auto n : list_f){
+		if (n.id() == i2 ){
+			//std::cout<<"LES 2 NOEUDS ONT UNE FACE COMMUNE"<<std::endl;
+			return true;
+		}
+	}
 }
 
 bool Tools::checkFollowIdNode(const int i1, const int i2,const int faceID)
@@ -292,7 +292,7 @@ std::vector<std::vector<int>> Tools::getAllNodesChain(const int i1, const int i2
 			auto newPairToAdd = Tools::getOtherNodes(p.front(), p.back());
 			for (auto n : newPairToAdd) {
 				if ((*find(pairNodes.begin(), pairNodes.end(), n.front()) == n.front()) ||
-					 (*find(pairNodes.begin(), pairNodes.end(), n.back()) == n.back())) {
+				    (*find(pairNodes.begin(), pairNodes.end(), n.back()) == n.back())) {
 					std::cout << "DEJA DANS LA LISTE DES NOEUDS " << n.front() << " " << n.back() << std::endl;
 					std::cout<<"Pair check :" <<std::endl;
 					for (auto i : pairNodes){
@@ -428,7 +428,7 @@ std::vector<int> Tools::getListSecondNodesChain(const int i1, const int i2)
 	return listSecondNodesChain;
 }
 
-Node Tools::creatMiddleNode(Node i1,Node i2)
+Node Tools::createMiddleNode(Node i1,Node i2)
 {
 	double newX = (i1.X()+i2.X())/2;
 	double newY=(i1.Y()+i2.Y())/2;
@@ -439,4 +439,20 @@ Node Tools::creatMiddleNode(Node i1,Node i2)
 	std::cout<<"Le new node : " <<newNode<<std::endl;
 
 	return newNode;
+}
+
+void Tools::createAllMiddlePoint(Node i1, Node i2)
+{
+	auto listPair = Tools::getAllNodesChain(i1.id(),i2.id());
+	std::cout<<"List pair Nodes :"<<std::endl;
+	for (auto n : listPair){
+		for (auto i : n){
+			std::cout<<i<<std::endl;
+		}
+	}
+	for(auto p : listPair){
+		Node nodeToAdd = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(p.front()),g_grid.m_mesh.get<Node>(p.back()));
+		g_grid.m_mesh.newNode(nodeToAdd.X(),nodeToAdd.Y(),nodeToAdd.Z());
+		std::cout<<"Le nouveau NOEUD :"<<nodeToAdd<<std::endl;
+	}
 }

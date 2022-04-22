@@ -119,7 +119,8 @@ int main(){
 	}*/
 	//tool.getOtherNodes(2,7);
 	//tool.getListSecondNodesChain(11,16);
-	tool.creatMiddleNode(tool.g_grid.m_mesh.get<Node>(1),tool.g_grid.m_mesh.get<Node>(2));
+	//tool.createAllMiddlePoint(tool.g_grid.m_mesh.get<Node>(1),tool.g_grid.m_mesh.get<Node>(2));
+	tool.getAllNodesChain(1,2);
 
 // Save Triangle Generation
 	IGMeshIOService ioService(&mT);

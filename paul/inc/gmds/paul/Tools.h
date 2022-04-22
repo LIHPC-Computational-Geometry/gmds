@@ -177,7 +177,15 @@ class Tools{
 
 	std::vector<int> getListSecondNodesChain(const int i1, const int i2);
 
-	Node creatMiddleNode(Node i1,Node i2);
+	/** \brief create middle point between 2 points
+	 *
+	 * @param i1 first point id
+	 * @param i2  second point id
+	 * @return
+	 */
+	Node createMiddleNode(Node i1,Node i2);
+
+	void createAllMiddlePoint(Node i1, Node i2);
 
 	gmds::GridBuilderAround g_grid;
 
