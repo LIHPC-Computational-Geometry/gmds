@@ -40,7 +40,7 @@ double AeroMeshQuality::oppositeedgeslenghtratio(Mesh *AMesh, TCellID n0_id, TCe
 /*------------------------------------------------------------------------*/
 double AeroMeshQuality::angleouverture(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id){
 
-	std::cout << "ids : " << n0_id << ", " << n1_id << ", " << n2_id << ", " << n3_id << std::endl;
+	//std::cout << "ids : " << n0_id << ", " << n1_id << ", " << n2_id << ", " << n3_id << std::endl;
 
 	Node n0 = AMesh->get<Node>(n0_id);
 	Node n1 = AMesh->get<Node>(n1_id);

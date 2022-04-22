@@ -27,10 +27,29 @@ AeroExtrusion_2D::execute()
 	//if(m_mesh==NULL)
 	//	throw AeroException("ERROR: Invalid mesh pointer");
 
-	Front Current_Front = Compute1stLayer(m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.025,
+	Front Current_Front = Compute1stLayer(m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.25,
 	                m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	Current_Front = ComputeLayer(2, Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 1,
+	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.5,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.75,
+	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 1,
+	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+
+	// Test nombres de faces par arête
+	for (auto e_id:m_meshQ->edges()){
+		Edge e = m_meshQ->get<Edge>(e_id);
+		std::vector<Face> faces = e.get<Face>();
+		if (faces.size() < 1 || faces.size() > 2)
+		{
+			std::cout << "Edge ID :" << e_id << "NOMBRE DE FACES : " << faces.size() << std::endl;
+		}
+	}
+
+	for (auto n_id:m_meshQ->nodes()){
+		Node n = m_meshQ->get<Node>(n_id);
+		//std::cout << "Noeud " << n_id << ", Pos : " << n.point() << std::endl;
+	}
 
 	return AeroExtrusion_2D::SUCCESS;
 }
@@ -64,8 +83,11 @@ Front
 AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors){
 
 	Front Front_Paroi;
+	Front_Paroi.setFrontID(0);
 	Front_Paroi.initializeFromLayerId(m_meshQ, 0);
+
 	Front First_Front;
+	First_Front.setFrontID(Front_Paroi.getFrontID()+1);
 
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_Paroi, dist_cible, A_distance, A_vectors);
 
@@ -78,7 +100,7 @@ AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cibl
 	for (auto n_id:front_nodes){
 		// Ajout de la nouvelle arête du front dans l'objet concerné
 		First_Front.addNodeId(map_new_nodes[n_id]);
-		couche_id->set(map_new_nodes[n_id], 1);
+		couche_id->set(map_new_nodes[n_id], First_Front.getFrontID());
 	}
 
 	for (auto e_id:front_edges){
@@ -144,21 +166,28 @@ AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cibl
 	}
 
 	return First_Front;
+
 }
 /*------------------------------------------------------------------------*/
 
 
 /*------------------------------------------------------------------------*/
 Front
-AeroExtrusion_2D::ComputeLayer(int layer_id, Front Front_IN, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors){
+AeroExtrusion_2D::ComputeLayer(Front Front_IN2, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors){
 	Front Front_OUT;
 
+	Front Front_IN;
+	Front_IN.initializeFromLayerId(m_meshQ, Front_IN2.getFrontID());
+
+	std::cout << "--------- couche " << Front_IN.getFrontID()+1 << std::endl;
+
+	Front_OUT.setFrontID(Front_IN.getFrontID()+1);
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_IN, dist_cible, A_distance, A_vectors);
 
 	// Mise à jour de l'indice de couche
 	Variable<int>* couche_id = m_meshQ->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	for (auto n_id:Front_IN.getNodes()){
-		couche_id->set(map_new_nodes[n_id], layer_id);
+		couche_id->set(map_new_nodes[n_id], Front_OUT.getFrontID());
 	}
 
 	Front_IN.initializeNodeType(m_meshQ, map_new_nodes);
@@ -203,14 +232,8 @@ AeroExtrusion_2D::ComputeLayer(int layer_id, Front Front_IN, Variable<double>* A
 
 	}
 
-	for (auto e_id:m_meshQ->edges()){
-		Edge e = m_meshQ->get<Edge>(e_id);
-		std::vector<Face> faces = e.get<Face>();
-		std::cout << "NOMBRE DE FACES : " << faces.size() << std::endl;
-	}
-
 	// Supression des noeuds non utilisés
-	math::Utils::MeshCleaner(m_meshQ);
+	//math::Utils::MeshCleaner(m_meshQ);
 
 	return Front_OUT;
 }
@@ -232,9 +255,10 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 
 		// Les tests pour la FUSION
 		std::vector<TCellID> neighbors_nodes = Front_IN.getNeighbors(n_id);
-		if (Front_IN.getNodeType(n_id) == 0
-		    && Front_IN.getNodeType(neighbors_nodes[0]) == 0
-		    && Front_IN.getNodeType(neighbors_nodes[1]) == 0){
+		if (Front_IN.isFusionable(n_id)){
+		   //Front_IN.getNodeType(n_id) == 0
+		    //&& Front_IN.getNodeType(neighbors_nodes[0]) == 0
+		    //&& Front_IN.getNodeType(neighbors_nodes[1]) == 0){
 
 			// test arête écrasée premier quad
 			double min_lenght_1 = math::AeroMeshQuality::minlenghtedge(m_meshQ, n_id, neighbors_nodes[0],
@@ -272,16 +296,16 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 		}
 
 		// Les tests pour l'INSERSION
-		/*
-		if(singu_not_found && Front_IN.getNodeType(n_id) == 0
-		    && Front_IN.getNodeType(neighbors_nodes[0]) != 2
-		    && Front_IN.getNodeType(neighbors_nodes[1]) != 2){
+		if(singu_not_found && Front_IN.isMultiplicable(n_id)){
+		    //&& Front_IN.getNodeType(n_id) == 0
+		    //&& Front_IN.getNodeType(neighbors_nodes[0]) != 2
+		    //&& Front_IN.getNodeType(neighbors_nodes[1]) != 2){
 
 			// test angles
 			double angle = math::AeroMeshQuality::angleouverture(m_meshQ, n_id,
 			                                                     Front_IN.getIdealNode(n_id),
 			                                                     neighbors_nodes[0], neighbors_nodes[1]) ;
-			std::cout << "angle : " << angle << std::endl;
+			//std::cout << "angle : " << angle << std::endl;
 			if (singu_not_found
 			    && ( angle > 4.0*M_PI/3.0 )){
 				node_id = n_id;
@@ -289,7 +313,7 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 				singu_not_found = false;
 			}
 
-
+			/*
 			// test premier quad
 			double r1 = math::AeroMeshQuality::oppositeedgeslenghtratio(m_meshQ, n_id, neighbors_nodes[0],
 			                                                     Front_IN.getNextNode(neighbors_nodes[0],n_id),
@@ -303,9 +327,9 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 				type = 1;
 				singu_not_found = false;
 			}
+			 */
 
 		}
-		 */
 
 	}
 
@@ -334,11 +358,6 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT
 	AdvectedPointRK4_2D advpoint_n2(m_meshT, P1_construction, dist_cible, A_distance, A_vectors);
 	advpoint_n2.execute();
 	Node n2 = m_meshQ->newNode(advpoint_n2.getPend());
-
-	// Mise à jour du Front_IN
-	Front_IN.setMultipleNode(n_id);
-	Front_IN.setNextNode( n_id, neighbors_nodes[0], n1.id());
-	Front_IN.setNextNode( n_id, neighbors_nodes[1], n2.id());
 
 	// Création du quad
 	TCellID n0_id = Front_IN.getIdealNode(n_id);
@@ -381,6 +400,16 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT
 	e3.add<Face>(f);		// E->F
 
 
+	// Mise à jour du Front_IN
+	Front_IN.setMultipleNode(n_id);
+	Front_IN.setNextNode( n_id, neighbors_nodes[0], n1.id());
+	Front_IN.setNextNode( n_id, neighbors_nodes[1], n2.id());
+	Front_IN.setNonMultiplicable(n_id);
+	Front_IN.setNonFusionable(n_id);
+	Front_IN.setNonFusionable(neighbors_nodes[0]);
+	Front_IN.setNonFusionable(neighbors_nodes[1]);
+
+
 	// Mise à jour du Front_OUT
 	Front_OUT.addEdgeId(e0.id());
 	Front_OUT.addEdgeId(e3.id());
@@ -388,10 +417,11 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT
 	Front_OUT.addNodeId(n1.id());
 	Front_OUT.addNodeId(n2.id());
 
+
 	// Mise à jour de l'indice de couche
 	Variable<int>* couche_id = m_meshQ->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-	couche_id->set(n1.id(), layer_id);
-	couche_id->set(n2.id(), layer_id);
+	couche_id->set(n1.id(), Front_OUT.getFrontID());
+	couche_id->set(n2.id(), Front_OUT.getFrontID());
 
 }
 /*------------------------------------------------------------------------*/
@@ -454,6 +484,16 @@ void AeroExtrusion_2D::Fusion(Front &Front_IN, TCellID n_id, Front &Front_OUT){
 	std::vector<TCellID> n2_neighbors = Front_IN.getNeighbors(neighbors_nodes[1]);
 	Front_IN.setNextNode( neighbors_nodes[1], n2_neighbors[0], n0.id());
 	Front_IN.setNextNode( neighbors_nodes[1], n2_neighbors[1], n0.id());
+	Front_IN.setNonMultiplicable(n_id);
+	Front_IN.setNonFusionable(n_id);
+	Front_IN.setNonMultiplicable(neighbors_nodes[0]);
+	Front_IN.setNonMultiplicable(neighbors_nodes[1]);
+	Front_IN.setNonFusionable(neighbors_nodes[0]);
+	Front_IN.setNonFusionable(neighbors_nodes[1]);
+	Front_IN.setNonFusionable(n1_neighbors[0]);
+	Front_IN.setNonFusionable(n1_neighbors[1]);
+	Front_IN.setNonFusionable(n2_neighbors[0]);
+	Front_IN.setNonFusionable(n2_neighbors[1]);
 
 
 	// Mise à jour du Front_OUT
@@ -464,7 +504,7 @@ void AeroExtrusion_2D::Fusion(Front &Front_IN, TCellID n_id, Front &Front_OUT){
 
 
 /*------------------------------------------------------------------------*/
-void AeroExtrusion_2D::CreateNormalQuad(TCellID e_id, Front &Front_IN, Front &Front_OUT){
+void AeroExtrusion_2D::CreateNormalQuad(TCellID e_id, Front &Front_IN){
 
 	Edge e = m_meshQ->get<Edge>(e_id);
 	std::vector<Node> nodes = e.get<Node>();
@@ -521,10 +561,6 @@ void AeroExtrusion_2D::CreateNormalQuad(TCellID e_id, Front &Front_IN, Front &Fr
 	e0.add<Face>(f);		// E->F
 	e1.add<Face>(f);		// E->F
 	e_opp.add<Face>(f);	// E->F
-
-
-	// Ajout de la nouvelle arête du front dans l'objet concerné
-	Front_OUT.addEdgeId(e_opp.id());
 
 }
 /*------------------------------------------------------------------------*/

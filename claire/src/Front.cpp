@@ -44,6 +44,20 @@ void Front::setNextNode(TCellID n_id, TCellID n_neighbor_id, TCellID n_new_id){
 
 
 /*-------------------------------------------------------------------*/
+void Front::setNonFusionable(TCellID n_id){
+	m_NodeInfo[n_id].isFusionable = false;
+}
+/*-------------------------------------------------------------------*/
+
+
+/*-------------------------------------------------------------------*/
+void Front::setNonMultiplicable(TCellID n_id){
+	m_NodeInfo[n_id].isMultiplicable = false;
+}
+/*-------------------------------------------------------------------*/
+
+
+/*-------------------------------------------------------------------*/
 int Front::getFrontID(){
 	return m_FrontID;
 }
@@ -79,6 +93,20 @@ int Front::getNodeType(TCellID n_id){
 
 
 /*-------------------------------------------------------------------*/
+bool Front::isFusionable(TCellID n_id){
+	return m_NodeInfo[n_id].isFusionable;
+}
+/*-------------------------------------------------------------------*/
+
+
+/*-------------------------------------------------------------------*/
+bool Front::isMultiplicable(TCellID n_id){
+	return m_NodeInfo[n_id].isMultiplicable;
+}
+/*-------------------------------------------------------------------*/
+
+
+/*-------------------------------------------------------------------*/
 TCellID Front::getIdealNode(TCellID n_id){
 	return m_NodeInfo[n_id].ideal_node_id;
 }
@@ -109,6 +137,9 @@ void Front::addEdgeId(TCellID e_id){
 /*-------------------------------------------------------------------*/
 void Front::initializeFromLayerId(Mesh *m, int layer_id){
 	Variable<int>* couche_id = m->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+
+	m_FrontID = layer_id;
+
 	for (auto n_id:m->nodes())
 	{
 		if(couche_id->value(n_id) == layer_id)
@@ -156,6 +187,9 @@ void Front::initializeNodeType(Mesh *m, std::map<TCellID, TCellID> map_idealposi
 		for (auto n_neighbor_id:m_NodeNeighbors[n_id]){
 			m_NodeInfo[n_id].next_nodes[n_neighbor_id] = map_idealpositions[n_id];
 		}
+		// Initialisation de la fusionabilité ou multiplicabilité des noeuds
+		m_NodeInfo[n_id].isFusionable = true;
+		m_NodeInfo[n_id].isMultiplicable = true;
 	}
 
 }

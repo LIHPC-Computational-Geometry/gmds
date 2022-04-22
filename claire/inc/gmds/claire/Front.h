@@ -35,7 +35,9 @@ class LIB_GMDS_CLAIRE_API Front {
 		TCellID     					n_id;
 		TCellID 							ideal_node_id;
 		int 								nodeType;
-		std::map<TCellID, TCellID> next_nodes;	// (e_id, next_n_id)
+		bool								isFusionable;
+		bool 								isMultiplicable;
+		std::map<TCellID, TCellID> next_nodes;	// (neighbors_node_id, next_n_id)
 	};
 
  public:
@@ -64,6 +66,18 @@ class LIB_GMDS_CLAIRE_API Front {
 	 */
 	void setNextNode(TCellID n_id, TCellID n_neighbor_id, TCellID n_new_id);
 	/*-------------------------------------------------------------------*/
+	/** @brief Indique qu'il n'est plus possible de fusionner le noeud
+	 * 	d'id n_id
+	 * 	@param[in] n_id id du noeud concerné
+	 */
+	void setNonFusionable(TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Indique qu'il n'est plus possible de multiplier le noeud
+	 * 	d'id n_id
+	 * 	@param[in] n_id id du noeud concerné
+	 */
+	void setNonMultiplicable(TCellID n_id);
+	/*-------------------------------------------------------------------*/
 	/** @brief Retourne l'id du front
 	 */
 	int getFrontID();
@@ -85,6 +99,18 @@ class LIB_GMDS_CLAIRE_API Front {
 	 * 	@param[in] n_id id du noeud concerné
 	 */
 	int getNodeType(TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Retourne un booléen qui indique si il est possible de
+	 * 	fusionner le noeud d'id n_id
+	 * 	@param[in] n_id id du noeud concerné
+	 */
+	bool isFusionable(TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Retourne un booléen qui indique si il est possible de
+	 * 	multiplier le noeud d'id n_id
+	 * 	@param[in] n_id id du noeud concerné
+	 */
+	bool isMultiplicable(TCellID n_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Retourne l'id du noeud correspondant à la position idéale
 	 * à partir du noeud n.

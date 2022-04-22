@@ -113,6 +113,7 @@ AeroPipeline_2D::execute(){
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
+	/*
 	// Mise à jour du linker pour la dernière couche de noeuds
 	UpdateLinkerLastLayer(1);
 
@@ -120,15 +121,13 @@ AeroPipeline_2D::execute(){
 	ConvertisseurMeshToBlocking();
 
 	// Lissage
-	/*
 	std::cout << "-> Lissage final" << std::endl;
 	t_start = clock();
 	Grid_Smooth2D smoother(&m_Blocking2D, 100);
 	smoother.execute();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
-	 */
-
+	*/
 
 	// Ecriture finale des maillages
 	EcritureMaillage();
@@ -172,8 +171,8 @@ AeroPipeline_2D::EcritureMaillage(){
 
 	std::cout << "-> Ecriture du maillage ..." << std::endl;
 
-	//gmds::IGMeshIOService ioService(m_meshHex);
-	gmds::IGMeshIOService ioService(&m_Blocking2D);
+	gmds::IGMeshIOService ioService(m_meshHex);
+	//gmds::IGMeshIOService ioService(&m_Blocking2D);
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
