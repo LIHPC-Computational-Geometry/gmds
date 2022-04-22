@@ -5,6 +5,7 @@
 #include <gmds/math/Point.h>
 #include <gmds/math/Vector.h>
 #include <gmds/math/Matrix.h>
+#include <gmds/math/Tetrahedron.h>
 #include <gmds/utils/BitVector.h>
 #include <gmds/utils/VariableManager.h>
 #include <gmds/utils/Variable.h>
@@ -352,6 +353,7 @@ class SimplexMesh
 
   unsigned int edgesRemove(const gmds::BitVector& nodeBitVector, std::vector<TSimplexID>& deletedNodes);
 
+  bool edgeRemove(const TInt nodeA, const TInt nodeB);
 
 
   unsigned int buildEdges(const std::multimap<TInt, TInt>& AEdges, const gmds::BitVector& nodeBitVector);
@@ -409,6 +411,8 @@ class SimplexMesh
   double subSurfaceFactor(const std::vector<std::vector<TInt>>& faces);
 
   double computeQualityElement(const TSimplexID simplex);
+
+  double computeQualityElement(const TInt nodeA, const TInt nodeB, const TInt nodeC, const TInt nodeD);
 
 private:
 

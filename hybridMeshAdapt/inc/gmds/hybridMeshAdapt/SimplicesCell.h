@@ -68,6 +68,9 @@ namespace gmds
 
         std::vector<TInt> getOrderedFace      (const TInt indexFace) const;
 
+        /*return the local face that are visible from node*/
+        std::vector<TInt> visibleFaces(const math::Point& coordNode) const ;
+
         /*return the opposite tetra or errorId if there is nothing*/
         std::vector<TSimplexID> oppositeTetraVectorPrivated(const simplicesNode::SimplicesNode& simplicesNode) const;
 

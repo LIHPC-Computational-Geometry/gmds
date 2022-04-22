@@ -22,6 +22,7 @@ using namespace simplicesCell;
 /*----------------------------------------------------------------------------*/
 int main(int argc, char* argv[])
 {
+
     std::cout << "==== METRIC BASED ADAPTATION  ====" << std::endl;
     std::string fIn, fOut;
     if(argc != 2)
@@ -32,7 +33,6 @@ int main(int argc, char* argv[])
     if (fIn.find('.vtk') == std::string::npos) {
       throw gmds::GMDSException("<mesh_in> NOT A .vtk FILE");
     }
-
 
     //==================================================================
     // MESH READING

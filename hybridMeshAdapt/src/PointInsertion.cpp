@@ -269,7 +269,8 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
 
           //If the node is on ridge update edgeStructure
           unsigned int label = (*BND_CURVE_COLOR)[simpliceNode.getGlobalNode()];
-          if(label != 0)
+          bool alreadyBelongingToAnEdge = cavityIO.getNodeInfoEdge();
+          if(label != 0 & alreadyBelongingToAnEdge == false)
           {
             std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure = simplexMesh->getEdgeStructure();
             std::multimap<TInt, std::pair<TInt,TInt>> edgeStructureCopy = edgeStructure;

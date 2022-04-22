@@ -92,6 +92,10 @@ namespace gmds
 
             bool isTetragonalizableFrom(const TInt nodeToInsert);
 
+            bool getNodeInfoEdge() const {return alreadyBelongingToAnEdge;}
+
+            void setNodeInfoEdge(const bool nodeInfo) {alreadyBelongingToAnEdge = nodeInfo;}
+
           private:
             /*represente the cavity In*/
             std::vector<TSimplexID> m_cavityCellIn;
@@ -119,6 +123,8 @@ namespace gmds
             std::pair<TInt, TInt> m_edgeContainingNode{};
 
             SimplexMesh*      m_simplex_mesh   = nullptr;
+
+            bool alreadyBelongingToAnEdge = false;
           };
 
 
@@ -146,7 +152,6 @@ namespace gmds
           SimplexMesh*      m_simplex_mesh   = nullptr;
 
           BitVector         m_tetSelectedIds;
-
         };
     }
   }

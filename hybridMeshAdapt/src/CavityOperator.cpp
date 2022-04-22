@@ -579,6 +579,8 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
   else if(dimNode == SimplexMesh::topo::SURFACE){  indexNode =  (*BND_SURFACE_COLOR)[node.getGlobalNode()] ; }
   else                                          {  indexNode =  0;}
 
+  /*std::cout << "CavityCell.size() BEFORE -> " << initCavityCell.size() << std::endl;
+  std::cout << "initCavityTriangle.size() BEFORE -> " << initCavityTriangle.size() << std::endl;*/
   bool flag = true;
   //CELL EXPANSION START
   while(flag)
@@ -594,6 +596,11 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
           for(TInt nodeIndexLocal = 0; nodeIndexLocal < sizeLocalNodeCell; nodeIndexLocal++)
           {
             TSimplexID nextSimplexToAdd = cell.oppositeTetraIdx(nodeIndexLocal);
+            std::vector<TInt> orderedFace = cell.getOrderedFace(nodeIndexLocal);
+            if(orderedFace[0] == node.getGlobalNode() || orderedFace[1] == node.getGlobalNode() || orderedFace[2] == node.getGlobalNode())
+            {
+              continue;
+            }
             if(nextSimplexToAdd != errorId)
             {
               if(nextSimplexToAdd >= 0)
@@ -627,9 +634,14 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       }
     }
     //CELL EXPANSION END
+    /*std::cout << "CavityCell.size() AFTER -> " << cavityCell.size() << std::endl;
+    std::cout << "initCavityTriangle.size() AFTER -> " << initCavityTriangle.size() << std::endl;
+*/
     gmds::BitVector indexedTriangle(m_simplex_mesh->getBitVectorTri().capacity());
     if(dimNode == SimplexMesh::topo::RIDGE)
     {
+      //std::cout << node << std::endl;
+      bool alreadyBelongingToAnEdge;
       struct Edge{
         TInt node0;
         TInt node1;
@@ -641,74 +653,95 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       const std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure =  m_simplex_mesh->getConstEdgeStructure();
       auto it = edgeStructure.equal_range(indexNode);
 
-      double epsilon = 1E-3;
-      math::Point pC = node.getCoords();
-
+      /*test pour voir si le node appartient pas deja a ridge ex : durant une phase de reinsertion*/
       for(auto itr = it.first ; itr != it.second ; itr++)
       {
-        math::Point pA = SimplicesNode(m_simplex_mesh, itr->second.first).getCoords();
-        math::Point pB = SimplicesNode(m_simplex_mesh, itr->second.second).getCoords();
-
-        math::Vector3d vecAB = pB - pA ;
-        math::Vector3d vecAC = pC - pA ;
-
-        if((vecAB.cross(vecAC)).norm() < epsilon)
+        TInt nodeEdge0 = itr->second.first;
+        TInt nodeEdge1 = itr->second.second;
+        if(nodeEdge0 == node.getGlobalNode() || nodeEdge1 == node.getGlobalNode())
         {
-          double K_AC = vecAB.dot(vecAC);
-          double K_AB = vecAB.dot(vecAB);
+          alreadyBelongingToAnEdge = true;
+          cavityIO.setNodeInfoEdge(alreadyBelongingToAnEdge);
+          break;
+        }
+      }
 
-          if(K_AC >= 0 && K_AC <= K_AB)
+      std::vector<TSimplexID> firstTriangles{};
+      if(!alreadyBelongingToAnEdge)
+      {
+        double epsilon = 1E-3;
+        math::Point pC = node.getCoords();
+
+        for(auto itr = it.first ; itr != it.second ; itr++)
+        {
+          math::Point pA = SimplicesNode(m_simplex_mesh, itr->second.first).getCoords();
+          math::Point pB = SimplicesNode(m_simplex_mesh, itr->second.second).getCoords();
+
+          math::Vector3d vecAB = pB - pA ;
+          math::Vector3d vecAC = pC - pA ;
+
+          if((vecAB.cross(vecAC)).norm() < epsilon)
           {
-            e.node0 = std::min(itr->second.first, itr->second.second);
-            e.node1 = std::max(itr->second.first, itr->second.second);
-            cavityIO.setEdgeContainingNode(e.node0, e.node1);
-            break;
+            double K_AC = vecAB.dot(vecAC);
+            double K_AB = vecAB.dot(vecAB);
+
+            if(K_AC >= 0 && K_AC <= K_AB)
+            {
+              e.node0 = std::min(itr->second.first, itr->second.second);
+              e.node1 = std::max(itr->second.first, itr->second.second);
+              cavityIO.setEdgeContainingNode(e.node0, e.node1);
+              break;
+            }
           }
         }
-      }
 
-      if(e.node0 == errorId || e.node1 == errorId)
-      {
-        //the node is not on a curve
-        return false;
-      }
-
-      const std::vector<TSimplexID> shell = SimplicesNode(m_simplex_mesh, e.node0).shell(SimplicesNode(m_simplex_mesh, e.node1));
-      std::vector<TSimplexID> firstTriangles{};
-      for(auto const simplex : shell){if(simplex < 0){firstTriangles.push_back(-simplex);}}
-      /////////////////////////
-
-      ///////////////////////////
-      if(firstTriangles.size() != 2){
-
-        for(auto const data : edgeStructure)
+        if(e.node0 == errorId || e.node1 == errorId)
         {
-          std::cout << "data --> " << data.first << " | [" << data.second.first << " : " << data.second.second << "]" << std::endl;
+          //the node is not on a curve
+          return false;
         }
-        std::cout << "e.node0 -> " << e.node0 << std::endl;
-        std::cout << "e.node1 -> " << e.node1 << std::endl;
-        std::cout << "NODE BEING INSERTED -> " << node.getGlobalNode() << std::endl;
-        std::cout << "LABEL -> " << indexNode << std::endl;
-        std::cout << "firstTriangles.size() -> " << firstTriangles.size() << std::endl;
 
-        //IF DEBUG MODE
-          gmds::ISimplexMeshIOService ioService(m_simplex_mesh);
-          gmds::VTKWriter vtkWriterDI(&ioService);
-          vtkWriterDI.setCellOptions(gmds::N|gmds::R|gmds::F);
-          vtkWriterDI.setDataOptions(gmds::N|gmds::R|gmds::F);
-          vtkWriterDI.write("EDGE_BUG_" + std::to_string(node.getGlobalNode()) + ".vtk");
+        const std::vector<TSimplexID> shell = SimplicesNode(m_simplex_mesh, e.node0).shell(SimplicesNode(m_simplex_mesh, e.node1));
+        for(auto const simplex : shell){if(simplex < 0){firstTriangles.push_back(-simplex);}}
+        /////////////////////////
 
-          SimplexMesh nodeMesh = SimplexMesh();
-          std::cout << "node.getCoords() -> " << node.getCoords() << std::endl;
-          nodeMesh.addNode(node.getCoords()[0], node.getCoords()[1], node.getCoords()[2]);
-          nodeMesh.addTetraedre(0, 0, 0, 0);
-          gmds::ISimplexMeshIOService ioServiceNode(&nodeMesh);
-          gmds::VTKWriter vtkWriterNode(&ioServiceNode);
-          vtkWriterNode.setCellOptions(gmds::N|gmds::R);
-          vtkWriterNode.setDataOptions(gmds::N|gmds::R);
-          vtkWriterNode.write("NODE_" + std::to_string(node.getGlobalNode()) + ".vtk");
+        ///////////////////////////
+        if(firstTriangles.size() != 2){
 
-        throw GMDSException("firstTriangles.size() != 2, the surface mesh is broken ...");
+          for(auto const data : edgeStructure)
+          {
+            std::cout << "data --> " << data.first << " | [" << data.second.first << " : " << data.second.second << "]" << std::endl;
+          }
+          std::cout << "e.node0 -> " << e.node0 << std::endl;
+          std::cout << "e.node1 -> " << e.node1 << std::endl;
+          std::cout << "NODE BEING INSERTED -> " << node.getGlobalNode() << std::endl;
+          std::cout << "LABEL -> " << indexNode << std::endl;
+          std::cout << "firstTriangles.size() -> " << firstTriangles.size() << std::endl;
+
+          //IF DEBUG MODE
+            gmds::ISimplexMeshIOService ioService(m_simplex_mesh);
+            gmds::VTKWriter vtkWriterDI(&ioService);
+            vtkWriterDI.setCellOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriterDI.setDataOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriterDI.write("EDGE_BUG_" + std::to_string(node.getGlobalNode()) + ".vtk");
+
+            SimplexMesh nodeMesh = SimplexMesh();
+            std::cout << "node.getCoords() -> " << node.getCoords() << std::endl;
+            nodeMesh.addNode(node.getCoords()[0], node.getCoords()[1], node.getCoords()[2]);
+            nodeMesh.addTetraedre(0, 0, 0, 0);
+            gmds::ISimplexMeshIOService ioServiceNode(&nodeMesh);
+            gmds::VTKWriter vtkWriterNode(&ioServiceNode);
+            vtkWriterNode.setCellOptions(gmds::N|gmds::R);
+            vtkWriterNode.setDataOptions(gmds::N|gmds::R);
+            vtkWriterNode.write("NODE_" + std::to_string(node.getGlobalNode()) + ".vtk");
+
+          throw GMDSException("firstTriangles.size() != 2, the surface mesh is broken ...");
+        }
+      }
+      else
+      {
+        const std::vector<TSimplexID> ball = node.ballOf();
+        for(auto const simplex : ball){if(simplex < 0){firstTriangles.push_back(-simplex);}}
       }
 
       for(auto const & triangle : firstTriangles){
@@ -782,7 +815,10 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       }
     }
   }
-
+/*
+  std::cout << "trianglesConnectedToP.size() AFTER -> " << trianglesConnectedToP.size() << std::endl;
+  std::cout << "trianglesNotConnectedToP.size() AFTER -> " << trianglesNotConnectedToP.size() << std::endl;
+*/
   cavityIO.setSimplexCavity(cavityCell, trianglesConnectedToP, trianglesNotConnectedToP);
   return true;
 }

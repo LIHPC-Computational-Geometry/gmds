@@ -180,19 +180,29 @@ SimplexMesh::~SimplexMesh()
 /*****************************************************************************/
 void SimplexMesh::deleteAllSimplicesBut(const std::vector<TSimplexID> & simplices)
 {
-  for(unsigned int tet = 0 ; tet < m_tet_ids.capacity(); tet++)
+  if(simplices.size() != 0)
   {
-    if(std::find(simplices.begin(), simplices.end(), tet) == simplices.end())
+    for(unsigned int tet = 0 ; tet < m_tet_ids.capacity(); tet++)
     {
-      m_tet_ids.unselect(tet);
+      if(std::find(simplices.begin(), simplices.end(), tet) == simplices.end())
+      {
+        m_tet_ids.unselect(tet);
+      }
+    }
+
+    for(unsigned int tri = 1 ; tri < m_tri_ids.capacity(); tri++)
+    {
+      if(std::find(simplices.begin(), simplices.end(), -tri) == simplices.end())
+      {
+        m_tri_ids.unselect(tri);
+      }
     }
   }
-
-  for(unsigned int tri = 1 ; tri < m_tri_ids.capacity(); tri++)
+  else
   {
-    if(std::find(simplices.begin(), simplices.end(), -tri) == simplices.end())
+    for(unsigned int tet = 0 ; tet < m_tet_ids.capacity(); tet++)
     {
-      m_tri_ids.unselect(tri);
+      m_tet_ids.unselect(tet);
     }
   }
 }
@@ -4179,6 +4189,29 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
         }
         else
         {
+          std::cout << "nodeA -> " << nodeA << std::endl;
+          std::cout << "nodeB -> " << nodeB << std::endl;
+          std::cout << std::endl;
+          std::cout << "triangle : " << std::endl;
+          std::cout << SimplicesTriangle(this, triangle) << std::endl;
+          std::cout << "oppositeTriangle : " << std::endl;
+          std::cout << SimplicesTriangle(this, oppositeTriangle) << std::endl;
+          std::cout << std::endl;
+          std::vector<TSimplexID> cellInfo{};
+          std::vector<TSimplexID> trianglesInfo{std::abs(triangle), std::abs(oppositeTriangle)};
+          deleteAllTrianglesBut(trianglesInfo);
+          deleteAllSimplicesBut(cellInfo);
+
+          gmds::ISimplexMeshIOService ioServiceMesh(this);
+          gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
+          vtkWriterMesh.setCellOptions(gmds::N|gmds::R|gmds::F);
+          vtkWriterMesh.setDataOptions(gmds::N|gmds::R|gmds::F);
+          vtkWriterMesh.write("DEBUG_MESH.vtk");
+          std::cout << "oppoNode.size() -> " << oppoNode.size() << std::endl;
+          for(auto const node : oppoNode)
+          {
+            std::cout << "  node -> " << node << std::endl;
+          }
           throw GMDSException("oppoNode.size() != 1");
         }
 
@@ -4775,6 +4808,65 @@ void SimplexMesh::pointsLabeling(const std::vector<math::Point> &points, std::ve
       break;
     }
   }
+}
+/******************************************************************************/
+bool SimplexMesh::edgeRemove(const TInt nodeA, const TInt nodeB)
+{
+  Variable<int>* BND_VERTEX_COLOR  = nullptr;
+  Variable<int>* BND_CURVE_COLOR   = nullptr;
+  Variable<int>* BND_SURFACE_COLOR = nullptr;
+
+  try{
+    BND_VERTEX_COLOR  = getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+    BND_CURVE_COLOR   = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+    BND_SURFACE_COLOR = getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+  } catch(gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  const SimplicesNode sNodeA(this, nodeA);
+  const SimplicesNode sNodeB(this, nodeB);
+
+  unsigned int nodeADim = ((*BND_VERTEX_COLOR)[nodeA] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[nodeA] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[nodeA] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
+  unsigned int nodeALabel = ((*BND_VERTEX_COLOR)[nodeA] != 0)?(*BND_VERTEX_COLOR)[nodeA]:((*BND_CURVE_COLOR)[nodeA] != 0)?(*BND_CURVE_COLOR)[nodeA]:((*BND_SURFACE_COLOR)[nodeA] != 0)?(*BND_SURFACE_COLOR)[nodeA]:0;
+  unsigned int nodeBDim = ((*BND_VERTEX_COLOR)[nodeB] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[nodeB] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[nodeB] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
+  unsigned int nodeBLabel = ((*BND_VERTEX_COLOR)[nodeB] != 0)?(*BND_VERTEX_COLOR)[nodeB]:((*BND_CURVE_COLOR)[nodeB] != 0)?(*BND_CURVE_COLOR)[nodeB]:((*BND_SURFACE_COLOR)[nodeB] != 0)?(*BND_SURFACE_COLOR)[nodeB]:0;
+
+  bool status = false;
+  CriterionRAIS criterionRAIS(new VolumeCriterion());
+  const gmds::BitVector markedNodes{};
+  std::vector<TSimplexID> deletedSimplex{};
+  std::vector<TInt> deletedNodes{};
+  const std::multimap<TInt, TInt>& facesAlreadyBuilt{};
+  std::vector<TSimplexID> cellsCreated{};
+
+
+  if(nodeADim == nodeBDim)
+  {
+    if(nodeALabel == nodeBLabel)
+    {
+      std::vector<TSimplexID> ball = sNodeA.ballOf();
+      PointInsertion pi(this, sNodeB, criterionRAIS, status, ball, markedNodes, deletedNodes, facesAlreadyBuilt, cellsCreated);
+      if(!status)
+      {
+        std::vector<TSimplexID> ball = sNodeB.ballOf();
+        PointInsertion pi(this, sNodeA, criterionRAIS, status, ball, markedNodes, deletedNodes, facesAlreadyBuilt, cellsCreated);
+      }
+    }
+  }
+  else if(nodeADim > nodeBDim)
+  {
+    std::vector<TSimplexID> ball = sNodeA.ballOf();
+    PointInsertion pi(this, sNodeB, criterionRAIS, status, ball, markedNodes, deletedNodes, facesAlreadyBuilt, cellsCreated);
+  }
+  else //nodeBDim > nodeADim
+  {
+    std::vector<TSimplexID> ball = sNodeB.ballOf();
+    PointInsertion pi(this, sNodeA, criterionRAIS, status, ball, markedNodes, deletedNodes, facesAlreadyBuilt, cellsCreated);
+  }
+
+  return status;
 }
 /******************************************************************************/
 unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std::vector<TInt>& deletedNodes)
@@ -5600,98 +5692,109 @@ double SimplexMesh::subSurfaceFactor(const std::vector<std::vector<TInt>>& faces
   return res;
 }
 /******************************************************************************/
-double SimplexMesh::computeQualityElement(const TSimplexID simplex)
+double SimplexMesh::computeQualityElement(const TInt nodeA, const TInt nodeB, const TInt nodeC, const TInt nodeD)
 {
-  if(m_tet_ids[simplex] != 0)
+  Variable<Eigen::Matrix3d>* metric = nullptr;
+  try{
+    metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }catch (gmds::GMDSException e)
   {
-    Variable<Eigen::Matrix3d>* metric = nullptr;
-    try{
-      metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
-    }catch (gmds::GMDSException e)
+    throw gmds::GMDSException(e);
+  }
+  //compute the mean of the metric for the current simplex in order to approximate a quality factor using mean metric
+  const gmds::math::Point pA = SimplicesNode(this, nodeA).getCoords();
+  const gmds::math::Point pB = SimplicesNode(this, nodeB).getCoords();
+  const gmds::math::Point pC = SimplicesNode(this, nodeC).getCoords();
+  const gmds::math::Point pD = SimplicesNode(this, nodeD).getCoords();
+
+  gmds::math::Point points[4] = {pA, pB, pC, pD};
+  gmds::math::Tetrahedron tet(points);
+  const double volumeK  = tet.getVolume();
+  
+  Eigen::Matrix3d M0 = (*metric)[nodeA];
+  Eigen::Matrix3d M1 = (*metric)[nodeB];
+  Eigen::Matrix3d M2 = (*metric)[nodeC];
+  Eigen::Matrix3d M3 = (*metric)[nodeD];
+
+  //https://pages.saclay.inria.fr/frederic.alauzet/download/George_Mesh%20generation%20and%20mesh%20adaptivity%20theory%20and%20techniques.pdf
+  //compute the qualité of simplex with each simplex's node metric and the quality of the simplex will be the worst quality previously computed
+  std::vector<double> qualities{};
+  std::vector<Eigen::Matrix3d> metrics{M0, M1, M2, M3};
+  math::Vector3d vec01 = SimplicesNode(this, nodeB).getCoords() - SimplicesNode(this, nodeA).getCoords();
+  math::Vector3d vec02 = SimplicesNode(this, nodeC).getCoords() - SimplicesNode(this, nodeA).getCoords();
+  math::Vector3d vec12 = SimplicesNode(this, nodeC).getCoords() - SimplicesNode(this, nodeB).getCoords();
+  math::Vector3d vec03 = SimplicesNode(this, nodeD).getCoords() - SimplicesNode(this, nodeA).getCoords();
+  math::Vector3d vec13 = SimplicesNode(this, nodeD).getCoords() - SimplicesNode(this, nodeB).getCoords();
+  math::Vector3d vec23 = SimplicesNode(this, nodeD).getCoords() - SimplicesNode(this, nodeC).getCoords();
+
+  Eigen::Vector3d e01 = Eigen::Vector3d(vec01.X(), vec01.Y(), vec01.Z());
+  Eigen::Vector3d e02 = Eigen::Vector3d(vec02.X(), vec02.Y(), vec02.Z());
+  Eigen::Vector3d e12 = Eigen::Vector3d(vec12.X(), vec12.Y(), vec12.Z());
+  Eigen::Vector3d e03 = Eigen::Vector3d(vec03.X(), vec03.Y(), vec03.Z());
+  Eigen::Vector3d e13 = Eigen::Vector3d(vec13.X(), vec13.Y(), vec13.Z());
+  Eigen::Vector3d e23 = Eigen::Vector3d(vec23.X(), vec23.Y(), vec23.Z());
+
+  std::vector<Eigen::Vector3d> edges{e01,e02,e12,e03,e13,e23};
+  double den = 0.0;
+  for(auto const metric : metrics)
+  {
+    for(auto const edge : edges)
     {
-      throw gmds::GMDSException(e);
+      den += (edge.dot(metric * edge) * edge.dot(metric * edge));
     }
-    //compute the mean of the metric for the current simplex in order to approximate a quality factor using mean metric
-    const std::vector<TInt> nodes = SimplicesCell(this, simplex).getNodes();
-    const double volumeK          = SimplicesCell(this, simplex).getVolumeOfCell();
-
-    if(nodes.size() == 4)
+    if(den == 0.0)
     {
-      Eigen::Matrix3d M0 = (*metric)[nodes[0]];
-      Eigen::Matrix3d M1 = (*metric)[nodes[1]];
-      Eigen::Matrix3d M2 = (*metric)[nodes[2]];
-      Eigen::Matrix3d M3 = (*metric)[nodes[3]];
-
-      //https://pages.saclay.inria.fr/frederic.alauzet/download/George_Mesh%20generation%20and%20mesh%20adaptivity%20theory%20and%20techniques.pdf
-      //compute the qualité of simplex with each simplex's node metric and the quality of the simplex will be the worst quality previously computed
-      std::vector<double> qualities{};
-      std::vector<Eigen::Matrix3d> metrics{M0, M1, M2, M3};
-      math::Vector3d vec01 = SimplicesNode(this, nodes[1]).getCoords() - SimplicesNode(this, nodes[0]).getCoords();
-      math::Vector3d vec02 = SimplicesNode(this, nodes[2]).getCoords() - SimplicesNode(this, nodes[0]).getCoords();
-      math::Vector3d vec12 = SimplicesNode(this, nodes[2]).getCoords() - SimplicesNode(this, nodes[1]).getCoords();
-      math::Vector3d vec03 = SimplicesNode(this, nodes[3]).getCoords() - SimplicesNode(this, nodes[0]).getCoords();
-      math::Vector3d vec13 = SimplicesNode(this, nodes[3]).getCoords() - SimplicesNode(this, nodes[1]).getCoords();
-      math::Vector3d vec23 = SimplicesNode(this, nodes[3]).getCoords() - SimplicesNode(this, nodes[2]).getCoords();
-
-      Eigen::Vector3d e01 = Eigen::Vector3d(vec01.X(), vec01.Y(), vec01.Z());
-      Eigen::Vector3d e02 = Eigen::Vector3d(vec02.X(), vec02.Y(), vec02.Z());
-      Eigen::Vector3d e12 = Eigen::Vector3d(vec12.X(), vec12.Y(), vec12.Z());
-      Eigen::Vector3d e03 = Eigen::Vector3d(vec03.X(), vec03.Y(), vec03.Z());
-      Eigen::Vector3d e13 = Eigen::Vector3d(vec13.X(), vec13.Y(), vec13.Z());
-      Eigen::Vector3d e23 = Eigen::Vector3d(vec23.X(), vec23.Y(), vec23.Z());
-
-      std::vector<Eigen::Vector3d> edges{e01,e02,e12,e03,e13,e23};
-      double den = 0.0;
-      for(auto const metric : metrics)
-      {
-        for(auto const edge : edges)
-        {
-          den += (edge.dot(metric * edge) * edge.dot(metric * edge));
-        }
-        if(den == 0.0)
-        {
-          throw gmds::GMDSException("den == 0.0");
-          //qualities.push_back(std::numeric_limits<double>::max());
-        }
-        else
-        {
-          /*double maxlenghtEdge = std::max(std::max(e01.norm(),std::max(e02.norm(), e12.norm())), std::max(e03.norm(),std::max(e13.norm(), e23.norm())));
-          double v_regular = sqrt(2.0) / 12.0 * std::pow(maxlenghtEdge, 3);
-          double alpha = v_regular / (6.0*std::pow(maxlenghtEdge,2));*/
-          qualities.push_back(/*(1.0 / alpha) /*/ (sqrt(metric.determinant()) * volumeK) / den);
-        }
-      }
-
-      return std::min(std::min(qualities[0], qualities[1]), std::min(qualities[2], qualities[3]));
-      //https://tel.archives-ouvertes.fr/tel-00120327/document
-      //means of the simplex 's node metric ..other way to compute quality element
-      /*Eigen::Matrix3d M  = (M0.inverse() + M1.inverse() + M2.inverse() + M3.inverse());
-      M = 0.25 * M.inverse();
-      std::vector<Eigen::Vector3d> edges{e01,e02,e12,e03,e13,e23};
-      double num = 0.0;
-      for(auto const edge : edges)
-      {
-        num += edge.dot(M * edge);
-      }
-      if(volumeK == 0.0)
-      {
-        return std::numeric_limits<double>::max();
-      }
-      else
-      {
-        return (num * num * num) * (sqrt(M.determinant()) * volumeK);
-      }*/
+      throw gmds::GMDSException("den == 0.0");
+      //qualities.push_back(std::numeric_limits<double>::max());
     }
     else
     {
-      throw gmds::GMDSException("nodes.size() == 4");
+      /*double maxlenghtEdge = std::max(std::max(e01.norm(),std::max(e02.norm(), e12.norm())), std::max(e03.norm(),std::max(e13.norm(), e23.norm())));
+      double v_regular = sqrt(2.0) / 12.0 * std::pow(maxlenghtEdge, 3);
+      double alpha = v_regular / (6.0*std::pow(maxlenghtEdge,2));*/
+      qualities.push_back(/*(1.0 / alpha) /*/ (sqrt(metric.determinant()) * volumeK) / den);
+    }
+  }
+  return std::min(std::min(qualities[0], qualities[1]), std::min(qualities[2], qualities[3]));
+  //https://tel.archives-ouvertes.fr/tel-00120327/document
+  //means of the simplex 's node metric ..other way to compute quality element
+  /*Eigen::Matrix3d M  = (M0.inverse() + M1.inverse() + M2.inverse() + M3.inverse());
+  M = 0.25 * M.inverse();
+  std::vector<Eigen::Vector3d> edges{e01,e02,e12,e03,e13,e23};
+  double num = 0.0;
+  for(auto const edge : edges)
+  {
+    num += edge.dot(M * edge);
+  }
+  if(volumeK == 0.0)
+  {
+    return std::numeric_limits<double>::max();
+  }
+  else
+  {
+    return (num * num * num) * (sqrt(M.determinant()) * volumeK);
+  }*/
+}
+/******************************************************************************/
+double SimplexMesh::computeQualityElement(const TSimplexID simplex)
+{
+  if(simplex >= 0)
+  {
+    if(m_tet_ids[simplex] != 0)
+    {
+      std::vector<TInt> nodes = SimplicesCell(this, simplex).getNodes();
+      return computeQualityElement(nodes[0], nodes[1], nodes[2], nodes[3]);
+    }
+    else
+    {
+      std::cout << "simplex -> " << simplex << std::endl;
+      std::cout << SimplicesCell(this, simplex) << std::endl;
+      throw gmds::GMDSException("m_tet_ids[simplex] != 0");
     }
   }
   else
   {
-    std::cout << "simplex -> " << simplex << std::endl;
-    std::cout << SimplicesCell(this, simplex) << std::endl;
-    throw gmds::GMDSException("m_tet_ids[simplex] != 0");
+    throw gmds::GMDSException("simplex < 0");
   }
 }
 /******************************************************************************/

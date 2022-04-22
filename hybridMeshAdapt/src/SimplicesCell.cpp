@@ -8,6 +8,7 @@ using namespace gmds;
 using namespace hybrid;
 using namespace simplicesNode;
 using namespace simplicesCell;
+using namespace operators;
 /*----------------------------------------------------------------------------*/
 SimplicesCell::SimplicesCell(SimplexMesh* simplexMesh, const TSimplexID simplexId)
 {
@@ -535,6 +536,22 @@ std::vector<TInt> SimplicesCell::getOrderedFace(const TInt indexFace) const
   }
 
   return std::move(v);
+}
+/******************************************************************************/
+std::vector<TInt> SimplicesCell::visibleFaces(const math::Point& coordNode) const
+{
+  CriterionRAIS criterionRAIS(new VolumeCriterion());
+  const unsigned int sizeFace = 4;
+  std::vector<TInt> res{};
+  for(unsigned int face = 0 ; face < sizeFace ; face++)
+  {
+    bool isfaceVisible = !criterionRAIS.execute(m_simplex_mesh, m_simplexId, face, coordNode);
+    if(isfaceVisible)
+    {
+      res.push_back(face);
+    }
+  }
+  return res;
 }
 /******************************************************************************/
 std::vector<TSimplexID> SimplicesCell::oppositeTetraVectorPrivated(const SimplicesNode& simplicesNode) const
