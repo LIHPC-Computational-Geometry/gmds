@@ -113,9 +113,8 @@ AeroPipeline_2D::execute(){
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
-	/*
 	// Mise à jour du linker pour la dernière couche de noeuds
-	UpdateLinkerLastLayer(1);
+	UpdateLinkerLastLayer();
 
 	// Conversion structure maillage à blocking + maillage des blocs par transfinies
 	ConvertisseurMeshToBlocking();
@@ -127,7 +126,6 @@ AeroPipeline_2D::execute(){
 	smoother.execute();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
-	*/
 
 	// Ecriture finale des maillages
 	EcritureMaillage();
@@ -171,8 +169,8 @@ AeroPipeline_2D::EcritureMaillage(){
 
 	std::cout << "-> Ecriture du maillage ..." << std::endl;
 
-	gmds::IGMeshIOService ioService(m_meshHex);
-	//gmds::IGMeshIOService ioService(&m_Blocking2D);
+	//gmds::IGMeshIOService ioService(m_meshHex);
+	gmds::IGMeshIOService ioService(&m_Blocking2D);
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
@@ -451,11 +449,12 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 
 	std::cout << "-> Conversion Maillage en Blocking2D et connectivités" << std::endl;
 
-	Variable<TCellID>* var_new_id = m_meshHex->newVariable<TCellID,GMDS_NODE>("New_ID");
-
 	m_linker_BG->setGeometry(m_manager);
 	m_linker_BG->setMesh(&m_Blocking2D);
 
+	//m_Blocking2D = Blocking2D(*m_meshHex);
+
+	Variable<TCellID>* var_new_id = m_meshHex->newVariable<TCellID,GMDS_NODE>("New_ID");
 	Variable<int>* var_couche = m_Blocking2D.newVariable<int, GMDS_NODE>("GMDS_Couche");
 
 	for (auto n_id:m_meshHex->nodes()){
@@ -480,6 +479,7 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 
 	m_meshHex->deleteVariable(GMDS_NODE, "New_ID");
 
+
 	BlockingClassification();
 
 }
@@ -502,7 +502,18 @@ AeroPipeline_2D::UpdateLinker(cad::GeomMeshLinker* linker_1, Node n_1, cad::Geom
 
 /*------------------------------------------------------------------------*/
 void
-AeroPipeline_2D::UpdateLinkerLastLayer(int layer_id){
+AeroPipeline_2D::UpdateLinkerLastLayer(){
+
+	int layer_id(0);
+	Variable<int>* couche_id = m_meshHex->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+
+	for (auto n_id:m_meshHex->nodes())
+	{
+		if (couche_id->value(n_id) > layer_id)
+		{
+			layer_id = couche_id->value(n_id);
+		}
+	}
 
 	for (auto n_id:m_meshHex->nodes()){
 		if( m_couche_id->value(n_id) == layer_id ) {
@@ -524,18 +535,20 @@ AeroPipeline_2D::BlockingClassification(){
 
 	Variable<int>* var_couche = m_Blocking2D.getVariable<int, GMDS_NODE>("GMDS_Couche");
 
-	for (auto B0:m_Blocking2D.allBlocks()){
+	for (auto B0:m_Blocking2D.allBlocks())
+	{
 		int Nx = B0.getNbDiscretizationI()-1;
 		int Ny = B0.getNbDiscretizationJ()-1;
 
 		if ( var_couche->value( B0(0,0).id() ) == var_couche->value( B0(Nx,0).id() ) ) {
 			int geom_id_corner_1 = m_linker_BG->getGeomId<Node>(B0(0,0).id()) ;
 			int geom_id_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,0).id()) ;
-			int dim_corner_1 = m_linker_BG->getGeomId<Node>(B0(0,0).id()) ;
-			int dim_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,0).id());
+			int dim_corner_1 = m_linker_BG->getGeomDim<Node>(B0(0,0).id()) ;
+			int dim_corner_2 = m_linker_BG->getGeomDim<Node>(B0(Nx,0).id());
 			if( dim_corner_1 == dim_corner_2 && dim_corner_1 == 2 )
 			{
-				for (int i=1;i<Nx;i++){
+				for (int i=1;i<Nx;i++)
+				{
 					Node n = B0(i,0);
 					m_linker_BG->linkNodeToCurve(n.id(), geom_id_corner_1);
 					cad::GeomCurve* curve = m_manager->getCurve(geom_id_corner_1);
@@ -569,8 +582,8 @@ AeroPipeline_2D::BlockingClassification(){
 		if ( var_couche->value( B0(0,Ny).id() ) == var_couche->value( B0(Nx,Ny).id() ) ) {
 			int geom_id_corner_1 = m_linker_BG->getGeomId<Node>(B0(0,Ny).id()) ;
 			int geom_id_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,Ny).id()) ;
-			int dim_corner_1 = m_linker_BG->getGeomId<Node>(B0(0,Ny).id()) ;
-			int dim_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,Ny).id());
+			int dim_corner_1 = m_linker_BG->getGeomDim<Node>(B0(0,Ny).id()) ;
+			int dim_corner_2 = m_linker_BG->getGeomDim<Node>(B0(Nx,Ny).id());
 			if( dim_corner_1 == dim_corner_2 && dim_corner_1 == 2 )
 			{
 				for (int i=1;i<Nx;i++){
@@ -587,8 +600,8 @@ AeroPipeline_2D::BlockingClassification(){
 		if ( var_couche->value( B0(Nx,0).id() ) == var_couche->value( B0(Nx,Ny).id() ) ) {
 			int geom_id_corner_1 = m_linker_BG->getGeomId<Node>(B0(Nx,0).id()) ;
 			int geom_id_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,Ny).id()) ;
-			int dim_corner_1 = m_linker_BG->getGeomId<Node>(B0(Nx,0).id()) ;
-			int dim_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,Ny).id());
+			int dim_corner_1 = m_linker_BG->getGeomDim<Node>(B0(Nx,0).id()) ;
+			int dim_corner_2 = m_linker_BG->getGeomDim<Node>(B0(Nx,Ny).id());
 			if( dim_corner_1 == dim_corner_2 && dim_corner_1 == 2 )
 			{
 				for (int j=1;j<Ny;j++){

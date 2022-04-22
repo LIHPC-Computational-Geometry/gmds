@@ -85,20 +85,18 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
 	/** @brief Insertion d'un bloc.
 	 	* \param[in] Front_IN the front
    	* \param[in] n_id l'id du noeud concerné
-		* \param[in] Front_OUT front de sortie
 		*
 		* \return
 	 */
-	void Insertion(Front &Front_IN, TCellID n_id, Front &Front_OUT, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors);
+	void Insertion(Front &Front_IN, TCellID n_id, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors);
 	/*-------------------------------------------------------------------*/
 	/** @brief Fusion de deux blocs.
 	 	* \param[in] Front_IN the front
    	* \param[in] n_id l'id du noeud concerné
-		* \param[in] Front_OUT front de sortie
 		*
 		* \return
 	 */
-	void Fusion(Front &Front_IN, TCellID n_id, Front &Front_OUT);
+	void Fusion(Front &Front_IN, TCellID n_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Créé un quad normal sur la couche à partir d'une arête
 	 	* \param[in] e_id l'arête concernée

@@ -93,10 +93,9 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_2D : public AbstractAeroPipeline {
 	void UpdateLinker(cad::GeomMeshLinker* linker_1, Node n_1, cad::GeomMeshLinker* linker_2, Node n_2);
 	/*----------------------------------------------------------------------------*/
 	/** @brief Update the linker for the last layer (on amont boundary)
-	 * @param layer_id layer's id
 	 * @return void
 	 */
-	void UpdateLinkerLastLayer(int layer_id);
+	void UpdateLinkerLastLayer();
 	/*----------------------------------------------------------------------------*/
 	/** @brief Transmet la classification des noeuds de blocs aux noeuds intérieurs
 	 * aux blocs
