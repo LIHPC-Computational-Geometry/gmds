@@ -44,6 +44,17 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	 */
 	static double angleouverture(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
 	/*------------------------------------------------------------------------*/
+	/** \brief  The angles side by side the edge (n0_id, n1_id)
+         *
+         * \param[in] n0_id first node id
+         * \param[in] n1_id second node id
+         * \param[in] n2_id third node id
+         * \param[in] n3_id fourth node id
+         *
+         * \return  the min ratio between two opposite edges (between 0 and 1)
+	 */
+	static double minlenghtedge(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
+	/*------------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/

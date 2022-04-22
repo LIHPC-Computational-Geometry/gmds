@@ -71,7 +71,7 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
 		*
 		* \return  the front computed
 	 */
-	Front ComputeLayer(Front Front_IN, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors);
+	Front ComputeLayer(int layer_id, Front Front_IN, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors);
 	/*-------------------------------------------------------------------*/
 	/** @brief Retourne un noeud singulier du front.
 	 	* \param[in] Front_IN the front

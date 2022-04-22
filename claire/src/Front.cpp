@@ -16,6 +16,13 @@ Front::Front() {
 
 
 /*-------------------------------------------------------------------*/
+void Front::setFrontID(int layer_id){
+	m_FrontID = layer_id;
+}
+/*-------------------------------------------------------------------*/
+
+
+/*-------------------------------------------------------------------*/
 void Front::setMultipleNode(TCellID n_id){
 	m_NodeInfo[n_id].nodeType = 1;
 }
@@ -32,6 +39,13 @@ void Front::setContractedNode(TCellID n_id){
 /*-------------------------------------------------------------------*/
 void Front::setNextNode(TCellID n_id, TCellID n_neighbor_id, TCellID n_new_id){
 	m_NodeInfo[n_id].next_nodes[n_neighbor_id] = n_new_id ;
+}
+/*-------------------------------------------------------------------*/
+
+
+/*-------------------------------------------------------------------*/
+int Front::getFrontID(){
+	return m_FrontID;
 }
 /*-------------------------------------------------------------------*/
 

@@ -40,6 +40,11 @@ class LIB_GMDS_CLAIRE_API Front {
 
  public:
 	/*-------------------------------------------------------------------*/
+	/** @brief Change l'id du front
+	 * 	@param[in] layer_id nouvel id du front
+	 */
+	void setFrontID(int layer_id);
+	/*-------------------------------------------------------------------*/
 	/** @brief Change le type d'un noeud pour le passer en multiple
 	 * 	@param[in] n_id id du noeud concerné
 	 */
@@ -58,6 +63,10 @@ class LIB_GMDS_CLAIRE_API Front {
 	 * 	connecter
 	 */
 	void setNextNode(TCellID n_id, TCellID n_neighbor_id, TCellID n_new_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Retourne l'id du front
+	 */
+	int getFrontID();
 	/*-------------------------------------------------------------------*/
 	/** @brief Retourne les id des noeuds du front dans un vecteur
 	 */
@@ -122,6 +131,8 @@ class LIB_GMDS_CLAIRE_API Front {
 	void initializeNodeNeighbors(Mesh *m);
 	/*-------------------------------------------------------------------*/
  private:
+	/** Id du front, de la couche */
+	int m_FrontID;
 	/** Liste d'id des noeuds du front */
 	std::vector<TCellID> m_nodesId;
 	/** Liste d'id des arêtes du front */
