@@ -313,12 +313,12 @@ std::vector<std::vector<int>> Tools::getAllNodesChain(const int i1, const int i2
 		}
 	}
 
-	for (auto n : listAllPairNodesChain){
+	/*for (auto n : listAllPairNodesChain){
 		std::cout<<"\nUne Pair : "<<std::endl;
 		for (auto i : n){
 			std::cout<<i<<std::endl;
 		}
-	}
+	}*/
 	return listAllPairNodesChain;
 }
 
@@ -444,15 +444,10 @@ Node Tools::createMiddleNode(Node i1,Node i2)
 void Tools::createAllMiddlePoint(Node i1, Node i2)
 {
 	auto listPair = Tools::getAllNodesChain(i1.id(),i2.id());
-	std::cout<<"List pair Nodes :"<<std::endl;
-	for (auto n : listPair){
-		for (auto i : n){
-			std::cout<<i<<std::endl;
-		}
-	}
+
 	for(auto p : listPair){
 		Node nodeToAdd = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(p.front()),g_grid.m_mesh.get<Node>(p.back()));
-		g_grid.m_mesh.newNode(math::Point(nodeToAdd.X(),nodeToAdd.Y(),nodeToAdd.Z()));
-		std::cout<<"Le nouveau NOEUD :"<<nodeToAdd<<std::endl;
+		Node newNode=g_grid.m_mesh.newNode(math::Point(nodeToAdd.X(),nodeToAdd.Y(),nodeToAdd.Z()));
+		std::cout<<"Le nouveau ouais NOEUD :"<<newNode<<std::endl;
 	}
 }
