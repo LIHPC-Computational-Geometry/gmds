@@ -2,25 +2,26 @@
 // Created by Baptiste Bony on 22/04/22.
 //
 
-#include </home/bonyb/Documents/GitHub/gmds/baptiste/inc/gmds/baptiste/RLBlockSet.h>
+#include <gmds/baptiste/RLBlockSet.h>
 #include <gmds/utils/Variable.h>
+
 
 using namespace gmds;
 
-RLBlockSet::RLBlockSet(gmds::Mesh mesh)
-{
-    m_mesh = mesh;
-}
 
-void createFourNodes(double xA, double yA, double xB, double yB);
+RLBlockSet::RLBlockSet(Mesh *AMesh)
+	:m_mesh(*AMesh){;}
+
+
+void RLBlockSet::createFourNodes(double xA, double yA, double xB, double yB)
 {
     std::vector<double> AX = {xA, xB, xA, xB};
     std::vector<double> AY = {yA, yA, yB, yB};
     std::vector<double> AZ = {0, 0, 0, 0};
-    m_mesh.createNodes(AX, AY, AZ);
+	 Node n = m_mesh.newNode(xA, yA);
 }
 
-void setFrame(double xMin, double yMin, double xMax, double yMax)
+void RLBlockSet::setFrame(double xMin, double yMin, double xMax, double yMax)
 {
     double xPitch = abs(xMax - xMin)/3;
     double yPitch = abs(yMax - yMin)/3;
@@ -39,12 +40,12 @@ void setFrame(double xMin, double yMin, double xMax, double yMax)
     createFourNodes(x2, y2, xMax, yMax);
 }
 
-int getNumberOfBlocks()
+int RLBlockSet::getNumberOfBlocks()
 {
 
 }
 
-void deleteBlock(const int faceID)
+void RLBlockSet::deleteBlock(const int faceID)
 {
 
 }

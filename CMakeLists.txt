@@ -111,7 +111,7 @@ GMDS_ADD_COMPONENT(
         BAPTISTE                       # cmake variable
         baptiste                        # src subdirectory name
         GMDSBaptiste                    # name of the generated library
-        "Provide the mesh of a block structure classified on a CAD geometry"  # description
+        "Model 2D Shapes by Reinforcement Learning"  # description
         ON                                 # is activated
         ON                                 # must be covered
 )
