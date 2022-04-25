@@ -119,7 +119,7 @@ int main(){
 	}*/
 	//tool.getOtherNodes(2,7);
 	//tool.getListSecondNodesChain(11,16);
-	tool.createAllMiddlePoint(tool.g_grid.m_mesh.get<Node>(2),tool.g_grid.m_mesh.get<Node>(3));
+	tool.createAllMiddlePoint(tool.g_grid.m_mesh.get<Node>(9),tool.g_grid.m_mesh.get<Node>(14));
 	//tool.getAllNodesChain(1,2);
 
 // Save Triangle Generation
@@ -127,7 +127,7 @@ int main(){
 	VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("tata.vtk");
+	vtkWriter.write("lulu.vtk");
 
 
 // Save GridBuilder Generation
@@ -135,7 +135,7 @@ int main(){
 	VTKWriter vtkWriter2(&ioService2);
 	vtkWriter2.setCellOptions(gmds::N|gmds::F);
 	vtkWriter2.setDataOptions(gmds::N|gmds::F);
-	vtkWriter2.write("toto.vtk");
+	vtkWriter2.write("lili.vtk");
 
 	exit(3);
 
