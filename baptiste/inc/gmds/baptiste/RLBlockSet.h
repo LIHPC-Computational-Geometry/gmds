@@ -6,16 +6,20 @@
 #define GMDS_RL_BLOCK_SET_H
 /*----------------------------------------------------------------------------*/
 #include "gmds/ig/Mesh.h"
+#include "GMDSIgAlgo_export.h"
 /*----------------------------------------------------------------------------*/
 
 namespace gmds {
 class RLBlockSet
 {
  public:
-	gmds::Mesh m_mesh;
-	RLBlockSet(gmds::Mesh m_mesh);
 
-	void createNode(double xA, double yA, double xB, double yB);
+	RLBlockSet(Mesh *AMesh);
+
+	gmds::Mesh m_mesh;
+	// RLBlockSet();
+
+	void createFourNodes(double xA, double yA, double xB, double yB);
 	
 	void setFrame(double xMin, double yMin, double xMax, double yMax);
 

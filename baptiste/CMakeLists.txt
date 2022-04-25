@@ -5,6 +5,13 @@
 set(GMDS_LIB ${LIB_GMDS_BAPTISTE})
 set(GMDS_LIB_PREFIX gmds/baptiste)
 
+set(GMDS_INC
+        ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
+        inc/gmds/baptiste/RLBlockSet.h
+        )
+
+set(GMDS_SRC
+        src/RLBlockSet.cpp src/main.cpp inc/gmds/baptiste/RLBlockSet.h)
 
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
@@ -40,3 +47,9 @@ if(WITH_TEST)
     add_subdirectory(tst)
 endif(WITH_TEST)
 
+#==============================================================================
+# EXECUTABLE
+#==============================================================================
+add_executable(Baptiste src/main.cpp)
+target_link_libraries(Baptiste PRIVATE ${GMDS_LIB})
+target_compile_features(Baptiste PUBLIC cxx_std_14)
