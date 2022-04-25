@@ -19,11 +19,11 @@ int Tools::getValueActivateFace(const int faceIDChecked)
 bool Tools::checkExistEdge(const int i1, const int i2, const int faceID)
 {
 	if(Tools::checkFollowIdNode(i1,i2,faceID) && Tools::checkCommonFace(i1,i2)){
-		std::cout<<"LES 2 NOEUDS ONT UNE ARETE !"<<std::endl;
+		//std::cout<<"LES 2 NOEUDS ONT UNE ARETE !"<<std::endl;
 		return true;
 	}
 	else{
-		std::cout<<"LES 2 NOEUDS N'ONT PAS UNE ARETE !"<<std::endl;
+		//std::cout<<"LES 2 NOEUDS N'ONT PAS UNE ARETE !"<<std::endl;
 		return false;
 	}
 
@@ -90,7 +90,7 @@ std::vector<Face> Tools::getFacesCommon(const int i1, const int i2)
 		}
 	}
 	if(list_Face_Common.empty()){
-		std::cout<<"Erreur, noeuds pas de face en commun "<<std::endl;
+		//std::cout<<"Erreur, noeuds pas de face en commun "<<std::endl;
 		return {};
 	}
 	/*std::cout<<"List des faces en commun entre "<<i1<<" et "<<i2<<" :"<<std::endl;
@@ -126,11 +126,11 @@ int Tools::getIdPreviousNode(const int idNode,const int idFaceNode)
 		//std::cout<<"Le dernier element du vec est "<<listNodeFace.back()<<std::endl;
 		if (listNodeFace[i].id() == idNode){
 			if(i == 0){
-				std::cout << "Le noeud precedent est " << listNodeFace.back().id() << std::endl;
+				//std::cout << "Le noeud precedent est " << listNodeFace.back().id() << std::endl;
 				return listNodeFace.back().id();
 			}
 			else {
-				std::cout << "Le noeud precedent est " << listNodeFace[i - 1].id() << std::endl;
+				//std::cout << "Le noeud precedent est " << listNodeFace[i - 1].id() << std::endl;
 				return listNodeFace[i - 1].id();
 			}
 		}
@@ -146,11 +146,11 @@ int Tools::getIdNextNode(const int idNode, const int idFaceNode)
 		//std::cout<<"Le dernier element du vec est "<<listNodeFace.back()<<std::endl;
 		if (listNodeFace[i].id() == idNode){
 			if(i == listNodeFace.size()-1){
-				std::cout << "Le noeud suivant est " << listNodeFace.front().id() << std::endl;
+				//std::cout << "Le noeud suivant est " << listNodeFace.front().id() << std::endl;
 				return listNodeFace.front().id();
 			}
 			else {
-				std::cout << "Le noeud suivant est " << listNodeFace[i + 1].id() << std::endl;
+				//std::cout << "Le noeud suivant est " << listNodeFace[i + 1].id() << std::endl;
 				return listNodeFace[i + 1].id();
 			}
 		}
@@ -191,12 +191,12 @@ std::vector<std::vector<int>> Tools::getOtherNodes(const int i1, const int i2)
 			}
 		}
 	}
-	for (auto n : listPairNodes){
+	/*for (auto n : listPairNodes){
 		std::cout<<"UNE PAIRE de noeuds : "<<std::endl;
 		for(auto i : n) {
 			std::cout << "============"<< "Elements list pair : " << i << "===========" << std::endl;
 		}
-	}
+	}*/
 	return listPairNodes;
 }
 
@@ -210,13 +210,13 @@ std::vector<Face> Tools::getAllFacesChain(const int i1, const int i2)
 	while(!listPairToCheck.empty()){
 		auto listParcour = listPairToCheck;
 		for (auto p : listParcour){
-			std::cout<<"LES ID QUI SONT CHECK"<<std::endl;
+			/*std::cout<<"LES ID QUI SONT CHECK"<<std::endl;
 			for (auto n : p){
 				std::cout<<n<<std::endl;
-			}
+			}*/
 			if (*find(nodeCheck.begin(), nodeCheck.end(), p.front()) == p.front() ||
 				 *find(nodeCheck.begin(), nodeCheck.end(), p.back()) == p.back()) {
-				std::cout<<"Noeud DEJA Check"<<std::endl;
+				//std::cout<<"Noeud DEJA Check"<<std::endl;
 
 			}
 			else{
@@ -224,10 +224,10 @@ std::vector<Face> Tools::getAllFacesChain(const int i1, const int i2)
 				nodeCheck.push_back(p.back());
 
 			}
-			std::cout<<"Noeuds Check :"<<std::endl;
+			/*std::cout<<"Noeuds Check :"<<std::endl;
 			for (auto j : nodeCheck){
 				std::cout<<j<<std::endl;
-			}
+			}*/
 			std::vector<std::vector<int>> otherNodes = Tools::getOtherNodes(p.front(),p.back());
 
 
@@ -238,7 +238,7 @@ std::vector<Face> Tools::getAllFacesChain(const int i1, const int i2)
 			for(auto n : otherNodes){
 				if (*find(nodeCheck.begin(), nodeCheck.end(), n.front()) == n.front() ||
 					 *find(nodeCheck.begin(), nodeCheck.end(), n.back()) == n.back()) {
-					std::cout<<"Other nodes deja check"<<std::endl;
+					//std::cout<<"Other nodes deja check"<<std::endl;
 
 				}
 				else{
@@ -249,7 +249,7 @@ std::vector<Face> Tools::getAllFacesChain(const int i1, const int i2)
 			for (auto f : newFaces){
 
 				if (*find(listAllFaces.begin(), listAllFaces.end(),f) == f){
-					std::cout<<"Other nodes deja check"<<std::endl;
+					//std::cout<<"Other nodes deja check"<<std::endl;
 				}
 				else{
 					listAllFaces.push_back(f);
@@ -269,10 +269,10 @@ std::vector<Face> Tools::getAllFacesChain(const int i1, const int i2)
 
 		}
 	}
-	std::cout<<"LA LISTE DES FACES "<<std::endl;
+	/*std::cout<<"LA LISTE DES FACES "<<std::endl;
 	for(auto f : listAllFaces){
 		std::cout<<f<<std::endl;
-	}
+	}*/
 	return listAllFaces;
 }
 
@@ -293,15 +293,15 @@ std::vector<std::vector<int>> Tools::getAllNodesChain(const int i1, const int i2
 			for (auto n : newPairToAdd) {
 				if ((*find(pairNodes.begin(), pairNodes.end(), n.front()) == n.front()) ||
 				    (*find(pairNodes.begin(), pairNodes.end(), n.back()) == n.back())) {
-					std::cout << "DEJA DANS LA LISTE DES NOEUDS " << n.front() << " " << n.back() << std::endl;
+					/*std::cout << "DEJA DANS LA LISTE DES NOEUDS " << n.front() << " " << n.back() << std::endl;
 					std::cout<<"Pair check :" <<std::endl;
 					for (auto i : pairNodes){
 						std::cout<<i<<std::endl;
-					}
+					}*/
 				}
 				else {
 
-					std::cout<<"Element ADD : "<<n.front()<<" "<<n.back()<<std::endl;
+					//std::cout<<"Element ADD : "<<n.front()<<" "<<n.back()<<std::endl;
 					listPairToCheck.push_back(n);
 				}
 			}
@@ -339,10 +339,10 @@ std::vector<Node> Tools::nodesAroundANode(const int i1)
 			}
 		}
 	}
-	std::cout<<"List Node Around"<<std::endl;
+	/*std::cout<<"List Node Around"<<std::endl;
 	for (auto n : listNodesAround){
 		std::cout<<n<<std::endl;
-	}
+	}*/
 
 	return listNodesAround;
 }
@@ -421,8 +421,8 @@ std::vector<int> Tools::getListFirstNodesChain(const int i1, const int i2)
 std::vector<int> Tools::getListSecondNodesChain(const int i1, const int i2)
 {
 	auto listSecondNodesChain=Tools::getListFirstNodesChain(i2,i1);
-	std::cout<<"List Nodes First"<<std::endl;
-	/*for (auto n : listSecondNodesChain){
+	/*std::cout<<"List Nodes First"<<std::endl;
+	for (auto n : listSecondNodesChain){
 		std::cout<<n<<std::endl;
 	}*/
 	return listSecondNodesChain;
@@ -436,7 +436,7 @@ Node Tools::createMiddleNode(Node i1,Node i2)
 
 	Node newNode = g_grid.m_mesh.newNode(math::Point(newX,newY,newZ));
 
-	std::cout<<"Le new node : " <<newNode<<std::endl;
+	//std::cout<<"Le new node : " <<newNode<<std::endl;
 
 	return newNode;
 }
@@ -444,15 +444,193 @@ Node Tools::createMiddleNode(Node i1,Node i2)
 void Tools::createAllMiddlePoint(Node i1, Node i2)
 {
 	auto listPair = Tools::getAllNodesChain(i1.id(),i2.id());
-	std::cout<<"List pair Nodes :"<<std::endl;
+	/*std::cout<<"List pair Nodes :"<<std::endl;
 	for (auto n : listPair){
 		for (auto i : n){
 			std::cout<<i<<std::endl;
 		}
-	}
+	}*/
 	for(auto p : listPair){
 		Node nodeToAdd = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(p.front()),g_grid.m_mesh.get<Node>(p.back()));
 		g_grid.m_mesh.newNode(math::Point(nodeToAdd.X(),nodeToAdd.Y(),nodeToAdd.Z()));
-		std::cout<<"Le nouveau NOEUD :"<<nodeToAdd<<std::endl;
+		//std::cout<<"Le nouveau NOEUD :"<<nodeToAdd<<std::endl;
+	}
+}
+
+std::vector<std::vector<int>> Tools::getPairNodesFace(const int i1, const int i2, const int faceID)
+{
+	std::vector<std::vector<int>> pairNodesFace = {};
+	auto allPairNodes = Tools::getAllNodesChain(i1,i2);
+	auto listNodes = Tools::getListNodesOfFace(faceID);
+
+	for (auto p : allPairNodes){
+		if (std::find(listNodes.begin(),listNodes.end(),g_grid.m_mesh.get<Node>(p.front()))!=listNodes.end() ||
+		    std::find(listNodes.begin(),listNodes.end(),g_grid.m_mesh.get<Node>(p.back()))!=listNodes.end()){
+			pairNodesFace.push_back(p);
+		}
+	}
+
+	/*std::cout<<"List pair Nodes of Face :"<<std::endl;
+	for (auto n : pairNodesFace){
+		for (auto i : n){
+			std::cout<<i<<std::endl;
+		}
+	}*/
+
+	return pairNodesFace;
+}
+
+void Tools::joinFaceToNodes(Node i1, Node i2)
+{
+	auto listFaces = Tools::getAllFacesChain(i1.id(),i2.id());
+	auto listPairNodes = Tools::getAllNodesChain(i1.id(),i2.id());
+	auto listFirstNodes = Tools::getListFirstNodesChain(i1.id(),i2.id());
+	auto listSecondNodes = Tools::getListSecondNodesChain(i1.id(),i2.id());
+
+	Node oldNewNodePair1;
+	Node oldNewNodePair2;
+
+
+	for(auto f : listFaces){
+		auto pairNodesFace=Tools::getPairNodesFace(i1.id(),i2.id(),f.id());
+		auto firstPair = pairNodesFace.front();
+		auto secondPair = pairNodesFace.back();
+		std::cout<< "La face : " << f.id() <<std::endl;
+		std::cout<< "Pair 1 : "<<firstPair.front()<<" "<<firstPair.back()<<std::endl;
+		std::cout<< "Pair 2 : "<<secondPair.front()<<" "<<secondPair.back()<<std::endl;
+		auto newNodePair1= Tools::createMiddleNode(g_grid.m_mesh.get<Node>(firstPair.front()),g_grid.m_mesh.get<Node>(firstPair.back()));
+		auto newNodePair2 = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(secondPair.front()),g_grid.m_mesh.get<Node>(secondPair.back()));
+		std::cout<< "Pair 1 new node: "<<newNodePair1<<std::endl;
+		std::cout<< "Pair 2 new node: "<<newNodePair2<<std::endl;
+
+		Node nodeFirstPair1;
+		Node nodeSecondPair1;
+
+		Node nodeFirstPair2;
+		Node nodeSecondPair2;
+
+
+		for (auto l : listFirstNodes){
+			for (auto i : firstPair){
+				if (i==l){
+					nodeSecondPair1= g_grid.m_mesh.get<Node>(i);
+				}
+			}
+			for( auto i : secondPair){
+				if (i==l){
+					nodeSecondPair2= g_grid.m_mesh.get<Node>(i);
+				}
+			}
+		}
+		for (auto l : listSecondNodes){
+			for (auto i : firstPair){
+				if (i==l){
+					nodeFirstPair1= g_grid.m_mesh.get<Node>(i);
+				}
+			}
+			for( auto i : secondPair){
+				if (i==l){
+					nodeFirstPair2= g_grid.m_mesh.get<Node>(i);
+				}
+			}
+		}
+
+
+		std::cout<< "LES FACES : "<<std::endl;
+
+
+		if (newNodePair1!=oldNewNodePair1 && newNodePair1 != oldNewNodePair2){
+			if(newNodePair2!=oldNewNodePair1 && newNodePair2 != oldNewNodePair2){
+				Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,nodeFirstPair2,newNodePair1,newNodePair2);
+				g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
+				g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
+				g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceLeft);
+				g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceLeft);
+
+				Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1,nodeSecondPair2,newNodePair1,newNodePair2);
+				g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
+				g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
+				g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceRight);
+				g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceRight);
+
+				std::cout<< "LES FACES GAUCHE DROITE 1: "<<std::endl;
+				std::cout<<newFaceLeft<<std::endl;
+				std::cout<<newFaceRight<<std::endl;
+
+
+			}
+			else{
+				if(newNodePair2==oldNewNodePair1){
+					Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,nodeFirstPair2,newNodePair1,oldNewNodePair1);
+					Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1,nodeSecondPair2,newNodePair1,oldNewNodePair1);
+					std::cout<< "LES FACES GAUCHE DROITE 2: "<<std::endl;
+
+					std::cout<<newFaceLeft<<std::endl;
+					std::cout<<newFaceRight<<std::endl;
+				}
+				else{
+					Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,nodeFirstPair2,newNodePair1,oldNewNodePair2);
+					Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1,nodeSecondPair2,newNodePair1,oldNewNodePair2);
+					std::cout<< "LES FACES GAUCHE DROITE 3: "<<std::endl;
+
+					std::cout<<newFaceLeft<<std::endl;
+					std::cout<<newFaceRight<<std::endl;
+
+				}
+			}
+		}
+		else{
+			if(newNodePair2!=oldNewNodePair1 && newNodePair2 != oldNewNodePair2){
+				if (newNodePair1==oldNewNodePair1){
+					Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,nodeFirstPair2,oldNewNodePair1,newNodePair2);
+					Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair2,nodeSecondPair1,oldNewNodePair1,newNodePair2);
+					std::cout<< "LES FACES GAUCHE DROITE 4: "<<std::endl;
+
+					std::cout<<newFaceLeft<<std::endl;
+					std::cout<<newFaceRight<<std::endl;
+				}
+				else{
+					Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,nodeFirstPair2,oldNewNodePair2,newNodePair2);
+					Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair2,nodeSecondPair1,oldNewNodePair2,newNodePair2);
+					std::cout<< "LES FACES GAUCHE DROITE 5 : "<<std::endl;
+
+					std::cout<<newFaceLeft<<std::endl;
+					std::cout<<newFaceRight<<std::endl;
+				}
+
+			}
+			else{
+				if (newNodePair1==oldNewNodePair1){
+					if(newNodePair2==oldNewNodePair1){
+						Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,nodeFirstPair2,oldNewNodePair1,oldNewNodePair1);
+						Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair2,nodeSecondPair1,oldNewNodePair1,oldNewNodePair1);				std::cout<< "LES FACES GAUCHE DROITE : "<<std::endl;
+						std::cout<< "LES FACES GAUCHE DROITE 6 : "<<std::endl;
+
+						std::cout<<newFaceLeft<<std::endl;
+						std::cout<<newFaceRight<<std::endl;
+					}
+					else{
+						Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,nodeFirstPair2,oldNewNodePair1,oldNewNodePair2);
+						Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair2,nodeSecondPair1,oldNewNodePair1,oldNewNodePair2);
+						std::cout<< "LES FACES GAUCHE DROITE 7 : "<<std::endl;
+
+						std::cout<<newFaceLeft<<std::endl;
+						std::cout<<newFaceRight<<std::endl;
+					}
+
+				}
+				else{
+					if(newNodePair2==oldNewNodePair1){
+
+					}
+					else{
+
+					}
+
+				}
+
+			}
+
+		}
 	}
 }

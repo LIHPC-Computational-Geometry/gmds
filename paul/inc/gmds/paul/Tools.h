@@ -185,7 +185,16 @@ class Tools{
 	 */
 	Node createMiddleNode(Node i1,Node i2);
 
+	/** @brief function to create au new middle ligne of nodes
+	 *
+	 * @param i1 first point id
+	 * @param i2 second point id
+	 */
 	void createAllMiddlePoint(Node i1, Node i2);
+
+	std::vector<std::vector<int>> getPairNodesFace(const int i1, const int i2, const int faceID);
+
+	void joinFaceToNodes(Node i1,Node i2);
 
 	gmds::GridBuilderAround g_grid;
 
