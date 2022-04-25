@@ -28,6 +28,15 @@ void setFrame(double xMin, double yMin, double xMax, double yMax)
     double x2 = xMin + 2*xPitch;
     double y1 = yMin + yPitch;
     double y2 = yMin + 2*yPitch;
+    createFourNodes(xMin, yMin, x1, y1);
+    createFourNodes(x1, yMin, x2, y1);
+    createFourNodes(x2, yMin, xMax, y1);
+    createFourNodes(xMin, y1, x1, y2);
+    createFourNodes(x1, y1, x2, y2);
+    createFourNodes(x2, y1, xMax, y2);
+    createFourNodes(xMin, y2, x1, yMax);
+    createFourNodes(x1, y2, x2, yMax);
+    createFourNodes(x2, y2, xMax, yMax);
 }
 
 int getNumberOfBlocks()
