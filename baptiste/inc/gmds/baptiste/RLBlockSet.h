@@ -2,20 +2,22 @@
 // Created by Baptiste Bony on 22/04/22.
 //
 
-#ifndef BLOCKMESHER_CPP_RLBLOCKSET_H
-#define BLOCKMESHER_CPP_RLBLOCKSET_H
+#ifndef GMDS_RL_BLOCK_SET_H
+#define GMDS_RL_BLOCK_SET_H
 /*----------------------------------------------------------------------------*/
 #include "gmds/ig/Mesh.h"
 /*----------------------------------------------------------------------------*/
 
 namespace gmds {
-// Action Delete Face (swap value activate variable)
 class RLBlockSet
 {
  public:
-	RLBlockSet(gmds::Mesh mesh);
+	gmds::Mesh m_mesh;
+	RLBlockSet(gmds::Mesh m_mesh);
 
-	void setFrame(gmds::Node xMin, gmds::Node yMin, gmds::Node xMax, gmds::Node yMax);
+	void createNode(double xA, double yA, double xB, double yB);
+	
+	void setFrame(double xMin, double yMin, double xMax, double yMax);
 
 	int getNumberOfBlocks();
 
@@ -23,4 +25,4 @@ class RLBlockSet
 
 };
 }
-#endif     // BLOCKMESHER_CPP_RLBLOCKSET_H
+#endif     // GMDS_RL_BLOCK_SET_H
