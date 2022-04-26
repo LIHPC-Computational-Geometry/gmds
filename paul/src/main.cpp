@@ -120,15 +120,23 @@ int main(){
 	//tool.getOtherNodes(2,7);
 	//tool.createAllMiddlePoint(tool.g_grid.m_mesh.get<Node>(6),tool.g_grid.m_mesh.get<Node>(11));
 	//tool.getPairNodesFace(5,10,4);
-	//tool.joinFaceToNodes(tool.g_grid.m_mesh.get<Node>(0),tool.g_grid.m_mesh.get<Node>(1));
+	tool.joinFaceToNodes(tool.g_grid.m_mesh.get<Node>(2),tool.g_grid.m_mesh.get<Node>(1));
 
 	//tool.getBoundaryEdge(tool.g_grid.m_mesh.get<Node>(11),tool.g_grid.m_mesh.get<Node>(10));
 
-	//action.executeCutEdge(action.g_grid.m_mesh.get<Node>(11),action.g_grid.m_mesh.get<Node>(16));
+
 	//action.executeCutEdge(action.g_grid.m_mesh.get<Node>(13),action.g_grid.m_mesh.get<Node>(18));
-	//tool.getAllNodesChain(11,16);
+
+	//action.executeCutEdge(action.g_grid.m_mesh.get<Node>(9),action.g_grid.m_mesh.get<Node>(14));
+	//action.executeCutEdge(action.g_grid.m_mesh.get<Node>(0),action.g_grid.m_mesh.get<Node>(1));
+	/*auto listNodesChain = tool.getAllNodesChain(6,28);
+	for (auto l : listNodesChain){
+		std::cout<<"Une paire dans le for Main"<<std::endl;
+		std::cout<<l.front()<<" "<<l.back()<<std::endl;
+
+	}*/
 	//tool.getListNodesOfFace(8);
-	tool.getAllNodesChain(4,3);
+	//tool.getAllNodesChain(14,19);
 	//tool.getPairNodesFace(14,19,8);
 
 
