@@ -5,7 +5,8 @@
 #ifndef GMDS_RL_BLOCK_SET_H
 #define GMDS_RL_BLOCK_SET_H
 /*----------------------------------------------------------------------------*/
-#include "gmds/ig/Mesh.h"
+#include "LIB_GMDS_BAPTISTE_export.h"
+#include <gmds/ig/Mesh.h>
 #include "GMDSIgAlgo_export.h"
 /*----------------------------------------------------------------------------*/
 
@@ -14,10 +15,9 @@ class RLBlockSet
 {
  public:
 
-	gmds::Mesh m_mesh;
-
 	RLBlockSet(Mesh *AMesh);
 
+	gmds::Mesh m_mesh;
 
 	
 	void setFrame(double xMin, double yMin, double xMax, double yMax, int nX, int nY);
