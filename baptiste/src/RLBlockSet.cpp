@@ -25,17 +25,21 @@ std::vector<double> LinearSpacedArray(double a, double b, std::size_t N)
 	return v;
 }
 
-void RLBlockSet::createFourNodes(double xA, double yA, double xB, double yB)
-{
-	std::vector<double> AX = {xA, xB, xA, xB};
-   std::vector<double> AY = {yA, yA, yB, yB};
-   std::vector<double> AZ = {0, 0, 0, 0};
-	Node n = m_mesh.newNode(xA, yA);
-}
-
 void RLBlockSet::setFrame(double xMin, double yMin, double xMax, double yMax, int nX, int nY)
 {
-
+	std::vector<double> xVector = LinearSpacedArray(xMin, xMax, nX);
+	std::vector<double> yVector = LinearSpacedArray(yMin, yMax, nY);
+	for (int i = 0; i < xVector.size() - 1; ++i)
+	{
+		for (int j = 0; j < yVector.size() - 1; ++j)
+		{
+			Node n0 = m_mesh.newNode(xVector[i], yVector[j]);
+			Node n1 = m_mesh.newNode(xVector[i+1], yVector[j]);
+			Node n2 = m_mesh.newNode(xVector[i], yVector[j+1]);
+			Node n3 = m_mesh.newNode(xVector[i+1], yVector[j+1]);
+			m_mesh.newQuad(n0, n1, n2, n3);
+		}
+	}
 }
 
 int RLBlockSet::getNumberOfBlocks()
