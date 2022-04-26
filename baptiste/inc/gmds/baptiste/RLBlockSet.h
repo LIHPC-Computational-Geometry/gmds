@@ -21,7 +21,7 @@ class RLBlockSet
 
 	void createFourNodes(double xA, double yA, double xB, double yB);
 	
-	void setFrame(double xMin, double yMin, double xMax, double yMax);
+	void setFrame(double xMin, double yMin, double xMax, double yMax, int nX, int nY);
 
 	int getNumberOfBlocks();
 
