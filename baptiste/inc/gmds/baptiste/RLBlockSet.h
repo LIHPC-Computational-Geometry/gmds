@@ -14,12 +14,11 @@ class RLBlockSet
 {
  public:
 
+	gmds::Mesh m_mesh;
+
 	RLBlockSet(Mesh *AMesh);
 
-	gmds::Mesh m_mesh;
-	// RLBlockSet();
 
-	void createFourNodes(double xA, double yA, double xB, double yB);
 	
 	void setFrame(double xMin, double yMin, double xMax, double yMax, int nX, int nY);
 
