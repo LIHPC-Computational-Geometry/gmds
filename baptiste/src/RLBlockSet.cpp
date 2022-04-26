@@ -3,8 +3,6 @@
 //
 
 #include <gmds/baptiste/RLBlockSet.h>
-#include <gmds/utils/Variable.h>
-
 
 using namespace gmds;
 

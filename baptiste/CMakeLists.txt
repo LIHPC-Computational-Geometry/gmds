@@ -11,7 +11,8 @@ set(GMDS_INC
         )
 
 set(GMDS_SRC
-        src/RLBlockSet.cpp src/main.cpp inc/gmds/baptiste/RLBlockSet.h)
+        src/RLBlockSet.cpp
+        src/main.cpp)
 
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
