@@ -79,7 +79,7 @@ int main(){
 	//Create the grid around the target (triangle in this case)
 	std::cout<<"=== Test Grid Builder Around ==="<<std::endl;
 	GridBuilderAround gba(&m,2);
-	gba.executeGrid2D(4,3,4,3);
+	gba.executeGrid2D(5,3,5,3);
 	Actions action(&gba);
 	//Variable<int> *activate = m.newVariable<int,GMDS_FACE>("exist");
 
@@ -120,7 +120,33 @@ int main(){
 	//tool.getOtherNodes(2,7);
 	//tool.createAllMiddlePoint(tool.g_grid.m_mesh.get<Node>(6),tool.g_grid.m_mesh.get<Node>(11));
 	//tool.getPairNodesFace(5,10,4);
-	tool.joinFaceToNodes(tool.g_grid.m_mesh.get<Node>(6),tool.g_grid.m_mesh.get<Node>(11));
+	//tool.joinFaceToNodes(tool.g_grid.m_mesh.get<Node>(0),tool.g_grid.m_mesh.get<Node>(1));
+
+	//tool.getBoundaryEdge(tool.g_grid.m_mesh.get<Node>(11),tool.g_grid.m_mesh.get<Node>(10));
+
+	//action.executeCutEdge(action.g_grid.m_mesh.get<Node>(11),action.g_grid.m_mesh.get<Node>(16));
+	//action.executeCutEdge(action.g_grid.m_mesh.get<Node>(13),action.g_grid.m_mesh.get<Node>(18));
+	//tool.getAllNodesChain(11,16);
+	//tool.getListNodesOfFace(8);
+	tool.getAllNodesChain(4,3);
+	//tool.getPairNodesFace(14,19,8);
+
+
+
+	/*
+ * Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,newNodePair1,newNodePair2,nodeFirstPair2);
+	g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
+	g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
+	g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceLeft);
+	g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceLeft);
+
+
+Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1,newNodePair1,newNodePair2,nodeSecondPair2);
+g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
+g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
+g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceRight);
+g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceRight);
+ */
 
 // Save Triangle Generation
 	IGMeshIOService ioService(&mT);

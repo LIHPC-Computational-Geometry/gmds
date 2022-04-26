@@ -7,6 +7,7 @@
 #include "gmds/ig/Mesh.h"
 #include "GMDSIgAlgo_export.h"
 #include "gmds/paul/Grid.h"
+#include "gmds/paul/Tools.h"
 /*----------------------------------------------------------------------------*/
 
 namespace gmds {
@@ -19,11 +20,12 @@ namespace gmds {
 	    */
 	   void executeDeleteFace(const int faceID);
 
-	   void executeCutEdge(gmds::Edge edge);
+	   void executeCutEdge(Node firstNodeID,Node secondNodeID);
 
 	   void executeGlideNode(gmds::Node node);
 
 	   gmds::GridBuilderAround g_grid;
+	   gmds::Tools tool;
    };
 }
 #endif     // GMDS_ACTIONS_AGENT_H

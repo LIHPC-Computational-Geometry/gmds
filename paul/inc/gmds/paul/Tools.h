@@ -194,6 +194,8 @@ class Tools{
 
 	std::vector<std::vector<int>> getPairNodesFace(const int i1, const int i2, const int faceID);
 
+	std::vector<Node> getBoundaryEdge(Node firstNodeId, Node secondNodeId);
+
 	void joinFaceToNodes(Node i1,Node i2);
 
 	gmds::GridBuilderAround g_grid;
