@@ -120,10 +120,12 @@ int main(){
 	//tool.getOtherNodes(2,7);
 	//tool.createAllMiddlePoint(tool.g_grid.m_mesh.get<Node>(6),tool.g_grid.m_mesh.get<Node>(11));
 	//tool.getPairNodesFace(5,10,4);
-	tool.joinFaceToNodes(tool.g_grid.m_mesh.get<Node>(19),tool.g_grid.m_mesh.get<Node>(14));
+	//tool.joinFaceToNodes(tool.g_grid.m_mesh.get<Node>(19),tool.g_grid.m_mesh.get<Node>(14));
+	//tool.joinFaceToNodes(tool.g_grid.m_mesh.get<Node>(0),tool.g_grid.m_mesh.get<Node>(1));
 
 	//tool.joinFaceToNodes(tool.g_grid.m_mesh.get<Node>(9),tool.g_grid.m_mesh.get<Node>(14));
-	//tool.joinFaceToNodes(tool.g_grid.m_mesh.get<Node>(5),tool.g_grid.m_mesh.get<Node>(0));
+	tool.createEdge(tool.g_grid.m_mesh.get<Node>(2),tool.g_grid.m_mesh.get<Node>(7));
+
 
 	//tool.getBoundaryEdge(tool.g_grid.m_mesh.get<Node>(11),tool.g_grid.m_mesh.get<Node>(10));
 

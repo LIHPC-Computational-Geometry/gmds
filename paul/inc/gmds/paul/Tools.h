@@ -198,6 +198,10 @@ class Tools{
 
 	void joinFaceToNodes(Node i1,Node i2);
 
+	void createEdge(Node i1, Node i2);
+
+	Face getFaceEdges(const int i1,const int i2,const int i3,const int i4);
+
 	gmds::GridBuilderAround g_grid;
 
 };
