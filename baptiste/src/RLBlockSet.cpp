@@ -14,6 +14,19 @@ RLBlockSet::~RLBlockSet()
 {}
 
 
+std::vector<double> RLBlockSet::LinearSpacedArray(double a, double b, std::size_t N)
+{
+	double h = (b - a) / static_cast<double>(N-1);
+	std::vector<double> v(N);
+	std::vector<double>::iterator x;
+	double val;
+	for (x = v.begin(), val = a; x != v.end(); ++x, val += h)
+	{
+		*x = val;
+	}
+	return v;
+}
+
 void RLBlockSet::setFrame(double xMin, double yMin, double xMax, double yMax, int nX, int nY)
 {
 	std::vector<double> xVector = LinearSpacedArray(xMin, xMax, nX);
@@ -39,17 +52,5 @@ int RLBlockSet::getNumberOfBlocks()
 
 void RLBlockSet::deleteBlock(const int faceID)
 {
-	//m_mesh.faces_begin();
-}
-std::vector<double> RLBlockSet::LinearSpacedArray(double a, double b, std::size_t N)
-{
-	double h = (b - a) / static_cast<double>(N-1);
-	std::vector<double> v(N);
-	std::vector<double>::iterator x;
-	double val;
-	for (x = v.begin(), val = a; x != v.end(); ++x, val += h)
-	{
-		*x = val;
-	}
-	return v;
+	m_mesh.deleteFace(faceID);
 }
