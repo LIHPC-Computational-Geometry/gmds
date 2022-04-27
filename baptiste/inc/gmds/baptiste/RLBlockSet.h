@@ -15,7 +15,7 @@ class RLBlockSet
 {
  public:
 
-	RLBlockSet(Mesh* AMesh);
+	RLBlockSet(MeshModel model);
 
 	virtual ~RLBlockSet();
 
