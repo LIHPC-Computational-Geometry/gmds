@@ -7,13 +7,9 @@
 using namespace gmds;
 
 
-RLBlockSet::RLBlockSet(Mesh* AMesh)
-	:m_mesh(*AMesh) {}
+RLBlockSet::RLBlockSet(MeshModel model)
+	:m_mesh(model) {}
 
-/*
-RLBlockSet::RLBlockSet(Mesh AMesh)
-  :m_mesh(AMesh){;}
-*/
 RLBlockSet::~RLBlockSet()
 {}
 
@@ -22,9 +18,9 @@ void RLBlockSet::setFrame(double xMin, double yMin, double xMax, double yMax, in
 {
 	std::vector<double> xVector = LinearSpacedArray(xMin, xMax, nX);
 	std::vector<double> yVector = LinearSpacedArray(yMin, yMax, nY);
-	for (int i = 0; i < xVector.size() - 1; ++i)
+	for (int i = 0; i < xVector.size(); ++i)
 	{
-		for (int j = 0; j < yVector.size() - 1; ++j)
+		for (int j = 0; j < yVector.size(); ++j)
 		{
 			Node n0 = m_mesh.newNode(xVector[i], yVector[j]);
 			Node n1 = m_mesh.newNode(xVector[i+1], yVector[j]);
@@ -43,7 +39,7 @@ int RLBlockSet::getNumberOfBlocks()
 
 void RLBlockSet::deleteBlock(const int faceID)
 {
-
+	//m_mesh.faces_begin();
 }
 std::vector<double> RLBlockSet::LinearSpacedArray(double a, double b, std::size_t N)
 {
