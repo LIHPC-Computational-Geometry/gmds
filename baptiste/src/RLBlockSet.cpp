@@ -16,8 +16,8 @@ RLBlockSet::~RLBlockSet()
 
 std::vector<double> RLBlockSet::LinearSpacedArray(double a, double b, std::size_t N)
 {
-	double h = (b - a) / static_cast<double>(N-1);
-	std::vector<double> v(N);
+	double h = (b - a) / static_cast<double>(N);
+	std::vector<double> v(N+1);
 	std::vector<double>::iterator x;
 	double val;
 	for (x = v.begin(), val = a; x != v.end(); ++x, val += h)
@@ -31,9 +31,9 @@ void RLBlockSet::setFrame(double xMin, double yMin, double xMax, double yMax, in
 {
 	std::vector<double> xVector = LinearSpacedArray(xMin, xMax, nX);
 	std::vector<double> yVector = LinearSpacedArray(yMin, yMax, nY);
-	for (int i = 0; i < xVector.size(); ++i)
+	for (int i = 0; i < xVector.size()-1; ++i)
 	{
-		for (int j = 0; j < yVector.size(); ++j)
+		for (int j = 0; j < yVector.size()-1; ++j)
 		{
 			Node n0 = m_mesh.newNode(xVector[i], yVector[j]);
 			Node n1 = m_mesh.newNode(xVector[i+1], yVector[j]);
