@@ -54,3 +54,13 @@ void RLBlockSet::deleteBlock(const int faceID)
 {
 	m_mesh.deleteFace(faceID);
 }
+
+void RLBlockSet::editBottomCorner(const int faceID)
+{
+	Face face = m_mesh.get<Face>(faceID);
+	std::vector<Node> nodes = face.get<Node>();
+	for (Node node : nodes)
+	{
+		//
+	}
+}
