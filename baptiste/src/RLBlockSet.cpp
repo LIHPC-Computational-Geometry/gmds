@@ -7,21 +7,16 @@
 using namespace gmds;
 
 
-RLBlockSet::RLBlockSet(Mesh *AMesh)
-	:m_mesh(*AMesh){;}
+RLBlockSet::RLBlockSet(Mesh* AMesh)
+	:m_mesh(*AMesh) {}
 
-std::vector<double> LinearSpacedArray(double a, double b, std::size_t N)
-{
-	double h = (b - a) / static_cast<double>(N-1);
-	std::vector<double> v(N);
-	std::vector<double>::iterator x;
-	double val;
-	for (x = v.begin(), val = a; x != v.end(); ++x, val += h)
-	{
-		*x = val;
-	}
-	return v;
-}
+/*
+RLBlockSet::RLBlockSet(Mesh AMesh)
+  :m_mesh(AMesh){;}
+*/
+RLBlockSet::~RLBlockSet()
+{}
+
 
 void RLBlockSet::setFrame(double xMin, double yMin, double xMax, double yMax, int nX, int nY)
 {
@@ -42,10 +37,23 @@ void RLBlockSet::setFrame(double xMin, double yMin, double xMax, double yMax, in
 
 int RLBlockSet::getNumberOfBlocks()
 {
-
+	int numberOfBlocks = m_mesh.getNbFaces();
+	return numberOfBlocks;
 }
 
 void RLBlockSet::deleteBlock(const int faceID)
 {
 
+}
+std::vector<double> RLBlockSet::LinearSpacedArray(double a, double b, std::size_t N)
+{
+	double h = (b - a) / static_cast<double>(N-1);
+	std::vector<double> v(N);
+	std::vector<double>::iterator x;
+	double val;
+	for (x = v.begin(), val = a; x != v.end(); ++x, val += h)
+	{
+		*x = val;
+	}
+	return v;
 }

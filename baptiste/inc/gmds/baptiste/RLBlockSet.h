@@ -15,12 +15,15 @@ class RLBlockSet
 {
  public:
 
-	RLBlockSet(Mesh *AMesh);
+	RLBlockSet(Mesh* AMesh);
+
+	virtual ~RLBlockSet();
 
 	gmds::Mesh m_mesh;
 
-	
-	void setFrame(double xMin, double yMin, double xMax, double yMax, int nX, int nY);
+	std::vector<double> LinearSpacedArray(double a, double b, std::size_t N);
+
+	void setFrame(double xMin, double yMin, double xMax, double yMax, int nX = 3, int nY = 3);
 
 	int getNumberOfBlocks();
 
