@@ -29,6 +29,8 @@ class RLBlockSet
 
 	void deleteBlock(const int faceID);
 
+	void editBottomCorner(const int faceID);
+
 };
 }
 #endif     // GMDS_RL_BLOCK_SET_H
