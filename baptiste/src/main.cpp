@@ -23,6 +23,7 @@ int main()
 	int nbFaces = blockSet.getNumberOfBlocks();
 	std::cout << "Number of blocks : " << nbFaces << "\n";
 
+	/*
 	for(auto faceID: blockSet.m_mesh.faces())
 	{
 		std::cout << faceID << "\n";
@@ -32,7 +33,9 @@ int main()
 			std::cout << "Face " << faceID << " deleted" << "\n";
 		}
 	}
+	 */
 
+	
 	nbFaces = blockSet.getNumberOfBlocks();
 	std::cout << "Number of blocks : " << nbFaces << "\n";
 

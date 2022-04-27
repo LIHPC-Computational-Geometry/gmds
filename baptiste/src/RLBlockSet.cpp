@@ -37,8 +37,8 @@ void RLBlockSet::setFrame(double xMin, double yMin, double xMax, double yMax, in
 		{
 			Node n0 = m_mesh.newNode(xVector[i], yVector[j]);
 			Node n1 = m_mesh.newNode(xVector[i+1], yVector[j]);
-			Node n2 = m_mesh.newNode(xVector[i], yVector[j+1]);
-			Node n3 = m_mesh.newNode(xVector[i+1], yVector[j+1]);
+			Node n2 = m_mesh.newNode(xVector[i+1], yVector[j+1]);
+			Node n3 = m_mesh.newNode(xVector[i], yVector[j+1]);
 			m_mesh.newQuad(n0, n1, n2, n3);
 		}
 	}
