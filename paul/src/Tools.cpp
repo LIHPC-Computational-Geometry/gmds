@@ -750,7 +750,7 @@ void Tools::createEdge(Node i1, Node i2)
 			std::cout <<"Previous Edge: "<<previousEdge.front()<<" "<<previousEdge.back()<<std::endl;
 			std::cout <<"PreviousMiddleNode : "<<previousMiddleNode<<std::endl;
 			auto faceEdges = Tools::getFaceEdges(previousEdge.front(),previousEdge.back(),e.front(),e.back());
-			std::cout<<"La face : \n"<<faceEdges<<std::endl;
+			//std::cout<<"La face : \n"<<faceEdges<<std::endl;
 			auto pairNodesFace = Tools::getPairNodesFace(i1.id(), i2.id(), faceEdges.id());
 			std::vector<int> firstPair = pairNodesFace.front();
 			std::vector<int> secondPair = pairNodesFace.back();

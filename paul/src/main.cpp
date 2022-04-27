@@ -125,7 +125,7 @@ int main(){
 
 	//tool.joinFaceToNodes(tool.g_grid.m_mesh.get<Node>(9),tool.g_grid.m_mesh.get<Node>(14));
 	tool.createEdge(tool.g_grid.m_mesh.get<Node>(2),tool.g_grid.m_mesh.get<Node>(7));
-	tool.createEdge(tool.g_grid.m_mesh.get<Node>(19),tool.g_grid.m_mesh.get<Node>(24));
+	tool.createEdge(tool.g_grid.m_mesh.get<Node>(9),tool.g_grid.m_mesh.get<Node>(14));
 
 
 	//tool.getBoundaryEdge(tool.g_grid.m_mesh.get<Node>(11),tool.g_grid.m_mesh.get<Node>(10));
