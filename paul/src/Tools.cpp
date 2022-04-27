@@ -787,6 +787,7 @@ void Tools::createEdge(Node i1, Node i2)
 				}
 			}
 
+
 			if(firstPair.front()==previousEdge.front()&& firstPair.back()==previousEdge.back()) {
 				Node newMiddleNode = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(secondPair.front()), g_grid.m_mesh.get<Node>(secondPair.back()));
 				Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1, previousMiddleNode, newMiddleNode, nodeFirstPair2);
@@ -812,16 +813,16 @@ void Tools::createEdge(Node i1, Node i2)
 				std::cout << "Previous Node : " << previousMiddleNode << std::endl;
 				std::cout << "Previous Edge :" << previousEdge.front() << " " << previousEdge.back() << std::endl;
 			}
-			if(firstPair.back()== previousEdge.front()&& firstPair.front()==previousEdge.back()){
+			else if(firstPair.back()== previousEdge.front()&& firstPair.front()==previousEdge.back()){
 				Node newMiddleNode = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(secondPair.front()),g_grid.m_mesh.get<Node>(secondPair.back()));
-				Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,newMiddleNode,previousMiddleNode,nodeFirstPair2);
+				Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,previousMiddleNode,newMiddleNode,nodeFirstPair2);
 				g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>( newMiddleNode.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceLeft);
 
 
-				Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1,newMiddleNode,previousMiddleNode,nodeSecondPair2);
+				Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1,previousMiddleNode,newMiddleNode,nodeSecondPair2);
 				g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(newMiddleNode.id()).add(newFaceRight);
@@ -838,7 +839,7 @@ void Tools::createEdge(Node i1, Node i2)
 				std::cout<<"Previous Node : "<<previousMiddleNode<<std::endl;
 				std::cout<<"Previous Edge :"<<previousEdge.front()<<" "<<previousEdge.back()<<std::endl;
 			}
-			if(secondPair.front()==previousEdge.front()&& secondPair.back()==previousEdge.back()){
+			else if(secondPair.front()==previousEdge.front()&& secondPair.back()==previousEdge.back()){
 				Node newMiddleNode = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(firstPair.front()),g_grid.m_mesh.get<Node>(firstPair.back()));
 				Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,newMiddleNode,previousMiddleNode,nodeFirstPair2);
 				g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
@@ -865,16 +866,16 @@ void Tools::createEdge(Node i1, Node i2)
 				std::cout<<"Previous Node : "<<previousMiddleNode<<std::endl;
 				std::cout<<"Previous Edge :"<<previousEdge.front()<<" "<<previousEdge.back()<<std::endl;
 			}
-			if(secondPair.back()== previousEdge.front()&& secondPair.front()==previousEdge.back()){
+			else if(secondPair.back()== previousEdge.front()&& secondPair.front()==previousEdge.back()){
 				Node newMiddleNode = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(firstPair.front()),g_grid.m_mesh.get<Node>(firstPair.back()));
-				Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,previousMiddleNode,newMiddleNode,nodeFirstPair2);
+				Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,newMiddleNode,previousMiddleNode,nodeFirstPair2);
 				g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>( newMiddleNode.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceLeft);
 
 
-				Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1,previousMiddleNode,newMiddleNode,nodeSecondPair2);
+				Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1,newMiddleNode,previousMiddleNode,nodeSecondPair2);
 				g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(newMiddleNode.id()).add(newFaceRight);
