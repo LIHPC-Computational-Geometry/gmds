@@ -31,6 +31,8 @@ std::vector<double> RLBlockSet::LinearSpacedArray(double a, double b, std::size_
 
 void RLBlockSet::setFrame(double xMin, double yMin, double xMax, double yMax, int nX, int nY)
 {
+	xSize = (xMax - xMin) / double(nX);
+	ySize = (yMax - yMin) / double(nY);
 	std::vector<double> xVector = LinearSpacedArray(xMin, xMax, nX);
 	std::vector<double> yVector = LinearSpacedArray(yMin, yMax, nY);
 	for (int i = 0; i < xVector.size()-1; ++i)
@@ -74,11 +76,11 @@ void RLBlockSet::editCorner(const int faceID, bool v, std::string axis, int rang
 	Node corner = m_mesh.get<Node>(nodeID);
 	if (axis == "x")
 	{
-		corner.setX(corner.X()+range);
+		corner.setX(corner.X()+range*xSize/10);
 	}
 	else if (axis == "y")
 	{
-		corner.setY(corner.Y()+range);
+		corner.setY(corner.Y()+range*ySize/10);
 	}
 }
 

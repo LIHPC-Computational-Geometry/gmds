@@ -20,6 +20,8 @@ class RLBlockSet
 	virtual ~RLBlockSet();
 
 	gmds::Mesh m_mesh;
+	double xSize;
+	double ySize;
 
 	std::vector<double> LinearSpacedArray(double a, double b, std::size_t N);
 
