@@ -29,7 +29,7 @@ class RLBlockSet
 
 	void deleteBlock(const int faceID);
 
-	void editBottomCorner(const int faceID);
+	void editCorner(const int faceID, bool v, std::string axis, int range);
 
 };
 }
