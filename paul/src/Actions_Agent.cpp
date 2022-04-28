@@ -12,7 +12,7 @@ void Actions::executeDeleteFace(const int faceID)
 void Actions::executeCutEdge(Node firstNodeID, Node secondNodeID)
 {
 	if(tool.checkExistEdge(firstNodeID.id(),secondNodeID.id(),tool.getIdOneCommonFace(firstNodeID.id(),secondNodeID.id()))){
-		tool.joinFaceToNodes(firstNodeID,secondNodeID);
+		tool.createEdge(firstNodeID,secondNodeID);
 	}
 	else{
 		std::cout<<"Error, no edge between nodes"<<std::endl;

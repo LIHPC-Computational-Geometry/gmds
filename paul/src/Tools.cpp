@@ -755,6 +755,8 @@ void Tools::createEdge(Node i1, Node i2)
 			std::vector<int> firstPair = pairNodesFace.front();
 			std::vector<int> secondPair = pairNodesFace.back();
 
+			int valueActivateFace;
+
 
 			Node nodeFirstPair1;
 			Node nodeSecondPair1;
@@ -796,6 +798,8 @@ void Tools::createEdge(Node i1, Node i2)
 				g_grid.m_mesh.get<Node>(newMiddleNode.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceLeft);
 
+
+
 				Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1, previousMiddleNode, newMiddleNode, nodeSecondPair2);
 				g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
@@ -806,6 +810,9 @@ void Tools::createEdge(Node i1, Node i2)
 				std::cout << "Avant MAJ :" << std::endl;
 				std::cout << "Previous Node : " << previousMiddleNode << std::endl;
 				std::cout << "Previous Edge :" << previousEdge.front() << " " << previousEdge.back() << std::endl;
+
+				g_grid.activate->set(newFaceLeft.id(),1); //attribution val aux faces
+				g_grid.activate->set(newFaceRight.id(),1); //attribution val aux faces
 
 				previousMiddleNode = newMiddleNode;
 				previousEdge = {e.front(), e.back()};
@@ -833,6 +840,10 @@ void Tools::createEdge(Node i1, Node i2)
 				std::cout<<"Previous Node : "<<previousMiddleNode<<std::endl;
 				std::cout<<"Previous Edge :"<<previousEdge.front()<<" "<<previousEdge.back()<<std::endl;
 
+
+				g_grid.activate->set(newFaceLeft.id(),1); //attribution val aux faces
+				g_grid.activate->set(newFaceRight.id(),1); //attribution val aux faces
+
 				previousMiddleNode=newMiddleNode;
 				previousEdge={e.front(),e.back()};
 				std::cout<<"Apres MAJ :"<<std::endl;
@@ -855,10 +866,15 @@ void Tools::createEdge(Node i1, Node i2)
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceRight);
 
 
+
 				std::cout<<"Dans le troisieme if :"<<std::endl;
 				std::cout<<"Avant MAJ :"<<std::endl;
 				std::cout<<"Previous Node : "<<previousMiddleNode<<std::endl;
 				std::cout<<"Previous Edge :"<<previousEdge.front()<<" "<<previousEdge.back()<<std::endl;
+
+
+				g_grid.activate->set(newFaceLeft.id(),1); //attribution val aux faces
+				g_grid.activate->set(newFaceRight.id(),1); //attribution val aux faces
 
 				previousMiddleNode=newMiddleNode;
 				previousEdge={e.front(),e.back()};
@@ -887,6 +903,9 @@ void Tools::createEdge(Node i1, Node i2)
 				std::cout<<"Previous Node : "<<previousMiddleNode<<std::endl;
 				std::cout<<"Previous Edge :"<<previousEdge.front()<<" "<<previousEdge.back()<<std::endl;
 
+				g_grid.activate->set(newFaceLeft.id(),1); //attribution val aux faces
+				g_grid.activate->set(newFaceRight.id(),1); //attribution val aux faces
+
 				previousMiddleNode=newMiddleNode;
 				previousEdge={e.front(),e.back()};
 				std::cout<<"Apres MAJ :"<<std::endl;
@@ -900,6 +919,10 @@ void Tools::createEdge(Node i1, Node i2)
 		}
 	}
 	for (auto lFace : listFaces){
+		auto listNodesOfFace = Tools::getListNodesOfFace(lFace.id());
+		for (auto n : listNodesOfFace){
+			g_grid.m_mesh.get<Node>(n.id()).remove(lFace);
+		}
 		g_grid.m_mesh.deleteFace(lFace.id());
 	}
 

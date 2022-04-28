@@ -98,70 +98,18 @@ int main(){
 		}
 	}
 
-	for(int id=0;id <2;id++) {
+	for(int id=0;id <4;id++) {
 		action.executeDeleteFace(id);
 	}
-	/*for (auto face_id : gba.m_mesh.faces()) {
-		std::cout << "Valeur Activate :" << action.getValueActivateFace(face_id)<<"\nFace_ID :"<<face_id << std::endl;
-	}*/
 
 	Tools tool(&gba);
-	/*for (auto nodes_id: gba.m_mesh.nodes()){
-		tool.getListFacesOfNode(nodes_id);
-	}*/
-	/*for (int i=0;i < 20;i++) {
-		int i1alea,i2alea,faceAlea;
-		i1alea = rand() % 16;
-		i2alea = rand() % 16;
-		faceAlea=rand() % 9;
-		std::cout<<"Noeud 1 :"<<i1alea<<"\nNoeud 2 :"<<i2alea<<"\nFace :"<<tool.getIdOneCommonFace(i1alea,i2alea)<<std::endl;
-		tool.checkExistEdge(i1alea,i2alea,tool.getIdOneCommonFace(i1alea,i2alea));
-	}*/
-	//tool.getOtherNodes(2,7);
-	//tool.createAllMiddlePoint(tool.g_grid.m_mesh.get<Node>(6),tool.g_grid.m_mesh.get<Node>(11));
-	//tool.getPairNodesFace(5,10,4);
-	//tool.joinFaceToNodes(tool.g_grid.m_mesh.get<Node>(19),tool.g_grid.m_mesh.get<Node>(14));
-	//tool.joinFaceToNodes(tool.g_grid.m_mesh.get<Node>(0),tool.g_grid.m_mesh.get<Node>(1));
 
-	//tool.joinFaceToNodes(tool.g_grid.m_mesh.get<Node>(9),tool.g_grid.m_mesh.get<Node>(14));
-	tool.createEdge(tool.g_grid.m_mesh.get<Node>(2),tool.g_grid.m_mesh.get<Node>(7));
-	tool.createEdge(tool.g_grid.m_mesh.get<Node>(9),tool.g_grid.m_mesh.get<Node>(14));
+	action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(18),tool.g_grid.m_mesh.get<Node>(13));
+	//action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(1),tool.g_grid.m_mesh.get<Node>(2));
+	//action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(3),tool.g_grid.m_mesh.get<Node>(2));
+	//action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(9),tool.g_grid.m_mesh.get<Node>(25));
 
 
-	//tool.getBoundaryEdge(tool.g_grid.m_mesh.get<Node>(11),tool.g_grid.m_mesh.get<Node>(10));
-
-
-	//action.executeCutEdge(action.g_grid.m_mesh.get<Node>(13),action.g_grid.m_mesh.get<Node>(18));
-	//action.executeCutEdge(action.g_grid.m_mesh.get<Node>(0),action.g_grid.m_mesh.get<Node>(1));
-
-	//action.executeCutEdge(action.g_grid.m_mesh.get<Node>(9),action.g_grid.m_mesh.get<Node>(14));
-	//action.executeCutEdge(action.g_grid.m_mesh.get<Node>(0),action.g_grid.m_mesh.get<Node>(1));
-	/*auto listNodesChain = tool.getAllNodesChain(6,28);
-	for (auto l : listNodesChain){
-		std::cout<<"Une paire dans le for Main"<<std::endl;
-		std::cout<<l.front()<<" "<<l.back()<<std::endl;
-
-	}*/
-	//tool.getListNodesOfFace(8);
-	//tool.getAllNodesChain(14,19);
-	//tool.getPairNodesFace(14,19,8);
-
-
-
-	/*
- * Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,newNodePair1,newNodePair2,nodeFirstPair2);
-	g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
-	g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
-	g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceLeft);
-	g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceLeft);
-
-
-Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1,newNodePair1,newNodePair2,nodeSecondPair2);
-g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
-g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
-g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceRight);
-g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceRight);
- */
 
 // Save Triangle Generation
 	IGMeshIOService ioService(&mT);
