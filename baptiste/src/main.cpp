@@ -1,8 +1,6 @@
 #include <iostream>
 #include "gmds/baptiste/RLBlockSet.h"
-#include "gmds/ig/Mesh.h"
 #include "gmds/io/IGMeshIOService.h"
-#include "gmds/io/VTKWriter.h"
 
 //using namespace std;
 using namespace gmds;
@@ -37,15 +35,9 @@ int main()
 
 	for(auto faceID: blockSet.m_mesh.faces())
 	{
-		blockSet.editCorner(faceID, false, "y", -2);
+		blockSet.editCorner(faceID, false, "y", -3);
 	}
 
-	// Save Mesh
-	IGMeshIOService ioService(&blockSet.m_mesh);
-	VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::F);
-	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("MyBlockSet.vtk");
-	
+	blockSet.saveMesh("MyBlockSet");
 	return 0;
 }
