@@ -53,7 +53,7 @@ namespace gmds {
       	          const TInt  AYNb, const TCoord AYStep
    	);
 
-	   void getActivate(const int faceID);
+	   //void getActivate(const int faceID);
 
 	   void flipActivate(const int faceID);
    };

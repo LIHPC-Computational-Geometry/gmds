@@ -192,14 +192,41 @@ class Tools{
 	 */
 	void createAllMiddlePoint(Node i1, Node i2);
 
+	/** @brief get a pair of edges for a specify face and a edge reference (for know the direction of the edges)
+	 *
+	 * @param i1 first node of the edge reference
+	 * @param i2 second node of  the edge reference
+	 * @param faceID face target id
+	 * @return two edges (vector of vector of int, with only 2 int by vector for the pair)
+	 */
 	std::vector<std::vector<int>> getPairNodesFace(const int i1, const int i2, const int faceID);
 
+	/** @brief return one boundary edge of a chain faces
+	 *
+	 * @param firstNodeId
+	 * @param secondNodeId
+	 * @return vector of nodes (the edge)
+	 */
 	std::vector<Node> getBoundaryEdge(Node firstNodeId, Node secondNodeId);
 
+	//premier test de la fonction pour couper les aretes
 	void joinFaceToNodes(Node i1,Node i2);
 
+	/** @brief create new edges and new faces during the action executeCutEdge
+	 *
+	 * @param i1 first node of the edge to cut
+	 * @param i2 second node of the edge to cut
+	 */
 	void createEdge(Node i1, Node i2);
 
+	/** @brief get the face common of 2 edges
+	 *
+	 * @param i1 first node first edge
+	 * @param i2 second node first edge
+	 * @param i3 first node second edge
+	 * @param i4 second node second edge
+	 * @return face
+	 */
 	Face getFaceEdges(const int i1,const int i2,const int i3,const int i4);
 
 	gmds::GridBuilderAround g_grid;

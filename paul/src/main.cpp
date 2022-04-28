@@ -98,6 +98,7 @@ int main(){
 		}
 	}
 
+
 	for(int id=0;id <4;id++) {
 		action.executeDeleteFace(id);
 	}
@@ -105,9 +106,13 @@ int main(){
 	Tools tool(&gba);
 
 	action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(18),tool.g_grid.m_mesh.get<Node>(13));
-	//action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(1),tool.g_grid.m_mesh.get<Node>(2));
-	//action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(3),tool.g_grid.m_mesh.get<Node>(2));
-	//action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(9),tool.g_grid.m_mesh.get<Node>(25));
+	action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(1),tool.g_grid.m_mesh.get<Node>(2));
+	action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(3),tool.g_grid.m_mesh.get<Node>(2));
+	action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(14),tool.g_grid.m_mesh.get<Node>(25));
+	action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(19),tool.g_grid.m_mesh.get<Node>(25));
+	action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(4),tool.g_grid.m_mesh.get<Node>(3));
+
+
 
 
 

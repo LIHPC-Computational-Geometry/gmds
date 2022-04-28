@@ -21,10 +21,10 @@ GridBuilderAround::getMesh() const
 int GridBuilderAround::getDim() const
 {return m_dim;}
 
-int GridBuilderAround::getActivate(const int faceID)
+/*int GridBuilderAround::getActivate(const int faceID)
 {
-      return m_mesh.get<Face>(faceID).;
-}
+      //return m_mesh.get<Face>(faceID).;
+}*/
 
 GridBuilderAround::~GridBuilderAround()
 {}
