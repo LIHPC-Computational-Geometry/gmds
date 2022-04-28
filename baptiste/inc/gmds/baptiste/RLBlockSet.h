@@ -31,6 +31,7 @@ class RLBlockSet
 
 	void editCorner(const int faceID, bool v, std::string axis, int range);
 
+	void saveMesh(std::string title);
 };
 }
 #endif     // GMDS_RL_BLOCK_SET_H

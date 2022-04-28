@@ -3,6 +3,9 @@
 //
 
 #include <gmds/baptiste/RLBlockSet.h>
+#include "gmds/io/IGMeshIOService.h"
+#include "gmds/io/VTKWriter.h"
+
 using namespace gmds;
 
 
@@ -77,4 +80,13 @@ void RLBlockSet::editCorner(const int faceID, bool v, std::string axis, int rang
 	{
 		corner.setY(corner.Y()+range);
 	}
+}
+
+void RLBlockSet::saveMesh(std::string title)
+{
+	IGMeshIOService ioService(&m_mesh);
+	VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write(title + ".vtk");
 }
