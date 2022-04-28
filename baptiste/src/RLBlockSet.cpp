@@ -3,7 +3,6 @@
 //
 
 #include <gmds/baptiste/RLBlockSet.h>
-
 using namespace gmds;
 
 
@@ -55,12 +54,27 @@ void RLBlockSet::deleteBlock(const int faceID)
 	m_mesh.deleteFace(faceID);
 }
 
-void RLBlockSet::editBottomCorner(const int faceID)
+void RLBlockSet::editCorner(const int faceID, bool v, std::string axis, int range)
 {
 	Face face = m_mesh.get<Face>(faceID);
 	std::vector<Node> nodes = face.get<Node>();
-	for (Node node : nodes)
+	std::vector<Node>::iterator iter;
+	if (v)
 	{
-		//
+		 iter = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() <= b.X() and a.Y() <= b.Y();});
+	}
+	else
+	{
+		iter = std::max_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() <= b.X() and a.Y() <= b.Y();});
+	}
+	int nodeID = iter->id();
+	Node corner = m_mesh.get<Node>(nodeID);
+	if (axis == "x")
+	{
+		corner.setX(corner.X()+range);
+	}
+	else if (axis == "y")
+	{
+		corner.setY(corner.Y()+range);
 	}
 }

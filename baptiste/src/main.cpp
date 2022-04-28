@@ -13,11 +13,10 @@ int main()
 
 	RLBlockSet blockSet(MeshModel(DIM3|F|N|F2N|N2F));
 
-	double xMin = 0.2;
-	double yMin = 0.5;
-	double xMax = 5.3;
-	double yMax = 4.7;
-
+	double xMin = 0;
+	double yMin = 0;
+	double xMax = 9;
+	double yMax = 9;
 	blockSet.setFrame(xMin, yMin, xMax, yMax);
 
 	int nbFaces = blockSet.getNumberOfBlocks();
@@ -36,12 +35,17 @@ int main()
 	nbFaces = blockSet.getNumberOfBlocks();
 	std::cout << "Number of blocks : " << nbFaces << "\n";
 
+	for(auto faceID: blockSet.m_mesh.faces())
+	{
+		blockSet.editCorner(faceID, false, "y", -2);
+	}
+
 	// Save Mesh
 	IGMeshIOService ioService(&blockSet.m_mesh);
 	VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("MyBlockSet.vtk");
-
+	
 	return 0;
 }
