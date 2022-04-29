@@ -53,6 +53,11 @@ namespace gmds {
       	          const TInt  AYNb, const TCoord AYStep
    	);
 
+	   /** \brief get the value au the variable activate for a specify Face
+	    *
+	    * @param AFace the face
+	    * @return the int value of activate (0 -> not activate, 1 -> activate
+	    */
 	   int getActivate(gmds::Face AFace);
 
 	   /** \brief change the value of activate for a 0 (the false)
