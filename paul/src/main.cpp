@@ -115,20 +115,32 @@ int main(){
 	*/
 
 	//====================== TEST =====================
-
 	std::srand(std::time(nullptr));
+	for (int j=0; j<21;j++) {
 
-	for (int i=0; i < 1000;i++){
-		int i1=rand() %82;
-		int i2=rand() %82;
-		Node node1 = gba.m_mesh.get<Node>(i1);
-		Node node2 = gba.m_mesh.get<Node>(i2);
-		action.executeCutEdge(node1,node2);
-	}
+		for (int i = 0; i < 1000; i++) {
+			int i1 = rand() % 82;
+			int i2 = rand() % 82;
+			Node node1 = gba.m_mesh.get<Node>(i1);
+			Node node2 = gba.m_mesh.get<Node>(i2);
+			action.executeCutEdge(node1, node2);
+		}
 
-	for (int i; i<10; i++){
-		int idFace = rand() %50;
-		action.executeDeleteFace(idFace);
+		for (int i; i < 18; i++) {
+			int idFace = rand() % 50;
+			action.executeDeleteFace(idFace);
+		}
+		IGMeshIOService ioService23(&m);
+		VTKWriter vtkWriter23(&ioService23);
+		vtkWriter23.setCellOptions(gmds::N|gmds::F);
+		vtkWriter23.setDataOptions(gmds::N|gmds::F);
+		std::string s = std::to_string(j);
+		s.push_back('.');
+		s.push_back('v');
+		s.push_back('t');
+		s.push_back('k');
+		vtkWriter23.write(s);
+
 	}
 
 
