@@ -1,7 +1,9 @@
 //
 // Created by Paul Bourmaud on 23/03/2022.
 //
+#include <cstdlib>
 #include <iostream>
+#include <ctime>
 #include "gmds/paul/Grid.h"
 #include "gmds/ig/Mesh.h"
 #include "gmds/igalgo/VolFracComputation.h"
@@ -68,7 +70,9 @@ int main(){
 	//Create the grid around the target (triangle in this case)
 	std::cout<<"=== Test Grid Builder Around ==="<<std::endl;
 	GridBuilderAround gba(&m,2);
-	gba.executeGrid2D(5,3,5,3);
+	int nbNodes = 5;
+	double sizeStep = 5;
+	gba.executeGrid2D(nbNodes,sizeStep,nbNodes,sizeStep);
 	Actions action(&gba);
 	//Variable<int> *activate = m.newVariable<int,GMDS_FACE>("exist");
 
@@ -87,18 +91,45 @@ int main(){
 		}
 	}
 
+	/*
 	for(int id=0;id <9;id++) {
 		action.executeDeleteFace(id);
-	}
+	}*/
 
 	Tools tool(&gba);
 
+	//======================================== TEST CUT NODE GLIDE =============================================
+	/*
+	gba.m_mesh.get<Node>(4).X()=0.5;
+	gba.m_mesh.get<Node>(4).Y()=4.5;
+
+	action.executeCutEdge(gba.m_mesh.get<Node>(4),gba.m_mesh.get<Node>(9));
+	*/
+	/*
 	action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(18),tool.g_grid.m_mesh.get<Node>(13));
 	action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(1),tool.g_grid.m_mesh.get<Node>(2));
 	action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(3),tool.g_grid.m_mesh.get<Node>(2));
 	action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(14),tool.g_grid.m_mesh.get<Node>(25));
 	action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(19),tool.g_grid.m_mesh.get<Node>(25));
 	action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(4),tool.g_grid.m_mesh.get<Node>(3));
+	*/
+
+	//====================== TEST =====================
+
+	std::srand(std::time(nullptr));
+
+	for (int i=0; i < 1000;i++){
+		int i1=rand() %82;
+		int i2=rand() %82;
+		Node node1 = gba.m_mesh.get<Node>(i1);
+		Node node2 = gba.m_mesh.get<Node>(i2);
+		action.executeCutEdge(node1,node2);
+	}
+
+	for (int i; i<10; i++){
+		int idFace = rand() %50;
+		action.executeDeleteFace(idFace);
+	}
 
 
 
