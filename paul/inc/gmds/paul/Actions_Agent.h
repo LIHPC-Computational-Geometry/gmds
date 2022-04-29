@@ -17,9 +17,16 @@ namespace gmds {
 	 public:
 	   Actions(GridBuilderAround* AGrid);
 	   /** @brief action delete face
+	    *
+	    * @param faceID id of the face to delete
 	    */
 	   void executeDeleteFace(const int faceID);
 
+	   /** \brief action for cute a face
+	    *
+	    * @param firstNodeID first node
+	    * @param secondNodeID second node
+	    */
 	   void executeCutEdge(Node firstNodeID,Node secondNodeID);
 
 	   void executeGlideNode(gmds::Node node);

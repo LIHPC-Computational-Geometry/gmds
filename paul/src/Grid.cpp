@@ -76,6 +76,13 @@ void GridBuilderAround::gridBuild2D(const gmds::TInt AXNb,
 	}
 
 }
+
+int GridBuilderAround::getActivate(gmds::Face AFace) {
+	int  valueActivateFace = m_mesh.getVariable<int,GMDS_FACE>("exist")->value(AFace.id());
+	return valueActivateFace;
+}
+
+
 void GridBuilderAround::flipActivate(const int faceID)
 {
 	activate->set(faceID,0);

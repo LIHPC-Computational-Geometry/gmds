@@ -40,10 +40,10 @@ namespace gmds {
 	   void executeGrid2D(const TInt  AXNb, const TCoord AXStep,
 	                    const TInt  AYNb, const TCoord AYStep);
 
-	   /** a mesh*/
+	   /* a mesh*/
 	   gmds::Mesh m_mesh;
 
-	   /** add variable activate -> Face*/
+	   /* add variable activate -> Face*/
 	   Variable<int> *activate = m_mesh.newVariable<int,GMDS_FACE>("exist");
 
 	   /** Grid dimension*/
@@ -53,7 +53,12 @@ namespace gmds {
       	          const TInt  AYNb, const TCoord AYStep
    	);
 
-	   //void getActivate(const int faceID);
+	   int getActivate(gmds::Face AFace);
+
+	   /** \brief change the value of activate for a 0 (the false)
+	    *
+	    * @param faceID id face
+	    */
 
 	   void flipActivate(const int faceID);
    };

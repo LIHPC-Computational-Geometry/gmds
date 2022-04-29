@@ -520,202 +520,7 @@ std::vector<Node> Tools::getBoundaryEdge(Node firstNodeId, Node secondNodeId)
 }
 
 
-void Tools::joinFaceToNodes(Node i1, Node i2)
-{
-	auto boundaryEdge = Tools::getBoundaryEdge(i1, i2);
-	auto listFaces = Tools::getAllFacesChain(boundaryEdge.front().id(), boundaryEdge.back().id());
-	auto listPairNodes = Tools::getAllNodesChain(boundaryEdge.front().id(), boundaryEdge.back().id());
-	auto listFirstNodes = Tools::getListFirstNodesChain(boundaryEdge.front().id(), boundaryEdge.back().id());
-	auto listSecondNodes = Tools::getListSecondNodesChain(boundaryEdge.front().id(), boundaryEdge.back().id());
 
-	std::vector<Node> nodesCreate;
-	std::vector<Node> nodesDouble;
-
-
-	//Node oldNewNodePair1 = g_grid.m_mesh.newNode(10000000,10000000,10000000);
-	//Node oldNewNodePair2 = g_grid.m_mesh.newNode(10000000,10000000,10000000);
-
-	for (auto f : listFaces) {
-		auto pairNodesFace = Tools::getPairNodesFace(i1.id(), i2.id(), f.id());
-		std::vector<int> firstPair = pairNodesFace.front();
-		std::vector<int> secondPair = pairNodesFace.back();
-
-		auto newNodePair1 = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(firstPair.front()), g_grid.m_mesh.get<Node>(firstPair.back()));
-		auto newNodePair2 = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(secondPair.front()), g_grid.m_mesh.get<Node>(secondPair.back()));
-
-
-		Node nodeFirstPair1;
-		Node nodeSecondPair1;
-
-		Node nodeFirstPair2;
-		Node nodeSecondPair2;
-
-		for (auto l : listFirstNodes) {
-			for (auto i : firstPair) {
-				if (i == l) {
-					nodeSecondPair1 = g_grid.m_mesh.get<Node>(i);
-				}
-			}
-			for (auto i : secondPair) {
-				if (i == l) {
-					nodeSecondPair2 = g_grid.m_mesh.get<Node>(i);
-				}
-			}
-		}
-		for (auto l : listSecondNodes) {
-			for (auto i : firstPair) {
-				if (i == l) {
-					nodeFirstPair1 = g_grid.m_mesh.get<Node>(i);
-				}
-			}
-			for (auto i : secondPair) {
-				if (i == l) {
-					nodeFirstPair2 = g_grid.m_mesh.get<Node>(i);
-				}
-			}
-		}
-
-		/*if (newNodePair1.X() == oldNewNodePair1.X() && newNodePair1.Y() == oldNewNodePair1.Y() && newNodePair1.Z() == oldNewNodePair1.Z()) {
-			std::cout << "DANS LE IF 1 :" << std::endl;
-			Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1, oldNewNodePair1, newNodePair2, nodeFirstPair2);
-			g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
-			g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
-			g_grid.m_mesh.get<Node>(oldNewNodePair1.id()).add(newFaceLeft);
-			g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceLeft);
-
-			Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1, oldNewNodePair1, newNodePair2, nodeSecondPair2);
-			g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
-			g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
-			g_grid.m_mesh.get<Node>(oldNewNodePair1.id()).add(newFaceRight);
-			g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceRight);
-
-			oldNewNodePair1=newNodePair1;
-			oldNewNodePair2=newNodePair2;
-		}
-		else {
-			if (newNodePair1.X() == oldNewNodePair2.X() && newNodePair1.Y() == oldNewNodePair2.Y() && newNodePair1.Z() == oldNewNodePair2.Z()) {
-				std::cout << "DANS LE IF 2 :" << std::endl;
-				Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1, oldNewNodePair2, newNodePair2, nodeFirstPair2);
-				g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
-				g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
-				g_grid.m_mesh.get<Node>(oldNewNodePair2.id()).add(newFaceLeft);
-				g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceLeft);
-
-				Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1, oldNewNodePair2, newNodePair2, nodeSecondPair2);
-				g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
-				g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
-				g_grid.m_mesh.get<Node>(oldNewNodePair2.id()).add(newFaceRight);
-				g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceRight);
-				oldNewNodePair1=newNodePair1;
-				oldNewNodePair2=newNodePair2;
-			}
-			else {
-				if (newNodePair2.X() == oldNewNodePair1.X() && newNodePair2.Y() == oldNewNodePair1.Y() && newNodePair2.Z() == oldNewNodePair1.Z()) {
-					std::cout << "DANS LE IF 3 :" << std::endl;
-					Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1, newNodePair1, oldNewNodePair1, nodeFirstPair2);
-					g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
-					g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
-					g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceLeft);
-					g_grid.m_mesh.get<Node>(oldNewNodePair1.id()).add(newFaceLeft);
-
-					Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1, newNodePair1, oldNewNodePair1, nodeSecondPair2);
-					g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
-					g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
-					g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceRight);
-					g_grid.m_mesh.get<Node>(oldNewNodePair1.id()).add(newFaceRight);
-					oldNewNodePair1=newNodePair1;
-					oldNewNodePair2=newNodePair2;
-				}
-				else {
-					if (newNodePair2.X() == oldNewNodePair2.X() && newNodePair2.Y() == oldNewNodePair2.Y() && newNodePair2.Z() == oldNewNodePair2.Z()) {
-						std::cout << "DANS LE IF 4 :" << std::endl;
-						Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1, newNodePair1, oldNewNodePair2, nodeFirstPair2);
-						g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
-						g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
-						g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceLeft);
-						g_grid.m_mesh.get<Node>(oldNewNodePair2.id()).add(newFaceLeft);
-
-						Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1, newNodePair1, oldNewNodePair2, nodeSecondPair2);
-						g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
-						g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
-						g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceRight);
-						g_grid.m_mesh.get<Node>(oldNewNodePair2.id()).add(newFaceRight);
-						oldNewNodePair1=newNodePair1;
-						oldNewNodePair2=newNodePair2;
-					}
-					else {
-						std::cout << "DANS LE ELSE FINAL :" << std::endl;
-						Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1, newNodePair1, newNodePair2, nodeFirstPair2);
-						g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
-						g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
-						g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceLeft);
-						g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceLeft);
-
-						Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1, newNodePair1, newNodePair2, nodeSecondPair2);
-						g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
-						g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
-						g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceRight);
-						g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceRight);
-
-						oldNewNodePair1=newNodePair1;
-						oldNewNodePair2=newNodePair2;
-
-					}
-				}
-			}
-		}
-		*/
-		/*if(!nodesCreate.empty()) {
-			for (auto w : nodesCreate) {
-				if (w.X() == newNodePair1.X() && w.Y() == newNodePair1.Y() && w.Z() == newNodePair1.Z()) {
-					nodesDouble.push_back(newNodePair1);
-				}
-				if (w.X() == newNodePair2.X() && w.Y() == newNodePair2.Y() && w.Z() == newNodePair2.Z()) {
-					nodesDouble.push_back(newNodePair2);
-				}
-				if (w.X() != newNodePair1.X() && w.Y() != newNodePair1.Y() && w.Z() != newNodePair1.Z()) {
-				}
-			}
-		}*/
-			std::cout << "DANS LE ELSE FINAL :" << std::endl;
-			Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1, newNodePair1, newNodePair2, nodeFirstPair2);
-			g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
-			g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
-			g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceLeft);
-			g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceLeft);
-
-			Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1, newNodePair1, newNodePair2, nodeSecondPair2);
-			g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
-			g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
-			g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceRight);
-			g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceRight);
-
-			for (auto n : nodesCreate) {
-				if (n.X() == newNodePair1.X() && n.Y() == newNodePair1.Y() && n.Z() == newNodePair1.Z()) {
-					nodesDouble.push_back(newNodePair1);
-				}
-				if (n.X() == newNodePair2.X() && n.Y() == newNodePair2.Y() && n.Z() == newNodePair2.Z()) {
-					nodesDouble.push_back(newNodePair2);
-				}
-			}
-
-			nodesCreate.push_back(newNodePair1);
-			nodesCreate.push_back(newNodePair2);
-
-
-
-
-
-	 }
-	 std::cout<<"NODES CREE EN DOUBLE :"<<std::endl;
-	 for (auto n : nodesDouble){
-		 std::cout<<n<<std::endl;
-		 //g_grid.m_mesh.deleteNode(n.id());
-	 }
-	 for (auto lFace : listFaces){
-		 g_grid.m_mesh.deleteFace(lFace.id());
-	 }
-}
 void Tools::createEdge(Node i1, Node i2)
 {
 	auto edgeBoundary = Tools::getBoundaryEdge(i1,i2);
@@ -790,10 +595,9 @@ void Tools::createEdge(Node i1, Node i2)
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceRight);
 
 				valueActivateFace=g_grid.m_mesh.getVariable<int,GMDS_FACE>("exist")->value(faceEdges.id());
-				std::cout << "vactivate" << valueActivateFace << std::endl;
 
-				g_grid.activate->set(newFaceLeft.id(),valueActivateFace); //attribution val aux faces
-				g_grid.activate->set(newFaceRight.id(),valueActivateFace); //attribution val aux faces
+				g_grid.activate->set(newFaceLeft.id(),g_grid.getActivate(faceEdges)); //attribution val aux faces
+				g_grid.activate->set(newFaceRight.id(),g_grid.getActivate(faceEdges)); //attribution val aux faces
 
 				previousMiddleNode = newMiddleNode;
 				previousEdge = {e.front(), e.back()};
@@ -816,10 +620,9 @@ void Tools::createEdge(Node i1, Node i2)
 
 
 				valueActivateFace=g_grid.m_mesh.getVariable<int,GMDS_FACE>("exist")->value(faceEdges.id());
-				std::cout << "vactivate" << valueActivateFace << std::endl;
 
-				g_grid.activate->set(newFaceLeft.id(),valueActivateFace); //attribution val aux faces
-				g_grid.activate->set(newFaceRight.id(),valueActivateFace); //attribution val aux faces
+				g_grid.activate->set(newFaceLeft.id(),g_grid.getActivate(faceEdges)); //attribution val aux faces
+				g_grid.activate->set(newFaceRight.id(),g_grid.getActivate(faceEdges)); //attribution val aux faces
 
 				previousMiddleNode=newMiddleNode;
 				previousEdge={e.front(),e.back()};
@@ -840,10 +643,9 @@ void Tools::createEdge(Node i1, Node i2)
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceRight);
 
 				valueActivateFace=g_grid.m_mesh.getVariable<int,GMDS_FACE>("exist")->value(faceEdges.id());
-				std::cout << "vactivate" << valueActivateFace << std::endl;
 
-				g_grid.activate->set(newFaceLeft.id(),valueActivateFace); //attribution val aux faces
-				g_grid.activate->set(newFaceRight.id(),valueActivateFace); //attribution val aux faces
+				g_grid.activate->set(newFaceLeft.id(),g_grid.getActivate(faceEdges)); //attribution val aux faces
+				g_grid.activate->set(newFaceRight.id(),g_grid.getActivate(faceEdges)); //attribution val aux faces
 
 				previousMiddleNode=newMiddleNode;
 				previousEdge={e.front(),e.back()};
@@ -864,9 +666,9 @@ void Tools::createEdge(Node i1, Node i2)
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceRight);
 
 				valueActivateFace=g_grid.m_mesh.getVariable<int,GMDS_FACE>("exist")->value(faceEdges.id());
-				std::cout << "vactivate" << valueActivateFace << std::endl;
-				g_grid.activate->set(newFaceLeft.id(), valueActivateFace);      // attribution val aux faces
-				g_grid.activate->set(newFaceRight.id(), valueActivateFace);     // attribution val aux faces
+
+				g_grid.activate->set(newFaceLeft.id(), g_grid.getActivate(faceEdges));      // attribution val aux faces
+				g_grid.activate->set(newFaceRight.id(), g_grid.getActivate(faceEdges));     // attribution val aux faces
 
 				previousMiddleNode = newMiddleNode;
 				previousEdge = {e.front(), e.back()};
@@ -898,5 +700,208 @@ Face Tools::getFaceEdges(const int i1, const int i2, const int i3, const int i4)
 				return f1;
 			}
 		}
+	}
+}
+
+
+
+
+//========================================================================================
+//OLD FUNCTION
+
+void Tools::joinFaceToNodes(Node i1, Node i2)
+{
+	auto boundaryEdge = Tools::getBoundaryEdge(i1, i2);
+	auto listFaces = Tools::getAllFacesChain(boundaryEdge.front().id(), boundaryEdge.back().id());
+	auto listPairNodes = Tools::getAllNodesChain(boundaryEdge.front().id(), boundaryEdge.back().id());
+	auto listFirstNodes = Tools::getListFirstNodesChain(boundaryEdge.front().id(), boundaryEdge.back().id());
+	auto listSecondNodes = Tools::getListSecondNodesChain(boundaryEdge.front().id(), boundaryEdge.back().id());
+
+	std::vector<Node> nodesCreate;
+	std::vector<Node> nodesDouble;
+
+
+	//Node oldNewNodePair1 = g_grid.m_mesh.newNode(10000000,10000000,10000000);
+	//Node oldNewNodePair2 = g_grid.m_mesh.newNode(10000000,10000000,10000000);
+
+	for (auto f : listFaces) {
+		auto pairNodesFace = Tools::getPairNodesFace(i1.id(), i2.id(), f.id());
+		std::vector<int> firstPair = pairNodesFace.front();
+		std::vector<int> secondPair = pairNodesFace.back();
+
+		auto newNodePair1 = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(firstPair.front()), g_grid.m_mesh.get<Node>(firstPair.back()));
+		auto newNodePair2 = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(secondPair.front()), g_grid.m_mesh.get<Node>(secondPair.back()));
+
+
+		Node nodeFirstPair1;
+		Node nodeSecondPair1;
+
+		Node nodeFirstPair2;
+		Node nodeSecondPair2;
+
+		for (auto l : listFirstNodes) {
+			for (auto i : firstPair) {
+				if (i == l) {
+					nodeSecondPair1 = g_grid.m_mesh.get<Node>(i);
+				}
+			}
+			for (auto i : secondPair) {
+				if (i == l) {
+					nodeSecondPair2 = g_grid.m_mesh.get<Node>(i);
+				}
+			}
+		}
+		for (auto l : listSecondNodes) {
+			for (auto i : firstPair) {
+				if (i == l) {
+					nodeFirstPair1 = g_grid.m_mesh.get<Node>(i);
+				}
+			}
+			for (auto i : secondPair) {
+				if (i == l) {
+					nodeFirstPair2 = g_grid.m_mesh.get<Node>(i);
+				}
+			}
+		}
+
+		/*if (newNodePair1.X() == oldNewNodePair1.X() && newNodePair1.Y() == oldNewNodePair1.Y() && newNodePair1.Z() == oldNewNodePair1.Z()) {
+		   std::cout << "DANS LE IF 1 :" << std::endl;
+		   Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1, oldNewNodePair1, newNodePair2, nodeFirstPair2);
+		   g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
+		   g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
+		   g_grid.m_mesh.get<Node>(oldNewNodePair1.id()).add(newFaceLeft);
+		   g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceLeft);
+
+		   Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1, oldNewNodePair1, newNodePair2, nodeSecondPair2);
+		   g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
+		   g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
+		   g_grid.m_mesh.get<Node>(oldNewNodePair1.id()).add(newFaceRight);
+		   g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceRight);
+
+		   oldNewNodePair1=newNodePair1;
+		   oldNewNodePair2=newNodePair2;
+		}
+		else {
+		   if (newNodePair1.X() == oldNewNodePair2.X() && newNodePair1.Y() == oldNewNodePair2.Y() && newNodePair1.Z() == oldNewNodePair2.Z()) {
+		      std::cout << "DANS LE IF 2 :" << std::endl;
+		      Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1, oldNewNodePair2, newNodePair2, nodeFirstPair2);
+		      g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
+		      g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
+		      g_grid.m_mesh.get<Node>(oldNewNodePair2.id()).add(newFaceLeft);
+		      g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceLeft);
+
+		      Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1, oldNewNodePair2, newNodePair2, nodeSecondPair2);
+		      g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
+		      g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
+		      g_grid.m_mesh.get<Node>(oldNewNodePair2.id()).add(newFaceRight);
+		      g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceRight);
+		      oldNewNodePair1=newNodePair1;
+		      oldNewNodePair2=newNodePair2;
+		   }
+		   else {
+		      if (newNodePair2.X() == oldNewNodePair1.X() && newNodePair2.Y() == oldNewNodePair1.Y() && newNodePair2.Z() == oldNewNodePair1.Z()) {
+		         std::cout << "DANS LE IF 3 :" << std::endl;
+		         Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1, newNodePair1, oldNewNodePair1, nodeFirstPair2);
+		         g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
+		         g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
+		         g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceLeft);
+		         g_grid.m_mesh.get<Node>(oldNewNodePair1.id()).add(newFaceLeft);
+
+		         Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1, newNodePair1, oldNewNodePair1, nodeSecondPair2);
+		         g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
+		         g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
+		         g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceRight);
+		         g_grid.m_mesh.get<Node>(oldNewNodePair1.id()).add(newFaceRight);
+		         oldNewNodePair1=newNodePair1;
+		         oldNewNodePair2=newNodePair2;
+		      }
+		      else {
+		         if (newNodePair2.X() == oldNewNodePair2.X() && newNodePair2.Y() == oldNewNodePair2.Y() && newNodePair2.Z() == oldNewNodePair2.Z()) {
+		            std::cout << "DANS LE IF 4 :" << std::endl;
+		            Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1, newNodePair1, oldNewNodePair2, nodeFirstPair2);
+		            g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
+		            g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
+		            g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceLeft);
+		            g_grid.m_mesh.get<Node>(oldNewNodePair2.id()).add(newFaceLeft);
+
+		            Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1, newNodePair1, oldNewNodePair2, nodeSecondPair2);
+		            g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
+		            g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
+		            g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceRight);
+		            g_grid.m_mesh.get<Node>(oldNewNodePair2.id()).add(newFaceRight);
+		            oldNewNodePair1=newNodePair1;
+		            oldNewNodePair2=newNodePair2;
+		         }
+		         else {
+		            std::cout << "DANS LE ELSE FINAL :" << std::endl;
+		            Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1, newNodePair1, newNodePair2, nodeFirstPair2);
+		            g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
+		            g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
+		            g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceLeft);
+		            g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceLeft);
+
+		            Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1, newNodePair1, newNodePair2, nodeSecondPair2);
+		            g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
+		            g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
+		            g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceRight);
+		            g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceRight);
+
+		            oldNewNodePair1=newNodePair1;
+		            oldNewNodePair2=newNodePair2;
+
+		         }
+		      }
+		   }
+		}
+		*/
+		/*if(!nodesCreate.empty()) {
+		   for (auto w : nodesCreate) {
+		      if (w.X() == newNodePair1.X() && w.Y() == newNodePair1.Y() && w.Z() == newNodePair1.Z()) {
+		         nodesDouble.push_back(newNodePair1);
+		      }
+		      if (w.X() == newNodePair2.X() && w.Y() == newNodePair2.Y() && w.Z() == newNodePair2.Z()) {
+		         nodesDouble.push_back(newNodePair2);
+		      }
+		      if (w.X() != newNodePair1.X() && w.Y() != newNodePair1.Y() && w.Z() != newNodePair1.Z()) {
+		      }
+		   }
+		}*/
+		std::cout << "DANS LE ELSE FINAL :" << std::endl;
+		Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1, newNodePair1, newNodePair2, nodeFirstPair2);
+		g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
+		g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
+		g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceLeft);
+		g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceLeft);
+
+		Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1, newNodePair1, newNodePair2, nodeSecondPair2);
+		g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
+		g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
+		g_grid.m_mesh.get<Node>(newNodePair1.id()).add(newFaceRight);
+		g_grid.m_mesh.get<Node>(newNodePair2.id()).add(newFaceRight);
+
+		for (auto n : nodesCreate) {
+			if (n.X() == newNodePair1.X() && n.Y() == newNodePair1.Y() && n.Z() == newNodePair1.Z()) {
+				nodesDouble.push_back(newNodePair1);
+			}
+			if (n.X() == newNodePair2.X() && n.Y() == newNodePair2.Y() && n.Z() == newNodePair2.Z()) {
+				nodesDouble.push_back(newNodePair2);
+			}
+		}
+
+		nodesCreate.push_back(newNodePair1);
+		nodesCreate.push_back(newNodePair2);
+
+
+
+
+
+	}
+	std::cout<<"NODES CREE EN DOUBLE :"<<std::endl;
+	for (auto n : nodesDouble){
+		std::cout<<n<<std::endl;
+		//g_grid.m_mesh.deleteNode(n.id());
+	}
+	for (auto lFace : listFaces){
+		g_grid.m_mesh.deleteFace(lFace.id());
 	}
 }

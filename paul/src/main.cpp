@@ -58,17 +58,6 @@ int main(){
 		}
 	}
 
-	std::cout<<"================== Apres le test ========================="<<std::endl;
-	for(auto face_id:mT.faces()){
-		Face fT = mT.get<Face>(face_id);
-		std::vector<Node> f_nodes = fT.get<Node>();
-		//std::cout<<"Viens de print le node"<<std::endl;
-		for(auto n:f_nodes){
-			//std::cout<<"Avant Print boucle for auto 2"<<std::endl;
-			std::cout<<n<<std::endl;
-			//std::cout<<"Apres Print boucle for auto 2"<<std::endl;
-		}
-	}
 	//test VolFrac function create by nicolas legoff (pas possible pour le moment parce que pas bon type
 	// de maillage en entrée, besoin maillage tétraédrique je crois)
 	/*std::cout<<"=== Valeur Fraction ==="<<std::endl;
@@ -98,8 +87,7 @@ int main(){
 		}
 	}
 
-
-	for(int id=0;id <4;id++) {
+	for(int id=0;id <9;id++) {
 		action.executeDeleteFace(id);
 	}
 
