@@ -50,6 +50,10 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static void MeshCleaner(Mesh *AMesh);
 	/*------------------------------------------------------------------------*/
+	/** @brief Donne le vecteur des noeuds adjacents à n dans le maillage m.
+	 */
+	static std::vector<Node> AdjacentNodes(Mesh* m, Node n);
+	/*----------------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/

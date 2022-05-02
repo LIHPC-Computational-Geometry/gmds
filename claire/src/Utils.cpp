@@ -56,6 +56,22 @@ void Utils::MeshCleaner(Mesh *AMesh){
 /*------------------------------------------------------------------------*/
 
 
+/*------------------------------------------------------------------------*/
+std::vector<Node> Utils::AdjacentNodes(Mesh* m, Node n){
+
+	std::vector<Edge> adjacent_edges = n.get<Edge>() ;
+	std::vector<Node> adjacent_nodes;
+	for (auto e:adjacent_edges){
+		TCellID ne_id = e.getOppositeNodeId(n);
+		Node ne = m->get<Node>(ne_id);
+		adjacent_nodes.push_back(ne);
+	}
+
+	return adjacent_nodes;
+}
+/*------------------------------------------------------------------------*/
+
+
 
 /*----------------------------------------------------------------------------*/
 }  // namespace math
