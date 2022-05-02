@@ -9,6 +9,7 @@
 #include "gmds/igalgo/VolFracComputation.h"
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKWriter.h"
+#include "gmds/io/VTKReader.h"
 #include "gmds/paul/Actions_Agent.h"
 #include "gmds/paul/Tools.h"
 
@@ -115,12 +116,12 @@ int main(){
 	*/
 
 	//====================== TEST =====================
-	std::srand(std::time(nullptr));
-	for (int j=0; j<21;j++) {
-
+		std::srand(std::time(nullptr));
 		for (int i = 0; i < 1000; i++) {
 			int i1 = rand() % 82;
+			std::cout<<i1<<std::endl;
 			int i2 = rand() % 82;
+			std::cout<<i2<<std::endl;
 			Node node1 = gba.m_mesh.get<Node>(i1);
 			Node node2 = gba.m_mesh.get<Node>(i2);
 			action.executeCutEdge(node1, node2);
@@ -130,18 +131,10 @@ int main(){
 			int idFace = rand() % 50;
 			action.executeDeleteFace(idFace);
 		}
-		IGMeshIOService ioService23(&m);
-		VTKWriter vtkWriter23(&ioService23);
-		vtkWriter23.setCellOptions(gmds::N|gmds::F);
-		vtkWriter23.setDataOptions(gmds::N|gmds::F);
-		std::string s = std::to_string(j);
-		s.push_back('.');
-		s.push_back('v');
-		s.push_back('t');
-		s.push_back('k');
-		vtkWriter23.write(s);
 
-	}
+	   IGMeshIOService ioServiceRead(&mT);
+	   VTKReader vtkReader(&ioServiceRead);
+	   vtkReader.read()
 
 
 
