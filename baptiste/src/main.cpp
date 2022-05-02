@@ -10,8 +10,8 @@
 
 //using namespace std;
 using namespace gmds;
-/*
-Node findMinMax(Mesh mesh)
+
+Node findMinNode(Mesh mesh)
 {
 
 	std::vector<Node> nodes;
@@ -21,11 +21,27 @@ Node findMinMax(Mesh mesh)
 		nodes.push_back(node);
 	}
 	std::vector<Node>::iterator iter;
-	iterMin = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() <= b.X() and a.Y() <= b.Y();});
-	int nodeID = iterMin->id();
-	Node min = mesh.get<Node>(nodeID);
+	iter = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() <= b.X() and a.Y() <= b.Y();});
+	int nodeID = iter->id();
+	Node node = mesh.get<Node>(nodeID);
+	return node;
 }
- */
+
+
+Node finMaxNode(Mesh mesh)
+{
+	std::vector<Node> nodes;
+	for (int nodeID : mesh.nodes())
+	{
+		Node node = mesh.get<Node>(nodeID);
+		nodes.push_back(node);
+	}
+	std::vector<Node>::iterator iter;
+	iter = std::max_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() <= b.X() and a.Y() <= b.Y();});
+	int nodeID = iter->id();
+	Node node = mesh.get<Node>(nodeID);
+	return node;
+}
 
 int main()
 {
