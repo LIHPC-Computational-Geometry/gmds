@@ -27,7 +27,7 @@ class RLBlockSet
 
 	void setFrame(double xMin, double yMin, double xMax, double yMax, int nX = 3, int nY = 3);
 
-	int getNumberOfBlocks();
+	int countBlocks();
 
 	void deleteBlock(const int faceID);
 

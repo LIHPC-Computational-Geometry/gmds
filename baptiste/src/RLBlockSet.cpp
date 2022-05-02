@@ -48,10 +48,9 @@ void RLBlockSet::setFrame(double xMin, double yMin, double xMax, double yMax, in
 	}
 }
 
-int RLBlockSet::getNumberOfBlocks()
+int RLBlockSet::countBlocks()
 {
-	int numberOfBlocks = m_mesh.getNbFaces();
-	return numberOfBlocks;
+	return m_mesh.getNbFaces();
 }
 
 void RLBlockSet::deleteBlock(const int faceID)
