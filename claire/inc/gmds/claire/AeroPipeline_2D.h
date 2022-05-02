@@ -42,37 +42,6 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_2D : public AbstractAeroPipeline {
 	 */
 	void EcritureMaillage();
 	/*----------------------------------------------------------------------------*/
-	/** @brief Génère une couche de noeuds du maillage
-	 */
-	void GenerationCouche(int couche_id, double dist);
-	/*----------------------------------------------------------------------------*/
-	/** @brief Donne le noeud de la couche i construit à partir du noeud n0 de la
-	 * couche i-1. On suppose ici, pour l'instant, qu'il est unique.
-	 */
-	Node SuccessorNode(Node n0);
-	/*----------------------------------------------------------------------------*/
-	/** @brief Donne le noeud de la couche i construit à partir du noeud n0 de la
-	 * couche i+1. On suppose ici, pour l'instant, qu'il est unique.
-	 */
-	Node AnteriorNode(Node n0);
-	/*----------------------------------------------------------------------------*/
-	/** @brief Donne le vecteur des noeuds adjacents à n0 qui sont dans la couche i.
-	 */
-	std::vector<Node> AdjNodesInLayer(Node n0, int couche_i);
-	/*----------------------------------------------------------------------------*/
-	/** @brief Créé une face de type quad dans la couche avec les noeuds n0 de couche i,
-	 * n1 son antécédant dans la couche i-1, n2 un noeud adjacent à n1 dans la couche i-1.
-	 * Le dernier noeud n3 de la couche i est obtenu à l'aide de n2.
-	 */
-	void CreateQuadAndConnectivities(Node n0, Node n1, Node n2);
-	/*----------------------------------------------------------------------------*/
-	/** @brief Vérifie si une face de type quad est créée. Face correspondant
-	 * aux noeuds n0 de couche i, n1 son antécédant dans la couche i-1, n2 un noeud
-	 *  adjacent à n1 dans la couche i-1. Le dernier noeud n3 de la couche i est
-	 *  obtenu à l'aide de n2.
-	 */
-	bool isQuadCreated(Node n0, Node n1, Node n2);
-	/*----------------------------------------------------------------------------*/
 	/** @brief Créé les sommets des blocs sur le bord de couleur color pour le
 	 * maillage quad généré.
 	 */

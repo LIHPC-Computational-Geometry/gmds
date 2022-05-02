@@ -29,10 +29,10 @@ AeroExtrusion_2D::execute()
 
 	Front Current_Front = Compute1stLayer(m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.25,
 	                m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	//Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.5,
-	//                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	//Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.75,
-	//                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.5,
+	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.75,
+	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 1,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 
@@ -249,9 +249,6 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 		// Les tests pour la FUSION
 		std::vector<TCellID> neighbors_nodes = Front_IN.getNeighbors(n_id);
 		if (Front_IN.isFusionable(n_id)){
-		   //Front_IN.getNodeType(n_id) == 0
-		    //&& Front_IN.getNodeType(neighbors_nodes[0]) == 0
-		    //&& Front_IN.getNodeType(neighbors_nodes[1]) == 0){
 
 			// test arête écrasée premier quad
 			double min_lenght_1 = math::AeroMeshQuality::minlenghtedge(m_meshQ, n_id, neighbors_nodes[0],
@@ -290,9 +287,6 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 
 		// Les tests pour l'INSERSION
 		if(singu_not_found && Front_IN.isMultiplicable(n_id)){
-		    //&& Front_IN.getNodeType(n_id) == 0
-		    //&& Front_IN.getNodeType(neighbors_nodes[0]) != 2
-		    //&& Front_IN.getNodeType(neighbors_nodes[1]) != 2){
 
 			// test angles
 			double angle = math::AeroMeshQuality::angleouverture(m_meshQ, n_id,
