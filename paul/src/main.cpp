@@ -76,7 +76,7 @@ int main(){
 	IGMeshIOService ioServiceRead(&meshTarget);
 	VTKReader vtkReader(&ioServiceRead);
 	vtkReader.setCellOptions(gmds::N|gmds::R);
-	vtkReader.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/mesh/Circle_ref.vtk");
+	vtkReader.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
 
 
 	GridBuilderAround gba(&meshTarget,2);

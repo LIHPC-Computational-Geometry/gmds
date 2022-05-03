@@ -49,14 +49,8 @@ void GridBuilderAround::executeGrid2D(const gmds::TInt ANb) {
 			Ymin=m_mesh.get<Node>(n).Y();
 		}
 	}
-	std::cout<<"Valeur X max :"<<Xmax<<std::endl;
-	std::cout<<"Valeur Y max :"<<Ymax<<std::endl;
-	std::cout<<"Valeur X min :"<<Xmin<<std::endl;
-	std::cout<<"Valeur Y min :"<<Ymin<<std::endl;
 	double rangeX = abs(Xmin-Xmax);
 	double rangeY = abs(Ymin-Ymax);
-	std::cout<<"Valeur range X :"<<rangeX<<std::endl;
-	std::cout<<"Valeur range Y :"<<rangeY<<std::endl;
 	m_mesh.clear();
 	gridBuild2D(ANb, rangeX, ANb, rangeY,Xmin,Ymin);
 }
@@ -73,7 +67,7 @@ void GridBuilderAround::gridBuild2D(const gmds::TInt AXNb,
 
 	for (auto x = 0; x < AXNb; x++) {
 		for (auto y = 0; y < AYNb; y++) {
-			Node n = m_mesh.newNode(x*AXStep/(AXNb-1), y*AYStep/(AYNb-1), 0);
+			Node n = m_mesh.newNode(Xmin+(x*AXStep/(AXNb-1)), Ymin+(y*AYStep/(AYNb-1)), 0);
 			node_ids.push_back(n.id());
 		}
 	}
