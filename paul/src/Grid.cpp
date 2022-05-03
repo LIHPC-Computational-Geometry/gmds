@@ -30,16 +30,41 @@ GridBuilderAround::~GridBuilderAround()
 {}
 
 /*----------------------------------------------------------------------------*/
-void GridBuilderAround::executeGrid2D(const gmds::TInt AXNb, const gmds::TCoord AXStep, const gmds::TInt AYNb,
-                     const gmds::TCoord AYStep) {
+void GridBuilderAround::executeGrid2D(const gmds::TInt ANb) {
+	double Xmax = 0;
+	double Ymax = 0;
+	double Xmin = 0;
+	double Ymin = 0;
+	for(auto n : m_mesh.nodes()){
+		if ( m_mesh.get<Node>(n).X()>Xmax){
+			Xmax=m_mesh.get<Node>(n).X();
+		}
+		if ( m_mesh.get<Node>(n).Y()>Ymax){
+			Ymax=m_mesh.get<Node>(n).Y();
+		}
+		if ( m_mesh.get<Node>(n).X()<Xmin){
+			Xmin=m_mesh.get<Node>(n).X();
+		}
+		if ( m_mesh.get<Node>(n).Y()<Ymin){
+			Ymin=m_mesh.get<Node>(n).Y();
+		}
+	}
+	std::cout<<"Valeur X max :"<<Xmax<<std::endl;
+	std::cout<<"Valeur Y max :"<<Ymax<<std::endl;
+	std::cout<<"Valeur X min :"<<Xmin<<std::endl;
+	std::cout<<"Valeur Y min :"<<Ymin<<std::endl;
+	double rangeX = abs(Xmin-Xmax);
+	double rangeY = abs(Ymin-Ymax);
+	std::cout<<"Valeur range X :"<<rangeX<<std::endl;
+	std::cout<<"Valeur range Y :"<<rangeY<<std::endl;
 	m_mesh.clear();
-	gridBuild2D(AXNb, AXStep, AYNb, AYStep);
+	gridBuild2D(ANb, rangeX, ANb, rangeY,Xmin,Ymin);
 }
 
 void GridBuilderAround::gridBuild2D(const gmds::TInt AXNb,
                      const gmds::TCoord AXStep,
                      const gmds::TInt AYNb,
-                     const gmds::TCoord AYStep)
+                     const gmds::TCoord AYStep, const gmds::TCoord Xmin, const gmds::TCoord Ymin)
 {
 
 	std::vector<TCellID> node_ids;

@@ -32,13 +32,9 @@ namespace gmds {
 	   virtual ~GridBuilderAround();
 
 	   /** @brief  Performs the grid building
-         * @param AXNb      NB cells in X direction
-         * @param AXStep    Length of each step in in X direction
-         * @param AYNb      NB cells in Y direction
-         * @param AYStep    Length of each step in in Y direction
+         * @param ANb      NB nodes in X  and Y directions
          */
-	   void executeGrid2D(const TInt  AXNb, const TCoord AXStep,
-	                    const TInt  AYNb, const TCoord AYStep);
+	   void executeGrid2D(const TInt  ANb);
 
 	   /* a mesh*/
 	   gmds::Mesh m_mesh;
@@ -49,8 +45,17 @@ namespace gmds {
 	   /** Grid dimension*/
 	   TInt m_dim;
 
+	   /** @brief grid Build 2D around the target mesh
+	    *
+	    * @param AXNb number of nodes on X
+	    * @param AXStep range on X
+	    * @param AYNb number of nodes on Y
+	    * @param AYStep range on Y
+	    * @param Xmin  coord Xmin
+	    * @param Ymin coord Ymin
+	    */
    	void gridBuild2D(const TInt  AXNb, const TCoord AXStep,
-      	          const TInt  AYNb, const TCoord AYStep
+      	          const TInt  AYNb, const TCoord AYStep, const TCoord Xmin,const TCoord Ymin
    	);
 
 	   /** \brief get the value au the variable activate for a specify Face

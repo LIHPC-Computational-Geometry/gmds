@@ -4,14 +4,16 @@
 #include <cstdlib>
 #include <iostream>
 #include <ctime>
+
 #include "gmds/paul/Grid.h"
 #include "gmds/ig/Mesh.h"
 #include "gmds/igalgo/VolFracComputation.h"
+#include "gmds/paul/Actions_Agent.h"
+#include "gmds/paul/Tools.h"
+
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKWriter.h"
 #include "gmds/io/VTKReader.h"
-#include "gmds/paul/Actions_Agent.h"
-#include "gmds/paul/Tools.h"
 
 using namespace gmds;
 
@@ -70,10 +72,16 @@ int main(){
 
 	//Create the grid around the target (triangle in this case)
 	std::cout<<"=== Test Grid Builder Around ==="<<std::endl;
-	GridBuilderAround gba(&m,2);
+	Mesh meshTarget (	MeshModel(DIM3|F|N|F2N|N2F));
+	IGMeshIOService ioServiceRead(&meshTarget);
+	VTKReader vtkReader(&ioServiceRead);
+	vtkReader.setCellOptions(gmds::N|gmds::R);
+	vtkReader.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/mesh/Circle_ref.vtk");
+
+
+	GridBuilderAround gba(&meshTarget,2);
 	int nbNodes = 5;
-	double sizeStep = 5;
-	gba.executeGrid2D(nbNodes,sizeStep,nbNodes,sizeStep);
+	gba.executeGrid2D(nbNodes);
 	Actions action(&gba);
 	//Variable<int> *activate = m.newVariable<int,GMDS_FACE>("exist");
 
@@ -116,7 +124,7 @@ int main(){
 	*/
 
 	//====================== TEST =====================
-		std::srand(std::time(nullptr));
+		/*std::srand(std::time(nullptr));
 		for (int i = 0; i < 1000; i++) {
 			int i1 = rand() % 82;
 			std::cout<<i1<<std::endl;
@@ -130,11 +138,15 @@ int main(){
 		for (int i; i < 18; i++) {
 			int idFace = rand() % 50;
 			action.executeDeleteFace(idFace);
-		}
+		}*/
 
-	   IGMeshIOService ioServiceRead(&mT);
+	// exemple lecture fichier vtk
+	   /*Mesh meshTarget (	MeshModel(DIM3|F|N|F2N|N2F));
+	   IGMeshIOService ioServiceRead(&meshTarget);
 	   VTKReader vtkReader(&ioServiceRead);
-	   vtkReader.read()
+	   vtkReader.setCellOptions(gmds::N|gmds::R);
+	   vtkReader.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/A.vtk");
+*/
 
 
 
@@ -149,7 +161,7 @@ int main(){
 
 
 // Save GridBuilder Generation
-	IGMeshIOService ioService2(&m);
+	IGMeshIOService ioService2(&meshTarget);
 	VTKWriter vtkWriter2(&ioService2);
 	vtkWriter2.setCellOptions(gmds::N|gmds::F);
 	vtkWriter2.setDataOptions(gmds::N|gmds::F);
