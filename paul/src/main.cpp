@@ -63,21 +63,43 @@ int main(){
 		}
 	}
 
-	//test VolFrac function create by nicolas legoff (pas possible pour le moment parce que pas bon type
-	// de maillage en entrée, besoin maillage tétraédrique je crois)
-	/*std::cout<<"=== Valeur Fraction ==="<<std::endl;
-	Variable<double> *volFrac = mT.newVariable<double,GMDS_FACE>("Valeur Fraction");
-	gmds::volfraccomputation_2d(&mT,&m,volFrac);
-	std::cout<<volFrac<<std::endl;*/
+	//test VolFrac function create by nicolas legoff
+	std::cout<<"=== Valeur Fraction ==="<<std::endl;
+
+
+	Mesh mImprint (	MeshModel(DIM2|F|N|F2N|N2F));
+	IGMeshIOService ioServiceRead(&mImprint);
+	VTKReader vtkReader(&ioServiceRead);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/triangulated_quad.vtk");
+
+
+
+
+	Mesh mGridAround(MeshModel (DIM3|F|N|F2N|N2F));
+	GridBuilderAround gridAround(&mGridAround,2);
+	gridAround.executeGrid2D(5);
+
+
+
+
+	Variable<double>* volFrac = mGridAround.newVariable<double,GMDS_FACE>("volFrac");
+	volfraccomputation_2d(&mGridAround,&mImprint,volFrac);
+
+	gmds::IGMeshIOService ioService_write(&mGridAround);
+	gmds::VTKWriter vtkWriterGba(&ioService_write);
+	vtkWriterGba.setCellOptions(gmds::N|gmds::F);
+	vtkWriterGba.setDataOptions(gmds::N|gmds::F);
+	vtkWriterGba.write("VolFracComputation_test2D.vtk");
 
 	//Create the grid around the target (triangle in this case)
 	std::cout<<"=== Test Grid Builder Around ==="<<std::endl;
-	Mesh meshTarget (	MeshModel(DIM3|F|N|F2N|N2F));
-	IGMeshIOService ioServiceRead(&meshTarget);
-	VTKReader vtkReader(&ioServiceRead);
-	vtkReader.setCellOptions(gmds::N|gmds::R);
-	vtkReader.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
 
+	Mesh meshTarget (	MeshModel(DIM3|F|N|F2N|N2F));
+	IGMeshIOService ioServiceRead1(&meshTarget);
+	VTKReader vtkReader1(&ioServiceRead1);
+	vtkReader1.setCellOptions(gmds::N|gmds::F);
+	vtkReader1.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
 
 	GridBuilderAround gba(&meshTarget,2);
 	int nbNodes = 5;
