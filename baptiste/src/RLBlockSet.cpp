@@ -65,21 +65,49 @@ void RLBlockSet::editCorner(const int faceID, bool v, std::string axis, int rang
 	std::vector<Node>::iterator iter;
 	if (v)
 	{
-		 iter = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() <= b.X() and a.Y() <= b.Y();});
+		iter = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() <= b.X() and a.Y() <= b.Y();});
+		int nodeID = iter->id();
+		Node corner = m_mesh.get<Node>(nodeID);
+		std::vector<Node>::iterator iterBis;
+		if (axis == "x")
+		{
+			iterBis = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() <= b.X() and a.Y() >= b.Y();});
+			int nodeIDBis = iterBis->id();
+			Node cornerBis = m_mesh.get<Node>(nodeIDBis);
+			corner.setX(corner.X()+range*xSize/10);
+			cornerBis.setX(cornerBis.X()+range*xSize/10);
+		}
+		else if (axis == "y")
+		{
+			iterBis = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() >= b.X() and a.Y() <= b.Y();});
+			int nodeIDBis = iterBis->id();
+			Node cornerBis = m_mesh.get<Node>(nodeIDBis);
+			corner.setY(corner.Y()+range*ySize/10);
+			cornerBis.setY(cornerBis.Y()+range*ySize/10);
+		}
 	}
 	else
 	{
-		iter = std::max_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() <= b.X() and a.Y() <= b.Y();});
-	}
-	int nodeID = iter->id();
-	Node corner = m_mesh.get<Node>(nodeID);
-	if (axis == "x")
-	{
-		corner.setX(corner.X()+range*xSize/10);
-	}
-	else if (axis == "y")
-	{
-		corner.setY(corner.Y()+range*ySize/10);
+		iter = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() >= b.X() and a.Y() >= b.Y();});
+		int nodeID = iter->id();
+		Node corner = m_mesh.get<Node>(nodeID);
+		std::vector<Node>::iterator iterBis;
+		if (axis == "x")
+		{
+			iterBis = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() >= b.X() and a.Y() <= b.Y();});
+			int nodeIDBis = iterBis->id();
+			Node cornerBis = m_mesh.get<Node>(nodeIDBis);
+			corner.setX(corner.X()+range*xSize/10);
+			cornerBis.setX(cornerBis.X()+range*xSize/10);
+		}
+		else if (axis == "y")
+		{
+			iterBis = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() <= b.X() and a.Y() >= b.Y();});
+			int nodeIDBis = iterBis->id();
+			Node cornerBis = m_mesh.get<Node>(nodeIDBis);
+			corner.setY(corner.Y()+range*ySize/10);
+			cornerBis.setY(cornerBis.Y()+range*ySize/10);
+		}
 	}
 }
 
