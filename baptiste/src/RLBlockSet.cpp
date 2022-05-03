@@ -5,6 +5,7 @@
 #include <gmds/baptiste/RLBlockSet.h>
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKWriter.h"
+#include <gmds/io/VTKReader.h>
 
 using namespace gmds;
 
@@ -118,4 +119,37 @@ void RLBlockSet::saveMesh(std::string title)
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write(title + ".vtk");
+}
+
+void RLBlockSet::setFromFile(std::string filename)
+{
+	Mesh target_mesh = Mesh(MeshModel(DIM3|F|N));
+	gmds::IGMeshIOService ioService(&target_mesh);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read(filename);
+
+	double xMin, yMin, xMax, yMax;
+	for (int nodeID : target_mesh.nodes())
+	{
+		Node node = target_mesh.get<Node>(nodeID);
+		if (node.X() > xMax)
+		{
+			xMax = node.X();
+		}
+		if (node.X() < xMin)
+		{
+			xMin = node.X();
+		}
+		if (node.Y() > yMax)
+		{
+			yMax = node.Y();
+		}
+		if (node.Y() < yMin)
+		{
+			yMin = node.Y();
+		}
+	}
+	setFrame(xMin, yMin, xMax, yMax);
+	std::cout << "Done." << "\n";
 }
