@@ -123,16 +123,16 @@ void RLBlockSet::saveMesh(std::string title)
 
 void RLBlockSet::setFromFile(std::string filename)
 {
-	Mesh target_mesh = Mesh(MeshModel(DIM3|F|N));
-	gmds::IGMeshIOService ioService(&target_mesh);
+	Mesh targetMesh = Mesh(MeshModel(DIM3|F|N));
+	gmds::IGMeshIOService ioService(&targetMesh);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N|gmds::F);
 	vtkReader.read(filename);
 
 	double xMin, yMin, xMax, yMax;
-	for (int nodeID : target_mesh.nodes())
+	for (int nodeID : targetMesh.nodes())
 	{
-		Node node = target_mesh.get<Node>(nodeID);
+		Node node = targetMesh.get<Node>(nodeID);
 		if (node.X() > xMax)
 		{
 			xMax = node.X();
@@ -151,5 +151,4 @@ void RLBlockSet::setFromFile(std::string filename)
 		}
 	}
 	setFrame(xMin, yMin, xMax, yMax);
-	std::cout << "Done." << "\n";
 }
