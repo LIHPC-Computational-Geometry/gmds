@@ -5,8 +5,8 @@
 #include <gmds/claire/LevelSetExtended.h>
 #include <gmds/claire/LevelSetEloi.h>
 #include <gmds/claire/LevelSetCombined.h>
-#include <gmds/claire/GradientComputation2D.h>
-#include <gmds/claire/GradientComputation3D.h>
+#include <gmds/claire/GradientComputation_2D.h>
+#include <gmds/claire/GradientComputation_3D.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -24,7 +24,7 @@ using namespace gmds;
 
 
 /*----------------------------------------------------------------------------*/
-/*                  CAS TEST CLASSE GradientComputation2D                     */
+/*                  CAS TEST CLASSE GradientComputation_2D                     */
 /*----------------------------------------------------------------------------*/
 
 TEST(GradientComputationTestClass, GradientComputation2D_Test1)
@@ -72,15 +72,15 @@ TEST(GradientComputationTestClass, GradientComputation2D_Test1)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
-	GradientComputation2D::STATUS result = grad2D.execute();
+	GradientComputation_2D grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	GradientComputation_2D::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("GradientComputation2D_Test1_Result.vtk");
 
-	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
+	ASSERT_EQ(GradientComputation_2D::SUCCESS, result);
 }
 
 /*
@@ -134,15 +134,15 @@ TEST(GradientComputationTestClass, GradientComputation2D_Test2)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
-	GradientComputation2D::STATUS result = grad2D.execute();
+	GradientComputation_2D grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	GradientComputation_2D::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("GradientComputation2D_Test2_Result.vtk");
 
-	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
+	ASSERT_EQ(GradientComputation_2D::SUCCESS, result);
 }
 
 TEST(GradientComputationTestClass, GradientComputation2D_Test3)
@@ -205,15 +205,15 @@ TEST(GradientComputationTestClass, GradientComputation2D_Test3)
 	m.unmarkAll<Node>(markFrontNodesOut);
 	m.freeMark<Node>(markFrontNodesOut);
 
-	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
-	GradientComputation2D::STATUS result = grad2D.execute();
+	GradientComputation_2D grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	GradientComputation_2D::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("GradientComputation2D_Test3_Result.vtk");
 
-	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
+	ASSERT_EQ(GradientComputation_2D::SUCCESS, result);
 }
 
 TEST(GradientComputationTestClass, GradientComputation2D_Test4)
@@ -258,15 +258,15 @@ TEST(GradientComputationTestClass, GradientComputation2D_Test4)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	GradientComputation2D grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
-	GradientComputation2D::STATUS result = grad2D.execute();
+	GradientComputation_2D grad2D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	GradientComputation_2D::STATUS result = grad2D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("GradientComputation2D_Test4_Result.vtk");
 
-	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
+	ASSERT_EQ(GradientComputation_2D::SUCCESS, result);
 }
  */
 
@@ -276,7 +276,7 @@ TEST(GradientComputationTestClass, GradientComputation2D_Test4)
 
 
 /*----------------------------------------------------------------------------*/
-/*                  CAS TEST CLASSE GradientComputation3D                     */
+/*                  CAS TEST CLASSE GradientComputation_3D                     */
 /*----------------------------------------------------------------------------*/
 
 TEST(GradientComputationTestClass, GradientComputation3D_Test1)
@@ -320,15 +320,15 @@ TEST(GradientComputationTestClass, GradientComputation3D_Test1)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	GradientComputation3D grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
-	GradientComputation3D::STATUS result = grad3D.execute();
+	GradientComputation_3D grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	GradientComputation_3D::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::R);
 	vtkWriter.setDataOptions(gmds::N|gmds::R);
 	vtkWriter.write("GradientComputation3D_Test1_Result.vtk");
 
-	ASSERT_EQ(GradientComputation3D::SUCCESS, result);
+	ASSERT_EQ(GradientComputation_3D::SUCCESS, result);
 }
 /*
 TEST(GradientComputationTestClass, GradientComputation3D_Test2)
@@ -372,15 +372,15 @@ TEST(GradientComputationTestClass, GradientComputation3D_Test2)
 	m.unmarkAll<Node>(markFrontNodes);
 	m.freeMark<Node>(markFrontNodes);
 
-	GradientComputation3D grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
-	GradientComputation3D::STATUS result = grad3D.execute();
+	GradientComputation_3D grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	GradientComputation_3D::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::R);
 	vtkWriter.setDataOptions(gmds::N|gmds::R);
 	vtkWriter.write("GradientComputation3D_Test2_Result.vtk");
 
-	ASSERT_EQ(GradientComputation3D::SUCCESS, result);
+	ASSERT_EQ(GradientComputation_3D::SUCCESS, result);
 }
 
 TEST(GradientComputationTestClass, GradientComputation3D_Test3)
@@ -433,15 +433,15 @@ TEST(GradientComputationTestClass, GradientComputation3D_Test3)
 
 	ASSERT_EQ(LevelSetCombined::SUCCESS, result_lscombined);
 
-	GradientComputation3D grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
-	GradientComputation3D::STATUS result = grad3D.execute();
+	GradientComputation_3D grad3D(&m, m.getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	GradientComputation_3D::STATUS result = grad3D.execute();
 
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::R);
 	vtkWriter.setDataOptions(gmds::N|gmds::R);
 	vtkWriter.write("GradientComputation3D_Test3_Result.vtk");
 
-	ASSERT_EQ(GradientComputation3D::SUCCESS, result);
+	ASSERT_EQ(GradientComputation_3D::SUCCESS, result);
 }
  */
 /*----------------------------------------------------------------------------*/
@@ -504,7 +504,7 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test1)
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("LeastSquaresGradientComputation_2D_Test1_Result.vtk");
 
-	ASSERT_EQ(GradientComputation2D::SUCCESS, result);
+	ASSERT_EQ(GradientComputation_2D::SUCCESS, result);
 }
 /*
 TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test2)

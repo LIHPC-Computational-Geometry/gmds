@@ -2,13 +2,12 @@
 // Created by rochec on 21/01/2022.
 //
 /*------------------------------------------------------------------------*/
-#include <gmds/claire/GradientComputation2D.h>
+#include <gmds/claire/GradientComputation_2D.h>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-
-GradientComputation2D::GradientComputation2D(Mesh *AMesh, Variable<double>* Adistance) {
+GradientComputation_2D::GradientComputation_2D(Mesh *AMesh, Variable<double>* Adistance) {
 	m_mesh = AMesh;
 	m_distance = Adistance;
 	m_gradient2D = m_mesh->newVariable<math::Vector3d ,GMDS_FACE>("GMDS_Gradient_2D");
@@ -16,7 +15,8 @@ GradientComputation2D::GradientComputation2D(Mesh *AMesh, Variable<double>* Adis
 
 
 /*------------------------------------------------------------------------*/
-GradientComputation2D::STATUS GradientComputation2D::execute()
+GradientComputation_2D::STATUS
+GradientComputation_2D::execute()
 {
 
 	for(auto face_id:m_mesh->faces()) {
@@ -24,13 +24,14 @@ GradientComputation2D::STATUS GradientComputation2D::execute()
 		m_gradient2D->set(face_id, Gradient) ;
 	}
 
-	return GradientComputation2D::SUCCESS;
+	return GradientComputation_2D::SUCCESS;
 }
 /*------------------------------------------------------------------------*/
 
 
 /*------------------------------------------------------------------------*/
-math::Vector3d GradientComputation2D::getNormalVector(TCellID n0_id, TCellID n1_id){
+math::Vector3d
+GradientComputation_2D::getNormalVector(TCellID n0_id, TCellID n1_id){
 	Node n0 = m_mesh->get<Node>(n0_id);
 	Node n1 = m_mesh->get<Node>(n1_id);
 	math::Point p0 = n0.point();
@@ -50,7 +51,8 @@ math::Vector3d GradientComputation2D::getNormalVector(TCellID n0_id, TCellID n1_
 
 
 /*------------------------------------------------------------------------*/
-math::Vector3d GradientComputation2D::computeGradientOnSimpleFace(TCellID face_id){
+math::Vector3d
+GradientComputation_2D::computeGradientOnSimpleFace(TCellID face_id){
 	math::Vector3d Gradient ;
 	Face face = m_mesh->get<Face>(face_id);
 	std::vector<TCellID> face_nodes_ids = face.getIDs<Node>();

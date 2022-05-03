@@ -5,7 +5,7 @@
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/LevelSetEloi.h>
 #include <gmds/claire/LevelSetExtended.h>
-#include <gmds/claire/GradientComputation2D.h>
+#include <gmds/claire/GradientComputation_2D.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/claire/AdvectedPointRK4_2D.h>
 #include <gmds/claire/AdvectedPointRK4_3D.h>

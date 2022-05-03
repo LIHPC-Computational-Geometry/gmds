@@ -11,8 +11,8 @@ set(GMDS_INC
 		inc/gmds/claire/Grid_Smooth2D.h
 		inc/gmds/claire/DistanceMap.h
         inc/gmds/claire/LevelSetCombined.h
-		inc/gmds/claire/GradientComputation2D.h
-		inc/gmds/claire/GradientComputation3D.h
+        inc/gmds/claire/GradientComputation_2D.h
+		inc/gmds/claire/GradientComputation_3D.h
         inc/gmds/claire/LeastSquaresGradientComputation.h
         inc/gmds/claire/AdvectedPointRK4_2D.h
         inc/gmds/claire/Params.h
@@ -34,8 +34,8 @@ set(GMDS_SRC
         src/Grid_Smooth2D.cpp
 		src/DistanceMap.cpp
         src/LevelSetCombined.cpp
-		src/GradientComputation2D.cpp
-		src/GradientComputation3D.cpp
+        src/GradientComputation_2D.cpp
+		src/GradientComputation_3D.cpp
         src/LeastSquaresGradientComputation.cpp
         src/AdvectedPointRK4_2D.cpp
         src/AbstractAeroPipeline.cpp
