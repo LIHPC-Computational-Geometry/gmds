@@ -35,7 +35,7 @@ class RLBlockSet
 
 	void saveMesh(std::string title);
 
-	void setFromFile(std::string filename);
+	void setFromFile(std::string filename, int nX = 3, int nY = 3);
 };
 }
 #endif     // GMDS_RL_BLOCK_SET_H

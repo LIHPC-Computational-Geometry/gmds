@@ -121,7 +121,7 @@ void RLBlockSet::saveMesh(std::string title)
 	vtkWriter.write(title + ".vtk");
 }
 
-void RLBlockSet::setFromFile(std::string filename)
+void RLBlockSet::setFromFile(std::string filename, int nX, int nY)
 {
 	Mesh targetMesh = Mesh(MeshModel(DIM3|F|N));
 	gmds::IGMeshIOService ioService(&targetMesh);
@@ -150,5 +150,5 @@ void RLBlockSet::setFromFile(std::string filename)
 			yMin = node.Y();
 		}
 	}
-	setFrame(xMin, yMin, xMax, yMax);
+	setFrame(xMin, yMin, xMax, yMax, nX, nY);
 }
