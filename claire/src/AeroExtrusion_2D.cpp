@@ -27,14 +27,18 @@ AeroExtrusion_2D::execute()
 	//if(m_mesh==NULL)
 	//	throw AeroException("ERROR: Invalid mesh pointer");
 
-	Front Current_Front = Compute1stLayer(m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.25,
+	Front Current_Front = Compute1stLayer(m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.1,
 	                m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+
+	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.25,
+	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.5,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.75,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 1,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+
 
 	// Test nombres de faces par arête
 	for (auto e_id:m_meshQ->edges()){
@@ -266,22 +270,17 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 				singu_not_found = false;
 			}
 
-			/*
-			// test premier quad
-			double r1 = math::AeroMeshQuality::oppositeedgeslenghtratio(m_meshQ, n_id, neighbors_nodes[0],
-			                                                            Front_IN.getNextNode(neighbors_nodes[0],n_id),
-			                                                            Front_IN.getNextNode(n_id,neighbors_nodes[0]));
-			// test second quad
-			double r2 = math::AeroMeshQuality::oppositeedgeslenghtratio(m_meshQ, n_id, neighbors_nodes[1],
-			                                                            Front_IN.getNextNode(neighbors_nodes[1],n_id),
-			                                                            Front_IN.getNextNode(n_id,neighbors_nodes[1]));
-			std::cout << "DISTANCES : " << r1 << ", " << r2 << std::endl;
-			if (singu_not_found && (r1 > 1.6 || r2 > 1.6) ){
+			// test angles
+			double angle = math::AeroMeshQuality::angleouverture(m_meshQ, n_id,
+			                                                     Front_IN.getIdealNode(n_id),
+			                                                     neighbors_nodes[0], neighbors_nodes[1]) ;
+			//std::cout << "angle : " << angle << std::endl;
+			if (singu_not_found
+			    && ( angle < 3.0*M_PI/4.0 )){
 				node_id = n_id;
 				type = 2;
 				singu_not_found = false;
 			}
-			 */
 
 		}
 
@@ -294,7 +293,7 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 			                                                     neighbors_nodes[0], neighbors_nodes[1]) ;
 			//std::cout << "angle : " << angle << std::endl;
 			if (singu_not_found
-			    && ( angle > 4.0*M_PI/3.0 )){
+			    && ( angle > 8.0*M_PI/6.0 )){
 				node_id = n_id;
 				type = 1;
 				singu_not_found = false;
