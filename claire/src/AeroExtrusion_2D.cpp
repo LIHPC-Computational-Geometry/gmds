@@ -13,9 +13,10 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AeroExtrusion_2D::AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ) {
+AeroExtrusion_2D::AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero Aparams_aero) {
 	m_meshT = AMeshT;
 	m_meshQ = AMeshQ;
+	m_params_aero = Aparams_aero;
 }
 
 
@@ -188,6 +189,8 @@ AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, dou
 
 	std::vector<TCellID> front_nodes = Front_IN.getNodes();
 	std::vector<TCellID> front_edges = Front_IN.getEdges();
+
+	Front_IN.setMultorFusFromLimits(m_meshQ, m_params_aero.x_lim, m_params_aero.y_lim, m_params_aero.z_lim);
 
 	// Boucle d'insertion d'éléments
 	bool do_smooth(true);

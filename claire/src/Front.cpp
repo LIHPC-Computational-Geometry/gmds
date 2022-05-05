@@ -194,3 +194,25 @@ void Front::initializeNodeType(Mesh *m, std::map<TCellID, TCellID> map_idealposi
 
 }
 /*-------------------------------------------------------------------*/
+
+
+/*-------------------------------------------------------------------*/
+void Front::setMultorFusFromLimits(Mesh *m, double x_lim, double y_lim, double z_lim){
+
+	for (auto n_id:m_nodesId){
+		Node n = m->get<Node>(n_id);
+		math::Point p = n.point();
+		if ( p.X() < x_lim ){
+			setNonFusionable(n_id);
+			setNonMultiplicable(n_id);
+		}
+		if ( p.Y() < y_lim ){
+			setNonFusionable(n_id);
+			setNonMultiplicable(n_id);
+		}
+		if ( p.Z() < z_lim ){
+			setNonFusionable(n_id);
+			setNonMultiplicable(n_id);
+		}
+	}
+}

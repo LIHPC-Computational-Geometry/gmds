@@ -10,6 +10,7 @@
 #include "gmds/ig/Mesh.h"
 #include <gmds/claire/AeroException.h>
 #include <gmds/claire/Front.h>
+#include <gmds/claire/Params.h>
 #include <string>
 #include <map>
 #include <fstream>
@@ -32,7 +33,7 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
          *  @param[in] AMeshQ the quad mesh to generate
          *
 	 */
-	AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ);
+	AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero Aparams_aero);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -111,6 +112,8 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
 	Mesh *m_meshT;
 	/** quad mesh to generate */
 	Mesh *m_meshQ;
+	/** Params pour l'aéro */
+	ParamsAero m_params_aero;
 
 };
 /*----------------------------------------------------------------------------*/

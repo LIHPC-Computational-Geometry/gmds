@@ -74,7 +74,7 @@ AeroPipeline_2D::execute(){
 	std::cout << "-> Calcul Gradient" << std::endl;
 	t_start = clock();
 	m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-	LeastSquaresGradientComputation grad2D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	LeastSquaresGradientComputation grad2D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
 	                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	grad2D.execute();
 	t_end = clock();
@@ -108,7 +108,7 @@ AeroPipeline_2D::execute(){
 
 	std::cout << "-> Extrusion" << std::endl;
 	t_start = clock();
-	AeroExtrusion_2D aero_extrusion(m_meshTet, m_meshHex);
+	AeroExtrusion_2D aero_extrusion(m_meshTet, m_meshHex, m_params);
 	aero_extrusion.execute();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;

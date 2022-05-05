@@ -156,6 +156,15 @@ class LIB_GMDS_CLAIRE_API Front {
 	 */
 	void initializeNodeNeighbors(Mesh *m);
 	/*-------------------------------------------------------------------*/
+	/** @brief Initialise les booléens isMultiplicable et isFusionable
+	 * 	pour chaque noeud du front à partir de 3 limites.
+	 *
+	 * 	@param[in] x_lim the limit on the x axis
+	 * 	@param[in] y_lim the limit on the y axis
+	 * 	@param[in] z_lim the limit on the z axis
+	 */
+	void setMultorFusFromLimits(Mesh *m, double x_lim, double y_lim, double z_lim);
+	/*-------------------------------------------------------------------*/
  private:
 	/** Id du front, de la couche */
 	int m_FrontID;

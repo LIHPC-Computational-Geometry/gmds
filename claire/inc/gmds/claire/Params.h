@@ -51,6 +51,12 @@ namespace gmds {
         std::string output_dir;
 	     /** Nombre mini de blocs */
         int nbrMinBloc;
+	     /** Limite x amont/aval */
+	     double x_lim;
+	     /** Limite y amont/aval */
+	     double y_lim;
+	     /** Limite z amont/aval */
+	     double z_lim;
     };
 /*------------------------------------------------------------------------*/
 }
