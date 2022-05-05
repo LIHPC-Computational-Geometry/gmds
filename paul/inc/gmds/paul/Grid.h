@@ -31,6 +31,13 @@ namespace gmds {
 
 	   virtual ~GridBuilderAround();
 
+	   /*------------------------------------------------------------------------*/
+	   /** @brief Check if the mesh fits algorithm requirements, which are:
+         *         - 3D mesh with R, N and R2N
+         *         - 2D mesh with F, N and F2N
+	    */
+	   bool isValid() const;
+
 	   /** @brief  Performs the grid building
          * @param ANb      NB nodes in X  and Y directions
          */
@@ -40,7 +47,7 @@ namespace gmds {
 	   gmds::Mesh m_mesh;
 
 	   /* add variable activate -> Face*/
-	   Variable<int> *activate = m_mesh.newVariable<int,GMDS_FACE>("exist");
+	   Variable<int> *activate = m_mesh.newVariable<int,GMDS_FACE>("activate");
 
 	   /** Grid dimension*/
 	   TInt m_dim;

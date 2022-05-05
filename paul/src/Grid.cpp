@@ -28,13 +28,25 @@ int GridBuilderAround::getDim() const
 
 GridBuilderAround::~GridBuilderAround()
 {}
+bool GridBuilderAround::isValid() const
+{
+	if(m_dim==3)
+		return (m_mesh.getModel()==(DIM3|R|N|R2N));
+	else if(m_dim==2)
+		return (m_mesh.getModel()==(DIM3|F|N|F2N) ||
+		        m_mesh.getModel()==(DIM2|F|N|F2N));
 
+	//dimension error
+	return false;
+}
 /*----------------------------------------------------------------------------*/
 void GridBuilderAround::executeGrid2D(const gmds::TInt ANb) {
 	double Xmax = 0;
 	double Ymax = 0;
 	double Xmin = 0;
 	double Ymin = 0;
+	double Zmin = 0;
+	double Zmax = 0;
 	for(auto n : m_mesh.nodes()){
 		if ( m_mesh.get<Node>(n).X()>Xmax){
 			Xmax=m_mesh.get<Node>(n).X();
@@ -51,17 +63,27 @@ void GridBuilderAround::executeGrid2D(const gmds::TInt ANb) {
 	}
 	double rangeX = abs(Xmin-Xmax);
 	double rangeY = abs(Ymin-Ymax);
+	double rangeZ = 0;
+	std::cout<<"Xmax : "<<Xmax<<std::endl;
+	std::cout<<"Ymax : "<<Ymax<<std::endl;
+	std::cout<<"Xmin : "<<Xmin<<std::endl;
+	std::cout<<"Ymin : "<<Ymin<<std::endl;
+	std::cout<<"range X : "<<rangeX<<std::endl;
+	std::cout<<"range Y : "<<rangeY<<std::endl;
 	m_mesh.clear();
-	gridBuild2D(ANb, rangeX, ANb, rangeY,Xmin,Ymin);
+	if (m_dim == 2){
+		gridBuild2D(ANb, rangeX, ANb, rangeY,Xmin,Ymin);
+	}
+	else if(m_dim==3){
+		//gridBuild3D(ANb,rangeX,ANb,rangeY,ANb,rangeZ,Xmin,Ymin,Zmin);
+	}
 }
 
-void GridBuilderAround::gridBuild2D(const gmds::TInt AXNb,
-                     const gmds::TCoord AXStep,
-                     const gmds::TInt AYNb,
+void GridBuilderAround::gridBuild2D(const gmds::TInt AXNb, const gmds::TCoord AXStep, const gmds::TInt AYNb,
                      const gmds::TCoord AYStep, const gmds::TCoord Xmin, const gmds::TCoord Ymin)
 {
 
-	std::vector<TCellID> node_ids;
+	std::vector<TCellID> node_ids = std::vector<TCellID>();
 	const gmds::TInt N = AXNb * AYNb;
 	node_ids.reserve(N);
 
@@ -97,7 +119,7 @@ void GridBuilderAround::gridBuild2D(const gmds::TInt AXNb,
 }
 
 int GridBuilderAround::getActivate(gmds::Face AFace) {
-	int  valueActivateFace = m_mesh.getVariable<int,GMDS_FACE>("exist")->value(AFace.id());
+	int  valueActivateFace = m_mesh.getVariable<int,GMDS_FACE>("activate")->value(AFace.id());
 	return valueActivateFace;
 }
 

@@ -14,6 +14,7 @@
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKWriter.h"
 #include "gmds/io/VTKReader.h"
+#include "gmds/ig/MeshDoctor.h"
 
 using namespace gmds;
 
@@ -71,18 +72,23 @@ int main(){
 	IGMeshIOService ioServiceRead(&mImprint);
 	VTKReader vtkReader(&ioServiceRead);
 	vtkReader.setCellOptions(gmds::N|gmds::F);
-	vtkReader.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/triangulated_quad.vtk");
+	vtkReader.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
 
 
 
 
-	Mesh mGridAround(MeshModel (DIM3|F|N|F2N|N2F));
+	Mesh mGridAround(MeshModel (DIM2|F|N|F2N|N2F));
+	IGMeshIOService ioServiceRead2(&mGridAround);
+	VTKReader vtkReader2(&ioServiceRead2);
+	vtkReader2.setCellOptions(gmds::N|gmds::F);
+	vtkReader2.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
 	GridBuilderAround gridAround(&mGridAround,2);
 	gridAround.executeGrid2D(5);
 
 
-
-
+	Actions actionb(&gridAround);
+	actionb.executeCutEdge(mGridAround.get<Node>(3),mGridAround.get<Node>(8));
+	MeshDoctor doc(&mGridAround);
 	Variable<double>* volFrac = mGridAround.newVariable<double,GMDS_FACE>("volFrac");
 	volfraccomputation_2d(&mGridAround,&mImprint,volFrac);
 
@@ -136,6 +142,8 @@ int main(){
 
 	action.executeCutEdge(gba.m_mesh.get<Node>(4),gba.m_mesh.get<Node>(9));
 	*/
+
+	//======================================== TEST MULTI CUT  =============================================
 	/*
 	action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(18),tool.g_grid.m_mesh.get<Node>(13));
 	action.executeCutEdge(tool.g_grid.m_mesh.get<Node>(1),tool.g_grid.m_mesh.get<Node>(2));

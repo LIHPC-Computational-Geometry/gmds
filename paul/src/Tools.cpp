@@ -579,22 +579,32 @@ void Tools::createEdge(Node i1, Node i2)
 
 
 			if(firstPair.front()==previousEdge.front()&& firstPair.back()==previousEdge.back()) {
+				std::cout<<"First If"<<std::endl;
 				Node newMiddleNode = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(secondPair.front()), g_grid.m_mesh.get<Node>(secondPair.back()));
-				Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1, previousMiddleNode, newMiddleNode, nodeFirstPair2);
+				Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair2,  newMiddleNode,previousMiddleNode, nodeFirstPair1);
 				g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>(newMiddleNode.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceLeft);
 
+				std::cout<<"Face Left : "<< newFaceLeft<<std::endl;
+				for (auto n : Tools::getListNodesOfFace(newFaceLeft.id())){
+					std::cout<<n<<std::endl;
+				}
 
 
-				Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1, previousMiddleNode, newMiddleNode, nodeSecondPair2);
+				Face newFaceRight = g_grid.m_mesh.newQuad( newMiddleNode,  nodeSecondPair2,nodeSecondPair1,previousMiddleNode);
 				g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(newMiddleNode.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceRight);
 
-				valueActivateFace=g_grid.m_mesh.getVariable<int,GMDS_FACE>("exist")->value(faceEdges.id());
+				std::cout<<"Face Right : "<< newFaceRight<<std::endl;
+				for (auto n : Tools::getListNodesOfFace(newFaceRight.id())){
+					std::cout<<n<<std::endl;
+				}
+
+				valueActivateFace=g_grid.m_mesh.getVariable<int,GMDS_FACE>("activate")->value(faceEdges.id());
 
 				g_grid.activate->set(newFaceLeft.id(),g_grid.getActivate(faceEdges)); //attribution val aux faces
 				g_grid.activate->set(newFaceRight.id(),g_grid.getActivate(faceEdges)); //attribution val aux faces
@@ -604,6 +614,7 @@ void Tools::createEdge(Node i1, Node i2)
 
 			}
 			else if(firstPair.back()== previousEdge.front()&& firstPair.front()==previousEdge.back()){
+				std::cout<<"Second If"<<std::endl;
 				Node newMiddleNode = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(secondPair.front()),g_grid.m_mesh.get<Node>(secondPair.back()));
 				Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,previousMiddleNode,newMiddleNode,nodeFirstPair2);
 				g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
@@ -612,14 +623,14 @@ void Tools::createEdge(Node i1, Node i2)
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceLeft);
 
 
-				Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1,previousMiddleNode,newMiddleNode,nodeSecondPair2);
+				Face newFaceRight = g_grid.m_mesh.newQuad(previousMiddleNode,nodeSecondPair1,nodeSecondPair2,newMiddleNode);
 				g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(newMiddleNode.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceRight);
 
 
-				valueActivateFace=g_grid.m_mesh.getVariable<int,GMDS_FACE>("exist")->value(faceEdges.id());
+				valueActivateFace=g_grid.m_mesh.getVariable<int,GMDS_FACE>("activate")->value(faceEdges.id());
 
 				g_grid.activate->set(newFaceLeft.id(),g_grid.getActivate(faceEdges)); //attribution val aux faces
 				g_grid.activate->set(newFaceRight.id(),g_grid.getActivate(faceEdges)); //attribution val aux faces
@@ -628,6 +639,7 @@ void Tools::createEdge(Node i1, Node i2)
 				previousEdge={e.front(),e.back()};
 			}
 			else if(secondPair.front()==previousEdge.front()&& secondPair.back()==previousEdge.back()){
+				std::cout<<"Third If"<<std::endl;
 				Node newMiddleNode = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(firstPair.front()),g_grid.m_mesh.get<Node>(firstPair.back()));
 				Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1,newMiddleNode,previousMiddleNode,nodeFirstPair2);
 				g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
@@ -635,14 +647,22 @@ void Tools::createEdge(Node i1, Node i2)
 				g_grid.m_mesh.get<Node>( newMiddleNode.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceLeft);
 
+				std::cout<<"Face Left : "<< newFaceLeft<<std::endl;
+				for (auto n : Tools::getListNodesOfFace(newFaceLeft.id())){
+					std::cout<<n<<std::endl;
+				}
 
-				Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1,newMiddleNode,previousMiddleNode,nodeSecondPair2);
+				Face newFaceRight = g_grid.m_mesh.newQuad(newMiddleNode,nodeSecondPair1,nodeSecondPair2,previousMiddleNode);
 				g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(newMiddleNode.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceRight);
 
-				valueActivateFace=g_grid.m_mesh.getVariable<int,GMDS_FACE>("exist")->value(faceEdges.id());
+				std::cout<<"Face Right : "<< newFaceRight<<std::endl;
+				for (auto n : Tools::getListNodesOfFace(newFaceRight.id())){
+					std::cout<<n<<std::endl;
+				}
+				valueActivateFace=g_grid.m_mesh.getVariable<int,GMDS_FACE>("activate")->value(faceEdges.id());
 
 				g_grid.activate->set(newFaceLeft.id(),g_grid.getActivate(faceEdges)); //attribution val aux faces
 				g_grid.activate->set(newFaceRight.id(),g_grid.getActivate(faceEdges)); //attribution val aux faces
@@ -652,6 +672,7 @@ void Tools::createEdge(Node i1, Node i2)
 
 			}
 			else if(secondPair.back()== previousEdge.front()&& secondPair.front()==previousEdge.back()) {
+				std::cout<<"Fourth If"<<std::endl;
 				Node newMiddleNode = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(firstPair.front()), g_grid.m_mesh.get<Node>(firstPair.back()));
 				Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair1, newMiddleNode, previousMiddleNode, nodeFirstPair2);
 				g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
@@ -659,13 +680,15 @@ void Tools::createEdge(Node i1, Node i2)
 				g_grid.m_mesh.get<Node>(newMiddleNode.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceLeft);
 
-				Face newFaceRight = g_grid.m_mesh.newQuad(nodeSecondPair1, newMiddleNode, previousMiddleNode, nodeSecondPair2);
+
+				Face newFaceRight = g_grid.m_mesh.newQuad( newMiddleNode, nodeSecondPair1, nodeSecondPair2,previousMiddleNode);
 				g_grid.m_mesh.get<Node>(nodeSecondPair1.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(newMiddleNode.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceRight);
 
-				valueActivateFace=g_grid.m_mesh.getVariable<int,GMDS_FACE>("exist")->value(faceEdges.id());
+
+				valueActivateFace=g_grid.m_mesh.getVariable<int,GMDS_FACE>("activate")->value(faceEdges.id());
 
 				g_grid.activate->set(newFaceLeft.id(), g_grid.getActivate(faceEdges));      // attribution val aux faces
 				g_grid.activate->set(newFaceRight.id(), g_grid.getActivate(faceEdges));     // attribution val aux faces
