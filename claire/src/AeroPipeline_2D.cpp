@@ -49,6 +49,7 @@ AeroPipeline_2D::execute(){
 	std::cout << "-> Analyse des bords" << std::endl;
 	t_start = clock();
 	m_Bnd->execute();
+	std::cout << "Nombre de bords : " << m_Bnd->getNbrBords()-1 << std::endl;
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
@@ -113,11 +114,19 @@ AeroPipeline_2D::execute(){
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
+	std::cout << "-> Classification géométrique" << std::endl;
+	t_start = clock();
 	// Mise à jour du linker pour la dernière couche de noeuds
 	UpdateLinkerLastLayer();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
+	std::cout << "-> Conversion maillage en blocking" << std::endl;
+	t_start = clock();
 	// Conversion structure maillage à blocking + maillage des blocs par transfinies
 	ConvertisseurMeshToBlocking();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
 	// Lissage
 	std::cout << "-> Lissage final" << std::endl;
@@ -296,7 +305,7 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 void
 AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 
-	std::cout << "-> Conversion Maillage en Blocking2D et connectivités" << std::endl;
+	//std::cout << "-> Conversion Maillage en Blocking2D et connectivités" << std::endl;
 
 	m_linker_BG->setGeometry(m_manager);
 	m_linker_BG->setMesh(&m_Blocking2D);
