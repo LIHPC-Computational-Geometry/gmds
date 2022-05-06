@@ -229,6 +229,10 @@ class Tools{
 	 */
 	Face getFaceEdges(const int i1,const int i2,const int i3,const int i4);
 
+	std::vector<int> getAllNodesSameWay(Node i1, Node i2);
+
+	bool checkVertical(Node i1, Node i2 );
+
 	gmds::GridBuilderAround g_grid;
 
 };

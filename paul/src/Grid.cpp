@@ -101,7 +101,8 @@ void GridBuilderAround::gridBuild2D(const gmds::TInt AXNb, const gmds::TCoord AX
 		Face q = m_mesh.newQuad(node_ids.at(k),
 										node_ids.at(k + AYNb),			// [x + 1][y],
 										node_ids.at(k + AYNb + 1),		// [x + 1][y + 1],
-										node_ids.at(k + 1));			// [x][y + 1],
+										node_ids.at(k + 1));// [x][y + 1],
+
 		m_mesh.get<Node>(node_ids.at(k)).add(q);
 		m_mesh.get<Node>(node_ids.at(k + AYNb)).add(q);
 		m_mesh.get<Node>(node_ids.at(k + AYNb + 1)).add(q);
