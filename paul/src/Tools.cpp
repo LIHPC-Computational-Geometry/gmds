@@ -634,6 +634,11 @@ void Tools::createEdge(Node i1, Node i2)
 				g_grid.m_mesh.get<Node>(newMiddleNode.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceLeft);
 
+				std::cout <<"Liste Noeuds :"<<std::endl;
+				std::cout<<"Node First Pair 2 "<<nodeFirstPair2<<std::endl;
+				std::cout<<"Node First Pair 1 "<<nodeFirstPair1<<std::endl;
+				std::cout<<"Previous Middle Node "<<previousMiddleNode<<std::endl;
+				std::cout<<"newMiddleNode "<<newMiddleNode<<std::endl;
 				std::cout<<"Face Left : "<< newFaceLeft<<std::endl;
 				for (auto n : Tools::getListNodesOfFace(newFaceLeft.id())){
 					std::cout<<n<<std::endl;
@@ -646,6 +651,12 @@ void Tools::createEdge(Node i1, Node i2)
 				g_grid.m_mesh.get<Node>(newMiddleNode.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceRight);
 
+				std::cout <<"Liste Noeuds :"<<std::endl;
+
+				std::cout<<"newMiddleNode "<<newMiddleNode<<std::endl;
+				std::cout<<"Previous Middle Node "<<previousMiddleNode<<std::endl;
+				std::cout<<"Node Second Pair 1 "<<nodeSecondPair1<<std::endl;
+				std::cout<<"Node Second Pair 2 "<<nodeSecondPair2<<std::endl;
 				std::cout<<"Face Right : "<< newFaceRight<<std::endl;
 				for (auto n : Tools::getListNodesOfFace(newFaceRight.id())){
 					std::cout<<n<<std::endl;
