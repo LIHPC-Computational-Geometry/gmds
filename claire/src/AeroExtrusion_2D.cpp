@@ -9,6 +9,7 @@
 #include <gmds/claire/AeroExtrusion_2D.h>
 #include <gmds/claire/AdvectedPointRK4_2D.h>
 #include <gmds/claire/AeroMeshQuality.h>
+#include <gmds/claire/SmoothingPaving_2D.h>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -35,10 +36,12 @@ AeroExtrusion_2D::execute()
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.5,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	/*
 	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.75,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 1,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	                             */
 
 
 	// Test nombres de faces par arête
@@ -234,6 +237,9 @@ AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, dou
 	// Initialisation du front de sortie
 	Front Front_OUT;
 	Front_OUT.initializeFromLayerId(m_meshQ, Front_IN.getFrontID()+1);
+
+	SmoothingPaving_2D smoother(m_meshQ, Front_OUT);
+	smoother.execute();
 
 	return Front_OUT;
 }

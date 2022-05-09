@@ -48,7 +48,7 @@ set(GMDS_SRC
 		src/Utils.cpp
 		src/AbstractAeroBoundaries.cpp
 		src/AeroBoundaries_2D.cpp
-		src/AeroBoundaries_3D.cpp inc/gmds/claire/AeroMeshQuality.h src/AeroMeshQuality.cpp inc/gmds/claire/AeroExtrusion_2D.h src/AeroExtrusion_2D.cpp inc/gmds/claire/AeroException.h src/AeroException.cpp inc/gmds/claire/Front.h src/Front.cpp)
+		src/AeroBoundaries_3D.cpp inc/gmds/claire/AeroMeshQuality.h src/AeroMeshQuality.cpp inc/gmds/claire/AeroExtrusion_2D.h src/AeroExtrusion_2D.cpp inc/gmds/claire/AeroException.h src/AeroException.cpp inc/gmds/claire/Front.h src/Front.cpp inc/gmds/claire/SmoothingPaving_2D.h src/SmoothingPaving_2D.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

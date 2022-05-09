@@ -224,6 +224,9 @@ void AbstractAeroBoundaries::MarkAmontAndParoiNodes(){
 		}
 		else{
 			m_mesh->mark<Node>(n_id,m_markNodesParoi);
+			//Node n = m_mesh->get<Node>(n_id);
+			//math::Point p = n.point();
+			//std::cout << "Coord z : " << p.Z() << std::endl;
 			//(*var_color_paroi)[n_id] = 2;
 		}
 	}
