@@ -68,7 +68,7 @@ int main(){
 	std::cout<<"=== Valeur Fraction ==="<<std::endl;
 
 
-	Mesh mImprint (	MeshModel(DIM2|F|N|F2N|N2F));
+	Mesh mImprint (	MeshModel(DIM2|F|E|N|F2N|N2F|E2N));
 	IGMeshIOService ioServiceRead(&mImprint);
 	VTKReader vtkReader(&ioServiceRead);
 	vtkReader.setCellOptions(gmds::N|gmds::F);
@@ -76,6 +76,10 @@ int main(){
 
 
 
+
+	gmds::MeshDoctor doc_imprint(&mImprint);
+	doc_imprint.updateUpwardConnectivity();
+	doc_imprint.buildBoundaryCells();
 
 	Mesh mGridAround(MeshModel (DIM2|F|N|F2N|N2F));
 	IGMeshIOService ioServiceRead2(&mGridAround);
@@ -107,14 +111,39 @@ int main(){
 	actionb.executeCutEdge(mGridAround.get<Node>(4),mGridAround.get<Node>(41));
 	actionb.executeCutEdge(mGridAround.get<Node>(3),mGridAround.get<Node>(2));
 	actionb.executeCutEdge(mGridAround.get<Node>(14),mGridAround.get<Node>(19));
+	actionb.executeCutEdge(mGridAround.get<Node>(40),mGridAround.get<Node>(8));
+	actionb.executeCutEdge(mGridAround.get<Node>(8),mGridAround.get<Node>(34));
+	actionb.executeCutEdge(mGridAround.get<Node>(72),mGridAround.get<Node>(2));
+	actionb.executeCutEdge(mGridAround.get<Node>(2),mGridAround.get<Node>(56));
 
 	volfraccomputation_2d(&mGridAround,&mImprint,volFrac);
 
-	Mesh boundaryMesh(MeshModel (DIM2|F|N|F2N|N2F));
 
+
+	//+===================================== TEST BOUNDARY EXTRACTOR =======================================
+	/*
+	Mesh boundaryMesh(MeshModel (DIM2|E|N|N2E|E2N));
 	BoundaryExtractor2D boundary_extractor(&mImprint,&boundaryMesh);
-	toolsB.boundaryNodes(&boundary_extractor);
+	std::vector<Node> listBoundaryNodes={};
+	std::map<TCellID ,TCellID > aNodeMap;
+	std::map<TCellID ,TCellID > aEdgeMap;
+	std::map<TCellID ,TCellID > aNodeMapInv;
+	std::map<TCellID ,TCellID > aEdgeMapInv;
+	boundary_extractor.setMappings(&aNodeMap,&aEdgeMap,&aNodeMapInv,&aEdgeMapInv);
+	boundary_extractor.execute();
 
+	std::cout<<"$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
+	if(aNodeMap.empty()){
+		std::cout<<"LA MAP EST VIDE"<<std::endl;
+	}
+	for (auto n : aNodeMap){
+		std::cout<<"N First : "<<n.first<< " " << "N Second : "<<n.second<<std::endl;
+
+	}*/
+
+	//=======================================================================================================================
+
+	toolsB.getBoundaryNodes(&mImprint);
 
 	gmds::IGMeshIOService ioService_write(&mGridAround);
 	gmds::VTKWriter vtkWriterGba(&ioService_write);

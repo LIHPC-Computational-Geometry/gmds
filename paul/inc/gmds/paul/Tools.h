@@ -6,6 +6,7 @@
 #define GMDS_Tools_H
 /*----------------------------------------------------------------------------*/
 #include "gmds/ig/Mesh.h"
+#include "gmds/ig/MeshDoctor.h"
 #include "GMDSIgAlgo_export.h"
 #include "gmds/paul/Grid.h"
 
@@ -245,7 +246,7 @@ class Tools{
 	 */
 	bool checkVertical(Node i1, Node i2 );
 
-	std::vector<Node> boundaryNodes (const BoundaryExtractor2D *AMesh);
+	std::vector<Node> getBoundaryNodes (const gmds::Mesh *AMesh);
 
 	gmds::GridBuilderAround g_grid;
 

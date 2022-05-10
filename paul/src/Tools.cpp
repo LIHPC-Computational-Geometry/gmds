@@ -207,11 +207,12 @@ std::vector<Face> Tools::getAllFacesChain(const int i1, const int i2)
 	std::vector<int> nodeCheck = {i1,i2};
 	auto listAllPairToCheck = Tools::getAllNodesChain(i1,i2);
 	auto listPairToCheck = listAllPairNodes;
-	std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
+	/*std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
 	for (auto n : listAllPairToCheck){
 		std::cout<<"une PAIR : "<<n.front()<<" "<<n.back()<<std::endl;
 	}
 	std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
+	 */
 
 	for (auto p : listAllPairToCheck){
 		auto theCurrentFace = Tools::getFacesCommon(p.front(),p.back());
@@ -222,14 +223,14 @@ std::vector<Face> Tools::getAllFacesChain(const int i1, const int i2)
 				else{
 					listAllFaces.push_back(f);
 				}
-				std::cout<<f<<std::endl;
+				//std::cout<<f<<std::endl;
 			}
 	}
-	std::cout<<"LA LISTE DES FACES TRUE "<<std::endl;
+	/*std::cout<<"LA LISTE DES FACES TRUE "<<std::endl;
 	for(auto f : listAllFaces){
 		std::cout<<f<<std::endl;
 
-	}
+	}*/
 	return listAllFaces;
 }
 
@@ -488,11 +489,12 @@ std::vector<Node> Tools::getBoundaryEdge(Node firstNodeId, Node secondNodeId)
 			}
 		}
 	}
+	/*
 	std::cout<<"TRIEE :"<<std::endl;
 	for (auto j : listNodes){
 		std::cout<<j<<std::endl;
 		std::cout<<j.X()<<std::endl;
-	}
+	}*/
 	if(listNodes[0].Y()<=listNodes[1].Y()){
 		node = listNodes[0];
 	}
@@ -500,7 +502,7 @@ std::vector<Node> Tools::getBoundaryEdge(Node firstNodeId, Node secondNodeId)
 		node = listNodes[1];
 	}
 
-	std::cout<<node<<std::endl;
+	//std::cout<<node<<std::endl;
 
 	for (auto e: boundaryEdges){
 		if(e.front().X()==node.X() && e.front().Y()==node.Y()){
@@ -514,11 +516,11 @@ std::vector<Node> Tools::getBoundaryEdge(Node firstNodeId, Node secondNodeId)
 	}
 
 	/*boundaryEdge.push_back(boundaryEdges.front().front());
-	boundaryEdge.push_back(boundaryEdges.front().back());*/
+	boundaryEdge.push_back(boundaryEdges.front().back());
 	std::cout<<"L'arete finale :"<<std::endl;
 	for (auto i:boundaryEdge){
 		std::cout<<i<<std::endl;
-	}
+	}*/
 
 	return boundaryEdge;
 }
@@ -528,7 +530,7 @@ std::vector<Node> Tools::getBoundaryEdge(Node firstNodeId, Node secondNodeId)
 void Tools::createEdge(Node i1, Node i2)
 {
 	auto edgeBoundary = Tools::getBoundaryEdge(i1,i2);
-	auto listFaces = Tools::getAllFacesChain(i1.id(),i2.id());
+	auto listFaces = Tools::getAllFacesChain(edgeBoundary.front().id(),edgeBoundary.back().id());
 	auto listEdges = Tools::getAllNodesChain(edgeBoundary.front().id(),edgeBoundary.back().id());
 	auto firstNodesList = Tools::getListFirstNodesChain(edgeBoundary.front().id(),edgeBoundary.back().id());
 	auto secondNodesList = Tools::getListSecondNodesChain(edgeBoundary.front().id(),edgeBoundary.back().id());
@@ -583,7 +585,7 @@ void Tools::createEdge(Node i1, Node i2)
 				}
 			}
 			if(vertical){
-				std::cout<<"Vertical If"<<std::endl;
+				//std::cout<<"Vertical If"<<std::endl;
 				Node newMiddleNode = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(secondPair.front()), g_grid.m_mesh.get<Node>(secondPair.back()));
 				Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair2,nodeFirstPair1,  previousMiddleNode,newMiddleNode);
 				g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
@@ -591,6 +593,7 @@ void Tools::createEdge(Node i1, Node i2)
 				g_grid.m_mesh.get<Node>(newMiddleNode.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceLeft);
 
+				/*
 				std::cout <<"Liste Noeuds :"<<std::endl;
 				std::cout<<"Node First Pair 2 "<<nodeFirstPair2<<std::endl;
 				std::cout<<"Node First Pair 1 "<<nodeFirstPair1<<std::endl;
@@ -599,7 +602,7 @@ void Tools::createEdge(Node i1, Node i2)
 				std::cout<<"Face Left : "<< newFaceLeft<<std::endl;
 				for (auto n : Tools::getListNodesOfFace(newFaceLeft.id())){
 					std::cout<<n<<std::endl;
-				}
+				}*/
 
 
 				Face newFaceRight = g_grid.m_mesh.newQuad( newMiddleNode,previousMiddleNode,nodeSecondPair1,  nodeSecondPair2);
@@ -608,6 +611,7 @@ void Tools::createEdge(Node i1, Node i2)
 				g_grid.m_mesh.get<Node>(newMiddleNode.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceRight);
 
+				/*
 				std::cout <<"Liste Noeuds :"<<std::endl;
 
 				std::cout<<"newMiddleNode "<<newMiddleNode<<std::endl;
@@ -617,7 +621,7 @@ void Tools::createEdge(Node i1, Node i2)
 				std::cout<<"Face Right : "<< newFaceRight<<std::endl;
 				for (auto n : Tools::getListNodesOfFace(newFaceRight.id())){
 					std::cout<<n<<std::endl;
-				}
+				}*/
 
 				valueActivateFace=g_grid.m_mesh.getVariable<int,GMDS_FACE>("activate")->value(faceEdges.id());
 
@@ -628,18 +632,18 @@ void Tools::createEdge(Node i1, Node i2)
 				previousEdge = {e.front(), e.back()};
 			}
 			else{
-				std::cout<<"Horizontal If"<<std::endl;
+				//std::cout<<"Horizontal If"<<std::endl;
 				Node newMiddleNode = Tools::createMiddleNode(g_grid.m_mesh.get<Node>(secondPair.front()), g_grid.m_mesh.get<Node>(secondPair.back()));
 				Face newFaceLeft = g_grid.m_mesh.newQuad(nodeFirstPair2,  newMiddleNode,previousMiddleNode, nodeFirstPair1);
 				g_grid.m_mesh.get<Node>(nodeFirstPair1.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>(nodeFirstPair2.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>(newMiddleNode.id()).add(newFaceLeft);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceLeft);
-
+				/*
 				std::cout<<"Face Left : "<< newFaceLeft<<std::endl;
 				for (auto n : Tools::getListNodesOfFace(newFaceLeft.id())){
 					std::cout<<n<<std::endl;
-				}
+				}*/
 
 
 				Face newFaceRight = g_grid.m_mesh.newQuad( newMiddleNode,  nodeSecondPair2,nodeSecondPair1,previousMiddleNode);
@@ -647,11 +651,11 @@ void Tools::createEdge(Node i1, Node i2)
 				g_grid.m_mesh.get<Node>(nodeSecondPair2.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(newMiddleNode.id()).add(newFaceRight);
 				g_grid.m_mesh.get<Node>(previousMiddleNode.id()).add(newFaceRight);
-
+				/*
 				std::cout<<"Face Right : "<< newFaceRight<<std::endl;
 				for (auto n : Tools::getListNodesOfFace(newFaceRight.id())){
 					std::cout<<n<<std::endl;
-				}
+				}*/
 
 				valueActivateFace=g_grid.m_mesh.getVariable<int,GMDS_FACE>("activate")->value(faceEdges.id());
 
@@ -673,10 +677,6 @@ void Tools::createEdge(Node i1, Node i2)
 		for (auto n : listNodesOfFace){
 			g_grid.m_mesh.get<Node>(n.id()).remove(lFace);
 		}
-
-		std::cout<<"============================================================"<<std::endl;
-		std::cout<<"SUPPRESSION FACE : "<<lFace<<std::endl;
-		std::cout<<"============================================================"<<std::endl;
 		g_grid.m_mesh.deleteFace(lFace.id());
 	}
 
@@ -705,11 +705,11 @@ Tools::checkVertical(Node i1, Node i2)
 
 	for(auto i : listNodesCheck){
 		if (i==1){
-			std::cout<<"VERTICAL"<<std::endl;
+			//std::cout<<"VERTICAL"<<std::endl;
 			return true ;
 		}
 	}
-	std::cout<<"HORIZONTAL"<<std::endl;
+	//std::cout<<"HORIZONTAL"<<std::endl;
 	return false;
 }
 
@@ -728,25 +728,27 @@ std::vector<int> Tools::getAllNodesSameWay(Node i1, Node i2)
 		edge.push_back(otherNodes.front().back());
 	}
 	std::vector<int> listNodes=Tools::getListFirstNodesChain(edge.front(),edge.back());
-	std::cout<<"List Noeuds meme sens :"<<std::endl;
+	/*std::cout<<"List Noeuds meme sens :"<<std::endl;
 	for (auto i : listNodes){
 		std::cout<<i<<std::endl;
-	}
+	}*/
 	return listNodes;
 }
 
-std::vector<Node> Tools::boundaryNodes(const BoundaryExtractor2D *AMesh)
+std::vector<Node> Tools::getBoundaryNodes(const gmds::Mesh *AMesh)
 {
-	gmds::Mesh meshBoundary(gmds::MeshModel(DIM2|E|N|N2E|E2N));
-
-	gmds::BoundaryExtractor2D boundary_extractor(*AMesh);
+	gmds::MeshDoctor doc_imprint((Mesh *) &AMesh);
+	doc_imprint.updateUpwardConnectivity();
+	doc_imprint.buildBoundaryCells();
 	std::vector<Node> listBoundaryNodes={};
+
+	Mesh boundaryMesh(MeshModel (DIM2|E|N|N2E|E2N));
+
+	BoundaryExtractor2D boundary_extractor((Mesh *) &AMesh,&boundaryMesh);
 	std::map<TCellID ,TCellID > aNodeMap;
 	std::map<TCellID ,TCellID > aEdgeMap;
 	std::map<TCellID ,TCellID > aNodeMapInv;
 	std::map<TCellID ,TCellID > aEdgeMapInv;
-
-
 	boundary_extractor.setMappings(&aNodeMap,&aEdgeMap,&aNodeMapInv,&aEdgeMapInv);
 	boundary_extractor.execute();
 
@@ -758,6 +760,8 @@ std::vector<Node> Tools::boundaryNodes(const BoundaryExtractor2D *AMesh)
 		std::cout<<"N First : "<<n.first<< " " << "N Second : "<<n.second<<std::endl;
 
 	}
+
+
 	return listBoundaryNodes;
 }
 

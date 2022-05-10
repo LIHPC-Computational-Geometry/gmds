@@ -41,10 +41,11 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 	for(auto f_id: AMesh->faces()) {
 		gmds::Face f = AMesh->get<Face>(f_id);
 		std::vector<gmds::Node> n = f.get<gmds::Node>();
+		AVolFrac->set(f_id,0);
 
 		gmds::math::Quadrilateral quad(n[0].point(), n[1].point(), n[2].point(), n[3].point());
 		double sj = quad.computeScaledJacobian2D();
-		std::cout<<"SJ Face "<<f_id<<"("<<n[0].id()<<", "<<n[1].id()<<", "<<n[2].id()<<", "<<n[3].id()<<": "<<sj<<std::endl;
+		//std::cout<<"SJ Face "<<f_id<<"("<<n[0].id()<<", "<<n[1].id()<<", "<<n[2].id()<<", "<<n[3].id()<<": "<<sj<<std::endl;
 		if(sj < 0) {
 			msg += std::string("AMesh has a bad cell.");
 			valid_input = false;
