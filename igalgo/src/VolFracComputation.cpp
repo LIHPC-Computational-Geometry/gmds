@@ -66,9 +66,10 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 //		}
 //	}
 
+	/*
 	if(!valid_input) {
 		throw gmds::GMDSException(msg);
-	}
+	}*/
 
 
 	for(auto tri_id: AImprintMesh->faces()) {

@@ -22,14 +22,16 @@ void Actions::executeCutEdge(Node firstNodeID, Node secondNodeID)
 void Actions::executeGlideNode(Node node, Mesh *AMesh)
 {
 	auto boundaryNodes = tool.getBoundaryNodes(AMesh);
-	double range = NULL;
+	double range;
+	bool first = true;
 	double newX;
 	double newY;
 	double newZ;
 	for (auto n : boundaryNodes){
 		double newRange = tool.calcRangePoints(node,AMesh->get<Node>(n.first));
-		if (range==NULL){
+		if (first == true){
 			range = newRange;
+			first=false;
 			newX=AMesh->get<Node>(n.first).X();
 			newY=AMesh->get<Node>(n.first).Y();
 			newZ=AMesh->get<Node>(n.first).Z();

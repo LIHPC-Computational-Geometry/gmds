@@ -117,6 +117,16 @@ int main(){
 	actionb.executeCutEdge(mGridAround.get<Node>(72),mGridAround.get<Node>(2));
 	actionb.executeCutEdge(mGridAround.get<Node>(2),mGridAround.get<Node>(56));
 
+	//volfraccomputation_2d(&mGridAround,&mImprint,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
+	actionb.executeGlideNode(mGridAround.get<Node>(130),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(61),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(84),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(83),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(52),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(11),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(75),&mImprint);
+
+
 	volfraccomputation_2d(&mGridAround,&mImprint,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
 
 	actionb.executeDeleteFace(15);
@@ -156,7 +166,8 @@ int main(){
 
 	//=======================================================================================================================
 
-	actionb.executeGlideNode(mGridAround.get<Node>(52),&mImprint);
+
+
 
 	gmds::IGMeshIOService ioService_write(&mGridAround);
 	gmds::VTKWriter vtkWriterGba(&ioService_write);
