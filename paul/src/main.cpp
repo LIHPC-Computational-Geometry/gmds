@@ -87,24 +87,33 @@ int main(){
 
 
 	Actions actionb(&gridAround);
-	actionb.executeCutEdge(mGridAround.get<Node>(21),mGridAround.get<Node>(20));
+	Tools toolsB(&gridAround);
+
 
 	MeshDoctor doc(&mGridAround);
 	Variable<double>* volFrac = mGridAround.newVariable<double,GMDS_FACE>("volFrac");
 
 
 
+	actionb.executeCutEdge(mGridAround.get<Node>(21),mGridAround.get<Node>(20));
 	actionb.executeCutEdge(mGridAround.get<Node>(5),mGridAround.get<Node>(10));
 	std::cout<<"============================================================================="<<std::endl;
 	actionb.executeCutEdge(mGridAround.get<Node>(4),mGridAround.get<Node>(9));
 	actionb.executeCutEdge(mGridAround.get<Node>(4),mGridAround.get<Node>(3));
 	actionb.executeCutEdge(mGridAround.get<Node>(19),mGridAround.get<Node>(24));
-
 	std::cout<<"============================================================================="<<std::endl;
 
 	actionb.executeCutEdge(mGridAround.get<Node>(22),mGridAround.get<Node>(21));
+	actionb.executeCutEdge(mGridAround.get<Node>(4),mGridAround.get<Node>(41));
+	actionb.executeCutEdge(mGridAround.get<Node>(3),mGridAround.get<Node>(2));
+	actionb.executeCutEdge(mGridAround.get<Node>(14),mGridAround.get<Node>(19));
 
 	volfraccomputation_2d(&mGridAround,&mImprint,volFrac);
+
+	Mesh boundaryMesh(MeshModel (DIM2|F|N|F2N|N2F));
+
+	BoundaryExtractor2D boundary_extractor(&mImprint,&boundaryMesh);
+	toolsB.boundaryNodes(&boundary_extractor);
 
 
 	gmds::IGMeshIOService ioService_write(&mGridAround);
@@ -157,12 +166,12 @@ int main(){
 	*/
 
 	//======================================== TEST CUT NODE GLIDE =============================================
-	/*
+/*
 	gba.m_mesh.get<Node>(4).X()=0.5;
 	gba.m_mesh.get<Node>(4).Y()=4.5;
 
 	action.executeCutEdge(gba.m_mesh.get<Node>(4),gba.m_mesh.get<Node>(9));
-	*/
+*/
 
 	//======================================== TEST MULTI CUT  =============================================
 	/*

@@ -6,6 +6,7 @@
 #define GMDS_GRID_H
 /*----------------------------------------------------------------------------*/
 #include "gmds/ig/Mesh.h"
+#include "gmds/igalgo/BoundaryExtractor2D.h"
 #include "GMDSIgAlgo_export.h"
 /*----------------------------------------------------------------------------*/
 
@@ -45,6 +46,7 @@ namespace gmds {
 
 	   /* a mesh*/
 	   gmds::Mesh m_mesh;
+
 
 	   /* add variable activate -> Face*/
 	   Variable<int> *activate = m_mesh.newVariable<int,GMDS_FACE>("activate");

@@ -229,9 +229,23 @@ class Tools{
 	 */
 	Face getFaceEdges(const int i1,const int i2,const int i3,const int i4);
 
+	/** @brief get all nodes in the same way, use for checkVertical function
+	 *
+	 * @param i1 first node
+	 * @param i2 second node
+	 * @return vector of int (id nodes)
+	 */
 	std::vector<int> getAllNodesSameWay(Node i1, Node i2);
 
+	/** @brief check if a edge is vertical
+	 *
+	 * @param i1 first node
+	 * @param i2 second node
+	 * @return true if vertical, false if horizontal
+	 */
 	bool checkVertical(Node i1, Node i2 );
+
+	std::vector<Node> boundaryNodes (const BoundaryExtractor2D *AMesh);
 
 	gmds::GridBuilderAround g_grid;
 

@@ -202,77 +202,34 @@ std::vector<std::vector<int>> Tools::getOtherNodes(const int i1, const int i2)
 
 std::vector<Face> Tools::getAllFacesChain(const int i1, const int i2)
 {
-	std::vector<Face> listAllFaces = Tools::getFacesCommon(i1,i2);
+	std::vector<Face> listAllFaces = {};
 	std::vector<std::vector<int>> listAllPairNodes = Tools::getOtherNodes(i1,i2);
 	std::vector<int> nodeCheck = {i1,i2};
+	auto listAllPairToCheck = Tools::getAllNodesChain(i1,i2);
 	auto listPairToCheck = listAllPairNodes;
+	std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
+	for (auto n : listAllPairToCheck){
+		std::cout<<"une PAIR : "<<n.front()<<" "<<n.back()<<std::endl;
+	}
+	std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
 
-	while(!listPairToCheck.empty()){
-		auto listParcour = listPairToCheck;
-		for (auto p : listParcour){
-			/*std::cout<<"LES ID QUI SONT CHECK"<<std::endl;
-			for (auto n : p){
-				std::cout<<n<<std::endl;
-			}*/
-			if (*find(nodeCheck.begin(), nodeCheck.end(), p.front()) == p.front() ||
-				 *find(nodeCheck.begin(), nodeCheck.end(), p.back()) == p.back()) {
-				//std::cout<<"Noeud DEJA Check"<<std::endl;
-
-			}
-			else{
-				nodeCheck.push_back(p.front());
-				nodeCheck.push_back(p.back());
-
-			}
-			/*std::cout<<"Noeuds Check :"<<std::endl;
-			for (auto j : nodeCheck){
-				std::cout<<j<<std::endl;
-			}*/
-			std::vector<std::vector<int>> otherNodes = Tools::getOtherNodes(p.front(),p.back());
-
-
-			/*for(auto f : Tools::getFacesCommon(p.front(),p.back())){
-				listAllFaces.push_back(f);
-				std::cout<<"Face ADD : "<<f<<std::endl;
-			}*/
-			for(auto n : otherNodes){
-				if (*find(nodeCheck.begin(), nodeCheck.end(), n.front()) == n.front() ||
-					 *find(nodeCheck.begin(), nodeCheck.end(), n.back()) == n.back()) {
-					//std::cout<<"Other nodes deja check"<<std::endl;
-
-				}
-				else{
-					listPairToCheck.push_back(n);
-				}
-			}
-			auto newFaces = Tools::getFacesCommon(p.front(),p.back());
-			for (auto f : newFaces){
-
-				if (*find(listAllFaces.begin(), listAllFaces.end(),f) == f){
+	for (auto p : listAllPairToCheck){
+		auto theCurrentFace = Tools::getFacesCommon(p.front(),p.back());
+		for (auto f : theCurrentFace){
+			if (std::find(listAllFaces.begin(), listAllFaces.end(), f)!=listAllFaces.end()){
 					//std::cout<<"Other nodes deja check"<<std::endl;
 				}
 				else{
 					listAllFaces.push_back(f);
 				}
+				std::cout<<f<<std::endl;
 			}
-
-			//Old method to remove an element
-			// listPairToCheck.erase(std::remove(listPairToCheck.begin(), listPairToCheck.end(), p), listPairToCheck.end());
-
-			listPairToCheck.erase(std::find(listPairToCheck.begin(),listPairToCheck.end(),p));
-
-			for (auto n : listPairToCheck){
-				for (auto j : n){
-					//std::cout<<"LIST EN COURS DE SUPP : "<<j<<std::endl;
-				}
-			}
-
-		}
 	}
-	/*std::cout<<"LA LISTE DES FACES "<<std::endl;
+	std::cout<<"LA LISTE DES FACES TRUE "<<std::endl;
 	for(auto f : listAllFaces){
 		std::cout<<f<<std::endl;
-	}*/
+
+	}
 	return listAllFaces;
 }
 
@@ -571,7 +528,7 @@ std::vector<Node> Tools::getBoundaryEdge(Node firstNodeId, Node secondNodeId)
 void Tools::createEdge(Node i1, Node i2)
 {
 	auto edgeBoundary = Tools::getBoundaryEdge(i1,i2);
-	auto listFaces = Tools::getAllFacesChain(edgeBoundary.front().id(),edgeBoundary.back().id());
+	auto listFaces = Tools::getAllFacesChain(i1.id(),i2.id());
 	auto listEdges = Tools::getAllNodesChain(edgeBoundary.front().id(),edgeBoundary.back().id());
 	auto firstNodesList = Tools::getListFirstNodesChain(edgeBoundary.front().id(),edgeBoundary.back().id());
 	auto secondNodesList = Tools::getListSecondNodesChain(edgeBoundary.front().id(),edgeBoundary.back().id());
@@ -716,6 +673,10 @@ void Tools::createEdge(Node i1, Node i2)
 		for (auto n : listNodesOfFace){
 			g_grid.m_mesh.get<Node>(n.id()).remove(lFace);
 		}
+
+		std::cout<<"============================================================"<<std::endl;
+		std::cout<<"SUPPRESSION FACE : "<<lFace<<std::endl;
+		std::cout<<"============================================================"<<std::endl;
 		g_grid.m_mesh.deleteFace(lFace.id());
 	}
 
@@ -774,6 +735,31 @@ std::vector<int> Tools::getAllNodesSameWay(Node i1, Node i2)
 	return listNodes;
 }
 
+std::vector<Node> Tools::boundaryNodes(const BoundaryExtractor2D *AMesh)
+{
+	gmds::Mesh meshBoundary(gmds::MeshModel(DIM2|E|N|N2E|E2N));
+
+	gmds::BoundaryExtractor2D boundary_extractor(*AMesh);
+	std::vector<Node> listBoundaryNodes={};
+	std::map<TCellID ,TCellID > aNodeMap;
+	std::map<TCellID ,TCellID > aEdgeMap;
+	std::map<TCellID ,TCellID > aNodeMapInv;
+	std::map<TCellID ,TCellID > aEdgeMapInv;
+
+
+	boundary_extractor.setMappings(&aNodeMap,&aEdgeMap,&aNodeMapInv,&aEdgeMapInv);
+	boundary_extractor.execute();
+
+	std::cout<<"$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
+	if(aNodeMap.empty()){
+		std::cout<<"LA MAP EST VIDE"<<std::endl;
+	}
+	for (auto n : aNodeMap){
+		std::cout<<"N First : "<<n.first<< " " << "N Second : "<<n.second<<std::endl;
+
+	}
+	return listBoundaryNodes;
+}
 
 //========================================================================================
 //OLD FUNCTION
@@ -959,10 +945,6 @@ void Tools::joinFaceToNodes(Node i1, Node i2)
 
 		nodesCreate.push_back(newNodePair1);
 		nodesCreate.push_back(newNodePair2);
-
-
-
-
 
 	}
 	std::cout<<"NODES CREE EN DOUBLE :"<<std::endl;

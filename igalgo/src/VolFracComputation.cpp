@@ -65,9 +65,10 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 //		}
 //	}
 
-	/*if(!valid_input) {
+	if(!valid_input) {
 		throw gmds::GMDSException(msg);
-	}*/
+	}
+
 
 	for(auto tri_id: AImprintMesh->faces()) {
 		gmds::Face tri = AImprintMesh->get<Face>(tri_id);
@@ -85,6 +86,7 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 		r2d_poly_faces_from_verts(planes,  vertices, numverts);
 
 		for(auto f_id: AMesh->faces()) {
+
 			gmds::Face f = AMesh->get<Face>(f_id);
 
 			std::vector<gmds::Node> n_quad = f.get<gmds::Node>();
@@ -130,9 +132,11 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 			r2d_reduce(&poly, om, POLY_ORDER);
 
 			double vf = AVolFrac->value(f_id);
-//			std::cout<<"f_id "<<f_id<<" volsurf "<<volsurf<<" vf "<<vf<<" om "<<om[0]/volsurf<<std::endl;
+			//std::cout<<"AVANT MAJ \n"<<"f_id "<<f_id<<" volsurf "<<volsurf<<" vf "<<vf<<" om "<<om[0]/volsurf<<std::endl;
 			// add but do not forget to divide by cell area
-			AVolFrac->set(f_id, vf + om[0]/volsurf);
+			AVolFrac->set(f_id, vf+om[0]/volsurf);
+			double vfN = AVolFrac->value(f_id);
+			//std::cout<<"APRES MAJ \n"<<"f_id "<<f_id<<" volsurf "<<volsurf<<" vfN "<<vfN<<" om "<<om[0]/volsurf<<std::endl;
 		}
 	}
 }
