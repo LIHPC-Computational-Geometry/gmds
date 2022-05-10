@@ -34,14 +34,6 @@ void testVolFrac()
 		}
 	}
 
-
-	for(auto faceID: blockSet.m_mesh.faces())
-	{
-		blockSet.editCorner(faceID, false, "y", -3);
-		blockSet.editCorner(faceID, true, "x", 2);
-	}
-
-
 	AMesh.newVariable<double, GMDS_FACE>("volFrac");
 	volfraccomputation_2d(&AMesh, &AImprintMesh, AMesh.getVariable<double, GMDS_FACE>("volFrac"));
 	std::cout << "The function has been called successfully" << "\n";
@@ -52,6 +44,13 @@ void testVolFrac()
 		std::cout << "IoU n°" << i << " : " << res->value(i) << "\n";
 	}
 
+	for(auto faceID: blockSet.m_mesh.faces())
+	{
+		blockSet.editCorner(faceID, false, "y", -3);
+		blockSet.editCorner(faceID, true, "x", 2);
+	}
+
+	volfraccomputation_2d(&AMesh, &AImprintMesh, AMesh.getVariable<double, GMDS_FACE>("volFrac"));
 
 	blockSet.saveMesh("MyBlockSet");
 }
