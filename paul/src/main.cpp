@@ -76,11 +76,11 @@ int main(){
 
 
 
-
+/*
 	gmds::MeshDoctor doc_imprint(&mImprint);
 	doc_imprint.updateUpwardConnectivity();
 	doc_imprint.buildBoundaryCells();
-
+*/
 	Mesh mGridAround(MeshModel (DIM2|F|N|F2N|N2F));
 	IGMeshIOService ioServiceRead2(&mGridAround);
 	VTKReader vtkReader2(&ioServiceRead2);
@@ -143,7 +143,7 @@ int main(){
 
 	//=======================================================================================================================
 
-	toolsB.getBoundaryNodes(&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(52),&mImprint);
 
 	gmds::IGMeshIOService ioService_write(&mGridAround);
 	gmds::VTKWriter vtkWriterGba(&ioService_write);

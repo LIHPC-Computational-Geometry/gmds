@@ -735,16 +735,17 @@ std::vector<int> Tools::getAllNodesSameWay(Node i1, Node i2)
 	return listNodes;
 }
 
-std::vector<Node> Tools::getBoundaryNodes(const gmds::Mesh *AMesh)
+std::map<TCellID ,TCellID> Tools::getBoundaryNodes(Mesh *AMesh)
 {
-	gmds::MeshDoctor doc_imprint((Mesh *) &AMesh);
+
+	gmds::MeshDoctor doc_imprint(AMesh);
 	doc_imprint.updateUpwardConnectivity();
 	doc_imprint.buildBoundaryCells();
 	std::vector<Node> listBoundaryNodes={};
 
 	Mesh boundaryMesh(MeshModel (DIM2|E|N|N2E|E2N));
 
-	BoundaryExtractor2D boundary_extractor((Mesh *) &AMesh,&boundaryMesh);
+	BoundaryExtractor2D boundary_extractor(AMesh,&boundaryMesh);
 	std::map<TCellID ,TCellID > aNodeMap;
 	std::map<TCellID ,TCellID > aEdgeMap;
 	std::map<TCellID ,TCellID > aNodeMapInv;
@@ -752,17 +753,14 @@ std::vector<Node> Tools::getBoundaryNodes(const gmds::Mesh *AMesh)
 	boundary_extractor.setMappings(&aNodeMap,&aEdgeMap,&aNodeMapInv,&aEdgeMapInv);
 	boundary_extractor.execute();
 
-	std::cout<<"$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
-	if(aNodeMap.empty()){
-		std::cout<<"LA MAP EST VIDE"<<std::endl;
-	}
-	for (auto n : aNodeMap){
-		std::cout<<"N First : "<<n.first<< " " << "N Second : "<<n.second<<std::endl;
+	return aNodeMap;
+}
 
-	}
-
-
-	return listBoundaryNodes;
+double Tools::calcRangePoints(Node node1, Node node2)
+{
+	double range = 0;
+	range = sqrt(pow(node1.X()-node2.X(),2)+pow(node1.Z()-node2.Z(),2)+pow(node1.Y()-node2.Y(),2));
+	return range;
 }
 
 //========================================================================================

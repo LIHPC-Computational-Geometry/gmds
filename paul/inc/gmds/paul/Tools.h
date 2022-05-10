@@ -246,7 +246,14 @@ class Tools{
 	 */
 	bool checkVertical(Node i1, Node i2 );
 
-	std::vector<Node> getBoundaryNodes (const gmds::Mesh *AMesh);
+	/** get all boundary nodes for a mesh
+	 *
+	 * @param AMesh the mesh
+	 * @return map nodes
+	 */
+	std::map<TCellID ,TCellID> getBoundaryNodes (Mesh *AMesh);
+
+	double calcRangePoints(Node node1, Node node2);
 
 	gmds::GridBuilderAround g_grid;
 

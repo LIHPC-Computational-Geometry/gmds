@@ -19,7 +19,30 @@ void Actions::executeCutEdge(Node firstNodeID, Node secondNodeID)
 	}
 }
 
-void Actions::executeGlideNode(gmds::Node nodeID)
+void Actions::executeGlideNode(Node node, Mesh *AMesh)
 {
+	auto boundaryNodes = tool.getBoundaryNodes(AMesh);
+	double range = NULL;
+	double newX;
+	double newY;
+	double newZ;
+	for (auto n : boundaryNodes){
+		double newRange = tool.calcRangePoints(node,AMesh->get<Node>(n.first));
+		if (range==NULL){
+			range = newRange;
+			newX=AMesh->get<Node>(n.first).X();
+			newY=AMesh->get<Node>(n.first).Y();
+			newZ=AMesh->get<Node>(n.first).Z();
+		}
+		else if (newRange < range){
+			range = newRange;
+			newX=AMesh->get<Node>(n.first).X();
+			newY=AMesh->get<Node>(n.first).Y();
+			newZ=AMesh->get<Node>(n.first).Z();
+		}
+	}
 
+	node.X()=newX;
+	node.Y()=newY;
+	node.Z()=newZ;
 }

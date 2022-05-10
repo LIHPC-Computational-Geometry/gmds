@@ -29,7 +29,7 @@ namespace gmds {
 	    */
 	   void executeCutEdge(Node firstNodeID,Node secondNodeID);
 
-	   void executeGlideNode(gmds::Node node);
+	   void executeGlideNode(Node node,Mesh *AMesh);
 
 	   gmds::GridBuilderAround g_grid;
 	   gmds::Tools tool;
