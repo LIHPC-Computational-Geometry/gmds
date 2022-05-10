@@ -8,6 +8,7 @@
 #include "gmds/ig/Mesh.h"
 #include "gmds/igalgo/BoundaryExtractor2D.h"
 #include "GMDSIgAlgo_export.h"
+#include "gmds/igalgo/VolFracComputation.h"
 /*----------------------------------------------------------------------------*/
 
 namespace gmds {
@@ -50,6 +51,7 @@ namespace gmds {
 
 	   /* add variable activate -> Face*/
 	   Variable<int> *activate = m_mesh.newVariable<int,GMDS_FACE>("activate");
+	   Variable<double>* volFrac = m_mesh.newVariable<double,GMDS_FACE>("volFrac");
 
 	   /** Grid dimension*/
 	   TInt m_dim;

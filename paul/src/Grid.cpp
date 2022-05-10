@@ -70,6 +70,7 @@ void GridBuilderAround::executeGrid2D(const gmds::TInt ANb) {
 	std::cout<<"Ymin : "<<Ymin<<std::endl;
 	std::cout<<"range X : "<<rangeX<<std::endl;
 	std::cout<<"range Y : "<<rangeY<<std::endl;
+
 	m_mesh.clear();
 	if (m_dim == 2){
 		gridBuild2D(ANb, rangeX, ANb, rangeY,Xmin,Ymin);
@@ -116,7 +117,6 @@ void GridBuilderAround::gridBuild2D(const gmds::TInt AXNb, const gmds::TCoord AX
 			activate->set(f.id(),1); //attribution val aux faces
 		}
 	}
-
 }
 
 int GridBuilderAround::getActivate(gmds::Face AFace) {

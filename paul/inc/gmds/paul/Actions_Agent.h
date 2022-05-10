@@ -11,7 +11,7 @@
 /*----------------------------------------------------------------------------*/
 
 namespace gmds {
-	// Action Delete Face (swap value activate variable)
+
 	class Actions
    {
 	 public:

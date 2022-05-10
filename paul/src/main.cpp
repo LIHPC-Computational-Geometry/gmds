@@ -10,6 +10,7 @@
 #include "gmds/igalgo/VolFracComputation.h"
 #include "gmds/paul/Actions_Agent.h"
 #include "gmds/paul/Tools.h"
+#include "gmds/paul/Environment.h"
 
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKWriter.h"
@@ -95,7 +96,7 @@ int main(){
 
 
 	MeshDoctor doc(&mGridAround);
-	Variable<double>* volFrac = mGridAround.newVariable<double,GMDS_FACE>("volFrac");
+	//Variable<double>* volFrac = mGridAround.newVariable<double,GMDS_FACE>("volFrac");
 
 
 
@@ -116,8 +117,20 @@ int main(){
 	actionb.executeCutEdge(mGridAround.get<Node>(72),mGridAround.get<Node>(2));
 	actionb.executeCutEdge(mGridAround.get<Node>(2),mGridAround.get<Node>(56));
 
-	volfraccomputation_2d(&mGridAround,&mImprint,volFrac);
+	volfraccomputation_2d(&mGridAround,&mImprint,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
 
+	actionb.executeDeleteFace(15);
+	actionb.executeDeleteFace(11);
+	actionb.executeDeleteFace(42);
+	actionb.executeDeleteFace(43);
+	actionb.executeDeleteFace(28);
+	actionb.executeDeleteFace(29);
+	actionb.executeDeleteFace(10);
+
+	Environment environment(&gridAround,&mImprint);
+
+	environment.localIoU(mGridAround.get<Face>(34));
+	//0.745944
 
 
 	//+===================================== TEST BOUNDARY EXTRACTOR =======================================
