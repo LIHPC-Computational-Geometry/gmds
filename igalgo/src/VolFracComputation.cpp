@@ -42,6 +42,7 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 	// check mesh orientation
 	// TODO
 	for(auto f_id: AMesh->faces()) {
+		AVolFrac->set(f_id, 0);
 		gmds::Face f = AMesh->get<Face>(f_id);
 		std::vector<gmds::Node> n = f.get<gmds::Node>();
 
