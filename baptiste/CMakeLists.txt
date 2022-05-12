@@ -4,7 +4,8 @@
 # Nommer tout en GMDS_MODULE_NAME, GMDS_SRC, ... dans les composants
 set(GMDS_LIB ${LIB_GMDS_BAPTISTE})
 set(GMDS_LIB_PREFIX gmds/baptiste)
-
+message(STATUS "${GMDS_LIB_PREFIX}")
+message(STATUS "${LIB_GMDS_BAPTISTE}")
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/baptiste/RLBlockSet.h
@@ -54,3 +55,23 @@ endif(WITH_TEST)
 add_executable(Baptiste src/main.cpp)
 target_link_libraries(Baptiste PRIVATE ${GMDS_LIB})
 target_compile_features(Baptiste PUBLIC cxx_std_14)
+
+add_subdirectory(pybind11)
+
+pybind11_add_module(environment src/wrapper.cpp src/RLBlockSet.cpp)
+target_link_libraries(environment PUBLIC
+        ${LIB_GMDS_IG}
+        ${LIB_GMDS_IO}
+        ${LIB_GMDS_IG_ALGO}
+        ${LIB_GMDS_BAPTISTE}
+        )
+
+target_compile_features(environment PUBLIC cxx_std_14)
+
+
+
+install(TARGETS environment
+        COMPONENT python
+        LIBRARY DESTINATION .#"${PYTHON_LIBRARY_DIR}"
+        )
+
