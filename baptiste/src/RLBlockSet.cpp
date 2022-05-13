@@ -13,6 +13,9 @@ using namespace gmds;
 RLBlockSet::RLBlockSet(MeshModel model)
 	:m_mesh(model) {}
 
+RLBlockSet::RLBlockSet()
+  :m_mesh(MeshModel(DIM3|F|N|F2N|N2F)) {}
+
 RLBlockSet::~RLBlockSet()
 {}
 

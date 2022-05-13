@@ -17,6 +17,8 @@ class RLBlockSet
 
 	RLBlockSet(MeshModel model);
 
+	RLBlockSet();
+
 	virtual ~RLBlockSet();
 
 	gmds::Mesh m_mesh;

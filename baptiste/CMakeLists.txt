@@ -68,8 +68,6 @@ target_link_libraries(environment PUBLIC
 
 target_compile_features(environment PUBLIC cxx_std_14)
 
-
-
 install(TARGETS environment
         COMPONENT python
         LIBRARY DESTINATION .#"${PYTHON_LIBRARY_DIR}"
