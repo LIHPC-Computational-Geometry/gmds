@@ -46,6 +46,11 @@ class LIB_GMDS_CLAIRE_API SmoothingPaving_2D
 	 */
 	void UpdateOldCoords();
 	/*-------------------------------------------------------------------*/
+	/** @brief Initialise la map des longueurs idéales ld pour les noeuds
+	 * du front
+	 */
+	void InitializeMapLd();
+	/*-------------------------------------------------------------------*/
 	/** @brief Lisse les noeuds du front
 	 */
 	void FrontNodeSmoothing();
@@ -60,6 +65,11 @@ class LIB_GMDS_CLAIRE_API SmoothingPaving_2D
 	 */
 	math::Vector3d ComputeDb(TCellID n_id);
 	/*-------------------------------------------------------------------*/
+	/** @brief Calcule Delta c
+	 		*  @param[in] n_id noeud du front concerné
+	 */
+	math::Vector3d ComputeDc(TCellID n_id);
+	/*-------------------------------------------------------------------*/
 
  private:
 	/** mesh we work on */
@@ -68,6 +78,8 @@ class LIB_GMDS_CLAIRE_API SmoothingPaving_2D
 	Front m_Front;
 	/** Ancienne coordonnées */
 	std::map<TCellID,math::Point> m_map_old_coords;
+	/** Map des tailles suivant "y" */
+	std::map<TCellID,double> m_map_ld;
 	/** Marque les noeuds du front */
 	int m_markFrontNodes;
 
