@@ -19,7 +19,7 @@ class RLBlockSet
 
 	RLBlockSet();
 
-	virtual ~RLBlockSet();
+	~RLBlockSet();
 
 	gmds::Mesh m_mesh;
 	double xSize;

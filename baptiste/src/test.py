@@ -17,3 +17,26 @@ ar = blockSet.LinearSpacedArray(0, 5, 6)
 
 print(type(ar))
 print(ar)
+def main():
+	double xMin = 0
+	double yMin = 0
+	double xMax = 9
+	double yMax = 9
+	blockSet.setFrame(xMin, yMin, xMax, yMax)
+
+	nbFaces = blockSet.countBlocks()
+	print("Number of blocks : " + nbFaces + "\n")
+
+	for faceID in blockSet.m_mesh.faces():
+		print(faceID + "\n")
+		if faceID > 4:
+			blockSet.deleteBlock(faceID)
+			print("Face " + faceID + " deleted" + "\n")
+
+	nbFaces = blockSet.countBlocks();
+	print("Number of blocks : " + nbFaces + "\n")
+
+	for faceID in blockSet.m_mesh.faces():
+		blockSet.editCorner(faceID, False, "y", -3)
+
+	blockSet.saveMesh("MyBlockSetPython");
