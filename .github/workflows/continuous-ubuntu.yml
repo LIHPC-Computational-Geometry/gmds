@@ -41,6 +41,8 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+      # CMAKE_INSTALL_PREFIX is specified here because of issue 20565 where CMAKE_INSTALL_LIBDIR
+      # does not seem to be re-evaluated during the call to cmake --install
       run: >
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.config }} 
         -DWITH_CODE_COVERAGE=ON
@@ -48,6 +50,7 @@ jobs:
         -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/kokkos"
         -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib 
         -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
+        -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/buildinstall
 
     - name: Build
       # Use a bash shell so we can use the same syntax for environment variable
@@ -72,5 +75,17 @@ jobs:
         fi
 
     - name: Install
-      run: make install
+      run: |
+        if ${{ matrix.config == 'Release'}}; then
+            cmake --install build --prefix ${{github.workspace}}/buildinstall --config Release
+        else
+            cmake --install build --prefix ${{github.workspace}}/buildinstall --config Debug
+        fi
 
+    - name: Test lib install
+      run: |
+        cmake -E make_directory ${{github.workspace}}/user_exe_build
+        cd ${{github.workspace}}/user_exe_build/
+        cmake -DCMAKE_PREFIX_PATH="${{github.workspace}}/buildinstall" ${{github.workspace}}/docs/example
+        make
+        ./examplegmds
