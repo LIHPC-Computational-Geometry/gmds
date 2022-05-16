@@ -29,9 +29,15 @@ SmoothingPaving_2D::execute()
 
 	InitializeMapLd();
 
-	FrontNodeSmoothing();
+	// Lissage des noeuds du front
 	//FrontNodeSmoothing();
 	//FrontNodeSmoothing();
+	//FrontNodeSmoothing();
+	//FrontNodeSmoothing();
+	//FrontNodeSmoothing();
+
+	// Lissage des noeuds intérieurs au front
+	//InteriorNodeSmoothing();
 
 	m_mesh->unmarkAll<Node>(m_markFrontNodes);
 	m_mesh->freeMark<Node>(m_markFrontNodes);
@@ -42,7 +48,8 @@ SmoothingPaving_2D::execute()
 
 
 /*------------------------------------------------------------------------*/
-void SmoothingPaving_2D::UpdateOldCoords()
+void
+SmoothingPaving_2D::UpdateOldCoords()
 {
 	for (auto n_id:m_mesh->nodes())
 	{
@@ -54,7 +61,8 @@ void SmoothingPaving_2D::UpdateOldCoords()
 
 
 /*------------------------------------------------------------------------*/
-void SmoothingPaving_2D::InitializeMapLd()
+void
+SmoothingPaving_2D::InitializeMapLd()
 {
 	std::vector<TCellID> nodes_id = m_Front.getNodes();
 
@@ -90,13 +98,15 @@ SmoothingPaving_2D::FrontNodeSmoothing()
 	{
 		Node n = m_mesh->get<Node>(n_id);
 		std::vector<Face> adj_faces = n.get<Face>();
-		if (adj_faces.size()!=2) {
+
+		if (adj_faces.size()!=2)
+		{
 			math::Vector3d Da = ComputeDa(n_id);
 			Node n = m_mesh->get<Node>(n_id);
 			n.setPoint(n.point() + Da);
 		}
 
-		else
+		if (adj_faces.size()==2)
 		{
 			math::Vector3d Db = ComputeDb(n_id);
 			math::Vector3d Dc = ComputeDc(n_id);
@@ -105,6 +115,7 @@ SmoothingPaving_2D::FrontNodeSmoothing()
 		}
 
 	}
+
 }
 /*------------------------------------------------------------------------*/
 
@@ -128,7 +139,8 @@ SmoothingPaving_2D::ComputeDa(TCellID n_id)
 			{
 				Vip = Vip + m_map_old_coords[n.id()];
 			}
-			else if (n.id() != n_id)
+			else if ( (n.id() != n_id)
+			         && (math::Utils::CommonEdge(m_mesh, n.id(), n_id) == NullID) )
 			{
 				Vip = Vip - m_map_old_coords[n.id()];
 			}
@@ -166,12 +178,13 @@ SmoothingPaving_2D::ComputeDb(TCellID n_id)
 	math::Vector3d Da = ComputeDa(n_id);
 	math::Vector3d Vi = m_map_old_coords[n.id()];
 	math::Vector3d Vj = m_map_old_coords[nj.id()];
-	double la = Da.norm();
-	//double ld = (Vi-Vj).norm() ;
+	math::Vector3d Vip = Vi+Da;
+	double la = (Vip-Vj).norm();
 	double ld = m_map_ld[n_id] ;
 
 	math::Vector3d Db;
 	Db = Vj-Vi + (Da+Vi-Vj)*(ld/la);
+
 	return Db;
 
 }
@@ -198,9 +211,9 @@ SmoothingPaving_2D::ComputeDc(TCellID n_id)
 		}
 	}
 
-	math::Vector3d Pi = n.point()-nj.point() ;
-	math::Vector3d Pim1 = m_map_old_coords[ni_adj[0].id()] - nj.point() ;
-	math::Vector3d Pip1 = m_map_old_coords[ni_adj[1].id()] - nj.point() ;
+	math::Vector3d Pi = n.point()-m_map_old_coords[nj.id()] ;
+	math::Vector3d Pim1 = m_map_old_coords[ni_adj[0].id()] - m_map_old_coords[nj.id()] ;
+	math::Vector3d Pip1 = m_map_old_coords[ni_adj[1].id()] - m_map_old_coords[nj.id()] ;
 	math::Vector3d Pb1 = Pim1 + Pip1 ;
 
 	// Calcul de la direction
@@ -209,13 +222,21 @@ SmoothingPaving_2D::ComputeDc(TCellID n_id)
 
 	// Calcul de la norme
 	math::Point Q;
-	math::Line L1(nj.point(),nj.point() + Pb1);
-	math::Line L2(m_map_old_coords[ni_adj[0].id()],m_map_old_coords[ni_adj[2].id()]);
+	math::Line L1(m_map_old_coords[nj.id()],m_map_old_coords[nj.id()] + Pb2);
+	math::Line L2(m_map_old_coords[ni_adj[0].id()],m_map_old_coords[ni_adj[1].id()]);
 	double param;
 	L1.intersect2D(L2, Q, param);
-	math::Vector3d QNj = Q - nj.point() ;
-	math::Vector3d NiNj = nj.point() - n.point();
-	//double ld = NiNj.norm() ;
+	math::Vector3d QNj = Q - m_map_old_coords[nj.id()] ;
+	/*
+	std::cout << "------------" << std::endl;
+	std::cout << "n id : " << n_id << std::endl;
+	std::cout << "param : " << param << std::endl;
+	std::cout << "Q : " << Q << std::endl;
+	std::cout << "Pb1 : " << Pb1 << std::endl;
+	std::cout << "Autre vecteur : " << m_map_old_coords[ni_adj[1].id()] - m_map_old_coords[ni_adj[0].id()] << std::endl;
+	std::cout << "QNj : " << QNj << std::endl;
+	 */
+
 	double ld = m_map_ld[n_id] ;
 	double lq = QNj.norm() ;
 
@@ -231,6 +252,54 @@ SmoothingPaving_2D::ComputeDc(TCellID n_id)
 	math::Vector3d Dc = Pb2-Pi;
 
 	return Dc;
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void
+SmoothingPaving_2D::InteriorNodeSmoothing()
+{
+	UpdateOldCoords();
+
+	std::vector<TCellID> front_nodes = m_Front.getNodes();
+	Variable<int> * var_couche = m_mesh->getVariable<int,GMDS_NODE>("GMDS_Couche_Id");
+
+	Node n_front = m_mesh->get<Node>(front_nodes[0]);
+	int id_front = n_front.id() ;
+
+	for (auto n_id:m_mesh->nodes())
+	{
+		Node n = m_mesh->get<Node>(n_id);
+		std::vector<Node> adj_nodes = math::Utils::AdjacentNodes(m_mesh, n);
+		int couche_n = var_couche->value(n.id());
+
+		if (couche_n != 0 && couche_n != id_front && couche_n != 1) {
+
+			math::Vector3d Di_num(0,0,0);
+			double Di_denom(0);
+
+			for (auto n_adj : adj_nodes) {
+				math::Vector3d Vj = n_adj.point() - n.point();
+				math::Vector3d Cj = Vj;
+				int couche = var_couche->value(n_adj.id());
+
+				if (couche == id_front) {
+					math::Vector3d Dc = ComputeDc(n_id);
+					Cj = Cj + Dc;
+				}
+
+				double Cj_norm = Cj.norm();
+				Di_num = Di_num + Cj_norm*Cj;
+				Di_denom = Di_denom + Cj_norm;
+
+			}
+
+			n.setPoint(n.point() + Di_num/Di_denom );
+
+		}
+	}
 
 }
 /*------------------------------------------------------------------------*/

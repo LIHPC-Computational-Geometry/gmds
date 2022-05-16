@@ -70,6 +70,10 @@ class LIB_GMDS_CLAIRE_API SmoothingPaving_2D
 	 */
 	math::Vector3d ComputeDc(TCellID n_id);
 	/*-------------------------------------------------------------------*/
+	/** @brief Lisse les noeuds internes (tous sauf paroi et front)
+	 */
+	void InteriorNodeSmoothing();
+	/*-------------------------------------------------------------------*/
 
  private:
 	/** mesh we work on */
