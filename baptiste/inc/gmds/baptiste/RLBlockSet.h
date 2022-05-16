@@ -19,6 +19,8 @@ class RLBlockSet
 
 	RLBlockSet();
 
+	//RLBlockSet(RLBlockSet& original);
+
 	~RLBlockSet();
 
 	gmds::Mesh m_mesh;
@@ -26,6 +28,15 @@ class RLBlockSet
 	double ySize;
 
 	std::vector<double> LinearSpacedArray(double a, double b, std::size_t N);
+
+	std::vector<int> getAllFaces(){
+		std::vector<int> v;
+		for (int faceID : m_mesh.faces())
+		{
+			v.push_back(faceID);
+		}
+		return v;
+	};
 
 	void setFrame(double xMin, double yMin, double xMax, double yMax, int nX = 3, int nY = 3);
 

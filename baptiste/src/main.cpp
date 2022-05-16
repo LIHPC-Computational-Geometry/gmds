@@ -54,6 +54,19 @@ void testVolFrac()
 
 	blockSet.saveMesh("MyBlockSet");
 }
+/*
+void virtualExpert(RLBlockSet blockSet, Mesh targetShape, int nMax)
+{
+	RLBlockSet* test = new RLBlockSet*blockSet);
+	for (int step=0; step<nMax; step++)
+	{
+		for(int faceID: blockSet.m_mesh.faces())
+		{
+			blockSet.editCorner(faceID, false, "y", -3);
+		}
+	}
+}
+ */
 
 int main()
 {

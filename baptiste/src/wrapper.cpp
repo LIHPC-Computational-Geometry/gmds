@@ -21,7 +21,9 @@ PYBIND11_MODULE(environment, m)
 		.def("deleteBlock", &gmds::RLBlockSet::deleteBlock)
 		.def("editCorner", &gmds::RLBlockSet::editCorner)
 	   .def("saveMesh", &gmds::RLBlockSet::saveMesh)
-	   .def("setFromFile", &gmds::RLBlockSet::setFromFile);
+	   .def("setFromFile", &gmds::RLBlockSet::setFromFile)
+	   .def("getAllFaces", &gmds::RLBlockSet::getAllFaces)
+	   ;
 
 	py::class_<gmds::MeshModel>(m, "MeshModel")
 	   .def(py::init<const int &>());
@@ -41,4 +43,6 @@ PYBIND11_MODULE(environment, m)
 	py::class_<gmds::FaceContainer>(m, "FaceContainer")
 	   .def("__iter__", [](gmds::FaceContainer &s) { return py::make_iterator(s.begin(), s.end()); },
 	      py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */);
+
+	py::class_<gmds::Face>(m, "Face");
  }
