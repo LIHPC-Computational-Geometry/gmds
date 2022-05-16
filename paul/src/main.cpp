@@ -124,7 +124,47 @@ int main(){
 	actionb.executeGlideNode(mGridAround.get<Node>(83),&mImprint);
 	actionb.executeGlideNode(mGridAround.get<Node>(52),&mImprint);
 	actionb.executeGlideNode(mGridAround.get<Node>(11),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(27),&mImprint);
+
+	//trou
 	actionb.executeGlideNode(mGridAround.get<Node>(75),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(95),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(111),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(94),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(123),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(93),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(58),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(102),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(125),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(103),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(113),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(104),&mImprint);
+
+	//Supp face
+	actionb.executeDeleteFace(0);
+	actionb.executeDeleteFace(96);
+	actionb.executeDeleteFace(8);
+	actionb.executeDeleteFace(89);
+	actionb.executeDeleteFace(80);
+	actionb.executeDeleteFace(40);
+	actionb.executeDeleteFace(81);
+	actionb.executeDeleteFace(97																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																				);
+	actionb.executeDeleteFace(0);
+	actionb.executeDeleteFace(0);
+	actionb.executeDeleteFace(0);
+	actionb.executeDeleteFace(0);
+	actionb.executeDeleteFace(0);
+	actionb.executeDeleteFace(0);
+	actionb.executeDeleteFace(0);
+	actionb.executeDeleteFace(0);
+	actionb.executeDeleteFace(0);
+	actionb.executeDeleteFace(0);
+	actionb.executeDeleteFace(0);
+	actionb.executeDeleteFace(0);
+	actionb.executeDeleteFace(0);
+	actionb.executeDeleteFace(0);
+
+
 
 
 	volfraccomputation_2d(&mGridAround,&mImprint,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));

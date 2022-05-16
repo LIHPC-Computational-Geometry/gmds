@@ -4,7 +4,6 @@
 # Nommer tout en GMDS_MODULE_NAME, GMDS_SRC, ... dans les composants
 set(GMDS_LIB ${LIB_GMDS_PAUL})
 set(GMDS_LIB_PREFIX gmds/paul)
-
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/paul/Grid.h
