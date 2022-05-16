@@ -11,32 +11,37 @@ print("Current working directory: {0}".format(os.getcwd()))
 
 from environment import RLBlockSet
 
-blockSet = RLBlockSet()
-
-ar = blockSet.LinearSpacedArray(0, 5, 6)
-
-print(type(ar))
-print(ar)
 def main():
-	double xMin = 0
-	double yMin = 0
-	double xMax = 9
-	double yMax = 9
-	blockSet.setFrame(xMin, yMin, xMax, yMax)
+	blockSet = RLBlockSet()
+	xMin = 0.
+	yMin = 0.
+	xMax = 9.
+	yMax = 9.
+	blockSet.setFrame(xMin, yMin, xMax, yMax, 3, 3)
 
 	nbFaces = blockSet.countBlocks()
-	print("Number of blocks : " + nbFaces + "\n")
+	print("Number of blocks : " + str(nbFaces) + "\n")
+	print(blockSet.getAllFaces())
+	
+	# ^----- Attention double free or corruption vérifier
+	
+	for faceID in list(blockSet.getAllFaces()):
 
-	for faceID in blockSet.m_mesh.faces():
-		print(faceID + "\n")
+		print(str(faceID) + "\n")
 		if faceID > 4:
 			blockSet.deleteBlock(faceID)
-			print("Face " + faceID + " deleted" + "\n")
+			print("Face " + str(faceID) + " deleted" + "\n")
 
 	nbFaces = blockSet.countBlocks();
-	print("Number of blocks : " + nbFaces + "\n")
+	print("Number of blocks : " + str(nbFaces) + "\n")
 
-	for faceID in blockSet.m_mesh.faces():
+
+	for faceID in blockSet.getAllFaces():
 		blockSet.editCorner(faceID, False, "y", -3)
 
-	blockSet.saveMesh("MyBlockSetPython");
+
+	print("Corner editing done")
+	blockSet.saveMesh("MyBlockSetPython2")
+	print("Figure saved")
+
+main()
