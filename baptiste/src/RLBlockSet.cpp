@@ -6,6 +6,7 @@
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKWriter.h"
 #include <gmds/io/VTKReader.h>
+#include "gmds/baptiste/tools.h"
 
 using namespace gmds;
 
@@ -19,19 +20,6 @@ RLBlockSet::RLBlockSet()
 RLBlockSet::~RLBlockSet()
 {}
 
-
-std::vector<double> RLBlockSet::LinearSpacedArray(double a, double b, std::size_t N)
-{
-	double h = (b - a) / static_cast<double>(N);
-	std::vector<double> v(N+1);
-	std::vector<double>::iterator x;
-	double val;
-	for (x = v.begin(), val = a; x != v.end(); ++x, val += h)
-	{
-		*x = val;
-	}
-	return v;
-}
 
 void RLBlockSet::setFrame(double xMin, double yMin, double xMax, double yMax, int nX, int nY)
 {

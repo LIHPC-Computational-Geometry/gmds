@@ -3,6 +3,7 @@
 #include <pybind11/functional.h>
 #include <pybind11/chrono.h>
 #include "gmds/baptiste/RLBlockSet.h"
+#include "gmds/baptiste/tools.h"
 #include <pybind11/embed.h>
 
 namespace py = pybind11;
@@ -15,7 +16,6 @@ PYBIND11_MODULE(environment, m)
 	   .def_readwrite("m_mesh", &gmds::RLBlockSet::m_mesh)
 	   .def_readwrite("xSize", &gmds::RLBlockSet::xSize)
 	   .def_readwrite("ySize", &gmds::RLBlockSet::ySize)
-	   .def("LinearSpacedArray", &gmds::RLBlockSet::LinearSpacedArray)
 		.def("setFrame", &gmds::RLBlockSet::setFrame)
 		.def("countBlocks", &gmds::RLBlockSet::countBlocks)
 		.def("deleteBlock", &gmds::RLBlockSet::deleteBlock)

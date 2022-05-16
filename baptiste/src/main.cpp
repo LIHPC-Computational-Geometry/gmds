@@ -72,12 +72,12 @@ int main()
 {
 	std::cout << "Hello World" << "\n";
 
-	// RLBlockSet blockSet(MeshModel(DIM3|F|N|F2N|N2F));
+	RLBlockSet blockSet(MeshModel(DIM3|F|N|F2N|N2F));
 	// blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk");
 
-	testVolFrac();
+	//testVolFrac();
 
-	/*
+
 	double xMin = 0;
 	double yMin = 0;
 	double xMax = 9;
@@ -104,7 +104,7 @@ int main()
 	{
 		blockSet.editCorner(faceID, false, "y", -3);
 	}
-	*/
+
 
 	// blockSet.saveMesh("MyBlockSet");
 	return 0;
