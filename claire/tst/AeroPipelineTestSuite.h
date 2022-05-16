@@ -27,10 +27,10 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	// le temps de mettre en place un fichier .ini
 	params_aero.dim=ParamsAero::DIM_2D;
 	std::string dir(TEST_SAMPLES_DIR);
-	params_aero.input_file=dir+"/Aero/2D/RAMCII_2D_0.1.vtk";
+	params_aero.input_file=dir+"/Aero/2D/Stardust_2D_0.1.vtk";
 	params_aero.output_file="AeroPipeline2D_Quad.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
-	params_aero.nbrMinBloc=40;
+	params_aero.nbrMinBloc=10;
 
 	// Limites physiques à partir desquelles on n'autorise
 	// pas l'insertion et la fusion de blocs

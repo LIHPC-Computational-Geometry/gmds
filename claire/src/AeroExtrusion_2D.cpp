@@ -39,6 +39,7 @@ AeroExtrusion_2D::execute()
 	/*
 	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.75,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	/*
 	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 1,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	                             */
@@ -238,8 +239,9 @@ AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, dou
 	Front Front_OUT;
 	Front_OUT.initializeFromLayerId(m_meshQ, Front_IN.getFrontID()+1);
 
-	SmoothingPaving_2D smoother(m_meshQ, Front_OUT);
-	smoother.execute();
+	// Lissage de la couche
+	//SmoothingPaving_2D smoother(m_meshQ, Front_OUT);
+	//smoother.execute();
 
 	return Front_OUT;
 }
