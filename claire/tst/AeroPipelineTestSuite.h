@@ -34,7 +34,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 
 	// Limites physiques à partir desquelles on n'autorise
 	// pas l'insertion et la fusion de blocs
-	params_aero.x_lim=-10000;
+	params_aero.x_lim=0;
 	params_aero.y_lim=-10000;
 	params_aero.z_lim=-10000;
 

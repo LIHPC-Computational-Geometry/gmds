@@ -6,6 +6,7 @@
 #include <gmds/claire/Utils.h>
 #include <gmds/claire/AeroPipeline_2D.h>
 #include <gmds/claire/AeroBoundaries_2D.h>
+#include <gmds/claire/LevelSetExtended.h>
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/claire/AdvectedPointRK4_2D.h>
@@ -70,6 +71,42 @@ AeroPipeline_2D::execute(){
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
+
+
+   Variable<double> * var_d_int = m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	Variable<double> * var_d_comb = m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance");
+	double d_max_amont(0.0);
+	for (auto n_id:m_meshTet->nodes()){
+		Node n = m_meshTet->get<Node>(n_id);
+		math::Point p = n.point();
+		if ( p.X() < m_params.x_lim && d_max_amont < var_d_int->value(n_id) ) {
+         d_max_amont = var_d_int->value(n_id);
+		}
+	}
+
+	int m_mark_z1 = m_meshTet->newMark<Node>();
+	for (auto n_id:m_meshTet->nodes()){
+		if ( var_d_int->value(n_id) > d_max_amont || abs(var_d_comb->value(n_id)-1.0) < pow(10,-6) )
+		{
+			Node n = m_meshTet->get<Node>(n_id);
+         m_meshTet->mark(n, m_mark_z1);
+		}
+	}
+
+	//LevelSetExtended ls_test(m_meshTet, m_mark_z1,m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Z1"));
+	//ls_test.execute();
+
+	LevelSetCombined lsCombined2(m_meshTet, m_Bnd->getMarkParoi(), m_mark_z1,
+	                            m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_2"),
+	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	                             m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Z1"));
+	lsCombined2.execute();
+
+	m_meshTet->unmarkAll<Node>(m_mark_z1);
+	m_meshTet->freeMark<Node>(m_mark_z1);
+
+
+
 
 	// Calcul du gradient du champ de Level Set
 	std::cout << "-> Calcul Gradient" << std::endl;
