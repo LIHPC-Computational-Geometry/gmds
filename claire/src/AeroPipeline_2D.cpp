@@ -54,11 +54,6 @@ AeroPipeline_2D::execute(){
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
-	for (auto n_id:m_meshTet->nodes()){
-		Node n = m_meshTet->get<Node>(n_id);
-		std::cout << "Coord Z : " << n.Z() << std::endl;
-	}
-
 	m_manager->initAndLinkFrom2DMesh(m_meshTet, m_linker_TG);
 
 	// Calcul du level set
