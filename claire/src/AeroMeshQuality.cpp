@@ -94,6 +94,29 @@ double AeroMeshQuality::minlenghtedge(Mesh *AMesh, TCellID n0_id, TCellID n1_id,
 /*------------------------------------------------------------------------*/
 
 
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::AspectRatioQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id){
+
+	Node n0 = AMesh->get<Node>(n0_id);
+	Node n1 = AMesh->get<Node>(n1_id);
+	Node n2 = AMesh->get<Node>(n2_id);
+	Node n3 = AMesh->get<Node>(n3_id);
+
+	math::Point p0 = n0.point();
+	math::Point p1 = n1.point();
+	math::Point p2 = n2.point();
+	math::Point p3 = n3.point();
+
+	Vector3d a = p2-p0;
+	Vector3d b = p1-p3;
+
+	return fmin(a.norm(), b.norm())/fmax(a.norm(), b.norm());
+
+}
+/*------------------------------------------------------------------------*/
+
+
+
 /*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/

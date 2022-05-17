@@ -55,6 +55,18 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	 */
 	static double minlenghtedge(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
 	/*------------------------------------------------------------------------*/
+	/** \brief  Aspect Ratio
+         *
+         * \param[in] AMesh the mesh
+         * \param[in] n0_id first node id
+         * \param[in] n1_id second node id
+         * \param[in] n2_id third node id
+         * \param[in] n3_id fourth node id
+         *
+         * \return  the min ratio between two opposite edges (between 0 and 1)
+	 */
+	static double AspectRatioQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
+	/*------------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/
