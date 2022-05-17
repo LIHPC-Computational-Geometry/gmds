@@ -5,6 +5,7 @@
 #include "gmds/baptiste/RLBlockSet.h"
 #include "gmds/baptiste/tools.h"
 #include <pybind11/embed.h>
+#include "gmds/igalgo/VolFracComputation.h"
 
 namespace py = pybind11;
 
@@ -13,6 +14,7 @@ PYBIND11_MODULE(environment, m)
 	py::class_<gmds::RLBlockSet>(m, "RLBlockSet")
 	   .def(py::init<gmds::MeshModel>())
 	   .def(py::init<>())
+	   .def(py::init<int>())
 	   .def_readwrite("m_mesh", &gmds::RLBlockSet::m_mesh)
 	   .def_readwrite("xSize", &gmds::RLBlockSet::xSize)
 	   .def_readwrite("ySize", &gmds::RLBlockSet::ySize)
@@ -23,7 +25,7 @@ PYBIND11_MODULE(environment, m)
 	   .def("saveMesh", &gmds::RLBlockSet::saveMesh)
 	   .def("setFromFile", &gmds::RLBlockSet::setFromFile)
 	   .def("getAllFaces", &gmds::RLBlockSet::getAllFaces)
-	   ;
+	   .def("getReward", &gmds::RLBlockSet::getReward);
 
 	py::class_<gmds::MeshModel>(m, "MeshModel")
 	   .def(py::init<const int &>());
@@ -45,4 +47,18 @@ PYBIND11_MODULE(environment, m)
 	      py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */);
 
 	py::class_<gmds::Face>(m, "Face");
+
+	// m.def("readMesh", &gmds::readMesh);
+
+	//m.def("computeVolFrac", &gmds::computeVolFrac);
+
+	m.def("getVolFrac", &gmds::getVolFrac);
+
+	m.def("volFracComputation2D", &gmds::volfraccomputation_2d);
+
+	py::class_<gmds::Tools>(m, "Tools")
+	   .def(py::init<>())
+	   .def_readwrite("m_mesh", &gmds::Tools::m_mesh)
+	   .def("readMesh", &gmds::Tools::readMesh)
+		.def("computeVolFrac", &gmds::Tools::computeVolFrac);
  }

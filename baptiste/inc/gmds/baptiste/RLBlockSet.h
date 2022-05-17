@@ -19,22 +19,13 @@ class RLBlockSet
 
 	RLBlockSet();
 
-	//RLBlockSet(RLBlockSet& original);
+	RLBlockSet(int dim2);
 
 	~RLBlockSet();
 
 	gmds::Mesh m_mesh;
 	double xSize;
 	double ySize;
-
-	std::vector<int> getAllFaces(){
-		std::vector<int> v;
-		for (int faceID : m_mesh.faces())
-		{
-			v.push_back(faceID);
-		}
-		return v;
-	};
 
 	void setFrame(double xMin, double yMin, double xMax, double yMax, int nX = 3, int nY = 3);
 
@@ -47,6 +38,10 @@ class RLBlockSet
 	void saveMesh(std::string title);
 
 	void setFromFile(std::string filename, int nX = 3, int nY = 3);
+
+	void getReward(Mesh targetMesh);
+
+	std::vector<int> getAllFaces();
 };
 }
 #endif     // GMDS_RL_BLOCK_SET_H

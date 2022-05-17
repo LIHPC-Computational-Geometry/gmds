@@ -7,6 +7,7 @@
 #include "gmds/io/VTKWriter.h"
 #include <gmds/io/VTKReader.h>
 #include "gmds/baptiste/tools.h"
+#include "gmds/igalgo/VolFracComputation.h"
 
 using namespace gmds;
 
@@ -16,6 +17,8 @@ RLBlockSet::RLBlockSet(MeshModel model)
 
 RLBlockSet::RLBlockSet()
   :m_mesh(MeshModel(DIM3|F|N|F2N|N2F)) {}
+
+RLBlockSet::RLBlockSet(int dim2) :m_mesh(MeshModel(DIM2|F|N|F2N|N2F)) {}
 
 RLBlockSet::~RLBlockSet()
 {}
@@ -142,4 +145,20 @@ void RLBlockSet::setFromFile(std::string filename, int nX, int nY)
 		}
 	}
 	setFrame(xMin, yMin, xMax, yMax, nX, nY);
+}
+
+std::vector<int> RLBlockSet::getAllFaces()
+{
+	std::vector<int> v;
+	for (int faceID : m_mesh.faces())
+	{
+		v.push_back(faceID);
+	}
+	return v;
+}
+
+void RLBlockSet::getReward(Mesh targetMesh)
+{
+	m_mesh.newVariable<double, GMDS_FACE>("volFrac");
+	volfraccomputation_2d(&m_mesh, &targetMesh, m_mesh.getVariable<double, GMDS_FACE>("volFrac"));
 }

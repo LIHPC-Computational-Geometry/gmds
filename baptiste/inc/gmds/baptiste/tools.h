@@ -9,5 +9,22 @@
 namespace gmds
 {
 	std::vector<double> LinearSpacedArray(double a, double b, std::size_t N);
+
+   // Mesh readMesh(std::string filename);
+
+
+
+   Variable<double>* getVolFrac(Mesh mesh);
+
+   class Tools
+   {
+	 public:
+	   Tools();
+
+	   Mesh m_mesh;
+	   void readMesh(std::string filename);
+	   void computeVolFrac(Mesh AMesh, Mesh targetMesh);
+   };
+
 }
 #endif     // GMDS_TOOLS_H

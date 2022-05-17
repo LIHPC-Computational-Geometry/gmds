@@ -19,7 +19,9 @@ Mesh readMesh(std::string filename)
 void testVolFrac()
 {
 	Mesh AImprintMesh = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk");
-	RLBlockSet blockSet = RLBlockSet(MeshModel(DIM2|F|N|F2N|N2F));
+	//RLBlockSet blockSet = RLBlockSet(MeshModel(DIM2|F|N|F2N|N2F));
+	RLBlockSet blockSet = RLBlockSet(2);
+	std::cout << "Constructor Ok" << "\n";
 	blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 8, 4);
 	Mesh AMesh = blockSet.m_mesh;
 	std::cout << "The files have been read successfully" << "\n";
@@ -70,12 +72,13 @@ void virtualExpert(RLBlockSet blockSet, Mesh targetShape, int nMax)
 
 int main()
 {
-	std::cout << "Hello World" << "\n";
 
+	std::cout << "Hello World" << "\n";
+	testVolFrac();
+
+	/*
 	RLBlockSet blockSet(MeshModel(DIM3|F|N|F2N|N2F));
 	// blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk");
-
-	//testVolFrac();
 
 
 	double xMin = 0;
@@ -107,5 +110,6 @@ int main()
 
 
 	// blockSet.saveMesh("MyBlockSet");
+	 */
 	return 0;
 }
