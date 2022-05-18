@@ -59,6 +59,8 @@ namespace gmds {
 	     double z_lim;
 	     /** Epaisseur de couche limite */
 	     double delta_cl;
+	     /** Est-ce que le cas est 2D axi ? */
+	     bool AXI_2D;
     };
 /*------------------------------------------------------------------------*/
 }

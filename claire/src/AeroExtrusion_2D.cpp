@@ -42,6 +42,7 @@ AeroExtrusion_2D::execute()
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 
 
+
 	// Test nombres de faces par arête
 	for (auto e_id:m_meshQ->edges()){
 		Edge e = m_meshQ->get<Edge>(e_id);
@@ -237,8 +238,10 @@ AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, dou
 	Front_OUT.initializeFromLayerId(m_meshQ, Front_IN.getFrontID()+1);
 
 	// Lissage de la couche
-	SmoothingPaving_2D smoother(m_meshQ, Front_OUT);
-	smoother.execute();
+	if ( abs(dist_cible - 1.0) > pow(10,-6)) {
+		SmoothingPaving_2D smoother(m_meshQ, Front_OUT);
+		smoother.execute();
+	}
 
 	return Front_OUT;
 }
@@ -293,33 +296,48 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 		}
 
 		// Les tests pour l'INSERSION
-		if(singu_not_found && Front_IN.isMultiplicable(n_id)){
+		if(singu_not_found && Front_IN.isMultiplicable(n_id)) {
 
 			// test angles
-			double angle = math::AeroMeshQuality::angleouverture(m_meshQ, n_id,
-			                                                     Front_IN.getIdealNode(n_id),
-			                                                     neighbors_nodes[0], neighbors_nodes[1]) ;
-			//std::cout << "angle : " << angle << std::endl;
-			if (singu_not_found
-			    && ( angle > 8.0*M_PI/6.0 )){
-				node_id = n_id;
-				type = 1;
-				singu_not_found = false;
+			{
+				double angle = math::AeroMeshQuality::angleouverture(m_meshQ, n_id,
+				                                                     Front_IN.getIdealNode(n_id), neighbors_nodes[0], neighbors_nodes[1]);
+				if (singu_not_found && (angle > 7.0*M_PI/6.0)) {
+					node_id = n_id;
+					type = 1;
+					singu_not_found = false;
+				}
 			}
 
+			// Internal Angle Deviation
 			/*
-			// test premier quad
-			double r1 = math::AeroMeshQuality::oppositeedgeslenghtratio(m_meshQ, n_id, neighbors_nodes[0],
-			                                                     Front_IN.getNextNode(neighbors_nodes[0],n_id),
-			                                                     Front_IN.getNextNode(n_id,neighbors_nodes[0]));
-			// test second quad
-			double r2 = math::AeroMeshQuality::oppositeedgeslenghtratio(m_meshQ, n_id, neighbors_nodes[1],
-			                                                     Front_IN.getNextNode(neighbors_nodes[1],n_id),
-			                                                     Front_IN.getNextNode(n_id,neighbors_nodes[1]));
-			if (singu_not_found && (r1 < 0.3 || r2 < 0.3) ){
-				node_id = n_id;
-				type = 1;
-				singu_not_found = false;
+			{
+			   double iad1 = math::AeroMeshQuality::InternalAngleDeviationQUAD(m_meshQ, n_id, neighbors_nodes[0], Front_IN.getNextNode(neighbors_nodes[0], n_id),
+			                                                                   Front_IN.getNextNode(n_id, neighbors_nodes[0]));
+			   double iad2 = math::AeroMeshQuality::InternalAngleDeviationQUAD(m_meshQ, n_id, neighbors_nodes[1], Front_IN.getNextNode(neighbors_nodes[1], n_id),
+			                                                                   Front_IN.getNextNode(n_id, neighbors_nodes[1]));
+
+			   // std::cout << "angle : " << angle << std::endl;
+			   if (singu_not_found && (iad1 > 40.0 || iad2 > 40.0)) {
+			      node_id = n_id;
+			      type = 1;
+			      singu_not_found = false;
+			   }
+			}
+			*/
+
+			// Aspect Ratio
+			/*
+			{
+				double ar1 = math::AeroMeshQuality::AspectRatioQUAD(m_meshQ, n_id, neighbors_nodes[0], Front_IN.getNextNode(neighbors_nodes[0], n_id),
+																					 Front_IN.getNextNode(n_id, neighbors_nodes[0]));
+				double ar2 = math::AeroMeshQuality::AspectRatioQUAD(m_meshQ, n_id, neighbors_nodes[1], Front_IN.getNextNode(neighbors_nodes[1], n_id),
+																					 Front_IN.getNextNode(n_id, neighbors_nodes[1]));
+				if (singu_not_found && (ar1 < 0.88 && ar2 < 0.88)) {
+					node_id = n_id;
+					type = 1;
+					singu_not_found = false;
+				}
 			}
 			 */
 

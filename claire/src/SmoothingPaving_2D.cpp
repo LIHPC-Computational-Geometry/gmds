@@ -30,13 +30,14 @@ SmoothingPaving_2D::execute()
 	InitializeMapLd();
 
 	// Lissage des noeuds du front
-	//FrontNodeSmoothing();
+	FrontNodeSmoothing();
 	//FrontNodeSmoothing();
 	//FrontNodeSmoothing();
 	//FrontNodeSmoothing();
 	//FrontNodeSmoothing();
 
 	// Lissage des noeuds intérieurs au front
+	//InteriorNodeSmoothing();
 	//InteriorNodeSmoothing();
 
 	m_mesh->unmarkAll<Node>(m_markFrontNodes);
@@ -102,17 +103,17 @@ SmoothingPaving_2D::FrontNodeSmoothing()
 		if (adj_faces.size()!=2)
 		{
 			math::Vector3d Da = ComputeDa(n_id);
-			Node n = m_mesh->get<Node>(n_id);
 			n.setPoint(n.point() + Da);
 		}
 
+		/*
 		if (adj_faces.size()==2)
 		{
 			math::Vector3d Db = ComputeDb(n_id);
 			math::Vector3d Dc = ComputeDc(n_id);
-			Node n = m_mesh->get<Node>(n_id);
 			n.setPoint(n.point() + (Db+Dc)/2.0);
 		}
+		 */
 
 	}
 
@@ -267,7 +268,7 @@ SmoothingPaving_2D::InteriorNodeSmoothing()
 	Variable<int> * var_couche = m_mesh->getVariable<int,GMDS_NODE>("GMDS_Couche_Id");
 
 	Node n_front = m_mesh->get<Node>(front_nodes[0]);
-	int id_front = n_front.id() ;
+	int id_front = var_couche->value(n_front.id() ) ;
 
 	for (auto n_id:m_mesh->nodes())
 	{
@@ -275,12 +276,13 @@ SmoothingPaving_2D::InteriorNodeSmoothing()
 		std::vector<Node> adj_nodes = math::Utils::AdjacentNodes(m_mesh, n);
 		int couche_n = var_couche->value(n.id());
 
-		if (couche_n != 0 && couche_n != id_front && couche_n != 1) {
+		if (couche_n > 1 && couche_n < id_front ) {
 
 			math::Vector3d Di_num(0,0,0);
 			double Di_denom(0);
 
 			for (auto n_adj : adj_nodes) {
+
 				math::Vector3d Vj = n_adj.point() - n.point();
 				math::Vector3d Cj = Vj;
 				int couche = var_couche->value(n_adj.id());
