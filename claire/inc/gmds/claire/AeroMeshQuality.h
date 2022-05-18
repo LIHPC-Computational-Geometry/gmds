@@ -79,6 +79,20 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	 */
 	static double InternalAngleDeviationQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
 	/*------------------------------------------------------------------------*/
+	/** \brief  Equi Angle Skewness
+         *
+         * \param[in] AMesh the mesh
+         * \param[in] n0_id first node id
+         * \param[in] n1_id second node id
+         * \param[in] n2_id third node id
+         * \param[in] n3_id fourth node id
+         *
+         * \return  the min ratio between two opposite edges (between 0 and 1)
+	 */
+	static double EquiAngleSkewnessQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
+	/*------------------------------------------------------------------------*/
+
+
 
 };
 /*----------------------------------------------------------------------------*/

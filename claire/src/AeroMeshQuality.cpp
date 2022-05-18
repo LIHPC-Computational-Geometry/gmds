@@ -110,7 +110,7 @@ double AeroMeshQuality::AspectRatioQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_i
 	Vector3d a = p2-p0;
 	Vector3d b = p1-p3;
 
-	return fmin(a.norm(), b.norm())/fmax(a.norm(), b.norm());
+	return std::min(a.norm(), b.norm())/std::max(a.norm(), b.norm());
 
 }
 /*------------------------------------------------------------------------*/
@@ -144,14 +144,51 @@ double AeroMeshQuality::InternalAngleDeviationQUAD(Mesh *AMesh, TCellID n0_id, T
 	double teta3 = acos(e3.dot(e4)) * 180.0 / M_PI;
 	double teta4 = acos(e4.dot(e1)) * 180.0 / M_PI;
 
-	double teta_min = fmin( fmin(teta1, teta2), fmin(teta3, teta4));
-   double teta_max = fmax( fmax(teta1, teta2), fmax(teta3, teta4));
+	double teta_min = std::min( std::min(teta1, teta2), std::min(teta3, teta4));
+   double teta_max = std::max( std::max(teta1, teta2), std::max(teta3, teta4));
 
-	return fmax( abs(90.0-teta_min), abs(teta_max-90.0) ) ;
+	return std::max( abs(90.0-teta_min), abs(teta_max-90.0) ) ;
 
 }
 /*------------------------------------------------------------------------*/
 
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::EquiAngleSkewnessQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id)
+{
+	Node n0 = AMesh->get<Node>(n0_id);
+	Node n1 = AMesh->get<Node>(n1_id);
+	Node n2 = AMesh->get<Node>(n2_id);
+	Node n3 = AMesh->get<Node>(n3_id);
+
+	math::Point p0 = n0.point();
+	math::Point p1 = n1.point();
+	math::Point p2 = n2.point();
+	math::Point p3 = n3.point();
+
+	Vector3d e1 = p1-p0;
+	Vector3d e2 = p2-p1;
+	Vector3d e3 = p3-p2;
+	Vector3d e4 = p0-p3;
+
+	e1.normalize();
+	e2.normalize();
+	e3.normalize();
+	e4.normalize();
+
+	double teta1 = acos(e1.dot(e2)) * 180.0 / M_PI;
+	double teta2 = acos(e2.dot(e3)) * 180.0 / M_PI;
+	double teta3 = acos(e3.dot(e4)) * 180.0 / M_PI;
+	double teta4 = acos(e4.dot(e1)) * 180.0 / M_PI;
+
+	double Q_min = std::min( std::min(teta1, teta2), std::min(teta3, teta4));
+	double Q_max = std::max( std::max(teta1, teta2), std::max(teta3, teta4));
+	double Q_eq = 90.0;
+
+	return 1.0 - std::max( (Q_max-Q_eq)/(180.0-Q_eq), (Q_eq-Q_min)/Q_eq ) ;
+
+}
+/*------------------------------------------------------------------------*/
 
 
 /*----------------------------------------------------------------------------*/

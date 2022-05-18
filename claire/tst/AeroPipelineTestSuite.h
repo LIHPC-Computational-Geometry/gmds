@@ -38,6 +38,8 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.y_lim=-10000;
 	params_aero.z_lim=-10000;
 
+	params_aero.delta_cl = 0.05 ;
+
 	AeroPipeline_2D algo_aero2D(params_aero);
 	AbstractAeroPipeline::STATUS aero2D_result = algo_aero2D.execute();
 

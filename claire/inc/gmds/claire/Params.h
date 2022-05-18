@@ -57,6 +57,8 @@ namespace gmds {
 	     double y_lim;
 	     /** Limite z amont/aval */
 	     double z_lim;
+	     /** Epaisseur de couche limite */
+	     double delta_cl;
     };
 /*------------------------------------------------------------------------*/
 }
