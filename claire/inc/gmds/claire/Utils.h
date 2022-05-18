@@ -59,6 +59,14 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static std::vector<Node> AdjacentNodes(Mesh* m, Node n);
 	/*----------------------------------------------------------------------------*/
+	/** @brief Analyse la qualité d'un maillage composé de quad.
+	 	*
+		* \param[in] m the mesh
+		*
+		* \return  nothing
+	 */
+	static void AnalyseQuadMeshQuality(Mesh* m);
+	/*----------------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/

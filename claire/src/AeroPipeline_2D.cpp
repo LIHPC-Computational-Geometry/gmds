@@ -173,6 +173,8 @@ AeroPipeline_2D::execute(){
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
+	math::Utils::AnalyseQuadMeshQuality(&m_Blocking2D);
+
 	// Ecriture finale des maillages
 	EcritureMaillage();
 

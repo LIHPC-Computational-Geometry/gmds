@@ -185,7 +185,7 @@ double AeroMeshQuality::EquiAngleSkewnessQUAD(Mesh *AMesh, TCellID n0_id, TCellI
 	double Q_max = std::max( std::max(teta1, teta2), std::max(teta3, teta4));
 	double Q_eq = 90.0;
 
-	return 1.0 - std::max( (Q_max-Q_eq)/(180.0-Q_eq), (Q_eq-Q_min)/Q_eq ) ;
+	return std::max( (Q_max-Q_eq)/(180.0-Q_eq), (Q_eq-Q_min)/Q_eq ) ;
 
 }
 /*------------------------------------------------------------------------*/
