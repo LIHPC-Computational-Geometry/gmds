@@ -239,6 +239,37 @@ double AeroMeshQuality::ConditionQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id,
 
 
 
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::EdgeRatioQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id)
+{
+	Node n0 = AMesh->get<Node>(n0_id);
+	Node n1 = AMesh->get<Node>(n1_id);
+	Node n2 = AMesh->get<Node>(n2_id);
+	Node n3 = AMesh->get<Node>(n3_id);
+
+	math::Point P0 = n0.point();
+	math::Point P1 = n1.point();
+	math::Point P2 = n2.point();
+	math::Point P3 = n3.point();
+
+	Vector3d L0 = P1-P0;
+	Vector3d L1 = P2-P1;
+	Vector3d L2 = P3-P2;
+	Vector3d L3 = P0-P3;
+
+	double l0 = L0.norm() ;
+	double l1 = L1.norm() ;
+	double l2 = L2.norm() ;
+	double l3 = L3.norm() ;
+
+	double Lmax = std::max( std::max(l0, l1), std::max(l2, l3));
+	double Lmin = std::min( std::min(l0, l1), std::min(l2, l3));
+
+	return Lmax/Lmin;
+}
+/*------------------------------------------------------------------------*/
+
+
 /*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/
