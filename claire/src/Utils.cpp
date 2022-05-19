@@ -81,6 +81,7 @@ void Utils::AnalyseQuadMeshQuality(Mesh* m)
 	Variable<double>* var_equi_angle_skewness = m->newVariable<double, GMDS_FACE>("MQ_Equi_Angle_Skewness");
 	Variable<double>* var_condition = m->newVariable<double, GMDS_FACE>("MQ_Condition");
 	Variable<double>* var_edge_ratio = m->newVariable<double, GMDS_FACE>("MQ_EdgeRatio");
+	Variable<double>* var_jacobian = m->newVariable<double, GMDS_FACE>("MQ_Jacobian");
 
 	for (auto f_id:m->faces())
 	{
@@ -92,12 +93,14 @@ void Utils::AnalyseQuadMeshQuality(Mesh* m)
 		double eas = AeroMeshQuality::EquiAngleSkewnessQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
 		double cond = AeroMeshQuality::ConditionQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
 		double er =  AeroMeshQuality::EdgeRatioQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
+		double jac =  AeroMeshQuality::JacobianQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
 
 		var_aspect_ratio->set(f_id, ar);
 		var_int_angle_deviation->set(f_id, iad);
 		var_equi_angle_skewness->set(f_id, eas);
 		var_condition->set(f_id, cond);
 		var_edge_ratio->set(f_id, er);
+		var_jacobian->set(f_id, jac);
 
 	}
 
