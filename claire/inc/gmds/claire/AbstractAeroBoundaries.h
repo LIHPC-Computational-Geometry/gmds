@@ -143,6 +143,8 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	int m_color_Amont;
 	/** Colorie chaque bord d'une couleur != */
 	Variable<int>* m_var_color_bords ;
+	/** Colorie chaque bord d'une couleur != */
+	std::map<TCellID,int> m_map_color_bords;
 	/** Vecteur des id des noeuds de bord */
 	std::vector<TCellID> m_bnd_nodes_ids ;
 	/** Marque les noeuds des bords */

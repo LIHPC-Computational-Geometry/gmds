@@ -99,6 +99,8 @@ std::vector<TCellID> AeroBoundaries_2D::BndNodesOrdered(int color){
 	std::vector<TCellID> bnd_node_ids;
 	bnd_op.getBoundaryNodes(bnd_node_ids);
 
+	std::cout << "Nbr de noeuds sur le bord : " << bnd_node_ids.size() << std::endl;
+
 	int markCurveEdges = m_mesh->newMark<Edge>();
 	int markCurveNodes = m_mesh->newMark<Node>();
 	int markPointNodes = m_mesh->newMark<Node>();
@@ -109,25 +111,25 @@ std::vector<TCellID> AeroBoundaries_2D::BndNodesOrdered(int color){
 
 	m_mesh->unmarkAll<Node>(markAloneNodes);
 	m_mesh->freeMark<Node>(markAloneNodes);
+	m_mesh->unmarkAll<Edge>(markCurveEdges);
+	m_mesh->freeMark<Edge>(markCurveEdges);
+	m_mesh->unmarkAll<Node>(markCurveNodes);
+	m_mesh->freeMark<Node>(markCurveNodes);
 
 	TCellID n0_id = NullID ; // Choix du noeud de départ
 
 	// STRATEGIE 1 : On récuère un noeud de ce bord qui est sur un sommet
 	for(auto n_it = m_mesh->nodes_begin(); n_it!= m_mesh->nodes_end() && (n0_id == NullID);++n_it){
 		TCellID n_id = *n_it;
-		//std::cout << "Test 1 : " << n_id << " " << m_mesh->isMarked<Node>(n_id, m_markFrontNodesParoi) << std::endl;
-		if ( m_mesh->isMarked<Node>(n_id, m_markNodesParoi) &&
-		    m_var_color_bords->value(n_id) == color &&
+		std::cout << "--------------" << std::endl;
+		std::cout << "couleur du bord : " << m_var_color_bords->value(n_id) << std::endl;
+		//if ( m_mesh->isMarked<Node>(n_id, m_markNodesParoi) &&
+		if ( m_var_color_bords->value(n_id) == color &&
 		    m_mesh->isMarked<Node>(n_id, markPointNodes) ){
 			n0_id = n_id;
+			std::cout << "Trouvé " << n0_id << std::endl;
 		}
 	}
-
-	m_mesh->unmarkAll<Edge>(markCurveEdges);
-	m_mesh->freeMark<Edge>(markCurveEdges);
-
-	m_mesh->unmarkAll<Node>(markCurveNodes);
-	m_mesh->freeMark<Node>(markCurveNodes);
 
 	m_mesh->unmarkAll<Node>(markPointNodes);
 	m_mesh->freeMark<Node>(markPointNodes);
@@ -135,7 +137,7 @@ std::vector<TCellID> AeroBoundaries_2D::BndNodesOrdered(int color){
 	// STRATEGIE 2 : On prend le point d'arrêt, positionné au x_min.
 	// Attention, plusieurs noeuds peuvent être au x_min. Cette méthode
 	// en retourne un au hasard.
-	n0_id = PointArret(color);
+	//n0_id = PointArret(color);
 
 	// STRATEGIE 3 : On sélectionne un noeud au hasard
 	/*
@@ -214,5 +216,31 @@ double AeroBoundaries_2D::ComputeBoundaryLength(int color){
 	length += v.norm();
 
 	return length;
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+std::vector<TCellID> AeroBoundaries_2D::BndEdges(int color)
+{
+	std::vector<TCellID> edges_id;
+
+	for (auto n_id:m_mesh->nodes())
+	{
+		m_map_color_bords[n_id] = m_var_color_bords->value(n_id);
+	}
+
+	for (auto e_id:m_mesh->edges())
+	{
+		Edge e = m_mesh->get<Edge>(e_id);
+		std::vector<Node> nodes = e.get<Node>();
+		if (m_map_color_bords[nodes[0].id()] == color
+		       && m_map_color_bords[nodes[1].id()] == color)
+		{
+			edges_id.push_back(e_id);
+		}
+	}
+
+	return edges_id;
 }
 /*------------------------------------------------------------------------*/

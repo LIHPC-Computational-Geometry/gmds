@@ -33,6 +33,11 @@ class LIB_GMDS_CLAIRE_API AeroBoundaries_2D: public AbstractAeroBoundaries {
 	 */
 	double ComputeBoundaryLength(int color);
 	/*-----------------------------------------------------------------------*/
+	/** @brief Retourne un vecteur des id des arêtes du bord
+	 * correspondant à la couleur color.
+	 */
+	std::vector<TCellID> BndEdges(int color);
+	/*------------------------------------------------------------------------*/
 
  protected:
 	/*-------------------------------------------------------------------*/

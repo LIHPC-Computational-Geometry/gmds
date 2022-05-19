@@ -39,7 +39,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.output_dir="gmds/claire/tst/";
 
 	// Paramètres discrétisation de la paroi
-	params_aero.nbrMinBloc=10;
+	params_aero.nbrMinBloc=20;
 
 	// Paramètres de l'extrusion
 	params_aero.nbr_couches = 3;

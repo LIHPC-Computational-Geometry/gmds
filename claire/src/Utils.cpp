@@ -82,6 +82,10 @@ void Utils::AnalyseQuadMeshQuality(Mesh* m)
 	Variable<double>* var_condition = m->newVariable<double, GMDS_FACE>("MQ_Condition");
 	Variable<double>* var_edge_ratio = m->newVariable<double, GMDS_FACE>("MQ_EdgeRatio");
 	Variable<double>* var_jacobian = m->newVariable<double, GMDS_FACE>("MQ_Jacobian");
+	Variable<double>* var_scaled_jacobian = m->newVariable<double, GMDS_FACE>("MQ_ScaledJacobian");
+	Variable<double>* var_shape = m->newVariable<double, GMDS_FACE>("MQ_Shape");
+	Variable<double>* var_skew = m->newVariable<double, GMDS_FACE>("MQ_Skew");
+	Variable<double>* var_stretch = m->newVariable<double, GMDS_FACE>("MQ_Stretch");
 
 	for (auto f_id:m->faces())
 	{
@@ -92,8 +96,12 @@ void Utils::AnalyseQuadMeshQuality(Mesh* m)
 		double iad = AeroMeshQuality::InternalAngleDeviationQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
 		double eas = AeroMeshQuality::EquiAngleSkewnessQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
 		double cond = AeroMeshQuality::ConditionQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
-		double er =  AeroMeshQuality::EdgeRatioQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
-		double jac =  AeroMeshQuality::JacobianQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
+		double er = AeroMeshQuality::EdgeRatioQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
+		double jac = AeroMeshQuality::JacobianQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
+		double scajac = AeroMeshQuality::ScaledJacobianQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
+		double shape = AeroMeshQuality::ShapeQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
+		double skew = AeroMeshQuality::SkewQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
+		double stretch = AeroMeshQuality::StretchQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
 
 		var_aspect_ratio->set(f_id, ar);
 		var_int_angle_deviation->set(f_id, iad);
@@ -101,6 +109,10 @@ void Utils::AnalyseQuadMeshQuality(Mesh* m)
 		var_condition->set(f_id, cond);
 		var_edge_ratio->set(f_id, er);
 		var_jacobian->set(f_id, jac);
+		var_scaled_jacobian->set(f_id, scajac);
+		var_shape->set(f_id, shape);
+		var_skew->set(f_id, skew);
+		var_stretch->set(f_id, stretch);
 
 	}
 

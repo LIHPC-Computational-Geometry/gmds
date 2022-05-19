@@ -223,7 +223,7 @@ double AeroMeshQuality::ConditionQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id,
 	Vector3d X2 = (P2-P1) + (P3-P0) ;
 
 	Vector3d Nc = X1.cross(X2) ;
-	Vector3d nc = Nc.normalize() ;
+	Vector3d nc = Nc /Nc.norm() ;
 
 	double a0 = nc.dot(N0) ;
 	double a1 = nc.dot(N1) ;
@@ -301,7 +301,7 @@ double AeroMeshQuality::JacobianQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, 
 	Vector3d X2 = (P2-P1) + (P3-P0) ;
 
 	Vector3d Nc = X1.cross(X2) ;
-	Vector3d nc = Nc.normalize() ;
+	Vector3d nc = Nc / Nc.norm() ;
 
 	double a0 = nc.dot(N0) ;
 	double a1 = nc.dot(N1) ;
@@ -312,6 +312,161 @@ double AeroMeshQuality::JacobianQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, 
 }
 /*------------------------------------------------------------------------*/
 
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::ScaledJacobianQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id)
+{
+	Node n0 = AMesh->get<Node>(n0_id);
+	Node n1 = AMesh->get<Node>(n1_id);
+	Node n2 = AMesh->get<Node>(n2_id);
+	Node n3 = AMesh->get<Node>(n3_id);
+
+	math::Point P0 = n0.point();
+	math::Point P1 = n1.point();
+	math::Point P2 = n2.point();
+	math::Point P3 = n3.point();
+
+	Vector3d L0 = P1-P0;
+	Vector3d L1 = P2-P1;
+	Vector3d L2 = P3-P2;
+	Vector3d L3 = P0-P3;
+
+	double l0 = L0.norm() ;
+	double l1 = L1.norm() ;
+	double l2 = L2.norm() ;
+	double l3 = L3.norm() ;
+
+	Vector3d N0 = L3.cross(L0) ;
+	Vector3d N1 = L0.cross(L1) ;
+	Vector3d N2 = L1.cross(L2) ;
+	Vector3d N3 = L2.cross(L3) ;
+
+	Vector3d X1 = (P1-P0) + (P2-P3) ;
+	Vector3d X2 = (P2-P1) + (P3-P0) ;
+
+	Vector3d Nc = X1.cross(X2) ;
+	Vector3d nc = Nc /Nc.norm() ;
+
+	double a0 = nc.dot(N0) ;
+	double a1 = nc.dot(N1) ;
+	double a2 = nc.dot(N2) ;
+	double a3 = nc.dot(N3) ;
+
+	double sj0 = a0/(l0*l3);
+	double sj1 = a1/(l0*l1);
+	double sj2 = a2/(l1*l2);
+	double sj3 = a3/(l2*l3);
+
+	return std::min( std::min(sj0, sj1), std::min(sj2, sj3) );
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::ShapeQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id)
+{
+	Node n0 = AMesh->get<Node>(n0_id);
+	Node n1 = AMesh->get<Node>(n1_id);
+	Node n2 = AMesh->get<Node>(n2_id);
+	Node n3 = AMesh->get<Node>(n3_id);
+
+	math::Point P0 = n0.point();
+	math::Point P1 = n1.point();
+	math::Point P2 = n2.point();
+	math::Point P3 = n3.point();
+
+	Vector3d L0 = P1-P0;
+	Vector3d L1 = P2-P1;
+	Vector3d L2 = P3-P2;
+	Vector3d L3 = P0-P3;
+
+	double l0 = L0.norm() ;
+	double l1 = L1.norm() ;
+	double l2 = L2.norm() ;
+	double l3 = L3.norm() ;
+
+	Vector3d N0 = L3.cross(L0) ;
+	Vector3d N1 = L0.cross(L1) ;
+	Vector3d N2 = L1.cross(L2) ;
+	Vector3d N3 = L2.cross(L3) ;
+
+	Vector3d X1 = (P1-P0) + (P2-P3) ;
+	Vector3d X2 = (P2-P1) + (P3-P0) ;
+
+	Vector3d Nc = X1.cross(X2) ;
+	Vector3d nc = Nc /Nc.norm() ;
+
+	double a0 = nc.dot(N0) ;
+	double a1 = nc.dot(N1) ;
+	double a2 = nc.dot(N2) ;
+	double a3 = nc.dot(N3) ;
+
+	double s0 = a0/(pow(l0,2)+pow(l3,2));
+	double s1 = a1/(pow(l0,2)+pow(l1,2));
+	double s2 = a2/(pow(l1,2)+pow(l2,2));
+	double s3 = a3/(pow(l2,2)+pow(l3,2));
+
+	return 2.0*std::min( std::min(s0, s1), std::min(s2, s3) );
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::SkewQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id)
+{
+	Node n0 = AMesh->get<Node>(n0_id);
+	Node n1 = AMesh->get<Node>(n1_id);
+	Node n2 = AMesh->get<Node>(n2_id);
+	Node n3 = AMesh->get<Node>(n3_id);
+
+	math::Point P0 = n0.point();
+	math::Point P1 = n1.point();
+	math::Point P2 = n2.point();
+	math::Point P3 = n3.point();
+
+	Vector3d X1 = (P1-P0) + (P2-P3) ;
+	Vector3d X2 = (P2-P1) + (P3-P0) ;
+
+	Vector3d x1 = X1 / X1.norm() ;
+	Vector3d x2 = X2 / X2.norm() ;
+
+	return abs(x1.dot(x2));
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::StretchQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id)
+{
+	Node n0 = AMesh->get<Node>(n0_id);
+	Node n1 = AMesh->get<Node>(n1_id);
+	Node n2 = AMesh->get<Node>(n2_id);
+	Node n3 = AMesh->get<Node>(n3_id);
+
+	math::Point P0 = n0.point();
+	math::Point P1 = n1.point();
+	math::Point P2 = n2.point();
+	math::Point P3 = n3.point();
+
+	Vector3d L0 = P1-P0;
+	Vector3d L1 = P2-P1;
+	Vector3d L2 = P3-P2;
+	Vector3d L3 = P0-P3;
+
+	double l0 = L0.norm() ;
+	double l1 = L1.norm() ;
+	double l2 = L2.norm() ;
+	double l3 = L3.norm() ;
+
+	Vector3d D0 = P2-P0;
+	Vector3d D1 = P3-P1;
+
+	double Dmax = std::max(D0.norm(), D1.norm());
+	double lmin = std::min(std::min(l0, l1), std::min(l2, l3));
+
+	return sqrt(2.0)*lmin/Dmax ;
+}
+/*------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
 }  // namespace math

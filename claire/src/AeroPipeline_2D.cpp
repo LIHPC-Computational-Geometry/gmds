@@ -12,6 +12,7 @@
 #include <gmds/claire/AdvectedPointRK4_2D.h>
 #include <gmds/claire/Grid_Smooth2D.h>
 #include <gmds/claire/AeroExtrusion_2D.h>
+#include <gmds/claire/SU2Writer.h>
 
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -255,8 +256,6 @@ AeroPipeline_2D::EcritureMaillage(){
 	vtkWriter2.setCellOptions(gmds::N|gmds::F);
 	vtkWriter2.setDataOptions(gmds::N|gmds::F);
 	vtkWriter2.write("AeroPipeline2D_Triangles.vtk");
-
-
 
 }
 /*------------------------------------------------------------------------*/

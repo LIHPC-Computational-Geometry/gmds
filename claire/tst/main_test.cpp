@@ -11,6 +11,7 @@
 #include "AeroPipelineTestSuite.h"
 #include "AeroBoundariesTestSuite.h"
 #include "UtilsTestSuite.h"
+#include "SU2WriterTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

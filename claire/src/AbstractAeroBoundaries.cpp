@@ -16,7 +16,7 @@ AbstractAeroBoundaries::AbstractAeroBoundaries(Mesh *AMesh) :
 	m_markNodesParoi = m_mesh->newMark<gmds::Node>();
 	m_markNodesAmont = m_mesh->newMark<gmds::Node>();
 	m_markBoundaryNodes = m_mesh->newMark<Node>();
-	m_var_color_bords = m_mesh->newVariable<int, GMDS_NODE>("COLOR_BORDS");
+	m_var_color_bords = m_mesh->getOrCreateVariable<int, GMDS_NODE>("COLOR_BORDS");
 }
 /*------------------------------------------------------------------------*/
 
@@ -32,8 +32,17 @@ AbstractAeroBoundaries::~AbstractAeroBoundaries()
 /*------------------------------------------------------------------------*/
 
 
+/*------------------------------------------------------------------------*/
+AbstractAeroBoundaries::STATUS AbstractAeroBoundaries::execute(){
 
+	MarkBoundariesNodes();
+	ColoriageBordsConnexes();
+	WhichColorIsAmont();
+	MarkAmontAndParoiNodes();
 
+	return AbstractAeroBoundaries::SUCCESS;
+}
+/*------------------------------------------------------------------------*/
 
 
 /*------------------------------------------------------------------------*/
@@ -128,20 +137,6 @@ TCellID AbstractAeroBoundaries::PointArret(int color){
 /*------------------------------------------------------------------------*/
 
 
-
-/*------------------------------------------------------------------------*/
-AbstractAeroBoundaries::STATUS AbstractAeroBoundaries::execute(){
-
-	MarkBoundariesNodes();
-	ColoriageBordsConnexes();
-	WhichColorIsAmont();
-	MarkAmontAndParoiNodes();
-
-	return AbstractAeroBoundaries::SUCCESS;
-}
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 void AbstractAeroBoundaries::ColoriageBordsConnexes(){
 
@@ -214,20 +209,13 @@ void AbstractAeroBoundaries::ColoriageBordsConnexes(){
 /*------------------------------------------------------------------------*/
 void AbstractAeroBoundaries::MarkAmontAndParoiNodes(){
 	// On marque les fronts paroi et extérieur
-	// Variable qui contient la couleur du bord
-	//Variable<int>* var_color_paroi = m_mesh->newVariable<int, GMDS_NODE>("COLOR_PAROI");
 	for (auto n_id:m_bnd_nodes_ids){
 		int couleur = m_var_color_bords->value(n_id);
 		if(couleur == m_color_Amont){
 			m_mesh->mark<Node>(n_id,m_markNodesAmont);
-			//(*var_color_paroi)[n_id] = 1;
 		}
 		else{
 			m_mesh->mark<Node>(n_id,m_markNodesParoi);
-			//Node n = m_mesh->get<Node>(n_id);
-			//math::Point p = n.point();
-			//std::cout << "Coord z : " << p.Z() << std::endl;
-			//(*var_color_paroi)[n_id] = 2;
 		}
 	}
 }

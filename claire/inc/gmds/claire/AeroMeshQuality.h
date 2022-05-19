@@ -113,7 +113,7 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
          * \param[in] n2_id third node id
          * \param[in] n3_id fourth node id
          *
-         * \return  the condition of the quad
+         * \return  the edge ratio of the quad
 	 */
 	static double EdgeRatioQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
 	/*------------------------------------------------------------------------*/
@@ -126,9 +126,61 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
          * \param[in] n2_id third node id
          * \param[in] n3_id fourth node id
          *
-         * \return  the condition of the quad
+         * \return  the jacobian of the quad
 	 */
 	static double JacobianQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
+	/*------------------------------------------------------------------------*/
+	/** \brief  Scaled Jacobian for QUAD (cf The Verdict Geometric Quality Library from SANDIA)
+	 		* Définie entre -1 et 1, une valeur entre 0.3 et 1 est acceptable.
+         *
+         * \param[in] AMesh the mesh
+         * \param[in] n0_id first node id
+         * \param[in] n1_id second node id
+         * \param[in] n2_id third node id
+         * \param[in] n3_id fourth node id
+         *
+         * \return  the scaled jacobian of the quad
+	 */
+	static double ScaledJacobianQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
+	/*------------------------------------------------------------------------*/
+	/** \brief  Shape for QUAD (cf The Verdict Geometric Quality Library from SANDIA)
+	 		* Définie entre 0 et 1, une valeur entre 0.3 et 1 est acceptable.
+         *
+         * \param[in] AMesh the mesh
+         * \param[in] n0_id first node id
+         * \param[in] n1_id second node id
+         * \param[in] n2_id third node id
+         * \param[in] n3_id fourth node id
+         *
+         * \return  the shape of the quad
+	 */
+	static double ShapeQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
+	/*------------------------------------------------------------------------*/
+	/** \brief  Skew for QUAD (cf The Verdict Geometric Quality Library from SANDIA)
+	 		* Définie entre 0 et 1, une valeur entre 0 et 0.5 est acceptable.
+         *
+         * \param[in] AMesh the mesh
+         * \param[in] n0_id first node id
+         * \param[in] n1_id second node id
+         * \param[in] n2_id third node id
+         * \param[in] n3_id fourth node id
+         *
+         * \return  the skew of the quad
+	 */
+	static double SkewQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
+	/*------------------------------------------------------------------------*/
+	/** \brief  Stretch for QUAD (cf The Verdict Geometric Quality Library from SANDIA)
+	 		* Définie entre 0 et 1, une valeur entre 0.25 et 1 est acceptable.
+         *
+         * \param[in] AMesh the mesh
+         * \param[in] n0_id first node id
+         * \param[in] n1_id second node id
+         * \param[in] n2_id third node id
+         * \param[in] n3_id fourth node id
+         *
+         * \return  the stretch of the quad
+	 */
+	static double StretchQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
 	/*------------------------------------------------------------------------*/
 
 
