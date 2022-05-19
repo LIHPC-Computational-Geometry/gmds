@@ -3,6 +3,8 @@
 #include <fstream>
 #include <bitset>
 /*----------------------------------------------------------------------------*/
+#include <gmds/math/Hexahedron.h>
+/*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/io/IGMeshIOService.h>
@@ -65,6 +67,19 @@ int main(int argc, char* argv[])
   simplexMesh.initializeEdgeStructure();
   simplexMesh.buildSimplexHull();
 
+  //initial nb of tet
+  const TInt T_init = simplexMesh.getNbTetra();
+  double T_init_vol = 0.0;
+  const gmds::BitVector& bVec = simplexMesh.getBitVectorTet();
+  for(unsigned int t = 0 ; t < bVec.capacity(); t++)
+  {
+    if(bVec[t] == 1)
+    {
+      double vol = SimplicesCell(&simplexMesh, t).getVolumeOfCell();
+      T_init_vol += vol;
+    }
+  }
+  std::cout << "Volume init -> " << T_init_vol << std::endl;
   Octree oc(&simplexMesh, 50);
   simplexMesh.setOctree(&oc);
   Variable<int>* BND_VERTEX_COLOR  = simplexMesh.getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
@@ -99,9 +114,8 @@ int main(int argc, char* argv[])
   // DElAUNAY INSERTION OF THE POINT DATA
   //==================================================================
   std::cout << "DELAUNAY POINT INSERTION START" << std::endl;
-  std::clock_t start;
-  double duration;
-  start = std::clock();
+  std::clock_t start = std::clock();
+
   for(unsigned int idx = 0 ; idx < nodesToAddIds.capacity() ; idx++)
   {
     if(nodesToAddIds[idx] != 0)
@@ -150,8 +164,8 @@ int main(int argc, char* argv[])
     }
   }
 
-  duration = (std::clock()-start)/(double)CLOCKS_PER_SEC;
-  std::cout << "DELAUNAY INSERTION DONE IN " << duration << std::endl;
+  const std::clock_t durationDI = (std::clock()-start)/(double)CLOCKS_PER_SEC;
+  std::cout << "DELAUNAY INSERTION DONE IN " << durationDI << std::endl;
   std::cout << "  INSERTED NODE -> "  << (double)nodesAdded.size() / (double)nodesToAddIds.size() * 100.0 << "% " << std::endl;
   std::cout << "  NODE NOT INSERTED -> "  << nodesToAddIds.size() - nodesAdded.size() << std::endl;
   std::cout << std::endl;
@@ -197,8 +211,8 @@ int main(int argc, char* argv[])
     }
   }
 
-  duration = (std::clock()-start)/(double)CLOCKS_PER_SEC;
-  std::cout << "EDGES REMOVED DONE IN " << duration << std::endl;
+  const std::clock_t durationER = (std::clock()-start)/(double)CLOCKS_PER_SEC;
+  std::cout << "EDGES REMOVED DONE IN " << durationER << std::endl;
   std::cout << std::endl;
   gmds::VTKWriter vtkWriterER(&ioService);
   vtkWriterER.setCellOptions(gmds::N|gmds::R|gmds::F);
@@ -325,7 +339,7 @@ int main(int argc, char* argv[])
   }
 
   //RESULT DATA
-  duration = (std::clock()-start)/(double)CLOCKS_PER_SEC;
+  const std::clock_t duration = (std::clock()-start)/(double)CLOCKS_PER_SEC;
   std::cout << "HEX GENERATION DONE " << duration << std::endl;
   std::cout << "  hex build % -> " << hexBuiltCpt / (double)nodesHex.size() << std::endl;
   std::cout << "  hexBuiltCpt -> " << hexBuiltCpt << std::endl;
@@ -334,6 +348,65 @@ int main(int argc, char* argv[])
 
   simplexMesh.setHexadronData(hexesNodes);
   simplexMesh.setMarkedTet(markedTet);
+
+  //computing statistics
+  //Tetra out & Hexa out
+  const TInt T_out = markedTet.size();
+  const TInt H_out = hexesNodes.size();
+
+  double H_vol, T_vol, Hex_quality_average, Hex_quality_min = std::numeric_limits<double>::max(), Hex_quality_max = std::numeric_limits<double>::min();
+  // volume of tet & hex
+  for(unsigned int t = 0 ; t < markedTet.capacity(); t++)
+  {
+    if(markedTet[t] == 1)
+    {
+      double vol = SimplicesCell(&simplexMesh, t).getVolumeOfCell();
+      T_vol += std::abs(vol);
+    }
+  }
+
+  for(auto const & h : hexesNodes)
+  {
+    math::Point c0 = SimplicesNode(&simplexMesh, h[0]).getCoords();
+    math::Point c1 = SimplicesNode(&simplexMesh, h[1]).getCoords();
+    math::Point c2 = SimplicesNode(&simplexMesh, h[2]).getCoords();
+    math::Point c3 = SimplicesNode(&simplexMesh, h[3]).getCoords();
+    math::Point c4 = SimplicesNode(&simplexMesh, h[4]).getCoords();
+    math::Point c5 = SimplicesNode(&simplexMesh, h[5]).getCoords();
+    math::Point c6 = SimplicesNode(&simplexMesh, h[6]).getCoords();
+    math::Point c7 = SimplicesNode(&simplexMesh, h[7]).getCoords();
+    gmds::math::Hexahedron hex(c0, c1, c2, c3, c4, c5, c6, c7);
+    double quality = hex.computeNormalizedScaledJacobian();
+    Hex_quality_average += quality;
+    if(Hex_quality_min > quality)
+    {
+      Hex_quality_min = quality;
+    }
+    if(Hex_quality_max < quality)
+    {
+      Hex_quality_max = quality;
+    }
+    double vol = std::abs(hex.getVolume());
+    H_vol += vol;
+  }
+
+  std::cout << std::endl;
+  std::cout << "Duration Delaunay insertion -> " << durationDI << std::endl;
+  std::cout << "Duration edge remove -> " << durationER << std::endl;
+  std::cout << std::endl;
+  std::cout << "T_init -> " << T_init << std::endl;
+  std::cout << "T_out  -> " << T_out << std::endl;
+  std::cout << "hexadron input -> " << nodesHex.size() << std::endl;
+  std::cout << "H_out  -> " << H_out << std::endl;
+  std::cout << "H_out / hexadron input -> " << H_out / (double)nodesHex.size() << " % " << std::endl;
+  std::cout << std::endl;
+  std::cout << "V_tot  -> " << H_vol + T_vol << std::endl;
+  std::cout << "T_vol  -> " << T_vol / (H_vol + T_vol)  << " % " << std::endl;
+  std::cout << "H_vol  -> " << H_vol / (H_vol + T_vol) <<  " % " <<std::endl;
+  std::cout << std::endl;
+  std::cout << "Hex_quality_average  -> " << Hex_quality_average / (double)hexesNodes.size() << std::endl;
+  std::cout << "Hex_quality_min  -> " << Hex_quality_min << std::endl;
+  std::cout << "Hex_quality_max  -> " << Hex_quality_max << std::endl;
 
   gmds::VTKWriter vtkWriterHT(&ioService);
   vtkWriterHT.setCellOptions(gmds::N|gmds::R);
