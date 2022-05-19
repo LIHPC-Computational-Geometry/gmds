@@ -10,9 +10,10 @@
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
-SU2Writer::SU2Writer(Mesh *AMesh, std::string AFileName) {
+SU2Writer::SU2Writer(Mesh *AMesh, std::string AFileName, double Ax_lim_inout) {
 	m_mesh = AMesh;
 	m_filename = AFileName;
+	m_x_lim_inout = Ax_lim_inout;
 }
 
 
@@ -59,7 +60,7 @@ SU2Writer::STATUS SU2Writer::execute()
 			stream << 5 << " " << map_new_id[face_nodes[0].id()] << " " << map_new_id[face_nodes[1].id()] << " " << map_new_id[face_nodes[2].id()] << "\n";
 		}
 		else if (face_nodes.size() == 4){	// QUAD
-			stream << 9 << " " << map_new_id[face_nodes[0].id()] << " " << map_new_id[face_nodes[1].id()] << " " << map_new_id[face_nodes[2].id()] << "\n";
+			stream << 9 << " " << map_new_id[face_nodes[0].id()] << " " << map_new_id[face_nodes[1].id()] << " " << map_new_id[face_nodes[2].id()] << " " << map_new_id[face_nodes[3].id()] << "\n";
 		}
 	}
 
@@ -90,9 +91,40 @@ SU2Writer::STATUS SU2Writer::execute()
 	int color_ext = bnd_2D->getColorAmont();
 	std::vector<TCellID> edges_id_ext = bnd_2D->BndEdges(color_ext);
 
-	stream << "MARKER_TAG= outlet\n";
-	stream << "MARKER_ELEMS= " << edges_id_ext.size() << "\n";
+	std::vector<TCellID> edges_outlet;
 	for (auto e_id:edges_id_ext)
+	{
+		Edge e = m_mesh->get<Edge>(e_id);
+		std::vector<Node> edge_nodes = e.get<Node>();
+		if (edge_nodes[0].X() > m_x_lim_inout
+		    && edge_nodes[1].X() > m_x_lim_inout)
+		{
+			edges_outlet.push_back(e_id);
+		}
+	}
+	stream << "MARKER_TAG= outlet\n";
+	stream << "MARKER_ELEMS= " << edges_outlet.size() << "\n";
+	for (auto e_id:edges_outlet)
+	{
+		Edge e = m_mesh->get<Edge>(e_id);
+		std::vector<Node> edge_nodes = e.get<Node>();
+		stream << 3 << " " << map_new_id[edge_nodes[0].id()] << " " << map_new_id[edge_nodes[1].id()] << "\n";
+	}
+
+	std::vector<TCellID> edges_inlet;
+	for (auto e_id:edges_id_ext)
+	{
+		Edge e = m_mesh->get<Edge>(e_id);
+		std::vector<Node> edge_nodes = e.get<Node>();
+		if (edge_nodes[0].X() <= m_x_lim_inout
+		    || edge_nodes[1].X() <= m_x_lim_inout)
+		{
+			edges_inlet.push_back(e_id);
+		}
+	}
+	stream << "MARKER_TAG= inlet\n";
+	stream << "MARKER_ELEMS= " << edges_inlet.size() << "\n";
+	for (auto e_id:edges_inlet)
 	{
 		Edge e = m_mesh->get<Edge>(e_id);
 		std::vector<Node> edge_nodes = e.get<Node>();

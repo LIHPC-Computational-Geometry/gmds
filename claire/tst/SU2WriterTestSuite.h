@@ -39,7 +39,7 @@ TEST(ClaireTestClass, testSU2Writer)
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
 
-	SU2Writer writer(&m, "Test.su2");
+	SU2Writer writer(&m, "Test.su2", -0.5);
 	SU2Writer::STATUS result = writer.execute();
 
 	ioService = &m;

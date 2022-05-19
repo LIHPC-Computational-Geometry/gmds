@@ -31,9 +31,10 @@ class LIB_GMDS_CLAIRE_API SU2Writer
 	/** @brief Constructor.
          *  @param[in] AMesh the mesh to write
          *  @param[in] AFileName the name of the written file
+         *  @param[in] Ax_lim_inout limit between inlet and outlet
          *
 	 */
-	SU2Writer(Mesh *AMeshT, std::string AFileName);
+	SU2Writer(Mesh *AMeshT, std::string AFileName, double Ax_lim_inout);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -46,6 +47,8 @@ class LIB_GMDS_CLAIRE_API SU2Writer
 	Mesh *m_mesh;
 	/** the name of the written file */
 	std::string m_filename;
+	/** limit between inlet and outlet */
+	double m_x_lim_inout;
 
 };
 /*----------------------------------------------------------------------------*/

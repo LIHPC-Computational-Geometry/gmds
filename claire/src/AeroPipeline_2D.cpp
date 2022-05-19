@@ -257,6 +257,10 @@ AeroPipeline_2D::EcritureMaillage(){
 	vtkWriter2.setDataOptions(gmds::N|gmds::F);
 	vtkWriter2.write("AeroPipeline2D_Triangles.vtk");
 
+	// Ecriture du blocking au format su2
+	SU2Writer writer(m_meshHex, "AeroPipeline2D_Quad.su2", m_params.x_lim);
+	SU2Writer::STATUS result = writer.execute();
+
 }
 /*------------------------------------------------------------------------*/
 
