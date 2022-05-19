@@ -31,26 +31,24 @@ AeroExtrusion_2D::execute()
 
 	Front Current_Front = Compute1stLayer(m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), m_params_aero.delta_cl,
 	                m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-
-	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.25,
+	/*
+	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_2"), 0.25,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.5,
+	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_2"), 0.5,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 0.75,
+	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_2"), 0.75,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), 1,
+	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_2"), 1,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	                             */
 
+	double pas_couche = 1.0/m_params_aero.nbr_couches ;
 
-
-	// Test nombres de faces par arête
-	for (auto e_id:m_meshQ->edges()){
-		Edge e = m_meshQ->get<Edge>(e_id);
-		std::vector<Face> faces = e.get<Face>();
-		if (faces.size() < 1 || faces.size() > 2)
-		{
-			std::cout << "Edge ID :" << e_id << "NOMBRE DE FACES : " << faces.size() << std::endl;
-		}
+	for (int i=2; i <= m_params_aero.nbr_couches; i++)
+	{
+		Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_3"), i*pas_couche,
+	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+		std::cout << "distance : " << i*pas_couche << std::endl;
 	}
 
 	return AeroExtrusion_2D::SUCCESS;
@@ -83,6 +81,8 @@ std::map<TCellID, TCellID>
 /*------------------------------------------------------------------------*/
 Front
 AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors){
+
+	std::cout << "--------- couche " << 1 << std::endl;
 
 	Front Front_Paroi;
 	Front_Paroi.setFrontID(0);
@@ -359,17 +359,31 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id,
 
 	// Contruction du premier noeud n1
 	Node n_neighbor = m_meshQ->get<Node>(neighbors_nodes[0]);
-	math::Point P1_construction = n.point() + 0.33*(n_neighbor.point()-n.point()) ;
-	AdvectedPointRK4_2D advpoint_n1(m_meshT, P1_construction, dist_cible, A_distance, A_vectors);
-	advpoint_n1.execute();
-	Node n1 = m_meshQ->newNode(advpoint_n1.getPend());
+	//math::Point P1_construction = n.point() + 0.33*(n_neighbor.point()-n.point()) ;
+	//AdvectedPointRK4_2D advpoint_n1(m_meshT, P1_construction, dist_cible, A_distance, A_vectors);
+	//advpoint_n1.execute();
+	//Node n1 = m_meshQ->newNode(advpoint_n1.getPend());
+	TCellID n_next_ideal_id = Front_IN.getIdealNode(n_id);
+	TCellID n_next_id = Front_IN.getNextNode(neighbors_nodes[0],n_id);
+	Node n_next_ideal = m_meshQ->get<Node>(n_next_ideal_id) ;
+	Node n_next = m_meshQ->get<Node>(n_next_id) ;
+	math::Point P1_construction = 0.33*(n_next.point()-n_next_ideal.point()) ;
+	Node n1 = m_meshQ->newNode(n_next_ideal.point() + P1_construction);
 
 	// Contruction du premier noeud n2
 	n_neighbor = m_meshQ->get<Node>(neighbors_nodes[1]);
+	/*
 	P1_construction = n.point() + 0.33*(n_neighbor.point()-n.point()) ;
 	AdvectedPointRK4_2D advpoint_n2(m_meshT, P1_construction, dist_cible, A_distance, A_vectors);
 	advpoint_n2.execute();
 	Node n2 = m_meshQ->newNode(advpoint_n2.getPend());
+	 */
+	n_next_ideal_id = Front_IN.getIdealNode(n_id);
+	n_next_id = Front_IN.getNextNode(neighbors_nodes[1],n_id);
+	n_next_ideal = m_meshQ->get<Node>(n_next_ideal_id) ;
+	n_next = m_meshQ->get<Node>(n_next_id) ;
+	P1_construction = 0.33*(n_next.point()-n_next_ideal.point()) ;
+	Node n2 = m_meshQ->newNode(n_next_ideal.point() + P1_construction);
 
 	// Création du quad
 	TCellID n0_id = Front_IN.getIdealNode(n_id);

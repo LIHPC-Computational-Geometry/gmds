@@ -76,9 +76,10 @@ std::vector<Node> Utils::AdjacentNodes(Mesh* m, Node n){
 /*------------------------------------------------------------------------*/
 void Utils::AnalyseQuadMeshQuality(Mesh* m)
 {
-	Variable<double>* var_aspect_ratio = m->newVariable<double, GMDS_FACE>("Aspect_Ratio");
-	Variable<double>* var_int_angle_deviation = m->newVariable<double, GMDS_FACE>("Internal_Angle_Deviation");
-	Variable<double>* var_equi_angle_skewness = m->newVariable<double, GMDS_FACE>("Equi_Angle_Skewness");
+	Variable<double>* var_aspect_ratio = m->newVariable<double, GMDS_FACE>("MQ_Aspect_Ratio");
+	Variable<double>* var_int_angle_deviation = m->newVariable<double, GMDS_FACE>("MQ_Internal_Angle_Deviation");
+	Variable<double>* var_equi_angle_skewness = m->newVariable<double, GMDS_FACE>("MQ_Equi_Angle_Skewness");
+	Variable<double>* var_condition = m->newVariable<double, GMDS_FACE>("MQ_Condition");
 
 	for (auto f_id:m->faces())
 	{
@@ -88,10 +89,12 @@ void Utils::AnalyseQuadMeshQuality(Mesh* m)
 		double ar = AeroMeshQuality::AspectRatioQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
 		double iad = AeroMeshQuality::InternalAngleDeviationQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
 		double eas = AeroMeshQuality::EquiAngleSkewnessQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
+		double cond = AeroMeshQuality::ConditionQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
 
 		var_aspect_ratio->set(f_id, ar);
 		var_int_angle_deviation->set(f_id, iad);
 		var_equi_angle_skewness->set(f_id, eas);
+		var_condition->set(f_id, cond);
 
 	}
 

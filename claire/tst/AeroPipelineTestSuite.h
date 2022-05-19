@@ -25,24 +25,28 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 
 	// Définition en dur des paramètres pour l'aéro
 	// le temps de mettre en place un fichier .ini
+
+	// Paramètres de dimension
 	params_aero.dim=ParamsAero::DIM_2D;
+
+	// Paramètres 2D Axi (PAS IMPLéMENTé)
+	params_aero.AXI_2D = false;
+
+	// Paramètres d'entrée/sortie
 	std::string dir(TEST_SAMPLES_DIR);
 	params_aero.input_file=dir+"/Aero/2D/C13_2D_0.1.vtk";
 	params_aero.output_file="AeroPipeline2D_Quad.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
+
+	// Paramètres discrétisation de la paroi
 	params_aero.nbrMinBloc=10;
 
-	// Limites physiques à partir desquelles on n'autorise
-	// pas l'insertion et la fusion de blocs
-	params_aero.x_lim=0;
-	params_aero.y_lim=-10000;
-	params_aero.z_lim=-10000;
-
-	// Paramètres couche limite
-	params_aero.delta_cl = 0.05 ;
-
-	// Paramètres 2D Axi
-	params_aero.AXI_2D = false;
+	// Paramètres de l'extrusion
+	params_aero.nbr_couches = 3;
+	params_aero.delta_cl = 0.05 ;	// Epaisseur de la première couche
+	params_aero.x_lim=0;				// Limites physiques à partir desquelles
+	params_aero.y_lim=-10000;		// l'insertion et la fusion de blocs
+	params_aero.z_lim=-10000;		// sont autorisées
 
 	AeroPipeline_2D algo_aero2D(params_aero);
 	AbstractAeroPipeline::STATUS aero2D_result = algo_aero2D.execute();

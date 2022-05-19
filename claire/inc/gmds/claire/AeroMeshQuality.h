@@ -91,7 +91,19 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	 */
 	static double EquiAngleSkewnessQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
 	/*------------------------------------------------------------------------*/
-
+	/** \brief  Condition for QUAD (cf The Verdict Geometric Quality Library from SANDIA)
+	 		* Définie entre 1 et double_max, une valeur entre 1 et 4 est acceptable.
+         *
+         * \param[in] AMesh the mesh
+         * \param[in] n0_id first node id
+         * \param[in] n1_id second node id
+         * \param[in] n2_id third node id
+         * \param[in] n3_id fourth node id
+         *
+         * \return  the condition of the quad
+	 */
+	static double ConditionQUAD(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
+	/*------------------------------------------------------------------------*/
 
 
 };

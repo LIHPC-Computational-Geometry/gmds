@@ -102,6 +102,30 @@ AeroPipeline_2D::execute(){
 	                             m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Z1"));
 	lsCombined2.execute();
 
+	Variable<double> * var_d_comb_2 = m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_2");
+	Variable<double> * var_d_comb_3 = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_3");
+
+	for (auto n_id:m_meshTet->nodes())
+	{
+		var_d_comb_3->set(n_id, var_d_comb_2->value(n_id));
+	}
+
+	for (auto f_id:m_meshTet->faces())
+	{
+		Face f = m_meshTet->get<Face>(f_id);
+		std::vector<Node> nodes = f.get<Node>();
+
+		if ( abs( var_d_comb_2->value(nodes[0].id()) - 1.0) < pow(10,-6)
+		    && abs( var_d_comb_2->value(nodes[1].id()) - 1.0) < pow(10,-6)
+		    && abs( var_d_comb_2->value(nodes[2].id()) - 1.0) < pow(10,-6) )
+		{
+			var_d_comb_3->set(nodes[0].id(), 1.1);
+			var_d_comb_3->set(nodes[1].id(), 1.1);
+			var_d_comb_3->set(nodes[2].id(), 1.1);
+		}
+
+	}
+
 	m_meshTet->unmarkAll<Node>(m_mark_z1);
 	m_meshTet->freeMark<Node>(m_mark_z1);
 
@@ -267,12 +291,6 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 	double Lmax = perim/ m_params.nbrMinBloc ;
 	double l(0);
 
-	// Calcul de la valeur min de x sur les noeuds du bord
-	//TCellID n_arret_tri_id = m_Bnd->PointArret(color);
-	//Node n_arret_tri = m_meshTet->get<Node>(n_arret_tri_id) ;
-	//math::Point point_arret = n_arret_tri.point();
-	//double x_min = point_arret.X() ;
-
 	Node n0_tri = m_meshTet->get<Node>(bnd_nodes_id_ordered[0]) ;
 	Node n0_quad = m_meshHex->newNode(n0_tri.point()); // Premier noeud du nouveau maillage
 
@@ -305,15 +323,14 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 		}
 
 
-
 		if ( m_meshTet->isMarked<Node>(bnd_nodes_id_ordered[i], markPointNodes)
 		    || l >= Lmax
 		    || abs(l-Lmax) <= pow(10,-6)
-		    //|| abs(p.X() - x_min) <= pow(10,-6)
 		    || isExtremum ){
 
 			n1_quad = n2_quad;
 			n2_quad = m_meshHex->newNode(n.point());
+
 			UpdateLinker(m_linker_TG, n, m_linker_HG, n2_quad);
 			Edge e = m_meshHex->newEdge(n1_quad, n2_quad);
 
@@ -335,6 +352,48 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 
 	m_meshTet->unmarkAll<Node>(markPointNodes);
 	m_meshTet->freeMark<Node>(markPointNodes);
+
+	// Classification géométrique des arêtes de la paroi
+
+	for (auto e_id:m_meshHex->edges())
+	{
+		Edge e = m_meshHex->get<Edge>(e_id);
+		std::vector<Node> nodes = e.get<Node>();
+
+		int geom_id_node_0 = m_linker_HG->getGeomId<Node>(nodes[0].id()) ;
+		int geom_id_node_1 = m_linker_HG->getGeomId<Node>(nodes[1].id()) ;
+		int dim_node_0 = m_linker_HG->getGeomDim<Node>(nodes[0].id()) ;
+		int dim_node_1 = m_linker_HG->getGeomDim<Node>(nodes[1].id());
+
+		if (dim_node_0 == 2)
+		{
+			m_linker_HG->linkNodeToCurve(e_id, geom_id_node_0);
+		}
+		else if (dim_node_1 == 2)
+		{
+			m_linker_HG->linkNodeToCurve(e_id, geom_id_node_1);
+		}
+		else if (dim_node_0 == 1 && dim_node_1 == 1)
+		{
+			cad::GeomPoint* PG_0 = m_manager->getPoint(geom_id_node_0);
+			cad::GeomPoint* PG_1 = m_manager->getPoint(geom_id_node_1);
+			//cad::GeomCurve* Curve = PG_0.co ;
+			std::vector<cad::GeomCurve*> PG_0_Curves = PG_0->curves() ;
+			std::vector<cad::GeomCurve*> PG_1_Curves = PG_1->curves() ;
+			if (PG_0_Curves[0]->id() == PG_1_Curves[0]->id()
+			    || PG_0_Curves[0]->id() == PG_1_Curves[1]->id() )
+			{
+				m_linker_HG->linkNodeToCurve(e_id, PG_0_Curves[0]->id());
+			}
+			else if (PG_0_Curves[1]->id() == PG_1_Curves[0]->id()
+			         || PG_0_Curves[1]->id() == PG_1_Curves[1]->id() )
+			{
+				m_linker_HG->linkNodeToCurve(e_id, PG_0_Curves[1]->id());
+			}
+
+		}
+
+	}
 
 }
 /*------------------------------------------------------------------------*/

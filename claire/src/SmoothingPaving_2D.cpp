@@ -30,7 +30,7 @@ SmoothingPaving_2D::execute()
 	InitializeMapLd();
 
 	// Lissage des noeuds du front
-	FrontNodeSmoothing();
+	//FrontNodeSmoothing();
 	//FrontNodeSmoothing();
 	//FrontNodeSmoothing();
 	//FrontNodeSmoothing();

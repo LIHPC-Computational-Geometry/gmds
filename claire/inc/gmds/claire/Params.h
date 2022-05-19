@@ -61,6 +61,8 @@ namespace gmds {
 	     double delta_cl;
 	     /** Est-ce que le cas est 2D axi ? */
 	     bool AXI_2D;
+	     /** Nombre de couches lors de l'extrusion */
+	     int nbr_couches;
     };
 /*------------------------------------------------------------------------*/
 }
