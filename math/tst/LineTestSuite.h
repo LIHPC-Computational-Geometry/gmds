@@ -76,5 +76,33 @@ TEST(MathTest,Line) {
 		std::cout << "Param : " << param << std::endl;
 	}
 
+	{
+		// Test 3
+		std::cout << "-----------" << std::endl;
+		std::cout << "TEST 3" << std::endl;
+		std::cout << "-----------" << std::endl;
+		math::Point p1(-1, 0, 0);
+		math::Vector3d v1(1, 0, 0);
+		math::Point p2(0, -3, 0);
+		math::Vector3d v2(0, 1, 0);
+
+		bool intersect;
+		math::Point Pint;
+		double param;
+
+		math::Line L1(p1, v1);
+		math::Line L2(p2, v2);
+
+		intersect = L2.intersect2D(L1, Pint, param);
+		std::cout << "Intersection : " << intersect << std::endl;
+		std::cout << "Point : " << Pint << std::endl;
+		std::cout << "Param : " << param << std::endl;
+
+		intersect = L1.intersect2D(L2, Pint, param);
+		std::cout << "Intersection : " << intersect << std::endl;
+		std::cout << "Point : " << Pint << std::endl;
+		std::cout << "Param : " << param << std::endl;
+	}
+
 	EXPECT_EQ(1,1);
 }
