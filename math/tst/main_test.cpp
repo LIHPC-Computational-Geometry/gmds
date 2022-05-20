@@ -12,6 +12,7 @@
 #include <QuaternionTestSuite.h>
 #include <OrientationTestSuite.h>
 #include <TransfiniteInterpolationTestSuite.h>
+#include <LineTestSuite.h>
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

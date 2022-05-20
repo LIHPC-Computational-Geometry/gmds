@@ -8,7 +8,7 @@ add_executable(GMDS_MATH_TEST
         QuaternionTestSuite.h
         OrientationTestSuite.h
         TransfiniteInterpolationTestSuite.h
-        main_test.cpp)
+        main_test.cpp LineTestSuite.h)
 
 target_link_libraries(GMDS_MATH_TEST PUBLIC
         ${GMDS_LIB}
