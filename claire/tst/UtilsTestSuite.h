@@ -2,6 +2,7 @@
 // Created by rochec on 22/03/2022.
 //
 
+#include <gmds/math/Line.h>
 #include <gmds/claire/Utils.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -154,5 +155,84 @@ TEST(UtilsTestClass, Utils_Test3)
 	writer_geom.setCellOptions(N|F);
 	writer_geom.setDataOptions(N|F);
 	writer_geom.write("Utils_Test3.vtk");
+
+}
+
+
+TEST(ClaireTestClass, Utils_AdjacentNodes)
+{
+	// Test
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir + "/Aero/Poubelle/Carre.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N | gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	TCellID n_id = 1;
+	Node n = m.get<Node>(n_id);
+	std::vector<Node> adj_nodes = math::Utils::AdjacentNodes(&m, n);
+	ASSERT_EQ(adj_nodes.size(),3);
+	ASSERT_EQ(adj_nodes[0].id(),11);
+	ASSERT_EQ(adj_nodes[1].id(),91);
+	ASSERT_EQ(adj_nodes[2].id(),10);
+
+	n_id = 4;
+	n = m.get<Node>(n_id);
+	adj_nodes = math::Utils::AdjacentNodes(&m, n);
+	ASSERT_EQ(adj_nodes.size(),4);
+	ASSERT_EQ(adj_nodes[0].id(),5);
+	ASSERT_EQ(adj_nodes[1].id(),79);
+	ASSERT_EQ(adj_nodes[2].id(),0);
+	ASSERT_EQ(adj_nodes[3].id(),90);
+
+	n_id = 92;
+	n = m.get<Node>(n_id);
+	adj_nodes = math::Utils::AdjacentNodes(&m, n);
+	ASSERT_EQ(adj_nodes.size(), 6);
+	ASSERT_EQ(adj_nodes[0].id(), 69);
+	ASSERT_EQ(adj_nodes[1].id(), 70);
+	ASSERT_EQ(adj_nodes[2].id(), 71);
+	ASSERT_EQ(adj_nodes[3].id(), 50);
+	ASSERT_EQ(adj_nodes[4].id(), 86);
+	ASSERT_EQ(adj_nodes[5].id(), 84);
+	//std::cout << adj_nodes[5].id() << std::endl;
+
+	/*
+	math::Point p1(0.0, 0.0);
+	math::Point p2(1.0, 0.0);
+
+	math::Vector3d v1(1,0);
+
+	math::Point p3(-1.0, -3.0);
+	math::Point p4(-1.0, -2.0);
+
+	math::Vector3d v2(0,1);
+
+	math::Line L1(p1, p2);
+	math::Line L2(p3, p4);
+
+	math::Point p;
+	double param;
+
+	bool test = L2.intersect2D(L1, p, param);
+	std::cout << "intersect : " << test << std::endl;
+	std::cout << "point : " << p << std::endl;
+	std::cout << "param : " << param << std::endl;
+	 */
+
+
+	IGMeshIOService ioService_geom(&m);
+	VTKWriter writer_geom(&ioService_geom);
+	writer_geom.setCellOptions(N|F);
+	writer_geom.setDataOptions(N|F);
+	writer_geom.write("Utils_Test4.vtk");
 
 }
