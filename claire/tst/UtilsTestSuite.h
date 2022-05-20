@@ -205,30 +205,6 @@ TEST(ClaireTestClass, Utils_AdjacentNodes)
 	ASSERT_EQ(adj_nodes[5].id(), 84);
 	//std::cout << adj_nodes[5].id() << std::endl;
 
-	/*
-	math::Point p1(0.0, 0.0);
-	math::Point p2(1.0, 0.0);
-
-	math::Vector3d v1(1,0);
-
-	math::Point p3(-1.0, -3.0);
-	math::Point p4(-1.0, -2.0);
-
-	math::Vector3d v2(0,1);
-
-	math::Line L1(p1, p2);
-	math::Line L2(p3, p4);
-
-	math::Point p;
-	double param;
-
-	bool test = L2.intersect2D(L1, p, param);
-	std::cout << "intersect : " << test << std::endl;
-	std::cout << "point : " << p << std::endl;
-	std::cout << "param : " << param << std::endl;
-	 */
-
-
 	IGMeshIOService ioService_geom(&m);
 	VTKWriter writer_geom(&ioService_geom);
 	writer_geom.setCellOptions(N|F);
