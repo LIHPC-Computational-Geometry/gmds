@@ -30,7 +30,7 @@ TEST(AeroBoundariesTestClass, AeroBoundaries2D_Test1)
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir + "/Aero/C1_2D_0.1.vtk";
+	std::string vtk_file = dir + "/Aero/2D/C1_2D_0.1.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
