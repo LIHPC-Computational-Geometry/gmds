@@ -32,7 +32,7 @@ class LIB_GMDS_CLAIRE_API Utils {
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Return the common edge between 2 points if it exists, NullID
-	 		* otherwise
+	 		* otherwise (ou si la connectivité n'est pas renseignée)
          *
          * \param[in] n0_id first node id
          * \param[in] n1_id second node id
@@ -50,6 +50,23 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static void MeshCleaner(Mesh *AMesh);
 	/*------------------------------------------------------------------------*/
+	/** @brief Donne le vecteur des noeuds adjacents à n dans le maillage m.
+	 	*
+		* \param[in] m the mesh
+	 	* \param[in] n the node
+		*
+		* \return  a vector of Nodes
+	 */
+	static std::vector<Node> AdjacentNodes(Mesh* m, Node n);
+	/*----------------------------------------------------------------------------*/
+	/** @brief Analyse la qualité d'un maillage composé de quad.
+	 	*
+		* \param[in] m the mesh
+		*
+		* \return  nothing
+	 */
+	static void AnalyseQuadMeshQuality(Mesh* m);
+	/*----------------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/

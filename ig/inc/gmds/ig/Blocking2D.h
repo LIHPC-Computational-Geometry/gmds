@@ -68,6 +68,7 @@ namespace gmds {
 		       */
 		      std::pair<int,int> getIndices(const TCellID AID);
 
+
          private:
             /** Access to the edge with local index @p AI nad @p AJ in the
              *  current face
@@ -167,7 +168,6 @@ namespace gmds {
 	      * @return Dimension of the blocking entity
 	      */
 	     int getBlockingDim(TCellID AId);
-
 
     private:
 

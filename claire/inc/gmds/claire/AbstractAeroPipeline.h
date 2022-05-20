@@ -9,6 +9,8 @@
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/claire/Params.h>
+#include <gmds/claire/AbstractAeroBoundaries.h>
+#include <gmds/cad/FACManager.h>
 #include <string>
 #include <map>
 #include <fstream>
@@ -36,48 +38,35 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	/** @brief Constructor.
          *  @param
 	 */
-	//AbstractAeroPipeline(ParamsAero Aparams, gmds::Mesh && Am);
 	AbstractAeroPipeline(ParamsAero Aparams);
+	/*--------------------------------------------------------------------*/
+	/** @brief Destructor.
+         *  @param
+	 */
+	~AbstractAeroPipeline();
 	/*-------------------------------------------------------------------*/
 	/** \brief Function to be called for mesh generation
 	 */
-	virtual void execute()=0;
+	virtual AbstractAeroPipeline::STATUS execute()=0;
 	/*-------------------------------------------------------------------*/
-	/** \brief Function pour savoir si le pipeline s'est terminé
-	 */
-	bool getIsOver();
-	/*-------------------------------------------------------------------*/
-
- protected:
-	/*----------------------------------------------------------------------------*/
-	/** @brief Donne le vecteur des noeuds adjacents à n.
-	 */
-	std::vector<Node> AdjacentNodes(Node n);
-	/*----------------------------------------------------------------------------*/
 
  protected:
 	/** pointer to mesh we work on */
-	Mesh* m_mesh;
+	Mesh* m_meshTet;
 	/** pointer to mesh we generate */
-	Mesh* m_meshGen;
+	Mesh* m_meshHex;
 	/** parameters for the algorithm */
 	ParamsAero m_params;
-	/** Nombre de bords distincts de bords */
-	int m_nbrBords;
-	/** Nombre de bords distincts sur la paroi */
-	int m_nbrBordsParoi;
-	/** Couleur qui correspond au bord extérieur */
-	int m_bigest_color;
-	/** Colorie chaque bord d'une couleur != */
-	Variable<int>* m_var_color_bords ;
-	/** Marque sur les noeuds de la paroi */
-	int m_markFrontNodesParoi;
-	/** Marque sur les noeuds de la frontière ext */
-	int m_markFrontNodesExt;
 	/** Variable sur le nouveau maillage, indique à quelle couche appartient un noeud */
 	Variable<int>* m_couche_id;
-	/** Est-ce que le code s'est bien terminé */
-	bool m_isOver ;
+	/** Nombre de couches de mailles */
+	int m_nbr_couches;
+	/** Manager */
+	cad::FACManager* m_manager;
+	/** Linker maillage T entrée à la géométrie */
+	cad::GeomMeshLinker* m_linker_TG;
+	/** Linker maillage Q/H sortie à la géométrie */
+	cad::GeomMeshLinker* m_linker_HG;
 
 };
 /*----------------------------------------------------------------------------*/

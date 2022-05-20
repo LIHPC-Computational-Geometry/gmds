@@ -2,14 +2,13 @@
 // Created by rochec on 21/01/2022.
 //
 /*------------------------------------------------------------------------*/
-#include <gmds/claire/GradientComputation3D.h>
+#include <gmds/claire/GradientComputation_3D.h>
 #include <limits>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-
-GradientComputation3D::GradientComputation3D(Mesh *AMesh, Variable<double>* Adistance) {
+GradientComputation_3D::GradientComputation_3D(Mesh *AMesh, Variable<double>* Adistance) {
 	m_mesh = AMesh;
 	m_distance = Adistance;
 	m_gradient3D = m_mesh->newVariable<math::Vector3d,GMDS_REGION>("GMDS_Gradient_3D");
@@ -17,7 +16,8 @@ GradientComputation3D::GradientComputation3D(Mesh *AMesh, Variable<double>* Adis
 
 
 /*------------------------------------------------------------------------*/
-GradientComputation3D::STATUS GradientComputation3D::execute()
+GradientComputation_3D::STATUS
+GradientComputation_3D::execute()
 {
 
 	for(auto region_id:m_mesh->regions()) {
@@ -25,14 +25,15 @@ GradientComputation3D::STATUS GradientComputation3D::execute()
 		m_gradient3D->set(region_id, Gradient) ;
 	}
 
-	return GradientComputation3D::SUCCESS;
+	return GradientComputation_3D::SUCCESS;
 }
 /*------------------------------------------------------------------------*/
 
 
 
 /*------------------------------------------------------------------------*/
-math::Vector3d GradientComputation3D::computeGradientOnSimpleRegion(TCellID region_id){
+math::Vector3d
+GradientComputation_3D::computeGradientOnSimpleRegion(TCellID region_id){
 	math::Vector3d Gradient(0,0,0) ;
 	Region reg = m_mesh->get<Region>(region_id);
 	std::vector<TCellID> region_nodes_ids = reg.getIDs<Node>();

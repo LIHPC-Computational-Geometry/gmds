@@ -2,8 +2,8 @@
 // Created by rochec on 21/01/2022.
 //
 
-#ifndef GMDS_GRADIENTCOMPUTATION2D_H
-#define GMDS_GRADIENTCOMPUTATION2D_H
+#ifndef GMDS_GRADIENTCOMPUTATION_3D_H
+#define GMDS_GRADIENTCOMPUTATION_3D_H
 
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
@@ -14,7 +14,8 @@
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_CLAIRE_API GradientComputation2D {
+class LIB_GMDS_CLAIRE_API GradientComputation_3D
+{
  public:
 	/*--------------------------------------------------------------------*/
 	/** @enum  Status code for executing algorithms
@@ -28,7 +29,7 @@ class LIB_GMDS_CLAIRE_API GradientComputation2D {
 	/** @brief Constructor.
          *  @param AMesh the mesh where we work on
 	 */
-	GradientComputation2D(Mesh *AMesh, Variable<double>* Adistance);
+	GradientComputation_3D(Mesh *AMesh, Variable<double>* Adistance);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -37,14 +38,9 @@ class LIB_GMDS_CLAIRE_API GradientComputation2D {
 
  private:
 	/*-------------------------------------------------------------------*/
-	/** @brief Retourne le vecteur orthogonal (rotation de pi/2 dans le sens trigo)
-	 * au vecteur v0v1
+	/** @brief Donne le vecteur gradient sur une région
 	 */
-	math::Vector3d getNormalVector(TCellID n0_id, TCellID n1_id);
-	/*-------------------------------------------------------------------*/
-	/** @brief Donne le vecteur gradient sur une face
-	 */
-	math::Vector3d computeGradientOnSimpleFace(TCellID face_id);
+	math::Vector3d computeGradientOnSimpleRegion(TCellID region_id);
 	/*-------------------------------------------------------------------*/
 
  private:
@@ -53,9 +49,9 @@ class LIB_GMDS_CLAIRE_API GradientComputation2D {
 	/** champ scalaire dont on souhaite obtenir le gradient */
 	Variable<double>* m_distance;
 	/** champ de gradient défini sur chaque face */
-	Variable<math::Vector3d>* m_gradient2D;
+	Variable<math::Vector3d>* m_gradient3D;
 };
 /*----------------------------------------------------------------------------*/
 }     // namespace gmds
 
-#endif     // GMDS_GRADIENTCOMPUTATION2D_H
+#endif     // GMDS_GRADIENTCOMPUTATION_3D_H

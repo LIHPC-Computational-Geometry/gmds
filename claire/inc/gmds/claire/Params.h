@@ -51,6 +51,18 @@ namespace gmds {
         std::string output_dir;
 	     /** Nombre mini de blocs */
         int nbrMinBloc;
+	     /** Limite x amont/aval */
+	     double x_lim;
+	     /** Limite y amont/aval */
+	     double y_lim;
+	     /** Limite z amont/aval */
+	     double z_lim;
+	     /** Epaisseur de couche limite */
+	     double delta_cl;
+	     /** Est-ce que le cas est 2D axi ? */
+	     bool AXI_2D;
+	     /** Nombre de couches lors de l'extrusion */
+	     int nbr_couches;
     };
 /*------------------------------------------------------------------------*/
 }

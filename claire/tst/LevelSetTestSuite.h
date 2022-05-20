@@ -6,7 +6,7 @@
 #include <gmds/claire/LevelSetEloi.h>
 #include <gmds/claire/LevelSetExtended.h>
 #include <gmds/claire/LevelSetCombined.h>
-#include <gmds/claire/GradientComputation2D.h>
+#include <gmds/claire/GradientComputation_2D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator.h>

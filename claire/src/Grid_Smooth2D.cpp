@@ -38,8 +38,8 @@ Grid_Smooth2D::STATUS Grid_Smooth2D::execute()
 			Blocking2D::Block bi = m_mesh->block(f_id) ;
 			int Nx = bi.getNbDiscretizationI();
 			int Ny = bi.getNbDiscretizationJ();
-			std::cout << "Nx = " << Nx << std::endl;
-			std::cout << "Ny = " << Ny << std::endl;
+			//std::cout << "Nx = " << Nx << std::endl;
+			//std::cout << "Ny = " << Ny << std::endl;
 
 			// Loop on the inner nodes of the bi block
 			for (int i = 1; i < Nx - 1; i++) {
@@ -89,6 +89,27 @@ Grid_Smooth2D::STATUS Grid_Smooth2D::execute()
 					}
 				}
 			}
+
+
+			// Glissement des bords
+			for (int i=1;i<Nx-1;i++)
+			{
+				math::Point Mid = FindMidBranche(bi(i-1,0).point(), bi(i,0).point(), bi(i+1,0).point());
+				bi(i, 0).setPoint(Mid);
+
+				Mid = FindMidBranche(bi(i-1,Ny-1).point(), bi(i,Ny-1).point(), bi(i+1,Ny-1).point());
+				bi(i, Ny-1).setPoint(Mid);
+			}
+
+			for (int j=1;j<Ny-1;j++)
+			{
+				math::Point Mid = FindMidBranche(bi(0,j-1).point(), bi(0,j).point(), bi(0,j+1).point());
+				bi(0, j).setPoint(Mid);
+
+				Mid = FindMidBranche(bi(Nx-1,j-1).point(), bi(Nx-1,j).point(), bi(Nx-1,j+1).point());
+				bi(Nx-1, j).setPoint(Mid);
+			}
+
 	}
 
 	}

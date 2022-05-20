@@ -172,7 +172,6 @@ TEST(Blocking2DTestSuite, test_blocking2D_3)
 	ASSERT_EQ(mesh.getBlockingId(7), 0);
 
 }
-/*----------------------------------------------------------------------------*/
 TEST(Blocking2DTestSuite, test_blocking2D_4)
 {
 	Blocking2D m;
