@@ -12,6 +12,7 @@
 #include "AeroBoundariesTestSuite.h"
 #include "UtilsTestSuite.h"
 #include "SU2WriterTestSuite.h"
+#include "AeroMeshQualityTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

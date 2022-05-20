@@ -79,6 +79,8 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero3D_result);
 
 }
+
+
 /*----------------------------------------------------------------------------*/
 /*              CAS TEST 3D CLASSE LevelSet avec Exceptions                   */
 /*----------------------------------------------------------------------------*/
