@@ -173,7 +173,37 @@ TEST(Blocking2DTestSuite, test_blocking2D_3)
 
 }
 /*----------------------------------------------------------------------------*/
+TEST(Blocking2DTestSuite, test_blocking2D_4)
+{
+	Blocking2D m;
+	Node n1 = m.newBlockCorner(0,0);
+	Node n2 = m.newBlockCorner(1,0);
+	Node n3 = m.newBlockCorner(1,1);
+	Node n4=  m.newBlockCorner(0,1);
 
+	Blocking2D::Block b0 = m.newBlock(n1,n2,n3,n4);
+
+	Node n5 = m.newBlockCorner(2,0,0);
+	Node n6 = m.newBlockCorner(2,1.5,0);
+	Blocking2D::Block b1 = m.newBlock(n2,n5,n6,n3);
+
+	b0.setNbDiscretizationI(3);
+	b0.setNbDiscretizationJ(3);
+	b1.setNbDiscretizationI(3);
+	b1.setNbDiscretizationJ(3);
+
+	m.initializeGridPoints();
+	b0 = m.block(0);
+
+	ASSERT_EQ(b0(4,1).id(),11);
+
+	b1 = m.block(1);
+	std::pair<int,int> indices = b1.getIndices(11);
+
+	ASSERT_EQ(indices.first, 2);
+	ASSERT_EQ(indices.second, 1);
+
+}
 
 
 
