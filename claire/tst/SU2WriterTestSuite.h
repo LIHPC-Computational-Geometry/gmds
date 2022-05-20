@@ -20,7 +20,7 @@
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
-TEST(ClaireTestClass, testSU2Writer)
+/*TEST(ClaireTestClass, testSU2Writer)
 {
 	// Test
 	Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -50,5 +50,5 @@ TEST(ClaireTestClass, testSU2Writer)
 
 	ASSERT_EQ(SU2Writer::SUCCESS, result);
 }
-
+*/
 #endif     // GMDS_SU2WRITERTESTSUITE_H
