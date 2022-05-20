@@ -61,6 +61,12 @@ namespace gmds {
             int getNbDiscretizationI() const;
             int getNbDiscretizationJ() const;
 
+		      /** @brief Get the indices I and J of node @p AID in the block.
+		       *
+		       * @param AID
+		       * @return A pair containing the indice I and J
+		       */
+		      std::pair<int,int> getIndices(const TCellID AID);
 
 
          private:
