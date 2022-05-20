@@ -238,10 +238,12 @@ AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, dou
 	Front_OUT.initializeFromLayerId(m_meshQ, Front_IN.getFrontID()+1);
 
 	// Lissage de la couche
+	/*
 	if ( abs(dist_cible - 1.0) > pow(10,-6)) {
 		SmoothingPaving_2D smoother(m_meshQ, Front_OUT);
 		smoother.execute();
 	}
+	 */
 
 	return Front_OUT;
 }

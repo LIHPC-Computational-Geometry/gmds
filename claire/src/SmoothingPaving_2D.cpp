@@ -106,14 +106,12 @@ SmoothingPaving_2D::FrontNodeSmoothing()
 			n.setPoint(n.point() + Da);
 		}
 
-		/*
 		if (adj_faces.size()==2)
 		{
 			math::Vector3d Db = ComputeDb(n_id);
 			math::Vector3d Dc = ComputeDc(n_id);
 			n.setPoint(n.point() + (Db+Dc)/2.0);
 		}
-		 */
 
 	}
 
@@ -226,7 +224,12 @@ SmoothingPaving_2D::ComputeDc(TCellID n_id)
 	math::Line L1(m_map_old_coords[nj.id()],m_map_old_coords[nj.id()] + Pb2);
 	math::Line L2(m_map_old_coords[ni_adj[0].id()],m_map_old_coords[ni_adj[1].id()]);
 	double param;
-	L1.intersect2D(L2, Q, param);
+	bool intersection = L1.intersect2D(L2, Q, param);
+	//std::cout << "Intersection trouvée ? " << intersection << std::endl;
+	if (!intersection)
+	{
+		Q = n.point();
+	}
 	math::Vector3d QNj = Q - m_map_old_coords[nj.id()] ;
 	/*
 	std::cout << "------------" << std::endl;

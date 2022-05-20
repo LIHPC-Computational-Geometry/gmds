@@ -43,7 +43,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 
 	// Paramètres de l'extrusion
 	params_aero.nbr_couches = 3;
-	params_aero.delta_cl = 0.05 ;	// Epaisseur de la première couche
+	params_aero.delta_cl = 0.05;		// Epaisseur de la première couche
 	params_aero.x_lim=0;				// Limites physiques à partir desquelles
 	params_aero.y_lim=-10000;		// l'insertion et la fusion de blocs
 	params_aero.z_lim=-10000;		// sont autorisées
