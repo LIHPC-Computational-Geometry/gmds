@@ -102,13 +102,14 @@ SU2Writer::STATUS SU2Writer::execute()
 			edges_outlet.push_back(e_id);
 		}
 	}
-	stream << "MARKER_TAG= outlet\n";
-	stream << "MARKER_ELEMS= " << edges_outlet.size() << "\n";
-	for (auto e_id:edges_outlet)
-	{
-		Edge e = m_mesh->get<Edge>(e_id);
-		std::vector<Node> edge_nodes = e.get<Node>();
-		stream << 3 << " " << map_new_id[edge_nodes[0].id()] << " " << map_new_id[edge_nodes[1].id()] << "\n";
+	if (edges_outlet.size() != 0) {
+		stream << "MARKER_TAG= outlet\n";
+		stream << "MARKER_ELEMS= " << edges_outlet.size() << "\n";
+		for (auto e_id : edges_outlet) {
+			Edge e = m_mesh->get<Edge>(e_id);
+			std::vector<Node> edge_nodes = e.get<Node>();
+			stream << 3 << " " << map_new_id[edge_nodes[0].id()] << " " << map_new_id[edge_nodes[1].id()] << "\n";
+		}
 	}
 
 	std::vector<TCellID> edges_inlet;
@@ -122,14 +123,18 @@ SU2Writer::STATUS SU2Writer::execute()
 			edges_inlet.push_back(e_id);
 		}
 	}
-	stream << "MARKER_TAG= inlet\n";
-	stream << "MARKER_ELEMS= " << edges_inlet.size() << "\n";
-	for (auto e_id:edges_inlet)
-	{
-		Edge e = m_mesh->get<Edge>(e_id);
-		std::vector<Node> edge_nodes = e.get<Node>();
-		stream << 3 << " " << map_new_id[edge_nodes[0].id()] << " " << map_new_id[edge_nodes[1].id()] << "\n";
+	if (edges_inlet.size() != 0) {
+		stream << "MARKER_TAG= inlet\n";
+		stream << "MARKER_ELEMS= " << edges_inlet.size() << "\n";
+		for (auto e_id : edges_inlet) {
+			Edge e = m_mesh->get<Edge>(e_id);
+			std::vector<Node> edge_nodes = e.get<Node>();
+			stream << 3 << " " << map_new_id[edge_nodes[0].id()] << " " << map_new_id[edge_nodes[1].id()] << "\n";
+		}
 	}
+
+
+
 
 	// Autres bords
 	int wall = 1;

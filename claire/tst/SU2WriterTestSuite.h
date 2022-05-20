@@ -33,13 +33,13 @@ TEST(ClaireTestClass, testSU2Writer)
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N|gmds::F);
-	vtkReader.read(dir+"/Aero/2D/C13_2D_0.1.vtk");
+	vtkReader.read(dir+"/Aero/2D/SU2_C1_2D_0.1.vtk");
 
 	gmds::MeshDoctor doc(&m);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
 
-	SU2Writer writer(&m, "Test.su2", -0.5);
+	SU2Writer writer(&m, "Test.su2", -10.0);
 	SU2Writer::STATUS result = writer.execute();
 
 	ioService = &m;
