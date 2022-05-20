@@ -100,14 +100,12 @@ int main(){
 
 
 
+	//coupe
 	actionb.executeCutEdge(mGridAround.get<Node>(21),mGridAround.get<Node>(20));
 	actionb.executeCutEdge(mGridAround.get<Node>(5),mGridAround.get<Node>(10));
-	std::cout<<"============================================================================="<<std::endl;
 	actionb.executeCutEdge(mGridAround.get<Node>(4),mGridAround.get<Node>(9));
 	actionb.executeCutEdge(mGridAround.get<Node>(4),mGridAround.get<Node>(3));
 	actionb.executeCutEdge(mGridAround.get<Node>(19),mGridAround.get<Node>(24));
-	std::cout<<"============================================================================="<<std::endl;
-
 	actionb.executeCutEdge(mGridAround.get<Node>(22),mGridAround.get<Node>(21));
 	actionb.executeCutEdge(mGridAround.get<Node>(4),mGridAround.get<Node>(41));
 	actionb.executeCutEdge(mGridAround.get<Node>(3),mGridAround.get<Node>(2));
@@ -117,6 +115,7 @@ int main(){
 	actionb.executeCutEdge(mGridAround.get<Node>(72),mGridAround.get<Node>(2));
 	actionb.executeCutEdge(mGridAround.get<Node>(2),mGridAround.get<Node>(56));
 
+	//Glide
 	//volfraccomputation_2d(&mGridAround,&mImprint,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
 	actionb.executeGlideNode(mGridAround.get<Node>(130),&mImprint);
 	actionb.executeGlideNode(mGridAround.get<Node>(61),&mImprint);
@@ -141,41 +140,36 @@ int main(){
 	actionb.executeGlideNode(mGridAround.get<Node>(104),&mImprint);
 
 	//Supp face
-	actionb.executeDeleteFace(0);
+	//trou
+	/*actionb.executeDeleteFace(0);
 	actionb.executeDeleteFace(96);
 	actionb.executeDeleteFace(8);
 	actionb.executeDeleteFace(89);
 	actionb.executeDeleteFace(80);
 	actionb.executeDeleteFace(40);
 	actionb.executeDeleteFace(81);
-	actionb.executeDeleteFace(97																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																				);
-	actionb.executeDeleteFace(0);
-	actionb.executeDeleteFace(0);
-	actionb.executeDeleteFace(0);
-	actionb.executeDeleteFace(0);
-	actionb.executeDeleteFace(0);
-	actionb.executeDeleteFace(0);
-	actionb.executeDeleteFace(0);
-	actionb.executeDeleteFace(0);
-	actionb.executeDeleteFace(0);
-	actionb.executeDeleteFace(0);
-	actionb.executeDeleteFace(0);
-	actionb.executeDeleteFace(0);
-	actionb.executeDeleteFace(0);
-	actionb.executeDeleteFace(0);
+	actionb.executeDeleteFace(97);
 
-
-
-
-	volfraccomputation_2d(&mGridAround,&mImprint,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
-
+	//rebord droit
+	actionb.executeDeleteFace(26);
+	actionb.executeDeleteFace(10);
+	actionb.executeDeleteFace(27);
+	actionb.executeDeleteFace(53);
+	actionb.executeDeleteFace(55);
+	actionb.executeDeleteFace(118);
+	actionb.executeDeleteFace(120);
+	actionb.executeDeleteFace(119);
 	actionb.executeDeleteFace(15);
 	actionb.executeDeleteFace(11);
 	actionb.executeDeleteFace(42);
 	actionb.executeDeleteFace(43);
 	actionb.executeDeleteFace(28);
 	actionb.executeDeleteFace(29);
-	actionb.executeDeleteFace(10);
+	actionb.executeDeleteFace(10);*/
+
+
+
+	volfraccomputation_2d(&mGridAround,&mImprint,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
 
 	Environment environment(&gridAround,&mImprint);
 
