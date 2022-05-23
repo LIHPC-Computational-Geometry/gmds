@@ -85,14 +85,14 @@ int main(int argc, char* argv[])
       }
     }
     //////////////////////////////////////////////////////////////////////////////
-    std::cout << "INITIAL NODE SIZE IN MESH --> " << meshNode.size() << std::endl;
+    std::cout << "INITIAL NODE SIZE IN MESH --> " << meshNode.capacity() << std::endl;
     MetricAdaptation mA(&simplexMesh);
     mA.execute();
-    std::cout << "NODE SIZE IN MESH AFTER METRIC ADAPTATION--> " << meshNode.size() << std::endl;
+    std::cout << "NODE SIZE IN MESH AFTER METRIC ADAPTATION--> " << meshNode.capacity() << std::endl;
 
     gmds::VTKWriter vtkWriterMA(&ioService);
-    vtkWriterMA.setCellOptions(gmds::N|gmds::R/*|gmds::F*/);
-    vtkWriterMA.setDataOptions(gmds::N|gmds::R/*|gmds::F*/);
+    vtkWriterMA.setCellOptions(gmds::N|gmds::R|gmds::F);
+    vtkWriterMA.setDataOptions(gmds::N|gmds::R|gmds::F);
     vtkWriterMA.write(fOut);
 }
 

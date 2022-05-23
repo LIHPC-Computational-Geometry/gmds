@@ -87,7 +87,7 @@ void MetricAdaptation::execute()
     throw gmds::GMDSException(e);
   }
 
-  unsigned int maxIterationAdaptation = 2;
+  unsigned int maxIterationAdaptation = 10;
   CriterionRAIS criterionRAIS(new VolumeCriterion());
   const gmds::BitVector& meshNode = m_simplexMesh->getBitVectorNodes();
   unsigned int cpt = 0;
@@ -132,14 +132,8 @@ void MetricAdaptation::execute()
         unsigned int directNodeLabel = ((*BND_VERTEX_COLOR)[dNode] != 0)?(*BND_VERTEX_COLOR)[dNode]:((*BND_CURVE_COLOR)[dNode] != 0)?(*BND_CURVE_COLOR)[dNode]:((*BND_SURFACE_COLOR)[dNode] != 0)?(*BND_SURFACE_COLOR)[dNode]:0;
         unsigned int newNodeDim = std::max(nodeDim, directNodeDim);
 
-        if(newNodeDim > 2){continue;}
         if(metricLenght > sqrt(2.0))
         {
-          if(nodeId == 14 && dNode == 15)
-          {
-              std::cout << "nodeId -> " << nodeId << std::endl;
-              std::cout << "dNode -> " << dNode << std::endl;
-          }
           bool alreadyAdd = false;
           std::vector<TSimplexID> tetraContenaingPt{};
           const Point pt = 0.5 * (nodeCoord0 + nodeCoord1);
@@ -193,18 +187,6 @@ void MetricAdaptation::execute()
                   std::cout << "p1.first | p1.second -> " << p1.first << " | " << p1.second << std::endl;
 
                   SimplexMesh nodeMesh = SimplexMesh();
-
-                  /*std::cout << "ball of node -> " << nodeId << std::endl;
-                  for(auto const tet : SimplicesNode(m_simplexMesh, nodeId).ballOf())
-                  {
-                    std::cout << "  tet -> " << tet << std::endl;
-                  }
-                  std::cout << "ball of node -> " << dNode << std::endl;
-                  for(auto const tet : SimplicesNode(m_simplexMesh, dNode).ballOf())
-                  {
-                    std::cout << "  tet -> " << tet << std::endl;
-                  }*/
-
                   nodeMesh.addNode(SimplicesNode(m_simplexMesh, nodeId).getCoords());
                   nodeMesh.addNode(SimplicesNode(m_simplexMesh, dNode).getCoords());
                   nodeMesh.addTetraedre(0, 0, 0, 0);
@@ -304,25 +286,12 @@ void MetricAdaptation::execute()
           const std::multimap<TInt, TInt>& facesAlreadyBuilt{};
           std::vector<TSimplexID> cellsCreated{};
           PointInsertion pi(m_simplexMesh, SimplicesNode(m_simplexMesh, newNodeId), criterionRAIS, status, shell, markedNodes, deletedNodes, facesAlreadyBuilt, cellsCreated);
-          gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
-          vtkWriterMesh.setCellOptions(gmds::N|gmds::R);
-          vtkWriterMesh.setDataOptions(gmds::N|gmds::R);
+
+          /*gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
+          vtkWriterMesh.setCellOptions(gmds::N|gmds::R|gmds::F);
+          vtkWriterMesh.setDataOptions(gmds::N|gmds::R|gmds::F);
           vtkWriterMesh.write("LOOP_" + std::to_string(cpt) + ".vtk");
-          cpt++;
-          /*if(nodeId == 14 && dNode == 15)
-          {
-              std::cout << "newNodeId -> " << newNodeId << std::endl;
-              std::cout << "status -> " << status << std::endl;
-              std::cout << "shell.front() -> " << shell[0] << std::endl;
-              std::cout << "shell.front() -> " << shell[1] << std::endl;
-              std::cout << "shell.front() -> " << shell[2] << std::endl;
-              m_simplexMesh->deleteAllSimplicesBut(cellsCreated);
-              gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
-              vtkWriterMesh.setCellOptions(gmds::N|gmds::R);
-              vtkWriterMesh.setDataOptions(gmds::N|gmds::R);
-              vtkWriterMesh.write("test.vtk");
-              return;
-          }*/
+          cpt++;*/
           if(status)
           {
             cptSlice++;
@@ -337,7 +306,7 @@ void MetricAdaptation::execute()
     cpt++;*/
 
     std::cout << "  SLINCING END" << std::endl;
-    return;
+    continue;
     //Metric adaptation EDGE REMOVE
     std::cout << "  EDGE REMOVE START" << std::endl;
     buildEdgesMap();
@@ -631,6 +600,6 @@ void MetricAdaptation::execute()
     //cpt++;
 
   }
-  std::cout << "meshNode.size() END -> " << meshNode.size() << std::endl;
+  std::cout << "meshNode.capacity() END -> " << meshNode.capacity() << std::endl;
 
 }

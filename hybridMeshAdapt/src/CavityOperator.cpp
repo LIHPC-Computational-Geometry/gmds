@@ -543,8 +543,7 @@ bool CavityOperator::CavityIO::isTetragonalizableFrom(const TInt nodeToInsert)
 bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexID>& initCavityCell, std::vector<TSimplexID>& initCavityTriangle,
                                         const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const std::multimap<TInt, TInt>& facesAlreadyBuilt,
                                          const std::vector<TSimplexID> markedSimplex)
-{
-  std::vector<TSimplexID> trianglesConnectedToP{};
+{std::vector<TSimplexID> trianglesConnectedToP{};
   std::vector<TSimplexID> trianglesNotConnectedToP{};
 
   int errorId =  std::numeric_limits<int>::min();
@@ -579,8 +578,6 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
   else if(dimNode == SimplexMesh::topo::SURFACE){  indexNode =  (*BND_SURFACE_COLOR)[node.getGlobalNode()] ; }
   else                                          {  indexNode =  0;}
 
-  /*std::cout << "CavityCell.size() BEFORE -> " << initCavityCell.size() << std::endl;
-  std::cout << "initCavityTriangle.size() BEFORE -> " << initCavityTriangle.size() << std::endl;*/
   bool flag = true;
   //CELL EXPANSION START
   while(flag)
@@ -633,15 +630,13 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         }
       }
     }
+
     //CELL EXPANSION END
-    /*std::cout << "CavityCell.size() AFTER -> " << cavityCell.size() << std::endl;
-    std::cout << "initCavityTriangle.size() AFTER -> " << initCavityTriangle.size() << std::endl;
-*/
     gmds::BitVector indexedTriangle(m_simplex_mesh->getBitVectorTri().capacity());
     if(dimNode == SimplexMesh::topo::RIDGE)
     {
       //std::cout << node << std::endl;
-      bool alreadyBelongingToAnEdge;
+      bool alreadyBelongingToAnEdge = false;
       struct Edge{
         TInt node0;
         TInt node1;
@@ -815,10 +810,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       }
     }
   }
-/*
-  std::cout << "trianglesConnectedToP.size() AFTER -> " << trianglesConnectedToP.size() << std::endl;
-  std::cout << "trianglesNotConnectedToP.size() AFTER -> " << trianglesNotConnectedToP.size() << std::endl;
-*/
+
   cavityIO.setSimplexCavity(cavityCell, trianglesConnectedToP, trianglesNotConnectedToP);
   return true;
 }
