@@ -790,7 +790,7 @@ Node Tools::selectNodeMinRange(Face AFace)
 {
 	Node minNode;
 	auto listNodes = Tools::getListNodesOfFace(AFace.id());
-	auto listNodesBoundary = Tools::getBoundaryNodes()
+	//auto listNodesBoundary = Tools::getBoundaryNodes();
 }
 
 double Tools::calcRangePoints(Node node1, Node node2)
