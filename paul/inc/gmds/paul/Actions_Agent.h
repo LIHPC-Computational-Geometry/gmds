@@ -28,6 +28,18 @@ namespace gmds {
 	    * @param secondNodeID second node
 	    */
 	   void executeCutEdge(Node firstNodeID,Node secondNodeID);
+		/** \brief cut the face with a direction indicator
+		 *
+		 * @param AFace the face cut
+		 * @param direction if direction = 1 cut vertical, if direction = 0 cut horizontal
+		 */
+	   void executeCutFace(Face AFace, int direction);
+
+	   /** \brief glide a node to the boundary of the target mesh
+	    *
+	    * @param node The node to drag
+	    * @param AMesh the target mesh
+	    */
 
 	   void executeGlideNode(Node node,Mesh *AMesh);
 

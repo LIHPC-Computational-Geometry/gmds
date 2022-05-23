@@ -755,6 +755,43 @@ std::map<TCellID ,TCellID> Tools::getBoundaryNodes(Mesh *AMesh)
 
 	return aNodeMap;
 }
+std::vector<Node> Tools::getVerticalEdge(Face AFace)
+{
+	std::vector<Node> verticalEdge;
+	auto listNodesFace = Tools::getListNodesOfFace(AFace.id());
+	for (auto i : listNodesFace){
+		for (auto j : listNodesFace){
+			if (i != j && Tools::checkExistEdge(i.id(),j.id(),AFace.id()) && Tools::checkVertical(i,j)){
+				verticalEdge.push_back(i);
+				verticalEdge.push_back(j);
+				std::cout<<"l'arete verticale : " << verticalEdge.front()<<" et " <<verticalEdge.back()<<std::endl;
+				return verticalEdge;
+			}
+		}
+	}
+}
+std::vector<Node> Tools::getHorizontalEdge(Face AFace)
+{
+	std::vector<Node> horizontalEdge;
+	auto listNodesFace = Tools::getListNodesOfFace(AFace.id());
+	for (auto i : listNodesFace){
+		for (auto j : listNodesFace){
+			if (i != j && Tools::checkExistEdge(i.id(),j.id(),AFace.id()) && !Tools::checkVertical(i,j)){
+				horizontalEdge.push_back(i);
+				horizontalEdge.push_back(j);
+				std::cout<<"l'arete horizontale : " << horizontalEdge.front()<<" et " <<horizontalEdge.back()<<std::endl;
+				return horizontalEdge;
+			}
+		}
+	}
+}
+
+Node Tools::selectNodeMinRange(Face AFace)
+{
+	Node minNode;
+	auto listNodes = Tools::getListNodesOfFace(AFace.id());
+	auto listNodesBoundary = Tools::getBoundaryNodes()
+}
 
 double Tools::calcRangePoints(Node node1, Node node2)
 {

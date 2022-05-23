@@ -94,12 +94,11 @@ int main(){
 	Actions actionb(&gridAround);
 	Tools toolsB(&gridAround);
 
-
 	MeshDoctor doc(&mGridAround);
 	//Variable<double>* volFrac = mGridAround.newVariable<double,GMDS_FACE>("volFrac");
 
 
-
+/*
 	//coupe
 	actionb.executeCutEdge(mGridAround.get<Node>(21),mGridAround.get<Node>(20));
 	actionb.executeCutEdge(mGridAround.get<Node>(5),mGridAround.get<Node>(10));
@@ -137,7 +136,7 @@ int main(){
 	actionb.executeGlideNode(mGridAround.get<Node>(125),&mImprint);
 	actionb.executeGlideNode(mGridAround.get<Node>(103),&mImprint);
 	actionb.executeGlideNode(mGridAround.get<Node>(113),&mImprint);
-	actionb.executeGlideNode(mGridAround.get<Node>(104),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(104),&mImprint);*/
 
 	//Supp face
 	//trou
@@ -166,6 +165,12 @@ int main(){
 	actionb.executeDeleteFace(28);
 	actionb.executeDeleteFace(29);
 	actionb.executeDeleteFace(10);*/
+
+
+	//===================================== TEST ACTIONS CUT FACE ET DIRECTION ===============================
+	/*actionb.executeCutFace(gridAround.m_mesh.get<Face>(2),1);
+	actionb.executeCutFace(gridAround.m_mesh.get<Face>(16),0);
+	actionb.executeCutFace(gridAround.m_mesh.get<Face>(2),1);*/
 
 
 

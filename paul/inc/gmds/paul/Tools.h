@@ -253,6 +253,14 @@ class Tools{
 	 */
 	std::map<TCellID ,TCellID> getBoundaryNodes (Mesh *AMesh);
 
+	std::vector<Node> getVerticalEdge (Face AFace);
+
+	std::vector<Node> getHorizontalEdge (Face AFace);
+
+	Node selectNodeMinRange (Face AFace);
+
+
+
 	double calcRangePoints(Node node1, Node node2);
 
 	gmds::GridBuilderAround g_grid;

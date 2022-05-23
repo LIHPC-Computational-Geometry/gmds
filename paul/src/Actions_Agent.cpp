@@ -48,3 +48,15 @@ void Actions::executeGlideNode(Node node, Mesh *AMesh)
 	node.Y()=newY;
 	node.Z()=newZ;
 }
+void Actions::executeCutFace(Face AFace, int direction)
+{
+	if (direction==0){
+		auto edgeHorizontal = tool.getHorizontalEdge(AFace);
+		Actions::executeCutEdge(edgeHorizontal.front(),edgeHorizontal.back());
+	}
+	else if (direction == 1){
+		auto edgeVertical = tool.getVerticalEdge(AFace);
+		Actions::executeCutEdge(edgeVertical.front(),edgeVertical.back());
+	}
+	else{std::cout<<"Error input"<<std::endl;}
+}
