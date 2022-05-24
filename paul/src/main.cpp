@@ -87,12 +87,21 @@ int main(){
 	VTKReader vtkReader2(&ioServiceRead2);
 	vtkReader2.setCellOptions(gmds::N|gmds::F);
 	vtkReader2.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
-	GridBuilderAround gridAround(&mGridAround,2);
+	GridBuilderAround gridAround(&mGridAround,&mImprint,2);
 	gridAround.executeGrid2D(5);
 
 
 	Actions actionb(&gridAround);
 	Tools toolsB(&gridAround);
+
+	// =============================== TEST NOUVELLES ACTIONS SEULEMENT SUR LES FACES =================================
+	/*
+	actionb.executeCutFace(mGridAround.get<Face>(9),0);
+	actionb.executeCutFace(mGridAround.get<Face>(20),1);
+	actionb.executeGlidNodeFace(mGridAround.get<Face>(18));
+	actionb.executeCutFace(mGridAround.get<Face>(18),1);
+	actionb.executeGlidNodeFace(mGridAround.get<Face>(20));*/
+
 
 	MeshDoctor doc(&mGridAround);
 	//Variable<double>* volFrac = mGridAround.newVariable<double,GMDS_FACE>("volFrac");
@@ -166,19 +175,19 @@ int main(){
 	actionb.executeDeleteFace(29);
 	actionb.executeDeleteFace(10);*/
 
-
-	//===================================== TEST ACTIONS CUT FACE ET DIRECTION ===============================
-	/*actionb.executeCutFace(gridAround.m_mesh.get<Face>(2),1);
-	actionb.executeCutFace(gridAround.m_mesh.get<Face>(16),0);
-	actionb.executeCutFace(gridAround.m_mesh.get<Face>(2),1);*/
-
-
-
-	volfraccomputation_2d(&mGridAround,&mImprint,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
-
 	Environment environment(&gridAround,&mImprint);
 
-	environment.localIoU(mGridAround.get<Face>(34));
+	environment.localIoU(mGridAround.get<Face>(6));
+
+	//===================================== TEST ACTIONS CUT FACE ET DIRECTION ===============================
+	actionb.executeCutFace(gridAround.m_mesh.get<Face>(6),1);
+	actionb.executeCutFace(gridAround.m_mesh.get<Face>(16),0);
+	actionb.executeCutFace(gridAround.m_mesh.get<Face>(2),1);
+	actionb.executeCutFace(gridAround.m_mesh.get<Face>(31),1);
+
+
+	environment.localIoU(mGridAround.get<Face>(6));
+
 	//0.745944
 
 
@@ -224,7 +233,7 @@ int main(){
 	vtkReader1.setCellOptions(gmds::N|gmds::F);
 	vtkReader1.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
 
-	GridBuilderAround gba(&meshTarget,2);
+	GridBuilderAround gba(&meshTarget,&mImprint,2);
 	int nbNodes = 5;
 	gba.executeGrid2D(nbNodes);
 	Actions action(&gba);

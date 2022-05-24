@@ -23,7 +23,32 @@ double Environment::globalIoU()
 }
 double Environment::localIoU(const gmds::Face AFaceID)
 {
+	volfraccomputation_2d(&g_grid.m_mesh,&g_grid.meshTarget,g_grid.m_mesh.getVariable<double,GMDS_FACE>("volFrac"));
 	double localIoU = g_grid.m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(AFaceID.id());
 	std::cout<<"Local IoU : "<<localIoU<<std::endl;
 	return localIoU;
+}
+
+Face Environment::faceSelect()
+{
+	Face AFace;
+	bool firstIte = true;
+	double minLocalIoU;
+
+	for (auto f : g_grid.m_mesh.faces()){
+		Face actualFace = g_grid.m_mesh.get<Face>(f);
+		double actualLocalIoU = Environment::localIoU(actualFace);
+		if(g_grid.getActivate(g_grid.m_mesh.get<Face>(f))==1) {
+			if (firstIte) {
+				minLocalIoU = actualLocalIoU;
+				AFace = actualFace;
+				firstIte = false;
+			}
+			else if (actualLocalIoU < minLocalIoU) {
+				minLocalIoU = actualLocalIoU;
+				AFace = actualFace;
+			}
+		}
+	}
+	return AFace;
 }

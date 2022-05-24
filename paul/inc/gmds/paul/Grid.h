@@ -27,8 +27,9 @@ namespace gmds {
    class GridBuilderAround
    {
 	 public:
-	   GridBuilderAround(Mesh* AMesh, const TInt ADim=2);
+	   GridBuilderAround(Mesh* AMesh,Mesh* mImprint, const TInt ADim=2);
 	   const Mesh getMesh() const;
+	   const Mesh getmImprint() const;
 	   int getDim() const;
 
 	   virtual ~GridBuilderAround();
@@ -47,6 +48,7 @@ namespace gmds {
 
 	   /* a mesh*/
 	   gmds::Mesh m_mesh;
+	   gmds::Mesh meshTarget;
 
 
 	   /* add variable activate -> Face*/

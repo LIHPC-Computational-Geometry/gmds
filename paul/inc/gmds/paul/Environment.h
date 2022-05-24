@@ -21,6 +21,8 @@ namespace gmds {
 
 	   double localIoU(const Face AFaceID);
 
+	   Face faceSelect();
+
 	   gmds::GridBuilderAround g_grid;
 	   gmds::Mesh m_mesh;
    };

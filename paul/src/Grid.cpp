@@ -11,8 +11,8 @@ int Grid::getX() const
 int Grid::getY() const
 {return m_Y;}
 
-GridBuilderAround::GridBuilderAround(Mesh *AMesh, const TInt ADim)
-   :m_mesh(*AMesh), m_dim(ADim){;}
+GridBuilderAround::GridBuilderAround(Mesh *AMesh,Mesh *mImprint, const TInt ADim)
+   :m_mesh(*AMesh),meshTarget(*mImprint), m_dim(ADim){;}
 
 const Mesh
 GridBuilderAround::getMesh() const

@@ -60,3 +60,9 @@ void Actions::executeCutFace(Face AFace, int direction)
 	}
 	else{std::cout<<"Error input"<<std::endl;}
 }
+
+void Actions::executeGlidNodeFace(Face AFace)
+{
+	Node theNode = tool.selectNodeMinRange(AFace);
+	Actions::executeGlideNode(theNode,&g_grid.meshTarget);
+}

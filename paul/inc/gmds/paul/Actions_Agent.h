@@ -31,7 +31,7 @@ namespace gmds {
 		/** \brief cut the face with a direction indicator
 		 *
 		 * @param AFace the face cut
-		 * @param direction if direction = 1 cut vertical, if direction = 0 cut horizontal
+		 * @param direction if direction = 0 cut horizontal, if direction = 1 cut vertical
 		 */
 	   void executeCutFace(Face AFace, int direction);
 
@@ -42,6 +42,8 @@ namespace gmds {
 	    */
 
 	   void executeGlideNode(Node node,Mesh *AMesh);
+
+	   void executeGlidNodeFace(Face AFace);
 
 	   gmds::GridBuilderAround g_grid;
 	   gmds::Tools tool;

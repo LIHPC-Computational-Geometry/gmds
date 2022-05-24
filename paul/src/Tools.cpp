@@ -701,9 +701,11 @@ Tools::checkVertical(Node i1, Node i2)
 {
 	auto otherEdge = Tools::getOtherNodes(i1.id(),i2.id());
 	auto faceEdge = g_grid.m_mesh.get<Face>(Tools::getIdOneCommonFace(i1.id(),i2.id()));
-	auto listNodesCheck = Tools::getAllNodesSameWay(i1,i2);
+	auto boundaryEdge = Tools::getBoundaryEdge(i1,i2);
+	auto listNodesCheck = Tools::getAllNodesSameWay(boundaryEdge.front(),boundaryEdge.back());
 
 	for(auto i : listNodesCheck){
+		//std::cout<<"LES NOEUDS VU : "<<i<<std::endl;
 		if (i==1){
 			//std::cout<<"VERTICAL"<<std::endl;
 			return true ;
@@ -761,10 +763,10 @@ std::vector<Node> Tools::getVerticalEdge(Face AFace)
 	auto listNodesFace = Tools::getListNodesOfFace(AFace.id());
 	for (auto i : listNodesFace){
 		for (auto j : listNodesFace){
-			if (i != j && Tools::checkExistEdge(i.id(),j.id(),AFace.id()) && Tools::checkVertical(i,j)){
+			if (i != j && Tools::checkExistEdge(i.id(),j.id(),AFace.id()) && !Tools::checkVertical(i,j)){
 				verticalEdge.push_back(i);
 				verticalEdge.push_back(j);
-				std::cout<<"l'arete verticale : " << verticalEdge.front()<<" et " <<verticalEdge.back()<<std::endl;
+				//std::cout<<"l'arete verticale : " << verticalEdge.front()<<" et " <<verticalEdge.back()<<std::endl;
 				return verticalEdge;
 			}
 		}
@@ -776,10 +778,10 @@ std::vector<Node> Tools::getHorizontalEdge(Face AFace)
 	auto listNodesFace = Tools::getListNodesOfFace(AFace.id());
 	for (auto i : listNodesFace){
 		for (auto j : listNodesFace){
-			if (i != j && Tools::checkExistEdge(i.id(),j.id(),AFace.id()) && !Tools::checkVertical(i,j)){
+			if (i != j && Tools::checkExistEdge(i.id(),j.id(),AFace.id()) && Tools::checkVertical(i,j)){
 				horizontalEdge.push_back(i);
 				horizontalEdge.push_back(j);
-				std::cout<<"l'arete horizontale : " << horizontalEdge.front()<<" et " <<horizontalEdge.back()<<std::endl;
+				//std::cout<<"l'arete horizontale : " << horizontalEdge.front()<<" et " <<horizontalEdge.back()<<std::endl;
 				return horizontalEdge;
 			}
 		}
@@ -789,8 +791,28 @@ std::vector<Node> Tools::getHorizontalEdge(Face AFace)
 Node Tools::selectNodeMinRange(Face AFace)
 {
 	Node minNode;
+	double minRange;
+	bool minRangeNull = true;
 	auto listNodes = Tools::getListNodesOfFace(AFace.id());
-	//auto listNodesBoundary = Tools::getBoundaryNodes();
+	auto  boundaryNodes = Tools::getBoundaryNodes(&g_grid.meshTarget);
+	for (auto b : boundaryNodes){
+		for (auto n : listNodes) {
+			double range = Tools::calcRangePoints(n,g_grid.meshTarget.get<Node>(b.first));
+			if (minRangeNull == true ) {
+				minNode = n;
+				minRange = range;
+				minRangeNull=false;
+			}
+			else if (range < minRange){
+				minRange = range;
+				minNode = n;
+
+			}
+		}
+
+	}
+	return minNode;
+
 }
 
 double Tools::calcRangePoints(Node node1, Node node2)
