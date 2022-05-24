@@ -39,7 +39,7 @@ class RLBlockSet
 
 	void setFromFile(std::string filename, int nX = 3, int nY = 3);
 
-	void getReward(Mesh targetMesh);
+	int getReward(Mesh targetMesh);
 
 	std::vector<int> getAllFaces();
 };

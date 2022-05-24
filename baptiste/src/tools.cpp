@@ -30,13 +30,11 @@ Mesh gmds::readMesh(std::string filename)
 }
  */
 
-/*
-void gmds::computeVolFrac(Mesh AMesh, Mesh targetMesh)
+void gmds::applyVolFrac(Mesh mesh, Mesh targetMesh)
 {
-	AMesh.newVariable<double, GMDS_FACE>("volFrac");
-	volfraccomputation_2d(&AMesh, &targetMesh, AMesh.getVariable<double, GMDS_FACE>("volFrac"));
+	mesh.newVariable<double, GMDS_FACE>("volFrac");
+	volfraccomputation_2d(&mesh, &targetMesh, mesh.getVariable<double, GMDS_FACE>("volFrac"));
 }
- */
 
 Variable<double>* gmds::getVolFrac(Mesh mesh)
 {

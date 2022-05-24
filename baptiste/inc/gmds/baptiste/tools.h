@@ -12,7 +12,8 @@ namespace gmds
 
    // Mesh readMesh(std::string filename);
 
-
+   // plutôt void applyVolFrac(Mesh* mesh, Mesh* targetMesh);
+   void applyVolFrac(Mesh mesh, Mesh targetMesh);
 
    Variable<double>* getVolFrac(Mesh mesh);
 

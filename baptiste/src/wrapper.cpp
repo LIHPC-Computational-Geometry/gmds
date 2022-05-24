@@ -15,6 +15,8 @@ PYBIND11_MODULE(environment, m)
 	   .def(py::init<gmds::MeshModel>())
 	   .def(py::init<>())
 	   .def(py::init<int>())
+	   .def("__copy__",  [](const gmds::RLBlockSet &self) { return gmds::RLBlockSet(self); })
+	   .def("__deepcopy__", [](const gmds::RLBlockSet &self, py::dict) { return gmds::RLBlockSet(self); })
 	   .def_readwrite("m_mesh", &gmds::RLBlockSet::m_mesh)
 	   .def_readwrite("xSize", &gmds::RLBlockSet::xSize)
 	   .def_readwrite("ySize", &gmds::RLBlockSet::ySize)
@@ -40,7 +42,9 @@ PYBIND11_MODULE(environment, m)
 		.def("getNode", &gmds::Mesh::get<gmds::Node>)
 		.def("getEdge", &gmds::Mesh::get<gmds::Edge>)
 		.def("getFace", &gmds::Mesh::get<gmds::Face>)
-		.def("getRegion", &gmds::Mesh::get<gmds::Region>);
+		.def("getRegion", &gmds::Mesh::get<gmds::Region>)
+	   .def("newDouble", &gmds::Mesh::newVariable<double, gmds::GMDS_FACE>)
+	   .def("getDouble", &gmds::Mesh::getVariable<double, gmds::GMDS_FACE>);
 
 	py::class_<gmds::FaceContainer>(m, "FaceContainer")
 	   .def("__iter__", [](gmds::FaceContainer &s) { return py::make_iterator(s.begin(), s.end()); },
@@ -50,7 +54,7 @@ PYBIND11_MODULE(environment, m)
 
 	// m.def("readMesh", &gmds::readMesh);
 
-	//m.def("computeVolFrac", &gmds::computeVolFrac);
+	m.def("applyVolFrac", &gmds::applyVolFrac);
 
 	m.def("getVolFrac", &gmds::getVolFrac);
 
@@ -61,4 +65,7 @@ PYBIND11_MODULE(environment, m)
 	   .def_readwrite("m_mesh", &gmds::Tools::m_mesh)
 	   .def("readMesh", &gmds::Tools::readMesh)
 		.def("computeVolFrac", &gmds::Tools::computeVolFrac);
+
+	py::class_<gmds::Variable<double>>(m, "meshDouble");
+
  }

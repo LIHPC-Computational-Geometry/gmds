@@ -18,10 +18,10 @@ RLBlockSet::RLBlockSet(MeshModel model)
 RLBlockSet::RLBlockSet()
   :m_mesh(MeshModel(DIM3|F|N|F2N|N2F)) {}
 
-RLBlockSet::RLBlockSet(int dim2) :m_mesh(MeshModel(DIM2|F|N|F2N|N2F)) {}
+RLBlockSet::RLBlockSet(int dim2)
+  :m_mesh(MeshModel(DIM2|F|N|F2N|N2F)) {}
 
-RLBlockSet::~RLBlockSet()
-{}
+RLBlockSet::~RLBlockSet() {}
 
 
 void RLBlockSet::setFrame(double xMin, double yMin, double xMax, double yMax, int nX, int nY)
@@ -157,8 +157,8 @@ std::vector<int> RLBlockSet::getAllFaces()
 	return v;
 }
 
-void RLBlockSet::getReward(Mesh targetMesh)
+int RLBlockSet::getReward(Mesh targetMesh)
 {
-	m_mesh.newVariable<double, GMDS_FACE>("volFrac");
-	volfraccomputation_2d(&m_mesh, &targetMesh, m_mesh.getVariable<double, GMDS_FACE>("volFrac"));
+	//applyVolFrac(m_mesh, targetMesh);
+	return countBlocks();
 }
