@@ -543,7 +543,8 @@ bool CavityOperator::CavityIO::isTetragonalizableFrom(const TInt nodeToInsert)
 bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexID>& initCavityCell, std::vector<TSimplexID>& initCavityTriangle,
                                         const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const std::multimap<TInt, TInt>& facesAlreadyBuilt,
                                          const std::vector<TSimplexID> markedSimplex)
-{std::vector<TSimplexID> trianglesConnectedToP{};
+{
+  std::vector<TSimplexID> trianglesConnectedToP{};
   std::vector<TSimplexID> trianglesNotConnectedToP{};
 
   int errorId =  std::numeric_limits<int>::min();
@@ -593,11 +594,11 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
           for(TInt nodeIndexLocal = 0; nodeIndexLocal < sizeLocalNodeCell; nodeIndexLocal++)
           {
             TSimplexID nextSimplexToAdd = cell.oppositeTetraIdx(nodeIndexLocal);
-            std::vector<TInt> orderedFace = cell.getOrderedFace(nodeIndexLocal);
+            /*std::vector<TInt> orderedFace = cell.getOrderedFace(nodeIndexLocal);
             if(orderedFace[0] == node.getGlobalNode() || orderedFace[1] == node.getGlobalNode() || orderedFace[2] == node.getGlobalNode())
             {
               continue;
-            }
+            }*/
             if(nextSimplexToAdd != errorId)
             {
               if(nextSimplexToAdd >= 0)
@@ -633,9 +634,9 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
 
     //CELL EXPANSION END
     gmds::BitVector indexedTriangle(m_simplex_mesh->getBitVectorTri().capacity());
+
     if(dimNode == SimplexMesh::topo::RIDGE)
     {
-      //std::cout << node << std::endl;
       bool alreadyBelongingToAnEdge = false;
       struct Edge{
         TInt node0;
@@ -660,7 +661,6 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
           break;
         }
       }
-
       std::vector<TSimplexID> firstTriangles{};
       if(!alreadyBelongingToAnEdge)
       {

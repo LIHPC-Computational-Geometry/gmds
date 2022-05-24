@@ -87,7 +87,7 @@ void MetricAdaptation::execute()
     throw gmds::GMDSException(e);
   }
 
-  unsigned int maxIterationAdaptation = 10;
+  unsigned int maxIterationAdaptation = 25;
   CriterionRAIS criterionRAIS(new VolumeCriterion());
   const gmds::BitVector& meshNode = m_simplexMesh->getBitVectorNodes();
   unsigned int cpt = 0;
@@ -287,11 +287,11 @@ void MetricAdaptation::execute()
           std::vector<TSimplexID> cellsCreated{};
           PointInsertion pi(m_simplexMesh, SimplicesNode(m_simplexMesh, newNodeId), criterionRAIS, status, shell, markedNodes, deletedNodes, facesAlreadyBuilt, cellsCreated);
 
-          /*gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
-          vtkWriterMesh.setCellOptions(gmds::N|gmds::R|gmds::F);
-          vtkWriterMesh.setDataOptions(gmds::N|gmds::R|gmds::F);
-          vtkWriterMesh.write("LOOP_" + std::to_string(cpt) + ".vtk");
-          cpt++;*/
+          //gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
+          //vtkWriterMesh.setCellOptions(gmds::N|gmds::R|gmds::F);
+          //vtkWriterMesh.setDataOptions(gmds::N|gmds::R|gmds::F);
+          //vtkWriterMesh.write("LOOP_" + std::to_string(cpt) + ".vtk");
+          //cpt++;
           if(status)
           {
             cptSlice++;
@@ -306,7 +306,8 @@ void MetricAdaptation::execute()
     cpt++;*/
 
     std::cout << "  SLINCING END" << std::endl;
-    continue;
+    //continue;
+
     //Metric adaptation EDGE REMOVE
     std::cout << "  EDGE REMOVE START" << std::endl;
     buildEdgesMap();
@@ -335,14 +336,21 @@ void MetricAdaptation::execute()
         double metricLenght        = M0.metricDist(nodeCoord0, nodeCoord1, M1);
         if(metricLenght < (1.0 / sqrt(2.0)))
         {
+          //std::cout << "node0 node1 -> " << node0 << " | " << node1 << std::endl;
           if(m_simplexMesh->edgeRemove(node0, node1))
           {
             cptEdgeRemove++;
+            /*gmds::VTKWriter vtkWriterMeshER(&ioServiceMesh);
+            vtkWriterMeshER.setCellOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriterMeshER.setDataOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriterMeshER.write("ADAPTAION_LOOP_EDGEREMOVE_" + std::to_string(cptEdgeRemove) + ".vtk");*/
+            //return;
           }
         }
       }
     }
     std::cout << "  EDGE REMOVE END" << std::endl;
+    continue;
 
     gmds::VTKWriter vtkWriterMeshER(&ioServiceMesh);
     vtkWriterMeshER.setCellOptions(gmds::N|gmds::R);

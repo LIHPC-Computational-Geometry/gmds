@@ -4192,9 +4192,9 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
           std::cout << "nodeA -> " << nodeA << std::endl;
           std::cout << "nodeB -> " << nodeB << std::endl;
           std::cout << std::endl;
-          std::cout << "triangle : " << std::endl;
+          std::cout << "triangle : " << triangle << std::endl;
           std::cout << SimplicesTriangle(this, triangle) << std::endl;
-          std::cout << "oppositeTriangle : " << std::endl;
+          std::cout << "oppositeTriangle : " << oppositeTriangle << std::endl;
           std::cout << SimplicesTriangle(this, oppositeTriangle) << std::endl;
           std::cout << std::endl;
           std::vector<TSimplexID> cellInfo{};
@@ -4841,6 +4841,11 @@ bool SimplexMesh::edgeRemove(const TInt nodeA, const TInt nodeB)
   const std::multimap<TInt, TInt>& facesAlreadyBuilt{};
   std::vector<TSimplexID> cellsCreated{};
 
+
+  if(nodeADim == topo::CORNER || nodeBDim == topo::CORNER)
+  {
+    return status;
+  }
 
   if(nodeADim == nodeBDim)
   {
@@ -5710,7 +5715,7 @@ double SimplexMesh::computeQualityElement(const TInt nodeA, const TInt nodeB, co
   gmds::math::Point points[4] = {pA, pB, pC, pD};
   gmds::math::Tetrahedron tet(points);
   const double volumeK  = tet.getVolume();
-  
+
   Eigen::Matrix3d M0 = (*metric)[nodeA];
   Eigen::Matrix3d M1 = (*metric)[nodeB];
   Eigen::Matrix3d M2 = (*metric)[nodeC];
