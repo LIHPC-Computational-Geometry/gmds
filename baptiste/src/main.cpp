@@ -60,9 +60,11 @@ void testVolFrac()
 	blockSet.saveMesh("MyBlockSet");
 }
 
-double getReward(RLBlockSet blockSet, Mesh targetShape)
+double getReward(RLBlockSet &blockSet, Mesh &targetShape)
 {
+	std::cout << "Entering getReward function\n";
 	blockSet.m_mesh.newVariable<double, GMDS_FACE>("volFrac");
+	std::cout << "Variable created successfully\n";
 	volfraccomputation_2d(&blockSet.m_mesh, &targetShape, blockSet.m_mesh.getVariable<double, GMDS_FACE>("volFrac"));
 	std::cout << "The function has been called successfully" << "\n";
 	Variable<double>* res = blockSet.m_mesh.getVariable<double, GMDS_FACE>("volFrac");
@@ -84,41 +86,24 @@ void testReward()
 }
 
 
-Mesh copyMesh(RLBlockSet blockSet)
-{
-	Tools t = Tools();
-	std::cout << "tools created";
-	blockSet.saveMesh("originalMesh");
-	std::cout << "Mesh saved";
-	t.readMesh("originalMesh.vtk");
-	std::cout << "Mesh read";
-	std::cout << "Mesh copied";
-	return t.m_mesh;
-}
 
-Mesh cloneMesh(const Mesh &mesh)
+void cloneMesh(const Mesh &originalMesh, Mesh &newMesh)
 {
-	if (mesh.getDim() == 3)
+	if (originalMesh.getDim() == 3 or newMesh.getDim() == 3)
 	{
 		throw GMDSException("Dimension must be 2");
 	}
-	Mesh newMesh = Mesh(MeshModel(DIM3|F|N|F2N));
-	for (int nodeID:mesh.nodes())
+
+	for (int nodeID:originalMesh.nodes())
 	{
-		newMesh.newNode(mesh.get<Node>(nodeID).point());
+		newMesh.newNode(originalMesh.get<Node>(nodeID).point());
 	}
-	/*
-	for (int faceID:mesh.faces())
-	{
-		newMesh.newFace(mesh.get<Face>(faceID).get<Node>());
-	}
-	 */
 	std::set<TCellID> invalidIndexes;
-	for (int faceID = 0; faceID <= mesh.getMaxLocalID(2); faceID++)
+	for (int faceID = 0; faceID <= originalMesh.getMaxLocalID(2); faceID++)
 	{
-		if (mesh.has<Face>(faceID))
+		if (originalMesh.has<Face>(faceID))
 		{
-			newMesh.newFace(mesh.get<Face>(faceID).get<Node>());
+			newMesh.newFace(originalMesh.get<Face>(faceID).get<Node>());
 		}
 		else
 		{
@@ -130,20 +115,6 @@ Mesh cloneMesh(const Mesh &mesh)
 	{
 		newMesh.deleteFace(faceID);
 	}
-	std::cout << mesh.getNbNodes() << "\n";
-	std::cout << mesh.getNbFaces() << "\n";
-	std::cout << newMesh.getNbNodes() << "\n";
-	std::cout << newMesh.getNbFaces() << "\n";
-
-	for (int faceID:mesh.faces())
-	{
-		std::cout << faceID;
-	}
-	for (int faceID:newMesh.faces())
-	{
-		std::cout << faceID;
-	}
-	return newMesh;
 }
 
 std::vector<std::map<int , int>> getAllActions()
@@ -174,9 +145,9 @@ std::vector<std::map<int , int>> getAllActions()
 	return actions;
 }
 
-void executeAction(RLBlockSet blockSet, std::map<int , int> action, int faceID)
+void executeAction(RLBlockSet &blockSet, std::map<int , int> &action, int faceID)
 {
-	if (action[0] == 0)
+	if (action[0] == 2)
 	{
 		blockSet.deleteBlock(faceID);
 	}
@@ -198,7 +169,14 @@ void executeAction(RLBlockSet blockSet, std::map<int , int> action, int faceID)
 }
 
 
-void virtualExpert(RLBlockSet blockSet, Mesh targetShape, int nMax)
+void cloneBlockSet(const RLBlockSet &originalBlockSet, RLBlockSet &newBlockSet)
+{
+	cloneMesh(originalBlockSet.m_mesh, newBlockSet.m_mesh);
+	newBlockSet.xSize = originalBlockSet.xSize;
+	newBlockSet.ySize = originalBlockSet.ySize;
+}
+
+void virtualExpert(RLBlockSet &blockSet, Mesh &targetShape, int nMax)
 {
 	std::vector<std::map<int , int>> actions = getAllActions();
 	for (int step=0; step<nMax; step++)
@@ -206,24 +184,29 @@ void virtualExpert(RLBlockSet blockSet, Mesh targetShape, int nMax)
 		std::cout << "Step n°" << step << "\n";
 		for(int faceID: blockSet.m_mesh.faces())
 		{
-			std::cout << "In faceIDs loop n°" << step << "\n";
+			std::cout << "In faceIDs loop with id = " << faceID << "\n";
 			std::map<int , int> bestAction = actions[0];
 			double maxReward = 0;
-			for (std::map<int , int> action:actions)
+			int actionCounter = 0;
+			//std::cout << "Number of actions : " << actions.size() << "\n";
+			for (auto action:actions)
 			{
-				std::cout << "In actions loop n°" << step << "\n";
-				Mesh meshBis = copyMesh(blockSet);
-				std::cout << "Mesh copied cc";
+				//std::cout << "In actions loop n°" << actionCounter << "\n";
+
 				RLBlockSet blockSetBis = RLBlockSet(2);
-				blockSetBis.m_mesh = meshBis;
+				cloneBlockSet(blockSet, blockSetBis);
 				executeAction(blockSetBis, action, faceID);
-				double reward = getReward(blockSetBis, targetShape);
+				//double reward = getReward(blockSetBis, targetShape);
+				//double reward = blockSetBis.getReward(targetShape);
+				double reward = blockSetBis.getReward(targetShape);
+				//double reward = rand() % 10;
+				//double reward = 1;
 				if (reward > maxReward)
 				{
 					maxReward = reward;
-					bestAction= action;
+					bestAction = action;
 				}
-				std::cout << "End of n°" << step << "\n";
+				actionCounter++;
 			}
 			executeAction(blockSet, bestAction, faceID);
 		}
@@ -242,11 +225,14 @@ void testDeepCopy()
 	int nbFaces = blockSet.countBlocks();
 	std::cout << "Number of blocks : " << nbFaces << "\n";
 
-	//RLBlockSet blockSet2 = RLBlockSet(blockSet.m_mesh);
+	/*
 	RLBlockSet blockSet2 = RLBlockSet(2);
 	Mesh mesh2 = cloneMesh(blockSet.m_mesh);
 
 	blockSet2.m_mesh = mesh2;
+	 */
+	RLBlockSet blockSet2 = RLBlockSet(2);
+	cloneBlockSet(blockSet, blockSet2);
 	std::cout << "New block set created" << "\n";
 
 	nbFaces = blockSet2.countBlocks();
@@ -263,21 +249,39 @@ void testDeepCopy()
 
 
 
-
-
 int main()
 {
 	std::cout << "Hello World" << "\n";
-	Mesh targetShape = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk");
+
+
+	//Mesh targetShape = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk");
+	Mesh targetShape = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/A.vtk");
+
 	RLBlockSet blockSet = RLBlockSet(2);
-	blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 8, 4);
-	//virtualExpert(blockSet, targetShape, 25);
-	//blockSet.saveMesh("virtualExpert");
+
+	blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 3, 3);
+
+	//double reward = blockSet.getReward(targetShape);
+	//std::cout << reward << "\n";
+	virtualExpert(blockSet, targetShape, 3);
+
+	blockSet.saveMesh("/home/bonyb/Documents/virtualExpert");
+
+	//Mesh m = Mesh(MeshModel(F|N|F2N|N2F));
+
+	/*
+	RLBlockSet blockSet = RLBlockSet(2);
+	blockSet.setFrame(0, 0, 3, 3, 3, 3);
+	//Mesh m2 = cloneMesh(blockSet.m_mesh);
+	//RLBlockSet blockSet2 = copyBlockSet(blockSet);
 
 
-	//testVolFrac();
+	RLBlockSet blockSetBis = RLBlockSet(2);
+	cloneBlockSet(blockSet, blockSetBis);
+	 */
+
 	//testReward();
-	testDeepCopy();
+	//testDeepCopy();
 
 	/*
 	RLBlockSet blockSet(MeshModel(DIM3|F|N|F2N|N2F));

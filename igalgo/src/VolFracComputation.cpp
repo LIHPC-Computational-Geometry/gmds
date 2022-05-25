@@ -15,30 +15,25 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 	bool valid_input = true;
 	std::string msg("volfraccomputation_2d ");
 
-	std::cout << "Is the input valid ? " << valid_input << "\n";
 	gmds::MeshModel model = AMesh->getModel();
 	if (!model.has(gmds::F) || !model.has(gmds::F2N) || !model.has(gmds::DIM2)) {
 		msg += std::string("bad model for AMesh");
 		valid_input = false;
 	}
-	std::cout << "Is the input valid ? " << valid_input << "\n";
 	if(AMesh->getNbFaces() != AMesh->getNbQuadrilaterals()) {
 		msg += std::string("AMesh should have only quads");
 		valid_input = false;
 	}
-	std::cout << "Is the input valid ? " << valid_input << "\n";
 	gmds::MeshModel modelImprint = AImprintMesh->getModel();
 	if (!modelImprint.has(gmds::F) || !modelImprint.has(gmds::F2N) || !model.has(gmds::DIM2)) {
 		msg += std::string("bad model for AMesh");
 		valid_input = false;
 	}
-	std::cout << "Is the input valid ? " << valid_input << "\n";
 	if(AImprintMesh->getNbFaces() != AImprintMesh->getNbTriangles()) {
 		msg += std::string("AImprintMesh should have only triangles");
 		valid_input = false;
    }
 
-	std::cout << "Is the input valid ? " << valid_input << "\n";
 	// check mesh orientation
 	// TODO
 	for(auto f_id: AMesh->faces()) {

@@ -50,7 +50,18 @@ int RLBlockSet::countBlocks()
 
 void RLBlockSet::deleteBlock(const int faceID)
 {
+	std::cout << "Trying to delete face with id : " << faceID << "\n";
+	std::cout << m_mesh.has<Face>(4);
+	if (m_mesh.has<Face>(faceID))
+	{
+		std::cout << "Has face\n";
+	}
+	else
+	{
+		std::cout << "Does not have face\n";
+	}
 	m_mesh.deleteFace(faceID);
+	std::cout << "Deleted face with id : " << faceID << "\n";
 }
 
 void RLBlockSet::editCorner(const int faceID, bool v, std::string axis, int range)
@@ -157,8 +168,19 @@ std::vector<int> RLBlockSet::getAllFaces()
 	return v;
 }
 
-int RLBlockSet::getReward(Mesh targetMesh)
+double RLBlockSet::getReward(Mesh &targetMesh)
 {
-	//applyVolFrac(m_mesh, targetMesh);
-	return countBlocks();
+	if (not m_mesh.hasVariable(GMDS_FACE, "volFrac"))
+	{
+		m_mesh.newVariable<double, GMDS_FACE>("volFrac");
+	}
+
+	volfraccomputation_2d(&m_mesh, &targetMesh, m_mesh.getVariable<double, GMDS_FACE>("volFrac"));
+	Variable<double>* res = m_mesh.getVariable<double, GMDS_FACE>("volFrac");
+	double sum = 0;
+	for (int i =0; i < res->getNbValues(); i++)
+	{
+		sum += res->value(i);
+	}
+	return sum;
 }
