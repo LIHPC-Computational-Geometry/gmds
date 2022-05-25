@@ -50,18 +50,7 @@ int RLBlockSet::countBlocks()
 
 void RLBlockSet::deleteBlock(const int faceID)
 {
-	std::cout << "Trying to delete face with id : " << faceID << "\n";
-	std::cout << m_mesh.has<Face>(4);
-	if (m_mesh.has<Face>(faceID))
-	{
-		std::cout << "Has face\n";
-	}
-	else
-	{
-		std::cout << "Does not have face\n";
-	}
 	m_mesh.deleteFace(faceID);
-	std::cout << "Deleted face with id : " << faceID << "\n";
 }
 
 void RLBlockSet::editCorner(const int faceID, bool v, std::string axis, int range)

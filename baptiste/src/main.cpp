@@ -60,31 +60,6 @@ void testVolFrac()
 	blockSet.saveMesh("MyBlockSet");
 }
 
-double getReward(RLBlockSet &blockSet, Mesh &targetShape)
-{
-	std::cout << "Entering getReward function\n";
-	blockSet.m_mesh.newVariable<double, GMDS_FACE>("volFrac");
-	std::cout << "Variable created successfully\n";
-	volfraccomputation_2d(&blockSet.m_mesh, &targetShape, blockSet.m_mesh.getVariable<double, GMDS_FACE>("volFrac"));
-	std::cout << "The function has been called successfully" << "\n";
-	Variable<double>* res = blockSet.m_mesh.getVariable<double, GMDS_FACE>("volFrac");
-	double sum = 0;
-	for (int i =0; i < res->getNbValues(); i++)
-	{
-		sum += res->value(i);
-	}
-	return sum;
-}
-
-void testReward()
-{
-	Mesh AImprintMesh = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk");
-	RLBlockSet blockSet = RLBlockSet(2);
-	blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 8, 4);
-	double r = getReward(blockSet, AImprintMesh);
-	std::cout << r << "\n";
-}
-
 
 
 void cloneMesh(const Mesh &originalMesh, Mesh &newMesh)
@@ -147,7 +122,7 @@ std::vector<std::map<int , int>> getAllActions()
 
 void executeAction(RLBlockSet &blockSet, std::map<int , int> &action, int faceID)
 {
-	if (action[0] == 2)
+	if (action[0] == 0)
 	{
 		blockSet.deleteBlock(faceID);
 	}
@@ -188,23 +163,34 @@ void virtualExpert(RLBlockSet &blockSet, Mesh &targetShape, int nMax)
 			std::map<int , int> bestAction = actions[0];
 			double maxReward = 0;
 			int actionCounter = 0;
-			//std::cout << "Number of actions : " << actions.size() << "\n";
 			for (auto action:actions)
 			{
-				//std::cout << "In actions loop n°" << actionCounter << "\n";
-
-				RLBlockSet blockSetBis = RLBlockSet(2);
-				cloneBlockSet(blockSet, blockSetBis);
-				executeAction(blockSetBis, action, faceID);
-				//double reward = getReward(blockSetBis, targetShape);
-				//double reward = blockSetBis.getReward(targetShape);
-				double reward = blockSetBis.getReward(targetShape);
-				//double reward = rand() % 10;
-				//double reward = 1;
-				if (reward > maxReward)
+				if (step <= 0.5 * nMax)
 				{
-					maxReward = reward;
-					bestAction = action;
+					if (action[0] == 1)
+					{
+						RLBlockSet blockSetBis = RLBlockSet(2);
+						cloneBlockSet(blockSet, blockSetBis);
+						executeAction(blockSetBis, action, faceID);
+						double reward = blockSetBis.getReward(targetShape);
+						if (reward > maxReward)
+						{
+							maxReward = reward;
+							bestAction = action;
+						}
+					}
+				}
+				else
+				{
+					RLBlockSet blockSetBis = RLBlockSet(2);
+					cloneBlockSet(blockSet, blockSetBis);
+					executeAction(blockSetBis, action, faceID);
+					double reward = blockSetBis.getReward(targetShape);
+					if (reward > maxReward)
+					{
+						maxReward = reward;
+						bestAction = action;
+					}
 				}
 				actionCounter++;
 			}
@@ -254,18 +240,21 @@ int main()
 	std::cout << "Hello World" << "\n";
 
 
-	//Mesh targetShape = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk");
-	Mesh targetShape = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/A.vtk");
+	Mesh targetShape = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk");
+	//Mesh targetShape = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/A.vtk");
+	//Mesh targetShape = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk");
+
 
 	RLBlockSet blockSet = RLBlockSet(2);
 
 	blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 3, 3);
-
+	//blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/A.vtk", 3, 3);
+	//blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk", 3, 3);
 	//double reward = blockSet.getReward(targetShape);
 	//std::cout << reward << "\n";
-	virtualExpert(blockSet, targetShape, 3);
+	virtualExpert(blockSet, targetShape, 5);
 
-	blockSet.saveMesh("/home/bonyb/Documents/virtualExpert");
+	blockSet.saveMesh("/home/bonyb/Documents/virtualExpertCurvedShape");
 
 	//Mesh m = Mesh(MeshModel(F|N|F2N|N2F));
 
