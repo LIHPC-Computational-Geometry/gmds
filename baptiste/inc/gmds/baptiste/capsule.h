@@ -17,4 +17,4 @@ namespace gmds
 	   void readMesh(std::string filename);
    };
 }
-#endif     // GMDS_TOOLS_H
+#endif     // GMDS_CAPSULE_H
