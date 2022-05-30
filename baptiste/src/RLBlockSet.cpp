@@ -103,13 +103,13 @@ void RLBlockSet::editCorner(const int faceID, bool v, std::string axis, int rang
 	}
 }
 
-void RLBlockSet::saveMesh(std::string title)
+void RLBlockSet::saveMesh(std::string filename)
 {
 	IGMeshIOService ioService(&m_mesh);
 	VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write(title + ".vtk");
+	vtkWriter.write(filename);
 }
 
 void RLBlockSet::setFromFile(std::string filename, int nX, int nY)

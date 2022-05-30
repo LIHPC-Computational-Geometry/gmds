@@ -46,7 +46,7 @@ void testVolFrac()
 
 	volfraccomputation_2d(&AMesh, &AImprintMesh, AMesh.getVariable<double, GMDS_FACE>("volFrac"));
 
-	blockSet.saveMesh("MyBlockSet");
+	blockSet.saveMesh("MyBlockSet.vtk");
 }
 
 std::vector<std::map<int , int>> getAllActions()
@@ -196,7 +196,7 @@ int main()
 	//std::cout << reward << "\n";
 	virtualExpert(blockSet, targetShape, 5);
 
-	blockSet.saveMesh("/home/bonyb/Documents/virtualExpertCurvedShape");
+	blockSet.saveMesh("/home/bonyb/Documents/virtualExpertCurvedShape.vtk");
 
 	//Mesh m = Mesh(MeshModel(F|N|F2N|N2F));
 
@@ -247,7 +247,7 @@ int main()
 	}
 
 
-	// blockSet.saveMesh("MyBlockSet");
+	// blockSet.saveMesh("MyBlockSet.vtk");
 	 */
 	return 0;
 }
