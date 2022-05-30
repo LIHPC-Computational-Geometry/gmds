@@ -54,6 +54,8 @@ PYBIND11_MODULE(environment, m)
 
 	// m.def("readMesh", &gmds::readMesh);
 
+	m.def("cloneBlockSet", &gmds::cloneBlockSet);
+
 	m.def("applyVolFrac", &gmds::applyVolFrac);
 
 	m.def("getVolFrac", &gmds::getVolFrac);
