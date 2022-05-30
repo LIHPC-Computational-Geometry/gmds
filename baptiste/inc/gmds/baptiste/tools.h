@@ -16,16 +16,5 @@ namespace gmds
    void cloneBlockSet(const RLBlockSet &originalBlockSet, RLBlockSet &newBlockSet);
 
    Mesh readMesh(std::string filename);
-
-   class Tools
-   {
-	 public:
-	   Tools();
-
-	   Mesh m_mesh;
-	   void readMesh(std::string filename);
-	   void computeVolFrac(Mesh AMesh, Mesh targetMesh);
-   };
-
 }
 #endif     // GMDS_TOOLS_H

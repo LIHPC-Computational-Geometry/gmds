@@ -1,11 +1,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/functional.h>
-#include <pybind11/chrono.h>
 #include "gmds/baptiste/RLBlockSet.h"
 #include "gmds/baptiste/tools.h"
-#include <pybind11/embed.h>
-#include "gmds/igalgo/VolFracComputation.h"
+#include "gmds/baptiste/capsule.h"
 
 namespace py = pybind11;
 
@@ -29,9 +26,6 @@ PYBIND11_MODULE(environment, m)
 	   .def("getAllFaces", &gmds::RLBlockSet::getAllFaces)
 	   .def("getReward", &gmds::RLBlockSet::getReward);
 
-	py::class_<gmds::MeshModel>(m, "MeshModel")
-	   .def(py::init<const int &>());
-
 	py::class_<gmds::Mesh>(m, "Mesh")
 	   .def(py::init<const gmds::MeshModel&>())
 	   .def("faces", &gmds::Mesh::faces)
@@ -52,18 +46,10 @@ PYBIND11_MODULE(environment, m)
 
 	py::class_<gmds::Face>(m, "Face");
 
-	m.def("readMesh", &gmds::readMesh);
-
 	m.def("cloneBlockSet", &gmds::cloneBlockSet);
 
-	m.def("volFracComputation2D", &gmds::volfraccomputation_2d);
-
-	py::class_<gmds::Tools>(m, "Tools")
+	py::class_<gmds::Capsule>(m, "Capsule")
 	   .def(py::init<>())
-	   .def_readwrite("m_mesh", &gmds::Tools::m_mesh)
-	   .def("readMesh", &gmds::Tools::readMesh)
-		.def("computeVolFrac", &gmds::Tools::computeVolFrac);
-
-	py::class_<gmds::Variable<double>>(m, "meshDouble");
-
+	   .def_readwrite("m_mesh", &gmds::Capsule::m_mesh)
+	   .def("readMesh", &gmds::Capsule::readMesh);
  }

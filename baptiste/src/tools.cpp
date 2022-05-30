@@ -66,19 +66,3 @@ Mesh gmds::readMesh(std::string filename)
 	vtkReader.read(filename);
 	return mesh;
 }
-
-Tools::Tools() : m_mesh(MeshModel(DIM2|F|N|F2N)) {}
-
-void Tools::readMesh(std::string filename)
-{
-	gmds::IGMeshIOService ioService(&m_mesh);
-	gmds::VTKReader vtkReader(&ioService);
-	vtkReader.setCellOptions(gmds::N|gmds::F);
-	vtkReader.read(filename);
-}
-
-void Tools::computeVolFrac(Mesh AMesh, Mesh targetMesh)
-{
-	AMesh.newVariable<double, GMDS_FACE>("volFrac");
-	volfraccomputation_2d(&AMesh, &targetMesh, AMesh.getVariable<double, GMDS_FACE>("volFrac"));
-}

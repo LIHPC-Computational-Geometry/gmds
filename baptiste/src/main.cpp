@@ -2,7 +2,6 @@
 #include "gmds/baptiste/RLBlockSet.h"
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/igalgo/VolFracComputation.h"
-#include <gmds/io/VTKReader.h>
 #include "gmds/baptiste/tools.h"
 #include <map>
 #include <string>
