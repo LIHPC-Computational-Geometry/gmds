@@ -5,6 +5,7 @@
 #include "gmds/baptiste/tools.h"
 #include <map>
 #include <string>
+#include "gmds/baptiste/action.h"
 
 using namespace gmds;
 
@@ -176,11 +177,47 @@ void testDeepCopy()
 	std::cout << "Number of blocks 2 : " << nbFaces << "\n";
 }
 
+void testActions()
+{
+	RLBlockSet blockSet = RLBlockSet();
+	double xMin = 0;
+	double yMin = 0;
+	double xMax = 9;
+	double yMax = 9;
+	blockSet.setFrame(xMin, yMin, xMax, yMax);
+
+	int nbFaces = blockSet.countBlocks();
+	std::cout << "Number of blocks : " << nbFaces << "\n";
+
+	ActionDelete a1 = ActionDelete();
+	ActionEdit a2 = ActionEdit(0, 0, 1);
+
+	std::vector<Action*> vect;
+
+	vect.push_back(&a1);
+	vect.push_back(&a2);
+
+	for (auto& action : vect)
+	{
+		if (dynamic_cast<ActionDelete*>(action) == nullptr)
+		{
+			ActionEdit* child = dynamic_cast<ActionEdit*>(action);
+			child->executeAction(blockSet, 1);
+		}
+		else
+		{
+			action->executeAction(blockSet, 0);
+		}
+	}
+}
 
 int main()
 {
 	std::cout << "Hello World" << "\n";
 
+	testActions();
+
+	/*
 
 	Mesh targetShape = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk");
 	//Mesh targetShape = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/A.vtk");
@@ -249,5 +286,6 @@ int main()
 
 	// blockSet.saveMesh("MyBlockSet.vtk");
 	 */
+
 	return 0;
 }

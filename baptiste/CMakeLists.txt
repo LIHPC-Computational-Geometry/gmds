@@ -11,12 +11,14 @@ set(GMDS_INC
         inc/gmds/baptiste/RLBlockSet.h
         inc/gmds/baptiste/tools.h
         inc/gmds/baptiste/capsule.h
+        inc/gmds/baptiste/action.h
         )
 
 set(GMDS_SRC
         src/RLBlockSet.cpp
         src/tools.cpp
         src/capsule.cpp
+        src/action.cpp
         src/main.cpp)
 
 #==============================================================================
@@ -62,7 +64,7 @@ target_compile_features(Baptiste PUBLIC cxx_std_14)
 
 add_subdirectory(pybind11)
 
-pybind11_add_module(environment src/wrapper.cpp src/RLBlockSet.cpp src/tools.cpp src/capsule.cpp)
+pybind11_add_module(environment src/wrapper.cpp src/RLBlockSet.cpp src/tools.cpp src/capsule.cpp src/action.cpp)
 target_link_libraries(environment PUBLIC
         ${LIB_GMDS_IG}
         ${LIB_GMDS_IO}
