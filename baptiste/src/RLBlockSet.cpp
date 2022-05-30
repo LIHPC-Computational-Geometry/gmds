@@ -160,7 +160,6 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 	{
 		m_mesh.newVariable<double, GMDS_FACE>("volFrac");
 	}
-
 	volfraccomputation_2d(&m_mesh, &targetMesh, m_mesh.getVariable<double, GMDS_FACE>("volFrac"));
 	Variable<double>* res = m_mesh.getVariable<double, GMDS_FACE>("volFrac");
 	double sum = 0;

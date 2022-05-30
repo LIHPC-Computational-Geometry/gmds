@@ -15,10 +15,7 @@ namespace gmds
 
    void cloneBlockSet(const RLBlockSet &originalBlockSet, RLBlockSet &newBlockSet);
 
-   // plutôt void applyVolFrac(Mesh* mesh, Mesh* targetMesh);
-   void applyVolFrac(Mesh mesh, Mesh targetMesh);
-
-   Variable<double>* getVolFrac(Mesh mesh);
+   Mesh readMesh(std::string filename);
 
    class Tools
    {

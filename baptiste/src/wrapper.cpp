@@ -52,13 +52,9 @@ PYBIND11_MODULE(environment, m)
 
 	py::class_<gmds::Face>(m, "Face");
 
-	// m.def("readMesh", &gmds::readMesh);
+	m.def("readMesh", &gmds::readMesh);
 
 	m.def("cloneBlockSet", &gmds::cloneBlockSet);
-
-	m.def("applyVolFrac", &gmds::applyVolFrac);
-
-	m.def("getVolFrac", &gmds::getVolFrac);
 
 	m.def("volFracComputation2D", &gmds::volfraccomputation_2d);
 

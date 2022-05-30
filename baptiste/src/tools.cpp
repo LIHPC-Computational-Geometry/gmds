@@ -56,7 +56,7 @@ void gmds::cloneBlockSet(const RLBlockSet &originalBlockSet, RLBlockSet &newBloc
 	newBlockSet.ySize = originalBlockSet.ySize;
 }
 
-/*
+
 Mesh gmds::readMesh(std::string filename)
 {
 	Mesh mesh = Mesh(MeshModel(DIM2|F|N|F2N));
@@ -66,20 +66,6 @@ Mesh gmds::readMesh(std::string filename)
 	vtkReader.read(filename);
 	return mesh;
 }
- */
-
-void gmds::applyVolFrac(Mesh mesh, Mesh targetMesh)
-{
-	mesh.newVariable<double, GMDS_FACE>("volFrac");
-	volfraccomputation_2d(&mesh, &targetMesh, mesh.getVariable<double, GMDS_FACE>("volFrac"));
-}
-
-Variable<double>* gmds::getVolFrac(Mesh mesh)
-{
-	Variable<double>* res = mesh.getVariable<double, GMDS_FACE>("volFrac");
-	return res;
-}
-
 
 Tools::Tools() : m_mesh(MeshModel(DIM2|F|N|F2N)) {}
 

@@ -9,16 +9,6 @@
 
 using namespace gmds;
 
-Mesh readMesh(std::string filename)
-{
-	Mesh mesh = Mesh(MeshModel(DIM2|F|N|F2N));
-	gmds::IGMeshIOService ioService(&mesh);
-	gmds::VTKReader vtkReader(&ioService);
-	vtkReader.setCellOptions(gmds::N|gmds::F);
-	vtkReader.read(filename);
-	return mesh;
-}
-
 void testVolFrac()
 {
 	Mesh AImprintMesh = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk");
