@@ -23,7 +23,7 @@ void testVolFrac()
 {
 	Mesh AImprintMesh = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk");
 	//RLBlockSet blockSet = RLBlockSet(MeshModel(DIM2|F|N|F2N|N2F));
-	RLBlockSet blockSet = RLBlockSet(2);
+	RLBlockSet blockSet = RLBlockSet();
 	std::cout << "Constructor Ok" << "\n";
 	blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 8, 4);
 	Mesh AMesh = blockSet.m_mesh;
@@ -129,7 +129,7 @@ void virtualExpert(RLBlockSet &blockSet, Mesh &targetShape, int nMax)
 				{
 					if (action[0] == 1)
 					{
-						RLBlockSet blockSetBis = RLBlockSet(2);
+						RLBlockSet blockSetBis = RLBlockSet();
 						cloneBlockSet(blockSet, blockSetBis);
 						executeAction(blockSetBis, action, faceID);
 						double reward = blockSetBis.getReward(targetShape);
@@ -142,7 +142,7 @@ void virtualExpert(RLBlockSet &blockSet, Mesh &targetShape, int nMax)
 				}
 				else
 				{
-					RLBlockSet blockSetBis = RLBlockSet(2);
+					RLBlockSet blockSetBis = RLBlockSet();
 					cloneBlockSet(blockSet, blockSetBis);
 					executeAction(blockSetBis, action, faceID);
 					double reward = blockSetBis.getReward(targetShape);
@@ -161,7 +161,7 @@ void virtualExpert(RLBlockSet &blockSet, Mesh &targetShape, int nMax)
 
 void testDeepCopy()
 {
-	RLBlockSet blockSet = RLBlockSet(2);
+	RLBlockSet blockSet = RLBlockSet();
 	double xMin = 0;
 	double yMin = 0;
 	double xMax = 9;
@@ -171,13 +171,7 @@ void testDeepCopy()
 	int nbFaces = blockSet.countBlocks();
 	std::cout << "Number of blocks : " << nbFaces << "\n";
 
-	/*
-	RLBlockSet blockSet2 = RLBlockSet(2);
-	Mesh mesh2 = cloneMesh(blockSet.m_mesh);
-
-	blockSet2.m_mesh = mesh2;
-	 */
-	RLBlockSet blockSet2 = RLBlockSet(2);
+	RLBlockSet blockSet2 = RLBlockSet();
 	cloneBlockSet(blockSet, blockSet2);
 	std::cout << "New block set created" << "\n";
 
@@ -204,7 +198,7 @@ int main()
 	//Mesh targetShape = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk");
 
 
-	RLBlockSet blockSet = RLBlockSet(2);
+	RLBlockSet blockSet = RLBlockSet();
 
 	blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 3, 3);
 	//blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/A.vtk", 3, 3);
@@ -218,13 +212,13 @@ int main()
 	//Mesh m = Mesh(MeshModel(F|N|F2N|N2F));
 
 	/*
-	RLBlockSet blockSet = RLBlockSet(2);
+	RLBlockSet blockSet = RLBlockSet();
 	blockSet.setFrame(0, 0, 3, 3, 3, 3);
 	//Mesh m2 = cloneMesh(blockSet.m_mesh);
 	//RLBlockSet blockSet2 = copyBlockSet(blockSet);
 
 
-	RLBlockSet blockSetBis = RLBlockSet(2);
+	RLBlockSet blockSetBis = RLBlockSet();
 	cloneBlockSet(blockSet, blockSetBis);
 	 */
 

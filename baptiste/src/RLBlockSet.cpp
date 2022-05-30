@@ -16,9 +16,6 @@ RLBlockSet::RLBlockSet(MeshModel model)
 	:m_mesh(model) {}
 
 RLBlockSet::RLBlockSet()
-  :m_mesh(MeshModel(DIM3|F|N|F2N|N2F)) {}
-
-RLBlockSet::RLBlockSet(int dim2)
   :m_mesh(MeshModel(DIM2|F|N|F2N|N2F)) {}
 
 RLBlockSet::~RLBlockSet() {}

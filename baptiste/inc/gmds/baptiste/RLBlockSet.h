@@ -19,8 +19,6 @@ class RLBlockSet
 
 	RLBlockSet();
 
-	RLBlockSet(int dim2);
-
 	~RLBlockSet();
 
 	gmds::Mesh m_mesh;
