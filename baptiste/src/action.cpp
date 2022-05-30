@@ -4,13 +4,6 @@ using namespace gmds;
 
 Action::Action() {}
 
-/*
-void Action::executeAction(RLBlockSet &blockSet, int faceID)
-{
-	std::cout << "Entering base executeAction function ...";
-}
- */
-
 ActionDelete::ActionDelete() {}
 
 void ActionDelete::executeAction(RLBlockSet &blockSet, int faceID)
