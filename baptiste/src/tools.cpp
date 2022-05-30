@@ -66,3 +66,21 @@ Mesh gmds::readMesh(std::string filename)
 	vtkReader.read(filename);
 	return mesh;
 }
+std::vector<Action *> gmds::getActionsVector()
+{
+	std::vector<Action *> actions;
+	ActionDelete d = ActionDelete();
+	actions.push_back(&d);
+	for (int iV = 0; iV <= 1; iV++)
+	{
+		for (int iAxis = 0; iAxis <= 1; iAxis++) {
+			std::vector<int> ranges = {-2, -1, 1, 2};
+			for (int iRange : ranges)
+			{
+				ActionEdit e = ActionEdit(iV, iAxis, iRange);
+				actions.push_back(&e);
+			}
+		}
+	}
+	return actions;
+}

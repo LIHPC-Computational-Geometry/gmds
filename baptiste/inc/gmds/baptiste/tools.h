@@ -5,6 +5,7 @@
 #include <gmds/ig/Mesh.h>
 #include "gmds/baptiste/RLBlockSet.h"
 #include "GMDSIgAlgo_export.h"
+#include "gmds/baptiste/action.h"
 /*----------------------------------------------------------------------------*/
 
 namespace gmds
@@ -16,5 +17,7 @@ namespace gmds
    void cloneBlockSet(const RLBlockSet &originalBlockSet, RLBlockSet &newBlockSet);
 
    Mesh readMesh(std::string filename);
+
+   std::vector<Action*> getActionsVector();
 }
 #endif     // GMDS_TOOLS_H

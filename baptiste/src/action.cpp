@@ -11,10 +11,10 @@ void ActionDelete::executeAction(RLBlockSet &blockSet, int faceID)
 	blockSet.deleteBlock(faceID);
 }
 
-ActionEdit::ActionEdit(int V, int Axis, int Range)
+ActionEdit::ActionEdit(int iV, int iAxis, int iRange)
 {
-	v = !!V;
-	if (Axis == 0)
+	v = !!iV;
+	if (iAxis == 0)
 	{
 		axis = "x";
 	}
@@ -22,7 +22,7 @@ ActionEdit::ActionEdit(int V, int Axis, int Range)
 	{
 		axis = "y";
 	}
-	range = Range;
+	range = iRange;
 }
 
 void ActionEdit::executeAction(RLBlockSet &blockSet, int faceID)
