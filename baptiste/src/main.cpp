@@ -60,38 +60,6 @@ void testVolFrac()
 	blockSet.saveMesh("MyBlockSet");
 }
 
-
-
-void cloneMesh(const Mesh &originalMesh, Mesh &newMesh)
-{
-	if (originalMesh.getDim() == 3 or newMesh.getDim() == 3)
-	{
-		throw GMDSException("Dimension must be 2");
-	}
-
-	for (int nodeID:originalMesh.nodes())
-	{
-		newMesh.newNode(originalMesh.get<Node>(nodeID).point());
-	}
-	std::set<TCellID> invalidIndexes;
-	for (int faceID = 0; faceID <= originalMesh.getMaxLocalID(2); faceID++)
-	{
-		if (originalMesh.has<Face>(faceID))
-		{
-			newMesh.newFace(originalMesh.get<Face>(faceID).get<Node>());
-		}
-		else
-		{
-			newMesh.newFace({0, 0, 0, 0});
-			invalidIndexes.insert(faceID);
-		}
-	}
-	for (int faceID:invalidIndexes)
-	{
-		newMesh.deleteFace(faceID);
-	}
-}
-
 std::vector<std::map<int , int>> getAllActions()
 {
 	std::vector<std::map<int , int>> actions;
@@ -141,14 +109,6 @@ void executeAction(RLBlockSet &blockSet, std::map<int , int> &action, int faceID
 		int range = action[3];
 		blockSet.editCorner(faceID, v, axis, range);
 	}
-}
-
-
-void cloneBlockSet(const RLBlockSet &originalBlockSet, RLBlockSet &newBlockSet)
-{
-	cloneMesh(originalBlockSet.m_mesh, newBlockSet.m_mesh);
-	newBlockSet.xSize = originalBlockSet.xSize;
-	newBlockSet.ySize = originalBlockSet.ySize;
 }
 
 void virtualExpert(RLBlockSet &blockSet, Mesh &targetShape, int nMax)
@@ -232,7 +192,6 @@ void testDeepCopy()
 	nbFaces = blockSet2.countBlocks();
 	std::cout << "Number of blocks 2 : " << nbFaces << "\n";
 }
-
 
 
 int main()

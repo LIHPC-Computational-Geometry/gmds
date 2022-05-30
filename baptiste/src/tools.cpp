@@ -2,6 +2,7 @@
 #include "gmds/io/IGMeshIOService.h"
 #include <gmds/io/VTKReader.h>
 #include "gmds/igalgo/VolFracComputation.h"
+#include "gmds/baptiste/RLBlockSet.h"
 
 using namespace gmds;
 
@@ -16,6 +17,43 @@ std::vector<double> gmds::LinearSpacedArray(double a, double b, std::size_t N)
 		*x = val;
 	}
 	return v;
+}
+
+void gmds::cloneMesh(const Mesh &originalMesh, Mesh &newMesh)
+{
+	if (originalMesh.getDim() == 3 or newMesh.getDim() == 3)
+	{
+		throw GMDSException("Dimension must be 2");
+	}
+
+	for (int nodeID:originalMesh.nodes())
+	{
+		newMesh.newNode(originalMesh.get<Node>(nodeID).point());
+	}
+	std::set<TCellID> invalidIndexes;
+	for (int faceID = 0; faceID <= originalMesh.getMaxLocalID(2); faceID++)
+	{
+		if (originalMesh.has<Face>(faceID))
+		{
+			newMesh.newFace(originalMesh.get<Face>(faceID).get<Node>());
+		}
+		else
+		{
+			newMesh.newFace({0, 0, 0, 0});
+			invalidIndexes.insert(faceID);
+		}
+	}
+	for (int faceID:invalidIndexes)
+	{
+		newMesh.deleteFace(faceID);
+	}
+}
+
+void gmds::cloneBlockSet(const RLBlockSet &originalBlockSet, RLBlockSet &newBlockSet)
+{
+	cloneMesh(originalBlockSet.m_mesh, newBlockSet.m_mesh);
+	newBlockSet.xSize = originalBlockSet.xSize;
+	newBlockSet.ySize = originalBlockSet.ySize;
 }
 
 /*
@@ -41,6 +79,7 @@ Variable<double>* gmds::getVolFrac(Mesh mesh)
 	Variable<double>* res = mesh.getVariable<double, GMDS_FACE>("volFrac");
 	return res;
 }
+
 
 Tools::Tools() : m_mesh(MeshModel(DIM2|F|N|F2N)) {}
 
