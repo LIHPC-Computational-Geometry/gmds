@@ -11,6 +11,7 @@
 #include "gmds/paul/Actions_Agent.h"
 #include "gmds/paul/Tools.h"
 #include "gmds/paul/Environment.h"
+#include "gmds/paul/Q_Learning_Algo.h"
 
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKWriter.h"
@@ -124,7 +125,7 @@ int main(){
 	actionb.executeCutEdge(mGridAround.get<Node>(2),mGridAround.get<Node>(56));
 
 	//Glide
-	//volfraccomputation_2d(&mGridAround,&mImprint,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
+
 	actionb.executeGlideNode(mGridAround.get<Node>(130),&mImprint);
 	actionb.executeGlideNode(mGridAround.get<Node>(61),&mImprint);
 	actionb.executeGlideNode(mGridAround.get<Node>(84),&mImprint);
@@ -175,18 +176,28 @@ int main(){
 	actionb.executeDeleteFace(29);
 	actionb.executeDeleteFace(10);*/
 
-	Environment environment(&gridAround,&mImprint);
+	volfraccomputation_2d(&mGridAround,&mImprint,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
+
+	Environment environment(&gridAround,&mImprint,&actionb);
+	environment.executeAction(environment.faceSelect(),1);
+
+	initQTable();
+
+
 
 	environment.localIoU(mGridAround.get<Face>(6));
 
 	//===================================== TEST ACTIONS CUT FACE ET DIRECTION ===============================
-	actionb.executeCutFace(gridAround.m_mesh.get<Face>(6),1);
+	/*actionb.executeCutFace(gridAround.m_mesh.get<Face>(6),1);
 	actionb.executeCutFace(gridAround.m_mesh.get<Face>(16),0);
 	actionb.executeCutFace(gridAround.m_mesh.get<Face>(2),1);
-	actionb.executeCutFace(gridAround.m_mesh.get<Face>(31),1);
+	actionb.executeCutFace(gridAround.m_mesh.get<Face>(31),1);*/
 
 
 	environment.localIoU(mGridAround.get<Face>(6));
+	std::cout<<"Reward : "<<environment.reward(mGridAround.get<Face>(6))<<std::endl;
+
+
 
 	//0.745944
 

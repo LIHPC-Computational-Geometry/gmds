@@ -64,12 +64,12 @@ void GridBuilderAround::executeGrid2D(const gmds::TInt ANb) {
 	double rangeX = abs(Xmin-Xmax);
 	double rangeY = abs(Ymin-Ymax);
 	double rangeZ = 0;
-	std::cout<<"Xmax : "<<Xmax<<std::endl;
+	/*std::cout<<"Xmax : "<<Xmax<<std::endl;
 	std::cout<<"Ymax : "<<Ymax<<std::endl;
 	std::cout<<"Xmin : "<<Xmin<<std::endl;
 	std::cout<<"Ymin : "<<Ymin<<std::endl;
 	std::cout<<"range X : "<<rangeX<<std::endl;
-	std::cout<<"range Y : "<<rangeY<<std::endl;
+	std::cout<<"range Y : "<<rangeY<<std::endl;*/
 
 	m_mesh.clear();
 	if (m_dim == 2){

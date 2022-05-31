@@ -253,14 +253,39 @@ class Tools{
 	 */
 	std::map<TCellID ,TCellID> getBoundaryNodes (Mesh *AMesh);
 
+	/** \brief get a vertical edge for a face
+	 *
+	 * @param AFace the face
+	 * @return the selected edge (vector of 2 nodes)
+	 */
 	std::vector<Node> getVerticalEdge (Face AFace);
 
+	/** \brief get a horizontal edge for a face
+	 *
+	 * @param AFace the face
+	 * @return the selected edge (vector of 2 nodes)
+	 */
 	std::vector<Node> getHorizontalEdge (Face AFace);
 
+	/** \brief the node with the minimum range between the selected face and the boundary of the TargetMesh
+	 *
+	 * @param AFace the face
+	 * @return the selected node
+	 */
 	Node selectNodeMinRange (Face AFace);
+	/** \brief the node with the maximum range between the selected face and the boundary of the TargetMesh
+	 *
+	 * @param AFace the face
+	 * @return the selected node
+	 */
+	Node selectNodeMaxRange (Face AFace);
 
-
-
+	/** \brief cacl the range between 2 nodes
+	 *
+	 * @param node1 the first node
+	 * @param node2 the second node
+	 * @return the range
+	 */
 	double calcRangePoints(Node node1, Node node2);
 
 	gmds::GridBuilderAround g_grid;

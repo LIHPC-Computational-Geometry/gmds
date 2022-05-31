@@ -20,7 +20,7 @@ namespace gmds {
 	    *
 	    * @param faceID id of the face to delete
 	    */
-	   void executeDeleteFace(const int faceID);
+	   void executeDeleteFace(int faceID);
 
 	   /** \brief action for cute a face
 	    *
@@ -43,7 +43,10 @@ namespace gmds {
 
 	   void executeGlideNode(Node node,Mesh *AMesh);
 
-	   void executeGlidNodeFace(Face AFace);
+	   void executeGlideMaxNodeFace(Face AFace);
+	   void executeGlideMinNodeFace(Face AFace);
+
+	   void executeAction(int actionSelect,Face AFace);
 
 	   gmds::GridBuilderAround g_grid;
 	   gmds::Tools tool;

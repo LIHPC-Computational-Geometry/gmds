@@ -4,7 +4,7 @@ using namespace gmds;
 Actions::Actions(GridBuilderAround *AGrid)
    :g_grid(*AGrid), tool(&g_grid){;}
 
-void Actions::executeDeleteFace(const int faceID)
+void Actions::executeDeleteFace(int faceID)
 {
 	g_grid.flipActivate(faceID);
 }
@@ -61,8 +61,14 @@ void Actions::executeCutFace(Face AFace, int direction)
 	else{std::cout<<"Error input"<<std::endl;}
 }
 
-void Actions::executeGlidNodeFace(Face AFace)
+void Actions::executeGlideMaxNodeFace(Face AFace)
 {
-	Node theNode = tool.selectNodeMinRange(AFace);
-	Actions::executeGlideNode(theNode,&g_grid.meshTarget);
+	Node ANode = tool.selectNodeMaxRange(AFace);
+	Actions::executeGlideNode(ANode,&g_grid.meshTarget);
+}
+
+void Actions::executeGlideMinNodeFace(Face AFace)
+{
+	Node ANode = tool.selectNodeMinRange(AFace);
+	Actions::executeGlideNode(ANode,&g_grid.meshTarget);
 }

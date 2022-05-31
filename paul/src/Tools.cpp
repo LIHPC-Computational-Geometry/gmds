@@ -815,6 +815,33 @@ Node Tools::selectNodeMinRange(Face AFace)
 
 }
 
+Node Tools::selectNodeMaxRange(Face AFace)
+{
+	Node maxNode;
+	double maxRange;
+	bool maxRangeNull = true;
+	auto listNodes = Tools::getListNodesOfFace(AFace.id());
+	auto  boundaryNodes = Tools::getBoundaryNodes(&g_grid.meshTarget);
+	for (auto b : boundaryNodes){
+		for (auto n : listNodes) {
+			double range = Tools::calcRangePoints(n,g_grid.meshTarget.get<Node>(b.first));
+			if (maxRangeNull == true ) {
+				maxNode = n;
+				maxRange = range;
+				maxRangeNull=false;
+			}
+			else if (range > maxRange){
+				maxRange = range;
+				maxNode = n;
+
+			}
+		}
+
+	}
+	return maxNode;
+
+}
+
 double Tools::calcRangePoints(Node node1, Node node2)
 {
 	double range = 0;
