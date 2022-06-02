@@ -345,7 +345,7 @@ class SimplexMesh
 
   bool isFaceBuild(const std::vector<TInt>& nodes);
 
-  void rebuildCavity(operators::CavityOperator::CavityIO& cavityIO, const TInt nodeToConnect, std::vector<TSimplexID>& createdCells);
+  void rebuildCavity(operators::CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri, const TInt nodeToConnect, std::vector<TSimplexID>& createdCells);
 
   void pointsLabeling(const std::vector<math::Point> &points, std::vector<int>& pointsLabeling, std::vector<int>& topoIndex, std::vector<TInt>& nearNodes);
 
@@ -413,6 +413,10 @@ class SimplexMesh
   double computeQualityElement(const TSimplexID simplex);
 
   double computeQualityElement(const TInt nodeA, const TInt nodeB, const TInt nodeC, const TInt nodeD);
+
+  const std::vector<TSimplexID>& getBase(){return m_base;}
+
+  void setBase(const TInt node, const TSimplexID simplex);
 
 private:
 

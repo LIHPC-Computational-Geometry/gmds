@@ -66,6 +66,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
 
       if(flag && initCavity.size() != 0)
       {
+        const std::vector<TSimplexID>& base = simplexMesh->getBase();
 
         CavityOperator cavOp(simplexMesh);
         std::vector<TSimplexID> initialCavityCell{};
@@ -86,6 +87,15 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
         CavityOperator::CavityIO cavityIO(simplexMesh);
         if(cavOp.cavityEnlargement(cavityIO, initialCavityCell, initialCavityTriangle, simpliceNode, criterion, facesAlreadyBuilt, markedSimplex))
         {
+          const std::vector<std::vector<TInt>>& pointsToConnect = cavityIO.getNodesToReconnect();
+          for(auto const & nodes : pointsToConnect)
+          {
+            if(nodes[0] == simpliceNode.getGlobalNode() || nodes[1] == simpliceNode.getGlobalNode() || nodes[2] == simpliceNode.getGlobalNode())
+            {
+              status = false;
+              return;
+            }
+          }
           //test sur les triangles non connecté a P pour ne pas créer de retournement topologique
           for(auto const triNotCo : cavityIO.getTrianglesNotConnectedToPInCavity())
           {
@@ -105,7 +115,6 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             return;
           }
           const std::vector<TInt>& nodesInsideCavity = cavityIO.getNodeInCavity();
-
           cavityIO.nodesReconnection(simpliceNode.getGlobalNode());
 
           ////////////////////////////ADRIEN IDEA///////////////////////////////////////
@@ -229,44 +238,49 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             }
           }
 
-
-          /*if(simpliceNode.getGlobalNode() == 271729){
-            //simplexMesh->deleteAllSimplicesBut(cavityIO.cellInCavity());
-            for(auto const & triangleConnectedToP : cavityIO.getTrianglesConnectedToPInCavity())
-            {
-              std::cout << "triangleConnectedToP to delete --> " << SimplicesTriangle(simplexMesh, -triangleConnectedToP) << std::endl;
-            }
-            for(auto const & triangleNotConnectedToP : cavityIO.getTrianglesNotConnectedToPInCavity())
-            {
-              std::cout << "triangleNotConnectedToP --> " << SimplicesTriangle(simplexMesh, -triangleNotConnectedToP) << std::endl;
-            }
-            gmds::ISimplexMeshIOService ioService0(simplexMesh);
-            gmds::VTKWriter vtkWriter0(&ioService0);
-            vtkWriter0.setCellOptions(gmds::N|gmds::R|gmds::F);
-            vtkWriter0.setDataOptions(gmds::N|gmds::R|gmds::F);
-            vtkWriter0.write("MESH_BUG_" + std::to_string(simpliceNode.getGlobalNode()) + ".vtk");
-            throw gmds::GMDSException("OKOK");
-          }*/
-          //SimplexMesh beforeBugMesh = *simplexMesh;
           //deleteThe simplexin the cavity
+          const gmds::BitVector& bitVectorTet = simplexMesh->getBitVectorTet();
+          std::vector<TSimplexID> ball = simpliceNode.ballOf();
+          std::vector<std::vector<TInt>> deleted_Tet{};
+
           for(auto const & simplexInCavity : cavityIO.cellInCavity())
           {
             if(std::find(markedSimplex.begin(), markedSimplex.end(), simplexInCavity) != markedSimplex.end())
             {
               return;
             }
+            const std::vector<TInt> nodes = SimplicesCell(simplexMesh, simplexInCavity).getNodes();
+            deleted_Tet.push_back(nodes);
             simplexMesh->deleteTetra(simplexInCavity);
             //deletedSimplex.push_back(simplexInCavity);
           }
 
+
+
           //delete the surface triangle connected to simpliceNode
+          std::vector<std::vector<TInt>> deleted_Tri{};
           for(auto const & triangleConnectedToP : cavityIO.getTrianglesConnectedToPInCavity())
           {
-            //std::cout << "triangleConnectedToP to delete --> " << SimplicesTriangle(simplexMesh, -triangleConnectedToP) << std::endl;
+            const std::vector<TInt> nodes = SimplicesTriangle(simplexMesh, triangleConnectedToP).getNodes();
+            deleted_Tri.push_back(nodes);
             simplexMesh->deleteTriangle(triangleConnectedToP);
           }
 
-
+          //In case if the node don't have any information of the base[node] for the reinsertion
+          //check pair.second.size() == 1 in rebuildCavity
+          if(base[simpliceNode.getGlobalNode()] == border)
+          {
+            for(auto const simplex : ball)
+            {
+              if(simplex >= 0)
+              {
+                if(bitVectorTet[simplex] != 0)
+                {
+                  simplexMesh->setBase(simpliceNode.getGlobalNode(), simplex);
+                }
+              }
+            }
+          }
           //If the node is on ridge update edgeStructure
           unsigned int label = (*BND_CURVE_COLOR)[simpliceNode.getGlobalNode()];
           bool alreadyBelongingToAnEdge = cavityIO.getNodeInfoEdge();
@@ -416,8 +430,28 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             }
           }
 
-          simplexMesh->rebuildCavity(cavityIO, simpliceNode.getGlobalNode(), createdCells);
+          std::cout << "REBUILD START" << std::endl;
+          simplexMesh->rebuildCavity(cavityIO, deleted_Tet, deleted_Tri, simpliceNode.getGlobalNode(), createdCells);
           status = true;
+
+          std::cout << std::endl;
+          const std::vector<std::vector<TInt>>& pts = cavityIO.getNodesToReconnect();
+          for(auto const nodes : pts)
+          {
+            for(auto const node : nodes)
+            {
+              if(std::find(deletedNodes.begin(), deletedNodes.end(), node) == deletedNodes.end())
+              {
+                if(base[node] == border && node != simpliceNode.getGlobalNode())
+                {
+                  std::cout << "nodes -> " << nodes[0] << " | " << nodes[1] << " | " << nodes[2] << " | " << std::endl;
+                  std::cout << "  base[" << node << "] = border " << std::endl;
+                  throw gmds::GMDSException("STOP");
+                }
+              }
+            }
+          }
+          std::cout << "REBUILD END" << std::endl;
         }
       }
     }

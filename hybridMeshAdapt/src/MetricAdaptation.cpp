@@ -3,6 +3,7 @@
 #include "gmds/hybridMeshAdapt/SimplexMesh.h"
 #include "gmds/hybridMeshAdapt/SimplicesCell.h"
 #include "gmds/hybridMeshAdapt/SimplicesNode.h"
+#include "gmds/hybridMeshAdapt/SimplicesTriangle.h"
 #include "gmds/hybridMeshAdapt/Metric.h"
 #include <gmds/hybridMeshAdapt/ICriterion.h>
 #include <gmds/hybridMeshAdapt/ISimplexMeshIOService.h>
@@ -14,6 +15,7 @@ using namespace math;
 using namespace hybrid;
 using namespace operators;
 using namespace simplicesNode;
+using namespace simplicesTriangle;
 using namespace simplicesCell;
 /*----------------------------------------------------------------------------*/
 MetricAdaptation::MetricAdaptation(SimplexMesh* simplexMesh):m_simplexMesh(simplexMesh)
@@ -87,7 +89,7 @@ void MetricAdaptation::execute()
     throw gmds::GMDSException(e);
   }
 
-  unsigned int maxIterationAdaptation = 25;
+  unsigned int maxIterationAdaptation = 1;
   CriterionRAIS criterionRAIS(new VolumeCriterion());
   const gmds::BitVector& meshNode = m_simplexMesh->getBitVectorNodes();
   unsigned int cpt = 0;
@@ -105,7 +107,7 @@ void MetricAdaptation::execute()
 
     //Metric adaptation SLICING
     std::cout << "  SLICING START" << std::endl;
-    buildEdgesMap();
+    /*buildEdgesMap();
     for(auto const edge : m_edgesMap)
     {
       TInt nodeId = edge.first;
@@ -298,7 +300,7 @@ void MetricAdaptation::execute()
           }
         }
       }
-    }
+    }*/
     /*gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
     vtkWriterMesh.setCellOptions(gmds::N|gmds::R);
     vtkWriterMesh.setDataOptions(gmds::N|gmds::R);
@@ -311,6 +313,7 @@ void MetricAdaptation::execute()
     //Metric adaptation EDGE REMOVE
     std::cout << "  EDGE REMOVE START" << std::endl;
     buildEdgesMap();
+    const TInt border = std::numeric_limits<TInt>::min();
     for(auto const edge : m_edgesMap)
     {
       TInt node0 = edge.first;
@@ -336,15 +339,25 @@ void MetricAdaptation::execute()
         double metricLenght        = M0.metricDist(nodeCoord0, nodeCoord1, M1);
         if(metricLenght < (1.0 / sqrt(2.0)))
         {
-          //std::cout << "node0 node1 -> " << node0 << " | " << node1 << std::endl;
+          const std::vector<TSimplexID>& base = m_simplexMesh->getBase();
+          const gmds::BitVector& bitVectorTet = m_simplexMesh->getBitVectorTet();
+          const gmds::BitVector& bitVectorNode = m_simplexMesh->getBitVectorNodes();
+          std::cout << "base[439] -> " << base[439] << std::endl;
+          std::cout << "bitVectorTet[base[439]] -> " << bitVectorTet[base[439]] << std::endl;
+          if(bitVectorNode[439] == 1 && bitVectorTet[base[439]] == 0)
+          {
+            return;
+          }
+          std::cout << "node0 node1 -> " << node0 << " | " << node1 << std::endl;
+
           if(m_simplexMesh->edgeRemove(node0, node1))
           {
             cptEdgeRemove++;
-            /*gmds::VTKWriter vtkWriterMeshER(&ioServiceMesh);
+            gmds::VTKWriter vtkWriterMeshER(&ioServiceMesh);
             vtkWriterMeshER.setCellOptions(gmds::N|gmds::R|gmds::F);
             vtkWriterMeshER.setDataOptions(gmds::N|gmds::R|gmds::F);
-            vtkWriterMeshER.write("ADAPTAION_LOOP_EDGEREMOVE_" + std::to_string(cptEdgeRemove) + ".vtk");*/
-            //return;
+            vtkWriterMeshER.write("ADAPTAION_LOOP_EDGEREMOVE_" + std::to_string(cptEdgeRemove) + ".vtk");
+            std::cout << "cptEdgeRemove -> " << cptEdgeRemove << std::endl;
           }
         }
       }
@@ -352,14 +365,14 @@ void MetricAdaptation::execute()
     std::cout << "  EDGE REMOVE END" << std::endl;
     continue;
 
-    gmds::VTKWriter vtkWriterMeshER(&ioServiceMesh);
+    /*gmds::VTKWriter vtkWriterMeshER(&ioServiceMesh);
     vtkWriterMeshER.setCellOptions(gmds::N|gmds::R);
     vtkWriterMeshER.setDataOptions(gmds::N|gmds::R);
-    vtkWriterMeshER.write("ADAPTAION_LOOP_EDGEREMOVE_" + std::to_string(cpt) + ".vtk");
+    vtkWriterMeshER.write("ADAPTAION_LOOP_EDGEREMOVE_" + std::to_string(cpt) + ".vtk");*/
 
 
     //Swapping face
-    std::cout << "  SWAPPING FACE START" << std::endl;
+    /*std::cout << "  SWAPPING FACE START" << std::endl;
     const gmds::BitVector& tetBitVec = m_simplexMesh->getBitVectorTet();
     unsigned int sizeFace = 4;
     for(TSimplexID tetId = 0 ; tetId < tetBitVec.capacity() ; tetId++)
@@ -394,14 +407,7 @@ void MetricAdaptation::execute()
 
               std::vector<TInt> nodesFace = cell0.getOrderedFace(face);
 
-              /*std::cout << "tetId -> " << tetId << std::endl;
-              std::cout << "oppositeTet -> " << oppositeTet << std::endl;
-              std::cout << "nodesFace -> " << nodesFace[0] << " | " << nodesFace[1] << " | " << nodesFace[2] << " | " << std::endl;*/
 
-              gmds::VTKWriter vtkWriterMeshSwapping(&ioServiceMesh);
-              vtkWriterMeshSwapping.setCellOptions(gmds::N|gmds::R);
-              vtkWriterMeshSwapping.setDataOptions(gmds::N|gmds::R);
-              vtkWriterMeshSwapping.write("DEBUG_INFO_TEST.vtk");
               if(nodesFace.size() == 3)
               {
                 std::vector<TInt> node_1 = cell1.getOtherNodeInSimplex(nodesFace);
@@ -417,18 +423,17 @@ void MetricAdaptation::execute()
 
                   double worstNewElement = std::min(qualityElementtet_0, std::min(qualityElementtet_1, qualityElementtet_2));
 
-                  /*std::cout << "element quality factor -> " << worstQuality << std::endl;
-                  std::cout << "new element quality factor -> " << worstNewElement << std::endl;
-                  std::cout << std::endl;*/
+                  //std::cout << "element quality factor -> " << worstQuality << std::endl;
+                  /std::cout << "new element quality factor -> " << worstNewElement << std::endl;
+                  //std::cout << std::endl;
 
-                  if(worstNewElement < worstQuality)
+                  if(worstNewElement > worstQuality)
                   {
                     const gmds::BitVector markedNodes{};
                     std::vector<TSimplexID> deletedSimplex{};
                     std::vector<TInt> deletedNodes{};
                     const std::multimap<TInt, TInt>& facesAlreadyBuilt{};
                     std::vector<TSimplexID> cellsCreated{};
-                    //std::cout << "node 38 ball size -> " << SimplicesNode(m_simplexMesh, 38).ballOf().size() << std::endl;
                     PointInsertion pi(m_simplexMesh, SimplicesNode(m_simplexMesh, node_0), criterionRAIS, status, cavity, markedNodes, deletedNodes, facesAlreadyBuilt, cellsCreated);
                     if(status)
                     {
@@ -450,7 +455,7 @@ void MetricAdaptation::execute()
           }
         }
       }
-    }
+    }*/
     std::cout << "  SWAPPING FACE END" << std::endl;
     std::cout << "cptEdgeRemove -> " << cptEdgeRemove << " | " << "cptSlice -> " << cptSlice << " | " << "cptSwap -> " << cptSwap << std::endl;
 

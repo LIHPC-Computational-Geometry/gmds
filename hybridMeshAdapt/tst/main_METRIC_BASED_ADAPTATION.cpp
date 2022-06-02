@@ -76,9 +76,9 @@ int main(int argc, char* argv[])
       {
         double x = SimplicesNode(&simplexMesh, nodeId).getCoords()[0];
         //double metric = (1.0 - x)*metricMin + x*metricMax;
-        double metricX = 0.1;
-        double metricY = 0.1;
-        double metricZ = 0.1;
+        double metricX = 0.2;
+        double metricY = 0.2;
+        double metricZ = 0.2;
         (*metricNode)[nodeId](0,0) = 1.0 / (metricX*metricX);
         (*metricNode)[nodeId](1,1) = 1.0 / (metricY*metricY);
         (*metricNode)[nodeId](2,2) = 1.0 / (metricZ*metricZ);

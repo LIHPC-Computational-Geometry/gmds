@@ -75,6 +75,53 @@ bool SimplicesTriangle::containNode(const simplicesNode::SimplicesNode& simplice
     return false;
   }
 }
+/******************************************************************************/
+bool SimplicesTriangle::containNode(const std::vector<TInt>& nodes)
+{
+  std::vector<TInt> triNode = getNodes();
+  if(m_simplex_mesh != nullptr)
+  {
+    for(auto const node : nodes)
+    {
+      if(!(node == triNode[0] || node == triNode[1] || node == triNode[2]))
+      {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+/******************************************************************************/
+std::vector<TInt> SimplicesTriangle::intersectionNodes(const SimplicesTriangle& triangle)
+{
+  std::vector<TInt> v{};
+  if(m_simplex_mesh != nullptr)
+  {
+    std::vector<TInt> nodesT0 = getNodes();
+    std::vector<TInt> nodesT1 = triangle.getNodes();
+
+
+
+    for(unsigned int nodeLocalT0 = 0; nodeLocalT0 < nodesT0.size(); nodeLocalT0++)
+    {
+      for(unsigned int nodeLocalT1 = 0; nodeLocalT1 < nodesT1.size(); nodeLocalT1++)
+      {
+        if(nodesT0[nodeLocalT0] == nodesT1[nodeLocalT1])
+        {
+          v.push_back(nodesT0[nodeLocalT0]);
+          break;
+        }
+      }
+    }
+  }
+  else
+  {
+      /*TODO exeption*/
+  }
+
+  return std::move(v);
+}
+/******************************************************************************/
 
 void SimplicesTriangle::reorientTriangle()
 {

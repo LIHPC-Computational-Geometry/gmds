@@ -1653,6 +1653,8 @@ TInt SimplexMesh::findRemainTriangleIdx(const TInt tri, gmds::BitVector& cycling
 /******************************************************************************/
 std::vector<TInt> SimplexMesh::deleteTetra(const TInt ATetraIndex)
 {
+  std::cout << "m_base[439] -> " << m_base[439] << std::endl;
+  std::cout << "m_tet_ids[base[439]] -> " << m_tet_ids[m_base[439]] << std::endl;
   int errorId = std::numeric_limits<int>::min();
   std::vector<TInt> nodes;
   if(ATetraIndex < 0 || ATetraIndex > m_tet_ids.capacity())
@@ -1748,6 +1750,8 @@ std::vector<TInt> SimplexMesh::deleteTetra(const TInt ATetraIndex)
         m_tet_ids.unselect(ATetraIndex);
       }
   }
+  std::cout << "m_base[439] -> " << m_base[439] << std::endl;
+  std::cout << "m_tet_ids[base[439]] -> " << m_tet_ids[m_base[439]] << std::endl;
   return std::move(nodes);
 }
 /*****************************************************************************/
@@ -4069,7 +4073,22 @@ bool SimplexMesh::isFaceBuild(const std::vector<TInt>& nodes)
   return flag;
 }
 /******************************************************************************/
-void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)
+void SimplexMesh::setBase(const TInt node, const TSimplexID simplex)
+{
+  if(this != nullptr)
+  {
+    if(m_base.size() >= node -1)
+    {
+      m_base[node] = simplex;
+    }
+    else
+    {
+      throw gmds::GMDSException("m_base.size() < node -1");
+    }
+  }
+}
+/******************************************************************************/
+void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)
 {
   Variable<int>* BND_CURVE_COLOR    = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
   const std::vector<std::vector<TInt>>&         pointsToConnect          = cavityIO.getNodesToReconnect();
@@ -4160,63 +4179,65 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
     {
       unsigned int localNodeforTriangle  = localsInfoForTriangles[faceIter][lN];
       TSimplexID oppositeTriangle        = -oppositeTriangles[faceIter][lN];
-
       if(localNodeforTriangle != border)
       {
         TInt nodeB = face[(localNodeforTriangle + 1) % sizeFace];
         TInt nodeA = face[(localNodeforTriangle + 2) % sizeFace];
 
-        TInt triangle = -addTriangle(nodeA, nodeB, nodeToConnect, false);
-        triangles.push_back(triangle);
-        (*BND_TRIANGLES)[-triangle] = trianglesIndices[faceIter][lN];
-
-        m_tri_nodes[-triangle][3] = simplex;
-        m_tet_adj[simplex][localNodeforTriangle] = triangle;
-        std::vector<TInt> oppoNode = SimplicesTriangle(this, oppositeTriangle).getOtherNodeInSimplex(std::vector<TInt>{nodeA, nodeB});
-
-        if(oppoNode.size() == 1)
+        if(nodeA != nodeToConnect && nodeB != nodeToConnect)
         {
-          unsigned int localnode = SimplicesTriangle(this, oppositeTriangle).getLocalNode(oppoNode.front());
-          if(localnode < 3)
+          TInt triangle = -addTriangle(nodeA, nodeB, nodeToConnect, false);
+          triangles.push_back(triangle);
+          (*BND_TRIANGLES)[-triangle] = trianglesIndices[faceIter][lN];
+
+          m_tri_nodes[-triangle][3] = simplex;
+          m_tet_adj[simplex][localNodeforTriangle] = triangle;
+          std::vector<TInt> oppoNode = SimplicesTriangle(this, oppositeTriangle).getOtherNodeInSimplex(std::vector<TInt>{nodeA, nodeB});
+
+          if(oppoNode.size() == 1)
           {
-              m_tri_adj[oppositeTriangle][localnode] = -triangle;
-              m_tri_adj[-triangle][2] = oppositeTriangle;
+            unsigned int localnode = SimplicesTriangle(this, oppositeTriangle).getLocalNode(oppoNode.front());
+            if(localnode < 3)
+            {
+                m_tri_adj[oppositeTriangle][localnode] = -triangle;
+                m_tri_adj[-triangle][2] = oppositeTriangle;
+            }
+            else
+            {
+              throw GMDSException("localnode >= 3");
+            }
           }
           else
           {
-            throw GMDSException("localnode >= 3");
-          }
-        }
-        else
-        {
-          std::cout << "nodeA -> " << nodeA << std::endl;
-          std::cout << "nodeB -> " << nodeB << std::endl;
-          std::cout << std::endl;
-          std::cout << "triangle : " << triangle << std::endl;
-          std::cout << SimplicesTriangle(this, triangle) << std::endl;
-          std::cout << "oppositeTriangle : " << oppositeTriangle << std::endl;
-          std::cout << SimplicesTriangle(this, oppositeTriangle) << std::endl;
-          std::cout << std::endl;
-          std::vector<TSimplexID> cellInfo{};
-          std::vector<TSimplexID> trianglesInfo{std::abs(triangle), std::abs(oppositeTriangle)};
-          deleteAllTrianglesBut(trianglesInfo);
-          deleteAllSimplicesBut(cellInfo);
+            std::cout << "nodeA -> " << nodeA << std::endl;
+            std::cout << "nodeB -> " << nodeB << std::endl;
+            std::cout << std::endl;
+            std::cout << "triangle : " << triangle << std::endl;
+            std::cout << SimplicesTriangle(this, triangle) << std::endl;
+            std::cout << "oppositeTriangle : " << oppositeTriangle << std::endl;
+            std::cout << SimplicesTriangle(this, oppositeTriangle) << std::endl;
+            std::cout << std::endl;
+            std::vector<TSimplexID> cellInfo{};
+            std::vector<TSimplexID> trianglesInfo{std::abs(triangle), std::abs(oppositeTriangle)};
+            deleteAllTrianglesBut(trianglesInfo);
+            deleteAllSimplicesBut(cellInfo);
 
-          gmds::ISimplexMeshIOService ioServiceMesh(this);
-          gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
-          vtkWriterMesh.setCellOptions(gmds::N|gmds::R|gmds::F);
-          vtkWriterMesh.setDataOptions(gmds::N|gmds::R|gmds::F);
-          vtkWriterMesh.write("DEBUG_MESH.vtk");
-          std::cout << "oppoNode.size() -> " << oppoNode.size() << std::endl;
-          for(auto const node : oppoNode)
-          {
-            std::cout << "  node -> " << node << std::endl;
+            gmds::ISimplexMeshIOService ioServiceMesh(this);
+            gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
+            vtkWriterMesh.setCellOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriterMesh.setDataOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriterMesh.write("DEBUG_MESH.vtk");
+            std::cout << "oppoNode.size() -> " << oppoNode.size() << std::endl;
+            for(auto const node : oppoNode)
+            {
+              std::cout << "  node -> " << node << std::endl;
+            }
+            throw GMDSException("oppoNode.size() != 1");
           }
-          throw GMDSException("oppoNode.size() != 1");
-        }
 
-        hash_edge[nodeA].push_back(-triangle);
-        hash_edge[nodeB].push_back(-triangle);
+          hash_edge[nodeA].push_back(-triangle);
+          hash_edge[nodeB].push_back(-triangle);
+        }
       }
       else
       {
@@ -4232,31 +4253,194 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
   {
     TInt node = pair.first;
     std::vector<TInt> commonEdge{node, nodeToConnect};
-    if(pair.second.size() == 2)
+    if(pair.second.size() == 0)
     {
-      TSimplexID idxTriangleA = pair.second.front();
-      TSimplexID idxTriangleB = pair.second.back();
+      throw GMDSException("pair.second.size() == 0");
+    }
+    else if(pair.second.size() <= 2)
+    {
+      if(pair.second.size() == 1)
+      {
+        TSimplexID idxTriangleA = pair.second.front();
+        SimplicesTriangle triangleA = SimplicesTriangle(this, idxTriangleA);
+        std::vector<TInt> nodesTriangleA = triangleA.getNodes();
+        TInt localNode = (nodesTriangleA[0] != node)? 0 : 1;
 
-      SimplicesTriangle triangleA = SimplicesTriangle(this, -idxTriangleA);
-      SimplicesTriangle triangleB = SimplicesTriangle(this, -idxTriangleB);
+        /*const std::vector<TSimplexID> shell = SimplicesNode(this, node).shell(SimplicesNode(this, nodeToConnect));
+        for(auto const triangle : shell)
+        {
+          if(triangle < 0 && triangle != idxTriangleA)
+          {
+            m_tri_adj[idxTriangleA][localNode] = -triangle;
+            std::vector<TInt> nodeShell{node, nodeToConnect};
+            std::vector<TInt> otherNodes = SimplicesTriangle(this, -triangle).getOtherNodeInSimplex(nodeShell);
+            if(otherNodes.size() == 1)
+            {
+              TInt lNode = SimplicesTriangle(this, -triangle).getLocalNode(otherNodes.front());
+              m_tri_adj[-triangle][lNode] = idxTriangleA;
+              break;
+            }
+            else
+            {
+              throw gmds::GMDSException("otherNodes.size() == 1 in hash EDGE");
+            }
+          }
+        }*/
 
-      std::vector<TInt> nodesTriangleA = triangleA.getNodes();
-      TInt nodeA = nodesTriangleA[0];
-      TInt nodeB = nodesTriangleA[1];
-      TInt localNodeA = (nodeA != node)? 0 : 1;
+        for(auto const triangles : oppositeTriangles)
+        {
+          for(auto const triangle : triangles)
+          {
+            if(triangle != border)
+            {
+              std::vector<TInt> interNodes = triangleA.intersectionNodes(SimplicesTriangle(this,triangle));
+              if(interNodes.size() == 2)
+              {
+                std::vector<TInt> otherNodesA = triangleA.otherNodesInTriangle(SimplicesTriangle(this,triangle));
+                std::vector<TInt> otherNodes = SimplicesTriangle(this,triangle).otherNodesInTriangle(triangleA);
+
+                if(otherNodesA.size() == 1 && otherNodes.size() == 1)
+                {
+                  const TInt lNodeA = triangleA.getLocalNode(otherNodesA.front());
+                  const TInt lNode = SimplicesTriangle(this,triangle).getLocalNode(otherNodes.front());
+                  m_tri_adj[idxTriangleA][lNodeA] = -triangle;
+                  m_tri_adj[-triangle][lNode] = idxTriangleA;
+                }
+                else
+                {
+                  throw gmds::GMDSException("!(otherNodesA.size() == 1 && otherNodes.size() == 1)");
+                }
+              }
+            }
+          }
+        }
+        if(m_tri_adj[idxTriangleA][localNode] == border)
+        {
+          std::cout << "idxTriangleA -> " << SimplicesTriangle(this, idxTriangleA) << std::endl;
+          std::cout << "localNode    -> " << localNode << std::endl;
+          gmds::ISimplexMeshIOService ioServiceMesh(this);
+          gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
+          vtkWriterMesh.setCellOptions(gmds::N|gmds::R|gmds::F);
+          vtkWriterMesh.setDataOptions(gmds::N|gmds::R|gmds::F);
+          vtkWriterMesh.write("DEBUG_MESH.vtk");
 
 
-      std::vector<TInt> nodesTriangleB = triangleB.getNodes();
-      nodeA = nodesTriangleB[0];
-      nodeB = nodesTriangleB[1];
-      TInt localNodeB = (nodeA != node)? 0 : 1;
+          SimplexMesh simplexMeshDebug = SimplexMesh();
+          std::vector<TInt> new_Nodes_Already_Added{};
+          std::map<TInt, TInt> m{};
+          for(auto const nodes : deleted_Tet)
+          {
+            std::vector<TInt> new_Nodes{};
+            for(auto const node : nodes)
+            {
+              if(std::find(new_Nodes_Already_Added.begin(), new_Nodes_Already_Added.end(), node) == new_Nodes_Already_Added.end())
+              {
+                new_Nodes_Already_Added.push_back(node);
+                const math::Point& pt = SimplicesNode(this, node).getCoords();
+                new_Nodes.push_back(simplexMeshDebug.addNode(pt));
+                std::pair<TInt, TInt> p{node, new_Nodes.back()};
+                m.insert(p);
+                if(node == nodeToConnect)
+                {
+                  std::cout << "nex node to connect in debug mesh is -> " << new_Nodes.back() << std::endl;
+                }
+              }
+              else
+              {
+                new_Nodes.push_back(m[node]);
+              }
+            }
+            simplexMeshDebug.addTetraedre(new_Nodes[0], new_Nodes[1], new_Nodes[2], new_Nodes[3]);
+          }
 
-      m_tri_adj[idxTriangleA][localNodeA] = idxTriangleB;
-      m_tri_adj[idxTriangleB][localNodeB] = idxTriangleA;
+          for(auto const nodes : deleted_Tri)
+          {
+            std::vector<TInt> new_Nodes{};
+            for(auto const node : nodes)
+            {
+              const math::Point& pt = SimplicesNode(this, node).getCoords();
+              new_Nodes.push_back(simplexMeshDebug.addNode(pt));
+            }
+            simplexMeshDebug.addTriangle(new_Nodes[0], new_Nodes[1], new_Nodes[2]);
+          }
+          gmds::ISimplexMeshIOService ioServiceMeshCavity(&simplexMeshDebug);
+          gmds::VTKWriter vtkWriterMeshCavity(&ioServiceMeshCavity);
+          vtkWriterMeshCavity.setCellOptions(gmds::N|gmds::R|gmds::F);
+          vtkWriterMeshCavity.setDataOptions(gmds::N|gmds::R|gmds::F);
+          vtkWriterMeshCavity.write("DEBUG_MESH_CAVITY.vtk");
+
+          throw GMDSException("m_tri_adj[idxTriangleA][localNodeA] == border");
+        }
+      }
+      else if(pair.second.size() == 2)
+      {
+        TSimplexID idxTriangleA = pair.second.front();
+        TSimplexID idxTriangleB = pair.second.back();
+
+        SimplicesTriangle triangleA = SimplicesTriangle(this, -idxTriangleA);
+        SimplicesTriangle triangleB = SimplicesTriangle(this, -idxTriangleB);
+
+        std::vector<TInt> nodesTriangleA = triangleA.getNodes();
+        TInt nodeA = nodesTriangleA[0];
+        TInt nodeB = nodesTriangleA[1];
+        TInt localNodeA = (nodeA != node)? 0 : 1;
+
+        std::vector<TInt> nodesTriangleB = triangleB.getNodes();
+        nodeA = nodesTriangleB[0];
+        nodeB = nodesTriangleB[1];
+        TInt localNodeB = (nodeA != node)? 0 : 1;
+
+        m_tri_adj[idxTriangleA][localNodeA] = idxTriangleB;
+        m_tri_adj[idxTriangleB][localNodeB] = idxTriangleA;
+      }
     }
     else
     {
-      throw GMDSException("pair.second.size() != 2");
+      SimplexMesh simplexMeshDebug = SimplexMesh();
+      std::vector<TInt> new_Nodes_Already_Added{};
+      std::map<TInt, TInt> m{};
+      for(auto const nodes : deleted_Tet)
+      {
+        std::vector<TInt> new_Nodes{};
+        for(auto const node : nodes)
+        {
+          if(std::find(new_Nodes_Already_Added.begin(), new_Nodes_Already_Added.end(), node) == new_Nodes_Already_Added.end())
+          {
+            new_Nodes_Already_Added.push_back(node);
+            const math::Point& pt = SimplicesNode(this, node).getCoords();
+            new_Nodes.push_back(simplexMeshDebug.addNode(pt));
+            std::pair<TInt, TInt> p{node, new_Nodes.back()};
+            m.insert(p);
+            if(node == nodeToConnect)
+            {
+              std::cout << "nex node to connect in debug mesh is -> " << new_Nodes.back() << std::endl;
+            }
+          }
+          else
+          {
+            new_Nodes.push_back(m[node]);
+          }
+        }
+        simplexMeshDebug.addTetraedre(new_Nodes[0], new_Nodes[1], new_Nodes[2], new_Nodes[3]);
+      }
+
+      for(auto const nodes : deleted_Tri)
+      {
+        std::vector<TInt> new_Nodes{};
+        for(auto const node : nodes)
+        {
+          const math::Point& pt = SimplicesNode(this, node).getCoords();
+          new_Nodes.push_back(simplexMeshDebug.addNode(pt));
+        }
+        simplexMeshDebug.addTriangle(new_Nodes[0], new_Nodes[1], new_Nodes[2]);
+      }
+      gmds::ISimplexMeshIOService ioServiceMesh(&simplexMeshDebug);
+      gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
+      vtkWriterMesh.setCellOptions(gmds::N|gmds::R|gmds::F);
+      vtkWriterMesh.setDataOptions(gmds::N|gmds::R|gmds::F);
+      vtkWriterMesh.write("DEBUG_MESH_pair.vtk");
+
+      throw GMDSException("pair.second.size() > 2");
     }
   }
 
@@ -4387,14 +4571,12 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const TInt n
       }
     }
   }
-
   for(unsigned int triangleIdx = 0 ; triangleIdx < triangles.size() ; triangleIdx++)
   {
     const TSimplexID simplex       =  triangles[triangleIdx];
     if(simplex != border)
     {
       const std::vector<TInt> nodes{ m_tri_nodes[-simplex][0],  m_tri_nodes[-simplex][1]};
-
       for(unsigned int localNode = 0 ; localNode < 2 ; localNode++)
       {
         TInt node = nodes[localNode];

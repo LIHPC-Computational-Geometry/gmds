@@ -42,7 +42,6 @@ bool SimplicesNode::checkExistance()
 std::vector<TSimplexID> SimplicesNode::ballOf(bool boundariesAccepted) const
 {
   //std::cout << "ballOf(bool boundariesAccepted)" << std::endl;
-  //std::cout << "m_indexPoint -> " << m_indexPoint << std::endl;
   std::vector<TSimplexID> v{};
   std::vector<TSimplexID> to_do{};
   int border = std::numeric_limits<int>::min();
@@ -153,7 +152,6 @@ std::vector<TSimplexID> SimplicesNode::ballOf(bool boundariesAccepted) const
   }
 
   return std::move(v);
-
 }
 /********************************************************************************/
 std::vector<TSimplexID> SimplicesNode::linksTri() const

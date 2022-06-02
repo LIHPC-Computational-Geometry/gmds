@@ -38,6 +38,10 @@ namespace gmds
 
         bool containNode                          (const gmds::hybrid::simplicesNode::SimplicesNode& simplicesNode);
 
+        bool containNode                          (const std::vector<TInt>& nodes);
+
+        std::vector<TInt> intersectionNodes             (const SimplicesTriangle& triangles);
+
         /*Reorient the Tetra (the normal is out of the Tetra ) if the normal is inside the Tetra*/
         void reorientTriangle                     ();
 
