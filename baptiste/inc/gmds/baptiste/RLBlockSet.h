@@ -10,7 +10,8 @@
 #include "GMDSIgAlgo_export.h"
 /*----------------------------------------------------------------------------*/
 
-namespace gmds {
+namespace gmds
+{
 class RLBlockSet
 {
  public:
@@ -33,6 +34,14 @@ class RLBlockSet
 
 	void editCorner(const int faceID, bool v, std::string axis, int range);
 
+	Node findCorner(std::vector<Node> nodes, bool v);
+
+	Node findSecondCorner(Node corner, std::vector<Node> nodes, std::string axis);
+
+	void moveCorners(Node corner, Node secondCorner, std::string axis, int range);
+
+	void editCornerBis(const int faceID, bool v, std::string axis, int range);
+
 	void saveMesh(std::string title);
 
 	void setFromFile(std::string filename, int nX = 3, int nY = 3);
@@ -41,5 +50,6 @@ class RLBlockSet
 
 	std::vector<int> getAllFaces();
 };
+
 }
 #endif     // GMDS_RL_BLOCK_SET_H

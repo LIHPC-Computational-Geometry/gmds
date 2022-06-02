@@ -12,6 +12,8 @@ namespace gmds
 {
 	std::vector<double> LinearSpacedArray(double a, double b, std::size_t N);
 
+
+
    void cloneMesh(const Mesh &originalMesh, Mesh &newMesh);
 
    void cloneBlockSet(const RLBlockSet &originalBlockSet, RLBlockSet &newBlockSet);
@@ -19,5 +21,7 @@ namespace gmds
    Mesh readMesh(std::string filename);
 
    std::vector<Action*> getActionsVector();
+
+   void volfraccomputation_2d_reverse(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMesh, gmds::Variable<double>* AVolFrac);
 }
 #endif     // GMDS_TOOLS_H

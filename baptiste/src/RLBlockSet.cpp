@@ -103,6 +103,91 @@ void RLBlockSet::editCorner(const int faceID, bool v, std::string axis, int rang
 	}
 }
 
+
+Node RLBlockSet::findCorner(std::vector<Node> nodes, bool v)
+{
+	/*
+	int nodeID = 0;
+	Node corner = m_mesh.get<Node>(nodeID);
+	std::cout << "X : " << corner.X() << ", Y : " << corner.Y() << "\n";
+	std::cout << nodes.size();
+	 */
+	Node corner = nodes[0];
+	for (auto node : nodes)
+	{
+		if (v)
+		{
+			if (node.X() <= corner.X() and  node.Y() <= corner.Y())
+			{
+				corner = node;
+			}
+		}
+		else
+		{
+			if (node.X() >= corner.X() and  node.Y() >= corner.Y())
+			{
+				corner = node;
+			}
+		}
+	}
+	std::cout << "X : " << corner.X() << ", Y : " << corner.Y() << "\n";
+	return corner;
+}
+
+Node RLBlockSet::findSecondCorner(Node corner, std::vector<Node> nodes, std::string axis)
+{
+	Node secondCorner = nodes[0];
+	std::cout << "X : " << secondCorner.X() << ", Y : " << secondCorner.Y() << "\n";
+	for (Node node : nodes)
+	{
+		secondCorner = node;
+	}
+	for (Node node : nodes)
+	{
+		if (axis == "x")
+		{
+			if (node.X() != corner.X() and  node.Y() == corner.Y())
+			{
+				secondCorner = node;
+			}
+		}
+		else if (axis == "y")
+		{
+			if (node.X() == corner.X() and  node.Y() != corner.Y())
+			{
+				secondCorner = node;
+			}
+		}
+	}
+	std::cout << "X : " << secondCorner.X() << ", Y : " << secondCorner.Y() << "\n";
+	return secondCorner;
+}
+
+void RLBlockSet::moveCorners(Node corner, Node secondCorner, std::string axis, int range)
+{
+	if (axis == "x")
+	{
+		corner.setX(corner.X()+range*xSize/10);
+		secondCorner.setX(secondCorner.X()+range*xSize/10);
+	}
+	else if (axis == "y")
+	{
+		corner.setY(corner.Y()+range*ySize/10);
+		secondCorner.setY(secondCorner.Y()+range*ySize/10);
+	}
+}
+
+void RLBlockSet::editCornerBis(const int faceID, bool v, std::string axis, int range)
+{
+	Face face = m_mesh.get<Face>(faceID);
+	std::cout << "xxxxxx " << face << "\n";
+	std::vector<Node> nodes = face.get<Node>();
+	std::cout << "$$$$$$$$$$$$$$$$$$$$ " << nodes.empty() << "\n";
+	Node corner = findCorner(nodes, v);
+	Node secondCorner = findSecondCorner(corner, nodes, axis);
+	moveCorners(corner, secondCorner, axis,  range);
+}
+
 void RLBlockSet::saveMesh(std::string filename)
 {
 	IGMeshIOService ioService(&m_mesh);
@@ -162,10 +247,25 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 	}
 	volfraccomputation_2d(&m_mesh, &targetMesh, m_mesh.getVariable<double, GMDS_FACE>("volFrac"));
 	Variable<double>* res = m_mesh.getVariable<double, GMDS_FACE>("volFrac");
-	double sum = 0;
+	double a = 0;
 	for (int i =0; i < res->getNbValues(); i++)
 	{
-		sum += res->value(i);
+		a += res->value(i);
 	}
-	return sum;
+	/*
+	if (not targetMesh.hasVariable(GMDS_FACE, "volFrac"))
+	{
+		targetMesh.newVariable<double, GMDS_FACE>("volFrac");
+	}
+	volfraccomputation_2d_reverse(&m_mesh, &targetMesh, m_mesh.getVariable<double, GMDS_FACE>("volFrac"));
+	Variable<double>* res2 = m_mesh.getVariable<double, GMDS_FACE>("volFrac");
+	double b = 0;
+	for (int i =0; i < res2->getNbValues(); i++)
+	{
+		b += res->value(i);
+	}
+	b = b/targetMesh.getNbFaces();
+	 */
+
+	return a;
 }

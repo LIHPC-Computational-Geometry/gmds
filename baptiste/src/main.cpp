@@ -53,28 +53,25 @@ void testVolFrac()
 std::vector<std::map<int , int>> getAllActions()
 {
 	std::vector<std::map<int , int>> actions;
-	for (int type = 0; type <= 1; type++)
+	for (int v = 0; v <= 1; v++)
 	{
-		for (int v = 0; v <= 1; v++)
+		for (int axis = 0; axis <= 1; axis++)
 		{
-			for (int axis = 0; axis <= 1; axis++)
+			std::vector<int> ranges = {-2, -1, 1, 2};
+			for (int range:ranges)
 			{
-				std::vector<int> ranges = {-2, -1, 1, 2};
-				for (int range:ranges)
-				{
-
-					std::map<int, int> action = {
-					   { 0, type },
-					   { 1, v },
-					   { 2, axis },
-					   { 3, range}
-					};
-
-					actions.push_back(action);
-				}
+				std::map<int, int> action = {
+				   { 0, 1 },
+				   { 1, v },
+				   { 2, axis },
+				   { 3, range}
+				};
+				actions.push_back(action);
 			}
 		}
 	}
+	std::map<int, int> action = { { 0, 0 } };
+	actions.push_back(action);
 	return actions;
 }
 
@@ -149,6 +146,48 @@ void virtualExpert(RLBlockSet &blockSet, Mesh &targetShape, int nMax)
 	}
 }
 
+void virtualExpertBis(RLBlockSet &blockSet, Mesh &targetShape, int nMax)
+{
+	std::vector<Action *> actions;
+	for (int iV = 0; iV <= 1; iV++)
+	{
+		for (int iAxis = 0; iAxis <= 1; iAxis++) {
+			std::vector<int> ranges = {-2, -1, 1, 2};
+			for (int iRange : ranges)
+			{
+				ActionEdit e = ActionEdit(iV, iAxis, iRange);
+				actions.push_back(&e);
+			}
+		}
+	}
+	for (int step=0; step<nMax; step++)
+	{
+		std::cout << "Step n°" << step << "\n";
+		for(int faceID: blockSet.m_mesh.faces())
+		{
+			std::cout << "In faceIDs loop with id = " << faceID << "\n";
+			Action *bestAction = actions[0];
+			double maxReward = 0;
+			int actionCounter = 0;
+			for (auto action:actions)
+			{
+				RLBlockSet blockSetBis = RLBlockSet();
+				cloneBlockSet(blockSet, blockSetBis);
+				//action->executeAction(blockSetBis, faceID);
+				//executeAction(action, blockSetBis, faceID);
+				double reward = blockSetBis.getReward(targetShape);
+				if (reward > maxReward)
+				{
+					maxReward = reward;
+					bestAction = action;
+				}
+				actionCounter++;
+			}
+			bestAction->executeAction(blockSet, faceID);
+		}
+	}
+}
+
 void testDeepCopy()
 {
 	RLBlockSet blockSet = RLBlockSet();
@@ -189,16 +228,43 @@ void testActions()
 	int nbFaces = blockSet.countBlocks();
 	std::cout << "Number of blocks : " << nbFaces << "\n";
 
-	ActionDelete a1 = ActionDelete();
-	ActionEdit a2 = ActionEdit(0, 0, 1);
+	//ActionDelete a1 = ActionDelete();
+	ActionEdit a2 = ActionEdit(1, 1, 1);
+	ActionEdit a3 = ActionEdit(0, 0, -2);
 
 	std::vector<Action*> vect;
 
-	vect.push_back(&a1);
-	vect.push_back(&a2);
+	//vect.push_back(&a1);
+	//vect.push_back(&a2);
+	//vect.push_back(&a3);
 
-	for (auto& action : vect)
+	for (int iV = 0; iV <= 1; iV++)
 	{
+		for (int iAxis = 0; iAxis <= 1; iAxis++) {
+			std::vector<int> ranges = {-2, -1, 1, 2};
+			for (int iRange : ranges)
+			{
+				ActionEdit e = ActionEdit(iV, iAxis, iRange);
+				vect.push_back(&e);
+			}
+		}
+	}
+
+	std::cout << "Length of action vector : " << vect.size() << "\n";
+	for(int faceID: blockSet.m_mesh.faces())
+	{
+		for (auto action : vect)
+		{
+			action -> executeAction(blockSet, faceID);
+		}
+	}
+
+	/*
+	for (auto action : vect)
+	{
+		action -> executeAction(blockSet, 5);
+
+
 		if (dynamic_cast<ActionDelete*>(action) == nullptr)
 		{
 			ActionEdit* child = dynamic_cast<ActionEdit*>(action);
@@ -209,6 +275,7 @@ void testActions()
 			action->executeAction(blockSet, 0);
 		}
 	}
+	*/
 }
 
 int main()
@@ -216,8 +283,6 @@ int main()
 	std::cout << "Hello World" << "\n";
 
 	testActions();
-
-	/*
 
 	Mesh targetShape = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk");
 	//Mesh targetShape = readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/A.vtk");
@@ -231,8 +296,8 @@ int main()
 	//blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk", 3, 3);
 	//double reward = blockSet.getReward(targetShape);
 	//std::cout << reward << "\n";
+	//virtualExpert(blockSet, targetShape, 5);
 	virtualExpert(blockSet, targetShape, 5);
-
 	blockSet.saveMesh("/home/bonyb/Documents/virtualExpertCurvedShape.vtk");
 
 	//Mesh m = Mesh(MeshModel(F|N|F2N|N2F));
@@ -287,5 +352,6 @@ int main()
 	// blockSet.saveMesh("MyBlockSet.vtk");
 	 */
 
+	exit(3);
 	return 0;
 }
