@@ -12,6 +12,7 @@
 #include "gmds/paul/Tools.h"
 #include "gmds/paul/Environment.h"
 #include "gmds/paul/Q_Learning_Algo.h"
+#include "gmds/paul/Politique.h"
 
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKWriter.h"
@@ -21,6 +22,9 @@
 using namespace gmds;
 
 int main(){
+
+
+	srand (time(NULL));
 
 	//Create the agent environment
 	std::cout<<"=== Test Grid ==="<<std::endl;
@@ -181,7 +185,12 @@ int main(){
 	Environment environment(&gridAround,&mImprint,&actionb);
 	environment.executeAction(environment.faceSelect(),1);
 
-	initQTable();
+	Politique policy(&environment);
+
+	executeTrainQlearning(environment);
+
+
+	//std::cout<<"interval : "<<policy.getInterval(1)<<std::endl;
 
 
 

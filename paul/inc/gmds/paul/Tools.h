@@ -288,6 +288,8 @@ class Tools{
 	 */
 	double calcRangePoints(Node node1, Node node2);
 
+	void cloneMesh(const GridBuilderAround &originalGrid, GridBuilderAround &newGrid);
+
 	gmds::GridBuilderAround g_grid;
 
 };

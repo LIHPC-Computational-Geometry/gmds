@@ -12,11 +12,12 @@
 #include "gmds/paul/Tools.h"
 #include "gmds/paul/Actions_Agent.h"
 #include "gmds/paul/Environment.h"
+#include"gmds/paul/Politique.h"
 /*----------------------------------------------------------------------------*/
 
 namespace gmds{
 
-void executeAlgoQlearning(Environment environment);
+void executeTrainQlearning(Environment environment);
 
 /** \brief verify if is the terminal state (global IoU > 0.9 )
  *

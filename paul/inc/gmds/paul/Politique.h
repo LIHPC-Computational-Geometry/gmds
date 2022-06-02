@@ -13,6 +13,8 @@
 #include "gmds/paul/Actions_Agent.h"
 #include "gmds/paul/Environment.h"
 /*----------------------------------------------------------------------------*/
+#include <time.h>
+/*----------------------------------------------------------------------------*/
 namespace gmds {
 class Politique
 {
@@ -20,6 +22,14 @@ class Politique
 	Politique(Environment *AEnv);
 
 	void initQTable();
+
+	int getNextAction(int intervalIoU);
+
+	void updateQTable(int intervalIoU, int actionSelect, double newQValue);
+
+	int getInterval(double localIoU);
+
+	double maxQValue(int intervalIoU);
 
 
 	std::vector<std::vector<double>> getQTable();

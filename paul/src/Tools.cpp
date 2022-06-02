@@ -849,6 +849,35 @@ double Tools::calcRangePoints(Node node1, Node node2)
 	return range;
 }
 
+void Tools::cloneMesh(const GridBuilderAround &originalGrid, GridBuilderAround &newGrid)
+{
+	if (originalGrid.getDim() == 3 or newGrid.getDim() == 3)
+	{
+		throw GMDSException("Dimension must be 2");
+	}
+
+	for (int nodeID:originalGrid.m_mesh.nodes())
+	{
+		newGrid.m_mesh.newNode(originalGrid.m_mesh.get<Node>(nodeID).point());
+	}
+	std::set<TCellID> invalidIndexes;
+	for (int faceID = 0; faceID <= originalGrid.m_mesh.getMaxLocalID(2); faceID++)
+	{
+		if (originalGrid.m_mesh.has<Face>(faceID))
+		{
+			newGrid.m_mesh.newFace(originalGrid.m_mesh.get<Face>(faceID).get<Node>());
+		}
+		else
+		{
+			newGrid.m_mesh.newFace({0, 0, 0, 0});
+			invalidIndexes.insert(faceID);
+		}
+	}
+	for (int faceID:invalidIndexes)
+	{
+		newGrid.m_mesh.deleteFace(faceID);
+	}
+}
 //========================================================================================
 //OLD FUNCTION
 
@@ -1044,4 +1073,6 @@ void Tools::joinFaceToNodes(Node i1, Node i2)
 		g_grid.m_mesh.deleteFace(lFace.id());
 	}
 }
+
+
 
