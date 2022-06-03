@@ -99,6 +99,29 @@ int main(){
 	Actions actionb(&gridAround);
 	Tools toolsB(&gridAround);
 
+	Mesh mGridAroundCopy(mGridAround.getModel());
+	GridBuilderAround gridAroundCopy(&mGridAroundCopy,&mImprint,2);
+	toolsB.cloneMesh(gridAround,gridAroundCopy);
+
+	Actions actionCopy(&gridAroundCopy);
+	Tools copyTools(&gridAroundCopy);
+
+	//actionCopy.executeDeleteFace(gridAroundCopy.m_mesh.get<Face>(9).id());
+	//actionCopy.executeCutFace(gridAroundCopy.m_mesh.get<Face>(2),0);
+	//actionCopy.executeCutFace(gridAroundCopy.m_mesh.get<Face>(16),1);
+	//auto edgeCopy = copyTools.getHorizontalEdge(gridAroundCopy.m_mesh.get<Face>(2));
+	//std::cout<<"Edge Horiz Face 2 : "<<edgeCopy.front()<<" "<<edgeCopy.back()<<std::endl;
+	//std::cout<<"Edge Horiz Face 2 : "<<edgeCopy.size()<<std::endl;
+
+	gmds::IGMeshIOService ioService_write_Copy(&mGridAroundCopy);
+	gmds::VTKWriter vtkWriterGba_Copy(&ioService_write_Copy);
+	vtkWriterGba_Copy.setCellOptions(gmds::N|gmds::F);
+	vtkWriterGba_Copy.setDataOptions(gmds::N|gmds::F);
+	vtkWriterGba_Copy.write("VolFracComputation_test2DCopy.vtk");
+
+
+
+
 	// =============================== TEST NOUVELLES ACTIONS SEULEMENT SUR LES FACES =================================
 	/*
 	actionb.executeCutFace(mGridAround.get<Face>(9),0);
@@ -106,6 +129,9 @@ int main(){
 	actionb.executeGlidNodeFace(mGridAround.get<Face>(18));
 	actionb.executeCutFace(mGridAround.get<Face>(18),1);
 	actionb.executeGlidNodeFace(mGridAround.get<Face>(20));*/
+
+	actionb.executeGlideMaxNodeFace(gridAround.m_mesh.get<Face>(2));
+	actionb.executeGlideMinNodeFace(gridAround.m_mesh.get<Face>(2));
 
 
 	MeshDoctor doc(&mGridAround);
@@ -183,11 +209,13 @@ int main(){
 	volfraccomputation_2d(&mGridAround,&mImprint,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
 
 	Environment environment(&gridAround,&mImprint,&actionb);
-	environment.executeAction(environment.faceSelect(),1);
+	//environment.executeAction(environment.faceSelect(),1);
 
 	Politique policy(&environment);
 
-	executeTrainQlearning(environment);
+
+
+	//executeTrainQlearning(environment);
 
 
 	//std::cout<<"interval : "<<policy.getInterval(1)<<std::endl;

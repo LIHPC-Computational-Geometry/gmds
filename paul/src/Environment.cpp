@@ -4,8 +4,8 @@
 #include "gmds/paul/Environment.h"
 using namespace gmds;
 
-Environment::Environment(GridBuilderAround *AGrid, Mesh *AMesh,Actions *AAction)
-	:g_grid(*AGrid),m_mesh(*AMesh),action(*AAction){;}
+Environment::Environment(GridBuilderAround *AGrid, Mesh *AMeshTarget,Actions *AAction)
+	:g_grid(*AGrid),m_mesh(*AMeshTarget),action(*AAction){;}
 
 double Environment::globalIoU()
 {
@@ -15,6 +15,7 @@ double Environment::globalIoU()
 		if(g_grid.getActivate(g_grid.m_mesh.get<Face>(f))==1){
 			nbActivateFace+=1;
 			globalIoU+=Environment::localIoU(g_grid.m_mesh.get<Face>(f));
+			//std::cout<<"Calcul global IoU, face : "<<f<<" avec local IoU de "<<Environment::localIoU(g_grid.m_mesh.get<Face>(f))<<std::endl;
 		}
 	}
 	globalIoU=globalIoU/nbActivateFace;

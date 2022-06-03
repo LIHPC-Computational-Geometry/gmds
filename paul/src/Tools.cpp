@@ -61,7 +61,8 @@ std::vector<Node> Tools::getListNodesOfFace(const int faceID)
 {
 	Face f = g_grid.m_mesh.get<Face>(faceID);
 	std::vector<Node>list_nodes = f.get<Node>();
-	/*for (auto n : list_nodes){
+	/*
+	for (auto n : list_nodes){
 		std::cout<<"Face :"<< faceID <<" avec les noeuds :"<< n<<std::endl;
 	}*/
 	return list_nodes;
@@ -71,7 +72,8 @@ std::vector<Face> Tools::getListFacesOfNode(const int nodeID)
 {
 	Node n =g_grid.m_mesh.get<Node>(nodeID);
 	std::vector<Face> list_faces = n.get<Face>();
-	/*for (auto n : list_faces){
+	/*
+	for (auto n : list_faces){
 		std::cout<<"Le noeud " << nodeID << " avec les faces"<< n <<std::endl;
 	}*/
 	return list_faces;
@@ -143,6 +145,7 @@ int Tools::getIdNextNode(const int idNode, const int idFaceNode)
 
 	for(int i = 0; i < listNodeFace.size();i++){
 		//std::cout<<"L'element i : "<< i <<" du vecteur est :"<<listNodeFace[i].id()<<std::endl;
+		//std::cout<<"L'element idNode : "<< idNode <<std::endl;
 		//std::cout<<"Le dernier element du vec est "<<listNodeFace.back()<<std::endl;
 		if (listNodeFace[i].id() == idNode){
 			if(i == listNodeFace.size()-1){
@@ -761,9 +764,13 @@ std::vector<Node> Tools::getVerticalEdge(Face AFace)
 {
 	std::vector<Node> verticalEdge;
 	auto listNodesFace = Tools::getListNodesOfFace(AFace.id());
+	/*std::cout<<"Liste Noeuds "<<std::endl;
+	for (auto n : listNodesFace){
+		std::cout<<"le noeud : "<<n<<std::endl;
+	}*/
 	for (auto i : listNodesFace){
 		for (auto j : listNodesFace){
-			if (i != j && Tools::checkExistEdge(i.id(),j.id(),AFace.id()) && !Tools::checkVertical(i,j)){
+			if (i != j && Tools::checkExistEdge(i.id(),j.id(),AFace.id()) && Tools::checkVertical(i,j)){
 				verticalEdge.push_back(i);
 				verticalEdge.push_back(j);
 				//std::cout<<"l'arete verticale : " << verticalEdge.front()<<" et " <<verticalEdge.back()<<std::endl;
@@ -778,7 +785,7 @@ std::vector<Node> Tools::getHorizontalEdge(Face AFace)
 	auto listNodesFace = Tools::getListNodesOfFace(AFace.id());
 	for (auto i : listNodesFace){
 		for (auto j : listNodesFace){
-			if (i != j && Tools::checkExistEdge(i.id(),j.id(),AFace.id()) && Tools::checkVertical(i,j)){
+			if (i != j && Tools::checkExistEdge(i.id(),j.id(),AFace.id()) && !Tools::checkVertical(i,j)){
 				horizontalEdge.push_back(i);
 				horizontalEdge.push_back(j);
 				//std::cout<<"l'arete horizontale : " << horizontalEdge.front()<<" et " <<horizontalEdge.back()<<std::endl;
@@ -786,6 +793,7 @@ std::vector<Node> Tools::getHorizontalEdge(Face AFace)
 			}
 		}
 	}
+	//std::cout<<"Arete select : "<<horizontalEdge.front()<<" \n"<<horizontalEdge.back()<<std::endl;
 }
 
 Node Tools::selectNodeMinRange(Face AFace)
@@ -866,6 +874,14 @@ void Tools::cloneMesh(const GridBuilderAround &originalGrid, GridBuilderAround &
 		if (originalGrid.m_mesh.has<Face>(faceID))
 		{
 			newGrid.m_mesh.newFace(originalGrid.m_mesh.get<Face>(faceID).get<Node>());
+			newGrid.activate->set(faceID,originalGrid.m_mesh.getVariable<int,GMDS_FACE>("activate")->value(faceID));
+			newGrid.volFrac->set(faceID,originalGrid.m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(faceID));
+			auto listNodeFaceOriginalGrid=Tools::getListNodesOfFace(faceID);
+			for (int i =0;i<4;i++){
+				auto actualNode = listNodeFaceOriginalGrid[i];
+				auto actualFace = newGrid.m_mesh.get<Face>(faceID);
+				newGrid.m_mesh.get<Node>(actualNode.id()).add(actualFace);
+			}
 		}
 		else
 		{

@@ -15,23 +15,39 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 	Politique politique(&environmentInit);
 	politique.initQTable();
 
-	Tools tool(&environmentInit.g_grid);
+	Tools toolInit(&environmentInit.g_grid);
 
 
 	for (int i=0; i<=4;i++){
+		std::cout <<"Dans le for : "<<i<<std::endl;
+
+
 
 		Mesh copyGridMesh(environmentInit.g_grid.m_mesh.getModel());
 		GridBuilderAround copyGrid(&copyGridMesh,&environmentInit.g_grid.meshTarget,2);
-		tool.cloneMesh(environmentInit.g_grid,copyGrid);
+		//copyGrid.executeGrid2D(5);
+		toolInit.cloneMesh(environmentInit.g_grid,copyGrid);
+		//Tools toolsCopy(&copyGrid);
 		Actions actionQLearning(&copyGrid);
-		Environment environment(&environmentInit.g_grid,&environmentInit.g_grid.meshTarget,&actionQLearning);
+		Environment environment(&copyGrid,&environmentInit.g_grid.meshTarget,&actionQLearning);
+		/*
+		auto facesAllCopy = copyGrid.m_mesh.faces();
+		for (auto f : facesAllCopy){
+			std::cout<<"La Face : "<<copyGrid.m_mesh.get<Face>(f)<<std::endl;
+		}*/
 
-		std::cout <<"Dans le for : "<<i<<std::endl;
+
+
 
 
 		while(environment.globalIoU()<0.9){
 
+			std::cout<<"Valeur env Global IoU : \n"<<environment.globalIoU()<<std::endl;
+
 			Face faceSelected = environment.faceSelect();
+
+			std::cout<<"Face Select : "<<faceSelected<< " avec valeur activate "<<copyGrid.getActivate(faceSelected)<<" et vol Frac "
+			          <<copyGrid.m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(faceSelected.id())<<std::endl;
 			double localIoU = environment.localIoU(faceSelected);
 			int intervalIoU = politique.getInterval(localIoU);
 			int actionIndex = politique.getNextAction(intervalIoU);

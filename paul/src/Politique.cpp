@@ -39,7 +39,7 @@ int Politique::getNextAction(int intervalIoU)
 	bool firstIte = true;
 	float epsilon = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);;
 	std::cout<<"Epsilon : "<< epsilon<<std::endl;
-	if(epsilon < 0.9)
+	if(epsilon < 0.5)
 	{
 		std::cout<<"Dans le if"<<std::endl;
 		for (auto i : theQTable[intervalIoU]) {

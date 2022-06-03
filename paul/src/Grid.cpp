@@ -114,9 +114,11 @@ void GridBuilderAround::gridBuild2D(const gmds::TInt AXNb, const gmds::TCoord AX
 		Face f=m_mesh.get<Face>(face_id);
 		std::vector<Node> f_nodes = f.get<Node>();
 		for (auto n : f_nodes){
-			activate->set(f.id(),1); //attribution val aux faces
+			//attribution val aux faces
 		}
+		activate->set(f.id(),1);
 	}
+	volfraccomputation_2d(&m_mesh,&meshTarget,																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									m_mesh.getVariable<double,GMDS_FACE>("volFrac"));
 }
 
 int GridBuilderAround::getActivate(gmds::Face AFace) {

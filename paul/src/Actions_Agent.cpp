@@ -50,11 +50,11 @@ void Actions::executeGlideNode(Node node, Mesh *AMesh)
 }
 void Actions::executeCutFace(Face AFace, int direction)
 {
-	if (direction==0){
+	if (direction==1){
 		auto edgeHorizontal = tool.getHorizontalEdge(AFace);
 		Actions::executeCutEdge(edgeHorizontal.front(),edgeHorizontal.back());
 	}
-	else if (direction == 1){
+	else if (direction == 0){
 		auto edgeVertical = tool.getVerticalEdge(AFace);
 		Actions::executeCutEdge(edgeVertical.front(),edgeVertical.back());
 	}

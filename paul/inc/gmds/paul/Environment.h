@@ -16,7 +16,7 @@ namespace gmds {
 	class Environment
    {
 	 public :
-	   Environment(GridBuilderAround* AGrid,Mesh* AMesh,Actions* AAction);
+	   Environment(GridBuilderAround* AGrid,Mesh* AMeshTarget,Actions* AAction);
 
 	   /** \brief calc the global Intersection over Union
 	    *
