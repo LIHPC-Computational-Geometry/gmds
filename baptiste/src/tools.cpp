@@ -90,6 +90,17 @@ std::vector<Action *> gmds::getActionsVector()
 	return actions;
 }
 
+double gmds::getMeshArea(Mesh &mesh)
+{
+	double res = 0;
+	for (int faceID : mesh.faces())
+	{
+		Face face = mesh.get<Face>(faceID);
+		res += face.area();
+	}
+	return res;
+}
+
 void gmds::volfraccomputation_2d_reverse(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMesh, gmds::Variable<double> *AVolFrac)
 {
 	// check validity of the inputs
@@ -118,7 +129,6 @@ void gmds::volfraccomputation_2d_reverse(gmds::Mesh *AMesh, const gmds::Mesh *AI
 	// check mesh orientation
 	// TODO
 	for(auto f_id: AMesh->faces()) {
-		AVolFrac->set(f_id, 0);
 		gmds::Face f = AMesh->get<Face>(f_id);
 		std::vector<gmds::Node> n = f.get<gmds::Node>();
 
@@ -130,12 +140,29 @@ void gmds::volfraccomputation_2d_reverse(gmds::Mesh *AMesh, const gmds::Mesh *AI
 			break;
 		}
 	}
+/*
+	for (auto tri_id: AImprintMesh->faces())
+	{
+		std::cout<<"Init volFrac"<<std::endl;
+		AVolFrac->set(tri_id, 0);
+	}*/
 
 	if(!valid_input) {
 		throw gmds::GMDSException(msg);
 	}
 
-	for(auto tri_id: AImprintMesh->faces()) {
+
+
+	auto idFaceTri = AImprintMesh->faces();
+	idFaceTri.remove(1089);
+	idFaceTri.remove(1091);
+	idFaceTri.remove(2497);
+	idFaceTri.remove(2498);
+	idFaceTri.remove(2499);
+
+	for(auto tri_id: idFaceTri) {
+
+		std::cout<<"Valeur id face tri : "<<tri_id<<std::endl;
 		gmds::Face tri = AImprintMesh->get<Face>(tri_id);
 		std::vector<gmds::Node> n_tri = tri.get<gmds::Node>();
 
@@ -168,7 +195,6 @@ void gmds::volfraccomputation_2d_reverse(gmds::Mesh *AMesh, const gmds::Mesh *AI
 			xyz[3][1] = n_quad[3].Y();
 			xyz[3][2] = n_quad[3].Z();
 
-			/*
 			gmds::math::Point pt0(xyz[0][0], xyz[0][1], xyz[0][2]);
 			gmds::math::Point pt1(xyz[1][0], xyz[1][1], xyz[1][2]);
 			gmds::math::Point pt2(xyz[2][0], xyz[2][1], xyz[2][2]);
@@ -176,14 +202,6 @@ void gmds::volfraccomputation_2d_reverse(gmds::Mesh *AMesh, const gmds::Mesh *AI
 			gmds::math::Quadrilateral q(pt0, pt1, pt2, pt3);
 
 			const double volsurf = q.area();
-            */
-
-			gmds::math::Point pt0(vertices[0].x, vertices[0].y);
-			gmds::math::Point pt1(vertices[1].x, vertices[1].y);
-			gmds::math::Point pt2(vertices[2].x, vertices[2].y);
-			gmds::math::Triangle t(pt0, pt1, pt2);
-
-			const double volsurf = t.area();
 
 			r2d_poly poly;
 			r2d_rvec2 verts[4];
@@ -205,10 +223,9 @@ void gmds::volfraccomputation_2d_reverse(gmds::Mesh *AMesh, const gmds::Mesh *AI
 			r2d_reduce(&poly, om, POLY_ORDER);
 
 			double vf = AVolFrac->value(tri_id);
-			//double vf = AVolFrac->value(f_id);
 			//			std::cout<<"f_id "<<f_id<<" volsurf "<<volsurf<<" vf "<<vf<<" om "<<om[0]/volsurf<<std::endl;
 			// add but do not forget to divide by cell area
-			AVolFrac->set(f_id, vf + om[0]/volsurf);
+			AVolFrac->set(tri_id, vf + om[0]/volsurf);
 		}
 	}
 }

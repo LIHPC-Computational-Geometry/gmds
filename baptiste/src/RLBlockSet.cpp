@@ -2,12 +2,13 @@
 // Created by Baptiste Bony on 22/04/22.
 //
 
-#include <gmds/baptiste/RLBlockSet.h>
-#include "gmds/io/IGMeshIOService.h"
-#include "gmds/io/VTKWriter.h"
-#include <gmds/io/VTKReader.h>
 #include "gmds/baptiste/tools.h"
 #include "gmds/igalgo/VolFracComputation.h"
+#include "gmds/io/IGMeshIOService.h"
+#include "gmds/io/VTKWriter.h"
+#include "gmds/math/Quadrilateral.h"
+#include <gmds/baptiste/RLBlockSet.h>
+#include <gmds/io/VTKReader.h>
 
 using namespace gmds;
 
@@ -246,26 +247,42 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 		m_mesh.newVariable<double, GMDS_FACE>("volFrac");
 	}
 	volfraccomputation_2d(&m_mesh, &targetMesh, m_mesh.getVariable<double, GMDS_FACE>("volFrac"));
-	Variable<double>* res = m_mesh.getVariable<double, GMDS_FACE>("volFrac");
-	double a = 0;
-	for (int i =0; i < res->getNbValues(); i++)
+	Variable<double>* volFracVar = m_mesh.getVariable<double, GMDS_FACE>("volFrac");
+	double res = 0;
+	for (int i =0; i < volFracVar->getNbValues(); i++)
 	{
-		a += res->value(i);
+		res += volFracVar->value(i);
 	}
-	/*
+
 	if (not targetMesh.hasVariable(GMDS_FACE, "volFrac"))
 	{
 		targetMesh.newVariable<double, GMDS_FACE>("volFrac");
 	}
 	volfraccomputation_2d_reverse(&m_mesh, &targetMesh, m_mesh.getVariable<double, GMDS_FACE>("volFrac"));
-	Variable<double>* res2 = m_mesh.getVariable<double, GMDS_FACE>("volFrac");
-	double b = 0;
-	for (int i =0; i < res2->getNbValues(); i++)
+	Variable<double>* volFracVarReverse = m_mesh.getVariable<double, GMDS_FACE>("volFrac");
+	for (int i =0; i < volFracVarReverse->getNbValues(); i++)
 	{
-		b += res->value(i);
+		res += volFracVarReverse->value(i);
 	}
-	b = b/targetMesh.getNbFaces();
-	 */
 
-	return a;
+	return res;
+}
+
+bool RLBlockSet::isValid()
+{
+	bool res = true;
+	for(auto faceID: m_mesh.faces())
+	{
+		gmds::Face f = m_mesh.get<Face>(faceID);
+		std::vector<gmds::Node> n = f.get<gmds::Node>();
+
+		gmds::math::Quadrilateral quad(n[0].point(), n[1].point(), n[2].point(), n[3].point());
+		double sj = quad.computeScaledJacobian2D();
+		if(sj < 0)
+		{
+			res = false;
+			break;
+		}
+	}
+	return res;
 }

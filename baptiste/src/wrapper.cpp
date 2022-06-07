@@ -11,9 +11,8 @@ PYBIND11_MODULE(environment, m)
 	py::class_<gmds::RLBlockSet>(m, "RLBlockSet")
 	   .def(py::init<gmds::MeshModel>())
 	   .def(py::init<>())
-	   .def(py::init<int>())
-	   .def("__copy__",  [](const gmds::RLBlockSet &self) { return gmds::RLBlockSet(self); })
-	   .def("__deepcopy__", [](const gmds::RLBlockSet &self, py::dict) { return gmds::RLBlockSet(self); })
+	   //.def("__copy__",  [](const gmds::RLBlockSet &self) { return gmds::RLBlockSet(self); })
+	   //.def("__deepcopy__", [](const gmds::RLBlockSet &self, py::dict) { return gmds::RLBlockSet(self); })
 	   .def_readwrite("m_mesh", &gmds::RLBlockSet::m_mesh)
 	   .def_readwrite("xSize", &gmds::RLBlockSet::xSize)
 	   .def_readwrite("ySize", &gmds::RLBlockSet::ySize)
@@ -24,7 +23,8 @@ PYBIND11_MODULE(environment, m)
 	   .def("saveMesh", &gmds::RLBlockSet::saveMesh)
 	   .def("setFromFile", &gmds::RLBlockSet::setFromFile)
 	   .def("getAllFaces", &gmds::RLBlockSet::getAllFaces)
-	   .def("getReward", &gmds::RLBlockSet::getReward);
+	   .def("getReward", &gmds::RLBlockSet::getReward)
+	   .def("isValid", &gmds::RLBlockSet::isValid);
 
 	py::class_<gmds::Mesh>(m, "Mesh")
 	   .def(py::init<const gmds::MeshModel&>())
@@ -44,7 +44,9 @@ PYBIND11_MODULE(environment, m)
 	   .def("__iter__", [](gmds::FaceContainer &s) { return py::make_iterator(s.begin(), s.end()); },
 	      py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */);
 
-	py::class_<gmds::Face>(m, "Face");
+	py::class_<gmds::Face>(m, "Face")
+	   .def("area", &gmds::Face::area)
+	   .def("nbNodes", &gmds::Face::nbNodes);
 
 	m.def("cloneBlockSet", &gmds::cloneBlockSet);
 
