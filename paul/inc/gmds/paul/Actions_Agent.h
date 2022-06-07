@@ -16,6 +16,11 @@ namespace gmds {
    {
 	 public:
 	   Actions(GridBuilderAround* AGrid);
+
+	   //virtual ~Actions();
+
+	   void deleteActions();
+
 	   /** @brief action delete face
 	    *
 	    * @param faceID id of the face to delete

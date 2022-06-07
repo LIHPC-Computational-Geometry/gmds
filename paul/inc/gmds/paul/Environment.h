@@ -18,11 +18,15 @@ namespace gmds {
 	 public :
 	   Environment(GridBuilderAround* AGrid,Mesh* AMeshTarget,Actions* AAction);
 
+	   //virtual ~Environment();
+
 	   /** \brief calc the global Intersection over Union
 	    *
 	    * @return the IoU global
 	    */
 	   double globalIoU();
+
+	   void deleteEnv();
 
 	   /** \brief calc the local Intersection over Union for a specify face
 	    *

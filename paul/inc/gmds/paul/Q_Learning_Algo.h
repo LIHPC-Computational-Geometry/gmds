@@ -6,6 +6,11 @@
 #define GMDS_Q_LEARNING_ALGO_H
 
 /*----------------------------------------------------------------------------*/
+#include "gmds/io/IGMeshIOService.h"
+#include "gmds/io/VTKWriter.h"
+#include "gmds/io/VTKReader.h"
+
+
 #include "gmds/ig/Mesh.h"
 #include "GMDSIgAlgo_export.h"
 #include "gmds/paul/Grid.h"

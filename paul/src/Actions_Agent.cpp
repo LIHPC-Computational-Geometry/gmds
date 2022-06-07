@@ -4,6 +4,17 @@ using namespace gmds;
 Actions::Actions(GridBuilderAround *AGrid)
    :g_grid(*AGrid), tool(&g_grid){;}
 
+/*
+Actions::~Actions(){
+	delete &g_grid;
+	delete this;
+}*/
+
+void Actions::deleteActions()
+{
+	delete this;
+}
+
 void Actions::executeDeleteFace(int faceID)
 {
 	g_grid.flipActivate(faceID);

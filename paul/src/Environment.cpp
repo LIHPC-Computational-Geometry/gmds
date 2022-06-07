@@ -7,6 +7,14 @@ using namespace gmds;
 Environment::Environment(GridBuilderAround *AGrid, Mesh *AMeshTarget,Actions *AAction)
 	:g_grid(*AGrid),m_mesh(*AMeshTarget),action(*AAction){;}
 
+
+//Environment::~Environment(){}
+
+void Environment::deleteEnv()
+{
+	delete this;
+}
+
 double Environment::globalIoU()
 {
 	double globalIoU=0;
@@ -59,6 +67,7 @@ Face Environment::faceSelect()
 			}
 		}
 	}
+	std::cout << AFace << std::endl;
 	return AFace;
 }
 
@@ -74,10 +83,10 @@ void Environment::executeAction(Face AFace,int numberAction)
 		action.executeCutFace(AFace,0);
 	}
 	else if(numberAction==3){
-	    action.executeGlideMaxNodeFace(AFace);
+	    action.executeGlideMinNodeFace(AFace);
 	}
 	else if(numberAction==4){
-	    action.executeGlideMinNodeFace(AFace);
+	    action.executeGlideMaxNodeFace(AFace);
 	}
 
 }

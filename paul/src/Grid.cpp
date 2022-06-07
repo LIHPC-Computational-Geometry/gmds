@@ -26,8 +26,12 @@ int GridBuilderAround::getDim() const
       //return m_mesh.get<Face>(faceID).;
 }*/
 
-GridBuilderAround::~GridBuilderAround()
-{}
+//GridBuilderAround::~GridBuilderAround(){}
+
+void GridBuilderAround::deleteGridAround()
+{
+	delete this;
+}
 bool GridBuilderAround::isValid() const
 {
 	if(m_dim==3)

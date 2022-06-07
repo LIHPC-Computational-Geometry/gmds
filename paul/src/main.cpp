@@ -130,8 +130,8 @@ int main(){
 	actionb.executeCutFace(mGridAround.get<Face>(18),1);
 	actionb.executeGlidNodeFace(mGridAround.get<Face>(20));*/
 
-	actionb.executeGlideMaxNodeFace(gridAround.m_mesh.get<Face>(2));
-	actionb.executeGlideMinNodeFace(gridAround.m_mesh.get<Face>(2));
+	//actionb.executeGlideMaxNodeFace(mGridAround.get<Face>(12));
+	//actionb.executeGlideMinNodeFace(gridAround.m_mesh.get<Face>(12));
 
 
 	MeshDoctor doc(&mGridAround);
@@ -208,14 +208,14 @@ int main(){
 
 	volfraccomputation_2d(&mGridAround,&mImprint,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
 
-	Environment environment(&gridAround,&mImprint,&actionb);
+	Environment environment(&gridAround,&gridAround.meshTarget,&actionb);
 	//environment.executeAction(environment.faceSelect(),1);
 
 	Politique policy(&environment);
 
 
 
-	//executeTrainQlearning(environment);
+
 
 
 	//std::cout<<"interval : "<<policy.getInterval(1)<<std::endl;
@@ -376,7 +376,9 @@ int main(){
 	vtkWriter2.setDataOptions(gmds::N|gmds::F);
 	vtkWriter2.write("lili.vtk");
 
-	exit(3);
+
+	executeTrainQlearning(environment);
+
 
 }
 

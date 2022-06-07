@@ -32,8 +32,9 @@ namespace gmds {
 	   const Mesh getmImprint() const;
 	   int getDim() const;
 
-	   virtual ~GridBuilderAround();
+	   //virtual ~GridBuilderAround();
 
+	   void deleteGridAround();
 	   /*------------------------------------------------------------------------*/
 	   /** @brief Check if the mesh fits algorithm requirements, which are:
          *         - 3D mesh with R, N and R2N

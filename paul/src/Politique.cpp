@@ -12,7 +12,7 @@ void Politique::initQTable()
 {
 	for (int i = 0; i <5;i++ ){
 		std::vector<double> ligne;
-		for (int j = 0; j<5;j++){
+		for (int j = 0; j<4;j++){
 			ligne.push_back(0);
 		}
 		Q_Table.push_back(ligne);
@@ -59,7 +59,7 @@ int Politique::getNextAction(int intervalIoU)
 		return actionSelect;
 	}
 	else{
-		int randomAction = rand() % 5;
+		int randomAction = rand() % 4;
 		std::cout<<"Action alea "<< randomAction<<std::endl;
 		return randomAction;
 
