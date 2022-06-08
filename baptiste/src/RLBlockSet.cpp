@@ -254,6 +254,7 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 		res += volFracVar->value(i);
 	}
 
+	/*
 	if (not targetMesh.hasVariable(GMDS_FACE, "volFrac"))
 	{
 		targetMesh.newVariable<double, GMDS_FACE>("volFrac");
@@ -264,7 +265,7 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 	{
 		res += volFracVarReverse->value(i);
 	}
-
+	 */
 	return res;
 }
 

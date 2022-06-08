@@ -101,7 +101,7 @@ double gmds::getMeshArea(Mesh &mesh)
 	return res;
 }
 
-void gmds::volfraccomputation_2d_reverse(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMesh, gmds::Variable<double> *AVolFrac)
+void gmds::volfraccomputation_2d_reverse(const gmds::Mesh *AMesh, gmds::Mesh *AImprintMesh, gmds::Variable<double> *AVolFrac)
 {
 	// check validity of the inputs
 	bool valid_input = true;
