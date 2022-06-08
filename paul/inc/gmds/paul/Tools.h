@@ -10,6 +10,11 @@
 #include "GMDSIgAlgo_export.h"
 #include "gmds/paul/Grid.h"
 
+//include volFracComputation
+#include "gmds/igalgo/r2d.h"
+#include <gmds/math/Quadrilateral.h>
+#include <gmds/math/Triangle.h>
+
 /*----------------------------------------------------------------------------*/
 
 
@@ -289,6 +294,8 @@ class Tools{
 	double calcRangePoints(Node node1, Node node2);
 
 	void cloneMesh(const GridBuilderAround &originalGrid, GridBuilderAround &newGrid);
+
+	void intersectionTargetWithGrid(Mesh* AMesh, const Mesh* AImprintMesh,gmds::Variable<double>* AVolFrac);
 
 	gmds::GridBuilderAround g_grid;
 
