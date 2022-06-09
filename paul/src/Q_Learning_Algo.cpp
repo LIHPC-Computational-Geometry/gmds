@@ -18,17 +18,24 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 	Tools toolInit(&environmentInit.g_grid);
 
 
-	for (int i=0; i<=2;i++){
+	for (int i=0; i<=10;i++){
 		std::cout <<"Dans le for : "<<i<<std::endl;
 
 
-
+		std::cout<<"Copy mesh"<<std::endl;
 		Mesh *copyGridMesh= new Mesh(environmentInit.g_grid.m_mesh.getModel());
+		std::cout<<"Copy grid"<<std::endl;
+
 		GridBuilderAround *copyGrid=new GridBuilderAround(copyGridMesh,&environmentInit.g_grid.meshTarget,2);
 		//copyGrid.executeGrid2D(5);
+		std::cout<<"Clone"<<std::endl;
+
 		toolInit.cloneMesh(environmentInit.g_grid,*copyGrid);
 		//Tools toolsCopy(&copyGrid);
+		std::cout<<"Action"<<std::endl;
+
 		Actions *actionQLearning=new Actions(copyGrid);
+		std::cout<<"Env"<<std::endl;
 		Environment *environment= new Environment(copyGrid,&environmentInit.g_grid.meshTarget,actionQLearning);
 		/*
 		auto facesAllCopy = copyGrid.m_mesh.faces();
@@ -43,28 +50,39 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 		//environment.executeAction(selectFace,1);
 
 		int countIte=0;
-		while(environment->globalIoU()<0.85 && countIte<15){
+		while(environment->globalIoU()<0.9 && countIte<30){
 
-			std::cout<<"Valeur env Global IoU : \n"<<environment->globalIoU()<<std::endl;
-
+			environment->calcVolFrac();
+			//std::cout<<"Valeur env Global IoU : \n"<<environment->globalIoU()<<std::endl;
+			//std::cout<<"Select Face"<<std::endl;
 			Face faceSelected = environment->faceSelect();
 
-			std::cout<<"Face Select : "<<faceSelected<< " avec valeur activate "<<copyGrid->getActivate(faceSelected)<<" et vol Frac "
-			          <<copyGrid->m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(faceSelected.id())<<std::endl;
+			//std::cout<<"Face Select : "<<faceSelected<< " avec valeur activate "<<copyGrid->getActivate(faceSelected)<<" et vol Frac "
+			          //<<copyGrid->m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(faceSelected.id())<<std::endl;
+			//std::cout<<"Calcul IoU"<<std::endl;
+
 			double localIoU = environment->localIoU(faceSelected);
+			//std::cout<<"Calcul intervalIoU"<<std::endl;
 			int intervalIoU = politique->getInterval(localIoU);
+			//std::cout<<"Calcul actionIndex"<<std::endl;
 			int actionIndex = politique->getNextAction(intervalIoU);
+			//std::cout<<"oldQValue"<<std::endl;
 			double oldQValue = politique->Q_Table[intervalIoU][actionIndex];
+			//std::cout<<"maxQValue"<<std::endl;
 			double maxQValue = politique->maxQValue(intervalIoU);
 
+			//std::cout<<"executeAction"<<std::endl;
 			environment->executeAction(faceSelected,actionIndex);
+			//std::cout<<"Calcul reward"<<std::endl;
 			double reward = environment->reward(faceSelected);
-
+			//std::cout<<"Calcul TD"<<std::endl;
 			double temporal_difference = reward + (0.9 * maxQValue) - oldQValue;
+			//std::cout<<"Calcul newQvalue"<<std::endl;
 			double newQValue = oldQValue + (0.9 * temporal_difference);
-			std::cout << "#nbface " << faceSelected.nbNodes() << std::endl;
+			//std::cout << "#nbface " << faceSelected.nbNodes() << std::endl;
+			//std::cout<<"Calcul updateQTable"<<std::endl;
 			politique->updateQTable(intervalIoU,actionIndex,newQValue);
-			std::cout<<"Count Ite : "<<countIte<<std::endl;
+			//std::cout<<"Count Ite : "<<countIte<<std::endl;
 
 			countIte+=1;
 		}

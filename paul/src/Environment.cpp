@@ -32,9 +32,14 @@ double Environment::globalIoU()
 }
 double Environment::localIoU(const gmds::Face AFace)
 {
-	volfraccomputation_2d(&g_grid.m_mesh,&g_grid.meshTarget,g_grid.m_mesh.getVariable<double,GMDS_FACE>("volFrac"));
 	double localIoU = g_grid.m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(AFace.id());
 	//std::cout<<"Local IoU : "<<localIoU<<std::endl;
+	if (localIoU<0){
+		std::cout<<"local IoU inf 0"<<std::endl;
+		volfraccomputation_2d(&g_grid.m_mesh,&g_grid.meshTarget,g_grid.m_mesh.getVariable<double,GMDS_FACE>("volFrac"));
+		localIoU = g_grid.m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(AFace.id());
+		std::cout<<"Apres maj local IoU"<<localIoU<<std::endl;
+	}
 	return localIoU;
 }
 
@@ -67,7 +72,7 @@ Face Environment::faceSelect()
 			}
 		}
 	}
-	std::cout << AFace << std::endl;
+	//std::cout << AFace << std::endl;
 	return AFace;
 }
 
@@ -89,4 +94,11 @@ void Environment::executeAction(Face AFace,int numberAction)
 	    action.executeGlideMaxNodeFace(AFace);
 	}
 
+	volfraccomputation_2d(&g_grid.m_mesh,&g_grid.meshTarget,g_grid.m_mesh.getVariable<double,GMDS_FACE>("volFrac"));
+
+}
+
+void Environment::calcVolFrac()
+{
+	volfraccomputation_2d(&g_grid.m_mesh,&g_grid.meshTarget,g_grid.m_mesh.getVariable<double,GMDS_FACE>("volFrac"));
 }

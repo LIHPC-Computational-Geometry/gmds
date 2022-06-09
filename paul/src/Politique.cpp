@@ -38,10 +38,10 @@ int Politique::getNextAction(int intervalIoU)
 	double maxQvalue;
 	bool firstIte = true;
 	float epsilon = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);;
-	std::cout<<"Epsilon : "<< epsilon<<std::endl;
+	//std::cout<<"Epsilon : "<< epsilon<<std::endl;
 	if(epsilon < 0.5)
 	{
-		std::cout<<"Dans le if"<<std::endl;
+		//std::cout<<"Dans le if"<<std::endl;
 		for (auto i : theQTable[intervalIoU]) {
 			if (firstIte) {
 				actionSelect = i;
@@ -55,12 +55,12 @@ int Politique::getNextAction(int intervalIoU)
 				}
 			}
 		}
-		std::cout<<"Action Select : "<<actionSelect<<std::endl;
+		//std::cout<<"Action Select : "<<actionSelect<<std::endl;
 		return actionSelect;
 	}
 	else{
 		int randomAction = rand() % 4;
-		std::cout<<"Action alea "<< randomAction<<std::endl;
+		//std::cout<<"Action alea "<< randomAction<<std::endl;
 		return randomAction;
 
 	}

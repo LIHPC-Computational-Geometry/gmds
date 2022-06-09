@@ -51,6 +51,8 @@ namespace gmds {
 	    */
 	   Face faceSelect();
 
+	   void calcVolFrac();
+
 	   gmds::GridBuilderAround g_grid;
 	   gmds::Mesh m_mesh;
 

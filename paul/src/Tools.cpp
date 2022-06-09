@@ -1148,6 +1148,14 @@ void Tools::intersectionTargetWithGrid(Mesh *AMesh, const Mesh *AImprintMesh, gm
 	}*/
 
 	for (auto f_id: AMesh->faces()){
+
+		std::cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
+
+		std::cout<<"Face Grid select"<<f_id<<std::endl;
+
+		std::cout<<"\"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\" "<<std::endl;
+
+
 		gmds::Face f = AMesh->get<Face>(f_id);
 
 		r2d_rvec2 vertices_Quad[4];
@@ -1201,11 +1209,13 @@ void Tools::intersectionTargetWithGrid(Mesh *AMesh, const Mesh *AImprintMesh, gm
 			const double volsurf = q.area();
 			const double IoU = t.area();
 
+
 			r2d_poly poly;
 			r2d_rvec2 verts[4];
 
 			r2d_poly tetra;
 			r2d_rvec2 verts_tri[3];
+
 
 			r2d_init_poly(&tetra,verts_tri,3);
 
@@ -1217,8 +1227,12 @@ void Tools::intersectionTargetWithGrid(Mesh *AMesh, const Mesh *AImprintMesh, gm
 			double vf_tri = AVolFrac->value(tri_id);
 
 			std::cout<<"Id Face : "<<tri_id<<std::endl;
-			std::cout<<"valeur Vol frac : "<<vf_tri<<std::endl;
-			AVolFrac->set(tri_id, vf_tri + om[0]/IoU);
+			std::cout<<"valeur om : "<<om<<std::endl;
+			std::cout<<"valeur om[0] : "<<om[0]<<std::endl;
+			std::cout<<"valeur IoU : "<<IoU<<std::endl;
+
+
+			AVolFrac->set(tri_id, vf_tri +om[0]/IoU);
 
 
 

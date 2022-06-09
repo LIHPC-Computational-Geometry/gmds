@@ -140,7 +140,7 @@ int main(){
 	//Variable<double>* volFrac = mGridAround.newVariable<double,GMDS_FACE>("volFrac");
 	Variable<double>* IoU = gridAround.meshTarget.newVariable<double,GMDS_FACE>("IoU");
 
-	toolsB.intersectionTargetWithGrid(&gridAround.m_mesh,&gridAround.meshTarget,IoU);
+//	toolsB.intersectionTargetWithGrid(&gridAround.m_mesh,&gridAround.meshTarget,IoU);
 
 
 /*
@@ -388,7 +388,7 @@ int main(){
 	vtkWriter2.write("lili.vtk");
 
 
-	//executeTrainQlearning(environment);
+	executeTrainQlearning(environment);
 
 	exit(3);
 
