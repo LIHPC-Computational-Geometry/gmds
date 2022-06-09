@@ -83,14 +83,18 @@ def getAllActions():
 	return actions
 
 def getAllActionsBis(blockSet):
+	id = 0
 	actions = []
-	actions.append({"type" : "stay"})
+	actions.append({"id" : id, "type" : "stay"})
+	id += 1
 	for faceID in blockSet.getAllFaces():
-		actions.append({"type" : "delete", "face" : faceID})
+		actions.append({"id" : id, "type" : "delete", "face" : faceID})
 		for v in [False, True]:
 			for axis in ["x", "y"]:
 				for arange in [-2, -1, 1, 2]:
-					action = {"type" : "edit",
+					id += 1
+					action = {"id" : id,
+							  "type" : "edit",
 							  "v" : v,
 							  "axis" : axis,
 							  "range" : arange,
@@ -130,10 +134,17 @@ def virtualExpert(blockSet, targetMesh, nMax):
 
 
 def executeActionBis(action, blockSet):
-	if action["type"] == "delete":
-		blockSet.deleteBlock(action["face"])
-	elif action["type"] == "edit":
-		blockSet.editCorner(action["face"], action["v"], action["axis"], action["range"])
+	if action["type"] == "stay":
+		return True
+	elif action["face"] in blockSet.getAllFaces():
+		if action["type"] == "delete":
+			blockSet.deleteBlock(action["face"])
+			print("A face has been deleted")
+		elif action["type"] == "edit":
+			blockSet.editCorner(action["face"], action["v"], action["axis"], action["range"])
+		return True
+	else:
+		return False
 
 def virtualExpertBis(blockSet, targetMesh, nMax):
 	res = []
@@ -188,6 +199,7 @@ def testVirtualExpert():
 	c = Capsule()
 	c.readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk")
 	targetMesh = c.m_mesh
+	print(type(targetMesh))
 	blockSet = RLBlockSet()
 	blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 3, 3)
 	res = virtualExpertBis(blockSet, targetMesh, 10)
@@ -214,7 +226,7 @@ import random
 
 alpha = 0.1
 gamma = 0.6
-epsilon = 0.1
+epsilon = 0.5
 q_table = dict()
 
 
@@ -264,18 +276,40 @@ def training(m, a, alpha = 0.1, gamma = 0.6, epsilon = 0.1, n = 5):
 def step(state, action, targetMesh):
 	nextState = RLBlockSet()
 	cloneBlockSet(state, nextState)
-	executeActionBis(action, nextState)
-	if nextState.isValid():
-		reward = nextState.getReward(nextState, targetMesh)
-	else:
+	possible = executeActionBis(action, nextState)
+	if not possible:
 		reward = -100
-	terminated = reward > 0.95
+	else:
+		if nextState.isValid():
+			reward = nextState.getReward(targetMesh)
+		else:
+			reward = -100
+	print("Reward : " + str(reward))
+	terminated = (reward > 0.95)
 	return nextState, reward, terminated
 
+def generateID(text):
+  hash = 0
+  for ch in text:
+    hash = ( hash*281  ^ ord(ch)*997) & 0xFFFFFFFF
+  return hash
 
+
+def readTable(q_table, state, action):
+	value = 0
+	if (generateID(state.getStateID()), action["id"]) in q_table:
+		value = q_table[generateID(state.getStateID()), action["id"]]
+	return value
+
+def updateTable(q_table, state, action, value):
+	q_table[generateID(state.getStateID()), action["id"]] = value
 
 def train(filename, n = 10):
-	targetShape = getTargetShape(filename)
+	#targetShape = getTargetShape(filename)
+	c = Capsule()
+	c.readMesh(filename)
+	targetShape = c.m_mesh
+	print("Number of nodes in target mesh : " + str(targetShape.getNbNodes()))
 	blockSet = RLBlockSet()
 	blockSet.setFromFile(filename, 3, 3)
 	actions = getAllActionsBis(blockSet)
@@ -287,28 +321,36 @@ def train(filename, n = 10):
 		# Initialize variables
 		reward = 0
 		terminated = False
-		epochs = 0
+		k = 0
 
 		while not terminated:
-			print(epochs)
+			print("Epoch n°" + str(k))
+			print(q_table)
 			# Take learned path or explore new actions based on the epsilon
 			if random.uniform(0, 1) < epsilon:
 				action = random.choice(actions)
 			else:
 				# action = np.argmax(q_table[state])
-				action = max(q_table, key = q_table.get)[1]
+				try:
+					actionID = max(q_table, key = q_table.get)[1]
+					action = list(filter(lambda a: a["id"] == actionID, actions))[0]
+				except:
+					action = random.choice(actions)
 
 			nextState, reward, terminated = step(state, action, targetShape)
-			old_value = q_table[state, action]
-
-			inter_table = { key: value for key, value in q_table.items() if key[0] == nextState }
-			nextMax = q_table[max(inter_table, key = inter_table.get)]
-
-			new_value = (1 - alpha) * old_value + alpha * (reward + gamma * nextMax)
-			q_table[state, action] = new_value
+			#old_value = q_table[generateID(state.getStateID()), generateID(str(action))]
+			oldValue = readTable(q_table, state, action)
+			interTable = { key: value for key, value in q_table.items() if key[0] == nextState }
+			try:
+				nextMax = q_table[max(interTable, key = interTable.get)]
+			except:
+				nextMax = 0
+			newValue = (1 - alpha) * oldValue + alpha * (reward + gamma * nextMax)
+			#q_table[generateID(state.getStateID()), generateID(str(action))] = newValue
+			updateTable(q_table, state, action, newValue)
 			
 			state = nextState
-			epochs += 1
+			k += 1
 		
 		if (episode + 1) % 100 == 0:
 			clear_output(wait=True)
@@ -321,3 +363,24 @@ def train(filename, n = 10):
 
 
 train("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk")
+
+
+
+def testSerialize():
+	c = Capsule()
+	c.readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk")
+	targetMesh = c.m_mesh
+	#print(type(targetMesh))
+	blockSet = RLBlockSet()
+	blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 3, 3)
+
+	blockSetBis = RLBlockSet()
+	cloneBlockSet(blockSet, blockSetBis)
+
+
+	x = blockSet.getStateID()
+	print(x)
+
+	id_ = generateID(x)
+	print(id_)
+	print(generateID(blockSetBis.getStateID()))

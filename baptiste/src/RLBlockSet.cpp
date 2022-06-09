@@ -266,7 +266,7 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 		res += volFracVarReverse->value(i);
 	}
 	 */
-	return res;
+	return res/countBlocks();
 }
 
 bool RLBlockSet::isValid()
@@ -284,6 +284,23 @@ bool RLBlockSet::isValid()
 			res = false;
 			break;
 		}
+	}
+	return res;
+}
+
+std::string RLBlockSet::getStateID()
+{
+	/*
+	std::ostringstream out;
+	m_mesh.serialize(out);
+	return out.str();
+	 */
+	std::string res;
+	for (int nodeID : m_mesh.nodes())
+	{
+		Node node = m_mesh.get<Node>(nodeID);
+		res += std::to_string(node.X());
+		res += std::to_string(node.Y());
 	}
 	return res;
 }

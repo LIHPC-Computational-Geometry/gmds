@@ -51,6 +51,8 @@ class RLBlockSet
 	double getReward(Mesh &targetMesh);
 
 	bool isValid();
+
+	std::string getStateID();
 };
 
 }
