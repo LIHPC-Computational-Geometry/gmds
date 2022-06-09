@@ -286,6 +286,8 @@ def step(state, action, targetMesh):
 			reward = -100
 	print("Reward : " + str(reward))
 	terminated = (reward > 0.95)
+	if len(state.getAllFaces()) == 0:
+		terminated = True
 	return nextState, reward, terminated
 
 def generateID(text):
@@ -304,7 +306,7 @@ def readTable(q_table, state, action):
 def updateTable(q_table, state, action, value):
 	q_table[generateID(state.getStateID()), action["id"]] = value
 
-def train(filename, n = 10):
+def train(filename, n = 1):
 	#targetShape = getTargetShape(filename)
 	c = Capsule()
 	c.readMesh(filename)
