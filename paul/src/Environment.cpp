@@ -34,11 +34,13 @@ double Environment::localIoU(const gmds::Face AFace)
 {
 	double localIoU = g_grid.m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(AFace.id());
 	//std::cout<<"Local IoU : "<<localIoU<<std::endl;
-	if (localIoU<0){
-		std::cout<<"local IoU inf 0"<<std::endl;
+	while(localIoU<0){
+		std::cout<<"local IoU inf 0, valeur : "<<localIoU<<std::endl;
 		volfraccomputation_2d(&g_grid.m_mesh,&g_grid.meshTarget,g_grid.m_mesh.getVariable<double,GMDS_FACE>("volFrac"));
 		localIoU = g_grid.m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(AFace.id());
 		std::cout<<"Apres maj local IoU"<<localIoU<<std::endl;
+
+
 	}
 	return localIoU;
 }

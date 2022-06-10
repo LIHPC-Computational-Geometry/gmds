@@ -78,10 +78,13 @@ void GridBuilderAround::executeGrid2D(const gmds::TInt ANb) {
 	m_mesh.clear();
 	if (m_dim == 2){
 		gridBuild2D(ANb, rangeX, ANb, rangeY,Xmin,Ymin);
+
 	}
 	else if(m_dim==3){
 		//gridBuild3D(ANb,rangeX,ANb,rangeY,ANb,rangeZ,Xmin,Ymin,Zmin);
+		//volfraccomputation_2d(&m_mesh,&meshTarget,m_mesh.getVariable<double,GMDS_FACE>("volFrac"));
 	}
+	//volfraccomputation_2d(&m_mesh.,&meshTarget,m_mesh.getVariable<double,GMDS_FACE>("volFrac"));
 }
 
 void GridBuilderAround::gridBuild2D(const gmds::TInt AXNb, const gmds::TCoord AXStep, const gmds::TInt AYNb,
@@ -122,7 +125,6 @@ void GridBuilderAround::gridBuild2D(const gmds::TInt AXNb, const gmds::TCoord AX
 		}
 		activate->set(f.id(),1);
 	}
-	volfraccomputation_2d(&m_mesh,&meshTarget,																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									m_mesh.getVariable<double,GMDS_FACE>("volFrac"));
 }
 
 int GridBuilderAround::getActivate(gmds::Face AFace) {

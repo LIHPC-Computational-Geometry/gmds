@@ -18,7 +18,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 	Tools toolInit(&environmentInit.g_grid);
 
 
-	for (int i=0; i<=10;i++){
+	for (int i=0; i<=20;i++){
 		std::cout <<"Dans le for : "<<i<<std::endl;
 
 

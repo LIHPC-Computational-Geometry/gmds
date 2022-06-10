@@ -41,7 +41,7 @@ namespace gmds {
 		/** \brief execute the action
 		 *
 		 * @param AFace the face select by the environment
-		 * @param numberAction 0 = executeDeleteFace ; 1 = executeCutFace vertical; 2 = executeCutFace horizontal; 3 = Glide point max range; 4 = glide point min range
+		 * @param numberAction 0 = executeDeleteFace ; 1 = executeCutFace vertical; 2 = executeCutFace horizontal; 3 = Glide point min range; 4 = glide point max range
 		 */
 	   void executeAction(Face AFace, int numberAction);
 

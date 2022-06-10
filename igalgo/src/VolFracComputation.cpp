@@ -25,8 +25,9 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 		msg += std::string("AMesh should have only quads");
 		valid_input = false;
 	}
+	//
 	gmds::MeshModel modelImprint = AImprintMesh->getModel();
-	if (!modelImprint.has(gmds::F) || !modelImprint.has(gmds::F2N) || !model.has(gmds::DIM2)) {
+	if (!modelImprint.has(gmds::F) || !modelImprint.has(gmds::F2N) ||!model.has(gmds::DIM2)) {
 		msg += std::string("bad model for AMesh");
 		valid_input = false;
 	}
@@ -66,10 +67,10 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 //		}
 //	}
 
-/*
+
 	if(!valid_input) {
 		throw gmds::GMDSException(msg);
-	}*/
+	}
 
 
 	for(auto tri_id: AImprintMesh->faces()) {

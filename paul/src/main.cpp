@@ -94,6 +94,8 @@ int main(){
 	vtkReader2.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
 	GridBuilderAround gridAround(&mGridAround,&mImprint,2);
 	gridAround.executeGrid2D(5);
+	volfraccomputation_2d(&gridAround.m_mesh,&gridAround.meshTarget,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
+
 
 
 	Actions actionb(&gridAround);
@@ -140,7 +142,9 @@ int main(){
 	//Variable<double>* volFrac = mGridAround.newVariable<double,GMDS_FACE>("volFrac");
 	Variable<double>* IoU = gridAround.meshTarget.newVariable<double,GMDS_FACE>("IoU");
 
-//	toolsB.intersectionTargetWithGrid(&gridAround.m_mesh,&gridAround.meshTarget,IoU);
+	toolsB.intersectionTargetWithGrid(&gridAround.m_mesh,&gridAround.meshTarget,IoU);
+	actionb.executeCutFace(gridAround.m_mesh.get<Face>(2),1);
+	actionb.executeCutFace(gridAround.m_mesh.get<Face>(16),1);
 
 
 /*
@@ -211,7 +215,6 @@ int main(){
 	actionb.executeDeleteFace(29);
 	actionb.executeDeleteFace(10);*/
 
-	volfraccomputation_2d(&mGridAround,&mImprint,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
 
 	Environment environment(&gridAround,&gridAround.meshTarget,&actionb);
 	//environment.executeAction(environment.faceSelect(),1);
@@ -227,7 +230,7 @@ int main(){
 
 
 
-	environment.localIoU(mGridAround.get<Face>(6));
+	//environment.localIoU(mGridAround.get<Face>(6));
 
 	//===================================== TEST ACTIONS CUT FACE ET DIRECTION ===============================
 	/*actionb.executeCutFace(gridAround.m_mesh.get<Face>(6),1);
@@ -236,7 +239,7 @@ int main(){
 	actionb.executeCutFace(gridAround.m_mesh.get<Face>(31),1);*/
 
 
-	environment.localIoU(mGridAround.get<Face>(6));
+	//environment.localIoU(mGridAround.get<Face>(6));
 	std::cout<<"Reward : "<<environment.reward(mGridAround.get<Face>(6))<<std::endl;
 
 
@@ -388,7 +391,7 @@ int main(){
 	vtkWriter2.write("lili.vtk");
 
 
-	executeTrainQlearning(environment);
+	//executeTrainQlearning(environment);
 
 	exit(3);
 

@@ -1217,7 +1217,7 @@ void Tools::intersectionTargetWithGrid(Mesh *AMesh, const Mesh *AImprintMesh, gm
 			r2d_rvec2 verts_tri[3];
 
 
-			r2d_init_poly(&tetra,verts_tri,3);
+			r2d_init_poly(&tetra,vertices,3);
 
 			r2d_clip(&tetra,planes_Quad,4);
 			r2d_int POLY_ORDER = 2;
@@ -1230,9 +1230,13 @@ void Tools::intersectionTargetWithGrid(Mesh *AMesh, const Mesh *AImprintMesh, gm
 			std::cout<<"valeur om : "<<om<<std::endl;
 			std::cout<<"valeur om[0] : "<<om[0]<<std::endl;
 			std::cout<<"valeur IoU : "<<IoU<<std::endl;
+			std::cout<<"old value : "<<vf_tri<<std::endl;
 
 
-			AVolFrac->set(tri_id, vf_tri +om[0]/IoU);
+
+			AVolFrac->set(tri_id, om[0]/IoU);
+
+			std::cout<<"valeur volfrac : "<<AVolFrac->value(tri_id)<<std::endl;
 
 
 

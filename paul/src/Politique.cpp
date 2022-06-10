@@ -12,7 +12,7 @@ void Politique::initQTable()
 {
 	for (int i = 0; i <5;i++ ){
 		std::vector<double> ligne;
-		for (int j = 0; j<4;j++){
+		for (int j = 0; j<3;j++){
 			ligne.push_back(0);
 		}
 		Q_Table.push_back(ligne);
@@ -42,7 +42,7 @@ int Politique::getNextAction(int intervalIoU)
 	if(epsilon < 0.5)
 	{
 		//std::cout<<"Dans le if"<<std::endl;
-		for (auto i : theQTable[intervalIoU]) {
+		for (int i = 0;i <3;i++) {
 			if (firstIte) {
 				actionSelect = i;
 				maxQvalue = theQTable[intervalIoU][i];
@@ -59,7 +59,7 @@ int Politique::getNextAction(int intervalIoU)
 		return actionSelect;
 	}
 	else{
-		int randomAction = rand() % 4;
+		int randomAction = rand() % 3;
 		//std::cout<<"Action alea "<< randomAction<<std::endl;
 		return randomAction;
 
