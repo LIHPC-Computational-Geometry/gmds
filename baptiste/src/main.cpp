@@ -1,11 +1,13 @@
-#include <iostream>
 #include "gmds/baptiste/RLBlockSet.h"
-#include "gmds/io/IGMeshIOService.h"
-#include "gmds/igalgo/VolFracComputation.h"
+#include "gmds/baptiste/action.h"
+#include "gmds/baptiste/capsule.h"
 #include "gmds/baptiste/tools.h"
+#include "gmds/igalgo/VolFracComputation.h"
+#include "gmds/io/IGMeshIOService.h"
+#include "gmds/io/VTKWriter.h"
+#include <iostream>
 #include <map>
 #include <string>
-#include "gmds/baptiste/action.h"
 
 using namespace gmds;
 
@@ -297,9 +299,19 @@ int main()
 	//double reward = blockSet.getReward(targetShape);
 	//std::cout << reward << "\n";
 	//virtualExpert(blockSet, targetShape, 5);
-	virtualExpert(blockSet, targetShape, 5);
+
+	double reward = blockSet.getReward(targetShape);
 	blockSet.saveMesh("/home/bonyb/Documents/virtualExpertCurvedShape.vtk");
 
+	Variable<double>* volFracVarReverse = targetShape.getVariable<double, GMDS_FACE>("volFrac2");
+	double b = 0;
+	for (int i =0; i < volFracVarReverse->getNbValues(); i++)
+	{
+		std::cout << volFracVarReverse->value(i) << "\n";
+	}
+	//Capsule capsule = Capsule();
+	//capsule.m_mesh = targetShape;
+	//capsule.saveMesh("/home/bonyb/Documents/targetMeshTestIoU.vtk");
 	//Mesh m = Mesh(MeshModel(F|N|F2N|N2F));
 
 	/*
@@ -352,6 +364,6 @@ int main()
 	// blockSet.saveMesh("MyBlockSet.vtk");
 	 */
 
-	exit(3);
+	//exit(3);
 	return 0;
 }

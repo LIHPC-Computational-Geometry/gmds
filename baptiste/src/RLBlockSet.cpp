@@ -248,25 +248,26 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 	}
 	volfraccomputation_2d(&m_mesh, &targetMesh, m_mesh.getVariable<double, GMDS_FACE>("volFrac"));
 	Variable<double>* volFracVar = m_mesh.getVariable<double, GMDS_FACE>("volFrac");
-	double res = 0;
+	double a = 0;
 	for (int i =0; i < volFracVar->getNbValues(); i++)
 	{
-		res += volFracVar->value(i);
+		a += volFracVar->value(i);
 	}
+	a = a/countBlocks();
 
-	/*
-	if (not targetMesh.hasVariable(GMDS_FACE, "volFrac"))
+	if (not targetMesh.hasVariable(GMDS_FACE, "volFrac2"))
 	{
-		targetMesh.newVariable<double, GMDS_FACE>("volFrac");
+		targetMesh.newVariable<double, GMDS_FACE>("volFrac2");
 	}
-	volfraccomputation_2d_reverse(&m_mesh, &targetMesh, m_mesh.getVariable<double, GMDS_FACE>("volFrac"));
-	Variable<double>* volFracVarReverse = m_mesh.getVariable<double, GMDS_FACE>("volFrac");
+	volfraccomputation_2d_reverse(&m_mesh, &targetMesh, targetMesh.getVariable<double, GMDS_FACE>("volFrac2"));
+	Variable<double>* volFracVarReverse = targetMesh.getVariable<double, GMDS_FACE>("volFrac2");
+	double b = 0;
 	for (int i =0; i < volFracVarReverse->getNbValues(); i++)
 	{
-		res += volFracVarReverse->value(i);
+		b += volFracVarReverse->value(i);
 	}
-	 */
-	return res/countBlocks();
+	b = b/targetMesh.getNbFaces();
+	return a+b;
 }
 
 bool RLBlockSet::isValid()

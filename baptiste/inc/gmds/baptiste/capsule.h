@@ -12,9 +12,13 @@ namespace gmds
 	 public:
 	   Capsule();
 
+	   ~Capsule();
+
 	   Mesh m_mesh;
 
 	   void readMesh(std::string filename);
+
+	   void saveMesh(std::string filename);
    };
 }
 #endif     // GMDS_CAPSULE_H
