@@ -78,7 +78,17 @@ int main(){
 	IGMeshIOService ioServiceRead(&mImprint);
 	VTKReader vtkReader(&ioServiceRead);
 	vtkReader.setCellOptions(gmds::N|gmds::F);
+	//vtkReader.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
 	vtkReader.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
+
+
+
+	Mesh mImprintTestA (	MeshModel(DIM2|F|E|N|F2N|N2F|E2N));
+	IGMeshIOService ioServiceReadTest(&mImprintTestA);
+	VTKReader vtkReaderTest(&ioServiceReadTest);
+	vtkReaderTest.setCellOptions(gmds::N|gmds::F);
+	//vtkReader.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
+	vtkReaderTest.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/A.vtk");
 
 
 
@@ -91,8 +101,9 @@ int main(){
 	IGMeshIOService ioServiceRead2(&mGridAround);
 	VTKReader vtkReader2(&ioServiceRead2);
 	vtkReader2.setCellOptions(gmds::N|gmds::F);
-	vtkReader2.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
-	GridBuilderAround gridAround(&mGridAround,&mImprint,2);
+	//vtkReader2.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
+	vtkReader2.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/A.vtk");
+	GridBuilderAround gridAround(&mGridAround,&mImprintTestA,2);
 	gridAround.executeGrid2D(5);
 	volfraccomputation_2d(&gridAround.m_mesh,&gridAround.meshTarget,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
 
@@ -102,7 +113,7 @@ int main(){
 	Tools toolsB(&gridAround);
 
 	Mesh mGridAroundCopy(mGridAround.getModel());
-	GridBuilderAround gridAroundCopy(&mGridAroundCopy,&mImprint,2);
+	GridBuilderAround gridAroundCopy(&mGridAroundCopy,&mImprintTestA,2);
 	toolsB.cloneMesh(gridAround,gridAroundCopy);
 
 	Actions actionCopy(&gridAroundCopy);
@@ -141,10 +152,9 @@ int main(){
 	MeshDoctor doc(&mGridAround);
 	//Variable<double>* volFrac = mGridAround.newVariable<double,GMDS_FACE>("volFrac");
 	Variable<double>* IoU = gridAround.meshTarget.newVariable<double,GMDS_FACE>("IoU");
+	Variable<double>* test = mImprint.newVariable<double,GMDS_FACE>("IoUmImprint");
 
-	toolsB.intersectionTargetWithGrid(&gridAround.m_mesh,&gridAround.meshTarget,IoU);
-	actionb.executeCutFace(gridAround.m_mesh.get<Face>(2),1);
-	actionb.executeCutFace(gridAround.m_mesh.get<Face>(16),1);
+	toolsB.intersectionTargetWithGrid(&gridAround.m_mesh,&mImprint,test);
 
 
 /*
@@ -242,6 +252,18 @@ int main(){
 	//environment.localIoU(mGridAround.get<Face>(6));
 	std::cout<<"Reward : "<<environment.reward(mGridAround.get<Face>(6))<<std::endl;
 
+	gmds::IGMeshIOService ioService_write(&mGridAround);
+	gmds::VTKWriter vtkWriterGba(&ioService_write);
+	vtkWriterGba.setCellOptions(gmds::N|gmds::F);
+	vtkWriterGba.setDataOptions(gmds::N|gmds::F);
+	vtkWriterGba.write("VolFracComputation_test2DA.vtk");
+
+	gmds::IGMeshIOService ioService_write_target(&mImprint);
+	gmds::VTKWriter vtkWriterTarget(&ioService_write_target);
+	vtkWriterTarget.setCellOptions(gmds::N|gmds::F);
+	vtkWriterTarget.setDataOptions(gmds::N|gmds::F);
+	vtkWriterTarget.write("VolFracComputation_mImprint.vtk");
+
 
 
 	//0.745944
@@ -273,17 +295,10 @@ int main(){
 
 
 
-	gmds::IGMeshIOService ioService_write(&mGridAround);
-	gmds::VTKWriter vtkWriterGba(&ioService_write);
-	vtkWriterGba.setCellOptions(gmds::N|gmds::F);
-	vtkWriterGba.setDataOptions(gmds::N|gmds::F);
-	vtkWriterGba.write("VolFracComputation_test2D.vtk");
 
-	gmds::IGMeshIOService ioService_write_target(&gridAround.meshTarget);
-	gmds::VTKWriter vtkWriterGbaTarget(&ioService_write_target);
-	vtkWriterGbaTarget.setCellOptions(gmds::N|gmds::F);
-	vtkWriterGbaTarget.setDataOptions(gmds::N|gmds::F);
-	vtkWriterGbaTarget.write("VolFracComputation_Target.vtk");
+
+
+
 
 
 	//Create the grid around the target (triangle in this case)

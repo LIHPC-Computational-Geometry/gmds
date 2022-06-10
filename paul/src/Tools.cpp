@@ -1229,25 +1229,17 @@ void Tools::intersectionTargetWithGrid(Mesh *AMesh, const Mesh *AImprintMesh, gm
 			std::cout<<"Id Face : "<<tri_id<<std::endl;
 			std::cout<<"valeur om : "<<om<<std::endl;
 			std::cout<<"valeur om[0] : "<<om[0]<<std::endl;
-			std::cout<<"valeur IoU : "<<IoU<<std::endl;
+			std::cout<<"valeur IoU air : "<<IoU<<std::endl;
 			std::cout<<"old value : "<<vf_tri<<std::endl;
 
 
 
-			AVolFrac->set(tri_id, om[0]/IoU);
+			AVolFrac->set(tri_id, vf_tri+om[0]*IoU);
 
 			std::cout<<"valeur volfrac : "<<AVolFrac->value(tri_id)<<std::endl;
 
 
 
 		}
-
-
-
 	}
-
-
-
 }
-
-
