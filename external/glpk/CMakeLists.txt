@@ -56,7 +56,11 @@ else() # unix
     endif()
     
     if(BUILD_SHARED_LIBS)
-        set(GLPK_LIBNAME "libglpk.so")
+	if(APPLE)
+          set(GLPK_LIBNAME "libglpk.dylib")
+	else()
+	  set(GLPK_LIBNAME "libglpk.so")
+        endif()	  
     else()        
         set(GLPK_LIBNAME "libglpk.a")
     endif()
