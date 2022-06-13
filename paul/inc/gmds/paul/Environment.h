@@ -16,7 +16,7 @@ namespace gmds {
 	class Environment
    {
 	 public :
-	   Environment(GridBuilderAround* AGrid,Mesh* AMeshTarget,Actions* AAction);
+	   Environment(GridBuilderAround* AGrid,Mesh* AMeshTarget,Actions* AAction,Tools* ATool);
 
 	   //virtual ~Environment();
 
@@ -34,6 +34,8 @@ namespace gmds {
 	    * @return the local IoU
 	    */
 	   double localIoU(const Face AFace);
+
+	   double globalReverseIoU();
 
 	   double reward(const Face AFace);
 
@@ -57,6 +59,8 @@ namespace gmds {
 	   gmds::Mesh m_mesh;
 
 	   gmds::Actions action;
+
+	   gmds::Tools tool;
    };
 }
 #endif     // GMDS_ENVIRONMENT_H

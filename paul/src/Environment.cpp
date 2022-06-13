@@ -4,8 +4,8 @@
 #include "gmds/paul/Environment.h"
 using namespace gmds;
 
-Environment::Environment(GridBuilderAround *AGrid, Mesh *AMeshTarget,Actions *AAction)
-	:g_grid(*AGrid),m_mesh(*AMeshTarget),action(*AAction){;}
+Environment::Environment(GridBuilderAround *AGrid, Mesh *AMeshTarget,Actions *AAction,Tools *ATool)
+	:g_grid(*AGrid),m_mesh(*AMeshTarget),action(*AAction),tool(*ATool){;}
 
 
 //Environment::~Environment(){}
@@ -30,6 +30,27 @@ double Environment::globalIoU()
 	//std::cout<<"Global IoU : "<<globalIoU<<std::endl;
 	return globalIoU;
 }
+
+double Environment::globalReverseIoU()
+{
+	double globalReverseIoU = 0;
+	int nbFaces=0;
+	if(not g_grid.meshTarget.hasVariable(GMDS_FACE,"reverseIoU")){
+		std::cout<<"Pas de variable reverseIoU"<<std::endl;
+		g_grid.meshTarget.newVariable<double, GMDS_FACE>("reverseIoU");
+		tool.anotherVolFrac(&g_grid.m_mesh,&g_grid.meshTarget,g_grid.meshTarget.getVariable<double,GMDS_FACE>("reverseIoU"));
+
+	}
+
+	Variable<double>* reverseIoU = g_grid.meshTarget.getVariable<double, GMDS_FACE>("reverseIoU");
+	for (int i =0; i < reverseIoU->getNbValues(); i++)
+	{
+		globalReverseIoU += reverseIoU->value(i);
+	}
+	globalReverseIoU=globalReverseIoU/g_grid.meshTarget.getNbFaces();
+	std::cout<<"Valeur Global IoU : "<<globalReverseIoU<<std::endl;
+	return globalReverseIoU;
+}
 double Environment::localIoU(const gmds::Face AFace)
 {
 	double localIoU = g_grid.m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(AFace.id());
@@ -47,8 +68,14 @@ double Environment::localIoU(const gmds::Face AFace)
 
 double Environment::reward(const Face AFace)
 {
-	double alpha = 0.1;
-	double reward = globalIoU() + alpha * localIoU(AFace);
+	double teta = 0.1;
+	double alpha = 0.9;
+	double beta = 1 - alpha;
+	double IoU = globalIoU() + teta * localIoU(AFace);
+	double reverseIoU=globalReverseIoU();
+
+
+	double reward = IoU * reverseIoU;
 
 	return reward;
 }
@@ -97,6 +124,12 @@ void Environment::executeAction(Face AFace,int numberAction)
 	}
 
 	volfraccomputation_2d(&g_grid.m_mesh,&g_grid.meshTarget,g_grid.m_mesh.getVariable<double,GMDS_FACE>("volFrac"));
+	if(not g_grid.meshTarget.hasVariable(GMDS_FACE,"reverseIoU")){
+		std::cout<<"Pas de variable reverseIoU Action"<<std::endl;
+		g_grid.meshTarget.newVariable<double, GMDS_FACE>("reverseIoU");
+	}
+
+	tool.anotherVolFrac(&g_grid.m_mesh,&g_grid.meshTarget,g_grid.meshTarget.getVariable<double,GMDS_FACE>("reverseIoU"));
 
 }
 

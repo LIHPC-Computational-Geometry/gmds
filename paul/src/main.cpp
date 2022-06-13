@@ -102,8 +102,8 @@ int main(){
 	VTKReader vtkReader2(&ioServiceRead2);
 	vtkReader2.setCellOptions(gmds::N|gmds::F);
 	//vtkReader2.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
-	vtkReader2.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/A.vtk");
-	GridBuilderAround gridAround(&mGridAround,&mImprintTestA,2);
+	vtkReader2.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
+	GridBuilderAround gridAround(&mGridAround,&mImprint,2);
 	gridAround.executeGrid2D(5);
 	volfraccomputation_2d(&gridAround.m_mesh,&gridAround.meshTarget,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
 
@@ -153,8 +153,9 @@ int main(){
 	//Variable<double>* volFrac = mGridAround.newVariable<double,GMDS_FACE>("volFrac");
 	Variable<double>* IoU = gridAround.meshTarget.newVariable<double,GMDS_FACE>("IoU");
 	Variable<double>* test = mImprint.newVariable<double,GMDS_FACE>("IoUmImprint");
+	//Variable<double>* reverseIoU = mImprint.newVariable<double,GMDS_FACE>("reverseIoU");
 
-	toolsB.intersectionTargetWithGrid(&gridAround.m_mesh,&mImprint,test);
+	toolsB.anotherVolFrac(&gridAround.m_mesh,&mImprint,test);
 
 
 /*
@@ -226,10 +227,26 @@ int main(){
 	actionb.executeDeleteFace(10);*/
 
 
-	Environment environment(&gridAround,&gridAround.meshTarget,&actionb);
+	Environment environment(&gridAround,&gridAround.meshTarget,&actionb,&toolsB);
 	//environment.executeAction(environment.faceSelect(),1);
-
+/*
 	Politique policy(&environment);
+
+	Actions testAction(&gridAround);
+	Tools testTool(&gridAround);
+	Environment testEnvironment(&gridAround,&mImprint,&testAction,&testTool);
+
+	//gridAround.m_mesh.deleteFace(12);
+	//gridAround.m_mesh.deleteFace(13);
+	//gridAround.m_mesh.deleteFace(14);
+	//gridAround.m_mesh.deleteFace(15);
+
+	testAction.executeDeleteFace(12);
+	testAction.executeDeleteFace(13);
+	testAction.executeDeleteFace(14);
+	testAction.executeDeleteFace(15);
+
+	testEnvironment.globalReverseIoU();*/
 
 
 
@@ -263,6 +280,12 @@ int main(){
 	vtkWriterTarget.setCellOptions(gmds::N|gmds::F);
 	vtkWriterTarget.setDataOptions(gmds::N|gmds::F);
 	vtkWriterTarget.write("VolFracComputation_mImprint.vtk");
+
+	gmds::IGMeshIOService ioService_write_m(&gridAround.meshTarget);
+	gmds::VTKWriter vtkWriterM(&ioService_write_m);
+	vtkWriterM.setCellOptions(gmds::N|gmds::F);
+	vtkWriterM.setDataOptions(gmds::N|gmds::F);
+	vtkWriterM.write("VolFracComputationReverse_m.vtk");
 
 
 
@@ -406,7 +429,7 @@ int main(){
 	vtkWriter2.write("lili.vtk");
 
 
-	//executeTrainQlearning(environment);
+	executeTrainQlearning(environment);
 
 	exit(3);
 

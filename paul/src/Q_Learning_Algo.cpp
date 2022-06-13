@@ -35,8 +35,9 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 		std::cout<<"Action"<<std::endl;
 
 		Actions *actionQLearning=new Actions(copyGrid);
+		Tools *toolsQlearning=new Tools(copyGrid);
 		std::cout<<"Env"<<std::endl;
-		Environment *environment= new Environment(copyGrid,&environmentInit.g_grid.meshTarget,actionQLearning);
+		Environment *environment= new Environment(copyGrid,&environmentInit.g_grid.meshTarget,actionQLearning,toolsQlearning);
 		/*
 		auto facesAllCopy = copyGrid.m_mesh.faces();
 		for (auto f : facesAllCopy){
@@ -50,7 +51,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 		//environment.executeAction(selectFace,1);
 
 		int countIte=0;
-		while(environment->globalIoU()<0.9 && countIte<30){
+		while(environment->globalIoU()<0.96 && countIte<30){
 
 			environment->calcVolFrac();
 			//std::cout<<"Valeur env Global IoU : \n"<<environment->globalIoU()<<std::endl;
@@ -72,7 +73,14 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 			double maxQValue = politique->maxQValue(intervalIoU);
 
 			//std::cout<<"executeAction"<<std::endl;
-			environment->executeAction(faceSelected,actionIndex);
+			if(localIoU==0){
+				std::cout<<"Action delete"<<std::endl;
+				std::cout<<"local IoU : "<<localIoU<<std::endl;
+				environment->executeAction(faceSelected, 0);
+			}
+			else {
+				environment->executeAction(faceSelected, actionIndex);
+			}
 			//std::cout<<"Calcul reward"<<std::endl;
 			double reward = environment->reward(faceSelected);
 			//std::cout<<"Calcul TD"<<std::endl;

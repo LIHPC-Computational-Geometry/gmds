@@ -296,6 +296,7 @@ class Tools{
 	void cloneMesh(const GridBuilderAround &originalGrid, GridBuilderAround &newGrid);
 
 	void intersectionTargetWithGrid(Mesh* AMesh, const Mesh* AImprintMesh,gmds::Variable<double>* AVolFrac);
+	void anotherVolFrac(Mesh* AMesh, const Mesh* AImprintMesh,gmds::Variable<double>* AVolFrac);
 
 	gmds::GridBuilderAround g_grid;
 
