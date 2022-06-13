@@ -4,6 +4,7 @@
 
 #include "gmds/baptiste/tools.h"
 #include "gmds/igalgo/VolFracComputation.h"
+#include "gmds/igalgo/r2d.h"
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKWriter.h"
 #include "gmds/math/Quadrilateral.h"
@@ -242,7 +243,8 @@ std::vector<int> RLBlockSet::getAllFaces()
 
 double RLBlockSet::getReward(Mesh &targetMesh)
 {
-	/*
+	double alpha = 0.25;
+
 	if (not m_mesh.hasVariable(GMDS_FACE, "volFrac"))
 	{
 		m_mesh.newVariable<double, GMDS_FACE>("volFrac");
@@ -255,21 +257,6 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 		a += volFracVar->value(i);
 	}
 	a = a/countBlocks();
-
-
-	if (not targetMesh.hasVariable(GMDS_FACE, "volFrac2"))
-	{
-		targetMesh.newVariable<double, GMDS_FACE>("volFrac2");
-	}
-	volfraccomputation_2d_reverse(&m_mesh, &targetMesh, targetMesh.getVariable<double, GMDS_FACE>("volFrac2"));
-	Variable<double>* volFracVarReverse = targetMesh.getVariable<double, GMDS_FACE>("volFrac2");
-	double b = 0;
-	for (int i =0; i < volFracVarReverse->getNbValues(); i++)
-	{
-		b += volFracVarReverse->value(i);
-	}
-	b = b/targetMesh.getNbFaces();
-	*/
 
 	if (not targetMesh.hasVariable(GMDS_FACE, "volFrac2"))
 	{
@@ -284,7 +271,9 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 	}
 	b = b/targetMesh.getNbFaces();
 
-	return b;
+	double beta = 0.5;
+	double c = overlap();
+	return alpha * a + (1-alpha) * b - beta * c;
 }
 
 bool RLBlockSet::isValid()
@@ -321,4 +310,58 @@ std::string RLBlockSet::getStateID()
 		res += std::to_string(node.Y());
 	}
 	return res;
+}
+
+double RLBlockSet::overlap()
+{
+	double res = 0;
+	for (int faceIDA : m_mesh.faces())
+	{
+		Face faceA = m_mesh.get<Face>(faceIDA);
+		for (int faceIDB : m_mesh.faces())
+		{
+			Face faceB = m_mesh.get<Face>(faceIDB);
+			if (faceIDA != faceIDB)
+			{
+				std::vector<Node> nodesA = faceA.get<Node>();
+				std::vector<Node> nodesB = faceB.get<Node>();
+				r2d_rvec2 vertices[4];
+				vertices[0].x = nodesB[0].X();
+				vertices[0].y = nodesB[0].Y();
+				vertices[1].x = nodesB[1].X();
+				vertices[1].y = nodesB[1].Y();
+				vertices[2].x = nodesB[2].X();
+				vertices[2].y = nodesB[2].Y();
+				vertices[3].x = nodesB[3].X();
+				vertices[3].y = nodesB[3].Y();
+
+				r2d_plane planes[4];
+				r2d_poly_faces_from_verts(planes,  vertices, 4);
+
+				r2d_poly poly;
+				r2d_rvec2 verts[4];
+
+				verts[0].x = nodesA[0].X();
+				verts[0].y = nodesA[0].Y();
+				verts[1].x = nodesA[1].X();
+				verts[1].y = nodesA[1].Y();
+				verts[2].x = nodesA[2].X();
+				verts[2].y = nodesA[2].Y();
+				verts[3].x = nodesA[3].X();
+				verts[3].y = nodesA[3].Y();
+
+				r2d_init_poly(&poly, verts, 4);
+
+				r2d_clip(&poly, planes, 4);
+				r2d_int POLY_ORDER = 2;
+				r2d_real om[R2D_NUM_MOMENTS(POLY_ORDER)];
+				r2d_reduce(&poly, om, POLY_ORDER);
+
+				res += om[0];
+			}
+		}
+		res = res * faceA.area();
+	}
+	// return res / (xSize * ySize * countBlocks());
+	return res / getMeshArea(m_mesh);
 }

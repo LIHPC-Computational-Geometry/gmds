@@ -53,6 +53,8 @@ class RLBlockSet
 	bool isValid();
 
 	std::string getStateID();
+
+	double overlap();
 };
 
 }

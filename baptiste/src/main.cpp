@@ -312,6 +312,16 @@ int main()
 		std::cout << volFracVarReverse->value(i) << "\n";
 	}
 
+	IGMeshIOService ioService(&targetShape);
+	VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("/home/bonyb/Documents/newVolFracOnTargetMesh.vtk");
+
+
+	blockSet.saveMesh("/home/bonyb/Documents/MyBlockSet.vtk");
+
+
 	/*
 	Variable<double>* volFracVar = blockSet.m_mesh.getVariable<double, GMDS_FACE>("volFrac");
 	for (int i =0; i < volFracVar->getNbValues(); i++)
