@@ -25,5 +25,7 @@ namespace gmds
    double getMeshArea(Mesh &mesh);
 
    void volfraccomputation_2d_reverse(const gmds::Mesh *AMesh, gmds::Mesh *AImprintMesh, gmds::Variable<double>* AVolFrac);
+
+   void anotherVolFrac(const gmds::Mesh *AMesh, gmds::Mesh *AImprintMesh, gmds::Variable<double>* AVolFrac);
 }
 #endif     // GMDS_TOOLS_H

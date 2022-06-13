@@ -242,6 +242,7 @@ std::vector<int> RLBlockSet::getAllFaces()
 
 double RLBlockSet::getReward(Mesh &targetMesh)
 {
+	/*
 	if (not m_mesh.hasVariable(GMDS_FACE, "volFrac"))
 	{
 		m_mesh.newVariable<double, GMDS_FACE>("volFrac");
@@ -255,6 +256,7 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 	}
 	a = a/countBlocks();
 
+
 	if (not targetMesh.hasVariable(GMDS_FACE, "volFrac2"))
 	{
 		targetMesh.newVariable<double, GMDS_FACE>("volFrac2");
@@ -267,7 +269,22 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 		b += volFracVarReverse->value(i);
 	}
 	b = b/targetMesh.getNbFaces();
-	return a+b;
+	*/
+
+	if (not targetMesh.hasVariable(GMDS_FACE, "volFrac2"))
+	{
+		targetMesh.newVariable<double, GMDS_FACE>("volFrac2");
+	}
+	anotherVolFrac(&m_mesh, &targetMesh, targetMesh.getVariable<double, GMDS_FACE>("volFrac2"));
+	Variable<double>* volFracVarReverse = targetMesh.getVariable<double, GMDS_FACE>("volFrac2");
+	double b = 0;
+	for (int i =0; i < volFracVarReverse->getNbValues(); i++)
+	{
+		b += volFracVarReverse->value(i);
+	}
+	b = b/targetMesh.getNbFaces();
+
+	return b;
 }
 
 bool RLBlockSet::isValid()

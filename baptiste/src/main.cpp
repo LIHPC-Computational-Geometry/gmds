@@ -300,15 +300,36 @@ int main()
 	//std::cout << reward << "\n";
 	//virtualExpert(blockSet, targetShape, 5);
 
+
+	blockSet.deleteBlock(4);
+
 	double reward = blockSet.getReward(targetShape);
 	blockSet.saveMesh("/home/bonyb/Documents/virtualExpertCurvedShape.vtk");
 
 	Variable<double>* volFracVarReverse = targetShape.getVariable<double, GMDS_FACE>("volFrac2");
-	double b = 0;
 	for (int i =0; i < volFracVarReverse->getNbValues(); i++)
 	{
 		std::cout << volFracVarReverse->value(i) << "\n";
 	}
+
+	/*
+	Variable<double>* volFracVar = blockSet.m_mesh.getVariable<double, GMDS_FACE>("volFrac");
+	for (int i =0; i < volFracVar->getNbValues(); i++)
+	{
+		std::cout << volFracVar->value(i) << "\n";
+	}
+
+
+
+	Variable<double>* volFracVarReverse = targetShape.getVariable<double, GMDS_FACE>("volFrac2");
+	for (int i =0; i < volFracVarReverse->getNbValues(); i++)
+	{
+		std::cout << volFracVarReverse->value(i) << "\n";
+	}
+
+*/
+
+
 	//Capsule capsule = Capsule();
 	//capsule.m_mesh = targetShape;
 	//capsule.saveMesh("/home/bonyb/Documents/targetMeshTestIoU.vtk");

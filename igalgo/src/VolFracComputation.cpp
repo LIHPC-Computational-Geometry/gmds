@@ -128,6 +128,13 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 			r2d_reduce(&poly, om, POLY_ORDER);
 
 			double vf = AVolFrac->value(f_id);
+
+			std::cout<<"Id Face : "<<tri_id<<std::endl;
+			std::cout<<"valeur om : "<<om<<std::endl;
+			std::cout<<"valeur om[0] : "<<om[0]<<std::endl;
+			std::cout<<"valeur IoU : "<<volsurf<<std::endl;
+			std::cout<<"old value : "<<vf<<std::endl;
+
 //			std::cout<<"f_id "<<f_id<<" volsurf "<<volsurf<<" vf "<<vf<<" om "<<om[0]/volsurf<<std::endl;
 			// add but do not forget to divide by cell area
 			AVolFrac->set(f_id, vf + om[0]/volsurf);
