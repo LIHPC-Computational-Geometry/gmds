@@ -72,7 +72,7 @@ double Politique::maxQValue(int intervalIoU)
 	auto theQTable = getQTable();
 	double maxQValue;
 	bool firstIte = true;
-	for (auto i : theQTable[intervalIoU]) {
+	for (int i =0;i < theQTable[intervalIoU].size();i++) {
 		if (firstIte) {
 			maxQValue = theQTable[intervalIoU][i];
 			firstIte = false;

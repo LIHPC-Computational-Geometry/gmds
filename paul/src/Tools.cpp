@@ -1380,3 +1380,68 @@ void Tools::anotherVolFrac(Mesh *AMesh, const Mesh *AImprintMesh, gmds::Variable
 		}
 	}
 }
+
+int Tools::bestCutDirection(gmds::Face AFace)
+{
+	auto listNodes = getListNodesOfFace(AFace.id());
+	Node p0 = listNodes[0];
+	Node p1 = listNodes[1];
+	Node p2 = listNodes[2];
+	Node p3 = listNodes[3];
+
+	Node p5= createMiddleNode(p0,p1);
+	Node p6= createMiddleNode(p1,p2);
+	Node p7= createMiddleNode(p2,p3);
+	Node p8= createMiddleNode(p3,p0);
+
+	Mesh m0(MeshModel(DIM2|F|N|F2N|N2F));
+	Mesh m1(MeshModel(DIM2|F|N|F2N|N2F));
+	Mesh m2(MeshModel(DIM2|F|N|F2N|N2F));
+	Mesh m3(MeshModel(DIM2|F|N|F2N|N2F));
+
+	m0.newQuad(p0,p5,p7,p3);
+	m1.newQuad(p5,p1,p2,p7);
+	m2.newQuad(p8,p6,p2,p3);
+	m3.newQuad(p0,p1,p6,p8);
+
+
+	Variable<double>* volFracM0 = m0.newVariable<double,GMDS_FACE>("volFrac");
+	Variable<double>* volFracM1 = m1.newVariable<double,GMDS_FACE>("volFrac");
+	Variable<double>* volFracM2 = m2.newVariable<double,GMDS_FACE>("volFrac");
+	Variable<double>* volFracM3 = m3.newVariable<double,GMDS_FACE>("volFrac");
+
+
+	volfraccomputation_2d(&m0,&g_grid.meshTarget,volFracM0);
+	volfraccomputation_2d(&m1,&g_grid.meshTarget,volFracM1);
+	volfraccomputation_2d(&m2,&g_grid.meshTarget,volFracM2);
+	volfraccomputation_2d(&m3,&g_grid.meshTarget,volFracM3);
+	double IoUm0 = m0.getVariable<double,GMDS_FACE>("volFrac")->value(0);
+	std::cout<<"Valeur IoUm0 : "<<IoUm0<<std::endl;
+	double IoUm1 = m1.getVariable<double,GMDS_FACE>("volFrac")->value(0);
+	std::cout<<"Valeur IoUm1 : "<<IoUm1<<std::endl;
+	double IoUm2 = m2.getVariable<double,GMDS_FACE>("volFrac")->value(0);
+	std::cout<<"Valeur IoUm2 : "<<IoUm2<<std::endl;
+	double IoUm3 = m3.getVariable<double,GMDS_FACE>("volFrac")->value(0);
+	std::cout<<"Valeur IoUm3 : "<<IoUm3<<std::endl;
+
+	std::vector<double> listIoU{IoUm0,IoUm1,IoUm2,IoUm3};
+	double maxIoU = 0;
+	int cutSelect;
+
+/*
+	for (int i = 0;i<listIoU.size();i++){
+		std::cout<<"IoU de : "<<i<<" est egal a : "<<listIoU[i]<<std::endl;
+		if (listIoU[i]>maxIoU){
+			maxIoU=listIoU[i];
+			if(i==0 || i==1){
+				cutSelect=1;
+			}
+			else{
+				cutSelect=0;
+			}
+		}
+	}
+	std::cout<<"Cut select : "<<cutSelect<<std::endl;*/
+	return cutSelect;
+
+}

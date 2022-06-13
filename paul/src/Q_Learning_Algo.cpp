@@ -18,7 +18,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 	Tools toolInit(&environmentInit.g_grid);
 
 
-	for (int i=0; i<=20;i++){
+	for (int i=0; i<=100;i++){
 		std::cout <<"Dans le for : "<<i<<std::endl;
 
 
@@ -77,6 +77,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 				std::cout<<"Action delete"<<std::endl;
 				std::cout<<"local IoU : "<<localIoU<<std::endl;
 				environment->executeAction(faceSelected, 0);
+				actionIndex=0;
 			}
 			else {
 				environment->executeAction(faceSelected, actionIndex);

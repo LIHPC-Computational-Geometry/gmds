@@ -266,6 +266,11 @@ int main(){
 	actionb.executeCutFace(gridAround.m_mesh.get<Face>(31),1);*/
 
 
+	std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
+	toolsB.bestCutDirection(gridAround.m_mesh.get<Face>(13));
+	std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
+
+
 	//environment.localIoU(mGridAround.get<Face>(6));
 	std::cout<<"Reward : "<<environment.reward(mGridAround.get<Face>(6))<<std::endl;
 
@@ -273,7 +278,7 @@ int main(){
 	gmds::VTKWriter vtkWriterGba(&ioService_write);
 	vtkWriterGba.setCellOptions(gmds::N|gmds::F);
 	vtkWriterGba.setDataOptions(gmds::N|gmds::F);
-	vtkWriterGba.write("VolFracComputation_test2DA.vtk");
+	vtkWriterGba.write("VolFracComputation_test_Bis.vtk");
 
 	gmds::IGMeshIOService ioService_write_target(&mImprint);
 	gmds::VTKWriter vtkWriterTarget(&ioService_write_target);
@@ -429,7 +434,7 @@ int main(){
 	vtkWriter2.write("lili.vtk");
 
 
-	executeTrainQlearning(environment);
+	//executeTrainQlearning(environment);
 
 	exit(3);
 

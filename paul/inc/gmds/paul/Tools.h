@@ -298,6 +298,8 @@ class Tools{
 	void intersectionTargetWithGrid(Mesh* AMesh, const Mesh* AImprintMesh,gmds::Variable<double>* AVolFrac);
 	void anotherVolFrac(Mesh* AMesh, const Mesh* AImprintMesh,gmds::Variable<double>* AVolFrac);
 
+	int bestCutDirection(gmds::Face AFace);
+
 	gmds::GridBuilderAround g_grid;
 
 };

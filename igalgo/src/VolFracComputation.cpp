@@ -139,7 +139,7 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 			// add but do not forget to divide by cell area
 			AVolFrac->set(f_id, vf+om[0]/volsurf);
 			double vfN = AVolFrac->value(f_id);
-			//std::cout<<"APRES MAJ \n"<<"f_id "<<f_id<<" volsurf "<<volsurf<<" vfN "<<vfN<<" om "<<om[0]/volsurf<<std::endl;
+			std::cout<<"APRES MAJ \n"<<"f_id "<<f_id<<" volsurf "<<volsurf<<" vfN "<<vfN<<" om "<<om[0]/volsurf<<std::endl;
 		}
 	}
 }
