@@ -306,11 +306,13 @@ int main()
 	double reward = blockSet.getReward(targetShape);
 	blockSet.saveMesh("/home/bonyb/Documents/virtualExpertCurvedShape.vtk");
 
-	Variable<double>* volFracVarReverse = targetShape.getVariable<double, GMDS_FACE>("volFrac2");
+	/*
+	Variable<double>* volFracVarReverse = targetShape.getVariable<double, GMDS_FACE>("volFrac");
 	for (int i =0; i < volFracVarReverse->getNbValues(); i++)
 	{
 		std::cout << volFracVarReverse->value(i) << "\n";
 	}
+	*/
 
 	IGMeshIOService ioService(&targetShape);
 	VTKWriter vtkWriter(&ioService);

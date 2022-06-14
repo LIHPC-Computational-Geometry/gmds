@@ -243,8 +243,33 @@ std::vector<int> RLBlockSet::getAllFaces()
 
 double RLBlockSet::getReward(Mesh &targetMesh)
 {
-	double alpha = 0.25;
+	if (not m_mesh.hasVariable(GMDS_FACE, "volFrac"))
+	{
+		m_mesh.newVariable<double, GMDS_FACE>("volFrac");
+	}
+	if (not targetMesh.hasVariable(GMDS_FACE, "volFrac"))
+	{
+		targetMesh.newVariable<double, GMDS_FACE>("volFrac");
+	}
+	computeVolFrac(&m_mesh, &targetMesh, m_mesh.getVariable<double, GMDS_FACE>("volFrac"), targetMesh.getVariable<double, GMDS_FACE>("volFrac"));
 
+	Variable<double>* volFracVar = m_mesh.getVariable<double, GMDS_FACE>("volFrac");
+	double a = 0;
+	for (int i =0; i < volFracVar->getNbValues(); i++)
+	{
+		a += volFracVar->value(i);
+	}
+	a = a/countBlocks();
+
+	Variable<double>* volFracVarReverse = targetMesh.getVariable<double, GMDS_FACE>("volFrac");
+	double b = 0;
+	for (int i =0; i < volFracVarReverse->getNbValues(); i++)
+	{
+		b += volFracVarReverse->value(i);
+	}
+	b = b/targetMesh.getNbFaces();
+
+	/*
 	if (not m_mesh.hasVariable(GMDS_FACE, "volFrac"))
 	{
 		m_mesh.newVariable<double, GMDS_FACE>("volFrac");
@@ -270,7 +295,9 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 		b += volFracVarReverse->value(i);
 	}
 	b = b/targetMesh.getNbFaces();
+	 */
 
+	double alpha = 0.25;
 	double beta = 0.5;
 	double c = overlap();
 	return alpha * a + (1-alpha) * b - beta * c;
