@@ -148,10 +148,7 @@ def executeActionBis(action, blockSet):
 def virtualExpertBis(blockSet, targetMesh, nMax):
 	res = []
 	actions = getAllActionsBis(blockSet)
-	#for step in range(nMax):
-	stop = False
-	step = 0
-	while not stop:
+	for step in range(nMax):
 		step += 1
 		print("Step n°" + str(step))
 		maxReward = 0
@@ -174,10 +171,10 @@ def virtualExpertBis(blockSet, targetMesh, nMax):
 		if bestAction["type"] == "delete":
 			print("A delete action has been selected")
 			actions = list(filter(lambda a: a["face"] != bestAction["face"], actions))
-		if bestAction["type"] == "stay":
-			stop = True
 		executeActionBis(bestAction, blockSet)
 		res.append(bestAction)
+		if bestAction["type"] == "stay":
+			break
 	return res
 
 
@@ -187,7 +184,7 @@ def testDeepCopy():
 
 	xMin, yMin, xMax, yMax = 0., 0., 9., 9.
 	blockSet.setFrame(xMin, yMin, xMax, yMax, 3, 3)
-	
+
 	print("Number of blocks : " + str(blockSet.countBlocks()) + "\n")
 
 	blockSet2 = RLBlockSet(2)
@@ -203,21 +200,21 @@ def testDeepCopy():
 
 def testVirtualExpert(n):
 	c = Capsule()
-	c.readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk")
-	#c.readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk")
+	#c.readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk")
+	c.readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk")
 	targetMesh = c.m_mesh
 	print(type(targetMesh))
 	blockSet = RLBlockSet()
-	blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 3, 3)
-	#blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk", 3, 3)
+	#blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 3, 3)
+	blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk", 6, 6)
 	res = virtualExpertBis(blockSet, targetMesh, n)
 	print(res)
 	print(len(res))
-	blockSet.saveMesh("/home/bonyb/Documents/virtualExpertPyCurvedShape.vtk")
+	blockSet.saveMesh("/home/bonyb/Documents/virtualExpertPyHolesInSquareTest.vtk")
 	exit(0)
 
 
-testVirtualExpert(2)
+#testVirtualExpert(30)
 
 
 
@@ -252,11 +249,11 @@ def step(state, action, targetMesh):
 	if not possible:
 		reward = -100
 	else:
-		if nextState.isValid():
+		if nextState.isValid() and nextState.countBlocks() > 1:
 			reward = nextState.getReward(targetMesh)
 		else:
 			reward = -100
-	print("Reward : " + str(reward))
+	#print("Reward : " + str(reward))
 	terminated = (reward > 0.95)
 	if len(state.getAllFaces()) == 0:
 		terminated = True
@@ -285,11 +282,12 @@ def train(filename, n = 1):
 	c = Capsule()
 	c.readMesh(filename)
 	targetShape = c.m_mesh
-	print("Number of nodes in target mesh : " + str(targetShape.getNbNodes()))
+	#print("Number of nodes in target mesh : " + str(targetShape.getNbNodes()))
 	blockSet = RLBlockSet()
 	blockSet.setFromFile(filename, 3, 3)
 	actions = getAllActionsBis(blockSet)
 	for episode in range(n):
+		print("Episode " + str(episode))
 		state = RLBlockSet()
 		cloneBlockSet(blockSet, state)
 
@@ -298,8 +296,8 @@ def train(filename, n = 1):
 		k = 0
 
 		while not terminated:
-			print("Iteration n°" + str(k))
-			print(qTable)
+			#print("Iteration n°" + str(k))
+			#print(qTable)
 			if random.uniform(0, 1) < epsilon:
 				action = random.choice(actions)
 			else:
@@ -311,7 +309,7 @@ def train(filename, n = 1):
 
 			nextState, reward, terminated = step(state, action, targetShape)
 			oldValue = readTable(qTable, state, action)
-			interTable = { key: value for key, value in qTable.items() if key[0] == nextState }
+			interTable = { key: value for key, value in qTable.items() if key[0] == generateID(nextState.getStateID()) }
 			try:
 				nextMax = qTable[max(interTable, key = interTable.get)]
 			except:
@@ -331,141 +329,33 @@ def train(filename, n = 1):
 			state = nextState
 			
 			k += 1
-		
-		if (episode + 1) % 100 == 0:
-			clear_output(wait=True)
-			print("Episode: {}".format(episode + 1))
-			enviroment.render()
 
 	print("**********************************")
 	print("Training is done!\n")
 	print("**********************************")
-	state.saveMesh("/home/bonyb/Documents/resultOfQLearning.vtk")
+	return qTable
 
 
-#train("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 10)
+qTable = train("/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk", 15)
 
 
-
-def testSerialize():
-	c = Capsule()
-	c.readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk")
-	targetMesh = c.m_mesh
-	#print(type(targetMesh))
+def exploit(qTable, filename):
+	sum = 0
 	blockSet = RLBlockSet()
-	blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 3, 3)
-
-	blockSetBis = RLBlockSet()
-	cloneBlockSet(blockSet, blockSetBis)
-
-
-	x = blockSet.getStateID()
-	print(x)
-
-	id_ = generateID(x)
-	print(id_)
-	print(generateID(blockSetBis.getStateID()))
-
-
-def testIoU():
-	c = Capsule()
-	
-	c.readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk")
-	targetMesh = c.m_mesh
-	print(type(targetMesh))
-	blockSet = RLBlockSet()
-	blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 3, 3)
-	print("Alles in Ordnung")
-	blockSet.getReward(targetMesh)
-	"""
-	blockSet.saveMesh("/home/bonyb/Documents/virtualExpertPy.vtk")
-	"""
-	#c.saveMesh("/home/bonyb/Documents/targetMeshTestIoU.vtk")
-	exit(0)
-
-#testIoU()
-
-def testOverlay():
-	c = Capsule()
-	c.readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk")
-	targetMesh = c.m_mesh
-	blockSet = RLBlockSet()
-	blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 3, 3)
-	blockSet.editCorner(0, False, "x", 2)
-	print(blockSet.overlay())
-	blockSet.editCorner(0, False, "x", 2)
-	print(blockSet.overlay())
-	blockSet.editCorner(0, False, "x", 2)
-	print(blockSet.overlay())
-	blockSet.editCorner(0, False, "x", 2)
-	print(blockSet.overlay())
-	blockSet.editCorner(0, False, "x", 2)
-	print(blockSet.overlay())
-	blockSet.editCorner(0, False, "x", 2)
-	print(blockSet.overlay())
-	blockSet.editCorner(0, False, "x", 2)
-	print(blockSet.overlay())
-	blockSet.editCorner(0, False, "x", 2)
-	print(blockSet.overlay())
-	blockSet.editCorner(0, False, "x", 2)
-	print(blockSet.overlay())
-	blockSet.editCorner(0, False, "x", 2)
-	print(blockSet.overlay())
-	blockSet.editCorner(0, False, "x", 2)
-	print(blockSet.overlay())
-	blockSet.editCorner(0, False, "x", 2)
-	print(blockSet.overlay())
-	blockSet.editCorner(0, False, "x", 2)
-	print(blockSet.overlay())
-
-
-#testOverlay()
-
-
-def metropolis(blockSet, targetMesh):
-	reward = blockSet.getReward(targetMesh)
+	blockSet.setFromFile(filename, 3, 3)
 	actions = getAllActionsBis(blockSet)
-
-	while reward < 0.95:
-		print(reward)
-
-		action = random.choice(actions)
-
-		blockSetBis = RLBlockSet()
-		cloneBlockSet(blockSet, blockSetBis)
-
-		executeActionBis(action, blockSetBis)
-
-		if blockSetBis.isValid():
-			newReward = blockSetBis.getReward(targetMesh)
-
-			ratio = newReward/reward
-
-			if ratio > 1:
-				executeActionBis(action, blockSet)
-				reward = newReward
-
-			else:
-				eps = random.uniform(0.9, 1)
-
-				if ratio > eps:
-					executeActionBis(action, blockSet)
-					reward = newReward
-				else:
-					pass
-		else:
-			pass
+	for i in range(30):
+		interTable = { key: value for key, value in qTable.items() if key[0] == generateID(blockSet.getStateID()) }
+		try:
+			actionID = max(interTable, key = interTable.get)[1]
+			action = list(filter(lambda a: a["id"] == actionID, actions))[0]
+		except:
+			sum += 1
+			action = random.choice(actions)
+			print(action)
+		executeActionBis(action, blockSet)
+	print(sum)
+	blockSet.saveMesh("/home/bonyb/Documents/resultOfQLearning.vtk")
 
 
-
-def testMetropolis():
-	c = Capsule()
-	c.readMesh("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk")
-	targetMesh = c.m_mesh
-	blockSet = RLBlockSet()
-	blockSet.setFromFile("/home/bonyb/Documents/GitHub/gmds/test_samples/Curved_Shape1_ref2.vtk", 3, 3)
-	metropolis(blockSet, targetMesh)
-	blockSet.saveMesh("/home/bonyb/Documents/metropolis.vtk")
-	exit(0)
-
-#testMetropolis()
+exploit(qTable, "/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk")
