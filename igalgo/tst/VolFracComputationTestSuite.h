@@ -53,6 +53,8 @@ TEST(VolFracComputation, DISABLED_test2D_nonconvex)
 	gmds::Node t1 = mImprint.newNode(1,-2,0);
 	gmds::Node t2 = mImprint.newNode(1,1,0);
 	mImprint.newTriangle(t0,t1,t2);
+	gmds::Node t3 = mImprint.newNode(-2,-2,0);
+	mImprint.newTriangle(t0,t3,t1);
 
 	// reorient the faces of the mesh when necessary
 	gmds::MeshDoctor doc(&mImprint);
