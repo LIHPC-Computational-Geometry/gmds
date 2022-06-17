@@ -46,7 +46,7 @@ AeroExtrusion_2D::execute()
 
 	for (int i=2; i <= m_params_aero.nbr_couches; i++)
 	{
-		Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_3"), i*pas_couche,
+		Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), i*pas_couche,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 		std::cout << "distance : " << i*pas_couche << std::endl;
 	}
