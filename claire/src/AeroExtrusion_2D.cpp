@@ -261,11 +261,35 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 	node_id = NullID;
 	type = 0;
 
-	for (auto n_id:front_nodes){
+	for (auto n_id:front_nodes) {
+
+		std::vector<TCellID> neighbors_nodes = Front_IN.getNeighbors(n_id);
+
+		std::vector<Node> nodes_quad_1;
+		std::vector<Node> nodes_quad_2;
+
+		nodes_quad_1.push_back(m_meshQ->get<Node>(n_id));
+		nodes_quad_1.push_back(m_meshQ->get<Node>(neighbors_nodes[0]));
+		nodes_quad_1.push_back(m_meshQ->get<Node>(Front_IN.getNextNode(neighbors_nodes[0], n_id)));
+		nodes_quad_1.push_back(m_meshQ->get<Node>(Front_IN.getNextNode(n_id, neighbors_nodes[0])));
+
+		nodes_quad_2.push_back(m_meshQ->get<Node>(n_id));
+		nodes_quad_2.push_back(m_meshQ->get<Node>(neighbors_nodes[1]));
+		nodes_quad_2.push_back(m_meshQ->get<Node>(Front_IN.getNextNode(neighbors_nodes[1], n_id)));
+		nodes_quad_2.push_back(m_meshQ->get<Node>(Front_IN.getNextNode(n_id, neighbors_nodes[1])));
 
 		// Les tests pour la FUSION
-		std::vector<TCellID> neighbors_nodes = Front_IN.getNeighbors(n_id);
-		if (Front_IN.isFusionable(n_id)){
+		if (Front_IN.isFusionable(n_id)) {
+
+			// test arête écrasée premier quad
+			double min_lenght_1 =
+			   math::AeroMeshQuality::minlenghtedge(nodes_quad_1[0].point(), nodes_quad_1[1].point(), nodes_quad_1[2].point(), nodes_quad_1[3].point());
+
+			// test arête écrasée second quad
+			double min_lenght_2 =
+			   math::AeroMeshQuality::minlenghtedge(nodes_quad_2[0].point(), nodes_quad_2[1].point(), nodes_quad_2[2].point(), nodes_quad_2[3].point());
+
+			/*
 
 			// test arête écrasée premier quad
 			double min_lenght_1 = math::AeroMeshQuality::minlenghtedge(m_meshQ, n_id, neighbors_nodes[0],
@@ -276,20 +300,9 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 			double min_lenght_2 = math::AeroMeshQuality::minlenghtedge(m_meshQ, n_id, neighbors_nodes[1],
 			                                                           Front_IN.getNextNode(neighbors_nodes[1],n_id),
 			                                                           Front_IN.getNextNode(n_id,neighbors_nodes[1]));
+			                                                           */
 
-			if (singu_not_found && (min_lenght_1 < 0.001 || min_lenght_2 < 0.001) ){
-				node_id = n_id;
-				type = 2;
-				singu_not_found = false;
-			}
-
-			// test angles
-			double angle = math::AeroMeshQuality::angleouverture(m_meshQ, n_id,
-			                                                     Front_IN.getIdealNode(n_id),
-			                                                     neighbors_nodes[0], neighbors_nodes[1]) ;
-			//std::cout << "angle : " << angle << std::endl;
-			if (singu_not_found
-			    && ( angle < 3.0*M_PI/4.0 )){
+			if (singu_not_found && (min_lenght_1 < 0.001 || min_lenght_2 < 0.001)) {
 				node_id = n_id;
 				type = 2;
 				singu_not_found = false;
@@ -298,51 +311,20 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 		}
 
 		// Les tests pour l'INSERSION
-		if(singu_not_found && Front_IN.isMultiplicable(n_id)) {
+		if (singu_not_found && Front_IN.isMultiplicable(n_id)) {
 
+			/*
 			// test angles
 			{
-				double angle = math::AeroMeshQuality::angleouverture(m_meshQ, n_id,
-				                                                     Front_IN.getIdealNode(n_id), neighbors_nodes[0], neighbors_nodes[1]);
-				if (singu_not_found && (angle > 7.0*M_PI/6.0)) {
-					node_id = n_id;
-					type = 1;
-					singu_not_found = false;
-				}
-			}
-
-			// Internal Angle Deviation
-			/*
-			{
-			   double iad1 = math::AeroMeshQuality::InternalAngleDeviationQUAD(m_meshQ, n_id, neighbors_nodes[0], Front_IN.getNextNode(neighbors_nodes[0], n_id),
-			                                                                   Front_IN.getNextNode(n_id, neighbors_nodes[0]));
-			   double iad2 = math::AeroMeshQuality::InternalAngleDeviationQUAD(m_meshQ, n_id, neighbors_nodes[1], Front_IN.getNextNode(neighbors_nodes[1], n_id),
-			                                                                   Front_IN.getNextNode(n_id, neighbors_nodes[1]));
-
-			   // std::cout << "angle : " << angle << std::endl;
-			   if (singu_not_found && (iad1 > 40.0 || iad2 > 40.0)) {
+			   double angle = math::AeroMeshQuality::angleouverture(m_meshQ, n_id,
+			                                                        Front_IN.getIdealNode(n_id), neighbors_nodes[0], neighbors_nodes[1]);
+			   if (singu_not_found && (angle > 7.0*M_PI/6.0)) {
 			      node_id = n_id;
 			      type = 1;
 			      singu_not_found = false;
 			   }
 			}
-			*/
-
-			// Aspect Ratio
-			/*
-			{
-				double ar1 = math::AeroMeshQuality::AspectRatioQUAD(m_meshQ, n_id, neighbors_nodes[0], Front_IN.getNextNode(neighbors_nodes[0], n_id),
-																					 Front_IN.getNextNode(n_id, neighbors_nodes[0]));
-				double ar2 = math::AeroMeshQuality::AspectRatioQUAD(m_meshQ, n_id, neighbors_nodes[1], Front_IN.getNextNode(neighbors_nodes[1], n_id),
-																					 Front_IN.getNextNode(n_id, neighbors_nodes[1]));
-				if (singu_not_found && (ar1 < 0.88 && ar2 < 0.88)) {
-					node_id = n_id;
-					type = 1;
-					singu_not_found = false;
-				}
-			}
 			 */
-
 		}
 
 	}

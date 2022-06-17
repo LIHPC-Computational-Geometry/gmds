@@ -34,17 +34,17 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 
 	// Paramètres d'entrée/sortie
 	std::string dir(TEST_SAMPLES_DIR);
-	params_aero.input_file=dir+"/Aero/2D/Apollo_2D_5.vtk";
+	params_aero.input_file=dir+"/Aero/2D/C1_2D_0.1.vtk";
 	params_aero.output_file="AeroPipeline2D_Quad.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
 
 	// Paramètres discrétisation de la paroi
-	params_aero.nbrMinBloc=8;
+	params_aero.nbrMinBloc=4;
 
 	// Paramètres de l'extrusion
 	params_aero.nbr_couches = 3;
-	params_aero.delta_cl = 10;			// Epaisseur de la première couche
-	params_aero.x_lim=0;					// Limites physiques à partir desquelles
+	params_aero.delta_cl = 0.15;			// Epaisseur de la première couche
+	params_aero.x_lim=-10000;			// Limites physiques à partir desquelles
 	params_aero.y_lim=-10000;			// l'insertion et la fusion de blocs
 	params_aero.z_lim=-10000;			// sont autorisées
 

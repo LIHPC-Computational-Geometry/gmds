@@ -254,6 +254,7 @@ AeroPipeline_2D::EcritureMaillage(){
 	vtkWriter_Blocking.write("AeroPipeline2D_Blocking.vtk");
 
 	math::Utils::BuildMesh2DFromBlocking2D(&m_Blocking2D, m_meshHex);
+	math::Utils::AnalyseQuadMeshQuality(m_meshHex);
 	ioService = m_meshHex;
 	gmds::VTKWriter vtkWriter_HexMesh(&ioService);
 	vtkWriter_HexMesh.setCellOptions(gmds::N|gmds::F);
@@ -519,7 +520,7 @@ AeroPipeline_2D::BlockingClassification(){
 		int Nx = B0.getNbDiscretizationI()-1;
 		int Ny = B0.getNbDiscretizationJ()-1;
 
-		if ( var_couche->value( B0(0,0).id() ) == var_couche->value( B0(Nx,0).id() ) ) {
+		if ( var_couche->value( B0(0,0).id() ) == var_couche->value( B0(Nx,0).id() )) {
 			int geom_id_corner_1 = m_linker_BG->getGeomId<Node>(B0(0,0).id()) ;
 			int geom_id_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,0).id()) ;
 			int dim_corner_1 = m_linker_BG->getGeomDim<Node>(B0(0,0).id()) ;
@@ -531,34 +532,48 @@ AeroPipeline_2D::BlockingClassification(){
 					Node n = B0(i,0);
 					m_linker_BG->linkNodeToCurve(n.id(), geom_id_corner_1);
 					cad::GeomCurve* curve = m_manager->getCurve(geom_id_corner_1);
+					math::Point p0 = n.point();
 					math::Point p = n.point();
 					curve->project(p);
 					n.setPoint(p);
+
+					if (var_couche->value( B0(0,0).id() ) == 0) {
+						math::Vector3d delta_p = p - p0;
+						Node n_opp = B0(i, Ny);
+						math::Point p_opp = n_opp.point();
+						n_opp.setPoint(p_opp + delta_p);
+					}
 				}
 			}
 		}
 
-		if ( var_couche->value( B0(0,0).id() ) == var_couche->value( B0(0,Ny).id() ) ) {
+		if ( var_couche->value( B0(0,0).id() ) == var_couche->value( B0(0,Ny).id() )) {
 			int geom_id_corner_1 = m_linker_BG->getGeomId<Node>(B0(0,0).id()) ;
 			int geom_id_corner_2 = m_linker_BG->getGeomId<Node>(B0(0,Ny).id()) ;
 			int dim_corner_1 = m_linker_BG->getGeomDim<Node>(B0(0,0).id()) ;
 			int dim_corner_2 = m_linker_BG->getGeomDim<Node>(B0(0,Ny).id());
-			//std::cout << "dim 1 : " << dim_corner_1 << std::endl;
-			//std::cout << "dim 2 : " << dim_corner_2 << std::endl;
 			if( dim_corner_1 == dim_corner_2 && dim_corner_1 == 2 )
 			{
 				for (int j=1;j<Ny;j++){
 					Node n = B0(0,j);
 					m_linker_BG->linkNodeToCurve(n.id(), geom_id_corner_1);
 					cad::GeomCurve* curve = m_manager->getCurve(geom_id_corner_1);
+					math::Point p0 = n.point();
 					math::Point p = n.point();
 					curve->project(p);
 					n.setPoint(p);
+
+					if (var_couche->value( B0(0,0).id() ) == 0) {
+						math::Vector3d delta_p = p - p0;
+						Node n_opp = B0(Nx, j);
+						math::Point p_opp = n_opp.point();
+						n_opp.setPoint(p_opp + delta_p);
+					}
 				}
 			}
 		}
 
-		if ( var_couche->value( B0(0,Ny).id() ) == var_couche->value( B0(Nx,Ny).id() ) ) {
+		if ( var_couche->value( B0(0,Ny).id() ) == var_couche->value( B0(Nx,Ny).id() )) {
 			int geom_id_corner_1 = m_linker_BG->getGeomId<Node>(B0(0,Ny).id()) ;
 			int geom_id_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,Ny).id()) ;
 			int dim_corner_1 = m_linker_BG->getGeomDim<Node>(B0(0,Ny).id()) ;
@@ -569,9 +584,17 @@ AeroPipeline_2D::BlockingClassification(){
 					Node n = B0(i,Ny);
 					m_linker_BG->linkNodeToCurve(n.id(), geom_id_corner_1);
 					cad::GeomCurve* curve = m_manager->getCurve(geom_id_corner_1);
+					math::Point p0 = n.point();
 					math::Point p = n.point();
 					curve->project(p);
 					n.setPoint(p);
+
+					if (var_couche->value( B0(0,0).id() ) == 0) {
+						math::Vector3d delta_p = p - p0;
+						Node n_opp = B0(i, 0);
+						math::Point p_opp = n_opp.point();
+						n_opp.setPoint(p_opp + delta_p);
+					}
 				}
 			}
 		}
@@ -587,9 +610,17 @@ AeroPipeline_2D::BlockingClassification(){
 					Node n = B0(Nx,j);
 					m_linker_BG->linkNodeToCurve(n.id(), geom_id_corner_1);
 					cad::GeomCurve* curve = m_manager->getCurve(geom_id_corner_1);
+					math::Point p0 = n.point();
 					math::Point p = n.point();
 					curve->project(p);
 					n.setPoint(p);
+
+					if (var_couche->value( B0(0,0).id() ) == 0) {
+						math::Vector3d delta_p = p - p0;
+						Node n_opp = B0(0, j);
+						math::Point p_opp = n_opp.point();
+						n_opp.setPoint(p_opp + delta_p);
+					}
 				}
 			}
 		}
