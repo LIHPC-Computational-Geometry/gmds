@@ -9,6 +9,7 @@
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include "gmds/ig/Mesh.h"
+#include "gmds/ig/Blocking2D.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -66,6 +67,14 @@ class LIB_GMDS_CLAIRE_API Utils {
 		* \return  nothing
 	 */
 	static void AnalyseQuadMeshQuality(Mesh* m);
+	/*----------------------------------------------------------------------------*/
+	/** @brief Build a mesh 2D from a Blocking2D.
+	 	*
+		* \param[in] blocking2D the blocking
+		*
+		* \return  the mesh
+	 */
+	static void BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m);
 	/*----------------------------------------------------------------------------*/
 
 };

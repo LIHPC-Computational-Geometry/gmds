@@ -4,6 +4,8 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/claire/Utils.h>
 #include <gmds/claire/AeroMeshQuality.h>
+#include <gmds/ig/Blocking2D.h>
+#include <gmds/ig/MeshDoctor.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -119,6 +121,74 @@ void Utils::AnalyseQuadMeshQuality(Mesh* m)
 }
 /*------------------------------------------------------------------------*/
 
+
+/*------------------------------------------------------------------------*/
+void Utils::BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m){
+
+	m->clear();
+
+	std::map<TCellID, TCellID> map_new_node_ids;
+	int markTreatedNodes = blocking2D->newMark<Node>();
+
+	// Create all the nodes in the mesh m
+	for (auto b:blocking2D->allBlocks())
+	{
+		int Nx = b.getNbDiscretizationI();
+		int Ny = b.getNbDiscretizationJ();
+		for (int i=0; i <= Nx-1; i++)
+		{
+			for (int j=0; j <= Ny-1; j++)
+			{
+				Node n = b(i,j);
+				if (!blocking2D->isMarked(n, markTreatedNodes))
+				{
+					Node n_new = m->newNode(n.point());
+					map_new_node_ids[n.id()] = n_new.id();
+					blocking2D->mark(n, markTreatedNodes);
+				}
+			}
+		}
+	}
+
+	blocking2D->unmarkAll<Node>(markTreatedNodes);
+	blocking2D->freeMark<Node>(markTreatedNodes);
+
+	// Create all the faces in the mesh m
+	for (auto b:blocking2D->allBlocks())
+	{
+		int Nx = b.getNbDiscretizationI();
+		int Ny = b.getNbDiscretizationJ();
+		for (int i=0; i < Nx-1; i++)
+		{
+			for (int j=0; j < Ny-1; j++)
+			{
+				Node n0_inBlocking = b(i,j);
+				Node n1_inBlocking = b(i+1,j);
+				Node n2_inBlocking = b(i+1,j+1);
+				Node n3_inBlocking = b(i,j+1);
+
+				Node n0_inMesh = m->get<Node>(map_new_node_ids[n0_inBlocking.id()]);
+				Node n1_inMesh = m->get<Node>(map_new_node_ids[n1_inBlocking.id()]);
+				Node n2_inMesh = m->get<Node>(map_new_node_ids[n2_inBlocking.id()]);
+				Node n3_inMesh = m->get<Node>(map_new_node_ids[n3_inBlocking.id()]);
+
+				Face f = m->newQuad(n0_inMesh, n1_inMesh, n2_inMesh, n3_inMesh);
+				// Connectivities N->F (x4)
+				n0_inMesh.add<Face>(f.id()); // N->F
+				n1_inMesh.add<Face>(f.id()); // N->F
+				n2_inMesh.add<Face>(f.id()); // N->F
+				n3_inMesh.add<Face>(f.id()); // N->F
+
+			}
+		}
+	}
+
+	gmds::MeshDoctor doc(m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+}
+/*------------------------------------------------------------------------*/
 
 
 /*----------------------------------------------------------------------------*/
