@@ -261,6 +261,17 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 	}
 	a = a/countBlocks();
 
+	/*
+	int i = 0;
+	for (int faceID : m_mesh.faces())
+	{
+		Face face = m_mesh.get<Face>(faceID);
+		a += face.area() * volFracVar->value(i);
+		i++;
+	}
+	a = a/getMeshArea(m_mesh);
+   */
+	
 	Variable<double>* volFracVarReverse = targetMesh.getVariable<double, GMDS_FACE>("volFrac");
 	double b = 0;
 	for (int i =0; i < volFracVarReverse->getNbValues(); i++)
@@ -268,6 +279,17 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 		b += volFracVarReverse->value(i);
 	}
 	b = b/targetMesh.getNbFaces();
+
+	/*
+	int j = 0;
+	for (int faceID : targetMesh.faces())
+	{
+		Face face = targetMesh.get<Face>(faceID);
+		b += face.area() * volFracVarReverse->value(j);
+		j++;
+	}
+	b = b/getMeshArea(targetMesh);
+   */
 
 	/*
 	if (not m_mesh.hasVariable(GMDS_FACE, "volFrac"))
