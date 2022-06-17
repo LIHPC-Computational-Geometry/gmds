@@ -84,18 +84,11 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           return flag;
         });
 
+        std::cout << "cavityEnlargement START" << std::endl;
         CavityOperator::CavityIO cavityIO(simplexMesh);
         if(cavOp.cavityEnlargement(cavityIO, initialCavityCell, initialCavityTriangle, simpliceNode, criterion, facesAlreadyBuilt, markedSimplex))
         {
-          const std::vector<std::vector<TInt>>& pointsToConnect = cavityIO.getNodesToReconnect();
-          for(auto const & nodes : pointsToConnect)
-          {
-            if(nodes[0] == simpliceNode.getGlobalNode() || nodes[1] == simpliceNode.getGlobalNode() || nodes[2] == simpliceNode.getGlobalNode())
-            {
-              status = false;
-              return;
-            }
-          }
+          std::cout << "cavityEnlargement END" << std::endl;
           //test sur les triangles non connecté a P pour ne pas créer de retournement topologique
           for(auto const triNotCo : cavityIO.getTrianglesNotConnectedToPInCavity())
           {
@@ -110,12 +103,16 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           ////////////////////////////////////////////////////////////////////////////////
           ///////////////////////finding the node inside the cavity///////////////////////
           ////////////////////////////////////////////////////////////////////////////////
+          std::cout << "nodeInCavity START" << std::endl;
           if(!cavityIO.nodeInCavity(simpliceNode.getGlobalNode())){
             status = false;
             return;
           }
-          const std::vector<TInt>& nodesInsideCavity = cavityIO.getNodeInCavity();
+          std::cout << "nodeInCavity END" << std::endl;
+
+          std::cout << "nodesReconnection START" << std::endl;
           cavityIO.nodesReconnection(simpliceNode.getGlobalNode());
+          std::cout << "nodesReconnection START" << std::endl;
 
           ////////////////////////////ADRIEN IDEA///////////////////////////////////////
           //this section is here in order to optimize the futurs normals of the created
@@ -431,10 +428,11 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           }
 
           std::cout << "REBUILD START" << std::endl;
-          simplexMesh->rebuildCavity(cavityIO, deleted_Tet, deleted_Tri, simpliceNode.getGlobalNode(), createdCells);
+          simplexMesh->rebuildCav(cavityIO, deleted_Tet, deleted_Tri, simpliceNode.getGlobalNode(), createdCells);
+          //simplexMesh->rebuildCavity(cavityIO, deleted_Tet, deleted_Tri, simpliceNode.getGlobalNode(), createdCells);
           status = true;
 
-          std::cout << std::endl;
+          /*std::cout << std::endl;
           const std::vector<std::vector<TInt>>& pts = cavityIO.getNodesToReconnect();
           for(auto const nodes : pts)
           {
@@ -451,7 +449,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
               }
             }
           }
-          std::cout << "REBUILD END" << std::endl;
+          std::cout << "REBUILD END" << std::endl;*/
         }
       }
     }

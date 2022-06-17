@@ -78,6 +78,7 @@ bool CavityOperator::CavityIO::CavityIO::nodeInCavity(const TInt node)
   unsigned int sizeTriangle = 3;
 
   gmds::BitVector cellBitvector(m_simplex_mesh->tetCapacity());
+  gmds::BitVector triangleNotCoToP_BitVector(m_simplex_mesh->triCapacity());
   gmds::BitVector nodesBitvector(m_simplex_mesh->nodesCapacity());
   gmds::BitVector borderNodesBitvector(m_simplex_mesh->nodesCapacity());
 
@@ -89,6 +90,16 @@ bool CavityOperator::CavityIO::CavityIO::nodeInCavity(const TInt node)
   //////////////////////////////////////////////////////////////////////////////
   ////////////////////this section found the interior nodes with cells//////////
   //////////////////////////////////////////////////////////////////////////////
+
+  std::vector<TSimplexID> triangleNotCoToP = getTrianglesNotConnectedToPInCavity();
+  for(auto const triangle : triangleNotCoToP)
+  {
+    if(triangle < 0 && triangle != border)
+    {
+      triangleNotCoToP_BitVector.assign(-triangle);
+    }
+  }
+
   for(auto const & tet : cellInCavity())
   {
     if(tet != border)
@@ -109,32 +120,40 @@ bool CavityOperator::CavityIO::CavityIO::nodeInCavity(const TInt node)
       throw gmds::GMDSException("tet == border");
     }
   }
-
+  std::cout << "OK" << std::endl;
   for(auto const & tet : cellInCavity())
   {
+    std::cout << "tet -> " << tet << std::endl;
     SimplicesCell cell = SimplicesCell(m_simplex_mesh, tet);
+    std::cout << "cell -> " << cell << std::endl;
     for(unsigned int localIndex = 0 ; localIndex < sizeCell ; localIndex++)
     {
       //look if the oppositeCell is in the cavity with the help of tetBitVector
       TSimplexID oppositeCell = cell.oppositeTetraIdx(localIndex);
       const std::vector<TInt>&& nodes =  cell.getOrderedFace(localIndex);
-
-      if(oppositeCell >= 0)
+      std::cout << "oppositeCell -> " << oppositeCell << std::endl;
+      if(!(nodes[0] == node || nodes[1] == node || nodes[2] == node))
       {
-        if(cellBitvector[oppositeCell] == 0)
+        if(oppositeCell >= 0)
         {
-          m_nodesToReconnect.push_back(nodes);
-          m_oppositeCell.push_back(oppositeCell);
+          if(cellBitvector[oppositeCell] == 0)
+          {
+            m_nodesToReconnect.push_back(nodes);
+            m_oppositeCell.push_back(oppositeCell);
+          }
         }
-      }
-      else
-      {
-        m_nodesToReconnect.push_back(nodes);
-        m_oppositeCell.push_back(oppositeCell);
+        else
+        {
+          if(triangleNotCoToP_BitVector[-oppositeCell] != 0)
+          {
+            m_nodesToReconnect.push_back(nodes);
+            m_oppositeCell.push_back(oppositeCell);
+          }
+        }
       }
     }
   }
-
+std::cout << "OK1" << std::endl;
   for(auto const nodes : m_nodesToReconnect)
   {
     for(auto const node : nodes)
@@ -245,7 +264,6 @@ bool CavityOperator::CavityIO::CavityIO::nodeInCavity(const TInt node)
 void CavityOperator::CavityIO::CavityIO::nodesReconnection(const TInt node)
 {
   const std::vector<TSimplexID>& base = m_simplex_mesh->getBase();
-  //std::cout << "NODE RECONNECTION" << std::endl;
   Variable<int>* BND_TRIANGLES = m_simplex_mesh->getVariable<int,SimplicesTriangle>("BND_TRIANGLES");
 
   m_localsNodeForReconnectionWithTriangle.clear();
@@ -254,14 +272,14 @@ void CavityOperator::CavityIO::CavityIO::nodesReconnection(const TInt node)
 
   unsigned int sizeFace = 3;
   int border = std::numeric_limits<int>::min();
-  gmds::BitVector triBitvector(m_simplex_mesh->triCapacity());
+  gmds::BitVector triBitVector(m_simplex_mesh->triCapacity());
   for(auto const & tri : getTrianglesConnectedToPInCavity())
   {
     if(tri != border)
     {
-      if(triBitvector[-tri] == 0)
+      if(triBitVector[-tri] == 0)
       {
-        triBitvector.assign(-tri);
+        triBitVector.assign(-tri);
       }
     }
   }
@@ -272,38 +290,62 @@ void CavityOperator::CavityIO::CavityIO::nodesReconnection(const TInt node)
   m_oppositeTriangle.resize(m_nodesToReconnect.size(), initVec);
   m_triangleIndices.resize(m_nodesToReconnect.size(), initVec);
 
-  unsigned int faceCpt = 0;
-  for(auto const& nodes : m_nodesToReconnect)
+  for(unsigned int triangle = 0 ; triangle < triBitVector.capacity() ; triangle++)
   {
+    if(triBitVector[triangle] != 0)
+    {
+      SimplicesTriangle t     = SimplicesTriangle(m_simplex_mesh, triangle);
+      std::vector<TInt> nodes = t.getNodes();
+      for(int localNode = 0 ; localNode < sizeFace ; localNode++)
+      {
+        TInt nodeA = nodes[localNode];
+        TInt nodeB = nodes[(localNode + 1) % sizeFace];
+        TInt nodeC = nodes[(localNode + 2) % sizeFace];
+        if(nodeA != node && nodeB != node)
+        {
+          TInt lNode = t.getLocalNode(nodeC);
+          TSimplexID neighborTri = t.neighborTriangle(lNode);
+          if(neighborTri != border)
+          {
+            if(triBitVector[neighborTri] == 0)
+            {
+              m_nodesToReconnect_Tri.push_back(std::vector<TInt>{nodeA, nodeB});
+              m_oppositeTri.push_back(neighborTri);
+              m_indices.push_back((*BND_TRIANGLES)[triangle]);
+            }
+          }
+          else
+          {
+            throw gmds::GMDSException("neighborTri == border");
+          }
+        }
+      }
+    }
+  }
+  /*unsigned int faceCpt = 0;
+  for(unsigned int i = 0 ; i < m_nodesToReconnect.size() ; i++)
+  {
+    std::vector<TInt> nodes    = m_nodesToReconnect[i];
+    TSimplexID oppositeSimplex = m_oppositeCell[i];
     for(int localNode = 0 ; localNode < sizeFace ; localNode++)
     {
       TInt node0 = nodes[localNode];
       TInt nodeA = nodes[(localNode + 1) % sizeFace];
       TInt nodeB = nodes[(localNode + 2) % sizeFace];
-      //std::cout << "nodes -> " << node0 << " | " << nodeA << " | "<< nodeB << " | " << std::endl;
       for(auto const borderSurface : m_borderSurfaceNode)
       {
         bool flag = false ;
         TInt tmpNodeA = borderSurface.front();
         TInt tmpNodeB = borderSurface.back();
-        //std::cout << "tmpNodeAB -> " << tmpNodeA << " | " << tmpNodeB << " | " << std::endl;
 
         if(tmpNodeA == nodeB && tmpNodeB == nodeA)
         {
           m_localsNodeForReconnectionWithTriangle[faceCpt][localNode] = localNode;
           const std::vector<TSimplexID>&& shell = SimplicesNode(m_simplex_mesh, nodeA).shell(SimplicesNode(m_simplex_mesh, nodeB));
-          const std::vector<TSimplexID>&& ballA = SimplicesNode(m_simplex_mesh, nodeA).ballOf();
-          const std::vector<TSimplexID>&& ballB = SimplicesNode(m_simplex_mesh, nodeB).ballOf();
-          //std::cout << std::endl;
-          /*std::cout << "3 base[439] -> " << base[439] << std::endl;
 
-          std::cout << "shell.size() -> " << shell.size() << std::endl;
-          std::cout << "ballA.size() -> " << nodeA << " | " << ballA.size() << std::endl;
-          std::cout << "ballB.size() -> " << nodeB << " | " << ballB.size() << std::endl;*/
           if(shell.size() == 0){throw gmds::GMDSException("STOP");}
           for(auto const simplex : shell)
           {
-            //std::cout << "SIMPLEX -> " << simplex << std::endl;
             if(simplex < 0)
             {
               if(triBitvector[-simplex] == 0)
@@ -324,19 +366,15 @@ void CavityOperator::CavityIO::CavityIO::nodesReconnection(const TInt node)
             {
               TInt tmpNodeA = borderSurface.front();
               TInt tmpNodeB = borderSurface.back();
-              std::cout << "tmpNodeA -> " << tmpNodeA << std::endl;
-              std::cout << "tmpNodeB -> " << tmpNodeB << std::endl;
               const std::vector<TSimplexID>&& shell = SimplicesNode(m_simplex_mesh, tmpNodeA).shell(SimplicesNode(m_simplex_mesh, tmpNodeB));
               for(auto const simplex : shell)
               {
                   if(simplex < 0)
                   {
-                    std::cout << "triangle -> " << simplex << std::endl;
                     std::cout << SimplicesTriangle(m_simplex_mesh, -simplex) << std::endl;
 
                   }
               }
-              std::cout << std::endl;
             }
 
             gmds::ISimplexMeshIOService ioService0(m_simplex_mesh);
@@ -370,9 +408,7 @@ void CavityOperator::CavityIO::CavityIO::nodesReconnection(const TInt node)
       }
     }
     faceCpt++;
-  }
-  std::cout << "4 base[439] -> " << base[439] << std::endl;
-
+  }*/
 }
 /******************************************************************************/
 std::vector<std::vector<TInt>> CavityOperator::CavityIO::CavityIO::pointToConnect(std::vector<TSimplexID>& orderedAdjTet, std::set<TSimplexID>& complementarySimplex,const std::vector<TInt>& nodesInsideCavity, std::vector<TInt>& cellOfPointToConnect, std::vector<TInt>& nodeNotConnected, const TInt nodeToInsert) const

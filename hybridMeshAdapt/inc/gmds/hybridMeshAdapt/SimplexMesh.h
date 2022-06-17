@@ -347,6 +347,8 @@ class SimplexMesh
 
   void rebuildCavity(operators::CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri, const TInt nodeToConnect, std::vector<TSimplexID>& createdCells);
 
+  void rebuildCav(operators::CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells);
+
   void pointsLabeling(const std::vector<math::Point> &points, std::vector<int>& pointsLabeling, std::vector<int>& topoIndex, std::vector<TInt>& nearNodes);
 
   void fillBNDVariable();

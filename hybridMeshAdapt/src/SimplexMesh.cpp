@@ -1653,8 +1653,6 @@ TInt SimplexMesh::findRemainTriangleIdx(const TInt tri, gmds::BitVector& cycling
 /******************************************************************************/
 std::vector<TInt> SimplexMesh::deleteTetra(const TInt ATetraIndex)
 {
-  std::cout << "m_base[439] -> " << m_base[439] << std::endl;
-  std::cout << "m_tet_ids[base[439]] -> " << m_tet_ids[m_base[439]] << std::endl;
   int errorId = std::numeric_limits<int>::min();
   std::vector<TInt> nodes;
   if(ATetraIndex < 0 || ATetraIndex > m_tet_ids.capacity())
@@ -1750,8 +1748,7 @@ std::vector<TInt> SimplexMesh::deleteTetra(const TInt ATetraIndex)
         m_tet_ids.unselect(ATetraIndex);
       }
   }
-  std::cout << "m_base[439] -> " << m_base[439] << std::endl;
-  std::cout << "m_tet_ids[base[439]] -> " << m_tet_ids[m_base[439]] << std::endl;
+
   return std::move(nodes);
 }
 /*****************************************************************************/
@@ -4086,6 +4083,103 @@ void SimplexMesh::setBase(const TInt node, const TSimplexID simplex)
       throw gmds::GMDSException("m_base.size() < node -1");
     }
   }
+}
+/******************************************************************************/
+void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)
+{
+  gmds::Variable<int>* BND_TRIANGLES     = getVariable<int, SimplicesTriangle>("BND_TRIANGLES");
+  const std::vector<std::vector<TInt>>&         pointsToConnect              = cavityIO.getNodesToReconnect();
+  const std::vector<TSimplexID>&                extSimplexBorder             = cavityIO.getOppositesSimplex();
+  const std::vector<std::vector<TInt>>&         pointsToConnect_tri          = cavityIO.getNodesToReconnect_Tri();
+  const std::vector<TSimplexID>&                extSimplexBorder_tri         = cavityIO.getOppositesSimplex_Tri();
+  const std::vector<unsigned int>&              trianglesIndices             = cavityIO.getIndices_Tri();
+
+  TInt border = std::numeric_limits<int>::min();
+
+  //Rebuild volume
+  std::multimap<std::pair<TInt, TInt>, TSimplexID> hash_face; // multimap  for the reconnection of the tetraedron
+  auto my_make = [=](const TInt a, const TInt b){
+    return (a < b)? std::make_pair(a, b) : std::make_pair(b, a);
+  };
+
+  for(unsigned int idx = 0 ; idx < pointsToConnect.size() ; idx++)
+  {
+    //std::cout << "idx -> " << idx << std::endl;
+    //extracting cell data for reconstruction
+    std::vector<TInt> nodes       = pointsToConnect[idx];
+    TSimplexID oppositeSimplex    = extSimplexBorder[idx];
+
+    //sort the edge's face of the simpelx created for the adjacent reconstruction
+    TInt nodeA = nodes[0]; TInt nodeB = nodes[1]; TInt nodeC = nodes[2];
+    std::pair<TInt, TInt> p0 = my_make(nodeA, nodeB);
+    std::pair<TInt, TInt> p1 = my_make(nodeB, nodeC);
+    std::pair<TInt, TInt> p2 = my_make(nodeC, nodeA);
+
+    TSimplexID cell = addTetraedre(nodeA, nodeB, nodeC, nodeToConnect, false);
+    hash_face.insert(std::pair<std::pair<TInt, TInt>, TSimplexID>(p0, cell));
+    hash_face.insert(std::pair<std::pair<TInt, TInt>, TSimplexID>(p1, cell));
+    hash_face.insert(std::pair<std::pair<TInt, TInt>, TSimplexID>(p2, cell));
+
+    //std::cout << "node to connect -> " << nodeToConnect << std::endl;
+    //std::cout << "nodes -> " << nodes[0] << " | " << nodes[1] << " | " << nodes[2] << " " << std::endl;
+    //std::cout << "oppositeSimplex -> " << oppositeSimplex << std::endl;
+    //std::cout << std::endl;
+
+    std::vector<TSimplexID> vecAdj{border, border, border, border};
+    m_tet_adj[cell] = vecAdj;
+    m_tet_adj[cell][3] = oppositeSimplex;
+
+    if(oppositeSimplex != border)
+    {
+      if(oppositeSimplex >= 0)
+      {
+        std::vector<TInt>&& nodesNeighborTet = SimplicesCell(this, oppositeSimplex).getOtherNodeInSimplex(nodes);
+        if(nodesNeighborTet.size() == 1)
+        {
+          //std::cout << "nodesNeighborTet.front() -> " << nodesNeighborTet.front() << std::endl;
+          TInt nodeLocalNeighborSimplex = SimplicesCell(this, oppositeSimplex).getLocalNode(nodesNeighborTet.front());
+          //std::cout << "nodeLocalNeighborSimplex -> " << nodeLocalNeighborSimplex << std::endl;
+          m_tet_adj[oppositeSimplex][nodeLocalNeighborSimplex] = cell;
+        }
+        else
+        {
+          throw gmds::GMDSException("nodesNeighborTet.size() == 1");
+        }
+      }
+      else
+      {
+        m_tri_nodes[-oppositeSimplex][3] = cell;
+      }
+    }
+  }
+
+  while(!hash_face.empty())
+  {
+    std::multimap<std::pair<TInt, TInt>, TSimplexID>::iterator it0 = hash_face.begin();
+    std::pair<std::pair<TInt, TInt>, TSimplexID> p = *it0;
+    std::pair<TInt, TInt> pairNode = my_make(p.first.first, p.first.second); //std::pair(nodeA, nodeB)
+    std::pair <std::multimap<std::pair<TInt, TInt>, TSimplexID>::iterator, std::multimap<std::pair<TInt, TInt>, TSimplexID>::iterator> pair_it;
+    pair_it = hash_face.equal_range(pairNode);
+    int count = std::distance(pair_it.first, pair_it.second);
+    if(count == 2)
+    {
+      std::multimap<std::pair<TInt, TInt>, TSimplexID>::iterator it1 = hash_face.begin();
+      it1++;
+      TSimplexID simplexA = (*it0).second;
+      TSimplexID simplexB = (*it1).second;
+
+      std::cout << "simplices -> " << simplexA << " | " << simplexB << std::endl;
+      hash_face.erase(it0);
+      hash_face.erase(it1);
+    }
+    else
+    {
+      std::cout << "reinsertion ? " << std::endl;
+    }
+  }
+  throw gmds::GMDSException("end of rcacvity reconstruction");
+  //rebuild surface if need it
+  std::cout << "end of rcacvity reconstruction" << std::endl;
 }
 /******************************************************************************/
 void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)

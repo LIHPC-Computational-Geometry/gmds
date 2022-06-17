@@ -63,6 +63,12 @@ namespace gmds
 
             const std::vector<TSimplexID>  &  getOppositesSimplex() const {return m_oppositeCell;}
 
+            const std::vector<std::vector<TInt>>  &  getNodesToReconnect_Tri() const {return m_nodesToReconnect_Tri;}
+
+            const std::vector<unsigned int>  &  getIndices_Tri() const {return m_indices;}
+
+            const std::vector<TSimplexID>  &  getOppositesSimplex_Tri() const {return m_oppositeTri;}
+
             const std::vector<std::vector<TInt>>  &  getTriangleReconstructionInfo() const {return m_localsNodeForReconnectionWithTriangle;}
 
             const std::vector<std::vector<TSimplexID>>  &  getoppositeTriangle          () const {return m_oppositeTriangle;}
@@ -107,6 +113,12 @@ namespace gmds
             std::vector<std::vector<TInt>> m_nodesToReconnect;
 
             std::vector<TSimplexID> m_oppositeCell;
+
+            std::vector<std::vector<TInt>> m_nodesToReconnect_Tri;
+
+            std::vector<TSimplexID> m_oppositeTri;
+
+            std::vector<unsigned int> m_indices;
 
             std::vector<std::vector<TInt>> m_localsNodeForReconnectionWithTriangle;
 
