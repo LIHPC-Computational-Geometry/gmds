@@ -73,6 +73,7 @@ AeroPipeline_2D::execute(){
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
+	/*
 
    Variable<double> * var_d_int = m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int");
 	Variable<double> * var_d_comb = m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance");
@@ -131,6 +132,7 @@ AeroPipeline_2D::execute(){
 	m_meshTet->freeMark<Node>(m_mark_z1);
 
 
+	*/
 
 
 	// Calcul du gradient du champ de Level Set
@@ -244,18 +246,26 @@ AeroPipeline_2D::EcritureMaillage(){
 
 	//gmds::IGMeshIOService ioService(m_meshHex);
 	gmds::IGMeshIOService ioService(&m_Blocking2D);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::F);
-	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	gmds::VTKWriter vtkWriter_Blocking(&ioService);
+	vtkWriter_Blocking.setCellOptions(gmds::N|gmds::F);
+	vtkWriter_Blocking.setDataOptions(gmds::N|gmds::F);
 	std::string dir(".");//TEST_SAMPLES_DIR);
-	vtkWriter.write(m_params.output_file);
+	//vtkWriter_Blocking.write(m_params.output_file);
+	vtkWriter_Blocking.write("AeroPipeline2D_Blocking.vtk");
+
+	math::Utils::BuildMesh2DFromBlocking2D(&m_Blocking2D, m_meshHex);
+	ioService = m_meshHex;
+	gmds::VTKWriter vtkWriter_HexMesh(&ioService);
+	vtkWriter_HexMesh.setCellOptions(gmds::N|gmds::F);
+	vtkWriter_HexMesh.setDataOptions(gmds::N|gmds::F);
+	vtkWriter_HexMesh.write("AeroPipeline2D_HexMesh.vtk");
 
 	// Ecriture du maillage en triangles initial pour visualisation et débug
 	ioService = m_meshTet;
-	gmds::VTKWriter vtkWriter2(&ioService);
-	vtkWriter2.setCellOptions(gmds::N|gmds::F);
-	vtkWriter2.setDataOptions(gmds::N|gmds::F);
-	vtkWriter2.write("AeroPipeline2D_Triangles.vtk");
+	gmds::VTKWriter vtkWriter_TetMesh(&ioService);
+	vtkWriter_TetMesh.setCellOptions(gmds::N|gmds::F);
+	vtkWriter_TetMesh.setDataOptions(gmds::N|gmds::F);
+	vtkWriter_TetMesh.write("AeroPipeline2D_TetMesh.vtk");
 
 	// Ecriture du blocking au format su2
 	SU2Writer writer(m_meshHex, "AeroPipeline2D_Quad.su2", m_params.x_lim);
@@ -463,24 +473,34 @@ AeroPipeline_2D::UpdateLinker(cad::GeomMeshLinker* linker_1, Node n_1, cad::Geom
 void
 AeroPipeline_2D::UpdateLinkerLastLayer(){
 
-	int layer_id(0);
+	int max_layer_id(0);
 	Variable<int>* couche_id = m_meshHex->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 
+	// Compute the id of the last layer
 	for (auto n_id:m_meshHex->nodes())
 	{
-		if (couche_id->value(n_id) > layer_id)
+		if (couche_id->value(n_id) > max_layer_id)
 		{
-			layer_id = couche_id->value(n_id);
+			max_layer_id = couche_id->value(n_id);
 		}
 	}
 
 	for (auto n_id:m_meshHex->nodes()){
-		if( m_couche_id->value(n_id) == layer_id ) {
+		if( m_couche_id->value(n_id) == max_layer_id ) {
 			Node n = m_meshHex->get<Node>(n_id);
 			math::Point p = n.point();
 			TCellID closest_n_id = m_Bnd->ClosestNodeOnBnd(m_Bnd->getColorAmont(), p);
 			UpdateLinker(m_linker_TG, m_meshTet->get<Node>(closest_n_id), m_linker_HG, n);
-			Node n_test = m_meshTet->get<Node>(closest_n_id);
+			//Node n_test = m_meshTet->get<Node>(closest_n_id);
+
+			int geom_id = m_linker_HG->getGeomId<Node>(n.id()) ;
+			int geom_dim = m_linker_HG->getGeomDim<Node>(n.id()) ;
+			if (geom_dim == 2)
+			{
+				cad::GeomCurve* curve = m_manager->getCurve(geom_id);
+				curve->project(p);
+				n.setPoint(p);
+			}
 		}
 	}
 

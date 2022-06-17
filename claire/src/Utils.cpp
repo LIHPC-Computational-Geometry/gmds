@@ -128,30 +128,14 @@ void Utils::BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m){
 	m->clear();
 
 	std::map<TCellID, TCellID> map_new_node_ids;
-	int markTreatedNodes = blocking2D->newMark<Node>();
 
 	// Create all the nodes in the mesh m
-	for (auto b:blocking2D->allBlocks())
+	for (auto n_id:blocking2D->nodes())
 	{
-		int Nx = b.getNbDiscretizationI();
-		int Ny = b.getNbDiscretizationJ();
-		for (int i=0; i <= Nx-1; i++)
-		{
-			for (int j=0; j <= Ny-1; j++)
-			{
-				Node n = b(i,j);
-				if (!blocking2D->isMarked(n, markTreatedNodes))
-				{
-					Node n_new = m->newNode(n.point());
-					map_new_node_ids[n.id()] = n_new.id();
-					blocking2D->mark(n, markTreatedNodes);
-				}
-			}
-		}
+		Node n_blocking = blocking2D->get<Node>(n_id);
+		Node n_mesh = m->newNode(n_blocking.point());
+		map_new_node_ids[n_blocking.id()] = n_mesh.id();
 	}
-
-	blocking2D->unmarkAll<Node>(markTreatedNodes);
-	blocking2D->freeMark<Node>(markTreatedNodes);
 
 	// Create all the faces in the mesh m
 	for (auto b:blocking2D->allBlocks())
