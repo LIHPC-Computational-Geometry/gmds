@@ -313,19 +313,17 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 		// Les tests pour l'INSERSION
 		if (singu_not_found && Front_IN.isMultiplicable(n_id)) {
 
-			/*
-			// test angles
-			{
-			   double angle = math::AeroMeshQuality::angleouverture(m_meshQ, n_id,
-			                                                        Front_IN.getIdealNode(n_id), neighbors_nodes[0], neighbors_nodes[1]);
-			   if (singu_not_found && (angle > 7.0*M_PI/6.0)) {
+			double internal_angle_1 = math::AeroMeshQuality::InternalAngleDeviationQUAD(nodes_quad_1[0].point(), nodes_quad_1[1].point(),
+			                                                                            nodes_quad_1[2].point(), nodes_quad_1[3].point()) ;
+			double internal_angle_2 = math::AeroMeshQuality::InternalAngleDeviationQUAD(nodes_quad_2[0].point(), nodes_quad_2[1].point(),
+			                                                  									nodes_quad_2[2].point(), nodes_quad_2[3].point()) ;
+
+			   if (singu_not_found && (internal_angle_1 < 40 || internal_angle_2 < 44.5)) {
 			      node_id = n_id;
 			      type = 1;
 			      singu_not_found = false;
 			   }
 			}
-			 */
-		}
 
 	}
 
