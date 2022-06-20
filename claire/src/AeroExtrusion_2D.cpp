@@ -263,6 +263,7 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 
 	for (auto n_id:front_nodes) {
 
+		Node n = m_meshQ->get<Node>(n_id);
 		std::vector<TCellID> neighbors_nodes = Front_IN.getNeighbors(n_id);
 
 		std::vector<Node> nodes_quad_1;
@@ -313,6 +314,21 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 		// Les tests pour l'INSERSION
 		if (singu_not_found && Front_IN.isMultiplicable(n_id)) {
 
+			// Test angle ouverture
+			Node n_ideal = m_meshQ->get<Node>(Front_IN.getIdealNode(n_id));
+			Node n_neighbor_1 = m_meshQ->get<Node>(neighbors_nodes[0]);
+			Node n_neighbor_2 = m_meshQ->get<Node>(neighbors_nodes[1]);
+			double angle_ouverture = math::AeroMeshQuality::AngleOuverture(n.point(), n_ideal.point(),
+			                                                               n_neighbor_1.point(), n_neighbor_2.point());
+
+			if (singu_not_found && (angle_ouverture > 7.0*M_PI/6.0)) {
+				node_id = n_id;
+				type = 1;
+				singu_not_found = false;
+			}
+
+
+			/*
 			double internal_angle_1 = math::AeroMeshQuality::InternalAngleDeviationQUAD(nodes_quad_1[0].point(), nodes_quad_1[1].point(),
 			                                                                            nodes_quad_1[2].point(), nodes_quad_1[3].point()) ;
 			double internal_angle_2 = math::AeroMeshQuality::InternalAngleDeviationQUAD(nodes_quad_2[0].point(), nodes_quad_2[1].point(),
@@ -323,6 +339,7 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 			      type = 1;
 			      singu_not_found = false;
 			   }
+         */
 			}
 
 	}
