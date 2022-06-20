@@ -32,6 +32,18 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	 */
 	static double minlenghtedge(math::Point p0, math::Point p1, math::Point p2, math::Point p3);
 	/*------------------------------------------------------------------------*/
+	/** \brief  The sum of the angle between the vectors p0p1 and p0P2, and the
+	 * vectors p0p1 and p0p3
+         *
+         * \param[in] p0 first point
+			* \param[in] p1 second point
+			* \param[in] p2 third point
+			* \param[in] p3 fourth point
+         *
+         * \return  the angle
+	 */
+	static double AngleOuverture(math::Point p0, math::Point p1, math::Point p2, math::Point p3);
+	/*------------------------------------------------------------------------*/
 	/** \brief  Aspect Ratio
          *
          * \param[in] p0 first point
