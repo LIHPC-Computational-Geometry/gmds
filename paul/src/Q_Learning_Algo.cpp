@@ -18,15 +18,15 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 	Tools toolInit(&environmentInit.g_grid);
 
 
-	for (int i=0; i<=100;i++){
+	for (int i=0; i<=5;i++){
 		std::cout <<"Dans le for : "<<i<<std::endl;
 
 
 		std::cout<<"Copy mesh"<<std::endl;
-		Mesh *copyGridMesh= new Mesh(environmentInit.g_grid.m_mesh.getModel());
+		Mesh *copyGridMesh= new Mesh(environmentInit.g_grid.m_mesh->getModel());
 		std::cout<<"Copy grid"<<std::endl;
 
-		GridBuilderAround *copyGrid=new GridBuilderAround(copyGridMesh,&environmentInit.g_grid.meshTarget,2);
+		GridBuilderAround *copyGrid=new GridBuilderAround(copyGridMesh,environmentInit.g_grid.meshTarget,2);
 		//copyGrid.executeGrid2D(5);
 		std::cout<<"Clone"<<std::endl;
 
@@ -37,7 +37,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 		Actions *actionQLearning=new Actions(copyGrid);
 		Tools *toolsQlearning=new Tools(copyGrid);
 		std::cout<<"Env"<<std::endl;
-		Environment *environment= new Environment(copyGrid,&environmentInit.g_grid.meshTarget,actionQLearning,toolsQlearning);
+		Environment *environment= new Environment(copyGrid,environmentInit.g_grid.meshTarget,actionQLearning,toolsQlearning);
 		/*
 		auto facesAllCopy = copyGrid.m_mesh.faces();
 		for (auto f : facesAllCopy){
@@ -51,7 +51,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 		//environment.executeAction(selectFace,1);
 
 		int countIte=0;
-		while(environment->globalIoU()<0.96 && countIte<30){
+		while(environment->globalIoU()<0.99 && countIte<50){
 
 			environment->calcVolFrac();
 			//std::cout<<"Valeur env Global IoU : \n"<<environment->globalIoU()<<std::endl;
@@ -74,14 +74,76 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 
 			//std::cout<<"executeAction"<<std::endl;
 			if(localIoU==0){
-				std::cout<<"Action delete"<<std::endl;
-				std::cout<<"local IoU : "<<localIoU<<std::endl;
+				//std::cout<<"Action delete"<<std::endl;
+				//std::cout<<"local IoU : "<<localIoU<<std::endl;
 				environment->executeAction(faceSelected, 0);
 				actionIndex=0;
 			}
 			else {
-				environment->executeAction(faceSelected, actionIndex);
+				if(actionIndex == 1){
+					std::vector<Node> listNodesFaceSelected = toolsQlearning->getListNodesOfFace(faceSelected.id());
+					int cutDirection = toolsQlearning->bestCutDirection(faceSelected);
+					environment->executeAction(faceSelected, actionIndex);
+					if(cutDirection==0){
+						auto listFaceCutHorizontal0 = toolsQlearning->getFacesCommon(listNodesFaceSelected[0].id(),listNodesFaceSelected[1].id());
+						auto listFaceCutHorizontal1 = toolsQlearning->getFacesCommon(listNodesFaceSelected[3].id(),listNodesFaceSelected[2].id());
+
+						std::vector<Face> listNewFaces;
+						for(auto f0:listFaceCutHorizontal0){
+							for(auto f1:listFaceCutHorizontal1){
+								if(toolsQlearning->commonNodesFaces(f0,f1)){
+									listNewFaces.push_back(f0);
+									listNewFaces.push_back(f1);
+								}
+							}
+						}
+
+						if (copyGrid->m_mesh->getVariable<double,GMDS_FACE>("volFrac")->value(listNewFaces[0].id())<
+						    copyGrid->m_mesh->getVariable<double,GMDS_FACE>("volFrac")->value(listNewFaces[1].id())){
+							faceSelected = listNewFaces[1];
+						}
+						else{
+							faceSelected = listNewFaces[0];
+						}
+
+
+
+
+
+					}else{
+
+						auto listFaceCutVertical0 = toolsQlearning->getFacesCommon(listNodesFaceSelected[0].id(),listNodesFaceSelected[3].id());
+						auto listFaceCutVertical1 = toolsQlearning->getFacesCommon(listNodesFaceSelected[1].id(),listNodesFaceSelected[2].id());
+
+						std::vector<Face> listNewFaces;
+						for(auto f0:listFaceCutVertical0){
+							for(auto f1:listFaceCutVertical1){
+								if(toolsQlearning->commonNodesFaces(f0,f1)){
+									listNewFaces.push_back(f0);
+									listNewFaces.push_back(f1);
+								}
+							}
+						}
+						if (copyGrid->m_mesh->getVariable<double,GMDS_FACE>("volFrac")->value(listNewFaces[0].id())<
+						    copyGrid->m_mesh->getVariable<double,GMDS_FACE>("volFrac")->value(listNewFaces[1].id())){
+							faceSelected = listNewFaces[1];
+						}
+						else{
+							faceSelected = listNewFaces[0];
+						}
+
+					}
+				}
+				else {
+					environment->executeAction(faceSelected, actionIndex);
+				}
 			}
+			gmds::IGMeshIOService ioService_write_Copy_grid(copyGridMesh);
+			gmds::VTKWriter vtkWriterGba(&ioService_write_Copy_grid);
+			vtkWriterGba.setCellOptions(gmds::N|gmds::F);
+			vtkWriterGba.setDataOptions(gmds::N|gmds::F);
+			vtkWriterGba.write("Q_learning_test.vtk");
+			std::cout<<"La face select : "<<faceSelected<<std::endl;
 			//std::cout<<"Calcul reward"<<std::endl;
 			double reward = environment->reward(faceSelected);
 			//std::cout<<"Calcul TD"<<std::endl;
@@ -91,7 +153,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 			//std::cout << "#nbface " << faceSelected.nbNodes() << std::endl;
 			//std::cout<<"Calcul updateQTable"<<std::endl;
 			politique->updateQTable(intervalIoU,actionIndex,newQValue);
-			//std::cout<<"Count Ite : "<<countIte<<std::endl;
+			std::cout<<"Count Ite : "<<countIte<<std::endl;
 
 			countIte+=1;
 		}

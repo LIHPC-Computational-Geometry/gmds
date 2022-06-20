@@ -139,8 +139,8 @@ GMDS_ADD_COMPONENT(
         singGraphBuild
         GMDSSingGraphBuild
         "Singularity graph building component"
-        ON
-        ON                                 # must be covered
+        OFF
+        OFF                                 # must be covered
 )
 
 GMDS_ADD_COMPONENT(

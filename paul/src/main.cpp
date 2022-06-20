@@ -105,7 +105,7 @@ int main(){
 	vtkReader2.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
 	GridBuilderAround gridAround(&mGridAround,&mImprint,2);
 	gridAround.executeGrid2D(5);
-	volfraccomputation_2d(&gridAround.m_mesh,&gridAround.meshTarget,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
+	volfraccomputation_2d(gridAround.m_mesh,gridAround.meshTarget,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
 
 
 
@@ -151,15 +151,59 @@ int main(){
 
 	MeshDoctor doc(&mGridAround);
 	//Variable<double>* volFrac = mGridAround.newVariable<double,GMDS_FACE>("volFrac");
-	Variable<double>* IoU = gridAround.meshTarget.newVariable<double,GMDS_FACE>("IoU");
+	Variable<double>* IoU = gridAround.meshTarget->newVariable<double,GMDS_FACE>("IoU");
 	Variable<double>* test = mImprint.newVariable<double,GMDS_FACE>("IoUmImprint");
 	//Variable<double>* reverseIoU = mImprint.newVariable<double,GMDS_FACE>("reverseIoU");
 
-	toolsB.anotherVolFrac(&gridAround.m_mesh,&mImprint,test);
+	toolsB.anotherVolFrac(gridAround.m_mesh,&mImprint,test);
 
-
+	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 /*
+	std::vector<Node> listNodesFaceSelected = toolsB.getListNodesOfFace(gridAround.m_mesh.get<Face>(13).id());
+	actionb.executeCutFace(gridAround.m_mesh.get<Face>(13),toolsB.bestCutDirection(gridAround.m_mesh.get<Face>(13)));
+
+	for (auto n : listNodesFaceSelected){
+		std::cout<<"Nodes de la face : "<<n<<std::endl;
+	}
+	std::cout<<"Noeuds 0 de la liste : "<<listNodesFaceSelected[0]<<std::endl;
+	std::cout<<"Noeuds 1 de la liste : "<<listNodesFaceSelected[1]<<std::endl;
+	std::cout<<"Noeuds 2 de la liste : "<<listNodesFaceSelected[2]<<std::endl;
+	std::cout<<"Noeuds 3 de la liste : "<<listNodesFaceSelected[3]<<std::endl;
+	auto listFaceCutHorizontal0 = toolsB.getFacesCommon(listNodesFaceSelected[0].id(),listNodesFaceSelected[1].id());
+	auto listFaceCutHorizontal1 = toolsB.getFacesCommon(listNodesFaceSelected[3].id(),listNodesFaceSelected[2].id());
+	for (auto f : listFaceCutHorizontal0){
+		std::cout<<"New Face 0 : "<<f<<std::endl;
+	}
+	for (auto f : listFaceCutHorizontal1){
+		std::cout<<"New Face 1 : "<<f<<std::endl;
+	}
+	std::vector<Face> listNewFaces;
+	for(auto f0:listFaceCutHorizontal0){
+		for(auto f1:listFaceCutHorizontal1){
+			if(toolsB.commonNodesFaces(f0,f1)){
+				listNewFaces.push_back(f0);
+				listNewFaces.push_back(f1);
+			}
+		}
+	}
+	for (auto f : listNewFaces){
+		std::cout<<"New Face Selected : "<<f<<std::endl;
+	}
+
+	volfraccomputation_2d(&gridAround.m_mesh,&gridAround.meshTarget,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
+	if (gridAround.m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(listNewFaces[0].id())<
+	    gridAround.m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(listNewFaces[1].id())){
+		std::cout<<"Meilleur volFrac : "<<listNewFaces[1]<<std::endl;
+	}
+	else{
+		std::cout<<"Meilleur volFrac : "<<listNewFaces[0]<<std::endl;
+	}*/
+
+	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
 	//coupe
+	/*
 	actionb.executeCutEdge(mGridAround.get<Node>(21),mGridAround.get<Node>(20));
 	actionb.executeCutEdge(mGridAround.get<Node>(5),mGridAround.get<Node>(10));
 	actionb.executeCutEdge(mGridAround.get<Node>(4),mGridAround.get<Node>(9));
@@ -172,7 +216,28 @@ int main(){
 	actionb.executeCutEdge(mGridAround.get<Node>(40),mGridAround.get<Node>(8));
 	actionb.executeCutEdge(mGridAround.get<Node>(8),mGridAround.get<Node>(34));
 	actionb.executeCutEdge(mGridAround.get<Node>(72),mGridAround.get<Node>(2));
-	actionb.executeCutEdge(mGridAround.get<Node>(2),mGridAround.get<Node>(56));
+	actionb.executeCutEdge(mGridAround.get<Node>(2),mGridAround.get<Node>(56));*/
+
+	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	/*
+	actionb.executeGlideNode(mGridAround.get<Node>(130),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(61),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(84),&mImprint);*/
+	//actionb.executeGlideNode(mGridAround.get<Node>(83),&mImprint);
+	//actionb.executeGlideNode(mGridAround.get<Node>(52),&mImprint);
+	//actionb.executeGlideNode(mGridAround.get<Node>(11),&mImprint);
+	//actionb.executeGlideNode(mGridAround.get<Node>(27),&mImprint);
+
+	//volfraccomputation_2d(&gridAround.m_mesh,&gridAround.meshTarget,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
+
+	//actionb.executeGlideNode(mGridAround.get<Node>(21),&mImprint);
+	/*
+	gridAround.m_mesh.get<Node>(21).X() = 8.14;
+	gridAround.m_mesh.get<Node>(21).Y()= 2.3;
+	gridAround.m_mesh.get<Node>(21).Z()=0;
+	volfraccomputation_2d(&gridAround.m_mesh,&gridAround.meshTarget,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
+*/
+ /*
 
 	//Glide
 
@@ -227,7 +292,7 @@ int main(){
 	actionb.executeDeleteFace(10);*/
 
 
-	Environment environment(&gridAround,&gridAround.meshTarget,&actionb,&toolsB);
+	Environment environment(&gridAround,gridAround.meshTarget,&actionb,&toolsB);
 	//environment.executeAction(environment.faceSelect(),1);
 /*
 	Politique policy(&environment);
@@ -265,20 +330,16 @@ int main(){
 	actionb.executeCutFace(gridAround.m_mesh.get<Face>(2),1);
 	actionb.executeCutFace(gridAround.m_mesh.get<Face>(31),1);*/
 
-
+/*
 	std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
-	toolsB.bestCutDirection(gridAround.m_mesh.get<Face>(13));
+	toolsB.bestCutDirection(gridAround.m_mesh.get<Face>(6));
 	std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
-
+/*
 
 	//environment.localIoU(mGridAround.get<Face>(6));
 	std::cout<<"Reward : "<<environment.reward(mGridAround.get<Face>(6))<<std::endl;
 
-	gmds::IGMeshIOService ioService_write(&mGridAround);
-	gmds::VTKWriter vtkWriterGba(&ioService_write);
-	vtkWriterGba.setCellOptions(gmds::N|gmds::F);
-	vtkWriterGba.setDataOptions(gmds::N|gmds::F);
-	vtkWriterGba.write("VolFracComputation_test_Bis.vtk");
+
 
 	gmds::IGMeshIOService ioService_write_target(&mImprint);
 	gmds::VTKWriter vtkWriterTarget(&ioService_write_target);
@@ -317,6 +378,11 @@ int main(){
 		std::cout<<"N First : "<<n.first<< " " << "N Second : "<<n.second<<std::endl;
 
 	}*/
+	gmds::IGMeshIOService ioService_write(&mGridAround);
+	gmds::VTKWriter vtkWriterGba(&ioService_write);
+	vtkWriterGba.setCellOptions(gmds::N|gmds::F);
+	vtkWriterGba.setDataOptions(gmds::N|gmds::F);
+	vtkWriterGba.write("VolFracComputation.vtk");
 
 	//=======================================================================================================================
 
@@ -344,8 +410,8 @@ int main(){
 	Actions action(&gba);
 	//Variable<int> *activate = m.newVariable<int,GMDS_FACE>("exist");
 
-	for(auto face_id:gba.m_mesh.faces()){
-		Face f =gba.m_mesh.get<Face>(face_id);
+	for(auto face_id:gba.m_mesh->faces()){
+		Face f =gba.m_mesh->get<Face>(face_id);
 		std::vector<Node>f_nodes = f.get<Node>();
 		//std::cout<<"Avant bool activate"<<std::endl;
 		//std::cout<<activate<<std::endl;
@@ -373,10 +439,10 @@ int main(){
 
 	//======================================== TEST CUT NODE GLIDE =============================================
 /*
-	gba.m_mesh.get<Node>(4).X()=0.5;
-	gba.m_mesh.get<Node>(4).Y()=4.5;
+	gba.m_mesh->get<Node>(4).X()=0.5;
+	gba.m_mesh->get<Node>(4).Y()=4.5;
 
-	action.executeCutEdge(gba.m_mesh.get<Node>(4),gba.m_mesh.get<Node>(9));
+	action.executeCutEdge(gba.m_mesh->get<Node>(4),gba.m_mesh->get<Node>(9));
 */
 
 	//======================================== TEST MULTI CUT  =============================================
@@ -396,8 +462,8 @@ int main(){
 			std::cout<<i1<<std::endl;
 			int i2 = rand() % 82;
 			std::cout<<i2<<std::endl;
-			Node node1 = gba.m_mesh.get<Node>(i1);
-			Node node2 = gba.m_mesh.get<Node>(i2);
+			Node node1 = gba.m_mesh->get<Node>(i1);
+			Node node2 = gba.m_mesh->get<Node>(i2);
 			action.executeCutEdge(node1, node2);
 		}
 

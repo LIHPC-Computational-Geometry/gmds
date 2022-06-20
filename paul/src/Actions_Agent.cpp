@@ -75,11 +75,11 @@ void Actions::executeCutFace(Face AFace, int direction)
 void Actions::executeGlideMaxNodeFace(Face AFace)
 {
 	Node ANode = tool.selectNodeMaxRange(AFace);
-	Actions::executeGlideNode(ANode,&g_grid.meshTarget);
+	Actions::executeGlideNode(ANode,g_grid.meshTarget);
 }
 
 void Actions::executeGlideMinNodeFace(Face AFace)
 {
 	Node ANode = tool.selectNodeMinRange(AFace);
-	Actions::executeGlideNode(ANode,&g_grid.meshTarget);
+	Actions::executeGlideNode(ANode,g_grid.meshTarget);
 }

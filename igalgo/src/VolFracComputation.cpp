@@ -47,11 +47,12 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 		gmds::math::Quadrilateral quad(n[0].point(), n[1].point(), n[2].point(), n[3].point());
 		double sj = quad.computeScaledJacobian2D();
 		//std::cout<<"SJ Face "<<f_id<<"("<<n[0].id()<<", "<<n[1].id()<<", "<<n[2].id()<<", "<<n[3].id()<<": "<<sj<<std::endl;
+		/*
 		if(sj < 0) {
 			msg += std::string("AMesh has a bad cell.");
 			valid_input = false;
 			break;
-		}
+		}*/
 	}
 
 //	for(auto f_id: AImprintMesh->faces()) {
@@ -90,6 +91,7 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 
 		for(auto f_id: AMesh->faces()) {
 
+			//std::cout<<"Valeur f_id "<<f_id<<std::endl;
 			gmds::Face f = AMesh->get<Face>(f_id);
 
 			std::vector<gmds::Node> n_quad = f.get<gmds::Node>();
@@ -139,7 +141,7 @@ void gmds::volfraccomputation_2d(gmds::Mesh *AMesh, const gmds::Mesh *AImprintMe
 			// add but do not forget to divide by cell area
 			AVolFrac->set(f_id, vf+om[0]/volsurf);
 			double vfN = AVolFrac->value(f_id);
-			std::cout<<"APRES MAJ \n"<<"f_id "<<f_id<<" volsurf "<<volsurf<<" vfN "<<vfN<<" om "<<om[0]/volsurf<<std::endl;
+			//std::cout<<"APRES MAJ \n"<<"f_id "<<f_id<<" volsurf "<<volsurf<<" vfN "<<vfN<<" om "<<om[0]/volsurf<<std::endl;
 		}
 	}
 }

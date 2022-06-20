@@ -28,6 +28,8 @@ namespace gmds {
    {
 	 public:
 	   GridBuilderAround(Mesh* AMesh,Mesh* mImprint, const TInt ADim=2);
+
+	   ~GridBuilderAround(){;};
 	   const Mesh getMesh() const;
 	   const Mesh getmImprint() const;
 	   int getDim() const;
@@ -48,13 +50,13 @@ namespace gmds {
 	   void executeGrid2D(const TInt  ANb);
 
 	   /* a mesh*/
-	   gmds::Mesh m_mesh;
-	   gmds::Mesh meshTarget;
+	   gmds::Mesh* m_mesh;
+	   gmds::Mesh* meshTarget;
 
 
 	   /* add variable activate -> Face*/
-	   Variable<int> *activate = m_mesh.newVariable<int,GMDS_FACE>("activate");
-	   Variable<double>* volFrac = m_mesh.newVariable<double,GMDS_FACE>("volFrac");
+	   Variable<int> *activate = m_mesh->newVariable<int,GMDS_FACE>("activate");
+	   Variable<double>* volFrac = m_mesh->newVariable<double,GMDS_FACE>("volFrac");
 
 	   /** Grid dimension*/
 	   TInt m_dim;

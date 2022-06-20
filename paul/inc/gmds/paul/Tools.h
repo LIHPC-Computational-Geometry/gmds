@@ -14,6 +14,10 @@
 #include "gmds/igalgo/r2d.h"
 #include <gmds/math/Quadrilateral.h>
 #include <gmds/math/Triangle.h>
+#include "gmds/io/IGMeshIOService.h"
+#include "gmds/io/VTKWriter.h"
+#include "gmds/io/VTKReader.h"
+#include "gmds/ig/MeshDoctor.h"
 
 /*----------------------------------------------------------------------------*/
 
@@ -298,7 +302,13 @@ class Tools{
 	void intersectionTargetWithGrid(Mesh* AMesh, const Mesh* AImprintMesh,gmds::Variable<double>* AVolFrac);
 	void anotherVolFrac(Mesh* AMesh, const Mesh* AImprintMesh,gmds::Variable<double>* AVolFrac);
 
+	void saveMesh(Mesh *AMesh,std::string filename);
+
 	int bestCutDirection(gmds::Face AFace);
+
+	bool commonNodesFaces(gmds::Face AFace0,gmds::Face AFace1);
+
+	bool isValid(gmds::Face &AFace);
 
 	gmds::GridBuilderAround g_grid;
 

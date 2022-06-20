@@ -59,7 +59,7 @@ int Politique::getNextAction(int intervalIoU)
 		return actionSelect;
 	}
 	else{
-		int randomAction = rand() % 3;
+		int randomAction = 1 + rand() % 2;
 		//std::cout<<"Action alea "<< randomAction<<std::endl;
 		return randomAction;
 
@@ -100,19 +100,19 @@ int Politique::getInterval(double localIoU)
 		interval = 0;
 		return interval;
 	}
-	else if(localIoU>0 && localIoU<=0.3){
+	else if(localIoU>0 && localIoU<=0.15){
 		interval = 1;
 		return interval;
 	}
-	else if(localIoU>0.3 && localIoU<=0.6){
+	else if(localIoU>0.15 && localIoU<=0.3){
 		interval = 2;
 		return interval;
 	}
-	else if(localIoU>0.6 && localIoU<1){
+	else if(localIoU>0.3 && localIoU<=0.5){
 		interval = 3;
 		return interval;
 	}
-	else if(localIoU==1){
+	else if(localIoU>0.5 && localIoU<=1){
 		interval = 4;
 		return interval;
 	}
