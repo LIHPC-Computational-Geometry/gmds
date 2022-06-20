@@ -25,6 +25,22 @@ double AeroMeshQuality::minlenghtedge(math::Point p0, math::Point p1, math::Poin
 
 
 /*------------------------------------------------------------------------*/
+double AeroMeshQuality::AngleOuverture(math::Point p0, math::Point p1, math::Point p2, math::Point p3)
+{
+	Vector3d v1 = p1-p0;
+	Vector3d v2 = p2-p0;
+	Vector3d v3 = p3-p0;
+
+	double angle1 = acos(v1.dot(v2));
+	double angle2 = acos(v1.dot(v3));
+
+	return angle1+angle2;
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
 double AeroMeshQuality::AspectRatioQUAD(math::Point p0, math::Point p1, math::Point p2, math::Point p3){
 
 	Vector3d a = p2-p0;
