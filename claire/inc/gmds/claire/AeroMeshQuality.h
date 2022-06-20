@@ -23,10 +23,10 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	/*------------------------------------------------------------------------*/
 	/** \brief  The angles side by side the edge (n0_id, n1_id)
          *
-         * \param[in] n0_id first node id
-         * \param[in] n1_id second node id
-         * \param[in] n2_id third node id
-         * \param[in] n3_id fourth node id
+         * \param[in] p0 first point
+			* \param[in] p1 second point
+			* \param[in] p2 third point
+			* \param[in] p3 fourth point
          *
          * \return  the min ratio between two opposite edges (between 0 and 1)
 	 */
@@ -34,11 +34,10 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	/*------------------------------------------------------------------------*/
 	/** \brief  Aspect Ratio
          *
-         * \param[in] AMesh the mesh
-         * \param[in] n0_id first node id
-         * \param[in] n1_id second node id
-         * \param[in] n2_id third node id
-         * \param[in] n3_id fourth node id
+         * \param[in] p0 first point
+			* \param[in] p1 second point
+			* \param[in] p2 third point
+			* \param[in] p3 fourth point
          *
          * \return  the min ratio between two opposite edges (between 0 and 1)
 	 */
@@ -46,11 +45,10 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	/*------------------------------------------------------------------------*/
 	/** \brief  Internal Angle Deviation
          *
-         * \param[in] AMesh the mesh
-         * \param[in] n0_id first node id
-         * \param[in] n1_id second node id
-         * \param[in] n2_id third node id
-         * \param[in] n3_id fourth node id
+         * \param[in] p0 first point
+			* \param[in] p1 second point
+			* \param[in] p2 third point
+			* \param[in] p3 fourth point
          *
          * \return  the min ratio between two opposite edges (between 0 and 1)
 	 */
@@ -58,11 +56,10 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	/*------------------------------------------------------------------------*/
 	/** \brief  Equi Angle Skewness
          *
-         * \param[in] AMesh the mesh
-         * \param[in] n0_id first node id
-         * \param[in] n1_id second node id
-         * \param[in] n2_id third node id
-         * \param[in] n3_id fourth node id
+         * \param[in] p0 first point
+			* \param[in] p1 second point
+			* \param[in] p2 third point
+			* \param[in] p3 fourth point
          *
          * \return  the min ratio between two opposite edges (between 0 and 1)
 	 */
@@ -71,11 +68,10 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	/** \brief  Condition for QUAD (cf The Verdict Geometric Quality Library from SANDIA)
 	 		* Définie entre 1 et double_max, une valeur entre 1 et 4 est acceptable.
          *
-         * \param[in] AMesh the mesh
-         * \param[in] n0_id first node id
-         * \param[in] n1_id second node id
-         * \param[in] n2_id third node id
-         * \param[in] n3_id fourth node id
+         * \param[in] p0 first point
+			* \param[in] p1 second point
+			* \param[in] p2 third point
+			* \param[in] p3 fourth point
          *
          * \return  the condition of the quad
 	 */
@@ -84,11 +80,10 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	/** \brief  Edge ratio for QUAD (cf The Verdict Geometric Quality Library from SANDIA)
 	 		* Définie entre 1 et double_max, une valeur entre 1 et 1.3 est acceptable.
          *
-         * \param[in] AMesh the mesh
-         * \param[in] n0_id first node id
-         * \param[in] n1_id second node id
-         * \param[in] n2_id third node id
-         * \param[in] n3_id fourth node id
+         * \param[in] p0 first point
+			* \param[in] p1 second point
+			* \param[in] p2 third point
+			* \param[in] p3 fourth point
          *
          * \return  the edge ratio of the quad
 	 */
@@ -97,11 +92,10 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	/** \brief  Jacobian for QUAD (cf The Verdict Geometric Quality Library from SANDIA)
 	 		* Définie entre 0 et double_max, une valeur entre 0 et double_max est acceptable.
          *
-         * \param[in] AMesh the mesh
-         * \param[in] n0_id first node id
-         * \param[in] n1_id second node id
-         * \param[in] n2_id third node id
-         * \param[in] n3_id fourth node id
+         * \param[in] p0 first point
+			* \param[in] p1 second point
+			* \param[in] p2 third point
+			* \param[in] p3 fourth point
          *
          * \return  the jacobian of the quad
 	 */
@@ -110,11 +104,10 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	/** \brief  Scaled Jacobian for QUAD (cf The Verdict Geometric Quality Library from SANDIA)
 	 		* Définie entre -1 et 1, une valeur entre 0.3 et 1 est acceptable.
          *
-         * \param[in] AMesh the mesh
-         * \param[in] n0_id first node id
-         * \param[in] n1_id second node id
-         * \param[in] n2_id third node id
-         * \param[in] n3_id fourth node id
+         * \param[in] p0 first point
+			* \param[in] p1 second point
+			* \param[in] p2 third point
+			* \param[in] p3 fourth point
          *
          * \return  the scaled jacobian of the quad
 	 */
@@ -123,11 +116,10 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	/** \brief  Shape for QUAD (cf The Verdict Geometric Quality Library from SANDIA)
 	 		* Définie entre 0 et 1, une valeur entre 0.3 et 1 est acceptable.
          *
-         * \param[in] AMesh the mesh
-         * \param[in] n0_id first node id
-         * \param[in] n1_id second node id
-         * \param[in] n2_id third node id
-         * \param[in] n3_id fourth node id
+         * \param[in] p0 first point
+			* \param[in] p1 second point
+			* \param[in] p2 third point
+			* \param[in] p3 fourth point
          *
          * \return  the shape of the quad
 	 */
@@ -136,11 +128,10 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	/** \brief  Skew for QUAD (cf The Verdict Geometric Quality Library from SANDIA)
 	 		* Définie entre 0 et 1, une valeur entre 0 et 0.5 est acceptable.
          *
-         * \param[in] AMesh the mesh
-         * \param[in] n0_id first node id
-         * \param[in] n1_id second node id
-         * \param[in] n2_id third node id
-         * \param[in] n3_id fourth node id
+         * \param[in] p0 first point
+			* \param[in] p1 second point
+			* \param[in] p2 third point
+			* \param[in] p3 fourth point
          *
          * \return  the skew of the quad
 	 */
