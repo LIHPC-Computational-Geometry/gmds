@@ -120,18 +120,14 @@ bool CavityOperator::CavityIO::CavityIO::nodeInCavity(const TInt node)
       throw gmds::GMDSException("tet == border");
     }
   }
-  std::cout << "OK" << std::endl;
   for(auto const & tet : cellInCavity())
   {
-    std::cout << "tet -> " << tet << std::endl;
     SimplicesCell cell = SimplicesCell(m_simplex_mesh, tet);
-    std::cout << "cell -> " << cell << std::endl;
     for(unsigned int localIndex = 0 ; localIndex < sizeCell ; localIndex++)
     {
       //look if the oppositeCell is in the cavity with the help of tetBitVector
       TSimplexID oppositeCell = cell.oppositeTetraIdx(localIndex);
       const std::vector<TInt>&& nodes =  cell.getOrderedFace(localIndex);
-      std::cout << "oppositeCell -> " << oppositeCell << std::endl;
       if(!(nodes[0] == node || nodes[1] == node || nodes[2] == node))
       {
         if(oppositeCell >= 0)
@@ -153,8 +149,7 @@ bool CavityOperator::CavityIO::CavityIO::nodeInCavity(const TInt node)
       }
     }
   }
-std::cout << "OK1" << std::endl;
-  for(auto const nodes : m_nodesToReconnect)
+   for(auto const nodes : m_nodesToReconnect)
   {
     for(auto const node : nodes)
     {
@@ -836,7 +831,6 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
 
       for(auto const & triangle : firstTriangles){
         selectConnexTriangle(triangle, triBitVector, indexedTriangle);
-        std::cout << std::endl;
       }
     }
     //std::cout << "SETTING THE TRIANGLE " << std::endl;

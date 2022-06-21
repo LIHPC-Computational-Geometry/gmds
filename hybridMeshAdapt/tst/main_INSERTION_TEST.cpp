@@ -95,18 +95,18 @@ int main(int argc, char* argv[])
   double duration;
   start = std::clock();
   unsigned int nodeCpt = 0;
+  std::cout << "nodesToAddIds.capacity() -> " << nodesToAddIds.capacity() << std::endl;
   for(unsigned int idx = 0 ; idx < nodesToAddIds.capacity() ; idx++)
   {
-    std::cout << "idx -> " << idx << std::endl;
     if(nodesToAddIds[idx] != 0)
     {
+      std::cout << "idx -> " << idx << std::endl;
       const gmds::BitVector & nodesIds = simplexMesh.getBitVectorNodes();
       math::Point point = SimplicesNode(&simplexNodes, idx).getCoords();
 
       bool alreadyAdd = false;
       std::vector<TSimplexID> tetraContenaingPt{};
       TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
-      std::cout << "node -> " << node << std::endl;
       if(!alreadyAdd)
       {
         if((*BND_CURVE_COLOR_NODES)[idx] != 0) {BND_CURVE_COLOR->set(node, (*BND_CURVE_COLOR_NODES)[idx]);}
@@ -118,10 +118,7 @@ int main(int argc, char* argv[])
           bool status = false;
           std::vector<TSimplexID> deletedSimplex{};
           const std::multimap<TInt, TInt> facesAlreadyBuilt{};
-          std::cout << "DelaunayPointInsertion " << std::endl;
           DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, tetraContenaingPt, status, nodesAdded, deletedSimplex, facesAlreadyBuilt);
-          std::cout << "status -> " << status << std::endl;
-          std::cout << std::endl;
           if(status)
           {
             nodeCpt++;
@@ -130,7 +127,12 @@ int main(int argc, char* argv[])
       }
     }
   }
-
+  //==================================================================
+  // VOLUME POINT INSERTION CHECK
+  //==================================================================
+  std::cout << "VOLUME POINT INSERTION CHECK" << std::endl;
+  simplexMesh.checkMesh();
+  
   duration = (std::clock()-start)/(double)CLOCKS_PER_SEC;
   std::cout << "DELAUNAY VOLUME INSERTION DONE IN " << duration << std::endl;
   std::cout << "  INSERTED NODE -> "  << (double)nodeCpt / (double)nodesToAddIds.size() * 100.0 << "% " << std::endl;

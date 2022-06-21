@@ -1244,103 +1244,54 @@ bool SimplexMesh::checkMeshLocal(const SimplicesNode node)
 }
 /******************************************************************************/
 
-bool SimplexMesh::checkMesh()
+void SimplexMesh::checkMesh()
 {
   TInt border = std::numeric_limits<int>::min();
-  bool flagRes = true;;
-/*  for(unsigned int iter = 0; iter < m_tet_ids.capacity(); iter++)
-  {
-    if(m_tet_ids[iter] != 0)
-    {
-      std::vector<TSimplexID>&& neighborTet = SimplicesCell(this, iter).adjacentTetra();
-      unsigned int nodeLocal = 0;
-      for(auto const & tet : neighborTet)
-      {
-        const unsigned int nodeGlobal = SimplicesCell(this, iter).getNode(nodeLocal).getGlobalNode();
-        if(tet != border)
-        {
-          flagRes = false;
-          std::vector<TInt>&& intersectedNodes = SimplicesCell(this, iter).intersectionNodes(SimplicesCell(this, tet));
-          if(intersectedNodes.size() == 3)
-          {
-            std::vector<TInt>&& adjNodes = SimplicesCell(this, tet).getNodes();
-            adjNodes.erase(std::remove_if(adjNodes.begin(), adjNodes.end(), [&](TInt node)
-            {
-            bool flag = false;
-            if(std::find(intersectedNodes.begin(), intersectedNodes.end(), node) != intersectedNodes.end())
-            {
-              flag = true;
-            }
-            return flag;
-            }), adjNodes.end());
-            if(adjNodes.size() == 1)
-            {
-              TSimplexID checkSimplex = SimplicesCell(this, tet).oppositeTetraIdx(SimplicesNode(this, adjNodes.front()));
-              if(checkSimplex != iter)
-              {
-                std::cout << "checkSimplex != iter" << std::endl;
-                std::cout << "checkSimplex : " << checkSimplex << "  tet : " << iter  << std::endl;
-              }
-              else
-              {
-                flagRes = true;
-              }
-            }
-            else
-            {
-              std::cout << "adjNodes.size() != 1" << std::endl;
-            }
-          }
-          else
-          {
-            std::cout << "Simplices [" << iter << ";" << tet << "] are adjacent but don't have 3 intersected node" << std::endl;
-          }
-
-
-          if(flagRes == false)
-          {
-            break;
-          }
-        }
-        else
-        {
-          for(unsigned int tet = 0; tet < m_tet_ids.capacity(); tet++)
-          {
-            if(tet != iter)
-            {
-              if(m_tet_ids[tet] == 1)
-              {
-                SimplicesCell cell(this, iter);
-                SimplicesCell cellToCompare(this, tet);
-                const std::vector<TInt>&& intersectionNode = cell.intersectionNodes(cellToCompare);
-                if(intersectionNode.size() == 3)
-                {
-                  if(std::find(intersectionNode.begin(), intersectionNode.end(), nodeGlobal) == intersectionNode.end())
-                  {
-                    std::cout << "Simplices [" << tet << ";" << iter << "] are adjacent but adjcent vector is wrong" << std::endl;
-                  }
-                }
-              }
-            }
-          }
-        }
-        nodeLocal++;
-      }
-    }
-    if(flagRes == false)
-    {
-      break;
-    }
-  }
-*/
   unsigned int tetraNbr = getNbTetra();
   unsigned int cpt = 0;
+  unsigned int sizeFace = 3;
+
   for(unsigned int cell0 = 0; cell0 < m_tet_ids.capacity(); cell0++)
   {
     if(m_tet_ids[cell0] == 1)
     {
-      cpt++;
-      std::cout << "avancement : " << (float)cpt / (float)tetraNbr * 100.0f<< " %" << std::endl;
+      const SimplicesCell c0 = SimplicesCell(this, cell0);
+      for(unsigned int face = 0; face < sizeFace; face++)
+      {
+        TSimplexID oppositeCell = m_tet_adj[cell0][face];
+        if(oppositeCell == border)
+        {
+          std::cout << "c0 -> " << c0 << std::endl;
+          throw gmds::GMDSException("oppositeCell == border");
+        }
+
+        if(oppositeCell >= 0)
+        {
+          const SimplicesCell c1 = SimplicesCell(this, oppositeCell);
+          std::vector<TInt> nodesFace =  c0.getOrderedFace(face);
+          if(nodesFace.size() != 3)
+          {
+            throw gmds::GMDSException("nodeFace.size() != 3");
+          }
+
+          std::vector<TInt> otherNode = c1.getOtherNodeInSimplex(nodesFace);
+          if(otherNode.size() != 1)
+          {
+            throw gmds::GMDSException("otherNode.size() != 1");
+          }
+          
+          if(m_tet_adj[oppositeCell][c1.getLocalNode(otherNode.front())] != cell0)
+          {
+            std::cout << "cell0 -> " << c0 << std::endl;
+            std::cout << "opposite Cell -> " << c1 << std::endl;
+            throw gmds::GMDSException("m_tet_adj[oppositeCell][otherNode.size()] != cell0");
+          }
+        }
+        else
+        {
+
+        }
+      }
       for(unsigned int cell1 = 0; cell1 < m_tet_ids.capacity(); cell1++)
       {
         if(m_tet_ids[cell1] == 1)
@@ -1363,22 +1314,16 @@ bool SimplexMesh::checkMesh()
                   TInt localNode1 = cellToCompare.getLocalNode(node1.getGlobalNode());
                   if(m_tet_adj[cell0][localNode0] != cell1 || m_tet_adj[cell1][localNode1] != cell0)
                   {
-                      flagRes = false;
                       std::cout << "Simplices [" << cell0 << ";" << cell1 << "] are adjacent but adjcent vector is wrong" << std::endl;
+                      gmds::GMDSException("WRONG MESH");
                   }
                 }
               }
             }
           }
         }
-        if(!flagRes)
-        {
-          break;
-        }
       }
     }
-
-  return flagRes;
 }
 /******************************************************************************/
 bool SimplexMesh::doCellExist(const TSimplexID simplex) const
@@ -4164,11 +4109,33 @@ void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vect
     if(count == 2)
     {
       std::multimap<std::pair<TInt, TInt>, TSimplexID>::iterator it1 = hash_face.begin();
-      it1++;
+      ++it1;
       TSimplexID simplexA = (*it0).second;
       TSimplexID simplexB = (*it1).second;
 
-      std::cout << "simplices -> " << simplexA << " | " << simplexB << std::endl;
+      const SimplicesCell cA = SimplicesCell(this, simplexA);
+      const SimplicesCell cB = SimplicesCell(this, simplexB);
+
+      std::vector<TInt> intersectionFaces = cA.intersectionNodes(cB);
+      if(intersectionFaces.size() != 3)
+      {
+        throw gmds::GMDSException("intersectionFaces.size() != 3");
+      }
+
+      std::vector<TInt> otherNode_A = cA.getOtherNodeInSimplex(intersectionFaces);
+      std::vector<TInt> otherNode_B = cB.getOtherNodeInSimplex(intersectionFaces);
+
+      if(otherNode_A.size() != 1 || otherNode_B.size() != 1)
+      {
+        throw gmds::GMDSException("otherNode_A != 1 || otherNode_B != 1");
+      }
+
+      TInt localNode_A = cA.getLocalNode(otherNode_A.front());
+      TInt localNode_B = cB.getLocalNode(otherNode_B.front());
+
+      m_tet_adj[simplexA][localNode_A] = simplexB;
+      m_tet_adj[simplexB][localNode_B] = simplexA;
+
       hash_face.erase(it0);
       hash_face.erase(it1);
     }
@@ -4177,9 +4144,8 @@ void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vect
       std::cout << "reinsertion ? " << std::endl;
     }
   }
-  throw gmds::GMDSException("end of rcacvity reconstruction");
+  //throw gmds::GMDSException("end of rcacvity reconstruction");
   //rebuild surface if need it
-  std::cout << "end of rcacvity reconstruction" << std::endl;
 }
 /******************************************************************************/
 void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)

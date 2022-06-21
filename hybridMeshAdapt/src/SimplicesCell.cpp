@@ -641,7 +641,7 @@ std::vector<TInt> SimplicesCell::intersectionFaces(const std::vector<TInt>& loca
   return res;
 }
 /******************************************************************************/
-std::vector<TInt> SimplicesCell::intersectionNodes(const SimplicesCell& simplicesCell)
+std::vector<TInt> SimplicesCell::intersectionNodes(const SimplicesCell& simplicesCell) const
 {
   std::vector<TInt> v{};
   if(m_simplex_mesh != nullptr)

@@ -84,11 +84,9 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           return flag;
         });
 
-        std::cout << "cavityEnlargement START" << std::endl;
         CavityOperator::CavityIO cavityIO(simplexMesh);
         if(cavOp.cavityEnlargement(cavityIO, initialCavityCell, initialCavityTriangle, simpliceNode, criterion, facesAlreadyBuilt, markedSimplex))
         {
-          std::cout << "cavityEnlargement END" << std::endl;
           //test sur les triangles non connecté a P pour ne pas créer de retournement topologique
           for(auto const triNotCo : cavityIO.getTrianglesNotConnectedToPInCavity())
           {
@@ -103,16 +101,12 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           ////////////////////////////////////////////////////////////////////////////////
           ///////////////////////finding the node inside the cavity///////////////////////
           ////////////////////////////////////////////////////////////////////////////////
-          std::cout << "nodeInCavity START" << std::endl;
           if(!cavityIO.nodeInCavity(simpliceNode.getGlobalNode())){
             status = false;
             return;
           }
-          std::cout << "nodeInCavity END" << std::endl;
 
-          std::cout << "nodesReconnection START" << std::endl;
           cavityIO.nodesReconnection(simpliceNode.getGlobalNode());
-          std::cout << "nodesReconnection START" << std::endl;
 
           ////////////////////////////ADRIEN IDEA///////////////////////////////////////
           //this section is here in order to optimize the futurs normals of the created
@@ -427,7 +421,6 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             }
           }
 
-          std::cout << "REBUILD START" << std::endl;
           simplexMesh->rebuildCav(cavityIO, deleted_Tet, deleted_Tri, simpliceNode.getGlobalNode(), createdCells);
           //simplexMesh->rebuildCavity(cavityIO, deleted_Tet, deleted_Tri, simpliceNode.getGlobalNode(), createdCells);
           status = true;

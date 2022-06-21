@@ -228,7 +228,7 @@ class SimplexMesh
 
   void setMarkedTet(const gmds::BitVector& markedTet){m_markedTet = markedTet;}
 
-  bool checkMesh();
+  void checkMesh();
 
   bool checkMeshLocal(const simplicesNode::SimplicesNode node);
 

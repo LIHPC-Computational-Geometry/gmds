@@ -78,7 +78,7 @@ namespace gmds
         std::vector<TSimplexID> adjacentTetra () const;
 
         /*return a vector of nodes conain in this and tetra (intersection nodes of both tetra)*/
-        std::vector<TInt> intersectionNodes(const SimplicesCell& simplicesCell);
+        std::vector<TInt> intersectionNodes(const SimplicesCell& simplicesCell) const;
 
         void intersectionSimplexFacesForUnbuildStruct(const SimplicesCell& simplicesCell, std::vector<TSimplexID>& intersectionNodes);
 
