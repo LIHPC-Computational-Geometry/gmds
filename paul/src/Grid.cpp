@@ -137,3 +137,22 @@ void GridBuilderAround::flipActivate(const int faceID)
 {
 	activate->set(faceID,0);
 }
+
+bool GridBuilderAround::isValid()
+{
+	bool res = true;
+	for(auto faceID: m_mesh->faces())
+	{
+		gmds::Face f = m_mesh->get<Face>(faceID);
+		std::vector<gmds::Node> n = f.get<gmds::Node>();
+
+		gmds::math::Quadrilateral quad(n[0].point(), n[1].point(), n[2].point(), n[3].point());
+		double sj = quad.computeScaledJacobian2D();
+		if(sj < 0)
+		{
+			res = false;
+			break;
+		}
+	}
+	return res;
+}

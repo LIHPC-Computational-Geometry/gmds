@@ -38,6 +38,10 @@ void Actions::executeGlideNode(Node node, Mesh *AMesh)
 	double newX;
 	double newY;
 	double newZ;
+	auto listFacesNode = tool.getListFacesOfNode(node.id());
+	double oldXNode=node.X();
+	double oldYNode=node.Y();
+	double oldZNode=node.Z();
 	for (auto n : boundaryNodes){
 		double newRange = tool.calcRangePoints(node,AMesh->get<Node>(n.first));
 		if (first == true){
@@ -58,6 +62,18 @@ void Actions::executeGlideNode(Node node, Mesh *AMesh)
 	node.X()=newX;
 	node.Y()=newY;
 	node.Z()=newZ;
+
+	if(! g_grid.isValid()){
+		std::cout<<"Bad Cell detected"<<std::endl;
+		while(!g_grid.isValid()){
+			std::cout<<"Bad Cell detected in while"<<std::endl;
+			node.X()= (node.X() + oldXNode)/2;
+			node.Y() = (node.Y() + oldYNode)/2;
+			node.Z() = (node.Z() + oldZNode)/2;
+		}
+	}
+
+
 }
 void Actions::executeCutFace(Face AFace, int direction)
 {

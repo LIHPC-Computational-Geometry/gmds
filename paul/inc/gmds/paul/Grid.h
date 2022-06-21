@@ -9,6 +9,7 @@
 #include "gmds/igalgo/BoundaryExtractor2D.h"
 #include "GMDSIgAlgo_export.h"
 #include "gmds/igalgo/VolFracComputation.h"
+#include "gmds/math/Quadrilateral.h"
 /*----------------------------------------------------------------------------*/
 
 namespace gmds {
@@ -87,6 +88,8 @@ namespace gmds {
 	    */
 
 	   void flipActivate(const int faceID);
+
+	   bool isValid();
    };
 }
 #endif     // GMDS_GRID_H

@@ -18,7 +18,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 	Tools toolInit(&environmentInit.g_grid);
 
 
-	for (int i=0; i<=5;i++){
+	for (int i=0; i<=100;i++){
 		std::cout <<"Dans le for : "<<i<<std::endl;
 
 
@@ -51,7 +51,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 		//environment.executeAction(selectFace,1);
 
 		int countIte=0;
-		while(environment->globalIoU()<0.99 && countIte<50){
+		while(environment->globalIoU()<0.99 && countIte<100){
 
 			environment->calcVolFrac();
 			//std::cout<<"Valeur env Global IoU : \n"<<environment->globalIoU()<<std::endl;
@@ -144,6 +144,10 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 			vtkWriterGba.setDataOptions(gmds::N|gmds::F);
 			vtkWriterGba.write("Q_learning_test.vtk");
 			std::cout<<"La face select : "<<faceSelected<<std::endl;
+			std::cout<<"Noeuds la face  : "<<std::endl;
+			for (auto n : toolsQlearning->getListNodesOfFace(faceSelected.id())){
+				std::cout<<n<<std::endl;
+			}
 			//std::cout<<"Calcul reward"<<std::endl;
 			double reward = environment->reward(faceSelected);
 			//std::cout<<"Calcul TD"<<std::endl;

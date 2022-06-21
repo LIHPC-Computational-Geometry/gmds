@@ -157,6 +157,9 @@ int main(){
 
 	toolsB.anotherVolFrac(gridAround.m_mesh,&mImprint,test);
 
+
+
+
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 /*
 	std::vector<Node> listNodesFaceSelected = toolsB.getListNodesOfFace(gridAround.m_mesh.get<Face>(13).id());
@@ -203,7 +206,7 @@ int main(){
 
 
 	//coupe
-	/*
+/*
 	actionb.executeCutEdge(mGridAround.get<Node>(21),mGridAround.get<Node>(20));
 	actionb.executeCutEdge(mGridAround.get<Node>(5),mGridAround.get<Node>(10));
 	actionb.executeCutEdge(mGridAround.get<Node>(4),mGridAround.get<Node>(9));
@@ -216,20 +219,20 @@ int main(){
 	actionb.executeCutEdge(mGridAround.get<Node>(40),mGridAround.get<Node>(8));
 	actionb.executeCutEdge(mGridAround.get<Node>(8),mGridAround.get<Node>(34));
 	actionb.executeCutEdge(mGridAround.get<Node>(72),mGridAround.get<Node>(2));
-	actionb.executeCutEdge(mGridAround.get<Node>(2),mGridAround.get<Node>(56));*/
+	actionb.executeCutEdge(mGridAround.get<Node>(2),mGridAround.get<Node>(56));
 
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-	/*
+
 	actionb.executeGlideNode(mGridAround.get<Node>(130),&mImprint);
 	actionb.executeGlideNode(mGridAround.get<Node>(61),&mImprint);
-	actionb.executeGlideNode(mGridAround.get<Node>(84),&mImprint);*/
-	//actionb.executeGlideNode(mGridAround.get<Node>(83),&mImprint);
-	//actionb.executeGlideNode(mGridAround.get<Node>(52),&mImprint);
-	//actionb.executeGlideNode(mGridAround.get<Node>(11),&mImprint);
-	//actionb.executeGlideNode(mGridAround.get<Node>(27),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(84),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(83),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(52),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(11),&mImprint);
+	actionb.executeGlideNode(mGridAround.get<Node>(27),&mImprint);
 
-	//volfraccomputation_2d(&gridAround.m_mesh,&gridAround.meshTarget,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
-
+	volfraccomputation_2d(gridAround.m_mesh,gridAround.meshTarget,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
+	*/
 	//actionb.executeGlideNode(mGridAround.get<Node>(21),&mImprint);
 	/*
 	gridAround.m_mesh.get<Node>(21).X() = 8.14;
@@ -500,7 +503,7 @@ int main(){
 	vtkWriter2.write("lili.vtk");
 
 
-	//executeTrainQlearning(environment);
+	executeTrainQlearning(environment);
 
 	exit(3);
 
