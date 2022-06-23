@@ -6,7 +6,7 @@
 
 using namespace gmds;
 Politique::Politique(Environment *AEnv)
-   :env(*AEnv){;}
+	:env(*AEnv){;}
 
 void Politique::initQTable()
 {
@@ -64,6 +64,32 @@ int Politique::getNextAction(int intervalIoU)
 		return randomAction;
 
 	}
+
+}
+
+int Politique::getNextActionQLearning(int intervalIoU)
+{
+	auto theQTable = getQTable();
+	int actionSelect;
+	double maxQvalue;
+	bool firstIte = true;
+	//std::cout<<"Dans le if"<<std::endl;
+	for (int i = 0;i <3;i++) {
+		if (firstIte) {
+			actionSelect = i;
+			maxQvalue = theQTable[intervalIoU][i];
+			firstIte = false;
+		}
+		else {
+			std::cout<<"Dans le else "<<std::endl;
+			if (maxQvalue < theQTable[intervalIoU][i]) {
+				actionSelect = i;
+				maxQvalue = theQTable[intervalIoU][i];
+			}
+		}
+	}
+	std::cout<<"Action Select : "<<actionSelect<<std::endl;
+	return actionSelect;
 
 }
 

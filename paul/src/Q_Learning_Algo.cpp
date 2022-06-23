@@ -18,7 +18,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 	Tools toolInit(&environmentInit.g_grid);
 
 
-	for (int i=0; i<=100;i++){
+	for (int i=0; i<=30;i++){
 		std::cout <<"Dans le for : "<<i<<std::endl;
 
 
@@ -51,7 +51,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 		//environment.executeAction(selectFace,1);
 
 		int countIte=0;
-		while(environment->globalIoU()<0.99 && countIte<100){
+		while(environment->globalIoU()<0.9 && countIte<15){
 
 			environment->calcVolFrac();
 			//std::cout<<"Valeur env Global IoU : \n"<<environment->globalIoU()<<std::endl;
@@ -59,7 +59,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 			Face faceSelected = environment->faceSelect();
 
 			//std::cout<<"Face Select : "<<faceSelected<< " avec valeur activate "<<copyGrid->getActivate(faceSelected)<<" et vol Frac "
-			          //<<copyGrid->m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(faceSelected.id())<<std::endl;
+			//<<copyGrid->m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(faceSelected.id())<<std::endl;
 			//std::cout<<"Calcul IoU"<<std::endl;
 
 			double localIoU = environment->localIoU(faceSelected);
@@ -99,7 +99,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 						}
 
 						if (copyGrid->m_mesh->getVariable<double,GMDS_FACE>("volFrac")->value(listNewFaces[0].id())<
-						    copyGrid->m_mesh->getVariable<double,GMDS_FACE>("volFrac")->value(listNewFaces[1].id())){
+							 copyGrid->m_mesh->getVariable<double,GMDS_FACE>("volFrac")->value(listNewFaces[1].id())){
 							faceSelected = listNewFaces[1];
 						}
 						else{
@@ -125,7 +125,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 							}
 						}
 						if (copyGrid->m_mesh->getVariable<double,GMDS_FACE>("volFrac")->value(listNewFaces[0].id())<
-						    copyGrid->m_mesh->getVariable<double,GMDS_FACE>("volFrac")->value(listNewFaces[1].id())){
+							 copyGrid->m_mesh->getVariable<double,GMDS_FACE>("volFrac")->value(listNewFaces[1].id())){
 							faceSelected = listNewFaces[1];
 						}
 						else{
@@ -148,7 +148,18 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 			for (auto n : toolsQlearning->getListNodesOfFace(faceSelected.id())){
 				std::cout<<n<<std::endl;
 			}
+			std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
+			std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
+			std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
 			//std::cout<<"Calcul reward"<<std::endl;
+			if(environment->localIoU(faceSelected)<0){
+				std::cout<<"Local IoU negatif : "<<environment->localIoU(faceSelected)<<std::endl;
+				std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
+				std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
+				std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
+				break ;
+
+			}
 			double reward = environment->reward(faceSelected);
 			//std::cout<<"Calcul TD"<<std::endl;
 			double temporal_difference = reward + (0.9 * maxQValue) - oldQValue;
@@ -187,12 +198,54 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 			std::cout<<d<<std::endl;
 		}
 	}
+	saveQTable(politique->Q_Table,"Q_Table_Save.txt");
 	exit(0);
 }
 
-int gmds::getNextAction(){
-	int ok = 1;
-return ok;
+void gmds::executeQLearning(Environment environment)
+{
+	Politique *qLearningPolicy=new Politique(&environment);
+	qLearningPolicy->initQTable();
+	qLearningPolicy->Q_Table=readQTable(qLearningPolicy->getQTable(),"Q_Table_Save.txt");
+
+
+
+	std::cout<<"La lecture de la QTable"<<std::endl;
+	for (auto l : qLearningPolicy->Q_Table ){
+		std::cout<<"une ligne de la qtable : "<<l.front()<<std::endl;
+		for (auto d : l ){
+			std::cout<<d<<std::endl;
+		}
+	}
+
+	while(environment.globalIoU()<0.9){
+		environment.calcVolFrac();
+
+		Face faceSelected = environment.faceSelect();
+
+		std::cout<<"Face select "<<faceSelected<<std::endl;
+
+		double localIoU = environment.localIoU(faceSelected);
+
+		int intervalIoU = qLearningPolicy->getInterval(localIoU);
+
+		int actionIndex =  qLearningPolicy->getNextActionQLearning(intervalIoU);
+
+		std::cout<<"interval IoU "<<intervalIoU<<std::endl;
+
+		environment.executeAction(faceSelected,actionIndex);
+
+		gmds::IGMeshIOService ioService_write_Copy_grid(environment.g_grid.m_mesh);
+		gmds::VTKWriter vtkWriterGba(&ioService_write_Copy_grid);
+		vtkWriterGba.setCellOptions(gmds::N|gmds::F);
+		vtkWriterGba.setDataOptions(gmds::N|gmds::F);
+		vtkWriterGba.write("Q_learning_result.vtk");
+
+	}
+
+
+
+
 }
 
 void gmds::initQTable(){
@@ -211,4 +264,73 @@ void gmds::initQTable(){
 			std::cout<<d<<std::endl;
 		}
 	}
+}
+
+void gmds::saveQTable(std::vector<std::vector<double>> theQTable,std::string NameFile)
+{
+	std::ofstream myfile;
+	myfile.open(NameFile);
+	for(auto i :theQTable){
+		for(auto j : i){
+			myfile<<j<<"\n";
+		}
+	}
+	myfile.close();
+}
+
+std::vector<std::vector<double>> gmds::readQTable(std::vector<std::vector<double>> theQTable, std::string NameFile)
+{
+	std::fstream myfile;
+	myfile.open(NameFile,std::ios::in);
+	int x;
+	if (!myfile) {
+		std::cout << "Unable to open file";
+		exit(1); // terminate with error
+	}
+
+	std::string myString;
+	if(myfile.is_open()){
+		std::string tp;
+		int nbLigne = 0;
+		int ligneQtable=0;
+		while(std::getline(myfile,tp)) {
+			std::cout<<"Numero ligne "<<ligneQtable<<std::endl;
+
+			std::stringstream ss;
+
+			if(nbLigne != 0 && nbLigne%3 == 0){
+				ligneQtable++;
+			}
+
+			std::cout << "My string " << tp << std::endl;
+			ss << tp; // send it to the string stream
+
+			double x;
+			if(ss >> x) // send it to a double, test for correctness
+			{
+				int colonne = nbLigne %3;
+
+				std::cout<<"La colonne : "<<colonne<<std::endl;
+				std::cout << "success, " << " x = " << x << std::endl;
+				theQTable[ligneQtable][colonne]=x;
+			}
+			else
+			{
+				std::cout << "error converting " << tp << std::endl;
+			}
+
+
+			nbLigne++;
+		}
+	}
+
+	for (auto l : theQTable){
+		std::cout<<"une ligne de la qtable : "<<l.front()<<std::endl;
+		for (auto d : l ){
+			std::cout<<d<<std::endl;
+		}
+	}
+
+	return theQTable;
+
 }

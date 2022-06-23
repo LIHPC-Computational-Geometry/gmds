@@ -30,8 +30,9 @@ void Actions::executeCutEdge(Node firstNodeID, Node secondNodeID)
 	}
 }
 
-void Actions::executeGlideNode(Node node, Mesh *AMesh)
+bool Actions::executeGlideNode(Node node, Mesh *AMesh)
 {
+	std::cout<<"Action glide Node"<<std::endl;
 	auto boundaryNodes = tool.getBoundaryNodes(AMesh);
 	double range;
 	bool first = true;
@@ -63,15 +64,29 @@ void Actions::executeGlideNode(Node node, Mesh *AMesh)
 	node.Y()=newY;
 	node.Z()=newZ;
 
-	if(! g_grid.isValid()){
+	std::cout<<"New Coord X "<<node.X()<<std::endl;
+	std::cout<<"New Coord Y "<<node.Y()<<std::endl;
+	std::cout<<"New Coord Z "<<node.Z()<<std::endl;
+
+	if(g_grid.isValid()==false){
+		int ite = 0;
 		std::cout<<"Bad Cell detected"<<std::endl;
-		while(!g_grid.isValid()){
+		while(g_grid.isValid()==false){
+			if(ite==50){
+				node.X()=oldXNode;
+				node.Y()=oldYNode;
+				node.Z()=oldZNode;
+				return false;
+			}
 			std::cout<<"Bad Cell detected in while"<<std::endl;
 			node.X()= (node.X() + oldXNode)/2;
 			node.Y() = (node.Y() + oldYNode)/2;
 			node.Z() = (node.Z() + oldZNode)/2;
+			ite+=1;
 		}
 	}
+
+	return true;
 
 
 }
@@ -97,5 +112,9 @@ void Actions::executeGlideMaxNodeFace(Face AFace)
 void Actions::executeGlideMinNodeFace(Face AFace)
 {
 	Node ANode = tool.selectNodeMinRange(AFace);
-	Actions::executeGlideNode(ANode,g_grid.meshTarget);
+
+	if(!Actions::executeGlideNode(ANode,g_grid.meshTarget)){
+		std::cout<<"$$$$$$$$$$$$$$$$$$$$$$ CAS PROBLEME $$$$$$$$$$$$$$$$$$$ "<<std::endl;
+		Actions::executeDeleteFace(AFace.id());
+	}
 }

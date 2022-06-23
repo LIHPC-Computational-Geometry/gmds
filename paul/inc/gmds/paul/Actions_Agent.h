@@ -46,7 +46,7 @@ namespace gmds {
 	    * @param AMesh the target mesh
 	    */
 
-	   void executeGlideNode(Node node,Mesh *AMesh);
+	   bool executeGlideNode(Node node,Mesh *AMesh);
 
 	   void executeGlideMaxNodeFace(Face AFace);
 	   void executeGlideMinNodeFace(Face AFace);

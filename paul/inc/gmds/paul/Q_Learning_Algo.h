@@ -10,6 +10,10 @@
 #include "gmds/io/VTKWriter.h"
 #include "gmds/io/VTKReader.h"
 
+#include <iostream>
+#include <fstream>
+#include <string>
+
 
 #include "gmds/ig/Mesh.h"
 #include "GMDSIgAlgo_export.h"
@@ -24,6 +28,9 @@ namespace gmds{
 
 void executeTrainQlearning(Environment environment);
 
+
+void executeQLearning(Environment environment);
+
 /** \brief verify if is the terminal state (global IoU > 0.9 )
  *
  * @param environment the environment
@@ -33,9 +40,12 @@ bool isTerminalState(Environment environment);
 
 auto getQTable();
 
-int getNextAction();
 
 void initQTable();
+
+void saveQTable(std::vector<std::vector<double>> theQTable,std::string NameFile);
+
+std::vector<std::vector<double>> readQTable(std::vector<std::vector<double>> theQTable,std::string NameFile);
 
 
 

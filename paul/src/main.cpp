@@ -297,8 +297,12 @@ int main(){
 
 	Environment environment(&gridAround,gridAround.meshTarget,&actionb,&toolsB);
 	//environment.executeAction(environment.faceSelect(),1);
-/*
+
 	Politique policy(&environment);
+	policy.initQTable();
+
+
+	/*
 
 	Actions testAction(&gridAround);
 	Tools testTool(&gridAround);
@@ -503,7 +507,12 @@ int main(){
 	vtkWriter2.write("lili.vtk");
 
 
-	executeTrainQlearning(environment);
+	//readQTable(policy.Q_Table,"Q_Table_Save.txt");
+
+	//executeTrainQlearning(environment);
+	executeQLearning(environment);
+
+
 
 	exit(3);
 

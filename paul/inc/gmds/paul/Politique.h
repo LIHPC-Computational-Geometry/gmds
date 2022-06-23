@@ -25,6 +25,8 @@ class Politique
 
 	int getNextAction(int intervalIoU);
 
+	int getNextActionQLearning(int intervalIoU);
+
 	void updateQTable(int intervalIoU, int actionSelect, double newQValue);
 
 	int getInterval(double localIoU);
