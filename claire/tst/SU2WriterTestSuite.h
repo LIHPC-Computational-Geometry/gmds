@@ -20,7 +20,7 @@
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
-/*TEST(ClaireTestClass, testSU2Writer)
+TEST(ClaireTestClass, testSU2Writer)
 {
 	// Test
 	Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|
@@ -33,13 +33,13 @@ using namespace gmds;
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N|gmds::F);
-	vtkReader.read(dir+"/Aero/2D/SU2_C1_2D_0.1.vtk");
+	vtkReader.read(dir+"/Aero/Poubelle/mesh.vtk");
 
 	gmds::MeshDoctor doc(&m);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
 
-	SU2Writer writer(&m, "Test.su2", -10.0);
+	SU2Writer writer(&m, "mesh.su2", -1000);
 	SU2Writer::STATUS result = writer.execute();
 
 	ioService = &m;
@@ -50,5 +50,5 @@ using namespace gmds;
 
 	ASSERT_EQ(SU2Writer::SUCCESS, result);
 }
-*/
+
 #endif     // GMDS_SU2WRITERTESTSUITE_H

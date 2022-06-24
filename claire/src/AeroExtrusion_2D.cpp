@@ -291,7 +291,6 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 			   math::AeroMeshQuality::minlenghtedge(nodes_quad_2[0].point(), nodes_quad_2[1].point(), nodes_quad_2[2].point(), nodes_quad_2[3].point());
 
 			/*
-
 			// test arête écrasée premier quad
 			double min_lenght_1 = math::AeroMeshQuality::minlenghtedge(m_meshQ, n_id, neighbors_nodes[0],
 			                                  Front_IN.getNextNode(neighbors_nodes[0],n_id),
@@ -302,6 +301,7 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 			                                                           Front_IN.getNextNode(neighbors_nodes[1],n_id),
 			                                                           Front_IN.getNextNode(n_id,neighbors_nodes[1]));
 			                                                           */
+
 
 			if (singu_not_found && (min_lenght_1 < 0.001 || min_lenght_2 < 0.001)) {
 				node_id = n_id;

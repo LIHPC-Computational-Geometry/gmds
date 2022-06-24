@@ -73,6 +73,12 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_2D : public AbstractAeroPipeline {
 	 */
 	void BlockingClassification();
 	/*----------------------------------------------------------------------------*/
+	/** @brief Compute the vector field used for the extrusion.
+	 * @param
+	 * @return void
+	 */
+	void ComputeVectorFieldForExtrusion();
+	/*----------------------------------------------------------------------------*/
  protected:
 	/** blocking 2D */
 	Blocking2D m_Blocking2D;

@@ -139,7 +139,7 @@ AeroPipeline_2D::execute(){
 	std::cout << "-> Calcul Gradient" << std::endl;
 	t_start = clock();
 	m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-	LeastSquaresGradientComputation grad2D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	LeastSquaresGradientComputation grad2D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
 	                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	grad2D.execute();
 	t_end = clock();
@@ -268,8 +268,8 @@ AeroPipeline_2D::EcritureMaillage(){
 	vtkWriter_TetMesh.setDataOptions(gmds::N|gmds::F);
 	vtkWriter_TetMesh.write("AeroPipeline2D_TetMesh.vtk");
 
-	// Ecriture du blocking au format su2
-	SU2Writer writer(m_meshHex, "AeroPipeline2D_Quad.su2", m_params.x_lim);
+	// Ecriture du maillage au format su2
+	SU2Writer writer(m_meshHex, "AeroPipeline2D_QuadMesh.su2", -1000);
 	SU2Writer::STATUS result = writer.execute();
 
 }
@@ -441,8 +441,8 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 		std::vector<Node> quad_nodes = f.get<Node>() ;
 		Blocking2D::Block B0 = m_Blocking2D.newBlock( var_new_id->value(quad_nodes[0].id()), var_new_id->value(quad_nodes[1].id()),
 		                      var_new_id->value(quad_nodes[2].id()), var_new_id->value(quad_nodes[3].id()));
-		B0.setNbDiscretizationI(10);
-		B0.setNbDiscretizationJ(10);
+		B0.setNbDiscretizationI(50);
+		B0.setNbDiscretizationJ(50);
 	}
 
 	m_Blocking2D.initializeGridPoints();	// Maillage des blocs par transfinies
@@ -537,12 +537,14 @@ AeroPipeline_2D::BlockingClassification(){
 					curve->project(p);
 					n.setPoint(p);
 
+
 					if (var_couche->value( B0(0,0).id() ) == 0) {
 						math::Vector3d delta_p = p - p0;
 						Node n_opp = B0(i, Ny);
 						math::Point p_opp = n_opp.point();
 						n_opp.setPoint(p_opp + delta_p);
 					}
+
 				}
 			}
 		}
@@ -563,12 +565,14 @@ AeroPipeline_2D::BlockingClassification(){
 					curve->project(p);
 					n.setPoint(p);
 
+
 					if (var_couche->value( B0(0,0).id() ) == 0) {
 						math::Vector3d delta_p = p - p0;
 						Node n_opp = B0(Nx, j);
 						math::Point p_opp = n_opp.point();
 						n_opp.setPoint(p_opp + delta_p);
 					}
+
 				}
 			}
 		}
@@ -589,12 +593,14 @@ AeroPipeline_2D::BlockingClassification(){
 					curve->project(p);
 					n.setPoint(p);
 
+
 					if (var_couche->value( B0(0,0).id() ) == 0) {
 						math::Vector3d delta_p = p - p0;
 						Node n_opp = B0(i, 0);
 						math::Point p_opp = n_opp.point();
 						n_opp.setPoint(p_opp + delta_p);
 					}
+
 				}
 			}
 		}
@@ -615,14 +621,76 @@ AeroPipeline_2D::BlockingClassification(){
 					curve->project(p);
 					n.setPoint(p);
 
+
 					if (var_couche->value( B0(0,0).id() ) == 0) {
 						math::Vector3d delta_p = p - p0;
 						Node n_opp = B0(0, j);
 						math::Point p_opp = n_opp.point();
 						n_opp.setPoint(p_opp + delta_p);
 					}
+
 				}
 			}
+		}
+
+	}
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
+
+	Variable<math::Vector3d>* var_VectorsForExtrusion = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
+
+	if (m_params.vectors_field == 0)
+	{
+		// Compute the gradient field of the level set from the wall to the external boundary
+		LeastSquaresGradientComputation grad2D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+		                                       var_VectorsForExtrusion);
+		grad2D.execute();
+	}
+	else if (m_params.vectors_field == 1)
+	{
+		// Compute the gradient field of the level set from the wall to the external boundary
+		LeastSquaresGradientComputation grad2D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+		                                       var_VectorsForExtrusion);
+		grad2D.execute();
+	}
+	else if (m_params.vectors_field == 2)
+	{
+		Variable<math::Vector3d>* var_VectorField_1 = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_1");
+		Variable<math::Vector3d>* var_VectorField_2 = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_2");
+
+		LeastSquaresGradientComputation grad2D_1(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+		                                       var_VectorField_1);
+		grad2D_1.execute();
+		LeastSquaresGradientComputation grad2D_2(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+		                                         var_VectorField_2);
+		grad2D_2.execute();
+
+		for (auto n_id:m_meshTet->nodes())
+		{
+			math::Vector3d vec_1 = var_VectorField_1->value(n_id);
+			math::Vector3d vec_2 = var_VectorField_2->value(n_id);
+
+			vec_1.normalize();
+			vec_2.normalize();
+
+			Node n = m_meshTet->get<Node>(n_id);
+			math::Point p = n.point();
+
+			if (p.X() < m_params.x_lim)
+			{
+				var_VectorsForExtrusion->set(n_id, vec_1);
+			}
+			else
+			{
+				var_VectorsForExtrusion->set(n_id, vec_2);
+			}
+
 		}
 
 	}

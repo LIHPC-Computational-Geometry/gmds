@@ -63,6 +63,8 @@ namespace gmds {
 	     bool AXI_2D;
 	     /** Nombre de couches lors de l'extrusion */
 	     int nbr_couches;
+	     /* Choose the way the vectors field is computed for the extrusion */
+	     int vectors_field;
     };
 /*------------------------------------------------------------------------*/
 }

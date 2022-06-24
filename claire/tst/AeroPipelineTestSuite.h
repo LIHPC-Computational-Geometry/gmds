@@ -39,12 +39,13 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.output_dir="gmds/claire/tst/";
 
 	// Paramètres discrétisation de la paroi
-	params_aero.nbrMinBloc=4;
+	params_aero.nbrMinBloc=8;
 
 	// Paramètres de l'extrusion
-	params_aero.nbr_couches = 3;
-	params_aero.delta_cl = 0.15;			// Epaisseur de la première couche
-	params_aero.x_lim=-10000;			// Limites physiques à partir desquelles
+	params_aero.vectors_field = 0;
+	params_aero.nbr_couches = 5;
+	params_aero.delta_cl = 0.01;			// Epaisseur de la première couche
+	params_aero.x_lim=0;			// Limites physiques à partir desquelles
 	params_aero.y_lim=-10000;			// l'insertion et la fusion de blocs
 	params_aero.z_lim=-10000;			// sont autorisées
 
