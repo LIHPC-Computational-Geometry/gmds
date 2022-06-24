@@ -84,6 +84,10 @@ int main(int argc, char* argv[])
 
   CriterionRAIS criterionRAIS(new VolumeCriterion());
   gmds::BitVector nodesAdded(simplexMesh.nodesCapacity());
+  for(unsigned int idx = 0 ; idx < nodesAdded.capacity() ; idx++)
+  {
+    nodesAdded.unselect(idx);
+  }
   std::vector<TInt> nodes(nodesToAddIds.capacity(), -1);
   TInt border = std::numeric_limits<TInt>::min();
 
@@ -95,6 +99,8 @@ int main(int argc, char* argv[])
   double duration;
   start = std::clock();
   unsigned int nodeCpt = 0;
+  unsigned int nodeVolumeTot = 0;
+
   std::cout << "nodesToAddIds.capacity() -> " << nodesToAddIds.capacity() << std::endl;
   for(unsigned int idx = 0 ; idx < nodesToAddIds.capacity() ; idx++)
   {
@@ -109,35 +115,45 @@ int main(int argc, char* argv[])
       TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
       if(!alreadyAdd)
       {
+        simplexMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("metric")->value(node) = m;
         if((*BND_CURVE_COLOR_NODES)[idx] != 0) {BND_CURVE_COLOR->set(node, (*BND_CURVE_COLOR_NODES)[idx]);}
         else if((*BND_SURFACE_COLOR_NODES)[idx] != 0) {BND_SURFACE_COLOR->set(node, (*BND_SURFACE_COLOR_NODES)[idx]);}
         else if((*BND_VERTEX_COLOR_NODES)[idx] != 0) {BND_VERTEX_COLOR->set(node, (*BND_VERTEX_COLOR_NODES)[idx]);}
 
-        if((*BND_CURVE_COLOR)[node] == 0 && (*BND_SURFACE_COLOR)[node] == 0 && (*BND_SURFACE_COLOR)[node] == 0)
+        if((*BND_CURVE_COLOR)[node] == 0 && (*BND_SURFACE_COLOR)[node] == 0 && (*BND_VERTEX_COLOR)[node] == 0)
         {
+          ++nodeVolumeTot;
           bool status = false;
           std::vector<TSimplexID> deletedSimplex{};
           const std::multimap<TInt, TInt> facesAlreadyBuilt{};
           DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, tetraContenaingPt, status, nodesAdded, deletedSimplex, facesAlreadyBuilt);
+          std::cout << std::endl;
           if(status)
           {
-            nodeCpt++;
+            ++nodeCpt;
           }
         }
       }
     }
   }
+
+  duration = (std::clock()-start)/(double)CLOCKS_PER_SEC;
+  std::cout << "nodeCpt -> " << nodeCpt << std::endl;
+  std::cout << "nodeVolumeTot -> " << nodeVolumeTot << std::endl;
+  std::cout << "DELAUNAY VOLUME INSERTION DONE IN " << duration << std::endl;
+  std::cout << "  INSERTED NODE -> "  << (double)nodeCpt / (double)nodeVolumeTot * 100.0 << "% " << std::endl;
+  std::cout << std::endl;
+  std::cout << std::endl;
+  gmds::VTKWriter vtkWriterDI(&ioService);
+  vtkWriterDI.setCellOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriterDI.setDataOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriterDI.write("TEST_MESH.vtk");
   //==================================================================
   // VOLUME POINT INSERTION CHECK
   //==================================================================
   std::cout << "VOLUME POINT INSERTION CHECK" << std::endl;
-  simplexMesh.checkMesh();
-  
-  duration = (std::clock()-start)/(double)CLOCKS_PER_SEC;
-  std::cout << "DELAUNAY VOLUME INSERTION DONE IN " << duration << std::endl;
-  std::cout << "  INSERTED NODE -> "  << (double)nodeCpt / (double)nodesToAddIds.size() * 100.0 << "% " << std::endl;
-  std::cout << std::endl;
-  std::cout << std::endl;
+  //simplexMesh.checkMesh();
+
 }
 
 /*----------------------------------------------------------------------------*/

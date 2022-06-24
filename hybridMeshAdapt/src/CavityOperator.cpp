@@ -680,7 +680,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
 
     //CELL EXPANSION END
     gmds::BitVector indexedTriangle(m_simplex_mesh->getBitVectorTri().capacity());
-
+    std::cout << "dimNode -> " << dimNode << std::endl; 
     if(dimNode == SimplexMesh::topo::RIDGE)
     {
       bool alreadyBelongingToAnEdge = false;

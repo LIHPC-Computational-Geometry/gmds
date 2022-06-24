@@ -90,6 +90,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           //test sur les triangles non connecté a P pour ne pas créer de retournement topologique
           for(auto const triNotCo : cavityIO.getTrianglesNotConnectedToPInCavity())
           {
+            //std::cout << "triNotCo ->  " << triNotCo << " | " << (*BND_TRIANGLES)[-triNotCo] << std::endl;
             const SimplicesTriangle triangle = SimplicesTriangle(simplexMesh, triNotCo);
             math::Orientation::Sign orientation =  triangle.orientation(simpliceNode.getCoords());
             if(orientation < 0)

@@ -1279,7 +1279,7 @@ void SimplexMesh::checkMesh()
           {
             throw gmds::GMDSException("otherNode.size() != 1");
           }
-          
+
           if(m_tet_adj[oppositeCell][c1.getLocalNode(otherNode.front())] != cell0)
           {
             std::cout << "cell0 -> " << c0 << std::endl;
@@ -4106,7 +4106,13 @@ void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vect
     std::pair <std::multimap<std::pair<TInt, TInt>, TSimplexID>::iterator, std::multimap<std::pair<TInt, TInt>, TSimplexID>::iterator> pair_it;
     pair_it = hash_face.equal_range(pairNode);
     int count = std::distance(pair_it.first, pair_it.second);
-    if(count == 2)
+
+    if(count > 2)
+    {
+      std::cout << "p.first.first -> " << p.first.first << " | " << "p.first.second -> " << p.first.second << std::endl;
+      throw gmds::GMDSException("count > 2");
+    }
+    else if(count == 2)
     {
       std::multimap<std::pair<TInt, TInt>, TSimplexID>::iterator it1 = hash_face.begin();
       ++it1;
@@ -4139,8 +4145,10 @@ void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vect
       hash_face.erase(it0);
       hash_face.erase(it1);
     }
-    else
+    else if(count == 1)
     {
+      const TSimplexID simplexA = p.second;
+      TInt nodeA = p.first.first ; TInt nodeA = p.first.second ; TInt nodeC = nodeToConnect ;
       std::cout << "reinsertion ? " << std::endl;
     }
   }
