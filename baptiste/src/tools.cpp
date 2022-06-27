@@ -333,6 +333,11 @@ void gmds::computeVolFrac(gmds::Mesh *AMesh, gmds::Mesh *AImprintMesh, gmds::Var
 
 			const double volsurfQuad = q.area();
 
+            if (volsurfQuad <= 0)
+            {
+                throw gmds::GMDSException("Surface of face is null");
+            }
+
 
 
 			r2d_poly poly;

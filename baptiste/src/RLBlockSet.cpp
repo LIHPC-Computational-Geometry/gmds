@@ -320,9 +320,32 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 	 */
 
 	double alpha = 0.25;
-	double beta = 0.5;
-	double c = overlap();
-	return alpha * a + (1-alpha) * b - beta * c;
+	double beta = 2;
+	double c = getOverlap();
+    /*
+    if (a < 0)
+    {
+        a = 0;
+    }
+    if (b < 0)
+    {
+        b = 0;
+    }
+    if (c < 0)
+    {
+        c = 0;
+    }
+    if (alpha * a + (1-alpha) * b - beta * c < 0)
+    {
+        return 0;
+    }
+     */
+    std::cout << "Quad mesh volFrac : " << a << "\n";
+    std::cout << "Target mesh volFrac : " << b << "\n";
+    std::cout << "Overlap : " << c << "\n";
+    double res = alpha * a + (1-alpha) * b - beta * c;
+    res = std::fmax(0, res);
+    return res;
 }
 
 bool RLBlockSet::isValid()
@@ -340,6 +363,11 @@ bool RLBlockSet::isValid()
 			res = false;
 			break;
 		}
+        if (f.area() <= 0)
+        {
+            res = false;
+            break;
+        }
 	}
 	return res;
 }
@@ -412,5 +440,56 @@ double RLBlockSet::overlap()
 		res = res * faceA.area();
 	}
 	// return res / (xSize * ySize * countBlocks());
-	return res / getMeshArea(m_mesh);
+    double result;
+    if (res / getMeshArea(m_mesh) > 1)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = res / getMeshArea(m_mesh);
+    }
+    return res / getMeshArea(m_mesh);
+}
+
+double RLBlockSet::getOverlap()
+{
+    double res = 0;
+    for (int faceID1 : m_mesh.faces())
+    {
+        for (int faceID2: m_mesh.faces())
+        {
+            if (faceID1 != faceID2)
+            {
+                Face face1 = m_mesh.get<Face>(faceID1);
+
+
+                std::vector<Node> nodes1 = face1.get<Node>();
+                std::vector<Node>::iterator iter1;
+                iter1 = std::min_element(nodes1.begin(), nodes1.end(),[](Node a, Node b){return a.X() <= b.X() and a.Y() <= b.Y();});
+                int nodeID1 = iter1->id();
+                Node node1 = m_mesh.get<Node>(nodeID1);
+
+
+                Face face2 = m_mesh.get<Face>(faceID2);
+                std::vector<Node> nodes2 = face2.get<Node>();
+                std::vector<Node>::iterator iter2;
+                iter2 = std::min_element(nodes2.begin(), nodes2.end(),[](Node a, Node b){return a.X() >= b.X() and a.Y() >= b.Y();});
+                int nodeID2 = iter2->id();
+                Node node2 = m_mesh.get<Node>(nodeID2);
+
+                double intersection = 0;
+                if (node2.Y() > node1.Y() and node2.X() > node1.X())
+                {
+                    intersection = (node2.Y() - node1.Y()) * (node2.X() - node1.X());
+                }
+                if (intersection > face1.area() or intersection > face2.area())
+                {
+                    intersection = 0;
+                }
+                res += intersection;
+            }
+        }
+    }
+    return res/getMeshArea(m_mesh);
 }
