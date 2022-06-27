@@ -114,3 +114,48 @@ IntervalAssignment_2D::ComputeOppositeEdges(TCellID e_id)
 	return opposite_edges_id;
 }
 /*-------------------------------------------------------------------*/
+
+
+/*-------------------------------------------------------------------*/
+void
+IntervalAssignment_2D::EdgeConstraint(TCellID e_id, int N_ideal, bool hardConstraint)
+{
+	Edge e = m_blocking->get<Edge>(e_id) ;
+	Variable<int>* var_layer_id = m_blocking->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche");
+
+	// Default parameters
+	hardConstraint = false;
+	N_ideal = int(e.length()/m_params_aero.cell_size_default);
+
+	std::vector<Face> e_faces = e.get<Face>() ;
+	std::vector<Node> face_nodes = e_faces[0].get<Node>();
+
+	// If the edge is on a border
+	if (e_faces.size() == 1)
+	{
+		if (var_layer_id->value(face_nodes[0].id()) == 0
+		    && var_layer_id->value(face_nodes[1].id()) == 0)
+		{
+			N_ideal = int(e.length()/m_params_aero.cell_size_default) ;
+			hardConstraint = true;
+		}
+	}
+
+	// If the edge is ortho to the wall, in the boundary layer
+	if (var_layer_id->value(face_nodes[0].id()) == 0
+	    xor var_layer_id->value(face_nodes[1].id()) == 0)
+	{
+		N_ideal = m_params_aero.nbrCellsInCL ;
+		hardConstraint = true;
+	}
+
+
+
+	if (N_ideal <= 0)
+	{
+		N_ideal = 0;
+	}
+
+}
+/*-------------------------------------------------------------------*/
+

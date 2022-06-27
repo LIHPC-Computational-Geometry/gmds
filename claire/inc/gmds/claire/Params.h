@@ -73,6 +73,13 @@ namespace gmds {
 	     /** Choose the x value of the second zone [x_VectorField_Z2, +inf] */
 	     double x_VectorField_Z2;
 
+	     /** Block discretization on the wall */
+	     double cell_size_dx_wall ;
+	     /** Default block discretization in the domain */
+	     double cell_size_default ;
+	     /** Number of cells in the boundary layer */
+	     int nbrCellsInCL;
+
 	     /** Limit between inlet and outlet for SU2 writer */
 	     double x_lim_SU2_inoutlet;
     };
