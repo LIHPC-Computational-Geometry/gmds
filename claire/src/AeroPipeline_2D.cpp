@@ -441,8 +441,8 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 		std::vector<Node> quad_nodes = f.get<Node>() ;
 		Blocking2D::Block B0 = m_Blocking2D.newBlock( var_new_id->value(quad_nodes[0].id()), var_new_id->value(quad_nodes[1].id()),
 		                      var_new_id->value(quad_nodes[2].id()), var_new_id->value(quad_nodes[3].id()));
-		B0.setNbDiscretizationI(50);
-		B0.setNbDiscretizationJ(50);
+		B0.setNbDiscretizationI(100);
+		B0.setNbDiscretizationJ(100);
 	}
 
 	m_Blocking2D.initializeGridPoints();	// Maillage des blocs par transfinies

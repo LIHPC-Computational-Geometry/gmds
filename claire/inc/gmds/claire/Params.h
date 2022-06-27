@@ -59,8 +59,6 @@ namespace gmds {
 	     double z_lim;
 	     /** Epaisseur de couche limite */
 	     double delta_cl;
-	     /** Est-ce que le cas est 2D axi ? */
-	     bool AXI_2D;
 	     /** Nombre de couches lors de l'extrusion */
 	     int nbr_couches;
 	     /* Choose the way the vectors field is computed for the extrusion */
