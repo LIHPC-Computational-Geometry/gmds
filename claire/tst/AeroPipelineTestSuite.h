@@ -36,15 +36,23 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.output_dir="gmds/claire/tst/";
 
 	// Paramètres discrétisation de la paroi
-	params_aero.nbrMinBloc=16;
+	params_aero.nbrMinBloc=8;
 
 	// Paramètres de l'extrusion
 	params_aero.vectors_field = 0;
 	params_aero.nbr_couches = 10;
 	params_aero.delta_cl = 0.025;			// Epaisseur de la première couche
-	params_aero.x_lim=0;			// Limites physiques à partir desquelles
+	params_aero.x_lim=0;					// Limites physiques à partir desquelles
 	params_aero.y_lim=-10000;			// l'insertion et la fusion de blocs
 	params_aero.z_lim=-10000;			// sont autorisées
+
+	// Parameters for vector field computation
+	params_aero.vectors_field = 2;				// Choose the way the vectors field is computed for the extrusion
+	params_aero.x_VectorField_Z1 = 1.0;			// Choose the x value of the first zone  [-inf, x_VectorField_Z1]
+	params_aero.x_VectorField_Z2 = 1.0;			// Choose the x value of the second zone [x_VectorField_Z2, +inf]
+
+	// Parameters for SU2 writing
+	params_aero.x_lim_SU2_inoutlet= -pow(10,6);		// Limit between inlet and outlet for SU2 writer
 
 	AeroPipeline_2D algo_aero2D(params_aero);
 	AbstractAeroPipeline::STATUS aero2D_result = algo_aero2D.execute();

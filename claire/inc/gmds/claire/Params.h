@@ -61,8 +61,16 @@ namespace gmds {
 	     double delta_cl;
 	     /** Nombre de couches lors de l'extrusion */
 	     int nbr_couches;
-	     /* Choose the way the vectors field is computed for the extrusion */
+
+	     /** Choose the way the vectors field is computed for the extrusion */
 	     int vectors_field;
+	     /** Choose the x value of the first zone [-inf, x_VectorField_Z1] */
+	     double x_VectorField_Z1;
+	     /** Choose the x value of the second zone [x_VectorField_Z2, +inf] */
+	     double x_VectorField_Z2;
+
+	     /** Limit between inlet and outlet for SU2 writer */
+	     double x_lim_SU2_inoutlet;
     };
 /*------------------------------------------------------------------------*/
 }
