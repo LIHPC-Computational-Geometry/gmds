@@ -31,9 +31,11 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
 	/** @brief Constructor.
          *  @param[in] AMeshT the triangular mesh where we work on
          *  @param[in] AMeshQ the quad mesh to generate
+         *  @param[in] Aparams_aero parameters for aero algorithm
+         *  @param[in] A_VectorField vector field for extrusion
          *
 	 */
-	AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero Aparams_aero);
+	AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero Aparams_aero, Variable<math::Vector3d>* A_VectorField);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -114,6 +116,8 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
 	Mesh *m_meshQ;
 	/** Params pour l'aéro */
 	ParamsAero m_params_aero;
+	/** Vector Field for extrusion */
+	Variable<math::Vector3d>* m_VectorField;
 
 };
 /*----------------------------------------------------------------------------*/

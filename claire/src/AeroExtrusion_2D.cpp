@@ -14,10 +14,11 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AeroExtrusion_2D::AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero Aparams_aero) {
+AeroExtrusion_2D::AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero Aparams_aero, Variable<math::Vector3d>* A_VectorField) {
 	m_meshT = AMeshT;
 	m_meshQ = AMeshQ;
 	m_params_aero = Aparams_aero;
+	m_VectorField = A_VectorField;
 }
 
 
@@ -30,7 +31,7 @@ AeroExtrusion_2D::execute()
 	//	throw AeroException("ERROR: Invalid mesh pointer");
 
 	Front Current_Front = Compute1stLayer(m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), m_params_aero.delta_cl,
-	                m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	                m_VectorField);
 	/*
 	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_2"), 0.25,
 	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
@@ -47,7 +48,7 @@ AeroExtrusion_2D::execute()
 	for (int i=2; i <= m_params_aero.nbr_couches; i++)
 	{
 		Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), i*pas_couche,
-	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	                             m_VectorField);
 		std::cout << "distance : " << i*pas_couche << std::endl;
 	}
 
