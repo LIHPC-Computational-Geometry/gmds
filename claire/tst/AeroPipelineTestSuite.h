@@ -40,15 +40,15 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
 
 	// Wall Discretization Parameter
-	params_aero.nbrMinBloc = 8;
+	params_aero.nbrMinBloc = 4;
 
 	// Vector Field Computation Parameters
-	params_aero.vectors_field = 3;				// Choose the way the vectors field is computed for the extrusion
+	params_aero.vectors_field = 0;				// Choose the way the vectors field is computed for the extrusion
 	params_aero.x_VectorField_Z1 = 0.5;			// Choose the x value of the first zone  [-inf, x_VectorField_Z1]
 	params_aero.x_VectorField_Z2 = 3.0;			// Choose the x value of the second zone [x_VectorField_Z2, +inf]
 
 	// Extrusion Parameters
-	params_aero.nbr_couches = 5;			// Nomber of layer in extrusion
+	params_aero.nbr_couches = 3;			// Nomber of layer in extrusion
 	params_aero.x_lim = 0;					// Limites physiques à partir desquelles
 	params_aero.y_lim = -10000;			// l'insertion et la fusion de blocs
 	params_aero.z_lim = -10000;			// sont autorisées
