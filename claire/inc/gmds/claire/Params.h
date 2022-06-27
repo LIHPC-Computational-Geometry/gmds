@@ -49,6 +49,12 @@ namespace gmds {
         std::string output_file;
         /** Output directory */
         std::string output_dir;
+
+	     /** Epaisseur de couche limite */
+	     double delta_cl;
+	     /** Angle d'incidence (in degrees) */
+	     double angle_attack;
+
 	     /** Nombre mini de blocs */
         int nbrMinBloc;
 	     /** Limite x amont/aval */
@@ -57,8 +63,6 @@ namespace gmds {
 	     double y_lim;
 	     /** Limite z amont/aval */
 	     double z_lim;
-	     /** Epaisseur de couche limite */
-	     double delta_cl;
 	     /** Nombre de couches lors de l'extrusion */
 	     int nbr_couches;
 

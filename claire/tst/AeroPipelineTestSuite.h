@@ -26,34 +26,37 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	// Définition en dur des paramètres pour l'aéro
 	// le temps de mettre en place un fichier .ini
 
-	// Paramètres de dimension
+	// Dimension Parameter
 	params_aero.dim=ParamsAero::DIM_2D;
 
-	// Paramètres d'entrée/sortie
+	// IN/OUT Parameters
 	std::string dir(TEST_SAMPLES_DIR);
 	params_aero.input_file=dir+"/Aero/Poubelle/mesh_1.vtk";
 	params_aero.output_file="AeroPipeline2D_Quad.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
 
-	// Paramètres discrétisation de la paroi
-	params_aero.nbrMinBloc=8;
+	// Physical Parameters for the algorithm
+	params_aero.delta_cl = 0.025;			// Epaisseur de la première couche, pour la couche limite
+	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
 
-	// Paramètres de l'extrusion
-	params_aero.vectors_field = 0;
-	params_aero.nbr_couches = 10;
-	params_aero.delta_cl = 0.025;			// Epaisseur de la première couche
-	params_aero.x_lim=0;					// Limites physiques à partir desquelles
-	params_aero.y_lim=-10000;			// l'insertion et la fusion de blocs
-	params_aero.z_lim=-10000;			// sont autorisées
+	// Wall Discretization Parameter
+	params_aero.nbrMinBloc = 8;
 
-	// Parameters for vector field computation
-	params_aero.vectors_field = 2;				// Choose the way the vectors field is computed for the extrusion
-	params_aero.x_VectorField_Z1 = 1.0;			// Choose the x value of the first zone  [-inf, x_VectorField_Z1]
-	params_aero.x_VectorField_Z2 = 1.0;			// Choose the x value of the second zone [x_VectorField_Z2, +inf]
+	// Vector Field Computation Parameters
+	params_aero.vectors_field = 3;				// Choose the way the vectors field is computed for the extrusion
+	params_aero.x_VectorField_Z1 = 0.5;			// Choose the x value of the first zone  [-inf, x_VectorField_Z1]
+	params_aero.x_VectorField_Z2 = 3.0;			// Choose the x value of the second zone [x_VectorField_Z2, +inf]
 
-	// Parameters for SU2 writing
-	params_aero.x_lim_SU2_inoutlet= -pow(10,6);		// Limit between inlet and outlet for SU2 writer
+	// Extrusion Parameters
+	params_aero.nbr_couches = 5;			// Nomber of layer in extrusion
+	params_aero.x_lim = 0;					// Limites physiques à partir desquelles
+	params_aero.y_lim = -10000;			// l'insertion et la fusion de blocs
+	params_aero.z_lim = -10000;			// sont autorisées
 
+	// SU2 Writer Parameter
+	params_aero.x_lim_SU2_inoutlet = -pow(10,6);		// Limit between inlet and outlet for SU2 writer
+
+	// Mesh Generation
 	AeroPipeline_2D algo_aero2D(params_aero);
 	AbstractAeroPipeline::STATUS aero2D_result = algo_aero2D.execute();
 
