@@ -50,6 +50,14 @@ class LIB_GMDS_CLAIRE_API IntervalAssignment_2D
 	 */
 	std::map<int, std::vector<TCellID>> ComputeChords();
 	/*-------------------------------------------------------------------*/
+	/** @brief Get the opposite edges
+	 	* \param[in] e_id the edge we want the opposites
+		*
+		* \return  std::vector<TCellID> vector of one or two opposite edges
+	 	* of e_id
+	 */
+	std::vector<TCellID> ComputeOppositeEdges(TCellID e_id);
+	/*-------------------------------------------------------------------*/
 
  private:
 	/** Blocking */

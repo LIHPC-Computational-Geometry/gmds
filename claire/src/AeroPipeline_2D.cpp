@@ -13,6 +13,7 @@
 #include <gmds/claire/Grid_Smooth2D.h>
 #include <gmds/claire/AeroExtrusion_2D.h>
 #include <gmds/claire/SU2Writer.h>
+#include <gmds/claire/IntervalAssignment_2D.h>
 
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -452,6 +453,8 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 
 	m_meshHex->deleteVariable(GMDS_NODE, "New_ID");
 
+	IntervalAssignment_2D IntAss(&m_Blocking2D, m_params);
+	IntAss.execute();
 
 	BlockingClassification();
 
