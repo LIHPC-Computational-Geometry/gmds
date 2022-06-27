@@ -77,6 +77,10 @@ namespace gmds
 
             const std::vector<std::vector<TInt>>  &  getBorderEdges               () const {return m_borderSurfaceNode;}
 
+            const std::map<std::pair<TInt, TInt>, TSimplexID> & getReinsertionData () const {return m_mapForReinsertion;}
+
+            void setReinsertionData (const std::map<std::pair<TInt, TInt>, TSimplexID> & mapForReinsertion) {m_mapForReinsertion = mapForReinsertion;}
+
             void setEdgeContainingNode                                   (const TInt node0, const TInt node1){m_edgeContainingNode = std::make_pair(node0, node1);};
 
             const std::pair<TInt, TInt>  &  getEdgeContainingNode        () const {return m_edgeContainingNode;}
@@ -133,6 +137,8 @@ namespace gmds
             std::vector<TInt> m_surfaceNodeInCavity;
 
             std::pair<TInt, TInt> m_edgeContainingNode{};
+
+            std::map<std::pair<TInt, TInt>, TSimplexID> m_mapForReinsertion{};
 
             SimplexMesh*      m_simplex_mesh   = nullptr;
 

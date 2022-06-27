@@ -4033,12 +4033,12 @@ void SimplexMesh::setBase(const TInt node, const TSimplexID simplex)
 void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)
 {
   gmds::Variable<int>* BND_TRIANGLES     = getVariable<int, SimplicesTriangle>("BND_TRIANGLES");
-  const std::vector<std::vector<TInt>>&         pointsToConnect              = cavityIO.getNodesToReconnect();
-  const std::vector<TSimplexID>&                extSimplexBorder             = cavityIO.getOppositesSimplex();
-  const std::vector<std::vector<TInt>>&         pointsToConnect_tri          = cavityIO.getNodesToReconnect_Tri();
-  const std::vector<TSimplexID>&                extSimplexBorder_tri         = cavityIO.getOppositesSimplex_Tri();
-  const std::vector<unsigned int>&              trianglesIndices             = cavityIO.getIndices_Tri();
-
+  const std::vector<std::vector<TInt>>&               pointsToConnect              = cavityIO.getNodesToReconnect();
+  const std::vector<TSimplexID>&                      extSimplexBorder             = cavityIO.getOppositesSimplex();
+  const std::vector<std::vector<TInt>>&               pointsToConnect_tri          = cavityIO.getNodesToReconnect_Tri();
+  const std::vector<TSimplexID>&                      extSimplexBorder_tri         = cavityIO.getOppositesSimplex_Tri();
+  const std::vector<unsigned int>&                    trianglesIndices             = cavityIO.getIndices_Tri();
+  const std::map<std::pair<TInt, TInt>, TSimplexID> & mapForReinsertion            = cavityIO.getReinsertionData();
   TInt border = std::numeric_limits<int>::min();
 
   //Rebuild volume
@@ -4147,9 +4147,51 @@ void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vect
     }
     else if(count == 1)
     {
+      //reinsertion node
       const TSimplexID simplexA = p.second;
-      TInt nodeA = p.first.first ; TInt nodeA = p.first.second ; TInt nodeC = nodeToConnect ;
-      std::cout << "reinsertion ? " << std::endl;
+      TInt nodeA = p.first.first ; TInt nodeB = p.first.second ; TInt nodeC = nodeToConnect ;
+      std::vector<TInt> nodesFace{nodeA, nodeB, nodeC};
+
+      std::pair<TInt, TInt> p_data = my_make(nodeA, nodeB);
+
+      TSimplexID simplexAdj = border;
+      try{
+        simplexAdj = mapForReinsertion.at(p_data);
+      } catch(std::out_of_range& oor)
+      {
+        std::cout << "nodeToConnect -> " << nodeToConnect << std::endl;
+        std::cout << "p_data -> " << p_data.first << " | " << p_data.second <<std::endl;
+        std::cout << "simplexA ->" << simplexA << std::endl;
+
+        std::vector<TSimplexID> simplices{simplexA};
+        deleteAllSimplicesBut(simplices);
+
+        gmds::ISimplexMeshIOService ioServiceMesh(this);
+        gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
+        vtkWriterMesh.setCellOptions(gmds::N|gmds::R|gmds::F);
+        vtkWriterMesh.setDataOptions(gmds::N|gmds::R|gmds::F);
+        vtkWriterMesh.write("DEBUG_MESH.vtk");
+
+        std::cerr << "Out of Range error: " << oor.what() << '\n';
+      }
+
+      const SimplicesCell cellAdj = SimplicesCell(this, simplexAdj);
+      const SimplicesCell cell    = SimplicesCell(this, simplexA);
+
+      std::vector<TInt> otherNode_Adj = cellAdj.getOtherNodeInSimplex(nodesFace);
+      std::vector<TInt> otherNode_A   = cell.getOtherNodeInSimplex(nodesFace);
+      if(otherNode_Adj.size() != 1 || otherNode_A.size() != 1)
+      {
+        throw gmds::GMDSException(" ! (otherNode_Adj.size() != 1 || otherNode_A.size() != 1)");
+      }
+
+      TInt localNode_Adj    = cellAdj.getLocalNode(otherNode_Adj.front());
+      TInt localNode_cell   = cell.getLocalNode(otherNode_A.front());
+
+      m_tet_adj[simplexA][localNode_cell] = simplexAdj;
+      m_tet_adj[simplexAdj][localNode_Adj] = simplexA;
+
+      hash_face.erase(it0);
     }
   }
   //throw gmds::GMDSException("end of rcacvity reconstruction");

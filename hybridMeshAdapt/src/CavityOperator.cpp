@@ -590,6 +590,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
                                         const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const std::multimap<TInt, TInt>& facesAlreadyBuilt,
                                          const std::vector<TSimplexID> markedSimplex)
 {
+  std::map<std::pair<TInt, TInt>, TSimplexID> mapForReinsertion{};
   std::vector<TSimplexID> trianglesConnectedToP{};
   std::vector<TSimplexID> trianglesNotConnectedToP{};
 
@@ -647,6 +648,16 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
                 std::vector<TInt> orderedFace = cell.getOrderedFace(nodeIndexLocal);
                 if(orderedFace[0] == node.getGlobalNode() || orderedFace[1] == node.getGlobalNode() || orderedFace[2] == node.getGlobalNode())
                 {
+                  //fill adj tets
+                  std::vector<TInt> adjNodes{};
+                  std::copy_if(orderedFace.begin(), orderedFace.end(), std::back_inserter(adjNodes), [&] (TInt adjNode){
+                    return (adjNode != node.getGlobalNode());
+                  });
+                  auto my_make = [=](TInt nodeA, TInt nodeB){
+                    return (nodeA > nodeB)? std::make_pair(nodeB, nodeA):std::make_pair(nodeA, nodeB);
+                  };
+                  std::pair<TInt, TInt> p = my_make(adjNodes.front(), adjNodes.back());
+                  mapForReinsertion.insert(std::pair<std::pair<TInt, TInt>, TSimplexID>(p, nextSimplexToAdd));
                   continue;
                 }
                 if(criterion.execute(m_simplex_mesh, simplexId, nodeIndexLocal, nextPt))
@@ -680,7 +691,6 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
 
     //CELL EXPANSION END
     gmds::BitVector indexedTriangle(m_simplex_mesh->getBitVectorTri().capacity());
-    std::cout << "dimNode -> " << dimNode << std::endl; 
     if(dimNode == SimplexMesh::topo::RIDGE)
     {
       bool alreadyBelongingToAnEdge = false;
@@ -861,6 +871,8 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
   std::cout << std::endl;
   for(auto const triNotCoP : trianglesNotConnectedToP){std::cout << "triNotCoP -> " << triNotCoP << std::endl;}
   */
+
+  cavityIO.setReinsertionData(mapForReinsertion);
   cavityIO.setSimplexCavity(cavityCell, trianglesConnectedToP, trianglesNotConnectedToP);
   return true;
 }
