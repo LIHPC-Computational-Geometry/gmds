@@ -58,6 +58,15 @@ class LIB_GMDS_CLAIRE_API IntervalAssignment_2D
 	 */
 	std::vector<TCellID> ComputeOppositeEdges(TCellID e_id);
 	/*-------------------------------------------------------------------*/
+	/** @brief Get the opposite edges
+	 	* \param[in] e_id the edge we want to know the constraint
+	 	* \param[out] N_ideal the ideal number of cells on the edge
+	 	* \param[out] hardConstraint is the constraint on the edge hard or not
+		*
+		* \return
+	 */
+	void EdgeConstraint(TCellID e_id, int N_ideal, bool hardConstraint);
+	/*-------------------------------------------------------------------*/
 
  private:
 	/** Blocking */
