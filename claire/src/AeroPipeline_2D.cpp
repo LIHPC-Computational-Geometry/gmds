@@ -198,7 +198,7 @@ AeroPipeline_2D::execute(){
 	// Lissage
 	std::cout << "-> Lissage final" << std::endl;
 	t_start = clock();
-	Grid_Smooth2D smoother(&m_Blocking2D, 100);
+	Grid_Smooth2D smoother(&m_Blocking2D, 400);
 	smoother.execute();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
@@ -445,16 +445,17 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 		std::vector<Node> quad_nodes = f.get<Node>() ;
 		Blocking2D::Block B0 = m_Blocking2D.newBlock( var_new_id->value(quad_nodes[0].id()), var_new_id->value(quad_nodes[1].id()),
 		                      var_new_id->value(quad_nodes[2].id()), var_new_id->value(quad_nodes[3].id()));
-		B0.setNbDiscretizationI(10);
-		B0.setNbDiscretizationJ(10);
+		//B0.setNbDiscretizationI(10);
+		//B0.setNbDiscretizationJ(10);
 	}
+
+	IntervalAssignment_2D IntAss(&m_Blocking2D, m_params);
+	IntAss.execute();
 
 	m_Blocking2D.initializeGridPoints();	// Maillage des blocs par transfinies
 
 	m_meshHex->deleteVariable(GMDS_NODE, "New_ID");
 
-	IntervalAssignment_2D IntAss(&m_Blocking2D, m_params);
-	IntAss.execute();
 
 	BlockingClassification();
 

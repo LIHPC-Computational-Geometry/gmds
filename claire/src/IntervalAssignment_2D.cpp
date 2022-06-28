@@ -25,6 +25,40 @@ IntervalAssignment_2D::execute()
 	std::map<int, std::vector<TCellID>> map_chords = ComputeChords();
 	std::cout << "NOMBRE DE CORDES : " << map_chords.size() << std::endl;
 
+	Variable<int>* var_NbrCells = m_blocking->getOrCreateVariable<int, GMDS_EDGE>("NbrCells");
+
+	for (auto chord:map_chords)
+	{
+		int Nb_cells = ComputeChordDiscretization(chord.second);
+		std::cout << "Nombre de cellules dans la corde " << chord.first << " : " << Nb_cells << std::endl;
+		for (auto e_id:chord.second)
+		{
+			var_NbrCells->set(e_id, Nb_cells);
+		}
+	}
+
+	/*
+	for (auto bloc_id:m_blocking->faces())
+	{
+		Face bloc = m_blocking->get<Face>(bloc_id);
+		Blocking2D::Block B = m_blocking->block(bloc_id);
+		std::vector<Edge> bloc_edges = bloc.get<Edge>() ; // e0, e2 are subdivsion I, e1, e3 are subdivision J (according to Blocking2D class)
+
+		B.setNbDiscretizationI(var_NbrCells->value(bloc_edges[0].id()));
+		B.setNbDiscretizationJ(var_NbrCells->value(bloc_edges[1].id()));
+
+	}
+	 */
+	for (auto bloc:m_blocking->allBlocks())
+	{
+		Edge e_i = bloc.getEdgeI();
+		Edge e_j = bloc.getEdgeJ();
+		bloc.setNbDiscretizationI(var_NbrCells->value(e_i.id()));
+		bloc.setNbDiscretizationJ(var_NbrCells->value(e_j.id()));
+	}
+
+	m_blocking->deleteVariable(GMDS_EDGE, "NbrCells");
+
 	return IntervalAssignment_2D::SUCCESS;
 }
 /*------------------------------------------------------------------------*/
@@ -118,7 +152,7 @@ IntervalAssignment_2D::ComputeOppositeEdges(TCellID e_id)
 
 /*-------------------------------------------------------------------*/
 void
-IntervalAssignment_2D::EdgeConstraint(TCellID e_id, int N_ideal, bool hardConstraint)
+IntervalAssignment_2D::EdgeConstraint(TCellID e_id, int &N_ideal, bool &hardConstraint)
 {
 	Edge e = m_blocking->get<Edge>(e_id) ;
 	Variable<int>* var_layer_id = m_blocking->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche");
@@ -128,13 +162,13 @@ IntervalAssignment_2D::EdgeConstraint(TCellID e_id, int N_ideal, bool hardConstr
 	N_ideal = int(e.length()/m_params_aero.cell_size_default);
 
 	std::vector<Face> e_faces = e.get<Face>() ;
-	std::vector<Node> face_nodes = e_faces[0].get<Node>();
+	std::vector<Node> e_nodes = e.get<Node>() ;
 
 	// If the edge is on a border
 	if (e_faces.size() == 1)
 	{
-		if (var_layer_id->value(face_nodes[0].id()) == 0
-		    && var_layer_id->value(face_nodes[1].id()) == 0)
+		if (var_layer_id->value(e_nodes[0].id()) == 0
+		    && var_layer_id->value(e_nodes[1].id()) == 0)
 		{
 			N_ideal = int(e.length()/m_params_aero.cell_size_default) ;
 			hardConstraint = true;
@@ -142,8 +176,8 @@ IntervalAssignment_2D::EdgeConstraint(TCellID e_id, int N_ideal, bool hardConstr
 	}
 
 	// If the edge is ortho to the wall, in the boundary layer
-	if (var_layer_id->value(face_nodes[0].id()) == 0
-	    xor var_layer_id->value(face_nodes[1].id()) == 0)
+	if (var_layer_id->value(e_nodes[0].id()) == 0
+	    xor var_layer_id->value(e_nodes[1].id()) == 0)
 	{
 		N_ideal = m_params_aero.nbrCellsInCL ;
 		hardConstraint = true;
@@ -153,9 +187,43 @@ IntervalAssignment_2D::EdgeConstraint(TCellID e_id, int N_ideal, bool hardConstr
 
 	if (N_ideal <= 0)
 	{
-		N_ideal = 0;
+		N_ideal = 1;
 	}
 
 }
 /*-------------------------------------------------------------------*/
 
+
+/*-------------------------------------------------------------------*/
+int
+IntervalAssignment_2D::ComputeChordDiscretization(std::vector<TCellID> chord)
+{
+	int Nbr_cells;
+
+	bool chord_hardConstrained(false);
+	double sum_num;
+
+	for(auto e_id:chord)
+	{
+		int N_ideal;
+		bool hardConstraint;
+		EdgeConstraint(e_id, N_ideal, hardConstraint);
+		if (hardConstraint)
+		{
+			Nbr_cells = N_ideal;
+			chord_hardConstrained = true;
+		}
+		else
+		{
+			sum_num += N_ideal;
+		}
+	}
+
+	if (!chord_hardConstrained)
+	{
+		Nbr_cells = int(1.0*sum_num/chord.size());
+	}
+
+	return Nbr_cells;
+}
+/*-------------------------------------------------------------------*/
