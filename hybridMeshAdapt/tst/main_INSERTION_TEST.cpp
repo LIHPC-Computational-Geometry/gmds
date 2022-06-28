@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
   simplexMesh.buildAdjInfoGlobal();
   simplexMesh.initializeEdgeStructure();
   simplexMesh.buildSimplexHull();
-  unsigned int sizeFace = 3;
+  unsigned int sizeFace = 4;
 
   Octree oc(&simplexMesh, 50);
   simplexMesh.setOctree(&oc);
@@ -103,6 +103,7 @@ int main(int argc, char* argv[])
   unsigned int nodeVolumeTot = 0;
   for(unsigned int idx = 0 ; idx < nodesToAddIds.capacity() ; idx++)
   {
+    break;
     if(nodesToAddIds[idx] != 0)
     {
       const gmds::BitVector & nodesIds = simplexMesh.getBitVectorNodes();
@@ -118,14 +119,14 @@ int main(int argc, char* argv[])
         else if((*BND_SURFACE_COLOR_NODES)[idx] != 0) {BND_SURFACE_COLOR->set(node, (*BND_SURFACE_COLOR_NODES)[idx]);}
         else if((*BND_VERTEX_COLOR_NODES)[idx] != 0) {BND_VERTEX_COLOR->set(node, (*BND_VERTEX_COLOR_NODES)[idx]);}
 
-        if((*BND_CURVE_COLOR)[node] == 0 && (*BND_SURFACE_COLOR)[node] == 0 && (*BND_VERTEX_COLOR)[node] == 0)
+        //if((*BND_CURVE_COLOR)[node] == 0 && (*BND_SURFACE_COLOR)[node] == 0 && (*BND_VERTEX_COLOR)[node] == 0)
+        if((*BND_SURFACE_COLOR)[node] != 0 && idx == 20)
         {
           ++nodeVolumeTot;
           bool status = false;
           std::vector<TSimplexID> deletedSimplex{};
           const std::multimap<TInt, TInt> facesAlreadyBuilt{};
           DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, tetraContenaingPt, status, nodesAdded, deletedSimplex, facesAlreadyBuilt);
-          std::cout << std::endl;
           if(status)
           {
             ++nodeCpt;
@@ -144,6 +145,62 @@ int main(int argc, char* argv[])
   std::cout << std::endl;
 
   //==================================================================
+  // SURFACE POINT INSERTION
+  //==================================================================
+  std::cout << "SURFACE POINT INSERTION START" << std::endl;
+  start;
+  duration;
+  start = std::clock();
+  nodeCpt = 0;
+  unsigned int nodeSurfaceTot = 0;
+  for(unsigned int idx = 0 ; idx < nodesToAddIds.capacity() ; idx++)
+  {
+    if(nodesToAddIds[idx] != 0)
+    {
+      const gmds::BitVector & nodesIds = simplexMesh.getBitVectorNodes();
+      math::Point point = SimplicesNode(&simplexNodes, idx).getCoords();
+
+      bool alreadyAdd = false;
+      std::vector<TSimplexID> tetraContenaingPt{};
+      TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
+
+      if(!alreadyAdd)
+      {
+        simplexMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("metric")->value(node) = m;
+        if((*BND_CURVE_COLOR_NODES)[idx] != 0) {BND_CURVE_COLOR->set(node, (*BND_CURVE_COLOR_NODES)[idx]);}
+        else if((*BND_SURFACE_COLOR_NODES)[idx] != 0) {BND_SURFACE_COLOR->set(node, (*BND_SURFACE_COLOR_NODES)[idx]);}
+        else if((*BND_VERTEX_COLOR_NODES)[idx] != 0) {BND_VERTEX_COLOR->set(node, (*BND_VERTEX_COLOR_NODES)[idx]);}
+
+        if((*BND_SURFACE_COLOR)[node] != 0)
+        {
+          ++nodeSurfaceTot;
+          bool status = false;
+          std::vector<TSimplexID> deletedSimplex{};
+          const std::multimap<TInt, TInt> facesAlreadyBuilt{};
+          DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, tetraContenaingPt, status, nodesAdded, deletedSimplex, facesAlreadyBuilt);
+          if(status)
+          {
+            ++nodeCpt;
+          }
+        }
+      }
+    }
+  }
+
+  duration = (std::clock()-start)/(double)CLOCKS_PER_SEC;
+  std::cout << "nodeCpt -> " << nodeCpt << std::endl;
+  std::cout << "nodeSurfaceTot -> " << nodeSurfaceTot << std::endl;
+  std::cout << "DELAUNAY SURFACE INSERTION DONE IN " << duration << std::endl;
+  std::cout << "  INSERTED NODE -> "  << (double)nodeCpt / (double)nodeSurfaceTot * 100.0 << "% " << std::endl;
+  std::cout << std::endl;
+  std::cout << std::endl;
+
+  gmds::VTKWriter vtkWriterSURFACE(&ioService);
+  vtkWriterSURFACE.setCellOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriterSURFACE.setDataOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriterSURFACE.write("SURFACE_TEST.vtk");
+  //return 0;
+  //==================================================================
   // REINSERTION POINT TEST
   //==================================================================
   std::cout << "REINSERTED NODE START" << std::endl;
@@ -152,6 +209,7 @@ int main(int argc, char* argv[])
   unsigned int reinsertionCpt = 0;
   for(unsigned int T = 0; T < bitVectorTet.capacity() ; T++)
   {
+    break;
     if(bitVectorTet[T] != 0)
     {
       const SimplicesCell cell = SimplicesCell(&simplexMesh, T);

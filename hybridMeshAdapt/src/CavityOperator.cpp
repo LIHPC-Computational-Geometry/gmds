@@ -590,7 +590,12 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
                                         const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const std::multimap<TInt, TInt>& facesAlreadyBuilt,
                                          const std::vector<TSimplexID> markedSimplex)
 {
+  auto my_make = [=](TInt nodeA, TInt nodeB){
+    return (nodeA > nodeB)? std::make_pair(nodeB, nodeA):std::make_pair(nodeA, nodeB);
+  };
+
   std::map<std::pair<TInt, TInt>, TSimplexID> mapForReinsertion{};
+  std::map<std::pair<TInt, TInt>, std::pair<unsigned int, TSimplexID>> mapForTriangleColor{};
   std::vector<TSimplexID> trianglesConnectedToP{};
   std::vector<TSimplexID> trianglesNotConnectedToP{};
 
@@ -600,6 +605,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
   std::vector<TSimplexID> simplexToRemove{};
   size_t sizeLocalNodeCell = 4;
   size_t sizeLocalNodeTriangle = 3;
+  unsigned int sizeEdge = 3;
 
   gmds::BitVector bitMarkedCell(m_simplex_mesh->tetCapacity());
   gmds::BitVector bitCellInCavity(m_simplex_mesh->tetCapacity());
@@ -653,9 +659,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
                   std::copy_if(orderedFace.begin(), orderedFace.end(), std::back_inserter(adjNodes), [&] (TInt adjNode){
                     return (adjNode != node.getGlobalNode());
                   });
-                  auto my_make = [=](TInt nodeA, TInt nodeB){
-                    return (nodeA > nodeB)? std::make_pair(nodeB, nodeA):std::make_pair(nodeA, nodeB);
-                  };
+
                   std::pair<TInt, TInt> p = my_make(adjNodes.front(), adjNodes.back());
                   mapForReinsertion.insert(std::pair<std::pair<TInt, TInt>, TSimplexID>(p, nextSimplexToAdd));
                   continue;
@@ -867,11 +871,31 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
     }
   }
 
-  /*for(auto const triCoP : trianglesConnectedToP){std::cout << "triCoToP -> " << triCoP << std::endl;}
-  std::cout << std::endl;
-  for(auto const triNotCoP : trianglesNotConnectedToP){std::cout << "triNotCoP -> " << triNotCoP << std::endl;}
-  */
+  gmds::BitVector triCoToP_BitVector(m_simplex_mesh->getBitVectorTri().capacity());
+  for(auto const t : trianglesConnectedToP)
+  {
+    triCoToP_BitVector.assign(-t);
+  }
+  for(auto const t : trianglesConnectedToP)
+  {
+    const SimplicesTriangle triangle = SimplicesTriangle(m_simplex_mesh, t);
+    for(unsigned int edge = 0; edge < sizeEdge ; edge++)
+    {
+      TSimplexID oppositeTriangle = triangle.neighborTriangle(edge);
+      if(triCoToP_BitVector[oppositeTriangle] != 1)
+      {
+        TInt nodeA = triangle.getNodes()[(edge + 1) % sizeEdge];
+        TInt nodeB = triangle.getNodes()[(edge + 2) % sizeEdge];
 
+        unsigned int indice = (*BND_TRIANGLES)[-t];
+        std::pair<unsigned int, TSimplexID> r(indice, oppositeTriangle);
+        std::pair<TInt, TInt> p = my_make(nodeA, nodeB);
+        mapForTriangleColor.insert(std::pair<std::pair<TInt, TInt>, std::pair<unsigned int, TSimplexID>>(p, r));
+      }
+    }
+  }
+
+  cavityIO.setTrianglesColor(mapForTriangleColor);
   cavityIO.setReinsertionData(mapForReinsertion);
   cavityIO.setSimplexCavity(cavityCell, trianglesConnectedToP, trianglesNotConnectedToP);
   return true;

@@ -92,7 +92,7 @@ bool SimplicesTriangle::containNode(const std::vector<TInt>& nodes)
   return true;
 }
 /******************************************************************************/
-std::vector<TInt> SimplicesTriangle::intersectionNodes(const SimplicesTriangle& triangle)
+std::vector<TInt> SimplicesTriangle::intersectionNodes(const SimplicesTriangle& triangle) const 
 {
   std::vector<TInt> v{};
   if(m_simplex_mesh != nullptr)
