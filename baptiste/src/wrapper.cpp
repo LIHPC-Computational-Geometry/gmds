@@ -26,7 +26,8 @@ PYBIND11_MODULE(environment, m)
 	   .def("getReward", &gmds::RLBlockSet::getReward)
 	   .def("isValid", &gmds::RLBlockSet::isValid)
 	   .def("getStateID", &gmds::RLBlockSet::getStateID)
-	   .def("overlap", &gmds::RLBlockSet::overlap);
+	   .def("overlap", &gmds::RLBlockSet::overlap)
+       .def("getLocalIou", &gmds::RLBlockSet::getLocalIou);
 
 	py::class_<gmds::Mesh>(m, "Mesh")
 	   .def(py::init<const gmds::MeshModel&>())

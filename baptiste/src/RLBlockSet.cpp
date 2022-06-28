@@ -493,3 +493,8 @@ double RLBlockSet::getOverlap()
     }
     return res/getMeshArea(m_mesh);
 }
+
+double RLBlockSet::getLocalIou(int faceID)
+{
+    return m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(faceID);
+}

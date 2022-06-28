@@ -57,6 +57,8 @@ class RLBlockSet
 	double overlap();
 
     double getOverlap();
+
+    double getLocalIou(int faceID);
 };
 
 }
