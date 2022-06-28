@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <ctime>
+#include <string>
 
 #include "gmds/paul/Grid.h"
 #include "gmds/ig/Mesh.h"
@@ -88,7 +89,7 @@ int main(){
 	VTKReader vtkReaderTest(&ioServiceReadTest);
 	vtkReaderTest.setCellOptions(gmds::N|gmds::F);
 	//vtkReader.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
-	vtkReaderTest.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/A.vtk");
+	vtkReaderTest.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/mesh/Circle_coarse.vtk");
 
 
 
@@ -105,7 +106,7 @@ int main(){
 	vtkReader2.read("/home/bourmaudp/Documents/Stage_CEA_2022/Repo_GMDS/gmds/test_samples/HolesInSquare0.vtk");
 	GridBuilderAround gridAround(&mGridAround,&mImprint,2);
 	gridAround.executeGrid2D(5);
-	volfraccomputation_2d(gridAround.m_mesh,gridAround.meshTarget,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
+	//volfraccomputation_2d(gridAround.m_mesh,gridAround.meshTarget,mGridAround.getVariable<double,GMDS_FACE>("volFrac"));
 
 
 
@@ -119,6 +120,12 @@ int main(){
 	Actions actionCopy(&gridAroundCopy);
 	Tools copyTools(&gridAroundCopy);
 
+	mGridAround.deleteFace(6);
+
+	//actionb.executeDeleteFace(6);
+	//actionb.executeCutFace(mGridAround.get<Face>(2),0);
+	actionb.executeCutFace(mGridAround.get<Face>(5),1);
+
 
 
 	//actionCopy.executeDeleteFace(gridAroundCopy.m_mesh.get<Face>(9).id());
@@ -127,12 +134,12 @@ int main(){
 	//auto edgeCopy = copyTools.getHorizontalEdge(gridAroundCopy.m_mesh.get<Face>(2));
 	//std::cout<<"Edge Horiz Face 2 : "<<edgeCopy.front()<<" "<<edgeCopy.back()<<std::endl;
 	//std::cout<<"Edge Horiz Face 2 : "<<edgeCopy.size()<<std::endl;
-
+/*
 	gmds::IGMeshIOService ioService_write_Copy(&mGridAroundCopy);
 	gmds::VTKWriter vtkWriterGba_Copy(&ioService_write_Copy);
 	vtkWriterGba_Copy.setCellOptions(gmds::N|gmds::F);
 	vtkWriterGba_Copy.setDataOptions(gmds::N|gmds::F);
-	vtkWriterGba_Copy.write("VolFracComputation_test2DCopy.vtk");
+	vtkWriterGba_Copy.write("VolFracComputation_test2DCopy.vtk");*/
 
 
 
@@ -385,7 +392,7 @@ int main(){
 		std::cout<<"N First : "<<n.first<< " " << "N Second : "<<n.second<<std::endl;
 
 	}*/
-	gmds::IGMeshIOService ioService_write(&mGridAround);
+	gmds::IGMeshIOService ioService_write(gridAround.m_mesh);
 	gmds::VTKWriter vtkWriterGba(&ioService_write);
 	vtkWriterGba.setCellOptions(gmds::N|gmds::F);
 	vtkWriterGba.setDataOptions(gmds::N|gmds::F);
@@ -510,7 +517,12 @@ int main(){
 	//readQTable(policy.Q_Table,"Q_Table_Save.txt");
 
 	//executeTrainQlearning(environment);
-	executeQLearning(environment);
+	//executeQLearning(environment);
+	std::string s = std::to_string(10);
+
+	std::string name = "/training_results/"+s+".vtk";
+
+	std::cout<<"LE NAME DU FICHIER "<<name<<std::endl;
 
 
 

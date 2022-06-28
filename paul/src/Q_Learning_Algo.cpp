@@ -18,7 +18,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 	Tools toolInit(&environmentInit.g_grid);
 
 
-	for (int i=0; i<=30;i++){
+	for (int i=0; i<=5;i++){
 		std::cout <<"Dans le for : "<<i<<std::endl;
 
 
@@ -51,7 +51,7 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 		//environment.executeAction(selectFace,1);
 
 		int countIte=0;
-		while(environment->globalIoU()<0.9 && countIte<15){
+		while(environment->globalIoU()<0.95 && countIte<130){
 
 			environment->calcVolFrac();
 			//std::cout<<"Valeur env Global IoU : \n"<<environment->globalIoU()<<std::endl;
@@ -138,11 +138,8 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 					environment->executeAction(faceSelected, actionIndex);
 				}
 			}
-			gmds::IGMeshIOService ioService_write_Copy_grid(copyGridMesh);
-			gmds::VTKWriter vtkWriterGba(&ioService_write_Copy_grid);
-			vtkWriterGba.setCellOptions(gmds::N|gmds::F);
-			vtkWriterGba.setDataOptions(gmds::N|gmds::F);
-			vtkWriterGba.write("Q_learning_test.vtk");
+
+
 			std::cout<<"La face select : "<<faceSelected<<std::endl;
 			std::cout<<"Noeuds la face  : "<<std::endl;
 			for (auto n : toolsQlearning->getListNodesOfFace(faceSelected.id())){
@@ -168,10 +165,19 @@ void gmds::executeTrainQlearning(Environment environmentInit){
 			//std::cout << "#nbface " << faceSelected.nbNodes() << std::endl;
 			//std::cout<<"Calcul updateQTable"<<std::endl;
 			politique->updateQTable(intervalIoU,actionIndex,newQValue);
+
+			std::string s = std::to_string(i);
+
+			std::string name = "training_results/"+s+".vtk";
+
+			toolInit.saveMesh(copyGridMesh,name);
+
 			std::cout<<"Count Ite : "<<countIte<<std::endl;
 
 			countIte+=1;
 		}
+
+
 
 		std::cout << "Fin du for, Bientot le nouveau"<<std::endl;
 
