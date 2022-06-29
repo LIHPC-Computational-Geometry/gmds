@@ -4,7 +4,7 @@ import numpy as np
 
 alpha = 0.1
 gamma = 0.6
-epsilon = 0.5
+epsilon = 0.4
 
 
 def executeAction(action, blockSet, faceID):
@@ -54,17 +54,12 @@ def step(state, action, targetMesh, faceID):
 		terminated = True
 	return nextState, reward, terminated
 	
-def getCategory(state, faceID, targetShape):
-	localIOU = state.getLocalIOU(faceID, targetShape)
-	if localIOU < 0.25:
-		res = 0
-	elif localIOU < 0.5:
-		res = 1
-	elif localIOU < 0.75:
-		res = 2
-	else:
-		res = 3
-	return res
+def getCategory(state, faceID, n):
+	local = state.getLocalIou(faceID)
+	for i, x in enumerate(list(np.linspace(0, 1, n))):
+		if local < x:
+			return i-1
+	return n
 
 
 def training(filename, n = 1):
@@ -79,7 +74,7 @@ def training(filename, n = 1):
 
 	qTables = dict()	
 	for faceID in blockSet.getAllFaces():
-		qTables[faceID] = np.zeros([10, len(actions)])
+		qTables[faceID] = np.zeros([6, len(actions)])
 	
 	
 
@@ -107,7 +102,7 @@ def training(filename, n = 1):
 					action = random.choice(actions)
 				else:
 					try:
-						actionID = np.argmax(qTable[int(state.getLocalIou(faceID))])
+						actionID = np.argmax(qTable[getCategory(state, faceID, 5)])
 						action = list(filter(lambda a: a["id"] == actionID, actions))[0]
 					except:
 						action = random.choice(actions)
@@ -121,13 +116,13 @@ def training(filename, n = 1):
 
 				nextState, reward, terminated = step(state, action, targetShape, faceID)
 				
-				oldValue = qTable[int(state.getLocalIou(faceID)), action["id"]]
+				oldValue = qTable[getCategory(state, faceID, 5), action["id"]]
 
-				nextMax = np.max(qTable[int(state.getLocalIou(faceID))])
+				nextMax = np.max(qTable[getCategory(state, faceID, 5)])
 
 				newValue = (1 - alpha) * oldValue + alpha * (reward + gamma * nextMax)
 
-				qTable[int(state.getLocalIou(faceID)), action["id"]] = newValue
+				qTable[getCategory(state, faceID, 5), action["id"]] = newValue
 
 
 				state = nextState
@@ -156,16 +151,17 @@ def testing(filename):
 			qTable = qTables[faceID]
 			if blockSet.isValid():
 				blockSet.getReward(targetShape)
-			actionID = np.argmax(qTable[int(blockSet.getLocalIou(faceID))])
+			actionID = np.argmax(qTable[getCategory(blockSet, faceID, 5)])
 			action = list(filter(lambda a: a["id"] == actionID, actions))[0]
 			executeAction(action, blockSet, faceID)
 		blockSet.saveMesh("/home/bonyb/Images/figures/newqlearning/result" + str(i) + ".vtk")
 
 
-qTables = training("/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk", 300)
 
-
+qTables = training("/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk", 500)
 
 print(qTables)
 
 testing("/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk")
+
+print("Number of episodes whihc converge : " + str(counter))

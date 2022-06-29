@@ -255,41 +255,39 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 
 	Variable<double>* volFracVar = m_mesh.getVariable<double, GMDS_FACE>("volFrac");
 	double a = 0;
+    /*
 	for (int i =0; i < volFracVar->getNbValues(); i++)
 	{
 		a += volFracVar->value(i);
 	}
 	a = a/countBlocks();
+     */
 
-	/*
-	int i = 0;
+
 	for (int faceID : m_mesh.faces())
 	{
 		Face face = m_mesh.get<Face>(faceID);
-		a += face.area() * volFracVar->value(i);
-		i++;
+		a += face.area() * volFracVar->value(faceID);
 	}
 	a = a/getMeshArea(m_mesh);
-   */
-	
+
 	Variable<double>* volFracVarReverse = targetMesh.getVariable<double, GMDS_FACE>("volFrac");
 	double b = 0;
+    /*
 	for (int i =0; i < volFracVarReverse->getNbValues(); i++)
 	{
 		b += volFracVarReverse->value(i);
 	}
 	b = b/targetMesh.getNbFaces();
+     */
 
-	/*
-	int j = 0;
 	for (int faceID : targetMesh.faces())
 	{
 		Face face = targetMesh.get<Face>(faceID);
-		b += face.area() * volFracVarReverse->value(j);
-		j++;
+		b += face.area() * volFracVarReverse->value(faceID);
 	}
 	b = b/getMeshArea(targetMesh);
-   */
+
 
 	/*
 	if (not m_mesh.hasVariable(GMDS_FACE, "volFrac"))
@@ -320,7 +318,7 @@ double RLBlockSet::getReward(Mesh &targetMesh)
 	 */
 
 	double alpha = 0.25;
-	double beta = 2;
+	double beta = 4;
 	double c = getOverlap();
     /*
     if (a < 0)
