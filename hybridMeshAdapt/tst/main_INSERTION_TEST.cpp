@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
   unsigned int nodeVolumeTot = 0;
   for(unsigned int idx = 0 ; idx < nodesToAddIds.capacity() ; idx++)
   {
-    break;
+    //break;
     if(nodesToAddIds[idx] != 0)
     {
       const gmds::BitVector & nodesIds = simplexMesh.getBitVectorNodes();
@@ -199,17 +199,17 @@ int main(int argc, char* argv[])
   vtkWriterSURFACE.setCellOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterSURFACE.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterSURFACE.write("SURFACE_TEST.vtk");
-  //return 0;
+
+
   //==================================================================
-  // REINSERTION POINT TEST
+  //VOLUME REINSERTION POINT TEST
   //==================================================================
-  std::cout << "REINSERTED NODE START" << std::endl;
+  std::cout << "REINSERTED VOLUME NODE START" << std::endl;
   gmds::BitVector markedNodes(simplexMesh.nodesCapacity());
   const gmds::BitVector& bitVectorTet = simplexMesh.getBitVectorTet();
   unsigned int reinsertionCpt = 0;
   for(unsigned int T = 0; T < bitVectorTet.capacity() ; T++)
   {
-    break;
     if(bitVectorTet[T] != 0)
     {
       const SimplicesCell cell = SimplicesCell(&simplexMesh, T);
@@ -220,6 +220,7 @@ int main(int argc, char* argv[])
         if(oppoCell >= 0)
         {
           if((*BND_CURVE_COLOR)[N] == 0 && (*BND_SURFACE_COLOR)[N] == 0 && (*BND_VERTEX_COLOR)[N] == 0)
+          //if((*BND_SURFACE_COLOR)[N] != 0)
           {
             std::vector<TSimplexID> cavity{T, oppoCell};
             bool status = false;
@@ -237,11 +238,55 @@ int main(int argc, char* argv[])
       }
     }
   }
-  std::cout << "  REINSERTED NODE -> "  << reinsertionCpt << std::endl;
+  std::cout << "  REINSERTED VOLUME NODE -> "  << reinsertionCpt << std::endl;
+  std::cout << std::endl;
+  gmds::VTKWriter vtkWriterVOL_REINSERTION(&ioService);
+  vtkWriterVOL_REINSERTION.setCellOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriterVOL_REINSERTION.setDataOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriterVOL_REINSERTION.write("REINSERTED_VOLUME_TEST.vtk");
+
+  //==================================================================
+  // REINSERTION SURFACE POINT TEST
+  //==================================================================
+  std::cout << "REINSERTED SURFACE NODE START" << std::endl;
+  const gmds::BitVector& bitVectorTri = simplexMesh.getBitVectorTri();
+  reinsertionCpt = 0;
+  unsigned int sizeEdges = 3;
+  for(unsigned int t = 1; t < bitVectorTri.capacity() ; t++)
+  {
+    if(bitVectorTri[t] != 0)
+    {
+      const SimplicesTriangle triangle = SimplicesTriangle(&simplexMesh, t);
+      for(unsigned int e = 0; e < sizeEdges ; e++)
+      {
+        const TInt                   N        = triangle.getNodes()[e];
+        const std::vector<TSimplexID> nodeEdge = triangle.getOppositeEdge(e);
+        if((*BND_SURFACE_COLOR)[nodeEdge.front()] == (*BND_SURFACE_COLOR)[N] && (*BND_SURFACE_COLOR)[nodeEdge.back()] == (*BND_SURFACE_COLOR)[N] && (*BND_SURFACE_COLOR)[N] != 0)
+        {
+          std::vector<TSimplexID> cavity = SimplicesNode(&simplexMesh, nodeEdge.front()).shell(SimplicesNode(&simplexMesh, nodeEdge.back()));
+          bool status = false;
+          std::vector<TInt> deletedNode{};
+          const std::multimap<TInt, TInt> facesAlreadyBuilt{};
+          std::vector<TSimplexID> createdCells{};
+          PointInsertion pi(&simplexMesh, SimplicesNode(&simplexMesh, N), criterionRAIS, status, cavity, markedNodes, deletedNode, facesAlreadyBuilt, createdCells);
+          if(status)
+          {
+            ++reinsertionCpt;
+            break;
+          }
+        }
+      }
+    }
+  }
+  std::cout << "  REINSERTED SURFACENODE -> "  << reinsertionCpt << std::endl;
+  gmds::VTKWriter vtkWriterSURFACE_REINSERTION(&ioService);
+  vtkWriterSURFACE_REINSERTION.setCellOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriterSURFACE_REINSERTION.setDataOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriterSURFACE_REINSERTION.write("SURFACE_REINSERTION_TEST.vtk");
   //==================================================================
   // VOLUME POINT INSERTION CHECK
   //==================================================================
-  std::cout << "VOLUME POINT INSERTION CHECK" << std::endl;
+  std::cout << "MESH VALIDITY CHECK" << std::endl;
   simplexMesh.checkMesh();
 
 }

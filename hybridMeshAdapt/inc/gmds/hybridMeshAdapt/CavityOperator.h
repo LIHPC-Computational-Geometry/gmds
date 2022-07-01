@@ -81,6 +81,10 @@ namespace gmds
 
             void setReinsertionData (const std::map<std::pair<TInt, TInt>, TSimplexID> & mapForReinsertion) {m_mapForReinsertion = mapForReinsertion;}
 
+            const std::map<TInt, TSimplexID> & getReinsertionSurfaceData () const {return m_mapForReinsertionSurface;}
+
+            void setReinsertionSurfaceData (const std::map<TInt, TSimplexID> & mapForReinsertionSurface) {m_mapForReinsertionSurface = mapForReinsertionSurface;}
+
             const std::map<std::pair<TInt, TInt>, std::pair<unsigned int, TSimplexID>> & getTrianglesColor () const {return m_mapForTriangleColor;}
 
             void setTrianglesColor (const std::map<std::pair<TInt, TInt>, std::pair<unsigned int, TSimplexID>> & mapForTriangleColor) {m_mapForTriangleColor = mapForTriangleColor;}
@@ -143,6 +147,8 @@ namespace gmds
             std::pair<TInt, TInt> m_edgeContainingNode{};
 
             std::map<std::pair<TInt, TInt>, TSimplexID> m_mapForReinsertion{};
+
+            std::map<TInt, TSimplexID> m_mapForReinsertionSurface{};
 
             //the second argument off the template is the color of the triangle that will be built
             // and the opposite triangle to connect with

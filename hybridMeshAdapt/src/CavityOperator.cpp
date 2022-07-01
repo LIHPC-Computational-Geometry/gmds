@@ -317,93 +317,6 @@ void CavityOperator::CavityIO::CavityIO::nodesReconnection(const TInt node)
       }
     }
   }
-  /*unsigned int faceCpt = 0;
-  for(unsigned int i = 0 ; i < m_nodesToReconnect.size() ; i++)
-  {
-    std::vector<TInt> nodes    = m_nodesToReconnect[i];
-    TSimplexID oppositeSimplex = m_oppositeCell[i];
-    for(int localNode = 0 ; localNode < sizeFace ; localNode++)
-    {
-      TInt node0 = nodes[localNode];
-      TInt nodeA = nodes[(localNode + 1) % sizeFace];
-      TInt nodeB = nodes[(localNode + 2) % sizeFace];
-      for(auto const borderSurface : m_borderSurfaceNode)
-      {
-        bool flag = false ;
-        TInt tmpNodeA = borderSurface.front();
-        TInt tmpNodeB = borderSurface.back();
-
-        if(tmpNodeA == nodeB && tmpNodeB == nodeA)
-        {
-          m_localsNodeForReconnectionWithTriangle[faceCpt][localNode] = localNode;
-          const std::vector<TSimplexID>&& shell = SimplicesNode(m_simplex_mesh, nodeA).shell(SimplicesNode(m_simplex_mesh, nodeB));
-
-          if(shell.size() == 0){throw gmds::GMDSException("STOP");}
-          for(auto const simplex : shell)
-          {
-            if(simplex < 0)
-            {
-              if(triBitvector[-simplex] == 0)
-              {
-                flag = true;
-                m_oppositeTriangle[faceCpt][localNode] = simplex;
-              }
-              if(triBitvector[-simplex] == 1)
-              {
-                m_triangleIndices[faceCpt][localNode] = (*BND_TRIANGLES)[-simplex];
-              }
-            }
-          }
-
-          if(!flag)
-          {
-            for(auto const borderSurface : m_borderSurfaceNode)
-            {
-              TInt tmpNodeA = borderSurface.front();
-              TInt tmpNodeB = borderSurface.back();
-              const std::vector<TSimplexID>&& shell = SimplicesNode(m_simplex_mesh, tmpNodeA).shell(SimplicesNode(m_simplex_mesh, tmpNodeB));
-              for(auto const simplex : shell)
-              {
-                  if(simplex < 0)
-                  {
-                    std::cout << SimplicesTriangle(m_simplex_mesh, -simplex) << std::endl;
-
-                  }
-              }
-            }
-
-            gmds::ISimplexMeshIOService ioService0(m_simplex_mesh);
-            gmds::VTKWriter vtkWriter0(&ioService0);
-            vtkWriter0.setCellOptions(gmds::N|gmds::R|gmds::F);
-            vtkWriter0.setDataOptions(gmds::N|gmds::R|gmds::F);
-            vtkWriter0.write("MESH_BUG_" + std::to_string(node) + ".vtk");
-
-            m_simplex_mesh->deleteAllSimplicesBut(m_cavityCellIn);
-            gmds::ISimplexMeshIOService ioService(m_simplex_mesh);
-            gmds::VTKWriter vtkWriter(&ioService);
-            vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
-            vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
-            vtkWriter.write("SHELL_BUG_" + std::to_string(node) + ".vtk");
-
-            SimplexMesh nodeMesh = SimplexMesh();
-            std::cout << "node -> " << node << std::endl;
-            const SimplicesNode sNode(m_simplex_mesh, node);
-            nodeMesh.addNode(sNode.getCoords()[0], sNode.getCoords()[1], sNode.getCoords()[2]);
-            nodeMesh.addTetraedre(0, 0, 0, 0);
-            gmds::ISimplexMeshIOService ioServiceNode(&nodeMesh);
-            gmds::VTKWriter vtkWriterNode(&ioServiceNode);
-            vtkWriterNode.setCellOptions(gmds::N|gmds::R);
-            vtkWriterNode.setDataOptions(gmds::N|gmds::R);
-            vtkWriterNode.write("NODE_" + std::to_string(sNode.getGlobalNode()) + ".vtk");
-
-
-            throw gmds::GMDSException("m_oppositeTriangle[faceCpt][localNode] = border");
-          }
-        }
-      }
-    }
-    faceCpt++;
-  }*/
 }
 /******************************************************************************/
 std::vector<std::vector<TInt>> CavityOperator::CavityIO::CavityIO::pointToConnect(std::vector<TSimplexID>& orderedAdjTet, std::set<TSimplexID>& complementarySimplex,const std::vector<TInt>& nodesInsideCavity, std::vector<TInt>& cellOfPointToConnect, std::vector<TInt>& nodeNotConnected, const TInt nodeToInsert) const
@@ -659,7 +572,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
                   std::copy_if(orderedFace.begin(), orderedFace.end(), std::back_inserter(adjNodes), [&] (TInt adjNode){
                     return (adjNode != node.getGlobalNode());
                   });
-
+                  //reinsertion on the volume
                   std::pair<TInt, TInt> p = my_make(adjNodes.front(), adjNodes.back());
                   mapForReinsertion.insert(std::pair<std::pair<TInt, TInt>, TSimplexID>(p, nextSimplexToAdd));
                   continue;
@@ -861,6 +774,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       for(auto const tri : initCavityTriangle)
       {
         if(indexedTriangle[-tri] == 1){
+          //teste sur les node pour voir si le triangle appartient bien a la zone de triangle a detruire
           trianglesConnectedToP.push_back(tri);
         }
         else
@@ -871,6 +785,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
     }
   }
 
+  std::map<TInt, TSimplexID> mapForReinsertionSurface{};
   gmds::BitVector triCoToP_BitVector(m_simplex_mesh->getBitVectorTri().capacity());
   for(auto const t : trianglesConnectedToP)
   {
@@ -886,7 +801,13 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       {
         TInt nodeA = triangle.getNodes()[(edge + 1) % sizeEdge];
         TInt nodeB = triangle.getNodes()[(edge + 2) % sizeEdge];
-
+        if(nodeA == node.getGlobalNode() || nodeB == node.getGlobalNode())
+        {
+          //reinsertion on the surface
+          TInt n = (nodeA == node.getGlobalNode())? nodeB: nodeA;
+          mapForReinsertionSurface.insert(std::pair<TInt, TSimplexID>(n, oppositeTriangle));
+          continue;
+        }
         unsigned int indice = (*BND_TRIANGLES)[-t];
         std::pair<unsigned int, TSimplexID> r(indice, oppositeTriangle);
         std::pair<TInt, TInt> p = my_make(nodeA, nodeB);
@@ -895,9 +816,63 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
     }
   }
 
+  //////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+  //Check to see if the surface is a variety or not
+  std::vector<unsigned int> cpt_VecNodes(m_simplex_mesh->getBitVectorNodes().capacity(),0);
+  gmds::BitVector allTriangleInSurface(m_simplex_mesh->getBitVectorTri().capacity());
+  for(unsigned int t = 0 ; t < allTriangleInSurface.capacity() ; t++)
+  {
+    allTriangleInSurface.unselect(t);
+  }
+  for(auto const t : trianglesConnectedToP)
+  {
+    allTriangleInSurface.assign(-t);
+  }
+  for(auto const t : trianglesNotConnectedToP)
+  {
+    allTriangleInSurface.assign(-t);
+  }
+  for(unsigned int t = 1 ; t < allTriangleInSurface.capacity() ; t++)
+  {
+    if(allTriangleInSurface[t] == 1)
+    {
+      const SimplicesTriangle triangle = SimplicesTriangle(m_simplex_mesh, t);
+      for(unsigned int edge = 0; edge < sizeEdge ; edge++)
+      {
+        TSimplexID oppositeTriangle = triangle.neighborTriangle(edge);
+        if(allTriangleInSurface[oppositeTriangle] == 0)
+        {
+          TInt nodeA = triangle.getNodes()[(edge + 1) % sizeEdge];
+          TInt nodeB = triangle.getNodes()[(edge + 2) % sizeEdge];
+
+          cpt_VecNodes[nodeA] += 1;
+          cpt_VecNodes[nodeB] += 1;
+        }
+      }
+    }
+  }
+  //check if the border surface is a variety by checking the cpt
+  for(auto const cpt : cpt_VecNodes)
+  {
+    if(cpt > 2)
+    {
+      //std::cout << "CPT > 2 --> " << cpt << std::endl;
+      return false;
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
   cavityIO.setTrianglesColor(mapForTriangleColor);
+  cavityIO.setReinsertionSurfaceData(mapForReinsertionSurface);
   cavityIO.setReinsertionData(mapForReinsertion);
   cavityIO.setSimplexCavity(cavityCell, trianglesConnectedToP, trianglesNotConnectedToP);
+  /*
+  for(auto const tet : cavityCell){std::cout << "tet -> " << tet << std::endl;}
+  for(auto const triCo : trianglesConnectedToP){std::cout << "triCo -> " << triCo << " | " << (*BND_TRIANGLES)[-triCo] << std::endl;}
+  for(auto const triNotCo : trianglesNotConnectedToP){std::cout << "triNotCo -> " << triNotCo << " | " << (*BND_TRIANGLES)[-triNotCo] << std::endl;}
+  */
   return true;
 }
 /**********************************************************************/

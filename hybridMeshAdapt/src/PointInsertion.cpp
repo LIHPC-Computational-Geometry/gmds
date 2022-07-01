@@ -90,7 +90,6 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           //test sur les triangles non connecté a P pour ne pas créer de retournement topologique
           for(auto const triNotCo : cavityIO.getTrianglesNotConnectedToPInCavity())
           {
-            //std::cout << "triNotCo ->  " << triNotCo << " | " << (*BND_TRIANGLES)[-triNotCo] << std::endl;
             const SimplicesTriangle triangle = SimplicesTriangle(simplexMesh, triNotCo);
             math::Orientation::Sign orientation =  triangle.orientation(simpliceNode.getCoords());
             if(orientation < 0)
@@ -203,7 +202,6 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
             }
           }
 
-
           for(auto const & surfaceNodeInCavity : cavityIO.getSurfaceNodeInCavity())
           {
             if(markedNodes[surfaceNodeInCavity] == 1 && surfaceNodeInCavity != simpliceNode.getGlobalNode())
@@ -212,6 +210,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
               return;
             }
           }
+
           ////deletedNode insertion
           std::vector<TInt> curveNodeToDel{};
           for(auto const & nodeInCavity : cavityIO.getNodeInCavity())
@@ -421,29 +420,9 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
               }
             }
           }
-
           simplexMesh->rebuildCav(cavityIO, deleted_Tet, deleted_Tri, simpliceNode.getGlobalNode(), createdCells);
           //simplexMesh->rebuildCavity(cavityIO, deleted_Tet, deleted_Tri, simpliceNode.getGlobalNode(), createdCells);
           status = true;
-
-          /*std::cout << std::endl;
-          const std::vector<std::vector<TInt>>& pts = cavityIO.getNodesToReconnect();
-          for(auto const nodes : pts)
-          {
-            for(auto const node : nodes)
-            {
-              if(std::find(deletedNodes.begin(), deletedNodes.end(), node) == deletedNodes.end())
-              {
-                if(base[node] == border && node != simpliceNode.getGlobalNode())
-                {
-                  std::cout << "nodes -> " << nodes[0] << " | " << nodes[1] << " | " << nodes[2] << " | " << std::endl;
-                  std::cout << "  base[" << node << "] = border " << std::endl;
-                  throw gmds::GMDSException("STOP");
-                }
-              }
-            }
-          }
-          std::cout << "REBUILD END" << std::endl;*/
         }
       }
     }
@@ -479,6 +458,11 @@ void PointInsertion::normalsPatch(SimplexMesh* simplexMesh, CavityOperator::Cavi
       TInt nodeA = edge.front();
       TInt nodeB = edge.back();
 
+      //if this condition happen that's mean an reinsertion is occuring
+      if(nodeA == node.getGlobalNode() || nodeB == node.getGlobalNode())
+      {
+        continue;
+      }
       math::Point nodeACoord = SimplicesNode(simplexMesh, nodeA).getCoords();
       math::Point nodeBCoord = SimplicesNode(simplexMesh, nodeB).getCoords();
       math::Point nodeCoord  = node.getCoords();
