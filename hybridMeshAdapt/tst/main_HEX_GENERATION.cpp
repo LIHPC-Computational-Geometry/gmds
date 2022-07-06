@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
   vtkWriterDI.setCellOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterDI.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterDI.write(fDI);
-
+  return 0;
   start = std::clock();
   std::vector<TInt> deletedNodes{};
   unsigned int tmp = 0;

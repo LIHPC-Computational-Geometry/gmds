@@ -4034,10 +4034,12 @@ void SimplexMesh::setBase(const TInt node, const TSimplexID simplex)
 void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)
 {
   gmds::Variable<int>* BND_SURFACE_COLOR = nullptr;
+  gmds::Variable<int>* BND_CURVE_COLOR = nullptr;
   gmds::Variable<int>* BND_TRIANGLES   = nullptr;
 
   try{
     BND_SURFACE_COLOR    = getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+    BND_CURVE_COLOR      = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
     BND_TRIANGLES        = getVariable<int, SimplicesTriangle>("BND_TRIANGLES");
   } catch (gmds::GMDSException e)
   {
@@ -4121,11 +4123,6 @@ void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vect
     pair_it = hash_face.equal_range(pairNode);
     int count = std::distance(pair_it.first, pair_it.second);
 
-    //if(cell == 19298)
-    {
-      //std::cout << "p.first.first -> " << p.first.first << std::endl;
-      //std::cout << "p.first.second -> " << p.first.second << std::endl;
-    }
     if(count > 2)
     {
       std::cout << "p.first.first -> " << p.first.first << " | " << "p.first.second -> " << p.first.second << std::endl;
@@ -4181,7 +4178,7 @@ void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vect
         //if the surface is being reconstruct it's normal look in cavityOperator enlargement function
         //mapForReinsertion is not fill if oppositeCell is a triangle
         //if not throw exception
-        if((*BND_SURFACE_COLOR)[nodeToConnect] == 0)
+        if((*BND_SURFACE_COLOR)[nodeToConnect] == 0 && (*BND_CURVE_COLOR)[nodeToConnect] == 0)
         {
           std::cout << "nodeToConnect -> " << nodeToConnect << std::endl;
           std::cout << "p_data -> " << p_data.first << " | " << p_data.second <<std::endl;

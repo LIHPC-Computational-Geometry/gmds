@@ -500,7 +500,7 @@ TSimplexID SimplicesNode::directSimplex(const math::Vector3d& vector) const
 
 }
 /******************************************************************************/
-std::vector<TInt> SimplicesNode::neighborNodes()
+std::vector<TInt> SimplicesNode::neighborNodes() const
 {
   std::vector<TSimplexID> ball = ballOf();
   std::set<TInt> s{};

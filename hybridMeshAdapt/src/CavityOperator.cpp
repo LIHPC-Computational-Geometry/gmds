@@ -868,6 +868,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
   cavityIO.setReinsertionSurfaceData(mapForReinsertionSurface);
   cavityIO.setReinsertionData(mapForReinsertion);
   cavityIO.setSimplexCavity(cavityCell, trianglesConnectedToP, trianglesNotConnectedToP);
+
   /*
   for(auto const tet : cavityCell){std::cout << "tet -> " << tet << std::endl;}
   for(auto const triCo : trianglesConnectedToP){std::cout << "triCo -> " << triCo << " | " << (*BND_TRIANGLES)[-triCo] << std::endl;}

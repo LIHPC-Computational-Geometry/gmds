@@ -67,6 +67,12 @@ int main(int argc, char* argv[])
   Variable<Eigen::Matrix3d>* var = simplexMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("metric");
   Eigen::Matrix3d m =  Eigen::MatrixXd::Identity(3, 3);
   var->setValuesTo(m);
+  gmds::VTKWriter vtkWriter(&ioService);
+  vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriter.write("M.vtk");
+
+
   //==================================================================
   // POINT FILE READING
   //==================================================================
@@ -106,22 +112,18 @@ int main(int argc, char* argv[])
     //break;
     if(nodesToAddIds[idx] != 0)
     {
-      const gmds::BitVector & nodesIds = simplexMesh.getBitVectorNodes();
-      math::Point point = SimplicesNode(&simplexNodes, idx).getCoords();
-
-      bool alreadyAdd = false;
-      std::vector<TSimplexID> tetraContenaingPt{};
-      TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
-      if(!alreadyAdd)
+      if((*BND_CURVE_COLOR_NODES)[idx] == 0 && (*BND_SURFACE_COLOR_NODES)[idx] == 0 && (*BND_VERTEX_COLOR_NODES)[idx] == 0)
       {
-        simplexMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("metric")->value(node) = m;
-        if((*BND_CURVE_COLOR_NODES)[idx] != 0) {BND_CURVE_COLOR->set(node, (*BND_CURVE_COLOR_NODES)[idx]);}
-        else if((*BND_SURFACE_COLOR_NODES)[idx] != 0) {BND_SURFACE_COLOR->set(node, (*BND_SURFACE_COLOR_NODES)[idx]);}
-        else if((*BND_VERTEX_COLOR_NODES)[idx] != 0) {BND_VERTEX_COLOR->set(node, (*BND_VERTEX_COLOR_NODES)[idx]);}
+        const gmds::BitVector & nodesIds = simplexMesh.getBitVectorNodes();
+        math::Point point = SimplicesNode(&simplexNodes, idx).getCoords();
 
-        //if((*BND_CURVE_COLOR)[node] == 0 && (*BND_SURFACE_COLOR)[node] == 0 && (*BND_VERTEX_COLOR)[node] == 0)
-        if((*BND_SURFACE_COLOR)[node] != 0 && idx == 20)
+        bool alreadyAdd = false;
+        std::vector<TSimplexID> tetraContenaingPt{};
+        TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
+        if(!alreadyAdd)
         {
+          simplexMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("metric")->value(node) = m;
+
           ++nodeVolumeTot;
           bool status = false;
           std::vector<TSimplexID> deletedSimplex{};
@@ -155,24 +157,21 @@ int main(int argc, char* argv[])
   unsigned int nodeSurfaceTot = 0;
   for(unsigned int idx = 0 ; idx < nodesToAddIds.capacity() ; idx++)
   {
+    //break;
     if(nodesToAddIds[idx] != 0)
     {
-      const gmds::BitVector & nodesIds = simplexMesh.getBitVectorNodes();
-      math::Point point = SimplicesNode(&simplexNodes, idx).getCoords();
-
-      bool alreadyAdd = false;
-      std::vector<TSimplexID> tetraContenaingPt{};
-      TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
-
-      if(!alreadyAdd)
+      if((*BND_SURFACE_COLOR_NODES)[idx] != 0)
       {
-        simplexMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("metric")->value(node) = m;
-        if((*BND_CURVE_COLOR_NODES)[idx] != 0) {BND_CURVE_COLOR->set(node, (*BND_CURVE_COLOR_NODES)[idx]);}
-        else if((*BND_SURFACE_COLOR_NODES)[idx] != 0) {BND_SURFACE_COLOR->set(node, (*BND_SURFACE_COLOR_NODES)[idx]);}
-        else if((*BND_VERTEX_COLOR_NODES)[idx] != 0) {BND_VERTEX_COLOR->set(node, (*BND_VERTEX_COLOR_NODES)[idx]);}
+        bool alreadyAdd = false;
+        std::vector<TSimplexID> tetraContenaingPt{};
+        math::Point point = SimplicesNode(&simplexNodes, idx).getCoords();
+        TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
 
-        if((*BND_SURFACE_COLOR)[node] != 0)
+        if(!alreadyAdd)
         {
+          BND_SURFACE_COLOR->set(node, (*BND_SURFACE_COLOR_NODES)[idx]);
+          simplexMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("metric")->value(node) = m;
+
           ++nodeSurfaceTot;
           bool status = false;
           std::vector<TSimplexID> deletedSimplex{};
@@ -200,6 +199,115 @@ int main(int argc, char* argv[])
   vtkWriterSURFACE.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterSURFACE.write("SURFACE_TEST.vtk");
 
+  //==================================================================
+  // EDGE POINT INSERTION
+  //==================================================================
+  std::cout << "EDGE POINT INSERTION START" << std::endl;;
+  duration;
+  start = std::clock();
+  nodeCpt = 0;
+  std::vector<TInt> nodesInserted{};
+  unsigned int nodeEdgeTot = 0;
+  for(unsigned int idx = 0 ; idx < nodesToAddIds.capacity() ; idx++)
+  {
+    //break;
+    if(nodesToAddIds[idx] != 0)
+    {
+      if((*BND_CURVE_COLOR_NODES)[idx] != 0)
+      {
+        bool alreadyAdd = false;
+        std::vector<TSimplexID> tetraContenaingPt{};
+        math::Point point = SimplicesNode(&simplexNodes, idx).getCoords();
+        TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
+
+        if(!alreadyAdd)
+        {
+          BND_CURVE_COLOR->set(node, (*BND_CURVE_COLOR_NODES)[idx]);
+          simplexMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("metric")->value(node) = m;
+
+          ++nodeEdgeTot;
+          bool status = false;
+          std::vector<TSimplexID> deletedSimplex{};
+          const std::multimap<TInt, TInt> facesAlreadyBuilt{};
+          DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, tetraContenaingPt, status, nodesAdded, deletedSimplex, facesAlreadyBuilt);
+          if(status)
+          {
+            nodesInserted.push_back(node);
+            ++nodeCpt;
+          }
+        }
+      }
+    }
+  }
+  gmds::VTKWriter vtkWriterEDGE_INSERTION(&ioService);
+  vtkWriterEDGE_INSERTION.setCellOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriterEDGE_INSERTION.setDataOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriterEDGE_INSERTION.write("EDGE_INSERTION.vtk");
+
+
+  duration = (std::clock()-start)/(double)CLOCKS_PER_SEC;
+  std::cout << "nodeCpt -> " << nodeCpt << std::endl;
+  std::cout << "nodeEdgeTot -> " << nodeEdgeTot << std::endl;
+  std::cout << "DELAUNAY CURVE INSERTION DONE IN " << duration << std::endl;
+  std::cout << "  INSERTED NODE -> "  << (double)nodeCpt / (double)nodeEdgeTot * 100.0 << "% " << std::endl;
+  std::cout << std::endl;
+  std::cout << std::endl;
+
+  //==================================================================
+  // EDGE POINT REINSERTION
+  //==================================================================
+  std::cout << "EDGE POINT REINSERTION START" << std::endl;
+  start;
+  duration;
+  start = std::clock();
+  nodeCpt = 0;
+  nodeEdgeTot = 0;
+  const gmds::BitVector & nodesIds = simplexMesh.getBitVectorNodes();
+  for(unsigned int node = 0 ; node < nodesIds.capacity() ; node++)
+  {
+    if(nodesIds[node] != 0)
+    {
+      if((*BND_CURVE_COLOR)[node] != 0)
+      {
+        if(std::find(nodesInserted.begin(), nodesInserted.end(), node) == nodesInserted.end())
+        {
+          ++nodeEdgeTot;
+          const SimplicesNode n(&simplexMesh, node);
+          std::vector<TInt> nodes = n.neighborNodes();
+          for(auto const Nn : nodes)
+          {
+            if((*BND_CURVE_COLOR)[Nn] == (*BND_CURVE_COLOR)[node])
+            {
+              bool status = false;
+              std::vector<TSimplexID> cavity = n.ballOf();
+              std::vector<TSimplexID> deletedSimplex{};
+              const std::multimap<TInt, TInt> facesAlreadyBuilt{};
+              DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, Nn), criterionRAIS, cavity, status, nodesAdded, deletedSimplex, facesAlreadyBuilt);
+              if(status)
+              {
+                ++nodeCpt;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  gmds::VTKWriter vtkWriterEDGE_REINSERTION(&ioService);
+  vtkWriterEDGE_REINSERTION.setCellOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriterEDGE_REINSERTION.setDataOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriterEDGE_REINSERTION.write("EDGE_REINSERTION.vtk");
+
+
+  duration = (std::clock()-start)/(double)CLOCKS_PER_SEC;
+  std::cout << "nodeCpt -> " << nodeCpt << std::endl;
+  std::cout << "nodeEdgeTot -> " << nodeEdgeTot << std::endl;
+  std::cout << "DELAUNAY CURVE REINSERTION DONE IN " << duration << std::endl;
+  std::cout << "  INSERTED NODE -> "  << (double)nodeCpt / (double)nodeEdgeTot * 100.0 << "% " << std::endl;
+  std::cout << std::endl;
+  std::cout << std::endl;
+
 
   //==================================================================
   //VOLUME REINSERTION POINT TEST
@@ -210,6 +318,7 @@ int main(int argc, char* argv[])
   unsigned int reinsertionCpt = 0;
   for(unsigned int T = 0; T < bitVectorTet.capacity() ; T++)
   {
+    //break;
     if(bitVectorTet[T] != 0)
     {
       const SimplicesCell cell = SimplicesCell(&simplexMesh, T);
@@ -220,7 +329,6 @@ int main(int argc, char* argv[])
         if(oppoCell >= 0)
         {
           if((*BND_CURVE_COLOR)[N] == 0 && (*BND_SURFACE_COLOR)[N] == 0 && (*BND_VERTEX_COLOR)[N] == 0)
-          //if((*BND_SURFACE_COLOR)[N] != 0)
           {
             std::vector<TSimplexID> cavity{T, oppoCell};
             bool status = false;
@@ -254,6 +362,7 @@ int main(int argc, char* argv[])
   unsigned int sizeEdges = 3;
   for(unsigned int t = 1; t < bitVectorTri.capacity() ; t++)
   {
+    //break;
     if(bitVectorTri[t] != 0)
     {
       const SimplicesTriangle triangle = SimplicesTriangle(&simplexMesh, t);
@@ -279,12 +388,17 @@ int main(int argc, char* argv[])
     }
   }
   std::cout << "  REINSERTED SURFACENODE -> "  << reinsertionCpt << std::endl;
+  std::cout << std::endl;
+  std::cout << std::endl;
   gmds::VTKWriter vtkWriterSURFACE_REINSERTION(&ioService);
   vtkWriterSURFACE_REINSERTION.setCellOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterSURFACE_REINSERTION.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterSURFACE_REINSERTION.write("SURFACE_REINSERTION_TEST.vtk");
+
+
+
   //==================================================================
-  // VOLUME POINT INSERTION CHECK
+  // MESH VALIDITY CHECK
   //==================================================================
   std::cout << "MESH VALIDITY CHECK" << std::endl;
   simplexMesh.checkMesh();
