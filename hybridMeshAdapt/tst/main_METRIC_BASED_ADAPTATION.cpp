@@ -70,15 +70,21 @@ int main(int argc, char* argv[])
     const gmds::BitVector& meshNode = simplexMesh.getBitVectorNodes();
     //double metricMin = 0.5;
     //double metricMax = 0.5;
+    double meanEdge = 0.0; double minEdge = 0.0; double maxEdge = 0.0;
+    simplexMesh.getEdgeSizeInfo(meanEdge, minEdge, maxEdge);
+    std::cout << "meanEdge START -> " << meanEdge << std::endl;
+    std::cout << "minEdge  START -> " << minEdge << std::endl;
+    std::cout << "maxEdge  START -> " << maxEdge << std::endl;
+
     for(unsigned int nodeId = 0 ; nodeId < meshNode.capacity() ; nodeId++)
     {
       if(meshNode[nodeId] == 1)
       {
         double x = SimplicesNode(&simplexMesh, nodeId).getCoords()[0];
         //double metric = (1.0 - x)*metricMin + x*metricMax;
-        double metricX = 0.2;
-        double metricY = 0.2;
-        double metricZ = 0.2;
+        double metricX = 0.3;
+        double metricY = 0.3;
+        double metricZ = 0.3;
         (*metricNode)[nodeId](0,0) = 1.0 / (metricX*metricX);
         (*metricNode)[nodeId](1,1) = 1.0 / (metricY*metricY);
         (*metricNode)[nodeId](2,2) = 1.0 / (metricZ*metricZ);
@@ -89,6 +95,11 @@ int main(int argc, char* argv[])
     MetricAdaptation mA(&simplexMesh);
     mA.execute();
     std::cout << "NODE SIZE IN MESH AFTER METRIC ADAPTATION--> " << meshNode.capacity() << std::endl;
+
+    simplexMesh.getEdgeSizeInfo(meanEdge, minEdge, maxEdge);
+    std::cout << "meanEdge END -> " << meanEdge << std::endl;
+    std::cout << "minEdge  END -> " << minEdge << std::endl;
+    std::cout << "maxEdge  END -> " << maxEdge << std::endl;
 
     gmds::VTKWriter vtkWriterMA(&ioService);
     vtkWriterMA.setCellOptions(gmds::N|gmds::R|gmds::F);

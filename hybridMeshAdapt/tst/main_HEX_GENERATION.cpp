@@ -106,6 +106,7 @@ int main(int argc, char* argv[])
   {
     if(nodesToAddIds[idx] != 0)
     {
+      std::cout << "idx -> " << idx << std::endl;
       const gmds::BitVector & nodesIds = simplexMesh.getBitVectorNodes();
       math::Point point = SimplicesNode(&simplexNodes, idx).getCoords();
 
@@ -159,6 +160,16 @@ int main(int argc, char* argv[])
   vtkWriterDI.setCellOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterDI.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterDI.write(fDI);
+  std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure = simplexMesh.getEdgeStructure();
+  for(auto const dataBis : edgeStructure)
+  {
+    std::cout << "data --> " << dataBis.first << " | [" << dataBis.second.first << " : " << dataBis.second.second << "]" << std::endl;
+  }
+  //==================================================================
+  // MESH VALIDITY CHECK
+  //==================================================================
+  std::cout << "MESH VALIDITY CHECK" << std::endl;
+  simplexMesh.checkMesh();
   return 0;
   start = std::clock();
   std::vector<TInt> deletedNodes{};

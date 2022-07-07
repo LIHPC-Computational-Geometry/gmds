@@ -4031,6 +4031,52 @@ void SimplexMesh::setBase(const TInt node, const TSimplexID simplex)
   }
 }
 /******************************************************************************/
+void SimplexMesh::getEdgeSizeInfo(double& meanEdges, double& maxEdge, double& minEdge)
+{
+  auto my_make = [=](const TInt a, const TInt b){
+    return (a < b)? std::make_pair(a, b) : std::make_pair(b, a);
+  };
+
+  meanEdges = 0.0;
+  std::map<TInt, TInt> edges{};
+  std::set<double> sizeEdges{};
+  for(unsigned int node = 0 ; node < m_node_ids.capacity() ; node++)
+  {
+    if(m_node_ids[node] != 0)
+    {
+      const SimplicesNode N(this, node);
+      std::vector<TInt> nodes = N.neighborNodes();
+      for(auto const n : nodes)
+      {
+        std::pair<TInt, TInt> edge = my_make(node, n);
+        edges.insert(edge);
+      }
+    }
+  }
+
+  for(auto const edge : edges)
+  {
+    const SimplicesNode N0(this, edge.first);
+    const SimplicesNode N1(this, edge.second);
+
+    const math::Point coord0 = N0.getCoords();
+    const math::Point coord1 = N1.getCoords();
+
+    const math::Vector3d vec = coord0 - coord1;
+    const double norm = vec.norm();
+    sizeEdges.insert(norm);
+  }
+
+  for(auto const sizeEdge : sizeEdges)
+  {
+    meanEdges += sizeEdge;
+  }
+
+  meanEdges /= sizeEdges.size();
+  maxEdge = *(sizeEdges.begin());
+  minEdge = *(--sizeEdges.end());
+}
+/******************************************************************************/
 void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)
 {
   gmds::Variable<int>* BND_SURFACE_COLOR = nullptr;

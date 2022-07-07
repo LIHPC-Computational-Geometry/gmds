@@ -74,10 +74,10 @@ void MetricAdaptation::buildEdgesMap()
 /*----------------------------------------------------------------------------*/
 void MetricAdaptation::execute()
 {
-  Variable<int>* BND_VERTEX_COLOR ;
-  Variable<int>* BND_CURVE_COLOR  ;
-  Variable<int>* BND_SURFACE_COLOR;
-  Variable<Eigen::Matrix3d>* metric;
+  Variable<int>* BND_VERTEX_COLOR   = nullptr;
+  Variable<int>* BND_CURVE_COLOR    = nullptr;
+  Variable<int>* BND_SURFACE_COLOR  = nullptr;
+  Variable<Eigen::Matrix3d>* metric = nullptr;
   try{
     BND_VERTEX_COLOR  = m_simplexMesh->getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
     BND_CURVE_COLOR   = m_simplexMesh->getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
@@ -89,7 +89,7 @@ void MetricAdaptation::execute()
     throw gmds::GMDSException(e);
   }
 
-  unsigned int maxIterationAdaptation = 1;
+  unsigned int maxIterationAdaptation = 50;
   CriterionRAIS criterionRAIS(new VolumeCriterion());
   const gmds::BitVector& meshNode = m_simplexMesh->getBitVectorNodes();
   unsigned int cpt = 0;
@@ -99,20 +99,17 @@ void MetricAdaptation::execute()
 
   for(unsigned int iter = 0 ; iter < maxIterationAdaptation ; iter++)
   {
-    std::cout << "MESHNODE.CAPACITY() -> " << meshNode.capacity() << std::endl;
-
     unsigned int cptEdgeRemove = 0;
     unsigned int cptSlice = 0;
     unsigned int cptSwap = 0;
 
     //Metric adaptation SLICING
     std::cout << "  SLICING START" << std::endl;
-    /*buildEdgesMap();
+    buildEdgesMap();
     for(auto const edge : m_edgesMap)
     {
       TInt nodeId = edge.first;
       TInt dNode  = edge.second;
-
 
       if(meshNode[nodeId] != 0 && meshNode[dNode] != 0)
       {
@@ -289,23 +286,19 @@ void MetricAdaptation::execute()
           std::vector<TSimplexID> cellsCreated{};
           PointInsertion pi(m_simplexMesh, SimplicesNode(m_simplexMesh, newNodeId), criterionRAIS, status, shell, markedNodes, deletedNodes, facesAlreadyBuilt, cellsCreated);
 
-          //gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
-          //vtkWriterMesh.setCellOptions(gmds::N|gmds::R|gmds::F);
-          //vtkWriterMesh.setDataOptions(gmds::N|gmds::R|gmds::F);
-          //vtkWriterMesh.write("LOOP_" + std::to_string(cpt) + ".vtk");
-          //cpt++;
           if(status)
           {
             cptSlice++;
           }
         }
       }
-    }*/
-    /*gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
+    }
+    gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
     vtkWriterMesh.setCellOptions(gmds::N|gmds::R);
     vtkWriterMesh.setDataOptions(gmds::N|gmds::R);
-    vtkWriterMesh.write("ADAPTAION_LOOP_SLICING_" + std::to_string(cpt) + ".vtk");
-    cpt++;*/
+    //vtkWriterMesh.write("ADAPTAION_LOOP_SLICING_" + std::to_string(cpt) + ".vtk");
+    //cpt++;
+
 
     std::cout << "  SLINCING END" << std::endl;
     //continue;
@@ -342,37 +335,25 @@ void MetricAdaptation::execute()
           const std::vector<TSimplexID>& base = m_simplexMesh->getBase();
           const gmds::BitVector& bitVectorTet = m_simplexMesh->getBitVectorTet();
           const gmds::BitVector& bitVectorNode = m_simplexMesh->getBitVectorNodes();
-          std::cout << "base[439] -> " << base[439] << std::endl;
-          std::cout << "bitVectorTet[base[439]] -> " << bitVectorTet[base[439]] << std::endl;
-          if(bitVectorNode[439] == 1 && bitVectorTet[base[439]] == 0)
-          {
-            return;
-          }
-          std::cout << "node0 node1 -> " << node0 << " | " << node1 << std::endl;
-
           if(m_simplexMesh->edgeRemove(node0, node1))
           {
             cptEdgeRemove++;
-            gmds::VTKWriter vtkWriterMeshER(&ioServiceMesh);
-            vtkWriterMeshER.setCellOptions(gmds::N|gmds::R|gmds::F);
-            vtkWriterMeshER.setDataOptions(gmds::N|gmds::R|gmds::F);
-            vtkWriterMeshER.write("ADAPTAION_LOOP_EDGEREMOVE_" + std::to_string(cptEdgeRemove) + ".vtk");
-            std::cout << "cptEdgeRemove -> " << cptEdgeRemove << std::endl;
           }
         }
       }
     }
     std::cout << "  EDGE REMOVE END" << std::endl;
-    continue;
 
-    /*gmds::VTKWriter vtkWriterMeshER(&ioServiceMesh);
+
+    gmds::VTKWriter vtkWriterMeshER(&ioServiceMesh);
     vtkWriterMeshER.setCellOptions(gmds::N|gmds::R);
     vtkWriterMeshER.setDataOptions(gmds::N|gmds::R);
-    vtkWriterMeshER.write("ADAPTAION_LOOP_EDGEREMOVE_" + std::to_string(cpt) + ".vtk");*/
-
+    //vtkWriterMeshER.write("ADAPTAION_LOOP_EDGEREMOVE_" + std::to_string(cpt) + ".vtk");
+    //cpt++;
+    //continue;
 
     //Swapping face
-    /*std::cout << "  SWAPPING FACE START" << std::endl;
+    std::cout << "  SWAPPING FACE START" << std::endl;
     const gmds::BitVector& tetBitVec = m_simplexMesh->getBitVectorTet();
     unsigned int sizeFace = 4;
     for(TSimplexID tetId = 0 ; tetId < tetBitVec.capacity() ; tetId++)
@@ -424,7 +405,7 @@ void MetricAdaptation::execute()
                   double worstNewElement = std::min(qualityElementtet_0, std::min(qualityElementtet_1, qualityElementtet_2));
 
                   //std::cout << "element quality factor -> " << worstQuality << std::endl;
-                  /std::cout << "new element quality factor -> " << worstNewElement << std::endl;
+                  //std::cout << "new element quality factor -> " << worstNewElement << std::endl;
                   //std::cout << std::endl;
 
                   if(worstNewElement > worstQuality)
@@ -455,7 +436,7 @@ void MetricAdaptation::execute()
           }
         }
       }
-    }*/
+    }
     std::cout << "  SWAPPING FACE END" << std::endl;
     std::cout << "cptEdgeRemove -> " << cptEdgeRemove << " | " << "cptSlice -> " << cptSlice << " | " << "cptSwap -> " << cptSwap << std::endl;
 
@@ -465,6 +446,7 @@ void MetricAdaptation::execute()
     vtkWriterMeshSwapping.setDataOptions(gmds::N|gmds::R);
     vtkWriterMeshSwapping.write("ADAPTAION_LOOP_SWAPPING_" + std::to_string(cpt) + ".vtk");
     cpt++;
+    continue;
     //BOUGE DE POINTS
     /*std::cout << "BOUGE DE POINTS" << std::endl;
     const gmds::BitVector& meshNode = m_simplexMesh->getBitVectorNodes();

@@ -420,6 +420,8 @@ class SimplexMesh
 
   void setBase(const TInt node, const TSimplexID simplex);
 
+  void getEdgeSizeInfo(double& meanEdges, double& maxedge, double& minEdge) ;
+
 private:
 
   //node coordinates with bitvector

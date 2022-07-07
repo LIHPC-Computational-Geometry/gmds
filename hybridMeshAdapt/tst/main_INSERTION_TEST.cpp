@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
   unsigned int nodeVolumeTot = 0;
   for(unsigned int idx = 0 ; idx < nodesToAddIds.capacity() ; idx++)
   {
-    //break;
+    break;
     if(nodesToAddIds[idx] != 0)
     {
       if((*BND_CURVE_COLOR_NODES)[idx] == 0 && (*BND_SURFACE_COLOR_NODES)[idx] == 0 && (*BND_VERTEX_COLOR_NODES)[idx] == 0)
@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
   unsigned int nodeSurfaceTot = 0;
   for(unsigned int idx = 0 ; idx < nodesToAddIds.capacity() ; idx++)
   {
-    //break;
+    break;
     if(nodesToAddIds[idx] != 0)
     {
       if((*BND_SURFACE_COLOR_NODES)[idx] != 0)
@@ -215,6 +215,8 @@ int main(int argc, char* argv[])
     {
       if((*BND_CURVE_COLOR_NODES)[idx] != 0)
       {
+        std::cout << std::endl;
+
         bool alreadyAdd = false;
         std::vector<TSimplexID> tetraContenaingPt{};
         math::Point point = SimplicesNode(&simplexNodes, idx).getCoords();
@@ -244,7 +246,11 @@ int main(int argc, char* argv[])
   vtkWriterEDGE_INSERTION.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterEDGE_INSERTION.write("EDGE_INSERTION.vtk");
 
-
+  std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure = simplexMesh.getEdgeStructure();
+  for(auto const dataBis : edgeStructure)
+  {
+    std::cout << "data --> " << dataBis.first << " | [" << dataBis.second.first << " : " << dataBis.second.second << "]" << std::endl;
+  }
   duration = (std::clock()-start)/(double)CLOCKS_PER_SEC;
   std::cout << "nodeCpt -> " << nodeCpt << std::endl;
   std::cout << "nodeEdgeTot -> " << nodeEdgeTot << std::endl;
@@ -252,7 +258,7 @@ int main(int argc, char* argv[])
   std::cout << "  INSERTED NODE -> "  << (double)nodeCpt / (double)nodeEdgeTot * 100.0 << "% " << std::endl;
   std::cout << std::endl;
   std::cout << std::endl;
-
+  //return 0;
   //==================================================================
   // EDGE POINT REINSERTION
   //==================================================================
@@ -271,6 +277,7 @@ int main(int argc, char* argv[])
       {
         if(std::find(nodesInserted.begin(), nodesInserted.end(), node) == nodesInserted.end())
         {
+          std::cout << std::endl;
           ++nodeEdgeTot;
           const SimplicesNode n(&simplexMesh, node);
           std::vector<TInt> nodes = n.neighborNodes();
@@ -307,7 +314,7 @@ int main(int argc, char* argv[])
   std::cout << "  INSERTED NODE -> "  << (double)nodeCpt / (double)nodeEdgeTot * 100.0 << "% " << std::endl;
   std::cout << std::endl;
   std::cout << std::endl;
-
+  return 0;
 
   //==================================================================
   //VOLUME REINSERTION POINT TEST
