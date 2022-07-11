@@ -138,7 +138,7 @@ GMDS_ADD_COMPONENT(
         BLOCKING                       # cmake variable
         blocking                        # src subdirectory name
         GMDSBlocking                    # name of the generated library
-        ""  # description
+        "This module provides a data structure for a blocking representation"  # description
         ON                                 # is activated
         ON                                 # must be covered
 )
