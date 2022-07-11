@@ -135,6 +135,15 @@ GMDS_ADD_COMPONENT(
 )
 
 GMDS_ADD_COMPONENT(
+        BLOCKING                       # cmake variable
+        blocking                        # src subdirectory name
+        GMDSBlocking                    # name of the generated library
+        ""  # description
+        ON                                 # is activated
+        ON                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
         FRAME                               # cmake variable
         frame                               # src subdirectory name
         GMDSFrame                           # name of the generated library
