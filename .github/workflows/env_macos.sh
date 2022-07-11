@@ -13,5 +13,6 @@ cp /Users/runner/work/gmds/gmds/.github/workflows/misc/config.yaml /Users/runner
 spack external find cmake
 spack install lcov
 spack install glpk
+spack install cgal@5.0.3
 ls /Users/runner/work/gmds/gmds/spack/opt/spack/glpk
 ls -l /Users/runner/work/gmds/gmds/spack/opt/spack/glpk/lib

@@ -24,6 +24,7 @@ jobs:
       run: >
         cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -Ax64 
         -DWITH_TEST="ON"
+        -DENABLE_BLOCKING="OFF"
         -DENABLE_ELG3D="OFF"
         -DENABLE_HYBRIDMESHADAPT="OFF"
         -DENABLE_PADDING="OFF"
