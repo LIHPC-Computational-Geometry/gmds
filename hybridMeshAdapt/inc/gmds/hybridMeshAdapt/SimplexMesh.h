@@ -230,6 +230,8 @@ class SimplexMesh
 
   void checkMesh();
 
+  void checkMeshCavity(const std::vector<TSimplexID>& cavity);
+
   bool checkMeshLocal(const simplicesNode::SimplicesNode node);
 
   bool doCellExist(const TSimplexID simplex) const ;

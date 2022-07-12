@@ -89,7 +89,7 @@ void MetricAdaptation::execute()
     throw gmds::GMDSException(e);
   }
 
-  unsigned int maxIterationAdaptation = 50;
+  unsigned int maxIterationAdaptation = 1;
   CriterionRAIS criterionRAIS(new VolumeCriterion());
   const gmds::BitVector& meshNode = m_simplexMesh->getBitVectorNodes();
   unsigned int cpt = 0;
@@ -108,6 +108,7 @@ void MetricAdaptation::execute()
     buildEdgesMap();
     for(auto const edge : m_edgesMap)
     {
+      break;
       TInt nodeId = edge.first;
       TInt dNode  = edge.second;
 
@@ -307,6 +308,8 @@ void MetricAdaptation::execute()
     std::cout << "  EDGE REMOVE START" << std::endl;
     buildEdgesMap();
     const TInt border = std::numeric_limits<TInt>::min();
+    unsigned int cptt = 0 ;
+
     for(auto const edge : m_edgesMap)
     {
       TInt node0 = edge.first;
@@ -315,6 +318,51 @@ void MetricAdaptation::execute()
       {
         unsigned int nodeDim = ((*BND_VERTEX_COLOR)[node0] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[node0] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[node0] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
         unsigned int directNodeDim = ((*BND_VERTEX_COLOR)[node1] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[node1] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[node1] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
+        //we do not remove and edge with a node on the surface and node on a curve
+        if((nodeDim == SimplexMesh::topo::RIDGE))
+        {
+          if((directNodeDim == SimplexMesh::topo::SURFACE))
+          {
+            continue;
+          }
+        }
+        if((directNodeDim == SimplexMesh::topo::RIDGE))
+        {
+          if((nodeDim == SimplexMesh::topo::SURFACE))
+          {
+            continue;
+          }
+        }
+
+        if((nodeDim == SimplexMesh::topo::SURFACE))
+        {
+          if((directNodeDim == SimplexMesh::topo::VOLUME))
+          {
+            continue;
+          }
+        }
+        if((directNodeDim == SimplexMesh::topo::VOLUME))
+        {
+          if((nodeDim == SimplexMesh::topo::SURFACE))
+          {
+            continue;
+          }
+        }
+
+        if((nodeDim == SimplexMesh::topo::RIDGE))
+        {
+          if((directNodeDim == SimplexMesh::topo::VOLUME))
+          {
+            continue;
+          }
+        }
+        if((directNodeDim == SimplexMesh::topo::VOLUME))
+        {
+          if((nodeDim == SimplexMesh::topo::RIDGE))
+          {
+            continue;
+          }
+        }
         //
         unsigned int newNodeDim = std::max(nodeDim, directNodeDim);
         if(newNodeDim > 2){continue;}
@@ -335,9 +383,19 @@ void MetricAdaptation::execute()
           const std::vector<TSimplexID>& base = m_simplexMesh->getBase();
           const gmds::BitVector& bitVectorTet = m_simplexMesh->getBitVectorTet();
           const gmds::BitVector& bitVectorNode = m_simplexMesh->getBitVectorNodes();
+          std::cout << "  edgeRemove( " <<  node0 << " | " << node1  << " ) dimension -> " << nodeDim << " | " << directNodeDim << std::endl;
           if(m_simplexMesh->edgeRemove(node0, node1))
           {
+            std::cout << "edge remove " << std::endl;
+            gmds::VTKWriter vtkWriterMeshER(&ioServiceMesh);
+            vtkWriterMeshER.setCellOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriterMeshER.setDataOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriterMeshER.write("TEST_" + std::to_string(cptt) + ".vtk");
+            std::cout << "cpt -> " << cptt << std::endl;
+            cptt++;
             cptEdgeRemove++;
+            std::cout << std::endl;
+            std::cout << std::endl;
           }
         }
       }
@@ -348,9 +406,11 @@ void MetricAdaptation::execute()
     gmds::VTKWriter vtkWriterMeshER(&ioServiceMesh);
     vtkWriterMeshER.setCellOptions(gmds::N|gmds::R);
     vtkWriterMeshER.setDataOptions(gmds::N|gmds::R);
-    //vtkWriterMeshER.write("ADAPTAION_LOOP_EDGEREMOVE_" + std::to_string(cpt) + ".vtk");
-    //cpt++;
-    //continue;
+    vtkWriterMeshER.write("ADAPTAION_LOOP_EDGEREMOVE_" + std::to_string(cpt) + ".vtk");
+    cpt++;
+    std::cout << "MESH VALIDITY CHECK" << std::endl;
+    m_simplexMesh->checkMesh();
+    continue;
 
     //Swapping face
     std::cout << "  SWAPPING FACE START" << std::endl;

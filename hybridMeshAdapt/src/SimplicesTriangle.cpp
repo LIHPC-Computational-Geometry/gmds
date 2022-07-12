@@ -29,6 +29,7 @@ SimplicesTriangle::SimplicesTriangle(SimplexMesh* simplexMesh, const TSimplexID 
   {
     /*TODO exception*/
     std::cout << "Creer le triangle " << indexTriangle <<  " avant de l'utiliser !!" << std::endl;
+    throw gmds::GMDSException("triangle doesnt exist");
   }
 }
 
@@ -92,7 +93,7 @@ bool SimplicesTriangle::containNode(const std::vector<TInt>& nodes)
   return true;
 }
 /******************************************************************************/
-std::vector<TInt> SimplicesTriangle::intersectionNodes(const SimplicesTriangle& triangle) const 
+std::vector<TInt> SimplicesTriangle::intersectionNodes(const SimplicesTriangle& triangle) const
 {
   std::vector<TInt> v{};
   if(m_simplex_mesh != nullptr)

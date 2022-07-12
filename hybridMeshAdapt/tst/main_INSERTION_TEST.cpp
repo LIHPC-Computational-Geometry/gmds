@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
   unsigned int nodeVolumeTot = 0;
   for(unsigned int idx = 0 ; idx < nodesToAddIds.capacity() ; idx++)
   {
-    break;
+    //break;
     if(nodesToAddIds[idx] != 0)
     {
       if((*BND_CURVE_COLOR_NODES)[idx] == 0 && (*BND_SURFACE_COLOR_NODES)[idx] == 0 && (*BND_VERTEX_COLOR_NODES)[idx] == 0)
@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
   unsigned int nodeSurfaceTot = 0;
   for(unsigned int idx = 0 ; idx < nodesToAddIds.capacity() ; idx++)
   {
-    break;
+    //break;
     if(nodesToAddIds[idx] != 0)
     {
       if((*BND_SURFACE_COLOR_NODES)[idx] != 0)
@@ -215,8 +215,6 @@ int main(int argc, char* argv[])
     {
       if((*BND_CURVE_COLOR_NODES)[idx] != 0)
       {
-        std::cout << std::endl;
-
         bool alreadyAdd = false;
         std::vector<TSimplexID> tetraContenaingPt{};
         math::Point point = SimplicesNode(&simplexNodes, idx).getCoords();
@@ -277,7 +275,6 @@ int main(int argc, char* argv[])
       {
         if(std::find(nodesInserted.begin(), nodesInserted.end(), node) == nodesInserted.end())
         {
-          std::cout << std::endl;
           ++nodeEdgeTot;
           const SimplicesNode n(&simplexMesh, node);
           std::vector<TInt> nodes = n.neighborNodes();

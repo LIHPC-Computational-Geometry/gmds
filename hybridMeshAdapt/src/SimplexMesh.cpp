@@ -1243,7 +1243,6 @@ bool SimplexMesh::checkMeshLocal(const SimplicesNode node)
   return true;
 }
 /******************************************************************************/
-
 void SimplexMesh::checkMesh()
 {
   TInt border = std::numeric_limits<int>::min();
@@ -1324,6 +1323,105 @@ void SimplexMesh::checkMesh()
         }
       }
     }
+}
+/******************************************************************************/
+void SimplexMesh::checkMeshCavity(const std::vector<TSimplexID>& cavity)
+{
+  TInt border = std::numeric_limits<int>::min();
+  unsigned int sizeFACE = 4;
+  unsigned int sizeEDGE = 3;
+
+  for(auto const s : cavity)
+  {
+    if(s >= 0)
+    {
+      const SimplicesCell c0 = SimplicesCell(this, s);
+      for(unsigned int face = 0; face < sizeFACE; face++)
+      {
+        TSimplexID oppositeCell = m_tet_adj[s][face];
+        if(oppositeCell == border)
+        {
+          std::cout << "c0 -> " << c0 << std::endl;
+          throw gmds::GMDSException("oppositeCell == border");
+        }
+
+        if(oppositeCell >= 0)
+        {
+          const SimplicesCell c1 = SimplicesCell(this, oppositeCell);
+          std::vector<TInt> nodesFace =  c0.getOrderedFace(face);
+          if(nodesFace.size() != 3)
+          {
+            throw gmds::GMDSException("nodeFace.size() != 3");
+          }
+
+          std::vector<TInt> otherNode = c1.getOtherNodeInSimplex(nodesFace);
+          if(otherNode.size() != 1)
+          {
+            throw gmds::GMDSException("otherNode.size() != 1");
+          }
+
+          if(m_tet_adj[oppositeCell][c1.getLocalNode(otherNode.front())] != s)
+          {
+            std::cout << "TET WARNING" << std::endl;
+            std::cout << "simplex -> " << c0 << std::endl;
+            std::cout << "opposite Cell -> " << c1 << std::endl;
+            throw gmds::GMDSException("m_tet_adj[oppositeCell][otherNode.size()] != simplex");
+          }
+        }
+      }
+    }
+    else
+    {
+      //tetra neigbor of the current triangle s
+      TSimplexID oppositeCell = m_tri_nodes[-s][3];
+      if(oppositeCell < 0)
+      {
+        std::cout << "TRIANGLE WARNING" << std::endl;
+        throw gmds::GMDSException("oppositeCell < 0");
+      }
+      const SimplicesCell c1 = SimplicesCell(this, oppositeCell);
+      std::vector<TInt> nodesFace = SimplicesTriangle(this, s).getNodes();
+      std::vector<TInt> otherNode = c1.getOtherNodeInSimplex(nodesFace);
+      if(m_tet_adj[oppositeCell][c1.getLocalNode(otherNode.front())] != s)
+      {
+        std::cout << "TRIANGLE WARNING" << std::endl;
+        std::cout << "triangle -> " << s << std::endl;
+        std::cout << "opposite Cell -> " << c1 << std::endl;
+        throw gmds::GMDSException("m_tet_adj[oppositeCell][otherNode.size()] != simplex");
+      }
+
+      //triagle neigbor
+      for(unsigned int edge = 0; edge < sizeEDGE; edge++)
+      {
+        TSimplexID oppositeCell = m_tri_adj[-s][edge];
+        if(oppositeCell == border)
+        {
+          std::cout << "TRIANGLE WARNING" << std::endl;
+          std::cout << "s -> " << s << std::endl;
+          throw gmds::GMDSException("oppositeCell == border");
+        }
+
+        std::vector<TInt> nodesEdge =  SimplicesTriangle(this, s).getOppositeEdge(edge);
+        const SimplicesTriangle c1 = SimplicesTriangle(this, oppositeCell);
+
+        std::vector<TInt> otherNode = c1.getOtherNodeInSimplex(nodesEdge);
+        if(otherNode.size() != 1)
+        {
+          std::cout << "TRIANGLE WARNING" << std::endl;
+          throw gmds::GMDSException("otherNode.size() != 1");
+        }
+
+        if(m_tri_adj[oppositeCell][c1.getLocalNode(otherNode.front())] != -s)
+        {
+          std::cout << "TRIANGLE WARNING" << std::endl;
+          std::cout << "triangle -> " << s << std::endl;
+          std::cout << "oppositeCell -> " << oppositeCell << std::endl;
+          std::cout << "m_tri_adj[oppositeCell][c1.getLocalNode(otherNode.front())] -> " << m_tri_adj[oppositeCell][c1.getLocalNode(otherNode.front())] << std::endl;
+          throw gmds::GMDSException("m_tet_adj[oppositeCell][otherNode.size()] != simplex");
+        }
+      }
+    }
+  }
 }
 /******************************************************************************/
 bool SimplexMesh::doCellExist(const TSimplexID simplex) const
@@ -1670,7 +1768,15 @@ std::vector<TInt> SimplexMesh::deleteTetra(const TInt ATetraIndex)
                 else
                 {
                   /*todo Exception*/
+                  gmds::ISimplexMeshIOService ioServiceMesh(this);
+                  std::vector<TSimplexID> v{ATetraIndex, adjSimplex[0], adjSimplex[1], adjSimplex[2], adjSimplex[3]};
+                  deleteAllSimplicesBut(v);
                   std::cout << "vecNode.size() != 3 " << vecNode.size()  << std::endl;
+                  gmds::VTKWriter vtkWriterMeshER(&ioServiceMesh);
+                  vtkWriterMeshER.setCellOptions(gmds::N|gmds::R|gmds::F);
+                  vtkWriterMeshER.setDataOptions(gmds::N|gmds::R|gmds::F);
+                  vtkWriterMeshER.write("TEST_VECNODE.vtk");
+                  throw gmds::GMDSException("vecNode");
                 }
               }
             }
@@ -4112,7 +4218,8 @@ void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vect
   };
 
   std::vector<TSimplexID> tets{};
-
+  std::vector<TSimplexID> trianglesCreated;
+  std::vector<TSimplexID> tetsCreated;
   for(unsigned int idx = 0 ; idx < pointsToConnect.size() ; idx++)
   {
     //std::cout << "idx -> " << idx << std::endl;
@@ -4127,6 +4234,8 @@ void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vect
     std::pair<TInt, TInt> p2 = my_make(nodeC, nodeA);
 
     TSimplexID cell = addTetraedre(nodeA, nodeB, nodeC, nodeToConnect, false);
+    createdCells.push_back(cell);
+    tetsCreated.push_back(cell);
 
     tets.push_back(cell);
     hash_face.insert(std::pair<std::pair<TInt, TInt>, TSimplexID>(p0, cell));
@@ -4171,7 +4280,15 @@ void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vect
 
     if(count > 2)
     {
+      std::cout << "hash_face filling algo" << std::endl;
       std::cout << "p.first.first -> " << p.first.first << " | " << "p.first.second -> " << p.first.second << std::endl;
+
+      deleteAllSimplicesBut(tetsCreated);
+      gmds::ISimplexMeshIOService ioServiceMesh(this);
+      gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
+      vtkWriterMesh.setCellOptions(gmds::N|gmds::R|gmds::F);
+      vtkWriterMesh.setDataOptions(gmds::N|gmds::R|gmds::F);
+      vtkWriterMesh.write("DEBUG_MESH.vtk");
       throw gmds::GMDSException("count > 2");
     }
     else if(count == 2)
@@ -4311,6 +4428,7 @@ void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vect
     }
 
     TSimplexID t = addTriangle(orderedNodes.back(), orderedNodes.front(), nodeToConnect, false);
+    createdCells.push_back(-t);
     std::vector<TInt> v{nodeA, nodeB};
     std::vector<TInt> otherNodeInOppTriangle = SimplicesTriangle(this, oppositeTriangle).getOtherNodeInSimplex(v);
     if(otherNodeInOppTriangle.size() != 1)
@@ -4353,7 +4471,13 @@ void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vect
 
     if(count > 2)
     {
+      std::cout << "hash_edge filling algo" << std::endl;
       std::cout << "p.first.first -> " << p.first.first << " | " << "p.first.second -> " << p.first.second << std::endl;
+      gmds::ISimplexMeshIOService ioServiceMesh(this);
+      gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
+      vtkWriterMesh.setCellOptions(gmds::N|gmds::R|gmds::F);
+      vtkWriterMesh.setDataOptions(gmds::N|gmds::R|gmds::F);
+      vtkWriterMesh.write("DEBUG_MESH.vtk");
       throw gmds::GMDSException("count > 2");
     }
     else if(count == 2)
@@ -5374,11 +5498,13 @@ bool SimplexMesh::edgeRemove(const TInt nodeA, const TInt nodeB)
   const std::multimap<TInt, TInt>& facesAlreadyBuilt{};
   std::vector<TSimplexID> cellsCreated{};
 
-
+  std::cout << "nodeALabel -> "<<  nodeALabel << std::endl;
+  std::cout << "nodeBLabel -> "<<  nodeBLabel << std::endl;
   if(nodeADim == topo::CORNER || nodeBDim == topo::CORNER)
   {
     return status;
   }
+
 
   if(nodeADim == nodeBDim)
   {
