@@ -38,31 +38,36 @@ def getAllActions():
 
 
 def step(state, action, targetMesh, faceID):
+	oldReward = state.getReward(targetMesh)
 	nextState = RLBlockSet()
 	cloneBlockSet(state, nextState)
 	if faceID in nextState.getAllFaces():
 		executeAction(action, nextState, faceID)
 	else:
 		print("Could not execute action on deleted face")
-	if nextState.isValid() and nextState.countBlocks() > 1:
+	if nextState.isValid(targetMesh) and nextState.countBlocks() > 1:
 		reward = nextState.getReward(targetMesh)
+		ratio = reward/oldReward
 	else:
-		reward = -100
+		reward = 0
+		ratio = -10
 	print("Reward : " + str(reward))
 	terminated = (reward > 1.1)
+	if terminated:
+		ratio += 10
 	if state.countBlocks() == 0:
 		terminated = True
-	return nextState, reward, terminated
+	return nextState, ratio, terminated
 	
-def getCategory(state, faceID, n):
+def getCategory(state, faceID, m):
 	local = state.getLocalIou(faceID)
-	for i, x in enumerate(list(np.linspace(0, 1, n))):
+	for i, x in enumerate(list(np.linspace(0, 1, m))):
 		if local < x:
 			return i-1
-	return n
+	return m
 
 
-def training(filename, n = 1):
+def training(filename, n = 1, m = 15):
 	print("Training !!!")
 	actions = getAllActions()
 
@@ -70,11 +75,11 @@ def training(filename, n = 1):
 	c.readMesh(filename)
 	targetShape = c.m_mesh
 	blockSet = RLBlockSet()
-	blockSet.setFromFile(filename, 3, 2)
+	blockSet.setFromFile(filename, 3, 3)
 
-	qTables = dict()	
+	qTables = dict()
 	for faceID in blockSet.getAllFaces():
-		qTables[faceID] = np.zeros([6, len(actions)])
+		qTables[faceID] = np.zeros([m+1, len(actions)])
 	
 	
 
@@ -102,12 +107,12 @@ def training(filename, n = 1):
 					action = random.choice(actions)
 				else:
 					try:
-						actionID = np.argmax(qTable[getCategory(state, faceID, 5)])
+						actionID = np.argmax(qTable[getCategory(state, faceID, m)])
 						action = list(filter(lambda a: a["id"] == actionID, actions))[0]
 					except:
 						action = random.choice(actions)
 
-				if state.isValid():
+				if state.isValid(targetShape):
 					state.getReward(targetShape)
 				else:
 					print("Could not compute reward on this state because of bad cell")
@@ -116,13 +121,16 @@ def training(filename, n = 1):
 
 				nextState, reward, terminated = step(state, action, targetShape, faceID)
 				
-				oldValue = qTable[getCategory(state, faceID, 5), action["id"]]
+				if reward <= 0.7:
+					reset = True
+					break
+				oldValue = qTable[getCategory(state, faceID, m), action["id"]]
 
-				nextMax = np.max(qTable[getCategory(state, faceID, 5)])
+				nextMax = np.max(qTable[getCategory(state, faceID, m)])
 
 				newValue = (1 - alpha) * oldValue + alpha * (reward + gamma * nextMax)
 
-				qTable[getCategory(state, faceID, 5), action["id"]] = newValue
+				qTable[getCategory(state, faceID, m), action["id"]] = newValue
 
 
 				state = nextState
@@ -139,29 +147,37 @@ def training(filename, n = 1):
 	return qTables
 
 
-def testing(filename):
+def testing(filename, m = 15):
 	actions = getAllActions()
 	c = Capsule()
 	c.readMesh(filename)
 	targetShape = c.m_mesh
 	blockSet = RLBlockSet()
-	blockSet.setFromFile(filename, 3, 2)
+	blockSet.setFromFile(filename, 3, 3)
 	for i in range(30):
 		for faceID in blockSet.getAllFaces():
 			qTable = qTables[faceID]
-			if blockSet.isValid():
+			if blockSet.isValid(targetShape):
 				blockSet.getReward(targetShape)
-			actionID = np.argmax(qTable[getCategory(blockSet, faceID, 5)])
+			actionID = np.argmax(qTable[getCategory(blockSet, faceID, m)])
 			action = list(filter(lambda a: a["id"] == actionID, actions))[0]
 			executeAction(action, blockSet, faceID)
 		blockSet.saveMesh("/home/bonyb/Images/figures/newqlearning/result" + str(i) + ".vtk")
 
 
-
-qTables = training("/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk", 500)
+qTables = training("/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk", 10000)
 
 print(qTables)
 
 testing("/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk")
 
-print("Number of episodes whihc converge : " + str(counter))
+
+def testSomething():
+	filename = "/home/bonyb/Documents/GitHub/gmds/test_samples/HolesInSquare0.vtk"
+	c = Capsule()
+	c.readMesh(filename)
+	targetShape = c.m_mesh
+	blockSet = RLBlockSet()
+	blockSet.setFromFile(filename, 3, 2)
+	coo = blockSet.getMinMaxCoordinates()
+	print(coo)

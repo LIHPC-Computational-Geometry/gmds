@@ -50,7 +50,7 @@ class RLBlockSet
 
 	double getReward(Mesh &targetMesh);
 
-	bool isValid();
+	bool isValid(Mesh &targetMesh);
 
 	std::string getStateID();
 
@@ -59,6 +59,8 @@ class RLBlockSet
     double getOverlap();
 
     double getLocalIou(int faceID);
+
+    std::vector<double> getMinMaxCoordinates();
 };
 
 }

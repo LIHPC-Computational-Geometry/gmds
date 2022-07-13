@@ -346,8 +346,24 @@ double RLBlockSet::getReward(Mesh &targetMesh)
     return res;
 }
 
-bool RLBlockSet::isValid()
+bool RLBlockSet::isValid(Mesh &targetMesh)
 {
+    std::vector<Node> nodes;
+    for (int faceID : targetMesh.faces())
+    {
+        Face face = targetMesh.get<Face>(faceID);
+        std::vector<Node> nodesF = face.get<Node>();
+        nodes.insert( nodes.end(), nodesF.begin(), nodesF.end() );
+    }
+    std::vector<Node>::iterator iter;
+    iter = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() <= b.X();});
+    double xMin = targetMesh.get<Node>(iter->id()).X();
+    iter = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() >= b.X();});
+    double xMax = targetMesh.get<Node>(iter->id()).X();
+    iter = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.Y() <= b.Y();});
+    double yMin = targetMesh.get<Node>(iter->id()).Y();
+    iter = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.Y() >= b.Y();});
+    double yMax = targetMesh.get<Node>(iter->id()).Y();
 	bool res = true;
 	for(auto faceID: m_mesh.faces())
 	{
@@ -365,6 +381,20 @@ bool RLBlockSet::isValid()
         {
             res = false;
             break;
+        }
+        std::vector<Node> nodes = f.get<Node>();
+        for (Node node : nodes)
+        {
+            if (node.X() > xMax or node.X() < xMin)
+            {
+                res = false;
+                break;
+            }
+            if (node.Y() > yMax or node.Y() < yMin)
+            {
+                res = false;
+                break;
+            }
         }
 	}
 	return res;
@@ -495,4 +525,26 @@ double RLBlockSet::getOverlap()
 double RLBlockSet::getLocalIou(int faceID)
 {
     return m_mesh.getVariable<double,GMDS_FACE>("volFrac")->value(faceID);
+}
+
+std::vector<double> RLBlockSet::getMinMaxCoordinates()
+{
+    std::vector<Node> nodes;
+    for (int faceID : m_mesh.faces())
+    {
+        Face face = m_mesh.get<Face>(faceID);
+        std::vector<Node> nodesF = face.get<Node>();
+        nodes.insert( nodes.end(), nodesF.begin(), nodesF.end() );
+    }
+    std::vector<double> res;
+    std::vector<Node>::iterator iter;
+    iter = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() <= b.X();});
+    res.push_back(m_mesh.get<Node>(iter->id()).X());
+    iter = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.X() >= b.X();});
+    res.push_back(m_mesh.get<Node>(iter->id()).X());
+    iter = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.Y() <= b.Y();});
+    res.push_back(m_mesh.get<Node>(iter->id()).Y());
+    iter = std::min_element(nodes.begin(), nodes.end(),[](Node a, Node b){return a.Y() >= b.Y();});
+    res.push_back(m_mesh.get<Node>(iter->id()).Y());
+    return res;
 }

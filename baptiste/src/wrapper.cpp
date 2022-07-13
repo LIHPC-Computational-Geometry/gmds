@@ -27,7 +27,8 @@ PYBIND11_MODULE(environment, m)
 	   .def("isValid", &gmds::RLBlockSet::isValid)
 	   .def("getStateID", &gmds::RLBlockSet::getStateID)
 	   .def("overlap", &gmds::RLBlockSet::overlap)
-       .def("getLocalIou", &gmds::RLBlockSet::getLocalIou);
+       .def("getLocalIou", &gmds::RLBlockSet::getLocalIou)
+       .def("getMinMaxCoordinates", &gmds::RLBlockSet::getMinMaxCoordinates);
 
 	py::class_<gmds::Mesh>(m, "Mesh")
 	   .def(py::init<const gmds::MeshModel&>())
