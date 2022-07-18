@@ -14,6 +14,7 @@
 #include <gmds/io/VTKWriter.h>
 #include <gtest/gtest.h>
 #include <iostream>
+#include <unit_test_config.h>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -605,7 +606,8 @@ TEST(ClaireTestClass, test_pour_interpolation)
 
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM2|gmds::F|gmds::E|gmds::N|gmds::N2E|gmds::E2N|gmds::E2F|gmds::N2F|gmds::F2N));
 
-	std::string vtk_file = "/home/calderans/dev/pour_claire/quart_torus.vtk";
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir + "/quart_torus.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -655,23 +657,8 @@ TEST(ClaireTestClass, test_pour_interpolation)
 
 	b.initializeBlocksPoints();
 
-	IGMeshIOService ios_geom(&manager.getMeshView());
-	VTKWriter writer_geom(&ios_geom);
-	writer_geom.setCellOptions(N|F);
-	writer_geom.setDataOptions(N|F);
-	writer_geom.write("/home/calderans/dev/pour_claire/geom_test.vtk");
+	math::Point p(b.get<Node>(145).point());
 
-	IGMeshIOService ios(&m);
-	VTKWriter writer(&ios);
-	writer.setCellOptions(N|F);
-	writer.setDataOptions(N|F);
-	writer.write("/home/calderans/dev/pour_claire/test_mesh.vtk");
-
-	IGMeshIOService iosb(&b);
-	VTKWriter writerb(&iosb);
-	writerb.setCellOptions(N);
-	writerb.setDataOptions(N);
-	writerb.write("/home/calderans/dev/pour_claire/test_grid.vtk");
-
-
+	ASSERT_FLOAT_EQ(p.X(),3.8780577);
+	ASSERT_FLOAT_EQ(p.Y(),5.6330175);
 }
