@@ -97,6 +97,11 @@ TEST(Blocking2DTestSuite, test_blocking2D_2)
 	b0.setNbDiscretizationI(11);
 	b0.setNbDiscretizationJ(11);
 
+
+	Blocking2D::Block b1 = blocking.block(1);
+	b1.setNbDiscretizationI(11);
+	b1.setNbDiscretizationJ(11);
+
 	ASSERT_EQ(n1.id(),b0.origin());
 	ASSERT_FLOAT_EQ(b0.getUnitVectorI().X(),1.0);
 	ASSERT_FLOAT_EQ(b0.getUnitVectorI().Y(),0.0);
