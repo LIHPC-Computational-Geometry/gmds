@@ -180,6 +180,7 @@ AeroPipeline_2D::execute(){
 	aero_extrusion.execute();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
 
 	std::cout << "-> Classification géométrique" << std::endl;
 	t_start = clock();
@@ -187,6 +188,7 @@ AeroPipeline_2D::execute(){
 	UpdateLinkerLastLayer();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
 
 	std::cout << "-> Conversion maillage en blocking" << std::endl;
 	t_start = clock();
@@ -194,20 +196,26 @@ AeroPipeline_2D::execute(){
 	ConvertisseurMeshToBlocking();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
 
 	// Lissage
 	std::cout << "-> Lissage final" << std::endl;
 	t_start = clock();
-	Grid_Smooth2D smoother(&m_Blocking2D, 400);
-	smoother.execute();
+	//Grid_Smooth2D smoother(&m_Blocking2D, 400);
+	//smoother.execute();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
 
 	// Compute the quality criterions of the blocking
 	math::Utils::AnalyseQuadMeshQuality(&m_Blocking2D);
 
 	// Ecriture finale des maillages
+	std::cout << "-> Ecriture finale des maillages" << std::endl;
+	t_start = clock();
 	EcritureMaillage();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
 	std::cout << " " << std::endl;
 	std::cout << "INFORMATIONS COMPLEMENTAIRES :" << std::endl;
@@ -247,6 +255,7 @@ void
 AeroPipeline_2D::EcritureMaillage(){
 
 	std::cout << "-> Ecriture du maillage ..." << std::endl;
+	std::cout << "Ecriture 1 ..." << std::endl;
 
 	//gmds::IGMeshIOService ioService(m_meshHex);
 	gmds::IGMeshIOService ioService(&m_Blocking2D);
@@ -257,13 +266,20 @@ AeroPipeline_2D::EcritureMaillage(){
 	//vtkWriter_Blocking.write(m_params.output_file);
 	vtkWriter_Blocking.write("AeroPipeline2D_Blocking.vtk");
 
+	std::cout << "Ecriture 2 ..." << std::endl;
+
+	/*
 	math::Utils::BuildMesh2DFromBlocking2D(&m_Blocking2D, m_meshHex);
 	math::Utils::AnalyseQuadMeshQuality(m_meshHex);
 	ioService = m_meshHex;
 	gmds::VTKWriter vtkWriter_HexMesh(&ioService);
 	vtkWriter_HexMesh.setCellOptions(gmds::N|gmds::F);
 	vtkWriter_HexMesh.setDataOptions(gmds::N|gmds::F);
+	std::cout << "Test" << std::endl;
 	vtkWriter_HexMesh.write("AeroPipeline2D_HexMesh.vtk");
+	 */
+
+	std::cout << "Ecriture 3 ..." << std::endl;
 
 	// Ecriture du maillage en triangles initial pour visualisation et débug
 	ioService = m_meshTet;
@@ -273,8 +289,8 @@ AeroPipeline_2D::EcritureMaillage(){
 	vtkWriter_TetMesh.write("AeroPipeline2D_TetMesh.vtk");
 
 	// Ecriture du maillage au format su2
-	SU2Writer writer(m_meshHex, "AeroPipeline2D_QuadMesh.su2", m_params.x_lim_SU2_inoutlet);
-	SU2Writer::STATUS result = writer.execute();
+	//SU2Writer writer(m_meshHex, "AeroPipeline2D_QuadMesh.su2", m_params.x_lim_SU2_inoutlet);
+	//SU2Writer::STATUS result = writer.execute();
 
 }
 /*------------------------------------------------------------------------*/
@@ -753,6 +769,15 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 
 		m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_1);
 
+	}
+
+
+	// Normalisation du champ
+	for (auto n_id:m_meshTet->nodes())
+	{
+		math::Vector3d vec = var_VectorsForExtrusion->value(n_id);
+		vec.normalize();
+		var_VectorsForExtrusion->set(n_id, vec);
 	}
 
 }
