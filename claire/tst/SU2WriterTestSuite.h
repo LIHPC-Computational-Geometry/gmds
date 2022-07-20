@@ -33,12 +33,13 @@ TEST(ClaireTestClass, testSU2Writer)
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N|gmds::F);
-	vtkReader.read(dir+"/Aero/Poubelle/mesh.vtk");
+	vtkReader.read(dir+"/Aero/2D/Diamond_Airfoil_2D_Papier_5.vtk");
 
 	gmds::MeshDoctor doc(&m);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
 
+	std::cout << "-> Ecriture du maillage ..." << std::endl;
 	SU2Writer writer(&m, "mesh.su2", -1000);
 	SU2Writer::STATUS result = writer.execute();
 
