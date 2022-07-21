@@ -11,6 +11,7 @@
 #include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/claire/AdvectedPointRK4_2D.h>
 #include <gmds/claire/Grid_Smooth2D.h>
+#include <gmds/claire/SmoothLineSweepingYao.h>
 #include <gmds/claire/AeroExtrusion_2D.h>
 #include <gmds/claire/SU2Writer.h>
 #include <gmds/claire/IntervalAssignment_2D.h>
@@ -201,8 +202,13 @@ AeroPipeline_2D::execute(){
 	// Lissage
 	std::cout << "-> Lissage final" << std::endl;
 	t_start = clock();
-	Grid_Smooth2D smoother(&m_Blocking2D, 100);
-	smoother.execute();
+	//Grid_Smooth2D smoother(&m_Blocking2D, 100);
+	//smoother.execute();
+	for (auto b:m_Blocking2D.allBlocks())
+	{
+		SmoothLineSweepingYao smoother( &b, 500);
+		smoother.execute();
+	}
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;

@@ -46,9 +46,13 @@ class LIB_GMDS_CLAIRE_API AbstractSmoothLineSweeping_2D{
 	/*-------------------------------------------------------------------*/
 
 	/*-------------------------------------------------------------------*/
-	/** @brief Update old coords
+	/** @brief One step of the smoothing algorithm
 	 */
 	void One_Step_Smoothing();
+	/*-------------------------------------------------------------------*/
+	/** @brief Boundary smoothing algorithm
+	 */
+	void BoundarySlipping();
 	/*-------------------------------------------------------------------*/
 
 	/*-------------------------------------------------------------------*/
@@ -69,12 +73,16 @@ class LIB_GMDS_CLAIRE_API AbstractSmoothLineSweeping_2D{
  protected:
 	/** block we work on */
 	Blocking2D::Block* m_B;
-	/** nb max iterations */
-	int m_nb_max_iterations;
 	/** discretization I */
 	int m_Nx;
 	/** discretization J */
 	int m_Ny;
+	/** old coord x */
+	Array2D<TCoord> m_old_coord_x;
+	/** old coord y */
+	Array2D<TCoord> m_old_coord_y;
+	/** nb max iterations */
+	int m_nb_max_iterations;
 	/** tolerance */
 	int m_tol;
 	/** damping parameter */
