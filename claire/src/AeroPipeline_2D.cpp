@@ -201,8 +201,8 @@ AeroPipeline_2D::execute(){
 	// Lissage
 	std::cout << "-> Lissage final" << std::endl;
 	t_start = clock();
-	//Grid_Smooth2D smoother(&m_Blocking2D, 400);
-	//smoother.execute();
+	Grid_Smooth2D smoother(&m_Blocking2D, 100);
+	smoother.execute();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
