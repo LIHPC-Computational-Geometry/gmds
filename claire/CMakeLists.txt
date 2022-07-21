@@ -59,7 +59,7 @@ set(GMDS_SRC
 		src/AeroException.cpp
 		src/Front.cpp
 		src/SmoothingPaving_2D.cpp
-        src/SU2Writer.cpp inc/gmds/claire/SU2Writer.h inc/gmds/claire/IntervalAssignment_2D.h src/IntervalAssignment_2D.cpp inc/gmds/claire/AbstractSmoothLineSweeping_2D.h src/AbstractSmoothLineSweeping_2D.cpp)
+        src/SU2Writer.cpp inc/gmds/claire/SU2Writer.h inc/gmds/claire/IntervalAssignment_2D.h src/IntervalAssignment_2D.cpp inc/gmds/claire/AbstractSmoothLineSweeping_2D.h src/AbstractSmoothLineSweeping_2D.cpp inc/gmds/claire/SmoothLineSweepingYao.h src/SmoothLineSweepingYao.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

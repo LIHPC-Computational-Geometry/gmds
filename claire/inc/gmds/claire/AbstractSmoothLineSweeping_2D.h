@@ -40,9 +40,30 @@ class LIB_GMDS_CLAIRE_API AbstractSmoothLineSweeping_2D{
 
  protected:
 	/*-------------------------------------------------------------------*/
+	/** @brief Compute the new position of the node
+	 */
+	virtual math::Point ComputeNewPosition(int i, int j)=0;
+	/*-------------------------------------------------------------------*/
+
+	/*-------------------------------------------------------------------*/
+	/** @brief Update old coords
+	 */
+	void One_Step_Smoothing();
+	/*-------------------------------------------------------------------*/
+
+	/*-------------------------------------------------------------------*/
 	/** @brief Find the middle of a branch between 3 points
 	 */
 	math::Point FindMidBranche(const math::Point A, const math::Point B, const math::Point C);
+	/*-------------------------------------------------------------------*/
+	/** @brief Compute the L2 norm of the relative error between the pos
+	 * of the nodes on the bloc and the old coords
+	 */
+	double L2_norm_relative_error(Array2D<TCoord>* old_coord_x, Array2D<TCoord>* old_coord_y);
+	/*-------------------------------------------------------------------*/
+	/** @brief Update old coords
+	 */
+	void Update_old_coords(Array2D<TCoord>* old_coord_x, Array2D<TCoord>* old_coord_y);
 	/*-------------------------------------------------------------------*/
 
  protected:
@@ -50,6 +71,14 @@ class LIB_GMDS_CLAIRE_API AbstractSmoothLineSweeping_2D{
 	Blocking2D::Block* m_B;
 	/** nb max iterations */
 	int m_nb_max_iterations;
+	/** discretization I */
+	int m_Nx;
+	/** discretization J */
+	int m_Ny;
+	/** tolerance */
+	int m_tol;
+	/** damping parameter */
+	double m_theta;
 
 	typedef struct {
 		unsigned int val[3][3];
