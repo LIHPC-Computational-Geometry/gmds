@@ -16,7 +16,6 @@ Grid_Smooth2D::Grid_Smooth2D(Blocking2D *AMesh,
 void Grid_Smooth2D::setNbIterations(const int ANbIterations)
 {
 	m_nb_max_iterations=ANbIterations;
-
 }
 /*------------------------------------------------------------------------*/
 Grid_Smooth2D::STATUS Grid_Smooth2D::execute()

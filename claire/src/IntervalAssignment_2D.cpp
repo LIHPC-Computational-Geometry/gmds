@@ -23,14 +23,14 @@ IntervalAssignment_2D::execute()
 {
 
 	std::map<int, std::vector<TCellID>> map_chords = ComputeChords();
-	std::cout << "NOMBRE DE CORDES : " << map_chords.size() << std::endl;
+	//std::cout << "NOMBRE DE CORDES : " << map_chords.size() << std::endl;
 
 	Variable<int>* var_NbrCells = m_blocking->getOrCreateVariable<int, GMDS_EDGE>("NbrCells");
 
 	for (auto chord:map_chords)
 	{
 		int Nb_cells = ComputeChordDiscretization(chord.second);
-		std::cout << "Nombre de cellules dans la corde " << chord.first << " : " << Nb_cells << std::endl;
+		//std::cout << "Nombre de cellules dans la corde " << chord.first << " : " << Nb_cells << std::endl;
 		for (auto e_id:chord.second)
 		{
 			var_NbrCells->set(e_id, Nb_cells);

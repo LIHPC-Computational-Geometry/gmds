@@ -31,19 +31,19 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 
 	// IN/OUT Parameters
 	std::string dir(TEST_SAMPLES_DIR);
-	params_aero.input_file=dir+"/Aero/2D/Diamond_Airfoil_2D_Papier.vtk";
+	params_aero.input_file=dir+"/Aero/2D/NACA_0012_2D_0.5.vtk";
 	params_aero.output_file="AeroPipeline2D_Quad.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
 
 	// Physical Parameters for the algorithm
-	params_aero.delta_cl = 5;				// Epaisseur de la première couche, pour la couche limite
+	params_aero.delta_cl = 0.05;				// Epaisseur de la première couche, pour la couche limite
 	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
 
 	// Wall Discretization Parameter
-	params_aero.nbrMinBloc = 16;					// Minimal number of block on the wall
+	params_aero.nbrMinBloc = 20;					// Minimal number of block on the wall
 	params_aero.nbrCellsInCL = 30;				// Number of cells in the boundary layer
-	params_aero.cell_size_dx_wall = 0.1 ;			// Maximal size of the cells on the wall
-	params_aero.cell_size_default = 0.1 ;			// Default size of the cells in the domain
+	params_aero.cell_size_dx_wall = 0.01 ;			// Maximal size of the cells on the wall
+	params_aero.cell_size_default = 0.01 ;			// Default size of the cells in the domain
 
 	// Vector Field Computation Parameters
 	params_aero.vectors_field = 0;				// Choose the way the vectors field is computed for the extrusion

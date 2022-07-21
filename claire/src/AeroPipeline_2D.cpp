@@ -268,16 +268,13 @@ AeroPipeline_2D::EcritureMaillage(){
 
 	std::cout << "Ecriture 2 ..." << std::endl;
 
-	/*
 	math::Utils::BuildMesh2DFromBlocking2D(&m_Blocking2D, m_meshHex);
 	math::Utils::AnalyseQuadMeshQuality(m_meshHex);
 	ioService = m_meshHex;
 	gmds::VTKWriter vtkWriter_HexMesh(&ioService);
 	vtkWriter_HexMesh.setCellOptions(gmds::N|gmds::F);
 	vtkWriter_HexMesh.setDataOptions(gmds::N|gmds::F);
-	std::cout << "Test" << std::endl;
 	vtkWriter_HexMesh.write("AeroPipeline2D_HexMesh.vtk");
-	 */
 
 	std::cout << "Ecriture 3 ..." << std::endl;
 

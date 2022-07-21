@@ -281,6 +281,7 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 		nodes_quad_2.push_back(m_meshQ->get<Node>(Front_IN.getNextNode(n_id, neighbors_nodes[1])));
 
 		// Les tests pour la FUSION
+		/*
 		if (Front_IN.isFusionable(n_id)) {
 
 			// test arête écrasée premier quad
@@ -291,19 +292,6 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 			double min_lenght_2 =
 			   math::AeroMeshQuality::minlenghtedge(nodes_quad_2[0].point(), nodes_quad_2[1].point(), nodes_quad_2[2].point(), nodes_quad_2[3].point());
 
-			/*
-			// test arête écrasée premier quad
-			double min_lenght_1 = math::AeroMeshQuality::minlenghtedge(m_meshQ, n_id, neighbors_nodes[0],
-			                                  Front_IN.getNextNode(neighbors_nodes[0],n_id),
-			                                  Front_IN.getNextNode(n_id,neighbors_nodes[0]));
-
-			// test arête écrasée second quad
-			double min_lenght_2 = math::AeroMeshQuality::minlenghtedge(m_meshQ, n_id, neighbors_nodes[1],
-			                                                           Front_IN.getNextNode(neighbors_nodes[1],n_id),
-			                                                           Front_IN.getNextNode(n_id,neighbors_nodes[1]));
-			                                                           */
-
-
 			if (singu_not_found && (min_lenght_1 < 0.001 || min_lenght_2 < 0.001)) {
 				node_id = n_id;
 				type = 2;
@@ -311,6 +299,7 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 			}
 
 		}
+	   */
 
 		// Les tests pour l'INSERSION
 		if (singu_not_found && Front_IN.isMultiplicable(n_id)) {
