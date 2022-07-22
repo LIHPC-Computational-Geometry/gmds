@@ -134,6 +134,16 @@ TEST(EllipticSmoothingTestSuite, grid2D_smoother)
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
 	doc.orient2DFaces();
+	for(auto f_id:m.faces()) {
+		Face f=m.get<Face>(f_id);
+		if (f.normal().dot(math::Vector3d({.0, .0, 1.0})) <= 0) {
+			std::vector<TCellID> ns = f.getIDs<Node>();
+			std::vector<TCellID> ns2(ns.size());
+			for (auto i = 0; i < ns.size(); i++)
+				ns2[ns.size() - 1 - i] = ns[i];
+			f.set<Node>(ns2);
+		}
+	}
 
 	//==================================================================
 	// MARK ALL THE BOUNDARY CELL OF THE INIT MESH
