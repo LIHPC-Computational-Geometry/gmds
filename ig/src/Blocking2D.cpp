@@ -4,7 +4,7 @@
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
-Blocking2D::Blocking2D() 
+Blocking2D::Blocking2D()
   : Mesh(MeshModel(DIM3|F|E|N|F2N|E2N|F2E|E2F|N2E|N2F))
 {
 	m_embedding_dim = newVariable<int, GMDS_NODE>("embedding_dim");
@@ -16,7 +16,7 @@ Blocking2D::Blocking2D()
 
 }
 /*----------------------------------------------------------------------------*/
-Blocking2D::Blocking2D(const Mesh& AMesh, int AN): Mesh(AMesh.getModel()){
+Blocking2D::Blocking2D(const Mesh& AMesh): Mesh(AMesh.getModel()){
 
 	// for now, we assume that the mesh hasn't already been used for a blocking
 
@@ -41,8 +41,6 @@ Blocking2D::Blocking2D(const Mesh& AMesh, int AN): Mesh(AMesh.getModel()){
 		std::vector<TCellID> f_nodes;
 		face.getIDs<Node>(f_nodes);
 		Block b = newBlock(n2n[f_nodes[0]],n2n[f_nodes[1]],n2n[f_nodes[2]],n2n[f_nodes[3]]);
-		b.setNbDiscretizationI(AN);
-		b.setNbDiscretizationJ(AN);
 	}
 
 
@@ -160,6 +158,120 @@ bool Blocking2D::checkDiscretizationValidity() const {
 
 	return true;
 }
+/*----------------------------------------------------------------------------*/
+void Blocking2D::initializeEdgesPoints()
+{
+	// first we check that edges are discretiezd similarly by blocks sharing
+	// them
+	checkDiscretizationValidity();
+	// then we mesh edges
+	for (auto e_id : edges()) {
+		Edge ei = get<Edge>(e_id);
+		int nb_subdiv = getNbDiscretization(ei.get<Face>()[0], ei);
+		// We use a discrete linear interpolation along the edge
+		std::vector<Node> ei_end_nodes = ei.get<Node>();
+		Node n0 = ei_end_nodes[0];
+		Node n1 = ei_end_nodes[1];
+		math::DiscretizationScheme1DUniform d(n0.point(), n1.point(), nb_subdiv);
+		std::vector<TCellID> *edge_disc = new std::vector<TCellID>();
+		edge_disc->push_back(n0.id());
+		for (auto i = 1; i < nb_subdiv - 1; i++) {
+			Node ni = newNode(d(i));
+			m_embedding_dim->set(ni.id(), 1);
+			m_embedding_id->set(ni.id(), e_id);
+			edge_disc->push_back(ni.id());
+		}
+		edge_disc->push_back(n1.id());
+		m_edge_grids->set(e_id, edge_disc);
+	}
+}
+/*----------------------------------------------------------------------------*/
+void Blocking2D::initializeBlocksPoints(){
+	for(auto f_id:faces()){
+		Block bi(f_id,this);
+		auto nb_I = bi.getNbDiscretizationI();
+		auto nb_J = bi.getNbDiscretizationJ();
+
+		Array2D<TCellID>* a = new Array2D<TCellID>(nb_I,nb_J);
+		Array2D<math::Point> pnts(nb_I,nb_J);
+
+		Node n0 = bi.getNode(0);
+		Node n1 = bi.getNode(1);
+		Node n2 = bi.getNode(2);
+		Node n3 = bi.getNode(3);
+
+		(*a)(0,0)           =n0.id();
+		(*a)(nb_I-1,0)      =n1.id();
+		(*a)(nb_I-1,nb_J-1) =n2.id();
+		(*a)(0,nb_J-1)      =n3.id();
+
+		pnts(0,0)           =n0.point();
+		pnts(nb_I-1,0)      =n1.point();
+		pnts(nb_I-1,nb_J-1) =n2.point();
+		pnts(0,nb_J-1)      =n3.point();
+
+		Edge e01 = bi.getEdge(0,1);
+		std::vector<TCellID>* e01_nodes = m_edge_grids->value(e01.id());
+		if((*e01_nodes)[0]==n1.id()){
+			//need to reverse
+			std::reverse(e01_nodes->begin(),e01_nodes->end());
+		}
+
+		Edge e12 = bi.getEdge(1,2);
+		std::vector<TCellID>* e12_nodes = m_edge_grids->value(e12.id());
+		if((*e12_nodes)[0]==n2.id()){
+			//need to reverse
+			std::reverse(e12_nodes->begin(),e12_nodes->end());
+		}
+
+		Edge e32 = bi.getEdge(3,2);
+		std::vector<TCellID>* e32_nodes = m_edge_grids->value(e32.id());
+		if((*e32_nodes)[0]==n2.id()){
+			//need to reverse
+			std::reverse(e32_nodes->begin(),e32_nodes->end());
+		}
+
+		Edge e03 = bi.getEdge(0,3);
+		std::vector<TCellID>* e03_nodes = m_edge_grids->value(e03.id());
+		if((*e03_nodes)[0]==n3.id()){
+			//need to reverse
+			std::reverse(e03_nodes->begin(),e03_nodes->end());
+		}
+
+		for(auto i=1; i<e01_nodes->size()-1;i++){
+			(*a)(i,0) =(*e01_nodes)[i];
+			pnts(i,0)= get<Node>((*e01_nodes)[i]).point();
+		}
+		for(auto i=1; i<e32_nodes->size()-1;i++){
+			(*a)(i,nb_J-1) =(*e32_nodes)[i];
+			pnts(i,nb_J-1)= get<Node>((*e32_nodes)[i]).point();
+		}
+		for(auto i=1; i<e03_nodes->size()-1;i++){
+			(*a)(0,i) =(*e03_nodes)[i];
+			pnts(0,i)= get<Node>((*e03_nodes)[i]).point();
+		}
+		for(auto i=1; i<e12_nodes->size()-1;i++){
+			(*a)(nb_I-1,i) =(*e12_nodes)[i];
+			pnts(nb_I-1,i)= get<Node>((*e12_nodes)[i]).point();
+		}
+
+		math::TransfiniteInterpolation::computeQuad(pnts);
+		for(auto i=1; i<nb_I-1;i++){
+			for(auto j=1; j<nb_J-1;j++) {
+				Node nij = newNode(pnts(i,j));
+				(*a)(i,j)=nij.id();
+				m_embedding_dim->set(nij.id(),2);
+				m_embedding_id->set(nij.id(),f_id);
+			}
+		}
+		m_face_grids->set(f_id,a);
+	}
+}
+/*----------------------------------------------------------------------------*/
+std::vector<TCellID>* Blocking2D::getEdgeGrid(TCellID AID){
+	return m_edge_grids->value(AID);
+}
+
 /*----------------------------------------------------------------------------*/
 void Blocking2D::initializeGridPoints() {
 	// first we check that edges are discretiezd similarly by blocks sharing
@@ -590,7 +702,6 @@ Node Blocking2D::Block::operator()(const int AI, const int AJ) {
 			int b_edge_index = -1;
 
 
-			std::cout<<"id "<<edge.id()<<std::endl;
 			for(int i = 0; i<4; i++){
 
 
@@ -791,4 +902,22 @@ std::pair<int,int> Blocking2D::Block::getIndices(const TCellID AID){
 		}
 	}
 	throw GMDSException("ERROR: Node not in the block grid.");
+}
+/*----------------------------------------------------------------------------*/
+bool Blocking2D::Block::isEdgeOnI(const TCellID AID) {
+	std::vector<TCellID> e_nodes = m_support->get<Edge>(AID).getIDs<Node>();
+	std::vector<TCellID> nids = m_face.getIDs<Node>();
+	//Same as getEdge, we use the node indices (more suitable for class changes?)
+	return (e_nodes[0] == nids[0] && e_nodes[1] == nids[1]) || (e_nodes[0] == nids[1] && e_nodes[1] == nids[0])
+	       || (e_nodes[0] == nids[2] && e_nodes[1] == nids[3]) || (e_nodes[0] == nids[3] && e_nodes[1] == nids[2]);
+	//CAUTION : if the edge does not belong the bloc it will return false instead of an error
+}
+/*----------------------------------------------------------------------------*/
+bool Blocking2D::Block::isEdgeOnJ(const TCellID AID) {
+	std::vector<TCellID> e_nodes = m_support->get<Edge>(AID).getIDs<Node>();
+	std::vector<TCellID> nids = m_face.getIDs<Node>();
+	//Same as getEdge, we use the node indices (more suitable for class changes?)
+	return (e_nodes[0] == nids[1] && e_nodes[1] == nids[2]) || (e_nodes[0] == nids[2] && e_nodes[1] == nids[1])
+	       || (e_nodes[0] == nids[0] && e_nodes[1] == nids[3]) || (e_nodes[0] == nids[3] && e_nodes[1] == nids[0]);
+	//CAUTION : if the edge does not belong the bloc it will return false instead of an error
 }

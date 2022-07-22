@@ -2,8 +2,10 @@
 // Created by ledouxf on 1/22/19.
 //
 /*----------------------------------------------------------------------------*/
-#include <gmds/claire/Smooth2D.h>
+#include <gmds/cad/FACManager.h>
+#include "gmds/io/VTKReader.h"
 #include <gmds/claire/Grid_Smooth2D.h>
+#include <gmds/claire/Smooth2D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
@@ -12,6 +14,7 @@
 #include <gmds/io/VTKWriter.h>
 #include <gtest/gtest.h>
 #include <iostream>
+#include <unit_test_config.h>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -105,7 +108,7 @@ TEST(ClaireTestClass, testGrid2D_Perturbation_1)
 	for(auto id:m.nodes()){
 		if(var_bnd->value(id)==0){
 			n = m.get<Node>(id);
-		   n_coords = n.point();
+			n_coords = n.point();
 			c1 = rand()/ double(RAND_MAX) ;
 			c2 = rand()/ double(RAND_MAX) ;
 			//std::cout << "Numéro node :" << n << std::endl ;
@@ -184,39 +187,39 @@ TEST(ClaireTestClass, testGrid2D_Quart_Cylindre)
 	// sont numérotés les noeuds lors de la génération du maillage avec
 	// GridBuilder
 	for(auto id:bnd_node_ids){
-			n = m.get<Node>(id);
-			n_coords = n.point();
-			//std::cout << "Numéro node :" << n << std::endl ;
-			//std::cout << "Nombre aléatoire c1 =" << c1 << std::endl ;
-			n.setX( n_coords.X() );
-			n.setY( n_coords.Y() );
-		   // "Bord gauche" du domaine carré
-		   if (id <= Ny-1) {
-			   n.setX( - R_int - (double(id)/(Ny-1))*(R_ext-R_int) );
-				n.setY( 0.0 );
-		   }
-		   // "Bord droit" du domaine carré
-		   else if (id >= (Ny-1)*Nx) {
-			   n.setX( 0.0 );
-			   n.setY( R_int + ((double(id)-(Nx-1.0)*Ny)/(Ny-1.0))*(R_ext-R_int) );
-		   }
-		   // "Bord bas et haut" du domaine carré
-		   else {
-			   // "Bord bas" du domaine carré
-			   if ( id%Ny == 0 ) {
-				   int k = id / Ny;
-				   theta = M_PI - (double(k) / (Nx - 1.0)) * M_PI / 2.0;
-				   n.setX(R_int*cos(theta) );
-				   n.setY(R_int*sin(theta) );
-			   }
-			   // "Bord haut" du domaine carré
-			   else {
-				   int k = ( (id+1) / Ny) - 1;
-				   theta = M_PI - (double(k) / (Nx - 1.0)) * M_PI / 2.0;
-				   n.setX(R_ext*cos(theta) );
-				   n.setY(R_ext*sin(theta) );
-			   }
-		   }
+		n = m.get<Node>(id);
+		n_coords = n.point();
+		//std::cout << "Numéro node :" << n << std::endl ;
+		//std::cout << "Nombre aléatoire c1 =" << c1 << std::endl ;
+		n.setX( n_coords.X() );
+		n.setY( n_coords.Y() );
+		// "Bord gauche" du domaine carré
+		if (id <= Ny-1) {
+			n.setX( - R_int - (double(id)/(Ny-1))*(R_ext-R_int) );
+			n.setY( 0.0 );
+		}
+		// "Bord droit" du domaine carré
+		else if (id >= (Ny-1)*Nx) {
+			n.setX( 0.0 );
+			n.setY( R_int + ((double(id)-(Nx-1.0)*Ny)/(Ny-1.0))*(R_ext-R_int) );
+		}
+		// "Bord bas et haut" du domaine carré
+		else {
+			// "Bord bas" du domaine carré
+			if ( id%Ny == 0 ) {
+				int k = id / Ny;
+				theta = M_PI - (double(k) / (Nx - 1.0)) * M_PI / 2.0;
+				n.setX(R_int*cos(theta) );
+				n.setY(R_int*sin(theta) );
+			}
+			// "Bord haut" du domaine carré
+			else {
+				int k = ( (id+1) / Ny) - 1;
+				theta = M_PI - (double(k) / (Nx - 1.0)) * M_PI / 2.0;
+				n.setX(R_ext*cos(theta) );
+				n.setY(R_ext*sin(theta) );
+			}
+		}
 	}
 	// ---------------------------------------------------------------
 
@@ -550,10 +553,10 @@ TEST(ClaireTestClass, testGrid_Smooth2D_2)
 	// Perturbation of the mesh
 	// Boucle sur les noeuds internes du bloc b0
 	for (int i=1; i<Nx-1; i++) {
-		for (int j=1; j<Ny-1; j++) {
-			b1(i,j).setX(0.0);
-			b1(i,j).setY(0.0);
-		}
+	   for (int j=1; j<Ny-1; j++) {
+	      b1(i,j).setX(0.0);
+	      b1(i,j).setY(0.0);
+	   }
 	}
 
 	b1 = m.block(1);
@@ -563,10 +566,10 @@ TEST(ClaireTestClass, testGrid_Smooth2D_2)
 	// Perturbation of the mesh
 	// Boucle sur les noeuds internes du bloc b1
 	for (int i=1; i<Nx-1; i++) {
-		for (int j=1; j<Ny-1; j++) {
-			b1(i,j).setX(0.0);
-			b1(i,j).setY(0.0);
-		}
+	   for (int j=1; j<Ny-1; j++) {
+	      b1(i,j).setX(0.0);
+	      b1(i,j).setY(0.0);
+	   }
 	}
 
 	 */
@@ -586,4 +589,76 @@ TEST(ClaireTestClass, testGrid_Smooth2D_2)
 	writer_geom.setDataOptions(N|F);
 	writer_geom.write("testGrid_Smooth2D_2_result.vtk");
 
+}
+
+
+TEST(ClaireTestClass, test_pour_interpolation)
+{
+	Blocking2D b;
+	Node n1 = b.newBlockCorner(0,0);
+	Node n2 = b.newBlockCorner(5,0);
+	Node n3 = b.newBlockCorner(10,5);
+	Node n4=  b.newBlockCorner(10,10);
+
+	Blocking2D::Block b1 = b.newBlock(n1,n2,n3,n4);
+	b1.setNbDiscretizationI(10);
+	b1.setNbDiscretizationJ(30);
+
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM2|gmds::F|gmds::E|gmds::N|gmds::N2E|gmds::E2N|gmds::E2F|gmds::N2F|gmds::F2N));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir + "/quart_torus.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::E|gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.updateUpwardConnectivity();
+
+	cad::FACManager manager;
+	cad::GeomMeshLinker linkerTri;
+	manager.initAndLinkFrom2DMesh(&m, &linkerTri);
+	cad::GeomMeshLinker linker;
+	linker.setGeometry(&manager);
+	linker.setMesh(&b);
+
+	linker.linkNodeToPoint(0,1);
+	linker.linkNodeToPoint(1,2);
+	linker.linkNodeToPoint(2,3);
+	linker.linkNodeToPoint(3,4);
+
+	linker.linkEdgeToCurve(0,1);
+	linker.linkEdgeToCurve(1,3);
+	linker.linkEdgeToCurve(2,2);
+	linker.linkEdgeToCurve(3,4);
+
+	b.initializeEdgesPoints();
+
+	for(auto nid : b.nodes()){
+		//On teste si le noeud est sur une arete de bloc
+		if(b.getBlockingDim(nid) == 1){
+			//Si oui on recupere l'id de l'arete de bloc
+			int edge_id = b.getBlockingId(nid);
+			//On teste si l'arete est sur une courbe
+			if(linker.getGeomDim<Edge>(edge_id) == 2){
+				//Si oui on recupere l'id de la courbe
+				int curve_id = linker.getGeomId<Edge>(edge_id);
+				cad::GeomCurve* curve = manager.getCurve(curve_id);
+
+				Node n = b.get<Node>(nid);
+				math::Point point_to_project = n.point();
+				curve->project(point_to_project);
+				n.setPoint(point_to_project);
+			}
+		}
+	}
+
+	b.initializeBlocksPoints();
+
+	math::Point p(b.get<Node>(145).point());
+
+	ASSERT_FLOAT_EQ(p.X(),3.8780577);
+	ASSERT_FLOAT_EQ(p.Y(),5.6330175);
 }
