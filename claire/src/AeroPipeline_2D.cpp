@@ -12,6 +12,7 @@
 #include <gmds/claire/AdvectedPointRK4_2D.h>
 #include <gmds/claire/Grid_Smooth2D.h>
 #include <gmds/claire/SmoothLineSweepingYao.h>
+#include <gmds/claire/SmoothLineSweepingOrtho.h>
 #include <gmds/claire/AeroExtrusion_2D.h>
 #include <gmds/claire/SU2Writer.h>
 #include <gmds/claire/IntervalAssignment_2D.h>
@@ -206,7 +207,7 @@ AeroPipeline_2D::execute(){
 	//smoother.execute();
 	for (auto b:m_Blocking2D.allBlocks())
 	{
-		SmoothLineSweepingYao smoother( &b, 1000, 0.0);
+		SmoothLineSweepingYao smoother( &b, 2000, 0.0);
 		smoother.execute();
 	}
 	t_end = clock();

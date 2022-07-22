@@ -36,14 +36,14 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.output_dir="gmds/claire/tst/";
 
 	// Physical Parameters for the algorithm
-	params_aero.delta_cl = 0.025;				// Epaisseur de la première couche, pour la couche limite
+	params_aero.delta_cl = 0.04;				// Epaisseur de la première couche, pour la couche limite
 	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
 
 	// Wall Discretization Parameter
-	params_aero.nbrMinBloc = 14;					// Minimal number of block on the wall
+	params_aero.nbrMinBloc = 10;					// Minimal number of block on the wall
 	params_aero.nbrCellsInCL = 30;				// Number of cells in the boundary layer
-	params_aero.cell_size_dx_wall = 0.00025 ;			// Maximal size of the cells on the wall
-	params_aero.cell_size_default = 0.01 ;			// Default size of the cells in the domain
+	params_aero.cell_size_dx_wall = 2.5*pow(10,-5) ;			// Maximal size of the cells on the wall
+	params_aero.cell_size_default = 0.05 ;			// Default size of the cells in the domain
 
 	// Vector Field Computation Parameters
 	params_aero.vectors_field = 0;				// Choose the way the vectors field is computed for the extrusion
@@ -51,7 +51,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.x_VectorField_Z2 = 1.4;			// Choose the x value of the second zone [x_VectorField_Z2, +inf]
 
 	// Extrusion Parameters
-	params_aero.nbr_couches = 5;			// Number of layer in extrusion
+	params_aero.nbr_couches = 3;			// Number of layer in extrusion
 	params_aero.x_lim = -10000;			// Limites physiques à partir desquelles
 	params_aero.y_lim = -10000;			// l'insertion et la fusion de blocs
 	params_aero.z_lim = -10000;			// sont autorisées
