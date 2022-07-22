@@ -70,8 +70,8 @@ struct GMDSSmoothy_API EllipticSmoothingOptions
 /**
  * Default smoothing options
  */
-const EllipticSmoothingOptions GMDSSmoothy_API ESO_default2D(1. / 2, 10000, 1e-4, 30000, 1, false, false, 1e-5, false, false);
-const EllipticSmoothingOptions GMDSSmoothy_API ESO_default3D(1. / 2., 10000, 1e-4, 300, 1, false, false, 1e-5, false, false);
+const EllipticSmoothingOptions ESO_default2D(1. / 2, 10000, 1e-4, 30000, 1, false, false, 1e-5, false, false);
+const EllipticSmoothingOptions ESO_default3D(1. / 2., 10000, 1e-4, 300, 1, false, false, 1e-5, false, false);
 /*----------------------------------------------------------------------------*/
 class GMDSSmoothy_API EllipticSmoothing2D
 {
