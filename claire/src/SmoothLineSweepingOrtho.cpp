@@ -54,9 +54,60 @@ math::Point SmoothLineSweepingOrtho::ComputeNewPosition(int i, int j)
 		X2 = (*m_B)(i,j).point();
 	}
 
-	math::Point Pos;
+	math::Point X1 = ComputeOrtho(i, j);
 
-	return Pos;
+	math::Point P_new;
+
+	if ( Seg_Hori_1.isIn(X1) && Seg_Hori_1.isIn(X2) )
+	{
+		P_new = alpha*X2 + (1.0-alpha)*X1 ;
+	}
+	else if ( Seg_Hori_2.isIn(X1) && Seg_Hori_2.isIn(X2) )
+	{
+		P_new = alpha*X2 + (1.0-alpha)*X1 ;
+	}
+	else if ( Seg_Hori_1.isIn(X1) && Seg_Hori_2.isIn(X2) )
+	{
+		math::Vector3d v_s1 = H2-X1;
+		math::Vector3d v_s2 = X2-H2;
+		double l = alpha*( v_s1.norm() + v_s2.norm() );
+		if ( l <= v_s1.norm() )
+		{
+			math::Vector3d u = H2-X1;
+			u.normalize();
+			P_new = X1 + l*u;
+		}
+		else
+		{
+			math::Vector3d u = H2-X2;
+			u.normalize();
+			P_new = X2 + ( v_s1.norm() + v_s2.norm() - l )*u;
+		}
+	}
+	else if ( Seg_Hori_2.isIn(X1) && Seg_Hori_1.isIn(X2) )
+	{
+		math::Vector3d v_s1 = H2-X2;
+		math::Vector3d v_s2 = X1-H2;
+		double l = (1.0-alpha)*( v_s1.norm() + v_s2.norm() );
+		if ( l <= v_s1.norm() )
+		{
+			math::Vector3d u = H2-X2;
+			u.normalize();
+			P_new = X2 + l*u;
+		}
+		else
+		{
+			math::Vector3d u = H2-X1;
+			u.normalize();
+			P_new = X1 + ( v_s1.norm() + v_s2.norm() - l )*u;
+		}
+	}
+	else
+	{
+		P_new = H2 ;
+	}
+
+	return P_new;
 }
 /*------------------------------------------------------------------------*/
 
