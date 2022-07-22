@@ -73,7 +73,7 @@ template<typename TType> struct CrossNDPolicy<3, TType>
  * \tparam TDim  vector dimension
  * \tparam TType component type
  */
-template<int TDim, class TType> struct GMDSMath_API VectorND
+template<int TDim, class TType> struct VectorND
 {
 
 	/** alias on this vector type */

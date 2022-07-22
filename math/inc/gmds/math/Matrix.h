@@ -16,7 +16,6 @@
 // GMDS File Headers
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/math/Vector.h>
-#include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
     /*------------------------------------------------------------------------*/
@@ -33,7 +32,7 @@ namespace gmds{
 			*/
 		  /*----------------------------------------------------------------------------*/
 		  template <int TRow, int TCol, typename TType>
-		  struct GMDSMath_API Matrix {
+		  struct Matrix {
 
 			  /** type of matrix components */
 			  typedef TType value_type;
