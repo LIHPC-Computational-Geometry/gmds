@@ -312,7 +312,7 @@ double Elliptic_smoother_3D::evaluate_energy() {
     double E = 0;
 	 for(auto t=0; t<N_tets_;t++) {
         double c = chi(eps_, det_[t]);
-        double f = (J_[t][0] * J_[t][0] + J_[t][1] * J_[t][1] + J_[t][2] * J_[t][2]) / std::pow(c, 2. / 3.);
+        double f = (J_[t][0].dot(J_[t][0])+ J_[t][1].dot(J_[t][1]) + J_[t][2].dot(J_[t][2])) / std::pow(c, 2. / 3.);
         double g = (1 + det_[t] * det_[t]) / c;
         E += ((1 - options_.theta) * f + options_.theta * g) * vol_[t];
     }
@@ -325,7 +325,7 @@ void Elliptic_smoother_3D::standard_elliptic_energy(const std::vector<double>&, 
         double c1 = chi(eps_, det_[t]);
         double c2 = std::pow(c1, 2. / 3.);
         double c3 = chi_deriv(eps_, det_[t]);
-        double f = (J_[t][0] * J_[t][0] + J_[t][1] * J_[t][1] + J_[t][2] * J_[t][2]) / c2;
+        double f = (J_[t][0].dot(J_[t][0]) + J_[t][1].dot(J_[t][1]) + J_[t][2].dot(J_[t][2])) / c2;
         double g = (1 + det_[t] * det_[t]) / c1;
 
 		  for(auto d=0; d<3; d++) {
@@ -333,7 +333,7 @@ void Elliptic_smoother_3D::standard_elliptic_energy(const std::vector<double>&, 
 			  math::Vector3d dgda = K_[t][d] * ((2 * det_[t] - g * c3) / c1);
 
 			  for(auto tc=0; tc<4; tc++) {
-				  double gradi = (dfda * (1. - options_.theta) + dgda * options_.theta) * refs_grad_[t][tc] * vol_[t];
+				  double gradi = (dfda * (1. - options_.theta) + dgda * options_.theta).dot(refs_grad_[t][tc]) * vol_[t];
 				  var_.add2grad(12 * t + 3 * tc + d, gradi, G);
 			  }
 		  }
@@ -346,7 +346,7 @@ void Elliptic_smoother_3D::standard_elliptic_energy_w_hessian(const std::vector<
         double c1 = chi(eps_, det_[t]);
         double c2 = std::pow(c1, 2. / 3.);
         double c3 = chi_deriv(eps_, det_[t]);
-        double f = (J_[t][0] * J_[t][0] + J_[t][1] * J_[t][1] + J_[t][2] * J_[t][2]) / c2;
+        double f = (J_[t][0].dot(J_[t][0]) + J_[t][1].dot(J_[t][1]) + J_[t][2].dot(J_[t][2])) / c2;
         double g = (1 + det_[t] * det_[t]) / c1;
 
 
@@ -354,7 +354,7 @@ void Elliptic_smoother_3D::standard_elliptic_energy_w_hessian(const std::vector<
 			  math::Vector3d dfda = J_[t][d] * (2. / c2) - K_[t][d] * ((2. * f * c3) / (3. * c1));
 			  math::Vector3d dgda = K_[t][d] * ((2 * det_[t] - g * c3) / c1);
             for(auto tc=0; tc<4; tc++) {
-                double gradi = (dfda * (1. - options_.theta) + dgda * options_.theta) * refs_grad_[t][tc] * vol_[t];
+                double gradi = (dfda * (1. - options_.theta) + dgda * options_.theta) .dot(refs_grad_[t][tc]) * vol_[t];
                 var_.add2grad(12 * t + 3 * tc + d, gradi, G);
             }
         }

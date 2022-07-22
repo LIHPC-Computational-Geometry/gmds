@@ -699,14 +699,6 @@ operator+(const VectorND<TDim, TVec> &AV,const Point &AP)
 	return r;
 }
 
-template<int TDim, typename TType> TType
-operator*(const VectorND<TDim, TType> &AV1, const VectorND<TDim, TType> &AV2)
-{
-	TType r = 0;
-	for (int i = TDim; i--; r += AV1[i] * AV2[i])
-		;
-	return r;
-}
 
 
 typedef VectorND<2, TCoord> Vector2d;

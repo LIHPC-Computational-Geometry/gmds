@@ -96,13 +96,14 @@ namespace gmds{
 
 	        Matrix<TRow, TCol,TType> inverse_transpose() const {
 		        Matrix<TRow, TCol,TType> res = adjugate();
-				  return res/(res[0]*m_rows[0]);
+				  return res/(res[0].dot(m_rows[0]));
 			  }
 
 
-							 /*------------------------------------------------------------------------*/
-							 /** \brief  Creation of the inverse matrix
-							  */	        Matrix<TRow, TCol,TType> inverse() const {
+	        /*------------------------------------------------------------------------*/
+	        /** \brief  Creation of the inverse matrix
+				*/
+	        Matrix<TRow, TCol,TType> inverse() const {
 				  return inverse_transpose().transpose();
 			  }
 
