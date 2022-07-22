@@ -157,7 +157,7 @@ class BaseTest : public ::testing::Test {
 };
 
 class DerivedTest : public BaseTest, public ::testing::WithParamInterface<int> {
-  // The usual test fixture members go here too.
+  // The usual test fixture members execute here too.
 };
 
 TEST_F(BaseTest, HasFoo) {

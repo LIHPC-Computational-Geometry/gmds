@@ -170,7 +170,7 @@ FEMSolverStrategy::buildRightHandDirichlet(Eigen::VectorXd& AB, const int AI)
                 std::vector<Node> nodes_of_r = r.get<Node>();
                 bool is_boundary_region = false;
 
-                math::Vector4d Ud(null_vec);
+                math::Vector4d Ud({0,0,0,0});
                 int n_index_in_r = -1;
                 // we store if the i^th node of r is on the boundary or not
 
@@ -193,12 +193,11 @@ FEMSolverStrategy::buildRightHandDirichlet(Eigen::VectorXd& AB, const int AI)
                     math::Matrix<4, 4, double> s = math::TetrahedronP1::stiffnessMatrix(pi, pj, pk,pl);
 
                     // Ud is build
-                    double val_tab[4]={s.get(0, n_index_in_r),
+					     math::Vector4d v={s.get(0, n_index_in_r),
                                        s.get(1, n_index_in_r),
                                        s.get(2, n_index_in_r),
                                        s.get(3, n_index_in_r)};
 
-                    math::Vector4d v(val_tab);
                     AB[I] += -v.dot(Ud);
                 }
             }
@@ -227,34 +226,32 @@ void FEMSolverStrategy::getFeasibleSolution()
         if (!m_mesh->isMarked<Node>(n_id, m_markNodeLocked)) {
 
             int local_id = (*m_ordering)[n_id];
-            double t[9] = {
-                    m_X[0][local_id],
-                    m_X[1][local_id],
-                    m_X[2][local_id],
-                    m_X[3][local_id],
-                    m_X[4][local_id],
-                    m_X[5][local_id],
-                    m_X[6][local_id],
-                    m_X[7][local_id],
-                    m_X[8][local_id]};
 
-            math::Vector9d v(t);
+            math::Vector9d v= {
+			      m_X[0][local_id],
+			      m_X[1][local_id],
+			      m_X[2][local_id],
+			      m_X[3][local_id],
+			      m_X[4][local_id],
+			      m_X[5][local_id],
+			      m_X[6][local_id],
+			      m_X[7][local_id],
+			      m_X[8][local_id]};
+
 
             math::AxisAngleRotation r;
 
             math::SHarmonicL4 sh = math::SHarmonicL4::closest(v, r);
 
-            math::Vector3d vx(1, 0, 0);
-            math::Vector3d vy(0, 1, 0);
-            math::Vector3d vz(0, 0, 1);
+            math::Vector3d vx({1, 0, 0});
+            math::Vector3d vy({0, 1, 0});
+            math::Vector3d vz({0, 0, 1});
             vx = r * vx;
             vy = r * vy;
             vz = r * vz;
 
             (*m_harmonic_field)[n_id] = sh;
-            (*m_chart_field)[n_id] = math::Chart(math::Vector3d(vx[0], vx[1], vx[2]),
-                                                   math::Vector3d(vy[0], vy[1], vy[2]),
-                                                   math::Vector3d(vz[0], vz[1], vz[2]));
+            (*m_chart_field)[n_id] = math::Chart({vx[0], vx[1], vx[2]}, {vy[0], vy[1], vy[2]}, {vz[0], vz[1], vz[2]});
 
         }
     }

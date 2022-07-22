@@ -22,7 +22,7 @@ annotations that can be passed to the :func:`module::def` and
 :enum:`return_value_policy::automatic`.
 
 Return value policies are tricky, and it's very important to get them right.
-Just to illustrate what can go wrong, consider the following simple example:
+Just to illustrate what can execute wrong, consider the following simple example:
 
 .. code-block:: cpp
 

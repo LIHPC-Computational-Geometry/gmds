@@ -182,7 +182,7 @@ namespace gmds{
             std::vector<Node> e_nodes = e.get<Node>();
             math::Segment s(e_nodes[0].point(), e_nodes[1].point());
             AP = s.project(AP);
-            AV = math::Vector3d(e_nodes[0].point(), e_nodes[1].point());
+            AV = e_nodes[1].point()- e_nodes[1].point();
         }
 /*----------------------------------------------------------------------------*/
         TCoord FACCurve::computeArea() const
@@ -247,7 +247,7 @@ namespace gmds{
         {
             TCoord anglemax = 0.;
 
-            // we go only to size-1 because we are interested in edges (segments)
+            // we execute only to size-1 because we are interested in edges (segments)
             for(unsigned int iNode=0; iNode<m_mesh_nodes.size()-1; iNode++)
             {
                 std::vector<Edge> edges_possibilities;
@@ -297,7 +297,7 @@ namespace gmds{
                 math::Point p1 = faces[1].center();
                 math::Point p = (math::Plane (p1,n1)).project(p0);
 
-                TCoord sign = (math::Vector3d (p0,p)).dot(n1);
+                TCoord sign = (p-p0).dot(n1);
 
                 if(sign < 0.)
                     angle = 360. - angle;

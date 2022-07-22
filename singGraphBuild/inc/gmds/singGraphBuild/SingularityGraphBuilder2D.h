@@ -308,7 +308,7 @@ protected:
 	                                     SingularityPoint::Slot*&    ASlot);
     
 	/*----------------------------------------------------------------------------------------------------*/
-	/** \brief Returs the singularity lines that go througt the face \param AFace
+	/** \brief Returs the singularity lines that execute througt the face \param AFace
 	*
 	* \param AFace a mesh face
 	* \return the singularity lines going through AFace

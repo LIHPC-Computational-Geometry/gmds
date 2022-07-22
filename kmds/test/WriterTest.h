@@ -169,11 +169,11 @@ TEST_F(WriterTest, N2R_hexpyrtetprism)
     (*vardouble)[tetId] = 7.3;
     (*vardouble)[prismId] = 7.4;
 
-    kmds::Variable<gmds::math::Vector>* varvec = m.createVariable<gmds::math::Vector>(gmds::math::Vector(0., 0., 0.), kmds::KMDS_REGION, "varvec");
-    (*varvec)[hexId] = gmds::math::Vector (1.,0.,0.);
-    (*varvec)[pyrId] = gmds::math::Vector (1.,1.,0.);
-    (*varvec)[tetId] = gmds::math::Vector (1.,1.,1.);
-    (*varvec)[prismId] = gmds::math::Vector (2.,0.,0.);
+    kmds::Variable<gmds::math::Vector>* varvec = m.createVariable<gmds::math::Vector>(gmds::math::Vector({0., 0., 0.}), kmds::KMDS_REGION, "varvec");
+    (*varvec)[hexId] = gmds::math::Vector ({1., 0., 0.});
+    (*varvec)[pyrId] = gmds::math::Vector ({1., 1., 0.});
+    (*varvec)[tetId] = gmds::math::Vector ({1., 1., 1.});
+    (*varvec)[prismId] = gmds::math::Vector ({2., 0., 0.});
 
     kmds::VTKWriter<kmds::Mesh> w(m);
     w.write("vtkwritertest_3D", kmds::R);

@@ -681,8 +681,8 @@ buildEdges(std::vector<std::vector<OrientedEdge> >& AInEdges,
                         continue;
                     }
                     //We compare length and direction of ej and ek
-                    math::Vector3d vj(m_pnt[ej.first], m_pnt[ej.second]);
-                    math::Vector3d vk(m_pnt[ek.first], m_pnt[ek.second]);
+                    math::Vector3d vj= m_pnt[ej.second]-m_pnt[ej.first];
+                    math::Vector3d vk= m_pnt[ek.second]-m_pnt[ek.first];
                     if(vk.norm2()<vj.norm2()){
                         vj.normalize();
                         vk.normalize();
@@ -776,7 +776,7 @@ buildOrientedEdgesInVolume(const int            APntID,
             if(!computeVolumePointFrom(i, v_axis,next_pi)){
                 continue; //means we reached a FF-singular area
             }
-            math::Vector3d v(pi,next_pi);
+            math::Vector3d v=next_pi-pi;
             std::vector<int> candidates = m_filter[i];
             math::Point pw(pi.X()+v.X(),
                            pi.Y()+v.Y(),
@@ -791,7 +791,7 @@ buildOrientedEdgesInVolume(const int            APntID,
             for(unsigned int j=0; j<candidates.size(); j++){
 
                 math::Point pj = m_pnt[candidates[j]];
-                math::Vector3d vij(pi,pj);
+                math::Vector3d vij=pj-pi;
                 vij.normalize();
                 if(v.dot(vij)>tol) {
                     //pj is candidate so
@@ -865,14 +865,14 @@ buildOrientedEdgesOnSurface(const int            APntID,
             v_axis.normalize(); //likely useless
             math::Vector3d v;
             if((v_axis.dot(n))>tol){
-                //We go out of the domain
+                //We execute out of the domain
                 continue;
             }
             else if((v_axis.dot(n))<-tol){
-                //we go inside the domain
+                //we execute inside the domain
                 math::Point next_pi;
                 if(computeVolumePointFrom(i, v_axis,next_pi))
-                    v=math::Vector3d(pi,next_pi);
+                    v=next_pi-pi;
                 else
                     continue; //it means we reached a FF-singular area
             }
@@ -880,7 +880,7 @@ buildOrientedEdgesOnSurface(const int            APntID,
                 //we are on the surface
                 math::Point next_pi;
                 if(computeSurfacePointFrom(i, v_axis,next_pi))
-                    v=math::Vector3d(pi,next_pi);
+                    v=next_pi-pi;
                 else
                     continue; //it means we reached a FF-singular area
 
@@ -899,7 +899,7 @@ buildOrientedEdgesOnSurface(const int            APntID,
 
             for(unsigned int j=0; j<candidates.size(); j++){
                 math::Point pj = m_pnt[candidates[j]];
-                math::Vector3d vij(pi,pj);
+                math::Vector3d vij=pj-pi;
                 vij.normalize();
 
                 //only volume and boundary well-aligned points are added
@@ -982,7 +982,7 @@ buildOrientedEdgesOnCurve(const int            APntID,
 
             for(unsigned int j=0; j<candidates.size(); j++){
                 math::Point pj = m_pnt[candidates[j]];
-                math::Vector3d vij(pi,pj);
+                math::Vector3d vij=pj-pi;
                 vij.normalize();
 
                 //only point well-aligned and on the boundary are taken
@@ -1029,7 +1029,7 @@ buildOrientedEdges(std::vector<std::vector<OrientedEdge> >& AEdges)
     AEdges.clear();
     AEdges.resize(m_pnt.size());
 
-    //We go through all the points and we store for each of them the list of
+    //We execute through all the points and we store for each of them the list of
     // oriented edges
     for(auto i=0; i<m_pnt.size(); i++){
 
@@ -1249,9 +1249,9 @@ buildCornersAsSolidAngles(const int AOrigin,
         // are geometrically lying on the same plan, they do not define a
         // valid corner
 
-        math::Vector3d v12(origin_pnt,p[0]);
-        math::Vector3d v13(origin_pnt,p[1]);
-        math::Vector3d v14(origin_pnt,p[2]);
+        math::Vector3d v12=p[0]-origin_pnt;
+        math::Vector3d v13=p[1]-origin_pnt;
+        math::Vector3d v14=p[2]-origin_pnt;
 
 
 //      if (origin_pnt.areCoplanar(p[0], p[1], p[2])){
@@ -1290,11 +1290,11 @@ buildCornersAsSolidAngles(const int AOrigin,
         if(valid){
 
             //So we can build a hex corner from this set of edges
-            math::Vector3d v[3] = {
-                math::Vector3d(origin_pnt,p[0]),
-                math::Vector3d(origin_pnt,p[1]),
-                math::Vector3d(origin_pnt,p[2])
-            };
+            math::Vector3d v[3] = {p[0]-origin_pnt,
+			                          p[1]-origin_pnt,
+			                          p[2]-origin_pnt};
+
+
             addCorner(origin_id,
                       AEdges[ti[0]].second, v[0],
                       AEdges[ti[1]].second, v[1],
@@ -1511,13 +1511,13 @@ void PointConnectionBuilder::buildHexahedral()
     Variable<int>* var_surf = m_hexes.newVariable<int,GMDS_NODE>("surface_id");
     Variable<int>* var_curv = m_hexes.newVariable<int,GMDS_NODE>("curve_id");
 
-    /* We go trought all the points and we build hexahedral elements
+    /* We execute trought all the points and we build hexahedral elements
      * for each associated free corner */
     for(unsigned int i=0; i<m_pnt.size(); i++){
 
         math::Point pi = m_pnt[i];
         std::vector<HexCorner> corners_i = m_hc_mapping[i];
-        //Now we go throught the associated corners
+        //Now we execute throught the associated corners
 
         for(unsigned int j=0; j<corners_i.size();j++){
             HexCorner cj = corners_i[j];
@@ -1770,11 +1770,11 @@ getOutputNormal(Face& AFace, Region& ARegion)
     math::Point  reg_center  = ARegion.center();
     math::Point  face_center = AFace.center();
     math::Vector face_normal = AFace.normal();
-    math::Vector v_ref(face_center, reg_center);
+    math::Vector v_ref=reg_center-face_center;
 
     if(face_normal.dot(v_ref)>0)
-        return math::Vector3d(-face_normal.X(), -face_normal.Y(), -face_normal.Z());
+        return math::Vector3d({-face_normal.X(), -face_normal.Y(), -face_normal.Z()});
 
-    return math::Vector3d(face_normal.X(), face_normal.Y(), face_normal.Z());
+    return math::Vector3d({face_normal.X(), face_normal.Y(), face_normal.Z()});
 
 }

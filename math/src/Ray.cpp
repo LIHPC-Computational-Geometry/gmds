@@ -55,7 +55,7 @@ namespace gmds{
 	  dir_pnt.Y() = m_pnt.Y() + m_dirUnit.Y(); 
 	  dir_pnt.Z() = m_pnt.Z() + m_dirUnit.Z(); 
 	  
-          Vector3d v12(p1,p2);
+          Vector3d v12= p2-p1;
           if(v12.isColinear(m_dirUnit)){
               return false; // No intersection
           }
@@ -97,13 +97,13 @@ namespace gmds{
           Point q1 = m_pnt;
           Point q2 = m_pnt + m_dirUnit;	  
 		
-          Vector3d v12(p1,p2);
+          Vector3d v12=p2-p1;
           if(v12.isColinear(m_dirUnit)){
 		  //cout<<"v12.isColinear(m_dirUnit)"<<endl;
               return false; // No intersection
           }
                       
-          math::Point r = p2 - p1;            
+          math::Point r(v12.X(),v12.Y(),v12.Z());
 	/*  
 	  math::Point s = q2 - q1;
 	  
@@ -145,10 +145,10 @@ namespace gmds{
 	  
 	  ////////////////////////////////////////////
 	  
-	 math::Vector3d v1(p1, q1);
-	  math::Vector3d v2(p1, p2);
-	  math::Vector3d d(q1, q2);
-	  math::Vector3d v3(-d[1], d[0]);
+	 math::Vector3d v1=q1-p1;
+	  math::Vector3d v2=p2-p1;
+	  math::Vector3d d=q2-q1;
+	  math::Vector3d v3={-d[1], d[0],0};
 	  double NN = v1.dot(v3);
 	  double DD = v2.dot(v3);
 	  //cout<<"v1 "<<v1<<endl;
@@ -195,9 +195,9 @@ namespace gmds{
           Point p3 = m_pnt;
           Point p4 = m_pnt + m_dirUnit;
 
-          Vector3d v13(p1,p3);
-          Vector3d v12(p1,p2);
-          Vector3d v34(p3,p4);
+          Vector3d v13=p3-p1;
+          Vector3d v12=p2-p1;
+          Vector3d v34=p4-p3;
 
           double tol = 0.001;
           
@@ -236,7 +236,7 @@ namespace gmds{
           Point src_pnt = m_pnt;
           Point dir_pnt = m_pnt + m_dirUnit;
 
-          Vector3d v12(p1,p2);
+          Vector3d v12=p2-p1;
       if(v12.isColinear(m_dirUnit)){
 	return false; // No intersection
       }

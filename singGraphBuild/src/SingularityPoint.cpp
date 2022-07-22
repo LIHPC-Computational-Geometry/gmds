@@ -107,7 +107,7 @@ SingularityPoint::newGeomSlot(const gmds::math::Point &APnt, SingularityLine *AL
 		while (math::near(p_begin.distance(snd_pnt), 0.0))
 			snd_pnt = line_disc[++snd_index];
 
-		slot_dir = math::Vector3d(p_begin, snd_pnt);
+		slot_dir = snd_pnt-p_begin;
 	}
 	else {
 		// start from the last point, we look for a point quite far enough
@@ -116,7 +116,7 @@ SingularityPoint::newGeomSlot(const gmds::math::Point &APnt, SingularityLine *AL
 		while (math::near(p_end.distance(snd_pnt), 0.0))
 			snd_pnt = line_disc[--snd_index];
 
-		slot_dir = math::Vector3d(p_end, snd_pnt);
+		slot_dir = snd_pnt-p_end;
 	}
 	return newSlot(APnt,                // slot location
 	               slot_dir,            // slot direction
@@ -304,7 +304,7 @@ SingularityPoint::getMesh<Region>()
 SingularityPoint::Slot::Slot() :
   isLaunched(false),
   location(math::Point(0, 0, 0)),
-  direction(math::Vector3d(0, 0, 0)),
+  direction(math::Vector3d({0, 0, 0})),
   starting_cell_id(NullID),
   starting_cell_dim(0),
   line(0),

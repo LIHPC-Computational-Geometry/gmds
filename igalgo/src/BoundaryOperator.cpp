@@ -302,8 +302,8 @@ void BoundaryOperator::markNodesOnPoint(const int AMarkCE,// edge on curve IN
                   Node n0 = connected_nodes[0];
                   Node n1 = connected_nodes[1];
 
-                  math::Vector3d v0(n.point(), n0.point());
-                  math::Vector3d v1(n.point(), n1.point());
+                  math::Vector3d v0= n0.point()- n.point();
+                  math::Vector3d v1= n1.point()- n.point();
                   v0.normalize();
                   v1.normalize();
                   double dotProduct = v0.dot(v1);
@@ -412,7 +412,7 @@ colorEdges(const int AMarkEOnCurv, const int AMarkNOnPnt,
     std::vector<Edge> done_edges;
     for (auto e_id:m_mesh->edges())
     {
-        // We only go throug edges classigied on curves and that have not been
+        // We only execute throug edges classigied on curves and that have not been
         // yet handled
         if ( m_mesh->isMarked<Edge>(e_id, AMarkEOnCurv) &&
              !m_mesh->isMarked<Edge>(e_id, markDone)) {
@@ -493,13 +493,13 @@ math::Vector3d BoundaryOperator::getOutputNormal(Face& AFace, Region& ARegion)
     math::Point face_center = AFace.center();
     math::Vector3d face_normal = AFace.normal();
 
-    math::Vector3d inward(face_center,region_center);
+    math::Vector3d inward= region_center-face_center;
     if (inward.dot(face_normal)>0.0)
     {
-        return math::Vector3d(
+        return math::Vector3d({
                 -face_normal.X(),
                 -face_normal.Y(),
-                -face_normal.Z());
+                -face_normal.Z()});
     }
     return face_normal;
 }

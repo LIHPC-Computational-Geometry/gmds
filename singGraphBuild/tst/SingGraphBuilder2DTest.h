@@ -76,7 +76,7 @@ TEST(SingGraphBuilder2DTest, halfDisk)
 	Variable<math::Vector3d> *field_X = mesh.getVariable<math::Vector3d, gmds::GMDS_NODE>("cross_X");
 	Variable<math::Cross2D> *field = mesh.newVariable<math::Cross2D, gmds::GMDS_NODE>("c");
 
-	math::Vector3d OX(1, 0, 0);
+	math::Vector3d OX({1, 0, 0});
 	for (auto n_id : mesh.nodes()) {
 		Node n = mesh.get<Node>(n_id);
 		math::Vector3d vx = (*field_X)[n.id()];

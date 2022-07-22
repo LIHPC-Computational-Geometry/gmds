@@ -61,16 +61,15 @@ Triangle::~Triangle(){;}
     /*----------------------------------------------------------------------------*/
     double Triangle::area() const
     {
-        Vector3d v1(m_pnts[0], m_pnts[1]);
-        Vector3d v2(m_pnts[0], m_pnts[2]);
-        
+        Vector3d v1 = m_pnts[1] - m_pnts[0];
+        Vector3d v2 = m_pnts[2] - m_pnts[0];
         return 0.5 * (v1.cross(v2)).norm();
     }
     /*----------------------------------------------------------------------------*/
     double Triangle::angle() const
     {
-        Vector3d v1(m_pnts[0], m_pnts[1]);
-        Vector3d v2(m_pnts[0], m_pnts[2]);
+	    Vector3d v1 = m_pnts[1] - m_pnts[0];
+	    Vector3d v2 = m_pnts[2] - m_pnts[0];
         v1.normalize();
         v2.normalize();
 
@@ -78,14 +77,14 @@ Triangle::~Triangle(){;}
     }
 /*----------------------------------------------------------------------------*/
 bool Triangle::isGood() const {
-        Vector3d v1(m_pnts[0], m_pnts[1]);
-        Vector3d v2(m_pnts[0], m_pnts[2]);
+	Vector3d v1 = m_pnts[1] - m_pnts[0];
+	Vector3d v2 = m_pnts[2] - m_pnts[0];
 	return !v1.isColinear(v2);
 }
 /*----------------------------------------------------------------------------*/
     Vector3d Triangle::getNormal() const {
-        Vector3d v1(m_pnts[0], m_pnts[1]);
-        Vector3d v2(m_pnts[0], m_pnts[2]);
+	    Vector3d v1 = m_pnts[1] - m_pnts[0];
+	    Vector3d v2 = m_pnts[2] - m_pnts[0];
         return v1.cross(v2);
 }
 /*----------------------------------------------------------------------------*/
@@ -100,7 +99,7 @@ Triangle::computeScaledJacobian2D() const
 {
   throw GMDSException("Triangle::computeScaledJacobian2D not implemented yet.");
 
-  math::Vector3d crossProduct = (math::Vector3d(m_pnts[0],m_pnts[1])).cross(math::Vector3d( m_pnts[0],m_pnts[2]));
+  math::Vector3d crossProduct = (m_pnts[1]-m_pnts[0]).cross(m_pnts[2]-m_pnts[0]);
   
   
 }
@@ -110,7 +109,7 @@ Triangle::computeNormalizedScaledJacobian2D() const
 {
   throw GMDSException("Triangle::computeNormalizedScaledJacobian2D not implemented yet.");
 
-  math::Vector3d crossProduct = (math::Vector3d(m_pnts[0],m_pnts[1])).cross(math::Vector3d(m_pnts[0],m_pnts[2]));
+  math::Vector3d crossProduct = (m_pnts[1]-m_pnts[0]).cross(m_pnts[2]-m_pnts[0]);
   
   
 }
@@ -145,11 +144,11 @@ Triangle::intersect(const Triangle& ATri, const bool AProper) const
   Point P2[3] = {ATri.getPoint(0), ATri.getPoint(1), ATri.getPoint(2)};
   
   Vector3d N2 = ATri.getNormal();
-  TCoord D2 = -N2.dot(Vector3d(P2[0]));
+  TCoord D2 = -N2.dot(Vector3d({P2[0].X(),P2[0].Y(),P2[0].Z()}));
 
-  TCoord dist_P10_to_Plane2 = N2.dot(Vector3d(P1[0]))+D2;
-  TCoord dist_P11_to_Plane2 = N2.dot(Vector3d(P1[1]))+D2;
-  TCoord dist_P12_to_Plane2 = N2.dot(Vector3d(P1[2]))+D2;
+  TCoord dist_P10_to_Plane2 = N2.dot(Vector3d({P1[0].X(),P1[0].Y(),P1[0].Z()}))+D2;
+  TCoord dist_P11_to_Plane2 = N2.dot(Vector3d({P1[1].X(),P1[1].Y(),P1[1].Z()}))+D2;
+  TCoord dist_P12_to_Plane2 = N2.dot(Vector3d({P1[2].X(),P1[2].Y(),P1[2].Z()}))+D2;
   
   // Triangle T1 does not intersect the plane containing T2
   if ( dist_P10_to_Plane2>0.0 && dist_P11_to_Plane2>0.0 && dist_P12_to_Plane2>0.0) {
@@ -245,11 +244,11 @@ Triangle::intersect(const Triangle& ATri, const bool AProper) const
 
   // Now we check if T2  intersect the plane containing T1
   Vector3d N1 = this->getNormal();
-  TCoord D1 = -N1.dot(Vector3d(P1[0]));
+  TCoord D1 = -N1.dot(Vector3d({P1[0].X(),P1[0].Y(),P1[0].Z()}));
   
-  TCoord dist_P20_to_Plane1 = N1.dot(Vector3d(P2[0]))+D1;
-  TCoord dist_P21_to_Plane1 = N1.dot(Vector3d(P2[1]))+D1;
-  TCoord dist_P22_to_Plane1 = N1.dot(Vector3d(P2[2]))+D1;
+  TCoord dist_P20_to_Plane1 = N1.dot(Vector3d({P2[0].X(),P2[0].Y(),P2[0].Z()}))+D1;
+  TCoord dist_P21_to_Plane1 = N1.dot(Vector3d({P2[1].X(),P2[1].Y(),P2[1].Z()}))+D1;
+  TCoord dist_P22_to_Plane1 = N1.dot(Vector3d({P2[2].X(),P2[2].Y(),P2[2].Z()}))+D1;
   
   // Triangle T2 does not intersect the plane containing T1
   if ( dist_P20_to_Plane1>0.0 && dist_P21_to_Plane1>0.0 && dist_P22_to_Plane1>0.0) {
@@ -326,9 +325,9 @@ Triangle::intersect(const Triangle& ATri, const bool AProper) const
     d2 = dist_P12_to_Plane2;
   }
   
-  TCoord proj_C0_L = D.dot(Vector3d(C0));
-  TCoord proj_C1_L = D.dot(Vector3d(C1));
-  TCoord proj_C2_L = D.dot(Vector3d(C2));
+  TCoord proj_C0_L = D.dot({C0.X(),C0.Y(),C0.Z()});
+  TCoord proj_C1_L = D.dot({C1.X(),C1.Y(),C1.Z()});
+  TCoord proj_C2_L = D.dot({C2.X(),C2.Y(),C2.Z()});
   
   TCoord a = proj_C0_L + (proj_C1_L-proj_C0_L)*d0/(d0-d1);
   TCoord b = proj_C2_L + (proj_C1_L-proj_C2_L)*d2/(d2-d1);
@@ -353,9 +352,9 @@ Triangle::intersect(const Triangle& ATri, const bool AProper) const
     d2 = dist_P22_to_Plane1;
   }
   
-  proj_C0_L = D.dot(Vector3d(C0));
-  proj_C1_L = D.dot(Vector3d(C1));
-  proj_C2_L = D.dot(Vector3d(C2));
+  proj_C0_L = D.dot({C0.X(),C0.Y(),C0.Z()});
+  proj_C1_L = D.dot({C1.X(),C1.Y(),C1.Z()});
+  proj_C2_L = D.dot({C2.X(),C2.Y(),C2.Z()});
   
   TCoord c = proj_C0_L + (proj_C1_L-proj_C0_L)*d0/(d0-d1);
   TCoord d = proj_C2_L + (proj_C1_L-proj_C2_L)*d2/(d2-d1);
@@ -505,9 +504,9 @@ Triangle::intersect(const Ray& ARay, const bool AProper) const
   	 * length twice the sum of the distance between the ray point and the triangle points
   	 * intersects the triangle
   	 */
-	TCoord maxDist = (Vector3d(ARay.getPoint(), this->getPoint(0))).norm();
-	maxDist = maxDist + (Vector3d(ARay.getPoint(), this->getPoint(1))).norm();
-	maxDist = maxDist + (Vector3d(ARay.getPoint(), this->getPoint(2))).norm();
+	TCoord maxDist = (this->getPoint(0)-ARay.getPoint()).norm();
+	maxDist = maxDist + (this->getPoint(1)-ARay.getPoint()).norm();
+	maxDist = maxDist + (this->getPoint(2)-ARay.getPoint()).norm();
 
 	Segment seg(ARay.getPoint(), ARay.getPoint() + (maxDist * 2) * ARay.getDirUnit());
 	return this->intersect(seg, AProper);

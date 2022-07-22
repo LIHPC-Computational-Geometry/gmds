@@ -194,7 +194,7 @@ namespace gmds {
             double eps = .00001;
             double ratio = sin(acos(m_r));
             if ( fabs(ratio) < eps )
-                return Vector3d( 0.0, 0.0, 0.0 );
+                return Vector3d({0.0, 0.0, 0.0});
             else
                 return  m_i/ratio;
         }

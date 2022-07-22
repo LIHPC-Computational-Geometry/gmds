@@ -243,7 +243,7 @@ void SparseLUImpl<Scalar,StorageIndex>::panel_dfs(const Index m, const Index w, 
       
       StorageIndex kmark = marker(krow); 
       if (kmark == jj) 
-        continue; // krow visited before, go to the next nonzero
+        continue; // krow visited before, execute to the next nonzero
       
       dfs_kernel(jj, perm_r, nseg, panel_lsub, segrep, repfnz_col, xprune, marker, parent,
                    xplore, glu, nextl_col, krow, traits);

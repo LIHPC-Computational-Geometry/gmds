@@ -140,7 +140,7 @@ void IReader::readDataRegions() {
 }
 /*----------------------------------------------------------------------------*/
 bool IReader::moveStreamOntoFirst(const std::string &AString){
-	//go to the beginning of the stream
+	//execute to the beginning of the stream
 	m_stream->clear();
     m_stream->seekg(0,std::ios::beg);
 	std::string str;

@@ -28,8 +28,8 @@ namespace gmds{
         Plane::Plane(const Point&AP1, const Point &AP2, const Point &AP3)
         : m_pnt(AP1)
         {
-            Vector3d v1(AP1, AP2);
-            Vector3d  v2(AP1, AP3);
+            Vector3d v1= AP2-AP1;
+            Vector3d  v2=AP3-AP1;
             m_normal = v1.cross(v2);
             m_normal.normalize();
         }
@@ -40,8 +40,8 @@ namespace gmds{
             m_pnt = AT.getPoint(0);
             Point p1 = AT.getPoint(1);
             Point p2 = AT.getPoint(2);
-            Vector3d v1(m_pnt, p1);
-            Vector3d v2(m_pnt, p2);
+            Vector3d v1=p1-m_pnt;
+            Vector3d v2=p2-m_pnt;
             m_normal = v1.cross(v2);
             m_normal.normalize();
         }
@@ -81,24 +81,24 @@ namespace gmds{
         /*----------------------------------------------------------------------------*/
         bool  Plane::isIn(const Point& AP) const
         {
-            return isZero(m_normal.dot(Vector3d(m_pnt, AP)));
+            return isZero(m_normal.dot(AP-m_pnt));
         }
         /*----------------------------------------------------------------------------*/
         bool Plane::isStrictlyOnLeft(const Point& AP) const
         {
-            return (m_normal.dot(Vector3d(m_pnt, AP)) < 0.0);
+            return (m_normal.dot(AP-m_pnt) < 0.0);
         }
         /*----------------------------------------------------------------------------*/
         TCoord Plane::distance(const Point& AP) const
         {
-            Vector3d v(m_pnt, AP);
+            Vector3d v= AP-m_pnt;
             return fabs(m_normal.dot(v));
         }
         
         /*----------------------------------------------------------------------------*/
         Point Plane::project(const Point& AP) const
         {
-            Vector3d v(m_pnt, AP);
+	        Vector3d v= AP-m_pnt;
             TCoord alpha = -m_normal.dot(v);		  
 		  math::Point thePoint = AP;		  
 		  
@@ -130,8 +130,8 @@ namespace gmds{
                          double& AW1,const bool AProper) const
         {
             Plane::IntersectionType return_value = SEGMENT_MIDDLE;
-            Vector3d OP1 (AS.getPoint(0).X(), AS.getPoint(0).Y(), AS.getPoint(0).Z());
-            Vector3d P1P2(AS.getPoint(0), AS.getPoint(1));
+            Vector3d OP1 ({AS.getPoint(0).X(), AS.getPoint(0).Y(), AS.getPoint(0).Z()});
+            Vector3d P1P2= AS.getPoint(1)-AS.getPoint(0);
 
             TCoord a, b, c, d;
             getEquationCoeffs(a, b, c, d);
@@ -166,8 +166,8 @@ namespace gmds{
             if (isZero(m_normal.cross(AP.m_normal).norm2()))
             {
                 //we have parallel planes
-                if (isZero(m_normal.dot(Vector3d(m_pnt, AP.m_pnt))))
-                    return (AProper) ? false : true; // the same plane !
+                if (isZero(m_normal.dot(AP.m_pnt-m_pnt)))
+                    return (AProper) ? false : true; // the same plane !)
                 else
                     return false; //different planes
             }

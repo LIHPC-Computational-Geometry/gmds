@@ -88,9 +88,9 @@ const Point& Tetrahedron::getPoint(const TInt& AIndex) const
     /*----------------------------------------------------------------------------*/
      TCoord Tetrahedron::getVolume() const
     {
-        math::Vector3d v01(m_pnts[0],m_pnts[1]);
-        math::Vector3d v02(m_pnts[0],m_pnts[2]);
-        math::Vector3d v03(m_pnts[0],m_pnts[3]);
+        math::Vector3d v01=m_pnts[1]-m_pnts[0];
+        math::Vector3d v02=m_pnts[2]-m_pnts[0];
+        math::Vector3d v03=m_pnts[3]-m_pnts[0];
         return (v03.dot(v01.cross(v02)))/ 6.0;
     }
 /*----------------------------------------------------------------------------*/
@@ -121,9 +121,9 @@ Tetrahedron::computeScaledJacobian() const
 		int i0    = neighbors[iVertex][0];
 		int i1    = neighbors[iVertex][1];
 		int i2    = neighbors[iVertex][2];
-		double l0 = math::Vector3d(m_pnts[i0], m_pnts[iVertex]).norm();
-		double l1 = math::Vector3d(m_pnts[i1], m_pnts[iVertex]).norm();
-		double l2 = math::Vector3d(m_pnts[i2],m_pnts[iVertex]).norm();
+		double l0 = (m_pnts[iVertex]-m_pnts[i0]).norm();
+		double l1 = (m_pnts[iVertex]-m_pnts[i1]).norm();
+		double l2 = (m_pnts[iVertex]-m_pnts[i2]).norm();
 		double length = l0*l1*l2;
 
 		if(length > maxLength) {
@@ -243,18 +243,7 @@ Tetrahedron::computeBoundingBox(TCoord AMinXYZ[3], TCoord AMaxXYZ[3]) const
 math::Matrix<3,3,double>
 Tetrahedron::jacobian() const
 {
-	TCoord matValues[3][3];
-        matValues[0][0] = m_pnts[1].X()-m_pnts[0].X();
-        matValues[1][0] = m_pnts[1].Y()-m_pnts[0].Y();
-        matValues[2][0] = m_pnts[1].Z()-m_pnts[0].Z();
-        matValues[0][1] = m_pnts[2].X()-m_pnts[0].X();
-        matValues[1][1] = m_pnts[2].Y()-m_pnts[0].Y();
-        matValues[2][1] = m_pnts[2].Z()-m_pnts[0].Z();
-        matValues[0][2] = m_pnts[3].X()-m_pnts[0].X();
-        matValues[1][2] = m_pnts[3].Y()-m_pnts[0].Y();
-        matValues[2][2] = m_pnts[3].Z()-m_pnts[0].Z();
-
-	return math::Matrix<3,3,double> (matValues);
+	return{m_pnts[1]-m_pnts[0],m_pnts[2]-m_pnts[0],m_pnts[3]-m_pnts[0]};
 }
 /*----------------------------------------------------------------------------*/
 bool

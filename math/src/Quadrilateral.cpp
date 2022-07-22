@@ -105,8 +105,8 @@ Quadrilateral::computeScaledJacobian2D() const
                 
                 int i0    = neighbors[iVertex][0];
                 int i1    = neighbors[iVertex][1];
-                double l0 = Vector3d(m_pnts[i0], m_pnts[iVertex]).norm2();
-                double l1 = Vector3d(m_pnts[i1], m_pnts[iVertex]).norm2();
+                double l0 = (m_pnts[iVertex]-m_pnts[i0]).norm2();
+                double l1 = (m_pnts[iVertex]-m_pnts[i1]).norm2();
                 double l01 = sqrt(l0*l1);
                 double det = A.det();
                 if (l01 == 0 || det == 0) 
@@ -141,8 +141,8 @@ Quadrilateral::computeScaledJacobian2DAt(int AVert) const
 
         int i0    = neighbors[AVert][0];
         int i1    = neighbors[AVert][1];
-        double l0 = Vector3d(m_pnts[i0], m_pnts[AVert]).norm2();
-        double l1 = Vector3d(m_pnts[i1], m_pnts[AVert]).norm2();
+        double l0 = (m_pnts[AVert]-m_pnts[i0]).norm2();
+        double l1 = (m_pnts[AVert]-m_pnts[i1]).norm2();
         double l01 = sqrt(l0*l1);
         double det = A.det();
         if (l01 == 0 || det == 0)
@@ -180,39 +180,39 @@ Quadrilateral::computeMeanEdgeLength() const
 math::Matrix<2,2,double>
 Quadrilateral::jacobian2D(const int iVertex) const
 {
-        TCoord matValues[2][2];
+	math::Matrix<2,2,double> mat;
 
         switch(iVertex) {
         case 0:
-                matValues[0][0] = m_pnts[1].X()-m_pnts[0].X();
-                matValues[1][0] = m_pnts[1].Y()-m_pnts[0].Y();
-                matValues[0][1] = m_pnts[3].X()-m_pnts[0].X();
-                matValues[1][1] = m_pnts[3].Y()-m_pnts[0].Y();
+		     mat={m_pnts[1].X()-m_pnts[0].X(),
+					 m_pnts[1].Y()-m_pnts[0].Y(),
+                m_pnts[3].X()-m_pnts[0].X(),
+                m_pnts[3].Y()-m_pnts[0].Y()};
                 break;
         case 1:
-                matValues[0][0] = m_pnts[1].X()-m_pnts[0].X();
-                matValues[1][0] = m_pnts[1].Y()-m_pnts[0].Y();
-                matValues[0][1] = m_pnts[2].X()-m_pnts[1].X();
-                matValues[1][1] = m_pnts[2].Y()-m_pnts[1].Y();
+		     mat={m_pnts[1].X()-m_pnts[0].X(),
+                m_pnts[1].Y()-m_pnts[0].Y(),
+                m_pnts[2].X()-m_pnts[1].X(),
+                m_pnts[2].Y()-m_pnts[1].Y()};
                 break;
         case 2:
-                matValues[0][0] = m_pnts[2].X()-m_pnts[3].X();
-                matValues[1][0] = m_pnts[2].Y()-m_pnts[3].Y();
-                matValues[0][1] = m_pnts[2].X()-m_pnts[1].X();
-                matValues[1][1] = m_pnts[2].Y()-m_pnts[1].Y();
+		     mat={ m_pnts[2].X()-m_pnts[3].X(),
+                 m_pnts[2].Y()-m_pnts[3].Y(),
+                m_pnts[2].X()-m_pnts[1].X(),
+                 m_pnts[2].Y()-m_pnts[1].Y()};
                 break;
         case 3:
-		matValues[0][0] = m_pnts[2].X()-m_pnts[3].X();
-                matValues[1][0] = m_pnts[2].Y()-m_pnts[3].Y();
-                matValues[0][1] = m_pnts[3].X()-m_pnts[0].X();
-                matValues[1][1] = m_pnts[3].Y()-m_pnts[0].Y();
+		     mat={m_pnts[2].X()-m_pnts[3].X(),
+                m_pnts[2].Y()-m_pnts[3].Y(),
+                m_pnts[3].X()-m_pnts[0].X(),
+                 m_pnts[3].Y()-m_pnts[0].Y()};
                 break;
 	default:
                 throw GMDSException("Quadrilateral::jacobian invalid vertex number.");
                 break;
         }
 
-        return math::Matrix<2,2,double> (matValues);
+        return mat;
 }
 /*----------------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& AStr, const Quadrilateral& AQuad){

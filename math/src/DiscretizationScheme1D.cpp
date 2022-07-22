@@ -41,7 +41,7 @@ Point DiscretizationScheme1DGeometric::operator()(const int AIndex) const
 {
     if(AIndex<0 || AIndex>m_nb_points)
         throw GMDSMathException("Range access error in Discretization1D");
-    math::Vector v(m_origin,m_destination);
+    math::Vector3d v =m_destination-m_origin;
     double r = 0;
     if(AIndex==0)
         return m_origin;

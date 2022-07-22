@@ -19,14 +19,14 @@ namespace math {
             //==========================================
             // Useful vectors for our computations
             //==========================================
-            math::Vector3d v01(AP0, AP1);
-            math::Vector3d v02(AP0, AP2);
-            math::Vector3d v03(AP0, AP3);
-            math::Vector3d v10(AP1, AP0);
-            math::Vector3d v13(AP1, AP3);
-            math::Vector3d v21(AP2, AP1);
-            math::Vector3d v20(AP2, AP0);
-            math::Vector3d v23(AP2, AP3);
+            math::Vector3d v01= AP1-AP0;
+            math::Vector3d v02= AP2-AP0;
+            math::Vector3d v03=AP3-AP0;
+            math::Vector3d v10=AP0-AP1;
+            math::Vector3d v13=AP3-AP1;
+            math::Vector3d v21=AP1-AP2;
+            math::Vector3d v20=AP0-AP2;
+            math::Vector3d v23=AP3-AP2;
 
             //==========================================
             // Volume computation
@@ -73,16 +73,16 @@ namespace math {
                                  double &ALargeAngle) {
         double small=0, large=0;
 
-        small = Vector3d(AP0, AP2).angle(Vector3d(AP0, AP1));
+        small = (AP2-AP0).angle(AP1-AP0);
         large = small;
 
-        double aij = Vector3d(AP1, AP0).angle(Vector3d(AP1, AP2));
+        double aij = (AP0-AP1).angle(AP2-AP1);
         if(aij<small)
             small=aij;
         if(aij>large)
             large=aij;
 
-        aij = Vector3d(AP2, AP1).angle(Vector3d(AP2, AP0));
+        aij = (AP1-AP2).angle(AP0-AP2);
         if(aij<small)
             small=aij;
         if(aij>large)

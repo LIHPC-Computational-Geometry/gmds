@@ -120,8 +120,8 @@ namespace gmds{
             double y31 = y3-y1;
             double y12 = y1-y2;
             
-            Vector3d v12(AP1,AP2);
-            Vector3d v13(AP1,AP3);
+            Vector3d v12=AP2-AP1;
+            Vector3d v13=AP3-AP1;
             double area2 = x1*y2 - x1*y3 - x2*y1 + x2*y3 + x3*y1 -x3*y2;
             //      double area2 = v12.cross(v13).norm(); //value Area Triangle(AP1,AP2,AP3)
             double area4 = 2*area2;
@@ -182,9 +182,9 @@ namespace gmds{
                              const Point& C,
                              const Point& D)
         {
-            math::Vector3d u(A,B);
-            math::Vector3d v(A,C);
-            math::Vector3d w(A,D);
+            math::Vector3d u=B-A;
+            math::Vector3d v=C-A;
+            math::Vector3d w=D-A;
             math::Vector3d uv = u.cross(v);
             math::Vector3d uw = u.cross(w);
             uv.normalize();
@@ -204,7 +204,7 @@ namespace gmds{
                                const Point& C,
                                const Point& D)
         {
-            math::Vector3d cd(C,D);
+            math::Vector3d cd=D-C;
             double opp_angle = dihedralAngle(C,D,A,B);
             return (cd.norm()*std::atan(opp_angle))/6.0;
         }
@@ -248,7 +248,7 @@ namespace gmds{
             
             
             APlanePnt = mc;
-            APlaneNormal = math::Vector3d(a,b,c);
+            APlaneNormal = math::Vector3d({a,b,c});
         }
         /*----------------------------------------------------------------------------*/
         bool

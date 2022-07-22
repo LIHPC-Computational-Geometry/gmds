@@ -31,7 +31,7 @@ Mesh Gregson2011_2D::getPolycube(){
 }
 /*---------------------------------------------------------------------------*/
 math::Vector eigen2math(vect2D v){
-    return math::Vector(v.x(),v.y(),0);
+    return math::Vector({v.x(), v.y(), 0});
 }
 /*---------------------------------------------------------------------------*/
 Mesh Gregson2011_2D::getMesh(){
@@ -235,7 +235,7 @@ void Gregson2011_2D::transformMeshToPolycube(){
             Node n = mesh->get<Node>(n_id);
             if (mesh->isMarked(n,mark_smooth_bnd_nodes)){
 				std::vector<TCellID> edges = n.getIDs<Edge>();
-				(*rotated_normal)[n.id()]=math::Vector(0.,0.,0.);
+				(*rotated_normal)[n.id()]=math::Vector({0., 0., 0.});
 				for (auto e:edges){
 					if (mesh->isMarked(mesh->get<Edge>(e), mark_bnd_egdes)){
 						std::vector<TCellID> nodes = (mesh->get<Edge>(e)).getIDs<Node>();
@@ -447,7 +447,7 @@ vect2D Gregson2011_2D::normal(Edge e)
                                            (mesh->get<Node>(Nodes[0])).Y() - (mesh->get<Node>(n)).Y() );
         }
     }
-    // if the dot product is positive, the two vector go to the general same direction
+    // if the dot product is positive, the two vector execute to the general same direction
     if (normal.transpose() * direction_comparator < 0){
         // and we want the normal going the other way around
         normal = -normal;

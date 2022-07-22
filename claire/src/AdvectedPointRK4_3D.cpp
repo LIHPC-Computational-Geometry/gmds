@@ -17,7 +17,7 @@ AdvectedPointRK4_3D::AdvectedPointRK4_3D(Mesh *AMesh, math::Point A_Pstart, doub
 	m_d0 = A_d0;
 	m_distance = A_distance;
 	m_gradient2D = A_gradient2D;
-	m_discrete_path.push_back(m_Pstart);
+	m_discrete_path.push_back({m_Pstart.X(),m_Pstart.Y(),m_Pstart.Z()});
 }
 /*------------------------------------------------------------------------*/
 
@@ -71,7 +71,7 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 				Grad = interpolationGradient(region_id, Mat_A_Inv, M);	// Mise à jour du gradient
 				dist = dist_M;
 				//std::cout << "distance : " << dist << std::endl;
-				m_discrete_path.push_back(m_Pend);
+				m_discrete_path.push_back({m_Pend.X(),m_Pend.Y(),m_Pend.Z()});
 			}
 			else {
 				// Alors on a dépassé la distance souhaitée, m_Pend n'est pas mis à jour, on retranche le pas de temps

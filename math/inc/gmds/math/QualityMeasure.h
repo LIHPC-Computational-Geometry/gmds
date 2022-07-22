@@ -61,6 +61,8 @@ class GMDSMath_API QualityMeasure
 	 * \param[out] ALargeAngle largest angle
 	 */
 	static void extremAngles(const Triangle &AT, double &ASmallAngle, double &ALargeAngle);
+
+
 };
 /*----------------------------------------------------------------------------*/
 }     // namespace math

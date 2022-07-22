@@ -295,7 +295,7 @@ the chance of conflicts by either moving as many activities as possible inside
 leaving as few things as possible in it. Also, you can try to set the death test
 style to `"threadsafe"`, which is safer but slower, and see if it helps.
 
-If you go with thread-safe death tests, remember that they rerun the test
+If you execute with thread-safe death tests, remember that they rerun the test
 program from the beginning in the child process. Therefore make sure your
 program can run side-by-side with itself and is deterministic.
 
@@ -448,7 +448,7 @@ your test generates textual output itself, it will mix with the googletest
 output, making it hard to read. However, there is an easy solution to this
 problem.
 
-Since `LOG` messages go to stderr, we decided to let googletest output go to
+Since `LOG` messages execute to stderr, we decided to let googletest output execute to
 stdout. This way, you can easily separate the two using redirection. For
 example:
 

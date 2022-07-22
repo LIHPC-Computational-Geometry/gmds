@@ -55,9 +55,7 @@ namespace gmds {
             m_data[7] = 0;
             m_data[8] = sqrt(5.0/12.0);
         }
-        /*---------------------------------------------------------*/
-        SHarmonicL4::SHarmonicL4(const double *ATab):
-        Vector9d(ATab) {;}
+
         /*---------------------------------------------------------*/
         SHarmonicL4::SHarmonicL4(const double AV1, const double AV2,
                      const double AV3, const double AV4,
@@ -87,8 +85,8 @@ namespace gmds {
             m_data[7] = 0;
             m_data[8] = sqrt(5.0/12.0);
 
-            Vector3d y (AC.Y()[0],AC.Y()[1], AC.Y()[2]);
-            Vector3d z (AC.Z()[0],AC.Z()[1], AC.Z()[2]);
+            Vector3d y ({AC.Y()[0],AC.Y()[1], AC.Y()[2]});
+            Vector3d z ({AC.Z()[0],AC.Z()[1], AC.Z()[2]});
             
             AxisAngleRotation r = AxisAngleRotation::alignYZ(y,z);
             
@@ -101,7 +99,7 @@ namespace gmds {
 //            q.toEulerAngle(alpha,beta, gamma);
 //            rotXYZ(alpha,beta,gamma);
         }
-        
+
 
         /*---------------------------------------------------------*/
         SHarmonicL4::SHarmonicL4(const SHarmonicL4& AF):Vector9d(AF)
@@ -114,9 +112,9 @@ namespace gmds {
             AxisAngleRotation r;
             SHarmonicL4::closest(*this, r);
             
-            Vector3d x(1,0,0);
-            Vector3d y(0,1,0);
-            Vector3d z(0,0,1);
+            Vector3d x={1,0,0};
+            Vector3d y={0,1,0};
+            Vector3d z={0,0,1};
             return Chart(r*x,r*y,r*z);
         }
         /*---------------------------------------------------------*/
@@ -272,33 +270,41 @@ namespace gmds {
                 {0,0,0,0,0.763763,0,0,0,-0.645497},
                 {0,0,-0.853913,0,-0.190941,0,0,0,-0.484123}
             };
-            
+
             Vector3d init_AARot[5] = {
-                Vector3d(0,0,0),
-                Vector3d(0.785398,0,0),
-                Vector3d(0,0.785398,0),
-                Vector3d(0,0,0.785398),
-                Vector3d(0.743782,0.308085,0.743782)
+                Vector3d({0,0,0}),
+                Vector3d({0.785398,0,0}),
+                Vector3d({0,0.785398,0}),
+                Vector3d({0,0,0.785398}),
+                Vector3d({0.743782,0.308085,0.743782})
             };
             
             //we look for the best starting point??
             int      i_best = 0;
-            Vector9d v_test = Vector9d(init_SH[0]) - q;
+            Vector9d v_test =Vector9d({init_SH[0][0],init_SH[0][1],init_SH[0][2],init_SH[0][3],init_SH[0][4],init_SH[0][5],init_SH[0][6],init_SH[0][7],init_SH[0][8]}) - q;
             auto     d_best = v_test.norm();
             for (auto i = 1; i < 5; i++) {
-                v_test = Vector9d(init_SH[i]) - q;
+                v_test = Vector9d({init_SH[i][0],init_SH[i][1],init_SH[i][2],init_SH[i][3],init_SH[i][4],init_SH[i][5],init_SH[i][6],init_SH[i][7],init_SH[i][8]}) - q;
                 auto d = v_test.norm();
                 if (d<d_best) {
                     d_best = d;
                     i_best = i;
                 }
             }
-            
-            
-            ARot = AxisAngleRotation(init_AARot[i_best]);
-            SHarmonicL4 sh(init_SH[i_best]);
-            
-            //    math::Vector3d first_gradient(qt*math::SH::EX()*a,
+
+
+			  ARot = AxisAngleRotation(init_AARot[i_best]);
+			  SHarmonicL4 sh(Vector9d {init_SH[i_best][0],
+												init_SH[i_best][1],
+												init_SH[i_best][2],
+												init_SH[i_best][3],
+												init_SH[i_best][4],
+												init_SH[i_best][5],
+												init_SH[i_best][6],
+												init_SH[i_best][7],
+												init_SH[i_best][8]});
+
+			  //    math::Vector3d first_gradient(qt*math::SH::EX()*a,
             //                                qt*math::SH::EY()*a,
             //                                qt*math::SH::EZ()*a);
             ////    std::cout<<"--------------------------"<<std::endl;
@@ -340,9 +346,9 @@ namespace gmds {
                                         -3*sh[1],-4*sh[0]);
                 
                 
-                math::Vector3d gradient(q.dot(EX_sh),
+                math::Vector3d gradient({q.dot(EX_sh),
                                         q.dot(EY_sh),
-                                        q.dot(EZ_sh));
+                                        q.dot(EZ_sh)});
                 
                 if(gradient.norm()<grad_threshold)
                     break;
@@ -357,9 +363,9 @@ namespace gmds {
                           gradient.Y(),
                           gradient.Z());
                 
-                ARot = AxisAngleRotation(math::Vector3d(1,0,0),gradient[0])*ARot;
-                ARot = AxisAngleRotation(math::Vector3d(0,1,0),gradient[1])*ARot;
-                ARot = AxisAngleRotation(math::Vector3d(0,0,1),gradient[2])*ARot;
+                ARot = AxisAngleRotation(math::Vector3d({1,0,0}),gradient[0])*ARot;
+                ARot = AxisAngleRotation(math::Vector3d({0,1,0}),gradient[1])*ARot;
+                ARot = AxisAngleRotation(math::Vector3d({0,0,1}),gradient[2])*ARot;
                 
                 
             }

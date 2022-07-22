@@ -270,8 +270,8 @@ bool Pillow2D::execute(std::vector<VirtualEdge>& AEdges, bool AWithCheck){
             math::Point p1 = m_mesh->get<Node>(AEdges[i].node_ids()[1]).point();
             Face adj_quad = m_mesh->get<Face>(adj_quad_id);
             math::Vector3d quad_normal = adj_quad.normal();
-            math::Vector3d to_quad(p0,adj_quad.center());
-            math::Vector v01_normal = math::Vector3d(p0,p1).cross(quad_normal);
+            math::Vector3d to_quad=adj_quad.center()-p0;
+            math::Vector v01_normal = (p1-p0).cross(quad_normal);
             if(v01_normal.dot(to_quad)<0){
                 must_inverse=true;
             }
@@ -303,8 +303,8 @@ bool Pillow2D::execute(std::vector<VirtualEdge>& AEdges, bool AWithCheck){
             math::Point p0 = m_mesh->get<Node>(AEdges[i].oriented_node_ids()[0]).point();
             math::Point p1 = m_mesh->get<Node>(AEdges[i].oriented_node_ids()[1]).point();
             math::Vector3d quad_normal = adj_quad.normal();
-            math::Vector3d to_quad(p0,adj_quad.center());
-            math::Vector v01_normal = math::Vector3d(p0,p1).cross(quad_normal);
+            math::Vector3d to_quad=adj_quad.center()-p0;
+            math::Vector v01_normal =(p1-p0).cross(quad_normal);
             if(v01_normal.dot(to_quad)<0){
                 boundary_shrink_quads.insert(adj_quad_ids[1]);
                 m_mesh->mark<Face>(adj_quad_ids[1],mark_shrink_quads);
@@ -393,7 +393,7 @@ bool Pillow2D::execute(std::vector<VirtualEdge>& AEdges, bool AWithCheck){
 
         if(isABoundaryNode(n_id)){
             // we get the boundary edges (in the geometric meaning)
-            // so we go through the adjacent faces
+            // so we execute through the adjacent faces
             std::vector<TCellID> adj_bnd_edges[2];
             for(auto q_id:adj_shrink_f) {
                 Face q = m_mesh->get<Face>(q_id);

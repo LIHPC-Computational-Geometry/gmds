@@ -364,7 +364,7 @@ bool Pillow3D::execute(std::vector<VirtualFace>& AFaces, bool AWithCheck){
             math::Point p1 = m_mesh->get<Node>(AFaces[i].node_ids()[1]).point();
             math::Point p2 = m_mesh->get<Node>(AFaces[i].node_ids()[2]).point();
             math::Triangle p012(p0,p1,p2);
-            math::Vector3d to_hex(p0,m_mesh->get<Region>(adj_hex_id).center());
+            math::Vector3d to_hex=m_mesh->get<Region>(adj_hex_id).center()-p0;
             if(p012.getNormal().dot(to_hex)<0){
                 must_inverse=true;
             }
@@ -396,7 +396,7 @@ bool Pillow3D::execute(std::vector<VirtualFace>& AFaces, bool AWithCheck){
             math::Point p1 = m_mesh->get<Node>(AFaces[i].oriented_node_ids()[1]).point();
             math::Point p2 = m_mesh->get<Node>(AFaces[i].oriented_node_ids()[2]).point();
             math::Triangle p012(p0,p1,p2);
-            math::Vector3d to_hex(p0,m_mesh->get<Region>(adj_hex_id).center());
+            math::Vector3d to_hex=m_mesh->get<Region>(adj_hex_id).center()-p0;
             if(p012.getNormal().dot(to_hex)<0){
                 boundary_shrink_hexes.insert(adj_hex_ids[1]);
                 m_mesh->mark<Region>(adj_hex_ids[1],mark_shrink_hexes);
@@ -488,7 +488,7 @@ bool Pillow3D::execute(std::vector<VirtualFace>& AFaces, bool AWithCheck){
 
         if(isABoundaryNode(n_id)){
             // we get the boundary faces (in the geometric meaning)
-            // so we go through the adjacent regions
+            // so we execute through the adjacent regions
             std::vector<TCellID> adj_bnd_faces[4];
             for(auto h_id:adj_shrink_r) {
                 Region h = m_mesh->get<Region>(h_id);

@@ -174,7 +174,7 @@ int SingularityLineHelper::computeSingularityIndex(Face& AF)
     std::vector<math::Vector3d> ref_vectors;
     ref_vectors.resize(3);
     //We take the first edge of the triangle as the OX axis
-    math::Vector3d OX(nodes[0].point(), nodes[1].point());
+    math::Vector3d OX =nodes[1].point()- nodes[0].point();
     OX.normalize();
 
     for(auto i = 0; i < 3; i++) {
@@ -338,7 +338,7 @@ moveBoundarySingularity(TCellID AFrom, TCellID ATo)
     std::vector<Node> to_nodes = to_face.get<Node>();
 
     // we build an orthonormal basis local to to_face.
-    math::Vector3d v1(to_nodes[0].point(), to_nodes[1].point());
+    math::Vector3d v1=to_nodes[1].point()- to_nodes[0].point();
     Region to_r = to_face.get<Region>()[0];
     math::Vector3d v3 = getInputNormal(to_face,to_r);
     math::Vector3d v2 = v1.cross(v3);
@@ -362,7 +362,7 @@ moveBoundarySingularity(TCellID AFrom, TCellID ATo)
         math::Point ref_point = to_face.center();
 
 
-        math::Vector3d n_vec(ref_point,pi);
+        math::Vector3d n_vec=pi-ref_point;
         double n_angle = from_chart.X().orientedAngle(n_vec,from_chart.Z());
 
         bool found_interval=false;
@@ -538,7 +538,7 @@ closestBndFace(const TCellID ATetID, math::Vector3d AV, TCellID& ABndFaceID)
         // FINALIZATION
         //================================================
         // Now we have our point to get out of current_cell
-        math::Vector3d v(from_point,out_pnt);
+        math::Vector3d v= out_pnt-from_point;
 
         Face out_face = cf[out_index];
 
@@ -547,12 +547,12 @@ closestBndFace(const TCellID ATetID, math::Vector3d AV, TCellID& ABndFaceID)
 
         //we update the direction we come from for the next step
         from_direction = out_dir;
-        dist +=math::Vector3d(from_point,new_from).norm();
+        dist +=(new_from-from_point).norm();
 
         from_point  = new_from;
 
 
-        //We compute the next current cell using the face we go
+        //We compute the next current cell using the face we execute
         //from_point
 
         std::vector<Region> adj_out_face = out_face.get<Region>();
@@ -610,7 +610,7 @@ bool SingularityLineHelper::followFlow(const Face AFromFace,
     }
     // We build the reference chart to propagate singularity line directions
     std::vector<Node> from_nodes = from_face.get<Node>();
-    math::Vector3d v1(from_nodes[0].point(), from_nodes[1].point());
+    math::Vector3d v1=from_nodes[1].point()- from_nodes[0].point();
     math::Vector3d v3(AData.dir);
     math::Vector3d v2 = v1.cross(v3);
     math::Chart from_chart(v1,v2,v3);
@@ -706,7 +706,7 @@ bool SingularityLineHelper::followFlow(const Face AFromFace,
         // FINALIZATION
         //================================================
         // Now we have our point to get out of current_cell
-        math::Vector3d v(from_point,out_pnt);
+        math::Vector3d v=out_pnt-from_point;
 
         Face out_face = cf[out_index];
         //       std::cout<<"Out face: "<<out_face.getID()<<std::endl;
@@ -715,7 +715,7 @@ bool SingularityLineHelper::followFlow(const Face AFromFace,
 
         //we update the direction we come from for the next step
         from_direction = out_dir;
-        current_dist +=math::Vector3d(from_point,new_from).norm();
+        current_dist +=(new_from-from_point).norm();
 
         Node n_from = path.newNode(from_point);
         Node n_to = path.newNode(new_from);
@@ -723,7 +723,7 @@ bool SingularityLineHelper::followFlow(const Face AFromFace,
         from_point  = new_from;
 
 
-        //We compute the next current cell using the face we go
+        //We compute the next current cell using the face we execute
         //from_point
 
                 std::vector<Region> adj_out_face = out_face.get<Region>();
@@ -803,7 +803,7 @@ bool SingularityLineHelper::followFlow(const Face AFromFace,
         math::Point plane_point     = (*propag_intersection)[current_node.id()];
 
 
-        math::Vector3d n_vec(plane_point, current_node.point());
+        math::Vector3d n_vec=current_node.point()-plane_point;
         double n_angle = plane_chart.X().orientedAngle(n_vec,plane_chart.Z());
 
         bool found_interval=false;
@@ -903,9 +903,7 @@ computeFuzzyHeuns(const math::Point&                 AFromPnt,
 {
 
     // check whether the line intersects the triangle
-    math::Line ray(AFromPnt,math::Vector3d(AFromDir.X(),
-                                           AFromDir.Y(),
-                                           AFromDir.Z()));
+    math::Line ray(AFromPnt,math::Vector3d({AFromDir.X(), AFromDir.Y(), AFromDir.Z()}));
 
     //===================================================================
     double param[4] = {-1, -1,-1,-1};
@@ -1072,16 +1070,15 @@ SingularityLineHelper::getOutputNormal(const Face& AF, const Region& AR)
     if (f_nodes.size() != 3)
         throw GMDSException("SingularityGraphBuilder::getOutputNormal can only be used on triangular faces");
 
-    // we go through all the nodes of ARegion to find the one that do not belong
+    // we execute through all the nodes of ARegion to find the one that do not belong
     // to AF
     for (auto n : r_nodes) {
         if (n != f_nodes[0] && n != f_nodes[1] && n != f_nodes[2]) {
             // n is the node opposite to the face AF
             math::Vector3d normal = AF.normal();
-            math::Vector3d in_vector(f_nodes[0].point(), n.point());
+            math::Vector3d in_vector= n.point()-f_nodes[0].point();
             if (normal.dot(in_vector) > 0.0) {
-                return math::Vector3d(-normal.X(), -normal.Y(),
-                                      -normal.Z());
+                return math::Vector3d({-normal.X(), -normal.Y(), -normal.Z()});
             } else {
                 return normal;
             }
@@ -1128,7 +1125,7 @@ defineBoundarySlotsViaAngles(const Face& ABndFace,
     // We compute the singularity index (+1 or -1)
     //=====================================================================
     // We compute reference angle in the face plane using Palacio technique
-    math::Vector3d ref(nodes[0].point(), nodes[1].point());
+    math::Vector3d ref=nodes[1].point()-nodes[0].point();
 
     ref.normalize();
 
@@ -1143,9 +1140,9 @@ defineBoundarySlotsViaAngles(const Face& ABndFace,
 
     //=====================================================================
     // Then the reference vector
-    math::Vector3d ref0(cos(angle[0]), sin(angle[0]), 0.0);
-    math::Vector3d ref1(cos(angle[1]), sin(angle[1]), 0.0);
-    math::Vector3d ref2(cos(angle[2]), sin(angle[2]), 0.0);
+    math::Vector3d ref0({cos(angle[0]), sin(angle[0]), 0.0});
+    math::Vector3d ref1({cos(angle[1]), sin(angle[1]), 0.0});
+    math::Vector3d ref2({cos(angle[2]), sin(angle[2]), 0.0});
 
     //=====================================================================
     // And so the face index k = 1 or -1 depending on the sing type
@@ -1168,7 +1165,7 @@ defineBoundarySlotsViaAngles(const Face& ABndFace,
         math::Point pj = nodes[j].point();
         //        std::cout<<"From "<<nodes[i].getID()<<" to "<<nodes[j].getID()<<std::endl;
         // we work along the edge [i,j]
-        math::Vector3d vij(pi, pj);
+        math::Vector3d vij=pj-pi;
 
         // all ref angles are recomputed for this edge
         for (auto k = 0; k < 3; k++) {
@@ -1194,9 +1191,9 @@ defineBoundarySlotsViaAngles(const Face& ABndFace,
             cross_angle_j[k] = math::modulo2PI(a + k * math::Constants::PIDIV2);
         }
         // For each vector, we check if we find a point where to
-        // go out along edge [i,j]
-        math::Vector3d vi(pi, ASingLoc);
-        math::Vector3d vj(pj, ASingLoc);
+        // execute out along edge [i,j]
+        math::Vector3d vi=ASingLoc-pi;
+        math::Vector3d vj=ASingLoc-pj;
         double alpha_i = vij.orientedAngle(vi, normal);
         double alpha_j = vij.orientedAngle(vj, normal);
 
@@ -1224,7 +1221,7 @@ defineBoundarySlotsViaAngles(const Face& ABndFace,
             if (t >= 0 && t <= 1) {
                 found_first_separatrix = true;
                 math::Point pnt_sepa = (1 - t) * pi + t * pj;
-                first_sepa = math::Vector3d(ASingLoc, pnt_sepa);
+                first_sepa = pnt_sepa-ASingLoc;
                 first_sepa.normalize();
             }
         }
@@ -1281,10 +1278,10 @@ defineBoundarySlotsViaVectors(const Face& ABndFace,
     // We project charts into the plane to avoid numerical issues
     math::Plane pl(ASingLoc, normal);
     for (auto i = 0; i < nodes.size(); i++) {
-        math::Vector3d vi(v[i].X(), v[i].Y(), v[i].Z());
+        math::Vector3d vi({v[i].X(), v[i].Y(), v[i].Z()});
         math::Point p = ASingLoc + vi;
         p = pl.project(p);
-        v[i] = math::Vector3d(ASingLoc, p);
+        v[i] = p-ASingLoc;
         v[i].normalize();
     }
     //=====================================================================
@@ -1373,7 +1370,7 @@ defineBoundarySlotsViaVectors(const Face& ABndFace,
             if (!close) {
                 double s = param_ij[i];
                 math::Point p_sol = (1 - s) * pi + s * pj;
-                math::Vector3d v_sol(ASingLoc, p_sol);
+                math::Vector3d v_sol=p_sol-ASingLoc;
                 v_sol.normalize();
                 sep.push_back(v_sol);
             }
@@ -1385,11 +1382,11 @@ defineBoundarySlotsViaVectors(const Face& ABndFace,
     final_sep.resize(sep.size());
 
     final_sep[0] = sep[0];
-    math::Vector3d ref(sep[0].X(), sep[0].Y(), sep[0].Z());
+    math::Vector3d ref({sep[0].X(), sep[0].Y(), sep[0].Z()});
     std::vector<double> angle(sep.size(), 0);
     angle[0] = 0;
     for (auto i = 1; i < sep.size(); i++) {
-        math::Vector3d vi(sep[i].X(), sep[i].Y(), sep[i].Z());
+        math::Vector3d vi({sep[i].X(), sep[i].Y(), sep[i].Z()});
         angle[i] = ref.angleIn02PI(vi, normal);
         std::cout << "angle " << i << ": " << angle[i] << std::endl;
     }

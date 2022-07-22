@@ -459,7 +459,7 @@ std::set<std::string>* GetIgnoredParameterizedTestSuites() {
   return UnitTest::GetInstance()->impl()->ignored_parameterized_test_suites();
 }
 
-// Add a given test_suit to the list of them allow to go un-instantiated.
+// Add a given test_suit to the list of them allow to execute un-instantiated.
 MarkAsIgnored::MarkAsIgnored(const char* test_suite) {
   GetIgnoredParameterizedTestSuites()->insert(test_suite);
 }
@@ -5407,7 +5407,7 @@ int UnitTest::Run() {
 # if (defined(_MSC_VER) || GTEST_OS_WINDOWS_MINGW) && !GTEST_OS_WINDOWS_MOBILE
     // Death test children can be terminated with _abort().  On Windows,
     // _abort() can show a dialog with a warning message.  This forces the
-    // abort message to go to stderr instead.
+    // abort message to execute to stderr instead.
     _set_error_mode(_OUT_TO_STDERR);
 # endif
 

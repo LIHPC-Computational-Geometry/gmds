@@ -47,52 +47,51 @@ namespace gmds {
     /*------------------------------------------------------------------------*/
     bool MeshDoctor::orient2DFace(Face& AF)
     {
-        bool isReoriented = false;
-        std::vector<Node> nodes = AF.get<Node>();
-        TCoord orientation=0;
-        if(AF.type()==GMDS_TRIANGLE) {
-            orientation = isLeft(nodes[0],nodes[1],nodes[2]);
-        }
-        else {
-            //find the rightmost lowest vertex of the polygon
-            unsigned int index_min=0;
-            TCoord x_min = nodes[0].X();
-            TCoord y_min = nodes[0].Y();
-            for(unsigned int
-                        i=0;i<nodes.size();i++)
-            {
-                if(nodes[i].Y()>y_min)
-                    continue;
-                if(nodes[i].Y()==y_min) {	// just as low
-                    if(nodes[i].X()<x_min)  // and to left
-                        continue;
-                }
-                
-                index_min =i;
-                x_min = nodes[i].X();
-                y_min = nodes[i].Y();
-            }
-            
-            /* Orientation is tested in this vertex */
-            if(index_min==0)
-                orientation = isLeft(nodes[nodes.size()-1],nodes[0],nodes[1]);
-            else if (index_min==nodes.size()-1)
-                orientation = isLeft(nodes[index_min-1],nodes[index_min],nodes[0]);
-            else
-                orientation = isLeft(nodes[index_min-1],nodes[index_min],nodes[index_min+1]);
-        }
-        if(orientation>0.0) // clockwise or degenerated (=0)
-        {
-            isReoriented= true;
-            std::vector<Node> nodes_inv;
-            nodes_inv.resize(nodes.size());
-            auto node_size = nodes.size();
-            for(unsigned int i=0;i<node_size;i++)
-                nodes_inv[i] = nodes[node_size-1-i];
-            AF.set<Node>(nodes_inv);
-        }
-        
-        return isReoriented;
+	     bool isReoriented = false;
+	     std::vector<Node> nodes = AF.get<Node>();
+	     TCoord orientation=0;
+	     if(AF.type()==GMDS_TRIANGLE) {
+		     orientation = isLeft(nodes[0],nodes[1],nodes[2]);
+	     }
+	    else {
+		     //find the rightmost lowest vertex of the polygon
+		     unsigned int index_min=0;
+		     TCoord x_min = nodes[0].X();
+		     TCoord y_min = nodes[0].Y();
+		     for(unsigned int
+		             i=0;i<nodes.size();i++)
+		     {
+			     if(nodes[i].Y()>y_min)
+				     continue;
+			     if(nodes[i].Y()==y_min) {	// just as low
+				     if(nodes[i].X()<x_min)  // and to left
+					     continue;
+			     }
+
+			     index_min =i;
+			     x_min = nodes[i].X();
+			     y_min = nodes[i].Y();
+		     }
+
+		     if(index_min==0)
+			     orientation = isLeft(nodes[nodes.size()-1],nodes[0],nodes[1]);
+		     else if (index_min==nodes.size()-1)
+			     orientation = isLeft(nodes[index_min-1],nodes[index_min],nodes[0]);
+		     else
+			     orientation = isLeft(nodes[index_min-1],nodes[index_min],nodes[index_min+1]);
+	     }
+	     if(orientation>0.0) // clockwise or degenerated (=0)
+	     {
+		     isReoriented= true;
+		     std::vector<Node> nodes_inv;
+		     nodes_inv.resize(nodes.size());
+		     auto node_size = nodes.size();
+		     for(unsigned int i=0;i<node_size;i++)
+			     nodes_inv[i] = nodes[node_size-1-i];
+		     AF.set<Node>(nodes_inv);
+	     }
+
+	     return isReoriented;
     }
     /*----------------------------------------------------------------------------*/
     void MeshDoctor::buildFacesAndR2F() const

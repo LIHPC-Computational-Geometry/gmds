@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
         Node n = m.get<Node>(n_id);
         if (m.isMarked(n, pm.mark_node_on_surf)) {
         math::Vector3d nv = boundaryOp.getOutputNormalOfABoundaryNode(n);
-        bnd_normals[n.id()] = math::Vector3d(nv.X(), nv.Y(), nv.Z());
+        bnd_normals[n.id()] = math::Vector3d({nv.X(), nv.Y(), nv.Z()});
         }
     }
 

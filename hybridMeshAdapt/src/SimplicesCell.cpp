@@ -348,7 +348,7 @@ math::Orientation::Sign SimplicesCell::orientation(const TInt faceIdx, const gmd
 /*----------------------------------------------------------------------------*/
 math::Vector3d SimplicesCell::normalOfFace(const std::vector<TInt>& nodes) const
 {
-  math::Vector3d normal(0.0, 0.0, 0.0);
+  math::Vector3d normal({0.0, 0.0, 0.0});
   if(nodes.size() != 3)
   {
     //TODO exception
@@ -367,8 +367,8 @@ math::Vector3d SimplicesCell::normalOfFace(const std::vector<TInt>& nodes) const
       math::Point pt1 = m_simplex_mesh->m_coords[m_simplex_mesh->m_tet_nodes[m_simplexId][localNode1]];
       math::Point pt2 = m_simplex_mesh->m_coords[m_simplex_mesh->m_tet_nodes[m_simplexId][localNode2]];
 
-      math::Vector3d vec0 = math::Vector3d(pt2.X() - pt0.X(), pt2.Y() - pt0.Y(), pt2.Z() - pt0.Z());
-      math::Vector3d vec1 = math::Vector3d(pt1.X() - pt0.X(), pt1.Y() - pt0.Y(), pt1.Z() - pt0.Z());
+      math::Vector3d vec0 = math::Vector3d({pt2.X() - pt0.X(), pt2.Y() - pt0.Y(), pt2.Z() - pt0.Z()});
+      math::Vector3d vec1 = math::Vector3d({pt1.X() - pt0.X(), pt1.Y() - pt0.Y(), pt1.Z() - pt0.Z()});
 
       normal = vec0.cross(vec1);
 
@@ -391,7 +391,7 @@ math::Vector3d SimplicesCell::normalOfFace(const std::vector<TInt>& nodes) const
         else
         {
           math::Point ptTest = m_simplex_mesh->m_coords[m_simplex_mesh->m_tet_nodes[m_simplexId][localNode4]];
-          math::Vector3d vecTest = math::Vector3d(ptTest.X() - pt0.X(), ptTest.Y() - pt0.Y(), ptTest.Z() - pt0.Z());
+          math::Vector3d vecTest = math::Vector3d({ptTest.X() - pt0.X(), ptTest.Y() - pt0.Y(), ptTest.Z() - pt0.Z()});
           if(normal.dot(vecTest) < 0.0)
           {
             normal = -normal;

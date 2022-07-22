@@ -79,7 +79,7 @@ TCoord Edge::length() const
 {
 	std::vector<Node> nodes;
 	get<Node>(nodes);
-	return math::Vector3d(nodes[0].point(), nodes[1].point()).norm();
+	return (nodes[1].point()-nodes[0].point()).norm();
 }
 /*----------------------------------------------------------------------------*/
 math::Point Edge::center() const

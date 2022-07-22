@@ -32,7 +32,7 @@ namespace gmds {
               std::cout<<AV1.dot(AV2)<<std::endl;
               throw GMDSException("A Cross2D object can only be built from 2 orthogonal vectors");
           }
-          Vector3d v(1,0,0);
+          Vector3d v({1,0,0});
           TCoord a = v.orientedAngle(AV1);
       /* //a must be converted from degree to radians
           a = a*Constants::PIDIV180;
@@ -48,7 +48,7 @@ namespace gmds {
       Cross2D::
       Cross2D(const Vector3d& ARef)
       {
-          Vector3d v(1,0,0);
+          Vector3d v({1,0,0});
           TCoord a = v.orientedAngle(ARef);
           if(a<0){
               a = Constants::PI2+a;
@@ -137,7 +137,7 @@ namespace gmds {
               TCoord a = m_angle/4.0;
               for(unsigned int i=0;i<4;i++){
                   TCoord a_i = a +i*Constants::PIDIV2;
-                  v[i] = Vector3d(cos(a_i),sin(a_i),0.0);
+                  v[i] = {cos(a_i),sin(a_i),0.0};
               }
           }
           return v;
@@ -151,15 +151,14 @@ namespace gmds {
 	TCoord a = m_angle/4.0;
 	for(unsigned int i=0;i<4;i++){
 	  TCoord a_i = a +i*Constants::PIDIV2;
-	  m_vectors[i] = Vector3d(cos(a_i),sin(a_i),0.0);
+	  m_vectors[i] = {cos(a_i),sin(a_i),0.0};
 	}
       }
     }
     /*-----------------------------------------------------------------*/
     Vector3d Cross2D::referenceVector() const
     {
-      TCoord a = m_angle;
-      return Vector3d(cos(a),sin(a),0.0);
+      return {cos(m_angle),sin(m_angle),0.0};
     }
     /*-----------------------------------------------------------------*/
     Cross2D  Cross2D::mean(const vector<Cross2D> & ACrosses, 
@@ -256,7 +255,7 @@ namespace gmds {
         Vector3d v1 = AC1.componentVectors()[0];
         Vector3d v2 = AC2.closestComponentVector(v1);
         Vector3d v = AW1*v1 + AW2*v2;
-        Vector3d v_ortho = v.cross(math::Vector3d(0,0,1));
+        Vector3d v_ortho = v.cross({0,0,1});
 
       return Cross2D(v,v_ortho);
     }

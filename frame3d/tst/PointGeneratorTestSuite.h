@@ -109,7 +109,7 @@ void setup_point_generation_tests(const std::string& AVtkFile,
         Node n = AMesh->get<Node>(n_id);
         if (AMesh->isMarked(n, AParamMark->mark_node_on_surf)) {
             math::Vector nv= boundaryOp.getOutputNormalOfABoundaryNode(n);
-            ABndNormals[n_id]=math::Vector3d(nv.X(),nv.Y(),nv.Z());
+            ABndNormals[n_id]=math::Vector3d({nv.X(), nv.Y(), nv.Z()});
         }
     }
 

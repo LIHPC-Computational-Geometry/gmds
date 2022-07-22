@@ -50,7 +50,7 @@ public:
 	 * \param AP2 a point of the plane
 	 */
 	Ray(const Point& AP1, const Point& AP2)
-	:m_pnt(AP1),m_dir(Vector3d(AP1,AP2)) {
+	:m_pnt(AP1),m_dir(AP2-AP1) {
 	  m_isDirUnit = true;
 	  m_dirUnit = m_dir.getNormalize();
 	}

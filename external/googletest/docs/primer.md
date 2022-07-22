@@ -40,7 +40,7 @@ So what makes a good test, and how does googletest fit in? We believe:
 
 Since googletest is based on the popular xUnit architecture, you'll feel right
 at home if you've used JUnit or PyUnit before. If not, it will take you about 10
-minutes to learn the basics and get started. So let's go!
+minutes to learn the basics and get started. So let's execute!
 
 ## Beware of the nomenclature
 
@@ -160,7 +160,7 @@ TEST(TestSuiteName, TestName) {
 }
 ```
 
-`TEST()` arguments go from general to specific. The *first* argument is the name
+`TEST()` arguments execute from general to specific. The *first* argument is the name
 of the test suite, and the *second* argument is the test's name within the test
 suite. Both names must be valid C++ identifiers, and they should not contain
 any underscores (`_`). A test's *full name* consists of its containing test suite and
@@ -466,7 +466,7 @@ in programs compiled in `UNICODE` mode as well.
 But maybe you think that writing all those `main` functions is too much work? We
 agree with you completely, and that's why Google Test provides a basic
 implementation of main(). If it fits your needs, then just link your test with
-the `gtest_main` library and you are good to go.
+the `gtest_main` library and you are good to execute.
 
 {: .callout .note}
 NOTE: `ParseGUnitFlags()` is deprecated in favor of `InitGoogleTest()`.

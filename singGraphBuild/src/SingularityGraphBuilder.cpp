@@ -677,7 +677,7 @@ SingularityGraphBuilder::createOneSingularityLineFrom(SingularityPoint *ASingPoi
 	while (!completeSingLine) {
 		new_line->addDiscretizationPoint(currentPnt);
 		m_mesh->mark(FCurr, AMarkFaceUsedForSep);
-		std::cout << "We go from face " << FCurr.id() << " into tetrahedron " << currentTet.id() << std::endl;
+		std::cout << "We execute from face " << FCurr.id() << " into tetrahedron " << currentTet.id() << std::endl;
 		// Now look for the opposite face
 		int nbOfNewFacesOkay = 0;
 
@@ -1073,7 +1073,7 @@ SingularityGraphBuilder::computeSingInfoOnEdge(const int AFaceMark,
 	// puis on resoud les equations comme en 2D
 	// et on applique linverse de M aux resultats
 	// CALCUL de la matrice de rotation
-	math::Vector3d orthogBase(ANormalToFace.Y(), -ANormalToFace.X(), 0);     // le vecteur orthogonal a normaleTriang et 0,0,1
+	math::Vector3d orthogBase({ANormalToFace.Y(), -ANormalToFace.X(), 0});     // le vecteur orthogonal a normaleTriang et 0,0,1
 
 	double matrixRotation[3][3];
 	double normeOrthog = orthogBase.norm();
@@ -1262,7 +1262,7 @@ SingularityGraphBuilder::computeSingInfoOnEdge(const int AFaceMark,
 				dirSepRotTmp[j] += matrixRotation[k][j] * dirSepTmp[k];
 			}
 		}
-		math::Vector3d v(dirSepRotTmp[0], dirSepRotTmp[1], dirSepRotTmp[2]);
+		math::Vector3d v({dirSepRotTmp[0], dirSepRotTmp[1], dirSepRotTmp[2]});
 		dirSep.push_back(v);
 	}
 }
@@ -1410,7 +1410,7 @@ SingularityGraphBuilder::createVolumeSingularityLines()
 	// now we need to compute the lines of sing into separatrices
 	int markFaceUsedForSep = m_mesh->newMark<Face>();
 
-	/* We go through all the volume singularity points and we create a sing line
+	/* We execute through all the volume singularity points and we create a sing line
 	 * for every available free slot.
 	 */
 	//	std::vector<VolumeSingularityPoint*> singularity_points = m_graph.olumePoints();
@@ -1650,7 +1650,7 @@ SingularityGraphBuilder::createOneVolumeSingularityPoint(std::vector<gmds::Regio
 		if (isSingularFace(bnd_face)) {
 			// A Singularty line goes through bnd_face
 			math::Point face_center = bnd_face.center();
-			math::Vector3d line_vec(sing_pnt, face_center);
+			math::Vector3d line_vec= face_center-sing_pnt;
 			// TODO CHANGE singularity->newSlot(face_center, line_vec, bnd_face, false);
 		}
 	}
@@ -1854,7 +1854,7 @@ SingularityGraphBuilder::addGeometryToSingularitGraph()
 				else
 					other_node = edge_nodes[0];
 
-				math::Vector3d vec(current_node.point(), other_node.point());
+				math::Vector3d vec= other_node.point()-current_node.point();
 				vec.normalize();
 
 				// Maintenant on va regarder pour toutes les faces adjacentes
@@ -2151,11 +2151,11 @@ SingularityGraphBuilder::addGeometryToSingularitGraph()
 			gmds::math::Vector3d lj_end_dir[2];
 			lj_end_loc[0] = lj_discretization[0];
 			lj_end_loc[1] = lj_discretization[lj_discretization.size() - 1];
-			lj_end_dir[0] = gmds::math::Vector3d(lj_end_loc[0], lj_discretization[1]);
-			lj_end_dir[1] = gmds::math::Vector3d(lj_end_loc[1], lj_discretization[lj_discretization.size() - 2]);
+			lj_end_dir[0] = lj_discretization[1]-lj_end_loc[0];
+			lj_end_dir[1] = lj_discretization[lj_discretization.size() - 2]-lj_end_loc[1];
 			for (int k = 0; k < 2; k++) {
 				gmds::math::Point pk = lj_end_loc[k];
-				gmds::math::Vector3d v(pk, pi_point);
+				gmds::math::Vector3d v= pi_point-pk;
 				if (v.norm2() < 1e-5) {
 					Face f;
 					// pi and lj must be connected
@@ -2191,9 +2191,9 @@ SingularityGraphBuilder::isIn(const math::Point &APnt, Edge &AEdge)
 	math::Point p0 = n[0].point();
 	math::Point p1 = n[1].point();
 	// first, we look if the p is colinear with p0,p1
-	math::Vector3d v01(p0, p1);
-	math::Vector3d v0(p0, p);
-	math::Vector3d v1(p1, p);
+	math::Vector3d v01=p1-p0;
+	math::Vector3d v0=p-p0;
+	math::Vector3d v1=p-p1;
 
 	math::Vector3d v01n = v01;
 	v01n.normalize();
@@ -2237,7 +2237,7 @@ SingularityGraphBuilder::isInside(const math::Point &APnt, const math::Vector3d 
 	if (opp_node.id() == NullID) throw GMDSException("isInside(): Error, no opposite node");
 
 	math::Point opp_pnt = opp_node.point();
-	math::Vector3d v_test(APnt, opp_pnt);
+	math::Vector3d v_test=opp_pnt-APnt;
 
 	return (AVec.dot(v_test) >= 0.0);
 }
@@ -2331,7 +2331,7 @@ SingularityGraphBuilder::computeSurfaceSingularityLine(SingularityPoint *AFromPo
 	// first we add the singularity point of the slot ,and we define prev_vec
 	if (prev_face.id() == NullID) {
 		std::cout << "we have a prev face" << std::endl;
-		prev_vec = math::Vector3d(AFromSlot->from_point->getLocation(), current_pnt);
+		prev_vec = current_pnt-AFromSlot->from_point->getLocation();
 		std::cout << " PREV VEC: " << prev_vec << std::endl;
 		math::Point prevPnt(startPnt.X() + prev_vec.X(), startPnt.Y() + prev_vec.Y(), startPnt.Z() + prev_vec.Z());
 
@@ -2565,9 +2565,9 @@ SingularityGraphBuilder::computeIntersection(
 	math::Point p1 = edge_nodes[1].point();
 
 	math::Vector3d q0q1(AVec);
-	math::Vector3d q0p0(q0, p0);
-	math::Vector3d q0p1(q0, p1);
-	math::Vector3d p0p1(p0, p1);
+	math::Vector3d q0p0=p0-q0;
+	math::Vector3d q0p1=p1-q0;
+	math::Vector3d p0p1=p1-p0;
 
 	// by default (APnt,AVec) and AEdge should not be colinear,
 	// and APnt, p1 and p2 are assumed as being coplanar
@@ -2578,13 +2578,6 @@ SingularityGraphBuilder::computeIntersection(
 	double colinear = fabs(col1.dot(col2));
 	if (fabs(1 - colinear) < epsilon) return false;
 
-	std::cout << "Q0   " << q0 << std::endl;
-	std::cout << "P0   " << p0 << std::endl;
-	std::cout << "P1   " << p1 << std::endl;
-	std::cout << "Q0Q1 " << q0q1 << std::endl;
-	std::cout << "P0P1 " << p0p1 << std::endl;
-	std::cout << "Q0P0 " << q0p0 << std::endl;
-	std::cout << "Q0P1 " << q0p1 << std::endl;
 
 	// We have an intersection point to compute
 	// coeff of the line L0(Q0, V0) equation sytem
@@ -2691,7 +2684,7 @@ SingularityGraphBuilder::computeOutDataOnTheSurface(const gmds::math::Vector3d &
 	math::Vector3d v_in = AINVec;
 	v_in.normalize();
 	math::Point node_loc = AINNode1.point();
-	math::Vector3d v1(AINPnt, node_loc);
+	math::Vector3d v1=node_loc-AINPnt;
 	v1.normalize();
 	math::Quaternion q;
 	if (fabs(v1.dot(v_in) - 1) < 1e-5) {
@@ -3025,8 +3018,8 @@ SingularityGraphBuilder::computeOutTriangleOnTheSurface(gmds::Face &ACurrentFace
 				}
 			}
 		}
-		math::Vector3d v0(out_node.point(), other_nodes[0].point());
-		math::Vector3d v1(out_node.point(), other_nodes[1].point());
+		math::Vector3d v0=other_nodes[0].point()-out_node.point();
+		math::Vector3d v1=other_nodes[1].point()-out_node.point();
 
 		math::Vector3d normal = AOUTFace.normal();
 		// cross c(out_q, AOUTFace.normal());
@@ -3204,7 +3197,7 @@ SingularityGraphBuilder::getOutputNormal(Face &AFace, Region &ARegion)
 	if (region_nodes.size() != 4) throw GMDSException("SingularityGraphBuilder::getOutputNormal can only be used on tetrahedral regions");
 	if (face_nodes.size() != 3) throw GMDSException("SingularityGraphBuilder::getOutputNormal can only be used on triangular faces");
 
-	// we go through all the nodes of ARegion to find the one that do not belong
+	// we execute through all the nodes of ARegion to find the one that do not belong
 	// to AFAce
 	for (unsigned int i = 0; i < region_nodes.size(); i++) {
 		Node n = region_nodes[i];
@@ -3214,9 +3207,9 @@ SingularityGraphBuilder::getOutputNormal(Face &AFace, Region &ARegion)
 			Node n1 = face_nodes[1];
 			Node n2 = face_nodes[2];
 			math::Vector3d normal_to_face = AFace.normal();
-			math::Vector3d in_vector(n0.point(), n.point());
+			math::Vector3d in_vector=n.point()-n0.point();
 			if (normal_to_face.dot(in_vector) > 0.0) {
-				return math::Vector3d(-normal_to_face[0], -normal_to_face[1], -normal_to_face[2]);
+				return math::Vector3d({-normal_to_face[0], -normal_to_face[1], -normal_to_face[2]});
 				/*return math::Vector3d(-normal_to_face.get(0),
 				                              -normal_to_face.get(1),
 				                              -normal_to_face.get(2)); */

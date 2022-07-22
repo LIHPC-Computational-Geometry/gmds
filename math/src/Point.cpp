@@ -34,13 +34,6 @@ namespace gmds{
                          AP1.m_coord[2] + AP2.m_coord[2]);
         }
         /*---------------------------------------------------------------------*/
-        Point operator-(const Point& AP1, const Point& AP2){
-            return Point(
-                         AP1.m_coord[0] - AP2.m_coord[0],
-                         AP1.m_coord[1] - AP2.m_coord[1],
-                         AP1.m_coord[2] - AP2.m_coord[2]);
-        }
-        /*---------------------------------------------------------------------*/
         bool Point::operator==(const Point& AP) const
         {
             if (&AP == this)
@@ -82,37 +75,24 @@ namespace gmds{
         }
         /*---------------------------------------------------------------------*/
         TCoord Point::distance2(const Point& AP) const{
-            return Vector3d(*this,AP).norm2();
+            return (AP-(*this)).norm2();
         }
         /*---------------------------------------------------------------------*/
         bool Point::areColinear(const Point& AP2, const Point& AP3) const
         {
-            Point p1 = *this;
-            Vector3d v1(p1, AP2);
-            Vector3d v2(p1, AP3);
-            Vector3d v = v1.cross(v2);
-		  
-		  return (isZero(v[0]) && isZero(v[1]) && isZero(v[2]) );
+            Vector3d v = (AP2-(*this)).cross(AP3-(*this));
+	         return (isZero(v[0]) && isZero(v[1]) && isZero(v[2]) );
         }
          /*---------------------------------------------------------------------*/
         bool Point::areColinear2ndMethod(const Point& AP2, const Point& AP3) const
         {
-            Point p1 = *this;
-            Vector3d v1(p1, AP2);
-            Vector3d v2(p1, AP3);
-            Vector3d v = v1.cross(v2);
-		  return (isZero2ndMethod(v[0]) && isZero2ndMethod(v[1]) && isZero2ndMethod(v[2]) );
+	        Vector3d v = (AP2-(*this)).cross(AP3-(*this));
+	        return (isZero2ndMethod(v[0]) && isZero2ndMethod(v[1]) && isZero2ndMethod(v[2]) );
         }
         /*---------------------------------------------------------------------*/
         bool Point::
         areCoplanar(const Point& AP2, const Point& AP3, const Point& AP4) const{
-
-            Point p1 = *this;
-            Vector3d v12(p1,AP2);
-            Vector3d v13(p1,AP3);
-            Vector3d v14(p1,AP4);
-            return isZero(v12.dot(v13.cross(v14)));
-
+            return isZero((AP2-(*this)).dot((AP3-(*this)).cross((AP4-(*this)))));
         }
         /*---------------------------------------------------------------------*/
         bool
@@ -217,16 +197,14 @@ namespace gmds{
                                        const math::Point& AP,
                                        TCoord& A0, TCoord& A1,
                                        TCoord& A2, TCoord& A3) {
-            double val_A[4][4] = {
-                {AT0.X(), AT1.X(), AT2.X(), AT3.X()},
-                {AT0.Y(), AT1.Y(), AT2.Y(), AT3.Y()},
-                {AT0.Z(), AT1.Z(), AT2.Z(), AT3.Z()},
-                {1.0    , 1.0    , 1.0    , 1.0    }};
 
-            double val_b[4] = {AP.X(),AP.Y(),AP.Z(),1.0};
-            VectorND<4, double>   b(val_b);
-            Matrix<4, 4, double>  A(val_A);
 
+            VectorND<4, double>   b={AP.X(),AP.Y(),AP.Z(),1.0};
+            Matrix<4, 4, double>  A={
+	            AT0.X(), AT1.X(), AT2.X(), AT3.X(),
+	            AT0.Y(), AT1.Y(), AT2.Y(), AT3.Y(),
+	            AT0.Z(), AT1.Z(), AT2.Z(), AT3.Z(),
+	            1.0    , 1.0    , 1.0    , 1.0    };
             //We solve AX=b
             VectorND<4, double> x = A.solve(b);
 
@@ -238,15 +216,13 @@ namespace gmds{
                                        const math::Point& AP,
                                        std::vector<TCoord>& ACoeff) {
             if(AT.size()==4){
-                double val_A[4][4] = {
-                    {AT[0].X(), AT[1].X(), AT[2].X(), AT[3].X()},
-                    {AT[0].Y(), AT[1].Y(), AT[2].Y(), AT[3].Y()},
-                    {AT[0].Z(), AT[1].Z(), AT[2].Z(), AT[3].Z()},
-                    {1.0      , 1.0      , 1.0      , 1.0      }};
+		         Matrix<4, 4, double>  A= {
+                    AT[0].X(), AT[1].X(), AT[2].X(), AT[3].X(),
+                    AT[0].Y(), AT[1].Y(), AT[2].Y(), AT[3].Y(),
+                    AT[0].Z(), AT[1].Z(), AT[2].Z(), AT[3].Z(),
+                    1.0      , 1.0      , 1.0      , 1.0      };
 
-                double val_b[4] = {AP.X(),AP.Y(),AP.Z(),1.0};
-                VectorND<4, double>   b(val_b);
-                Matrix<4, 4, double>  A(val_A);
+		         VectorND<4, double>   b = {AP.X(),AP.Y(),AP.Z(),1.0};
                 //We solve AX=b
                 VectorND<4, double> x = A.solve(b);
                 ACoeff.resize(4);
@@ -256,14 +232,13 @@ namespace gmds{
                 ACoeff[3]=x[3];
             }
             else if (AT.size()==3){
-                double val_A[3][3] = {
-                    {AT[0].X(), AT[1].X(), AT[2].X()},
-                    {AT[0].Y(), AT[1].Y(), AT[2].Y()},
-                    {AT[0].Z(), AT[1].Z(), AT[2].Z()}};
+		         Matrix<3, 3, double> A= {
+                    AT[0].X(), AT[1].X(), AT[2].X(),
+                    AT[0].Y(), AT[1].Y(), AT[2].Y(),
+                    AT[0].Z(), AT[1].Z(), AT[2].Z()};
 
-                double val_b[3] = {AP.X(),AP.Y(),AP.Z()};
-                VectorND<3, double>   b(val_b);
-                Matrix<3, 3, double>  A(val_A);
+                VectorND<3, double>   b= {AP.X(),AP.Y(),AP.Z()};
+
                 //We solve AX=b
                 VectorND<3, double> x = A.solve(b);
                 ACoeff.resize(3);
@@ -311,8 +286,8 @@ namespace gmds{
                 throw GMDSException("Coplanarity is mandatory to compute barycentric coordinates of a point into a 3D triangle");
             }
 
-            Vector3d v1(p1.X()-p0.X(), p1.Y()-p0.Y(), p1.Z()-p0.Z());
-            Vector3d v3(p2.X()-p0.X(), p2.Y()-p0.Y(), p2.Z()-p0.Z());
+            Vector3d v1= p1-p0;
+            Vector3d v3= p2-p0;
 
             Vector3d normal = (v1.cross(v3));
             normal.normalize();
@@ -368,8 +343,8 @@ namespace gmds{
                 throw GMDSException("Coplanarity is mandatory to compute barycentric coordinates of a point into a 3D triangle");
             }
 
-            Vector3d v1(p1.X()-p0.X(), p1.Y()-p0.Y(), p1.Z()-p0.Z());
-            Vector3d v3(p2.X()-p0.X(), p2.Y()-p0.Y(), p2.Z()-p0.Z());
+            Vector3d v1= p1-p0;
+            Vector3d v3= p2-p0;
 
             Vector3d normal = (v1.cross(v3));
             normal.normalize();

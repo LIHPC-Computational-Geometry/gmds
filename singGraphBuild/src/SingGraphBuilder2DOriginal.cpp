@@ -209,15 +209,15 @@ SingGraphBuilder2DOriginal::computeSingularityLine(SingularityPoint *AFromPoint,
 
 	AFromSlot->line = surf_line;
 	// AFromSlot->line_direction =  AFromSlot->direction;
-	math::Vector3d firstDir = math::Vector3d(from_sing_pnt->getLocation(), line_discretization[0]);
+	math::Vector3d firstDir = line_discretization[0]-from_sing_pnt->getLocation();
 	if (m_withGlobalComments) std::cout << "firstDir " << firstDir.X() << " " << firstDir.Y() << std::endl;
 	AFromSlot->line_direction = firstDir;
 	AFromSlot->isLaunched = true;
 	if (to_slot != 0) {
 		streamlineDeviation = (streamlineDeviation
 		                       + fabs(1
-		                              - to_slot->direction.dot(math::Vector3d(line_discretization[line_discretization.size() - 1],
-		                                                                      line_discretization[line_discretization.size() - 2]))));
+		                              - to_slot->direction.dot(line_discretization[line_discretization.size() - 2]-
+		                                                                      line_discretization[line_discretization.size() - 1])));
 		streamlineDeviation = streamlineDeviation / (line_discretization.size() + 1);
 		AFromSlot->lineDeviation = streamlineDeviation;
 	}
@@ -357,8 +357,8 @@ SingGraphBuilder2DOriginal::computeSingularityLine(SingularityPoint *AFromPoint,
 		backtrackSingularityLine(surf_line,       // the line we modify
 		                         to_sing_pnt,     // the point we start from
 		                         to_slot,         // the slot we start from
-		                         AFromPoint,      // the point we go to
-		                         AFromSlot,       // the slot we go to
+		                         AFromPoint,      // the point we execute to
+		                         AFromSlot,       // the slot we execute to
 		                         to_dir,          // the direction of the streamline for to_slot
 		                         foundPath);      // boolean value indicating if we have found a path
 
@@ -380,8 +380,8 @@ SingGraphBuilder2DOriginal::computeSingularityLine(SingularityPoint *AFromPoint,
 			for (unsigned int i = 1; i < finalLineDiscretization.size() - 1; i++) {
 				previous_point = current_point;
 				current_point = finalLineDiscretization[i];
-				previous_dir = math::Vector3d(previous_point, current_point);
-				next_dir = math::Vector3d(current_point, finalLineDiscretization[i + 1]);
+				previous_dir = current_point-previous_point;
+				next_dir = finalLineDiscretization[i + 1]-current_point;
 				if (i == 1) {
 					streamlineDeviation = streamlineDeviation + fabs(1.0 - previous_dir.dot(AFromSlot->direction));
 				}
@@ -518,8 +518,8 @@ SingGraphBuilder2DOriginal::computeStreamLine(SingularityPoint *AFromPnt,
 			ATriangles.insert(ATriangles.end(), adj_faces.begin(), adj_faces.end());
 
 			std::vector<Node> currentNodes = currentEdge.get<Node>();
-			math::Vector3d v0(start_pnt, currentNodes[0].point());
-			math::Vector3d v1(start_pnt, currentNodes[1].point());
+			math::Vector3d v0=currentNodes[0].point()-start_pnt;
+			math::Vector3d v1=currentNodes[1].point()-start_pnt;
 			Node next_node;
 			if (math::near(v0.norm(), 0.0))
 				next_node = currentNodes[1];
@@ -531,7 +531,7 @@ SingGraphBuilder2DOriginal::computeStreamLine(SingularityPoint *AFromPnt,
 				next_node = currentNodes[1];
 
 			math::Vector3d next_dir;
-			math::Vector3d devVect(start_pnt, next_node.point());
+			math::Vector3d devVect= next_node.point()-start_pnt;
 			devVect.normalize();
 			m_tool.computeOutVectorAtPoint(next_node, start_dir, next_dir);
 			start_dir.normalize();
@@ -675,7 +675,7 @@ SingGraphBuilder2DOriginal::computeStreamLine(SingularityPoint *AFromPnt,
 				                        start_dir,            /* the geometric direction to follow*/
 				                        start_cell_dim,       /* the dimension of the cell start_pnt is located */
 				                        start_cell_id,        /* the id of the cell start_pnt is located on*/
-				                        out_pnt,              /* the geometric point where we go out */
+				                        out_pnt,              /* the geometric point where we execute out */
 				                        out_vec,              /* the geometric direction to follow after*/
 				                        out_cell_dim,         /* the dimension of the out cell (0 or 1) */
 				                        out_cell_id,          /* the id of the out cell*/

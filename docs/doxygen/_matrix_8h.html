@@ -84,7 +84,7 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgmds_1_1math_1_1_det_traits.html">gmds::math::DetTraits&lt; TLin, TCol, TType &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgmds_1_1math_1_1_det_traits.html">gmds::math::DetTraits&lt; TRow, TCol, TType &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Template structure providing a tailored process for computing the determinant of an TLinxTCol matrix.  <a href="structgmds_1_1math_1_1_det_traits.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgmds_1_1math_1_1_det_traits_3_012_00_012_00_01_t_type_01_4.html">gmds::math::DetTraits&lt; 2, 2, TType &gt;</a></td></tr>
@@ -93,7 +93,7 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgmds_1_1math_1_1_det_traits_3_014_00_014_00_01_t_type_01_4.html">gmds::math::DetTraits&lt; 4, 4, TType &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgmds_1_1math_1_1_inv_traits.html">gmds::math::InvTraits&lt; TLin, TCol, TType &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgmds_1_1math_1_1_inv_traits.html">gmds::math::InvTraits&lt; TRow, TCol, TType &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Template structure providing a tailored process for computing the inverse matrix of an TLinxTCol matrix.  <a href="structgmds_1_1math_1_1_inv_traits.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgmds_1_1math_1_1_inv_traits_3_013_00_013_00_01_t_type_01_4.html">gmds::math::InvTraits&lt; 3, 3, TType &gt;</a></td></tr>
@@ -110,32 +110,32 @@ Namespaces</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a167158be23b8092fdfe2c318a80acb2f"><td class="memTemplParams" colspan="2"><a id="a167158be23b8092fdfe2c318a80acb2f"></a>
-template&lt;int TLin, int TCol, typename TType &gt; </td></tr>
-<tr class="memitem:a167158be23b8092fdfe2c318a80acb2f"><td class="memTemplItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gmds::math::operator&lt;&lt;</b> (std::ostream &amp;stream, const <a class="el" href="class_matrix.html">Matrix</a>&lt; TLin, TCol, TType &gt; &amp;mat)</td></tr>
+template&lt;int TRow, int TCol, typename TType &gt; </td></tr>
+<tr class="memitem:a167158be23b8092fdfe2c318a80acb2f"><td class="memTemplItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gmds::math::operator&lt;&lt;</b> (std::ostream &amp;stream, const <a class="el" href="class_matrix.html">Matrix</a>&lt; TRow, TCol, TType &gt; &amp;mat)</td></tr>
 <tr class="separator:a167158be23b8092fdfe2c318a80acb2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaee642bfb1d53ae2d85e6793317f9d92"><td class="memTemplParams" colspan="2"><a id="aaee642bfb1d53ae2d85e6793317f9d92"></a>
-template&lt;int TLin, int TCol, typename TType &gt; </td></tr>
-<tr class="memitem:aaee642bfb1d53ae2d85e6793317f9d92"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="class_matrix.html">Matrix</a>&lt; TLin, TCol, TType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gmds::math::operator-</b> (const <a class="el" href="class_matrix.html">Matrix</a>&lt; TLin, TCol, TType &gt; &amp;a, const <a class="el" href="class_matrix.html">Matrix</a>&lt; TLin, TCol, TType &gt; &amp;b)</td></tr>
+template&lt;int TRow, int TCol, typename TType &gt; </td></tr>
+<tr class="memitem:aaee642bfb1d53ae2d85e6793317f9d92"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="class_matrix.html">Matrix</a>&lt; TRow, TCol, TType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gmds::math::operator-</b> (const <a class="el" href="class_matrix.html">Matrix</a>&lt; TRow, TCol, TType &gt; &amp;a, const <a class="el" href="class_matrix.html">Matrix</a>&lt; TRow, TCol, TType &gt; &amp;b)</td></tr>
 <tr class="separator:aaee642bfb1d53ae2d85e6793317f9d92"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a74ae6a00b3057ddc6e19dea102dcdea9"><td class="memTemplParams" colspan="2"><a id="a74ae6a00b3057ddc6e19dea102dcdea9"></a>
-template&lt;int TLin, int TCol, typename TType &gt; </td></tr>
-<tr class="memitem:a74ae6a00b3057ddc6e19dea102dcdea9"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="class_matrix.html">Matrix</a>&lt; TLin, TCol, TType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gmds::math::operator+</b> (const <a class="el" href="class_matrix.html">Matrix</a>&lt; TLin, TCol, TType &gt; &amp;a, const <a class="el" href="class_matrix.html">Matrix</a>&lt; TLin, TCol, TType &gt; &amp;b)</td></tr>
+template&lt;int TRow, int TCol, typename TType &gt; </td></tr>
+<tr class="memitem:a74ae6a00b3057ddc6e19dea102dcdea9"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="class_matrix.html">Matrix</a>&lt; TRow, TCol, TType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gmds::math::operator+</b> (const <a class="el" href="class_matrix.html">Matrix</a>&lt; TRow, TCol, TType &gt; &amp;a, const <a class="el" href="class_matrix.html">Matrix</a>&lt; TRow, TCol, TType &gt; &amp;b)</td></tr>
 <tr class="separator:a74ae6a00b3057ddc6e19dea102dcdea9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2522dd41ed76e099f0a6a134eb7162c9"><td class="memTemplParams" colspan="2"><a id="a2522dd41ed76e099f0a6a134eb7162c9"></a>
-template&lt;int TLin, int TCommon, int TCol, typename TType &gt; </td></tr>
-<tr class="memitem:a2522dd41ed76e099f0a6a134eb7162c9"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="class_matrix.html">Matrix</a>&lt; TLin, TCol, TType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gmds::math::operator*</b> (const <a class="el" href="class_matrix.html">Matrix</a>&lt; TLin, TCommon, TType &gt; &amp;a, const <a class="el" href="class_matrix.html">Matrix</a>&lt; TCommon, TCol, TType &gt; &amp;b)</td></tr>
+template&lt;int TRow, int TCommon, int TCol, typename TType &gt; </td></tr>
+<tr class="memitem:a2522dd41ed76e099f0a6a134eb7162c9"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="class_matrix.html">Matrix</a>&lt; TRow, TCol, TType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gmds::math::operator*</b> (const <a class="el" href="class_matrix.html">Matrix</a>&lt; TRow, TCommon, TType &gt; &amp;a, const <a class="el" href="class_matrix.html">Matrix</a>&lt; TCommon, TCol, TType &gt; &amp;b)</td></tr>
 <tr class="separator:a2522dd41ed76e099f0a6a134eb7162c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a211346f3eaa58099ebda20f11cf777b8"><td class="memTemplParams" colspan="2"><a id="a211346f3eaa58099ebda20f11cf777b8"></a>
-template&lt;int TLin, int TCol, typename TType &gt; </td></tr>
-<tr class="memitem:a211346f3eaa58099ebda20f11cf777b8"><td class="memTemplItemLeft" align="right" valign="top">VectorND&lt; TLin, TType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gmds::math::operator*</b> (const <a class="el" href="class_matrix.html">Matrix</a>&lt; TLin, TCol, TType &gt; &amp;a, const VectorND&lt; TCol, TType &gt; &amp;v)</td></tr>
+template&lt;int TRow, int TCol, typename TType &gt; </td></tr>
+<tr class="memitem:a211346f3eaa58099ebda20f11cf777b8"><td class="memTemplItemLeft" align="right" valign="top">VectorND&lt; TRow, TType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gmds::math::operator*</b> (const <a class="el" href="class_matrix.html">Matrix</a>&lt; TRow, TCol, TType &gt; &amp;a, const VectorND&lt; TCol, TType &gt; &amp;v)</td></tr>
 <tr class="separator:a211346f3eaa58099ebda20f11cf777b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad53d7f1cfb21880823f5fae2fd2deeeb"><td class="memTemplParams" colspan="2"><a id="ad53d7f1cfb21880823f5fae2fd2deeeb"></a>
-template&lt;int TLin, int TCol, typename TType &gt; </td></tr>
-<tr class="memitem:ad53d7f1cfb21880823f5fae2fd2deeeb"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="class_matrix.html">Matrix</a>&lt; TLin, TCol, TType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gmds::math::operator*</b> (const <a class="el" href="class_matrix.html">Matrix</a>&lt; TLin, TCol, TType &gt; &amp;a, const TType &amp;k)</td></tr>
+template&lt;int TRow, int TCol, typename TType &gt; </td></tr>
+<tr class="memitem:ad53d7f1cfb21880823f5fae2fd2deeeb"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="class_matrix.html">Matrix</a>&lt; TRow, TCol, TType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gmds::math::operator*</b> (const <a class="el" href="class_matrix.html">Matrix</a>&lt; TRow, TCol, TType &gt; &amp;a, const TType &amp;k)</td></tr>
 <tr class="separator:ad53d7f1cfb21880823f5fae2fd2deeeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2b306a3295809a4202a7252077ec8f1"><td class="memTemplParams" colspan="2"><a id="ab2b306a3295809a4202a7252077ec8f1"></a>
-template&lt;int TLin, int TCol, typename TType &gt; </td></tr>
-<tr class="memitem:ab2b306a3295809a4202a7252077ec8f1"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="class_matrix.html">Matrix</a>&lt; TLin, TCol, TType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gmds::math::operator/</b> (const <a class="el" href="class_matrix.html">Matrix</a>&lt; TLin, TCol, TType &gt; &amp;a, const TType &amp;k)</td></tr>
+template&lt;int TRow, int TCol, typename TType &gt; </td></tr>
+<tr class="memitem:ab2b306a3295809a4202a7252077ec8f1"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="class_matrix.html">Matrix</a>&lt; TRow, TCol, TType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gmds::math::operator/</b> (const <a class="el" href="class_matrix.html">Matrix</a>&lt; TRow, TCol, TType &gt; &amp;a, const TType &amp;k)</td></tr>
 <tr class="separator:ab2b306a3295809a4202a7252077ec8f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad043cd6709de41ce7a26b9a0e961df55"><td class="memTemplParams" colspan="2"><a id="ad043cd6709de41ce7a26b9a0e961df55"></a>
 template&lt;int I, int J, typename T &gt; </td></tr>

@@ -7,8 +7,8 @@
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
 TEST(Cross2DTest, initVec1) {
-    math::Vector3d v1(1, 0, 0);
-    math::Vector3d v2(0, 1, 0);
+    math::Vector3d v1({1, 0, 0});
+    math::Vector3d v2({0, 1, 0});
     math::Cross2D c(v1, v2);
 
     EXPECT_EQ(0, c.referenceAngle());
@@ -38,8 +38,8 @@ TEST(Cross2DTest, initVec1) {
 
 /*----------------------------------------------------------------------------*/
 TEST(Cross2DTest, initVec2) {
-    math::Vector3d v1(0, 1, 0);
-    math::Vector3d v2(-1, 0, 0);
+    math::Vector3d v1({0, 1, 0});
+    math::Vector3d v2({-1, 0, 0});
     math::Cross2D c(v1, v2);
 
     EXPECT_EQ(0, c.referenceAngle());
@@ -47,8 +47,8 @@ TEST(Cross2DTest, initVec2) {
 
 /*----------------------------------------------------------------------------*/
 TEST(Cross2DTest, initVec3) {
-    math::Vector3d v1(-1, 0, 0);
-    math::Vector3d v2(0, -1, 0);
+    math::Vector3d v1({-1, 0, 0});
+    math::Vector3d v2({0, -1, 0});
     math::Cross2D c(v1, v2);
 
     EXPECT_EQ(0, c.referenceAngle());
@@ -56,8 +56,8 @@ TEST(Cross2DTest, initVec3) {
 
 /*----------------------------------------------------------------------------*/
 TEST(Cross2DTest, initVec4) {
-    math::Vector3d v1(1, 0, 0);
-    math::Vector3d v2(0, -1, 0);
+    math::Vector3d v1({1, 0, 0});
+    math::Vector3d v2({0, -1, 0});
     math::Cross2D c(v1, v2);
 
     EXPECT_EQ(0, c.referenceAngle());
@@ -65,8 +65,8 @@ TEST(Cross2DTest, initVec4) {
 
 /*----------------------------------------------------------------------------*/
 TEST(Cross2DTest, initVecFail) {
-    math::Vector3d v1(1, 0, 0);
-    math::Vector3d v2(0.1, 1, 0);
+    math::Vector3d v1({1, 0, 0});
+    math::Vector3d v2({0.1, 1, 0});
     EXPECT_THROW({
                      math::Cross2D c(v1, v2);
 
@@ -76,7 +76,7 @@ TEST(Cross2DTest, initVecFail) {
 
 /*----------------------------------------------------------------------------*/
 TEST(Cross2DTest, initVectorsVsRef) {
-    math::Vector3d v_ref(1, 0, 0);
+    math::Vector3d v_ref({1, 0, 0});
     math::Cross2D c(v_ref);
 
     EXPECT_EQ(0, c.referenceAngle());

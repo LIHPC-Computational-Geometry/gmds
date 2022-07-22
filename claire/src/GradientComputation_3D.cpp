@@ -34,7 +34,7 @@ GradientComputation_3D::execute()
 /*------------------------------------------------------------------------*/
 math::Vector3d
 GradientComputation_3D::computeGradientOnSimpleRegion(TCellID region_id){
-	math::Vector3d Gradient(0,0,0) ;
+	math::Vector3d Gradient({0,0,0}) ;
 	Region reg = m_mesh->get<Region>(region_id);
 	std::vector<TCellID> region_nodes_ids = reg.getIDs<Node>();
 

@@ -112,7 +112,7 @@ static void run(Index rows, Index cols, Index depth,
 
       pack_lhs(blockA+info[tid].lhs_start*actual_kc, lhs.getSubMapper(info[tid].lhs_start,k), actual_kc, info[tid].lhs_length);
 
-      // Notify the other threads that the part A'_i is ready to go.
+      // Notify the other threads that the part A'_i is ready to execute.
       info[tid].sync = k;
 
       // Computes C_i += A' * B' per A'_i

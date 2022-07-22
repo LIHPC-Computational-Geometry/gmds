@@ -341,7 +341,7 @@ void VTKReader::readDataNodes(){
             for (int i = 0; i < nb_values; i++){
                 double x, y, z;
                 *m_stream >> x >> y >> z;
-                d.values[i] = math::Vector3d(x, y, z);
+                d.values[i] = math::Vector3d({x, y, z});
             }
             m_mesh_service->addDataVectorNodes(d);
         }
@@ -449,7 +449,7 @@ void VTKReader::readDataEdges(){
                 *m_stream >> z;
                 if (m_cell_types[i]==GMDS_EDGE) {
 
-                    tmp_val.push_back(math::Vector3d(x,y,z));
+                    tmp_val.push_back({x,y,z});
                     nb_true_cells++;
                     if(!(x==0.0 && y==0 && z==0)){
                         only_null=false;
@@ -576,7 +576,7 @@ void VTKReader::readDataFaces(){
                     m_cell_types[i]==GMDS_TRIANGLE ||
                     m_cell_types[i]==GMDS_POLYGON ) {
 
-                    tmp_val.push_back(math::Vector3d(x,y,z));
+                    tmp_val.push_back(math::Vector3d({x,y,z}));
                     nb_true_cells++;
                     if(!(x==0.0 && y==0 && z==0)){
                         only_null=false;
@@ -708,7 +708,7 @@ void VTKReader::readDataRegions(){
                     m_cell_types[i]==GMDS_HEX ||
                     m_cell_types[i]==GMDS_PYRAMID ||
                     m_cell_types[i]==GMDS_PRISM3 ) {
-                    tmp_val.push_back(math::Vector3d(x,y,z));
+                    tmp_val.push_back(math::Vector3d({x,y,z}));
                     nb_true_cells++;
                     if(!(x==0.0 && y==0 && z==0)){
                         only_null=false;

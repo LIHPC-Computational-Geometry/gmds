@@ -18,7 +18,6 @@ set(GMDS_INC
         inc/gmds/math/Hexahedron.h
         inc/gmds/math/Line.h
         inc/gmds/math/Matrix.h
-        inc/gmds/math/Matrix_def.h
         inc/gmds/math/Numerics.h
         inc/gmds/math/Orientation.h
         inc/gmds/math/Plane.h
@@ -67,6 +66,7 @@ set(GMDS_SRC
         src/StreamComputation.cpp
         src/VectorDyn.cpp
         src/Orientation.cpp
+        src/Vector.cpp
         src/TransfiniteInterpolation.cpp )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})

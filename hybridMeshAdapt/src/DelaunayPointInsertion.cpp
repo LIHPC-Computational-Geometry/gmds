@@ -105,7 +105,7 @@ bool DelaunayPointInsertion::isNodeInCircumSphere(SimplexMesh* simplexMesh, cons
     SimplicesNode S2 = SimplicesNode(simplexMesh, nodes[2]);
     SimplicesNode S3 = SimplicesNode(simplexMesh, nodes[3]);
 
-    Vector3d v1 = S0.getCoords(); Vector3d v2 = S1.getCoords(); Vector3d v3 = S2.getCoords(); Vector3d v4 = S3.getCoords();
+    Vector3d v1 = vec(S0.getCoords()); Vector3d v2 = vec(S1.getCoords()); Vector3d v3 = vec(S2.getCoords()); Vector3d v4 = vec(S3.getCoords());
     double x1 = v1.X(); double y1 = v1.Y(); double z1 = v1.Z();
     double x2 = v2.X(); double y2 = v2.Y(); double z2 = v2.Z();
     double x3 = v3.X(); double y3 = v3.Y(); double z3 = v3.Z();
@@ -169,9 +169,9 @@ bool DelaunayPointInsertion::isNodeInCircumSphere(SimplexMesh* simplexMesh, cons
     {
         Ox /= det; Oy /= det; Oz /= det;
         Metric<Eigen::Matrix3d> metric0 =  Metric<Eigen::Matrix3d>(m0);
-        const math::Vector3d O = math::Vector3d(Ox, Oy, Oz);
-        double dist = metric0.metricDist(node.getCoords(), O);
-        double alpha = dist / metric0.metricDist(S0.getCoords(), O);
+        const math::Vector3d O = math::Vector3d({Ox, Oy, Oz});
+        double dist = metric0.metricDist(vec(node.getCoords()), O);
+        double alpha = dist / metric0.metricDist(vec(S0.getCoords()), O);
         flag = (alpha <= 1.0)? true : false;
     }
     else

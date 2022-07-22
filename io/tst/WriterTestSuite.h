@@ -19,7 +19,7 @@ TEST(MeshClass, testWriterVTK_NF)
     // WE WRITE
     gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::F2N));
 
-    gmds::math::Vector3d normal(0,0,1);
+    gmds::math::Vector3d normal({0, 0, 1});
     gmds::Variable<int>* v_n = m.newVariable<int,gmds::GMDS_NODE>("val_int");
     gmds::Variable<double>* v_f = m.newVariable<double,gmds::GMDS_FACE>("val_double");
 
@@ -81,7 +81,7 @@ TEST(MeshClass, testWriterVTK_NF)
     }
     ASSERT_EQ(m2.getAllVariables(gmds::GMDS_NODE).size(),3);
 
-    ASSERT_EQ((*v2_fv)[0],gmds::math::Vector3d(0,0,0));
+    ASSERT_EQ((*v2_fv)[0],gmds::math::Vector3d({0, 0, 0}));
     ASSERT_EQ((*v2_fv)[1],normal);
 
 }
@@ -91,7 +91,7 @@ TEST(MeshClass, testWriterVTK_NR)
     // WE WRITE
     gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::R|gmds::N|gmds::R2N));
 
-    gmds::math::Vector3d normal(0,0,1);
+    gmds::math::Vector3d normal({0, 0, 1});
     gmds::Variable<int>* v_n = m.newVariable<int,gmds::GMDS_NODE>("val_int");
     gmds::Variable<double>* v_f = m.newVariable<double,gmds::GMDS_REGION>("val_double");
 
@@ -155,7 +155,7 @@ TEST(MeshClass, testWriterVTK_NR)
     }
     ASSERT_EQ(m2.getAllVariables(gmds::GMDS_NODE).size(),3);
 
-    ASSERT_EQ((*v2_fv)[0],gmds::math::Vector3d(0,0,1));
+    ASSERT_EQ((*v2_fv)[0],gmds::math::Vector3d({0, 0, 1}));
     ASSERT_EQ((*v2_fv)[1],normal);
 
 }

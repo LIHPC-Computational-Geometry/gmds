@@ -13,14 +13,13 @@ namespace gmds{
     namespace math{
         /*--------------------------------------------------------------------*/
         AxisAngleRotation::AxisAngleRotation(){
-            double val[3] = {0,0,0};
-            m_axis=Vector3d(val);
+            m_axis=Vector3d({0,0,0});
         }
         
         /*--------------------------------------------------------------------*/
         AxisAngleRotation::
         AxisAngleRotation(const Vector3d& AV, const double AA)
-        : m_axis(AA*AV[0],AA*AV[1],AA*AV[2]){
+        : m_axis({AA*AV[0],AA*AV[1],AA*AV[2]}){
         }
         
         /*--------------------------------------------------------------------*/
@@ -50,12 +49,12 @@ namespace gmds{
             
             Vector3d a = m_axis;
             a.normalize();
-            double K_val[3][3]= {
-                { 0.0  ,-a.Z(), a.Y()},
-                { a.Z(), 0.0  ,-a.X()},
-                {-a.Y(),a.X() , 0.0   }};
-            
-            Matrix<3,3,double> K(K_val);
+
+            Matrix<3,3,double> K=
+	            { 0.0  ,-a.Z(), a.Y(),
+	             a.Z(), 0.0  ,-a.X(),
+	            -a.Y(),a.X() , 0.0 };
+
             Matrix<3,3,double> K2 = K*K;
             Matrix<3,3,double> I = Matrix<3,3,double>::identity();
             
@@ -67,9 +66,9 @@ namespace gmds{
         /*--------------------------------------------------------------------*/
         Chart AxisAngleRotation::toChart() const
         {
-            return Chart((*this)*math::Vector3d(1,0,0),
-                         (*this)*math::Vector3d(0,1,0),
-                         (*this)*math::Vector3d(0,0,1));
+            return Chart((*this)*math::Vector3d({1,0,0}),
+                         (*this)*math::Vector3d({0,1,0}),
+                         (*this)*math::Vector3d({0,0,1}));
         }
         
         /*--------------------------------------------------------------------*/
@@ -81,7 +80,7 @@ namespace gmds{
             double alpha = 2.0*acos(v);
             
             if (AQ.imaginaryPart().norm()<1.0e-5) {
-                m_axis=Vector3d(0., 0., 0.);
+                m_axis=Vector3d({0., 0., 0.});
             }
             else {
                 Vector3d ax =AQ.imaginaryPart();
@@ -93,8 +92,8 @@ namespace gmds{
         /*--------------------------------------------------------------------*/
         AxisAngleRotation::AxisAngleRotation(const Chart& AC)
         {
-            Vector3d y (AC.Y()[0],AC.Y()[1], AC.Y()[2]);
-            Vector3d z (AC.Z()[0],AC.Z()[1], AC.Z()[2]);
+            Vector3d y ({AC.Y()[0],AC.Y()[1], AC.Y()[2]});
+            Vector3d z ({AC.Z()[0],AC.Z()[1], AC.Z()[2]});
             AxisAngleRotation r = AxisAngleRotation::alignYZ(y,z);
             m_axis = r.m_axis;
         }
@@ -102,11 +101,11 @@ namespace gmds{
         AxisAngleRotation::AxisAngleRotation(const Vector3d& AFrom,
                                              const Vector3d& ATo)
         {
-            Vector3d rotation_vector(0.0, 0.0, 0.0);
+            Vector3d rotation_vector({0.0, 0.0, 0.0});
             
             if ((AFrom+ATo).norm() < 1.0e-2) {
                 // vectors are opposite
-                rotation_vector = Vector3d(0.0,M_PI,0.0);
+                rotation_vector = Vector3d({0.0,M_PI,0.0});
             }
             else {
                 rotation_vector = AFrom.cross(ATo);
@@ -131,7 +130,7 @@ namespace gmds{
         /*--------------------------------------------------------------------*/
         AxisAngleRotation AxisAngleRotation::alignZ(const Vector3d& AV)
         {
-            return AxisAngleRotation(Vector3d(0., 0., 1.), AV);
+            return AxisAngleRotation(Vector3d({0., 0., 1.}), AV);
         }
         
         Vector3d AxisAngleRotation::toRotationAxis(const int AIndex) const{
@@ -159,35 +158,32 @@ namespace gmds{
             
             switch(AIndex) {
                 case 0:
-                    return Vector3d(1.0 - (yy + zz), xy + wz, xz - wy);
+                    return Vector3d({1.0 - (yy + zz), xy + wz, xz - wy});
                 case 1:
-                    return Vector3d(xy - wz, 1.0 - (xx + zz), yz + wx);
+                    return Vector3d({xy - wz, 1.0 - (xx + zz), yz + wx});
                 case 2:
-                    return Vector3d(xz + wy, yz - wx, 1.0 - (xx + yy));
+                    return Vector3d({xz + wy, yz - wx, 1.0 - (xx + yy)});
             }
-            return Vector3d(0.0, 0.0, 0.0);
+            return Vector3d({0.0, 0.0, 0.0});
         }
         /*--------------------------------------------------------------------*/
         AxisAngleRotation AxisAngleRotation::alignYZ(const Vector3d& AY,
                                                      const Vector3d& AZ){
             AxisAngleRotation res =AxisAngleRotation::alignZ(AZ);
-            Vector3d rotation_y = res * Vector3d(0.0, 1.0, 0.0);
+            Vector3d rotation_y = res * Vector3d({0.0, 1.0, 0.0});
 
             double angle = atan2(AZ.dot(AY.cross(rotation_y)),
                                  AY.dot(rotation_y)          );
             if(angle!=0)
-                res = res*AxisAngleRotation(-angle*Vector3d(0.0, 0.0, 1.0));
+                res = res*AxisAngleRotation(-angle*Vector3d({0.0, 0.0, 1.0}));
             return res;
         }
         /*--------------------------------------------------------------------*/
         Vector3d operator*(const AxisAngleRotation& AR,
                            const Vector3d &AV) {
             Matrix<4,4, double> M = AR.quaternion().toMatrix();
-            return Vector3d(
-                        M(0,0)*AV[0] + M(0,1)*AV[1] + M(0,2)*AV[2],
-                        M(1,0)*AV[0] + M(1,1)*AV[1] + M(1,2)*AV[2],
-                        M(2,0)*AV[0] + M(2,1)*AV[1] + M(2,2)*AV[2]
-                        );
+            return Vector3d({M(0, 0) * AV[0] + M(0, 1) * AV[1] + M(0, 2) * AV[2], M(1, 0) * AV[0] + M(1, 1) * AV[1] + M(1, 2) * AV[2],
+	                          M(2, 0) * AV[0] + M(2, 1) * AV[1] + M(2, 2) * AV[2]});
         }
         /*--------------------------------------------------------------------*/
         AxisAngleRotation operator*(const AxisAngleRotation& AR0,

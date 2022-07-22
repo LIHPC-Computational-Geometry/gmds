@@ -123,7 +123,7 @@ SmoothingPaving_2D::FrontNodeSmoothing()
 math::Vector3d
 SmoothingPaving_2D::ComputeDa(TCellID n_id)
 {
-	math::Vector3d Vip(0,0,0);
+	math::Vector3d Vip({0,0,0});
 	Node n = m_mesh->get<Node>(n_id);
 	std::vector<Face> faces = n.get<Face>();
 
@@ -136,12 +136,14 @@ SmoothingPaving_2D::ComputeDa(TCellID n_id)
 			if ( (n.id() != n_id)
 			    && (math::Utils::CommonEdge(m_mesh, n.id(), n_id) != NullID) )
 			{
-				Vip = Vip + m_map_old_coords[n.id()];
+				math::Point tmp_p= m_map_old_coords[n.id()];
+				Vip += {tmp_p.X(),tmp_p.Y(),tmp_p.Z()};
 			}
 			else if ( (n.id() != n_id)
 			         && (math::Utils::CommonEdge(m_mesh, n.id(), n_id) == NullID) )
 			{
-				Vip = Vip - m_map_old_coords[n.id()];
+				math::Point tmp_p= m_map_old_coords[n.id()];
+				Vip -= {tmp_p.X(),tmp_p.Y(),tmp_p.Z()};
 			}
 		}
 
@@ -151,7 +153,7 @@ SmoothingPaving_2D::ComputeDa(TCellID n_id)
 	Vip = Vip / faces.size();
 
 	math::Vector3d Da;
-	Da = Vip - n.point();
+	Da = Vip - math::Vector3d({n.X(),n.Y(),n.Z()});
 
 	return Da;
 
@@ -175,8 +177,8 @@ SmoothingPaving_2D::ComputeDb(TCellID n_id)
 	}
 
 	math::Vector3d Da = ComputeDa(n_id);
-	math::Vector3d Vi = m_map_old_coords[n.id()];
-	math::Vector3d Vj = m_map_old_coords[nj.id()];
+	math::Vector3d Vi = math::vec(m_map_old_coords[n.id()]);
+	math::Vector3d Vj = math::vec(m_map_old_coords[nj.id()]);
 	math::Vector3d Vip = Vi+Da;
 	double la = (Vip-Vj).norm();
 	double ld = m_map_ld[n_id] ;
@@ -281,7 +283,7 @@ SmoothingPaving_2D::InteriorNodeSmoothing()
 
 		if (couche_n > 1 && couche_n < id_front ) {
 
-			math::Vector3d Di_num(0,0,0);
+			math::Vector3d Di_num({0,0,0});
 			double Di_denom(0);
 
 			for (auto n_adj : adj_nodes) {

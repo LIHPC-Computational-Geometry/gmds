@@ -115,7 +115,7 @@ void OpenNLFieldSolverStrategy::getFeasibleSolution()
         for (auto n_id: m_mesh->nodes()) {
             if (!m_mesh->isMarked<Node>(n_id, m_markNodeLocked)) {
                 int local_id = 9 * (*m_ordering)[n_id];
-                double t[9] = {
+			       math::Vector9d v = {
                         nlGetVariable(local_id),
                         nlGetVariable(local_id + 1),
                         nlGetVariable(local_id + 2),
@@ -126,15 +126,15 @@ void OpenNLFieldSolverStrategy::getFeasibleSolution()
                         nlGetVariable(local_id + 7),
                         nlGetVariable(local_id + 8)};
 
-                math::Vector9d v(t);
+
 
                 math::AxisAngleRotation r;
 
                 math::SHarmonicL4 sh = math::SHarmonicL4::closest(v, r);
 
-                math::Vector3d vx(1, 0, 0);
-                math::Vector3d vy(0, 1, 0);
-                math::Vector3d vz(0, 0, 1);
+                math::Vector3d vx({1, 0, 0});
+                math::Vector3d vy({0, 1, 0});
+                math::Vector3d vz({0, 0, 1});
                 vx = r * vx;
                 vy = r * vy;
                 vz = r * vz;

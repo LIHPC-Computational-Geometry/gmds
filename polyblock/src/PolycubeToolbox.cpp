@@ -703,7 +703,7 @@ bool PolycubeToolbox::checkingChartDivision(){
 				 }
 			 }
 
-			 math::Vector averageVector1(0.,0.,0.),averageVector2(0.,0.,0.);
+			 math::Vector averageVector1({0., 0., 0.}),averageVector2({0., 0., 0.});
 			 for (auto f : chart1_close_faces) {
 				 averageVector1 = averageVector1 + (*face_normals)[f];
 			 }
@@ -911,7 +911,7 @@ inline double PolycubeToolbox::angleFace2Node(TCellID face, TCellID node){
 	for (auto n : nodes){
 		if (n != node){
 			Node n2 = mesh->get<Node>(n);
-			v.push_back(math::Vector( n2.X()-n1.X(),n2.Y()-n1.Y(),n2.Z()-n1.Z() ));
+			v.push_back(math::Vector({n2.X() - n1.X(), n2.Y() - n1.Y(), n2.Z() - n1.Z()}));
 		}
 	}
 	return v[0].angle(v[1]);
@@ -923,8 +923,8 @@ void PolycubeToolbox::computeNodeInformation(){
 	std::cout << "computing node information ..." << '\n';
 	// compute normal and quaternion of regular boundary point
 	for (auto n_id : mesh->nodes()) {
-		math::Vector normal(0,0,0);
-		math::Vector ChosenNormal(0,0,0);
+		math::Vector normal({0, 0, 0});
+		math::Vector ChosenNormal({0, 0, 0});
         Node n = mesh->get<Node>(n_id);
         if(mesh->isMarked(n,mark_smooth_bnd_nodes)){
             std::vector<TCellID> faces =n.getIDs<Face>();
@@ -965,7 +965,7 @@ void PolycubeToolbox::gregson2011Iteration(){
 		smooth_quaternion << Matrix<double,Dynamic,4>::Zero(mesh->getNbNodes(),4); // initialisation to 0
 		// making a eigen matrix to resolve from quaternion
 		for (auto n_id : mesh->nodes()) {
-			math::Vector normal(0,0,0);
+			math::Vector normal({0, 0, 0});
 			Node n = mesh->get<Node>(n_id);
 			if(mesh->isMarked(n,mark_smooth_bnd_nodes)){
 				smooth_quaternion(n.id(),0) = (*point_quaternion)[n_id].w();
@@ -1398,7 +1398,7 @@ void PolycubeToolbox::chartsGeneration(bool speaking){
 										face_to_explore.push_back(f);
 										mesh->mark(mesh->get<Face>(f),marked_face);
 
-										// we already marked the chosen_face, so it won't go back in face_to_explore
+										// we already marked the chosen_face, so it won't execute back in face_to_explore
 									}
 								}
 							} // end for (auto f : faces)
@@ -1623,7 +1623,7 @@ void PolycubeToolbox::chartsGeneration(bool speaking){
 		std::vector<math::Vector> ns_node;
 		std::vector<TCellID> nodeID;
 		TCellID node = TEDGE.corner1;
-		ns_node.push_back(math::Vector(mesh->get<Node>(node).X(),mesh->get<Node>(node).Y(),mesh->get<Node>(node).Z()));
+		ns_node.push_back(math::vec(mesh->get<Node>(node).point()));
 		long long last_edge=-1;
 		while (new_edge.size() !=  TEDGE.edge.size())
 		{
@@ -1636,13 +1636,13 @@ void PolycubeToolbox::chartsGeneration(bool speaking){
 						Node n2 = mesh->get<Node>(nodes[0]);
 						// (*edge_normal)[e] = math::Vector(n1.X() - n2.X(),n1.Y() - n2.Y(),n1.Z() - n2.Z());
 
-						ns_node.push_back(math::Vector(n2.X(),n2.Y(),n2.Z())); nodeID.push_back(nodes[0]);
+						ns_node.push_back(math::Vector({n2.X(), n2.Y(), n2.Z()})); nodeID.push_back(nodes[0]);
 						node = nodes[0];
 						new_edge.push_back(e); last_edge = e;
 					} else if (nodes[0] == node){
 						Node n1 = mesh->get<Node>(node);
 						Node n2 = mesh->get<Node>(nodes[1]);
-						ns_node.push_back(math::Vector(n2.X(),n2.Y(),n2.Z())); nodeID.push_back(nodes[1]);
+						ns_node.push_back(math::Vector({n2.X(), n2.Y(), n2.Z()})); nodeID.push_back(nodes[1]);
 						node = nodes[1];
 						new_edge.push_back(e); last_edge =e;
 					}
@@ -2099,43 +2099,42 @@ Mesh PolycubeToolbox::getMesh(){
 }
 /*----------------------------------------------------------------------------*/
 // use as get_3rd_vector[i*6+j] for the third axis of i and j
-const math::Vector get3DVector[36] = {
-	math::Vector(0,0,0), 
-	math::Vector(0,0,0), 
-	math::Vector(0,0,1),	
-	math::Vector(0,0,1), 
-	math::Vector(0,1,0), 
-	math::Vector(0,1,0),
-	math::Vector(0,0,0), 
-	math::Vector(0,0,0), 
-	math::Vector(0,0,1),	
-	math::Vector(0,0,1), 
-	math::Vector(0,1,0), 
-	math::Vector(0,1,0),
-	math::Vector(0,0,1), 
-	math::Vector(0,0,1), 
-	math::Vector(0,0,0),	
-	math::Vector(0,0,0), 
-	math::Vector(1,0,0), 
-	math::Vector(1,0,0),
-	math::Vector(0,0,1), 
-	math::Vector(0,0,1), 
-	math::Vector(0,0,0),	
-	math::Vector(0,0,0), 
-	math::Vector(1,0,0), 
-	math::Vector(1,0,0),
-	math::Vector(0,1,0), 
-	math::Vector(0,1,0), 
-	math::Vector(1,0,0),	
-	math::Vector(1,0,0), 
-	math::Vector(0,0,0), 
-	math::Vector(0,0,0),
-	math::Vector(0,1,0), 
-	math::Vector(0,1,0), 
-	math::Vector(1,0,0),	
-	math::Vector(1,0,0), 
-	math::Vector(0,0,0), 
-	math::Vector(0,0,0)
+const math::Vector get3DVector[36] = {{0, 0, 0},
+	{0,0,0},
+	{0,0,1},
+	{0,0,1},
+	{0,1,0},
+	{0,1,0},
+	{0,0,0},
+	{0,0,0},
+	{0,0,1},
+	{0,0,1},
+	{0,1,0},
+	{0,1,0},
+	{0,0,1},
+	{0,0,1},
+	{0,0,0},
+	{0,0,0},
+	{1,0,0},
+	{1,0,0},
+	{0,0,1},
+	{0,0,1},
+	{0,0,0},
+	{0,0,0},
+	{1,0,0},
+	{1,0,0},
+	{0,1,0},
+	{0,1,0},
+	{1,0,0},
+	{1,0,0},
+	{0,0,0},
+	{0,0,0},
+	{0,1,0},
+	{0,1,0},
+	{1,0,0},
+	{1,0,0},
+	{0,0,0},
+	{0,0,0}
 };
 
 struct extra_data_cpq {
@@ -2163,7 +2162,7 @@ double Cpq_iterative_smoothing(int p, int q, int label_p, int label_q,void *extr
 inline math::Vector PolycubeToolbox::convert_edge_to_vector(Edge e){
 	std::vector<TCellID> nodes = e.getIDs<Node>();
 	Node n1 = mesh->get<Node>(nodes[0]), n2 = mesh->get<Node>(nodes[1]);
-	return math::Vector(n1.X() - n2.X(), n1.Y() - n2.Y(), n1.Z() - n2.Z() );
+	return math::Vector({n1.X() - n2.X(), n1.Y() - n2.Y(), n1.Z() - n2.Z()});
 }
 
 

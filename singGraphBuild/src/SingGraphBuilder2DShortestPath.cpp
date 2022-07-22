@@ -324,7 +324,7 @@ SingGraphBuilder2DShortestPath::computeFaceNeighboursInfo()
 			const vector<Node> adjacent_nodes = currentEdge.get<Node>();
 			const math::Point p1 = adjacent_nodes[0].point();
 			const math::Point p2 = adjacent_nodes[1].point();
-			const math::Vector3d v1 = math::Vector3d(p1, p2).normalize();
+			const math::Vector3d v1 = (p2- p1).normalize();
 			const vector<Face> adjacent_faces = currentEdge.get<Face>();
 			m_bdry_edge_normals[e_id] = v1.cross(adjacent_faces[0].normal());
 		}
@@ -445,7 +445,7 @@ SingGraphBuilder2DShortestPath::tryEarlySlot2SlotConnection(const SourceID contS
 	const auto &sourcePoint = sourceSlot->from_point->getLocation();
 	const auto &targetPoint = targetSlot->from_point->getLocation();
 
-	const auto linkVector = math::Vector3d(sourcePoint, targetPoint);
+	const auto linkVector = targetPoint-sourcePoint;
 	if ((linkVector.angle(sourceSlot->direction) < 0.523598) && (linkVector.angle(targetSlot->direction.opp()) < 0.523598)) {     // pi/6
 
 		sourceSlot->isFreeze = true;
@@ -476,7 +476,7 @@ SingGraphBuilder2DShortestPath::computeStreamLineFirstPoints()
 			TCellID bestFace = 0;
 			double bestCos = -1;
 			for (const TCellID &faceID : node.getIDs<Face>()) {
-				const auto slotToFace = math::Vector3d(slot->location, m_triangle_centers[faceID]);
+				const auto slotToFace = m_triangle_centers[faceID]-slot->location;
 				const double cos = slotToFace.dot(slot->direction);
 				if (cos > bestCos) {
 					bestCos = cos;
@@ -615,7 +615,7 @@ SingGraphBuilder2DShortestPath::createSolvedSingularityLines()
 			const auto &boundaryParam = m_bdryPathEndParam[contSource][bdryLocalID];
 			const auto &penultimatePoint =
 			   lineIsOneSegment ? current_slot->from_point->getLocation() : m_triangle_centers[m_finalPaths[contSource][contTarget].back()];
-			const auto lastLineDirection = math::Vector3d(penultimatePoint, boundaryParam.point).normalize();
+			const auto lastLineDirection = (boundaryParam.point-penultimatePoint).normalize();
 
 			createGeometricSingularityPoint(boundaryParam.point,      // the last point added
 			                                lastLineDirection,        // the direction
@@ -763,7 +763,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 	// search for nearby target, if found, only the singularities locations will be used,
 	// similar as in tryEarlySlot2SlotConnection(), but less strict on angle
 	for (const TargetID contTarget : neighbouringTarget[source]) {
-		const auto linkVector = math::Vector3d(m_targets[contSource]->from_point->getLocation(), m_targets[contTarget]->from_point->getLocation());
+		const auto linkVector = m_targets[contTarget]->from_point->getLocation()-m_targets[contSource]->from_point->getLocation();
 		const auto targetOwnDirection = m_targets[contTarget]->direction.opp();
 		const double srcAngle = linkVector.angle(sourceDirection);
 		const double tgtAngle = linkVector.angle(targetOwnDirection);
@@ -772,7 +772,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 
 	// check if the slot face is actually a good candidate
 	{
-		const auto tri2tri = math::Vector3d(startPoint, m_triangle_centers[source]).normalize();
+		const auto tri2tri = (m_triangle_centers[source]-startPoint).normalize();
 		const double directionnalAngle = sourceDirection.angle(tri2tri);
 
 		if (directionnalAngle < math::Constants::PIDIV2) {     // less strict here (pi/2), to manage turbulant cross field near singularities
@@ -794,7 +794,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 
 		if (!m_mesh->isMarked<Face>(v_id, m_mark_faces_with_sing_point)) {
 
-			const auto tri2tri = math::Vector3d(startPoint, m_triangle_centers[v_id]).normalize();
+			const auto tri2tri = (m_triangle_centers[v_id]-startPoint).normalize();
 			const double directionnalAngle = sourceDirection.angle(tri2tri);
 
 			if (directionnalAngle < math::Constants::PIDIV4) {
@@ -828,7 +828,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 
 			if (targetOwnDirection.angle(prevCross_u) > math::Constants::PIDIV4) continue;
 
-			const auto tri2tri = math::Vector3d(m_triangle_centers[u_id], m_targets[contTarget]->location).normalize();
+			const auto tri2tri = (m_targets[contTarget]->location-m_triangle_centers[u_id]).normalize();
 			const double directionnalAngle = prevCross_u.angle(tri2tri) + targetOwnDirection.angle(tri2tri);
 			DijkstraCellParam targetCost = previousCostParam;     // ++nVisitedCellsBefore
 			targetCost.nVisitedCellsBefore++;
@@ -913,7 +913,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 			const bool validNeighbour = m_mesh->isMarked<Face>(v_id, m_mark_faces_with_sing_point) ? false : true;
 
 			if (!visitedFaces[v_id] && validNeighbour) {
-				const auto tri2tri = math::Vector3d(m_triangle_centers[u_id], m_triangle_centers[v_id]).normalize();
+				const auto tri2tri = (m_triangle_centers[v_id]-m_triangle_centers[u_id]).normalize();
 				const double directionnalAngle = prevCross_u.orientedAngle(tri2tri);
 				const double absDirectionnalAngle = fabs(directionnalAngle);
 

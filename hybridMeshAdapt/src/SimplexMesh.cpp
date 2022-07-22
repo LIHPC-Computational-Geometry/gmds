@@ -1831,7 +1831,7 @@ SimplexMesh& SimplexMesh::buildRobustLayerMesh(const unsigned int nbrLayer)
 
       if(ball.size() != 0)
       {
-        math::Vector3d normal(0.0f, 0.0f, 0.0f);
+        math::Vector3d normal({0.0f, 0.0f, 0.0f});
         for(auto const & tet : ball)
         {
           std::vector<TInt>&& nodes = SimplicesCell(this, tet).getNodes();
@@ -1948,7 +1948,7 @@ SimplexMesh& SimplexMesh::buildRobustLayerMeshOrderedNode(const unsigned int nbr
       if(ball.size() != 0)
       {
         std::vector<Vector3d> normalFaces{};
-        math::Vector3d normal(0.0, 0.0, 0.0);
+        math::Vector3d normal({0.0, 0.0, 0.0});
         std::vector<math::Vector3d> normals;
         for(auto const & tet : ball)
         {
@@ -2171,7 +2171,7 @@ SimplexMesh& SimplexMesh::buildRobustLayerMeshOrderedNode01(const unsigned int n
       if(ball.size() != 0)
       {
         std::vector<Vector3d> normalFaces{};
-        math::Vector3d normal(0.0, 0.0, 0.0);
+        math::Vector3d normal({0.0, 0.0, 0.0});
         std::vector<math::Vector3d> normals;
         for(auto const & tet : ball)
         {
@@ -2228,7 +2228,8 @@ SimplexMesh& SimplexMesh::buildRobustLayerMeshOrderedNode01(const unsigned int n
         {
             if(neighbor != node)
             {
-              math::Point recenterNeighborPoint = m_coords[neighbor] - m_coords[node];
+					math::Vector3d vtemp=m_coords[neighbor] - m_coords[node];
+              math::Point recenterNeighborPoint(vtemp.X(),vtemp.Y(),vtemp.Z());
               Eigen::Vector3d recenterVec       = Eigen::Vector3d(recenterNeighborPoint.X(), recenterNeighborPoint.Y(), recenterNeighborPoint.Z());
               Eigen::Vector3d localNode         = P.inverse() * recenterVec;
               nodesInLocalBase.push_back(localNode);
@@ -3903,12 +3904,12 @@ bool SimplexMesh::MollerTriangleIntersection(const simplicesNode::SimplicesNode&
   {
     //Real moller intersection
     math::Vector3d ray_direction = dir;
-    math::Vector3d ray_origin    = nodeA.getCoords();
+    math::Vector3d ray_origin    = math::vec(nodeA.getCoords());
 
     //on regarde maintenant si il y'a intersection... Möller..
     math::Vector3d E1 = SimplicesNode(this, triangleNodeId[1]).getCoords() - SimplicesNode(this, triangleNodeId[0]).getCoords();
     math::Vector3d E2 = SimplicesNode(this, triangleNodeId[2]).getCoords() - SimplicesNode(this, triangleNodeId[0]).getCoords();
-    math::Vector3d T = ray_origin - SimplicesNode(this, triangleNodeId[0]).getCoords();
+    math::Vector3d T = ray_origin - math::vec(SimplicesNode(this, triangleNodeId[0]).getCoords());
 
 
     math::Vector3d DxE2 = ray_direction.cross(E2);
@@ -3922,7 +3923,7 @@ bool SimplexMesh::MollerTriangleIntersection(const simplicesNode::SimplicesNode&
     double compo1 = TxE1.dot(E2);
     double compo2 = DxE2.dot(T);
     double compo3 = TxE1.dot(ray_direction);
-    tuv = (1.0/den) * math::Vector3d(compo1,compo2,compo3);
+    tuv = (1.0/den) * math::Vector3d({compo1, compo2, compo3});
 
 
     //condition d'intersection..

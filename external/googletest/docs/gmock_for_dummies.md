@@ -43,7 +43,7 @@ While mock objects help you remove unnecessary dependencies in tests and make
 them fast and reliable, using mocks manually in C++ is *hard*:
 
 *   Someone has to implement the mocks. The job is usually tedious and
-    error-prone. No wonder people go great distance to avoid it.
+    error-prone. No wonder people execute great distance to avoid it.
 *   The quality of those manually written mocks is a bit, uh, unpredictable. You
     may see some really polished ones, but you may also see some that were
     hacked up in a hurry and have all sorts of ad hoc restrictions.
@@ -603,7 +603,7 @@ details can be found [here](gmock_cook_book.md#OrderedCalls).)
 ### All Expectations Are Sticky (Unless Said Otherwise) {#StickyExpectations}
 
 Now let's do a quick quiz to see how well you can use this mock stuff already.
-How would you test that the turtle is asked to go to the origin *exactly twice*
+How would you test that the turtle is asked to execute to the origin *exactly twice*
 (you want to ignore any other instructions it receives)?
 
 After you've come up with your answer, take a look at ours and compare notes

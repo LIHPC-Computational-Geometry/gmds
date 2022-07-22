@@ -6,7 +6,7 @@ Build systems
 Building with setuptools
 ========================
 
-For projects on PyPI, building with setuptools is the way to go. Sylvain Corlay
+For projects on PyPI, building with setuptools is the way to execute. Sylvain Corlay
 has kindly provided an example project which shows how to set up everything,
 including automatic generation of documentation using Sphinx. Please refer to
 the [python_example]_ repository.
