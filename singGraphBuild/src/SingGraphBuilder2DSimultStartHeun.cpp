@@ -174,7 +174,7 @@ SingGraphBuilder2DSimultStartHeun::createSingularityLines()
 
 	int contor = 0;
 
-	math::Vector3d surfNormal(1.0, 1.0, 1.0);
+	math::Vector3d surfNormal({1.0, 1.0, 1.0});
 	// vector storing ((slotA, slotB) , (distance between them, angle of intersection))
 	vector<pair<pair<unsigned int, unsigned int>, pair<double, double>>> possibleConnectingLines;
 	vector<pair<unsigned int, unsigned int>> forbiddenConnectingLines;
@@ -234,15 +234,14 @@ SingGraphBuilder2DSimultStartHeun::createSingularityLines()
 						surf_line->addDiscretizationPoint(from_sing_pnt->getLocation());
 						current_slot->line = surf_line;
 
-						math::Vector3d firstDir = math::Vector3d(from_sing_pnt->getLocation(), line_discretization[i][0]);
+						math::Vector3d firstDir = line_discretization[i][0]-from_sing_pnt->getLocation();
 
 						current_slot->line_direction = firstDir;
 						current_slot->isLaunched = true;
 						if (to_slot != 0) {
 							streamlineDeviation[i] = (streamlineDeviation[i]
 							                          + fabs(1
-							                                 - to_slot->direction.dot(math::Vector3d(line_discretization[i][line_discretization[i].size() - 1],
-							                                                                         line_discretization[i][line_discretization[i].size() - 2]))));
+							                                 - to_slot->direction.dot(line_discretization[i][line_discretization[i].size() - 2]-line_discretization[i][line_discretization[i].size() - 1])));
 							streamlineDeviation[i] = streamlineDeviation[i] / (line_discretization.size() + 1);
 							current_slot->lineDeviation = streamlineDeviation[i];
 						}
@@ -304,7 +303,7 @@ SingGraphBuilder2DSimultStartHeun::createSingularityLines()
 
 							current_slot->line = surf_line;
 
-							math::Vector3d firstDir = math::Vector3d(from_sing_pnt->getLocation(), line_discretization[i][0]);
+							math::Vector3d firstDir = line_discretization[i][0]-from_sing_pnt->getLocation();
 
 							current_slot->line_direction = firstDir;
 							current_slot->isLaunched = true;
@@ -368,7 +367,7 @@ SingGraphBuilder2DSimultStartHeun::createSingularityLines()
 										}
 										if (!forbiddenPair) {
 											math::Point last_added_pnt = line_discretization[i][line_discretization[i].size() - 1];
-											math::Vector3d start_dir = math::Vector3d(last_added_pnt, line_discretization[j][line_discretization[j].size() - 1]);
+											math::Vector3d start_dir = line_discretization[j][line_discretization[j].size() - 1]-last_added_pnt;
 											if (!connectByField) {
 												double tempDev = 0.0;
 
@@ -453,10 +452,10 @@ SingGraphBuilder2DSimultStartHeun::createSingularityLines()
 													t++;
 												}
 
-												math::Vector3d test1(line_discretization[i][line_discretization[i].size() - 2],
-												                     line_discretization[i][line_discretization[i].size() - 1]);
-												math::Vector3d test2(line_discretization[j][line_discretization[j].size() - 2],
-												                     line_discretization[j][line_discretization[j].size() - 1]);
+												math::Vector3d test1=line_discretization[i][line_discretization[i].size() - 1]-
+												                     line_discretization[i][line_discretization[i].size() - 2];
+												math::Vector3d test2=line_discretization[j][line_discretization[j].size() - 1]-
+												                     line_discretization[j][line_discretization[j].size() - 2];
 												test1.normalize();
 												test2.normalize();
 												// if close to perpendicular=> shouldn't connect
@@ -577,10 +576,10 @@ SingGraphBuilder2DSimultStartHeun::createSingularityLines()
 			surf_line->addSlot(the_other_slot);
 			// surf_line->addDiscretizationPoint(from_sing_pnt->getLocation());
 
-			math::Vector3d firstDir = math::Vector3d(line_discretization[i][0], line_discretization[i][1]);
+			math::Vector3d firstDir = line_discretization[i][1]-line_discretization[i][0];
 			searchSlots[i]->line_direction = firstDir;
 
-			firstDir = math::Vector3d(line_discretization[j][0], line_discretization[j][1]);
+			firstDir = line_discretization[j][1]-line_discretization[j][0];
 			searchSlots[j]->line_direction = firstDir;
 
 			streamlineDeviation[i] = streamlineDeviation[i] + streamlineDeviation[j];

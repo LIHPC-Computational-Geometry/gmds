@@ -84,7 +84,7 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingularityLine
   /*------------------------------------------------------------------------*/
   /** \brief Correct the line orientation. Considering the line discretization
    *         and its 2 end points, this operation invert the discretization
-   *         to go from the 1st to the 2nd end point (if necessary).
+   *         to execute from the 1st to the 2nd end point (if necessary).
    *
    * \return false if the operation is not performed (due to missing or wrong
    *         internal data). Ex: only one end point.
@@ -286,7 +286,7 @@ class CurveSingularityLine : public SingularityLine
   /*------------------------------------------------------------------------*/
   /** \brief Correct the line orientation. Considering the line discretization
    *         and its 2 end points, this operation invert the discretization
-   *         to go from the 1st to the 2nd end point (if necessary).
+   *         to execute from the 1st to the 2nd end point (if necessary).
    *
    * \return false if the operation is not performed (due to missing or wrong
    *         internal data). Ex: only one end point.

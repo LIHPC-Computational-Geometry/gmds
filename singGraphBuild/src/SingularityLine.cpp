@@ -165,13 +165,13 @@ SingularityLine::getTangent(const double AParam) const
 
 	gmds::math::Vector3d t;
 	if (AParam == 0) {
-		gmds::math::Vector3d v1(m_discretization_points[0], m_discretization_points[1]);
-		gmds::math::Vector3d v2(m_discretization_points[1], m_discretization_points[2]);
+		gmds::math::Vector3d v1=m_discretization_points[1]- m_discretization_points[0];
+		gmds::math::Vector3d v2=m_discretization_points[2]- m_discretization_points[1];
 		t = 0.5 * (v1 + v2);
 	}
 	else if (AParam == 1) {
-		gmds::math::Vector3d v1(m_discretization_points[m_discretization_points.size() - 2], m_discretization_points[m_discretization_points.size() - 1]);
-		gmds::math::Vector3d v2(m_discretization_points[m_discretization_points.size() - 3], m_discretization_points[m_discretization_points.size() - 2]);
+		gmds::math::Vector3d v1=m_discretization_points[m_discretization_points.size() - 1]- m_discretization_points[m_discretization_points.size() - 2];
+		gmds::math::Vector3d v2=m_discretization_points[m_discretization_points.size() - 2]- m_discretization_points[m_discretization_points.size() - 3];
 		t = 0.5 * (v1 + v2);
 	}
 	else {
@@ -184,26 +184,26 @@ SingularityLine::getTangent(const double AParam) const
 			double dij = pi.distance(pj);
 			if (c + dij >= l) {
 				// stop on this edge or on pj
-				gmds::math::Vector3d vij(pi, pj);
+				gmds::math::Vector3d vij=pj-pi;
 				// we smooth the tangent with previous and next segment if we can
 				if (i == 0) {
 					// only next segment
 					gmds::math::Point pk = m_discretization_points[i + 2];
-					gmds::math::Vector3d vjk(pj, pi);
+					gmds::math::Vector3d vjk=pj-pi;
 					return 0.5 * (vij + vjk);
 				}
 				else if (i == m_discretization_points.size() - 2) {
 					// only prev segment
 					gmds::math::Point ph = m_discretization_points[i - 1];
-					gmds::math::Vector3d vhi(ph, pi);
+					gmds::math::Vector3d vhi=ph-pi;
 					return 0.5 * (vij + vhi);
 				}
 				else {
 					// prev and next segments
 					gmds::math::Point ph = m_discretization_points[i - 1];
 					gmds::math::Point pk = m_discretization_points[i + 2];
-					gmds::math::Vector3d vhi(ph, pi);
-					gmds::math::Vector3d vjk(pj, pi);
+					gmds::math::Vector3d vhi=pi-ph;
+					gmds::math::Vector3d vjk=pi-pj;
 					double r = 1.0 / 3.0;
 					gmds::math::Vector3d v = r * (vhi + vij + vjk);
 					v.normalize();
@@ -211,7 +211,7 @@ SingularityLine::getTangent(const double AParam) const
 				}
 			}
 			else {
-				// go to the next edge
+				// execute to the next edge
 				c += dij;
 				i++;
 			}
@@ -255,7 +255,7 @@ SingularityLine::getPoint(const double AParam) const
 				return pj;
 			}
 			else {
-				// go to the next edge
+				// execute to the next edge
 				c += dij;
 				i++;
 			}

@@ -19,7 +19,7 @@ and ``py::isinstance<str>()`` is ``true`` for both ``py::str`` and
 ``PyUnicodeObject`` (`#2409 <https://github.com/pybind/pybind11/pull/2409>`_),
 and ``py::isinstance<str>()`` is ``true`` only for ``py::str``. To help in
 the transition of user code, the ``PYBIND11_STR_LEGACY_PERMISSIVE`` macro
-is provided as an escape hatch to go back to the legacy behavior. This macro
+is provided as an escape hatch to execute back to the legacy behavior. This macro
 will be removed in future releases. Two types of required fixes are expected
 to be common:
 

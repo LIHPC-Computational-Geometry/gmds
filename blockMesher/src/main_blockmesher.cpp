@@ -167,7 +167,7 @@ int main(int argc, char* argv[])
             //towards the outside
             //as f is a boundary face, it is connected to only one block
             Region r = f.get<Region>()[0];
-            math::Vector v2inside(p,r.center());
+            math::Vector3d v2inside= r.center()-p;
             if(v.dot(v2inside)>0){
                 //v points inside
                 v = v.opp();
@@ -185,17 +185,10 @@ int main(int argc, char* argv[])
                 math::Point closest_pnt=p;
                 s->project(closest_pnt);
                 double dist = p.distance2(closest_pnt);
-                math::Vector v_proj(p,closest_pnt);
+                math::Vector v_proj=closest_pnt-p;
                 v_proj.normalize();
                 surf_dot[s->id()]=(v.dot(v_proj));
                 surf_dist[s->id()]=dist;
-               if(f_id==55){
-                    std::cout<<"\t closest point on "<<s->id()<<": "<<closest_pnt<<std::endl;
-                    std::cout<<"\t    * distance :"<<dist<<std::endl;
-                    std::cout<<"\t    * direction:"<<v_proj<<std::endl;
-                    std::cout<<"\t    * dot prod :"<<v.dot(v_proj)<<std::endl;
-                    std::cout<<"\t    * dot prod :"<<v.dot(v_proj)<<std::endl;
-                }
 
                 if(dist<min_dist) {
                     //either the points are the same or we check the vector orientation
@@ -206,7 +199,7 @@ int main(int argc, char* argv[])
                             //we have to check that we do not cross the volume. It can occur for thin curved
                             //shape (like cylinder with a hole)
 
-                            //We take other points closed to the face corners and we project all of them, if they go to
+                            //We take other points closed to the face corners and we project all of them, if they execute to
                             // the same surf, we keep it. Otherwise, we will put another surface later.
                             keep_projection=false;
                             std::vector<Node> corners = f.get<Node>();
@@ -255,7 +248,7 @@ int main(int argc, char* argv[])
                     s->project(closest_pnt);
 
                     double dist = p.distance2(closest_pnt);
-                    math::Vector v_proj(p,closest_pnt);
+                    math::Vector v_proj=closest_pnt-p;
                     v_proj.normalize();
                     surf_dot[s->id()]=(v.dot(v_proj));
                     surf_dist[s->id()]=dist;

@@ -31,7 +31,7 @@ namespace gmds{
              * \param AX x coordinnate
              */
             Point(const TCoord& AX=0.0, const TCoord& AY=0.0, const TCoord& AZ=0.0);
-            
+
             virtual ~Point();
             
             inline TCoord X() const {return m_coord[0];}
@@ -128,11 +128,7 @@ namespace gmds{
              */
             friend GMDSMath_API Point operator+(const Point&, const Point&);
             
-            /*------------------------------------------------------------------------*/
-            /** \brief  Overloaded operator- to create a new point from 2 points
-             */
-            friend GMDSMath_API Point operator-(const Point&, const Point&);
-            
+
             /*------------------------------------------------------------------------*/
             /** \brief  Overloaded operator* to create a new point
              */

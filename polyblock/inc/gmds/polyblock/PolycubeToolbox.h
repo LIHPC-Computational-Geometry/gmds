@@ -13,12 +13,7 @@ enum labelling {Xp,Yp,Zp,Xm,Ym,Zm};
 /*----------------------------------------------------------------------------*/
 Eigen::Vector3d math2eigen(gmds::math::Vector v);
 
-const gmds::math::Vector vect[6] = {gmds::math::Vector(1,0,0),
-                                    gmds::math::Vector(-1,0,0),
-                                    gmds::math::Vector(0,1,0),
-                                    gmds::math::Vector(0,-1,0),
-                                    gmds::math::Vector(0,0,1),
-                                    gmds::math::Vector(0,0,-1) };
+const gmds::math::Vector vect[6] = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 

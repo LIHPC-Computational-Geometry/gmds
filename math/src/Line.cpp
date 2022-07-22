@@ -37,8 +37,8 @@ namespace gmds{
             Point src_pnt = m_p1;
             Point dir_pnt = m_p2;
 
-            Vector3d v12(p1,p2);
-            Vector3d vsc(src_pnt,dir_pnt);
+            Vector3d v12=p2-p1;
+            Vector3d vsc=dir_pnt-src_pnt;
             if(v12.isColinear(vsc)){
                 return false; // No intersection
             }
@@ -76,10 +76,10 @@ namespace gmds{
 bool Line::intersect3D(const Plane& APlane, Point& AP, double& AParam) const
 {
 	Point src = m_p1;
-    Vector3d dir(m_p1, m_p2);
+    Vector3d dir = m_p2-m_p1;
 
     Vector3d normal = APlane.getNormal();
-    Vector3d w0(APlane.getPoint(),src);
+    Vector3d w0 = src -APlane.getPoint();
 
 	double a = - normal.dot(w0);
 	double b = normal.dot(dir);
@@ -113,7 +113,7 @@ bool Line::intersect3D(const Triangle& ATri, Point& AP, double& AParam) const
         /*----------------------------------------------------------------------------*/
         Point Line::project(const Point& AP) const {
 
-            Vector3d v1(m_p1, m_p2), v2(m_p1, AP);
+            Vector3d v1=m_p2-m_p1, v2=AP-m_p1;
             
             TCoord a = v1.dot(v2), b = v1.dot(v1);
             
@@ -132,8 +132,8 @@ bool Line::intersect3D(const Triangle& ATri, Point& AP, double& AParam) const
             Point src_pnt = m_p1;
             Point dir_pnt = m_p2;
 
-            Vector3d v12(p1,p2);
-            Vector3d vsc(src_pnt,dir_pnt);
+            Vector3d v12=p2-p1;
+            Vector3d vsc= dir_pnt-src_pnt;
             if(v12.isColinear(vsc)){
                 //===========================================
                 // No intersection, parallel case

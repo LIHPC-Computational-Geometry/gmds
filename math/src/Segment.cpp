@@ -56,7 +56,7 @@ Point Segment::getPoint(const int AIndex) const
 /*----------------------------------------------------------------------------*/
 	Vector3d Segment::getDir() const
 {
-	return Vector3d(pnts_[0], pnts_[1]);
+	return (pnts_[1]-pnts_[0]);
 }
 /*----------------------------------------------------------------------------*/
 	Vector3d& Segment::getUnitVector() const
@@ -65,7 +65,7 @@ Point Segment::getPoint(const int AIndex) const
 		return vunit_;
 	}
 	isVunit_ = true;
-	vunit_ = Vector3d(pnts_[0], pnts_[1]);
+	vunit_ = pnts_[1]- pnts_[0];
 	vunit_.normalize();
 	return vunit_;
 }
@@ -117,9 +117,9 @@ bool Segment::isIn(const Point& AP, const bool AProper) const
 		return false;
 	}
 	
-	TCoord a = Vector3d(pnts_[0], AP).norm2();
-	TCoord b = Vector3d(pnts_[1], AP).norm2();
-	TCoord c = Vector3d(pnts_[0], pnts_[1]).norm2();
+	TCoord a = (AP-pnts_[0]).norm2();
+	TCoord b = (AP-pnts_[1]).norm2();
+	TCoord c = (pnts_[1]- pnts_[0]).norm2();
 	
 	return (a <= c) && (b <= c);
 }
@@ -131,9 +131,9 @@ bool Segment::isIn2ndMethod(const Point& AP, const bool AProper) const
 		return false;
 	}
 	
-	TCoord a = Vector3d(pnts_[0], AP).norm2();
-	TCoord b = Vector3d(pnts_[1], AP).norm2();
-	TCoord c = Vector3d(pnts_[0], pnts_[1]).norm2();
+	TCoord a = (AP-pnts_[0]).norm2();
+	TCoord b = (AP-pnts_[1]).norm2();
+	TCoord c = (pnts_[1]- pnts_[0]).norm2();
 	//std::cout<<"a= "<<a<<" , b= "<<b<<" , c= "<<c<<" , c+gmds::math::Constants::EPSILON="<<c+gmds::math::Constants::EPSILON<<std::endl;
 	return (a <= c+gmds::math::Constants::EPSILON && b <= c+gmds::math::Constants::EPSILON);
 }
@@ -175,8 +175,8 @@ TCoord Segment::distanceInf(const Segment& ASegment) const
 }
 /*----------------------------------------------------------------------------*/
 Point Segment::project(const Point& AP) const {
-		Vector3d v1(pnts_[0], pnts_[1]);
-		Vector3d v2(pnts_[0], AP);
+		Vector3d v1=pnts_[1]-pnts_[0];
+		Vector3d v2=AP-pnts_[0];
 	TCoord a = v1.dot(v2);
 	if (a <= 0.0) {
 		return pnts_[0];
@@ -234,9 +234,9 @@ Segment::intersect2D(const Segment& ASeg, const bool AProper) const
         Point p3 = pnts_[0];
         Point p4 = pnts_[1];
 
-		Vector3d v13(p1,p3);
-		Vector3d v12(p1,p2);
-		Vector3d v34(p3,p4);
+		Vector3d v13=p3-p1;
+		Vector3d v12=p2-p1;
+		Vector3d v34=p4-p3;
         
         double tol = 0.01;
         
@@ -277,9 +277,9 @@ Segment::intersect3D(const Segment &AS, Point &AP, double &AParamSeg, double &AP
 	Point p3 = pnts_[0];
 	Point p4 = pnts_[1];
 
-	Vector3d v13(p1, p3);
-	Vector3d v12(p1, p2);
-	Vector3d v34(p3, p4);
+	Vector3d v13=p3-p1;
+	Vector3d v12=p2-p1;
+	Vector3d v34=p4-p3;
 
 	double tol = 0.01;
 
@@ -313,8 +313,8 @@ bool Segment::intersect2D(const Segment& ASeg, Point& APnt) const
 
   //OK We try to intersect so;
 
-	Vector3d vAB(pA,pB);
-	Vector3d vCD(pC,pD);
+	Vector3d vAB=pB-pA;
+	Vector3d vCD=pD-pC;
   if(vAB.isColinear(vCD)){
     return false; // No intersection
   }
@@ -360,8 +360,8 @@ bool Segment::SecondMetIntersect2D(const Segment& ASeg, Point& APnt, double& APa
 
   	//OK We try to intersect so;
 
-	Vector3d vAB(pA,pB);
-	Vector3d vCD(pC,pD);
+	Vector3d vAB=pB-pA;
+	Vector3d vCD=pD-pC;
   	if(vAB.isColinear(vCD)){
     		return false; // No intersection
   	}

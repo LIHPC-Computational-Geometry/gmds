@@ -134,9 +134,9 @@ const Point Prism3::getCenter() const
             int i0    = neighbors[iVertex][0];
             int i1    = neighbors[iVertex][1];
             int i2    = neighbors[iVertex][2];
-            double l0 = math::Vector3d(m_pnts[i0], m_pnts[iVertex]).norm();
-            double l1 = math::Vector3d(m_pnts[i1], m_pnts[iVertex]).norm();
-            double l2 = math::Vector3d(m_pnts[i2],m_pnts[iVertex]).norm();
+            double l0 = (m_pnts[iVertex]-m_pnts[i0]).norm();
+            double l1 = (m_pnts[iVertex]-m_pnts[i1]).norm();
+            double l2 = (m_pnts[iVertex]-m_pnts[i2]).norm();
             double l012 = l0*l1*l2;
             double det = A.det();
             if (l012 == 0 || det == 0)
@@ -252,81 +252,48 @@ Prism3::computeMeanEdgeLength() const
 math::Matrix<3,3,double>
 Prism3::jacobian(const int iVertex) const
 {
-        TCoord matValues[3][3];
+	math::Matrix<3,3,double> mat;
 
-        switch(iVertex) {
-        case 0:
-                matValues[0][0] = m_pnts[1].X()-m_pnts[0].X();
-                matValues[1][0] = m_pnts[1].Y()-m_pnts[0].Y();
-                matValues[2][0] = m_pnts[1].Z()-m_pnts[0].Z();
-                matValues[0][1] = m_pnts[2].X()-m_pnts[0].X();
-                matValues[1][1] = m_pnts[2].Y()-m_pnts[0].Y();
-                matValues[2][1] = m_pnts[2].Z()-m_pnts[0].Z();
-                matValues[0][2] = m_pnts[3].X()-m_pnts[0].X();
-                matValues[1][2] = m_pnts[3].Y()-m_pnts[0].Y();
-                matValues[2][2] = m_pnts[3].Z()-m_pnts[0].Z();
-                break;
-        case 1:
-                matValues[0][0] = m_pnts[1].X()-m_pnts[0].X();
-                matValues[1][0] = m_pnts[1].Y()-m_pnts[0].Y();
-                matValues[2][0] = m_pnts[1].Z()-m_pnts[0].Z();
-                matValues[0][1] = m_pnts[2].X()-m_pnts[0].X();
-                matValues[1][1] = m_pnts[2].Y()-m_pnts[0].Y();
-                matValues[2][1] = m_pnts[2].Z()-m_pnts[0].Z();
-                matValues[0][2] = m_pnts[4].X()-m_pnts[1].X();
-                matValues[1][2] = m_pnts[4].Y()-m_pnts[1].Y();
-                matValues[2][2] = m_pnts[4].Z()-m_pnts[1].Z();
-                break;
-        case 2:
-                matValues[0][0] = m_pnts[1].X()-m_pnts[0].X();
-                matValues[1][0] = m_pnts[1].Y()-m_pnts[0].Y();
-                matValues[2][0] = m_pnts[1].Z()-m_pnts[0].Z();
-                matValues[0][1] = m_pnts[2].X()-m_pnts[0].X();
-                matValues[1][1] = m_pnts[2].Y()-m_pnts[0].Y();
-                matValues[2][1] = m_pnts[2].Z()-m_pnts[0].Z();
-                matValues[0][2] = m_pnts[5].X()-m_pnts[2].X();
-                matValues[1][2] = m_pnts[5].Y()-m_pnts[2].Y();
-                matValues[2][2] = m_pnts[5].Z()-m_pnts[2].Z();
-                break;
-        case 3:
-                matValues[0][0] = m_pnts[4].X()-m_pnts[3].X();
-                matValues[1][0] = m_pnts[4].Y()-m_pnts[3].Y();
-                matValues[2][0] = m_pnts[4].Z()-m_pnts[3].Z();
-                matValues[0][1] = m_pnts[5].X()-m_pnts[3].X();
-                matValues[1][1] = m_pnts[5].Y()-m_pnts[3].Y();
-                matValues[2][1] = m_pnts[5].Z()-m_pnts[3].Z();
-                matValues[0][2] = m_pnts[3].X()-m_pnts[0].X();
-                matValues[1][2] = m_pnts[3].Y()-m_pnts[0].Y();
-                matValues[2][2] = m_pnts[3].Z()-m_pnts[0].Z();
-                break;
-        case 4:
-                matValues[0][0] = m_pnts[4].X()-m_pnts[3].X();
-                matValues[1][0] = m_pnts[4].Y()-m_pnts[3].Y();
-                matValues[2][0] = m_pnts[4].Z()-m_pnts[3].Z();
-                matValues[0][1] = m_pnts[5].X()-m_pnts[3].X();
-                matValues[1][1] = m_pnts[5].Y()-m_pnts[3].Y();
-                matValues[2][1] = m_pnts[5].Z()-m_pnts[3].Z();
-                matValues[0][2] = m_pnts[4].X()-m_pnts[1].X();
-                matValues[1][2] = m_pnts[4].Y()-m_pnts[1].Y();
-                matValues[2][2] = m_pnts[4].Z()-m_pnts[1].Z();
-                break;
-        case 5:
-                matValues[0][0] = m_pnts[4].X()-m_pnts[3].X();
-                matValues[1][0] = m_pnts[4].Y()-m_pnts[3].Y();
-                matValues[2][0] = m_pnts[4].Z()-m_pnts[3].Z();
-                matValues[0][1] = m_pnts[5].X()-m_pnts[3].X();
-                matValues[1][1] = m_pnts[5].Y()-m_pnts[3].Y();
-                matValues[2][1] = m_pnts[5].Z()-m_pnts[3].Z();
-                matValues[0][2] = m_pnts[5].X()-m_pnts[2].X();
-                matValues[1][2] = m_pnts[5].Y()-m_pnts[2].Y();
-                matValues[2][2] = m_pnts[5].Z()-m_pnts[2].Z();
-                break;
-        default:
-                throw GMDSException("Prism3::jacobian invalid vertex number.");
-                break;
-        }
+	switch(iVertex) {
+	case 0:
+		mat= {	 m_pnts[1]- m_pnts[0],
+					 m_pnts[2]- m_pnts[0],
+					 m_pnts[3]- m_pnts[0]};
+		break;
+	case 1:
 
-        return math::Matrix<3,3,double> (matValues);
+		mat= {	 m_pnts[1]- m_pnts[0],
+					 m_pnts[2]- m_pnts[0],
+					 m_pnts[4]- m_pnts[1]};
+		break;
+	case 2:
+
+		mat= {	 m_pnts[1]- m_pnts[0],
+					 m_pnts[2]- m_pnts[0],
+					 m_pnts[5]- m_pnts[2]};
+		break;
+	case 3:
+
+		mat= {	 m_pnts[4]- m_pnts[3],
+					 m_pnts[5]- m_pnts[3],
+					 m_pnts[3]- m_pnts[0]};
+		break;
+	case 4:
+		mat= {	 m_pnts[4]- m_pnts[3],
+					 m_pnts[5]- m_pnts[3],
+					 m_pnts[4]- m_pnts[1]};
+		break;
+	case 5:
+		mat= {	 m_pnts[4]- m_pnts[3],
+					 m_pnts[5]- m_pnts[3],
+					 m_pnts[5]- m_pnts[2]};
+		break;
+	default:
+		throw GMDSException("Prism3::jacobian invalid vertex number.");
+		break;
+	}
+
+	return mat;
 }
 /*----------------------------------------------------------------------------*/
 bool

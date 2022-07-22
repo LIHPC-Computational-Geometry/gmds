@@ -71,7 +71,7 @@ public:
      *          distance is \p AMaxDist.
      *
      * \details This algorithm uses Heun's scheme + a fuzzy approch where we 
-     *          always go in/out of simplex along faces
+     *          always execute in/out of simplex along faces
      *
      * \param[in] AData     point data in the flow
      * \param[in] AMaxDist  Maximum distance allowed for the displacement
@@ -96,7 +96,7 @@ public:
                                       const gmds::TCellID ATo) const;
     
     /*------------------------------------------------------------------------*/
-    /** \brief Gives the out point when we go through a triangle following the
+    /** \brief Gives the out point when we execute through a triangle following the
      *         cross field
      *
      * \param AFace       the face we work on
@@ -104,10 +104,10 @@ public:
      * \param AInVec      the geometric direction to follow
      * \param AInCellDim  the dimension of the cell start_pnt is located
      * \param AInCellID   the id of the cell start_pnt is located on
-     * \param AOutPnt     the geometric point we go out
+     * \param AOutPnt     the geometric point we execute out
      * \param AOutVec     the geometric direction to follow after
-     * \param AOutCellDim the dimension of the cell we go out
-     * \param AOutCellID  the id of the cell we go out
+     * \param AOutCellDim the dimension of the cell we execute out
+     * \param AOutCellID  the id of the cell we execute out
      */
     void	traverseTriangle(const gmds::Face&         AFace,
                              const gmds::math::Point&  AInPnt,
@@ -121,17 +121,17 @@ public:
 					    double&          streamlineDeviation);
     
     /*------------------------------------------------------------------------*/
-    /** \brief Gives the out point when we go through a triangle following the
+    /** \brief Gives the out point when we execute through a triangle following the
      *         cross field and starting from a node
      *
      * \param AFace       the face we work on
      * \param ANode       the node we come from
      * \param AInPnt      the geometric point we start from
      * \param AInVec      the geometric direction to follow
-     * \param AOutPnt     the geometric point we go out
+     * \param AOutPnt     the geometric point we execute out
      * \param AOutVec     the geometric direction to follow after
-     * \param AOutCellDim the dimension of the cell we go out
-     * \param AOutCellID  the id of the cell we go out
+     * \param AOutCellDim the dimension of the cell we execute out
+     * \param AOutCellID  the id of the cell we execute out
      */
     void	traverseTriangle(const gmds::Face&         AFace,
                              const gmds::Node&         ANode,
@@ -144,17 +144,17 @@ public:
 					    double&           streamlineDeviation);
     
     /*------------------------------------------------------------------------*/
-    /** \brief Gives the out point when we go through a triangle following the
+    /** \brief Gives the out point when we execute through a triangle following the
      *         cross field and starting from an edge
      *
      * \param AFace       the face we work on
      * \param AEdge       the edge we come from
      * \param AInPnt      the geometric point we start from
      * \param AInVec      the geometric direction to follow
-     * \param AOutPnt     the geometric point we go out
+     * \param AOutPnt     the geometric point we execute out
      * \param AOutVec     the geometric direction to follow after
-     * \param AOutCellDim the dimension of the cell we go out
-     * \param AOutCellID  the id of the cell we go out
+     * \param AOutCellDim the dimension of the cell we execute out
+     * \param AOutCellID  the id of the cell we execute out
      */
     void	traverseTriangle(const gmds::Face&         AFace,
                              const gmds::Edge&         AEdge,
@@ -168,9 +168,9 @@ public:
     
     /*------------------------------------------------------------------------*/
     /** \brief Performs the Heun's algorithm into a triangle to compute the
-     *                  out point when we go through this triangle and we arrive
+     *                  out point when we execute through this triangle and we arrive
      *                  from an edge. Note that the algorithm is numerically
-     *                  corrected to avoid to go back in the face we come from.
+     *                  corrected to avoid to execute back in the face we come from.
      *
      * \param AInEdge   the edge we come from
      * \param AInPnt    the geometric point we start from
@@ -180,10 +180,10 @@ public:
      * \param AInNode2  the second node of AInEdge
      * \param AOutEdge1 another edge of the face we work on
      * \param AOutEdge2 a second another edge of the face we work on
-     * \param AOutPnt   the geometric point we go out
+     * \param AOutPnt   the geometric point we execute out
      * \param AOutVec   the geometric direction to follow after
      *
-     * \return an index indicating which is the cell we go out through:
+     * \return an index indicating which is the cell we execute out through:
      *         - 1 for AOppNode
      *         - 2 for AInNode1
      *         - 3 for AInNode2
@@ -205,9 +205,9 @@ public:
     
     /*------------------------------------------------------------------------*/
     /** \brief Performs the Heun's algorithm into a triangle to compute the
-     *                  out point when we go through this triangle and we arrive
+     *                  out point when we execute through this triangle and we arrive
      *                  from a node. Note that the algorithm is numerically
-     *                  corrected to avoid to go out from the triangle we get
+     *                  corrected to avoid to execute out from the triangle we get
      *                  in.
      *
      * \param AInNode   the node we come from
@@ -216,10 +216,10 @@ public:
      * \param AOppNode1 the first node of AOppEdge
      * \param AOppNode2 the second node of AOppEdge
      * \param AOppEdge  the edge opposite to AInNode
-     * \param AOutPnt   the geometric point we go out
+     * \param AOutPnt   the geometric point we execute out
      * \param AOutVec   the geometric direction to follow after
      *
-     * \return an index indicating which is the cell we go out through:
+     * \return an index indicating which is the cell we execute out through:
      *         - 0 if it does not intersect
      *         - 1 for AOppNode1
      *         - 2 for AOppNode2
@@ -239,13 +239,13 @@ public:
     
      /*------------------------------------------------------------------------*/
     /** \brief Performs the Runge-Kutta algorithm into a triangle to compute the
-     *                  out point when we go through this triangle and we arrive
+     *                  out point when we execute through this triangle and we arrive
      *                  from an edge. Note that the algorithm is numerically
-     *                  corrected to avoid to go back in the face we come from.
+     *                  corrected to avoid to execute back in the face we come from.
      *
      * \param AINPnt    the geometric point we start from
      * \param AINVec    the geometric direction to follow
-     * \param[out] AOUTPnt   the geometric point we go out (in case we arrive at boundary -> the obtained bdry point)
+     * \param[out] AOUTPnt   the geometric point we execute out (in case we arrive at boundary -> the obtained bdry point)
      * \param[out] AOUTVec   the geometric direction to follow after
      * \param deviation measure of the deviation from the field
      * \param stepSize  the step size for the algorithm (∆t)
@@ -273,7 +273,7 @@ public:
      * \param AEdge     the edge we intersect
      * \param AInPnt    the geometric point we start from
      * \param AInVec    the geometric direction to follow
-     * \param AOutPnt   the geometric point we go out
+     * \param AOutPnt   the geometric point we execute out
      * \param AOutVec   the geometric direction to follow after
      * \param deviation   deviation of the resulted line wrt the closest component of the cross at the intersection point
 	* 
@@ -302,11 +302,11 @@ public:
     
     
     /*------------------------------------------------------------------------*/
-    /** \brief Compute the next cell we will go through. It is a face (dim=2),
+    /** \brief Compute the next cell we will execute through. It is a face (dim=2),
      *         or an edge (dim=1).
      *
      * \param[IN]  AFromPnt     the geometric point we start from
-     * \param[IN]  AFromVec     the geometric direction we go along
+     * \param[IN]  AFromVec     the geometric direction we execute along
      * \param[IN]  AFromCellDim the dim. of the mesh cell we start from (0 or 1)
      * \param[IN]  AFromCellID  the id of the mesh cell we start from
      * \param[OUT] AToCellDim   the dim. of the mesh cell we start from (0 or 1)
@@ -324,7 +324,7 @@ public:
      *         or an edge (dim=1).
      *
      * \param[IN]  AFromPnt   the geometric point we start from
-     * \param[IN]  AFromVec   the geometric direction we go along
+     * \param[IN]  AFromVec   the geometric direction we execute along
      * \param[IN]  AFromNode  the node we come from
      * \param[OUT] AToCellDim the dim. of the mesh cell we start from (0 or 1)
      * \param[OUT] AToCellID  the id of the mesh cell we start from
@@ -339,7 +339,7 @@ public:
      *         or an edge (dim=1).
      *
      * \param[IN]  AFromPnt   the geometric point we start from
-     * \param[IN]  AFromVec   the geometric direction we go along
+     * \param[IN]  AFromVec   the geometric direction we execute along
      * \param[IN]  AFromEdge  the edge we come from
      * \param[OUT] AToCellDim the dim. of the mesh cell we start from (0 or 1)
      * \param[OUT] AToCellID  the id of the mesh cell we start from

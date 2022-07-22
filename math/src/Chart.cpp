@@ -17,9 +17,9 @@ namespace gmds {
         /*-----------------------------------------------------------------*/
         Chart::Chart()
         {
-            m_v[0] = Vector3d(1,0,0);
-            m_v[1] = Vector3d(0,1,0);
-            m_v[2] = Vector3d(0,0,1);
+            m_v[0] = Vector3d({1,0,0});
+            m_v[1] = Vector3d({0,1,0});
+            m_v[2] = Vector3d({0,0,1});
         }
         /*-----------------------------------------------------------------*/
         Chart::Chart(const Vector3d& AX, const Vector3d& AY,
@@ -62,7 +62,7 @@ namespace gmds {
             if(AIndex<0 || AIndex>2)
                 throw GMDSException("Chart - Wrong range index");
             
-            return Vector3d(m_v[AIndex].X(),m_v[AIndex].Y(),m_v[AIndex].Z());
+            return Vector3d({m_v[AIndex].X(),m_v[AIndex].Y(),m_v[AIndex].Z()});
         }
         
         /*-----------------------------------------------------------------*/
@@ -88,11 +88,11 @@ namespace gmds {
         /*-----------------------------------------------------------------*/
         Matrix<3,3,double> Chart::toMatrix() const
         {
-            double v[3][3]= {
-                { m_v[0].X(), m_v[1].X(), m_v[2].X()},
-                { m_v[0].Y(), m_v[1].Y(), m_v[2].Y()},
-                { m_v[0].Z(), m_v[1].Z(), m_v[2].Z()} };
-            return Matrix<3,3,double>(v);
+	        Matrix<3,3,double> K =
+					{ m_v[0].X(), m_v[1].X(), m_v[2].X(),
+					m_v[0].Y(), m_v[1].Y(), m_v[2].Y(),
+					 m_v[0].Z(), m_v[1].Z(), m_v[2].Z() };
+	        return K;
         }
         
         /*-----------------------------------------------------------------*/
@@ -251,9 +251,8 @@ namespace gmds {
         
         /*-----------------------------------------------------------------*/
         Chart::Mapping::Mapping(){
-            int m[3]={0,1,2}, d[3]={1,1,1};
-            m_map= Vector3i(m);
-            m_dir= Vector3i(d);
+            m_map= {0,1,2};
+            m_dir= {1,1,1};
         }
         /*-----------------------------------------------------------------*/
         Chart::Mapping::Mapping(const Chart& AC1, const Chart& AC2){

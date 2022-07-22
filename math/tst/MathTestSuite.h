@@ -151,7 +151,7 @@ TEST(MathTest,TriangleRayIntersection) {
 	math::Triangle triangle(pnt0,pnt1,pnt2);
 
 	math::Point pnt(0.263162, -0.546133, 5);
-	math::Vector3d dir(0, 0, -0.15228);
+	math::Vector3d dir({0, 0, -0.15228});
 	math::Ray ray(pnt,dir);	
 
 	bool res = triangle.intersect(ray);
@@ -221,8 +221,8 @@ TEST(MathTest,HexahedronScaledJacobian) {
 }
 /*----------------------------------------------------------------------------*/
 TEST(MathTest,VectorAngle) {
-  math::Vector3d v1(1,0,0);
-  math::Vector3d v2(0,-1,0);
+  math::Vector3d v1({1, 0, 0});
+  math::Vector3d v2({0, -1, 0});
  
   double angle1 = v1.angle(v2);
   double angle2 = v2.angle(v1);
@@ -231,8 +231,8 @@ TEST(MathTest,VectorAngle) {
 }
 /*----------------------------------------------------------------------------*/
 TEST(MathTest,VectorOrientedAngle) {
-  math::Vector3d v1(1,0,0);
-  math::Vector3d v2(0,-1,0);
+  math::Vector3d v1({1, 0, 0});
+  math::Vector3d v2({0, -1, 0});
  
   double angle1 = v1.orientedAngle(v2);
   double angle2 = v2.orientedAngle(v1);
@@ -243,7 +243,7 @@ TEST(MathTest,VectorOrientedAngle) {
 }
 /*----------------------------------------------------------------------------*/
 TEST(MathTest,VectorSelfAngle) {
-  math::Vector3d v(1,1,0);
+  math::Vector3d v({1, 1, 0});
  
   double angle1 = v.angle(v);
   double angle2 = v.orientedAngle(v);
@@ -253,21 +253,21 @@ TEST(MathTest,VectorSelfAngle) {
 }
 /*----------------------------------------------------------------------------*/
 TEST(MathTest,Vector3dOrtho1) {
-    math::Vector3d v(1,0,0);
+    math::Vector3d v({1, 0, 0});
     math::Vector3d v2 = v.getOneOrtho();
     EXPECT_TRUE(math::isZero(v.dot(v2)));
 
 }
 /*----------------------------------------------------------------------------*/
 TEST(MathTest,Vector3dOrtho2) {
-    math::Vector3d v(0,-2,0);
+    math::Vector3d v({0, -2, 0});
     math::Vector3d v2 = v.getOneOrtho();
     EXPECT_TRUE(math::isZero(v.dot(v2)));
 
 }
 /*----------------------------------------------------------------------------*/
 TEST(MathTest,Vector3dOrtho3) {
-    math::Vector3d v(0,0,4);
+    math::Vector3d v({0, 0, 4});
     math::Vector3d v2 = v.getOneOrtho();
 
     EXPECT_TRUE(math::isZero(v.dot(v2)));
@@ -275,7 +275,7 @@ TEST(MathTest,Vector3dOrtho3) {
 }
 /*----------------------------------------------------------------------------*/
 TEST(MathTest,Vector3dOrtho4) {
-    math::Vector3d v(1.23,-0.45,124.5);
+    math::Vector3d v({1.23, -0.45, 124.5});
 
     math::Vector3d v2 = v.getOneOrtho();
 
@@ -284,9 +284,9 @@ TEST(MathTest,Vector3dOrtho4) {
 }
 /*----------------------------------------------------------------------------*/
 TEST(MathTest,VectorOrderingAngles) {
-  math::Vector3d v(1,0,0);
-  math::Vector3d v1(1,1,0);
-  math::Vector3d v2(1,-1,0);
+  math::Vector3d v({1, 0, 0});
+  math::Vector3d v1({1, 1, 0});
+  math::Vector3d v2({1, -1, 0});
 
   double angle1   = v.angle(v1);
   double angle2   = v.angle(v2);
@@ -304,7 +304,7 @@ TEST(MathTest, numericComparison){
 
 /*----------------------------------------------------------------------------*/
 TEST(MathTest, planeSegmentIntersection1){
-    math::Plane pl(math::Point(0,0,0), math::Vector3d(0,0,1));
+    math::Plane pl(math::Point(0,0,0), math::Vector3d({0, 0, 1}));
     math::Segment seg(math::Point(0,0,-1), math::Point(0,0,2));
     math::Point pi;
     double w0=0, w1=0;
@@ -314,7 +314,7 @@ TEST(MathTest, planeSegmentIntersection1){
 
 /*----------------------------------------------------------------------------*/
 TEST(MathTest, planeSegmentIntersection2){
-    math::Plane pl(math::Point(0,0,0), math::Vector3d(0,0,1));
+    math::Plane pl(math::Point(0,0,0), math::Vector3d({0, 0, 1}));
     math::Segment seg(math::Point(1,1,0), math::Point(0,0,2));
     math::Point pi;
     double w0=0, w1=0;
@@ -324,7 +324,7 @@ TEST(MathTest, planeSegmentIntersection2){
 
 /*----------------------------------------------------------------------------*/
 TEST(MathTest, planeSegmentIntersection3){
-    math::Plane pl(math::Point(0,0,0), math::Vector3d(0,0,1));
+    math::Plane pl(math::Point(0,0,0), math::Vector3d({0, 0, 1}));
     math::Segment seg(math::Point(0,0,-1), math::Point(1,1234,0));
     math::Point pi;
     double w0=0, w1=0;
@@ -333,7 +333,7 @@ TEST(MathTest, planeSegmentIntersection3){
 }
 /*----------------------------------------------------------------------------*/
 TEST(MathTest, planeSegmentIntersection4){
-    math::Plane pl(math::Point(0,0,0), math::Vector3d(0,0,1));
+    math::Plane pl(math::Point(0,0,0), math::Vector3d({0, 0, 1}));
     math::Segment seg(math::Point(0,0,-1), math::Point(0,0,-0.5));
     math::Point pi;
     double w0=0, w1=0;
@@ -348,18 +348,18 @@ TEST(MathTest, dotTest){
     math::Point p1(5,4.427,-0.5);
     math::Point p2(5,4.144,-0.5);
 
-    math::Vector3d va(p1,pa);
-    math::Vector3d v12(p1,p2);
+    math::Vector3d va=pa-1;
+    math::Vector3d v12=p2-p1;
     TCoord a = v12.dot(va);
     ASSERT_TRUE(a>=0);
     ASSERT_TRUE(a>=v12.norm());
 
-    math::Vector3d vb(p1,pb);
+    math::Vector3d vb=pb-p1;
     a = v12.dot(vb);
 
     ASSERT_TRUE(a>=0);
     ASSERT_TRUE(a<=v12.norm());
-    math::Vector3d vc(p1,pc);
+    math::Vector3d vc=pc-p1;
     a = v12.dot(vc);
 
     ASSERT_TRUE(a<=0);

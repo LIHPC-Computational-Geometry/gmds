@@ -981,7 +981,7 @@ void set_from_triplets(const InputIterator& begin, const InputIterator& end, Spa
     }
     SparseMatrixType m(rows,cols);
     m.setFromTriplets(tripletList.begin(), tripletList.end());
-    // m is ready to go!
+    // m is ready to execute!
   * \endcode
   *
   * \warning The list of triplets is read multiple times (at least twice). Therefore, it is not recommended to define

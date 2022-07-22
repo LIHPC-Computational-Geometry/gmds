@@ -93,7 +93,7 @@ GeodHexMesher::OpResult GeodHexMesher::execute() {
                 }
                 else{
                     //we create the node
-                    math::Vector v(m_center, ni.point());
+                    math::Vector v=ni.point()-m_center;
                     v.normalize();
                     v = layer_radius*v;
                     Node nj = m_mesh->newNode(m_center+v);

@@ -71,26 +71,28 @@ namespace gmds {
                     math::Point p2 = nodes[1].point();
                     math::Point p3 = nodes[2].point();
 
-                    math::Vector3d v1(p1, p2);
-                    math::Vector3d v3(p1, p3);
+                    math::Vector3d v1=p2-p1;
+                    math::Vector3d v3=p3-p1;
 
                     n = (v1.cross(v3));
                     n.normalize();
-            } else if (nb_nodes > 3) {
-                    math::Point p = center();
-                    math::Vector3d n_temp(0, 0, 0);
+            } else if (nb_nodes > 3){
+                    math::Vector3d n_temp({0,0,0});
+		              int tmp_nb=0;
                     for (auto i = 0; i < nb_nodes; i++) {
-                            math::Point pi = nodes[i].point();
-                            math::Point pj = nodes[(i + 1) % nb_nodes].point();
-                            math::Vector3d vi(p, pi);
-                            math::Vector3d vj(p, pj);
-                            math::Vector3d nij = vi.cross(vj);
-                            nij.normalize();
-                            n_temp += nij;
+			             		 math::Point p1 = nodes[(i==0)?nb_nodes-1:i - 1].point();
+                            math::Point p2 = nodes[i].point();
+                            math::Point p3 = nodes[(i + 1) % nb_nodes].point();
+			                   math::Vector3d v1=p2-p1;
+			                   math::Vector3d v3=p3-p1;
+
+			                   math::Vector3d ni = (v1.cross(v3));
+			                   n_temp+=ni;
+			                   tmp_nb++;
                     }
-                    n_temp /= nb_nodes;
+                    n_temp /= tmp_nb;
                     n_temp.normalize();
-                    n = math::Vector3d(n_temp.X(), n_temp.Y(), n_temp.Z());
+                    n = n_temp;
             }
             return n;
     }
@@ -118,8 +120,8 @@ namespace gmds {
             Node n2 = nodes[(nodeIndex + 1) % nodes.size()];
             Node n3 = nodes[(nodeIndex + 2) % nodes.size()];
 
-            math::Vector3d v1(n2.X() - n1.X(), n2.Y() - n1.Y(), n2.Z() - n1.Z());
-            math::Vector3d v3(n3.X() - n1.X(), n3.Y() - n1.Y(), n3.Z() - n1.Z());
+            math::Vector3d v1({n2.X() - n1.X(), n2.Y() - n1.Y(), n2.Z() - n1.Z()});
+            math::Vector3d v3({n3.X() - n1.X(), n3.Y() - n1.Y(), n3.Z() - n1.Z()});
 
             n = (v1.cross(v3));
             n.normalize();
@@ -138,8 +140,8 @@ namespace gmds {
                     Node n2 = nodes[1];
                     Node n3 = nodes[2];
 
-                    math::Vector3d v1(n2.X() - n1.X(), n2.Y() - n1.Y(), n2.Z() - n1.Z());
-                    math::Vector3d v3(n3.X() - n1.X(), n3.Y() - n1.Y(), n3.Z() - n1.Z());
+                    math::Vector3d v1({n2.X() - n1.X(), n2.Y() - n1.Y(), n2.Z() - n1.Z()});
+                    math::Vector3d v3({n3.X() - n1.X(), n3.Y() - n1.Y(), n3.Z() - n1.Z()});
 
                     n = (v1.cross(v3));
 

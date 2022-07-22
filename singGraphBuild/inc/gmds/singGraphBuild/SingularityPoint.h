@@ -164,7 +164,7 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingularityPoint
 		const int ACellDim,
 		const bool AIsOnSurf,
 		SingularityLine* ALine = 0,
-		const gmds::math::Vector3d ALineDirection = gmds::math::Vector3d(1,0,0));
+		const gmds::math::Vector3d ALineDirection = gmds::math::Vector3d({1, 0, 0}));
 
   /*------------------------------------------------------------------------*/
   /** \brief Creates a new geometric slot.  A geom slot is associated to a curve

@@ -36,7 +36,7 @@ namespace gmds {
             /*------------------------------------------------------------------------*/
             /** \brief Default Constructor.
              */
-            Quaternion():m_r(1.), m_i(0.,0.,0.) {};
+            Quaternion():m_r(1.), m_i({0.,0.,0.}) {};
             /*------------------------------------------------------------------------*/
             /** \brief Constructor.
              *
@@ -47,7 +47,7 @@ namespace gmds {
              */
             Quaternion(const TCoord AX, const TCoord AI,
                        const TCoord AJ, const TCoord AK)
-            :m_r(AX),m_i(AI,AJ,AK)
+            :m_r(AX),m_i({AI,AJ,AK})
             {
                 this->normalize();
             };
@@ -229,7 +229,7 @@ namespace gmds {
             /** \brief Computes the spherical interpolation between two Quaternions (SLERP)
              *
              * \param[in] AFrom the first quaternion we come from
-             * \param[in] ATO   the second quaternion we go to
+             * \param[in] ATO   the second quaternion we execute to
              * \param[in] AParam the interpoloation parameter  in [0.0,1.0]
              * \return a Quaternion equals to (\p AParam-1)*\p AFrom +\p AParam*\p ATo
              */

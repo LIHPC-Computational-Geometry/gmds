@@ -147,9 +147,9 @@ Hexahedron::computeScaledJacobian() const
 		int i0    = neighbors[iVertex][0];
 		int i1    = neighbors[iVertex][1];
 		int i2    = neighbors[iVertex][2];
-		double l0 = math::Vector3d(m_pnts[i0], m_pnts[iVertex]).norm2();
-		double l1 = math::Vector3d(m_pnts[i1], m_pnts[iVertex]).norm2();
-		double l2 = math::Vector3d(m_pnts[i2], m_pnts[iVertex]).norm2();
+		double l0 = (m_pnts[iVertex]-m_pnts[i0]).norm2();
+		double l1 = (m_pnts[iVertex]-m_pnts[i1]).norm2();
+		double l2 = (m_pnts[iVertex]-m_pnts[i2]).norm2();
 		double l012 = sqrt(l0*l1*l2);
 		double det = A.det();
 		if (l012 == 0 || det == 0)
@@ -198,9 +198,9 @@ Hexahedron::computeScaledJacobianAt(int AVert) const
         int i0    = neighbors[AVert][0];
         int i1    = neighbors[AVert][1];
         int i2    = neighbors[AVert][2];
-        double l0 = Vector3d(m_pnts[i0], m_pnts[AVert]).norm2();
-        double l1 = Vector3d(m_pnts[i1], m_pnts[AVert]).norm2();
-        double l2 = Vector3d(m_pnts[i2], m_pnts[AVert]).norm2();
+        double l0 = (m_pnts[AVert]-m_pnts[i0]).norm2();
+        double l1 = (m_pnts[AVert]-m_pnts[i1]).norm2();
+        double l2 = (m_pnts[AVert]-m_pnts[i2]).norm2();
         double l012 = sqrt(l0*l1*l2);
         double det = A.det();
         if (l012 == 0 || det == 0)
@@ -370,103 +370,55 @@ Hexahedron::intersect(const Triangle& ATri, const bool AProper) const
 math::Matrix<3,3,double>
 Hexahedron::jacobian(const int iVertex) const
 {
-	TCoord matValues[3][3];
+	math::Matrix<3,3,double> mat;
 
 	switch(iVertex) {
 		case 0:
-			matValues[0][0] = m_pnts[1].X()-m_pnts[0].X();
-			matValues[1][0] = m_pnts[1].Y()-m_pnts[0].Y();
-			matValues[2][0] = m_pnts[1].Z()-m_pnts[0].Z();
-			matValues[0][1] = m_pnts[3].X()-m_pnts[0].X();
-			matValues[1][1] = m_pnts[3].Y()-m_pnts[0].Y();
-			matValues[2][1] = m_pnts[3].Z()-m_pnts[0].Z();
-			matValues[0][2] = m_pnts[4].X()-m_pnts[0].X();
-			matValues[1][2] = m_pnts[4].Y()-m_pnts[0].Y();
-			matValues[2][2] = m_pnts[4].Z()-m_pnts[0].Z();
+		   mat={  m_pnts[1]-m_pnts[0],
+		          m_pnts[3]-m_pnts[0],
+		          m_pnts[4]-m_pnts[0]};
 			break;
 		case 1:
-			matValues[0][0] = m_pnts[1].X()-m_pnts[0].X();
-			matValues[1][0] = m_pnts[1].Y()-m_pnts[0].Y();
-			matValues[2][0] = m_pnts[1].Z()-m_pnts[0].Z();
-			matValues[0][1] = m_pnts[2].X()-m_pnts[1].X();
-			matValues[1][1] = m_pnts[2].Y()-m_pnts[1].Y();
-			matValues[2][1] = m_pnts[2].Z()-m_pnts[1].Z();
-			matValues[0][2] = m_pnts[5].X()-m_pnts[1].X();
-			matValues[1][2] = m_pnts[5].Y()-m_pnts[1].Y();
-			matValues[2][2] = m_pnts[5].Z()-m_pnts[1].Z();
+		   mat={  m_pnts[1]-m_pnts[0],
+		          m_pnts[2]-m_pnts[1],
+		          m_pnts[5]-m_pnts[1]};
 			break;
 		case 2:
-			matValues[0][0] = m_pnts[2].X()-m_pnts[3].X();
-			matValues[1][0] = m_pnts[2].Y()-m_pnts[3].Y();
-			matValues[2][0] = m_pnts[2].Z()-m_pnts[3].Z();
-			matValues[0][1] = m_pnts[2].X()-m_pnts[1].X();
-			matValues[1][1] = m_pnts[2].Y()-m_pnts[1].Y();
-			matValues[2][1] = m_pnts[2].Z()-m_pnts[1].Z();
-			matValues[0][2] = m_pnts[6].X()-m_pnts[2].X();
-			matValues[1][2] = m_pnts[6].Y()-m_pnts[2].Y();
-			matValues[2][2] = m_pnts[6].Z()-m_pnts[2].Z();
+		   mat={  m_pnts[2]-m_pnts[3],
+		          m_pnts[2]-m_pnts[1],
+		          m_pnts[6]-m_pnts[2]};
 			break;
 		case 3:
-			matValues[0][0] = m_pnts[2].X()-m_pnts[3].X();
-			matValues[1][0] = m_pnts[2].Y()-m_pnts[3].Y();
-			matValues[2][0] = m_pnts[2].Z()-m_pnts[3].Z();
-			matValues[0][1] = m_pnts[3].X()-m_pnts[0].X();
-			matValues[1][1] = m_pnts[3].Y()-m_pnts[0].Y();
-			matValues[2][1] = m_pnts[3].Z()-m_pnts[0].Z();
-			matValues[0][2] = m_pnts[7].X()-m_pnts[3].X();
-			matValues[1][2] = m_pnts[7].Y()-m_pnts[3].Y();
-			matValues[2][2] = m_pnts[7].Z()-m_pnts[3].Z();
+		   mat={  m_pnts[2]-m_pnts[3],
+		          m_pnts[3]-m_pnts[0],
+		          m_pnts[7]-m_pnts[3]};
 			break;
 		case 4:
-			matValues[0][0] = m_pnts[5].X()-m_pnts[4].X();
-			matValues[1][0] = m_pnts[5].Y()-m_pnts[4].Y();
-			matValues[2][0] = m_pnts[5].Z()-m_pnts[4].Z();
-			matValues[0][1] = m_pnts[7].X()-m_pnts[4].X();
-			matValues[1][1] = m_pnts[7].Y()-m_pnts[4].Y();
-			matValues[2][1] = m_pnts[7].Z()-m_pnts[4].Z();
-			matValues[0][2] = m_pnts[4].X()-m_pnts[0].X();
-			matValues[1][2] = m_pnts[4].Y()-m_pnts[0].Y();
-			matValues[2][2] = m_pnts[4].Z()-m_pnts[0].Z();
+		   mat={  m_pnts[5]-m_pnts[4],
+		          m_pnts[7]-m_pnts[4],
+		          m_pnts[4]-m_pnts[0]};
 			break;
 		case 5:
-			matValues[0][0] = m_pnts[5].X()-m_pnts[4].X();
-			matValues[1][0] = m_pnts[5].Y()-m_pnts[4].Y();
-			matValues[2][0] = m_pnts[5].Z()-m_pnts[4].Z();
-			matValues[0][1] = m_pnts[6].X()-m_pnts[5].X();
-			matValues[1][1] = m_pnts[6].Y()-m_pnts[5].Y();
-			matValues[2][1] = m_pnts[6].Z()-m_pnts[5].Z();
-			matValues[0][2] = m_pnts[5].X()-m_pnts[1].X();
-			matValues[1][2] = m_pnts[5].Y()-m_pnts[1].Y();
-			matValues[2][2] = m_pnts[5].Z()-m_pnts[1].Z();
+		   mat={  m_pnts[5]-m_pnts[4],
+		          m_pnts[6]-m_pnts[5],
+		          m_pnts[5]-m_pnts[1]};
 			break;
 		case 6:
-			matValues[0][0] = m_pnts[6].X()-m_pnts[7].X();
-			matValues[1][0] = m_pnts[6].Y()-m_pnts[7].Y();
-			matValues[2][0] = m_pnts[6].Z()-m_pnts[7].Z();
-			matValues[0][1] = m_pnts[6].X()-m_pnts[5].X();
-			matValues[1][1] = m_pnts[6].Y()-m_pnts[5].Y();
-			matValues[2][1] = m_pnts[6].Z()-m_pnts[5].Z();
-			matValues[0][2] = m_pnts[6].X()-m_pnts[2].X();
-			matValues[1][2] = m_pnts[6].Y()-m_pnts[2].Y();
-			matValues[2][2] = m_pnts[6].Z()-m_pnts[2].Z();
+		   mat={  m_pnts[6]-m_pnts[7],
+		          m_pnts[6]-m_pnts[5],
+		          m_pnts[6]-m_pnts[2]};
 			break;
 		case 7:
-			matValues[0][0] = m_pnts[6].X()-m_pnts[7].X();
-			matValues[1][0] = m_pnts[6].Y()-m_pnts[7].Y();
-			matValues[2][0] = m_pnts[6].Z()-m_pnts[7].Z();
-			matValues[0][1] = m_pnts[7].X()-m_pnts[4].X();
-			matValues[1][1] = m_pnts[7].Y()-m_pnts[4].Y();
-			matValues[2][1] = m_pnts[7].Z()-m_pnts[4].Z();
-			matValues[0][2] = m_pnts[7].X()-m_pnts[3].X();
-			matValues[1][2] = m_pnts[7].Y()-m_pnts[3].Y();
-			matValues[2][2] = m_pnts[7].Z()-m_pnts[3].Z();
+		   mat={  m_pnts[6]-m_pnts[7],
+		          m_pnts[7]-m_pnts[4],
+		          m_pnts[7]-m_pnts[3]};
 			break;
 		default:
 			throw GMDSException("Hexahedron::jacobian invalid vertex number.");
 			break;
 	}	
 	
-	return math::Matrix<3,3,double> (matValues);
+	return mat;
 }
 /*---------------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& AStr, const Hexahedron& AHex){

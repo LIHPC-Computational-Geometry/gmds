@@ -411,11 +411,11 @@ protected:
     /** \brief Add a corner data to the point with index \p AIndex
      *
      * \param[in] AIndex  the point index we add a corner to
-     * \param[in] AIndex1 the point index we go to in direction 1
+     * \param[in] AIndex1 the point index we execute to in direction 1
      * \param[in] AV1     the vector in direction 1
-     * \param[in] AIndex2 the point index we go to in direction 2
+     * \param[in] AIndex2 the point index we execute to in direction 2
      * \param[in] AV2     the vector in direction 2
-     * \param[in] AIndex3 the point index we go to in direction 3
+     * \param[in] AIndex3 the point index we execute to in direction 3
      * \param[in] AV3     the vector in direction 3
      */
     void addCorner(const int AIndex,

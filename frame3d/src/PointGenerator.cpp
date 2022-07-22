@@ -82,9 +82,9 @@ math::Vector3d PointGenerator::computeGij(OrientedEdge& AE)  {
     TCellID j = nj.id();
     
     math::Vector3d ref_XYZ[3] = {
-        math::Vector3d(1., 0., 0.),
-        math::Vector3d(0., 1., 0.),
-        math::Vector3d(0., 0., 1.)
+        math::Vector3d({1., 0., 0.}),
+        math::Vector3d({0., 1., 0.}),
+        math::Vector3d({0., 0., 1.})
     };
     math::AxisAngleRotation rot_i = (*m_rotation_field)[i];
     math::AxisAngleRotation rot_j = (*m_rotation_field)[j];
@@ -92,8 +92,8 @@ math::Vector3d PointGenerator::computeGij(OrientedEdge& AE)  {
     math::Chart::Mapping r_ij = getRij(i,j);
     
     //vector from pi to pj
-    math::Vector3d xij(ni.point(), nj.point());
-    
+    math::Vector3d xij= nj.point()-ni.point();
+
     math::Vector3d gij_component[3];
     for (int d = 0; d<3; d++) {
         math::Vector3d tmp = (rot_j*(r_ij.inverse()*ref_XYZ[d]) +
@@ -115,7 +115,7 @@ math::Vector3d PointGenerator::computeGij(OrientedEdge& AE)  {
 math::Vector3d PointGenerator::computeCij(OrientedEdge& AE)
 {
     if(m_curl == 0.0) {
-        return math::Vector3d(0, 0, 0);
+        return math::Vector3d({0, 0, 0});
     }
     
     Edge e = AE.edge;
@@ -123,7 +123,7 @@ math::Vector3d PointGenerator::computeCij(OrientedEdge& AE)
     
     math::Chart::Mapping r_ij = getRij(AE.first,AE.second);
     
-    math::Vector3d correction(0, 0, 0);
+    math::Vector3d correction({0, 0, 0});
     math::Vector3d edge_correction = m_corr[e_id];
     for (int d = 0;d<3;d++){
         correction[d] = edge_correction[d];
@@ -182,7 +182,7 @@ void PointGenerator::computeCurlCorrection()
     // 1 - The correction term of each edge is set to (0,0,0)
     //======================================================================
     for(auto e_id : m_mesh->edges()){
-        m_corr[e_id] = math::Vector3d(0, 0, 0);
+        m_corr[e_id] = {0, 0, 0};
     }
 
     //======================================================================
@@ -256,7 +256,7 @@ void PointGenerator::computeCurlCorrection()
         }
         
         // Righ-hand side term in the AX=b system we build in
-        math::Vector3d b(0, 0, 0);
+        math::Vector3d b({0, 0, 0});
         // add each edge's contribution
         for (int i = 0; i < 3; i++) {
             OrientedEdge ei = orient_e[i];
@@ -296,9 +296,7 @@ void PointGenerator::computeCurlCorrection()
     std::map<TCellID, gmds::math::Vector3d >::iterator corr_it;
     for(corr_it=m_corr.begin(); corr_it!=m_corr.end();corr_it++){
         int lid = m_edge_id[corr_it->first];
-        math::Vector3d cor_vec(nlGetVariable(3*lid  ),
-                               nlGetVariable(3*lid+1),
-                               nlGetVariable(3*lid+2));
+        math::Vector3d cor_vec({nlGetVariable(3 * lid), nlGetVariable(3 * lid + 1), nlGetVariable(3 * lid + 2)});
         
         corr_it->second=cor_vec;
     }
@@ -403,7 +401,7 @@ void PointGenerator::getUiSolution(){
   
     for(auto g_id:m_mesh->nodes()) {
          int l_id = m_id[g_id];
-        math::Vector3d ui(0, 0, 0);
+        math::Vector3d ui({0, 0, 0});
         double c = (.5 / M_PI);
         
         for(int k=0; k<3; k++){
@@ -450,14 +448,14 @@ void PointGenerator::setBoundaryConstraint()
     //======================================================================
     for(auto n_id : m_mesh->nodes()) {
         if(m_mesh->isMarked<Node>(n_id,m_bm.mark_node_on_pnt)){
-            m_bnd_constraint[n_id]=math::Vector3d(1,1,1);
+            m_bnd_constraint[n_id]=math::Vector3d({1, 1, 1});
         }
         else{
-            m_bnd_constraint[n_id] = math::Vector3d(0,0,0);
+            m_bnd_constraint[n_id] = math::Vector3d({0, 0, 0});
         }
     }
     //======================================================================
-    // We go through each boundary face to constrained its
+    // We execute through each boundary face to constrained its
     // incicent nodes (so nodes on surf, curves and points)
     //======================================================================
     for(auto f_id : m_mesh->faces()) {
@@ -471,7 +469,7 @@ void PointGenerator::setBoundaryConstraint()
         std::vector<Node> f_nodes=f.get<Node>();
         
         math::Vector nf = f.normal();
-        math::Vector3d f_normal(nf.X(), nf.Y(), nf.Z());
+        math::Vector3d f_normal({nf.X(), nf.Y(), nf.Z()});
         
         //for each node of a boudary face, we look for its chart alignment
         //with the normal to the surface defined by f
@@ -723,7 +721,7 @@ void PointGenerator::extractPoints(){
         bool already_in=false;
         math::Point pi = extracted_points[i];
         for (int j=i+1;j<extracted_points.size() && !already_in; j++) {
-            math::Vector3d vij(pi,extracted_points[j]);
+            math::Vector3d vij= extracted_points[j]-pi;
             if (vij.norm2()< eps2)  {
                 //we only keep element with a smaller (or equal classification)
                 if(extracted_classification[j]<=
@@ -1351,7 +1349,7 @@ getOutputNormal(Face& AFace, Region& ARegion)
     if (face_nodes.size() != 3)
         throw GMDSException("SingularityGraphBuilder::getOutputNormal can only be used on triangular faces");
     
-    //we go through all the nodes of ARegion to find the one that do not belong
+    //we execute through all the nodes of ARegion to find the one that do not belong
     //to AFAce
     for (auto n: region_nodes)   {
         if (n != face_nodes[0] && n != face_nodes[1] && n != face_nodes[2]) {
@@ -1360,12 +1358,10 @@ getOutputNormal(Face& AFace, Region& ARegion)
             Node n1 = face_nodes[1];
             Node n2 = face_nodes[2];
             math::Vector normal_to_face = AFace.normal();
-            math::Vector in_vector(n0.point(), n.point());
+            math::Vector in_vector= n.point()-n0.point();
             if (normal_to_face.dot(in_vector)>0.0)
             {
-                return math::Vector3d(-normal_to_face.get(0),
-                                      -normal_to_face.get(1),
-                                      -normal_to_face.get(2));
+                return math::Vector3d({-normal_to_face.get(0), -normal_to_face.get(1), -normal_to_face.get(2)});
             }
             else
             {
@@ -1375,7 +1371,7 @@ getOutputNormal(Face& AFace, Region& ARegion)
         } //if (n != face_nodes[0] && n != face_nodes[1] && n != face_nodes[2])
         
     }//for (unsigned int i = 0; i<region_nodes.size(); i++)
-    return math::Vector3d(0, 0, 0);
+    return math::Vector3d({0, 0, 0});
 }
 /*----------------------------------------------------------------------------*/
 math::Vector3d PointGenerator::

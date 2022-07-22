@@ -18,7 +18,7 @@ namespace gmds {
              *  \brief Method to compute the output point @APout and the output
              *  vector @AVOut. This is an implementation of the RK4 algorithm
             *  where the dt value is given by boundary intersection only.
-             *  @AOutCellDim gives the dimension of the cell we go out in the
+             *  @AOutCellDim gives the dimension of the cell we execute out in the
              *  triangle (0 in a point, 1 in an edge). For dimension 0,
              *  @AOutCellId is 0 for @AP0, 1 for @AP1, 2 for @AP3. For dimension
              *  1, @AOutCellId is 0 for edge [@AP0,@AP1], 1 for edge [@AP1,@AP2]

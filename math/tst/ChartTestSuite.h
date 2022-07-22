@@ -7,8 +7,8 @@ using namespace gmds;
 /*----------------------------------------------------------------------------*/
 TEST(ChartClass, testBasic)
 {
-    math::Vector3d v1(0,1,1);
-    math::Vector3d v2(1,0,1);
+    math::Vector3d v1({0, 1, 1});
+    math::Vector3d v2({1, 0, 1});
     math::Chart c(v1,v2);
 
     ASSERT_EQ(c.get(0), v1);

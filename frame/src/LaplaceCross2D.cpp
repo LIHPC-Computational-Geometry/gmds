@@ -205,8 +205,8 @@ void LaplaceCross2D::buildRightHandDirichlet(Eigen::VectorXd& ABCos,
       std::vector<Node> nodes_of_f_j = f_j.get<Node>();
       bool is_boundary_face=false;
 
-      math::Vector3d Ud_cos(0,0,0);
-      math::Vector3d Ud_sin(0,0,0);
+      math::Vector3d Ud_cos({0,0,0});
+      math::Vector3d Ud_sin({0,0,0});
       int n_i_index_in_f_j=-1;
       //we store if the i^th node of f_j is on the boundary or not
 
@@ -232,9 +232,9 @@ void LaplaceCross2D::buildRightHandDirichlet(Eigen::VectorXd& ABCos,
 	math::Matrix<3,3,double> s = math::stiffnessMatrix2D(pi,pj,pk);
 
 	//Ud is build
-	math::Vector3d v(s.get(0,n_i_index_in_f_j),
-		       s.get(1,n_i_index_in_f_j),
-		       s.get(2,n_i_index_in_f_j));
+	math::Vector3d v({s[0][n_i_index_in_f_j],
+		       s[1][n_i_index_in_f_j],
+		       s[2][n_i_index_in_f_j]});
 	ABCos[n_id] = -v.dot(Ud_cos);
 	ABSin[n_id] = -v.dot(Ud_sin);
       }

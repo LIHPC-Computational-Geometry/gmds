@@ -103,7 +103,7 @@ namespace gmds{
             /*---------------------------------------------------------------*/
             /** \brief Build the identity axis-angle rotation */
             AxisAngleRotation identity() const
-            { return AxisAngleRotation(Vector3d(1,0,0),0); }
+            { return AxisAngleRotation(Vector3d({1,0,0}),0); }
             
             /*---------------------------------------------------------------*/
             /** \brief Build a corresponding 3x3 rotation matrix */

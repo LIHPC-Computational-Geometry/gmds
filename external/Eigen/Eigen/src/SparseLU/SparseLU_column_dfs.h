@@ -109,7 +109,7 @@ Index SparseLUImpl<Scalar,StorageIndex>::column_dfs(const Index m, const Index j
     lsub_col(k) = emptyIdxLU; 
     Index kmark = marker2(krow); 
     
-    // krow was visited before, go to the next nonz; 
+    // krow was visited before, execute to the next nonz;
     if (kmark == jcol) continue;
     
     dfs_kernel(StorageIndex(jcol), perm_r, nseg, glu.lsub, segrep, repfnz, xprune, marker2, parent,

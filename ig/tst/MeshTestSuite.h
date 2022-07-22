@@ -567,7 +567,7 @@ TEST(MeshClass, testFaceInfo) {
 
     gmds::Face q = m.newQuad(n0, n1, n2, n3);
     ASSERT_EQ(q.area(), 1);
-    gmds::math::Vector3d n(0,0,1);
+    gmds::math::Vector3d n({0, 0, 1});
     ASSERT_EQ(std::abs(q.normal().dot(n)),1);
     ASSERT_EQ(std::abs(q.normal(n1).dot(n)),1);
 

@@ -142,8 +142,8 @@ void BoundaryOperator2D::markNodesOnPoint(const int AMarkCE,// edge on curve IN
             Node n0 = adj_nodes[0];
             Node n1 = adj_nodes[1];
 
-            math::Vector3d v0(n.point(), n0.point());
-            math::Vector3d v1(n.point(), n1.point());
+            math::Vector3d v0=n0.point()- n.point();
+            math::Vector3d v1=n1.point()- n.point();
             v0.normalize();
             v1.normalize();
             double dotProduct = v0.dot(v1);
@@ -183,7 +183,7 @@ colorEdges(const int AMarkEOnCurv, const int AMarkNOnPnt, Variable<int>* AColor)
     std::vector<Edge> done_edges;
     for (auto e_id:m_mesh->edges())
     {
-        // We only go through edges classified on curves and that have not been
+        // We only execute through edges classified on curves and that have not been
         // yet handled
         if ( m_mesh->isMarked<Edge>(e_id, AMarkEOnCurv) &&
              !m_mesh->isMarked<Edge>(e_id, markDone)) {

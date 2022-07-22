@@ -20,8 +20,8 @@ namespace gmds {
     /*-----------------------------------------------------------------*/
     Cross::Cross()
     {
-      m_x = math::Vector3d(1,0,0);
-      m_y = math::Vector3d(0,1,0);
+      m_x = math::Vector3d({1,0,0});
+      m_y = math::Vector3d({0,1,0});
     }
 
     /*-----------------------------------------------------------------*/
@@ -72,8 +72,8 @@ namespace gmds {
     {
       math::Vector3d v = AN;
       v.normalize();
-      math::Vector3d x_opp(-m_x.X(), -m_x.Y(), -m_x.Z());
-      math::Vector3d y_opp(-m_y.X(), -m_y.Y(), -m_y.Z());
+      math::Vector3d x_opp({-m_x.X(), -m_x.Y(), -m_x.Z()});
+      math::Vector3d y_opp({-m_y.X(), -m_y.Y(), -m_y.Z()});
 
       math::Vector3d result = m_x;
       double valX = v.dot(m_x);

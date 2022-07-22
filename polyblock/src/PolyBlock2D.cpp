@@ -16,12 +16,12 @@
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
 const math::Vector3d PolyBlock2D::REF[]= {
-        math::Vector3d(1,0,0),
-        math::Vector3d(-1,0,0),
-        math::Vector3d(0,1,0),
-        math::Vector3d(0,-1,0),
-        math::Vector3d(0,0,1),
-        math::Vector3d(0,0,-1)};
+        {1, 0, 0},
+        {-1, 0, 0},
+        {0, 1, 0},
+        {0, -1, 0},
+        {0, 0, 1},
+        {0, 0, -1}};
 /*----------------------------------------------------------------------------*/
 PolyBlock2D::
 PolyBlock2D(Mesh* AMesh, const int ABndNodeMark, const int ABndEdgeMark)
@@ -92,12 +92,12 @@ void PolyBlock2D::computeBndNormals() {
             std::vector<Node> end_nodes = e.get<Node>();
             math::Point p0 = end_nodes[0].point();
             math::Point p1 = end_nodes[1].point();
-            math::Vector3d v01(p0,p1);
+            math::Vector3d v01=p1-p0;
             v01.normalize();
-            math::Vector normal(v01.Y(),-v01.X(),0);
-            //check if we go inside or outside
+            math::Vector normal({v01.Y(), -v01.X(), 0});
+            //check if we execute inside or outside
             Face adj_face = e.get<Face>()[0];
-            math::Vector to_inside(e.center(),adj_face.center());
+            math::Vector to_inside=adj_face.center()-e.center();
             if(to_inside.dot(normal)>0){
                 normal = normal.opp();
             }
@@ -105,7 +105,7 @@ void PolyBlock2D::computeBndNormals() {
         }
         else{
             //internal edge
-            m_bnd_normal_edge->set(e_id,math::Vector3d(0,0,0));
+            m_bnd_normal_edge->set(e_id,math::Vector3d({0, 0, 0}));
         }
     }
 
@@ -128,7 +128,7 @@ void PolyBlock2D::computeBndNormals() {
         }
         else{
             //internal edge
-            m_bnd_normal_node->set(n_id,math::Vector3d(0,0,0));
+            m_bnd_normal_node->set(n_id,math::Vector3d({0, 0, 0}));
 
         }
     }
@@ -150,7 +150,7 @@ void PolyBlock2D::computeTargetXYZ() {
             m_target_XYZ_edge->set(e_id, REF[closest_ref]);
         }
        else{
-            m_target_XYZ_edge->set(e_id, math::Vector3d(0, 0, 0));
+            m_target_XYZ_edge->set(e_id, math::Vector3d({0, 0, 0}));
        }
     }
 
@@ -172,7 +172,7 @@ void PolyBlock2D::computeTargetXYZ() {
             m_target_XYZ_node->set(n_id, v0);
         } else {
             //internal edge
-            m_target_XYZ_node->set(n_id, math::Vector3d(0, 0, 0));
+            m_target_XYZ_node->set(n_id, math::Vector3d({0, 0, 0}));
 
         }
     }
@@ -191,7 +191,7 @@ void PolyBlock2D::computeCrossField() {
 }
 /*----------------------------------------------------------------------------*/
 void PolyBlock2D::updateCrossFieldBoundary() {
-    math::Vector3d z_vec(0,0,1);
+    math::Vector3d z_vec({0, 0, 1});
     for(auto f_id:m_mesh->faces()) {
         std::vector<TCellID> edge_ids = m_mesh->get<Face>(f_id).getIDs<Edge>();
         for(auto e_id:edge_ids){
@@ -310,9 +310,9 @@ void PolyBlock2D::solveUV() {
         TCellID i = nodes[0];
         TCellID j = nodes[1];
         TCellID k = nodes[2];
-        math::Vector3d ejk(zj,zk);
-        math::Vector3d eki(zk,zi);
-        math::Vector3d eij(zi,zj);
+        math::Vector3d ejk=zk-zj;
+        math::Vector3d eki=zi-zk;
+        math::Vector3d eij=zj-zi;
 
         nlBegin(NL_ROW);
         nlCoefficient(i, ejk.X());
@@ -364,7 +364,7 @@ int PolyBlock2D::computeUVBndEdge(const TCellID AEdgeID){
     //we get is directional info
     math::Cross2D c = m_cross_face->value(e.getIDs<Face>()[0]);
     std::vector<Node> e_nodes = e.get<Node>();
-    math::Vector3d dir(e_nodes[0].point(),e_nodes[1].point());
+    math::Vector3d dir=e_nodes[1].point()-e_nodes[0].point();
     dir.normalize();
     if(dir.dot(c.componentVectors()[0])<dir.dot(c.componentVectors()[1])){
         //means aligned with V direction, so
@@ -453,8 +453,8 @@ void PolyBlock2D::deformOmega() {
 void PolyBlock2D::projectInUV(const TCellID& AFaceID, math::Point& AZ1, math::Point& AZ2, math::Point& AZ3){
     Face f = m_mesh->get<Face>(AFaceID);
     math::Cross2D uv = m_cross_face->value(AFaceID);
-    math::Vector3d u(1,0,0);// = uv.componentVectors()[0];
-    math::Vector3d v(0,1,0);// = uv.componentVectors()[1];
+    math::Vector3d u({1, 0, 0});// = uv.componentVectors()[0];
+    math::Vector3d v({0, 1, 0});// = uv.componentVectors()[1];
 
     AZ1.setX(0);
     AZ1.setY(0);
@@ -464,11 +464,11 @@ void PolyBlock2D::projectInUV(const TCellID& AFaceID, math::Point& AZ1, math::Po
     math::Point p1 = ns[1].point();
     math::Point p2 = ns[2].point();
 
-    math::Vector3d v01(p0,p1);
+    math::Vector3d v01=p1-p0;
     AZ2.setX(u.dot(v01));
     AZ2.setY(v.dot(v01));
 
-    math::Vector3d v02(p0,p2);
+    math::Vector3d v02=p2-p0;
     AZ3.setX(u.dot(v02));
     AZ3.setY(v.dot(v02));
 

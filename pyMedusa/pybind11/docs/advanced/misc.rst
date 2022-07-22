@@ -53,7 +53,7 @@ could be realized as follows (important changes highlighted):
         py::class_<Animal, PyAnimal> animal(m, "Animal");
         animal
             .def(py::init<>())
-            .def("go", &Animal::go);
+            .def("go", &Animal::execute);
 
         py::class_<Dog>(m, "Dog", animal)
             .def(py::init<>());

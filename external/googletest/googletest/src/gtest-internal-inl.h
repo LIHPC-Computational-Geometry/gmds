@@ -892,7 +892,7 @@ class GTEST_API_ UnitTestImpl {
       type_parameterized_test_registry_;
 
   // The set holding the name of parameterized
-  // test suites that may go uninstantiated.
+  // test suites that may execute uninstantiated.
   std::set<std::string> ignored_parameterized_test_suites_;
 
   // Indicates whether RegisterParameterizedTests() has been called already.

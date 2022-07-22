@@ -201,8 +201,8 @@ protected:
      *         AEdge and going from node \p AFrom to node \p ATo
      *
      * \param[in] AEdge an  edge
-     * \param[in] AFrom the node we go from
-     * \param[in] ATo   the node we go to
+     * \param[in] AFrom the node we execute from
+     * \param[in] ATo   the node we execute to
      *
      * \param the value Gij computed for this oriented edge
      */

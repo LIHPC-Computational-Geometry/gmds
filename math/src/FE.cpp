@@ -8,16 +8,16 @@ namespace gmds{
     namespace math{
         /*--------------------------------------------------------------------*/
         Vector2d TriangleP1::grad_ref[3] = {
-                Vector2d(-1.0,-1.0),
-                Vector2d( 1.0, 0.0),
-                Vector2d( 0.0, 1.0)
+                Vector2d({-1.0,-1.0}),
+                Vector2d({ 1.0, 0.0}),
+                Vector2d({ 0.0, 1.0})
         };
         /*--------------------------------------------------------------------*/
         Vector3d TetrahedronP1::grad_ref[4] = {
-                Vector3d(-1.0,-1.0,-1.0),
-                Vector3d( 1.0, 0.0, 0.0),
-                Vector3d( 0.0, 1.0, 0.0),
-                Vector3d( 0.0, 0.0, 1.0)
+                Vector3d({-1.0,-1.0,-1.0}),
+                Vector3d({ 1.0, 0.0, 0.0}),
+                Vector3d({ 0.0, 1.0, 0.0}),
+                Vector3d({0.0, 0.0, 1.0})
         };
         /*--------------------------------------------------------------------*/
         Matrix<2,2,double> TriangleP1::B(const Point& AP1,
@@ -34,7 +34,7 @@ namespace gmds{
 
             double inv_2area =1.0/(area2);
             // First line
-            s.set(0, 0, (x2-x1)*inv_2area);
+            s[0][0]= (x2-x1)*inv_2area;
             s.set(0, 1, (x3-x1)*inv_2area);
             // Second line
             s.set(1, 0, (y2-y1)*inv_2area);
@@ -83,8 +83,8 @@ namespace gmds{
             double y31 = y3-y1;
             double y12 = y1-y2;
 
-            Vector3d v12(AP1,AP2);
-            Vector3d v13(AP1,AP3);
+            Vector3d v12=AP2-AP1;
+            Vector3d v13=AP3-AP1;
             double area2 = x1*y2 - x1*y3 - x2*y1 + x2*y3 + x3*y1 -x3*y2;
             //      double area2 = v12.cross(v13).norm(); //get Area Triangle(AP1,AP2,AP3)
             double area4 = 4*area2*area2;

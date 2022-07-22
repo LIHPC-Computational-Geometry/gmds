@@ -51,12 +51,12 @@ StructuredGrid::StructuredGrid(const Point& firstPoint, const std::vector<Vector
 
 Vector3i StructuredGrid::getPreviousNode(const Vector3i& currentNodeinGrid) const
 {
-  Vector3i previousNode(0, 0, 0);
+  Vector3i previousNode({0, 0, 0});
   if((currentNodeinGrid[0] < 1 ) || (currentNodeinGrid[0] > m_subdivisionXYZ[0] - 1) ||
       (currentNodeinGrid[1] < 1 ) || (currentNodeinGrid[1] > m_subdivisionXYZ[1] - 1) ||
         (currentNodeinGrid[2] < 1 ) || (currentNodeinGrid[2] > m_subdivisionXYZ[2] - 1))
         {
-          previousNode = currentNodeinGrid - Vector3i(-1, -1, -1);
+          previousNode = currentNodeinGrid - Vector3i({-1, -1, -1});
         }
   else
   {

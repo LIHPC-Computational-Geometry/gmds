@@ -103,9 +103,9 @@ Tools::removeBoundarySlivers(Mesh *AMesh)
 		math::Point p = n_opp.point();
 		math::Plane pl(n[0].point(), n[1].point(), n[2].point());
 		math::Point pr = pl.project(p);
-		math::Vector3d v01(n[0].point(), n[1].point());
-		math::Vector3d v02(n[0].point(), n[2].point());
-		math::Vector3d v12(n[1].point(), n[2].point());
+		math::Vector3d v01=n[1].point()- n[0].point();
+		math::Vector3d v02=n[2].point()- n[0].point();
+		math::Vector3d v12=n[2].point()- n[1].point();
 
 		double min_dist = math::min3(v01.norm(), v02.norm(), v12.norm());
 
@@ -253,7 +253,7 @@ Tools::computeFuzzyHeuns(const math::Point &AFromPnt,
                          int &AToFaceId)
 {
 	// check whether the line intersects the triangle
-	math::Line ray(AFromPnt, math::Vector3d(AFromDir.X(), AFromDir.Y(), AFromDir.Z()));
+	math::Line ray(AFromPnt, math::Vector3d({AFromDir.X(), AFromDir.Y(), AFromDir.Z()}));
 
 	//===================================================================
 	double param[4] = {-1, -1, -1, -1};
@@ -340,7 +340,7 @@ Tools::computeFuzzyHeuns(const math::Point &AFromPnt,
 {
 	//===================================================================
 	math::Point ray_from = AFromPnt;
-	math::Point ray_to = AFromPnt + math::Vector3d(AFromDir.X(), AFromDir.Y(), AFromDir.Z());
+	math::Point ray_to = AFromPnt + math::Vector3d({AFromDir.X(), AFromDir.Y(), AFromDir.Z()});
 	double param[3] = {-1, -1, -1};
 	double param_seg[3] = {-1, -1, -1};
 	math::Point p[3];
@@ -470,7 +470,7 @@ Tools::followFlow(const PointVolumetricData &AData, const double AMaxDist, math:
 		// FINALIZATION
 		//================================================
 		// Now we have our point to get out of current_cell
-		math::Vector3d v(from, out_pnt);
+		math::Vector3d v=out_pnt-from;
 		if (current_dist + v.norm() >= AMaxDist) {
 			v.normalize();
 			double remaining_dist = AMaxDist - current_dist;
@@ -485,9 +485,9 @@ Tools::followFlow(const PointVolumetricData &AData, const double AMaxDist, math:
 			// Fuzzy approach to avoid topological cases
 			math::Point new_from = 0.95 * out_pnt + 0.05 * out_face.center();
 			dir = out_dir;
-			current_dist += math::Vector3d(from, new_from).norm();
+			current_dist += (new_from-from).norm();
 			from = new_from;
-			// We compute the next current cell using the face we go
+			// We compute the next current cell using the face we execute
 			// from
 			std::vector<Region> adj_out_face = out_face.get<Region>();
 			if (adj_out_face.size() == 1) {
@@ -568,7 +568,7 @@ Tools::followFlow(const PointSurfacicData &AData, const double AMaxDist, const i
 		std::vector<Node> cur_nodes = current_cell.get<Node>();
 		math::Plane pl(cur_nodes[0].point(), cur_nodes[1].point(), cur_nodes[2].point());
 		math::Point proj = pl.project(p);
-		dir = math::Vector3d(from, proj);
+		dir = proj-from;
 
 		// std::cout<<"From point "<<from<<std::endl;
 		// math::Vector3d dir_v(dir.X(),dir.Y(), dir.Z());
@@ -596,7 +596,7 @@ Tools::followFlow(const PointSurfacicData &AData, const double AMaxDist, const i
 		//================================================
 		dir = 0.5 * dir + 0.5 * out_dir;
 		math::Point p2(from.X() + dir.X(), from.Y() + dir.Y(), from.Z() + dir.Z());
-		dir = math::Vector3d(from, pl.project(p2));
+		dir = pl.project(p2)-from;
 
 		computeFuzzyHeuns(from, dir, cf, s, out_pnt, out_dir, out_index);
 
@@ -604,8 +604,7 @@ Tools::followFlow(const PointSurfacicData &AData, const double AMaxDist, const i
 		// FINALIZATION
 		//================================================
 		// Now we have our point to get out of current_cell
-		math::Vector3d v(from, out_pnt);
-		// std::cout<<"OUT PNT: "<<out_pnt<<std::endl;
+		math::Vector3d v= out_pnt-from;
 		if (current_dist + v.norm() >= AMaxDist) {
 			v.normalize();
 			double remaining_dist = AMaxDist - current_dist;
@@ -619,7 +618,7 @@ Tools::followFlow(const PointSurfacicData &AData, const double AMaxDist, const i
 			// Fuzzy approach to avoid topological cases
 			from = 0.95 * out_pnt + 0.05 * out_edge.center();
 			current_dist += v.norm();
-			// We compute the next current cell using the face we go
+			// We compute the next current cell using the face we execute
 			// from
 			std::vector<Face> adj_out_edge = out_edge.get<Face>();
 			std::vector<Face> adj_bnd;
@@ -916,11 +915,10 @@ Tools::heunsComputation(     // const Edge&         AINEdge,
 	// Go through the opposite node AOPPNode???
 	//================================================
 	math::Point opp_node_loc = AOPPNode.point();
-	math::Vector3d v_opp(AINPnt, opp_node_loc);
+	math::Vector3d v_opp= opp_node_loc-AINPnt;
 	v_opp.normalize();
 
 	if (math::near(v_opp.dot(v_in) - 1, 0)) {
-		// std::cout << "INTERSECT NODE --> out in a node" << std::endl;
 		// intersected point = node
 		AOUTPnt = opp_node_loc;
 		computeOutVectorAtPoint(AOPPNode, AINVec, AOUTVec);
@@ -931,7 +929,7 @@ Tools::heunsComputation(     // const Edge&         AINEdge,
 	// Go through AINNode1???
 	//================================================
 	math::Point node1_loc = AINNode1.point();
-	math::Vector3d v1(AINPnt, node1_loc);
+	math::Vector3d v1=node1_loc-AINPnt;
 	v1.normalize();
 
 	if (math::near(v1.dot(v_in) - 1, 0)) {
@@ -946,7 +944,7 @@ Tools::heunsComputation(     // const Edge&         AINEdge,
 	// Go through AINNode2???
 	//================================================
 	math::Point node2_loc = AINNode2.point();
-	math::Vector3d v2(AINPnt, node2_loc);
+	math::Vector3d v2=node2_loc-AINPnt;
 	v2.normalize();
 
 	if (math::near(v2.dot(v_in) - 1, 0)) {
@@ -1038,7 +1036,7 @@ Tools::heunsComputation(     // const Node&         AFROMNode,
 	// Go through the opposite node AOPPNode1???
 	//================================================
 	math::Point opp_node_loc1 = AOPPNode1.point();
-	math::Vector3d v_opp1(AINPnt, opp_node_loc1);
+	math::Vector3d v_opp1=opp_node_loc1-AINPnt;
 	v_opp1.normalize();
 
 	if (math::near(v_opp1.dot(v_in) - 1, 0)) {
@@ -1053,7 +1051,7 @@ Tools::heunsComputation(     // const Node&         AFROMNode,
 	// Go through the opposite node AOPPNode1???
 	//================================================
 	math::Point opp_node_loc2 = AOPPNode2.point();
-	math::Vector3d v_opp2(AINPnt, opp_node_loc2);
+	math::Vector3d v_opp2=opp_node_loc2-AINPnt;
 	v_opp2.normalize();
 
 	if (math::near(v_opp2.dot(v_in) - 1, 0)) {
@@ -1380,9 +1378,9 @@ Tools::isGoingInto(const math::Point &APnt, const math::Vector3d &AVec, const Ed
 	if (opp_node.id() == NullID) throw GMDSException("isGoingInto(): Error, no opposite node");
 
 	math::Point opp_pnt = opp_node.point();
-	math::Vector3d edge_vector(from_nodes[0].point(), from_nodes[1].point());
-	math::Vector3d edge_witness(from_nodes[0].point(), opp_pnt);
-	math::Vector3d edge_ortho = edge_vector.cross(math::Vector3d(0, 0, 1));
+	math::Vector3d edge_vector=from_nodes[1].point()-from_nodes[0].point();
+	math::Vector3d edge_witness=opp_pnt-from_nodes[0].point();
+	math::Vector3d edge_ortho = edge_vector.cross(math::Vector3d({0, 0, 1}));
 
 	if (edge_ortho.dot(edge_witness) < 0) edge_ortho = edge_ortho.opp();
 
@@ -1405,7 +1403,7 @@ Tools::isAlong(const math::Vector3d &AVec, const Node &AFromNode, Edge &AEdge)
 	}
 	if (!found_origin) return false;
 
-	math::Vector3d v_edge(AFromNode.point(), other_node.point());
+	math::Vector3d v_edge= other_node.point()-AFromNode.point();
 	v_edge.normalize();
 
 	math::Vector3d v_dir = AVec;
@@ -1525,7 +1523,7 @@ Tools::findTriangleAndNextVectorRK4(const gmds::math::Point &AInPnt,
 				if (withComments) {
 					cout << "point_x " << point_x << " is NOT!!! inside tri " << current_face.id() << endl;
 				}
-				math::Vector3d current_vector(AInPnt, point_x);
+				math::Vector3d current_vector=point_x-AInPnt;
 
 				math::Ray ray(AInPnt, current_vector);
 				// it might be that the next point is situated in a face we cannot reach by edge adjacency

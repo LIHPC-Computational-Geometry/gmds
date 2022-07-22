@@ -82,7 +82,7 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DOriginal : public Singularit
 	 * \param ALine     the singularity line we work on
 	 * \param AFromPnt  the singularity point we start from
 	 * \param AFromSlot the associated slot we really consider
-	 * \param AToPnt    the singularity point we go to
+	 * \param AToPnt    the singularity point we execute to
 	 * \param AToSlot   the associated slot we really consider
 	 * \param to_dir    the direction of the singularity line
 	 * \param to_dir    the deviation of the newly computed singularity line

@@ -770,13 +770,13 @@ int Blocking2D::Block::getNbDiscretizationJ() const{
 /*----------------------------------------------------------------------------*/
 math::Vector3d Blocking2D::Block::getUnitVectorI() {
 	std::vector<Node> nids = m_face.get<Node>();
-	math::Vector3d v(nids[0].point(),nids[1].point());
+	math::Vector3d v=nids[1].point()-nids[0].point();
 	return v.getNormalize();
 }
 /*----------------------------------------------------------------------------*/
 math::Vector3d Blocking2D::Block::getUnitVectorJ() {
 	std::vector<Node> nids = m_face.get<Node>();
-	math::Vector3d v(nids[0].point(),nids[3].point());
+	math::Vector3d v=nids[3].point()-nids[0].point();
 	return v.getNormalize();
 }
 /*----------------------------------------------------------------------------*/

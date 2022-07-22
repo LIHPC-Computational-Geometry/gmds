@@ -285,7 +285,7 @@ void  CrossFieldGeneration2D::initCrossesOnCurves()
 	  //we build the direction vector of the current edge
 	  math::Point p1 = node1.point();
 	  math::Point p2 = node2.point();
-	  math::Vector3d v1 = math::Vector3d(p1, p2);
+	  math::Vector3d v1 = p2-p1;
 	  v1.normalize();
 
 	  newN = v1;
@@ -303,8 +303,8 @@ void  CrossFieldGeneration2D::initCrossesOnCurves()
 	  math::Point  p1 = node1.point();
 	  math::Point  p  = current_node.point();
 	  math::Point  p2 = node2.point();
-	  math::Vector3d v1 = math::Vector3d(p1, p);
-	  math::Vector3d v2 = math::Vector3d(p, p2);
+	  math::Vector3d v1 = p-p1;
+	  math::Vector3d v2 = p2-p;
 	  v1.normalize();
 	  v2.normalize();
 

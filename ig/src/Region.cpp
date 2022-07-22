@@ -977,7 +977,7 @@ return 0;
         }
 
         std::vector<bool> isNodeFree(nodes.size(),false);
-        std::vector<gmds::math::Vector3d> displacement(nodes.size(), gmds::math::Vector3d(0.,0.,0.));
+        std::vector<gmds::math::Vector3d> displacement(nodes.size(), gmds::math::Vector3d({0.,0.,0.}));
         std::vector<VirtualFace> ffs = this->getFakeFaces();
         for(auto ff: ffs) {
             if(freeFaces.find(ff) != freeFaces.end()) {

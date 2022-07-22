@@ -5,6 +5,7 @@
 
 #include "LaplacianSmootherTestSuite.h"
 #include "AngleBasedQuadSmootherTestSuite.h"
+#include "ElliptingSmoothingTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

@@ -27,10 +27,10 @@ compute(std::vector<std::vector<Point>> &AG) {
 
             AG[i][j] =   wi_0*AG[0][j] + wi_1*AG[M-1][j]
                          + wj_0*AG[i][0] + wj_1*AG[i][N-1]
-                         - wi_0*wj_0*AG[0  ][0  ]
-                         - wi_0*wj_1*AG[0  ][N-1]
-                         - wi_1*wj_0*AG[M-1][0  ]
-                         - wi_1*wj_1*AG[M-1][N-1];
+                         +(- wi_0*wj_0*AG[0  ][0  ])
+                         +(- wi_0*wj_1*AG[0  ][N-1])
+                         +(- wi_1*wj_0*AG[M-1][0  ])
+                         +(- wi_1*wj_1*AG[M-1][N-1]);
         }
 
     }
@@ -57,10 +57,10 @@ computeQuad(Array2D<Point> &AG) {
 
             AG(i,j) =   wi_0*AG(0,j) + wi_1*AG(M-1,j)
                          + wj_0*AG(i,0) + wj_1*AG(i,N-1)
-                         - wi_0*wj_0*AG(0  ,0  )
-                         - wi_0*wj_1*AG(0  ,N-1)
-                         - wi_1*wj_0*AG(M-1,0  )
-                         - wi_1*wj_1*AG(M-1,N-1);
+                         +(- wi_0*wj_0*AG(0  ,0  ))
+                         +(- wi_0*wj_1*AG(0  ,N-1))
+                         +(- wi_1*wj_0*AG(M-1,0  ))
+                         +(- wi_1*wj_1*AG(M-1,N-1));
         }
     }
     return true;
@@ -92,9 +92,9 @@ bool TransfiniteInterpolation::computeTri(TriArray<Point> &AGrid) {
             auto b3 = n-b1-b2;
             auto k=n-i-j;
             AGrid(i,j,k)=
-                    a1*((AGrid(n-b2,b2,0)+AGrid(n-b3,0,b3))-p100)+
-                    a2*((AGrid(0,n-b3,b3)+AGrid(b1,n-b1,0))-p010)+
-                    a3*((AGrid(b1,0,n-b1)+AGrid(0,b2,n-b2))-p001);
+                    a1*((AGrid(n-b2,b2,0)+AGrid(n-b3,0,b3))+math::Point(-p100.X(),-p100.Y(),-p100.Z()))+
+                    a2*((AGrid(0,n-b3,b3)+AGrid(b1,n-b1,0))+math::Point(-p010.X(),-p010.Y(),-p010.Z()))+
+                    a3*((AGrid(b1,0,n-b1)+AGrid(0,b2,n-b2))+(math::Point(-p001.X(),-p001.Y(),-p001.Z())));
         }
     }
     return true;

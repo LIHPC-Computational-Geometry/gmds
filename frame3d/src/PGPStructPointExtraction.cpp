@@ -62,9 +62,9 @@ math::Vector3d PGPStructPointExtraction::computeGij(OrientedEdge& AE)  {
     TCellID j = nj.id();
     
     math::Vector3d ref_XYZ[3] = {
-        math::Vector3d(1., 0., 0.),
-        math::Vector3d(0., 1., 0.),
-        math::Vector3d(0., 0., 1.)
+        math::Vector3d({1., 0., 0.}),
+        math::Vector3d({0., 1., 0.}),
+        math::Vector3d({0., 0., 1.})
     };
     math::AxisAngleRotation rot_i = (*m_rotation_field)[i];
     math::AxisAngleRotation rot_j = (*m_rotation_field)[j];
@@ -72,7 +72,7 @@ math::Vector3d PGPStructPointExtraction::computeGij(OrientedEdge& AE)  {
     math::Chart::Mapping r_ij = getRij(i,j);
     
     //vector from pi to pj
-    math::Vector3d xij(ni.point(), nj.point());
+    math::Vector3d xij= nj.point()-ni.point();
     
     math::Vector3d gij_component[3];
     for (int d = 0; d<3; d++) {
@@ -95,7 +95,7 @@ math::Vector3d PGPStructPointExtraction::computeGij(OrientedEdge& AE)  {
 math::Vector3d PGPStructPointExtraction::computeCij(OrientedEdge& AE)
 {
     if(m_curl == 0.0) {
-        return math::Vector3d(0, 0, 0);
+        return math::Vector3d({0, 0, 0});
     }
     
     Edge e = AE.edge;
@@ -103,7 +103,7 @@ math::Vector3d PGPStructPointExtraction::computeCij(OrientedEdge& AE)
     
     math::Chart::Mapping r_ij = getRij(AE.first,AE.second);
     
-    math::Vector3d correction(0, 0, 0);
+    math::Vector3d correction({0, 0, 0});
     math::Vector3d edge_correction = m_corr[e_id];
     for (int d = 0;d<3;d++){
         correction[d] = edge_correction[d];

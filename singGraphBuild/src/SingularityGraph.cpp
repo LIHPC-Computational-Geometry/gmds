@@ -358,7 +358,7 @@ SingularityGraph::splitCurveLine(
 	ASing->addMeshEdge(AEdge);
 
 	// create its 3 slots :
-	const auto slotDir = math::Vector3d(oldDiscretization[curve_index], oldDiscretization[curve_index + 1]).normalize();
+	const auto slotDir = (oldDiscretization[curve_index + 1]-oldDiscretization[curve_index]).normalize();
 
 	SingularityPoint::Slot *newSlotOnSplittedCurve = ASing->newSlot(APnt, slotDir.opp(), AEdge.id(), 1, true, split_curve, slotDir);
 	SingularityPoint::Slot *newSlotOnNewLine = ASing->newSlot(APnt, slotDir, AEdge.id(), 1, true, newLine, slotDir.opp());
@@ -917,7 +917,7 @@ SingularityGraph::buildSurfacePatchs()
 			// Second traversal
 			//=====================================================
 			// second time, a patch can be built if the curve is not on the boundary.
-			// Second time we go from the 2nd end point towards the 1st one A patch is
+			// Second time we execute from the 2nd end point towards the 1st one A patch is
 			// created
 			if (li[i]->getType() == SingularityLine::CURVE) continue;
 
@@ -1261,7 +1261,7 @@ SingularityGraph::buildCurveSurfacePatchs(unsigned int &number_of_control_points
 			// Second traversal
 			//=====================================================
 			// second time, a patch can be built if the curve is not on the boundary.
-			// Second time we go from the 2nd end point towards the 1st one A patch is
+			// Second time we execute from the 2nd end point towards the 1st one A patch is
 			// created
 
 			// cout<<"!reverse[li[i]] "<<endl;

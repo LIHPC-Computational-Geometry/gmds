@@ -369,7 +369,7 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id,
 	TCellID n_next_id = Front_IN.getNextNode(neighbors_nodes[0],n_id);
 	Node n_next_ideal = m_meshQ->get<Node>(n_next_ideal_id) ;
 	Node n_next = m_meshQ->get<Node>(n_next_id) ;
-	math::Point P1_construction = 0.33*(n_next.point()-n_next_ideal.point()) ;
+	math::Vector3d P1_construction = 0.33*(n_next.point()-n_next_ideal.point()) ;
 	Node n1 = m_meshQ->newNode(n_next_ideal.point() + P1_construction);
 
 	// Contruction du premier noeud n2

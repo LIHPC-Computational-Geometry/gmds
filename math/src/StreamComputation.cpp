@@ -61,7 +61,7 @@ bool StreamComputation::RK4FromNode(const Point AP[3], const Vector3d AV[3],
     //=============================================================
     // 2ND LAUNCH
     //=============================================================
-    //We go back to the origin with a new vector
+    //We execute back to the origin with a new vector
     math::Vector3d v_launched_2 = 0.5*(AVIn+v_result_1);
 
     Plane pl2(APIn,v_launched_2);

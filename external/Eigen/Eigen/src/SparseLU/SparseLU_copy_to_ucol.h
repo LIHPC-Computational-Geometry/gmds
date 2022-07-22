@@ -64,7 +64,7 @@ Index SparseLUImpl<Scalar,StorageIndex>::copy_to_ucol(const Index jcol, const In
   {
     krep = segrep(k); k--; 
     ksupno = glu.supno(krep); 
-    if (jsupno != ksupno ) // should go into ucol(); 
+    if (jsupno != ksupno ) // should execute into ucol();
     {
       kfnz = repfnz(krep); 
       if (kfnz != emptyIdxLU)

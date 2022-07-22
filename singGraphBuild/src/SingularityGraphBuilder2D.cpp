@@ -826,13 +826,13 @@ SingularityGraphBuilder2D::createSingPointAndSlots(const Face &AFace)
 				slot_param.push_back(alpha);
 				slot_points.push_back(p);
 
-				slot_dirs.push_back(math::Vector3d(s, p));
+				slot_dirs.push_back(p-s);
 
-				if (alpha == 0) {     // we go out from a node
+				if (alpha == 0) {     // we execute out from a node
 					slot_cell_dim.push_back(0);
 					slot_cell_id.push_back(ni.id());
 				}
-				else if (alpha == 0) {     // we go out from a node
+				else if (alpha == 0) {     // we execute out from a node
 					slot_cell_dim.push_back(0);
 					slot_cell_id.push_back(nj.id());
 				}
@@ -938,7 +938,7 @@ SingularityGraphBuilder2D::addGeometryToSingularityGraph(vector<CurveSingularity
 			if (NodeLeft.id() == NodeRight.id()) {
 				listOfNodesInSingRight.push_back(NodeLeft.id());     // cycle
 			}
-			else {     // now we need to go on the right
+			else {     // now we need to execute on the right
 				Node Ncurr = currentNode;
 				while (!m_mesh->isMarked(NodeRight, m_mark_nodes_on_point)) {
 
@@ -1024,20 +1024,20 @@ SingularityGraphBuilder2D::addGeometryToSingularityGraph(vector<CurveSingularity
 				std::vector<Node> e_nodes = lj_edges[0].get<Node>();
 				first_node = e_nodes[0];
 				last_node = e_nodes[1];
-				first_vec = math::Vector3d(first_node.point(), last_node.point());
-				last_vec = math::Vector3d(last_node.point(), first_node.point());
+				first_vec = last_node.point()-first_node.point();
+				last_vec = first_node.point()-last_node.point();
 			}
 			else {
 				Node nextNode = m_tool.getCommonNode(lj_edges[0], lj_edges[1]);
 				first_node = m_tool.getOpposedNodeOnEdge(nextNode, lj_edges[0]);
-				first_vec = math::Vector3d(first_node.point(), nextNode.point());
+				first_vec = nextNode.point()-first_node.point();
 
 				Edge &last_but_one_edge = lj_edges[lj_edges.size() - 2];
 				Edge &last_edge = lj_edges[lj_edges.size() - 1];
 
 				Node penultiemNode = m_tool.getCommonNode(last_but_one_edge, last_edge);
 				last_node = m_tool.getOpposedNodeOnEdge(penultiemNode, last_edge);
-				last_vec = math::Vector3d(last_node.point(), nextNode.point());
+				last_vec = nextNode.point()-last_node.point();
 			}
 			// We compare the point node with the first and last node of the curve
 			if (ni == first_node) {
@@ -1073,8 +1073,8 @@ SingularityGraphBuilder2D::addGeometryToSingularityGraph(vector<CurveSingularity
 			const std::vector<math::Point> &line_disc = ci->getDiscretizationPoints();
 			const math::Point &p_begin = line_disc[0];
 			const math::Point &p_end = line_disc[line_disc.size() - 1];
-			const math::Vector3d slot_dir1 = math::Vector3d(p_begin, line_disc[1]);
-			const math::Vector3d slot_dir2 = math::Vector3d(p_end, line_disc[line_disc.size() - 2]);
+			const math::Vector3d slot_dir1 = line_disc[1]-p_begin;
+			const math::Vector3d slot_dir2 = line_disc[line_disc.size() - 2]-p_end;
 
 			CurveSingularityPoint *p = m_graph.newCurvePoint();
 			artificialSingPointsCreated.push_back(p);
@@ -1132,8 +1132,8 @@ SingularityGraphBuilder2D::buildGeometricSlots()
 					opposedPoint[pointID++] = ni.point();
 				}
 			}
-			math::Vector3d v1(currentPoint, opposedPoint[0]);
-			math::Vector3d v2(currentPoint, opposedPoint[1]);
+			math::Vector3d v1=opposedPoint[0]-currentPoint;
+			math::Vector3d v2=opposedPoint[1]-currentPoint;
 			angle_rad += v1.angle(v2);
 		}
 		double angle_deg = angle_rad * 180 / math::Constants::PI;
@@ -1174,8 +1174,8 @@ SingularityGraphBuilder2D::createLineFrom(VertexSingularityPoint *AFrom, const d
 			surfNode = node;
 		}
 	}
-	const auto v_bnd = math::Vector3d(currentNode.point(), bdryNode.point()).normalize();
-	const auto v_to = math::Vector3d(currentNode.point(), surfNode.point()).normalize();
+	const auto v_bnd = (bdryNode.point()-currentNode.point()).normalize();
+	const auto v_to = (surfNode.point()-currentNode.point()).normalize();
 	const auto axis = v_bnd.cross(v_to).normalize();
 
 	struct BaseSlot
@@ -1216,7 +1216,7 @@ SingularityGraphBuilder2D::createLineFrom(VertexSingularityPoint *AFrom, const d
 			if (!m_mesh->isMarked(other_nodes[0], m_mark_nodes_on_curve)) {
 
 				const math::Point opp_node_loc1 = other_nodes[0].point();
-				const auto v_opp1 = math::Vector3d(currentNode.point(), opp_node_loc1).normalize();
+				const auto v_opp1 = (opp_node_loc1-currentNode.point()).normalize();
 				if (math::near(v_opp1.dot(line_dir) - 1, 0)) {
 					m_tool.computeOutVectorAtPoint(other_nodes[0], line_dir, out_vec);
 					baseSlots.push_back({opp_node_loc1, out_vec, other_nodes[0].id(), 0});
@@ -1226,7 +1226,7 @@ SingularityGraphBuilder2D::createLineFrom(VertexSingularityPoint *AFrom, const d
 			if (!m_mesh->isMarked(other_nodes[1], m_mark_nodes_on_curve)) {
 
 				math::Point opp_node_loc2 = other_nodes[1].point();
-				const auto v_opp2 = math::Vector3d(currentNode.point(), opp_node_loc2).normalize();
+				const auto v_opp2 = (opp_node_loc2-currentNode.point()).normalize();
 				if (math::near(v_opp2.dot(line_dir) - 1, 0)) {
 					m_tool.computeOutVectorAtPoint(other_nodes[1], line_dir, out_vec);
 					baseSlots.push_back({opp_node_loc2, out_vec, other_nodes[1].id(), 0});
@@ -1755,8 +1755,8 @@ SingularityGraphBuilder2D::growLine(SingularityPoint *AFromSingPnt,
 			ATriangles.insert(ATriangles.end(), adj_faces.begin(), adj_faces.end());
 
 			std::vector<Node> currentNodes = currentEdge.get<Node>();
-			math::Vector3d v0(start_pnt, currentNodes[0].point());
-			math::Vector3d v1(start_pnt, currentNodes[1].point());
+			math::Vector3d v0=currentNodes[0].point()-start_pnt;
+			math::Vector3d v1=currentNodes[1].point()-start_pnt;
 			Node next_node;
 			if (math::near(v0.norm(), 0.0))
 				next_node = currentNodes[1];
@@ -1768,7 +1768,7 @@ SingularityGraphBuilder2D::growLine(SingularityPoint *AFromSingPnt,
 				next_node = currentNodes[1];
 
 			math::Vector3d next_dir;
-			math::Vector3d devVect(start_pnt, next_node.point());
+			math::Vector3d devVect=next_node.point()-start_pnt;
 			devVect.normalize();
 			m_tool.computeOutVectorAtPoint(next_node, start_dir, next_dir);
 			start_dir.normalize();
@@ -1891,7 +1891,7 @@ SingularityGraphBuilder2D::growLine(SingularityPoint *AFromSingPnt,
 				                        start_dir,            /* the geometric direction to follow*/
 				                        start_cell_dim,       /* the dimension of the cell start_pnt is located */
 				                        start_cell_id,        /* the id of the cell start_pnt is located on*/
-				                        out_pnt,              /* the geometric point where we go out */
+				                        out_pnt,              /* the geometric point where we execute out */
 				                        out_vec,              /* the geometric direction to follow after*/
 				                        out_cell_dim,         /* the dimension of the out cell (0 or 1) */
 				                        out_cell_id,          /* the id of the out cell*/
@@ -2075,7 +2075,7 @@ SingularityGraphBuilder2D::growLineRK4(const SingularityPoint::Slot *AFromSlot,
 					SingularityPoint::Slot *current_slot = cur_slots[i_slot];
 					if (current_slot->isFreeze) continue;
 
-					math::Vector3d resultingVec(start_dirPnt, current_slot->location);
+					math::Vector3d resultingVec=current_slot->location-start_dirPnt;
 
 					if (start_dir.angle(resultingVec) > gmds::math::Constants::PIDIV2) continue;
 
@@ -2328,7 +2328,7 @@ SingularityGraphBuilder2D::remeshTriangles(gmds::Mesh *newLocalMesh,
 	visitedVerts.clear();
 	visitedVerts.resize(newLocalMesh->getNbNodes(), false);
 
-	math::Vector3d OX(1, 0, 0);
+	math::Vector3d OX({1, 0, 0});
 	for (auto e_id : newLocalMesh->edges()) {
 		gmds::Edge currentEdge = newLocalMesh->get<gmds::Edge>(e_id);
 		vector<gmds::Node> currentNodes = (newLocalMesh->get<gmds::Edge>(e_id)).get<gmds::Node>();
@@ -2626,7 +2626,7 @@ SingularityGraphBuilder2D::remeshTrianglesNewMesh(gmds::Mesh *newLocalMesh,
 	visitedVerts.clear();
 	visitedVerts.resize(newLocalMesh->getNbNodes(), false);
 
-	math::Vector3d OX(1, 0, 0);
+	math::Vector3d OX({1, 0, 0});
 	for (auto e_id : newLocalMesh->edges()) {
 		gmds::Edge currentEdge = newLocalMesh->get<gmds::Edge>(e_id);
 		vector<gmds::Node> currentNodes = (newLocalMesh->get<gmds::Edge>(e_id)).get<gmds::Node>();
@@ -2673,7 +2673,7 @@ SingularityGraphBuilder2D::remeshTrianglesNewMesh(gmds::Mesh *newLocalMesh,
 	}
 
 	newBdryEdgeNormals.resize(newLocalMesh->getNbEdges());
-	gmds::math::Vector3d zeroVec(0.0, 0.0, 0.0);
+	gmds::math::Vector3d zeroVec({0.0, 0.0, 0.0});
 	newBdryNodeNormals.resize(newLocalMesh->getNbNodes(), zeroVec);
 
 	for (auto e_id : newLocalMesh->edges()) {
@@ -2682,7 +2682,7 @@ SingularityGraphBuilder2D::remeshTrianglesNewMesh(gmds::Mesh *newLocalMesh,
 			vector<gmds::Node> adjacent_nodes = currentEdge.get<gmds::Node>();
 			math::Point p1 = adjacent_nodes[0].point();
 			math::Point p2 = adjacent_nodes[1].point();
-			math::Vector3d v1 = math::Vector3d(p1, p2);
+			math::Vector3d v1 = p2-p1;
 			v1.normalize();
 			vector<gmds::Face> adjacent_faces = currentEdge.get<gmds::Face>();
 			newBdryEdgeNormals[e_id] = v1.cross(adjacent_faces[0].normal());
@@ -2747,8 +2747,8 @@ SingularityGraphBuilder2D::connectSingularityLines(math::Vector3d dir_slot_i,
 	}
 	else {     // on edge
 		vector<Node> currentNodes = (m_mesh->get<Edge>(start_cell_id1)).get<Node>();
-		math::Vector3d AB(currentNodes[0].point(), currentNodes[1].point());
-		math::Vector3d AC(currentNodes[0].point(), start_pnt1);
+		math::Vector3d AB=currentNodes[1].point()-currentNodes[0].point();
+		math::Vector3d AC=start_pnt1-currentNodes[0].point();
 		double alpha = AC.norm() / AB.norm();
 
 		std::vector<math::Vector3d> compVectorsA, compVectorsB;
@@ -2797,8 +2797,8 @@ SingularityGraphBuilder2D::connectSingularityLines(math::Vector3d dir_slot_i,
 				ATriangles.insert(ATriangles.end(), adj_faces.begin(), adj_faces.end());
 
 				std::vector<Node> currentNodes = currentEdge.get<Node>();
-				math::Vector3d v0(start_pnt, currentNodes[0].point());
-				math::Vector3d v1(start_pnt, currentNodes[1].point());
+				math::Vector3d v0=currentNodes[0].point()-start_pnt;
+				math::Vector3d v1=currentNodes[1].point()-start_pnt;
 				Node next_node;
 				if (math::near(v0.norm(), 0.0))
 					next_node = currentNodes[1];
@@ -2850,7 +2850,7 @@ SingularityGraphBuilder2D::connectSingularityLines(math::Vector3d dir_slot_i,
 
 				for (unsigned int t = 0; t < 3; t++) {
 					math::Point node_loc = currentNodes[t].point();
-					math::Vector3d trial_vector(start_pnt, node_loc);
+					math::Vector3d trial_vector=node_loc-start_pnt;
 					trial_vector.normalize();
 					double temp_dot = trial_vector.dot(connection_dir);
 					if (temp_dot > min_value) {
@@ -2897,8 +2897,8 @@ SingularityGraphBuilder2D::connectSingularityLines(math::Vector3d dir_slot_i,
 				}
 				else {     // on edge
 					vector<Node> currentNodes = (m_mesh->get<Edge>(start_cell_id)).get<Node>();
-					math::Vector3d AB(currentNodes[0].point(), currentNodes[1].point());
-					math::Vector3d AC(currentNodes[0].point(), start_pnt);
+					math::Vector3d AB= currentNodes[1].point()-currentNodes[0].point();
+					math::Vector3d AC= start_pnt-currentNodes[0].point();
 					double alpha = AC.norm() / AB.norm();
 
 					std::vector<math::Vector3d> compVectorsA, compVectorsB;
@@ -2939,7 +2939,7 @@ SingularityGraphBuilder2D::computeFace2FaceInfo()
 	// here we assume the mesh is manifold
 	*/
 
-	gmds::math::Vector3d zeroVec(0.0, 0.0, 0.0);
+	gmds::math::Vector3d zeroVec({0.0, 0.0, 0.0});
 	if (m_face_normals.size() == 0) m_face_normals.resize(m_original_faces_number);
 
 	// For every non-border edge
@@ -2965,7 +2965,7 @@ SingularityGraphBuilder2D::computeFace2FaceInfo()
 			}
 
 			vector<gmds::Node> edge_nodes0 = currentEdges0[fid0_vc].get<gmds::Node>();
-			gmds::math::Vector3d common_edge(edge_nodes0[0].point(), edge_nodes0[1].point());
+			gmds::math::Vector3d common_edge= edge_nodes0[1].point()- edge_nodes0[0].point();
 			common_edge.normalize();
 
 			// Common local Basis (CLB) Map the two triangles in a new space where the common edge is the x axis and the N0
@@ -3040,7 +3040,7 @@ LineRelaxator::LineRelaxator(SingularityGraph *graph, const double meanEdgeLengt
 	computeFixedGroupAndFixedLine();
 	for (auto line : m_graph->getLines()) {
 		const auto slots = line->getSlots();
-		const auto direction = math::Vector3d(slots[0]->from_point->getLocation(), slots[1]->from_point->getLocation());
+		const auto direction = slots[1]->from_point->getLocation()- slots[0]->from_point->getLocation();
 		slots[0]->line_direction = direction;
 		slots[1]->line_direction = direction.opp();
 	}
@@ -3080,7 +3080,7 @@ LineRelaxator::computeMeanEdgeLengthByGroup()
 	m_lineSpringLenght = std::vector<double>(m_graph->getNLinkedEdgeGroup(), 0.0);
 	for (const auto line : m_graph->getLines()) {
 		const auto points = line->getEndPoints();
-		const auto direction = gmds::math::Vector3d(points[0]->getLocation(), points[1]->getLocation());
+		const auto direction = points[1]->getLocation()- points[0]->getLocation();
 
 		if (!m_groupIsFixed[line->getLinkedEdgeID()]) {
 			const auto groupID = line->getLinkedEdgeID();
@@ -3127,7 +3127,7 @@ LineRelaxator::applySpringForceOnPoints()
 	for (const auto line : m_maxLineByGroup) {     // m_graph->getLines()
 
 		auto points = line->getEndPoints();
-		auto direction = gmds::math::Vector3d(points[0]->getLocation(), points[1]->getLocation());
+		auto direction = points[1]->getLocation() - points[0]->getLocation();
 
 		const auto length = direction.norm();
 		const auto L0 = m_lineSpringLenght[line->getLinkedEdgeID()];
@@ -3147,7 +3147,7 @@ LineRelaxator::MoveIfNewLocationIsWorthTheAnglePenalty(SingularityPoint *singPoi
 	const auto slots = singPoint->getSlots();
 	for (auto slot : slots) {
 		const auto lineSlots = slot->line->getSlots();
-		const auto direction = math::Vector3d(lineSlots[0]->from_point->getLocation(), lineSlots[1]->from_point->getLocation());
+		const auto direction = lineSlots[1]->from_point->getLocation()-lineSlots[0]->from_point->getLocation();
 		// here we "direction" or "direction.opp()" doesn't matter, as only the absolute value of "90-angle" will be used.
 		lineSlots[0]->line_direction = direction;
 		lineSlots[1]->line_direction = direction;
@@ -3207,7 +3207,7 @@ LineRelaxator::movePoints()
 			if (!ref_line) throw GMDSException("curve singularity without curved line");
 
 			const auto &linePoints = ref_line->getEndPoints();
-			const gmds::math::Vector3d lineDir(linePoints[0]->getLocation(), linePoints[1]->getLocation());
+			const gmds::math::Vector3d lineDir=linePoints[1]->getLocation()- linePoints[0]->getLocation();
 			auto projectedDirection = m_directions[point->getNumber()].dot(lineDir) * lineDir / lineDir.norm2();
 			projectedDirection *= m_step;
 			constrainDirection(point, projectedDirection);
@@ -3252,10 +3252,10 @@ LineRelaxator::getWorstAngle()
 
 		std::vector<SingularityPoint *> points;
 		patch->getPoints(points);
-		const auto v1 = math::Vector3d(points[0]->getLocation(), points[1]->getLocation());
-		const auto v2 = math::Vector3d(points[1]->getLocation(), points[2]->getLocation());
-		const auto v3 = math::Vector3d(points[2]->getLocation(), points[3]->getLocation());
-		const auto v4 = math::Vector3d(points[3]->getLocation(), points[0]->getLocation());
+		const auto v1 = points[1]->getLocation()- points[0]->getLocation();
+		const auto v2 = points[2]->getLocation()- points[1]->getLocation();
+		const auto v3 = points[3]->getLocation()- points[2]->getLocation();
+		const auto v4 = points[0]->getLocation()- points[3]->getLocation();
 		std::vector<double> angles;
 		angles.push_back(v1.angle(v4.opp()));
 		angles.push_back(v2.angle(v1.opp()));

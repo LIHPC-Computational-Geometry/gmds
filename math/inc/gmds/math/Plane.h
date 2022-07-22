@@ -102,8 +102,8 @@ public:
 	 */
 	void set(const Point &AP1, const Point &AP2, const Point &AP3) {
 		m_pnt = AP1;
-		Vector3d v1(AP1, AP2);
-		Vector3d v2(AP1, AP3);
+		Vector3d v1=AP2-AP1;
+		Vector3d v2=AP3-AP1;
 		m_normal = v1.cross(v2);
         m_normal.normalize();
     }
@@ -123,7 +123,7 @@ public:
 		AA = m_normal.X();
 		AB = m_normal.Y();
 		AC = m_normal.Z();
-		Vector3d v(m_pnt.X(), m_pnt.Y(), m_pnt.Z());
+		Vector3d v({m_pnt.X(), m_pnt.Y(), m_pnt.Z()});
 		AD = m_normal.dot(v);
 	}
 

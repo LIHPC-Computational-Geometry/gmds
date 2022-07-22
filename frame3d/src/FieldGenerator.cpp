@@ -667,7 +667,7 @@ void FieldGenerator::initHarmonicOnCurve(const Node &ANode)
         //we build the direction vector of the current edge
         math::Point p1 = node1.point();
         math::Point p2 = node2.point();
-        v1 = math::Vector3d( p1, p2);
+        v1 = p2-p1;
         v1.normalize();
         //We retrieve adjacent boundary faces and we get their normal vectors
         std::vector<Face> boundary_faces = getFacesOnSurface(current_edge);
@@ -697,7 +697,7 @@ void FieldGenerator::initHarmonicOnCurve(const Node &ANode)
         //we build the direction vector linking the two adjacent nodes
         math::Point p1 = node1.point();
         math::Point p2 = node2.point();
-        v1 = math::Vector3d( p1, p2);
+        v1 =p2-p1;
         v1.normalize();
         
         //Normal are computed in the same way
@@ -926,9 +926,9 @@ void FieldGenerator::writeSolution(){
         
         math::Chart c = (*m_chart_field)[n.id()];
 
-        math::Vector3d evx(c.X()[0],c.X()[1],c.X()[2]);
-        math::Vector3d evy(c.Y()[0],c.Y()[1],c.Y()[2]);
-        math::Vector3d evz(c.Z()[0],c.Z()[1],c.Z()[2]);
+        math::Vector3d evx({c.X()[0], c.X()[1], c.X()[2]});
+        math::Vector3d evy({c.Y()[0], c.Y()[1], c.Y()[2]});
+        math::Vector3d evz({c.Z()[0], c.Z()[1], c.Z()[2]});
         
         evx.normalize();
         evy.normalize();
@@ -938,9 +938,9 @@ void FieldGenerator::writeSolution(){
             std::cout<<"Error Nan for node "<<n.id()<<std::endl;
             continue;
         }
-        math::Vector3d vx(evx.X(),evx.Y(),evx.Z());
-        math::Vector3d vy(evy.X(),evy.Y(),evy.Z());
-        math::Vector3d vz(evz.X(),evz.Y(),evz.Z());
+        math::Vector3d vx({evx.X(), evx.Y(), evx.Z()});
+        math::Vector3d vy({evy.X(), evy.Y(), evy.Z()});
+        math::Vector3d vz({evz.X(), evz.Y(), evz.Z()});
         
         math::Point p1 = center + (vx + vy - vz)*cube_size;
         
