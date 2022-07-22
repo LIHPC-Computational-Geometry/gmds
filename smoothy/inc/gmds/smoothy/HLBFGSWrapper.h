@@ -5,12 +5,13 @@
 #include <cassert>
 #include <functional>
 #include <vector>
+#include "GMDSSmoothy_export.h"
 /*----------------------------------------------------------------------------*/
 #include "HLBFGS.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-struct HLBFGSWrapper {
+struct GMDSSmoothy_API HLBFGSWrapper {
 	typedef std::function<void(const std::vector<double> &x, double &f, std::vector<double> &g)> gradient_eval;
 
 	HLBFGSWrapper(gradient_eval func) : gradient(func) {}

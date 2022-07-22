@@ -348,7 +348,7 @@ TEST(MathTest, dotTest){
     math::Point p1(5,4.427,-0.5);
     math::Point p2(5,4.144,-0.5);
 
-    math::Vector3d va=pa-1;
+    math::Vector3d va=pa-p1;
     math::Vector3d v12=p2-p1;
     TCoord a = v12.dot(va);
     ASSERT_TRUE(a>=0);

@@ -4,6 +4,7 @@
 /*----------------------------------------------------------------------------*/
 #	include <gmds/math/Matrix.h>
 #	include <gmds/math/Vector.h>
+#include <GMDSSmoothy_export.h>
 /*----------------------------------------------------------------------------*/
 #	include <array>
 #	include <assert.h>
@@ -12,7 +13,7 @@
 namespace gmds {
 namespace smoothy {
 /*----------------------------------------------------------------------------*/
-class EllipticSmoothingMeshGlue
+class GMDSSmoothy_API EllipticSmoothingMeshGlue
 {
  public:
 	/** return ne number of reduced variables */
@@ -30,7 +31,7 @@ class EllipticSmoothingMeshGlue
 	virtual void add2Hessian(const int i, const int j, const double value, std::vector<sparse_term> &H) = 0;
 };
 /*----------------------------------------------------------------------------*/
-struct EllipticSmoothingOptions
+struct GMDSSmoothy_API EllipticSmoothingOptions
 {
 	EllipticSmoothingOptions(double _theta,
 	                         int _maxiter,
@@ -69,10 +70,10 @@ struct EllipticSmoothingOptions
 /**
  * Default smoothing options
  */
-const EllipticSmoothingOptions ESO_default2D(1. / 2, 10000, 1e-4, 30000, 1, false, false, 1e-5, false, false);
-const EllipticSmoothingOptions ESO_default3D(1. / 2., 10000, 1e-4, 300, 1, false, false, 1e-5, false, false);
+const EllipticSmoothingOptions GMDSSmoothy_API ESO_default2D(1. / 2, 10000, 1e-4, 30000, 1, false, false, 1e-5, false, false);
+const EllipticSmoothingOptions GMDSSmoothy_API ESO_default3D(1. / 2., 10000, 1e-4, 300, 1, false, false, 1e-5, false, false);
 /*----------------------------------------------------------------------------*/
-class EllipticSmoothing2D
+class GMDSSmoothy_API EllipticSmoothing2D
 {
  public:
 	EllipticSmoothing2D(EllipticSmoothingMeshGlue &var, const int nb_tri, const EllipticSmoothingOptions &options = ESO_default2D) :
@@ -135,7 +136,7 @@ class EllipticSmoothing2D
 	double start_eps = 1.;
 };
 /*----------------------------------------------------------------------------*/
-class Elliptic_smoother_3D
+class GMDSSmoothy_API Elliptic_smoother_3D
 {
  public:
 	Elliptic_smoother_3D(EllipticSmoothingMeshGlue &var, const int nb_tets, const EllipticSmoothingOptions &options = ESO_default3D) :
