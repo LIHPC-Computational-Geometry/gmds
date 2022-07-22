@@ -1,9 +1,9 @@
 //
-// Created by rochec on 21/07/2022.
+// Created by rochec on 22/07/2022.
 //
 
-#ifndef GMDS_SMOOTHLINESWEEPINGYAO_H
-#define GMDS_SMOOTHLINESWEEPINGYAO_H
+#ifndef GMDS_SMOOTHLINESWEEPINGORTHO_H
+#define GMDS_SMOOTHLINESWEEPINGORTHO_H
 
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
@@ -11,10 +11,10 @@
 /*----------------------------------------------------------------------------*/
 namespace  gmds {
 /*----------------------------------------------------------------------------*/
-/** \class  Yao's Line Sweeping algorithm
+/** \class  Yao's Line Sweeping algorithm + orthogonalization
  *  \brief
  */
-class LIB_GMDS_CLAIRE_API SmoothLineSweepingYao: public AbstractSmoothLineSweeping_2D {
+class LIB_GMDS_CLAIRE_API SmoothLineSweepingOrtho: public AbstractSmoothLineSweeping_2D {
  public:
 
 	/*------------------------------------------------------------------------*/
@@ -22,8 +22,8 @@ class LIB_GMDS_CLAIRE_API SmoothLineSweepingYao: public AbstractSmoothLineSweepi
 	*	 @param AB a block
 	*	 @param Anb_max_it max iteration number
 	*	 @param Atheta damping parameter, theta is in [0,1]
-	*/
-	SmoothLineSweepingYao(Blocking2D::Block* AB, int Anb_max_it, double Atheta);
+	 */
+	SmoothLineSweepingOrtho(Blocking2D::Block* AB, int Anb_max_it, double Atheta);
 
 	/*------------------------------------------------------------------------*/
 
@@ -36,9 +36,18 @@ class LIB_GMDS_CLAIRE_API SmoothLineSweepingYao: public AbstractSmoothLineSweepi
 	virtual math::Point ComputeNewPosition(int i, int j);
 	/*-------------------------------------------------------------------*/
 
+ private:
+	/*-------------------------------------------------------------------*/
+	/** @brief Compute the orthogonal node
+	 * @param i index of the node in the block
+	 * @param j index of the node in the block
+	 */
+	math::Point ComputeOrtho(int i, int j);
+	/*-------------------------------------------------------------------*/
+
 };
 /*----------------------------------------------------------------------------*/
 }
 /*----------------------------------------------------------------------------*/
 
-#endif     // GMDS_SMOOTHLINESWEEPINGYAO_H
+#endif     // GMDS_SMOOTHLINESWEEPINGORTHO_H
