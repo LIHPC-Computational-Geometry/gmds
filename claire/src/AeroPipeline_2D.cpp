@@ -206,7 +206,7 @@ AeroPipeline_2D::execute(){
 	//smoother.execute();
 	for (auto b:m_Blocking2D.allBlocks())
 	{
-		SmoothLineSweepingYao smoother( &b, 500);
+		SmoothLineSweepingYao smoother( &b, 2000);
 		smoother.execute();
 	}
 	t_end = clock();
@@ -225,6 +225,7 @@ AeroPipeline_2D::execute(){
 
 	std::cout << " " << std::endl;
 	std::cout << "INFORMATIONS COMPLEMENTAIRES :" << std::endl;
+	std::cout << "Nbr de blocs : " << m_Blocking2D.getNbFaces() << std::endl;
 	std::cout << "Nbr faces : " << m_meshHex->getNbFaces() << std::endl;
 	std::cout << "Nbr arêtes : " << m_meshHex->getNbEdges() << std::endl;
 

@@ -30,13 +30,16 @@ AbstractSmoothLineSweeping_2D::STATUS AbstractSmoothLineSweeping_2D::execute()
 
 	while ( err > m_tol && iteration < m_nb_max_iterations )
 	{
+		Update_old_coords(&m_old_coord_x, &m_old_coord_y);
 		One_Step_Smoothing();
 		BoundarySlipping();
 
 		err = L2_norm_relative_error(&m_old_coord_x, &m_old_coord_y);
 		iteration++;
-		Update_old_coords(&m_old_coord_x, &m_old_coord_y);
+
 	}
+
+	std::cout << "Nombre d'itérations lissage : " << iteration << std::endl;
 
 	return AbstractSmoothLineSweeping_2D::SUCCESS;
 }
