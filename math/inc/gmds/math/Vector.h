@@ -73,7 +73,7 @@ template<typename TType> struct CrossNDPolicy<3, TType>
  * \tparam TDim  vector dimension
  * \tparam TType component type
  */
-template<int TDim, class TType> struct VectorND
+template<int TDim, class TType> struct GMDSMath_API VectorND
 {
 
 	/** alias on this vector type */
@@ -717,12 +717,12 @@ typedef VectorND<3, int64_t> Vector3i;
 
 typedef VectorND<3, TCoord> Vector;
 
-Vector3d operator-(const Point& AP1, const Point& AP2);
+Vector3d GMDSMath_API operator-(const Point& AP1, const Point& AP2);
 /** Convert a point into a 3D vector
  * @param AP a 3D point
  * @return the corresponding 3D vector
  */
-Vector3d vec(const Point&AP);
+Vector3d GMDSMath_API vec(const Point&AP);
 /*---------------------------------------------------------------------*/
 /** \brief Writes a vector to a stream
  *
