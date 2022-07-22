@@ -206,7 +206,7 @@ AeroPipeline_2D::execute(){
 	//smoother.execute();
 	for (auto b:m_Blocking2D.allBlocks())
 	{
-		SmoothLineSweepingYao smoother( &b, 2000);
+		SmoothLineSweepingYao smoother( &b, 1000, 0.0);
 		smoother.execute();
 	}
 	t_end = clock();
@@ -293,8 +293,8 @@ AeroPipeline_2D::EcritureMaillage(){
 	vtkWriter_TetMesh.write("AeroPipeline2D_TetMesh.vtk");
 
 	// Ecriture du maillage au format su2
-	//SU2Writer writer(m_meshHex, "AeroPipeline2D_QuadMesh.su2", m_params.x_lim_SU2_inoutlet);
-	//SU2Writer::STATUS result = writer.execute();
+	SU2Writer writer(m_meshHex, "AeroPipeline2D_QuadMesh.su2", m_params.x_lim_SU2_inoutlet);
+	SU2Writer::STATUS result = writer.execute();
 
 }
 /*------------------------------------------------------------------------*/

@@ -9,8 +9,8 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-SmoothLineSweepingYao::SmoothLineSweepingYao(Blocking2D::Block *AB, int Anb_max_it) :
-  AbstractSmoothLineSweeping_2D(AB, Anb_max_it)
+SmoothLineSweepingYao::SmoothLineSweepingYao(Blocking2D::Block *AB, int Anb_max_it, double Atheta) :
+  AbstractSmoothLineSweeping_2D(AB, Anb_max_it, Atheta)
 {
 
 }
@@ -21,13 +21,13 @@ SmoothLineSweepingYao::SmoothLineSweepingYao(Blocking2D::Block *AB, int Anb_max_
 math::Point SmoothLineSweepingYao::ComputeNewPosition(int i, int j)
 {
 	// Compute the 6 points for the Yao Smoother
-	math::Point V1 = FindMidBranche((*m_B)(i-1,j-1).point(), (*m_B)(i,j-1).point(), (*m_B)(i+1,j-1).point());
-	math::Point V2 = FindMidBranche((*m_B)(i-1,j).point(), (*m_B)(i,j).point(), (*m_B)(i+1,j).point());
-	math::Point V3 = FindMidBranche((*m_B)(i-1,j+1).point(), (*m_B)(i,j+1).point(), (*m_B)(i+1,j+1).point());
+	math::Point V1 = WeightedPointOnBranch((*m_B)(i-1,j-1).point(), (*m_B)(i,j-1).point(), (*m_B)(i+1,j-1).point(), 0.5);
+	math::Point V2 = WeightedPointOnBranch((*m_B)(i-1,j).point(), (*m_B)(i,j).point(), (*m_B)(i+1,j).point(), 0.5);
+	math::Point V3 = WeightedPointOnBranch((*m_B)(i-1,j+1).point(), (*m_B)(i,j+1).point(), (*m_B)(i+1,j+1).point(), 0.5);
 
-	math::Point H1 = FindMidBranche((*m_B)(i-1,j-1).point(), (*m_B)(i-1,j).point(), (*m_B)(i-1,j+1).point());
-	math::Point H2 = FindMidBranche((*m_B)(i,j-1).point(), (*m_B)(i,j).point(), (*m_B)(i,j+1).point());
-	math::Point H3 = FindMidBranche((*m_B)(i+1,j-1).point(), (*m_B)(i+1,j).point(), (*m_B)(i+1,j+1).point());
+	math::Point H1 = WeightedPointOnBranch((*m_B)(i-1,j-1).point(), (*m_B)(i-1,j).point(), (*m_B)(i-1,j+1).point(), 0.5);
+	math::Point H2 = WeightedPointOnBranch((*m_B)(i,j-1).point(), (*m_B)(i,j).point(), (*m_B)(i,j+1).point(), 0.5);
+	math::Point H3 = WeightedPointOnBranch((*m_B)(i+1,j-1).point(), (*m_B)(i+1,j).point(), (*m_B)(i+1,j+1).point(), 0.5);
 
 	// Finding the intersection between the 4 segments
 	bool intersection_trouvee(false);

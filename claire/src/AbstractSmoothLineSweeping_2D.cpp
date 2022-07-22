@@ -8,16 +8,16 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AbstractSmoothLineSweeping_2D::AbstractSmoothLineSweeping_2D(Blocking2D::Block* B, int nb_max_it):
-  	m_B(B),
-  	m_nb_max_iterations(nb_max_it),
+AbstractSmoothLineSweeping_2D::AbstractSmoothLineSweeping_2D(Blocking2D::Block* AB, int Anb_max_it, double Atheta):
+  	m_B(AB),
+  	m_nb_max_iterations(Anb_max_it),
+  	m_theta(Atheta),
   	m_Nx(m_B->getNbDiscretizationI()-1),
 	m_Ny(m_B->getNbDiscretizationJ()-1),
   	m_old_coord_x(m_Nx,m_Ny),
 	m_old_coord_y(m_Nx,m_Ny)
 {
 	m_tol = pow(10,-6);
-	m_theta = 0.0;
 }
 /*------------------------------------------------------------------------*/
 
@@ -72,20 +72,20 @@ void AbstractSmoothLineSweeping_2D::BoundarySlipping()
 {
 	for (int i=1;i<m_Nx;i++)
 	{
-		math::Point Mid = FindMidBranche((*m_B)(i-1,0).point(), (*m_B)(i,0).point(), (*m_B)(i+1,0).point());
+		math::Point Mid = WeightedPointOnBranch((*m_B)(i-1,0).point(), (*m_B)(i,0).point(), (*m_B)(i+1,0).point(), 0.5);
 		(*m_B)(i, 0).setPoint(m_theta*(*m_B)(i, 0).point() + (1.0-m_theta)*Mid );
 
-		Mid = FindMidBranche((*m_B)(i-1,m_Ny).point(), (*m_B)(i,m_Ny).point(), (*m_B)(i+1,m_Ny).point());
+		Mid = WeightedPointOnBranch((*m_B)(i-1,m_Ny).point(), (*m_B)(i,m_Ny).point(), (*m_B)(i+1,m_Ny).point(), 0.5);
 		(*m_B)(i, m_Ny).setPoint(m_theta*(*m_B)(i, m_Ny).point() + (1.0-m_theta)*Mid );
 	}
 
 
 	for (int j=1;j<m_Ny;j++)
 	{
-		math::Point Mid = FindMidBranche((*m_B)(0,j-1).point(), (*m_B)(0,j).point(), (*m_B)(0,j+1).point());
+		math::Point Mid = WeightedPointOnBranch((*m_B)(0,j-1).point(), (*m_B)(0,j).point(), (*m_B)(0,j+1).point(), 0.5);
 		(*m_B)(0, j).setPoint(m_theta*(*m_B)(0, j).point() + (1.0-m_theta)*Mid);
 
-		Mid = FindMidBranche((*m_B)(m_Nx,j-1).point(), (*m_B)(m_Nx,j).point(), (*m_B)(m_Nx,j+1).point());
+		Mid = WeightedPointOnBranch((*m_B)(m_Nx,j-1).point(), (*m_B)(m_Nx,j).point(), (*m_B)(m_Nx,j+1).point(), 0.5);
 		(*m_B)(m_Nx, j).setPoint(m_theta*(*m_B)(m_Nx, j).point() + (1.0-m_theta)*Mid);
 	}
 }
@@ -93,26 +93,26 @@ void AbstractSmoothLineSweeping_2D::BoundarySlipping()
 
 
 /*------------------------------------------------------------------------*/
-math::Point AbstractSmoothLineSweeping_2D::FindMidBranche(const math::Point A, const math::Point B, const math::Point C) {
-	math::Point Point_Milieu ;
+math::Point AbstractSmoothLineSweeping_2D::WeightedPointOnBranch(const math::Point A, const math::Point B, const math::Point C, double alpha) {
+	math::Point P_Weighted;
 	math::Vector3d Vec_AB = B-A ;
 	math::Vector3d Vec_BC = C-B ;
 	double norme_1 = Vec_AB.norm() ;
 	double norme_2 = Vec_BC.norm() ;
 	double norme_branche = norme_1 + norme_2 ;
-	double norme_milieu = norme_branche / 2.0 ;
+	double norme_cible = alpha*norme_branche ;
 
-	if (norme_milieu <= norme_1){
+	if (norme_cible <= norme_1){
 		Vec_AB.normalize();
-		Point_Milieu = A + norme_milieu*Vec_AB ;
+		P_Weighted = A + norme_cible*Vec_AB ;
 	}
-	else if (norme_milieu > norme_1){
+	else if (norme_cible > norme_1){
 		math::Vector3d Vec_CB = - Vec_BC ;
 		Vec_CB.normalize();
-		Point_Milieu = C + norme_milieu*Vec_CB ;
+		P_Weighted = C + norme_cible*Vec_CB ;
 	}
 
-	return Point_Milieu;
+	return P_Weighted;
 }
 /*------------------------------------------------------------------------*/
 
