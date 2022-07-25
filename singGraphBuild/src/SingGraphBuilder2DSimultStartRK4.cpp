@@ -211,7 +211,7 @@ SingGraphBuilder2DSimultStartRK4::createSingularityLines()
 				bool find_end = false;
 
 				if (contor == 1) {
-					// here it can also execute out through a node<!!! add triangles
+					// here it can also go out through a node<!!! add triangles
 					Edge currentEdge = m_mesh->get<Edge>(to_cell_id[i]);
 					std::vector<TCellID> adj_faces = currentEdge.getIDs<Face>();
 					bool AOnEdge0, AOnEdge1, AOnEdge2;

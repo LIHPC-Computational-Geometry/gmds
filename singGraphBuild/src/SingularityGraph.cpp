@@ -917,7 +917,7 @@ SingularityGraph::buildSurfacePatchs()
 			// Second traversal
 			//=====================================================
 			// second time, a patch can be built if the curve is not on the boundary.
-			// Second time we execute from the 2nd end point towards the 1st one A patch is
+			// Second time we go from the 2nd end point towards the 1st one A patch is
 			// created
 			if (li[i]->getType() == SingularityLine::CURVE) continue;
 
@@ -1261,7 +1261,7 @@ SingularityGraph::buildCurveSurfacePatchs(unsigned int &number_of_control_points
 			// Second traversal
 			//=====================================================
 			// second time, a patch can be built if the curve is not on the boundary.
-			// Second time we execute from the 2nd end point towards the 1st one A patch is
+			// Second time we go from the 2nd end point towards the 1st one A patch is
 			// created
 
 			// cout<<"!reverse[li[i]] "<<endl;

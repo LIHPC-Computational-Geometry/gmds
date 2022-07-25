@@ -447,7 +447,7 @@ vect2D Gregson2011_2D::normal(Edge e)
                                            (mesh->get<Node>(Nodes[0])).Y() - (mesh->get<Node>(n)).Y() );
         }
     }
-    // if the dot product is positive, the two vector execute to the general same direction
+    // if the dot product is positive, the two vector go to the general same direction
     if (normal.transpose() * direction_comparator < 0){
         // and we want the normal going the other way around
         normal = -normal;

@@ -229,7 +229,7 @@ namespace gmds {
             /** \brief Computes the spherical interpolation between two Quaternions (SLERP)
              *
              * \param[in] AFrom the first quaternion we come from
-             * \param[in] ATO   the second quaternion we execute to
+             * \param[in] ATO   the second quaternion we go to
              * \param[in] AParam the interpoloation parameter  in [0.0,1.0]
              * \return a Quaternion equals to (\p AParam-1)*\p AFrom +\p AParam*\p ATo
              */

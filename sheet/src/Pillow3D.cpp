@@ -488,7 +488,7 @@ bool Pillow3D::execute(std::vector<VirtualFace>& AFaces, bool AWithCheck){
 
         if(isABoundaryNode(n_id)){
             // we get the boundary faces (in the geometric meaning)
-            // so we execute through the adjacent regions
+            // so we go through the adjacent regions
             std::vector<TCellID> adj_bnd_faces[4];
             for(auto h_id:adj_shrink_r) {
                 Region h = m_mesh->get<Region>(h_id);

@@ -247,7 +247,7 @@ namespace gmds{
         {
             TCoord anglemax = 0.;
 
-            // we execute only to size-1 because we are interested in edges (segments)
+            // we go only to size-1 because we are interested in edges (segments)
             for(unsigned int iNode=0; iNode<m_mesh_nodes.size()-1; iNode++)
             {
                 std::vector<Edge> edges_possibilities;

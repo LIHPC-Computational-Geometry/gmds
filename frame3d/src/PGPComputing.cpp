@@ -267,7 +267,7 @@ void PGPComputing::setBoundaryConstraint()
         }
     }
     //======================================================================
-    // We execute through each boundary face to constrained its
+    // We go through each boundary face to constrained its
     // incicent nodes (so nodes on surf, curves and points)
     //======================================================================
     for(auto f_id : m_mesh->faces()) {

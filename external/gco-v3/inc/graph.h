@@ -138,7 +138,7 @@ public:
 	// no calls to delete/new (which could be quite slow).
 	//
 	// If the graph structure stays the same, then an alternative
-	// is to execute through all nodes/edges and set new residual capacities
+	// is to go through all nodes/edges and set new residual capacities
 	// (see functions below).
 	void reset();
 

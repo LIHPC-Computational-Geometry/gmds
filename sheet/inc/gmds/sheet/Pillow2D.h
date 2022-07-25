@@ -59,7 +59,7 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /**@brief Setter of the boundary behaviour
          *
-         * @param AEscape true means that the inserted sheet must execute through the
+         * @param AEscape true means that the inserted sheet must go through the
          *                boundary, while false means the sheet remains along the
          *                boundary curves.
          */

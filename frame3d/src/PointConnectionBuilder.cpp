@@ -865,11 +865,11 @@ buildOrientedEdgesOnSurface(const int            APntID,
             v_axis.normalize(); //likely useless
             math::Vector3d v;
             if((v_axis.dot(n))>tol){
-                //We execute out of the domain
+                //We go out of the domain
                 continue;
             }
             else if((v_axis.dot(n))<-tol){
-                //we execute inside the domain
+                //we go inside the domain
                 math::Point next_pi;
                 if(computeVolumePointFrom(i, v_axis,next_pi))
                     v=next_pi-pi;
@@ -1029,7 +1029,7 @@ buildOrientedEdges(std::vector<std::vector<OrientedEdge> >& AEdges)
     AEdges.clear();
     AEdges.resize(m_pnt.size());
 
-    //We execute through all the points and we store for each of them the list of
+    //We go through all the points and we store for each of them the list of
     // oriented edges
     for(auto i=0; i<m_pnt.size(); i++){
 
@@ -1511,13 +1511,13 @@ void PointConnectionBuilder::buildHexahedral()
     Variable<int>* var_surf = m_hexes.newVariable<int,GMDS_NODE>("surface_id");
     Variable<int>* var_curv = m_hexes.newVariable<int,GMDS_NODE>("curve_id");
 
-    /* We execute trought all the points and we build hexahedral elements
+    /* We go trought all the points and we build hexahedral elements
      * for each associated free corner */
     for(unsigned int i=0; i<m_pnt.size(); i++){
 
         math::Point pi = m_pnt[i];
         std::vector<HexCorner> corners_i = m_hc_mapping[i];
-        //Now we execute throught the associated corners
+        //Now we go throught the associated corners
 
         for(unsigned int j=0; j<corners_i.size();j++){
             HexCorner cj = corners_i[j];

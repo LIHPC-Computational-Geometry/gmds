@@ -120,7 +120,7 @@ Bindings should be made against the actual class, not the trampoline helper clas
     py::class_<Animal, PyAnimal /* <--- trampoline*/> animal(m, "Animal");
         animal
             .def(py::init<>())
-            .def("execute", &PyAnimal::go); /* <--- THIS IS WRONG, use &Animal::go */
+            .def("go", &PyAnimal::go); /* <--- THIS IS WRONG, use &Animal::go */
 
 Note, however, that the above is sufficient for allowing python classes to
 extend ``Animal``, but not ``Dog``: see :ref:`virtual_and_inheritance` for the

@@ -357,8 +357,8 @@ SingGraphBuilder2DOriginal::computeSingularityLine(SingularityPoint *AFromPoint,
 		backtrackSingularityLine(surf_line,       // the line we modify
 		                         to_sing_pnt,     // the point we start from
 		                         to_slot,         // the slot we start from
-		                         AFromPoint,      // the point we execute to
-		                         AFromSlot,       // the slot we execute to
+		                         AFromPoint,      // the point we go to
+		                         AFromSlot,       // the slot we go to
 		                         to_dir,          // the direction of the streamline for to_slot
 		                         foundPath);      // boolean value indicating if we have found a path
 
@@ -675,7 +675,7 @@ SingGraphBuilder2DOriginal::computeStreamLine(SingularityPoint *AFromPnt,
 				                        start_dir,            /* the geometric direction to follow*/
 				                        start_cell_dim,       /* the dimension of the cell start_pnt is located */
 				                        start_cell_id,        /* the id of the cell start_pnt is located on*/
-				                        out_pnt,              /* the geometric point where we execute out */
+				                        out_pnt,              /* the geometric point where we go out */
 				                        out_vec,              /* the geometric direction to follow after*/
 				                        out_cell_dim,         /* the dimension of the out cell (0 or 1) */
 				                        out_cell_id,          /* the id of the out cell*/

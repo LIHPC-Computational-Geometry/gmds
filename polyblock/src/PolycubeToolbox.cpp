@@ -1398,7 +1398,7 @@ void PolycubeToolbox::chartsGeneration(bool speaking){
 										face_to_explore.push_back(f);
 										mesh->mark(mesh->get<Face>(f),marked_face);
 
-										// we already marked the chosen_face, so it won't execute back in face_to_explore
+										// we already marked the chosen_face, so it won't go back in face_to_explore
 									}
 								}
 							} // end for (auto f : faces)

@@ -487,7 +487,7 @@ Tools::followFlow(const PointVolumetricData &AData, const double AMaxDist, math:
 			dir = out_dir;
 			current_dist += (new_from-from).norm();
 			from = new_from;
-			// We compute the next current cell using the face we execute
+			// We compute the next current cell using the face we go
 			// from
 			std::vector<Region> adj_out_face = out_face.get<Region>();
 			if (adj_out_face.size() == 1) {
@@ -618,7 +618,7 @@ Tools::followFlow(const PointSurfacicData &AData, const double AMaxDist, const i
 			// Fuzzy approach to avoid topological cases
 			from = 0.95 * out_pnt + 0.05 * out_edge.center();
 			current_dist += v.norm();
-			// We compute the next current cell using the face we execute
+			// We compute the next current cell using the face we go
 			// from
 			std::vector<Face> adj_out_edge = out_edge.get<Face>();
 			std::vector<Face> adj_bnd;

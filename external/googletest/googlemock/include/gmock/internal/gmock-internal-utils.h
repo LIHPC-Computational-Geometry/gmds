@@ -161,7 +161,7 @@ using LosslessArithmeticConvertibleImpl = std::integral_constant<
     : (kFromKind != kToKind) ? false
     : (kFromKind == kInteger &&
        // Converting between integers of different widths is allowed so long
-       // as the conversion does not execute from signed to unsigned.
+       // as the conversion does not go from signed to unsigned.
       (((sizeof(From) < sizeof(To)) &&
         !(std::is_signed<From>::value && !std::is_signed<To>::value)) ||
        // Converting between integers of the same width only requires the

@@ -160,7 +160,7 @@ GTEST_DISABLE_MSC_WARNINGS_POP_()  //  4275
 #endif  // GTEST_HAS_EXCEPTIONS
 
 namespace edit_distance {
-// Returns the optimal edits to execute from 'left' to 'right'.
+// Returns the optimal edits to go from 'left' to 'right'.
 // All edits cost the same, with replace having lower priority than
 // add/remove.
 // Simple implementation of the Wagner-Fischer algorithm.
