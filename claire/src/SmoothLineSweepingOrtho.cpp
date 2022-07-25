@@ -104,7 +104,7 @@ math::Point SmoothLineSweepingOrtho::ComputeNewPosition(int i, int j)
 	}
 	else
 	{
-		P_new = H2 ;
+		P_new = X2 ;
 	}
 
 	return P_new;
