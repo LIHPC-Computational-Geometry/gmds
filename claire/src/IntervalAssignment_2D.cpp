@@ -53,8 +53,8 @@ IntervalAssignment_2D::execute()
 	{
 		Edge e_i = bloc.getEdgeI();
 		Edge e_j = bloc.getEdgeJ();
-		bloc.setNbDiscretizationI(var_NbrCells->value(e_i.id()));
-		bloc.setNbDiscretizationJ(var_NbrCells->value(e_j.id()));
+		bloc.setNbDiscretizationI(var_NbrCells->value(e_i.id())+1);
+		bloc.setNbDiscretizationJ(var_NbrCells->value(e_j.id())+1);
 	}
 
 	m_blocking->deleteVariable(GMDS_EDGE, "NbrCells");

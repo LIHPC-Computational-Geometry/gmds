@@ -74,6 +74,7 @@ void AbstractSmoothLineSweeping_2D::One_Step_Smoothing(){
 /*------------------------------------------------------------------------*/
 void AbstractSmoothLineSweeping_2D::BoundarySlipping()
 {
+	/*
 	for (int i=1;i<m_Nx;i++)
 	{
 		math::Point Mid = WeightedPointOnBranch((*m_B)(i-1,0).point(), (*m_B)(i,0).point(), (*m_B)(i+1,0).point(), 0.5);
@@ -91,7 +92,7 @@ void AbstractSmoothLineSweeping_2D::BoundarySlipping()
 		Mid = WeightedPointOnBranch((*m_B)(m_Nx,j-1).point(), (*m_B)(m_Nx,j).point(), (*m_B)(m_Nx,j+1).point(), 0.5);
 		m_P_new(m_Nx,j) = ( m_theta*(*m_B)(m_Nx, j).point() + (1.0-m_theta)*Mid ) ;
 	}
-
+	*/
 }
 /*------------------------------------------------------------------------*/
 
