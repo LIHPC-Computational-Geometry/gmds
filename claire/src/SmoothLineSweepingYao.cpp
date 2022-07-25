@@ -48,12 +48,12 @@ math::Point SmoothLineSweepingYao::ComputeNewPosition(int i, int j)
 		intersection_trouvee = Seg_Vert_2.intersect2D(Seg_Hori_2, M);
 	}
 
-	math::Point Pos = (*m_B)(i,j).point() ;
+	math::Point P_ideal = (*m_B)(i,j).point() ;
 	if (intersection_trouvee) {
-		Pos = M;
+		P_ideal = M;
 	}
 
-	return Pos;
+	return P_ideal;
 }
 
 /*------------------------------------------------------------------------*/

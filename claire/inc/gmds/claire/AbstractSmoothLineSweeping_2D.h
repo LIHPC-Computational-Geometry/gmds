@@ -63,11 +63,11 @@ class LIB_GMDS_CLAIRE_API AbstractSmoothLineSweeping_2D{
 	/** @brief Compute the L2 norm of the relative error between the pos
 	 * of the nodes on the bloc and the old coords
 	 */
-	double L2_norm_relative_error(Array2D<TCoord>* old_coord_x, Array2D<TCoord>* old_coord_y);
+	double L2_norm_relative_error();
 	/*-------------------------------------------------------------------*/
-	/** @brief Update old coords
+	/** @brief Update new coords
 	 */
-	void Update_old_coords(Array2D<TCoord>* old_coord_x, Array2D<TCoord>* old_coord_y);
+	void Update_new_coords();
 	/*-------------------------------------------------------------------*/
 
  protected:
@@ -77,23 +77,14 @@ class LIB_GMDS_CLAIRE_API AbstractSmoothLineSweeping_2D{
 	int m_Nx;
 	/** discretization J */
 	int m_Ny;
-	/** old coord x */
-	Array2D<TCoord> m_old_coord_x;
-	/** old coord y */
-	Array2D<TCoord> m_old_coord_y;
+	/** old points */
+	Array2D<math::Point> m_P_new;
 	/** nb max iterations */
 	int m_nb_max_iterations;
 	/** tolerance */
 	int m_tol;
 	/** damping parameter */
 	double m_theta;
-
-	typedef struct {
-		unsigned int val[3][3];
-	} stencil;
-	/** stencil for each node id */
-	std::map<TCellID, stencil> m_stencil;
-
 
 };
 /*----------------------------------------------------------------------------*/

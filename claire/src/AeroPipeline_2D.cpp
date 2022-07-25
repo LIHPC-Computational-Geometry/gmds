@@ -203,13 +203,15 @@ AeroPipeline_2D::execute(){
 	// Lissage
 	std::cout << "-> Lissage final" << std::endl;
 	t_start = clock();
-	//Grid_Smooth2D smoother(&m_Blocking2D, 100);
+	//Grid_Smooth2D smoother(&m_Blocking2D, 2000);
 	//smoother.execute();
+
 	for (auto b:m_Blocking2D.allBlocks())
 	{
-		SmoothLineSweepingYao smoother( &b, 2000, 0.0);
+		SmoothLineSweepingOrtho smoother( &b, 2000, 0.0);
 		smoother.execute();
 	}
+
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
@@ -745,7 +747,7 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 		{
 			math::Vector3d vec_1 = var_VectorField_1->value(n_id);
 			double angle_rad = m_params.angle_attack*M_PI/180.0 ;
-			math::Vector3d vec_flow(cos(angle_rad), sin(angle_rad), 0.0) ;
+			math::Vector3d vec_flow({cos(angle_rad), sin(angle_rad), 0.0}) ;
 
 			vec_1.normalize();
 			vec_flow.normalize();
