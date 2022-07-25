@@ -677,7 +677,7 @@ SingularityGraphBuilder::createOneSingularityLineFrom(SingularityPoint *ASingPoi
 	while (!completeSingLine) {
 		new_line->addDiscretizationPoint(currentPnt);
 		m_mesh->mark(FCurr, AMarkFaceUsedForSep);
-		std::cout << "We execute from face " << FCurr.id() << " into tetrahedron " << currentTet.id() << std::endl;
+		std::cout << "We go from face " << FCurr.id() << " into tetrahedron " << currentTet.id() << std::endl;
 		// Now look for the opposite face
 		int nbOfNewFacesOkay = 0;
 
@@ -1410,7 +1410,7 @@ SingularityGraphBuilder::createVolumeSingularityLines()
 	// now we need to compute the lines of sing into separatrices
 	int markFaceUsedForSep = m_mesh->newMark<Face>();
 
-	/* We execute through all the volume singularity points and we create a sing line
+	/* We go through all the volume singularity points and we create a sing line
 	 * for every available free slot.
 	 */
 	//	std::vector<VolumeSingularityPoint*> singularity_points = m_graph.olumePoints();
@@ -3197,7 +3197,7 @@ SingularityGraphBuilder::getOutputNormal(Face &AFace, Region &ARegion)
 	if (region_nodes.size() != 4) throw GMDSException("SingularityGraphBuilder::getOutputNormal can only be used on tetrahedral regions");
 	if (face_nodes.size() != 3) throw GMDSException("SingularityGraphBuilder::getOutputNormal can only be used on triangular faces");
 
-	// we execute through all the nodes of ARegion to find the one that do not belong
+	// we go through all the nodes of ARegion to find the one that do not belong
 	// to AFAce
 	for (unsigned int i = 0; i < region_nodes.size(); i++) {
 		Node n = region_nodes[i];

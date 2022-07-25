@@ -455,7 +455,7 @@ void PointGenerator::setBoundaryConstraint()
         }
     }
     //======================================================================
-    // We execute through each boundary face to constrained its
+    // We go through each boundary face to constrained its
     // incicent nodes (so nodes on surf, curves and points)
     //======================================================================
     for(auto f_id : m_mesh->faces()) {
@@ -1349,7 +1349,7 @@ getOutputNormal(Face& AFace, Region& ARegion)
     if (face_nodes.size() != 3)
         throw GMDSException("SingularityGraphBuilder::getOutputNormal can only be used on triangular faces");
     
-    //we execute through all the nodes of ARegion to find the one that do not belong
+    //we go through all the nodes of ARegion to find the one that do not belong
     //to AFAce
     for (auto n: region_nodes)   {
         if (n != face_nodes[0] && n != face_nodes[1] && n != face_nodes[2]) {

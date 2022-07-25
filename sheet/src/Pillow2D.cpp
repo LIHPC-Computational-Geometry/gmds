@@ -393,7 +393,7 @@ bool Pillow2D::execute(std::vector<VirtualEdge>& AEdges, bool AWithCheck){
 
         if(isABoundaryNode(n_id)){
             // we get the boundary edges (in the geometric meaning)
-            // so we execute through the adjacent faces
+            // so we go through the adjacent faces
             std::vector<TCellID> adj_bnd_edges[2];
             for(auto q_id:adj_shrink_f) {
                 Face q = m_mesh->get<Face>(q_id);

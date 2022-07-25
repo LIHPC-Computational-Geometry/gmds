@@ -242,7 +242,7 @@ the default behavior rarely changes from test to test. Then in the test body
 they set the expectations, which are often different for each test. Having an
 `ON_CALL` in the set-up part of a test doesn't mean that the calls are expected.
 If there's no `EXPECT_CALL` and the method is called, it's possibly an error. If
-we quietly let the call execute through without notifying the user, bugs may creep in
+we quietly let the call go through without notifying the user, bugs may creep in
 unnoticed.
 
 If, however, you are sure that the calls are OK, you can write
@@ -369,7 +369,7 @@ Usually, if your action is for a particular function type, defining it using
 different types (e.g. if you are defining `Return(*value*)`),
 `MakePolymorphicAction()` is easiest. Sometimes you want precise control on what
 types of functions the action can be used in, and implementing `ActionInterface`
-is the way to execute here. See the implementation of `Return()` in
+is the way to go here. See the implementation of `Return()` in
 `testing/base/public/gmock-actions.h` for an example.
 
 ### I use SetArgPointee() in WillOnce(), but gcc complains about "conflicting return type specified". What does it mean?

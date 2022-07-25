@@ -72,7 +72,7 @@ could be realized as follows (important changes highlighted):
         py::class_<Animal, PyAnimal> animal(m, "Animal");
         animal
             .def(py::init<>())
-            .def("go", &Animal::execute);
+            .def("go", &Animal::go);
 
         py::class_<Dog>(m, "Dog", animal)
             .def(py::init<>());

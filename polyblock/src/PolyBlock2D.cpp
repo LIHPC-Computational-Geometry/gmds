@@ -95,7 +95,7 @@ void PolyBlock2D::computeBndNormals() {
             math::Vector3d v01=p1-p0;
             v01.normalize();
             math::Vector normal({v01.Y(), -v01.X(), 0});
-            //check if we execute inside or outside
+            //check if we go inside or outside
             Face adj_face = e.get<Face>()[0];
             math::Vector to_inside=adj_face.center()-e.center();
             if(to_inside.dot(normal)>0){

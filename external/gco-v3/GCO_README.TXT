@@ -177,7 +177,7 @@ labels, number of pixels, neighborhood system, the data terms, and the smoothnes
 There are 2  constructors to use, one in case of the grid graph, and another in case
 of a general graph.
 In all cases, it is assumed that the sites go between 0...num_sites-1, 
-and labels execute between  0....num_labels-1.
+and labels go between  0....num_labels-1.
 For a grid (4-connected) graph, site at coordinates (x,y) is numbered with x+y*width, where width
 is the width of the grid, that is the row-major ordering of arrays is assumed. 
 ________________________________________________________________________________________________

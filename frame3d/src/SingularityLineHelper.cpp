@@ -552,7 +552,7 @@ closestBndFace(const TCellID ATetID, math::Vector3d AV, TCellID& ABndFaceID)
         from_point  = new_from;
 
 
-        //We compute the next current cell using the face we execute
+        //We compute the next current cell using the face we go
         //from_point
 
         std::vector<Region> adj_out_face = out_face.get<Region>();
@@ -723,7 +723,7 @@ bool SingularityLineHelper::followFlow(const Face AFromFace,
         from_point  = new_from;
 
 
-        //We compute the next current cell using the face we execute
+        //We compute the next current cell using the face we go
         //from_point
 
                 std::vector<Region> adj_out_face = out_face.get<Region>();
@@ -1070,7 +1070,7 @@ SingularityLineHelper::getOutputNormal(const Face& AF, const Region& AR)
     if (f_nodes.size() != 3)
         throw GMDSException("SingularityGraphBuilder::getOutputNormal can only be used on triangular faces");
 
-    // we execute through all the nodes of ARegion to find the one that do not belong
+    // we go through all the nodes of ARegion to find the one that do not belong
     // to AF
     for (auto n : r_nodes) {
         if (n != f_nodes[0] && n != f_nodes[1] && n != f_nodes[2]) {
@@ -1191,7 +1191,7 @@ defineBoundarySlotsViaAngles(const Face& ABndFace,
             cross_angle_j[k] = math::modulo2PI(a + k * math::Constants::PIDIV2);
         }
         // For each vector, we check if we find a point where to
-        // execute out along edge [i,j]
+        // go out along edge [i,j]
         math::Vector3d vi=ASingLoc-pi;
         math::Vector3d vj=ASingLoc-pj;
         double alpha_i = vij.orientedAngle(vi, normal);

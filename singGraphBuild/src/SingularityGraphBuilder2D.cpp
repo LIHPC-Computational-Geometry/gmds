@@ -828,11 +828,11 @@ SingularityGraphBuilder2D::createSingPointAndSlots(const Face &AFace)
 
 				slot_dirs.push_back(p-s);
 
-				if (alpha == 0) {     // we execute out from a node
+				if (alpha == 0) {     // we go out from a node
 					slot_cell_dim.push_back(0);
 					slot_cell_id.push_back(ni.id());
 				}
-				else if (alpha == 0) {     // we execute out from a node
+				else if (alpha == 0) {     // we go out from a node
 					slot_cell_dim.push_back(0);
 					slot_cell_id.push_back(nj.id());
 				}
@@ -938,7 +938,7 @@ SingularityGraphBuilder2D::addGeometryToSingularityGraph(vector<CurveSingularity
 			if (NodeLeft.id() == NodeRight.id()) {
 				listOfNodesInSingRight.push_back(NodeLeft.id());     // cycle
 			}
-			else {     // now we need to execute on the right
+			else {     // now we need to go on the right
 				Node Ncurr = currentNode;
 				while (!m_mesh->isMarked(NodeRight, m_mark_nodes_on_point)) {
 
@@ -1891,7 +1891,7 @@ SingularityGraphBuilder2D::growLine(SingularityPoint *AFromSingPnt,
 				                        start_dir,            /* the geometric direction to follow*/
 				                        start_cell_dim,       /* the dimension of the cell start_pnt is located */
 				                        start_cell_id,        /* the id of the cell start_pnt is located on*/
-				                        out_pnt,              /* the geometric point where we execute out */
+				                        out_pnt,              /* the geometric point where we go out */
 				                        out_vec,              /* the geometric direction to follow after*/
 				                        out_cell_dim,         /* the dimension of the out cell (0 or 1) */
 				                        out_cell_id,          /* the id of the out cell*/

@@ -199,7 +199,7 @@ int main(int argc, char* argv[])
                             //we have to check that we do not cross the volume. It can occur for thin curved
                             //shape (like cylinder with a hole)
 
-                            //We take other points closed to the face corners and we project all of them, if they execute to
+                            //We take other points closed to the face corners and we project all of them, if they go to
                             // the same surf, we keep it. Otherwise, we will put another surface later.
                             keep_projection=false;
                             std::vector<Node> corners = f.get<Node>();

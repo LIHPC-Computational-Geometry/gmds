@@ -1137,7 +1137,7 @@ class CapturedStream {
 #  endif
     name_template.append("gtest_captured_stream.XXXXXX");
 
-    // mkstemp() modifies the string bytes in place, and does not execute beyond the
+    // mkstemp() modifies the string bytes in place, and does not go beyond the
     // string's length. This results in well-defined behavior in C++17.
     //
     // The const_cast is needed below C++17. The constraints on std::string

@@ -412,7 +412,7 @@ colorEdges(const int AMarkEOnCurv, const int AMarkNOnPnt,
     std::vector<Edge> done_edges;
     for (auto e_id:m_mesh->edges())
     {
-        // We only execute throug edges classigied on curves and that have not been
+        // We only go throug edges classigied on curves and that have not been
         // yet handled
         if ( m_mesh->isMarked<Edge>(e_id, AMarkEOnCurv) &&
              !m_mesh->isMarked<Edge>(e_id, markDone)) {

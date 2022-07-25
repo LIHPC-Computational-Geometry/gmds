@@ -211,7 +211,7 @@ SingularityLine::getTangent(const double AParam) const
 				}
 			}
 			else {
-				// execute to the next edge
+				// go to the next edge
 				c += dij;
 				i++;
 			}
@@ -255,7 +255,7 @@ SingularityLine::getPoint(const double AParam) const
 				return pj;
 			}
 			else {
-				// execute to the next edge
+				// go to the next edge
 				c += dij;
 				i++;
 			}

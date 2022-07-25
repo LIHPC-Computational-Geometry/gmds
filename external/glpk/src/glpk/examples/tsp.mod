@@ -39,7 +39,7 @@ s.t. enter{j in V}: sum{(i,j) in E} x[i,j] = 1;
    that, I invented yet another way. The general idea is the following.
    Let the salesman sell, say, cars, starting the travel from node 1,
    where he has n cars. If we require the salesman to sell exactly one
-   car in each node, he will need to execute through all nodes to satisfy
+   car in each node, he will need to go through all nodes to satisfy
    this requirement, thus, all subtours will be eliminated. */
 
 var y{(i,j) in E}, >= 0;
