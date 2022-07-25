@@ -170,7 +170,7 @@ IntervalAssignment_2D::EdgeConstraint(TCellID e_id, int &N_ideal, bool &hardCons
 		if (var_layer_id->value(e_nodes[0].id()) == 0
 		    && var_layer_id->value(e_nodes[1].id()) == 0)
 		{
-			N_ideal = int(e.length()/m_params_aero.cell_size_default) ;
+			N_ideal = int(e.length()/m_params_aero.cell_size_dx_wall) ;
 			hardConstraint = true;
 		}
 	}

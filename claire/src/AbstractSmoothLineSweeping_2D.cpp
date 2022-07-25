@@ -14,10 +14,9 @@ AbstractSmoothLineSweeping_2D::AbstractSmoothLineSweeping_2D(Blocking2D::Block* 
   	m_theta(Atheta),
   	m_Nx(m_B->getNbDiscretizationI()-1),
 	m_Ny(m_B->getNbDiscretizationJ()-1),
-  	m_old_coord_x(m_Nx,m_Ny),
-	m_old_coord_y(m_Nx,m_Ny)
+  	m_P_new(m_Nx+1, m_Ny+1)
 {
-	m_tol = pow(10,-6);
+	m_tol = pow(10,-3);
 }
 /*------------------------------------------------------------------------*/
 
@@ -28,15 +27,20 @@ AbstractSmoothLineSweeping_2D::STATUS AbstractSmoothLineSweeping_2D::execute()
 	double err = pow(10,6);
 	int iteration(0);
 
+	// Block points initialization. The only points fixed during the whole smoothing.
+	m_P_new(0,0) = (*m_B)(0,0).point() ;
+	m_P_new(m_Nx,0) = (*m_B)(m_Nx,0).point() ;
+	m_P_new(0,m_Ny) = (*m_B)(0,m_Ny).point() ;
+	m_P_new(m_Nx,m_Ny) = (*m_B)(m_Nx,m_Ny).point() ;
+
 	while ( err > m_tol && iteration < m_nb_max_iterations )
 	{
-		Update_old_coords(&m_old_coord_x, &m_old_coord_y);
 		One_Step_Smoothing();
 		BoundarySlipping();
 
-		err = L2_norm_relative_error(&m_old_coord_x, &m_old_coord_y);
+		err = L2_norm_relative_error();
+		Update_new_coords();
 		iteration++;
-
 	}
 
 	std::cout << "Nombre d'itérations lissage : " << iteration << std::endl;
@@ -55,11 +59,11 @@ void AbstractSmoothLineSweeping_2D::One_Step_Smoothing(){
 	{
 		for (int j=1; j < m_Ny; j++)
 		{
-			math::Point new_ideal_pos = ComputeNewPosition(i,j) ;
+			math::Point P_new_ideal = ComputeNewPosition(i,j) ;
 
 			// Damping
 			Node n = (*m_B)(i, j);
-			n.setPoint( m_theta*n.point() + (1.0-m_theta)*new_ideal_pos );
+			m_P_new(i,j) = m_theta*n.point() + (1.0-m_theta)*P_new_ideal;
 		}
 	}
 
@@ -73,21 +77,21 @@ void AbstractSmoothLineSweeping_2D::BoundarySlipping()
 	for (int i=1;i<m_Nx;i++)
 	{
 		math::Point Mid = WeightedPointOnBranch((*m_B)(i-1,0).point(), (*m_B)(i,0).point(), (*m_B)(i+1,0).point(), 0.5);
-		(*m_B)(i, 0).setPoint(m_theta*(*m_B)(i, 0).point() + (1.0-m_theta)*Mid );
+		m_P_new(i,0) =( m_theta*(*m_B)(i, 0).point() + (1.0-m_theta)*Mid ) ;
 
 		Mid = WeightedPointOnBranch((*m_B)(i-1,m_Ny).point(), (*m_B)(i,m_Ny).point(), (*m_B)(i+1,m_Ny).point(), 0.5);
-		(*m_B)(i, m_Ny).setPoint(m_theta*(*m_B)(i, m_Ny).point() + (1.0-m_theta)*Mid );
+		m_P_new(i,m_Ny) = ( m_theta*(*m_B)(i, m_Ny).point() + (1.0-m_theta)*Mid ) ;
 	}
-
 
 	for (int j=1;j<m_Ny;j++)
 	{
 		math::Point Mid = WeightedPointOnBranch((*m_B)(0,j-1).point(), (*m_B)(0,j).point(), (*m_B)(0,j+1).point(), 0.5);
-		(*m_B)(0, j).setPoint(m_theta*(*m_B)(0, j).point() + (1.0-m_theta)*Mid);
+		m_P_new(0,j) = ( m_theta*(*m_B)(0, j).point() + (1.0-m_theta)*Mid ) ;
 
 		Mid = WeightedPointOnBranch((*m_B)(m_Nx,j-1).point(), (*m_B)(m_Nx,j).point(), (*m_B)(m_Nx,j+1).point(), 0.5);
-		(*m_B)(m_Nx, j).setPoint(m_theta*(*m_B)(m_Nx, j).point() + (1.0-m_theta)*Mid);
+		m_P_new(m_Nx,j) = ( m_theta*(*m_B)(m_Nx, j).point() + (1.0-m_theta)*Mid ) ;
 	}
+
 }
 /*------------------------------------------------------------------------*/
 
@@ -109,7 +113,11 @@ math::Point AbstractSmoothLineSweeping_2D::WeightedPointOnBranch(const math::Poi
 	else if (norme_cible > norme_1){
 		math::Vector3d Vec_CB = - Vec_BC ;
 		Vec_CB.normalize();
-		P_Weighted = C + norme_cible*Vec_CB ;
+		P_Weighted = C + (norme_branche-norme_cible)*Vec_CB ;
+	}
+	else
+	{
+		P_Weighted = B ;
 	}
 
 	return P_Weighted;
@@ -118,19 +126,20 @@ math::Point AbstractSmoothLineSweeping_2D::WeightedPointOnBranch(const math::Poi
 
 
 /*------------------------------------------------------------------------*/
-double AbstractSmoothLineSweeping_2D::L2_norm_relative_error(Array2D<TCoord>* old_coord_x, Array2D<TCoord>* old_coord_y)
+double AbstractSmoothLineSweeping_2D::L2_norm_relative_error()
 {
 	double num(0.0);
 	double denom(0.0);
 
 	for (int i=0; i < m_Nx; i++) {
-		for (int j = 0; j < m_Ny; j++) {
+		for (int j = 0; j < m_Ny; j++)
+		{
 			Node n = (*m_B)(i, j);
 
-			double err_loc = sqrt( pow((*old_coord_x)(i, j) - n.X() , 2) + pow((*old_coord_y)(i, j) - n.Y(),2) );
+			double err_loc = sqrt( pow(m_P_new(i,j).X() - n.X() , 2) + pow(m_P_new(i,j).Y() - n.Y(),2) );
 
 			num += pow(err_loc, 2);
-			denom += pow((*old_coord_x)(i, j), 2) + pow((*old_coord_y)(i, j), 2) ;
+			denom += pow(m_P_new(i,j).X(), 2) + pow(m_P_new(i,j).Y(), 2) ;
 		}
 	}
 
@@ -140,15 +149,14 @@ double AbstractSmoothLineSweeping_2D::L2_norm_relative_error(Array2D<TCoord>* ol
 
 
 /*------------------------------------------------------------------------*/
-void AbstractSmoothLineSweeping_2D::Update_old_coords(Array2D<TCoord>* old_coord_x, Array2D<TCoord>* old_coord_y)
+void AbstractSmoothLineSweeping_2D::Update_new_coords()
 {
-	for (int i=0; i < m_Nx; i++)
+	for (int i=0; i <= m_Nx; i++)
 	{
-		for (int j=0; j < m_Ny; j++)
+		for (int j=0; j <= m_Ny; j++)
 		{
 			Node n = (*m_B)(i, j);
-			(*old_coord_x)(i,j) = n.X() ;
-			(*old_coord_y)(i,j) = n.Y() ;
+			n.setPoint(m_P_new(i,j));
 		}
 	}
 }
