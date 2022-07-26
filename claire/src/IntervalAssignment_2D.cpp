@@ -159,7 +159,7 @@ IntervalAssignment_2D::EdgeConstraint(TCellID e_id, int &N_ideal, bool &hardCons
 
 	// Default parameters
 	hardConstraint = false;
-	N_ideal = int(e.length()/m_params_aero.cell_size_default);
+	N_ideal = int(e.length()/m_params_aero.edge_size_default);
 
 	std::vector<Face> e_faces = e.get<Face>() ;
 	std::vector<Node> e_nodes = e.get<Node>() ;
@@ -170,7 +170,7 @@ IntervalAssignment_2D::EdgeConstraint(TCellID e_id, int &N_ideal, bool &hardCons
 		if (var_layer_id->value(e_nodes[0].id()) == 0
 		    && var_layer_id->value(e_nodes[1].id()) == 0)
 		{
-			N_ideal = int(e.length()/m_params_aero.cell_size_dx_wall) ;
+			N_ideal = int(e.length()/m_params_aero.edge_size_wall) ;
 			hardConstraint = true;
 		}
 	}

@@ -31,28 +31,28 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 
 	// IN/OUT Parameters
 	std::string dir(TEST_SAMPLES_DIR);
-	params_aero.input_file=dir+"/Aero/2D/NACA_0012_2D_0.5.vtk";
+	params_aero.input_file=dir+"/Aero/2D/NACA_0012_2D.vtk";
 	params_aero.output_file="AeroPipeline2D_Quad.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
 
 	// Physical Parameters for the algorithm
 	params_aero.delta_cl = 0.08;				// Epaisseur de la première couche, pour la couche limite
-	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
+	params_aero.angle_attack = 17;			// Angle of attack (in degrees)
 
 	// Wall Discretization Parameter
 	params_aero.nbrMinBloc = 10;					// Minimal number of block on the wall
 	params_aero.nbrCellsInCL = 30;				// Number of cells in the boundary layer
-	params_aero.cell_size_dx_wall = 0.1 ;			// Maximal size of the cells on the wall
-	params_aero.cell_size_default = 0.08 ;			// Default size of the cells in the domain
+	params_aero.edge_size_wall = 0.01 ;			// Maximal size of the cells on the wall
+	params_aero.edge_size_default = 0.02 ;			// Default size of the cells in the domain
 
 	// Vector Field Computation Parameters
-	params_aero.vectors_field = 0;				// Choose the way the vectors field is computed for the extrusion
-	params_aero.x_VectorField_Z1 = 0.4;			// Choose the x value of the first zone  [-inf, x_VectorField_Z1]
-	params_aero.x_VectorField_Z2 = 1.4;			// Choose the x value of the second zone [x_VectorField_Z2, +inf]
+	params_aero.vectors_field = 3;				// Choose the way the vectors field is computed for the extrusion
+	params_aero.x_VectorField_Z1 = 1.5;			// Choose the x value of the first zone  [-inf, x_VectorField_Z1]
+	params_aero.x_VectorField_Z2 = 3.5;			// Choose the x value of the second zone [x_VectorField_Z2, +inf]
 
 	// Extrusion Parameters
 	params_aero.nbr_couches = 3;			// Number of layer in extrusion
-	params_aero.x_lim = 1.0;			// Limites physiques à partir desquelles
+	params_aero.x_lim = 1.2;			// Limites physiques à partir desquelles
 	params_aero.y_lim = -10000;			// l'insertion et la fusion de blocs
 	params_aero.z_lim = -10000;			// sont autorisées
 

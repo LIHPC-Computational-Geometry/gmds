@@ -74,9 +74,9 @@ namespace gmds {
 	     double x_VectorField_Z2;
 
 	     /** Block discretization on the wall */
-	     double cell_size_dx_wall ;
+	     double edge_size_wall ;
 	     /** Default block discretization in the domain */
-	     double cell_size_default ;
+	     double edge_size_default ;
 	     /** Number of cells in the boundary layer */
 	     int nbrCellsInCL;
 

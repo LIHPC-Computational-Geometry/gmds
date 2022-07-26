@@ -11,6 +11,7 @@
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
+#include <gmds/claire/Utils.h>
 #include <gmds/igalgo/GridBuilder.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>
@@ -33,11 +34,13 @@ TEST(ClaireTestClass, testSU2Writer)
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N|gmds::F);
-	vtkReader.read(dir+"/Aero/2D/Diamond_Airfoil_2D_Papier_5.vtk");
+	vtkReader.read(dir+"/Aero/2D/NACA_0012_2D.vtk");
 
 	gmds::MeshDoctor doc(&m);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
+
+	math::Utils::MeshCleaner(&m);
 
 	std::cout << "-> Ecriture du maillage ..." << std::endl;
 	SU2Writer writer(&m, "mesh.su2", -1000);

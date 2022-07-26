@@ -17,6 +17,15 @@ AbstractSmoothLineSweeping_2D::AbstractSmoothLineSweeping_2D(Blocking2D::Block* 
   	m_P_new(m_Nx+1, m_Ny+1)
 {
 	m_tol = pow(10,-3);
+
+	for (int i=0; i <= m_Nx; i++)
+	{
+		for (int j=0; j <= m_Ny; j++)
+		{
+			Node n = (*m_B)(i, j);
+			m_P_new(i,j) = n.point() ;
+		}
+	}
 }
 /*------------------------------------------------------------------------*/
 
@@ -74,7 +83,7 @@ void AbstractSmoothLineSweeping_2D::One_Step_Smoothing(){
 /*------------------------------------------------------------------------*/
 void AbstractSmoothLineSweeping_2D::BoundarySlipping()
 {
-	/*
+
 	for (int i=1;i<m_Nx;i++)
 	{
 		math::Point Mid = WeightedPointOnBranch((*m_B)(i-1,0).point(), (*m_B)(i,0).point(), (*m_B)(i+1,0).point(), 0.5);
@@ -92,7 +101,7 @@ void AbstractSmoothLineSweeping_2D::BoundarySlipping()
 		Mid = WeightedPointOnBranch((*m_B)(m_Nx,j-1).point(), (*m_B)(m_Nx,j).point(), (*m_B)(m_Nx,j+1).point(), 0.5);
 		m_P_new(m_Nx,j) = ( m_theta*(*m_B)(m_Nx, j).point() + (1.0-m_theta)*Mid ) ;
 	}
-	*/
+
 }
 /*------------------------------------------------------------------------*/
 
