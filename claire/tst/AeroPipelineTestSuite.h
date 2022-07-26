@@ -46,7 +46,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.edge_size_default = 0.01 ;			// Default size of the cells in the domain
 
 	// Vector Field Computation Parameters
-	params_aero.vectors_field = 5;				// Choose the way the vectors field is computed for the extrusion
+	params_aero.vectors_field = 3;				// Choose the way the vectors field is computed for the extrusion
 	params_aero.x_VectorField_Z1 = 1.5;			// Choose the x value of the first zone  [-inf, x_VectorField_Z1]
 	params_aero.x_VectorField_Z2 = 3.5;			// Choose the x value of the second zone [x_VectorField_Z2, +inf]
 

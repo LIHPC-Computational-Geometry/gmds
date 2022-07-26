@@ -703,7 +703,7 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 
 	Variable<math::Vector3d>* var_VectorsForExtrusion = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
 
-	if (m_params.vectors_field == 0)
+	if (m_params.vectors_field <= 0 || m_params.vectors_field > 3)
 	{
 		// Compute the gradient field of the level set from the wall to the external boundary
 		LeastSquaresGradientComputation grad2D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
