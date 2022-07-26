@@ -37,19 +37,48 @@ struct GMDSQuality_API HexQuality
 
 
 	double volume() const;
+	double diagonal() const;
+	double edgeRatio() const;
+	double maximumEdgeRatio() const;
+	double jacobian() const;
+	double scaledJacobian() const;
+	double shape() const;
+	double maximumAspectFrobenius() const;
+	double meanAspectFrobenius() const;
+	double oddy() const;
+	double shear() const;
+	double skew() const;
+	double stretch() const;
+	double taper() const;
 
 	inline math::Vector3d L0() const { return p[1]- p[0];}
-	inline math::Vector3d L1() const { return p[2]- p[1];}
-	inline math::Vector3d L2() const { return p[3]- p[2];}
-	inline math::Vector3d L3() const { return p[3]- p[0];}
-	inline math::Vector3d L4() const { return p[4]- p[0];}
-	inline math::Vector3d L5() const { return p[5]- p[1];}
-	inline math::Vector3d L6() const { return p[6]- p[2];}
-	inline math::Vector3d L7() const { return p[7]- p[3];}
-	inline math::Vector3d L8() const { return p[5]- p[4];}
-	inline math::Vector3d L9() const { return p[6]- p[5];}
-	inline math::Vector3d L10() const { return p[7]- p[6];}
-	inline math::Vector3d L11() const { return p[7]- p[4];}
+		inline math::Vector3d L1() const { return p[2]- p[1];}
+		inline math::Vector3d L2() const { return p[3]- p[2];}
+		inline math::Vector3d L3() const { return p[3]- p[0];}
+		inline math::Vector3d L4() const { return p[4]- p[0];}
+		inline math::Vector3d L5() const { return p[5]- p[1];}
+		inline math::Vector3d L6() const { return p[6]- p[2];}
+		inline math::Vector3d L7() const { return p[7]- p[3];}
+		inline math::Vector3d L8() const { return p[5]- p[4];}
+		inline math::Vector3d L9() const { return p[6]- p[5];}
+		inline math::Vector3d L10() const { return p[7]- p[6];}
+		inline math::Vector3d L11() const { return p[7]- p[4];}
+
+	   inline double l0() const { return L0().norm();}
+	   inline double l1() const { return L1().norm();}
+	   inline double l2() const { return L2().norm();}
+	   inline double l3() const { return L3().norm();}
+	   inline double l4() const { return L4().norm();}
+	   inline double l5() const { return L5().norm();}
+	   inline double l6() const { return L6().norm();}
+	   inline double l7() const { return L7().norm();}
+	   inline double l8() const { return L8().norm();}
+	   inline double l9() const { return L9().norm();}
+	   inline double l10() const { return L10().norm();}
+	   inline double l11() const { return L11().norm();}
+
+	   double lmin() const;
+	   double lmax() const;
 
 
 
@@ -63,9 +92,9 @@ struct GMDSQuality_API HexQuality
 	//HERE HERE HERE
 
 	/** Principal axes */
-	inline math::Vector3d X1() const {return (p[1]-p[0])+(p[2]-p[3]+(p[5]-p[4]+(p[6]-p[7]);}
-	inline math::Vector3d X2() const {return (p[3]-p[0])+(p[2]-p[1]+(p[7]-p[4]+(p[6]-p[5]);}
-	inline math::Vector3d X3() const {return (p[4]-p[0])+(p[5]-p[1]+(p[6]-p[2]+(p[7]-p[3]);}
+	inline math::Vector3d X1() const {return (p[1]-p[0])+(p[2]-p[3])+(p[5]-p[4])+(p[6]-p[7]);}
+	inline math::Vector3d X2() const {return (p[3]-p[0])+(p[2]-p[1])+(p[7]-p[4])+(p[6]-p[5]);}
+	inline math::Vector3d X3() const {return (p[4]-p[0])+(p[5]-p[1])+(p[6]-p[2])+(p[7]-p[3]);}
 
 	/** Cross derivatives*/
 	inline math::Vector3d X12() const {return (p[2]-p[3])-(p[1]-p[0])+(p[6]-p[7])-(p[5]-p[4]);}
@@ -85,6 +114,35 @@ struct GMDSQuality_API HexQuality
 	inline math::Matrix33 A6() const {return {-L9(),L10(),-L6()};}
 	inline math::Matrix33 A7() const {return {-L10(),-L11(),-L7()};}
 	inline math::Matrix33 A8() const {return {X1(),X2(),X3()};}
+
+	/**  normalized jacobian matrices */
+	inline math::Matrix33 A0unit() const {return {L0().normalize(),
+																 L3().normalize(),
+																 L4().normalize()};}
+	inline math::Matrix33 A1unit() const {return {L1().normalize(),
+																 -L0().normalize(),
+																 L5().normalize()};}
+	inline math::Matrix33 A2unit() const {return {L2().normalize(),
+																 -L1().normalize(),
+																 L6().normalize()};}
+	inline math::Matrix33 A3unit() const {return {-L3().normalize(),
+																 -L2().normalize(),
+																 L7().normalize()};}
+	inline math::Matrix33 A4unit() const {return {L11().normalize(),
+																 L8().normalize(),
+																 -L4().normalize()};}
+	inline math::Matrix33 A5unit() const {return {-L8().normalize(),
+																 L9().normalize(),
+																 -L5().normalize()};}
+	inline math::Matrix33 A6unit() const {return {-L9().normalize(),
+																 L10().normalize(),
+																 -L6().normalize()};}
+	inline math::Matrix33 A7unit() const {return {-L10().normalize(),
+																 -L11().normalize(),
+																 -L7().normalize()};}
+	inline math::Matrix33 A8unit() const {return {X1().normalize(),
+																 X2().normalize(),
+																 X3().normalize()};}
 };
 /*----------------------------------------------------------------------------*/
 }
