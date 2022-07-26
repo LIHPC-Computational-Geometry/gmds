@@ -51,7 +51,7 @@ void Utils::MeshCleaner(Mesh *AMesh){
 	{
 		Node n = AMesh->get<Node>(n_id);
 		if (n.get<Face>().empty()) {
-			//std::cout << "Noeud isolé : " << n_id << std::endl;
+			std::cout << "Noeud isolé : " << n_id << std::endl;
 			AMesh->deleteNode(n_id);
 		}
 	}
