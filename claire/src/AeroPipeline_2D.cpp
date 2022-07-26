@@ -16,6 +16,7 @@
 #include <gmds/claire/AeroExtrusion_2D.h>
 #include <gmds/claire/SU2Writer.h>
 #include <gmds/claire/IntervalAssignment_2D.h>
+#include <gmds/math/TransfiniteInterpolation.h>
 
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -206,11 +207,13 @@ AeroPipeline_2D::execute(){
 	//Grid_Smooth2D smoother(&m_Blocking2D, 2000);
 	//smoother.execute();
 
+	/*
 	for (auto b:m_Blocking2D.allBlocks())
 	{
-		SmoothLineSweepingYao smoother( &b, 4000, 0.5);
+		SmoothLineSweepingYao smoother( &b, 100, 0.5);
 		smoother.execute();
 	}
+	 */
 
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
@@ -663,6 +666,31 @@ AeroPipeline_2D::BlockingClassification(){
 			}
 		}
 
+	}
+
+	// New mesh of the interior points of the blocks
+	for(auto B0:m_Blocking2D.allBlocks()) {
+		auto Nx = B0.getNbDiscretizationI();
+		auto Ny = B0.getNbDiscretizationJ();
+
+		Array2D<TCellID> *a = new Array2D<TCellID>(Nx, Ny);
+		Array2D<math::Point> pnts(Nx, Ny);
+
+		for (auto i = 0; i < Nx; i++) {
+			pnts(i, 0) = B0(i,0).point();
+			pnts(i, Ny - 1) = B0(i,Ny-1).point();
+		}
+		for (auto j = 0; j < Ny; j++) {
+			pnts(0, j) = B0(0,j).point();
+			pnts(Nx - 1, j) = B0(Nx-1,j).point();
+		}
+
+		math::TransfiniteInterpolation::computeQuad(pnts);
+		for (auto i = 1; i < Nx - 1; i++) {
+			for (auto j = 1; j < Ny - 1; j++) {
+				B0(i,j).setPoint(pnts(i,j));
+			}
+		}
 	}
 
 }

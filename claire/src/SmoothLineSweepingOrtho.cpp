@@ -20,7 +20,7 @@ SmoothLineSweepingOrtho::SmoothLineSweepingOrtho(Blocking2D::Block *AB, int Anb_
 /*------------------------------------------------------------------------*/
 math::Point SmoothLineSweepingOrtho::ComputeNewPosition(int i, int j)
 {
-	double alpha = pow( (j-1.0)/( 6.0*(m_Ny-2.0) ) , 0.1) ;
+	double alpha = pow( (j-1.0)/( 6.0*(m_Ny-1.0) ) , 0.1) ;
 
 	// Compute the 6 points for the Yao Smoother
 	math::Point V1 = WeightedPointOnBranch((*m_B)(i-1,j-1).point(), (*m_B)(i,j-1).point(), (*m_B)(i+1,j-1).point(), 0.5);
