@@ -207,13 +207,11 @@ AeroPipeline_2D::execute(){
 	//Grid_Smooth2D smoother(&m_Blocking2D, 2000);
 	//smoother.execute();
 
-	/*
 	for (auto b:m_Blocking2D.allBlocks())
 	{
-		SmoothLineSweepingYao smoother( &b, 100, 0.5);
+		SmoothLineSweepingYao smoother( &b, 10, 0.5);
 		smoother.execute();
 	}
-	 */
 
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
