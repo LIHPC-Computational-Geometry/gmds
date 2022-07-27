@@ -37,10 +37,16 @@ class LIB_GMDS_CLAIRE_API RefinementBeta
 	 */
 	STATUS execute();
 	/*-------------------------------------------------------------------*/
+	/** @brief Get the new vector of positions
+		*
+		* \return
+	 */
+	std::vector<math::Point> GetNewPositions();
+	/*-------------------------------------------------------------------*/
 
  private:
 	/*-------------------------------------------------------------------*/
-	/** @brief Compute the map of chords of the blocking.
+	/** @brief Compute the Beta parameter
 	 	* \param[in] first_edge_size the size imposed on the first edge
 	 	* \param[in] sum_edge_sizes the sum of the edges size
 	 	* \param[in] Nbr_Points final number of points

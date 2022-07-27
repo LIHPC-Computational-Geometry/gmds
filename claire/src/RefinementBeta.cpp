@@ -34,6 +34,7 @@ RefinementBeta::execute()
 	}
 
 	double Beta = ComputeBeta(m_size_first_edge, sum_size_edges, Nbr_Points) ;
+	std::cout << "Beta : " << Beta << std::endl;
 
 	m_PointsRefined.push_back(m_Points[0]);	// The first position is fixed
 
@@ -47,7 +48,7 @@ RefinementBeta::execute()
 		double fn = 1.0+Beta*(1.0-exp(p))/(1.0+exp(p));
 		double l = fn*sum_size_edges;
 
-		for (int j=1; j < Nbr_Points-1; j++)
+		for (int j=0; j < Nbr_Points-1; j++)
 		{
 			if ( l >= longueurs[j] && l <= longueurs[j+1] )
 			{
@@ -67,12 +68,20 @@ RefinementBeta::execute()
 
 
 /*------------------------------------------------------------------------*/
+std::vector<math::Point> RefinementBeta::GetNewPositions()
+{
+	return m_PointsRefined;
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
 double RefinementBeta::ComputeBeta(double first_edge_size, double sum_edge_sizes, int Nbr_Points)
 {
 
 	double n = 1.0/(Nbr_Points-1.0);
 	double tol = pow(10,-6); 	// Tolerance for the Newton algorithm
-	double Beta = 1.000000001;			// Initialization of the Beta parameter
+	double Beta = 1.00000001;			// Initialization of the Beta parameter
 	double F = 1.0;						// Initialization of the function F
 	int iter = 0;							// Initialization iterations of the Newton
 
