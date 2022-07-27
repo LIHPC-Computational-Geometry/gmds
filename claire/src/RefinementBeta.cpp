@@ -34,7 +34,6 @@ RefinementBeta::execute()
 	}
 
 	double Beta = ComputeBeta(m_size_first_edge, sum_size_edges, Nbr_Points) ;
-	std::cout << "Beta : " << Beta << std::endl;
 
 	m_PointsRefined.push_back(m_Points[0]);	// The first position is fixed
 
