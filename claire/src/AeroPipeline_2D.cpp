@@ -17,6 +17,7 @@
 #include <gmds/claire/SU2Writer.h>
 #include <gmds/claire/IntervalAssignment_2D.h>
 #include <gmds/math/TransfiniteInterpolation.h>
+#include <gmds/claire/RefinementBeta.h>
 
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -216,6 +217,37 @@ AeroPipeline_2D::execute(){
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
+
+
+
+	// Add the Beta Refinement
+	for (auto b:m_Blocking2D.allBlocks())
+	{
+		int Nx = b.getNbDiscretizationI();
+		int Ny = b.getNbDiscretizationJ();
+
+		for (int i=0; i < Nx; i++)
+		{
+			std::vector<math::Point> Points;
+			for (int j=0; j < Ny; j++)
+			{
+				Points.push_back(b(i,j).point());
+			}
+
+			RefinementBeta ref(Points, pow(10,-8));
+			ref.execute();
+			Points = ref.GetNewPositions();
+
+			for (int j=1; j < Ny-1; j++)
+			{
+				b(i,j).setPoint({Points[j]});
+			}
+
+		}
+	}
+
+
+
 
 	// Compute the quality criterions of the blocking
 	math::Utils::AnalyseQuadMeshQuality(&m_Blocking2D);
