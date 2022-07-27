@@ -53,12 +53,9 @@ TEST(RefinementBetaTestClass, test_1)
 		Points.push_back(b1(i, j).point());
 	}
 
-	std::cout << "Size 1 : " << Points.size() << std::endl;
-
 	RefinementBeta ref(Points, pow(10, -8));
 	ref.execute();
 	Points = ref.GetNewPositions();
-	std::cout << "Size 2 : " << Points.size() << std::endl;
 
 	for (int j = 1; j < Ny - 1; j++)
 	{
