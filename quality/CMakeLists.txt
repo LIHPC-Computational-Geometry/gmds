@@ -2,25 +2,18 @@
 # LIBRARY DEFINTION (SOURCE FILES)
 #==============================================================================
 # Nommer tout en GMDS_MODULE_NAME, GMDS_SRC, ... dans les composants
-set(GMDS_LIB ${LIB_GMDS_IG_ALGO})
-set(GMDS_LIB_PREFIX gmds/igalgo)
+set(GMDS_LIB ${LIB_GMDS_QUALITY})
+set(GMDS_LIB_PREFIX gmds/quality)
 
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
-        inc/gmds/igalgo/BoundaryExtractor3D.h
-        inc/gmds/igalgo/BoundaryExtractor2D.h
-        inc/gmds/igalgo/BoundaryOperator.h
-        inc/gmds/igalgo/BoundaryOperator2D.h
-        inc/gmds/igalgo/GridBuilder.h
-        inc/gmds/igalgo/THexBuilder.h)
+        inc/gmds/quality/QuadQuality.h
+        inc/gmds/quality/HexQuality.h
+        )
 set(GMDS_SRC
-        src/BoundaryExtractor3D.cpp
-        src/BoundaryExtractor2D.cpp
-        src/BoundaryOperator.cpp
-        src/BoundaryOperator2D.cpp
-        src/GridBuilder.cpp
-        src/THexBuilder.cpp)
-
+        src/QuadQuality.cpp
+        src/HexQuality.cpp
+        )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
@@ -35,7 +28,7 @@ include(GNUInstallDirs)
 
 #LIBRARY TO INSTALL
 target_link_libraries(${GMDS_LIB} PUBLIC
-        ${LIB_GMDS_IG} ${LIB_GMDS_QUALITY})
+        ${LIB_GMDS_MATH})
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)
 
@@ -52,6 +45,7 @@ install(TARGETS ${GMDS_LIB}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
 
 #==============================================================================
 if(WITH_TEST)
