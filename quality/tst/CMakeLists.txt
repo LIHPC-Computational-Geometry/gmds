@@ -1,5 +1,6 @@
 add_executable(GMDS_QUALITY_TEST
         QuadEvalTestSuite.h
+        HexEvalTestSuite.h
         main_test.cpp)
 
 target_link_libraries(GMDS_QUALITY_TEST PUBLIC
