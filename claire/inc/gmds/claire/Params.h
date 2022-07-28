@@ -77,8 +77,15 @@ namespace gmds {
 	     double edge_size_wall ;
 	     /** Default block discretization in the domain */
 	     double edge_size_default ;
+	     /** First edge size in the direction ortho to the wall */
+	     double edge_size_first_ortho_wall ;
 	     /** Number of cells in the boundary layer */
 	     int nbrCellsInCL;
+
+	     /** Number of iterations of the Yao Smoother */
+	     int nbr_iter_smoothing_yao;
+	     /** Damping parameter for the Yao Smoother */
+	     double damping_smoothing_yao;
 
 	     /** Limit between inlet and outlet for SU2 writer */
 	     double x_lim_SU2_inoutlet;
