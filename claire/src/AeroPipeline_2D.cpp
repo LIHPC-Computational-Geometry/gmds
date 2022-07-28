@@ -210,7 +210,7 @@ AeroPipeline_2D::execute(){
 
 	for (auto b:m_Blocking2D.allBlocks())
 	{
-		SmoothLineSweepingYao smoother( &b, 20, 0.5);
+		SmoothLineSweepingYao smoother( &b, m_params.nbr_iter_smoothing_yao, m_params.damping_smoothing_yao);
 		smoother.execute();
 	}
 
@@ -231,14 +231,6 @@ AeroPipeline_2D::execute(){
 		Node n1 = b.getNode(1);
 		Node n2 = b.getNode(2);
 		Node n3 = b.getNode(3);
-
-		/*
-		std::cout << "---------------" << std::endl;
-		std::cout << "Noeud 0 dans la couche : " << var_couche->value(n0.id()) << std::endl;
-		std::cout << "Noeud 1 dans la couche : " << var_couche->value(n1.id()) << std::endl;
-		std::cout << "Noeud 2 dans la couche : " << var_couche->value(n2.id()) << std::endl;
-		std::cout << "Noeud 3 dans la couche : " << var_couche->value(n3.id()) << std::endl;
-		 */
 
 		int compteur(0);
 		if (var_couche->value(n0.id()) == 0)
@@ -265,7 +257,7 @@ AeroPipeline_2D::execute(){
 					Points.push_back(b(i, j).point());
 				}
 
-				RefinementBeta ref(Points, 8*pow(10, -6));
+				RefinementBeta ref(Points, m_params.edge_size_first_ortho_wall);
 				ref.execute();
 				Points = ref.GetNewPositions();
 

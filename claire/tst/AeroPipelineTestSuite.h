@@ -42,8 +42,9 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	// Wall Discretization Parameter
 	params_aero.nbrMinBloc = 10;					// Minimal number of block on the wall
 	params_aero.nbrCellsInCL = 30;				// Number of cells in the boundary layer
-	params_aero.edge_size_wall = 0.001 ;			// Maximal size of the cells on the wall
-	params_aero.edge_size_default = 0.02 ;			// Default size of the cells in the domain
+	params_aero.edge_size_wall = 0.001 ;									// Maximal size of the cells on the wall
+	params_aero.edge_size_default = 0.02 ;									// Default size of the cells in the domain
+	params_aero.edge_size_first_ortho_wall = 8*pow(10,-5);	//
 
 	// Vector Field Computation Parameters
 	params_aero.vectors_field = 3;				// Choose the way the vectors field is computed for the extrusion
@@ -56,6 +57,9 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.y_lim = -10000;			// l'insertion et la fusion de blocs
 	params_aero.z_lim = -10000;			// sont autorisées
 
+	// Smoothing Parameters
+	params_aero.nbr_iter_smoothing_yao = 20 ;		// Number of iterations for the Yao Smoothing
+	params_aero.damping_smoothing_yao = 0.5 ;		// Damping parameter for the Yao Smoothing
 
 	// SU2 Writer Parameter
 	params_aero.x_lim_SU2_inoutlet = -pow(10,6);		// Limit between inlet and outlet for SU2 writer
