@@ -52,7 +52,7 @@ AbstractSmoothLineSweeping_2D::STATUS AbstractSmoothLineSweeping_2D::execute()
 		iteration++;
 	}
 
-	std::cout << "Nombre d'itérations lissage : " << iteration << std::endl;
+	//std::cout << "Nombre d'itérations lissage : " << iteration << std::endl;
 
 	return AbstractSmoothLineSweeping_2D::SUCCESS;
 }

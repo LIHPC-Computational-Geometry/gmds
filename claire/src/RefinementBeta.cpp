@@ -35,12 +35,13 @@ RefinementBeta::execute()
 
 	double Beta = ComputeBeta(m_size_first_edge, sum_size_edges, Nbr_Points) ;
 
+	m_PointsRefined.clear();
 	m_PointsRefined.push_back(m_Points[0]);	// The first position is fixed
 
 	// Compute the position of the new points
 	for (int i=1; i < Nbr_Points-1; i++)
 	{
-		double n = (i-1.0)/(Nbr_Points-1.0);
+		double n = 1.0*i/(Nbr_Points-1.0);
 		double r = (Beta+1.0)/(Beta-1.0);
 		double z = log(r);
 		double p = z*(1.0-n);
@@ -49,11 +50,12 @@ RefinementBeta::execute()
 
 		for (int j=0; j < Nbr_Points-1; j++)
 		{
-			if ( l >= longueurs[j] && l <= longueurs[j+1] )
+			bool point_find(false);
+			if ( l >= longueurs[j] && l < longueurs[j+1] && !point_find )
 			{
-				l = l - longueurs[j];
 				math::Vector3d v = ( m_Points[j+1]-m_Points[j] ).normalize() ;
-				m_PointsRefined.push_back( m_Points[j] + l*v );
+				m_PointsRefined.push_back( m_Points[j] + (l - longueurs[j])*v );
+				point_find = true;
 			}
 		}
 
@@ -79,7 +81,7 @@ double RefinementBeta::ComputeBeta(double first_edge_size, double sum_edge_sizes
 {
 
 	double n = 1.0/(Nbr_Points-1.0);
-	double tol = pow(10,-6); 	// Tolerance for the Newton algorithm
+	double tol = pow(10,-9); 	// Tolerance for the Newton algorithm
 	double Beta = 1.00000001;			// Initialization of the Beta parameter
 	double F = 1.0;						// Initialization of the function F
 	int iter = 0;							// Initialization iterations of the Newton

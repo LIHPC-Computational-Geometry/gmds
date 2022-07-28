@@ -210,7 +210,7 @@ AeroPipeline_2D::execute(){
 
 	for (auto b:m_Blocking2D.allBlocks())
 	{
-		SmoothLineSweepingYao smoother( &b, 10, 0.5);
+		SmoothLineSweepingYao smoother( &b, 20, 0.5);
 		smoother.execute();
 	}
 
@@ -226,23 +226,53 @@ AeroPipeline_2D::execute(){
 		int Nx = b.getNbDiscretizationI();
 		int Ny = b.getNbDiscretizationJ();
 
-		for (int i=0; i < Nx; i++)
+		Variable<int>* var_couche = m_Blocking2D.getVariable<int, GMDS_NODE>("GMDS_Couche");
+		Node n0 = b.getNode(0);
+		Node n1 = b.getNode(1);
+		Node n2 = b.getNode(2);
+		Node n3 = b.getNode(3);
+
+		/*
+		std::cout << "---------------" << std::endl;
+		std::cout << "Noeud 0 dans la couche : " << var_couche->value(n0.id()) << std::endl;
+		std::cout << "Noeud 1 dans la couche : " << var_couche->value(n1.id()) << std::endl;
+		std::cout << "Noeud 2 dans la couche : " << var_couche->value(n2.id()) << std::endl;
+		std::cout << "Noeud 3 dans la couche : " << var_couche->value(n3.id()) << std::endl;
+		 */
+
+		int compteur(0);
+		if (var_couche->value(n0.id()) == 0)
 		{
-			std::vector<math::Point> Points;
-			for (int j=0; j < Ny; j++)
-			{
-				Points.push_back(b(i,j).point());
+			compteur++;
+		}
+		if (var_couche->value(n1.id()) == 0)
+		{
+			compteur++;
+		}
+		if (var_couche->value(n2.id()) == 0)
+		{
+			compteur++;
+		}
+		if (var_couche->value(n3.id()) == 0)
+		{
+			compteur++;
+		}
+
+		if (compteur == 2) {
+			for (int i = 0; i < Nx; i++) {
+				std::vector<math::Point> Points;
+				for (int j = 0; j < Ny; j++) {
+					Points.push_back(b(i, j).point());
+				}
+
+				RefinementBeta ref(Points, 8*pow(10, -6));
+				ref.execute();
+				Points = ref.GetNewPositions();
+
+				for (int j = 1; j < Ny - 1; j++) {
+					b(i, j).setPoint({Points[j]});
+				}
 			}
-
-			RefinementBeta ref(Points, pow(10,-8));
-			ref.execute();
-			Points = ref.GetNewPositions();
-
-			for (int j=1; j < Ny-1; j++)
-			{
-				b(i,j).setPoint({Points[j]});
-			}
-
 		}
 	}
 
@@ -492,6 +522,7 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 		Node n_blocking = m_Blocking2D.newBlockCorner(n.point());
 		var_new_id->set(n_id, n_blocking.id());
 		var_couche->set(n_blocking.id(), m_couche_id->value(n_id));
+		//std::cout << "Noeud " << n_blocking.id() << " dans la couche " << var_couche->value(n_blocking.id()) << std::endl;
 
 		UpdateLinker(m_linker_HG, n, m_linker_BG, n_blocking); // Init linker_BG
 	}

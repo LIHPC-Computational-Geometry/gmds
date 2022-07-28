@@ -37,13 +37,13 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 
 	// Physical Parameters for the algorithm
 	params_aero.delta_cl = 0.04;				// Epaisseur de la première couche, pour la couche limite
-	params_aero.angle_attack = 17;			// Angle of attack (in degrees)
+	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
 
 	// Wall Discretization Parameter
 	params_aero.nbrMinBloc = 10;					// Minimal number of block on the wall
 	params_aero.nbrCellsInCL = 30;				// Number of cells in the boundary layer
 	params_aero.edge_size_wall = 0.001 ;			// Maximal size of the cells on the wall
-	params_aero.edge_size_default = 0.01 ;			// Default size of the cells in the domain
+	params_aero.edge_size_default = 0.02 ;			// Default size of the cells in the domain
 
 	// Vector Field Computation Parameters
 	params_aero.vectors_field = 3;				// Choose the way the vectors field is computed for the extrusion
