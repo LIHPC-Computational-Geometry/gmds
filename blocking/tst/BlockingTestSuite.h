@@ -1,13 +1,14 @@
 /*----------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 /*----------------------------------------------------------------------------*/
-// Files containing the different test suites to launch
-#include "BlockingTestSuite.h"
-#include "CGALTestSuite.h"
+//#include <iostream>
+//#include <vector>
 /*----------------------------------------------------------------------------*/
-int main(int argc, char ** argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+#include <gmds/blocking/Blocking.h>
+/*----------------------------------------------------------------------------*/
+TEST(BlockingTestSuite, dummytest)
+{
+	ASSERT_EQ(0, 0);
 }
 /*----------------------------------------------------------------------------*/
-
+/*----------------------------------------------------------------------------*/
