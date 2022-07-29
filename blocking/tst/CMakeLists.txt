@@ -1,10 +1,12 @@
 add_executable(GMDS_BLOCKING_TEST
+        BlockingTestSuite.h
         CGALTestSuite.h
         main_test.cpp )
 
 target_link_libraries(GMDS_BLOCKING_TEST PUBLIC
         ${GMDS_LIB}
-        CGAL::CGAL
+        CGAL::CGAL_Core
+#        CGAL::CGAL_Basic_viewer
         gtest)
 
 target_include_directories(GMDS_BLOCKING_TEST PRIVATE .)
