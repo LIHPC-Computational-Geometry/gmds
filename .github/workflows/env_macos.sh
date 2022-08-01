@@ -2,7 +2,10 @@
 
 brew install autoconf automake libtool gcc
 
-git clone --depth=1 -b releases/latest https://github.com/spack/spack.git
+# will return to the latest of spack when a more recent version of CGAL is included
+# (my commit is in branch develop at the moment)
+#git clone --depth=1 -b releases/latest https://github.com/spack/spack.git
+git clone --branch develop https://github.com/spack/spack.git
 . ./spack/share/spack/setup-env.sh
 
 
@@ -10,9 +13,10 @@ git clone --depth=1 -b releases/latest https://github.com/spack/spack.git
 cp /Users/runner/work/gmds/gmds/.github/workflows/misc/config.yaml /Users/runner/work/gmds/gmds/spack/etc/spack/defaults/
 
 . ./spack/share/spack/setup-env.sh
+
 spack external find cmake
 spack install lcov
 spack install glpk
-spack install cgal@5.0.3
+spack install cgal
 ls /Users/runner/work/gmds/gmds/spack/opt/spack/glpk
 ls -l /Users/runner/work/gmds/gmds/spack/opt/spack/glpk/lib
