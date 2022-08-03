@@ -2,6 +2,9 @@
 #ifndef GMDS_BLOCKING_H
 #define GMDS_BLOCKING_H
 /*----------------------------------------------------------------------------*/
+#include <map>
+#include <string>
+/*----------------------------------------------------------------------------*/
 //#include <CGAL/Generalized_map.h>
 #include <CGAL/Linear_cell_complex_for_generalized_map.h>
 /*----------------------------------------------------------------------------*/
@@ -45,10 +48,46 @@ class LIB_GMDS_BLOCKING_API Blocking{
 	 */
 	STATUS execute();
 
+	/*--------------------------------------------------------------------*/
+	/** @brief  Get nbVertices
+	 */
+	 int nbVertices() const;
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Get nbEdges
+	  */
+	 int nbEdges() const;
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Get nbFaces
+	  */
+	 int nbFaces() const;
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Get nbBlocks
+	  */
+	 int nbBlocks() const;
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Create grid of blocks
+	  */
+	 void createGrid();
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Create grid of blocks
+	  */
+	 void writeMokaFile(std::string AFileName) const;
+
  private:
 
+	// blocking entities to darts mapping
+	std::map<int, Dart_handle> v2d_;
+	std::map<int, Dart_handle> e2d_;
+	std::map<int, Dart_handle> f2d_;
+	std::map<int, Dart_handle> b2d_;
+
 	// linear cell complex
-	LCC_3 llc;
+	LCC_3 lcc_;
 };
 /*----------------------------------------------------------------------------*/
 } // namespace blocking
