@@ -52,32 +52,42 @@ class LIB_GMDS_BLOCKING_API Blocking{
 	/*--------------------------------------------------------------------*/
 	/** @brief  Get nbVertices
 	 */
-	 int nbVertices() const;
+	 int nbVertices() const {return lcc_.number_of_vertex_attributes();};
 
 	 /*--------------------------------------------------------------------*/
 	 /** @brief  Get nbEdges
 	  */
-	 int nbEdges() const;
+	 int nbEdges() const {return lcc_.one_dart_per_cell<1>().size();};
 
 	 /*--------------------------------------------------------------------*/
 	 /** @brief  Get nbFaces
 	  */
-	 int nbFaces() const;
+	 int nbFaces() const {return lcc_.one_dart_per_cell<2>().size();};
 
 	 /*--------------------------------------------------------------------*/
 	 /** @brief  Get nbBlocks
 	  */
-	 int nbBlocks() const;
+	 int nbBlocks() const {return lcc_.one_dart_per_cell<3>().size();};
 
 	 /*--------------------------------------------------------------------*/
 	 /** @brief  Create grid of blocks
 	  */
-	 void createGrid();
+	 void createGrid2d();
 
 	 /*--------------------------------------------------------------------*/
 	 /** @brief  Create grid of blocks
 	  */
-	 void createGrid(gmds::math::Point APmin, gmds::math::Point APmax, int ANx, int ANy, int ANz);
+	 void createGrid3d();
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Create grid of blocks
+	  */
+	 void createGrid2d(gmds::math::Point APmin, gmds::math::Point APmax, int ANx, int ANy);
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Create grid of blocks
+	  */
+	 void createGrid3d(gmds::math::Point APmin, gmds::math::Point APmax, int ANx, int ANy, int ANz);
 
 	 /*--------------------------------------------------------------------*/
 	 /** @brief  Create grid of blocks

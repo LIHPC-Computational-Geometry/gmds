@@ -19,12 +19,63 @@ Blocking::execute()
 	return Blocking::SUCCESS;
 }
 /*----------------------------------------------------------------------------*/
-void Blocking::createGrid()
+void Blocking::createGrid2d()
 {
-	this->createGrid(gmds::math::Point(0,0,0), gmds::math::Point(1,1,1), 3,3,3);
+	this->createGrid2d(gmds::math::Point(0,0,0), gmds::math::Point(1,1,1), 3,3);
 }
 /*----------------------------------------------------------------------------*/
-void Blocking::createGrid(gmds::math::Point APmin, gmds::math::Point APmax, int ANx, int ANy, int ANz)
+void Blocking::createGrid3d()
+{
+	this->createGrid3d(gmds::math::Point(0,0,0), gmds::math::Point(1,1,1), 3,3,3);
+}
+/*----------------------------------------------------------------------------*/
+void Blocking::createGrid2d(gmds::math::Point APmin, gmds::math::Point APmax, int ANx, int ANy)
+{
+	Dart_handle* dhs = new Dart_handle[ANx*ANy];
+
+	for(int i=0; i<ANx; i++) {
+		for(int j=0; j<ANy; j++) {
+
+			double x0 = APmin.X() + ((double) i / (double) ANx) * (APmax.X() + (-1. * APmin.X()));
+			double y0 = APmin.Y() + ((double) j / (double) ANy) * (APmax.Y() + (-1. * APmin.Y()));
+			double x1 = APmin.X() + ((double) (i+1) / (double) ANx) * (APmax.X() + (-1. * APmin.X()));
+			double y1 = APmin.Y() + ((double) (j+1) / (double) ANy) * (APmax.Y() + (-1. * APmin.Y()));
+
+			Dart_handle dh =
+				lcc_.make_quadrangle(Point(x0, y0, 0.),
+											Point(x1, y0, 0.),
+											Point(x1, y1, 0.),
+											Point(x0, y1, 0.));
+
+			dhs[i*ANy+j] = dh;
+		}
+	}
+
+
+	for(int i=0; i<ANx; i++) {
+		for (int j=0; j<ANy; j++) {
+			Dart_handle dh = dhs[i*ANy+j];
+
+			if(i != ANx-1) {
+				Dart_handle dhi = dhs[(i+1)*ANy+j];
+				lcc_.sew<2>(lcc_.alpha(dh, 0, 1), lcc_.alpha(dhi, 1));
+			}
+			if(j != ANy-1) {
+				Dart_handle dhj = dhs[i*ANy+j+1];
+				lcc_.sew<2>(lcc_.alpha(dh, 1, 0, 1), dhj);
+			}
+		}
+	}
+
+	delete[] dhs;
+
+	if (!lcc_.is_valid()) {
+		std::string s ="Blocking::createGrid lcc not valid";
+		throw gmds::GMDSException(s);
+	}
+}
+/*----------------------------------------------------------------------------*/
+void Blocking::createGrid3d(gmds::math::Point APmin, gmds::math::Point APmax, int ANx, int ANy, int ANz)
 {
 	Dart_handle* dhs = new Dart_handle[ANx*ANy*ANz];
 
