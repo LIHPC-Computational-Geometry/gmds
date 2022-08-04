@@ -11,10 +11,19 @@ TEST(BlockingTestSuite, dummytest)
 	ASSERT_EQ(0, 0);
 }
 /*----------------------------------------------------------------------------*/
-TEST(BlockingTestSuite, write)
+TEST(BlockingTestSuite, createGrid)
 {
 	gmds::blocking::Blocking bl;
 	bl.createGrid();
+
+
+	ASSERT_EQ(0, 0);
+}
+/*----------------------------------------------------------------------------*/
+TEST(BlockingTestSuite, write)
+{
+	gmds::blocking::Blocking bl;
+	bl.createGrid(gmds::math::Point(0,0,0), gmds::math::Point(1,1,1), 2,3,4);
 
 	bl.writeMokaFile("aaa.moka");
 	ASSERT_EQ(0, 0);
