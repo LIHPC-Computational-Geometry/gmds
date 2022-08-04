@@ -11,6 +11,7 @@
 /*----------------------------------------------------------------------------*/
 // GMDS File Headers
 /*----------------------------------------------------------------------------*/
+#include <gmds/math/Point.h>
 #include "LIB_GMDS_BLOCKING_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
@@ -72,6 +73,11 @@ class LIB_GMDS_BLOCKING_API Blocking{
 	 /** @brief  Create grid of blocks
 	  */
 	 void createGrid();
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Create grid of blocks
+	  */
+	 void createGrid(gmds::math::Point APmin, gmds::math::Point APmax, int ANx, int ANy, int ANz);
 
 	 /*--------------------------------------------------------------------*/
 	 /** @brief  Create grid of blocks

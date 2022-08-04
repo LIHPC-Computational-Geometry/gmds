@@ -21,10 +21,66 @@ Blocking::execute()
 /*----------------------------------------------------------------------------*/
 void Blocking::createGrid()
 {
-	lcc_.make_hexahedron(Point(0,0,0), Point(5,0,0),
-								Point(5,5,0), Point(0,5,0),
-								Point(0,5,4), Point(0,0,4),
-								Point(5,0,4), Point(5,5,4));
+	this->createGrid(gmds::math::Point(0,0,0), gmds::math::Point(1,1,1), 3,3,3);
+}
+/*----------------------------------------------------------------------------*/
+void Blocking::createGrid(gmds::math::Point APmin, gmds::math::Point APmax, int ANx, int ANy, int ANz)
+{
+	Dart_handle* dhs = new Dart_handle[ANx*ANy*ANz];
+
+	for(int i=0; i<ANx; i++) {
+		for(int j=0; j<ANy; j++) {
+			for(int k=0; k<ANz; k++) {
+
+				double x0 = APmin.X() + ((double) i / (double) ANx) * (APmax.X() + (-1. * APmin.X()));
+				double y0 = APmin.Y() + ((double) j / (double) ANy) * (APmax.Y() + (-1. * APmin.Y()));
+				double z0 = APmin.Z() + ((double) k / (double) ANz) * (APmax.Z() + (-1. * APmin.Z()));
+				double x1 = APmin.X() + ((double) (i+1) / (double) ANx) * (APmax.X() + (-1. * APmin.X()));
+				double y1 = APmin.Y() + ((double) (j+1) / (double) ANy) * (APmax.Y() + (-1. * APmin.Y()));
+				double z1 = APmin.Z() + ((double) (k+1) / (double) ANz) * (APmax.Z() + (-1. * APmin.Z()));
+
+				Dart_handle dh =
+				   lcc_.make_hexahedron(Point(x0, y0, z0),
+												Point(x1, y0, z0),
+				                        Point(x1, y1, z0),
+												Point(x0, y1, z0),
+												Point(x0, y1, z1),
+												Point(x0, y0, z1),
+												Point(x1, y0, z1),
+												Point(x1, y1, z1));
+
+				dhs[i*(ANy*ANz)+j*ANz+k] = dh;
+			}
+		}
+	}
+
+	for(int i=0; i<ANx; i++) {
+		for (int j=0; j<ANy; j++) {
+			for (int k=0; k<ANz; k++) {
+				Dart_handle dh = dhs[i*(ANy*ANz)+j*ANz+k];
+
+				if(i != ANx-1) {
+					Dart_handle dhi = dhs[(i+1)*(ANy*ANz)+j*ANz+k];
+					lcc_.sew<3>(lcc_.alpha(dh, 1, 0, 1, 2), lcc_.alpha(dhi, 2));
+				}
+				if(j != ANy-1) {
+					Dart_handle dhj = dhs[i*(ANy*ANz)+(j+1)*ANz+k];
+					lcc_.sew<3>(lcc_.alpha(dh, 2, 1, 0, 1, 2), dhj);
+				}
+				if(k != ANz-1) {
+					Dart_handle dhk = dhs[i*(ANy*ANz)+j*ANz+(k+1)];
+					lcc_.sew<3>(lcc_.alpha(dh, 0, 1, 2), lcc_.alpha(dhk, 1, 2));
+				}
+			}
+		}
+	}
+
+	delete[] dhs;
+
+	if (!lcc_.is_valid()) {
+		std::string s ="Blocking::createGrid lcc not valid";
+		throw gmds::GMDSException(s);
+	}
 }
 /*----------------------------------------------------------------------------*/
 void Blocking::writeMokaFile(std::string AFileName) const
@@ -37,7 +93,7 @@ void Blocking::writeMokaFile(std::string AFileName) const
 
 	stream << "Moka file [ascii]" << std::endl;;
 
-	// TODO investigate the magix number
+	// TODO investigate the magic_number
 	const int magic_number = 128;
 	stream << magic_number <<" 7 0 0 0 0 0 0" << std::endl;
 
