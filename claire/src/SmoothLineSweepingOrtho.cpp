@@ -20,7 +20,7 @@ SmoothLineSweepingOrtho::SmoothLineSweepingOrtho(Blocking2D::Block *AB, int Anb_
 /*------------------------------------------------------------------------*/
 math::Point SmoothLineSweepingOrtho::ComputeNewPosition(int i, int j)
 {
-	double alpha = pow( (j-1.0)/( 6.0*(m_Ny-1.0) ) , 0.1) ;
+	double alpha = pow( (j-1.0)/( 6.0*(m_Ny-1.0) ) , 0.01) ;
 
 	// Compute the 6 points for the Yao Smoother
 	math::Point V1 = WeightedPointOnBranch((*m_B)(i-1,j-1).point(), (*m_B)(i,j-1).point(), (*m_B)(i+1,j-1).point(), 0.5);
@@ -117,11 +117,11 @@ math::Point SmoothLineSweepingOrtho::ComputeOrtho(int i, int j)
 {
 	math::Point X1;
 
-	math::Vector3d v1 = (*m_B)(i, j-1).point() - (*m_B)(i-1, j-1).point() ;
-	math::Vector3d v2 = (*m_B)(i, j-1).point() - (*m_B)(i+1, j-1).point() ;
+	math::Vector3d v1 = (*m_B)(i, 0).point() - (*m_B)(i-1, 0).point() ;
+	math::Vector3d v2 = (*m_B)(i+1, 0).point() - (*m_B)(i, 0).point() ;
 
-	math::Vector3d n1 = v1.getOneOrtho();
-	math::Vector3d n2 = v2.getOneOrtho();
+	math::Vector3d n1({v1.Y(), -v1.X(), 0});
+	math::Vector3d n2({v2.Y(), -v2.X(), 0});
 
 	math::Vector3d n = n1+n2;
 
@@ -133,7 +133,12 @@ math::Point SmoothLineSweepingOrtho::ComputeOrtho(int i, int j)
 	math::Segment Seg_Hori_1(H1, H2);
 	math::Segment Seg_Hori_2(H2, H3);
 
-	math::Segment Seg_Ortho((*m_B)(i,j-1).point()+pow(10,6)*(-n), (*m_B)(i,j-1).point()+pow(10,6)*n);
+	//math::Segment Seg_Ortho((*m_B)(i,j-1).point()+pow(10,6)*(-n), (*m_B)(i,j-1).point()+pow(10,6)*n);
+	math::Point Q = (*m_B)(i,j-1).point() ;
+	math::Point P1_s, P2_s;
+	P1_s.setXYZ( Q.X() - pow(10,1)*n.X(),  Q.Y() - pow(10,1)*n.Y(), 0);
+	P2_s.setXYZ( Q.X() + pow(10,1)*n.X(),  Q.Y() + pow(10,1)*n.Y(), 0);
+	math::Segment Seg_Ortho(P1_s, P2_s);
 
 	bool intersection_trouvee(false);
 	if (!intersection_trouvee) {
@@ -146,6 +151,29 @@ math::Point SmoothLineSweepingOrtho::ComputeOrtho(int i, int j)
 	if (!intersection_trouvee) {
 		X1 = (*m_B)(i,j).point();
 	}
+
+	/*
+	if (i==5 && j==5)
+	{
+		std::cout << v1 << std::endl;
+		std::cout << v2 << std::endl;
+		std::cout << " " << std::endl;
+		std::cout << n1 << std::endl;
+		std::cout << n2 << std::endl;
+		std::cout << n << std::endl;
+		std::cout << " " << std::endl;
+		std::cout << H1 << std::endl;
+		std::cout << H2 << std::endl;
+		std::cout << H3 << std::endl;
+		std::cout << " " << std::endl;
+		std::cout << P1_s << std::endl;
+		std::cout << P2_s << std::endl;
+		std::cout << " " << std::endl;
+		std::cout << "Intersection trouvée " << intersection_trouvee << std::endl;
+		std::cout << (*m_B)(i,j).point() << std::endl;
+		std::cout << X1 << std::endl;
+	}
+	 */
 
 	return X1;
 }

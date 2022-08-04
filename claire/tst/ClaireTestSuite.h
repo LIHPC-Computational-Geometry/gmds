@@ -6,6 +6,7 @@
 #include "gmds/io/VTKReader.h"
 #include <gmds/claire/Grid_Smooth2D.h>
 #include <gmds/claire/Smooth2D.h>
+#include <gmds/claire/SmoothLineSweepingOrtho.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
@@ -661,4 +662,40 @@ TEST(ClaireTestClass, test_pour_interpolation)
 
 	ASSERT_FLOAT_EQ(p.X(),3.8780577);
 	ASSERT_FLOAT_EQ(p.Y(),5.6330175);
+}
+
+
+
+TEST(ClaireTestClass, testGrid_SmoothLineSweepingOrtho)
+{
+	Blocking2D m;
+	Node n1 = m.newBlockCorner(0,0);
+	Node n2 = m.newBlockCorner(1,0);
+	Node n3 = m.newBlockCorner(1.5,1);
+	Node n4=  m.newBlockCorner(0.5,1);
+
+	Blocking2D::Block b1 = m.newBlock(n1,n2,n3,n4);
+
+	b1.setNbDiscretizationI(100);
+	b1.setNbDiscretizationJ(100);
+
+	m.initializeGridPoints();
+
+	b1 = m.block(0);
+
+	IGMeshIOService ios(&m);
+	VTKWriter writer(&ios);
+	writer.setCellOptions(N|F);
+	writer.setDataOptions(N|F);
+	writer.write("testGrid_SmoothLineSweepingOrtho.vtk");
+
+	SmoothLineSweepingOrtho smoother( &b1, 100, 0.0);
+	smoother.execute();
+
+	IGMeshIOService ioService_geom(&m);
+	VTKWriter writer_geom(&ioService_geom);
+	writer_geom.setCellOptions(N|F);
+	writer_geom.setDataOptions(N|F);
+	writer_geom.write("testGrid_SmoothLineSweepingOrtho_result.vtk");
+
 }

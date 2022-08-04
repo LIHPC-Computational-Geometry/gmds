@@ -3,6 +3,7 @@
 //
 
 /*------------------------------------------------------------------------*/
+#include<gmds/math/Line.h>
 #include <gmds/claire/AbstractSmoothLineSweeping_2D.h>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
@@ -86,11 +87,26 @@ void AbstractSmoothLineSweeping_2D::BoundarySlipping()
 
 	for (int i=1;i<m_Nx;i++)
 	{
-		math::Point Mid = WeightedPointOnBranch((*m_B)(i-1,0).point(), (*m_B)(i,0).point(), (*m_B)(i+1,0).point(), 0.5);
-		m_P_new(i,0) =( m_theta*(*m_B)(i, 0).point() + (1.0-m_theta)*Mid ) ;
+		//math::Point Mid = WeightedPointOnBranch((*m_B)(i-1,0).point(), (*m_B)(i,0).point(), (*m_B)(i+1,0).point(), 0.5);
+		//m_P_new(i,0) =( m_theta*(*m_B)(i, 0).point() + (1.0-m_theta)*Mid ) ;
 
-		Mid = WeightedPointOnBranch((*m_B)(i-1,m_Ny).point(), (*m_B)(i,m_Ny).point(), (*m_B)(i+1,m_Ny).point(), 0.5);
-		m_P_new(i,m_Ny) = ( m_theta*(*m_B)(i, m_Ny).point() + (1.0-m_theta)*Mid ) ;
+		/*
+		math::Segment tan( (*m_B)(i,m_Ny-2).point(), 100.0*(*m_B)(i,m_Ny-1).point() ) ;
+		math::Segment b1( (*m_B)(i-1,m_Ny).point(), (*m_B)(i,m_Ny).point() );
+		math::Segment b2( (*m_B)(i,m_Ny).point(), (*m_B)(i+1,m_Ny).point() );
+		math::Point P_intersection;
+		bool int_found = tan.intersect2D(b1, P_intersection);
+		if (!int_found)
+		{
+			tan.intersect2D(b2, P_intersection);
+		}
+		if (!int_found)
+		{
+			P_intersection = WeightedPointOnBranch((*m_B)(i-1,m_Ny).point(), (*m_B)(i,m_Ny).point(), (*m_B)(i+1,m_Ny).point(), 0.5);
+		}
+
+		m_P_new(i,m_Ny) = ( m_theta*(*m_B)(i, m_Ny).point() + (1.0-m_theta)*P_intersection ) ;
+		 */
 	}
 
 	for (int j=1;j<m_Ny;j++)

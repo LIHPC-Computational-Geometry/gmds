@@ -203,6 +203,7 @@ AeroPipeline_2D::execute(){
 	std::cout << " " << std::endl;
 
 	// Lissage
+	/*
 	std::cout << "-> Lissage final" << std::endl;
 	t_start = clock();
 	//Grid_Smooth2D smoother(&m_Blocking2D, 2000);
@@ -217,10 +218,13 @@ AeroPipeline_2D::execute(){
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
+	 */
 
 
 
-	// Add the Beta Refinement
+	// Add the Ortho Smoothing in the Boundary Layer and the Beta Refinement
+	std::cout << "-> Smoothing & Beta Refinement on the first layer" << std::endl;
+	t_start = clock();
 	for (auto b:m_Blocking2D.allBlocks())
 	{
 		int Nx = b.getNbDiscretizationI();
@@ -251,6 +255,12 @@ AeroPipeline_2D::execute(){
 		}
 
 		if (compteur == 2) {
+
+			SmoothLineSweepingOrtho smoother( &b, m_params.nbr_iter_smoothing_yao, m_params.damping_smoothing_yao);
+			smoother.execute();
+
+			// Beta Refinement
+			/*
 			for (int i = 0; i < Nx; i++) {
 				std::vector<math::Point> Points;
 				for (int j = 0; j < Ny; j++) {
@@ -265,8 +275,13 @@ AeroPipeline_2D::execute(){
 					b(i, j).setPoint({Points[j]});
 				}
 			}
+			*/
 		}
 	}
+
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
 
 
 
@@ -756,7 +771,7 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 
 	Variable<math::Vector3d>* var_VectorsForExtrusion = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
 
-	if (m_params.vectors_field <= 0 || m_params.vectors_field > 3)
+	if (m_params.vectors_field <= 0 || m_params.vectors_field > 4)
 	{
 		// Compute the gradient field of the level set from the wall to the external boundary
 		LeastSquaresGradientComputation grad2D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
@@ -837,6 +852,52 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 			math::Point p = n.point();
 
 			if (p.X() < m_params.x_VectorField_Z1)
+			{
+				var_VectorsForExtrusion->set(n_id, vec_1);
+			}
+			else if (p.X() > m_params.x_VectorField_Z2)
+			{
+				var_VectorsForExtrusion->set(n_id, vec_flow);
+			}
+			else
+			{
+				// Compute the transition field
+				double alpha = (p.X() - m_params.x_VectorField_Z1)/(m_params.x_VectorField_Z2-m_params.x_VectorField_Z1) ;
+				math::Vector3d v_transit = alpha*vec_flow + (1.0-alpha)*vec_1 ;
+				v_transit.normalize();
+				var_VectorsForExtrusion->set(n_id, v_transit);
+			}
+
+		}
+
+		m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_1);
+
+	}
+	else if (m_params.vectors_field == 4)
+	{
+		Variable<math::Vector3d>* var_VectorField_1 = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_1");
+
+		LeastSquaresGradientComputation grad2D_1(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+		                                         var_VectorField_1);
+		grad2D_1.execute();
+
+		for (auto n_id:m_meshTet->nodes())
+		{
+			math::Vector3d vec_1 = var_VectorField_1->value(n_id);
+			double angle_rad = m_params.angle_attack*M_PI/180.0 ;
+			math::Vector3d vec_flow({cos(angle_rad), sin(angle_rad), 0.0}) ;
+
+			vec_1.normalize();
+			vec_flow.normalize();
+
+			Node n = m_meshTet->get<Node>(n_id);
+			math::Point p = n.point();
+
+			if (p.X() < 10.0)
+			{
+				var_VectorsForExtrusion->set(n_id, -vec_flow);
+			}
+			else if (p.X() < m_params.x_VectorField_Z1)
 			{
 				var_VectorsForExtrusion->set(n_id, vec_1);
 			}

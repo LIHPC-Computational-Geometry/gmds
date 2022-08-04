@@ -34,7 +34,7 @@ TEST(ClaireTestClass, testSU2Writer)
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N|gmds::F);
-	vtkReader.read(dir+"/Aero/2D/NACA_0012_2D.vtk");
+	vtkReader.read(dir+"/Aero/2D/Diamond_Airfoil_2D_Papier.vtk");
 
 	gmds::MeshDoctor doc(&m);
 	doc.buildEdgesAndX2E();
