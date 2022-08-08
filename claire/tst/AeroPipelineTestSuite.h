@@ -40,16 +40,16 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
 
 	// Wall Discretization Parameter
-	params_aero.nbrMinBloc = 4;					// Minimal number of block on the wall
+	params_aero.nbrMinBloc = 8;					// Minimal number of block on the wall
 	params_aero.nbrCellsInCL = 30;				// Number of cells in the boundary layer
 	params_aero.edge_size_wall = 0.5 ;										// Maximal size of the cells on the wall
 	params_aero.edge_size_default = 2 ;										// Default size of the cells in the domain
 	params_aero.edge_size_first_ortho_wall = 1*pow(10,-3);	// Size of the first edge orthogonal to the wall
 
 	// Vector Field Computation Parameters
-	params_aero.vectors_field = 4;				// Choose the way the vectors field is computed for the extrusion
-	params_aero.x_VectorField_Z1 = 100;			// Choose the x value of the first zone  [-inf, x_VectorField_Z1]
-	params_aero.x_VectorField_Z2 = 300;			// Choose the x value of the second zone [x_VectorField_Z2, +inf]
+	params_aero.vectors_field = 3;				// Choose the way the vectors field is computed for the extrusion
+	params_aero.x_VectorField_Z1 = 150;			// Choose the x value of the first zone  [-inf, x_VectorField_Z1]
+	params_aero.x_VectorField_Z2 = 400;			// Choose the x value of the second zone [x_VectorField_Z2, +inf]
 
 	// Extrusion Parameters
 	params_aero.nbr_couches = 5;			// Number of layer in extrusion
@@ -58,8 +58,8 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.z_lim = -10000;			// sont autorisées
 
 	// Smoothing Parameters
-	params_aero.nbr_iter_smoothing_yao = 100 ;		// Number of iterations for the Yao Smoothing
-	params_aero.damping_smoothing_yao = 0.0 ;		// Damping parameter for the Yao Smoothing
+	params_aero.nbr_iter_smoothing_yao = 300 ;		// Number of iterations for the Yao Smoothing
+	params_aero.damping_smoothing_yao = 0.5 ;		// Damping parameter for the Yao Smoothing
 
 	// SU2 Writer Parameter
 	params_aero.x_lim_SU2_inoutlet = -pow(10,6);		// Limit between inlet and outlet for SU2 writer

@@ -79,6 +79,12 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_2D : public AbstractAeroPipeline {
 	 */
 	void ComputeVectorFieldForExtrusion();
 	/*----------------------------------------------------------------------------*/
+	/** @brief Mesh refinement.
+	 * @param
+	 * @return void
+	 */
+	void MeshRefinement();
+	/*----------------------------------------------------------------------------*/
  protected:
 	/** blocking 2D */
 	Blocking2D m_Blocking2D;

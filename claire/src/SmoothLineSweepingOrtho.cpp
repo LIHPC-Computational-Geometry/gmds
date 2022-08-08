@@ -123,6 +123,9 @@ math::Point SmoothLineSweepingOrtho::ComputeOrtho(int i, int j)
 	math::Vector3d n1({v1.Y(), -v1.X(), 0});
 	math::Vector3d n2({v2.Y(), -v2.X(), 0});
 
+	n1.normalize();
+	n2.normalize();
+
 	math::Vector3d n = n1+n2;
 
 	// Finding the intersection between the 4 segments

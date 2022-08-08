@@ -689,7 +689,7 @@ TEST(ClaireTestClass, testGrid_SmoothLineSweepingOrtho)
 	writer.setDataOptions(N|F);
 	writer.write("testGrid_SmoothLineSweepingOrtho.vtk");
 
-	SmoothLineSweepingOrtho smoother( &b1, 100, 0.0);
+	SmoothLineSweepingOrtho smoother( &b1, 300, 0.3);
 	smoother.execute();
 
 	IGMeshIOService ioService_geom(&m);

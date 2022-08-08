@@ -275,10 +275,10 @@ AeroPipeline_2D::execute(){
 					b(i, j).setPoint({Points[j]});
 				}
 			}
-			*/
+			 */
 		}
 	}
-
+	MeshRefinement();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
@@ -929,5 +929,148 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 		var_VectorsForExtrusion->set(n_id, vec);
 	}
 
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void
+   AeroPipeline_2D::MeshRefinement()
+{
+	int mark_isTreated = m_Blocking2D.newMark<Node>();
+	int mark_refinementNeeded = m_Blocking2D.newMark<Node>();
+
+	for (auto b:m_Blocking2D.allBlocks())
+	{
+		Variable<int>* var_couche = m_Blocking2D.getVariable<int, GMDS_NODE>("GMDS_Couche");
+		Node n0 = b.getNode(0);
+		Node n1 = b.getNode(1);
+		Node n2 = b.getNode(2);
+		Node n3 = b.getNode(3);
+
+		if (var_couche->value(n0.id()) == 0
+		    && var_couche->value(n1.id()) == 0)
+		{
+			m_Blocking2D.mark(n0, mark_refinementNeeded);
+			m_Blocking2D.mark(n1, mark_refinementNeeded);
+		}
+		else if (var_couche->value(n1.id()) == 0
+		         && var_couche->value(n2.id()) == 0)
+		{
+			m_Blocking2D.mark(n1, mark_refinementNeeded);
+			m_Blocking2D.mark(n2, mark_refinementNeeded);
+		}
+		else if (var_couche->value(n2.id()) == 0
+		         && var_couche->value(n3.id()) == 0)
+		{
+			m_Blocking2D.mark(n2, mark_refinementNeeded);
+			m_Blocking2D.mark(n3, mark_refinementNeeded);
+		}
+		else if (var_couche->value(n3.id()) == 0
+		    && var_couche->value(n0.id()) == 0)
+		{
+			m_Blocking2D.mark(n3, mark_refinementNeeded);
+			m_Blocking2D.mark(n0, mark_refinementNeeded);
+		}
+
+		//std::vector<Face> common_blocks = n0.get<Face>();
+		//std::cout << common_blocks.size() << std::endl;
+		if (var_couche->value(n0.id()) == 0
+		    && var_couche->value(n1.id()) == 1)
+		{
+			m_Blocking2D.mark(n1, mark_refinementNeeded);
+		}
+
+	}
+
+	for (auto b:m_Blocking2D.allBlocks())
+	{
+		int Nx = b.getNbDiscretizationI();
+		int Ny = b.getNbDiscretizationJ();
+
+		Variable<int>* var_couche = m_Blocking2D.getVariable<int, GMDS_NODE>("GMDS_Couche");
+		Node n0 = b.getNode(0);
+		Node n1 = b.getNode(1);
+		Node n2 = b.getNode(2);
+		Node n3 = b.getNode(3);
+
+		if (m_Blocking2D.isMarked(n0, mark_refinementNeeded)
+		    && m_Blocking2D.isMarked(n1, mark_refinementNeeded))
+		{
+			for (int i = 0; i < Nx; i++) {
+				std::vector<math::Point> Points;
+				for (int j = 0; j < Ny; j++) {
+					Points.push_back(b(i, j).point());
+				}
+				RefinementBeta ref(Points, m_params.edge_size_first_ortho_wall);
+				ref.execute();
+				Points = ref.GetNewPositions();
+
+				for (int j = 1; j < Ny - 1; j++) {
+					b(i, j).setPoint({Points[j]});
+				}
+			}
+		}
+
+		if (m_Blocking2D.isMarked(n2, mark_refinementNeeded)
+		    && m_Blocking2D.isMarked(n3, mark_refinementNeeded))
+		{
+			for (int i = 0; i < Nx; i++) {
+				std::vector<math::Point> Points;
+				for (int j = Ny-1; j >= 0; j--) {
+					Points.push_back(b(i, j).point());
+				}
+				RefinementBeta ref(Points, m_params.edge_size_first_ortho_wall);
+				ref.execute();
+				Points = ref.GetNewPositions();
+
+				for (int j = 1; j < Ny - 1; j++) {
+					b(i, j).setPoint({Points[Ny-1-j]});
+				}
+			}
+		}
+
+		if (m_Blocking2D.isMarked(n0, mark_refinementNeeded)
+		    && m_Blocking2D.isMarked(n3, mark_refinementNeeded))
+		{
+			for (int j = 0; j < Ny; j++) {
+				std::vector<math::Point> Points;
+				for (int i = 0; i < Nx; i++) {
+					Points.push_back(b(i, j).point());
+				}
+				RefinementBeta ref(Points, m_params.edge_size_first_ortho_wall);
+				ref.execute();
+				Points = ref.GetNewPositions();
+
+				for (int i = 1; i < Nx - 1; i++) {
+					b(i, j).setPoint({Points[i]});
+				}
+			}
+		}
+
+		if (m_Blocking2D.isMarked(n1, mark_refinementNeeded)
+		    && m_Blocking2D.isMarked(n2, mark_refinementNeeded))
+		{
+			for (int j = 0; j < Ny; j++) {
+				std::vector<math::Point> Points;
+				for (int i = Nx-1; i >= 0; i--) {
+					Points.push_back(b(i, j).point());
+				}
+				RefinementBeta ref(Points, m_params.edge_size_first_ortho_wall);
+				ref.execute();
+				Points = ref.GetNewPositions();
+
+				for (int i = 1; i < Nx - 1; i++) {
+					b(i, j).setPoint({Points[Nx-1-i]});
+				}
+			}
+		}
+
+	}
+
+	m_Blocking2D.unmarkAll<Node>(mark_isTreated);
+	m_Blocking2D.freeMark<Node>(mark_isTreated);
+	m_Blocking2D.unmarkAll<Node>(mark_refinementNeeded);
+	m_Blocking2D.freeMark<Node>(mark_refinementNeeded);
 }
 /*------------------------------------------------------------------------*/

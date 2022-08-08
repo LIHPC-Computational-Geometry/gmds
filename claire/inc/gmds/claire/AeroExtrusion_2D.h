@@ -93,6 +93,14 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
 	 */
 	void Insertion(Front &Front_IN, TCellID n_id, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors);
 	/*-------------------------------------------------------------------*/
+	/** @brief Insertion de deux bloc.
+	 	* \param[in] Front_IN the front
+   	* \param[in] n_id l'id du noeud auquel 2 blocs sont insérés
+		*
+		* \return
+	 */
+	void Insertion_Double(Front &Front_IN, TCellID n_id, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors);
+	/*-------------------------------------------------------------------*/
 	/** @brief Fusion de deux blocs.
 	 	* \param[in] Front_IN the front
    	* \param[in] n_id l'id du noeud concerné
