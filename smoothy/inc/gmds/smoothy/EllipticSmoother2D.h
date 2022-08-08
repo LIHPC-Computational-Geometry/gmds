@@ -32,6 +32,11 @@ class GMDSSmoothy_API EllipticSmoother2D {
 	/** @brief Lock the boundary nodes	 */
 	void lockBoundary();
 
+	/** @brief Set the number of max iterations. Default is 1000*/
+	void setMaxIterations(const int AI){m_max_iterations=AI;}
+
+	/** @brief Set the theta value. Default is 1e-3 */
+	void setTheta(const double AT){m_theta=AT;}
 	/** @brief Lock the nodes marked with the mark @p AMark. In practice, the
 	 *  mark is internally duplicated
 	 * @param AMark node mark
@@ -55,6 +60,10 @@ class GMDSSmoothy_API EllipticSmoother2D {
 	Mesh* m_mesh;
 	/** Boolean mark indicating which nodes are locked */
 	int m_lock;
+	/** Maximum number of solver iterations*/
+	int m_max_iterations;
+	/** theta value in the algorithm */
+	double m_theta;
 };
 /*----------------------------------------------------------------------------*/
 } // end namespace cad

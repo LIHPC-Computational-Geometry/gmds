@@ -7,7 +7,7 @@ using namespace gmds;
 using namespace gmds::smoothy;
 /*----------------------------------------------------------------------------*/
 EllipticSmoother2D::EllipticSmoother2D(Mesh *AMesh)
-: m_mesh(AMesh)
+: m_mesh(AMesh), m_max_iterations(1000), m_theta(1e-3)
 {
 	m_lock= m_mesh->newMark<Node>();
 }
@@ -100,9 +100,9 @@ void EllipticSmoother2D::execute()
 	EllipticSmoothingMeshGlue2D tri(node_coords,triangles,lock_nodes);
 
 	EllipticSmoothingOptions options = ESO_default2D;
-	options.maxiter=10;//00;
+	options.maxiter=m_max_iterations;
 	options.eps_from_theorem=true;
-	options.theta = 1e-3;
+	options.theta = m_theta;
 	options.bfgs_threshold = 1e-9;
 	options.debug=0;
 	EllipticSmoothing2D smooth(tri, triangles.size(),options);
