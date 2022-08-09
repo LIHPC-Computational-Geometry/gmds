@@ -18,6 +18,7 @@
 #include <gmds/claire/IntervalAssignment_2D.h>
 #include <gmds/math/TransfiniteInterpolation.h>
 #include <gmds/claire/RefinementBeta.h>
+#include <gmds/claire/RefinementBetaBlocking.h>
 
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -223,7 +224,7 @@ AeroPipeline_2D::execute(){
 
 
 	// Add the Ortho Smoothing in the Boundary Layer and the Beta Refinement
-	std::cout << "-> Smoothing & Beta Refinement on the first layer" << std::endl;
+	std::cout << "-> Smoothing on the first layer" << std::endl;
 	t_start = clock();
 	for (auto b:m_Blocking2D.allBlocks())
 	{
@@ -278,11 +279,23 @@ AeroPipeline_2D::execute(){
 			 */
 		}
 	}
-	MeshRefinement();
+	//MeshRefinement();
+
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
+
+
+	std::cout << "-> Beta Refinement on the first layer" << std::endl;
+	t_start = clock();
+
+	RefinementBetaBlocking block_refinement(&m_Blocking2D, m_params);
+	block_refinement.execute();
+
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
 
 
 
