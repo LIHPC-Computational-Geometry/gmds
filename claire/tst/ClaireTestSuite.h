@@ -699,3 +699,35 @@ TEST(ClaireTestClass, testGrid_SmoothLineSweepingOrtho)
 	writer_geom.write("testGrid_SmoothLineSweepingOrtho_result.vtk");
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TEST(ClaireTestClass, test_Bug_1)
+{
+	math::Vector3d v_1({1.0, 0.0, 0.0});
+	math::Vector3d n = v_1.getOneOrtho();
+
+	std::cout << v_1 << std::endl;
+	std::cout << n << std::endl;		// n is supposed to be a normal vector to v_1 but n is equal to 0.
+
+	ASSERT_FLOAT_EQ( v_1.X(), 1.0);
+
+}

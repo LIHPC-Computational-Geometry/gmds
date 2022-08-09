@@ -40,7 +40,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
 
 	// Wall Discretization Parameter
-	params_aero.nbrMinBloc = 4;					// Minimal number of block on the wall
+	params_aero.nbrMinBloc = 10;					// Minimal number of block on the wall
 	params_aero.nbrCellsInCL = 30;				// Number of cells in the boundary layer
 	params_aero.edge_size_wall = 0.01 ;										// Maximal size of the cells on the wall
 	params_aero.edge_size_default = 0.02 ;										// Default size of the cells in the domain
