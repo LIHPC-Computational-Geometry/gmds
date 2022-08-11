@@ -32,6 +32,7 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <fstream>
 /*----------------------------------------------------------------------------*/
 /** \class  SimplexMesh
  *  \brief  ???
@@ -179,6 +180,8 @@ class SimplexMesh
   /*adding some point to the mesh*/
   TInt addNode(const TCoord X, const TCoord Y, const TCoord Z);
 
+  /*move node to newCoord without checking if it's create a unvalid mesh, use wisely*/
+  void moveNodeCoord(const TInt node, const math::Point& newCoord) ;
 
   /*adding some point to the mesh and check if  this point already exist*/
   TInt addNodeAndcheck(const math::Point& pt, std::vector<TSimplexID>& tetraContainingPt, bool& alreadyAdd, TSimplexID checkSimplicesContenaing = std::numeric_limits<TSimplexID>::min());
@@ -309,6 +312,10 @@ class SimplexMesh
 
   const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& getEdgeTianglesIndices() const {return edgeTianglesIndices;}
 
+  const std::map<unsigned int, std::vector<unsigned int>>& getCornerSurfaceConnexion() const {return cornerSurfaceConnexion;}
+
+  const std::map<unsigned int, std::vector<unsigned int>>& getCornerEdgeConnexion() const {return cornerEdgeConnexion;}
+
   /*return a vector of simplex in border*/
   std::set<TSimplexID> simplexInBorder();
 
@@ -358,7 +365,6 @@ class SimplexMesh
   unsigned int edgesRemove(const gmds::BitVector& nodeBitVector, std::vector<TSimplexID>& deletedNodes);
 
   bool edgeRemove(const TInt nodeA, const TInt nodeB);
-
 
   unsigned int buildEdges(const std::multimap<TInt, TInt>& AEdges, const gmds::BitVector& nodeBitVector);
 
@@ -414,15 +420,27 @@ class SimplexMesh
 
   double subSurfaceFactor(const std::vector<std::vector<TInt>>& faces);
 
+  double computeQualityEdge(const TInt nodeA, const TInt nodeB);
+
+  double computeQualityEdge(const gmds::math::Point& pA, const gmds::math::Point& pB,
+                                         const Eigen::Matrix3d& MA, const Eigen::Matrix3d& MB) const;
+
   double computeQualityElement(const TSimplexID simplex);
 
   double computeQualityElement(const TInt nodeA, const TInt nodeB, const TInt nodeC, const TInt nodeD);
+
+  double computeQualityElement(const gmds::math::Point& pA, const gmds::math::Point& pB, const gmds::math::Point& pC, const gmds::math::Point& pD,
+                               const Eigen::Matrix3d& MA, const Eigen::Matrix3d& MB, const Eigen::Matrix3d& MC, const Eigen::Matrix3d& MD) const;
 
   const std::vector<TSimplexID>& getBase(){return m_base;}
 
   void setBase(const TInt node, const TSimplexID simplex);
 
   void getEdgeSizeInfo(double& meanEdges, double& maxedge, double& minEdge) ;
+
+  void getEdgeSizeInfowithMetric(double& meanEdges, double& maxEdge, double& minEdge) ;
+
+  void setAnalyticMetric(const TInt node);
 
 private:
 
@@ -445,6 +463,13 @@ private:
   std::vector<std::vector<TInt>> m_tri_adj; //3 faces et 1 index du tetra voisin negatif
 
   Octree* m_octree = nullptr;
+  //Corner node to triangle indices connexion
+  std::map<unsigned int, std::vector<unsigned int>> cornerSurfaceConnexion{};
+
+  //Corner node to edge indices connexion
+  std::map<unsigned int, std::vector<unsigned int>> cornerEdgeConnexion{};
+
+  //Curve to surface indices connexion
   std::map<unsigned int, std::pair<unsigned int, unsigned int>> edgeTianglesIndices{};
 
   //data for edge structure [labelCurve, (curveNodeX, curveNodeY)]...
@@ -463,6 +488,9 @@ private:
 
   //Variablemanager triangle
   VariableManager* m_tri_variable_manager = nullptr;
+
+  //IO file that contain data to plot in python for the adaptation algo visualization
+  std::ofstream myfile;
 };
 
 /******************************************************************************/

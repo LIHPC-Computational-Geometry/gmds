@@ -290,6 +290,7 @@ std::vector<TSimplexID> SimplicesTriangle::findclockWiseTrianglesbyShell(const T
     {
       //TODO exception
       std::cout << "otherNodes.size() != 1" << std::endl;
+      throw gmds::GMDSException(" triangle adj problem !");
     }
     currentSimplex = nextSimplex;
   }

@@ -348,6 +348,55 @@ math::Orientation::Sign SimplicesCell::orientation(const TInt faceIdx, const gmd
   return sign;
 }
 /*----------------------------------------------------------------------------*/
+double SimplicesCell::dihedralAngle(const unsigned int localNode0, const unsigned int localNode1) const
+{
+    if((localNode0 < 0 || localNode0 > 3) || (localNode1 < 0 || localNode1 > 3))
+    {
+      std::cout << "localNode0 -> " << localNode0 << std::endl;
+      std::cout << "localNode1 -> " << localNode1 << std::endl;
+      throw gmds::GMDSException("(localNode0 < 0 || localNode0 > 3) || (localNode1 < 0 || localNode1 > 3)");
+    }
+    if(localNode0 == localNode1)
+    {
+      throw gmds::GMDSException("localNode0 == localNode1");
+    }
+
+    std::vector<unsigned int> localsNode{0,1,2,3};
+    localsNode.erase(std::remove_if(localsNode.begin(), localsNode.end(), [=](unsigned int lN){
+      return (lN == localNode0 || lN == localNode1);
+    }), localsNode.end());
+
+    const math::Point pt0 = getNode(localNode0).getCoords();
+    const math::Point pt1 = getNode(localNode1).getCoords();
+    const math::Point pt2 = getNode(localsNode.front()).getCoords();
+    const math::Point pt3 = getNode(localsNode.back()).getCoords();
+
+    return gmds::math::dihedralAngle(pt0, pt1, pt2, pt3);
+}
+/*----------------------------------------------------------------------------*/
+std::set<double> SimplicesCell::minAndmaxDihedralAngle() const
+{
+  std::set<double> s{};
+  s.insert(dihedralAngle(0, 1));
+  s.insert(dihedralAngle(0, 2));
+  s.insert(dihedralAngle(0, 3));
+  s.insert(dihedralAngle(1, 2));
+  s.insert(dihedralAngle(1, 3));
+  s.insert(dihedralAngle(2, 3));
+
+  return s;
+}
+/*----------------------------------------------------------------------------*/
+bool SimplicesCell::isSliver() const
+{
+  //a checker si cela convient
+  double epsilon = 0.1;
+  double pi      = M_PI;
+  const std::set<double> s = minAndmaxDihedralAngle();
+
+  return  (*(s.begin()) < epsilon) || (*(--s.end()) > (M_PI - epsilon));
+}
+/*----------------------------------------------------------------------------*/
 math::Vector3d SimplicesCell::normalOfFace(const std::vector<TInt>& nodes) const
 {
   math::Vector3d normal(0.0, 0.0, 0.0);

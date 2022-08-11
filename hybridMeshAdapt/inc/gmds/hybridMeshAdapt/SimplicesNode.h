@@ -67,6 +67,9 @@ namespace gmds
 
           std::vector<TInt> neighborNodes() const;
 
+          /*return the direct subSurface node connected with m_indexPoint */
+          std::vector<TInt> neighborSubSurfaceNodes() const;
+
           std::vector<TSimplexID> directSimplices(const math::Vector3d& vector) const ;
 
           /*return the ordered simplex that are intersected by the edge formed by this ans the argument simpliceNodeB */

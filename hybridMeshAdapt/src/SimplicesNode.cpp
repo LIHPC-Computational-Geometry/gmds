@@ -525,6 +525,86 @@ std::vector<TInt> SimplicesNode::neighborNodes() const
   return res;
 }
 /******************************************************************************/
+std::vector<TInt> SimplicesNode::neighborSubSurfaceNodes() const
+{
+  std::vector<TInt> res{};
+  std::vector<TInt> directNodes = neighborNodes() ;
+
+  Variable<int>* BND_VERTEX_COLOR   = nullptr;
+  Variable<int>* BND_CURVE_COLOR    = nullptr;
+  Variable<int>* BND_SURFACE_COLOR  = nullptr;
+  Variable<Eigen::Matrix3d>* metric = nullptr;
+  try{
+    BND_VERTEX_COLOR  = m_simplex_mesh->getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+    BND_CURVE_COLOR   = m_simplex_mesh->getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+    BND_SURFACE_COLOR = m_simplex_mesh->getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+    metric            = m_simplex_mesh->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  //the current node is a volume node
+  if((*BND_VERTEX_COLOR)[getGlobalNode()] == 0 && (*BND_SURFACE_COLOR)[getGlobalNode()] == 0 && (*BND_SURFACE_COLOR)[getGlobalNode()] == 0)
+  {
+    return directNodes;
+  }
+  else
+  {
+    const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& E2S_indices = m_simplex_mesh->getEdgeTianglesIndices();
+    const std::map<unsigned int, std::vector<unsigned int>>& C2S_indices = m_simplex_mesh->getCornerSurfaceConnexion() ;
+    const std::map<unsigned int, std::vector<unsigned int>>& C2E_indices = m_simplex_mesh->getCornerEdgeConnexion() ;
+
+    for(auto const node : directNodes)
+    {
+      if((*BND_VERTEX_COLOR)[getGlobalNode()] != 0)
+      {
+        break;
+      }
+      else if((*BND_CURVE_COLOR)[getGlobalNode()] != 0)
+      {
+        if((*BND_CURVE_COLOR)[getGlobalNode()] == (*BND_CURVE_COLOR)[node])
+        {
+          res.push_back(node);
+        }
+        else if((*BND_VERTEX_COLOR)[node] != 0)
+        {
+          std::vector<unsigned int> E_indices = C2E_indices.at((*BND_VERTEX_COLOR)[node]);
+          if(std::find(E_indices.begin(), E_indices.end(), (*BND_CURVE_COLOR)[getGlobalNode()]) != E_indices.end())
+          {
+            res.push_back(node);
+          }
+        }
+      }
+      else if((*BND_SURFACE_COLOR)[getGlobalNode()] != 0)
+      {
+        if((*BND_SURFACE_COLOR)[getGlobalNode()] == (*BND_SURFACE_COLOR)[node])
+        {
+          res.push_back(node);
+        }
+        else if((*BND_CURVE_COLOR)[node] != 0)
+        {
+          std::pair<unsigned int, unsigned int> p = E2S_indices.at((*BND_CURVE_COLOR)[node]);
+          if(p.first == (*BND_SURFACE_COLOR)[getGlobalNode()] || p.second == (*BND_SURFACE_COLOR)[getGlobalNode()])
+          {
+            res.push_back(node);
+          }
+        }
+        else if((*BND_VERTEX_COLOR)[node] != 0)
+        {
+          std::vector<unsigned int> S_indices = C2S_indices.at((*BND_VERTEX_COLOR)[node]);
+          if(std::find(S_indices.begin(), S_indices.end(), (*BND_SURFACE_COLOR)[getGlobalNode()]) != S_indices.end())
+          {
+            res.push_back(node);
+          }
+        }
+      }
+    }
+  }
+  return res;
+}
+/******************************************************************************/
 std::vector<TSimplexID> SimplicesNode::simplicesIntersectedbyRay(const SimplicesNode& simpliceNodeB) const
 {
   std::vector<TSimplexID> v;

@@ -258,84 +258,204 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           //delete the surface triangle connected to simpliceNode
           //use delete_tri in order to rebuild the edge if it was destroy
           //If the node is on ridge update edgeStructure
-          unsigned int label = (*BND_CURVE_COLOR)[simpliceNode.getGlobalNode()];
-          if(label != 0)
+          unsigned int labelCurve = (*BND_CURVE_COLOR)[simpliceNode.getGlobalNode()];
+          unsigned int labelCorner = (*BND_VERTEX_COLOR)[simpliceNode.getGlobalNode()];
+          const std::map<unsigned int, std::vector<unsigned int>>& cornerEdgeConnexion = simplexMesh->getCornerEdgeConnexion();
+          unsigned int sizeFace = 3;
+          if(labelCorner != 0)
           {
-            //std::cout << std::endl;
-            //std::cout << std::endl;
-            //std::cout << "node to insert -> " << simpliceNode.getGlobalNode() << std::endl;
-            //std::cout << "LABEL -> " << label << std::endl;
+            std::set<std::pair<TInt, TInt>> mapNodesOnRidge{};
+            std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure = simplexMesh->getEdgeStructure();
+            std::vector<unsigned int> edgesIndices = cornerEdgeConnexion.at(labelCorner);
+            //check the edge that will be destroy
+            if(edgesIndices.size() == 0)
+            {
+              throw gmds::GMDSException("edgesIndices.size() == 0");
+            }
+            for(auto const edgeIdx : edgesIndices)
+            {
+              for(auto const tri : cavityIO.getTrianglesConnectedToPInCavity())
+              {
+                const std::vector<TInt> nodes = SimplicesTriangle(simplexMesh, tri).getNodes();
+                std::vector<std::vector<TInt>> nodesOnRidge{};
+
+                for(unsigned int lN = 0 ; lN < sizeFace ; lN++)
+                {
+                  TInt n0 = nodes[lN];
+                  TInt n1 = nodes[(lN + 1) % sizeFace];
+                  if(labelCorner == (*BND_VERTEX_COLOR)[n0] || (*BND_CURVE_COLOR)[n0] == edgeIdx)
+                  {
+                    if(labelCorner == (*BND_VERTEX_COLOR)[n1] || (*BND_CURVE_COLOR)[n1] == edgeIdx)
+                    {
+                      std::pair<TInt, TInt> p = my_make(n0, n1);
+                      mapNodesOnRidge.insert(p);
+                    }
+                  }
+                }
+              }
+
+              if(mapNodesOnRidge.size() != 0)
+              {
+                auto it = edgeStructure.equal_range(edgeIdx);
+                std::vector<TInt> nodesEdge{};
+                std::vector<TInt> borderNodesEdge{};
+                for(auto const edge : mapNodesOnRidge)
+                {
+                  TInt nodeA = edge.first;
+                  TInt nodeB = edge.second;
+                  for(auto itr = it.first ; itr != it.second; ++itr)
+                  {
+                    //destroy the node on the edge STRUCTURE
+                    if(nodeA == itr->second.first && nodeB == itr->second.second)
+                    {
+                      //delete an element of the map during the iteration over this map
+                      itr = edgeStructure.erase(itr);
+                      nodesEdge.push_back(nodeA);
+                      nodesEdge.push_back(nodeB);
+                      it = edgeStructure.equal_range(edgeIdx);
+                      break;
+                    }
+                  }
+                }
+
+                std::sort(nodesEdge.begin(), nodesEdge.end());
+                for(unsigned int i = 0 ; i < nodesEdge.size();)
+                {
+                  TInt node_i = nodesEdge[i];
+                  TInt node_j = nodesEdge[i+1];
+                  if(node_i != node_j)
+                  {
+                    borderNodesEdge.push_back(node_i);
+                    if(i == nodesEdge.size() -2)
+                    {
+                      borderNodesEdge.push_back(node_j);
+                      break;
+                    }
+                    ++i;
+                  }
+                  else
+                  {
+                    if(i == nodesEdge.size() - 2)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        i = i+2;
+                    }
+                  }
+                }
+                //rebuild the edge structure with the node to connect and the border edge STRUCTURE
+                if(borderNodesEdge.size() == 2)
+                {
+                  if(borderNodesEdge.front() == simpliceNode.getGlobalNode() || borderNodesEdge.back() == simpliceNode.getGlobalNode())
+                  {
+                    std::pair<TInt, TInt> p = my_make(borderNodesEdge.front(), borderNodesEdge.back());
+                    edgeStructure.insert(std::pair<TInt, std::pair<TInt, TInt>>(edgeIdx, p));
+                  }
+                  else
+                  {
+                    std::pair<TInt, TInt> p0 = my_make(simpliceNode.getGlobalNode(), borderNodesEdge.back());
+                    std::pair<TInt, TInt> p1 = my_make(simpliceNode.getGlobalNode(), borderNodesEdge.front());
+                    edgeStructure.insert(std::pair<TInt, std::pair<TInt, TInt>>(edgeIdx, p0));
+                    edgeStructure.insert(std::pair<TInt, std::pair<TInt, TInt>>(edgeIdx, p1));
+                  }
+                }
+              }
+            }
+          }
+          else if(labelCurve != 0)
+          {
             std::set<std::pair<TInt, TInt>> mapNodesOnRidge{};
             std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure = simplexMesh->getEdgeStructure();
 
             //check the edge that will be destroy
             for(auto const tri : cavityIO.getTrianglesConnectedToPInCavity())
             {
-              //std::cout << "tri -> " << tri << std::endl;
               const std::vector<TInt> nodes = SimplicesTriangle(simplexMesh, tri).getNodes();
               std::vector<TInt> nodesOnRidge{};
-              for(auto const node : nodes)
+              for(unsigned int lN = 0 ; lN < sizeFace ; lN++)
               {
-                if(label == (*BND_CURVE_COLOR)[node] || (*BND_VERTEX_COLOR)[node] != 0)
+                TInt n0 = nodes[lN];
+                TInt n1 = nodes[(lN + 1) % sizeFace];
+                std::vector<unsigned int> edgesIndices;
+
+                if((*BND_VERTEX_COLOR)[n0] != 0 && (*BND_VERTEX_COLOR)[n1] != 0)
                 {
-                  nodesOnRidge.push_back(node);
+                  std::vector<unsigned int> edgesIndices0 = cornerEdgeConnexion.at((*BND_VERTEX_COLOR)[n0]);
+                  std::vector<unsigned int> edgesIndices1 = cornerEdgeConnexion.at((*BND_VERTEX_COLOR)[n1]);
+                  if(std::find(edgesIndices0.begin(), edgesIndices0.end(), labelCurve) == edgesIndices0.end() ||
+                      std::find(edgesIndices1.begin(), edgesIndices1.end(), labelCurve) == edgesIndices1.end())
+                  {
+                    continue;
+                  }
+                }
+                else if((*BND_VERTEX_COLOR)[n0] != 0)
+                {
+                  edgesIndices = cornerEdgeConnexion.at((*BND_VERTEX_COLOR)[n0]);
+                }
+                else if((*BND_VERTEX_COLOR)[n1] != 0)
+                {
+                  edgesIndices = cornerEdgeConnexion.at((*BND_VERTEX_COLOR)[n1]);
+                }
+
+                if(edgesIndices.size() == 0)
+                {
+                  if(labelCurve == (*BND_CURVE_COLOR)[n0] && labelCurve == (*BND_CURVE_COLOR)[n1])
+                  {
+                    std::pair<TInt, TInt> p = my_make(n0, n1);
+                    mapNodesOnRidge.insert(p);
+                  }
+                }
+                else
+                {
+                  if(labelCurve == (*BND_CURVE_COLOR)[n0] || std::find(edgesIndices.begin(), edgesIndices.end(), labelCurve) != edgesIndices.end())
+                  {
+                    if(labelCurve == (*BND_CURVE_COLOR)[n1] || std::find(edgesIndices.begin(), edgesIndices.end(), labelCurve) != edgesIndices.end())
+                    {
+                      std::pair<TInt, TInt> p = my_make(n0, n1);
+                      mapNodesOnRidge.insert(p);
+                    }
+                  }
                 }
               }
-
-              if(nodesOnRidge.size() == 3)
-              {
-                //the triangle is curently fully on the ridge, is 3 nodes are on it ... weird
-                throw gmds::GMDSException("nodesOnRidge.size() == 3");
-              }
-              else if(nodesOnRidge.size() == 2)
-              {
-                //std::cout << "  nodesOnRidge.size() == 2 " << std::endl;
-                std::pair<TInt, TInt> p = my_make(nodesOnRidge.front(), nodesOnRidge.back());
-                mapNodesOnRidge.insert(p);
-              }
+            }
+            for(auto const edge : mapNodesOnRidge)
+            {
+              TInt nodeA = edge.first;
+              TInt nodeB = edge.second;
             }
             if(mapNodesOnRidge.size() != 0)
             {
-              for(auto const edge : mapNodesOnRidge)
-              {
-                TInt nodeA = edge.first;
-                TInt nodeB = edge.second;
-                //std::cout << "  nodeA -> " << nodeA << std::endl;
-                //std::cout << "  nodeB -> " << nodeB << std::endl;
-              }
-              auto it = edgeStructure.equal_range(label);
+              auto it = edgeStructure.equal_range(labelCurve);
               std::vector<TInt> nodesEdge{};
               std::vector<TInt> borderNodesEdge{};
               for(auto const edge : mapNodesOnRidge)
               {
                 TInt nodeA = edge.first;
                 TInt nodeB = edge.second;
-                //std::cout << "  nodeA -> " << nodeA << std::endl;
-                //std::cout << "  nodeB -> " << nodeB << std::endl;
-                for(auto itr = it.first ; itr != it.second;)
+                for(auto itr = it.first ; itr != it.second ; ++itr)
                 {
                   //destroy the edge on the edge STRUCTURE
                   if(nodeA == itr->second.first && nodeB == itr->second.second)
                   {
                     //delete an element of the map during the iteration over this map
-                    itr = edgeStructure.erase(itr);
+                    edgeStructure.erase(itr);
                     nodesEdge.push_back(nodeA);
                     nodesEdge.push_back(nodeB);
-                  }
-                  else
-                  {
-                    ++itr;
+                    it = edgeStructure.equal_range(labelCurve);
+                    break;
                   }
                 }
               }
               std::sort(nodesEdge.begin(), nodesEdge.end());
-              //std::cout << "  nodesEdge.size() -> " << nodesEdge.size() << std::endl;
+              //std::cout << "simpliceNode -> " << simpliceNode.getGlobalNode() <<  " | labelCurve -> " << labelCurve <<std::endl;
+              //std::cout << " nodesEdge.size() -> " << nodesEdge.size() << std::endl;
               //for(auto const node : nodesEdge){std::cout << " NODES **** " << node << std::endl;}
               for(unsigned int i = 0 ; i < nodesEdge.size();)
               {
                 TInt node_i = nodesEdge[i];
                 TInt node_j = nodesEdge[i+1];
-                //std::cout << "  nodes_ij -> " << node_i << " | " << node_j << std::endl;
                 if(node_i != node_j)
                 {
                   borderNodesEdge.push_back(node_i);
@@ -362,6 +482,12 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
               //rebuild the edge structure with the node to connect and the border edge STRUCTURE
               if(borderNodesEdge.size() != 2)
               {
+                gmds::ISimplexMeshIOService ioServiceMesh(simplexMesh);
+                gmds::VTKWriter vtkWriterCS(&ioServiceMesh);
+                vtkWriterCS.setCellOptions(gmds::N|gmds::R|gmds::F);
+                vtkWriterCS.setDataOptions(gmds::N|gmds::R|gmds::F);
+                vtkWriterCS.write("no_borderNodesEdge.vtk");
+                std::cout << "node being inserted -> " << simpliceNode.getGlobalNode() << std::endl;
                 std::cout << "borderNodesEdge.size() -> " << borderNodesEdge.size() << std::endl;
                 throw gmds::GMDSException("borderNodesEdge.size() != 2");
               }
@@ -369,17 +495,22 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
               if(borderNodesEdge.front() == simpliceNode.getGlobalNode() || borderNodesEdge.back() == simpliceNode.getGlobalNode())
               {
                 std::pair<TInt, TInt> p = my_make(borderNodesEdge.front(), borderNodesEdge.back());
-                edgeStructure.insert(std::pair<TInt, std::pair<TInt, TInt>>(label, p));
+                edgeStructure.insert(std::pair<TInt, std::pair<TInt, TInt>>(labelCurve, p));
               }
               else
               {
                 std::pair<TInt, TInt> p0 = my_make(simpliceNode.getGlobalNode(), borderNodesEdge.back());
                 std::pair<TInt, TInt> p1 = my_make(simpliceNode.getGlobalNode(), borderNodesEdge.front());
-                edgeStructure.insert(std::pair<TInt, std::pair<TInt, TInt>>(label, p0));
-                edgeStructure.insert(std::pair<TInt, std::pair<TInt, TInt>>(label, p1));
+                edgeStructure.insert(std::pair<TInt, std::pair<TInt, TInt>>(labelCurve, p0));
+                edgeStructure.insert(std::pair<TInt, std::pair<TInt, TInt>>(labelCurve, p1));
               }
             }
           }
+          std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure = simplexMesh->getEdgeStructure();
+          /*for(auto const p : edgeStructure)
+          {
+            std::cout << "edge idx -> " << p.first << " | nodes -> " << p.second.first << " : " << p.second.second << std::endl;
+          }*/
 
           std::vector<std::vector<TInt>> deleted_Tri{};
           for(auto const & triangleConnectedToP : cavityIO.getTrianglesConnectedToPInCavity())
@@ -404,16 +535,8 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
               }
             }
           }
+
           simplexMesh->rebuildCav(cavityIO, deleted_Tet, deleted_Tri, simpliceNode.getGlobalNode(), createdCells);
-            /*std::cout << "simplexCreated" << std::endl;
-            for(auto const simplex : createdCells)
-            {
-              if(simplex >= 0){std::cout << SimplicesCell(simplexMesh, simplex);}
-            }
-            for(auto const simplex : createdCells)
-            {
-              if(simplex < 0){std::cout << SimplicesTriangle(simplexMesh, simplex);}
-            }*/
           simplexMesh->checkMeshCavity(createdCells);
           status = true;
         }

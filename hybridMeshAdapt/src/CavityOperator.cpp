@@ -577,6 +577,34 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
                   mapForReinsertion.insert(std::pair<std::pair<TInt, TInt>, TSimplexID>(p, nextSimplexToAdd));
                   continue;
                 }
+
+                //if simplexId is a sliver we add the adjacent tet to the vector
+                const SimplicesCell cell = SimplicesCell(m_simplex_mesh, simplexId);
+                if(cell.isSliver())
+                {
+                  std::vector<TSimplexID> adjTet = cell.adjacentTetra();
+                  for(auto const simplex : adjTet)
+                  {
+                    if(simplex < 0)
+                    {
+                      if(triBitVector[-simplex] == 0)
+                      {
+                        initCavityTriangle.push_back(simplex);
+                        triBitVector.assign(-simplex);
+                      }
+                    }
+                    else
+                    {
+                      if(bitCellInCavity[simplex] == 0 && bitMarkedCell[simplex] == 0)
+                      {
+                        cavityCell.resize(cavityCell.size() + 1);
+                        cavityCell[cavityCell.size() - 1] = simplex;
+                        bitCellInCavity.assign(simplex);
+                      }
+                    }
+                  }
+                }
+
                 if(criterion.execute(m_simplex_mesh, simplexId, nodeIndexLocal, nextPt))
                 {
                   if(bitCellInCavity[nextSimplexToAdd] == 0 && bitMarkedCell[nextSimplexToAdd] == 0)
@@ -596,6 +624,10 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
                 }
               }
             }
+            else
+            {
+              throw gmds::GMDSException("nextSimplexToAdd == errorId");
+            }
           }
         }
         else
@@ -608,7 +640,17 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
 
     //CELL EXPANSION END
     gmds::BitVector indexedTriangle(m_simplex_mesh->getBitVectorTri().capacity());
-    if(dimNode == SimplexMesh::topo::RIDGE)
+    if(dimNode == SimplexMesh::topo::CORNER)
+    {
+      std::vector<TSimplexID> firstTriangles{};
+      const std::vector<TSimplexID> ball = node.ballOf();
+      for(auto const simplex : ball){if(simplex < 0){firstTriangles.push_back(-simplex);}}
+
+      for(auto const & triangle : firstTriangles){
+        selectConnexTriangle(triangle, triBitVector, indexedTriangle);
+      }
+    }
+    else if(dimNode == SimplexMesh::topo::RIDGE)
     {
       bool alreadyBelongingToAnEdge = false;
       struct Edge{
@@ -874,6 +916,11 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
   for(auto const triCo : trianglesConnectedToP){std::cout << "triCo -> " << triCo << " | " << (*BND_TRIANGLES)[-triCo] << std::endl;}
   for(auto const triNotCo : trianglesNotConnectedToP){std::cout << "triNotCo -> " << triNotCo << " | " << (*BND_TRIANGLES)[-triNotCo] << std::endl;}
   */
+
+  /*std::cout << "cavityCell.size() -> " << cavityCell.size() << std::endl;
+  std::cout << "trianglesConnectedToP.size() -> " << trianglesConnectedToP.size() << std::endl;
+  std::cout << "trianglesNotConnectedToP.size() -> " << trianglesNotConnectedToP.size() << std::endl;*/
+
   return true;
 }
 /**********************************************************************/

@@ -3,12 +3,14 @@
 /**************************************************************/
 #include<vector>
 #include <iostream>
+#include <set>
 /**************************************************************/
 #include<gmds/utils/CommonTypes.h>
 /**************************************************************/
 #include<gmds/math/Vector.h>
 #include<gmds/math/Point.h>
 #include <gmds/math/Orientation.h>
+#include <gmds/math/Numerics.h>
 /**************************************************************/
 #include <Eigen/Dense>
 /**************************************************************/
@@ -111,6 +113,15 @@ namespace gmds
         /*return true if the pt is in the cell, false otherwise*/
         math::Orientation::Sign orientation(const TInt faceIdx, const gmds::math::Point& pt, bool inverseOrientation = false) const ;
 
+        /*return the dihedral angle between the localNode0 & localNode1*/
+        double dihedralAngle(const unsigned int localNode0, const unsigned int localNode1) const ;
+
+        /*return the minimum dihedral angle*/
+        std::set<double> minAndmaxDihedralAngle() const ;
+
+        /*return true if current Tet is a sliver*/
+        bool isSliver() const;
+        
         /*return true if the localIndex correspond to the generalIndex*/
         bool correspondance                    (const TInt localIndex, const TInt generalIndex) const;
 
