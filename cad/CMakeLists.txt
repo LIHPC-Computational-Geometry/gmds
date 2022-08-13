@@ -7,11 +7,6 @@ set(GMDS_LIB_PREFIX gmds/cad)
 
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
-        inc/gmds/cad/FACCurve.h
-        inc/gmds/cad/FACManager.h
-        inc/gmds/cad/FACPoint.h
-        inc/gmds/cad/FACSurface.h
-        inc/gmds/cad/FACVolume.h
         inc/gmds/cad/GeomCurve.h
         inc/gmds/cad/GeomEntity.h
         inc/gmds/cad/GeomManager.h
@@ -20,11 +15,6 @@ set(GMDS_INC
         inc/gmds/cad/GeomMeshLinker.h
         inc/gmds/cad/GeomVolume.h        )
 set(GMDS_SRC
-        src/FACCurve.cpp
-        src/FACManager.cpp
-        src/FACPoint.cpp
-        src/FACSurface.cpp
-        src/FACVolume.cpp
         src/GeomSurface.cpp
         src/GeomMeshLinker.cpp
         )
@@ -61,10 +51,5 @@ install(TARGETS ${GMDS_LIB}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-#==============================================================================
-if(WITH_TEST)
-    add_subdirectory(tst)
-endif(WITH_TEST)
 #==============================================================================
 

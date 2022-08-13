@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
-#include <gmds/cad/FACManager.h>
+#include <gmds/cadfac/FACManager.h>
 #include <gmds/cad/GeomMeshLinker.h>
 #include <gmds/smoothy/LaplacianSmoother.h>
 #include <gmds/io/IGMeshIOService.h>

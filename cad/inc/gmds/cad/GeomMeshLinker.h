@@ -18,10 +18,6 @@
 
 #include "gmds/cad/GeomCurve.h"
 #include "gmds/cad/GeomManager.h"
-#include "gmds/cad/FACVolume.h"
-#include "gmds/cad/FACSurface.h"
-#include "gmds/cad/FACCurve.h"
-#include "gmds/cad/FACPoint.h"
 #include "GMDSCad_export.h"
 
 #include "gmds/ig/Edge.h"

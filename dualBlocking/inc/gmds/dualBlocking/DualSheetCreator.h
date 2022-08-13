@@ -8,7 +8,7 @@
 #include <gmds/ig/Mesh.h>
 #include <gmds/math/Chart.h>
 #include <gmds/math/Plane.h>
-#include <gmds/cad/FACManager.h>
+#include <gmds/cadfac/FACManager.h>
 #include <gmds/cad/GeomMeshLinker.h>
 #include <map>
 

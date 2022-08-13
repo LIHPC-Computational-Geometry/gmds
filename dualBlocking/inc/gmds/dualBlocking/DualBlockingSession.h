@@ -13,7 +13,7 @@
 #include <gmds/dualBlocking/BoundarySurfaceCreator.h>
 
 
-#include <gmds/cad/FACManager.h>
+#include <gmds/cadfac/FACManager.h>
 #include <gmds/cad/GeomMeshLinker.h>
 
 #include "EdgeDiscrAlgo.h"

@@ -4,7 +4,7 @@
 #include <gmds/utils/Exception.h>
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/cad/GeomMeshLinker.h>
-#include <gmds/cad/FACManager.h>
+#include <gmds/cadfac/FACManager.h>
 #include <gmds/smoothy/AbstractSmoother.h>
 #include "GMDSSmoothy_export.h"
 /*----------------------------------------------------------------------------*/

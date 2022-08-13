@@ -6,7 +6,7 @@
  *      Author: ledouxf
  */
 /*----------------------------------------------------------------------------*/
-#include <gmds/cad/FACManager.h>
+#include <gmds/cadfac/FACManager.h>
 #include <gmds/igalgo/BoundaryOperator.h>
 #include <gmds/ig/MeshDoctor.h>
 

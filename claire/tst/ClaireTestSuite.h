@@ -2,7 +2,7 @@
 // Created by ledouxf on 1/22/19.
 //
 /*----------------------------------------------------------------------------*/
-#include <gmds/cad/FACManager.h>
+#include <gmds/cadfac/FACManager.h>
 #include "gmds/io/VTKReader.h"
 #include <gmds/claire/Grid_Smooth2D.h>
 #include <gmds/claire/Smooth2D.h>

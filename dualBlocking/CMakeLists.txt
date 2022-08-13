@@ -33,6 +33,7 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_IG_ALGO}
         ${LIB_GMDS_IO}
         ${LIB_GMDS_CAD}
+        ${LIB_GMDS_CADFAC}
         Predicates_psm
         glpk)
 

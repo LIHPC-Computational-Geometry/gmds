@@ -6,9 +6,9 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
 #include <gmds/igalgo/BoundaryExtractor3D.h>
-#include <gmds/cad/FACManager.h>
-#include <gmds/cad/FACSurface.h>
-#include <gmds/cad/FACVolume.h>
+#include <gmds/cadfac/FACManager.h>
+#include <gmds/cadfac/FACSurface.h>
+#include <gmds/cadfac/FACVolume.h>
 #include <gmds/io/VTKReader.h>
 #include <gmds/io/VTKWriter.h>
 #include <gmds/io/IGMeshIOService.h>

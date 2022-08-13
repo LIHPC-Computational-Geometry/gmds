@@ -4,7 +4,7 @@
 
 #include <gmds/cad/GeomCurve.h>
 #include <gmds/cad/GeomSurface.h>
-#include <gmds/cad/FACSurface.h>
+#include <gmds/cadfac/FACSurface.h>
 
 
 #include <gmds/graph/TopologyGraph.h>

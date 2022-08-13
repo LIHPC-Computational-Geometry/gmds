@@ -198,7 +198,8 @@ target_link_libraries(run_compare3d elg3d kmds Kokkos::kokkoscore)
 
 target_link_libraries(elg3d
 #	PUBLIC ${LIB_GMDS_MATH} ${LIB_GMDS_IG} ${LIB_GMDS_CAD} ${LIB_GMDS_UTILS} kmds Kokkos::kokkoscore Kokkos::kokkoscontainers GCO  gts glib-2.0
-        PUBLIC ${LIB_GMDS_MATH} ${LIB_GMDS_IG} ${LIB_GMDS_CAD} ${LIB_GMDS_UTILS} kmds Kokkos::kokkoscore Kokkos::kokkoscontainers GCO PkgConfig::PKG_GTS
+        PUBLIC ${LIB_GMDS_MATH} ${LIB_GMDS_IG} ${LIB_GMDS_CAD}
+        ${LIB_GMDS_CADFAC} ${LIB_GMDS_UTILS} kmds Kokkos::kokkoscore Kokkos::kokkoscontainers GCO PkgConfig::PKG_GTS
 	INTERFACE glpk)
 
 if(ELG3D_WITH_EXODUSII)

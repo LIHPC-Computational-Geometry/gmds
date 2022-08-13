@@ -2,7 +2,7 @@
 #define GMDS_TOPOLOGYGRAPH_H
 
 #include <vector>
-#include <gmds/cad/FACManager.h>
+#include <gmds/cadfac/FACManager.h>
 #include <gmds/math/Chart.h>
 #include <gmds/graph/MinCut.h>
 

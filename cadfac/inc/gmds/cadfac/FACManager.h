@@ -20,17 +20,17 @@
 
 #include "gmds/cad/GeomCurve.h"
 #include "gmds/cad/GeomManager.h"
-#include "gmds/cad/FACVolume.h"
-#include "gmds/cad/FACSurface.h"
-#include "gmds/cad/FACCurve.h"
-#include "gmds/cad/FACPoint.h"
+#include "gmds/cadfac/FACVolume.h"
+#include "gmds/cadfac/FACSurface.h"
+#include "gmds/cadfac/FACCurve.h"
+#include "gmds/cadfac/FACPoint.h"
 
 #include "gmds/ig/Edge.h"
 #include "gmds/ig/Node.h"
 #include "gmds/ig/MeshDoctor.h"
 #include "gmds/ig/Mesh.h"
-#include "GeomMeshLinker.h"
-#include "GMDSCad_export.h"
+#include  "gmds/cad/GeomMeshLinker.h"
+#include "GMDSCadFac_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -43,7 +43,7 @@ namespace gmds{
  *
  */
 /*----------------------------------------------------------------------------*/
-        class  GMDSCad_API FACManager :
+        class  GMDSCadFac_API FACManager :
                 public GeomManager
         {
 
