@@ -6,8 +6,8 @@
 /*----------------------------------------------------------------------------*/
 // GMDS File Headers
 /*----------------------------------------------------------------------------*/
-#include <gmds/cad/FACPoint.h>
-#include <gmds/cad/FACCurve.h>
+#include <gmds/cadfac/FACPoint.h>
+#include <gmds/cadfac/FACCurve.h>
 #include <gmds/ig/Mesh.h>
 #include <set>
 /*----------------------------------------------------------------------------*/

@@ -4,10 +4,10 @@
  *  \date    30/05/2011
  */
 /*----------------------------------------------------------------------------*/
-#include <gmds/cad/FACCurve.h>
-#include <gmds/cad/FACSurface.h>
-#include <gmds/cad/FACPoint.h>
-#include <gmds/cad/FACVolume.h>
+#include <gmds/cadfac/FACCurve.h>
+#include <gmds/cadfac/FACSurface.h>
+#include <gmds/cadfac/FACPoint.h>
+#include <gmds/cadfac/FACVolume.h>
 #include <gmds/math/Constants.h>
 #include <gmds/math/Plane.h>
 #include <gmds/ig/Mesh.h>

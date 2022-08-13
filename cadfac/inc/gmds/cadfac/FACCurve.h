@@ -12,12 +12,12 @@
 #include "gmds/utils/CommonTypes.h"
 #include "gmds/utils/Exception.h"
 #include "gmds/cad/GeomCurve.h"
-#include "gmds/cad/FACPoint.h"
+#include "gmds/cadfac/FACPoint.h"
 #include "gmds/ig/Edge.h"
 #include "gmds/ig/Node.h"
 #include "gmds/math/Point.h"
 #include "gmds/math/Vector.h"
-#include "GMDSCad_export.h"
+#include "GMDSCadFac_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -30,7 +30,7 @@ class FACSurface;
  *  	   mesh to the geometrical model.
  */
 /*----------------------------------------------------------------------------*/
-class GMDSCad_API FACCurve: public GeomCurve {
+class GMDSCadFac_API FACCurve: public GeomCurve {
 
 public:
 	/*------------------------------------------------------------------------*/

@@ -10,12 +10,12 @@
 // ANN File Headers
 #include "ANN/ANN.h"
 /*----------------------------------------------------------------------------*/
-#include "gmds/cad/FACSurface.h"
+#include "gmds/cadfac/FACSurface.h"
 /*----------------------------------------------------------------------------*/
-#include <gmds/cad/FACManager.h>
-#include "gmds/cad/FACVolume.h"
-#include "gmds/cad/FACCurve.h"
-#include "gmds/cad/FACPoint.h"
+#include <gmds/cadfac/FACManager.h>
+#include "gmds/cadfac/FACVolume.h"
+#include "gmds/cadfac/FACCurve.h"
+#include "gmds/cadfac/FACPoint.h"
 #include "gmds/math/Ray.h"
 #include "gmds/math/Triangle.h"
 #include "gmds/utils/RandomGenerator.h"

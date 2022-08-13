@@ -17,7 +17,7 @@
 /*----------------------------------------------------------------------------*/
 // GMDS File Headers
 /*----------------------------------------------------------------------------*/
-#include <gmds/cad/FACManager.h>
+#include <gmds/cadfac/FACManager.h>
 //#include <GMDS/IG/IG.h>
 
 #include <KM/DS/Mesh.h>

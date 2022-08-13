@@ -10,7 +10,7 @@
 #include <gmds/ig/Mesh.h>
 #include <gmds/claire/Params.h>
 #include <gmds/claire/AbstractAeroBoundaries.h>
-#include <gmds/cad/FACManager.h>
+#include <gmds/cadfac/FACManager.h>
 #include <string>
 #include <map>
 #include <fstream>

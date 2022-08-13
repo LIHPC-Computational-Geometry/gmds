@@ -19,7 +19,7 @@
 /*----------------------------------------------------------------------------*/
 #include <KM/IO/VTKWriter.h>
 
-#include <gmds/cad/FACManager.h>
+#include <gmds/cadfac/FACManager.h>
 #include <KM/DS/Mesh.h>
 /*----------------------------------------------------------------------------*/
 // Elg3D File Headers

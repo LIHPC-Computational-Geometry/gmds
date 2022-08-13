@@ -15,7 +15,7 @@
 #include "gmds/math/Point.h"
 #include "gmds/ig/Mesh.h"
 #include "gmds/ig/Node.h"
-#include "GMDSCad_export.h"
+#include "GMDSCadFac_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -29,7 +29,7 @@ namespace gmds{
  *  \param TBase the data type used to store geometrical data
  */
 /*----------------------------------------------------------------------------*/
-        class GMDSCad_API FACPoint : public GeomPoint {
+        class GMDSCadFac_API FACPoint : public GeomPoint {
 
         public:
 

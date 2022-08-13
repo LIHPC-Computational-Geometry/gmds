@@ -37,7 +37,8 @@ include(GNUInstallDirs)
 
 #LIBRARY TO INSTALL
 target_link_libraries(${GMDS_LIB} PUBLIC
-        ${LIB_GMDS_IG} ${LIB_GMDS_CAD})
+        ${LIB_GMDS_IG} ${LIB_GMDS_CAD}
+        ${LIB_GMDS_CADFAC})
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)
 

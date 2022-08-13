@@ -1,3 +1,3 @@
 #CAD module
 
-This module provides **cad** representation for meshing algorithms.
+This module provides **cad** interface representation for meshing algorithms.

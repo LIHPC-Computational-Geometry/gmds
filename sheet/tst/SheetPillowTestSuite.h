@@ -8,7 +8,7 @@
 #include <iostream>
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/sheet/Pillow2D.h>
-#include <gmds/cad/FACManager.h>
+#include <gmds/cadfac/FACManager.h>
 #include <gmds/smoothy/LaplacianSmoother.h>
 
 using namespace gmds;

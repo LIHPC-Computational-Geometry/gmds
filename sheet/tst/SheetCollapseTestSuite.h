@@ -9,7 +9,7 @@
 #include <gmds/sheet/Collapse2D.h>
 #include <gmds/sheet/Collapse3D.h>
 #include <gmds/cad/GeomMeshLinker.h>
-#include <gmds/cad/FACManager.h>
+#include <gmds/cadfac/FACManager.h>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
