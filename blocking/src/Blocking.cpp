@@ -3,7 +3,12 @@
 /*----------------------------------------------------------------------------*/
 #include <fstream>
 /*----------------------------------------------------------------------------*/
+#include <gmds/ig/Mesh.h>
 #include <gmds/utils/Exception.h>
+
+#include <gmds/io/IGMeshIOService.h>
+#include <gmds/io/VTKReader.h>
+#include <gmds/io/VTKWriter.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -42,10 +47,10 @@ void Blocking::createGrid2d(gmds::math::Point APmin, gmds::math::Point APmax, in
 			double y1 = APmin.Y() + ((double) (j+1) / (double) ANy) * (APmax.Y() + (-1. * APmin.Y()));
 
 			Dart_handle dh =
-				lcc_.make_quadrangle(Point(x0, y0, 0.),
-											Point(x1, y0, 0.),
-											Point(x1, y1, 0.),
-											Point(x0, y1, 0.));
+				lcc_.make_quadrangle(LCC_3::Point(x0, y0, 0.),
+											LCC_3::Point(x1, y0, 0.),
+											LCC_3::Point(x1, y1, 0.),
+											LCC_3::Point(x0, y1, 0.));
 
 			dhs[i*ANy+j] = dh;
 		}
@@ -66,7 +71,7 @@ void Blocking::createGrid2d(gmds::math::Point APmin, gmds::math::Point APmax, in
 			}
 		}
 	}
-
+	//lcc_.display_darts(std::cout, true);
 	delete[] dhs;
 
 	if (!lcc_.is_valid()) {
@@ -91,14 +96,14 @@ void Blocking::createGrid3d(gmds::math::Point APmin, gmds::math::Point APmax, in
 				double z1 = APmin.Z() + ((double) (k+1) / (double) ANz) * (APmax.Z() + (-1. * APmin.Z()));
 
 				Dart_handle dh =
-				   lcc_.make_hexahedron(Point(x0, y0, z0),
-												Point(x1, y0, z0),
-				                        Point(x1, y1, z0),
-												Point(x0, y1, z0),
-												Point(x0, y1, z1),
-												Point(x0, y0, z1),
-												Point(x1, y0, z1),
-												Point(x1, y1, z1));
+				   lcc_.make_hexahedron(LCC_3::Point(x0, y0, z0),
+												LCC_3::Point(x1, y0, z0),
+				                        LCC_3::Point(x1, y1, z0),
+												LCC_3::Point(x0, y1, z0),
+												LCC_3::Point(x0, y1, z1),
+												LCC_3::Point(x0, y0, z1),
+												LCC_3::Point(x1, y0, z1),
+												LCC_3::Point(x1, y1, z1));
 
 				dhs[i*(ANy*ANz)+j*ANz+k] = dh;
 			}
@@ -134,6 +139,18 @@ void Blocking::createGrid3d(gmds::math::Point APmin, gmds::math::Point APmax, in
 	}
 }
 /*----------------------------------------------------------------------------*/
+void Blocking::readVTKFile(std::string AFileName)
+{
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N));
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N | gmds::F);
+	vtkReader.read(AFileName);
+
+
+}
+/*----------------------------------------------------------------------------*/
 void Blocking::writeMokaFile(std::string AFileName) const
 {
 	std::ofstream stream(AFileName, std::ios::out);
@@ -167,6 +184,140 @@ void Blocking::writeMokaFile(std::string AFileName) const
 		}
 	}
 	stream.close();
+}
+/*----------------------------------------------------------------------------*/
+void Blocking::writeVTKFile(std::string AFileName) const
+{
+	// validity checks
+	if (!lcc_.is_valid()) {
+		std::string s("Blocking::writeVTKFile lcc is not valid");
+		throw gmds::GMDSException(s);
+	}
+
+	gmds::MeshModel model(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::F|gmds::R|gmds::F2N|gmds::R2N));
+	gmds::Mesh m(model);
+
+	std::map<LCC_3::Vertex_attribute_range::const_iterator, gmds::TCellID> v2n;
+
+	// Display all the vertices of the map.
+	for (LCC_3::Vertex_attribute_range::const_iterator
+			  it=lcc_.vertex_attributes().begin(),
+			  itend=lcc_.vertex_attributes().end();
+		  it!=itend; ++it) {
+		gmds::math::Point pt(lcc_.point_of_vertex_attribute(it).x(), lcc_.point_of_vertex_attribute(it).y(), lcc_.point_of_vertex_attribute(it).z());
+		v2n[it] = m.newNode(pt).id();
+	}
+
+	for (auto it  = lcc_.one_dart_per_cell<2>().begin(); it != lcc_.one_dart_per_cell<2>().end(); it++) {
+//		std::cout << "poyop " << lcc_.darts_of_orbit<0, 1>(it).size() << std::endl;
+
+		int nb = lcc_.darts_of_orbit<0, 1>(it).size();
+		switch (nb) {
+		case 6: { // triangle
+			LCC_3::Dart_const_handle d0 = it;
+			LCC_3::Dart_const_handle d1 = lcc_.alpha(d0, 0, 1);
+			LCC_3::Dart_const_handle d2 = lcc_.alpha(d1, 0, 1);
+			LCC_3::Vertex_attribute_const_handle v0 = lcc_.vertex_attribute(d0);
+			LCC_3::Vertex_attribute_const_handle v1 = lcc_.vertex_attribute(d1);
+			LCC_3::Vertex_attribute_const_handle v2 = lcc_.vertex_attribute(d2);
+			m.newTriangle(v2n[v0], v2n[v1], v2n[v2]);
+		} break;
+		case 8: { //quadrangle
+			LCC_3::Dart_const_handle d0 = it;
+			LCC_3::Dart_const_handle d1 = lcc_.alpha(d0, 0, 1);
+			LCC_3::Dart_const_handle d2 = lcc_.alpha(d1, 0, 1);
+			LCC_3::Dart_const_handle d3 = lcc_.alpha(d2, 0, 1);
+			LCC_3::Vertex_attribute_const_handle v0 = lcc_.vertex_attribute(d0);
+			LCC_3::Vertex_attribute_const_handle v1 = lcc_.vertex_attribute(d1);
+			LCC_3::Vertex_attribute_const_handle v2 = lcc_.vertex_attribute(d2);
+			LCC_3::Vertex_attribute_const_handle v3 = lcc_.vertex_attribute(d3);
+			m.newQuad(v2n[v0], v2n[v1], v2n[v2], v2n[v3]);
+		} break;
+		default: {
+			std::string s = "Blocking::writeVTKFile 2d cell has an unexpected number of darts " + std::to_string(nb);
+			throw gmds::GMDSException(s);
+		}
+		}
+	}
+
+	// In some (all?) cases when in 2d a unique 3d cell exists and all darts self reference themselves by alpha3
+	// check whether we have "real" 3d cells that we need to effectively write
+	bool in2d = true;
+	if(lcc_.one_dart_per_cell<3>().size() == 1) {
+		int index = 0;
+		for(auto it = lcc_.darts().begin(); it != lcc_.darts().end(); ++it) {
+			if(index != lcc_.darts().index(lcc_.get_alpha<3>(it))) {
+				in2d = false;
+				break;
+			}
+			index++;
+		}
+	} else {
+		in2d = false;
+	}
+
+	if(!in2d) {
+
+		for (auto it = lcc_.one_dart_per_cell<3>().begin(); it != lcc_.one_dart_per_cell<3>().end(); it++) {
+			int nb = lcc_.darts_of_orbit<0, 1, 2>(it).size();
+			switch (nb) {
+			case 24: {     // tetrahedron
+				LCC_3::Dart_const_handle d0 = it;
+				LCC_3::Dart_const_handle d1 = lcc_.alpha(d0, 0, 1);
+				LCC_3::Dart_const_handle d2 = lcc_.alpha(d1, 0, 1);
+				LCC_3::Dart_const_handle d3 = lcc_.alpha(d0, 2, 1, 0);
+				LCC_3::Vertex_attribute_const_handle v0 = lcc_.vertex_attribute(d0);
+				LCC_3::Vertex_attribute_const_handle v1 = lcc_.vertex_attribute(d1);
+				LCC_3::Vertex_attribute_const_handle v2 = lcc_.vertex_attribute(d2);
+				LCC_3::Vertex_attribute_const_handle v3 = lcc_.vertex_attribute(d3);
+				m.newTet(v2n[v0], v2n[v1], v2n[v2], v2n[v3]);
+			} break;
+			case 36: {     // prism3
+				            //			LCC_3::Dart_const_handle d0 = it;
+				            //			LCC_3::Dart_const_handle d1 = lcc_.alpha(d0, 0, 1);
+				            //			LCC_3::Dart_const_handle d2 = lcc_.alpha(d1, 0, 1);
+				            //			LCC_3::Dart_const_handle d3 = lcc_.alpha(d0, 2, 1, 0);
+				            //			LCC_3::Vertex_attribute_const_handle v0 = lcc_.vertex_attribute(d0);
+				            //			LCC_3::Vertex_attribute_const_handle v1 = lcc_.vertex_attribute(d1);
+				            //			LCC_3::Vertex_attribute_const_handle v2 = lcc_.vertex_attribute(d2);
+				            //			LCC_3::Vertex_attribute_const_handle v3 = lcc_.vertex_attribute(d3);
+				            //			m.newTet(v2n[v0], v2n[v1], v2n[v2], v2n[v3]);
+			} break;
+			case 48: {     // hexahedron
+				LCC_3::Dart_const_handle d0 = it;
+				LCC_3::Dart_const_handle d1 = lcc_.alpha(d0, 0, 1);
+				LCC_3::Dart_const_handle d2 = lcc_.alpha(d1, 0, 1);
+				LCC_3::Dart_const_handle d3 = lcc_.alpha(d2, 0, 1);
+				LCC_3::Dart_const_handle d4 = lcc_.alpha(it, 2, 1, 0, 1, 2);
+				LCC_3::Dart_const_handle d5 = lcc_.alpha(d4, 0, 1);
+				LCC_3::Dart_const_handle d6 = lcc_.alpha(d5, 0, 1);
+				LCC_3::Dart_const_handle d7 = lcc_.alpha(d6, 0, 1);
+				LCC_3::Vertex_attribute_const_handle v0 = lcc_.vertex_attribute(d0);
+				LCC_3::Vertex_attribute_const_handle v1 = lcc_.vertex_attribute(d1);
+				LCC_3::Vertex_attribute_const_handle v2 = lcc_.vertex_attribute(d2);
+				LCC_3::Vertex_attribute_const_handle v3 = lcc_.vertex_attribute(d3);
+				LCC_3::Vertex_attribute_const_handle v4 = lcc_.vertex_attribute(d4);
+				LCC_3::Vertex_attribute_const_handle v5 = lcc_.vertex_attribute(d5);
+				LCC_3::Vertex_attribute_const_handle v6 = lcc_.vertex_attribute(d6);
+				LCC_3::Vertex_attribute_const_handle v7 = lcc_.vertex_attribute(d7);
+				m.newHex(v2n[v0], v2n[v1], v2n[v2], v2n[v3], v2n[v4], v2n[v5], v2n[v6], v2n[v7]);
+			} break;
+			default: {
+				std::string s = "Blocking::writeVTKFile 3d cell has an unexpected number of darts " + std::to_string(nb);
+				throw gmds::GMDSException(s);
+			}
+			}
+		}
+	}
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKWriter vtkWriter(&ioService);
+	if(!in2d) {
+		vtkWriter.setCellOptions(gmds::N | gmds::R);
+	} else {
+		vtkWriter.setCellOptions(gmds::N|gmds::F);
+	}
+	vtkWriter.write(AFileName);
 }
 /*----------------------------------------------------------------------------*/
 }  // namespace blocking
