@@ -52,7 +52,9 @@ class LIB_GMDS_BLOCKING_API Blocking{
 	/*--------------------------------------------------------------------*/
 	/** @brief  Get nbVertices
 	 */
-	 int nbVertices() const {return lcc_.number_of_vertex_attributes();};
+	 // TODO is one better than the other ?
+//	 int nbVertices() const {return lcc_.number_of_vertex_attributes();};
+	 int nbVertices() const {return lcc_.one_dart_per_cell<0>().size();};
 
 	 /*--------------------------------------------------------------------*/
 	 /** @brief  Get nbEdges
@@ -90,9 +92,40 @@ class LIB_GMDS_BLOCKING_API Blocking{
 	 void createGrid3d(gmds::math::Point APmin, gmds::math::Point APmax, int ANx, int ANy, int ANz);
 
 	 /*--------------------------------------------------------------------*/
-	 /** @brief  Create grid of blocks
+	 /** @brief  Read the blocking using the vtk file format
+	  */
+	 void readVTKFile(std::string AFileName);
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Write the blocking using the moka file format
 	  */
 	 void writeMokaFile(std::string AFileName) const;
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Write the blocking using the vtk file format
+	  */
+	 void writeVTKFile(std::string AFileName) const;
+
+	 // TODO write vtk / read vtk / create grid with holes /
+    // TODO fill the maps entities_2_darts
+	 // outside cell ?
+
+	 // TODO insert sheet
+	 // TODO detect and delete sheet
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Insert sheet
+	  */
+	 void sheetInsert();
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Collapse sheet
+	  */
+	 void sheetCollapse();
+
+	 // TODO later the same on chords
+
+
 
  private:
 
