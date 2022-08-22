@@ -6,7 +6,9 @@
 /*----------------------------------------------------------------------------*/
 //#include <gmds/blocking/Blocking.h>
 /*----------------------------------------------------------------------------*/
-//#include <CGAL/draw_linear_cell_complex.h>
+#if WITH_CGAL_QT5
+#include <CGAL/draw_linear_cell_complex.h>
+#endif
 #include <CGAL/Generalized_map.h>
 #include <CGAL/Linear_cell_complex_for_generalized_map.h>
 /*----------------------------------------------------------------------------*/
@@ -80,6 +82,7 @@ TEST(CGALTestSuite, using_lcc_gmaps)
 //	lcc.display_characteristics(std::cout);
 }
 /*----------------------------------------------------------------------------*/
+#if WITH_CGAL_QT5
 TEST(CGALTestSuite, DISABLED_draw)
 {
 	// This is taken from CGAL Linear_cell_complex/draw_linear_cell_complex.cpp
@@ -103,4 +106,5 @@ TEST(CGALTestSuite, DISABLED_draw)
 	ASSERT_TRUE(lcc.is_valid());
 //	CGAL::draw(lcc);
 }
+#endif
 /*----------------------------------------------------------------------------*/
