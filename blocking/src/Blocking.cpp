@@ -141,13 +141,88 @@ void Blocking::createGrid3d(gmds::math::Point APmin, gmds::math::Point APmax, in
 /*----------------------------------------------------------------------------*/
 void Blocking::readVTKFile(std::string AFileName)
 {
-	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N));
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::N | gmds::F | gmds::R | gmds::F2N | gmds::R2N));
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
-	vtkReader.setCellOptions(gmds::N | gmds::F);
+	vtkReader.setCellOptions(gmds::N | gmds::F | gmds::R);
 	vtkReader.read(AFileName);
 
+	// check validity
+	// we only handle meshes containing either faces or regions, not both, at the moment
+	// and the mesh must have at least one
+	if (((m.getNbFaces() == 0) && (m.getNbRegions() == 0)) ||
+	    ((m.getNbFaces() != 0) && (m.getNbRegions() != 0))) {
+		std::string s ="Blocking::readVTKFile we only handle meshes containing either faces or regions, "
+		                "not both, at the moment and the mesh must have at least one";
+		throw gmds::GMDSException(s);
+	}
+
+	//
+
+	if(m.getNbFaces() != 0) {
+		for(auto i:m.faces()) {
+			gmds::Face f = m.get<gmds::Face>(i);
+			std::cout << "Face " << f.id() << " of type " << f.type() << " with nodes " << std::endl;
+			std::vector<gmds::TCellID> n_ids = f.getIDs<gmds::Node>();
+			std::vector<gmds::Node> nds = f.get<gmds::Node>();
+
+			switch(f.type()) {
+			case gmds::GMDS_TRIANGLE: {
+				LCC_3::Dart_handle d = lcc_.make_triangle(LCC_3::Point(nds[0].point().X(), nds[0].point().Y(), nds[0].point().Z()),
+																		LCC_3::Point(nds[1].point().X(), nds[1].point().Y(), nds[1].point().Z()),
+																		LCC_3::Point(nds[2].point().X(), nds[2].point().Y(), nds[2].point().Z()));
+			}
+				break;
+			case gmds::GMDS_QUAD: {
+				LCC_3::Dart_handle d = lcc_.make_quadrangle(LCC_3::Point(nds[0].point().X(), nds[0].point().Y(), nds[0].point().Z()),
+																		  LCC_3::Point(nds[1].point().X(), nds[1].point().Y(), nds[1].point().Z()),
+																		  LCC_3::Point(nds[2].point().X(), nds[2].point().Y(), nds[2].point().Z()),
+																		  LCC_3::Point(nds[3].point().X(), nds[3].point().Y(), nds[3].point().Z()));
+			}
+				break;
+			default: {
+				std::string s = "Blocking::readVTKFile face type not handled";
+				throw gmds::GMDSException(s);
+			}
+			}
+
+
+
+			for (auto j : n_ids) {
+			}
+		}
+	} else {
+		for(auto i:m.regions()) {
+			gmds::Region r = m.get<gmds::Region>(i);
+			std::cout << "Region " << r.id() << " of type " << r.type() << " with nodes " << std::endl;
+			std::vector<gmds::TCellID> n_ids = r.getIDs<gmds::Node>();
+			std::vector<gmds::Node> nds = r.get<gmds::Node>();
+
+			switch (r.type()) {
+			case gmds::GMDS_TETRA: {
+				LCC_3::Dart_handle d = lcc_.make_tetrahedron(LCC_3::Point(nds[0].point().X(), nds[0].point().Y(), nds[0].point().Z()),
+																			LCC_3::Point(nds[1].point().X(), nds[1].point().Y(), nds[1].point().Z()),
+																			LCC_3::Point(nds[2].point().X(), nds[2].point().Y(), nds[2].point().Z()),
+																			LCC_3::Point(nds[3].point().X(), nds[3].point().Y(), nds[3].point().Z()));
+			} break;
+			case gmds::GMDS_HEX: {
+				LCC_3::Dart_handle d = lcc_.make_hexahedron(LCC_3::Point(nds[0].point().X(), nds[0].point().Y(), nds[0].point().Z()),
+																		  LCC_3::Point(nds[1].point().X(), nds[1].point().Y(), nds[1].point().Z()),
+																		  LCC_3::Point(nds[2].point().X(), nds[2].point().Y(), nds[2].point().Z()),
+																		  LCC_3::Point(nds[3].point().X(), nds[3].point().Y(), nds[3].point().Z()),
+																		  LCC_3::Point(nds[5].point().X(), nds[5].point().Y(), nds[5].point().Z()),
+																		  LCC_3::Point(nds[6].point().X(), nds[6].point().Y(), nds[6].point().Z()),
+																		  LCC_3::Point(nds[7].point().X(), nds[7].point().Y(), nds[7].point().Z()),
+																		  LCC_3::Point(nds[4].point().X(), nds[4].point().Y(), nds[4].point().Z()));
+			} break;
+			default: {
+				std::string s = "Blocking::readVTKFile cell type not handled";
+				throw gmds::GMDSException(s);
+			}
+			}
+		}
+	}  //
 
 }
 /*----------------------------------------------------------------------------*/
@@ -308,7 +383,7 @@ void Blocking::writeVTKFile(std::string AFileName) const
 			}
 			}
 		}
-	}
+	}  // if(!in2d)
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKWriter vtkWriter(&ioService);

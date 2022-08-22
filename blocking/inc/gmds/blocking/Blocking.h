@@ -106,7 +106,7 @@ class LIB_GMDS_BLOCKING_API Blocking{
 	  */
 	 void writeVTKFile(std::string AFileName) const;
 
-	 // TODO write vtk / read vtk / create grid with holes /
+	 // TODO read vtk / create grid with holes /
     // TODO fill the maps entities_2_darts
 	 // outside cell ?
 
@@ -145,5 +145,3 @@ class LIB_GMDS_BLOCKING_API Blocking{
 /*----------------------------------------------------------------------------*/
 #endif //GMDS_BLOCKING_H
 /*----------------------------------------------------------------------------*/
-
-

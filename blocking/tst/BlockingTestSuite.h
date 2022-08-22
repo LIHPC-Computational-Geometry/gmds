@@ -68,4 +68,25 @@ TEST(BlockingTestSuite, writeVTK_3d)
 	ASSERT_EQ(bl3d.nbVertices(), 64);
 }
 /*----------------------------------------------------------------------------*/
+TEST(BlockingTestSuite, readVTK_2d)
+{
+	gmds::blocking::Blocking bl2d;
+	bl2d.readVTKFile("grid2d.vtk");
+
+//	ASSERT_EQ(bl2d.nbVertices(), 16);
+//	ASSERT_EQ(bl2d.nbEdges(), 24);
+	ASSERT_EQ(bl2d.nbFaces(), 9);
+}
+/*----------------------------------------------------------------------------*/
+TEST(BlockingTestSuite, readVTK_3d)
+{
+	gmds::blocking::Blocking bl3d;
+	bl3d.readVTKFile("grid3d.vtk");
+
+//	ASSERT_EQ(bl3d.nbVertices(), 64);
+//	ASSERT_EQ(bl3d.nbEdges(), 144);
+//	ASSERT_EQ(bl3d.nbFaces(), 108);
+	ASSERT_EQ(bl3d.nbBlocks(), 27);
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
