@@ -77,6 +77,8 @@ void AeroEllipticSmoothing_2D::BoundarySlipping(){
 		old_cords[n_id] = n.point();
 	}
 
+
+
 	// Compute the new positions of the nodes
 	for (auto n_id:m_slippingNodesId)
 	{
