@@ -8,6 +8,8 @@
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/ig/Blocking2D.h>
+#include <gmds/math/Point.h>
+#include <gmds/utils/Array.h>
 #include <string>
 #include <map>
 #include <fstream>
