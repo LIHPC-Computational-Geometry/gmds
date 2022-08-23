@@ -177,7 +177,7 @@ IntervalAssignment_2D::EdgeConstraint(TCellID e_id, int &N_ideal, bool &hardCons
 
 	// If the edge is ortho to the wall, in the boundary layer
 	if ((var_layer_id->value(e_nodes[0].id()) == 0)
-	    xor (var_layer_id->value(e_nodes[1].id()) == 0))
+	    ^ (var_layer_id->value(e_nodes[1].id()) == 0))
 	{
 		N_ideal = m_params_aero.nbrCellsInCL ;
 		hardConstraint = true;
