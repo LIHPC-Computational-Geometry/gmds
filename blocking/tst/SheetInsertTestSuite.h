@@ -5,24 +5,24 @@
 //#include <iostream>
 //#include <vector>
 /*----------------------------------------------------------------------------*/
-#include <gmds/blocking/InsertSheet.h>
+#include <gmds/blocking/SheetInsert.h>
 
 #include <gmds/blocking/Blocking.h>
 /*----------------------------------------------------------------------------*/
-TEST(InsertSheetTestSuite, dummytest)
+TEST(SheetInsertTestSuite, dummytest)
 {
 	ASSERT_EQ(0, 0);
 }
 /*----------------------------------------------------------------------------*/
-TEST(InsertSheetTestSuite, instanciate)
+TEST(SheetInsertTestSuite, instanciate)
 {
 	gmds::blocking::Blocking bl;
 	bl.createGrid2d();
 
-	gmds::blocking::InsertSheet is;
+	gmds::blocking::SheetInsert is;
 	is.setBl(&bl);
 
-	gmds::blocking::InsertSheet::STATUS status = is.execute();
-	ASSERT_EQ(status, gmds::blocking::InsertSheet::NOT_YET_IMPLEMENTED);
+	gmds::blocking::SheetInsert::STATUS status = is.execute();
+	ASSERT_EQ(status, gmds::blocking::SheetInsert::NOT_YET_IMPLEMENTED);
 }
 /*----------------------------------------------------------------------------*/

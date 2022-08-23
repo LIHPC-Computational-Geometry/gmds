@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*/
-#ifndef GMDS_BLOCKING_INSERTSHEET_H
-#define GMDS_BLOCKING_INSERTSHEET_H
+#ifndef GMDS_BLOCKING_SHEETINSERT_H
+#define GMDS_BLOCKING_SHEETINSERT_H
 /*----------------------------------------------------------------------------*/
 #include <map>
 #include <string>
@@ -19,7 +19,8 @@ namespace gmds{
 /*----------------------------------------------------------------------------*/
 namespace blocking{
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_BLOCKING_API InsertSheet{
+class LIB_GMDS_BLOCKING_API SheetInsert
+{
 
  public:
 	/*--------------------------------------------------------------------*/
@@ -33,11 +34,11 @@ class LIB_GMDS_BLOCKING_API InsertSheet{
 
 	/** @brief  Default Constructor
 	 */
-	InsertSheet();
+	SheetInsert();
 
 	/** @brief  Destructor
 	 */
-	virtual ~InsertSheet();
+	virtual ~SheetInsert();
 
 	/*--------------------------------------------------------------------*/
 	/** @brief  Dummy call
@@ -56,7 +57,7 @@ class LIB_GMDS_BLOCKING_API InsertSheet{
 /*----------------------------------------------------------------------------*/
 } // namespace gmds
 /*----------------------------------------------------------------------------*/
-#endif //GMDS_BLOCKING_INSERTSHEET_H
+#endif //GMDS_BLOCKING_SHEETINSERT_H
 /*----------------------------------------------------------------------------*/
 
 

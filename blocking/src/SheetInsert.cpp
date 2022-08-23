@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-#include "gmds/blocking/InsertSheet.h"
+#include "gmds/blocking/SheetInsert.h"
 /*----------------------------------------------------------------------------*/
 //#include <fstream>
 /*----------------------------------------------------------------------------*/
@@ -14,14 +14,14 @@ namespace gmds {
 /*----------------------------------------------------------------------------*/
 namespace blocking {
 /*----------------------------------------------------------------------------*/
-InsertSheet::InsertSheet() {}
+SheetInsert::SheetInsert() {}
 /*----------------------------------------------------------------------------*/
-InsertSheet::~InsertSheet() {}
+SheetInsert::~SheetInsert() {}
 /*----------------------------------------------------------------------------*/
-InsertSheet::STATUS
-InsertSheet::execute()
+SheetInsert::STATUS
+SheetInsert::execute()
 {
-	return InsertSheet::NOT_YET_IMPLEMENTED;
+	return SheetInsert::NOT_YET_IMPLEMENTED;
 }
 /*----------------------------------------------------------------------------*/
 }  // namespace blocking
