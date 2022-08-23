@@ -358,6 +358,18 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 			}
 
 
+			// Alignement avec le flow
+			math::Vector3d v = (m_meshQ->get<Node>(Front_IN.getNextNode(n_id, neighbors_nodes[1])).point() - m_meshQ->get<Node>(n_id).point()) ;
+			v.normalize();
+			math::Vector3d v_flow({cos(m_params_aero.angle_attack), sin(m_params_aero.angle_attack), 0.0}) ;
+			double angle = v.dot(v_flow)*(180.0/M_PI);
+			if (singu_not_found && abs(angle) < 55 && abs(angle) > 35)
+			{
+				node_id = n_id;
+				type = 1;
+				singu_not_found = false;
+			}
+
 			/*
 			double internal_angle_1 = math::AeroMeshQuality::InternalAngleDeviationQUAD(nodes_quad_1[0].point(), nodes_quad_1[1].point(),
 			                                                                            nodes_quad_1[2].point(), nodes_quad_1[3].point()) ;

@@ -731,3 +731,34 @@ TEST(ClaireTestClass, test_Bug_1)
 	ASSERT_FLOAT_EQ( v_1.X(), 1.0);
 
 }
+
+
+/*
+TEST(ClaireTestClass, test_Bug_2)
+{
+	Blocking2D blocking;
+
+	Node n1 = blocking.newBlockCorner(0,0);
+	Node n2 = blocking.newBlockCorner(5,0);
+	Node n3 = blocking.newBlockCorner(10,5);
+	Node n4=  blocking.newBlockCorner(10,10);
+
+	Blocking2D::Block b1 = blocking.newBlock(n1,n2,n3,n4);
+	b1.setNbDiscretizationI(10);
+	b1.setNbDiscretizationJ(10);
+
+	int mark_1 = blocking.newMark<Node>();
+	int mark_2 = blocking.newMark<Node>();
+
+	std::cout << "Marque 1, id : " << mark_1 << std::endl;
+	std::cout << "Marque 2, id : " << mark_2 << std::endl;
+
+	blocking.unmarkAll<Node>(mark_1);
+	blocking.freeMark<Node>(mark_1);
+	blocking.unmarkAll<Node>(mark_2);
+	blocking.freeMark<Node>(mark_2);
+
+	ASSERT_NE( mark_1, mark_2);
+
+}
+ */

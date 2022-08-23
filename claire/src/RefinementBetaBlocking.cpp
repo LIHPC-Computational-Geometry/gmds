@@ -56,14 +56,6 @@ RefinementBetaBlocking::execute()
 			Node n1 = b.getNode(1);
 			Node n2 = b.getNode(2);
 			Node n3 = b.getNode(3);
-			/*
-			std::cout << " ------------------------- " << std::endl;
-			std::cout << "BLOCK " << b_id << std::endl;
-			std::cout << "Node " << n0.id() << " , layer : " << var_couche->value(n0.id()) << std::endl;
-			std::cout << "Node " << n1.id() << " , layer : " << var_couche->value(n1.id()) << std::endl;
-			std::cout << "Node " << n2.id() << " , layer : " << var_couche->value(n2.id()) << std::endl;
-			std::cout << "Node " << n3.id() << " , layer : " << var_couche->value(n3.id()) << std::endl;
-			 */
 
 			if (var_couche->value(n0.id()) == 0
 			    || var_couche->value(n1.id()) == 0
@@ -81,38 +73,11 @@ RefinementBetaBlocking::execute()
 				chord_to_refine = true;
 			}
 
-			/*
-			if (!chord_to_refine
-			    && var_couche->value(n0.id()) == 0
-			    && var_couche->value(n1.id()) == 0)
-			{
-				chord_to_refine = true;
-			}
-			else if (!chord_to_refine
-			    && var_couche->value(n1.id()) == 0
-			    && var_couche->value(n2.id()) == 0)
-			{
-				chord_to_refine = true;
-			}
-			else if (!chord_to_refine
-			         && var_couche->value(n2.id()) == 0
-			         && var_couche->value(n3.id()) == 0)
-			{
-				chord_to_refine = true;
-			}
-			else if (!chord_to_refine
-			         && var_couche->value(n3.id()) == 0
-			         && var_couche->value(n0.id()) == 0)
-			{
-				chord_to_refine = true;
-			}
-			 */
-
 		}
 
 		if (chord_to_refine && compteur_blocks_layer_0 > 1){
 			chords_to_refine.push_back(chord.first);
-			std::cout << "Indice de corde à raffiner : " << chord.first << std::endl;
+			//std::cout << "Indice de corde à raffiner : " << chord.first << std::endl;
 		}
 
 	}
@@ -463,18 +428,8 @@ RefinementBetaBlocking::ChordRefinement(int ind_chord){
 			compteur_treated_bloc++;
 		}
 
-		/*
-		std::cout << "------------------------" << std::endl;
-		std::cout << "Bloc " << b.id() << std::endl;
-		std::cout << "Node " << n0.id() << ", treated : " << m_blocking->isMarked(n0, mark_isTreated) << ", refined : " << m_blocking->isMarked(n0, mark_refinementNeeded) << ", layer : " << var_couche->value(n0.id()) << std::endl;
-		std::cout << "Node " << n1.id() << ", treated : " << m_blocking->isMarked(n1, mark_isTreated) << ", refined : " << m_blocking->isMarked(n1, mark_refinementNeeded) << ", layer : " << var_couche->value(n1.id()) << std::endl;
-		std::cout << "Node " << n2.id() << ", treated : " << m_blocking->isMarked(n2, mark_isTreated) << ", refined : " << m_blocking->isMarked(n2, mark_refinementNeeded) << ", layer : " << var_couche->value(n2.id()) << std::endl;
-		std::cout << "Node " << n3.id() << ", treated : " << m_blocking->isMarked(n3, mark_isTreated) << ", refined : " << m_blocking->isMarked(n3, mark_refinementNeeded) << ", layer : " << var_couche->value(n3.id()) << std::endl;
-		*/
-
 	}
 
-	std::cout << "===============================" << std::endl;
 
 	while(compteur_treated_bloc != m_map_chords[ind_chord].size())
 	{
@@ -486,39 +441,6 @@ RefinementBetaBlocking::ChordRefinement(int ind_chord){
 			Node n2 = b.getNode(2);
 			Node n3 = b.getNode(3);
 			bool block_treated(false);
-
-			/*
-			int compteur_refinementneeded = 0;
-			if (map_refinementNeeded[n0.id()])
-			{
-				compteur_refinementneeded++;
-			}
-			if (map_refinementNeeded[n1.id()])
-			{
-				compteur_refinementneeded++;
-			}
-			if (map_refinementNeeded[n2.id()])
-			{
-				compteur_refinementneeded++;
-			}
-			if (map_refinementNeeded[n3.id()])
-			{
-				compteur_refinementneeded++;
-			}
-			if (compteur_refinementneeded==2)
-			{
-				block_treated = true;
-			}
-			 */
-
-			/*
-			std::cout << "------------------------" << std::endl;
-			std::cout << "Bloc " << b.id() << std::endl;
-			std::cout << "Node " << n0.id() << ", treated : " << m_blocking->isMarked(n0, mark_isTreated) << ", refined : " << m_blocking->isMarked(n0, mark_refinementNeeded) << ", layer : " << var_couche->value(n0.id()) << std::endl;
-			std::cout << "Node " << n1.id() << ", treated : " << m_blocking->isMarked(n1, mark_isTreated) << ", refined : " << m_blocking->isMarked(n1, mark_refinementNeeded) << ", layer : " << var_couche->value(n1.id()) << std::endl;
-			std::cout << "Node " << n2.id() << ", treated : " << m_blocking->isMarked(n2, mark_isTreated) << ", refined : " << m_blocking->isMarked(n2, mark_refinementNeeded) << ", layer : " << var_couche->value(n2.id()) << std::endl;
-			std::cout << "Node " << n3.id() << ", treated : " << m_blocking->isMarked(n3, mark_isTreated) << ", refined : " << m_blocking->isMarked(n3, mark_refinementNeeded) << ", layer : " << var_couche->value(n3.id()) << std::endl;
-			*/
 
 			if (!map_isTreated[n0.id()]
 			    || !map_isTreated[n1.id()]
@@ -595,13 +517,13 @@ RefinementBetaBlocking::ChordRefinement(int ind_chord){
 
 			}
 		}
-		std::cout << "------------" << std::endl;
-		std::cout << "Compteur : " << compteur_treated_bloc << " sur " << m_map_chords[ind_chord].size() << std::endl;
+		//std::cout << "------------" << std::endl;
+		//std::cout << "Compteur : " << compteur_treated_bloc << " sur " << m_map_chords[ind_chord].size() << std::endl;
 	}
 
 
-	std::cout << "Nbr of blocs in the chord : " << m_map_chords[ind_chord].size() << std::endl;
-	std::cout << "Compteur : " << compteur_treated_bloc << std::endl;
+	//std::cout << "Nbr of blocs in the chord : " << m_map_chords[ind_chord].size() << std::endl;
+	//std::cout << "Compteur : " << compteur_treated_bloc << std::endl;
 
 
 
