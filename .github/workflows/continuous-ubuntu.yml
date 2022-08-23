@@ -23,6 +23,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
+        fetch-depth: 2 # seems to be needed by codecov
         submodules: recursive
 
     - name: Initialize the dev environement
