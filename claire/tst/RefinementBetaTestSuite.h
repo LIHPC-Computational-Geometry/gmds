@@ -3,7 +3,7 @@
 //
 
 /*----------------------------------------------------------------------------*/
-#include <gmds/cad/FACManager.h>
+#include <gmds/cadfac/FACManager.h>
 #include "gmds/io/VTKReader.h"
 #include <gmds/ig/Blocking2D.h>
 #include <gmds/claire/RefinementBeta.h>
