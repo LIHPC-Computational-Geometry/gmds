@@ -82,9 +82,27 @@ void AeroEllipticSmoothing_2D::BoundarySlipping(){
 	{
 		Node n = m_mesh->get<Node>(n_id);
 		std::vector<Node> neighbors_nodes = math::Utils::AdjacentNodes(m_mesh, n) ;
+		std::vector<Node> slipping_neighbors_nodes;
+		for (auto neighbor_node:neighbors_nodes)
+		{
+			if (m_layer->value(n_id) == m_layer->value(neighbor_node.id()))
+			{
+				slipping_neighbors_nodes.push_back(neighbor_node);
+			}
+		}
 
-		double l1 = (neighbors_nodes[0].point() - n.point()).norm() ;
-		double l2 = (neighbors_nodes[0].point() - n.point()).norm() ;
+		math::Point M = math::Utils::WeightedPointOnBranch(old_cords[slipping_neighbors_nodes[0].id()], n.point(),
+		                                                   old_cords[slipping_neighbors_nodes[1].id()], 0.5) ;
+
+		// Projection of M on the curve
+		int geom_id = m_linker->getGeomId<Node>(n.id()) ;
+		int geom_dim = m_linker->getGeomDim<Node>(n.id()) ;
+		if (geom_dim == 2)
+		{
+			cad::GeomCurve* curve = m_manager->getCurve(geom_id);
+			curve->project(M);
+			n.setPoint(M);
+		}
 
 	}
 

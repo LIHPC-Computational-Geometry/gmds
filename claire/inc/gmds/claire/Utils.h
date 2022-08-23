@@ -83,7 +83,7 @@ class LIB_GMDS_CLAIRE_API Utils {
 		*
 		* \return  the point at position alpha from the point A
 	 */
-	math::Point WeightedPointOnBranch(const math::Point A, const math::Point B, const math::Point C, double alpha);
+	static math::Point WeightedPointOnBranch(const math::Point A, const math::Point B, const math::Point C, double alpha);
 	/*----------------------------------------------------------------------------*/
 
 };

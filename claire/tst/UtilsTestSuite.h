@@ -256,3 +256,35 @@ TEST(ClaireTestClass, Utils_BuildMesh2DFromBlocking2D)
 	writer_geom_mesh.write("Utils_BuildMesh2DFromBlocking2D_Mesh.vtk");
 
 }
+
+
+TEST(ClaireTestClass, Utils_WeightedPointOnBranch)
+{
+	{
+		math::Point A({0.0, 0.0, 0.0});
+		math::Point B({1.0, 0.0, 0.0});
+		math::Point C({3.0, 0.0, 0.0});
+		math::Point D = math::Utils::WeightedPointOnBranch(A, B, C, 0.5);
+		ASSERT_FLOAT_EQ(D.X(), 1.5);
+		ASSERT_FLOAT_EQ(D.Y(), 0.0);
+	}
+
+	{
+		math::Point A({0.0, 0.0, 0.0});
+		math::Point B({1.0, 0.0, 0.0});
+		math::Point C({4.0, 0.0, 0.0});
+		math::Point D = math::Utils::WeightedPointOnBranch(A, B, C, 0.75);
+		ASSERT_FLOAT_EQ(D.X(), 3.0);
+		ASSERT_FLOAT_EQ(D.Y(), 0.0);
+	}
+
+	{
+		math::Point A({0.0, 0.0, 0.0});
+		math::Point B({1.0, 0.0, 0.0});
+		math::Point C({1.0, 3.0, 0.0});
+		math::Point D = math::Utils::WeightedPointOnBranch(A, B, C, 0.75);
+		ASSERT_FLOAT_EQ(D.X(), 1.0);
+		ASSERT_FLOAT_EQ(D.Y(), 2.0);
+	}
+
+}
