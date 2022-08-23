@@ -76,6 +76,15 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static void BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m);
 	/*----------------------------------------------------------------------------*/
+	/** @brief Return the point at position alpha of the branch. alpha = 0.5 returns
+	 * the mid point on the branch.
+	 	*
+		* \param[in] A, B, C the three ordered points of the branch
+		*
+		* \return  the point at position alpha from the point A
+	 */
+	math::Point WeightedPointOnBranch(const math::Point A, const math::Point B, const math::Point C, double alpha);
+	/*----------------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/

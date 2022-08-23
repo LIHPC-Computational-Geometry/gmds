@@ -175,6 +175,35 @@ void Utils::BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m){
 /*------------------------------------------------------------------------*/
 
 
+/*------------------------------------------------------------------------*/
+math::Point Utils::WeightedPointOnBranch(const math::Point A, const math::Point B, const math::Point C, double alpha) {
+	math::Point P_Weighted;
+	math::Vector3d Vec_AB = B-A ;
+	math::Vector3d Vec_BC = C-B ;
+	double norme_1 = Vec_AB.norm() ;
+	double norme_2 = Vec_BC.norm() ;
+	double norme_branche = norme_1 + norme_2 ;
+	double norme_cible = alpha*norme_branche ;
+
+	if (norme_cible <= norme_1){
+		Vec_AB.normalize();
+		P_Weighted = A + norme_cible*Vec_AB ;
+	}
+	else if (norme_cible > norme_1){
+		math::Vector3d Vec_CB = - Vec_BC ;
+		Vec_CB.normalize();
+		P_Weighted = C + (norme_branche-norme_cible)*Vec_CB ;
+	}
+	else
+	{
+		P_Weighted = B ;
+	}
+
+	return P_Weighted;
+}
+/*------------------------------------------------------------------------*/
+
+
 /*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/
