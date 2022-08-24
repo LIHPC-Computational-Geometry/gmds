@@ -666,42 +666,6 @@ TEST(ClaireTestClass, test_pour_interpolation)
 
 
 
-TEST(ClaireTestClass, testGrid_SmoothLineSweepingOrtho)
-{
-	Blocking2D m;
-	Node n1 = m.newBlockCorner(0,0);
-	Node n2 = m.newBlockCorner(1,0);
-	Node n3 = m.newBlockCorner(1.5,1);
-	Node n4=  m.newBlockCorner(0.5,1);
-
-	Blocking2D::Block b1 = m.newBlock(n1,n2,n3,n4);
-
-	b1.setNbDiscretizationI(100);
-	b1.setNbDiscretizationJ(100);
-
-	m.initializeGridPoints();
-
-	b1 = m.block(0);
-
-	IGMeshIOService ios(&m);
-	VTKWriter writer(&ios);
-	writer.setCellOptions(N|F);
-	writer.setDataOptions(N|F);
-	writer.write("testGrid_SmoothLineSweepingOrtho.vtk");
-
-	SmoothLineSweepingOrtho smoother( &b1, 300, 0.3);
-	smoother.execute();
-
-	IGMeshIOService ioService_geom(&m);
-	VTKWriter writer_geom(&ioService_geom);
-	writer_geom.setCellOptions(N|F);
-	writer_geom.setDataOptions(N|F);
-	writer_geom.write("testGrid_SmoothLineSweepingOrtho_result.vtk");
-
-}
-
-
-
 
 
 

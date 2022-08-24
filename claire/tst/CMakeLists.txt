@@ -6,7 +6,12 @@ add_executable(GMDS_CLAIRE_TEST
         PointFollowingVectorFieldTestSuite.h
         AeroPipelineTestSuite.h
         AeroMeshQualityTestSuite.h
-        main_test.cpp ../inc/gmds/claire/LevelSetCombined.h UtilsTestSuite.h AeroBoundariesTestSuite.h SU2WriterTestSuite.h RefinementBetaTestSuite.h)
+        main_test.cpp ../inc/gmds/claire/LevelSetCombined.h
+        UtilsTestSuite.h
+        AeroBoundariesTestSuite.h
+        SU2WriterTestSuite.h
+        RefinementBetaTestSuite.h
+        SmoothLineSweepingTestSuite.h)
 
 target_link_libraries(GMDS_CLAIRE_TEST PUBLIC
         ${GMDS_LIB}
