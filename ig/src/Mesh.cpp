@@ -304,26 +304,34 @@ template<> void Mesh::unmarkAll<Region>(const TInt AMarkNumber)
 /*----------------------------------------------------------------------------*/
 template<> void Mesh::freeMark<Node>(int AMarkNumber)
 {
-	m_usedMarks_nodes.set(AMarkNumber, false);
-	m_marks_nodes[-- m_nbUsedMarks_nodes] = AMarkNumber;
+	if(m_usedMarks_nodes.value(AMarkNumber)==true) {
+		m_usedMarks_nodes.set(AMarkNumber, false);
+		m_marks_nodes[--m_nbUsedMarks_nodes] = AMarkNumber;
+	}
 }
 /*----------------------------------------------------------------------------*/
 template<> void Mesh::freeMark<Edge>(int AMarkNumber)
 {
-	m_usedMarks_edges.set(AMarkNumber, false);
-	m_marks_edges[-- m_nbUsedMarks_edges] = AMarkNumber;
+	if(m_usedMarks_edges.value(AMarkNumber)==true) {
+		m_usedMarks_edges.set(AMarkNumber, false);
+		m_marks_edges[--m_nbUsedMarks_edges] = AMarkNumber;
+	}
 }
 /*----------------------------------------------------------------------------*/
 template<> void Mesh::freeMark<Face>(int AMarkNumber)
 {
-	m_usedMarks_faces.set(AMarkNumber, false);
-	m_marks_faces[-- m_nbUsedMarks_faces] = AMarkNumber;
+	if(m_usedMarks_faces.value(AMarkNumber)==true) {
+		m_usedMarks_faces.set(AMarkNumber, false);
+		m_marks_faces[--m_nbUsedMarks_faces] = AMarkNumber;
+	}
 }
 /*----------------------------------------------------------------------------*/
 template<> void Mesh::freeMark<Region>(int AMarkNumber)
 {
-	m_usedMarks_regions.set(AMarkNumber, false);
-	m_marks_regions[-- m_nbUsedMarks_regions] = AMarkNumber;
+	if(m_usedMarks_regions.value(AMarkNumber)==true) {
+		m_usedMarks_regions.set(AMarkNumber, false);
+		m_marks_regions[--m_nbUsedMarks_regions] = AMarkNumber;
+	}
 }
 /*----------------------------------------------------------------------------*/
 template<> Node Mesh::get<Node>(const TCellID& AID) const
