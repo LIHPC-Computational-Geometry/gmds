@@ -201,7 +201,7 @@ IntervalAssignment_2D::ComputeChordDiscretization(std::vector<TCellID> chord)
 	int Nbr_cells;
 
 	bool chord_hardConstrained(false);
-	double sum_num;
+	double sum_num(0.0);
 
 	for(auto e_id:chord)
 	{
