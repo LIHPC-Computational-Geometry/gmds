@@ -19,6 +19,7 @@
 #include <gmds/math/TransfiniteInterpolation.h>
 #include <gmds/claire/RefinementBeta.h>
 #include <gmds/claire/RefinementBetaBlocking.h>
+#include <gmds/claire/AeroEllipticSmoothing_2D.h>
 
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -195,6 +196,9 @@ AeroPipeline_2D::execute(){
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
+	AeroEllipticSmoothing_2D smooth2D(m_meshHex, m_meshHex->getVariable<int, GMDS_NODE>("GMDS_Couche_Id"), m_manager, m_linker_HG);
+	smooth2D.execute();
+
 	std::cout << "-> Conversion maillage en blocking" << std::endl;
 	t_start = clock();
 	// Conversion structure maillage à blocking + maillage des blocs par transfinies
@@ -367,7 +371,7 @@ AeroPipeline_2D::EcritureMaillage(){
 	gmds::VTKWriter vtkWriter_HexMesh(&ioService);
 	vtkWriter_HexMesh.setCellOptions(gmds::N|gmds::F);
 	vtkWriter_HexMesh.setDataOptions(gmds::N|gmds::F);
-	vtkWriter_HexMesh.write("AeroPipeline2D_HexMesh.vtk");
+	vtkWriter_HexMesh.write("AeroPipeline2D_QuadMesh.vtk");
 
 	std::cout << "Ecriture 3 ..." << std::endl;
 
@@ -376,7 +380,7 @@ AeroPipeline_2D::EcritureMaillage(){
 	gmds::VTKWriter vtkWriter_TetMesh(&ioService);
 	vtkWriter_TetMesh.setCellOptions(gmds::N|gmds::F);
 	vtkWriter_TetMesh.setDataOptions(gmds::N|gmds::F);
-	vtkWriter_TetMesh.write("AeroPipeline2D_TetMesh.vtk");
+	vtkWriter_TetMesh.write("AeroPipeline2D_TriMesh.vtk");
 
 	// Ecriture du maillage au format su2
 	SU2Writer writer(m_meshHex, "AeroPipeline2D_QuadMesh.su2", m_params.x_lim_SU2_inoutlet);
@@ -708,7 +712,7 @@ AeroPipeline_2D::BlockingClassification(){
 					n.setPoint(p);
 
 
-					if (var_couche->value( B0(0,0).id() ) == 0) {
+					if (var_couche->value( B0(Nx,Ny).id() ) == 0) {
 						math::Vector3d delta_p = p - p0;
 						Node n_opp = B0(i, 0);
 						math::Point p_opp = n_opp.point();
@@ -736,7 +740,7 @@ AeroPipeline_2D::BlockingClassification(){
 					n.setPoint(p);
 
 
-					if (var_couche->value( B0(0,0).id() ) == 0) {
+					if (var_couche->value( B0(Nx,Ny).id() ) == 0) {
 						math::Vector3d delta_p = p - p0;
 						Node n_opp = B0(0, j);
 						math::Point p_opp = n_opp.point();

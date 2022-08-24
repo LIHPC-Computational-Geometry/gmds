@@ -6,11 +6,10 @@
 #include <gmds/claire/AeroEllipticSmoothing_2D.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
 #include <gmds/claire/Utils.h>
-//#include <gmds/smoothy/EllipticSmoothing.h>
-//#include <gmds/smoothy/EllipticSmoother2D.h>
+#include <gmds/smoothy/EllipticSmoother2D.h>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
-//using namespace gmds::smoothy;
+using namespace gmds::smoothy;
 /*------------------------------------------------------------------------*/
 
 AeroEllipticSmoothing_2D::AeroEllipticSmoothing_2D(Mesh *AMesh, Variable<int>* Alayer, cad::FACManager* Amanager, cad::GeomMeshLinker* Alinker) {
@@ -25,9 +24,28 @@ AeroEllipticSmoothing_2D::AeroEllipticSmoothing_2D(Mesh *AMesh, Variable<int>* A
 AeroEllipticSmoothing_2D::STATUS
 AeroEllipticSmoothing_2D::execute()
 {
+	//==================================================================
+	// REORIENT THE FACES
+	//==================================================================
+	MeshDoctor doc(m_mesh);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+	doc.orient2DFaces();
+	for(auto f_id:m_mesh->faces()) {
+		Face f=m_mesh->get<Face>(f_id);
+		if (f.normal().dot(math::Vector3d({.0, .0, 1.0})) <= 0) {
+			std::vector<TCellID> ns = f.getIDs<Node>();
+			std::vector<TCellID> ns2(ns.size());
+			for (auto i = 0; i < ns.size(); i++)
+				ns2[ns.size() - 1 - i] = ns[i];
+			f.set<Node>(ns2);
+		}
+	}
+
 
 	//==================================================================
-	// MARK ALL THE BOUNDARY CELL OF THE INIT MESH
+	// MARK ALL THE BOUNDARY CELL OF THE INIT MESH AND THE NODES ON THE
+	// FIRST LAYER
 	//==================================================================
 	// we get all the nodes that are on the mesh boundary
 	BoundaryOperator2D op(m_mesh);
@@ -47,6 +65,7 @@ AeroEllipticSmoothing_2D::execute()
 			m_mesh->mark<Node>(n_id, mark_locked_nodes);
 		}
 
+
 		// Add the nodes id of the exterior boundary to the slipping nodes list
 		if ( (m_mesh->isMarked<Node>(n_id, mark_node_on_crv) || m_mesh->isMarked<Node>(n_id, mark_node_on_pnt))
 		    && m_layer->value(n_id) > 1 )
@@ -55,11 +74,16 @@ AeroEllipticSmoothing_2D::execute()
 		}
 	}
 
-	/*
-	EllipticSmoother2D smoother2D(&m);
-	smoother2D.lock(mark_locked_nodes);
-	smoother2D.execute();
-	*/
+	for (int i=0; i<10; i++) {
+		//==================================================================
+		// PERFORM THE ELLIPTIC SMOOTHING
+		//==================================================================
+		EllipticSmoother2D smoother2D(m_mesh);
+		smoother2D.lock(mark_locked_nodes);
+		smoother2D.execute();
+
+		BoundarySlipping();
+	}
 
 	return AeroEllipticSmoothing_2D::SUCCESS;
 }
@@ -76,8 +100,6 @@ void AeroEllipticSmoothing_2D::BoundarySlipping(){
 		Node n = m_mesh->get<Node>(n_id);
 		old_cords[n_id] = n.point();
 	}
-
-
 
 	// Compute the new positions of the nodes
 	for (auto n_id:m_slippingNodesId)

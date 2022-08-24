@@ -42,8 +42,8 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	// Wall Discretization Parameter
 	params_aero.nbrMinBloc = 4;					// Minimal number of block on the wall
 	params_aero.nbrCellsInCL = 30;				// Number of cells in the boundary layer
-	params_aero.edge_size_wall = 2 ;										// Maximal size of the cells on the wall
-	params_aero.edge_size_default = 0.2 ;										// Default size of the cells in the domain
+	params_aero.edge_size_wall = 1 ;										// Maximal size of the cells on the wall
+	params_aero.edge_size_default = 2 ;										// Default size of the cells in the domain
 	params_aero.edge_size_first_ortho_wall = 1*pow(10,-3);	// Size of the first edge orthogonal to the wall
 
 	// Vector Field Computation Parameters
@@ -52,7 +52,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	params_aero.x_VectorField_Z2 = 600;			// Choose the x value of the second zone [x_VectorField_Z2, +inf]
 
 	// Extrusion Parameters
-	params_aero.nbr_couches = 3;			// Number of layer in extrusion
+	params_aero.nbr_couches = 4;			// Number of layer in extrusion
 	params_aero.x_lim = 20000;				// Limites physiques à partir desquelles
 	params_aero.y_lim = -10000;			// l'insertion et la fusion de blocs
 	params_aero.z_lim = -10000;			// sont autorisées

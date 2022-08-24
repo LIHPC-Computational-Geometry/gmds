@@ -99,11 +99,11 @@ RefinementBetaBlocking::ChordRefinement(int ind_chord){
 
 	Variable<int>* var_couche = m_blocking->getVariable<int, GMDS_NODE>("GMDS_Couche");
 
-	/*
 	// Mark the bloc nodes for a chord to refine
 	//int mark_isTreated = m_blocking->newMark<Node>();
 	//int mark_refinementNeeded = m_blocking->newMark<Node>();
-	//std::cout << "marque 1 : " << mark_isTreated << " marque 2 : " << mark_isTreated << std::endl;
+	//std::cout << "marque 1 : " << mark_isTreated << " marque 2 : " << mark_refinementNeeded << std::endl;
+	/*
 	int compteur_treated_bloc = 0;
 
 	for (auto b_id:m_map_chords[ind_chord])
