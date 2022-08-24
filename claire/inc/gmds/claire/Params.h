@@ -49,6 +49,12 @@ namespace gmds {
         std::string output_file;
         /** Output directory */
         std::string output_dir;
+
+	     /** Epaisseur de couche limite */
+	     double delta_cl;
+	     /** Angle d'incidence (in degrees) */
+	     double angle_attack;
+
 	     /** Nombre mini de blocs */
         int nbrMinBloc;
 	     /** Limite x amont/aval */
@@ -57,12 +63,32 @@ namespace gmds {
 	     double y_lim;
 	     /** Limite z amont/aval */
 	     double z_lim;
-	     /** Epaisseur de couche limite */
-	     double delta_cl;
-	     /** Est-ce que le cas est 2D axi ? */
-	     bool AXI_2D;
 	     /** Nombre de couches lors de l'extrusion */
 	     int nbr_couches;
+
+	     /** Choose the way the vectors field is computed for the extrusion */
+	     int vectors_field;
+	     /** Choose the x value of the first zone [-inf, x_VectorField_Z1] */
+	     double x_VectorField_Z1;
+	     /** Choose the x value of the second zone [x_VectorField_Z2, +inf] */
+	     double x_VectorField_Z2;
+
+	     /** Block discretization on the wall */
+	     double edge_size_wall ;
+	     /** Default block discretization in the domain */
+	     double edge_size_default ;
+	     /** First edge size in the direction ortho to the wall */
+	     double edge_size_first_ortho_wall ;
+	     /** Number of cells in the boundary layer */
+	     int nbrCellsInCL;
+
+	     /** Number of iterations of the Yao Smoother */
+	     int nbr_iter_smoothing_yao;
+	     /** Damping parameter for the Yao Smoother */
+	     double damping_smoothing_yao;
+
+	     /** Limit between inlet and outlet for SU2 writer */
+	     double x_lim_SU2_inoutlet;
     };
 /*------------------------------------------------------------------------*/
 }

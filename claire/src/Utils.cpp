@@ -4,6 +4,8 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/claire/Utils.h>
 #include <gmds/claire/AeroMeshQuality.h>
+#include <gmds/ig/Blocking2D.h>
+#include <gmds/ig/MeshDoctor.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -49,7 +51,7 @@ void Utils::MeshCleaner(Mesh *AMesh){
 	{
 		Node n = AMesh->get<Node>(n_id);
 		if (n.get<Face>().empty()) {
-			//std::cout << "Noeud isolé : " << n_id << std::endl;
+			std::cout << "Noeud isolé : " << n_id << std::endl;
 			AMesh->deleteNode(n_id);
 		}
 	}
@@ -92,16 +94,16 @@ void Utils::AnalyseQuadMeshQuality(Mesh* m)
 		Face f = m->get<Face>(f_id);
 		std::vector<Node> face_nodes = f.get<Node>() ;
 
-		double ar = AeroMeshQuality::AspectRatioQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
-		double iad = AeroMeshQuality::InternalAngleDeviationQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
-		double eas = AeroMeshQuality::EquiAngleSkewnessQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
-		double cond = AeroMeshQuality::ConditionQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
-		double er = AeroMeshQuality::EdgeRatioQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
-		double jac = AeroMeshQuality::JacobianQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
-		double scajac = AeroMeshQuality::ScaledJacobianQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
-		double shape = AeroMeshQuality::ShapeQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
-		double skew = AeroMeshQuality::SkewQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
-		double stretch = AeroMeshQuality::StretchQUAD(m, face_nodes[0].id(), face_nodes[1].id(), face_nodes[2].id(), face_nodes[3].id());
+		double ar = AeroMeshQuality::AspectRatioQUAD(face_nodes[0].point(), face_nodes[1].point(), face_nodes[2].point(), face_nodes[3].point());
+		double iad = AeroMeshQuality::InternalAngleDeviationQUAD(face_nodes[0].point(), face_nodes[1].point(), face_nodes[2].point(), face_nodes[3].point());
+		double eas = AeroMeshQuality::EquiAngleSkewnessQUAD(face_nodes[0].point(), face_nodes[1].point(), face_nodes[2].point(), face_nodes[3].point());
+		double cond = AeroMeshQuality::ConditionQUAD(face_nodes[0].point(), face_nodes[1].point(), face_nodes[2].point(), face_nodes[3].point());
+		double er = AeroMeshQuality::EdgeRatioQUAD(face_nodes[0].point(), face_nodes[1].point(), face_nodes[2].point(), face_nodes[3].point());
+		double jac = AeroMeshQuality::JacobianQUAD(face_nodes[0].point(), face_nodes[1].point(), face_nodes[2].point(), face_nodes[3].point());
+		double scajac = AeroMeshQuality::ScaledJacobianQUAD(face_nodes[0].point(), face_nodes[1].point(), face_nodes[2].point(), face_nodes[3].point());
+		double shape = AeroMeshQuality::ShapeQUAD(face_nodes[0].point(), face_nodes[1].point(), face_nodes[2].point(), face_nodes[3].point());
+		double skew = AeroMeshQuality::SkewQUAD(face_nodes[0].point(), face_nodes[1].point(), face_nodes[2].point(), face_nodes[3].point());
+		double stretch = AeroMeshQuality::StretchQUAD(face_nodes[0].point(), face_nodes[1].point(), face_nodes[2].point(), face_nodes[3].point());
 
 		var_aspect_ratio->set(f_id, ar);
 		var_int_angle_deviation->set(f_id, iad);
@@ -119,6 +121,87 @@ void Utils::AnalyseQuadMeshQuality(Mesh* m)
 }
 /*------------------------------------------------------------------------*/
 
+
+/*------------------------------------------------------------------------*/
+void Utils::BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m){
+
+	m->clear();
+
+	std::map<TCellID, TCellID> map_new_node_ids;
+
+	// Create all the nodes in the mesh m
+	for (auto n_id:blocking2D->nodes())
+	{
+		Node n_blocking = blocking2D->get<Node>(n_id);
+		Node n_mesh = m->newNode(n_blocking.point());
+		map_new_node_ids[n_blocking.id()] = n_mesh.id();
+	}
+
+	// Create all the faces in the mesh m
+	for (auto b:blocking2D->allBlocks())
+	{
+		int Nx = b.getNbDiscretizationI();
+		int Ny = b.getNbDiscretizationJ();
+		for (int i=0; i < Nx-1; i++)
+		{
+			for (int j=0; j < Ny-1; j++)
+			{
+				Node n0_inBlocking = b(i,j);
+				Node n1_inBlocking = b(i+1,j);
+				Node n2_inBlocking = b(i+1,j+1);
+				Node n3_inBlocking = b(i,j+1);
+
+				Node n0_inMesh = m->get<Node>(map_new_node_ids[n0_inBlocking.id()]);
+				Node n1_inMesh = m->get<Node>(map_new_node_ids[n1_inBlocking.id()]);
+				Node n2_inMesh = m->get<Node>(map_new_node_ids[n2_inBlocking.id()]);
+				Node n3_inMesh = m->get<Node>(map_new_node_ids[n3_inBlocking.id()]);
+
+				Face f = m->newQuad(n0_inMesh, n1_inMesh, n2_inMesh, n3_inMesh);
+				// Connectivities N->F (x4)
+				n0_inMesh.add<Face>(f.id()); // N->F
+				n1_inMesh.add<Face>(f.id()); // N->F
+				n2_inMesh.add<Face>(f.id()); // N->F
+				n3_inMesh.add<Face>(f.id()); // N->F
+
+			}
+		}
+	}
+
+	gmds::MeshDoctor doc(m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+math::Point Utils::WeightedPointOnBranch(const math::Point A, const math::Point B, const math::Point C, double alpha) {
+	math::Point P_Weighted;
+	math::Vector3d Vec_AB = B-A ;
+	math::Vector3d Vec_BC = C-B ;
+	double norme_1 = Vec_AB.norm() ;
+	double norme_2 = Vec_BC.norm() ;
+	double norme_branche = norme_1 + norme_2 ;
+	double norme_cible = alpha*norme_branche ;
+
+	if (norme_cible <= norme_1){
+		Vec_AB.normalize();
+		P_Weighted = A + norme_cible*Vec_AB ;
+	}
+	else if (norme_cible > norme_1){
+		math::Vector3d Vec_CB = - Vec_BC ;
+		Vec_CB.normalize();
+		P_Weighted = C + (norme_branche-norme_cible)*Vec_CB ;
+	}
+	else
+	{
+		P_Weighted = B ;
+	}
+
+	return P_Weighted;
+}
+/*------------------------------------------------------------------------*/
 
 
 /*----------------------------------------------------------------------------*/

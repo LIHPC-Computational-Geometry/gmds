@@ -6,6 +6,7 @@
 #include "gmds/io/VTKReader.h"
 #include <gmds/claire/Grid_Smooth2D.h>
 #include <gmds/claire/Smooth2D.h>
+#include <gmds/claire/SmoothLineSweepingOrtho.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
@@ -662,3 +663,66 @@ TEST(ClaireTestClass, test_pour_interpolation)
 	ASSERT_FLOAT_EQ(p.X(),3.8780577);
 	ASSERT_FLOAT_EQ(p.Y(),5.6330175);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TEST(ClaireTestClass, test_Bug_1)
+{
+	math::Vector3d v_1({1.0, 0.0, 0.0});
+	math::Vector3d n = v_1.getOneOrtho();
+
+	std::cout << v_1 << std::endl;
+	std::cout << n << std::endl;		// n is supposed to be a normal vector to v_1 but n is equal to 0.
+
+	ASSERT_FLOAT_EQ( v_1.X(), 1.0);
+
+}
+
+
+/*
+TEST(ClaireTestClass, test_Bug_2)
+{
+	Blocking2D blocking;
+
+	Node n1 = blocking.newBlockCorner(0,0);
+	Node n2 = blocking.newBlockCorner(5,0);
+	Node n3 = blocking.newBlockCorner(10,5);
+	Node n4=  blocking.newBlockCorner(10,10);
+
+	Blocking2D::Block b1 = blocking.newBlock(n1,n2,n3,n4);
+	b1.setNbDiscretizationI(10);
+	b1.setNbDiscretizationJ(10);
+
+	int mark_1 = blocking.newMark<Node>();
+	int mark_2 = blocking.newMark<Node>();
+
+	std::cout << "Marque 1, id : " << mark_1 << std::endl;
+	std::cout << "Marque 2, id : " << mark_2 << std::endl;
+
+	blocking.unmarkAll<Node>(mark_1);
+	blocking.freeMark<Node>(mark_1);
+	blocking.unmarkAll<Node>(mark_2);
+	blocking.freeMark<Node>(mark_2);
+
+	ASSERT_NE( mark_1, mark_2);
+
+}
+ */

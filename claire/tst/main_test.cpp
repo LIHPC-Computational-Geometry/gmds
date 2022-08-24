@@ -13,6 +13,8 @@
 #include "UtilsTestSuite.h"
 #include "SU2WriterTestSuite.h"
 #include "AeroMeshQualityTestSuite.h"
+#include "RefinementBetaTestSuite.h"
+#include "SmoothLineSweepingTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

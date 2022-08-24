@@ -43,7 +43,7 @@ namespace gmds{
             for (auto i = 0; i < m_i; i++) {
                 m_tab[i].resize(m_j);
                 for (auto j = 0; j < m_j; j++) {
-                    m_tab[i][j] = A[i][j];
+                    m_tab[i][j] = A(i,j);
                 }
             }
         }
@@ -57,9 +57,10 @@ namespace gmds{
             for (auto i = 0; i < m_i; i++) {
                 m_tab[i].resize(m_j);
                 for (auto j = 0; j < m_j; j++) {
-                    m_tab[i][j] = A[i][j];
+                    m_tab[i][j] = A(i,j);
                 }
             }
+		      return *this;
         }
         /*------------------------------------------------------------------------*/
         /** \brief Destructor
@@ -286,6 +287,7 @@ namespace gmds{
                     }
                 }
             }
+		      return *this;
         }
         /*------------------------------------------------------------------------*/
         /** \brief Destructor

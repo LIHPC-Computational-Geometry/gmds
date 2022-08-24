@@ -16,7 +16,6 @@ Grid_Smooth2D::Grid_Smooth2D(Blocking2D *AMesh,
 void Grid_Smooth2D::setNbIterations(const int ANbIterations)
 {
 	m_nb_max_iterations=ANbIterations;
-
 }
 /*------------------------------------------------------------------------*/
 Grid_Smooth2D::STATUS Grid_Smooth2D::execute()
@@ -38,8 +37,6 @@ Grid_Smooth2D::STATUS Grid_Smooth2D::execute()
 			Blocking2D::Block bi = m_mesh->block(f_id) ;
 			int Nx = bi.getNbDiscretizationI();
 			int Ny = bi.getNbDiscretizationJ();
-			//std::cout << "Nx = " << Nx << std::endl;
-			//std::cout << "Ny = " << Ny << std::endl;
 
 			// Loop on the inner nodes of the bi block
 			for (int i = 1; i < Nx - 1; i++) {

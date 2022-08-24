@@ -11,8 +11,15 @@
 #include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/claire/AdvectedPointRK4_2D.h>
 #include <gmds/claire/Grid_Smooth2D.h>
+#include <gmds/claire/SmoothLineSweepingYao.h>
+#include <gmds/claire/SmoothLineSweepingOrtho.h>
 #include <gmds/claire/AeroExtrusion_2D.h>
 #include <gmds/claire/SU2Writer.h>
+#include <gmds/claire/IntervalAssignment_2D.h>
+#include <gmds/math/TransfiniteInterpolation.h>
+#include <gmds/claire/RefinementBeta.h>
+#include <gmds/claire/RefinementBetaBlocking.h>
+#include <gmds/claire/AeroEllipticSmoothing_2D.h>
 
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -73,6 +80,7 @@ AeroPipeline_2D::execute(){
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
+	/*
 
    Variable<double> * var_d_int = m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int");
 	Variable<double> * var_d_comb = m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance");
@@ -131,15 +139,18 @@ AeroPipeline_2D::execute(){
 	m_meshTet->freeMark<Node>(m_mark_z1);
 
 
+	*/
 
 
 	// Calcul du gradient du champ de Level Set
 	std::cout << "-> Calcul Gradient" << std::endl;
 	t_start = clock();
-	m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-	LeastSquaresGradientComputation grad2D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
-	                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	grad2D.execute();
+	//m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	//LeastSquaresGradientComputation grad2D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+	//                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	//grad2D.execute();
+	Variable<math::Vector3d>* var_VectorField = m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
+	ComputeVectorFieldForExtrusion();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
@@ -171,10 +182,11 @@ AeroPipeline_2D::execute(){
 
 	std::cout << "-> Extrusion" << std::endl;
 	t_start = clock();
-	AeroExtrusion_2D aero_extrusion(m_meshTet, m_meshHex, m_params);
+	AeroExtrusion_2D aero_extrusion(m_meshTet, m_meshHex, m_params, var_VectorField);
 	aero_extrusion.execute();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
 
 	std::cout << "-> Classification géométrique" << std::endl;
 	t_start = clock();
@@ -182,6 +194,12 @@ AeroPipeline_2D::execute(){
 	UpdateLinkerLastLayer();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
+
+
+	AeroEllipticSmoothing_2D smooth2D(m_meshHex, m_meshHex->getVariable<int, GMDS_NODE>("GMDS_Couche_Id"), m_manager, m_linker_HG);
+	smooth2D.execute();
+
 
 	std::cout << "-> Conversion maillage en blocking" << std::endl;
 	t_start = clock();
@@ -189,22 +207,117 @@ AeroPipeline_2D::execute(){
 	ConvertisseurMeshToBlocking();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
 
 	// Lissage
+	/*
 	std::cout << "-> Lissage final" << std::endl;
 	t_start = clock();
-	Grid_Smooth2D smoother(&m_Blocking2D, 100);
-	smoother.execute();
+	//Grid_Smooth2D smoother(&m_Blocking2D, 2000);
+	//smoother.execute();
+
+	for (auto b:m_Blocking2D.allBlocks())
+	{
+		SmoothLineSweepingYao smoother( &b, m_params.nbr_iter_smoothing_yao, m_params.damping_smoothing_yao);
+		smoother.execute();
+	}
+
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
+	 */
 
+
+
+	// Add the Ortho Smoothing in the Boundary Layer and the Beta Refinement
+	std::cout << "-> Smoothing on the first layer" << std::endl;
+	t_start = clock();
+	for (auto b:m_Blocking2D.allBlocks())
+	{
+		int Nx = b.getNbDiscretizationI();
+		int Ny = b.getNbDiscretizationJ();
+
+		Variable<int>* var_couche = m_Blocking2D.getVariable<int, GMDS_NODE>("GMDS_Couche");
+		Node n0 = b.getNode(0);
+		Node n1 = b.getNode(1);
+		Node n2 = b.getNode(2);
+		Node n3 = b.getNode(3);
+
+		int compteur(0);
+		if (var_couche->value(n0.id()) == 0)
+		{
+			compteur++;
+		}
+		if (var_couche->value(n1.id()) == 0)
+		{
+			compteur++;
+		}
+		if (var_couche->value(n2.id()) == 0)
+		{
+			compteur++;
+		}
+		if (var_couche->value(n3.id()) == 0)
+		{
+			compteur++;
+		}
+
+		if (compteur == 2) {
+
+			SmoothLineSweepingOrtho smoother( &b, m_params.nbr_iter_smoothing_yao, m_params.damping_smoothing_yao);
+			smoother.execute();
+
+			// Beta Refinement
+			/*
+			for (int i = 0; i < Nx; i++) {
+				std::vector<math::Point> Points;
+				for (int j = 0; j < Ny; j++) {
+					Points.push_back(b(i, j).point());
+				}
+
+				RefinementBeta ref(Points, m_params.edge_size_first_ortho_wall);
+				ref.execute();
+				Points = ref.GetNewPositions();
+
+				for (int j = 1; j < Ny - 1; j++) {
+					b(i, j).setPoint({Points[j]});
+				}
+			}
+			 */
+		}
+	}
+	//MeshRefinement();
+
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
+
+
+
+	std::cout << "-> Beta Refinement on the first layer" << std::endl;
+	t_start = clock();
+
+	RefinementBetaBlocking block_refinement(&m_Blocking2D, m_params);
+	block_refinement.execute();
+
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
+
+
+
+	// Compute the quality criterions of the blocking
 	math::Utils::AnalyseQuadMeshQuality(&m_Blocking2D);
 
 	// Ecriture finale des maillages
+	std::cout << "-> Ecriture finale des maillages" << std::endl;
+	t_start = clock();
 	EcritureMaillage();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
 	std::cout << " " << std::endl;
 	std::cout << "INFORMATIONS COMPLEMENTAIRES :" << std::endl;
+	std::cout << "Nbr de blocs : " << m_Blocking2D.getNbFaces() << std::endl;
 	std::cout << "Nbr faces : " << m_meshHex->getNbFaces() << std::endl;
 	std::cout << "Nbr arêtes : " << m_meshHex->getNbEdges() << std::endl;
 
@@ -241,24 +354,39 @@ void
 AeroPipeline_2D::EcritureMaillage(){
 
 	std::cout << "-> Ecriture du maillage ..." << std::endl;
+	std::cout << "Ecriture Blocking en .vtk ..." << std::endl;
 
 	//gmds::IGMeshIOService ioService(m_meshHex);
 	gmds::IGMeshIOService ioService(&m_Blocking2D);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::F);
-	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	gmds::VTKWriter vtkWriter_Blocking(&ioService);
+	vtkWriter_Blocking.setCellOptions(gmds::N|gmds::F);
+	vtkWriter_Blocking.setDataOptions(gmds::N|gmds::F);
 	std::string dir(".");//TEST_SAMPLES_DIR);
-	vtkWriter.write(m_params.output_file);
+	//vtkWriter_Blocking.write(m_params.output_file);
+	vtkWriter_Blocking.write("AeroPipeline2D_Blocking.vtk");
+
+	std::cout << "Ecriture Maillage Quad en .vtk ..." << std::endl;
+
+	math::Utils::BuildMesh2DFromBlocking2D(&m_Blocking2D, m_meshHex);
+	math::Utils::AnalyseQuadMeshQuality(m_meshHex);
+	ioService = m_meshHex;
+	gmds::VTKWriter vtkWriter_HexMesh(&ioService);
+	vtkWriter_HexMesh.setCellOptions(gmds::N|gmds::F);
+	vtkWriter_HexMesh.setDataOptions(gmds::N|gmds::F);
+	vtkWriter_HexMesh.write("AeroPipeline2D_QuadMesh.vtk");
+
+	std::cout << "Ecriture Maillage Tri en .vtk ..." << std::endl;
 
 	// Ecriture du maillage en triangles initial pour visualisation et débug
 	ioService = m_meshTet;
-	gmds::VTKWriter vtkWriter2(&ioService);
-	vtkWriter2.setCellOptions(gmds::N|gmds::F);
-	vtkWriter2.setDataOptions(gmds::N|gmds::F);
-	vtkWriter2.write("AeroPipeline2D_Triangles.vtk");
+	gmds::VTKWriter vtkWriter_TetMesh(&ioService);
+	vtkWriter_TetMesh.setCellOptions(gmds::N|gmds::F);
+	vtkWriter_TetMesh.setDataOptions(gmds::N|gmds::F);
+	vtkWriter_TetMesh.write("AeroPipeline2D_TriMesh.vtk");
 
-	// Ecriture du blocking au format su2
-	SU2Writer writer(m_meshHex, "AeroPipeline2D_Quad.su2", m_params.x_lim);
+	// Ecriture du maillage au format su2
+	std::cout << "Ecriture Maillage Quad en .su2 ..." << std::endl;
+	SU2Writer writer(m_meshHex, "AeroPipeline2D_QuadMesh.su2", m_params.x_lim_SU2_inoutlet);
 	SU2Writer::STATUS result = writer.execute();
 
 }
@@ -421,6 +549,7 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 		Node n_blocking = m_Blocking2D.newBlockCorner(n.point());
 		var_new_id->set(n_id, n_blocking.id());
 		var_couche->set(n_blocking.id(), m_couche_id->value(n_id));
+		//std::cout << "Noeud " << n_blocking.id() << " dans la couche " << var_couche->value(n_blocking.id()) << std::endl;
 
 		UpdateLinker(m_linker_HG, n, m_linker_BG, n_blocking); // Init linker_BG
 	}
@@ -430,9 +559,12 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 		std::vector<Node> quad_nodes = f.get<Node>() ;
 		Blocking2D::Block B0 = m_Blocking2D.newBlock( var_new_id->value(quad_nodes[0].id()), var_new_id->value(quad_nodes[1].id()),
 		                      var_new_id->value(quad_nodes[2].id()), var_new_id->value(quad_nodes[3].id()));
-		B0.setNbDiscretizationI(10);
-		B0.setNbDiscretizationJ(10);
+		//B0.setNbDiscretizationI(10);
+		//B0.setNbDiscretizationJ(10);
 	}
+
+	IntervalAssignment_2D IntAss(&m_Blocking2D, m_params);
+	IntAss.execute();
 
 	m_Blocking2D.initializeGridPoints();	// Maillage des blocs par transfinies
 
@@ -463,24 +595,34 @@ AeroPipeline_2D::UpdateLinker(cad::GeomMeshLinker* linker_1, Node n_1, cad::Geom
 void
 AeroPipeline_2D::UpdateLinkerLastLayer(){
 
-	int layer_id(0);
+	int max_layer_id(0);
 	Variable<int>* couche_id = m_meshHex->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 
+	// Compute the id of the last layer
 	for (auto n_id:m_meshHex->nodes())
 	{
-		if (couche_id->value(n_id) > layer_id)
+		if (couche_id->value(n_id) > max_layer_id)
 		{
-			layer_id = couche_id->value(n_id);
+			max_layer_id = couche_id->value(n_id);
 		}
 	}
 
 	for (auto n_id:m_meshHex->nodes()){
-		if( m_couche_id->value(n_id) == layer_id ) {
+		if( m_couche_id->value(n_id) == max_layer_id ) {
 			Node n = m_meshHex->get<Node>(n_id);
 			math::Point p = n.point();
 			TCellID closest_n_id = m_Bnd->ClosestNodeOnBnd(m_Bnd->getColorAmont(), p);
 			UpdateLinker(m_linker_TG, m_meshTet->get<Node>(closest_n_id), m_linker_HG, n);
-			Node n_test = m_meshTet->get<Node>(closest_n_id);
+			//Node n_test = m_meshTet->get<Node>(closest_n_id);
+
+			int geom_id = m_linker_HG->getGeomId<Node>(n.id()) ;
+			int geom_dim = m_linker_HG->getGeomDim<Node>(n.id()) ;
+			if (geom_dim == 2)
+			{
+				cad::GeomCurve* curve = m_manager->getCurve(geom_id);
+				curve->project(p);
+				n.setPoint(p);
+			}
 		}
 	}
 
@@ -499,7 +641,7 @@ AeroPipeline_2D::BlockingClassification(){
 		int Nx = B0.getNbDiscretizationI()-1;
 		int Ny = B0.getNbDiscretizationJ()-1;
 
-		if ( var_couche->value( B0(0,0).id() ) == var_couche->value( B0(Nx,0).id() ) ) {
+		if ( var_couche->value( B0(0,0).id() ) == var_couche->value( B0(Nx,0).id() )) {
 			int geom_id_corner_1 = m_linker_BG->getGeomId<Node>(B0(0,0).id()) ;
 			int geom_id_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,0).id()) ;
 			int dim_corner_1 = m_linker_BG->getGeomDim<Node>(B0(0,0).id()) ;
@@ -511,34 +653,52 @@ AeroPipeline_2D::BlockingClassification(){
 					Node n = B0(i,0);
 					m_linker_BG->linkNodeToCurve(n.id(), geom_id_corner_1);
 					cad::GeomCurve* curve = m_manager->getCurve(geom_id_corner_1);
+					math::Point p0 = n.point();
 					math::Point p = n.point();
 					curve->project(p);
 					n.setPoint(p);
+
+
+					if (var_couche->value( B0(0,0).id() ) == 0) {
+						math::Vector3d delta_p = p - p0;
+						Node n_opp = B0(i, Ny);
+						math::Point p_opp = n_opp.point();
+						n_opp.setPoint(p_opp + delta_p);
+					}
+
 				}
 			}
 		}
 
-		if ( var_couche->value( B0(0,0).id() ) == var_couche->value( B0(0,Ny).id() ) ) {
+		if ( var_couche->value( B0(0,0).id() ) == var_couche->value( B0(0,Ny).id() )) {
 			int geom_id_corner_1 = m_linker_BG->getGeomId<Node>(B0(0,0).id()) ;
 			int geom_id_corner_2 = m_linker_BG->getGeomId<Node>(B0(0,Ny).id()) ;
 			int dim_corner_1 = m_linker_BG->getGeomDim<Node>(B0(0,0).id()) ;
 			int dim_corner_2 = m_linker_BG->getGeomDim<Node>(B0(0,Ny).id());
-			//std::cout << "dim 1 : " << dim_corner_1 << std::endl;
-			//std::cout << "dim 2 : " << dim_corner_2 << std::endl;
 			if( dim_corner_1 == dim_corner_2 && dim_corner_1 == 2 )
 			{
 				for (int j=1;j<Ny;j++){
 					Node n = B0(0,j);
 					m_linker_BG->linkNodeToCurve(n.id(), geom_id_corner_1);
 					cad::GeomCurve* curve = m_manager->getCurve(geom_id_corner_1);
+					math::Point p0 = n.point();
 					math::Point p = n.point();
 					curve->project(p);
 					n.setPoint(p);
+
+
+					if (var_couche->value( B0(0,0).id() ) == 0) {
+						math::Vector3d delta_p = p - p0;
+						Node n_opp = B0(Nx, j);
+						math::Point p_opp = n_opp.point();
+						n_opp.setPoint(p_opp + delta_p);
+					}
+
 				}
 			}
 		}
 
-		if ( var_couche->value( B0(0,Ny).id() ) == var_couche->value( B0(Nx,Ny).id() ) ) {
+		if ( var_couche->value( B0(0,Ny).id() ) == var_couche->value( B0(Nx,Ny).id() )) {
 			int geom_id_corner_1 = m_linker_BG->getGeomId<Node>(B0(0,Ny).id()) ;
 			int geom_id_corner_2 = m_linker_BG->getGeomId<Node>(B0(Nx,Ny).id()) ;
 			int dim_corner_1 = m_linker_BG->getGeomDim<Node>(B0(0,Ny).id()) ;
@@ -549,9 +709,19 @@ AeroPipeline_2D::BlockingClassification(){
 					Node n = B0(i,Ny);
 					m_linker_BG->linkNodeToCurve(n.id(), geom_id_corner_1);
 					cad::GeomCurve* curve = m_manager->getCurve(geom_id_corner_1);
+					math::Point p0 = n.point();
 					math::Point p = n.point();
 					curve->project(p);
 					n.setPoint(p);
+
+
+					if (var_couche->value( B0(Nx,Ny).id() ) == 0) {
+						math::Vector3d delta_p = p - p0;
+						Node n_opp = B0(i, 0);
+						math::Point p_opp = n_opp.point();
+						n_opp.setPoint(p_opp + delta_p);
+					}
+
 				}
 			}
 		}
@@ -567,14 +737,360 @@ AeroPipeline_2D::BlockingClassification(){
 					Node n = B0(Nx,j);
 					m_linker_BG->linkNodeToCurve(n.id(), geom_id_corner_1);
 					cad::GeomCurve* curve = m_manager->getCurve(geom_id_corner_1);
+					math::Point p0 = n.point();
 					math::Point p = n.point();
 					curve->project(p);
 					n.setPoint(p);
+
+
+					if (var_couche->value( B0(Nx,Ny).id() ) == 0) {
+						math::Vector3d delta_p = p - p0;
+						Node n_opp = B0(0, j);
+						math::Point p_opp = n_opp.point();
+						n_opp.setPoint(p_opp + delta_p);
+					}
+
 				}
 			}
 		}
 
 	}
 
+	// New mesh of the interior points of the blocks
+	for(auto B0:m_Blocking2D.allBlocks()) {
+		auto Nx = B0.getNbDiscretizationI();
+		auto Ny = B0.getNbDiscretizationJ();
+
+		Array2D<TCellID> *a = new Array2D<TCellID>(Nx, Ny);
+		Array2D<math::Point> pnts(Nx, Ny);
+
+		for (auto i = 0; i < Nx; i++) {
+			pnts(i, 0) = B0(i,0).point();
+			pnts(i, Ny - 1) = B0(i,Ny-1).point();
+		}
+		for (auto j = 0; j < Ny; j++) {
+			pnts(0, j) = B0(0,j).point();
+			pnts(Nx - 1, j) = B0(Nx-1,j).point();
+		}
+
+		math::TransfiniteInterpolation::computeQuad(pnts);
+		for (auto i = 1; i < Nx - 1; i++) {
+			for (auto j = 1; j < Ny - 1; j++) {
+				B0(i,j).setPoint(pnts(i,j));
+			}
+		}
+	}
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
+
+	Variable<math::Vector3d>* var_VectorsForExtrusion = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
+
+	if (m_params.vectors_field <= 0 || m_params.vectors_field > 4)
+	{
+		// Compute the gradient field of the level set from the wall to the external boundary
+		LeastSquaresGradientComputation grad2D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+		                                       var_VectorsForExtrusion);
+		grad2D.execute();
+	}
+	else if (m_params.vectors_field == 1)
+	{
+		// Compute the gradient field of the level set from the wall to the external boundary
+		LeastSquaresGradientComputation grad2D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+		                                       var_VectorsForExtrusion);
+		grad2D.execute();
+	}
+	else if (m_params.vectors_field == 2)
+	{
+		Variable<math::Vector3d>* var_VectorField_1 = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_1");
+		Variable<math::Vector3d>* var_VectorField_2 = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_2");
+
+		LeastSquaresGradientComputation grad2D_1(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+		                                       var_VectorField_1);
+		grad2D_1.execute();
+		LeastSquaresGradientComputation grad2D_2(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+		                                         var_VectorField_2);
+		grad2D_2.execute();
+
+		for (auto n_id:m_meshTet->nodes())
+		{
+			math::Vector3d vec_1 = var_VectorField_1->value(n_id);
+			math::Vector3d vec_2 = var_VectorField_2->value(n_id);
+
+			vec_1.normalize();
+			vec_2.normalize();
+
+			Node n = m_meshTet->get<Node>(n_id);
+			math::Point p = n.point();
+
+			if (p.X() <= m_params.x_VectorField_Z1)
+			{
+				var_VectorsForExtrusion->set(n_id, vec_1);
+			}
+			else if (p.X() >= m_params.x_VectorField_Z2)
+			{
+				var_VectorsForExtrusion->set(n_id, vec_2);
+			}
+			else
+			{
+				// Compute the transition field
+				double alpha = (p.X() - m_params.x_VectorField_Z1)/(m_params.x_VectorField_Z2-m_params.x_VectorField_Z1) ;
+				math::Vector3d v_transit = alpha*vec_2 + (1.0-alpha)*vec_1 ;
+				v_transit.normalize();
+				var_VectorsForExtrusion->set(n_id, v_transit);
+			}
+
+		}
+
+		m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_1);
+		m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_2);
+
+	}
+	else if (m_params.vectors_field == 3)
+	{
+		Variable<math::Vector3d>* var_VectorField_1 = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_1");
+
+		LeastSquaresGradientComputation grad2D_1(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+		                                         var_VectorField_1);
+		grad2D_1.execute();
+
+		for (auto n_id:m_meshTet->nodes())
+		{
+			math::Vector3d vec_1 = var_VectorField_1->value(n_id);
+			double angle_rad = m_params.angle_attack*M_PI/180.0 ;
+			math::Vector3d vec_flow({cos(angle_rad), sin(angle_rad), 0.0}) ;
+
+			vec_1.normalize();
+			vec_flow.normalize();
+
+			Node n = m_meshTet->get<Node>(n_id);
+			math::Point p = n.point();
+
+			if (p.X() < m_params.x_VectorField_Z1)
+			{
+				var_VectorsForExtrusion->set(n_id, vec_1);
+			}
+			else if (p.X() > m_params.x_VectorField_Z2)
+			{
+				var_VectorsForExtrusion->set(n_id, vec_flow);
+			}
+			else
+			{
+				// Compute the transition field
+				double alpha = (p.X() - m_params.x_VectorField_Z1)/(m_params.x_VectorField_Z2-m_params.x_VectorField_Z1) ;
+				math::Vector3d v_transit = alpha*vec_flow + (1.0-alpha)*vec_1 ;
+				v_transit.normalize();
+				var_VectorsForExtrusion->set(n_id, v_transit);
+			}
+
+		}
+
+		m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_1);
+
+	}
+	else if (m_params.vectors_field == 4)
+	{
+		Variable<math::Vector3d>* var_VectorField_1 = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_1");
+
+		LeastSquaresGradientComputation grad2D_1(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+		                                         var_VectorField_1);
+		grad2D_1.execute();
+
+		for (auto n_id:m_meshTet->nodes())
+		{
+			math::Vector3d vec_1 = var_VectorField_1->value(n_id);
+			double angle_rad = m_params.angle_attack*M_PI/180.0 ;
+			math::Vector3d vec_flow({cos(angle_rad), sin(angle_rad), 0.0}) ;
+
+			vec_1.normalize();
+			vec_flow.normalize();
+
+			Node n = m_meshTet->get<Node>(n_id);
+			math::Point p = n.point();
+
+			if (p.X() < 10.0)
+			{
+				var_VectorsForExtrusion->set(n_id, -vec_flow);
+			}
+			else if (p.X() < m_params.x_VectorField_Z1)
+			{
+				var_VectorsForExtrusion->set(n_id, vec_1);
+			}
+			else if (p.X() > m_params.x_VectorField_Z2)
+			{
+				var_VectorsForExtrusion->set(n_id, vec_flow);
+			}
+			else
+			{
+				// Compute the transition field
+				double alpha = (p.X() - m_params.x_VectorField_Z1)/(m_params.x_VectorField_Z2-m_params.x_VectorField_Z1) ;
+				math::Vector3d v_transit = alpha*vec_flow + (1.0-alpha)*vec_1 ;
+				v_transit.normalize();
+				var_VectorsForExtrusion->set(n_id, v_transit);
+			}
+
+		}
+
+		m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_1);
+
+	}
+
+
+	// Normalisation du champ
+	for (auto n_id:m_meshTet->nodes())
+	{
+		math::Vector3d vec = var_VectorsForExtrusion->value(n_id);
+		vec.normalize();
+		var_VectorsForExtrusion->set(n_id, vec);
+	}
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void
+   AeroPipeline_2D::MeshRefinement()
+{
+	int mark_isTreated = m_Blocking2D.newMark<Node>();
+	int mark_refinementNeeded = m_Blocking2D.newMark<Node>();
+
+	for (auto b:m_Blocking2D.allBlocks())
+	{
+		Variable<int>* var_couche = m_Blocking2D.getVariable<int, GMDS_NODE>("GMDS_Couche");
+		Node n0 = b.getNode(0);
+		Node n1 = b.getNode(1);
+		Node n2 = b.getNode(2);
+		Node n3 = b.getNode(3);
+
+		if (var_couche->value(n0.id()) == 0
+		    && var_couche->value(n1.id()) == 0)
+		{
+			m_Blocking2D.mark(n0, mark_refinementNeeded);
+			m_Blocking2D.mark(n1, mark_refinementNeeded);
+		}
+		else if (var_couche->value(n1.id()) == 0
+		         && var_couche->value(n2.id()) == 0)
+		{
+			m_Blocking2D.mark(n1, mark_refinementNeeded);
+			m_Blocking2D.mark(n2, mark_refinementNeeded);
+		}
+		else if (var_couche->value(n2.id()) == 0
+		         && var_couche->value(n3.id()) == 0)
+		{
+			m_Blocking2D.mark(n2, mark_refinementNeeded);
+			m_Blocking2D.mark(n3, mark_refinementNeeded);
+		}
+		else if (var_couche->value(n3.id()) == 0
+		    && var_couche->value(n0.id()) == 0)
+		{
+			m_Blocking2D.mark(n3, mark_refinementNeeded);
+			m_Blocking2D.mark(n0, mark_refinementNeeded);
+		}
+
+		//std::vector<Face> common_blocks = n0.get<Face>();
+		//std::cout << common_blocks.size() << std::endl;
+		if (var_couche->value(n0.id()) == 0
+		    && var_couche->value(n1.id()) == 1)
+		{
+			m_Blocking2D.mark(n1, mark_refinementNeeded);
+		}
+
+	}
+
+	for (auto b:m_Blocking2D.allBlocks())
+	{
+		int Nx = b.getNbDiscretizationI();
+		int Ny = b.getNbDiscretizationJ();
+
+		Variable<int>* var_couche = m_Blocking2D.getVariable<int, GMDS_NODE>("GMDS_Couche");
+		Node n0 = b.getNode(0);
+		Node n1 = b.getNode(1);
+		Node n2 = b.getNode(2);
+		Node n3 = b.getNode(3);
+
+		if (m_Blocking2D.isMarked(n0, mark_refinementNeeded)
+		    && m_Blocking2D.isMarked(n1, mark_refinementNeeded))
+		{
+			for (int i = 0; i < Nx; i++) {
+				std::vector<math::Point> Points;
+				for (int j = 0; j < Ny; j++) {
+					Points.push_back(b(i, j).point());
+				}
+				RefinementBeta ref(Points, m_params.edge_size_first_ortho_wall);
+				ref.execute();
+				Points = ref.GetNewPositions();
+
+				for (int j = 1; j < Ny - 1; j++) {
+					b(i, j).setPoint({Points[j]});
+				}
+			}
+		}
+
+		if (m_Blocking2D.isMarked(n2, mark_refinementNeeded)
+		    && m_Blocking2D.isMarked(n3, mark_refinementNeeded))
+		{
+			for (int i = 0; i < Nx; i++) {
+				std::vector<math::Point> Points;
+				for (int j = Ny-1; j >= 0; j--) {
+					Points.push_back(b(i, j).point());
+				}
+				RefinementBeta ref(Points, m_params.edge_size_first_ortho_wall);
+				ref.execute();
+				Points = ref.GetNewPositions();
+
+				for (int j = 1; j < Ny - 1; j++) {
+					b(i, j).setPoint({Points[Ny-1-j]});
+				}
+			}
+		}
+
+		if (m_Blocking2D.isMarked(n0, mark_refinementNeeded)
+		    && m_Blocking2D.isMarked(n3, mark_refinementNeeded))
+		{
+			for (int j = 0; j < Ny; j++) {
+				std::vector<math::Point> Points;
+				for (int i = 0; i < Nx; i++) {
+					Points.push_back(b(i, j).point());
+				}
+				RefinementBeta ref(Points, m_params.edge_size_first_ortho_wall);
+				ref.execute();
+				Points = ref.GetNewPositions();
+
+				for (int i = 1; i < Nx - 1; i++) {
+					b(i, j).setPoint({Points[i]});
+				}
+			}
+		}
+
+		if (m_Blocking2D.isMarked(n1, mark_refinementNeeded)
+		    && m_Blocking2D.isMarked(n2, mark_refinementNeeded))
+		{
+			for (int j = 0; j < Ny; j++) {
+				std::vector<math::Point> Points;
+				for (int i = Nx-1; i >= 0; i--) {
+					Points.push_back(b(i, j).point());
+				}
+				RefinementBeta ref(Points, m_params.edge_size_first_ortho_wall);
+				ref.execute();
+				Points = ref.GetNewPositions();
+
+				for (int i = 1; i < Nx - 1; i++) {
+					b(i, j).setPoint({Points[Nx-1-i]});
+				}
+			}
+		}
+
+	}
+
+	m_Blocking2D.unmarkAll<Node>(mark_isTreated);
+	m_Blocking2D.freeMark<Node>(mark_isTreated);
+	m_Blocking2D.unmarkAll<Node>(mark_refinementNeeded);
+	m_Blocking2D.freeMark<Node>(mark_refinementNeeded);
 }
 /*------------------------------------------------------------------------*/
