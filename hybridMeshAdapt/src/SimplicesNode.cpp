@@ -544,11 +544,17 @@ std::vector<TInt> SimplicesNode::neighborSubSurfaceNodes() const
   {
     throw gmds::GMDSException(e);
   }
+  unsigned int nodeIdDim   = ((*BND_VERTEX_COLOR)[getGlobalNode()] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[getGlobalNode()] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[getGlobalNode()] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
+  unsigned int nodeIdLabel = (nodeIdDim == SimplexMesh::topo::CORNER)?(*BND_VERTEX_COLOR)[getGlobalNode()]:(nodeIdDim == SimplexMesh::topo::RIDGE)?(*BND_CURVE_COLOR)[getGlobalNode()]:(nodeIdDim == SimplexMesh::topo::SURFACE)?(*BND_SURFACE_COLOR)[getGlobalNode()]:0;
 
   //the current node is a volume node
-  if((*BND_VERTEX_COLOR)[getGlobalNode()] == 0 && (*BND_SURFACE_COLOR)[getGlobalNode()] == 0 && (*BND_SURFACE_COLOR)[getGlobalNode()] == 0)
+  if(nodeIdDim == SimplexMesh::topo::VOLUME)
   {
     return directNodes;
+  }
+  else if(nodeIdDim == SimplexMesh::topo::CORNER)
+  {
+    return std::vector<TInt>{};
   }
   else
   {
@@ -558,15 +564,14 @@ std::vector<TInt> SimplicesNode::neighborSubSurfaceNodes() const
 
     for(auto const node : directNodes)
     {
-      if((*BND_VERTEX_COLOR)[getGlobalNode()] != 0)
+      if((*BND_CURVE_COLOR)[getGlobalNode()] != 0)
       {
-        break;
-      }
-      else if((*BND_CURVE_COLOR)[getGlobalNode()] != 0)
-      {
-        if((*BND_CURVE_COLOR)[getGlobalNode()] == (*BND_CURVE_COLOR)[node])
+        if((*BND_CURVE_COLOR)[node] != 0)
         {
-          res.push_back(node);
+          if((*BND_CURVE_COLOR)[getGlobalNode()] == (*BND_CURVE_COLOR)[node])
+          {
+            res.push_back(node);
+          }
         }
         else if((*BND_VERTEX_COLOR)[node] != 0)
         {
@@ -579,9 +584,12 @@ std::vector<TInt> SimplicesNode::neighborSubSurfaceNodes() const
       }
       else if((*BND_SURFACE_COLOR)[getGlobalNode()] != 0)
       {
-        if((*BND_SURFACE_COLOR)[getGlobalNode()] == (*BND_SURFACE_COLOR)[node])
+        if((*BND_SURFACE_COLOR)[node] != 0)
         {
-          res.push_back(node);
+          if((*BND_SURFACE_COLOR)[getGlobalNode()] == (*BND_SURFACE_COLOR)[node])
+          {
+            res.push_back(node);
+          }
         }
         else if((*BND_CURVE_COLOR)[node] != 0)
         {

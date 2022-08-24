@@ -4345,15 +4345,22 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
 
   //analytic isotrope metric here !
   gmds::math::Point pt = m_coords[node];
+  double epsilon = 0.001;
 
   //CONSTANT ISOTROPE METRIC
   /*double metricX = 0.1;
   double metricY = 0.1;
   double metricZ = 0.1;*/
 
-  double metricX = std::atan(80.0* (std::pow(pt.X(), 4) * std::pow(pt.Y(), 4)) );
-  double metricY = std::atan(80.0* (std::pow(pt.X(), 4) * std::pow(pt.Y(), 4) ));
-  double metricZ = std::atan(80.0* (std::pow(pt.X(), 4) * std::pow(pt.Y(), 4)) );
+  //double metricX = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
+  //double metricY = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
+  //double metricZ = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
+
+  double metricX = (1.0 - std::exp(-2.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
+  double metricY = (1.0 - std::exp(-2.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
+  double metricZ = (1.0 - std::exp(-2.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
+
+
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
   (*metric)[node](1,1) = 1.0 / (metricY*metricY);
   (*metric)[node](2,2) = 1.0 / (metricZ*metricZ);

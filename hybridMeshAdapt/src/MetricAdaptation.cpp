@@ -349,9 +349,10 @@ bool MetricAdaptation::computeSlicing(const TInt nodeA, const TInt nodeB)
     unsigned int directNodeLabel = ((*BND_VERTEX_COLOR)[nodeB] != 0)?(*BND_VERTEX_COLOR)[nodeB]:((*BND_CURVE_COLOR)[nodeB] != 0)?(*BND_CURVE_COLOR)[nodeB]:((*BND_SURFACE_COLOR)[nodeB] != 0)?(*BND_SURFACE_COLOR)[nodeB]:0;
     unsigned int newNodeDim = std::max(nodeDim, directNodeDim);
 
-    //std::cout << " node0 -> " << nodeId << " | dimNode -> " << nodeDim << std::endl;
-    //std::cout << " node1 -> " << dNode << " | dimNode -> " << directNodeDim << std::endl;
-    //std::cout << " metricLenght -> " << metricLenght << std::endl;
+    const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& E2S_indices = m_simplexMesh->getEdgeTianglesIndices();
+    const std::map<unsigned int, std::vector<unsigned int>>& C2S_indices = m_simplexMesh->getCornerSurfaceConnexion() ;
+    const std::map<unsigned int, std::vector<unsigned int>>& C2E_indices = m_simplexMesh->getCornerEdgeConnexion() ;
+
     bool alreadyAdd = false;
     std::vector<TSimplexID> tetraContenaingPt{};
     math::Point nodeCoord0 = node0.getCoords();
@@ -373,6 +374,27 @@ bool MetricAdaptation::computeSlicing(const TInt nodeA, const TInt nodeB)
       //define a new curve color...
       //BND_CURVE_COLOR->set(newNodeId, newColorToDefine)
       return false;
+      /*std::cout << "(*BND_VERTEX_COLOR)[nodeA] -> " << (*BND_VERTEX_COLOR)[nodeA] << std::endl;
+      std::cout << "(*BND_VERTEX_COLOR)[nodeB] -> " << (*BND_VERTEX_COLOR)[nodeB] << std::endl;
+      std::vector<unsigned int> edgeIdx_A = C2E_indices.at((*BND_VERTEX_COLOR)[nodeA]);
+      std::vector<unsigned int> edgeIdx_B = C2E_indices.at((*BND_VERTEX_COLOR)[nodeB]);
+      std::find_if(edgeIdx_A.begin(), edgeIdx_A.end(), [=](unsigned int e){
+        if(std::find(edgeIdx_B.begin(), edgeIdx_B.end(), e) != edgeIdx_B.end())
+        {
+          BND_CURVE_COLOR->set(newNodeId, e);
+          return true;
+        }
+      });
+
+      std::vector<unsigned int> surfaceIdx_A = C2S_indices.at((*BND_VERTEX_COLOR)[nodeA]);
+      std::vector<unsigned int> surfaceIdx_B = C2S_indices.at((*BND_VERTEX_COLOR)[nodeB]);
+      std::find_if(surfaceIdx_A.begin(), surfaceIdx_A.end(), [=](unsigned int s){
+        if(std::find(surfaceIdx_B.begin(), surfaceIdx_B.end(), s) != surfaceIdx_B.end())
+        {
+          BND_SURFACE_COLOR->set(newNodeId, s);
+          return true;
+        }
+      });*/
     }
     else if(newNodeDim == SimplexMesh::topo::RIDGE)
     {
@@ -381,9 +403,8 @@ bool MetricAdaptation::computeSlicing(const TInt nodeA, const TInt nodeB)
         if(nodeLabel != directNodeLabel)
         {
           //node sur la surface or the volume...
-          const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& ridgeEdge = m_simplexMesh->getEdgeTianglesIndices();
-          std::pair<unsigned int, unsigned int> p0 = ridgeEdge.at(nodeLabel);
-          std::pair<unsigned int, unsigned int> p1 = ridgeEdge.at(directNodeLabel);
+          std::pair<unsigned int, unsigned int> p0 = E2S_indices.at(nodeLabel);
+          std::pair<unsigned int, unsigned int> p1 = E2S_indices.at(directNodeLabel);
           bool flag = false;
           std::vector<unsigned int> p0Vec{p0.first, p0.second};
           std::vector<unsigned int> p1Vec{p1.first, p1.second};
@@ -403,45 +424,50 @@ bool MetricAdaptation::computeSlicing(const TInt nodeA, const TInt nodeB)
               break;
             }
           }
-
-          //node à inserer dans le volume donc rien a faire
-          if(!flag)
-          {
-            /*std::cout << "edge To Insert -> " << nodeA << " | " << nodeB << std::endl;
-            std::cout << "p0.first | p0.second -> " << p0.first << " | " << p0.second << std::endl;
-            std::cout << "p1.first | p1.second -> " << p1.first << " | " << p1.second << std::endl;
-
-            SimplexMesh nodeMesh = SimplexMesh();
-            nodeMesh.addNode(SimplicesNode(m_simplexMesh, nodeA).getCoords());
-            nodeMesh.addNode(SimplicesNode(m_simplexMesh, nodeB).getCoords());
-            nodeMesh.addTetraedre(0, 0, 0, 0);
-            gmds::ISimplexMeshIOService ioServiceNode(&nodeMesh);
-            gmds::VTKWriter vtkWriterNode(&ioServiceNode);
-            vtkWriterNode.setCellOptions(gmds::N|gmds::R);
-            vtkWriterNode.setDataOptions(gmds::N|gmds::R);
-            vtkWriterNode.write("NODE_" + std::to_string(nodeA) + "_" + std::to_string(nodeB) +  ".vtk");
-
-            gmds::VTKWriter vtkWriterDEBUG(&ioServiceMesh);
-            vtkWriterDEBUG.setCellOptions(gmds::N|gmds::R|gmds::F);
-            vtkWriterDEBUG.setDataOptions(gmds::N|gmds::R|gmds::F);
-            vtkWriterDEBUG.write("No_COMMON_SURFACE.vtk");
-            throw gmds::GMDSException("no common surface");*/
-          }
         }
         else
         {
           BND_CURVE_COLOR->set(newNodeId, nodeLabel);
         }
       }
-      else
+      else if(nodeDim > directNodeDim)
       {
-        if(nodeDim > directNodeDim)
+        std::vector<unsigned int> edgeIdx = C2E_indices.at((*BND_VERTEX_COLOR)[nodeB]);
+        if(std::find(edgeIdx.begin(), edgeIdx.end(), (*BND_CURVE_COLOR)[nodeA]) != edgeIdx.end())
         {
           BND_CURVE_COLOR->set(newNodeId, nodeLabel);
         }
         else
         {
+          std::vector<unsigned int> surfaceIdx0 = C2S_indices.at((*BND_VERTEX_COLOR)[nodeB]);
+          std::pair<unsigned int, unsigned int> surfaceIdx1 = E2S_indices.at((*BND_CURVE_COLOR)[nodeA]);
+          std::find_if(surfaceIdx0.begin(), surfaceIdx0.end(), [=](unsigned int s){
+            if(s == surfaceIdx1.first || s == surfaceIdx1.second)
+            {
+              BND_SURFACE_COLOR->set(newNodeId, s);
+              return true;
+            }
+          });
+        }
+      }
+      else
+      {
+        std::vector<unsigned int> edgeIdx = C2E_indices.at((*BND_VERTEX_COLOR)[nodeA]);
+        if(std::find(edgeIdx.begin(), edgeIdx.end(), (*BND_CURVE_COLOR)[nodeB]) != edgeIdx.end())
+        {
           BND_CURVE_COLOR->set(newNodeId, directNodeLabel);
+        }
+        else
+        {
+          std::vector<unsigned int> surfaceIdx0 = C2S_indices.at((*BND_VERTEX_COLOR)[nodeA]);
+          std::pair<unsigned int, unsigned int> surfaceIdx1 = E2S_indices.at((*BND_CURVE_COLOR)[nodeB]);
+          std::find_if(surfaceIdx0.begin(), surfaceIdx0.end(), [=](unsigned int s){
+            if(s == surfaceIdx1.first || s == surfaceIdx1.second)
+            {
+              BND_SURFACE_COLOR->set(newNodeId, s);
+              return true;
+            }
+          });
         }
       }
     }
@@ -455,63 +481,45 @@ bool MetricAdaptation::computeSlicing(const TInt nodeA, const TInt nodeB)
         }
         //node dans le volume donc RAF sinon
       }
-      else
+      else if(nodeDim > directNodeDim)
       {
-        if(nodeDim > directNodeDim)
+        //on verifie si la surface est bien relié au ridge
+        if(directNodeDim == SimplexMesh::topo::RIDGE)
         {
-          //on verifie si la surface est bien relié au ridge
-          if(directNodeDim == SimplexMesh::topo::RIDGE)
-          {
-            const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& ridgeEdge = m_simplexMesh->getEdgeTianglesIndices();
-            std::pair<unsigned int, unsigned int> p1 = ridgeEdge.at(directNodeLabel);
-            std::vector<unsigned int> p1Vec{p1.first, p1.second};
-            if(p1Vec.front() == nodeLabel || p1Vec.back() == nodeLabel)
-            {
-              BND_SURFACE_COLOR->set(newNodeId, nodeLabel);
-            }
-            else
-            {
-              //The node is on the volume
-
-              /*std::cout << "nodeA -> " << nodeA << " | dimNode -> " << nodeDim << " | label -> " << nodeLabel << std::endl;
-              std::cout << "nodeB -> " << nodeB << " | dimNode -> " << directNodeDim << " | label -> " << directNodeLabel << std::endl;
-              std::cout << "nodeLabel -> " << nodeLabel << std::endl;
-              std::cout << "directNodeLabel -> " << directNodeLabel << std::endl;
-              std::cout << "continue -> " << p1.first << " | " << p1.second << std::endl;
-              for(auto const connexion : ridgeEdge)
-              {
-                std::cout << "CONNEXION -> " << connexion.first << " | " << connexion.second.first << " & " << connexion.second.second << std::endl;
-              }
-              throw gmds::GMDSException("surface no linked to the ridge");*/
-              //continue;
-            }
-          }
-          else if(directNodeDim == SimplexMesh::topo::CORNER)
+          const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& ridgeEdge = m_simplexMesh->getEdgeTianglesIndices();
+          std::pair<unsigned int, unsigned int> p1 = ridgeEdge.at(directNodeLabel);
+          if(p1.first == nodeLabel || p1.second == nodeLabel)
           {
             BND_SURFACE_COLOR->set(newNodeId, nodeLabel);
           }
         }
-        else // nodeDim < directNodeDim
+        else if(directNodeDim == SimplexMesh::topo::CORNER)
         {
-          if(nodeDim == SimplexMesh::topo::RIDGE)
+          std::vector<unsigned int> surfaceIdx = C2S_indices.at((*BND_VERTEX_COLOR)[nodeB]);
+          if(std::find(surfaceIdx.begin(), surfaceIdx.end(), (*BND_SURFACE_COLOR)[nodeA]) != surfaceIdx.end())
           {
-            const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& ridgeEdge = m_simplexMesh->getEdgeTianglesIndices();
-            std::pair<unsigned int, unsigned int> p1 = ridgeEdge.at(nodeLabel);
-            std::vector<unsigned int> p1Vec{p1.first, p1.second};
-            if(p1Vec.front() == directNodeLabel || p1Vec.back() == directNodeLabel)
-            {
-              BND_SURFACE_COLOR->set(newNodeId, directNodeLabel);
-            }
-            else
-            {
-              return false;
-            }
+            BND_SURFACE_COLOR->set(newNodeId, nodeLabel);
           }
-          else if(nodeDim == SimplexMesh::topo::CORNER)
+        }
+      }
+      else // nodeDim < directNodeDim
+      {
+        if(nodeDim == SimplexMesh::topo::RIDGE)
+        {
+          const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& ridgeEdge = m_simplexMesh->getEdgeTianglesIndices();
+          std::pair<unsigned int, unsigned int> p1 = ridgeEdge.at(nodeLabel);
+          if(p1.first == directNodeLabel || p1.second == directNodeLabel)
           {
             BND_SURFACE_COLOR->set(newNodeId, directNodeLabel);
           }
-          //BND_SURFACE_COLOR->set(newNodeId, directNodeLabel);
+        }
+        else if(nodeDim == SimplexMesh::topo::CORNER)
+        {
+          std::vector<unsigned int> surfaceIdx = C2S_indices.at((*BND_VERTEX_COLOR)[nodeA]);
+          if(std::find(surfaceIdx.begin(), surfaceIdx.end(), (*BND_SURFACE_COLOR)[nodeB]) != surfaceIdx.end())
+          {
+            BND_SURFACE_COLOR->set(newNodeId, directNodeLabel);
+          }
         }
       }
     }
@@ -967,124 +975,72 @@ unsigned int MetricAdaptation::computePointSmoothing()
   {
     if(meshNode[nodeId] != 0)
     {
-      std::cout << std::endl;
       unsigned int nodeIdDim   = ((*BND_VERTEX_COLOR)[nodeId] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[nodeId] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[nodeId] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
       unsigned int nodeIdLabel = (nodeIdDim == SimplexMesh::topo::CORNER)?(*BND_VERTEX_COLOR)[nodeId]:(nodeIdDim == SimplexMesh::topo::RIDGE)?(*BND_CURVE_COLOR)[nodeId]:(nodeIdDim == SimplexMesh::topo::SURFACE)?(*BND_SURFACE_COLOR)[nodeId]:0;
-      //std::cout << std::endl;
-      //std::cout << "nodeId -> " << nodeId << std::endl;
-      //std::cout << "nodeIdDim -> " << nodeIdDim << std::endl;
-      //std::cout << "nodeIdLabel -> " << nodeIdLabel << std::endl;
 
-      if(nodeIdDim == SimplexMesh::topo::SURFACE || nodeIdDim == SimplexMesh::topo::RIDGE)
+      if(!nodeIdDim == SimplexMesh::topo::SURFACE)
       {
         continue;
       }
 
-      //computing the optimal position of P in order to have Lm(PPj) ~ 1
-      //https://tel.archives-ouvertes.fr/tel-00120327/document
       Metric<Eigen::Matrix3d> M0 = Metric<Eigen::Matrix3d>((*metric)[nodeId]);
       const SimplicesNode   node = SimplicesNode(m_simplexMesh, nodeId);
       const math::Point        p = node.getCoords();
       const std::vector<TInt> nodes = node.neighborSubSurfaceNodes();
-      std::vector<math::Point> P_opti{};
       std::vector<TSimplexID> ball = node.ballOf();
       if(ball.size() == 0){continue;}
+      math::Point p_opti;
 
+      for(auto const n : nodes)
+      {
+        if(meshNode[n] != 0)
+        {
+          const SimplicesNode sNode   = SimplicesNode(m_simplexMesh, n);
+          const math::Point pj        = sNode.getCoords();
+          Metric<Eigen::Matrix3d> M1  = Metric<Eigen::Matrix3d>((*metric)[n]);
+          double metricLenght         = M0.metricDist(p, pj, M1);
+
+          if(metricLenght != 0.0)
+          {
+            math::Vector3d vec = pj - p;
+            p_opti = p_opti + (p + (vec / metricLenght));
+          }
+          else
+          {
+            throw gmds::GMDSException("metricLenght != 0.0");
+          }
+        }
+      }
+
+      math::Point new_P = p_opti;
+      new_P = math::Point(new_P.X() / (double)nodes.size(), new_P.Y() / (double)nodes.size(), new_P.Z() / (double)nodes.size());
+
+      //test pour calculer si new_P est étoilable par rapport a la boule de nodeId
+      bool flag = false;
       for(auto const simplex : ball)
       {
         if(simplex >= 0)
         {
-          unsigned int sizeTet = 4;
+          //compute quality of the tetrahedron for the next step
           unsigned int localNode = SimplicesCell(m_simplexMesh, simplex).getLocalNode(nodeId);
-          math::Point p_opti(0.0, 0.0, 0.0);
-
-          for(unsigned int n = 1 ; n < sizeTet ; n++)
+          if(criterionRAIS.execute(m_simplexMesh, simplex, localNode, new_P))
           {
-            unsigned int nodeFaceLocal = (localNode + n) % sizeTet;
-            const SimplicesNode sNode = SimplicesCell(m_simplexMesh, simplex).getNode(nodeFaceLocal);
-            const math::Point pj        = sNode.getCoords();
-            Metric<Eigen::Matrix3d> M1  = Metric<Eigen::Matrix3d>((*metric)[sNode.getGlobalNode()]);
-            double metricLenght         = M0.metricDist(p, pj, M1);
-
-            if(metricLenght != 0.0)
-            {
-              math::Vector3d vec = pj - p;
-              p_opti = p_opti + (p + (vec / metricLenght));
-            }
-            else
-            {
-              throw gmds::GMDSException("metricLenght != 0.0");
-            }
+            break;
+            flag = true;
           }
-          P_opti.push_back(p_opti * (1.0 / 3.0));
         }
       }
 
-      math::Point new_P;
-      if(P_opti.size() != 0)
+      if(flag)
       {
-        for(auto const p : P_opti)
-        {
-          new_P = new_P + p;
-        }
-        new_P = math::Point(new_P.X() / (double)P_opti.size(), new_P.Y() / (double)P_opti.size(), new_P.Z() / (double)P_opti.size());
-
-        //test pour calculer si new_P est étoilable par rapport a la boule de nodeId
-        std::set<double> tetQuality{};
-        for(auto const simplex : ball)
-        {
-          if(simplex >= 0)
-          {
-            //compute quality of the tetrahedron for the next step
-            tetQuality.insert(m_simplexMesh->computeQualityElement(simplex));
-            unsigned int localNode = SimplicesCell(m_simplexMesh, simplex).getLocalNode(nodeId);
-            if(criterionRAIS.execute(m_simplexMesh, simplex, localNode, new_P))
-            {
-              return computePointSmoothing;
-            }
-          }
-        }
-
-        //test pour calculer le plus pire tetra créer est meilleur que le plus pire de l'ancienne boule liée a nodeId
-        std::set<double> newQuality{};
-        for(auto const simplex : ball)
-        {
-          if(simplex >= 0)
-          {
-            unsigned int sizeTet = 4;
-            unsigned int localNode = SimplicesCell(m_simplexMesh, simplex).getLocalNode(nodeId);
-            std::vector<TInt> faceNodes = SimplicesCell(m_simplexMesh, simplex).getOrderedFace(localNode);
-
-            const math::Point pA = SimplicesNode(m_simplexMesh, faceNodes.front()).getCoords();
-            const math::Point pB = SimplicesNode(m_simplexMesh, faceNodes[1]).getCoords();
-            const math::Point pC = SimplicesNode(m_simplexMesh, faceNodes.back()).getCoords();
-
-            Eigen::Matrix3d MA = (*metric)[faceNodes.front()];
-            Eigen::Matrix3d MB = (*metric)[faceNodes[1]];
-            Eigen::Matrix3d MC = (*metric)[faceNodes.back()];
-
-            Eigen::Matrix3d M_newpt =  Eigen::MatrixXd::Identity(3, 3);
-            double metricX = 0.1;
-            double metricY = 0.1;
-            double metricZ = 0.1;
-
-            M_newpt(0,0) = 1.0 / (metricX*metricX);
-            M_newpt(1,1) = 1.0 / (metricY*metricY);
-            M_newpt(2,2) = 1.0 / (metricZ*metricZ);
-
-            double qualityNewTet = m_simplexMesh->computeQualityElement(pA, pB, pC, new_P, MA, MB, MC, M_newpt);
-            //if a new tet vuild is worst than the worst previous tet we do not rebuild the cav
-            if(qualityNewTet < *(tetQuality.begin()))
-            {
-              return computePointSmoothing;
-            }
-          }
-        }
+        break;
       }
+
       m_simplexMesh->moveNodeCoord(nodeId, new_P);
+      m_simplexMesh->setAnalyticMetric(nodeId);
+      computePointSmoothing++;
     }
   }
-
   return computePointSmoothing;
 }
 /*----------------------------------------------------------------------------*/
@@ -1106,7 +1062,7 @@ void MetricAdaptation::execute()
   }
 
   unsigned int cpt = 0;
-  unsigned int maxIterationAdaptation = 100;
+  unsigned int maxIterationAdaptation = 50;
   CriterionRAIS criterionRAIS(new VolumeCriterion());
   gmds::ISimplexMeshIOService ioServiceMesh(m_simplexMesh);
   const gmds::BitVector& meshNode = m_simplexMesh->getBitVectorNodes();
@@ -1130,32 +1086,27 @@ void MetricAdaptation::execute()
     {
       TInt nodeA = edge.first;
       TInt nodeB = edge.second;
-      //std::cout << "nodes -> " << nodeA << " | " << nodeB << std::endl;
-      //if((*BND_VERTEX_COLOR)[nodeA] == 0 && (*BND_SURFACE_COLOR)[nodeA] == 0 && (*BND_CURVE_COLOR)[nodeA] == 0){continue;}
-      //if((*BND_VERTEX_COLOR)[nodeB] == 0 && (*BND_SURFACE_COLOR)[nodeB] == 0 && (*BND_CURVE_COLOR)[nodeB] == 0){continue;}
-      if((*BND_SURFACE_COLOR)[nodeA] == (*BND_SURFACE_COLOR)[nodeB]  && (*BND_SURFACE_COLOR)[nodeB] == 1){
-        if(meshNode[nodeA] != 0 && meshNode[nodeB] != 0)
+      if(meshNode[nodeA] != 0 && meshNode[nodeB] != 0)
+      {
+        SimplicesNode sNodeA(m_simplexMesh, nodeA);
+        SimplicesNode sNodeB(m_simplexMesh, nodeB);
+
+        std::vector<TSimplexID> shell = sNodeA.shell(sNodeB);
+        if(shell.size() == 0){continue;}
+
+        math::Point nodeCoord0 = sNodeA.getCoords();
+        math::Point nodeCoord1 = sNodeB.getCoords();
+        Metric<Eigen::Matrix3d> M0 = Metric<Eigen::Matrix3d>((*metric)[nodeA]);
+        Metric<Eigen::Matrix3d> M1 = Metric<Eigen::Matrix3d>((*metric)[nodeB]);
+        double metricLenght        = M0.metricDist(nodeCoord0, nodeCoord1, M1);
+
+        if(metricLenght > sqrt(2))
         {
-          SimplicesNode sNodeA(m_simplexMesh, nodeA);
-          SimplicesNode sNodeB(m_simplexMesh, nodeB);
-
-          std::vector<TSimplexID> shell = sNodeA.shell(sNodeB);
-          if(shell.size() == 0){continue;}
-
-          math::Point nodeCoord0 = sNodeA.getCoords();
-          math::Point nodeCoord1 = sNodeB.getCoords();
-          Metric<Eigen::Matrix3d> M0 = Metric<Eigen::Matrix3d>((*metric)[nodeA]);
-          Metric<Eigen::Matrix3d> M1 = Metric<Eigen::Matrix3d>((*metric)[nodeB]);
-          double metricLenght        = M0.metricDist(nodeCoord0, nodeCoord1, M1);
-
-          if(metricLenght > sqrt(2))
-          {
-            computeSlicing(nodeA, nodeB);
-          }
-          else if(metricLenght < 0.5 * sqrt(2))
-          {
-            computeEdgeRemove(nodeA, nodeB);
-          }
+          computeSlicing(nodeA, nodeB);
+        }
+        else if(metricLenght < 0.5 * sqrt(2))
+        {
+          computeEdgeRemove(nodeA, nodeB);
         }
       }
     }
@@ -1164,12 +1115,6 @@ void MetricAdaptation::execute()
     vtkWriterCS.setCellOptions(gmds::N|gmds::R|gmds::F);
     vtkWriterCS.setDataOptions(gmds::N|gmds::R|gmds::F);
     vtkWriterCS.write("ComputeSlicing_EdgeRemove_" + std::to_string(cpt) + ".vtk");
-    /*std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure = m_simplexMesh->getEdgeStructure();
-    for(auto const p : edgeStructure)
-    {
-      std::cout << "edge idx -> " << p.first << " | nodes -> " << p.second.first << " : " << p.second.second << std::endl;
-    }*/
-    //throw gmds::GMDSException("END");
 
     //BOUGE DE POINTS
     /*std::cout << "POINT SMOOTHING START" << std::endl;
@@ -1180,45 +1125,14 @@ void MetricAdaptation::execute()
     vtkWriterPS.setDataOptions(gmds::N|gmds::R|gmds::F);
     vtkWriterPS.write("ComputePoint_Smoothing_" + std::to_string(cpt) + ".vtk");*/
 
-    /*const gmds::BitVector& tetQuality = m_simplexMesh->getBitVectorTet();
-    std::set<double> s{};
-    for(unsigned int tet = 0 ; tet < tetQuality.capacity() ; tet++)
-    {
-      if(tetQuality[tet] != 0)
-      {
-        double qualityelmt = m_simplexMesh->computeQualityElement(tet);
-        s.insert(qualityelmt);
-        std::cout << "tet -> " << tet << std::endl;
-        std::cout << "qualityelmt -> " << qualityelmt << std::endl;
-      }
-    }
-    std::cout << "BEST quality Element -> " << *(--s.end()) << std::endl;
-    std::vector<TSimplexID> tet{6178};
-    m_simplexMesh->deleteAllSimplicesBut(tet);
-    gmds::VTKWriter vtkWriterPS(&ioServiceMesh);
-    vtkWriterPS.setCellOptions(gmds::N|gmds::R);
-    vtkWriterPS.setDataOptions(gmds::N|gmds::R);
-    vtkWriterPS.write("TEST.vtk");
-    throw gmds::GMDSException("END");*/
-    /*for(auto const qual : s)
-    {
-      std::cout << "qualityelmt -> " << qual << std::endl;
-    }*/
-
     /*std::cout << "  SWAPPING EDGE START" << std::endl;
     cptEdgeSwap = computeSurfaceEdgeSwap();
     std::cout << "    cptEdgeSwap -> " << cptEdgeSwap << std::endl;
     gmds::VTKWriter vtkWriterMeshSwapping(&ioServiceMesh);
     vtkWriterMeshSwapping.setCellOptions(gmds::N|gmds::R|gmds::F);
     vtkWriterMeshSwapping.setDataOptions(gmds::N|gmds::R|gmds::F);
-    vtkWriterMeshSwapping.write("ComputeSurfaceSwap_" + std::to_string(cpt) + ".vtk");
+    vtkWriterMeshSwapping.write("ComputeSurfaceSwap_" + std::to_string(cpt) + ".vtk");*/
 
-    std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure1 = m_simplexMesh->getEdgeStructure();
-    for(auto const p : edgeStructure1)
-    {
-      std::cout << "edge idx -> " << p.first << " | nodes -> " << p.second.first << " : " << p.second.second << std::endl;
-    }
-    throw gmds::GMDSException("END");*/
     /*//SWAPPING FACE
     std::cout << "  SWAPPING FACE START" << std::endl;
     //do{
@@ -1231,14 +1145,7 @@ void MetricAdaptation::execute()
     vtkWriterMeshSwapping.setDataOptions(gmds::N|gmds::R|gmds::F);
     vtkWriterMeshSwapping.write("ComputeFaceSwap_" + std::to_string(cpt) + ".vtk");*/
     cpt++;
-    if(cpt == 10)
-    {
-      //throw gmds::GMDSException("END");
-    }
-    /*m_simplexMesh->getEdgeSizeInfowithMetric(meanEdge, minEdge, maxEdge);
-    std::cout << "      meanEdge END -> " << meanEdge << std::endl;
-    std::cout << "      minEdge  END -> " << minEdge << std::endl;
-    std::cout << "      maxEdge  END -> " << maxEdge << std::endl;*/
+    /*m_simplexMesh->getEdgeSizeInfowithMetric(meanEdge, minEdge, maxEdge);*/
   }
 /*----------------------------------------------------------------------------*/
 /*void MetricAdaptation::execute()
