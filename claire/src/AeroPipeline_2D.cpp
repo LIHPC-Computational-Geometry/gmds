@@ -196,8 +196,10 @@ AeroPipeline_2D::execute(){
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
+
 	AeroEllipticSmoothing_2D smooth2D(m_meshHex, m_meshHex->getVariable<int, GMDS_NODE>("GMDS_Couche_Id"), m_manager, m_linker_HG);
 	smooth2D.execute();
+
 
 	std::cout << "-> Conversion maillage en blocking" << std::endl;
 	t_start = clock();
@@ -352,7 +354,7 @@ void
 AeroPipeline_2D::EcritureMaillage(){
 
 	std::cout << "-> Ecriture du maillage ..." << std::endl;
-	std::cout << "Ecriture 1 ..." << std::endl;
+	std::cout << "Ecriture Blocking en .vtk ..." << std::endl;
 
 	//gmds::IGMeshIOService ioService(m_meshHex);
 	gmds::IGMeshIOService ioService(&m_Blocking2D);
@@ -363,7 +365,7 @@ AeroPipeline_2D::EcritureMaillage(){
 	//vtkWriter_Blocking.write(m_params.output_file);
 	vtkWriter_Blocking.write("AeroPipeline2D_Blocking.vtk");
 
-	std::cout << "Ecriture 2 ..." << std::endl;
+	std::cout << "Ecriture Maillage Quad en .vtk ..." << std::endl;
 
 	math::Utils::BuildMesh2DFromBlocking2D(&m_Blocking2D, m_meshHex);
 	math::Utils::AnalyseQuadMeshQuality(m_meshHex);
@@ -373,7 +375,7 @@ AeroPipeline_2D::EcritureMaillage(){
 	vtkWriter_HexMesh.setDataOptions(gmds::N|gmds::F);
 	vtkWriter_HexMesh.write("AeroPipeline2D_QuadMesh.vtk");
 
-	std::cout << "Ecriture 3 ..." << std::endl;
+	std::cout << "Ecriture Maillage Tri en .vtk ..." << std::endl;
 
 	// Ecriture du maillage en triangles initial pour visualisation et débug
 	ioService = m_meshTet;
@@ -383,6 +385,7 @@ AeroPipeline_2D::EcritureMaillage(){
 	vtkWriter_TetMesh.write("AeroPipeline2D_TriMesh.vtk");
 
 	// Ecriture du maillage au format su2
+	std::cout << "Ecriture Maillage Quad en .su2 ..." << std::endl;
 	SU2Writer writer(m_meshHex, "AeroPipeline2D_QuadMesh.su2", m_params.x_lim_SU2_inoutlet);
 	SU2Writer::STATUS result = writer.execute();
 

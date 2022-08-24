@@ -92,7 +92,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_User)
 
 	// Physical Parameters for the algorithm
 	params_aero.delta_cl = 2;				// Epaisseur de la première couche, pour la couche limite
-	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
+	params_aero.angle_attack = 10;			// Angle of attack (in degrees)
 
 	// Wall Discretization Parameter
 	params_aero.nbrMinBloc = 4;					// Minimal number of block on the wall
@@ -108,12 +108,12 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_User)
 
 	// Extrusion Parameters
 	params_aero.nbr_couches = 5;			// Number of layer in extrusion
-	params_aero.x_lim = 20000;				// Limites physiques à partir desquelles
+	params_aero.x_lim = 0;				// Limites physiques à partir desquelles
 	params_aero.y_lim = -10000;			// l'insertion et la fusion de blocs
 	params_aero.z_lim = -10000;			// sont autorisées
 
 	// Smoothing Parameters
-	params_aero.nbr_iter_smoothing_yao = 200 ;		// Number of iterations for the Yao Smoothing
+	params_aero.nbr_iter_smoothing_yao = 0 ;		// Number of iterations for the Yao Smoothing
 	params_aero.damping_smoothing_yao = 0.5 ;		// Damping parameter for the Yao Smoothing
 
 	// SU2 Writer Parameter
