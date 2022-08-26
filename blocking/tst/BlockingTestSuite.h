@@ -5,6 +5,8 @@
 //#include <iostream>
 //#include <vector>
 /*----------------------------------------------------------------------------*/
+#include "gmds/io/IGMeshIOService.h"
+#include "gmds/io/VTKWriter.h"
 #include <gmds/blocking/Blocking.h>
 /*----------------------------------------------------------------------------*/
 TEST(BlockingTestSuite, dummytest)
@@ -89,4 +91,38 @@ TEST(BlockingTestSuite, readVTK_3d)
 	ASSERT_EQ(bl3d.nbBlocks(), 27);
 }
 /*----------------------------------------------------------------------------*/
+TEST(BlockingTestSuite, createBlocks_3d)
+{
+	gmds::Mesh m3d(gmds::MeshModel(gmds::DIM3| gmds::R | gmds::N | gmds::R2N | gmds::N2R));
+
+	gmds::Node n0 = m3d.newNode(0,0,0);
+	gmds::Node n1 = m3d.newNode(1,0,0);
+	gmds::Node n2 = m3d.newNode(1,1,0);
+	gmds::Node n3 = m3d.newNode(0,1,0);
+	gmds::Node n4 = m3d.newNode(0,0,1);
+	gmds::Node n5 = m3d.newNode(1,0,1);
+	gmds::Node n6 = m3d.newNode(1,1,1);
+	gmds::Node n7 = m3d.newNode(0,1,1);
+
+	m3d.newHex(n0,n1,n2,n3,n4,n5,n6,n7);
+
+	gmds::Node n8 = m3d.newNode(2,0,0);
+	gmds::Node n9 = m3d.newNode(2,1,0);
+	gmds::Node n10 = m3d.newNode(2,0,1);
+	gmds::Node n11 = m3d.newNode(2,1,1);
+
+	m3d.newHex(n1,n8,n9,n2,n5,n10,n11,n6);
+
+	gmds::Node n12 = m3d.newNode(1,0,2);
+	gmds::Node n13 = m3d.newNode(2,0,2);
+	gmds::Node n14 = m3d.newNode(2,1,2);
+	gmds::Node n15 = m3d.newNode(1,1,2);
+
+	m3d.newHex(n5,n10,n11,n6,n12,n13,n14,n15);
+
+	gmds::blocking::Blocking bl3d;
+	bl3d.createBlocks3dFromMesh(m3d);
+	bl3d.writeVTKFile("blocks3d.vtk");
+	//ASSERT_EQ(bl3d.nbVertices(), 64);
+}
 /*----------------------------------------------------------------------------*/

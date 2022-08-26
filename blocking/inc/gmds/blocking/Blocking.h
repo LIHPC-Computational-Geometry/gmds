@@ -11,8 +11,9 @@
 /*----------------------------------------------------------------------------*/
 // GMDS File Headers
 /*----------------------------------------------------------------------------*/
-#include <gmds/math/Point.h>
-#include "LIB_GMDS_BLOCKING_export.h"
+#	include "LIB_GMDS_BLOCKING_export.h"
+#	include "gmds/ig/Mesh.h"
+#	include <gmds/math/Point.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -92,6 +93,11 @@ class LIB_GMDS_BLOCKING_API Blocking{
 	 void createGrid3d(gmds::math::Point APmin, gmds::math::Point APmax, int ANx, int ANy, int ANz);
 
 	 /*--------------------------------------------------------------------*/
+	 /** @brief  Create a block structure from a GMDS Mesh
+	 */
+	 void createBlocks3dFromMesh(const gmds::Mesh &AMesh);
+
+	 /*--------------------------------------------------------------------*/
 	 /** @brief  Read the blocking using the vtk file format
 	  */
 	 void readVTKFile(std::string AFileName);
@@ -126,6 +132,17 @@ class LIB_GMDS_BLOCKING_API Blocking{
 	 // TODO later the same on chords
 
 
+  private:
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief Create a hexaedron in the GMAP
+	  */
+	 void createNewHex(std::vector<Node> ANodes, std::map<std::tuple<int,int,int,int>, Dart_handle> &AFtoD);
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Create a quadrangle in the GMAP
+	  */
+	 Dart_handle createNewQuad(Node n0, Node n1, Node n2, Node n3, std::map<std::tuple<int,int,int,int>, Dart_handle> &AFtoD);
 
  private:
 

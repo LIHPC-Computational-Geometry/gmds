@@ -139,6 +139,191 @@ void Blocking::createGrid3d(gmds::math::Point APmin, gmds::math::Point APmax, in
 	}
 }
 /*----------------------------------------------------------------------------*/
+void Blocking::createBlocks3dFromMesh(const Mesh &AMesh){
+
+	Dart_handle* dh_nodes = new Dart_handle[AMesh.getNbNodes()];
+
+	std::map<std::tuple<int,int,int,int>, Dart_handle> FtoD;
+
+	for(auto r : AMesh.regions()){
+		Region region = AMesh.get<Region>(r);
+
+		createNewHex(region.get<Node>(),FtoD);
+	}
+
+	//lcc_.display_darts(std::cout,true);
+
+}
+/*----------------------------------------------------------------------------*/
+void Blocking::createNewHex(std::vector<Node> ANodes, std::map<std::tuple<int,int,int,int>, Dart_handle> &AFtoD){
+
+	Dart_handle d1 = createNewQuad(ANodes[0],ANodes[1],ANodes[2],ANodes[3],AFtoD);
+	Dart_handle d2 = createNewQuad(ANodes[0],ANodes[1],ANodes[5],ANodes[4],AFtoD);
+	Dart_handle d3 = createNewQuad(ANodes[1],ANodes[2],ANodes[6],ANodes[5],AFtoD);
+	Dart_handle d4 = createNewQuad(ANodes[2],ANodes[3],ANodes[7],ANodes[6],AFtoD);
+	Dart_handle d5 = createNewQuad(ANodes[3],ANodes[0],ANodes[4],ANodes[7],AFtoD);
+	Dart_handle d6 = createNewQuad(ANodes[4],ANodes[5],ANodes[6],ANodes[7],AFtoD);
+
+	lcc_.sew<2>(d1,d2);
+	lcc_.sew<2>(lcc_.alpha<0,1>(d1),d3);
+	lcc_.sew<2>(lcc_.alpha<0,1,0,1>(d1),d4);
+	lcc_.sew<2>(lcc_.alpha<1,0>(d1),d5);
+
+	lcc_.sew<2>(lcc_.alpha<0,1>(d2),lcc_.alpha<1>(d3));
+	lcc_.sew<2>(lcc_.alpha<1>(d2),lcc_.alpha<0,1>(d5));
+	lcc_.sew<2>(lcc_.alpha<1,0,1>(d2),d6);
+
+	lcc_.sew<2>(lcc_.alpha<0,1>(d3),lcc_.alpha<1>(d4));
+	lcc_.sew<2>(lcc_.alpha<1,0,1>(d3),lcc_.alpha<0,1>(d6));
+
+	lcc_.sew<2>(lcc_.alpha<0,1>(d4),lcc_.alpha<1>(d5));
+	lcc_.sew<2>(lcc_.alpha<1,0,1>(d4),lcc_.alpha<0,1,0,1>(d6));
+
+	lcc_.sew<2>(lcc_.alpha<1,0,1>(d5),lcc_.alpha<1,0>(d6));
+
+	//lcc_.correct_invalid_attributes();
+
+}
+/*----------------------------------------------------------------------------*/
+Dart_handle Blocking::createNewQuad(Node n0, Node n1, Node n2, Node n3, std::map<std::tuple<int,int,int,int>, Dart_handle> &AFtoD){
+
+	Dart_handle d = lcc_.make_quadrangle(LCC_3::Point(n0.point().X(), n0.point().Y(), n0.point().Z()),
+	                                     LCC_3::Point(n1.point().X(), n1.point().Y(), n1.point().Z()),
+	                                     LCC_3::Point(n2.point().X(), n2.point().Y(), n2.point().Z()),
+	                                     LCC_3::Point(n3.point().X(), n3.point().Y(), n3.point().Z()));
+
+	int n0_id = n0.id();
+	int n1_id = n1.id();
+	int n2_id = n2.id();
+	int n3_id = n3.id();
+
+	Dart_handle dmin;
+	std::tuple<int,int,int,int> f, fopp;
+
+	if(n0_id<n1_id){
+		if(n0_id<n2_id){
+			if(n0_id<n3_id){//n0 is the min
+				if(n1_id<n3_id){
+					f = {n0_id,n1_id,n2_id,n3_id};
+					fopp = {n0_id,n3_id,n2_id,n1_id};
+				}else{
+					f = {n0_id,n3_id,n2_id,n1_id};
+					fopp = {n0_id,n1_id,n2_id,n3_id};
+				}
+				dmin = d;
+			}else{//n3 is the min
+				if(n0_id<n2_id){
+					f = {n3_id,n0_id,n1_id,n2_id};
+					fopp = {n3_id,n2_id,n1_id,n0_id};
+				}else{
+					f = {n3_id,n2_id,n1_id,n0_id};
+					fopp = {n3_id,n0_id,n1_id,n2_id};
+				}
+				dmin = lcc_.alpha<1,0>(d);
+			}
+		}else{
+			if(n2_id<n3_id){//n2 is the min
+				if(n1_id<n3_id){
+					f = {n2_id,n1_id,n0_id,n3_id};
+					fopp = {n2_id,n3_id,n0_id,n1_id};
+				}else{
+					f = {n2_id,n3_id,n0_id,n1_id};
+					fopp = {n2_id,n1_id,n0_id,n3_id};
+				}
+				dmin = lcc_.alpha<0,1,0,1>(d);
+			}else{//n3 is the min
+				if(n0_id<n2_id){
+					f = {n3_id,n0_id,n1_id,n2_id};
+					fopp = {n3_id,n2_id,n1_id,n0_id};
+				}else{
+					f = {n3_id,n2_id,n1_id,n0_id};
+					fopp = {n3_id,n0_id,n1_id,n2_id};
+				}
+				dmin = lcc_.alpha<1,0>(d);
+			}
+		}
+	}else{
+		if(n1_id<n2_id){
+			if(n1_id<n3_id){//n1 is the min
+				if(n0_id<n2_id){
+					f = {n1_id,n0_id,n3_id,n2_id};
+					fopp = {n1_id,n2_id,n3_id,n0_id};
+				}else{
+					f = {n1_id,n2_id,n3_id,n0_id};
+					fopp = {n1_id,n0_id,n3_id,n2_id};
+				}
+				dmin = lcc_.alpha<0,1>(d);
+			}else{//n3 is the min
+				if(n0_id<n2_id){
+					f = {n3_id,n0_id,n1_id,n2_id};
+					fopp = {n3_id,n2_id,n1_id,n0_id};
+				}else{
+					f = {n3_id,n2_id,n1_id,n0_id};
+					fopp = {n3_id,n0_id,n1_id,n2_id};
+				}
+				dmin = lcc_.alpha<1,0>(d);
+			}
+		}else{
+			if(n2_id<n3_id){//n2 is the min
+				if(n1_id<n3_id){
+					f = {n2_id,n1_id,n0_id,n3_id};
+					fopp = {n2_id,n3_id,n0_id,n1_id};
+				}else{
+					f = {n2_id,n3_id,n0_id,n1_id};
+					fopp = {n2_id,n1_id,n0_id,n3_id};
+				}
+				dmin = lcc_.alpha<0,1,0,1>(d);
+			}else{//n3 is the min
+				if(n0_id<n2_id){
+					f = {n3_id,n0_id,n1_id,n2_id};
+					fopp = {n3_id,n2_id,n1_id,n0_id};
+				}else{
+					f = {n3_id,n2_id,n1_id,n0_id};
+					fopp = {n3_id,n0_id,n1_id,n2_id};
+				}
+				dmin = lcc_.alpha<1,0>(d);
+			}
+		}
+	}
+
+	f = {n0_id,n1_id,n2_id,n3_id};
+
+	/*std::map<std::tuple<int,int,int,int>, Dart_handle>::iterator it = AFtoD.find(fopp);
+
+	if(it != AFtoD.end()){
+		std::cout<<"Face opp trouvée"<<std::endl;
+		lcc_.sew<3>(lcc_.alpha<1>(dmin), it->second);
+	}*/
+
+	for(auto fopp : AFtoD){
+		std::set<int> fopp_set;
+		fopp_set.insert(std::get<0>(fopp.first));
+		fopp_set.insert(std::get<1>(fopp.first));
+		fopp_set.insert(std::get<2>(fopp.first));
+		fopp_set.insert(std::get<3>(fopp.first));
+
+		std::set<int> f_set;
+		f_set.insert(std::get<0>(f));
+		f_set.insert(std::get<1>(f));
+		f_set.insert(std::get<2>(f));
+		f_set.insert(std::get<3>(f));
+
+
+		if(fopp_set == f_set && dmin != fopp.second){
+			if(std::get<1>(f) == std::get<1>(fopp.first)){
+				lcc_.sew<3>(dmin, fopp.second);
+			}else{
+				lcc_.sew<3>(lcc_.alpha<1>(dmin), fopp.second);
+			}
+		}
+	}
+	AFtoD[f] = dmin;
+
+
+	return d;
+}
+
+/*----------------------------------------------------------------------------*/
 void Blocking::readVTKFile(std::string AFileName)
 {
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::N | gmds::F | gmds::R | gmds::F2N | gmds::R2N));
@@ -158,72 +343,7 @@ void Blocking::readVTKFile(std::string AFileName)
 		throw gmds::GMDSException(s);
 	}
 
-	//
-
-	if(m.getNbFaces() != 0) {
-		for(auto i:m.faces()) {
-			gmds::Face f = m.get<gmds::Face>(i);
-			std::cout << "Face " << f.id() << " of type " << f.type() << " with nodes " << std::endl;
-			std::vector<gmds::TCellID> n_ids = f.getIDs<gmds::Node>();
-			std::vector<gmds::Node> nds = f.get<gmds::Node>();
-
-			switch(f.type()) {
-			case gmds::GMDS_TRIANGLE: {
-				LCC_3::Dart_handle d = lcc_.make_triangle(LCC_3::Point(nds[0].point().X(), nds[0].point().Y(), nds[0].point().Z()),
-																		LCC_3::Point(nds[1].point().X(), nds[1].point().Y(), nds[1].point().Z()),
-																		LCC_3::Point(nds[2].point().X(), nds[2].point().Y(), nds[2].point().Z()));
-			}
-				break;
-			case gmds::GMDS_QUAD: {
-				LCC_3::Dart_handle d = lcc_.make_quadrangle(LCC_3::Point(nds[0].point().X(), nds[0].point().Y(), nds[0].point().Z()),
-																		  LCC_3::Point(nds[1].point().X(), nds[1].point().Y(), nds[1].point().Z()),
-																		  LCC_3::Point(nds[2].point().X(), nds[2].point().Y(), nds[2].point().Z()),
-																		  LCC_3::Point(nds[3].point().X(), nds[3].point().Y(), nds[3].point().Z()));
-			}
-				break;
-			default: {
-				std::string s = "Blocking::readVTKFile face type not handled";
-				throw gmds::GMDSException(s);
-			}
-			}
-
-
-
-			for (auto j : n_ids) {
-			}
-		}
-	} else {
-		for(auto i:m.regions()) {
-			gmds::Region r = m.get<gmds::Region>(i);
-			std::cout << "Region " << r.id() << " of type " << r.type() << " with nodes " << std::endl;
-			std::vector<gmds::TCellID> n_ids = r.getIDs<gmds::Node>();
-			std::vector<gmds::Node> nds = r.get<gmds::Node>();
-
-			switch (r.type()) {
-			case gmds::GMDS_TETRA: {
-				LCC_3::Dart_handle d = lcc_.make_tetrahedron(LCC_3::Point(nds[0].point().X(), nds[0].point().Y(), nds[0].point().Z()),
-																			LCC_3::Point(nds[1].point().X(), nds[1].point().Y(), nds[1].point().Z()),
-																			LCC_3::Point(nds[2].point().X(), nds[2].point().Y(), nds[2].point().Z()),
-																			LCC_3::Point(nds[3].point().X(), nds[3].point().Y(), nds[3].point().Z()));
-			} break;
-			case gmds::GMDS_HEX: {
-				LCC_3::Dart_handle d = lcc_.make_hexahedron(LCC_3::Point(nds[0].point().X(), nds[0].point().Y(), nds[0].point().Z()),
-																		  LCC_3::Point(nds[1].point().X(), nds[1].point().Y(), nds[1].point().Z()),
-																		  LCC_3::Point(nds[2].point().X(), nds[2].point().Y(), nds[2].point().Z()),
-																		  LCC_3::Point(nds[3].point().X(), nds[3].point().Y(), nds[3].point().Z()),
-																		  LCC_3::Point(nds[5].point().X(), nds[5].point().Y(), nds[5].point().Z()),
-																		  LCC_3::Point(nds[6].point().X(), nds[6].point().Y(), nds[6].point().Z()),
-																		  LCC_3::Point(nds[7].point().X(), nds[7].point().Y(), nds[7].point().Z()),
-																		  LCC_3::Point(nds[4].point().X(), nds[4].point().Y(), nds[4].point().Z()));
-			} break;
-			default: {
-				std::string s = "Blocking::readVTKFile cell type not handled";
-				throw gmds::GMDSException(s);
-			}
-			}
-		}
-	}  //
-
+	createBlocks3dFromMesh(m);
 }
 /*----------------------------------------------------------------------------*/
 void Blocking::writeMokaFile(std::string AFileName) const
@@ -383,7 +503,7 @@ void Blocking::writeVTKFile(std::string AFileName) const
 			}
 			}
 		}
-	}  // if(!in2d)
+	}
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKWriter vtkWriter(&ioService);
