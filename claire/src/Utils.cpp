@@ -123,11 +123,20 @@ void Utils::AnalyseQuadMeshQuality(Mesh* m)
 
 
 /*------------------------------------------------------------------------*/
-void Utils::BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m){
+void Utils::BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m, int mark_block_nodes, int mark_first_layer_nodes, int mark_farfield_nodes){
 
 	m->clear();
 
 	std::map<TCellID, TCellID> map_new_node_ids;
+	Variable<int>* var_couche = blocking2D->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche");
+	Variable<int>* var_couche_mesh = m->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+
+	// Get max layer id
+	int max_layer_id(0);
+	for (auto n_id:blocking2D->nodes())
+	{
+		max_layer_id = std::max(max_layer_id, var_couche->value(n_id));
+	}
 
 	// Create all the nodes in the mesh m
 	for (auto n_id:blocking2D->nodes())
@@ -135,6 +144,18 @@ void Utils::BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m){
 		Node n_blocking = blocking2D->get<Node>(n_id);
 		Node n_mesh = m->newNode(n_blocking.point());
 		map_new_node_ids[n_blocking.id()] = n_mesh.id();
+		var_couche_mesh->set(n_mesh.id(), var_couche->value(n_id));
+		std::cout << "Node " << n_mesh.id() << ", couche " << var_couche->value(n_id) << ", couche mesh " << var_couche_mesh->value(n_mesh.id()) << std::endl;
+
+		if ( var_couche->value(n_id)==1 || var_couche->value(n_id)==0 )
+		{
+			m->mark(n_mesh, mark_first_layer_nodes);
+		}
+		if ( blocking2D->getBlockingDim(n_blocking.id()) == 0 )
+		{
+			m->mark(n_mesh, mark_block_nodes);
+		}
+
 	}
 
 	// Create all the faces in the mesh m

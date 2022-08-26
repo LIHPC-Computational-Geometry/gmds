@@ -345,7 +345,7 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 		if (singu_not_found && Front_IN.isMultiplicable(n_id)) {
 
 			// Test angle ouverture
-			/*
+
 			Node n_ideal = m_meshQ->get<Node>(Front_IN.getIdealNode(n_id));
 			Node n_neighbor_1 = m_meshQ->get<Node>(neighbors_nodes[0]);
 			Node n_neighbor_2 = m_meshQ->get<Node>(neighbors_nodes[1]);
@@ -357,8 +357,9 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 				type = 1;
 				singu_not_found = false;
 			}
-			 */
 
+
+			/*
 
 			// Alignement avec le flow
 			math::Vector3d v = (m_meshQ->get<Node>(Front_IN.getNextNode(n_id, neighbors_nodes[1])).point() - m_meshQ->get<Node>(n_id).point()) ;
@@ -371,6 +372,8 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 				type = 1;
 				singu_not_found = false;
 			}
+			 */
+
 
 			/*
 			double internal_angle_1 = math::AeroMeshQuality::InternalAngleDeviationQUAD(nodes_quad_1[0].point(), nodes_quad_1[1].point(),
