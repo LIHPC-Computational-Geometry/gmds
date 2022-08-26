@@ -368,8 +368,44 @@ AeroPipeline_2D::EcritureMaillage(){
 
 	std::cout << "Ecriture Maillage Quad en .vtk ..." << std::endl;
 
-	math::Utils::BuildMesh2DFromBlocking2D(&m_Blocking2D, m_meshHex);
+	int mark_block_nodes = m_meshHex->newMark<Node>();
+	int mark_first_layer = m_meshHex->newMark<Node>();
+	int mark_farfield_nodes = m_meshHex->newMark<Node>();
+	math::Utils::BuildMesh2DFromBlocking2D(&m_Blocking2D, m_meshHex, mark_block_nodes, mark_first_layer, mark_farfield_nodes);
+	int mark_locked_nodes = m_meshHex->newMark<Node>();
+
+	Variable<int>* var_locked_nodes = m_meshHex->newVariable<int, GMDS_NODE>("Locked_Nodes") ;
+
+	for (auto n_id:m_meshHex->nodes())
+	{
+		Node n = m_meshHex->get<Node>(n_id);
+		if (m_meshHex->isMarked(n, mark_block_nodes) || m_meshHex->isMarked(n, mark_first_layer) )
+		{
+			m_meshHex->mark(n, mark_locked_nodes);
+			var_locked_nodes->set(n_id, 1);
+		}
+		else
+		{
+			var_locked_nodes->set(n_id, 0);
+		}
+	}
+
+	std::cout << "Smoothing..." << std::endl;
+	//smoothy::EllipticSmoother2D smoother2D(m_meshHex);
+	//smoother2D.lock(mark_locked_nodes);
+	//smoother2D.execute();
+	m_meshHex->unmarkAll<Node>(mark_block_nodes);
+	m_meshHex->freeMark<Node>(mark_block_nodes);
+	m_meshHex->unmarkAll<Edge>(mark_first_layer);
+	m_meshHex->freeMark<Edge>(mark_first_layer);
+	m_meshHex->unmarkAll<Edge>(mark_farfield_nodes);
+	m_meshHex->freeMark<Edge>(mark_farfield_nodes);
+	m_meshHex->unmarkAll<Edge>(mark_locked_nodes);
+	m_meshHex->freeMark<Edge>(mark_locked_nodes);
+
 	math::Utils::AnalyseQuadMeshQuality(m_meshHex);
+
+
 	ioService = m_meshHex;
 	gmds::VTKWriter vtkWriter_HexMesh(&ioService);
 	vtkWriter_HexMesh.setCellOptions(gmds::N|gmds::F);
@@ -568,6 +604,40 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 	IntAss.execute();
 
 	m_Blocking2D.initializeGridPoints();	// Maillage des blocs par transfinies
+
+
+	// Add the id of the layer at all the nodes of the blocking
+	for (auto b:m_Blocking2D.allBlocks())
+	{
+		int layer_id_bloc(0);
+		layer_id_bloc = std::max(var_couche->value(b.getNode(0).id()), var_couche->value(b.getNode(1).id()));
+		layer_id_bloc = std::max(layer_id_bloc, var_couche->value(b.getNode(2).id()));
+		layer_id_bloc = std::max(layer_id_bloc, var_couche->value(b.getNode(3).id()));
+
+		int Nx = b.getNbDiscretizationI();
+		int Ny = b.getNbDiscretizationJ();
+
+		for (int i=1; i<Nx-1; i++)
+		{
+			for (int j=1; j<Ny-1; j++)
+			{
+				var_couche->set(b(i,j).id(), layer_id_bloc);
+			}
+		}
+
+		for (int i=1; i<Nx-1; i++)
+		{
+			var_couche->set(b(i,0).id(), std::max(var_couche->value(b(0,0).id()), var_couche->value(b(Nx-1,0).id())));
+			var_couche->set(b(i,Ny-1).id(), std::max(var_couche->value(b(0,Ny-1).id()), var_couche->value(b(Nx-1,Ny-1).id())));
+		}
+
+		for (int j=1; j<Ny-1; j++)
+		{
+			var_couche->set(b(0,j).id(), std::max(var_couche->value(b(0,0).id()), var_couche->value(b(0,Ny-1).id())));
+			var_couche->set(b(Nx-1,j).id(), std::max(var_couche->value(b(Nx-1,0).id()), var_couche->value(b(Nx-1,Ny-1).id())));
+		}
+
+	}
 
 	m_meshHex->deleteVariable(GMDS_NODE, "New_ID");
 
@@ -994,8 +1064,6 @@ void
 			m_Blocking2D.mark(n0, mark_refinementNeeded);
 		}
 
-		//std::vector<Face> common_blocks = n0.get<Face>();
-		//std::cout << common_blocks.size() << std::endl;
 		if (var_couche->value(n0.id()) == 0
 		    && var_couche->value(n1.id()) == 1)
 		{
