@@ -74,7 +74,7 @@ class LIB_GMDS_CLAIRE_API Utils {
 		*
 		* \return  the mesh
 	 */
-	static void BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m);
+	static void BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m, const int mark_block_nodes, const int mark_first_layer_nodes, const int mark_farfield_nodes);
 	/*----------------------------------------------------------------------------*/
 	/** @brief Return the point at position alpha of the branch. alpha = 0.5 returns
 	 * the mid point on the branch.
