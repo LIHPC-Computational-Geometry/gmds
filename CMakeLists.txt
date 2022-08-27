@@ -46,6 +46,12 @@ option(WITH_CODE_COVERAGE "Perform code coverage with avail. test suites"       
 option(WITH_CODE_COVERAGE_HTML_REPORT "Activate html reporting during code covering"    OFF)
 option(BUILD_SHARED_LIBS ""                                                             ON)
 #==============================================================================
+# remove permissive compile option
+if(MSVC)
+    add_compile_options(/permissive-)
+endif()
+#==============================================================================
+
 if(BUILD_SHARED_LIBS)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
