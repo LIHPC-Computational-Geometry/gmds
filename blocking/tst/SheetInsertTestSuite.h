@@ -29,7 +29,8 @@ TEST(SheetInsertTestSuite, instanciate)
 TEST(SheetInsertTestSuite, pillow3d)
 {
 	gmds::blocking::Blocking bl;
-	bl.createGrid3d();
+//	bl.createGrid3d();
+	bl.createGrid3d(gmds::math::Point(0,0,0), gmds::math::Point(1,1,1), 1,1,1);
 
 	gmds::blocking::SheetInsert is;
 	is.setBl(&bl);
@@ -37,7 +38,7 @@ TEST(SheetInsertTestSuite, pillow3d)
 	gmds::blocking::SheetInsert::STATUS status = is.pillow();
 	ASSERT_EQ(status, gmds::blocking::SheetInsert::NOT_YET_IMPLEMENTED);
 
-//	bl.writeVTKFile("insertsheet3d.vtk");
+	bl.writeVTKFile("insertsheet3d.vtk");
 //	bl.writeMokaFile("insertsheet3d.moka");
 }
 /*----------------------------------------------------------------------------*/
