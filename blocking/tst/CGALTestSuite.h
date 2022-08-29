@@ -183,3 +183,19 @@ TEST(CGALTestSuite, using_lcc_gmaps_marks)
 
 }
 /*----------------------------------------------------------------------------*/
+TEST(CGALTestSuite, using_links)
+{
+	typedef CGAL::Generalized_map<3> GMap_3;
+	typedef GMap_3::Dart_handle Dart_handle;
+
+	GMap_3 gm;
+	Dart_handle d1 = gm.create_dart();
+	Dart_handle d2 = gm.create_dart();
+
+	ASSERT_EQ(d1, gm.alpha(d1, 0));
+	ASSERT_EQ(d2, gm.alpha(d2, 0));
+	gm.link_alpha<0>(d1, d2);
+	ASSERT_EQ(d2, gm.alpha(d1, 0));
+	ASSERT_EQ(d1, gm.alpha(d2, 0));
+}
+/*----------------------------------------------------------------------------*/
