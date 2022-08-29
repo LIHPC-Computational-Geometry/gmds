@@ -125,9 +125,12 @@ class LIB_GMDS_BLOCKING_API Blocking{
 
 	 // TODO later the same on chords
 
+	 /*--------------------------------------------------------------------*/
+	 /** @brief getter
+	  */
+	 LCC_3* lcc() {return &lcc_;};
 
-
- private:
+  private:
 
 	// blocking entities to darts mapping
 	std::map<int, Dart_handle> v2d_;
