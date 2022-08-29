@@ -28,7 +28,6 @@ SheetInsert::STATUS
 SheetInsert::pillow()
 {
 	//TODO get the set of 3-cells in another way
-	//
 
 
 	// check that the implementation can handle the data
@@ -61,6 +60,34 @@ SheetInsert::pillow()
 		lcc()->mark(it, m);
 		center = lcc()->barycenter<3>(it);
 	}
+	d++;
+	for (LCC_3::Dart_of_cell_range<3>::iterator
+	        it(lcc()->darts_of_cell<3>(d).begin()),
+	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
+		lcc()->mark(it, m);
+	}
+	d++;
+	for (LCC_3::Dart_of_cell_range<3>::iterator
+	        it(lcc()->darts_of_cell<3>(d).begin()),
+	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
+		lcc()->mark(it, m);
+	}
+
+	LCC_3::size_type m_temp = lcc()->get_new_mark();
+	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
+			  itend(lcc()->darts().end()); it!=itend; ++it)
+	{
+		if(lcc()->is_marked(it, m)) {
+			if(lcc()->alpha(it, 3) == it) {
+				lcc()->mark(it, m_temp);
+			} else {
+				if(!lcc()->is_marked(lcc()->alpha(it, 3), m)) {
+					lcc()->mark(it, m_temp);
+				}
+			}
+		}
+	}
+	m = m_temp;
 
 //	for (LCC_3::Dart_range::iterator it(getlcc()->darts().begin()),
 //			  itend(getlcc()->darts().end()); it!=itend; ++it)
@@ -263,21 +290,26 @@ SheetInsert::pillow()
 	for(auto it: old_alpha3) {
 		LCC_3::Dart_handle d = it.first;
 		LCC_3::Dart_handle d0 = old_pattern[d][0];
-//		LCC_3::Dart_handle d1 = old_pattern[d][1];
+		LCC_3::Dart_handle d1 = old_pattern[d][1];
 //
 //		Dart_handle dopp = lcc()->alpha(d, 3);
 //		if(d != dopp) {
 //			lcc()->link_alpha<3>(d1, dopp);
 //		}
 
-		LCC_3::Dart_handle dlink = lcc()->alpha(d, 3);
-		if(dlink != d0) {
-			lcc()->sew<3>(d, d0);
+//		LCC_3::Dart_handle dlink = lcc()->alpha(d, 3);
+//		if(dlink != d0) {
+//			lcc()->sew<3>(d, d0);
+//		}
+
+		Dart_handle dopp = it.second;
+		lcc()->link_alpha<3>(d, d0);
+
+		if(d != dopp) {
+			lcc()->link_alpha<3>(dopp, d1);
 		}
-
-//		lcc()->link_alpha<3>(d, d0);
-
 	}
+	lcc()->correct_invalid_attributes();
 
 	std::cout<<"nbVertices "<<bl()->nbVertices()<<std::endl;
 	std::cout<<"nbBlocks "<<bl()->nbBlocks()<<std::endl;
