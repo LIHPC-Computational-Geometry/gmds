@@ -20,6 +20,7 @@
 #include <gmds/claire/RefinementBeta.h>
 #include <gmds/claire/RefinementBetaBlocking.h>
 #include <gmds/claire/AeroEllipticSmoothing_2D.h>
+#include <gmds/smoothy/EllipticSmoother2D.h>
 
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -267,26 +268,8 @@ AeroPipeline_2D::execute(){
 			SmoothLineSweepingOrtho smoother( &b, m_params.nbr_iter_smoothing_yao, m_params.damping_smoothing_yao);
 			smoother.execute();
 
-			// Beta Refinement
-			/*
-			for (int i = 0; i < Nx; i++) {
-				std::vector<math::Point> Points;
-				for (int j = 0; j < Ny; j++) {
-					Points.push_back(b(i, j).point());
-				}
-
-				RefinementBeta ref(Points, m_params.edge_size_first_ortho_wall);
-				ref.execute();
-				Points = ref.GetNewPositions();
-
-				for (int j = 1; j < Ny - 1; j++) {
-					b(i, j).setPoint({Points[j]});
-				}
-			}
-			 */
 		}
 	}
-	//MeshRefinement();
 
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
@@ -296,18 +279,88 @@ AeroPipeline_2D::execute(){
 
 	std::cout << "-> Beta Refinement on the first layer" << std::endl;
 	t_start = clock();
-
 	RefinementBetaBlocking block_refinement(&m_Blocking2D, m_params);
 	block_refinement.execute();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
+
+	// Compute the quality criterions of the blocking
+	math::Utils::AnalyseQuadMeshQuality(&m_Blocking2D);
+
+
+	// Ecriture finale des maillages
+	std::cout << "-> Elliptic Smoothing on quad mesh" << std::endl;
+	t_start = clock();
+
+	int mark_block_nodes = m_meshHex->newMark<Node>();
+	int mark_first_layer = m_meshHex->newMark<Node>();
+	int mark_farfield_nodes = m_meshHex->newMark<Node>();
+	math::Utils::BuildMesh2DFromBlocking2D(&m_Blocking2D, m_meshHex, mark_block_nodes, mark_first_layer, mark_farfield_nodes);
+	int mark_locked_nodes = m_meshHex->newMark<Node>();
+
+	Variable<int>* var_locked_nodes = m_meshHex->newVariable<int, GMDS_NODE>("Locked_Nodes") ;
+
+	for (auto n_id:m_meshHex->nodes())
+	{
+		Node n = m_meshHex->get<Node>(n_id);
+		//if (m_meshHex->isMarked(n, mark_block_nodes)
+		//    || m_meshHex->isMarked(n, mark_first_layer)
+		//    || m_meshHex->isMarked(n, mark_farfield_nodes))
+		if (m_meshHex->isMarked(n, mark_first_layer)
+		    || m_meshHex->isMarked(n, mark_farfield_nodes))
+		{
+			m_meshHex->mark(n, mark_locked_nodes);
+			var_locked_nodes->set(n_id, 1);
+		}
+		else
+		{
+			var_locked_nodes->set(n_id, 0);
+		}
+	}
+
+	std::cout << "Smoothing..." << std::endl;
+
+	//==================================================================
+	// REORIENT THE FACES
+	//==================================================================
+	MeshDoctor doc(m_meshHex);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+	doc.orient2DFaces();
+	for(auto f_id:m_meshHex->faces()) {
+		Face f=m_meshHex->get<Face>(f_id);
+		if (f.normal().dot(math::Vector3d({.0, .0, 1.0})) <= 0) {
+			std::vector<TCellID> ns = f.getIDs<Node>();
+			std::vector<TCellID> ns2(ns.size());
+			for (auto i = 0; i < ns.size(); i++)
+				ns2[ns.size() - 1 - i] = ns[i];
+			f.set<Node>(ns2);
+		}
+	}
+
+	smoothy::EllipticSmoother2D smoother2D(m_meshHex);
+	smoother2D.lock(mark_locked_nodes);
+	smoother2D.execute();
+
+
+	m_meshHex->unmarkAll<Node>(mark_block_nodes);
+	m_meshHex->freeMark<Node>(mark_block_nodes);
+	m_meshHex->unmarkAll<Edge>(mark_first_layer);
+	m_meshHex->freeMark<Edge>(mark_first_layer);
+	m_meshHex->unmarkAll<Edge>(mark_farfield_nodes);
+	m_meshHex->freeMark<Edge>(mark_farfield_nodes);
+	m_meshHex->unmarkAll<Edge>(mark_locked_nodes);
+	m_meshHex->freeMark<Edge>(mark_locked_nodes);
 
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
 
+	// Analysis of the quad mesh quality
+	math::Utils::AnalyseQuadMeshQuality(m_meshHex);
 
-	// Compute the quality criterions of the blocking
-	math::Utils::AnalyseQuadMeshQuality(&m_Blocking2D);
 
 	// Ecriture finale des maillages
 	std::cout << "-> Ecriture finale des maillages" << std::endl;
@@ -319,6 +372,7 @@ AeroPipeline_2D::execute(){
 	std::cout << " " << std::endl;
 	std::cout << "INFORMATIONS COMPLEMENTAIRES :" << std::endl;
 	std::cout << "Nbr de blocs : " << m_Blocking2D.getNbFaces() << std::endl;
+	std::cout << " " << std::endl;
 	std::cout << "Nbr faces : " << m_meshHex->getNbFaces() << std::endl;
 	std::cout << "Nbr arêtes : " << m_meshHex->getNbEdges() << std::endl;
 
@@ -355,74 +409,32 @@ void
 AeroPipeline_2D::EcritureMaillage(){
 
 	std::cout << "-> Ecriture du maillage ..." << std::endl;
-	std::cout << "Ecriture Blocking en .vtk ..." << std::endl;
 
-	//gmds::IGMeshIOService ioService(m_meshHex);
+	std::cout << "			1. Ecriture Blocking en .vtk ..." << std::endl;
 	gmds::IGMeshIOService ioService(&m_Blocking2D);
 	gmds::VTKWriter vtkWriter_Blocking(&ioService);
 	vtkWriter_Blocking.setCellOptions(gmds::N|gmds::F);
 	vtkWriter_Blocking.setDataOptions(gmds::N|gmds::F);
-	std::string dir(".");//TEST_SAMPLES_DIR);
-	//vtkWriter_Blocking.write(m_params.output_file);
+	std::string dir(".");
 	vtkWriter_Blocking.write("AeroPipeline2D_Blocking.vtk");
 
-	std::cout << "Ecriture Maillage Quad en .vtk ..." << std::endl;
-
-	int mark_block_nodes = m_meshHex->newMark<Node>();
-	int mark_first_layer = m_meshHex->newMark<Node>();
-	int mark_farfield_nodes = m_meshHex->newMark<Node>();
-	math::Utils::BuildMesh2DFromBlocking2D(&m_Blocking2D, m_meshHex, mark_block_nodes, mark_first_layer, mark_farfield_nodes);
-	int mark_locked_nodes = m_meshHex->newMark<Node>();
-
-	Variable<int>* var_locked_nodes = m_meshHex->newVariable<int, GMDS_NODE>("Locked_Nodes") ;
-
-	for (auto n_id:m_meshHex->nodes())
-	{
-		Node n = m_meshHex->get<Node>(n_id);
-		if (m_meshHex->isMarked(n, mark_block_nodes) || m_meshHex->isMarked(n, mark_first_layer) )
-		{
-			m_meshHex->mark(n, mark_locked_nodes);
-			var_locked_nodes->set(n_id, 1);
-		}
-		else
-		{
-			var_locked_nodes->set(n_id, 0);
-		}
-	}
-
-	std::cout << "Smoothing..." << std::endl;
-	//smoothy::EllipticSmoother2D smoother2D(m_meshHex);
-	//smoother2D.lock(mark_locked_nodes);
-	//smoother2D.execute();
-	m_meshHex->unmarkAll<Node>(mark_block_nodes);
-	m_meshHex->freeMark<Node>(mark_block_nodes);
-	m_meshHex->unmarkAll<Edge>(mark_first_layer);
-	m_meshHex->freeMark<Edge>(mark_first_layer);
-	m_meshHex->unmarkAll<Edge>(mark_farfield_nodes);
-	m_meshHex->freeMark<Edge>(mark_farfield_nodes);
-	m_meshHex->unmarkAll<Edge>(mark_locked_nodes);
-	m_meshHex->freeMark<Edge>(mark_locked_nodes);
-
-	math::Utils::AnalyseQuadMeshQuality(m_meshHex);
-
-
+	std::cout << "			2. Ecriture Maillage Quad en .vtk ..." << std::endl;
 	ioService = m_meshHex;
 	gmds::VTKWriter vtkWriter_HexMesh(&ioService);
 	vtkWriter_HexMesh.setCellOptions(gmds::N|gmds::F);
 	vtkWriter_HexMesh.setDataOptions(gmds::N|gmds::F);
 	vtkWriter_HexMesh.write("AeroPipeline2D_QuadMesh.vtk");
 
-	std::cout << "Ecriture Maillage Tri en .vtk ..." << std::endl;
 
-	// Ecriture du maillage en triangles initial pour visualisation et débug
+	std::cout << "			3. Ecriture Maillage Tri en .vtk ..." << std::endl;
 	ioService = m_meshTet;
 	gmds::VTKWriter vtkWriter_TetMesh(&ioService);
 	vtkWriter_TetMesh.setCellOptions(gmds::N|gmds::F);
 	vtkWriter_TetMesh.setDataOptions(gmds::N|gmds::F);
 	vtkWriter_TetMesh.write("AeroPipeline2D_TriMesh.vtk");
 
-	// Ecriture du maillage au format su2
-	std::cout << "Ecriture Maillage Quad en .su2 ..." << std::endl;
+
+	std::cout << "			4. Ecriture Maillage Quad en .su2 ..." << std::endl;
 	SU2Writer writer(m_meshHex, "AeroPipeline2D_QuadMesh.su2", m_params.x_lim_SU2_inoutlet);
 	SU2Writer::STATUS result = writer.execute();
 

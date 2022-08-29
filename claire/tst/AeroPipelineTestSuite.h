@@ -97,7 +97,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_User)
 	params_aero.nbrMinBloc = 4;					// Minimal number of block on the wall
 	params_aero.nbrCellsInCL = 30;				// Number of cells in the boundary layer
 	params_aero.edge_size_wall = 2 ;										// Maximal size of the cells on the wall
-	params_aero.edge_size_default = 10 ;										// Default size of the cells in the domain
+	params_aero.edge_size_default = 2 ;										// Default size of the cells in the domain
 	params_aero.edge_size_first_ortho_wall = 1*pow(10,-3);	// Size of the first edge orthogonal to the wall
 
 	// Vector Field Computation Parameters
