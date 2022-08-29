@@ -45,12 +45,22 @@ class LIB_GMDS_BLOCKING_API SheetInsert
 	 */
 	STATUS execute();
 
-	void setBl(gmds::blocking::Blocking* ABl) {bl = ABl;};
-	gmds::blocking::Blocking* getBl() const {return bl;};
+	/*--------------------------------------------------------------------*/
+	/** @brief  Dummy call
+	 */
+	STATUS pillow();
+
+	void setBl(gmds::blocking::Blocking* ABl) {bl_ = ABl;};
+	gmds::blocking::Blocking* bl() const {return bl_;};
+	LCC_3* lcc() {return bl_->lcc();};
+
 
  private:
 	// blocking structure
-	gmds::blocking::Blocking* bl;
+	gmds::blocking::Blocking* bl_;
+
+	// shrink set
+
 };
 /*----------------------------------------------------------------------------*/
 } // namespace blocking

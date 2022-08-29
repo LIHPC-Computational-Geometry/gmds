@@ -108,3 +108,78 @@ TEST(CGALTestSuite, DISABLED_draw)
 }
 #endif
 /*----------------------------------------------------------------------------*/
+TEST(CGALTestSuite, using_lcc_gmaps_attributes)
+{
+	typedef CGAL::Linear_cell_complex_for_generalized_map<3> LCC_3;
+	typedef LCC_3::size_type size_type;
+	typedef LCC_3::Dart_handle Dart_handle;
+	typedef LCC_3::Point Point;
+
+	LCC_3 lcc;
+	Dart_handle dh1=
+	   lcc.make_hexahedron(Point(0,0,0), Point(5,0,0),
+	                       Point(5,5,0), Point(0,5,0),
+	                       Point(0,5,4), Point(0,0,4),
+	                       Point(5,0,4), Point(5,5,4));
+
+	typedef LCC_3::Attribute_handle<3>::type region_attribute;
+
+//	for (LCC_3::Attribute_range<3>::type::iterator it = lcc.attributes<3>().begin(), itend = lcc.attributes<2>().end();
+//             it != itend; ++it) {
+//		id = lcc.info_of_attribute<2>(it)[0];
+//	}
+
+//	LCC_3::CellAttribute ca;
+
+//	lcc.create_attribute<3>(int);
+
+//	ASSERT_EQ(lcc.number_of_attributes<0>(), 1);
+//	ASSERT_EQ(lcc.number_of_attributes<3>(), 8);
+//	lcc.is_attribute_used<3>();
+
+	// 1) Create all 2-attributes and associated them to darts.
+//	for (LCC_3::Dart_range::iterator
+//			  it=lcc.darts().begin(), itend=lcc.darts().end();
+//		  it!=itend; ++it)
+//	{
+//		if ( lcc.attribute<2>(it)==nullptr ) {
+//			lcc.set_attribute<2>(it, lcc.create_attribute<2>());
+//		}
+//	}
+
+//	// Set the "color" of all vertices of the first cube to 1.
+//	for (LCC_3::One_dart_per_incident_cell_range<0, 3>::iterator
+//			  it=lcc.one_dart_per_incident_cell<0,3>(dh1).begin(),
+//			  itend=lcc.one_dart_per_incident_cell<0,3>(dh1).end(); it!=itend; ++it) {
+////		lcc.info<0>(it)=1;
+//	}
+}
+/*----------------------------------------------------------------------------*/
+TEST(CGALTestSuite, using_lcc_gmaps_marks)
+{
+	typedef CGAL::Linear_cell_complex_for_generalized_map<3> LCC_3;
+	typedef LCC_3::size_type size_type;
+	typedef LCC_3::Dart_handle Dart_handle;
+	typedef LCC_3::Point Point;
+
+	LCC_3 lcc;
+	Dart_handle dh1=
+	   lcc.make_hexahedron(Point(0,0,0), Point(5,0,0),
+	                       Point(5,5,0), Point(0,5,0),
+	                       Point(0,5,4), Point(0,0,4),
+	                       Point(5,0,4), Point(5,5,4));
+	Dart_handle dh2=
+	   lcc.make_hexahedron(Point(5,0,0), Point(10,0,0),
+	                       Point(10,5,0), Point(5,5,0),
+	                       Point(5,5,4), Point(5,0,4),
+	                       Point(10,0,4), Point(10,5,4));
+
+	LCC_3::size_type mark = lcc.get_new_mark();
+	lcc.mark(dh1, mark);
+
+	ASSERT_EQ(lcc.number_of_used_marks(), 1);
+	ASSERT_EQ(lcc.number_of_marked_darts(mark), 1);
+
+
+}
+/*----------------------------------------------------------------------------*/

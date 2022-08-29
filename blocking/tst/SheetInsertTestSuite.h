@@ -26,3 +26,18 @@ TEST(SheetInsertTestSuite, instanciate)
 	ASSERT_EQ(status, gmds::blocking::SheetInsert::NOT_YET_IMPLEMENTED);
 }
 /*----------------------------------------------------------------------------*/
+TEST(SheetInsertTestSuite, pillow3d)
+{
+	gmds::blocking::Blocking bl;
+	bl.createGrid3d();
+
+	gmds::blocking::SheetInsert is;
+	is.setBl(&bl);
+
+	gmds::blocking::SheetInsert::STATUS status = is.pillow();
+	ASSERT_EQ(status, gmds::blocking::SheetInsert::NOT_YET_IMPLEMENTED);
+
+//	bl.writeVTKFile("insertsheet3d.vtk");
+//	bl.writeMokaFile("insertsheet3d.moka");
+}
+/*----------------------------------------------------------------------------*/
