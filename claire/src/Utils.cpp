@@ -131,13 +131,6 @@ void Utils::BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m, int mark_
 	Variable<int>* var_couche = blocking2D->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche");
 	Variable<int>* var_couche_mesh = m->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 
-	// Get max layer id
-	int max_layer_id(0);
-	for (auto n_id:blocking2D->nodes())
-	{
-		max_layer_id = std::max(max_layer_id, var_couche->value(n_id));
-	}
-
 	// Create all the nodes in the mesh m
 	for (auto n_id:blocking2D->nodes())
 	{
@@ -145,7 +138,7 @@ void Utils::BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m, int mark_
 		Node n_mesh = m->newNode(n_blocking.point());
 		map_new_node_ids[n_blocking.id()] = n_mesh.id();
 		var_couche_mesh->set(n_mesh.id(), var_couche->value(n_id));
-		std::cout << "Node " << n_mesh.id() << ", couche " << var_couche->value(n_id) << ", couche mesh " << var_couche_mesh->value(n_mesh.id()) << std::endl;
+		//std::cout << "Node " << n_mesh.id() << ", couche " << var_couche->value(n_id) << ", couche mesh " << var_couche_mesh->value(n_mesh.id()) << std::endl;
 
 		if ( var_couche->value(n_id)==1 || var_couche->value(n_id)==0 )
 		{
@@ -186,6 +179,58 @@ void Utils::BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m, int mark_
 
 			}
 		}
+	}
+
+
+	// Mark nodes on the farfield
+	// Get max layer id
+	int max_layer_id(0);
+	for (auto n_id:blocking2D->nodes())
+	{
+		max_layer_id = std::max(max_layer_id, var_couche->value(n_id));
+	}
+
+	for (auto b:blocking2D->allBlocks())
+	{
+		int Nx = b.getNbDiscretizationI();
+		int Ny = b.getNbDiscretizationJ();
+
+		if ( var_couche->value(b(0,0).id()) == max_layer_id
+		    && var_couche->value(b(Nx-1,0).id()) == max_layer_id  )
+		{
+			for (int i=0; i<Nx; i++)
+			{
+				m->mark(b(i,0), mark_farfield_nodes);
+			}
+		}
+
+		if ( var_couche->value(b(0,Ny-1).id()) == max_layer_id
+		    && var_couche->value(b(Nx-1,Ny-1).id()) == max_layer_id  )
+		{
+			for (int i=0; i<Nx; i++)
+			{
+				m->mark(b(i,Ny-1), mark_farfield_nodes);
+			}
+		}
+
+		if ( var_couche->value(b(0,0).id()) == max_layer_id
+		    && var_couche->value(b(0,Ny-1).id()) == max_layer_id  )
+		{
+			for (int j=0; j<Ny; j++)
+			{
+				m->mark(b(0,j), mark_farfield_nodes);
+			}
+		}
+
+		if ( var_couche->value(b(Nx-1,0).id()) == max_layer_id
+		    && var_couche->value(b(Nx-1,Ny-1).id()) == max_layer_id  )
+		{
+			for (int j=0; j<Ny; j++)
+			{
+				m->mark(b(Nx-1,j), mark_farfield_nodes);
+			}
+		}
+
 	}
 
 	gmds::MeshDoctor doc(m);
