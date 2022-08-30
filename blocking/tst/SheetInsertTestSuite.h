@@ -30,7 +30,7 @@ TEST(SheetInsertTestSuite, pillow3d)
 {
 	gmds::blocking::Blocking bl;
 //	bl.createGrid3d();
-	bl.createGrid3d(gmds::math::Point(0,0,0), gmds::math::Point(1,1,1), 2,2,2);
+	bl.createGrid3d(gmds::math::Point(0,0,0), gmds::math::Point(2,2,2), 2,2,2);
 
 	gmds::blocking::SheetInsert is;
 	is.setBl(&bl);

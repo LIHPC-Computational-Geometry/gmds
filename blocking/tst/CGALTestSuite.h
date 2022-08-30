@@ -199,3 +199,117 @@ TEST(CGALTestSuite, using_links)
 	ASSERT_EQ(d1, gm.alpha(d2, 0));
 }
 /*----------------------------------------------------------------------------*/
+TEST(CGALTestSuite, vertex_position)
+{
+	typedef CGAL::Linear_cell_complex_for_generalized_map<3> LCC_3;
+	typedef LCC_3::size_type size_type;
+	typedef LCC_3::Dart_handle Dart_handle;
+	typedef LCC_3::Point Point;
+
+	LCC_3 lcc;
+	LCC_3::Vertex_attribute_handle v0 = lcc.create_vertex_attribute( LCC_3::Point (0.5, 0, 0));
+	LCC_3::Vertex_attribute_handle v1 = lcc.create_vertex_attribute( LCC_3::Point (1, 0, 0));
+	LCC_3::Vertex_attribute_handle v2 = lcc.create_vertex_attribute( LCC_3::Point (2, 0, 0));
+	LCC_3::Vertex_attribute_handle v3 = lcc.create_vertex_attribute( LCC_3::Point (3, 0, 0));
+
+	Dart_handle d0 = lcc.create_dart(v0);
+	Dart_handle d1 = lcc.create_dart(v1);
+	Dart_handle d2 = lcc.create_dart(v2);
+	Dart_handle d3 = lcc.create_dart(v3);
+
+	ASSERT_TRUE(lcc.is_valid());
+	ASSERT_EQ(4, lcc.number_of_vertex_attributes());
+
+	std::cout<<lcc.vertex_attribute(d0)->point()<<std::endl;
+	std::cout<<lcc.vertex_attribute(d1)->point()<<std::endl;
+	std::cout<<lcc.vertex_attribute(d2)->point()<<std::endl;
+	std::cout<<lcc.vertex_attribute(d3)->point()<<std::endl;
+
+	std::set<Dart_handle> darts;
+	darts.insert(d0);
+	darts.insert(d1);
+
+	lcc.link_alpha<1>(d0, d1);
+
+	ASSERT_TRUE(darts.find(d0) != darts.end());
+	ASSERT_TRUE(darts.find(d1) != darts.end());
+	ASSERT_NE(d0, d1);
+
+	std::cout<<lcc.vertex_attribute(d0)->point()<<std::endl;
+	std::cout<<lcc.vertex_attribute(d1)->point()<<std::endl;
+	std::cout<<lcc.vertex_attribute(d2)->point()<<std::endl;
+	std::cout<<lcc.vertex_attribute(d3)->point()<<std::endl;
+	ASSERT_EQ(lcc.vertex_attribute(d0)->point(), lcc.vertex_attribute(d1)->point());
+	ASSERT_EQ(3, lcc.number_of_vertex_attributes());
+
+
+	std::cout<<lcc.vertex_attribute(d0)->point()<<std::endl;
+	std::cout<<lcc.vertex_attribute(d1)->point()<<std::endl;
+
+	lcc.link_alpha<2>(d0, d2);
+	ASSERT_TRUE(lcc.is_valid());
+	ASSERT_EQ(lcc.vertex_attribute(d0)->point(), lcc.vertex_attribute(d2)->point());
+
+//	lcc.correct_invalid_attributes();
+	ASSERT_EQ(2, lcc.number_of_vertex_attributes());
+
+	ASSERT_TRUE(lcc.is_valid());
+	lcc.link_alpha<3>(d0, d3);
+	ASSERT_FALSE(lcc.is_valid());
+
+	ASSERT_EQ(lcc.vertex_attribute(d0)->point(), lcc.vertex_attribute(d3)->point());
+	ASSERT_EQ(1, lcc.number_of_vertex_attributes());
+
+	std::cout<< "automatic " << lcc.are_attributes_automatically_managed()<<std::endl;
+	std::cout<<"attribute "<<lcc.is_attribute_used<0>(v0)<<" "<<lcc.is_valid_attribute<0>(v0)<<std::endl;
+	std::cout<<"attribute "<<lcc.is_attribute_used<0>(v1)<<" "<<lcc.is_valid_attribute<0>(v1)<<std::endl;
+	std::cout<<"attribute "<<lcc.is_attribute_used<0>(v2)<<" "<<lcc.is_valid_attribute<0>(v2)<<std::endl;
+	std::cout<<"attribute "<<lcc.is_attribute_used<0>(v3)<<" "<<lcc.is_valid_attribute<0>(v3)<<std::endl;
+	lcc.correct_invalid_attributes();
+	std::cout<<"attribute "<<lcc.is_attribute_used<0>(v0)<<" "<<lcc.is_valid_attribute<0>(v0)<<std::endl;
+	std::cout<<"attribute "<<lcc.is_attribute_used<0>(v1)<<" "<<lcc.is_valid_attribute<0>(v1)<<std::endl;
+	std::cout<<"attribute "<<lcc.is_attribute_used<0>(v2)<<" "<<lcc.is_valid_attribute<0>(v2)<<std::endl;
+	std::cout<<"attribute "<<lcc.is_attribute_used<0>(v3)<<" "<<lcc.is_valid_attribute<0>(v3)<<std::endl;
+
+	std::cout<<"nbref "<<v0->get_nb_refs()<<" "<<v1->get_nb_refs()<<" "<<v2->get_nb_refs()<<" "<<v3->get_nb_refs()<<std::endl;
+
+	lcc.unlink_alpha(d0, 3);
+	lcc.correct_invalid_attributes();
+	ASSERT_TRUE(lcc.is_valid());
+	ASSERT_EQ(2, lcc.number_of_vertex_attributes());
+	ASSERT_EQ(lcc.vertex_attribute(d0)->point(), lcc.vertex_attribute(d3)->point());
+	std::cout<<lcc.vertex_attribute(d0)->point()<<" "<<lcc.vertex_attribute(d3)->point()<<std::endl;
+	v0->point() = LCC_3::Point (7,7,7);
+	std::cout<<lcc.vertex_attribute(d0)->point()<<" "<<lcc.vertex_attribute(d3)->point()<<std::endl;
+}
+/*----------------------------------------------------------------------------*/
+TEST(CGALTestSuite, vertex_attributes)
+{
+	typedef CGAL::Linear_cell_complex_for_generalized_map<3> LCC_3;
+	typedef LCC_3::size_type size_type;
+	typedef LCC_3::Dart_handle Dart_handle;
+	typedef LCC_3::Point Point;
+
+	LCC_3 lcc;
+	LCC_3::Vertex_attribute_handle v0 = lcc.create_vertex_attribute(LCC_3::Point(0.5, 0, 0));
+	LCC_3::Vertex_attribute_handle v1 = lcc.create_vertex_attribute(LCC_3::Point(1, 0, 0));
+
+	Dart_handle d0 = lcc.create_dart(v0);
+	Dart_handle d1 = lcc.create_dart(v1);
+
+	std::cout<<"attribute "<<lcc.is_attribute_used<0>(v0)<<" "<<lcc.is_valid_attribute<0>(v0)<<std::endl;
+	std::cout<<"attribute "<<lcc.is_attribute_used<0>(v1)<<" "<<lcc.is_valid_attribute<0>(v1)<<std::endl;
+
+	lcc.link_alpha<1>(d0, d1);
+	std::cout<<"attribute "<<lcc.is_attribute_used<0>(v0)<<" "<<lcc.is_valid_attribute<0>(v0)<<std::endl;
+	std::cout<<"attribute "<<lcc.is_attribute_used<0>(v1)<<" "<<lcc.is_valid_attribute<0>(v1)<<std::endl;
+	ASSERT_EQ(1, lcc.number_of_vertex_attributes());
+
+	lcc.set_vertex_attribute_of_dart(d1, v1);
+	std::cout<<"attribute "<<lcc.is_attribute_used<0>(v0)<<" "<<lcc.is_valid_attribute<0>(v0)<<std::endl;
+	std::cout<<"attribute "<<lcc.is_attribute_used<0>(v1)<<" "<<lcc.is_valid_attribute<0>(v1)<<std::endl;
+
+
+	ASSERT_EQ(1, lcc.number_of_vertex_attributes());
+}
+/*----------------------------------------------------------------------------*/
