@@ -72,6 +72,12 @@ SheetInsert::pillow()
 	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
 		lcc()->mark(it, m);
 	}
+//	d++;
+//	for (LCC_3::Dart_of_cell_range<3>::iterator
+//	        it(lcc()->darts_of_cell<3>(d).begin()),
+//	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
+//		lcc()->mark(it, m);
+//	}
 
 	LCC_3::size_type m_temp = lcc()->get_new_mark();
 	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
@@ -87,7 +93,7 @@ SheetInsert::pillow()
 			}
 		}
 	}
-	m = m_temp;
+	std::swap(m, m_temp);
 
 //	for (LCC_3::Dart_range::iterator it(getlcc()->darts().begin()),
 //			  itend(getlcc()->darts().end()); it!=itend; ++it)
@@ -96,6 +102,31 @@ SheetInsert::pillow()
 //	}
 
 	std::cout<<"nbMarked "<< lcc()->number_of_marked_darts(m)<<std::endl;
+
+
+	// check that on orbit<2,3> two and only two darts are marked
+	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
+			  itend(lcc()->darts().end()); it!=itend; ++it) {
+
+		int nbfound = 1;
+
+		if (lcc()->is_marked(it, m)) {
+			for (LCC_3::Dart_of_orbit_range<2, 3>::iterator itbis(lcc()->darts_of_orbit<2, 3>(it).begin()), itend(lcc()->darts_of_orbit<2, 3>(it).end());
+			     itbis != itend; ++itbis) {
+
+				LCC_3::Dart_handle dbis = itbis;
+
+				if ((it != dbis) && (lcc()->is_marked(dbis, m))) {
+					nbfound++;
+				}
+			}
+
+			if (nbfound != 2) {
+				std::string s ="wrong number of marked darts on orbit<2,3> " + std::to_string(nbfound);
+				throw gmds::GMDSException(s);
+			}
+		}
+	}
 
 	// first mark the darts on the boundary of the shrink set
 
@@ -114,12 +145,25 @@ SheetInsert::pillow()
 	}
 	std::cout<<"old_alpha3.size() "<< old_alpha3.size()<<std::endl;
 
+	// unlink the alpha3
+	for(auto d: old_alpha3) {
+//		if(d.first != d.second) {
+//			lcc()->unlink_alpha(d.first, 3);
+//		}
+		if(lcc()->alpha(d.first, 3) != d.first) {
+			lcc()->unsew<3>(d.first);
+		}
+	}
+	lcc()->is_valid();
+	lcc()->correct_invalid_attributes();
+
 	// create the pattern for the marked darts
 	std::map<LCC_3::Dart_handle, std::array<LCC_3::Dart_handle, 10> > old_pattern;
 
 	for(auto d: old_alpha3) {
 //		LCC_3::Vertex_attribute_const_handle v = getlcc()->vertex_attribute(d.first);
 		LCC_3::Vertex_attribute_handle v = lcc()->vertex_attribute(d.first);
+
 
 		// TODO determine position of new vertex and which darts are assigned to it
 //		LCC_3::Vertex_attribute_handle vbis = lcc()->create_vertex_attribute(LCC_3::Point ());
@@ -130,41 +174,22 @@ SheetInsert::pillow()
 //		LCC_3::Vertex_attribute_handle vbis = lcc()->create_vertex_attribute( center + 0.8 * (center + v->point()) );
 //		LCC_3::Vertex_attribute_handle vbis = lcc()->create_vertex_attribute( LCC_3::Point (v->point().x(), v->point().y(), v->point().z()));
 //		lcc()->point_of_vertex_attribute(v) = LCC_3::Point (posx, posy, posz);
-		LCC_3::Vertex_attribute_handle vbis = lcc()->create_vertex_attribute( LCC_3::Point (posx, posy, posz));
-		lcc()->set_vertex_attribute_of_dart(d.first, vbis);
+//		LCC_3::Vertex_attribute_handle vbis = lcc()->create_vertex_attribute( LCC_3::Point (posx, posy, posz));
+//		lcc()->set_vertex_attribute_of_dart(d.first, vbis);
+		LCC_3::Point newpt(v->point().x(), v->point().y(), v->point().z());
+		v->point() = LCC_3::Point (posx, posy, posz);
+		LCC_3::Vertex_attribute_handle vbis = lcc()->create_vertex_attribute( newpt);
 
-//		LCC_3::Dart_handle ddd = lcc()->create_dart(v);
-//		LCC_3::Dart_handle d0 = lcc()->create_dart(v->point());
-//		LCC_3::Dart_handle d1 = lcc()->create_dart(v->point());
-//		LCC_3::Dart_handle d2 = lcc()->create_dart(v->point());
-//		LCC_3::Dart_handle d3 = lcc()->create_dart(v->point());
-//		LCC_3::Dart_handle d4 = lcc()->create_dart(v->point());
-//		LCC_3::Dart_handle d5 = lcc()->create_dart(v->point());
-//		LCC_3::Dart_handle d6 = lcc()->create_dart(v->point());
-//		LCC_3::Dart_handle d7 = lcc()->create_dart(v->point());
-//		LCC_3::Dart_handle d8 = lcc()->create_dart(v->point());
-//		LCC_3::Dart_handle d9 = lcc()->create_dart(v->point());
-//		LCC_3::Dart_handle d0 = lcc()->create_dart(v);
-//		LCC_3::Dart_handle d1 = lcc()->create_dart(v);
-//		LCC_3::Dart_handle d2 = lcc()->create_dart(v);
-//		LCC_3::Dart_handle d3 = lcc()->create_dart(v);
-//		LCC_3::Dart_handle d4 = lcc()->create_dart(v);
-//		LCC_3::Dart_handle d5 = lcc()->create_dart(v);
-//		LCC_3::Dart_handle d6 = lcc()->create_dart(v);
-//		LCC_3::Dart_handle d7 = lcc()->create_dart(v);
-//		LCC_3::Dart_handle d8 = lcc()->create_dart(v);
-//		LCC_3::Dart_handle d9 = lcc()->create_dart(v);
-
-		LCC_3::Dart_handle d0 = lcc()->create_dart(vbis);
-		LCC_3::Dart_handle d1 = lcc()->create_dart(v);
-		LCC_3::Dart_handle d2 = lcc()->create_dart(vbis);
-		LCC_3::Dart_handle d3 = lcc()->create_dart(vbis);
-		LCC_3::Dart_handle d4 = lcc()->create_dart(v);
-		LCC_3::Dart_handle d5 = lcc()->create_dart(v);
-		LCC_3::Dart_handle d6 = lcc()->create_dart(vbis);
-		LCC_3::Dart_handle d7 = lcc()->create_dart(vbis);
-		LCC_3::Dart_handle d8 = lcc()->create_dart(v);
-		LCC_3::Dart_handle d9 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d0 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d1 = lcc()->create_dart(vbis);
+		LCC_3::Dart_handle d2 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d3 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d4 = lcc()->create_dart(vbis);
+		LCC_3::Dart_handle d5 = lcc()->create_dart(vbis);
+		LCC_3::Dart_handle d6 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d7 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d8 = lcc()->create_dart(vbis);
+		LCC_3::Dart_handle d9 = lcc()->create_dart(vbis);
 
 		lcc()->mark(d0, m_new);
 		lcc()->mark(d1, m_new);
@@ -303,11 +328,13 @@ SheetInsert::pillow()
 //		}
 
 		Dart_handle dopp = it.second;
-		lcc()->link_alpha<3>(d, d0);
-
-		if(d != dopp) {
-			lcc()->link_alpha<3>(dopp, d1);
+		if(d == dopp) {
+			lcc()->link_alpha<3>(d, d0);
+		} else {
+			lcc()->link_alpha<3>(d, d0);
+			lcc()->link_alpha<3>(d1, dopp);
 		}
+
 	}
 	lcc()->correct_invalid_attributes();
 
@@ -319,6 +346,7 @@ SheetInsert::pillow()
 	// free the marks
 	lcc()->free_mark(m);
 	lcc()->free_mark(m_new);
+	lcc()->free_mark(m_temp);
 
 	return SheetInsert::NOT_YET_IMPLEMENTED;
 }
