@@ -197,10 +197,10 @@ AeroPipeline_2D::execute(){
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
-	/*
-	AeroEllipticSmoothing_2D smooth2D(m_meshHex, m_meshHex->getVariable<int, GMDS_NODE>("GMDS_Couche_Id"), m_manager, m_linker_HG);
-	smooth2D.execute();
-	 */
+
+	//AeroEllipticSmoothing_2D smooth2D(m_meshHex, m_meshHex->getVariable<int, GMDS_NODE>("GMDS_Couche_Id"), m_manager, m_linker_HG);
+	//smooth2D.execute();
+
 
 
 	std::cout << "-> Conversion maillage en blocking" << std::endl;
@@ -210,24 +210,6 @@ AeroPipeline_2D::execute(){
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
-
-	// Lissage
-	/*
-	std::cout << "-> Lissage final" << std::endl;
-	t_start = clock();
-	//Grid_Smooth2D smoother(&m_Blocking2D, 2000);
-	//smoother.execute();
-
-	for (auto b:m_Blocking2D.allBlocks())
-	{
-		SmoothLineSweepingYao smoother( &b, m_params.nbr_iter_smoothing_yao, m_params.damping_smoothing_yao);
-		smoother.execute();
-	}
-
-	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
-	std::cout << " " << std::endl;
-	 */
 
 
 
@@ -289,6 +271,14 @@ AeroPipeline_2D::execute(){
 	math::Utils::AnalyseQuadMeshQuality(&m_Blocking2D);
 
 
+	std::cout << " " << std::endl;
+	std::cout << "INFORMATIONS COMPLEMENTAIRES :" << std::endl;
+	std::cout << "Nbr de blocs : " << m_Blocking2D.getNbFaces() << std::endl;
+	std::cout << "Nbr de noeuds : " << m_meshHex->getNbNodes() << std::endl;
+	std::cout << "Nbr faces : " << m_meshHex->getNbFaces() << std::endl;
+	std::cout << "Nbr arêtes : " << m_meshHex->getNbEdges() << std::endl;
+
+
 	// Ecriture finale des maillages
 	std::cout << "-> Elliptic Smoothing on quad mesh" << std::endl;
 	t_start = clock();
@@ -339,10 +329,11 @@ AeroPipeline_2D::execute(){
 		}
 	}
 
+	/*
 	smoothy::EllipticSmoother2D smoother2D(m_meshHex);
 	smoother2D.lock(mark_locked_nodes);
 	smoother2D.execute();
-
+	*/
 
 	m_meshHex->unmarkAll<Node>(mark_block_nodes);
 	m_meshHex->freeMark<Node>(mark_block_nodes);
@@ -372,7 +363,7 @@ AeroPipeline_2D::execute(){
 	std::cout << " " << std::endl;
 	std::cout << "INFORMATIONS COMPLEMENTAIRES :" << std::endl;
 	std::cout << "Nbr de blocs : " << m_Blocking2D.getNbFaces() << std::endl;
-	std::cout << " " << std::endl;
+	std::cout << "Nbr de noeuds : " << m_meshHex->getNbNodes() << std::endl;
 	std::cout << "Nbr faces : " << m_meshHex->getNbFaces() << std::endl;
 	std::cout << "Nbr arêtes : " << m_meshHex->getNbEdges() << std::endl;
 

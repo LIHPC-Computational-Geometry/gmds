@@ -30,6 +30,9 @@ double AeroMeshQuality::AngleOuverture(math::Point p0, math::Point p1, math::Poi
 	Vector3d v1 = p1-p0;
 	Vector3d v2 = p2-p0;
 	Vector3d v3 = p3-p0;
+	v1.normalize();
+	v2.normalize();
+	v3.normalize();
 
 	double angle1 = acos(v1.dot(v2));
 	double angle2 = acos(v1.dot(v3));
