@@ -72,12 +72,18 @@ SheetInsert::pillow()
 	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
 		lcc()->mark(it, m);
 	}
-//	d++;
-//	for (LCC_3::Dart_of_cell_range<3>::iterator
-//	        it(lcc()->darts_of_cell<3>(d).begin()),
-//	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
-//		lcc()->mark(it, m);
-//	}
+	d++;
+	for (LCC_3::Dart_of_cell_range<3>::iterator
+	        it(lcc()->darts_of_cell<3>(d).begin()),
+	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
+		lcc()->mark(it, m);
+	}
+	d++;
+	for (LCC_3::Dart_of_cell_range<3>::iterator
+	        it(lcc()->darts_of_cell<3>(d).begin()),
+	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
+		lcc()->mark(it, m);
+	}
 
 	LCC_3::size_type m_temp = lcc()->get_new_mark();
 	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
@@ -94,12 +100,6 @@ SheetInsert::pillow()
 		}
 	}
 	std::swap(m, m_temp);
-
-//	for (LCC_3::Dart_range::iterator it(getlcc()->darts().begin()),
-//			  itend(getlcc()->darts().end()); it!=itend; ++it)
-//	{
-//		getlcc()->mark(it, m);
-//	}
 
 	std::cout<<"nbMarked "<< lcc()->number_of_marked_darts(m)<<std::endl;
 
@@ -128,9 +128,6 @@ SheetInsert::pillow()
 		}
 	}
 
-	// first mark the darts on the boundary of the shrink set
-
-
 	std::map<LCC_3::Dart_handle, LCC_3::Dart_handle> old_alpha3;
 
 	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
@@ -145,7 +142,7 @@ SheetInsert::pillow()
 	}
 	std::cout<<"old_alpha3.size() "<< old_alpha3.size()<<std::endl;
 
-	// unlink the alpha3
+	// unsew the alpha3
 	for(auto d: old_alpha3) {
 //		if(d.first != d.second) {
 //			lcc()->unlink_alpha(d.first, 3);
@@ -155,30 +152,36 @@ SheetInsert::pillow()
 		}
 	}
 	lcc()->is_valid();
-	lcc()->correct_invalid_attributes();
+//	lcc()->correct_invalid_attributes();
 
 	// create the pattern for the marked darts
 	std::map<LCC_3::Dart_handle, std::array<LCC_3::Dart_handle, 10> > old_pattern;
 
+	std::map<LCC_3::Vertex_attribute_handle, LCC_3::Vertex_attribute_handle> old2new_vertices;
+
 	for(auto d: old_alpha3) {
-//		LCC_3::Vertex_attribute_const_handle v = getlcc()->vertex_attribute(d.first);
 		LCC_3::Vertex_attribute_handle v = lcc()->vertex_attribute(d.first);
+		if(old2new_vertices.find(v) == old2new_vertices.end()) {
+			// TODO determine position of new vertex and which darts are assigned to it
 
 
-		// TODO determine position of new vertex and which darts are assigned to it
-//		LCC_3::Vertex_attribute_handle vbis = lcc()->create_vertex_attribute(LCC_3::Point ());
-		double posx = center.x() + 0.8 * (v->point().x() - center.x());
-		double posy = center.y() + 0.8 * (v->point().y() - center.y());
-		double posz = center.z() + 0.8 * (v->point().z() - center.z());
-//		gmds::math::Point newPos =
-//		LCC_3::Vertex_attribute_handle vbis = lcc()->create_vertex_attribute( center + 0.8 * (center + v->point()) );
-//		LCC_3::Vertex_attribute_handle vbis = lcc()->create_vertex_attribute( LCC_3::Point (v->point().x(), v->point().y(), v->point().z()));
-//		lcc()->point_of_vertex_attribute(v) = LCC_3::Point (posx, posy, posz);
-//		LCC_3::Vertex_attribute_handle vbis = lcc()->create_vertex_attribute( LCC_3::Point (posx, posy, posz));
-//		lcc()->set_vertex_attribute_of_dart(d.first, vbis);
-		LCC_3::Point newpt(v->point().x(), v->point().y(), v->point().z());
-		v->point() = LCC_3::Point (posx, posy, posz);
-		LCC_3::Vertex_attribute_handle vbis = lcc()->create_vertex_attribute( newpt);
+
+			double posx = center.x() + 0.8 * (v->point().x() - center.x());
+			double posy = center.y() + 0.8 * (v->point().y() - center.y());
+			double posz = center.z() + 0.8 * (v->point().z() - center.z());
+			LCC_3::Point newpt(v->point().x(), v->point().y(), v->point().z());
+			v->point() = LCC_3::Point (posx, posy, posz);
+			LCC_3::Vertex_attribute_handle vbis = lcc()->create_vertex_attribute( newpt);
+			old2new_vertices.emplace(v, vbis);
+		}
+		LCC_3::Vertex_attribute_handle vbis = old2new_vertices[v];
+
+//		double posx = center.x() + 0.8 * (v->point().x() - center.x());
+//		double posy = center.y() + 0.8 * (v->point().y() - center.y());
+//		double posz = center.z() + 0.8 * (v->point().z() - center.z());
+//		LCC_3::Point newpt(v->point().x(), v->point().y(), v->point().z());
+//		v->point() = LCC_3::Point (posx, posy, posz);
+//		LCC_3::Vertex_attribute_handle vbis = lcc()->create_vertex_attribute( newpt);
 
 		LCC_3::Dart_handle d0 = lcc()->create_dart(v);
 		LCC_3::Dart_handle d1 = lcc()->create_dart(vbis);
@@ -336,10 +339,12 @@ SheetInsert::pillow()
 		}
 
 	}
+	// TODO try to get rid of this automatic correction
 	lcc()->correct_invalid_attributes();
 
 	std::cout<<"nbVertices "<<bl()->nbVertices()<<std::endl;
 	std::cout<<"nbBlocks "<<bl()->nbBlocks()<<std::endl;
+
 	// TODO clear the orphaned darts
 
 
