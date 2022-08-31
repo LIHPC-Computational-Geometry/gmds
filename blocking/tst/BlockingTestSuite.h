@@ -68,4 +68,32 @@ TEST(BlockingTestSuite, writeVTK_3d)
 	ASSERT_EQ(bl3d.nbVertices(), 64);
 }
 /*----------------------------------------------------------------------------*/
+TEST(BlockingTestSuite, unsew_and_vertices_move)
+{
+	typedef CGAL::Linear_cell_complex_for_generalized_map<3> LCC_3;
+	typedef LCC_3::size_type size_type;
+	typedef LCC_3::Dart_handle Dart_handle;
+	typedef LCC_3::Point Point;
+
+	gmds::blocking::Blocking bl;
+
+	Dart_handle dh1=
+		bl.lcc()->make_hexahedron(Point(0,0,0), Point(5,0,0),
+										  Point(5,5,0), Point(0,5,0),
+										  Point(0,5,4), Point(0,0,4),
+										  Point(5,0,4), Point(5,5,4));
+	Dart_handle dh2=
+		bl.lcc()->make_hexahedron(Point(5,0,0), Point(10,0,0),
+										  Point(10,5,0), Point(5,5,0),
+										  Point(5,5,4), Point(5,0,4),
+										  Point(10,0,4), Point(10,5,4));
+
+	bl.writeVTKFile("unsew_a.vtk");
+	bl.lcc()->sew<3>(bl.lcc()->alpha(dh1, 1,0,1,2), bl.lcc()->alpha(dh2,2));
+	bl.writeVTKFile("unsew_b.vtk");
+	bl.lcc()->unsew<3>(bl.lcc()->alpha(dh1, 1,0,1,2));
+	bl.writeVTKFile("unsew_c.vtk");
+
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
