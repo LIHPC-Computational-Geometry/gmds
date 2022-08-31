@@ -19,7 +19,18 @@ namespace gmds{
 /*----------------------------------------------------------------------------*/
 namespace blocking{
 /*----------------------------------------------------------------------------*/
-typedef CGAL::Linear_cell_complex_for_generalized_map<3,3> LCC_3;
+struct Myitem
+{
+	template<class GMap>
+	struct Dart_wrapper
+	{
+		typedef CGAL::Cell_attribute_with_point<GMap, std::vector<int>, CGAL::Tag_true> Vertex_attribute;
+		typedef std::tuple<Vertex_attribute ,void,void> Attributes;
+	};
+};
+
+typedef CGAL::Linear_cell_complex_traits<3, CGAL::Exact_predicates_inexact_constructions_kernel> Traits;
+typedef CGAL::Linear_cell_complex_for_generalized_map<3,3, Traits, Myitem> LCC_3;
 typedef LCC_3::Dart_handle                                 Dart_handle;
 typedef LCC_3::Point                                       Point;
 typedef LCC_3::Vector                                      Vector;
@@ -135,7 +146,7 @@ class LIB_GMDS_BLOCKING_API Blocking{
   private:
 
 	 /*--------------------------------------------------------------------*/
-	 /** @brief Create a hexaedron in the GMAP
+	 /** @brief Create a hexaedron in the GMAP from list of GMDS::Node
 	  */
 	 void createNewHex(std::vector<Node> ANodes, std::map<std::tuple<int,int,int,int>, Dart_handle> &AFtoD);
 
