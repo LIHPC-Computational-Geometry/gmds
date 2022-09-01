@@ -188,9 +188,9 @@ AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cibl
 		math::Vector3d v1 = (n_neighbor_1.point() - n.point()).normalize();
 		math::Vector3d v2 = (n_neighbor_2.point() - n.point()).normalize();
 
-		double angle = acos(v1.dot(v2)) ;
+		double angle = (acos(v1.dot(v2))*180/M_PI) ;
 
-		if (abs(angle) < M_PI/6.0)
+		if (abs(angle) < 45)
 		{
 			Insertion_Double(Front_Paroi, n_id, A_distance, dist_cible, A_vectors);
 		}
@@ -370,7 +370,7 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 			double angle = v.dot(v_flow)*(180.0/M_PI);
 			double angle_on_layer = math::AeroMeshQuality::AngleOuverture(n.point(), n_ideal.point(),
 			                                                               n_neighbor_1.point(), n_neighbor_2.point());
-			double theta = M_PI/6.0 ;
+			double theta = M_PI/4.0 ;
 			bool test(angle_on_layer > 3.0*M_PI/2.0);
 			if (singu_not_found && angle_on_layer > 3.0*M_PI/2.0 - theta && abs(angle) < 55 && abs(angle) > 35) //
 			{

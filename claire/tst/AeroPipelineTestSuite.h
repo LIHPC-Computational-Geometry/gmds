@@ -85,35 +85,36 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_User)
 
 	// IN/OUT Parameters
 	std::string dir(TEST_SAMPLES_DIR);
-	params_aero.input_file=dir+"/Aero/2D/Diamond_Airfoil_2D_Papier.vtk";
+	//params_aero.input_file=dir+"/Aero/2D/Diamond_Airfoil_2D_Papier_150_5.vtk";
+	params_aero.input_file=dir+"/Aero/2D/test_2.vtk";
 	params_aero.output_file="AeroPipeline2D_Quad.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
 
 	// Physical Parameters for the algorithm
-	params_aero.delta_cl = 2;				// Epaisseur de la première couche, pour la couche limite
-	params_aero.angle_attack = 10;			// Angle of attack (in degrees)
+	params_aero.delta_cl = 0.1;				// Epaisseur de la première couche, pour la couche limite
+	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
 
 	// Wall Discretization Parameter
-	params_aero.nbrMinBloc = 4;					// Minimal number of block on the wall
+	params_aero.nbrMinBloc = 10;					// Minimal number of block on the wall
 	params_aero.nbrCellsInCL = 30;				// Number of cells in the boundary layer
-	params_aero.edge_size_wall = 2 ;										// Maximal size of the cells on the wall
-	params_aero.edge_size_default = 2 ;										// Default size of the cells in the domain
-	params_aero.edge_size_first_ortho_wall = 1*pow(10,-3);	// Size of the first edge orthogonal to the wall
+	params_aero.edge_size_wall = 0.01 ;										// Maximal size of the cells on the wall
+	params_aero.edge_size_default = 0.1 ;										// Default size of the cells in the domain
+	params_aero.edge_size_first_ortho_wall = 1*pow(10,-6);	// Size of the first edge orthogonal to the wall
 
 	// Vector Field Computation Parameters
-	params_aero.vectors_field = 3;				// Choose the way the vectors field is computed for the extrusion
-	params_aero.x_VectorField_Z1 = 200;			// Choose the x value of the first zone  [-inf, x_VectorField_Z1]
+	params_aero.vectors_field = 1;				// Choose the way the vectors field is computed for the extrusion
+	params_aero.x_VectorField_Z1 = 100;			// Choose the x value of the first zone  [-inf, x_VectorField_Z1]
 	params_aero.x_VectorField_Z2 = 600;			// Choose the x value of the second zone [x_VectorField_Z2, +inf]
 
 	// Extrusion Parameters
-	params_aero.nbr_couches = 10;			// Number of layer in extrusion
-	params_aero.x_lim = 0;				// Limites physiques à partir desquelles
+	params_aero.nbr_couches = 4;			// Number of layer in extrusion
+	params_aero.x_lim = 100;				// Limites physiques à partir desquelles
 	params_aero.y_lim = -10000;			// l'insertion et la fusion de blocs
 	params_aero.z_lim = -10000;			// sont autorisées
 
 	// Smoothing Parameters
-	params_aero.nbr_iter_smoothing_yao = 0 ;		// Number of iterations for the Yao Smoothing
-	params_aero.damping_smoothing_yao = 0.5 ;		// Damping parameter for the Yao Smoothing
+	params_aero.nbr_iter_smoothing_yao = 200 ;		// Number of iterations for the Yao Smoothing
+	params_aero.damping_smoothing_yao = 0.2 ;		// Damping parameter for the Yao Smoothing
 
 	// SU2 Writer Parameter
 	params_aero.x_lim_SU2_inoutlet = -pow(10,6);		// Limit between inlet and outlet for SU2 writer
