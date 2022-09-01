@@ -30,6 +30,7 @@
 #include <gmds/io/VTKReader.h>
 #include <iostream>
 #include <chrono>
+
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -69,14 +70,66 @@ AeroPipeline_2D::execute(){
 	// Calcul du level set
 	std::cout << "-> Calcul Level Sets" << std::endl;
 	t_start = clock();
-	m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance");
-	m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
-	m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+
+	Variable<double>* var_dist = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance");
+	Variable<double>* var_dist_int = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	Variable<double>* var_dist_out = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+	/*
 	LevelSetCombined lsCombined(m_meshTet, m_Bnd->getMarkParoi(), m_Bnd->getMarkAmont(),
 	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
 	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
 	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
+
 	lsCombined.execute();
+	*/
+
+	int mark_Farfiel = m_Bnd->getMarkAmont();
+	int mark_Paroi = m_Bnd->getMarkParoi();
+
+	std::vector<TCellID> nodes_Farfield;
+	std::vector<TCellID> nodes_Paroi;
+
+	for (auto n_id:m_meshTet->nodes())
+	{
+		if (m_Bnd->isParoi(n_id)  )
+		{
+			nodes_Paroi.push_back(n_id) ;
+		}
+
+		if (m_Bnd->isAmont(n_id) )
+		{
+			nodes_Farfield.push_back(n_id) ;
+		}
+	}
+
+
+	for (auto ni_id:m_meshTet->nodes())
+	{
+		Node ni = m_meshTet->get<Node>(ni_id);
+		var_dist_int->set(ni_id, std::numeric_limits<double>::max()) ;
+		var_dist_out->set(ni_id, std::numeric_limits<double>::max()) ;
+		for (auto nj_id:nodes_Paroi) {
+			Node nj = m_meshTet->get<Node>(nj_id);
+			if ((ni.point() - nj.point()).norm() < var_dist_int->value(ni_id)) {
+				var_dist_int->set(ni_id, (ni.point() - nj.point()).norm());
+			}
+		}
+
+		for (auto nj_id:nodes_Farfield) {
+			Node nj = m_meshTet->get<Node>(nj_id);
+			if ((ni.point()-nj.point()).norm() < var_dist_out->value(ni_id) )
+			{
+				var_dist_out->set(ni_id, (ni.point()-nj.point()).norm()) ;
+			}
+
+		}
+	}
+
+	for (auto n_id:m_meshTet->nodes())
+	{
+		var_dist->set(n_id, ( var_dist_int->value(n_id) )/( var_dist_int->value(n_id) + var_dist_out->value(n_id) ) );
+	}
+
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
@@ -272,12 +325,14 @@ AeroPipeline_2D::execute(){
 
 
 	std::cout << " " << std::endl;
+	std::cout << "======================================" << std::endl;
 	std::cout << "INFORMATIONS COMPLEMENTAIRES :" << std::endl;
 	std::cout << "Nbr de blocs : " << m_Blocking2D.getNbFaces() << std::endl;
 	std::cout << "Nbr de noeuds : " << m_meshHex->getNbNodes() << std::endl;
 	std::cout << "Nbr faces : " << m_meshHex->getNbFaces() << std::endl;
 	std::cout << "Nbr arêtes : " << m_meshHex->getNbEdges() << std::endl;
-
+	std::cout << "======================================" << std::endl;
+	std::cout << " " << std::endl;
 
 	// Ecriture finale des maillages
 	std::cout << "-> Elliptic Smoothing on quad mesh" << std::endl;
