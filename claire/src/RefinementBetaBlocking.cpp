@@ -528,8 +528,10 @@ RefinementBetaBlocking::ChordRefinement(int ind_chord){
 
 
 	// Refinement
-	for (auto b:m_blocking->allBlocks())
+	//for (auto b:m_blocking->allBlocks())
+	for (auto b_id:m_map_chords[ind_chord])
 	{
+		Blocking2D::Block b = m_blocking->block(b_id) ;
 		int Nx = b.getNbDiscretizationI();
 		int Ny = b.getNbDiscretizationJ();
 
