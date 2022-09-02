@@ -202,10 +202,6 @@ AeroPipeline_2D::execute(){
 	// Calcul du gradient du champ de Level Set
 	std::cout << "-> Calcul Gradient" << std::endl;
 	t_start = clock();
-	//m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-	//LeastSquaresGradientComputation grad2D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
-	//                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	//grad2D.execute();
 	Variable<math::Vector3d>* var_VectorField = m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
 	ComputeVectorFieldForExtrusion();
 	t_end = clock();
@@ -226,16 +222,6 @@ AeroPipeline_2D::execute(){
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
-	// Extrusion par couches
-	/*
-	m_nbr_couches=1;
-	for(int couche=1;couche<=m_nbr_couches;couche++){
-		t_start = clock();
-		GenerationCouche(couche, 1.0/m_nbr_couches);
-		t_end = clock();
-		std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
-	}
-	 */
 
 	std::cout << "-> Extrusion" << std::endl;
 	t_start = clock();
@@ -508,12 +494,12 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 	bnd_op.markCellOnGeometry(markCurveEdges, markCurveNodes,
 	                          markPointNodes, markAloneNodes);
 
-	m_meshTet->unmarkAll<Node>(markAloneNodes);
-	m_meshTet->freeMark<Node>(markAloneNodes);
 	m_meshTet->unmarkAll<Edge>(markCurveEdges);
 	m_meshTet->freeMark<Edge>(markCurveEdges);
 	m_meshTet->unmarkAll<Node>(markCurveNodes);
 	m_meshTet->freeMark<Node>(markCurveNodes);
+	m_meshTet->unmarkAll<Node>(markAloneNodes);
+	m_meshTet->freeMark<Node>(markAloneNodes);
 
 	// Calcul de la longueur max des arêtes de bloc
 	double perim = m_Bnd->ComputeBoundaryLength(color);		// Calcul du périmètre du bord regardé
@@ -647,7 +633,6 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 		Node n_blocking = m_Blocking2D.newBlockCorner(n.point());
 		var_new_id->set(n_id, n_blocking.id());
 		var_couche->set(n_blocking.id(), m_couche_id->value(n_id));
-		//std::cout << "Noeud " << n_blocking.id() << " dans la couche " << var_couche->value(n_blocking.id()) << std::endl;
 
 		UpdateLinker(m_linker_HG, n, m_linker_BG, n_blocking); // Init linker_BG
 	}

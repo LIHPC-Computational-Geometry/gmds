@@ -102,7 +102,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_User)
 	params_aero.edge_size_first_ortho_wall = 1*pow(10,-6);	// Size of the first edge orthogonal to the wall
 
 	// Vector Field Computation Parameters
-	params_aero.vectors_field = 3;				// Choose the way the vectors field is computed for the extrusion
+	params_aero.vectors_field = 5;				// Choose the way the vectors field is computed for the extrusion
 	params_aero.x_VectorField_Z1 = 100;			// Choose the x value of the first zone  [-inf, x_VectorField_Z1]
 	params_aero.x_VectorField_Z2 = 600;			// Choose the x value of the second zone [x_VectorField_Z2, +inf]
 
