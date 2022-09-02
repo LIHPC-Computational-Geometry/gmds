@@ -474,7 +474,9 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id,
 
 
 	// TEST 4
-	math::Vector3d v_follow = m_meshQ->get<Node>(Front_IN.getIdealNode(n_neighbor.id())).point() - n_neighbor.point() ;
+	math::Vector3d v_follow = (m_meshQ->get<Node>(Front_IN.getIdealNode(n_neighbor.id())).point() - n_neighbor.point()).normalize() ;
+	v_follow += (m_meshQ->get<Node>(Front_IN.getIdealNode(n_id)).point() - n.point() ).normalize() ;
+	v_follow.normalize();
 	Variable<math::Vector3d>* var_flow = m_meshT->newVariable<math::Vector3d , GMDS_NODE>("Flow") ;
 	for (auto n_id:m_meshT->nodes())
 	{
