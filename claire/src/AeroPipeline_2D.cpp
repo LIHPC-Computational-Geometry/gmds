@@ -74,6 +74,7 @@ AeroPipeline_2D::execute(){
 	Variable<double>* var_dist = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance");
 	Variable<double>* var_dist_int = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
 	Variable<double>* var_dist_out = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+
 	/*
 	LevelSetCombined lsCombined(m_meshTet, m_Bnd->getMarkParoi(), m_Bnd->getMarkAmont(),
 	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
@@ -82,6 +83,7 @@ AeroPipeline_2D::execute(){
 
 	lsCombined.execute();
 	*/
+
 
 	int mark_Farfiel = m_Bnd->getMarkAmont();
 	int mark_Paroi = m_Bnd->getMarkParoi();
@@ -129,6 +131,7 @@ AeroPipeline_2D::execute(){
 	{
 		var_dist->set(n_id, ( var_dist_int->value(n_id) )/( var_dist_int->value(n_id) + var_dist_out->value(n_id) ) );
 	}
+
 
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
@@ -920,13 +923,14 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 
 	Variable<math::Vector3d>* var_VectorsForExtrusion = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
 
-	if (m_params.vectors_field <= 0 || m_params.vectors_field > 4)
+	if (m_params.vectors_field <= 0 || m_params.vectors_field > 5)
 	{
 		// Compute the gradient field of the level set from the wall to the external boundary
 		LeastSquaresGradientComputation grad2D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
 		                                       var_VectorsForExtrusion);
 		grad2D.execute();
 	}
+
 	else if (m_params.vectors_field == 1)
 	{
 		// Compute the gradient field of the level set from the wall to the external boundary
@@ -934,6 +938,7 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 		                                       var_VectorsForExtrusion);
 		grad2D.execute();
 	}
+
 	else if (m_params.vectors_field == 2)
 	{
 		Variable<math::Vector3d>* var_VectorField_1 = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_1");
@@ -980,6 +985,7 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 		m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_2);
 
 	}
+
 	else if (m_params.vectors_field == 3)
 	{
 		Variable<math::Vector3d>* var_VectorField_1 = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_1");
@@ -1022,6 +1028,7 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 		m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_1);
 
 	}
+
 	else if (m_params.vectors_field == 4)
 	{
 		Variable<math::Vector3d>* var_VectorField_1 = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_1");
@@ -1062,6 +1069,67 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 				v_transit.normalize();
 				var_VectorsForExtrusion->set(n_id, v_transit);
 			}
+
+		}
+
+		m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_1);
+
+	}
+
+	else if (m_params.vectors_field == 5)
+	{
+		Variable<double>* var_distance = m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance");
+		Variable<math::Vector3d>* var_VectorField_1 = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_1");
+
+		LeastSquaresGradientComputation grad2D_1(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+		                                         var_VectorField_1);
+		grad2D_1.execute();
+
+		double angle_rad = m_params.angle_attack*M_PI/180.0 ;
+		math::Vector3d v_flow({cos(angle_rad), sin(angle_rad), 0.0});
+		math::Vector3d v_flow_ortho({-sin(angle_rad), cos(angle_rad), 0.0});
+
+		//std::cout << "v flow" << v_flow << std::endl;
+		//std::cout << "v flow ortho" << v_flow_ortho << std::endl;
+
+		for (auto n_id:m_meshTet->nodes())
+		{
+			Node n = m_meshTet->get<Node>(n_id);
+			math::Point p = n.point();
+
+			math::Vector3d vec_1 = var_VectorField_1->value(n_id);
+			vec_1.normalize();
+
+			math::Vector3d vec_flow(v_flow);
+			double min_angle = abs(acos(vec_1.dot(v_flow))) ;
+
+			if ( acos(vec_1.dot(-v_flow)) < min_angle )
+			{
+				min_angle = acos(vec_1.dot(-v_flow));
+				vec_flow = -v_flow;
+			}
+			if (acos(vec_1.dot(v_flow_ortho)) < min_angle )
+			{
+				min_angle =acos(vec_1.dot(v_flow_ortho));
+				vec_flow = v_flow_ortho;
+			}
+			if ( acos(vec_1.dot(-v_flow_ortho)) < min_angle )
+			{
+				min_angle = acos(vec_1.dot(-v_flow_ortho));
+				vec_flow = -v_flow_ortho;
+			}
+
+			double theta = pow(var_distance->value(n_id), 2.0) ;
+			math::Vector3d v = theta*vec_flow + (1.0-theta)*vec_1 ;
+			v.normalize();
+			var_VectorsForExtrusion->set(n_id, v);
+			/*
+			std::cout << "=============================" << std::endl;
+			std::cout << "node " << n_id << std::endl;
+			std::cout << "theta" << theta << std::endl;
+			std::cout << "v flow" << vec_flow << std::endl;
+			std::cout << "min angle" << min_angle << std::endl;
+			 */
 
 		}
 
