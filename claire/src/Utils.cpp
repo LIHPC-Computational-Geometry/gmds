@@ -6,6 +6,8 @@
 #include <gmds/claire/AeroMeshQuality.h>
 #include <gmds/ig/Blocking2D.h>
 #include <gmds/ig/MeshDoctor.h>
+#include <Eigen/Sparse>
+#include <Eigen/Eigen>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -266,6 +268,60 @@ math::Point Utils::WeightedPointOnBranch(const math::Point A, const math::Point 
 	}
 
 	return P_Weighted;
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+bool Utils::isInTriangle(const math::Point T1, const math::Point T2, const math::Point T3, const math::Point M)
+{
+	bool isInFace(false);
+
+	math::Vector3d vij = T2-T1 ;
+	math::Vector3d vjk = T3-T2 ;
+	math::Vector3d vki = T1-T3 ;
+	math::Vector3d viM = M-T1 ;
+	math::Vector3d vjM = M-T2 ;
+	math::Vector3d vkM = M-T3 ;
+
+	double d1 = ( vij.cross(viM) ).dot( viM.cross(-vki) ) ;
+	double d2 = ( -vij.cross(vjM) ).dot( vjM.cross(vjk) ) ;
+	double d3 = ( vki.cross(vkM) ).dot( vkM.cross(-vjk) ) ;
+
+	if (d1 >= 0 && d2 >= 0 && d3 >= 0) {
+		isInFace = true;
+	}
+	return isInFace;
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+double Utils::linearInterpolation2D3Pt(const math::Point P1, const math::Point P2, const math::Point P3, const math::Point M, const double c1, const double c2, const double c3)
+{
+	Eigen::Matrix3d Mat_A;
+
+	Mat_A(0,0) = P1.X() ;
+	Mat_A(0,1) = P1.Y() ;
+	Mat_A(0,2) = 1.0 ;
+	Mat_A(1,0) = P2.X() ;
+	Mat_A(1,1) = P2.Y() ;
+	Mat_A(1,2) = 1.0 ;
+	Mat_A(2,0) = P3.X() ;
+	Mat_A(2,1) = P3.Y() ;
+	Mat_A(2,2) = 1.0 ;
+
+	Eigen::Matrix3d Mat_A_Inv = Mat_A.inverse();
+
+	Eigen::Vector3d b;
+	b[0] = c1 ;
+	b[1] = c2 ;
+	b[2] = c3 ;
+
+	Eigen::Vector3d coef = Mat_A_Inv * b;
+
+	return coef[0]*M.X() + coef[1]*M.Y() + coef[2];
+
 }
 /*------------------------------------------------------------------------*/
 

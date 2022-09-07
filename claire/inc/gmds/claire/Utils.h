@@ -85,6 +85,25 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static math::Point WeightedPointOnBranch(const math::Point A, const math::Point B, const math::Point C, double alpha);
 	/*----------------------------------------------------------------------------*/
+	/** @brief Return true if the point M is in the triangle T
+	 	*
+		* \param[in] T1, T2, T3 the point of the triangle
+	 	* \param[in] M, the point to check if it's in the triangle
+		*
+		* \return  the point at position alpha from the point A
+	 */
+	static bool isInTriangle(const math::Point T1, const math::Point T2, const math::Point T3, const math::Point M);
+	/*----------------------------------------------------------------------------*/
+	/** @brief Linear 2D interpolation with 3 points
+	 	*
+		* \param[in] P1, P2, P3 the 3 points were the value is known
+	 	* \param[in] c1, c2, c3 the 3 values à the points P1, P2 and P3
+	 	* \param[in] M the position we want to interpolate the value
+		*
+		* \return  the interpolated value
+	 */
+	static double linearInterpolation2D3Pt(const math::Point P1, const math::Point P2, const math::Point P3, const math::Point M, const double c1, const double c2, const double c3);
+	/*----------------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/
