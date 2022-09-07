@@ -85,6 +85,12 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_2D : public AbstractAeroPipeline {
 	 */
 	void MeshRefinement();
 	/*----------------------------------------------------------------------------*/
+	/** @brief Check the mesh alignement with a vector field.
+	 * @param
+	 * @return void
+	 */
+	void MeshAlignement();
+	/*----------------------------------------------------------------------------*/
  protected:
 	/** blocking 2D */
 	Blocking2D m_Blocking2D;
