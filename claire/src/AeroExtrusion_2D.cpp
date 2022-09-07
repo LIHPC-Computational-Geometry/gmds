@@ -427,8 +427,9 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id,
 	*/
 
 
-	/*
+
 	// TEST 3
+	/*
 	math::Vector3d v_flow({cos(m_params_aero.angle_attack*M_PI/180.0), sin(m_params_aero.angle_attack*M_PI/180.0), 0.0}) ;
 	math::Vector3d v_flow_ortho({-v_flow.Y(), v_flow.X(), 0.0});
 	v_flow.normalize();
@@ -486,7 +487,6 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id,
 	advpoint_n1.execute();
 	Node n1 = m_meshQ->newNode(advpoint_n1.getPend());
 	m_meshT->deleteVariable(GMDS_NODE, "Flow") ;
-
 
 
 

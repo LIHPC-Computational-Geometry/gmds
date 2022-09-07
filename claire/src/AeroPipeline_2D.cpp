@@ -21,6 +21,8 @@
 #include <gmds/claire/RefinementBetaBlocking.h>
 #include <gmds/claire/AeroEllipticSmoothing_2D.h>
 #include <gmds/smoothy/EllipticSmoother2D.h>
+#include<gmds/math/Line.h>
+#include<gmds/math/BezierCurve.h>
 
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -395,6 +397,8 @@ AeroPipeline_2D::execute(){
 
 	// Analysis of the quad mesh quality
 	math::Utils::AnalyseQuadMeshQuality(m_meshHex);
+
+	//MeshAlignement();
 
 
 	// Ecriture finale des maillages
@@ -898,6 +902,209 @@ AeroPipeline_2D::BlockingClassification(){
 		}
 	}
 
+
+
+
+
+	// Curved the block edges in the tangent direction of the wall
+	Variable<math::Vector3d>* var_vec_tangent_layer = m_Blocking2D.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Vec_Tan_Layer");
+	for (auto n_id:m_Blocking2D.nodes())
+	{
+		int node_dim = m_Blocking2D.getBlockingDim(n_id);
+		if (node_dim == 0)
+		{
+			Node n = m_Blocking2D.get<Node>(n_id);
+			std::vector<Edge> block_edges = n.get<Edge>() ;
+			std::vector<Node> n_neighbor;
+			for (auto e:block_edges)
+			{
+				std::vector<Node> e_nodes = e.get<Node>();
+				if (e_nodes[0].id() == n_id && var_couche->value(e_nodes[0].id()) == var_couche->value(e_nodes[1].id()) )
+				{
+					n_neighbor.push_back(e_nodes[1]);
+				}
+				else if (e_nodes[1].id() == n_id && var_couche->value(e_nodes[0].id()) == var_couche->value(e_nodes[1].id()) )
+				{
+					n_neighbor.push_back(e_nodes[0]);
+				}
+
+			}
+
+			if (n_neighbor.size() == 2)
+			{
+				math::Vector3d v = ( n.point() - n_neighbor[0].point() ).normalize() + ( n_neighbor[1].point() - n.point() ).normalize() ;
+				v.normalize();
+				var_vec_tangent_layer->set(n_id, v);
+			}
+
+		}
+	}
+
+
+	//Variable<int>* var_couche_id = m_Blocking2D.getVariable<int, GMDS_NODE>("GMDS_Couche");
+	for (auto e_id:m_Blocking2D.edges())
+	{
+		Edge e = m_Blocking2D.get<Edge>(e_id);
+		std::vector<Node> e_nodes = e.get<Node>();
+
+		if (var_couche->value(e_nodes[0].id()) != 0
+		    && var_couche->value(e_nodes[0].id()) != 1
+		    && var_couche->value(e_nodes[0].id()) != m_params.nbr_couches
+		    && var_couche->value(e_nodes[0].id()) == var_couche->value(e_nodes[1].id())) {
+
+			math::Vector3d v0 = var_vec_tangent_layer->value(e_nodes[0].id());
+			math::Vector3d v1 = var_vec_tangent_layer->value(e_nodes[1].id());
+
+			math::Line l0(e_nodes[0].point(), v0);
+			math::Line l1(e_nodes[1].point(), v1);
+
+			math::Point P_control;
+			double param_useless;
+			bool intersection_found = l0.intersect2D(l1, P_control, param_useless);
+
+			if (intersection_found) {
+				math::BezierCurve bcurve(e_nodes[0].point(), P_control, e_nodes[1].point());
+
+				Blocking2D::Block b = m_Blocking2D.block(e.get<Face>()[0].id());
+				int nb_subdi;
+				if (b.isEdgeOnI(e_id)) {
+					nb_subdi = b.getNbDiscretizationI();
+				}
+				else {
+					nb_subdi = b.getNbDiscretizationJ();
+				}
+
+				if (nb_subdi >= 2) {
+					/*
+					std::cout << "--------------------------------------------------" << std::endl;
+					std::cout << "Edge id : " << e_id << ", nbr subdi : " << nb_subdi << std::endl;
+				   std::cout << " " << std::endl;
+					std::cout << "Point A : " << e_nodes[0].point() << std::endl;
+				   std::cout << "Tan A : " << v0 << std::endl;
+					std::cout << "Point B : " << e_nodes[1].point() << std::endl;
+				   std::cout << "Tan B : " << v1 << std::endl;
+				   std::cout << " " << std::endl;
+				   std::cout << "Point contrôl : " << P_control << std::endl;
+				   std::cout << "Intersection trouvée : " << intersection_found << std::endl;
+				   v0.normalize();
+				   v1.normalize();
+				   std::cout << v0.dot(v1) << std::endl;
+				   */
+					std::vector<math::Point> new_pos = bcurve.getDiscretization(nb_subdi);
+
+					Node corner_0 = b.getNode(0);
+					Node corner_1 = b.getNode(1);
+					Node corner_2 = b.getNode(2);
+					Node corner_3 = b.getNode(3);
+
+					int Nx = b.getNbDiscretizationI();
+					int Ny = b.getNbDiscretizationJ();
+
+
+					if (b.isEdgeOnI(e_id)) {
+						if (e_nodes[0].id() == corner_0.id() && e_nodes[1].id() == corner_1.id())
+						{
+							for (int i=1;i<Nx-1;i++)
+							{
+								b(i,0).setPoint(new_pos[i]);
+							}
+						}
+						if (e_nodes[0].id() == corner_3.id() && e_nodes[1].id() == corner_2.id())
+						{
+							for (int i=1;i<Nx-1;i++)
+							{
+								b(i,Ny-1).setPoint(new_pos[i]);
+							}
+						}
+						if (e_nodes[0].id() == corner_1.id() && e_nodes[1].id() == corner_0.id())
+						{
+							for (int i=1;i<Nx-1;i++)
+							{
+								b(i,0).setPoint(new_pos[Nx-1-i]);
+							}
+						}
+						if (e_nodes[0].id() == corner_2.id() && e_nodes[1].id() == corner_3.id())
+						{
+							for (int i=1;i<Nx-1;i++)
+							{
+								b(i,Ny-1).setPoint(new_pos[Nx-1-i]);
+							}
+						}
+
+					}
+
+
+					if (b.isEdgeOnJ(e_id)) {
+						if (e_nodes[0].id() == corner_0.id() && e_nodes[1].id() == corner_3.id())
+						{
+							for (int j=1;j<Ny-1;j++)
+							{
+								b(0,j).setPoint(new_pos[j]);
+							}
+						}
+						if (e_nodes[0].id() == corner_1.id() && e_nodes[1].id() == corner_2.id())
+						{
+							for (int j=1;j<Ny-1;j++)
+							{
+								b(Nx-1,j).setPoint(new_pos[j]);
+							}
+						}
+						if (e_nodes[0].id() == corner_3.id() && e_nodes[1].id() == corner_0.id())
+						{
+							for (int j=1;j<Nx-1;j++)
+							{
+								b(0,j).setPoint(new_pos[Ny-1-j]);
+							}
+						}
+						if (e_nodes[0].id() == corner_2.id() && e_nodes[1].id() == corner_1.id())
+						{
+							for (int j=1;j<Ny-1;j++)
+							{
+								b(Nx-1,j).setPoint(new_pos[Ny-1-j]);
+							}
+						}
+
+					}
+
+
+
+				}
+			}
+		}
+
+	}
+
+	m_Blocking2D.deleteVariable(GMDS_NODE, "GMDS_Vec_Tan_Layer");
+
+
+
+
+	// New mesh of the interior points of the blocks
+	for(auto B0:m_Blocking2D.allBlocks()) {
+		auto Nx = B0.getNbDiscretizationI();
+		auto Ny = B0.getNbDiscretizationJ();
+
+		Array2D<TCellID> *a = new Array2D<TCellID>(Nx, Ny);
+		Array2D<math::Point> pnts(Nx, Ny);
+
+		for (auto i = 0; i < Nx; i++) {
+			pnts(i, 0) = B0(i,0).point();
+			pnts(i, Ny - 1) = B0(i,Ny-1).point();
+		}
+		for (auto j = 0; j < Ny; j++) {
+			pnts(0, j) = B0(0,j).point();
+			pnts(Nx - 1, j) = B0(Nx-1,j).point();
+		}
+
+		math::TransfiniteInterpolation::computeQuad(pnts);
+		for (auto i = 1; i < Nx - 1; i++) {
+			for (auto j = 1; j < Ny - 1; j++) {
+				B0(i,j).setPoint(pnts(i,j));
+			}
+		}
+	}
+
+
 }
 /*------------------------------------------------------------------------*/
 
@@ -1274,3 +1481,110 @@ void
 	m_Blocking2D.freeMark<Node>(mark_refinementNeeded);
 }
 /*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void
+   AeroPipeline_2D::MeshAlignement()
+{
+
+	Variable<math::Vector3d>* var_vector_quadmesh = m_meshHex->newVariable<math::Vector3d, GMDS_NODE>("Vector_Ref");
+	Variable<math::Vector3d>* var_vector_trimesh = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
+
+	// Set the reference vector field on the mesh
+	for (auto n_id:m_meshHex->nodes())
+	{
+		Node n = m_meshHex->get<Node>(n_id);
+		bool triangle_found(false);
+		TCellID f_id_in_Tri_mesh(NullID);
+		for (auto f_tri_id:m_meshTet->faces())
+		{
+			if (!triangle_found) {
+				Face f = m_meshTet->get<Face>(f_tri_id);
+				std::vector<Node> f_nodes = f.get<Node>();
+				triangle_found = math::Utils::isInTriangle(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point(), n.point());
+				if (triangle_found)
+				{
+					f_id_in_Tri_mesh = f_tri_id;
+				}
+			}
+		}
+
+		if (f_id_in_Tri_mesh != NullID)
+		{
+			math::Vector3d v;
+			Face f = m_meshTet->get<Face>(f_id_in_Tri_mesh);
+			std::vector<Node> f_nodes = f.get<Node>();
+			v.setX(math::Utils::linearInterpolation2D3Pt(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point(), n.point(),
+			                                      var_vector_trimesh->value(f_nodes[0].id()).X(),
+			                                      var_vector_trimesh->value(f_nodes[1].id()).X(),
+			                                      var_vector_trimesh->value(f_nodes[2].id()).X()) );
+			v.setY(math::Utils::linearInterpolation2D3Pt(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point(), n.point(),
+			                                             var_vector_trimesh->value(f_nodes[0].id()).Y(),
+			                                             var_vector_trimesh->value(f_nodes[1].id()).Y(),
+			                                             var_vector_trimesh->value(f_nodes[2].id()).Y()) );
+			v.setZ(0.0);
+
+			var_vector_quadmesh->set(n_id, v);
+
+		}
+	}
+
+
+	MeshDoctor doc(m_meshHex);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	Variable<double>* var_deviation = m_meshHex->newVariable<double, GMDS_NODE>("MQ_Deviation_Flow");
+	// Compute the flow deviation
+	for (auto n_id:m_meshHex->nodes())
+	{
+		Node n = m_meshHex->get<Node>(n_id);
+		math::Vector3d v_ref = (var_vector_quadmesh->value(n_id)).normalize();
+		math::Vector3d v_ref_ortho({-v_ref.Y(), v_ref.X(), 0.0}) ;
+		v_ref_ortho.normalize();
+		std::vector<Edge> edges = n.get<Edge>();
+		std::vector<double> min_angles;
+
+		for (auto e:edges)
+		{
+			std::vector<Node> e_nodes = e.get<Node>();
+			math::Vector3d vec_edge = (e_nodes[0].point() - e_nodes[1].point()).normalize() ;
+			double min_angle(90);
+
+			if ( acos(vec_edge.dot(v_ref))*180/M_PI < min_angle )
+			{
+				min_angle = acos(vec_edge.dot(v_ref))*180/M_PI;
+			}
+			if ( acos(vec_edge.dot(-v_ref))*180/M_PI < min_angle )
+			{
+				min_angle = acos(vec_edge.dot(-v_ref))*180/M_PI;
+			}
+			if ( acos(vec_edge.dot(v_ref_ortho))*180/M_PI < min_angle )
+			{
+				min_angle = acos(vec_edge.dot(v_ref_ortho))*180/M_PI;
+			}
+			if ( acos(vec_edge.dot(-v_ref_ortho))*180/M_PI < min_angle )
+			{
+				min_angle = acos(vec_edge.dot(-v_ref_ortho))*180/M_PI;
+			}
+
+			min_angles.push_back(min_angle);
+
+		}
+
+		var_deviation->set(n_id, 0);
+		for (auto angle:min_angles)
+		{
+			if ( var_deviation->value(n_id) < angle )
+			{
+				var_deviation->set(n_id, angle) ;
+			}
+		}
+
+	}
+
+
+}
+/*------------------------------------------------------------------------*/
+
