@@ -11,13 +11,24 @@
 /*----------------------------------------------------------------------------*/
 // GMDS File Headers
 /*----------------------------------------------------------------------------*/
-#include <gmds/math/Point.h>
-#include "LIB_GMDS_BLOCKING_export.h"
+#	include "LIB_GMDS_BLOCKING_export.h"
+#	include "gmds/ig/Mesh.h"
+#	include <gmds/math/Point.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
 namespace blocking{
 /*----------------------------------------------------------------------------*/
+struct Myitem
+{
+	template<class GMap>
+	struct Dart_wrapper
+	{
+		typedef CGAL::Cell_attribute_with_point<GMap, std::vector<int>, CGAL::Tag_true> Vertex_attribute;
+		typedef std::tuple<Vertex_attribute ,void,void> Attributes;
+	};
+};
+
 typedef CGAL::Linear_cell_complex_for_generalized_map<3,3> LCC_3;
 typedef LCC_3::Dart_handle                                 Dart_handle;
 typedef LCC_3::Point                                       Point;
@@ -92,6 +103,11 @@ class LIB_GMDS_BLOCKING_API Blocking{
 	 void createGrid3d(gmds::math::Point APmin, gmds::math::Point APmax, int ANx, int ANy, int ANz);
 
 	 /*--------------------------------------------------------------------*/
+	 /** @brief  Create a block structure from a GMDS Mesh
+	 */
+	 void createBlocks3dFromMesh(const gmds::Mesh &AMesh);
+
+	 /*--------------------------------------------------------------------*/
 	 /** @brief  Read the blocking using the vtk file format
 	  */
 	 void readVTKFile(std::string AFileName);
@@ -106,7 +122,7 @@ class LIB_GMDS_BLOCKING_API Blocking{
 	  */
 	 void writeVTKFile(std::string AFileName) const;
 
-	 // TODO write vtk / read vtk / create grid with holes /
+	 // TODO read vtk / create grid with holes /
     // TODO fill the maps entities_2_darts
 	 // outside cell ?
 
@@ -132,6 +148,18 @@ class LIB_GMDS_BLOCKING_API Blocking{
 
   private:
 
+	 /*--------------------------------------------------------------------*/
+	 /** @brief Create a hexaedron in the GMAP from list of GMDS::Node
+	  */
+	 void createNewHex(std::vector<Node> ANodes, std::map<std::tuple<int,int,int,int>, Dart_handle> &AFtoD);
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Create a quadrangle in the GMAP
+	  */
+	 Dart_handle createNewQuad(Node n0, Node n1, Node n2, Node n3, std::map<std::tuple<int,int,int,int>, Dart_handle> &AFtoD);
+
+ private:
+
 	// blocking entities to darts mapping
 	std::map<int, Dart_handle> v2d_;
 	std::map<int, Dart_handle> e2d_;
@@ -148,5 +176,3 @@ class LIB_GMDS_BLOCKING_API Blocking{
 /*----------------------------------------------------------------------------*/
 #endif //GMDS_BLOCKING_H
 /*----------------------------------------------------------------------------*/
-
-
