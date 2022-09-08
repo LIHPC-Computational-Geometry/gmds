@@ -22,8 +22,8 @@ TEST(SheetInsertTestSuite, instanciate)
 	gmds::blocking::SheetInsert is;
 	is.setBl(&bl);
 
-	gmds::blocking::SheetInsert::STATUS status = is.execute();
-	ASSERT_EQ(status, gmds::blocking::SheetInsert::NOT_YET_IMPLEMENTED);
+//	gmds::blocking::SheetInsert::STATUS status = is.execute();
+//	ASSERT_EQ(status, gmds::blocking::SheetInsert::NOT_YET_IMPLEMENTED);
 }
 /*----------------------------------------------------------------------------*/
 TEST(SheetInsertTestSuite, pillow3d)
@@ -35,7 +35,13 @@ TEST(SheetInsertTestSuite, pillow3d)
 	gmds::blocking::SheetInsert is;
 	is.setBl(&bl);
 
-	gmds::blocking::SheetInsert::STATUS status = is.pillow();
+	gmds::blocking::LCC_3::size_type mark = is.lcc()->get_new_mark();
+	gmds::blocking::InputMarkedDarts imd;
+	imd.pillow_mark_first_cells3d(bl.lcc(), mark, 5);
+
+	gmds::blocking::SheetInsert::STATUS status = is.pillow(mark);
+	is.lcc()->free_mark(mark);
+
 	ASSERT_EQ(status, gmds::blocking::SheetInsert::NOT_YET_IMPLEMENTED);
 
 	bl.writeVTKFile("pillow3d.vtk");
@@ -51,7 +57,13 @@ TEST(SheetInsertTestSuite, insert3d)
 	gmds::blocking::SheetInsert is;
 	is.setBl(&bl);
 
-	gmds::blocking::SheetInsert::STATUS status = is.execute();
+	gmds::blocking::LCC_3::size_type mark = is.lcc()->get_new_mark();
+	gmds::blocking::InputMarkedDarts imd;
+	imd.insertsheet_mark_first_cells3d(bl.lcc(), mark, 5);
+
+	gmds::blocking::SheetInsert::STATUS status = is.execute(mark);
+	is.lcc()->free_mark(mark);
+
 	ASSERT_EQ(status, gmds::blocking::SheetInsert::NOT_YET_IMPLEMENTED);
 
 	bl.writeVTKFile("insertsheet3d.vtk");

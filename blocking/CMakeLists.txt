@@ -8,10 +8,12 @@ set(GMDS_LIB_PREFIX gmds/blocking)
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/blocking/Blocking.h
+        inc/gmds/blocking/InputMarkedDarts.h
         inc/gmds/blocking/SheetInsert.h
         )
 set(GMDS_SRC
         src/Blocking.cpp
+        src/InputMarkedDarts.cpp
         src/SheetInsert.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
@@ -43,7 +45,7 @@ message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}CGAL_MINOR_VERSION}")
 #LIBRARY TO INSTALL
 target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_IG}
-        #${LIB_GMDS_CAD}
+        ${LIB_GMDS_CADFAC}
         #${LIB_GMDS_IG_ALGO}
         ${LIB_GMDS_IO}
         #${LIB_GMDS_SMOOTHY})
