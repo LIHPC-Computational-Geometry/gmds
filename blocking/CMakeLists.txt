@@ -8,10 +8,11 @@ set(GMDS_LIB_PREFIX gmds/blocking)
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/blocking/Blocking.h
+        inc/gmds/blocking/SheetInsert.h
         )
 set(GMDS_SRC
         src/Blocking.cpp
-        )
+        src/SheetInsert.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

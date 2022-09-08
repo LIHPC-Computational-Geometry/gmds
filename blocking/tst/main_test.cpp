@@ -4,6 +4,7 @@
 // Files containing the different test suites to launch
 #include "BlockingTestSuite.h"
 #include "CGALTestSuite.h"
+#include "SheetInsertTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

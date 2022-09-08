@@ -503,8 +503,8 @@ void Blocking::writeVTKFile(std::string AFileName) const
 				m.newHex(v2n[v0], v2n[v1], v2n[v2], v2n[v3], v2n[v4], v2n[v5], v2n[v6], v2n[v7]);
 			} break;
 			default: {
-				std::string s = "Blocking::writeVTKFile 3d cell has an unexpected number of darts " + std::to_string(nb);
-				throw gmds::GMDSException(s);
+//				std::string s = "Blocking::writeVTKFile 3d cell has an unexpected number of darts " + std::to_string(nb);
+//				throw gmds::GMDSException(s);
 			}
 			}
 		}

@@ -1,0 +1,651 @@
+/*----------------------------------------------------------------------------*/
+#include "gmds/blocking/SheetInsert.h"
+/*----------------------------------------------------------------------------*/
+#include <array>
+/*----------------------------------------------------------------------------*/
+//#include <gmds/ig/Mesh.h>
+//#include <gmds/utils/Exception.h>
+//
+//#include <gmds/io/IGMeshIOService.h>
+//#include <gmds/io/VTKReader.h>
+//#include <gmds/io/VTKWriter.h>
+/*----------------------------------------------------------------------------*/
+namespace gmds {
+/*----------------------------------------------------------------------------*/
+namespace blocking {
+/*----------------------------------------------------------------------------*/
+SheetInsert::SheetInsert() {}
+/*----------------------------------------------------------------------------*/
+SheetInsert::~SheetInsert() {}
+/*----------------------------------------------------------------------------*/
+SheetInsert::STATUS
+SheetInsert::execute()
+{
+	// check that the implementation can handle the data
+	if(!lcc()->is_valid()) {
+		std::string s ="SheetInsert::pillow can be applied on a valid gmap only";
+		throw gmds::GMDSException(s);
+	}
+	// TODO check the validity of the shrink set
+
+	// mark the darts to extrude
+	LCC_3::size_type m = lcc()->get_new_mark();
+	LCC_3::size_type m_new = lcc()->get_new_mark();
+
+	// TODO for now we mark the darts of the n first cell
+	const int nbCellsToMark = 5;
+	int nbCellsMarked = 0;
+	for (auto it = lcc()->one_dart_per_cell<3>().begin(); it != lcc()->one_dart_per_cell<3>().end(); it++) {
+
+		for (LCC_3::Dart_of_cell_range<3>::iterator
+		        itbis(lcc()->darts_of_cell<3>(it).begin()),
+		     itend(lcc()->darts_of_cell<3>(it).end()); itbis!=itend; ++itbis) {
+			lcc()->mark(itbis, m);
+		}
+
+		nbCellsMarked++;
+		if(nbCellsMarked>=nbCellsToMark) {
+			break;
+		}
+	}
+
+	LCC_3::size_type m_temp = lcc()->get_new_mark();
+	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
+	     itend(lcc()->darts().end()); it!=itend; ++it)
+	{
+		if(lcc()->is_marked(it, m)) {
+			// Do not mark the boundary darts
+			if(lcc()->alpha(it, 3) != it) {
+				if(!lcc()->is_marked(lcc()->alpha(it, 3), m)) {
+					lcc()->mark(it, m_temp);
+				}
+			}
+		}
+	}
+	std::swap(m, m_temp);
+
+	std::cout<<"nbMarked "<< lcc()->number_of_marked_darts(m)<<std::endl;
+
+	// TODO check validity of the marked darts
+//	// check that on orbit<2,3> two and only two darts are marked
+//	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
+//	     itend(lcc()->darts().end()); it!=itend; ++it) {
+//
+//		int nbfound = 1;
+//
+//		if (lcc()->is_marked(it, m)) {
+//			for (LCC_3::Dart_of_orbit_range<2, 3>::iterator itbis(lcc()->darts_of_orbit<2, 3>(it).begin()), itend(lcc()->darts_of_orbit<2, 3>(it).end());
+//			     itbis != itend; ++itbis) {
+//
+//				LCC_3::Dart_handle dbis = itbis;
+//
+//				if ((it != dbis) && (lcc()->is_marked(dbis, m))) {
+//					nbfound++;
+//				}
+//			}
+//
+//			if (nbfound != 2) {
+//				std::string s ="wrong number of marked darts on orbit<2,3> " + std::to_string(nbfound);
+//				throw gmds::GMDSException(s);
+//			}
+//		}
+//	}
+
+	//
+	std::map<LCC_3::Dart_handle, LCC_3::Dart_handle> old_alpha3;
+
+	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
+	     itend(lcc()->darts().end()); it!=itend; ++it) {
+
+		if(lcc()->is_marked(it, m)) {
+			LCC_3::Dart_handle d0 = it;
+			LCC_3::Dart_handle d3 = lcc()->alpha(d0,3);
+
+			old_alpha3.insert(std::pair<LCC_3::Dart_handle, LCC_3::Dart_handle> (d0, d3));
+		}
+	}
+	std::cout<<"old_alpha3.size() "<< old_alpha3.size()<<std::endl;
+
+	// unsew the alpha3
+	for(auto d: old_alpha3) {
+		if(lcc()->alpha(d.first, 3) != d.first) {
+			lcc()->unsew<3>(d.first);
+		}
+	}
+	lcc()->is_valid();
+
+	// create the pattern for the marked darts
+	std::map<LCC_3::Dart_handle, std::array<LCC_3::Dart_handle, 10> > old_pattern;
+
+	std::map<LCC_3::Vertex_attribute_handle, LCC_3::Vertex_attribute_handle> old2new_vertices;
+
+	LCC_3::size_type m_cells_center = lcc()->get_new_mark();
+
+	for(auto d: old_alpha3) {
+		LCC_3::Vertex_attribute_handle v = lcc()->vertex_attribute(d.first);
+		if(old2new_vertices.find(v) == old2new_vertices.end()) {
+			// TODO determine position of new vertex and which darts are assigned to it
+			double posx = 0.;
+			double posy = 0.;
+			double posz = 0.;
+			int nb_marked_Cells = 0;
+
+			lcc()->darts_of_orbit<1,2,3>(d.first);
+			std::set<LCC_3::Dart_handle> darts;
+			for (LCC_3::Dart_of_orbit_range<1, 2, 3>::iterator it(lcc()->darts_of_orbit<1, 2, 3>(d.first).begin()), itend(lcc()->darts_of_orbit<1, 2, 3>(d.first).end());
+			     it != itend; ++it) {
+
+				LCC_3::Dart_handle dbis = it;
+
+				if(!lcc()->is_marked(it, m_cells_center)) {
+					lcc()->mark_cell<3>(it, m_cells_center);
+					nb_marked_Cells++;
+					LCC_3::Point center_tmp = lcc()->barycenter<3>(it);
+
+					posx += center_tmp.x();
+					posy += center_tmp.y();
+					posz += center_tmp.z();
+				}
+			}
+			posx /= nb_marked_Cells;
+			posy /= nb_marked_Cells;
+			posz /= nb_marked_Cells;
+			lcc()->unmark_all(m_cells_center);
+
+			posx += + 0.8 * (v->point().x() - posx);
+			posy += + 0.8 * (v->point().y() - posy);
+			posz += + 0.8 * (v->point().z() - posz);
+
+			LCC_3::Point newpt(v->point().x(), v->point().y(), v->point().z());
+			v->point() = LCC_3::Point (posx, posy, posz);
+			LCC_3::Vertex_attribute_handle vbis = lcc()->create_vertex_attribute( newpt);
+			old2new_vertices.emplace(v, vbis);
+		}
+		LCC_3::Vertex_attribute_handle vbis = old2new_vertices[v];
+
+		LCC_3::Dart_handle d0 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d1 = lcc()->create_dart(vbis);
+		LCC_3::Dart_handle d2 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d3 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d4 = lcc()->create_dart(vbis);
+		LCC_3::Dart_handle d5 = lcc()->create_dart(vbis);
+		LCC_3::Dart_handle d6 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d7 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d8 = lcc()->create_dart(vbis);
+		LCC_3::Dart_handle d9 = lcc()->create_dart(vbis);
+
+		lcc()->mark(d0, m_new);
+		lcc()->mark(d1, m_new);
+		lcc()->mark(d2, m_new);
+		lcc()->mark(d3, m_new);
+		lcc()->mark(d4, m_new);
+		lcc()->mark(d5, m_new);
+		lcc()->mark(d6, m_new);
+		lcc()->mark(d7, m_new);
+		lcc()->mark(d8, m_new);
+		lcc()->mark(d9, m_new);
+
+		lcc()->link_alpha<2>(d0, d2);
+		lcc()->link_alpha<2>(d5, d1);
+
+		lcc()->link_alpha<1>(d2, d3);
+		lcc()->link_alpha<0>(d3, d4);
+		lcc()->link_alpha<1>(d4, d5);
+		lcc()->link_alpha<1>(d6, d7);
+		lcc()->link_alpha<0>(d7, d8);
+		lcc()->link_alpha<1>(d8, d9);
+
+		lcc()->link_alpha<3>(d2, d6);
+		lcc()->link_alpha<3>(d3, d7);
+		lcc()->link_alpha<3>(d4, d8);
+		lcc()->link_alpha<3>(d5, d9);
+
+		old_pattern.insert(std::pair<LCC_3::Dart_handle, std::array<LCC_3::Dart_handle, 10> > (d.first, {d0,d1,d2,d3,d4,d5,d6,d7,d8,d9}));
+	}
+
+	// link the created darts between the patterns
+	// first step with the always known links
+	for(auto it: old_alpha3) {
+		LCC_3::Dart_handle d = it.first;
+		LCC_3::Dart_handle d0 = old_pattern[d][0];
+		LCC_3::Dart_handle d1 = old_pattern[d][1];
+		LCC_3::Dart_handle d2 = old_pattern[d][2];
+		LCC_3::Dart_handle d3 = old_pattern[d][3];
+		LCC_3::Dart_handle d4 = old_pattern[d][4];
+		LCC_3::Dart_handle d5 = old_pattern[d][5];
+		LCC_3::Dart_handle d6 = old_pattern[d][6];
+		LCC_3::Dart_handle d9 = old_pattern[d][9];
+
+		lcc()->link_alpha<0>(d0, old_pattern[lcc()->alpha(d,0)][0]);
+		lcc()->link_alpha<1>(d0, old_pattern[lcc()->alpha(d,1)][0]);
+
+		lcc()->link_alpha<0>(d1, old_pattern[lcc()->alpha(d,0)][1]);
+		lcc()->link_alpha<1>(d1, old_pattern[lcc()->alpha(d,1)][1]);
+
+		lcc()->link_alpha<0>(d2, old_pattern[lcc()->alpha(d,0)][2]);
+		lcc()->link_alpha<0>(d5, old_pattern[lcc()->alpha(d,0)][5]);
+
+		lcc()->link_alpha<0>(d6, old_pattern[lcc()->alpha(d,0)][6]);
+		lcc()->link_alpha<0>(d9, old_pattern[lcc()->alpha(d,0)][9]);
+
+		// alpha2 for d3 d4
+		lcc()->link_alpha<2>(d3, old_pattern[lcc()->alpha(d,1)][3]);
+		lcc()->link_alpha<2>(d4, old_pattern[lcc()->alpha(d,1)][4]);
+	}
+
+	// link the created darts between the patterns
+	// second step with the links that depend on the orbits
+	for(auto it: old_alpha3) {
+		LCC_3::Dart_handle d = it.first;
+		LCC_3::Dart_handle d6 = old_pattern[d][6];
+		LCC_3::Dart_handle d7 = old_pattern[d][7];
+		LCC_3::Dart_handle d8 = old_pattern[d][8];
+		LCC_3::Dart_handle d9 = old_pattern[d][9];
+
+		lcc()->darts_of_orbit<2,3>(d);
+		std::cout<<"orbit.size() "<< lcc()->darts_of_orbit<2,3>(d).size()<<std::endl;
+
+		// find the marked dart
+		// TODO we assume that there is only one at the moment; which is false with self-intersecting/touching sheets
+		bool found_opp = false;
+
+		for(LCC_3::Dart_of_orbit_range<2,3>::iterator
+		        itbis(lcc()->darts_of_orbit<2,3>(d).begin()),
+		     itend(lcc()->darts_of_orbit<2,3>(d).end()); itbis!=itend; ++itbis) {
+
+			LCC_3::Dart_handle dbis = itbis;
+
+			if((d != dbis) && (lcc()->is_marked(dbis, m))) {
+
+				found_opp = true;
+
+				LCC_3::Dart_handle dbis6 = old_pattern[dbis][6];
+				LCC_3::Dart_handle dbis7 = old_pattern[dbis][7];
+				LCC_3::Dart_handle dbis8 = old_pattern[dbis][8];
+				LCC_3::Dart_handle dbis9 = old_pattern[dbis][9];
+
+				lcc()->link_alpha<2>(d6, dbis6);
+				lcc()->link_alpha<2>(d7, dbis7);
+				lcc()->link_alpha<2>(d8, dbis8);
+				lcc()->link_alpha<2>(d9, dbis9);
+
+				break;
+			}
+		}
+
+		if(!found_opp) {
+			LCC_3::Dart_handle d2 = old_pattern[d][2];
+			LCC_3::Dart_handle d3 = old_pattern[d][3];
+			LCC_3::Dart_handle d4 = old_pattern[d][4];
+			LCC_3::Dart_handle d5 = old_pattern[d][5];
+			lcc()->unlink_alpha<3>(d2);
+			lcc()->unlink_alpha<3>(d3);
+			lcc()->unlink_alpha<3>(d4);
+			lcc()->unlink_alpha<3>(d5);
+			lcc()->erase_dart(d6);
+			lcc()->erase_dart(d7);
+			lcc()->erase_dart(d8);
+			lcc()->erase_dart(d9);
+		}
+	}
+	lcc()->correct_invalid_attributes();
+
+	return SheetInsert::NOT_YET_IMPLEMENTED;
+}
+/*----------------------------------------------------------------------------*/
+SheetInsert::STATUS
+SheetInsert::pillow()
+{
+	//TODO get the set of 3-cells in another way
+
+
+	// check that the implementation can handle the data
+	if(!lcc()->is_valid()) {
+		std::string s ="SheetInsert::pillow can be applied on a valid gmap only";
+		throw gmds::GMDSException(s);
+	}
+	// TODO check the validity of the shrink set
+
+
+	// mark the darts to extrude
+	LCC_3::size_type m = lcc()->get_new_mark();
+	LCC_3::size_type m_new = lcc()->get_new_mark();
+
+//	lcc.mark(dh1, mark);
+	// TODO for now we mark the darts of the first cell
+//	for (auto it = getlcc()->one_dart_per_cell<3>().begin(); it != getlcc()->one_dart_per_cell<3>().end(); it++) {
+//		int nb = getlcc()->darts_of_orbit<0, 1, 2>(it).size();
+//		std::cout<<"nbdarts "<<nb<<std::endl;
+//	}
+	auto d = lcc()->one_dart_per_cell<3>().begin();
+	int nb = lcc()->darts_of_orbit<0, 1, 2>(d).size();
+	std::cout<<"nbdarts "<<nb<<std::endl;
+
+	LCC_3::Point center;
+
+	for (LCC_3::Dart_of_cell_range<3>::iterator
+			  it(lcc()->darts_of_cell<3>(d).begin()),
+			  itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
+		lcc()->mark(it, m);
+		center = lcc()->barycenter<3>(it);
+	}
+	d++;
+	for (LCC_3::Dart_of_cell_range<3>::iterator
+	        it(lcc()->darts_of_cell<3>(d).begin()),
+	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
+		lcc()->mark(it, m);
+	}
+	d++;
+	for (LCC_3::Dart_of_cell_range<3>::iterator
+	        it(lcc()->darts_of_cell<3>(d).begin()),
+	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
+		lcc()->mark(it, m);
+	}
+	d++;
+	for (LCC_3::Dart_of_cell_range<3>::iterator
+	        it(lcc()->darts_of_cell<3>(d).begin()),
+	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
+		lcc()->mark(it, m);
+	}
+	d++;
+	for (LCC_3::Dart_of_cell_range<3>::iterator
+	        it(lcc()->darts_of_cell<3>(d).begin()),
+	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
+		lcc()->mark(it, m);
+	}
+
+	LCC_3::size_type m_temp = lcc()->get_new_mark();
+	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
+			  itend(lcc()->darts().end()); it!=itend; ++it)
+	{
+		if(lcc()->is_marked(it, m)) {
+			if(lcc()->alpha(it, 3) == it) {
+				lcc()->mark(it, m_temp);
+			} else {
+				if(!lcc()->is_marked(lcc()->alpha(it, 3), m)) {
+					lcc()->mark(it, m_temp);
+				}
+			}
+		}
+	}
+	std::swap(m, m_temp);
+
+	std::cout<<"nbMarked "<< lcc()->number_of_marked_darts(m)<<std::endl;
+
+
+	// check that on orbit<2,3> two and only two darts are marked
+	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
+			  itend(lcc()->darts().end()); it!=itend; ++it) {
+
+		int nbfound = 1;
+
+		if (lcc()->is_marked(it, m)) {
+			for (LCC_3::Dart_of_orbit_range<2, 3>::iterator itbis(lcc()->darts_of_orbit<2, 3>(it).begin()), itend(lcc()->darts_of_orbit<2, 3>(it).end());
+			     itbis != itend; ++itbis) {
+
+				LCC_3::Dart_handle dbis = itbis;
+
+				if ((it != dbis) && (lcc()->is_marked(dbis, m))) {
+					nbfound++;
+				}
+			}
+
+			if (nbfound != 2) {
+				std::string s ="wrong number of marked darts on orbit<2,3> " + std::to_string(nbfound);
+				throw gmds::GMDSException(s);
+			}
+		}
+	}
+
+	std::map<LCC_3::Dart_handle, LCC_3::Dart_handle> old_alpha3;
+
+	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
+			  itend(lcc()->darts().end()); it!=itend; ++it) {
+
+		if(lcc()->is_marked(it, m)) {
+			LCC_3::Dart_handle d0 = it;
+			LCC_3::Dart_handle d3 = lcc()->alpha(d0,3);
+
+			old_alpha3.insert(std::pair<LCC_3::Dart_handle, LCC_3::Dart_handle> (d0, d3));
+		}
+	}
+	std::cout<<"old_alpha3.size() "<< old_alpha3.size()<<std::endl;
+
+	// unsew the alpha3
+	for(auto d: old_alpha3) {
+//		if(d.first != d.second) {
+//			lcc()->unlink_alpha(d.first, 3);
+//		}
+		if(lcc()->alpha(d.first, 3) != d.first) {
+			lcc()->unsew<3>(d.first);
+		}
+	}
+	lcc()->is_valid();
+//	lcc()->correct_invalid_attributes();
+
+	// create the pattern for the marked darts
+	std::map<LCC_3::Dart_handle, std::array<LCC_3::Dart_handle, 10> > old_pattern;
+
+	std::map<LCC_3::Vertex_attribute_handle, LCC_3::Vertex_attribute_handle> old2new_vertices;
+	LCC_3::size_type m_cells_center = lcc()->get_new_mark();
+
+	for(auto d: old_alpha3) {
+		LCC_3::Vertex_attribute_handle v = lcc()->vertex_attribute(d.first);
+		if(old2new_vertices.find(v) == old2new_vertices.end()) {
+			// TODO determine position of new vertex and which darts are assigned to it=
+			double posx = 0.;
+			double posy = 0.;
+			double posz = 0.;
+			int nb_marked_Cells = 0;
+
+			lcc()->darts_of_orbit<1,2,3>(d.first);
+			std::set<LCC_3::Dart_handle> darts;
+			for (LCC_3::Dart_of_orbit_range<1, 2, 3>::iterator it(lcc()->darts_of_orbit<1, 2, 3>(d.first).begin()), itend(lcc()->darts_of_orbit<1, 2, 3>(d.first).end());
+			     it != itend; ++it) {
+
+				LCC_3::Dart_handle dbis = it;
+
+				if(!lcc()->is_marked(it, m_cells_center)) {
+					lcc()->mark_cell<3>(it, m_cells_center);
+					nb_marked_Cells++;
+					LCC_3::Point center_tmp = lcc()->barycenter<3>(it);
+
+					posx += center_tmp.x();
+					posy += center_tmp.y();
+					posz += center_tmp.z();
+				}
+			}
+			posx /= nb_marked_Cells;
+			posy /= nb_marked_Cells;
+			posz /= nb_marked_Cells;
+			lcc()->unmark_all(m_cells_center);
+
+			posx += + 0.8 * (v->point().x() - posx);
+			posy += + 0.8 * (v->point().y() - posy);
+			posz += + 0.8 * (v->point().z() - posz);
+
+			LCC_3::Point newpt(v->point().x(), v->point().y(), v->point().z());
+			v->point() = LCC_3::Point (posx, posy, posz);
+			LCC_3::Vertex_attribute_handle vbis = lcc()->create_vertex_attribute( newpt);
+			old2new_vertices.emplace(v, vbis);
+		}
+		LCC_3::Vertex_attribute_handle vbis = old2new_vertices[v];
+
+		LCC_3::Dart_handle d0 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d1 = lcc()->create_dart(vbis);
+		LCC_3::Dart_handle d2 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d3 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d4 = lcc()->create_dart(vbis);
+		LCC_3::Dart_handle d5 = lcc()->create_dart(vbis);
+		LCC_3::Dart_handle d6 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d7 = lcc()->create_dart(v);
+		LCC_3::Dart_handle d8 = lcc()->create_dart(vbis);
+		LCC_3::Dart_handle d9 = lcc()->create_dart(vbis);
+
+		lcc()->mark(d0, m_new);
+		lcc()->mark(d1, m_new);
+		lcc()->mark(d2, m_new);
+		lcc()->mark(d3, m_new);
+		lcc()->mark(d4, m_new);
+		lcc()->mark(d5, m_new);
+		lcc()->mark(d6, m_new);
+		lcc()->mark(d7, m_new);
+		lcc()->mark(d8, m_new);
+		lcc()->mark(d9, m_new);
+
+		lcc()->link_alpha<2>(d0, d2);
+		lcc()->link_alpha<2>(d5, d1);
+
+		lcc()->link_alpha<1>(d2, d3);
+		lcc()->link_alpha<0>(d3, d4);
+		lcc()->link_alpha<1>(d4, d5);
+		lcc()->link_alpha<1>(d6, d7);
+		lcc()->link_alpha<0>(d7, d8);
+		lcc()->link_alpha<1>(d8, d9);
+
+		lcc()->link_alpha<3>(d2, d6);
+		lcc()->link_alpha<3>(d3, d7);
+		lcc()->link_alpha<3>(d4, d8);
+		lcc()->link_alpha<3>(d5, d9);
+
+		old_pattern.insert(std::pair<LCC_3::Dart_handle, std::array<LCC_3::Dart_handle, 10> > (d.first, {d0,d1,d2,d3,d4,d5,d6,d7,d8,d9}));
+	}
+
+	// link the created darts between the patterns
+	// first step with the always known links
+	for(auto it: old_alpha3) {
+		LCC_3::Dart_handle d = it.first;
+		LCC_3::Dart_handle d0 = old_pattern[d][0];
+		LCC_3::Dart_handle d1 = old_pattern[d][1];
+		LCC_3::Dart_handle d2 = old_pattern[d][2];
+		LCC_3::Dart_handle d3 = old_pattern[d][3];
+		LCC_3::Dart_handle d4 = old_pattern[d][4];
+		LCC_3::Dart_handle d5 = old_pattern[d][5];
+		LCC_3::Dart_handle d6 = old_pattern[d][6];
+		LCC_3::Dart_handle d9 = old_pattern[d][9];
+
+		lcc()->link_alpha<0>(d0, old_pattern[lcc()->alpha(d,0)][0]);
+		lcc()->link_alpha<1>(d0, old_pattern[lcc()->alpha(d,1)][0]);
+
+		lcc()->link_alpha<0>(d1, old_pattern[lcc()->alpha(d,0)][1]);
+		lcc()->link_alpha<1>(d1, old_pattern[lcc()->alpha(d,1)][1]);
+
+		lcc()->link_alpha<0>(d2, old_pattern[lcc()->alpha(d,0)][2]);
+		lcc()->link_alpha<0>(d5, old_pattern[lcc()->alpha(d,0)][5]);
+
+		lcc()->link_alpha<0>(d6, old_pattern[lcc()->alpha(d,0)][6]);
+		lcc()->link_alpha<0>(d9, old_pattern[lcc()->alpha(d,0)][9]);
+
+		// alpha2 for d3 d4
+		lcc()->link_alpha<2>(d3, old_pattern[lcc()->alpha(d,1)][3]);
+		lcc()->link_alpha<2>(d4, old_pattern[lcc()->alpha(d,1)][4]);
+	}
+
+	// link the created darts between the patterns
+	// second step with the links that depend on the orbits
+	for(auto it: old_alpha3) {
+		LCC_3::Dart_handle d = it.first;
+		LCC_3::Dart_handle d6 = old_pattern[d][6];
+		LCC_3::Dart_handle d7 = old_pattern[d][7];
+		LCC_3::Dart_handle d8 = old_pattern[d][8];
+		LCC_3::Dart_handle d9 = old_pattern[d][9];
+
+		lcc()->darts_of_orbit<2,3>(d);
+		std::cout<<"orbit.size() "<< lcc()->darts_of_orbit<2,3>(d).size()<<std::endl;
+
+		// find the marked dart
+		// TODO we assume that there is only one at the moment; which is false with self-intersecting/touching sheets
+		bool found_opp = false;
+
+		for(LCC_3::Dart_of_orbit_range<2,3>::iterator
+				  itbis(lcc()->darts_of_orbit<2,3>(d).begin()),
+				  itend(lcc()->darts_of_orbit<2,3>(d).end()); itbis!=itend; ++itbis) {
+
+			LCC_3::Dart_handle dbis = itbis;
+
+			if((d != dbis) && (lcc()->is_marked(dbis, m))) {
+
+				found_opp = true;
+
+				LCC_3::Dart_handle dbis6 = old_pattern[dbis][6];
+				LCC_3::Dart_handle dbis7 = old_pattern[dbis][7];
+				LCC_3::Dart_handle dbis8 = old_pattern[dbis][8];
+				LCC_3::Dart_handle dbis9 = old_pattern[dbis][9];
+
+				lcc()->link_alpha<2>(d6, dbis6);
+				lcc()->link_alpha<2>(d7, dbis7);
+				lcc()->link_alpha<2>(d8, dbis8);
+				lcc()->link_alpha<2>(d9, dbis9);
+
+				break;
+			}
+		}
+
+//		if(!found_opp) {
+//
+//			lcc()->erase_dart(d6);
+//			lcc()->erase_dart(d7);
+//			lcc()->erase_dart(d8);
+//			lcc()->erase_dart(d9);
+//		}
+
+//		for(auto dbis: getlcc()->darts_of_orbit<2,3>(d)) {
+//			if(getlcc()->is_marked(dbis, m)) {
+//
+//			}
+//		}
+
+
+
+	}
+
+	std::cout<<"nbBlocks "<<bl()->nbBlocks()<<std::endl;
+//	lcc()->correct_invalid_attributes();
+
+	// alpha3 for the marked darts
+	for(auto it: old_alpha3) {
+		LCC_3::Dart_handle d = it.first;
+		LCC_3::Dart_handle d0 = old_pattern[d][0];
+		LCC_3::Dart_handle d1 = old_pattern[d][1];
+//
+//		Dart_handle dopp = lcc()->alpha(d, 3);
+//		if(d != dopp) {
+//			lcc()->link_alpha<3>(d1, dopp);
+//		}
+
+//		LCC_3::Dart_handle dlink = lcc()->alpha(d, 3);
+//		if(dlink != d0) {
+//			lcc()->sew<3>(d, d0);
+//		}
+
+		Dart_handle dopp = it.second;
+		if(d == dopp) {
+			lcc()->link_alpha<3>(d, d0);
+		} else {
+			lcc()->link_alpha<3>(d, d0);
+			lcc()->link_alpha<3>(d1, dopp);
+		}
+	}
+
+	// TODO try to get rid of this automatic correction
+	lcc()->correct_invalid_attributes();
+
+	std::cout<<"nbVertices "<<bl()->nbVertices()<<std::endl;
+	std::cout<<"nbBlocks "<<bl()->nbBlocks()<<std::endl;
+
+	// TODO clear the orphaned darts
+
+
+	// free the marks
+	lcc()->free_mark(m);
+	lcc()->free_mark(m_new);
+	lcc()->free_mark(m_temp);
+	lcc()->free_mark(m_cells_center);
+
+	return SheetInsert::NOT_YET_IMPLEMENTED;
+}
+/*----------------------------------------------------------------------------*/
+}  // namespace blocking
+/*----------------------------------------------------------------------------*/
+}  // namespace gmds
+/*----------------------------------------------------------------------------*/
