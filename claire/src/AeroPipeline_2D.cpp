@@ -318,10 +318,9 @@ AeroPipeline_2D::execute(){
 	std::cout << " " << std::endl;
 	std::cout << "======================================" << std::endl;
 	std::cout << "INFORMATIONS COMPLEMENTAIRES :" << std::endl;
-	std::cout << "Nbr de blocs : " << m_Blocking2D.getNbFaces() << std::endl;
-	std::cout << "Nbr de noeuds : " << m_meshHex->getNbNodes() << std::endl;
-	std::cout << "Nbr faces : " << m_meshHex->getNbFaces() << std::endl;
-	std::cout << "Nbr arêtes : " << m_meshHex->getNbEdges() << std::endl;
+	std::cout << "Nbr de blocs            : " << m_Blocking2D.getNbFaces() << std::endl;
+	std::cout << "Nbr de sommets de blocs : " << m_meshHex->getNbNodes() << std::endl;
+	std::cout << "Nbr d'arêtes de blocs   : " << m_meshHex->getNbEdges() << std::endl;
 	std::cout << "======================================" << std::endl;
 	std::cout << " " << std::endl;
 
@@ -409,11 +408,16 @@ AeroPipeline_2D::execute(){
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
 	std::cout << " " << std::endl;
-	std::cout << "INFORMATIONS COMPLEMENTAIRES :" << std::endl;
-	std::cout << "Nbr de blocs : " << m_Blocking2D.getNbFaces() << std::endl;
+	std::cout << " " << std::endl;
+
+	std::cout << "======================================" << std::endl;
+	std::cout << "INFORMATIONS COMPLEMENTAIRES MAILLAGE FINAL :" << std::endl;
+	std::cout << "Nbr de blocs  : " << m_Blocking2D.getNbFaces() << std::endl;
 	std::cout << "Nbr de noeuds : " << m_meshHex->getNbNodes() << std::endl;
-	std::cout << "Nbr faces : " << m_meshHex->getNbFaces() << std::endl;
-	std::cout << "Nbr arêtes : " << m_meshHex->getNbEdges() << std::endl;
+	std::cout << "Nbr de faces  : " << m_meshHex->getNbFaces() << std::endl;
+	std::cout << "Nbr d'arêtes  : " << m_meshHex->getNbEdges() << std::endl;
+	std::cout << "======================================" << std::endl;
+	std::cout << " " << std::endl;
 
 	return AbstractAeroPipeline::SUCCESS;
 
@@ -1528,6 +1532,7 @@ void
 			var_vector_quadmesh->set(n_id, v);
 
 		}
+
 	}
 
 
