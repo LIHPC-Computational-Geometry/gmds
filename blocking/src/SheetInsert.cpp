@@ -19,7 +19,7 @@ SheetInsert::SheetInsert() {}
 SheetInsert::~SheetInsert() {}
 /*----------------------------------------------------------------------------*/
 SheetInsert::STATUS
-SheetInsert::execute()
+SheetInsert::execute(LCC_3::size_type AMark)
 {
 	// check that the implementation can handle the data
 	if(!lcc()->is_valid()) {
@@ -124,6 +124,9 @@ SheetInsert::execute()
 	for(auto d: old_alpha3) {
 		LCC_3::Vertex_attribute_handle v = lcc()->vertex_attribute(d.first);
 		if(old2new_vertices.find(v) == old2new_vertices.end()) {
+
+//			lcc()->
+
 			// TODO determine position of new vertex and which darts are assigned to it
 			double posx = 0.;
 			double posy = 0.;
@@ -290,11 +293,16 @@ SheetInsert::execute()
 	}
 	lcc()->correct_invalid_attributes();
 
+	// free the marks
+	lcc()->free_mark(m);
+	lcc()->free_mark(m_temp);
+	lcc()->free_mark(m_cells_center);
+
 	return SheetInsert::NOT_YET_IMPLEMENTED;
 }
 /*----------------------------------------------------------------------------*/
 SheetInsert::STATUS
-SheetInsert::pillow()
+SheetInsert::pillow(LCC_3::size_type AMark)
 {
 	//TODO get the set of 3-cells in another way
 
@@ -311,52 +319,26 @@ SheetInsert::pillow()
 	LCC_3::size_type m = lcc()->get_new_mark();
 	LCC_3::size_type m_new = lcc()->get_new_mark();
 
-//	lcc.mark(dh1, mark);
-	// TODO for now we mark the darts of the first cell
-//	for (auto it = getlcc()->one_dart_per_cell<3>().begin(); it != getlcc()->one_dart_per_cell<3>().end(); it++) {
-//		int nb = getlcc()->darts_of_orbit<0, 1, 2>(it).size();
-//		std::cout<<"nbdarts "<<nb<<std::endl;
-//	}
-	auto d = lcc()->one_dart_per_cell<3>().begin();
-	int nb = lcc()->darts_of_orbit<0, 1, 2>(d).size();
-	std::cout<<"nbdarts "<<nb<<std::endl;
+	// TODO for now we mark the darts of the n first cell
+	const int nbCellsToMark = 5;
+	int nbCellsMarked = 0;
+	for (auto it = lcc()->one_dart_per_cell<3>().begin(); it != lcc()->one_dart_per_cell<3>().end(); it++) {
 
-	LCC_3::Point center;
+		for (LCC_3::Dart_of_cell_range<3>::iterator
+		        itbis(lcc()->darts_of_cell<3>(it).begin()),
+		     itend(lcc()->darts_of_cell<3>(it).end()); itbis!=itend; ++itbis) {
+			lcc()->mark(itbis, m);
+		}
 
-	for (LCC_3::Dart_of_cell_range<3>::iterator
-			  it(lcc()->darts_of_cell<3>(d).begin()),
-			  itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
-		lcc()->mark(it, m);
-		center = lcc()->barycenter<3>(it);
-	}
-	d++;
-	for (LCC_3::Dart_of_cell_range<3>::iterator
-	        it(lcc()->darts_of_cell<3>(d).begin()),
-	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
-		lcc()->mark(it, m);
-	}
-	d++;
-	for (LCC_3::Dart_of_cell_range<3>::iterator
-	        it(lcc()->darts_of_cell<3>(d).begin()),
-	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
-		lcc()->mark(it, m);
-	}
-	d++;
-	for (LCC_3::Dart_of_cell_range<3>::iterator
-	        it(lcc()->darts_of_cell<3>(d).begin()),
-	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
-		lcc()->mark(it, m);
-	}
-	d++;
-	for (LCC_3::Dart_of_cell_range<3>::iterator
-	        it(lcc()->darts_of_cell<3>(d).begin()),
-	     itend(lcc()->darts_of_cell<3>(d).end()); it!=itend; ++it) {
-		lcc()->mark(it, m);
+		nbCellsMarked++;
+		if(nbCellsMarked>=nbCellsToMark) {
+			break;
+		}
 	}
 
 	LCC_3::size_type m_temp = lcc()->get_new_mark();
 	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
-			  itend(lcc()->darts().end()); it!=itend; ++it)
+	     itend(lcc()->darts().end()); it!=itend; ++it)
 	{
 		if(lcc()->is_marked(it, m)) {
 			if(lcc()->alpha(it, 3) == it) {
@@ -626,7 +608,6 @@ SheetInsert::pillow()
 			lcc()->link_alpha<3>(d1, dopp);
 		}
 	}
-
 	// TODO try to get rid of this automatic correction
 	lcc()->correct_invalid_attributes();
 
@@ -641,6 +622,176 @@ SheetInsert::pillow()
 	lcc()->free_mark(m_new);
 	lcc()->free_mark(m_temp);
 	lcc()->free_mark(m_cells_center);
+
+	return SheetInsert::NOT_YET_IMPLEMENTED;
+}
+/*----------------------------------------------------------------------------*/
+SheetInsert::STATUS
+SheetInsert::buildCADfromGrid(gmds::math::Point APmin, gmds::math::Point APmax, int ANx, int ANy, int ANz)
+{
+	gmds::Mesh& mesh = cad_.getMeshView();
+	gmds::Node corners[8];
+	corners[0] = mesh.newNode(APmin.X(), APmin.Y(), APmin.Z());
+	corners[1] = mesh.newNode(APmax.X(), APmin.Y(), APmin.Z());
+	corners[2] = mesh.newNode(APmax.X(), APmax.Y(), APmin.Z());
+	corners[3] = mesh.newNode(APmin.X(), APmax.Y(), APmin.Z());
+	corners[4] = mesh.newNode(APmin.X(), APmin.Y(), APmax.Z());
+	corners[5] = mesh.newNode(APmax.X(), APmin.Y(), APmax.Z());
+	corners[6] = mesh.newNode(APmax.X(), APmax.Y(), APmax.Z());
+	corners[7] = mesh.newNode(APmin.X(), APmax.Y(), APmax.Z());
+
+	gmds::Face triangles[12];
+	triangles[ 0] = mesh.newTriangle(corners[0], corners[1], corners[5]); // front
+	triangles[ 1] = mesh.newTriangle(corners[0], corners[5], corners[4]);
+	triangles[ 2] = mesh.newTriangle(corners[2], corners[3], corners[7]); // back
+	triangles[ 3] = mesh.newTriangle(corners[2], corners[7], corners[6]);
+	triangles[ 4] = mesh.newTriangle(corners[3], corners[0], corners[4]); // left
+	triangles[ 5] = mesh.newTriangle(corners[3], corners[4], corners[7]);
+	triangles[ 6] = mesh.newTriangle(corners[1], corners[2], corners[6]); // right
+	triangles[ 7] = mesh.newTriangle(corners[1], corners[6], corners[5]);
+	triangles[ 8] = mesh.newTriangle(corners[0], corners[3], corners[2]); // bottom
+	triangles[ 9] = mesh.newTriangle(corners[0], corners[2], corners[1]);
+	triangles[10] = mesh.newTriangle(corners[4], corners[5], corners[6]); // top
+	triangles[11] = mesh.newTriangle(corners[4], corners[6], corners[7]);
+
+	gmds::CellGroup<gmds::Node>* corner0 = mesh.newGroup<gmds::Node>("corner_0");
+	corner0->add(corners[0]);
+	gmds::CellGroup<gmds::Node>* corner1 = mesh.newGroup<gmds::Node>("corner_1");
+	corner1->add(corners[1]);
+	gmds::CellGroup<gmds::Node>* corner2 = mesh.newGroup<gmds::Node>("corner_2");
+	corner2->add(corners[2]);
+	gmds::CellGroup<gmds::Node>* corner3 = mesh.newGroup<gmds::Node>("corner_3");
+	corner3->add(corners[3]);
+	gmds::CellGroup<gmds::Node>* corner4 = mesh.newGroup<gmds::Node>("corner_4");
+	corner4->add(corners[4]);
+	gmds::CellGroup<gmds::Node>* corner5 = mesh.newGroup<gmds::Node>("corner_5");
+	corner5->add(corners[5]);
+	gmds::CellGroup<gmds::Node>* corner6 = mesh.newGroup<gmds::Node>("corner_6");
+	corner6->add(corners[6]);
+	gmds::CellGroup<gmds::Node>* corner7 = mesh.newGroup<gmds::Node>("corner_7");
+	corner7->add(corners[7]);
+
+	gmds::CellGroup<gmds::Node>* curve_0 = mesh.newGroup<gmds::Node>("curve_0");
+	curve_0->add(corners[0]);
+	curve_0->add(corners[1]);
+	gmds::CellGroup<gmds::Node>* curve_1 = mesh.newGroup<gmds::Node>("curve_1");
+	curve_1->add(corners[1]);
+	curve_1->add(corners[2]);
+	gmds::CellGroup<gmds::Node>* curve_2 = mesh.newGroup<gmds::Node>("curve_2");
+	curve_2->add(corners[2]);
+	curve_2->add(corners[3]);
+	gmds::CellGroup<gmds::Node>* curve_3 = mesh.newGroup<gmds::Node>("curve_3");
+	curve_3->add(corners[3]);
+	curve_3->add(corners[0]);
+	gmds::CellGroup<gmds::Node>* curve_4 = mesh.newGroup<gmds::Node>("curve_4");
+	curve_4->add(corners[4]);
+	curve_4->add(corners[5]);
+	gmds::CellGroup<gmds::Node>* curve_5 = mesh.newGroup<gmds::Node>("curve_5");
+	curve_5->add(corners[5]);
+	curve_5->add(corners[6]);
+	gmds::CellGroup<gmds::Node>* curve_6 = mesh.newGroup<gmds::Node>("curve_6");
+	curve_6->add(corners[6]);
+	curve_6->add(corners[7]);
+	gmds::CellGroup<gmds::Node>* curve_7 = mesh.newGroup<gmds::Node>("curve_7");
+	curve_7->add(corners[7]);
+	curve_7->add(corners[4]);
+	gmds::CellGroup<gmds::Node>* curve_8 = mesh.newGroup<gmds::Node>("curve_8");
+	curve_8->add(corners[0]);
+	curve_8->add(corners[4]);
+	gmds::CellGroup<gmds::Node>* curve_9 = mesh.newGroup<gmds::Node>("curve_9");
+	curve_9->add(corners[1]);
+	curve_9->add(corners[5]);
+	gmds::CellGroup<gmds::Node>* curve_10 = mesh.newGroup<gmds::Node>("curve_10");
+	curve_10->add(corners[2]);
+	curve_10->add(corners[6]);
+	gmds::CellGroup<gmds::Node>* curve_11 = mesh.newGroup<gmds::Node>("curve_11");
+	curve_11->add(corners[3]);
+	curve_11->add(corners[7]);
+
+	gmds::CellGroup<gmds::Face>* surf_front = mesh.newGroup<gmds::Face>("surf_front");
+	surf_front->add(triangles[0]);
+	surf_front->add(triangles[1]);
+	gmds::CellGroup<gmds::Face>* surf_back = mesh.newGroup<gmds::Face>("surf_back");
+	surf_back->add(triangles[2]);
+	surf_back->add(triangles[3]);
+	gmds::CellGroup<gmds::Face>* surf_left = mesh.newGroup<gmds::Face>("surf_left");
+	surf_left->add(triangles[4]);
+	surf_left->add(triangles[5]);
+	gmds::CellGroup<gmds::Face>* surf_right = mesh.newGroup<gmds::Face>("surf_right");
+	surf_right->add(triangles[6]);
+	surf_right->add(triangles[7]);
+	gmds::CellGroup<gmds::Face>* surf_bottom = mesh.newGroup<gmds::Face>("surf_bottom");
+	surf_bottom->add(triangles[8]);
+	surf_bottom->add(triangles[9]);
+	gmds::CellGroup<gmds::Face>* surf_top = mesh.newGroup<gmds::Face>("surf_top");
+	surf_top->add(triangles[10]);
+	surf_top->add(triangles[11]);
+
+	cad_.updateFromMesh();
+
+	std::vector<gmds::cad::GeomPoint*> vertices;
+	std::vector<gmds::cad::GeomCurve*> curves;
+	std::vector<gmds::cad::GeomSurface*> surfaces;
+	cad_.getPoints(vertices);
+	cad_.getCurves(curves);
+	cad_.getSurfaces(surfaces);
+//	std::map<std::string, std::uintptr_t> name2Points;
+//	std::map<std::string, std::uintptr_t> name2Curves;
+//	std::map<std::string, std::uintptr_t> name2Surfaces;
+//	for(auto v: vertices) {
+//		name2Points[v->name()] = reinterpret_cast<std::uintptr_t> (v);
+//	}
+//	for(auto c: curves) {
+//		name2Curves[c->name()] = reinterpret_cast<std::uintptr_t> (c);
+//	}
+//	for(auto s: surfaces) {
+//		name2Surfaces[s->name()] = reinterpret_cast<std::uintptr_t> (s);
+//	}
+	std::map<std::string, gmds::cad::GeomPoint*> name2Points;
+	std::map<std::string, gmds::cad::GeomCurve*> name2Curves;
+	std::map<std::string, gmds::cad::GeomSurface*> name2Surfaces;
+	for(auto v: vertices) {
+		name2Points[v->name()] = v;
+	}
+	for(auto c: curves) {
+		name2Curves[c->name()] = c;
+	}
+	for(auto s: surfaces) {
+		name2Surfaces[s->name()] = s;
+	}
+
+	// TODO this is valid only because we know how the grid was built
+	Dart_handle d_first = lcc()->one_dart_per_cell<3>().begin();
+
+	// associate corners
+	Dart_handle d = d_first;
+	gmds::cad::FACPoint* pt = dynamic_cast<gmds::cad::FACPoint*> (name2Points["corner_0"]);
+	d2p_.emplace(d, pt);
+
+	d = d_first;
+	for(int i=0; i<ANx; i++) {
+		d = lcc()->alpha(d, 1, 0, 1, 2, 3, 2);
+	}
+	d = lcc()->alpha(d, 1, 0);
+	pt = dynamic_cast<gmds::cad::FACPoint*> (name2Points["corner_1"]);
+	d2p_.emplace(d, pt);
+
+	d = d_first;
+	for(int i=0; i<ANx; i++) {
+		d = lcc()->alpha(d, 1, 0, 1, 2, 3, 2);
+	}
+	d = lcc()->alpha(d, 1, 0, 1, 2);
+	for(int j=0; j<ANy; j++) {
+		d = lcc()->alpha(d, 1, 0, 1, 2, 3, 2);
+	}
+	d = lcc()->alpha(d, 1, 0);
+	pt = dynamic_cast<gmds::cad::FACPoint*> (name2Points["corner_2"]);
+	d2p_.emplace(d, pt);
+
+
+//	gmds::cad::FACPoint* pt = reinterpret_cast<gmds::cad::FACPoint*> (name2Points["corner_0"]);
+//	d2p_.emplace(d, dynamic_cast<gmds::cad::FACPoint*> (name2Points["corner_0"]));
+
 
 	return SheetInsert::NOT_YET_IMPLEMENTED;
 }

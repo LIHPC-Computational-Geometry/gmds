@@ -130,11 +130,6 @@ class LIB_GMDS_BLOCKING_API Blocking{
 	 // TODO detect and delete sheet
 
 	 /*--------------------------------------------------------------------*/
-	 /** @brief  Insert sheet
-	  */
-	 void sheetInsert();
-
-	 /*--------------------------------------------------------------------*/
 	 /** @brief  Collapse sheet
 	  */
 	 void sheetCollapse();

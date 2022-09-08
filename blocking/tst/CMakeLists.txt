@@ -1,6 +1,7 @@
 add_executable(GMDS_BLOCKING_TEST
         BlockingTestSuite.h
         CGALTestSuite.h
+        InputMarkedDartsTestSuite.h
         SheetInsertTestSuite.h
         main_test.cpp)
 
