@@ -28,43 +28,8 @@ SheetInsert::execute(LCC_3::size_type AMark)
 	}
 	// TODO check the validity of the shrink set
 
-	// mark the darts to extrude
-	LCC_3::size_type m = lcc()->get_new_mark();
-	LCC_3::size_type m_new = lcc()->get_new_mark();
 
-	// TODO for now we mark the darts of the n first cell
-	const int nbCellsToMark = 5;
-	int nbCellsMarked = 0;
-	for (auto it = lcc()->one_dart_per_cell<3>().begin(); it != lcc()->one_dart_per_cell<3>().end(); it++) {
-
-		for (LCC_3::Dart_of_cell_range<3>::iterator
-		        itbis(lcc()->darts_of_cell<3>(it).begin()),
-		     itend(lcc()->darts_of_cell<3>(it).end()); itbis!=itend; ++itbis) {
-			lcc()->mark(itbis, m);
-		}
-
-		nbCellsMarked++;
-		if(nbCellsMarked>=nbCellsToMark) {
-			break;
-		}
-	}
-
-	LCC_3::size_type m_temp = lcc()->get_new_mark();
-	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
-	     itend(lcc()->darts().end()); it!=itend; ++it)
-	{
-		if(lcc()->is_marked(it, m)) {
-			// Do not mark the boundary darts
-			if(lcc()->alpha(it, 3) != it) {
-				if(!lcc()->is_marked(lcc()->alpha(it, 3), m)) {
-					lcc()->mark(it, m_temp);
-				}
-			}
-		}
-	}
-	std::swap(m, m_temp);
-
-	std::cout<<"nbMarked "<< lcc()->number_of_marked_darts(m)<<std::endl;
+	std::cout<<"SheetInsert::execute nbMarked "<< lcc()->number_of_marked_darts(AMark)<<std::endl;
 
 	// TODO check validity of the marked darts
 //	// check that on orbit<2,3> two and only two darts are marked
@@ -97,7 +62,7 @@ SheetInsert::execute(LCC_3::size_type AMark)
 	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
 	     itend(lcc()->darts().end()); it!=itend; ++it) {
 
-		if(lcc()->is_marked(it, m)) {
+		if(lcc()->is_marked(it, AMark)) {
 			LCC_3::Dart_handle d0 = it;
 			LCC_3::Dart_handle d3 = lcc()->alpha(d0,3);
 
@@ -115,6 +80,7 @@ SheetInsert::execute(LCC_3::size_type AMark)
 	lcc()->is_valid();
 
 	// create the pattern for the marked darts
+	LCC_3::size_type m_new = lcc()->get_new_mark();
 	std::map<LCC_3::Dart_handle, std::array<LCC_3::Dart_handle, 10> > old_pattern;
 
 	std::map<LCC_3::Vertex_attribute_handle, LCC_3::Vertex_attribute_handle> old2new_vertices;
@@ -258,7 +224,7 @@ SheetInsert::execute(LCC_3::size_type AMark)
 
 			LCC_3::Dart_handle dbis = itbis;
 
-			if((d != dbis) && (lcc()->is_marked(dbis, m))) {
+			if((d != dbis) && (lcc()->is_marked(dbis, AMark))) {
 
 				found_opp = true;
 
@@ -294,8 +260,7 @@ SheetInsert::execute(LCC_3::size_type AMark)
 	lcc()->correct_invalid_attributes();
 
 	// free the marks
-	lcc()->free_mark(m);
-	lcc()->free_mark(m_temp);
+	lcc()->free_mark(m_new);
 	lcc()->free_mark(m_cells_center);
 
 	return SheetInsert::NOT_YET_IMPLEMENTED;
@@ -315,45 +280,7 @@ SheetInsert::pillow(LCC_3::size_type AMark)
 	// TODO check the validity of the shrink set
 
 
-	// mark the darts to extrude
-	LCC_3::size_type m = lcc()->get_new_mark();
-	LCC_3::size_type m_new = lcc()->get_new_mark();
-
-	// TODO for now we mark the darts of the n first cell
-	const int nbCellsToMark = 5;
-	int nbCellsMarked = 0;
-	for (auto it = lcc()->one_dart_per_cell<3>().begin(); it != lcc()->one_dart_per_cell<3>().end(); it++) {
-
-		for (LCC_3::Dart_of_cell_range<3>::iterator
-		        itbis(lcc()->darts_of_cell<3>(it).begin()),
-		     itend(lcc()->darts_of_cell<3>(it).end()); itbis!=itend; ++itbis) {
-			lcc()->mark(itbis, m);
-		}
-
-		nbCellsMarked++;
-		if(nbCellsMarked>=nbCellsToMark) {
-			break;
-		}
-	}
-
-	LCC_3::size_type m_temp = lcc()->get_new_mark();
-	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
-	     itend(lcc()->darts().end()); it!=itend; ++it)
-	{
-		if(lcc()->is_marked(it, m)) {
-			if(lcc()->alpha(it, 3) == it) {
-				lcc()->mark(it, m_temp);
-			} else {
-				if(!lcc()->is_marked(lcc()->alpha(it, 3), m)) {
-					lcc()->mark(it, m_temp);
-				}
-			}
-		}
-	}
-	std::swap(m, m_temp);
-
-	std::cout<<"nbMarked "<< lcc()->number_of_marked_darts(m)<<std::endl;
-
+	std::cout<<"SheetInsert::pillow nbMarked "<< lcc()->number_of_marked_darts(AMark)<<std::endl;
 
 	// check that on orbit<2,3> two and only two darts are marked
 	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
@@ -361,13 +288,13 @@ SheetInsert::pillow(LCC_3::size_type AMark)
 
 		int nbfound = 1;
 
-		if (lcc()->is_marked(it, m)) {
+		if (lcc()->is_marked(it, AMark)) {
 			for (LCC_3::Dart_of_orbit_range<2, 3>::iterator itbis(lcc()->darts_of_orbit<2, 3>(it).begin()), itend(lcc()->darts_of_orbit<2, 3>(it).end());
 			     itbis != itend; ++itbis) {
 
 				LCC_3::Dart_handle dbis = itbis;
 
-				if ((it != dbis) && (lcc()->is_marked(dbis, m))) {
+				if ((it != dbis) && (lcc()->is_marked(dbis, AMark))) {
 					nbfound++;
 				}
 			}
@@ -384,7 +311,7 @@ SheetInsert::pillow(LCC_3::size_type AMark)
 	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
 			  itend(lcc()->darts().end()); it!=itend; ++it) {
 
-		if(lcc()->is_marked(it, m)) {
+		if(lcc()->is_marked(it, AMark)) {
 			LCC_3::Dart_handle d0 = it;
 			LCC_3::Dart_handle d3 = lcc()->alpha(d0,3);
 
@@ -406,6 +333,7 @@ SheetInsert::pillow(LCC_3::size_type AMark)
 //	lcc()->correct_invalid_attributes();
 
 	// create the pattern for the marked darts
+	LCC_3::size_type m_new = lcc()->get_new_mark();
 	std::map<LCC_3::Dart_handle, std::array<LCC_3::Dart_handle, 10> > old_pattern;
 
 	std::map<LCC_3::Vertex_attribute_handle, LCC_3::Vertex_attribute_handle> old2new_vertices;
@@ -490,7 +418,7 @@ SheetInsert::pillow(LCC_3::size_type AMark)
 		lcc()->link_alpha<3>(d4, d8);
 		lcc()->link_alpha<3>(d5, d9);
 
-		old_pattern.insert(std::pair<LCC_3::Dart_handle, std::array<LCC_3::Dart_handle, 10> > (d.first, {d0,d1,d2,d3,d4,d5,d6,d7,d8,d9}));
+		old_pattern.emplace(d.first, std::array<LCC_3::Dart_handle, 10> ({d0,d1,d2,d3,d4,d5,d6,d7,d8,d9}));
 	}
 
 	// link the created darts between the patterns
@@ -545,7 +473,7 @@ SheetInsert::pillow(LCC_3::size_type AMark)
 
 			LCC_3::Dart_handle dbis = itbis;
 
-			if((d != dbis) && (lcc()->is_marked(dbis, m))) {
+			if((d != dbis) && (lcc()->is_marked(dbis, AMark))) {
 
 				found_opp = true;
 
@@ -618,9 +546,7 @@ SheetInsert::pillow(LCC_3::size_type AMark)
 
 
 	// free the marks
-	lcc()->free_mark(m);
 	lcc()->free_mark(m_new);
-	lcc()->free_mark(m_temp);
 	lcc()->free_mark(m_cells_center);
 
 	return SheetInsert::NOT_YET_IMPLEMENTED;
