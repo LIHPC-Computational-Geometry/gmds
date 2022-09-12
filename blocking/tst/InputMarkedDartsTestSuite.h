@@ -39,3 +39,16 @@ TEST(InputMarkedDartsTestSuite, insert3d)
 	ASSERT_EQ(40, nbMarkedDarts);
 }
 /*----------------------------------------------------------------------------*/
+TEST(InputMarkedDartsTestSuite, insert3d_intersect)
+{
+	gmds::blocking::Blocking bl;
+	bl.createGrid3d(gmds::math::Point(0,0,0), gmds::math::Point(4,4,4), 4,4,4);
+
+	gmds::blocking::LCC_3::size_type mark = bl.lcc()->get_new_mark();
+	gmds::blocking::InputMarkedDarts imd;
+	int nbMarkedDarts = imd.insertsheet_mark_intersect_3d(bl.lcc(), mark, 4, 4, 4);
+	bl.lcc()->free_mark(mark);
+
+	ASSERT_EQ(320, nbMarkedDarts);
+}
+/*----------------------------------------------------------------------------*/
