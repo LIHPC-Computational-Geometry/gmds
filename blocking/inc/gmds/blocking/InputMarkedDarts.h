@@ -33,6 +33,8 @@ class LIB_GMDS_BLOCKING_API InputMarkedDarts
 	 */
 	int pillow_mark_first_cells3d(LCC_3* ALcc, LCC_3::size_type AMark, int ANbCells);
 	int insertsheet_mark_first_cells3d(LCC_3* ALcc, LCC_3::size_type AMark, int ANbCells);
+
+	int insertsheet_mark_intersect_3d(LCC_3* ALcc, LCC_3::size_type AMark, int ANi, int ANj, int ANk);
 };
 /*----------------------------------------------------------------------------*/
 } // namespace blocking
