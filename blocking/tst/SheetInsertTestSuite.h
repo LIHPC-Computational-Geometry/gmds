@@ -5,9 +5,9 @@
 //#include <iostream>
 //#include <vector>
 /*----------------------------------------------------------------------------*/
-#include <gmds/blocking/SheetInsert.h>
-
 #include <gmds/blocking/Blocking.h>
+#include <gmds/blocking/InputMarkedDarts.h>
+#include <gmds/blocking/SheetInsert.h>
 /*----------------------------------------------------------------------------*/
 TEST(SheetInsertTestSuite, dummytest)
 {
@@ -51,7 +51,6 @@ TEST(SheetInsertTestSuite, pillow3d)
 TEST(SheetInsertTestSuite, insert3d)
 {
 	gmds::blocking::Blocking bl;
-	//	bl.createGrid3d();
 	bl.createGrid3d(gmds::math::Point(0,0,0), gmds::math::Point(2,2,2), 2,2,2);
 
 	gmds::blocking::SheetInsert is;
@@ -66,7 +65,28 @@ TEST(SheetInsertTestSuite, insert3d)
 
 	ASSERT_EQ(status, gmds::blocking::SheetInsert::NOT_YET_IMPLEMENTED);
 
-	bl.writeVTKFile("insertsheet3d.vtk");
-	bl.writeMokaFile("insertsheet3d.moka");
+	bl.writeVTKFile("insertsheet3d_firstcells.vtk");
+	bl.writeMokaFile("insertsheet3d_firstcells.moka");
+}
+/*----------------------------------------------------------------------------*/
+TEST(SheetInsertTestSuite, intersect3d)
+{
+	gmds::blocking::Blocking bl;
+	bl.createGrid3d(gmds::math::Point(0,0,0), gmds::math::Point(4,4,4), 4,4,4);
+
+	gmds::blocking::SheetInsert is;
+	is.setBl(&bl);
+
+	gmds::blocking::LCC_3::size_type mark = is.lcc()->get_new_mark();
+	gmds::blocking::InputMarkedDarts imd;
+	imd.insertsheet_mark_intersect_3d(bl.lcc(), mark, 4, 4, 4);
+
+	gmds::blocking::SheetInsert::STATUS status = is.execute(mark);
+	is.lcc()->free_mark(mark);
+
+	ASSERT_EQ(status, gmds::blocking::SheetInsert::NOT_YET_IMPLEMENTED);
+
+	bl.writeVTKFile("insertsheet3d_autointersect.vtk");
+	bl.writeMokaFile("insertsheet3d_autointersect.moka");
 }
 /*----------------------------------------------------------------------------*/
