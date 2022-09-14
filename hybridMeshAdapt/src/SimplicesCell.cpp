@@ -632,29 +632,45 @@ std::vector<TSimplexID> SimplicesCell::adjacentTetra() const
   std::vector<TSimplexID> v{border, border, border, border};
   unsigned int nodeLocalSize = 4;
 
-  for(unsigned int nodeLocal = 0; nodeLocal < nodeLocalSize; nodeLocal++)
+  v[0] = m_simplex_mesh->m_tet_adj[m_simplexId][0];
+  v[1] = m_simplex_mesh->m_tet_adj[m_simplexId][1];
+  v[2] = m_simplex_mesh->m_tet_adj[m_simplexId][2];
+  v[3] = m_simplex_mesh->m_tet_adj[m_simplexId][3];
+
+  return std::move(v);
+}
+/******************************************************************************/
+std::vector<TSimplexID> SimplicesCell::directConnectedSimplex () const
+{
+  gmds::BitVector tetAlreadyIn(m_simplex_mesh->getBitVectorTet().capacity());
+  gmds::BitVector triAlreadyIn(m_simplex_mesh->getBitVectorTri().capacity());
+  std::vector<TSimplexID> res{};
+
+  std::vector<TInt> nodes = getNodes();
+  for(auto const n : nodes)
   {
-    TSimplexID adjTet = m_simplex_mesh->m_tet_adj[m_simplexId][nodeLocal];
-    if(adjTet != border)
+    std::vector<TSimplexID> ball = SimplicesNode(m_simplex_mesh, n).ballOf();
+    for(auto const simplex : ball)
     {
-      if(adjTet >= 0)
+      if(simplex >= 0)
       {
-        if(m_simplex_mesh->m_tet_ids[adjTet] != 0)
+        if(tetAlreadyIn[simplex] == 0)
         {
-          v[nodeLocal] = adjTet;
+          res.push_back(simplex);
+          tetAlreadyIn.assign(simplex);
         }
       }
       else
       {
-        if(m_simplex_mesh->m_tri_ids[-adjTet] != 0)
+        if(triAlreadyIn[-simplex] == 0)
         {
-          v[nodeLocal] = adjTet;
+          res.push_back(simplex);
+          triAlreadyIn.assign(-simplex);
         }
       }
     }
   }
-
-  return std::move(v);
+  return res;
 }
 /******************************************************************************/
 std::vector<TInt> SimplicesCell::intersectionFaces(const std::vector<TInt>& localFaces) const

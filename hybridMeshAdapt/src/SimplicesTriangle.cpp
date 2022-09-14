@@ -408,3 +408,26 @@ std::vector<TInt> SimplicesTriangle::getOtherNodeInSimplex(const std::vector<TIn
 
     return sign;
   }
+  /*---------------------------------------------------------------------------*/
+  bool SimplicesTriangle::isEdge() const
+  {
+    double epsilon = 0.001;
+    bool flag = false;
+    unsigned int sizeTriangle = 3;
+
+    std::vector<TInt> nodes = getNodes();
+    const math::Point nodeA = SimplicesNode(m_simplex_mesh, nodes[0]).getCoords();
+    const math::Point nodeB = SimplicesNode(m_simplex_mesh, nodes[1]).getCoords();
+    const math::Point nodeC = SimplicesNode(m_simplex_mesh, nodes[2]).getCoords();
+
+    const math::Vector3d AB(nodeA.X() - nodeB.X(), nodeA.Y() - nodeB.Y(), nodeA.Z() - nodeB.Z());
+    const math::Vector3d BC(nodeB.X() - nodeC.X(), nodeB.Y() - nodeC.Y(), nodeB.Z() - nodeC.Z());
+    const math::Vector3d CA(nodeC.X() - nodeA.X(), nodeC.Y() - nodeA.Y(), nodeC.Z() - nodeA.Z());
+
+    if(AB.dot(BC) < epsilon && BC.dot(CA) < epsilon && CA.dot(AB) < epsilon)
+    {
+      flag = true;
+    }
+    return flag;
+  }
+  /*---------------------------------------------------------------------------*/

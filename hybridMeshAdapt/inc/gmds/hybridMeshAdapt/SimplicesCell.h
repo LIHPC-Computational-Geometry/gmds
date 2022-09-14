@@ -79,6 +79,9 @@ namespace gmds
         /*return the tetra adjacent to this tetra*/
         std::vector<TSimplexID> adjacentTetra () const;
 
+        /*return all the direct simplex connected this*/
+        std::vector<TSimplexID> directConnectedSimplex () const;
+        
         /*return a vector of nodes conain in this and tetra (intersection nodes of both tetra)*/
         std::vector<TInt> intersectionNodes(const SimplicesCell& simplicesCell) const;
 
@@ -121,7 +124,7 @@ namespace gmds
 
         /*return true if current Tet is a sliver*/
         bool isSliver() const;
-        
+
         /*return true if the localIndex correspond to the generalIndex*/
         bool correspondance                    (const TInt localIndex, const TInt generalIndex) const;
 
@@ -148,6 +151,7 @@ namespace gmds
 
         /*return the nbr of face that are not visible by the node : simpliceNode*/
         unsigned int checkFaceNbrVisibility(std::vector<std::vector<TInt>>& facesId, const simplicesNode::SimplicesNode & simpliceNode);
+
 
         friend std::ostream&  operator<<(std::ostream& os, const SimplicesCell& simpliceCell)
         {

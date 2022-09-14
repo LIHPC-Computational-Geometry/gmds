@@ -524,6 +524,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           //check pair.second.size() == 1 in rebuildCavity
           if(base[simpliceNode.getGlobalNode()] == border)
           {
+            std::vector<TSimplexID> ball = simpliceNode.ballOf();
             for(auto const simplex : ball)
             {
               if(simplex >= 0)

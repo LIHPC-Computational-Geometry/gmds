@@ -73,6 +73,9 @@ namespace gmds
 
         math::Orientation::Sign orientation(const gmds::math::Point& pt, bool inverseOrientation = false) const;
 
+        /*return true if the triangle have aligned points*/
+        bool isEdge() const;
+        
         friend std::ostream&  operator<<(std::ostream& os, const SimplicesTriangle& simplicesTriangle)
         {
           std::vector<TInt > nodes = simplicesTriangle.getNodes();

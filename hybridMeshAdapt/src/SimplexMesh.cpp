@@ -4186,6 +4186,9 @@ void SimplexMesh::setBase(const TInt node, const TSimplexID simplex)
     }
     else
     {
+      std::cout << "m_base.size() >= node -1 -> " << (m_base.size() >= node -1) << std::endl;
+      std::cout << "node -> " << node - 1<< std::endl;
+      std::cout << "m_base.size() -> " << m_base.size() << std::endl;
       throw gmds::GMDSException("m_base.size() < node -1");
     }
   }
@@ -4253,7 +4256,6 @@ void SimplexMesh::getEdgeSizeInfo(double& meanEdges, double& maxEdge, double& mi
 /******************************************************************************/
 void SimplexMesh::getEdgeSizeInfowithMetric(double& meanEdges, double& minEdge, double& maxEdge)
 {
-
   Variable<Eigen::Matrix3d>* metric = nullptr;
   try{
     metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
@@ -4285,6 +4287,7 @@ void SimplexMesh::getEdgeSizeInfowithMetric(double& meanEdges, double& minEdge, 
 
   unsigned int edgesAboveSqrt2CPT = 0;
   unsigned int edgesUnderSqrt_2CPT = 0;
+  unsigned int goodSizeEdge_CPT = 0;
 
   for(auto const edge : edges)
   {
@@ -4306,6 +4309,10 @@ void SimplexMesh::getEdgeSizeInfowithMetric(double& meanEdges, double& minEdge, 
     {
       edgesUnderSqrt_2CPT++;
     }
+    else
+    {
+      goodSizeEdge_CPT++;
+    }
     sizeEdges.insert(metricLenght);
   }
 
@@ -4324,7 +4331,10 @@ void SimplexMesh::getEdgeSizeInfowithMetric(double& meanEdges, double& minEdge, 
     myfile << "meanValue -> " << meanEdges << std::endl;
     myfile << "maxEdge -> " << maxEdge << std::endl;
     myfile << "minEdge -> " << minEdge << std::endl;
+    myfile << "edgesUnderSqrt_2CPT -> " << edgesUnderSqrt_2CPT / static_cast<double>(edges.size())<< std::endl;
+    myfile << "edgesAboveSqrt2CPT -> " << edgesAboveSqrt2CPT / static_cast<double>(edges.size())<< std::endl;
     myfile << "edgeWithWrongSize -> " << (edgesUnderSqrt_2CPT + edgesAboveSqrt2CPT) / static_cast<double>(edges.size()) << std::endl;
+    myfile << "goodSizeEdge_CPT -> " << goodSizeEdge_CPT / static_cast<double>(edges.size()) << std::endl;
     myfile.close();
   }
   else
@@ -4345,7 +4355,7 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
 
   //analytic isotrope metric here !
   gmds::math::Point pt = m_coords[node];
-  double epsilon = 0.001;
+  double epsilon = 0.01;
 
   //CONSTANT ISOTROPE METRIC
   /*double metricX = 0.1;
@@ -4356,9 +4366,9 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   //double metricY = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
   //double metricZ = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
 
-  double metricX = (1.0 - std::exp(-2.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
-  double metricY = (1.0 - std::exp(-2.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
-  double metricZ = (1.0 - std::exp(-2.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
+  double metricX = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
+  double metricY = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
+  double metricZ = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
 
 
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
@@ -4600,6 +4610,17 @@ void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vect
     std::multimap<std::pair<TInt, TInt>, TSimplexID>::iterator it = hash_face_Copy.find(pairNode);
     if(it == hash_face_Copy.end())
     {
+      std::cout << "node to connect -> " << nodeToConnect << std::endl;
+      std::cout << "pairNode.first -> " << pairNode.first << std::endl;
+      std::cout << "pairNode.second -> " << pairNode.second << std::endl;
+
+      deleteAllSimplicesBut(tetsCreated);
+      gmds::ISimplexMeshIOService ioServiceMesh(this);
+      gmds::VTKWriter vtkWriterMesh(&ioServiceMesh);
+      vtkWriterMesh.setCellOptions(gmds::N|gmds::R|gmds::F);
+      vtkWriterMesh.setDataOptions(gmds::N|gmds::R|gmds::F);
+      vtkWriterMesh.write("DEBUG_MESH.vtk");
+
       throw gmds::GMDSException("hash_face_Copy.find(pairNode) == hash_face_Copy.end()");
     }
     else
