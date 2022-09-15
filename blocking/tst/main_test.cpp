@@ -6,6 +6,7 @@
 #include "CGALTestSuite.h"
 #include "InputMarkedDartsTestSuite.h"
 #include "SheetInsertTestSuite.h"
+#include "WriterDartsVTKTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
