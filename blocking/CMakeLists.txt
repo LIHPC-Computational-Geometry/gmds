@@ -10,11 +10,13 @@ set(GMDS_INC
         inc/gmds/blocking/Blocking.h
         inc/gmds/blocking/InputMarkedDarts.h
         inc/gmds/blocking/SheetInsert.h
+        inc/gmds/blocking/WriterDartsVTK.h
         )
 set(GMDS_SRC
         src/Blocking.cpp
         src/InputMarkedDarts.cpp
-        src/SheetInsert.cpp)
+        src/SheetInsert.cpp
+        src/WriterDartsVTK.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
