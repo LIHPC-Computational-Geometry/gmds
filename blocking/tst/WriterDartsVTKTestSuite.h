@@ -18,7 +18,8 @@ TEST(WriterDartsVTKTestSuite, grid2d)
 
 	gmds::blocking::WriterDartsVTK writer;
 	writer.setBl(&bl);
-	writer.execute("darts_grid2d.vtk");
+	gmds::blocking::WriterDartsVTK::STATUS st = writer.execute("darts_grid2d.vtk");
+	ASSERT_EQ(gmds::blocking::WriterDartsVTK::SUCCESS, st);
 }
 /*----------------------------------------------------------------------------*/
 TEST(WriterDartsVTKTestSuite, grid3d)
@@ -28,6 +29,7 @@ TEST(WriterDartsVTKTestSuite, grid3d)
 
 	gmds::blocking::WriterDartsVTK writer;
 	writer.setBl(&bl);
-	writer.execute("darts_grid3d.vtk");
+	gmds::blocking::WriterDartsVTK::STATUS st = writer.execute("darts_grid3d.vtk");
+	ASSERT_EQ(gmds::blocking::WriterDartsVTK::SUCCESS, st);
 }
 /*----------------------------------------------------------------------------*/

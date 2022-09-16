@@ -8,6 +8,7 @@
 #include <gmds/blocking/Blocking.h>
 #include <gmds/blocking/InputMarkedDarts.h>
 #include <gmds/blocking/SheetInsert.h>
+#include <gmds/blocking/WriterDartsVTK.h>
 /*----------------------------------------------------------------------------*/
 TEST(SheetInsertTestSuite, dummytest)
 {
@@ -46,6 +47,11 @@ TEST(SheetInsertTestSuite, pillow3d)
 
 	bl.writeVTKFile("pillow3d.vtk");
 	bl.writeMokaFile("pillow3d.moka");
+
+	gmds::blocking::WriterDartsVTK writer;
+	writer.setBl(&bl);
+	gmds::blocking::WriterDartsVTK::STATUS st = writer.execute("darts_pillow3d.vtk");
+	ASSERT_EQ(gmds::blocking::WriterDartsVTK::SUCCESS, st);
 }
 /*----------------------------------------------------------------------------*/
 TEST(SheetInsertTestSuite, insert3d)
@@ -67,6 +73,11 @@ TEST(SheetInsertTestSuite, insert3d)
 
 	bl.writeVTKFile("insertsheet3d_firstcells.vtk");
 	bl.writeMokaFile("insertsheet3d_firstcells.moka");
+
+	gmds::blocking::WriterDartsVTK writer;
+	writer.setBl(&bl);
+	gmds::blocking::WriterDartsVTK::STATUS st = writer.execute("darts_insertsheet3d_firstcells.vtk");
+	ASSERT_EQ(gmds::blocking::WriterDartsVTK::SUCCESS, st);
 }
 /*----------------------------------------------------------------------------*/
 TEST(SheetInsertTestSuite, intersect3d)
@@ -88,5 +99,10 @@ TEST(SheetInsertTestSuite, intersect3d)
 
 	bl.writeVTKFile("insertsheet3d_autointersect.vtk");
 	bl.writeMokaFile("insertsheet3d_autointersect.moka");
+
+	gmds::blocking::WriterDartsVTK writer;
+	writer.setBl(&bl);
+	gmds::blocking::WriterDartsVTK::STATUS st = writer.execute("darts_insertsheet3d_autointersect.vtk");
+	ASSERT_EQ(gmds::blocking::WriterDartsVTK::SUCCESS, st);
 }
 /*----------------------------------------------------------------------------*/

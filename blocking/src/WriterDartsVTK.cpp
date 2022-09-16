@@ -82,12 +82,17 @@ WriterDartsVTK::execute(std::string AFilename)
 	for (auto it = bl()->lcc()->one_dart_per_cell<2>().begin(); it != bl()->lcc()->one_dart_per_cell<2>().end(); it++) {
 		Dart_handle d = it;
 
+		if(dart_pos.find(d) == dart_pos.end()) {
+			std::cout<<"a dart from a 2-cell was not previously treated with the 1-cells"<<std::endl;
+			return WriterDartsVTK::FAIL;
+		}
+
 		LCC_3::Point barycenter = lcc()->barycenter<2>(d);
 		gmds::math::Point barycenter_gmds(barycenter.x(), barycenter.y(), barycenter.z());
 
-		for(LCC_3::Dart_of_orbit_range<0,1>::iterator
-				 itbis(lcc()->darts_of_orbit<0,1>(d).begin()),
-				 itend(lcc()->darts_of_orbit<0,1>(d).end()); itbis!=itend; ++itbis) {
+		for(LCC_3::Dart_of_orbit_range<0,1,3>::iterator
+				 itbis(lcc()->darts_of_orbit<0,1,3>(d).begin()),
+				 itend(lcc()->darts_of_orbit<0,1,3>(d).end()); itbis!=itend; ++itbis) {
 
 			LCC_3::Dart_handle dbis = itbis;
 
@@ -109,6 +114,11 @@ WriterDartsVTK::execute(std::string AFilename)
 
 			Dart_handle d = it;
 
+			if(dart_pos.find(d) == dart_pos.end()) {
+				std::cout<<"a dart from a 3-cell was not previously treated with the 1-cells"<<std::endl;
+				return WriterDartsVTK::FAIL;
+			}
+
 			LCC_3::Point barycenter = lcc()->barycenter<3>(d);
 			gmds::math::Point barycenter_gmds(barycenter.x(), barycenter.y(), barycenter.z());
 
@@ -117,6 +127,11 @@ WriterDartsVTK::execute(std::string AFilename)
 					 itend(lcc()->darts_of_orbit<0,1,2>(d).end()); itbis!=itend; ++itbis) {
 
 				LCC_3::Dart_handle dbis = itbis;
+
+				if(dart_pos.find(dbis) == dart_pos.end()) {
+					std::cout<<"a dart from a 3-cell was not previously treated with the 1-cells"<<std::endl;
+					return WriterDartsVTK::FAIL;
+				}
 
 				gmds::math::Point e0_0 = (1.- ratio3_) * (barycenter_gmds - dart_pos[dbis].first) + dart_pos[dbis].first;
 				gmds::math::Point e0_1 = (1.- ratio3_) * (barycenter_gmds - dart_pos[dbis].second) + dart_pos[dbis].second;
