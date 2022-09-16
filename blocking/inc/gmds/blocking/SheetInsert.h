@@ -78,6 +78,9 @@ class LIB_GMDS_BLOCKING_API SheetInsert
 
 	// shrink set
 
+	// shrink ratio vertices to insert
+	double ratio_vertex_insert_ = 0.5;
+
 
 	// blocking to CAD
 	std::map<Dart_handle, gmds::cad::FACPoint*> d2p_;

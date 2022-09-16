@@ -57,10 +57,10 @@ class LIB_GMDS_BLOCKING_API WriterDartsVTK
 	// blocking structure
 	gmds::blocking::Blocking* bl_;
 
-	double ratio0_ = 0.75;
+	double ratio0_ = 0.9;
 	double ratio1_ = 0.9;
 	double ratio2_ = 0.9;
-	double ratio3_ = 0.9;
+	double ratio3_ = 0.85;
 
 	double display_alpha1_ = 0.1;
 	double display_alpha2_ = 0.4;

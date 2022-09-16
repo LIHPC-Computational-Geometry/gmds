@@ -122,9 +122,9 @@ SheetInsert::execute(LCC_3::size_type AMark)
 			posz /= nb_marked_Cells;
 			lcc()->unmark_all(m_cells_center);
 
-			posx += + 0.8 * (v->point().x() - posx);
-			posy += + 0.8 * (v->point().y() - posy);
-			posz += + 0.8 * (v->point().z() - posz);
+			posx += ratio_vertex_insert_ * (v->point().x() - posx);
+			posy += ratio_vertex_insert_ * (v->point().y() - posy);
+			posz += ratio_vertex_insert_ * (v->point().z() - posz);
 
 			LCC_3::Point newpt(v->point().x(), v->point().y(), v->point().z());
 			v->point() = LCC_3::Point (posx, posy, posz);
@@ -365,7 +365,7 @@ SheetInsert::execute(LCC_3::size_type AMark)
 	lcc()->free_mark(m_new);
 	lcc()->free_mark(m_cells_center);
 
-	return SheetInsert::NOT_YET_IMPLEMENTED;
+	return SheetInsert::SUCCESS;
 }
 /*----------------------------------------------------------------------------*/
 SheetInsert::STATUS
@@ -473,9 +473,9 @@ SheetInsert::pillow(LCC_3::size_type AMark)
 			posz /= nb_marked_Cells;
 			lcc()->unmark_all(m_cells_center);
 
-			posx += + 0.8 * (v->point().x() - posx);
-			posy += + 0.8 * (v->point().y() - posy);
-			posz += + 0.8 * (v->point().z() - posz);
+			posx += ratio_vertex_insert_ * (v->point().x() - posx);
+			posy += ratio_vertex_insert_ * (v->point().y() - posy);
+			posz += ratio_vertex_insert_ * (v->point().z() - posz);
 
 			LCC_3::Point newpt(v->point().x(), v->point().y(), v->point().z());
 			v->point() = LCC_3::Point (posx, posy, posz);
@@ -645,7 +645,7 @@ SheetInsert::pillow(LCC_3::size_type AMark)
 	lcc()->free_mark(m_new);
 	lcc()->free_mark(m_cells_center);
 
-	return SheetInsert::NOT_YET_IMPLEMENTED;
+	return SheetInsert::SUCCESS;
 }
 /*----------------------------------------------------------------------------*/
 SheetInsert::STATUS

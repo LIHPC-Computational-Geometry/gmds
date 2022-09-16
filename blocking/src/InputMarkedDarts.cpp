@@ -25,7 +25,7 @@ InputMarkedDarts::insertsheet_mark_first_cells3d(LCC_3* ALcc, LCC_3::size_type A
 	LCC_3::size_type m = ALcc->get_new_mark();
 
 	// TODO for now we mark the darts of the n first cell
-	const int nbCellsToMark = 5;
+	const int nbCellsToMark = ANbCells;
 	int nbCellsMarked = 0;
 	for (auto it = ALcc->one_dart_per_cell<3>().begin(); it != ALcc->one_dart_per_cell<3>().end(); it++) {
 
