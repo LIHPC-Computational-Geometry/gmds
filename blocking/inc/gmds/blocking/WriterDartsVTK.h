@@ -42,7 +42,7 @@ class LIB_GMDS_BLOCKING_API WriterDartsVTK
 	/*--------------------------------------------------------------------*/
 	/** @brief  Dummy call
 	 */
-	STATUS execute(std::string AFilename);
+	STATUS execute(std::string AFilename, int AToMark=-1);
 
 	/*--------------------------------------------------------------------*/
 	/** @brief  Dummy call

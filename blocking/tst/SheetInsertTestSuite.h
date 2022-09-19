@@ -42,6 +42,10 @@ TEST(SheetInsertTestSuite, pillow3d)
 	gmds::blocking::InputMarkedDarts imd;
 	imd.pillow_mark_first_cells3d(bl.lcc(), mark, 5);
 
+	gmds::blocking::WriterDartsVTK writer_tmp;
+	writer_tmp.setBl(&bl);
+	gmds::blocking::WriterDartsVTK::STATUS st_tmp = writer_tmp.execute("darts_tmp_pillow3d.vtk", mark);
+
 	gmds::blocking::SheetInsert::STATUS status = is.pillow(mark);
 	is.lcc()->free_mark(mark);
 
@@ -68,6 +72,10 @@ TEST(SheetInsertTestSuite, insert3d)
 	gmds::blocking::InputMarkedDarts imd;
 	imd.insertsheet_mark_first_cells3d(bl.lcc(), mark, 5);
 
+	gmds::blocking::WriterDartsVTK writer_tmp;
+	writer_tmp.setBl(&bl);
+	gmds::blocking::WriterDartsVTK::STATUS st_tmp = writer_tmp.execute("darts_tmp_insertsheet3d_firstcells.vtk", mark);
+
 	gmds::blocking::SheetInsert::STATUS status = is.execute(mark);
 	is.lcc()->free_mark(mark);
 
@@ -93,6 +101,10 @@ TEST(SheetInsertTestSuite, intersect3d)
 	gmds::blocking::LCC_3::size_type mark = is.lcc()->get_new_mark();
 	gmds::blocking::InputMarkedDarts imd;
 	imd.insertsheet_mark_intersect_3d(bl.lcc(), mark, 4, 4, 4);
+
+	gmds::blocking::WriterDartsVTK writer_tmp;
+	writer_tmp.setBl(&bl);
+	gmds::blocking::WriterDartsVTK::STATUS st_tmp = writer_tmp.execute("darts_tmp_insertsheet3d_autointersect.vtk", mark);
 
 	gmds::blocking::SheetInsert::STATUS status = is.execute(mark);
 	is.lcc()->free_mark(mark);
@@ -156,6 +168,10 @@ TEST(SheetInsertTestSuite, pillow_ogrid_3d)
 	gmds::blocking::InputMarkedDarts imd;
 	imd.pillow_mark_first_cells3d(bl.lcc(), mark, 3);
 
+	gmds::blocking::WriterDartsVTK writer_tmp;
+	writer_tmp.setBl(&bl);
+	gmds::blocking::WriterDartsVTK::STATUS st_tmp = writer_tmp.execute("darts_tmp_pillow3d_ogrid.vtk", mark);
+
 	gmds::blocking::SheetInsert::STATUS status_insert = is.pillow(mark);
 	is.lcc()->free_mark(mark);
 
@@ -185,6 +201,10 @@ TEST(SheetInsertTestSuite, insertsheet_ogrid_3d)
 	gmds::blocking::LCC_3::size_type mark = is.lcc()->get_new_mark();
 	gmds::blocking::InputMarkedDarts imd;
 	imd.insertsheet_mark_first_cells3d(bl.lcc(), mark, 3);
+
+	gmds::blocking::WriterDartsVTK writer_tmp;
+	writer_tmp.setBl(&bl);
+	gmds::blocking::WriterDartsVTK::STATUS st_tmp = writer_tmp.execute("darts_tmp_insertsheet3d_ogrid.vtk", mark);
 
 	gmds::blocking::SheetInsert::STATUS status_insert = is.execute(mark);
 	is.lcc()->free_mark(mark);

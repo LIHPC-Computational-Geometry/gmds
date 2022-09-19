@@ -18,7 +18,7 @@ WriterDartsVTK::WriterDartsVTK() {}
 WriterDartsVTK::~WriterDartsVTK() {}
 /*----------------------------------------------------------------------------*/
 WriterDartsVTK::STATUS
-WriterDartsVTK::execute(std::string AFilename)
+WriterDartsVTK::execute(std::string AFilename, int AToMark)
 {
 	LCC_3::size_type mark = bl()->lcc()->get_new_mark();
 
@@ -151,10 +151,17 @@ WriterDartsVTK::execute(std::string AFilename)
 	gmds::Variable<int>* var_node_type = m.newVariable<int, gmds::GMDS_NODE>("node_type");
 	gmds::Variable<int>* var_edge_type = m.newVariable<int, gmds::GMDS_FACE>("edge_type");
 
+	gmds::Variable<int>* var_edge_marked = m.newVariable<int, gmds::GMDS_FACE>("edge_marked");
+
 	for(auto d: dart_pos) {
 		gmds::Node n0 = m.newNode(d.second.first);
 		gmds::Node n1 = m.newNode(d.second.second);
 		gmds::Face f = m.newTriangle(n0, n1, n1);
+		if(AToMark != -1) {
+			if(bl()->lcc()->is_marked(d.first, AToMark)) {
+				(*var_edge_marked)[f.id()] = 1;
+			}
+		}
 		(*var_node_type)[n0.id()] = 1;
 		(*var_node_type)[n1.id()] = 0;
 		(*var_edge_type)[f.id()] = 4;

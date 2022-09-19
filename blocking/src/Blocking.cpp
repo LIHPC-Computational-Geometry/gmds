@@ -515,8 +515,12 @@ void Blocking::writeVTKFile(std::string AFileName) const
 	gmds::VTKWriter vtkWriter(&ioService);
 	if(!in2d) {
 		vtkWriter.setCellOptions(gmds::N | gmds::R);
+		// to output the gmds IDs
+		vtkWriter.setDataOptions(gmds::N | gmds::R);
 	} else {
-		vtkWriter.setCellOptions(gmds::N|gmds::F);
+		vtkWriter.setCellOptions(gmds::N | gmds::F);
+		// to output the gmds IDs
+		vtkWriter.setDataOptions(gmds::N | gmds::F);
 	}
 	vtkWriter.write(AFileName);
 }
