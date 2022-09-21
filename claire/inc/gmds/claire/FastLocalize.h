@@ -41,7 +41,7 @@ class LIB_GMDS_CLAIRE_API FastLocalize {
 	ANNkd_tree*	 m_kdTree;
 	ANNidxArray	 m_nnIdx;					// near neighbor indices
 	ANNdistArray m_dists;					// near neighbor distances
-
+	ANNpoint 	 m_queryPt;
 };
 /*----------------------------------------------------------------------------*/
 }     // namespace gmds

@@ -13,9 +13,9 @@ FastLocalize::FastLocalize(Mesh *AMesh): m_mesh(AMesh) {
 	ANNpointArray		dataPts;					// data points
 	ANNpoint				queryPt;					// query point
 
+	m_queryPt = annAllocPt(2);
 
 
-	queryPt = annAllocPt(dim);					// allocate 1 query point
 	dataPts = annAllocPts(maxPts, dim);			// allocate data points
 	m_nnIdx = new ANNidx[k];						// allocate near neigh indices
 	m_dists = new ANNdist[k];						// allocate near neighbor dists
@@ -47,6 +47,7 @@ FastLocalize::~FastLocalize(){
 	delete [] m_nnIdx;							// clean things up
 	delete [] m_dists;
 	delete m_kdTree;
+	annDeallocPt(m_queryPt);
 	annClose();									// done with ANN
 
 }
@@ -55,17 +56,14 @@ Cell::Data
 FastLocalize::find(const math::Point &APoint)
 {
 	int	k			= 5;      // max number of nearest neighbors
-	ANNpoint			queryPt;
-	queryPt = annAllocPt(2);
-	queryPt[0]=APoint.X();
-	queryPt[1]=APoint.Y();
+	m_queryPt[0]=APoint.X();
+	m_queryPt[1]=APoint.Y();
 
 	m_kdTree->annkSearch(		// search
-	   queryPt,// query point
+	   m_queryPt,// query point
 	   k,
 	   m_nnIdx,
 	   m_dists,
 	   0.01);
-
 	return Cell::Data(0,m_ann2gmds_id[m_nnIdx[0]]);
 }
