@@ -15,6 +15,7 @@
 #include "AeroMeshQualityTestSuite.h"
 #include "RefinementBetaTestSuite.h"
 #include "SmoothLineSweepingTestSuite.h"
+#include "FastLocalizeTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

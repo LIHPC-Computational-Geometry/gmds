@@ -6,6 +6,7 @@ add_executable(GMDS_CLAIRE_TEST
         PointFollowingVectorFieldTestSuite.h
         AeroPipelineTestSuite.h
         AeroMeshQualityTestSuite.h
+        FastLocalizeTestSuite.h
         main_test.cpp ../inc/gmds/claire/LevelSetCombined.h
         UtilsTestSuite.h
         AeroBoundariesTestSuite.h
