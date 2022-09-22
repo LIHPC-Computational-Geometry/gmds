@@ -326,6 +326,48 @@ double Utils::linearInterpolation2D3Pt(const math::Point P1, const math::Point P
 /*------------------------------------------------------------------------*/
 
 
+/*------------------------------------------------------------------------*/
+void Utils::CurveBlockEdgesReavel(Blocking2D* blocking2D, Mesh* m){
+
+	m->clear();
+
+	// Create all the faces in the mesh m
+	for (auto b:blocking2D->allBlocks())
+	{
+		int Nx = b.getNbDiscretizationI();
+		int Ny = b.getNbDiscretizationJ();
+		for (int i=0; i < Nx-1; i++) {
+
+			Node n0 = m->newNode( b(i,0).point() );
+			Node n1 = m->newNode( b(i+1,0).point());
+			Face f1 = m->newTriangle(n0, n1, n1);
+
+			Node n2 = m->newNode( b(i,Ny-1).point() );
+			Node n3 = m->newNode( b(i+1,Ny-1).point() );
+			Face f2 = m->newTriangle(n2, n3, n3);
+
+		}
+
+		for (int j=0; j < Ny-1; j++) {
+
+			Node n0 = m->newNode( b(0,j).point() );
+			Node n1 = m->newNode( b(0,j+1).point() );
+			Face f1 = m->newTriangle(n0, n1, n1);
+
+			Node n2 = m->newNode( b(Nx-1,j).point() );
+			Node n3 = m->newNode(b(Nx-1,j+1).point() );
+			Face f2 = m->newTriangle(n2, n3, n3);
+
+		}
+
+
+	}
+
+
+}
+/*------------------------------------------------------------------------*/
+
+
 /*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/
