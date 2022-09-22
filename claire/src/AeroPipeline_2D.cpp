@@ -23,6 +23,7 @@
 #include <gmds/smoothy/EllipticSmoother2D.h>
 #include<gmds/math/Line.h>
 #include<gmds/math/BezierCurve.h>
+#include <gmds/claire/AeroMeshQuality.h>
 
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -324,8 +325,8 @@ AeroPipeline_2D::execute(){
 	std::cout << "======================================" << std::endl;
 	std::cout << " " << std::endl;
 
-	// Ecriture finale des maillages
-	std::cout << "-> Elliptic Smoothing on quad mesh" << std::endl;
+	// Elliptic Smoothing on global mesh
+	//std::cout << "-> Elliptic Smoothing on quad mesh" << std::endl;
 	t_start = clock();
 
 	int mark_block_nodes = m_meshHex->newMark<Node>();
@@ -334,6 +335,7 @@ AeroPipeline_2D::execute(){
 	math::Utils::BuildMesh2DFromBlocking2D(&m_Blocking2D, m_meshHex, mark_block_nodes, mark_first_layer, mark_farfield_nodes);
 	int mark_locked_nodes = m_meshHex->newMark<Node>();
 
+	/*
 	Variable<int>* var_locked_nodes = m_meshHex->newVariable<int, GMDS_NODE>("Locked_Nodes") ;
 
 	for (auto n_id:m_meshHex->nodes())
@@ -374,7 +376,6 @@ AeroPipeline_2D::execute(){
 		}
 	}
 
-	/*
 	smoothy::EllipticSmoother2D smoother2D(m_meshHex);
 	smoother2D.lock(mark_locked_nodes);
 	smoother2D.execute();
@@ -395,9 +396,20 @@ AeroPipeline_2D::execute(){
 
 
 	// Analysis of the quad mesh quality
-	math::Utils::AnalyseQuadMeshQuality(m_meshHex);
-
+	std::cout << "-> Analyse de la qualité du maillage quad" << std::endl;
+	t_start = clock();
+	//math::Utils::AnalyseQuadMeshQuality(m_meshHex);
+	Variable<double>* var_scaled_jacobian = m_meshHex->newVariable<double, GMDS_FACE>("MQ_ScaledJacobian");
+	for (auto f_id:m_meshHex->faces())
+	{
+		Face f = m_meshHex->get<Face>(f_id);
+		std::vector<Node> face_nodes = f.get<Node>() ;
+		double scajac = math::AeroMeshQuality::ScaledJacobianQUAD(face_nodes[0].point(), face_nodes[1].point(), face_nodes[2].point(), face_nodes[3].point());
+		var_scaled_jacobian->set(f_id, scajac);
+	}
 	//MeshAlignement();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
 
 	// Ecriture finale des maillages
@@ -480,6 +492,18 @@ AeroPipeline_2D::EcritureMaillage(){
 	std::cout << "			4. Ecriture Maillage Quad en .su2 ..." << std::endl;
 	SU2Writer writer(m_meshHex, "AeroPipeline2D_QuadMesh.su2", m_params.x_lim_SU2_inoutlet);
 	SU2Writer::STATUS result = writer.execute();
+
+
+
+	gmds::Mesh meshReavel(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
+	math::Utils::CurveBlockEdgesReavel(&m_Blocking2D, &meshReavel);
+	std::cout << "			5. Ecriture Maillage Reavel en .vtk ..." << std::endl;
+	ioService = &meshReavel;
+	gmds::VTKWriter vtkWriter_CurvedReavel(&ioService);
+	vtkWriter_CurvedReavel.setCellOptions(gmds::N|gmds::F);
+	vtkWriter_CurvedReavel.setDataOptions(gmds::N|gmds::F);
+	vtkWriter_CurvedReavel.write("AeroPipeline2D_CurvedBlocks.vtk");
+
 
 }
 /*------------------------------------------------------------------------*/
@@ -908,8 +932,6 @@ AeroPipeline_2D::BlockingClassification(){
 
 
 
-
-
 	// Curved the block edges in the tangent direction of the wall
 	Variable<math::Vector3d>* var_vec_tangent_layer = m_Blocking2D.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Vec_Tan_Layer");
 	for (auto n_id:m_Blocking2D.nodes())
@@ -979,21 +1001,6 @@ AeroPipeline_2D::BlockingClassification(){
 				}
 
 				if (nb_subdi >= 2) {
-					/*
-					std::cout << "--------------------------------------------------" << std::endl;
-					std::cout << "Edge id : " << e_id << ", nbr subdi : " << nb_subdi << std::endl;
-				   std::cout << " " << std::endl;
-					std::cout << "Point A : " << e_nodes[0].point() << std::endl;
-				   std::cout << "Tan A : " << v0 << std::endl;
-					std::cout << "Point B : " << e_nodes[1].point() << std::endl;
-				   std::cout << "Tan B : " << v1 << std::endl;
-				   std::cout << " " << std::endl;
-				   std::cout << "Point contrôl : " << P_control << std::endl;
-				   std::cout << "Intersection trouvée : " << intersection_found << std::endl;
-				   v0.normalize();
-				   v1.normalize();
-				   std::cout << v0.dot(v1) << std::endl;
-				   */
 					std::vector<math::Point> new_pos = bcurve.getDiscretization(nb_subdi);
 
 					Node corner_0 = b.getNode(0);
@@ -1109,6 +1116,8 @@ AeroPipeline_2D::BlockingClassification(){
 	}
 
 
+
+
 }
 /*------------------------------------------------------------------------*/
 
@@ -1221,7 +1230,7 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 
 		}
 
-		m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_1);
+		//m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_1);
 
 	}
 
@@ -1536,6 +1545,85 @@ void
 	}
 
 
+
+
+
+	/*
+	AeroBoundaries_2D Bnd_HexMesh(m_meshHex);
+	Bnd_HexMesh.execute();
+
+	Variable<double>* var_dist = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance");
+	Variable<double>* var_dist_int = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	Variable<double>* var_dist_out = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
+
+	int mark_Farfiel = Bnd_HexMesh.getMarkAmont();
+	int mark_Paroi = Bnd_HexMesh.getMarkParoi();
+
+	std::vector<TCellID> nodes_Farfield;
+	std::vector<TCellID> nodes_Paroi;
+
+	for (auto n_id:m_meshHex->nodes())
+	{
+		if (Bnd_HexMesh.isParoi(n_id)  )
+		{
+			nodes_Paroi.push_back(n_id) ;
+		}
+
+		if (Bnd_HexMesh.isAmont(n_id) )
+		{
+			nodes_Farfield.push_back(n_id) ;
+		}
+	}
+
+	for (auto ni_id:m_meshHex->nodes())
+	{
+		Node ni = m_meshHex->get<Node>(ni_id);
+		var_dist_int->set(ni_id, std::numeric_limits<double>::max()) ;
+		var_dist_out->set(ni_id, std::numeric_limits<double>::max()) ;
+		for (auto nj_id:nodes_Paroi) {
+			Node nj = m_meshHex->get<Node>(nj_id);
+			if ((ni.point() - nj.point()).norm() < var_dist_int->value(ni_id)) {
+				var_dist_int->set(ni_id, (ni.point() - nj.point()).norm());
+			}
+		}
+
+		for (auto nj_id:nodes_Farfield) {
+			Node nj = m_meshHex->get<Node>(nj_id);
+			if ((ni.point()-nj.point()).norm() < var_dist_out->value(ni_id) )
+			{
+				var_dist_out->set(ni_id, (ni.point()-nj.point()).norm()) ;
+			}
+
+		}
+	}
+
+	for (auto n_id:m_meshHex->nodes())
+	{
+		var_dist->set(n_id, ( var_dist_int->value(n_id) )/( var_dist_int->value(n_id) + var_dist_out->value(n_id) ) );
+	}
+
+	 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	MeshDoctor doc(m_meshHex);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
@@ -1546,6 +1634,7 @@ void
 	{
 		Node n = m_meshHex->get<Node>(n_id);
 		math::Vector3d v_ref = (var_vector_quadmesh->value(n_id)).normalize();
+		//math::Vector3d v_ref({cos(m_params.angle_attack*M_PI/180.0), sin(m_params.angle_attack*M_PI/180.0), 0.0});
 		math::Vector3d v_ref_ortho({-v_ref.Y(), v_ref.X(), 0.0}) ;
 		v_ref_ortho.normalize();
 		std::vector<Edge> edges = n.get<Edge>();

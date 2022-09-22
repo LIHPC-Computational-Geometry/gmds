@@ -104,6 +104,14 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static double linearInterpolation2D3Pt(const math::Point P1, const math::Point P2, const math::Point P3, const math::Point M, const double c1, const double c2, const double c3);
 	/*----------------------------------------------------------------------------*/
+	/** @brief Reavel the curved block edges
+	 	*
+		* \param[in] blocking2D the blocking
+		*
+		* \return  the mesh
+	 */
+	static void CurveBlockEdgesReavel(Blocking2D* blocking2D, Mesh* m);
+	/*----------------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/

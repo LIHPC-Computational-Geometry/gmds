@@ -190,8 +190,9 @@ AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cibl
 
 		double angle = (acos(v1.dot(v2))*180/M_PI) ;
 
-		if (abs(angle) < 45)
+		if (abs(angle) < 40)
 		{
+			std::cout << "Angle : " << angle << std::endl;
 			Insertion_Double(Front_Paroi, n_id, A_distance, dist_cible, A_vectors);
 		}
 
@@ -238,25 +239,27 @@ AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, dou
 	// Boucle d'insertion d'éléments
 	bool do_smooth(true);
 
-	while (do_smooth){
-		do_smooth = false;
-		// A FAIRE : lissage de la couche
+	if (Front_IN.getFrontID()+1 != m_params_aero.nbr_couches ) {
+		while (do_smooth) {
+			do_smooth = false;
+			// A FAIRE : lissage de la couche
 
-		TCellID node_id;
-		int type_node(0);
-		getSingularNode(Front_IN, node_id, type_node);
+			TCellID node_id;
+			int type_node(0);
+			getSingularNode(Front_IN, node_id, type_node);
 
-		if (type_node == 1){
-			// Insertion
-			std::cout << "INSERTION QUAD AU NOEUD : " << node_id << std::endl;
-			Insertion(Front_IN, node_id, A_distance, dist_cible, A_vectors);
-			do_smooth = true;
-		}
-		else if (type_node == 2){
-			// Fusion
-			std::cout << "FUSION QUAD AU NOEUD : " << node_id << std::endl;
-			Fusion(Front_IN, node_id);
-			do_smooth = true;
+			if (type_node == 1) {
+				// Insertion
+				std::cout << "INSERTION QUAD AU NOEUD : " << node_id << std::endl;
+				Insertion(Front_IN, node_id, A_distance, dist_cible, A_vectors);
+				do_smooth = true;
+			}
+			else if (type_node == 2) {
+				// Fusion
+				std::cout << "FUSION QUAD AU NOEUD : " << node_id << std::endl;
+				Fusion(Front_IN, node_id);
+				do_smooth = true;
+			}
 		}
 	}
 
@@ -332,14 +335,15 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 			double min_lenght_2 =
 			   math::AeroMeshQuality::minlenghtedge(nodes_quad_2[0].point(), nodes_quad_2[1].point(), nodes_quad_2[2].point(), nodes_quad_2[3].point());
 
-			if (singu_not_found && (min_lenght_1 < 0.001 || min_lenght_2 < 0.001)) {
+			if (singu_not_found && (min_lenght_1 < 1.0 && min_lenght_2 < 1.0)) {
 				node_id = n_id;
 				type = 2;
 				singu_not_found = false;
 			}
 
 		}
-	   */
+		 */
+
 
 		// Les tests pour l'INSERSION
 		if (singu_not_found && Front_IN.isMultiplicable(n_id)) {
