@@ -24,6 +24,7 @@
 #include<gmds/math/Line.h>
 #include<gmds/math/BezierCurve.h>
 #include <gmds/claire/AeroMeshQuality.h>
+#include <gmds/claire/FastLocalize.h>
 
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -399,6 +400,7 @@ AeroPipeline_2D::execute(){
 	std::cout << "-> Analyse de la qualité du maillage quad" << std::endl;
 	t_start = clock();
 	//math::Utils::AnalyseQuadMeshQuality(m_meshHex);
+	/*
 	Variable<double>* var_scaled_jacobian = m_meshHex->newVariable<double, GMDS_FACE>("MQ_ScaledJacobian");
 	for (auto f_id:m_meshHex->faces())
 	{
@@ -407,7 +409,8 @@ AeroPipeline_2D::execute(){
 		double scajac = math::AeroMeshQuality::ScaledJacobianQUAD(face_nodes[0].point(), face_nodes[1].point(), face_nodes[2].point(), face_nodes[3].point());
 		var_scaled_jacobian->set(f_id, scajac);
 	}
-	//MeshAlignement();
+	 */
+	MeshAlignement();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
@@ -1230,7 +1233,7 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 
 		}
 
-		//m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_1);
+		m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_1);
 
 	}
 
@@ -1500,129 +1503,7 @@ void
 void
    AeroPipeline_2D::MeshAlignement()
 {
-
-	Variable<math::Vector3d>* var_vector_quadmesh = m_meshHex->newVariable<math::Vector3d, GMDS_NODE>("Vector_Ref");
 	Variable<math::Vector3d>* var_vector_trimesh = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
-
-	// Set the reference vector field on the mesh
-	for (auto n_id:m_meshHex->nodes())
-	{
-		Node n = m_meshHex->get<Node>(n_id);
-		bool triangle_found(false);
-		TCellID f_id_in_Tri_mesh(NullID);
-		for (auto f_tri_id:m_meshTet->faces())
-		{
-			if (!triangle_found) {
-				Face f = m_meshTet->get<Face>(f_tri_id);
-				std::vector<Node> f_nodes = f.get<Node>();
-				triangle_found = math::Utils::isInTriangle(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point(), n.point());
-				if (triangle_found)
-				{
-					f_id_in_Tri_mesh = f_tri_id;
-				}
-			}
-		}
-
-		if (f_id_in_Tri_mesh != NullID)
-		{
-			math::Vector3d v;
-			Face f = m_meshTet->get<Face>(f_id_in_Tri_mesh);
-			std::vector<Node> f_nodes = f.get<Node>();
-			v.setX(math::Utils::linearInterpolation2D3Pt(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point(), n.point(),
-			                                      var_vector_trimesh->value(f_nodes[0].id()).X(),
-			                                      var_vector_trimesh->value(f_nodes[1].id()).X(),
-			                                      var_vector_trimesh->value(f_nodes[2].id()).X()) );
-			v.setY(math::Utils::linearInterpolation2D3Pt(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point(), n.point(),
-			                                             var_vector_trimesh->value(f_nodes[0].id()).Y(),
-			                                             var_vector_trimesh->value(f_nodes[1].id()).Y(),
-			                                             var_vector_trimesh->value(f_nodes[2].id()).Y()) );
-			v.setZ(0.0);
-
-			var_vector_quadmesh->set(n_id, v);
-
-		}
-
-	}
-
-
-
-
-
-	/*
-	AeroBoundaries_2D Bnd_HexMesh(m_meshHex);
-	Bnd_HexMesh.execute();
-
-	Variable<double>* var_dist = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance");
-	Variable<double>* var_dist_int = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
-	Variable<double>* var_dist_out = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
-
-	int mark_Farfiel = Bnd_HexMesh.getMarkAmont();
-	int mark_Paroi = Bnd_HexMesh.getMarkParoi();
-
-	std::vector<TCellID> nodes_Farfield;
-	std::vector<TCellID> nodes_Paroi;
-
-	for (auto n_id:m_meshHex->nodes())
-	{
-		if (Bnd_HexMesh.isParoi(n_id)  )
-		{
-			nodes_Paroi.push_back(n_id) ;
-		}
-
-		if (Bnd_HexMesh.isAmont(n_id) )
-		{
-			nodes_Farfield.push_back(n_id) ;
-		}
-	}
-
-	for (auto ni_id:m_meshHex->nodes())
-	{
-		Node ni = m_meshHex->get<Node>(ni_id);
-		var_dist_int->set(ni_id, std::numeric_limits<double>::max()) ;
-		var_dist_out->set(ni_id, std::numeric_limits<double>::max()) ;
-		for (auto nj_id:nodes_Paroi) {
-			Node nj = m_meshHex->get<Node>(nj_id);
-			if ((ni.point() - nj.point()).norm() < var_dist_int->value(ni_id)) {
-				var_dist_int->set(ni_id, (ni.point() - nj.point()).norm());
-			}
-		}
-
-		for (auto nj_id:nodes_Farfield) {
-			Node nj = m_meshHex->get<Node>(nj_id);
-			if ((ni.point()-nj.point()).norm() < var_dist_out->value(ni_id) )
-			{
-				var_dist_out->set(ni_id, (ni.point()-nj.point()).norm()) ;
-			}
-
-		}
-	}
-
-	for (auto n_id:m_meshHex->nodes())
-	{
-		var_dist->set(n_id, ( var_dist_int->value(n_id) )/( var_dist_int->value(n_id) + var_dist_out->value(n_id) ) );
-	}
-
-	 */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	MeshDoctor doc(m_meshHex);
 	doc.buildEdgesAndX2E();
@@ -1632,49 +1513,84 @@ void
 	// Compute the flow deviation
 	for (auto n_id:m_meshHex->nodes())
 	{
-		Node n = m_meshHex->get<Node>(n_id);
-		math::Vector3d v_ref = (var_vector_quadmesh->value(n_id)).normalize();
-		//math::Vector3d v_ref({cos(m_params.angle_attack*M_PI/180.0), sin(m_params.angle_attack*M_PI/180.0), 0.0});
-		math::Vector3d v_ref_ortho({-v_ref.Y(), v_ref.X(), 0.0}) ;
-		v_ref_ortho.normalize();
-		std::vector<Edge> edges = n.get<Edge>();
-		std::vector<double> min_angles;
+			Node n = m_meshHex->get<Node>(n_id);
+		   std::vector<Face> n_faces_in_quad = n.get<Face>() ;
 
-		for (auto e:edges)
-		{
-			std::vector<Node> e_nodes = e.get<Node>();
-			math::Vector3d vec_edge = (e_nodes[0].point() - e_nodes[1].point()).normalize() ;
-			double min_angle(90);
+		   if (n_faces_in_quad.size() > 2) {
 
-			if ( acos(vec_edge.dot(v_ref))*180/M_PI < min_angle )
-			{
-				min_angle = acos(vec_edge.dot(v_ref))*180/M_PI;
-			}
-			if ( acos(vec_edge.dot(-v_ref))*180/M_PI < min_angle )
-			{
-				min_angle = acos(vec_edge.dot(-v_ref))*180/M_PI;
-			}
-			if ( acos(vec_edge.dot(v_ref_ortho))*180/M_PI < min_angle )
-			{
-				min_angle = acos(vec_edge.dot(v_ref_ortho))*180/M_PI;
-			}
-			if ( acos(vec_edge.dot(-v_ref_ortho))*180/M_PI < min_angle )
-			{
-				min_angle = acos(vec_edge.dot(-v_ref_ortho))*180/M_PI;
-			}
+			   FastLocalize fl(m_meshTet);
+			   gmds::Cell::Data data = fl.find(n.point());
 
-			min_angles.push_back(min_angle);
+			   Node n_closer_tri = m_meshTet->get<Node>(data.id);
+			   std::vector<Face> faces = n_closer_tri.get<Face>();
 
-		}
+			   bool triangle_found(false);
+			   TCellID f_id_in_Tri_mesh(NullID);
+			   for (auto f_tri : faces) {
+				   std::vector<Node> f_nodes = f_tri.get<Node>();
+				   triangle_found = math::Utils::isInTriangle(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point(), n.point());
+				   if (triangle_found) {
+					   f_id_in_Tri_mesh = f_tri.id();
+				   }
+			   }
 
-		var_deviation->set(n_id, 0);
-		for (auto angle:min_angles)
-		{
-			if ( var_deviation->value(n_id) < angle )
-			{
-				var_deviation->set(n_id, angle) ;
-			}
-		}
+			   if (f_id_in_Tri_mesh != NullID) {
+				   math::Vector3d v_ref;
+				   Face f = m_meshTet->get<Face>(f_id_in_Tri_mesh);
+				   std::vector<Node> f_nodes = f.get<Node>();
+				   v_ref.setX(math::Utils::linearInterpolation2D3Pt(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point(), n.point(),
+				                                                    var_vector_trimesh->value(f_nodes[0].id()).X(), var_vector_trimesh->value(f_nodes[1].id()).X(),
+				                                                    var_vector_trimesh->value(f_nodes[2].id()).X()));
+				   v_ref.setY(math::Utils::linearInterpolation2D3Pt(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point(), n.point(),
+				                                                    var_vector_trimesh->value(f_nodes[0].id()).Y(), var_vector_trimesh->value(f_nodes[1].id()).Y(),
+				                                                    var_vector_trimesh->value(f_nodes[2].id()).Y()));
+				   /*
+				   v_ref.setX(1.0);
+				   v_ref.setY(1.0);
+				    */
+				   v_ref.setZ(0.0);
+
+				   v_ref.normalize();
+
+				   //  math::Vector3d v_ref({cos(m_params.angle_attack*M_PI/180.0), sin(m_params.angle_attack*M_PI/180.0), 0.0});
+				   math::Vector3d v_ref_ortho({-v_ref.Y(), v_ref.X(), 0.0});
+				   v_ref_ortho.normalize();
+				   std::vector<Edge> edges = n.get<Edge>();
+				   std::vector<double> min_angles;
+
+				   for (auto e : edges) {
+					   std::vector<Node> e_nodes = e.get<Node>();
+					   math::Vector3d vec_edge = (e_nodes[0].point() - e_nodes[1].point()).normalize();
+					   double min_angle(90);
+
+					   if (acos(vec_edge.dot(v_ref)) * 180 / M_PI < min_angle) {
+						   min_angle = acos(vec_edge.dot(v_ref)) * 180 / M_PI;
+					   }
+					   if (acos(vec_edge.dot(-v_ref)) * 180 / M_PI < min_angle) {
+						   min_angle = acos(vec_edge.dot(-v_ref)) * 180 / M_PI;
+					   }
+					   if (acos(vec_edge.dot(v_ref_ortho)) * 180 / M_PI < min_angle) {
+						   min_angle = acos(vec_edge.dot(v_ref_ortho)) * 180 / M_PI;
+					   }
+					   if (acos(vec_edge.dot(-v_ref_ortho)) * 180 / M_PI < min_angle) {
+						   min_angle = acos(vec_edge.dot(-v_ref_ortho)) * 180 / M_PI;
+					   }
+
+					   min_angles.push_back(min_angle);
+				   }
+
+				   var_deviation->set(n_id, 0);
+				   for (auto angle : min_angles) {
+					   if (var_deviation->value(n_id) < angle) {
+						   var_deviation->set(n_id, angle);
+					   }
+				   }
+
+
+			   }
+
+
+		   }
 
 	}
 
