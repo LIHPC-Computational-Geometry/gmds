@@ -4,7 +4,6 @@
 // Files containing the different test suites to launch
 
 #include "BlockMesherTestSuite.h"
-#include "BlockMesher2DTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

@@ -205,6 +205,7 @@ class GMDSIg_API Blocking2D: public Mesh{
 	 */
 	std::vector<TCellID>* getEdgeGrid(TCellID AID);
 
+
  private:
 
 	/**
@@ -238,6 +239,8 @@ class GMDSIg_API Blocking2D: public Mesh{
 	/** variables that store the grids nodes for blocks entities*/
 	Variable<Array2D<TCellID>* >* m_face_grids;
 	Variable<std::vector<TCellID>* >* m_edge_grids;
+
+
 };
 }
 #endif //GMDS_BLOCKING_H

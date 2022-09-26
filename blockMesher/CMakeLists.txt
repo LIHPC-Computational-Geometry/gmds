@@ -8,13 +8,10 @@ set(GMDS_LIB_PREFIX gmds/blockMesher)
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/blockMesher/BlockMesher.h
-        inc/gmds/blockMesher/BlockMesher2D.h
-        inc/gmds/blockMesher/BlockClassificator.h
         )
 set(GMDS_SRC
         src/BlockMesher.cpp
-        src/BlockMesher2D.cpp
-        src/BlockClassificator.cpp)
+        )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
