@@ -41,7 +41,7 @@ TEST(ClaireTestClass, Test_ConditionQUAD)
 	for (auto f_id:m.faces()) {
 		Face f = m.get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
-		double cond = math::AeroMeshQuality::ConditionQUAD(&m, nodes[0].id(), nodes[1].id(), nodes[2].id(), nodes[3].id());
+		double cond = math::AeroMeshQuality::ConditionQUAD(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
 		ASSERT_TRUE(abs(cond - 1.0) < eps);
 	}
 	//std::cout << "cond : " << cond << std::endl;
@@ -79,9 +79,9 @@ TEST(ClaireTestClass, Test_ConditionQUAD)
 	double eps2(pow(10,-3));
 
 	for (auto f_id:m2.faces()) {
-		Face f = m.get<Face>(f_id);
+		Face f = m2.get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
-		double cond = math::AeroMeshQuality::ConditionQUAD(&m2, nodes[0].id(), nodes[1].id(), nodes[2].id(), nodes[3].id());
+		double cond = math::AeroMeshQuality::ConditionQUAD(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
 		ASSERT_TRUE(abs(cond - map_mq[f_id]) < eps2);
 	}
 
@@ -117,7 +117,7 @@ TEST(ClaireTestClass, Test_EdgeRatioQUAD)
 	for (auto f_id:m.faces()) {
 		Face f = m.get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
-		double cond = math::AeroMeshQuality::EdgeRatioQUAD(&m, nodes[0].id(), nodes[1].id(), nodes[2].id(), nodes[3].id());
+		double cond = math::AeroMeshQuality::EdgeRatioQUAD(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
 		ASSERT_TRUE(abs(cond - 1.0) < eps);
 	}
 	//std::cout << "cond : " << cond << std::endl;
@@ -155,10 +155,9 @@ TEST(ClaireTestClass, Test_EdgeRatioQUAD)
 	double eps2(pow(10,-3));
 
 	for (auto f_id:m2.faces()) {
-		Face f = m.get<Face>(f_id);
+		Face f = m2.get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
-		double mq = math::AeroMeshQuality::EdgeRatioQUAD(&m2, nodes[0].id(), nodes[1].id(), nodes[2].id(), nodes[3].id());
-		//std::cout << f_id << " " << mq << std::endl;
+		double mq = math::AeroMeshQuality::EdgeRatioQUAD(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
 		ASSERT_TRUE(abs(mq - map_mq[f_id]) < eps2);
 	}
 
@@ -192,7 +191,7 @@ TEST(ClaireTestClass, Test_JacobianQUAD)
 	for (auto f_id:m.faces()) {
 		Face f = m.get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
-		double mq = math::AeroMeshQuality::JacobianQUAD(&m, nodes[0].id(), nodes[1].id(), nodes[2].id(), nodes[3].id());
+		double mq = math::AeroMeshQuality::JacobianQUAD(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
 		//std::cout << f_id <<  " " << mq << std::endl;
 		ASSERT_TRUE(abs(mq - 1.0) < eps);
 	}
@@ -231,10 +230,10 @@ TEST(ClaireTestClass, Test_JacobianQUAD)
 	double eps2(pow(10,-3));
 
 	for (auto f_id:m2.faces()) {
-		Face f = m.get<Face>(f_id);
+		Face f = m2.get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
-		double mq = math::AeroMeshQuality::JacobianQUAD(&m2, nodes[0].id(), nodes[1].id(), nodes[2].id(), nodes[3].id());
-		std::cout << f_id << " " << mq << std::endl;
+		double mq = math::AeroMeshQuality::JacobianQUAD(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
+		//std::cout << f_id << " " << mq << std::endl;
 		ASSERT_TRUE(abs(mq - map_mq[f_id]) < eps2);
 	}
 
@@ -268,7 +267,7 @@ TEST(ClaireTestClass, Test_ScaledJacobianQUAD)
 	for (auto f_id:m.faces()) {
 		Face f = m.get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
-		double mq = math::AeroMeshQuality::ScaledJacobianQUAD(&m, nodes[0].id(), nodes[1].id(), nodes[2].id(), nodes[3].id());
+		double mq = math::AeroMeshQuality::ScaledJacobianQUAD(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
 		//std::cout << f_id <<  " " << mq << std::endl;
 		ASSERT_TRUE(abs(mq - 1.0) < eps);
 	}
@@ -307,9 +306,9 @@ TEST(ClaireTestClass, Test_ScaledJacobianQUAD)
 	double eps2(pow(10,-3));
 
 	for (auto f_id:m2.faces()) {
-		Face f = m.get<Face>(f_id);
+		Face f = m2.get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
-		double mq = math::AeroMeshQuality::ScaledJacobianQUAD(&m2, nodes[0].id(), nodes[1].id(), nodes[2].id(), nodes[3].id());
+		double mq = math::AeroMeshQuality::ScaledJacobianQUAD(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
 		//std::cout << f_id << " " << mq << std::endl;
 		ASSERT_TRUE(abs(mq - map_mq[f_id]) < eps2);
 	}
@@ -344,7 +343,7 @@ TEST(ClaireTestClass, Test_ShapeQUAD)
 	for (auto f_id:m.faces()) {
 		Face f = m.get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
-		double mq = math::AeroMeshQuality::ShapeQUAD(&m, nodes[0].id(), nodes[1].id(), nodes[2].id(), nodes[3].id());
+		double mq = math::AeroMeshQuality::ShapeQUAD(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
 		//std::cout << f_id <<  " " << mq << std::endl;
 		ASSERT_TRUE(abs(mq - 1.0) < eps);
 	}
@@ -383,9 +382,9 @@ TEST(ClaireTestClass, Test_ShapeQUAD)
 	double eps2(pow(10,-3));
 
 	for (auto f_id:m2.faces()) {
-		Face f = m.get<Face>(f_id);
+		Face f = m2.get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
-		double mq = math::AeroMeshQuality::ShapeQUAD(&m2, nodes[0].id(), nodes[1].id(), nodes[2].id(), nodes[3].id());
+		double mq = math::AeroMeshQuality::ShapeQUAD(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
 		//std::cout << f_id << " " << mq << std::endl;
 		ASSERT_TRUE(abs(mq - map_mq[f_id]) < eps2);
 	}
@@ -420,7 +419,7 @@ TEST(ClaireTestClass, Test_SkewQUAD)
 	for (auto f_id:m.faces()) {
 		Face f = m.get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
-		double mq = math::AeroMeshQuality::SkewQUAD(&m, nodes[0].id(), nodes[1].id(), nodes[2].id(), nodes[3].id());
+		double mq = math::AeroMeshQuality::SkewQUAD(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
 		//std::cout << f_id <<  " " << mq << std::endl;
 		ASSERT_TRUE(abs(mq - 0.0) < eps);
 	}
@@ -458,9 +457,9 @@ TEST(ClaireTestClass, Test_SkewQUAD)
 	double eps2(pow(10,-3));
 
 	for (auto f_id:m2.faces()) {
-		Face f = m.get<Face>(f_id);
+		Face f = m2.get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
-		double mq = math::AeroMeshQuality::SkewQUAD(&m2, nodes[0].id(), nodes[1].id(), nodes[2].id(), nodes[3].id());
+		double mq = math::AeroMeshQuality::SkewQUAD(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
 		//std::cout << f_id << " " << mq << std::endl;
 		ASSERT_TRUE(abs(mq - map_mq[f_id]) < eps2);
 	}
@@ -495,7 +494,7 @@ TEST(ClaireTestClass, Test_StretchQUAD)
 	for (auto f_id:m.faces()) {
 		Face f = m.get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
-		double mq = math::AeroMeshQuality::StretchQUAD(&m, nodes[0].id(), nodes[1].id(), nodes[2].id(), nodes[3].id());
+		double mq = math::AeroMeshQuality::StretchQUAD(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
 		//std::cout << f_id <<  " " << mq << std::endl;
 		ASSERT_TRUE(abs(mq - 1.0) < eps);
 	}
@@ -533,9 +532,9 @@ TEST(ClaireTestClass, Test_StretchQUAD)
 	double eps2(pow(10,-3));
 
 	for (auto f_id:m2.faces()) {
-		Face f = m.get<Face>(f_id);
+		Face f = m2.get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
-		double mq = math::AeroMeshQuality::StretchQUAD(&m2, nodes[0].id(), nodes[1].id(), nodes[2].id(), nodes[3].id());
+		double mq = math::AeroMeshQuality::StretchQUAD(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
 		//std::cout << f_id << " " << mq << std::endl;
 		ASSERT_TRUE(abs(mq - map_mq[f_id]) < eps2);
 	}

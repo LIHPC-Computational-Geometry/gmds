@@ -71,16 +71,6 @@ TEST(BlockingTestSuite, writeVTK_3d)
 	ASSERT_EQ(bl3d.nbVertices(), 64);
 }
 /*----------------------------------------------------------------------------*/
-TEST(BlockingTestSuite, readVTK_2d)
-{
-	gmds::blocking::Blocking bl2d;
-	bl2d.readVTKFile("grid2d.vtk");
-
-//	ASSERT_EQ(bl2d.nbVertices(), 16);
-//	ASSERT_EQ(bl2d.nbEdges(), 24);
-	ASSERT_EQ(bl2d.nbFaces(), 9);
-}
-/*----------------------------------------------------------------------------*/
 TEST(BlockingTestSuite, readVTK_3d)
 {
 	gmds::blocking::Blocking bl3d;
@@ -119,18 +109,33 @@ TEST(BlockingTestSuite, createBlocks_3d)
 	gmds::Node n14 = m3d.newNode(2,1,2);
 	gmds::Node n15 = m3d.newNode(1,1,2);
 
-	m3d.newHex(n6,n5,n10,n11,n15,n12,n13,n14);
-	//m3d.newHex(n5,n10,n11,n6,n12,n13,n14,n15);
+	m3d.newHex(n5,n10,n11,n6,n12,n13,n14,n15);
 
 	gmds::blocking::Blocking bl3d;
 	bl3d.createBlocks3dFromMesh(m3d);
-	bl3d.writeVTKFile("blocks3d.vtk");
+	//ASSERT_EQ(bl3d.nbVertices(), 16);
+}
+/*----------------------------------------------------------------------------*/
+TEST(BlockingTestSuite, unsew_and_vertices_move)
+{
+	gmds::blocking::Blocking bl;
 
-	gmds::IGMeshIOService ioService(&m3d);
-	gmds::VTKWriter vtkReader(&ioService);
-	vtkReader.setCellOptions(gmds::N|gmds::F);
-	vtkReader.write("GMDSblocks.vtk");
-	//ASSERT_EQ(bl3d.nbVertices(), 64);
+	gmds::blocking::Dart_handle dh1=
+		bl.lcc()->make_hexahedron(gmds::blocking::Point(0,0,0), gmds::blocking::Point(5,0,0),
+										  gmds::blocking::Point(5,5,0), gmds::blocking::Point(0,5,0),
+										  gmds::blocking::Point(0,5,4), gmds::blocking::Point(0,0,4),
+										  gmds::blocking::Point(5,0,4), gmds::blocking::Point(5,5,4));
+	gmds::blocking::Dart_handle dh2=
+		bl.lcc()->make_hexahedron(gmds::blocking::Point(5,0,0), gmds::blocking::Point(10,0,0),
+										  gmds::blocking::Point(10,5,0), gmds::blocking::Point(5,5,0),
+										  gmds::blocking::Point(5,5,4), gmds::blocking::Point(5,0,4),
+										  gmds::blocking::Point(10,0,4), gmds::blocking::Point(10,5,4));
+
+	bl.writeVTKFile("unsew_a.vtk");
+	bl.lcc()->sew<3>(bl.lcc()->alpha(dh1, 1,0,1,2), bl.lcc()->alpha(dh2,2));
+	bl.writeVTKFile("unsew_b.vtk");
+	bl.lcc()->unsew<3>(bl.lcc()->alpha(dh1, 1,0,1,2));
+	bl.writeVTKFile("unsew_c.vtk");
 }
 /*----------------------------------------------------------------------------*/
 TEST(BlockingTestSuite, getSheet_3d)

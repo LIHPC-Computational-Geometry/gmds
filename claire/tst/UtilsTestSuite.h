@@ -212,3 +212,79 @@ TEST(ClaireTestClass, Utils_AdjacentNodes)
 	writer_geom.write("Utils_Test4.vtk");
 
 }
+
+
+TEST(ClaireTestClass, Utils_BuildMesh2DFromBlocking2D)
+{
+	// Test
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
+
+	Blocking2D b;
+	Node n1 = b.newBlockCorner(0,0);
+	Node n2 = b.newBlockCorner(1,0);
+	Node n3 = b.newBlockCorner(1,1);
+	Node n4=  b.newBlockCorner(0,1);
+
+	Blocking2D::Block b0 = b.newBlock(n1,n2,n3,n4);
+
+	Node n5 = b.newBlockCorner(2,0,0);
+	Node n6 = b.newBlockCorner(2,1.5,0);
+	Blocking2D::Block b1 = b.newBlock(n2,n5,n6,n3);
+
+	ASSERT_EQ(b0.id(), b.block(0).id());
+	b0.setNbDiscretizationI(11);
+	b0.setNbDiscretizationJ(11);
+	b1.setNbDiscretizationI(11);
+	b1.setNbDiscretizationJ(11);
+	b.initializeGridPoints();
+
+	math::Utils::BuildMesh2DFromBlocking2D(&b, &m);
+
+	ASSERT_EQ(m.getNbFaces(), 200);
+	ASSERT_EQ(m.getNbNodes(), 231);
+
+	IGMeshIOService ioService_geom(&b);
+	VTKWriter writer_geom(&ioService_geom);
+	writer_geom.setCellOptions(N|F);
+	writer_geom.setDataOptions(N|F);
+	writer_geom.write("Utils_BuildMesh2DFromBlocking2D_Blocking.vtk");
+
+	IGMeshIOService ioService_geom_mesh(&m);
+	VTKWriter writer_geom_mesh(&ioService_geom_mesh);
+	writer_geom_mesh.setCellOptions(N|F);
+	writer_geom_mesh.setDataOptions(N|F);
+	writer_geom_mesh.write("Utils_BuildMesh2DFromBlocking2D_Mesh.vtk");
+
+}
+
+
+TEST(ClaireTestClass, Utils_WeightedPointOnBranch)
+{
+	{
+		math::Point A({0.0, 0.0, 0.0});
+		math::Point B({1.0, 0.0, 0.0});
+		math::Point C({3.0, 0.0, 0.0});
+		math::Point D = math::Utils::WeightedPointOnBranch(A, B, C, 0.5);
+		ASSERT_FLOAT_EQ(D.X(), 1.5);
+		ASSERT_FLOAT_EQ(D.Y(), 0.0);
+	}
+
+	{
+		math::Point A({0.0, 0.0, 0.0});
+		math::Point B({1.0, 0.0, 0.0});
+		math::Point C({4.0, 0.0, 0.0});
+		math::Point D = math::Utils::WeightedPointOnBranch(A, B, C, 0.75);
+		ASSERT_FLOAT_EQ(D.X(), 3.0);
+		ASSERT_FLOAT_EQ(D.Y(), 0.0);
+	}
+
+	{
+		math::Point A({0.0, 0.0, 0.0});
+		math::Point B({1.0, 0.0, 0.0});
+		math::Point C({1.0, 3.0, 0.0});
+		math::Point D = math::Utils::WeightedPointOnBranch(A, B, C, 0.75);
+		ASSERT_FLOAT_EQ(D.X(), 1.0);
+		ASSERT_FLOAT_EQ(D.Y(), 2.0);
+	}
+
+}
