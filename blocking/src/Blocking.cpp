@@ -434,8 +434,8 @@ void Blocking::writeVTKFile(std::string AFileName) const
 			m.newQuad(v2n[v0], v2n[v1], v2n[v2], v2n[v3]);
 		} break;
 		default: {
-//			std::string s = "Blocking::writeVTKFile 2d cell has an unexpected number of darts " + std::to_string(nb);
-//			throw gmds::GMDSException(s);
+			std::string s = "Blocking::writeVTKFile 2d cell has an unexpected number of darts " + std::to_string(nb);
+			throw gmds::GMDSException(s);
 		}
 		}
 	}
