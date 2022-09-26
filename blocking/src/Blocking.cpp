@@ -31,7 +31,7 @@ void Blocking::createGrid2d()
 /*----------------------------------------------------------------------------*/
 void Blocking::createGrid3d()
 {
-	this->createGrid3d(gmds::math::Point(0,0,0), gmds::math::Point(1,1,1), 3,3,3);
+	this->createGrid3d(gmds::math::Point(0,0,0), gmds::math::Point(1,1,1), 1,3,4);
 }
 /*----------------------------------------------------------------------------*/
 void Blocking::createGrid2d(gmds::math::Point APmin, gmds::math::Point APmax, int ANx, int ANy)
@@ -198,7 +198,7 @@ void Blocking::createNewHex(std::vector<Node> ANodes, std::map<std::tuple<int,in
 
 }
 /*----------------------------------------------------------------------------*/
-Dart_handle Blocking::createNewQuad(const Node n0,const Node n1,const Node n2,const Node n3, std::map<std::tuple<int,int,int,int>, Dart_handle> &AFtoD){
+Dart_handle Blocking::createNewQuad(Node &n0, Node &n1, Node &n2, Node &n3, std::map<std::tuple<int,int,int,int>, Dart_handle> &AFtoD){
 
 	Dart_handle d = lcc_.make_quadrangle(LCC_3::Point(n0.point().X(), n0.point().Y(), n0.point().Z()),
 	                                     LCC_3::Point(n1.point().X(), n1.point().Y(), n1.point().Z()),
@@ -461,6 +461,36 @@ void Blocking::writeVTKFile(std::string AFileName) const
 		for (auto it = lcc_.one_dart_per_cell<3>().begin(); it != lcc_.one_dart_per_cell<3>().end(); it++) {
 			int nb = lcc_.darts_of_orbit<0, 1, 2>(it).size();
 			switch (nb) {
+			case 8: {
+				LCC_3::Dart_const_handle d0 = it;
+				LCC_3::Dart_const_handle d1 = lcc_.alpha(d0, 0, 1);
+				LCC_3::Dart_const_handle d2 = lcc_.alpha(d1, 0, 1);
+				LCC_3::Dart_const_handle d3 = lcc_.alpha(d0, 1, 0);
+				LCC_3::Vertex_attribute_const_handle v0 = lcc_.vertex_attribute(d0);
+				LCC_3::Vertex_attribute_const_handle v1 = lcc_.vertex_attribute(d1);
+				LCC_3::Vertex_attribute_const_handle v2 = lcc_.vertex_attribute(d2);
+				LCC_3::Vertex_attribute_const_handle v3 = lcc_.vertex_attribute(d3);
+				m.newQuad(v2n[v0], v2n[v1], v2n[v2], v2n[v3]);
+			} break;
+			case 16: {
+				LCC_3::Dart_const_handle d0 = it;
+				LCC_3::Dart_const_handle d1 = lcc_.alpha(d0, 0, 1);
+				LCC_3::Dart_const_handle d2 = lcc_.alpha(d1, 0, 1);
+				LCC_3::Dart_const_handle d3 = lcc_.alpha(d0, 1, 0);
+				LCC_3::Dart_const_handle d4 = lcc_.alpha(d0, 2);
+				LCC_3::Dart_const_handle d5 = lcc_.alpha(d1, 2);
+				LCC_3::Dart_const_handle d6 = lcc_.alpha(d2, 2);
+				LCC_3::Dart_const_handle d7 = lcc_.alpha(d3, 2);
+				LCC_3::Vertex_attribute_const_handle v0 = lcc_.vertex_attribute(d0);
+				LCC_3::Vertex_attribute_const_handle v1 = lcc_.vertex_attribute(d1);
+				LCC_3::Vertex_attribute_const_handle v2 = lcc_.vertex_attribute(d2);
+				LCC_3::Vertex_attribute_const_handle v3 = lcc_.vertex_attribute(d3);
+				LCC_3::Vertex_attribute_const_handle v4 = lcc_.vertex_attribute(d4);
+				LCC_3::Vertex_attribute_const_handle v5 = lcc_.vertex_attribute(d5);
+				LCC_3::Vertex_attribute_const_handle v6 = lcc_.vertex_attribute(d6);
+				LCC_3::Vertex_attribute_const_handle v7 = lcc_.vertex_attribute(d7);
+				m.newHex(v2n[v0], v2n[v1], v2n[v2], v2n[v3], v2n[v4], v2n[v5], v2n[v6], v2n[v7]);
+			} break;
 			case 24: {     // tetrahedron
 				LCC_3::Dart_const_handle d0 = it;
 				LCC_3::Dart_const_handle d1 = lcc_.alpha(d0, 0, 1);
@@ -513,11 +543,104 @@ void Blocking::writeVTKFile(std::string AFileName) const
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKWriter vtkWriter(&ioService);
 	if(!in2d) {
-		vtkWriter.setCellOptions(gmds::N | gmds::R);
+		vtkWriter.setCellOptions(gmds::N | gmds::F);
 	} else {
 		vtkWriter.setCellOptions(gmds::N|gmds::F);
 	}
 	vtkWriter.write(AFileName);
+}
+/*----------------------------------------------------------------------------*/
+std::vector<Dart_handle> Blocking::getSheet(Dart_handle ADart){
+
+	std::vector<Dart_handle> sheet;
+	sheet.push_back(ADart);
+
+	std::vector<Dart_handle> working_darts; //darts we iterate on to find next ones
+	std::set<Dart_handle> found_darts; //next darts found
+
+	//initialising the loop
+	if(!lcc_.is_free<3>(ADart))
+		working_darts.push_back(lcc_.alpha<3,2,1,0,1,2>(ADart));
+	if(!lcc_.is_free<3>(lcc_.alpha<2>(ADart)))
+		working_darts.push_back(lcc_.alpha<2,3,2,1,0,1>(ADart));
+	if(!lcc_.is_free<3>(lcc_.alpha<2,1,0,1,2>(ADart)))
+		working_darts.push_back(lcc_.alpha<2,1,0,1,2,3>(ADart));
+	if(!lcc_.is_free<3>(lcc_.alpha<1,0,1,2>(ADart)))
+		working_darts.push_back(lcc_.alpha<1,0,1,2,3,2>(ADart));
+
+	for(auto d : working_darts)
+		sheet.push_back(d);
+
+	//Doing a Breadth-First Search in order to get all darts of the sheet
+
+	while (!working_darts.empty()){//while there is dart to work on we continue
+
+		for(auto d : working_darts){
+			if(!lcc_.is_free<3>(d))
+				if(std::find(sheet.begin(), sheet.end(), lcc_.alpha<3,2,1,0,1,2>(d)) == sheet.end())
+					found_darts.insert(lcc_.alpha<3,2,1,0,1,2>(d));
+			if(!lcc_.is_free<3>(lcc_.alpha<2>(d)))
+				if(std::find(sheet.begin(), sheet.end(), lcc_.alpha<2,3,2,1,0,1>(d)) == sheet.end())
+					found_darts.insert(lcc_.alpha<2,3,2,1,0,1>(d));
+			if(!lcc_.is_free<3>(lcc_.alpha<2,1,0,1,2>(d)))
+				if(std::find(sheet.begin(), sheet.end(), lcc_.alpha<2,1,0,1,2,3>(d)) == sheet.end())
+					found_darts.insert(lcc_.alpha<2,1,0,1,2,3>(d));
+			if(!lcc_.is_free<3>(lcc_.alpha<1,0,1,2>(d)))
+				if(std::find(sheet.begin(), sheet.end(), lcc_.alpha<1,0,1,2,3,2>(d)) == sheet.end())
+					found_darts.insert(lcc_.alpha<1,0,1,2,3,2>(d));
+		}
+
+		//Replacing the old working darts by the newly found
+		working_darts.clear();
+		for(auto d : found_darts){
+			sheet.push_back(d); //filling the sheet list in the same time
+			working_darts.push_back(d);
+		}
+
+		found_darts.clear();
+	}
+
+	return sheet;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<Dart_handle> Blocking::getChord(Dart_handle ADart){
+
+	std::vector<Dart_handle> chord;
+	chord.push_back(ADart);
+
+	std::vector<Dart_handle> working_darts; //darts we iterate on to find next ones
+	std::vector<Dart_handle> found_darts; //next darts found
+
+	if(!lcc_.is_free<3>(ADart))
+		working_darts.push_back(lcc_.alpha<3,2,1,0,1,2>(ADart));
+	if(!lcc_.is_free<3>(lcc_.alpha<2,1,0,1,2>(ADart)))
+		working_darts.push_back(lcc_.alpha<2,1,0,1,2,3>(ADart));
+
+	for(auto d : working_darts)
+		chord.push_back(d);
+
+	while (!working_darts.empty()){//while there is dart to work on we continue
+
+		for(auto d : working_darts){
+			if(!lcc_.is_free<3>(d))
+				if(std::find(chord.begin(), chord.end(), lcc_.alpha<3,2,1,0,1,2>(d)) == chord.end())
+					found_darts.push_back(lcc_.alpha<3,2,1,0,1,2>(d));
+			if(!lcc_.is_free<3>(lcc_.alpha<2,1,0,1,2>(d)))
+				if(std::find(chord.begin(), chord.end(), lcc_.alpha<2,1,0,1,2,3>(d)) == chord.end())
+					found_darts.push_back(lcc_.alpha<2,1,0,1,2,3>(d));
+		}
+
+		//Replacing the old working darts by the newly found
+		working_darts.clear();
+		for(auto d : found_darts){
+			chord.push_back(d); //filling the sheet list in the same time
+			working_darts.push_back(d);
+		}
+
+		found_darts.clear();
+	}
+
+	return chord;
 }
 /*----------------------------------------------------------------------------*/
 }  // namespace blocking

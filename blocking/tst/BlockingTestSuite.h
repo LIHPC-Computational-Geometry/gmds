@@ -8,6 +8,7 @@
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKWriter.h"
 #include <gmds/blocking/Blocking.h>
+#include <gmds/blocking/SheetCollapse.h>
 /*----------------------------------------------------------------------------*/
 TEST(BlockingTestSuite, dummytest)
 {
@@ -118,11 +119,42 @@ TEST(BlockingTestSuite, createBlocks_3d)
 	gmds::Node n14 = m3d.newNode(2,1,2);
 	gmds::Node n15 = m3d.newNode(1,1,2);
 
-	m3d.newHex(n5,n10,n11,n6,n12,n13,n14,n15);
+	m3d.newHex(n6,n5,n10,n11,n15,n12,n13,n14);
+	//m3d.newHex(n5,n10,n11,n6,n12,n13,n14,n15);
 
 	gmds::blocking::Blocking bl3d;
 	bl3d.createBlocks3dFromMesh(m3d);
 	bl3d.writeVTKFile("blocks3d.vtk");
+
+	gmds::IGMeshIOService ioService(&m3d);
+	gmds::VTKWriter vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.write("GMDSblocks.vtk");
 	//ASSERT_EQ(bl3d.nbVertices(), 64);
 }
 /*----------------------------------------------------------------------------*/
+TEST(BlockingTestSuite, getSheet_3d)
+{
+	gmds::blocking::Blocking bl3d;
+	bl3d.createGrid3d();
+	std::vector<gmds::blocking::Dart_handle> sheet = bl3d.getSheet(0);
+
+	std::cout<<"Nb darts "<<sheet.size()<<std::endl;
+}
+/*----------------------------------------------------------------------------*/
+TEST(BlockingTestSuite, collapseSheet_3d)
+{
+	gmds::blocking::Blocking bl3d;
+	bl3d.createGrid3d();
+
+	gmds::blocking::SheetCollapse collapse;
+	collapse.setBl(&bl3d);
+	collapse.execute();
+
+	//ASSERT_EQ(48*(3*3), bl3d.lcc()->darts().size());
+
+	if (!bl3d.lcc()->is_valid()) {
+		std::string s ="Blocking::createGrid lcc not valid";
+		throw gmds::GMDSException(s);
+	}
+}
