@@ -23,6 +23,7 @@ set(GMDS_INC
         inc/gmds/hybridMeshAdapt/Metric.h
         inc/gmds/hybridMeshAdapt/Octree.h
         inc/gmds/hybridMeshAdapt/MetricAdaptation.h
+        inc/gmds/hybridMeshAdapt/MetricFFPointgeneration.h
         )
 
 set(GMDS_SRC
@@ -45,6 +46,7 @@ set(GMDS_SRC
         src/Metric.cpp
         src/MetricAdaptation.cpp
         src/Octree.cpp
+        src/MetricFFPointgeneration.cpp
         )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})

@@ -36,6 +36,9 @@ namespace gmds{
         //compute the new mesh
         void execute();
 
+        //compute the new mesh
+        void executeCustomMethod();
+
         void buildEdgesMap();
 
       private:

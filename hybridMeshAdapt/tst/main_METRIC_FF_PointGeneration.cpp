@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     std::cout << "Reading " << std::endl;
     std::string extansion(".vtk");
     std::size_t position = fIn.find(extansion);
-    fOut = fIn.substr(0,position) + "_ADAPTED.vtk";
+    fOut = fIn.substr(0,position) + "_Points_Generated.vtk";
     std::cout << "INPUT FILE: " << fIn << std::endl;
     std::cout << "OUTPUT FILE: " << fOut << std::endl;
 
@@ -88,14 +88,6 @@ int main(int argc, char* argv[])
     m <<  1.0, 0.0, .0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0;
     metricNode->setValuesTo(m);
     const gmds::BitVector& meshNode = simplexMesh.getBitVectorNodes();
-    //double metricMin = 0.5;
-    //double metricMax = 0.5;
-    double meanEdge = 0.0; double minEdge = 0.0; double maxEdge = 0.0;
-    simplexMesh.getEdgeSizeInfo(meanEdge, minEdge, maxEdge);
-    std::cout << "meanEdge START -> " << meanEdge << std::endl;
-    std::cout << "minEdge  START -> " << minEdge << std::endl;
-    std::cout << "maxEdge  START -> " << maxEdge << std::endl;
-
     for(unsigned int nodeId = 0 ; nodeId < meshNode.capacity() ; nodeId++)
     {
       if(meshNode[nodeId] == 1)
@@ -105,10 +97,8 @@ int main(int argc, char* argv[])
     }
     //////////////////////////////////////////////////////////////////////////////
     std::cout << "INITIAL NODE SIZE IN MESH --> " << meshNode.capacity() << std::endl;
-    MetricAdaptation mA(&simplexMesh);
-    //mA.execute();
-    mA.executeCustomMethod();
-    std::cout << "NODE SIZE IN MESH AFTER METRIC ADAPTATION--> " << meshNode.capacity() << std::endl;
+    MetricFFPointgeneration p(&simplexMesh);
+    p.execute();
 
 
     std::cout << "MESH VALIDITY CHECK" << std::endl;

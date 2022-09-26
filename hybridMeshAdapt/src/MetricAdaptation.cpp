@@ -816,3 +816,109 @@ void MetricAdaptation::execute()
     m_simplexMesh->getEdgeSizeInfowithMetric(meanEdge, minEdge, maxEdge);
   }
 }
+/*----------------------------------------------------------------------------*/
+void MetricAdaptation::executeCustomMethod()
+{
+  CriterionRAIS criterionRAIS(new VolumeCriterion());
+
+  Variable<int>* BND_VERTEX_COLOR   = nullptr;
+  Variable<int>* BND_SURFACE_COLOR   = nullptr;
+  Variable<int>* BND_CURVE_COLOR   = nullptr;
+  Variable<Eigen::Matrix3d>* metric = nullptr;
+
+  try{
+    metric = m_simplexMesh->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    BND_VERTEX_COLOR  = m_simplexMesh->getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+    BND_SURFACE_COLOR  = m_simplexMesh->getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+    BND_CURVE_COLOR  = m_simplexMesh->getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  const math::Vector3d v0 = math::Vector3d(-sqrt(2.0) / 2.0 , std::sqrt(2.0) / 2.0 , 0.0);
+  const gmds::BitVector& meshNode = m_simplexMesh->getBitVectorNodes();
+
+
+  static unsigned int cptTEST = 0;
+  unsigned int maxIterationAdaptation = 50;
+  for(unsigned int iter = 0 ; iter < maxIterationAdaptation ; iter++)
+  {
+    std::cout << "iteration -> " << cptTEST << std::endl;
+    unsigned int cpt = 0;
+    buildEdgesMap();
+    for(auto const edge : m_edgesMap)
+    {
+      TInt nodeA = edge.first;
+      TInt nodeB = edge.second;
+      if(meshNode[nodeA] != 0 && meshNode[nodeB] != 0)
+      {
+        const SimplicesNode sNodeA(m_simplexMesh, nodeA);
+        const SimplicesNode sNodeB(m_simplexMesh, nodeB);
+        const math::Point ptA = sNodeA.getCoords();
+
+        /*std::cout << "nodeA -> " << nodeA << std::endl;
+        std::cout << "nodeB -> " << nodeB << std::endl;*/
+        if((*BND_SURFACE_COLOR)[nodeA] == 5 && (*BND_SURFACE_COLOR)[nodeB] == 5)
+        {
+          const double m = metric->value(nodeB)(0, 0);
+
+          unsigned int nodeDim = ((*BND_VERTEX_COLOR)[nodeB] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[nodeB] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[nodeB] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
+          unsigned int nodeLabel = ((*BND_VERTEX_COLOR)[nodeB] != 0)?(*BND_VERTEX_COLOR)[nodeA]:((*BND_CURVE_COLOR)[nodeB] != 0)?(*BND_CURVE_COLOR)[nodeA]:((*BND_SURFACE_COLOR)[nodeB] != 0)?(*BND_SURFACE_COLOR)[nodeB]:0;
+
+          double borneMin = sqrt(1.0 / (2.0 * m * (std::pow(v0.Y() / v0.X(), 2) + 1))) + ptA.Y();
+          double borneMax = sqrt(2.0 / ( m * (std::pow(v0.Y() / v0.X(), 2) + 1))) + ptA.Y();
+
+          double newPosition_yB = (borneMin + borneMax) / 2.0;
+          double newPosition_xB = ptA.X() + (ptA.Y() - newPosition_yB)*(v0.Y() / v0.X());
+          const Point pt = Point(newPosition_xB, newPosition_yB, 0.0);
+          const Vector3d p = Vector3d(pt.X() - ptA.X(), pt.Y() - ptA.Y(), pt.Z() - ptA.Z()) ;
+          //std::cout << "p length -> " << p.norm() << std::endl;
+          bool alreadyAdd = false;
+          std::vector<TSimplexID> tetraContenaingPt{};
+          TInt newNodeId = m_simplexMesh->addNodeAndcheck(pt, tetraContenaingPt, alreadyAdd);
+          if(!alreadyAdd)
+          {
+            m_simplexMesh->setAnalyticMetric(newNodeId);
+            if(nodeDim == SimplexMesh::topo::CORNER)
+            {
+              BND_VERTEX_COLOR->set(newNodeId, nodeLabel);
+            }
+            else if(nodeDim == SimplexMesh::topo::RIDGE)
+            {
+              BND_CURVE_COLOR->set(newNodeId, nodeLabel);
+            }
+            else if(nodeDim == SimplexMesh::topo::SURFACE)
+            {
+              BND_SURFACE_COLOR->set(newNodeId, nodeLabel);
+            }
+          }
+
+          bool status = false;
+          const gmds::BitVector markedNodes{};
+          std::vector<TSimplexID> deletedSimplex{};
+          std::vector<TInt> deletedNodes{};
+          const std::multimap<TInt, TInt>& facesAlreadyBuilt{};
+          std::vector<TSimplexID> cellsCreated{};
+          //std::vector<TSimplexID> cavity = sNodeB.ballOf();
+          std::vector<TSimplexID> cavity = sNodeB.shell(sNodeA);
+          gmds::BitVector nodesAdded(m_simplexMesh->nodesCapacity());
+          //DelaunayPointInsertion DI(m_simplexMesh, SimplicesNode(m_simplexMesh, newNodeId), criterionRAIS, cavity, status, nodesAdded, deletedSimplex, facesAlreadyBuilt);
+          PointInsertion pi(m_simplexMesh, SimplicesNode(m_simplexMesh, newNodeId), criterionRAIS, status, cavity, markedNodes, deletedNodes, facesAlreadyBuilt, cellsCreated);
+          /*std::cout << "status -> " << status << std::endl;
+          std::cout << std::endl;*/
+          if(status)
+          {
+            gmds::ISimplexMeshIOService ioServiceMesh(m_simplexMesh);
+            gmds::VTKWriter vtkWriterCS(&ioServiceMesh);
+            vtkWriterCS.setCellOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriterCS.setDataOptions(gmds::N|gmds::R|gmds::F);
+            vtkWriterCS.write("TEST2_Metric_Vector_"+ std::to_string(cptTEST)+ "_" + std::to_string(cpt) + ".vtk");
+            cpt++;
+          }
+        }
+      }
+    }
+    cptTEST++;
+  }
+}
