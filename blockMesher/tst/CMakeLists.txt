@@ -1,5 +1,6 @@
 add_executable(GMDS_BLOCK_MESHER_TEST
         BlockMesherTestSuite.h
+        BlockMesher2DTestSuite.h
         main_test.cpp )
 
 target_link_libraries(GMDS_BLOCK_MESHER_TEST PUBLIC

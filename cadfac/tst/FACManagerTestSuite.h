@@ -176,3 +176,30 @@ TEST(FacManagerTestSuite, project)
 	//std::cout<<ps<<std::endl;
 	ASSERT_NEAR(pc.distance(pc_on), 0., 10e-15);
 }
+/*----------------------------------------------------------------------------*/
+TEST(FacManagerTestSuite, automatic_blocks_classification)
+{
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM2|gmds::F|gmds::E|gmds::N|gmds::N2E|gmds::E2N|gmds::E2F|gmds::N2F|gmds::F2N));
+
+	std::string vtk_file = "/home/calderans/dev/v3.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::E|gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.updateUpwardConnectivity();
+
+	cad::FACManager manager;
+	cad::GeomMeshLinker linkerTri;
+	manager.initAndLinkFrom2DMesh(&m, &linkerTri);
+
+	Mesh blocks(gmds::MeshModel(gmds::DIM2|gmds::F|gmds::E|gmds::N|gmds::N2E|gmds::E2N|gmds::E2F|gmds::N2F|gmds::F2N));
+
+	
+
+	cad::GeomMeshLinker linker;
+	linker.setGeometry(&manager);
+	linker.setMesh(&blocks);
+}

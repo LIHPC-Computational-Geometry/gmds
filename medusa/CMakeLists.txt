@@ -42,10 +42,10 @@ add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
 # TARGET DEFINITION
 #==============================================================================
-set(VTK_DIR /home/simon/Dev/VTK/VTK-install/lib)
-find_package(VTK)
+set(VTK_DIR /home/simon/Dev/VTK/build/)
+#find_package(VTK)
 #find_package(VTK REQUIRED)
-include(${VTK_USE_FILE})
+#include(${VTK_USE_FILE})
 
 #DEPENDENCY TO OTHER LIBS (and so targets)
 target_link_libraries(${GMDS_LIB} PUBLIC
