@@ -1,6 +1,7 @@
 add_executable(GMDS_BLOCKING_TEST
         BlockingTestSuite.h
         CGALTestSuite.h
+        CGNSWriterTestSuite.h
         main_test.cpp )
 
 target_link_libraries(GMDS_BLOCKING_TEST PUBLIC

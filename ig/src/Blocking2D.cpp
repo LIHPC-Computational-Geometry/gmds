@@ -921,3 +921,125 @@ bool Blocking2D::Block::isEdgeOnJ(const TCellID AID) {
 	       || (e_nodes[0] == nids[0] && e_nodes[1] == nids[3]) || (e_nodes[0] == nids[3] && e_nodes[1] == nids[0]);
 	//CAUTION : if the edge does not belong the bloc it will return false instead of an error
 }
+/*----------------------------------------------------------------------------*/
+void Blocking2D::Block::computeT(){
+	std::vector<Edge> edges = m_face.get<Edge>();
+	for(int i_e = 0; i_e<4; i_e++){
+		std::vector<TCellID> faces = edges[i_e].getIDs<Face>();
+		if(faces.size() == 2){
+			TCellID f_voisine = faces[0] == id() ? faces[1] : faces[0];
+
+			Block voisin = m_support->block(f_voisine);
+
+			int i_e_voisin = 0;
+			for(int indice_e = 0; indice_e<4; indice_e++){
+				TCellID e_voisin = voisin.m_face.getIDs<Edge>()[indice_e];
+				if(e_voisin == edges[i_e].id()) i_e_voisin = indice_e;
+			}
+
+			//i_e et i_e_voisin sont les indices de l'arete interface entre les deux blocs pour chaque bloc
+			//Maintenant on va vérifier si elles sont dans le même sens, en connaissant le sens et l'indice de l'arête
+			//dans chaque bloc on peut retrouver la matrice de transformation
+
+			TCellID n0 = edges[i_e].getIDs<Node>()[0];
+			TCellID n1 = edges[i_e].getIDs<Node>()[1];
+
+			int indice_0 = -1;
+			int indice_1 = -1;
+
+			for(int i = 0; i<4; i++){
+				if(getNode(i).id() == n0) indice_0 = i;
+				if(getNode(i).id() == n1) indice_1 = i;
+			}
+			//On ordonne les noeuds selon les indices
+			if(indice_0 > indice_1){
+				int tmp_indice = indice_0;
+				indice_0 = indice_1;
+				indice_1 = tmp_indice;
+
+				TCellID tmp_id = n0;
+				n0 = n1;
+				n1 = tmp_id;
+			}
+
+			int indice_v0 = -1;
+			int indice_v1 = -1;
+
+			for(int i_voisin = 0; i_voisin<4; i_voisin++){
+				if(voisin.getNode(i_voisin).id() == n0) indice_v0 = i_voisin;
+				if(voisin.getNode(i_voisin).id() == n1) indice_v1 = i_voisin;
+			}
+
+			//Ici on a les quatre indices
+			//Pour le moment on considère que la structure de blocs est conforme, les indices sont donc
+			// 0,Imax,Jmax
+
+			std::vector<int> indices = {indice_0,indice_1,indice_v0,indice_v1};
+
+			int dim = 2; //Dans l'idée dim prend la valeur de la dimension de la structure de bloc, la on est forcément en 2D
+
+			int coords[4][dim];
+
+			for(int i = 0; i<4;i++){
+				if(indices[i] == 0){
+					coords[i][0] = 0;
+					coords[i][1] = 0;
+				}else if(indices[i] == 1){
+					coords[i][0] = 1;
+					coords[i][1] = 0;
+				}else if(indices[i] == 2){
+					coords[i][0] = 1;
+					coords[i][1] = 1;
+				}else if(indices[i] == 3){
+					coords[i][0] = 0;
+					coords[i][1] = 1;
+				}
+			}
+
+			std::vector<int> T;
+			T.resize(dim);
+
+			for(int i = 0; i<2; i++){
+				if(coords[0][i] == coords[1][i]){
+					int val1 = coords[0][i];
+					//On cherche la position de l'arête dans l'autre bloc
+					for(int i2 = 0; i2<2; i2++){
+						if(coords[2][i2] == coords[3][i2]){
+							T[i] = i2 + 1;
+							int val2 = coords[2][i2];
+							if(val1 == val2){
+								T[i] = -T[i];
+							}
+						}
+					}
+				}else{
+					int val1 = coords[0][i];
+					//On cherche la direction de l'arête dans l'autre bloc
+					for(int i2 = 0; i2<2; i2++){
+						if(coords[2][i2] != coords[3][i2]){
+							T[i] = i2 + 1;
+							int val2 = coords[2][i2];
+							if(val1 != val2){
+								T[i] = -T[i];
+							}
+						}
+					}
+				}
+			}
+
+			m_b_T.emplace(voisin.id(), T);
+			std::vector<int> e_indices;
+			e_indices.push_back(i_e);
+			e_indices.push_back(i_e_voisin);
+			m_interface_info.emplace(voisin.id(),e_indices);
+		}
+	}
+}
+/*----------------------------------------------------------------------------*/
+std::map<int,std::vector<int>> Blocking2D::Block::getT(){
+	return m_b_T;
+}
+/*----------------------------------------------------------------------------*/
+std::map<int,std::vector<int>> Blocking2D::Block::getInterfaceInfo(){
+	return m_interface_info;
+}

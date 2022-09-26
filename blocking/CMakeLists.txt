@@ -8,9 +8,13 @@ set(GMDS_LIB_PREFIX gmds/blocking)
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/blocking/Blocking.h
+        inc/gmds/blocking/CGNSWriter.h
+        inc/gmds/blocking/SheetCollapse.h
         )
 set(GMDS_SRC
         src/Blocking.cpp
+        src/CGNSWriter.cpp
+        src/SheetCollapse.cpp
         )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
@@ -29,6 +33,8 @@ include(GNUInstallDirs)
 # TODO it does not seem to work, the message is still displayed ?
 set (CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 
+set(CGAL_DATA_DIR "/usr/include/CGAL")
+
 # dependencies
 if (WITH_CGAL_QT5)
     find_package(CGAL REQUIRED COMPONENTS Core Qt5)
@@ -39,6 +45,52 @@ endif(WITH_CGAL_QT5)
 
 message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}CGAL_MINOR_VERSION}")
 
+set(CGNS_DIR /home/simon/soft/cgns/CGNS/build/)
+
+enable_language(C)
+
+find_package(HDF5)
+if(HDF5_FOUND)
+    set(HDF5_LIB "${HDF5_C_LIBRARIES}")
+    list(APPEND EXTERNAL_INCLUDES ${HDF5_INCLUDE_DIRS})
+    if(ENABLE_MED)
+        find_library(MED_LIB medC)
+        if(MED_LIB)
+            set_config_option(HAVE_MED "Med")
+            list(APPEND EXTERNAL_LIBRARIES ${MED_LIB})
+        endif()
+    endif()
+    find_library(CGNS_LIB cgns HINTS ENV CGNS_ROOT PATH_SUFFIXES lib)
+    find_path(CGNS_INC "cgnslib.h" HINTS ENV CGNS_ROOT PATH_SUFFIXES include)
+    message(${CGNS_LIB})
+    message(${CGNS_INC})
+    if(CGNS_LIB AND CGNS_INC)
+        set(HAVE_LIBCGNS true)
+        list(APPEND EXTERNAL_LIBRARIES ${CGNS_LIB})
+        list(APPEND EXTERNAL_INCLUDES ${CGNS_INC})
+        if(ENABLE_CGNS_CPEX0045)
+            set_config_option(HAVE_LIBCGNS_CPEX0045 "Cgns_CPEX0045")
+        endif()
+    endif()
+    if(MED_LIB OR CGNS_LIB)
+        list(APPEND EXTERNAL_LIBRARIES ${HDF5_LIB})
+        find_library(SZ_LIB NAMES szlib sz)
+        if(SZ_LIB)
+            list(APPEND EXTERNAL_LIBRARIES ${SZ_LIB})
+        endif()
+        if(NOT HAVE_LIBZ) # necessary for non-GUI builds
+            find_package(ZLIB)
+            if(ZLIB_FOUND)
+                #set_config_option(HAVE_LIBZ "Zlib")
+                list(APPEND EXTERNAL_LIBRARIES ${ZLIB_LIBRARIES})
+            endif()
+        endif()
+    endif()
+else()
+    message(STATUS "HDF5 not found")
+endif()
+
+
 #LIBRARY TO INSTALL
 target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_IG}
@@ -48,6 +100,7 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         #${LIB_GMDS_SMOOTHY})
         ${LIB_GMDS_MATH}
         CGAL::CGAL_Core
+        cgns
         )
 
 if (WITH_CGAL_QT5)
