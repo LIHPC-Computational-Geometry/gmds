@@ -16,6 +16,9 @@ add_executable(GMDS_SIMPLEX_INDEXING_CORRECTION
 add_executable(GMDS_SIMPLEX_METRIC_BASED_ADAPTATION
         main_METRIC_BASED_ADAPTATION.cpp)
 
+add_executable(GMDS_SIMPLEX_METRIC_FF_POINTGEN
+        main_METRIC_FF_PointGeneration.cpp)
+
 add_executable(GMDS_SIMPLEX_TEST
         SimplexMeshTestAdd_NTt.h
         SimplexMeshTestSuite.h
@@ -35,11 +38,15 @@ target_link_libraries(GMDS_SIMPLEX_TEST PUBLIC
         ${LIB_GMDS_IO}
         gtest)
 
-target_link_libraries(GMDS_SIMPLEX_METRIC_BASED_ADAPTATION PUBLIC
+target_link_libraries(GMDS_SIMPLEX_METRIC_FF_POINTGEN PUBLIC
         ${GMDS_LIB}
         ${LIB_GMDS_IO}
         gtest)
 
+target_link_libraries(GMDS_SIMPLEX_METRIC_BASED_ADAPTATION PUBLIC
+        ${GMDS_LIB}
+        ${LIB_GMDS_IO}
+        gtest)
 
 target_link_libraries(GMDS_SIMPLEX_INDEXING PUBLIC
       ${GMDS_LIB}

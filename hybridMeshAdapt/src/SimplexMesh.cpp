@@ -1280,7 +1280,7 @@ void SimplexMesh::checkMesh()
                         std::cout << "Simplices [" << cell0 << ";" << cell1 << "] are adjacent but adjcent vector is wrong" << std::endl;
                         std::cout << "cell0 -> " << cell << std::endl;
                         std::cout << "cell1 -> " << cellToCompare << std::endl;
-                        std::vector<TSimplexID> v{cell0, cell1};
+                        std::vector<TSimplexID> v{static_cast<int>(cell0), static_cast<int>(cell1)};
                         std::vector<TSimplexID> adjSimplices = cell.adjacentTetra();
                         for(auto const simplex : adjSimplices)
                         {
@@ -1536,7 +1536,7 @@ void SimplexMesh::buildSimplexHull()
       else
       {
         gmds::ISimplexMeshIOService ioServiceMesh(this);
-        std::vector<TSimplexID> v{tri};
+        std::vector<TSimplexID> v{static_cast<int>(tri)};
         deleteAllTrianglesBut(v);
         gmds::VTKWriter vtkWriterMeshER(&ioServiceMesh);
         vtkWriterMeshER.setCellOptions(gmds::N|gmds::F);

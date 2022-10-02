@@ -334,7 +334,7 @@ int main(int argc, char* argv[])
         {
           if((*BND_CURVE_COLOR)[N] == 0 && (*BND_SURFACE_COLOR)[N] == 0 && (*BND_VERTEX_COLOR)[N] == 0)
           {
-            std::vector<TSimplexID> cavity{T, oppoCell};
+            std::vector<TSimplexID> cavity{static_cast<int>(T), oppoCell};
             bool status = false;
             std::vector<TInt> deletedNode{};
             const std::multimap<TInt, TInt> facesAlreadyBuilt{};
