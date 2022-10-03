@@ -78,8 +78,8 @@ int main(int argc, char* argv[])
     p.execute();
 
 
-    std::cout << "MESH VALIDITY CHECK" << std::endl;
-    simplexMesh.checkMesh();
+    //std::cout << "MESH VALIDITY CHECK" << std::endl;
+    //simplexMesh.checkMesh();
 
     gmds::VTKWriter vtkWriterMA(&ioService);
     vtkWriterMA.setCellOptions(gmds::N|gmds::R|gmds::F);

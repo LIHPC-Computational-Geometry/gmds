@@ -47,16 +47,150 @@ void MetricFFPointgeneration::execute()
     throw gmds::GMDSException(e);
   }
 
+  std::vector<double> edges_length{};
   const std::map<unsigned int, std::vector<TInt>> sortedEdges = buildSortedEdges();
-  const std::vector<std::vector<double>> edgesU = buildParamEdgeU(sortedEdges);
+  const std::vector<std::vector<double>> edgesU = buildParamEdgeU(sortedEdges, edges_length);
 
   unsigned int i = 0;
   for(auto const & sortedEdge : sortedEdges)
   {
+    std::vector<TInt> edge = sortedEdge.second;
     std::vector<double> edgeU = edgesU[i];
+    double edge_length = edges_length[i];
+
     //dichotomie algo reduction edge to see if the edge is sample enough
-    
-    i++;
+    std::vector<TInt> nodeAdded{};
+    Eigen::Vector3d dir(0.0, 1.0, 0.0);
+    subdivideEdgeUsingMetric(dir, nodeAdded, edge, edgeU, edge_length);
+    std::cout << "ptAdded size -> " << nodeAdded.size() << std::endl;
+    for(auto const node : nodeAdded)
+    {
+      std::cout << "node -> " << SimplicesNode(m_simplexMesh, node) << std::endl;
+    }
+    break;
+  }
+}
+/*----------------------------------------------------------------------------*/
+void MetricFFPointgeneration::subdivideEdgeUsingMetric(Eigen::Vector3d & dir, std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) const
+{
+  if(edge.size() < 2)
+  {
+    return;
+  }
+
+  double den = 0.0;
+  dir.normalize();
+  Variable<Eigen::Matrix3d>* metric  = nullptr;
+
+  try{
+    metric = m_simplexMesh->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  for(unsigned int i = 0 ; i < edge.size() - 1 ; i++)
+  {
+    const TInt nodeA = edge[i];
+    const TInt nodeB = edge[i + 1];
+
+    const Eigen::Matrix3d MA = metric->value(nodeA);
+    const Eigen::Matrix3d MB = metric->value(nodeB);
+
+    Eigen::Matrix3d MA_modified = metric->value(nodeA);
+    Eigen::Matrix3d MB_modified = metric->value(nodeB);
+
+    MA_modified(0,0) = 1.0 /sqrt(MA(0,0)); MA_modified(1,1) = 1.0 /sqrt(MA(1,1)); MA_modified(2,2) = 1.0 /sqrt(MA(2,2));
+    MB_modified(0,0) = 1.0 /sqrt(MB(0,0)); MB_modified(1,1) = 1.0 /sqrt(MB(1,1)); MB_modified(2,2) = 1.0 /sqrt(MB(2,2));
+
+    const Eigen::Vector3d vecA = MA_modified * dir;
+    const Eigen::Vector3d vecB = MB_modified * dir;
+
+    const double mA = vecA.norm();
+    const double mB = vecB.norm();
+
+    const double sizeInterval = edgeU[i + 1] - edgeU[i];
+
+    //https://fr.wikipedia.org/wiki/Calcul_num%C3%A9rique_d%27une_int%C3%A9grale
+    //basic discret intergral square integral
+    den += sizeInterval *  (0.5 * mA + 0.5 * mB);
+  }
+
+  if(den == 0.0)
+  {
+    throw gmds::GMDSException("den == 0.0");
+  }
+  else if(sizeEdge / den > 1.0)
+  {
+    //compute the center of the parametrized Edge usinig U
+    for(unsigned int i = 0 ; i < edgeU.size() - 1 ; i++)
+    {
+      const double uA = edgeU[i];
+      const double uB = edgeU[i + 1];
+      if(uA <= 0.5 && uB >= 0.5)
+      {
+        //interpolation (linear) of the middle position using the interval ua, ub and u = 0.5
+        if(uB != uA)
+        {
+          const TInt nodeA = edge[i];
+          const TInt nodeB = edge[i + 1];
+
+          const Point ptA = SimplicesNode(m_simplexMesh, nodeA).getCoords();
+          const Point ptB = SimplicesNode(m_simplexMesh, nodeB).getCoords();
+
+          const double t = (0.5-uA) / (uB-uA);
+
+          std::vector<TInt> newEdge0{};
+          std::vector<TInt> newEdge1{};
+
+          std::vector<double> edgeU_0 {};
+          std::vector<double> edgeU_1 {};
+
+          if(t == 0.0)
+          {
+            nodesAdded.push_back(nodeA);
+            std::copy(edge.begin(), edge.begin() + i + 1, std::back_inserter(newEdge0));
+            std::copy(edge.begin() + i + 1, edge.end(), std::back_inserter(newEdge1));
+          }
+          else if(t == 1.0)
+          {
+            nodesAdded.push_back(nodeB);
+            std::copy(edge.begin(), edge.begin() + i + 2, std::back_inserter(newEdge0));
+            std::copy(edge.begin() + i + 2, edge.end(), std::back_inserter(newEdge1));
+          }
+          else
+          {
+            const Point pt = ptA * (1.0 - t) + ptB * t;
+            std::vector<TSimplexID> tetraContenaingPt{};
+            bool alreadyAdd = false;
+            TInt newNodeId = m_simplexMesh->addNodeAndcheck(pt, tetraContenaingPt, alreadyAdd);
+            m_simplexMesh->setAnalyticMetric(newNodeId);
+            std::copy(edge.begin(), edge.begin() + i + 1, std::back_inserter(newEdge0));
+            newEdge0.push_back(newNodeId);
+            newEdge1.push_back(newNodeId);
+            std::copy(edge.begin() + i + 2, edge.end(), std::back_inserter(newEdge1));
+            nodesAdded.push_back(newNodeId);
+          }
+
+          std::vector<double> edges_length0{};
+          std::vector<double> edges_length1{};
+          std::map<unsigned int, std::vector<TInt>> sortedEdges0;
+          std::map<unsigned int, std::vector<TInt>> sortedEdges1;
+          sortedEdges0[0] = newEdge0;
+          sortedEdges1[0] = newEdge1;
+          const std::vector<std::vector<double>> edgesU0 = buildParamEdgeU(sortedEdges0, edges_length0);
+          const std::vector<std::vector<double>> edgesU1 = buildParamEdgeU(sortedEdges1, edges_length1);
+
+          subdivideEdgeUsingMetric(dir, nodesAdded, newEdge0,  edgesU0.front(), edges_length0.front());
+          subdivideEdgeUsingMetric(dir, nodesAdded, newEdge1,  edgesU1.front(), edges_length1.front());
+          break;
+        }
+        else
+        {
+          throw gmds::GMDSException("uB == uA");
+        }
+      }
+    }
   }
 }
 /*----------------------------------------------------------------------------*/
@@ -132,16 +266,15 @@ std::map<unsigned int, std::vector<TInt>> MetricFFPointgeneration::buildSortedEd
   return res;
 }
 /*----------------------------------------------------------------------------*/
-std::vector<std::vector<double>> MetricFFPointgeneration::buildParamEdgeU(const std::map<unsigned int, std::vector<TInt>>& sortedEdge) const
+std::vector<std::vector<double>> MetricFFPointgeneration::buildParamEdgeU(const std::map<unsigned int, std::vector<TInt>>& sortedEdge, std::vector<double> & length_edges) const
 {
   std::vector<double> sizeEdges{};
   std::vector<std::vector<double>> sizeSubEdges{};
 
-  std::cout << "sortedEdge.size() -> " << sortedEdge.size() << std::endl;
   for(auto const & edge : sortedEdge)
   {
     double AB_length = 0.0;
-    std::vector<double> sizeSubEdge{};
+    std::vector<double> sizeSubEdge{0.0};
     for(unsigned int nodeIdx = 0 ; nodeIdx < edge.second.size() - 1; nodeIdx++)
     {
       TInt nodeA = edge.second[nodeIdx];
@@ -154,6 +287,7 @@ std::vector<std::vector<double>> MetricFFPointgeneration::buildParamEdgeU(const 
       AB_length += AB.norm();
       sizeSubEdge.push_back(AB_length);
     }
+    length_edges.push_back(AB_length);
     sizeSubEdges.push_back(sizeSubEdge);
     sizeEdges.push_back(AB_length);
   }
