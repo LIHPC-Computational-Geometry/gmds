@@ -57,21 +57,70 @@ void MetricFFPointgeneration::execute()
     std::vector<TInt> edge = sortedEdge.second;
     std::vector<double> edgeU = edgesU[i];
     double edge_length = edges_length[i];
-
+    i++;
     //dichotomie algo reduction edge to see if the edge is sample enough
     std::vector<TInt> nodeAdded{};
-    Eigen::Vector3d dir(0.0, 1.0, 0.0);
-    subdivideEdgeUsingMetric(dir, nodeAdded, edge, edgeU, edge_length);
-    std::cout << "ptAdded size -> " << nodeAdded.size() << std::endl;
+    subdivideEdgeUsingMetric(nodeAdded, edge, edgeU, edge_length);
+    nodesSpreading(nodeAdded);
+    /*std::cout << "ptAdded size -> " << nodeAdded.size() << std::endl;
     for(auto const node : nodeAdded)
     {
       std::cout << "node -> " << SimplicesNode(m_simplexMesh, node) << std::endl;
     }
-    break;
+    std::cout << std::endl;*/
   }
 }
 /*----------------------------------------------------------------------------*/
-void MetricFFPointgeneration::subdivideEdgeUsingMetric(Eigen::Vector3d & dir, std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) const
+void MetricFFPointgeneration::nodesSpreading(const std::vector<TInt>& nodesAdded) const
+{
+  static unsigned int cpt = 0;
+  const Eigen::Vector3d x_dir(1.0, 0.0, 0.0);
+  const Eigen::Vector3d y_dir(0.0, 1.0, 0.0);
+  const Eigen::Vector3d z_dir(0.0, 0.0, 1.0);
+  std::vector<double> spins{-1.0, 1.0};
+  std::vector<TInt> nodeAdded{};
+
+  std::vector<Eigen::Vector3d> dirs{x_dir, y_dir, z_dir};
+  Variable<Eigen::Matrix3d>* metric  = nullptr;
+  try{
+    metric = m_simplexMesh->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  for(auto const node : nodesAdded)
+  {
+    for(auto const & dir : dirs)
+    {
+      for(auto const spin : spins)
+      {
+        Eigen::Vector3d d = spin * dir;
+        const math::Point pt = SimplicesNode(m_simplexMesh, node).getCoords();
+        Eigen::Matrix3d M = metric->value(node);
+        M(0,0) = 1.0 /sqrt(M(0,0)); M(1,1) = 1.0 /sqrt(M(1,1)); M(2,2) = 1.0 /sqrt(M(2,2));
+        const Eigen::Vector3d vec = M * d;
+        const double m = vec.norm();
+
+        math::Point newCoord = pt + m*math::Point(d.x(), d.y(), d.z());
+
+        std::vector<TSimplexID> tetraContenaingPt{};
+        bool alreadyAdd = false;
+        TInt newNodeId  = m_simplexMesh->addNodeAndcheck(newCoord, tetraContenaingPt, alreadyAdd);
+        if(newNodeId != -1)
+        {
+          nodeAdded.push_back(newNodeId);
+        }
+      }
+    }
+    break;
+  }
+
+  std::cout << "new_Nodes -> " << nodeAdded.size() << std::endl;
+  cpt++;
+}
+/*----------------------------------------------------------------------------*/
+void MetricFFPointgeneration::subdivideEdgeUsingMetric(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) const
 {
   if(edge.size() < 2)
   {
@@ -79,7 +128,6 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric(Eigen::Vector3d & dir, st
   }
 
   double den = 0.0;
-  dir.normalize();
   Variable<Eigen::Matrix3d>* metric  = nullptr;
 
   try{
@@ -93,6 +141,12 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric(Eigen::Vector3d & dir, st
   {
     const TInt nodeA = edge[i];
     const TInt nodeB = edge[i + 1];
+
+    const math::Point ptA = SimplicesNode(m_simplexMesh, nodeA).getCoords();
+    const math::Point ptB = SimplicesNode(m_simplexMesh, nodeB).getCoords();
+
+    Eigen::Vector3d dir = Eigen::Vector3d(ptB.X() - ptA.X(), ptB.Y() - ptA.Y(), ptB.Z() - ptA.Z());
+    dir.normalize();
 
     const Eigen::Matrix3d MA = metric->value(nodeA);
     const Eigen::Matrix3d MB = metric->value(nodeB);
@@ -150,13 +204,13 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric(Eigen::Vector3d & dir, st
           {
             nodesAdded.push_back(nodeA);
             std::copy(edge.begin(), edge.begin() + i + 1, std::back_inserter(newEdge0));
-            std::copy(edge.begin() + i + 1, edge.end(), std::back_inserter(newEdge1));
+            std::copy(edge.begin() + i, edge.end(), std::back_inserter(newEdge1));
           }
           else if(t == 1.0)
           {
             nodesAdded.push_back(nodeB);
             std::copy(edge.begin(), edge.begin() + i + 2, std::back_inserter(newEdge0));
-            std::copy(edge.begin() + i + 2, edge.end(), std::back_inserter(newEdge1));
+            std::copy(edge.begin() + i + 1, edge.end(), std::back_inserter(newEdge1));
           }
           else
           {
@@ -181,8 +235,8 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric(Eigen::Vector3d & dir, st
           const std::vector<std::vector<double>> edgesU0 = buildParamEdgeU(sortedEdges0, edges_length0);
           const std::vector<std::vector<double>> edgesU1 = buildParamEdgeU(sortedEdges1, edges_length1);
 
-          subdivideEdgeUsingMetric(dir, nodesAdded, newEdge0,  edgesU0.front(), edges_length0.front());
-          subdivideEdgeUsingMetric(dir, nodesAdded, newEdge1,  edgesU1.front(), edges_length1.front());
+          subdivideEdgeUsingMetric(nodesAdded, newEdge0,  edgesU0.front(), edges_length0.front());
+          subdivideEdgeUsingMetric(nodesAdded, newEdge1,  edgesU1.front(), edges_length1.front());
           break;
         }
         else

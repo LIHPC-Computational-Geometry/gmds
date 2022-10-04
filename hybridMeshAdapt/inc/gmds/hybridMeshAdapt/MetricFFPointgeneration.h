@@ -21,7 +21,9 @@ namespace gmds{
 
         std::vector<std::vector<double>> buildParamEdgeU(const std::map<unsigned int, std::vector<TInt>>& sortedEdge, std::vector<double> & length_edges) const;
 
-        void subdivideEdgeUsingMetric(Eigen::Vector3d & dir, std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) const;
+        void subdivideEdgeUsingMetric(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) const;
+
+        void nodesSpreading(const std::vector<TInt>& nodesAdded) const;
 
         void execute();
 

@@ -363,7 +363,13 @@ TInt SimplexMesh::addNodeAndcheck(const math::Point& pt, std::vector<TSimplexID>
   {
     flag = checkSimplicesContenaing(pt, tetraContainingPt, simplexToCheckFirst);
   }
-
+  std::cout << "tetraContainingPt.size() -> " << tetraContainingPt.size() << std::endl;
+  std::cout << "tetraContainingPt.front() -> " << tetraContainingPt.front() << std::endl;
+  std::cout << std::endl;
+  if(tetraContainingPt.size() == 0)
+  {
+    return -1;
+  }
   if(flag)
   {
     double epsilon = 10E-4;
@@ -4358,9 +4364,22 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   double epsilon = 0.01;
 
   //CONSTANT ISOTROPE METRIC
-  double metricX = 0.1;
-  double metricY = 0.1;
-  double metricZ = 0.1;
+  double metricX;
+  double metricY;
+  double metricZ;
+
+  if(pt.Y() <= 0.5)
+  {
+    metricX = 0.1;
+    metricY = 0.1;
+    metricZ = 0.1;
+  }
+  else
+  {
+    metricX = 0.2;
+    metricY = 0.2;
+    metricZ = 0.2;
+  }
 
   //double metricX = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
   //double metricY = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
