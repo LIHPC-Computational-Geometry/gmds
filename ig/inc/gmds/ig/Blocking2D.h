@@ -81,6 +81,12 @@ class GMDSIg_API Blocking2D: public Mesh{
 		 */
 		bool isEdgeOnJ(TCellID AID);
 
+		void computeT();
+
+		std::map<int,std::vector<int>> getT();
+
+		std::map<int,std::vector<int>> getInterfaceInfo();
+
 	 private:
 		/** Access to the edge with local index @p AI nad @p AJ in the
              *  current face
@@ -106,6 +112,9 @@ class GMDSIg_API Blocking2D: public Mesh{
 		Face m_face;
 		Blocking2D* m_support;
 		Array2D<TCellID>* m_grid_view;
+
+		std::map<int ,std::vector<int>> m_b_T;
+		std::map<int, std::vector<int>> m_interface_info;
 	};
 	/** @brief Constructor
 	 */

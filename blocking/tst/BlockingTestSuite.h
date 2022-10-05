@@ -8,6 +8,7 @@
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKWriter.h"
 #include <gmds/blocking/Blocking.h>
+#include <gmds/blocking/SheetCollapse.h>
 /*----------------------------------------------------------------------------*/
 TEST(BlockingTestSuite, dummytest)
 {
@@ -137,3 +138,29 @@ TEST(BlockingTestSuite, unsew_and_vertices_move)
 	bl.writeVTKFile("unsew_c.vtk");
 }
 /*----------------------------------------------------------------------------*/
+TEST(BlockingTestSuite, getSheet_3d)
+{
+	gmds::blocking::Blocking bl3d;
+	bl3d.createGrid3d();
+	std::vector<gmds::blocking::Dart_handle> sheet = bl3d.getSheet(bl3d.lcc()->darts().begin());
+
+	std::cout<<"Nb darts "<<sheet.size()<<std::endl;
+}
+/*----------------------------------------------------------------------------*/
+TEST(BlockingTestSuite, collapseSheet_3d)
+{
+	gmds::blocking::Blocking bl3d;
+	bl3d.createGrid3d();
+
+	gmds::blocking::SheetCollapse collapse;
+	collapse.setBl(&bl3d);
+	collapse.setDart(bl3d.lcc()->darts().begin());
+	collapse.execute();
+
+	//ASSERT_EQ(48*(3*3), bl3d.lcc()->darts().size());
+
+	if (!bl3d.lcc()->is_valid()) {
+		std::string s ="Blocking::createGrid lcc not valid";
+		throw gmds::GMDSException(s);
+	}
+}

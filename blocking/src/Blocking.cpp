@@ -525,6 +525,99 @@ void Blocking::writeVTKFile(std::string AFileName) const
 	vtkWriter.write(AFileName);
 }
 /*----------------------------------------------------------------------------*/
+std::vector<Dart_handle> Blocking::getSheet(Dart_handle ADart){
+
+	std::vector<Dart_handle> sheet;
+	sheet.push_back(ADart);
+
+	std::vector<Dart_handle> working_darts; //darts we iterate on to find next ones
+	std::set<Dart_handle> found_darts; //next darts found
+
+	//initialising the loop
+	if(!lcc_.is_free<3>(ADart))
+		working_darts.push_back(lcc_.alpha<3,2,1,0,1,2>(ADart));
+	if(!lcc_.is_free<3>(lcc_.alpha<2>(ADart)))
+		working_darts.push_back(lcc_.alpha<2,3,2,1,0,1>(ADart));
+	if(!lcc_.is_free<3>(lcc_.alpha<2,1,0,1,2>(ADart)))
+		working_darts.push_back(lcc_.alpha<2,1,0,1,2,3>(ADart));
+	if(!lcc_.is_free<3>(lcc_.alpha<1,0,1,2>(ADart)))
+		working_darts.push_back(lcc_.alpha<1,0,1,2,3,2>(ADart));
+
+	for(auto d : working_darts)
+		sheet.push_back(d);
+
+	//Doing a Breadth-First Search in order to get all darts of the sheet
+
+	while (!working_darts.empty()){//while there is dart to work on we continue
+
+		for(auto d : working_darts){
+			if(!lcc_.is_free<3>(d))
+				if(std::find(sheet.begin(), sheet.end(), lcc_.alpha<3,2,1,0,1,2>(d)) == sheet.end())
+					found_darts.insert(lcc_.alpha<3,2,1,0,1,2>(d));
+			if(!lcc_.is_free<3>(lcc_.alpha<2>(d)))
+				if(std::find(sheet.begin(), sheet.end(), lcc_.alpha<2,3,2,1,0,1>(d)) == sheet.end())
+					found_darts.insert(lcc_.alpha<2,3,2,1,0,1>(d));
+			if(!lcc_.is_free<3>(lcc_.alpha<2,1,0,1,2>(d)))
+				if(std::find(sheet.begin(), sheet.end(), lcc_.alpha<2,1,0,1,2,3>(d)) == sheet.end())
+					found_darts.insert(lcc_.alpha<2,1,0,1,2,3>(d));
+			if(!lcc_.is_free<3>(lcc_.alpha<1,0,1,2>(d)))
+				if(std::find(sheet.begin(), sheet.end(), lcc_.alpha<1,0,1,2,3,2>(d)) == sheet.end())
+					found_darts.insert(lcc_.alpha<1,0,1,2,3,2>(d));
+		}
+
+		//Replacing the old working darts by the newly found
+		working_darts.clear();
+		for(auto d : found_darts){
+			sheet.push_back(d); //filling the sheet list in the same time
+			working_darts.push_back(d);
+		}
+
+		found_darts.clear();
+	}
+
+	return sheet;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<Dart_handle> Blocking::getChord(Dart_handle ADart){
+
+	std::vector<Dart_handle> chord;
+	chord.push_back(ADart);
+
+	std::vector<Dart_handle> working_darts; //darts we iterate on to find next ones
+	std::vector<Dart_handle> found_darts; //next darts found
+
+	if(!lcc_.is_free<3>(ADart))
+		working_darts.push_back(lcc_.alpha<3,2,1,0,1,2>(ADart));
+	if(!lcc_.is_free<3>(lcc_.alpha<2,1,0,1,2>(ADart)))
+		working_darts.push_back(lcc_.alpha<2,1,0,1,2,3>(ADart));
+
+	for(auto d : working_darts)
+		chord.push_back(d);
+
+	while (!working_darts.empty()){//while there is dart to work on we continue
+
+		for(auto d : working_darts){
+			if(!lcc_.is_free<3>(d))
+				if(std::find(chord.begin(), chord.end(), lcc_.alpha<3,2,1,0,1,2>(d)) == chord.end())
+					found_darts.push_back(lcc_.alpha<3,2,1,0,1,2>(d));
+			if(!lcc_.is_free<3>(lcc_.alpha<2,1,0,1,2>(d)))
+				if(std::find(chord.begin(), chord.end(), lcc_.alpha<2,1,0,1,2,3>(d)) == chord.end())
+					found_darts.push_back(lcc_.alpha<2,1,0,1,2,3>(d));
+		}
+
+		//Replacing the old working darts by the newly found
+		working_darts.clear();
+		for(auto d : found_darts){
+			chord.push_back(d); //filling the sheet list in the same time
+			working_darts.push_back(d);
+		}
+
+		found_darts.clear();
+	}
+
+	return chord;
+}
+/*----------------------------------------------------------------------------*/
 }  // namespace blocking
 /*----------------------------------------------------------------------------*/
 }  // namespace gmds
