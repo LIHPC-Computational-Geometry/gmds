@@ -19,7 +19,7 @@ namespace gmds{
 /*----------------------------------------------------------------------------*/
 namespace blocking{
 /*----------------------------------------------------------------------------*/
-struct Myitem
+/*struct Myitem
 {
 	template<class GMap>
 	struct Dart_wrapper
@@ -27,8 +27,9 @@ struct Myitem
 		typedef CGAL::Cell_attribute_with_point<GMap, std::vector<int>, CGAL::Tag_true> Vertex_attribute;
 		typedef std::tuple<Vertex_attribute ,void,void> Attributes;
 	};
-};
+};*/
 
+//typedef CGAL::Linear_cell_complex_traits<3, CGAL::Exact_predicates_inexact_constructions_kernel> Traits;
 typedef CGAL::Linear_cell_complex_for_generalized_map<3,3> LCC_3;
 typedef LCC_3::Dart_handle                                 Dart_handle;
 typedef LCC_3::Point                                       Point;
@@ -128,6 +129,24 @@ class LIB_GMDS_BLOCKING_API Blocking{
 
 	 // TODO insert sheet
 	 // TODO detect and delete sheet
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Get sheet from dart @param ADart
+		* @return A list of dart for each hex of the sheet
+	  */
+	 std::vector<Dart_handle> getSheet(Dart_handle ADart);
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Get chord from dart @param ADart
+	  * @return A list of dart for each hex of the chord
+	  */
+	 std::vector<Dart_handle> getChord(Dart_handle ADart);
+
+
+	 /*--------------------------------------------------------------------*/
+	 /** @brief  Insert sheet
+	  */
+	 void sheetInsert();
 
 	 /*--------------------------------------------------------------------*/
 	 /** @brief  Collapse sheet
