@@ -976,7 +976,7 @@ void Blocking2D::Block::computeT(){
 
 			std::vector<int> indices = {indice_0,indice_1,indice_v0,indice_v1};
 
-			int dim = 2; //Dans l'idée dim prend la valeur de la dimension de la structure de bloc, la on est forcément en 2D
+			constexpr int dim = 2; //Dans l'idée dim prend la valeur de la dimension de la structure de bloc, la on est forcément en 2D
 
 			int coords[4][dim];
 
