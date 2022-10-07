@@ -442,6 +442,8 @@ class SimplexMesh
 
   void setAnalyticMetric(const TInt node);
 
+  Eigen::Matrix3d getAnalyticMetric(const math::Point& pt) const;
+
 private:
 
   //node coordinates with bitvector

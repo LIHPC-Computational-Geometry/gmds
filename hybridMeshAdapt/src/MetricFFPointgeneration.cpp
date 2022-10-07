@@ -57,18 +57,71 @@ void MetricFFPointgeneration::execute()
     std::vector<TInt> edge = sortedEdge.second;
     std::vector<double> edgeU = edgesU[i];
     double edge_length = edges_length[i];
-    i++;
     //dichotomie algo reduction edge to see if the edge is sample enough
     std::vector<TInt> nodeAdded{};
-    subdivideEdgeUsingMetric(nodeAdded, edge, edgeU, edge_length);
-    nodesSpreading(nodeAdded);
-    /*std::cout << "ptAdded size -> " << nodeAdded.size() << std::endl;
-    for(auto const node : nodeAdded)
-    {
-      std::cout << "node -> " << SimplicesNode(m_simplexMesh, node) << std::endl;
-    }
-    std::cout << std::endl;*/
+    //subdivideEdgeUsingMetric_Dichotomie(nodeAdded, edge, edgeU, edge_length);
+    subdivideEdgeUsingMetric_Relaxation(nodeAdded, edge, edgeU, edge_length);
+    i++;
   }
+}
+/*----------------------------------------------------------------------------*/
+Point MetricFFPointgeneration::computeTheEdgeNodeCoordinate(const double u, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const
+{
+  Point pt;
+  if(edgeU.size() < 2)
+  {
+    throw gmds::GMDSException("edgeU.size() < 2");
+  }
+  if(!(u >= edgeU.front() && u <= edgeU.back()))
+  {
+    throw gmds::GMDSException("!(u >= edgeU.front() && u <= edgeU.back())");
+  }
+
+  for(unsigned int i = 0 ; i < edgeU.size() - 1 ; i++)
+  {
+    const double uA = edgeU[i];
+    const double uB = edgeU[i + 1];
+    if(uA <= u && uB >= u)
+    {
+      //interpolation (linear) of the middle position using the interval ua, ub and u = 0.5
+      if(uB != uA)
+      {
+        const TInt nodeA = edge[i];
+        const TInt nodeB = edge[i + 1];
+
+        const Point ptA = SimplicesNode(m_simplexMesh, nodeA).getCoords();
+        const Point ptB = SimplicesNode(m_simplexMesh, nodeB).getCoords();
+
+        const double t = (u-uA) / (uB-uA);
+
+        std::vector<TInt> newEdge0{};
+        std::vector<TInt> newEdge1{};
+
+        std::vector<double> edgeU_0 {};
+        std::vector<double> edgeU_1 {};
+
+        if(t == 0.0)
+        {
+          pt = ptA;
+        }
+        else if(t == 1.0)
+        {
+          pt = ptB;
+        }
+        else
+        {
+          pt = ptA * (1.0 - t) + ptB * t;
+        }
+        break;
+      }
+      else
+      {
+        throw gmds::GMDSException("uB == uA");
+      }
+    }
+  }
+
+  return pt;
 }
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::nodesSpreading(const std::vector<TInt>& nodesAdded) const
@@ -116,11 +169,154 @@ void MetricFFPointgeneration::nodesSpreading(const std::vector<TInt>& nodesAdded
     break;
   }
 
-  std::cout << "new_Nodes -> " << nodeAdded.size() << std::endl;
   cpt++;
 }
 /*----------------------------------------------------------------------------*/
-void MetricFFPointgeneration::subdivideEdgeUsingMetric(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) const
+void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) const
+{
+  double den = 0.0;
+  Variable<Eigen::Matrix3d>* metric  = nullptr;
+
+  try{
+    metric = m_simplexMesh->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  //compute the how many node should be in the edge  (depending on the Metric define on the mesh 's edges')
+  for(unsigned int i = 0 ; i < edge.size() - 1 ; i++)
+  {
+    const TInt nodeA = edge[i];
+    const TInt nodeB = edge[i + 1];
+
+    const math::Point ptA = SimplicesNode(m_simplexMesh, nodeA).getCoords();
+    const math::Point ptB = SimplicesNode(m_simplexMesh, nodeB).getCoords();
+
+    Eigen::Vector3d dir = Eigen::Vector3d(ptB.X() - ptA.X(), ptB.Y() - ptA.Y(), ptB.Z() - ptA.Z());
+    dir.normalize();
+
+    const Eigen::Matrix3d MA = metric->value(nodeA);
+    const Eigen::Matrix3d MB = metric->value(nodeB);
+
+    Eigen::Matrix3d MA_modified = metric->value(nodeA);
+    Eigen::Matrix3d MB_modified = metric->value(nodeB);
+
+    MA_modified(0,0) = 1.0 /sqrt(MA(0,0)); MA_modified(1,1) = 1.0 /sqrt(MA(1,1)); MA_modified(2,2) = 1.0 /sqrt(MA(2,2));
+    MB_modified(0,0) = 1.0 /sqrt(MB(0,0)); MB_modified(1,1) = 1.0 /sqrt(MB(1,1)); MB_modified(2,2) = 1.0 /sqrt(MB(2,2));
+
+    const Eigen::Vector3d vecA = MA_modified * dir;
+    const Eigen::Vector3d vecB = MB_modified * dir;
+
+    const double mA = vecA.norm();
+    const double mB = vecB.norm();
+
+    const double sizeInterval = edgeU[i + 1] - edgeU[i];
+
+    //https://fr.wikipedia.org/wiki/Calcul_num%C3%A9rique_d%27une_int%C3%A9grale
+    //basic discret square integral
+    den += sizeInterval *  (0.5 * mA + 0.5 * mB);
+  }
+  if(den == 0.0)
+  {
+    throw gmds::GMDSException("den == 0.0");
+  }
+
+  const unsigned int n = std::ceil(static_cast<double>(sizeEdge) / den);
+  std::vector<double>res{};
+  metricSamplingEdge(n, res, edge, edgeU);
+
+  //for(auto const u : res)
+  for(unsigned int i = 1 ; i < res.size() - 1 ; i++)
+  {
+    const double u = res[i];
+    Point pt = computeTheEdgeNodeCoordinate(u, edge, edgeU);
+    std::vector<TSimplexID> tetraContenaingPt{};
+    bool alreadyAdd = false;
+    TInt newNodeId = m_simplexMesh->addNodeAndcheck(pt, tetraContenaingPt, alreadyAdd);
+    m_simplexMesh->setAnalyticMetric(newNodeId);
+    nodesAdded.push_back(newNodeId);
+  }
+}
+/*----------------------------------------------------------------------------*/
+void MetricFFPointgeneration::metricSamplingEdge(const unsigned int n, std::vector<double>& res, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const
+{
+  if(edge.size() < 2)
+  {
+    throw gmds::GMDSException("edge.size < 2");
+  }
+  double epsilon = 0.01;
+  //first we subdivide the edge uniformly (whitout using any random generator for the position)
+  std::vector<double> params_u{};
+  const double e = 1.0 / static_cast<double>(n);
+  for(unsigned int i = 0 ; i < n + 1 ; i++)
+  {
+    params_u.push_back(e * static_cast<double>(i));
+  }
+  //Compute the right sample node position in u coordinate with Loyd methodes in CVT -> Fast Methods for Computing Centroidal Voronoi Tessellations
+  //compute V(zk) & the corresponding zk -> [0, 1]
+  double error_max = 0.0;
+  do
+  {
+    error_max = 0.0;
+    std::vector<std::vector<double>> V{};
+    std::vector<double> p{0.0};
+    for(unsigned int i = 1 ; i < params_u.size() - 1; i++)
+    {
+      const double uA = params_u[i - 1];
+      const double uB = params_u[i    ];
+      const double uC = params_u[i + 1];
+      const double V0 = 0.5*(uA + uB);
+      const double V1 = 0.5*(uC + uB);
+      V.push_back(std::vector<double>{V0, V1});
+    }
+
+    //compute the new zk
+    for(unsigned int i = 0; i < V.size() ; i++)
+    {
+      const double u_min = V[i][0];
+      const double u_max = V[i][1];
+
+      const Point pt_min = computeTheEdgeNodeCoordinate(u_min, edge, edgeU);
+      const Point pt_max = computeTheEdgeNodeCoordinate(u_max, edge, edgeU);
+
+      Eigen::Vector3d dir = Eigen::Vector3d(pt_max.X() - pt_min.X(), pt_max.Y() - pt_min.Y(), pt_max.Z() - pt_min.Z());
+      dir.normalize();
+
+      Eigen::Matrix3d M_min  = m_simplexMesh->getAnalyticMetric(pt_min);
+      Eigen::Matrix3d M_max  = m_simplexMesh->getAnalyticMetric(pt_max);
+
+      M_min(0,0) = 1.0 /sqrt(M_min(0,0)); M_min(1,1) = 1.0 /sqrt(M_min(1,1)); M_min(2,2) = 1.0 /sqrt(M_min(2,2));
+      M_max(0,0) = 1.0 /sqrt(M_max(0,0)); M_max(1,1) = 1.0 /sqrt(M_max(1,1)); M_max(2,2) = 1.0 /sqrt(M_max(2,2));
+
+      const Eigen::Vector3d vecA = M_max * dir;
+      const Eigen::Vector3d vecB = M_min * dir;
+
+      const double r_min = vecA.norm();
+      const double r_max = vecB.norm();
+
+      const double num = u_min*r_min + u_max*r_max;
+      const double den = r_min + r_max;
+
+      if(den == 0.0)
+      {
+        throw gmds::GMDSException("den == 0");
+      }
+
+      const double zk = num / den;
+
+
+      p.push_back(zk);
+      error_max = std::max(error_max, std::abs(zk - params_u[i + 1]));
+    }
+    p.push_back(1.0);
+    params_u = p;
+  }while(error_max > epsilon);
+
+  res = params_u;
+}
+/*----------------------------------------------------------------------------*/
+void MetricFFPointgeneration::subdivideEdgeUsingMetric_Dichotomie(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) const
 {
   if(edge.size() < 2)
   {
@@ -235,8 +431,8 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric(std::vector<TInt>& nodesA
           const std::vector<std::vector<double>> edgesU0 = buildParamEdgeU(sortedEdges0, edges_length0);
           const std::vector<std::vector<double>> edgesU1 = buildParamEdgeU(sortedEdges1, edges_length1);
 
-          subdivideEdgeUsingMetric(nodesAdded, newEdge0,  edgesU0.front(), edges_length0.front());
-          subdivideEdgeUsingMetric(nodesAdded, newEdge1,  edgesU1.front(), edges_length1.front());
+          subdivideEdgeUsingMetric_Dichotomie(nodesAdded, newEdge0,  edgesU0.front(), edges_length0.front());
+          subdivideEdgeUsingMetric_Dichotomie(nodesAdded, newEdge1,  edgesU1.front(), edges_length1.front());
           break;
         }
         else
