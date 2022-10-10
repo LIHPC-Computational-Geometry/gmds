@@ -4356,7 +4356,7 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
   double metricY;
   double metricZ;
 
-  if(pt.Y() <= 0.5)
+  /*if(pt.Y() <= 0.5)
   {
     metricX = 0.1;
     metricY = 0.1;
@@ -4367,7 +4367,11 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
     metricX = 0.2;
     metricY = 0.2;
     metricZ = 0.2;
-  }
+  }*/
+
+  metricX = 0.1*(1.0 - pt.Y()) + 0.15*pt.Y();
+  metricY = 0.1*(1.0 - pt.Y()) + 0.15*pt.Y();
+  metricZ = 0.1*(1.0 - pt.Y()) + 0.15*pt.Y();
 
   //double metricX = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
   //double metricY = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
@@ -4377,7 +4381,7 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
   double metricY = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
   double metricZ = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;*/
 
-  Eigen::Matrix3d m;
+  Eigen::Matrix3d m = Eigen::MatrixXd::Identity(3, 3);
 
   m(0,0) = 1.0 / (metricX*metricX);
   m(1,1) = 1.0 / (metricY*metricY);
@@ -4405,7 +4409,7 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   double metricY;
   double metricZ;
 
-  
+
   if(pt.Y() <= 0.5)
   {
     metricX = 0.1;

@@ -1,12 +1,5 @@
-#include "gmds/hybridMeshAdapt/PointInsertion.h"
 #include "gmds/hybridMeshAdapt/MetricFFPointgeneration.h"
 #include "gmds/hybridMeshAdapt/SimplexMesh.h"
-#include "gmds/hybridMeshAdapt/SimplicesCell.h"
-#include "gmds/hybridMeshAdapt/SimplicesNode.h"
-#include "gmds/hybridMeshAdapt/SimplicesTriangle.h"
-#include "gmds/hybridMeshAdapt/Metric.h"
-#include <gmds/hybridMeshAdapt/ICriterion.h>
-#include <gmds/hybridMeshAdapt/ISimplexMeshIOService.h>
 /*----------------------------------------------------------------------------*/
 #include <gmds/io/VTKWriter.h>
 /*----------------------------------------------------------------------------*/
@@ -18,9 +11,9 @@ using namespace simplicesNode;
 using namespace simplicesTriangle;
 using namespace simplicesCell;
 /*----------------------------------------------------------------------------*/
-MetricFFPointgeneration::MetricFFPointgeneration(SimplexMesh* simplexMesh):m_simplexMesh(simplexMesh)
+MetricFFPointgeneration::MetricFFPointgeneration(SimplexMesh* simplexMesh):m_simplexMesh(simplexMesh),m_oc(Octree(simplexMesh, 10))
 {
-
+  m_nodesMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
 }
 /*----------------------------------------------------------------------------*/
 MetricFFPointgeneration::~MetricFFPointgeneration()
@@ -51,6 +44,7 @@ void MetricFFPointgeneration::execute()
   const std::map<unsigned int, std::vector<TInt>> sortedEdges = buildSortedEdges();
   const std::vector<std::vector<double>> edgesU = buildParamEdgeU(sortedEdges, edges_length);
 
+  std::vector<TInt> nodeAdded{};
   unsigned int i = 0;
   for(auto const & sortedEdge : sortedEdges)
   {
@@ -58,11 +52,17 @@ void MetricFFPointgeneration::execute()
     std::vector<double> edgeU = edgesU[i];
     double edge_length = edges_length[i];
     //dichotomie algo reduction edge to see if the edge is sample enough
-    std::vector<TInt> nodeAdded{};
     //subdivideEdgeUsingMetric_Dichotomie(nodeAdded, edge, edgeU, edge_length);
     subdivideEdgeUsingMetric_Relaxation(nodeAdded, edge, edgeU, edge_length);
     i++;
   }
+
+  nodesSpreading(nodeAdded);
+  gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
+  gmds::VTKWriter vtkWriterMA(&ioService);
+  vtkWriterMA.setCellOptions(gmds::N);
+  vtkWriterMA.setDataOptions(gmds::N);
+  vtkWriterMA.write("metricFF_Node.vtk");
 }
 /*----------------------------------------------------------------------------*/
 Point MetricFFPointgeneration::computeTheEdgeNodeCoordinate(const double u, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const
@@ -124,14 +124,19 @@ Point MetricFFPointgeneration::computeTheEdgeNodeCoordinate(const double u, cons
   return pt;
 }
 /*----------------------------------------------------------------------------*/
-void MetricFFPointgeneration::nodesSpreading(const std::vector<TInt>& nodesAdded) const
+bool MetricFFPointgeneration::toReject(const math::Point& pt) const
 {
-  static unsigned int cpt = 0;
+  return true;
+}
+/*----------------------------------------------------------------------------*/
+void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
+{
+  std::vector<TInt> newNodes{};
+  //test direction, we force the direction tospread the nodes to i,j,k
   const Eigen::Vector3d x_dir(1.0, 0.0, 0.0);
   const Eigen::Vector3d y_dir(0.0, 1.0, 0.0);
   const Eigen::Vector3d z_dir(0.0, 0.0, 1.0);
   std::vector<double> spins{-1.0, 1.0};
-  std::vector<TInt> nodeAdded{};
 
   std::vector<Eigen::Vector3d> dirs{x_dir, y_dir, z_dir};
   Variable<Eigen::Matrix3d>* metric  = nullptr;
@@ -148,31 +153,64 @@ void MetricFFPointgeneration::nodesSpreading(const std::vector<TInt>& nodesAdded
     {
       for(auto const spin : spins)
       {
-        Eigen::Vector3d d = spin * dir;
-        const math::Point pt = SimplicesNode(m_simplexMesh, node).getCoords();
+        const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
         Eigen::Matrix3d M = metric->value(node);
         M(0,0) = 1.0 /sqrt(M(0,0)); M(1,1) = 1.0 /sqrt(M(1,1)); M(2,2) = 1.0 /sqrt(M(2,2));
+        Eigen::Vector3d d = spin * dir;
+        d.normalize();
         const Eigen::Vector3d vec = M * d;
         const double m = vec.norm();
 
         math::Point newCoord = pt + m*math::Point(d.x(), d.y(), d.z());
-
-        std::vector<TSimplexID> tetraContenaingPt{};
-        bool alreadyAdd = false;
-        TInt newNodeId  = m_simplexMesh->addNodeAndcheck(newCoord, tetraContenaingPt, alreadyAdd);
-        if(newNodeId != -1)
+        //check if the pt is in the mesh
+        if(m_oc.belongToOc(newCoord))
         {
-          nodeAdded.push_back(newNodeId);
+          //compute the metric lentgh based on newNodeId and the metric at node
+          findOptimimalPosition(node, newCoord);
+          TInt newNodeId = m_nodesMesh.addNode(newCoord);
+          newNodes.push_back(newNodeId);
         }
       }
     }
-    break;
   }
-
-  cpt++;
+  nodesAdded = newNodes;
 }
 /*----------------------------------------------------------------------------*/
-void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) const
+void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point& initialCoord)
+{
+  double epsilon = 0.001;
+  Variable<Eigen::Matrix3d>* metric  = nullptr;
+  try{
+    metric = m_simplexMesh->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  //the node is the layer node so we can not move this once
+  const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
+  Eigen::Vector3d dir(initialCoord.X() - pt.X(), initialCoord.Y() - pt.Y(), initialCoord.Z() - pt.Z());
+
+  //the metric being analytique we do not have to interpolate the metric at point
+  const Eigen::Matrix3d m0 = (*metric)[node];
+  const Eigen::Matrix3d m1 = m_nodesMesh.getAnalyticMetric(initialCoord);
+
+  //compute the current length based on the metric atached to the mesh
+  const double metricLenght = 0.5 * sqrt(dir.dot(m0*dir)) +  0.5 * sqrt(dir.dot(m1*dir));
+
+  if(metricLenght < 1.0 - epsilon)
+  {
+    initialCoord = pt + 1.5 * math::Vector3d(dir.x(), dir.y(), dir.z());
+    findOptimimalPosition(node, initialCoord);
+  }
+  else if(metricLenght > 1.0 + epsilon)
+  {
+    initialCoord = 0.5 * (pt + initialCoord);
+    findOptimimalPosition(node, initialCoord);
+  }
+}
+/*----------------------------------------------------------------------------*/
+void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge)
 {
   double den = 0.0;
   Variable<Eigen::Matrix3d>* metric  = nullptr;
@@ -224,17 +262,14 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TI
 
   const unsigned int n = std::ceil(static_cast<double>(sizeEdge) / den);
   std::vector<double>res{};
-  metricSamplingEdge(n, res, edge, edgeU);
+  metricSamplingEdge(n + 1, res, edge, edgeU);
 
-  //for(auto const u : res)
   for(unsigned int i = 1 ; i < res.size() - 1 ; i++)
   {
     const double u = res[i];
     Point pt = computeTheEdgeNodeCoordinate(u, edge, edgeU);
-    std::vector<TSimplexID> tetraContenaingPt{};
-    bool alreadyAdd = false;
-    TInt newNodeId = m_simplexMesh->addNodeAndcheck(pt, tetraContenaingPt, alreadyAdd);
-    m_simplexMesh->setAnalyticMetric(newNodeId);
+    TInt newNodeId = m_nodesMesh.addNode(pt);
+    m_nodesMesh.setAnalyticMetric(newNodeId);
     nodesAdded.push_back(newNodeId);
   }
 }

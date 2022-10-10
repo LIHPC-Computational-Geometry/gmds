@@ -5,6 +5,15 @@
 #include <gmds/math/Vector.h>
 #include <gmds/math/Matrix.h>
 /*****************************************************************************/
+#include "gmds/hybridMeshAdapt/SimplicesCell.h"
+#include "gmds/hybridMeshAdapt/SimplicesNode.h"
+#include "gmds/hybridMeshAdapt/SimplicesTriangle.h"
+#include "gmds/hybridMeshAdapt/Metric.h"
+#include <gmds/hybridMeshAdapt/ICriterion.h>
+#include <gmds/hybridMeshAdapt/ISimplexMeshIOService.h>
+#include "gmds/hybridMeshAdapt/PointInsertion.h"
+#include "gmds/hybridMeshAdapt/Octree.h"
+/*****************************************************************************/
 namespace gmds{
   namespace hybrid{
 
@@ -21,11 +30,11 @@ namespace gmds{
 
         std::vector<std::vector<double>> buildParamEdgeU(const std::map<unsigned int, std::vector<TInt>>& sortedEdge, std::vector<double> & length_edges) const;
 
-        void subdivideEdgeUsingMetric_Relaxation(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) const;
+        void subdivideEdgeUsingMetric_Relaxation(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) ;
 
         void subdivideEdgeUsingMetric_Dichotomie(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) const;
 
-        void nodesSpreading(const std::vector<TInt>& nodesAdded) const;
+        void nodesSpreading(std::vector<TInt>& nodesAdded);
 
         void execute();
 
@@ -33,8 +42,15 @@ namespace gmds{
 
         math::Point computeTheEdgeNodeCoordinate(const double u, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const;
 
+        bool toReject(const math::Point& pt) const;
+
+        void findOptimimalPosition(const TInt node, math::Point &newCoord) ;
       private:
         SimplexMesh* m_simplexMesh = nullptr;
+
+        SimplexMesh m_nodesMesh;
+
+        Octree m_oc;
     };
   }
 }
