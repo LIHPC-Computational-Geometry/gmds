@@ -45,6 +45,10 @@ namespace gmds{
         bool toReject(const math::Point& pt) const;
 
         void findOptimimalPosition(const TInt node, math::Point &newCoord) ;
+
+        //return true if there is no point near (anisotropic length) pt, using octree for fast result
+        bool nodeFiltering(const TInt node, const math::Point& pt);
+
       private:
         SimplexMesh* m_simplexMesh = nullptr;
 
