@@ -81,6 +81,10 @@ class LIB_GMDS_BLOCKING_API SheetInsert
 	// shrink ratio vertices to insert
 	double ratio_vertex_insert_ = 0.5;
 
+	// TODO get rid of it when the geom association is in place
+	// TODO and there is no need to manually alter the mesh
+	bool screenshot_ = false;
+
 
 	// blocking to CAD
 	std::map<Dart_handle, gmds::cad::FACPoint*> d2p_;

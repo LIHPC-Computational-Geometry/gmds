@@ -9,6 +9,8 @@
 //#include <gmds/io/IGMeshIOService.h>
 //#include <gmds/io/VTKReader.h>
 //#include <gmds/io/VTKWriter.h>
+
+#include "gmds/blocking/WriterDartsVTK.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -58,7 +60,6 @@ SheetInsert::execute(LCC_3::size_type AMark)
 
 	// store current alpha links that will be invalidated by the unsew
 	std::map<LCC_3::Dart_handle, LCC_3::Dart_handle> old_alpha3;
-	std::map<LCC_3::Dart_handle, LCC_3::Dart_handle> old_alpha3_bothways;
 
 	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
 	     itend(lcc()->darts().end()); it!=itend; ++it) {
@@ -68,8 +69,6 @@ SheetInsert::execute(LCC_3::size_type AMark)
 			LCC_3::Dart_handle d3 = lcc()->alpha(d0,3);
 
 			old_alpha3.emplace(d0, d3);
-			old_alpha3_bothways.emplace(d0, d3);
-			old_alpha3_bothways.emplace(d3, d0);
 		}
 	}
 	std::cout<<"old_alpha3.size() "<< old_alpha3.size()<<std::endl;
@@ -91,6 +90,8 @@ SheetInsert::execute(LCC_3::size_type AMark)
 	LCC_3::size_type m_cells_center = lcc()->get_new_mark();
 
 	for(auto d: old_alpha3) {
+
+
 		LCC_3::Vertex_attribute_handle v = lcc()->vertex_attribute(d.first);
 		if(old2new_vertices.find(v) == old2new_vertices.end()) {
 
@@ -125,6 +126,28 @@ SheetInsert::execute(LCC_3::size_type AMark)
 			posx += ratio_vertex_insert_ * (v->point().x() - posx);
 			posy += ratio_vertex_insert_ * (v->point().y() - posy);
 			posz += ratio_vertex_insert_ * (v->point().z() - posz);
+
+
+			if(screenshot_) {
+//				posx = v->point().x();
+//				posy = v->point().y();
+//				posz = 0.5;
+				if ((posx > 3.24) && (posx < 3.27) && (posz > 1.24) && (posz < 1.27)) {
+					posz = 1.1;
+				}
+
+				if ((posx > 2.73) && (posx < 2.75) && (posz > 0.69) && (posz < 0.72)) {
+					posx = 2.9;
+				}
+
+				if ((posx > 3.24) && (posx < 3.3) && (posz > 0.21) && (posz < 0.26)) {
+					posz = 0.;
+				}
+
+				if ((posx > 3.79) && (posx < 3.9) && (posz > 0.71) && (posz < 0.76)) {
+					posx = 4.;
+				}
+			}
 
 			LCC_3::Point newpt(v->point().x(), v->point().y(), v->point().z());
 			v->point() = LCC_3::Point (posx, posy, posz);
@@ -210,6 +233,10 @@ SheetInsert::execute(LCC_3::size_type AMark)
 		lcc()->link_alpha<2>(d3, old_pattern[lcc()->alpha(d,1)][3]);
 		lcc()->link_alpha<2>(d4, old_pattern[lcc()->alpha(d,1)][4]);
 	}
+
+	gmds::blocking::WriterDartsVTK writer;
+	writer.setBl(bl());
+	gmds::blocking::WriterDartsVTK::STATUS st = writer.execute("darts_first_link.vtk");
 
 	// link the created darts between the patterns
 	// second step with the links that depend on the orbits
@@ -297,6 +324,10 @@ SheetInsert::execute(LCC_3::size_type AMark)
 	}
 	lcc()->correct_invalid_attributes();
 
+	writer.execute("darts_second_link.vtk");
+
+	LCC_3::size_type mark_chord = lcc()->get_new_mark();
+
 	// last round to close the inserted chord
 	for(auto it: old_alpha3) {
 		LCC_3::Dart_handle d = it.first;
@@ -308,6 +339,15 @@ SheetInsert::execute(LCC_3::size_type AMark)
 		if((lcc()->alpha(d11, 1) == d11) && (lcc()->alpha(d10, 1) != d10)) {
 			lcc()->link_alpha<1>(d11, lcc()->alpha(d11, 0, 1, 0, 1, 0, 1, 0));
 			lcc()->link_alpha<2>(d9, lcc()->alpha(d9, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1));
+
+			lcc()->mark(d11, mark_chord);
+			lcc()->mark(lcc()->alpha(d11, 0, 1, 0, 1, 0, 1, 0), mark_chord);
+			lcc()->mark(lcc()->alpha(d11, 0, 1, 0, 1, 0, 1), mark_chord);
+			lcc()->mark(lcc()->alpha(d11, 0, 1, 0, 1, 0), mark_chord);
+			lcc()->mark(lcc()->alpha(d11, 0, 1, 0, 1), mark_chord);
+			lcc()->mark(lcc()->alpha(d11, 0, 1, 0), mark_chord);
+			lcc()->mark(lcc()->alpha(d11, 0, 1), mark_chord);
+			lcc()->mark(lcc()->alpha(d11, 0), mark_chord);
 		}
 	}
 	lcc()->correct_invalid_attributes();
@@ -355,11 +395,54 @@ SheetInsert::execute(LCC_3::size_type AMark)
 	//	TODO try to get rid of this automatic correction
 	lcc()->correct_invalid_attributes();
 
+	writer.execute("darts_third_link.vtk");
+
 	// TODO clear the orphaned darts and flat cells
 	int nbRemoved = cleanup_flat_cells(AMark);
 	std::cout<<"insertsheet nbRemoved "<<nbRemoved<<std::endl;
 
 	lcc()->correct_invalid_attributes();
+
+	// very last round for alpha-3 of the chords
+	for(auto it: old_alpha3) {
+		LCC_3::Dart_handle d = it.first;
+		LCC_3::Dart_handle d10 = old_pattern[d][10];
+		LCC_3::Dart_handle d11 = old_pattern[d][11];
+
+		if (bl()->lcc()->is_marked(d10,mark_chord)) {
+
+			if (bl()->lcc()->is_free(d10, 3)) {
+				// consider only darts from hex
+				if (bl()->lcc()->darts_of_orbit<0, 1, 2>(d10).size() == 48) {
+					std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAA " << lcc()->darts_of_orbit<2, 3>(d10).size() << std::endl;
+
+					for (LCC_3::Dart_of_orbit_range<2, 3>::iterator itbis(lcc()->darts_of_orbit<2, 3>(d10).begin()), itend(lcc()->darts_of_orbit<2, 3>(d10).end());
+					     itbis != itend; ++itbis) {
+
+						if (bl()->lcc()->is_marked(itbis,mark_chord)) {
+							if (bl()->lcc()->alpha(itbis, 3) == itbis) {
+								std::cout << "FREE" << std::endl;
+								if ((d10 != itbis)) {
+									std::cout << "DIFFERENT " << bl()->lcc()->darts_of_orbit<0, 1, 2>(itbis).size() << std::endl;
+									// check that itbis is a dart from an hex
+									if (bl()->lcc()->darts_of_orbit<0, 1, 2>(itbis).size() == 48) {
+
+										//						bl()->lcc()->link_alpha<3>(d10, itbis);
+										//						bl()->lcc()->link_alpha<3>(d11, bl()->lcc()->alpha(itbis, 0));
+										bl()->lcc()->sew<3>(d10, itbis);
+										std::cout << "QQQQQQQQQQQQQQQQQQQQQQQQQQ" << std::endl;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	lcc()->correct_invalid_attributes();
+
+	writer.execute("darts_chord_link.vtk");
 
 	// free the marks
 	lcc()->free_mark(m_new);
@@ -410,7 +493,6 @@ SheetInsert::pillow(LCC_3::size_type AMark)
 
 	// store current alpha links that will be invalidated by the unsew
 	std::map<LCC_3::Dart_handle, LCC_3::Dart_handle> old_alpha3;
-	std::map<LCC_3::Dart_handle, LCC_3::Dart_handle> old_alpha3_bothways;
 
 	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
 			  itend(lcc()->darts().end()); it!=itend; ++it) {
@@ -420,8 +502,6 @@ SheetInsert::pillow(LCC_3::size_type AMark)
 			LCC_3::Dart_handle d3 = lcc()->alpha(d0,3);
 
 			old_alpha3.emplace(d0, d3);
-			old_alpha3_bothways.emplace(d0, d3);
-			old_alpha3_bothways.emplace(d3, d0);
 		}
 	}
 	std::cout<<"old_alpha3.size() "<< old_alpha3.size()<<std::endl;

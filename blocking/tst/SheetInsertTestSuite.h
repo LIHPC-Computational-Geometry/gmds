@@ -63,14 +63,14 @@ TEST(SheetInsertTestSuite, pillow3d)
 TEST(SheetInsertTestSuite, insert3d)
 {
 	gmds::blocking::Blocking bl;
-	bl.createGrid3d(gmds::math::Point(0,0,0), gmds::math::Point(2,2,2), 2,2,2);
+	bl.createGrid3d(gmds::math::Point(0,0,0), gmds::math::Point(2,4,4), 2,4,4);
 
 	gmds::blocking::SheetInsert is;
 	is.setBl(&bl);
 
 	gmds::blocking::LCC_3::size_type mark = is.lcc()->get_new_mark();
 	gmds::blocking::InputMarkedDarts imd;
-	imd.insertsheet_mark_first_cells3d(bl.lcc(), mark, 5);
+	imd.insertsheet_mark_first_cells3d(bl.lcc(), mark, 16);
 
 	gmds::blocking::WriterDartsVTK writer_tmp;
 	writer_tmp.setBl(&bl);
@@ -94,6 +94,8 @@ TEST(SheetInsertTestSuite, intersect3d)
 {
 	gmds::blocking::Blocking bl;
 	bl.createGrid3d(gmds::math::Point(0,0,0), gmds::math::Point(4,4,4), 4,4,4);
+
+	bl.writeVTKFile("grid3d_insertsheet3d_autointersect.vtk");
 
 	gmds::blocking::SheetInsert is;
 	is.setBl(&bl);
@@ -220,5 +222,37 @@ TEST(SheetInsertTestSuite, insertsheet_ogrid_3d)
 	writer.setBl(&bl);
 	gmds::blocking::WriterDartsVTK::STATUS status_write = writer.execute("darts_insertsheet3d_ogrid.vtk");
 	ASSERT_EQ(gmds::blocking::WriterDartsVTK::SUCCESS, status_write);
+}
+/*----------------------------------------------------------------------------*/
+TEST(SheetInsertTestSuite, insert3d_screenshots)
+{
+	gmds::blocking::Blocking bl;
+	bl.createGrid3d(gmds::math::Point(0,0,0), gmds::math::Point(1,1,1), 1,1,2);
+
+	gmds::blocking::SheetInsert is;
+	is.setBl(&bl);
+
+	bl.writeVTKFile("grid3d_insert3d_screenshot.vtk");
+
+	gmds::blocking::LCC_3::size_type mark = is.lcc()->get_new_mark();
+	gmds::blocking::InputMarkedDarts imd;
+	imd.insertsheet_mark_first_cells3d(bl.lcc(), mark, 1);
+
+	gmds::blocking::WriterDartsVTK writer_tmp;
+	writer_tmp.setBl(&bl);
+	gmds::blocking::WriterDartsVTK::STATUS st_tmp = writer_tmp.execute("darts_tmp_insertsheet3d_screenshot.vtk", mark);
+
+	gmds::blocking::SheetInsert::STATUS status = is.execute(mark);
+	is.lcc()->free_mark(mark);
+
+	ASSERT_EQ(status, gmds::blocking::SheetInsert::SUCCESS);
+
+	bl.writeVTKFile("insertsheet3d_screenshot.vtk");
+	bl.writeMokaFile("insertsheet3d_screenshot.moka");
+
+	gmds::blocking::WriterDartsVTK writer;
+	writer.setBl(&bl);
+	gmds::blocking::WriterDartsVTK::STATUS st = writer.execute("darts_insertsheet3d_screenshot.vtk");
+	ASSERT_EQ(gmds::blocking::WriterDartsVTK::SUCCESS, st);
 }
 /*----------------------------------------------------------------------------*/
