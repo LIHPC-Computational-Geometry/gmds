@@ -4352,9 +4352,9 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
   double epsilon = 0.01;
 
   //CONSTANT ISOTROPE METRIC
-  double metricX;
-  double metricY;
-  double metricZ;
+  double metricX = 0.1;
+  double metricY = 0.1;
+  double metricZ = 0.1;
 
   /*if(pt.Y() <= 0.5)
   {
@@ -4369,9 +4369,10 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
     metricZ = 0.2;
   }*/
 
-  metricX = 0.1/**(1.0 - pt.Y()) + 0.1*pt.Y()*/;
-  metricY = 0.1/**(1.0 - pt.Y()) + 0.1*pt.Y()*/;
-  metricZ = 0.1/**(1.0 - pt.Y()) + 0.1*pt.Y()*/;
+
+  /*metricX = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();
+  metricY = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();
+  metricZ = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();*/
 
   //double metricX = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
   //double metricY = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
@@ -4408,6 +4409,10 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   double metricX = 0.1;
   double metricY = 0.1;
   double metricZ = 0.1;
+
+  /*metricX = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();
+  metricY = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();
+  metricZ = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();*/
 
 
   /*if(pt.Y() <= 0.5)
