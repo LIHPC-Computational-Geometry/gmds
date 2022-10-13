@@ -433,7 +433,7 @@ TInt SimplexMesh::addNode(const math::Point& pt)
 
   m_node_ids.assign(idx);
   m_coords[idx] = pt;
-  //m_node_variable_manager->addEntry(idx);
+  m_node_variable_manager->addEntry(idx);
   return idx;
 }
 /*****************************************************************************/
@@ -4353,7 +4353,7 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
 
   //CONSTANT ISOTROPE METRIC
   double metricX = 0.1;
-  double metricY = 0.1;
+  double metricY =  0.05*(1.0 - pt.Y()) + 0.3*pt.Y();
   double metricZ = 0.1;
 
   /*if(pt.Y() <= 0.5)
@@ -4407,7 +4407,7 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
 
   //CONSTANT ISOTROPE METRIC
   double metricX = 0.1;
-  double metricY = 0.1;
+  double metricY =  0.05*(1.0 - pt.Y()) + 0.3*pt.Y();
   double metricZ = 0.1;
 
   /*metricX = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();

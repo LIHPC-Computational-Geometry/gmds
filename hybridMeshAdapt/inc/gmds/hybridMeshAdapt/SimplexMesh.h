@@ -571,7 +571,7 @@ gmds::Variable<T>* SimplexMesh::newVariable(const std::string& AName)
 template<typename T, class C>
 gmds::Variable<T>* SimplexMesh::getVariable(const std::string&& AName)
 {
-  gmds::Variable<T>* var;
+  gmds::Variable<T>* var = nullptr;
 
   if(std::is_same<C, simplicesNode::SimplicesNode>::value == true)
   {

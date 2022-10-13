@@ -42,14 +42,12 @@ namespace gmds{
 
         math::Point computeTheEdgeNodeCoordinate(const double u, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const;
 
-        bool toReject(const math::Point& pt) const;
-
         void findOptimimalPosition(const TInt node, math::Point &newCoord) ;
 
-        //return true if there is no point near (anisotropic length) pt, using octree for fast result
-        bool nodeFiltering(const TInt node, const math::Point& pt);
+        void nodeFiltering(const TInt node, const math::Point& pt, std::vector<TInt> & neighboorNode);
 
       private:
+        std::map<TInt, std::vector<TInt>> m_nodeStructure;
         SimplexMesh* m_simplexMesh = nullptr;
 
         SimplexMesh m_nodesMesh;
