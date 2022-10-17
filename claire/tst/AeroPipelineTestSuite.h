@@ -72,7 +72,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 
 }
 
-
+/*
 TEST(AeroPipelineTestClass, AeroPipeline2D_User_NACA)
 {
 	ParamsAero params_aero;
@@ -126,8 +126,9 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_User_NACA)
 	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero2D_result);
 
 }
+*/
 
-
+/*
 TEST(AeroPipelineTestClass, AeroPipeline2D_User_DA)
 {
 	ParamsAero params_aero;
@@ -151,7 +152,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_User_DA)
 
 	// Wall Discretization Parameter
 	params_aero.nbrMinBloc = 4;					// Minimal number of block on the wall
-	params_aero.nbrCellsInCL = 100;				// Number of cells in the boundary layer
+	params_aero.nbrCellsInCL = 30;				// Number of cells in the boundary layer
 	params_aero.edge_size_wall = 0.4 ;										// Maximal size of the cells on the wall
 	params_aero.edge_size_default = 1.0 ;										// Default size of the cells in the domain
 	params_aero.edge_size_first_ortho_wall = 1*pow(10,-7);	// Size of the first edge orthogonal to the wall
@@ -181,7 +182,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_User_DA)
 	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero2D_result);
 
 }
-
+*/
 
 /*----------------------------------------------------------------------------*/
 /*                       CAS TEST 3D CLASSE LevelSet                          */
