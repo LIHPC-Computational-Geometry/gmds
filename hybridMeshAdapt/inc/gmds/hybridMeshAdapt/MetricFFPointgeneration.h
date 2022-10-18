@@ -22,6 +22,15 @@ namespace gmds{
     class MetricFFPointgeneration
     {
       public:
+        //structure will permit us to sort the sampling node in order to
+        //saple low metric first
+        //node is the node where coord came from
+        struct nodeSamplingData{
+          TInt node;
+          double m;
+          math::Point coord;
+        };
+
         MetricFFPointgeneration(SimplexMesh* m_simplexMesh);
 
         ~MetricFFPointgeneration();

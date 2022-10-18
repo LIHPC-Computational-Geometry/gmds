@@ -62,10 +62,12 @@ void MetricFFPointgeneration::execute()
   while(nodeAdded.size() != 0)
   {
     std::cout << "nodeAdded.size() BEFORE -> " << nodeAdded.size() << std::endl;
+    //preprocessing the node coord sampling
     nodesSpreading(nodeAdded);
     std::cout << "nodeAdded.size() AFTER  -> " << nodeAdded.size() << std::endl;
     std::cout << std::endl;
     std::cout << std::endl;
+    //throw gmds::GMDSException("END");
   }
 
   for(auto const & d : m_nodeStructure)
@@ -176,23 +178,114 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
 
   std::vector<Eigen::Vector3d> dirs{x_dir, y_dir, z_dir};
   Variable<Eigen::Matrix3d>* metric  = nullptr;
+  Variable<Eigen::Matrix3d>* metricNodes  = nullptr;
+
   try{
     metric = m_simplexMesh->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    metricNodes = m_nodesMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
   }catch (gmds::GMDSException e)
   {
     throw gmds::GMDSException(e);
   }
+
+  std::vector<nodeSamplingData> nodesSamplingData{};
+  for(auto const node : nodesAdded)
+  {
+    const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
+    for(auto const & dir : dirs)
+    {
+      for(auto const spin : spins)
+      {
+        Eigen::Matrix3d M = metricNodes->value(node);
+        M(0,0) = 1.0 /sqrt(M(0,0)); M(1,1) = 1.0 /sqrt(M(1,1)); M(2,2) = 1.0 /sqrt(M(2,2));
+        Eigen::Vector3d d = spin * dir;
+        d.normalize();
+        const Eigen::Vector3d vec = M * d;
+        const double m = vec.norm();
+        math::Point newCoord = pt + m*math::Point(d.x(), d.y(), d.z());
+        nodeSamplingData samplingData{};
+        samplingData.node = node;
+        samplingData.m = m;
+        samplingData.coord = newCoord;
+        nodesSamplingData.push_back(samplingData);
+      }
+    }
+  }
+  sort(nodesSamplingData.begin(), nodesSamplingData.end(),
+    [](const nodeSamplingData & dataA, const nodeSamplingData & dataB) -> bool
+    {
+    return dataA.m > dataB.m;
+    });
+
+
+  /*unsigned int id = 0;
+  std::vector<TInt> v{-1, -1, -1, -1, -1, -1};
+  for(auto const & data : nodesSamplingData)
+  {
+    if(id == 5)
+    {
+      id = 0;
+      v = std::vector<TInt>{-1, -1, -1, -1, -1, -1};
+    }
+    math::Point newCoord = data.coord;
+    const TInt node = data.node;
+
+    //check if the pt is in the mesh
+    if(m_oc.belongToOc(newCoord))
+    {
+      //compute the metric lentgh based on newNodeId and the metric at node
+      findOptimimalPosition(node, newCoord);
+      std::vector<TInt> neighboorNodes;
+      nodeFiltering(node, newCoord, neighboorNodes);
+
+      if(!neighboorNodes.size())
+      {
+        TInt newNodeId = m_nodesMesh.addNode(newCoord);
+        m_nodesMesh.setAnalyticMetric(newNodeId);
+        v[id] = newNodeId;
+        newNodes.push_back(newNodeId);
+        gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
+        gmds::VTKWriter vtkWriterMA(&ioService);
+        vtkWriterMA.setCellOptions(gmds::N);
+        vtkWriterMA.setDataOptions(gmds::N);
+        vtkWriterMA.write("metricFF_Node_CPT_" + std::to_string(cpt) + ".vtk");
+        cpt++;
+      }
+      else
+      {
+        double distMin = std::numeric_limits<double>::max();
+        TInt neighboorNode;
+        for(auto const n : neighboorNodes)
+        {
+          math::Point pid = SimplicesNode(&m_nodesMesh, n).getCoords();
+          math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
+          math::Vector3d v = math::Vector3d(pid.X() - pt.X(), pid.Y() - pt.Y(), pid.Z() - pt.Z());
+          double dist = v.norm();
+          if(dist < distMin)
+          {
+            distMin = dist;
+            neighboorNode = n;
+          }
+        }
+        v[id] = neighboorNode;
+      }
+    }
+    id++;
+    m_nodeStructure.insert( std::pair<TInt, std::vector<TInt>>(node, v) );
+  }*/
+
 
   for(auto const node : nodesAdded)
   {
     unsigned int id = 0;
     std::vector<TInt> v{-1, -1, -1, -1, -1, -1};
     const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
+
     for(auto const & dir : dirs)
     {
       for(auto const spin : spins)
       {
-        Eigen::Matrix3d M = metric->value(node);
+        Eigen::Matrix3d M = metricNodes->value(node);
         M(0,0) = 1.0 /sqrt(M(0,0)); M(1,1) = 1.0 /sqrt(M(1,1)); M(2,2) = 1.0 /sqrt(M(2,2));
         Eigen::Vector3d d = spin * dir;
         d.normalize();
@@ -203,7 +296,6 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
         //check if the pt is in the mesh
         if(m_oc.belongToOc(newCoord))
         {
-          //std::cout << "node belong to oc " << std::endl;
           //compute the metric lentgh based on newNodeId and the metric at node
           findOptimimalPosition(node, newCoord);
           std::vector<TInt> neighboorNodes;
@@ -212,6 +304,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
           if(!neighboorNodes.size())
           {
             TInt newNodeId = m_nodesMesh.addNode(newCoord);
+            m_nodesMesh.setAnalyticMetric(newNodeId);
             v[id] = newNodeId;
             newNodes.push_back(newNodeId);
             gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
@@ -251,7 +344,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::nodeFiltering(const TInt node, const math::Point& pt, std::vector<TInt> & neighboorNode)
 {
-  const double k = 0.8;
+  const double k = 0.65;
   const double epsilon = 0.01;
   Variable<Eigen::Matrix3d>* metric  = nullptr;
   gmds::Variable<int>* BND_CURVE_COLOR_NODE = nullptr;
@@ -289,9 +382,9 @@ void MetricFFPointgeneration::nodeFiltering(const TInt node, const math::Point& 
 void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point& initialCoord)
 {
   double epsilon = 0.001;
-  Variable<Eigen::Matrix3d>* metric  = nullptr;
+  Variable<Eigen::Matrix3d>* metricNodes  = nullptr;
   try{
-    metric = m_simplexMesh->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    metricNodes = m_nodesMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
   }catch (gmds::GMDSException e)
   {
     throw gmds::GMDSException(e);
@@ -302,8 +395,8 @@ void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point
   Eigen::Vector3d dir(initialCoord.X() - pt.X(), initialCoord.Y() - pt.Y(), initialCoord.Z() - pt.Z());
 
   //the metric being analytique we do not have to interpolate the metric at point
-  const Eigen::Matrix3d m0 = (*metric)[node];
-  const Eigen::Matrix3d m1 = m_nodesMesh.getAnalyticMetric(initialCoord);
+  const Eigen::Matrix3d m0 = (*metricNodes)[node];
+  const Eigen::Matrix3d m1 = m_simplexMesh->getAnalyticMetric(initialCoord);
 
   //compute the current length based on the metric atached to the mesh
   const double metricLenght = 0.5 * sqrt(dir.dot(m0*dir)) +  0.5 * sqrt(dir.dot(m1*dir));
@@ -324,10 +417,12 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TI
 {
   double den = 0.0;
   Variable<Eigen::Matrix3d>* metric  = nullptr;
+  Variable<Eigen::Matrix3d>* metricNode  = nullptr;
   gmds::Variable<int>* BND_CURVE_COLOR_NODE = nullptr;
 
   try{
     metric = m_simplexMesh->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    metricNode = m_nodesMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
     BND_CURVE_COLOR_NODE = m_nodesMesh.getVariable<int, SimplicesNode>("BND_CURVE_COLOR");
   }catch (gmds::GMDSException e)
   {
@@ -362,7 +457,6 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TI
     const double mB = vecB.norm();
 
     const double sizeInterval = edgeU[i + 1] - edgeU[i];
-
     //https://fr.wikipedia.org/wiki/Calcul_num%C3%A9rique_d%27une_int%C3%A9grale
     //basic discret square integral
     den += sizeInterval *  (0.5 * mA + 0.5 * mB);

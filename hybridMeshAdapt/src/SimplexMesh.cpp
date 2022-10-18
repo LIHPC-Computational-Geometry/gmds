@@ -4350,11 +4350,12 @@ void SimplexMesh::getEdgeSizeInfowithMetric(double& meanEdges, double& minEdge, 
 Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
 {
   double epsilon = 0.01;
+  Eigen::Matrix3d m = Eigen::MatrixXd::Identity(3, 3);
 
   //CONSTANT ISOTROPE METRIC
-  double metricX = 0.1;
-  double metricY =  0.05*(1.0 - pt.Y()) + 0.3*pt.Y();
-  double metricZ = 0.1;
+  double metricX = 0.1*(1.0 - pt.X()) + 0.1*pt.X();
+  double metricY = 0.3*(1.0 - pt.X()) + 0.3*pt.X();
+  double metricZ = 0.1*(1.0 - pt.X()) + 0.1*pt.X();
 
   /*if(pt.Y() <= 0.5)
   {
@@ -4382,7 +4383,6 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
   double metricY = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
   double metricZ = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;*/
 
-  Eigen::Matrix3d m = Eigen::MatrixXd::Identity(3, 3);
 
   m(0,0) = 1.0 / (metricX*metricX);
   m(1,1) = 1.0 / (metricY*metricY);
@@ -4393,6 +4393,7 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
 /******************************************************************************/
 void SimplexMesh::setAnalyticMetric(const TInt node)
 {
+  //std::cout << "NODE  -> " << node << std::endl;
   Variable<Eigen::Matrix3d>* metric = nullptr;
   try{
     metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
@@ -4406,10 +4407,14 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   double epsilon = 0.01;
 
   //CONSTANT ISOTROPE METRIC
-  double metricX = 0.1;
-  double metricY =  0.05*(1.0 - pt.Y()) + 0.3*pt.Y();
-  double metricZ = 0.1;
-
+  (*metric)[node] =  Eigen::MatrixXd::Identity(3, 3);
+  double metricX = 0.1*(1.0 - pt.X()) + 0.1*pt.X();
+  double metricY = 0.3*(1.0 - pt.X()) + 0.3*pt.X();
+  double metricZ = 0.1*(1.0 - pt.X()) + 0.1*pt.X();
+  /*std::cout << "pt -> " << pt << std::endl;
+  std::cout << "metricX -> " << metricX << std::endl;
+  std::cout << "metricY -> " << metricY << std::endl;
+  std::cout << "metricZ -> " << metricZ << std::endl;*/
   /*metricX = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();
   metricY = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();
   metricZ = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();*/
@@ -4439,7 +4444,7 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
   (*metric)[node](1,1) = 1.0 / (metricY*metricY);
   (*metric)[node](2,2) = 1.0 / (metricZ*metricZ);
-
+  //std::cout << "*metric -> " << (*metric)[node] << std::endl;
 }
 /******************************************************************************/
 void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)

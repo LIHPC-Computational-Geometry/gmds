@@ -63,7 +63,6 @@ int main(int argc, char* argv[])
     //==================================================================
     Variable<Eigen::Matrix3d>* metricNode = simplexMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
     Eigen::Matrix3d m =  Eigen::MatrixXd::Identity(3, 3);
-    m <<  1.0, 0.0, .0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0;
     metricNode->setValuesTo(m);
     const gmds::BitVector& meshNode = simplexMesh.getBitVectorNodes();
     for(unsigned int nodeId = 0 ; nodeId < meshNode.capacity() ; nodeId++)
