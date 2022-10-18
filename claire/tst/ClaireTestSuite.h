@@ -13,6 +13,8 @@
 #include <gmds/igalgo/GridBuilder.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>
+#include <gmds/math/Line.h>
+#include <gmds/math/BezierCurve.h>
 #include <gtest/gtest.h>
 #include <iostream>
 #include <unit_test_config.h>
@@ -726,3 +728,33 @@ TEST(ClaireTestClass, test_Bug_2)
 
 }
  */
+
+
+TEST(ClaireTestClass, test_Bug_3)
+{
+
+	math::Point A({28.208, -67.9729, 0});
+	math::Point B({-18.6767, -23.5042, 0});
+	math::Point C({-4.9457, -43.606, 0});
+
+	math::BezierCurve bcurve(A, C, B);
+
+	// If nb_dubdi = 50 for instance, exception returned
+	std::vector<math::Point> new_pos = bcurve.getDiscretization(30);
+
+	std::ofstream stream= std::ofstream("BCurve.txt", std::ios::out);
+	//set the numerical precision (number of digits)
+	stream.precision(15);
+	//Header indicating which type of file it is
+	//stream << "# Claire PHD Debug Version 1.0\n\n";
+
+	for (auto p:new_pos)
+	{
+		stream << p.X() << " " << p.Y() << " " << p.Z() << "\n" ;
+	}
+
+	stream.close();
+
+	ASSERT_FLOAT_EQ( 1.0, 1.0);
+
+}

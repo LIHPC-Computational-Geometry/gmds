@@ -90,6 +90,10 @@ void AbstractSmoothLineSweeping_2D::BoundarySlipping()
 		//math::Point Mid = WeightedPointOnBranch((*m_B)(i-1,0).point(), (*m_B)(i,0).point(), (*m_B)(i+1,0).point(), 0.5);
 		//m_P_new(i,0) =( m_theta*(*m_B)(i, 0).point() + (1.0-m_theta)*Mid ) ;
 
+		math::Point Mid = WeightedPointOnBranch((*m_B)(i-1,m_Ny).point(), (*m_B)(i,m_Ny).point(), (*m_B)(i+1,m_Ny).point(), 0.5);
+		m_P_new(i,m_Ny) =( m_theta*(*m_B)(i, m_Ny).point() + (1.0-m_theta)*Mid ) ;
+
+		/*
 		math::Vector3d v = ( (*m_B)(i,m_Ny-1).point() - (*m_B)(i,m_Ny-2).point() ).normalize() ;
 		math::Segment tan( (*m_B)(i,m_Ny-2).point(), (*m_B)(i,m_Ny-2).point() + pow(10,6)*v ) ;
 		math::Segment b1( (*m_B)(i-1,m_Ny).point(), (*m_B)(i,m_Ny).point() );
@@ -106,6 +110,7 @@ void AbstractSmoothLineSweeping_2D::BoundarySlipping()
 		}
 
 		m_P_new(i,m_Ny) = ( m_theta*(*m_B)(i, m_Ny).point() + (1.0-m_theta)*P_intersection ) ;
+		 */
 
 	}
 

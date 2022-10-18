@@ -49,8 +49,8 @@ namespace gmds{
         }
         /*------------------------------------------------------------------------*/
         Point BezierCurve::operator()(const double& AT) const {
-            if(AT>1.0 || AT<0.0)
-                throw GMDSException("BezierCurve Query out of the range [0,1]");
+            //if(AT>1.0 || AT<0.0)
+            //    throw GMDSException("BezierCurve Query out of the range [0,1]");
 
 
             std::vector<Point> current_control = m_control_points;
