@@ -376,7 +376,7 @@ unsigned int MetricAdaptation::computeSurfaceEdgeSwap()
           math::Point nodeCoord1 = sNode1.getCoords();
           Metric<Eigen::Matrix3d> M0 = Metric<Eigen::Matrix3d>((*metric)[node0]);
           Metric<Eigen::Matrix3d> M1 = Metric<Eigen::Matrix3d>((*metric)[node1]);
-          metricLenght0_1        = M0.metricDist(nodeCoord0, nodeCoord1, M1);
+          metricLenght0_1        = M0.metricDist(vec(nodeCoord0), vec(nodeCoord1), M1);
 
           if(metricLenght0_1 < sqrt(2.0)*0.5 || metricLenght0_1 > sqrt(2.0))
           {
@@ -412,7 +412,7 @@ unsigned int MetricAdaptation::computeSurfaceEdgeSwap()
               math::Point nodeCoord11 = sNode11.getCoords();
               Metric<Eigen::Matrix3d> M0 = Metric<Eigen::Matrix3d>((*metric)[n00]);
               Metric<Eigen::Matrix3d> M1 = Metric<Eigen::Matrix3d>((*metric)[n11]);
-              double metricLenght00_11   = M0.metricDist(nodeCoord00, nodeCoord11, M1);
+              double metricLenght00_11   = M0.metricDist(vec(nodeCoord00), vec(nodeCoord11), M1);
 
               if(std::abs(metricLenght00_11 - halfInter) < std::abs(metricLenght0_1 - halfInter))
               {
@@ -650,7 +650,7 @@ unsigned int MetricAdaptation::computePointSmoothing()
           const SimplicesNode sNode   = SimplicesNode(m_simplexMesh, n);
           const math::Point pj        = sNode.getCoords();
           Metric<Eigen::Matrix3d> M1  = Metric<Eigen::Matrix3d>((*metric)[n]);
-          double metricLenght         = M0.metricDist(p, pj, M1);
+          double metricLenght         = M0.metricDist(vec(p), vec(pj), M1);
 
           if(metricLenght != 0.0)
           {
@@ -756,7 +756,7 @@ void MetricAdaptation::execute()
         math::Point nodeCoord1 = sNodeB.getCoords();
         Metric<Eigen::Matrix3d> M0 = Metric<Eigen::Matrix3d>((*metric)[nodeA]);
         Metric<Eigen::Matrix3d> M1 = Metric<Eigen::Matrix3d>((*metric)[nodeB]);
-        double metricLenght        = M0.metricDist(nodeCoord0, nodeCoord1, M1);
+        double metricLenght        = M0.metricDist(vec(nodeCoord0), vec(nodeCoord1), M1);
 
         if(metricLenght > sqrt(2))
         {
@@ -836,7 +836,7 @@ void MetricAdaptation::executeCustomMethod()
     throw gmds::GMDSException(e);
   }
 
-  const math::Vector3d v0 = math::Vector3d(-sqrt(2.0) / 2.0 , std::sqrt(2.0) / 2.0 , 0.0);
+  const math::Vector3d v0 = math::Vector3d({-sqrt(2.0) / 2.0 , std::sqrt(2.0) / 2.0 , 0.0});
   const gmds::BitVector& meshNode = m_simplexMesh->getBitVectorNodes();
 
 
@@ -872,7 +872,7 @@ void MetricAdaptation::executeCustomMethod()
           double newPosition_yB = (borneMin + borneMax) / 2.0;
           double newPosition_xB = ptA.X() + (ptA.Y() - newPosition_yB)*(v0.Y() / v0.X());
           const Point pt = Point(newPosition_xB, newPosition_yB, 0.0);
-          const Vector3d p = Vector3d(pt.X() - ptA.X(), pt.Y() - ptA.Y(), pt.Z() - ptA.Z()) ;
+          const Vector3d p = Vector3d({pt.X() - ptA.X(), pt.Y() - ptA.Y(), pt.Z() - ptA.Z()}) ;
           //std::cout << "p length -> " << p.norm() << std::endl;
           bool alreadyAdd = false;
           std::vector<TSimplexID> tetraContenaingPt{};

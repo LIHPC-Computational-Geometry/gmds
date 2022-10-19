@@ -4305,7 +4305,7 @@ void SimplexMesh::getEdgeSizeInfowithMetric(double& meanEdges, double& minEdge, 
     Metric<Eigen::Matrix3d> M0 = Metric<Eigen::Matrix3d>((*metric)[edge.first]);
     Metric<Eigen::Matrix3d> M1 = Metric<Eigen::Matrix3d>((*metric)[edge.second]);
 
-    double metricLenght        = M0.metricDist(coord0, coord1, M1);
+    double metricLenght        = M0.metricDist(vec(coord0), vec(coord0), M1);
     if(metricLenght > sqrt(2))
     {
       edgesAboveSqrt2CPT++;

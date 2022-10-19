@@ -321,7 +321,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
             for(auto const n : neighboorNodes)
             {
               math::Point pid = SimplicesNode(&m_nodesMesh, n).getCoords();
-              math::Vector3d v = math::Vector3d(pid.X() - pt.X(), pid.Y() - pt.Y(), pid.Z() - pt.Z());
+              math::Vector3d v = math::Vector3d({pid.X() - pt.X(), pid.Y() - pt.Y(), pid.Z() - pt.Z()});
               double dist = v.norm();
               if(dist < distMin)
               {
@@ -403,7 +403,7 @@ void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point
 
   if(metricLenght < 1.0 - epsilon)
   {
-    initialCoord = pt + 1.5 * math::Vector3d(dir.x(), dir.y(), dir.z());
+    initialCoord = pt + 1.5 * math::Vector3d({dir.x(), dir.y(), dir.z()});
     findOptimimalPosition(node, initialCoord);
   }
   else if(metricLenght > 1.0 + epsilon)
