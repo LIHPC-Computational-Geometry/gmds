@@ -1510,6 +1510,11 @@ void
 	doc.updateUpwardConnectivity();
 
 	Variable<double>* var_deviation = m_meshHex->newVariable<double, GMDS_NODE>("MQ_Deviation_Flow");
+
+	// as m_meshTet is not modified, we can
+	// build the research tree once for all the subsequent queries
+	FastLocalize fl(m_meshTet);
+
 	// Compute the flow deviation
 	for (auto n_id:m_meshHex->nodes())
 	{
@@ -1518,7 +1523,6 @@ void
 
 		   if (n_faces_in_quad.size() > 2) {
 
-			   FastLocalize fl(m_meshTet);
 			   gmds::Cell::Data data = fl.find(n.point());
 
 			   Node n_closer_tri = m_meshTet->get<Node>(data.id);
