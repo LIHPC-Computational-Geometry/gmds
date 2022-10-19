@@ -300,24 +300,19 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
           findOptimimalPosition(node, newCoord);
           std::vector<TInt> neighboorNodes;
           nodeFiltering(node, newCoord, neighboorNodes);
+          TInt newNodeId = -1;
 
           if(!neighboorNodes.size())
           {
-            TInt newNodeId = m_nodesMesh.addNode(newCoord);
+            newNodeId = m_nodesMesh.addNode(newCoord);
             m_nodesMesh.setAnalyticMetric(newNodeId);
             v[id] = newNodeId;
             newNodes.push_back(newNodeId);
-            gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
-            gmds::VTKWriter vtkWriterMA(&ioService);
-            vtkWriterMA.setCellOptions(gmds::N);
-            vtkWriterMA.setDataOptions(gmds::N);
-            vtkWriterMA.write("metricFF_Node_CPT_" + std::to_string(cpt) + ".vtk");
-            cpt++;
+
           }
           else
           {
             double distMin = std::numeric_limits<double>::max();
-            TInt neighboorNode;
             for(auto const n : neighboorNodes)
             {
               math::Point pid = SimplicesNode(&m_nodesMesh, n).getCoords();
@@ -326,11 +321,17 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
               if(dist < distMin)
               {
                 distMin = dist;
-                neighboorNode = n;
+                newNodeId = n;
               }
             }
-            v[id] = neighboorNode;
+            v[id] = newNodeId;
           }
+          /*gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
+          gmds::VTKWriter vtkWriterMA(&ioService);
+          vtkWriterMA.setCellOptions(gmds::N);
+          vtkWriterMA.setDataOptions(gmds::N);
+          vtkWriterMA.write("metricFF_Node_CPT_" + std::to_string(cpt) + ".vtk");
+          cpt++;*/
         }
         id++;
       }
@@ -344,7 +345,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::nodeFiltering(const TInt node, const math::Point& pt, std::vector<TInt> & neighboorNode)
 {
-  const double k = 0.65;
+  const double k = 1.0;
   const double epsilon = 0.01;
   Variable<Eigen::Matrix3d>* metric  = nullptr;
   gmds::Variable<int>* BND_CURVE_COLOR_NODE = nullptr;
@@ -366,17 +367,21 @@ void MetricFFPointgeneration::nodeFiltering(const TInt node, const math::Point& 
     {
       const math::Point nodeCoord = SimplicesNode(&m_nodesMesh, nodeId).getCoords();
       Eigen::Vector3d v(pt.X() - nodeCoord.X(), pt.Y() - nodeCoord.Y(), pt.Z() - nodeCoord.Z());
+      const double euclidianNorm = v.norm();
       //the metric being analytique we do not have to interpolate the metric at point
-      const Eigen::Matrix3d m0 = (*metric)[nodeId];
-      const Eigen::Matrix3d m1 = m_nodesMesh.getAnalyticMetric(pt);
+      const Eigen::Matrix3d m0 = m_nodesMesh.getAnalyticMetric(pt);
       //compute the current length based on the metric atached to the mesh
-      const double metricLenght = 0.5 * sqrt(v.dot(m0*v)) +  0.5 * sqrt(v.dot(m1*v));
-      if(metricLenght <= k*(1.0 - epsilon))
+      const double metricLenght = sqrt(v.dot(m0*v));
+
+      if(metricLenght <= 0.70)
       {
         neighboorNode.push_back(nodeId);
       }
     }
   }
+  /*std::cout << std::endl;
+  std::cout << std::endl;*/
+
 }
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point& initialCoord)
