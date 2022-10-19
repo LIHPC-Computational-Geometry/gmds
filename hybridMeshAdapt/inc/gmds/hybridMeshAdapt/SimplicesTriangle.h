@@ -38,6 +38,10 @@ namespace gmds
 
         bool containNode                          (const gmds::hybrid::simplicesNode::SimplicesNode& simplicesNode);
 
+        bool containNode                          (const std::vector<TInt>& nodes);
+
+        std::vector<TInt> intersectionNodes             (const SimplicesTriangle& triangles) const;
+
         /*Reorient the Tetra (the normal is out of the Tetra ) if the normal is inside the Tetra*/
         void reorientTriangle                     ();
 
@@ -69,6 +73,9 @@ namespace gmds
 
         math::Orientation::Sign orientation(const gmds::math::Point& pt, bool inverseOrientation = false) const;
 
+        /*return true if the triangle have aligned points*/
+        bool isEdge() const;
+        
         friend std::ostream&  operator<<(std::ostream& os, const SimplicesTriangle& simplicesTriangle)
         {
           std::vector<TInt > nodes = simplicesTriangle.getNodes();

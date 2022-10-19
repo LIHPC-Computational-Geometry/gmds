@@ -8,6 +8,7 @@ using namespace gmds;
 using namespace hybrid;
 using namespace simplicesNode;
 using namespace simplicesCell;
+using namespace operators;
 /*----------------------------------------------------------------------------*/
 SimplicesCell::SimplicesCell(SimplexMesh* simplexMesh, const TSimplexID simplexId)
 {
@@ -18,6 +19,7 @@ SimplicesCell::SimplicesCell(SimplexMesh* simplexMesh, const TSimplexID simplexI
     {
       /*TODO exeption le node d'existe pas ... le creer avant de poouvoir l'utiliser*/
       std::cout << "Creer la cellule " << m_simplexId <<  " avant de l'utiliser !!" << std::endl;
+      throw gmds::GMDSException("cell doesnt exist") ;
     }
 }
 /*----------------------------------------------------------------------------*/
@@ -346,6 +348,55 @@ math::Orientation::Sign SimplicesCell::orientation(const TInt faceIdx, const gmd
   return sign;
 }
 /*----------------------------------------------------------------------------*/
+double SimplicesCell::dihedralAngle(const unsigned int localNode0, const unsigned int localNode1) const
+{
+    if((localNode0 < 0 || localNode0 > 3) || (localNode1 < 0 || localNode1 > 3))
+    {
+      std::cout << "localNode0 -> " << localNode0 << std::endl;
+      std::cout << "localNode1 -> " << localNode1 << std::endl;
+      throw gmds::GMDSException("(localNode0 < 0 || localNode0 > 3) || (localNode1 < 0 || localNode1 > 3)");
+    }
+    if(localNode0 == localNode1)
+    {
+      throw gmds::GMDSException("localNode0 == localNode1");
+    }
+
+    std::vector<unsigned int> localsNode{0,1,2,3};
+    localsNode.erase(std::remove_if(localsNode.begin(), localsNode.end(), [=](unsigned int lN){
+      return (lN == localNode0 || lN == localNode1);
+    }), localsNode.end());
+
+    const math::Point pt0 = getNode(localNode0).getCoords();
+    const math::Point pt1 = getNode(localNode1).getCoords();
+    const math::Point pt2 = getNode(localsNode.front()).getCoords();
+    const math::Point pt3 = getNode(localsNode.back()).getCoords();
+
+    return gmds::math::dihedralAngle(pt0, pt1, pt2, pt3);
+}
+/*----------------------------------------------------------------------------*/
+std::set<double> SimplicesCell::minAndmaxDihedralAngle() const
+{
+  std::set<double> s{};
+  s.insert(dihedralAngle(0, 1));
+  s.insert(dihedralAngle(0, 2));
+  s.insert(dihedralAngle(0, 3));
+  s.insert(dihedralAngle(1, 2));
+  s.insert(dihedralAngle(1, 3));
+  s.insert(dihedralAngle(2, 3));
+
+  return s;
+}
+/*----------------------------------------------------------------------------*/
+bool SimplicesCell::isSliver() const
+{
+  //a checker si cela convient
+  double epsilon = 0.1;
+  double pi      = M_PI;
+  const std::set<double> s = minAndmaxDihedralAngle();
+
+  return  (*(s.begin()) < epsilon) || (*(--s.end()) > (M_PI - epsilon));
+}
+/*----------------------------------------------------------------------------*/
 math::Vector3d SimplicesCell::normalOfFace(const std::vector<TInt>& nodes) const
 {
   math::Vector3d normal({0.0, 0.0, 0.0});
@@ -537,6 +588,22 @@ std::vector<TInt> SimplicesCell::getOrderedFace(const TInt indexFace) const
   return std::move(v);
 }
 /******************************************************************************/
+std::vector<TInt> SimplicesCell::visibleFaces(const math::Point& coordNode) const
+{
+  CriterionRAIS criterionRAIS(new VolumeCriterion());
+  const unsigned int sizeFace = 4;
+  std::vector<TInt> res{};
+  for(unsigned int face = 0 ; face < sizeFace ; face++)
+  {
+    bool isfaceVisible = !criterionRAIS.execute(m_simplex_mesh, m_simplexId, face, coordNode);
+    if(isfaceVisible)
+    {
+      res.push_back(face);
+    }
+  }
+  return res;
+}
+/******************************************************************************/
 std::vector<TSimplexID> SimplicesCell::oppositeTetraVectorPrivated(const SimplicesNode& simplicesNode) const
 {
   std::vector<TSimplexID> v{};
@@ -565,29 +632,45 @@ std::vector<TSimplexID> SimplicesCell::adjacentTetra() const
   std::vector<TSimplexID> v{border, border, border, border};
   unsigned int nodeLocalSize = 4;
 
-  for(unsigned int nodeLocal = 0; nodeLocal < nodeLocalSize; nodeLocal++)
+  v[0] = m_simplex_mesh->m_tet_adj[m_simplexId][0];
+  v[1] = m_simplex_mesh->m_tet_adj[m_simplexId][1];
+  v[2] = m_simplex_mesh->m_tet_adj[m_simplexId][2];
+  v[3] = m_simplex_mesh->m_tet_adj[m_simplexId][3];
+
+  return std::move(v);
+}
+/******************************************************************************/
+std::vector<TSimplexID> SimplicesCell::directConnectedSimplex () const
+{
+  gmds::BitVector tetAlreadyIn(m_simplex_mesh->getBitVectorTet().capacity());
+  gmds::BitVector triAlreadyIn(m_simplex_mesh->getBitVectorTri().capacity());
+  std::vector<TSimplexID> res{};
+
+  std::vector<TInt> nodes = getNodes();
+  for(auto const n : nodes)
   {
-    TSimplexID adjTet = m_simplex_mesh->m_tet_adj[m_simplexId][nodeLocal];
-    if(adjTet != border)
+    std::vector<TSimplexID> ball = SimplicesNode(m_simplex_mesh, n).ballOf();
+    for(auto const simplex : ball)
     {
-      if(adjTet >= 0)
+      if(simplex >= 0)
       {
-        if(m_simplex_mesh->m_tet_ids[adjTet] != 0)
+        if(tetAlreadyIn[simplex] == 0)
         {
-          v[nodeLocal] = adjTet;
+          res.push_back(simplex);
+          tetAlreadyIn.assign(simplex);
         }
       }
       else
       {
-        if(m_simplex_mesh->m_tri_ids[-adjTet] != 0)
+        if(triAlreadyIn[-simplex] == 0)
         {
-          v[nodeLocal] = adjTet;
+          res.push_back(simplex);
+          triAlreadyIn.assign(-simplex);
         }
       }
     }
   }
-
-  return std::move(v);
+  return res;
 }
 /******************************************************************************/
 std::vector<TInt> SimplicesCell::intersectionFaces(const std::vector<TInt>& localFaces) const
@@ -624,7 +707,7 @@ std::vector<TInt> SimplicesCell::intersectionFaces(const std::vector<TInt>& loca
   return res;
 }
 /******************************************************************************/
-std::vector<TInt> SimplicesCell::intersectionNodes(const SimplicesCell& simplicesCell)
+std::vector<TInt> SimplicesCell::intersectionNodes(const SimplicesCell& simplicesCell) const
 {
   std::vector<TInt> v{};
   if(m_simplex_mesh != nullptr)

@@ -29,6 +29,7 @@ SimplicesTriangle::SimplicesTriangle(SimplexMesh* simplexMesh, const TSimplexID 
   {
     /*TODO exception*/
     std::cout << "Creer le triangle " << indexTriangle <<  " avant de l'utiliser !!" << std::endl;
+    throw gmds::GMDSException("triangle doesnt exist");
   }
 }
 
@@ -75,6 +76,53 @@ bool SimplicesTriangle::containNode(const simplicesNode::SimplicesNode& simplice
     return false;
   }
 }
+/******************************************************************************/
+bool SimplicesTriangle::containNode(const std::vector<TInt>& nodes)
+{
+  std::vector<TInt> triNode = getNodes();
+  if(m_simplex_mesh != nullptr)
+  {
+    for(auto const node : nodes)
+    {
+      if(!(node == triNode[0] || node == triNode[1] || node == triNode[2]))
+      {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+/******************************************************************************/
+std::vector<TInt> SimplicesTriangle::intersectionNodes(const SimplicesTriangle& triangle) const
+{
+  std::vector<TInt> v{};
+  if(m_simplex_mesh != nullptr)
+  {
+    std::vector<TInt> nodesT0 = getNodes();
+    std::vector<TInt> nodesT1 = triangle.getNodes();
+
+
+
+    for(unsigned int nodeLocalT0 = 0; nodeLocalT0 < nodesT0.size(); nodeLocalT0++)
+    {
+      for(unsigned int nodeLocalT1 = 0; nodeLocalT1 < nodesT1.size(); nodeLocalT1++)
+      {
+        if(nodesT0[nodeLocalT0] == nodesT1[nodeLocalT1])
+        {
+          v.push_back(nodesT0[nodeLocalT0]);
+          break;
+        }
+      }
+    }
+  }
+  else
+  {
+      /*TODO exeption*/
+  }
+
+  return std::move(v);
+}
+/******************************************************************************/
 
 void SimplicesTriangle::reorientTriangle()
 {
@@ -242,6 +290,7 @@ std::vector<TSimplexID> SimplicesTriangle::findclockWiseTrianglesbyShell(const T
     {
       //TODO exception
       std::cout << "otherNodes.size() != 1" << std::endl;
+      throw gmds::GMDSException(" triangle adj problem !");
     }
     currentSimplex = nextSimplex;
   }
@@ -359,3 +408,26 @@ std::vector<TInt> SimplicesTriangle::getOtherNodeInSimplex(const std::vector<TIn
 
     return sign;
   }
+  /*---------------------------------------------------------------------------*/
+  bool SimplicesTriangle::isEdge() const
+  {
+    double epsilon = 0.001;
+    bool flag = false;
+    unsigned int sizeTriangle = 3;
+
+    std::vector<TInt> nodes = getNodes();
+    const math::Point nodeA = SimplicesNode(m_simplex_mesh, nodes[0]).getCoords();
+    const math::Point nodeB = SimplicesNode(m_simplex_mesh, nodes[1]).getCoords();
+    const math::Point nodeC = SimplicesNode(m_simplex_mesh, nodes[2]).getCoords();
+
+    const math::Vector3d AB(nodeA.X() - nodeB.X(), nodeA.Y() - nodeB.Y(), nodeA.Z() - nodeB.Z());
+    const math::Vector3d BC(nodeB.X() - nodeC.X(), nodeB.Y() - nodeC.Y(), nodeB.Z() - nodeC.Z());
+    const math::Vector3d CA(nodeC.X() - nodeA.X(), nodeC.Y() - nodeA.Y(), nodeC.Z() - nodeA.Z());
+
+    if(AB.dot(BC) < epsilon && BC.dot(CA) < epsilon && CA.dot(AB) < epsilon)
+    {
+      flag = true;
+    }
+    return flag;
+  }
+  /*---------------------------------------------------------------------------*/

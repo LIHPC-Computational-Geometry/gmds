@@ -1,11 +1,18 @@
 #ifndef OCTREE_H
 #define OCTREE_H
-
-// gmds Headers
+////////////////////////////////////////////////////////////////////////////////
 #include <gmds/math/Point.h>
+#include <gmds/math/Hexahedron.h>
+////////////////////////////////////////////////////////////////////////////////
 #include <gmds/hybridMeshAdapt/CommonInfo.h>
 #include <gmds/hybridMeshAdapt/SimplexMesh.h>
 #include <gmds/hybridMeshAdapt/SimplicesNode.h>
+////////////////////////////////////////////////////////////////////////////////
+#include <gmds/ig/Mesh.h>
+#include <gmds/ig/MeshDoctor.h>
+////////////////////////////////////////////////////////////////////////////////
+#include <gmds/io/IGMeshIOService.h>
+#include <gmds/io/VTKWriter.h>
 ////////////////////////////////////////////////////////////////////////////////
 // STL Headers
 #include <vector>
@@ -32,11 +39,16 @@ namespace gmds
 
       void preprocess();
 
-      bool belongToOc(const math::Point& pt);
+      bool belongToOc(const math::Point& pt) const ;
+
 
       TSimplexID findSimplexNextTo(const math::Point& pt);
 
       std::vector<TInt> findNodesNextTo(const math::Point& pt);
+
+      void writeOctree(Mesh& mesh, std::vector<std::vector<Node>>& nodes) const ;
+
+      void setRootOctree(Octree* rootOc){m_rootOc = rootOc;} 
 
     private:
       double m_xmin, m_xmax, m_ymin, m_ymax, m_zmin, m_zmax;
@@ -45,6 +57,7 @@ namespace gmds
 
       std::vector<TInt> m_nodes;
       std::vector<Octree*> m_ocs{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+      Octree* m_rootOc = nullptr;
     };
   }
 }

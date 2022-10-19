@@ -121,7 +121,16 @@ bool DelaunayPointInsertion::isNodeInCircumSphere(SimplexMesh* simplexMesh, cons
     double z12, z13, z14 = 0.0;
 
     Eigen::Matrix3d m0;
-    gmds::Variable<Eigen::Matrix3d>* var =  simplexMesh->getVariable<Eigen::Matrix3d, SimplicesNode>("metric");
+    gmds::Variable<Eigen::Matrix3d>* var;
+    try
+    {
+      var =  simplexMesh->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    }catch (gmds::GMDSException e)
+    {
+      throw gmds::GMDSException(e);
+    }
+
+
     if(var != nullptr)
     {
       m0 = var->value(nodes[0]);

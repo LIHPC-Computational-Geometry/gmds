@@ -106,6 +106,7 @@ int main(int argc, char* argv[])
   {
     if(nodesToAddIds[idx] != 0)
     {
+      std::cout << "idx -> " << idx << std::endl;
       const gmds::BitVector & nodesIds = simplexMesh.getBitVectorNodes();
       math::Point point = SimplicesNode(&simplexNodes, idx).getCoords();
 
@@ -159,7 +160,17 @@ int main(int argc, char* argv[])
   vtkWriterDI.setCellOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterDI.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterDI.write(fDI);
-
+  std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure = simplexMesh.getEdgeStructure();
+  for(auto const dataBis : edgeStructure)
+  {
+    std::cout << "data --> " << dataBis.first << " | [" << dataBis.second.first << " : " << dataBis.second.second << "]" << std::endl;
+  }
+  //==================================================================
+  // MESH VALIDITY CHECK
+  //==================================================================
+  std::cout << "MESH VALIDITY CHECK" << std::endl;
+  simplexMesh.checkMesh();
+  return 0;
   start = std::clock();
   std::vector<TInt> deletedNodes{};
   unsigned int tmp = 0;
@@ -188,8 +199,9 @@ int main(int argc, char* argv[])
       std::vector<TSimplexID> tetraContenaingPt{};
       std::vector<TInt> deletedNodes{};
       const std::multimap<TInt, TInt> facesAlreadyBuilt{};
+      std::vector<TSimplexID> createdCells{};
       bool status = false;
-      PointInsertion(&simplexMesh, SimplicesNode(&simplexMesh, deletedNode), criterionRAIS, status, tetraContenaingPt, nodesAdded, deletedNodes, facesAlreadyBuilt);
+      PointInsertion(&simplexMesh, SimplicesNode(&simplexMesh, deletedNode), criterionRAIS, status, tetraContenaingPt, nodesAdded, deletedNodes, facesAlreadyBuilt, createdCells);
       if(status)
       {
         nodeReinsertedSize++;
