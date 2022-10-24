@@ -4,14 +4,26 @@
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/DiffusionEquation2D.h>
 #include <Eigen/Sparse>
+#include <Eigen/Eigen>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-DiffusionEquation2D::DiffusionEquation2D(Mesh *AMesh, int AmarkFrontNodes_int, int AmarkFrontNodes_out) {
+DiffusionEquation2D::DiffusionEquation2D(Mesh *AMesh, int AmarkFrontNodes_int, int AmarkFrontNodes_out, Variable<double>* Adistance) {
 	m_mesh = AMesh;
 	m_markNodes_int = AmarkFrontNodes_int;
 	m_markNodes_out = AmarkFrontNodes_out;
+	m_distance = Adistance;
+
+	int index=0;
+	for(auto n_id:m_mesh->nodes()) {
+		m_id_local_index[n_id]=index;
+		index++;
+	}
+
+	m_dt = 0.01;
+	m_sigma = 1.0;
+
 }
 
 
@@ -19,6 +31,17 @@ DiffusionEquation2D::DiffusionEquation2D(Mesh *AMesh, int AmarkFrontNodes_int, i
 DiffusionEquation2D::STATUS
 DiffusionEquation2D::execute()
 {
+	initialisation();
+	// Boucle en temps
+	for (int it = 1; it <= 10; it++)
+	{
+		oneTimeStep();
+	}
+
+	for (auto n_id:m_mesh->nodes())
+	{
+		m_distance->set(n_id, m_sol_n.coeffRef(m_id_local_index[n_id]));
+	}
 
 	return DiffusionEquation2D::SUCCESS;
 }
@@ -142,5 +165,158 @@ double DiffusionEquation2D::absdetJFK(TCellID triK_id)
 Eigen::Vector2d DiffusionEquation2D::grad_phi(int i_hat, TCellID triK_id)
 {
 	return (((JFK(triK_id)).inverse()).transpose())*grad_phi_hat(i_hat);
+}
+/*------------------------------------------------------------------------*/
+
+
+
+
+
+//
+// Assemble Matrix
+//
+
+/*------------------------------------------------------------------------*/
+void DiffusionEquation2D::assembleMassAndStiffnessMatrices()
+{
+	std::vector<Eigen::Triplet<double>> tripletsMass, tripletsStiffness;
+	m_mass.setZero();
+	m_stiffness.setZero();
+
+	// Loop on the element K in T_h
+	for (auto triK_id:m_mesh->faces())
+	{
+		Face K = m_mesh->get<Face>(triK_id);
+		std::vector<Node> K_nodes = K.get<Node>();
+		// Loop on the quadrature points
+		for (auto n:K_nodes)
+		{
+			// Loop on the nodes of the triangle K
+			for (int i_hat=1; i_hat<4; i_hat++)
+			{
+				// Loop on the nodes of the triangle K
+				for (int j_hat=1; j_hat<4; j_hat++)
+				{
+					// i = global id of the node i_hat of triangle K
+					int i( m_id_local_index[K_nodes[i_hat-1].id()] );
+					// j = global id of the node j_hat of triangle K
+					int j( m_id_local_index[K_nodes[j_hat-1].id()] );
+
+					// M(i,j) = M(i,j) + contribution de la _masse (hati,hatj) en hatX_q
+					m_mass.coeffRef(i,j) += 0.5				// Area of the ref triangle K_hat
+					                         			*(1.0/3.0)		// Weight of the quadrature points
+					   										* phi_hat(i_hat, n.point())
+					   										* phi_hat(j_hat, n.point())
+					   										* absdetJFK(K.id());
+
+					// K(i,j) = K(i,j) + contribution de la rigidité (hati,hatj) en hatX_q
+					m_stiffness.coeffRef(i,j) += 0.5		// Area of the ref triangle K_hat
+					   								*(1.0/3.0)			// Weight of the quadrature points
+					   								* grad_phi(i_hat, K.id()).dot(grad_phi(j_hat, K.id()))
+					   								* absdetJFK(K.id());
+
+				}
+			}
+		}
+	}
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void DiffusionEquation2D::applyBCToSystemMatrix(Eigen::SparseMatrix<double,Eigen::RowMajor> & systemMatrix)
+{
+	Eigen::SparseVector<double> zeroRow(systemMatrix.cols());
+	for (auto n_id:m_mesh->nodes())
+	{
+		Node n = m_mesh->get<Node>(n_id);
+		if (m_mesh->isMarked(n, m_markNodes_int) || m_mesh->isMarked(n, m_markNodes_out) )
+		{
+			int index = m_id_local_index[n_id];
+			systemMatrix.row(index) = zeroRow;
+			systemMatrix.coeffRef(index, index) = 1.0;
+		}
+	}
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void DiffusionEquation2D::applyBCToSecondMember(Eigen::SparseVector<double> & secondMember)
+{
+	for (auto n_id:m_mesh->nodes())
+	{
+		Node n = m_mesh->get<Node>(n_id);
+		if (m_mesh->isMarked(n, m_markNodes_int) )
+		{
+			int index = m_id_local_index[n_id];
+			secondMember.coeffRef(index) = 0.0;
+		}
+		if (m_mesh->isMarked(n, m_markNodes_out))
+		{
+			int index = m_id_local_index[n_id];
+			secondMember.coeffRef(index) = 1.0;
+		}
+	}
+}
+/*------------------------------------------------------------------------*/
+
+
+
+
+
+
+//
+// Time Scheme
+//
+
+/*------------------------------------------------------------------------*/
+void DiffusionEquation2D::initialisation()
+{
+	// Construction de la matrice du système
+
+	std::cout << "Assembling" << std::endl;
+	assembleMassAndStiffnessMatrices();
+	Eigen::SparseMatrix<double,Eigen::RowMajor> systemMatrix(m_mass+m_dt*m_sigma*m_stiffness);
+
+	// Application des conditions aux bords sur la matrice
+	applyBCToSystemMatrix(systemMatrix);
+
+	// On envoie la matrice du système au solver
+	std::cout << "Preprocessing of the matrix" << std::endl;
+	//Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::ColMajor>, Eigen::COLAMDOrdering<int> > solver;
+	// Compute the ordering permutation vector from the structural pattern of A
+	m_solver.analyzePattern(systemMatrix);
+	// Compute the numerical factorization
+	m_solver.factorize(systemMatrix);
+
+	// On recupère la solution initiale
+	m_sol_0.setZero();
+	for (auto n_id:m_mesh->nodes())
+	{
+		int index = m_id_local_index[n_id];
+		m_sol_0.coeffRef(index) = 0.0;
+	}
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void DiffusionEquation2D::oneTimeStep()
+{
+	// On avance le temps
+	m_t += m_dt;
+	m_it += 1;
+	// Construction du second membre
+	Eigen::SparseVector<double> secondMember(m_mass*m_sol_0);
+
+	// Application des conditions sur le terme de droite
+	applyBCToSecondMember(secondMember);
+	// Résolution du système
+	std::cout << "Solve system at time " << m_t << std::endl;
+	m_sol_n = m_solver.solve(secondMember);
+	m_sol_0 = m_sol_n;
 }
 /*------------------------------------------------------------------------*/

@@ -29,7 +29,7 @@ class LIB_GMDS_CLAIRE_API DiffusionEquation2D
 	/** @brief Constructor.
          *  @param AMesh the mesh where we work on
 	 */
-	DiffusionEquation2D(Mesh *AMesh, int AmarkFrontNodes_int, int AmarkFrontNodes_out);
+	DiffusionEquation2D(Mesh *AMesh, int AmarkFrontNodes_int, int AmarkFrontNodes_out, Variable<double>* Adistance);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -72,6 +72,30 @@ class LIB_GMDS_CLAIRE_API DiffusionEquation2D
 	 */
 	Eigen::Vector2d grad_phi(int i_hat, TCellID triK_id);
 	/*-------------------------------------------------------------------*/
+
+	/*-------------------------------------------------------------------*/
+	/** @brief Assemble the stiffness and mass matrix for the resolution.
+	 */
+	void assembleMassAndStiffnessMatrices();
+	/*-------------------------------------------------------------------*/
+	/** @brief Apply the Boundary Conditions on the system matrix.
+	 */
+	void applyBCToSystemMatrix(Eigen::SparseMatrix<double,Eigen::RowMajor> & systemMatrix);
+	/*-------------------------------------------------------------------*/
+	/** @brief Apply the Dirichlet Boundary Conditions on the second member.
+	 */
+	void applyBCToSecondMember(Eigen::SparseVector<double> & secondMember);
+	/*-------------------------------------------------------------------*/
+
+	/*-------------------------------------------------------------------*/
+	/** @brief Initialisation for the time scheme.
+	 */
+	void initialisation();
+	/*-------------------------------------------------------------------*/
+	/** @brief One iteration of the time scheme.
+	 */
+	void oneTimeStep();
+	/*-------------------------------------------------------------------*/
  private:
 	/** mesh we work on */
 	Mesh *m_mesh;
@@ -79,6 +103,33 @@ class LIB_GMDS_CLAIRE_API DiffusionEquation2D
 	int m_markNodes_int;
 	/** mark on the exterior nodes, second boundary */
 	int m_markNodes_out;
+	/** carte des distances par rapport au front concerné */
+	Variable<double>* m_distance;
+
+	/** We store the correspondance from node ids to local index in m_nodes */
+	std::map<gmds::TCellID, int> m_id_local_index;
+
+	/** Stiffness Matrix */
+	Eigen::SparseMatrix<double,Eigen::RowMajor> m_stiffness;
+	/** Mass Matrix */
+	Eigen::SparseMatrix<double,Eigen::RowMajor> m_mass;
+
+	/** Time */
+	double m_t;
+	/** Time step */
+	double m_dt;
+	/** Iteration */
+	int m_it;
+	/** Diffusion coefficient */
+	double m_sigma;
+
+	/** Solveur */
+	Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::ColMajor>, Eigen::COLAMDOrdering<int> > m_solver;
+
+	/** Initial conditions */
+	Eigen::SparseVector<double> m_sol_0;
+	/** Solution at time n */
+	Eigen::SparseVector<double> m_sol_n;
 };
 /*----------------------------------------------------------------------------*/
 }     // namespace gmds
