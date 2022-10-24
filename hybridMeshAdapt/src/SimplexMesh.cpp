@@ -358,19 +358,17 @@ TSimplexID SimplexMesh::getSimplexFromBase(const TInt ANodeID)
 TInt SimplexMesh::addNodeAndcheck(const math::Point& pt, std::vector<TSimplexID>& tetraContainingPt, bool& alreadyAdd, TSimplexID simplexToCheckFirst)
 {
   bool flag = false;
+  double epsilon = 10E-4;
+
   //check if the point pt is on any other node already in the mesh;
   if(tetraContainingPt.size() == 0)
   {
     flag = checkSimplicesContenaing(pt, tetraContainingPt, simplexToCheckFirst);
   }
 
-  if(tetraContainingPt.size() == 0)
-  {
-    return -1;
-  }
+
   if(flag)
   {
-    double epsilon = 10E-4;
     for(auto const & tet : tetraContainingPt)
     {
       const std::vector<TInt>& nodesOfTet = SimplicesCell(this, tet).getNodes();
@@ -386,6 +384,24 @@ TInt SimplexMesh::addNodeAndcheck(const math::Point& pt, std::vector<TSimplexID>
       }
     }
   }
+
+  if(m_tet_nodes.size() == 0)
+  {
+    for(unsigned int nodeId = 0 ; nodeId < m_node_ids.capacity() ; nodeId++)
+    {
+      if(m_node_ids[nodeId] != 0)
+      {
+        math::Vector3d VecBetweenPt = (SimplicesNode(this, nodeId).getCoords() - pt);
+        double lenght = VecBetweenPt.norm();
+        if(lenght < epsilon)//pt is on nodeOfTet
+        {
+          alreadyAdd = true;
+          return nodeId;
+        }
+      }
+    }
+  }
+
 
   if(m_node_ids.top() + 1 >= m_node_ids.capacity() )
   {
@@ -3207,7 +3223,8 @@ bool SimplexMesh::checkSimplicesContenaing(const gmds::math::Point& pt, std::vec
   //uvwt.reserve(4);
 
 
-
+  if(m_tet_ids.size() == 0){return false;}
+  if(m_tri_ids.size() == 0){return false;}
   TSimplexID simplexNextToPt = (simplexToCheckFirst == border)?m_octree->findSimplexNextTo(pt):simplexToCheckFirst;
   BitVector cyclingCheck(getBitVectorTet().capacity());
 

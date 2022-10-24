@@ -55,8 +55,13 @@ namespace gmds{
 
         void nodeFiltering(const TInt node, const math::Point& pt, std::vector<TInt> & neighboorNode);
 
+        void computeQuadFaces(std::set<std::vector<TInt>> & faces) const ;
+
+        void computeHexa(std::set<std::vector<TInt>> & hexa) const ;
+
       private:
         std::map<TInt, std::vector<TInt>> m_nodeStructure;
+
         SimplexMesh* m_simplexMesh = nullptr;
 
         SimplexMesh m_nodesMesh;

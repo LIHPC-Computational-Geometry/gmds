@@ -96,11 +96,166 @@ void MetricFFPointgeneration::execute()
     }
   }
 
+  std::set<std::vector<TInt>> hex{};
+  computeHexa(hex);
+
   gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
   gmds::VTKWriter vtkWriterMA(&ioService);
   vtkWriterMA.setCellOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterMA.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterMA.write("metricFF_Node.vtk");
+}
+/*----------------------------------------------------------------------------*/
+void MetricFFPointgeneration::computeHexa(std::set<std::vector<TInt>> & hexa) const
+{
+  const gmds::BitVector& nodeBitVector = m_nodesMesh.getBitVectorNodes();
+  std::set<std::vector<TInt>> faces{};
+  unsigned int sizeFACE = 4;
+  computeQuadFaces(faces);
+
+
+
+  //compute the hull of a node in faces
+  std::multimap<TInt, std::vector<TInt>> mm{};
+  std::unordered_map<TInt, std::set<TInt>> um{};
+  for(auto const face : faces)
+  {
+    for(unsigned int n = 0 ; n < sizeFACE ; n++)
+    {
+      std::pair<TInt, std::vector<TInt>> p{face[n], std::vector<TInt>{face[(n + 1) % sizeFACE], face[(n + 2) % sizeFACE], face[(n + 3) % sizeFACE]}};
+      mm.insert(p);
+    }
+  }
+
+  for(unsigned int n = 0 ; n < nodeBitVector.capacity() ; n++)
+  {
+    if(nodeBitVector[n] != 0)
+    {
+      std::set<TInt> s{};
+      auto r = mm.equal_range(n);
+      for(auto it = r.first ; it != r.second ; it++)
+      {
+        for(auto const neighborNode : it->second)
+        {
+          s.insert(neighborNode);
+        }
+      }
+      um.insert(std::pair<TInt, std::set<TInt>>{n, s});
+    }
+  }
+
+
+  for(auto const & p0 : um)
+  {
+    unsigned int cpt = 0;
+    std::vector<TInt> v{};
+    TInt nodeA ;
+    TInt nodeB ;
+    for(auto const & p1 : um)
+    {
+      if(p0 != p1)
+      {
+        cpt = 0;
+        v.clear();
+        nodeA = p0.first;
+        nodeB = p1.first;
+
+        for(auto const & v0 : p0.second)
+        {
+          for(auto const & v1 : p1.second)
+          {
+            if(v0 == v1 && v0 != nodeA && v0 != nodeB)
+            {
+              v.push_back(v0);
+              cpt++;
+              break;
+            }
+          }
+        }
+      }
+      if(cpt == 6)
+      {
+        v.push_back(nodeA);
+        v.push_back(nodeB);
+        std::sort(v.begin(), v.end());
+        hexa.insert(v);
+      }
+    }
+  }
+
+  for(auto const & h : hexa)
+  {
+    std::cout << "hex -> ";
+    for(auto const n : h)
+    {
+      std::cout << n << " | ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << "hex size -> " << hexa.size() << std::endl;
+  /*for(auto const & p : um)
+  {
+    std::cout << "n -> " << p.first << " | ";
+    for(auto const n : p.second)
+    {
+      std::cout << n << " ";
+    }
+    std::cout << std::endl;
+  }*/
+}
+/*----------------------------------------------------------------------------*/
+void MetricFFPointgeneration::computeQuadFaces(std::set<std::vector<TInt>> & faces) const
+{
+  faces.clear();
+  std::multimap<TInt, TInt> edges{};
+
+  for(auto const & s : m_nodeStructure)
+  {
+    TInt node = s.first;
+    for(auto const & n : s.second)
+    {
+      if(n != -1)
+      {
+        std::pair<TInt, TInt> p(node,n);
+        edges.insert(p);
+      }
+    }
+  }
+
+  for(auto const & edge : edges)
+  {
+    TInt nodeA = edge.first;
+    TInt nodeB = edge.second;
+
+    auto rangeA = edges.equal_range(nodeA);
+    auto rangeB = edges.equal_range(nodeB);
+
+    gmds::BitVector bitVectorNodeRangeA(m_nodesMesh.getBitVectorNodes().capacity());
+    for (auto i = rangeA.first; i != rangeA.second; ++i)
+    {
+      if(i->second != nodeB)
+      {
+        bitVectorNodeRangeA.assign(i->second);
+      }
+    }
+
+    for (auto j = rangeB.first; j != rangeB.second; ++j)
+    {
+      if(j->second != nodeA)
+      {
+        auto rangeC = edges.equal_range(j->second);
+        for (auto k = rangeC.first; k != rangeC.second; ++k)
+        {
+          if(bitVectorNodeRangeA[k->second] != 0)
+          {
+            std::vector<TInt> v{nodeA, nodeB, j->second, k->second};
+            std::sort(v.begin(), v.end());
+            faces.insert(v);
+          }
+        }
+      }
+    }
+  }
 }
 /*----------------------------------------------------------------------------*/
 Point MetricFFPointgeneration::computeTheEdgeNodeCoordinate(const double u, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const
@@ -479,10 +634,15 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TI
   {
     const double u = res[i];
     Point pt = computeTheEdgeNodeCoordinate(u, edge, edgeU);
-    TInt newNodeId = m_nodesMesh.addNode(pt);
-    (*BND_CURVE_COLOR_NODE)[newNodeId] = edgeId;
-    m_nodesMesh.setAnalyticMetric(newNodeId);
-    nodesAdded.push_back(newNodeId);
+    std::vector<TSimplexID> tetraContenaingPt{};
+    bool status = false;
+    TInt newNodeId = m_nodesMesh.addNodeAndcheck(pt, tetraContenaingPt, status);
+    if(!status)
+    {
+      (*BND_CURVE_COLOR_NODE)[newNodeId] = edgeId;
+      m_nodesMesh.setAnalyticMetric(newNodeId);
+      nodesAdded.push_back(newNodeId);
+    }
   }
 }
 /*----------------------------------------------------------------------------*/
