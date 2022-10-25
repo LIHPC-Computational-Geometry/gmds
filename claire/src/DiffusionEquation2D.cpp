@@ -9,7 +9,10 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-DiffusionEquation2D::DiffusionEquation2D(Mesh *AMesh, int AmarkFrontNodes_int, int AmarkFrontNodes_out, Variable<double>* Adistance) {
+DiffusionEquation2D::DiffusionEquation2D(Mesh *AMesh, int AmarkFrontNodes_int, int AmarkFrontNodes_out, Variable<double>* Adistance) :
+  m_mass(m_mesh->getNbNodes(), m_mesh->getNbNodes()),
+  m_stiffness(m_mesh->getNbNodes(), m_mesh->getNbNodes())
+{
 	m_mesh = AMesh;
 	m_markNodes_int = AmarkFrontNodes_int;
 	m_markNodes_out = AmarkFrontNodes_out;
@@ -182,6 +185,8 @@ void DiffusionEquation2D::assembleMassAndStiffnessMatrices()
 	std::vector<Eigen::Triplet<double>> tripletsMass, tripletsStiffness;
 	m_mass.setZero();
 	m_stiffness.setZero();
+
+	std::cout << "Nbr of nodes :" << m_mesh->getNbNodes() << std::endl;
 
 	// Loop on the element K in T_h
 	for (auto triK_id:m_mesh->faces())

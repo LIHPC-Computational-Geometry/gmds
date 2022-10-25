@@ -25,6 +25,7 @@
 #include<gmds/math/BezierCurve.h>
 #include <gmds/claire/AeroMeshQuality.h>
 #include <gmds/claire/FastLocalize.h>
+#include <gmds/claire/DiffusionEquation2D.h>
 
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -91,6 +92,13 @@ AeroPipeline_2D::execute(){
 
 	int mark_Farfiel = m_Bnd->getMarkAmont();
 	int mark_Paroi = m_Bnd->getMarkParoi();
+
+	/*
+	//Test LS computation by diffusion equation
+	Variable<double>* var_ls_test = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_TEST");
+	DiffusionEquation2D ls_test(m_meshTet, mark_Paroi, mark_Farfiel, var_ls_test);
+	ls_test.execute();
+	 */
 
 	std::vector<TCellID> nodes_Farfield;
 	std::vector<TCellID> nodes_Paroi;

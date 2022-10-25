@@ -16,6 +16,7 @@
 #include "RefinementBetaTestSuite.h"
 #include "SmoothLineSweepingTestSuite.h"
 #include "FastLocalizeTestSuite.h"
+#include "DiffusionEquation2DTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
