@@ -12,7 +12,8 @@ add_executable(GMDS_CLAIRE_TEST
         AeroBoundariesTestSuite.h
         SU2WriterTestSuite.h
         RefinementBetaTestSuite.h
-        SmoothLineSweepingTestSuite.h)
+        SmoothLineSweepingTestSuite.h
+        DiffusionEquation2DTestSuite.h)
 
 target_link_libraries(GMDS_CLAIRE_TEST PUBLIC
         ${GMDS_LIB}
