@@ -36,9 +36,9 @@ TEST(DiffusionEquation2DTestClass, DiffusionEquation2D)
 	gmds::MeshDoctor doc(&m);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
+	doc.orient2DFaces();
 
 	math::Utils::MeshCleaner(&m);
-
 
 	AeroBoundaries_2D* Bnd = new AeroBoundaries_2D(&m) ;
 	Bnd->execute();
@@ -49,6 +49,12 @@ TEST(DiffusionEquation2DTestClass, DiffusionEquation2D)
 	Variable<double>* var_ls_test = m.newVariable<double,GMDS_NODE>("GMDS_Distance_TEST");
 	DiffusionEquation2D ls_test(&m, mark_Paroi, mark_Farfiel, var_ls_test);
 	DiffusionEquation2D::STATUS ls_result = ls_test.execute();
+
+	// Ecriture
+	gmds::VTKWriter vtkWriter_TetMesh(&ioService);
+	vtkWriter_TetMesh.setCellOptions(gmds::N|gmds::F);
+	vtkWriter_TetMesh.setDataOptions(gmds::N|gmds::F);
+	vtkWriter_TetMesh.write("DiffusionEquation2D_Result.vtk");
 
 	ASSERT_EQ(DiffusionEquation2D::SUCCESS, ls_result);
 
