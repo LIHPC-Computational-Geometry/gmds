@@ -72,6 +72,12 @@ class LIB_GMDS_CLAIRE_API DiffusionEquation2D
 	 */
 	Eigen::Vector2d grad_phi(int i_hat, TCellID triK_id);
 	/*-------------------------------------------------------------------*/
+	/** @brief Quadrature points and weights for the Summit Formula.
+	 	*  @param[in]
+	 	*  @param[in]
+	 */
+	void quadraturePointsAndWeightsSummitpointFormula(std::vector<double> &weights, std::vector<math::Point> &points);
+	/*-------------------------------------------------------------------*/
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Assemble the stiffness and mass matrix for the resolution.
@@ -120,6 +126,8 @@ class LIB_GMDS_CLAIRE_API DiffusionEquation2D
 	double m_dt;
 	/** Iteration */
 	int m_it;
+	/** Iteration max */
+	int m_it_max;
 	/** Diffusion coefficient */
 	double m_sigma;
 

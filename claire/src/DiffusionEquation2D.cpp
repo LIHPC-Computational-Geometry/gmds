@@ -10,22 +10,26 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 DiffusionEquation2D::DiffusionEquation2D(Mesh *AMesh, int AmarkFrontNodes_int, int AmarkFrontNodes_out, Variable<double>* Adistance) :
+  m_mesh(AMesh),
   m_mass(m_mesh->getNbNodes(), m_mesh->getNbNodes()),
-  m_stiffness(m_mesh->getNbNodes(), m_mesh->getNbNodes())
+  m_stiffness(m_mesh->getNbNodes(), m_mesh->getNbNodes()),
+  m_sol_0(m_mesh->getNbNodes()),
+  m_sol_n(m_mesh->getNbNodes())
 {
-	m_mesh = AMesh;
 	m_markNodes_int = AmarkFrontNodes_int;
 	m_markNodes_out = AmarkFrontNodes_out;
 	m_distance = Adistance;
 
+	// m_id_local_index gives us a compact numerotation of the nodes of the mesh
 	int index=0;
 	for(auto n_id:m_mesh->nodes()) {
 		m_id_local_index[n_id]=index;
 		index++;
 	}
 
-	m_dt = 0.01;
+	m_dt = 10.0;
 	m_sigma = 1.0;
+	m_it_max = 1000;
 
 }
 
@@ -36,7 +40,7 @@ DiffusionEquation2D::execute()
 {
 	initialisation();
 	// Boucle en temps
-	for (int it = 1; it <= 10; it++)
+	for (int it = 1; it <= m_it_max; it++)
 	{
 		oneTimeStep();
 	}
@@ -172,6 +176,19 @@ Eigen::Vector2d DiffusionEquation2D::grad_phi(int i_hat, TCellID triK_id)
 /*------------------------------------------------------------------------*/
 
 
+/*------------------------------------------------------------------------*/
+// Points et poids de quadrature de la formule des sommets (intégration 2D)
+void DiffusionEquation2D::quadraturePointsAndWeightsSummitpointFormula(std::vector<double> &weights, std::vector<math::Point> &points)
+{
+	weights.push_back(1./3.);
+	weights.push_back(1./3.);
+	weights.push_back(1./3.);
+
+	points.push_back({0,0});
+	points.push_back({1,0});
+	points.push_back({0,1});
+}
+/*------------------------------------------------------------------------*/
 
 
 
@@ -186,7 +203,9 @@ void DiffusionEquation2D::assembleMassAndStiffnessMatrices()
 	m_mass.setZero();
 	m_stiffness.setZero();
 
-	std::cout << "Nbr of nodes :" << m_mesh->getNbNodes() << std::endl;
+	std::vector<double> weights;
+	std::vector<math::Point> quadrature_points;
+	quadraturePointsAndWeightsSummitpointFormula(weights, quadrature_points);
 
 	// Loop on the element K in T_h
 	for (auto triK_id:m_mesh->faces())
@@ -194,8 +213,10 @@ void DiffusionEquation2D::assembleMassAndStiffnessMatrices()
 		Face K = m_mesh->get<Face>(triK_id);
 		std::vector<Node> K_nodes = K.get<Node>();
 		// Loop on the quadrature points
-		for (auto n:K_nodes)
+		for (int p_id=0; p_id < quadrature_points.size(); p_id++)
 		{
+			math::Point p = quadrature_points[p_id];
+			double w = weights[p_id];
 			// Loop on the nodes of the triangle K
 			for (int i_hat=1; i_hat<4; i_hat++)
 			{
@@ -209,14 +230,14 @@ void DiffusionEquation2D::assembleMassAndStiffnessMatrices()
 
 					// M(i,j) = M(i,j) + contribution de la _masse (hati,hatj) en hatX_q
 					m_mass.coeffRef(i,j) += 0.5				// Area of the ref triangle K_hat
-					                         			*(1.0/3.0)		// Weight of the quadrature points
-					   										* phi_hat(i_hat, n.point())
-					   										* phi_hat(j_hat, n.point())
+					                         			*w					// Weight of the quadrature points
+					   										* phi_hat(i_hat, p)
+					   										* phi_hat(j_hat, p)
 					   										* absdetJFK(K.id());
 
 					// K(i,j) = K(i,j) + contribution de la rigidité (hati,hatj) en hatX_q
 					m_stiffness.coeffRef(i,j) += 0.5		// Area of the ref triangle K_hat
-					   								*(1.0/3.0)			// Weight of the quadrature points
+					   								*w						// Weight of the quadrature points
 					   								* grad_phi(i_hat, K.id()).dot(grad_phi(j_hat, K.id()))
 					   								* absdetJFK(K.id());
 
@@ -302,6 +323,7 @@ void DiffusionEquation2D::initialisation()
 	{
 		int index = m_id_local_index[n_id];
 		m_sol_0.coeffRef(index) = 0.0;
+		m_sol_n.coeffRef(index) = 0.0;
 	}
 
 }
@@ -315,13 +337,12 @@ void DiffusionEquation2D::oneTimeStep()
 	m_t += m_dt;
 	m_it += 1;
 	// Construction du second membre
-	Eigen::SparseVector<double> secondMember(m_mass*m_sol_0);
+	Eigen::SparseVector<double> secondMember(m_mass*m_sol_n);
 
 	// Application des conditions sur le terme de droite
 	applyBCToSecondMember(secondMember);
 	// Résolution du système
 	std::cout << "Solve system at time " << m_t << std::endl;
 	m_sol_n = m_solver.solve(secondMember);
-	m_sol_0 = m_sol_n;
 }
 /*------------------------------------------------------------------------*/
