@@ -96,8 +96,9 @@ void MetricFFPointgeneration::execute()
     }
   }
 
-  std::set<std::vector<TInt>> hex{};
-  computeHexa(hex);
+  std::set<std::vector<TInt>> hexs{};
+  computeHexa(hexs);
+  std::cout << "hex size -> " << hexs.size() << std::endl;
 
   gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
   gmds::VTKWriter vtkWriterMA(&ioService);
@@ -118,6 +119,7 @@ void MetricFFPointgeneration::computeHexa(std::set<std::vector<TInt>> & hexa) co
   //compute the hull of a node in faces
   std::multimap<TInt, std::vector<TInt>> mm{};
   std::unordered_map<TInt, std::set<TInt>> um{};
+
   for(auto const face : faces)
   {
     for(unsigned int n = 0 ; n < sizeFACE ; n++)
@@ -144,64 +146,45 @@ void MetricFFPointgeneration::computeHexa(std::set<std::vector<TInt>> & hexa) co
     }
   }
 
-
+  unsigned int cpt = 0;
+  std::vector<TInt> v{};
+  TInt nodeA ;
+  TInt nodeB ;
+  unsigned int t = 0;
   for(auto const & p0 : um)
   {
-    unsigned int cpt = 0;
-    std::vector<TInt> v{};
-    TInt nodeA ;
-    TInt nodeB ;
     for(auto const & p1 : um)
     {
       if(p0 != p1)
       {
-        cpt = 0;
         v.clear();
         nodeA = p0.first;
         nodeB = p1.first;
 
-        for(auto const & v0 : p0.second)
+        if(std::find(p1.second.begin(), p1.second.end(), nodeA) == p1.second.end())
         {
-          for(auto const & v1 : p1.second)
+          for(auto const & v0 : p0.second)
           {
-            if(v0 == v1 && v0 != nodeA && v0 != nodeB)
+            for(auto const & v1 : p1.second)
             {
-              v.push_back(v0);
-              cpt++;
-              break;
+              if(v0 == v1 && v0 != nodeA && v0 != nodeB)
+              {
+                v.push_back(v0);
+              }
             }
           }
         }
-      }
-      if(cpt == 6)
-      {
-        v.push_back(nodeA);
-        v.push_back(nodeB);
-        std::sort(v.begin(), v.end());
-        hexa.insert(v);
-      }
-    }
-  }
 
-  for(auto const & h : hexa)
-  {
-    std::cout << "hex -> ";
-    for(auto const n : h)
-    {
-      std::cout << n << " | ";
+        if(v.size() == 6)
+        {
+          v.push_back(nodeA);
+          v.push_back(nodeB);
+          std::sort(v.begin(), v.end());
+          hexa.insert(v);
+        }
+      }
     }
-    std::cout << std::endl;
   }
-  std::cout << "hex size -> " << hexa.size() << std::endl;
-  /*for(auto const & p : um)
-  {
-    std::cout << "n -> " << p.first << " | ";
-    for(auto const n : p.second)
-    {
-      std::cout << n << " ";
-    }
-    std::cout << std::endl;
-  }*/
 }
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::computeQuadFaces(std::set<std::vector<TInt>> & faces) const
@@ -534,9 +517,6 @@ void MetricFFPointgeneration::nodeFiltering(const TInt node, const math::Point& 
       }
     }
   }
-  /*std::cout << std::endl;
-  std::cout << std::endl;*/
-
 }
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point& initialCoord)

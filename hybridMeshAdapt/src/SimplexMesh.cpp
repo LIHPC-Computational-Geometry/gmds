@@ -4433,9 +4433,7 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   std::cout << "metricX -> " << metricX << std::endl;
   std::cout << "metricY -> " << metricY << std::endl;
   std::cout << "metricZ -> " << metricZ << std::endl;*/
-  /*metricX = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();
-  metricY = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();
-  metricZ = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();*/
+
 
 
   /*if(pt.Y() <= 0.5)
