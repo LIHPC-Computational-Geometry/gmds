@@ -53,7 +53,6 @@ CriterionRAIS::~CriterionRAIS()
 /******************************************************************/
 bool CriterionRAIS::execute(SimplexMesh* m_simplex_mesh, const TSimplexID simplexId, const TInt nodeIndexLocal, const gmds::math::Point& nextPt) const
 {
-
   if(m_criterion != nullptr)
   {
       return m_criterion->execute(m_simplex_mesh, simplexId, nodeIndexLocal, nextPt);

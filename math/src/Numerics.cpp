@@ -87,14 +87,14 @@ namespace gmds{
         }
         /*----------------------------------------------------------------------------*/
         bool isZero(const TCoord a, const TCoord AEpsilon){
-		
+
             return std::fabs(a)<AEpsilon; // < TCoord_Epsilon
         }
-        
+
         /*----------------------------------------------------------------------------*/
         bool isZero2ndMethod(const TCoord a){
-		
-            return std::fabs(a)<math::Constants::EPSILON; 
+
+            return std::fabs(a)<math::Constants::EPSILON;
         }
         /*----------------------------------------------------------------------------*/
         bool areEquals(const TCoord a,const TCoord b, const TCoord AEpsilon){
@@ -112,14 +112,14 @@ namespace gmds{
             double x1 = AP1.X(), y1 = AP1.Y();
             double x2 = AP2.X(), y2 = AP2.Y();
             double x3 = AP3.X(), y3 = AP3.Y();
-            
+
             double x23 = x2-x3;
             double x31 = x3-x1;
             double x12 = x1-x2;
             double y23 = y2-y3;
             double y31 = y3-y1;
             double y12 = y1-y2;
-            
+
             Vector3d v12=AP2-AP1;
             Vector3d v13=AP3-AP1;
             double area2 = x1*y2 - x1*y3 - x2*y1 + x2*y3 + x3*y1 -x3*y2;
@@ -138,10 +138,10 @@ namespace gmds{
             s.set(2, 0, (y23*y12 + x23*x12)*inv_area4);
             s.set(2, 1, (y31*y12 + x31*x12)*inv_area4);
             s.set(2, 2, (y12*y12 + x12*x12)*inv_area4);
-            
+
             return s;
         }
- 
+
         /*----------------------------------------------------------------------------*/
         int solve2ndDegreePolynomial(const double& AA,
                                         const double& AB,
@@ -150,13 +150,13 @@ namespace gmds{
         {
             AX.clear();
             int nb_solutions = 0;
-            
+
             double a = AA;
             double b = AB;
             double c = AC;
-            
+
             double det = b*b - 4*a*c;
-            
+
             if (det < 0.0) {
                 std::cout << "No solution for: "<<a<<" X2 + "<<b<<" X + "<<c <<" with Det= "<<det<< std::endl;
                 nb_solutions = 0;
@@ -172,7 +172,7 @@ namespace gmds{
                 double x2 = (-b-sqrt(det))/(2*a);
                 AX.push_back(x1);
                 AX.push_back(x2);
-                
+
             }
             return nb_solutions;
         }
@@ -192,11 +192,11 @@ namespace gmds{
             auto cos_angle =uv.dot(uw);
             if(cos_angle>1)
                 cos_angle=1;
-            else if(cos_angle<0){
-                cos_angle=0;
+            else if(cos_angle<-1){
+                cos_angle=-1;
             }
             return std::acos(cos_angle);
-            
+
         }
         /*----------------------------------------------------------------------------*/
         double cotangentWeight(const Point& A,
@@ -217,11 +217,11 @@ namespace gmds{
 
 
             Eigen::Matrix3d A;
-            
+
             for(auto i=0; i<3; i++)
                 for(auto j=0; j<3; j++)
                     A(i,j)=0;
-            
+
             for(auto p:AP){
                 double x = p.X()-mc.X();
                 double y = p.Y()-mc.Y();
@@ -231,7 +231,7 @@ namespace gmds{
                 A(2,0) += x*z; A(2,1) += y*z; A(2,2) += z*z;
             }
             Eigen::EigenSolver<Eigen::MatrixXd> solver(A);
-            
+
             int sev=0;
             double val = solver.eigenvalues()(0).real();
             for(auto i=1;i<3;i++){
@@ -241,12 +241,12 @@ namespace gmds{
                     val = val_i;
                 }
             }
-            
+
             double a = solver.eigenvectors().col(sev)(0).real();
             double b = solver.eigenvectors().col(sev)(1).real();
             double c = solver.eigenvectors().col(sev)(2).real();
-            
-            
+
+
             APlanePnt = mc;
             APlaneNormal = math::Vector3d({a,b,c});
         }

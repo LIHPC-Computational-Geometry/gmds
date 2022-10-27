@@ -1,16 +1,35 @@
 #include "gmds/hybridMeshAdapt/Octree.h"
-
 ////////////////////////////////////////////////////////////////////////////////
 using namespace gmds;
 using namespace hybrid;
 using namespace simplicesNode;
-
+using namespace math;
+////////////////////////////////////////////////////////////////////////////////
 Octree::Octree(SimplexMesh* simplexMesh,
        const unsigned int numbersMaxSimplices) :
        m_simplexMesh(simplexMesh),
-       m_numbersMaxSimplices(numbersMaxSimplices)
+       m_numbersMaxSimplices(numbersMaxSimplices),
+       m_rootOc(nullptr)
 {
+  std::vector<std::vector<Node>> nodes{};
   initialize();
+
+  Mesh m(MeshModel(DIM3 | R | F | E | N |
+	                 R2N | F2N | E2N | R2F | F2R |
+	                 F2E | E2F | R2E | N2R | N2F | N2E));
+
+
+
+  writeOctree(m, nodes);
+  for(auto const & node : nodes)
+  {
+    m.newHex(node[0], node[1], node[2], node[3], node[4], node[5], node[6], node[7]);
+  }
+  gmds::IGMeshIOService ioService(&m);
+  gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("Octree.vtk");
 }
 /******************************************************************************/
 Octree::Octree(
@@ -37,10 +56,31 @@ Octree::~Octree()
   }
 }
 /******************************************************************************/
+void Octree::writeOctree(Mesh& mesh, std::vector<std::vector<Node>>& nodes) const
+{
+  const Point p0(m_xmin, m_ymin, m_zmin); const Point p1(m_xmin, m_ymax, m_zmin);
+  const Point p2(m_xmin, m_ymax, m_zmax); const Point p3(m_xmin, m_ymin, m_zmax);
+
+  const Point p4(m_xmax, m_ymin, m_zmin); const Point p5(m_xmax, m_ymax, m_zmin);
+  const Point p6(m_xmax, m_ymax, m_zmax); const Point p7(m_xmax, m_ymin, m_zmax);
+
+  Node n0 = mesh.newNode(p0); Node n1 = mesh.newNode(p1); Node n2 = mesh.newNode(p2); Node n3 = mesh.newNode(p3);
+  Node n4 = mesh.newNode(p4); Node n5 = mesh.newNode(p5); Node n6 = mesh.newNode(p6); Node n7 = mesh.newNode(p7);
+
+  nodes.push_back(std::vector<Node>{n0, n1, n2, n3, n4, n5, n6, n7});
+  for(auto const & oc : m_ocs)
+  {
+    if(oc != nullptr)
+    {
+      oc->writeOctree(mesh, nodes);
+    }
+  }
+}
+/******************************************************************************/
 void Octree::initialize()
 {
   const BitVector& nodesVector = m_simplexMesh->getBitVectorNodes();
-  double epsilon = 10E-2;
+  double epsilon = 10E-4;
   double min = std::numeric_limits<double>::min();
   double max = std::numeric_limits<double>::max();
 
@@ -85,6 +125,9 @@ void Octree::initialize()
     Octree * oc6 = new Octree(m_xmin, (m_xmax + m_xmin) / 2.0, (m_ymin + m_ymax) / 2.0, m_ymax, (m_zmin + m_zmax) /2.0, m_zmax, m_simplexMesh, m_numbersMaxSimplices);
     Octree * oc7 = new Octree((m_xmax + m_xmin) / 2.0, m_xmax, (m_ymin + m_ymax) / 2.0, m_ymax, (m_zmin + m_zmax) /2.0, m_zmax, m_simplexMesh, m_numbersMaxSimplices);
 
+    oc0->setRootOctree(this); oc1->setRootOctree(this); oc2->setRootOctree(this); oc3->setRootOctree(this);
+    oc4->setRootOctree(this); oc5->setRootOctree(this); oc6->setRootOctree(this); oc7->setRootOctree(this);
+
     m_ocs[0] = oc0 ; m_ocs[1] = oc1 ; m_ocs[2] = oc2 ; m_ocs[3] = oc3 ; m_ocs[4] = oc4 ; m_ocs[5] = oc5 ; m_ocs[6] = oc6 ; m_ocs[7] = oc7;
   }
 }
@@ -126,7 +169,7 @@ void Octree::preprocess()
   }
 }
 /******************************************************************************/
-bool Octree::belongToOc(const math::Point& pt)
+bool Octree::belongToOc(const math::Point& pt) const
 {
   double x = pt.X();
   double y = pt.Y();

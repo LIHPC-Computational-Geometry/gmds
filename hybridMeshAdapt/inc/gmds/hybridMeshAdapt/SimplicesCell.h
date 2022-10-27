@@ -3,12 +3,14 @@
 /**************************************************************/
 #include<vector>
 #include <iostream>
+#include <set>
 /**************************************************************/
 #include<gmds/utils/CommonTypes.h>
 /**************************************************************/
 #include<gmds/math/Vector.h>
 #include<gmds/math/Point.h>
 #include <gmds/math/Orientation.h>
+#include <gmds/math/Numerics.h>
 /**************************************************************/
 #include <Eigen/Dense>
 /**************************************************************/
@@ -68,14 +70,20 @@ namespace gmds
 
         std::vector<TInt> getOrderedFace      (const TInt indexFace) const;
 
+        /*return the local face that are visible from node*/
+        std::vector<TInt> visibleFaces(const math::Point& coordNode) const ;
+
         /*return the opposite tetra or errorId if there is nothing*/
         std::vector<TSimplexID> oppositeTetraVectorPrivated(const simplicesNode::SimplicesNode& simplicesNode) const;
 
         /*return the tetra adjacent to this tetra*/
         std::vector<TSimplexID> adjacentTetra () const;
 
+        /*return all the direct simplex connected this*/
+        std::vector<TSimplexID> directConnectedSimplex () const;
+        
         /*return a vector of nodes conain in this and tetra (intersection nodes of both tetra)*/
-        std::vector<TInt> intersectionNodes(const SimplicesCell& simplicesCell);
+        std::vector<TInt> intersectionNodes(const SimplicesCell& simplicesCell) const;
 
         void intersectionSimplexFacesForUnbuildStruct(const SimplicesCell& simplicesCell, std::vector<TSimplexID>& intersectionNodes);
 
@@ -108,6 +116,15 @@ namespace gmds
         /*return true if the pt is in the cell, false otherwise*/
         math::Orientation::Sign orientation(const TInt faceIdx, const gmds::math::Point& pt, bool inverseOrientation = false) const ;
 
+        /*return the dihedral angle between the localNode0 & localNode1*/
+        double dihedralAngle(const unsigned int localNode0, const unsigned int localNode1) const ;
+
+        /*return the minimum dihedral angle*/
+        std::set<double> minAndmaxDihedralAngle() const ;
+
+        /*return true if current Tet is a sliver*/
+        bool isSliver() const;
+
         /*return true if the localIndex correspond to the generalIndex*/
         bool correspondance                    (const TInt localIndex, const TInt generalIndex) const;
 
@@ -134,6 +151,7 @@ namespace gmds
 
         /*return the nbr of face that are not visible by the node : simpliceNode*/
         unsigned int checkFaceNbrVisibility(std::vector<std::vector<TInt>>& facesId, const simplicesNode::SimplicesNode & simpliceNode);
+
 
         friend std::ostream&  operator<<(std::ostream& os, const SimplicesCell& simpliceCell)
         {

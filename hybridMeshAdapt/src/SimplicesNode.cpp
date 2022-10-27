@@ -42,7 +42,6 @@ bool SimplicesNode::checkExistance()
 std::vector<TSimplexID> SimplicesNode::ballOf(bool boundariesAccepted) const
 {
   //std::cout << "ballOf(bool boundariesAccepted)" << std::endl;
-  //std::cout << "m_indexPoint -> " << m_indexPoint << std::endl;
   std::vector<TSimplexID> v{};
   std::vector<TSimplexID> to_do{};
   int border = std::numeric_limits<int>::min();
@@ -153,7 +152,6 @@ std::vector<TSimplexID> SimplicesNode::ballOf(bool boundariesAccepted) const
   }
 
   return std::move(v);
-
 }
 /********************************************************************************/
 std::vector<TSimplexID> SimplicesNode::linksTri() const
@@ -502,7 +500,7 @@ TSimplexID SimplicesNode::directSimplex(const math::Vector3d& vector) const
 
 }
 /******************************************************************************/
-std::vector<TInt> SimplicesNode::neighborNodes()
+std::vector<TInt> SimplicesNode::neighborNodes() const
 {
   std::vector<TSimplexID> ball = ballOf();
   std::set<TInt> s{};
@@ -524,6 +522,94 @@ std::vector<TInt> SimplicesNode::neighborNodes()
   }
 
   std::copy(s.begin(), s.end(), std::back_inserter(res));
+  return res;
+}
+/******************************************************************************/
+std::vector<TInt> SimplicesNode::neighborSubSurfaceNodes() const
+{
+  std::vector<TInt> res{};
+  std::vector<TInt> directNodes = neighborNodes() ;
+
+  Variable<int>* BND_VERTEX_COLOR   = nullptr;
+  Variable<int>* BND_CURVE_COLOR    = nullptr;
+  Variable<int>* BND_SURFACE_COLOR  = nullptr;
+  Variable<Eigen::Matrix3d>* metric = nullptr;
+  try{
+    BND_VERTEX_COLOR  = m_simplex_mesh->getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+    BND_CURVE_COLOR   = m_simplex_mesh->getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+    BND_SURFACE_COLOR = m_simplex_mesh->getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+    metric            = m_simplex_mesh->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+  unsigned int nodeIdDim   = ((*BND_VERTEX_COLOR)[getGlobalNode()] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[getGlobalNode()] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[getGlobalNode()] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
+  unsigned int nodeIdLabel = (nodeIdDim == SimplexMesh::topo::CORNER)?(*BND_VERTEX_COLOR)[getGlobalNode()]:(nodeIdDim == SimplexMesh::topo::RIDGE)?(*BND_CURVE_COLOR)[getGlobalNode()]:(nodeIdDim == SimplexMesh::topo::SURFACE)?(*BND_SURFACE_COLOR)[getGlobalNode()]:0;
+
+  //the current node is a volume node
+  if(nodeIdDim == SimplexMesh::topo::VOLUME)
+  {
+    return directNodes;
+  }
+  else if(nodeIdDim == SimplexMesh::topo::CORNER)
+  {
+    return std::vector<TInt>{};
+  }
+  else
+  {
+    const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& E2S_indices = m_simplex_mesh->getEdgeTianglesIndices();
+    const std::map<unsigned int, std::vector<unsigned int>>& C2S_indices = m_simplex_mesh->getCornerSurfaceConnexion() ;
+    const std::map<unsigned int, std::vector<unsigned int>>& C2E_indices = m_simplex_mesh->getCornerEdgeConnexion() ;
+
+    for(auto const node : directNodes)
+    {
+      if((*BND_CURVE_COLOR)[getGlobalNode()] != 0)
+      {
+        if((*BND_CURVE_COLOR)[node] != 0)
+        {
+          if((*BND_CURVE_COLOR)[getGlobalNode()] == (*BND_CURVE_COLOR)[node])
+          {
+            res.push_back(node);
+          }
+        }
+        else if((*BND_VERTEX_COLOR)[node] != 0)
+        {
+          std::vector<unsigned int> E_indices = C2E_indices.at((*BND_VERTEX_COLOR)[node]);
+          if(std::find(E_indices.begin(), E_indices.end(), (*BND_CURVE_COLOR)[getGlobalNode()]) != E_indices.end())
+          {
+            res.push_back(node);
+          }
+        }
+      }
+      else if((*BND_SURFACE_COLOR)[getGlobalNode()] != 0)
+      {
+        if((*BND_SURFACE_COLOR)[node] != 0)
+        {
+          if((*BND_SURFACE_COLOR)[getGlobalNode()] == (*BND_SURFACE_COLOR)[node])
+          {
+            res.push_back(node);
+          }
+        }
+        else if((*BND_CURVE_COLOR)[node] != 0)
+        {
+          std::pair<unsigned int, unsigned int> p = E2S_indices.at((*BND_CURVE_COLOR)[node]);
+          if(p.first == (*BND_SURFACE_COLOR)[getGlobalNode()] || p.second == (*BND_SURFACE_COLOR)[getGlobalNode()])
+          {
+            res.push_back(node);
+          }
+        }
+        else if((*BND_VERTEX_COLOR)[node] != 0)
+        {
+          std::vector<unsigned int> S_indices = C2S_indices.at((*BND_VERTEX_COLOR)[node]);
+          if(std::find(S_indices.begin(), S_indices.end(), (*BND_SURFACE_COLOR)[getGlobalNode()]) != S_indices.end())
+          {
+            res.push_back(node);
+          }
+        }
+      }
+    }
+  }
   return res;
 }
 /******************************************************************************/
@@ -689,6 +775,47 @@ bool SimplicesNode::isAttachToSimplex() const
   TSimplexID border  = std::numeric_limits<int>::min();
   TSimplexID simplex = m_simplex_mesh->m_base[m_indexPoint];
   return (simplex != border);
+}
+/******************************************************************************/
+std::vector<TInt> SimplicesNode::complentaryNodeShell(const SimplicesNode& simpliceNode) const
+{
+  std::set<TInt> s{};
+  std::vector<TInt> v{};
+  std::vector<TInt>nodeShell{this->getGlobalNode(), simpliceNode.getGlobalNode()};
+  std::vector<TSimplexID> shell = this->shell(simpliceNode);
+  for(auto const simplice : shell)
+  {
+    if(simplice >= 0)
+    {
+      std::vector<TInt> v = SimplicesCell(m_simplex_mesh, simplice).getOtherNodeInSimplex(nodeShell);
+      copy(v.begin(), v.end(),inserter(s, s.begin()));
+    }
+  }
+  std::copy(s.begin(), s.end(), std::back_inserter(v));
+  return v;
+}
+/******************************************************************************/
+std::vector<TInt> SimplicesNode::directNeighboorNodeId() const
+{
+  std::vector<TInt> res{};
+  std::set<TInt> s{};
+  const std::vector<TInt>&& ball = ballOf();
+
+  for(auto const simplex : ball)
+  {
+    if(simplex > 0)
+    {
+      SimplicesCell cell(m_simplex_mesh, simplex);
+      const std::vector<TInt>&& directNodes = cell.getNodes();
+      std::copy(directNodes.begin(), directNodes.end(), std::inserter(s, s.begin()));
+    }
+  }
+
+  std::copy_if(s.begin(), s.end(), std::back_inserter(res), [&](const TInt currentNode){
+    return (currentNode != m_indexPoint);
+  });
+
+  return res;
 }
 /******************************************************************************/
 void SimplicesNode::detectType(const nodeNeighborInfo& nodeInfo) const

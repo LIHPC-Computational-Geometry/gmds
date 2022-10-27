@@ -65,7 +65,10 @@ namespace gmds
 
           TSimplexID directSimplex(const math::Vector3d& vector) const ;
 
-          std::vector<TInt> neighborNodes();
+          std::vector<TInt> neighborNodes() const;
+
+          /*return the direct subSurface node connected with m_indexPoint */
+          std::vector<TInt> neighborSubSurfaceNodes() const;
 
           std::vector<TSimplexID> directSimplices(const math::Vector3d& vector) const ;
 
@@ -81,6 +84,10 @@ namespace gmds
           bool isFaceVisible(math::Vector3d& normalOfFace, math::Vector3d& vecFacePt) const;
 
           bool isAttachToSimplex() const ;
+
+          std::vector<TInt> complentaryNodeShell (const SimplicesNode& simpliceNode) const;
+
+          std::vector<TInt> directNeighboorNodeId() const ;
 
           /*adding some point to the mesh and check if  this point already exist*/
           void detectType(const nodeNeighborInfo& nodeInfo) const;
