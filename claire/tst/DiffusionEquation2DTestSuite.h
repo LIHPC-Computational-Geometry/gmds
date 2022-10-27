@@ -26,12 +26,11 @@ TEST(DiffusionEquation2DTestClass, DiffusionEquation2D)
 	                             gmds::N2F|gmds::F2N|gmds::E2N|gmds::F2E|gmds::E2F));
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir + "/Aero/2D/Apollo_2D_5.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N|gmds::E|gmds::F);
-	vtkReader.read(vtk_file);
+	vtkReader.read(dir + "/Aero/2D/Apollo_2D_5.vtk");
 
 	gmds::MeshDoctor doc(&m);
 	doc.buildEdgesAndX2E();
