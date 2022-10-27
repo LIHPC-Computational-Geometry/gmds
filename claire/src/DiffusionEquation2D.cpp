@@ -40,6 +40,7 @@ DiffusionEquation2D::execute()
 {
 	initialisation();
 	// Boucle en temps
+	std::cout << "Time loop..." << std::endl;
 	for (int it = 1; it <= m_it_max; it++)
 	{
 		oneTimeStep();
@@ -342,7 +343,7 @@ void DiffusionEquation2D::oneTimeStep()
 	// Application des conditions sur le terme de droite
 	applyBCToSecondMember(secondMember);
 	// Résolution du système
-	std::cout << "Solve system at time " << m_t << std::endl;
+	//std::cout << "Solve system at time " << m_t << std::endl;
 	m_sol_n = m_solver.solve(secondMember);
 }
 /*------------------------------------------------------------------------*/
