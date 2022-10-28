@@ -67,7 +67,7 @@ set(GMDS_SRC
         src/VectorDyn.cpp
         src/Orientation.cpp
         src/Vector.cpp
-        src/TransfiniteInterpolation.cpp )
+        src/TransfiniteInterpolation.cpp inc/gmds/math/BezierSurface.h src/BezierSurface.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
