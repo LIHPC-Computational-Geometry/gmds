@@ -355,64 +355,6 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
     return dataA.m > dataB.m;
     });
 
-
-  /*unsigned int id = 0;
-  std::vector<TInt> v{-1, -1, -1, -1, -1, -1};
-  for(auto const & data : nodesSamplingData)
-  {
-    if(id == 5)
-    {
-      id = 0;
-      v = std::vector<TInt>{-1, -1, -1, -1, -1, -1};
-    }
-    math::Point newCoord = data.coord;
-    const TInt node = data.node;
-
-    //check if the pt is in the mesh
-    if(m_oc.belongToOc(newCoord))
-    {
-      //compute the metric lentgh based on newNodeId and the metric at node
-      findOptimimalPosition(node, newCoord);
-      std::vector<TInt> neighboorNodes;
-      nodeFiltering(node, newCoord, neighboorNodes);
-
-      if(!neighboorNodes.size())
-      {
-        TInt newNodeId = m_nodesMesh.addNode(newCoord);
-        m_nodesMesh.setAnalyticMetric(newNodeId);
-        v[id] = newNodeId;
-        newNodes.push_back(newNodeId);
-        gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
-        gmds::VTKWriter vtkWriterMA(&ioService);
-        vtkWriterMA.setCellOptions(gmds::N);
-        vtkWriterMA.setDataOptions(gmds::N);
-        vtkWriterMA.write("metricFF_Node_CPT_" + std::to_string(cpt) + ".vtk");
-        cpt++;
-      }
-      else
-      {
-        double distMin = std::numeric_limits<double>::max();
-        TInt neighboorNode;
-        for(auto const n : neighboorNodes)
-        {
-          math::Point pid = SimplicesNode(&m_nodesMesh, n).getCoords();
-          math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
-          math::Vector3d v = math::Vector3d(pid.X() - pt.X(), pid.Y() - pt.Y(), pid.Z() - pt.Z());
-          double dist = v.norm();
-          if(dist < distMin)
-          {
-            distMin = dist;
-            neighboorNode = n;
-          }
-        }
-        v[id] = neighboorNode;
-      }
-    }
-    id++;
-    m_nodeStructure.insert( std::pair<TInt, std::vector<TInt>>(node, v) );
-  }*/
-
-
   for(auto const node : nodesAdded)
   {
     unsigned int id = 0;
