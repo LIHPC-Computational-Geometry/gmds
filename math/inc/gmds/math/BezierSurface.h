@@ -6,12 +6,10 @@
 #define GMDS_BEZIERSURFACE_H
 /*----------------------------------------------------------------------------*/
 #include <cmath>
-#include <vector>
 /*----------------------------------------------------------------------------*/
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/utils/Array.h>
 #include <gmds/math/Point.h>
-#include <gmds/math/Vector.h>
 #include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
