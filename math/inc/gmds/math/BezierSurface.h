@@ -43,6 +43,17 @@ class GMDSMath_API BezierSurface {
 	math::Point operator()(const double& u, const double& v) const;
 
 	/*------------------------------------------------------------------------*/
+	/** \brief Returns a set of point that discretize the surface in
+	    * 	ANb_m x ANb_n segment in the parametric space
+       *
+       * \param[in] ANb_m the number of segment we want to have in the first direction
+       * \param[in] ANb_n the number of segment we want to have in the second direction
+       *
+       * \return The set of point discretizing (*this);
+	 */
+	Array2D<math::Point> getDiscretization(const int ANb_m, const int ANb_n) const;
+
+	/*------------------------------------------------------------------------*/
 
  private:
 	/*------------------------------------------------------------------------*/
@@ -73,8 +84,8 @@ class GMDSMath_API BezierSurface {
 	/** ordered 2D array of control points of the curve */
 	Array2D<math::Point> m_control_points;
 	/** polynomial degrees of the surface */
-	int m_degree_n;
 	int m_degree_m;
+	int m_degree_n;
 
 };
 /*----------------------------------------------------------------------------*/

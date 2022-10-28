@@ -20,10 +20,13 @@ TEST(BezierSurfaceClass, testBasic)
 
 	math::Point p = bezier_surface(0.5, 0.5);
 
-	ASSERT_EQ(ctrl_pts(0,0).X(), 0);
-
 	ASSERT_NEAR(p.X(), 0.5, pow(10,-6));
 	ASSERT_NEAR(p.Y(), 0.5, pow(10,-6));
+
+	Array2D<math::Point> pts = bezier_surface.getDiscretization(10,10);
+
+	ASSERT_NEAR(pts(5,5).X(), 0.5, pow(10,-6));
+	ASSERT_NEAR(pts(5,5).Y(), 0.5, pow(10,-6));
 
 }
 /*----------------------------------------------------------------------------*/
