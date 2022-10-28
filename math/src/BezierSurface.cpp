@@ -15,7 +15,7 @@ BezierSurface::BezierSurface(const Array2D<math::Point>& APts) :
 	m_degree_n = m_control_points.nbColumns()-1;
 }
 /*------------------------------------------------------------------------*/
-math::Point BezierSurface::operator()(const double& u, const double& v) const {
+math::Point BezierSurface::operator()(const double& Au, const double& Av) const {
 
 	Array2D<math::Point> current_control = m_control_points;
 	math::Point M({0,0,0});
@@ -24,8 +24,8 @@ math::Point BezierSurface::operator()(const double& u, const double& v) const {
 	{
 		for (int j=0; j<=m_degree_n; j++)
 		{
-			double Bmu = BernsteinPolynomial(m_degree_m, i, u);
-			double Bnv = BernsteinPolynomial(m_degree_n, j, v);
+			double Bmu = BernsteinPolynomial(m_degree_m, i, Au);
+			double Bnv = BernsteinPolynomial(m_degree_n, j, Av);
 			M = M + Bmu*Bnv*m_control_points(i,j) ;
 		}
 	}
@@ -50,20 +50,20 @@ Array2D<math::Point> BezierSurface:: getDiscretization(const int ANb_m, const in
 	return points;
 }
 /*----------------------------------------------------------------------------*/
-double BezierSurface::BinomialCoefficient(int n, int k) const
+double BezierSurface::BinomialCoefficient(const int An, const int Ak) const
 {
 	double factorial_n(1);
 	double factorial_k(1);
 	double factorial_n_k(1);
 
-	for (int i=2; i <= n; i++)
+	for (int i=2; i <= An; i++)
 	{
 		factorial_n = factorial_n*i;
-		if (i <= k)
+		if (i <= Ak)
 		{
 			factorial_k = factorial_k*i;
 		}
-		if (i <= n-k)
+		if (i <= An-Ak)
 		{
 			factorial_n_k = factorial_n_k*i;
 		}
@@ -73,10 +73,10 @@ double BezierSurface::BinomialCoefficient(int n, int k) const
 
 }
 /*------------------------------------------------------------------------*/
-double BezierSurface::BernsteinPolynomial(int n, int i, double u) const
+double BezierSurface::BernsteinPolynomial(const int An, const int Ai, const double Au) const
 {
-	double C_n_i = BinomialCoefficient(n, i);
-	return C_n_i* pow(u, i)* pow(1-u, n-i);
+	double C_n_i = BinomialCoefficient(An, Ai);
+	return C_n_i* pow(Au, Ai)* pow(1-Au, An-Ai);
 }
 /*----------------------------------------------------------------------------*/
 } // namespace math

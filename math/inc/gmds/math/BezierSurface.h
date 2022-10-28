@@ -28,63 +28,61 @@ class GMDSMath_API BezierSurface {
 	/** \brief Constructor of a bezier surface from an 2D array of ordered
 	    * 	set of control points.
        *
-       * \param APts the set of control points to define the curve
+       * \param[in] APts the set of control points to define the curve
 	 */
 	BezierSurface(const Array2D<math::Point> & APts);
 
 	/*------------------------------------------------------------------------*/
-	/** \brief Returns the point located on the parametric surface with
+	/** \brief Returns the point located on the parametric surface with:
        *
-       * \param[in] u the first parameter in [0,1]
-       * \param[in] v the second parameter in [0,1]
+       * \param[in] Au the first parameter in [0,1]
+       * \param[in] Av the second parameter in [0,1]
        *
-       * \return The point located at (u,v) on the parametric surface
+       * \return The point located at (Au,Av) on the parametric surface.
 	 */
-	math::Point operator()(const double& u, const double& v) const;
+	math::Point operator()(const double& Au, const double& Av) const;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief Returns a set of point that discretize the surface in
-	    * 	ANb_m x ANb_n segment in the parametric space
+	    * 	ANb_m x ANb_n segments in the parametric space.
        *
-       * \param[in] ANb_m the number of segment we want to have in the first direction
-       * \param[in] ANb_n the number of segment we want to have in the second direction
+       * \param[in] ANb_m the number of segments in the first direction
+       * \param[in] ANb_n the number of segments in the second direction
        *
-       * \return The set of point discretizing (*this);
+       * \return The set of point discretizing the surface (*this).
 	 */
 	Array2D<math::Point> getDiscretization(const int ANb_m, const int ANb_n) const;
 
-	/*------------------------------------------------------------------------*/
-
  private:
 	/*------------------------------------------------------------------------*/
-	/** \brief Returns the binomial coefficient C_k^n. This is the number of
-	    *		part of k elements in a set of n elements
+	/** \brief Returns the binomial coefficient C_Ak^An. This is the number of
+	    *		part of Ak elements in a set of An elements.
        *
-       * \param[in] n
-       * \param[in] k
+       * \param[in] An the number of elements in the set
+       * \param[in] Ak
        *
-       * \return The binomial coefficient C_k^n
+       * \return The binomial coefficient C_Ak^An.
 	 */
-	double BinomialCoefficient(int n, int k) const;
+	double BinomialCoefficient(const int An, const int Ak) const;
 
 	/*------------------------------------------------------------------------*/
-	/** \brief Returns the value of the Bernstein's i-th polynomial of degree n
-	    * 	for u in [0,1].
+	/** \brief Returns the value of the Bernstein's Ai-th polynomial of degree An
+	    * 	for Au in [0,1].
        *
-       * \param[in] n degree of the Bernstein's polynomial
-       * \param[in] i Bernstein's i-th polynomial of degree n
-       * \param[in] u parameter in [0,1]
+       * \param[in] An degree of the Bernstein's polynomial
+       * \param[in] Ai Bernstein's i-th polynomial of degree n
+       * \param[in] Au parameter in [0,1]
        *
-       * \return Bernstein's i-th polynomial of degree n evaluated at u
+       * \return Bernstein's Ai-th polynomial of degree An evaluated at Au
 	 */
-	double BernsteinPolynomial(int n, int i, double u) const;
+	double BernsteinPolynomial(const int An, const int Ai, const double Au) const;
 
-	/*------------------------------------------------------------------------*/
  private:
 	/** ordered 2D array of control points of the curve */
 	Array2D<math::Point> m_control_points;
-	/** polynomial degrees of the surface */
+	/** polynomial degree of the surface in the first direction */
 	int m_degree_m;
+	/** polynomial degree of the surface in the second direction */
 	int m_degree_n;
 
 };
