@@ -4375,7 +4375,6 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
 
-  
   /*if(pt.Y() <= 0.5)
   {
     metricX = 0.1;
@@ -4460,6 +4459,94 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   (*metric)[node](1,1) = 1.0 / (metricY*metricY);
   (*metric)[node](2,2) = 1.0 / (metricZ*metricZ);
   //std::cout << "*metric -> " << (*metric)[node] << std::endl;
+}
+/******************************************************************************/
+bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d> frames)
+{
+  frames.clear();
+  frames.resize(6);
+  Variable<math::Vector3d>* FF_X_NEG = nullptr;
+  Variable<math::Vector3d>* FF_X_POS = nullptr;
+  Variable<math::Vector3d>* FF_Y_NEG = nullptr;
+  Variable<math::Vector3d>* FF_Y_POS = nullptr;
+  Variable<math::Vector3d>* FF_Z_NEG = nullptr;
+  Variable<math::Vector3d>* FF_Z_POS = nullptr;
+
+  try{
+    FF_X_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_X_NEG");
+    FF_X_POS = getVariable<math::Vector3d, SimplicesNode>("FF_X_POS");
+    FF_Y_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_Y_NEG");
+    FF_Y_POS = getVariable<math::Vector3d, SimplicesNode>("FF_Y_POS");
+    FF_Z_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_Z_NEG");
+    FF_Z_POS = getVariable<math::Vector3d, SimplicesNode>("FF_Z_POS");
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  std::vector<TSimplexID> tetraContainingPt{};
+  TSimplexID simplexToCheckFirst;
+  unsigned int sizeCell = 4;
+  checkSimplicesContenaing(pt, tetraContainingPt, simplexToCheckFirst);
+
+  if(tetraContainingPt.size() != 0)
+  {
+    TSimplexID tet = tetraContainingPt.front();
+    std::vector<double> uvwt{};
+    std::vector<std::vector<math::Vector3d>> framesNode{};
+
+    SimplicesCell cell(this,tet);
+    std::vector<TInt> nodes = cell.getNodes();
+    double volumeTotal = cell.getVolumeOfCell();
+
+    for(unsigned int nodeId = 0 ; nodeId < sizeCell ; nodeId++)
+    {
+      framesNode.push_back(std::vector<math::Vector3d>{(*FF_X_NEG)[nodes[nodeId]], (*FF_X_POS)[nodes[nodeId]], (*FF_Y_NEG)[nodes[nodeId]],
+                                                    (*FF_Y_POS)[nodes[nodeId]], (*FF_Z_NEG)[nodes[nodeId]], (*FF_Z_POS)[nodes[nodeId]]});
+    }
+
+    for(unsigned int faceId = 0 ; faceId < sizeCell ; faceId++)
+    {
+      std::vector<TInt> orderedFace = cell.getOrderedFace(faceId);
+      Tetrahedron tetrahedron(pt, SimplicesNode(this, orderedFace[0]).getCoords(),
+       SimplicesNode(this, orderedFace[1]).getCoords(), SimplicesNode(this, orderedFace[2]).getCoords());
+      uvwt.push_back(tetrahedron.getVolume() / volumeTotal);
+    }
+
+    std::vector<std::vector<math::Vector3d>> F{};
+    for(unsigned int nodeId = 0 ; nodeId < sizeCell ; nodeId++)
+    {
+      double r = uvwt[nodeId];
+      for(auto const & f : framesNode)
+      {
+        math::Vector3d vec;
+        std::vector<math::Vector3d> vs{};
+        for(auto const & v : f)
+        {
+          vec = v*r;
+          vs.push_back(vec);
+        }
+        F.push_back(vs);
+      }
+    }
+
+
+    unsigned int sizeFrame = 6;
+    for(auto const & f : F)
+    {
+      for(unsigned int fId = 0 ; fId < sizeFrame ; fId++)
+      {
+        frames[fId] += f[fId] / static_cast<double>(sizeFrame);
+      }
+    }
+  }
+
+  for(auto const & v : frames)
+  {
+    std::cout << "v -> " << v << std::endl;
+  }
+  std::cout << std::endl;
+  return false;
 }
 /******************************************************************************/
 void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)

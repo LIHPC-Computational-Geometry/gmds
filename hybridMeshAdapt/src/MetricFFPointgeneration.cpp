@@ -304,6 +304,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
 {
   static int cpt = 0;
   std::vector<TInt> newNodes{};
+
   //test direction, we force the direction tospread the nodes to i,j,k
   /*Eigen::Vector3d x_dir(1.0, 0.0, 0.0);
   Eigen::Vector3d y_dir(0.0, 1.0, 1.0);
@@ -330,6 +331,14 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
   for(auto const node : nodesAdded)
   {
     const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
+
+  }
+  for(auto const node : nodesAdded)
+  {
+    std::vector<math::Vector3d> frames{};
+    const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
+    m_simplexMesh->getFrameAt(pt, frames);
+    return;
     for(auto const & dir : dirs)
     {
       for(auto const spin : spins)
@@ -349,13 +358,57 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
       }
     }
   }
-  sort(nodesSamplingData.begin(), nodesSamplingData.end(),
+  /*sort(nodesSamplingData.begin(), nodesSamplingData.end(),
     [](const nodeSamplingData & dataA, const nodeSamplingData & dataB) -> bool
     {
-    return dataA.m > dataB.m;
-    });
+    return dataA.m < dataB.m;
+  });*/
 
-  for(auto const node : nodesAdded)
+  std::vector<TInt> v;
+  for(auto const nodeData : nodesSamplingData)
+  {
+    TInt node = nodeData.node;
+    math::Point newCoord = nodeData.coord;
+    const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
+    TInt newNodeId = -1;
+    if(m_oc.belongToOc(newCoord))
+    {
+      //compute the metric lentgh based on newNodeId and the metric at node
+      findOptimimalPosition(node, newCoord);
+      std::vector<TInt> neighboorNodes;
+      nodeFiltering(node, newCoord, neighboorNodes);
+      if(!neighboorNodes.size())
+      {
+        newNodeId = m_nodesMesh.addNode(newCoord);
+        m_nodesMesh.setAnalyticMetric(newNodeId);
+        newNodes.push_back(newNodeId);
+      }
+      else
+      {
+        double distMin = std::numeric_limits<double>::max();
+        for(auto const n : neighboorNodes)
+        {
+          math::Point pid = SimplicesNode(&m_nodesMesh, n).getCoords();
+          math::Vector3d v = math::Vector3d({pid.X() - pt.X(), pid.Y() - pt.Y(), pid.Z() - pt.Z()});
+          double dist = v.norm();
+          if(dist < distMin)
+          {
+            distMin = dist;
+            newNodeId = n;
+          }
+        }
+      }
+    }
+    v.push_back(newNodeId);
+    if(v.size() == 6)
+    {
+      m_nodeStructure.insert( std::pair<TInt, std::vector<TInt>>(node, v) );
+      v.clear();
+      continue;
+    }
+  }
+
+  /*for(auto const node : nodesAdded)
   {
     unsigned int id = 0;
     std::vector<TInt> v{-1, -1, -1, -1, -1, -1};
@@ -406,18 +459,18 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
             }
             v[id] = newNodeId;
           }
-          /*gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
-          gmds::VTKWriter vtkWriterMA(&ioService);
-          vtkWriterMA.setCellOptions(gmds::N);
-          vtkWriterMA.setDataOptions(gmds::N);
-          vtkWriterMA.write("metricFF_Node_CPT_" + std::to_string(cpt) + ".vtk");
-          cpt++;*/
+          //gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
+          //gmds::VTKWriter vtkWriterMA(&ioService);
+          //vtkWriterMA.setCellOptions(gmds::N);
+          //vtkWriterMA.setDataOptions(gmds::N);
+          //vtkWriterMA.write("metricFF_Node_CPT_" + std::to_string(cpt) + ".vtk");
+          //cpt++;
         }
         id++;
       }
     }
     m_nodeStructure.insert( std::pair<TInt, std::vector<TInt>>(node, v) );
-  }
+  }*/
 
   nodesAdded.clear();
   nodesAdded = newNodes;
