@@ -3,6 +3,7 @@
 /*----------------------------------------------------------------------------*/
 // Files containing the different test suites to launch
 
+#include <BezierSurfaceTestSuite.h>
 #include <ChartTestSuite.h>
 #include <Cross2DTestSuite.h>
 #include <CrossTestSuite.h>
