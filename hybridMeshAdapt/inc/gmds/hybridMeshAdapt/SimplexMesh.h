@@ -444,7 +444,7 @@ class SimplexMesh
 
   Eigen::Matrix3d getAnalyticMetric(const math::Point& pt) const;
 
-  bool getFrameAt(const math::Point& pt, std::vector<math::Vector3d> frames) ;
+  bool getFrameAt(const math::Point& pt, std::vector<math::Vector3d>& frames) ;
 
 private:
 

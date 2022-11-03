@@ -4461,7 +4461,7 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   //std::cout << "*metric -> " << (*metric)[node] << std::endl;
 }
 /******************************************************************************/
-bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d> frames)
+bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>& frames)
 {
   frames.clear();
   frames.resize(6);
@@ -4503,48 +4503,33 @@ bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d> 
     {
       framesNode.push_back(std::vector<math::Vector3d>{(*FF_X_NEG)[nodes[nodeId]], (*FF_X_POS)[nodes[nodeId]], (*FF_Y_NEG)[nodes[nodeId]],
                                                     (*FF_Y_POS)[nodes[nodeId]], (*FF_Z_NEG)[nodes[nodeId]], (*FF_Z_POS)[nodes[nodeId]]});
-    }
-
-    for(unsigned int faceId = 0 ; faceId < sizeCell ; faceId++)
-    {
-      std::vector<TInt> orderedFace = cell.getOrderedFace(faceId);
+      std::vector<TInt> orderedFace = cell.getOrderedFace(nodeId);
       Tetrahedron tetrahedron(pt, SimplicesNode(this, orderedFace[0]).getCoords(),
        SimplicesNode(this, orderedFace[1]).getCoords(), SimplicesNode(this, orderedFace[2]).getCoords());
-      uvwt.push_back(tetrahedron.getVolume() / volumeTotal);
+      uvwt.push_back(std::abs(tetrahedron.getVolume() / volumeTotal));
+      std::cout << "framesNode -> " << framesNode.back()[0] << std::endl;
     }
 
-    std::vector<std::vector<math::Vector3d>> F{};
+
+    std::cout << "uvwt -> " << uvwt[0] << " " << uvwt[1] << " " << uvwt[2] << " " << uvwt[3] <<  std::endl;
     for(unsigned int nodeId = 0 ; nodeId < sizeCell ; nodeId++)
     {
       double r = uvwt[nodeId];
-      for(auto const & f : framesNode)
-      {
-        math::Vector3d vec;
-        std::vector<math::Vector3d> vs{};
-        for(auto const & v : f)
-        {
-          vec = v*r;
-          vs.push_back(vec);
-        }
-        F.push_back(vs);
-      }
-    }
+      std::cout << "nodeId -> " << nodeId << std::endl;
+      std::vector<math::Vector3d> f = framesNode[nodeId];
+      frames[0] += f[0] * r ; frames[1] += f[1] * r ; frames[2] += f[2] * r ;
+      frames[3] += f[3] * r ; frames[4] += f[4] * r ; frames[5] += f[5] * r ;
+      std::cout << "f[0] -> " << f[0].X() << " | " << f[0].Y() << " | " << f[0].Z() << std::endl;
+      std::cout << "frames[0] -> " << frames[0].X() << " | " << frames[0].Y() << " | " << frames[0].Z() << std::endl;
 
-
-    unsigned int sizeFrame = 6;
-    for(auto const & f : F)
-    {
-      for(unsigned int fId = 0 ; fId < sizeFrame ; fId++)
-      {
-        frames[fId] += f[fId] / static_cast<double>(sizeFrame);
-      }
     }
   }
+  std::cout << "frames[0] -> " << frames[0].X() << " | " << frames[0].Y() << " | " << frames[0].Z() << std::endl;
 
-  for(auto const & v : frames)
+  /*for(auto const & v : frames)
   {
     std::cout << "v -> " << v << std::endl;
-  }
+  }*/
   std::cout << std::endl;
   return false;
 }
