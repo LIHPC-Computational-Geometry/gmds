@@ -4374,7 +4374,9 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
   double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-
+  metricX = 3.0;
+  metricY = 3.0;
+  metricZ = 3.0;
   /*if(pt.Y() <= 0.5)
   {
     metricX = 0.1;
@@ -4433,7 +4435,9 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   std::cout << "metricX -> " << metricX << std::endl;
   std::cout << "metricY -> " << metricY << std::endl;
   std::cout << "metricZ -> " << metricZ << std::endl;*/
-
+  metricX = 3.0;
+  metricY = 3.0;
+  metricZ = 3.0;
   /*if(pt.Y() <= 0.5)
   {
     metricX = 0.1;
@@ -4499,6 +4503,7 @@ bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>&
     std::vector<TInt> nodes = cell.getNodes();
     double volumeTotal = cell.getVolumeOfCell();
 
+
     for(unsigned int nodeId = 0 ; nodeId < sizeCell ; nodeId++)
     {
       framesNode.push_back(std::vector<math::Vector3d>{(*FF_X_NEG)[nodes[nodeId]], (*FF_X_POS)[nodes[nodeId]], (*FF_Y_NEG)[nodes[nodeId]],
@@ -4507,30 +4512,29 @@ bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>&
       Tetrahedron tetrahedron(pt, SimplicesNode(this, orderedFace[0]).getCoords(),
        SimplicesNode(this, orderedFace[1]).getCoords(), SimplicesNode(this, orderedFace[2]).getCoords());
       uvwt.push_back(std::abs(tetrahedron.getVolume() / volumeTotal));
-      std::cout << "framesNode -> " << framesNode.back()[0] << std::endl;
     }
 
+    //sort the frame data occording to the first one to have all frames data in correct direction (based on dot product between frame0's vector and other frame's vector)
+    for(unsigned int nodeId = 1 ; nodeId < sizeCell ; nodeId++)
+    {
+      std::sort(framesNode[nodeId].begin(), framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[0][0].dot(vA) > framesNode[0][0].dot(vB));});
+      std::sort(framesNode[nodeId].begin()+1, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[0][1].dot(vA) > framesNode[0][1].dot(vB));});
+      std::sort(framesNode[nodeId].begin()+2, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[0][2].dot(vA) > framesNode[0][2].dot(vB));});
+      std::sort(framesNode[nodeId].begin()+3, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[0][3].dot(vA) > framesNode[0][3].dot(vB));});
+      std::sort(framesNode[nodeId].begin()+4, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[0][4].dot(vA) > framesNode[0][4].dot(vB));});
+      std::sort(framesNode[nodeId].begin()+5, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[0][5].dot(vA) > framesNode[0][5].dot(vB));});
+    }
 
-    std::cout << "uvwt -> " << uvwt[0] << " " << uvwt[1] << " " << uvwt[2] << " " << uvwt[3] <<  std::endl;
+    //throw gmds::GMDSException("OK");
     for(unsigned int nodeId = 0 ; nodeId < sizeCell ; nodeId++)
     {
       double r = uvwt[nodeId];
-      std::cout << "nodeId -> " << nodeId << std::endl;
       std::vector<math::Vector3d> f = framesNode[nodeId];
       frames[0] += f[0] * r ; frames[1] += f[1] * r ; frames[2] += f[2] * r ;
       frames[3] += f[3] * r ; frames[4] += f[4] * r ; frames[5] += f[5] * r ;
-      std::cout << "f[0] -> " << f[0].X() << " | " << f[0].Y() << " | " << f[0].Z() << std::endl;
-      std::cout << "frames[0] -> " << frames[0].X() << " | " << frames[0].Y() << " | " << frames[0].Z() << std::endl;
 
     }
   }
-  std::cout << "frames[0] -> " << frames[0].X() << " | " << frames[0].Y() << " | " << frames[0].Z() << std::endl;
-
-  /*for(auto const & v : frames)
-  {
-    std::cout << "v -> " << v << std::endl;
-  }*/
-  std::cout << std::endl;
   return false;
 }
 /******************************************************************************/
