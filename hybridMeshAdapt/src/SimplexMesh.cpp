@@ -358,19 +358,17 @@ TSimplexID SimplexMesh::getSimplexFromBase(const TInt ANodeID)
 TInt SimplexMesh::addNodeAndcheck(const math::Point& pt, std::vector<TSimplexID>& tetraContainingPt, bool& alreadyAdd, TSimplexID simplexToCheckFirst)
 {
   bool flag = false;
+  double epsilon = 10E-4;
+
   //check if the point pt is on any other node already in the mesh;
   if(tetraContainingPt.size() == 0)
   {
     flag = checkSimplicesContenaing(pt, tetraContainingPt, simplexToCheckFirst);
   }
 
-  if(tetraContainingPt.size() == 0)
-  {
-    return -1;
-  }
+
   if(flag)
   {
-    double epsilon = 10E-4;
     for(auto const & tet : tetraContainingPt)
     {
       const std::vector<TInt>& nodesOfTet = SimplicesCell(this, tet).getNodes();
@@ -386,6 +384,24 @@ TInt SimplexMesh::addNodeAndcheck(const math::Point& pt, std::vector<TSimplexID>
       }
     }
   }
+
+  if(m_tet_nodes.size() == 0)
+  {
+    for(unsigned int nodeId = 0 ; nodeId < m_node_ids.capacity() ; nodeId++)
+    {
+      if(m_node_ids[nodeId] != 0)
+      {
+        math::Vector3d VecBetweenPt = (SimplicesNode(this, nodeId).getCoords() - pt);
+        double lenght = VecBetweenPt.norm();
+        if(lenght < epsilon)//pt is on nodeOfTet
+        {
+          alreadyAdd = true;
+          return nodeId;
+        }
+      }
+    }
+  }
+
 
   if(m_node_ids.top() + 1 >= m_node_ids.capacity() )
   {
@@ -3207,7 +3223,8 @@ bool SimplexMesh::checkSimplicesContenaing(const gmds::math::Point& pt, std::vec
   //uvwt.reserve(4);
 
 
-
+  if(m_tet_ids.size() == 0){return false;}
+  if(m_tri_ids.size() == 0){return false;}
   TSimplexID simplexNextToPt = (simplexToCheckFirst == border)?m_octree->findSimplexNextTo(pt):simplexToCheckFirst;
   BitVector cyclingCheck(getBitVectorTet().capacity());
 
@@ -4305,7 +4322,7 @@ void SimplexMesh::getEdgeSizeInfowithMetric(double& meanEdges, double& minEdge, 
     Metric<Eigen::Matrix3d> M0 = Metric<Eigen::Matrix3d>((*metric)[edge.first]);
     Metric<Eigen::Matrix3d> M1 = Metric<Eigen::Matrix3d>((*metric)[edge.second]);
 
-    double metricLenght        = M0.metricDist(vec(coord0), vec(coord0), M1);
+    double metricLenght        = M0.metricDist(vec(coord0), vec(coord1), M1);
     if(metricLenght > sqrt(2))
     {
       edgesAboveSqrt2CPT++;
@@ -4354,10 +4371,11 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
   Eigen::Matrix3d m = Eigen::MatrixXd::Identity(3, 3);
 
   //CONSTANT ISOTROPE METRIC
-  double metricX = 0.1*(1.0 - pt.X()) + 0.1*pt.X();
-  double metricY = 0.3*(1.0 - pt.X()) + 0.3*pt.X();
-  double metricZ = 0.1*(1.0 - pt.X()) + 0.1*pt.X();
+  double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
+  double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
+  double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
 
+  
   /*if(pt.Y() <= 0.5)
   {
     metricX = 0.1;
@@ -4388,8 +4406,8 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
   m(0,0) = 1.0 / (metricX*metricX);
   m(1,1) = 1.0 / (metricY*metricY);
   m(2,2) = 1.0 / (metricZ*metricZ);
-
   return m;
+
 }
 /******************************************************************************/
 void SimplexMesh::setAnalyticMetric(const TInt node)
@@ -4409,17 +4427,13 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
 
   //CONSTANT ISOTROPE METRIC
   (*metric)[node] =  Eigen::MatrixXd::Identity(3, 3);
-  double metricX = 0.1*(1.0 - pt.X()) + 0.1*pt.X();
-  double metricY = 0.3*(1.0 - pt.X()) + 0.3*pt.X();
-  double metricZ = 0.1*(1.0 - pt.X()) + 0.1*pt.X();
+  double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
+  double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
+  double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   /*std::cout << "pt -> " << pt << std::endl;
   std::cout << "metricX -> " << metricX << std::endl;
   std::cout << "metricY -> " << metricY << std::endl;
   std::cout << "metricZ -> " << metricZ << std::endl;*/
-  /*metricX = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();
-  metricY = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();
-  metricZ = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();*/
-
 
   /*if(pt.Y() <= 0.5)
   {

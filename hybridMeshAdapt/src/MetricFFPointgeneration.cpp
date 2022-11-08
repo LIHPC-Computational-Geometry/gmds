@@ -96,11 +96,149 @@ void MetricFFPointgeneration::execute()
     }
   }
 
+  std::set<std::vector<TInt>> hexs{};
+  computeHexa(hexs);
+  std::cout << "hex size -> " << hexs.size() << std::endl;
+
   gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
   gmds::VTKWriter vtkWriterMA(&ioService);
   vtkWriterMA.setCellOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterMA.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterMA.write("metricFF_Node.vtk");
+}
+/*----------------------------------------------------------------------------*/
+void MetricFFPointgeneration::computeHexa(std::set<std::vector<TInt>> & hexa) const
+{
+  const gmds::BitVector& nodeBitVector = m_nodesMesh.getBitVectorNodes();
+  std::set<std::vector<TInt>> faces{};
+  unsigned int sizeFACE = 4;
+  computeQuadFaces(faces);
+
+
+
+  //compute the hull of a node in faces
+  std::multimap<TInt, std::vector<TInt>> mm{};
+  std::unordered_map<TInt, std::set<TInt>> um{};
+
+  for(auto const face : faces)
+  {
+    for(unsigned int n = 0 ; n < sizeFACE ; n++)
+    {
+      std::pair<TInt, std::vector<TInt>> p{face[n], std::vector<TInt>{face[(n + 1) % sizeFACE], face[(n + 2) % sizeFACE], face[(n + 3) % sizeFACE]}};
+      mm.insert(p);
+    }
+  }
+
+  for(unsigned int n = 0 ; n < nodeBitVector.capacity() ; n++)
+  {
+    if(nodeBitVector[n] != 0)
+    {
+      std::set<TInt> s{};
+      auto r = mm.equal_range(n);
+      for(auto it = r.first ; it != r.second ; it++)
+      {
+        for(auto const neighborNode : it->second)
+        {
+          s.insert(neighborNode);
+        }
+      }
+      um.insert(std::pair<TInt, std::set<TInt>>{n, s});
+    }
+  }
+
+  unsigned int cpt = 0;
+  std::vector<TInt> v{};
+  TInt nodeA ;
+  TInt nodeB ;
+  unsigned int t = 0;
+  for(auto const & p0 : um)
+  {
+    for(auto const & p1 : um)
+    {
+      if(p0 != p1)
+      {
+        v.clear();
+        nodeA = p0.first;
+        nodeB = p1.first;
+
+        if(std::find(p1.second.begin(), p1.second.end(), nodeA) == p1.second.end())
+        {
+          for(auto const & v0 : p0.second)
+          {
+            for(auto const & v1 : p1.second)
+            {
+              if(v0 == v1 && v0 != nodeA && v0 != nodeB)
+              {
+                v.push_back(v0);
+              }
+            }
+          }
+        }
+
+        if(v.size() == 6)
+        {
+          v.push_back(nodeA);
+          v.push_back(nodeB);
+          std::sort(v.begin(), v.end());
+          hexa.insert(v);
+        }
+      }
+    }
+  }
+}
+/*----------------------------------------------------------------------------*/
+void MetricFFPointgeneration::computeQuadFaces(std::set<std::vector<TInt>> & faces) const
+{
+  faces.clear();
+  std::multimap<TInt, TInt> edges{};
+
+  for(auto const & s : m_nodeStructure)
+  {
+    TInt node = s.first;
+    for(auto const & n : s.second)
+    {
+      if(n != -1)
+      {
+        std::pair<TInt, TInt> p(node,n);
+        edges.insert(p);
+      }
+    }
+  }
+
+  for(auto const & edge : edges)
+  {
+    TInt nodeA = edge.first;
+    TInt nodeB = edge.second;
+
+    auto rangeA = edges.equal_range(nodeA);
+    auto rangeB = edges.equal_range(nodeB);
+
+    gmds::BitVector bitVectorNodeRangeA(m_nodesMesh.getBitVectorNodes().capacity());
+    for (auto i = rangeA.first; i != rangeA.second; ++i)
+    {
+      if(i->second != nodeB)
+      {
+        bitVectorNodeRangeA.assign(i->second);
+      }
+    }
+
+    for (auto j = rangeB.first; j != rangeB.second; ++j)
+    {
+      if(j->second != nodeA)
+      {
+        auto rangeC = edges.equal_range(j->second);
+        for (auto k = rangeC.first; k != rangeC.second; ++k)
+        {
+          if(bitVectorNodeRangeA[k->second] != 0)
+          {
+            std::vector<TInt> v{nodeA, nodeB, j->second, k->second};
+            std::sort(v.begin(), v.end());
+            faces.insert(v);
+          }
+        }
+      }
+    }
+  }
 }
 /*----------------------------------------------------------------------------*/
 Point MetricFFPointgeneration::computeTheEdgeNodeCoordinate(const double u, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const
@@ -217,64 +355,6 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
     return dataA.m > dataB.m;
     });
 
-
-  /*unsigned int id = 0;
-  std::vector<TInt> v{-1, -1, -1, -1, -1, -1};
-  for(auto const & data : nodesSamplingData)
-  {
-    if(id == 5)
-    {
-      id = 0;
-      v = std::vector<TInt>{-1, -1, -1, -1, -1, -1};
-    }
-    math::Point newCoord = data.coord;
-    const TInt node = data.node;
-
-    //check if the pt is in the mesh
-    if(m_oc.belongToOc(newCoord))
-    {
-      //compute the metric lentgh based on newNodeId and the metric at node
-      findOptimimalPosition(node, newCoord);
-      std::vector<TInt> neighboorNodes;
-      nodeFiltering(node, newCoord, neighboorNodes);
-
-      if(!neighboorNodes.size())
-      {
-        TInt newNodeId = m_nodesMesh.addNode(newCoord);
-        m_nodesMesh.setAnalyticMetric(newNodeId);
-        v[id] = newNodeId;
-        newNodes.push_back(newNodeId);
-        gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
-        gmds::VTKWriter vtkWriterMA(&ioService);
-        vtkWriterMA.setCellOptions(gmds::N);
-        vtkWriterMA.setDataOptions(gmds::N);
-        vtkWriterMA.write("metricFF_Node_CPT_" + std::to_string(cpt) + ".vtk");
-        cpt++;
-      }
-      else
-      {
-        double distMin = std::numeric_limits<double>::max();
-        TInt neighboorNode;
-        for(auto const n : neighboorNodes)
-        {
-          math::Point pid = SimplicesNode(&m_nodesMesh, n).getCoords();
-          math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
-          math::Vector3d v = math::Vector3d(pid.X() - pt.X(), pid.Y() - pt.Y(), pid.Z() - pt.Z());
-          double dist = v.norm();
-          if(dist < distMin)
-          {
-            distMin = dist;
-            neighboorNode = n;
-          }
-        }
-        v[id] = neighboorNode;
-      }
-    }
-    id++;
-    m_nodeStructure.insert( std::pair<TInt, std::vector<TInt>>(node, v) );
-  }*/
-
-
   for(auto const node : nodesAdded)
   {
     unsigned int id = 0;
@@ -300,24 +380,19 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
           findOptimimalPosition(node, newCoord);
           std::vector<TInt> neighboorNodes;
           nodeFiltering(node, newCoord, neighboorNodes);
+          TInt newNodeId = -1;
 
           if(!neighboorNodes.size())
           {
-            TInt newNodeId = m_nodesMesh.addNode(newCoord);
+            newNodeId = m_nodesMesh.addNode(newCoord);
             m_nodesMesh.setAnalyticMetric(newNodeId);
             v[id] = newNodeId;
             newNodes.push_back(newNodeId);
-            gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
-            gmds::VTKWriter vtkWriterMA(&ioService);
-            vtkWriterMA.setCellOptions(gmds::N);
-            vtkWriterMA.setDataOptions(gmds::N);
-            vtkWriterMA.write("metricFF_Node_CPT_" + std::to_string(cpt) + ".vtk");
-            cpt++;
+
           }
           else
           {
             double distMin = std::numeric_limits<double>::max();
-            TInt neighboorNode;
             for(auto const n : neighboorNodes)
             {
               math::Point pid = SimplicesNode(&m_nodesMesh, n).getCoords();
@@ -326,11 +401,17 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
               if(dist < distMin)
               {
                 distMin = dist;
-                neighboorNode = n;
+                newNodeId = n;
               }
             }
-            v[id] = neighboorNode;
+            v[id] = newNodeId;
           }
+          /*gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
+          gmds::VTKWriter vtkWriterMA(&ioService);
+          vtkWriterMA.setCellOptions(gmds::N);
+          vtkWriterMA.setDataOptions(gmds::N);
+          vtkWriterMA.write("metricFF_Node_CPT_" + std::to_string(cpt) + ".vtk");
+          cpt++;*/
         }
         id++;
       }
@@ -344,7 +425,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::nodeFiltering(const TInt node, const math::Point& pt, std::vector<TInt> & neighboorNode)
 {
-  const double k = 0.65;
+  const double k = 1.0;
   const double epsilon = 0.01;
   Variable<Eigen::Matrix3d>* metric  = nullptr;
   gmds::Variable<int>* BND_CURVE_COLOR_NODE = nullptr;
@@ -366,12 +447,13 @@ void MetricFFPointgeneration::nodeFiltering(const TInt node, const math::Point& 
     {
       const math::Point nodeCoord = SimplicesNode(&m_nodesMesh, nodeId).getCoords();
       Eigen::Vector3d v(pt.X() - nodeCoord.X(), pt.Y() - nodeCoord.Y(), pt.Z() - nodeCoord.Z());
+      const double euclidianNorm = v.norm();
       //the metric being analytique we do not have to interpolate the metric at point
-      const Eigen::Matrix3d m0 = (*metric)[nodeId];
-      const Eigen::Matrix3d m1 = m_nodesMesh.getAnalyticMetric(pt);
+      const Eigen::Matrix3d m0 = m_nodesMesh.getAnalyticMetric(pt);
       //compute the current length based on the metric atached to the mesh
-      const double metricLenght = 0.5 * sqrt(v.dot(m0*v)) +  0.5 * sqrt(v.dot(m1*v));
-      if(metricLenght <= k*(1.0 - epsilon))
+      const double metricLenght = sqrt(v.dot(m0*v));
+
+      if(metricLenght <= 0.70)
       {
         neighboorNode.push_back(nodeId);
       }
@@ -474,10 +556,15 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TI
   {
     const double u = res[i];
     Point pt = computeTheEdgeNodeCoordinate(u, edge, edgeU);
-    TInt newNodeId = m_nodesMesh.addNode(pt);
-    (*BND_CURVE_COLOR_NODE)[newNodeId] = edgeId;
-    m_nodesMesh.setAnalyticMetric(newNodeId);
-    nodesAdded.push_back(newNodeId);
+    std::vector<TSimplexID> tetraContenaingPt{};
+    bool status = false;
+    TInt newNodeId = m_nodesMesh.addNodeAndcheck(pt, tetraContenaingPt, status);
+    if(!status)
+    {
+      (*BND_CURVE_COLOR_NODE)[newNodeId] = edgeId;
+      m_nodesMesh.setAnalyticMetric(newNodeId);
+      nodesAdded.push_back(newNodeId);
+    }
   }
 }
 /*----------------------------------------------------------------------------*/
