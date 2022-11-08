@@ -12,6 +12,7 @@ set(GMDS_INC
         inc/gmds/blocking/SheetInsert.h
         inc/gmds/blocking/WriterDartsVTK.h
         inc/gmds/blocking/SheetCollapse.h
+        inc/gmds/blocking/CGNSWriter.h
         )
 set(GMDS_SRC
         src/Blocking.cpp
@@ -19,6 +20,7 @@ set(GMDS_SRC
         src/SheetInsert.cpp
         src/WriterDartsVTK.cpp
         src/SheetCollapse.cpp
+        src/CGNSWriter.cpp
         )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
@@ -36,6 +38,8 @@ include(GNUInstallDirs)
 # because of
 # TODO it does not seem to work, the message is still displayed ?
 set (CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
+
+set(cgns /home/calderans/soft/cgns)
 
 # dependencies
 if (WITH_CGAL_QT5)
@@ -56,6 +60,7 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         #${LIB_GMDS_SMOOTHY})
         ${LIB_GMDS_MATH}
         CGAL::CGAL_Core
+        cgns
         )
 
 if (WITH_CGAL_QT5)
