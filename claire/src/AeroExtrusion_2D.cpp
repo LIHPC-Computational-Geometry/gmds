@@ -188,10 +188,11 @@ AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cibl
 		math::Vector3d v1 = (n_neighbor_1.point() - n.point()).normalize();
 		math::Vector3d v2 = (n_neighbor_2.point() - n.point()).normalize();
 
-		double angle = acos(v1.dot(v2)) ;
+		double angle = (acos(v1.dot(v2))*180/M_PI) ;
 
-		if (abs(angle) < M_PI/6.0)
+		if (abs(angle) < 40)
 		{
+			std::cout << "Angle : " << angle << std::endl;
 			Insertion_Double(Front_Paroi, n_id, A_distance, dist_cible, A_vectors);
 		}
 
@@ -238,25 +239,27 @@ AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, dou
 	// Boucle d'insertion d'éléments
 	bool do_smooth(true);
 
-	while (do_smooth){
-		do_smooth = false;
-		// A FAIRE : lissage de la couche
+	if (Front_IN.getFrontID()+1 != m_params_aero.nbr_couches ) {
+		while (do_smooth) {
+			do_smooth = false;
+			// A FAIRE : lissage de la couche
 
-		TCellID node_id;
-		int type_node(0);
-		getSingularNode(Front_IN, node_id, type_node);
+			TCellID node_id;
+			int type_node(0);
+			getSingularNode(Front_IN, node_id, type_node);
 
-		if (type_node == 1){
-			// Insertion
-			std::cout << "INSERTION QUAD AU NOEUD : " << node_id << std::endl;
-			Insertion(Front_IN, node_id, A_distance, dist_cible, A_vectors);
-			do_smooth = true;
-		}
-		else if (type_node == 2){
-			// Fusion
-			std::cout << "FUSION QUAD AU NOEUD : " << node_id << std::endl;
-			Fusion(Front_IN, node_id);
-			do_smooth = true;
+			if (type_node == 1) {
+				// Insertion
+				std::cout << "INSERTION QUAD AU NOEUD : " << node_id << std::endl;
+				Insertion(Front_IN, node_id, A_distance, dist_cible, A_vectors);
+				do_smooth = true;
+			}
+			else if (type_node == 2) {
+				// Fusion
+				std::cout << "FUSION QUAD AU NOEUD : " << node_id << std::endl;
+				Fusion(Front_IN, node_id);
+				do_smooth = true;
+			}
 		}
 	}
 
@@ -332,23 +335,26 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 			double min_lenght_2 =
 			   math::AeroMeshQuality::minlenghtedge(nodes_quad_2[0].point(), nodes_quad_2[1].point(), nodes_quad_2[2].point(), nodes_quad_2[3].point());
 
-			if (singu_not_found && (min_lenght_1 < 0.001 || min_lenght_2 < 0.001)) {
+			if (singu_not_found && (min_lenght_1 < 1.0 && min_lenght_2 < 1.0)) {
 				node_id = n_id;
 				type = 2;
 				singu_not_found = false;
 			}
 
 		}
-	   */
+		 */
+
 
 		// Les tests pour l'INSERSION
 		if (singu_not_found && Front_IN.isMultiplicable(n_id)) {
 
 			// Test angle ouverture
-			/*
+
 			Node n_ideal = m_meshQ->get<Node>(Front_IN.getIdealNode(n_id));
 			Node n_neighbor_1 = m_meshQ->get<Node>(neighbors_nodes[0]);
 			Node n_neighbor_2 = m_meshQ->get<Node>(neighbors_nodes[1]);
+
+			/*
 			double angle_ouverture = math::AeroMeshQuality::AngleOuverture(n.point(), n_ideal.point(),
 			                                                               n_neighbor_1.point(), n_neighbor_2.point());
 
@@ -357,20 +363,27 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 				type = 1;
 				singu_not_found = false;
 			}
-			 */
+			*/
 
 
 			// Alignement avec le flow
-			math::Vector3d v = (m_meshQ->get<Node>(Front_IN.getNextNode(n_id, neighbors_nodes[1])).point() - m_meshQ->get<Node>(n_id).point()) ;
+			//math::Vector3d v = (m_meshQ->get<Node>(Front_IN.getNextNode(n_id, neighbors_nodes[1])).point() - m_meshQ->get<Node>(n_id).point()) ;
+			math::Vector3d v = (n_ideal.point() - n.point()) ;
 			v.normalize();
 			math::Vector3d v_flow({cos(m_params_aero.angle_attack*M_PI/180.0), sin(m_params_aero.angle_attack*M_PI/180.0), 0.0}) ;
 			double angle = v.dot(v_flow)*(180.0/M_PI);
-			if (singu_not_found && abs(angle) < 50 && abs(angle) > 40)
+			double angle_on_layer = math::AeroMeshQuality::AngleOuverture(n.point(), n_ideal.point(),
+			                                                               n_neighbor_1.point(), n_neighbor_2.point());
+			double theta = M_PI/4.0 ;
+			bool test(angle_on_layer > 3.0*M_PI/2.0);
+			if (singu_not_found && angle_on_layer > 3.0*M_PI/2.0 - theta && abs(angle) < 55 && abs(angle) > 35) //
 			{
 				node_id = n_id;
 				type = 1;
 				singu_not_found = false;
 			}
+
+
 
 			/*
 			double internal_angle_1 = math::AeroMeshQuality::InternalAngleDeviationQUAD(nodes_quad_1[0].point(), nodes_quad_1[1].point(),
@@ -406,12 +419,80 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id,
 	//AdvectedPointRK4_2D advpoint_n1(m_meshT, P1_construction, dist_cible, A_distance, A_vectors);
 	//advpoint_n1.execute();
 	//Node n1 = m_meshQ->newNode(advpoint_n1.getPend());
+
+	// TEST 2
+	/*
 	TCellID n_next_ideal_id = Front_IN.getIdealNode(n_id);
 	TCellID n_next_id = Front_IN.getNextNode(neighbors_nodes[0],n_id);
 	Node n_next_ideal = m_meshQ->get<Node>(n_next_ideal_id) ;
 	Node n_next = m_meshQ->get<Node>(n_next_id) ;
 	math::Vector3d P1_construction = 0.33*(n_next.point()-n_next_ideal.point()) ;
 	Node n1 = m_meshQ->newNode(n_next_ideal.point() + P1_construction);
+	*/
+
+
+
+	// TEST 3
+	/*
+	math::Vector3d v_flow({cos(m_params_aero.angle_attack*M_PI/180.0), sin(m_params_aero.angle_attack*M_PI/180.0), 0.0}) ;
+	math::Vector3d v_flow_ortho({-v_flow.Y(), v_flow.X(), 0.0});
+	v_flow.normalize();
+	v_flow_ortho.normalize();
+
+	math::Vector3d v10 = (n.point() - n_neighbor.point()).normalize() ;
+	math::Vector3d v10_ortho({-v10.Y(), v10.X(), 0.0}) ;
+
+	math::Vector3d v_follow;
+	double min_angle(2.0*M_PI);
+	if ( v10_ortho.dot(v_flow) < min_angle )
+	{
+		min_angle = v10_ortho.dot(v_flow);
+		v_follow = v_flow;
+	}
+	if ( v10_ortho.dot(-v_flow) < min_angle )
+	{
+		min_angle = v10_ortho.dot(-v_flow);
+		v_follow = -v_flow;
+	}
+	if ( v10_ortho.dot(v_flow_ortho) < min_angle )
+	{
+		min_angle = v10_ortho.dot(v_flow_ortho);
+		v_follow = v_flow_ortho;
+	}
+	if ( v10_ortho.dot(-v_flow_ortho) < min_angle )
+	{
+		min_angle = v10_ortho.dot(-v_flow_ortho);
+		v_follow = -v_flow_ortho;
+	}
+
+	Variable<math::Vector3d>* var_flow = m_meshT->newVariable<math::Vector3d , GMDS_NODE>("Flow") ;
+	for (auto n_id:m_meshT->nodes())
+	{
+		var_flow->set(n_id, v_follow);
+	}
+	AdvectedPointRK4_2D advpoint_n1(m_meshT, n.point(), dist_cible, A_distance, var_flow);
+	advpoint_n1.execute();
+	Node n1 = m_meshQ->newNode(advpoint_n1.getPend());
+	m_meshT->deleteVariable(GMDS_NODE, "Flow") ;
+	*/
+
+
+
+	// TEST 4
+	math::Vector3d v_follow = (m_meshQ->get<Node>(Front_IN.getIdealNode(n_neighbor.id())).point() - n_neighbor.point()).normalize() ;
+	v_follow += (m_meshQ->get<Node>(Front_IN.getIdealNode(n_id)).point() - n.point() ).normalize() ;
+	v_follow.normalize();
+	Variable<math::Vector3d>* var_flow = m_meshT->newVariable<math::Vector3d , GMDS_NODE>("Flow") ;
+	for (auto n_id:m_meshT->nodes())
+	{
+		var_flow->set(n_id, v_follow);
+	}
+	AdvectedPointRK4_2D advpoint_n1(m_meshT, n.point(), dist_cible, A_distance, var_flow);
+	advpoint_n1.execute();
+	Node n1 = m_meshQ->newNode(advpoint_n1.getPend());
+	m_meshT->deleteVariable(GMDS_NODE, "Flow") ;
+
+
 
 	// Contruction du premier noeud n2
 	n_neighbor = m_meshQ->get<Node>(neighbors_nodes[1]);
@@ -421,12 +502,77 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id,
 	advpoint_n2.execute();
 	Node n2 = m_meshQ->newNode(advpoint_n2.getPend());
 	 */
+
+	// TEST 2
+	/*
 	n_next_ideal_id = Front_IN.getIdealNode(n_id);
 	n_next_id = Front_IN.getNextNode(neighbors_nodes[1],n_id);
 	n_next_ideal = m_meshQ->get<Node>(n_next_ideal_id) ;
 	n_next = m_meshQ->get<Node>(n_next_id) ;
 	P1_construction = 0.33*(n_next.point()-n_next_ideal.point()) ;
 	Node n2 = m_meshQ->newNode(n_next_ideal.point() + P1_construction);
+	*/
+
+	// TEST 3
+	/*
+	math::Vector3d v20 = (n.point() - n_neighbor.point()).normalize() ;
+	math::Vector3d v20_ortho({-v10.Y(), v10.X(), 0.0}) ;
+
+	min_angle = 2.0*M_PI;
+	if ( v20_ortho.dot(v_flow) < min_angle )
+	{
+		min_angle = v20_ortho.dot(v_flow);
+		v_follow = v_flow;
+	}
+	if ( v20_ortho.dot(-v_flow) < min_angle )
+	{
+		min_angle = v20_ortho.dot(-v_flow);
+		v_follow = -v_flow;
+	}
+	if ( v20_ortho.dot(v_flow_ortho) < min_angle )
+	{
+		min_angle = v20_ortho.dot(v_flow_ortho);
+		v_follow = v_flow_ortho;
+	}
+	if ( v20_ortho.dot(-v_flow_ortho) < min_angle )
+	{
+		min_angle = v20_ortho.dot(-v_flow_ortho);
+		v_follow = -v_flow_ortho;
+	}
+
+	var_flow = m_meshT->newVariable<math::Vector3d , GMDS_NODE>("Flow") ;
+	for (auto n_id:m_meshT->nodes())
+	{
+		var_flow->set(n_id, v_follow);
+	}
+	AdvectedPointRK4_2D advpoint_n2(m_meshT, n.point(), dist_cible, A_distance, var_flow);
+	advpoint_n1.execute();
+	Node n2 = m_meshQ->newNode(advpoint_n1.getPend());
+	m_meshT->deleteVariable(GMDS_NODE, "Flow") ;
+	*/
+
+
+	// TEST 4
+	v_follow = m_meshQ->get<Node>(Front_IN.getIdealNode(n_neighbor.id())).point() - n_neighbor.point() ;
+	var_flow = m_meshT->newVariable<math::Vector3d , GMDS_NODE>("Flow") ;
+	for (auto n_id:m_meshT->nodes())
+	{
+		var_flow->set(n_id, v_follow);
+	}
+	AdvectedPointRK4_2D advpoint_n2(m_meshT, n.point(), dist_cible, A_distance, var_flow);
+	advpoint_n2.execute();
+	Node n2 = m_meshQ->newNode(advpoint_n2.getPend());
+	m_meshT->deleteVariable(GMDS_NODE, "Flow") ;
+
+
+
+
+
+
+	//=================================================
+	//			QUAD CREATION & CONNECTIVITIES
+	//=================================================
+
 
 	// Création du quad
 	TCellID n0_id = Front_IN.getIdealNode(n_id);
@@ -477,16 +623,6 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id,
 	Front_IN.setNonFusionable(n_id);
 	Front_IN.setNonFusionable(neighbors_nodes[0]);
 	Front_IN.setNonFusionable(neighbors_nodes[1]);
-
-
-	/*
-	// Mise à jour du Front_OUT
-	Front_OUT.addEdgeId(e0.id());
-	Front_OUT.addEdgeId(e3.id());
-	Front_OUT.addNodeId(n0.id());
-	Front_OUT.addNodeId(n1.id());
-	Front_OUT.addNodeId(n2.id());
-	 */
 
 
 	// Mise à jour de l'indice de couche

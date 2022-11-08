@@ -62,12 +62,12 @@ namespace gmds{
             
             //param in [src_pnt,dir_pnt]
             double t = N/D;
-            
-            if ((0.0 <= s) && (s <= 1.0) && (0.0 < t)){
+
+            //if ((0.0 <= s) && (s <= 1.0) && (0.0 < t)){
                 AP = p1 + s*(p2-p1);
                 AParam = 1-s;
                 return true;
-            }
+            //}
             return false;
             
         }

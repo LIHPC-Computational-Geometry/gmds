@@ -179,8 +179,26 @@ IntervalAssignment_2D::EdgeConstraint(TCellID e_id, int &N_ideal, bool &hardCons
 	if ((var_layer_id->value(e_nodes[0].id()) == 0)
 	    ^ (var_layer_id->value(e_nodes[1].id()) == 0))
 	{
-		N_ideal = m_params_aero.nbrCellsInCL ;
-		hardConstraint = true;
+		bool inserted_edge(false);
+		std::vector<Node> f0_nodes = e_faces[0].get<Node>();
+		std::vector<Node> f1_nodes = e_faces[1].get<Node>();
+		if ( ( (var_layer_id->value(f0_nodes[0].id()) == 0)
+		    ^ (var_layer_id->value(f0_nodes[1].id()) == 0)
+		    ^ (var_layer_id->value(f0_nodes[2].id()) == 0)
+		    ^ (var_layer_id->value(f0_nodes[3].id()) == 0) )
+		    &&
+		    ( (var_layer_id->value(f1_nodes[0].id()) == 0)
+		     ^ (var_layer_id->value(f1_nodes[1].id()) == 0)
+		     ^ (var_layer_id->value(f1_nodes[2].id()) == 0)
+		     ^ (var_layer_id->value(f1_nodes[3].id()) == 0) ) )
+		{
+			inserted_edge = true;
+		}
+
+		if (!inserted_edge) {
+			N_ideal = m_params_aero.nbrCellsInCL;
+			hardConstraint = true;
+		}
 	}
 
 
@@ -201,7 +219,7 @@ IntervalAssignment_2D::ComputeChordDiscretization(std::vector<TCellID> chord)
 	int Nbr_cells;
 
 	bool chord_hardConstrained(false);
-	double sum_num;
+	double sum_num(0.0);
 
 	for(auto e_id:chord)
 	{

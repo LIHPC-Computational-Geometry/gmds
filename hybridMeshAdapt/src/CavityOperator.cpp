@@ -78,6 +78,7 @@ bool CavityOperator::CavityIO::CavityIO::nodeInCavity(const TInt node)
   unsigned int sizeTriangle = 3;
 
   gmds::BitVector cellBitvector(m_simplex_mesh->tetCapacity());
+  gmds::BitVector triangleNotCoToP_BitVector(m_simplex_mesh->triCapacity());
   gmds::BitVector nodesBitvector(m_simplex_mesh->nodesCapacity());
   gmds::BitVector borderNodesBitvector(m_simplex_mesh->nodesCapacity());
 
@@ -89,6 +90,16 @@ bool CavityOperator::CavityIO::CavityIO::nodeInCavity(const TInt node)
   //////////////////////////////////////////////////////////////////////////////
   ////////////////////this section found the interior nodes with cells//////////
   //////////////////////////////////////////////////////////////////////////////
+
+  std::vector<TSimplexID> triangleNotCoToP = getTrianglesNotConnectedToPInCavity();
+  for(auto const triangle : triangleNotCoToP)
+  {
+    if(triangle < 0 && triangle != border)
+    {
+      triangleNotCoToP_BitVector.assign(-triangle);
+    }
+  }
+
   for(auto const & tet : cellInCavity())
   {
     if(tet != border)
@@ -109,7 +120,6 @@ bool CavityOperator::CavityIO::CavityIO::nodeInCavity(const TInt node)
       throw gmds::GMDSException("tet == border");
     }
   }
-
   for(auto const & tet : cellInCavity())
   {
     SimplicesCell cell = SimplicesCell(m_simplex_mesh, tet);
@@ -118,24 +128,28 @@ bool CavityOperator::CavityIO::CavityIO::nodeInCavity(const TInt node)
       //look if the oppositeCell is in the cavity with the help of tetBitVector
       TSimplexID oppositeCell = cell.oppositeTetraIdx(localIndex);
       const std::vector<TInt>&& nodes =  cell.getOrderedFace(localIndex);
-
-      if(oppositeCell >= 0)
+      if(!(nodes[0] == node || nodes[1] == node || nodes[2] == node))
       {
-        if(cellBitvector[oppositeCell] == 0)
+        if(oppositeCell >= 0)
         {
-          m_nodesToReconnect.push_back(nodes);
-          m_oppositeCell.push_back(oppositeCell);
+          if(cellBitvector[oppositeCell] == 0)
+          {
+            m_nodesToReconnect.push_back(nodes);
+            m_oppositeCell.push_back(oppositeCell);
+          }
         }
-      }
-      else
-      {
-        m_nodesToReconnect.push_back(nodes);
-        m_oppositeCell.push_back(oppositeCell);
+        else
+        {
+          if(triangleNotCoToP_BitVector[-oppositeCell] != 0)
+          {
+            m_nodesToReconnect.push_back(nodes);
+            m_oppositeCell.push_back(oppositeCell);
+          }
+        }
       }
     }
   }
-
-  for(auto const nodes : m_nodesToReconnect)
+   for(auto const nodes : m_nodesToReconnect)
   {
     for(auto const node : nodes)
     {
@@ -244,6 +258,7 @@ bool CavityOperator::CavityIO::CavityIO::nodeInCavity(const TInt node)
 /******************************************************************************/
 void CavityOperator::CavityIO::CavityIO::nodesReconnection(const TInt node)
 {
+  const std::vector<TSimplexID>& base = m_simplex_mesh->getBase();
   Variable<int>* BND_TRIANGLES = m_simplex_mesh->getVariable<int,SimplicesTriangle>("BND_TRIANGLES");
 
   m_localsNodeForReconnectionWithTriangle.clear();
@@ -252,14 +267,14 @@ void CavityOperator::CavityIO::CavityIO::nodesReconnection(const TInt node)
 
   unsigned int sizeFace = 3;
   int border = std::numeric_limits<int>::min();
-  gmds::BitVector triBitvector(m_simplex_mesh->triCapacity());
+  gmds::BitVector triBitVector(m_simplex_mesh->triCapacity());
   for(auto const & tri : getTrianglesConnectedToPInCavity())
   {
     if(tri != border)
     {
-      if(triBitvector[-tri] == 0)
+      if(triBitVector[-tri] == 0)
       {
-        triBitvector.assign(-tri);
+        triBitVector.assign(-tri);
       }
     }
   }
@@ -270,93 +285,37 @@ void CavityOperator::CavityIO::CavityIO::nodesReconnection(const TInt node)
   m_oppositeTriangle.resize(m_nodesToReconnect.size(), initVec);
   m_triangleIndices.resize(m_nodesToReconnect.size(), initVec);
 
-  unsigned int faceCpt = 0;
-  for(auto const& nodes : m_nodesToReconnect)
+  for(unsigned int triangle = 0 ; triangle < triBitVector.capacity() ; triangle++)
   {
-    for(int localNode = 0 ; localNode < sizeFace ; localNode++)
+    if(triBitVector[triangle] != 0)
     {
-      TInt node0 = nodes[localNode];
-      TInt nodeA = nodes[(localNode + 1) % sizeFace];
-      TInt nodeB = nodes[(localNode + 2) % sizeFace];
-
-      for(auto const borderSurface : m_borderSurfaceNode)
+      SimplicesTriangle t     = SimplicesTriangle(m_simplex_mesh, triangle);
+      std::vector<TInt> nodes = t.getNodes();
+      for(int localNode = 0 ; localNode < sizeFace ; localNode++)
       {
-        bool flag = false ;
-        TInt tmpNodeA = borderSurface.front();
-        TInt tmpNodeB = borderSurface.back();
-
-        if(tmpNodeA == nodeB && tmpNodeB == nodeA)
+        TInt nodeA = nodes[localNode];
+        TInt nodeB = nodes[(localNode + 1) % sizeFace];
+        TInt nodeC = nodes[(localNode + 2) % sizeFace];
+        if(nodeA != node && nodeB != node)
         {
-          m_localsNodeForReconnectionWithTriangle[faceCpt][localNode] = localNode;
-          const std::vector<TSimplexID>&& shell = SimplicesNode(m_simplex_mesh, nodeA).shell(SimplicesNode(m_simplex_mesh, nodeB));
-          for(auto const simplex : shell)
+          TInt lNode = t.getLocalNode(nodeC);
+          TSimplexID neighborTri = t.neighborTriangle(lNode);
+          if(neighborTri != border)
           {
-            if(simplex < 0)
+            if(triBitVector[neighborTri] == 0)
             {
-              if(triBitvector[-simplex] == 0)
-              {
-                flag = true;
-                m_oppositeTriangle[faceCpt][localNode] = simplex;
-              }
-              if(triBitvector[-simplex] == 1)
-              {
-                m_triangleIndices[faceCpt][localNode] = (*BND_TRIANGLES)[-simplex];
-              }
+              m_nodesToReconnect_Tri.push_back(std::vector<TInt>{nodeA, nodeB});
+              m_oppositeTri.push_back(neighborTri);
+              m_indices.push_back((*BND_TRIANGLES)[triangle]);
             }
           }
-
-          if(!flag)
+          else
           {
-            for(auto const borderSurface : m_borderSurfaceNode)
-            {
-              TInt tmpNodeA = borderSurface.front();
-              TInt tmpNodeB = borderSurface.back();
-              std::cout << "tmpNodeA -> " << tmpNodeA << std::endl;
-              std::cout << "tmpNodeB -> " << tmpNodeB << std::endl;
-              const std::vector<TSimplexID>&& shell = SimplicesNode(m_simplex_mesh, tmpNodeA).shell(SimplicesNode(m_simplex_mesh, tmpNodeB));
-              for(auto const simplex : shell)
-              {
-                  if(simplex < 0)
-                  {
-                    std::cout << "triangle -> " << simplex << std::endl;
-                    std::cout << SimplicesTriangle(m_simplex_mesh, -simplex) << std::endl;
-
-                  }
-              }
-              std::cout << std::endl;
-            }
-
-            gmds::ISimplexMeshIOService ioService0(m_simplex_mesh);
-            gmds::VTKWriter vtkWriter0(&ioService0);
-            vtkWriter0.setCellOptions(gmds::N|gmds::R|gmds::F);
-            vtkWriter0.setDataOptions(gmds::N|gmds::R|gmds::F);
-            vtkWriter0.write("MESH_BUG_" + std::to_string(node) + ".vtk");
-
-            m_simplex_mesh->deleteAllSimplicesBut(m_cavityCellIn);
-            gmds::ISimplexMeshIOService ioService(m_simplex_mesh);
-            gmds::VTKWriter vtkWriter(&ioService);
-            vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
-            vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
-            vtkWriter.write("SHELL_BUG_" + std::to_string(node) + ".vtk");
-
-            SimplexMesh nodeMesh = SimplexMesh();
-            std::cout << "node -> " << node << std::endl;
-            const SimplicesNode sNode(m_simplex_mesh, node);
-            nodeMesh.addNode(sNode.getCoords()[0], sNode.getCoords()[1], sNode.getCoords()[2]);
-            nodeMesh.addTetraedre(0, 0, 0, 0);
-            gmds::ISimplexMeshIOService ioServiceNode(&nodeMesh);
-            gmds::VTKWriter vtkWriterNode(&ioServiceNode);
-            vtkWriterNode.setCellOptions(gmds::N|gmds::R);
-            vtkWriterNode.setDataOptions(gmds::N|gmds::R);
-            vtkWriterNode.write("NODE_" + std::to_string(sNode.getGlobalNode()) + ".vtk");
-
-
-            throw gmds::GMDSException("m_oppositeTriangle[faceCpt][localNode] = border");
+            throw gmds::GMDSException("neighborTri == border");
           }
         }
       }
     }
-    faceCpt++;
   }
 }
 /******************************************************************************/
@@ -544,6 +503,12 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
                                         const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const std::multimap<TInt, TInt>& facesAlreadyBuilt,
                                          const std::vector<TSimplexID> markedSimplex)
 {
+  auto my_make = [=](TInt nodeA, TInt nodeB){
+    return (nodeA > nodeB)? std::make_pair(nodeB, nodeA):std::make_pair(nodeA, nodeB);
+  };
+
+  std::map<std::pair<TInt, TInt>, TSimplexID> mapForReinsertion{};
+  std::map<std::pair<TInt, TInt>, std::pair<unsigned int, TSimplexID>> mapForTriangleColor{};
   std::vector<TSimplexID> trianglesConnectedToP{};
   std::vector<TSimplexID> trianglesNotConnectedToP{};
 
@@ -553,6 +518,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
   std::vector<TSimplexID> simplexToRemove{};
   size_t sizeLocalNodeCell = 4;
   size_t sizeLocalNodeTriangle = 3;
+  unsigned int sizeEdge = 3;
 
   gmds::BitVector bitMarkedCell(m_simplex_mesh->tetCapacity());
   gmds::BitVector bitCellInCavity(m_simplex_mesh->tetCapacity());
@@ -584,64 +550,157 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
   while(flag)
   {
     flag = false;
+    //std::cout << std::endl;
+
     for(TInt idx = 0 ; idx < cavityCell.size() ; idx++)
     {
       TSimplexID simplexId = cavityCell[idx];
+      if(tetBitVector[simplexId] != 0)
       {
-        if(tetBitVector[simplexId] != 0)
+        SimplicesCell cell = SimplicesCell(m_simplex_mesh, simplexId);
+        for(TInt nodeIndexLocal = 0; nodeIndexLocal < sizeLocalNodeCell; nodeIndexLocal++)
         {
-          SimplicesCell cell = SimplicesCell(m_simplex_mesh, simplexId);
-          for(TInt nodeIndexLocal = 0; nodeIndexLocal < sizeLocalNodeCell; nodeIndexLocal++)
+          TSimplexID nextSimplexToAdd = cell.oppositeTetraIdx(nodeIndexLocal);
+          if(nextSimplexToAdd != errorId)
           {
-            TSimplexID nextSimplexToAdd = cell.oppositeTetraIdx(nodeIndexLocal);
-            if(nextSimplexToAdd != errorId)
+            if(nextSimplexToAdd >= 0)
             {
-              if(nextSimplexToAdd >= 0)
+              //if simplexId is a sliver we add the adjacent tet to the vector
+              const SimplicesCell cell = SimplicesCell(m_simplex_mesh, simplexId);
+              if(cell.isSliver())
               {
-                if(criterion.execute(m_simplex_mesh, simplexId, nodeIndexLocal, nextPt))
+                std::vector<TSimplexID> adjTet = cell.adjacentTetra();
+                //std::vector<TSimplexID> adjTet = cell.directConnectedSimplex();
+                //std::cout << "sliver -> " << simplexId << std::endl;
+                for(auto const simplex : adjTet)
                 {
-                  if(bitCellInCavity[nextSimplexToAdd] == 0 && bitMarkedCell[nextSimplexToAdd] == 0)
+                  //std::cout << "simplex -> " << simplex << std::endl;
+                  if(simplex < 0)
                   {
-                    cavityCell.resize(cavityCell.size() + 1);
-                    cavityCell[cavityCell.size() - 1] = nextSimplexToAdd;
-                    bitCellInCavity.assign(nextSimplexToAdd);
+                    if(triBitVector[-simplex] == 0)
+                    {
+                      initCavityTriangle.push_back(simplex);
+                      triBitVector.assign(-simplex);
+                    }
+                  }
+                  else
+                  {
+                    if(bitCellInCavity[simplex] == 0 && bitMarkedCell[simplex] == 0)
+                    {
+                      cavityCell.resize(cavityCell.size() + 1);
+                      cavityCell[cavityCell.size() - 1] = simplex;
+                      bitCellInCavity.assign(simplex);
+                    }
                   }
                 }
+                continue;
               }
-              else
+
+              std::vector<TInt> orderedFace = cell.getOrderedFace(nodeIndexLocal);
+              if(orderedFace[0] == node.getGlobalNode() || orderedFace[1] == node.getGlobalNode() || orderedFace[2] == node.getGlobalNode())
               {
-                if(triBitVector[-nextSimplexToAdd] == 0)
+                //fill adj tets
+                std::vector<TInt> adjNodes{};
+                std::copy_if(orderedFace.begin(), orderedFace.end(), std::back_inserter(adjNodes), [&] (TInt adjNode){
+                  return (adjNode != node.getGlobalNode());
+                });
+                //reinsertion on the volume
+                std::pair<TInt, TInt> p = my_make(adjNodes.front(), adjNodes.back());
+                mapForReinsertion.insert(std::pair<std::pair<TInt, TInt>, TSimplexID>(p, nextSimplexToAdd));
+                continue;
+              }
+
+
+
+              if(criterion.execute(m_simplex_mesh, simplexId, nodeIndexLocal, nextPt))
+              {
+                if(bitCellInCavity[nextSimplexToAdd] == 0 && bitMarkedCell[nextSimplexToAdd] == 0)
                 {
-                  initCavityTriangle.push_back(nextSimplexToAdd);
-                  triBitVector.assign(-nextSimplexToAdd);
+                  cavityCell.resize(cavityCell.size() + 1);
+                  cavityCell[cavityCell.size() - 1] = nextSimplexToAdd;
+                  bitCellInCavity.assign(nextSimplexToAdd);
                 }
               }
             }
+            else
+            {
+              if(triBitVector[-nextSimplexToAdd] == 0)
+              {
+                initCavityTriangle.push_back(nextSimplexToAdd);
+                triBitVector.assign(-nextSimplexToAdd);
+              }
+            }
+          }
+          else
+          {
+            throw gmds::GMDSException("nextSimplexToAdd == errorId");
           }
         }
-        else
-        {
-          std::cout << "tetBitVector[ " << simplexId << "] == 0" << std::endl;
-          throw gmds::GMDSException("unvalid simplex in cavity");
-        }
+      }
+      else
+      {
+        std::cout << "tetBitVector[ " << simplexId << "] == 0" << std::endl;
+        throw gmds::GMDSException("unvalid simplex in cavity");
       }
     }
 
-    //CELL EXPANSION END
-    gmds::BitVector indexedTriangle(m_simplex_mesh->getBitVectorTri().capacity());
-    if(dimNode == SimplexMesh::topo::RIDGE)
+    /*for(unsigned int tri = 0 ; tri < triBitVector.size() ; tri++)
     {
-      struct Edge{
-        TInt node0;
-        TInt node1;
-      };
-      Edge e;
-      e.node0 = errorId;
-      e.node1 = errorId;
+      const TSimplexID oppositeTriangle = SimplicesTriangle(m_simplexMesh, triBitVector[tri]).adjacentTriangle()
+      for(auto const oppoTri : oppositeTriangle)
+      {
+        const SimplicesTriangle triangle(m_simplexMesh, oppoTri);
+        if(triangle.isEdge())
+        {
+          triBitVector.resize(triBitVector.size() + 1);
+          triBitVector[triBitVector.size() - 1] = -oppoTri;
+        }
+      }
+    }*/
+  }
 
-      const std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure =  m_simplex_mesh->getConstEdgeStructure();
-      auto it = edgeStructure.equal_range(indexNode);
 
+  //CELL EXPANSION END
+  gmds::BitVector indexedTriangle(m_simplex_mesh->getBitVectorTri().capacity());
+  if(dimNode == SimplexMesh::topo::CORNER)
+  {
+    std::vector<TSimplexID> firstTriangles{};
+    const std::vector<TSimplexID> ball = node.ballOf();
+    for(auto const simplex : ball){if(simplex < 0){firstTriangles.push_back(-simplex);}}
+
+    for(auto const & triangle : firstTriangles){
+      selectConnexTriangle(triangle, triBitVector, indexedTriangle, node.getGlobalNode());
+    }
+  }
+  else if(dimNode == SimplexMesh::topo::RIDGE)
+  {
+    bool alreadyBelongingToAnEdge = false;
+    struct Edge{
+      TInt node0;
+      TInt node1;
+    };
+    Edge e;
+    e.node0 = errorId;
+    e.node1 = errorId;
+
+    const std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure =  m_simplex_mesh->getConstEdgeStructure();
+    auto it = edgeStructure.equal_range(indexNode);
+
+    /*test pour voir si le node appartient pas deja a ridge ex : durant une phase de reinsertion*/
+    for(auto itr = it.first ; itr != it.second ; itr++)
+    {
+      TInt nodeEdge0 = itr->second.first;
+      TInt nodeEdge1 = itr->second.second;
+      if(nodeEdge0 == node.getGlobalNode() || nodeEdge1 == node.getGlobalNode())
+      {
+        alreadyBelongingToAnEdge = true;
+        cavityIO.setNodeInfoEdge(alreadyBelongingToAnEdge);
+        break;
+      }
+    }
+    std::vector<TSimplexID> firstTriangles{};
+    if(!alreadyBelongingToAnEdge)
+    {
       double epsilon = 1E-3;
       math::Point pC = node.getCoords();
 
@@ -675,7 +734,6 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
       }
 
       const std::vector<TSimplexID> shell = SimplicesNode(m_simplex_mesh, e.node0).shell(SimplicesNode(m_simplex_mesh, e.node1));
-      std::vector<TSimplexID> firstTriangles{};
       for(auto const simplex : shell){if(simplex < 0){firstTriangles.push_back(-simplex);}}
       /////////////////////////
 
@@ -711,80 +769,208 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
 
         throw GMDSException("firstTriangles.size() != 2, the surface mesh is broken ...");
       }
-
-      for(auto const & triangle : firstTriangles){
-        selectConnexTriangle(triangle, triBitVector, indexedTriangle);
-      }
     }
-    else if(dimNode == SimplexMesh::topo::SURFACE)
+    else
     {
-      double distance = std::numeric_limits<TInt>::max();
-      std::vector<TSimplexID> firstTriangles{};
-      TSimplexID selectedTriangle = std::numeric_limits<TSimplexID>::max();
-      math::Point projectedPoint;
+      const std::vector<TSimplexID> ball = node.ballOf();
+      for(auto const simplex : ball){if(simplex < 0){firstTriangles.push_back(-simplex);}}
+    }
 
-      for(auto const tri : initCavityTriangle)
+    for(auto const & triangle : firstTriangles){
+      selectConnexTriangle(triangle, triBitVector, indexedTriangle, node.getGlobalNode());
+    }
+  }
+  else if(dimNode == SimplexMesh::topo::SURFACE)
+  {
+    double distance = std::numeric_limits<TInt>::max();
+    std::vector<TSimplexID> firstTriangles{};
+    TSimplexID selectedTriangle = std::numeric_limits<TSimplexID>::max();
+    math::Point projectedPoint;
+
+    for(auto const tri : initCavityTriangle)
+    {
+      if(indexNode == (*BND_TRIANGLES)[-tri])
       {
-        if(indexNode == (*BND_TRIANGLES)[-tri])
-        {
-          const SimplicesTriangle triangle(m_simplex_mesh, -tri);
-          const std::vector<TInt> nodes = triangle.getNodes();
-          const math::Point coord0 = SimplicesNode(m_simplex_mesh, nodes[0]).getCoords();
-          const math::Point coord1 = SimplicesNode(m_simplex_mesh, nodes[1]).getCoords();
-          const math::Point coord2 = SimplicesNode(m_simplex_mesh, nodes[2]).getCoords();
-          double distanceBis = std::numeric_limits<TInt>::max();
+        const SimplicesTriangle triangle(m_simplex_mesh, -tri);
+        const std::vector<TInt> nodes = triangle.getNodes();
+        const math::Point coord0 = SimplicesNode(m_simplex_mesh, nodes[0]).getCoords();
+        const math::Point coord1 = SimplicesNode(m_simplex_mesh, nodes[1]).getCoords();
+        const math::Point coord2 = SimplicesNode(m_simplex_mesh, nodes[2]).getCoords();
+        double distanceBis = std::numeric_limits<TInt>::max();
 
-          if(m_simplex_mesh->pointInTriangle(node.getCoords(), coord0, coord1, coord2, distanceBis, projectedPoint))
+        if(m_simplex_mesh->pointInTriangle(node.getCoords(), coord0, coord1, coord2, distanceBis, projectedPoint))
+        {
+          //std::cout << "  test for triangle -> " << tri << std::endl;
+          //std::cout << "  distance -> " << distanceBis << std::endl;
+
+          if(distanceBis < distance)
           {
-            if(distanceBis < distance)
-            {
-              selectedTriangle = -tri;
-              distance = distanceBis;
-            }
+            selectedTriangle = -tri;
+            distance = distanceBis;
           }
         }
       }
-
-      if(selectedTriangle != std::numeric_limits<TSimplexID>::max())
-      {
-        firstTriangles.push_back(selectedTriangle);
-      }
-
-
-      if(firstTriangles.size() == 0){
-        return false; //the node was not find on any triangle surface (due to epsilon)
-      }
-
-      for(auto const & triangle : firstTriangles){
-        selectConnexTriangle(triangle, triBitVector, indexedTriangle);
-      }
     }
 
-    //std::cout << "SETTING THE TRIANGLE " << std::endl;
-    //set type for the triangle see the paper : Robust Boundary Layer Mesh Generation
-    if(dimNode > SimplexMesh::topo::SURFACE) //if node is on volume
+    //std::cout << "selected triangle -> " << -selectedTriangle << std::endl;
+    if(selectedTriangle != std::numeric_limits<TSimplexID>::max())
     {
-      for(auto const tri : initCavityTriangle)
+      firstTriangles.push_back(selectedTriangle);
+    }
+
+
+    if(firstTriangles.size() == 0){
+      return false; //the node was not find on any triangle surface (due to epsilon)
+    }
+
+    for(auto const & triangle : firstTriangles){
+      selectConnexTriangle(triangle, triBitVector, indexedTriangle, node.getGlobalNode());
+    }
+  }
+  //std::cout << "SETTING THE TRIANGLE " << std::endl;
+  //set type for the triangle see the paper : Robust Boundary Layer Mesh Generation
+  if(dimNode > SimplexMesh::topo::SURFACE) //if node is on volume
+  {
+    for(auto const tri : initCavityTriangle)
+    {
+      trianglesNotConnectedToP.push_back(tri);
+    }
+  }
+  else //node one curve or surface
+  {
+    for(auto const tri : initCavityTriangle)
+    {
+      if(indexedTriangle[-tri] == 1){
+        //teste sur les node pour voir si le triangle appartient bien a la zone de triangle a detruire
+        trianglesConnectedToP.push_back(tri);
+      }
+      else
       {
         trianglesNotConnectedToP.push_back(tri);
       }
     }
-    else //node one curve or surface
+  }
+  //////////////////////////////
+  //////////////////////////////
+  //////////////////////////////
+
+  std::map<TInt, TSimplexID> mapForReinsertionSurface{};
+  gmds::BitVector triCoToP_BitVector(m_simplex_mesh->getBitVectorTri().capacity());
+  //std::cout << std::endl;
+  //std::cout << std::endl;
+  for(auto const t : trianglesConnectedToP)
+  {
+    triCoToP_BitVector.assign(-t);
+    //std::cout << "triagnle to delete -> " << t << std::endl;
+  }
+  for(auto const t : trianglesConnectedToP)
+  {
+    const SimplicesTriangle triangle = SimplicesTriangle(m_simplex_mesh, t);
+    //std::cout << "triangle -> " << t << std::endl;
+    for(unsigned int edge = 0; edge < sizeEdge ; edge++)
     {
-      for(auto const tri : initCavityTriangle)
+      TSimplexID oppositeTriangle = triangle.neighborTriangle(edge);
+      if(triCoToP_BitVector[oppositeTriangle] != 1)
       {
-        if(indexedTriangle[-tri] == 1){
-          trianglesConnectedToP.push_back(tri);
-        }
-        else
+        TInt nodeA = triangle.getNodes()[(edge + 1) % sizeEdge];
+        TInt nodeB = triangle.getNodes()[(edge + 2) % sizeEdge];
+        TInt nodeC = triangle.getNodes()[(edge + 3) % sizeEdge];
+
+        /*std::cout << "node " << node.getGlobalNode() << std::endl;
+        std::cout << "nodeA -> " << nodeA << std::endl;
+        std::cout << "nodeB -> " << nodeB << std::endl;
+        std::cout << "NODE_C -> " << nodeC << std::endl;
+        std::cout << "oppositeTriangle -> " << oppositeTriangle << std::endl;
+
+        if(nodeA == 6 && nodeB == 50)
         {
-          trianglesNotConnectedToP.push_back(tri);
+          std::cout << SimplicesTriangle(m_simplex_mesh, oppositeTriangle) << std::endl;
+          std::cout << SimplicesCell(m_simplex_mesh, SimplicesTriangle(m_simplex_mesh, oppositeTriangle).neighborTetra()[0]) << std::endl;
+
+          gmds::ISimplexMeshIOService ioServiceMesh(m_simplex_mesh);
+          gmds::VTKWriter vtkWriterCS(&ioServiceMesh);
+          vtkWriterCS.setCellOptions(gmds::N|gmds::R|gmds::F);
+          vtkWriterCS.setDataOptions(gmds::N|gmds::R|gmds::F);
+          vtkWriterCS.write("ComputeSlicing_EdgeRemove_TEST.vtk");
+        }*/
+        if(nodeA == node.getGlobalNode() || nodeB == node.getGlobalNode())
+        {
+          //reinsertion on the surface
+          TInt n = (nodeA == node.getGlobalNode())? nodeB: nodeA;
+          mapForReinsertionSurface.insert(std::pair<TInt, TSimplexID>(n, oppositeTriangle));
+          continue;
         }
+        unsigned int indice = (*BND_TRIANGLES)[-t];
+        std::pair<unsigned int, TSimplexID> r(indice, oppositeTriangle);
+        std::pair<TInt, TInt> p = my_make(nodeA, nodeB);
+        mapForTriangleColor.insert(std::pair<std::pair<TInt, TInt>, std::pair<unsigned int, TSimplexID>>(p, r));
       }
     }
   }
 
+  //////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+  //Check to see if the surface is a variety or not
+  std::vector<unsigned int> cpt_VecNodes(m_simplex_mesh->getBitVectorNodes().capacity(),0);
+  gmds::BitVector allTriangleInSurface(m_simplex_mesh->getBitVectorTri().capacity());
+  for(unsigned int t = 0 ; t < allTriangleInSurface.capacity() ; t++)
+  {
+    allTriangleInSurface.unselect(t);
+  }
+  for(auto const t : trianglesConnectedToP)
+  {
+    allTriangleInSurface.assign(-t);
+  }
+  for(auto const t : trianglesNotConnectedToP)
+  {
+    allTriangleInSurface.assign(-t);
+  }
+  for(unsigned int t = 1 ; t < allTriangleInSurface.capacity() ; t++)
+  {
+    if(allTriangleInSurface[t] == 1)
+    {
+      const SimplicesTriangle triangle = SimplicesTriangle(m_simplex_mesh, t);
+      for(unsigned int edge = 0; edge < sizeEdge ; edge++)
+      {
+        TSimplexID oppositeTriangle = triangle.neighborTriangle(edge);
+        if(allTriangleInSurface[oppositeTriangle] == 0)
+        {
+          TInt nodeA = triangle.getNodes()[(edge + 1) % sizeEdge];
+          TInt nodeB = triangle.getNodes()[(edge + 2) % sizeEdge];
+
+          cpt_VecNodes[nodeA] += 1;
+          cpt_VecNodes[nodeB] += 1;
+        }
+      }
+    }
+  }
+  //check if the border surface is a variety by checking the cpt
+  for(auto const cpt : cpt_VecNodes)
+  {
+    if(cpt > 2)
+    {
+      //std::cout << "CPT > 2 --> " << cpt << std::endl;
+      return false;
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+  cavityIO.setTrianglesColor(mapForTriangleColor);
+  cavityIO.setReinsertionSurfaceData(mapForReinsertionSurface);
+  cavityIO.setReinsertionData(mapForReinsertion);
   cavityIO.setSimplexCavity(cavityCell, trianglesConnectedToP, trianglesNotConnectedToP);
+
+  /*
+  for(auto const tet : cavityCell){std::cout << "tet -> " << tet << std::endl;}
+  for(auto const triCo : trianglesConnectedToP){std::cout << "triCo -> " << triCo << " | " << (*BND_TRIANGLES)[-triCo] << std::endl;}
+  for(auto const triNotCo : trianglesNotConnectedToP){std::cout << "triNotCo -> " << triNotCo << " | " << (*BND_TRIANGLES)[-triNotCo] << std::endl;}
+  */
+
+  /*std::cout << "cavityCell.size() -> " << cavityCell.size() << std::endl;
+  std::cout << "trianglesConnectedToP.size() -> " << trianglesConnectedToP.size() << std::endl;
+  std::cout << "trianglesNotConnectedToP.size() -> " << trianglesNotConnectedToP.size() << std::endl;*/
+
   return true;
 }
 /**********************************************************************/
@@ -793,7 +979,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
 
 }*/
 /**********************************************************************/
-void CavityOperator::selectConnexTriangle(const TSimplexID& firstTriangle, const gmds::BitVector& triangleInCav, gmds::BitVector& connexTriangle)
+void CavityOperator::selectConnexTriangle(const TSimplexID& firstTriangle, const gmds::BitVector& triangleInCav, gmds::BitVector& connexTriangle, const TInt nodeToConnect)
 {
   if(connexTriangle[firstTriangle] == 0)
   {
@@ -815,30 +1001,63 @@ void CavityOperator::selectConnexTriangle(const TSimplexID& firstTriangle, const
 
     unsigned int sizeTriangle = 3;
     unsigned int indexTriangle = (*BND_TRIANGLES)[firstTriangle];
+    unsigned int dimNode    = ((*BND_VERTEX_COLOR)[nodeToConnect] != 0)?SimplexMesh::topo::CORNER:((*BND_CURVE_COLOR)[nodeToConnect] != 0)?SimplexMesh::topo::RIDGE:((*BND_SURFACE_COLOR)[nodeToConnect] != 0)?SimplexMesh::topo::SURFACE:SimplexMesh::topo::VOLUME;
+    unsigned int labelNode  = (dimNode == SimplexMesh::topo::CORNER)?(*BND_VERTEX_COLOR)[nodeToConnect]:(dimNode == SimplexMesh::topo::RIDGE)?(*BND_CURVE_COLOR)[nodeToConnect]:(dimNode == SimplexMesh::topo::SURFACE)?(*BND_SURFACE_COLOR)[nodeToConnect]:0;
+
     const SimplicesTriangle currentTri(m_simplex_mesh, firstTriangle);
     //adjSimplex reprensent the adjacent local's ordered triangles 0, 1, 2
     //adjEdges represent the adjacent local's ordered edges 0, 1, 2
     const std::vector<TSimplexID>&& adjSimplex = currentTri.adjacentTriangle();
+
     std::vector<std::vector<TInt>> adjEdges{};
     adjEdges.push_back(currentTri.getOppositeEdge(0));
     adjEdges.push_back(currentTri.getOppositeEdge(1));
     adjEdges.push_back(currentTri.getOppositeEdge(2));
 
-    for(unsigned int idx = 0 ; idx < sizeTriangle ; idx++){
+    for(unsigned int idx = 0 ; idx < sizeTriangle ; idx++)
+    {
       const std::vector<TInt> edge = adjEdges[idx];
       if(edge.size() == 2)
       {
         if(edge.front() != border && edge.back() != border)
         {
-          if(((*BND_SURFACE_COLOR)[edge.front()] != 0 || (*BND_SURFACE_COLOR)[edge.back()] != 0) ||
-            ((*BND_CURVE_COLOR)[edge.front()] != (*BND_CURVE_COLOR)[edge.back()] && (*BND_CURVE_COLOR)[edge.front()] != 0 && (*BND_CURVE_COLOR)[edge.back()] != 0))
+          //if(((*BND_SURFACE_COLOR)[edge.front()] != 0 || (*BND_SURFACE_COLOR)[edge.back()] != 0) ||
+          //  ((*BND_CURVE_COLOR)[edge.front()] != (*BND_CURVE_COLOR)[edge.back()] && (*BND_CURVE_COLOR)[edge.front()] != 0 && (*BND_CURVE_COLOR)[edge.back()] != 0))
           {
             const TSimplexID triangle = adjSimplex[idx];
             if(indexTriangle == (*BND_TRIANGLES)[triangle] && triangleInCav[triangle] == 1)
             {
-              selectConnexTriangle(triangle, triangleInCav, connexTriangle);
+              selectConnexTriangle(triangle, triangleInCav, connexTriangle, nodeToConnect);
             }
           }
+
+          /////
+          /*const TSimplexID triangle = adjSimplex[idx];
+          if(dimNode == SimplexMesh::topo::SURFACE)
+          {
+            if(indexTriangle == (*BND_TRIANGLES)[triangle] && triangleInCav[triangle] == 1)
+            {
+              selectConnexTriangle(triangle, triangleInCav, connexTriangle, nodeToConnect);
+            }
+          }
+          else if(dimNode == SimplexMesh::topo::RIDGE)
+          {
+            const std::map<unsigned int, std::pair<unsigned int, unsigned int>>& C2S = m_simplex_mesh->getEdgeTianglesIndices();
+
+            std::pair<unsigned int, unsigned int> p{};
+            try{
+              p = C2S.at(labelNode);
+            }catch(gmds::GMDSException e)
+            {
+              throw gmds::GMDSException(e);
+            }
+
+            if(((*BND_TRIANGLES)[triangle] == p.first || (*BND_TRIANGLES)[triangle] == p.second) && triangleInCav[triangle] == 1)
+            {
+              selectConnexTriangle(triangle, triangleInCav, connexTriangle, nodeToConnect);
+            }
+          }*/
+          /////
         }
         else
         {
