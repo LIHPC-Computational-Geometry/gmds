@@ -81,7 +81,7 @@ namespace gmds
 
         /*return all the direct simplex connected this*/
         std::vector<TSimplexID> directConnectedSimplex () const;
-        
+
         /*return a vector of nodes conain in this and tetra (intersection nodes of both tetra)*/
         std::vector<TInt> intersectionNodes(const SimplicesCell& simplicesCell) const;
 
@@ -115,6 +115,8 @@ namespace gmds
 
         /*return true if the pt is in the cell, false otherwise*/
         math::Orientation::Sign orientation(const TInt faceIdx, const gmds::math::Point& pt, bool inverseOrientation = false) const ;
+
+        bool isInCell(const gmds::math::Point& pt, bool inverseOrientation = false) const;
 
         /*return the dihedral angle between the localNode0 & localNode1*/
         double dihedralAngle(const unsigned int localNode0, const unsigned int localNode1) const ;

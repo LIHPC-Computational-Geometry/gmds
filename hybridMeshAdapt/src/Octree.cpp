@@ -215,6 +215,39 @@ TSimplexID Octree::findSimplexNextTo(const math::Point& pt)
   return simplex;
 }
 /******************************************************************************/
+std::vector<TSimplexID> Octree::findSimplicesInOc(const math::Point& pt)
+{
+  std::vector<TSimplexID> ans {};
+  for(auto const & oc : m_ocs)
+  {
+    if(oc != nullptr)
+    {
+      if(oc->belongToOc(pt))
+      {
+        return oc->findSimplicesInOc(pt);
+      }
+    }
+    else
+    {
+      std::unordered_set<TSimplexID> us{};
+      const BitVector& nodesVector = m_simplexMesh->getBitVectorNodes();
+      for(auto const node : m_nodes)
+      {
+        std::vector<TSimplexID> ball = SimplicesNode(m_simplexMesh, node).ballOf();
+        for(auto const simplex : ball)
+        {
+          if(us.find(simplex) == us.end())
+          {
+            ans.push_back(simplex);
+            us.insert(simplex);
+          }
+        }
+      }
+    }
+  }
+  return ans;
+}
+/******************************************************************************/
 std::vector<TInt> Octree::findNodesNextTo(const math::Point& pt)
 {
   std::vector<TSimplexID> nodes{};

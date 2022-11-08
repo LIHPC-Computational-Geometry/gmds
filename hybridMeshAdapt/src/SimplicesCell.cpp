@@ -320,6 +320,40 @@ double SimplicesCell::signedBarycentric(const TInt index, const gmds::math::Poin
   }
   return signedBar;
 }
+
+/*----------------------------------------------------------------------------*/
+bool SimplicesCell::isInCell(const gmds::math::Point& pt, bool inverseOrientation) const
+{
+  math::Orientation::Sign sign;
+  unsigned int sizeCell = 4;
+  for(unsigned int face = 0 ; face < sizeCell ; face++)
+  {
+    const TInt Node0 = m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[face][0]];
+    const TInt Node1 = m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[face][1]];
+    const TInt Node2 = m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[face][2]];
+
+
+    const math::Point pt0 = m_simplex_mesh->m_coords[Node0];
+    const math::Point pt1 = m_simplex_mesh->m_coords[Node1];
+    const math::Point pt2 = m_simplex_mesh->m_coords[Node2];
+    if(inverseOrientation)
+    {
+      sign = math::Orientation::orient3d(pt0, pt2, pt1, pt);
+
+    }
+    else
+    {
+      sign = math::Orientation::orient3d(pt0, pt1, pt2, pt);
+    }
+
+    if(sign == math::Orientation::Sign::NEGATIVE)
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
 /*----------------------------------------------------------------------------*/
 math::Orientation::Sign SimplicesCell::orientation(const TInt faceIdx, const gmds::math::Point& pt, bool inverseOrientation) const
 {

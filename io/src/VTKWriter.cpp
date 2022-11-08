@@ -39,7 +39,7 @@ void VTKWriter::writeNodes() {
     auto vtk_node_id=0;
     for (auto info : nodes_info) {
         math::Point p = info.point;
-        *m_stream << p.X() << " " << p.Y() << " " << p.Z() << "\n";
+        *m_stream << p.X() <<  " " << p.Y() << " " << p.Z() << "\n";
         m_node_ids_mapping[info.id] = vtk_node_id++;
     }
 	(*m_stream).precision(6);

@@ -16,6 +16,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // STL Headers
 #include <vector>
+#include <unordered_set>
 
 namespace gmds
 {
@@ -46,9 +47,11 @@ namespace gmds
 
       std::vector<TInt> findNodesNextTo(const math::Point& pt);
 
+      std::vector<TSimplexID> findSimplicesInOc(const math::Point& pt);
+
       void writeOctree(Mesh& mesh, std::vector<std::vector<Node>>& nodes) const ;
 
-      void setRootOctree(Octree* rootOc){m_rootOc = rootOc;} 
+      void setRootOctree(Octree* rootOc){m_rootOc = rootOc;}
 
     private:
       double m_xmin, m_xmax, m_ymin, m_ymax, m_zmin, m_zmax;
