@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 /*----------------------------------------------------------------------------*/
+#include "gmds/blocking/CGNSWriter.h"
 #include "gmds/ig/Blocking2D.h"
 #include "gmds/ig/MeshDoctor.h"
 #include "gmds/io/IGMeshIOService.h"

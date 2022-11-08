@@ -12,7 +12,8 @@ set(GMDS_INC
         inc/gmds/blocking/SheetInsert.h
         inc/gmds/blocking/WriterDartsVTK.h
         inc/gmds/blocking/SheetCollapse.h
-        inc/gmds/blocking/CGNSWriter.h)
+        inc/gmds/blocking/CGNSWriter.h
+        )
 set(GMDS_SRC
         src/Blocking.cpp
         src/InputMarkedDarts.cpp
