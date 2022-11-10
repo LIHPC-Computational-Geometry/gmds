@@ -4374,9 +4374,9 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
   double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  metricX = 3.0;
-  metricY = 3.0;
-  metricZ = 3.0;
+  metricX = 0.1;
+  metricY = 0.1;
+  metricZ = 0.1;
   /*if(pt.Y() <= 0.5)
   {
     metricX = 0.1;
@@ -4435,9 +4435,9 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   std::cout << "metricX -> " << metricX << std::endl;
   std::cout << "metricY -> " << metricY << std::endl;
   std::cout << "metricZ -> " << metricZ << std::endl;*/
-  metricX = 3.0;
-  metricY = 3.0;
-  metricZ = 3.0;
+  metricX = 0.1;
+  metricY = 0.1;
+  metricZ = 0.1;
   /*if(pt.Y() <= 0.5)
   {
     metricX = 0.1;
