@@ -53,6 +53,8 @@ namespace gmds
 
       void setRootOctree(Octree* rootOc){m_rootOc = rootOc;}
 
+      void setParentOctree(Octree* parentOc){m_parentOc = parentOc;}
+
     private:
       double m_xmin, m_xmax, m_ymin, m_ymax, m_zmin, m_zmax;
       unsigned int m_numbersMaxSimplices;
@@ -61,6 +63,7 @@ namespace gmds
       std::vector<TInt> m_nodes;
       std::vector<Octree*> m_ocs{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
       Octree* m_rootOc = nullptr;
+      Octree* m_parentOc = nullptr;
     };
   }
 }
