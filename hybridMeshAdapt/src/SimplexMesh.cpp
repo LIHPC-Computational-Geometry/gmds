@@ -4374,34 +4374,9 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
   double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  metricX = 0.1;
-  metricY = 0.1;
-  metricZ = 0.1;
-  /*if(pt.Y() <= 0.5)
-  {
-    metricX = 0.1;
-    metricY = 0.1;
-    metricZ = 0.1;
-  }
-  else
-  {
-    metricX = 0.2;
-    metricY = 0.2;
-    metricZ = 0.2;
-  }*/
-
-
-  /*metricX = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();
-  metricY = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();
-  metricZ = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();*/
-
-  //double metricX = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
-  //double metricY = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
-  //double metricZ = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
-
-  /*double metricX = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
-  double metricY = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
-  double metricZ = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;*/
+  /*metricX = 0.2;
+  metricY = 0.2;
+  metricZ = 0.2;*/
 
 
   m(0,0) = 1.0 / (metricX*metricX);
@@ -4431,34 +4406,9 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  /*std::cout << "pt -> " << pt << std::endl;
-  std::cout << "metricX -> " << metricX << std::endl;
-  std::cout << "metricY -> " << metricY << std::endl;
-  std::cout << "metricZ -> " << metricZ << std::endl;*/
-  metricX = 0.1;
-  metricY = 0.1;
-  metricZ = 0.1;
-  /*if(pt.Y() <= 0.5)
-  {
-    metricX = 0.1;
-    metricY = 0.1;
-    metricZ = 0.1;
-  }
-  else
-  {
-    metricX = 0.2;
-    metricY = 0.2;
-    metricZ = 0.2;
-  }*/
-
-  //double metricX = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
-  //double metricY = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
-  //double metricZ = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
-
-  /*double metricX = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
-  double metricY = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
-  double metricZ = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;*/
-
+  /*metricX = 0.2;
+  metricY = 0.2;
+  metricZ = 0.2;*/
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
   (*metric)[node](1,1) = 1.0 / (metricY*metricY);
   (*metric)[node](2,2) = 1.0 / (metricZ*metricZ);
@@ -6940,6 +6890,7 @@ bool SimplexMesh::pointInTriangle(const math::Point& query_point,
     math::Vector3d normal = n;
     normal.normalize();
     distance = w.dot(normal);
+
     // The point P′ lies inside T if:
     //std::cout << "ABG -> " << alpha << " | " << beta << " | " << gamma << std::endl;
     return ((-epsilon <= alpha) && (alpha <= 1.0 + epsilon) &&
