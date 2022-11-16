@@ -79,17 +79,9 @@ void MetricFFPointgeneration::execute()
   while(nodeAdded.size() != 0)
   {
     std::cout << "nodeAdded.size() BEFORE  -> " << nodeAdded.size() << std::endl;
-
-    /*gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
-    gmds::VTKWriter vtkWriter(&ioService);
-    vtkWriter.setCellOptions(gmds::N|gmds::R);
-    vtkWriter.setDataOptions(gmds::N|gmds::R);
-    vtkWriter.write("metricFF_" + std::to_string(cpt) + ".vtk");*/
-    cpt++;
-
-    //preprocessing the node coord sampling
     nodesSpreading(nodeAdded);
     std::cout << "nodeAdded.size() AFTER  -> " << nodeAdded.size() << std::endl;
+    //throw gmds::GMDSException("OK");
     std::cout << std::endl;
   }
 
@@ -371,7 +363,8 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
     {
     return dataA.m < dataB.m;
   });*/
-
+  SimplexMesh m = SimplexMesh();
+  int i = 0;
   std::vector<TInt> v;
   for(auto const nodeData : nodesSamplingData)
   {
@@ -396,32 +389,14 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
       }
     }
 
-    //Enleve ce check et comparer les statistique temporel
-    //check if the node is in the mesh but not in octre's simplice due to bad sizing octree
-    /*if(!inCell)
-    {
-      const gmds::BitVector& tetVector = m_simplexMesh->getBitVectorTet();
-      for(unsigned int t = 0 ; t < tetVector.capacity() ; t++)
-      {
-        if(tetVector[t] != 0)
-        {
-          inCell = SimplicesCell(m_simplexMesh, t).isInCell(newCoord);
-          if(inCell)
-          {
-            break;
-          }
-        }
-      }
-    }*/
-
     //we project initiale node on surface
     //the good projection is determine by the minimum distance
     if(simplices.size() != 0)
     {
+      double minDistance = std::numeric_limits<int>::max();
       if(!inCell)
       {
         double distance;
-        double minDistance = std::numeric_limits<int>::max();
         math::Point goodProjection;
         for(auto const simplex : simplices)
         {
@@ -442,39 +417,39 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
             }
           }
         }
+
         if(minDistance != std::numeric_limits<int>::max())
           newCoord = goodProjection;
-        else
-          throw gmds::GMDSException("minDistance != std::numeric_limits<int>::max() : no triangle finded to project point");
       }
 
-
-      std::vector<TInt> neighboorNodes;
-      nodeFiltering(node, newCoord, neighboorNodes);
-
-      if(!neighboorNodes.size())
+      if(minDistance != std::numeric_limits<int>::max() || inCell)
       {
-        newNodeId = m_nodesMesh.addNode(newCoord);
-        m_nodesMesh.setAnalyticMetric(newNodeId);
-        newNodes.push_back(newNodeId);
-      }
-      else
-      {
-        double distMin = std::numeric_limits<double>::max();
-        for(auto const n : neighboorNodes)
+        std::vector<TInt> neighboorNodes;
+        nodeFiltering(node, newCoord, neighboorNodes);
+
+        if(!neighboorNodes.size())
         {
-          math::Point pid = SimplicesNode(&m_nodesMesh, n).getCoords();
-          math::Vector3d v = math::Vector3d({pid.X() - pt.X(), pid.Y() - pt.Y(), pid.Z() - pt.Z()});
-          double dist = v.norm();
-          if(dist < distMin)
+          newNodeId = m_nodesMesh.addNode(newCoord);
+          m_nodesMesh.setAnalyticMetric(newNodeId);
+          newNodes.push_back(newNodeId);
+        }
+        else
+        {
+          double distMin = std::numeric_limits<double>::max();
+          for(auto const n : neighboorNodes)
           {
-            distMin = dist;
-            newNodeId = n;
+            math::Point pid = SimplicesNode(&m_nodesMesh, n).getCoords();
+            math::Vector3d v = math::Vector3d({pid.X() - pt.X(), pid.Y() - pt.Y(), pid.Z() - pt.Z()});
+            double dist = v.norm();
+            if(dist < distMin)
+            {
+              distMin = dist;
+              newNodeId = n;
+            }
           }
         }
       }
     }
-
 
     v.push_back(newNodeId);
     if(v.size() == 6)
@@ -487,13 +462,12 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
 
   nodesAdded.clear();
   nodesAdded = newNodes;
-  //throw gmds::GMDSException("OK");
   cpt++;
 }
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::nodeFiltering(const TInt node, const math::Point& pt, std::vector<TInt> & neighboorNode)
 {
-  const double k = 0.8;
+  const double k = 0.7;
   const double epsilon = 0.01;
   Variable<Eigen::Matrix3d>* metric  = nullptr;
   gmds::Variable<int>* BND_CURVE_COLOR_NODE = nullptr;
