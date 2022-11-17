@@ -382,8 +382,7 @@ class SimplexMesh
                        const math::Point& triangle_vertex_0,
                        const math::Point& triangle_vertex_1,
                        const math::Point& triangle_vertex_2,
-                       double& distance,
-                       math::Point& projectedPoint);
+                       double& distance, math::Point& projectedPoint);
 
   /*adding some properties to the diffferent data of the mesh*/
   template<typename T, class C>
@@ -416,7 +415,7 @@ class SimplexMesh
 
   void setOctree(Octree* octree){m_octree = octree;}
 
-  Octree* getOctree(){return m_octree;}
+  Octree* getOctree() const {return m_octree;}
 
   double subSurfaceFactor(const std::vector<std::vector<TInt>>& faces);
 
@@ -445,6 +444,8 @@ class SimplexMesh
   Eigen::Matrix3d getAnalyticMetric(const math::Point& pt) const;
 
   bool getFrameAt(const math::Point& pt, std::vector<math::Vector3d>& frames) ;
+
+  void setColorsSurfaceFromSimplex(SimplexMesh* simplexMesh) ;
 
 private:
 

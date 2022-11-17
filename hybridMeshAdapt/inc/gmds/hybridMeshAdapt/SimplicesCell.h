@@ -103,6 +103,8 @@ namespace gmds
         /*return the faces that have negative dot with the vector*/
         //std::vector<std::vector<TInt>> facesNormalDotVec(const std::vector<std::vector<TInt>>& nodes, const math::Vector3d & vec);
 
+        /*return the uvwt*/
+        std::vector<double> uvwt(const math::Point& pt) const ;
 
         /*return the signed volume of the cell p,p1,p2,p3 with p1,p2,p3 are the node of the cell \ index */
         double signedBarycentricNormalized     (const TInt faceIdx, const gmds::math::Point& pt) const ;

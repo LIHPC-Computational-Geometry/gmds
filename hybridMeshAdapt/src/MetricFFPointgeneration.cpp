@@ -17,6 +17,8 @@ MetricFFPointgeneration::MetricFFPointgeneration(SimplexMesh* simplexMesh):m_sim
 {
   m_nodesMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
   m_nodesMesh.newVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+  m_nodesMesh.newVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+  m_nodesMesh.newVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
 }
 /*----------------------------------------------------------------------------*/
 MetricFFPointgeneration::~MetricFFPointgeneration()
@@ -26,22 +28,11 @@ MetricFFPointgeneration::~MetricFFPointgeneration()
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::execute()
 {
-  CriterionRAIS criterionRAIS(new VolumeCriterion());
-
-  Variable<int>* BND_VERTEX_COLOR    = nullptr;
-  Variable<int>* BND_SURFACE_COLOR   = nullptr;
-  Variable<int>* BND_CURVE_COLOR     = nullptr;
-  Variable<Eigen::Matrix3d>* metric  = nullptr;
-
-  try{
-    metric = m_simplexMesh->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
-    BND_VERTEX_COLOR  = m_simplexMesh->getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
-    BND_SURFACE_COLOR  = m_simplexMesh->getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
-    BND_CURVE_COLOR  = m_simplexMesh->getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
-  }catch (gmds::GMDSException e)
-  {
-    throw gmds::GMDSException(e);
-  }
+  gmds::ISimplexMeshIOService ioServiceSM(m_simplexMesh);
+  gmds::VTKWriter vtkWriterSM(&ioServiceSM);
+  vtkWriterSM.setCellOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriterSM.setDataOptions(gmds::N|gmds::R|gmds::F);
+  vtkWriterSM.write("modeleMESH.vtk");
 
   std::vector<double> edges_length{};
   const std::map<unsigned int, std::vector<TInt>> sortedEdges = buildSortedEdges();
@@ -55,8 +46,6 @@ void MetricFFPointgeneration::execute()
     std::vector<TInt> edge = sortedEdge.second;
     std::vector<double> edgeU = edgesU[i];
     double edge_length = edges_length[i];
-    //dichotomie algo reduction edge to see if the edge is sample enough
-    //subdivideEdgeUsingMetric_Dichotomie(nodeAdded, edge, edgeU, edge_length);
     subdivideEdgeUsingMetric_Relaxation(nodeAdded, edge, edgeU, edge_length, edgeId);
     i++;
   }
@@ -68,11 +57,6 @@ void MetricFFPointgeneration::execute()
       m_nodesMesh.addTetraedre(n,n,n,n);
     }
   }
-  gmds::ISimplexMeshIOService ioService(&m_nodesMesh);
-  gmds::VTKWriter vtkWriter(&ioService);
-  vtkWriter.setCellOptions(gmds::N|gmds::R);
-  vtkWriter.setDataOptions(gmds::N|gmds::R);
-  vtkWriter.write("metricFF_EDGE.vtk");
 
   std::cout << "EDGE NODES CREATED " << std::endl;
   unsigned int cpt = 0;
@@ -81,9 +65,15 @@ void MetricFFPointgeneration::execute()
     std::cout << "nodeAdded.size() BEFORE  -> " << nodeAdded.size() << std::endl;
     nodesSpreading(nodeAdded);
     std::cout << "nodeAdded.size() AFTER  -> " << nodeAdded.size() << std::endl;
-    //throw gmds::GMDSException("OK");
     std::cout << std::endl;
   }
+
+  m_nodesMesh.setColorsSurfaceFromSimplex(m_simplexMesh);
+  gmds::ISimplexMeshIOService ioServiceNODE(&m_nodesMesh);
+  gmds::VTKWriter vtkWriterNODE(&ioServiceNODE);
+  vtkWriterNODE.setCellOptions(gmds::N|gmds::R);
+  vtkWriterNODE.setDataOptions(gmds::N|gmds::R);
+  vtkWriterNODE.write("metricFF_Nodes.vtk");
 
   for(auto const & d : m_nodeStructure)
   {
@@ -116,9 +106,11 @@ void MetricFFPointgeneration::execute()
   computeHexa(hexs);
   std::cout << "hex size -> " << hexs.size() << std::endl;
 
-  vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
-  vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
-  vtkWriter.write("metricFF_Grid.vtk");
+  gmds::ISimplexMeshIOService ioServiceGRID(&m_nodesMesh);
+  gmds::VTKWriter vtkWriterGRID(&ioServiceGRID);
+  vtkWriterGRID.setCellOptions(gmds::N|gmds::R);
+  vtkWriterGRID.setDataOptions(gmds::N|gmds::R);
+  vtkWriterGRID.write("metricFF_Grid.vtk");
 }
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::computeHexa(std::set<std::vector<TInt>> & hexa) const

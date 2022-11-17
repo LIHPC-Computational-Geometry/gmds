@@ -4374,9 +4374,9 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
   double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  metricX = 3.0;
-  metricY = 3.0;
-  metricZ = 3.0;
+  metricX = 0.2;
+  metricY = 0.2;
+  metricZ = 0.2;
 
 
   m(0,0) = 1.0 / (metricX*metricX);
@@ -4406,9 +4406,9 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  metricX = 3.0;
-  metricY = 3.0;
-  metricZ = 3.0;
+  metricX = 0.2;
+  metricY = 0.2;
+  metricZ = 0.2;
 
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
   (*metric)[node](1,1) = 1.0 / (metricY*metricY);
@@ -4486,6 +4486,66 @@ bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>&
     }
   }
   return false;
+}
+/******************************************************************************/
+void SimplexMesh::setColorsSurfaceFromSimplex(SimplexMesh* simplexMesh)
+{
+  double epsilon = 0.0001;
+  unsigned int sizeFace = 4;
+
+  gmds::Variable<int>* BND_SURFACE_COLOR = nullptr;
+  gmds::Variable<int>* BND_CURVE_COLOR = nullptr;
+  gmds::Variable<int>* BND_TRIANGLES   = nullptr;
+
+  try{
+    BND_TRIANGLES        = simplexMesh->getVariable<int, SimplicesTriangle>("BND_TRIANGLES");
+    BND_CURVE_COLOR      = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+    BND_SURFACE_COLOR      = getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+  } catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  for(unsigned int n = 0 ; n < m_node_ids.capacity() ; n++)
+  {
+    if(m_node_ids[n] != 0)
+    {
+      if((*BND_CURVE_COLOR)[n] != 0)
+        continue;
+
+      const SimplicesNode node(this, n);
+      std::vector<TSimplexID> simplices = simplexMesh->getOctree()->findSimplicesInOc(node.getCoords());
+      TSimplexID s;
+      double d = std::numeric_limits<double>::max();
+      int face = 0;
+      unsigned int surfaceColorId;
+      for(auto const simplex : simplices)
+      {
+        if(simplex >= 0)
+        {
+          std::vector<double> UVWT = SimplicesCell(simplexMesh, simplex).uvwt(node.getCoords());
+          for(unsigned int c = 0; c < UVWT.size() ; c++)
+          {
+            TSimplexID t = SimplicesCell(simplexMesh, simplex).oppositeTetraIdx(c);
+            if(UVWT[c] <= d &&  t < 0)
+            {
+              d = UVWT[c];
+              s = simplex;
+              face = c;
+              surfaceColorId = (*BND_TRIANGLES)[-t];
+            }
+          }
+        }
+      }
+
+      if(simplices.size() == 0 || d ==  std::numeric_limits<double>::max())
+        continue;
+
+      std::cout << "n -> " << surfaceColorId << std::endl;
+      BND_SURFACE_COLOR->set(n, surfaceColorId);
+
+    }
+  }
 }
 /******************************************************************************/
 void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)

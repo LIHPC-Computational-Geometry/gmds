@@ -273,6 +273,16 @@ void SimplicesCell::reorientTet()
   }
 }
 /*----------------------------------------------------------------------------*/
+std::vector<double> SimplicesCell::uvwt(const gmds::math::Point& pt) const
+{
+  std::vector<double> uvwt;
+  unsigned int sizeFACE = 4;
+  for(unsigned int face = 0 ; face < sizeFACE ; face++)
+    uvwt.push_back(signedBarycentricNormalized(face, pt));
+
+  return uvwt;
+}
+/*----------------------------------------------------------------------------*/
 double SimplicesCell::signedBarycentricNormalized(const TInt index, const gmds::math::Point& pt) const
 {
   double signedBarNormalized = 0.0;
