@@ -42,9 +42,13 @@ AeroExtrusion_3D::execute()
 	}
 
 	Front_3D Front_Geom = Front_3D(0, surface_block_corners_Id, surface_block_faces_Id);
+	Front_3D Current_Front = Front_Geom;
 
-	// Compute a first layer
-	Front_3D Front_1 = ComputeLayer(Front_Geom, m_DistanceField, 0.5, m_VectorField);
+	// Compute the successive layers
+	for (int i=1; i <= m_params_aero.nbr_couches; i++) {
+		Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), i*pas_couche,
+		                             m_VectorField);
+	}
 
 	return AeroExtrusion_3D::SUCCESS;
 }
@@ -168,6 +172,83 @@ void AeroExtrusion_3D::CreateNormalHexa(TCellID f_id, Front_3D &Front_IN, std::m
 	var_face_couche_id->set(f_new_front.id(), Front_IN.getFrontID()+1);
 
 	// The faces between the two layers are not created.
+
+	TCellID f0_id = math::Utils::CommonFace(m_meshH, nodes[0].id(), nodes[1].id(), n0_id, n1_id);
+	if (f0_id == NullID)		// Then, the face doesn't exist yet
+	{
+		Face f0 = m_meshH->newQuad(nodes[0], nodes[1], n1, n0);	// F->N (x4)
+		nodes[0].add<Face>(f0);	// N->F
+		nodes[1].add<Face>(f0);	// N->F
+		n0.add<Face>(f0);			// N->F
+		n1.add<Face>(f0);			// N->F
+	}
+
+	TCellID f1_id = math::Utils::CommonFace(m_meshH, nodes[1].id(), nodes[2].id(), n1_id, n2_id);
+	if (f1_id == NullID)		// Then, the face doesn't exist yet
+	{
+		Face f1 = m_meshH->newQuad(nodes[1], nodes[2], n2, n1);	// F->N (x4)
+		nodes[1].add<Face>(f1);	// N->F
+		nodes[2].add<Face>(f1);	// N->F
+		n1.add<Face>(f1);			// N->F
+		n2.add<Face>(f1);			// N->F
+	}
+
+	TCellID f2_id = math::Utils::CommonFace(m_meshH, nodes[2].id(), nodes[3].id(), n2_id, n3_id);
+	if (f2_id == NullID)		// Then, the face doesn't exist yet
+	{
+		Face f2 = m_meshH->newQuad(nodes[2], nodes[3], n3, n2);	// F->N (x4)
+		nodes[2].add<Face>(f2);	// N->F
+		nodes[3].add<Face>(f2);	// N->F
+		n2.add<Face>(f2);			// N->F
+		n3.add<Face>(f2);			// N->F
+	}
+
+	TCellID f3_id = math::Utils::CommonFace(m_meshH, nodes[0].id(), nodes[3].id(), n0_id, n3_id);
+	if (f3_id == NullID)		// Then, the face doesn't exist yet
+	{
+		Face f3 = m_meshH->newQuad(nodes[0], nodes[3], n3, n0);	// F->N (x4)
+		nodes[0].add<Face>(f3);	// N->F
+		nodes[3].add<Face>(f3);	// N->F
+		n0.add<Face>(f3);			// N->F
+		n3.add<Face>(f3);			// N->F
+	}
+
+	/*
+	TCellID e0_id = math::Utils::CommonEdge(m_meshQ, nodes[0].id(), n0.id());
+	TCellID e1_id = math::Utils::CommonEdge(m_meshQ, nodes[1].id(), n1.id());
+	Edge e0, e1;
+	if ( e0_id == NullID ){
+		// Si l'arête n'existe pas, on la créé et on initialise les connectivités N->E
+		e0 = m_meshQ->newEdge(nodes[0].id(), n0.id());		// E->N (x2)
+		nodes[0].add<Edge>(e0);												// N->E
+		n0.add<Edge>(e0);														// N->E
+	}
+	else{
+		e0 = m_meshQ->get<Edge>(e0_id);
+	}
+
+	// Idem pour l'arête e1
+	if ( e1_id == NullID ){
+		e1 = m_meshQ->newEdge(nodes[1].id(), n1.id());		// E->N (x2)
+		nodes[1].add<Edge>(e1);												// N->E
+		n1.add<Edge>(e1);														// N->E
+	}
+	else{
+		e1 = m_meshQ->get<Edge>(e1_id);
+	}
+
+	// Connectivités F->E
+	f.add<Edge>(e);		// F->E
+	f.add<Edge>(e0);		// F->E
+	f.add<Edge>(e1);		// F->E
+	f.add<Edge>(e_opp);	// F->E
+
+	// Connectivités E->F
+	e.add<Face>(f);		// E->F
+	e0.add<Face>(f);		// E->F
+	e1.add<Face>(f);		// E->F
+	e_opp.add<Face>(f);	// E->F
+	 */
 
 }
 /*------------------------------------------------------------------------*/
