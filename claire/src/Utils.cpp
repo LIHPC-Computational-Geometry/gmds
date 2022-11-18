@@ -101,6 +101,32 @@ TCellID Utils::CommonFace3Nodes(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCell
 	return f_id;
 }
 /*------------------------------------------------------------------------*/
+TCellID Utils::CommonFace(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id){
+	TCellID f_id(NullID);
+	Node n0 = AMesh->get<Node>(n0_id);
+	std::vector<Face> adj_faces = n0.get<Face>();
+	for (auto f:adj_faces)
+	{
+		if (f_id==NullID)
+		{
+			std::vector<Node> f_nodes = f.get<Node>();
+			if ( f_nodes.size() == 4
+			    && (f_nodes[0].id() == n0_id || f_nodes[0].id() == n1_id || f_nodes[0].id() == n2_id || f_nodes[0].id() == n3_id )
+			    && (f_nodes[1].id() == n0_id || f_nodes[1].id() == n1_id || f_nodes[1].id() == n2_id || f_nodes[1].id() == n3_id )
+			    && (f_nodes[2].id() == n0_id || f_nodes[2].id() == n1_id || f_nodes[2].id() == n2_id || f_nodes[2].id() == n3_id )
+			    && (f_nodes[3].id() == n0_id || f_nodes[3].id() == n1_id || f_nodes[3].id() == n2_id || f_nodes[3].id() == n3_id ))
+			{
+				f_id = f.id();
+			}
+		}
+	}
+	return f_id;
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
 void Utils::MeshCleaner(Mesh *AMesh){
 	for (auto n_id:AMesh->nodes())
 	{
