@@ -9,8 +9,9 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------*/
-Front_3D::Front_3D() {
-
+Front_3D::Front_3D(std::vector<TCellID> nodes_Id, std::vector<TCellID> faces_Id) {
+	m_nodesId = nodes_Id;
+	m_facesId = faces_Id;
 }
 /*-------------------------------------------------------------------*/
 
@@ -22,5 +23,21 @@ void Front_3D::setFrontID(int layer_id){
 /*-------------------------------------------------------------------*/
 int Front_3D::getFrontID(){
 	return m_FrontID;
+}
+/*-------------------------------------------------------------------*/
+std::vector<TCellID> Front_3D::getNodes(){
+	return m_nodesId;
+};
+/*-------------------------------------------------------------------*/
+std::vector<TCellID> Front_3D::getFaces(){
+	return m_facesId;
+};
+/*-------------------------------------------------------------------*/
+void Front_3D::addNodeId(TCellID n_id){
+	m_nodesId.push_back(n_id);
+}
+/*-------------------------------------------------------------------*/
+void Front_3D::addFaceId(TCellID f_id){
+	m_facesId.push_back(f_id);
 }
 /*-------------------------------------------------------------------*/
