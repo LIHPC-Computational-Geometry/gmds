@@ -28,7 +28,7 @@ class LIB_GMDS_CLAIRE_API Front_3D {
 	/*-------------------------------------------------------------------*/
 	/** \brief Default constructor
 	 */
-	Front_3D(std::vector<TCellID> nodes_Id, std::vector<TCellID> faces_Id);
+	Front_3D(int front_id, std::vector<TCellID> nodes_Id, std::vector<TCellID> faces_Id);
 	/*-------------------------------------------------------------------*/
 
  public:
