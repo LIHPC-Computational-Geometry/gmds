@@ -21,7 +21,7 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_3D : public AbstractAeroPipeline {
 	/*------------------------------------------------------------------------*/
 	/** \brief Default constructor
 	 */
-	AeroPipeline_3D(std::string Aparams);
+	AeroPipeline_3D(ParamsAero Aparams);
 	/*------------------------------------------------------------------------*/
 	/** \brief Function to be called for mesh generation
 	 */
@@ -42,10 +42,6 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_3D : public AbstractAeroPipeline {
 	 * 	in a .vtk file for instance.
 	 */
 	void GeometrySurfaceBlockingGeneration();
-	/*------------------------------------------------------------------------*/
-	/** \brief
-	 */
-	void PreTraitementMeshTet();
 	/*------------------------------------------------------------------------*/
 
  protected:
