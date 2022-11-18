@@ -43,6 +43,19 @@ class LIB_GMDS_CLAIRE_API Utils {
 	static TCellID CommonEdge(Mesh *AMesh, TCellID n0_id, TCellID n1_id);
 
 	/*------------------------------------------------------------------------*/
+	/** \brief  Return the common face between 4 points if it exists, NullID
+	 		* otherwise (ou si la connectivité n'est pas renseignée)
+         *
+         * \param[in] n0_id first node id
+         * \param[in] n1_id second node id
+         * \param[in] n2_id thirst node id
+			* \param[in] n3_id fourth node id
+         *
+         * \return  the face between the nodes n0, n1, n2 and n3
+	 */
+	static TCellID CommonFace(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
+
+	/*------------------------------------------------------------------------*/
 	/** \brief  Retire les noeuds qui ne sont connectés à rien dans le maillage
          *
          * \param[in] AMesh the mesh
