@@ -9,7 +9,8 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------*/
-Front_3D::Front_3D(std::vector<TCellID> nodes_Id, std::vector<TCellID> faces_Id) {
+Front_3D::Front_3D(int front_id, std::vector<TCellID> nodes_Id, std::vector<TCellID> faces_Id) {
+	m_FrontID = front_id;
 	m_nodesId = nodes_Id;
 	m_facesId = faces_Id;
 }
