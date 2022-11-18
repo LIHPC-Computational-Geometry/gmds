@@ -42,7 +42,36 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	/*-------------------------------------------------------------------*/
 
  private:
-
+	/*-------------------------------------------------------------------*/
+	/** @brief Calcule la position idéale du prochain noeud pour chaque
+	 	* noeud du front.
+	 	* \param[in] AFront the front
+   	* \param[in] A_distance the distance variable on the first mesh
+		* \param[in] dist_cible the distance wanted for the first layer
+		*
+		* \return  a map with (TCellID, TCellID) for ideal positions
+	 */
+	std::map<TCellID, TCellID> ComputeIdealPositions(Front_3D AFront, double dist_cible, Variable<double>* A_distance, Variable<math::Vector3d>* A_vectors);
+	/*-------------------------------------------------------------------*/
+	/** @brief Construit une couche de mailles à partir d'un front. Ici,
+	 	* des mailles peuvent être fusionnées ou insérées.
+	 	* \param[in] Front_IN the front before
+   	* \param[in] A_distance the distance variable on the first mesh
+		* \param[in] dist_cible the distance wanted for the first layer
+	 	* \param[in] A_vectors le champ de vecteurs à utiliser
+		*
+		* \return  the front computed
+	 */
+	Front_3D ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors);
+	/*-------------------------------------------------------------------*/
+	/** @brief Créé un hax normal sur la couche à partir d'une face
+	 	* \param[in] f_id la face concernée
+	 	* \param[in] Front_IN front en entrée
+		*
+		* \return
+	 */
+	void CreateNormalHexa(TCellID f_id, Front_3D &Front_IN, std::map<TCellID, TCellID> map_new_nodes);
+	/*-------------------------------------------------------------------*/
  private:
 	/** triangular mesh we work on */
 	Mesh *m_meshT;
