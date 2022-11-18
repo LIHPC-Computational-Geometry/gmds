@@ -5,6 +5,7 @@
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/AeroPipeline_3D.h>
 #include <gmds/claire/AeroBoundaries_3D.h>
+#include <gmds/claire/AeroExtrusion_3D.h>
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/ig/Mesh.h>
@@ -26,6 +27,7 @@ AeroPipeline_3D::AeroPipeline_3D(ParamsAero Aparams) :
 	m_meshHex = new Mesh(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
 	                                     F2E | E2F | R2E | N2R | N2F | N2E));
 	m_couche_id = m_meshHex->newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	m_meshHex->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
 	m_Bnd = new AeroBoundaries_3D(m_meshTet) ;
 }
 /*------------------------------------------------------------------------*/
@@ -72,6 +74,17 @@ AeroPipeline_3D::execute(){
 
 	// Generate the blocking of the geometry surface.
 	GeometrySurfaceBlockingGeneration();
+
+	// Extrusion
+	std::cout << "-> Extrusion" << std::endl;
+	t_start = clock();
+	AeroExtrusion_3D aero_extrusion(m_meshTet, m_meshHex, m_params,
+	                                m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                                m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	aero_extrusion.execute();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
 
 	// Write the final mesh.
 	EcritureMaillage();
