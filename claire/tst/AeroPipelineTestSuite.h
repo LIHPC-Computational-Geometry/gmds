@@ -196,7 +196,8 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 	// le temps de mettre en place un fichier .ini
 	params_aero.dim=ParamsAero::DIM_3D;
 	std::string dir(TEST_SAMPLES_DIR);
-	params_aero.input_file=dir+"/Aero/3D/biconique.vtk";
+	//params_aero.input_file=dir+"/Aero/3D/biconique.vtk";
+	params_aero.input_file=dir+"/Aero/3D/C2_3D_0.3.vtk";
 	params_aero.output_file="AeroPipeline3D_Hexa.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
 

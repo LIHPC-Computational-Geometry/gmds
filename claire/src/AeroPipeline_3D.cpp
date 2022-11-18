@@ -70,6 +70,10 @@ AeroPipeline_3D::execute(){
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
+	// Generate the blocking of the geometry surface.
+	GeometrySurfaceBlockingGeneration();
+
+	// Write the final mesh.
 	EcritureMaillage();
 
 	return AbstractAeroPipeline::SUCCESS;
@@ -120,4 +124,65 @@ AeroPipeline_3D::EcritureMaillage(){
 
 }
 /*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
+{
+	//-------------------------------------//
+	// Special case of the C2_3D geometry
+	//------------------------------------//
+	Node n0 = m_meshHex->newNode({-0.5, -0.5, -0.5});
+	Node n1 = m_meshHex->newNode({-0.5, 0.5, -0.5});
+	Node n2 = m_meshHex->newNode({0.5, 0.5, -0.5});
+	Node n3 = m_meshHex->newNode({0.5, -0.5, -0.5});
+
+	Node n4 = m_meshHex->newNode({-0.5, -0.5, 0.5});
+	Node n5 = m_meshHex->newNode({-0.5, 0.5, 0.5});
+	Node n6 = m_meshHex->newNode({0.5, 0.5, 0.5});
+	Node n7 = m_meshHex->newNode({0.5, -0.5, 0.5});
+
+	Face f0 = m_meshHex->newQuad(n0,n1,n2,n3);	// F->N (x4)
+	n0.add<Face>(f0);
+	n1.add<Face>(f0);
+	n2.add<Face>(f0);
+	n3.add<Face>(f0);
+
+	Face f1 = m_meshHex->newQuad(n4,n5,n6,n7);
+	n4.add<Face>(f1);
+	n5.add<Face>(f1);
+	n6.add<Face>(f1);
+	n7.add<Face>(f1);
+
+	Face f2 = m_meshHex->newQuad(n0,n1,n5,n4);
+	n0.add<Face>(f2);
+	n1.add<Face>(f2);
+	n5.add<Face>(f2);
+	n4.add<Face>(f2);
+
+	Face f3 = m_meshHex->newQuad(n0,n3,n7,n4);
+	n0.add<Face>(f3);
+	n3.add<Face>(f3);
+	n7.add<Face>(f3);
+	n4.add<Face>(f3);
+
+	Face f4 = m_meshHex->newQuad(n3,n2,n6,n7);
+	n3.add<Face>(f4);
+	n2.add<Face>(f4);
+	n6.add<Face>(f4);
+	n7.add<Face>(f4);
+
+	Face f5 = m_meshHex->newQuad(n2,n1,n5,n6);
+	n2.add<Face>(f5);
+	n1.add<Face>(f5);
+	n5.add<Face>(f5);
+	n6.add<Face>(f5);
+
+	for (auto n_id:m_meshHex->nodes())
+	{
+		m_couche_id->set(n_id, 0);
+	}
+
+}
 
