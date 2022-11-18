@@ -131,8 +131,8 @@ void
 AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 {
 	//-------------------------------------//
-	// Special case of the C2_3D geometry
-	//------------------------------------//
+	// Special case of the C2_3D geometry  //
+	//-------------------------------------//
 	Node n0 = m_meshHex->newNode({-0.5, -0.5, -0.5});
 	Node n1 = m_meshHex->newNode({-0.5, 0.5, -0.5});
 	Node n2 = m_meshHex->newNode({0.5, 0.5, -0.5});
