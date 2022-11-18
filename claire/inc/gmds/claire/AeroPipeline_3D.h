@@ -38,6 +38,11 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_3D : public AbstractAeroPipeline {
 	 */
 	void EcritureMaillage();
 	/*------------------------------------------------------------------------*/
+	/** \brief Generate the blocking of the geometry surface. It can be read
+	 * 	in a .vtk file for instance.
+	 */
+	void GeometrySurfaceBlockingGeneration();
+	/*------------------------------------------------------------------------*/
 
  protected:
 	/** Données des bords */
