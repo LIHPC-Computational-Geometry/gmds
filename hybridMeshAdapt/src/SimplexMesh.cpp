@@ -4374,10 +4374,9 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
   double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  metricX = 0.2;
-  metricY = 0.2;
-  metricZ = 0.2;
-
+  metricX = 3.0;
+  metricY = 3.0;
+  metricZ = 3.0;
 
   m(0,0) = 1.0 / (metricX*metricX);
   m(1,1) = 1.0 / (metricY*metricY);
@@ -4406,9 +4405,9 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  metricX = 0.2;
-  metricY = 0.2;
-  metricZ = 0.2;
+  metricX = 3.0;
+  metricY = 3.0;
+  metricZ = 3.0;
 
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
   (*metric)[node](1,1) = 1.0 / (metricY*metricY);
@@ -4516,32 +4515,35 @@ void SimplexMesh::setColorsSurfaceFromSimplex(SimplexMesh* simplexMesh)
       const SimplicesNode node(this, n);
       std::vector<TSimplexID> simplices = simplexMesh->getOctree()->findSimplicesInOc(node.getCoords());
       TSimplexID s;
-      double d = std::numeric_limits<double>::max();
+      double d = epsilon;
       int face = 0;
-      unsigned int surfaceColorId;
+      unsigned int surfaceColorId = 0;
       for(auto const simplex : simplices)
       {
         if(simplex >= 0)
         {
-          std::vector<double> UVWT = SimplicesCell(simplexMesh, simplex).uvwt(node.getCoords());
-          for(unsigned int c = 0; c < UVWT.size() ; c++)
+          if(SimplicesCell(simplexMesh, simplex).isInCell(node.getCoords()))
           {
-            TSimplexID t = SimplicesCell(simplexMesh, simplex).oppositeTetraIdx(c);
-            if(UVWT[c] <= d &&  t < 0)
+            std::vector<double> UVWT = SimplicesCell(simplexMesh, simplex).uvwt(node.getCoords());
+            for(unsigned int c = 0; c < UVWT.size() ; c++)
             {
-              d = UVWT[c];
-              s = simplex;
-              face = c;
-              surfaceColorId = (*BND_TRIANGLES)[-t];
+              TSimplexID t = SimplicesCell(simplexMesh, simplex).oppositeTetraIdx(c);
+
+              if(t < 0 && UVWT[c] < d)
+              {
+                d = UVWT[c];
+                s = simplex;
+                face = c;
+                surfaceColorId = (*BND_TRIANGLES)[-t];
+              }
             }
           }
         }
       }
 
-      if(simplices.size() == 0 || d ==  std::numeric_limits<double>::max())
+      if(simplices.size() == 0 || surfaceColorId == 0)
         continue;
 
-      std::cout << "n -> " << surfaceColorId << std::endl;
       BND_SURFACE_COLOR->set(n, surfaceColorId);
 
     }

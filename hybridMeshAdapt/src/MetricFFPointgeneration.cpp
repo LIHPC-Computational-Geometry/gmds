@@ -28,12 +28,6 @@ MetricFFPointgeneration::~MetricFFPointgeneration()
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::execute()
 {
-  gmds::ISimplexMeshIOService ioServiceSM(m_simplexMesh);
-  gmds::VTKWriter vtkWriterSM(&ioServiceSM);
-  vtkWriterSM.setCellOptions(gmds::N|gmds::R|gmds::F);
-  vtkWriterSM.setDataOptions(gmds::N|gmds::R|gmds::F);
-  vtkWriterSM.write("modeleMESH.vtk");
-
   std::vector<double> edges_length{};
   const std::map<unsigned int, std::vector<TInt>> sortedEdges = buildSortedEdges();
   const std::vector<std::vector<double>> edgesU = buildParamEdgeU(sortedEdges, edges_length);
@@ -536,11 +530,13 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TI
   Variable<Eigen::Matrix3d>* metric  = nullptr;
   Variable<Eigen::Matrix3d>* metricNode  = nullptr;
   gmds::Variable<int>* BND_CURVE_COLOR_NODE = nullptr;
+  gmds::Variable<int>* BND_CURVE_VERTEX_NODE = nullptr;
 
   try{
     metric = m_simplexMesh->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
     metricNode = m_nodesMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
     BND_CURVE_COLOR_NODE = m_nodesMesh.getVariable<int, SimplicesNode>("BND_CURVE_COLOR");
+    BND_CURVE_VERTEX_NODE = m_nodesMesh.getVariable<int, SimplicesNode>("BND_VERTEX_COLOR");
   }catch (gmds::GMDSException e)
   {
     throw gmds::GMDSException(e);
@@ -889,69 +885,7 @@ std::map<unsigned int, std::vector<TInt>> MetricFFPointgeneration::buildSortedEd
     res[indices[i]] = nodes;
     i++;
   }
-  /*std::vector<std::set<TInt>> sortedEdges{};
-  for(unsigned int node = 0 ; node < meshNode.capacity() ; node++)
-  {
-    if((*BND_VERTEX_COLOR)[node] != 0)
-    {
-      const std::vector<TInt> neighborNodes = SimplicesNode(m_simplexMesh, node).neighborNodes();
-      for(auto const neighborNode : neighborNodes)
-      {
-        if((*BND_CURVE_COLOR)[neighborNode] != 0 || (*BND_VERTEX_COLOR)[neighborNode] != 0)
-        {
-          std::set<TInt> sortedEdge{static_cast<int>(node)};
-          sortedEdge.insert(neighborNode);
-          sortedEdges.push_back(sortedEdge);
-        }
-      }
-    }
-  }
 
-
-  std::vector<std::vector<TInt>> finalEdges{};
-  for(auto const & sortedEdge : sortedEdges)
-  {
-    const TInt firstNode = *(sortedEdge.begin());
-    TInt secondNode = *(--sortedEdge.end());
-    if((*BND_CURVE_COLOR)[secondNode] != 0)
-    {
-      std::vector<TInt> finalEdge{firstNode, secondNode};
-      do{
-        const std::vector<TInt> neighborNodes = SimplicesNode(m_simplexMesh, secondNode).neighborNodes();
-        for(auto const node : neighborNodes)
-        {
-          if((((*BND_VERTEX_COLOR)[node] != 0 && node != firstNode) || ((*BND_CURVE_COLOR)[node] == (*BND_CURVE_COLOR)[secondNode] && node != secondNode)) &&
-            std::find(finalEdge.begin(), finalEdge.end(), node) == finalEdge.end())
-          {
-            finalEdge.push_back(node);
-            secondNode = finalEdge.back();
-            break;
-          }
-        }
-      }while((*BND_VERTEX_COLOR)[finalEdge.back()] == 0);
-      finalEdges.push_back(finalEdge);
-    }
-    else
-    {
-      throw gmds::GMDSException("(*BND_CURVE_COLOR)[secondNode] != 0");
-    }
-  }
-
-
-  for(auto const & finalEdge : finalEdges)
-  {
-    res.insert(std::pair<unsigned int, std::vector<TInt>>((*BND_CURVE_COLOR)[finalEdge[1]], finalEdge));
-  }*/
-
-  /*for(auto const & r : res)
-  {
-    std::cout << "indice -> " << r.first << std::endl;
-    for(auto const & n : r.second)
-    {
-      std::cout << "  n -> " << n << std::endl;
-    }
-    std::cout << std::endl;
-  }*/
   return res;
 }
 /*----------------------------------------------------------------------------*/
