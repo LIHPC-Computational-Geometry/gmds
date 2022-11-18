@@ -97,7 +97,7 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 	std::cout << "Distance finale : " << dist << std::endl;
 	 */
 
-	writeDiscretePathInVTK();
+	//writeDiscretePathInVTK();
 
 	return AdvectedPointRK4_3D::SUCCESS;
 }

@@ -201,6 +201,14 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 	params_aero.output_file="AeroPipeline3D_Hexa.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
 
+	// Extrusion Parameters
+	params_aero.nbr_couches = 4;			// Number of layer in extrusion
+
+
+
+	//---------------------//
+	//    AERO PIPELINE    //
+	//---------------------//
 	AeroPipeline_3D algo_aero3D(params_aero);
 	AbstractAeroPipeline::STATUS aero3D_result = algo_aero3D.execute();
 
