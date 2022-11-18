@@ -28,19 +28,37 @@ class LIB_GMDS_CLAIRE_API Front_3D {
 	/*-------------------------------------------------------------------*/
 	/** \brief Default constructor
 	 */
-	Front_3D();
+	Front_3D(std::vector<TCellID> nodes_Id, std::vector<TCellID> faces_Id);
 	/*-------------------------------------------------------------------*/
 
  public:
 	/*-------------------------------------------------------------------*/
-	/** @brief Change l'id du front
+	/** @brief Set the front id
 	 * 	@param[in] layer_id nouvel id du front
 	 */
 	void setFrontID(int layer_id);
 	/*-------------------------------------------------------------------*/
-	/** @brief Retourne l'id du front
+	/** @brief Give the front id
 	 */
 	int getFrontID();
+	/*-------------------------------------------------------------------*/
+	/** @brief Returns the front nodes id
+	 */
+	std::vector<TCellID> getNodes();
+	/*-------------------------------------------------------------------*/
+	/** @brief Returns the front faces id
+	 */
+	std::vector<TCellID> getFaces();
+	/*-------------------------------------------------------------------*/
+	/** @brief Add the node id to the front
+	 * 	@param n_id id of the node to add
+	 */
+	void addNodeId(TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Add the face id to the front
+	 * 	@param f_id id of the face to add
+	 */
+	void addFaceId(TCellID f_id);
 	/*-------------------------------------------------------------------*/
 
  private:
@@ -50,7 +68,6 @@ class LIB_GMDS_CLAIRE_API Front_3D {
 	std::vector<TCellID> m_nodesId;
 	/** Liste d'id des arêtes du front */
 	std::vector<TCellID> m_facesId;
-
 
 };
 /*----------------------------------------------------------------------------*/
