@@ -52,6 +52,18 @@ AeroExtrusion_3D::execute()
 		                             m_VectorField);
 	}
 
+	Variable<int>* var_node_layer = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	Variable<int>* var_face_layer = m_meshH->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
+	for (auto f_id:m_meshH->faces())
+	{
+		Face f = m_meshH->get<Face>(f_id);
+		std::vector<Node> nodes = f.get<Node>();
+		int max_layer_index = std::max(var_node_layer->value(nodes[0].id()), var_node_layer->value(nodes[1].id()));
+		max_layer_index = std::max(max_layer_index, var_node_layer->value(nodes[2].id()));
+		max_layer_index = std::max(max_layer_index, var_node_layer->value(nodes[3].id()));
+		var_face_layer->set(f_id, max_layer_index);
+	}
+
 	return AeroExtrusion_3D::SUCCESS;
 }
 /*------------------------------------------------------------------------*/
