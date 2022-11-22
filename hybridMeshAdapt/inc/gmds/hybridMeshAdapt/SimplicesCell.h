@@ -120,6 +120,8 @@ namespace gmds
 
         bool isInCell(const gmds::math::Point& pt, bool inverseOrientation = false) const;
 
+        bool isCellClose(const gmds::math::Point& pt, std::vector<double>& UVWT, double epsilon) const;
+
         /*return the dihedral angle between the localNode0 & localNode1*/
         double dihedralAngle(const unsigned int localNode0, const unsigned int localNode1) const ;
 

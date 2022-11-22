@@ -365,6 +365,17 @@ bool SimplicesCell::isInCell(const gmds::math::Point& pt, bool inverseOrientatio
   return true;
 }
 /*----------------------------------------------------------------------------*/
+bool SimplicesCell::isCellClose(const gmds::math::Point& pt, std::vector<double>& UVWT, double epsilon) const
+{
+  UVWT =  uvwt(pt);
+
+  for(double c : UVWT)
+    if(c < - epsilon)
+      return false;
+
+  return true;
+}
+/*----------------------------------------------------------------------------*/
 math::Orientation::Sign SimplicesCell::orientation(const TInt faceIdx, const gmds::math::Point& pt, bool inverseOrientation) const
 {
   math::Orientation::Sign sign;

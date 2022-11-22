@@ -4489,17 +4489,19 @@ bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>&
 /******************************************************************************/
 void SimplexMesh::setColorsSurfaceFromSimplex(SimplexMesh* simplexMesh)
 {
-  double epsilon = 0.0001;
+  double epsilon = 0.07;
   unsigned int sizeFace = 4;
 
-  gmds::Variable<int>* BND_SURFACE_COLOR = nullptr;
-  gmds::Variable<int>* BND_CURVE_COLOR = nullptr;
-  gmds::Variable<int>* BND_TRIANGLES   = nullptr;
+  gmds::Variable<int>* BND_SURFACE_COLOR    = nullptr;
+  gmds::Variable<int>* BND_CURVE_COLOR      = nullptr;
+  gmds::Variable<int>* BND_TRIANGLES        = nullptr;
+  gmds::Variable<int>* BND_SURFACE_COLOR_MESH = nullptr;
 
   try{
+    BND_SURFACE_COLOR_MESH = simplexMesh->getVariable<int, SimplicesNode>("BND_SURFACE_COLOR");
     BND_TRIANGLES        = simplexMesh->getVariable<int, SimplicesTriangle>("BND_TRIANGLES");
     BND_CURVE_COLOR      = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
-    BND_SURFACE_COLOR      = getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+    BND_SURFACE_COLOR    = getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
   } catch (gmds::GMDSException e)
   {
     throw gmds::GMDSException(e);
@@ -4509,32 +4511,27 @@ void SimplexMesh::setColorsSurfaceFromSimplex(SimplexMesh* simplexMesh)
   {
     if(m_node_ids[n] != 0)
     {
-      if((*BND_CURVE_COLOR)[n] != 0)
+      if((*BND_CURVE_COLOR)[n] != 0 || (*BND_SURFACE_COLOR)[n] != 0)
         continue;
 
       const SimplicesNode node(this, n);
       std::vector<TSimplexID> simplices = simplexMesh->getOctree()->findSimplicesInOc(node.getCoords());
-      TSimplexID s;
-      double d = epsilon;
-      int face = 0;
       unsigned int surfaceColorId = 0;
+
       for(auto const simplex : simplices)
       {
         if(simplex >= 0)
         {
-          if(SimplicesCell(simplexMesh, simplex).isInCell(node.getCoords()))
+          std::vector<double> UVWT;
+          if(SimplicesCell(simplexMesh, simplex).isCellClose(node.getCoords(), UVWT, epsilon))
           {
-            std::vector<double> UVWT = SimplicesCell(simplexMesh, simplex).uvwt(node.getCoords());
             for(unsigned int c = 0; c < UVWT.size() ; c++)
             {
-              TSimplexID t = SimplicesCell(simplexMesh, simplex).oppositeTetraIdx(c);
-
-              if(t < 0 && UVWT[c] < d)
+              std::vector<TInt> orderedFace = SimplicesCell(simplexMesh, simplex).getOrderedFace(c);
+              int flag = (*BND_SURFACE_COLOR_MESH)[orderedFace[0]] | (*BND_SURFACE_COLOR_MESH)[orderedFace[1]] | (*BND_SURFACE_COLOR_MESH)[orderedFace[2]];
+              if(flag && (UVWT[c] > - epsilon && UVWT[c] <  epsilon))
               {
-                d = UVWT[c];
-                s = simplex;
-                face = c;
-                surfaceColorId = (*BND_TRIANGLES)[-t];
+                surfaceColorId = flag;
               }
             }
           }
