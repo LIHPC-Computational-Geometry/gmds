@@ -202,7 +202,7 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 	params_aero.output_dir="gmds/claire/tst/";
 
 	// Physical Parameters for the algorithm
-	params_aero.delta_cl = 0.1;			// Epaisseur de la première couche, pour la couche limite
+	params_aero.delta_cl = 0.3;			// Epaisseur de la première couche, pour la couche limite
 	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
 
 	// Extrusion Parameters
