@@ -394,6 +394,24 @@ void Utils::CurveBlockEdgesReavel(Blocking2D* blocking2D, Mesh* m){
 /*------------------------------------------------------------------------*/
 
 
+/*------------------------------------------------------------------------*/
+TCellID Utils::CreateQuadAndConnectivitiesN2E(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id)
+{
+	Node n0 = AMesh->get<Node>(n0_id);
+	Node n1 = AMesh->get<Node>(n1_id);
+	Node n2 = AMesh->get<Node>(n2_id);
+	Node n3 = AMesh->get<Node>(n3_id);
+	Face f = AMesh->newQuad(n0_id, n1_id, n2_id, n3_id);
+	n0.add<Face>(f);
+	n1.add<Face>(f);
+	n2.add<Face>(f);
+	n3.add<Face>(f);
+
+	return f.id();
+}
+/*------------------------------------------------------------------------*/
+
+
 /*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/

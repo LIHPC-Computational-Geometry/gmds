@@ -125,6 +125,19 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static void CurveBlockEdgesReavel(Blocking2D* blocking2D, Mesh* m);
 	/*----------------------------------------------------------------------------*/
+	/** \brief  Add the quad defined by the four nodes to the mesh, and create the
+	 		* connectivities N->E
+         *
+         * \param[in] AMesh the mesh
+         * \param[in] n0_id first node id
+         * \param[in] n1_id second node id
+         * \param[in] n2_id thirst node id
+			* \param[in] n3_id fourth node id
+         *
+         * \return  the id of the new face
+	 */
+	static TCellID CreateQuadAndConnectivitiesN2E(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
+	/*----------------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/

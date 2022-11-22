@@ -145,57 +145,146 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 {
 	//-------------------------------------//
 	// Special case of the C2_3D geometry  //
+	//	Surface Blocking 1						//
 	//-------------------------------------//
-	Node n0 = m_meshHex->newNode({-0.5, -0.5, -0.5});
-	Node n1 = m_meshHex->newNode({-0.5, 0.5, -0.5});
-	Node n2 = m_meshHex->newNode({0.5, 0.5, -0.5});
-	Node n3 = m_meshHex->newNode({0.5, -0.5, -0.5});
-
-	Node n4 = m_meshHex->newNode({-0.5, -0.5, 0.5});
-	Node n5 = m_meshHex->newNode({-0.5, 0.5, 0.5});
-	Node n6 = m_meshHex->newNode({0.5, 0.5, 0.5});
-	Node n7 = m_meshHex->newNode({0.5, -0.5, 0.5});
-
-	Face f0 = m_meshHex->newQuad(n0,n1,n2,n3);	// F->N (x4)
-	n0.add<Face>(f0);
-	n1.add<Face>(f0);
-	n2.add<Face>(f0);
-	n3.add<Face>(f0);
-
-	Face f1 = m_meshHex->newQuad(n4,n5,n6,n7);
-	n4.add<Face>(f1);
-	n5.add<Face>(f1);
-	n6.add<Face>(f1);
-	n7.add<Face>(f1);
-
-	Face f2 = m_meshHex->newQuad(n0,n1,n5,n4);
-	n0.add<Face>(f2);
-	n1.add<Face>(f2);
-	n5.add<Face>(f2);
-	n4.add<Face>(f2);
-
-	Face f3 = m_meshHex->newQuad(n0,n3,n7,n4);
-	n0.add<Face>(f3);
-	n3.add<Face>(f3);
-	n7.add<Face>(f3);
-	n4.add<Face>(f3);
-
-	Face f4 = m_meshHex->newQuad(n3,n2,n6,n7);
-	n3.add<Face>(f4);
-	n2.add<Face>(f4);
-	n6.add<Face>(f4);
-	n7.add<Face>(f4);
-
-	Face f5 = m_meshHex->newQuad(n2,n1,n5,n6);
-	n2.add<Face>(f5);
-	n1.add<Face>(f5);
-	n5.add<Face>(f5);
-	n6.add<Face>(f5);
-
-	for (auto n_id:m_meshHex->nodes())
 	{
-		m_couche_id->set(n_id, 0);
+		Node n0 = m_meshHex->newNode({-0.5, -0.5, -0.5});
+		Node n1 = m_meshHex->newNode({-0.5, 0.5, -0.5});
+		Node n2 = m_meshHex->newNode({0.5, 0.5, -0.5});
+		Node n3 = m_meshHex->newNode({0.5, -0.5, -0.5});
+
+		Node n4 = m_meshHex->newNode({-0.5, -0.5, 0.5});
+		Node n5 = m_meshHex->newNode({-0.5, 0.5, 0.5});
+		Node n6 = m_meshHex->newNode({0.5, 0.5, 0.5});
+		Node n7 = m_meshHex->newNode({0.5, -0.5, 0.5});
+
+		Face f0 = m_meshHex->newQuad(n0, n1, n2, n3);     // F->N (x4)
+		n0.add<Face>(f0);
+		n1.add<Face>(f0);
+		n2.add<Face>(f0);
+		n3.add<Face>(f0);
+
+		Face f1 = m_meshHex->newQuad(n4, n5, n6, n7);
+		n4.add<Face>(f1);
+		n5.add<Face>(f1);
+		n6.add<Face>(f1);
+		n7.add<Face>(f1);
+
+		Face f2 = m_meshHex->newQuad(n0, n1, n5, n4);
+		n0.add<Face>(f2);
+		n1.add<Face>(f2);
+		n5.add<Face>(f2);
+		n4.add<Face>(f2);
+
+		Face f3 = m_meshHex->newQuad(n0, n3, n7, n4);
+		n0.add<Face>(f3);
+		n3.add<Face>(f3);
+		n7.add<Face>(f3);
+		n4.add<Face>(f3);
+
+		Face f4 = m_meshHex->newQuad(n3, n2, n6, n7);
+		n3.add<Face>(f4);
+		n2.add<Face>(f4);
+		n6.add<Face>(f4);
+		n7.add<Face>(f4);
+
+		Face f5 = m_meshHex->newQuad(n2, n1, n5, n6);
+		n2.add<Face>(f5);
+		n1.add<Face>(f5);
+		n5.add<Face>(f5);
+		n6.add<Face>(f5);
+
+		for (auto n_id : m_meshHex->nodes()) {
+			m_couche_id->set(n_id, 0);
+		}
 	}
+
+
+	//-------------------------------------//
+	// Special case of the C2_3D geometry  //
+	//	Surface Blocking 2						//
+	//-------------------------------------//
+	/*
+	{
+		Node n1 = m_meshHex->newNode({-0.5, -0.5, -0.5});
+		Node n2 = m_meshHex->newNode({0.0, -0.5, -0.5});
+		Node n3 = m_meshHex->newNode({0.5, -0.5, -0.5});
+
+		Node n4 = m_meshHex->newNode({-0.5, 0, -0.5});
+		Node n5 = m_meshHex->newNode({0.0, 0, -0.5});
+		Node n6 = m_meshHex->newNode({0.5, 0, -0.5});
+
+		Node n7 = m_meshHex->newNode({-0.5, 0.5, -0.5});
+		Node n8 = m_meshHex->newNode({0.0, 0.5, -0.5});
+		Node n9 = m_meshHex->newNode({0.5, 0.5, -0.5});
+
+		Node n10 = m_meshHex->newNode({-0.5, -0.5, 0});
+		Node n11 = m_meshHex->newNode({0.0, -0.5, 0});
+		Node n12 = m_meshHex->newNode({0.5, -0.5, 0});
+
+		Node n13 = m_meshHex->newNode({-0.5, 0, 0});
+		Node n14 = m_meshHex->newNode({0.5, 0, 0});
+
+		Node n15 = m_meshHex->newNode({-0.5, 0.5, 0});
+		Node n16 = m_meshHex->newNode({0.0, 0.5, 0});
+		Node n17 = m_meshHex->newNode({0.5, 0.5, 0});
+
+		Node n18 = m_meshHex->newNode({-0.5, -0.5, 0.5});
+		Node n19 = m_meshHex->newNode({0.0, -0.5, 0.5});
+		Node n20 = m_meshHex->newNode({0.5, -0.5, 0.5});
+
+		Node n21 = m_meshHex->newNode({-0.5, 0, 0.5});
+		Node n22 = m_meshHex->newNode({0.0, 0, 0.5});
+		Node n23 = m_meshHex->newNode({0.5, 0, 0.5});
+
+		Node n24 = m_meshHex->newNode({-0.5, 0.5, 0.5});
+		Node n25 = m_meshHex->newNode({0.0, 0.5, 0.5});
+		Node n26 = m_meshHex->newNode({0.5, 0.5, 0.5});
+
+
+
+		Face f1 = m_meshHex->newQuad(n1, n2, n5, n4);     // F->N (x4)
+		n1.add<Face>(f1);
+		n2.add<Face>(f1);
+		n5.add<Face>(f1);
+		n4.add<Face>(f1);
+
+		Face f2 = m_meshHex->newQuad(n2, n3, n6, n5);
+		n2.add<Face>(f2);
+		n3.add<Face>(f2);
+		n6.add<Face>(f2);
+		n5.add<Face>(f2);
+
+		Face f3 = m_meshHex->newQuad(n4, n5, n8, n7);
+		n4.add<Face>(f3);
+		n5.add<Face>(f3);
+		n8.add<Face>(f3);
+		n7.add<Face>(f3);
+
+		Face f4 = m_meshHex->newQuad(n5, n6, n9, n8);
+		n5.add<Face>(f4);
+		n6.add<Face>(f4);
+		n9.add<Face>(f4);
+		n8.add<Face>(f4);
+
+		Face f4 = m_meshHex->newQuad(n3, n2, n6, n7);
+		n3.add<Face>(f4);
+		n2.add<Face>(f4);
+		n6.add<Face>(f4);
+		n7.add<Face>(f4);
+
+		Face f5 = m_meshHex->newQuad(n2, n1, n5, n6);
+		n2.add<Face>(f5);
+		n1.add<Face>(f5);
+		n5.add<Face>(f5);
+		n6.add<Face>(f5);
+
+		for (auto n_id : m_meshHex->nodes()) {
+			m_couche_id->set(n_id, 0);
+		}
+	}
+	*/
+
 
 }
 
