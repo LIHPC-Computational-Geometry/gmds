@@ -42,9 +42,15 @@ AeroExtrusion_3D::execute()
 	}
 
 	Front_3D Front_Geom = Front_3D(0, surface_block_corners_Id, surface_block_faces_Id);
+	//Front_3D Current_Front = Front_Geom;
 
-	// Compute a first layer
-	Front_3D Front_1 = ComputeLayer(Front_Geom, m_DistanceField, 0.5, m_VectorField);
+	Front_3D Current_Front = Compute1stLayer(Front_Geom, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), m_VectorField);
+
+	// Compute the successive layers
+	for (int i=2; i <= m_params_aero.nbr_couches; i++) {
+		Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), i*pas_couche,
+		                             m_VectorField);
+	}
 
 	return AeroExtrusion_3D::SUCCESS;
 }
@@ -73,7 +79,7 @@ AeroExtrusion_3D::ComputeIdealPositions(Front_3D AFront, double dist_cible, Vari
 Front_3D
 AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors){
 
-	std::cout << "--------- couche " << Front_IN.getFrontID()+1 << std::endl;
+	std::cout << "---------> build layer: " << Front_IN.getFrontID()+1 << std::endl;
 
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_IN, dist_cible, A_distance, A_vectors);
 
@@ -126,7 +132,61 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	return Front_OUT;
 }
 /*------------------------------------------------------------------------*/
-void AeroExtrusion_3D::CreateNormalHexa(TCellID f_id, Front_3D &Front_IN, std::map<TCellID, TCellID> map_new_nodes)
+Front_3D
+AeroExtrusion_3D::Compute1stLayer(Front_3D A_Front_IN, Variable<double>* A_distance, Variable<math::Vector3d>* A_vectors)
+{
+	std::cout << "---------> build layer: " << A_Front_IN.getFrontID()+1 << std::endl;
+
+	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(A_Front_IN, m_params_aero.delta_cl, A_distance, A_vectors);
+
+	// Mise à jour de l'indice de couche
+	Variable<int>* couche_id = m_meshH->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	for (auto n_id:A_Front_IN.getNodes()){
+		couche_id->set(map_new_nodes[n_id], A_Front_IN.getFrontID()+1);
+	}
+
+	std::vector<TCellID> front_nodes = A_Front_IN.getNodes();
+	std::vector<TCellID> front_faces = A_Front_IN.getFaces();
+
+	// Ajout des hex restants
+	for (auto f_id:front_faces){
+		Face f = m_meshH->get<Face>(f_id);
+		std::vector<Node> nodes = f.get<Node>();
+		CreateNormalHexa(f_id, A_Front_IN, map_new_nodes);
+	}
+
+	// Supression des noeuds non utilisés
+	math::Utils::MeshCleaner(m_meshH);
+
+	// Initialisation du front de sortie
+	std::vector<TCellID> new_front_nodes_id;
+	std::vector<TCellID> new_front_faces_id;
+
+	Variable<int>* var_node_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	Variable<int>* var_face_couche_id = m_meshH->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
+
+	for (auto n_id:m_meshH->nodes())
+	{
+		if (var_node_couche_id->value(n_id) == A_Front_IN.getFrontID()+1)
+		{
+			new_front_nodes_id.push_back(n_id);
+		}
+	}
+	for (auto f_id:m_meshH->faces())
+	{
+		if (var_face_couche_id->value(f_id) == A_Front_IN.getFrontID()+1)
+		{
+			new_front_faces_id.push_back(f_id);
+		}
+	}
+	Front_3D Front_OUT = Front_3D(A_Front_IN.getFrontID()+1, new_front_nodes_id, new_front_faces_id);
+
+	return Front_OUT;
+
+}
+/*------------------------------------------------------------------------*/
+void
+AeroExtrusion_3D::CreateNormalHexa(TCellID f_id, Front_3D &Front_IN, std::map<TCellID, TCellID> map_new_nodes)
 {
 	Variable<int>* var_node_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	Variable<int>* var_face_couche_id = m_meshH->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
@@ -168,6 +228,83 @@ void AeroExtrusion_3D::CreateNormalHexa(TCellID f_id, Front_3D &Front_IN, std::m
 	var_face_couche_id->set(f_new_front.id(), Front_IN.getFrontID()+1);
 
 	// The faces between the two layers are not created.
+
+	TCellID f0_id = math::Utils::CommonFace(m_meshH, nodes[0].id(), nodes[1].id(), n0_id, n1_id);
+	if (f0_id == NullID)		// Then, the face doesn't exist yet
+	{
+		Face f0 = m_meshH->newQuad(nodes[0], nodes[1], n1, n0);	// F->N (x4)
+		nodes[0].add<Face>(f0);	// N->F
+		nodes[1].add<Face>(f0);	// N->F
+		n0.add<Face>(f0);			// N->F
+		n1.add<Face>(f0);			// N->F
+	}
+
+	TCellID f1_id = math::Utils::CommonFace(m_meshH, nodes[1].id(), nodes[2].id(), n1_id, n2_id);
+	if (f1_id == NullID)		// Then, the face doesn't exist yet
+	{
+		Face f1 = m_meshH->newQuad(nodes[1], nodes[2], n2, n1);	// F->N (x4)
+		nodes[1].add<Face>(f1);	// N->F
+		nodes[2].add<Face>(f1);	// N->F
+		n1.add<Face>(f1);			// N->F
+		n2.add<Face>(f1);			// N->F
+	}
+
+	TCellID f2_id = math::Utils::CommonFace(m_meshH, nodes[2].id(), nodes[3].id(), n2_id, n3_id);
+	if (f2_id == NullID)		// Then, the face doesn't exist yet
+	{
+		Face f2 = m_meshH->newQuad(nodes[2], nodes[3], n3, n2);	// F->N (x4)
+		nodes[2].add<Face>(f2);	// N->F
+		nodes[3].add<Face>(f2);	// N->F
+		n2.add<Face>(f2);			// N->F
+		n3.add<Face>(f2);			// N->F
+	}
+
+	TCellID f3_id = math::Utils::CommonFace(m_meshH, nodes[0].id(), nodes[3].id(), n0_id, n3_id);
+	if (f3_id == NullID)		// Then, the face doesn't exist yet
+	{
+		Face f3 = m_meshH->newQuad(nodes[0], nodes[3], n3, n0);	// F->N (x4)
+		nodes[0].add<Face>(f3);	// N->F
+		nodes[3].add<Face>(f3);	// N->F
+		n0.add<Face>(f3);			// N->F
+		n3.add<Face>(f3);			// N->F
+	}
+
+	/*
+	TCellID e0_id = math::Utils::CommonEdge(m_meshQ, nodes[0].id(), n0.id());
+	TCellID e1_id = math::Utils::CommonEdge(m_meshQ, nodes[1].id(), n1.id());
+	Edge e0, e1;
+	if ( e0_id == NullID ){
+		// Si l'arête n'existe pas, on la créé et on initialise les connectivités N->E
+		e0 = m_meshQ->newEdge(nodes[0].id(), n0.id());		// E->N (x2)
+		nodes[0].add<Edge>(e0);												// N->E
+		n0.add<Edge>(e0);														// N->E
+	}
+	else{
+		e0 = m_meshQ->get<Edge>(e0_id);
+	}
+
+	// Idem pour l'arête e1
+	if ( e1_id == NullID ){
+		e1 = m_meshQ->newEdge(nodes[1].id(), n1.id());		// E->N (x2)
+		nodes[1].add<Edge>(e1);												// N->E
+		n1.add<Edge>(e1);														// N->E
+	}
+	else{
+		e1 = m_meshQ->get<Edge>(e1_id);
+	}
+
+	// Connectivités F->E
+	f.add<Edge>(e);		// F->E
+	f.add<Edge>(e0);		// F->E
+	f.add<Edge>(e1);		// F->E
+	f.add<Edge>(e_opp);	// F->E
+
+	// Connectivités E->F
+	e.add<Face>(f);		// E->F
+	e0.add<Face>(f);		// E->F
+	e1.add<Face>(f);		// E->F
+	e_opp.add<Face>(f);	// E->F
+	 */
 
 }
 /*------------------------------------------------------------------------*/
