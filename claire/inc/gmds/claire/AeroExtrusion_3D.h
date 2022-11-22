@@ -64,6 +64,16 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	 */
 	Front_3D ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors);
 	/*-------------------------------------------------------------------*/
+	/** @brief Construit la première couche de blocs. Pour cette couche,
+	 	* les conditions sont particulières.
+	 	* \param[in] A_Front_IN front faces and nodes
+   	* \param[in] A_distance the distance variable on the first mesh
+	 	* \param[in] A_vectors le champ de vecteurs à utiliser
+		*
+		* \return  the first front computed
+	 */
+	Front_3D Compute1stLayer(Front_3D A_Front_IN, Variable<double>* A_distance, Variable<math::Vector3d>* A_vectors);
+	/*-------------------------------------------------------------------*/
 	/** @brief Créé un hax normal sur la couche à partir d'une face
 	 	* \param[in] f_id la face concernée
 	 	* \param[in] Front_IN front en entrée

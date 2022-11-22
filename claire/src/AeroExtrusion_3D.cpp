@@ -42,10 +42,12 @@ AeroExtrusion_3D::execute()
 	}
 
 	Front_3D Front_Geom = Front_3D(0, surface_block_corners_Id, surface_block_faces_Id);
-	Front_3D Current_Front = Front_Geom;
+	//Front_3D Current_Front = Front_Geom;
+
+	Front_3D Current_Front = Compute1stLayer(Front_Geom, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), m_VectorField);
 
 	// Compute the successive layers
-	for (int i=1; i <= m_params_aero.nbr_couches; i++) {
+	for (int i=2; i <= m_params_aero.nbr_couches; i++) {
 		Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), i*pas_couche,
 		                             m_VectorField);
 	}
@@ -77,7 +79,7 @@ AeroExtrusion_3D::ComputeIdealPositions(Front_3D AFront, double dist_cible, Vari
 Front_3D
 AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors){
 
-	std::cout << "--------- couche " << Front_IN.getFrontID()+1 << std::endl;
+	std::cout << "---------> build layer: " << Front_IN.getFrontID()+1 << std::endl;
 
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_IN, dist_cible, A_distance, A_vectors);
 
@@ -130,7 +132,61 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	return Front_OUT;
 }
 /*------------------------------------------------------------------------*/
-void AeroExtrusion_3D::CreateNormalHexa(TCellID f_id, Front_3D &Front_IN, std::map<TCellID, TCellID> map_new_nodes)
+Front_3D
+AeroExtrusion_3D::Compute1stLayer(Front_3D A_Front_IN, Variable<double>* A_distance, Variable<math::Vector3d>* A_vectors)
+{
+	std::cout << "---------> build layer: " << A_Front_IN.getFrontID()+1 << std::endl;
+
+	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(A_Front_IN, m_params_aero.delta_cl, A_distance, A_vectors);
+
+	// Mise à jour de l'indice de couche
+	Variable<int>* couche_id = m_meshH->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	for (auto n_id:A_Front_IN.getNodes()){
+		couche_id->set(map_new_nodes[n_id], A_Front_IN.getFrontID()+1);
+	}
+
+	std::vector<TCellID> front_nodes = A_Front_IN.getNodes();
+	std::vector<TCellID> front_faces = A_Front_IN.getFaces();
+
+	// Ajout des hex restants
+	for (auto f_id:front_faces){
+		Face f = m_meshH->get<Face>(f_id);
+		std::vector<Node> nodes = f.get<Node>();
+		CreateNormalHexa(f_id, A_Front_IN, map_new_nodes);
+	}
+
+	// Supression des noeuds non utilisés
+	math::Utils::MeshCleaner(m_meshH);
+
+	// Initialisation du front de sortie
+	std::vector<TCellID> new_front_nodes_id;
+	std::vector<TCellID> new_front_faces_id;
+
+	Variable<int>* var_node_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	Variable<int>* var_face_couche_id = m_meshH->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
+
+	for (auto n_id:m_meshH->nodes())
+	{
+		if (var_node_couche_id->value(n_id) == A_Front_IN.getFrontID()+1)
+		{
+			new_front_nodes_id.push_back(n_id);
+		}
+	}
+	for (auto f_id:m_meshH->faces())
+	{
+		if (var_face_couche_id->value(f_id) == A_Front_IN.getFrontID()+1)
+		{
+			new_front_faces_id.push_back(f_id);
+		}
+	}
+	Front_3D Front_OUT = Front_3D(A_Front_IN.getFrontID()+1, new_front_nodes_id, new_front_faces_id);
+
+	return Front_OUT;
+
+}
+/*------------------------------------------------------------------------*/
+void
+AeroExtrusion_3D::CreateNormalHexa(TCellID f_id, Front_3D &Front_IN, std::map<TCellID, TCellID> map_new_nodes)
 {
 	Variable<int>* var_node_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	Variable<int>* var_face_couche_id = m_meshH->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
