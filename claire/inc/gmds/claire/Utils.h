@@ -136,7 +136,7 @@ class LIB_GMDS_CLAIRE_API Utils {
          *
          * \return  the id of the new face
 	 */
-	static TCellID CreateQuadAndConnectivitiesN2E(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
+	static TCellID CreateQuadAndConnectivitiesN2F(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
 	/*----------------------------------------------------------------------------*/
 
 };
