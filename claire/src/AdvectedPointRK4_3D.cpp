@@ -26,7 +26,6 @@ AdvectedPointRK4_3D::AdvectedPointRK4_3D(Mesh *AMesh, math::Point A_Pstart, doub
 AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 {
 	double minLenght = minEdgeLenght();
-	//std::cout << "min : " << minLenght << std::endl;
 
 	double dt = 0.9*minLenght;
 	double err = pow(10,-6);
@@ -39,18 +38,19 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 
 	// Initialisation
 	TCellID region_id = inWhichTetra(m_Pstart) ;		// Dans quel triangle est le point de départ
+	if (region_id == NullID)
+	{
+		// The node considered is not in the domain. Then, we replace it by the closest node of the tetra mesh.
+		TCellID n_closest_id = ClosestNode(m_Pstart);
+		Node n_closest = m_mesh->get<Node>(n_closest_id);
+		m_Pstart = n_closest.point();
+		region_id = inWhichTetra(m_Pstart);
+	}
 	Mat_A_Inv = getInvMatrixA(region_id);
 	dist = interpolationDistance(region_id, Mat_A_Inv, m_Pstart);	// A quelle distance est le point de départ
 	Grad = interpolationGradient(region_id, Mat_A_Inv, m_Pstart);	// Quel est le gradient à ce point
 
-	/*
-	std::cout << "distance initiale : " << dist << std::endl;
-	std::cout << "gradient initial  : " << Grad << std::endl;
-	std::cout << "Noeud dans le tétra : " << region_id << std::endl;
-	 */
-
 	while ( (abs(dist-m_d0) > err) && iterations < max_iterations ) {
-		//std::cout << "-------- ITERATION " << iterations << " ---------" << std::endl;
 		math::Point M = RungeKutta4(m_Pend, Grad.normalize(), dt);	// Calcule la position du point à l'itération n+1 avec un RK4
 		// On vérifie ensuite si cette position est "valide"
 		region_id = inWhichTetra(M, region_id) ;
@@ -66,11 +66,9 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 			// alors on met à jour la valeur du gradient et on continue le RK4
 			// Sinon, on retranche le pas de temps et on recommence
 			if ((dist_M < m_d0)) {
-				//std::cout << "Triangle : " << face_id << std::endl;
 				m_Pend = M;
 				Grad = interpolationGradient(region_id, Mat_A_Inv, M);	// Mise à jour du gradient
 				dist = dist_M;
-				//std::cout << "distance : " << dist << std::endl;
 				m_discrete_path.push_back({m_Pend.X(),m_Pend.Y(),m_Pend.Z()});
 			}
 			else {
@@ -91,11 +89,6 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 	region_id = inWhichTetra(m_Pend, region_id) ;
 	Mat_A_Inv = getInvMatrixA(region_id);
 	dist = interpolationDistance(region_id, Mat_A_Inv, m_Pend);
-	/*
-	std::cout << "----------------------------------" << std::endl;
-	std::cout << "Point final : " << m_Pend << std::endl;
-	std::cout << "Distance finale : " << dist << std::endl;
-	 */
 
 	//writeDiscretePathInVTK();
 
@@ -396,6 +389,25 @@ void AdvectedPointRK4_3D::writeDiscretePathInVTK(){
 	}
 
 	stream.close();
+}
+/*------------------------------------------------------------------------*/
+
+
+/*------------------------------------------------------------------------*/
+TCellID AdvectedPointRK4_3D::ClosestNode(math::Point M)
+{
+	TCellID n_id(NullID);
+	double min_dist(std::numeric_limits<double>::max());
+	for (auto n0_id:m_mesh->nodes())
+	{
+		Node n0 = m_mesh->get<Node>(n0_id);
+		if ((M-n0.point()).norm() < min_dist)
+		{
+			min_dist = (M-n0.point()).norm();
+			n_id = n0_id;
+		}
+	}
+	return n_id;
 }
 /*------------------------------------------------------------------------*/
 

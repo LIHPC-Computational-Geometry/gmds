@@ -79,6 +79,12 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_3D
 	 */
 	void writeDiscretePathInVTK();
 	/*-------------------------------------------------------------------*/
+	/** @brief Return the closest node to M
+	 *
+	 * \param[in] M point
+	 */
+	TCellID ClosestNode(math::Point M);
+	/*-------------------------------------------------------------------*/
 
  private:
 	/** mesh we work on */
