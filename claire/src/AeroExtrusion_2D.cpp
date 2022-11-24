@@ -14,9 +14,11 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AeroExtrusion_2D::AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero Aparams_aero, Variable<math::Vector3d>* A_VectorField) {
-	m_meshT = AMeshT;
-	m_meshQ = AMeshQ;
+AeroExtrusion_2D::AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero Aparams_aero, Variable<math::Vector3d>* A_VectorField) :
+	m_meshT(AMeshT),
+  	m_meshQ(AMeshQ),
+  	m_fl(m_meshT)
+{
 	m_params_aero = Aparams_aero;
 	m_VectorField = A_VectorField;
 }
@@ -67,7 +69,7 @@ std::map<TCellID, TCellID>
 	for (auto n_id:front_nodes){
 		Node n = m_meshQ->get<Node>(n_id);
 		math::Point M = n.point();
-		AdvectedPointRK4_2D advpoint(m_meshT, M, dist_cible, A_distance, A_vectors);
+		AdvectedPointRK4_2D advpoint(m_meshT, &m_fl, M, dist_cible, A_distance, A_vectors);
 		advpoint.execute();
 		//math::Point P = advpoint.getPend();
 		Node n_new = m_meshQ->newNode(advpoint.getPend());
@@ -487,7 +489,7 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id,
 	{
 		var_flow->set(n_id, v_follow);
 	}
-	AdvectedPointRK4_2D advpoint_n1(m_meshT, n.point(), dist_cible, A_distance, var_flow);
+	AdvectedPointRK4_2D advpoint_n1(m_meshT, &m_fl, n.point(), dist_cible, A_distance, var_flow);
 	advpoint_n1.execute();
 	Node n1 = m_meshQ->newNode(advpoint_n1.getPend());
 	m_meshT->deleteVariable(GMDS_NODE, "Flow") ;
@@ -559,7 +561,7 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id,
 	{
 		var_flow->set(n_id, v_follow);
 	}
-	AdvectedPointRK4_2D advpoint_n2(m_meshT, n.point(), dist_cible, A_distance, var_flow);
+	AdvectedPointRK4_2D advpoint_n2(m_meshT, &m_fl, n.point(), dist_cible, A_distance, var_flow);
 	advpoint_n2.execute();
 	Node n2 = m_meshQ->newNode(advpoint_n2.getPend());
 	m_meshT->deleteVariable(GMDS_NODE, "Flow") ;
