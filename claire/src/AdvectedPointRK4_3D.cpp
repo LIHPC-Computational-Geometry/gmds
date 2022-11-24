@@ -5,6 +5,7 @@
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/AdvectedPointRK4_3D.h>
 #include <limits>
+#include <chrono>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -203,6 +204,7 @@ TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point M, TCellID r0_id){
 	}
 
 	// If the tetra is not found, we check on all the tetras of the mesh
+	/*
 	for(auto r_it = m_mesh->regions_begin(); r_it!= m_mesh->regions_end() && !isInRegion;++r_it){
 		TCellID r_id = *r_it;
 		isInRegion = isInTetra(r_id, M);
@@ -210,6 +212,7 @@ TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point M, TCellID r0_id){
 			region_id = r_id;
 		}
 	}
+	 */
 
 	if (!isInRegion){
 		region_id = NullID;
