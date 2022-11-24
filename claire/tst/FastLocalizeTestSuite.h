@@ -77,4 +77,3 @@ TEST(FastLocalizeTestSuite, test_FastLocalize_3D)
 	ASSERT_EQ(data.id, 4048);
 
 }
-

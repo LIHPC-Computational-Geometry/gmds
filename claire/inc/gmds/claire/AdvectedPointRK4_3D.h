@@ -31,7 +31,7 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_3D
 	/** @brief Constructor.
          *  @param AMesh the mesh where we work on
 	 */
-	AdvectedPointRK4_3D(Mesh *AMesh, FastLocalize *A_fl, math::Point& A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D);
+	AdvectedPointRK4_3D(Mesh *AMesh, FastLocalize *A_fl, math::Point A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -44,13 +44,21 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_3D
 
  private:
 	/*-------------------------------------------------------------------*/
+	/** @brief Check if n4 and M are on the same side from the face n1/n2/n3
+	 */
+	bool SameSide(Node n1, Node n2, Node n3, Node n4, math::Point M);
+	/*-------------------------------------------------------------------*/
 	/** @brief Return true if the point M is in the tetra
 	 */
-	bool isInTetra(TCellID region_id, math::Point& M);
+	bool isInTetra(TCellID region_id, math::Point M);
 	/*-------------------------------------------------------------------*/
 	/** @brief Return in which tetra M is
 	 */
-	TCellID inWhichTetra(math::Point& M);
+	TCellID inWhichTetra(math::Point M, TCellID r0_id=NullID);
+	/*-------------------------------------------------------------------*/
+	/** @brief Compute the minimal edge's lenght
+	 */
+	double minEdgeLenght();
 	/*-------------------------------------------------------------------*/
 	/** @brief Retourne la matrice inverse de A sur la face face_id
 	 */
@@ -58,15 +66,15 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_3D
 	/*-------------------------------------------------------------------*/
 	/** @brief Interpolation de la distance au point M
 	 */
-	double interpolationDistance(TCellID region_id, Eigen::Matrix4d& Mat_A_Inv, math::Point& M);
+	double interpolationDistance(TCellID region_id, Eigen::Matrix4d Mat_A_Inv, math::Point M);
 	/*-------------------------------------------------------------------*/
 	/** @brief Interpolation du gradient au point M
 	 */
-	math::Vector3d interpolationGradient(TCellID region_id, Eigen::Matrix4d& Mat_A_Inv, math::Point& M);
+	math::Vector3d interpolationGradient(TCellID region_id, Eigen::Matrix4d Mat_A_Inv, math::Point M);
 	/*-------------------------------------------------------------------*/
 	/** @brief Applique le schéma Runge Kutta d'ordre 4 pour résoudre dx/dt = grad
 	 */
-	math::Point RungeKutta4(math::Point& yn, math::Vector3d& grad_yn, double dt);
+	math::Point RungeKutta4(math::Point yn, math::Vector3d grad_yn, double dt);
 	/*-------------------------------------------------------------------*/
 	/** @brief Write the discrete path in a vtk field
 	 */

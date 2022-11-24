@@ -11,6 +11,7 @@
 #include <gmds/claire/AeroException.h>
 #include <gmds/claire/Front_3D.h>
 #include <gmds/claire/Params.h>
+#include <gmds/claire/FastLocalize.h>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
 class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
@@ -85,6 +86,8 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
  private:
 	/** triangular mesh we work on */
 	Mesh *m_meshT;
+	/** k-d tree */
+	FastLocalize m_fl;
 	/** quad mesh to generate */
 	Mesh *m_meshH;
 	/** Params pour l'aéro */
