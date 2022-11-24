@@ -10,8 +10,10 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------*/
-AdvectedPointRK4_3D::AdvectedPointRK4_3D(Mesh *AMesh, math::Point A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D) {
-	m_mesh = AMesh;
+AdvectedPointRK4_3D::AdvectedPointRK4_3D(Mesh *AMesh, FastLocalize* A_fl, math::Point A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D) :
+	m_mesh(AMesh),
+  	m_fl(A_fl)
+{
 	m_Pstart = A_Pstart;
 	m_Pend = A_Pstart;
 	m_d0 = A_d0;
@@ -181,6 +183,26 @@ TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point M, TCellID r0_id){
 		}
 	}
 
+	// Use FastLocalize to check the tetras around the closest node
+	// to the point M
+	if (!isInRegion)
+	{
+		gmds::Cell::Data data = m_fl->find(M);
+		TCellID n_closest_id = data.id;
+		Node n_closest = m_mesh->get<Node>(n_closest_id);
+		std::vector<Region> n_closest_tetras = n_closest.get<Region>();
+		for (auto r:n_closest_tetras)
+		{
+			if (!isInRegion) {
+				isInRegion = isInTetra(r.id(), M);
+				if (isInRegion) {
+					region_id = r.id();
+				}
+			}
+		}
+	}
+
+	// If the tetra is not found, we check on all the tetras of the mesh
 	for(auto r_it = m_mesh->regions_begin(); r_it!= m_mesh->regions_end() && !isInRegion;++r_it){
 		TCellID r_id = *r_it;
 		isInRegion = isInTetra(r_id, M);
@@ -193,8 +215,6 @@ TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point M, TCellID r0_id){
 		region_id = NullID;
 	}
 
-	//std::cout << "Dans quelle région : " << region_id << std::endl;
-	//std::cout << "Nul ID : " << NullID << std::endl;
 
 	return region_id;
 }
