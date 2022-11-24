@@ -6,12 +6,12 @@ using namespace gmds;
 FastLocalize::FastLocalize(Mesh *AMesh): m_mesh(AMesh) {
 	int nb_pnts 	= m_mesh->getNbNodes();
 	int	k			= 20;      // max number of nearest neighbors
-	int	dim		= 2;       // dimension
+	int	dim		= 3;       // dimension
 	int	maxPts	= nb_pnts; // maximum number of data points
 
 	int					nPts;						// actual number of data points
 
-	m_queryPt = annAllocPt(2);
+	m_queryPt = annAllocPt(3);
 	m_dataPts = annAllocPts(maxPts, dim);			// allocate data points
 	m_nnIdx = new ANNidx[k];						// allocate near neigh indices
 	m_dists = new ANNdist[k];						// allocate near neighbor dists
@@ -27,6 +27,7 @@ FastLocalize::FastLocalize(Mesh *AMesh): m_mesh(AMesh) {
 		math::Point p = m_mesh->get<Node>(n_id).point();
 		m_dataPts[nPts][0] = p.X();
 		m_dataPts[nPts][1] = p.Y();
+		m_dataPts[nPts][2] = p.Z();
 		m_ann2gmds_id[nPts]=n_id;
 		nPts++;
 	};
@@ -55,6 +56,7 @@ FastLocalize::find(const math::Point &APoint)
 	int	k			= 5;      // max number of nearest neighbors
 	m_queryPt[0]=APoint.X();
 	m_queryPt[1]=APoint.Y();
+	m_queryPt[2]=APoint.Z();
 
 	m_kdTree->annkSearch(		// search
 	   m_queryPt,// query point
