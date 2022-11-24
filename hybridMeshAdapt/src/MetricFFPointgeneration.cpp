@@ -28,6 +28,15 @@ MetricFFPointgeneration::~MetricFFPointgeneration()
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::execute()
 {
+  gmds::Variable<int>* BND_SURFACE_COLOR    = nullptr;
+
+  try{
+    BND_SURFACE_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
   std::vector<double> edges_length{};
   const std::map<unsigned int, std::vector<TInt>> sortedEdges = buildSortedEdges();
   const std::vector<std::vector<double>> edgesU = buildParamEdgeU(sortedEdges, edges_length);
@@ -46,14 +55,9 @@ void MetricFFPointgeneration::execute()
   std::cout << "EDGE NODES CREATED " << std::endl;
   while(nodeAdded.size() != 0)
   {
-    std::cout << "nodeAdded.size() -> " << nodeAdded.size() << std::endl;
     nodesSpreading(nodeAdded, true);
-    std::cout << "nodeAdded.size() -> " << nodeAdded.size() << std::endl;
-    std::cout << std::endl;
   }
   std::cout << "SURFACE NODES CREATED " << std::endl;
-
-  m_nodesMesh.setColorsSurfaceFromSimplex(m_simplexMesh);
   for(unsigned int n = 0 ; n < m_nodesMesh.getBitVectorNodes().capacity() ; n++)
   {
     if(m_nodesMesh.getBitVectorNodes()[n] != 0)
@@ -65,9 +69,27 @@ void MetricFFPointgeneration::execute()
   gmds::VTKWriter vtkWriterNODE(&ioServiceNODE);
   vtkWriterNODE.setCellOptions(gmds::N|gmds::R);
   vtkWriterNODE.setDataOptions(gmds::N|gmds::R);
-  vtkWriterNODE.write("metricFF_Nodes.vtk");
-  return ;
+  vtkWriterNODE.write("metricFF_SURFACE.vtk");
 
+
+  const gmds::BitVector& m_nodes = m_nodesMesh.getBitVectorNodes();
+  std::cout << "m_nodes.capacity() -> " << m_nodes.capacity() << std::endl;
+  for(unsigned int n = 0 ; n < m_nodes.capacity() ; n++)
+  {
+    if(m_nodes[n] != 0)
+      if((*BND_SURFACE_COLOR)[n] != 0)
+        nodeAdded.push_back(n);
+  }
+
+  while(nodeAdded.size() != 0)
+  {
+    nodesSpreading(nodeAdded);
+  }
+  gmds::VTKWriter vtkWriterVOLUME(&ioServiceNODE);
+  vtkWriterVOLUME.setCellOptions(gmds::N|gmds::R);
+  vtkWriterVOLUME.setDataOptions(gmds::N|gmds::R);
+  vtkWriterVOLUME.write("metricFF_VOLUME.vtk");
+  std::cout << "VOLUME NODES CREATED " << std::endl;
 
   for(auto const & d : m_nodeStructure)
   {
@@ -86,27 +108,54 @@ void MetricFFPointgeneration::execute()
   }
 
   const gmds::BitVector& nodesMesh = m_nodesMesh.getBitVectorNodes();
-
-  const gmds::BitVector& nodeVector = m_nodesMesh.getBitVectorNodes();
-  std::cout << "node size -> " << nodeVector.size() << std::endl;
-  /*for(unsigned int n = 0 ; n < nodesMesh.capacity() ; n++)
+  for(unsigned int n = 0 ; n < nodesMesh.capacity() ; n++)
   {
     if(nodesMesh[n] != 0)
     {
       m_nodesMesh.addTetraedre(n,n,n,n);
     }
-  }*/
+  }
   std::set<std::vector<TInt>> hexs{};
   computeHexa(hexs);
   std::cout << "hex size -> " << hexs.size() << std::endl;
 
   gmds::ISimplexMeshIOService ioServiceGRID(&m_nodesMesh);
   gmds::VTKWriter vtkWriterGRID(&ioServiceGRID);
-  vtkWriterGRID.setCellOptions(gmds::N|gmds::R);
-  vtkWriterGRID.setDataOptions(gmds::N|gmds::R);
+  vtkWriterGRID.setCellOptions(gmds::N|gmds::F);
+  vtkWriterGRID.setDataOptions(gmds::N|gmds::F);
   vtkWriterGRID.write("metricFF_Grid.vtk");
 }
 /*----------------------------------------------------------------------------*/
+void MetricFFPointgeneration::correctNodeLabel()
+{
+  gmds::Variable<int>* BND_SURFACE_COLOR    = nullptr;
+  gmds::Variable<int>* BND_CURVE_COLOR    = nullptr;
+
+  try{
+    BND_SURFACE_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+    BND_CURVE_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  const gmds::BitVector& m_nodes = m_nodesMesh.getBitVectorNodes();
+  for(unsigned int n = 0 ; n < m_nodes.capacity() ; n++)
+  {
+    if(m_nodes[n] != 0)
+    {
+      if((*BND_SURFACE_COLOR)[n] == 0 || (*BND_CURVE_COLOR)[n] == 0 /*add vertex color*/)
+      {
+        int surfaceLabel = 0;
+        m_simplexMesh->onSurface(SimplicesNode(&m_nodesMesh,n).getCoords(), surfaceLabel);
+        if(surfaceLabel != 0)
+          m_nodesMesh.deleteNode(n);
+      }
+    }
+  }
+}
+/*----------------------------------------------------------------------------*/
+
 void MetricFFPointgeneration::computeHexa(std::set<std::vector<TInt>> & hexa) const
 {
   const gmds::BitVector& nodeBitVector = m_nodesMesh.getBitVectorNodes();
@@ -345,12 +394,12 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
     }
   }
 
-  sort(nodesSamplingData.begin(), nodesSamplingData.end(),
+  /*sort(nodesSamplingData.begin(), nodesSamplingData.end(),
     [&](const nodeSamplingData & dataA, const nodeSamplingData & dataB) -> bool
     {
       return ((*BND_SURFACE_COLOR)[dataA.node] > (*BND_SURFACE_COLOR)[dataB.node]);
     }
-  );
+  );*/
 
   SimplexMesh m = SimplexMesh();
   int i = 0;
@@ -411,16 +460,13 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
           newCoord = goodProjection;
       }
 
-      bool flag = true;
-      if(surfaceFlag == true)
-      {
-        int surfaceLabel = 0;
-        m_simplexMesh->onSurface(newCoord, surfaceLabel);
-        if(surfaceLabel == 0)
-          flag = false;
-      }
+      bool onSurface = true;
+      int surfaceLabel = 0;
+      m_simplexMesh->onSurface(newCoord, surfaceLabel);
+      if(surfaceLabel == 0)
+        onSurface = false;
 
-      if(flag)
+      if(surfaceFlag == onSurface)
       {
         if(minDistance != std::numeric_limits<int>::max() || inCell)
         {
@@ -429,8 +475,10 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
 
           if(!neighboorNodes.size())
           {
-
             newNodeId = m_nodesMesh.addNode(newCoord);
+            if(surfaceFlag == true)
+              BND_SURFACE_COLOR->set(newNodeId, surfaceLabel);
+
             m_nodesMesh.setAnalyticMetric(newNodeId);
             newNodes.push_back(newNodeId);
           }
@@ -453,12 +501,15 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
       }
     }
 
-    v.push_back(newNodeId);
-    if(v.size() == 6)
+    if(!surfaceFlag)
     {
-      m_nodeStructure.insert( std::pair<TInt, std::vector<TInt>>(node, v) );
-      v.clear();
-      continue;
+      v.push_back(newNodeId);
+      if(v.size() == 6)
+      {
+        m_nodeStructure.insert( std::pair<TInt, std::vector<TInt>>(node, v) );
+        v.clear();
+        continue;
+      }
     }
   }
 
@@ -468,7 +519,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::nodeFiltering(const TInt node, const math::Point& pt, std::vector<TInt> & neighboorNode)
 {
-  const double k = 0.7;
+  const double k =  1.1 * (sqrt(2.0) * 0.5);
   Variable<Eigen::Matrix3d>* metric  = nullptr;
   gmds::Variable<int>* BND_CURVE_COLOR_NODE = nullptr;
 

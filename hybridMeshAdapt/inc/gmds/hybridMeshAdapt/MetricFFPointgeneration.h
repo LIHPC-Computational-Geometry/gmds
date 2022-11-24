@@ -59,6 +59,8 @@ namespace gmds{
 
         void computeHexa(std::set<std::vector<TInt>> & hexa) const ;
 
+        void correctNodeLabel() ;
+
       private:
         std::map<TInt, std::vector<TInt>> m_nodeStructure;
 

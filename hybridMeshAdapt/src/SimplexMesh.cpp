@@ -4374,9 +4374,9 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
   double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  metricX = 3.0;
-  metricY = 3.0;
-  metricZ = 3.0;
+  metricX = 4.0;
+  metricY = 4.0;
+  metricZ = 4.0;
 
   m(0,0) = 1.0 / (metricX*metricX);
   m(1,1) = 1.0 / (metricY*metricY);
@@ -4405,9 +4405,9 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  metricX = 3.0;
-  metricY = 3.0;
-  metricZ = 3.0;
+  metricX = 4.0;
+  metricY = 4.0;
+  metricZ = 4.0;
 
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
   (*metric)[node](1,1) = 1.0 / (metricY*metricY);
@@ -4547,7 +4547,7 @@ void SimplexMesh::setColorsSurfaceFromSimplex(SimplexMesh* simplexMesh)
 /******************************************************************************/
 void SimplexMesh::onSurface(const math::Point& pt, int& surfaceLabel)
 {
-  double epsilon = 0.2;
+  double epsilon = 0.1;
   gmds::Variable<int>* BND_TRIANGLES  = nullptr;
 
   try{
