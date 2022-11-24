@@ -447,6 +447,8 @@ class SimplexMesh
 
   void setColorsSurfaceFromSimplex(SimplexMesh* simplexMesh) ;
 
+  void onSurface(const math::Point& pt, int& surfaceLabel) ; 
+
 private:
 
   //node coordinates with bitvector

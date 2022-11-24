@@ -84,9 +84,8 @@ void Octree::initialize()
   double epsilon = 10E-4;
   double min = std::numeric_limits<double>::min();
   double max = std::numeric_limits<double>::max();
-
+  std::set<TSimplexID> s{};
   std::vector<double> nodes{max, min, max, min, max, min}; // --> xmin, xmax, ymin, ymax, zmin, zmax
-  m_nodes.reserve(nodesVector.size());
 
   for(unsigned int nodeIds = 0; nodeIds < nodesVector.capacity(); nodeIds++)
   {
@@ -94,6 +93,16 @@ void Octree::initialize()
     {
       m_nodes.push_back(nodeIds);
       math::Point pt = SimplicesNode(m_simplexMesh, nodeIds).getCoords();
+      std::vector<TSimplexID> ball = SimplicesNode(m_simplexMesh, nodeIds).ballOf();
+      for(auto const simplex : ball)
+      {
+        if(s.find(simplex) == s.end())
+        {
+          s.insert(simplex);
+          m_simplices.push_back(simplex);
+        }
+      }
+
       double x = pt.X();
       double y = pt.Y();
       double z = pt.Z();
@@ -141,6 +150,7 @@ void Octree::preprocess()
 {
   const BitVector& nodesVector = m_simplexMesh->getBitVectorNodes();
   std::vector<TInt> nodesTmp{};
+  std::set<TSimplexID> s{};
 
   for(unsigned int nodeIds = 0; nodeIds < nodesVector.capacity(); nodeIds++)
   {
@@ -150,6 +160,15 @@ void Octree::preprocess()
       if(belongToOc(pt))
       {
         nodesTmp.push_back(nodeIds);
+        std::vector<TSimplexID> ball = SimplicesNode(m_simplexMesh, nodeIds).ballOf();
+        for(auto const simplex : ball)
+        {
+          if(s.find(simplex) == s.end())
+          {
+            s.insert(simplex);
+            m_simplices.push_back(simplex);
+          }
+        }
       }
     }
   }
@@ -242,7 +261,8 @@ std::vector<TSimplexID> Octree::findSimplicesInOc(const math::Point& pt)
     else
     {
       const BitVector& nodesVector = m_simplexMesh->getBitVectorNodes();
-      for(auto const node : m_parentOc->m_nodes)
+      ans = m_parentOc->m_simplices;
+      /*for(auto const node : m_parentOc->m_nodes)
       {
         std::vector<TSimplexID> ball = SimplicesNode(m_simplexMesh, node).ballOf();
         for(auto const simplex : ball)
@@ -253,7 +273,7 @@ std::vector<TSimplexID> Octree::findSimplicesInOc(const math::Point& pt)
             ans.push_back(simplex);
           }
         }
-      }
+      }*/
     }
   }
   return ans;

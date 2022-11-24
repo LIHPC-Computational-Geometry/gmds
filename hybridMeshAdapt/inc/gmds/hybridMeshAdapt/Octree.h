@@ -61,6 +61,7 @@ namespace gmds
       SimplexMesh* m_simplexMesh;// = nullptr;
 
       std::vector<TInt> m_nodes;
+      std::vector<TInt> m_simplices;
       std::vector<Octree*> m_ocs{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
       Octree* m_rootOc = nullptr;
       Octree* m_parentOc = nullptr;

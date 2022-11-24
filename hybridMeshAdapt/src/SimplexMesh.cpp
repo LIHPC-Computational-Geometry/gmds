@@ -4489,7 +4489,7 @@ bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>&
 /******************************************************************************/
 void SimplexMesh::setColorsSurfaceFromSimplex(SimplexMesh* simplexMesh)
 {
-  double epsilon = 0.07;
+  double epsilon = 0.1;
   unsigned int sizeFace = 4;
 
   gmds::Variable<int>* BND_SURFACE_COLOR    = nullptr;
@@ -4527,11 +4527,10 @@ void SimplexMesh::setColorsSurfaceFromSimplex(SimplexMesh* simplexMesh)
           {
             for(unsigned int c = 0; c < UVWT.size() ; c++)
             {
-              std::vector<TInt> orderedFace = SimplicesCell(simplexMesh, simplex).getOrderedFace(c);
-              int flag = (*BND_SURFACE_COLOR_MESH)[orderedFace[0]] | (*BND_SURFACE_COLOR_MESH)[orderedFace[1]] | (*BND_SURFACE_COLOR_MESH)[orderedFace[2]];
-              if(flag && (UVWT[c] > - epsilon && UVWT[c] <  epsilon))
+              TSimplexID t = SimplicesCell(simplexMesh, simplex).oppositeTetraIdx(c);
+              if(t < 0 && (UVWT[c] > - epsilon && UVWT[c] <  epsilon))
               {
-                surfaceColorId = flag;
+                surfaceColorId = (*BND_TRIANGLES)[-t];
               }
             }
           }
@@ -4542,7 +4541,40 @@ void SimplexMesh::setColorsSurfaceFromSimplex(SimplexMesh* simplexMesh)
         continue;
 
       BND_SURFACE_COLOR->set(n, surfaceColorId);
+    }
+  }
+}
+/******************************************************************************/
+void SimplexMesh::onSurface(const math::Point& pt, int& surfaceLabel)
+{
+  double epsilon = 0.2;
+  gmds::Variable<int>* BND_TRIANGLES  = nullptr;
 
+  try{
+    BND_TRIANGLES        = getVariable<int, SimplicesTriangle>("BND_TRIANGLES");
+  } catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  std::vector<TSimplexID> simplices = getOctree()->findSimplicesInOc(pt);
+  surfaceLabel = 0;
+  for(auto const simplex : simplices)
+  {
+    if(simplex >= 0)
+    {
+      std::vector<double> UVWT;
+      if(SimplicesCell(this, simplex).isCellClose(pt, UVWT, epsilon))
+      {
+        for(unsigned int c = 0; c < UVWT.size() ; c++)
+        {
+          TSimplexID t = SimplicesCell(this, simplex).oppositeTetraIdx(c);
+          if(t < 0 && (UVWT[c] > - epsilon && UVWT[c] <  epsilon))
+          {
+            surfaceLabel = (*BND_TRIANGLES)[-t];
+          }
+        }
+      }
     }
   }
 }

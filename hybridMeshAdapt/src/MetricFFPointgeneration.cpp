@@ -43,18 +43,17 @@ void MetricFFPointgeneration::execute()
     subdivideEdgeUsingMetric_Relaxation(nodeAdded, edge, edgeU, edge_length, edgeId);
     i++;
   }
-
   std::cout << "EDGE NODES CREATED " << std::endl;
-  unsigned int cpt = 0;
   while(nodeAdded.size() != 0)
   {
-    std::cout << "nodeAdded.size() BEFORE  -> " << nodeAdded.size() << std::endl;
-    nodesSpreading(nodeAdded);
-    m_nodesMesh.setColorsSurfaceFromSimplex(m_simplexMesh);
-    std::cout << "nodeAdded.size() AFTER  -> " << nodeAdded.size() << std::endl;
+    std::cout << "nodeAdded.size() -> " << nodeAdded.size() << std::endl;
+    nodesSpreading(nodeAdded, true);
+    std::cout << "nodeAdded.size() -> " << nodeAdded.size() << std::endl;
     std::cout << std::endl;
   }
+  std::cout << "SURFACE NODES CREATED " << std::endl;
 
+  m_nodesMesh.setColorsSurfaceFromSimplex(m_simplexMesh);
   for(unsigned int n = 0 ; n < m_nodesMesh.getBitVectorNodes().capacity() ; n++)
   {
     if(m_nodesMesh.getBitVectorNodes()[n] != 0)
@@ -301,10 +300,8 @@ Point MetricFFPointgeneration::computeTheEdgeNodeCoordinate(const double u, cons
   return pt;
 }
 /*----------------------------------------------------------------------------*/
-void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
+void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool surfaceFlag)
 {
-  static int cpt = 0;
-  double epsilon = 0.0;
   std::vector<TInt> newNodes{};
 
   Variable<Eigen::Matrix3d>* metric  = nullptr;
@@ -324,7 +321,6 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
 
   for(auto const node : nodesAdded)
   {
-
     std::vector<math::Vector3d> frames{};
     const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
     m_simplexMesh->getFrameAt(pt, frames);
@@ -415,29 +411,42 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
           newCoord = goodProjection;
       }
 
-      if(minDistance != std::numeric_limits<int>::max() || inCell)
+      bool flag = true;
+      if(surfaceFlag == true)
       {
-        std::vector<TInt> neighboorNodes;
-        nodeFiltering(node, newCoord, neighboorNodes);
+        int surfaceLabel = 0;
+        m_simplexMesh->onSurface(newCoord, surfaceLabel);
+        if(surfaceLabel == 0)
+          flag = false;
+      }
 
-        if(!neighboorNodes.size())
+      if(flag)
+      {
+        if(minDistance != std::numeric_limits<int>::max() || inCell)
         {
-          newNodeId = m_nodesMesh.addNode(newCoord);
-          m_nodesMesh.setAnalyticMetric(newNodeId);
-          newNodes.push_back(newNodeId);
-        }
-        else
-        {
-          double distMin = std::numeric_limits<double>::max();
-          for(auto const n : neighboorNodes)
+          std::vector<TInt> neighboorNodes;
+          nodeFiltering(node, newCoord, neighboorNodes);
+
+          if(!neighboorNodes.size())
           {
-            math::Point pid = SimplicesNode(&m_nodesMesh, n).getCoords();
-            math::Vector3d v = math::Vector3d({pid.X() - pt.X(), pid.Y() - pt.Y(), pid.Z() - pt.Z()});
-            double dist = v.norm();
-            if(dist < distMin)
+
+            newNodeId = m_nodesMesh.addNode(newCoord);
+            m_nodesMesh.setAnalyticMetric(newNodeId);
+            newNodes.push_back(newNodeId);
+          }
+          else
+          {
+            double distMin = std::numeric_limits<double>::max();
+            for(auto const n : neighboorNodes)
             {
-              distMin = dist;
-              newNodeId = n;
+              math::Point pid = SimplicesNode(&m_nodesMesh, n).getCoords();
+              math::Vector3d v = math::Vector3d({pid.X() - pt.X(), pid.Y() - pt.Y(), pid.Z() - pt.Z()});
+              double dist = v.norm();
+              if(dist < distMin)
+              {
+                distMin = dist;
+                newNodeId = n;
+              }
             }
           }
         }
@@ -455,7 +464,6 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded)
 
   nodesAdded.clear();
   nodesAdded = newNodes;
-  cpt++;
 }
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::nodeFiltering(const TInt node, const math::Point& pt, std::vector<TInt> & neighboorNode)
@@ -488,11 +496,6 @@ void MetricFFPointgeneration::nodeFiltering(const TInt node, const math::Point& 
       const Eigen::Matrix3d m0 = m_nodesMesh.getAnalyticMetric(pt);
       //compute the current length based on the metric atached to the mesh
       const double metricLenght = sqrt(v.dot(m0*v));
-      /*if(node == 472)
-      {
-        std::cout << "  nodeId  -> " << nodeId << std::endl;
-        std::cout << "  metricLenght  -> " << metricLenght << std::endl;
-      }*/
       if(metricLenght <= k)
       {
         neighboorNode.push_back(nodeId);
