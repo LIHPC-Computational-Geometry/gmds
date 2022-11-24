@@ -11,6 +11,7 @@
 #include <gmds/claire/AeroException.h>
 #include <gmds/claire/Front.h>
 #include <gmds/claire/Params.h>
+#include <gmds/claire/FastLocalize.h>
 #include <string>
 #include <map>
 #include <fstream>
@@ -120,6 +121,8 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
  private:
 	/** triangular mesh we work on */
 	Mesh *m_meshT;
+	/** k-d tree */
+	FastLocalize m_fl;
 	/** quad mesh to generate */
 	Mesh *m_meshQ;
 	/** Params pour l'aéro */

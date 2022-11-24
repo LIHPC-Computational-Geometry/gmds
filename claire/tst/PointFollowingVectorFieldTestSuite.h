@@ -80,10 +80,12 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test1)
 	LeastSquaresGradientComputation::STATUS result_grad = grad2D.execute();
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
 
+	FastLocalize fl(&m);
+
 	// Placement du point P à la distance souhaitée suivant le champ de gradient
 	math::Point M(0.5, 0.0, 0.0);
 	double distance = 0.3;
-	AdvectedPointRK4_2D advpoint(&m, M, distance, var_dist, m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
+	AdvectedPointRK4_2D advpoint(&m, &fl, M, distance, var_dist, m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
 	AdvectedPointRK4_2D::STATUS result = advpoint.execute();
 
 	IGMeshIOService ioService_geom(&m);

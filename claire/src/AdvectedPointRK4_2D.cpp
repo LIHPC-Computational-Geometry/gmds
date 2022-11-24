@@ -10,8 +10,10 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------*/
-AdvectedPointRK4_2D::AdvectedPointRK4_2D(Mesh *AMesh, math::Point A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D) {
-	m_mesh = AMesh;
+AdvectedPointRK4_2D::AdvectedPointRK4_2D(Mesh *AMesh, FastLocalize *A_fl, math::Point A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D) :
+	m_mesh(AMesh),
+  	m_fl(A_fl)
+{
 	m_Pstart = A_Pstart;
 	m_Pend = A_Pstart;
 	m_d0 = A_d0;
@@ -178,7 +180,26 @@ TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M, TCellID f0_id){
 	}
 
 
+	// Use FastLocalize to check the tetras around the closest node
+	// to the point M
+	if (!isInFace)
+	{
+		gmds::Cell::Data data = m_fl->find(M);
+		TCellID n_closest_id = data.id;
+		Node n_closest = m_mesh->get<Node>(n_closest_id);
+		std::vector<Face> n_closest_tri = n_closest.get<Face>();
+		for (auto f:n_closest_tri)
+		{
+			if (!isInFace) {
+				isInFace = isInTriangle(f.id(), M);
+				if (isInFace) {
+					face_id = f.id();
+				}
+			}
+		}
+	}
 
+	/*
 	for(auto f_it = m_mesh->faces_begin(); f_it!= m_mesh->faces_end() && !isInFace;++f_it){
 		TCellID f_id = *f_it;
 		isInFace = isInTriangle(f_id, M);
@@ -186,6 +207,8 @@ TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M, TCellID f0_id){
 			face_id = f_id;
 		}
 	}
+	 */
+
 
 	if (!isInFace){
 		face_id = NullID;

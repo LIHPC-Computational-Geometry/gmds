@@ -8,6 +8,7 @@
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/ig/Mesh.h>
+#include <gmds/claire/FastLocalize.h>
 #include <string>
 #include <map>
 #include <fstream>
@@ -30,7 +31,7 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_2D
 	/** @brief Constructor.
          *  @param AMesh the mesh where we work on
 	 */
-	AdvectedPointRK4_2D(Mesh *AMesh, math::Point A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D);
+	AdvectedPointRK4_2D(Mesh *AMesh, FastLocalize *A_fl, math::Point A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -79,6 +80,8 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_2D
  private:
 	/** mesh we work on */
 	Mesh *m_mesh;
+	/** k-d tree */
+	FastLocalize* m_fl;
 	/** starting point */
 	math::Point m_Pstart ;
 	/** ending point */
