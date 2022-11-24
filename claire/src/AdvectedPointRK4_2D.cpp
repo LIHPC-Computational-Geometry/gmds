@@ -28,7 +28,6 @@ AdvectedPointRK4_2D::AdvectedPointRK4_2D(Mesh *AMesh, FastLocalize *A_fl, math::
 AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 {
 	double minLenght = minEdgeLenght();
-	//std::cout << "min : " << minLenght << std::endl;
 
 	double dt = 0.9*minLenght;
 	double err = pow(10,-6);
@@ -45,14 +44,7 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 	dist = interpolationDistance(face_id, Mat_A_Inv, m_Pstart);	// A quelle distance est le point de départ
 	Grad = interpolationGradient(face_id, Mat_A_Inv, m_Pstart);	// Quel est le gradient à ce point
 
-	/*
-	std::cout << "distance initiale : " << dist << std::endl;
-	std::cout << "gradient initial  : " << Grad << std::endl;
-	std::cout << "Noeud dans le triangle : " << face_id << std::endl;
-	 */
-
 	while ( (abs(dist-m_d0) > err) && iterations < max_iterations ) {
-		//std::cout << "-------- ITERATION " << iterations << " ---------" << std::endl;
 		math::Point M = RungeKutta4(m_Pend, Grad.normalize(), dt);	// Calcule la position du point à l'itération n+1 avec un RK4
 		// On vérifie ensuite si cette position est "valide"
 		face_id = inWhichTriangle(M, face_id) ;
@@ -93,11 +85,6 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 	face_id = inWhichTriangle(m_Pend, face_id) ;
 	Mat_A_Inv = getInvMatrixA(face_id);
 	dist = interpolationDistance(face_id, Mat_A_Inv, m_Pend);
-	/*
-	std::cout << "----------------------------------" << std::endl;
-	std::cout << "Point final : " << m_Pend << std::endl;
-	std::cout << "Distance finale : " << dist << std::endl;
-	 */
 
 	//writeDiscretePathInVTK();
 
