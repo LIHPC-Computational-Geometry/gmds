@@ -10,11 +10,16 @@
 #include <gmds/claire/AeroExtrusion_3D.h>
 #include <gmds/claire/AdvectedPointRK4_3D.h>
 #include <gmds/claire/AeroMeshQuality.h>
+#include <chrono>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AeroExtrusion_3D::AeroExtrusion_3D(Mesh *AMeshT, Mesh *AMeshH, ParamsAero Aparams_aero, Variable<double>* A_DistanceField, Variable<math::Vector3d>* A_VectorField) {
+AeroExtrusion_3D::AeroExtrusion_3D(Mesh *AMeshT, Mesh *AMeshH, ParamsAero Aparams_aero, Variable<double>* A_DistanceField, Variable<math::Vector3d>* A_VectorField) :
+  m_meshT(AMeshT),
+  m_meshH(AMeshH),
+  m_fl(m_meshT)
+{
 	m_meshT = AMeshT;
 	m_meshH = AMeshH;
 	m_params_aero = Aparams_aero;
@@ -79,7 +84,7 @@ AeroExtrusion_3D::ComputeIdealPositions(Front_3D AFront, double dist_cible, Vari
 	for (auto n_id:front_nodes){
 		Node n = m_meshH->get<Node>(n_id);
 		math::Point M = n.point();
-		AdvectedPointRK4_3D advpoint(m_meshT, M, dist_cible, A_distance, A_vectors);
+		AdvectedPointRK4_3D advpoint(m_meshT, &m_fl, M, dist_cible, A_distance, A_vectors);
 		advpoint.execute();
 		Node n_new = m_meshH->newNode(advpoint.getPend());
 		map_idealNextNodes[n_id] = n_new.id() ;
@@ -104,7 +109,6 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	std::vector<TCellID> front_nodes = Front_IN.getNodes();
 	std::vector<TCellID> front_faces = Front_IN.getFaces();
 
-
 	// Ajout des hex restants
 	for (auto f_id:front_faces){
 		Face f = m_meshH->get<Face>(f_id);
@@ -118,7 +122,6 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 
 
 	// Initialisation du front de sortie
-
 	std::vector<TCellID> new_front_nodes_id;
 	std::vector<TCellID> new_front_faces_id;
 
