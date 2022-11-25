@@ -24,9 +24,9 @@ AeroPipeline_3D::AeroPipeline_3D(ParamsAero Aparams) :
 	AbstractAeroPipeline(Aparams)
 {
 	m_meshTet = new Mesh(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
-	                                  F2E | E2F | R2E | N2R | N2F | N2E));
+	                                  F2E | E2F | R2E | E2R | N2R | N2F | N2E));
 	m_meshHex = new Mesh(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
-	                                     F2E | E2F | R2E | N2R | N2F | N2E));
+	                                     F2E | E2F | R2E | E2R | N2R | N2F | N2E));
 	m_couche_id = m_meshHex->newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	m_meshHex->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
 	m_Bnd = new AeroBoundaries_3D(m_meshTet) ;
