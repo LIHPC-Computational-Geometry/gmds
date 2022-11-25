@@ -161,12 +161,12 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 		Node n7 = m_meshHex->newNode({0.5, -0.5, 0.5});
 
 		// Creates the faces
-		TCellID f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n0.id(), n1.id(), n2.id(), n3.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n4.id(), n5.id(), n6.id(), n7.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n0.id(), n1.id(), n5.id(), n4.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n0.id(), n3.id(), n7.id(), n4.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n3.id(), n2.id(), n6.id(), n7.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n2.id(), n1.id(), n5.id(), n6.id());
+		TCellID f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n0.id(), n1.id(), n2.id(), n3.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n4.id(), n5.id(), n6.id(), n7.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n0.id(), n1.id(), n5.id(), n4.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n0.id(), n3.id(), n7.id(), n4.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n3.id(), n2.id(), n6.id(), n7.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n2.id(), n1.id(), n5.id(), n6.id());
 
 		for (auto n_id : m_meshHex->nodes()) {
 			m_couche_id->set(n_id, 0);
@@ -216,35 +216,35 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 		Node n26 = m_meshHex->newNode({0.5, 0.5, 0.5});
 
 		// Create the faces
-		TCellID f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n1.id(), n2.id(), n5.id(), n4.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n2.id(), n3.id(), n6.id(), n5.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n4.id(), n5.id(), n8.id(), n7.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n5.id(), n6.id(), n9.id(), n8.id());
+		TCellID f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n1.id(), n2.id(), n5.id(), n4.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n2.id(), n3.id(), n6.id(), n5.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n4.id(), n5.id(), n8.id(), n7.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n5.id(), n6.id(), n9.id(), n8.id());
 
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n18.id(), n19.id(), n22.id(), n21.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n19.id(), n20.id(), n23.id(), n22.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n21.id(), n22.id(), n25.id(), n24.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n22.id(), n23.id(), n26.id(), n25.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n18.id(), n19.id(), n22.id(), n21.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n19.id(), n20.id(), n23.id(), n22.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n21.id(), n22.id(), n25.id(), n24.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n22.id(), n23.id(), n26.id(), n25.id());
 
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n1.id(), n2.id(), n11.id(), n10.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n2.id(), n3.id(), n12.id(), n11.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n10.id(), n11.id(), n19.id(), n18.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n11.id(), n12.id(), n20.id(), n19.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n1.id(), n2.id(), n11.id(), n10.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n2.id(), n3.id(), n12.id(), n11.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n10.id(), n11.id(), n19.id(), n18.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n11.id(), n12.id(), n20.id(), n19.id());
 
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n3.id(), n6.id(), n14.id(), n12.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n6.id(), n9.id(), n17.id(), n14.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n12.id(), n14.id(), n23.id(), n20.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n14.id(), n17.id(), n26.id(), n23.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n3.id(), n6.id(), n14.id(), n12.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n6.id(), n9.id(), n17.id(), n14.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n12.id(), n14.id(), n23.id(), n20.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n14.id(), n17.id(), n26.id(), n23.id());
 
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n9.id(), n8.id(), n16.id(), n17.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n8.id(), n7.id(), n15.id(), n16.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n17.id(), n16.id(), n25.id(), n26.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n16.id(), n15.id(), n24.id(), n25.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n9.id(), n8.id(), n16.id(), n17.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n8.id(), n7.id(), n15.id(), n16.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n17.id(), n16.id(), n25.id(), n26.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n16.id(), n15.id(), n24.id(), n25.id());
 
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n4.id(), n1.id(), n10.id(), n13.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n7.id(), n4.id(), n13.id(), n15.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n13.id(), n10.id(), n18.id(), n21.id());
-		f_id = math::Utils::CreateQuadAndConnectivitiesN2F(m_meshHex, n15.id(), n13.id(), n21.id(), n24.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n4.id(), n1.id(), n10.id(), n13.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n7.id(), n4.id(), n13.id(), n15.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n13.id(), n10.id(), n18.id(), n21.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n15.id(), n13.id(), n21.id(), n24.id());
 
 		for (auto n_id : m_meshHex->nodes()) {
 			m_couche_id->set(n_id, 0);
