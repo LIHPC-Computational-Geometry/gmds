@@ -312,7 +312,7 @@ TEST(ClaireTestClass, Utils_CreateQuadAndConnectivitiesN2F)
 
 	ASSERT_EQ(m.getNbFaces(), 0);
 
-	TCellID f_id = math::Utils::CreateQuadAndConnectivitiesN2F(&m, n0.id(), n1.id(), n2.id(), n3.id());
+	TCellID f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(&m, n0.id(), n1.id(), n2.id(), n3.id());
 	ASSERT_EQ(m.getNbFaces(), 1);
 
 	std::vector<Face> n0_faces = n0.get<Face>();

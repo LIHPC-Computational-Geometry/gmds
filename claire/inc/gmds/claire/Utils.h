@@ -125,8 +125,19 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static void CurveBlockEdgesReavel(Blocking2D* blocking2D, Mesh* m);
 	/*----------------------------------------------------------------------------*/
-	/** \brief  Add the quad defined by the four nodes to the mesh, and create the
+	/** \brief  Create the edge defined by the two nodes to the mesh, and create the
 	 		* connectivities N->E
+         *
+         * \param[in] AMesh the mesh
+         * \param[in] n0_id first node id
+         * \param[in] n1_id second node id
+         *
+         * \return  the id of the new face
+	 */
+	static TCellID GetOrCreateEdgeAndConnectivitiesN2E(Mesh *AMesh, TCellID n0_id, TCellID n1_id);
+	/*----------------------------------------------------------------------------*/
+	/** \brief  Add the quad defined by the four nodes to the mesh, and create the
+	 		* connectivities N->F
          *
          * \param[in] AMesh the mesh
          * \param[in] n0_id first node id
@@ -136,8 +147,24 @@ class LIB_GMDS_CLAIRE_API Utils {
          *
          * \return  the id of the new face
 	 */
-	static TCellID CreateQuadAndConnectivitiesN2F(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
+	static TCellID GetOrCreateQuadAndConnectivitiesN2F(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
 	/*----------------------------------------------------------------------------*/
+	/** @brief Create the hexa from the 8 nodes, and the connectivities
+	 	*
+	 	* \param[in] AMesh the mesh
+  		* \param[in] n0 first node
+  		* \param[in] n1 second node
+  		* \param[in] n2 thirst node
+  		* \param[in] n3 fourth node
+  		* \param[in] n4
+  		* \param[in] n5
+  		* \param[in] n6
+  		* \param[in] n7 last node
+		*
+		* \return
+	 */
+	static TCellID CreateHexaNConnectivities(Mesh *Amesh, Node n0, Node n1, Node n2, Node n3, Node n4, Node n5, Node n6, Node n7);
+	/*-------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/
