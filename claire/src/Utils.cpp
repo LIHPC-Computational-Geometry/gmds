@@ -410,7 +410,7 @@ TCellID Utils::GetOrCreateEdgeAndConnectivitiesN2E(Mesh *AMesh, TCellID n0_id, T
 	return e_id;
 }
 /*------------------------------------------------------------------------*/
-TCellID Utils::GetOrCreateQuadAndConnectivitiesN2F(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id)
+TCellID Utils::GetOrCreateQuadAndConnectivities(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id)
 {
 	Node n0 = AMesh->get<Node>(n0_id);
 	Node n1 = AMesh->get<Node>(n1_id);
@@ -426,6 +426,27 @@ TCellID Utils::GetOrCreateQuadAndConnectivitiesN2F(Mesh *AMesh, TCellID n0_id, T
 		n2.add<Face>(f);	// N->F
 		n3.add<Face>(f);	// N->F
 		f_id = f.id();
+
+		TCellID e0_id = Utils::GetOrCreateEdgeAndConnectivitiesN2E(AMesh, n0.id(), n1.id());	// E<->N
+		TCellID e1_id = Utils::GetOrCreateEdgeAndConnectivitiesN2E(AMesh, n1.id(), n2.id());	// E<->N
+		TCellID e2_id = Utils::GetOrCreateEdgeAndConnectivitiesN2E(AMesh, n2.id(), n3.id());	// E<->N
+		TCellID e3_id = Utils::GetOrCreateEdgeAndConnectivitiesN2E(AMesh, n3.id(), n0.id());	// E<->N
+
+		Edge e0 = AMesh->get<Edge>(e0_id);
+		Edge e1 = AMesh->get<Edge>(e1_id);
+		Edge e2 = AMesh->get<Edge>(e2_id);
+		Edge e3 = AMesh->get<Edge>(e3_id);
+
+		f.add<Edge>(e0);	// F->E
+		f.add<Edge>(e1);	// F->E
+		f.add<Edge>(e2);	// F->E
+		f.add<Edge>(e3);	// F->E
+
+		e0.add<Face>(f);	// E->F
+		e1.add<Face>(f);	// E->F
+		e2.add<Face>(f);	// E->F
+		e2.add<Face>(f);	// E->F
+
 	}
 
 	return f_id;
@@ -445,12 +466,12 @@ TCellID Utils::CreateHexaNConnectivities(Mesh *Amesh, Node n0, Node n1, Node n2,
 	n7.add<Region>(r);			// N->R (8/8)
 
 	// Create the 6 faces and connectivities N<->F (1x F->N and 4x N->F per face)
-	TCellID f0_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n0.id(), n1.id(), n2.id(), n3.id());
-	TCellID f1_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n4.id(), n5.id(), n6.id(), n7.id());
-	TCellID f2_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n0.id(), n1.id(), n5.id(), n4.id());
-	TCellID f3_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n1.id(), n2.id(), n6.id(), n5.id());
-	TCellID f4_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n2.id(), n3.id(), n7.id(), n6.id());
-	TCellID f5_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n3.id(), n0.id(), n4.id(), n7.id());
+	TCellID f0_id = math::Utils::GetOrCreateQuadAndConnectivities(Amesh, n0.id(), n1.id(), n2.id(), n3.id());
+	TCellID f1_id = math::Utils::GetOrCreateQuadAndConnectivities(Amesh, n4.id(), n5.id(), n6.id(), n7.id());
+	TCellID f2_id = math::Utils::GetOrCreateQuadAndConnectivities(Amesh, n0.id(), n1.id(), n5.id(), n4.id());
+	TCellID f3_id = math::Utils::GetOrCreateQuadAndConnectivities(Amesh, n1.id(), n2.id(), n6.id(), n5.id());
+	TCellID f4_id = math::Utils::GetOrCreateQuadAndConnectivities(Amesh, n2.id(), n3.id(), n7.id(), n6.id());
+	TCellID f5_id = math::Utils::GetOrCreateQuadAndConnectivities(Amesh, n3.id(), n0.id(), n4.id(), n7.id());
 
 	Face f0 = Amesh->get<Face>(f0_id);
 	Face f1 = Amesh->get<Face>(f1_id);
@@ -458,6 +479,36 @@ TCellID Utils::CreateHexaNConnectivities(Mesh *Amesh, Node n0, Node n1, Node n2,
 	Face f3 = Amesh->get<Face>(f3_id);
 	Face f4 = Amesh->get<Face>(f4_id);
 	Face f5 = Amesh->get<Face>(f5_id);
+
+
+	// Get the 12 edges
+	// Remark: these edges has been created when the 6 faces were created before
+	TCellID e0_id = math::Utils::GetOrCreateEdgeAndConnectivitiesN2E(Amesh, n0.id(), n1.id());
+	TCellID e1_id = math::Utils::GetOrCreateEdgeAndConnectivitiesN2E(Amesh, n1.id(), n2.id());
+	TCellID e2_id = math::Utils::GetOrCreateEdgeAndConnectivitiesN2E(Amesh, n2.id(), n3.id());
+	TCellID e3_id = math::Utils::GetOrCreateEdgeAndConnectivitiesN2E(Amesh, n3.id(), n0.id());
+	TCellID e4_id = math::Utils::GetOrCreateEdgeAndConnectivitiesN2E(Amesh, n4.id(), n5.id());
+	TCellID e5_id = math::Utils::GetOrCreateEdgeAndConnectivitiesN2E(Amesh, n5.id(), n6.id());
+	TCellID e6_id = math::Utils::GetOrCreateEdgeAndConnectivitiesN2E(Amesh, n6.id(), n7.id());
+	TCellID e7_id = math::Utils::GetOrCreateEdgeAndConnectivitiesN2E(Amesh, n7.id(), n4.id());
+	TCellID e8_id = math::Utils::GetOrCreateEdgeAndConnectivitiesN2E(Amesh, n0.id(), n4.id());
+	TCellID e9_id = math::Utils::GetOrCreateEdgeAndConnectivitiesN2E(Amesh, n1.id(), n5.id());
+	TCellID e10_id = math::Utils::GetOrCreateEdgeAndConnectivitiesN2E(Amesh, n2.id(), n6.id());
+	TCellID e11_id = math::Utils::GetOrCreateEdgeAndConnectivitiesN2E(Amesh, n3.id(), n7.id());
+
+	Edge e0 = Amesh->get<Edge>(e0_id);
+	Edge e1 = Amesh->get<Edge>(e1_id);
+	Edge e2 = Amesh->get<Edge>(e2_id);
+	Edge e3 = Amesh->get<Edge>(e3_id);
+	Edge e4 = Amesh->get<Edge>(e4_id);
+	Edge e5 = Amesh->get<Edge>(e5_id);
+	Edge e6 = Amesh->get<Edge>(e6_id);
+	Edge e7 = Amesh->get<Edge>(e7_id);
+	Edge e8 = Amesh->get<Edge>(e8_id);
+	Edge e9 = Amesh->get<Edge>(e9_id);
+	Edge e10 = Amesh->get<Edge>(e10_id);
+	Edge e11 = Amesh->get<Edge>(e11_id);
+
 
 	//----------------------------//
 	// Create the connectivities 	//
@@ -481,6 +532,51 @@ TCellID Utils::CreateHexaNConnectivities(Mesh *Amesh, Node n0, Node n1, Node n2,
 
 	f5.add<Region>(r);	// F->R
 	r.add<Face>(f5);		// R->F
+
+
+	//----------------------------//
+	// Create the connectivities 	//
+	// 		R<->E x12				//
+	//----------------------------//
+
+	e0.add<Region>(r);	// E->R
+	r.add<Edge>(e0);		// R->E
+
+	e1.add<Region>(r);	// E->R
+	r.add<Edge>(e1);		// R->E
+
+	e2.add<Region>(r);	// E->R
+	r.add<Edge>(e2);		// R->E
+
+	e3.add<Region>(r);	// E->R
+	r.add<Edge>(e3);		// R->E
+
+	e4.add<Region>(r);	// E->R
+	r.add<Edge>(e4);		// R->E
+
+	e5.add<Region>(r);	// E->R
+	r.add<Edge>(e5);		// R->E
+
+	e6.add<Region>(r);	// E->R
+	r.add<Edge>(e6);		// R->E
+
+	e7.add<Region>(r);	// E->R
+	r.add<Edge>(e7);		// R->E
+
+	e8.add<Region>(r);	// E->R
+	r.add<Edge>(e8);		// R->E
+
+	e9.add<Region>(r);	// E->R
+	r.add<Edge>(e9);		// R->E
+
+	e10.add<Region>(r);	// E->R
+	r.add<Edge>(e10);		// R->E
+
+	e11.add<Region>(r);	// E->R
+	r.add<Edge>(e11);		// R->E
+
+	return r.id();
+
 }
 /*------------------------------------------------------------------------*/
 
