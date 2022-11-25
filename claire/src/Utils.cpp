@@ -410,7 +410,7 @@ TCellID Utils::GetOrCreateEdgeAndConnectivitiesN2E(Mesh *AMesh, TCellID n0_id, T
 	return e_id;
 }
 /*------------------------------------------------------------------------*/
-TCellID Utils::GetOrCreateQuadAndConnectivitiesN2F(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id)
+TCellID Utils::GetOrCreateQuadAndConnectivities(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id)
 {
 	Node n0 = AMesh->get<Node>(n0_id);
 	Node n1 = AMesh->get<Node>(n1_id);
@@ -466,12 +466,12 @@ TCellID Utils::CreateHexaNConnectivities(Mesh *Amesh, Node n0, Node n1, Node n2,
 	n7.add<Region>(r);			// N->R (8/8)
 
 	// Create the 6 faces and connectivities N<->F (1x F->N and 4x N->F per face)
-	TCellID f0_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n0.id(), n1.id(), n2.id(), n3.id());
-	TCellID f1_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n4.id(), n5.id(), n6.id(), n7.id());
-	TCellID f2_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n0.id(), n1.id(), n5.id(), n4.id());
-	TCellID f3_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n1.id(), n2.id(), n6.id(), n5.id());
-	TCellID f4_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n2.id(), n3.id(), n7.id(), n6.id());
-	TCellID f5_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n3.id(), n0.id(), n4.id(), n7.id());
+	TCellID f0_id = math::Utils::GetOrCreateQuadAndConnectivities(Amesh, n0.id(), n1.id(), n2.id(), n3.id());
+	TCellID f1_id = math::Utils::GetOrCreateQuadAndConnectivities(Amesh, n4.id(), n5.id(), n6.id(), n7.id());
+	TCellID f2_id = math::Utils::GetOrCreateQuadAndConnectivities(Amesh, n0.id(), n1.id(), n5.id(), n4.id());
+	TCellID f3_id = math::Utils::GetOrCreateQuadAndConnectivities(Amesh, n1.id(), n2.id(), n6.id(), n5.id());
+	TCellID f4_id = math::Utils::GetOrCreateQuadAndConnectivities(Amesh, n2.id(), n3.id(), n7.id(), n6.id());
+	TCellID f5_id = math::Utils::GetOrCreateQuadAndConnectivities(Amesh, n3.id(), n0.id(), n4.id(), n7.id());
 
 	Face f0 = Amesh->get<Face>(f0_id);
 	Face f1 = Amesh->get<Face>(f1_id);
