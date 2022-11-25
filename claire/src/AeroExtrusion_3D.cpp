@@ -224,64 +224,104 @@ AeroExtrusion_3D::CreateNormalHexa(TCellID f_id, Front_3D &Front_IN, std::map<TC
 
 	// Create the hex associated to the face
 	Region r = m_meshH->newHex(nodes[0], nodes[1], nodes[2], nodes[3], n0, n1, n2, n3);	// R->N (x8)
-	nodes[0].add<Region>(r);
-	nodes[1].add<Region>(r);
-	nodes[2].add<Region>(r);
-	nodes[3].add<Region>(r);
-	n0.add<Region>(r);
-	n1.add<Region>(r);
-	n2.add<Region>(r);
-	n3.add<Region>(r);
+	nodes[0].add<Region>(r);	// N->R (1/8)
+	nodes[1].add<Region>(r);	// N->R
+	nodes[2].add<Region>(r);	// N->R
+	nodes[3].add<Region>(r);	// N->R
+	n0.add<Region>(r);			// N->R
+	n1.add<Region>(r);			// N->R
+	n2.add<Region>(r);			// N->R
+	n3.add<Region>(r);			// N->R (8/8)
 
 	// Create the face on the new front
 	Face f_new_front = m_meshH->newQuad(n0, n1, n2, n3);	// F->N (x4)
-	n0.add<Face>(f_new_front);
-	n1.add<Face>(f_new_front);
-	n2.add<Face>(f_new_front);
-	n3.add<Face>(f_new_front);
+	n0.add<Face>(f_new_front);		// N->F (1/4)
+	n1.add<Face>(f_new_front);		// N->F
+	n2.add<Face>(f_new_front);		// N->F
+	n3.add<Face>(f_new_front);		// N->F (4/4)
 	var_face_couche_id->set(f_new_front.id(), Front_IN.getFrontID()+1);
+	f_new_front.add<Region>(r);	// F->R
+	r.add<Face>(f_new_front);		// R->F
 
-	// The faces between the two layers are not created.
+	// Connect the face of the previous front to the hexa
+	TCellID f_old_front_id = math::Utils::CommonFace(m_meshH, nodes[0].id(), nodes[1].id(), nodes[2].id(), nodes[3].id());
+	Face f_old_front = m_meshH->get<Face>(f_old_front_id) ;
+	f_old_front.add<Region>(r);	// F->R
+	r.add<Face>(f_old_front);		// R->F
+
+
+	//-------------------------------------//
+	// Create or get the 4 faces and  		//
+	// connect them to the region.			//
+	//-------------------------------------//
 
 	TCellID f0_id = math::Utils::CommonFace(m_meshH, nodes[0].id(), nodes[1].id(), n0_id, n1_id);
+	Face f0;
 	if (f0_id == NullID)		// Then, the face doesn't exist yet
 	{
-		Face f0 = m_meshH->newQuad(nodes[0], nodes[1], n1, n0);	// F->N (x4)
-		nodes[0].add<Face>(f0);	// N->F
+		f0 = m_meshH->newQuad(nodes[0], nodes[1], n1, n0);	// F->N (x4)
+		nodes[0].add<Face>(f0);	// N->F (1/4)
 		nodes[1].add<Face>(f0);	// N->F
 		n0.add<Face>(f0);			// N->F
-		n1.add<Face>(f0);			// N->F
+		n1.add<Face>(f0);			// N->F (4/4)
 	}
+	else
+	{
+		f0 = m_meshH->get<Face>(f0_id);
+	}
+	f0.add<Region>(r);	// F->R
+	r.add<Face>(f0);		// R->F
 
 	TCellID f1_id = math::Utils::CommonFace(m_meshH, nodes[1].id(), nodes[2].id(), n1_id, n2_id);
+	Face f1;
 	if (f1_id == NullID)		// Then, the face doesn't exist yet
 	{
-		Face f1 = m_meshH->newQuad(nodes[1], nodes[2], n2, n1);	// F->N (x4)
+		f1 = m_meshH->newQuad(nodes[1], nodes[2], n2, n1);	// F->N (x4)
 		nodes[1].add<Face>(f1);	// N->F
 		nodes[2].add<Face>(f1);	// N->F
 		n1.add<Face>(f1);			// N->F
 		n2.add<Face>(f1);			// N->F
 	}
+	else
+	{
+		f1 = m_meshH->get<Face>(f1_id);
+	}
+	f1.add<Region>(r);	// F->R
+	r.add<Face>(f1);		// R->F
 
 	TCellID f2_id = math::Utils::CommonFace(m_meshH, nodes[2].id(), nodes[3].id(), n2_id, n3_id);
+	Face f2;
 	if (f2_id == NullID)		// Then, the face doesn't exist yet
 	{
-		Face f2 = m_meshH->newQuad(nodes[2], nodes[3], n3, n2);	// F->N (x4)
+		f2 = m_meshH->newQuad(nodes[2], nodes[3], n3, n2);	// F->N (x4)
 		nodes[2].add<Face>(f2);	// N->F
 		nodes[3].add<Face>(f2);	// N->F
 		n2.add<Face>(f2);			// N->F
 		n3.add<Face>(f2);			// N->F
 	}
+	else
+	{
+		f2 = m_meshH->get<Face>(f2_id);
+	}
+	f2.add<Region>(r);	// F->R
+	r.add<Face>(f2);		// R->F
 
 	TCellID f3_id = math::Utils::CommonFace(m_meshH, nodes[0].id(), nodes[3].id(), n0_id, n3_id);
+	Face f3;
 	if (f3_id == NullID)		// Then, the face doesn't exist yet
 	{
-		Face f3 = m_meshH->newQuad(nodes[0], nodes[3], n3, n0);	// F->N (x4)
+		f3 = m_meshH->newQuad(nodes[0], nodes[3], n3, n0);	// F->N (x4)
 		nodes[0].add<Face>(f3);	// N->F
 		nodes[3].add<Face>(f3);	// N->F
 		n0.add<Face>(f3);			// N->F
 		n3.add<Face>(f3);			// N->F
 	}
+	else
+	{
+		f3 = m_meshH->get<Face>(f3_id);
+	}
+	f3.add<Region>(r);	// F->R
+	r.add<Face>(f3);		// R->F
 
 	/*
 	TCellID e0_id = math::Utils::CommonEdge(m_meshQ, nodes[0].id(), n0.id());
