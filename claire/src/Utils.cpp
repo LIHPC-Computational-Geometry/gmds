@@ -575,6 +575,8 @@ TCellID Utils::CreateHexaNConnectivities(Mesh *Amesh, Node n0, Node n1, Node n2,
 	e11.add<Region>(r);	// E->R
 	r.add<Edge>(e11);		// R->E
 
+	return r.id();
+
 }
 /*------------------------------------------------------------------------*/
 
