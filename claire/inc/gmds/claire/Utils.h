@@ -126,7 +126,7 @@ class LIB_GMDS_CLAIRE_API Utils {
 	static void CurveBlockEdgesReavel(Blocking2D* blocking2D, Mesh* m);
 	/*----------------------------------------------------------------------------*/
 	/** \brief  Create the edge defined by the two nodes to the mesh, and create the
-	 		* connectivities N->E
+	 		* connectivities N<->E.
          *
          * \param[in] AMesh the mesh
          * \param[in] n0_id first node id
@@ -136,8 +136,8 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static TCellID GetOrCreateEdgeAndConnectivitiesN2E(Mesh *AMesh, TCellID n0_id, TCellID n1_id);
 	/*----------------------------------------------------------------------------*/
-	/** \brief  Add the quad defined by the four nodes to the mesh, and create the
-	 		* connectivities N->F
+	/** \brief  Create the quad defined by the four nodes to the mesh and create the
+	 		* four edges. Add all the connectivities N<->F, N<->E and E<->F.
          *
          * \param[in] AMesh the mesh
          * \param[in] n0_id first node id
@@ -147,9 +147,9 @@ class LIB_GMDS_CLAIRE_API Utils {
          *
          * \return  the id of the new face
 	 */
-	static TCellID GetOrCreateQuadAndConnectivitiesN2F(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
+	static TCellID GetOrCreateQuadAndConnectivities(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id);
 	/*----------------------------------------------------------------------------*/
-	/** @brief Create the hexa from the 8 nodes, and the connectivities
+	/** @brief Create the hexa from the 8 nodes, and all the connectivities
 	 	*
 	 	* \param[in] AMesh the mesh
   		* \param[in] n0 first node
