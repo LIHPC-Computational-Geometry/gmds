@@ -319,7 +319,66 @@ TEST(ClaireTestClass, Utils_CreateQuadAndConnectivitiesN2F)
 	ASSERT_EQ(n0_faces.size(), 1);
 
 }
-TEST(ClaireTestClass, Utils_isInTriangle)
+
+
+TEST(ClaireTestClass, Utils_CreateHexaNConnectivities)
+{
+	// Test
+	gmds::Mesh m(gmds::MeshModel(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
+																F2E | E2F | R2E | E2R | N2R | N2F | N2E )));
+
+	Node n0 = m.newNode({0,0,0});
+	Node n1 = m.newNode({1,0,0});
+	Node n2 = m.newNode({1,1,0});
+	Node n3 = m.newNode({0,1,0});
+
+	Node n4 = m.newNode({0,0,1});
+	Node n5 = m.newNode({1,0,1});
+	Node n6 = m.newNode({1,1,1});
+	Node n7 = m.newNode({0,1,1});
+
+	Node n8 = m.newNode({2,0,0});
+	Node n9 = m.newNode({2,1,0});
+
+	Node n10 = m.newNode({2,0,1});
+	Node n11 = m.newNode({2,1,1});
+
+	ASSERT_EQ(m.getNbFaces(), 0);
+	ASSERT_EQ(m.getNbNodes(), 12);
+
+	// Create a first hexa will all the connectivities
+	TCellID r1_id = math::Utils::CreateHexaNConnectivities(&m, n0, n1, n2, n3, n4, n5, n6, n7);
+
+	ASSERT_EQ(m.getNbEdges(), 12);
+	ASSERT_EQ(m.getNbFaces(), 6);
+	ASSERT_EQ(m.getNbRegions(), 1);
+	ASSERT_EQ((n0.get<Edge>()).size(), 3);
+	ASSERT_EQ((n0.get<Face>()).size(), 3);
+	ASSERT_EQ((n0.get<Region>()).size(), 1);
+	ASSERT_EQ((n1.get<Edge>()).size(), 3);
+	ASSERT_EQ((n1.get<Face>()).size(), 3);
+	ASSERT_EQ((n1.get<Region>()).size(), 1);
+	ASSERT_EQ((n8.get<Edge>()).size(), 0);
+	ASSERT_EQ((n8.get<Face>()).size(), 0);
+	ASSERT_EQ((n8.get<Region>()).size(), 0);
+
+	// Create a second hexa will all the connectivities
+	TCellID r2_id = math::Utils::CreateHexaNConnectivities(&m, n1, n8, n9, n2, n5, n10, n11, n6);
+
+	ASSERT_EQ(m.getNbEdges(), 20);
+	ASSERT_EQ(m.getNbFaces(), 11);
+	ASSERT_EQ(m.getNbRegions(), 2);
+	ASSERT_EQ((n0.get<Edge>()).size(), 3);
+	ASSERT_EQ((n0.get<Face>()).size(), 3);
+	ASSERT_EQ((n0.get<Region>()).size(), 1);
+	ASSERT_EQ((n1.get<Edge>()).size(), 4);
+	ASSERT_EQ((n1.get<Face>()).size(), 5);
+	ASSERT_EQ((n1.get<Region>()).size(), 2);
+	ASSERT_EQ((n8.get<Edge>()).size(), 3);
+	ASSERT_EQ((n8.get<Face>()).size(), 3);
+	ASSERT_EQ((n8.get<Region>()).size(), 1);
+
+}TEST(ClaireTestClass, Utils_isInTriangle)
 {
 	{
 		math::Point T1({0.0, 0.0, 0.0});
