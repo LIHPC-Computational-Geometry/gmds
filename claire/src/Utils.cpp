@@ -395,22 +395,94 @@ void Utils::CurveBlockEdgesReavel(Blocking2D* blocking2D, Mesh* m){
 
 
 /*------------------------------------------------------------------------*/
-TCellID Utils::CreateQuadAndConnectivitiesN2E(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id)
+TCellID Utils::GetOrCreateEdgeAndConnectivitiesN2E(Mesh *AMesh, TCellID n0_id, TCellID n1_id)
+{
+	Node n0 = AMesh->get<Node>(n0_id);
+	Node n1 = AMesh->get<Node>(n1_id);
+	TCellID e_id = math::Utils::CommonEdge(AMesh, n0_id, n1_id);
+	if (e_id==NullID)		// Then, the edge doesn't exist yet
+	{
+		Edge e = AMesh->newEdge(n0, n1);	// E->N (x2)
+		n0.add<Edge>(e);	// N->E
+		n1.add<Edge>(e);	// N->E
+		e_id = e.id();
+	}
+	return e_id;
+}
+/*------------------------------------------------------------------------*/
+TCellID Utils::GetOrCreateQuadAndConnectivitiesN2F(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id)
 {
 	Node n0 = AMesh->get<Node>(n0_id);
 	Node n1 = AMesh->get<Node>(n1_id);
 	Node n2 = AMesh->get<Node>(n2_id);
 	Node n3 = AMesh->get<Node>(n3_id);
-	Face f = AMesh->newQuad(n0_id, n1_id, n2_id, n3_id);
-	n0.add<Face>(f);
-	n1.add<Face>(f);
-	n2.add<Face>(f);
-	n3.add<Face>(f);
 
-	return f.id();
+	TCellID f_id = math::Utils::CommonFace(AMesh, n0_id, n1_id, n2_id, n3_id);
+	if (f_id == NullID)		// Then, the face doesn't exist yet
+	{
+		Face f = AMesh->newQuad(n0, n1, n2, n3);	// F->N (x4)
+		n0.add<Face>(f);	// N->F
+		n1.add<Face>(f);	// N->F
+		n2.add<Face>(f);	// N->F
+		n3.add<Face>(f);	// N->F
+		f_id = f.id();
+	}
+
+	return f_id;
 }
 /*------------------------------------------------------------------------*/
+TCellID Utils::CreateHexaNConnectivities(Mesh *Amesh, Node n0, Node n1, Node n2, Node n3, Node n4, Node n5, Node n6, Node n7)
+{
+	// Create the hex associated to the face
+	Region r = Amesh->newHex(n0, n1, n2, n3, n4, n5, n6, n7);	// R->N (x8)
+	n0.add<Region>(r);			// N->R (1/8)
+	n1.add<Region>(r);			// N->R
+	n2.add<Region>(r);			// N->R
+	n3.add<Region>(r);			// N->R
+	n4.add<Region>(r);			// N->R
+	n5.add<Region>(r);			// N->R
+	n6.add<Region>(r);			// N->R
+	n7.add<Region>(r);			// N->R (8/8)
 
+	// Create the 6 faces and connectivities N<->F (1x F->N and 4x N->F per face)
+	TCellID f0_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n0.id(), n1.id(), n2.id(), n3.id());
+	TCellID f1_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n4.id(), n5.id(), n6.id(), n7.id());
+	TCellID f2_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n0.id(), n1.id(), n5.id(), n4.id());
+	TCellID f3_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n1.id(), n2.id(), n6.id(), n5.id());
+	TCellID f4_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n2.id(), n3.id(), n7.id(), n6.id());
+	TCellID f5_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(Amesh, n3.id(), n0.id(), n4.id(), n7.id());
+
+	Face f0 = Amesh->get<Face>(f0_id);
+	Face f1 = Amesh->get<Face>(f1_id);
+	Face f2 = Amesh->get<Face>(f2_id);
+	Face f3 = Amesh->get<Face>(f3_id);
+	Face f4 = Amesh->get<Face>(f4_id);
+	Face f5 = Amesh->get<Face>(f5_id);
+
+	//----------------------------//
+	// Create the connectivities 	//
+	// 		R<->F x6					//
+	//----------------------------//
+
+	f0.add<Region>(r);	// F->R
+	r.add<Face>(f0);		// R->F
+
+	f1.add<Region>(r);	// F->R
+	r.add<Face>(f1);		// R->F
+
+	f2.add<Region>(r);	// F->R
+	r.add<Face>(f2);		// R->F
+
+	f3.add<Region>(r);	// F->R
+	r.add<Face>(f3);		// R->F
+
+	f4.add<Region>(r);	// F->R
+	r.add<Face>(f4);		// R->F
+
+	f5.add<Region>(r);	// F->R
+	r.add<Face>(f5);		// R->F
+}
+/*------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
 }  // namespace math

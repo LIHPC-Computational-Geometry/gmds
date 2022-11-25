@@ -3,6 +3,7 @@
 //
 
 /*------------------------------------------------------------------------*/
+#include <gmds/claire/Utils.h>
 #include <gmds/claire/AeroPipeline_3D.h>
 #include <gmds/claire/AeroBoundaries_3D.h>
 #include <gmds/claire/AeroExtrusion_3D.h>
@@ -124,8 +125,8 @@ AeroPipeline_3D::EcritureMaillage(){
 	// Ecriture du maillage généré
 	gmds::IGMeshIOService ioService(m_meshHex);
 	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::F);
-	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
 	vtkWriter.write(m_params.output_file);
 
 	// Ecriture du maillage initial (tetra)
@@ -147,6 +148,7 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 	// Special case of the C2_3D geometry  //
 	//	Surface Blocking 1						//
 	//-------------------------------------//
+	/*
 	{
 		Node n0 = m_meshHex->newNode({-0.5, -0.5, -0.5});
 		Node n1 = m_meshHex->newNode({-0.5, 0.5, -0.5});
@@ -158,53 +160,25 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 		Node n6 = m_meshHex->newNode({0.5, 0.5, 0.5});
 		Node n7 = m_meshHex->newNode({0.5, -0.5, 0.5});
 
-		Face f0 = m_meshHex->newQuad(n0, n1, n2, n3);     // F->N (x4)
-		n0.add<Face>(f0);
-		n1.add<Face>(f0);
-		n2.add<Face>(f0);
-		n3.add<Face>(f0);
-
-		Face f1 = m_meshHex->newQuad(n4, n5, n6, n7);
-		n4.add<Face>(f1);
-		n5.add<Face>(f1);
-		n6.add<Face>(f1);
-		n7.add<Face>(f1);
-
-		Face f2 = m_meshHex->newQuad(n0, n1, n5, n4);
-		n0.add<Face>(f2);
-		n1.add<Face>(f2);
-		n5.add<Face>(f2);
-		n4.add<Face>(f2);
-
-		Face f3 = m_meshHex->newQuad(n0, n3, n7, n4);
-		n0.add<Face>(f3);
-		n3.add<Face>(f3);
-		n7.add<Face>(f3);
-		n4.add<Face>(f3);
-
-		Face f4 = m_meshHex->newQuad(n3, n2, n6, n7);
-		n3.add<Face>(f4);
-		n2.add<Face>(f4);
-		n6.add<Face>(f4);
-		n7.add<Face>(f4);
-
-		Face f5 = m_meshHex->newQuad(n2, n1, n5, n6);
-		n2.add<Face>(f5);
-		n1.add<Face>(f5);
-		n5.add<Face>(f5);
-		n6.add<Face>(f5);
+		// Creates the faces
+		TCellID f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n0.id(), n1.id(), n2.id(), n3.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n4.id(), n5.id(), n6.id(), n7.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n0.id(), n1.id(), n5.id(), n4.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n0.id(), n3.id(), n7.id(), n4.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n3.id(), n2.id(), n6.id(), n7.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n2.id(), n1.id(), n5.id(), n6.id());
 
 		for (auto n_id : m_meshHex->nodes()) {
 			m_couche_id->set(n_id, 0);
 		}
 	}
-
+	*/
 
 	//-------------------------------------//
 	// Special case of the C2_3D geometry  //
 	//	Surface Blocking 2						//
 	//-------------------------------------//
-	/*
+
 	{
 		Node n1 = m_meshHex->newNode({-0.5, -0.5, -0.5});
 		Node n2 = m_meshHex->newNode({0.0, -0.5, -0.5});
@@ -241,49 +215,42 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 		Node n25 = m_meshHex->newNode({0.0, 0.5, 0.5});
 		Node n26 = m_meshHex->newNode({0.5, 0.5, 0.5});
 
+		// Create the faces
+		TCellID f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n1.id(), n2.id(), n5.id(), n4.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n2.id(), n3.id(), n6.id(), n5.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n4.id(), n5.id(), n8.id(), n7.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n5.id(), n6.id(), n9.id(), n8.id());
 
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n18.id(), n19.id(), n22.id(), n21.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n19.id(), n20.id(), n23.id(), n22.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n21.id(), n22.id(), n25.id(), n24.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n22.id(), n23.id(), n26.id(), n25.id());
 
-		Face f1 = m_meshHex->newQuad(n1, n2, n5, n4);     // F->N (x4)
-		n1.add<Face>(f1);
-		n2.add<Face>(f1);
-		n5.add<Face>(f1);
-		n4.add<Face>(f1);
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n1.id(), n2.id(), n11.id(), n10.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n2.id(), n3.id(), n12.id(), n11.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n10.id(), n11.id(), n19.id(), n18.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n11.id(), n12.id(), n20.id(), n19.id());
 
-		Face f2 = m_meshHex->newQuad(n2, n3, n6, n5);
-		n2.add<Face>(f2);
-		n3.add<Face>(f2);
-		n6.add<Face>(f2);
-		n5.add<Face>(f2);
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n3.id(), n6.id(), n14.id(), n12.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n6.id(), n9.id(), n17.id(), n14.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n12.id(), n14.id(), n23.id(), n20.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n14.id(), n17.id(), n26.id(), n23.id());
 
-		Face f3 = m_meshHex->newQuad(n4, n5, n8, n7);
-		n4.add<Face>(f3);
-		n5.add<Face>(f3);
-		n8.add<Face>(f3);
-		n7.add<Face>(f3);
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n9.id(), n8.id(), n16.id(), n17.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n8.id(), n7.id(), n15.id(), n16.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n17.id(), n16.id(), n25.id(), n26.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n16.id(), n15.id(), n24.id(), n25.id());
 
-		Face f4 = m_meshHex->newQuad(n5, n6, n9, n8);
-		n5.add<Face>(f4);
-		n6.add<Face>(f4);
-		n9.add<Face>(f4);
-		n8.add<Face>(f4);
-
-		Face f4 = m_meshHex->newQuad(n3, n2, n6, n7);
-		n3.add<Face>(f4);
-		n2.add<Face>(f4);
-		n6.add<Face>(f4);
-		n7.add<Face>(f4);
-
-		Face f5 = m_meshHex->newQuad(n2, n1, n5, n6);
-		n2.add<Face>(f5);
-		n1.add<Face>(f5);
-		n5.add<Face>(f5);
-		n6.add<Face>(f5);
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n4.id(), n1.id(), n10.id(), n13.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n7.id(), n4.id(), n13.id(), n15.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n13.id(), n10.id(), n18.id(), n21.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n15.id(), n13.id(), n21.id(), n24.id());
 
 		for (auto n_id : m_meshHex->nodes()) {
 			m_couche_id->set(n_id, 0);
 		}
 	}
-	*/
+
 
 
 }
