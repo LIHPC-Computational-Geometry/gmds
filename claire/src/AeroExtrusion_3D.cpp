@@ -99,6 +99,24 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_IN, dist_cible, A_distance, A_vectors);
 
+	// Init the multiple_info type
+	for (auto f_id:Front_IN.getFaces())
+	{
+		Face f = m_meshH->get<Face>(f_id);
+		std::vector<Node> f_nodes = f.get<Node>();
+
+		m_FaceInfo[f_id].next_ideal_nodes[f_nodes[0].id()] = map_new_nodes[f_nodes[0].id()];
+		m_FaceInfo[f_id].next_ideal_nodes[f_nodes[1].id()] = map_new_nodes[f_nodes[1].id()];
+		m_FaceInfo[f_id].next_ideal_nodes[f_nodes[2].id()] = map_new_nodes[f_nodes[2].id()];
+		m_FaceInfo[f_id].next_ideal_nodes[f_nodes[3].id()] = map_new_nodes[f_nodes[3].id()];
+
+		m_FaceInfo[f_id].next_nodes[f_nodes[0].id()] = map_new_nodes[f_nodes[0].id()];
+		m_FaceInfo[f_id].next_nodes[f_nodes[1].id()] = map_new_nodes[f_nodes[1].id()];
+		m_FaceInfo[f_id].next_nodes[f_nodes[2].id()] = map_new_nodes[f_nodes[2].id()];
+		m_FaceInfo[f_id].next_nodes[f_nodes[3].id()] = map_new_nodes[f_nodes[3].id()];
+
+	}
+
 	// Mise à jour de l'indice de couche
 	Variable<int>* couche_id = m_meshH->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	for (auto n_id:Front_IN.getNodes()){
@@ -109,6 +127,8 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	std::vector<TCellID> front_faces = Front_IN.getFaces();
 
 	Variable<int>* var_front_edges_classification = FrontEdgesClassification(Front_IN);
+
+	std::map<TCellID, int> test = getSingularNodes(Front_IN, var_front_edges_classification);
 
 	// Ajout des hex restants
 	for (auto f_id:front_faces){
@@ -154,6 +174,24 @@ AeroExtrusion_3D::Compute1stLayer(Front_3D A_Front_IN, Variable<double>* A_dista
 	std::cout << "---------> build layer: " << A_Front_IN.getFrontID()+1 << std::endl;
 
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(A_Front_IN, m_params_aero.delta_cl, A_distance, A_vectors);
+
+	// Init the multiple_info type
+	for (auto f_id:A_Front_IN.getFaces())
+	{
+		Face f = m_meshH->get<Face>(f_id);
+		std::vector<Node> f_nodes = f.get<Node>();
+
+		m_FaceInfo[f_id].next_ideal_nodes[f_nodes[0].id()] = map_new_nodes[f_nodes[0].id()];
+		m_FaceInfo[f_id].next_ideal_nodes[f_nodes[1].id()] = map_new_nodes[f_nodes[1].id()];
+		m_FaceInfo[f_id].next_ideal_nodes[f_nodes[2].id()] = map_new_nodes[f_nodes[2].id()];
+		m_FaceInfo[f_id].next_ideal_nodes[f_nodes[3].id()] = map_new_nodes[f_nodes[3].id()];
+
+		m_FaceInfo[f_id].next_nodes[f_nodes[0].id()] = map_new_nodes[f_nodes[0].id()];
+		m_FaceInfo[f_id].next_nodes[f_nodes[1].id()] = map_new_nodes[f_nodes[1].id()];
+		m_FaceInfo[f_id].next_nodes[f_nodes[2].id()] = map_new_nodes[f_nodes[2].id()];
+		m_FaceInfo[f_id].next_nodes[f_nodes[3].id()] = map_new_nodes[f_nodes[3].id()];
+
+	}
 
 	// Mise à jour de l'indice de couche
 	Variable<int>* couche_id = m_meshH->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
@@ -210,10 +248,17 @@ AeroExtrusion_3D::CreateNormalHexa(TCellID f_id, Front_3D &Front_IN, std::map<TC
 	Face f = m_meshH->get<Face>(f_id);
 	std::vector<Node> nodes = f.get<Node>();
 
+	/*
 	TCellID n0_id = map_new_nodes[nodes[0].id()] ;
 	TCellID n1_id = map_new_nodes[nodes[1].id()] ;
 	TCellID n2_id = map_new_nodes[nodes[2].id()] ;
 	TCellID n3_id = map_new_nodes[nodes[3].id()] ;
+	 */
+	TCellID n0_id = m_FaceInfo[f_id].next_nodes[nodes[0].id()] ;
+	TCellID n1_id = m_FaceInfo[f_id].next_nodes[nodes[1].id()] ;
+	TCellID n2_id = m_FaceInfo[f_id].next_nodes[nodes[2].id()] ;
+	TCellID n3_id = m_FaceInfo[f_id].next_nodes[nodes[3].id()] ;
+
 
 	Node n0 = m_meshH->get<Node>(n0_id);
 	Node n1 = m_meshH->get<Node>(n1_id);
@@ -225,6 +270,7 @@ AeroExtrusion_3D::CreateNormalHexa(TCellID f_id, Front_3D &Front_IN, std::map<TC
 	var_node_couche_id->set(n3_id, Front_IN.getFrontID()+1);
 
 	TCellID r_id = math::Utils::CreateHexaNConnectivities(m_meshH, nodes[0], nodes[1], nodes[2], nodes[3], n0, n1, n2, n3);
+
 
 	TCellID f_new_layer_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshH, n0.id(), n1.id(), n2.id(), n3.id());
 	var_face_couche_id->set(f_new_layer_id, Front_IN.getFrontID()+1);
@@ -245,7 +291,6 @@ AeroExtrusion_3D::SingleEdgeClassification(TCellID e_id, Front_3D &Front)
 	std::vector<Face> e_faces_on_front;
 	for (auto f:e_faces)
 	{
-		std::cout << "Face " << f.id() << std::endl;
 		if (var_face_couche_id->value(f.id()) == Front.getFrontID())
 		{
 			e_faces_on_front.push_back(f);
@@ -316,16 +361,12 @@ AeroExtrusion_3D::FrontEdgesClassification(Front_3D &Front)
 	{
 		Edge e = m_meshH->get<Edge>(e_id);
 		std::vector<Node> e_nodes = e.get<Node>() ;
-		std::cout << "---------------------------" << std::endl;
-		std::cout << "Node 1, " << e_nodes[0].id() << ", on layer: " << var_node_couche_id->value(e_nodes[0].id()) << std::endl;
-		std::cout << "Node 2, " << e_nodes[1].id() << ", on layer: " << var_node_couche_id->value(e_nodes[1].id()) << std::endl;
-		std::cout << "Front ID: " << Front.getFrontID() << std::endl;
 		if (var_node_couche_id->value(e_nodes[0].id()) == Front.getFrontID()
 		    && var_node_couche_id->value(e_nodes[1].id()) == Front.getFrontID())
 		{
 			// So, the edge is on the front.
 			int edge_classification = SingleEdgeClassification(e_id, Front);
-			std::cout << "Edge: " << e_id << ", Classified: " << edge_classification << std::endl;
+			//std::cout << "Edge: " << e_id << ", Classified: " << edge_classification << std::endl;
 			var_front_edges_classification->set(e_id, edge_classification);
 		}
 	}
@@ -333,3 +374,22 @@ AeroExtrusion_3D::FrontEdgesClassification(Front_3D &Front)
 	return var_front_edges_classification;
 
 }
+/*------------------------------------------------------------------------*/
+std::map<TCellID, int>
+AeroExtrusion_3D::getSingularNodes(Front_3D &AFront, Variable<int>* front_edges_classification)
+{
+	std::map<TCellID, int> sing_nodes;
+	for (auto n_id:AFront.getNodes())
+	{
+		std::vector<TCellID> n_ordered_edges = AFront.orderedFrontEdgesAroundNode(m_meshH, n_id);
+		//std::cout << "-----------------" << std::endl;
+		//std::cout << "Node " << n_id << std::endl;
+		for (auto e_id:n_ordered_edges)
+		{
+			Edge e = m_meshH->get<Edge>(e_id);
+			//std::cout << "edge " << e.get<Node>()[0].id() << ", " << e.get<Node>()[1].id() << std::endl;
+		}
+	}
+	return sing_nodes;
+}
+/*------------------------------------------------------------------------*/
