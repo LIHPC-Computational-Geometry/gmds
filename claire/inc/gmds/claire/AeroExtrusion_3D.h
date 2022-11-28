@@ -83,6 +83,21 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	 */
 	void CreateNormalHexa(TCellID f_id, Front_3D &Front_IN, std::map<TCellID, TCellID> map_new_nodes);
 	/*-------------------------------------------------------------------*/
+	/** @brief Classification of one edge of the front
+	 	* \param[in] e_id l'arête concernée
+	 	* \param[in] Front front en entrée
+		*
+		* \return the edge classification
+	 */
+	int SingleEdgeClassification(TCellID e_id, Front_3D &Front);
+	/*-------------------------------------------------------------------*/
+	/** @brief Classification of all the edges on the front
+	 	* \param[in] Front front en entrée
+		*
+		* \return the edge classification
+	 */
+	Variable<int>* FrontEdgesClassification(Front_3D &Front);
+	/*-------------------------------------------------------------------*/
  private:
 	/** triangular mesh we work on */
 	Mesh *m_meshT;

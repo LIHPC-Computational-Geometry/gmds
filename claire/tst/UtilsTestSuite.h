@@ -360,7 +360,6 @@ TEST(ClaireTestClass, Utils_CreateHexaNConnectivities)
 	// Create a first hexa will all the connectivities
 	TCellID r1_id = math::Utils::CreateHexaNConnectivities(&m, n0, n1, n2, n3, n4, n5, n6, n7);
 
-	ASSERT_EQ(r1_id, 1);
 	ASSERT_EQ(m.getNbEdges(), 12);
 	ASSERT_EQ(m.getNbFaces(), 6);
 	ASSERT_EQ(m.getNbRegions(), 1);
@@ -377,7 +376,6 @@ TEST(ClaireTestClass, Utils_CreateHexaNConnectivities)
 	// Create a second hexa will all the connectivities
 	TCellID r2_id = math::Utils::CreateHexaNConnectivities(&m, n1, n8, n9, n2, n5, n10, n11, n6);
 
-	ASSERT_EQ(r2_id, 2);
 	ASSERT_EQ(m.getNbEdges(), 20);
 	ASSERT_EQ(m.getNbFaces(), 11);
 	ASSERT_EQ(m.getNbRegions(), 2);
