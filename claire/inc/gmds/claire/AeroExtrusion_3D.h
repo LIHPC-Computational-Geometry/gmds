@@ -15,6 +15,7 @@ namespace gmds {
 /*----------------------------------------------------------------------------*/
 class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 {
+
  public:
 	/*--------------------------------------------------------------------*/
 	/** @enum  Status code for executing algorithms
@@ -40,6 +41,12 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	 */
 	STATUS execute();
 	/*-------------------------------------------------------------------*/
+
+	struct multiple_info{
+		TCellID     					f_id;
+		std::map<TCellID, TCellID> next_ideal_nodes;	// (f_node_id, next_ideal_n_id)
+		std::map<TCellID, TCellID> next_nodes;			// (f_node_id, next_n_id)
+	};
 
  private:
 	/*-------------------------------------------------------------------*/
@@ -97,6 +104,15 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	 */
 	Variable<int>* FrontEdgesClassification(Front_3D &Front);
 	/*-------------------------------------------------------------------*/
+	/** @brief Return, in a map, the singular nodes os the front, and the
+	 	* template to apply.
+	 	* \param[in] AFront the front
+   	* \param[in] front_edges_classification the front edges classification
+		*
+		* \return  a map with (TCellID, int) for the template to apply on each singular node
+	 */
+	std::map<TCellID, int> getSingularNodes(Front_3D &AFront, Variable<int>* front_edges_classification);
+	/*-------------------------------------------------------------------*/
  private:
 	/** triangular mesh we work on */
 	Mesh *m_meshT;
@@ -108,6 +124,8 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	Variable<double>* m_DistanceField;
 	/** Vector Field for extrusion */
 	Variable<math::Vector3d>* m_VectorField;
+	/** Infos sur les noeuds auxquels se connecter pour chaque face du front */
+	std::map<TCellID, multiple_info> m_FaceInfo;
 
 };
 /*----------------------------------------------------------------------------*/
