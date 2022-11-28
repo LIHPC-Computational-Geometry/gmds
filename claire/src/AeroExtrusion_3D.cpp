@@ -108,6 +108,8 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	std::vector<TCellID> front_nodes = Front_IN.getNodes();
 	std::vector<TCellID> front_faces = Front_IN.getFaces();
 
+	Variable<int>* var_front_edges_classification = FrontEdgesClassification(Front_IN);
+
 	// Ajout des hex restants
 	for (auto f_id:front_faces){
 		Face f = m_meshH->get<Face>(f_id);
@@ -230,3 +232,104 @@ AeroExtrusion_3D::CreateNormalHexa(TCellID f_id, Front_3D &Front_IN, std::map<TC
 
 }
 /*------------------------------------------------------------------------*/
+int
+AeroExtrusion_3D::SingleEdgeClassification(TCellID e_id, Front_3D &Front)
+{
+	int edge_classification(0);
+
+	Variable<int>* var_node_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	Variable<int>* var_face_couche_id = m_meshH->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
+
+	Edge e = m_meshH->get<Edge>(e_id);
+	std::vector<Face> e_faces = e.get<Face>();
+	std::vector<Face> e_faces_on_front;
+	for (auto f:e_faces)
+	{
+		std::cout << "Face " << f.id() << std::endl;
+		if (var_face_couche_id->value(f.id()) == Front.getFrontID())
+		{
+			e_faces_on_front.push_back(f);
+		}
+	}
+	// Each edge of the front is connected to two faces of the front.
+	// So the size of the vector e_faces_on_front is 2.
+
+	math::Vector3d n1 = e_faces_on_front[0].normal();
+	math::Vector3d n2 = e_faces_on_front[1].normal();
+
+	// Each face of the front is connected to a unique region
+	// So the size of the vector e_faces_on_front[0].get<Region>() is 1.
+	Region r1 = (e_faces_on_front[0].get<Region>())[0];
+	Region r2 = (e_faces_on_front[1].get<Region>())[0];
+
+	math::Point r1_center = r1.center();
+	math::Point r2_center = r2.center();
+
+	math::Point f1_center = e_faces_on_front[0].center();
+	math::Point f2_center = e_faces_on_front[1].center();
+
+	math::Vector3d v1 = (f1_center-r1.center()).normalize() ;
+	math::Vector3d v2 = (f2_center-r2.center()).normalize() ;
+
+	// Compute if the vectors n1 and n2 are well oriented.
+	if ( n1.dot(v1) < 0 )
+	{
+		n1=-n1;
+	}
+	if ( n2.dot(v2) < 0)
+	{
+		n2=-n2;
+	}
+
+	// Edge classification.
+	// 0 : Side
+	// 1 : Corner
+	// 2 : End
+	// 3 : Reversal
+
+	double angle = acos(n1.dot(n2));
+
+	if (M_PI/4.0 <= angle && angle < 3.0*M_PI/4.0)
+	{
+		edge_classification = 1;
+	}
+	else if (5.0*M_PI/4.0 <= angle && angle < 7.0*M_PI/4.0)
+	{
+		edge_classification = 2;
+	}
+	else if (3.0*M_PI/4.0 <= angle && angle < 5.0*M_PI/4.0)
+	{
+		edge_classification = 3;
+	}
+
+	return edge_classification;
+}
+/*------------------------------------------------------------------------*/
+Variable<int>*
+AeroExtrusion_3D::FrontEdgesClassification(Front_3D &Front)
+{
+	Variable<int>* var_front_edges_classification = m_meshH->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
+	Variable<int>* var_node_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	Variable<int>* var_face_couche_id = m_meshH->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
+
+	for (auto e_id:m_meshH->edges())
+	{
+		Edge e = m_meshH->get<Edge>(e_id);
+		std::vector<Node> e_nodes = e.get<Node>() ;
+		std::cout << "---------------------------" << std::endl;
+		std::cout << "Node 1, " << e_nodes[0].id() << ", on layer: " << var_node_couche_id->value(e_nodes[0].id()) << std::endl;
+		std::cout << "Node 2, " << e_nodes[1].id() << ", on layer: " << var_node_couche_id->value(e_nodes[1].id()) << std::endl;
+		std::cout << "Front ID: " << Front.getFrontID() << std::endl;
+		if (var_node_couche_id->value(e_nodes[0].id()) == Front.getFrontID()
+		    && var_node_couche_id->value(e_nodes[1].id()) == Front.getFrontID())
+		{
+			// So, the edge is on the front.
+			int edge_classification = SingleEdgeClassification(e_id, Front);
+			std::cout << "Edge: " << e_id << ", Classified: " << edge_classification << std::endl;
+			var_front_edges_classification->set(e_id, edge_classification);
+		}
+	}
+
+	return var_front_edges_classification;
+
+}
