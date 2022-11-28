@@ -125,8 +125,8 @@ AeroPipeline_3D::EcritureMaillage(){
 	// Ecriture du maillage généré
 	gmds::IGMeshIOService ioService(m_meshHex);
 	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::R);
-	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write(m_params.output_file);
 
 	// Ecriture du maillage initial (tetra)
@@ -148,7 +148,6 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 	// Special case of the C2_3D geometry  //
 	//	Surface Blocking 1						//
 	//-------------------------------------//
-	/*
 	{
 		Node n0 = m_meshHex->newNode({-0.5, -0.5, -0.5});
 		Node n1 = m_meshHex->newNode({-0.5, 0.5, -0.5});
@@ -161,24 +160,23 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 		Node n7 = m_meshHex->newNode({0.5, -0.5, 0.5});
 
 		// Creates the faces
-		TCellID f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n0.id(), n1.id(), n2.id(), n3.id());
-		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n4.id(), n5.id(), n6.id(), n7.id());
-		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n0.id(), n1.id(), n5.id(), n4.id());
-		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n0.id(), n3.id(), n7.id(), n4.id());
-		f_id = math::Utils::GetOrCreateQuadAndConnectivitiesN2F(m_meshHex, n3.id(), n2.id(), n6.id(), n7.id());
+		TCellID f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n0.id(), n1.id(), n2.id(), n3.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n4.id(), n5.id(), n6.id(), n7.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n0.id(), n1.id(), n5.id(), n4.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n0.id(), n3.id(), n7.id(), n4.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n3.id(), n2.id(), n6.id(), n7.id());
 		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n2.id(), n1.id(), n5.id(), n6.id());
 
 		for (auto n_id : m_meshHex->nodes()) {
 			m_couche_id->set(n_id, 0);
 		}
 	}
-	*/
 
 	//-------------------------------------//
 	// Special case of the C2_3D geometry  //
 	//	Surface Blocking 2						//
 	//-------------------------------------//
-
+	/*
 	{
 		Node n1 = m_meshHex->newNode({-0.5, -0.5, -0.5});
 		Node n2 = m_meshHex->newNode({0.0, -0.5, -0.5});
@@ -250,6 +248,7 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 			m_couche_id->set(n_id, 0);
 		}
 	}
+	 */
 
 
 
