@@ -42,3 +42,68 @@ void Front_3D::addFaceId(TCellID f_id){
 	m_facesId.push_back(f_id);
 }
 /*-------------------------------------------------------------------*/
+std::vector<TCellID>
+Front_3D::orderedFrontEdgesAroundNode(Mesh *m, TCellID n_id)
+{
+	std::vector<TCellID> n_ordered_edges_on_Front;
+
+	Node n = m->get<Node>(n_id);
+	std::vector<Edge> n_edges = n.get<Edge>();
+	Variable<int>* var_node_couche_id = m->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+
+	// Get the front edges connected to n
+	std::vector<Edge> n_edges_on_Front;
+	for (auto e:n_edges)
+	{
+		Node n_opp = e.getOppositeNode(n);
+		if (var_node_couche_id->value(n_opp.id()) == m_FrontID)
+		{
+			n_edges_on_Front.push_back(e);
+		}
+	}
+
+	int mark_isTreated = m->newMark<Face>();
+	n_ordered_edges_on_Front.push_back(n_edges_on_Front[0].id());	// Choose a first edge, and a first face
+
+	for (int i=1;i<=n_edges_on_Front.size()-1;i++)
+	{
+		TCellID e_id = n_ordered_edges_on_Front[n_ordered_edges_on_Front.size()-1];
+		Edge e = m->get<Edge>(e_id);
+		Node n_opp = e.getOppositeNode(n_id);
+
+		Face f;
+		std::vector<Face> e_faces = e.get<Face>() ;
+		for (auto f_loc:e_faces)
+		{
+			std::vector<Node> f_loc_nodes = f_loc.get<Node>();
+
+			if (!m->isMarked(f_loc, mark_isTreated)
+			    && var_node_couche_id->value(f_loc_nodes[0].id()) == m_FrontID
+			    && var_node_couche_id->value(f_loc_nodes[1].id()) == m_FrontID
+			    && var_node_couche_id->value(f_loc_nodes[2].id()) == m_FrontID
+			    && var_node_couche_id->value(f_loc_nodes[3].id()) == m_FrontID)
+			{
+				f = f_loc;
+			}
+		}
+		m->mark(f, mark_isTreated);
+
+		std::vector<Edge> f_edges = f.get<Edge>();
+		for (auto e_loc:f_edges)
+		{
+			std::vector<Node> e_loc_nodes = e_loc.get<Node>();
+			if ( (e_loc_nodes[0].id() == n_id && e_loc_nodes[1].id() != n_opp.id() )
+			    || (e_loc_nodes[1].id() == n_id && e_loc_nodes[0].id() != n_opp.id() ) )
+			{
+				n_ordered_edges_on_Front.push_back(e_loc.id());
+			}
+		}
+
+	}
+
+	m->unmarkAll<Face>(mark_isTreated);
+	m->freeMark<Face>(mark_isTreated);
+
+	return n_ordered_edges_on_Front;
+}
+/*-------------------------------------------------------------------*/
