@@ -445,7 +445,7 @@ TCellID Utils::GetOrCreateQuadAndConnectivities(Mesh *AMesh, TCellID n0_id, TCel
 		e0.add<Face>(f);	// E->F
 		e1.add<Face>(f);	// E->F
 		e2.add<Face>(f);	// E->F
-		e2.add<Face>(f);	// E->F
+		e3.add<Face>(f);	// E->F
 
 	}
 
