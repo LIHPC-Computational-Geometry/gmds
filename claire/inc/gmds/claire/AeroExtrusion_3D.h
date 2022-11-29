@@ -51,7 +51,9 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	struct sing_edge_info{
 		TCellID     					e_id;
 		int 								singularity_type;
-		std::map<TCellID, TCellID> next_nodes;			// (e_node_id, next_n_id)
+		std::map<TCellID, bool>		CORNER_n_face_created;
+		std::map<std::pair<TCellID, TCellID>, TCellID> CORNER_next_nodes;			// ((f_adj_id, e_node_id), next_n_id)
+		std::map<TCellID, TCellID> CORNER_diag_next_node;
 	};
 
  private:
@@ -86,15 +88,6 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 		* \return  the first front computed
 	 */
 	Front_3D Compute1stLayer(Front_3D A_Front_IN, Variable<double>* A_distance, Variable<math::Vector3d>* A_vectors);
-	/*-------------------------------------------------------------------*/
-	/** @brief Créé un hax normal sur la couche à partir d'une face
-	 	* \param[in] f_id la face concernée
-	 	* \param[in] Front_IN front en entrée
-	 	* \param[in] map_new_nodes map with the ideal next nodes of the front
-		*
-		* \return
-	 */
-	void CreateNormalHexa(TCellID f_id, Front_3D &Front_IN, std::map<TCellID, TCellID> map_new_nodes);
 	/*-------------------------------------------------------------------*/
 	/** @brief Classification of one edge of the front
 	 	* \param[in] e_id l'arête concernée
@@ -147,6 +140,15 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	 */
 	TCellID TemplateEdgeCorner(Front_3D &AFront, TCellID e_id);
 	/*-------------------------------------------------------------------*/
+	/** @brief Créé un hex normal sur la couche à partir d'une face
+	 	* \param[in] f_id la face concernée
+	 	* \param[in] Front_IN front en entrée
+	 	* \param[in] map_new_nodes map with the ideal next nodes of the front
+		*
+		* \return
+	 */
+	void TemplateFace(TCellID f_id, Front_3D &Front_IN, std::map<TCellID, TCellID> map_new_nodes);
+	/*-------------------------------------------------------------------*/
  private:
 	/** triangular mesh we work on */
 	Mesh *m_meshT;
@@ -163,7 +165,7 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	/** Infos sur les noeuds auxquels se connecter pour chaque face du front */
 	std::map<TCellID, multiple_info> m_FaceInfo;
 	/** Infos sur les noeuds auxquels se connecter pour chaque edge du front */
-	std::map<TCellID, multiple_info> m_EdgeInfo;
+	std::map<TCellID, sing_edge_info> m_EdgeInfo;
 
 };
 /*----------------------------------------------------------------------------*/

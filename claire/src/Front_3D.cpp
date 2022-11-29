@@ -130,3 +130,56 @@ Front_3D::edgeFacesOnFront(Mesh *m, TCellID e_id)
 	return e_faces_on_Front;
 }
 /*-------------------------------------------------------------------*/
+math::Vector3d
+Front_3D::outgoingNormal(Mesh *m, TCellID f_id)
+{
+	Face f = m->get<Face>(f_id);
+	math::Vector3d f_normal = f.normal();
+
+	// Each face of the front is connected to a unique region
+	// So the size of the vector f.get<Region>() is 1.
+	Region r = (f.get<Region>())[0];
+
+	math::Point r_center = r.center();
+	math::Point f_center = f.center();
+	math::Vector3d v_in_volume = (f_center-r.center()).normalize() ;
+
+	// Compute if the vectors n1 and n2 are well oriented.
+	if ( f_normal.dot(v_in_volume) < 0 )
+	{
+		f_normal=-f_normal;
+	}
+
+	return f_normal;
+}
+/*-------------------------------------------------------------------*/
+TCellID
+Front_3D::adjacentFaceOnFront(Mesh *m, TCellID f_id, TCellID e_id)
+{
+	TCellID f_adj_id(NullID);
+
+	Face f = m->get<Face>(f_id);
+	std::vector<Edge> f_edges = f.get<Edge>();
+
+	std::vector<TCellID> e_adj_faces = (*this).edgeFacesOnFront(m, e_id);		// Two faces in this vector
+
+	Face f0 = m->get<Face>(e_adj_faces[0]);
+	std::vector<Edge> f0_edges = f0.get<Edge>();
+	for (auto e_f:f_edges)
+	{
+		for (auto e0:f0_edges)
+		{
+			if (e_f.id()==e0.id())
+			{
+				f_adj_id = f0.id() ;
+			}
+		}
+	}
+
+	if (f_adj_id == NullID)
+	{
+		f_adj_id = e_adj_faces[1];
+	}
+
+	return f_adj_id;
+}

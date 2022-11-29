@@ -76,6 +76,24 @@ class LIB_GMDS_CLAIRE_API Front_3D {
 	 */
 	std::vector<TCellID> edgeFacesOnFront(Mesh *m, TCellID e_id);
 	/*-------------------------------------------------------------------*/
+	/** @brief Returns the outgoing normal to a face on the front.
+	 * 	@param m	the mesh
+	 *		@param f_id id of the face
+	 *
+	 *		\return  a 3d vector
+	 */
+	math::Vector3d outgoingNormal(Mesh *m, TCellID f_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Returns the face of the front adjacent to the face f_id
+	 * 	and the edge e_id.
+	 * 	@param m	the mesh
+	 *		@param f_id id of the face
+	 *		@param e_id id of the edge
+	 *
+	 *		\return  a 3d vector
+	 */
+	TCellID adjacentFaceOnFront(Mesh *m, TCellID f_id, TCellID e_id);
+	/*-------------------------------------------------------------------*/
 
  private:
 	/** Id du front, de la couche */
