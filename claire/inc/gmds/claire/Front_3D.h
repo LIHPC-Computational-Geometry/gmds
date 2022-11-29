@@ -68,6 +68,14 @@ class LIB_GMDS_CLAIRE_API Front_3D {
 	 */
 	std::vector<TCellID> orderedFrontEdgesAroundNode(Mesh *m, TCellID n_id);
 	/*-------------------------------------------------------------------*/
+	/** @brief Returns the two front faces around an edge.
+	 * 	@param m	the mesh
+	 *		@param e_id id of the edge
+	 *
+	 *		\return  a vector of the two faces id
+	 */
+	std::vector<TCellID> edgeFacesOnFront(Mesh *m, TCellID e_id);
+	/*-------------------------------------------------------------------*/
 
  private:
 	/** Id du front, de la couche */
