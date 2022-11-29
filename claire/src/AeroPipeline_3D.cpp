@@ -148,7 +148,7 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 	// Special case of the C2_3D geometry  //
 	//	Surface Blocking 1						//
 	//-------------------------------------//
-	/*
+
 	{
 		Node n0 = m_meshHex->newNode({-0.5, -0.5, -0.5});
 		Node n1 = m_meshHex->newNode({-0.5, 0.5, -0.5});
@@ -172,13 +172,13 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 			m_couche_id->set(n_id, 0);
 		}
 	}
-	*/
+
 
 	//-------------------------------------//
 	// Special case of the C2_3D geometry  //
 	//	Surface Blocking 2						//
 	//-------------------------------------//
-
+	/*
 	{
 		Node n1 = m_meshHex->newNode({-0.5, -0.5, -0.5});
 		Node n2 = m_meshHex->newNode({0.0, -0.5, -0.5});
@@ -250,7 +250,7 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 			m_couche_id->set(n_id, 0);
 		}
 	}
-
+	*/
 
 
 
