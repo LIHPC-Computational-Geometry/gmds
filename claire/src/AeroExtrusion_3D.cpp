@@ -130,6 +130,14 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 
 	std::map<TCellID, int> test = getSingularNodes(Front_IN, var_front_edges_classification);
 
+	for (auto singu:test)
+	{
+		TCellID n_id = singu.first ;
+		int singu_type = singu.second;
+		TCellID r_id = hexaInsertion(Front_IN, n_id, map_new_nodes);
+	}
+
+
 	// Ajout des hex restants
 	for (auto f_id:front_faces){
 		Face f = m_meshH->get<Face>(f_id);
@@ -248,12 +256,6 @@ AeroExtrusion_3D::CreateNormalHexa(TCellID f_id, Front_3D &Front_IN, std::map<TC
 	Face f = m_meshH->get<Face>(f_id);
 	std::vector<Node> nodes = f.get<Node>();
 
-	/*
-	TCellID n0_id = map_new_nodes[nodes[0].id()] ;
-	TCellID n1_id = map_new_nodes[nodes[1].id()] ;
-	TCellID n2_id = map_new_nodes[nodes[2].id()] ;
-	TCellID n3_id = map_new_nodes[nodes[3].id()] ;
-	 */
 	TCellID n0_id = m_FaceInfo[f_id].next_nodes[nodes[0].id()] ;
 	TCellID n1_id = m_FaceInfo[f_id].next_nodes[nodes[1].id()] ;
 	TCellID n2_id = m_FaceInfo[f_id].next_nodes[nodes[2].id()] ;
@@ -382,14 +384,119 @@ AeroExtrusion_3D::getSingularNodes(Front_3D &AFront, Variable<int>* front_edges_
 	for (auto n_id:AFront.getNodes())
 	{
 		std::vector<TCellID> n_ordered_edges = AFront.orderedFrontEdgesAroundNode(m_meshH, n_id);
-		//std::cout << "-----------------" << std::endl;
-		//std::cout << "Node " << n_id << std::endl;
+		int compteur_corner(0);
 		for (auto e_id:n_ordered_edges)
 		{
 			Edge e = m_meshH->get<Edge>(e_id);
-			//std::cout << "edge " << e.get<Node>()[0].id() << ", " << e.get<Node>()[1].id() << std::endl;
+			if (front_edges_classification->value(e_id) == 1)
+			{
+				compteur_corner +=1;
+			}
+		}
+		if (compteur_corner == 3)
+		{
+			sing_nodes[n_id] = 1;
 		}
 	}
 	return sing_nodes;
 }
 /*------------------------------------------------------------------------*/
+std::map<TCellID, int>
+AeroExtrusion_3D::getSingularEdges(Front_3D &AFront, Variable<int>* front_edges_classification, int mark_singEdgesTreated)
+{
+	std::map<TCellID, int> sing_edges;
+	Variable<int>* var_node_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	for (auto e_id:m_meshH->edges())
+	{
+		Edge e = m_meshH->get<Edge>(e_id);
+		std::vector<Node> e_nodes = e.get<Node>();
+		if (var_node_couche_id->value(e_nodes[0].id()) == AFront.getFrontID()
+		    && var_node_couche_id->value(e_nodes[1].id()) == AFront.getFrontID())
+		{
+			if ( !m_meshH->isMarked(e, mark_singEdgesTreated)
+			    && front_edges_classification->value(e_id) > 0)
+			{
+				sing_edges[e_id] = front_edges_classification->value(e_id);
+			}
+		}
+
+	}
+	return sing_edges;
+}
+/*------------------------------------------------------------------------*/
+TCellID
+AeroExtrusion_3D::hexaInsertion(Front_3D &AFront, TCellID n_id, std::map<TCellID, TCellID> map_new_nodes)
+{
+	//std::cout << "Insertion au noeud " << n_id << std::endl;
+	TCellID r_id;
+
+	std::vector<TCellID> n_ordered_edges = AFront.orderedFrontEdgesAroundNode(m_meshH, n_id);
+
+	Edge e_adj_1 = m_meshH->get<Edge>(n_ordered_edges[0]);
+	Edge e_adj_2 = m_meshH->get<Edge>(n_ordered_edges[1]);
+	Edge e_adj_3 = m_meshH->get<Edge>(n_ordered_edges[2]);
+
+	Node n = m_meshH->get<Node>(n_id);
+	Node n6 = m_meshH->get<Node>(map_new_nodes[n_id]);
+
+	Node n_adj_1 = e_adj_1.getOppositeNode(n);
+	Node n_adj_2 = e_adj_2.getOppositeNode(n);
+	Node n_adj_3 = e_adj_3.getOppositeNode(n);
+
+	math::Vector3d v1 = n_adj_1.point()-n.point() ;
+	math::Vector3d v2 = n_adj_2.point()-n.point() ;
+	math::Vector3d v3 = n_adj_3.point()-n.point() ;
+
+	math::Point p1 = n.point() + -v1 ;
+	math::Point p3 = n.point() + (n.point()-n_adj_2.point()) ;
+	math::Point p4 = n.point() + (n.point()-n_adj_3.point()) ;
+	//math::Point p2 = n.point() + (p1-p3).norm()*(p1-n.point() + p3-n.point()).normalize();
+	math::Point p2 = n6.point() + (n_adj_3.point()-n.point()) ;
+	math::Point p5 = n.point() + (p4-n.point()) + (p1-n.point()) ;
+	math::Point p7 = n.point() + (p4-n.point()) + (p3-n.point()) ;
+
+	Node n1 = m_meshH->newNode(p1);
+	Node n2 = m_meshH->newNode(p2);
+	Node n3 = m_meshH->newNode(p3);
+	Node n4 = m_meshH->newNode(p4);
+	Node n5 = m_meshH->newNode(p5);
+	Node n7 = m_meshH->newNode(p7);
+
+	// Update the layer ids
+	Variable<int>* var_node_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	var_node_couche_id->set(n1.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n2.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n3.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n4.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n5.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n7.id(), AFront.getFrontID()+1);
+
+	r_id = math::Utils::CreateHexaNConnectivities(m_meshH, n, n1, n2, n3, n4, n5, n6, n7);
+
+	// Update the faces information of the front
+	TCellID f_1 = math::Utils::CommonFace3Nodes(m_meshH, n_id, n_adj_1.id(), n_adj_2.id());
+	TCellID f_2 = math::Utils::CommonFace3Nodes(m_meshH, n_id,  n_adj_2.id(), n_adj_3.id());
+	TCellID f_3 = math::Utils::CommonFace3Nodes(m_meshH, n_id,  n_adj_3.id(), n_adj_1.id());
+
+	m_FaceInfo[f_1].next_nodes[n_id] = n4.id() ;
+	m_FaceInfo[f_2].next_nodes[n_id] = n1.id() ;
+	m_FaceInfo[f_3].next_nodes[n_id] = n3.id() ;
+
+	// Update the faces layer id
+	Variable<int>* var_face_couche_id = m_meshH->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
+	TCellID f_1_new_id = math::Utils::CommonFace3Nodes(m_meshH, n4.id(), n5.id(), n6.id());
+	TCellID f_2_new_id = math::Utils::CommonFace3Nodes(m_meshH, n1.id(),  n2.id(), n5.id());
+	TCellID f_3_new_id = math::Utils::CommonFace3Nodes(m_meshH, n2.id(),  n3.id(), n6.id());
+	var_face_couche_id->set(f_1_new_id, AFront.getFrontID()+1);
+	var_face_couche_id->set(f_2_new_id, AFront.getFrontID()+1);
+	var_face_couche_id->set(f_3_new_id, AFront.getFrontID()+1);
+
+	return r_id;
+}
+/*------------------------------------------------------------------------*/
+TCellID
+AeroExtrusion_3D::TemplateEdgeCorner(Front_3D &AFront, TCellID e_id)
+{
+	TCellID r_id(NullID);
+	return r_id;
+}
