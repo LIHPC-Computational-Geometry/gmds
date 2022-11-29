@@ -107,3 +107,26 @@ Front_3D::orderedFrontEdgesAroundNode(Mesh *m, TCellID n_id)
 	return n_ordered_edges_on_Front;
 }
 /*-------------------------------------------------------------------*/
+std::vector<TCellID>
+Front_3D::edgeFacesOnFront(Mesh *m, TCellID e_id)
+{
+	std::vector<TCellID> e_faces_on_Front;
+
+	Edge e = m->get<Edge>(e_id);
+	std::vector<Face> e_faces = e.get<Face>();
+	for (auto f:e_faces)
+	{
+		for (auto f_front_id:m_facesId)
+		{
+			if (f.id()==f_front_id)
+			{
+				e_faces_on_Front.push_back(f.id());
+			}
+		}
+	}
+
+	// e_faces_on_Front is supposed to be sized 2
+
+	return e_faces_on_Front;
+}
+/*-------------------------------------------------------------------*/
