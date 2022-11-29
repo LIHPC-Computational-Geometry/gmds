@@ -6044,6 +6044,9 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
         else if((*BND_SURFACE_COLOR)[node] != 0){dim_Ni = 2; index_Ni = (*BND_SURFACE_COLOR)[node];}
         else{dim_Ni = 4;}
 
+        std::cout << "node -> " << node << std::endl;
+        std::cout << "  dim_Ni -> " << dim_Ni << std::endl;
+        std::cout << "  index_Ni -> " << index_Ni << std::endl;
         //if(dim_Ni != 0)
         {
           SimplicesNode simpliceNode(this, node);

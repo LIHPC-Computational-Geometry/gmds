@@ -73,12 +73,15 @@ void MetricFFPointgeneration::execute()
 
 
   const gmds::BitVector& m_nodes = m_nodesMesh.getBitVectorNodes();
-  std::cout << "m_nodes.capacity() -> " << m_nodes.capacity() << std::endl;
   for(unsigned int n = 0 ; n < m_nodes.capacity() ; n++)
   {
     if(m_nodes[n] != 0)
+    {
       if((*BND_SURFACE_COLOR)[n] != 0)
+      {
         nodeAdded.push_back(n);
+      }
+    }
   }
 
   while(nodeAdded.size() != 0)
@@ -91,7 +94,7 @@ void MetricFFPointgeneration::execute()
   vtkWriterVOLUME.write("metricFF_VOLUME.vtk");
   std::cout << "VOLUME NODES CREATED " << std::endl;
 
-  for(auto const & d : m_nodeStructure)
+  /*for(auto const & d : m_nodeStructure)
   {
     std::vector<TInt> nodes{};
     for(auto const & n : d.second)
@@ -105,17 +108,17 @@ void MetricFFPointgeneration::execute()
     {
       m_nodesMesh.addTriangle(d.first,n,n);
     }
-  }
+  }*/
 
-  const gmds::BitVector& nodesMesh = m_nodesMesh.getBitVectorNodes();
+  /*const gmds::BitVector& nodesMesh = m_nodesMesh.getBitVectorNodes();
   for(unsigned int n = 0 ; n < nodesMesh.capacity() ; n++)
   {
     if(nodesMesh[n] != 0)
     {
       m_nodesMesh.addTetraedre(n,n,n,n);
     }
-  }
-  std::set<std::vector<TInt>> hexs{};
+  }*/
+  /*std::set<std::vector<TInt>> hexs{};
   computeHexa(hexs);
   std::cout << "hex size -> " << hexs.size() << std::endl;
 
@@ -123,7 +126,7 @@ void MetricFFPointgeneration::execute()
   gmds::VTKWriter vtkWriterGRID(&ioServiceGRID);
   vtkWriterGRID.setCellOptions(gmds::N|gmds::F);
   vtkWriterGRID.setDataOptions(gmds::N|gmds::F);
-  vtkWriterGRID.write("metricFF_Grid.vtk");
+  vtkWriterGRID.write("metricFF_Grid.vtk");*/
 }
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::correctNodeLabel()
@@ -503,6 +506,10 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
 
     if(!surfaceFlag)
     {
+      if(node == 1176)
+      {
+        std::cout << "newNodeId -> " << newNodeId << std::endl;
+      }
       v.push_back(newNodeId);
       if(v.size() == 6)
       {

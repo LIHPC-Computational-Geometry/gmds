@@ -67,9 +67,36 @@ int main(int argc, char* argv[])
 
   Octree oc(&simplexMesh, 50);
   simplexMesh.setOctree(&oc);
-  Variable<int>* BND_VERTEX_COLOR  = simplexMesh.getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
-  Variable<int>* BND_CURVE_COLOR   = simplexMesh.getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
-  Variable<int>* BND_SURFACE_COLOR = simplexMesh.getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+
+  Variable<int>* BND_VERTEX_COLOR  = nullptr;
+  Variable<int>* BND_CURVE_COLOR   = nullptr;
+  Variable<int>* BND_SURFACE_COLOR = nullptr;
+  Variable<Eigen::Matrix3d>* METRIC_NODES = nullptr;;
+
+  try{
+    BND_VERTEX_COLOR  = simplexMesh.getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+    BND_CURVE_COLOR   = simplexMesh.getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+    BND_SURFACE_COLOR = simplexMesh.getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+  }catch(gmds::GMDSException e)
+  {
+    throw GMDSException(e);
+  }
+
+  try{
+    METRIC_NODES = simplexMesh.getVariable<Eigen::Matrix3d,SimplicesNode>("NODE_METRIC");
+  }catch(gmds::GMDSException e)
+  {
+    METRIC_NODES = simplexMesh.newVariable<Eigen::Matrix3d,SimplicesNode>("NODE_METRIC");
+    const gmds::BitVector& nodeBitVectorMesh = simplexMesh.getBitVectorNodes();
+    for(unsigned int n = 0 ; n < nodeBitVectorMesh.capacity() ; n++)
+    {
+      if(nodeBitVectorMesh[n] != 0)
+      {
+        simplexMesh.setAnalyticMetric(n);
+      }
+    }
+  }
+
 
   //adding a metric to the mesh for the delaunay expansion ctriterion
   Variable<Eigen::Matrix3d>* var = simplexMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("metric");
@@ -106,7 +133,6 @@ int main(int argc, char* argv[])
   {
     if(nodesToAddIds[idx] != 0)
     {
-      std::cout << "idx -> " << idx << std::endl;
       const gmds::BitVector & nodesIds = simplexMesh.getBitVectorNodes();
       math::Point point = SimplicesNode(&simplexNodes, idx).getCoords();
 
@@ -161,16 +187,16 @@ int main(int argc, char* argv[])
   vtkWriterDI.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterDI.write(fDI);
   std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure = simplexMesh.getEdgeStructure();
-  for(auto const dataBis : edgeStructure)
+  /*for(auto const dataBis : edgeStructure)
   {
     std::cout << "data --> " << dataBis.first << " | [" << dataBis.second.first << " : " << dataBis.second.second << "]" << std::endl;
-  }
+  }*/
   //==================================================================
   // MESH VALIDITY CHECK
   //==================================================================
   std::cout << "MESH VALIDITY CHECK" << std::endl;
-  simplexMesh.checkMesh();
-  return 0;
+  //simplexMesh.checkMesh();
+  //return 0;
   start = std::clock();
   std::vector<TInt> deletedNodes{};
   unsigned int tmp = 0;
@@ -216,7 +242,7 @@ int main(int argc, char* argv[])
   vtkWriterER.setCellOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterER.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterER.write(fER);
-  //return 0;
+  return 0;
 
   ///////////////////////////EDGE BUILDER START HERE///////////////////////////
   std::multimap<TInt, TInt> edges{};
