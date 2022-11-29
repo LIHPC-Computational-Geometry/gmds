@@ -503,6 +503,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
                                         const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const std::multimap<TInt, TInt>& facesAlreadyBuilt,
                                          const std::vector<TSimplexID> markedSimplex)
 {
+  std::cout << "cavityEnlargement" <<std::endl;
   auto my_make = [=](TInt nodeA, TInt nodeB){
     return (nodeA > nodeB)? std::make_pair(nodeB, nodeA):std::make_pair(nodeA, nodeB);
   };
@@ -820,6 +821,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
 
 
     if(firstTriangles.size() == 0){
+      std::cout << "firstTriangles.size() -> " << firstTriangles.size() << std::endl;
       return false; //the node was not find on any triangle surface (due to epsilon)
     }
 
@@ -876,23 +878,7 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
         TInt nodeB = triangle.getNodes()[(edge + 2) % sizeEdge];
         TInt nodeC = triangle.getNodes()[(edge + 3) % sizeEdge];
 
-        /*std::cout << "node " << node.getGlobalNode() << std::endl;
-        std::cout << "nodeA -> " << nodeA << std::endl;
-        std::cout << "nodeB -> " << nodeB << std::endl;
-        std::cout << "NODE_C -> " << nodeC << std::endl;
-        std::cout << "oppositeTriangle -> " << oppositeTriangle << std::endl;
 
-        if(nodeA == 6 && nodeB == 50)
-        {
-          std::cout << SimplicesTriangle(m_simplex_mesh, oppositeTriangle) << std::endl;
-          std::cout << SimplicesCell(m_simplex_mesh, SimplicesTriangle(m_simplex_mesh, oppositeTriangle).neighborTetra()[0]) << std::endl;
-
-          gmds::ISimplexMeshIOService ioServiceMesh(m_simplex_mesh);
-          gmds::VTKWriter vtkWriterCS(&ioServiceMesh);
-          vtkWriterCS.setCellOptions(gmds::N|gmds::R|gmds::F);
-          vtkWriterCS.setDataOptions(gmds::N|gmds::R|gmds::F);
-          vtkWriterCS.write("ComputeSlicing_EdgeRemove_TEST.vtk");
-        }*/
         if(nodeA == node.getGlobalNode() || nodeB == node.getGlobalNode())
         {
           //reinsertion on the surface
@@ -949,7 +935,6 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
   {
     if(cpt > 2)
     {
-      //std::cout << "CPT > 2 --> " << cpt << std::endl;
       return false;
     }
   }
@@ -961,11 +946,11 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
   cavityIO.setReinsertionData(mapForReinsertion);
   cavityIO.setSimplexCavity(cavityCell, trianglesConnectedToP, trianglesNotConnectedToP);
 
-  /*
+
   for(auto const tet : cavityCell){std::cout << "tet -> " << tet << std::endl;}
   for(auto const triCo : trianglesConnectedToP){std::cout << "triCo -> " << triCo << " | " << (*BND_TRIANGLES)[-triCo] << std::endl;}
   for(auto const triNotCo : trianglesNotConnectedToP){std::cout << "triNotCo -> " << triNotCo << " | " << (*BND_TRIANGLES)[-triNotCo] << std::endl;}
-  */
+
 
   /*std::cout << "cavityCell.size() -> " << cavityCell.size() << std::endl;
   std::cout << "trianglesConnectedToP.size() -> " << trianglesConnectedToP.size() << std::endl;

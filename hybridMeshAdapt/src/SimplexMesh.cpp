@@ -4374,9 +4374,9 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
   double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  metricX = 4.0;
-  metricY = 4.0;
-  metricZ = 4.0;
+  /*metricX = 0.2;
+  metricY = 0.2;
+  metricZ = 0.2;*/
 
   m(0,0) = 1.0 / (metricX*metricX);
   m(1,1) = 1.0 / (metricY*metricY);
@@ -4405,9 +4405,9 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  metricX = 4.0;
-  metricY = 4.0;
-  metricZ = 4.0;
+  /*metricX = 0.2;
+  metricY = 0.2;
+  metricZ = 0.2;*/
 
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
   (*metric)[node](1,1) = 1.0 / (metricY*metricY);
@@ -6044,9 +6044,6 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
         else if((*BND_SURFACE_COLOR)[node] != 0){dim_Ni = 2; index_Ni = (*BND_SURFACE_COLOR)[node];}
         else{dim_Ni = 4;}
 
-        std::cout << "node -> " << node << std::endl;
-        std::cout << "  dim_Ni -> " << dim_Ni << std::endl;
-        std::cout << "  index_Ni -> " << index_Ni << std::endl;
         //if(dim_Ni != 0)
         {
           SimplicesNode simpliceNode(this, node);

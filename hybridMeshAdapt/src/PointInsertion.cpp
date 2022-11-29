@@ -368,10 +368,10 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           {
             std::set<std::pair<TInt, TInt>> mapNodesOnRidge{};
             std::multimap<TInt, std::pair<TInt,TInt>>& edgeStructure = simplexMesh->getEdgeStructure();
-            for(auto const p : edgeStructure)
+            /*for(auto const p : edgeStructure)
             {
               std::cout << "edge idx -> " << p.first << " | nodes -> " << p.second.first << " : " << p.second.second << std::endl;
-            }
+            }*/
             //check the edge that will be destroy
             for(auto const tri : cavityIO.getTrianglesConnectedToPInCavity())
             {

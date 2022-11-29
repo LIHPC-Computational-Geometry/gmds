@@ -99,9 +99,9 @@ int main(int argc, char* argv[])
 
 
   //adding a metric to the mesh for the delaunay expansion ctriterion
-  Variable<Eigen::Matrix3d>* var = simplexMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("metric");
+  /*Variable<Eigen::Matrix3d>* var = simplexMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("metric");
   Eigen::Matrix3d m =  Eigen::MatrixXd::Identity(3, 3);
-  var->setValuesTo(m);
+  var->setValuesTo(m);*/
   //==================================================================
   // POINT FILE READING
   //==================================================================
@@ -129,22 +129,29 @@ int main(int argc, char* argv[])
   std::clock_t start;
   double duration;
   start = std::clock();
+  int cpt = 0;
   for(unsigned int idx = 0 ; idx < nodesToAddIds.capacity() ; idx++)
   {
     if(nodesToAddIds[idx] != 0)
     {
+      std::cout << std::endl;
+      std::cout << std::endl;
+      if((*BND_SURFACE_COLOR_NODES)[idx] == 0)
+        continue;
       const gmds::BitVector & nodesIds = simplexMesh.getBitVectorNodes();
       math::Point point = SimplicesNode(&simplexNodes, idx).getCoords();
 
       bool alreadyAdd = false;
       std::vector<TSimplexID> tetraContenaingPt{};
       TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
+
       if(!alreadyAdd)
       {
         if((*BND_CURVE_COLOR_NODES)[idx] != 0) {BND_CURVE_COLOR->set(node, (*BND_CURVE_COLOR_NODES)[idx]);}
         else if((*BND_SURFACE_COLOR_NODES)[idx] != 0) {BND_SURFACE_COLOR->set(node, (*BND_SURFACE_COLOR_NODES)[idx]);}
 
-        simplexMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("metric")->value(node) = m;
+        /*simplexMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("metric")->value(node) = m;*/
+        simplexMesh.setAnalyticMetric(node);
         bool status = false;
         std::vector<TSimplexID> deletedSimplex{};
         const std::multimap<TInt, TInt> facesAlreadyBuilt{};
@@ -157,6 +164,11 @@ int main(int argc, char* argv[])
             nodesAdded.resize(nodesIds.capacity());
           }
           nodesAdded.assign(node);
+          gmds::VTKWriter vtkWriterTEST(&ioService);
+          vtkWriterTEST.setCellOptions(gmds::N|gmds::R|gmds::F);
+          vtkWriterTEST.setDataOptions(gmds::N|gmds::R|gmds::F);
+          vtkWriterTEST.write("test_" + std::to_string(cpt) + ".vtk");
+          cpt++;
         }
         else
         {

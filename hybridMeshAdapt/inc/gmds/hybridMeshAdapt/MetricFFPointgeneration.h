@@ -62,7 +62,7 @@ namespace gmds{
         void correctNodeLabel() ;
 
       private:
-        std::map<TInt, std::vector<TInt>> m_nodeStructure;
+        std::unordered_map<TInt, std::vector<TInt>> m_nodeStructure;
 
         SimplexMesh* m_simplexMesh = nullptr;
 

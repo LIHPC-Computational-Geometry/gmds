@@ -28,7 +28,7 @@ MetricFFPointgeneration::~MetricFFPointgeneration()
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::execute()
 {
-  gmds::Variable<int>* BND_SURFACE_COLOR    = nullptr;
+  gmds::Variable<int>* BND_SURFACE_COLOR = nullptr;
 
   try{
     BND_SURFACE_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
@@ -118,15 +118,26 @@ void MetricFFPointgeneration::execute()
       m_nodesMesh.addTetraedre(n,n,n,n);
     }
   }*/
-  /*std::set<std::vector<TInt>> hexs{};
+  std::set<std::vector<TInt>> hexs{};
   computeHexa(hexs);
   std::cout << "hex size -> " << hexs.size() << std::endl;
 
+  for(auto const & d : m_nodeStructure)
+  {
+    TInt node = d.first;
+    for(auto const n : d.second)
+    {
+      if(n != -1)
+      {
+        m_nodesMesh.addTriangle(d.first, n, n);
+      }
+    }
+  }
   gmds::ISimplexMeshIOService ioServiceGRID(&m_nodesMesh);
   gmds::VTKWriter vtkWriterGRID(&ioServiceGRID);
   vtkWriterGRID.setCellOptions(gmds::N|gmds::F);
   vtkWriterGRID.setDataOptions(gmds::N|gmds::F);
-  vtkWriterGRID.write("metricFF_Grid.vtk");*/
+  vtkWriterGRID.write("metricFF_Grid.vtk");
 }
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::correctNodeLabel()
@@ -503,21 +514,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
         }
       }
     }
-
-    if(!surfaceFlag)
-    {
-      if(node == 1176)
-      {
-        std::cout << "newNodeId -> " << newNodeId << std::endl;
-      }
-      v.push_back(newNodeId);
-      if(v.size() == 6)
-      {
-        m_nodeStructure.insert( std::pair<TInt, std::vector<TInt>>(node, v) );
-        v.clear();
-        continue;
-      }
-    }
+  m_nodeStructure[node].push_back(newNodeId);
   }
 
   nodesAdded.clear();
