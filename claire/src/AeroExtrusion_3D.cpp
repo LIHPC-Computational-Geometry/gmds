@@ -128,14 +128,36 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 
 	Variable<int>* var_front_edges_classification = FrontEdgesClassification(Front_IN);
 
-	std::map<TCellID, int> test = getSingularNodes(Front_IN, var_front_edges_classification);
+	int mark_edgesTreated = m_meshH->newMark<Edge>();
+	int mark_facesTreated = m_meshH->newMark<Face>();
 
-	for (auto singu:test)
+	std::map<TCellID, int> singular_nodes = getSingularNodes(Front_IN, var_front_edges_classification);
+
+	for (auto singu_node:singular_nodes)
 	{
-		TCellID n_id = singu.first ;
-		int singu_type = singu.second;
-		TCellID r_id = hexaInsertion(Front_IN, n_id, map_new_nodes);
+		TCellID n_id = singu_node.first ;
+		int singu_type = singu_node.second;
+		TCellID r_id = TemplateNode3Corner(Front_IN, n_id, map_new_nodes);
 	}
+
+
+	// Insert Hexa on Singular Edges
+	std::map<TCellID, int> singular_edges = getSingularEdges(Front_IN, var_front_edges_classification, mark_edgesTreated);
+
+	for (auto singu_edge:singular_edges)
+	{
+		TCellID e_id = singu_edge.first ;
+		int singu_type = singu_edge.second;
+		if (singu_type==1)
+		{
+			TCellID r_id = TemplateEdgeCorner(Front_IN, e_id);
+		}
+	}
+
+	m_meshH->unmarkAll<Edge>(mark_edgesTreated);
+	m_meshH->freeMark<Edge>(mark_edgesTreated);
+	m_meshH->unmarkAll<Face>(mark_facesTreated);
+	m_meshH->freeMark<Face>(mark_facesTreated);
 
 
 	// Ajout des hex restants
@@ -425,7 +447,7 @@ AeroExtrusion_3D::getSingularEdges(Front_3D &AFront, Variable<int>* front_edges_
 }
 /*------------------------------------------------------------------------*/
 TCellID
-AeroExtrusion_3D::hexaInsertion(Front_3D &AFront, TCellID n_id, std::map<TCellID, TCellID> map_new_nodes)
+AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<TCellID, TCellID> map_new_nodes)
 {
 	//std::cout << "Insertion au noeud " << n_id << std::endl;
 	TCellID r_id;
@@ -498,5 +520,106 @@ TCellID
 AeroExtrusion_3D::TemplateEdgeCorner(Front_3D &AFront, TCellID e_id)
 {
 	TCellID r_id(NullID);
+
+	Variable<int>* var_node_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+
+	Edge e = m_meshH->get<Edge>(e_id);
+	std::vector<TCellID> e_faces_on_front = AFront.edgeFacesOnFront(m_meshH, e.id());		// 2 faces in this vector
+	std::vector<Node> e_nodes = e.get<Node>();
+
+	// Check if a face is already inserted on the first node e_nodes[0]
+	TCellID f0_id(NullID);
+	std::vector<Face> n0_faces = e_nodes[0].get<Face>();
+	for (auto f:n0_faces)
+	{
+		std::vector<Node> f_nodes = f.get<Node>();
+		if (var_node_couche_id->value(f_nodes[0].id()) == AFront.getFrontID()+1
+		    || var_node_couche_id->value(f_nodes[1].id()) == AFront.getFrontID()+1
+		    || var_node_couche_id->value(f_nodes[2].id()) == AFront.getFrontID()+1
+		    || var_node_couche_id->value(f_nodes[3].id()) == AFront.getFrontID()+1)
+		{
+			f0_id = f.id();
+		}
+	}
+
+	TCellID n0_1_id(NullID);
+	TCellID n0_2_id(NullID);
+	TCellID n0_3_id(NullID);
+	if (f0_id != NullID)		// If the inserted face already exists, we get the nodes
+	{
+		Face f0 = m_meshH->get<Face>(f0_id);
+		n0_1_id = m_FaceInfo[e_faces_on_front[0]].next_nodes[e_nodes[0].id()] ;
+		n0_3_id = m_FaceInfo[e_faces_on_front[1]].next_nodes[e_nodes[0].id()] ;
+		std::vector<Node> f0_nodes = f0.get<Node>();
+		for (auto f0_n:f0_nodes)
+		{
+			if (f0_n.id() != e_nodes[0].id()
+			    && f0_n.id() != n0_1_id
+			    && f0_n.id() != n0_3_id)
+			{
+				n0_2_id = f0_n.id();
+			}
+		}
+	}
+	else		// Else, let's create the nodes
+	{
+		// TODOO
+		std::cout << "TODO: 1" << std::endl;
+	}
+
+
+	// Check if a face is already inserted on the second node e_nodes[1]
+	TCellID f1_id(NullID);
+	std::vector<Face> n1_faces = e_nodes[1].get<Face>();
+	for (auto f:n1_faces)
+	{
+		std::vector<Node> f_nodes = f.get<Node>();
+		if (var_node_couche_id->value(f_nodes[0].id()) == AFront.getFrontID()+1
+		    || var_node_couche_id->value(f_nodes[1].id()) == AFront.getFrontID()+1
+		    || var_node_couche_id->value(f_nodes[2].id()) == AFront.getFrontID()+1
+		    || var_node_couche_id->value(f_nodes[3].id()) == AFront.getFrontID()+1)
+		{
+			f1_id = f.id();
+		}
+	}
+
+	TCellID n1_1_id(NullID);
+	TCellID n1_2_id(NullID);
+	TCellID n1_3_id(NullID);
+	if (f1_id != NullID)		// If the inserted face already exists, we get the nodes
+	{
+		Face f1 = m_meshH->get<Face>(f1_id);
+		n1_1_id = m_FaceInfo[e_faces_on_front[0]].next_nodes[e_nodes[1].id()] ;
+		n1_3_id = m_FaceInfo[e_faces_on_front[1]].next_nodes[e_nodes[1].id()] ;
+		std::vector<Node> f1_nodes = f1.get<Node>();
+		for (auto f1_n:f1_nodes)
+		{
+			if (f1_n.id() != e_nodes[1].id()
+			    && f1_n.id() != n1_1_id
+			    && f1_n.id() != n1_3_id)
+			{
+				n1_2_id = f1_n.id();
+			}
+		}
+	}
+	else		// Else, let's create the nodes
+	{
+		// TODOO
+		std::cout << "TODO: 2" << std::endl;
+	}
+
+
+	Node n0_1 = m_meshH->get<Node>(n0_1_id);
+	Node n0_2 = m_meshH->get<Node>(n0_2_id);
+	Node n0_3 = m_meshH->get<Node>(n0_3_id);
+	Node n1_1 = m_meshH->get<Node>(n1_1_id);
+	Node n1_2 = m_meshH->get<Node>(n1_2_id);
+	Node n1_3 = m_meshH->get<Node>(n1_3_id);
+
+	// Create the hexa
+	r_id = math::Utils::CreateHexaNConnectivities(m_meshH, e_nodes[0], n0_1, n0_2, n0_3, e_nodes[1], n1_1, n1_2, n1_3);
+
+
 	return r_id;
 }
+/*------------------------------------------------------------------------*/
