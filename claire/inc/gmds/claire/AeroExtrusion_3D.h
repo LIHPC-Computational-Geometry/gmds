@@ -48,6 +48,11 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 		std::map<TCellID, TCellID> next_ideal_nodes;	// (f_node_id, next_ideal_n_id)
 		std::map<TCellID, TCellID> next_nodes;			// (f_node_id, next_n_id)
 	};
+	struct sing_edge_info{
+		TCellID     					e_id;
+		int 								singularity_type;
+		std::map<TCellID, TCellID> next_nodes;			// (e_node_id, next_n_id)
+	};
 
  private:
 	/*-------------------------------------------------------------------*/
@@ -85,6 +90,7 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	/** @brief Créé un hax normal sur la couche à partir d'une face
 	 	* \param[in] f_id la face concernée
 	 	* \param[in] Front_IN front en entrée
+	 	* \param[in] map_new_nodes map with the ideal next nodes of the front
 		*
 		* \return
 	 */
@@ -105,7 +111,7 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	 */
 	Variable<int>* FrontEdgesClassification(Front_3D &Front);
 	/*-------------------------------------------------------------------*/
-	/** @brief Return, in a map, the singular nodes os the front, and the
+	/** @brief Return, in a map, the singular nodes of the front, and the
 	 	* template to apply.
 	 	* \param[in] AFront the front
    	* \param[in] front_edges_classification the front edges classification
@@ -113,6 +119,33 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 		* \return  a map with (TCellID, int) for the template to apply on each singular node
 	 */
 	std::map<TCellID, int> getSingularNodes(Front_3D &AFront, Variable<int>* front_edges_classification);
+	/*-------------------------------------------------------------------*/
+	/** @brief Return, in a map, the singular edges of the front, and the
+	 	* template to apply.
+	 	* \param[in] AFront the front
+   	* \param[in] front_edges_classification the front edges classification
+   	* \param[in] mark_singEdgesTreated mark the already treated edges
+		*
+		* \return  a map with (TCellID, int) for the template to apply on each singular edge
+	 */
+	std::map<TCellID, int> getSingularEdges(Front_3D &AFront, Variable<int>* front_edges_classification, int mark_singEdgesTreated);
+	/*-------------------------------------------------------------------*/
+	/** @brief Hexa insertion at the node n_id.
+	 	* \param[in] AFront the front
+   	* \param[in] n_id the node
+   	* \param[in] map_new_nodes map with the ideal next nodes of the front
+		*
+		* \return  the id of the hexa
+	 */
+	TCellID hexaInsertion(Front_3D &AFront, TCellID n_id, std::map<TCellID, TCellID> map_new_nodes);
+	/*-------------------------------------------------------------------*/
+	/** @brief Advancing front template on edge classified as corner.
+	 	* \param[in] AFront the front
+   	* \param[in] e_id the node
+		*
+		* \return  the id of the hexa
+	 */
+	TCellID TemplateEdgeCorner(Front_3D &AFront, TCellID e_id);
 	/*-------------------------------------------------------------------*/
  private:
 	/** triangular mesh we work on */
@@ -129,6 +162,8 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	Variable<math::Vector3d>* m_VectorField;
 	/** Infos sur les noeuds auxquels se connecter pour chaque face du front */
 	std::map<TCellID, multiple_info> m_FaceInfo;
+	/** Infos sur les noeuds auxquels se connecter pour chaque edge du front */
+	std::map<TCellID, multiple_info> m_EdgeInfo;
 
 };
 /*----------------------------------------------------------------------------*/
