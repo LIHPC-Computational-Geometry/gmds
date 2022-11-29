@@ -137,7 +137,7 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 		*
 		* \return  the id of the hexa
 	 */
-	TCellID hexaInsertion(Front_3D &AFront, TCellID n_id, std::map<TCellID, TCellID> map_new_nodes);
+	TCellID TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<TCellID, TCellID> map_new_nodes);
 	/*-------------------------------------------------------------------*/
 	/** @brief Advancing front template on edge classified as corner.
 	 	* \param[in] AFront the front
