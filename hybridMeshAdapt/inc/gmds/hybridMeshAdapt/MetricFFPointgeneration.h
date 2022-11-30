@@ -41,8 +41,6 @@ namespace gmds{
 
         void subdivideEdgeUsingMetric_Relaxation(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge, const unsigned int edgeId) ;
 
-        void subdivideEdgeUsingMetric_Dichotomie(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) const;
-
         void nodesSpreading(std::vector<TInt>& nodesAdded, bool surfaceFlag = false);
 
         void execute();

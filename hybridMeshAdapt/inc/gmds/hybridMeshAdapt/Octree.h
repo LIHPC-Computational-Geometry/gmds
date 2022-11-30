@@ -55,6 +55,7 @@ namespace gmds
 
       void setParentOctree(Octree* parentOc){m_parentOc = parentOc;}
 
+      std::vector<double> getBorderOctree() const;
     private:
       double m_xmin, m_xmax, m_ymin, m_ymax, m_zmin, m_zmax;
       unsigned int m_numbersMaxSimplices;

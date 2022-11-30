@@ -300,3 +300,8 @@ std::vector<TInt> Octree::findNodesNextTo(const math::Point& pt)
   return m_nodes;
 }
 /******************************************************************************/
+std::vector<double> Octree::getBorderOctree() const
+{
+  std::vector<double> ans{m_xmin, m_xmax, m_ymin, m_ymax, m_zmin, m_zmax};
+  return ans;
+}

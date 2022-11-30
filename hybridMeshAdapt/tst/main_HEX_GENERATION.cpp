@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
     {
       if(nodeBitVectorMesh[n] != 0)
       {
-        simplexMesh.setAnalyticMetric(n);
+        simplexMesh.setAnalyticMetric(n, simplexMesh.getOctree());
       }
     }
   }
@@ -151,7 +151,7 @@ int main(int argc, char* argv[])
         else if((*BND_SURFACE_COLOR_NODES)[idx] != 0) {BND_SURFACE_COLOR->set(node, (*BND_SURFACE_COLOR_NODES)[idx]);}
 
         /*simplexMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("metric")->value(node) = m;*/
-        simplexMesh.setAnalyticMetric(node);
+        simplexMesh.setAnalyticMetric(node, simplexMesh.getOctree());
         bool status = false;
         std::vector<TSimplexID> deletedSimplex{};
         const std::multimap<TInt, TInt> facesAlreadyBuilt{};

@@ -4365,15 +4365,21 @@ void SimplexMesh::getEdgeSizeInfowithMetric(double& meanEdges, double& minEdge, 
   }
 }
 /******************************************************************************/
-Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
+Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, Octree* octree) const
 {
   double epsilon = 0.01;
   Eigen::Matrix3d m = Eigen::MatrixXd::Identity(3, 3);
-
+  std::vector<double> borders = octree->getBorderOctree();
+  double x_min = borders[0], x_max = borders[1];
+  double tx = (pt.X() - x_min ) / (x_max - x_min);
   //CONSTANT ISOTROPE METRIC
-  double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
+  double metricX = 1.0*(1.0 - tx) + 2.0*tx;
+  double metricY = 1.0*(1.0 - tx) + 2.0*tx;
+  double metricZ = 1.0*(1.0 - tx) + 2.0*tx;
+  //CONSTANT ISOTROPE METRIC
+  /*double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
+  double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();*/
   /*metricX = 0.2;
   metricY = 0.2;
   metricZ = 0.2;*/
@@ -4385,9 +4391,8 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
 
 }
 /******************************************************************************/
-void SimplexMesh::setAnalyticMetric(const TInt node)
+void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
 {
-  //std::cout << "NODE  -> " << node << std::endl;
   Variable<Eigen::Matrix3d>* metric = nullptr;
   try{
     metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
@@ -4400,11 +4405,18 @@ void SimplexMesh::setAnalyticMetric(const TInt node)
   gmds::math::Point pt = m_coords[node];
   double epsilon = 0.01;
 
+  //mesh 's octree information
+  std::vector<double> borders = octree->getBorderOctree();
+  double x_min = borders[0], x_max = borders[1];
+  double tx = (pt.X() - x_min ) / (x_max - x_min);
   //CONSTANT ISOTROPE METRIC
   (*metric)[node] =  Eigen::MatrixXd::Identity(3, 3);
-  double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
+  double metricX = 1.0*(1.0 - tx) + 2.0*tx;
+  double metricY = 1.0*(1.0 - tx) + 2.0*tx;
+  double metricZ = 1.0*(1.0 - tx) + 2.0*tx;
+  /*double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
+  double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();*/
   /*metricX = 0.2;
   metricY = 0.2;
   metricZ = 0.2;*/

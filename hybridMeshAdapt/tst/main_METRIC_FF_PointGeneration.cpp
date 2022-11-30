@@ -9,10 +9,15 @@
 #include <gmds/hybridMeshAdapt/DelaunayPointInsertion.h>
 #include <gmds/hybridMeshAdapt/Octree.h>
 #include <gmds/hybridMeshAdapt/MetricFFPointgeneration.h>
+#include <gmds/math/Hexahedron.h>
+#include <gmds/ig/Mesh.h>
+#include <gmds/ig/MeshDoctor.h>
+#include <gmds/io/IGMeshIOService.h>
 /*----------------------------------------------------------------------------*/
 #include <iostream>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
+using namespace math;
 using namespace hybrid;
 using namespace operators;
 using namespace simplicesNode;
@@ -21,7 +26,6 @@ using namespace simplicesCell;
 /*----------------------------------------------------------------------------*/
 int main(int argc, char* argv[])
 {
-
     std::cout << "==== METRIC BASED ADAPTATION  ====" << std::endl;
     std::string fIn, fOut;
     if(argc != 2)
@@ -38,10 +42,7 @@ int main(int argc, char* argv[])
     //==================================================================
     std::cout << "Reading " << std::endl;
     std::string extansion(".vtk");
-    std::size_t position = fIn.find(extansion);
-    fOut = fIn.substr(0,position) + "_Points_Generated.vtk";
     std::cout << "INPUT FILE: " << fIn << std::endl;
-    std::cout << "OUTPUT FILE: " << fOut << std::endl;
 
     SimplexMesh simplexMesh = SimplexMesh();
     gmds::ISimplexMeshIOService ioService(&simplexMesh);
@@ -69,22 +70,17 @@ int main(int argc, char* argv[])
     {
       if(meshNode[nodeId] == 1)
       {
-        simplexMesh.setAnalyticMetric(nodeId);
+        simplexMesh.setAnalyticMetric(nodeId, simplexMesh.getOctree());
       }
     }
     //////////////////////////////////////////////////////////////////////////////
+    std::cout << "FRONTAL ALGO STARTING ..." << std::endl;
     MetricFFPointgeneration p(&simplexMesh);
     p.execute();
 
 
     //std::cout << "MESH VALIDITY CHECK" << std::endl;
     //simplexMesh.checkMesh();
-
-    gmds::VTKWriter vtkWriterMA(&ioService);
-    vtkWriterMA.setCellOptions(gmds::N|gmds::R|gmds::F);
-    vtkWriterMA.setDataOptions(gmds::N|gmds::R|gmds::F);
-    vtkWriterMA.write(fOut);
-
     return 0;
 }
 
