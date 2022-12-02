@@ -130,7 +130,7 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 		*
 		* \return  the id of the hexa
 	 */
-	TCellID TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<TCellID, TCellID> map_new_nodes);
+	TCellID TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<TCellID, TCellID> map_new_nodes, double dc);
 	/*-------------------------------------------------------------------*/
 	/** @brief Advancing front template on edge classified as corner.
 	 	* \param[in] AFront the front
@@ -138,7 +138,7 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 		*
 		* \return  the id of the hexa
 	 */
-	TCellID TemplateEdgeCorner(Front_3D &AFront, TCellID e_id);
+	TCellID TemplateEdgeCorner(Front_3D &AFront, TCellID e_id, double dc);
 	/*-------------------------------------------------------------------*/
 	/** @brief Créé un hex normal sur la couche à partir d'une face
 	 	* \param[in] f_id la face concernée
@@ -166,6 +166,8 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	std::map<TCellID, multiple_info> m_FaceInfo;
 	/** Infos sur les noeuds auxquels se connecter pour chaque edge du front */
 	std::map<TCellID, sing_edge_info> m_EdgeInfo;
+	/** Compteur d'hexa */
+	int m_iteration;
 
 };
 /*----------------------------------------------------------------------------*/

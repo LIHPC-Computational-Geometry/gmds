@@ -4,6 +4,7 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/claire/Utils.h>
 #include <gmds/claire/AeroMeshQuality.h>
+#include <gmds/claire/AdvectedPointRK4_3D.h>
 #include <gmds/ig/Blocking2D.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <Eigen/Sparse>
@@ -98,7 +99,7 @@ void Utils::MeshCleaner(Mesh *AMesh){
 	{
 		Node n = AMesh->get<Node>(n_id);
 		if (n.get<Face>().empty()) {
-			std::cout << "Noeud isolé : " << n_id << std::endl;
+			//std::cout << "Noeud isolé : " << n_id << std::endl;
 			AMesh->deleteNode(n_id);
 		}
 	}
@@ -598,7 +599,51 @@ TCellID Utils::CreateHexaNConnectivities(Mesh *Amesh, Node n0, Node n1, Node n2,
 
 }
 /*------------------------------------------------------------------------*/
+bool Utils::isThisHexMeshValid(Mesh *Amesh)
+{
+	bool isValid(true);
 
+	for (auto r_id:Amesh->regions())
+	{
+		Region r = Amesh->get<Region>(r_id);
+		if (r.get<Node>().size() != 8)	// So the region r is not an HEXA
+		{
+			isValid = false;
+		}
+	}
+
+	for (auto f_id:Amesh->faces())
+	{
+		Face f = Amesh->get<Face>(f_id);
+		if (f.get<Node>().size() != 4)	// So the face f is not a QUAD
+		{
+			isValid = false;
+		}
+		if (f.area() < 0)
+		{
+			isValid = false;
+		}
+	}
+
+
+	return isValid;
+}
+/*------------------------------------------------------------------------*/
+math::Point Utils::AdvectedPointRK4_UniqVector_3D(Mesh *Amesh, FastLocalize *fl, math::Point M, double dist_cible, Variable<double>* A_distance, math::Vector3d A_vector)
+{
+	Variable<math::Vector3d>* var_vectors = Amesh->newVariable<math::Vector3d, GMDS_NODE>("Temp_vectors");
+	for (auto n_id:Amesh->nodes())
+	{
+		var_vectors->set(n_id, A_vector);
+	}
+
+	AdvectedPointRK4_3D advpoint(Amesh, fl, M, dist_cible, A_distance, var_vectors);
+	advpoint.execute();
+
+	Amesh->deleteVariable(GMDS_NODE, var_vectors);
+
+	return advpoint.getPend();
+}
 /*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/
