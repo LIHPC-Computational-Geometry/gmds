@@ -44,10 +44,16 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 	if (region_id == NullID)
 	{
 		// The node considered is not in the domain. Then, we replace it by the closest node of the tetra mesh.
-		TCellID n_closest_id = ClosestNode(m_Pstart);
-		Node n_closest = m_mesh->get<Node>(n_closest_id);
-		m_Pstart = n_closest.point();
-		region_id = inWhichTetra(m_Pstart);
+		gmds::Cell::Data data = m_fl->find(m_Pstart);
+		TCellID n_closest_id_fl = data.id;
+		Node n_closest_fl = m_mesh->get<Node>(n_closest_id_fl);
+		m_Pstart = n_closest_fl.point();
+		Region r = n_closest_fl.get<Region>()[0];
+		region_id = r.id();
+		if (region_id==NullID || n_closest_fl.get<Region>().size() == 0 )
+		{
+			std::cout << "APRK4_3D: Point de départ hors du domaine." << std::endl;
+		}
 	}
 	Mat_A_Inv = getInvMatrixA(region_id);
 	dist = interpolationDistance(region_id, Mat_A_Inv, m_Pstart);	// A quelle distance est le point de départ
@@ -412,25 +418,6 @@ void AdvectedPointRK4_3D::writeDiscretePathInVTK(){
 	}
 
 	stream.close();
-}
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
-TCellID AdvectedPointRK4_3D::ClosestNode(math::Point M)
-{
-	TCellID n_id(NullID);
-	double min_dist(std::numeric_limits<double>::max());
-	for (auto n0_id:m_mesh->nodes())
-	{
-		Node n0 = m_mesh->get<Node>(n0_id);
-		if ((M-n0.point()).norm() < min_dist)
-		{
-			min_dist = (M-n0.point()).norm();
-			n_id = n0_id;
-		}
-	}
-	return n_id;
 }
 /*------------------------------------------------------------------------*/
 

@@ -10,6 +10,7 @@
 #include "LIB_GMDS_CLAIRE_export.h"
 #include "gmds/ig/Mesh.h"
 #include "gmds/ig/Blocking2D.h"
+#include <gmds/claire/FastLocalize.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -164,6 +165,22 @@ class LIB_GMDS_CLAIRE_API Utils {
 		* \return
 	 */
 	static TCellID CreateHexaNConnectivities(Mesh *Amesh, Node n0, Node n1, Node n2, Node n3, Node n4, Node n5, Node n6, Node n7);
+	/*-------------------------------------------------------------------*/
+	/** @brief Check if the hex mesh is valid
+	 	*
+	 	* \param[in] AMesh the mesh
+		*
+		* \return true if the mesh is valid, based on the values checked
+	 */
+	static bool isThisHexMeshValid(Mesh *Amesh);
+	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	*
+	 	* \param[in] AMesh the mesh
+		*
+		* \return
+	 */
+	static math::Point AdvectedPointRK4_UniqVector_3D(Mesh *Amesh, FastLocalize *fl, math::Point M, double dist_cible, Variable<double>* A_distance, math::Vector3d A_vector);
 	/*-------------------------------------------------------------------*/
 
 };
