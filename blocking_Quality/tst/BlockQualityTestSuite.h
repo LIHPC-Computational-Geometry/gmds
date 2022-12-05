@@ -1,0 +1,8 @@
+//
+// Created by bourmaudp on 02/12/22.
+//
+
+#ifndef GMDS_BLOCKQUALITYTESTSUITE_H
+#define GMDS_BLOCKQUALITYTESTSUITE_H
+
+#endif     // GMDS_BLOCKQUALITYTESTSUITE_H
