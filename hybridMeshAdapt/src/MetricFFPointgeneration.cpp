@@ -1,9 +1,12 @@
 #include "gmds/hybridMeshAdapt/MetricFFPointgeneration.h"
 #include "gmds/hybridMeshAdapt/SimplexMesh.h"
 /*----------------------------------------------------------------------------*/
+#include <gmds/ig/Mesh.h>
+/*----------------------------------------------------------------------------*/
 #include <gmds/io/VTKWriter.h>
 /*----------------------------------------------------------------------------*/
 #include <unordered_set>
+#include <deque>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 using namespace math;
@@ -98,6 +101,28 @@ void MetricFFPointgeneration::execute()
   computeHexa(hexs);
   std::cout << "hex size -> " << hexs.size() << std::endl;
 
+  Mesh m(MeshModel(DIM3 | R | F | E | N |
+                   R2N | F2N | E2N | R2F | F2R |
+                   F2E | E2F | R2E | N2R | N2F | N2E));
+
+  for(auto const & hex : hexs)
+  {
+    const Node n0 = m.newNode(SimplicesNode(&m_nodesMesh, hex[0]).getCoords());
+    const Node n1 = m.newNode(SimplicesNode(&m_nodesMesh, hex[1]).getCoords());
+    const Node n2 = m.newNode(SimplicesNode(&m_nodesMesh, hex[2]).getCoords());
+    const Node n3 = m.newNode(SimplicesNode(&m_nodesMesh, hex[3]).getCoords());
+    const Node n4 = m.newNode(SimplicesNode(&m_nodesMesh, hex[4]).getCoords());
+    const Node n5 = m.newNode(SimplicesNode(&m_nodesMesh, hex[5]).getCoords());
+    const Node n6 = m.newNode(SimplicesNode(&m_nodesMesh, hex[6]).getCoords());
+    const Node n7 = m.newNode(SimplicesNode(&m_nodesMesh, hex[7]).getCoords());
+    m.newHex(n0, n1, n2, n3, n4, n5, n6, n7);
+  }
+  gmds::IGMeshIOService ioService(&m);
+  gmds::VTKWriter vtkWriter(&ioService);
+  vtkWriter.setCellOptions(gmds::N|gmds::R);
+  vtkWriter.setDataOptions(gmds::N|gmds::R);
+  vtkWriter.write("HEX.vtk");
+
   for(auto const & d : m_nodeStructure)
   {
     TInt node = d.first;
@@ -146,7 +171,7 @@ void MetricFFPointgeneration::correctNodeLabel()
 }
 /*----------------------------------------------------------------------------*/
 
-void MetricFFPointgeneration::computeHexa(std::set<std::vector<TInt>> & hexa) const
+void MetricFFPointgeneration::computeHexa(std::set<std::vector<TInt>> & hexa)
 {
   const gmds::BitVector& nodeBitVector = m_nodesMesh.getBitVectorNodes();
   std::set<std::vector<TInt>> faces{};
@@ -186,13 +211,9 @@ void MetricFFPointgeneration::computeHexa(std::set<std::vector<TInt>> & hexa) co
   }
 
   unsigned int cpt = 0;
-  std::vector<TInt> v{};
-  TInt nodeA ;
-  TInt nodeB ;
-  unsigned int t = 0;
   for(auto const & p0 : um)
   {
-    for(auto const & p1 : um)
+    /*for(auto const & p1 : um)
     {
       if(p0 != p1)
       {
@@ -216,13 +237,12 @@ void MetricFFPointgeneration::computeHexa(std::set<std::vector<TInt>> & hexa) co
 
         if(v.size() == 6)
         {
-          v.push_back(nodeA);
-          v.push_back(nodeB);
-          std::sort(v.begin(), v.end());
-          hexa.insert(v);
+          auto facesConnectedToA = mm.equal_range(p0.first);
+          auto facesConnectedToB = mm.equal_range(p1.first);
+          hexa.insert(vec);
         }
       }
-    }
+    }*/
   }
 }
 /*----------------------------------------------------------------------------*/

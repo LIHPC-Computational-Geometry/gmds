@@ -82,7 +82,6 @@ DelaunayPointInsertion::DelaunayPointInsertion(SimplexMesh* simplexMesh, const s
           }
         }
       }
-      std::cout << "cavity.size() -> " << cavity.size() << std::endl;
       PointInsertion pi(simplexMesh, simpliceNode, criterion, status, cavity, markedNodes, deletedSimplex, facesAlreadyBuilt, markedSimplex/*, cavReduction*/);
     }
   }

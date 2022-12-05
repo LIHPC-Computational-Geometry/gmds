@@ -55,7 +55,7 @@ namespace gmds{
 
         void computeQuadFaces(std::set<std::vector<TInt>> & faces) const ;
 
-        void computeHexa(std::set<std::vector<TInt>> & hexa) const ;
+        void computeHexa(std::set<std::vector<TInt>> & hexa) ;
 
         void correctNodeLabel() ;
 

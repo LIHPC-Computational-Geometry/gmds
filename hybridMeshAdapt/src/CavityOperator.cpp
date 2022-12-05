@@ -503,7 +503,6 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
                                         const simplicesNode::SimplicesNode& node, const CriterionRAIS& criterion, const std::multimap<TInt, TInt>& facesAlreadyBuilt,
                                          const std::vector<TSimplexID> markedSimplex)
 {
-  std::cout << "cavityEnlargement" <<std::endl;
   auto my_make = [=](TInt nodeA, TInt nodeB){
     return (nodeA > nodeB)? std::make_pair(nodeB, nodeA):std::make_pair(nodeA, nodeB);
   };
@@ -947,10 +946,10 @@ bool CavityOperator::cavityEnlargement(CavityIO& cavityIO, std::vector<TSimplexI
   cavityIO.setSimplexCavity(cavityCell, trianglesConnectedToP, trianglesNotConnectedToP);
 
 
-  for(auto const tet : cavityCell){std::cout << "tet -> " << tet << std::endl;}
+  /*for(auto const tet : cavityCell){std::cout << "tet -> " << tet << std::endl;}
   for(auto const triCo : trianglesConnectedToP){std::cout << "triCo -> " << triCo << " | " << (*BND_TRIANGLES)[-triCo] << std::endl;}
   for(auto const triNotCo : trianglesNotConnectedToP){std::cout << "triNotCo -> " << triNotCo << " | " << (*BND_TRIANGLES)[-triNotCo] << std::endl;}
-
+  */
 
   /*std::cout << "cavityCell.size() -> " << cavityCell.size() << std::endl;
   std::cout << "trianglesConnectedToP.size() -> " << trianglesConnectedToP.size() << std::endl;
