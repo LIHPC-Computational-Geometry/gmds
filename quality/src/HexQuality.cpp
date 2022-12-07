@@ -32,6 +32,22 @@ double HexQuality::diagonal() const {
 double HexQuality::edgeRatio() const {
 	return lmax()/lmin();
 }
+double HexQuality::edgeRatioModified() const{
+	double ratio0,ratio1,ratio2,ratio3,ratio4,ratio5,ratio6,ratio7;
+	ratio0 = std::max(l0(),l2())/std::min(l0(),l2());
+	ratio1 = std::max(l1(),l3())/std::min(l1(),l3());
+	ratio2 = std::max(l0(),l8())/std::min(l0(),l8());
+	ratio3 = std::max(l1(),l9())/std::min(l1(),l9());
+	ratio4 = std::max(l2(),l10())/std::min(l2(),l10());
+	ratio5 = std::max(l3(),l11())/std::min(l3(),l11());
+	ratio6 = std::max(l8(),l10())/std::min(l8(),l10());
+	ratio7 = std::max(l9(),l11())/std::min(l9(),l11());
+	double listRatios[8] = {ratio0,ratio1,ratio2,ratio3,ratio4,ratio5,ratio6,ratio7};
+
+	return *std::min_element(listRatios,listRatios+8);
+	return *std::min_element(listRatios,listRatios+8);
+
+}
 /*---------------------------------------------------------------------------*/
 double HexQuality::maximumEdgeRatio() const
 {
@@ -223,3 +239,5 @@ double HexQuality::taper() const{
 
 	return *std::max_element(taper, taper+3);
 }
+
+

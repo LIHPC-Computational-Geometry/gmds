@@ -51,6 +51,8 @@ struct GMDSQuality_API HexQuality
 	double stretch() const;
 	double taper() const;
 
+	double edgeRatioModified() const;
+
 	math::Vector3d L0() const { return p[1]- p[0];}
 	math::Vector3d L1() const { return p[2]- p[1];}
 	math::Vector3d L2() const { return p[3]- p[2];}

@@ -2,17 +2,17 @@
 # LIBRARY DEFINTION (SOURCE FILES)
 #==============================================================================
 # Nommer tout en GMDS_MODULE_NAME, GMDS_SRC, ... dans les composants
-set(GMDS_LIB ${LIB_GMDS_BLOCKINGQUALITY})
+set(GMDS_LIB ${LIB_GMDS_BLOCKING_QUALITY})
 set(GMDS_LIB_PREFIX gmds/blocking_Quality)
-
+message($GMDS LIB)
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/blocking_Quality/BlockingQuality.h
         )
-
+message($GMDS INC)
 set(GMDS_SRC
         src/BlockingQuality.cpp src/main_BlockingQuality.cpp)
-
+message($GMDS SRC)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
@@ -30,6 +30,7 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_IG}
         ${LIB_GMDS_IO}
         ${LIB_GMDS_IG_ALGO}
+        ${LIB_GMDS_QUALITY}
         )
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)
