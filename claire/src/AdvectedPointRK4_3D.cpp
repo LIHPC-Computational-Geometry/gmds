@@ -48,16 +48,30 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 		TCellID n_closest_id_fl = data.id;
 		Node n_closest_fl = m_mesh->get<Node>(n_closest_id_fl);
 		m_Pstart = n_closest_fl.point();
-		Region r = n_closest_fl.get<Region>()[0];
-		region_id = r.id();
-		if (region_id==NullID || n_closest_fl.get<Region>().size() == 0 )
+		m_Pend = n_closest_fl.point();
+		if (region_id==NullID && n_closest_fl.get<Region>().size() == 0 )
 		{
 			std::cout << "APRK4_3D: Point de départ hors du domaine." << std::endl;
 		}
+		Region r = n_closest_fl.get<Region>()[0];
+		region_id = r.id();
 	}
+
 	Mat_A_Inv = getInvMatrixA(region_id);
 	dist = interpolationDistance(region_id, Mat_A_Inv, m_Pstart);	// A quelle distance est le point de départ
 	Grad = interpolationGradient(region_id, Mat_A_Inv, m_Pstart);	// Quel est le gradient à ce point
+
+	if (m_Pstart.X()==0 && m_Pstart.Y()==0 && m_Pstart.Z()==0
+	    && Grad.X()==0 && Grad.Y()==0 && Grad.Z()==0)
+	{
+		std::cout << "RK4 3D: Fisrt node at (0,0,0). In order to avoid grad=0, M=(0.025, 0.025, 0.025)." << std::endl;
+		m_Pstart = {0.025, 0.025, 0.025};
+		m_Pend = {0.025, 0.025, 0.025};
+
+		Mat_A_Inv = getInvMatrixA(region_id);
+		dist = interpolationDistance(region_id, Mat_A_Inv, m_Pstart);	// A quelle distance est le point de départ
+		Grad = interpolationGradient(region_id, Mat_A_Inv, m_Pstart);	// Quel est le gradient à ce point
+	}
 
 	while ( (abs(dist-m_d0) > err) && iterations < max_iterations ) {
 		math::Point M = RungeKutta4(m_Pend, Grad.normalize(), dt);	// Calcule la position du point à l'itération n+1 avec un RK4
@@ -222,6 +236,7 @@ TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point M, TCellID r0_id){
 
 	if (!isInRegion){
 		region_id = NullID;
+		//std::cout << "Attention: APRK4, region not found." << std::endl;
 	}
 
 
