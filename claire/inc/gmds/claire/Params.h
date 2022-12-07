@@ -50,6 +50,9 @@ namespace gmds {
         /** Output directory */
         std::string output_dir;
 
+	     /** Block Surface 3D */
+	     int block_surface_3D;
+
 	     /** Epaisseur de couche limite */
 	     double delta_cl;
 	     /** Angle d'incidence (in degrees) */
