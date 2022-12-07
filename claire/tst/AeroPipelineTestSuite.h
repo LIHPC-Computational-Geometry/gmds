@@ -201,12 +201,15 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 	params_aero.output_file="AeroPipeline3D_Hexa.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
 
+	// Découpage de surface de géométrie en dur si pas lu dans un fichier en entrée
+	params_aero.block_surface_3D = 2;
+
 	// Physical Parameters for the algorithm
 	params_aero.delta_cl = 0.3;			// Epaisseur de la première couche, pour la couche limite
 	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
 
 	// Extrusion Parameters
-	params_aero.nbr_couches = 5;			// Number of layer in extrusion
+	params_aero.nbr_couches = 6;			// Number of layer in extrusion
 
 
 
