@@ -112,6 +112,9 @@ AeroPipeline_3D::LectureMaillage(){
 	doctor.buildEdgesAndX2E();
 	doctor.updateUpwardConnectivity();
 
+	// Erase node connected to nothing
+	math::Utils::MeshCleaner(m_meshTet);
+
 }
 /*------------------------------------------------------------------------*/
 
@@ -148,7 +151,7 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 	// Special case of the C2_3D geometry  //
 	//	Surface Blocking 1						//
 	//-------------------------------------//
-	/*
+	if (m_params.block_surface_3D==1)
 	{
 		Node n0 = m_meshHex->newNode({-0.5, -0.5, -0.5});
 		Node n1 = m_meshHex->newNode({-0.5, 0.5, -0.5});
@@ -172,13 +175,13 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 			m_couche_id->set(n_id, 0);
 		}
 	}
-	*/
 
 	//-------------------------------------//
 	// Special case of the C2_3D geometry  //
 	//	Surface Blocking 2						//
 	//-------------------------------------//
 
+	else if (m_params.block_surface_3D==2)
 	{
 		Node n1 = m_meshHex->newNode({-0.5, -0.5, -0.5});
 		Node n2 = m_meshHex->newNode({0.0, -0.5, -0.5});
@@ -252,7 +255,60 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 	}
 
 
+	//-------------------------------------//
+	// Special case of the C3_3D geometry  //
+	//	Surface Blocking 1						//
+	//-------------------------------------//
 
+	else if (m_params.block_surface_3D==3)
+	{
+		Node n0 = m_meshHex->newNode({0, 0, 0});
+
+		Node n1 = m_meshHex->newNode({-0.5, -0.5, 0.5});
+		Node n2 = m_meshHex->newNode({0.5, -0.5, 0.5});
+		Node n3 = m_meshHex->newNode({0.0, 0.0, 0.5});
+		Node n4 = m_meshHex->newNode({0.5, 0, 0.5});
+		Node n5 = m_meshHex->newNode({-0.5, 0.5, 0.5});
+		Node n6 = m_meshHex->newNode({0.0, 0.5, 0.5});
+
+		Node n7 = m_meshHex->newNode({0.5, 0.0, 0.0});
+		Node n8 = m_meshHex->newNode({0.0, 0.5, 0.0});
+		Node n9 = m_meshHex->newNode({0.5, 0.5, 0.0});
+
+		Node n10 = m_meshHex->newNode({-0.5, -0.5, -0.5});
+		Node n11 = m_meshHex->newNode({0.5, -0.5, -0.5});
+		Node n12 = m_meshHex->newNode({-0.5, 0.5, -0.5});
+		Node n13 = m_meshHex->newNode({0.5, 0.5, -0.5});
+
+		// Create the faces
+		TCellID f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n1.id(), n2.id(), n11.id(), n10.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n1.id(), n10.id(), n12.id(), n5.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n10.id(), n11.id(), n13.id(), n12.id());
+
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n3.id(), n4.id(), n7.id(), n0.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n0.id(), n7.id(), n9.id(), n8.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n3.id(), n0.id(), n8.id(), n6.id());
+
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n1.id(), n3.id(), n6.id(), n5.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n1.id(), n2.id(), n4.id(), n3.id());
+
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n5.id(), n6.id(), n8.id(), n12.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n8.id(), n9.id(), n13.id(), n12.id());
+
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n2.id(), n4.id(), n7.id(), n11.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n7.id(), n9.id(), n13.id(), n11.id());
+
+		for (auto n_id : m_meshHex->nodes()) {
+			m_couche_id->set(n_id, 0);
+		}
+
+		gmds::IGMeshIOService ioService(m_meshHex);
+		gmds::VTKWriter vtkWriter(&ioService);
+		vtkWriter.setCellOptions(gmds::N|gmds::F);
+		vtkWriter.setDataOptions(gmds::N|gmds::F);
+		vtkWriter.write("test.vtk");
+
+	}
 
 }
 /*------------------------------------------------------------------------*/
