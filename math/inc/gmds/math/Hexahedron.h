@@ -64,8 +64,8 @@ public:
   	 * 			  / |	  	 / |
   	 * 			 4--------------5  |
   	 * 			 |  |		|  |
-  	 * 			 |  3-----------|--2   
-  	 * 			 | /  		| /   
+  	 * 			 |  3-----------|--2
+  	 * 			 | /  		| /
   	 * 			 |/		|/
   	 * 			 0--------------1
   	 */
@@ -124,7 +124,7 @@ public:
         const Point getCenter() const;
 
 	/*------------------------------------------------------------------------*/
-	/** \brief  Compute the signed volume of the hexahedron. It is computed as 
+	/** \brief  Compute the signed volume of the hexahedron. It is computed as
 	 *          the sum of 6 pyramids.
 	 *
 	 * \return the signed volume of the hexahedron
@@ -182,6 +182,8 @@ public:
          */
         bool intersect(const Triangle& AT, const bool AProper = false) const;
 
+				bool isValid() const;
+
         /*------------------------------------------------------------------------*/
         /** \brief  Overloaded operator<< for output
          */
@@ -194,8 +196,8 @@ protected:
          * \return the jacobian matrix
          */
     math::Matrix<3,3,double> jacobian(const int iVertex) const;
-    
-    
+
+
 protected:
 	Point m_pnts[8];
 

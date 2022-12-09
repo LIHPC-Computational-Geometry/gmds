@@ -51,13 +51,15 @@ namespace gmds{
 
         void findOptimimalPosition(const TInt node, math::Point &newCoord) ;
 
-        void nodeFiltering(const TInt node, const math::Point& pt, std::vector<TInt> & neighboorNode);
+        void nodeFiltering(const math::Point& pt, std::vector<TInt> & neighboorNode,double k = 1.2* (sqrt(2.0) * 0.5), bool flag = false);
 
         void computeQuadFaces(std::set<std::vector<TInt>> & faces) const ;
 
         void computeHexa(std::set<std::vector<TInt>> & hexas) ;
 
         void correctNodeLabel() ;
+
+        void processNodesStructure();
 
       private:
         std::unordered_map<TInt, std::vector<TInt>> m_nodeStructure;

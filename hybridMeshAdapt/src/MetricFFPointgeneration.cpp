@@ -87,9 +87,15 @@ void MetricFFPointgeneration::execute()
     }
   }
 
+  unsigned int ii = 0;
   while(nodeAdded.size() != 0)
   {
     nodesSpreading(nodeAdded);
+    gmds::VTKWriter vtkWriterVOLUME(&ioServiceNODE);
+    vtkWriterVOLUME.setCellOptions(gmds::N|gmds::R);
+    vtkWriterVOLUME.setDataOptions(gmds::N|gmds::R);
+    vtkWriterVOLUME.write("metricFF_VOLUME_" + std::to_string(ii) + ".vtk");
+    std::cout << "VOLUME NODES  " << ii++ << std::endl;
   }
   gmds::VTKWriter vtkWriterVOLUME(&ioServiceNODE);
   vtkWriterVOLUME.setCellOptions(gmds::N|gmds::R);
@@ -97,6 +103,7 @@ void MetricFFPointgeneration::execute()
   vtkWriterVOLUME.write("metricFF_VOLUME.vtk");
   std::cout << "VOLUME NODES CREATED " << std::endl;
 
+  processNodesStructure();
   std::set<std::vector<TInt>> hexs{};
   computeHexa(hexs);
   std::cout << "hex size -> " << hexs.size() << std::endl;
@@ -170,7 +177,6 @@ void MetricFFPointgeneration::correctNodeLabel()
   }
 }
 /*----------------------------------------------------------------------------*/
-
 /*void MetricFFPointgeneration::computeHexa(std::set<std::vector<TInt>> & hexa)
 {
   const gmds::BitVector& nodeBitVector = m_nodesMesh.getBitVectorNodes();
@@ -266,12 +272,13 @@ void MetricFFPointgeneration::computeHexa(std::set<std::vector<TInt>> & hexas)
   const gmds::BitVector& nodeBitVector = m_nodesMesh.getBitVectorNodes();
   std::set<std::vector<TInt>> faces{};
   unsigned int sizeFACE = 4;
+
   computeQuadFaces(faces);
 
-
-  //compute the hull of a node in faces
   std::unordered_map<TInt, std::vector<std::set<TInt>>> um{};
   std::unordered_map<std::string, std::vector<TInt>> indirect_um{};
+  std::unordered_set<std::string> seen{};
+
   for(auto const face : faces)
   {
     std::set<TInt> s(face.begin(), face.end());
@@ -315,31 +322,51 @@ void MetricFFPointgeneration::computeHexa(std::set<std::vector<TInt>> & hexas)
     {
       if(d.second == 4)
       {
-        std::cout << face[0] << " " << face[1] << " " << face[2] << " " << face[3] << std::endl;
-        std::cout << d.first << std::endl;
-        std::size_t position0 = d.first.find("|");
-        std::string first = d.first.substr(0,position0);
-
-        std::size_t position1 = d.first.find("|",position0+1);
-        std::string second = d.first.substr(position0+1,position1 - position0 - 1);
-
-        std::size_t position2 = d.first.find("|",position1+1);
-        std::string third = d.first.substr(position1+1,position2 - position1 - 1);
-
-        std::size_t position3 = d.first.find("|",position2+1);
-        std::string fourth = d.first.substr(position2+1,position3 - position2 - 1);
-
         std::vector<TInt> hexa(face.begin(), face.end());
-        std::copy(indirect_um[d.first].begin(), indirect_um[d.first].end(), std::back_inserter(hexa));
-        for(auto const v : hexa)
-          std::cout << " h -> " << v << std::endl;
-        /*hexa.push_back(std::atoi(first.c_str()));
-        hexa.push_back(std::atoi(second.c_str()));
-        hexa.push_back(std::atoi(third.c_str()));
-        hexa.push_back(std::atoi(fourth.c_str()));*/
-        hexas.insert(hexa);
+        std::vector<TInt> face1{};
+        for(auto const node : face)
+        {
+          for(auto const neigboor : m_nodeStructure[node])
+          {
+            if(std::find(indirect_um[d.first].begin(), indirect_um[d.first].end(), neigboor) != indirect_um[d.first].end())
+              if(std::find(face1.begin(), face1.end(), neigboor) == face1.end())
+                face1.push_back(neigboor);
+          }
+        }
 
-        return;
+        if(face1.size() == sizeFACE)
+        {
+          std::vector<TInt> test_seen(face.begin(), face.end());
+          std::copy(face1.begin(), face1.end(), std::back_inserter(test_seen));
+          std::sort(test_seen.begin(), test_seen.end());
+
+          std::string str{};
+          for(auto const var : test_seen)
+            str += std::to_string(var);
+
+          if(seen.find(str) == seen.end())
+          {
+            std::copy(face1.begin(), face1.end(), std::back_inserter(hexa));
+            std::set<TInt> redunancy(hexa.begin(), hexa.end());
+            if(redunancy.size() == 8)
+            {
+              const math::Point p0 = SimplicesNode(&m_nodesMesh, hexa[0]).getCoords();
+              const math::Point p1 = SimplicesNode(&m_nodesMesh, hexa[1]).getCoords();
+              const math::Point p2 = SimplicesNode(&m_nodesMesh, hexa[2]).getCoords();
+              const math::Point p3 = SimplicesNode(&m_nodesMesh, hexa[3]).getCoords();
+              const math::Point p4 = SimplicesNode(&m_nodesMesh, hexa[4]).getCoords();
+              const math::Point p5 = SimplicesNode(&m_nodesMesh, hexa[5]).getCoords();
+              const math::Point p6 = SimplicesNode(&m_nodesMesh, hexa[6]).getCoords();
+              const math::Point p7 = SimplicesNode(&m_nodesMesh, hexa[7]).getCoords();
+
+              const Hexahedron h(p0, p1, p2, p3, p4, p5, p6, p7);
+              if(h.isValid()/* && h.computeScaledJacobian() > -0.7*/)
+                hexas.insert(hexa);
+
+              seen.insert(str);
+            }
+          }
+        }
       }
     }
   }
@@ -585,7 +612,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
         if(minDistance != std::numeric_limits<int>::max() || inCell)
         {
           std::vector<TInt> neighboorNodes;
-          nodeFiltering(node, newCoord, neighboorNodes);
+          nodeFiltering(newCoord, neighboorNodes);
 
           if(!neighboorNodes.size())
           {
@@ -596,34 +623,58 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
             m_nodesMesh.setAnalyticMetric(newNodeId, m_simplexMesh->getOctree());
             newNodes.push_back(newNodeId);
           }
-          else
-          {
-            double distMin = std::numeric_limits<double>::max();
-            for(auto const n : neighboorNodes)
-            {
-              math::Point pid = SimplicesNode(&m_nodesMesh, n).getCoords();
-              math::Vector3d v = math::Vector3d({pid.X() - pt.X(), pid.Y() - pt.Y(), pid.Z() - pt.Z()});
-              double dist = v.norm();
-              if(dist < distMin)
-              {
-                distMin = dist;
-                newNodeId = n;
-              }
-            }
-          }
         }
       }
     }
-  m_nodeStructure[node].push_back(newNodeId);
   }
 
   nodesAdded.clear();
   nodesAdded = newNodes;
 }
 /*----------------------------------------------------------------------------*/
-void MetricFFPointgeneration::nodeFiltering(const TInt node, const math::Point& pt, std::vector<TInt> & neighboorNode)
+void MetricFFPointgeneration::processNodesStructure()
 {
-  const double k =  1.15 * (sqrt(2.0) * 0.5);
+  const gmds::BitVector& nodesMesh = m_nodesMesh.getBitVectorNodes();
+  for(unsigned int nodeId = 0 ; nodeId < nodesMesh.capacity() ; nodeId++)
+  {
+    std::vector<TInt> neighboorNodes{};
+    const math::Point pt = SimplicesNode(&m_nodesMesh, nodeId).getCoords();
+    const double k = sqrt(2.0);
+    nodeFiltering(pt, neighboorNodes, k);
+
+    //comparing the distance and the angle divergence with the all the vector from frames
+    //at current position
+    std::vector<math::Vector3d> frames{};
+    m_simplexMesh->getFrameAt(pt, frames);
+    for(auto vec : frames)
+    {
+      TInt newNodeId = -1;
+      vec.normalize();
+      double angle_diff = 0.85;
+      double distMin = std::numeric_limits<double>::max();
+      for(auto const n : neighboorNodes)
+      {
+        math::Point pid = SimplicesNode(&m_nodesMesh, n).getCoords();
+        math::Vector3d v = math::Vector3d({pid.X() - pt.X(), pid.Y() - pt.Y(), pid.Z() - pt.Z()});
+        double dist = v.norm();
+        v.normalize();
+        double angle_dot = vec.dot(v);
+        if(angle_dot >= angle_diff && dist <= distMin && n != nodeId)
+        {
+          distMin = dist;
+          angle_diff = angle_dot;
+          newNodeId = n;
+        }
+      }
+      if(newNodeId != -1)
+        m_nodeStructure[nodeId].push_back(newNodeId);
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------*/
+void MetricFFPointgeneration::nodeFiltering(const math::Point& pt, std::vector<TInt> & neighboorNode, double k, bool flag)
+{
   Variable<Eigen::Matrix3d>* metric  = nullptr;
   gmds::Variable<int>* BND_CURVE_COLOR_NODE = nullptr;
 
@@ -636,21 +687,22 @@ void MetricFFPointgeneration::nodeFiltering(const TInt node, const math::Point& 
   }
 
   //todo use m_oc
-  bool flag = false;
-  std::vector<math::Point> pts{};
   const gmds::BitVector& nodesMesh = m_nodesMesh.getBitVectorNodes();
+
   for(unsigned int nodeId = 0 ; nodeId < nodesMesh.capacity() ; nodeId++)
   {
-
-    if(nodesMesh[nodeId] != 0 /*&& nodeId != node*/)
+    if(nodesMesh[nodeId] != 0)
     {
       const math::Point nodeCoord = SimplicesNode(&m_nodesMesh, nodeId).getCoords();
       Eigen::Vector3d v(pt.X() - nodeCoord.X(), pt.Y() - nodeCoord.Y(), pt.Z() - nodeCoord.Z());
       const double euclidianNorm = v.norm();
       //the metric being analytique we do not have to interpolate the metric at point
       const Eigen::Matrix3d m0 = m_nodesMesh.getAnalyticMetric(pt, m_simplexMesh->getOctree());
+      const Eigen::Matrix3d m1 = m_nodesMesh.getAnalyticMetric(nodeCoord, m_simplexMesh->getOctree());
       //compute the current length based on the metric atached to the mesh
-      const double metricLenght = sqrt(v.dot(m0*v));
+      const double metricLenght = 0.5 * sqrt(v.dot(m0*v)) + 0.5 * sqrt(v.dot(m1*v));
+      if(flag)
+        std::cout << "  metricLength -> " << metricLenght << std::endl;
       if(metricLenght <= k)
       {
         neighboorNode.push_back(nodeId);
