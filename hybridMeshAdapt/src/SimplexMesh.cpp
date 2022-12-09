@@ -4380,9 +4380,9 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, Octree* octree) 
   /*double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();*/
-  double metricX = 1.0;
-  double metricY = 1.0;
-  double metricZ = 1.0;
+  double metricX = 3.0;
+  double metricY = 3.0;
+  double metricZ = 3.0;
 
   m(0,0) = 1.0 / (metricX*metricX);
   m(1,1) = 1.0 / (metricY*metricY);
@@ -4417,9 +4417,9 @@ void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
   /*double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
   double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();*/
-  double metricX = 1.0;
-  double metricY = 1.0;
-  double metricZ = 1.0;
+  double metricX = 3.0;
+  double metricY = 3.0;
+  double metricZ = 3.0;
 
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
   (*metric)[node](1,1) = 1.0 / (metricY*metricY);

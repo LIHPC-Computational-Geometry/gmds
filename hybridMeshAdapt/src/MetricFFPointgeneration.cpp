@@ -33,6 +33,34 @@ void MetricFFPointgeneration::execute()
 {
   gmds::Variable<int>* BND_SURFACE_COLOR = nullptr;
 
+  std::vector<double> simplexMesh_Borders = m_oc.getBorderOctree();
+  Octree* simplexNodes_Octree = new Octree(m_simplexMesh, 3,
+                                    simplexMesh_Borders[0],simplexMesh_Borders[1],
+                                    simplexMesh_Borders[2],simplexMesh_Borders[3],
+                                    simplexMesh_Borders[4],simplexMesh_Borders[5]);
+
+  //////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+  Mesh m0(MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F
+                        | F2R |F2E | E2F | R2E | N2R | N2F | N2E));
+
+  m_nodesMesh.setOctree(simplexNodes_Octree);
+  std::vector<std::vector<Node>> nodes{};
+  m_nodesMesh.getOctree()->writeOctree(m0, nodes);
+  for(auto const & node : nodes)
+    m0.newHex(node[0], node[1], node[2], node[3], node[4], node[5], node[6], node[7]);
+
+
+  gmds::IGMeshIOService ioServiceM0(&m0);
+  gmds::VTKWriter vtkWriterM0(&ioServiceM0);
+	vtkWriterM0.setCellOptions(gmds::N|gmds::R);
+	vtkWriterM0.setDataOptions(gmds::N|gmds::R);
+	vtkWriterM0.write("Octree_Nodes.vtk");
+  //////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+
   try{
     BND_SURFACE_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
   }catch (gmds::GMDSException e)
@@ -87,15 +115,9 @@ void MetricFFPointgeneration::execute()
     }
   }
 
-  unsigned int ii = 0;
   while(nodeAdded.size() != 0)
   {
     nodesSpreading(nodeAdded);
-    gmds::VTKWriter vtkWriterVOLUME(&ioServiceNODE);
-    vtkWriterVOLUME.setCellOptions(gmds::N|gmds::R);
-    vtkWriterVOLUME.setDataOptions(gmds::N|gmds::R);
-    vtkWriterVOLUME.write("metricFF_VOLUME_" + std::to_string(ii) + ".vtk");
-    std::cout << "VOLUME NODES  " << ii++ << std::endl;
   }
   gmds::VTKWriter vtkWriterVOLUME(&ioServiceNODE);
   vtkWriterVOLUME.setCellOptions(gmds::N|gmds::R);
@@ -614,7 +636,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
           std::vector<TInt> neighboorNodes;
           nodeFiltering(newCoord, neighboorNodes);
 
-          if(!neighboorNodes.size())
+          if(neighboorNodes.size() == 0)
           {
             newNodeId = m_nodesMesh.addNode(newCoord);
             if(surfaceFlag == true)
@@ -622,6 +644,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
 
             m_nodesMesh.setAnalyticMetric(newNodeId, m_simplexMesh->getOctree());
             newNodes.push_back(newNodeId);
+            m_nodesMesh.getOctree()->addNode(newNodeId);
           }
         }
       }
@@ -688,8 +711,11 @@ void MetricFFPointgeneration::nodeFiltering(const math::Point& pt, std::vector<T
 
   //todo use m_oc
   const gmds::BitVector& nodesMesh = m_nodesMesh.getBitVectorNodes();
+  //for(unsigned int nodeId = 0 ; nodeId < nodesMesh.capacity() ; nodeId++)
 
-  for(unsigned int nodeId = 0 ; nodeId < nodesMesh.capacity() ; nodeId++)
+  std::vector<TInt> nodes = m_nodesMesh.getOctree()->findNodesNextTo(pt);
+  //std::cout << "  nodes -> " << nodes.size() << std::endl;
+  for(auto const nodeId : nodes)
   {
     if(nodesMesh[nodeId] != 0)
     {
@@ -817,6 +843,7 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TI
       (*BND_CURVE_COLOR_NODE)[newNodeId] = edgeId;
       m_nodesMesh.setAnalyticMetric(newNodeId, m_simplexMesh->getOctree());
       nodesAdded.push_back(newNodeId);
+      m_nodesMesh.getOctree()->addNode(newNodeId);
     }
   }
 }

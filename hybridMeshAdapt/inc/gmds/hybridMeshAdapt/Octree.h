@@ -34,6 +34,14 @@ namespace gmds
       Octree(SimplexMesh* simplexMesh,
              const unsigned int numbersMaxSimplices);
 
+      Octree(SimplexMesh* simplexMesh,
+              unsigned int subdivision,
+              double xmin, double xmax,
+              double ymin, double ymax,
+              double zmin, double zmax);
+
+      void addNode(TInt node);
+
       ~Octree();
 
       void initialize();
