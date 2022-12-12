@@ -40,7 +40,7 @@ namespace gmds
               double ymin, double ymax,
               double zmin, double zmax);
 
-      void addNode(TInt node);
+      void addNode(TInt node, std::unordered_set<TInt>& seen);
 
       ~Octree();
 
@@ -64,6 +64,7 @@ namespace gmds
       void setParentOctree(Octree* parentOc){m_parentOc = parentOc;}
 
       std::vector<double> getBorderOctree() const;
+
     private:
       double m_xmin, m_xmax, m_ymin, m_ymax, m_zmin, m_zmax;
       unsigned int m_numbersMaxSimplices;

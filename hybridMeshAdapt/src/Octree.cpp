@@ -66,18 +66,35 @@ Octree::Octree(SimplexMesh* simplexMesh,
   m_ocs[0] = oc0 ; m_ocs[1] = oc1 ; m_ocs[2] = oc2 ; m_ocs[3] = oc3 ; m_ocs[4] = oc4 ; m_ocs[5] = oc5 ; m_ocs[6] = oc6 ; m_ocs[7] = oc7;
 }
 /******************************************************************************/
-void Octree::addNode(TInt node)
+void Octree::addNode(TInt node, std::unordered_set<TInt>& seen)
 {
   const math::Point pt = SimplicesNode(m_simplexMesh, node).getCoords();
+  //std::cout << pt << std::endl;
+
   for(Octree* oc : m_ocs)
   {
     if(oc != nullptr)
     {
-      if(oc->belongToOc(node))
-        oc->addNode(node);
+      //std::cout << "BORDERS -> "<< oc->getBorderOctree()[0] << " | " << oc->getBorderOctree()[1] << " | " << oc->getBorderOctree()[2] <<
+      // " | " << oc->getBorderOctree()[3] << " | " << oc->getBorderOctree()[4] << " | " << oc->getBorderOctree()[5] << " | " << std::endl;
+      if(oc->belongToOc(pt))
+      {
+        //std::cout << "in octree" << std::endl;
+        oc->addNode(node, seen);
+      }
+
     }
     else
-      m_nodes.push_back(node);
+    {
+      if(seen.find(node) == seen.end())
+      {
+        seen.insert(node);
+        //std::cout << "adding " << node << " to octree -> " << this << std::endl;
+        //std::cout << m_xmin << " | " << m_xmax << " | " << m_ymin << " | " << m_ymax << " | " << m_zmin << " | " << m_zmax << " | " << std::endl;
+        m_nodes.push_back(node);
+      }
+      return;
+    }
   }
 }
 /******************************************************************************/
@@ -249,6 +266,7 @@ void Octree::preprocess()
 /******************************************************************************/
 bool Octree::belongToOc(const math::Point& pt) const
 {
+
   double x = pt.X();
   double y = pt.Y();
   double z = pt.Z();
@@ -340,6 +358,8 @@ std::vector<TInt> Octree::findNodesNextTo(const math::Point& pt)
     }
   }
 
+  //std::cout << m_xmin << " | " << m_xmax << " | " << m_ymin << " | " << m_ymax << " | " << m_zmin << " | " << m_zmax << " | " << std::endl;
+  //std::cout << "    current -> " << this << std::endl;
   return m_nodes;
 }
 /******************************************************************************/
