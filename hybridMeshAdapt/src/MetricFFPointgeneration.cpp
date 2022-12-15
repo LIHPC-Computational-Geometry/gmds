@@ -185,7 +185,7 @@ void MetricFFPointgeneration::execute()
   vtkWriterGRID.write("metricFF_Grid.vtk");
 
   double duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-  std::cout << "DURATION -> " << duration << std::endl;;
+  std::cout << "DURATION -> " << duration << std::endl;
 }
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::correctNodeLabel()
@@ -548,8 +548,10 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
   }
 
   std::vector<nodeSamplingData> nodesSamplingData{};
+  //std::clock_t start = std::clock();
   for(auto const node : nodesAdded)
   {
+    std::cout << "node -> " << node << std::endl;
     std::vector<math::Vector3d> frames{};
     const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
     m_simplexMesh->getFrameAt(pt, frames);
@@ -564,114 +566,105 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
       const double m = vec.norm();
       math::Point newCoord = pt + m*math::Point(d.x(), d.y(), d.z());
       nodeSamplingData samplingData{};
+      std::cout << "m -> " << m << std::endl;
+      std::cout << "newCoord -> " << newCoord << std::endl;
+
       if(m != 0.0)
       {
-        samplingData.node = node;
-        samplingData.m = m;
-        samplingData.coord = newCoord;
-        nodesSamplingData.push_back(samplingData);
-      }
-    }
-  }
-
-  /*sort(nodesSamplingData.begin(), nodesSamplingData.end(),
-    [&](const nodeSamplingData & dataA, const nodeSamplingData & dataB) -> bool
-    {
-      return ((*BND_SURFACE_COLOR)[dataA.node] > (*BND_SURFACE_COLOR)[dataB.node]);
-    }
-  );*/
-
-  SimplexMesh m = SimplexMesh();
-  int i = 0;
-  std::vector<TInt> v;
-  for(auto const nodeData : nodesSamplingData)
-  {
-    TInt node = nodeData.node;
-    math::Point newCoord = nodeData.coord;
-    const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
-    TInt newNodeId = -1;
-    //compute the metric lentgh based on newNodeId and the metric at node
-    findOptimimalPosition(node, newCoord);
-    //compute the nearest Simplices of newCoord with octree
-    std::vector<TSimplexID> simplices = m_oc.findSimplicesInOc(newCoord);
-    bool inCell = false;
-    for(auto const simplex : simplices)
-    {
-      if(simplex >= 0)
-      {
-        inCell = SimplicesCell(m_simplexMesh, simplex).isInCell(newCoord);
-        if(inCell)
-        {
-          break;
-        }
-      }
-    }
-
-    //we project initiale node on surface
-    //the good projection is determine by the minimum distance
-    if(simplices.size() != 0)
-    {
-      double minDistance = std::numeric_limits<int>::max();
-      if(!inCell)
-      {
-        double distance;
-        math::Point goodProjection;
+        const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
+        TInt newNodeId = -1;
+        //compute the metric lentgh based on newNodeId and the metric at node
+        findOptimimalPosition(node, newCoord);
+        //compute the nearest Simplices of newCoord with octree
+        std::vector<TSimplexID> simplices = m_oc.findSimplicesInOc(newCoord);
+        std::cout << "simplices.size() -> " << simplices.size() << std::endl;
+        bool inCell = false;
         for(auto const simplex : simplices)
         {
-          if(simplex < 0)
+          if(simplex >= 0)
           {
-            math::Point projectedPoint;
-            const SimplicesTriangle t(m_simplexMesh, simplex);
-            const std::vector<TInt> nodes = t.getNodes();
-            inCell = m_simplexMesh->pointInTriangle(newCoord,
-                                 SimplicesNode(m_simplexMesh, nodes[0]).getCoords(),
-                                 SimplicesNode(m_simplexMesh, nodes[1]).getCoords(),
-                                 SimplicesNode(m_simplexMesh, nodes[2]).getCoords(),
-                                 distance,projectedPoint);
-            if(inCell && distance < minDistance)
+            std::cout << "    simplex -> " << simplex << std::endl;
+            std::vector<double> UVWT{};
+            //inCell = SimplicesCell(m_simplexMesh, simplex).isCellClose(newCoord, UVWT, 0.001);
+            inCell = SimplicesCell(m_simplexMesh, simplex).isInCell(newCoord);
+            if(inCell)
             {
-              goodProjection = projectedPoint;
-              minDistance = distance;
+              break;
             }
           }
         }
+        std::cout << "    inCell -> " << inCell << std::endl;
 
-        if(minDistance != std::numeric_limits<int>::max())
-          newCoord = goodProjection;
-      }
-
-      bool onSurface = true;
-      int surfaceLabel = 0;
-      m_simplexMesh->onSurface(newCoord, surfaceLabel);
-      if(surfaceLabel == 0)
-        onSurface = false;
-
-      if(surfaceFlag == onSurface)
-      {
-        if(minDistance != std::numeric_limits<int>::max() || inCell)
+        //we project initiale node on surface
+        //the good projection is determine by the minimum distance
+        if(simplices.size() != 0)
         {
-          if(node == 981)
-            std::cout << "newCoord -> " << newCoord << std::endl;
-          std::vector<TInt> neighboorNodes;
-          nodeFiltering(newCoord, neighboorNodes);
-          if(node == 981)
-            std::cout << "neighboorNodes.size() -> " << neighboorNodes.size() << std::endl;
-
-          if(neighboorNodes.size() == 0)
+          double minDistance = std::numeric_limits<int>::max();
+          if(!inCell)
           {
-            newNodeId = m_nodesMesh.addNode(newCoord);
-            if(surfaceFlag == true)
-              BND_SURFACE_COLOR->set(newNodeId, surfaceLabel);
+            double distance;
+            math::Point goodProjection;
+            for(auto const simplex : simplices)
+            {
+              if(simplex < 0)
+              {
+                math::Point projectedPoint;
+                const SimplicesTriangle t(m_simplexMesh, simplex);
+                const std::vector<TInt> nodes = t.getNodes();
+                inCell = m_simplexMesh->pointInTriangle(newCoord,
+                                     SimplicesNode(m_simplexMesh, nodes[0]).getCoords(),
+                                     SimplicesNode(m_simplexMesh, nodes[1]).getCoords(),
+                                     SimplicesNode(m_simplexMesh, nodes[2]).getCoords(),
+                                     distance,projectedPoint);
+                if(inCell && distance < minDistance)
+                {
+                  goodProjection = projectedPoint;
+                  minDistance = distance;
+                }
+              }
+            }
+            std::cout << "    inCell 2 -> " << inCell << std::endl;
 
-            m_nodesMesh.setAnalyticMetric(newNodeId, m_simplexMesh->getOctree());
-            newNodes.push_back(newNodeId);
-            std::unordered_set<TInt> seen{};
-            m_nodesMesh.getOctree()->addNode(newNodeId, seen);
+            if(minDistance != std::numeric_limits<int>::max())
+              newCoord = goodProjection;
+          }
+
+          bool onSurface = true;
+          int surfaceLabel = 0;
+          std::cout << "    surfaceLabel -> " << surfaceLabel << std::endl;          
+          m_simplexMesh->onSurface(newCoord, surfaceLabel);
+          std::cout << "    surfaceLabel -> " << surfaceLabel << std::endl;
+
+          if(surfaceLabel == 0)
+            onSurface = false;
+          if(surfaceFlag == onSurface)
+          {
+            if(minDistance != std::numeric_limits<int>::max() || inCell)
+            {
+              std::vector<TInt> neighboorNodes;
+              std::cout << "    newCoord -> " << newCoord << std::endl;
+
+              nodeFiltering(newCoord, neighboorNodes);
+              if(neighboorNodes.size() == 0)
+              {
+                newNodeId = m_nodesMesh.addNode(newCoord);
+                if(surfaceFlag == true)
+                  BND_SURFACE_COLOR->set(newNodeId, surfaceLabel);
+
+                m_nodesMesh.setAnalyticMetric(newNodeId, m_simplexMesh->getOctree());
+                newNodes.push_back(newNodeId);
+                std::unordered_set<TInt> seen{};
+                m_nodesMesh.getOctree()->addNode(newNodeId, seen);
+              }
+            }
           }
         }
       }
     }
   }
+
+  //double duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+  //std::cout << "DURATION -> " << duration << std::endl;;
 
   nodesAdded.clear();
   nodesAdded = newNodes;
@@ -686,7 +679,7 @@ void MetricFFPointgeneration::processNodesStructure()
     {
       std::vector<TInt> neighboorNodes{};
       const math::Point pt = SimplicesNode(&m_nodesMesh, nodeId).getCoords();
-      const double k = 0.9 * sqrt(2.0);
+      const double k = 1.2 * sqrt(2.0);
       nodeFiltering(pt, neighboorNodes, k);
 
       //comparing the distance and the angle divergence with the all the vector from frames
@@ -738,18 +731,11 @@ void MetricFFPointgeneration::nodeFiltering(const math::Point& pt, std::vector<T
   //for(unsigned int nodeId = 0 ; nodeId < nodesMesh.capacity() ; nodeId++)
 
   std::vector<TInt> nodes = m_nodesMesh.getOctree()->findNodesNextTo(pt);
-  if(pt.X() == 0.519 && pt.Y() == 0.081 && pt.Z() == 0.481)
-  {
-    std::cout << "  k -> " << k  << std::endl;
-    std::cout << "  nodes.size() -> " << nodes.size() << std::endl;
-  }
 
   for(auto const nodeId : nodes)
   {
     if(nodesMesh[nodeId] != 0)
     {
-      if(pt.X() == 0.519 && pt.Y() == 0.081 && pt.Z() == 0.481)
-        std::cout << "  nodeId -> " << nodeId << std::endl;
       const math::Point nodeCoord = SimplicesNode(&m_nodesMesh, nodeId).getCoords();
       Eigen::Vector3d v(pt.X() - nodeCoord.X(), pt.Y() - nodeCoord.Y(), pt.Z() - nodeCoord.Z());
       const double euclidianNorm = v.norm();
@@ -758,8 +744,7 @@ void MetricFFPointgeneration::nodeFiltering(const math::Point& pt, std::vector<T
       const Eigen::Matrix3d m1 = m_nodesMesh.getAnalyticMetric(nodeCoord, m_simplexMesh->getOctree());
       //compute the current length based on the metric atached to the mesh
       const double metricLenght = 0.5 * sqrt(v.dot(m0*v)) + 0.5 * sqrt(v.dot(m1*v));
-      if(pt.X() == 0.519 && pt.Y() == 0.081 && pt.Z() == 0.481)
-        std::cout << "    metricLenght -> " << metricLenght << std::endl;
+
       if(metricLenght <= k)
       {
         neighboorNode.push_back(nodeId);
@@ -770,7 +755,7 @@ void MetricFFPointgeneration::nodeFiltering(const math::Point& pt, std::vector<T
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point& initialCoord)
 {
-  double epsilon = 0.001;
+  double epsilon = 0.01;
   Variable<Eigen::Matrix3d>* metricNodes  = nullptr;
   try{
     metricNodes = m_nodesMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");

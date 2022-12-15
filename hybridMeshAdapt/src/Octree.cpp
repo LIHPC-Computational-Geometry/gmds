@@ -304,8 +304,6 @@ TSimplexID Octree::findSimplexNextTo(const math::Point& pt)
 /******************************************************************************/
 std::vector<TSimplexID> Octree::findSimplicesInOc(const math::Point& pt)
 {
-  std::vector<TSimplexID> ans {};
-  std::unordered_set<TSimplexID> us{};
   for(auto const & oc : m_ocs)
   {
     if(oc != nullptr)
@@ -315,24 +313,41 @@ std::vector<TSimplexID> Octree::findSimplicesInOc(const math::Point& pt)
         return oc->findSimplicesInOc(pt);
       }
     }
-    else
+  }
+
+  std::cout << "m_parentOc -> " << m_parentOc << std::endl;
+  if(m_parentOc == nullptr)
+    return m_simplices;
+    std::cout << "m_parentOc->m_parentOc -> " << m_parentOc->m_parentOc << std::endl;
+  if(m_parentOc->m_parentOc == nullptr)
+    return m_parentOc->m_simplices;
+
+  std::vector<TSimplexID> ans{};
+  std::unordered_set<TSimplexID> seen{};
+  for(auto const oc : m_parentOc->m_parentOc->m_ocs)
+  {
+    for(auto const o : oc->m_ocs)
     {
-      const BitVector& nodesVector = m_simplexMesh->getBitVectorNodes();
-      ans = m_parentOc->m_simplices;
-      /*for(auto const node : m_parentOc->m_nodes)
+      std::cout << "o -> " << o << std::endl;
+      double xmin = o->getBorderOctree()[0] ; double xmax = o->getBorderOctree()[1] ;
+      double ymin = o->getBorderOctree()[2] ; double ymax = o->getBorderOctree()[3] ;
+      double zmin = o->getBorderOctree()[4] ; double zmax = o->getBorderOctree()[5] ;
+      if((xmax == m_xmin || xmin == m_xmin || xmin == m_xmax) &&
+        (ymax == m_ymin || ymin == m_ymin || ymin == m_ymax) &&
+        (zmax == m_zmin || zmin == m_zmin || zmin == m_zmax))
       {
-        std::vector<TSimplexID> ball = SimplicesNode(m_simplexMesh, node).ballOf();
-        for(auto const simplex : ball)
+        for(auto const s : o->m_simplices)
         {
-          if(us.find(simplex) == us.end())
+          //if(seen.find(s) == seen.end())
           {
-            us.insert(simplex);
-            ans.push_back(simplex);
+            //seen.insert(s);
+            ans.push_back(s);
           }
         }
-      }*/
+      }
     }
   }
+  std::cout << "ans.size() -> " << ans.size() << std::endl;
   return ans;
 }
 /******************************************************************************/
@@ -349,7 +364,14 @@ std::vector<TInt> Octree::findNodesNextTo(const math::Point& pt)
     }
   }
 
+  if(m_parentOc == nullptr)
+    return m_nodes;
+  if(m_parentOc->m_parentOc == nullptr)
+    return m_parentOc->m_nodes;
+
   std::vector<TInt> ans{};
+  std::unordered_set<TSimplexID> seen{};
+
   for(auto const oc : m_parentOc->m_parentOc->m_ocs)
   {
     for(auto const o : oc->m_ocs)
@@ -363,8 +385,11 @@ std::vector<TInt> Octree::findNodesNextTo(const math::Point& pt)
       {
         for(auto const n : o->m_nodes)
         {
-          ans.push_back(n);
-        }
+          //if(seen.find(n) == seen.end())
+          {
+            //seen.insert(n);
+            ans.push_back(n);
+          }        }
       }
     }
   }
