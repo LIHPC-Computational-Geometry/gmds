@@ -57,9 +57,6 @@ Octree::Octree(SimplexMesh* simplexMesh,
   Octree * oc6 = new Octree(simplexMesh, subdivision, m_xmin, (m_xmax + m_xmin) / 2.0, (m_ymin + m_ymax) / 2.0, m_ymax, (m_zmin + m_zmax) /2.0, m_zmax);
   Octree * oc7 = new Octree(simplexMesh, subdivision, (m_xmax + m_xmin) / 2.0, m_xmax, (m_ymin + m_ymax) / 2.0, m_ymax, (m_zmin + m_zmax) /2.0, m_zmax);
 
-  oc0->setRootOctree(this); oc1->setRootOctree(this); oc2->setRootOctree(this); oc3->setRootOctree(this);
-  oc4->setRootOctree(this); oc5->setRootOctree(this); oc6->setRootOctree(this); oc7->setRootOctree(this);
-
   oc0->setParentOctree(this); oc1->setParentOctree(this); oc2->setParentOctree(this); oc3->setParentOctree(this);
   oc4->setParentOctree(this); oc5->setParentOctree(this); oc6->setParentOctree(this); oc7->setParentOctree(this);
 
@@ -69,17 +66,13 @@ Octree::Octree(SimplexMesh* simplexMesh,
 void Octree::addNode(TInt node, std::unordered_set<TInt>& seen)
 {
   const math::Point pt = SimplicesNode(m_simplexMesh, node).getCoords();
-  //std::cout << pt << std::endl;
 
   for(Octree* oc : m_ocs)
   {
     if(oc != nullptr)
     {
-      //std::cout << "BORDERS -> "<< oc->getBorderOctree()[0] << " | " << oc->getBorderOctree()[1] << " | " << oc->getBorderOctree()[2] <<
-      // " | " << oc->getBorderOctree()[3] << " | " << oc->getBorderOctree()[4] << " | " << oc->getBorderOctree()[5] << " | " << std::endl;
       if(oc->belongToOc(pt))
       {
-        //std::cout << "in octree" << std::endl;
         oc->addNode(node, seen);
       }
 
@@ -89,8 +82,6 @@ void Octree::addNode(TInt node, std::unordered_set<TInt>& seen)
       if(seen.find(node) == seen.end())
       {
         seen.insert(node);
-        //std::cout << "adding " << node << " to octree -> " << this << std::endl;
-        //std::cout << m_xmin << " | " << m_xmax << " | " << m_ymin << " | " << m_ymax << " | " << m_zmin << " | " << m_zmax << " | " << std::endl;
         m_nodes.push_back(node);
       }
       return;
@@ -358,9 +349,28 @@ std::vector<TInt> Octree::findNodesNextTo(const math::Point& pt)
     }
   }
 
-  //std::cout << m_xmin << " | " << m_xmax << " | " << m_ymin << " | " << m_ymax << " | " << m_zmin << " | " << m_zmax << " | " << std::endl;
-  //std::cout << "    current -> " << this << std::endl;
-  return m_nodes;
+  std::vector<TInt> ans{};
+  for(auto const oc : m_parentOc->m_parentOc->m_ocs)
+  {
+    for(auto const o : oc->m_ocs)
+    {
+      double xmin = o->getBorderOctree()[0] ; double xmax = o->getBorderOctree()[1] ;
+      double ymin = o->getBorderOctree()[2] ; double ymax = o->getBorderOctree()[3] ;
+      double zmin = o->getBorderOctree()[4] ; double zmax = o->getBorderOctree()[5] ;
+      if((xmax == m_xmin || xmin == m_xmin || xmin == m_xmax) &&
+      (ymax == m_ymin || ymin == m_ymin || ymin == m_ymax) &&
+      (zmax == m_zmin || zmin == m_zmin || zmin == m_zmax))
+      {
+        for(auto const n : o->m_nodes)
+        {
+          ans.push_back(n);
+        }
+      }
+    }
+  }
+
+  return ans;
+
 }
 /******************************************************************************/
 std::vector<double> Octree::getBorderOctree() const
