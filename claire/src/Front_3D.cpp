@@ -136,6 +136,11 @@ Front_3D::outgoingNormal(Mesh *m, TCellID f_id)
 	Face f = m->get<Face>(f_id);
 	math::Vector3d f_normal = f.normal();
 
+	if (f.get<Region>().size()==0)
+	{
+		std::cout << "ATTENTION Front_3D, outgoingNormal: La face n'est connectée à aucune région." << std::endl;
+	}
+
 	// Each face of the front is connected to a unique region
 	// So the size of the vector f.get<Region>() is 1.
 	Region r = (f.get<Region>())[0];

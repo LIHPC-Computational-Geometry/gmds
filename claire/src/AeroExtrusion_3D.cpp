@@ -143,7 +143,14 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	{
 		TCellID n_id = singu_node.first ;
 		int singu_type = singu_node.second;
-		TCellID r_id = TemplateNode3Corner(Front_IN, n_id, map_new_nodes, dist_cible);
+		if (singu_type==1)
+		{
+			TCellID r_id = TemplateNode3Corner(Front_IN, n_id, map_new_nodes, dist_cible);
+		}
+		else if (singu_type==4)
+		{
+			TCellID r_id = TemplateNode3End(Front_IN, n_id, mark_edgesTreated, mark_facesTreated);
+		}
 	}
 
 	// Insert Hexa on Singular Edges
@@ -159,7 +166,7 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		}
 		else
 		{
-			std::cout << "Edge singularity not implemented yet" << std::endl;
+			//std::cout << "Edge singularity not implemented yet" << std::endl;
 		}
 	}
 
@@ -312,6 +319,7 @@ AeroExtrusion_3D::SingleEdgeClassification(TCellID e_id, Front_3D &Front)
 	Variable<int>* var_face_couche_id = m_meshH->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
 
 	Edge e = m_meshH->get<Edge>(e_id);
+
 	std::vector<Face> e_faces = e.get<Face>();
 	std::vector<Face> e_faces_on_front;
 	for (auto f:e_faces)
@@ -350,6 +358,23 @@ AeroExtrusion_3D::SingleEdgeClassification(TCellID e_id, Front_3D &Front)
 	{
 		n2=-n2;
 	}
+
+	/*
+	double angle(0);
+	std::vector<Region> e_regions = e.get<Region>() ;
+	for (auto r:e_regions)
+	{
+		std::vector<Face> two_adj_faces = math::Utils::getFacesAdjToEdgeInHexa(m_meshH, e.id(), r.id()) ;
+		Edge e_opp_0 = math::Utils::oppositeEdgeInFace(m_meshH, e.id(), two_adj_faces[0].id());
+		Edge e_opp_1 = math::Utils::oppositeEdgeInFace(m_meshH, e.id(), two_adj_faces[1].id());
+
+		math::Point center_e = e.center();
+		math::Vector3d v0 = (e_opp_0.center()-center_e).normalize() ;
+		math::Vector3d v1 = (e_opp_1.center()-center_e).normalize() ;
+
+		angle += acos(v0.dot(v1));
+	}
+	 */
 
 	// Edge classification.
 	// 0 : Side
@@ -432,6 +457,7 @@ AeroExtrusion_3D::getSingularNodes(Front_3D &AFront, Variable<int>* front_edges_
 				compteur_reversal +=1;
 			}
 		}
+
 		if ( (compteur_corner == 0 && compteur_end == 0 && compteur_reversal == 0)
 		    || (compteur_corner==2 && n_ordered_edges.size()==4)
 		    || (compteur_end==2 && n_ordered_edges.size()==4))
@@ -442,8 +468,14 @@ AeroExtrusion_3D::getSingularNodes(Front_3D &AFront, Variable<int>* front_edges_
 		{
 			sing_nodes[n_id] = 1;
 		}
+		else if (compteur_end == 3 && n_ordered_edges.size()==3)
+		{
+			sing_nodes[n_id] = 4;
+			std::cout << "Test" << std::endl;
+		}
 		else
 		{
+			/*
 			std::cout << "-------" << std::endl;
 			std::cout << "TemplateNode pas encore implémenté pour gérer cette configuration." << std::endl;
 			std::cout << "NOEUD: " << n_id << std::endl;
@@ -451,7 +483,9 @@ AeroExtrusion_3D::getSingularNodes(Front_3D &AFront, Variable<int>* front_edges_
 			std::cout << "Corner: " << compteur_corner << std::endl;
 			std::cout << "End: " << compteur_end << std::endl;
 			std::cout << "Reversal: " << compteur_reversal << std::endl;
+			*/
 		}
+
 	}
 	return sing_nodes;
 }
@@ -475,7 +509,7 @@ AeroExtrusion_3D::getSingularEdges(Front_3D &AFront, Variable<int>* front_edges_
 			}
 			if (front_edges_classification->value(e_id) > 1)
 			{
-				std::cout << "TemplateEdge pas encore implémenté pour gérer cette configuration." << std::endl;
+				//std::cout << "TemplateEdge pas encore implémenté pour gérer cette configuration." << std::endl;
 			}
 		}
 
@@ -619,6 +653,84 @@ AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<T
 	var_face_couche_id->set(f_1_new_id, AFront.getFrontID()+1);
 	var_face_couche_id->set(f_2_new_id, AFront.getFrontID()+1);
 	var_face_couche_id->set(f_3_new_id, AFront.getFrontID()+1);
+
+	gmds::IGMeshIOService ioService(m_meshH);
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
+	m_iteration++;
+
+	return r_id;
+}
+/*------------------------------------------------------------------------*/
+TCellID
+AeroExtrusion_3D::TemplateNode3End(Front_3D &AFront, TCellID n_id, int mark_edgesTreated, int mark_facesTreated)
+{
+	//std::cout << "Template Node 3 End au noeud " << n_id << std::endl;
+	TCellID r_id;
+
+	Node n = m_meshH->get<Node>(n_id);
+
+	std::vector<TCellID> n_ordered_edges = AFront.orderedFrontEdgesAroundNode(m_meshH, n_id);
+
+	Edge e_0 = m_meshH->get<Edge>(n_ordered_edges[0]);
+	Edge e_1 = m_meshH->get<Edge>(n_ordered_edges[1]);
+	Edge e_2 = m_meshH->get<Edge>(n_ordered_edges[2]);
+
+	Node n_e0_opp = e_0.getOppositeNode(n);
+	Node n_e1_opp = e_0.getOppositeNode(n);
+	Node n_e2_opp = e_0.getOppositeNode(n);
+
+	TCellID f0_id = math::Utils::CommonFace3Nodes(m_meshH, n_id, n_e0_opp.id(), n_e1_opp.id());
+	TCellID f1_id = math::Utils::CommonFace3Nodes(m_meshH, n_id, n_e1_opp.id(), n_e2_opp.id());
+	TCellID f2_id = math::Utils::CommonFace3Nodes(m_meshH, n_id, n_e2_opp.id(), n_e0_opp.id());
+
+	Face f0 = m_meshH->get<Face>(f0_id);
+	Face f1 = m_meshH->get<Face>(f1_id);
+	Face f2 = m_meshH->get<Face>(f2_id);
+
+	std::vector<Node> f0_nodes = f0.get<Node>();
+	std::vector<Node> f1_nodes = f1.get<Node>();
+	std::vector<Node> f2_nodes = f2.get<Node>();
+
+	Node n_f0_diag;
+	Node n_f1_diag;
+	Node n_f2_diag;
+	for (auto n_loc:f0_nodes)
+	{
+		if (n_loc.id() != n_id && n_loc.id() != n_e0_opp.id() && n_loc.id() != n_e1_opp.id())
+		{
+			n_f0_diag = n_loc;
+		}
+	}
+	for (auto n_loc:f1_nodes)
+	{
+		if (n_loc.id() != n_id && n_loc.id() != n_e1_opp.id() && n_loc.id() != n_e2_opp.id())
+		{
+			n_f1_diag = n_loc;
+		}
+	}
+	for (auto n_loc:f2_nodes)
+	{
+		if (n_loc.id() != n_id && n_loc.id() != n_e2_opp.id() && n_loc.id() != n_e0_opp.id())
+		{
+			n_f2_diag = n_loc;
+		}
+	}
+
+	Node n_new = m_meshH->get<Node>(m_FaceInfo[f0_id].next_ideal_nodes[n_id]);
+
+	// Create the new hexa
+	r_id = math::Utils::CreateHexaNConnectivities(m_meshH, n, n_e0_opp, n_f0_diag, n_e1_opp, n_e2_opp, n_f2_diag, n_new, n_f1_diag);
+
+	// Update the faces and edges that can't do actions anymore
+	m_meshH->mark(e_0, mark_edgesTreated);
+	m_meshH->mark(e_1, mark_edgesTreated);
+	m_meshH->mark(e_2, mark_edgesTreated);
+	m_meshH->mark(f0, mark_facesTreated);
+	m_meshH->mark(f1, mark_facesTreated);
+	m_meshH->mark(f2, mark_facesTreated);
 
 	gmds::IGMeshIOService ioService(m_meshH);
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -962,5 +1074,64 @@ AeroExtrusion_3D::TemplateFace(TCellID f_id, Front_3D &Front_IN, std::map<TCellI
 	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
 	m_iteration++;
 
+}
+/*------------------------------------------------------------------------*/
+std::map<int, std::vector<Edge>>
+AeroExtrusion_3D::ComputeGlobalFeatureEdges(Front_3D &Front_IN, std::map<TCellID, int> singular_nodes, std::map<TCellID, int> singular_edges)
+{
+	std::map<int, std::vector<Edge>> feature_edges;
+
+	int mark_isEdgeUsed = m_meshH->newMark<Edge>();
+
+	for (auto sing_node:singular_nodes)
+	{
+		Node n = m_meshH->get<Node>(sing_node.first);
+		std::vector<Edge> local_feature_edges;
+		for (auto sing_edge:singular_edges)
+		{
+			Edge e_loc = m_meshH->get<Edge>(sing_edge.first) ;
+			std::vector<Node> e_loc_nodes = e_loc.get<Node>();
+			if (e_loc_nodes[0].id() == n.id() || e_loc_nodes[1].id() == n.id())
+			{
+				local_feature_edges.push_back(e_loc);
+			}
+		}
+
+		for (auto e_loc_feature:local_feature_edges)
+		{
+			if(!m_meshH->isMarked(e_loc_feature, mark_isEdgeUsed))
+			{
+				std::vector<Edge> newGlobalFeature;
+				Node n_loc = m_meshH->get<Node>(n.id());
+				/*
+				{
+					newGlobalFeature.push_back(e_loc_feature);
+					Node n_opp = e_loc_feature.getOppositeNode(n_loc) ;
+				 	// Get next feature edge
+				   std::vector<Edge> local_feature_edges_around_n_opp;
+					for (auto sing_edge:singular_edges)
+					{
+						Edge e_loc = m_meshH->get<Edge>(sing_edge.first) ;
+						std::vector<Node> e_loc_nodes = e_loc.get<Node>();
+						if ( (e_loc_nodes[0].id() == n_opp.id() && e_loc_nodes[1].id() != n_loc.id() )
+						    || (e_loc_nodes[1].id() == n_opp.id() && e_loc_nodes[0].id() != n_loc.id()) )
+						{
+							local_feature_edges.push_back(e_loc);
+						}
+					}
+					if (local_feature_edges_around_n_opp.size() > 0)
+					{
+						Node n_loc = n_opp;
+					}
+				}
+				*/
+			}
+		}
+	}
+
+	m_meshH->unmarkAll<Edge>(mark_isEdgeUsed);
+	m_meshH->freeMark<Edge>(mark_isEdgeUsed);
+
+	return feature_edges;
 }
 /*------------------------------------------------------------------------*/
