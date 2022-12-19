@@ -47,10 +47,10 @@ void CGNSWriter::initialize(const std::string &AFileName){
 	// string to char array
 	strcpy(char_array, AFileName.c_str());
 
-	cg_open("aeropipeline.cgns",CG_MODE_WRITE,&m_indexFile);
+	cg_open(char_array,CG_MODE_WRITE,&m_indexFile);
 
 	char basename[33];
-	strcpy(basename, "aeropipeline.cgns");
+	strcpy(basename, char_array);
 
 	m_cellDim = 2;
 	m_physdim = 3;
@@ -220,24 +220,38 @@ void CGNSWriter::writeZones(){
 		Variable<int>* farfield;
 		Variable<int>* vehicule;
 
-		try {
+		farfield_var = true;
+		vehicule_var = true;
+
+		Variable<int>* couche = m_blocks->getVariable<int, GMDS_NODE>("GMDS_Couche");
+
+		int couche_max = 0;
+		for(auto n : m_blocks->nodes()){
+			if(couche->value(n) > couche_max) couche_max = couche->value(n);
+		}
+
+		/*try {
 			farfield = m_blocks->getVariable<int, GMDS_NODE>("Farfield");
 			farfield_var = true;
 		} catch(GMDSException e){
 			farfield_var = false;
 		}
 		try {
-			vehicule = m_blocks->getVariable<int, GMDS_NODE>("Vehicule");
+			vehicule = m_blocks->getVariable<int, GMDS_NODE>("Paroi");
 			vehicule_var = true;
 		}catch (GMDSException e){
 			vehicule_var = false;
-		}
+		}*/
 		std::vector<int> indices;
 
 		if(farfield_var) {
 			for (int i = 0; i < 4; i++) {
 				Node n = b.getNode(i);
-				if (farfield->value(n.id()) == 1) {
+				/*if (farfield->value(n.id()) == 1) {
+					farfield_found = true;
+					indices.push_back(i);
+				}*/
+				if (couche->value(n.id()) == couche_max) {
 					farfield_found = true;
 					indices.push_back(i);
 				}
@@ -277,7 +291,11 @@ void CGNSWriter::writeZones(){
 		if(vehicule_var) {
 			for (int i = 0; i < 4; i++) {
 				Node n = b.getNode(i);
-				if (vehicule->value(n.id()) == 1) {
+				/*if (vehicule->value(n.id()) == 1) {
+					vehicule_found = true;
+					indices.push_back(i);
+				}*/
+				if (couche->value(n.id()) == 0) {
 					vehicule_found = true;
 					indices.push_back(i);
 				}
@@ -306,7 +324,7 @@ void CGNSWriter::writeZones(){
 				}
 
 				char bc_name[32];
-				strcpy(bc_name, "Vehicule");
+				strcpy(bc_name, "Paroi");
 
 				writeBoundaryCondition(id_bc, pts_bc, b.id() + 1, bc_name);
 			}

@@ -31,6 +31,9 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_2D : public AbstractAeroPipeline {
 	virtual AbstractAeroPipeline::STATUS execute();
 	/*------------------------------------------------------------------------*/
 
+	Blocking2D* getBlocking();
+
+
  private:
 	/*----------------------------------------------------------------------------*/
 	/** @brief Lecture du fichier de maillage au format .vtk
