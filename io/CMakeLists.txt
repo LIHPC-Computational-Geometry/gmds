@@ -85,6 +85,7 @@ elseif(WITH_MESHB)
 else()
    target_link_libraries(${GMDS_LIB} PUBLIC
            ${LIB_GMDS_IG}
+           ${LIB_GMDS_IGALGO}
            ${LIB_GMDS_SOFIANE})
 endif()
 
