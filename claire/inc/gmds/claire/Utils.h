@@ -194,6 +194,22 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static math::Point AdvectedPointRK4_UniqVector_3D(Mesh *Amesh, FastLocalize *fl, math::Point M, double dist_cible, Variable<double>* A_distance, math::Vector3d A_vector);
 	/*-------------------------------------------------------------------*/
+	/** @brief Return the 2 faces adjacents to the edge e_id in the hexa
+	 	*
+	 	* \param[in] AMesh the mesh
+		*
+		* \return
+	 */
+	static std::vector<Face> getFacesAdjToEdgeInHexa(Mesh *Amesh, TCellID e_id, TCellID r_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Return the opposite edge of e in a quad face
+	 	*
+	 	* \param[in] AMesh the mesh
+		*
+		* \return
+	 */
+	static Edge oppositeEdgeInFace(Mesh *Amesh, TCellID e_id, TCellID f_id);
+	/*-------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/
