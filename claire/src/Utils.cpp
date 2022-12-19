@@ -645,6 +645,67 @@ math::Point Utils::AdvectedPointRK4_UniqVector_3D(Mesh *Amesh, FastLocalize *fl,
 	return advpoint.getPend();
 }
 /*----------------------------------------------------------------------------*/
+std::vector<Face> Utils::getFacesAdjToEdgeInHexa(Mesh *Amesh, TCellID e_id, TCellID r_id)
+{
+	std::vector<Face> adj_faces;	// Should be sized 2 at the end of the method
+
+	Region r = Amesh->get<Region>(r_id);
+	std::vector<Face> r_faces = r.get<Face>();	// Should be sized 6
+
+	if (r_faces.size() != 6)
+	{
+		std::cout << "ATTENTION getFacesAdjToEdgeInHexa: la région n'est pas un hexa." << std::endl;
+		std::cout << "-> Nbr faces: " << r_faces.size() << std::endl;
+	}
+
+	for (auto f:r_faces)
+	{
+		std::vector<Edge> f_edges = f.get<Edge>();
+		if (f_edges[0].id() == e_id || f_edges[1].id() == e_id
+		    || f_edges[2].id() == e_id || f_edges[3].id() == e_id)
+		{
+			adj_faces.push_back(f);
+		}
+	}
+
+	if (adj_faces.size() !=2)
+	{
+		std::cout << "ATTENTION getFacesAdjToEdgeInHexa: les 2 faces adjacentes n'ont pas été trouvées correctement." << std::endl;
+	}
+
+	return adj_faces;
+}
+/*----------------------------------------------------------------------------*/
+Edge Utils::oppositeEdgeInFace(Mesh *Amesh, TCellID e_id, TCellID f_id)
+{
+	Edge e_opp;
+	Face f = Amesh->get<Face>(f_id);
+	std::vector<Edge> f_edges = f.get<Edge>();
+	if (f_edges.size() !=4)
+	{
+		std::cout << "ATTENTION oppositeEdgeInFace: la face n'est pas un quad." << std::endl;
+	}
+
+	if (f_edges[0].id()==e_id)
+	{
+		e_opp = f_edges[2];
+	}
+	else if (f_edges[1].id()==e_id)
+	{
+		e_opp = f_edges[3];
+	}
+	else if (f_edges[2].id()==e_id)
+	{
+		e_opp = f_edges[0];
+	}
+	else if (f_edges[3].id()==e_id)
+	{
+		e_opp = f_edges[1];
+	}
+
+	return e_opp;
+}
+/*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/
 }  // namespace gmds

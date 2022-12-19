@@ -73,6 +73,24 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 		Grad = interpolationGradient(region_id, Mat_A_Inv, m_Pstart);	// Quel est le gradient à ce point
 	}
 
+	if ( abs(Grad.X()) <= pow(10,-6) && abs(Grad.Y())<=pow(10,-6) && abs(Grad.Z())<=pow(10,-6))
+	{
+		std::cout << "RK4: Le gradient est nul au départ de l'algo..." << std::endl;
+		gmds::Cell::Data data = m_fl->find(m_Pstart);
+		Node n = m_mesh->get<Node>(data.id);
+		std::vector<Edge> edges = n.get<Edge>();
+		//Grad = m_gradient2D->value(data.id) ;
+		//dist = m_distance->value(data.id) ;
+		for (auto e:edges)
+		{
+			Node n_opp = e.getOppositeNode(n);
+			Grad = Grad + m_gradient2D->value(n_opp.id());
+		}
+		Grad = Grad/edges.size();
+		std::cout << "Grad: " << Grad << std::endl;
+		std::cout << "----------" << std::endl;
+	}
+
 	while ( (abs(dist-m_d0) > err) && iterations < max_iterations ) {
 		math::Point M = RungeKutta4(m_Pend, Grad.normalize(), dt);	// Calcule la position du point à l'itération n+1 avec un RK4
 		// On vérifie ensuite si cette position est "valide"
