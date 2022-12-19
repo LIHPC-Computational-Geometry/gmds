@@ -132,6 +132,16 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	 */
 	TCellID TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<TCellID, TCellID> map_new_nodes, double dc);
 	/*-------------------------------------------------------------------*/
+	/** @brief Hexa insertion at the node n_id.
+	 	* \param[in] AFront the front
+   	* \param[in] n_id the node
+   	* \param[in] mark_edgesTreated mark the edges that can't insert or collapse an hex now
+   	* \param[in] mark_facesTreated mark the faces that can't insert an hex now
+		*
+		* \return  the id of the new hexa
+	 */
+	TCellID TemplateNode3End(Front_3D &AFront, TCellID n_id, int mark_edgesTreated, int mark_facesTreated);
+	/*-------------------------------------------------------------------*/
 	/** @brief Advancing front template on edge classified as corner.
 	 	* \param[in] AFront the front
    	* \param[in] e_id the node
@@ -148,6 +158,15 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 		* \return
 	 */
 	void TemplateFace(TCellID f_id, Front_3D &Front_IN, std::map<TCellID, TCellID> map_new_nodes);
+	/*-------------------------------------------------------------------*/
+	/** @brief Compute global feature edges
+	 	* \param[in] Front_IN front en entrée
+	 	* \param[in] singular_nodes singular nodes of the front
+	 	* \param[in] singular_edges singular edges of the front
+		*
+		* \return
+	 */
+	std::map<int, std::vector<Edge>> ComputeGlobalFeatureEdges(Front_3D &Front_IN, std::map<TCellID, int> singular_nodes, std::map<TCellID, int> singular_edges);
 	/*-------------------------------------------------------------------*/
  private:
 	/** triangular mesh we work on */
