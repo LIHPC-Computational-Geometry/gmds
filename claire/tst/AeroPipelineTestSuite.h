@@ -31,19 +31,19 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 
 	// IN/OUT Parameters
 	std::string dir(TEST_SAMPLES_DIR);
-	params_aero.input_file=dir+"/Aero/2D/Apollo_2D_5.vtk";
+	params_aero.input_file=dir+"/Aero/2D/Stardust_2D_0.01.vtk";
 	params_aero.output_file="AeroPipeline2D_Quad.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
 
 	// Physical Parameters for the algorithm
-	params_aero.delta_cl = 3;				// Epaisseur de la première couche, pour la couche limite
+	params_aero.delta_cl = 0.05;				// Epaisseur de la première couche, pour la couche limite
 	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
 
 	// Wall Discretization Parameter
-	params_aero.nbrMinBloc = 4;					// Minimal number of block on the wall
+	params_aero.nbrMinBloc = 20;					// Minimal number of block on the wall
 	params_aero.nbrCellsInCL = 30;				// Number of cells in the boundary layer
-	params_aero.edge_size_wall = 3 ;										// Maximal size of the cells on the wall
-	params_aero.edge_size_default = 5 ;										// Default size of the cells in the domain
+	params_aero.edge_size_wall = 0.002 ;										// Maximal size of the cells on the wall
+	params_aero.edge_size_default = 0.005 ;										// Default size of the cells in the domain
 	params_aero.edge_size_first_ortho_wall = 1*pow(10,-5);	// Size of the first edge orthogonal to the wall
 
 	// Vector Field Computation Parameters
@@ -205,11 +205,11 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 	params_aero.block_surface_3D = 2;
 
 	// Physical Parameters for the algorithm
-	params_aero.delta_cl = 0.3;			// Epaisseur de la première couche, pour la couche limite
+	params_aero.delta_cl = 0.05;			// Epaisseur de la première couche, pour la couche limite
 	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
 
 	// Extrusion Parameters
-	params_aero.nbr_couches = 6;			// Number of layer in extrusion
+	params_aero.nbr_couches = 10;			// Number of layer in extrusion
 
 
 

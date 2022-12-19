@@ -267,7 +267,7 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 		Node n1 = m_meshHex->newNode({-0.5, -0.5, 0.5});
 		Node n2 = m_meshHex->newNode({0.5, -0.5, 0.5});
 		Node n3 = m_meshHex->newNode({0.0, 0.0, 0.5});
-		Node n4 = m_meshHex->newNode({0.5, 0, 0.5});
+		Node n4 = m_meshHex->newNode({0.5, 0.0, 0.5});
 		Node n5 = m_meshHex->newNode({-0.5, 0.5, 0.5});
 		Node n6 = m_meshHex->newNode({0.0, 0.5, 0.5});
 
@@ -307,6 +307,109 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 		vtkWriter.setCellOptions(gmds::N|gmds::F);
 		vtkWriter.setDataOptions(gmds::N|gmds::F);
 		vtkWriter.write("test.vtk");
+
+	}
+
+
+	//-------------------------------------//
+	// Special case of the C3_3D geometry  //
+	//	Surface Blocking 2						//
+	//-------------------------------------//
+
+	else if (m_params.block_surface_3D==4)
+	{
+		Node n0 = m_meshHex->newNode({0, 0, 0});
+
+		Node n1 = m_meshHex->newNode({-0.5, -0.5, 0.5});
+		Node n2 = m_meshHex->newNode({0.5, -0.5, 0.5});
+		Node n3 = m_meshHex->newNode({0.0, 0.0, 0.5});
+		Node n4 = m_meshHex->newNode({0.5, 0.0, 0.5});
+		Node n5 = m_meshHex->newNode({-0.5, 0.5, 0.5});
+		Node n6 = m_meshHex->newNode({0.0, 0.5, 0.5});
+
+		Node n7 = m_meshHex->newNode({0.5, 0.0, 0.0});
+		Node n8 = m_meshHex->newNode({0.0, 0.5, 0.0});
+		Node n9 = m_meshHex->newNode({0.5, 0.5, 0.0});
+
+		Node n10 = m_meshHex->newNode({-0.5, -0.5, -0.5});
+		Node n11 = m_meshHex->newNode({0.5, -0.5, -0.5});
+		Node n12 = m_meshHex->newNode({-0.5, 0.5, -0.5});
+		Node n13 = m_meshHex->newNode({0.5, 0.5, -0.5});
+
+		Node n20 = m_meshHex->newNode({0, -0.5, 0.5});
+		Node n21 = m_meshHex->newNode({-0.5, -0.5, 0});
+		Node n22 = m_meshHex->newNode({0.0, -0.5, 0});
+		Node n23 = m_meshHex->newNode({0.5, -0.5, 0});
+		Node n24 = m_meshHex->newNode({0.0, -0.5, -0.5});
+		Node n25 = m_meshHex->newNode({0.25, 0.0, 0.5});
+		Node n26 = m_meshHex->newNode({0.0, 0.0, 0.25});
+		Node n27 = m_meshHex->newNode({0.25, 0.0, 0.25});
+		Node n28 = m_meshHex->newNode({0.5, 0.0, 0.25});
+		Node n29 = m_meshHex->newNode({0.25, 0.0, 0.0});
+		Node n30 = m_meshHex->newNode({-0.5, 0.0, 0.5});
+		Node n31 = m_meshHex->newNode({0.0, 0.25, 0.5});
+		Node n32 = m_meshHex->newNode({-0.5, 0.0, 0.0});
+		Node n33 = m_meshHex->newNode({0.0, 0.25, 0.25});
+		Node n34 = m_meshHex->newNode({0.0, 0.25, 0.0});
+		Node n35 = m_meshHex->newNode({0.25, 0.25, 0.0});
+		Node n36 = m_meshHex->newNode({0.5, 0.25, 0.0});
+		Node n37 = m_meshHex->newNode({0.5, 0.0, -0.5});
+		Node n38 = m_meshHex->newNode({-0.5, 0.0, -0.5});
+		Node n39 = m_meshHex->newNode({0.0, 0.0, -0.5});
+		Node n40 = m_meshHex->newNode({0.0, 0.5, 0.25});
+		Node n41 = m_meshHex->newNode({-0.5, 0.5, 0.0});
+		Node n42 = m_meshHex->newNode({0.25, 0.5, 0.0});
+		Node n43 = m_meshHex->newNode({0.0, 0.5, -0.5});
+
+		// Create the faces
+		TCellID f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n1.id(), n3.id(), n31.id(), n30.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n30.id(), n31.id(), n6.id(), n5.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n1.id(), n20.id(), n25.id(), n3.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n20.id(), n2.id(), n4.id(), n25.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n0.id(), n29.id(), n35.id(), n34.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n29.id(), n7.id(), n36.id(), n35.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n34.id(), n35.id(), n42.id(), n8.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n35.id(), n36.id(), n9.id(), n42.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n10.id(), n24.id(), n39.id(), n38.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n24.id(), n11.id(), n37.id(), n39.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n12.id(), n43.id(), n39.id(), n38.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n39.id(), n37.id(), n13.id(), n43.id());
+
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n2.id(), n4.id(), n28.id(), n23.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n11.id(), n7.id(), n28.id(), n23.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n11.id(), n7.id(), n36.id(), n37.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n13.id(), n9.id(), n36.id(), n37.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n3.id(), n31.id(), n33.id(), n26.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n0.id(), n34.id(), n33.id(), n26.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n40.id(), n33.id(), n34.id(), n8.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n40.id(), n33.id(), n31.id(), n6.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n1.id(), n30.id(), n32.id(), n21.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n10.id(), n38.id(), n32.id(), n21.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n12.id(), n38.id(), n32.id(), n41.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n5.id(), n30.id(), n32.id(), n41.id());
+
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n5.id(), n6.id(), n40.id(), n41.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n12.id(), n8.id(), n40.id(), n41.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n12.id(), n8.id(), n42.id(), n43.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n13.id(), n9.id(), n42.id(), n43.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n0.id(), n29.id(), n27.id(), n26.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n3.id(), n25.id(), n27.id(), n26.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n28.id(), n27.id(), n25.id(), n4.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n28.id(), n27.id(), n29.id(), n7.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n24.id(), n22.id(), n21.id(), n10.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n24.id(), n22.id(), n23.id(), n11.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n20.id(), n22.id(), n23.id(), n2.id());
+		f_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshHex, n20.id(), n22.id(), n21.id(), n1.id());
+
+		for (auto n_id : m_meshHex->nodes()) {
+			m_couche_id->set(n_id, 0);
+		}
+
+		gmds::IGMeshIOService ioService(m_meshHex);
+		gmds::VTKWriter vtkWriter(&ioService);
+		vtkWriter.setCellOptions(gmds::N|gmds::F);
+		vtkWriter.setDataOptions(gmds::N|gmds::F);
+		vtkWriter.write("Surface_3D.vtk");
 
 	}
 
