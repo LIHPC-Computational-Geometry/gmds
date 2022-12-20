@@ -5,7 +5,6 @@
 /*------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
 #include <gmds/claire/FrontEdgesNodesClassification_3D.h>
-#include <gmds/claire/Utils.h>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -34,7 +33,27 @@ FrontEdgesNodesClassification_3D::execute()
 	FrontNodesClassification();	// Fill the variable m_NodesClassification
 	MarkSemiEdgesandNodes();		// Mark the semi nodes, and the semi edges
 
+	m_global_feature_edges = ComputeAllGlobalFeatureEdge();
+
 	return FrontEdgesNodesClassification_3D::SUCCESS;
+}
+/*------------------------------------------------------------------------*/
+int
+FrontEdgesNodesClassification_3D::getMarkSemiEdges()
+{
+	return m_mark_semiEdges;
+}
+/*------------------------------------------------------------------------*/
+int
+FrontEdgesNodesClassification_3D::getMarkSemiNodes()
+{
+	return m_mark_semiNodes;
+}
+/*------------------------------------------------------------------------*/
+std::vector<std::vector<TCellID>>
+FrontEdgesNodesClassification_3D::getGlobalFeatureEdge()
+{
+	return m_global_feature_edges;
 }
 /*------------------------------------------------------------------------*/
 int
@@ -214,26 +233,33 @@ FrontEdgesNodesClassification_3D::ComputeOneGlobalFeatureEdge(TCellID n_id, TCel
 	std::vector<TCellID> global_feature_edge;
 	global_feature_edge.push_back(e_id);
 
-	Edge e = m_mesh->get<Edge>(e_id);
-	Node n = m_mesh->get<Node>(n_id);
+	int mark_UsedEdges = m_mesh->newMark<Edge>();
 
-	Node n_opp = e.getOppositeNode(n);
-	while (!m_mesh->isMarked(e, m_mark_semiEdges)
-	       && m_NodesClassification->value(n_opp.id()) == 2 )
+	Edge e_feature_loc = m_mesh->get<Edge>(e_id);
+	Node n_loc = e_feature_loc.getOppositeNode(m_mesh->get<Node>(n_id));
+	while (!m_mesh->isMarked(e_feature_loc, m_mark_semiEdges)
+	       && m_NodesClassification->value(n_loc.id()) == 2
+	       && !m_mesh->isMarked(e_feature_loc, mark_UsedEdges))
 	{
-		std::vector<Edge> n_opp_edges = n_opp.get<Edge>();
-		for (auto e_adj:n_opp_edges)
+		m_mesh->mark(e_feature_loc, mark_UsedEdges);
+		std::vector<Edge> n_loc_edges = n_loc.get<Edge>();
+		bool nextEdgeFound(false);
+		for (auto e_adj:n_loc_edges)
 		{
-			std::vector<Node> e_adj_nodes = e_adj.get<Node>();
-			if ( e_adj.id() != e.id()
-			    && m_EdgesClassification->value(e_adj.id()) > 0 )
+			if ( e_adj.id() != e_feature_loc.id()
+			    && m_EdgesClassification->value(e_adj.id()) > 0
+			    && !nextEdgeFound)
 			{
-				global_feature_edge.push_back(e_adj.id());
-				n_opp = e_adj.getOppositeNode(n_opp);
-				e = e_adj;
+				e_feature_loc = e_adj ;
+				global_feature_edge.push_back(e_feature_loc.id());
+				n_loc = e_feature_loc.getOppositeNode(n_loc);
+				nextEdgeFound = true;
 			}
 		}
 	}
+
+	m_mesh->unmarkAll<Edge>(mark_UsedEdges);
+	m_mesh->freeMark<Edge>(mark_UsedEdges);
 
 	return global_feature_edge;
 }
