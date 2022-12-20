@@ -61,6 +61,7 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 	dist = interpolationDistance(region_id, Mat_A_Inv, m_Pstart);	// A quelle distance est le point de départ
 	Grad = interpolationGradient(region_id, Mat_A_Inv, m_Pstart);	// Quel est le gradient à ce point
 
+	/*
 	if (m_Pstart.X()==0 && m_Pstart.Y()==0 && m_Pstart.Z()==0
 	    && Grad.X()==0 && Grad.Y()==0 && Grad.Z()==0)
 	{
@@ -72,6 +73,7 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 		dist = interpolationDistance(region_id, Mat_A_Inv, m_Pstart);	// A quelle distance est le point de départ
 		Grad = interpolationGradient(region_id, Mat_A_Inv, m_Pstart);	// Quel est le gradient à ce point
 	}
+	*/
 
 	if ( abs(Grad.X()) <= pow(10,-6) && abs(Grad.Y())<=pow(10,-6) && abs(Grad.Z())<=pow(10,-6))
 	{
