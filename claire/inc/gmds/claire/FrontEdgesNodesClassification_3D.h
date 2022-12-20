@@ -22,13 +22,7 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 		FAIL,
 		SUCCESS
 	} STATUS;
-	/*--------------------------------------------------------------------*/
-	struct Global_Feature_Edge
-	{
-		TCellID     					Start_n_id;
-		TCellID 							End_n_id;
-		std::vector<TCellID> 		edges_id;
-	};
+
 	/*-------------------------------------------------------------------*/
 	/** @brief Constructor.
          *  @param[in] AMeshT the triangular mesh where we work on
@@ -48,41 +42,6 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	/** @brief Execute the algorithm
 	 */
 	STATUS execute();
-	/*-------------------------------------------------------------------*/
-	/** @brief
-	 	* \param[in]
-		*
-		* \return  return the mark on semi edges
-	 */
-	int getMarkSemiEdges();
-	/*-------------------------------------------------------------------*/
-	/** @brief
-	 	* \param[in]
-		*
-		* \return  return the mark on semi nodes
-	 */
-	int getMarkSemiNodes();
-	/*-------------------------------------------------------------------*/
-	/** @brief
-	 	* \param[in]
-		*
-		* \return  return the mark
-	 */
-	int getMarkEdgesTemplates();
-	/*-------------------------------------------------------------------*/
-	/** @brief
-	 	* \param[in]
-		*
-		* \return  return the mark
-	 */
-	int getMarkNodesTemplates();
-	/*-------------------------------------------------------------------*/
-	/** @brief
-	 	* \param[in]
-		*
-		* \return  return the global feature edges
-	 */
-	std::vector<std::vector<TCellID>> getGlobalFeatureEdge();
 	/*-------------------------------------------------------------------*/
 
  private:
@@ -108,43 +67,6 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	 */
 	void FrontNodesClassification();
 	/*-------------------------------------------------------------------*/
-	/** @brief Init the mark on semi edges, and the one on semi nodes
-	 	* \param[in]
-		*
-		* \return
-	 */
-	void MarkSemiEdgesandNodes();
-	/*-------------------------------------------------------------------*/
-	/** @brief
-	 	* \param[in] n_id id of the node
-		*
-		* \return
-	 */
-	bool isValidNodeForTemplate(TCellID n_id);
-	/*-------------------------------------------------------------------*/
-	/** @brief From a feature node and an adjacent feature edge, compute
-	 	* the global feature edge
-	 	* \param[in] n_id id of the starting feature node
-	 	* \param[in] e_id id of the starting feature edge
-		*
-		* \return IDs of the edges on the global feature edge
-	 */
-	Global_Feature_Edge ComputeOneGFE(TCellID n_id, TCellID e_id);
-	/*-------------------------------------------------------------------*/
-	/** @brief Compute all the global feature edge
-	 	* \param[in]
-		*
-		* \return
-	 */
-	std::vector<Global_Feature_Edge> ComputeAllGFE();
-	/*-------------------------------------------------------------------*/
-	/** @brief
-	 	* \param[in]
-		*
-		* \return
-	 */
-	void ComputeValid_GFE();
-	/*-------------------------------------------------------------------*/
  private:
 	/** the quad mesh we work on */
 	Mesh *m_mesh;
@@ -158,14 +80,6 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	int m_mark_semiEdges;
 	/** Mark on semi nodes */
 	int m_mark_semiNodes;
-	/** Mark edges for templates */
-	int m_mark_EdgesForTemplates;
-	/** Mark nodes for templates */
-	int m_mark_NodesForTemplates;
-	/** */
-	std::vector<std::vector<TCellID>> m_global_feature_edges;
-	/** */
-	std::vector<Global_Feature_Edge> m_All_global_feature_edges;
 };
 /*----------------------------------------------------------------------------*/
 }     // namespace gmds
