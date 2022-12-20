@@ -10,6 +10,7 @@
 #include <gmds/claire/AeroExtrusion_3D.h>
 #include <gmds/claire/AdvectedPointRK4_3D.h>
 #include <gmds/claire/AeroMeshQuality.h>
+#include <gmds/claire/FrontEdgesNodesClassification_3D.h>
 
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>
@@ -57,7 +58,7 @@ AeroExtrusion_3D::execute()
 	Front_3D Current_Front = Compute1stLayer(Front_Geom, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), m_VectorField);
 
 	// Compute the successive layers
-	for (int i=2; i <= m_params_aero.nbr_couches; i++) {
+	for (int i=2; i <= m_params_aero.nbr_couches-3; i++) {
 		Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), i*pas_couche,
 		                             m_VectorField);
 	}
@@ -132,6 +133,53 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	std::vector<TCellID> front_nodes = Front_IN.getNodes();
 	std::vector<TCellID> front_faces = Front_IN.getFaces();
 
+	//------//
+	// TEST //
+	//------//
+
+	Variable<int>* var_TEST_EdgesClassification = m_meshH->getOrCreateVariable<int, GMDS_EDGE>("TEST_EdgesClassification");
+	Variable<int>* var_TEST_NodesClassification = m_meshH->getOrCreateVariable<int, GMDS_NODE>("TEST_NodesClassification");
+	FrontEdgesNodesClassification_3D Classification = FrontEdgesNodesClassification_3D(m_meshH,
+	                                                                                   &Front_IN,
+	                                                                                   var_TEST_EdgesClassification,
+	                                                                                   var_TEST_NodesClassification);
+	Classification.execute();
+
+	std::vector<std::vector<TCellID>> global_feature_edge = Classification.getGlobalFeatureEdge();
+	std::cout << "Nbr de global feature edge: " << global_feature_edge.size() << std::endl;
+
+	/*
+	std::map<TCellID, int> singular_nodes = getSingularNodes(Front_IN, var_TEST_EdgesClassification);
+	int mark_edgesTreated = m_meshH->newMark<Edge>();
+	int mark_facesTreated = m_meshH->newMark<Face>();
+
+
+	for (auto singu_node:singular_nodes)
+	{
+		TCellID n_id = singu_node.first ;
+		int singu_type = singu_node.second;
+		if (singu_type==1)
+		{
+			TCellID r_id = TemplateNode3Corner(Front_IN, n_id, map_new_nodes, dist_cible);
+		}
+		else if (singu_type==4)
+		{
+			TCellID r_id = TemplateNode3End(Front_IN, n_id, mark_edgesTreated, mark_facesTreated);
+		}
+	}
+
+	m_meshH->unmarkAll<Edge>(mark_edgesTreated);
+	m_meshH->freeMark<Edge>(mark_edgesTreated);
+	m_meshH->unmarkAll<Face>(mark_facesTreated);
+	m_meshH->freeMark<Face>(mark_facesTreated);
+	 */
+
+
+	//----------//
+	// FIN TEST //
+	//----------//
+
+	/*
 	Variable<int>* var_front_edges_classification = FrontEdgesClassification(Front_IN);
 
 	int mark_edgesTreated = m_meshH->newMark<Edge>();
@@ -174,6 +222,7 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	m_meshH->freeMark<Edge>(mark_edgesTreated);
 	m_meshH->unmarkAll<Face>(mark_facesTreated);
 	m_meshH->freeMark<Face>(mark_facesTreated);
+	 */
 
 
 	// Ajout des hex restants
@@ -1074,64 +1123,5 @@ AeroExtrusion_3D::TemplateFace(TCellID f_id, Front_3D &Front_IN, std::map<TCellI
 	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
 	m_iteration++;
 
-}
-/*------------------------------------------------------------------------*/
-std::map<int, std::vector<Edge>>
-AeroExtrusion_3D::ComputeGlobalFeatureEdges(Front_3D &Front_IN, std::map<TCellID, int> singular_nodes, std::map<TCellID, int> singular_edges)
-{
-	std::map<int, std::vector<Edge>> feature_edges;
-
-	int mark_isEdgeUsed = m_meshH->newMark<Edge>();
-
-	for (auto sing_node:singular_nodes)
-	{
-		Node n = m_meshH->get<Node>(sing_node.first);
-		std::vector<Edge> local_feature_edges;
-		for (auto sing_edge:singular_edges)
-		{
-			Edge e_loc = m_meshH->get<Edge>(sing_edge.first) ;
-			std::vector<Node> e_loc_nodes = e_loc.get<Node>();
-			if (e_loc_nodes[0].id() == n.id() || e_loc_nodes[1].id() == n.id())
-			{
-				local_feature_edges.push_back(e_loc);
-			}
-		}
-
-		for (auto e_loc_feature:local_feature_edges)
-		{
-			if(!m_meshH->isMarked(e_loc_feature, mark_isEdgeUsed))
-			{
-				std::vector<Edge> newGlobalFeature;
-				Node n_loc = m_meshH->get<Node>(n.id());
-				/*
-				{
-					newGlobalFeature.push_back(e_loc_feature);
-					Node n_opp = e_loc_feature.getOppositeNode(n_loc) ;
-				 	// Get next feature edge
-				   std::vector<Edge> local_feature_edges_around_n_opp;
-					for (auto sing_edge:singular_edges)
-					{
-						Edge e_loc = m_meshH->get<Edge>(sing_edge.first) ;
-						std::vector<Node> e_loc_nodes = e_loc.get<Node>();
-						if ( (e_loc_nodes[0].id() == n_opp.id() && e_loc_nodes[1].id() != n_loc.id() )
-						    || (e_loc_nodes[1].id() == n_opp.id() && e_loc_nodes[0].id() != n_loc.id()) )
-						{
-							local_feature_edges.push_back(e_loc);
-						}
-					}
-					if (local_feature_edges_around_n_opp.size() > 0)
-					{
-						Node n_loc = n_opp;
-					}
-				}
-				*/
-			}
-		}
-	}
-
-	m_meshH->unmarkAll<Edge>(mark_isEdgeUsed);
-	m_meshH->freeMark<Edge>(mark_isEdgeUsed);
-
-	return feature_edges;
 }
 /*------------------------------------------------------------------------*/

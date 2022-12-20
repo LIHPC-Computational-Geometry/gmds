@@ -43,6 +43,27 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	 */
 	STATUS execute();
 	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	* \param[in]
+		*
+		* \return  return the mark on semi edges
+	 */
+	int getMarkSemiEdges();
+	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	* \param[in]
+		*
+		* \return  return the mark on semi nodes
+	 */
+	int getMarkSemiNodes();
+	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	* \param[in]
+		*
+		* \return  return the global feature edges
+	 */
+	std::vector<std::vector<TCellID>> getGlobalFeatureEdge();
+	/*-------------------------------------------------------------------*/
 
  private:
 	/*-------------------------------------------------------------------*/
@@ -103,6 +124,8 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	int m_mark_semiEdges;
 	/** Mark on semi nodes */
 	int m_mark_semiNodes;
+	/** */
+	std::vector<std::vector<TCellID>> m_global_feature_edges;
 };
 /*----------------------------------------------------------------------------*/
 }     // namespace gmds
