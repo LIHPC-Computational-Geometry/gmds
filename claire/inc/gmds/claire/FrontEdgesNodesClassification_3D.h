@@ -67,6 +67,29 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	 */
 	void FrontNodesClassification();
 	/*-------------------------------------------------------------------*/
+	/** @brief Init the mark on semi edges, and the one on semi nodes
+	 	* \param[in]
+		*
+		* \return
+	 */
+	void MarkSemiEdgesandNodes();
+	/*-------------------------------------------------------------------*/
+	/** @brief From a feature node and an adjacent feature edge, compute
+	 	* the global feature edge
+	 	* \param[in] n_id id of the starting feature node
+	 	* \param[in] e_id id of the starting feature edge
+		*
+		* \return IDs of the edges on the global feature edge
+	 */
+	std::vector<TCellID> ComputeOneGlobalFeatureEdge(TCellID n_id, TCellID e_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Compute all the global feature edge
+	 	* \param[in]
+		*
+		* \return
+	 */
+	std::vector<std::vector<TCellID>> ComputeAllGlobalFeatureEdge();
+	/*-------------------------------------------------------------------*/
  private:
 	/** the quad mesh we work on */
 	Mesh *m_mesh;
