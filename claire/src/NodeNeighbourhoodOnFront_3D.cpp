@@ -37,6 +37,12 @@ NodeNeighbourhoodOnFront_3D::getOrderedEdges()
 }
 /*------------------------------------------------------------------------*/
 std::vector<TCellID>
+NodeNeighbourhoodOnFront_3D::getOrderedFaces()
+{
+	return m_orderedFaces;
+}
+/*------------------------------------------------------------------------*/
+std::vector<TCellID>
 NodeNeighbourhoodOnFront_3D::adjFacesToEdge(TCellID e_id)
 {
 	std::vector<TCellID> adj_faces;
@@ -81,7 +87,7 @@ NodeNeighbourhoodOnFront_3D::nextEdgeOfFace(TCellID f_id, TCellID e_id)
 }
 /*------------------------------------------------------------------------*/
 TCellID
-NodeNeighbourhoodOnFront_3D::adjFaceToEdge1InEdge2Side(TCellID e1_id, TCellID e2_id, TCellID e3_id)
+NodeNeighbourhoodOnFront_3D::adjFaceToEdge1InEdge2SideAvoidingEdge3(TCellID e1_id, TCellID e2_id, TCellID e3_id)
 {
 	TCellID face_id;
 
@@ -105,10 +111,16 @@ NodeNeighbourhoodOnFront_3D::adjFaceToEdge1InEdge2Side(TCellID e1_id, TCellID e2
 		}
 		else
 		{
-			Node n = m_mesh->get<Node>(m_n_id);
-			Edge e = m_mesh->get<Edge>(e_id);
-			Edge e_next = m_mesh->get<Edge>(next_edge_id);
-			f_id = math::Utils::CommonFace3Nodes(m_mesh, (e.getOppositeNode(n)).id(), m_n_id, (e_next.getOppositeNode(n)).id()) ;
+			e_id = next_edge_id;
+			std::vector<TCellID> e_faces = (*this).adjFacesToEdge(e_id) ;
+			if (e_faces[0] == f_id)
+			{
+				f_id = e_faces[1];
+			}
+			else
+			{
+				f_id = e_faces[0];
+			}
 		}
 	}
 
