@@ -69,6 +69,15 @@ class LIB_GMDS_CLAIRE_API NodeNeighbourhoodOnFront_3D
 	 */
 	TCellID adjFaceToEdge1InEdge2SideAvoidingEdge3(TCellID e1_id, TCellID e2_id, TCellID e3_id);
 	/*-------------------------------------------------------------------*/
+	/** @brief Adjacent face to Edge_1 on the front, in the side of Edge_2
+	 * 	\param[in] e1_id first edge
+	 * 	\param[in] e2_id second edge
+	 * 	\param[in] e3_id the edge to avoid
+	 *
+	 * 	\return the faces ids
+	 */
+	std::vector<TCellID> facesBtwEdge1nEdge2AvoidingEdge3(TCellID e1_id, TCellID e2_id, TCellID e3_id);
+	/*-------------------------------------------------------------------*/
  private:
 	/** @brief Returns the ordered front edges around a node of the front.
 	 *
