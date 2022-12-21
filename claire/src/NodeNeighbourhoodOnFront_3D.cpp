@@ -138,8 +138,7 @@ NodeNeighbourhoodOnFront_3D::facesBtwEdge1nEdge2AvoidingEdge3(TCellID e1_id, TCe
 	TCellID f_id = adj_faces[0];
 	TCellID e_id = e1_id ;
 	bool faceFound(false);
-	int max_iter(0);
-	while (!faceFound && max_iter < 100)
+	while (!faceFound)
 	{
 		TCellID next_edge_id = (*this).nextEdgeOfFace(f_id, e_id);
 		list_faces.push_back(f_id);
@@ -166,12 +165,6 @@ NodeNeighbourhoodOnFront_3D::facesBtwEdge1nEdge2AvoidingEdge3(TCellID e1_id, TCe
 				f_id = e_faces[0];
 			}
 		}
-		max_iter++;
-	}
-
-	if (max_iter == 100)
-	{
-		std::cout << "ATTENTION NodeNeighbourhoodOnFront: max iteration" << std::endl;
 	}
 
 	if (f_id==adj_faces[1] && faceFound)
@@ -217,7 +210,7 @@ NodeNeighbourhoodOnFront_3D::orderedFrontEdgesAroundNode()
 
 	// Get the front edges connected to n
 	std::vector<Edge> n_edges_on_Front;
-	for (auto const& e:n_edges)
+	for (auto e:n_edges)
 	{
 		Node n_opp = e.getOppositeNode(n);
 		if (var_node_couche_id->value(n_opp.id()) == m_Front->getFrontID())
@@ -226,7 +219,7 @@ NodeNeighbourhoodOnFront_3D::orderedFrontEdgesAroundNode()
 		}
 	}
 
-	TInt mark_isTreated = m_mesh->newMark<Face>();
+	int mark_isTreated = m_mesh->newMark<Face>();
 	m_orderedEdges.push_back(n_edges_on_Front[0].id());	// Choose a first edge, and a first face
 
 	for (int i=1;i<=n_edges_on_Front.size()-1;i++)
@@ -237,7 +230,7 @@ NodeNeighbourhoodOnFront_3D::orderedFrontEdgesAroundNode()
 
 		Face f;
 		std::vector<Face> e_faces = e.get<Face>() ;
-		for (auto const& f_loc:e_faces)
+		for (auto f_loc:e_faces)
 		{
 			std::vector<Node> f_loc_nodes = f_loc.get<Node>();
 
@@ -253,7 +246,7 @@ NodeNeighbourhoodOnFront_3D::orderedFrontEdgesAroundNode()
 		m_mesh->mark(f, mark_isTreated);
 
 		std::vector<Edge> f_edges = f.get<Edge>();
-		for (auto const& e_loc:f_edges)
+		for (auto e_loc:f_edges)
 		{
 			std::vector<Node> e_loc_nodes = e_loc.get<Node>();
 			if ( (e_loc_nodes[0].id() == m_n_id && e_loc_nodes[1].id() != n_opp.id() )
