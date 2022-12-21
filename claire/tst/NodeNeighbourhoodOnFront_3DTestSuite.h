@@ -167,6 +167,20 @@ TEST(NodeNeighbourhoodOnFront_3DTestClass, NodeNeighbourhoodOnFront_3D_Test1)
 	face_adj = Node_Neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(32, 62, 59);
 	ASSERT_EQ(face_adj, 26);
 
+	std::vector<TCellID> faces_btw_2edges = Node_Neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(32,59,62);
+	ASSERT_EQ(faces_btw_2edges.size(), 2);
+	ASSERT_EQ(faces_btw_2edges[0], 10);
+	ASSERT_EQ(faces_btw_2edges[1], 22);
+
+	faces_btw_2edges = Node_Neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(62,34,59);
+	ASSERT_EQ(faces_btw_2edges.size(), 2);
+	ASSERT_EQ(faces_btw_2edges[0], 26);
+	ASSERT_EQ(faces_btw_2edges[1], 10);
+
+	faces_btw_2edges = Node_Neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(62,59,32);
+	ASSERT_EQ(faces_btw_2edges.size(), 1);
+	ASSERT_EQ(faces_btw_2edges[0], 25);
+
 	gmds::IGMeshIOService ioService(m_mesh);
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
