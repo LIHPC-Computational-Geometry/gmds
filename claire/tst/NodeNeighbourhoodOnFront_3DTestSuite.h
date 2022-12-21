@@ -123,7 +123,55 @@ TEST(NodeNeighbourhoodOnFront_3DTestClass, NodeNeighbourhoodOnFront_3D_Test1)
 	NodeNeighbourhoodOnFront_3D Node_Neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, &Front, n12.id());
 	NodeNeighbourhoodOnFront_3D::STATUS result = Node_Neighbourhood.execute();
 
+	std::vector<TCellID> orderedEdges = Node_Neighbourhood.getOrderedEdges() ;
+	ASSERT_EQ(orderedEdges[0], 32);
+	ASSERT_EQ(orderedEdges[1], 62);
+	ASSERT_EQ(orderedEdges[2], 59);
+	ASSERT_EQ(orderedEdges[3], 34);
 
+	std::vector<TCellID> orderedFaces = Node_Neighbourhood.getOrderedFaces() ;
+	ASSERT_EQ(orderedFaces[0], 26);
+	ASSERT_EQ(orderedFaces[1], 25);
+	ASSERT_EQ(orderedFaces[2], 22);
+	ASSERT_EQ(orderedFaces[3], 10);
+
+	std::vector<TCellID> adj_faces = Node_Neighbourhood.adjFacesToEdge(32);
+	ASSERT_EQ(adj_faces[0], 10);
+	ASSERT_EQ(adj_faces[1], 26);
+
+	adj_faces = Node_Neighbourhood.adjFacesToEdge(59);
+	ASSERT_EQ(adj_faces[0], 25);
+	ASSERT_EQ(adj_faces[1], 22);
+
+	TCellID next_f_id = Node_Neighbourhood.nextEdgeOfFace(10, 32);
+	ASSERT_EQ(next_f_id, 34);
+
+	next_f_id = Node_Neighbourhood.nextEdgeOfFace(10, 34);
+	ASSERT_EQ(next_f_id, 32);
+
+	next_f_id = Node_Neighbourhood.nextEdgeOfFace(22, 59);
+	ASSERT_EQ(next_f_id, 34);
+
+	next_f_id = Node_Neighbourhood.nextEdgeOfFace(26, 32);
+	ASSERT_EQ(next_f_id, 62);
+
+	TCellID face_adj = Node_Neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(32, 59, 62);
+	ASSERT_EQ(face_adj, 10);
+
+	face_adj = Node_Neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(32, 34, 62);
+	ASSERT_EQ(face_adj, 10);
+
+	face_adj = Node_Neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(32, 62, 34);
+	ASSERT_EQ(face_adj, 26);
+
+	face_adj = Node_Neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(32, 62, 59);
+	ASSERT_EQ(face_adj, 26);
+
+	gmds::IGMeshIOService ioService(m_mesh);
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("TEST_SUITE_NodeNeighbourhoodOnFront_3D.vtk");
 
 	ASSERT_EQ(NodeNeighbourhoodOnFront_3D::SUCCESS, result);
 

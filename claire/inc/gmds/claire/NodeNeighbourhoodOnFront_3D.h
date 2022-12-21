@@ -25,10 +25,9 @@ class LIB_GMDS_CLAIRE_API NodeNeighbourhoodOnFront_3D
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Constructor.
-         *  @param[in] AMeshT the triangular mesh where we work on
+         *  @param[in] AMesh the triangular mesh where we work on
          *  @param[in] AFront front 3D
-         *  @param[in] A_EdgesClassification variable for the edges classification
-         *  @param[in] A_NodesClassification variable for the nodes classification
+         *  @param[in] An_id node id
          *
 	 */
 	NodeNeighbourhoodOnFront_3D(Mesh *AMesh, Front_3D *AFront, TCellID An_id);
@@ -47,6 +46,10 @@ class LIB_GMDS_CLAIRE_API NodeNeighbourhoodOnFront_3D
 	 */
 	std::vector<TCellID> getOrderedEdges();
 	/*-------------------------------------------------------------------*/
+	/** @brief Returns the front faces ordered
+	 */
+	std::vector<TCellID> getOrderedFaces();
+	/*-------------------------------------------------------------------*/
 	/** @brief Two adjacent faces to e_id on the front
 	 *
 	 * 	\return a vector sized two, with the 2 ids of the adjacent faces
@@ -64,7 +67,7 @@ class LIB_GMDS_CLAIRE_API NodeNeighbourhoodOnFront_3D
 	 *
 	 * 	\return a face id
 	 */
-	TCellID adjFaceToEdge1InEdge2Side(TCellID e1_id, TCellID e2_id, TCellID e3_id);
+	TCellID adjFaceToEdge1InEdge2SideAvoidingEdge3(TCellID e1_id, TCellID e2_id, TCellID e3_id);
 	/*-------------------------------------------------------------------*/
  private:
 	/** @brief Returns the ordered front edges around a node of the front.
