@@ -58,7 +58,7 @@ AeroExtrusion_3D::execute()
 	Front_3D Current_Front = Compute1stLayer(Front_Geom, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), m_VectorField);
 
 	// Compute the successive layers
-	for (int i=2; i <= m_params_aero.nbr_couches-3; i++) {
+	for (int i=2; i <= m_params_aero.nbr_couches; i++) {
 		Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), i*pas_couche,
 		                             m_VectorField);
 	}
