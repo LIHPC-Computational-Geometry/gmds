@@ -4590,7 +4590,7 @@ void SimplexMesh::onSurface(const math::Point& pt, int& surfaceLabel)
   }
 }
 /******************************************************************************/
-void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)
+/*void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)
 {
   gmds::Variable<int>* BND_SURFACE_COLOR = nullptr;
   gmds::Variable<int>* BND_CURVE_COLOR = nullptr;
@@ -4993,7 +4993,7 @@ void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vect
       hash_edge.erase(it0);
     }
   }
-}
+}*/
 /******************************************************************************/
 void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)
 {

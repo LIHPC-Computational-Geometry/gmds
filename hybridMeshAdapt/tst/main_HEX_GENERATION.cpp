@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
   simplexMesh.initializeEdgeStructure();
   simplexMesh.buildSimplexHull();
 
-  Octree oc(&simplexMesh, 50);
+  Octree oc(&simplexMesh, 10);
   simplexMesh.setOctree(&oc);
 
   Variable<int>* BND_VERTEX_COLOR  = nullptr;
@@ -129,15 +129,10 @@ int main(int argc, char* argv[])
   std::clock_t start;
   double duration;
   start = std::clock();
-  int cpt = 0;
   for(unsigned int idx = 0 ; idx < nodesToAddIds.capacity() ; idx++)
   {
     if(nodesToAddIds[idx] != 0)
     {
-      std::cout << std::endl;
-      std::cout << std::endl;
-      if((*BND_SURFACE_COLOR_NODES)[idx] == 0)
-        continue;
       const gmds::BitVector & nodesIds = simplexMesh.getBitVectorNodes();
       math::Point point = SimplicesNode(&simplexNodes, idx).getCoords();
 
@@ -164,11 +159,6 @@ int main(int argc, char* argv[])
             nodesAdded.resize(nodesIds.capacity());
           }
           nodesAdded.assign(node);
-          gmds::VTKWriter vtkWriterTEST(&ioService);
-          vtkWriterTEST.setCellOptions(gmds::N|gmds::R|gmds::F);
-          vtkWriterTEST.setDataOptions(gmds::N|gmds::R|gmds::F);
-          vtkWriterTEST.write("test_" + std::to_string(cpt) + ".vtk");
-          cpt++;
         }
         else
         {
@@ -222,6 +212,7 @@ int main(int argc, char* argv[])
     }
     tmp = edgesRemoved;
   }
+
   std::cout << "deletedNodes.size() --> " << deletedNodes.size() << std::endl;
   std::cout << "EDGE REMOVING REINSERTION " << std::endl;
   unsigned int nodeSize = 0;
@@ -254,7 +245,7 @@ int main(int argc, char* argv[])
   vtkWriterER.setCellOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterER.setDataOptions(gmds::N|gmds::R|gmds::F);
   vtkWriterER.write(fER);
-  return 0;
+
 
   ///////////////////////////EDGE BUILDER START HERE///////////////////////////
   std::multimap<TInt, TInt> edges{};
