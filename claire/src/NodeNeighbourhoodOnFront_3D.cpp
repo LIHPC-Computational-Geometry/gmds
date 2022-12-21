@@ -127,6 +127,80 @@ NodeNeighbourhoodOnFront_3D::adjFaceToEdge1InEdge2SideAvoidingEdge3(TCellID e1_i
 	return face_id;
 }
 /*------------------------------------------------------------------------*/
+std::vector<TCellID>
+NodeNeighbourhoodOnFront_3D::facesBtwEdge1nEdge2AvoidingEdge3(TCellID e1_id, TCellID e2_id, TCellID e3_id)
+{
+	std::vector<TCellID> faces;
+
+	std::vector<TCellID> adj_faces = (*this).adjFacesToEdge(e1_id);
+	std::vector<TCellID> list_faces;
+
+	TCellID f_id = adj_faces[0];
+	TCellID e_id = e1_id ;
+	bool faceFound(false);
+	while (!faceFound)
+	{
+		TCellID next_edge_id = (*this).nextEdgeOfFace(f_id, e_id);
+		list_faces.push_back(f_id);
+		if (next_edge_id==e2_id)
+		{
+			faces = list_faces;
+			faceFound = true;
+		}
+		else if (next_edge_id==e3_id)
+		{
+			f_id=adj_faces[1];
+			faceFound = true;
+		}
+		else
+		{
+			e_id = next_edge_id;
+			std::vector<TCellID> e_faces = (*this).adjFacesToEdge(e_id) ;
+			if (e_faces[0] == f_id)
+			{
+				f_id = e_faces[1];
+			}
+			else
+			{
+				f_id = e_faces[0];
+			}
+		}
+	}
+
+	if (f_id==adj_faces[1] && faceFound)
+	{
+		list_faces.clear();
+		f_id = adj_faces[1];
+		e_id = e1_id ;
+		faceFound = false;
+		while (!faceFound)
+		{
+			TCellID next_edge_id = (*this).nextEdgeOfFace(f_id, e_id);
+			list_faces.push_back(f_id);
+			if (next_edge_id==e2_id)
+			{
+				faces = list_faces;
+				faceFound = true;
+			}
+			else
+			{
+				e_id = next_edge_id;
+				std::vector<TCellID> e_faces = (*this).adjFacesToEdge(e_id) ;
+				if (e_faces[0] == f_id)
+				{
+					f_id = e_faces[1];
+				}
+				else
+				{
+					f_id = e_faces[0];
+				}
+			}
+		}
+	}
+
+	return faces;
+}
+/*------------------------------------------------------------------------*/
 void
 NodeNeighbourhoodOnFront_3D::orderedFrontEdgesAroundNode()
 {
