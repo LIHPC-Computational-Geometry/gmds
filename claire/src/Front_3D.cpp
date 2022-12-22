@@ -168,6 +168,15 @@ Front_3D::adjacentFaceOnFront(Mesh *m, TCellID f_id, TCellID e_id)
 
 	std::vector<TCellID> e_adj_faces = (*this).edgeFacesOnFront(m, e_id);		// Two faces in this vector
 
+	if (e_adj_faces[0] == f_id)
+	{
+		f_adj_id = e_adj_faces[1];
+	}
+	else
+	{
+		f_adj_id = e_adj_faces[0];
+	}
+	/*
 	Face f0 = m->get<Face>(e_adj_faces[0]);
 	std::vector<Edge> f0_edges = f0.get<Edge>();
 	for (auto e_f:f_edges)
@@ -180,6 +189,7 @@ Front_3D::adjacentFaceOnFront(Mesh *m, TCellID f_id, TCellID e_id)
 			}
 		}
 	}
+	 */
 
 	if (f_adj_id == NullID)
 	{
