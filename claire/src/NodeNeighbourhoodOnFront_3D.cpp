@@ -138,7 +138,8 @@ NodeNeighbourhoodOnFront_3D::facesBtwEdge1nEdge2AvoidingEdge3(TCellID e1_id, TCe
 	TCellID f_id = adj_faces[0];
 	TCellID e_id = e1_id ;
 	bool faceFound(false);
-	while (!faceFound)
+	int max_iter(0);
+	while (!faceFound && max_iter < 100)
 	{
 		TCellID next_edge_id = (*this).nextEdgeOfFace(f_id, e_id);
 		list_faces.push_back(f_id);
@@ -165,6 +166,12 @@ NodeNeighbourhoodOnFront_3D::facesBtwEdge1nEdge2AvoidingEdge3(TCellID e1_id, TCe
 				f_id = e_faces[0];
 			}
 		}
+		max_iter++;
+	}
+
+	if (max_iter == 100)
+	{
+		std::cout << "ATTENTION NodeNeighbourhoodOnFront: max iteration" << std::endl;
 	}
 
 	if (f_id==adj_faces[1] && faceFound)
