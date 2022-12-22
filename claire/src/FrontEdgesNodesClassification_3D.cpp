@@ -105,6 +105,9 @@ FrontEdgesNodesClassification_3D::SingleEdgeClassification(TCellID e_id)
 		n2=-n2;
 	}
 
+	math::Vector3d v_f1_tan = (f1_center-e.center()).normalize() ;
+	math::Vector3d v_f2_tan = (f2_center-e.center()).normalize() ;
+
 	/*
 	double angle(0);
 	std::vector<Region> e_regions = e.get<Region>() ;
@@ -132,7 +135,23 @@ FrontEdgesNodesClassification_3D::SingleEdgeClassification(TCellID e_id)
 
 	if (M_PI/4.0 <= angle && angle < 3.0*M_PI/4.0)
 	{
-		edge_classification = 1;
+
+		//edge_classification = 1;
+		if ( v_f1_tan.dot(n2) <= 0 && v_f2_tan.dot(n1) <= 0)
+		{
+			edge_classification = 1;
+		}
+		else
+		{
+			/*
+			std::cout << "--------------------------" << std::endl;
+			std::cout << "Edge: " << e.get<Node>()[0].id() << ", " << e.get<Node>()[1].id() << std::endl;
+			std::cout << v_f1_tan.dot(n2) << std::endl;
+			std::cout << v_f2_tan.dot(n1) << std::endl;
+			 */
+			edge_classification = 2;
+		}
+
 	}
 	else if (5.0*M_PI/4.0 <= angle && angle < 7.0*M_PI/4.0)
 	{
@@ -171,19 +190,6 @@ void
 FrontEdgesNodesClassification_3D::FrontNodesClassification()
 {
 	Variable<int>* var_node_couche_id = m_mesh->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-
-	for (auto e_id:m_mesh->edges())
-	{
-		Edge e = m_mesh->get<Edge>(e_id);
-		std::vector<Node> e_nodes = e.get<Node>() ;
-		if (var_node_couche_id->value(e_nodes[0].id()) == m_Front->getFrontID()
-		    && var_node_couche_id->value(e_nodes[1].id()) == m_Front->getFrontID())
-		{
-			// So, the edge is on the front.
-			int edge_classification = SingleEdgeClassification(e_id);
-			m_EdgesClassification->set(e_id, edge_classification);
-		}
-	}
 
 	for (auto n_id:m_Front->getNodes())
 	{
