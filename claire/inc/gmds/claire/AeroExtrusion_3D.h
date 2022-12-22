@@ -52,8 +52,9 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 		TCellID     					e_id;
 		int 								singularity_type;
 		std::map<TCellID, bool>		CORNER_n_face_created;
+		std::map<TCellID, bool>		END_n_face_created;
 		std::map<std::pair<TCellID, TCellID>, TCellID> CORNER_next_nodes;			// ((f_adj_id, e_node_id), next_n_id)
-		std::map<TCellID, TCellID> CORNER_diag_next_node;
+		std::map<TCellID, TCellID> diag_next_node;
 	};
 
  private:
@@ -149,6 +150,16 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 		* \return  the id of the hexa
 	 */
 	TCellID TemplateEdgeCorner(Front_3D &AFront, TCellID e_id, double dc);
+	/*-------------------------------------------------------------------*/
+	/** @brief Advancing front template on edge classified as end.
+	 	* \param[in] AFront the front
+   	* \param[in] e_id the node
+   	* \param[in] mark_edgesTreated mark the edges that can't insert or collapse an hex now
+		* \param[in] mark_facesTreated mark the faces that can't insert an hex now
+		*
+		* \return  the id of the hexa
+	 */
+	TCellID TemplateEdgeEnd(Front_3D &AFront, TCellID e_id, double dc, int mark_edgesTreated, int mark_facesTreated);
 	/*-------------------------------------------------------------------*/
 	/** @brief Créé un hex normal sur la couche à partir d'une face
 	 	* \param[in] f_id la face concernée
