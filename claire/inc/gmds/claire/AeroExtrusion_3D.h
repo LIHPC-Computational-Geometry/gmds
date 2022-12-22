@@ -90,14 +90,6 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	 */
 	Front_3D Compute1stLayer(Front_3D A_Front_IN, Variable<double>* A_distance, Variable<math::Vector3d>* A_vectors);
 	/*-------------------------------------------------------------------*/
-	/** @brief Classification of one edge of the front
-	 	* \param[in] e_id l'arête concernée
-	 	* \param[in] Front front en entrée
-		*
-		* \return the edge classification
-	 */
-	int SingleEdgeClassification(TCellID e_id, Front_3D &Front);
-	/*-------------------------------------------------------------------*/
 	/** @brief Classification of all the edges on the front
 	 	* \param[in] Front front en entrée
 		*
