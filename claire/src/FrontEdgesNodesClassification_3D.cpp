@@ -5,6 +5,7 @@
 /*------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
 #include <gmds/claire/FrontEdgesNodesClassification_3D.h>
+#include <gmds/claire/NodeNeighbourhoodOnFront_3D.h>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -16,6 +17,8 @@ FrontEdgesNodesClassification_3D::FrontEdgesNodesClassification_3D(Mesh *AMesh, 
 	m_NodesClassification = A_NodesClassification;
 	m_mark_semiEdges = m_mesh->newMark<Edge>();
 	m_mark_semiNodes = m_mesh->newMark<Node>();
+	m_mark_EdgesForTemplates = m_mesh->newMark<Edge>();
+	m_mark_NodesForTemplates = m_mesh->newMark<Node>();
 }
 /*------------------------------------------------------------------------*/
 FrontEdgesNodesClassification_3D::~FrontEdgesNodesClassification_3D()
@@ -24,6 +27,10 @@ FrontEdgesNodesClassification_3D::~FrontEdgesNodesClassification_3D()
 	m_mesh->freeMark<Edge>(m_mark_semiEdges);
 	m_mesh->unmarkAll<Node>(m_mark_semiNodes);
 	m_mesh->freeMark<Node>(m_mark_semiNodes);
+	m_mesh->unmarkAll<Edge>(m_mark_EdgesForTemplates);
+	m_mesh->freeMark<Edge>(m_mark_EdgesForTemplates);
+	m_mesh->unmarkAll<Node>(m_mark_NodesForTemplates);
+	m_mesh->freeMark<Node>(m_mark_NodesForTemplates);
 }
 /*------------------------------------------------------------------------*/
 FrontEdgesNodesClassification_3D::STATUS
@@ -34,6 +41,8 @@ FrontEdgesNodesClassification_3D::execute()
 	MarkSemiEdgesandNodes();		// Mark the semi nodes, and the semi edges
 
 	m_global_feature_edges = ComputeAllGlobalFeatureEdge();
+
+	ComputeNodesEdgesForTemplates();
 
 	return FrontEdgesNodesClassification_3D::SUCCESS;
 }
@@ -48,6 +57,18 @@ int
 FrontEdgesNodesClassification_3D::getMarkSemiNodes()
 {
 	return m_mark_semiNodes;
+}
+/*------------------------------------------------------------------------*/
+int
+FrontEdgesNodesClassification_3D::getMarkEdgesTemplates()
+{
+	return m_mark_EdgesForTemplates;
+}
+/*------------------------------------------------------------------------*/
+int
+FrontEdgesNodesClassification_3D::getMarkNodesTemplates()
+{
+	return m_mark_NodesForTemplates;
 }
 /*------------------------------------------------------------------------*/
 std::vector<std::vector<TCellID>>
@@ -312,3 +333,82 @@ FrontEdgesNodesClassification_3D::ComputeAllGlobalFeatureEdge()
 	return all_glob_feature_edge;
 }
 /*------------------------------------------------------------------------*/
+void
+FrontEdgesNodesClassification_3D::ComputeNodesEdgesForTemplates()
+{
+	// Initialization
+	for (auto global_feature_edge:m_global_feature_edges)
+	{
+		for (auto edge_id:global_feature_edge)
+		{
+			m_mesh->mark(m_mesh->get<Edge>(edge_id), m_mark_EdgesForTemplates);
+			std::vector<Node> nodes = (m_mesh->get<Edge>(edge_id)).get<Node>();
+			if (m_NodesClassification->value( nodes[0].id() ) >= 3)
+			{
+				m_mesh->mark(m_mesh->get<Node>(nodes[0].id()), m_mark_NodesForTemplates);
+			}
+			if (m_NodesClassification->value( nodes[1].id() ) >= 3)
+			{
+				m_mesh->mark(m_mesh->get<Node>(nodes[1].id()), m_mark_NodesForTemplates);
+			}
+		}
+	}
+
+	bool isAllMarked(false);
+
+	while (!isAllMarked)
+	{
+		isAllMarked=true;
+		for (auto n_id:m_Front->getNodes())
+		{
+			if (m_mesh->isMarked(m_mesh->get<Node>(n_id), m_mark_NodesForTemplates))
+			{
+				NodeNeighbourhoodOnFront_3D n_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n_id);
+				n_neighbourhood.execute();
+				int compteur_marked_edges(0);
+				for (auto edge_id:n_neighbourhood.getOrderedEdges())
+				{
+					if (m_mesh->isMarked(m_mesh->get<Edge>(edge_id), m_mark_EdgesForTemplates))
+					{
+						compteur_marked_edges++;
+					}
+				}
+				if (compteur_marked_edges < 3)
+				{
+					m_mesh->unmark(m_mesh->get<Node>(n_id), m_mark_NodesForTemplates);
+					isAllMarked = false;
+				}
+			}
+		}
+
+		for (auto global_feature_edge:m_global_feature_edges)
+		{
+			Edge e_0 = m_mesh->get<Edge>(global_feature_edge[0]);
+			Edge e_last = m_mesh->get<Edge>(global_feature_edge[global_feature_edge.size()-1]);
+
+			std::vector<Node> e_0_nodes = e_0.get<Node>();
+			std::vector<Node> e_last_nodes = e_last.get<Node>();
+
+			bool isGlobFeatEdgeAlreadyMarked = (m_mesh->isMarked(e_0, m_mark_EdgesForTemplates)
+			    || m_mesh->isMarked(e_last, m_mark_EdgesForTemplates) ) ;
+
+			bool isStartGFEMarked = ( m_mesh->isMarked(e_0_nodes[0], m_mark_NodesForTemplates)
+			    || m_mesh->isMarked(e_0_nodes[1], m_mark_NodesForTemplates) ) ;
+
+			bool isEndGBFMarked = ( m_mesh->isMarked(e_last_nodes[0], m_mark_NodesForTemplates)
+			        || m_mesh->isMarked(e_last_nodes[1], m_mark_NodesForTemplates) ) ;
+
+			if ( isGlobFeatEdgeAlreadyMarked
+			    && ( !isStartGFEMarked || !isEndGBFMarked) )
+			{
+				isAllMarked=false;
+				for (auto edge_loc_id:global_feature_edge)
+				{
+					m_mesh->unmark(m_mesh->get<Edge>(edge_loc_id), m_mark_EdgesForTemplates);
+				}
+			}
+		}
+
+	}
+
+}

@@ -60,6 +60,20 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	/** @brief
 	 	* \param[in]
 		*
+		* \return  return the mark
+	 */
+	int getMarkEdgesTemplates();
+	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	* \param[in]
+		*
+		* \return  return the mark
+	 */
+	int getMarkNodesTemplates();
+	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	* \param[in]
+		*
 		* \return  return the global feature edges
 	 */
 	std::vector<std::vector<TCellID>> getGlobalFeatureEdge();
@@ -111,6 +125,13 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	 */
 	std::vector<std::vector<TCellID>> ComputeAllGlobalFeatureEdge();
 	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	* \param[in]
+		*
+		* \return
+	 */
+	void ComputeNodesEdgesForTemplates();
+	/*-------------------------------------------------------------------*/
  private:
 	/** the quad mesh we work on */
 	Mesh *m_mesh;
@@ -124,6 +145,10 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	int m_mark_semiEdges;
 	/** Mark on semi nodes */
 	int m_mark_semiNodes;
+	/** Mark edges for templates */
+	int m_mark_EdgesForTemplates;
+	/** Mark nodes for templates */
+	int m_mark_NodesForTemplates;
 	/** */
 	std::vector<std::vector<TCellID>> m_global_feature_edges;
 };
