@@ -104,39 +104,28 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_IN, dist_cible, A_distance, A_vectors);
 
-	// Init the face_info type
-	for (auto f_id:Front_IN.getFaces())
-	{
-		Face f = m_meshH->get<Face>(f_id);
-		std::vector<Node> f_nodes = f.get<Node>();
+	// Init the face_info type for the faces of the front
+	InitFaceStructInfo(Front_IN, map_new_nodes);
 
-		m_FaceInfo[f_id].next_ideal_nodes[f_nodes[0].id()] = map_new_nodes[f_nodes[0].id()];
-		m_FaceInfo[f_id].next_ideal_nodes[f_nodes[1].id()] = map_new_nodes[f_nodes[1].id()];
-		m_FaceInfo[f_id].next_ideal_nodes[f_nodes[2].id()] = map_new_nodes[f_nodes[2].id()];
-		m_FaceInfo[f_id].next_ideal_nodes[f_nodes[3].id()] = map_new_nodes[f_nodes[3].id()];
-
-		m_FaceInfo[f_id].next_nodes[f_nodes[0].id()] = map_new_nodes[f_nodes[0].id()];
-		m_FaceInfo[f_id].next_nodes[f_nodes[1].id()] = map_new_nodes[f_nodes[1].id()];
-		m_FaceInfo[f_id].next_nodes[f_nodes[2].id()] = map_new_nodes[f_nodes[2].id()];
-		m_FaceInfo[f_id].next_nodes[f_nodes[3].id()] = map_new_nodes[f_nodes[3].id()];
-
-	}
-
-	// Mise à jour de l'indice de couche
-	Variable<int>* couche_id = m_meshH->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-	for (auto n_id:Front_IN.getNodes()){
-		couche_id->set(map_new_nodes[n_id], Front_IN.getFrontID()+1);
-	}
-
+	// Variables
+	Variable<int>* var_NODE_couche_id = m_meshH->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	Variable<int>* var_front_edges_classification = m_meshH->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
 	Variable<int>* var_front_nodes_classification = m_meshH->getOrCreateVariable<int, GMDS_NODE>("Nodes_Classification");
 
+
+	// Mise à jour de l'indice de couche
+	for (auto n_id:Front_IN.getNodes()){
+		var_NODE_couche_id->set(map_new_nodes[n_id], Front_IN.getFrontID()+1);
+	}
+
+	// Front edges and nodes classification
 	FrontEdgesNodesClassification_3D Classification = FrontEdgesNodesClassification_3D(m_meshH,
 	                                                                                   &Front_IN,
 	                                                                                   var_front_edges_classification,
 	                                                                                   var_front_nodes_classification);
 	Classification.execute();
 
+	// Init the edge_info type for the edges of the front
 	InitEdgeStructInfo(Front_IN);
 
 	int mark_edgesTreated = m_meshH->newMark<Edge>();
@@ -145,8 +134,8 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	int mark_EdgesTemplates = Classification.getMarkEdgesTemplates();
 	int mark_NodesTemplates = Classification.getMarkNodesTemplates();
 
+	// Create the HEXA on each NODE classified
 	std::map<TCellID, int> singular_nodes = getSingularNodes(Front_IN, var_front_edges_classification);
-
 	for (auto singu_node:singular_nodes)
 	{
 		TCellID n_id = singu_node.first ;
@@ -165,9 +154,9 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		}
 	}
 
-	// Insert Hexa on Singular Edges
-	std::map<TCellID, int> singular_edges = getSingularEdges(Front_IN, var_front_edges_classification, mark_edgesTreated);
 
+	// Create the HEXA on each EDGE classified
+	std::map<TCellID, int> singular_edges = getSingularEdges(Front_IN, var_front_edges_classification, mark_edgesTreated);
 	for (auto singu_edge:singular_edges)
 	{
 		TCellID e_id = singu_edge.first ;
@@ -191,7 +180,7 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	}
 
 
-	// Ajout des hex restants
+	// Create the HEXA on each FACE of the front
 	for (auto f_id:Front_IN.getFaces()){
 		Face f = m_meshH->get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
@@ -206,37 +195,11 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	m_meshH->unmarkAll<Face>(mark_facesTreated);
 	m_meshH->freeMark<Face>(mark_facesTreated);
 
-
-	// Supression des noeuds non utilisés
+	// Erase the nodes connected to nothing
 	math::Utils::MeshCleaner(m_meshH);
 
-
-
-	// Initialisation du front de sortie
-	std::vector<TCellID> new_front_nodes_id;
-	std::vector<TCellID> new_front_faces_id;
-
-	Variable<int>* var_node_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-	Variable<int>* var_face_couche_id = m_meshH->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
-
-
-	for (auto n_id:m_meshH->nodes())
-	{
-		if (var_node_couche_id->value(n_id) == Front_IN.getFrontID()+1)
-		{
-			new_front_nodes_id.push_back(n_id);
-		}
-	}
-	for (auto f_id:m_meshH->faces())
-	{
-		if (var_face_couche_id->value(f_id) == Front_IN.getFrontID()+1)
-		{
-			new_front_faces_id.push_back(f_id);
-		}
-	}
-	Front_3D Front_OUT = Front_3D(Front_IN.getFrontID()+1, new_front_nodes_id, new_front_faces_id);
-
-
+	// Init the Front OUT
+	Front_3D Front_OUT = InitFrontOUT(Front_IN);
 
 	//===================//
 	// FAST ANALYSIS		//
@@ -258,7 +221,45 @@ AeroExtrusion_3D::Compute1stLayer(Front_3D A_Front_IN, Variable<double>* A_dista
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(A_Front_IN, m_params_aero.delta_cl, A_distance, A_vectors);
 
 	// Init the face_info type
-	for (auto f_id:A_Front_IN.getFaces())
+	InitFaceStructInfo(A_Front_IN, map_new_nodes);
+
+	// Mise à jour de l'indice de couche
+	Variable<int>*var_NODE_couche_id = m_meshH->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	for (auto n_id:A_Front_IN.getNodes()){
+		var_NODE_couche_id->set(map_new_nodes[n_id], A_Front_IN.getFrontID()+1);
+	}
+
+	// Create the HEXA on each FACE of the front
+	for (auto f_id:A_Front_IN.getFaces()){
+		Face f = m_meshH->get<Face>(f_id);
+		std::vector<Node> nodes = f.get<Node>();
+		TemplateFace(f_id, A_Front_IN, map_new_nodes);
+	}
+
+	// Erase the nodes connected to nothing
+	math::Utils::MeshCleaner(m_meshH);
+
+	// Init the Front OUT
+	Front_3D Front_OUT = InitFrontOUT(A_Front_IN);
+
+	//===================//
+	// FAST ANALYSIS		//
+	//===================//
+	bool isHexMeshValid = math::Utils::isThisHexMeshValid(m_meshH);
+	if (!isHexMeshValid)
+	{
+		std::cout << "ATTENTION: the mesh is not valid. An element may be reversed during the advancing front." << std::endl;
+	}
+
+
+	return Front_OUT;
+
+}
+/*------------------------------------------------------------------------*/
+void
+AeroExtrusion_3D::InitFaceStructInfo(Front_3D &Front, std::map<TCellID, TCellID> map_new_nodes)
+{
+	for (auto f_id:Front.getFaces())
 	{
 		Face f = m_meshH->get<Face>(f_id);
 		std::vector<Node> f_nodes = f.get<Node>();
@@ -274,64 +275,6 @@ AeroExtrusion_3D::Compute1stLayer(Front_3D A_Front_IN, Variable<double>* A_dista
 		m_FaceInfo[f_id].next_nodes[f_nodes[3].id()] = map_new_nodes[f_nodes[3].id()];
 
 	}
-
-	// Mise à jour de l'indice de couche
-	Variable<int>* couche_id = m_meshH->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-	for (auto n_id:A_Front_IN.getNodes()){
-		couche_id->set(map_new_nodes[n_id], A_Front_IN.getFrontID()+1);
-	}
-
-	std::vector<TCellID> front_nodes = A_Front_IN.getNodes();
-	std::vector<TCellID> front_faces = A_Front_IN.getFaces();
-
-	// Ajout des hex restants
-	for (auto f_id:front_faces){
-		Face f = m_meshH->get<Face>(f_id);
-		std::vector<Node> nodes = f.get<Node>();
-		TemplateFace(f_id, A_Front_IN, map_new_nodes);
-	}
-
-	// Supression des noeuds non utilisés
-	math::Utils::MeshCleaner(m_meshH);
-
-	//----------------------//
-	// Initialisation du 	//
-	// front de sortie		//
-	//----------------------//
-	std::vector<TCellID> new_front_nodes_id;
-	std::vector<TCellID> new_front_faces_id;
-
-	Variable<int>* var_node_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-	Variable<int>* var_face_couche_id = m_meshH->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
-
-	for (auto n_id:m_meshH->nodes())
-	{
-		if (var_node_couche_id->value(n_id) == A_Front_IN.getFrontID()+1)
-		{
-			new_front_nodes_id.push_back(n_id);
-		}
-	}
-	for (auto f_id:m_meshH->faces())
-	{
-		if (var_face_couche_id->value(f_id) == A_Front_IN.getFrontID()+1)
-		{
-			new_front_faces_id.push_back(f_id);
-		}
-	}
-	Front_3D Front_OUT = Front_3D(A_Front_IN.getFrontID()+1, new_front_nodes_id, new_front_faces_id);
-
-	//===================//
-	// FAST ANALYSIS		//
-	//===================//
-	bool isHexMeshValid = math::Utils::isThisHexMeshValid(m_meshH);
-	if (!isHexMeshValid)
-	{
-		std::cout << "ATTENTION: the mesh is not valid. An element may be reversed during the advancing front." << std::endl;
-	}
-
-
-	return Front_OUT;
-
 }
 /*------------------------------------------------------------------------*/
 void
@@ -364,6 +307,34 @@ AeroExtrusion_3D::InitEdgeStructInfo(Front_3D &Front)
 			}
 		}
 	}
+
+}
+/*------------------------------------------------------------------------*/
+Front_3D
+AeroExtrusion_3D::InitFrontOUT(Front_3D &Front_IN)
+{
+	std::vector<TCellID> new_front_nodes_id;
+	std::vector<TCellID> new_front_faces_id;
+
+	Variable<int>* var_NODE_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	Variable<int>*var_FACE_couche_id = m_meshH->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
+
+	for (auto n_id:m_meshH->nodes())
+	{
+		if (var_NODE_couche_id->value(n_id) == Front_IN.getFrontID()+1)
+		{
+			new_front_nodes_id.push_back(n_id);
+		}
+	}
+	for (auto f_id:m_meshH->faces())
+	{
+		if (var_FACE_couche_id->value(f_id) == Front_IN.getFrontID()+1)
+		{
+			new_front_faces_id.push_back(f_id);
+		}
+	}
+
+	return Front_3D(Front_IN.getFrontID()+1, new_front_nodes_id, new_front_faces_id);
 
 }
 /*------------------------------------------------------------------------*/
@@ -457,7 +428,7 @@ AeroExtrusion_3D::getSingularEdges(Front_3D &AFront, Variable<int>* front_edges_
 TCellID
 AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<TCellID, TCellID> map_new_nodes, double dc)
 {
-	std::cout << "Template Node 3 Corner au noeud " << n_id << std::endl;
+	//std::cout << "Template Node 3 Corner au noeud " << n_id << std::endl;
 	TCellID r_id;
 
 	NodeNeighbourhoodOnFront_3D n_neighbourhood = NodeNeighbourhoodOnFront_3D(m_meshH, &AFront, n_id);
@@ -600,7 +571,7 @@ AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<T
 TCellID
 AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated)
 {
-	std::cout << "Template Node 2 Corner 1 End au noeud " << n_id << std::endl;
+	//std::cout << "Template Node 2 Corner 1 End au noeud " << n_id << std::endl;
 	TCellID r_id;
 
 	Node n = m_meshH->get<Node>(n_id);
@@ -750,7 +721,7 @@ AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double
 TCellID
 AeroExtrusion_3D::TemplateNode3End(Front_3D &AFront, TCellID n_id, int mark_edgesTreated, int mark_facesTreated)
 {
-	std::cout << "Template Node 3 End au noeud " << n_id << std::endl;
+	//std::cout << "Template Node 3 End au noeud " << n_id << std::endl;
 	TCellID r_id;
 
 	Node n = m_meshH->get<Node>(n_id);
@@ -904,7 +875,7 @@ AeroExtrusion_3D::TemplateNode3End(Front_3D &AFront, TCellID n_id, int mark_edge
 TCellID
 AeroExtrusion_3D::TemplateEdgeCorner(Front_3D &AFront, TCellID e_id, double dc)
 {
-	std::cout << "Template Edge Corner" << std::endl;
+	//std::cout << "Template Edge Corner" << std::endl;
 	TCellID r_id(NullID);
 
 	Edge e = m_meshH->get<Edge>(e_id);
@@ -1147,7 +1118,7 @@ AeroExtrusion_3D::TemplateEdgeCorner(Front_3D &AFront, TCellID e_id, double dc)
 TCellID
 AeroExtrusion_3D::TemplateEdgeEnd(Front_3D &AFront, TCellID e_id, double dc, int mark_edgesTreated, int mark_facesTreated)
 {
-	std::cout << "Template Edge End" << std::endl;
+	//std::cout << "Template Edge End" << std::endl;
 	TCellID r_id(NullID);
 
 	Edge e = m_meshH->get<Edge>(e_id);
