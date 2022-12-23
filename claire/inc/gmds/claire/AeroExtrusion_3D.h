@@ -43,12 +43,14 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	STATUS execute();
 	/*-------------------------------------------------------------------*/
 
-	struct multiple_info{
+	struct face_info
+	{
 		TCellID     					f_id;
 		std::map<TCellID, TCellID> next_ideal_nodes;	// (f_node_id, next_ideal_n_id)
 		std::map<TCellID, TCellID> next_nodes;			// (f_node_id, next_n_id)
 	};
-	struct sing_edge_info{
+	struct edge_info
+	{
 		TCellID     					e_id;
 		int 								singularity_type;
 		std::map<TCellID, bool>		CORNER_n_face_created;
@@ -95,7 +97,7 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 		*
 		* \return the edge classification
 	 */
-	Variable<int>* FrontEdgesClassification(Front_3D &Front);
+	void InitEdgeStructInfo(Front_3D &Front);
 	/*-------------------------------------------------------------------*/
 	/** @brief Return, in a map, the singular nodes of the front, and the
 	 	* template to apply.
@@ -186,9 +188,9 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	/** Vector Field for extrusion */
 	Variable<math::Vector3d>* m_VectorField;
 	/** Infos sur les noeuds auxquels se connecter pour chaque face du front */
-	std::map<TCellID, multiple_info> m_FaceInfo;
+	std::map<TCellID, face_info> m_FaceInfo;
 	/** Infos sur les noeuds auxquels se connecter pour chaque edge du front */
-	std::map<TCellID, sing_edge_info> m_EdgeInfo;
+	std::map<TCellID, edge_info> m_EdgeInfo;
 	/** Compteur d'hexa */
 	int m_iteration;
 
