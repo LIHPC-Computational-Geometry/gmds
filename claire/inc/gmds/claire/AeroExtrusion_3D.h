@@ -92,12 +92,30 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	 */
 	Front_3D Compute1stLayer(Front_3D A_Front_IN, Variable<double>* A_distance, Variable<math::Vector3d>* A_vectors);
 	/*-------------------------------------------------------------------*/
-	/** @brief Classification of all the edges on the front
+	/** @brief Init the faces struct info for the Front, according to the
+	 	* ideal position of each node computed.
+	 	*
+	 	* \param[in] Front front en entrée
+	 	* \param[in] map_new_nodes the map of new nodes
+		*
+		* \return
+	 */
+	void InitFaceStructInfo(Front_3D &Front, std::map<TCellID, TCellID> map_new_nodes);
+	/*-------------------------------------------------------------------*/
+	/** @brief Init the edges struct info for the Front, according to the edges
+	 	* classification.
 	 	* \param[in] Front front en entrée
 		*
-		* \return the edge classification
+		* \return
 	 */
 	void InitEdgeStructInfo(Front_3D &Front);
+	/*-------------------------------------------------------------------*/
+	/** @brief Init the next Front from a Front_IN.
+	 	* \param[in] Front_IN front en entrée
+		*
+		* \return
+	 */
+	Front_3D InitFrontOUT(Front_3D &Front_IN);
 	/*-------------------------------------------------------------------*/
 	/** @brief Return, in a map, the singular nodes of the front, and the
 	 	* template to apply.
