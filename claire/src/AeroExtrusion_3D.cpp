@@ -52,12 +52,11 @@ AeroExtrusion_3D::execute()
 	}
 
 	Front_3D Front_Geom = Front_3D(0, surface_block_corners_Id, surface_block_faces_Id);
-	//Front_3D Current_Front = Front_Geom;
 
 	Front_3D Current_Front = Compute1stLayer(Front_Geom, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), m_VectorField);
 
 	// Compute the successive layers
-	for (int i=2; i <= m_params_aero.nbr_couches-28; i++) {
+	for (int i=2; i <= m_params_aero.nbr_couches-17; i++) {
 		Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), i*pas_couche,
 		                             m_VectorField);
 	}
@@ -105,7 +104,7 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_IN, dist_cible, A_distance, A_vectors);
 
-	// Init the multiple_info type
+	// Init the face_info type
 	for (auto f_id:Front_IN.getFaces())
 	{
 		Face f = m_meshH->get<Face>(f_id);
@@ -129,13 +128,22 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		couche_id->set(map_new_nodes[n_id], Front_IN.getFrontID()+1);
 	}
 
-	std::vector<TCellID> front_nodes = Front_IN.getNodes();
-	std::vector<TCellID> front_faces = Front_IN.getFaces();
+	Variable<int>* var_front_edges_classification = m_meshH->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
+	Variable<int>* var_front_nodes_classification = m_meshH->getOrCreateVariable<int, GMDS_NODE>("Nodes_Classification");
 
-	Variable<int>* var_front_edges_classification = FrontEdgesClassification(Front_IN);
+	FrontEdgesNodesClassification_3D Classification = FrontEdgesNodesClassification_3D(m_meshH,
+	                                                                                   &Front_IN,
+	                                                                                   var_front_edges_classification,
+	                                                                                   var_front_nodes_classification);
+	Classification.execute();
+
+	InitEdgeStructInfo(Front_IN);
 
 	int mark_edgesTreated = m_meshH->newMark<Edge>();
 	int mark_facesTreated = m_meshH->newMark<Face>();
+
+	int mark_EdgesTemplates = Classification.getMarkEdgesTemplates();
+	int mark_NodesTemplates = Classification.getMarkNodesTemplates();
 
 	std::map<TCellID, int> singular_nodes = getSingularNodes(Front_IN, var_front_edges_classification);
 
@@ -143,15 +151,15 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	{
 		TCellID n_id = singu_node.first ;
 		int singu_type = singu_node.second;
-		if (singu_type==1)
+		if (singu_type==1 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
 			TCellID r_id = TemplateNode3Corner(Front_IN, n_id, map_new_nodes, dist_cible);
 		}
-		else if (singu_type==2)
+		else if (singu_type==2 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
 			TCellID r_id = TemplateNode2Corner1End(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated);
 		}
-		else if (singu_type==4)
+		else if (singu_type==4 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
 			TCellID r_id = TemplateNode3End(Front_IN, n_id, mark_edgesTreated, mark_facesTreated);
 		}
@@ -164,11 +172,15 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	{
 		TCellID e_id = singu_edge.first ;
 		int singu_type = singu_edge.second;
-		if (singu_type==1 && !m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_edgesTreated))
+		if (singu_type==1
+		    && !m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_edgesTreated)
+		    && m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_EdgesTemplates))
 		{
 			TCellID r_id = TemplateEdgeCorner(Front_IN, e_id, dist_cible);
 		}
-		else if (singu_type==2 && !m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_edgesTreated))
+		else if (singu_type==2
+		         && !m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_edgesTreated)
+		         && m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_EdgesTemplates))
 		{
 			TCellID r_id = TemplateEdgeEnd(Front_IN, e_id, dist_cible, mark_edgesTreated, mark_facesTreated);
 		}
@@ -180,7 +192,7 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 
 
 	// Ajout des hex restants
-	for (auto f_id:front_faces){
+	for (auto f_id:Front_IN.getFaces()){
 		Face f = m_meshH->get<Face>(f_id);
 		std::vector<Node> nodes = f.get<Node>();
 		if (!m_meshH->isMarked(m_meshH->get<Face>(f_id), mark_facesTreated))
@@ -245,7 +257,7 @@ AeroExtrusion_3D::Compute1stLayer(Front_3D A_Front_IN, Variable<double>* A_dista
 
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(A_Front_IN, m_params_aero.delta_cl, A_distance, A_vectors);
 
-	// Init the multiple_info type
+	// Init the face_info type
 	for (auto f_id:A_Front_IN.getFaces())
 	{
 		Face f = m_meshH->get<Face>(f_id);
@@ -322,19 +334,11 @@ AeroExtrusion_3D::Compute1stLayer(Front_3D A_Front_IN, Variable<double>* A_dista
 
 }
 /*------------------------------------------------------------------------*/
-Variable<int>*
-AeroExtrusion_3D::FrontEdgesClassification(Front_3D &Front)
+void
+AeroExtrusion_3D::InitEdgeStructInfo(Front_3D &Front)
 {
 	Variable<int>* var_front_edges_classification = m_meshH->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
-	Variable<int>* var_front_nodes_classification = m_meshH->getOrCreateVariable<int, GMDS_NODE>("Nodes_Classification");
 	Variable<int>* var_node_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-	Variable<int>* var_face_couche_id = m_meshH->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
-
-	FrontEdgesNodesClassification_3D Classification = FrontEdgesNodesClassification_3D(m_meshH,
-	                                                                                   &Front,
-	                                                                                   var_front_edges_classification,
-	                                                                                   var_front_nodes_classification);
-	Classification.execute();
 
 	for (auto e_id:m_meshH->edges())
 	{
@@ -360,8 +364,6 @@ AeroExtrusion_3D::FrontEdgesClassification(Front_3D &Front)
 			}
 		}
 	}
-
-	return var_front_edges_classification;
 
 }
 /*------------------------------------------------------------------------*/
@@ -455,7 +457,7 @@ AeroExtrusion_3D::getSingularEdges(Front_3D &AFront, Variable<int>* front_edges_
 TCellID
 AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<TCellID, TCellID> map_new_nodes, double dc)
 {
-	//std::cout << "Template Node 3 Corner au noeud " << n_id << std::endl;
+	std::cout << "Template Node 3 Corner au noeud " << n_id << std::endl;
 	TCellID r_id;
 
 	NodeNeighbourhoodOnFront_3D n_neighbourhood = NodeNeighbourhoodOnFront_3D(m_meshH, &AFront, n_id);
@@ -598,7 +600,7 @@ AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<T
 TCellID
 AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated)
 {
-	//std::cout << "Template Node 2 Corner 1 End au noeud " << n_id << std::endl;
+	std::cout << "Template Node 2 Corner 1 End au noeud " << n_id << std::endl;
 	TCellID r_id;
 
 	Node n = m_meshH->get<Node>(n_id);
@@ -645,7 +647,7 @@ AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double
 	Node n_4 = m_meshH->newNode(p4);
 
 	math::Vector3d v3 = ( ( n_c0.point() - n.point() ).normalize() + ( n_c1.point() - n.point() ).normalize() + v1 ).normalize() ;
-	math::Point p3 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n_c1.point(), dc, m_DistanceField, v3);
+	math::Point p3 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v3);
 	Node n_3 = m_meshH->newNode(p3);
 
 	// Create the new hexa
@@ -748,7 +750,7 @@ AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double
 TCellID
 AeroExtrusion_3D::TemplateNode3End(Front_3D &AFront, TCellID n_id, int mark_edgesTreated, int mark_facesTreated)
 {
-	//std::cout << "Template Node 3 End au noeud " << n_id << std::endl;
+	std::cout << "Template Node 3 End au noeud " << n_id << std::endl;
 	TCellID r_id;
 
 	Node n = m_meshH->get<Node>(n_id);
@@ -902,7 +904,7 @@ AeroExtrusion_3D::TemplateNode3End(Front_3D &AFront, TCellID n_id, int mark_edge
 TCellID
 AeroExtrusion_3D::TemplateEdgeCorner(Front_3D &AFront, TCellID e_id, double dc)
 {
-	//std::cout << "Template Edge Corner" << std::endl;
+	std::cout << "Template Edge Corner" << std::endl;
 	TCellID r_id(NullID);
 
 	Edge e = m_meshH->get<Edge>(e_id);
@@ -1145,7 +1147,7 @@ AeroExtrusion_3D::TemplateEdgeCorner(Front_3D &AFront, TCellID e_id, double dc)
 TCellID
 AeroExtrusion_3D::TemplateEdgeEnd(Front_3D &AFront, TCellID e_id, double dc, int mark_edgesTreated, int mark_facesTreated)
 {
-	//std::cout << "Template Edge End" << std::endl;
+	std::cout << "Template Edge End" << std::endl;
 	TCellID r_id(NullID);
 
 	Edge e = m_meshH->get<Edge>(e_id);
