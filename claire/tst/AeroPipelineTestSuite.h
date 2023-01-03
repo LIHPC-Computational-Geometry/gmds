@@ -208,7 +208,7 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
 
 	// Extrusion Parameters
-	params_aero.nbr_couches = 20;			// Number of layer in extrusion
+	params_aero.nbr_couches = 15;			// Number of layer in extrusion
 
 
 
