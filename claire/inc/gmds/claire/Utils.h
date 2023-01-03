@@ -162,7 +162,7 @@ class LIB_GMDS_CLAIRE_API Utils {
   		* \param[in] n6
   		* \param[in] n7 last node
 		*
-		* \return
+		* \return the id of the region (hexa) created
 	 */
 	static TCellID CreateHexaNConnectivities(Mesh *Amesh, Node n0, Node n1, Node n2, Node n3, Node n4, Node n5, Node n6, Node n7);
 	/*-------------------------------------------------------------------*/
@@ -174,27 +174,37 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static bool isThisHexMeshValid(Mesh *Amesh);
 	/*-------------------------------------------------------------------*/
-	/** @brief
+	/** @brief Compute the position of a point advected along a constant
+	 	* vector field, using the AdvectedPointRK4 algorithm.
 	 	*
 	 	* \param[in] AMesh the mesh
+	 	* \param[in] fl tree of the mesh AMesh
+	 	* \param[in] M strating point
+	 	* \param[in] dist_cible target distance in the distance field
+	 	* \param[in] A_distance the distance field
+	 	* \param[in] A_vector the vector
 		*
-		* \return
+		* \return the point of the final position of the point M
 	 */
 	static math::Point AdvectedPointRK4_UniqVector_3D(Mesh *Amesh, FastLocalize *fl, math::Point M, double dist_cible, Variable<double>* A_distance, math::Vector3d A_vector);
 	/*-------------------------------------------------------------------*/
 	/** @brief Return the 2 faces adjacents to the edge e_id in the hexa
 	 	*
 	 	* \param[in] AMesh the mesh
+	 	* \param[in] e_id the edge id
+	 	* \param[in] r_id the region id
 		*
-		* \return
+		* \return the two faces adjacents to the edge e_id in the hexa
 	 */
 	static std::vector<Face> getFacesAdjToEdgeInHexa(Mesh *Amesh, TCellID e_id, TCellID r_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Return the opposite edge of e in a quad face
 	 	*
 	 	* \param[in] AMesh the mesh
+	 	* \param[in] e_id the edge id
+	 	* \param[in] f_id the face id
 		*
-		* \return
+		* \return the opposite edge of e in a quad face
 	 */
 	static Edge oppositeEdgeInFace(Mesh *Amesh, TCellID e_id, TCellID f_id);
 	/*-------------------------------------------------------------------*/
