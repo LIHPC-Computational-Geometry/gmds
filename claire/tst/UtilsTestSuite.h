@@ -299,6 +299,33 @@ TEST(ClaireTestClass, Utils_WeightedPointOnBranch)
 
 }
 
+TEST(ClaireTestClass, Utils_isInTriangle)
+{
+	{
+		math::Point T1({0.0, 0.0, 0.0});
+		math::Point T2({1.0, 0.0, 0.0});
+		math::Point T3({0.0, 1.0, 0.0});
+		ASSERT_EQ(math::Utils::isInTriangle(T1, T2, T3, {0.25, 0.25, 0.0}), true);
+		ASSERT_EQ(math::Utils::isInTriangle(T1, T2, T3, {1.0, 1.0, 0.0}), false);
+		ASSERT_EQ(math::Utils::isInTriangle(T1, T2, T3, {0.5, 0.0, 0.0}), true);
+	}
+
+}
+
+TEST(ClaireTestClass, Utils_isInTetra)
+{
+	{
+		math::Point T1({0.0, 0.0, 0.0});
+		math::Point T2({1.0, 0.0, 0.0});
+		math::Point T3({0.0, 1.0, 0.0});
+		math::Point T4({0.0, 0.0, 1.0});
+
+		ASSERT_EQ(math::Utils::isInTetra(T1, T2, T3, T4, {0.25, 0.25, 0.0}), true);
+		ASSERT_EQ(math::Utils::isInTetra(T1, T2, T3, T4, {0, 0.25, 0.0}), true);
+		ASSERT_EQ(math::Utils::isInTetra(T1, T2, T3, T4, {1.0, 1.0, 1.0}), false);
+	}
+
+}
 
 TEST(ClaireTestClass, Utils_CreateQuadAndConnectivities)
 {

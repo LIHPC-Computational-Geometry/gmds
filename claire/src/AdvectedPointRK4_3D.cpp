@@ -38,11 +38,14 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 	double dist(0);
 	math::Vector3d Grad;
 	Eigen::Matrix4d Mat_A_Inv;
+	std::cout << "t1 " << std::endl;
+	std::cout << "Starting point: " << m_Pstart << std::endl;
 
 	// Initialisation
 	TCellID region_id = inWhichTetra(m_Pstart) ;		// Dans quel triangle est le point de départ
 	if (region_id == NullID)
 	{
+		std::cout << "Starting point not in the domain." << std::endl;
 		// The node considered is not in the domain. Then, we replace it by the closest node of the tetra mesh.
 		gmds::Cell::Data data = m_fl->find(m_Pstart);
 		TCellID n_closest_id_fl = data.id;
@@ -60,6 +63,11 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 	Mat_A_Inv = getInvMatrixA(region_id);
 	dist = interpolationDistance(region_id, Mat_A_Inv, m_Pstart);	// A quelle distance est le point de départ
 	Grad = interpolationGradient(region_id, Mat_A_Inv, m_Pstart);	// Quel est le gradient à ce point
+
+	if (dist > m_d0)
+	{
+		std::cout << "APRK4_3D: Distance de départ supérieure à la distance cible." << std::endl;
+	}
 
 	/*
 	if (m_Pstart.X()==0 && m_Pstart.Y()==0 && m_Pstart.Z()==0
@@ -94,6 +102,10 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 	{
 		std::cout << "ATTENTION AdvectedPointRK4_3D: Starting gradient vector equal to 0." << std::endl;
 	}
+
+	std::cout << "Modified Starting point: " << m_Pstart << std::endl;
+	std::cout << "dist: " << dist << std::endl;
+	std::cout << "distance cible: " << m_d0 << std::endl;
 
 	while ( (abs(dist-m_d0) > err) && iterations < max_iterations ) {
 		math::Point M = RungeKutta4(m_Pend, Grad.normalize(), dt);	// Calcule la position du point à l'itération n+1 avec un RK4
@@ -134,6 +146,7 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 	region_id = inWhichTetra(m_Pend, region_id) ;
 	Mat_A_Inv = getInvMatrixA(region_id);
 	dist = interpolationDistance(region_id, Mat_A_Inv, m_Pend);
+	std::cout << "distance out: " << dist << std::endl;
 
 	//writeDiscretePathInVTK();
 
@@ -234,10 +247,12 @@ TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point M, TCellID r0_id){
 		TCellID n_closest_id = data.id;
 		Node n_closest = m_mesh->get<Node>(n_closest_id);
 		std::vector<Region> n_closest_tetras = n_closest.get<Region>();
+		std::cout << "Nbr de tetras voisins: " << n_closest_tetras.size() << std::endl;
 		for (auto r:n_closest_tetras)
 		{
 			if (!isInRegion) {
 				isInRegion = isInTetra(r.id(), M);
+				std::cout << "Region " << r.id() << ", le point est dedans: " << isInRegion << std::endl;
 				if (isInRegion) {
 					region_id = r.id();
 				}

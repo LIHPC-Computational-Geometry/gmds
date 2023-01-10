@@ -102,11 +102,14 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 
 	std::cout << "---------> build layer: " << Front_IN.getFrontID()+1 << std::endl;
 
+	std::cout << "Test 1" << std::endl;
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_IN, dist_cible, A_distance, A_vectors);
 
+	std::cout << "Test 2" << std::endl;
 	// Init the face_info type for the faces of the front
 	InitFaceStructInfo(Front_IN, map_new_nodes);
 
+	std::cout << "Test 3" << std::endl;
 	// Variables
 	Variable<int>* var_NODE_couche_id = m_meshH->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	Variable<int>* var_front_edges_classification = m_meshH->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
@@ -118,6 +121,8 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		var_NODE_couche_id->set(map_new_nodes[n_id], Front_IN.getFrontID()+1);
 	}
 
+	std::cout << "Test 4" << std::endl;
+
 	// Front edges and nodes classification
 	FrontEdgesNodesClassification_3D Classification = FrontEdgesNodesClassification_3D(m_meshH,
 	                                                                                   &Front_IN,
@@ -125,17 +130,21 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	                                                                                   var_front_nodes_classification);
 	Classification.execute();
 
+	std::cout << "Test 5" << std::endl;
 	// Init the edge_info type for the edges of the front
 	InitEdgeStructInfo(Front_IN);
 
+	std::cout << "Test 6" << std::endl;
 	int mark_edgesTreated = m_meshH->newMark<Edge>();
 	int mark_facesTreated = m_meshH->newMark<Face>();
 
 	int mark_EdgesTemplates = Classification.getMarkEdgesTemplates();
 	int mark_NodesTemplates = Classification.getMarkNodesTemplates();
 
+	std::cout << "Test 7" << std::endl;
 	// Create the HEXA on each NODE classified
 	std::map<TCellID, int> singular_nodes = getSingularNodes(Front_IN, var_front_edges_classification);
+	std::cout << "Noeuds singuliers: " << singular_nodes.size() << std::endl;
 	for (auto singu_node:singular_nodes)
 	{
 		TCellID n_id = singu_node.first ;
@@ -157,6 +166,7 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 
 	// Create the HEXA on each EDGE classified
 	std::map<TCellID, int> singular_edges = getSingularEdges(Front_IN, var_front_edges_classification, mark_edgesTreated);
+	std::cout << "Arêtes singuliéres: " << singular_edges.size() << std::endl;
 	for (auto singu_edge:singular_edges)
 	{
 		TCellID e_id = singu_edge.first ;
@@ -200,6 +210,16 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 
 	// Init the Front OUT
 	Front_3D Front_OUT = InitFrontOUT(Front_IN);
+
+	std::cout << "Dist layer: " << dist_cible << std::endl;
+	for (auto n_id:m_meshH->nodes())
+	{
+		if (var_NODE_couche_id->value(n_id) == Front_OUT.getFrontID())
+		{
+			gmds::Cell::Data data = m_fl.find(m_meshH->get<Node>(n_id).point());
+			//std::cout << "Dist: " << m_DistanceField->value(data.id) << std::endl;
+		}
+	}
 
 	//===================//
 	// FAST ANALYSIS		//
@@ -603,7 +623,7 @@ AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double
 	TCellID f_end0_id = math::Utils::CommonFace3Nodes(m_meshH, n_c0.id(), n_id, ee.getOppositeNode(n).id()) ;
 	TCellID f_end1_id = math::Utils::CommonFace3Nodes(m_meshH, n_c1.id(), n_id, ee.getOppositeNode(n).id()) ;
 
-	math::Vector3d ve = ( ( n_c0.point() - n.point() ) + ( n_c1.point() - n.point() ) ).normalize() ;
+	math::Vector3d ve = ( ( n_c0.point() - n.point() ).normalize() + ( n_c1.point() - n.point() ).normalize() ).normalize() ;
 	math::Point pe = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, ve);
 	Node n_e = m_meshH->newNode(pe);
 
