@@ -120,6 +120,25 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static bool isInTriangle(const math::Point T1, const math::Point T2, const math::Point T3, const math::Point M);
 	/*----------------------------------------------------------------------------*/
+	/** @brief Return true if the points M1 and M2 are on the same side of the plan
+	 	* defined by the points T1/T2/T3
+	 	*
+		* \param[in] T1, T2, T3 the point of the plan
+	 	* \param[in] M1, M2 the points to check the side of
+		*
+		* \return  true if M1 and M2 are on the same side, false otherwise
+	 */
+	static bool sameSide(const math::Point T1, const math::Point T2, const math::Point T3, const math::Point M1, const math::Point M2);
+	/*----------------------------------------------------------------------------*/
+	/** @brief Return true if the point M is in the tetra T
+	 	*
+		* \param[in] T1, T2, T3, T4 the point of the tetra
+	 	* \param[in] M the point to check if it's in the tetra
+		*
+		* \return  true if M is in the tetra, false otherwise
+	 */
+	static bool isInTetra(const math::Point T1, const math::Point T2, const math::Point T3, const math::Point T4, const math::Point M);
+	/*----------------------------------------------------------------------------*/
 	/** @brief Linear 2D interpolation with 3 points
 	 	*
 		* \param[in] P1, P2, P3 the 3 points were the value is known
