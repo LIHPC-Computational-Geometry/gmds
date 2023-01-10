@@ -340,8 +340,28 @@ bool Utils::isInTriangle(const math::Point T1, const math::Point T2, const math:
 	return isInFace;
 }
 /*------------------------------------------------------------------------*/
+bool Utils::sameSide(const math::Point T1, const math::Point T2, const math::Point T3, const math::Point M1, const math::Point M2)
+{
+	math::Vector3d V1 = T2-T1 ;
+	math::Vector3d V2 = T3-T1 ;
+	math::Vector3d V3 = M1-T1 ;
+	math::Vector3d V4 = M2-T1 ;
 
+	math::Vector3d Normal = V1.cross(V2);
+	double dotN4 = Normal.dot(V3);
+	double dotM = Normal.dot(V4);
 
+	return (signbit(dotN4) == signbit(dotM) );
+}
+/*------------------------------------------------------------------------*/
+bool Utils::isInTetra(const math::Point T1, const math::Point T2, const math::Point T3, const math::Point T4, const math::Point M)
+{
+
+	return math::Utils::sameSide(T1, T2, T3, T4, M) &&
+	       math::Utils::sameSide(T2, T3, T4, T1, M) &&
+	       math::Utils::sameSide(T3, T4, T1, T2, M) &&
+	       math::Utils::sameSide(T4, T1, T2, T3, M);
+}
 /*------------------------------------------------------------------------*/
 double Utils::linearInterpolation2D3Pt(const math::Point P1, const math::Point P2, const math::Point P3, const math::Point M, const double c1, const double c2, const double c3)
 {
