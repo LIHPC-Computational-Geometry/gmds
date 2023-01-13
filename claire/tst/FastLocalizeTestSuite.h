@@ -4,6 +4,7 @@
 
 #include <gmds/claire/FastLocalize.h>
 #include <gmds/ig/Mesh.h>
+#include <gmds/claire/Utils.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/io/VTKWriter.h>
 #include <gmds/io/VTKReader.h>
@@ -75,5 +76,32 @@ TEST(FastLocalizeTestSuite, test_FastLocalize_3D)
 	data = fl.find(gmds::math::Point({-1.33,0.678,-1.89}));
 	ASSERT_EQ(data.dim, 0);
 	ASSERT_EQ(data.id, 4048);
+
+}
+
+TEST(FastLocalizeTestSuite, test_FastLocalize_3D_2)
+{
+	// WE READ
+	gmds::Mesh m(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
+	                              F2E | E2F | R2E | E2R | N2R | N2F | N2E));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir + "/Aero/3D/C3_3D_0.3.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N | gmds::R);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	FastLocalize fl(&m);
+	Cell::Data data = fl.find({-2.74355, -1.62243, -1.49076});
+
+	gmds::TCellID r_id = fl.findTetra({-2.74355, -1.62243, -1.49076});
+
+	ASSERT_EQ(r_id, 3364);
 
 }
