@@ -53,7 +53,7 @@ AeroExtrusion_3D::execute()
 
 	Front_3D Front_Geom = Front_3D(0, surface_block_corners_Id, surface_block_faces_Id);
 
-	Front_3D Current_Front = Compute1stLayer(Front_Geom, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), m_VectorField);
+	Front_3D Current_Front = Compute1stLayer(Front_Geom, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), m_VectorField);
 
 	// Compute the successive layers
 	for (int i=2; i <= m_params_aero.nbr_couches; i++) {
@@ -102,14 +102,11 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 
 	std::cout << "---------> build layer: " << Front_IN.getFrontID()+1 << std::endl;
 
-	std::cout << "Test 1" << std::endl;
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_IN, dist_cible, A_distance, A_vectors);
 
-	std::cout << "Test 2" << std::endl;
 	// Init the face_info type for the faces of the front
 	InitFaceStructInfo(Front_IN, map_new_nodes);
 
-	std::cout << "Test 3" << std::endl;
 	// Variables
 	Variable<int>* var_NODE_couche_id = m_meshH->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	Variable<int>* var_front_edges_classification = m_meshH->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
@@ -121,8 +118,6 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		var_NODE_couche_id->set(map_new_nodes[n_id], Front_IN.getFrontID()+1);
 	}
 
-	std::cout << "Test 4" << std::endl;
-
 	// Front edges and nodes classification
 	FrontEdgesNodesClassification_3D Classification = FrontEdgesNodesClassification_3D(m_meshH,
 	                                                                                   &Front_IN,
@@ -130,18 +125,15 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	                                                                                   var_front_nodes_classification);
 	Classification.execute();
 
-	std::cout << "Test 5" << std::endl;
 	// Init the edge_info type for the edges of the front
 	InitEdgeStructInfo(Front_IN);
 
-	std::cout << "Test 6" << std::endl;
 	int mark_edgesTreated = m_meshH->newMark<Edge>();
 	int mark_facesTreated = m_meshH->newMark<Face>();
 
 	int mark_EdgesTemplates = Classification.getMarkEdgesTemplates();
 	int mark_NodesTemplates = Classification.getMarkNodesTemplates();
 
-	std::cout << "Test 7" << std::endl;
 	// Create the HEXA on each NODE classified
 	std::map<TCellID, int> singular_nodes = getSingularNodes(Front_IN, var_front_edges_classification);
 	std::cout << "Noeuds singuliers: " << singular_nodes.size() << std::endl;
@@ -224,10 +216,15 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	//===================//
 	// FAST ANALYSIS		//
 	//===================//
-	bool isHexMeshValid = math::Utils::isThisHexMeshValid(m_meshH);
-	if (!isHexMeshValid)
+	for (auto e_id:m_meshH->edges())
 	{
-		std::cout << "ATTENTION: the mesh is not valid. An element may be reversed during the advancing front." << std::endl;
+		Edge e = m_meshH->get<Edge>(e_id);
+		if (var_NODE_couche_id->value(e.get<Node>()[0].id()) == Front_OUT.getFrontID()
+		    && var_NODE_couche_id->value(e.get<Node>()[1].id()) == Front_OUT.getFrontID()
+		    && Front_OUT.edgeFacesOnFront(m_meshH, e_id).size() != 2)
+		{
+			std::cout << "ATTENTION: the layer is not valid. At least one edge of the front has not 2 faces." << std::endl;
+		}
 	}
 
 	return Front_OUT;

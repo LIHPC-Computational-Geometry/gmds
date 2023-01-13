@@ -39,9 +39,7 @@ FrontEdgesNodesClassification_3D::execute()
 	FrontEdgesClassification();	// Fill the variable m_EdgesClassification
 	FrontNodesClassification();	// Fill the variable m_NodesClassification
 	MarkSemiEdgesandNodes();		// Mark the semi nodes, and the semi edges
-
 	m_global_feature_edges = ComputeAllGlobalFeatureEdge();
-
 	ComputeNodesEdgesForTemplates();
 
 	return FrontEdgesNodesClassification_3D::SUCCESS;
@@ -191,11 +189,11 @@ FrontEdgesNodesClassification_3D::FrontEdgesClassification()
 {
 	Variable<int>* var_node_couche_id = m_mesh->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	Variable<int>* var_face_couche_id = m_mesh->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
-
+	std::cout << "t1" << std::endl;
 	for (auto e_id:m_mesh->edges())
 	{
 		Edge e = m_mesh->get<Edge>(e_id);
-		std::vector<Node> e_nodes = e.get<Node>() ;
+		std::vector<Node> e_nodes = e.get<Node>();
 		if (var_node_couche_id->value(e_nodes[0].id()) == m_Front->getFrontID()
 		    && var_node_couche_id->value(e_nodes[1].id()) == m_Front->getFrontID())
 		{
@@ -204,7 +202,7 @@ FrontEdgesNodesClassification_3D::FrontEdgesClassification()
 			m_EdgesClassification->set(e_id, edge_classification);
 		}
 	}
-
+	std::cout << "t2" << std::endl;
 }
 /*------------------------------------------------------------------------*/
 void
@@ -412,3 +410,4 @@ FrontEdgesNodesClassification_3D::ComputeNodesEdgesForTemplates()
 	}
 
 }
+/*------------------------------------------------------------------------*/
