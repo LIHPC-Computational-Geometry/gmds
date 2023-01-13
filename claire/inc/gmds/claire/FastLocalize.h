@@ -31,6 +31,14 @@ class LIB_GMDS_CLAIRE_API FastLocalize {
 	*  @return the cell data indicating where \p APoint is in this->m_mesh
 	 */
 	Cell::Data find(const math::Point& APoint);
+	/*-------------------------------------------------------------------*/
+	/** @brief Given an input point \p APoint return the TCellID that
+	 *  indicate what is the closest region of \APoint
+	*  @param APoint point to localize
+	*  @return the TCellID indicating where \p APoint is in this->m_mesh
+	 */
+	TCellID findTetra(const math::Point& APoint);
+	/*-------------------------------------------------------------------*/
 
  private:
 	void buildANNTree();
