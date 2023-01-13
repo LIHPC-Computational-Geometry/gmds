@@ -67,7 +67,7 @@ AeroPipeline_3D::execute(){
 	std::cout << "-> Calcul du gradient du champ des Level Sets" << std::endl;
 	t_start = clock();
 	m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-	LeastSquaresGradientComputation grad3D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	LeastSquaresGradientComputation grad3D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
 	                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	grad3D.execute();
 	t_end = clock();
