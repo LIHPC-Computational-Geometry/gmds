@@ -356,11 +356,36 @@ bool Utils::sameSide(const math::Point T1, const math::Point T2, const math::Poi
 /*------------------------------------------------------------------------*/
 bool Utils::isInTetra(const math::Point T1, const math::Point T2, const math::Point T3, const math::Point T4, const math::Point M)
 {
+	bool isInTet = (math::Utils::sameSide(T1, T2, T3, T4, M) &&
+	                math::Utils::sameSide(T2, T3, T4, T1, M) &&
+	                math::Utils::sameSide(T3, T4, T1, T2, M) &&
+	                math::Utils::sameSide(T4, T1, T2, T3, M));
 
-	return math::Utils::sameSide(T1, T2, T3, T4, M) &&
-	       math::Utils::sameSide(T2, T3, T4, T1, M) &&
-	       math::Utils::sameSide(T3, T4, T1, T2, M) &&
-	       math::Utils::sameSide(T4, T1, T2, T3, M);
+	// Test méthode avec les volumes
+	if (!isInTet)
+	{
+		double V = (1.0/6.0)*abs( T1.X()*(T2.Y()*T3.Z()-T3.Y()*T2.Z())
+		                             + T2.X()*( T3.Y()*T1.Z()-T1.Y()*T3.Z())
+		                             + T3.X()*(T1.Y()*T2.Z()-T2.Y()*T1.Z())
+		                             + T4.X()*(T1.Y()*(T2.Z()-T3.Z())+T2.Y()*(T3.Z()-T1.Z())+T3.Y()*(T1.Z()-T2.Z())) );
+		double V1 = (1.0/6.0)*abs( M.X()*(T2.Y()*T3.Z()-T3.Y()*T2.Z())
+		                              + T2.X()*( T3.Y()*M.Z()-M.Y()*T3.Z())
+		                              + T3.X()*(M.Y()*T2.Z()-T2.Y()*M.Z()) );
+		double V2 = (1.0/6.0)*abs( T1.X()*(M.Y()*T3.Z()-T3.Y()*M.Z())
+		                              + M.X()*( T3.Y()*T1.Z()-T1.Y()*T3.Z())
+		                              + T3.X()*(T1.Y()*M.Z()-M.Y()*T1.Z()) ) ;
+		double V3 = (1.0/6.0)*abs( T1.X()*(T2.Y()*M.Z()-M.Y()*T2.Z())
+		                              + T2.X()*( M.Y()*T1.Z()-T1.Y()*M.Z())
+		                              + M.X()*(T1.Y()*T2.Z()-T2.Y()*T1.Z()) );
+		double V4 = (1.0/6.0)*abs(T1.Y()*(M.Y()*(T2.Z()-T3.Z())+T2.Y()*(T3.Z()-M.Z())+T3.Y()*(M.Z()-T2.Z())) );
+
+		if ( abs(V-V1-V2-V3-V4) <= pow(10,-6) )
+		{
+			isInTet = true;
+		}
+	}
+
+	return isInTet;
 }
 /*------------------------------------------------------------------------*/
 double Utils::linearInterpolation2D3Pt(const math::Point P1, const math::Point P2, const math::Point P3, const math::Point M, const double c1, const double c2, const double c3)
