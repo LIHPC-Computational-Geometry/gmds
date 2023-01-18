@@ -44,10 +44,6 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_3D
 
  private:
 	/*-------------------------------------------------------------------*/
-	/** @brief Check if n4 and M are on the same side from the face n1/n2/n3
-	 */
-	bool SameSide(Node n1, Node n2, Node n3, Node n4, math::Point M);
-	/*-------------------------------------------------------------------*/
 	/** @brief Return true if the point M is in the tetra
 	 */
 	bool isInTetra(TCellID region_id, math::Point M);

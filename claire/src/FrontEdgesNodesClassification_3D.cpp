@@ -189,7 +189,7 @@ FrontEdgesNodesClassification_3D::FrontEdgesClassification()
 {
 	Variable<int>* var_node_couche_id = m_mesh->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	Variable<int>* var_face_couche_id = m_mesh->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
-	std::cout << "t1" << std::endl;
+
 	for (auto e_id:m_mesh->edges())
 	{
 		Edge e = m_mesh->get<Edge>(e_id);
@@ -202,7 +202,7 @@ FrontEdgesNodesClassification_3D::FrontEdgesClassification()
 			m_EdgesClassification->set(e_id, edge_classification);
 		}
 	}
-	std::cout << "t2" << std::endl;
+
 }
 /*------------------------------------------------------------------------*/
 void
@@ -403,6 +403,10 @@ FrontEdgesNodesClassification_3D::ComputeNodesEdgesForTemplates()
 				for (auto edge_loc_id:global_feature_edge)
 				{
 					m_mesh->unmark(m_mesh->get<Edge>(edge_loc_id), m_mark_EdgesForTemplates);
+					m_mesh->unmark(e_0_nodes[0], m_mark_NodesForTemplates);
+					m_mesh->unmark(e_0_nodes[1], m_mark_NodesForTemplates);
+					m_mesh->unmark(e_last_nodes[0], m_mark_NodesForTemplates);
+					m_mesh->unmark(e_last_nodes[1], m_mark_NodesForTemplates);
 				}
 			}
 		}
