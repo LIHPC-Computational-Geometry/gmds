@@ -731,21 +731,19 @@ Edge Utils::oppositeEdgeInFace(Mesh *Amesh, TCellID e_id, TCellID f_id)
 		std::cout << "ATTENTION oppositeEdgeInFace: la face n'est pas un quad." << std::endl;
 	}
 
-	if (f_edges[0].id()==e_id)
+	Edge e = Amesh->get<Edge>(e_id);
+	std::vector<Node> e_nodes = e.get<Node>();
+
+	for (auto e_loc:f.get<Edge>())
 	{
-		e_opp = f_edges[2];
-	}
-	else if (f_edges[1].id()==e_id)
-	{
-		e_opp = f_edges[3];
-	}
-	else if (f_edges[2].id()==e_id)
-	{
-		e_opp = f_edges[0];
-	}
-	else if (f_edges[3].id()==e_id)
-	{
-		e_opp = f_edges[1];
+		std::vector<Node> e_loc_nodes = e_loc.get<Node>();
+		if (e_loc_nodes[0].id() != e_nodes[0].id()
+		    && e_loc_nodes[0].id() != e_nodes[1].id()
+		    && e_loc_nodes[1].id() != e_nodes[0].id()
+		    && e_loc_nodes[1].id() != e_nodes[1].id())
+		{
+			e_opp = e_loc;
+		}
 	}
 
 	return e_opp;
