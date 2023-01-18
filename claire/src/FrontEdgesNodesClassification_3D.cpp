@@ -405,6 +405,10 @@ FrontEdgesNodesClassification_3D::ComputeNodesEdgesForTemplates()
 				for (auto edge_loc_id:global_feature_edge)
 				{
 					m_mesh->unmark(m_mesh->get<Edge>(edge_loc_id), m_mark_EdgesForTemplates);
+					m_mesh->unmark(e_0_nodes[0], m_mark_NodesForTemplates);
+					m_mesh->unmark(e_0_nodes[1], m_mark_NodesForTemplates);
+					m_mesh->unmark(e_last_nodes[0], m_mark_NodesForTemplates);
+					m_mesh->unmark(e_last_nodes[1], m_mark_NodesForTemplates);
 				}
 			}
 		}
