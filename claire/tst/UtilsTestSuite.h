@@ -358,7 +358,6 @@ TEST(ClaireTestClass, Utils_CreateQuadAndConnectivities)
 
 }
 
-
 TEST(ClaireTestClass, Utils_CreateHexaNConnectivities)
 {
 	// Test
@@ -545,6 +544,26 @@ TEST(ClaireTestClass, Utils_CreateHexaNConnectivities)
 
 }
 
+TEST(ClaireTestClass, Utils_minEdgeLenght)
+{
+	// Test
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
+
+	Node n0 = m.newNode({0,0,0});
+	Node n1 = m.newNode({1,0,0});
+	Node n2 = m.newNode({1,1,0});
+	Node n3 = m.newNode({0,1,0});
+
+	m.newTriangle(n0,n1,n3);
+	m.newTriangle(n3,n1,n2);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	ASSERT_FLOAT_EQ(1.0, math::Utils::minEdgeLenght(&m));
+
+}
 TEST(ClaireTestClass, Utils_minEdgeLenght)
 {
 	// Test
