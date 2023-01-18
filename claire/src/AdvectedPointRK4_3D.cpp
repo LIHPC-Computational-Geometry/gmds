@@ -4,6 +4,7 @@
 
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/AdvectedPointRK4_3D.h>
+#include <gmds/claire/Utils.h>
 #include <limits>
 #include <chrono>
 /*------------------------------------------------------------------------*/
@@ -38,8 +39,6 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 	double dist(0);
 	math::Vector3d Grad;
 	Eigen::Matrix4d Mat_A_Inv;
-	//std::cout << "--------------------------------- " << std::endl;
-	//std::cout << "Starting point: " << m_Pstart << std::endl;
 
 	// Initialisation
 	TCellID region_id = inWhichTetra(m_Pstart) ;		// Dans quel triangle est le point de départ
@@ -134,78 +133,11 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 
 
 /*------------------------------------------------------------------------*/
-bool AdvectedPointRK4_3D::SameSide(Node n1, Node n2, Node n3, Node n4, math::Point M){
-
-	math::Point P1 = n1.point();
-	math::Point P2 = n2.point();
-	math::Point P3 = n3.point();
-	math::Point P4 = n4.point();
-
-	math::Vector3d V1 = P2-P1 ;
-	math::Vector3d V2 = P3-P1 ;
-	math::Vector3d V3 = P4-P1 ;
-	math::Vector3d V4 = M-P1 ;
-
-	math::Vector3d Normal = V1.cross(V2);
-	double dotN4 = Normal.dot(V3);
-	double dotM = Normal.dot(V4);
-
-	return (std::signbit(dotN4) == std::signbit(dotM) );
-
-}
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 bool AdvectedPointRK4_3D::isInTetra(TCellID region_id, math::Point M){
 
 	Region r = m_mesh->get<Region>(region_id);
 	std::vector<Node> Tetra_nodes = r.get<Node>();
-
-	if (Tetra_nodes.size() != 4){
-		std::cout << "Attention : l'élément regardé n'est pas un tétra." << std::endl;
-	}
-
-	Node n1 = Tetra_nodes[0] ;
-	Node n2 = Tetra_nodes[1] ;
-	Node n3 = Tetra_nodes[2] ;
-	Node n4 = Tetra_nodes[3] ;
-
-	bool sameSide = (SameSide(n1, n2, n3, n4, M) &&
-	                 SameSide(n2, n3, n4, n1, M) &&
-	                 SameSide(n3, n4, n1, n2, M) &&
-	                 SameSide(n4, n1, n2, n3, M));
-
-	// Test méthode avec les volumes
-	if (!sameSide)
-	{
-		math::Point p1 = n1.point();
-		math::Point p2 = n2.point();
-		math::Point p3 = n3.point();
-		math::Point p4 = n4.point();
-		double V = (1.0/6.0)*abs( p1.X()*(p2.Y()*p3.Z()-p3.Y()*p2.Z())
-		                             + p2.X()*( p3.Y()*p1.Z()-p1.Y()*p3.Z())
-		                             + p3.X()*(p1.Y()*p2.Z()-p2.Y()*p1.Z())
-		                             + p4.X()*(p1.Y()*(p2.Z()-p3.Z())+p2.Y()*(p3.Z()-p1.Z())+p3.Y()*(p1.Z()-p2.Z())) );
-		double V1 = (1.0/6.0)*abs( M.X()*(p2.Y()*p3.Z()-p3.Y()*p2.Z())
-		                              + p2.X()*( p3.Y()*M.Z()-M.Y()*p3.Z())
-		                              + p3.X()*(M.Y()*p2.Z()-p2.Y()*M.Z()) );
-		double V2 = (1.0/6.0)*abs( p1.X()*(M.Y()*p3.Z()-p3.Y()*M.Z())
-		                              + M.X()*( p3.Y()*p1.Z()-p1.Y()*p3.Z())
-		                              + p3.X()*(p1.Y()*M.Z()-M.Y()*p1.Z()) ) ;
-		double V3 = (1.0/6.0)*abs( p1.X()*(p2.Y()*M.Z()-M.Y()*p2.Z())
-		                              + p2.X()*( M.Y()*p1.Z()-p1.Y()*M.Z())
-		                              + M.X()*(p1.Y()*p2.Z()-p2.Y()*p1.Z()) );
-		double V4 = (1.0/6.0)*abs(p1.Y()*(M.Y()*(p2.Z()-p3.Z())+p2.Y()*(p3.Z()-M.Z())+p3.Y()*(M.Z()-p2.Z())) );
-
-		if ( abs(V-V1-V2-V3-V4) <= pow(10,-6) )
-		{
-			sameSide = true;
-			//std::cout << "New tetra found" << std::endl;
-		}
-	}
-
-	return sameSide;
+	return math::Utils::isInTetra(Tetra_nodes[0].point(), Tetra_nodes[1].point(), Tetra_nodes[2].point(), Tetra_nodes[3].point(), M);
 
 }
 /*------------------------------------------------------------------------*/
@@ -214,7 +146,7 @@ bool AdvectedPointRK4_3D::isInTetra(TCellID region_id, math::Point M){
 /*------------------------------------------------------------------------*/
 TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point M, TCellID r0_id){
 	TCellID region_id;
-	/*
+
 	bool isInRegion(false);
 
 	// Si un r0_id a été donné en entrée, on regarde dans les tétras voisins à
@@ -277,8 +209,8 @@ TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point M, TCellID r0_id){
 
 
 	return region_id;
-	*/
-	return m_fl->findTetra(M);
+
+	//return m_fl->findTetra(M);
 }
 /*------------------------------------------------------------------------*/
 
