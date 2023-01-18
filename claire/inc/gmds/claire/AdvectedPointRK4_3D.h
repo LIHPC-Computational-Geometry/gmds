@@ -50,11 +50,7 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_3D
 	/*-------------------------------------------------------------------*/
 	/** @brief Return in which tetra M is
 	 */
-	TCellID inWhichTetra(math::Point M, TCellID r0_id=NullID);
-	/*-------------------------------------------------------------------*/
-	/** @brief Compute the minimal edge's lenght
-	 */
-	double minEdgeLenght();
+	TCellID inWhichTetra(math::Point M);
 	/*-------------------------------------------------------------------*/
 	/** @brief Retourne la matrice inverse de A sur la face face_id
 	 */

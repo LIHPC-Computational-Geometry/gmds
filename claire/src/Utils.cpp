@@ -751,6 +751,20 @@ Edge Utils::oppositeEdgeInFace(Mesh *Amesh, TCellID e_id, TCellID f_id)
 	return e_opp;
 }
 /*----------------------------------------------------------------------------*/
+double Utils::minEdgeLenght(Mesh *Amesh){
+
+	double minLenght(std::numeric_limits<double>::max());
+	for (auto edge_id:Amesh->edges())
+	{
+		Edge edge = Amesh->get<Edge>(edge_id);
+		if(edge.length() < minLenght)
+		{
+			minLenght = edge.length() ;
+		}
+	}
+	return minLenght;
+}
+/*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/
 }  // namespace gmds
