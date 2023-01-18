@@ -239,6 +239,14 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static Edge oppositeEdgeInFace(Mesh *Amesh, TCellID e_id, TCellID f_id);
 	/*-------------------------------------------------------------------*/
+	/** @brief Compute the minimal edge's lenght
+	 	*
+	 	* \param[in] AMesh the mesh
+		*
+		* \return
+	 */
+	static double minEdgeLenght(Mesh *Amesh);
+	/*-------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/
