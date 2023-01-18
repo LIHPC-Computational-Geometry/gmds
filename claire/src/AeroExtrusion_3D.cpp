@@ -136,7 +136,6 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 
 	// Create the HEXA on each NODE classified
 	std::map<TCellID, int> singular_nodes = getSingularNodes(Front_IN, var_front_edges_classification);
-	std::cout << "Noeuds singuliers: " << singular_nodes.size() << std::endl;
 	for (auto singu_node:singular_nodes)
 	{
 		TCellID n_id = singu_node.first ;
@@ -149,6 +148,10 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		{
 			TCellID r_id = TemplateNode2Corner1End(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated);
 		}
+		else if (singu_type==3 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
+		{
+			TCellID r_id = TemplateNode1Corner2End(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated);
+		}
 		else if (singu_type==4 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
 			TCellID r_id = TemplateNode3End(Front_IN, n_id, mark_edgesTreated, mark_facesTreated);
@@ -158,7 +161,6 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 
 	// Create the HEXA on each EDGE classified
 	std::map<TCellID, int> singular_edges = getSingularEdges(Front_IN, var_front_edges_classification, mark_edgesTreated);
-	std::cout << "Arêtes singuliéres: " << singular_edges.size() << std::endl;
 	for (auto singu_edge:singular_edges)
 	{
 		TCellID e_id = singu_edge.first ;
@@ -203,13 +205,11 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	// Init the Front OUT
 	Front_3D Front_OUT = InitFrontOUT(Front_IN);
 
-	std::cout << "Dist layer: " << dist_cible << std::endl;
 	for (auto n_id:m_meshH->nodes())
 	{
 		if (var_NODE_couche_id->value(n_id) == Front_OUT.getFrontID())
 		{
 			gmds::Cell::Data data = m_fl.find(m_meshH->get<Node>(n_id).point());
-			//std::cout << "Dist: " << m_DistanceField->value(data.id) << std::endl;
 		}
 	}
 
@@ -393,6 +393,10 @@ AeroExtrusion_3D::getSingularNodes(Front_3D &AFront, Variable<int>* front_edges_
 		else if (compteur_corner==2 && compteur_end==1)
 		{
 			sing_nodes[n_id] = 2;
+		}
+		else if (compteur_corner==1 && compteur_end==2)
+		{
+			sing_nodes[n_id] = 3;
 		}
 		else if (compteur_end == 3 && n_ordered_edges.size()==3)
 		{
@@ -731,6 +735,138 @@ AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double
 	vtkWriter.setDataOptions(gmds::N|gmds::R);
 	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
 	m_iteration++;
+
+	return r_id;
+}
+/*------------------------------------------------------------------------*/
+TCellID
+AeroExtrusion_3D::TemplateNode1Corner2End(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated)
+{
+	std::cout << "Template Node 1 Corner 2 End au noeud " << n_id << std::endl;
+	TCellID r_id;
+
+	Node n = m_meshH->get<Node>(n_id);
+
+	NodeNeighbourhoodOnFront_3D n_neighbourhood = NodeNeighbourhoodOnFront_3D(m_meshH, &AFront, n_id);
+	n_neighbourhood.execute();
+
+	Variable<int>* var_front_edges_classification = m_meshH->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
+
+	std::vector<Edge> ee;	// For the two edge END
+	Edge ec;						// For the edge CORNER
+
+	// Get the local feature edges
+	for (auto edge_id:n_neighbourhood.getOrderedEdges())
+	{
+		if (var_front_edges_classification->value(edge_id)==2)
+		{
+			ee.push_back(m_meshH->get<Edge>(edge_id));
+		}
+		else if (var_front_edges_classification->value(edge_id)==1)
+		{
+			ec = m_meshH->get<Edge>(edge_id);
+		}
+	}
+
+	Node n_e0 = ee[0].getOppositeNode(n);
+	Node n_e1 = ee[1].getOppositeNode(n);
+
+	std::vector<TCellID> ee_faces = n_neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(ee[0].id(), ee[1].id(), ec.id()) ;
+	if (ee_faces.size() != 3)
+	{
+		std::cout << "Attention AeroExtrusion_3D: Template Node 1 CORNER, 2 END, ne respecte pas la condition des 3 faces entre les deux Edges de type END." << std::endl;
+	}
+
+	Face f1 = m_meshH->get<Face>(ee_faces[1]);
+
+	Edge e1 = m_meshH->get<Edge>(n_neighbourhood.nextEdgeOfFace(ee_faces[0], ee[0].id()));
+	Edge e3 = m_meshH->get<Edge>(n_neighbourhood.nextEdgeOfFace(ee_faces[2], ee[1].id()));
+	Node n1 = e1.getOppositeNode(n);
+	Node n3 = e3.getOppositeNode(n);
+
+	Node n2;
+	for (auto n_loc:f1.get<Node>())
+	{
+		if (n_loc.id() != n.id()
+		    && n_loc.id() != n1.id()
+		    && n_loc.id() != n3.id())
+		{
+			n2 = n_loc;
+		}
+	}
+
+	Node nc = ec.getOppositeNode(n) ;
+
+	Node n4 = m_meshH->get<Node>(m_FaceInfo[f1.id()].next_ideal_nodes[n1.id()]);
+	Node n5 = m_meshH->get<Node>(m_FaceInfo[f1.id()].next_ideal_nodes[n2.id()]);
+	Node n6 = m_meshH->get<Node>(m_FaceInfo[f1.id()].next_ideal_nodes[n3.id()]);
+
+	// Create the new hexa
+	r_id = math::Utils::CreateHexaNConnectivities(m_meshH, n, n1, n2, n3, nc, n4, n5, n6);
+
+	// Update the faces and edges that can't do actions anymore
+	m_meshH->mark(ec, mark_edgesTreated);
+	m_meshH->mark(f1, mark_facesTreated);
+
+	// Update the EdgeInfo structure for the END edges ---->
+	m_EdgeInfo[ee[0].id()].END_n_face_created[n_id] = true;
+	m_EdgeInfo[ee[0].id()].diag_next_node[n_id] = n4.id();
+	m_EdgeInfo[ee[1].id()].END_n_face_created[n_id] = true;
+	m_EdgeInfo[ee[1].id()].diag_next_node[n_id] = n6.id();
+	//<----
+
+	// Update the EdgeInfo structure for the CORNER edge ---->
+	NodeNeighbourhoodOnFront_3D nc_neighbourhood = NodeNeighbourhoodOnFront_3D(m_meshH, &AFront, nc.id());
+	nc_neighbourhood.execute();
+
+	std::vector<TCellID> nc_front_edges = nc_neighbourhood.getOrderedEdges();
+	Edge ec_next;
+	for (auto e_loc_id:nc_front_edges)
+	{
+		if (var_front_edges_classification->value(e_loc_id) == 1
+		    && e_loc_id != ec.id())
+		{
+			ec_next = m_meshH->get<Edge>(e_loc_id) ;
+		}
+	}
+	m_EdgeInfo[ec_next.id()].CORNER_n_face_created[nc.id()] = true;
+	m_EdgeInfo[ec_next.id()].diag_next_node[nc.id()] = n5.id();
+
+	Face f_ce_0 = m_meshH->get<Face>( n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec.id(), ee[0].id(), ee[1].id()) );
+	Face f_ce_1 = m_meshH->get<Face>( n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec.id(), ee[1].id(), ee[0].id()) );
+
+	Edge e_e0_opp = math::Utils::oppositeEdgeInFace(m_meshH, ee[0].id(), f_ce_0.id()) ;
+	Edge e_e1_opp = math::Utils::oppositeEdgeInFace(m_meshH, ee[1].id(), f_ce_1.id()) ;
+
+	Face f_ec_next_0 = m_meshH->get<Face>(nc_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec_next.id(), e_e0_opp.id(), e_e1_opp.id()) );
+	Face f_ec_next_1 = m_meshH->get<Face>(nc_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec_next.id(), e_e1_opp.id(), e_e0_opp.id()) );
+
+	std::pair<TCellID, TCellID> pair_1(f_ec_next_0.id(), nc.id());
+	std::pair<TCellID, TCellID> pair_2(f_ec_next_1.id(), nc.id());
+
+	m_EdgeInfo[ec_next.id()].CORNER_next_nodes[pair_1] = n4.id() ;
+	m_EdgeInfo[ec_next.id()].CORNER_next_nodes[pair_2] = n6.id() ;
+	//<----
+
+	// Update the FaceInfo structures ---->
+	for (auto f_loc_id:nc_neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(ec_next.id(), ec.id(), e_e1_opp.id()))
+	{
+		m_FaceInfo[f_loc_id].next_nodes[nc.id()] = n4.id();
+	}
+	for (auto f_loc_id:nc_neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(ec_next.id(), ec.id(), e_e0_opp.id()))
+	{
+		m_FaceInfo[f_loc_id].next_nodes[nc.id()] = n6.id();
+	}
+	//<----
+
+	// Write the new hexa in a VTK file <----
+	gmds::IGMeshIOService ioService(m_meshH);
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
+	m_iteration++;
+	//<----
 
 	return r_id;
 }
