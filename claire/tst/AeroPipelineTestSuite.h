@@ -196,12 +196,12 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 	// le temps de mettre en place un fichier .ini
 	params_aero.dim=ParamsAero::DIM_3D;
 	std::string dir(TEST_SAMPLES_DIR);
-	params_aero.input_file=dir+"/Aero/3D/C3_3D_0.3.vtk";
+	params_aero.input_file=dir+"/Aero/3D/C4_3D_0.5.vtk";
 	params_aero.output_file="AeroPipeline3D_Hexa.vtk";
 	params_aero.output_dir="gmds/claire/tst/";
 
 	// Découpage de surface de géométrie en dur si pas lu dans un fichier en entrée
-	params_aero.block_surface_3D = 4;
+	params_aero.block_surface_3D = 5;
 
 	// Physical Parameters for the algorithm
 	params_aero.delta_cl = 0.05;			// Epaisseur de la première couche, pour la couche limite
