@@ -102,14 +102,11 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 
 	std::cout << "---------> build layer: " << Front_IN.getFrontID()+1 << std::endl;
 
-	std::cout << "Test 1" << std::endl;
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_IN, dist_cible, A_distance, A_vectors);
 
-	std::cout << "Test 2" << std::endl;
 	// Init the face_info type for the faces of the front
 	InitFaceStructInfo(Front_IN, map_new_nodes);
 
-	std::cout << "Test 3" << std::endl;
 	// Variables
 	Variable<int>* var_NODE_couche_id = m_meshH->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	Variable<int>* var_front_edges_classification = m_meshH->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
@@ -121,8 +118,6 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		var_NODE_couche_id->set(map_new_nodes[n_id], Front_IN.getFrontID()+1);
 	}
 
-	std::cout << "Test 4" << std::endl;
-
 	// Front edges and nodes classification
 	FrontEdgesNodesClassification_3D Classification = FrontEdgesNodesClassification_3D(m_meshH,
 	                                                                                   &Front_IN,
@@ -130,18 +125,17 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	                                                                                   var_front_nodes_classification);
 	Classification.execute();
 
-	std::cout << "Test 5" << std::endl;
 	// Init the edge_info type for the edges of the front
 	InitEdgeStructInfo(Front_IN);
 
-	std::cout << "Test 6" << std::endl;
 	int mark_edgesTreated = m_meshH->newMark<Edge>();
 	int mark_facesTreated = m_meshH->newMark<Face>();
 
 	int mark_EdgesTemplates = Classification.getMarkEdgesTemplates();
 	int mark_NodesTemplates = Classification.getMarkNodesTemplates();
 
-	std::cout << "Test 7" << std::endl;
+	Variable<int>* var_TEST = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_TEST_NODES");
+
 	// Create the HEXA on each NODE classified
 	std::map<TCellID, int> singular_nodes = getSingularNodes(Front_IN, var_front_edges_classification);
 	for (auto singu_node:singular_nodes)
@@ -163,6 +157,11 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		else if (singu_type==4 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
 			TCellID r_id = TemplateNode3End(Front_IN, n_id, mark_edgesTreated, mark_facesTreated);
+		}
+		if (m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
+		{
+			//std::cout << "Noeud marqué pour template" << std::endl;
+			var_TEST->set(n_id, 1);
 		}
 	}
 
@@ -188,6 +187,10 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		else
 		{
 			//std::cout << "Edge singularity not implemented yet" << std::endl;
+		}
+		if (m_meshH->isMarked(m_meshH->get<Edge>(e_id),mark_EdgesTemplates))
+		{
+			//std::cout << "Arête marquée pour template" << std::endl;
 		}
 	}
 
@@ -224,10 +227,15 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	//===================//
 	// FAST ANALYSIS		//
 	//===================//
-	bool isHexMeshValid = math::Utils::isThisHexMeshValid(m_meshH);
-	if (!isHexMeshValid)
+	for (auto e_id:m_meshH->edges())
 	{
-		std::cout << "ATTENTION: the mesh is not valid. An element may be reversed during the advancing front." << std::endl;
+		Edge e = m_meshH->get<Edge>(e_id);
+		if (var_NODE_couche_id->value(e.get<Node>()[0].id()) == Front_OUT.getFrontID()
+		    && var_NODE_couche_id->value(e.get<Node>()[1].id()) == Front_OUT.getFrontID()
+		    && Front_OUT.edgeFacesOnFront(m_meshH, e_id).size() != 2)
+		{
+			std::cout << "ATTENTION: the layer is not valid. At least one edge of the front has not 2 faces." << std::endl;
+		}
 	}
 
 	return Front_OUT;
@@ -745,7 +753,7 @@ AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double
 TCellID
 AeroExtrusion_3D::TemplateNode1Corner2End(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated)
 {
-	std::cout << "Template Node 1 Corner 2 End au noeud " << n_id << std::endl;
+	//std::cout << "Template Node 1 Corner 2 End au noeud " << n_id << std::endl;
 	TCellID r_id;
 
 	Node n = m_meshH->get<Node>(n_id);
