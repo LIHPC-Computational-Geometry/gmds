@@ -134,6 +134,8 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	int mark_EdgesTemplates = Classification.getMarkEdgesTemplates();
 	int mark_NodesTemplates = Classification.getMarkNodesTemplates();
 
+	Variable<int>* var_TEST = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_TEST_NODES");
+
 	// Create the HEXA on each NODE classified
 	std::map<TCellID, int> singular_nodes = getSingularNodes(Front_IN, var_front_edges_classification);
 	for (auto singu_node:singular_nodes)
@@ -155,6 +157,11 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		else if (singu_type==4 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
 			TCellID r_id = TemplateNode3End(Front_IN, n_id, mark_edgesTreated, mark_facesTreated);
+		}
+		if (m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
+		{
+			//std::cout << "Noeud marqué pour template" << std::endl;
+			var_TEST->set(n_id, 1);
 		}
 	}
 
@@ -180,6 +187,10 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		else
 		{
 			//std::cout << "Edge singularity not implemented yet" << std::endl;
+		}
+		if (m_meshH->isMarked(m_meshH->get<Edge>(e_id),mark_EdgesTemplates))
+		{
+			//std::cout << "Arête marquée pour template" << std::endl;
 		}
 	}
 
@@ -742,7 +753,7 @@ AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double
 TCellID
 AeroExtrusion_3D::TemplateNode1Corner2End(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated)
 {
-	std::cout << "Template Node 1 Corner 2 End au noeud " << n_id << std::endl;
+	//std::cout << "Template Node 1 Corner 2 End au noeud " << n_id << std::endl;
 	TCellID r_id;
 
 	Node n = m_meshH->get<Node>(n_id);
