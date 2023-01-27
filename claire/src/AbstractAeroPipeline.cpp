@@ -24,7 +24,7 @@ AbstractAeroPipeline::AbstractAeroPipeline(std::string Aparams) :
 
 	p.add("section_INPUT_files","input_mesh",  Parameters::STRING_P);
 	p.add("section_INPUT_files","input_surface_mesh",  Parameters::STRING_P);
-	p.add("section_INPUT_files","block_surfaces_3D",  Parameters::INT_P);
+	p.add("section_INPUT_files","block_surface_3D",  Parameters::INT_P);
 
 	p.add("section_OUTPUT_files","output_file_name", Parameters::STRING_P);
 
@@ -61,7 +61,7 @@ AbstractAeroPipeline::AbstractAeroPipeline(std::string Aparams) :
 	m_params.input_file = dir+input;
 	p.get("section_INPUT_files","input_surface_mesh",  input);
 	m_params.input_file_3D_surface = dir+input;
-	p.get("section_INPUT_files","block_surfaces_3D",  m_params.block_surface_3D);
+	p.get("section_INPUT_files","block_surface_3D",  m_params.block_surface_3D);
 
 	p.get("section_OUTPUT_files","output_file_name", m_params.output_file);
 
