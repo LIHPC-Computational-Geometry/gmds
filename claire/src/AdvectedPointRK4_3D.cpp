@@ -45,6 +45,8 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 
 	if (region_id == NullID)
 	{
+		std::cout << "Tetra pas trouvé, point: " << m_Pstart << std::endl;
+		//exit(1);
 		// The node considered is not in the domain. Then, we replace it by the closest node of the tetra mesh.
 		gmds::Cell::Data data = m_fl->find(m_Pstart);
 		TCellID n_closest_id_fl = data.id;
@@ -65,6 +67,12 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 
 	if ( abs(Grad.X()) <= pow(10,-6) && abs(Grad.Y())<=pow(10,-6) && abs(Grad.Z())<=pow(10,-6))
 	{
+		Region r_test = m_mesh->get<Region>(region_id);
+		for (auto n_test:r_test.get<Node>())
+		{
+			std::cout << "Node " << n_test << ", distance: " << m_distance->value(n_test.id()) << std::endl;
+		}
+
 		gmds::Cell::Data data = m_fl->find(m_Pstart);
 		Node n = m_mesh->get<Node>(data.id);
 		std::vector<Edge> edges = n.get<Edge>();
@@ -83,6 +91,14 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 	if (dist > m_d0)
 	{
 		std::cout << "ATTENTION AdvectedPointRK4_3D: Distance de départ supérieure à la distance cible." << std::endl;
+		std::cout << "Starting point: " << m_Pstart << std::endl;
+		std::cout << "Tetra : " << region_id << std::endl;
+		std::cout << "Point 1 : " << m_mesh->get<Region>(region_id).get<Node>()[0].point() << std::endl;
+		std::cout << "Point 2 : " << m_mesh->get<Region>(region_id).get<Node>()[1].point() << std::endl;
+		std::cout << "Point 3 : " << m_mesh->get<Region>(region_id).get<Node>()[2].point() << std::endl;
+		std::cout << "Point 4 : " << m_mesh->get<Region>(region_id).get<Node>()[3].point() << std::endl;
+		std::cout << "Distance cible: " << m_d0 << ", distance de départ: " << dist << std::endl;
+		exit(1);
 	}
 
 	while ( (abs(dist-m_d0) > err) && iterations < max_iterations ) {
@@ -146,7 +162,7 @@ bool AdvectedPointRK4_3D::isInTetra(TCellID region_id, math::Point M){
 /*------------------------------------------------------------------------*/
 TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point M){
 	TCellID region_id;
-
+	/*
 	bool isInRegion(false);
 
 	// Use FastLocalize to check the tetras around the closest node to the point M
@@ -170,8 +186,8 @@ TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point M){
 	}
 
 	return region_id;
-
-	//return m_fl->findTetra(M);
+	*/
+	return m_fl->findTetra(M);
 }
 /*------------------------------------------------------------------------*/
 
