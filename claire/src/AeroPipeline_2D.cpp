@@ -40,7 +40,7 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AeroPipeline_2D::AeroPipeline_2D(ParamsAero Aparams) :
+AeroPipeline_2D::AeroPipeline_2D(std::string Aparams) :
   AbstractAeroPipeline(Aparams),
   m_linker_BG(new cad::GeomMeshLinker())
 {

@@ -38,7 +38,8 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	/** @brief Constructor.
          *  @param
 	 */
-	AbstractAeroPipeline(ParamsAero Aparams);
+	//AbstractAeroPipeline(ParamsAero Aparams);
+	AbstractAeroPipeline(std::string Aparams);
 	/*--------------------------------------------------------------------*/
 	/** @brief Destructor.
          *  @param
