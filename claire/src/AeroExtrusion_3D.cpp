@@ -239,6 +239,7 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		    && Front_OUT.edgeFacesOnFront(m_meshH, e_id).size() != 2)
 		{
 			std::cout << "ATTENTION: the layer is not valid. At least one edge of the front has not 2 faces." << std::endl;
+			exit(1);
 		}
 	}
 
@@ -293,6 +294,19 @@ AeroExtrusion_3D::Compute1stLayer(Front_3D A_Front_IN, Variable<double>* A_dista
 
 		}
 	}
+
+	/*
+	for (auto n_id:Front_OUT.getNodes())
+	{
+		Node n = m_meshH->get<Node>(n_id);
+		TCellID r_id = m_fl.findTetra(n.point());
+		Region r = m_meshT->get<Region>(r_id);
+		std::vector<Node> r_nodes = r.get<Node>();
+		double dist = math::Utils::linearInterpolation2D3Pt(r_nodes[0].point(), r_nodes[1].point(), r_nodes[2].point(), r_nodes[3].point(), n.point(),
+		                                      m_DistanceField->value(r_nodes[0].id()), m_DistanceField->value(r_nodes[1].id()),
+		                                      m_DistanceField->value(r_nodes[2].id()), m_DistanceField->value(r_nodes[3].id()));
+	}
+	 */
 
 
 	return Front_OUT;
@@ -1084,18 +1098,20 @@ AeroExtrusion_3D::TemplateNode3Corner3End(Front_3D &AFront, TCellID n_id, double
 		ee.push_back(m_meshH->get<Edge>(n_ordered_edges[0]));
 		ee.push_back(m_meshH->get<Edge>(n_ordered_edges[2]));
 		ee.push_back(m_meshH->get<Edge>(n_ordered_edges[4]));
+		ec.push_back(m_meshH->get<Edge>(n_ordered_edges[5]));
 		ec.push_back(m_meshH->get<Edge>(n_ordered_edges[1]));
 		ec.push_back(m_meshH->get<Edge>(n_ordered_edges[3]));
-		ec.push_back(m_meshH->get<Edge>(n_ordered_edges[5]));
 	}
 
 	Node nc0 = ec[0].getOppositeNode(n);
 	Node nc1 = ec[1].getOppositeNode(n);
 	Node nc2 = ec[2].getOppositeNode(n);
 
-	math::Vector3d v01 = ( (nc0.point() - n.point()).normalize() + (nc1.point() - n.point()).normalize() ).normalize() ;
-	math::Vector3d v12 = ( (nc1.point() - n.point()).normalize() + (nc2.point() - n.point()).normalize() ).normalize() ;
-	math::Vector3d v02 = ( (nc0.point() - n.point()).normalize() + (nc2.point() - n.point()).normalize() ).normalize() ;
+	Node n1 = m_meshH->get<Node>(m_FaceInfo[n.get<Face>()[0].id()].next_ideal_nodes[n_id]);
+
+	math::Vector3d v01 = ( (nc0.point() - n.point()).normalize() + (nc1.point() - n.point()).normalize() + (n1.point() - n.point()).normalize() ).normalize() ;
+	math::Vector3d v12 = ( (nc1.point() - n.point()).normalize() + (nc2.point() - n.point()).normalize() + (n1.point() - n.point()).normalize() ).normalize() ;
+	math::Vector3d v02 = ( (nc0.point() - n.point()).normalize() + (nc2.point() - n.point()).normalize() + (n1.point() - n.point()).normalize() ).normalize() ;
 
 	math::Point pe0 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v01);
 	math::Point pe1 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v12);
@@ -1104,8 +1120,6 @@ AeroExtrusion_3D::TemplateNode3Corner3End(Front_3D &AFront, TCellID n_id, double
 	Node ne0 = m_meshH->newNode(pe0);
 	Node ne1 = m_meshH->newNode(pe1);
 	Node ne2 = m_meshH->newNode(pe2);
-
-	Node n1 = m_meshH->get<Node>(m_FaceInfo[n.get<Face>()[0].id()].next_ideal_nodes[n_id]);
 
 	// Create the new hexa
 	r_id = math::Utils::CreateHexaNConnectivities(m_meshH, n, nc0, ne0, nc1, nc2, ne2, n1, ne1);
