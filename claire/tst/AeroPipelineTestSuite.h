@@ -220,7 +220,7 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 	*/
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string input_file=dir+"/Aero/3D/param_C2_3D.ini";
+	std::string input_file=dir+"/Aero/3D/param_C5_3D.ini";
 
 	//---------------------//
 	//    AERO PIPELINE    //
