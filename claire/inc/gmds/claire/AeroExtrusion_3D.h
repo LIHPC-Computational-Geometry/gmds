@@ -175,6 +175,17 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	 */
 	TCellID TemplateNode3End(Front_3D &AFront, TCellID n_id, int mark_edgesTreated, int mark_facesTreated);
 	/*-------------------------------------------------------------------*/
+	/** @brief Hexa insertion at the node n_id.
+	 	* \param[in] AFront the front
+   	* \param[in] n_id the node
+   	* \param[in] dc distance of the layer
+   	* \param[in] mark_edgesTreated mark the edges that can't insert or collapse an hex now
+   	* \param[in] mark_facesTreated mark the faces that can't insert an hex now
+		*
+		* \return  the id of the new hexa
+	 */
+	TCellID TemplateNode3Corner3End(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated);
+	/*-------------------------------------------------------------------*/
 	/** @brief Advancing front template on edge classified as corner.
 	 	* \param[in] AFront the front
    	* \param[in] e_id the node

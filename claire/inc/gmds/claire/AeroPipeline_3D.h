@@ -43,6 +43,10 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_3D : public AbstractAeroPipeline {
 	 */
 	void GeometrySurfaceBlockingGeneration();
 	/*------------------------------------------------------------------------*/
+	/** \brief
+	 */
+	void PreTraitementMeshTet();
+	/*------------------------------------------------------------------------*/
 
  protected:
 	/** Données des bords */
