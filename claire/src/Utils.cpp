@@ -89,6 +89,13 @@ TCellID Utils::CommonFace3Nodes(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCell
 			{
 				f_id = f.id();
 			}
+			else if ( f_nodes.size() == 3
+			    && (f_nodes[0].id() == n0_id || f_nodes[1].id() == n0_id || f_nodes[2].id() == n0_id )
+			    && (f_nodes[0].id() == n1_id || f_nodes[1].id() == n1_id || f_nodes[2].id() == n1_id )
+			    && (f_nodes[0].id() == n2_id || f_nodes[1].id() == n2_id || f_nodes[2].id() == n2_id ))
+			{
+				f_id = f.id();
+			}
 		}
 	}
 	return f_id;
@@ -290,7 +297,7 @@ void Utils::BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m, int mark_
 
 
 /*------------------------------------------------------------------------*/
-math::Point Utils::WeightedPointOnBranch(const math::Point A, const math::Point B, const math::Point C, double alpha) {
+math::Point Utils::WeightedPointOnBranch(const math::Point& A, const math::Point& B, const math::Point& C, double alpha) {
 	math::Point P_Weighted;
 	math::Vector3d Vec_AB = B-A ;
 	math::Vector3d Vec_BC = C-B ;
@@ -319,7 +326,7 @@ math::Point Utils::WeightedPointOnBranch(const math::Point A, const math::Point 
 
 
 /*------------------------------------------------------------------------*/
-bool Utils::isInTriangle(const math::Point T1, const math::Point T2, const math::Point T3, const math::Point M)
+bool Utils::isInTriangle(const math::Point& T1, const math::Point& T2, const math::Point& T3, const math::Point& M)
 {
 	bool isInFace(false);
 
@@ -340,7 +347,7 @@ bool Utils::isInTriangle(const math::Point T1, const math::Point T2, const math:
 	return isInFace;
 }
 /*------------------------------------------------------------------------*/
-bool Utils::sameSide(const math::Point T1, const math::Point T2, const math::Point T3, const math::Point M1, const math::Point M2)
+bool Utils::sameSide(const math::Point& T1, const math::Point& T2, const math::Point& T3, const math::Point& M1, const math::Point& M2)
 {
 	math::Vector3d V1 = T2-T1 ;
 	math::Vector3d V2 = T3-T1 ;
@@ -354,14 +361,56 @@ bool Utils::sameSide(const math::Point T1, const math::Point T2, const math::Poi
 	return (signbit(dotN4) == signbit(dotM) );
 }
 /*------------------------------------------------------------------------*/
-bool Utils::isInTetra(const math::Point T1, const math::Point T2, const math::Point T3, const math::Point T4, const math::Point M)
+bool Utils::isInTetra(const math::Point& T1, const math::Point& T2, const math::Point& T3, const math::Point& T4, const math::Point& M)
 {
-	bool isInTet = (math::Utils::sameSide(T1, T2, T3, T4, M) &&
+	bool isInTet = false;
+	/*
+	= (math::Utils::sameSide(T1, T2, T3, T4, M) &&
 	                math::Utils::sameSide(T2, T3, T4, T1, M) &&
 	                math::Utils::sameSide(T3, T4, T1, T2, M) &&
 	                math::Utils::sameSide(T4, T1, T2, T3, M));
+	                */
+
+	if (!isInTet)
+	{
+		TCoord c1, c2, c3, c4;
+		Point::computeBarycentric(T1, T2, T3, T4, M, c1, c2, c3, c4);
+		//std::cout << c1 << ", " << c2 << ", " << c3 << ", " << c4 << std::endl;
+		if (c1 >= 0 && c2 >= 0 && c3 >= 0 && c4 >= 0)
+		{
+			isInTet = true;
+		}
+	}
+
+	if (!isInTet)
+	{
+		isInTet = (math::Utils::sameSide(T1, T2, T3, T4, M) &&
+	                math::Utils::sameSide(T2, T3, T4, T1, M) &&
+	                math::Utils::sameSide(T3, T4, T1, T2, M) &&
+	                math::Utils::sameSide(T4, T1, T2, T3, M));
+	}
+
+	/*
+	if (!isInTet)
+	{
+		isInTet = isInTriangle(T1, T2, T3, M);
+	}
+	if (!isInTet)
+	{
+		isInTet = isInTriangle(T2, T3, T4, M);
+	}
+	if (!isInTet)
+	{
+		isInTet = isInTriangle(T1, T2, T4, M);
+	}
+	if (!isInTet)
+	{
+		isInTet = isInTriangle(T1, T3, T4, M);
+	}
+	 */
 
 	// Test méthode avec les volumes
+	/*
 	if (!isInTet)
 	{
 		double V = (1.0/6.0)*abs( T1.X()*(T2.Y()*T3.Z()-T3.Y()*T2.Z())
@@ -384,11 +433,12 @@ bool Utils::isInTetra(const math::Point T1, const math::Point T2, const math::Po
 			isInTet = true;
 		}
 	}
+	 */
 
 	return isInTet;
 }
 /*------------------------------------------------------------------------*/
-double Utils::linearInterpolation2D3Pt(const math::Point P1, const math::Point P2, const math::Point P3, const math::Point M, const double c1, const double c2, const double c3)
+double Utils::linearInterpolation2D3Pt(const math::Point& P1, const math::Point& P2, const math::Point& P3, const math::Point& M, const double c1, const double c2, const double c3)
 {
 	Eigen::Matrix3d Mat_A;
 
