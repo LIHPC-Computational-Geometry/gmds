@@ -336,11 +336,11 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 	// Init
 	for (auto GFE:m_All_global_feature_edges)
 	{
-		if (m_NodesClassification->value(GFE.End_n_id) == 3)
+		if (m_NodesClassification->value(GFE.End_n_id) >= 3)
 		{
 			m_mesh->mark(m_mesh->get<Node>(GFE.End_n_id), m_mark_NodesForTemplates);
 		}
-		if (m_NodesClassification->value(GFE.Start_n_id) == 3)
+		if (m_NodesClassification->value(GFE.Start_n_id) >= 3)
 		{
 			m_mesh->mark(m_mesh->get<Node>(GFE.Start_n_id), m_mark_NodesForTemplates);
 		}
