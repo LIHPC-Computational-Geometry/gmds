@@ -12,24 +12,21 @@ using namespace gmds;
 
 
 /*------------------------------------------------------------------------*/
-AbstractAeroPipeline::AbstractAeroPipeline(std::string &Aparams) :
+AbstractAeroPipeline::AbstractAeroPipeline(std::string Aparams) :
   m_meshTet(nullptr),
   m_meshHex(nullptr),
   m_manager(new cad::FACManager()),
   m_linker_TG(new cad::GeomMeshLinker()),
   m_linker_HG(new cad::GeomMeshLinker())
 {
-	//m_couche_id = m_meshHex->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-
 	Parameters p;
 	p.add("section_Dimension","dim", Parameters::INT_P);
 
 	p.add("section_INPUT_files","input_mesh",  Parameters::STRING_P);
 	p.add("section_INPUT_files","input_surface_mesh",  Parameters::STRING_P);
-	p.add("section_INPUT_files","block_surface_3D",  Parameters::INT_P);
+	p.add("section_INPUT_files","block_surfaces_3D",  Parameters::INT_P);
 
 	p.add("section_OUTPUT_files","output_file_name", Parameters::STRING_P);
-	p.add("section_OUTPUT_files","with_debug_files", Parameters::BOOL_P);
 
 	p.add("section_Physical","Boundary_layer_thickness", Parameters::DOUBLE_P);
 	p.add("section_Physical","Angle_of_Attack", Parameters::DOUBLE_P);
@@ -64,10 +61,9 @@ AbstractAeroPipeline::AbstractAeroPipeline(std::string &Aparams) :
 	m_params.input_file = dir+input;
 	p.get("section_INPUT_files","input_surface_mesh",  input);
 	m_params.input_file_3D_surface = dir+input;
-	p.get("section_INPUT_files","block_surface_3D",  m_params.block_surface_3D);
+	p.get("section_INPUT_files","block_surfaces_3D",  m_params.block_surface_3D);
 
 	p.get("section_OUTPUT_files","output_file_name", m_params.output_file);
-	p.get("section_OUTPUT_files","with_debug_files", m_params.with_debug_files);
 
 	p.get("section_Physical","Boundary_layer_thickness", m_params.delta_cl);
 	p.get("section_Physical","Angle_of_Attack", m_params.angle_attack);
