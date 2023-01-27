@@ -325,6 +325,17 @@ TEST(ClaireTestClass, Utils_isInTetra)
 		ASSERT_EQ(math::Utils::isInTetra(T1, T2, T3, T4, {1.0, 1.0, 1.0}), false);
 	}
 
+	{
+		math::Point T1({-1.76213, -1.12673, -0.129545});
+		math::Point T2({-1.28791, -1.47346, -0.211251});
+		math::Point T3({-1, -1, -0.5});
+		math::Point T4({-1.45698, -0.699361, -0.0343749});
+
+		math::Point M({-1, -1, -0.333333});
+
+		ASSERT_EQ(math::Utils::isInTetra(T1, T2, T3, T4, M), false);
+	}
+
 }
 
 TEST(ClaireTestClass, Utils_CreateQuadAndConnectivities)

@@ -47,6 +47,7 @@ AeroPipeline_3D::execute(){
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	//m_manager.initAndLinkFrom3DMesh(&m_mTetra,&m_linker_TG);
+	PreTraitementMeshTet();
 
 	// Calcul du level set
 	std::cout << "-> Calcul des Level Sets" << std::endl;
@@ -151,7 +152,22 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 	// Special case of the C2_3D geometry  //
 	//	Surface Blocking 1						//
 	//-------------------------------------//
-	if (m_params.block_surface_3D==1)
+	if (m_params.block_surface_3D==0)
+	{
+		// Lecture du maillage
+		std::cout << "-> Lecture du maillage de surface ..." << std::endl;
+
+		gmds::IGMeshIOService ioService(m_meshHex);
+		gmds::VTKReader vtkReader(&ioService);
+		vtkReader.setCellOptions(gmds::N|gmds::F);
+		vtkReader.read(m_params.input_file_3D_surface);
+
+		for (auto n_id : m_meshHex->nodes()) {
+			m_couche_id->set(n_id, 0);
+		}
+
+	}
+	else if (m_params.block_surface_3D==1)
 	{
 		Node n0 = m_meshHex->newNode({-0.5, -0.5, -0.5});
 		Node n1 = m_meshHex->newNode({-0.5, 0.5, -0.5});
@@ -574,4 +590,159 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 
 }
 /*------------------------------------------------------------------------*/
+void
+AeroPipeline_3D::PreTraitementMeshTet()
+{
+	for (auto r_id:m_meshTet->regions())
+	{
+		Region r = m_meshTet->get<Region>(r_id);
+		std::vector<Node> r_nodes = r.get<Node>();
+		if ( m_Bnd->getNodeColor(r_nodes[0].id()) != 0
+		    && (m_Bnd->getNodeColor(r_nodes[0].id()) == m_Bnd->getNodeColor(r_nodes[1].id()))
+		    && (m_Bnd->getNodeColor(r_nodes[0].id()) == m_Bnd->getNodeColor(r_nodes[2].id()))
+		    && (m_Bnd->getNodeColor(r_nodes[0].id()) == m_Bnd->getNodeColor(r_nodes[3].id())) )
+		{
+			//std::cout << "Tetra " << r_id << " pré traité" << std::endl;
 
+			math::Point P_bar = r.center();
+			m_meshTet->deleteRegion(r);
+			Node n_new = m_meshTet->newNode(P_bar);
+
+			r_nodes[0].remove<Region>(r);
+			r_nodes[1].remove<Region>(r);
+			r_nodes[2].remove<Region>(r);
+			r_nodes[3].remove<Region>(r);
+
+			// Get the 4 faces of the tet
+			TCellID f1_id = math::Utils::CommonFace3Nodes(m_meshTet, r_nodes[0].id(), r_nodes[1].id(), r_nodes[2].id());
+			TCellID f2_id = math::Utils::CommonFace3Nodes(m_meshTet, r_nodes[1].id(), r_nodes[2].id(), r_nodes[3].id());
+			TCellID f3_id = math::Utils::CommonFace3Nodes(m_meshTet, r_nodes[0].id(), r_nodes[2].id(), r_nodes[3].id());
+			TCellID f4_id = math::Utils::CommonFace3Nodes(m_meshTet, r_nodes[0].id(), r_nodes[1].id(), r_nodes[2].id());
+
+			// New tets
+			Region r_1 = m_meshTet->newTet(n_new, r_nodes[0], r_nodes[1], r_nodes[2]);
+			Region r_2 = m_meshTet->newTet(n_new, r_nodes[1], r_nodes[2], r_nodes[3]);
+			Region r_3 = m_meshTet->newTet(n_new, r_nodes[0], r_nodes[2], r_nodes[3]);
+			Region r_4 = m_meshTet->newTet(n_new, r_nodes[0], r_nodes[1], r_nodes[3]);
+
+			// The 3 new faces
+			Face f_new_01 = m_meshTet->newTriangle(n_new, r_nodes[0], r_nodes[1]);
+			Face f_new_02 = m_meshTet->newTriangle(n_new, r_nodes[0], r_nodes[2]);
+			Face f_new_03 = m_meshTet->newTriangle(n_new, r_nodes[0], r_nodes[3]);
+			Face f_new_12 = m_meshTet->newTriangle(n_new, r_nodes[1], r_nodes[2]);
+			Face f_new_13 = m_meshTet->newTriangle(n_new, r_nodes[1], r_nodes[3]);
+			Face f_new_23 = m_meshTet->newTriangle(n_new, r_nodes[2], r_nodes[3]);
+
+			// The 4 new edges
+			Edge e_new_0 = m_meshTet->newEdge(n_new, r_nodes[0]);
+			Edge e_new_1 = m_meshTet->newEdge(n_new, r_nodes[1]);
+			Edge e_new_2 = m_meshTet->newEdge(n_new, r_nodes[2]);
+			Edge e_new_3 = m_meshTet->newEdge(n_new, r_nodes[3]);
+
+			// Get the old tet edges
+			TCellID e_01_id = math::Utils::CommonEdge(m_meshTet, r_nodes[0].id(), r_nodes[1].id()) ;
+			TCellID e_02_id = math::Utils::CommonEdge(m_meshTet, r_nodes[0].id(), r_nodes[2].id()) ;
+			TCellID e_03_id = math::Utils::CommonEdge(m_meshTet, r_nodes[0].id(), r_nodes[2].id()) ;
+			TCellID e_12_id = math::Utils::CommonEdge(m_meshTet, r_nodes[1].id(), r_nodes[2].id()) ;
+			TCellID e_13_id = math::Utils::CommonEdge(m_meshTet, r_nodes[1].id(), r_nodes[3].id()) ;
+			TCellID e_23_id = math::Utils::CommonEdge(m_meshTet, r_nodes[2].id(), r_nodes[3].id()) ;
+
+			// Update the connectivities N->R
+			r_nodes[0].add<Region>(r_1);
+			r_nodes[0].add<Region>(r_3);
+			r_nodes[0].add<Region>(r_4);
+
+			r_nodes[1].add<Region>(r_1);
+			r_nodes[1].add<Region>(r_2);
+			r_nodes[1].add<Region>(r_4);
+
+			r_nodes[2].add<Region>(r_1);
+			r_nodes[2].add<Region>(r_2);
+			r_nodes[2].add<Region>(r_3);
+
+			r_nodes[3].add<Region>(r_2);
+			r_nodes[3].add<Region>(r_3);
+			r_nodes[3].add<Region>(r_4);
+
+			// Update the connectivities N->R (x4) for the new node
+			n_new.add<Region>(r_1);
+			n_new.add<Region>(r_2);
+			n_new.add<Region>(r_3);
+			n_new.add<Region>(r_4);
+
+			// Update the connectivities, N->F (x6) and N->E (x6)
+			n_new.add<Face>(f_new_01);
+			n_new.add<Face>(f_new_02);
+			n_new.add<Face>(f_new_03);
+			n_new.add<Face>(f_new_12);
+			n_new.add<Face>(f_new_13);
+			n_new.add<Face>(f_new_23);
+
+			n_new.add<Edge>(e_01_id);
+			n_new.add<Edge>(e_02_id);
+			n_new.add<Edge>(e_03_id);
+			n_new.add<Edge>(e_12_id);
+			n_new.add<Edge>(e_13_id);
+			n_new.add<Edge>(e_23_id);
+
+			// Update the connectivities for the nodes of the old tet
+			r_nodes[0].add<Edge>(e_new_0);
+			r_nodes[0].add<Face>(f_new_01);
+			r_nodes[0].add<Face>(f_new_02);
+			r_nodes[0].add<Face>(f_new_03);
+
+			r_nodes[1].add<Edge>(e_new_1);
+			r_nodes[1].add<Face>(f_new_01);
+			r_nodes[1].add<Face>(f_new_12);
+			r_nodes[1].add<Face>(f_new_13);
+
+			r_nodes[2].add<Edge>(e_new_2);
+			r_nodes[2].add<Face>(f_new_02);
+			r_nodes[2].add<Face>(f_new_12);
+			r_nodes[2].add<Face>(f_new_23);
+
+			r_nodes[3].add<Edge>(e_new_3);
+			r_nodes[3].add<Face>(f_new_03);
+			r_nodes[3].add<Face>(f_new_13);
+			r_nodes[3].add<Face>(f_new_23);
+
+			// Update the connectivities R->F (x3) and R->E (x3)
+			r_1.add<Face>(f1_id);
+			r_1.add<Face>(f_new_01.id());
+			r_1.add<Face>(f_new_12.id());
+			r_1.add<Edge>(e_01_id);
+			r_1.add<Edge>(e_12_id);
+			r_1.add<Edge>(e_02_id);
+
+			r_2.add<Face>(f2_id);
+			r_2.add<Face>(f_new_12.id());
+			r_2.add<Face>(f_new_23.id());
+			r_2.add<Edge>(e_12_id);
+			r_2.add<Edge>(e_02_id);
+			r_2.add<Edge>(e_01_id);
+
+			r_3.add<Face>(f3_id);
+			r_3.add<Face>(f_new_02.id());
+			r_3.add<Face>(f_new_23.id());
+			r_3.add<Edge>(e_02_id);
+			r_3.add<Edge>(e_23_id);
+			r_3.add<Edge>(e_03_id);
+
+			r_4.add<Face>(f4_id);
+			r_4.add<Face>(f_new_01.id());
+			r_4.add<Face>(f_new_13.id());
+			r_4.add<Edge>(e_01_id);
+			r_4.add<Edge>(e_13_id);
+			r_4.add<Edge>(e_03_id);
+
+		}
+	}
+
+	// Ecriture du maillage initial (tetra)
+	gmds::IGMeshIOService ioService(m_meshTet);
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("AeroPipeline3D_Tetra_PreTraite.vtk");
+}
+/*------------------------------------------------------------------------*/
