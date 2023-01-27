@@ -38,7 +38,8 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	/** @brief Constructor.
          *  @param
 	 */
-	AbstractAeroPipeline(std::string &Aparams);
+	//AbstractAeroPipeline(ParamsAero Aparams);
+	AbstractAeroPipeline(std::string Aparams);
 	/*--------------------------------------------------------------------*/
 	/** @brief Destructor.
          *  @param
@@ -59,6 +60,8 @@ class LIB_GMDS_CLAIRE_API AbstractAeroPipeline{
 	ParamsAero m_params;
 	/** Variable sur le nouveau maillage, indique à quelle couche appartient un noeud */
 	Variable<int>* m_couche_id;
+	/** Nombre de couches de mailles */
+	int m_nbr_couches;
 	/** Manager */
 	cad::FACManager* m_manager;
 	/** Linker maillage T entrée à la géométrie */

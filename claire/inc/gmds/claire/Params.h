@@ -37,6 +37,8 @@ namespace gmds {
 
         /** algo type */
         Dimension dim;
+	     /** */
+	     int dimension;
         /** phase we start from */
         AlgoPhaseType start_from;
         /** last phase we do */
