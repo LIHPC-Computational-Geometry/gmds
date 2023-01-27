@@ -50,8 +50,10 @@ namespace gmds {
         /** Output directory */
         std::string output_dir;
 
+	     /** Input 3D surface mesh file name */
+	     std::string input_file_3D_surface;		// 3D parameter
 	     /** Block Surface 3D */
-	     int block_surface_3D;
+	     int block_surface_3D;							// 3D parameter
 
 	     /** Epaisseur de couche limite */
 	     double delta_cl;
