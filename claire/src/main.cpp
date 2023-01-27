@@ -17,6 +17,7 @@ int main(int argc, char* argv[])
 {
 	std::cout << "=== CLAIRE ALGO ====" << std::endl;
 
+	/*
 	ParamsAero params;
 	params.dim=ParamsAero::DIM_2D;
 	params.input_file="...";
@@ -35,5 +36,5 @@ int main(int argc, char* argv[])
 	algo->execute();
 
 	delete algo;
-
+	*/
 }
