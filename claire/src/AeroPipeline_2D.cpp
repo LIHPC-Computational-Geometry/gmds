@@ -40,7 +40,7 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AeroPipeline_2D::AeroPipeline_2D(std::string &Aparams) :
+AeroPipeline_2D::AeroPipeline_2D(std::string Aparams) :
   AbstractAeroPipeline(Aparams),
   m_linker_BG(new cad::GeomMeshLinker())
 {
@@ -327,10 +327,10 @@ AeroPipeline_2D::execute(){
 
 	std::cout << " " << std::endl;
 	std::cout << "======================================" << std::endl;
-	std::cout << "INFORMATIONS COMPLEMENTAIRES BLOCKING :" << std::endl;
-	std::cout << "Nbr of blocs            : " << m_Blocking2D.getNbFaces() << std::endl;
-	std::cout << "Nbr of bloc corners     : " << m_meshHex->getNbNodes() << std::endl;
-	std::cout << "Nbr of bloc edges       : " << m_meshHex->getNbEdges() << std::endl;
+	std::cout << "INFORMATIONS COMPLEMENTAIRES :" << std::endl;
+	std::cout << "Nbr de blocs            : " << m_Blocking2D.getNbFaces() << std::endl;
+	std::cout << "Nbr de sommets de blocs : " << m_meshHex->getNbNodes() << std::endl;
+	std::cout << "Nbr d'arêtes de blocs   : " << m_meshHex->getNbEdges() << std::endl;
 	std::cout << "======================================" << std::endl;
 	std::cout << " " << std::endl;
 
@@ -418,7 +418,7 @@ AeroPipeline_2D::execute(){
 		var_scaled_jacobian->set(f_id, scajac);
 	}
 	 */
-	//MeshAlignement();
+	MeshAlignement();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
@@ -435,10 +435,10 @@ AeroPipeline_2D::execute(){
 
 	std::cout << "======================================" << std::endl;
 	std::cout << "INFORMATIONS COMPLEMENTAIRES MAILLAGE FINAL :" << std::endl;
-	std::cout << "Nbr of blocs  : " << m_Blocking2D.getNbFaces() << std::endl;
-	std::cout << "Nbr of faces  : " << m_meshHex->getNbFaces() << std::endl;
-	std::cout << "Nbr of edges  : " << m_meshHex->getNbEdges() << std::endl;
-	std::cout << "Nbr of nodes  : " << m_meshHex->getNbNodes() << std::endl;
+	std::cout << "Nbr de blocs  : " << m_Blocking2D.getNbFaces() << std::endl;
+	std::cout << "Nbr de noeuds : " << m_meshHex->getNbNodes() << std::endl;
+	std::cout << "Nbr de faces  : " << m_meshHex->getNbFaces() << std::endl;
+	std::cout << "Nbr d'arêtes  : " << m_meshHex->getNbEdges() << std::endl;
 	std::cout << "======================================" << std::endl;
 	std::cout << " " << std::endl;
 
@@ -499,11 +499,11 @@ AeroPipeline_2D::EcritureMaillage(){
 	vtkWriter_TetMesh.setDataOptions(gmds::N|gmds::F);
 	vtkWriter_TetMesh.write("AeroPipeline2D_TriMesh.vtk");
 
-	/*
+
 	std::cout << "			4. Ecriture Maillage Quad en .su2 ..." << std::endl;
 	SU2Writer writer(m_meshHex, "AeroPipeline2D_QuadMesh.su2", m_params.x_lim_SU2_inoutlet);
 	SU2Writer::STATUS result = writer.execute();
-	*/
+
 
 
 	gmds::Mesh meshReavel(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
@@ -557,9 +557,6 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 	Node n1_quad = n0_quad;
 	Node n2_quad = n0_quad;
 
-	// Compute the angle deviation
-	double angle_deviation(0);
-
 	for(int i=1;i<bnd_nodes_id_ordered.size();i++){
 
 		Node n = m_meshTet->get<Node>(bnd_nodes_id_ordered[i]);
@@ -583,32 +580,11 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 			isExtremum = true;
 		}
 
-		// Sum the vectors to find a potential high "rayon de courbure"
-		if (i==bnd_nodes_id_ordered.size()-1)
-		{
-			math::Vector3d v_1 = (m_meshTet->get<Node>(bnd_nodes_id_ordered[i]).point() - m_meshTet->get<Node>(bnd_nodes_id_ordered[i - 1]).point()).normalize();
-			math::Vector3d v_2 = (m_meshTet->get<Node>(bnd_nodes_id_ordered[0]).point() - m_meshTet->get<Node>(bnd_nodes_id_ordered[i]).point()).normalize();
-			angle_deviation += acos(v_1.dot(v_2));
-		}
-		else
-		{
-			math::Vector3d v_1 = (m_meshTet->get<Node>(bnd_nodes_id_ordered[i]).point() - m_meshTet->get<Node>(bnd_nodes_id_ordered[i - 1]).point()).normalize();
-			math::Vector3d v_2 = (m_meshTet->get<Node>(bnd_nodes_id_ordered[i + 1]).point() - m_meshTet->get<Node>(bnd_nodes_id_ordered[i]).point()).normalize();
-			if ( abs(v_1.dot(v_2) - 1.0) <= pow(10,-8))
-			{
-
-			}
-			else
-			{
-				angle_deviation += acos(v_1.dot(v_2));
-			}
-		}
 
 		if ( m_meshTet->isMarked<Node>(bnd_nodes_id_ordered[i], markPointNodes)
 		    || l >= Lmax
 		    || abs(l-Lmax) <= pow(10,-6)
-		    || isExtremum
-		    || angle_deviation >= M_PI/6.0){
+		    || isExtremum ){
 
 			n1_quad = n2_quad;
 			n2_quad = m_meshHex->newNode(n.point());
@@ -621,7 +597,6 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 			n2_quad.add<Edge>(e);
 
 			l = 0;	// On remet l à 0
-			angle_deviation = 0;		// Reset the angle deviation
 
 		}
 
@@ -640,8 +615,8 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 
 	for (auto e_id:m_meshHex->edges())
 	{
-		Edge e_loc = m_meshHex->get<Edge>(e_id);
-		std::vector<Node> nodes = e_loc.get<Node>();
+		Edge e = m_meshHex->get<Edge>(e_id);
+		std::vector<Node> nodes = e.get<Node>();
 
 		int geom_id_node_0 = m_linker_HG->getGeomId<Node>(nodes[0].id()) ;
 		int geom_id_node_1 = m_linker_HG->getGeomId<Node>(nodes[1].id()) ;
@@ -1274,7 +1249,7 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 	{
 		Variable<math::Vector3d>* var_VectorField_1 = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_1");
 
-		LeastSquaresGradientComputation grad2D_1(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+		LeastSquaresGradientComputation grad2D_1(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
 		                                         var_VectorField_1);
 		grad2D_1.execute();
 
@@ -1290,7 +1265,11 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 			Node n = m_meshTet->get<Node>(n_id);
 			math::Point p = n.point();
 
-			if (p.X() < m_params.x_VectorField_Z1)
+			if (p.X() < 10.0)
+			{
+				var_VectorsForExtrusion->set(n_id, -vec_flow);
+			}
+			else if (p.X() < m_params.x_VectorField_Z1)
 			{
 				var_VectorsForExtrusion->set(n_id, vec_1);
 			}
