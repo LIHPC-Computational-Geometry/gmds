@@ -5,14 +5,12 @@
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/AdvectedPointRK4_3D.h>
 #include <gmds/claire/Utils.h>
-#include <limits>
-#include <chrono>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------*/
-AdvectedPointRK4_3D::AdvectedPointRK4_3D(Mesh *AMesh, FastLocalize* A_fl, math::Point A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D) :
+AdvectedPointRK4_3D::AdvectedPointRK4_3D(Mesh *AMesh, FastLocalize* A_fl, math::Point& A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D) :
 	m_mesh(AMesh),
   	m_fl(A_fl)
 {
@@ -29,16 +27,13 @@ AdvectedPointRK4_3D::AdvectedPointRK4_3D(Mesh *AMesh, FastLocalize* A_fl, math::
 /*------------------------------------------------------------------------*/
 AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 {
-	double minLenght = minEdgeLenght();
+	double minLenght = math::Utils::minEdgeLenght(m_mesh);
 
 	double dt = 0.9*minLenght;
 	double err = pow(10,-6);
 	int max_iterations=10000;
 
 	int iterations=0;
-	double dist(0);
-	math::Vector3d Grad;
-	Eigen::Matrix4d Mat_A_Inv;
 
 	// Initialisation
 	TCellID region_id = inWhichTetra(m_Pstart) ;		// Dans quel triangle est le point de départ
@@ -53,7 +48,7 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 		Node n_closest_fl = m_mesh->get<Node>(n_closest_id_fl);
 		m_Pstart = n_closest_fl.point();
 		m_Pend = n_closest_fl.point();
-		if (region_id==NullID && n_closest_fl.get<Region>().size() == 0 )
+		if (region_id==NullID && n_closest_fl.get<Region>().empty())
 		{
 			std::cout << "ATTENTION AdvectedPointRK4_3D: Point de départ hors du domaine." << std::endl;
 		}
@@ -61,9 +56,9 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 		region_id = r.id();
 	}
 
-	Mat_A_Inv = getInvMatrixA(region_id);
-	dist = interpolationDistance(region_id, Mat_A_Inv, m_Pstart);	// A quelle distance est le point de départ
-	Grad = interpolationGradient(region_id, Mat_A_Inv, m_Pstart);	// Quel est le gradient à ce point
+	Eigen::Matrix4d Mat_A_Inv = getInvMatrixA(region_id);
+	double dist = interpolationDistance(region_id, Mat_A_Inv, m_Pstart);	// A quelle distance est le point de départ
+	math::Vector3d Grad = interpolationGradient(region_id, Mat_A_Inv, m_Pstart);	// Quel est le gradient à ce point
 
 	if ( abs(Grad.X()) <= pow(10,-6) && abs(Grad.Y())<=pow(10,-6) && abs(Grad.Z())<=pow(10,-6))
 	{
@@ -104,7 +99,7 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 	while ( (abs(dist-m_d0) > err) && iterations < max_iterations ) {
 		math::Point M = RungeKutta4(m_Pend, Grad.normalize(), dt);	// Calcule la position du point à l'itération n+1 avec un RK4
 		// On vérifie ensuite si cette position est "valide"
-		region_id = inWhichTetra(M, region_id) ;
+		region_id = inWhichTetra(M) ;
 
 		// Si le noeud M calculé est bien dans le maillage,
 		// alors on regarde la distance et le gradient.
@@ -137,9 +132,11 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 
 	// Pour le noeud Pend, calcule de la distance finale.
 	// Normalement, il n'y en a pas besoin, mais c'est pour l'affichage.
-	region_id = inWhichTetra(m_Pend, region_id) ;
+	/*
+	region_id = inWhichTetra(m_Pend) ;
 	Mat_A_Inv = getInvMatrixA(region_id);
 	dist = interpolationDistance(region_id, Mat_A_Inv, m_Pend);
+	 */
 
 	//writeDiscretePathInVTK();
 
@@ -149,7 +146,7 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 
 
 /*------------------------------------------------------------------------*/
-bool AdvectedPointRK4_3D::isInTetra(TCellID region_id, math::Point M){
+bool AdvectedPointRK4_3D::isInTetra(TCellID region_id, math::Point& M){
 
 	Region r = m_mesh->get<Region>(region_id);
 	std::vector<Node> Tetra_nodes = r.get<Node>();
@@ -160,91 +157,34 @@ bool AdvectedPointRK4_3D::isInTetra(TCellID region_id, math::Point M){
 
 
 /*------------------------------------------------------------------------*/
-TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point M, TCellID r0_id){
+TCellID AdvectedPointRK4_3D::inWhichTetra(math::Point& M){
 	TCellID region_id;
 	/*
 	bool isInRegion(false);
 
-	// Si un r0_id a été donné en entrée, on regarde dans les tétras voisins à
-	// celui ci si M y est, avant de regarder sur la totalité du maillage
-	if (r0_id != NullID){
-		// On regarde quelles sont les régions voisines de la région r0_id
-		std::vector<TCellID> adjacent_regions;
-		Region r0 = m_mesh->get<Region>(r0_id);
-		std::vector<Node> region_nodes = r0.get<Node>();
-		for (auto n:region_nodes){
-			std::vector<Region> node_regions = n.get<Region>();
-			for (auto r1:node_regions){
-				bool alreadyinvector(false);
-				for (auto rv_id:adjacent_regions){
-					if(r1.id() == rv_id){
-						alreadyinvector = true;
-					}
-				}
-				if (!alreadyinvector) {
-					adjacent_regions.push_back(r1.id());
-				}
-			}
-		}
-		// On regarde si le point M est dans un des tétra
-		for (auto r_adj_id:adjacent_regions){
-			if(!isInRegion){
-				isInRegion = isInTetra(r_adj_id, M);
-	         if(isInRegion){
-					region_id = r_adj_id;
-				}
-			}
-		}
-	}
-
-	// Use FastLocalize to check the tetras around the closest node
-	// to the point M
-	if (!isInRegion)
+	// Use FastLocalize to check the tetras around the closest node to the point M
+	gmds::Cell::Data data = m_fl->find(M);
+	TCellID n_closest_id = data.id;
+	Node n_closest = m_mesh->get<Node>(n_closest_id);
+	std::vector<Region> n_closest_tetras = n_closest.get<Region>();
+	for (auto r:n_closest_tetras)
 	{
-		gmds::Cell::Data data = m_fl->find(M);
-		TCellID n_closest_id = data.id;
-		Node n_closest = m_mesh->get<Node>(n_closest_id);
-		std::vector<Region> n_closest_tetras = n_closest.get<Region>();
-		//std::cout << "Dim of the closest Cell: " << data.dim << std::endl;
-		//std::cout << "Nbr closest tetras: " << n_closest_tetras.size() << std::endl;
-		for (auto r:n_closest_tetras)
-		{
-			if (!isInRegion) {
-				isInRegion = isInTetra(r.id(), M);
-				if (isInRegion) {
-					region_id = r.id();
-				}
+		if (!isInRegion) {
+			isInRegion = isInTetra(r.id(), M);
+			if (isInRegion) {
+				region_id = r.id();
 			}
 		}
 	}
 
 	if (!isInRegion){
 		region_id = NullID;
-		//std::cout << "Attention: APRK4, region not found." << std::endl;
+		//std::cout << "Attention APRK4: region not found." << std::endl;
 	}
-
 
 	return region_id;
 	*/
 	return m_fl->findTetra(M);
-}
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
-double AdvectedPointRK4_3D::minEdgeLenght(){
-	// Initialisation avec une arête prise au hasard. Pb : si l'arête 0 a été
-	// retirée
-	Edge edge_0 = m_mesh->get<Edge>(0);
-	double minLenght(edge_0.length());
-	for (auto edge_id:m_mesh->edges()){
-		Edge edge = m_mesh->get<Edge>(edge_id);
-		if(edge.length() < minLenght){
-			minLenght = edge.length() ;
-			//std::cout << "Edge id : " << edge_id << ", Taille : " << minLenght << std::endl;
-		}
-	}
-	return minLenght;
 }
 /*------------------------------------------------------------------------*/
 
@@ -295,7 +235,7 @@ Eigen::Matrix4d AdvectedPointRK4_3D::getInvMatrixA(TCellID region_id){
 
 
 /*------------------------------------------------------------------------*/
-double AdvectedPointRK4_3D::interpolationDistance(TCellID region_id, Eigen::Matrix4d Mat_A_Inv, math::Point M){
+double AdvectedPointRK4_3D::interpolationDistance(TCellID region_id, Eigen::Matrix4d& Mat_A_Inv, math::Point& M){
 	double dist_interpolee;
 
 	Region r = m_mesh->get<Region>(region_id);
@@ -322,7 +262,7 @@ double AdvectedPointRK4_3D::interpolationDistance(TCellID region_id, Eigen::Matr
 
 
 /*------------------------------------------------------------------------*/
-math::Vector3d AdvectedPointRK4_3D::interpolationGradient(TCellID region_id, Eigen::Matrix4d Mat_A_Inv, math::Point M){
+math::Vector3d AdvectedPointRK4_3D::interpolationGradient(TCellID region_id, Eigen::Matrix4d& Mat_A_Inv, math::Point& M){
 	math::Vector3d Gradient_M;
 
 	Region r = m_mesh->get<Region>(region_id);
@@ -371,7 +311,7 @@ math::Vector3d AdvectedPointRK4_3D::interpolationGradient(TCellID region_id, Eig
 
 
 /*------------------------------------------------------------------------*/
-math::Point AdvectedPointRK4_3D::RungeKutta4(math::Point yn, math::Vector3d grad_yn, double dt){
+math::Point AdvectedPointRK4_3D::RungeKutta4(math::Point& yn, math::Vector3d& grad_yn, double dt){
 	math::Point ynew;
 
 	math::Vector3d k1 = grad_yn ;
