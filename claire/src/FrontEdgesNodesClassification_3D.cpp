@@ -183,6 +183,7 @@ FrontEdgesNodesClassification_3D::SingleEdgeClassification(TCellID e_id)
 	else if (3.0*M_PI/4.0 <= angle && angle < 5.0*M_PI/4.0)
 	{
 		edge_classification = 3;
+		std::cout << "reversal edge found" << std::endl;
 	}
 
 	return edge_classification;
@@ -254,6 +255,94 @@ FrontEdgesNodesClassification_3D::MarkSemiEdgesandNodes()
 			}
 		}
 	}
+}
+/*------------------------------------------------------------------------*/
+bool
+FrontEdgesNodesClassification_3D::isValidNodeForTemplate(TCellID n_id)
+{
+	bool isValid(false);
+
+	std::vector<TCellID> n_ordered_edges = m_Front->orderedFrontEdgesAroundNode(m_mesh, n_id);
+	int compteur_corner(0);
+	int compteur_end(0);
+	int compteur_reversal(0);
+	// Compute the number of each singular edges around the node n
+	for (auto e_id:n_ordered_edges) {
+		Edge e = m_mesh->get<Edge>(e_id);
+		if (m_EdgesClassification->value(e_id) == 1) {
+			compteur_corner += 1;
+		}
+		else if (m_EdgesClassification->value(e_id) == 2) {
+			compteur_end += 1;
+		}
+		else if (m_EdgesClassification->value(e_id) == 3) {
+			compteur_reversal += 1;
+		}
+	}
+
+	// Check the valid configurations
+	if (compteur_corner == 3 && compteur_end == 0 && compteur_reversal == 0)
+	{
+		isValid = true;	// Template 3 CORNER
+	}
+	else if (compteur_corner==2 && compteur_end==1 && compteur_reversal==0)
+	{
+		isValid = true;	// Template 2 CORNER, 1 END
+	}
+	else if (compteur_corner==1 && compteur_end==2 && compteur_reversal==0)
+	{
+		std::vector<TCellID> end_edges;
+		TCellID corner_edge;
+		for (auto e_loc_id:n_ordered_edges)
+		{
+			if (m_EdgesClassification->value(e_loc_id)==1)
+			{
+				corner_edge = e_loc_id;
+			}
+			else if (m_EdgesClassification->value(e_loc_id)==2)
+			{
+				end_edges.push_back(e_loc_id);
+			}
+		}
+		NodeNeighbourhoodOnFront_3D n_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n_id);
+		n_neighbourhood.execute();
+		std::vector<TCellID> faces_id = n_neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(end_edges[0], end_edges[1], corner_edge);
+		if (faces_id.size()==3) {
+			isValid = true;     // Template 1 CORNER, 2 END
+		}
+	}
+	else if (compteur_end == 3 && n_ordered_edges.size()==3)
+	{
+		isValid = true;	// Template 3 END
+	}
+	else if (n_ordered_edges.size() == 6
+	         && ( ( m_EdgesClassification->value(n_ordered_edges[0]) == 1
+	              && m_EdgesClassification->value(n_ordered_edges[2]) == 1
+	              && m_EdgesClassification->value(n_ordered_edges[4]) == 1
+	              && m_EdgesClassification->value(n_ordered_edges[1]) == 2
+	              && m_EdgesClassification->value(n_ordered_edges[3]) == 2
+	              && m_EdgesClassification->value(n_ordered_edges[5]) == 2 )
+	             || ( m_EdgesClassification->value(n_ordered_edges[1]) == 1
+	                 && m_EdgesClassification->value(n_ordered_edges[3]) == 1
+	                 && m_EdgesClassification->value(n_ordered_edges[5]) == 1
+	                 && m_EdgesClassification->value(n_ordered_edges[0]) == 2
+	                 && m_EdgesClassification->value(n_ordered_edges[2]) == 2
+	                 && m_EdgesClassification->value(n_ordered_edges[4]) == 2 ) ) )
+	{
+		isValid = true;	// Template 3 CORNER, 3 END
+	}
+	else if (n_ordered_edges.size() == 6
+	         && compteur_corner == 2 && compteur_end==2 && compteur_reversal==0)
+	{
+		isValid = true;	// Template 2 CORNER, 2 END
+	}
+	else if (n_ordered_edges.size() == 3
+	         && compteur_corner == 2 && compteur_end==0 && compteur_reversal==1)
+	{
+		isValid = true;	// Template 2 CORNER, 1 REVERSAL
+	}
+
+	return isValid;
 }
 /*------------------------------------------------------------------------*/
 FrontEdgesNodesClassification_3D::Global_Feature_Edge
@@ -336,11 +425,13 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 	// Init
 	for (auto GFE:m_All_global_feature_edges)
 	{
-		if (m_NodesClassification->value(GFE.End_n_id) >= 3)
+		if (m_NodesClassification->value(GFE.End_n_id) >= 3
+		    && isValidNodeForTemplate(GFE.End_n_id))
 		{
 			m_mesh->mark(m_mesh->get<Node>(GFE.End_n_id), m_mark_NodesForTemplates);
 		}
-		if (m_NodesClassification->value(GFE.Start_n_id) >= 3)
+		if (m_NodesClassification->value(GFE.Start_n_id) >= 3
+		    && isValidNodeForTemplate(GFE.Start_n_id))
 		{
 			m_mesh->mark(m_mesh->get<Node>(GFE.Start_n_id), m_mark_NodesForTemplates);
 		}

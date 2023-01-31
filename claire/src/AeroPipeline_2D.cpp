@@ -418,7 +418,7 @@ AeroPipeline_2D::execute(){
 		var_scaled_jacobian->set(f_id, scajac);
 	}
 	 */
-	MeshAlignement();
+	//MeshAlignement();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
@@ -499,11 +499,11 @@ AeroPipeline_2D::EcritureMaillage(){
 	vtkWriter_TetMesh.setDataOptions(gmds::N|gmds::F);
 	vtkWriter_TetMesh.write("AeroPipeline2D_TriMesh.vtk");
 
-
+	/*
 	std::cout << "			4. Ecriture Maillage Quad en .su2 ..." << std::endl;
 	SU2Writer writer(m_meshHex, "AeroPipeline2D_QuadMesh.su2", m_params.x_lim_SU2_inoutlet);
 	SU2Writer::STATUS result = writer.execute();
-
+	*/
 
 
 	gmds::Mesh meshReavel(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
