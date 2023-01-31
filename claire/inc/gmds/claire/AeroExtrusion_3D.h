@@ -35,7 +35,7 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
          *  @param[in] A_VectorField vector field for extrusion
          *
 	 */
-	AeroExtrusion_3D(Mesh *AMeshT, Mesh *AMeshH, ParamsAero Aparams_aero, Variable<double>* A_DistanceField, Variable<math::Vector3d>* A_VectorField);
+	AeroExtrusion_3D(Mesh *AMeshT, Mesh *AMeshH, ParamsAero& Aparams_aero, Variable<double>* A_DistanceField, Variable<math::Vector3d>* A_VectorField);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -57,6 +57,11 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 		std::map<TCellID, bool>		END_n_face_created;
 		std::map<std::pair<TCellID, TCellID>, TCellID> CORNER_next_nodes;			// ((f_adj_id, e_node_id), next_n_id)
 		std::map<TCellID, TCellID> diag_next_node;
+
+		std::map<TCellID, bool>		REVERSAL_n_faces_created;
+		std::map<std::pair<TCellID, TCellID>, TCellID> REVERSAL_diag_nodes;
+		std::map<std::pair<TCellID, TCellID>, TCellID> REVERSAL_adj_nodes;
+		std::map<TCellID, TCellID> REVERSAL_medium_node;
 	};
 
  private:
@@ -186,6 +191,26 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	 */
 	TCellID TemplateNode3Corner3End(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated);
 	/*-------------------------------------------------------------------*/
+	/** @brief Hexa insertion at the node n_id.
+	 	* \param[in] AFront the front
+   	* \param[in] n_id the node
+   	* \param[in] dc distance of the layer
+   	* \param[in] mark_edgesTreated mark the edges that can't insert or collapse an hex now
+   	* \param[in] mark_facesTreated mark the faces that can't insert an hex now
+		*
+		* \return  the id of the new hexa
+	 */
+	std::vector<TCellID> TemplateNode2Corner2End(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated);
+	/*-------------------------------------------------------------------*/
+	/** @brief Hexa insertion at the node n_id.
+	 	* \param[in] AFront the front
+   	* \param[in] n_id the node
+   	* \param[in] dc distance of the layer
+		*
+		* \return  the id of the new hexa
+	 */
+	std::vector<TCellID> TemplateNode2Corner1Reversal(Front_3D &AFront, TCellID n_id, double dc);
+	/*-------------------------------------------------------------------*/
 	/** @brief Advancing front template on edge classified as corner.
 	 	* \param[in] AFront the front
    	* \param[in] e_id the node
@@ -204,6 +229,16 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	 */
 	TCellID TemplateEdgeEnd(Front_3D &AFront, TCellID e_id, double dc, int mark_edgesTreated, int mark_facesTreated);
 	/*-------------------------------------------------------------------*/
+	/** @brief Advancing front template on edge classified as REVERSAL.
+	 	* \param[in] AFront the front
+   	* \param[in] e_id the node
+   	* \param[in] mark_edgesTreated mark the edges that can't insert or collapse an hex now
+		* \param[in] mark_facesTreated mark the faces that can't insert an hex now
+		*
+		* \return  the id of the hexa
+	 */
+	std::vector<TCellID> TemplateEdgeReversal(Front_3D &AFront, TCellID e_id, double dc, int mark_edgesTreated, int mark_facesTreated);
+	/*-------------------------------------------------------------------*/
 	/** @brief Créé un hex normal sur la couche à partir d'une face
 	 	* \param[in] f_id la face concernée
 	 	* \param[in] Front_IN front en entrée
@@ -211,7 +246,7 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 		*
 		* \return
 	 */
-	void TemplateFace(TCellID f_id, Front_3D &Front_IN, std::map<TCellID, TCellID> map_new_nodes);
+	void TemplateFace(TCellID f_id, Front_3D &Front_IN, std::map<TCellID, TCellID>& map_new_nodes);
 	/*-------------------------------------------------------------------*/
  private:
 	/** triangular mesh we work on */
