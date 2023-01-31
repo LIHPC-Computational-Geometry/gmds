@@ -195,7 +195,7 @@ AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cibl
 		if (abs(angle) < 40)
 		{
 			std::cout << "Angle : " << angle << std::endl;
-			Insertion_Double(Front_Paroi, n_id, A_distance, dist_cible, A_vectors);
+			//Insertion_Double(Front_Paroi, n_id, A_distance, dist_cible, A_vectors);
 		}
 
 	}

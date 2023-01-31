@@ -115,6 +115,13 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	 */
 	void MarkSemiEdgesandNodes();
 	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	* \param[in] n_id id of the node
+		*
+		* \return
+	 */
+	bool isValidNodeForTemplate(TCellID n_id);
+	/*-------------------------------------------------------------------*/
 	/** @brief From a feature node and an adjacent feature edge, compute
 	 	* the global feature edge
 	 	* \param[in] n_id id of the starting feature node
