@@ -19,7 +19,7 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AeroExtrusion_3D::AeroExtrusion_3D(Mesh *AMeshT, Mesh *AMeshH, ParamsAero Aparams_aero, Variable<double>* A_DistanceField, Variable<math::Vector3d>* A_VectorField) :
+AeroExtrusion_3D::AeroExtrusion_3D(Mesh *AMeshT, Mesh *AMeshH, ParamsAero& Aparams_aero, Variable<double>* A_DistanceField, Variable<math::Vector3d>* A_VectorField) :
   m_meshT(AMeshT),
   m_meshH(AMeshH),
   m_fl(m_meshT)
@@ -162,6 +162,14 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		{
 			TCellID r_id = TemplateNode3Corner3End(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated);
 		}
+		else if (singu_type==6 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
+		{
+			std::vector<TCellID> r_id = TemplateNode2Corner2End(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated); // Create 2 hexas
+		}
+		else if (singu_type==7 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
+		{
+			std::vector<TCellID> r_id = TemplateNode2Corner1Reversal(Front_IN, n_id, dist_cible); // Create 2 hexas
+		}
 		if (m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
 			//std::cout << "Noeud marqué pour template" << std::endl;
@@ -188,13 +196,11 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		{
 			TCellID r_id = TemplateEdgeEnd(Front_IN, e_id, dist_cible, mark_edgesTreated, mark_facesTreated);
 		}
-		else
+		else if (singu_type==3
+		         && !m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_edgesTreated)
+		         && m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_EdgesTemplates))
 		{
-			//std::cout << "Edge singularity not implemented yet" << std::endl;
-		}
-		if (m_meshH->isMarked(m_meshH->get<Edge>(e_id),mark_EdgesTemplates))
-		{
-			//std::cout << "Arête marquée pour template" << std::endl;
+			std::vector<TCellID> r_ids = TemplateEdgeReversal(Front_IN, e_id, dist_cible, mark_edgesTreated, mark_facesTreated);
 		}
 	}
 
@@ -457,6 +463,16 @@ AeroExtrusion_3D::getSingularNodes(Front_3D &AFront, Variable<int>* front_edges_
 		                 && front_edges_classification->value(n_ordered_edges[4]) == 2 ) ) )
 		{
 			sing_nodes[n_id] = 5;
+		}
+		else if (n_ordered_edges.size() == 6
+		         && compteur_corner == 2 && compteur_end==2 && compteur_reversal==0)
+		{
+			sing_nodes[n_id] = 6;
+		}
+		else if (n_ordered_edges.size() == 3
+		         && compteur_corner == 2 && compteur_end==0 && compteur_reversal==1)
+		{
+			sing_nodes[n_id] = 7;
 		}
 
 	}
@@ -1242,6 +1258,347 @@ AeroExtrusion_3D::TemplateNode3Corner3End(Front_3D &AFront, TCellID n_id, double
 	return r_id;
 }
 /*------------------------------------------------------------------------*/
+std::vector<TCellID>
+AeroExtrusion_3D::TemplateNode2Corner2End(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated)
+{
+	std::cout << "Template Node 2 Corner 2 End au noeud " << n_id << std::endl;
+	std::vector<TCellID> hexas_id;
+
+	Node n = m_meshH->get<Node>(n_id);
+
+	NodeNeighbourhoodOnFront_3D n_neighbourhood = NodeNeighbourhoodOnFront_3D(m_meshH, &AFront, n_id);
+	n_neighbourhood.execute();
+	std::vector<TCellID> n_ordered_edges = n_neighbourhood.getOrderedEdges();
+
+	Variable<int>* var_front_edges_classification = m_meshH->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
+	std::vector<Edge> ec;
+	std::vector<Edge> ee;
+	for (auto e_loc_id:n_ordered_edges)
+	{
+		if (var_front_edges_classification->value(e_loc_id)==1)
+		{
+			ec.push_back(m_meshH->get<Edge>(e_loc_id));
+		}
+	}
+
+	// Store the edges in ee vector in the same side of the ones in ec
+	// This way, ee[0] will be the closest end edge to ec[0], and ee[1] the closest to ec[1]
+	// ---->
+	std::vector<TCellID> ec_0_faces = n_neighbourhood.adjFacesToEdge(ec[0].id());
+	if (var_front_edges_classification->value(n_neighbourhood.nextEdgeOfFace(ec_0_faces[0], ec[0].id()))==2)
+	{
+		ee.push_back(m_meshH->get<Edge>(n_neighbourhood.nextEdgeOfFace(ec_0_faces[0], ec[0].id())));
+	}
+	else
+	{
+		ee.push_back(m_meshH->get<Edge>(n_neighbourhood.nextEdgeOfFace(ec_0_faces[1], ec[0].id())));
+	}
+
+	std::vector<TCellID> ec_1_faces = n_neighbourhood.adjFacesToEdge(ec[1].id());
+	if (var_front_edges_classification->value(n_neighbourhood.nextEdgeOfFace(ec_1_faces[0], ec[1].id()))==2)
+	{
+		ee.push_back(m_meshH->get<Edge>(n_neighbourhood.nextEdgeOfFace(ec_1_faces[0], ec[1].id())));
+	}
+	else
+	{
+		ee.push_back(m_meshH->get<Edge>(n_neighbourhood.nextEdgeOfFace(ec_1_faces[1], ec[1].id())));
+	}
+	// <----
+
+	Node nc0 = ec[0].getOppositeNode(n);
+	Node nc1 = ec[1].getOppositeNode(n);
+
+	// Get the 5 faces around the node n
+	TCellID f0_id = n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec[0].id(), ee[0].id(), ee[1].id());
+	TCellID f1_id = n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec[0].id(), ee[1].id(), ee[0].id());
+	TCellID f2_id = n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ee[1].id(), ec[0].id(), ec[1].id());
+	TCellID f3_id = n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ee[1].id(), ec[1].id(), ec[0].id());
+	TCellID f4_id = n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec[1].id(), ee[0].id(), ee[1].id());
+	TCellID f5_id = n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ee[0].id(), ec[1].id(), ec[0].id());
+
+	// Get the 2 other nodes of Face f1 (the first ones are n and nc0) ---->
+	TCellID f1_next_edge = n_neighbourhood.nextEdgeOfFace(f1_id, ec[0].id());
+	TCellID n_f1_1_id = (m_meshH->get<Edge>(f1_next_edge)).getOppositeNodeId(n_id) ;
+	Node n_f1_1 = m_meshH->get<Node>(n_f1_1_id);
+
+	Edge f1_opp_edge = math::Utils::oppositeEdgeInFace(m_meshH, ec[0].id(), f1_id);
+	Node n_f1_2 = f1_opp_edge.getOppositeNode(n_f1_1);
+	// <----
+
+	// Get the 2 other nodes of Face f4 (the first ones are n and nc1) ---->
+	TCellID f4_next_edge = n_neighbourhood.nextEdgeOfFace(f4_id, ec[1].id());
+	TCellID n_f4_1_id = (m_meshH->get<Edge>(f4_next_edge)).getOppositeNodeId(n_id) ;
+	Node n_f4_1 = m_meshH->get<Node>(n_f4_1_id);
+
+	Edge f4_opp_edge = math::Utils::oppositeEdgeInFace(m_meshH, ec[1].id(), f4_id);
+	Node n_f4_2 = f4_opp_edge.getOppositeNode(n_f4_1);
+	// <----
+
+	Node n1 = m_meshH->get<Node>( m_FaceInfo[f0_id].next_ideal_nodes[n_id] ) ;
+	Node n2 = m_meshH->get<Node>( m_FaceInfo[f1_id].next_ideal_nodes[n_f1_2.id()] );
+	Node n3 = m_meshH->get<Node>( m_FaceInfo[f1_id].next_ideal_nodes[n_f1_1.id()] );
+	Node n4 = m_meshH->get<Node>( m_FaceInfo[f4_id].next_ideal_nodes[n_f4_2.id()] );
+	Node n5 = m_meshH->get<Node>( m_FaceInfo[f4_id].next_ideal_nodes[n_f4_1.id()] );
+
+	// Create the two new hexas
+	TCellID r_id = math::Utils::CreateHexaNConnectivities(m_meshH, n, nc0, n1, nc1, n_f1_1, n_f1_2, n2, n3);
+	hexas_id.push_back(r_id);
+	r_id = math::Utils::CreateHexaNConnectivities(m_meshH, n, nc0, n1, nc1, n_f4_1, n5, n4, n_f4_2);
+	hexas_id.push_back(r_id);
+
+
+	//===================//
+	//      UPDATES      //
+	//===================//
+
+	// Update the faces and edges that can't create hexas anymore
+	m_meshH->mark(ec[0], mark_edgesTreated);
+	m_meshH->mark(ec[1], mark_edgesTreated);
+	m_meshH->mark(m_meshH->get<Face>(f1_id), mark_facesTreated);
+	m_meshH->mark(m_meshH->get<Face>(f4_id), mark_facesTreated);
+
+	// Update the edge struc info for the 2 END edges ---->
+	m_EdgeInfo[ee[0].id()].END_n_face_created[n_id] = true;
+	m_EdgeInfo[ee[1].id()].END_n_face_created[n_id] = true;
+	m_EdgeInfo[ee[0].id()].diag_next_node[n_id] = n5.id();
+	m_EdgeInfo[ee[1].id()].diag_next_node[n_id] = n3.id();
+	// <----
+
+	// Update the edge struc info for the first CORNER edge ---->
+	NodeNeighbourhoodOnFront_3D n_c0_neighbourhood = NodeNeighbourhoodOnFront_3D(m_meshH, &AFront, nc0.id()) ;
+	n_c0_neighbourhood.execute();
+	for (auto edge_id:n_c0_neighbourhood.getOrderedEdges()) {
+		if (var_front_edges_classification->value(edge_id) == 1 && edge_id != ec[0].id()) {
+			m_EdgeInfo[edge_id].CORNER_n_face_created[nc0.id()] = true;
+			m_EdgeInfo[edge_id].diag_next_node[nc0.id()] = n4.id();
+
+			TCellID edge_f1_last = n_c0_neighbourhood.nextEdgeOfFace(f1_id, ec[0].id());
+			for (auto faces_id : n_c0_neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(ec[0].id(), edge_id, edge_f1_last)) {
+				m_FaceInfo[faces_id].next_nodes[nc0.id()] = n5.id();
+			}
+			TCellID edge_f0 = n_c0_neighbourhood.nextEdgeOfFace(f0_id, ec[0].id());
+			for (auto faces_id : n_c0_neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(ec[0].id(), edge_id, edge_f0)) {
+				m_FaceInfo[faces_id].next_nodes[nc0.id()] = n1.id();
+			}
+
+			std::pair<TCellID, TCellID> pair_1(n_c0_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(edge_id, ec[0].id(), edge_f1_last), nc0.id());
+			std::pair<TCellID, TCellID> pair_2(n_c0_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(edge_id, ec[0].id(), edge_f0), nc0.id());
+
+			m_EdgeInfo[edge_id].CORNER_next_nodes[pair_1] = n5.id();
+			m_EdgeInfo[edge_id].CORNER_next_nodes[pair_2] = n1.id();
+		}
+	}
+	// <----
+
+	// Update the edge struc info for the second CORNER edge ---->
+	NodeNeighbourhoodOnFront_3D n_c1_neighbourhood = NodeNeighbourhoodOnFront_3D(m_meshH, &AFront, nc1.id()) ;
+	n_c1_neighbourhood.execute();
+	for (auto edge_id:n_c1_neighbourhood.getOrderedEdges()) {
+		if (var_front_edges_classification->value(edge_id) == 1 && edge_id != ec[1].id()) {
+			m_EdgeInfo[edge_id].CORNER_n_face_created[nc1.id()] = true;
+			m_EdgeInfo[edge_id].diag_next_node[nc1.id()] = n2.id();
+
+			TCellID edge_f4_last = n_c1_neighbourhood.nextEdgeOfFace(f4_id, ec[1].id());
+			for (auto faces_id : n_c1_neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(ec[1].id(), edge_id, edge_f4_last)) {
+				m_FaceInfo[faces_id].next_nodes[nc1.id()] = n3.id();
+			}
+			TCellID edge_f3 = n_c1_neighbourhood.nextEdgeOfFace(f3_id, ec[1].id());
+			for (auto faces_id : n_c1_neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(ec[1].id(), edge_id, edge_f3)) {
+				m_FaceInfo[faces_id].next_nodes[nc1.id()] = n1.id();
+			}
+
+			std::pair<TCellID, TCellID> pair_1(n_c1_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(edge_id, ec[1].id(), edge_f4_last), nc1.id());
+			std::pair<TCellID, TCellID> pair_2(n_c1_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(edge_id, ec[1].id(), edge_f3), nc1.id());
+
+			m_EdgeInfo[edge_id].CORNER_next_nodes[pair_1] = n3.id();
+			m_EdgeInfo[edge_id].CORNER_next_nodes[pair_2] = n1.id();
+		}
+	}
+	// <----
+
+	// Write the new hexa in a VTK file <----
+	gmds::IGMeshIOService ioService(m_meshH);
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
+	m_iteration++;
+	//<----
+
+	return hexas_id;
+}
+/*------------------------------------------------------------------------*/
+std::vector<TCellID>
+AeroExtrusion_3D::TemplateNode2Corner1Reversal(Front_3D &AFront, TCellID n_id, double dc)
+{
+	//std::cout << "Template Node 2 Corner 1 Reversal au noeud " << n_id << std::endl;
+	std::vector<TCellID> hexas_id;
+
+	Node n = m_meshH->get<Node>(n_id);
+	NodeNeighbourhoodOnFront_3D n_neighbourhood = NodeNeighbourhoodOnFront_3D(m_meshH, &AFront, n_id);
+	n_neighbourhood.execute();
+	std::vector<TCellID> n_ordered_edges = n_neighbourhood.getOrderedEdges();
+	std::vector<TCellID> n_ordered_faces = n_neighbourhood.getOrderedFaces();
+
+	Variable<int>* var_front_edges_classification = m_meshH->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
+	std::vector<Edge> ec;
+	Edge er;
+	for (auto e_loc_id:n_ordered_edges)
+	{
+		if (var_front_edges_classification->value(e_loc_id)==1)
+		{
+			ec.push_back(m_meshH->get<Edge>(e_loc_id));
+		}
+		else if (var_front_edges_classification->value(e_loc_id)==3)
+		{
+			er = m_meshH->get<Edge>(e_loc_id);
+		}
+	}
+
+	Node n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11;
+	n2 = m_meshH->get<Node>(m_FaceInfo[n_ordered_faces[0]].next_ideal_nodes[n_id]);
+
+	// We build the 10 missing nodes ---->
+	Node nr = er.getOppositeNode(n);
+	Node nc0 = ec[0].getOppositeNode(n);
+	Node nc1 = ec[1].getOppositeNode(n);
+
+	math::Vector3d vr = (n.point()-nr.point()).normalize() ;
+	math::Vector3d vc0 = (n.point()-nc0.point()).normalize() ;
+	math::Vector3d vc1 = (n.point()-nc1.point()).normalize() ;
+
+	Face f_rc0 = m_meshH->get<Face>(n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(er.id(), ec[0].id(), ec[1].id()));
+	Face f_rc1 = m_meshH->get<Face>(n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(er.id(), ec[1].id(), ec[0].id()));
+	Face f_c0c1 = m_meshH->get<Face>(n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec[0].id(), ec[1].id(), er.id()));
+
+	math::Vector3d v_rc0 = f_rc0.normal();
+	gmds::Cell::Data data_rc0 = m_fl.find(f_rc0.center());
+	Node n_closest_f_rc0 = m_meshT->get<Node>(data_rc0.id);
+	math::Vector3d v_test = m_VectorField->value(n_closest_f_rc0.id()).normalize() ;
+	if (v_rc0.dot(v_test) <= 0)
+	{
+		v_rc0 = - v_rc0;
+	}
+
+	math::Vector3d v_rc1 = f_rc1.normal();
+	gmds::Cell::Data data_rc1 = m_fl.find(f_rc1.center());
+	Node n_closest_f_rc1 = m_meshT->get<Node>(data_rc1.id);
+	v_test = m_VectorField->value(n_closest_f_rc1.id()).normalize() ;
+	if (v_rc1.dot(v_test) <= 0)
+	{
+		v_rc1 = - v_rc1;
+	}
+
+	math::Vector3d v_c0c1 = f_c0c1.normal();
+	gmds::Cell::Data data_c0c1 = m_fl.find(f_c0c1.center());
+	Node n_closest_f_c0c1 = m_meshT->get<Node>(data_c0c1.id);
+	v_test = m_VectorField->value(n_closest_f_c0c1.id()).normalize() ;
+	if (v_c0c1.dot(v_test) <= 0)
+	{
+		v_c0c1 = - v_c0c1;
+	}
+
+	math::Point p1 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, vr);
+	math::Point p3 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (vc0+vc1).normalize());
+	math::Point p7 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v_rc0);
+	math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (vr+v_rc0).normalize());
+	math::Point p6 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (vc0+vc1+v_rc0).normalize());
+	math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (vr+vc0+vc1+v_rc0).normalize());
+
+	math::Point p11 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (v_rc1).normalize());
+	math::Point p8 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (vr+v_rc1).normalize());
+	math::Point p10 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (vc0+vc1+v_rc1).normalize());
+	math::Point p9 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (vr+vc0+vc1+v_rc1).normalize());
+
+	n1 = m_meshH->newNode(p1);
+	n3 = m_meshH->newNode(p3);
+	n7 = m_meshH->newNode(p7);
+	n4 = m_meshH->newNode(p4);
+	n6 = m_meshH->newNode(p6);
+	n5 = m_meshH->newNode(p5);
+	n11 = m_meshH->newNode(p11);
+	n8 = m_meshH->newNode(p8);
+	n10 = m_meshH->newNode(p10);
+	n9 = m_meshH->newNode(p9);
+	// <----
+
+	// Create the two new hexas
+	TCellID r_id = math::Utils::CreateHexaNConnectivities(m_meshH, n, n1, n2, n3, n7, n4, n5, n6);
+	hexas_id.push_back(r_id);
+	r_id = math::Utils::CreateHexaNConnectivities(m_meshH, n, n1, n2, n3, n11,n8, n9, n10);
+	hexas_id.push_back(r_id);
+
+	// Update the layer ID for the 10 new nodes on the next layer ---->
+	Variable<int>* var_node_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	var_node_couche_id->set(n1.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n2.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n3.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n4.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n5.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n6.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n7.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n8.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n9.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n10.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n11.id(), AFront.getFrontID()+1);
+	// <----
+
+	// Update the layer ID for the 6 new faces on the next layer ---->
+	Variable<int>* var_face_couche_id = m_meshH->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
+	TCellID f_1_id = math::Utils::CommonFace3Nodes(m_meshH, n4.id(), n5.id(), n6.id());
+	TCellID f_2_id = math::Utils::CommonFace3Nodes(m_meshH, n1.id(),  n2.id(), n5.id());
+	TCellID f_3_id = math::Utils::CommonFace3Nodes(m_meshH, n3.id(),  n2.id(), n5.id());
+	TCellID f_4_id = math::Utils::CommonFace3Nodes(m_meshH, n3.id(),  n2.id(), n9.id());
+	TCellID f_5_id = math::Utils::CommonFace3Nodes(m_meshH, n1.id(),  n2.id(), n9.id());
+	TCellID f_6_id = math::Utils::CommonFace3Nodes(m_meshH, n8.id(),  n9.id(), n10.id());
+	var_face_couche_id->set(f_1_id, AFront.getFrontID()+1);
+	var_face_couche_id->set(f_2_id, AFront.getFrontID()+1);
+	var_face_couche_id->set(f_3_id, AFront.getFrontID()+1);
+	var_face_couche_id->set(f_4_id, AFront.getFrontID()+1);
+	var_face_couche_id->set(f_5_id, AFront.getFrontID()+1);
+	var_face_couche_id->set(f_6_id, AFront.getFrontID()+1);
+	// <----
+
+	// Update the edge structure info <----
+	std::pair<TCellID, TCellID> pair_rc0(f_rc0.id(), n.id());
+	std::pair<TCellID, TCellID> pair_rc1(f_rc1.id(), n.id());
+	std::pair<TCellID, TCellID> pair_c0c1(f_c0c1.id(), n.id());
+	m_EdgeInfo[er.id()].REVERSAL_n_faces_created[n_id] = true;
+	m_EdgeInfo[er.id()].REVERSAL_diag_nodes[pair_rc0] = n6.id();
+	m_EdgeInfo[er.id()].REVERSAL_adj_nodes[pair_rc0] = n7.id();
+	m_EdgeInfo[er.id()].REVERSAL_diag_nodes[pair_rc1] = n10.id();
+	m_EdgeInfo[er.id()].REVERSAL_adj_nodes[pair_rc1] = n11.id();
+	m_EdgeInfo[er.id()].REVERSAL_medium_node[n_id] = n3.id() ;
+
+	m_EdgeInfo[ec[0].id()].CORNER_n_face_created[n_id] = true;
+	m_EdgeInfo[ec[0].id()].diag_next_node[n_id] = n4.id() ;
+	m_EdgeInfo[ec[0].id()].CORNER_next_nodes[pair_rc0] = n7.id() ;
+	m_EdgeInfo[ec[0].id()].CORNER_next_nodes[pair_c0c1] = n1.id() ;
+
+	m_EdgeInfo[ec[1].id()].CORNER_n_face_created[n_id] = true;
+	m_EdgeInfo[ec[1].id()].diag_next_node[n_id] = n8.id() ;
+	m_EdgeInfo[ec[1].id()].CORNER_next_nodes[pair_rc1] = n11.id() ;
+	m_EdgeInfo[ec[1].id()].CORNER_next_nodes[pair_c0c1] = n1.id() ;
+	// ---->
+
+	// Update the faces info ---->
+	m_FaceInfo[f_rc0.id()].next_nodes[n_id] = n7.id();
+	m_FaceInfo[f_rc1.id()].next_nodes[n_id] = n11.id();
+	m_FaceInfo[f_c0c1.id()].next_nodes[n_id] = n1.id();
+	// <----
+
+	// Write the new hexa in a VTK file <----
+	gmds::IGMeshIOService ioService(m_meshH);
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
+	m_iteration++;
+	//<----
+
+	return hexas_id;
+}
+/*------------------------------------------------------------------------*/
 TCellID
 AeroExtrusion_3D::TemplateEdgeCorner(Front_3D &AFront, TCellID e_id, double dc)
 {
@@ -1585,8 +1942,237 @@ AeroExtrusion_3D::TemplateEdgeEnd(Front_3D &AFront, TCellID e_id, double dc, int
 	return r_id;
 }
 /*------------------------------------------------------------------------*/
+std::vector<TCellID>
+AeroExtrusion_3D::TemplateEdgeReversal(Front_3D &AFront, TCellID e_id, double dc, int mark_edgesTreated, int mark_facesTreated)
+{
+	//std::cout << "Template Edge Reversal " << e_id << std::endl;
+	std::vector<TCellID> hexas_id;
+
+	Node n0 = ((m_meshH->get<Edge>(e_id)).get<Node>())[0];
+	Node n1 = ((m_meshH->get<Edge>(e_id)).get<Node>())[1];
+
+	Node n2, n3, n4, n5, n6, n7, n8, n9, n10, n11;
+
+	std::vector<TCellID> e_faces = AFront.edgeFacesOnFront(m_meshH, e_id);
+
+	// First side
+	if (m_EdgeInfo[e_id].REVERSAL_n_faces_created[n0.id()])	// The faces are already created
+	{
+		std::pair<TCellID, TCellID> pair_1(e_faces[0], n0.id());
+		n4 = m_meshH->get<Node>(m_EdgeInfo[e_id].REVERSAL_adj_nodes[pair_1]);
+		n7 = m_meshH->get<Node>(m_EdgeInfo[e_id].REVERSAL_diag_nodes[pair_1]);
+		std::pair<TCellID, TCellID> pair_2(e_faces[1], n0.id());
+		n8 = m_meshH->get<Node>(m_EdgeInfo[e_id].REVERSAL_adj_nodes[pair_2]);
+		n11 = m_meshH->get<Node>(m_EdgeInfo[e_id].REVERSAL_diag_nodes[pair_2]);
+
+		n3 = m_meshH->get<Node>(m_EdgeInfo[e_id].REVERSAL_medium_node[n0.id()]);
+	}
+	else	// Create the faces
+	{
+		n3 = m_meshH->get<Node>(m_FaceInfo[e_faces[0]].next_ideal_nodes[n0.id()]) ;
+		math::Vector3d v = (n3.point()-n0.point()).normalize() ;
+
+		math::Point f0_barycentre = m_meshH->get<Face>(e_faces[0]).center() ;
+		math::Vector3d f0_normale = m_meshH->get<Face>(e_faces[0]).normal();
+		gmds::Cell::Data data = m_fl.find(f0_barycentre);
+		Node n_closest = m_meshT->get<Node>(data.id);
+		math::Vector3d v1 = m_VectorField->value(n_closest.id()).normalize() ;
+		if (f0_normale.dot(v1) <= 0)
+		{
+			f0_normale = - f0_normale;
+		}
+
+		math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n0.point(), dc, m_DistanceField, f0_normale);
+		math::Point p7 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n0.point(), dc, m_DistanceField, (f0_normale+v).normalize());
+
+		n4 = m_meshH->newNode(p4);
+		n7 = m_meshH->newNode(p7);
+
+		math::Point f1_barycentre = m_meshH->get<Face>(e_faces[1]).center() ;
+		math::Vector3d f1_normale = m_meshH->get<Face>(e_faces[1]).normal();
+		gmds::Cell::Data data_f1 = m_fl.find(f1_barycentre);
+		Node n_closest_f1 = m_meshT->get<Node>(data_f1.id);
+		math::Vector3d v_f1 = m_VectorField->value(n_closest_f1.id()).normalize() ;
+		if (f1_normale.dot(v_f1) <= 0)
+		{
+			f1_normale = - f1_normale;
+		}
+
+		math::Point p8 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n0.point(), dc, m_DistanceField, f1_normale);
+		math::Point p11 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n0.point(), dc, m_DistanceField, (f1_normale+v).normalize());
+
+		n8 = m_meshH->newNode(p8);
+		n11 = m_meshH->newNode(p11);
+
+		//=====================//
+		// Update the REVERSAL //
+		// edge info for the	  //
+		// next edge			  //
+		//=====================//
+		Variable<int>* edge_classification = m_meshH->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
+		NodeNeighbourhoodOnFront_3D n0_neighbourhood = NodeNeighbourhoodOnFront_3D(m_meshH, &AFront, n0.id());
+		n0_neighbourhood.execute();
+		Edge next_edge;
+		for (auto e_loc_id:n0_neighbourhood.getOrderedEdges())
+		{
+			if ((e_loc_id != e_id)
+			    && edge_classification->value(e_loc_id)==3 )
+			{
+				next_edge = m_meshH->get<Edge>(e_loc_id);
+			}
+		}
+
+		Edge e_f0 = m_meshH->get<Edge>(n0_neighbourhood.nextEdgeOfFace(e_faces[0], e_id));
+		Edge e_f1 = m_meshH->get<Edge>(n0_neighbourhood.nextEdgeOfFace(e_faces[1], e_id));
+
+		Face f0_next = m_meshH->get<Face>(n0_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(next_edge.id(), e_f0.id(), e_f1.id())) ;
+		Face f1_next = m_meshH->get<Face>(n0_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(next_edge.id(), e_f1.id(), e_f0.id())) ;
+
+		std::pair<TCellID, TCellID> pair_0(f0_next.id(), n0.id());
+		std::pair<TCellID, TCellID> pair_1(f1_next.id(), n0.id());
+
+		m_EdgeInfo[next_edge.id()].REVERSAL_n_faces_created[n0.id()] = true;
+		m_EdgeInfo[next_edge.id()].REVERSAL_medium_node[n0.id()] = n3.id();
+		m_EdgeInfo[next_edge.id()].REVERSAL_adj_nodes[pair_0] = n4.id();
+		m_EdgeInfo[next_edge.id()].REVERSAL_adj_nodes[pair_1] = n8.id();
+		m_EdgeInfo[next_edge.id()].REVERSAL_diag_nodes[pair_0] = n7.id();
+		m_EdgeInfo[next_edge.id()].REVERSAL_diag_nodes[pair_1] = n11.id();
+		//==============//
+		// END UPDATES  //
+		//==============//
+
+	}
+
+	// Second side
+	if (m_EdgeInfo[e_id].REVERSAL_n_faces_created[n1.id()])	// The faces are already created
+	{
+		std::pair<TCellID, TCellID> pair_1(e_faces[0], n1.id());
+		n5 = m_meshH->get<Node>(m_EdgeInfo[e_id].REVERSAL_adj_nodes[pair_1]);
+		n6 = m_meshH->get<Node>(m_EdgeInfo[e_id].REVERSAL_diag_nodes[pair_1]);
+		std::pair<TCellID, TCellID> pair_2(e_faces[1], n1.id());
+		n9 = m_meshH->get<Node>(m_EdgeInfo[e_id].REVERSAL_adj_nodes[pair_2]);
+		n10 = m_meshH->get<Node>(m_EdgeInfo[e_id].REVERSAL_diag_nodes[pair_2]);
+
+		n2 = m_meshH->get<Node>(m_EdgeInfo[e_id].REVERSAL_medium_node[n1.id()]);
+	}
+	else	// Create the faces
+	{
+		n2 = m_meshH->get<Node>(m_FaceInfo[e_faces[0]].next_ideal_nodes[n1.id()]) ;
+		math::Vector3d v = (n2.point()-n1.point()).normalize() ;
+
+		math::Point f0_barycentre = m_meshH->get<Face>(e_faces[0]).center() ;
+		math::Vector3d f0_normale = m_meshH->get<Face>(e_faces[0]).normal();
+		gmds::Cell::Data data = m_fl.find(f0_barycentre);
+		Node n_closest = m_meshT->get<Node>(data.id);
+		math::Vector3d v1 = m_VectorField->value(n_closest.id()).normalize() ;
+		if (f0_normale.dot(v1) <= 0)
+		{
+			f0_normale = - f0_normale;
+		}
+
+		math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n1.point(), dc, m_DistanceField, f0_normale);
+		math::Point p6 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n1.point(), dc, m_DistanceField, (f0_normale+v).normalize());
+
+		n5 = m_meshH->newNode(p5);
+		n6 = m_meshH->newNode(p6);
+
+		math::Point f1_barycentre = m_meshH->get<Face>(e_faces[1]).center() ;
+		math::Vector3d f1_normale = m_meshH->get<Face>(e_faces[1]).normal();
+		gmds::Cell::Data data_f1 = m_fl.find(f1_barycentre);
+		Node n_closest_f1 = m_meshT->get<Node>(data_f1.id);
+		math::Vector3d v_f1 = m_VectorField->value(n_closest_f1.id()).normalize() ;
+		if (f1_normale.dot(v_f1) <= 0)
+		{
+			f1_normale = - f1_normale;
+		}
+
+		math::Point p9 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n1.point(), dc, m_DistanceField, f1_normale);
+		math::Point p10 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n1.point(), dc, m_DistanceField, (f1_normale+v).normalize());
+
+		n9 = m_meshH->newNode(p9);
+		n10 = m_meshH->newNode(p10);
+
+		//=====================//
+		// Update the REVERSAL //
+		// edge info for the	  //
+		// next edge			  //
+		//=====================//
+		Variable<int>* edge_classification = m_meshH->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
+		NodeNeighbourhoodOnFront_3D n1_neighbourhood = NodeNeighbourhoodOnFront_3D(m_meshH, &AFront, n1.id());
+		n1_neighbourhood.execute();
+		Edge next_edge;
+		for (auto e_loc_id:n1_neighbourhood.getOrderedEdges())
+		{
+			if ((e_loc_id != e_id)
+			    && edge_classification->value(e_loc_id)==3 )
+			{
+				next_edge = m_meshH->get<Edge>(e_loc_id);
+			}
+		}
+
+		Edge e_f0 = m_meshH->get<Edge>(n1_neighbourhood.nextEdgeOfFace(e_faces[0], e_id));
+		Edge e_f1 = m_meshH->get<Edge>(n1_neighbourhood.nextEdgeOfFace(e_faces[1], e_id));
+
+		Face f0_next = m_meshH->get<Face>(n1_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(next_edge.id(), e_f0.id(), e_f1.id())) ;
+		Face f1_next = m_meshH->get<Face>(n1_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(next_edge.id(), e_f1.id(), e_f0.id())) ;
+
+		std::pair<TCellID, TCellID> pair_0(f0_next.id(), n1.id());
+		std::pair<TCellID, TCellID> pair_1(f1_next.id(), n1.id());
+
+		m_EdgeInfo[next_edge.id()].REVERSAL_n_faces_created[n1.id()] = true;
+		m_EdgeInfo[next_edge.id()].REVERSAL_medium_node[n1.id()] = n2.id();
+		m_EdgeInfo[next_edge.id()].REVERSAL_adj_nodes[pair_0] = n5.id();
+		m_EdgeInfo[next_edge.id()].REVERSAL_adj_nodes[pair_1] = n9.id();
+		m_EdgeInfo[next_edge.id()].REVERSAL_diag_nodes[pair_0] = n6.id();
+		m_EdgeInfo[next_edge.id()].REVERSAL_diag_nodes[pair_1] = n10.id();
+		//==============//
+		// END UPDATES //
+		//==============//
+	}
+
+	TCellID r_id = math::Utils::CreateHexaNConnectivities(m_meshH, n0, n1, n2, n3, n4, n5, n6, n7);
+	hexas_id.push_back(r_id);
+	r_id = math::Utils::CreateHexaNConnectivities(m_meshH, n0, n1, n2, n3, n8, n9, n10, n11);
+	hexas_id.push_back(r_id);
+
+	// Update the layer id of the new nodes ---->
+	Variable<int>* var_node_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	var_node_couche_id->set(n4.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n7.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n3.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n11.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n8.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n5.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n6.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n2.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n10.id(), AFront.getFrontID()+1);
+	var_node_couche_id->set(n9.id(), AFront.getFrontID()+1);
+	// <----
+
+	// Update the layer ID for the 6 new faces on the next layer ---->
+	Variable<int>* var_face_couche_id = m_meshH->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
+	TCellID f_1_id = math::Utils::CommonFace3Nodes(m_meshH, n4.id(), n5.id(), n6.id());
+	TCellID f_2_id = math::Utils::CommonFace3Nodes(m_meshH, n2.id(), n3.id(), n7.id());
+	TCellID f_3_id = math::Utils::CommonFace3Nodes(m_meshH, n2.id(), n3.id(), n11.id());
+	TCellID f_4_id = math::Utils::CommonFace3Nodes(m_meshH, n9.id(), n10.id(), n11.id());
+	var_face_couche_id->set(f_1_id, AFront.getFrontID()+1);
+	var_face_couche_id->set(f_2_id, AFront.getFrontID()+1);
+	var_face_couche_id->set(f_3_id, AFront.getFrontID()+1);
+	var_face_couche_id->set(f_4_id, AFront.getFrontID()+1);
+	// <----
+
+	// Update the Face Info structures ---->
+	m_FaceInfo[e_faces[0]].next_nodes[n0.id()] = n4.id();
+	m_FaceInfo[e_faces[0]].next_nodes[n1.id()] = n5.id();
+	m_FaceInfo[e_faces[1]].next_nodes[n0.id()] = n8.id();
+	m_FaceInfo[e_faces[1]].next_nodes[n1.id()] = n9.id();
+	// <----
+
+	return hexas_id;
+}
+/*------------------------------------------------------------------------*/
 void
-AeroExtrusion_3D::TemplateFace(TCellID f_id, Front_3D &Front_IN, std::map<TCellID, TCellID> map_new_nodes)
+AeroExtrusion_3D::TemplateFace(TCellID f_id, Front_3D &Front_IN, std::map<TCellID, TCellID>& map_new_nodes)
 {
 	//std::cout << "Template Face" << std::endl;
 
