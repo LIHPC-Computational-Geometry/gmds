@@ -28,7 +28,7 @@ jobs:
         #    name: Windows
         #    script_name: ./.github/workflows/env_win.cmd
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         submodules: recursive
 
