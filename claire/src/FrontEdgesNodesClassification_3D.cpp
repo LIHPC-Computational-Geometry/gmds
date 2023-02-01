@@ -183,7 +183,6 @@ FrontEdgesNodesClassification_3D::SingleEdgeClassification(TCellID e_id)
 	else if (3.0*M_PI/4.0 <= angle && angle < 5.0*M_PI/4.0)
 	{
 		edge_classification = 3;
-		std::cout << "reversal edge found" << std::endl;
 	}
 
 	return edge_classification;
@@ -340,6 +339,11 @@ FrontEdgesNodesClassification_3D::isValidNodeForTemplate(TCellID n_id)
 	         && compteur_corner == 2 && compteur_end==0 && compteur_reversal==1)
 	{
 		isValid = true;	// Template 2 CORNER, 1 REVERSAL
+	}
+	else if (n_ordered_edges.size() == 6
+	         && compteur_corner == 0 && compteur_end==2 && compteur_reversal==1)
+	{
+		isValid = true;	// Template 2 END, 1 REVERSAL
 	}
 
 	return isValid;
