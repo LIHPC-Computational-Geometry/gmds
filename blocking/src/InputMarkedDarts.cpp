@@ -109,6 +109,49 @@ InputMarkedDarts::pillow_mark_first_cells3d(LCC_3 *ALcc, LCC_3::size_type AMark,
 }
 /*----------------------------------------------------------------------------*/
 int
+InputMarkedDarts::pillow_mark_cells_3d(LCC_3 *ALcc, LCC_3::size_type AMark, std::set<int> ACellset)
+{
+	// mark the darts to extrude
+	LCC_3::size_type m = ALcc->get_new_mark();
+
+	int nbCellsMarked = 0;
+	for (auto it = ALcc->one_dart_per_cell<3>().begin(); it != ALcc->one_dart_per_cell<3>().end(); it++) {
+
+		if(ACellset.find(nbCellsMarked) != ACellset.end()) {
+
+			for (LCC_3::Dart_of_cell_range<3>::iterator itbis(ALcc->darts_of_cell<3>(it).begin()), itend(ALcc->darts_of_cell<3>(it).end()); itbis != itend;
+			     ++itbis) {
+				ALcc->mark(itbis, m);
+			}
+		}
+
+		nbCellsMarked++;
+	}
+
+	for (LCC_3::Dart_range::iterator it(ALcc->darts().begin()),
+	     itend(ALcc->darts().end()); it!=itend; ++it)
+	{
+		if(ALcc->is_marked(it, m)) {
+			if(ALcc->alpha(it, 3) == it) {
+				ALcc->mark(it, AMark);
+			} else {
+				if(!ALcc->is_marked(ALcc->alpha(it, 3), m)) {
+					ALcc->mark(it, AMark);
+				}
+			}
+		}
+	}
+
+	const int nbMarkedDarts = ALcc->number_of_marked_darts(AMark);
+	std::cout<<"InputMarkedDarts::pillow_mark_first_cells3d nbMarkedDarts "<< nbMarkedDarts<<std::endl;
+
+	// free the marks
+	ALcc->free_mark(m);
+
+	return nbMarkedDarts;
+}
+/*----------------------------------------------------------------------------*/
+int
 InputMarkedDarts::insertsheet_mark_intersect_3d(LCC_3 *ALcc, LCC_3::size_type AMark, int ANi, int ANj, int ANk)
 {
 	std::set<int> cells_to_mark_top;
@@ -205,6 +248,48 @@ InputMarkedDarts::insertsheet_mark_intersect_3d(LCC_3 *ALcc, LCC_3::size_type AM
 			}
 		}
 		index++;
+	}
+
+	return ALcc->number_of_marked_darts(AMark);
+}
+/*----------------------------------------------------------------------------*/
+int
+InputMarkedDarts::mark_faceset_regionset_3d(LCC_3 *ALcc, LCC_3::size_type AMark, std::set<int> AFaceset, std::set<int> ARegionset) const
+{
+	std::cout<<"InputMarkedDarts::mark_faceset_regionset_3d AFaceset.size()   "<<AFaceset.size()<<std::endl;
+	std::cout<<"InputMarkedDarts::mark_faceset_regionset_3d ARegionset.size() "<<ARegionset.size()<<std::endl;
+
+	// set the cell ids
+	std::map<Dart_handle, int > dart_region_ids;
+
+	int index_region=0;
+	for (auto it = ALcc->one_dart_per_cell<3>().begin(); it != ALcc->one_dart_per_cell<3>().end(); it++, index_region++) {
+		Dart_handle d = ALcc->darts_of_cell<3>(it).begin();
+
+		for (LCC_3::Dart_of_orbit_range<0,1,2>::iterator
+				  itbis(ALcc->darts_of_orbit<0,1,2>(d).begin()),
+				  itend(ALcc->darts_of_orbit<0,1,2>(d).end()); itbis!=itend; ++itbis) {
+			dart_region_ids[itbis] = index_region;
+		}
+	}
+
+
+	// mark the darts to extrude
+	int index = 0;
+	for (auto it = ALcc->one_dart_per_cell<2>().begin(); it != ALcc->one_dart_per_cell<2>().end(); it++, index++) {
+
+		if (AFaceset.find(index) != AFaceset.end()) {
+
+			Dart_handle d = ALcc->darts_of_cell<2>(it).begin();
+
+			for (LCC_3::Dart_of_orbit_range<0,1,3>::iterator itbis(ALcc->darts_of_orbit<0,1,3>(d).begin()), itend(ALcc->darts_of_orbit<0,1,3>(d).end()); itbis != itend;
+			     ++itbis) {
+
+				if(ARegionset.find(dart_region_ids[itbis]) != ARegionset.end()) {
+					ALcc->mark(itbis, AMark);
+				}
+			}
+		}
 	}
 
 	return ALcc->number_of_marked_darts(AMark);
