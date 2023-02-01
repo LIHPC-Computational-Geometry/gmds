@@ -9,6 +9,7 @@
 #include "gmds/io/VTKWriter.h"
 #include <gmds/blocking/Blocking.h>
 #include <gmds/blocking/SheetCollapse.h>
+#include <gmds/blocking/WriterDartsVTK.h>
 /*----------------------------------------------------------------------------*/
 TEST(BlockingTestSuite, dummytest)
 {
