@@ -8,7 +8,7 @@ git clone --depth=1 -b releases/latest https://github.com/spack/spack.git
 cp /Users/runner/work/gmds/gmds/.github/workflows/misc/config.yaml /Users/runner/work/gmds/gmds/spack/etc/spack/defaults/
 . ./spack/share/spack/setup-env.sh
 
-git clone --depth=1 https://github.com/LIHPC-Computational-Geometry/spack_recipes_meshing.git
+git clone --branch gmds_temp --depth=1 https://github.com/LIHPC-Computational-Geometry/spack_recipes_meshing.git
 
 spack repo add ./spack_recipes_meshing/meshing_repo
 spack repo add ./spack_recipes_meshing/supersede_repo
