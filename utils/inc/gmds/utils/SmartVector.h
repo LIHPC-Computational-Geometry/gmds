@@ -403,7 +403,7 @@ namespace gmds{
         }
 
 
-        void mark(const std::vector<int>& ARef){
+        void mark(const std::vector<TInt>& ARef){
             for(unsigned int i=0; i<ARef.size();i++)
                 mark_[ARef[i]]=true;
             update();

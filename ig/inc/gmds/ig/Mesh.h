@@ -1286,7 +1286,7 @@ template<typename T, ECellType E> Variable<T> *
 Mesh::newVariable(const std::string &AName)
 {
 	Variable<T> *v;
-	std::vector<int> ids;
+	std::vector<TInt> ids;
 	switch (E) {
 	case GMDS_NODE: {
 		for (auto i : nodes()) {

@@ -50,7 +50,7 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief Set the domain entry to [0,i] with some default values
          */
-        virtual void setDomainWithDefault(const TCellID& i, const std::vector<int>& def) = 0;
+        virtual void setDomainWithDefault(const TCellID& i, const std::vector<TInt>& def) = 0;
         /*------------------------------------------------------------------------*/
         /** \brief Clear all the domain
          */
@@ -164,7 +164,7 @@ namespace gmds{
 /** \brief Set the domain entry to [0,i] with some default values
  */
         void
-        setDomainWithDefault(const TCellID& i, const std::vector<int>& def)
+        setDomainWithDefault(const TCellID& i, const std::vector<TInt>& def)
         {
             m_data.resize(i);
             if (def.size() > (unsigned int)i)
