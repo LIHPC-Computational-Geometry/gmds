@@ -29,7 +29,6 @@
 #include <sstream>
 #include <unordered_map>
 #include <vector>
-#include <cmath>
 typedef std::chrono::high_resolution_clock Clock;
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
@@ -1209,12 +1208,12 @@ SingularityGraphBuilder2D::createLineFrom(VertexSingularityPoint *AFrom, const d
 		throw GMDSException("unable to create the required number of slot," + std::to_string(baseSlots.size()) + " instead of " + std::to_string(ANbLines));
 	}
 	if (ANbLines == 3) {     // building 3 slots might have been a mistake if the cross field is grid like: (at least two slots with close directions)
-		bool recompute = baseSlots[0].direction.angle(baseSlots[1].direction) < M_PI_4     //
-		                 || baseSlots[1].direction.angle(baseSlots[2].direction) < M_PI_4;
+		bool recompute = baseSlots[0].direction.angle(baseSlots[1].direction) < math::Constants::PIDIV4     //
+		                 || baseSlots[1].direction.angle(baseSlots[2].direction) < math::Constants::PIDIV4  ;
 		if (recompute) return createLineFrom(AFrom, AAngle * 4 / 3, 2);     // create 2 slots instead
 	}
 	else if (ANbLines == 2) {     // building 2 slots might also have been a mistake (close slots directions)
-		bool recompute = baseSlots[0].direction.angle(baseSlots[1].direction) < M_PI_4;
+		bool recompute = baseSlots[0].direction.angle(baseSlots[1].direction) < math::Constants::PIDIV4  ;
 		if (recompute) return createLineFrom(AFrom, AAngle * 3 / 2, 1);     // create 1 slot instead. Might actually be 0 slot here.
 	}
 	for (const auto baseSlot : baseSlots)
@@ -3113,9 +3112,9 @@ LineRelaxator::MoveIfNewLocationIsWorthTheAnglePenalty(SingularityPoint *singPoi
 	const auto newAngles = computeAngleAtSingularity(singPoint);
 	const auto &oldAngles = m_angleAtSingularity[singPoint->getNumber()];
 	for (int i = 0; i < newAngles.size(); ++i) {
-		const double newGap = fabs(M_PI_2 - newAngles[i]);
+		const double newGap = fabs(math::Constants::PIDIV2   - newAngles[i]);
 		if (newGap > 0.349065) {     // 20°
-			const double oldGap = fabs(M_PI_2 - oldAngles[i]) + 1e-8;
+			const double oldGap = fabs(math::Constants::PIDIV2 - oldAngles[i]) + 1e-8;
 			if (newGap > oldGap) {
 				// the move is cancel
 				singPoint->setLocation(oldLocation);

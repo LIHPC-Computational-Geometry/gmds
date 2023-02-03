@@ -17,7 +17,7 @@ IWriter::IWriter(IMeshIOService* AMeshIOService,
 IWriter::~IWriter()
 {
 
-        delete m_stream;
+	delete m_stream;
 }
 /*----------------------------------------------------------------------------*/
 void IWriter::setCellOptions(const gmds::MeshModel &AModel) {

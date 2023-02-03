@@ -8,6 +8,7 @@
 /*----------------------------------------------------------------------------*/
 // GMDS header files
 #include <gmds/utils/CommonTypes.h>
+#include <fstream>
 #include "GMDSIo_export.h"
 /*----------------------------------------------------------------------------*/
 #include "IMeshIOService.h"
