@@ -16,7 +16,7 @@
 /*----------------------------------------------------------------------------*/
 namespace gmds{
     /*------------------------------------------------------------------------*/
-    typedef int TInt;
+    typedef unsigned long TInt;
     /*------------------------------------------------------------------------*/
     /** \type type used to define cell ids locally to a part */
     /*------------------------------------------------------------------------*/
@@ -69,7 +69,7 @@ namespace gmds{
     /*----------------------------------------------------------------------------*/
     class GMDSUtils_API MeshModel{
     public:
-        MeshModel(const int meshDef):m_meshDef(meshDef){;}
+        MeshModel(const int meshDef):m_meshDef(meshDef){}
         
         int getDef() const {return m_meshDef;}
         int getDim() const {
@@ -471,7 +471,7 @@ namespace gmds{
 
         }
         
-        ~VirtualEdge(){;}
+        ~VirtualEdge(){}
         
         std::vector<TCellID> node_ids() const {
             std::vector<TCellID> node_ids;
@@ -551,7 +551,7 @@ namespace gmds{
          */
         struct FaceID{
 
-            FaceID(){;}
+            FaceID(){}
             FaceID(const std::vector<TCellID>& AIDs){tab_ = AIDs;}
 
             void set(const std::vector<TCellID>& AIDs){tab_ = AIDs;}
@@ -589,7 +589,7 @@ namespace gmds{
             orient_=true;
         }
 
-        ~VirtualFace(){;}
+        ~VirtualFace(){}
 
         FaceID getID() const {return id_;}
 

@@ -44,7 +44,7 @@ namespace gmds {
      */
     class PropertyFieldOnMesh: public Property {
     protected:
-        PropertyFieldOnMesh(Mesh* AMesh) : Property(), m_mesh(AMesh){;}
+        PropertyFieldOnMesh(Mesh* AMesh) : Property(), m_mesh(AMesh){}
 
     public:
 
@@ -68,7 +68,7 @@ namespace gmds {
     class PropertyFieldOnNode: public PropertyFieldOnMesh {
         friend class PropertyFieldBuilder;
     private:
-        PropertyFieldOnNode(Mesh* AMesh) : PropertyFieldOnMesh(AMesh){;}
+        PropertyFieldOnNode(Mesh* AMesh) : PropertyFieldOnMesh(AMesh){}
 
     public:
         bool isValidOnMesh(const AbstractData* AData) const {

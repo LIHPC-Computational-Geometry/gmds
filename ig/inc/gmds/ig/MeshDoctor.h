@@ -26,7 +26,7 @@ namespace gmds{
         /** \brief Constructor
          * \param AModel a mesh model defining available cells and  connectivities
          */
-        MeshDoctor(Mesh* AMesh);
+        explicit MeshDoctor(Mesh* AMesh);
 
         /*------------------------------------------------------------------------*/
         /** \brief Destructor
@@ -96,14 +96,14 @@ namespace gmds{
         void  buildFAndR2F() const;
 
 
-        TCoord isLeft(Node& AN1, Node& AN2, Node& AN3);
+        static TCoord isLeft(Node& AN1, Node& AN2, Node& AN3);
         /*------------------------------------------------------------------------*/
         /** \brief Utilitary method to add a face if it exists
          *
          * \returns the id of the new or old face
          */
-        TCellID  addFace(Face& AFace,
-                         std::map<VirtualFace::FaceID, TCellID>& AFakeFaceMap) const;
+        static TCellID  addFace(Face& AFace,
+                         std::map<VirtualFace::FaceID, TCellID>& AFakeFaceMap) ;
 
         /*------------------------------------------------------------------------*/
         /** \brief Utilitary method to add a face if it does not exist

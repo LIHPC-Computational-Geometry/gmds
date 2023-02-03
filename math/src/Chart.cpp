@@ -98,7 +98,6 @@ namespace gmds {
         /*-----------------------------------------------------------------*/
         Matrix<3,3,double> Chart::computeRotationTo(const Chart& AC) const
         {
-            Matrix<3,3,double> m;
             Quaternion q_from(*this);
             Quaternion q_to(AC);
             Quaternion closest_q_to = q_to.closestImg(q_from);
@@ -178,7 +177,7 @@ namespace gmds {
             math::Chart::Mapping m12(AC2,AC3);
             math::Chart::Mapping m20(AC3,AC1);
 
-            return ((m20*m12*m01).isIdentity()==false);
+            return !(m20 * m12 * m01).isIdentity();
 
 
         }
@@ -196,14 +195,14 @@ namespace gmds {
              * maximal dot product (in abs value). It means then that those
              * vector are the most aligned ones.
              */
-            unsigned int iMax = 0, jMax = 0;
+	         int iMax = 0, jMax = 0;
             // the dotMax value store the maximal dot product
             double dotMax = 0.0;
             double dotProducts[3][3];
             
             
-            for (unsigned int i = 0; i < 3; i++){
-                for (unsigned int j = 0; j < 3; j++){
+            for (auto i = 0; i < 3; i++){
+                for (auto j = 0; j < 3; j++){
                     double dot_ij = c1_vec[i].dot(c2_vec[j]);
                     if (dot_ij < 0.0){
                         dot_ij = -dot_ij;
@@ -275,7 +274,7 @@ namespace gmds {
         Chart::Mapping Chart::Mapping::inverse() const {
             Mapping inv;
             for (int i = 0; i<3; i++){
-                inv.m_map[m_map[i]] = i;
+                inv.m_map[m_map[i]] = static_cast<int64_t >(i);
                 inv.m_dir[m_map[i]] = m_dir[i];
             }
             return inv;

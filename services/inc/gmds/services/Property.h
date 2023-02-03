@@ -27,7 +27,7 @@ namespace gmds{
          */
         virtual bool isValid(const AbstractData* AData) const =0;
 
-        virtual ~Property(){;}
+        virtual ~Property(){}
     protected:
          /** @brief Default constructor
           */

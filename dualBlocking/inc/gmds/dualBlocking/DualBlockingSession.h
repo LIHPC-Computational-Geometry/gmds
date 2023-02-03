@@ -71,7 +71,7 @@ namespace db {
         int createBlock();
 
         void smoothBlocks();
-        void resetBlockSmoothing(){;};
+        void resetBlockSmoothing(){};
         void interpolation(int Ait);
 
         void interpolationV2(int Ait);

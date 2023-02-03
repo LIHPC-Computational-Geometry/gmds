@@ -185,9 +185,9 @@ void DiffusionEquation2D::quadraturePointsAndWeightsSummitpointFormula(std::vect
 	weights.push_back(1./3.);
 	weights.push_back(1./3.);
 
-	points.push_back({0,0});
-	points.push_back({1,0});
-	points.push_back({0,1});
+	points.push_back(math::Point(0.,0.));
+	points.push_back(math::Point(1.,0.));
+	points.push_back(math::Point(0.,1.));
 }
 /*------------------------------------------------------------------------*/
 

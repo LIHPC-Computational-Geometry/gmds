@@ -42,7 +42,7 @@ namespace gmds{
           int dim;
           TCellID id;
           
-          Data(const int ADim=-1, const TCellID AID=0):dim(ADim),id(AID){;}
+          explicit Data(const int ADim=-1, const TCellID AID=0):dim(ADim),id(AID){}
       };
       
     /*------------------------------------------------------------------------*/
@@ -200,7 +200,7 @@ namespace gmds{
     /*------------------------------------------------------------------------*/
     /** \brief  Destructor.
      */
-    virtual ~Cell(){ ; }
+    virtual ~Cell()=default;
     /*------------------------------------------------------------------------*/
     /** \brief  Serializes the cell data into stream AStr
      *
@@ -325,8 +325,8 @@ namespace gmds{
   template<class T> bool Cell::has(TCellID AElt) {
     std::vector<TCellID> cellsIDs;
     getIDs<T>(cellsIDs);
-    for(unsigned int iCell=0; iCell<cellsIDs.size(); iCell++) {
-      if(cellsIDs[iCell] == AElt) {
+    for(unsigned int cellsID : cellsIDs) {
+      if(cellsID == AElt) {
         return true;
       }
     }
@@ -340,8 +340,8 @@ namespace gmds{
   template<class T> void Cell::removeAll() {
     std::vector<TCellID> cellsIDs;
     getIDs<T>(cellsIDs);
-    for(unsigned int iCell=0; iCell<cellsIDs.size(); iCell++) {
-      remove<T>(cellsIDs[iCell]);
+    for(unsigned int & cellsID : cellsIDs) {
+      remove<T>(cellsID);
     }
   }
   /*----------------------------------------------------------------------------*/

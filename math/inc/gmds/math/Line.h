@@ -36,7 +36,7 @@ class Triangle;
              * \param AP1 first point of the line
              * \param AP2 second point of the line
              */
-            Line(const Point& AP1, const Point& AP2):m_p1(AP1),m_p2(AP2) {;}
+            Line(const Point& AP1, const Point& AP2):m_p1(AP1),m_p2(AP2) {}
            
 	    /*------------------------------------------------------------------------*/
             /** \brief  constructor.
@@ -44,19 +44,19 @@ class Triangle;
              * \param AP a point on the line
              * \param AVec direction vector of the line
              */
-            Line(const Point& AP, const Vector3d& AVec):m_p1(AP),m_p2(AP+AVec) {;}
+            Line(const Point& AP, const Vector3d& AVec):m_p1(AP),m_p2(AP+AVec) {}
  
             /*------------------------------------------------------------------------*/
             /** \brief Copy constructor.
              *
              * \param AL another line
              */
-            Line(const Line& AL):m_p1(AL.m_p1),m_p2(AL.m_p2) {;}
+            Line(const Line& AL):m_p1(AL.m_p1),m_p2(AL.m_p2) {}
             
             /*------------------------------------------------------------------------*/
             /** \brief  Overloaded operator=
              */
-            virtual Line& operator= (const Line&);
+            Line& operator= (const Line&);
             
             /*------------------------------------------------------------------------*/
             /** \brief  Getter for the first point

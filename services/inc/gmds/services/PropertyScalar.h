@@ -55,7 +55,7 @@ namespace gmds {
     class PropertyScalarPositive : public Property {
         friend class PropertyScalarBuilder;
     private:
-        PropertyScalarPositive() : Property(){;}
+        PropertyScalarPositive() : Property(){}
     public:
         bool isValid(const AbstractData* AData) const {
             const  DataScalar<T>* scalar = dynamic_cast<const DataScalar<T>*>(AData);
@@ -73,7 +73,7 @@ namespace gmds {
     class PropertyScalarNegative: public Property {
         friend class PropertyScalarBuilder;
     private:
-        PropertyScalarNegative() : Property(){;}
+        PropertyScalarNegative() : Property(){}
     public:
         bool isValid(const AbstractData* AData) const {
             const DataScalar<T>* scalar = dynamic_cast<const DataScalar<T>*>(AData);
@@ -92,7 +92,7 @@ namespace gmds {
     class PropertyScalarPositiveStrictly : public Property {
         friend class PropertyScalarBuilder;
     private:
-        PropertyScalarPositiveStrictly() : Property(){;}
+        PropertyScalarPositiveStrictly() : Property(){}
     public:
         bool isValid(const AbstractData* AData) const {
             const DataScalar<T>* scalar = dynamic_cast<const DataScalar<T>*>(AData);
@@ -111,7 +111,7 @@ namespace gmds {
     class PropertyScalarNegativeStrictly : public Property {
         friend class PropertyScalarBuilder;
     private:
-        PropertyScalarNegativeStrictly() : Property(){;}
+        PropertyScalarNegativeStrictly() : Property(){}
     public:
         bool isValid(const AbstractData* AData) const {
             const  DataScalar<T>* scalar = dynamic_cast<const DataScalar<T>*>(AData);
@@ -130,7 +130,7 @@ namespace gmds {
     class PropertyScalarInRange : public Property {
         friend class PropertyScalarBuilder;
     private:
-        PropertyScalarInRange() : Property(), m_init(false), m_min(0), m_max(0){;}
+        PropertyScalarInRange() : Property(), m_init(false), m_min(0), m_max(0){}
     public:
         void setRange(const T AMin, const T AMax){
             m_init=true;

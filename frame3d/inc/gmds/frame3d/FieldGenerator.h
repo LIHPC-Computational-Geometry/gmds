@@ -92,11 +92,11 @@ protected:
     
     
     
-    virtual void buildFrameField() {;}
-    virtual void computeDistanceFields() {;}
-    virtual void initQuaternionsBySnapping() {;}
+    virtual void buildFrameField() {}
+    virtual void computeDistanceFields() {}
+    virtual void initQuaternionsBySnapping() {}
     
-    virtual void smoothAll(){;}
+    virtual void smoothAll(){}
     /*------------------------------------------------------------------------*/
     /** \brief Sort nodes to gather boundary nodes first then inner nodes
      */

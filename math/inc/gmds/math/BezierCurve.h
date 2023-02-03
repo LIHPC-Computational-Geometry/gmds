@@ -70,7 +70,7 @@ namespace gmds {
        * 
        * \param APts the set of control points to define the curve
        */
-      BezierCurve(const std::vector<Point>& APts);
+      explicit BezierCurve(const std::vector<Point>& APts);
 
       /*------------------------------------------------------------------------*/
       /** \brief Returns the point located on the parametric curve wit
@@ -89,7 +89,7 @@ namespace gmds {
        *
        * \return The set of point discretizing (*this);
        */
-      std::vector<Point> getDiscretization(const int ANb) const;
+      std::vector<Point> getDiscretization(int ANb) const;
       
     private:
       /** ordered list of control points of the curve */

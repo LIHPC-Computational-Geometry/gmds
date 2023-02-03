@@ -1681,12 +1681,12 @@ void PointGenerator::writeOutput(){
 }
 /*---------------------------------------------------------------------------*/
 PointGenerator::OrientedEdge::OrientedEdge()
-{;}
+{}
 /*---------------------------------------------------------------------------*/
 PointGenerator::OrientedEdge::OrientedEdge(gmds::Edge& AE,
                                            gmds::Node& AF,
                                            gmds::Node& AS):
-edge(AE), first(AF),second(AS){;}
+edge(AE), first(AF),second(AS){}
 /*---------------------------------------------------------------------------*/
 PointGenerator::OrientedEdge::OrientedEdge(gmds::Edge& AE)
 {

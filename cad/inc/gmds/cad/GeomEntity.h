@@ -8,6 +8,8 @@
 #define GMDS_GEOM_GEOMENTITY_H_
 /*----------------------------------------------------------------------------*/
 #include <string>
+#include <utility>
+#include <utility>
 /*----------------------------------------------------------------------------*/
 #include <gmds/math/Point.h>
 #include "GMDSCad_export.h"
@@ -27,13 +29,13 @@ namespace gmds{
 			/*------------------------------------------------------------------------*/
 			/** \brief  Default constructor
              */
-			GeomEntity(const std::string& AName = "Unknown entity"):
-					name_(AName){;}
+			explicit GeomEntity(std::string  AName = "Unknown entity"):
+					name_(std::move(AName)){}
 
 			/*------------------------------------------------------------------------*/
             /** \brief  sets the name of the geometrical entity.
              */
-            void setName(std::string AName) {name_ = AName;}
+            void setName(std::string AName) {name_ = std::move(AName);}
 
 			/*------------------------------------------------------------------------*/
 			/** \brief  provides the name f the geometrical entity.

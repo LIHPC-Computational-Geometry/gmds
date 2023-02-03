@@ -8,7 +8,6 @@
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKReader.h>
 #include <gmds/io/VTKWriter.h>
-#include <gmds/igalgo/BoundaryOperator.h>
 #include <gmds/frame/CrossFieldGeneration2D.h>
 
 /*----------------------------------------------------------------------------*/

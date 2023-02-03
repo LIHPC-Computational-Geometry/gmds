@@ -27,9 +27,9 @@ namespace gmds{
              * @param ANbPoints total number of points including the origin and
              *                  destination point
              */
-            DiscretizationScheme1D(const Point &AOrigin = math::Point(0, 0, 0),
+            explicit DiscretizationScheme1D(const Point &AOrigin = math::Point(0, 0, 0),
                                    const Point &ADest = math::Point(1, 0, 0),
-                                   const TInt ANbPoints = 10);
+                                   TInt ANbPoints = 10);
 
             void setOrigin(const math::Point &AP) { m_origin = AP; }
 
@@ -51,7 +51,7 @@ namespace gmds{
              * @param AIndex the point we want to get the valule
              * @return the point location
              */
-            virtual Point operator()(const int AIndex) const = 0;
+            virtual Point operator()(int AIndex) const = 0;
 
         protected:
             math::Point m_origin;
@@ -74,7 +74,7 @@ namespace gmds{
                */
             DiscretizationScheme1DUniform(const Point &AOrigin,
                                           const Point &ADest,
-                                          const TInt ANbPoints);
+                                          TInt ANbPoints);
 
             /** @brief Access to the @p AIndex th point of the discretization
              *         knowing that m_origin is at index 0 and ADest is the
@@ -85,7 +85,7 @@ namespace gmds{
              * @param AIndex the point we want to get the valule
              * @return
              */
-            virtual Point operator()(const int AIndex) const;
+            Point operator()(int AIndex) const override;
         };
 /*----------------------------------------------------------------------------*/
 /** \class DiscretizationScheme1DGeometric
@@ -104,10 +104,10 @@ namespace gmds{
                *                  destination point
                */
             DiscretizationScheme1DGeometric
-                    (const double AReason,
+                    (double AReason,
                      const Point &AOrigin,
                      const Point &ADest,
-                     const TInt ANbPoints);
+                     TInt ANbPoints);
 
             void setInverse(const bool& AInv);
             /** @brief Access to the @p AIndex th point of the discretization
@@ -119,7 +119,7 @@ namespace gmds{
              * @param AIndex the point we want to get the valule
              * @return
              */
-            virtual Point operator()(const int AIndex) const;
+            Point operator()(const int AIndex) const override;
 
         private:
             TCoord m_reason;

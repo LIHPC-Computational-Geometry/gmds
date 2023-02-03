@@ -35,13 +35,7 @@ namespace gmds{
       return m_dirUnit;
     }
     /*------------------------------------------------------------------------*/
-    Ray& Ray::operator=(const Ray& ARay) {
-      m_pnt = ARay.m_pnt;
-        m_dir = ARay.m_dir;
-        m_isDirUnit = ARay.m_isDirUnit;
-        m_dirUnit = ARay.m_dirUnit;
-        return *this;
-    }
+    Ray& Ray::operator=(const Ray& ARay) = default;
       /*----------------------------------------------------------------------------*/
       bool Ray::intersect2D(const Segment& AS, Point& AP, double& AParam) const {
           

@@ -18,7 +18,7 @@ namespace gmds{
         
         /*--------------------------------------------------------------------*/
         AxisAngleRotation::
-        AxisAngleRotation(const Vector3d& AV, const double AA)
+        AxisAngleRotation(const Vector3d& AV, double AA)
         : m_axis({AA*AV[0],AA*AV[1],AA*AV[2]}){
         }
         
@@ -32,12 +32,12 @@ namespace gmds{
         {
             double angle = m_axis.norm();
             if (angle<1e-5) {
-                return Quaternion(1.0, 0.0, 0.0, 0.0);
+                return {1.0, 0.0, 0.0, 0.0};
             }
             Vector3d n = m_axis;
             n.normalize();
             Vector3d v = sin(angle/2.0)*n;
-            return Quaternion(cos(angle/2.0),v);
+            return {cos(angle/2.0),v};
         }
         
         /*--------------------------------------------------------------------*/
@@ -163,7 +163,9 @@ namespace gmds{
                     return Vector3d({xy - wz, 1.0 - (xx + zz), yz + wx});
                 case 2:
                     return Vector3d({xz + wy, yz - wx, 1.0 - (xx + yy)});
-            }
+	             default:
+	             		throw GMDSException("error");
+	             }
             return Vector3d({0.0, 0.0, 0.0});
         }
         /*--------------------------------------------------------------------*/
@@ -182,7 +184,8 @@ namespace gmds{
         Vector3d operator*(const AxisAngleRotation& AR,
                            const Vector3d &AV) {
             Matrix<4,4, double> M = AR.quaternion().toMatrix();
-            return Vector3d({M(0, 0) * AV[0] + M(0, 1) * AV[1] + M(0, 2) * AV[2], M(1, 0) * AV[0] + M(1, 1) * AV[1] + M(1, 2) * AV[2],
+            return Vector3d({M(0, 0) * AV[0] + M(0, 1) * AV[1] + M(0, 2) * AV[2],
+	                          M(1, 0) * AV[0] + M(1, 1) * AV[1] + M(1, 2) * AV[2],
 	                          M(2, 0) * AV[0] + M(2, 1) * AV[1] + M(2, 2) * AV[2]});
         }
         /*--------------------------------------------------------------------*/

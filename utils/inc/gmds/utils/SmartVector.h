@@ -121,7 +121,7 @@ namespace gmds{
         /** \brief  Destructor. Note the algorithm is linear in the number of holes
          * 			in the container.
          */
-        ~SmartVector(){;}
+        ~SmartVector(){}
 
         /*------------------------------------------------------------------------*/
         /** \brief  Gives the number of elements stored in the container.

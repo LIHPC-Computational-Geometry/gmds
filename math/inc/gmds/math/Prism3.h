@@ -76,7 +76,7 @@ public:
          * \param APoints an array of points
          *
          */
-        Prism3(Point APoints[6]);
+        explicit Prism3(Point APoints[6]);
 
 	/*------------------------------------------------------------------------*/
         /** \brief  constructor
@@ -84,7 +84,7 @@ public:
          * \param APoints a vector of points
          *
          */
-        Prism3(const std::vector<Point>& APoints);
+        explicit Prism3(const std::vector<Point>& APoints);
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  constructor
@@ -118,7 +118,7 @@ public:
          *
          * \return a point
          */
-        const Point getCenter() const;
+        Point getCenter() const;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Compute the signed volume of the prism3. It is computed as 
@@ -147,7 +147,7 @@ public:
          *
          * \return the mean ratio
          */
-        double computeMeanRatio() const;
+        static double computeMeanRatio() ;
 
 	/*------------------------------------------------------------------------*/
         /** \brief  Compute the mean edge length of the prism3.
@@ -161,7 +161,7 @@ public:
  	 *          other.
          * \param AT a triangle
          */
-        bool intersect(const Triangle& AT, const bool AProper = false) const;
+        bool intersect(const Triangle& AT, bool AProper = false) const;
 
         /*------------------------------------------------------------------------*/
         /** \brief  Overloaded operator<< for output
@@ -176,7 +176,7 @@ protected:
          *
          * \return the jacobian matrix
          */
-        math::Matrix<3,3,double> jacobian(const int iVertex) const;
+        math::Matrix<3,3,double> jacobian(int iVertex) const;
 
 
 	Point m_pnts[6];

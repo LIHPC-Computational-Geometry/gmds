@@ -11,7 +11,7 @@ BoundaryOperator2D::BoundaryOperator2D(Mesh* AMesh)
 {}
 /*----------------------------------------------------------------------------*/
 BoundaryOperator2D::~BoundaryOperator2D()
-{}
+= default;
 /*----------------------------------------------------------------------------*/
 bool BoundaryOperator2D::isValid() const
 {
@@ -57,10 +57,10 @@ void BoundaryOperator2D::getBoundaryNodes(std::vector<TCellID>& ANodeIDs)
 }
 /*----------------------------------------------------------------------------*/
 void BoundaryOperator2D::
-markCellOnGeometry(const int AMarkEOnCurve,
-                   const int AMarkNOnCurve,
-                   const int AMarkNOnPnt,
-                   const int AMarkAN)
+markCellOnGeometry(int AMarkEOnCurve,
+                   int AMarkNOnCurve,
+                   int AMarkNOnPnt,
+                   int AMarkAN)
 {
     markCellsOnCurves(AMarkEOnCurve, AMarkNOnCurve);
 
@@ -69,7 +69,7 @@ markCellOnGeometry(const int AMarkEOnCurve,
     markAloneNodes(AMarkAN);
 }
 /*----------------------------------------------------------------------------*/
-void BoundaryOperator2D::markAloneNodes(const int AMarkAlone)
+void BoundaryOperator2D::markAloneNodes(int AMarkAlone)
 {
     int cpt = 0;
     for (auto n_id:m_mesh->nodes())
@@ -84,8 +84,8 @@ void BoundaryOperator2D::markAloneNodes(const int AMarkAlone)
 }
 /*----------------------------------------------------------------------------*/
 void BoundaryOperator2D::
-markCellsOnCurves(const int AMarkCE, //mark for edges on curves //OUT
-                  const int AMarkCN) //mark for nodes on curves //OUT
+markCellsOnCurves(int AMarkCE, //mark for edges on curves //OUT
+                  int AMarkCN) //mark for nodes on curves //OUT
 {
     if(m_mesh->getModel().has(E)) {
         for (auto e_id: m_mesh->edges()) {
@@ -111,9 +111,9 @@ markCellsOnCurves(const int AMarkCE, //mark for edges on curves //OUT
     }
 }
 /*----------------------------------------------------------------------------*/
-void BoundaryOperator2D::markNodesOnPoint(const int AMarkCE,// edge on curve IN
-                                        const int AMarkCN,// node on curve IN
-                                        const int AMarkPN)// node on vertex OUT
+void BoundaryOperator2D::markNodesOnPoint(int AMarkCE,// edge on curve IN
+                                        int AMarkCN,// node on curve IN
+                                        int AMarkPN)// node on vertex OUT
 {
     for (auto n_id:m_mesh->nodes()) {
         if (m_mesh->isMarked<Node>(n_id, AMarkCN)){
@@ -156,10 +156,10 @@ void BoundaryOperator2D::markNodesOnPoint(const int AMarkCE,// edge on curve IN
 }
 /*----------------------------------------------------------------------------*/
 void BoundaryOperator2D::
-colorEdges(const int AMarkEOnCurv, const int AMarkNOnPnt, Variable<int>* AColor)
+colorEdges(int AMarkEOnCurv, int AMarkNOnPnt, Variable<int>* AColor)
 {
     Variable<int>* var_color = AColor;
-    if(var_color==NULL) {
+    if(var_color==nullptr) {
         try {
             var_color = m_mesh->newVariable<int, GMDS_EDGE>("BND_CURVE_COLOR");
         } catch (GMDSException &e) {
@@ -167,7 +167,7 @@ colorEdges(const int AMarkEOnCurv, const int AMarkNOnPnt, Variable<int>* AColor)
         }
     }
     int color = 0; //Default value is 0
-    int markDone = m_mesh->newMark<Edge>();
+    TInt markDone = m_mesh->newMark<Edge>();
 
     //as we do not have N2E, we build it temporarily
     std::map<TCellID , std::vector<TCellID> > local_N2E;
@@ -203,7 +203,7 @@ colorEdges(const int AMarkEOnCurv, const int AMarkNOnPnt, Variable<int>* AColor)
                 //We get the ajacent edges that are on a curve but not yet done
                 std::vector<Node> current_nodes = current.get<Node>();
 
-                for (auto ni: current_nodes) {
+                for (const auto& ni: current_nodes) {
 
                     if (!m_mesh->isMarked(ni, AMarkNOnPnt)){
                         //If it is not a node classified on a point, we can found
@@ -229,10 +229,10 @@ colorEdges(const int AMarkEOnCurv, const int AMarkNOnPnt, Variable<int>* AColor)
 }
 /*----------------------------------------------------------------------------*/
 void BoundaryOperator2D::
-colorNodes(const int AMarkNOnPnt, Variable<int>* AColor)
+colorNodes(int AMarkNOnPnt, Variable<int>* AColor)
 {
     Variable<int>* v_color=AColor;
-    if(v_color==NULL){
+    if(v_color==nullptr){
         try {
             v_color = m_mesh->newVariable<int, GMDS_NODE>("BND_VERTEX_COLOR");
         } catch (GMDSException &e) {

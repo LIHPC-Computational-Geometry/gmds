@@ -21,9 +21,9 @@ void MediatorControl::initialize() {
     if(m_instance==NULL)
         m_instance=new MediatorControl();
 }/*----------------------------------------------------------------------------*/
-MediatorControl::MediatorControl():m_policy(new MediatorExplorerPolicy()) {;}
+MediatorControl::MediatorControl():m_policy(new MediatorExplorerPolicy()) {}
 /*----------------------------------------------------------------------------*/
-MediatorControl::~MediatorControl() {;}
+MediatorControl::~MediatorControl() {}
 /*----------------------------------------------------------------------------*/
 void MediatorControl::setPolicy(medusa::MediatorPolicyItf *APolicy) {
     if(APolicy==NULL)

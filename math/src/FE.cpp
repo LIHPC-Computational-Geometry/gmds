@@ -1,5 +1,4 @@
 // GMDS header files
-#include <gmds/math/Constants.h>
 #include <gmds/math/Segment.h>
 #include <gmds/math/FE.h>
 /*----------------------------------------------------------------------------*/

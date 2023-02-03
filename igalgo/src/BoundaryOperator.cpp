@@ -6,18 +6,18 @@
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
-BoundaryOperator::BoundaryOperator(Mesh* AMesh, const double AAngle)
+BoundaryOperator::BoundaryOperator(Mesh* AMesh, double AAngle)
         :m_mesh(AMesh), m_surface_angle_dot(AAngle)
 {}
 /*----------------------------------------------------------------------------*/
 BoundaryOperator::~BoundaryOperator()
-{}
+= default;
 /*----------------------------------------------------------------------------*/
-void BoundaryOperator::setSurfaceAngleDot(const double AD) {
+void BoundaryOperator::setSurfaceAngleDot(double AD) {
     m_surface_angle_dot=AD;
 }
 /*----------------------------------------------------------------------------*/
-double BoundaryOperator::getSurfaceAngleDot() {
+double BoundaryOperator::getSurfaceAngleDot() const {
     return m_surface_angle_dot;
 }
 /*----------------------------------------------------------------------------*/
@@ -69,13 +69,13 @@ void BoundaryOperator::getBoundaryNodes(std::vector<TCellID>& ANodeIDs)
 }
 /*----------------------------------------------------------------------------*/
 void BoundaryOperator::
-markCellOnGeometry(const int AMarkFOnSurf,
-                   const int AMarkEOnSurf,
-                   const int AMarkNOnSurf,
-                   const int AMarkEOnCurve,
-                   const int AMarkNOnCurve,
-                   const int AMarkNOnPnt,
-                   const int AMarkAN)
+markCellOnGeometry(int AMarkFOnSurf,
+                   int AMarkEOnSurf,
+                   int AMarkNOnSurf,
+                   int AMarkEOnCurve,
+                   int AMarkNOnCurve,
+                   int AMarkNOnPnt,
+                   int AMarkAN)
 {
     MeshModel model = m_mesh->getModel();
     if(model.has(R)) {
@@ -109,7 +109,7 @@ markCellOnGeometry(const int AMarkFOnSurf,
 }
 
 /*----------------------------------------------------------------------------*/
-void BoundaryOperator::markAloneNodes(const int AMarkAlone)
+void BoundaryOperator::markAloneNodes(int AMarkAlone)
 {
     int cpt = 0;
     for (auto n_id:m_mesh->nodes())
@@ -124,7 +124,7 @@ void BoundaryOperator::markAloneNodes(const int AMarkAlone)
 }
 /*----------------------------------------------------------------------------*/
 void BoundaryOperator::
-markCellsOnSurfaces(const int AMarkBF, const int AMarkBE, const int AMarkBN)
+markCellsOnSurfaces(int AMarkBF, int AMarkBE, int AMarkBN)
 {
     int cpt1 = 0, cpt2 = 0;
 
@@ -147,10 +147,10 @@ markCellsOnSurfaces(const int AMarkBF, const int AMarkBE, const int AMarkBN)
 }
 /*----------------------------------------------------------------------------*/
 void BoundaryOperator::
-markCellsOnCurves(const int AMarkBF,  //mark for faces on surfaces //IN
-                  const int AMarkBE,  //mark for edges on surfaces //IN
-                  const int AMarkCE,  //mark for edges on curves //OUT
-                  const int AMarkCN)  //mark for nodes on curves //OUT
+markCellsOnCurves(int AMarkBF,  //mark for faces on surfaces //IN
+                  int AMarkBE,  //mark for edges on surfaces //IN
+                  int AMarkCE,  //mark for edges on curves //OUT
+                  int AMarkCN)  //mark for nodes on curves //OUT
 {
 
     int cpt1 = 0, cpt2 = 0;
@@ -175,8 +175,7 @@ markCellsOnCurves(const int AMarkBF,  //mark for faces on surfaces //IN
               else{
                   std::vector<Face> boundary_adj_faces;
 
-                  for (unsigned int i = 0; i < adj_faces.size(); i++) {
-                      Face current_face = adj_faces[i];
+                  for (auto current_face : adj_faces) {
                       if (m_mesh->isMarked(current_face, AMarkBF))
                           boundary_adj_faces.push_back(current_face);
                   }
@@ -239,8 +238,8 @@ markCellsOnCurves(const int AMarkBF,  //mark for faces on surfaces //IN
 }
 /*----------------------------------------------------------------------------*/
 void BoundaryOperator::
-markCellsOnCurves(const int AMarkCE, //mark for edges on curves //OUT
-                  const int AMarkCN) //mark for nodes on curves //OUT
+markCellsOnCurves(int AMarkCE, //mark for edges on curves //OUT
+                  int AMarkCN) //mark for nodes on curves //OUT
 {
     int cpt1 = 0, cpt2 = 0;
     for (auto e_id: m_mesh->edges())  {
@@ -259,9 +258,9 @@ markCellsOnCurves(const int AMarkCE, //mark for edges on curves //OUT
     } //for (; !it.isDone(); it.next())  {
 }
 /*----------------------------------------------------------------------------*/
-void BoundaryOperator::markNodesOnPoint(const int AMarkCE,// edge on curve IN
-                                        const int AMarkCN,// node on curve IN
-                                        const int AMarkPN)// node on vertex OUT
+void BoundaryOperator::markNodesOnPoint(int AMarkCE,// edge on curve IN
+                                        int AMarkCN,// node on curve IN
+                                        int AMarkPN)// node on vertex OUT
 {
     int cpt1=0, cpt2=0;
 
@@ -274,7 +273,7 @@ void BoundaryOperator::markNodesOnPoint(const int AMarkCE,// edge on curve IN
               //We have a node on curve
               std::vector<Edge> adj_edges = n.get<Edge>();
               int cpt_tmp = 0;
-              for (auto ei:adj_edges){
+              for (const auto& ei:adj_edges){
                   if (m_mesh->isMarked(ei, AMarkCE))
                       cpt_tmp++;
               }
@@ -289,10 +288,10 @@ void BoundaryOperator::markNodesOnPoint(const int AMarkCE,// edge on curve IN
                   // boundary edge
                   std::vector<Node> connected_nodes;
 
-                  for (auto ei:adj_edges){
+                  for (const auto& ei:adj_edges){
                       if (m_mesh->isMarked(ei, AMarkCE)){
                           std::vector<Node> edge_nodes = ei.get<Node>();
-                          for (auto nj:edge_nodes){
+                          for (const auto& nj:edge_nodes){
                               if (nj != n)
                                   connected_nodes.push_back(nj);
                           }
@@ -332,11 +331,11 @@ void BoundaryOperator::markNodesOnPoint(const int AMarkCE,// edge on curve IN
 }
 /*----------------------------------------------------------------------------*/
 void BoundaryOperator::
-colorFaces(const int AMarkFOnSurf, const int AMarkEOnCurv,
+colorFaces(int AMarkFOnSurf, int AMarkEOnCurv,
            Variable<int>* AColor)
 {
     Variable<int>* var_color = AColor;
-    if(var_color==NULL) {
+    if(var_color==nullptr) {
         try {
             var_color = m_mesh->newVariable<int, GMDS_FACE>("BND_SURFACE_COLOR");
         }
@@ -346,7 +345,7 @@ colorFaces(const int AMarkFOnSurf, const int AMarkEOnCurv,
     }
 
     int color = 0; //Default value is 0
-    int markDone = m_mesh->newMark<Face>();
+    TInt markDone = m_mesh->newMark<Face>();
     for (auto f_id: m_mesh->faces())
     {
         //on ne considere que les faces au bord
@@ -370,11 +369,11 @@ colorFaces(const int AMarkFOnSurf, const int AMarkEOnCurv,
                 //recuperation des faces voisines non traitees et appartenant a la surface
                 std::vector<Edge> current_edges = current.get<Edge>();
 
-                for (auto ei:current_edges) {
+                for (const auto& ei:current_edges) {
                     if (!m_mesh->isMarked(ei, AMarkEOnCurv))//si ce n'est pas une arete au bord
                     {
                         std::vector<Face> f_edges = ei.get<Face>();
-                        for (auto fj:f_edges){
+                        for (const auto& fj:f_edges){
                             if (m_mesh->isMarked(fj, AMarkFOnSurf) &&
                                 !m_mesh->isMarked(fj, markDone)){
                                 m_mesh->mark(fj, markDone);
@@ -393,11 +392,11 @@ colorFaces(const int AMarkFOnSurf, const int AMarkEOnCurv,
 }
 /*----------------------------------------------------------------------------*/
 void BoundaryOperator::
-colorEdges(const int AMarkEOnCurv, const int AMarkNOnPnt,
+colorEdges(int AMarkEOnCurv, int AMarkNOnPnt,
            Variable<int>* AColor)
 {
     Variable<int>* var_color = AColor;
-    if(var_color==NULL) {
+    if(var_color==nullptr) {
         try {
             var_color = m_mesh->newVariable<int, GMDS_EDGE>("BND_CURVE_COLOR");
         }
@@ -407,7 +406,7 @@ colorEdges(const int AMarkEOnCurv, const int AMarkNOnPnt,
         }
     }
     int color = 0; //Default value is 0
-    int markDone = m_mesh->newMark<Edge>();
+    TInt markDone = m_mesh->newMark<Edge>();
 
     std::vector<Edge> done_edges;
     for (auto e_id:m_mesh->edges())
@@ -432,14 +431,14 @@ colorEdges(const int AMarkEOnCurv, const int AMarkNOnPnt,
                 //We get the ajacent edges that are on a curve but not yet done
                 std::vector<Node> current_nodes = current.get<Node>();
 
-                for (auto ni: current_nodes) {
+                for (const auto& ni: current_nodes) {
 
                     if (!m_mesh->isMarked(ni, AMarkNOnPnt)){
                         //If it is not a node classified on a point, we can found
                         // a next edge on this curve
 
                         std::vector<Edge> n_edges = ni.get<Edge>();
-                        for (auto ej:n_edges){
+                        for (const auto& ej:n_edges){
                             if (m_mesh->isMarked(ej, AMarkEOnCurv) &&
                                 !m_mesh->isMarked(ej, markDone)){
                                 m_mesh->mark(ej, markDone);
@@ -458,10 +457,10 @@ colorEdges(const int AMarkEOnCurv, const int AMarkNOnPnt,
 }
 /*----------------------------------------------------------------------------*/
 void BoundaryOperator::
-colorNodes(const int AMarkNOnPnt, Variable<int>* AColor)
+colorNodes(int AMarkNOnPnt, Variable<int>* AColor)
 {
     Variable<int>* v_color=AColor;
-    if(v_color==NULL)
+    if(v_color==nullptr)
     {
         try {
             v_color = m_mesh->newVariable<int, GMDS_NODE>("BND_VERTEX_COLOR");

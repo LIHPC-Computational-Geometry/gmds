@@ -191,7 +191,7 @@ collapseAndReconnect(const std::map<TCellID , std::vector<TCellID> >& AToCollaps
                     math::Point p1= n1.point();
                     math::Point p2= n2.point();
 
-                    if(geo_dim1==cad::GeomMeshLinker::LINK_CURVE){
+                    if(geo_dim1==cad::GeomMeshLinker::LinkCurve){
                         //On the same curve, same dim
                         int curve_id = m_geom_linker->getGeomId(n1);
                         cad::GeomManager* geo_model = m_geom_linker->geometry();
@@ -200,7 +200,7 @@ collapseAndReconnect(const std::map<TCellID , std::vector<TCellID> >& AToCollaps
                         geo_model->getCurve(curve_id)->project(new_point);
                         n1.setPoint(new_point);
                     }
-                    else if(geo_dim1!=cad::GeomMeshLinker::LINK_SURFACE){
+                    else if(geo_dim1!=cad::GeomMeshLinker::LinkSurface){
                         throw GMDSException("collapseAndReconnect: Unexpected configuration");
                     }
                 }
@@ -252,10 +252,10 @@ checkGeometricClassification(const std::vector<VirtualEdge>& AEdges,
 
         //if classified on same dim geom entity
         if(geom_dim_1==geom_dim_2){
-            if(geom_dim_1==cad::GeomMeshLinker::LINK_POINT){
+            if(geom_dim_1==cad::GeomMeshLinker::LinkPoint){
                 return false;
             }
-            else if(geom_dim_1==cad::GeomMeshLinker::LINK_CURVE){
+            else if(geom_dim_1==cad::GeomMeshLinker::LinkCurve){
                 // Means both extremities are on a curve.
                 // Is it the same, if yes and that we are on the boudary of the
                 // sheet, i.e the edge is adjacent to only one quad sheet, the

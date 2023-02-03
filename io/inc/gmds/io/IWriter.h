@@ -62,7 +62,7 @@ namespace gmds {
              * @param ACellModel type of cells to import
              * @param ADataModel type of cells we want to import the data from
              */
-        IWriter(IMeshIOService *AMeshService,
+        explicit IWriter(IMeshIOService *AMeshService,
                 const MeshModel& ACellModel=MeshModel(DIM3|N),
                 const MeshModel& ADataModel=MeshModel(DIM3|N));
 

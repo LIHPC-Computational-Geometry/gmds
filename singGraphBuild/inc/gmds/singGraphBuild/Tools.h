@@ -43,7 +43,7 @@ public:
         PointVolumetricData(const gmds::math::Point& AP,
                             const gmds::math::Vector3d& AV,
                             const gmds::Region& AR)
-        :pnt(AP),dir(AV),tet(AR){;}
+        :pnt(AP),dir(AV),tet(AR){}
     };
     struct PointSurfacicData{
         gmds::math::Point pnt;    // Point we are located at
@@ -53,7 +53,7 @@ public:
         PointSurfacicData(const gmds::math::Point& AP,
                             const gmds::math::Vector3d& AV,
                             const gmds::Face& AF)
-        :pnt(AP),dir(AV),tri(AF){;}
+        :pnt(AP),dir(AV),tri(AF){}
     };
     /*------------------------------------------------------------------------*/
     /** \brief Constructor.

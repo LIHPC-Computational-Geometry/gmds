@@ -148,11 +148,11 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	/** Vecteur des id des noeuds de bord */
 	std::vector<TCellID> m_bnd_nodes_ids ;
 	/** Marque les noeuds des bords */
-	int m_markBoundaryNodes;
+	TInt m_markBoundaryNodes;
 	/** Marque sur les noeuds de la paroi */
-	int m_markNodesParoi;
+	TInt m_markNodesParoi;
 	/** Marque sur les noeuds de la frontière amont */
-	int m_markNodesAmont;
+	TInt m_markNodesAmont;
 
 };
 /*----------------------------------------------------------------------------*/

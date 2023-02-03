@@ -13,8 +13,8 @@
 #include <iostream>
 #include <cmath>
 /*----------------------------------------------------------------------------*/
-#define a 1.0/sqrt(2.0)
-#define b 1.0/2.0
+#define a (1.0/sqrt(2.0))
+#define b (1.0/2.0)
 /*----------------------------------------------------------------------------*/
 namespace gmds {
     /*------------------------------------------------------------------------*/
@@ -139,7 +139,7 @@ namespace gmds {
             }
             
             double r = sqrt(1 + Quu - Qvv - Qww);
-            if (!(r > (-0.1))){ //Never done
+            if (r <= (-0.1)){ //Never done
                 r = 0.0;
             }
             
@@ -346,13 +346,13 @@ namespace gmds {
             angleX = phi;//angleZ = phi;
             
             
-            if (!(angleZ > -5) && !(angleZ<5)){
+            if (angleZ <= -5 && angleZ >= 5){
                 std::cout << "PROBLEM ANGLE Z" << std::endl;
             }
-            if (!(angleX>-5) && !(angleX<5)){
+            if (angleX <= -5 && angleX >= 5){
                 std::cout << "PROBLEM ANGLE X" << std::endl;
             }
-            if (!(angleY>-5) && !(angleY < 5)){
+            if (angleY <= -5 && angleY >= 5){
                 std::cout << "PROBLEM ANGLE Y" << std::endl;
             }
             
@@ -386,7 +386,7 @@ namespace gmds {
             double q2 = rand() / (double)RAND_MAX;
             double q3 = rand() / (double)RAND_MAX;
             double q4 = rand() / (double)RAND_MAX;
-            return Quaternion(q1, q2, q3, q4);
+            return {q1, q2, q3, q4};
         }
         /*----------------------------------------------------------------------------*/
         Quaternion Quaternion::simpleMean(const vector<Quaternion> & AQuats,
@@ -405,7 +405,7 @@ namespace gmds {
                 j += current_quat.J()*AWeights[ci];
                 k += current_quat.K()*AWeights[ci];
             }
-            return Quaternion(x, i, j, k);
+            return {x, i, j, k};
         }
         /*----------------------------------------------------------------------------*/
         Quaternion Quaternion::mean(const vector<Quaternion> & AQuats,
@@ -439,14 +439,13 @@ namespace gmds {
         Quaternion Quaternion::mean(const Quaternion& AQ1, const TCoord& AC1,
                                     const Quaternion& AQ2, const TCoord& AC2)
         {
-            const Quaternion q1 = AQ1;
-            const Quaternion q2 = AQ2.closestImg(q1);
-            TCoord x = AC1*q1.X()+AC2*q2.X();
-            TCoord i = AC1*q1.I()+AC2*q2.I();
-            TCoord j = AC1*q1.J()+AC2*q2.J();
-            TCoord k = AC1*q1.K()+AC2*q2.K();
+            const Quaternion q2 = AQ2.closestImg(AQ1);
+            TCoord x = AC1*AQ1.X()+AC2*q2.X();
+            TCoord i = AC1*AQ1.I()+AC2*q2.I();
+            TCoord j = AC1*AQ1.J()+AC2*q2.J();
+            TCoord k = AC1*AQ1.K()+AC2*q2.K();
             
-            return Quaternion(x, i, j, k);
+            return {x, i, j, k};
         }
         /*----------------------------------------------------------------------------*/
         int Quaternion::testSingularity(Quaternion& q1, Quaternion& q2,
@@ -466,24 +465,24 @@ namespace gmds {
             math::Chart::Mapping m12(c[1],c[2]);
             math::Chart::Mapping m20(c[2],c[0]);
 
-            if((m20*m12*m01).isIdentity()==false){
+            if(!(m20 * m12 * m01).isIdentity()){
                 sing_type++;
             }
             math::Chart::Mapping m13(c[1],c[3]);
             math::Chart::Mapping m30(c[3],c[0]);
-            if((m30*m13*m01).isIdentity()==false){
+            if(!(m30 * m13 * m01).isIdentity()){
                 sing_type++;
             }
 
             //FACE 023
             math::Chart::Mapping m02(c[0],c[2]);
             math::Chart::Mapping m23(c[2],c[3]);
-            if((m30*m23*m02).isIdentity()==false){
+            if(!(m30 * m23 * m02).isIdentity()){
                 sing_type++;}
 
             //FACE 123
             math::Chart::Mapping m31(c[3],c[1]);
-            if((m31*m23*m12).isIdentity()==false){
+            if(!(m31 * m23 * m12).isIdentity()){
                 sing_type++;};
 
 

@@ -15,19 +15,19 @@ IMeshIOService::EVariableType
 IMeshIOService::getType(const gmds::VariableItf *AVar) {
 
     IMeshIOService::EVariableType t;
-    if (dynamic_cast<const Variable<int>* >(AVar) != 0)
+    if (dynamic_cast<const Variable<int>* >(AVar) != nullptr)
         t = var_int;
-    else  if (dynamic_cast<const Variable<double>* >(AVar) != 0)
+    else  if (dynamic_cast<const Variable<double>* >(AVar) != nullptr)
         t = var_double;
-    else  if (dynamic_cast<const Variable<math::Vector2d>* >(AVar) != 0)
+    else  if (dynamic_cast<const Variable<math::Vector2d>* >(AVar) != nullptr)
         t = var_double_vec;
-    else  if (dynamic_cast<const Variable<math::Vector3d>* >(AVar) != 0)
+    else  if (dynamic_cast<const Variable<math::Vector3d>* >(AVar) != nullptr)
         t = var_double_vec;
-    else  if (dynamic_cast<const Variable<math::Cross>* >(AVar) != 0)
+    else  if (dynamic_cast<const Variable<math::Cross>* >(AVar) != nullptr)
         t = var_cross;
-    else  if (dynamic_cast<const Variable<math::Cross2D>* >(AVar) != 0)
+    else  if (dynamic_cast<const Variable<math::Cross2D>* >(AVar) != nullptr)
         t = var_cross_2D;
-    else  if (dynamic_cast<const Variable<math::Quaternion>* >(AVar) != 0)
+    else  if (dynamic_cast<const Variable<math::Quaternion>* >(AVar) != nullptr)
         t = var_quaternion;
     else
         t = var_unknown;

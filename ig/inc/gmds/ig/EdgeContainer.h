@@ -30,7 +30,7 @@ namespace gmds{
         friend class Mesh;
     public:
 
-        EdgeContainer(Mesh* AMesh);
+        explicit EdgeContainer(Mesh* AMesh);
         virtual ~EdgeContainer();
 
         /*------------------------------------------------------------------------*/
@@ -61,7 +61,7 @@ namespace gmds{
          *  \param ADim the dimension of the cells we want to store the adjacency
          *  			to
          */
-        void addConnectivityContainers(const TInt ADim);
+        void addConnectivityContainers(TInt ADim);
 
         /*------------------------------------------------------------------------*/
         /** \brief remove the containers for accessing to ADim-dimensional cells
@@ -69,7 +69,7 @@ namespace gmds{
          *  \param ADim the dimension of the cells we want to suppress the
          *  			adjacency to
          */
-        void removeConnectivityContainers(const TInt ADim);
+        void removeConnectivityContainers(TInt ADim);
 
         TInt getNbElements() const {return m_edge_ids.size();}
         TCellID getMaxID()   const {return m_edge_ids.top()-1;}
@@ -79,17 +79,15 @@ namespace gmds{
 
 
             using self_type = iterator;
-            using iterator_category = std::forward_iterator_tag;
-            using value_type = TInt;
-            using difference_type = int;
-            using pointer = TInt*;
-            using reference = TInt&;
+            using value_type = TCellID;
+            using pointer = TCellID*;
+            using reference = TCellID&;
 
             iterator(EdgeContainer* AContainer, bool ABegin):m_it(AContainer->m_edge_ids.begin()) {
                 if(!ABegin)
                     m_it=AContainer->m_edge_ids.end();
             }
-            iterator(const iterator& AIt):m_it(AIt.m_it){}
+            iterator(const iterator& AIt) = default;
 
 
             self_type operator++() {
@@ -110,12 +108,12 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief Provide an iterator onto the first element of this container
          */
-        iterator begin() {return iterator(this,true);};
+        iterator begin() {return {this,true};};
 
         /*------------------------------------------------------------------------*/
         /** \brief Provide an iterator onto the last element of this container
          */
-        iterator end() {return iterator(this,false);};
+        iterator end() {return {this,false};};
 
         /*------------------------------------------------------------------------*/
         /** \brief Get the node infos for the edge of id AID
@@ -123,21 +121,21 @@ namespace gmds{
          * \param AID the id of the edge we want to get infos
          * \param ANbNodes the number of nodes of the edge
          */
-        void getNodesData(const TCellID& AID, int& ANbNodes) const;
+        void getNodesData(const TCellID& AID, TInt& ANbNodes) const;
 
         /*------------------------------------------------------------------------*/
         /** \brief Get the edge infos for the edge of id AID
          * \param AID the id of the edge we want to get infos
          * \param ANbEdges the number of adjacent edges
          */
-        void getEdgesData(const TCellID& AID, int& ANbEdges) const;
+        void getEdgesData(const TCellID& AID, TInt& ANbEdges) const;
 
         /*------------------------------------------------------------------------*/
         /** \brief Get the face infos for the edge of id AID
          * \param AID the id of the edge we want to get infos
          * \param ANbFaces the number of adjacent faces
          */
-        void getFacesData(const TCellID& AID, int& ANbFaces) const;
+        void getFacesData(const TCellID& AID, TInt& ANbFaces) const;
 
 
         /*------------------------------------------------------------------------*/
@@ -146,7 +144,7 @@ namespace gmds{
          * \param AID the id of the edge we want to get infos
          * \param ANbRegions the number of regions adjacent to the edge
          */
-        void getRegionsData(const TCellID& AID, int& ANbRegions) const;
+        void getRegionsData(const TCellID& AID, TInt& ANbRegions) const;
 
         inline void remove(TInt index)
         {
@@ -154,7 +152,7 @@ namespace gmds{
             //connectivities container are indexed on m_edge_ids and so not updated
         }
         void clear();
-        void resize(const TInt);
+        void resize(TInt);
 
         /*------------------------------------------------------------------------*/
         /** \brief  This method is necessary when you want to regularize the
@@ -187,7 +185,7 @@ namespace gmds{
         TInt capacity() const {return m_edge_ids.capacity();}
 
     protected:
-        Edge buildEdge(const TInt) const;
+        Edge buildEdge(TInt) const;
         /*------------------------------------------------------------------------*/
         /** \brief Add an edge in the container
          *  \param AN1 first node id

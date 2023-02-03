@@ -43,7 +43,7 @@ public:
     m_nb_unknowns(0),
     m_markNodeLocked(0),
     m_penalty(10)
-    {;}
+    {}
     
     /*------------------------------------------------------------------------*/
     /** \brief Default destructor
