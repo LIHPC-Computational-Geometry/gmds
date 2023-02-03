@@ -3203,7 +3203,7 @@ double
 LineRelaxator::getWorstAngle()
 {
 	double worstDiff90 = 0;
-	double worstAngle = M_PI_2;
+	double worstAngle = math::Constants::PIDIV2;
 	math::Point worstPoint;
 	for (const auto patch : m_graph->getSurfacePatchs()) {
 
@@ -3220,7 +3220,7 @@ LineRelaxator::getWorstAngle()
 		angles.push_back(v4.angle(v3.opp()));
 		int count = 0;
 		for (const auto angle : angles) {
-			double diff90 = std::abs(M_PI_2 - angle);
+			double diff90 = std::abs(math::Constants::PIDIV2 - angle);
 			if (diff90 > worstDiff90) {
 				worstDiff90 = diff90;
 				worstAngle = angle;
