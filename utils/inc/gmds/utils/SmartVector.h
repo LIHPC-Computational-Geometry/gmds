@@ -206,10 +206,10 @@ namespace gmds{
              */
             size_=0;
 
-            TInt i =mark_.size()-1;
+            int i =mark_.size()-1;
             while(i>=0 && mark_[i]==false){
                 i--;
-            }
+		    }
 
             /* in this case, all the items are free */
             if(i==-1){

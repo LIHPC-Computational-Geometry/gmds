@@ -64,7 +64,7 @@ namespace gmds {
          */
         m_size=0;
 
-        TInt i =m_bits.size()-1;
+        int i =m_bits.size()-1;
         while(i>=0 && m_bits[i]==0){
             i--;
         }
