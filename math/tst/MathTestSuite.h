@@ -4,13 +4,14 @@
 /*----------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 /*----------------------------------------------------------------------------*/
+#include "gmds/math/Line.h"
 #include <gmds/math/Hexahedron.h>
-#include <gmds/math/Point.h>
-#include <gmds/math/Plane.h>
-#include <gmds/math/Segment.h>
-#include <gmds/math/Ray.h>
-#include <gmds/math/Triangle.h>
 #include <gmds/math/Numerics.h>
+#include <gmds/math/Plane.h>
+#include <gmds/math/Point.h>
+#include <gmds/math/Ray.h>
+#include <gmds/math/Segment.h>
+#include <gmds/math/Triangle.h>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -365,3 +366,16 @@ TEST(MathTest, dotTest){
     ASSERT_TRUE(a<=0);
 }
 /*----------------------------------------------------------------------------*/
+TEST(MathTest,LineTest) {
+	math::Point a(0, 0, 0);
+	math::Point b(1, 0, 0);
+	math::Point c(1, 1, 0);
+	math::Point d(1, 2, 0);
+
+	math::Line ab(a,b);
+	math::Line cd(c,d);
+
+	math::Point p;
+	double param;
+	EXPECT_TRUE(ab.intersect2D(cd,p,param));
+}

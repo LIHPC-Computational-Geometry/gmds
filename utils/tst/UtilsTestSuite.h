@@ -99,7 +99,7 @@ TEST(UtilsTestSuite, bitVector){
     v.unselect(1);
     ASSERT_EQ(v.size(),3);
     nb_vals=0;
-    for(gmds::TInt & val:v){
+    for(auto & val:v){
         nb_vals++;
     }
     ASSERT_EQ(nb_vals,3);

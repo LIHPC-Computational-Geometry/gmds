@@ -30,7 +30,7 @@ namespace gmds{
              * \brief Constructor
              * \param AX x coordinnate
              */
-            explicit Point(TCoord AX=0.0, TCoord AY=0.0, TCoord AZ=0.0);
+	       Point(TCoord AX=0.0, TCoord AY=0.0, TCoord AZ=0.0);
 
             virtual ~Point();
             

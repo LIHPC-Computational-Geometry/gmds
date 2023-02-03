@@ -22,11 +22,6 @@ namespace gmds{
         {
             return m_p2;
         }
-        /*------------------------------------------------------------------------*/
-        Line& Line::operator=(const Line& AL){
-	        m_p1=AL.m_p1;
-	        m_p2=AL.m_p2;
-        }
         /*----------------------------------------------------------------------------*/
         bool Line::intersect2D(const Line& AL, Point& AP, double& AParam) const {
             

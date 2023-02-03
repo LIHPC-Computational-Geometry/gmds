@@ -52,12 +52,7 @@ class Triangle;
              * \param AL another line
              */
             Line(const Line& AL):m_p1(AL.m_p1),m_p2(AL.m_p2) {}
-            
-            /*------------------------------------------------------------------------*/
-            /** \brief  Overloaded operator=
-             */
-            Line& operator= (const Line&);
-            
+
             /*------------------------------------------------------------------------*/
             /** \brief  Getter for the first point
              *
