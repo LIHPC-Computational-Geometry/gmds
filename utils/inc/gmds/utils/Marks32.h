@@ -26,14 +26,14 @@ public:
     /*------------------------------------------------------------------------*/
     /** \brief  Constructor.
      */
-    Marks32(int32_t AMask = MASK_FALSE):mask_(AMask){;}
+    Marks32(int32_t AMask = MASK_FALSE):mask_(AMask){}
 
     /*------------------------------------------------------------------------*/
     /** \brief  Copy Constructor.
      *
      *  \param AMarks another 32bits marks.
      */
-    Marks32(const Marks32& AMarks):mask_(AMarks.mask_){;}
+    Marks32(const Marks32& AMarks):mask_(AMarks.mask_){}
 
     /*------------------------------------------------------------------------*/
     /** \brief  Operator ==

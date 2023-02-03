@@ -113,25 +113,25 @@ public:
          *          not exist.
          *  \return A point
          */
-        virtual GeomPoint* getPoint(const TInt AID)=0;
+        virtual GeomPoint* getPoint(TInt AID)=0;
         /*------------------------------------------------------------------------*/
         /** \brief  Gives access to the curve of id @AID, Return NullPtr if it does
          *          not exist.
          *  \return A curve
          */
-        virtual GeomCurve* getCurve(const TInt AID)=0;
+        virtual GeomCurve* getCurve(TInt AID)=0;
         /*------------------------------------------------------------------------*/
         /** \brief  Gives access to the surface of id @AID, Return NullPtr if it
          *          does not exist.
          *  \return A surface
          */
-        virtual GeomSurface* getSurface(const TInt AID)=0;
+        virtual GeomSurface* getSurface(TInt AID)=0;
         /*------------------------------------------------------------------------*/
         /** \brief  Gives access to the volume of id @AID, Return NullPtr if it
          *          does not exist.
          *  \return A volume
          */
-        virtual GeomVolume* getVolume(const TInt AID)=0;
+        virtual GeomVolume* getVolume(TInt AID)=0;
 		/*------------------------------------------------------------------------*/
 		/** \brief  Get the curve common to 2 points
          *

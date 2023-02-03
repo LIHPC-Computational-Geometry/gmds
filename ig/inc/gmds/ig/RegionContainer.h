@@ -136,11 +136,9 @@ namespace gmds{
 
 
 			using self_type = iterator;
-			using iterator_category = std::forward_iterator_tag;
-			using value_type = TInt;
-			using difference_type = int;
-			using pointer = TInt*;
-			using reference = TInt&;
+			using value_type = TCellID;
+			using pointer = TCellID*;
+			using reference = TCellID&;
 
 			iterator(RegionContainer* AContainer, bool ABegin):m_it(AContainer->m_region_ids.begin()) {
 				if(!ABegin)
@@ -359,7 +357,7 @@ namespace gmds{
 		struct RegionInfo{
 			ECellType type;    ///region type : tet, hex, prism, pyramid,...
 			TInt	  type_id; ///id of the typed face
-			RegionInfo(ECellType t=GMDS_TETRA, TInt i=1):type(t), type_id(i){;}
+			RegionInfo(ECellType t=GMDS_TETRA, TInt i=1):type(t), type_id(i){}
 		};
 
 		/** Indexed collection of region types*/
@@ -402,7 +400,7 @@ namespace gmds{
 		{
 			SmartVector<TabCellID<N> >* m_adj;
 
-			AdjUpdate(SmartVector<TabCellID<N> >* adj):m_adj(adj){;}
+			AdjUpdate(SmartVector<TabCellID<N> >* adj):m_adj(adj){}
 
 			size_t select(){
 				return m_adj->selectNewIndex();

@@ -120,10 +120,10 @@ namespace gmds{
             }
 
             if(nb_convex>nb_concave && nb_convex>nb_flat)
-                return GeomCurve::CONVEX;
+                return GeomCurve::Convex;
             if(nb_concave>nb_convex && nb_concave>nb_flat)
-                return GeomCurve::CONCAVE;
-            return GeomCurve::FLAT;
+                return GeomCurve::Concave;
+            return GeomCurve::Flat;
         }
 /*----------------------------------------------------------------------------*/
         math::Point FACCurve::closestPoint(const math::Point &AP) const

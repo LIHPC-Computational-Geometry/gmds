@@ -17,36 +17,36 @@ NodeContainer::NodeContainer( Mesh* AMesh)
 	if(m_model.has(N2N))
 		m_N2N = new IndexedVector<TabCellID<size_undef> >();
 	else
-		m_N2N = 0;
+		m_N2N = nullptr;
 	if(m_model.has(N2E))
 		m_N2E = new IndexedVector<TabCellID<size_undef> >();
 	else
-		m_N2E = 0;
+		m_N2E = nullptr;
 	if(m_model.has(N2F))
 		m_N2F = new IndexedVector<TabCellID<size_undef> >();
 	else
-		m_N2F = 0;
+		m_N2F = nullptr;
 	if(m_model.has(N2R))
 		m_N2R = new IndexedVector<TabCellID<size_undef> >();
 	else
-		m_N2R = 0;
+		m_N2R = nullptr;
 }
 /*----------------------------------------------------------------------------*/
 NodeContainer::~NodeContainer()
 {
-	if(m_N2N)
+
 		delete m_N2N;
-	if(m_N2E)
+
 		delete m_N2E;
-	if(m_N2F)
+
 		delete m_N2F;
-	if(m_N2R)
+
 		delete m_N2R;
 
-    m_N2N=NULL;
-    m_N2E=NULL;
-    m_N2F=NULL;
-    m_N2R=NULL;
+    m_N2N=nullptr;
+    m_N2E=nullptr;
+    m_N2F=nullptr;
+    m_N2R=nullptr;
 }
 /*----------------------------------------------------------------------------*/
 Node NodeContainer::add(const TCoord& AX, const TCoord& AY, const TCoord& AZ)
@@ -97,28 +97,28 @@ void NodeContainer::addConnectivityContainers(const TInt ADim)
 	 * X2N->size()
 	 */
 	if(ADim==0){
-		if(m_N2N==0){
+		if(m_N2N==nullptr){
 			m_N2N = new IndexedVector<TabCellID<size_undef> >(
 				m_node_ids.capacity());
 			m_node_ids.update();
 		}
 	}
 	else if (ADim==1){
-		if (m_N2E==0){
+		if (m_N2E==nullptr){
                         m_N2E = new IndexedVector<TabCellID<size_undef> >(
                                 m_node_ids.capacity());
 			m_node_ids.update();
 		}
 	}
 	else if (ADim==2){
-		if (m_N2F==0){
+		if (m_N2F==nullptr){
                         m_N2F = new IndexedVector<TabCellID<size_undef> >(
                                 m_node_ids.capacity());
 			m_node_ids.update();
 		}
 	}
 	else if (ADim==3){
-		if(m_N2R==0){
+		if(m_N2R==nullptr){
                         m_N2R = new IndexedVector<TabCellID<size_undef> >(
                                 m_node_ids.capacity());
 			m_node_ids.update();
@@ -129,35 +129,35 @@ void NodeContainer::addConnectivityContainers(const TInt ADim)
 void NodeContainer::removeConnectivityContainers(const TInt ADim)
 {
 	if(ADim==0){
-		if(m_N2N!=0){
+		if(m_N2N!=nullptr){
 			delete m_N2N;
-			m_N2N=0;
+			m_N2N=nullptr;
 		}
 	}
 	else if (ADim==1){
-		if(m_N2E!=0){
+		if(m_N2E!=nullptr){
 			delete m_N2E;
-			m_N2E=0;
+			m_N2E=nullptr;
 		}
 	}
 	else if (ADim==2){
-		if(m_N2F!=0){
+		if(m_N2F!=nullptr){
 			delete m_N2F;
-			m_N2F=0;
+			m_N2F=nullptr;
 		}
 	}
 	else if (ADim==3)
 	{
-		if(m_N2R!=0){
+		if(m_N2R!=nullptr){
 			delete m_N2R;
-			m_N2R=0;
+			m_N2R=nullptr;
 		}
 	}
 }
 /*----------------------------------------------------------------------------*/
 void NodeContainer::getNodesData(const TCellID& AID, int& ANbNodes) const
 {
-	if(m_N2N==0)
+	if(m_N2N==nullptr)
 		ANbNodes = 0;
 	else
 		ANbNodes = (*m_N2N)[AID].size();
@@ -165,7 +165,7 @@ void NodeContainer::getNodesData(const TCellID& AID, int& ANbNodes) const
 /*----------------------------------------------------------------------------*/
 void NodeContainer::getEdgesData(const TCellID& AID, int& ANbEdges) const
 {
-	if(m_N2E==0)
+	if(m_N2E==nullptr)
 		ANbEdges = 0;
 	else
 		ANbEdges = (*m_N2E)[AID].size();
@@ -173,7 +173,7 @@ void NodeContainer::getEdgesData(const TCellID& AID, int& ANbEdges) const
 /*----------------------------------------------------------------------------*/
 void NodeContainer::getFacesData(const TCellID& AID, int& ANbFaces) const
 {
-	if(m_N2F==0)
+	if(m_N2F==nullptr)
 		ANbFaces = 0;
 	else
 		ANbFaces = (*m_N2F)[AID].size();
@@ -181,7 +181,7 @@ void NodeContainer::getFacesData(const TCellID& AID, int& ANbFaces) const
 /*----------------------------------------------------------------------------*/
 void NodeContainer::getRegionsData(const TCellID& AID, int& ANbRegions) const
 {
-	if(m_N2R==0)
+	if(m_N2R==nullptr)
 		ANbRegions = 0;
 	else
 		ANbRegions = (*m_N2R)[AID].size();

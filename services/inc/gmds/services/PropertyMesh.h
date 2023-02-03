@@ -41,7 +41,7 @@ namespace gmds {
     class PropertyMeshEmpty : public Property{
         friend class PropertyMeshBuilder;
     private:
-        PropertyMeshEmpty(){;}
+        PropertyMeshEmpty(){}
     public:
         bool isValid(const AbstractData* AData) const;
     };
@@ -49,7 +49,7 @@ namespace gmds {
     class PropertyMeshFullHex: public Property{
         friend class PropertyMeshBuilder;
     private:
-        PropertyMeshFullHex(){;}
+        PropertyMeshFullHex(){}
     public:
         bool isValid(const AbstractData* AData) const;
     };
@@ -57,7 +57,7 @@ namespace gmds {
     class PropertyMeshFullQuad: public Property{
         friend class PropertyMeshBuilder;
     private:
-        PropertyMeshFullQuad(){;}
+        PropertyMeshFullQuad(){}
     public:
         bool isValid(const AbstractData* AData) const;
     };
@@ -65,7 +65,7 @@ namespace gmds {
     class PropertyMeshFullTet: public Property{
         friend class PropertyMeshBuilder;
     private:
-        PropertyMeshFullTet(){;}
+        PropertyMeshFullTet(){}
     public:
         bool isValid(const AbstractData* AData) const;
     };
@@ -73,7 +73,7 @@ namespace gmds {
     class PropertyMeshFullTri: public Property{
         friend class PropertyMeshBuilder;
     private:
-        PropertyMeshFullTri(){;}
+        PropertyMeshFullTri(){}
     public:
         bool isValid(const AbstractData* AData) const;
     };

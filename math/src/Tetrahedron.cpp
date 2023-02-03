@@ -61,7 +61,7 @@ Tetrahedron::Tetrahedron(const Tetrahedron& ATet)
 	m_pnts[3] = ATet.m_pnts[3];
 }
 /*----------------------------------------------------------------------------*/
-Tetrahedron::~Tetrahedron(){;}
+Tetrahedron::~Tetrahedron(){}
 /*----------------------------------------------------------------------------*/
 const Point& Tetrahedron::getPoint(const TInt& AIndex) const
 {

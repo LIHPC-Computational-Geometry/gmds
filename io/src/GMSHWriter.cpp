@@ -1,14 +1,12 @@
 
-#include "GMDSIo_export.h"
 #include <fstream>
 #include <gmds/io/GMSHWriter.h>
-#include <gmds/io/VTKWriter.h>
 #include <gmds/utils/CommonTypes.h>
 
 namespace gmds {
 namespace {
 
-const size_t
+size_t
 getElementTypeToGmshTypeMap(ECellType type)
 {
 	switch (type) {
@@ -47,7 +45,7 @@ GMSHWriter::writeNodes()
 	*m_stream << nodesInfo.size() << "\n";
 	
 	(*m_stream).precision(15);
-	for (auto info : nodesInfo) {
+	for (const auto& info : nodesInfo) {
 		const math::Point p = info.point;
 		*m_stream << info.id << " " << p.X() << " " << p.Y() << " " << p.Z() << "\n";
 	}
@@ -64,7 +62,7 @@ GMSHWriter::writeFaces()
 
 	*m_stream << "$Elements\n";
 	*m_stream << facesInfo.size() << "\n";
-	for (auto info : facesInfo) {
+	for (const auto& info : facesInfo) {
 
 		*m_stream << info.id << " ";
 		*m_stream << getElementTypeToGmshTypeMap(info.type) << " ";

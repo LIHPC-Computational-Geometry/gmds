@@ -15,24 +15,23 @@ BoundaryExtractor3D(gmds::Mesh *AFromMesh, gmds::Mesh *AToMesh)
     m_with_color = false;
     m_with_mapping = false;
 
-    m_color_node_on_pnt = NULL;
-    m_color_node_on_curv = NULL;
-    m_color_node_on_surf = NULL;
-    m_color_edge_on_curv = NULL;
-    m_color_face_on_surf = NULL;
+    m_color_node_on_pnt = nullptr;
+    m_color_node_on_curv = nullptr;
+    m_color_node_on_surf = nullptr;
+    m_color_edge_on_curv = nullptr;
+    m_color_face_on_surf = nullptr;
 
-    m_node_map = NULL;
-    m_edge_map = NULL;
-    m_face_map = NULL;
+    m_node_map = nullptr;
+    m_edge_map = nullptr;
+    m_face_map = nullptr;
 
-    m_node_map_inv = NULL;
-    m_edge_map_inv = NULL;
-    m_face_map_inv = NULL;
+    m_node_map_inv = nullptr;
+    m_edge_map_inv = nullptr;
+    m_face_map_inv = nullptr;
 }
 
 /*----------------------------------------------------------------------------*/
-BoundaryExtractor3D::~BoundaryExtractor3D() {
-}
+BoundaryExtractor3D::~BoundaryExtractor3D() = default;
 
 /*----------------------------------------------------------------------------*/
 bool BoundaryExtractor3D::isValid() const {
@@ -114,19 +113,19 @@ void BoundaryExtractor3D::setMappings(std::map<TCellID, TCellID> *ANodeMap,
 }
 
 /*----------------------------------------------------------------------------*/
-void BoundaryExtractor3D::execute(const double AAngle) {
-    int mark_node_on_surf = m_from_mesh->newMark<Node>();
-    int mark_node_on_curv = m_from_mesh->newMark<Node>();
-    int mark_node_on_pnt = m_from_mesh->newMark<Node>();
-    int mark_node_isolated = m_from_mesh->newMark<Node>();
+void BoundaryExtractor3D::execute(double AAngle) {
+    TInt mark_node_on_surf = m_from_mesh->newMark<Node>();
+    TInt mark_node_on_curv = m_from_mesh->newMark<Node>();
+    TInt mark_node_on_pnt = m_from_mesh->newMark<Node>();
+    TInt mark_node_isolated = m_from_mesh->newMark<Node>();
 
-    int mark_node_frame = m_from_mesh->newMark<Node>();
-    int mark_node_hard = m_from_mesh->newMark<Node>();
+    TInt mark_node_frame = m_from_mesh->newMark<Node>();
+    TInt mark_node_hard = m_from_mesh->newMark<Node>();
 
-    int mark_edge_on_surf = m_from_mesh->newMark<Edge>();
-    int mark_edge_on_curv = m_from_mesh->newMark<Edge>();
+    TInt mark_edge_on_surf = m_from_mesh->newMark<Edge>();
+    TInt mark_edge_on_curv = m_from_mesh->newMark<Edge>();
 
-    int mark_face_on_surf = m_from_mesh->newMark<Face>();
+    TInt mark_face_on_surf = m_from_mesh->newMark<Face>();
 
     BoundaryOperator boundaryOp(m_from_mesh, AAngle);
 

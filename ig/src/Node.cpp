@@ -14,9 +14,9 @@ namespace gmds{
 /*----------------------------------------------------------------------------*/
 Node::
 Node()
-: Cell(0,GMDS_NODE,NullID)
+: Cell(nullptr,GMDS_NODE,NullID)
 {
-	m_nodes_container = 0;
+	m_nodes_container = nullptr;
 }
 /*----------------------------------------------------------------------------*/
 Node::
@@ -24,12 +24,12 @@ Node(Mesh* AMesh,  const TCellID& AID,
 		const TCoord& AX, const TCoord& AY, const TCoord& AZ)
 : Cell(AMesh,GMDS_NODE,AID)
 {
-	if(AMesh!=0){
+	if(AMesh!=nullptr){
 		m_nodes_container  = AMesh->m_nodes_container;
 		m_nodes_container->m_node_coords[m_id].setXYZ(AX,AY,AZ);
 	}
 	else
-		m_nodes_container=0;
+		m_nodes_container=nullptr;
 }
 /*----------------------------------------------------------------------------*/
 Node::
@@ -37,32 +37,32 @@ Node(Mesh* AMesh, const TCellID& AID,
 		const math::Point& APt)
 : Cell(AMesh,GMDS_NODE,AID)
 {
-	if(AMesh!=0){
+	if(AMesh!=nullptr){
 		m_nodes_container  = AMesh->m_nodes_container;
 		m_nodes_container->m_node_coords[m_id]=APt;
 	}
 	else
-		m_nodes_container=0;
+		m_nodes_container=nullptr;
 }
 /*----------------------------------------------------------------------------*/
 Node::
 Node(const Node& ANode)
 : Cell(ANode.m_owner,GMDS_NODE,ANode.m_id)
 {
-	if(m_owner!=0)
+	if(m_owner!=nullptr)
 		m_nodes_container  = m_owner->m_nodes_container;
 	else
-		m_nodes_container = 0;
+		m_nodes_container = nullptr;
 }
 /*----------------------------------------------------------------------------*/
 void Node::operator=(const Node& ANode)
 {
 	m_owner = ANode.m_owner;
 	m_id = ANode.m_id;
-	if(m_owner!=0)
+	if(m_owner!=nullptr)
 		m_nodes_container  = m_owner->m_nodes_container;
 	else
-		m_nodes_container = 0;
+		m_nodes_container = nullptr;
 }
 /*----------------------------------------------------------------------------*/
 bool Node::operator==(const Node& ANode) const
@@ -76,7 +76,7 @@ bool Node::operator!=(const Node& ANode) const
 }
 /*----------------------------------------------------------------------------*/
 Node::~Node()
-{}
+= default;
 /*----------------------------------------------------------------------------*/
 TInt Node::nbNodes() const
 {

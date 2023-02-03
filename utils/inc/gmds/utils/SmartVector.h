@@ -121,7 +121,7 @@ namespace gmds{
         /** \brief  Destructor. Note the algorithm is linear in the number of holes
          * 			in the container.
          */
-        ~SmartVector(){;}
+        ~SmartVector(){}
 
         /*------------------------------------------------------------------------*/
         /** \brief  Gives the number of elements stored in the container.
@@ -206,10 +206,10 @@ namespace gmds{
              */
             size_=0;
 
-            TInt i =mark_.size()-1;
+            int i =mark_.size()-1;
             while(i>=0 && mark_[i]==false){
                 i--;
-            }
+		    }
 
             /* in this case, all the items are free */
             if(i==-1){
@@ -403,7 +403,7 @@ namespace gmds{
         }
 
 
-        void mark(const std::vector<int>& ARef){
+        void mark(const std::vector<TInt>& ARef){
             for(unsigned int i=0; i<ARef.size();i++)
                 mark_[ARef[i]]=true;
             update();

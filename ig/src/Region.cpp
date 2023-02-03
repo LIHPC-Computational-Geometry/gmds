@@ -27,7 +27,7 @@ namespace gmds{
     /*----------------------------------------------------------------------------*/
     Region::
     Region()
-    : Cell(0,GMDS_TETRA,NullID),m_regions_container(0),m_type_id(NullID)
+    : Cell(nullptr,GMDS_TETRA,NullID),m_regions_container(nullptr),m_type_id(NullID)
     {
     }
     /*----------------------------------------------------------------------------*/
@@ -37,12 +37,12 @@ namespace gmds{
     {
         //============================================
         // we keep a reference on the face container
-        if(AMesh!=0){
+        if(AMesh!=nullptr){
             m_regions_container = AMesh->m_regions_container;
             m_type_id = m_regions_container->getTypeID(AID);
         }
         else {
-            m_regions_container = 0;
+            m_regions_container = nullptr;
             m_type_id = NullID;
         }
         
@@ -52,16 +52,16 @@ namespace gmds{
     Region(const Region& AReg)
     : Cell(AReg.m_owner,AReg.m_type,AReg.m_id)
     {
-        if(m_owner!=0)
+        if(m_owner!=nullptr)
             m_regions_container = m_owner->m_regions_container;
         else
-            m_regions_container = 0;
+            m_regions_container = nullptr;
         
         m_type_id = AReg.m_type_id;
     }
     /*----------------------------------------------------------------------------*/
     Region::~Region()
-    {}
+    = default;
     /*----------------------------------------------------------------------------*/
     bool Region::operator==(const Region& ARegion) const
     {
@@ -289,21 +289,21 @@ namespace gmds{
             }
                 break;
             case GMDS_TETRA:
-                for(unsigned int iNode=0; iNode<nodes.size(); iNode++)
+                for(auto & node : nodes)
                 {
-                    points.push_back(nodes[iNode].point());
+                    points.push_back(node.point());
                 }
                 break;
             case GMDS_PYRAMID:
-                for(unsigned int iNode=0; iNode<nodes.size(); iNode++)
+                for(auto & node : nodes)
                 {
-                    points.push_back(nodes[iNode].point());
+                    points.push_back(node.point());
                 }
                 break;
             case GMDS_PRISM3:
-                for(unsigned int iNode=0; iNode<nodes.size(); iNode++)
+                for(auto & node : nodes)
                 {
-                    points.push_back(nodes[iNode].point());
+                    points.push_back(node.point());
                 }
                 break;
             default:
@@ -825,26 +825,26 @@ return 0;
         std::vector<std::vector<TCellID> > orderedNodesFaces = this->getOrderedNodesFacesIDs();
         
         // first find the face
-        for(unsigned int iFace=0; iFace<orderedNodesFaces.size(); iFace++) {
+        for(auto & orderedNodesFace : orderedNodesFaces) {
 
-            if(AIDs.size() == orderedNodesFaces[iFace].size()) {
+            if(AIDs.size() == orderedNodesFace.size()) {
                 
                 unsigned int nbNodesMatched = 0;
                 
-                for(unsigned int iNode1=0; iNode1<orderedNodesFaces[iFace].size(); iNode1++) {
-                    for(unsigned int iNode2=0; iNode2<AIDs.size(); iNode2++) {
-                        if(AIDs[iNode2] == orderedNodesFaces[iFace][iNode1]) {
+                for(unsigned int iNode1=0; iNode1<orderedNodesFace.size(); iNode1++) {
+                    for(unsigned int AID : AIDs) {
+                        if(AID == orderedNodesFace[iNode1]) {
                             nbNodesMatched++;
                         }
                     }
                 }
                 if(nbNodesMatched == AIDs.size()) {
                     // face is found, now check the orientation
-                    if(orderedNodesFaces[iFace].size() < 3) {
+                    if(orderedNodesFace.size() < 3) {
                         throw GMDSException("Region::isFaceOrientedOutward face with less than 3 nodes.");
                     }
-                    TCellID firstNode = orderedNodesFaces[iFace][0];
-                    TCellID secondNode = orderedNodesFaces[iFace][1];
+                    TCellID firstNode = orderedNodesFace[0];
+                    TCellID secondNode = orderedNodesFace[1];
                     
                     for(unsigned int iNode2=0; iNode2<AIDs.size(); iNode2++) {
                         if(AIDs[iNode2] == firstNode) {
@@ -870,14 +870,14 @@ return 0;
 	std::vector<std::vector<Node> > orderedNodesFaces = this->getOrderedNodesFaces();
 	std::vector<VirtualFace> fakeFaces;
 
-	for(size_t iFace=0; iFace<orderedNodesFaces.size(); iFace++) {
+	for(auto & orderedNodesFace : orderedNodesFaces) {
 
-		std::vector<gmds::TCellID> ids(orderedNodesFaces[iFace].size());
+		std::vector<gmds::TCellID> ids(orderedNodesFace.size());
 		for(size_t iNode=0; iNode<ids.size(); iNode++) {
-			ids[iNode] = orderedNodesFaces[iFace][iNode].id();
+			ids[iNode] = orderedNodesFace[iNode].id();
 		}
 
-		fakeFaces.push_back(VirtualFace(ids));
+		fakeFaces.emplace_back(ids);
 	}
 
         return fakeFaces;
@@ -979,7 +979,7 @@ return 0;
         std::vector<bool> isNodeFree(nodes.size(),false);
         std::vector<gmds::math::Vector3d> displacement(nodes.size(), gmds::math::Vector3d({0.,0.,0.}));
         std::vector<VirtualFace> ffs = this->getFakeFaces();
-        for(auto ff: ffs) {
+        for(const auto& ff: ffs) {
             if(freeFaces.find(ff) != freeFaces.end()) {
                 std::vector<TCellID> faceNodeIDs = ff.node_ids();
                 std::vector<gmds::math::Point> facePoints;
@@ -1649,7 +1649,7 @@ return 0;
                     Face f = m_owner->get<Face>(c_id);
                     std::cout<<"Face: "<<c_id<<std::endl;
                     std::vector<Node> fn =f.get<Node>();
-                    for(auto ni:fn){
+                    for(const auto& ni:fn){
                         std::cout << "\t Node " << ni.id() << ": " << ni.point() << "\n";
                     }
                 }

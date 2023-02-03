@@ -14,7 +14,7 @@ public:
     /*--------------------------------------------------------------------*/
     /** \brief Execution of the algorithm
      */
-    virtual void execute(){;}
+    virtual void execute(){}
 };
 /*----------------------------------------------------------------------------*/
 #endif //GMDS_IDLESERVICE_H

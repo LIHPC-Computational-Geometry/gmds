@@ -62,7 +62,7 @@ public:
          * \param APoints an array of points
          *
          */
-        Pyramid(Point APoints[5]);
+        explicit Pyramid(Point APoints[5]);
 
 	/*------------------------------------------------------------------------*/
         /** \brief  constructor
@@ -70,7 +70,7 @@ public:
          * \param APoints a vector of points
          *
          */
-        Pyramid(const std::vector<Point>& APoints);
+        explicit Pyramid(const std::vector<Point>& APoints);
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  constructor
@@ -104,7 +104,7 @@ public:
          *
          * \return a point
          */
-        const Point getCenter() const;
+        Point getCenter() const;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Compute the signed volume of the pyramid. It is computed as 
@@ -135,7 +135,7 @@ public:
          *
          * \return the mean ratio
          */
-        double computeMeanRatio() const;
+        static double computeMeanRatio() ;
 
 	/*------------------------------------------------------------------------*/
         /** \brief  Compute the mean edge length of the pyranid.
@@ -149,7 +149,7 @@ public:
  	 *          other.
          * \param AT a triangle
          */
-        bool intersect(const Triangle& AT, const bool AProper = false) const;
+        bool intersect(const Triangle& AT, bool AProper = false) const;
 
         /*------------------------------------------------------------------------*/
         /** \brief  Overloaded operator<< for output

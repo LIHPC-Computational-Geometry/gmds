@@ -15,7 +15,7 @@ MeditReader(gmds::IMeshIOService *AMeshService, const bool AUseMeditLabels)
 {}
 /*----------------------------------------------------------------------------*/
 MeditReader::~MeditReader()
-{}
+= default;
 /*----------------------------------------------------------------------------*/
 void MeditReader::setOptionWithLabel(const bool AWithLabels)
 {

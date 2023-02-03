@@ -121,7 +121,7 @@ bool AdvectedPointRK4_3D::SameSide(Node n1, Node n2, Node n3, Node n4, math::Poi
 	double dotN4 = Normal.dot(V3);
 	double dotM = Normal.dot(V4);
 
-	return (signbit(dotN4) == signbit(dotM) );
+	return (std::signbit(dotN4) == std::signbit(dotM) );
 
 }
 /*------------------------------------------------------------------------*/

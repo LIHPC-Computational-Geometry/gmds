@@ -18,11 +18,7 @@ bool StreamComputation::RK4(const Point AP[3], const Vector3d AV[3],
                             int &AOutCellId)
 {
 
-    if(AInCellId<0 && AInCellId>2){
-        std::string mess = "StreamComputation::RK4) Wrong local input "+std::to_string(AInCellId);
-        throw GMDSException(mess);
-    }
-    if(AInCellDim==0){
+     if(0==AInCellDim){
         return RK4FromNode(AP,AV,  APIn,AVIn,AInCellId,
                     APOut,AVOut,AOutCellDim,AOutCellId);
     }

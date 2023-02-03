@@ -19,11 +19,11 @@ namespace gmds {
     /*------------------------------------------------------------------------*/
     BitVector::~BitVector() {}
     /*------------------------------------------------------------------------*/
-    TInt BitVector::size() const  {return m_size;}
+    BitVector::size_type BitVector::size() const  {return m_size;}
     /*------------------------------------------------------------------------*/
-    TInt BitVector::top() const {return m_top;}
+    BitVector::size_type BitVector::top() const {return m_top;}
     /*------------------------------------------------------------------------*/
-    TInt BitVector::capacity() const {return m_bits.size();}
+    BitVector::size_type BitVector::capacity() const {return m_bits.size();}
     /*------------------------------------------------------------------------*/
     bool BitVector::empty() const { return (m_size==0); }
     /*------------------------------------------------------------------------*/
@@ -39,7 +39,7 @@ namespace gmds {
         m_capacity=GChunkSize;
     }
     /*------------------------------------------------------------------------*/
-    void BitVector::resize(const TInt& ASize) {
+    void BitVector::resize(const BitVector::size_type & ASize) {
         m_bits.resize(ASize, false);
         m_capacity = ASize;
         update();
@@ -64,7 +64,7 @@ namespace gmds {
          */
         m_size=0;
 
-        TInt i =m_bits.size()-1;
+        int i =m_bits.size()-1;
         while(i>=0 && m_bits[i]==0){
             i--;
         }
@@ -97,7 +97,7 @@ namespace gmds {
         //return val;
     }
     /*----------------------------------------------------------------------------*/
-    TInt BitVector::selectNewBit()
+    BitVector::size_type BitVector::selectNewBit()
     {
         TInt index = getFreeIndex();
         assign(index);

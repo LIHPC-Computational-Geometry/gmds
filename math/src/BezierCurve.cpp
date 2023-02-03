@@ -57,7 +57,7 @@ namespace gmds{
             while(current_control.size()>1){
 
                 std::vector<Point> next_control;
-                const int deg = current_control.size();
+                auto deg = current_control.size();
 
                 next_control.resize(deg-1);
                 for(int i=0; i<deg-1; i++){
@@ -70,7 +70,7 @@ namespace gmds{
             return current_control[0];
         }
         /*------------------------------------------------------------------------*/
-        std::vector<Point> BezierCurve:: getDiscretization(const int ANb) const {
+        std::vector<Point> BezierCurve:: getDiscretization(int ANb) const {
             if(ANb<1)
                 throw GMDSException("BezierCurve discretization impossible with this parameter");
 

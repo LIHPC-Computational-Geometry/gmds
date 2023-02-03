@@ -46,7 +46,7 @@ typedef enum {
          *  \param ALevel  the level of this output
          */
         LogStream(std::basic_ostream<char> *AStream, const LogLevel& ALevel =LOG_INFO)
-        :m_stream(AStream),m_level(ALevel){;}
+        :m_stream(AStream),m_level(ALevel){}
         
         /*------------------------------------------------------------------------*/
         /** \brief Copy constructor.
@@ -59,7 +59,7 @@ typedef enum {
         }
         
         
-        ~LogStream(){;}
+        ~LogStream(){}
         
         /*------------------------------------------------------------------------*/
         /** \brief Overloading of =

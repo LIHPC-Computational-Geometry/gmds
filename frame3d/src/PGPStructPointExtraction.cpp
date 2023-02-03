@@ -395,12 +395,12 @@ void PGPStructPointExtraction::alignTij(math::Vector3d& AToBeAligned,
 }
 /*---------------------------------------------------------------------------*/
 PGPStructPointExtraction::OrientedEdge::OrientedEdge()
-{;}
+{}
 /*---------------------------------------------------------------------------*/
 PGPStructPointExtraction::OrientedEdge::OrientedEdge(gmds::Edge& AE,
                                            gmds::Node& AF,
                                            gmds::Node& AS):
-edge(AE), first(AF),second(AS){;}
+edge(AE), first(AF),second(AS){}
 /*---------------------------------------------------------------------------*/
 PGPStructPointExtraction::OrientedEdge::OrientedEdge(gmds::Edge& AE)
 {

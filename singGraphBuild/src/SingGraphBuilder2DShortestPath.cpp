@@ -767,7 +767,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 		const auto targetOwnDirection = m_targets[contTarget]->direction.opp();
 		const double srcAngle = linkVector.angle(sourceDirection);
 		const double tgtAngle = linkVector.angle(targetOwnDirection);
-		if (srcAngle < M_PI_4 && tgtAngle < M_PI_4) m_distances[contSource][contTarget] = srcAngle + tgtAngle;
+		if (srcAngle < math::Constants::PIDIV4 && tgtAngle < math::Constants::PIDIV4) m_distances[contSource][contTarget] = srcAngle + tgtAngle;
 	}
 
 	// check if the slot face is actually a good candidate
@@ -918,7 +918,7 @@ SingGraphBuilder2DShortestPath::getShortestPathBtwFacesOptimized(const vector<TC
 				const double absDirectionnalAngle = fabs(directionnalAngle);
 
 				DijkstraCellParam neighbourCellCost = previousCostParam;
-				if (absDirectionnalAngle > M_PI_4 || m_singOrGeomFaces[v_id]) {
+				if (absDirectionnalAngle > math::Constants::PIDIV4 || m_singOrGeomFaces[v_id]) {
 					continue;
 				}
 				else if (absDirectionnalAngle > maxAngleWithoutPenalty) {

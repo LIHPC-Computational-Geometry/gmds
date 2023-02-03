@@ -13,7 +13,7 @@ namespace gmds{
 /*----------------------------------------------------------------------------*/
 EdgeContainer::EdgeContainer( Mesh* AMesh)
 :m_mesh(AMesh),m_model(AMesh->getModel()),
- m_E2N(0),m_E2E(0),m_E2F(0),m_E2R(0)
+ m_E2N(nullptr),m_E2E(nullptr),m_E2F(nullptr),m_E2R(nullptr)
 {
 	if(m_model.has(E2N))
 	{
@@ -32,38 +32,38 @@ EdgeContainer::EdgeContainer( Mesh* AMesh)
 /*----------------------------------------------------------------------------*/
 EdgeContainer::~EdgeContainer()
 {
-	if(m_E2N)
+
 		delete m_E2N;
-	if(m_E2E)
+
 		delete m_E2E;
-	if(m_E2F)
+
 		delete m_E2F;
-	if(m_E2R)
+
 		delete m_E2R;
 }
 /*----------------------------------------------------------------------------*/
 void EdgeContainer::addConnectivityContainers(const TInt ADim)
 {
 	if(ADim==0){
-		if(m_E2N==0){
+		if(m_E2N==nullptr){
 			m_E2N = new IndexedVector<TabCellID<2> >(m_edge_ids.capacity());
 			m_edge_ids.update();
 		}
 	}
 	else if (ADim==1){
-		if (m_E2E==0){
+		if (m_E2E==nullptr){
 			m_E2E = new IndexedVector<TabCellID<size_undef> >(m_edge_ids.capacity());
 			m_edge_ids.update();
 		}
 	}
 	else if (ADim==2){
-		if (m_E2F==0){
+		if (m_E2F==nullptr){
 			m_E2F = new IndexedVector<TabCellID<size_undef> >(m_edge_ids.capacity());
 			m_edge_ids.update();
 		}
 	}
 	else if (ADim==3){
-		if(m_E2R==0){
+		if(m_E2R==nullptr){
 			m_E2R = new IndexedVector<TabCellID<size_undef> >(m_edge_ids.capacity());
 			m_edge_ids.update();
 		}
@@ -73,59 +73,59 @@ void EdgeContainer::addConnectivityContainers(const TInt ADim)
 void EdgeContainer::removeConnectivityContainers(const TInt ADim)
 {
 	if(ADim==0){
-		if(m_E2N!=0){
+		if(m_E2N!=nullptr){
 			delete m_E2N;
-			m_E2N=0;
+			m_E2N=nullptr;
 		}
 	}
 	else if (ADim==1){
-		if(m_E2E!=0){
+		if(m_E2E!=nullptr){
 			delete m_E2E;
-			m_E2E=0;
+			m_E2E=nullptr;
 		}
 	}
 	else if (ADim==2){
-		if(m_E2F!=0){
+		if(m_E2F!=nullptr){
 			delete m_E2F;
-			m_E2F=0;
+			m_E2F=nullptr;
 		}
 	}
 	else if (ADim==3)
 	{
-		if(m_E2R!=0){
+		if(m_E2R!=nullptr){
 			delete m_E2R;
-			m_E2R=0;
+			m_E2R=nullptr;
 		}
 	}
 }
 /*----------------------------------------------------------------------------*/
-void EdgeContainer::getNodesData(const TCellID& AID, int& ANbNodes) const
+void EdgeContainer::getNodesData(const TCellID& AID, TInt& ANbNodes) const
 {
-	if(m_E2N==0)
+	if(m_E2N==nullptr)
 		ANbNodes = 0;
 	else
 		ANbNodes = 2;
 }
 /*----------------------------------------------------------------------------*/
-void EdgeContainer::getEdgesData(const TCellID& AID, int& ANbEdges) const
+void EdgeContainer::getEdgesData(const TCellID& AID, TInt& ANbEdges) const
 {
-	if(m_E2E==0)
+	if(m_E2E==nullptr)
 		ANbEdges = 0;
 	else
-		ANbEdges = (*m_E2E)[AID].size();
+		ANbEdges = static_cast<int>((*m_E2E)[AID].size());
 }
 /*----------------------------------------------------------------------------*/
-void EdgeContainer::getFacesData(const TCellID& AID, int& ANbFaces) const
+void EdgeContainer::getFacesData(const TCellID& AID, TInt& ANbFaces) const
 {
-	if(m_E2F==0)
+	if(m_E2F==nullptr)
 		ANbFaces = 0;
 	else
 		ANbFaces = (*m_E2F)[AID].size();
 }
 /*----------------------------------------------------------------------------*/
-void EdgeContainer::getRegionsData(const TCellID& AID, int& ANbRegions) const
+void EdgeContainer::getRegionsData(const TCellID& AID, TInt& ANbRegions) const
 {
-	if(m_E2R==0)
+	if(m_E2R==nullptr)
 		ANbRegions = 0;
 	else
 		ANbRegions = (*m_E2R)[AID].size();

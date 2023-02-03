@@ -9,7 +9,6 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/math/Pyramid.h>
 /*----------------------------------------------------------------------------*/
-#include <gmds/math/Vector.h>
 #include <gmds/math/Tetrahedron.h>
 #include <gmds/math/Triangle.h>
 /*----------------------------------------------------------------------------*/
@@ -66,23 +65,23 @@ Pyramid::Pyramid(const Pyramid& APyr)
 	m_pnts[4] = APyr.m_pnts[4];
 }
 /*----------------------------------------------------------------------------*/
-Pyramid::~Pyramid(){;}
+Pyramid::~Pyramid(){}
 /*----------------------------------------------------------------------------*/
 const Point& Pyramid::getPoint(const TInt& AIndex) const
 {
 	return m_pnts[AIndex];
 }
 /*----------------------------------------------------------------------------*/
-const Point Pyramid::getCenter() const
+Point Pyramid::getCenter() const
 {
 	TCoord coordX = 0.;
 	TCoord coordY = 0.;
 	TCoord coordZ = 0.;
 	
-	for(int iPoint=0; iPoint<5; iPoint++) {
-		coordX += m_pnts[iPoint].X();
-		coordY += m_pnts[iPoint].Y();
-		coordZ += m_pnts[iPoint].Z();
+	for(const auto & m_pnt : m_pnts) {
+		coordX += m_pnt.X();
+		coordY += m_pnt.Y();
+		coordZ += m_pnt.Z();
 	}
 	coordX /= 5.;
 	coordY /= 5.;
@@ -144,7 +143,7 @@ Pyramid::computeNormalizedScaledJacobian() const
 }
 /*----------------------------------------------------------------------------*/
 double
-Pyramid::computeMeanRatio() const
+Pyramid::computeMeanRatio()
 {
 	throw GMDSException("Pyramid::computeMeanRatio not available yet.");
 

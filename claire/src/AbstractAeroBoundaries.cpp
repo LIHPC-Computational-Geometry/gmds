@@ -9,9 +9,7 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------*/
-AbstractAeroBoundaries::AbstractAeroBoundaries(Mesh *AMesh) :
-  m_mesh(AMesh),
-  m_isImmerged(true)
+AbstractAeroBoundaries::AbstractAeroBoundaries(Mesh *AMesh) : m_mesh(AMesh), m_isImmerged(true)
 {
 	m_markNodesParoi = m_mesh->newMark<gmds::Node>();
 	m_markNodesAmont = m_mesh->newMark<gmds::Node>();
@@ -31,9 +29,10 @@ AbstractAeroBoundaries::~AbstractAeroBoundaries()
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
-AbstractAeroBoundaries::STATUS AbstractAeroBoundaries::execute(){
+AbstractAeroBoundaries::STATUS
+AbstractAeroBoundaries::execute()
+{
 
 	MarkBoundariesNodes();
 	ColoriageBordsConnexes();
@@ -44,90 +43,99 @@ AbstractAeroBoundaries::STATUS AbstractAeroBoundaries::execute(){
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
-bool AbstractAeroBoundaries::isBnd(TCellID n_id){
+bool
+AbstractAeroBoundaries::isBnd(TCellID n_id)
+{
 	return m_mesh->isMarked<Node>(n_id, m_markBoundaryNodes);
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
-bool AbstractAeroBoundaries::isAmont(TCellID n_id){
+bool
+AbstractAeroBoundaries::isAmont(TCellID n_id)
+{
 	return m_mesh->isMarked<Node>(n_id, m_markNodesAmont);
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
-bool AbstractAeroBoundaries::isParoi(TCellID n_id){
+bool
+AbstractAeroBoundaries::isParoi(TCellID n_id)
+{
 	return m_mesh->isMarked<Node>(n_id, m_markNodesParoi);
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
-int AbstractAeroBoundaries::getMarkBnd(){
+int
+AbstractAeroBoundaries::getMarkBnd()
+{
 	return m_markBoundaryNodes;
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
-int AbstractAeroBoundaries::getMarkAmont(){
+int
+AbstractAeroBoundaries::getMarkAmont()
+{
 	return m_markNodesAmont;
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
-int AbstractAeroBoundaries::getMarkParoi(){
+int
+AbstractAeroBoundaries::getMarkParoi()
+{
 	return m_markNodesParoi;
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
-bool AbstractAeroBoundaries::isImmerged(){
-	return m_isImmerged ;
+bool
+AbstractAeroBoundaries::isImmerged()
+{
+	return m_isImmerged;
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
-int AbstractAeroBoundaries::getNbrBords(){
+int
+AbstractAeroBoundaries::getNbrBords()
+{
 	return m_nbrBords;
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
-int AbstractAeroBoundaries::getColorAmont(){
+int
+AbstractAeroBoundaries::getColorAmont()
+{
 	return m_color_Amont;
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
-int AbstractAeroBoundaries::getNodeColor(TCellID n_id){
+int
+AbstractAeroBoundaries::getNodeColor(TCellID n_id)
+{
 	return m_var_color_bords->value(n_id);
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
-TCellID AbstractAeroBoundaries::PointArret(int color){
+TCellID
+AbstractAeroBoundaries::PointArret(int color)
+{
 
 	TCellID n_arret_id(NullID);
 	double x_min = std::numeric_limits<double>::max();
 
-	for (auto n_it = m_mesh->nodes_begin(); n_it != m_mesh->nodes_end() ; ++n_it) {
+	for (auto n_it = m_mesh->nodes_begin(); n_it != m_mesh->nodes_end(); ++n_it) {
 		TCellID n_id = *n_it;
 		Node n = m_mesh->get<Node>(n_id);
 		math::Point p = n.point();
-		if ( m_mesh->isMarked<Node>(n_id, m_markNodesParoi ) &&
-		    m_var_color_bords->value(n_id) == color &&
-		    p.X() < x_min ) {
+		if (m_mesh->isMarked<Node>(n_id, m_markNodesParoi) && m_var_color_bords->value(n_id) == color && p.X() < x_min) {
 			n_arret_id = n_id;
 			x_min = p.X();
 		}
@@ -136,18 +144,17 @@ TCellID AbstractAeroBoundaries::PointArret(int color){
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
-void AbstractAeroBoundaries::ColoriageBordsConnexes(){
+void
+AbstractAeroBoundaries::ColoriageBordsConnexes()
+{
 
-	int color = 0; //Default value is 0
+	int color = 0;     // Default value is 0
 	int markTreated = m_mesh->newMark<Node>();
 
-	for (auto n_id:m_mesh->nodes())
-	{
+	for (auto n_id : m_mesh->nodes()) {
 		// Si un noeud est marqué sur le bord et qu'il n'est pas encore traité
-		if (m_mesh->isMarked<Node>(n_id, m_markBoundaryNodes) &&
-		    !m_mesh->isMarked<Node>(n_id, markTreated)){
+		if (m_mesh->isMarked<Node>(n_id, m_markBoundaryNodes) && !m_mesh->isMarked<Node>(n_id, markTreated)) {
 			Node n = m_mesh->get<Node>(n_id);
 
 			// Nouveau bord, nouvelle couleur
@@ -165,18 +172,17 @@ void AbstractAeroBoundaries::ColoriageBordsConnexes(){
 				next.pop_back();
 
 				// On récupère les noeuds adjacents au noeud traité
-				std::vector<Edge> adjacent_edges = current_node.get<Edge>() ;
+				std::vector<Edge> adjacent_edges = current_node.get<Edge>();
 				std::vector<Node> adjacent_nodes;
-				for (auto e:adjacent_edges){
+				for (auto e : adjacent_edges) {
 					TCellID ne_id = e.getOppositeNodeId(current_node);
 					Node ne = m_mesh->get<Node>(ne_id);
 					adjacent_nodes.push_back(ne);
 				}
 
-				for (auto n_adj: adjacent_nodes) {
+				for (auto n_adj : adjacent_nodes) {
 					TCellID n_adj_id = n_adj.id();
-					if(m_mesh->isMarked<Node>(n_adj_id, m_markBoundaryNodes) &&
-					    !m_mesh->isMarked<Node>(n_adj_id, markTreated)){
+					if (m_mesh->isMarked<Node>(n_adj_id, m_markBoundaryNodes) && !m_mesh->isMarked<Node>(n_adj_id, markTreated)) {
 						// Si le noeud est sur le bord et qu'il n'a pas été traité
 						// On met à jour sa couleur et on le marque comme traité
 						m_mesh->mark(n_adj, markTreated);
@@ -186,69 +192,67 @@ void AbstractAeroBoundaries::ColoriageBordsConnexes(){
 						next.push_back(n_adj);
 					}
 				}
-
 			}
-
 		}
 	}
 
 	m_nbrBords = color;
-	m_nbrBordsParoi = color-1;
+	m_nbrBordsParoi = color - 1;
 
-	if(color < 2){
+	if (color < 2) {
 		m_isImmerged = false;
 	}
 
 	m_mesh->unmarkAll<Node>(markTreated);
 	m_mesh->freeMark<Node>(markTreated);
-
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
-void AbstractAeroBoundaries::MarkAmontAndParoiNodes(){
+void
+AbstractAeroBoundaries::MarkAmontAndParoiNodes()
+{
 	// On marque les fronts paroi et extérieur
-	for (auto n_id:m_bnd_nodes_ids){
+	for (auto n_id : m_bnd_nodes_ids) {
 		int couleur = m_var_color_bords->value(n_id);
-		if(couleur == m_color_Amont){
-			m_mesh->mark<Node>(n_id,m_markNodesAmont);
+		if (couleur == m_color_Amont) {
+			m_mesh->mark<Node>(n_id, m_markNodesAmont);
 		}
-		else{
-			m_mesh->mark<Node>(n_id,m_markNodesParoi);
+		else {
+			m_mesh->mark<Node>(n_id, m_markNodesParoi);
 		}
 	}
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
 TCellID
-AbstractAeroBoundaries::ClosestNodeOnBnd(int color, math::Point p){
+AbstractAeroBoundaries::ClosestNodeOnBnd(int color, math::Point p)
+{
 	TCellID closest_node_id;
 	double min(std::numeric_limits<double>::max());
 
-	for (auto n_id:m_mesh->nodes()){
+	for (auto n_id : m_mesh->nodes()) {
 		Node n = m_mesh->get<Node>(n_id);
-		math::Vector3d vec = p-n.point();
-		if ( m_var_color_bords->value(n_id) == color &&  vec.norm() < min ){
+		math::Vector3d vec = p - n.point();
+		if (m_var_color_bords->value(n_id) == color && vec.norm() < min) {
 			min = vec.norm();
 			closest_node_id = n_id;
 		}
 	}
 	return closest_node_id;
-
 }
 /*------------------------------------------------------------------------*/
 
-
 /*------------------------------------------------------------------------*/
 TCellID
-AbstractAeroBoundaries::RandomNodeOnBnd(int color){
-	for (auto n_id:m_mesh->nodes()){
-		if ( m_var_color_bords->value(n_id) == color){
+AbstractAeroBoundaries::RandomNodeOnBnd(int color)
+{
+	for (auto n_id : m_mesh->nodes()) {
+		if (m_var_color_bords->value(n_id) == color) {
 			return n_id;
 		}
 	}
+	return NullID;
 }
 /*------------------------------------------------------------------------*/

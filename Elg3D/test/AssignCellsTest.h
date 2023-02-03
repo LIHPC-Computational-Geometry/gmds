@@ -18,13 +18,9 @@ class AssignCellsTest : public ::testing::Test
 {
  protected:
         AssignCellsTest()
-        {
-                ;
-        }
+        {}
         virtual ~AssignCellsTest()
-        {
-                ;
-        }
+        {}
 
     static void
     SetUpTestCase()

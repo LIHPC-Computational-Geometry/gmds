@@ -17,7 +17,7 @@
 #include "GMDSMath_export.h"
 /*----------------------------------------------------------------------------*/
 #include<cmath>
-#include<string.h>
+#include<cstring>
 /*----------------------------------------------------------------------------*/
 namespace gmds{
     /*------------------------------------------------------------------------*/
@@ -41,21 +41,21 @@ namespace gmds{
              * \param[in] AV the rotation vector
              * \param[in] AA the rotation angle
              */
-            AxisAngleRotation(const Vector3d& AV, const double AA);
+            AxisAngleRotation(const Vector3d& AV, double AA);
             /*---------------------------------------------------------------*/
             /** \brief Constructor.
              *
              * \param[in] AV a vector defining the rotation axis and the angle (via
              *           its norm
              */
-            AxisAngleRotation(const Vector3d& AV);
+            explicit AxisAngleRotation(const Vector3d& AV);
             
             /*---------------------------------------------------------------*/
             /** \brief Constructor from a quaternion
              *
              * \param AQ a unit quaternion corresponding to a rotation
              */
-            AxisAngleRotation(const Quaternion& AQ);
+            explicit AxisAngleRotation(const Quaternion& AQ);
             
             
             
@@ -65,7 +65,7 @@ namespace gmds{
              *
              * \param[in] AC a chart
              */
-            AxisAngleRotation(const Chart& AC);
+            explicit AxisAngleRotation(const Chart& AC);
             
             
             /*---------------------------------------------------------------*/
@@ -98,17 +98,17 @@ namespace gmds{
             /** \brief Build the inverse rotation, that is the an axis-angle
              *         rotation with opposite rotation angle */
             AxisAngleRotation inverse() const
-            { return AxisAngleRotation(m_axis,m_axis.norm()); }
+            { return {m_axis,m_axis.norm()}; }
             
             /*---------------------------------------------------------------*/
             /** \brief Build the identity axis-angle rotation */
-            AxisAngleRotation identity() const
-            { return AxisAngleRotation(Vector3d({1,0,0}),0); }
+            static AxisAngleRotation identity()
+            { return {Vector3d({1.,0.,0.}),0.}; }
             
             /*---------------------------------------------------------------*/
             /** \brief Build a corresponding 3x3 rotation matrix */
             Matrix<3,3,double> toRotationMatrix() const;
-            Vector3d toRotationAxis(const int AIndex) const;
+            Vector3d toRotationAxis(int AIndex) const;
             
             /*---------------------------------------------------------------*/
             /** \brief Build the chart corresponding to applying *this to

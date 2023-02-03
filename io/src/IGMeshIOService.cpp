@@ -6,7 +6,6 @@
 #include <sstream>
 /*----------------------------------------------------------------------------*/
 #include <gmds/io/IGMeshIOService.h>
-#include <gmds/io/IWriter.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/utils/Variable.h>
 /*----------------------------------------------------------------------------*/
@@ -161,7 +160,7 @@ template <typename TCellContainer, ECellType TCellType> struct GetDataPolicy{
 
         ADataID.values.clear();
 
-        for(auto i_node : ACells) {
+        for( auto i_node : ACells) {
             ADataID.values[i_node] = i_node;
         }
 
@@ -170,7 +169,7 @@ template <typename TCellContainer, ECellType TCellType> struct GetDataPolicy{
             switch (IMeshIOService::getType(current_var)){
                 case(IMeshIOService::var_int) :
                 {
-                    Variable<int>* v_int = dynamic_cast<Variable<int>*> (current_var);
+                    auto* v_int = dynamic_cast<Variable<int>*> (current_var);
                     IMeshIOService::DataInt data;
                     data.name = v_int->getName();
                     for(auto i_node : ACells) {
@@ -182,7 +181,7 @@ template <typename TCellContainer, ECellType TCellType> struct GetDataPolicy{
                     break;
                 case(IMeshIOService::var_double) :
                 {
-                    Variable<double>* v_double = dynamic_cast<Variable<double>*> (current_var);
+                    auto* v_double = dynamic_cast<Variable<double>*> (current_var);
                     IMeshIOService::DataReal data;
                     data.name = v_double->getName();
                     for(auto i_node : ACells) {
@@ -193,7 +192,7 @@ template <typename TCellContainer, ECellType TCellType> struct GetDataPolicy{
                     break;
                 case(IMeshIOService::var_double_vec) :
                 {
-                    Variable<math::Vector3d>* v_vec = dynamic_cast<Variable<math::Vector3d>*> (current_var);
+                    auto* v_vec = dynamic_cast<Variable<math::Vector3d>*> (current_var);
                     IMeshIOService::DataVector data;
                     data.name = v_vec->getName();
                     for(auto i_node : ACells) {

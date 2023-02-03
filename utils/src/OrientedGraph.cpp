@@ -24,7 +24,7 @@ namespace gmds{
         return  true;
     }
     /*----------------------------------------------------------------------------*/
-    TCellID GraphNode::id()
+    TCellID GraphNode::id() const
     {
         return m_id;
     }

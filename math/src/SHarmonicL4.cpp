@@ -11,7 +11,6 @@
 /*-----------------------------------------------------------------*/
 // uncomment to disable assert()
 // #define NDEBUG
-#include <cassert>
 /*-----------------------------------------------------------------*/
 namespace gmds {
   /*---------------------------------------------------------------*/
@@ -103,10 +102,10 @@ namespace gmds {
 
         /*---------------------------------------------------------*/
         SHarmonicL4::SHarmonicL4(const SHarmonicL4& AF):Vector9d(AF)
-        {;}
+        {}
         /*---------------------------------------------------------*/
         SHarmonicL4::SHarmonicL4(const Vector9d& AF):Vector9d(AF)
-        {;}
+        {}
         /*---------------------------------------------------------*/
         math::Chart SHarmonicL4::chart()const{
             AxisAngleRotation r;
