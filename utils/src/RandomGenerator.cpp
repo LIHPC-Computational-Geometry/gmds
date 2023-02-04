@@ -37,7 +37,7 @@ RandomGenerator::init()
 	input_file_stream.close();
 
 	//seed = 2;
-	srand(time(NULL) + seed);
+	srand(time(nullptr) + seed);
 }
 /*----------------------------------------------------------------------------*/
 double
