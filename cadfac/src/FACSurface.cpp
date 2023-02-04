@@ -30,7 +30,7 @@ namespace gmds{
         void FACSurface::resetIdCounter() {m_next_id=1;}
 /*----------------------------------------------------------------------------*/
         FACSurface::FACSurface(Mesh* AMesh)
-                : m_support(AMesh), m_kd_tree(NULL)
+                : m_support(AMesh), m_kd_tree(nullptr)
         {}
 /*----------------------------------------------------------------------------*/
 
@@ -39,7 +39,7 @@ namespace gmds{
                    std::vector<TCellID >& ADiscret,
                    const std::string& AName)
                 :GeomSurface(AName),m_support(AMesh),m_id(m_next_id++),
-                m_mesh_faces(ADiscret),m_kd_tree(NULL)
+                m_mesh_faces(ADiscret),m_kd_tree(nullptr)
         {
             buildANNTree();
         }
