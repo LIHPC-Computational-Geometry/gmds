@@ -50,7 +50,7 @@ DualSheetCreator::DualSheetCreator(Mesh *AMesh,
 
     try {
         m_part = m_mesh->getVariable<int,GMDS_REGION>("CUT_tet");
-    }catch (GMDSException e){
+    }catch (GMDSException& e){
         m_part = m_mesh->newVariable<int,GMDS_REGION>("CUT_tet");
         for(auto r : m_mesh->regions()){
             m_part->set(r,1);

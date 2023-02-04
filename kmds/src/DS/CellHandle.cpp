@@ -705,7 +705,7 @@ Region::surfvol() const
                                           n[2].getPoint(),
                                           n[3].getPoint(),
                                           n[4].getPoint()).getVolume();
-
+		          break;
             case KMDS_PRISM3:
                 vol = gmds::math::Prism3(n[0].getPoint(),
                                          n[1].getPoint(),
