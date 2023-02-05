@@ -414,7 +414,7 @@ std::vector<gmds::TCellID> MedusaGrid::getSingularGraph(){
                 sing_graph.push_back(r);
             }
         }
-    }catch (GMDSException e){
+    }catch (GMDSException& e){
         std::cout<<"ERROR: Singularity variable on mesh not defined."<<std::endl;
     }
 
