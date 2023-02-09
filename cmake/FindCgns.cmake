@@ -15,7 +15,7 @@
 message (STATUS "=====================================> CGNS_DIR: ${CGNS_DIR} Cgns_ROOT=${Cgns_ROOT}")
 
 if (CGNS_DIR)
-find_path (CGNS_INCLUDE_DIR NAMES cgnsconfig.h cgnslib.h cgnsBuild.defs PATHS ${CGNS_DIR}/include)
+	find_path (CGNS_INCLUDE_DIR NAMES cgnsconfig.h cgnslib.h cgnsBuild.defs PATHS ${CGNS_DIR}/include)
 elseif (Cgns_ROOT)
 find_path (CGNS_INCLUDE_DIR NAMES cgnsconfig.h cgnslib.h cgnsBuild.defs PATHS ${Cgns_ROOT}/include)
 else()
