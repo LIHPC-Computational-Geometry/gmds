@@ -8,13 +8,12 @@ add_executable(GMDS_BLOCKING_TEST
         main_test.cpp
         )
 
-set(cgns /home/calderans/soft/cgns)
 
 target_link_libraries(GMDS_BLOCKING_TEST PUBLIC
         ${GMDS_LIB}
         CGAL::CGAL_Core
         gtest
-        cgns)
+        cgns::cgns)
 
 if (WITH_CGAL_QT5)
     target_link_libraries(${GMDS_LIB} PUBLIC

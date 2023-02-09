@@ -9,6 +9,13 @@
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
 using namespace blocking;
+
+#define Structured CG_Structured
+#define RealDouble CG_RealDouble
+#define BCTypeUserDefined CG_BCTypeUserDefined
+#define PointRange CG_PointRange
+#define Unstructured CG_Unstructured
+#define TRI_3 CG_TRI_3
 /*----------------------------------------------------------------------------*/
 CGNSWriter::CGNSWriter(Blocking2D *ABlocking)
 			:m_blocks(ABlocking),m_mesh(nullptr)
