@@ -258,8 +258,6 @@ TEST(EllipticSmoothingTestSuite, grid2D_smoother_UC)
 	//==================================================================
 	// PERFORM THE MESH SMOOTHING NOWEllipticSmoothingTestSuite.grid2D_smoother (1)
 	//==================================================================
-
-
 	EllipticSmoother2D smoother2D(&m);
 	smoother2D.lock(mark_bnd_nodes);
 	smoother2D.execute();
