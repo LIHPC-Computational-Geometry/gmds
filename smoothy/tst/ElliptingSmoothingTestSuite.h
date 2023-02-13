@@ -8,6 +8,7 @@
 #include <gmds/smoothy/EllipticSmoother2D.h>
 #include <gmds/igalgo/GridBuilder.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
+#include <gmds/quality/QuadQuality.h>
 #include <unit_test_config.h>
 /*----------------------------------------------------------------------------*/
 #include <random>
@@ -401,4 +402,101 @@ TEST(EllipticSmoothingTestSuite, aero_test2)
 	   w.write("out_aero2.vtk");
 	*/
 }
+/*----------------------------------------------------------------------------*/
+TEST(EllipticSmoothingTestSuite, multimat_test)
+{
+	auto debug_mode=false;
+	Mesh m(MeshModel(DIM3 | F | E | N | F2N | F2E | E2F | E2N | N2E | N2F));
 
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/multimatSmooth2D.vtk";
+	IGMeshIOService ioService(&m);
+
+	VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read(vtk_file);
+
+	MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+	doc.orient2DFaces();
+	for(auto f_id:m.faces()) {
+		Face f=m.get<Face>(f_id);
+		if (f.normal().dot(math::Vector3d({.0, .0, 1.0})) <= 0) {
+			std::vector<TCellID> ns = f.getIDs<Node>();
+			std::vector<TCellID> ns2(ns.size());
+			for (auto i = 0; i < ns.size(); i++)
+				ns2[ns.size() - 1 - i] = ns[i];
+			f.set<Node>(ns2);
+		}
+	}
+
+	//==================================================================
+	// MARK ALL THE BOUNDARY CELL OF THE  MESH
+	//==================================================================
+	// we get all the nodes that are on the mesh boundary (including internal ones)
+	auto nb_locked = 0;
+	auto mark_bnd_nodes = m.newMark<Node>();
+	math::Point origin({0,0,0});
+	Variable<int>* var_bnd = m.newVariable<int,gmds::GMDS_NODE>("bnd");
+	for (auto n_id : m.nodes()) {
+		math::Point p = m.get<Node>(n_id).point();
+
+		if (p.Y()==0 ||p.Y()==2 ||p.X()==2 ||p.X()==-2 ||
+		    fabs(p.distance(origin)-1)<0.01 ||
+		    fabs(p.distance(origin)-1.1)<0.01||
+		    fabs(p.distance(origin)-1.2)<0.01) {
+			nb_locked += 1;
+			m.mark<Node>(n_id, mark_bnd_nodes);
+			var_bnd->set(n_id,1);
+		}
+		else{
+
+			var_bnd->set(n_id,0);
+		}
+	}
+
+
+	VTKWriter w(&ioService);
+	w.setCellOptions(gmds::N|gmds::F);
+	w.setDataOptions(gmds::N|gmds::F);
+	if(debug_mode)
+		w.write("multimatSmooth2D_marked.vtk");
+	//==================================================================
+	// PERFORM THE PERTURBATION
+	//==================================================================
+	constexpr int FLOAT_MIN = -10;
+	constexpr int FLOAT_MAX = 10;
+	std::random_device rd;
+	std::default_random_engine eng(rd());
+	std::uniform_real_distribution<float> distr(FLOAT_MIN, FLOAT_MAX);
+
+	for(auto n_id:m.nodes()){
+		if(!m.isMarked<Node>(n_id,mark_bnd_nodes)) {
+			Node n = m.get<Node>(n_id);
+			n.setXYZ(distr(eng), distr(eng), 0);
+		}
+	}
+	if(debug_mode)
+		w.write("multimatSmooth2D_perturbation.vtk");
+	//==================================================================
+	// PERFORM THE MESH SMOOTHING NOW
+	//==================================================================
+	EllipticSmoother2D smoother2D(&m);
+	smoother2D.lock(mark_bnd_nodes);
+	smoother2D.execute();
+
+	if(debug_mode)
+		w.write("multimatSmooth2D_out.vtk");
+
+	for(auto f_id:m.faces()){
+		Face f = m.get<Face>(f_id);
+		std::vector<Node> f_nodes = f.get<Node>();
+		// We can do it because we know the mesh is full quad
+		quality::QuadQuality qe = quality::QuadQuality::build(f_nodes[0].point(),
+		                                                      f_nodes[1].point(),
+		                                                      f_nodes[2].point(),
+		                                                      f_nodes[3].point());
+		ASSERT_NEAR(qe.scaledJacobian(),1,0.25);
+	}
+}
