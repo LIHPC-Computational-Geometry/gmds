@@ -82,7 +82,7 @@ elseif(WITH_MESHB)
                 ${LIB_GMDS_SOFIANE}
                 PRIVATE
                 ${libMeshb_LIBRARIES})
-els()
+else()
    target_link_libraries(${GMDS_LIB} PUBLIC
            ${LIB_GMDS_IG}
            ${LIB_GMDS_SOFIANE})
