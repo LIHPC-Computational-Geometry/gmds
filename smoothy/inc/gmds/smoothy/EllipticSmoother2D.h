@@ -33,7 +33,7 @@ class GMDSSmoothy_API EllipticSmoother2D {
 	void lockBoundary();
 
 	/** @brief Set the number of max iterations. Default is 1000*/
-	void setMaxIterations(const int AI){m_max_iterations=AI;}
+	void setMaxIterations(const TInt AI){m_max_iterations=AI;}
 
 	/** @brief Set the theta value. Default is 1e-3 */
 	void setTheta(const double AT){m_theta=AT;}
@@ -41,7 +41,7 @@ class GMDSSmoothy_API EllipticSmoother2D {
 	 *  mark is internally duplicated
 	 * @param AMark node mark
 	 * */
-	void lock(const int AMark);
+	void lock(const TInt AMark);
 
 		/** @brief Lock the nodes give in @p AV
 		 * @param AV a vector of node ids

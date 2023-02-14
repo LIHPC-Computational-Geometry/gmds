@@ -23,7 +23,7 @@ void EllipticSmoother2D::initLock()
 }
 /*----------------------------------------------------------------------------*/
 void
-EllipticSmoother2D::lock(const int AMark)
+EllipticSmoother2D::lock(const TInt AMark)
 {
 	initLock();
 	for(auto i:m_mesh->nodes())

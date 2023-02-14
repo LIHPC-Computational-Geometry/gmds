@@ -364,8 +364,7 @@ namespace gmds{
 
             BoundaryExtractor2D boundary_extractor(AFromMesh, &m_mesh);
             if(!boundary_extractor.isValid()){
-                throw GMDSException("FACManager::initAndLinkFrom2DMesh: "
-                                    "Invalid mesh models for the 2D boundary extraction");
+                throw GMDSException("FACManager::initAndLinkFrom2DMesh: Invalid mesh models for the 2D boundary extraction");
             }
             Variable<int>* node_on_pnt = m_mesh.newVariable<int, GMDS_NODE>("on_point"  );
             Variable<int>* node_on_crv = m_mesh.newVariable<int, GMDS_NODE>("on_curve"  );

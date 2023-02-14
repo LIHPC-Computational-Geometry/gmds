@@ -25,7 +25,7 @@ class GMDSException : public std::runtime_error
      *
      *  \param AWhat The exception message
 	 */
-	GMDSException(const std::string &AWhat = "") : std::runtime_error(AWhat) {}
+	explicit GMDSException(const std::string &AWhat = "") : std::runtime_error(AWhat) {}
 
 	/*------------------------------------------------------------------------*/
 	/** \brief Copy constructor.
@@ -42,7 +42,7 @@ class GMDSException : public std::runtime_error
 class GMDSMathException : public GMDSException
 {
  public:
-	GMDSMathException(const std::string &what = "") : GMDSException(what) {}
+	explicit GMDSMathException(const std::string &what = "") : GMDSException(what) {}
 };
 /*----------------------------------------------------------------------------*/
 }
