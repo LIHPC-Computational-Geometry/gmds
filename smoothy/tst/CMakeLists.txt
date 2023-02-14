@@ -4,7 +4,7 @@ add_executable(GMDS_SMOOTHY_TEST
         main_test.cpp)
 
 target_link_libraries(GMDS_SMOOTHY_TEST PUBLIC
-        ${GMDS_LIB}
+        ${GMDS_LIB} ${LIB_GMDS_QUALITY}
         gtest)
 
 target_include_directories(GMDS_SMOOTHY_TEST PRIVATE .)
