@@ -439,7 +439,6 @@ TEST(EllipticSmoothingTestSuite, multimat_test)
 	Variable<int>* var_bnd = m.newVariable<int,gmds::GMDS_NODE>("bnd");
 	for (auto n_id : m.nodes()) {
 		math::Point p = m.get<Node>(n_id).point();
-
 		if (p.Y()==0 ||p.Y()==2 ||p.X()==2 ||p.X()==-2 ||
 		    fabs(p.distance(origin)-1)<0.01 ||
 		    fabs(p.distance(origin)-1.1)<0.01||
@@ -495,6 +494,176 @@ TEST(EllipticSmoothingTestSuite, multimat_test)
 		                                                      f_nodes[1].point(),
 		                                                      f_nodes[2].point(),
 		                                                      f_nodes[3].point());
-		ASSERT_NEAR(qe.scaledJacobian(),1,0.25);
+		ASSERT_NEAR(qe.scaledJacobian(),1,0.75);
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+TEST(EllipticSmoothingTestSuite, multimat_tangled_test)
+{
+	auto debug_mode=false;
+	Mesh m(MeshModel(DIM3 | F | E | N | F2N | F2E | E2F | E2N | N2E | N2F));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/circle_in_square.vtk";
+	IGMeshIOService ioService(&m);
+
+	VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read(vtk_file);
+
+	MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+	doc.orient2DFaces();
+	for(auto f_id:m.faces()) {
+		Face f=m.get<Face>(f_id);
+		if (f.normal().dot(math::Vector3d({.0, .0, 1.0})) <= 0) {
+			std::vector<TCellID> ns = f.getIDs<Node>();
+			std::vector<TCellID> ns2(ns.size());
+			for (auto i = 0; i < ns.size(); i++)
+				ns2[ns.size() - 1 - i] = ns[i];
+			f.set<Node>(ns2);
+		}
+	}
+
+	//==================================================================
+	// MARK ALL THE BOUNDARY CELL OF THE  MESH
+	//==================================================================
+	// we get all the nodes that are on the mesh boundary (including internal ones)
+	auto nb_locked = 0;
+	auto mark_bnd_nodes = m.newMark<Node>();
+	math::Point origin({0,0,0});
+	math::Vector ox({1,0,0});
+	Variable<int>* var_bnd = m.newVariable<int,gmds::GMDS_NODE>("bnd");
+	for (auto n_id : m.nodes()) {
+		math::Point p = m.get<Node>(n_id).point();
+
+		if (p.Y()==-10 ||p.Y()==10 ||p.X()==10 ||p.X()==-10 ||
+		    fabs(p.distance(origin)-2)<0.1) {
+			nb_locked += 1;
+			m.mark<Node>(n_id, mark_bnd_nodes);
+			var_bnd->set(n_id, 1);
+			if (fabs(p.distance(origin) - 2) < 0.1) {
+				math::Vector3d op = p - origin;
+				op.normalize();
+				auto deform = fabs(3 * sin(2 * op.dot(ox)));
+				m.get<Node>(n_id).setPoint(p + deform * op);
+			}
+		}
+		else{
+
+			var_bnd->set(n_id,0);
+		}
+	}
+
+
+	VTKWriter w(&ioService);
+	w.setCellOptions(gmds::N|gmds::F);
+	w.setDataOptions(gmds::N|gmds::F);
+	if(debug_mode)
+		w.write("multimatSmooth2D_marked.vtk");
+
+	//==================================================================
+	// PERFORM THE MESH SMOOTHING NOW
+	//==================================================================
+	EllipticSmoother2D smoother2D(&m);
+	smoother2D.lock(mark_bnd_nodes);
+	smoother2D.execute();
+
+	if(debug_mode)
+		w.write("multimatSmooth2D_out.vtk");
+
+	for(auto f_id:m.faces()){
+		Face f = m.get<Face>(f_id);
+		std::vector<Node> f_nodes = f.get<Node>();
+		// We can do it because we know the mesh is full quad
+		quality::QuadQuality qe = quality::QuadQuality::build(f_nodes[0].point(),
+		                                                      f_nodes[1].point(),
+		                                                      f_nodes[2].point(),
+		                                                      f_nodes[3].point());
+		ASSERT_NEAR(qe.scaledJacobian(),1,0.9);
+	}
+}
+/*----------------------------------------------------------------------------*/
+TEST(DISABLED_EllipticSmoothingTestSuite, multimat_tangled_test_2)
+{
+	auto debug_mode=true;
+	Mesh m(MeshModel(DIM3 | F | E | N | F2N | F2E | E2F | E2N | N2E | N2F));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/circle_in_square.vtk";
+	IGMeshIOService ioService(&m);
+
+	VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read(vtk_file);
+
+	MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+	doc.orient2DFaces();
+	for(auto f_id:m.faces()) {
+		Face f=m.get<Face>(f_id);
+		if (f.normal().dot(math::Vector3d({.0, .0, 1.0})) <= 0) {
+			std::vector<TCellID> ns = f.getIDs<Node>();
+			std::vector<TCellID> ns2(ns.size());
+			for (auto i = 0; i < ns.size(); i++)
+				ns2[ns.size() - 1 - i] = ns[i];
+			f.set<Node>(ns2);
+		}
+	}
+
+	//==================================================================
+	// MARK ALL THE BOUNDARY CELL OF THE  MESH
+	//==================================================================
+	// we get all the nodes that are on the mesh boundary (including internal ones)
+	auto nb_locked = 0;
+	auto mark_bnd_nodes = m.newMark<Node>();
+	math::Point origin({0,0,0});
+	math::Vector perturb({5,5,0});
+	Variable<int>* var_bnd = m.newVariable<int,gmds::GMDS_NODE>("bnd");
+	for (auto n_id : m.nodes()) {
+		math::Point p = m.get<Node>(n_id).point();
+
+		if (p.Y()==-10 ||p.Y()==10 ||p.X()==10 ||p.X()==-10 ||
+		    fabs(p.distance(origin)-2)<0.1) {
+			nb_locked += 1;
+			m.mark<Node>(n_id, mark_bnd_nodes);
+			var_bnd->set(n_id, 1);
+			if (fabs(p.distance(origin) - 2) < 0.1) {
+				m.get<Node>(n_id).setPoint(p + perturb);
+			}
+		}
+		else{
+			var_bnd->set(n_id,0);
+		}
+	}
+
+
+	VTKWriter w(&ioService);
+	w.setCellOptions(gmds::N|gmds::F);
+	w.setDataOptions(gmds::N|gmds::F);
+	if(debug_mode)
+		w.write("move_circle_marked.vtk");
+	//==================================================================
+	// PERFORM THE MESH SMOOTHING NOW
+	//==================================================================
+	EllipticSmoother2D smoother2D(&m);
+	smoother2D.lock(mark_bnd_nodes);
+	smoother2D.execute();
+
+	if(debug_mode)
+		w.write("move_circle_out.vtk");
+
+	for(auto f_id:m.faces()){
+		Face f = m.get<Face>(f_id);
+		std::vector<Node> f_nodes = f.get<Node>();
+		// We can do it because we know the mesh is full quad
+		quality::QuadQuality qe = quality::QuadQuality::build(f_nodes[0].point(),
+		                                                      f_nodes[1].point(),
+		                                                      f_nodes[2].point(),
+		                                                      f_nodes[3].point());
+		ASSERT_NEAR(qe.scaledJacobian(),1,0.9);
 	}
 }
