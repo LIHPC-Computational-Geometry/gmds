@@ -21,7 +21,7 @@ namespace gmds{
     /** \type type used to define cell ids locally to a part */
     /*------------------------------------------------------------------------*/
     typedef unsigned int TCellID;
-    
+
     
     const TCellID NullID = UINT_MAX;
     const TCellID InfinityID = NullID-1;

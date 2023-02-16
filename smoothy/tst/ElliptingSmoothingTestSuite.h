@@ -259,8 +259,6 @@ TEST(EllipticSmoothingTestSuite, grid2D_smoother_UC)
 	//==================================================================
 	// PERFORM THE MESH SMOOTHING NOWEllipticSmoothingTestSuite.grid2D_smoother (1)
 	//==================================================================
-
-
 	EllipticSmoother2D smoother2D(&m);
 	smoother2D.lock(mark_bnd_nodes);
 	smoother2D.execute();
@@ -441,7 +439,6 @@ TEST(EllipticSmoothingTestSuite, multimat_test)
 	Variable<int>* var_bnd = m.newVariable<int,gmds::GMDS_NODE>("bnd");
 	for (auto n_id : m.nodes()) {
 		math::Point p = m.get<Node>(n_id).point();
-
 		if (p.Y()==0 ||p.Y()==2 ||p.X()==2 ||p.X()==-2 ||
 		    fabs(p.distance(origin)-1)<0.01 ||
 		    fabs(p.distance(origin)-1.1)<0.01||
@@ -639,7 +636,6 @@ TEST(DISABLED_EllipticSmoothingTestSuite, multimat_tangled_test_2)
 			}
 		}
 		else{
-
 			var_bnd->set(n_id,0);
 		}
 	}
@@ -650,7 +646,6 @@ TEST(DISABLED_EllipticSmoothingTestSuite, multimat_tangled_test_2)
 	w.setDataOptions(gmds::N|gmds::F);
 	if(debug_mode)
 		w.write("move_circle_marked.vtk");
-
 	//==================================================================
 	// PERFORM THE MESH SMOOTHING NOW
 	//==================================================================
