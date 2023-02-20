@@ -117,15 +117,6 @@ endmacro()
 # OPTIONAL COMPONENTS
 #==============================================================================
 GMDS_ADD_COMPONENT(
-        BLOCKING                       # cmake variable
-        blocking                        # src subdirectory name
-        GMDSBlocking                    # name of the generated library
-        "This module provides a data structure for a blocking representation"  # description
-        ON                                 # is activated
-        ON                                 # must be covered
-)
-
-GMDS_ADD_COMPONENT(
         CLAIRE                       # cmake variable
         claire                        # src subdirectory name
         GMDSClaire                    # name of the generated library
@@ -141,6 +132,15 @@ GMDS_ADD_COMPONENT(
         "Provide the mesh of a block structure classified on a CAD geometry"  # description
         ON                                 # is activated
         ON                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
+        BLOCKING                       # cmake variable
+        blocking                        # src subdirectory name
+        GMDSBlocking                    # name of the generated library
+        "This module provides a data structure for a blocking representation"  # description
+        ON                                 # is activated
+        OFF                                 # must be covered
 )
 
 GMDS_ADD_COMPONENT(

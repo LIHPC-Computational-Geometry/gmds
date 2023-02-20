@@ -64,8 +64,6 @@ std::map<TCellID, TCellID>
 	std::map<TCellID, TCellID> map_optnexpoint;
 	std::vector<TCellID> front_nodes = AFront.getNodes();
 
-	//Variable<int>* node_axis = m_meshQ->getVariable<int, GMDS_NODE>("Axis_nodes");
-
 	for (auto n_id:front_nodes){
 		Node n = m_meshQ->get<Node>(n_id);
 		math::Point M = n.point();
@@ -73,11 +71,8 @@ std::map<TCellID, TCellID>
 		advpoint.execute();
 		//math::Point P = advpoint.getPend();
 		Node n_new = m_meshQ->newNode(advpoint.getPend());
-		/*if(node_axis->value(n_id) == 1){
-			node_axis->set(n_new.id(), 1);
-		}*/
 		map_optnexpoint[n_id] = n_new.id() ;
-	}
+		}
 
 	return map_optnexpoint;
 }
