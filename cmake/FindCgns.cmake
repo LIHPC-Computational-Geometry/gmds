@@ -27,46 +27,46 @@ endif()
 set (CGNS_INCLUDE_DIRS ${CGNS_INCLUDE_DIR})
 
 if (CGNS_DIR)
-find_library (CGNS_LIBRARY cgns PATHS ${CGNS_DIR} PATH_SUFFIXES shlib64;shlib;lib64;lib)
+	find_library (CGNS_LIBRARY cgns PATHS ${CGNS_DIR} PATH_SUFFIXES shlib64;shlib;lib64;lib)
 elseif (Cgns_ROOT)
-find_library (CGNS_LIBRARY cgns PATHS ${Cgns_ROOT} PATH_SUFFIXES shlib64;shlib;lib64;lib)
+	find_library (CGNS_LIBRARY cgns PATHS ${Cgns_ROOT} PATH_SUFFIXES shlib64;shlib;lib64;lib)
 else()
-find_library (CGNS_LIBRARY cgns)
+	find_library (CGNS_LIBRARY cgns)
 endif()
 
 if (CGNS_INCLUDE_DIR AND CGNS_LIBRARY)
-message (STATUS "=====================================> CGNS FOUND : CGNS_INCLUDE_DIR=${CGNS_INCLUDE_DIR} CGNS_LIBRARY=${CGNS_LIBRARY}")
-set (CGNS_FOUND TRUE)
+	message (STATUS "=====================================> CGNS FOUND : CGNS_INCLUDE_DIR=${CGNS_INCLUDE_DIR} CGNS_LIBRARY=${CGNS_LIBRARY}")
+	set (CGNS_FOUND TRUE)
 else ( )
-message (STATUS "=====================================> CGNS NOT FOUND.")
-unset (CGNS_FOUND)
-return ( )
+	message (STATUS "=====================================> CGNS NOT FOUND.")
+	unset (CGNS_FOUND)
+	return ( )
 endif (CGNS_INCLUDE_DIR AND CGNS_LIBRARY)
 
 set (CGNS_LIBRARIES ${CGNS_LIBRARY})
 
 # try to guess root dir from include dir
 if (CGNS_INCLUDE_DIR)
-string (REGEX REPLACE "(.*)/include.*" "\\1" CGNS_ROOT_DIR ${CGNS_INCLUDE_DIR})
+  string (REGEX REPLACE "(.*)/include.*" "\\1" CGNS_ROOT_DIR ${CGNS_INCLUDE_DIR})
 # try to guess root dir from library dir
 elseif (CGNS_LIBRARY)
-string ( REGEX REPLACE "(.*)/lib[/|32|64].*" "\\1" CGNS_ROOT_DIR ${CGNS_LIBRARY})
+  string ( REGEX REPLACE "(.*)/lib[/|32|64].*" "\\1" CGNS_ROOT_DIR ${CGNS_LIBRARY})
 endif ()
 
 mark_as_advanced (
-CGNS_LIBRARY
-CGNS_LIBRARIES
-CGNS_INCLUDE_DIR
-CGNS_INCLUDE_DIRS
-CGNS_ROOT_DIR
+  CGNS_LIBRARY
+  CGNS_LIBRARIES
+  CGNS_INCLUDE_DIR
+  CGNS_INCLUDE_DIRS
+  CGNS_ROOT_DIR
 )
 
 set (CGNS_TARGET "cgns::cgns")
 
 if (EXTENSION STREQUAL ".a")
-add_library (${CGNS_TARGET} STATIC IMPORTED)
+	add_library (${CGNS_TARGET} STATIC IMPORTED)
 else()
-add_library (${CGNS_TARGET} SHARED IMPORTED)
+	add_library (${CGNS_TARGET} SHARED IMPORTED)
 endif ()
 
 set_target_properties (cgns::cgns PROPERTIES
