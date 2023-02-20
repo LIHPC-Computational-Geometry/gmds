@@ -39,7 +39,8 @@ include(GNUInstallDirs)
 # TODO it does not seem to work, the message is still displayed ?
 set (CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 
-set(cgns /home/calderans/soft/cgns)
+include (${CMAKE_SOURCE_DIR}/cmake/FindCgns.cmake)
+
 
 # dependencies
 if (WITH_CGAL_QT5)
@@ -49,7 +50,7 @@ else()
     find_package(CGAL REQUIRED COMPONENTS Core)
 endif(WITH_CGAL_QT5)
 
-message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}CGAL_MINOR_VERSION}")
+message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
 
 #LIBRARY TO INSTALL
 target_link_libraries(${GMDS_LIB} PUBLIC
@@ -60,7 +61,7 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         #${LIB_GMDS_SMOOTHY})
         ${LIB_GMDS_MATH}
         CGAL::CGAL_Core
-        cgns
+        cgns::cgns
         )
 
 if (WITH_CGAL_QT5)

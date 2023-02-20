@@ -34,7 +34,7 @@ class LIB_GMDS_BLOCKING_API CGNSWriter
 
 	void write(const std::string &AFileName);
 
-	void writeBoundaryCondition(int &id_bc, cgsize_t *pts, int id_zone, char ABCtype[32]);
+	void writeBoundaryCondition(int &id_bc, cgsize_t *pts, int id_zone, char ABCtype[32], int AEdgeID) const;
 
  protected:
 	void initialize(const std::string &AFileName);
@@ -43,7 +43,7 @@ class LIB_GMDS_BLOCKING_API CGNSWriter
 
 	void writeTri();
 
-	void finalize();
+	void finalize() const;
 
 	Blocking2D *m_blocks;
 	Mesh *m_mesh;

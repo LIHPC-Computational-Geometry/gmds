@@ -5,10 +5,18 @@
 /*----------------------------------------------------------------------------*/
 #include "gmds/blocking/CGNSWriter.h"
 #include <fstream>
+#include <iomanip>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
 using namespace blocking;
+
+#define Structured CG_Structured
+#define RealDouble CG_RealDouble
+#define BCTypeUserDefined CG_BCTypeUserDefined
+#define PointRange CG_PointRange
+#define Unstructured CG_Unstructured
+#define TRI_3 CG_TRI_3
 /*----------------------------------------------------------------------------*/
 CGNSWriter::CGNSWriter(Blocking2D *ABlocking)
 			:m_blocks(ABlocking),m_mesh(nullptr)
@@ -75,7 +83,9 @@ void CGNSWriter::writeZones(){
 
 		//Le nom de la zone correspond au nom du bloc, dans notre cas on l'appel juste
 		// "Block_<Block_ID>"
-		std::string name = "Block_"+std::to_string(b.id());//Pour le moment on utilise les faces du mesh comme bloc
+		std::stringstream ss;
+		ss <<"FLUIDE "<<std::setw(5)<<std::setfill('0')<<b.id();//Pour le moment on utilise les faces du mesh comme bloc
+		std::string name = ss.str();
 		char zonename[32];
 		strcpy(zonename,name.c_str());
 
@@ -115,10 +125,9 @@ void CGNSWriter::writeZones(){
 		char coord_nameZ[32];
 		strcpy(coord_nameZ,"CoordinateZ");
 
-
-		cg_coord_write(m_indexFile,m_indexBase,m_indexZone,RealDouble, coord_nameX, x_coords, &index_coord);
-		cg_coord_write(m_indexFile,m_indexBase,m_indexZone,RealDouble, coord_nameY, y_coords, &index_coord);
-		cg_coord_write(m_indexFile,m_indexBase,m_indexZone,RealDouble, coord_nameZ, z_coords, &index_coord);
+		cg_coord_write(m_indexFile,m_indexBase,m_indexZone,RealDouble, coord_nameX, &x_coords, &index_coord);
+		cg_coord_write(m_indexFile,m_indexBase,m_indexZone,RealDouble, coord_nameY, &y_coords, &index_coord);
+		cg_coord_write(m_indexFile,m_indexBase,m_indexZone,RealDouble, coord_nameZ, &z_coords, &index_coord);
 
 		b.computeT();
 
@@ -129,12 +138,20 @@ void CGNSWriter::writeZones(){
 
 			Blocking2D::Block voisin = m_blocks->block(id);
 
+
+			//TRES MOCHE A CHANGER MAIS POUR LE MOMENT CA FAIT L'AFFAIRE
+			int edge_id = m_blocks->get<Face>(b.id()).getIDs<Edge>()[b.getInterfaceInfo()[id][0]];
+
 			char interface[33];
-			std::string interface_s = std::to_string(b.id())+"_to_"+ std::to_string(id);
+			std::stringstream interface_ss;
+			interface_ss <<"C"<<std::setw(5)<<std::setfill('0')<<edge_id<<" (F"<<std::setw(5)<<std::setfill('0')<<b.id()<<" & F"<<std::setw(5)<<std::setfill('0')<<id<<")";
+			std::string interface_s = interface_ss.str();
 			strcpy(interface, interface_s.c_str());
 			std::cout<<"\t -> connection "<<interface_s<<std::endl;
 
-			std::string name2 = "Block_"+std::to_string(id);//Pour le moment on utilise les faces du mesh comme bloc
+			std::stringstream name2_ss;
+			name2_ss <<"FLUIDE " << std::setw(5)<<std::setfill('0')<<id;
+			std::string name2 = name2_ss.str();//Pour le moment on utilise les faces du mesh comme bloc
 			char zonename2[32];
 			strcpy(zonename2,name2.c_str());
 
@@ -210,18 +227,12 @@ void CGNSWriter::writeZones(){
 
 		//get coords of the 2 block corners that define boundary condition (bc), all mesh nodes between will be in the bc
 
-		bool farfield_var,vehicule_var;
-
-		bool farfield_found = false;
-		bool vehicule_found = false;
 		cgsize_t pts_bc[4];
 
 		//For now, we assume that a bc is on only one edge of a block
 		Variable<int>* farfield;
 		Variable<int>* vehicule;
 
-		farfield_var = true;
-		vehicule_var = true;
 
 		Variable<int>* couche = m_blocks->getVariable<int, GMDS_NODE>("GMDS_Couche");
 
@@ -230,115 +241,73 @@ void CGNSWriter::writeZones(){
 			if(couche->value(n) > couche_max) couche_max = couche->value(n);
 		}
 
-		/*try {
-			farfield = m_blocks->getVariable<int, GMDS_NODE>("Farfield");
-			farfield_var = true;
-		} catch(GMDSException e){
-			farfield_var = false;
-		}
-		try {
-			vehicule = m_blocks->getVariable<int, GMDS_NODE>("Paroi");
-			vehicule_var = true;
-		}catch (GMDSException e){
-			vehicule_var = false;
-		}*/
-		std::vector<int> indices;
+		//The next steps can be rewrited using a design pattern
+		// -> maybe putting the BoundaryCondition writing in a separated class
 
-		if(farfield_var) {
-			for (int i = 0; i < 4; i++) {
-				Node n = b.getNode(i);
-				/*if (farfield->value(n.id()) == 1) {
-					farfield_found = true;
-					indices.push_back(i);
-				}*/
-				if (couche->value(n.id()) == couche_max) {
-					farfield_found = true;
-					indices.push_back(i);
-				}
+		Face b_face = m_blocks->get<Face>(b.id());
+		int i_e = 0;
+		for(auto const &e : b_face.get<Edge>()){
+			int n0 = e.getIDs<Node>()[0];
+			int n1 = e.getIDs<Node>()[1];
+
+			// L'indice local de l'arête dans le bloc
+			switch (i_e) {
+			case 0:
+				pts_bc[0] = 1;
+				pts_bc[1] = 1;
+				pts_bc[2] = discrI;
+				pts_bc[3] = 1;
+				break;
+			case 1:
+				pts_bc[0] = discrI;
+				pts_bc[1] = 1;
+				pts_bc[2] = discrI;
+				pts_bc[3] = discrJ;
+				break;
+			case 2:
+				pts_bc[0] = 1;
+				pts_bc[1] = discrJ;
+				pts_bc[2] = discrI;
+				pts_bc[3] = discrJ;
+				break;
+			case 3:
+				pts_bc[0] = 1;
+				pts_bc[1] = 1;
+				pts_bc[2] = 1;
+				pts_bc[3] = discrJ;
+				break;
+			default:
+				break;
 			}
-			if(indices.size() == 1) indices.push_back(indices[0]); //Only one node of the block is in the bc, this may be a conception error: NEED TO VERIFY
-			if (farfield_found) {
-				for (int i = 0; i < indices.size(); i++) {
-					switch (indices[i]) {
-					case 0:
-						pts_bc[0 + (i * 2)] = 1;
-						pts_bc[1 + (i * 2)] = 1;
-						break;
-					case 1:
-						pts_bc[0 + (i * 2)] = discrI;
-						pts_bc[1 + (i * 2)] = 1;
-						break;
-					case 2:
-						pts_bc[0 + (i * 2)] = discrI;
-						pts_bc[1 + (i * 2)] = discrJ;
-						break;
-					case 3:
-						pts_bc[0 + (i * 2)] = 1;
-						pts_bc[1 + (i * 2)] = discrJ;
-						break;
-					}
-				}
 
-				char bc_name[32];
-				strcpy(bc_name, "Farfield");
 
-				writeBoundaryCondition(id_bc, pts_bc, b.id() + 1, bc_name);
+			std::string bcType_s = "ORFN";
+			if (couche->value(n0) == couche_max && couche->value(n1) == couche_max) {
+				bcType_s = "FARFIELD";
+			}else if (couche->value(n0) == 0 && couche->value(n1) == 0){
+				bcType_s = "PAROI";
 			}
-		}
 
-		indices.clear();
+			//Family name
+			char bc_type[32];
+			strcpy(bc_type, bcType_s.c_str());
+			writeBoundaryCondition(id_bc, pts_bc, b.id() + 1, bc_type, e.id());
 
-		if(vehicule_var) {
-			for (int i = 0; i < 4; i++) {
-				Node n = b.getNode(i);
-				/*if (vehicule->value(n.id()) == 1) {
-					vehicule_found = true;
-					indices.push_back(i);
-				}*/
-				if (couche->value(n.id()) == 0) {
-					vehicule_found = true;
-					indices.push_back(i);
-				}
-			}
-			if(indices.size() == 1) indices.push_back(indices[0]);//Only one node of the block is in the bc, this may be a conception error: NEED TO VERIFY
-			if (vehicule_found) {
-				for (int i = 0; i < indices.size(); i++) {
-					switch (indices[i]) {
-					case 0:
-						pts_bc[0 + (i * 2)] = 1;
-						pts_bc[1 + (i * 2)] = 1;
-						break;
-					case 1:
-						pts_bc[0 + (i * 2)] = discrI;
-						pts_bc[1 + (i * 2)] = 1;
-						break;
-					case 2:
-						pts_bc[0 + (i * 2)] = discrI;
-						pts_bc[1 + (i * 2)] = discrJ;
-						break;
-					case 3:
-						pts_bc[0 + (i * 2)] = 1;
-						pts_bc[1 + (i * 2)] = discrJ;
-						break;
-					}
-				}
-
-				char bc_name[32];
-				strcpy(bc_name, "Paroi");
-
-				writeBoundaryCondition(id_bc, pts_bc, b.id() + 1, bc_name);
-			}
+			i_e++;
 		}
 	}
 }
 /*----------------------------------------------------------------------------*/
-void CGNSWriter::writeBoundaryCondition(int &num_bc, cgsize_t* pts, int id_zone, char ABCtype[32]){
+void CGNSWriter::writeBoundaryCondition(int &num_bc, cgsize_t* pts, int id_zone, char ABCtype[32], int AEdgeID) const{
 
 	std::string name = ABCtype;
-	std::cout<<"\t -> bc of type "<<name<<std::endl;
+	//std::cout<<"\t -> bc of type "<<name<<std::endl;
 
 	char bc_name[32];
-	strcpy(bc_name,("BC_on_ENT" + std::to_string(num_bc)).c_str());
+	std::stringstream bctype_ss;
+	bctype_ss <<ABCtype <<" "<<std::setw(5)<<std::setfill('0')<<AEdgeID;
+	std::string bctype_s = bctype_ss.str();
+	strcpy(bc_name,bctype_s.c_str());
 
 	if(cg_boco_write(m_indexFile,m_indexBase,id_zone,bc_name,BCTypeUserDefined,PointRange,2,pts,&num_bc)
 	    != CG_OK) {
@@ -418,7 +387,7 @@ void CGNSWriter::writeTri(){
 	}
 }
 /*----------------------------------------------------------------------------*/
-void CGNSWriter::finalize(){
+void CGNSWriter::finalize() const{
 
 	std::cout<<"========================================================="<<std::endl;
 	std::cout<<"Finalize CGNS Writer"<<std::endl;
