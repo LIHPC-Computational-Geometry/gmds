@@ -4,8 +4,8 @@
  *  \date    09/21/2010
  */
 /*----------------------------------------------------------------------------*/
-#ifndef GMDS_GEOM_GEOMCURVE_H_
-#define GMDS_GEOM_GEOMCURVE_H_
+#ifndef GMDS_GEOMCURVE_H
+#define GMDS_GEOMCURVE_H
 /*----------------------------------------------------------------------------*/
 // GMDS File Headers
 /*----------------------------------------------------------------------------*/
@@ -36,23 +36,17 @@ namespace gmds{
              *          a volume
              */
 
-            enum CurvatureInfo {
-                FLAT,
-                CONVEX,
-                CONCAVE,
-                SMOOTH_CONVEX,
-                SMOOTH_CONCAVE
-            };
+            enum CurvatureInfo { Flat, Convex, Concave, SmoothConvex, SmoothConcave };
             /*---------------------------------------------------------------*/
             /** @brief  Constructor
              */
-			GeomCurve(const std::string& AName = "Unknown curve")
-					:GeomEntity(AName){;}
+			explicit GeomCurve(const std::string& AName = "Unknown curve")
+					:GeomEntity(AName){}
 
 			/*------------------------------------------------------------------------*/
 			/** @brief  provides the dimension of the geometrical entity.
              */
-			int dim() const {return 1;}
+			int dim() const override {return 1;}
 
 			/*------------------------------------------------------------------------*/
 			/** @brief  Length of the curve
@@ -72,7 +66,7 @@ namespace gmds{
              * 		   surface.
              *  \param AP
              */
-			virtual void project(math::Point& AP) const = 0;
+			void project(math::Point& AP) const override = 0;
 
 			/*------------------------------------------------------------------------*/
 			/** \brief Get the closest point from AP on the surface
@@ -114,5 +108,4 @@ namespace gmds{
 /*----------------------------------------------------------------------------*/
 } // namespace gmds
 /*----------------------------------------------------------------------------*/
-#endif /* GMDS_GEOM_GEOMCURVE_H_ */
-
+#endif /* GMDS_GEOMCURVE_H */

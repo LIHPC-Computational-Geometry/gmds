@@ -97,7 +97,7 @@ TEST(GeomTopologyTestSuite, cube_convex_curve)
     manager.getCurves(curves);
     for(auto c:curves){
         ASSERT_EQ(c->getCurvatureInfo(),
-                  cad::GeomCurve::CONVEX);
+                  cad::GeomCurve::Convex);
     }
 }
 /*----------------------------------------------------------------------------*/
@@ -132,9 +132,9 @@ TEST(GeomTopologyTestSuite, cube_convex_B45)
     int nb_concave=0;
     for(auto c:curves){
         cad::GeomCurve::CurvatureInfo ci = c->getCurvatureInfo();
-        if(ci==cad::GeomCurve::CONVEX)
+        if(ci==cad::GeomCurve::Convex)
             nb_convex++;
-        else if(ci==cad::GeomCurve::CONCAVE)
+        else if(ci==cad::GeomCurve::Concave)
             nb_concave++;
     }
     ASSERT_EQ(17, nb_convex);

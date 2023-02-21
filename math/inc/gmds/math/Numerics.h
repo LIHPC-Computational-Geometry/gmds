@@ -19,56 +19,56 @@ namespace gmds{
   /*----------------------------------------------------------------------------*/
   namespace math{
       /*----------------------------------------------------------------------------*/
-      bool GMDSMath_API isZero(const TCoord a, const TCoord AEpsilon = Constants::EPSILON);
+      bool GMDSMath_API isZero(TCoord a, TCoord AEpsilon = Constants::EPSILON);
 	 
-	  bool isZero2ndMethod(const TCoord a);
+	  bool isZero2ndMethod(TCoord a);
 
-      bool GMDSMath_API areEquals(const TCoord a, const TCoord b, const TCoord AEpsilon = Constants::EPSILON);
+      bool GMDSMath_API areEquals(TCoord a, TCoord b, TCoord AEpsilon = Constants::EPSILON);
 
     /*------------------------------------------------------------------------*/
     /** \brief Compute AVal modulo AMod
      */
-    TCoord GMDSMath_API modulo(const TCoord AVal, const TCoord AMod);
+    TCoord GMDSMath_API modulo(TCoord AVal, TCoord AMod);
     /*------------------------------------------------------------------------*/
     /** \brief Compute AVal modulo 2xPI
      */
-    TCoord GMDSMath_API modulo2PI(const TCoord AVal);
+    TCoord GMDSMath_API modulo2PI(TCoord AVal);
     /*------------------------------------------------------------------------*/
     /** \brief Returns the min value between AV1, AV2 and AV3
      */
-    TCoord GMDSMath_API min3(const TCoord AV1, const TCoord AV2, const TCoord AV3);
+    TCoord GMDSMath_API min3(TCoord AV1, TCoord AV2, TCoord AV3);
     /*------------------------------------------------------------------------*/
     /** \brief Returns the max value between AV1, AV2 and AV3
      */
-    TCoord max3(const TCoord AV1, const TCoord AV2, const TCoord AV3);
+    TCoord max3(TCoord AV1, TCoord AV2, TCoord AV3);
     /*------------------------------------------------------------------------*/
     /** \brief Returns the min value between AV1 and AV2
      */
-    TCoord min2(const TCoord AV1, const TCoord AV2);
+    TCoord min2(TCoord AV1, TCoord AV2);
     /*------------------------------------------------------------------------*/
     /** \brief Returns the max value between AV1 and AV2
      */
-    TCoord max2(const TCoord AV1, const TCoord AV2);
+    TCoord max2(TCoord AV1, TCoord AV2);
     /*------------------------------------------------------------------------*/
     /** \brief Returns the min value between AV1, AV2, AV3 and AV4
      */
-    TCoord min4(const TCoord AV1, const TCoord AV2, const TCoord AV3, const TCoord AV4);
+    TCoord min4(TCoord AV1, TCoord AV2, TCoord AV3, TCoord AV4);
     /*------------------------------------------------------------------------*/
     /** \brief Returns the max value among AV1, AV2, AV3 and AV4
      */
-    TCoord max4(const TCoord AV1, const TCoord AV2, const TCoord AV3, const TCoord AV4);
+    TCoord max4(TCoord AV1, TCoord AV2, TCoord AV3, TCoord AV4);
     /*------------------------------------------------------------------------*/
     /** \brief Returns the min value among eight values
      */
-    TCoord min8(const TCoord AV1, const TCoord AV2, const TCoord AV3, const TCoord AV4, const TCoord AV5, const TCoord AV6, const TCoord AV7, const TCoord AV8);
+    TCoord min8(TCoord AV1, TCoord AV2, TCoord AV3, TCoord AV4, TCoord AV5, TCoord AV6, TCoord AV7, TCoord AV8);
     /*------------------------------------------------------------------------*/
     /** \brief Returns the max value among eight values
      */
-    TCoord max8(const TCoord AV1, const TCoord AV2, const TCoord AV3, const TCoord AV4, const TCoord AV5, const TCoord AV6, const TCoord AV7, const TCoord AV8);
+    TCoord max8(TCoord AV1, TCoord AV2, TCoord AV3, TCoord AV4, TCoord AV5, TCoord AV6, TCoord AV7, TCoord AV8);
     /*------------------------------------------------------------------------*/
     /** \brief Returns true if AV1==AV2 [AEpsilon]
      */
-    bool GMDSMath_API near(const TCoord AV1, TCoord AV2, const TCoord AEpsilon = Constants::EPSILON);
+    bool GMDSMath_API near(TCoord AV1, TCoord AV2, TCoord AEpsilon = Constants::EPSILON);
 
       /*------------------------------------------------------------------------*/
       /** \brief Returns the stiffness matrix for the triangle element defined by

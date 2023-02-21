@@ -41,14 +41,14 @@ void AbstractSmoother::init() {
     Mesh *m = m_linker->mesh();
     for (auto n_id:m->nodes()) {
         auto geom_info = m_linker->getGeomInfo<Node>(n_id);
-        if (geom_info.first == GeomMeshLinker::LINK_CURVE) {
+        if (geom_info.first == GeomMeshLinker::LinkCurve) {
             //Means on a curve
             m_c2n[geom_info.second].push_back(n_id);
-        } else if (geom_info.first == GeomMeshLinker::LINK_SURFACE) {
+        } else if (geom_info.first == GeomMeshLinker::LinkSurface) {
             //Means on a surface
             m_s2n[geom_info.second].push_back(n_id);
-        } else if (geom_info.first == GeomMeshLinker::NO_LINK ||
-        geom_info.first == GeomMeshLinker::LINK_VOLUME) {
+        } else if (geom_info.first == GeomMeshLinker::NoLink ||
+        geom_info.first == GeomMeshLinker::LinkVolume) {
             //Means in a volume
             m_v2n[geom_info.second].push_back(n_id);
         }
@@ -60,12 +60,12 @@ void AbstractSmoother::init() {
         auto geom_dim = m_linker->getGeomDim<Node>(n_id);
         auto geom_id = m_linker->getGeomId<Node>(n_id);
 
-        if (geom_dim == GeomMeshLinker::LINK_CURVE) {
+        if (geom_dim == GeomMeshLinker::LinkCurve) {
             //Means on a curve
             std::vector<Edge> edges = m->get<Node>(n_id).get<Edge>();
 
             for (auto e:edges) {
-                if (m_linker->getGeomDim(e) == GeomMeshLinker::LINK_CURVE &&
+                if (m_linker->getGeomDim(e) == GeomMeshLinker::LinkCurve &&
                     m_linker->getGeomId(e) == geom_id) {
                     //Edge e is linked to the same curve as n_id
                     std::vector<TCellID> nids = e.getIDs<Node>();
@@ -76,12 +76,12 @@ void AbstractSmoother::init() {
                     }
                 }
             }
-        } else if (geom_dim == GeomMeshLinker::LINK_SURFACE) {
+        } else if (geom_dim == GeomMeshLinker::LinkSurface) {
             //Means on a surface
             std::vector<Face> faces = m->get<Node>(n_id).get<Face>();
 
             for (auto f:faces) {
-                if (m_linker->getGeomDim(f) == GeomMeshLinker::LINK_SURFACE &&
+                if (m_linker->getGeomDim(f) == GeomMeshLinker::LinkSurface &&
                 m_linker->getGeomId(f) == geom_id) {
                     //Face f is linked to the same surface as n_id
                     std::vector<TCellID> nids = f.getIDs<Node>();
@@ -92,8 +92,8 @@ void AbstractSmoother::init() {
                     }
                 }
             }
-        } else if (geom_dim == GeomMeshLinker::NO_LINK ||
-        geom_dim == GeomMeshLinker::LINK_VOLUME) {
+        } else if (geom_dim == GeomMeshLinker::NoLink ||
+        geom_dim == GeomMeshLinker::LinkVolume) {
             //Means in a volume
             std::vector<Region> regions = m->get<Node>(n_id).get<Region>();
 

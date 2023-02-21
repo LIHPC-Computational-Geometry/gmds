@@ -40,7 +40,7 @@ Edge(const Edge& AEdge)
 }
 /*----------------------------------------------------------------------------*/
 Edge::~Edge()
-{}
+= default;
 /*----------------------------------------------------------------------------*/
 bool Edge::operator==(const Edge& AEdge) const
 {
@@ -93,7 +93,7 @@ math::Segment Edge::segment() const
 {
     std::vector<Node> nodes;
     get<Node>(nodes);
-    return math::Segment(nodes[0].point(), nodes[1].point());
+    return {nodes[0].point(), nodes[1].point()};
 }
 /*----------------------------------------------------------------------------*/
 void Edge::delegateGet(std::vector<Node>&   ACells) const

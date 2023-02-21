@@ -4,12 +4,18 @@ add_executable(GMDS_BLOCKING_TEST
         InputMarkedDartsTestSuite.h
         SheetInsertTestSuite.h
         WriterDartsVTKTestSuite.h
-        main_test.cpp)
+        CGNSWriterTestSuite.h
+        main_test.cpp
+        )
+
+
 
 target_link_libraries(GMDS_BLOCKING_TEST PUBLIC
         ${GMDS_LIB}
+        ${LIB_GMDS_IG}
         CGAL::CGAL_Core
-        gtest)
+        gtest
+        cgns::cgns)
 
 if (WITH_CGAL_QT5)
     target_link_libraries(${GMDS_LIB} PUBLIC

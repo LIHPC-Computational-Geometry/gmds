@@ -72,7 +72,7 @@ void AngleBasedQuadSmoother::smoothCurves() {
                 std::vector<TCellID> faces_on_surf;
                 for(auto f_id:adj_face_ids) {
 
-                    if (m_linker->getGeomDim<Face>(f_id) == GeomMeshLinker::LINK_SURFACE &&
+                    if (m_linker->getGeomDim<Face>(f_id) == GeomMeshLinker::LinkSurface &&
                         m_linker->getGeomId<Face>(f_id) ==s_id){
                       faces_on_surf.push_back(f_id);
                   }

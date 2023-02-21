@@ -68,7 +68,7 @@ void LaplacianSmoother::smoothSurfaces(const int ANbIterations) {
                     s->project(pi);
 
                 }
-                catch(GMDSException& e){;}
+                catch(GMDSException& e){}
                 ni.setPoint(pi);
             }
         }

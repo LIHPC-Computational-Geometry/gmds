@@ -173,7 +173,7 @@ void Blocking2D::initializeEdgesPoints()
 		Node n0 = ei_end_nodes[0];
 		Node n1 = ei_end_nodes[1];
 		math::DiscretizationScheme1DUniform d(n0.point(), n1.point(), nb_subdiv);
-		std::vector<TCellID> *edge_disc = new std::vector<TCellID>();
+		auto *edge_disc = new std::vector<TCellID>();
 		edge_disc->push_back(n0.id());
 		for (auto i = 1; i < nb_subdiv - 1; i++) {
 			Node ni = newNode(d(i));
@@ -192,7 +192,7 @@ void Blocking2D::initializeBlocksPoints(){
 		auto nb_I = bi.getNbDiscretizationI();
 		auto nb_J = bi.getNbDiscretizationJ();
 
-		Array2D<TCellID>* a = new Array2D<TCellID>(nb_I,nb_J);
+		auto* a = new Array2D<TCellID>(nb_I,nb_J);
 		Array2D<math::Point> pnts(nb_I,nb_J);
 
 		Node n0 = bi.getNode(0);
@@ -286,7 +286,7 @@ void Blocking2D::initializeGridPoints() {
 		Node n0 = ei_end_nodes[0];
 		Node n1 = ei_end_nodes[1];
 		math::DiscretizationScheme1DUniform d(n0.point(),n1.point(),nb_subdiv);
-		std::vector<TCellID>* edge_disc = new std::vector<TCellID>();
+		auto* edge_disc = new std::vector<TCellID>();
 		edge_disc->push_back(n0.id());
 		for(auto i=1; i<nb_subdiv-1;i++){
 			Node ni = newNode(d(i));
@@ -304,7 +304,7 @@ void Blocking2D::initializeGridPoints() {
 		auto nb_I = bi.getNbDiscretizationI();
 		auto nb_J = bi.getNbDiscretizationJ();
 
-		Array2D<TCellID>* a = new Array2D<TCellID>(nb_I,nb_J);
+		auto* a = new Array2D<TCellID>(nb_I,nb_J);
 		Array2D<math::Point> pnts(nb_I,nb_J);
 
 		Node n0 = bi.getNode(0);

@@ -17,21 +17,19 @@ namespace gmds{
     /*-------------------------------------------------------------------------*/
     namespace math{
         /*---------------------------------------------------------------------*/
-        Point::Point(const TCoord& AX, const TCoord& AY, const TCoord& AZ)
+        Point::Point(TCoord AX, TCoord AY, TCoord AZ)
         {
             m_coord[0]=AX;
             m_coord[1]=AY;
             m_coord[2]=AZ;
         }
         /*---------------------------------------------------------------------*/
-        Point::~Point()
-        {}
+        Point::~Point() = default;
         /*---------------------------------------------------------------------*/
         Point operator+(const Point& AP1, const Point& AP2){
-            return Point(
-                         AP1.m_coord[0] + AP2.m_coord[0],
-                         AP1.m_coord[1] + AP2.m_coord[1],
-                         AP1.m_coord[2] + AP2.m_coord[2]);
+            return Point(AP1.m_coord[0] + AP2.m_coord[0],
+                    AP1.m_coord[1] + AP2.m_coord[1],
+                    AP1.m_coord[2] + AP2.m_coord[2]);
         }
         /*---------------------------------------------------------------------*/
         bool Point::operator==(const Point& AP) const
@@ -101,7 +99,7 @@ namespace gmds{
 
             double r = (AP2.X() - AP1.X()) * (this->Y() - AP1.Y()) - (this->X() - AP1.X()) * (AP2.Y() - AP1.Y());
 
-            return (r > 0.0) ? true : false;
+            return (r > 0.0);
         }
         /*---------------------------------------------------------------------*/
         void Point::computeBarycentric2D(
@@ -269,9 +267,9 @@ namespace gmds{
                                        const math::Point& AP,
                                        TCoord& AX, TCoord& AY, TCoord& AZ)
         {
-            math::Point p0 = AT1;
-            math::Point p1 = AT2;
-            math::Point p2 = AT3;
+            const math::Point& p0 = AT1;
+            const math::Point& p1 = AT2;
+            const math::Point& p2 = AT3;
 			//std::cout<<"p0.areColinear(p1,p2) "<<p0.areColinear(p1,p2)<<std::endl;
             if(p0.areColinear(p1,p2))
             {
@@ -326,9 +324,9 @@ namespace gmds{
                                        const math::Point& AP,
                                        TCoord& AX, TCoord& AY, TCoord& AZ)
         {
-            math::Point p0 = AT1;
-            math::Point p1 = AT2;
-            math::Point p2 = AT3;
+            const math::Point& p0 = AT1;
+            const math::Point& p1 = AT2;
+            const math::Point& p2 = AT3;
 			//std::cout<<"p0.areColinear(p1,p2) "<<p0.areColinear(p1,p2)<<std::endl;
             if(p0.areColinear2ndMethod(p1,p2))
             {

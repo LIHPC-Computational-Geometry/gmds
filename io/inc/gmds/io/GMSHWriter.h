@@ -17,13 +17,13 @@ namespace gmds {
          * @param AMeshService an implementation of an io service to write data
          * 					   into a mesh
          */
-        GMSHWriter(IMeshIOService *AMeshService);
+        explicit GMSHWriter(IMeshIOService *AMeshService);
 
 	private:
 
-        void initialize(const std::string &AFileName);
-        void writeNodes();
-        void writeFaces();
-        void finalize();
+        void initialize(const std::string &AFileName) override;
+        void writeNodes() override;
+        void writeFaces() override;
+        void finalize() override;
     };
 }

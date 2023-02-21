@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*/
-#ifndef GMDS_BLOCKING_H
-#define GMDS_BLOCKING_H
+#ifndef GMDS_BLOCKING2D_H
+#define GMDS_BLOCKING2D_H
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
 #include "GMDSIg_export.h"
@@ -240,4 +240,4 @@ class GMDSIg_API Blocking2D: public Mesh{
 	Variable<std::vector<TCellID>* >* m_edge_grids;
 };
 }
-#endif //GMDS_BLOCKING_H
+#endif //GMDS_BLOCKING2D_H

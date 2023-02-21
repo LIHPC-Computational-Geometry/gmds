@@ -65,7 +65,7 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief Destructor
         */
-        virtual  ~Array2D(){;}
+        virtual  ~Array2D(){}
 
         /*------------------------------------------------------------------------*/
         /** \brief give the number of lines
@@ -153,7 +153,7 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief Destructor
         */
-        virtual  ~TriArray(){;}
+        virtual  ~TriArray(){}
 
         /*------------------------------------------------------------------------*/
         /** \brief give the number of lines
@@ -292,7 +292,7 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief Destructor
         */
-        virtual  ~Array3D(){;}
+        virtual  ~Array3D(){}
 
         /*------------------------------------------------------------------------*/
         /** \brief give the number of elements for dim @p ADim

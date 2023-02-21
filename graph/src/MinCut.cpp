@@ -2,6 +2,8 @@
 // Created by calderans on 23/07/20.
 //
 
+#include <iostream>
+
 #include "gmds/graph/MinCut.h"
 #include "../../external/gco-v3/inc/GCoptimization.h"
 
@@ -66,9 +68,9 @@ void MinCut::graph_cut(Variable<int> *ATetAssign, Variable<int> *ATetResult,
     }
     gc->setSmoothCost(smooth);
 
-    printf("\nBefore optimization energy is %d",gc->compute_energy());
+	 std::cout<<"Before optimization energy is "<<gc->compute_energy()<<std::endl;
     gc->swap(100);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
-    printf("\nAfter optimization energy is %d",gc->compute_energy());
+	 std::cout<<"After optimization energy is  "<<gc->compute_energy()<<std::endl;
     std::cout<<std::endl;
 
     for(auto rid:m_mesh->regions()) {

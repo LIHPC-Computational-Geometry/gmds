@@ -68,7 +68,7 @@ namespace gmds{
         /** \brief Returns the node id
          */
         /*--------------------------------------------------------------------*/
-        TCellID id();
+        TCellID id() const;
     private:
         
         TCellID m_id;

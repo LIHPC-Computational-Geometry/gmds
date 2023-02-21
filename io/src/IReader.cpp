@@ -16,7 +16,7 @@ IReader::IReader(IMeshIOService* AMeshIOService,
 :m_mesh_service(AMeshIOService),
  m_cell_model(ACellModel),
  m_data_model(ADataModel),
- m_stream(NULL)
+ m_stream(nullptr)
 {}
 /*----------------------------------------------------------------------------*/
 IReader::~IReader()

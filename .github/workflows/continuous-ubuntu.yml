@@ -21,7 +21,7 @@ jobs:
         config: [Release, Debug]
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 2 # seems to be needed by codecov
         submodules: recursive
@@ -49,7 +49,7 @@ jobs:
         -DWITH_CODE_COVERAGE=ON
         -DENABLE_BLOCKING=true
         -DENABLE_KMDS=true
-        -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/kokkos;${{github.workspace}}/spack/opt/spack/cgal;${{github.workspace}}/spack/opt/spack/gmp;${{github.workspace}}/spack/opt/spack/mpfr;${{github.workspace}}/spack/opt/spack/boost"
+        -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/kokkos;${{github.workspace}}/spack/opt/spack/cgal;${{github.workspace}}/spack/opt/spack/gmp;${{github.workspace}}/spack/opt/spack/mpfr;${{github.workspace}}/spack/opt/spack/boost;${{github.workspace}}/spack/opt/spack/cgns"
         -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib 
         -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
         -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/buildinstall

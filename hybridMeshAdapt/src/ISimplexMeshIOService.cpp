@@ -130,7 +130,7 @@ void ISimplexMeshIOService::getRegions(std::vector<IMeshIOService::CellInfo>& AI
 
 
   //////////////////////////////////////////////////////////////////////////////
-  const std::vector<std::vector<TSimplexID>>& hexData = m_simplex_mesh->getHexadronData();
+  const std::vector<std::vector<TInt>>& hexData = m_simplex_mesh->getHexadronData();
   if(hexData.size() != 0)
   {
     unsigned int cpt = 0;

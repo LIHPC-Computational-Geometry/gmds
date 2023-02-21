@@ -73,7 +73,7 @@ public:
          *
          * \return the number of points
          */
-        int getNbPoints() const;
+        static int getNbPoints() ;
 
         /*------------------------------------------------------------------------*/
         /** \brief  Computes the center of the quadrilateral
@@ -136,7 +136,7 @@ protected:
          *
          * \return the jacobian matrix
          */
-        math::Matrix<2,2,double> jacobian2D(const int iVertex) const;
+        math::Matrix<2,2,double> jacobian2D(int iVertex) const;
 
 	Point m_pnts[4];
 

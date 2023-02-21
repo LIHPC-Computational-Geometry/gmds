@@ -39,7 +39,7 @@ namespace gmds{
          *
          * \param AMesh the mesh this face container builds faces for
          */
-		FaceContainer(Mesh* AMesh);
+		explicit FaceContainer(Mesh* AMesh);
 
 		/*------------------------------------------------------------------------*/
 		/** \brief Destructor
@@ -60,7 +60,7 @@ namespace gmds{
          *  \param ADim the dimension of the cells we want to store the adjacency
          *  			to
          */
-		void addConnectivityContainers(const TInt ADim);
+		void addConnectivityContainers(TInt ADim);
 
 		/*------------------------------------------------------------------------*/
 		/** \brief remove the containers for accessing to ADim-dimensional cells
@@ -68,7 +68,7 @@ namespace gmds{
          *  \param ADim the dimension of the cells we want to suppress the
          *  			adjacency to
          */
-		void removeConnectivityContainers(const TInt ADim);
+		void removeConnectivityContainers(TInt ADim);
 		/*------------------------------------------------------------------------*/
 		/** \brief Creation of a triangle
          *
@@ -115,17 +115,15 @@ namespace gmds{
 
 
 			using self_type = iterator;
-			using iterator_category = std::forward_iterator_tag;
-			using value_type = TInt;
-			using difference_type = int;
-			using pointer = TInt*;
-			using reference = TInt&;
+			using value_type = TCellID;
+			using pointer = TCellID*;
+			using reference = TCellID&;
 
 			iterator(FaceContainer* AContainer, bool ABegin):m_it(AContainer->m_face_ids.begin()) {
 				if(!ABegin)
 					m_it=AContainer->m_face_ids.end();
 			}
-			iterator(const iterator& AIt):m_it(AIt.m_it){}
+			iterator(const iterator& AIt)= default;
 
 
 			self_type operator++() {
@@ -145,12 +143,12 @@ namespace gmds{
 		/*------------------------------------------------------------------------*/
 		/** \brief Provide an iterator onto the first element of this container
          */
-		iterator begin() {return iterator(this,true);};
+		iterator begin() {return {this,true};};
 
 		/*------------------------------------------------------------------------*/
 		/** \brief Provide an iterator onto the last element of this container
          */
-		iterator end() {return iterator(this,false);};
+		iterator end() {return {this,false};};
 
 		/*------------------------------------------------------------------------*/
 		/** \brief Get the node infos for the face of id AID
@@ -158,21 +156,21 @@ namespace gmds{
          * \param AID the id of the face we want to get infos
          * \param ANbNodes the number of nodes of the face
          */
-		void getNodesData(const TCellID& AID, int& ANbNodes) const;
+		void getNodesData(const TCellID& AID, TInt& ANbNodes) const;
 
 		/*------------------------------------------------------------------------*/
 		/** \brief Get the edge infos for the face of id AID
          * \param AID the id of the face we want to get infos
          * \param ANbEdges the number of adjacent edges
          */
-		void getEdgesData(const TCellID& AID, int& ANbEdges) const;
+		void getEdgesData(const TCellID& AID, TInt& ANbEdges) const;
 
 		/*------------------------------------------------------------------------*/
 		/** \brief Get the face infos for the face of id AID
          * \param AID the id of the face we want to get infos
          * \param ANbFaces the number of adjacent faces
          */
-		void getFacesData(const TCellID& AID, int& ANbFaces) const;
+		void getFacesData(const TCellID& AID, TInt& ANbFaces) const;
 
 		/*------------------------------------------------------------------------*/
 		/** \brief Get the region infos for the face of id AID
@@ -180,7 +178,7 @@ namespace gmds{
          * \param AID the id of the face we want to get infos
          * \param ANbRegions the number of regions adjacent to the face
          */
-		void getRegionsData(const TCellID& AID, int& ANbRegions) const;
+		void getRegionsData(const TCellID& AID, TInt& ANbRegions) const;
 
 		/*------------------------------------------------------------------------*/
 		/** \brief Removes the face AIndex from the container
@@ -189,7 +187,7 @@ namespace gmds{
 		void remove(TInt AIndex);
 
 		void clear();
-		void resize(const TInt);
+		void resize(TInt);
 
 		/*------------------------------------------------------------------------*/
 		/** \brief  This method is necessary when you want to regularize the
@@ -272,7 +270,7 @@ namespace gmds{
 		/** \brief Build a face object
          * \param AIndex index of the face to be built
          */
-		Face buildFace(const TInt AIndex) const;
+		Face buildFace(TInt AIndex) const;
 
 		/*------------------------------------------------------------------------*/
 		/** \brief Initialization of the containers depending of the mesh model
@@ -302,7 +300,7 @@ namespace gmds{
 		struct FaceInfo{
 			ECellType type;    ///face type : triangle, quad, polygon
 			TInt	  type_id; ///id of the typed face
-			FaceInfo(ECellType t=GMDS_TRIANGLE, TInt i=1):type(t), type_id(i){;}
+			explicit FaceInfo(ECellType t=GMDS_TRIANGLE, TInt i=1):type(t), type_id(i){}
 		};
 
 		/** Indexed collection of face types*/
@@ -335,7 +333,7 @@ namespace gmds{
 		{
 			SmartVector<TabCellID<N> >* m_adj;
 
-			AdjUpdate(SmartVector<TabCellID<N> >* adj):m_adj(adj){;}
+			explicit AdjUpdate(SmartVector<TabCellID<N> >* adj):m_adj(adj){}
 
 			size_t select(){
 				return m_adj->selectNewIndex();
@@ -365,7 +363,7 @@ namespace gmds{
 
 			TAccessor(FaceContainer* AOwner, const MeshModel& AModel);
 			virtual ~TAccessor();
-			TInt getID();
+			TInt getID() const;
 		};
 		/** \struct QAccessor
          * \param instanciate generic pointers to specialize the access to cells and
@@ -385,7 +383,7 @@ namespace gmds{
 
 			QAccessor(FaceContainer* AOwner, const MeshModel& AModel);
 			virtual ~QAccessor();
-			TInt getID();
+			TInt getID() const;
 		};
 		/** \struct PAccessor
          * \param instanciate generic pointers to specialize the access to cells and
@@ -405,7 +403,7 @@ namespace gmds{
 
 			PAccessor(FaceContainer* AOwner, const MeshModel& AModel);
 			virtual ~PAccessor();
-			TInt getID();
+			TInt getID() const;
 		};
 
 		/** accessor to triangles */

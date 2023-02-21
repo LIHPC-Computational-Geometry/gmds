@@ -275,7 +275,7 @@ class LIB_GMDS_SINGGRAPHBUILD_API SurfaceSingularityPoint : public SingularityPo
    */
  SurfaceSingularityPoint(gmds::Mesh* AOwner, const ESingularityType AType = FIELD)
    :SingularityPoint(AOwner,AType,SURFACE)
-    {;}
+    {}
 
   /*------------------------------------------------------------------------*/
   /** \brief Returns the mesh face that contains this singularity
@@ -304,10 +304,10 @@ class LIB_GMDS_SINGGRAPHBUILD_API CurveSingularityPoint : public SingularityPoin
  CurveSingularityPoint(gmds::Mesh* AOwner, 
 		       const double AX, const double AY, const double AZ,
 		       const ESingularityType AType = GEOM)
-   :SingularityPoint(AOwner, AX, AY, AZ, AType, CURVE){;}
+   :SingularityPoint(AOwner, AX, AY, AZ, AType, CURVE){}
 
  CurveSingularityPoint(gmds::Mesh* AOwner, const ESingularityType AType = GEOM)
-   :SingularityPoint(AOwner,AType, CURVE){;}
+   :SingularityPoint(AOwner,AType, CURVE){}
 
 
 };
@@ -324,11 +324,11 @@ class LIB_GMDS_SINGGRAPHBUILD_API VertexSingularityPoint : public SingularityPoi
  VertexSingularityPoint(gmds::Mesh* AOwner, 
 			const double AX, const double AY, const double AZ,
 			const ESingularityType AType = GEOM)
-   :SingularityPoint(AOwner,AX, AY, AZ, AType, VERTEX){;}
+   :SingularityPoint(AOwner,AX, AY, AZ, AType, VERTEX){}
 
  VertexSingularityPoint(gmds::Mesh* AOwner, 
 			const ESingularityType AType = GEOM)
-   :SingularityPoint(AOwner, AType, VERTEX){;}
+   :SingularityPoint(AOwner, AType, VERTEX){}
 
 
   gmds::Node getMeshNode();

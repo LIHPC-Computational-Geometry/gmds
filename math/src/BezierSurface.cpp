@@ -17,7 +17,7 @@ BezierSurface::BezierSurface(const Array2D<math::Point>& APts) :
 /*------------------------------------------------------------------------*/
 math::Point BezierSurface::operator()(const double& Au, const double& Av) const {
 
-	math::Point M({0,0,0});
+	math::Point M(0.,0.,0.);
 
 	for (int i=0; i<=m_degree_m; i++)
 	{

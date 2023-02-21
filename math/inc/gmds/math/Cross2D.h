@@ -11,6 +11,7 @@
 /*-----------------------------------------------------------------*/
 #include "gmds/math/Quaternion.h"
 #include "gmds/math/Chart.h"
+#include "gmds/math/Numerics.h"
 #include "GMDSMath_export.h"
 /*-----------------------------------------------------------------*/
 #include <cmath>
@@ -44,12 +45,14 @@ namespace gmds {
             /* Constructor
              * Defines from a reference vector
              */
-            Cross2D(const Vector3d& ARefVec);
+            explicit Cross2D(const Vector3d& ARefVec);
             /*-----------------------------------------------------*/
             /* Constructor
              * Defines from a reference angle
              */
-            Cross2D(const TCoord& ARefAngle);
+            explicit Cross2D(TCoord ARefAngle):
+	           m_angle(modulo2PI(ARefAngle)), m_known_vectors(false){}
+
 
             /*-----------------------------------------------------*/
             /* Copy  Constructor
@@ -122,14 +125,14 @@ namespace gmds {
              */
             static  Cross2D mean(const vector<Cross2D> & ACrosses,
                                             const vector<TCoord> & AWeights,
-                                            const TInt ANbSteps=5);
+                                            TInt ANbSteps=5);
             static  Cross2D mean(const Cross2D & AC1,
                                             const TCoord& AW1,
                                             const Cross2D & AC2,
                                             const TCoord& AW2);
 		  static  Cross2D meanNotMedian(const vector<Cross2D> & ACrosses,
                                             const vector<TCoord> & AWeights,
-                                            const TInt ANbSteps=5);
+                                            TInt ANbSteps=5);
         private:
             // A 2D cross is only represented by an angle, which is the
             // angle between its representation vector and the (OX) axis

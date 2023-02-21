@@ -40,8 +40,26 @@ WriterDartsVTK::execute(std::string AFilename, int AToMark)
 
 	// edges
 	std::map<Dart_handle, std::pair<gmds::math::Point, gmds::math::Point> > dart_pos;
+	std::map<Dart_handle, int > dart_node_ids;
+	std::map<Dart_handle, int > dart_edge_ids;
+	std::map<Dart_handle, int > dart_face_ids;
+	std::map<Dart_handle, int > dart_region_ids;
 
-	for (auto it = bl()->lcc()->one_dart_per_cell<1>().begin(); it != bl()->lcc()->one_dart_per_cell<1>().end(); it++) {
+	int index_node=0;
+	for (auto it = bl()->lcc()->one_dart_per_cell<0>().begin(); it != bl()->lcc()->one_dart_per_cell<0>().end(); it++, index_node++) {
+
+		Dart_handle d = it;
+		for(LCC_3::Dart_of_orbit_range<1,2,3>::iterator
+				 itbis(lcc()->darts_of_orbit<1,2,3>(d).begin()),
+				 itend(lcc()->darts_of_orbit<1,2,3>(d).end()); itbis!=itend; ++itbis) {
+
+			LCC_3::Dart_handle dbis = itbis;
+			dart_node_ids[dbis] = index_node;
+		}
+	}
+
+	int index_edge=0;
+	for (auto it = bl()->lcc()->one_dart_per_cell<1>().begin(); it != bl()->lcc()->one_dart_per_cell<1>().end(); it++, index_edge++) {
 
 		Dart_handle d = it;
 
@@ -75,11 +93,15 @@ WriterDartsVTK::execute(std::string AFilename, int AToMark)
 				dart_pos[d0].second = e0_1;
 				dart_pos[d1].first = e1_0;
 				dart_pos[d1].second = e1_1;
+
+				dart_edge_ids[d0] = index_edge;
+				dart_edge_ids[d1] = index_edge;
 			}
 		}
 	}
 
-	for (auto it = bl()->lcc()->one_dart_per_cell<2>().begin(); it != bl()->lcc()->one_dart_per_cell<2>().end(); it++) {
+	int index_face=0;
+	for (auto it = bl()->lcc()->one_dart_per_cell<2>().begin(); it != bl()->lcc()->one_dart_per_cell<2>().end(); it++, index_face++) {
 		Dart_handle d = it;
 
 		if(dart_pos.find(d) == dart_pos.end()) {
@@ -105,12 +127,14 @@ WriterDartsVTK::execute(std::string AFilename, int AToMark)
 			gmds::math::Point e0_1 = (1.- ratio2_) * (barycenter_gmds - dart_pos[dbis].second) + dart_pos[dbis].second;
 			dart_pos[dbis].first = e0_0;
 			dart_pos[dbis].second = e0_1;
+			dart_face_ids[dbis] = index_face;
 		}
 	}
 
 	if(!is2d) {
 
-		for (auto it = bl()->lcc()->one_dart_per_cell<3>().begin(); it != bl()->lcc()->one_dart_per_cell<3>().end(); it++) {
+		int index_region=0;
+		for (auto it = bl()->lcc()->one_dart_per_cell<3>().begin(); it != bl()->lcc()->one_dart_per_cell<3>().end(); it++, index_region++) {
 
 			Dart_handle d = it;
 
@@ -137,6 +161,8 @@ WriterDartsVTK::execute(std::string AFilename, int AToMark)
 				gmds::math::Point e0_1 = (1.- ratio3_) * (barycenter_gmds - dart_pos[dbis].second) + dart_pos[dbis].second;
 				dart_pos[dbis].first = e0_0;
 				dart_pos[dbis].second = e0_1;
+
+				dart_region_ids[dbis] = index_region;
 			}
 		}
 	}
@@ -153,6 +179,12 @@ WriterDartsVTK::execute(std::string AFilename, int AToMark)
 
 	gmds::Variable<int>* var_edge_marked = m.newVariable<int, gmds::GMDS_FACE>("edge_marked");
 
+	// trying to give an index to the i-cells
+	gmds::Variable<int>* var_index_node_ids = m.newVariable<int, gmds::GMDS_FACE>("index_node_ids");
+	gmds::Variable<int>* var_index_edge_ids = m.newVariable<int, gmds::GMDS_FACE>("index_edge_ids");
+	gmds::Variable<int>* var_index_face_ids = m.newVariable<int, gmds::GMDS_FACE>("index_face_ids");
+	gmds::Variable<int>* var_index_region_ids = m.newVariable<int, gmds::GMDS_FACE>("index_regione_ids");
+
 	for(auto d: dart_pos) {
 		gmds::Node n0 = m.newNode(d.second.first);
 		gmds::Node n1 = m.newNode(d.second.second);
@@ -165,6 +197,11 @@ WriterDartsVTK::execute(std::string AFilename, int AToMark)
 		(*var_node_type)[n0.id()] = 1;
 		(*var_node_type)[n1.id()] = 0;
 		(*var_edge_type)[f.id()] = 4;
+
+		(*var_index_node_ids)[f.id()] = dart_node_ids[d.first];
+		(*var_index_edge_ids)[f.id()] = dart_edge_ids[d.first];
+		(*var_index_face_ids)[f.id()] = dart_face_ids[d.first];
+		(*var_index_region_ids)[f.id()] = dart_region_ids[d.first];
 	}
 
 	// now for the alpha links
@@ -193,6 +230,11 @@ WriterDartsVTK::execute(std::string AFilename, int AToMark)
 
 					set_alpha0.insert(dh);
 					set_alpha0.insert(d0);
+
+					(*var_index_node_ids)[f.id()] = -1;
+					(*var_index_edge_ids)[f.id()] = -1;
+					(*var_index_face_ids)[f.id()] = -1;
+					(*var_index_region_ids)[f.id()] = -1;
 				}
 			}
 		}
@@ -208,6 +250,11 @@ WriterDartsVTK::execute(std::string AFilename, int AToMark)
 
 					set_alpha1.insert(dh);
 					set_alpha1.insert(d1);
+
+					(*var_index_node_ids)[f.id()] = -1;
+					(*var_index_edge_ids)[f.id()] = -1;
+					(*var_index_face_ids)[f.id()] = -1;
+					(*var_index_region_ids)[f.id()] = -1;
 				}
 
 			}
@@ -224,6 +271,11 @@ WriterDartsVTK::execute(std::string AFilename, int AToMark)
 
 					set_alpha2.insert(dh);
 					set_alpha2.insert(d2);
+
+					(*var_index_node_ids)[f.id()] = -1;
+					(*var_index_edge_ids)[f.id()] = -1;
+					(*var_index_face_ids)[f.id()] = -1;
+					(*var_index_region_ids)[f.id()] = -1;
 				}
 
 			}
@@ -240,6 +292,11 @@ WriterDartsVTK::execute(std::string AFilename, int AToMark)
 
 					set_alpha3.insert(dh);
 					set_alpha3.insert(d3);
+
+					(*var_index_node_ids)[f.id()] = -1;
+					(*var_index_edge_ids)[f.id()] = -1;
+					(*var_index_face_ids)[f.id()] = -1;
+					(*var_index_region_ids)[f.id()] = -1;
 				}
 
 			}

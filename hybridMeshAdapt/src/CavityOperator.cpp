@@ -221,7 +221,7 @@ bool CavityOperator::CavityIO::CavityIO::nodeInCavity(const TInt node)
         if(triBitvector[oppositeTriangle] == 0)
         {
           //fill m_borderSurfaceNode
-          std::vector<TInt> borderEdge = triangle.getOppositeEdge(localIndex);
+          std::vector<TSimplexID> borderEdge = triangle.getOppositeEdge(localIndex);
 
           //condition to look if an indesirable triangle will be built during the cavity's rebuilding (triangle with it's 3 vertex on the same ridge)
           if((*BND_CURVE_COLOR)[node] != 0 && ((*BND_CURVE_COLOR)[borderEdge.front()] == (*BND_CURVE_COLOR)[node]) && ((*BND_CURVE_COLOR)[borderEdge.front()] == (*BND_CURVE_COLOR)[borderEdge.back()]))
@@ -280,7 +280,7 @@ void CavityOperator::CavityIO::CavityIO::nodesReconnection(const TInt node)
   }
 
   //looking for the border surface node contain in the m_cavityTriangleConnectedToP vector
-  std::vector<TInt> initVec{border, border, border};
+  std::vector<TSimplexID> initVec{border, border, border};
   m_localsNodeForReconnectionWithTriangle.resize(m_nodesToReconnect.size(), initVec);
   m_oppositeTriangle.resize(m_nodesToReconnect.size(), initVec);
   m_triangleIndices.resize(m_nodesToReconnect.size(), initVec);

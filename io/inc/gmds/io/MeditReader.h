@@ -24,12 +24,12 @@ namespace gmds {
          * @param AUseMeditLabels use medit labels to define groups of cells
          * 						  in the mesh
          */
-		MeditReader(IMeshIOService *AMeshService,
-					const bool AUseMeditLabels = false);
+		explicit MeditReader(IMeshIOService *AMeshService,
+					bool AUseMeditLabels = false);
 
 		/*------------------------------------------------------------------------*/
 		/** \brief  Destructor.	*/
-		virtual ~MeditReader();
+		~MeditReader() override;
 
 		/** @brief Set the option flags for using medit labels or not. NOT USED RIGHT NOW
 		 *
@@ -37,7 +37,7 @@ namespace gmds {
          * 					  in the mesh
 
 		 */
-		void setOptionWithLabel(const bool AWithLabels);
+		void setOptionWithLabel(bool AWithLabels);
 		/*------------------------------------------------------------------------*/
 		/** \brief  Read the content of the file named fileName and write it in
          *   		m_mesh.
@@ -51,12 +51,12 @@ namespace gmds {
 
 	protected:
 
-		virtual bool preCheckFormat();
+		bool preCheckFormat() override;
 
-		void readNodes();
-		void readEdges();
-		void readFaces();
- 		void readRegions();
+		void readNodes() override;
+		void readEdges() override;
+		void readFaces() override;
+ 		void readRegions() override;
 
  		void readTriangles();
  		void readQuadrilaterals();
@@ -65,7 +65,7 @@ namespace gmds {
  		void readHexahedra();
 
 		/** mesh dimension */
-		int m_mesh_dimension;
+		int m_mesh_dimension{};
 
 		bool m_with_labels;
 /*

@@ -607,12 +607,12 @@ PGPComputing::getOrientedEdge(const gmds::Face& AF){
 
 /*---------------------------------------------------------------------------*/
 PGPComputing::OrientedEdge::OrientedEdge()
-{;}
+{}
 /*---------------------------------------------------------------------------*/
 PGPComputing::OrientedEdge::OrientedEdge(gmds::Edge& AE,
                                          gmds::Node& AF,
                                          gmds::Node& AS):
-        edge(AE), first(AF),second(AS){;}
+        edge(AE), first(AF),second(AS){}
 /*---------------------------------------------------------------------------*/
 PGPComputing::OrientedEdge::OrientedEdge(gmds::Edge& AE)
 {

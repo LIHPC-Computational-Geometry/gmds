@@ -17,7 +17,7 @@ namespace gmds {
     {}
     /*----------------------------------------------------------------------------*/
     MeshDoctor::~MeshDoctor()
-    {}
+    = default;
     
     /*----------------------------------------------------------------------------*/
     void MeshDoctor::setMesh(Mesh* AMesh)
@@ -166,9 +166,9 @@ namespace gmds {
             for(auto id_f : m_mesh->faces()) {
                 Face f = m_mesh->get<Face>(id_f);
                 std::vector<Node> nodes = f.get<Node>();
-                for(unsigned int i=0; i<nodes.size();i++)
-                    if(!nodes[i].has<Face>(f)) {
-                        nodes[i].add<Face>(f);
+                for(auto & node : nodes)
+                    if(!node.has<Face>(f)) {
+                        node.add<Face>(f);
                     }
             }
             
@@ -179,9 +179,9 @@ namespace gmds {
                 Face f = m_mesh->get<Face>(id_f);
                 std::vector<Edge> edges = f.get<Edge>();
                 
-                for(unsigned int i=0; i<edges.size();i++)
-                    if(!edges[i].has<Face>(f)) {
-                        edges[i].add<Face>(f);
+                for(auto & edge : edges)
+                    if(!edge.has<Face>(f)) {
+                        edge.add<Face>(f);
                     }
             }
         }
@@ -192,9 +192,9 @@ namespace gmds {
                 Region r = m_mesh->get<Region>(id_r);
                 std::vector<Node> nodes = r.get<Node>();
                 
-                for(unsigned int i=0; i<nodes.size();i++)
-                    if(!nodes[i].has<Region>(r)) {
-                        nodes[i].add<Region>(r);
+                for(auto & node : nodes)
+                    if(!node.has<Region>(r)) {
+                        node.add<Region>(r);
                     }
             }
         }
@@ -205,9 +205,9 @@ namespace gmds {
                 Region r = m_mesh->get<Region>(id_r);
                 std::vector<Edge> edges = r.get<Edge>();
                 
-                for(unsigned int i=0; i<edges.size();i++)
-                    if(!edges[i].has<Region>(r)) {
-                        edges[i].add<Region>(r);
+                for(auto & edge : edges)
+                    if(!edge.has<Region>(r)) {
+                        edge.add<Region>(r);
                     }
             }
         }
@@ -218,9 +218,9 @@ namespace gmds {
                 Edge e = m_mesh->get<Edge>(e_id);
                 std::vector<Node> nodes = e.get<Node>();
                 
-                for(unsigned int i=0; i<nodes.size();i++)
-                    if(!nodes[i].has<Edge>(e)) {
-                        nodes[i].add<Edge>(e);
+                for(auto & node : nodes)
+                    if(!node.has<Edge>(e)) {
+                        node.add<Edge>(e);
                     }
             }
         }
@@ -231,9 +231,9 @@ namespace gmds {
                 Region r = m_mesh->get<Region>(id_r);
                 std::vector<Face> faces = r.get<Face>();
                 
-                for(unsigned int i=0; i<faces.size();i++) {
-                    if(!faces[i].has<Region>(r)) {
-                        faces[i].add<Region>(r);
+                for(auto & face : faces) {
+                    if(!face.has<Region>(r)) {
+                        face.add<Region>(r);
                     }
                 }
             }
@@ -389,7 +389,7 @@ namespace gmds {
     /*----------------------------------------------------------------------------*/
     TCellID MeshDoctor::
     addFace(Face& AFace,
-            std::map<VirtualFace::FaceID, TCellID>& AFakeFaceMap) const
+            std::map<VirtualFace::FaceID, TCellID>& AFakeFaceMap)
     {
         TCellID f_id;
         std::vector<TCellID> f_nodes = AFace.getIDs<Node>();

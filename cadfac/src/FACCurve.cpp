@@ -120,10 +120,10 @@ namespace gmds{
             }
 
             if(nb_convex>nb_concave && nb_convex>nb_flat)
-                return GeomCurve::CONVEX;
+                return GeomCurve::Convex;
             if(nb_concave>nb_convex && nb_concave>nb_flat)
-                return GeomCurve::CONCAVE;
-            return GeomCurve::FLAT;
+                return GeomCurve::Concave;
+            return GeomCurve::Flat;
         }
 /*----------------------------------------------------------------------------*/
         math::Point FACCurve::closestPoint(const math::Point &AP) const
@@ -132,7 +132,7 @@ namespace gmds{
             TCellID  min_id = NullID;
             for(auto e_id: m_mesh_edges){
                 Edge e = m_support->get<Edge>(e_id);
-                math:math::Point c= e.center();
+                math::Point c= e.center();
                 if(AP.distance2(c)<min_dist){
                     min_id = e_id;
                     min_dist = AP.distance2(c);

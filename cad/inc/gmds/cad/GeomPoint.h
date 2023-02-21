@@ -33,13 +33,13 @@ namespace gmds{
             /*------------------------------------------------------------------------*/
             /** \brief  Constructor
              */
-            GeomPoint(const std::string& AName = "Unknown point")
-                    :GeomEntity(AName){;}
+            explicit GeomPoint(const std::string& AName = "Unknown point")
+                    :GeomEntity(AName){}
 
             /*------------------------------------------------------------------------*/
             /** \brief  provides the dimension of the geometrical entity.
              */
-            int dim() const {return 0;}
+            int dim() const override {return 0;}
 
             /*------------------------------------------------------------------------*/
             /** \brief  Access to X coordinate
@@ -89,11 +89,11 @@ namespace gmds{
              *
              *  \param AP the point to project
              */
-            virtual void project(gmds::math::Point& AP) const{
+            void project(gmds::math::Point& AP) const override{
                 AP.setXYZ(X(),Y(),Z());
             };
 
-            virtual int id() const =0;
+            int id() const override =0;
 
             /**@brief Accessor to the adjacent curves. Warning, there is no
              *  assumption about the ordering

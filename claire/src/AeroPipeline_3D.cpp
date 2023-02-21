@@ -112,7 +112,7 @@ AeroPipeline_3D::EcritureMaillage(){
 	vtkWriter.write(m_params.output_file);
 
 	// Ecriture du maillage initial (tetra)
-	ioService = m_meshTet;
+	ioService = IGMeshIOService(m_meshTet);
 	gmds::VTKWriter vtkWriter2(&ioService);
 	vtkWriter2.setCellOptions(gmds::N|gmds::F);
 	vtkWriter2.setDataOptions(gmds::N|gmds::F);

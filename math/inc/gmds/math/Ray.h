@@ -60,16 +60,14 @@ public:
          *
          * \param ARay a ray
          */
-        Ray(const Ray& ARay)
-        :m_pnt(ARay.m_pnt),m_dir(ARay.m_dir),
-	  m_isDirUnit(ARay.m_isDirUnit),m_dirUnit(ARay.m_dirUnit) {
-        }
+        Ray(const Ray& ARay)= default;
 	
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Overloaded operator=
 	 */
-	virtual Ray& operator= (const Ray&);
+
+	     Ray& operator= (const Ray&);
 
 	/*------------------------------------------------------------------------*/
         /** \brief  Overloaded operator<< for output

@@ -253,7 +253,7 @@ namespace gmds{
             SHFrame():m_a(SH::Identity()),
             m_x(Eigen::Vector3d(1,0,0)),
             m_y(Eigen::Vector3d(0,1,0)),
-            m_z(Eigen::Vector3d(0,0,1)){;}
+            m_z(Eigen::Vector3d(0,0,1)){}
             
             SHFrame(const SHFrame& AF){
                 m_a = AF.m_a;

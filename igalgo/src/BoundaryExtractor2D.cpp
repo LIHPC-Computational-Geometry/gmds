@@ -28,15 +28,14 @@ BoundaryExtractor2D(gmds::Mesh *AFromMesh, gmds::Mesh *AToMesh)
 }
 /*----------------------------------------------------------------------------*/
 BoundaryExtractor2D::~BoundaryExtractor2D()
-{
-}
+= default;
 /*----------------------------------------------------------------------------*/
 bool BoundaryExtractor2D::isValid() const
 {
     //check the input first
     bool valid_input=true;
     MeshModel model = m_from_mesh->getModel();
-    if (!model.has(F)  || !model.has(N2F) || !model.has(F2N))
+    if (!model.has(F) || !model.has(N2F) || !model.has(F2N))
         valid_input= false;
 
     if(!valid_input)
@@ -46,7 +45,7 @@ bool BoundaryExtractor2D::isValid() const
     model = m_to_mesh->getModel();
     if (model.has(R))
         return false;
-    if (!model.has(E) || !model.has(E2N)| !model.has(N2E))
+    if (!model.has(E) || !model.has(E2N) || !model.has(N2E))
         return false;
 
 
@@ -98,11 +97,11 @@ void BoundaryExtractor2D::execute()
 {
     //the call to the boundary operator is generic in 2D and 3D for many
     //treatments. So we use her more marks that we could expect first
-    int mark_node_on_curv   = m_from_mesh->newMark<Node>();
-    int mark_node_on_pnt    = m_from_mesh->newMark<Node>();
-    int mark_node_isolated  = m_from_mesh->newMark<Node>();
+    TInt mark_node_on_curv   = m_from_mesh->newMark<Node>();
+	 TInt mark_node_on_pnt    = m_from_mesh->newMark<Node>();
+	 TInt mark_node_isolated  = m_from_mesh->newMark<Node>();
 
-    int mark_edge_on_curv   = m_from_mesh->newMark<Edge>();
+	 TInt mark_edge_on_curv   = m_from_mesh->newMark<Edge>();
 
 
     BoundaryOperator2D boundaryOp(m_from_mesh);

@@ -485,7 +485,7 @@ AeroPipeline_2D::EcritureMaillage(){
 	vtkWriter_Blocking.write("AeroPipeline2D_Blocking.vtk");
 
 	std::cout << "			2. Ecriture Maillage Quad en .vtk ..." << std::endl;
-	ioService = m_meshHex;
+	ioService = IGMeshIOService(m_meshHex);
 	gmds::VTKWriter vtkWriter_HexMesh(&ioService);
 	vtkWriter_HexMesh.setCellOptions(gmds::N|gmds::F);
 	vtkWriter_HexMesh.setDataOptions(gmds::N|gmds::F);
@@ -493,7 +493,7 @@ AeroPipeline_2D::EcritureMaillage(){
 
 
 	std::cout << "			3. Ecriture Maillage Tri en .vtk ..." << std::endl;
-	ioService = m_meshTet;
+	ioService = IGMeshIOService(m_meshTet);
 	gmds::VTKWriter vtkWriter_TetMesh(&ioService);
 	vtkWriter_TetMesh.setCellOptions(gmds::N|gmds::F);
 	vtkWriter_TetMesh.setDataOptions(gmds::N|gmds::F);
@@ -509,7 +509,7 @@ AeroPipeline_2D::EcritureMaillage(){
 	gmds::Mesh meshReavel(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
 	math::Utils::CurveBlockEdgesReavel(&m_Blocking2D, &meshReavel);
 	std::cout << "			5. Ecriture Maillage Reavel en .vtk ..." << std::endl;
-	ioService = &meshReavel;
+	ioService = IGMeshIOService(&meshReavel);
 	gmds::VTKWriter vtkWriter_CurvedReavel(&ioService);
 	vtkWriter_CurvedReavel.setCellOptions(gmds::N|gmds::F);
 	vtkWriter_CurvedReavel.setDataOptions(gmds::N|gmds::F);

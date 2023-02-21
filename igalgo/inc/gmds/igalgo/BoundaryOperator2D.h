@@ -46,10 +46,10 @@ namespace gmds{
          * 	@param AMarkAN isolated nodes (connected to nothing) are marked with it
          */
 
-        void markCellOnGeometry(const int AMarkEOnCurve,
-                                const int AMarkNOnCurve,
-                                const int AMarkNOnPnt,
-                                const int AMarkAN);
+        void markCellOnGeometry(int AMarkEOnCurve,
+                                int AMarkNOnCurve,
+                                int AMarkNOnPnt,
+                                int AMarkAN);
 
         /*------------------------------------------------------------------------*/
         /** @brief  Color the boundary edges with different colors to get one
@@ -61,8 +61,8 @@ namespace gmds{
          * @param[in] AColor color variable to be used. Otherwise, variable named
          *            "BND_CURVE_COLOR" will be retrieved or created.
          */
-        void colorEdges(const int AMarkEOnCurv, const int AMarkNOnPnt,
-                        Variable<int>* AColor=NULL);
+        void colorEdges(int AMarkEOnCurv, int AMarkNOnPnt,
+                        Variable<int>* AColor=nullptr);
 
         /*------------------------------------------------------------------------*/
         /** @brief  Color the boundary  nodes to get one color per geometric vertex
@@ -72,8 +72,8 @@ namespace gmds{
          * @param[in] AColor color variable to be used. Otherwise, variable named
          *            "BND_VERTEX_COLOR" will be retrieved or created.
          */
-        void colorNodes(const int AMarkNOnPnt,
-                        Variable<int>* AColor=NULL);
+        void colorNodes(int AMarkNOnPnt,
+                        Variable<int>* AColor=nullptr);
 
         /*------------------------------------------------------------------------*/
         /** @brief Return the boundary nodes
@@ -89,7 +89,7 @@ namespace gmds{
          * @param[in]  AMarkCE edges on geom curves
          * @param[in]  AMarkCN nodes on geom curves
          */
-        void markCellsOnCurves(const int AMarkCE, const int AMarkCN);
+        void markCellsOnCurves( int AMarkCE,  int AMarkCN);
 
 
         /*------------------------------------------------------------------------*/
@@ -98,14 +98,14 @@ namespace gmds{
          * @param[in]  AMarkCN nodes on geom curves
          * @param[out]  AMarkPN nodes on geom points
          */
-        void markNodesOnPoint(const int AMarkCE, const int AMarkCN,
-                              const int AMarkPN);
+        void markNodesOnPoint( int AMarkCE, int AMarkCN,
+                               int AMarkPN);
 
         /*------------------------------------------------------------------------*/
         /** @brief  Mark the boundary nodes that do not have adjacent edges
          * @param  AMarkAlone  mark of alone nodes
          */
-        void markAloneNodes(const int AMarkAlone);
+        void markAloneNodes( int AMarkAlone);
 
     protected:
         /* a mesh */
@@ -114,5 +114,5 @@ namespace gmds{
     /*----------------------------------------------------------------------------*/
 }
 /*----------------------------------------------------------------------------*/
-#endif /* GMDS_BOUNDARY_OPERATOR_H_ */
+#endif /* GMDS_BOUNDARY_OPERATOR_2D_H_ */
 /*----------------------------------------------------------------------------*/

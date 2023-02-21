@@ -10,7 +10,7 @@
 // STL File Headers
 #include <cmath>
 #include <cassert>
-#include <string.h>
+#include <cstring>
 #include <iostream>
 /*----------------------------------------------------------------------------*/
 // GMDS File Headers
@@ -208,13 +208,6 @@ namespace gmds{
 
 
 			  /*------------------------------------------------------------------------*/
-			  /** \brief  set vector
-		  *
-		  *  \param a tabular of TDim TBase-type element
-				*/
-			  void set(const value_type param[TRow][TCol]);
-
-			  /*------------------------------------------------------------------------*/
 			  /** \brief Returns the Euler-angles of the 3x3 rotation matrix \c *this
 			*         from the parameters (\p AR0,\p AR1,\p AR2) where each parameter
 			*         defines a rotation axis as an integer in {0,1,2}. 0 means X,
@@ -313,7 +306,7 @@ namespace gmds{
             static bool perform(const TType t[3][3], TType(&i)[3][3])
             {
                 double det = DetTraits<3, 3, TType>::perform(t);
-                if (det){
+                if (det!=0){
                     double inv_det = 1. / det;
                     i[0][0] =  (t[1][1] * t[2][2] - t[1][2] * t[2][1]) * inv_det;
                     i[1][0] = -(t[1][0] * t[2][2] - t[1][2] * t[2][0]) * inv_det;
@@ -468,9 +461,9 @@ namespace gmds{
                 
                 det = 1.0 / det;
                 
-                for (int j = 0; j < 4; j++)
+                for (auto & j : i)
                     for (int k = 0; k < 4; k++)
-                        i[j][k] = i[j][k] * det;
+                        j[k] = j[k] * det;
                 
                 return true;
                 

@@ -82,7 +82,7 @@ bool VectorDyn::
 operator==(const VectorDyn& vec) const
 {
 	if(size_!=vec.size_)
-		GMDSException("2 vectors with different dimension cannot be compared");
+		throw GMDSException("2 vectors with different dimensions cannot be compared");
 
 	bool result = true;
 	for(unsigned int i=0;i<size_;i++)
@@ -133,7 +133,7 @@ TCoord VectorDyn::normLp(const TInt& AP) const
 	TCoord s=0;
  	for(int i=0;i<size_;i++)
 		s=s+pow(tab_[i],AP);
- 	double inv_p = 1.0/(double)AP;
+ 	   double inv_p = 1.0/(double)AP;
 	return pow(s,inv_p);
 }
 /*----------------------------------------------------------------------------*/
@@ -166,7 +166,7 @@ void VectorDyn::set(const TCoord* ATab, const TInt ANb)
 TCoord VectorDyn::dot(const VectorDyn& vec) const
 {
 	if(size_!=vec.size_)
-		GMDSException("A dot product cannot be done between 2 vectors with different dimensions");
+		throw GMDSException("A dot product cannot be done between 2 vectors with different dimensions");
 
 	TCoord r=0.0;
 	for(int i=0;i<size_;i++)
@@ -178,7 +178,7 @@ TCoord VectorDyn::dot(const VectorDyn& vec) const
 VectorDyn VectorDyn::cross(const VectorDyn& vec) const
 {
 	if(size_!=vec.size_)
-		GMDSException("A cross product cannot be done between 2 vectors with different dimensions");
+		throw GMDSException("A cross product cannot be done between 2 vectors with different dimensions");
 	if(size_>3){
 		throw GMDSException("Cross product not yet implemented for 4 and higher dimension vector");
 	}
@@ -199,7 +199,7 @@ VectorDyn VectorDyn::cross(const VectorDyn& vec) const
 bool VectorDyn::isColinear(const VectorDyn& vec) const
 {
 	if(size_!=vec.size_)
-		GMDSException("We cannot check the colinearity of 2 vectors with different dimensions");
+		throw GMDSException("We cannot check the colinearity of 2 vectors with different dimensions");
 
 	VectorDyn v(*this), v2=vec;
 	v.normalize();
@@ -211,7 +211,7 @@ bool VectorDyn::isColinear(const VectorDyn& vec) const
 bool VectorDyn::isOrthogonal(const VectorDyn& vec) const
 {
 	if(size_!=vec.size_)
-		GMDSException("We cannot check the orthogonality of 2 vectors with different dimensions");
+		throw GMDSException("We cannot check the orthogonality of 2 vectors with different dimensions");
 	return (dot(vec)==0.0);
 }
 /*------------------------------------------------------------------------*/
@@ -229,7 +229,7 @@ VectorDyn VectorDyn::operator^(const TInt n)
 VectorDyn operator-(const VectorDyn& a, const VectorDyn& b)
 {
 	if(a.size_!=b.size_)
-		GMDSException("We cannot make a difference betwen 2 vectors with different dimensions");
+		throw GMDSException("We cannot make a difference betwen 2 vectors with different dimensions");
 	VectorDyn v(a.size_);
 	for(int i=0;i<a.size_;i++)
 		v.tab_[i] = a.tab_[i]-b.tab_[i];
@@ -239,7 +239,7 @@ VectorDyn operator-(const VectorDyn& a, const VectorDyn& b)
 VectorDyn operator+(const VectorDyn& a, const VectorDyn& b)
 {
 	if(a.size_!=b.size_)
-		GMDSException("We cannot sum 2 vectors with different dimensions");
+		throw GMDSException("We cannot sum 2 vectors with different dimensions");
 	VectorDyn v(a.size_);
 	for(int i=0;i<a.size_;i++)
 		v.tab_[i] = a.tab_[i]+b.tab_[i];

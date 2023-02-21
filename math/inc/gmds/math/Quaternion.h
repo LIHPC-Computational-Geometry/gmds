@@ -61,7 +61,7 @@ namespace gmds {
             /** \brief Copy constructor
              * \param[in] AQ A quaternion to be copied
              */
-            Quaternion(const Quaternion& AQ) : m_r(AQ.m_r), m_i(AQ.m_i) {}
+            Quaternion(const Quaternion& AQ) = default;
             
             /*------------------------------------------------------------------------*/
             /** \brief Constructs Quaternion from a vector and a scalar
@@ -77,11 +77,7 @@ namespace gmds {
              * \param[in] AQ the Quaternion to be copied
              * \return    a reference to (*this)
              */
-            Quaternion& operator = ( const Quaternion &AQ ) {
-                m_r = AQ.m_r;
-                m_i = AQ.m_i;
-                return *this ;
-            }
+            Quaternion& operator = ( const Quaternion &AQ ) = default;
 
             /*------------------------------------------------------------------------*/
             /** \brief Accessors
@@ -235,7 +231,7 @@ namespace gmds {
              */
             static Quaternion SLERP(const Quaternion& AFrom,
                                     const Quaternion& ATo,
-                                    const double APAram);
+                                    double APAram);
             /*------------------------------------------------------------------------*/
             /** \brief A simple pondered mean
              *
