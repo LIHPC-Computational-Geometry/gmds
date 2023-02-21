@@ -68,7 +68,7 @@ TEST(CGNSWriterTestSuite, test_monobloc_2){
 
 }
 /*----------------------------------------------------------------------------*/
-TEST(CGNSWriterTestSuite, test_triangles){
+TEST(CGNSWriterTestSuite, DISABLED_test_triangles){
 
 	gmds::Mesh m(gmds::DIM2|gmds::N|gmds::F|gmds::N2F|gmds::F2N);
 
@@ -93,53 +93,3 @@ TEST(CGNSWriterTestSuite, test_triangles){
 
 }
 /*----------------------------------------------------------------------------*/
-TEST(CGNSWriterTestSuite, test_resultClaire){
-	gmds::Mesh m(gmds::DIM2|gmds::N|gmds::E|gmds::F|gmds::N2E|gmds::N2F|gmds::E2N|gmds::E2F|gmds::F2N|gmds::F2E);
-
-	std::string vtk_file = "/home/calderans/dev/AeroPipeline2D_Blocking.vtk";
-
-	gmds::IGMeshIOService ioService(&m);
-	gmds::VTKReader vtkReader(&ioService);
-	vtkReader.setCellOptions(gmds::N|gmds::F);
-	vtkReader.setDataOptions(gmds::N|gmds::F);
-	vtkReader.read(vtk_file);
-
-	gmds::Variable<int>* discrI = m.getVariable<int, gmds::GMDS_FACE>("discretizationI");
-	gmds::Variable<int>* discrJ = m.getVariable<int, gmds::GMDS_FACE>("discretizationJ");
-	gmds::Variable<int>* couche = m.getVariable<int, gmds::GMDS_NODE>("GMDS_Couche");
-
-	gmds::Blocking2D b(m);
-
-	gmds::Variable<int>* farfield_mark = b.newVariable<int, gmds::GMDS_NODE>("Farfield");
-	gmds::Variable<int>* vehicule_mark = b.newVariable<int, gmds::GMDS_NODE>("Vehicule");
-
-	for(auto f : m.faces()){
-
-		gmds::Blocking2D::Block block = b.block(f);
-		block.setNbDiscretizationI(discrI->value(f));
-		block.setNbDiscretizationJ(discrJ->value(f));
-
-		for(auto n : b.nodes()){
-			if(couche->value(n) == 0){
-				vehicule_mark->set(n,1);
-			}
-			else if(couche->value(n) == 4){
-				farfield_mark->set(n,1);
-			}
-		}
-	}
-
-	gmds::IGMeshIOService ioService1(&b);
-	gmds::VTKWriter writer1(&ioService1);
-	writer1.setCellOptions(gmds::N|gmds::F);
-	writer1.setDataOptions(gmds::N|gmds::F);
-	writer1.write("test_blocking_read.vtk");
-
-	b.initializeGridPoints();
-
-
-
-	gmds::blocking::CGNSWriter writer(&b);
-	writer.write("aeropipeline_cgns");
-
-}

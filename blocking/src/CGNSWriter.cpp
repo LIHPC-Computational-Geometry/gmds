@@ -77,40 +77,35 @@ void CGNSWriter::writeZones(){
 
 	int id_bc = 0;
 
-	for(auto b : m_blocks->allBlocks()){
+	for(auto b : m_blocks->allBlocks()) {
 
-		std::cout<<"Writing zone "<<b.id()<<std::endl;
+		std::cout << "Writing zone " << b.id() << std::endl;
 
-		//Le nom de la zone correspond au nom du bloc, dans notre cas on l'appel juste
-		// "Block_<Block_ID>"
+		// Le nom de la zone correspond au nom du bloc, dans notre cas on l'appel juste
+		//  "Block_<Block_ID>"
 		std::stringstream ss;
-		ss <<"FLUIDE "<<std::setw(5)<<std::setfill('0')<<b.id();//Pour le moment on utilise les faces du mesh comme bloc
+		ss << "FLUIDE " << std::setw(5) << std::setfill('0') << b.id();     // Pour le moment on utilise les faces du mesh comme bloc
 		std::string name = ss.str();
 		char zonename[32];
-		strcpy(zonename,name.c_str());
+		strcpy(zonename, name.c_str());
 
 		int discrI = b.getNbDiscretizationI();
 		int discrJ = b.getNbDiscretizationJ();
 
 		// Ici on va remplir les infos sur le nombre de sommets, mailles etc du bloc
-		cgsize_t zone_size[6] = {discrI,
-		                         discrJ,
-		                         discrI - 1,
-		                         discrJ - 1,
-		                         0, 0};
+		cgsize_t zone_size[6] = {discrI, discrJ, discrI - 1, discrJ - 1, 0, 0};
 
-		cg_zone_write(m_indexFile,m_indexBase,zonename,zone_size,Structured,&m_indexZone);
+		cg_zone_write(m_indexFile, m_indexBase, zonename, zone_size, Structured, &m_indexZone);
 
-
-		double x_coords[discrI*discrJ];
-		double y_coords[discrI*discrJ];
-		double z_coords[discrI*discrJ];
+		double x_coords[discrI * discrJ];
+		double y_coords[discrI * discrJ];
+		double z_coords[discrI * discrJ];
 
 		int i_coord = 0;
-		for(int j = 0; j<discrJ; j++){
-			for(int i = 0; i<discrI; i++){
-				x_coords[i_coord] = b(i,j).X();
-				y_coords[i_coord] = b(i,j).Y();
+		for (int j = 0; j < discrJ; j++) {
+			for (int i = 0; i < discrI; i++) {
+				x_coords[i_coord] = b(i, j).X();
+				y_coords[i_coord] = b(i, j).Y();
 				z_coords[i_coord] = 0;
 				i_coord++;
 			}
@@ -119,182 +114,175 @@ void CGNSWriter::writeZones(){
 		int index_coord;
 
 		char coord_nameX[32];
-		strcpy(coord_nameX,"CoordinateX");
+		strcpy(coord_nameX, "CoordinateX");
 		char coord_nameY[32];
-		strcpy(coord_nameY,"CoordinateY");
+		strcpy(coord_nameY, "CoordinateY");
 		char coord_nameZ[32];
-		strcpy(coord_nameZ,"CoordinateZ");
+		strcpy(coord_nameZ, "CoordinateZ");
 
-		cg_coord_write(m_indexFile,m_indexBase,m_indexZone,RealDouble, coord_nameX, &x_coords, &index_coord);
-		cg_coord_write(m_indexFile,m_indexBase,m_indexZone,RealDouble, coord_nameY, &y_coords, &index_coord);
-		cg_coord_write(m_indexFile,m_indexBase,m_indexZone,RealDouble, coord_nameZ, &z_coords, &index_coord);
+		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, RealDouble, coord_nameX, &x_coords, &index_coord);
+		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, RealDouble, coord_nameY, &y_coords, &index_coord);
+		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, RealDouble, coord_nameZ, &z_coords, &index_coord);
 
 		b.computeT();
 
-		for(auto const &connection : b.getT()){
+		for (auto const &connection : b.getT()) {
 
 			int id = connection.first;
 			std::vector<int> T = connection.second;
 
 			Blocking2D::Block voisin = m_blocks->block(id);
 
-
-			//TRES MOCHE A CHANGER MAIS POUR LE MOMENT CA FAIT L'AFFAIRE
+			// TRES MOCHE A CHANGER MAIS POUR LE MOMENT CA FAIT L'AFFAIRE
 			int edge_id = m_blocks->get<Face>(b.id()).getIDs<Edge>()[b.getInterfaceInfo()[id][0]];
 
 			char interface[33];
 			std::stringstream interface_ss;
-			interface_ss <<"C"<<std::setw(5)<<std::setfill('0')<<edge_id<<" (F"<<std::setw(5)<<std::setfill('0')<<b.id()<<" & F"<<std::setw(5)<<std::setfill('0')<<id<<")";
+			interface_ss << "C" << std::setw(5) << std::setfill('0') << edge_id << " (F" << std::setw(5) << std::setfill('0') << b.id() << " & F" << std::setw(5)
+			             << std::setfill('0') << id << ")";
 			std::string interface_s = interface_ss.str();
 			strcpy(interface, interface_s.c_str());
-			std::cout<<"\t -> connection "<<interface_s<<std::endl;
+			std::cout << "\t -> connection " << interface_s << std::endl;
 
 			std::stringstream name2_ss;
-			name2_ss <<"FLUIDE " << std::setw(5)<<std::setfill('0')<<id;
-			std::string name2 = name2_ss.str();//Pour le moment on utilise les faces du mesh comme bloc
+			name2_ss << "FLUIDE " << std::setw(5) << std::setfill('0') << id;
+			std::string name2 = name2_ss.str();     // Pour le moment on utilise les faces du mesh comme bloc
 			char zonename2[32];
-			strcpy(zonename2,name2.c_str());
+			strcpy(zonename2, name2.c_str());
 
-			cgsize_t pts1[4],pts2[4];
+			cgsize_t pts1[4], pts2[4];
 
-			std::cout<<b.getInterfaceInfo()[id][0]<<std::endl;
-			std::cout<<b.getInterfaceInfo()[id][1]<<std::endl;
+			std::cout << b.getInterfaceInfo()[id][0] << std::endl;
+			std::cout << b.getInterfaceInfo()[id][1] << std::endl;
 
 			switch (b.getInterfaceInfo()[id][0]) {
-				case 0:
-					pts1[0] = 1;
-					pts1[1] = 1;
-					pts1[2] = discrI;
-					pts1[3] = 1;
-					break;
-				case 1:
-					pts1[0] = discrI;
-					pts1[1] = 1;
-					pts1[2] = discrI;
-					pts1[3] = discrJ;
-					break;
-				case 2:
-					pts1[0] = 1;
-					pts1[1] = discrJ;
-					pts1[2] = discrI;
-					pts1[3] = discrJ;
-					break;
-				case 3:
-					pts1[0] = 1;
-					pts1[1] = 1;
-					pts1[2] = 1;
-					pts1[3] = discrJ;
-					break;
+			case 0:
+				pts1[0] = 1;
+				pts1[1] = 1;
+				pts1[2] = discrI;
+				pts1[3] = 1;
+				break;
+			case 1:
+				pts1[0] = discrI;
+				pts1[1] = 1;
+				pts1[2] = discrI;
+				pts1[3] = discrJ;
+				break;
+			case 2:
+				pts1[0] = 1;
+				pts1[1] = discrJ;
+				pts1[2] = discrI;
+				pts1[3] = discrJ;
+				break;
+			case 3:
+				pts1[0] = 1;
+				pts1[1] = 1;
+				pts1[2] = 1;
+				pts1[3] = discrJ;
+				break;
 			}
 
 			switch (b.getInterfaceInfo()[id][1]) {
-				case 0:
-					pts2[0] = 1;
-					pts2[1] = 1;
-					pts2[2] = voisin.getNbDiscretizationI();
-					pts2[3] = 1;
-					break;
-				case 1:
-					pts2[0] = voisin.getNbDiscretizationI();
-					pts2[1] = 1;
-					pts2[2] = voisin.getNbDiscretizationI();
-					pts2[3] = voisin.getNbDiscretizationJ();
-					break;
-				case 2:
-					pts2[0] = 1;
-					pts2[1] = voisin.getNbDiscretizationJ();
-					pts2[2] = voisin.getNbDiscretizationI();
-					pts2[3] = voisin.getNbDiscretizationJ();
-					break;
-				case 3:
-					pts2[0] = 1;
-					pts2[1] = 1;
-					pts2[2] = 1;
-					pts2[3] = voisin.getNbDiscretizationJ();
-					break;
+			case 0:
+				pts2[0] = 1;
+				pts2[1] = 1;
+				pts2[2] = voisin.getNbDiscretizationI();
+				pts2[3] = 1;
+				break;
+			case 1:
+				pts2[0] = voisin.getNbDiscretizationI();
+				pts2[1] = 1;
+				pts2[2] = voisin.getNbDiscretizationI();
+				pts2[3] = voisin.getNbDiscretizationJ();
+				break;
+			case 2:
+				pts2[0] = 1;
+				pts2[1] = voisin.getNbDiscretizationJ();
+				pts2[2] = voisin.getNbDiscretizationI();
+				pts2[3] = voisin.getNbDiscretizationJ();
+				break;
+			case 3:
+				pts2[0] = 1;
+				pts2[1] = 1;
+				pts2[2] = 1;
+				pts2[3] = voisin.getNbDiscretizationJ();
+				break;
 			}
 
 			int transform[2];
 			transform[0] = b.getT()[id][0];
 			transform[1] = b.getT()[id][1];
 
-			if(cg_1to1_write(m_indexFile,m_indexBase,b.id()+1,interface,zonename2,pts1,pts2,transform,&index_tf)
-			    != CG_OK) {
-				std::cout<<cg_get_error()<<std::endl;
+			if (cg_1to1_write(m_indexFile, m_indexBase, b.id() + 1, interface, zonename2, pts1, pts2, transform, &index_tf) != CG_OK) {
+				std::cout << cg_get_error() << std::endl;
 			}
-
 		}
 
-		//get coords of the 2 block corners that define boundary condition (bc), all mesh nodes between will be in the bc
+		// get coords of the 2 block corners that define boundary condition (bc), all mesh nodes between will be in the bc
 
-		cgsize_t pts_bc[4];
+		try {
+			cgsize_t pts_bc[4];
+            Variable<int> *couche = m_blocks->getVariable<int, GMDS_NODE>("GMDS_Couche");
 
-		//For now, we assume that a bc is on only one edge of a block
-		Variable<int>* farfield;
-		Variable<int>* vehicule;
+            int couche_max = 0;
+            for (auto n : m_blocks->nodes()) {
+                if (couche->value(n) > couche_max) couche_max = couche->value(n);
+            }
 
+            // The next steps can be rewrited using a design pattern
+            //  -> maybe putting the BoundaryCondition writing in a separated class
 
-		Variable<int>* couche = m_blocks->getVariable<int, GMDS_NODE>("GMDS_Couche");
+            Face b_face = m_blocks->get<Face>(b.id());
+            int i_e = 0;
+            for (auto const &e : b_face.get<Edge>()) {
+                int n0 = e.getIDs<Node>()[0];
+                int n1 = e.getIDs<Node>()[1];
 
-		int couche_max = 0;
-		for(auto n : m_blocks->nodes()){
-			if(couche->value(n) > couche_max) couche_max = couche->value(n);
-		}
+                // L'indice local de l'arête dans le bloc
+                switch (i_e) {
+                case 0:
+                    pts_bc[0] = 1;
+                    pts_bc[1] = 1;
+                    pts_bc[2] = discrI;
+                    pts_bc[3] = 1;
+                    break;
+                case 1:
+                    pts_bc[0] = discrI;
+                    pts_bc[1] = 1;
+                    pts_bc[2] = discrI;
+                    pts_bc[3] = discrJ;
+                    break;
+                case 2:
+                    pts_bc[0] = 1;
+                    pts_bc[1] = discrJ;
+                    pts_bc[2] = discrI;
+                    pts_bc[3] = discrJ;
+                    break;
+                case 3:
+                    pts_bc[0] = 1;
+                    pts_bc[1] = 1;
+                    pts_bc[2] = 1;
+                    pts_bc[3] = discrJ;
+                    break;
+                default: break;
+                }
 
-		//The next steps can be rewrited using a design pattern
-		// -> maybe putting the BoundaryCondition writing in a separated class
+                std::string bcType_s = "ORFN";
+                if (couche->value(n0) == couche_max && couche->value(n1) == couche_max) {
+                    bcType_s = "FARFIELD";
+                }
+                else if (couche->value(n0) == 0 && couche->value(n1) == 0) {
+                    bcType_s = "PAROI";
+                }
 
-		Face b_face = m_blocks->get<Face>(b.id());
-		int i_e = 0;
-		for(auto const &e : b_face.get<Edge>()){
-			int n0 = e.getIDs<Node>()[0];
-			int n1 = e.getIDs<Node>()[1];
+                // Family name
+                char bc_type[32];
+                strcpy(bc_type, bcType_s.c_str());
+                writeBoundaryCondition(id_bc, pts_bc, b.id() + 1, bc_type, e.id());
 
-			// L'indice local de l'arête dans le bloc
-			switch (i_e) {
-			case 0:
-				pts_bc[0] = 1;
-				pts_bc[1] = 1;
-				pts_bc[2] = discrI;
-				pts_bc[3] = 1;
-				break;
-			case 1:
-				pts_bc[0] = discrI;
-				pts_bc[1] = 1;
-				pts_bc[2] = discrI;
-				pts_bc[3] = discrJ;
-				break;
-			case 2:
-				pts_bc[0] = 1;
-				pts_bc[1] = discrJ;
-				pts_bc[2] = discrI;
-				pts_bc[3] = discrJ;
-				break;
-			case 3:
-				pts_bc[0] = 1;
-				pts_bc[1] = 1;
-				pts_bc[2] = 1;
-				pts_bc[3] = discrJ;
-				break;
-			default:
-				break;
-			}
-
-
-			std::string bcType_s = "ORFN";
-			if (couche->value(n0) == couche_max && couche->value(n1) == couche_max) {
-				bcType_s = "FARFIELD";
-			}else if (couche->value(n0) == 0 && couche->value(n1) == 0){
-				bcType_s = "PAROI";
-			}
-
-			//Family name
-			char bc_type[32];
-			strcpy(bc_type, bcType_s.c_str());
-			writeBoundaryCondition(id_bc, pts_bc, b.id() + 1, bc_type, e.id());
-
-			i_e++;
-		}
+                i_e++;
+            }
+        }catch (GMDSException &e){}
 	}
 }
 /*----------------------------------------------------------------------------*/
