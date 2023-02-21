@@ -8,10 +8,15 @@ message($GMDS LIB)
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/blocking_Quality/BlockingQuality.h
+        inc/gmds/blocking_Quality/LinkerBlockingGeom.h
+        inc/gmds/blocking_Quality/mainBis1.h
         )
 message($GMDS INC)
 set(GMDS_SRC
-        src/BlockingQuality.cpp src/main_BlockingQuality.cpp)
+        src/BlockingQuality.cpp
+        src/main_BlockingQuality.cpp
+        src/mainBis1.cpp
+        src/LinkerBlockingGeom.cpp)
 message($GMDS SRC)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
@@ -31,6 +36,7 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_IO}
         ${LIB_GMDS_IG_ALGO}
         ${LIB_GMDS_QUALITY}
+        ${LIB_GMDS_BLOCK_MESHER}
         )
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)

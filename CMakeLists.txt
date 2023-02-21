@@ -126,15 +126,6 @@ GMDS_ADD_COMPONENT(
 )
 
 GMDS_ADD_COMPONENT(
-        BLOCKING_QUALITY                       # cmake variable
-        blocking_Quality                        # src subdirectory name
-        GMDSBlockingQuality                    # name of the generated library
-        " "  # description
-        ON                                 # is activated
-        ON                                 # must be covered
-)
-
-GMDS_ADD_COMPONENT(
         BLOCK_MESHER                       # cmake variable
         blockMesher                        # src subdirectory name
         GMDSBlockMesher                    # name of the generated library
@@ -248,6 +239,14 @@ GMDS_ADD_COMPONENT(
         "Algorithms to create honeycomb like meshes for spherical geometries"
         ON
         ON                                # must be covered
+)
+GMDS_ADD_COMPONENT(
+        BLOCKING_QUALITY                       # cmake variable
+        blocking_Quality                        # src subdirectory name
+        GMDSBlockingQuality                    # name of the generated library
+        " "  # description
+        ON                                 # is activated
+        ON                                 # must be covered
 )
 
 
@@ -373,6 +372,7 @@ set(LIB_GMDS_IG_SHEET GMDSSheet)
 add_subdirectory(sheet)
 set(LIB_GMDS_SERVICES GMDSServices)
 add_subdirectory(services)
+
 
 #add_subdirectory(pygmds)
 #==============================================================================

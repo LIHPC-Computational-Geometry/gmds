@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
     geom_manager.getCurves(curves);
     geom_manager.getPoints(points);
 
-//==================================================================
+//==================================================================flatpak install flathub md.obsidian.Obsidian
 //First, we classify each face
 
     for(auto f_id: blocking.faces()){
