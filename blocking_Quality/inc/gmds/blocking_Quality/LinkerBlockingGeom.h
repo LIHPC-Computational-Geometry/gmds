@@ -33,9 +33,9 @@ void reverseLink(Mesh* ABlocks, Mesh* AGeom, cad::GeomMeshLinker* ALinker,
 
 class LinkerBlockingGeom{
  public :
-	LinkerBlockingGeom(Mesh* ABlocks, Mesh* AGeom);
+	LinkerBlockingGeom(Mesh* ABlocks, cad::FACManager* AGeom);
 
-	//virtual ~LinkerBlockingGeom();
+	virtual ~LinkerBlockingGeom();
 
 	cad::GeomMeshLinker execute();
 
@@ -43,9 +43,7 @@ class LinkerBlockingGeom{
 	/** the block structure*/
 	Mesh* m_blocks;
 	/** the geometry mesh*/
-	Mesh* m_geom;
-	/** the link between blocking and geom*/
-	cad::GeomMeshLinker* m_linker;
+	cad::FACManager* m_geom;
 
 };
 }

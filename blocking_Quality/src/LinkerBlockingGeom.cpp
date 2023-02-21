@@ -6,21 +6,19 @@
 
 using namespace gmds;
 
-LinkerBlockingGeom::LinkerBlockingGeom(Mesh *ABlocks, Mesh *AGeom):
+LinkerBlockingGeom::LinkerBlockingGeom(Mesh *ABlocks, cad::FACManager *AGeom):
   m_blocks(ABlocks),
   m_geom(AGeom){;}
 
 
 cad::GeomMeshLinker LinkerBlockingGeom::execute()
 {
-	cad::FACManager geom_manager;
-	geom_manager.initFrom3DMesh(m_geom);
 
-	cad::GeomMeshLinker linker(m_blocks,&geom_manager);
-	std::cout<<"Geom info ("<<geom_manager.getNbVolumes()<<", "
-	          <<geom_manager.getNbSurfaces()<<", "
-	          <<geom_manager.getNbCurves()<<", "
-	          <<geom_manager.getNbPoints()<<")"<<std::endl;
+	cad::GeomMeshLinker linker(m_blocks,m_geom);
+	std::cout<<"Geom info ("<<m_geom->getNbVolumes()<<", "
+	          <<m_geom->getNbSurfaces()<<", "
+	          <<m_geom->getNbCurves()<<", "
+	          <<m_geom->getNbPoints()<<")"<<std::endl;
 	//=================================================================================================
 	//=================================================================================================
 
@@ -29,9 +27,9 @@ cad::GeomMeshLinker LinkerBlockingGeom::execute()
 	std::vector<cad::GeomCurve*> curves;
 	std::vector<cad::GeomPoint*> points;
 
-	geom_manager.getSurfaces(surfaces);
-	geom_manager.getCurves(curves);
-	geom_manager.getPoints(points);
+	m_geom->getSurfaces(surfaces);
+	m_geom->getCurves(curves);
+	m_geom->getPoints(points);
 
 	//==================================================================
 	//First, we classify each face
@@ -352,49 +350,7 @@ cad::GeomMeshLinker LinkerBlockingGeom::execute()
 
 	linker.writeVTKDebugMesh("linker_debug_1.vtk");
 
-
-	//=================================================================================================
-	//=================================================================================================
-	BlockMesher bm(m_blocks,&linker);
-	int edge_discretization = 4;
-
-	auto val = bm.execute(edge_discretization);
-
-	std::map<TCellID, Cell::Data> mesh_node_info = bm.mesh_node_classification();
-	std::map<TCellID, Cell::Data> mesh_edge_info = bm.mesh_edge_classification();
-	std::map<TCellID, Cell::Data> mesh_face_info = bm.mesh_face_classification();
-
-	std::cout<<"> Start block smoothing"<<std::endl;
-	//bm.mesh()->changeModel(MeshModel(DIM3|R|N|E|F|R2N|F2N|E2N|N2F|N2E|N2R));
-	MeshDoctor doc3(bm.mesh());
-	doc3.updateUpwardConnectivity();
-	cad::GeomMeshLinker linker_final(bm.mesh(),&geom_manager);
-	for(auto info:mesh_node_info){
-		Node n = bm.mesh()->get<Node>(info.first);
-		if(info.second.dim==0) {
-			linker_final.linkNodeToPoint(n.id(), info.second.id);
-		}
-		else if(info.second.dim==1) {
-			linker_final.linkNodeToCurve(n.id(), info.second.id);
-		}
-		else if(info.second.dim==2)
-			linker_final.linkNodeToSurface(n.id(),info.second.id);
-	}
-	for(auto info:mesh_edge_info){
-		std::cout<<"Dans le for"<<std::endl;
-		Edge e = bm.mesh()->get<Edge>(info.first);
-		if(info.second.dim==1) {
-			linker_final.linkEdgeToCurve(e.id(), info.second.id);
-			std::cout<<"Edge "<<e.getIDs<Node>()[0]<<"-"<<e.getIDs<Node>()[1]<<" on curve "<<info.second.id<<std::endl;
-		}
-	}
-	for(auto info:mesh_face_info){
-		Face f = bm.mesh()->get<Face>(info.first);
-		if(info.second.dim==2)
-			linker_final.linkFaceToSurface(f.id(),info.second.id);
-	}
-
-	return linker_final;
+	return linker;
 
 }
-
+LinkerBlockingGeom::~LinkerBlockingGeom() = default;
