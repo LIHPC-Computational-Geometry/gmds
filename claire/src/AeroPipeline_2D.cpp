@@ -1249,7 +1249,7 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 	{
 		Variable<math::Vector3d>* var_VectorField_1 = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_1");
 
-		LeastSquaresGradientComputation grad2D_1(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+		LeastSquaresGradientComputation grad2D_1(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
 		                                         var_VectorField_1);
 		grad2D_1.execute();
 
@@ -1265,11 +1265,7 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 			Node n = m_meshTet->get<Node>(n_id);
 			math::Point p = n.point();
 
-			if (p.X() < 10.0)
-			{
-				var_VectorsForExtrusion->set(n_id, -vec_flow);
-			}
-			else if (p.X() < m_params.x_VectorField_Z1)
+			if (p.X() < m_params.x_VectorField_Z1)
 			{
 				var_VectorsForExtrusion->set(n_id, vec_1);
 			}
