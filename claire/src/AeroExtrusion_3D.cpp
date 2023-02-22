@@ -534,16 +534,16 @@ AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<T
 		}
 	}
 
-	Edge e_adj_1 = m_meshH->get<Edge>(n_edges_corner[0]);
-	Edge e_adj_2 = m_meshH->get<Edge>(n_edges_corner[1]);
-	Edge e_adj_3 = m_meshH->get<Edge>(n_edges_corner[2]);
+	Edge ec_0 = m_meshH->get<Edge>(n_edges_corner[0]);
+	Edge ec_1 = m_meshH->get<Edge>(n_edges_corner[1]);
+	Edge ec_2 = m_meshH->get<Edge>(n_edges_corner[2]);
 
 	Node n = m_meshH->get<Node>(n_id);
 	Node n6 = m_meshH->get<Node>(map_new_nodes[n_id]);
 
-	Node n_adj_1 = e_adj_1.getOppositeNode(n);
-	Node n_adj_2 = e_adj_2.getOppositeNode(n);
-	Node n_adj_3 = e_adj_3.getOppositeNode(n);
+	Node n_adj_1 = ec_0.getOppositeNode(n);
+	Node n_adj_2 = ec_1.getOppositeNode(n);
+	Node n_adj_3 = ec_2.getOppositeNode(n);
 
 	math::Vector3d v1 = n_adj_1.point()-n.point() ;
 	math::Vector3d v2 = n_adj_2.point()-n.point() ;
@@ -579,17 +579,17 @@ AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<T
 	r_id = math::Utils::CreateHexaNConnectivities(m_meshH, n, n1, n2, n3, n4, n5, n6, n7);
 
 	// Update the faces information of the front
-	std::vector<TCellID> adj_faces = n_neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(e_adj_1.id(), e_adj_2.id(), e_adj_3.id());
+	std::vector<TCellID> adj_faces = n_neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(ec_0.id(), ec_1.id(), ec_2.id());
 	for (auto f_adj_id:adj_faces)
 	{
 		m_FaceInfo[f_adj_id].next_nodes[n_id] = n4.id() ;
 	}
-	adj_faces = n_neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(e_adj_2.id(), e_adj_3.id(), e_adj_1.id());
+	adj_faces = n_neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(ec_1.id(), ec_2.id(), ec_0.id());
 	for (auto f_adj_id:adj_faces)
 	{
 		m_FaceInfo[f_adj_id].next_nodes[n_id] = n1.id() ;
 	}
-	adj_faces = n_neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(e_adj_1.id(), e_adj_3.id(), e_adj_2.id());
+	adj_faces = n_neighbourhood.facesBtwEdge1nEdge2AvoidingEdge3(ec_0.id(), ec_2.id(), ec_1.id());
 	for (auto f_adj_id:adj_faces)
 	{
 		m_FaceInfo[f_adj_id].next_nodes[n_id] = n3.id() ;
@@ -1097,7 +1097,7 @@ AeroExtrusion_3D::TemplateNode3End(Front_3D &AFront, TCellID n_id, int mark_edge
 TCellID
 AeroExtrusion_3D::TemplateNode3Corner3End(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated)
 {
-	std::cout << "Template Node 3 Corner 3 End au noeud " << n_id << std::endl;
+	//std::cout << "Template Node 3 Corner 3 End au noeud " << n_id << std::endl;
 	TCellID r_id;
 
 	Node n = m_meshH->get<Node>(n_id);
@@ -1270,7 +1270,7 @@ AeroExtrusion_3D::TemplateNode3Corner3End(Front_3D &AFront, TCellID n_id, double
 std::vector<TCellID>
 AeroExtrusion_3D::TemplateNode2Corner2End(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated)
 {
-	std::cout << "Template Node 2 Corner 2 End au noeud " << n_id << std::endl;
+	//std::cout << "Template Node 2 Corner 2 End au noeud " << n_id << std::endl;
 	std::vector<TCellID> hexas_id;
 
 	Node n = m_meshH->get<Node>(n_id);
@@ -1611,7 +1611,7 @@ AeroExtrusion_3D::TemplateNode2Corner1Reversal(Front_3D &AFront, TCellID n_id, d
 std::vector<TCellID>
 AeroExtrusion_3D::TemplateNode2End1Reversal(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated)
 {
-	std::cout << "Template Node 2 End 1 Reversal au noeud " << n_id << std::endl;
+	//std::cout << "Template Node 2 End 1 Reversal au noeud " << n_id << std::endl;
 	std::vector<TCellID> hexas_id;
 
 	Node n = m_meshH->get<Node>(n_id);

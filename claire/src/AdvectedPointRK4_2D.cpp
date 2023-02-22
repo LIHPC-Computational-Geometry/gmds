@@ -86,7 +86,7 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 	Mat_A_Inv = getInvMatrixA(face_id);
 	dist = interpolationDistance(face_id, Mat_A_Inv, m_Pend);
 
-	//writeDiscretePathInVTK();
+	writeDiscretePathInVTK();
 
 	return AdvectedPointRK4_2D::SUCCESS;
 }
