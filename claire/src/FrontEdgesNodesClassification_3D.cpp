@@ -473,12 +473,13 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 			}
 		}
 	}
-
+	/*
 	for (auto GFE:m_All_global_feature_edges)
 	{
 		std::cout << "---------" << std::endl;
 		std::cout << "Starting point: " << GFE.Start_n_id << std::endl;
 		std::cout << "Ending point: " << GFE.End_n_id << std::endl;
 	}
+	 */
 }
 /*------------------------------------------------------------------------*/
