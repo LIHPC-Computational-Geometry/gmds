@@ -190,7 +190,7 @@ void VTKWriter::finalize() {
     *m_stream << "CELL_TYPES " << nb_cells << "\n";
 
     for(auto info: m_edges_info) {
-        *m_stream << "2 \n";
+        *m_stream << "3 \n";
     }
     for(auto info:m_faces_info){
         if (info.type == GMDS_TRIANGLE)
