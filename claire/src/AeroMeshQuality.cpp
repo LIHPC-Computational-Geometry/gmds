@@ -4,7 +4,6 @@
 
 /*----------------------------------------------------------------------------*/
 #include <gmds/claire/AeroMeshQuality.h>
-#include <gmds/claire/Utils.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -175,11 +174,6 @@ double AeroMeshQuality::JacobianQUAD(math::Point p0, math::Point p1, math::Point
 	Vector3d L1 = p2-p1;
 	Vector3d L2 = p3-p2;
 	Vector3d L3 = p0-p3;
-
-	double l0 = L0.norm() ;
-	double l1 = L1.norm() ;
-	double l2 = L2.norm() ;
-	double l3 = L3.norm() ;
 
 	Vector3d N0 = L3.cross(L0) ;
 	Vector3d N1 = L0.cross(L1) ;
