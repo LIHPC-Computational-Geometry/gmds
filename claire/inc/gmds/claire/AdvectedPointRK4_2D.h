@@ -46,11 +46,11 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_2D
 	/*-------------------------------------------------------------------*/
 	/** @brief Return true if the point M is in the triangle
 	 */
-	bool isInTriangle(TCellID face_id, math::Point M);
+	bool isInTriangle(TCellID face_id, math::Point &M);
 	/*-------------------------------------------------------------------*/
 	/** @brief Return in which triangle M is
 	 */
-	TCellID inWhichTriangle(math::Point M, TCellID f0_id);
+	TCellID inWhichTriangle(math::Point &M, TCellID f0_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Compute the minimal edge's lenght
 	 */
@@ -62,15 +62,15 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_2D
 	/*-------------------------------------------------------------------*/
 	/** @brief Interpolation de la distance au point M
 	 */
-	double interpolationDistance(TCellID face_id, Eigen::Matrix3d Mat_A_Inv, math::Point M);
+	double interpolationDistance(TCellID face_id, Eigen::Matrix3d &Mat_A_Inv, math::Point M);
 	/*-------------------------------------------------------------------*/
 	/** @brief Interpolation du gradient au point M
 	 */
-	math::Vector3d interpolationGradient(TCellID face_id, Eigen::Matrix3d Mat_A_Inv, math::Point M);
+	math::Vector3d interpolationGradient(TCellID face_id, Eigen::Matrix3d &Mat_A_Inv, math::Point M);
 	/*-------------------------------------------------------------------*/
 	/** @brief Applique le schéma Runge Kutta d'ordre 4 pour résoudre dx/dt = grad
 	 */
-	math::Point RungeKutta4(math::Point yn, math::Vector3d grad_yn, double dt);
+	math::Point RungeKutta4(math::Point &yn, math::Vector3d grad_yn, double dt);
 	/*-------------------------------------------------------------------*/
 	/** @brief Write the discrete path in a vtk field
 	 */
