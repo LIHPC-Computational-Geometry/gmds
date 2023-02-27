@@ -401,7 +401,8 @@ AeroExtrusion_3D::InitFrontOUT(Front_3D &Front_IN)
 		}
 	}
 
-	return Front_3D(Front_IN.getFrontID()+1, new_front_nodes_id, new_front_faces_id);
+	Front_3D Front_OUT = Front_3D(Front_IN.getFrontID()+1, new_front_nodes_id, new_front_faces_id);
+	return Front_OUT;
 
 }
 /*------------------------------------------------------------------------*/

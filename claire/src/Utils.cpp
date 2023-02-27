@@ -358,7 +358,7 @@ bool Utils::sameSide(const math::Point& T1, const math::Point& T2, const math::P
 	double dotN4 = Normal.dot(V3);
 	double dotM = Normal.dot(V4);
 
-	return (signbit(dotN4) == signbit(dotM) );
+	return (std::signbit(dotN4) == std::signbit(dotM) );
 }
 /*------------------------------------------------------------------------*/
 bool Utils::isInTetra(const math::Point& T1, const math::Point& T2, const math::Point& T3, const math::Point& T4, const math::Point& M)
