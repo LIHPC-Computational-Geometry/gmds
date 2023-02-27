@@ -78,7 +78,7 @@ FastLocalize::findTetra(const math::Point &APoint)
 	{
 		Node closest_node = m_mesh->get<Node>(data.id);
 		std::vector<Region> closest_regions = closest_node.get<Region>();
-		if (closest_regions.size() == 0)
+		if (closest_regions.empty())
 		{
 			std::cout << "ATTENTION FastLocalize: in findTetra, the closest node to the point is connected to 0 regions." << std::endl;
 		}
