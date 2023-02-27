@@ -12,7 +12,7 @@ using namespace gmds;
 
 
 /*------------------------------------------------------------------------*/
-AbstractAeroPipeline::AbstractAeroPipeline(std::string Aparams) :
+AbstractAeroPipeline::AbstractAeroPipeline(std::string &Aparams) :
   m_meshTet(nullptr),
   m_meshHex(nullptr),
   m_manager(new cad::FACManager()),
