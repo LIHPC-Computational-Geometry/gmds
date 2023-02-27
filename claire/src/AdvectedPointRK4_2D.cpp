@@ -4,7 +4,6 @@
 
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/AdvectedPointRK4_2D.h>
-#include <limits>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -94,7 +93,7 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 
 
 /*------------------------------------------------------------------------*/
-bool AdvectedPointRK4_2D::isInTriangle(TCellID face_id, math::Point M){
+bool AdvectedPointRK4_2D::isInTriangle(TCellID face_id, math::Point &M){
 	bool isInFace(false);
 	Face face = m_mesh->get<Face>(face_id);
 	std::vector<TCellID> face_nodes_ids = face.getIDs<Node>();
@@ -130,7 +129,7 @@ bool AdvectedPointRK4_2D::isInTriangle(TCellID face_id, math::Point M){
 
 
 /*------------------------------------------------------------------------*/
-TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M, TCellID f0_id){
+TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point &M, TCellID f0_id){
 	TCellID face_id;
 	bool isInFace(false);
 
@@ -234,10 +233,6 @@ Eigen::Matrix3d AdvectedPointRK4_2D::getInvMatrixA(TCellID face_id){
 	math::Point p1 = nodes[1].point() ;
 	math::Point p2 = nodes[2].point() ;
 
-	TCellID n0_id = nodes[0].id();
-	TCellID n1_id = nodes[1].id();
-	TCellID n2_id = nodes[2].id();
-
 	// x1 y1 1
 	// x2 y2 1
 	// x3 y3 1
@@ -259,7 +254,7 @@ Eigen::Matrix3d AdvectedPointRK4_2D::getInvMatrixA(TCellID face_id){
 
 
 /*------------------------------------------------------------------------*/
-double AdvectedPointRK4_2D::interpolationDistance(TCellID face_id, Eigen::Matrix3d Mat_A_Inv, math::Point M){
+double AdvectedPointRK4_2D::interpolationDistance(TCellID face_id, Eigen::Matrix3d &Mat_A_Inv, math::Point M){
 	double dist_interpolee;
 
 	Face f = m_mesh->get<Face>(face_id);
@@ -284,7 +279,7 @@ double AdvectedPointRK4_2D::interpolationDistance(TCellID face_id, Eigen::Matrix
 
 
 /*------------------------------------------------------------------------*/
-math::Vector3d AdvectedPointRK4_2D::interpolationGradient(TCellID face_id, Eigen::Matrix3d Mat_A_Inv, math::Point M){
+math::Vector3d AdvectedPointRK4_2D::interpolationGradient(TCellID face_id, Eigen::Matrix3d &Mat_A_Inv, math::Point M){
 	math::Vector3d Gradient_M;
 
 	Face f = m_mesh->get<Face>(face_id);
@@ -323,7 +318,7 @@ math::Vector3d AdvectedPointRK4_2D::interpolationGradient(TCellID face_id, Eigen
 
 
 /*------------------------------------------------------------------------*/
-math::Point AdvectedPointRK4_2D::RungeKutta4(math::Point yn, math::Vector3d grad_yn, double dt){
+math::Point AdvectedPointRK4_2D::RungeKutta4(math::Point &yn, math::Vector3d grad_yn, double dt){
 	math::Point ynew;
 
 	math::Vector3d k1 = grad_yn ;
