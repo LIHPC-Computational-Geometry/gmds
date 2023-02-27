@@ -3,10 +3,8 @@
 //
 
 /*------------------------------------------------------------------------*/
-#include <gmds/claire/Utils.h>
 #include <gmds/claire/AeroBoundaries_2D.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
-#include <iostream>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/

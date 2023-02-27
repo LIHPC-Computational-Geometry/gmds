@@ -135,9 +135,9 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	Mesh* m_mesh;
 	/** Booléen qui vérifie si le maillage correspond à un/des objet/s immergé/s */
 	bool m_isImmerged;
-	/** Nombre de bords distincts de bords */
+	/** Nombre de bords distincts */
 	int m_nbrBords;
-	/** Nombre de bords distincts sur la paroi */
+	/** Nombre de bords de type paroi distincts */
 	int m_nbrBordsParoi;
 	/** Couleur qui correspond au bord extérieur */
 	int m_color_Amont;
