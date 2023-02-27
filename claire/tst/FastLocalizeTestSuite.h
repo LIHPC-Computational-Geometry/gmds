@@ -98,8 +98,6 @@ TEST(FastLocalizeTestSuite, test_FastLocalize_3D_2)
 	doc.updateUpwardConnectivity();
 
 	FastLocalize fl(&m);
-	Cell::Data data = fl.find({-2.74355, -1.62243, -1.49076});
-
 	gmds::TCellID r_id = fl.findTetra({-2.74355, -1.62243, -1.49076});
 
 	ASSERT_EQ(r_id, 3364);
