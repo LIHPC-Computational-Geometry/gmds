@@ -56,6 +56,12 @@ class LIB_GMDS_CLAIRE_API AbstractSmoothLineSweeping_2D{
 	 */
 	void BoundarySlipping();
 	/*-------------------------------------------------------------------*/
+
+	/*-------------------------------------------------------------------*/
+	/** @brief Find the point at alpha of a branch between 3 points
+	 */
+	math::Point WeightedPointOnBranch(const math::Point &A, const math::Point &B, const math::Point &C, double alpha);
+	/*-------------------------------------------------------------------*/
 	/** @brief Compute the L2 norm of the relative error between the pos
 	 * of the nodes on the bloc and the old coords
 	 */
