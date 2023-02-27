@@ -128,7 +128,7 @@ void AbstractSmoothLineSweeping_2D::BoundarySlipping()
 
 
 /*------------------------------------------------------------------------*/
-math::Point AbstractSmoothLineSweeping_2D::WeightedPointOnBranch(const math::Point A, const math::Point B, const math::Point C, double alpha) {
+math::Point AbstractSmoothLineSweeping_2D::WeightedPointOnBranch(const math::Point &A, const math::Point &B, const math::Point &C, double alpha) {
 	math::Point P_Weighted;
 	math::Vector3d Vec_AB = B-A ;
 	math::Vector3d Vec_BC = C-B ;

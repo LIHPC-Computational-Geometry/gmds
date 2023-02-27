@@ -60,7 +60,7 @@ class LIB_GMDS_CLAIRE_API AbstractSmoothLineSweeping_2D{
 	/*-------------------------------------------------------------------*/
 	/** @brief Find the point at alpha of a branch between 3 points
 	 */
-	math::Point WeightedPointOnBranch(const math::Point A, const math::Point B, const math::Point C, double alpha);
+	math::Point WeightedPointOnBranch(const math::Point &A, const math::Point &B, const math::Point &C, double alpha);
 	/*-------------------------------------------------------------------*/
 	/** @brief Compute the L2 norm of the relative error between the pos
 	 * of the nodes on the bloc and the old coords
@@ -84,7 +84,7 @@ class LIB_GMDS_CLAIRE_API AbstractSmoothLineSweeping_2D{
 	/** nb max iterations */
 	int m_nb_max_iterations;
 	/** tolerance */
-	int m_tol;
+	double m_tol;
 	/** damping parameter */
 	double m_theta;
 
