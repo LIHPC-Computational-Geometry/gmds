@@ -24,7 +24,7 @@ double AeroMeshQuality::minlenghtedge(math::Point p0, math::Point p1, math::Poin
 
 
 /*------------------------------------------------------------------------*/
-double AeroMeshQuality::AngleOuverture(math::Point p0, math::Point p1, math::Point p2, math::Point p3)
+double AeroMeshQuality::AngleOuverture(const math::Point& p0, math::Point p1, math::Point p2, math::Point p3)
 {
 	Vector3d v1 = p1-p0;
 	Vector3d v2 = p2-p0;

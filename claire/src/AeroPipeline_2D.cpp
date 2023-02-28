@@ -764,7 +764,7 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 
 /*------------------------------------------------------------------------*/
 void
-AeroPipeline_2D::UpdateLinker(cad::GeomMeshLinker* linker_1, Node n_1, cad::GeomMeshLinker* linker_2, Node n_2){
+AeroPipeline_2D::UpdateLinker(cad::GeomMeshLinker* linker_1, const Node& n_1, cad::GeomMeshLinker* linker_2, const Node& n_2){
 	int geom_dim = linker_1->getGeomDim<Node>(n_1.id());
 	if(geom_dim == 1){
 		linker_2->linkNodeToPoint(n_2.id(), linker_1->getGeomId<Node>(n_1.id()));
@@ -946,7 +946,7 @@ AeroPipeline_2D::BlockingClassification(){
 		auto Nx = B0.getNbDiscretizationI();
 		auto Ny = B0.getNbDiscretizationJ();
 
-		Array2D<TCellID> *a = new Array2D<TCellID>(Nx, Ny);
+		auto *a = new Array2D<TCellID>(Nx, Ny);
 		Array2D<math::Point> pnts(Nx, Ny);
 
 		for (auto i = 0; i < Nx; i++) {
@@ -1131,7 +1131,7 @@ AeroPipeline_2D::BlockingClassification(){
 		auto Nx = B0.getNbDiscretizationI();
 		auto Ny = B0.getNbDiscretizationJ();
 
-		Array2D<TCellID> *a = new Array2D<TCellID>(Nx, Ny);
+		auto *a = new Array2D<TCellID>(Nx, Ny);
 		Array2D<math::Point> pnts(Nx, Ny);
 
 		for (auto i = 0; i < Nx; i++) {

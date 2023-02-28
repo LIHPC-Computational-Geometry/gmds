@@ -20,7 +20,7 @@ class LIB_GMDS_CLAIRE_API AeroBoundaries_2D: public AbstractAeroBoundaries {
 	/*------------------------------------------------------------------------*/
 	/** \brief Default constructor
 	 */
-	AeroBoundaries_2D(Mesh *AMesh);
+	explicit AeroBoundaries_2D(Mesh *AMesh);
 
 	/*------------------------------------------------------------------------*/
 	/** @brief Retourne un vecteur ordonné des id des noeuds du bord
