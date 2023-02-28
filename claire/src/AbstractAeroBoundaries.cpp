@@ -197,7 +197,6 @@ AbstractAeroBoundaries::ColoriageBordsConnexes()
 	}
 
 	m_nbrBords = color;
-	m_nbrBordsParoi = color - 1;
 
 	if (color < 2) {
 		m_isImmerged = false;

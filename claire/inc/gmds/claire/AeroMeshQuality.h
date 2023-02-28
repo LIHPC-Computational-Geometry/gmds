@@ -42,7 +42,7 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
          *
          * \return  the angle
 	 */
-	static double AngleOuverture(math::Point p0, math::Point p1, math::Point p2, math::Point p3);
+	static double AngleOuverture(const math::Point& p0, math::Point p1, math::Point p2, math::Point p3);
 	/*------------------------------------------------------------------------*/
 	/** \brief  Aspect Ratio
          *

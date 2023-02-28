@@ -34,7 +34,7 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	/** @brief Constructor.
          *  @param
 	 */
-	AbstractAeroBoundaries(Mesh *AMesh);
+	explicit AbstractAeroBoundaries(Mesh *AMesh);
 	/*--------------------------------------------------------------------*/
 	/** @brief Default destructor.
          *  @param
@@ -137,8 +137,6 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	bool m_isImmerged;
 	/** Nombre de bords distincts */
 	int m_nbrBords;
-	/** Nombre de bords de type paroi distincts */
-	int m_nbrBordsParoi;
 	/** Couleur qui correspond au bord extérieur */
 	int m_color_Amont;
 	/** Colorie chaque bord d'une couleur != */

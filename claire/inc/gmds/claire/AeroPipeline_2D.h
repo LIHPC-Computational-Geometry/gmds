@@ -59,7 +59,7 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_2D : public AbstractAeroPipeline {
 	 * @param n_2 the node in the second mesh to initialize the classification
 	 * @return void
 	 */
-	void UpdateLinker(cad::GeomMeshLinker* linker_1, Node n_1, cad::GeomMeshLinker* linker_2, Node n_2);
+	void UpdateLinker(cad::GeomMeshLinker* linker_1, const Node& n_1, cad::GeomMeshLinker* linker_2, const Node& n_2);
 	/*----------------------------------------------------------------------------*/
 	/** @brief Update the linker for the last layer (on amont boundary)
 	 * @return void
