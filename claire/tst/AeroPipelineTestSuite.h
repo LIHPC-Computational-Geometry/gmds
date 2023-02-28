@@ -11,7 +11,6 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <unit_test_config.h>
-#include <gmds/blocking/CGNSWriter.h>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/

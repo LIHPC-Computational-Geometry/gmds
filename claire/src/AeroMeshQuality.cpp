@@ -11,7 +11,7 @@ namespace math {
 
 
 /*------------------------------------------------------------------------*/
-double AeroMeshQuality::minlenghtedge(const math::Point& p0, const math::Point& p1, const math::Point& p2, const math::Point& p3){
+double AeroMeshQuality::minlenghtedge(math::Point p0, math::Point p1, math::Point p2, math::Point p3){
 
 	Vector3d v1 = p1-p0;
 	Vector3d v2 = p1-p2;
@@ -21,7 +21,10 @@ double AeroMeshQuality::minlenghtedge(const math::Point& p0, const math::Point& 
 	return std::min(std::min(v1.norm(), v2.norm()), std::min(v3.norm(), v4.norm()));
 }
 /*------------------------------------------------------------------------*/
-double AeroMeshQuality::AngleOuverture(const math::Point& p0, const math::Point& p1, const math::Point& p2, const math::Point& p3)
+
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::AngleOuverture(const math::Point& p0, math::Point p1, math::Point p2, math::Point p3)
 {
 	Vector3d v1 = p1-p0;
 	Vector3d v2 = p2-p0;
@@ -37,7 +40,10 @@ double AeroMeshQuality::AngleOuverture(const math::Point& p0, const math::Point&
 
 }
 /*------------------------------------------------------------------------*/
-double AeroMeshQuality::AspectRatioQUAD(const math::Point& p0, const math::Point& p1, const math::Point& p2, const math::Point& p3){
+
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::AspectRatioQUAD(math::Point p0, math::Point p1, math::Point p2, math::Point p3){
 
 	Vector3d a = p2-p0;
 	Vector3d b = p1-p3;
@@ -46,7 +52,10 @@ double AeroMeshQuality::AspectRatioQUAD(const math::Point& p0, const math::Point
 
 }
 /*------------------------------------------------------------------------*/
-double AeroMeshQuality::InternalAngleDeviationQUAD(const math::Point& p0, const math::Point& p1, const math::Point& p2, const math::Point& p3){
+
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::InternalAngleDeviationQUAD(math::Point p0, math::Point p1, math::Point p2, math::Point p3){
 
 	Vector3d e1 = p1-p0;
 	Vector3d e2 = p2-p1;
@@ -70,7 +79,10 @@ double AeroMeshQuality::InternalAngleDeviationQUAD(const math::Point& p0, const 
 
 }
 /*------------------------------------------------------------------------*/
-double AeroMeshQuality::EquiAngleSkewnessQUAD(const math::Point& p0, const math::Point& p1, const math::Point& p2, const math::Point& p3)
+
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::EquiAngleSkewnessQUAD(math::Point p0, math::Point p1, math::Point p2, math::Point p3)
 {
 	Vector3d e1 = p1-p0;
 	Vector3d e2 = p2-p1;
@@ -95,7 +107,10 @@ double AeroMeshQuality::EquiAngleSkewnessQUAD(const math::Point& p0, const math:
 
 }
 /*------------------------------------------------------------------------*/
-double AeroMeshQuality::ConditionQUAD(const math::Point& p0, const math::Point& p1, const math::Point& p2, const math::Point& p3)
+
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::ConditionQUAD(math::Point p0, math::Point p1, math::Point p2, math::Point p3)
 {
 	Vector3d L0 = p1-p0;
 	Vector3d L1 = p2-p1;
@@ -129,7 +144,10 @@ double AeroMeshQuality::ConditionQUAD(const math::Point& p0, const math::Point& 
 	return (1.0/2.0)*std::max( max1, max2  );
 }
 /*------------------------------------------------------------------------*/
-double AeroMeshQuality::EdgeRatioQUAD(const math::Point& p0, const math::Point& p1, const math::Point& p2, const math::Point& p3)
+
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::EdgeRatioQUAD(math::Point p0, math::Point p1, math::Point p2, math::Point p3)
 {
 	Vector3d L0 = p1-p0;
 	Vector3d L1 = p2-p1;
@@ -147,7 +165,10 @@ double AeroMeshQuality::EdgeRatioQUAD(const math::Point& p0, const math::Point& 
 	return Lmax/Lmin;
 }
 /*------------------------------------------------------------------------*/
-double AeroMeshQuality::JacobianQUAD(const math::Point& p0, const math::Point& p1, const math::Point& p2, const math::Point& p3)
+
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::JacobianQUAD(math::Point p0, math::Point p1, math::Point p2, math::Point p3)
 {
 	Vector3d L0 = p1-p0;
 	Vector3d L1 = p2-p1;
@@ -173,7 +194,10 @@ double AeroMeshQuality::JacobianQUAD(const math::Point& p0, const math::Point& p
 	return std::min( std::min(a0, a1), std::min(a2, a3) );
 }
 /*------------------------------------------------------------------------*/
-double AeroMeshQuality::ScaledJacobianQUAD(const math::Point& p0, const math::Point& p1, const math::Point& p2, const math::Point& p3)
+
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::ScaledJacobianQUAD(math::Point p0, math::Point p1, math::Point p2, math::Point p3)
 {
 	Vector3d L0 = p1-p0;
 	Vector3d L1 = p2-p1;
@@ -209,7 +233,10 @@ double AeroMeshQuality::ScaledJacobianQUAD(const math::Point& p0, const math::Po
 	return std::min( std::min(sj0, sj1), std::min(sj2, sj3) );
 }
 /*------------------------------------------------------------------------*/
-double AeroMeshQuality::ShapeQUAD(const math::Point& p0, const math::Point& p1, const math::Point& p2, const math::Point& p3)
+
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::ShapeQUAD(math::Point p0, math::Point p1, math::Point p2, math::Point p3)
 {
 	Vector3d L0 = p1-p0;
 	Vector3d L1 = p2-p1;
@@ -245,7 +272,10 @@ double AeroMeshQuality::ShapeQUAD(const math::Point& p0, const math::Point& p1, 
 	return 2.0*std::min( std::min(s0, s1), std::min(s2, s3) );
 }
 /*------------------------------------------------------------------------*/
-double AeroMeshQuality::SkewQUAD(const math::Point& p0, const math::Point& p1, const math::Point& p2, const math::Point& p3)
+
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::SkewQUAD(math::Point p0, math::Point p1, math::Point p2, math::Point p3)
 {
 	Vector3d X1 = (p1-p0) + (p2-p3) ;
 	Vector3d X2 = (p2-p1) + (p3-p0) ;
@@ -256,7 +286,10 @@ double AeroMeshQuality::SkewQUAD(const math::Point& p0, const math::Point& p1, c
 	return abs(x1.dot(x2));
 }
 /*------------------------------------------------------------------------*/
-double AeroMeshQuality::StretchQUAD(const math::Point& p0, const math::Point& p1, const math::Point& p2, const math::Point& p3)
+
+
+/*------------------------------------------------------------------------*/
+double AeroMeshQuality::StretchQUAD(math::Point p0, math::Point p1, math::Point p2, math::Point p3)
 {
 	Vector3d L0 = p1-p0;
 	Vector3d L1 = p2-p1;
