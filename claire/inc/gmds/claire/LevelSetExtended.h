@@ -23,7 +23,7 @@ class LIB_GMDS_CLAIRE_API LevelSetExtended: public AbstractLevelSet {
 	 *	 @param AmarkFrontNodes marque sur les noeuds sur front
 	 *	 @param Adistance variable distance
 	 */
-	LevelSetExtended(Mesh *AMesh, int AmarkFrontNodes, Variable<double>* Adistance);
+	LevelSetExtended(Mesh *AMesh, TInt AmarkFrontNodes, Variable<double>* Adistance);
 
 	/*------------------------------------------------------------------------*/
 
@@ -33,7 +33,7 @@ class LIB_GMDS_CLAIRE_API LevelSetExtended: public AbstractLevelSet {
 	 * @param n
 	 * @return a vector of nodes
 	 */
-	virtual std::vector<Node> getNeighbors(Node n);
+	std::vector<Node> getNeighbors(Node n) override;
 
 };
 /*----------------------------------------------------------------------------*/

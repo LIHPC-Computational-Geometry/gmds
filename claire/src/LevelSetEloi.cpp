@@ -9,7 +9,7 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-LevelSetEloi::LevelSetEloi(Mesh *AMesh, int AmarkFrontNodes, Variable<double> *Adistance) :
+LevelSetEloi::LevelSetEloi(Mesh *AMesh, TInt AmarkFrontNodes, Variable<double> *Adistance) :
   AbstractLevelSet(AMesh,AmarkFrontNodes, Adistance)
 {
 
@@ -21,7 +21,7 @@ LevelSetEloi::LevelSetEloi(Mesh *AMesh, int AmarkFrontNodes, Variable<double> *A
 std::vector<Node> LevelSetEloi::getNeighbors(Node n){
 	std::vector<Node> vec_Neighbors;
 	std::vector<Edge> adjacent_edges = n.get<Edge>() ;
-	for(auto e:adjacent_edges) {
+	for(auto const& e:adjacent_edges) {
 		TCellID ne_id = e.getOppositeNodeId(n);
 		Node ne = m_mesh->get<Node>(ne_id);
 		vec_Neighbors.push_back(ne);
