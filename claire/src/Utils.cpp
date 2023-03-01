@@ -8,12 +8,10 @@
 #include <gmds/ig/Blocking2D.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <Eigen/Sparse>
-#include <Eigen/Eigen>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
 namespace math {
-
 
 /*------------------------------------------------------------------------*/
 double Utils::distFromNodeIds(Mesh *AMesh, TCellID n0_id, TCellID n1_id){
@@ -26,14 +24,11 @@ double Utils::distFromNodeIds(Mesh *AMesh, TCellID n0_id, TCellID n1_id){
 	return v.norm();
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 TCellID Utils::CommonEdge(Mesh *AMesh, TCellID n0_id, TCellID n1_id){
 	TCellID e_id(NullID);
 	Node n0 = AMesh->get<Node>(n0_id);
 	std::vector<Edge> adj_edges = n0.get<Edge>();
-	for (auto e:adj_edges){
+	for (auto const& e:adj_edges){
 		if (e_id == NullID){
 			Node n_opp = e.getOppositeNode(n0);
 			if (n_opp.id() == n1_id){
@@ -46,14 +41,11 @@ TCellID Utils::CommonEdge(Mesh *AMesh, TCellID n0_id, TCellID n1_id){
 
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 TCellID Utils::CommonFace(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCellID n2_id, TCellID n3_id){
 	TCellID f_id(NullID);
 	Node n0 = AMesh->get<Node>(n0_id);
 	std::vector<Face> adj_faces = n0.get<Face>();
-	for (auto f:adj_faces)
+	for (auto const& f:adj_faces)
 	{
 		if (f_id==NullID)
 		{
@@ -77,22 +69,25 @@ TCellID Utils::CommonFace3Nodes(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCell
 	TCellID f_id(NullID);
 	Node n0 = AMesh->get<Node>(n0_id);
 	std::vector<Face> adj_faces = n0.get<Face>();
-	for (auto f:adj_faces)
+	if (adj_faces.size() < 3 || adj_faces.size() > 4)
+	{
+		std::cout << "Utils::CommonFace3Nodes: This method can't handle other than quad or tri faces." << std::endl;
+	}
+	for (auto const& f:adj_faces)
 	{
 		if (f_id==NullID)
 		{
 			std::vector<Node> f_nodes = f.get<Node>();
-			if ( f_nodes.size() == 4
+			bool condition_quad = ( f_nodes.size() == 4
 			    && (f_nodes[0].id() == n0_id || f_nodes[1].id() == n0_id || f_nodes[2].id() == n0_id || f_nodes[3].id() == n0_id )
 			    && (f_nodes[0].id() == n1_id || f_nodes[1].id() == n1_id || f_nodes[2].id() == n1_id || f_nodes[3].id() == n1_id )
-			    && (f_nodes[0].id() == n2_id || f_nodes[1].id() == n2_id || f_nodes[2].id() == n2_id || f_nodes[3].id() == n2_id ))
-			{
-				f_id = f.id();
-			}
-			else if ( f_nodes.size() == 3
+			    && (f_nodes[0].id() == n2_id || f_nodes[1].id() == n2_id || f_nodes[2].id() == n2_id || f_nodes[3].id() == n2_id ) );
+			bool condition_triangle  = ( f_nodes.size() == 3
 			    && (f_nodes[0].id() == n0_id || f_nodes[1].id() == n0_id || f_nodes[2].id() == n0_id )
 			    && (f_nodes[0].id() == n1_id || f_nodes[1].id() == n1_id || f_nodes[2].id() == n1_id )
-			    && (f_nodes[0].id() == n2_id || f_nodes[1].id() == n2_id || f_nodes[2].id() == n2_id ))
+			    && (f_nodes[0].id() == n2_id || f_nodes[1].id() == n2_id || f_nodes[2].id() == n2_id ));
+
+			if (condition_quad || condition_triangle)
 			{
 				f_id = f.id();
 			}
@@ -112,14 +107,11 @@ void Utils::MeshCleaner(Mesh *AMesh){
 	}
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
-std::vector<Node> Utils::AdjacentNodes(Mesh* m, Node n){
+std::vector<Node> Utils::AdjacentNodes(Mesh* m, const Node& n){
 
 	std::vector<Edge> adjacent_edges = n.get<Edge>() ;
 	std::vector<Node> adjacent_nodes;
-	for (auto e:adjacent_edges){
+	for (auto const& e:adjacent_edges){
 		TCellID ne_id = e.getOppositeNodeId(n);
 		Node ne = m->get<Node>(ne_id);
 		adjacent_nodes.push_back(ne);
@@ -127,9 +119,6 @@ std::vector<Node> Utils::AdjacentNodes(Mesh* m, Node n){
 
 	return adjacent_nodes;
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 void Utils::AnalyseQuadMeshQuality(Mesh* m)
 {
@@ -175,10 +164,7 @@ void Utils::AnalyseQuadMeshQuality(Mesh* m)
 
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
-void Utils::BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m, int mark_block_nodes, int mark_first_layer_nodes, int mark_farfield_nodes){
+void Utils::BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m, TInt mark_block_nodes, TInt mark_first_layer_nodes, TInt mark_farfield_nodes){
 
 	m->clear();
 
@@ -294,9 +280,6 @@ void Utils::BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m, int mark_
 
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 math::Point Utils::WeightedPointOnBranch(const math::Point& A, const math::Point& B, const math::Point& C, double alpha) {
 	math::Point P_Weighted;
 	math::Vector3d Vec_AB = B-A ;
@@ -322,9 +305,6 @@ math::Point Utils::WeightedPointOnBranch(const math::Point& A, const math::Point
 
 	return P_Weighted;
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 bool Utils::isInTriangle(const math::Point& T1, const math::Point& T2, const math::Point& T3, const math::Point& M)
 {
@@ -438,7 +418,7 @@ bool Utils::isInTetra(const math::Point& T1, const math::Point& T2, const math::
 	return isInTet;
 }
 /*------------------------------------------------------------------------*/
-double Utils::linearInterpolation2D3Pt(const math::Point& P1, const math::Point& P2, const math::Point& P3, const math::Point& M, const double c1, const double c2, const double c3)
+double Utils::linearInterpolation2D3Pt(const math::Point& P1, const math::Point& P2, const math::Point& P3, const math::Point& M, double c1, double c2, double c3)
 {
 	Eigen::Matrix3d Mat_A;
 
@@ -464,9 +444,6 @@ double Utils::linearInterpolation2D3Pt(const math::Point& P1, const math::Point&
 	return coef[0]*M.X() + coef[1]*M.Y() + coef[2];
 
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 void Utils::CurveBlockEdgesReavel(Blocking2D* blocking2D, Mesh* m){
 
@@ -506,9 +483,6 @@ void Utils::CurveBlockEdgesReavel(Blocking2D* blocking2D, Mesh* m){
 
 
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 TCellID Utils::GetOrCreateEdgeAndConnectivitiesN2E(Mesh *AMesh, TCellID n0_id, TCellID n1_id)
 {
@@ -753,7 +727,7 @@ std::vector<Face> Utils::getFacesAdjToEdgeInHexa(Mesh *Amesh, TCellID e_id, TCel
 		std::cout << "-> Nbr faces: " << r_faces.size() << std::endl;
 	}
 
-	for (auto f:r_faces)
+	for (auto const& f:r_faces)
 	{
 		std::vector<Edge> f_edges = f.get<Edge>();
 		if (f_edges[0].id() == e_id || f_edges[1].id() == e_id
@@ -784,7 +758,7 @@ Edge Utils::oppositeEdgeInFace(Mesh *Amesh, TCellID e_id, TCellID f_id)
 	Edge e = Amesh->get<Edge>(e_id);
 	std::vector<Node> e_nodes = e.get<Node>();
 
-	for (auto e_loc:f.get<Edge>())
+	for (auto const& e_loc:f.get<Edge>())
 	{
 		std::vector<Node> e_loc_nodes = e_loc.get<Node>();
 		if (e_loc_nodes[0].id() != e_nodes[0].id()

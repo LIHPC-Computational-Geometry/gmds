@@ -58,7 +58,8 @@ class LIB_GMDS_CLAIRE_API Utils {
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Return the common face between 3 points if it exists, NullID
-	 		* otherwise (ou si la connectivité n'est pas renseignée)
+	 		* otherwise (ou si la connectivité n'est pas renseignée).
+	 		* ATTENTION: This method can't handle other than quad or tri faces.
          *
          * \param[in] n0_id first node id
          * \param[in] n1_id second node id
@@ -84,7 +85,7 @@ class LIB_GMDS_CLAIRE_API Utils {
 		*
 		* \return  a vector of Nodes
 	 */
-	static std::vector<Node> AdjacentNodes(Mesh* m, Node n);
+	static std::vector<Node> AdjacentNodes(Mesh* m, const Node& n);
 	/*----------------------------------------------------------------------------*/
 	/** @brief Analyse la qualité d'un maillage composé de quad.
 	 	*
@@ -100,7 +101,7 @@ class LIB_GMDS_CLAIRE_API Utils {
 		*
 		* \return  the mesh
 	 */
-	static void BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m, const int mark_block_nodes, const int mark_first_layer_nodes, const int mark_farfield_nodes);
+	static void BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m, TInt mark_block_nodes, TInt mark_first_layer_nodes, TInt mark_farfield_nodes);
 	/*----------------------------------------------------------------------------*/
 	/** @brief Return the point at position alpha of the branch. alpha = 0.5 returns
 	 * the mid point on the branch.
@@ -147,7 +148,7 @@ class LIB_GMDS_CLAIRE_API Utils {
 		*
 		* \return  the interpolated value
 	 */
-	static double linearInterpolation2D3Pt(const math::Point& P1, const math::Point& P2, const math::Point& P3, const math::Point& M, const double c1, const double c2, const double c3);
+	static double linearInterpolation2D3Pt(const math::Point& P1, const math::Point& P2, const math::Point& P3, const math::Point& M, double c1, double c2, double c3);
 	/*----------------------------------------------------------------------------*/
 	/** @brief Reavel the curved block edges
 	 	*
