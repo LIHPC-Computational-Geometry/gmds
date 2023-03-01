@@ -9,14 +9,14 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 Smooth2D::Smooth2D(Mesh *AMesh,
                    const Variable<int>* AVarBnd,
-                   const int ANbIterations) {
+                   int ANbIterations) {
 	m_mesh = AMesh;
 	m_node_constrained = AVarBnd;
 	m_nb_max_iterations = ANbIterations;
 
 }
 /*------------------------------------------------------------------------*/
-void Smooth2D::setNbIterations(const int ANbIterations)
+void Smooth2D::setNbIterations(int ANbIterations)
 {
 	m_nb_max_iterations=ANbIterations;
 
@@ -187,7 +187,7 @@ void Smooth2D::buildStencils() {
         }
         //SECOND FACE
         std::vector<TCellID> faces_11_10 = m_mesh->getCommonFaces(current_node,f0_n0);
-        TCellID f1_id = NullID;
+        TCellID f1_id;
         if(faces_11_10[0]==f0.id()){
             f1_id=faces_11_10[1];
         }
@@ -215,7 +215,7 @@ void Smooth2D::buildStencils() {
         std::vector<TCellID> faces_11_21 =
                 m_mesh->getCommonFaces(current_node,
                                        m_mesh->get<Node>(current_stencil.val[2][1]));
-        TCellID f2_id = NullID;
+        TCellID f2_id;
         if(faces_11_21[0]==f1.id()){
             f2_id=faces_11_21[1];
         }
@@ -245,7 +245,7 @@ void Smooth2D::buildStencils() {
         std::vector<TCellID> faces_11_12 =
                 m_mesh->getCommonFaces(current_node,
                                        m_mesh->get<Node>(current_stencil.val[1][2]));
-        TCellID f3_id = NullID;
+        TCellID f3_id;
         if(faces_11_12[0]==f2.id()){
             f3_id=faces_11_12[1];
         }
@@ -311,7 +311,7 @@ void Smooth2D::PerturbationMaillage(const Variable<int>* var_bnd, const double d
 //                            positionné au milieu de cette branche
 // En entrée : A, B, C -> 3 points
 // En sortie : le point milieu
-math::Point Smooth2D::FindMidBranche(const math::Point A, const math::Point B, const math::Point C) {
+math::Point Smooth2D::FindMidBranche(const math::Point& A, const math::Point& B, const math::Point& C) {
 	math::Point Point_Milieu ;
 	math::Vector3d Vec_AB = B-A ;
 	math::Vector3d Vec_BC = C-B ;
@@ -350,8 +350,7 @@ bool Smooth2D::CheckStructuredMesh() {
 		if (checkmesh) {
 			Node current_node = m_mesh->get<Node>(n_id);
 			std::vector<Face> current_faces = current_node.get<Face>();
-			int Nbr_Faces = current_faces.size();
-			if (Nbr_Faces != 4) {
+			if (current_faces.size() != 4) {
 				checkmesh = false;
 			}
 		}
@@ -362,8 +361,7 @@ bool Smooth2D::CheckStructuredMesh() {
 		if (checkmesh) {
 			Face current_face = m_mesh->get<Face>(n_id);
 			std::vector<Node> current_nodes = current_face.get<Node>();
-			int Nbr_Noeuds = current_nodes.size();
-			if (Nbr_Noeuds != 4) {
+			if (current_nodes.size() != 4) {
 				checkmesh = false;
 			}
 		}
@@ -384,7 +382,7 @@ void Smooth2D::write_debug_txt(int n_id, const Variable<math::Point> *old_coords
                           math::Point H1, math::Point H2, math::Point H3,
                           math::Point V1, math::Point V2, math::Point V3,
                           math::Point Point_Intersection,
-                          std::string AFileName){
+                          const std::string& AFileName){
 
 	// First, we create the file where we are going to store the info
 	std::ofstream stream= std::ofstream(AFileName, std::ios::out);

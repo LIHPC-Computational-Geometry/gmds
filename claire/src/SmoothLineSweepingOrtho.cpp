@@ -32,14 +32,13 @@ math::Point SmoothLineSweepingOrtho::ComputeNewPosition(int i, int j)
 	math::Point H3 = WeightedPointOnBranch((*m_B)(i+1,j-1).point(), (*m_B)(i+1,j).point(), (*m_B)(i+1,j+1).point(), 0.5);
 
 	// Finding the intersection between the 4 segments
-	bool intersection_trouvee(false);
 	math::Point X2;
 	math::Segment Seg_Vert_1(V1, V2);
 	math::Segment Seg_Vert_2(V2, V3);
 	math::Segment Seg_Hori_1(H1, H2);
 	math::Segment Seg_Hori_2(H2, H3);
 
-	intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_1, X2);
+	bool intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_1, X2);
 	if (!intersection_trouvee) {
 		intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_2, X2);
 	}
@@ -143,10 +142,7 @@ math::Point SmoothLineSweepingOrtho::ComputeOrtho(int i, int j)
 	P2_s.setXYZ( Q.X() + pow(10,1)*n.X(),  Q.Y() + pow(10,1)*n.Y(), 0);
 	math::Segment Seg_Ortho(P1_s, P2_s);
 
-	bool intersection_trouvee(false);
-	if (!intersection_trouvee) {
-		intersection_trouvee = Seg_Ortho.intersect2D(Seg_Hori_1, X1);
-	}
+	bool intersection_trouvee = Seg_Ortho.intersect2D(Seg_Hori_1, X1);
 	if (!intersection_trouvee) {
 		intersection_trouvee = Seg_Ortho.intersect2D(Seg_Hori_2, X1);
 	}
