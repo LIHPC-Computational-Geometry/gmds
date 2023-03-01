@@ -47,7 +47,6 @@ TEST(UtilsTestClass, Utils_Test1)
 
 }
 
-
 TEST(UtilsTestClass, Utils_Test2)
 {
 	// Test de la méthode math::Utils::CommonEdge
@@ -109,7 +108,6 @@ TEST(UtilsTestClass, Utils_Test2)
 
 }
 
-
 TEST(UtilsTestClass, Utils_Test3)
 {
 	// Test de la méthode math::Utils::MeshCleaner
@@ -157,7 +155,6 @@ TEST(UtilsTestClass, Utils_Test3)
 	writer_geom.write("Utils_Test3.vtk");
 
 }
-
 
 TEST(ClaireTestClass, Utils_AdjacentNodes)
 {
@@ -213,7 +210,6 @@ TEST(ClaireTestClass, Utils_AdjacentNodes)
 
 }
 
-
 TEST(ClaireTestClass, Utils_BuildMesh2DFromBlocking2D)
 {
 	// Test
@@ -266,7 +262,6 @@ TEST(ClaireTestClass, Utils_BuildMesh2DFromBlocking2D)
 	writer_geom_mesh.write("Utils_BuildMesh2DFromBlocking2D_Mesh.vtk");
 
 }
-
 
 TEST(ClaireTestClass, Utils_WeightedPointOnBranch)
 {
@@ -446,5 +441,45 @@ TEST(ClaireTestClass, Utils_minEdgeLenght)
 	doc.updateUpwardConnectivity();
 
 	ASSERT_FLOAT_EQ(1.0, math::Utils::minEdgeLenght(&m));
+
+}
+
+TEST(ClaireTestClass, Utils_getFacesAdjToEdgeInHexa)
+{
+	// Test
+	gmds::Mesh m(gmds::MeshModel(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
+	                                             F2E | E2F | R2E | E2R | N2R | N2F | N2E )));
+
+	Node n0 = m.newNode({0,0,0});
+	Node n1 = m.newNode({1,0,0});
+	Node n2 = m.newNode({1,1,0});
+	Node n3 = m.newNode({0,1,0});
+
+	Node n4 = m.newNode({0,0,1});
+	Node n5 = m.newNode({1,0,1});
+	Node n6 = m.newNode({1,1,1});
+	Node n7 = m.newNode({0,1,1});
+
+	Node n8 = m.newNode({2,0,0});
+	Node n9 = m.newNode({2,1,0});
+
+	Node n10 = m.newNode({2,0,1});
+	Node n11 = m.newNode({2,1,1});
+
+	ASSERT_EQ(m.getNbFaces(), 0);
+	ASSERT_EQ(m.getNbNodes(), 12);
+
+	// Create a first hexa will all the connectivities
+	TCellID r1_id = math::Utils::CreateHexaNConnectivities(&m, n0, n1, n2, n3, n4, n5, n6, n7);
+
+	// Create a second hexa will all the connectivities
+	TCellID r2_id = math::Utils::CreateHexaNConnectivities(&m, n1, n8, n9, n2, n5, n10, n11, n6);
+
+	ASSERT_EQ(m.getNbRegions(), 2);
+
+	TCellID e_id = math::Utils::CommonEdge(&m, n0.id(), n1.id());
+	std::vector<Face> adj_faces = math::Utils::getFacesAdjToEdgeInHexa(&m, e_id, r1_id);
+
+	ASSERT_EQ(adj_faces.size(), 2);
 
 }
