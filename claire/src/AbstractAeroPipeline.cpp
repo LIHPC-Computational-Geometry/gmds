@@ -19,6 +19,8 @@ AbstractAeroPipeline::AbstractAeroPipeline(std::string &Aparams) :
   m_linker_TG(new cad::GeomMeshLinker()),
   m_linker_HG(new cad::GeomMeshLinker())
 {
+	//m_couche_id = m_meshHex->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+
 	Parameters p;
 	p.add("section_Dimension","dim", Parameters::INT_P);
 

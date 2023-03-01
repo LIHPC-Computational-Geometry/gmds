@@ -21,11 +21,11 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_3D : public AbstractAeroPipeline {
 	/*------------------------------------------------------------------------*/
 	/** \brief Default constructor
 	 */
-	AeroPipeline_3D(std::string Aparams);
+	explicit AeroPipeline_3D(std::string Aparams);
 	/*------------------------------------------------------------------------*/
 	/** \brief Function to be called for mesh generation
 	 */
-	virtual AbstractAeroPipeline::STATUS execute();
+	AbstractAeroPipeline::STATUS execute() override;
 	/*------------------------------------------------------------------------*/
 
  private:
