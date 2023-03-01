@@ -33,7 +33,7 @@ class LIB_GMDS_CLAIRE_API SmoothLineSweepingYao: public AbstractSmoothLineSweepi
 	 * @param i index of the node in the block
 	 * @param j index of the node in the block
 	 */
-	virtual math::Point ComputeNewPosition(int i, int j);
+	math::Point ComputeNewPosition(int i, int j) override;
 	/*-------------------------------------------------------------------*/
 
 };

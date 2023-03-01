@@ -30,14 +30,13 @@ math::Point SmoothLineSweepingYao::ComputeNewPosition(int i, int j)
 	math::Point H3 = WeightedPointOnBranch((*m_B)(i+1,j-1).point(), (*m_B)(i+1,j).point(), (*m_B)(i+1,j+1).point(), 0.5);
 
 	// Finding the intersection between the 4 segments
-	bool intersection_trouvee(false);
 	math::Point M;
 	math::Segment Seg_Vert_1(V1, V2);
 	math::Segment Seg_Vert_2(V2, V3);
 	math::Segment Seg_Hori_1(H1, H2);
 	math::Segment Seg_Hori_2(H2, H3);
 
-	intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_1, M);
+	bool intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_1, M);
 	if (!intersection_trouvee) {
 		intersection_trouvee = Seg_Vert_1.intersect2D(Seg_Hori_2, M);
 	}

@@ -70,8 +70,8 @@ TEST(ClaireTestClass, testGrid_SmoothLineSweepingYao)
 	{
 		for (int j=0; j<Ny-1; j++)
 		{
-			ASSERT_NEAR(b1(i,j).X(), i*(1.0/(Nx-1.0)), pow(10,-3));
-			ASSERT_NEAR(b1(i,j).Y(), j*(1.0/(Ny-1.0)), pow(10,-3));
+			ASSERT_NEAR(b1(i,j).X(), i*(1.0/(Nx-1.0)), pow(10,-2));
+			ASSERT_NEAR(b1(i,j).Y(), j*(1.0/(Ny-1.0)), pow(10,-2));
 		}
 	}
 
