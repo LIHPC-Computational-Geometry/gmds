@@ -234,9 +234,9 @@ TEST(ClaireTestClass, Utils_BuildMesh2DFromBlocking2D)
 	b1.setNbDiscretizationJ(11);
 	b.initializeGridPoints();
 
-	int mark_block_nodes = m.newMark<Node>();
-	int mark_first_layer = m.newMark<Node>();
-	int mark_farfield_nodes = m.newMark<Node>();
+	TInt mark_block_nodes = m.newMark<Node>();
+	TInt mark_first_layer = m.newMark<Node>();
+	TInt mark_farfield_nodes = m.newMark<Node>();
 	math::Utils::BuildMesh2DFromBlocking2D(&b, &m, mark_block_nodes, mark_first_layer, mark_farfield_nodes);
 	m.unmarkAll<Node>(mark_block_nodes);
 	m.freeMark<Node>(mark_block_nodes);
