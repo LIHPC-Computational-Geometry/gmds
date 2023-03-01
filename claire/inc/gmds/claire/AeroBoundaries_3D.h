@@ -20,7 +20,7 @@ class LIB_GMDS_CLAIRE_API AeroBoundaries_3D: public AbstractAeroBoundaries {
 	/*------------------------------------------------------------------------*/
 	/** \brief Default constructor
 	 */
-	AeroBoundaries_3D(Mesh *AMesh);
+	explicit AeroBoundaries_3D(Mesh *AMesh);
 
 	/*------------------------------------------------------------------------*/
 
@@ -29,12 +29,12 @@ class LIB_GMDS_CLAIRE_API AeroBoundaries_3D: public AbstractAeroBoundaries {
 	/** \brief Marque les noeuds sur les bords dans la marque
 	 * m_markBoundaryNodes
 	 */
-	void MarkBoundariesNodes();
+	void MarkBoundariesNodes() override;
 	/*-------------------------------------------------------------------*/
 	/** \brief Identifie de quelle couleur est le front Amont dans la
 	 * variable m_var_color_bords.
 	 */
-	void WhichColorIsAmont();
+	void WhichColorIsAmont() override;
 	/*-------------------------------------------------------------------*/
 
 };

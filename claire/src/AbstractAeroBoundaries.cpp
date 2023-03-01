@@ -9,7 +9,11 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------*/
-AbstractAeroBoundaries::AbstractAeroBoundaries(Mesh *AMesh) : m_mesh(AMesh), m_isImmerged(true)
+AbstractAeroBoundaries::AbstractAeroBoundaries(Mesh *AMesh) :
+  m_mesh(AMesh),
+  m_isImmerged(true),
+  m_nbrBords(0),
+  m_color_Amont(-1)
 {
 	m_markNodesParoi = m_mesh->newMark<gmds::Node>();
 	m_markNodesAmont = m_mesh->newMark<gmds::Node>();
@@ -68,7 +72,7 @@ AbstractAeroBoundaries::isParoi(TCellID n_id)
 /*------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------*/
-int
+TInt
 AbstractAeroBoundaries::getMarkBnd()
 {
 	return m_markBoundaryNodes;
@@ -76,7 +80,7 @@ AbstractAeroBoundaries::getMarkBnd()
 /*------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------*/
-int
+TInt
 AbstractAeroBoundaries::getMarkAmont()
 {
 	return m_markNodesAmont;
@@ -84,7 +88,7 @@ AbstractAeroBoundaries::getMarkAmont()
 /*------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------*/
-int
+TInt
 AbstractAeroBoundaries::getMarkParoi()
 {
 	return m_markNodesParoi;
@@ -150,7 +154,7 @@ AbstractAeroBoundaries::ColoriageBordsConnexes()
 {
 
 	int color = 0;     // Default value is 0
-	int markTreated = m_mesh->newMark<Node>();
+	TInt markTreated = m_mesh->newMark<Node>();
 
 	for (auto n_id : m_mesh->nodes()) {
 		// Si un noeud est marqué sur le bord et qu'il n'est pas encore traité
@@ -174,13 +178,13 @@ AbstractAeroBoundaries::ColoriageBordsConnexes()
 				// On récupère les noeuds adjacents au noeud traité
 				std::vector<Edge> adjacent_edges = current_node.get<Edge>();
 				std::vector<Node> adjacent_nodes;
-				for (auto e : adjacent_edges) {
+				for (auto const &e : adjacent_edges) {
 					TCellID ne_id = e.getOppositeNodeId(current_node);
 					Node ne = m_mesh->get<Node>(ne_id);
 					adjacent_nodes.push_back(ne);
 				}
 
-				for (auto n_adj : adjacent_nodes) {
+				for (auto const &n_adj : adjacent_nodes) {
 					TCellID n_adj_id = n_adj.id();
 					if (m_mesh->isMarked<Node>(n_adj_id, m_markBoundaryNodes) && !m_mesh->isMarked<Node>(n_adj_id, markTreated)) {
 						// Si le noeud est sur le bord et qu'il n'a pas été traité
@@ -226,7 +230,7 @@ AbstractAeroBoundaries::MarkAmontAndParoiNodes()
 
 /*------------------------------------------------------------------------*/
 TCellID
-AbstractAeroBoundaries::ClosestNodeOnBnd(int color, math::Point p)
+AbstractAeroBoundaries::ClosestNodeOnBnd(int color, const math::Point& p)
 {
 	TCellID closest_node_id;
 	double min(std::numeric_limits<double>::max());
