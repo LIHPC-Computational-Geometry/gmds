@@ -67,7 +67,7 @@ AeroPipeline_2D::execute(){
 	m_Bnd->execute();
 	std::cout << "Nombre de bords : " << m_Bnd->getNbrBords()-1 << std::endl;
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
 	m_manager->initAndLinkFrom2DMesh(m_meshTet, m_linker_TG);
@@ -90,8 +90,8 @@ AeroPipeline_2D::execute(){
 	*/
 
 
-	int mark_Farfiel = m_Bnd->getMarkAmont();
-	int mark_Paroi = m_Bnd->getMarkParoi();
+	TInt mark_Farfiel = m_Bnd->getMarkAmont();
+	TInt mark_Paroi = m_Bnd->getMarkParoi();
 
 	/*
 	//Test LS computation by diffusion equation
@@ -146,7 +146,7 @@ AeroPipeline_2D::execute(){
 
 
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
 	/*
@@ -217,7 +217,7 @@ AeroPipeline_2D::execute(){
 	Variable<math::Vector3d>* var_VectorField = m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
 	ComputeVectorFieldForExtrusion();
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
 	m_linker_HG->setGeometry(m_manager);
@@ -231,7 +231,7 @@ AeroPipeline_2D::execute(){
 		}
 	}
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
 
@@ -240,7 +240,7 @@ AeroPipeline_2D::execute(){
 	AeroExtrusion_2D aero_extrusion(m_meshTet, m_meshHex, m_params, var_VectorField);
 	aero_extrusion.execute();
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
 	std::cout << "-> Classification géométrique" << std::endl;
@@ -248,7 +248,7 @@ AeroPipeline_2D::execute(){
 	// Mise à jour du linker pour la dernière couche de noeuds
 	UpdateLinkerLastLayer();
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
 
@@ -262,7 +262,7 @@ AeroPipeline_2D::execute(){
 	// Conversion structure maillage à blocking + maillage des blocs par transfinies
 	ConvertisseurMeshToBlocking();
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
 
@@ -308,7 +308,7 @@ AeroPipeline_2D::execute(){
 	}
 
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
 
@@ -318,7 +318,7 @@ AeroPipeline_2D::execute(){
 	RefinementBetaBlocking block_refinement(&m_Blocking2D, m_params);
 	block_refinement.execute();
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
 	// Compute the quality criterions of the blocking
@@ -338,11 +338,11 @@ AeroPipeline_2D::execute(){
 	//std::cout << "-> Elliptic Smoothing on quad mesh" << std::endl;
 	t_start = clock();
 
-	int mark_block_nodes = m_meshHex->newMark<Node>();
-	int mark_first_layer = m_meshHex->newMark<Node>();
-	int mark_farfield_nodes = m_meshHex->newMark<Node>();
+	TInt mark_block_nodes = m_meshHex->newMark<Node>();
+	TInt mark_first_layer = m_meshHex->newMark<Node>();
+	TInt mark_farfield_nodes = m_meshHex->newMark<Node>();
 	math::Utils::BuildMesh2DFromBlocking2D(&m_Blocking2D, m_meshHex, mark_block_nodes, mark_first_layer, mark_farfield_nodes);
-	int mark_locked_nodes = m_meshHex->newMark<Node>();
+	TInt mark_locked_nodes = m_meshHex->newMark<Node>();
 
 	/*
 	Variable<int>* var_locked_nodes = m_meshHex->newVariable<int, GMDS_NODE>("Locked_Nodes") ;
@@ -400,7 +400,7 @@ AeroPipeline_2D::execute(){
 	m_meshHex->freeMark<Edge>(mark_locked_nodes);
 
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
 
@@ -420,7 +420,7 @@ AeroPipeline_2D::execute(){
 	 */
 	//MeshAlignement();
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
 
 	// Ecriture finale des maillages
@@ -428,7 +428,7 @@ AeroPipeline_2D::execute(){
 	t_start = clock();
 	EcritureMaillage();
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
 	std::cout << " " << std::endl;
 	std::cout << " " << std::endl;
@@ -528,10 +528,10 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 
 	std::vector<TCellID> bnd_nodes_id_ordered = m_Bnd->BndNodesOrdered(color);	// Tri les noeuds du bord concerné dans l'ordre
 
-	int markCurveEdges = m_meshTet->newMark<Edge>();
-	int markCurveNodes = m_meshTet->newMark<Node>();
-	int markPointNodes = m_meshTet->newMark<Node>();
-	int markAloneNodes = m_meshTet->newMark<Node>();
+	TInt markCurveEdges = m_meshTet->newMark<Edge>();
+	TInt markCurveNodes = m_meshTet->newMark<Node>();
+	TInt markPointNodes = m_meshTet->newMark<Node>();
+	TInt markAloneNodes = m_meshTet->newMark<Node>();
 
 	BoundaryOperator2D bnd_op(m_meshTet);
 	bnd_op.markCellOnGeometry(markCurveEdges, markCurveNodes,
@@ -978,7 +978,7 @@ AeroPipeline_2D::BlockingClassification(){
 			Node n = m_Blocking2D.get<Node>(n_id);
 			std::vector<Edge> block_edges = n.get<Edge>() ;
 			std::vector<Node> n_neighbor;
-			for (auto e:block_edges)
+			for (auto const &e:block_edges)
 			{
 				std::vector<Node> e_nodes = e.get<Node>();
 				if (e_nodes[0].id() == n_id && var_couche->value(e_nodes[0].id()) == var_couche->value(e_nodes[1].id()) )
@@ -1391,8 +1391,8 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 void
    AeroPipeline_2D::MeshRefinement()
 {
-	int mark_isTreated = m_Blocking2D.newMark<Node>();
-	int mark_refinementNeeded = m_Blocking2D.newMark<Node>();
+	TInt mark_isTreated = m_Blocking2D.newMark<Node>();
+	TInt mark_refinementNeeded = m_Blocking2D.newMark<Node>();
 
 	for (auto b:m_Blocking2D.allBlocks())
 	{
@@ -1545,7 +1545,7 @@ void
 	FastLocalize fl(m_meshTet);
 
 	// Compute the flow deviation
-	for (auto n_id:m_meshHex->nodes())
+	for (auto const &n_id:m_meshHex->nodes())
 	{
 			Node n = m_meshHex->get<Node>(n_id);
 		   std::vector<Face> n_faces_in_quad = n.get<Face>() ;
@@ -1559,7 +1559,7 @@ void
 
 			   bool triangle_found(false);
 			   TCellID f_id_in_Tri_mesh(NullID);
-			   for (auto f_tri : faces) {
+			   for (auto const &f_tri : faces) {
 				   std::vector<Node> f_nodes = f_tri.get<Node>();
 				   triangle_found = math::Utils::isInTriangle(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point(), n.point());
 				   if (triangle_found) {
@@ -1591,7 +1591,7 @@ void
 				   std::vector<Edge> edges = n.get<Edge>();
 				   std::vector<double> min_angles;
 
-				   for (auto e : edges) {
+				   for (auto const &e : edges) {
 					   std::vector<Node> e_nodes = e.get<Node>();
 					   math::Vector3d vec_edge = (e_nodes[0].point() - e_nodes[1].point()).normalize();
 					   double min_angle(90);

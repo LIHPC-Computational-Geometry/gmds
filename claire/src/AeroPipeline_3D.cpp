@@ -45,7 +45,7 @@ AeroPipeline_3D::execute(){
 	t_start = clock();
 	m_Bnd->execute();
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	//m_manager.initAndLinkFrom3DMesh(&m_mTetra,&m_linker_TG);
 	PreTraitementMeshTet();
 
@@ -61,7 +61,7 @@ AeroPipeline_3D::execute(){
 	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
 	lsCombined.execute();
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
 
 	// Calcul du gradient du champ de Level Set
@@ -72,7 +72,7 @@ AeroPipeline_3D::execute(){
 	                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	grad3D.execute();
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
 	// Generate the blocking of the geometry surface.
 	GeometrySurfaceBlockingGeneration();
@@ -85,7 +85,7 @@ AeroPipeline_3D::execute(){
 	                                m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
 	aero_extrusion.execute();
 	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
 	// Write the final mesh.
