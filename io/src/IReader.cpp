@@ -147,7 +147,7 @@ bool IReader::moveStreamOntoFirst(const std::string &AString){
 	bool found = false;
 	while (!found && (*m_stream)>>str)  {
         found = (std::string::npos != str.find(AString));
-	};
+	}
 
 	return found;
 }

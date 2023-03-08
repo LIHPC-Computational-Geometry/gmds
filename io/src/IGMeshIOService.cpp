@@ -23,7 +23,7 @@ void IGMeshIOService::createNodes(
     for(unsigned int i = 0; i<nb_nodes; i++) {
         m_mesh->newNode(AX[i], AY[i], AZ[i]);
     }
-};
+}
 /*----------------------------------------------------------------------------*/
 void IGMeshIOService::createEdge(const TCellID& AID1,
                                  const TCellID& AID2) {

@@ -1,6 +1,7 @@
 set(TEST_SUITES
         ReaderTestSuite.h
         WriterTestSuite.h
+        MdlReaderTestSuite.h
         )
 
 if(WITH_MESHB)

@@ -22,7 +22,8 @@ set(GMDS_INC
         inc/gmds/io/MeditReader.h
         inc/gmds/io/VTKReader.h
         inc/gmds/io/VTKWriter.h
-        inc/gmds/io/GMSHWriter.h)
+        inc/gmds/io/GMSHWriter.h
+        inc/gmds/io/MdlReader.h)
 set(GMDS_SRC
         src/IGMeshIOService.cpp
         src/IMeshIOService.cpp
@@ -31,7 +32,8 @@ set(GMDS_SRC
         src/MeditReader.cpp
         src/VTKReader.cpp
         src/VTKWriter.cpp
-        src/GMSHWriter.cpp)
+        src/GMSHWriter.cpp
+        src/MdlReader.cpp)
 
 if(WITH_MESHB)
    list(APPEND GMDS_INC inc/gmds/io/MeshBWriter.h)

@@ -7,6 +7,7 @@
 #ifdef WITH_LIMA
 #include "LimaWriteAndReadTestSuite.h"
 #endif//WITH_LIMA
+#include "MdlReaderTestSuite.h"
 //#include "MeshBWriterTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
