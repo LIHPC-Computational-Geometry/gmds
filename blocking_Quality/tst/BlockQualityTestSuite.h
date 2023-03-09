@@ -100,3 +100,9 @@ TEST(BlockQualityTestSuite, fromSurfMesh)
 	ASSERT_EQ(2, linker.getGeomId(n1));
 
 }
+TEST(BlockQualityTestSuite, test_Rubiks)
+{
+
+	ASSERT_EQ(2, linker.getGeomId(n1));
+
+}

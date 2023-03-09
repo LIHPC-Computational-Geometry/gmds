@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
     int nb_surface_smooth_iterations=0;
     int nb_volume_smooth_iterations=0;
     int edge_discretization=0;
-    if (argc != 9) {
+    if (argc != 3) {
         std::cout << "Require four paramaters : \n";
         std::cout << "  - [IN ] tetrahedral mesh (.vtk) that describes the geometry, \n";
         std::cout << "  - [IN ] mesh (.vtk) that describes the block structure to refine and smoothed, \n";
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 
     file_geom = std::string(argv[1]);
     file_mesh = std::string(argv[2]);
-    nb_curve_smooth_iterations = atoi(std::string(argv[3]).c_str());
+   /* nb_curve_smooth_iterations = atoi(std::string(argv[3]).c_str());
     nb_surface_smooth_iterations = atoi(std::string(argv[4]).c_str());
     nb_volume_smooth_iterations = atoi(std::string(argv[5]).c_str());
     edge_discretization = atoi(std::string(argv[6]).c_str());
@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
     std::cout << "  - Output block file  : " << file_block_out << std::endl;
     std::cout << "  - Output mesh file  : " << file_mesh_out << std::endl;
     std::cout << "=======================================" << std::endl;
-
+*/
 //==================================================================
 // GEOMETRY READING
 //==================================================================

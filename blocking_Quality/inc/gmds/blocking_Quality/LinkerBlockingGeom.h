@@ -37,7 +37,7 @@ class LinkerBlockingGeom{
 
 	virtual ~LinkerBlockingGeom();
 
-	cad::GeomMeshLinker execute();
+	void execute(cad::GeomMeshLinker* ALinker);
 
  private :
 	/** the block structure*/

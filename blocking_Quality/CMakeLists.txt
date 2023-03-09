@@ -16,7 +16,7 @@ set(GMDS_SRC
         src/BlockingQuality.cpp
         src/main_BlockingQuality.cpp
         src/mainBis1.cpp
-        src/LinkerBlockingGeom.cpp)
+        src/LinkerBlockingGeom.cpp inc/gmds/blocking_Quality/ValidBlocking.h src/ValidBlocking.cpp)
 message($GMDS SRC)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})

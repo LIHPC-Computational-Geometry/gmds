@@ -10,19 +10,9 @@ LinkerBlockingGeom::LinkerBlockingGeom(Mesh *ABlocks, cad::FACManager *AGeom):
   m_blocks(ABlocks),
   m_geom(AGeom){;}
 
-
-cad::GeomMeshLinker LinkerBlockingGeom::execute()
+void
+LinkerBlockingGeom::execute(cad::GeomMeshLinker *ALinker) 
 {
-
-	cad::GeomMeshLinker linker(m_blocks,m_geom);
-	std::cout<<"Geom info ("<<m_geom->getNbVolumes()<<", "
-	          <<m_geom->getNbSurfaces()<<", "
-	          <<m_geom->getNbCurves()<<", "
-	          <<m_geom->getNbPoints()<<")"<<std::endl;
-	//=================================================================================================
-	//=================================================================================================
-
-
 	std::vector<cad::GeomSurface*> surfaces;
 	std::vector<cad::GeomCurve*> curves;
 	std::vector<cad::GeomPoint*> points;
@@ -31,8 +21,6 @@ cad::GeomMeshLinker LinkerBlockingGeom::execute()
 	m_geom->getCurves(curves);
 	m_geom->getPoints(points);
 
-	//==================================================================
-	//First, we classify each face
 
 	//==================================================================
 	// MARK ALL THE BOUNDARY CELL OF THE INIT MESH
@@ -56,6 +44,9 @@ cad::GeomMeshLinker LinkerBlockingGeom::execute()
 	                      mark_node_on_crv,
 	                      mark_node_on_pnt,
 	                      mark_node_NAN);
+	//==================================================================
+	//First, we classify each face
+
 
 	for(auto f_id: m_blocks->faces()){
 		Face f= m_blocks->get<Face>(f_id);
@@ -163,7 +154,7 @@ cad::GeomMeshLinker LinkerBlockingGeom::execute()
 			}
 			if (min_entity_dim==2){
 				std::cout<<"==> Link face "<<f_id<<" on surf "<<min_entity_id<<" with distance:" <<min_dist<<std::endl;
-				linker.linkFaceToSurface(f_id,min_entity_id);
+				ALinker->linkFaceToSurface(f_id,min_entity_id);
 			}
 			else{
 				std::cout<<"\t ====> Link error for classifying a face"<<std::endl;
@@ -195,12 +186,12 @@ cad::GeomMeshLinker LinkerBlockingGeom::execute()
 				          <<"than 2 boundary faces ("
 				          <<"face "<<e_id<<")"<<std::endl;
 			}
-			auto surf0_id = linker.getGeomId<Face>(adj_bnd_face_ids[0]);
-			auto surf1_id = linker.getGeomId<Face>(adj_bnd_face_ids[1]);
+			auto surf0_id = ALinker->getGeomId<Face>(adj_bnd_face_ids[0]);
+			auto surf1_id = ALinker->getGeomId<Face>(adj_bnd_face_ids[1]);
 
 			if(surf0_id==surf1_id){
 				//edge embedded in the surface
-				linker.linkEdgeToSurface(e_id,surf1_id);
+				ALinker->linkEdgeToSurface(e_id,surf1_id);
 			}
 			else{
 				//it must be an edge classified on curves
@@ -222,7 +213,7 @@ cad::GeomMeshLinker LinkerBlockingGeom::execute()
 				}
 				if(found) {
 					if(candidate_curves.size()==1) {
-						linker.linkEdgeToCurve(e_id, candidate_curves[0]->id());
+						ALinker->linkEdgeToCurve(e_id, candidate_curves[0]->id());
 					}
 					else{
 						//we project on each of curve and keep the closest one
@@ -239,7 +230,7 @@ cad::GeomMeshLinker LinkerBlockingGeom::execute()
 							}
 						}
 
-						linker.linkEdgeToCurve(e_id, selected_curve->id());
+						ALinker->linkEdgeToCurve(e_id, selected_curve->id());
 
 					}
 				}
@@ -273,7 +264,7 @@ cad::GeomMeshLinker LinkerBlockingGeom::execute()
 			std::set<int> bnd_surfaces;
 
 			for (auto  id_face:adj_bnd_faces){
-				bnd_surfaces.insert(linker.getGeomId<Face>(id_face));
+				bnd_surfaces.insert(ALinker->getGeomId<Face>(id_face));
 			}
 			int min_entity_dim=-1;
 			int min_entity_id = -1;
@@ -327,16 +318,16 @@ cad::GeomMeshLinker LinkerBlockingGeom::execute()
 
 			if(min_entity_dim==0){
 				on_pnt++;
-				linker.linkNodeToPoint(n_id,min_entity_id);
+				ALinker->linkNodeToPoint(n_id,min_entity_id);
 				std::cout<<"Node "<<n_id<<" is on point "<<min_entity_id<<std::endl;
 			}
 			else if (min_entity_dim==1){
 				on_curve++;
-				linker.linkNodeToCurve(n_id,min_entity_id);
+				ALinker->linkNodeToCurve(n_id,min_entity_id);
 			}
 			else if (min_entity_dim==2){
 				on_surf++;
-				linker.linkNodeToSurface(n_id,min_entity_id);
+				ALinker->linkNodeToSurface(n_id,min_entity_id);
 			}
 			else{
 				throw GMDSException("Link error for classifying a node");
@@ -348,9 +339,7 @@ cad::GeomMeshLinker LinkerBlockingGeom::execute()
 	std::cout<<", on curves "<<on_curve;
 	std::cout<<", on surfs "<<on_surf<<"]"<<std::endl;
 
-	linker.writeVTKDebugMesh("linker_debug_1.vtk");
-
-	return linker;
+	ALinker->writeVTKDebugMesh("linker_debug_1.vtk");
 
 }
 LinkerBlockingGeom::~LinkerBlockingGeom() = default;
