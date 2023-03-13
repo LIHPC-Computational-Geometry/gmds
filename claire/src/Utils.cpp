@@ -69,10 +69,7 @@ TCellID Utils::CommonFace3Nodes(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCell
 	TCellID f_id(NullID);
 	Node n0 = AMesh->get<Node>(n0_id);
 	std::vector<Face> adj_faces = n0.get<Face>();
-	if (adj_faces.size() < 3 || adj_faces.size() > 4)
-	{
-		std::cout << "Utils::CommonFace3Nodes: This method can't handle other than quad or tri faces." << std::endl;
-	}
+
 	for (auto const& f:adj_faces)
 	{
 		if (f_id==NullID)
