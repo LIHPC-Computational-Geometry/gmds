@@ -30,7 +30,7 @@ class LIB_GMDS_CLAIRE_API RefinementBeta
          *  @param[in] Asize_first_edge size of the first edge
          *
 	 */
-	RefinementBeta(std::vector<math::Point> APoints, double Asize_first_edge);
+	RefinementBeta(std::vector<math::Point>& APoints, double Asize_first_edge);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -53,7 +53,7 @@ class LIB_GMDS_CLAIRE_API RefinementBeta
 		*
 		* \return  a double Beta computed by a Newton algorithm
 	 */
-	double ComputeBeta(double first_edge_size, double sum_edge_sizes, int Nbr_Points);
+	static double ComputeBeta(double first_edge_size, double sum_edge_sizes, int Nbr_Points);
 	/*-------------------------------------------------------------------*/
 
 

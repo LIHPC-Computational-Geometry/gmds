@@ -32,7 +32,7 @@ class LIB_GMDS_CLAIRE_API RefinementBetaBlocking
          *  @param[in] Aparams_aero parameters for aero algorithm
          *
 	 */
-	RefinementBetaBlocking(Blocking2D* ABlocking2D, ParamsAero Aparams_aero);
+	RefinementBetaBlocking(Blocking2D* ABlocking2D, ParamsAero& Aparams_aero);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
