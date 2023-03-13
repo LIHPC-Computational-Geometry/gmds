@@ -9,7 +9,7 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------*/
-AdvectedPointRK4_2D::AdvectedPointRK4_2D(Mesh *AMesh, FastLocalize *A_fl, math::Point A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D) :
+AdvectedPointRK4_2D::AdvectedPointRK4_2D(Mesh *AMesh, FastLocalize *A_fl, const math::Point& A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D) :
 	m_mesh(AMesh),
   	m_fl(A_fl)
 {
@@ -140,11 +140,11 @@ TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point &M, TCellID f0_id){
 		std::vector<TCellID> adjacent_faces;
 		Face f0 = m_mesh->get<Face>(f0_id);
 		std::vector<Node> face_nodes = f0.get<Node>();
-		for (auto n:face_nodes){
+		for (auto const& n:face_nodes){
 			std::vector<Face> node_faces = n.get<Face>();
-			for (auto f1:node_faces){
+			for (auto const& f1:node_faces){
 				bool alreadyinvector(false);
-				for (auto fv_id:adjacent_faces){
+				for (auto const& fv_id:adjacent_faces){
 					if(f1.id() == fv_id){
 						alreadyinvector = true;
 					}
@@ -155,7 +155,7 @@ TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point &M, TCellID f0_id){
 			}
 		}
 		// On regarde si le point M est dans un des triangles
-		for (auto f_adj_id:adjacent_faces){
+		for (auto const& f_adj_id:adjacent_faces){
 			if(!isInFace){
 				isInFace = isInTriangle(f_adj_id, M);
 				if(isInFace){
@@ -174,7 +174,7 @@ TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point &M, TCellID f0_id){
 		TCellID n_closest_id = data.id;
 		Node n_closest = m_mesh->get<Node>(n_closest_id);
 		std::vector<Face> n_closest_tri = n_closest.get<Face>();
-		for (auto f:n_closest_tri)
+		for (auto const& f:n_closest_tri)
 		{
 			if (!isInFace) {
 				isInFace = isInTriangle(f.id(), M);
@@ -210,7 +210,7 @@ double AdvectedPointRK4_2D::minEdgeLenght(){
 	// retirée
 	Edge edge_0 = m_mesh->get<Edge>(0);
 	double minLenght(edge_0.length());
-	for (auto edge_id:m_mesh->edges()){
+	for (auto const& edge_id:m_mesh->edges()){
 		Edge edge = m_mesh->get<Edge>(edge_id);
 		if(edge.length() < minLenght){
 			minLenght = edge.length() ;
@@ -352,8 +352,8 @@ void AdvectedPointRK4_2D::writeDiscretePathInVTK(){
 	stream << "POINTS ";
 	stream << m_discrete_path.size() ;
 	stream << " float\n";
-	for (int i=0; i< m_discrete_path.size(); i++){
-		stream << m_discrete_path[i].X() << " " << m_discrete_path[i].Y() << " " << m_discrete_path[i].Z() << "\n";
+	for (auto const& point_local:m_discrete_path){
+		stream << point_local.X() << " " << point_local.Y() << " " << point_local.Z() << "\n";
 	}
 
 	stream << "\n";

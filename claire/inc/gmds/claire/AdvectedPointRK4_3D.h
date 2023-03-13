@@ -66,7 +66,7 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_3D
 	/*-------------------------------------------------------------------*/
 	/** @brief Applique le schéma Runge Kutta d'ordre 4 pour résoudre dx/dt = grad
 	 */
-	math::Point RungeKutta4(math::Point& yn, math::Vector3d& grad_yn, double dt);
+	static math::Point RungeKutta4(math::Point& yn, math::Vector3d& grad_yn, double dt);
 	/*-------------------------------------------------------------------*/
 	/** @brief Write the discrete path in a vtk field
 	 */
