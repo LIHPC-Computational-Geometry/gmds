@@ -52,9 +52,6 @@ AeroPipeline_2D::AeroPipeline_2D(std::string &Aparams) :
 	m_couche_id = m_meshHex->newVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 AbstractAeroPipeline::STATUS
 AeroPipeline_2D::execute(){
 
@@ -448,9 +445,6 @@ AeroPipeline_2D::execute(){
 
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 void
 AeroPipeline_2D::LectureMaillage(){
 
@@ -469,9 +463,6 @@ AeroPipeline_2D::LectureMaillage(){
 	math::Utils::MeshCleaner(m_meshTet);
 
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 void
 AeroPipeline_2D::EcritureMaillage(){
@@ -519,9 +510,6 @@ AeroPipeline_2D::EcritureMaillage(){
 
 
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 void
 AeroPipeline_2D::DiscretisationParoi(int color){
@@ -682,9 +670,6 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 void
 AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 
@@ -762,9 +747,6 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 void
 AeroPipeline_2D::UpdateLinker(cad::GeomMeshLinker* linker_1, const Node& n_1, cad::GeomMeshLinker* linker_2, const Node& n_2){
 	int geom_dim = linker_1->getGeomDim<Node>(n_1.id());
@@ -775,9 +757,6 @@ AeroPipeline_2D::UpdateLinker(cad::GeomMeshLinker* linker_1, const Node& n_1, ca
 		linker_2->linkNodeToCurve(n_2.id(), linker_1->getGeomId<Node>(n_1.id()));
 	}
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 void
 AeroPipeline_2D::UpdateLinkerLastLayer(){
@@ -814,9 +793,6 @@ AeroPipeline_2D::UpdateLinkerLastLayer(){
 	}
 
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 void
 AeroPipeline_2D::BlockingClassification(){
@@ -1158,9 +1134,6 @@ AeroPipeline_2D::BlockingClassification(){
 
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 void
 AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 
@@ -1387,11 +1360,8 @@ AeroPipeline_2D::ComputeVectorFieldForExtrusion(){
 
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 void
-   AeroPipeline_2D::MeshRefinement()
+AeroPipeline_2D::MeshRefinement()
 {
 	TInt mark_isTreated = m_Blocking2D.newMark<Node>();
 	TInt mark_refinementNeeded = m_Blocking2D.newMark<Node>();
@@ -1526,110 +1496,6 @@ void
 	m_Blocking2D.freeMark<Node>(mark_isTreated);
 	m_Blocking2D.unmarkAll<Node>(mark_refinementNeeded);
 	m_Blocking2D.freeMark<Node>(mark_refinementNeeded);
-}
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
-void
-   AeroPipeline_2D::MeshAlignement()
-{
-	Variable<math::Vector3d>* var_vector_trimesh = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
-
-	MeshDoctor doc(m_meshHex);
-	doc.buildEdgesAndX2E();
-	doc.updateUpwardConnectivity();
-
-	Variable<double>* var_deviation = m_meshHex->newVariable<double, GMDS_NODE>("MQ_Deviation_Flow");
-
-	// as m_meshTet is not modified, we can
-	// build the research tree once for all the subsequent queries
-	FastLocalize fl(m_meshTet);
-
-	// Compute the flow deviation
-	for (auto const &n_id:m_meshHex->nodes())
-	{
-			Node n = m_meshHex->get<Node>(n_id);
-		   std::vector<Face> n_faces_in_quad = n.get<Face>() ;
-
-		   if (n_faces_in_quad.size() > 2) {
-
-			   gmds::Cell::Data data = fl.find(n.point());
-
-			   Node n_closer_tri = m_meshTet->get<Node>(data.id);
-			   std::vector<Face> faces = n_closer_tri.get<Face>();
-
-			   bool triangle_found(false);
-			   TCellID f_id_in_Tri_mesh(NullID);
-			   for (auto const &f_tri : faces) {
-				   std::vector<Node> f_nodes = f_tri.get<Node>();
-				   triangle_found = math::Utils::isInTriangle(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point(), n.point());
-				   if (triangle_found) {
-					   f_id_in_Tri_mesh = f_tri.id();
-				   }
-			   }
-
-			   if (f_id_in_Tri_mesh != NullID) {
-				   math::Vector3d v_ref;
-				   Face f = m_meshTet->get<Face>(f_id_in_Tri_mesh);
-				   std::vector<Node> f_nodes = f.get<Node>();
-				   v_ref.setX(math::Utils::linearInterpolation2D3Pt(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point(), n.point(),
-				                                                    var_vector_trimesh->value(f_nodes[0].id()).X(), var_vector_trimesh->value(f_nodes[1].id()).X(),
-				                                                    var_vector_trimesh->value(f_nodes[2].id()).X()));
-				   v_ref.setY(math::Utils::linearInterpolation2D3Pt(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point(), n.point(),
-				                                                    var_vector_trimesh->value(f_nodes[0].id()).Y(), var_vector_trimesh->value(f_nodes[1].id()).Y(),
-				                                                    var_vector_trimesh->value(f_nodes[2].id()).Y()));
-				   /*
-				   v_ref.setX(1.0);
-				   v_ref.setY(1.0);
-				    */
-				   v_ref.setZ(0.0);
-
-				   v_ref.normalize();
-
-				   //  math::Vector3d v_ref({cos(m_params.angle_attack*M_PI/180.0), sin(m_params.angle_attack*M_PI/180.0), 0.0});
-				   math::Vector3d v_ref_ortho({-v_ref.Y(), v_ref.X(), 0.0});
-				   v_ref_ortho.normalize();
-				   std::vector<Edge> edges = n.get<Edge>();
-				   std::vector<double> min_angles;
-
-				   for (auto const &e : edges) {
-					   std::vector<Node> e_nodes = e.get<Node>();
-					   math::Vector3d vec_edge = (e_nodes[0].point() - e_nodes[1].point()).normalize();
-					   double min_angle(90);
-
-					   if (acos(vec_edge.dot(v_ref)) * 180 / M_PI < min_angle) {
-						   min_angle = acos(vec_edge.dot(v_ref)) * 180 / M_PI;
-					   }
-					   if (acos(vec_edge.dot(-v_ref)) * 180 / M_PI < min_angle) {
-						   min_angle = acos(vec_edge.dot(-v_ref)) * 180 / M_PI;
-					   }
-					   if (acos(vec_edge.dot(v_ref_ortho)) * 180 / M_PI < min_angle) {
-						   min_angle = acos(vec_edge.dot(v_ref_ortho)) * 180 / M_PI;
-					   }
-					   if (acos(vec_edge.dot(-v_ref_ortho)) * 180 / M_PI < min_angle) {
-						   min_angle = acos(vec_edge.dot(-v_ref_ortho)) * 180 / M_PI;
-					   }
-
-					   min_angles.push_back(min_angle);
-				   }
-
-				   var_deviation->set(n_id, 0);
-				   for (auto angle : min_angles) {
-					   if (var_deviation->value(n_id) < angle) {
-						   var_deviation->set(n_id, angle);
-					   }
-				   }
-
-
-			   }
-
-
-		   }
-
-	}
-
-
 }
 /*------------------------------------------------------------------------*/
 
