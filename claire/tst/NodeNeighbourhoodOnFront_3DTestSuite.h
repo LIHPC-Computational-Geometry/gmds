@@ -112,10 +112,10 @@ TEST(NodeNeighbourhoodOnFront_3DTestClass, NodeNeighbourhoodOnFront_3D_Test1)
 		couche_id->set(n_id, 0);
 		front_nodes.push_back(n_id);
 	}
-	for (auto f_id:m_mesh->faces())
+	for (auto f_loc_id:m_mesh->faces())
 	{
-		couche_face_id->set(f_id, 0);
-		front_faces.push_back(f_id);
+		couche_face_id->set(f_loc_id, 0);
+		front_faces.push_back(f_loc_id);
 	}
 
 	Front_3D Front = Front_3D(0, front_nodes, front_faces);

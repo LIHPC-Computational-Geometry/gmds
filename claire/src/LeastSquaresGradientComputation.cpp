@@ -76,7 +76,7 @@ LeastSquaresGradientComputation::buildMatrix(TCellID n_id, Eigen::SparseMatrix<d
 	std::vector<Edge> adjacent_edges = n.get<Edge>() ;
 	std::vector<TCellID> adjacent_nodes ;
 	std::vector<math::Point> adjacent_points ;
-	for(auto edge:adjacent_edges) {
+	for(auto const& edge:adjacent_edges) {
 		TCellID n_ik = edge.getOppositeNodeId(n);
 		adjacent_nodes.push_back(n_ik);
 		Node node = m_mesh->get<Node>(n_ik);
