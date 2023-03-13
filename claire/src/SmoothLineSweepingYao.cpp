@@ -5,6 +5,7 @@
 #include <gmds/claire/SmoothLineSweepingYao.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/io/IGMeshIOService.h>
+#include <gmds/claire/Utils.h>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -15,19 +16,16 @@ SmoothLineSweepingYao::SmoothLineSweepingYao(Blocking2D::Block *AB, int Anb_max_
 
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 math::Point SmoothLineSweepingYao::ComputeNewPosition(int i, int j)
 {
 	// Compute the 6 points for the Yao Smoother
-	math::Point V1 = WeightedPointOnBranch((*m_B)(i-1,j-1).point(), (*m_B)(i,j-1).point(), (*m_B)(i+1,j-1).point(), 0.5);
-	math::Point V2 = WeightedPointOnBranch((*m_B)(i-1,j).point(), (*m_B)(i,j).point(), (*m_B)(i+1,j).point(), 0.5);
-	math::Point V3 = WeightedPointOnBranch((*m_B)(i-1,j+1).point(), (*m_B)(i,j+1).point(), (*m_B)(i+1,j+1).point(), 0.5);
+	math::Point V1 = math::Utils::WeightedPointOnBranch((*m_B)(i-1,j-1).point(), (*m_B)(i,j-1).point(), (*m_B)(i+1,j-1).point(), 0.5);
+	math::Point V2 = math::Utils::WeightedPointOnBranch((*m_B)(i-1,j).point(), (*m_B)(i,j).point(), (*m_B)(i+1,j).point(), 0.5);
+	math::Point V3 = math::Utils::WeightedPointOnBranch((*m_B)(i-1,j+1).point(), (*m_B)(i,j+1).point(), (*m_B)(i+1,j+1).point(), 0.5);
 
-	math::Point H1 = WeightedPointOnBranch((*m_B)(i-1,j-1).point(), (*m_B)(i-1,j).point(), (*m_B)(i-1,j+1).point(), 0.5);
-	math::Point H2 = WeightedPointOnBranch((*m_B)(i,j-1).point(), (*m_B)(i,j).point(), (*m_B)(i,j+1).point(), 0.5);
-	math::Point H3 = WeightedPointOnBranch((*m_B)(i+1,j-1).point(), (*m_B)(i+1,j).point(), (*m_B)(i+1,j+1).point(), 0.5);
+	math::Point H1 = math::Utils::WeightedPointOnBranch((*m_B)(i-1,j-1).point(), (*m_B)(i-1,j).point(), (*m_B)(i-1,j+1).point(), 0.5);
+	math::Point H2 = math::Utils::WeightedPointOnBranch((*m_B)(i,j-1).point(), (*m_B)(i,j).point(), (*m_B)(i,j+1).point(), 0.5);
+	math::Point H3 = math::Utils::WeightedPointOnBranch((*m_B)(i+1,j-1).point(), (*m_B)(i+1,j).point(), (*m_B)(i+1,j+1).point(), 0.5);
 
 	// Finding the intersection between the 4 segments
 	math::Point M;
@@ -54,5 +52,4 @@ math::Point SmoothLineSweepingYao::ComputeNewPosition(int i, int j)
 
 	return P_ideal;
 }
-
 /*------------------------------------------------------------------------*/
