@@ -25,7 +25,7 @@
 #include<gmds/math/BezierCurve.h>
 #include <gmds/claire/AeroMeshQuality.h>
 #include <gmds/claire/FastLocalize.h>
-#include <gmds/claire/DiffusionEquation2D.h>
+#include <gmds/claire/MeshAlignment_2D.h>
 
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -419,6 +419,8 @@ AeroPipeline_2D::execute(){
 	}
 	 */
 	//MeshAlignement();
+	MeshAlignment_2D align(m_meshTet, m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion"), m_meshHex);
+	align.execute();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
