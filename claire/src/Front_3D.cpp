@@ -9,7 +9,7 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------*/
-Front_3D::Front_3D(int front_id, std::vector<TCellID> nodes_Id, std::vector<TCellID> faces_Id) {
+Front_3D::Front_3D(int front_id, std::vector<TCellID>& nodes_Id, std::vector<TCellID>& faces_Id) {
 	m_FrontID = front_id;
 	m_nodesId = nodes_Id;
 	m_facesId = faces_Id;
@@ -28,11 +28,11 @@ int Front_3D::getFrontID(){
 /*-------------------------------------------------------------------*/
 std::vector<TCellID> Front_3D::getNodes(){
 	return m_nodesId;
-};
+}
 /*-------------------------------------------------------------------*/
 std::vector<TCellID> Front_3D::getFaces(){
 	return m_facesId;
-};
+}
 /*-------------------------------------------------------------------*/
 void Front_3D::addNodeId(TCellID n_id){
 	m_nodesId.push_back(n_id);
@@ -53,7 +53,7 @@ Front_3D::orderedFrontEdgesAroundNode(Mesh *m, TCellID n_id)
 
 	// Get the front edges connected to n
 	std::vector<Edge> n_edges_on_Front;
-	for (auto e:n_edges)
+	for (auto const& e:n_edges)
 	{
 		Node n_opp = e.getOppositeNode(n);
 		if (var_node_couche_id->value(n_opp.id()) == m_FrontID)
@@ -62,7 +62,7 @@ Front_3D::orderedFrontEdgesAroundNode(Mesh *m, TCellID n_id)
 		}
 	}
 
-	int mark_isTreated = m->newMark<Face>();
+	TInt mark_isTreated = m->newMark<Face>();
 	n_ordered_edges_on_Front.push_back(n_edges_on_Front[0].id());	// Choose a first edge, and a first face
 
 	for (int i=1;i<=n_edges_on_Front.size()-1;i++)
@@ -73,7 +73,7 @@ Front_3D::orderedFrontEdgesAroundNode(Mesh *m, TCellID n_id)
 
 		Face f;
 		std::vector<Face> e_faces = e.get<Face>() ;
-		for (auto f_loc:e_faces)
+		for (auto const& f_loc:e_faces)
 		{
 			std::vector<Node> f_loc_nodes = f_loc.get<Node>();
 
@@ -89,7 +89,7 @@ Front_3D::orderedFrontEdgesAroundNode(Mesh *m, TCellID n_id)
 		m->mark(f, mark_isTreated);
 
 		std::vector<Edge> f_edges = f.get<Edge>();
-		for (auto e_loc:f_edges)
+		for (auto const& e_loc:f_edges)
 		{
 			std::vector<Node> e_loc_nodes = e_loc.get<Node>();
 			if ( (e_loc_nodes[0].id() == n_id && e_loc_nodes[1].id() != n_opp.id() )
@@ -114,7 +114,7 @@ Front_3D::edgeFacesOnFront(Mesh *m, TCellID e_id)
 
 	Edge e = m->get<Edge>(e_id);
 	std::vector<Face> e_faces = e.get<Face>();
-	for (auto f:e_faces)
+	for (auto const& f:e_faces)
 	{
 		for (auto f_front_id:m_facesId)
 		{
@@ -136,7 +136,7 @@ Front_3D::outgoingNormal(Mesh *m, TCellID f_id)
 	Face f = m->get<Face>(f_id);
 	math::Vector3d f_normal = f.normal();
 
-	if (f.get<Region>().size()==0)
+	if (f.get<Region>().empty())
 	{
 		std::cout << "ATTENTION Front_3D, outgoingNormal: La face n'est connectée à aucune région." << std::endl;
 	}
@@ -161,7 +161,7 @@ Front_3D::outgoingNormal(Mesh *m, TCellID f_id)
 TCellID
 Front_3D::adjacentFaceOnFront(Mesh *m, TCellID f_id, TCellID e_id)
 {
-	TCellID f_adj_id(NullID);
+	TCellID f_adj_id;
 
 	Face f = m->get<Face>(f_id);
 	std::vector<Edge> f_edges = f.get<Edge>();
