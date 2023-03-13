@@ -217,7 +217,7 @@ NodeNeighbourhoodOnFront_3D::orderedFrontEdgesAroundNode()
 
 	// Get the front edges connected to n
 	std::vector<Edge> n_edges_on_Front;
-	for (auto e:n_edges)
+	for (auto const& e:n_edges)
 	{
 		Node n_opp = e.getOppositeNode(n);
 		if (var_node_couche_id->value(n_opp.id()) == m_Front->getFrontID())
@@ -226,7 +226,7 @@ NodeNeighbourhoodOnFront_3D::orderedFrontEdgesAroundNode()
 		}
 	}
 
-	int mark_isTreated = m_mesh->newMark<Face>();
+	TInt mark_isTreated = m_mesh->newMark<Face>();
 	m_orderedEdges.push_back(n_edges_on_Front[0].id());	// Choose a first edge, and a first face
 
 	for (int i=1;i<=n_edges_on_Front.size()-1;i++)
@@ -237,7 +237,7 @@ NodeNeighbourhoodOnFront_3D::orderedFrontEdgesAroundNode()
 
 		Face f;
 		std::vector<Face> e_faces = e.get<Face>() ;
-		for (auto f_loc:e_faces)
+		for (auto const& f_loc:e_faces)
 		{
 			std::vector<Node> f_loc_nodes = f_loc.get<Node>();
 
@@ -253,7 +253,7 @@ NodeNeighbourhoodOnFront_3D::orderedFrontEdgesAroundNode()
 		m_mesh->mark(f, mark_isTreated);
 
 		std::vector<Edge> f_edges = f.get<Edge>();
-		for (auto e_loc:f_edges)
+		for (auto const& e_loc:f_edges)
 		{
 			std::vector<Node> e_loc_nodes = e_loc.get<Node>();
 			if ( (e_loc_nodes[0].id() == m_n_id && e_loc_nodes[1].id() != n_opp.id() )
