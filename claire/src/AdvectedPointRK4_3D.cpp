@@ -63,7 +63,7 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 	if ( abs(Grad.X()) <= pow(10,-6) && abs(Grad.Y())<=pow(10,-6) && abs(Grad.Z())<=pow(10,-6))
 	{
 		Region r_test = m_mesh->get<Region>(region_id);
-		for (auto n_test:r_test.get<Node>())
+		for (auto const& n_test:r_test.get<Node>())
 		{
 			std::cout << "Node " << n_test << ", distance: " << m_distance->value(n_test.id()) << std::endl;
 		}
@@ -71,7 +71,7 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 		gmds::Cell::Data data = m_fl->find(m_Pstart);
 		Node n = m_mesh->get<Node>(data.id);
 		std::vector<Edge> edges = n.get<Edge>();
-		for (auto e:edges)
+		for (auto const& e:edges)
 		{
 			Node n_opp = e.getOppositeNode(n);
 			Grad = Grad + m_gradient2D->value(n_opp.id());
@@ -345,8 +345,8 @@ void AdvectedPointRK4_3D::writeDiscretePathInVTK(){
 	stream << "POINTS ";
 	stream << m_discrete_path.size() ;
 	stream << " float\n";
-	for (int i=0; i< m_discrete_path.size(); i++){
-		stream << m_discrete_path[i].X() << " " << m_discrete_path[i].Y() << " " << m_discrete_path[i].Z() << "\n";
+	for (auto const& point_local:m_discrete_path){
+		stream << point_local.X() << " " << point_local.Y() << " " << point_local.Z() << "\n";
 	}
 
 	stream << "\n";

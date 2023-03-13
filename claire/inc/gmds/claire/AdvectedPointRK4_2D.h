@@ -31,7 +31,7 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_2D
 	/** @brief Constructor.
          *  @param AMesh the mesh where we work on
 	 */
-	AdvectedPointRK4_2D(Mesh *AMesh, FastLocalize *A_fl, math::Point A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D);
+	AdvectedPointRK4_2D(Mesh *AMesh, FastLocalize *A_fl, const math::Point& A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -70,7 +70,7 @@ class LIB_GMDS_CLAIRE_API AdvectedPointRK4_2D
 	/*-------------------------------------------------------------------*/
 	/** @brief Applique le schéma Runge Kutta d'ordre 4 pour résoudre dx/dt = grad
 	 */
-	math::Point RungeKutta4(math::Point &yn, math::Vector3d grad_yn, double dt);
+	static math::Point RungeKutta4(math::Point &yn, math::Vector3d grad_yn, double dt);
 	/*-------------------------------------------------------------------*/
 	/** @brief Write the discrete path in a vtk field
 	 */
