@@ -19,6 +19,34 @@ using namespace gmds;
 #ifndef GMDS_AEROMESHQUALITYTESTSUITE_H
 #define GMDS_AEROMESHQUALITYTESTSUITE_H
 
+TEST(ClaireTestClass, Test_minedgelenght)
+{
+	// Test
+	Mesh m(MeshModel(DIM3 | R | F | N | F2N | N2F));
+
+	GridBuilder gb(&m,2);
+	gb.execute(3,1.0, 4, 1.0);
+
+	ASSERT_EQ(m.getNbNodes(),12);
+	ASSERT_EQ(m.getNbFaces(),6);
+
+	//==================================================================
+	// MESH PREPARATION
+	//==================================================================
+	MeshDoctor doctor(&m);
+	doctor.updateUpwardConnectivity();
+
+	double eps(pow(10,-6));
+
+	for (auto f_id:m.faces()) {
+		Face f = m.get<Face>(f_id);
+		std::vector<Node> nodes = f.get<Node>();
+		double min_edge = math::AeroMeshQuality::minlenghtedge(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
+		ASSERT_TRUE(abs(min_edge - 1.0) < eps);
+	}
+
+}
+
 TEST(ClaireTestClass, Test_ConditionQUAD)
 {
 	// Test
