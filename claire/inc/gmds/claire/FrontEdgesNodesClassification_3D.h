@@ -54,28 +54,28 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 		*
 		* \return  return the mark on semi edges
 	 */
-	int getMarkSemiEdges();
+	TInt getMarkSemiEdges();
 	/*-------------------------------------------------------------------*/
 	/** @brief
 	 	* \param[in]
 		*
 		* \return  return the mark on semi nodes
 	 */
-	int getMarkSemiNodes();
+	TInt getMarkSemiNodes();
 	/*-------------------------------------------------------------------*/
 	/** @brief
 	 	* \param[in]
 		*
 		* \return  return the mark
 	 */
-	int getMarkEdgesTemplates();
+	TInt getMarkEdgesTemplates();
 	/*-------------------------------------------------------------------*/
 	/** @brief
 	 	* \param[in]
 		*
 		* \return  return the mark
 	 */
-	int getMarkNodesTemplates();
+	TInt getMarkNodesTemplates();
 	/*-------------------------------------------------------------------*/
 	/** @brief
 	 	* \param[in]
@@ -155,13 +155,13 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	/** Nodes classification */
 	Variable<int>* m_NodesClassification;
 	/** Mark on semi edges */
-	int m_mark_semiEdges;
+	TInt m_mark_semiEdges;
 	/** Mark on semi nodes */
-	int m_mark_semiNodes;
+	TInt m_mark_semiNodes;
 	/** Mark edges for templates */
-	int m_mark_EdgesForTemplates;
+	TInt m_mark_EdgesForTemplates;
 	/** Mark nodes for templates */
-	int m_mark_NodesForTemplates;
+	TInt m_mark_NodesForTemplates;
 	/** */
 	std::vector<std::vector<TCellID>> m_global_feature_edges;
 	/** */

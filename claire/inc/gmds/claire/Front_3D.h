@@ -28,7 +28,7 @@ class LIB_GMDS_CLAIRE_API Front_3D {
 	/*-------------------------------------------------------------------*/
 	/** \brief Default constructor
 	 */
-	Front_3D(int front_id, std::vector<TCellID> nodes_Id, std::vector<TCellID> faces_Id);
+	Front_3D(int front_id, std::vector<TCellID>& nodes_Id, std::vector<TCellID>& faces_Id);
 	/*-------------------------------------------------------------------*/
 
  public:
@@ -82,7 +82,7 @@ class LIB_GMDS_CLAIRE_API Front_3D {
 	 *
 	 *		\return  a 3d vector
 	 */
-	math::Vector3d outgoingNormal(Mesh *m, TCellID f_id);
+	static math::Vector3d outgoingNormal(Mesh *m, TCellID f_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Returns the face of the front adjacent to the face f_id
 	 * 	and the edge e_id.
