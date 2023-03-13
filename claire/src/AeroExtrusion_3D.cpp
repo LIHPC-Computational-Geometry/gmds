@@ -128,11 +128,11 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	// Init the edge_info type for the edges of the front
 	InitEdgeStructInfo(Front_IN);
 
-	int mark_edgesTreated = m_meshH->newMark<Edge>();
-	int mark_facesTreated = m_meshH->newMark<Face>();
+	TInt mark_edgesTreated = m_meshH->newMark<Edge>();
+	TInt mark_facesTreated = m_meshH->newMark<Face>();
 
-	int mark_EdgesTemplates = Classification.getMarkEdgesTemplates();
-	int mark_NodesTemplates = Classification.getMarkNodesTemplates();
+	TInt mark_EdgesTemplates = Classification.getMarkEdgesTemplates();
+	TInt mark_NodesTemplates = Classification.getMarkNodesTemplates();
 
 	Variable<int>* var_TEST = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_TEST_NODES");
 
@@ -490,7 +490,7 @@ AeroExtrusion_3D::getSingularNodes(Front_3D &AFront, Variable<int>* front_edges_
 }
 /*------------------------------------------------------------------------*/
 std::map<TCellID, int>
-AeroExtrusion_3D::getSingularEdges(Front_3D &AFront, Variable<int>* front_edges_classification, int mark_singEdgesTreated)
+AeroExtrusion_3D::getSingularEdges(Front_3D &AFront, Variable<int>* front_edges_classification, TInt mark_singEdgesTreated)
 {
 	std::map<TCellID, int> sing_edges;
 	Variable<int>* var_node_couche_id = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
@@ -660,7 +660,7 @@ AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<T
 }
 /*------------------------------------------------------------------------*/
 TCellID
-AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated)
+AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double dc, TInt mark_edgesTreated, TInt mark_facesTreated)
 {
 	//std::cout << "Template Node 2 Corner 1 End au noeud " << n_id << std::endl;
 	TCellID r_id;
@@ -810,7 +810,7 @@ AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double
 }
 /*------------------------------------------------------------------------*/
 TCellID
-AeroExtrusion_3D::TemplateNode1Corner2End(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated)
+AeroExtrusion_3D::TemplateNode1Corner2End(Front_3D &AFront, TCellID n_id, double dc, TInt mark_edgesTreated, TInt mark_facesTreated)
 {
 	//std::cout << "Template Node 1 Corner 2 End au noeud " << n_id << std::endl;
 	TCellID r_id;
@@ -855,7 +855,7 @@ AeroExtrusion_3D::TemplateNode1Corner2End(Front_3D &AFront, TCellID n_id, double
 	Node n3 = e3.getOppositeNode(n);
 
 	Node n2;
-	for (auto n_loc:f1.get<Node>())
+	for (auto const& n_loc:f1.get<Node>())
 	{
 		if (n_loc.id() != n.id()
 		    && n_loc.id() != n1.id()
@@ -942,7 +942,7 @@ AeroExtrusion_3D::TemplateNode1Corner2End(Front_3D &AFront, TCellID n_id, double
 }
 /*------------------------------------------------------------------------*/
 TCellID
-AeroExtrusion_3D::TemplateNode3End(Front_3D &AFront, TCellID n_id, int mark_edgesTreated, int mark_facesTreated)
+AeroExtrusion_3D::TemplateNode3End(Front_3D &AFront, TCellID n_id, TInt mark_edgesTreated, TInt mark_facesTreated)
 {
 	//std::cout << "Template Node 3 End au noeud " << n_id << std::endl;
 	TCellID r_id;
@@ -976,21 +976,21 @@ AeroExtrusion_3D::TemplateNode3End(Front_3D &AFront, TCellID n_id, int mark_edge
 	Node n_f0_diag;
 	Node n_f1_diag;
 	Node n_f2_diag;
-	for (auto n_loc:f0_nodes)
+	for (auto const& n_loc:f0_nodes)
 	{
 		if (n_loc.id() != n_id && n_loc.id() != n_e0_opp.id() && n_loc.id() != n_e1_opp.id())
 		{
 			n_f0_diag = n_loc;
 		}
 	}
-	for (auto n_loc:f1_nodes)
+	for (auto const& n_loc:f1_nodes)
 	{
 		if (n_loc.id() != n_id && n_loc.id() != n_e1_opp.id() && n_loc.id() != n_e2_opp.id())
 		{
 			n_f1_diag = n_loc;
 		}
 	}
-	for (auto n_loc:f2_nodes)
+	for (auto const& n_loc:f2_nodes)
 	{
 		if (n_loc.id() != n_id && n_loc.id() != n_e2_opp.id() && n_loc.id() != n_e0_opp.id())
 		{
@@ -1096,7 +1096,7 @@ AeroExtrusion_3D::TemplateNode3End(Front_3D &AFront, TCellID n_id, int mark_edge
 }
 /*------------------------------------------------------------------------*/
 TCellID
-AeroExtrusion_3D::TemplateNode3Corner3End(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated)
+AeroExtrusion_3D::TemplateNode3Corner3End(Front_3D &AFront, TCellID n_id, double dc, TInt mark_edgesTreated, TInt mark_facesTreated)
 {
 	//std::cout << "Template Node 3 Corner 3 End au noeud " << n_id << std::endl;
 	TCellID r_id;
@@ -1269,7 +1269,7 @@ AeroExtrusion_3D::TemplateNode3Corner3End(Front_3D &AFront, TCellID n_id, double
 }
 /*------------------------------------------------------------------------*/
 std::vector<TCellID>
-AeroExtrusion_3D::TemplateNode2Corner2End(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated)
+AeroExtrusion_3D::TemplateNode2Corner2End(Front_3D &AFront, TCellID n_id, double dc, TInt mark_edgesTreated, TInt mark_facesTreated)
 {
 	//std::cout << "Template Node 2 Corner 2 End au noeud " << n_id << std::endl;
 	std::vector<TCellID> hexas_id;
@@ -1610,7 +1610,7 @@ AeroExtrusion_3D::TemplateNode2Corner1Reversal(Front_3D &AFront, TCellID n_id, d
 }
 /*------------------------------------------------------------------------*/
 std::vector<TCellID>
-AeroExtrusion_3D::TemplateNode2End1Reversal(Front_3D &AFront, TCellID n_id, double dc, int mark_edgesTreated, int mark_facesTreated)
+AeroExtrusion_3D::TemplateNode2End1Reversal(Front_3D &AFront, TCellID n_id, double dc, TInt mark_edgesTreated, TInt mark_facesTreated)
 {
 	//std::cout << "Template Node 2 End 1 Reversal au noeud " << n_id << std::endl;
 	std::vector<TCellID> hexas_id;
@@ -1985,7 +1985,7 @@ AeroExtrusion_3D::TemplateEdgeCorner(Front_3D &AFront, TCellID e_id, double dc)
 }
 /*------------------------------------------------------------------------*/
 TCellID
-AeroExtrusion_3D::TemplateEdgeEnd(Front_3D &AFront, TCellID e_id, double dc, int mark_edgesTreated, int mark_facesTreated)
+AeroExtrusion_3D::TemplateEdgeEnd(Front_3D &AFront, TCellID e_id, double dc, TInt mark_edgesTreated, TInt mark_facesTreated)
 {
 	//std::cout << "Template Edge End" << std::endl;
 	TCellID r_id(NullID);
@@ -2085,7 +2085,7 @@ AeroExtrusion_3D::TemplateEdgeEnd(Front_3D &AFront, TCellID e_id, double dc, int
 }
 /*------------------------------------------------------------------------*/
 std::vector<TCellID>
-AeroExtrusion_3D::TemplateEdgeReversal(Front_3D &AFront, TCellID e_id, double dc, int mark_edgesTreated, int mark_facesTreated)
+AeroExtrusion_3D::TemplateEdgeReversal(Front_3D &AFront, TCellID e_id, double dc, TInt mark_edgesTreated, TInt mark_facesTreated)
 {
 	//std::cout << "Template Edge Reversal " << e_id << std::endl;
 	std::vector<TCellID> hexas_id;
