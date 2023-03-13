@@ -5,6 +5,7 @@
 #include <gmds/claire/SmoothLineSweepingOrtho.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/io/IGMeshIOService.h>
+#include <gmds/claire/Utils.h>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -15,21 +16,18 @@ SmoothLineSweepingOrtho::SmoothLineSweepingOrtho(Blocking2D::Block *AB, int Anb_
 
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 math::Point SmoothLineSweepingOrtho::ComputeNewPosition(int i, int j)
 {
 	double alpha = pow( (j-1.0)/( 6.0*(m_Ny-1.0) ) , 0.01) ;
 
 	// Compute the 6 points for the Yao Smoother
-	math::Point V1 = WeightedPointOnBranch((*m_B)(i-1,j-1).point(), (*m_B)(i,j-1).point(), (*m_B)(i+1,j-1).point(), 0.5);
-	math::Point V2 = WeightedPointOnBranch((*m_B)(i-1,j).point(), (*m_B)(i,j).point(), (*m_B)(i+1,j).point(), 0.5);
-	math::Point V3 = WeightedPointOnBranch((*m_B)(i-1,j+1).point(), (*m_B)(i,j+1).point(), (*m_B)(i+1,j+1).point(), 0.5);
+	math::Point V1 = math::Utils::WeightedPointOnBranch((*m_B)(i-1,j-1).point(), (*m_B)(i,j-1).point(), (*m_B)(i+1,j-1).point(), 0.5);
+	math::Point V2 = math::Utils::WeightedPointOnBranch((*m_B)(i-1,j).point(), (*m_B)(i,j).point(), (*m_B)(i+1,j).point(), 0.5);
+	math::Point V3 = math::Utils::WeightedPointOnBranch((*m_B)(i-1,j+1).point(), (*m_B)(i,j+1).point(), (*m_B)(i+1,j+1).point(), 0.5);
 
-	math::Point H1 = WeightedPointOnBranch((*m_B)(i-1,j-1).point(), (*m_B)(i-1,j).point(), (*m_B)(i-1,j+1).point(), 0.5);
-	math::Point H2 = WeightedPointOnBranch((*m_B)(i,j-1).point(), (*m_B)(i,j).point(), (*m_B)(i,j+1).point(), 0.5);
-	math::Point H3 = WeightedPointOnBranch((*m_B)(i+1,j-1).point(), (*m_B)(i+1,j).point(), (*m_B)(i+1,j+1).point(), 0.5);
+	math::Point H1 = math::Utils::WeightedPointOnBranch((*m_B)(i-1,j-1).point(), (*m_B)(i-1,j).point(), (*m_B)(i-1,j+1).point(), 0.5);
+	math::Point H2 = math::Utils::WeightedPointOnBranch((*m_B)(i,j-1).point(), (*m_B)(i,j).point(), (*m_B)(i,j+1).point(), 0.5);
+	math::Point H3 = math::Utils::WeightedPointOnBranch((*m_B)(i+1,j-1).point(), (*m_B)(i+1,j).point(), (*m_B)(i+1,j+1).point(), 0.5);
 
 	// Finding the intersection between the 4 segments
 	math::Point X2;
@@ -109,9 +107,6 @@ math::Point SmoothLineSweepingOrtho::ComputeNewPosition(int i, int j)
 	return P_new;
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 math::Point SmoothLineSweepingOrtho::ComputeOrtho(int i, int j)
 {
 	math::Point X1;
@@ -128,9 +123,9 @@ math::Point SmoothLineSweepingOrtho::ComputeOrtho(int i, int j)
 	math::Vector3d n = n1+n2;
 
 	// Finding the intersection between the 4 segments
-	math::Point H1 = WeightedPointOnBranch((*m_B)(i-1,j-1).point(), (*m_B)(i-1,j).point(), (*m_B)(i-1,j+1).point(), 0.5);
-	math::Point H2 = WeightedPointOnBranch((*m_B)(i,j-1).point(), (*m_B)(i,j).point(), (*m_B)(i,j+1).point(), 0.5);
-	math::Point H3 = WeightedPointOnBranch((*m_B)(i+1,j-1).point(), (*m_B)(i+1,j).point(), (*m_B)(i+1,j+1).point(), 0.5);
+	math::Point H1 = math::Utils::WeightedPointOnBranch((*m_B)(i-1,j-1).point(), (*m_B)(i-1,j).point(), (*m_B)(i-1,j+1).point(), 0.5);
+	math::Point H2 = math::Utils::WeightedPointOnBranch((*m_B)(i,j-1).point(), (*m_B)(i,j).point(), (*m_B)(i,j+1).point(), 0.5);
+	math::Point H3 = math::Utils::WeightedPointOnBranch((*m_B)(i+1,j-1).point(), (*m_B)(i+1,j).point(), (*m_B)(i+1,j+1).point(), 0.5);
 
 	math::Segment Seg_Hori_1(H1, H2);
 	math::Segment Seg_Hori_2(H2, H3);
