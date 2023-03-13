@@ -55,7 +55,7 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test1)
 	bnd_op.getBoundaryNodes(bnd_node_ids);
 
 	// Initialisation des marques sur le front à avancer
-	int markFrontNodes = m.newMark<gmds::Node>();
+	TInt markFrontNodes = m.newMark<gmds::Node>();
 	for(auto id:bnd_node_ids){
 		Node n = m.get<Node>(id);
 		double coord_y = n.Y() ;
@@ -124,8 +124,8 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_3D_Test1)
 	doctor.updateUpwardConnectivity();
 
 	// Initialisation des marques sur le front à avancer
-	int markFrontNodesInt = m.newMark<gmds::Node>();
-	int markFrontNodesOut = m.newMark<gmds::Node>();
+	TInt markFrontNodesInt = m.newMark<gmds::Node>();
+	TInt markFrontNodesOut = m.newMark<gmds::Node>();
 	for (auto n_id:m.nodes()){
 		Node n = m.get<Node>(n_id);
 		double coord_x = n.X() ;
