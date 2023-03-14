@@ -19,7 +19,7 @@ using namespace gmds;
 /*                       CAS TEST 2D CLASSE LevelSet                          */
 /*----------------------------------------------------------------------------*/
 
-TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
+TEST(AeroPipelineTestClass, DISABLED_AeroPipeline2D_Test1)
 {
 	/*
 	ParamsAero params_aero;
@@ -194,7 +194,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_User_DA)
 /*                       CAS TEST 3D CLASSE LevelSet                          */
 /*----------------------------------------------------------------------------*/
 
-TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
+TEST(AeroPipelineTestClass, DISABLED_AeroPipeline3D_Test1)
 {
 	/*
 	ParamsAero params_aero;
