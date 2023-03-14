@@ -198,7 +198,7 @@ void Blocking::createNewHex(std::vector<Node> ANodes, std::map<std::tuple<int,in
 
 }
 /*----------------------------------------------------------------------------*/
-Dart_handle Blocking::createNewQuad(const Node n0,const Node n1,const Node n2,const Node n3, std::map<std::tuple<int,int,int,int>, Dart_handle> &AFtoD){
+Dart_handle Blocking::createNewQuad(const Node& n0,const Node& n1,const Node& n2,const Node& n3, std::map<std::tuple<int,int,int,int>, Dart_handle> &AFtoD){
 
 	Dart_handle d = lcc_.make_quadrangle(LCC_3::Point(n0.point().X(), n0.point().Y(), n0.point().Z()),
 	                                     LCC_3::Point(n1.point().X(), n1.point().Y(), n1.point().Z()),

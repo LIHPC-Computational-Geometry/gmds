@@ -170,7 +170,7 @@ class LIB_GMDS_BLOCKING_API Blocking{
 	 /*--------------------------------------------------------------------*/
 	 /** @brief  Create a quadrangle in the GMAP
 	  */
-	 Dart_handle createNewQuad(Node &n0, Node &n1, Node &n2, Node &n3, std::map<std::tuple<int,int,int,int>, Dart_handle> &AFtoD);
+	 Dart_handle createNewQuad(const Node &n0, const Node &n1, const Node &n2, const Node &n3, std::map<std::tuple<int,int,int,int>, Dart_handle> &AFtoD);
 
 
  private:
