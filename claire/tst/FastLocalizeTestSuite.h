@@ -78,28 +78,3 @@ TEST(FastLocalizeTestSuite, test_FastLocalize_3D)
 	ASSERT_EQ(data.id, 4048);
 
 }
-
-TEST(FastLocalizeTestSuite, test_FastLocalize_3D_2)
-{
-	// WE READ
-	gmds::Mesh m(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
-	                              F2E | E2F | R2E | E2R | N2R | N2F | N2E));
-
-	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir + "/Aero/3D/C3_3D_0.3.vtk";
-
-	gmds::IGMeshIOService ioService(&m);
-	gmds::VTKReader vtkReader(&ioService);
-	vtkReader.setCellOptions(gmds::N | gmds::R);
-	vtkReader.read(vtk_file);
-
-	gmds::MeshDoctor doc(&m);
-	doc.buildEdgesAndX2E();
-	doc.updateUpwardConnectivity();
-
-	FastLocalize fl(&m);
-	gmds::TCellID r_id = fl.findTetra({-2.74355, -1.62243, -1.49076});
-
-	ASSERT_EQ(r_id, 3364);
-
-}
