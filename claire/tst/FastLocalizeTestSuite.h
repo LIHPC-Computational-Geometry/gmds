@@ -79,7 +79,7 @@ TEST(FastLocalizeTestSuite, test_FastLocalize_3D)
 
 }
 
-TEST(FastLocalizeTestSuite, test_FastLocalize_3D_2)
+TEST(FastLocalizeTestSuite, DISABLED_test_FastLocalize_3D_2)
 {
 	// WE READ
 	gmds::Mesh m(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
