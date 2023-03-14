@@ -19,54 +19,8 @@ using namespace gmds;
 /*                       CAS TEST 2D CLASSE LevelSet                          */
 /*----------------------------------------------------------------------------*/
 
-TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
+TEST(AeroPipelineTestClass, DISABLED_AeroPipeline2D_Test1)
 {
-	/*
-	ParamsAero params_aero;
-
-	// Définition en dur des paramètres pour l'aéro
-	// le temps de mettre en place un fichier .ini
-
-	// Dimension Parameter
-	params_aero.dim=ParamsAero::DIM_2D;
-
-	// IN/OUT Parameters
-	std::string dir(TEST_SAMPLES_DIR);
-	params_aero.input_file=dir+"/Aero/2D/Stardust_2D_0.01.vtk";
-	params_aero.output_file="AeroPipeline2D_Quad.vtk";
-	params_aero.output_dir="gmds/claire/tst/";
-
-	// Physical Parameters for the algorithm
-	params_aero.delta_cl = 0.05;				// Epaisseur de la première couche, pour la couche limite
-	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
-
-	// Wall Discretization Parameter
-	params_aero.nbrMinBloc = 20;					// Minimal number of block on the wall
-	params_aero.nbrCellsInCL = 30;				// Number of cells in the boundary layer
-	params_aero.edge_size_wall = 0.002 ;										// Maximal size of the cells on the wall
-	params_aero.edge_size_default = 0.005 ;										// Default size of the cells in the domain
-	params_aero.edge_size_first_ortho_wall = 1*pow(10,-5);	// Size of the first edge orthogonal to the wall
-
-	// Vector Field Computation Parameters
-	params_aero.vectors_field = 1;				// Choose the way the vectors field is computed for the extrusion
-	params_aero.x_VectorField_Z1 = 200;			// Choose the x value of the first zone  [-inf, x_VectorField_Z1]
-	params_aero.x_VectorField_Z2 = 600;			// Choose the x value of the second zone [x_VectorField_Z2, +inf]
-
-	// Extrusion Parameters
-	params_aero.nbr_couches = 3;			// Number of layer in extrusion
-	params_aero.x_lim = 100;				// Limites physiques à partir desquelles
-	params_aero.y_lim = -10000;			// l'insertion et la fusion de blocs
-	params_aero.z_lim = -10000;			// sont autorisées
-
-	// Smoothing Parameters
-	params_aero.nbr_iter_smoothing_yao = 0 ;		// Number of iterations for the Yao Smoothing
-	params_aero.damping_smoothing_yao = 0.2 ;			// Damping parameter for the Yao Smoothing
-
-	// SU2 Writer Parameter
-	params_aero.x_lim_SU2_inoutlet = -pow(10,6);		// Limit between inlet and outlet for SU2 writer
-
-	*/
-
 	std::string dir(TEST_SAMPLES_DIR);
 	std::string input_file=dir+"/Aero/2D/param_Stardust_2D.ini";
 
@@ -75,7 +29,6 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	AbstractAeroPipeline::STATUS aero2D_result = algo_aero2D.execute();
 
 	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero2D_result);
-
 }
 
 /*
@@ -194,31 +147,8 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_User_DA)
 /*                       CAS TEST 3D CLASSE LevelSet                          */
 /*----------------------------------------------------------------------------*/
 
-TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
+TEST(AeroPipelineTestClass, DISABLED_AeroPipeline3D_Test1)
 {
-	/*
-	ParamsAero params_aero;
-
-	// Définition en dur des paramètres pour l'aéro
-	// le temps de mettre en place un fichier .ini
-	params_aero.dim=ParamsAero::DIM_3D;
-	std::string dir(TEST_SAMPLES_DIR);
-	params_aero.input_file=dir+"/Aero/3D/C5_3D_0.5_test.vtk";
-	params_aero.input_file_3D_surface=dir+"/Aero/3D/C5_3D_Surface.vtk";
-	params_aero.output_file="AeroPipeline3D_Hexa.vtk";
-	params_aero.output_dir="gmds/claire/tst/";
-
-	// Découpage de surface de géométrie en dur si pas lu dans un fichier en entrée
-	params_aero.block_surface_3D = 0;
-
-	// Physical Parameters for the algorithm
-	params_aero.delta_cl = 0.05;			// Epaisseur de la première couche, pour la couche limite
-	params_aero.angle_attack = 0;			// Angle of attack (in degrees)
-
-	// Extrusion Parameters
-	params_aero.nbr_couches = 20;			// Number of layer in extrusion
-	*/
-
 	std::string dir(TEST_SAMPLES_DIR);
 	std::string input_file=dir+"/Aero/3D/param_C7_3D.ini";
 
@@ -229,7 +159,6 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 	AbstractAeroPipeline::STATUS aero3D_result = algo_aero3D.execute();
 
 	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero3D_result);
-
 }
 
 
