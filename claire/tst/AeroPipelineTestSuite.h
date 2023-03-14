@@ -19,10 +19,10 @@ using namespace gmds;
 /*                       CAS TEST 2D CLASSE LevelSet                          */
 /*----------------------------------------------------------------------------*/
 
-TEST(AeroPipelineTestClass, DISABLED_AeroPipeline2D_Test1)
+TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 {
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string input_file=dir+"/Aero/2D/param_Stardust_2D.ini";
+	std::string input_file=dir+"/Aero/2D/param_Apollo_2D.ini";
 
 	// Mesh Generation
 	AeroPipeline_2D algo_aero2D(input_file);
