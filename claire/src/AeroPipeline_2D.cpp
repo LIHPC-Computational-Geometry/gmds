@@ -232,7 +232,7 @@ AeroPipeline_2D::execute(){
 	std::cout << " " << std::endl;
 
 	std::cout << "			3. Ecriture Maillage Tri en .vtk ..." << std::endl;
-	gmds::IGMeshIOService ioService = m_meshTet;
+	gmds::IGMeshIOService ioService(m_meshTet);
 	gmds::VTKWriter vtkWriter_TetMesh(&ioService);
 	vtkWriter_TetMesh.setCellOptions(gmds::N|gmds::F);
 	vtkWriter_TetMesh.setDataOptions(gmds::N|gmds::F);
