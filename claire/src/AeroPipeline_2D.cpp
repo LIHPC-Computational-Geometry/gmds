@@ -40,8 +40,8 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AeroPipeline_2D::AeroPipeline_2D(std::string &Aparams) :
-  AbstractAeroPipeline(Aparams),
+AeroPipeline_2D::AeroPipeline_2D(std::string &Aparams, std::string &Aworking_dir) :
+  AbstractAeroPipeline(Aparams, Aworking_dir),
   m_linker_BG(new cad::GeomMeshLinker())
 {
 	m_meshTet = new Mesh(gmds::MeshModel(gmds::DIM3|gmds::F|gmds::N|gmds::E| gmds::N2E|

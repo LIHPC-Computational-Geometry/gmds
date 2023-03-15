@@ -5,14 +5,13 @@
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/AbstractAeroPipeline.h>
 #include <gmds/utils/Parameters.h>
-#include <unit_test_config.h>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 
 /*------------------------------------------------------------------------*/
-AbstractAeroPipeline::AbstractAeroPipeline(std::string &Aparams) :
+AbstractAeroPipeline::AbstractAeroPipeline(std::string &Aparams, std::string &Aworking_dir) :
   m_meshTet(nullptr),
   m_meshHex(nullptr),
   m_manager(new cad::FACManager()),
@@ -54,16 +53,15 @@ AbstractAeroPipeline::AbstractAeroPipeline(std::string &Aparams) :
 
 	p.add("section_SU2_Writer","x_lim_SU2_inoutlet", Parameters::DOUBLE_P);
 
-	std::string dir(TEST_SAMPLES_DIR);
 	p.parseIni(Aparams);
 
 	p.get("section_Dimension", "dim", m_params.dimension);
 
 	std::string input;
 	p.get("section_INPUT_files","input_mesh",  input);
-	m_params.input_file = dir+input;
+	m_params.input_file = Aworking_dir+input;
 	p.get("section_INPUT_files","input_surface_mesh",  input);
-	m_params.input_file_3D_surface = dir+input;
+	m_params.input_file_3D_surface = Aworking_dir+input;
 	p.get("section_INPUT_files","block_surface_3D",  m_params.block_surface_3D);
 
 	p.get("section_OUTPUT_files","output_file_name", m_params.output_file);

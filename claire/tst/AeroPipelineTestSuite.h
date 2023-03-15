@@ -25,7 +25,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	std::string input_file=dir+"/Aero/2D/param_Apollo_2D.ini";
 
 	// Mesh Generation
-	AeroPipeline_2D algo_aero2D(input_file);
+	AeroPipeline_2D algo_aero2D(input_file, dir);
 	AbstractAeroPipeline::STATUS aero2D_result = algo_aero2D.execute();
 
 	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero2D_result);
@@ -155,7 +155,7 @@ TEST(AeroPipelineTestClass, DISABLED_AeroPipeline3D_Test1)
 	//---------------------//
 	//    AERO PIPELINE    //
 	//---------------------//
-	AeroPipeline_3D algo_aero3D(input_file);
+	AeroPipeline_3D algo_aero3D(input_file, dir);
 	AbstractAeroPipeline::STATUS aero3D_result = algo_aero3D.execute();
 
 	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero3D_result);
