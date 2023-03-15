@@ -233,6 +233,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_RAMCII)
 	// SU2 Writer Parameter
 	params_aero.x_lim_SU2_inoutlet = -pow(10,6);		// Limit between inlet and outlet for SU2 writer
 
+	params_aero.axisymetry = false;
 	// Mesh Generation
 	AeroPipeline_2D algo_aero2D(params_aero);
 	AbstractAeroPipeline::STATUS aero2D_result = algo_aero2D.execute();

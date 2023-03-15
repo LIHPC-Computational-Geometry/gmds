@@ -250,11 +250,13 @@ AeroPipeline_2D::execute(){
 	std::cout << "........................................ temps : " << 1.0*(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
-	Variable<int>* axis = m_meshHex->getVariable<int,GMDS_NODE>("Axis_nodes");
-	for(auto n : m_meshHex->nodes()){
-		Node node = m_meshHex->get<Node>(n);
-		//if(axis->value(n) == 1)
-			//node.setY(0);
+	if(m_params.axisymetry) {
+		Variable<int> *axis = m_meshHex->getVariable<int, GMDS_NODE>("Axis_nodes");
+		for (auto n : m_meshHex->nodes()) {
+			Node node = m_meshHex->get<Node>(n);
+			if(axis->value(n) == 1)
+				node.setY(0);
+		}
 	}
 
 
@@ -548,8 +550,10 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 	//std::cout << "-> Discrétisation du bord de couleur " << color << std::endl;
 
 	std::vector<TCellID> bnd_nodes_id_ordered = m_Bnd->BndNodesOrdered(color);	// Tri les noeuds du bord concerné dans l'ordre
-
-	Variable<int>* node_axis = m_meshHex->newVariable<int, GMDS_NODE>("Axis_nodes");
+	Variable<int> *node_axis;
+	if(m_params.axisymetry) {
+		 node_axis = m_meshHex->newVariable<int, GMDS_NODE>("Axis_nodes");
+	}
 
 	int markCurveEdges = m_meshTet->newMark<Edge>();
 	int markCurveNodes = m_meshTet->newMark<Node>();
@@ -575,10 +579,12 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 	Node n0_tri = m_meshTet->get<Node>(bnd_nodes_id_ordered[0]) ;
 	Node n0_quad = m_meshHex->newNode(n0_tri.point()); // Premier noeud du nouveau maillage
 
-	if(n0_tri.Y()*m_meshTet->get<Node>(bnd_nodes_id_ordered[bnd_nodes_id_ordered.size()-1]).Y() < 0){
-		if(n0_quad.Y() != 0) {
-			//n0_quad.setY(0);
-			//node_axis->set(n0_quad.id(), 1);
+	if(m_params.axisymetry) {
+		if (n0_tri.Y() * m_meshTet->get<Node>(bnd_nodes_id_ordered[bnd_nodes_id_ordered.size() - 1]).Y() < 0) {
+			if (n0_quad.Y() != 0) {
+				n0_quad.setY(0);
+				node_axis->set(n0_quad.id(), 1);
+			}
 		}
 	}
 
@@ -601,9 +607,11 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 		}
 		else{
 			n_droit = m_meshTet->get<Node>(bnd_nodes_id_ordered[i+1]);
-			if(n_droit.Y()*n_gauche.Y() < 0){
-				//if(n.Y() != 0) n.setY(0);
-				//isExtremum = true;
+			if(m_params.axisymetry) {
+				if (n_droit.Y() * n_gauche.Y() < 0) {
+					if(n.Y() != 0) n.setY(0);
+						isExtremum = true;
+				}
 			}
 		}
 
@@ -625,40 +633,43 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 
 			n1_quad = n2_quad;
 
-			/*if(n1_quad.Y()*n.Y() < 0){
-				//première arête
-				math::Point middle_point((n1_quad.X() + n.X())/2,(n1_quad.Y() + n.Y())/2);
-				n2_quad = m_meshHex->newNode(middle_point);
-				if(m_linker_HG->getGeomDim(n1_quad) == 2 && m_linker_TG->getGeomDim(n) == 2){
-					if(m_linker_HG->getGeomId(n1_quad) == m_linker_TG->getGeomId(n)) {
-						std::cout<<"Test réussi"<<std::endl;
-						m_linker_HG->linkNodeToCurve(n2_quad.id(), m_linker_HG->getGeomId(n1_quad));
-						cad::GeomCurve* c =m_manager->getCurve(m_linker_HG->getGeomId(n2_quad));
-						c->project(middle_point);
-						n2_quad.setX(middle_point.X());
-						n2_quad.setY(0);
-						node_axis->set(n2_quad.id(), 1);
-					}else{
-						std::cout<<"Cas pas pris en compte encore"<<std::endl;
-					}
-				}else{
-					std::cout<<"Cas pas pris en compte encore"<<std::endl;
+			if(m_params.axisymetry) {
+				if (n1_quad.Y() * n.Y() < 0) {
+					   // première arête
+					   math::Point middle_point((n1_quad.X() + n.X()) / 2, (n1_quad.Y() + n.Y()) / 2);
+					   n2_quad = m_meshHex->newNode(middle_point);
+					   if (m_linker_HG->getGeomDim(n1_quad) == 2 && m_linker_TG->getGeomDim(n) == 2) {
+						   if (m_linker_HG->getGeomId(n1_quad) == m_linker_TG->getGeomId(n)) {
+							   m_linker_HG->linkNodeToCurve(n2_quad.id(), m_linker_HG->getGeomId(n1_quad));
+							   cad::GeomCurve *c = m_manager->getCurve(m_linker_HG->getGeomId(n2_quad));
+							   c->project(middle_point);
+							   n2_quad.setX(middle_point.X());
+							   n2_quad.setY(0);
+							   node_axis->set(n2_quad.id(), 1);
+						   }
+						   else {
+							   std::cout << "Cas pas pris en compte encore" << std::endl;
+						   }
+					   }
+					   else {
+						   std::cout << "Cas pas pris en compte encore" << std::endl;
+					   }
+
+					   Edge e = m_meshHex->newEdge(n1_quad, n2_quad);
+
+					   // Ajout des connectivités Node -> Edge
+					   n1_quad.add<Edge>(e);
+					   n2_quad.add<Edge>(e);
+
+					   l = 0;     // On remet l à 0
+					   n1_quad = n2_quad;
 				}
-
-				Edge e = m_meshHex->newEdge(n1_quad, n2_quad);
-
-				// Ajout des connectivités Node -> Edge
-				n1_quad.add<Edge>(e);
-				n2_quad.add<Edge>(e);
-
-				l = 0;	// On remet l à 0
-				n1_quad = n2_quad;
-			}*/
-
+			}
 			n2_quad = m_meshHex->newNode(n.point());
-			if(n2_quad.Y() == 0){
-				//node_axis->set(n2_quad.id(), 1);
-
+			if(m_params.axisymetry) {
+				if (n2_quad.Y() == 0) {
+					   node_axis->set(n2_quad.id(), 1);
+				}
 			}
 			UpdateLinker(m_linker_TG, n, m_linker_HG, n2_quad);
 
@@ -674,15 +685,16 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 
 	}
 
-
-	/*if(n2_quad.Y()*n0_quad.Y() < 0){
-		cad::GeomCurve* c =m_manager->getCurve(m_linker_HG->getGeomId(n0_quad));
-		math::Point tmpPoint(n0_quad.point());
-		c->project(tmpPoint);
-		n0_quad.setX(tmpPoint.X());
-		n0_quad.setY(0);
-		node_axis->set(n0_quad.id(), 1);
-	}*/
+	if(m_params.axisymetry) {
+		if (n2_quad.Y() * n0_quad.Y() < 0) {
+			cad::GeomCurve *c = m_manager->getCurve(m_linker_HG->getGeomId(n0_quad));
+			math::Point tmpPoint(n0_quad.point());
+			c->project(tmpPoint);
+			n0_quad.setX(tmpPoint.X());
+			n0_quad.setY(0);
+			node_axis->set(n0_quad.id(), 1);
+		}
+	}
 	// Ajout de la dernière arête pour fermer le blocking du bord
 	Edge e = m_meshHex->newEdge(n2_quad, n0_quad);
 	// Ajout des connectivités Node -> Edge
