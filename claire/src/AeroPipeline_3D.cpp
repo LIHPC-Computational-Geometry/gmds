@@ -20,8 +20,8 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AeroPipeline_3D::AeroPipeline_3D(std::string Aparams) :
-	AbstractAeroPipeline(Aparams)
+AeroPipeline_3D::AeroPipeline_3D(std::string Aparams, std::string &Aworking_dir) :
+	AbstractAeroPipeline(Aparams, Aworking_dir)
 {
 	m_meshTet = new Mesh(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
 	                                  F2E | E2F | R2E | E2R | N2R | N2F | N2E));
