@@ -8,7 +8,6 @@
 #include "InputMarkedDartsTestSuite.h"
 #include "SheetInsertTestSuite.h"
 #include "WriterDartsVTKTestSuite.h"
-#include "CGNSWriterTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
