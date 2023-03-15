@@ -96,6 +96,9 @@ namespace gmds {
 
 	     /** Limit between inlet and outlet for SU2 writer */
 	     double x_lim_SU2_inoutlet;
+
+	     /** If true the result mesh will have a cut on the X axis */
+	     bool axisymetry = false;
     };
 /*------------------------------------------------------------------------*/
 }
