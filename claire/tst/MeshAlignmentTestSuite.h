@@ -38,22 +38,22 @@ TEST(ClaireTestClass, MeshAlignment_2D_Test)
 		Node n_11 = m_meshTri.newNode({1, 2, 0});
 		Node n_12 = m_meshTri.newNode({2, 2, 0});
 
-		Face f = m_meshTri.newTriangle(n_0, n_1, n_3);
-		f = m_meshTri.newTriangle(n_1, n_4, n_3);
-		f = m_meshTri.newTriangle(n_1, n_2, n_4);
-		f = m_meshTri.newTriangle(n_0, n_3, n_5);
-		f = m_meshTri.newTriangle(n_3, n_4, n_6);
-		f = m_meshTri.newTriangle(n_4, n_2, n_7);
-		f = m_meshTri.newTriangle(n_5, n_3, n_8);
-		f = m_meshTri.newTriangle(n_3, n_6, n_8);
-		f = m_meshTri.newTriangle(n_6, n_9, n_8);
-		f = m_meshTri.newTriangle(n_6, n_4, n_9);
-		f = m_meshTri.newTriangle(n_4, n_7, n_9);
-		f = m_meshTri.newTriangle(n_5, n_8, n_10);
-		f = m_meshTri.newTriangle(n_10, n_8, n_11);
-		f = m_meshTri.newTriangle(n_8, n_9, n_11);
-		f = m_meshTri.newTriangle(n_11, n_9, n_12);
-		f = m_meshTri.newTriangle(n_9, n_7, n_12);
+		m_meshTri.newTriangle(n_0, n_1, n_3);
+		m_meshTri.newTriangle(n_1, n_4, n_3);
+		m_meshTri.newTriangle(n_1, n_2, n_4);
+		m_meshTri.newTriangle(n_0, n_3, n_5);
+		m_meshTri.newTriangle(n_3, n_4, n_6);
+		m_meshTri.newTriangle(n_4, n_2, n_7);
+		m_meshTri.newTriangle(n_5, n_3, n_8);
+		m_meshTri.newTriangle(n_3, n_6, n_8);
+		m_meshTri.newTriangle(n_6, n_9, n_8);
+		m_meshTri.newTriangle(n_6, n_4, n_9);
+		m_meshTri.newTriangle(n_4, n_7, n_9);
+		m_meshTri.newTriangle(n_5, n_8, n_10);
+		m_meshTri.newTriangle(n_10, n_8, n_11);
+		m_meshTri.newTriangle(n_8, n_9, n_11);
+		m_meshTri.newTriangle(n_11, n_9, n_12);
+		m_meshTri.newTriangle(n_9, n_7, n_12);
 	}
 
 	Variable<math::Vector3d>* var_vectors = m_meshTri.newVariable<math::Vector3d, GMDS_NODE>("VectorField");
