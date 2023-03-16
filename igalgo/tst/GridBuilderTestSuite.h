@@ -74,16 +74,17 @@ TEST(GridTestSuite, testWriterVTK_Val){
 	// Call grid builder with mesh
 	gmds::GridBuilder gb(&m,3);
 	// Number of bloc for each dim
-	TInt x_n=4,y_n=4,z_n=4;
+	const TInt x_n=3;
+	const TInt y_n=3;
+	const TInt z_n=3;
 
-	gb.execute(x_n,1.0, y_n, 1.0, z_n, 1.0);
+	gb.execute(x_n+1,1.0, y_n+1, 1.0, z_n+1, 1.0);
 
 	std::cout << "Nodes " << m.getNbNodes() << std::endl;
 	std::cout << "Regions " << m.getNbRegions() << std::endl ;
 	std::cout << "Edges " << m.getNbEdges() << std::endl;
 	std::cout << "Faces " << m.getNbFaces() << std::endl;
-	// Correct numberof bloc
-	x_n=x_n-1,y_n=y_n-1,z_n=z_n-1;
+
 	// Mesh doctor to generate connectivity
 	gmds::MeshDoctor doc(&m);
 	doc.buildFacesAndR2F();
