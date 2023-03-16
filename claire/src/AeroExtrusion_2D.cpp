@@ -10,13 +10,20 @@
 #include <gmds/claire/AdvectedPointRK4_2D.h>
 #include <gmds/claire/AeroMeshQuality.h>
 #include <gmds/claire/SmoothingPaving_2D.h>
+
+#include <gmds/io/IGMeshIOService.h>
+#include <gmds/io/VTKWriter.h>
+#include <iostream>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AeroExtrusion_2D::AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero Aparams_aero, Variable<math::Vector3d>* A_VectorField) {
-	m_meshT = AMeshT;
-	m_meshQ = AMeshQ;
+AeroExtrusion_2D::AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero& Aparams_aero, Variable<math::Vector3d>* A_VectorField) :
+	m_meshT(AMeshT),
+  	m_meshQ(AMeshQ),
+  	m_fl(m_meshT),
+  	m_iteration(1)
+{
 	m_params_aero = Aparams_aero;
 	m_VectorField = A_VectorField;
 }
@@ -26,22 +33,8 @@ AeroExtrusion_2D::AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero Aparam
 AeroExtrusion_2D::STATUS
 AeroExtrusion_2D::execute()
 {
-	// Exemple exception
-	//if(m_mesh==NULL)
-	//	throw AeroException("ERROR: Invalid mesh pointer");
-
 	Front Current_Front = Compute1stLayer(m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), m_params_aero.delta_cl,
 	                m_VectorField);
-	/*
-	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_2"), 0.25,
-	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_2"), 0.5,
-	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_2"), 0.75,
-	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_2"), 1,
-	                             m_meshT->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	                             */
 
 	double pas_couche = 1.0/m_params_aero.nbr_couches ;
 
@@ -67,7 +60,7 @@ std::map<TCellID, TCellID>
 	for (auto n_id:front_nodes){
 		Node n = m_meshQ->get<Node>(n_id);
 		math::Point M = n.point();
-		AdvectedPointRK4_2D advpoint(m_meshT, M, dist_cible, A_distance, A_vectors);
+		AdvectedPointRK4_2D advpoint(m_meshT, &m_fl, M, dist_cible, A_distance, A_vectors);
 		advpoint.execute();
 		//math::Point P = advpoint.getPend();
 		Node n_new = m_meshQ->newNode(advpoint.getPend());
@@ -76,9 +69,6 @@ std::map<TCellID, TCellID>
 
 	return map_optnexpoint;
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 Front
 AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors){
@@ -193,7 +183,7 @@ AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cibl
 		if (abs(angle) < 40)
 		{
 			std::cout << "Angle : " << angle << std::endl;
-			Insertion_Double(Front_Paroi, n_id, A_distance, dist_cible, A_vectors);
+			//Insertion_Double(Front_Paroi, n_id, A_distance, dist_cible, A_vectors);
 		}
 
 	}
@@ -212,9 +202,6 @@ AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cibl
 	return First_Front;
 
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 Front
 AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors){
@@ -291,9 +278,6 @@ AeroExtrusion_2D::ComputeLayer(Front Front_IN, Variable<double>* A_distance, dou
 
 	return Front_OUT;
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &type){
 
@@ -404,9 +388,6 @@ void AeroExtrusion_2D::getSingularNode(Front Front_IN, TCellID &node_id, int &ty
 
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id,
                             Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors){
 
@@ -483,11 +464,11 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id,
 	v_follow += (m_meshQ->get<Node>(Front_IN.getIdealNode(n_id)).point() - n.point() ).normalize() ;
 	v_follow.normalize();
 	Variable<math::Vector3d>* var_flow = m_meshT->newVariable<math::Vector3d , GMDS_NODE>("Flow") ;
-	for (auto n_id:m_meshT->nodes())
+	for (auto n_id_loc:m_meshT->nodes())
 	{
-		var_flow->set(n_id, v_follow);
+		var_flow->set(n_id_loc, v_follow);
 	}
-	AdvectedPointRK4_2D advpoint_n1(m_meshT, n.point(), dist_cible, A_distance, var_flow);
+	AdvectedPointRK4_2D advpoint_n1(m_meshT, &m_fl, n.point(), dist_cible, A_distance, var_flow);
 	advpoint_n1.execute();
 	Node n1 = m_meshQ->newNode(advpoint_n1.getPend());
 	m_meshT->deleteVariable(GMDS_NODE, "Flow") ;
@@ -555,11 +536,11 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id,
 	// TEST 4
 	v_follow = m_meshQ->get<Node>(Front_IN.getIdealNode(n_neighbor.id())).point() - n_neighbor.point() ;
 	var_flow = m_meshT->newVariable<math::Vector3d , GMDS_NODE>("Flow") ;
-	for (auto n_id:m_meshT->nodes())
+	for (auto n_id_loc:m_meshT->nodes())
 	{
-		var_flow->set(n_id, v_follow);
+		var_flow->set(n_id_loc, v_follow);
 	}
-	AdvectedPointRK4_2D advpoint_n2(m_meshT, n.point(), dist_cible, A_distance, var_flow);
+	AdvectedPointRK4_2D advpoint_n2(m_meshT, &m_fl, n.point(), dist_cible, A_distance, var_flow);
 	advpoint_n2.execute();
 	Node n2 = m_meshQ->newNode(advpoint_n2.getPend());
 	m_meshT->deleteVariable(GMDS_NODE, "Flow") ;
@@ -630,10 +611,16 @@ void AeroExtrusion_2D::Insertion(Front &Front_IN, TCellID n_id,
 	couche_id->set(n1.id(), Front_IN.getFrontID()+1);
 	couche_id->set(n2.id(), Front_IN.getFrontID()+1);
 
+	if (m_params_aero.with_debug_files) {
+		gmds::IGMeshIOService ioService(m_meshQ);
+		gmds::VTKWriter vtkWriter(&ioService);
+		vtkWriter.setCellOptions(gmds::N | gmds::F);
+		vtkWriter.setDataOptions(gmds::N | gmds::F);
+		vtkWriter.write("AeroExtrusion_2D_" + std::to_string(m_iteration) + ".vtk");
+		m_iteration++;
+	}
+
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 void AeroExtrusion_2D::Insertion_Double(Front &Front_IN, TCellID n_id,
                             Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors){
@@ -776,10 +763,16 @@ void AeroExtrusion_2D::Insertion_Double(Front &Front_IN, TCellID n_id,
 	couche_id->set(n1_Q2.id(), Front_IN.getFrontID()+1);
 	couche_id->set(n2_Q2.id(), Front_IN.getFrontID()+1);
 
+	if (m_params_aero.with_debug_files) {
+		gmds::IGMeshIOService ioService(m_meshQ);
+		gmds::VTKWriter vtkWriter(&ioService);
+		vtkWriter.setCellOptions(gmds::N | gmds::R);
+		vtkWriter.setDataOptions(gmds::N | gmds::R);
+		vtkWriter.write("AeroExtrusion_2D_" + std::to_string(m_iteration) + ".vtk");
+		m_iteration++;
+	}
+
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 void AeroExtrusion_2D::Fusion(Front &Front_IN, TCellID n_id){
 
@@ -854,10 +847,16 @@ void AeroExtrusion_2D::Fusion(Front &Front_IN, TCellID n_id){
 	Front_OUT.addNodeId(n0.id());
 	 */
 
+	if (m_params_aero.with_debug_files) {
+		gmds::IGMeshIOService ioService(m_meshQ);
+		gmds::VTKWriter vtkWriter(&ioService);
+		vtkWriter.setCellOptions(gmds::N | gmds::F);
+		vtkWriter.setDataOptions(gmds::N | gmds::F);
+		vtkWriter.write("AeroExtrusion_2D_" + std::to_string(m_iteration) + ".vtk");
+		m_iteration++;
+	}
+
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 void AeroExtrusion_2D::CreateNormalQuad(TCellID e_id, Front &Front_IN){
 
@@ -916,6 +915,15 @@ void AeroExtrusion_2D::CreateNormalQuad(TCellID e_id, Front &Front_IN){
 	e0.add<Face>(f);		// E->F
 	e1.add<Face>(f);		// E->F
 	e_opp.add<Face>(f);	// E->F
+
+	if (m_params_aero.with_debug_files) {
+		gmds::IGMeshIOService ioService(m_meshQ);
+		gmds::VTKWriter vtkWriter(&ioService);
+		vtkWriter.setCellOptions(gmds::N | gmds::F);
+		vtkWriter.setDataOptions(gmds::N | gmds::F);
+		vtkWriter.write("AeroExtrusion_2D_" + std::to_string(m_iteration) + ".vtk");
+		m_iteration++;
+	}
 
 }
 /*------------------------------------------------------------------------*/

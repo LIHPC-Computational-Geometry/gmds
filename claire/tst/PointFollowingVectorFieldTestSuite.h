@@ -10,6 +10,7 @@
 #include <gmds/claire/AdvectedPointRK4_2D.h>
 #include <gmds/claire/AdvectedPointRK4_3D.h>
 #include <gmds/ig/Mesh.h>
+#include <gmds/claire/FastLocalize.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
 #include <gmds/igalgo/GridBuilder.h>
@@ -19,7 +20,6 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <unit_test_config.h>
-#include <ctime>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -55,7 +55,7 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test1)
 	bnd_op.getBoundaryNodes(bnd_node_ids);
 
 	// Initialisation des marques sur le front à avancer
-	int markFrontNodes = m.newMark<gmds::Node>();
+	TInt markFrontNodes = m.newMark<gmds::Node>();
 	for(auto id:bnd_node_ids){
 		Node n = m.get<Node>(id);
 		double coord_y = n.Y() ;
@@ -80,10 +80,12 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_2D_Test1)
 	LeastSquaresGradientComputation::STATUS result_grad = grad2D.execute();
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
 
+	FastLocalize fl(&m);
+
 	// Placement du point P à la distance souhaitée suivant le champ de gradient
 	math::Point M(0.5, 0.0, 0.0);
 	double distance = 0.3;
-	AdvectedPointRK4_2D advpoint(&m, M, distance, var_dist, m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
+	AdvectedPointRK4_2D advpoint(&m, &fl, M, distance, var_dist, m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
 	AdvectedPointRK4_2D::STATUS result = advpoint.execute();
 
 	IGMeshIOService ioService_geom(&m);
@@ -122,8 +124,8 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_3D_Test1)
 	doctor.updateUpwardConnectivity();
 
 	// Initialisation des marques sur le front à avancer
-	int markFrontNodesInt = m.newMark<gmds::Node>();
-	int markFrontNodesOut = m.newMark<gmds::Node>();
+	TInt markFrontNodesInt = m.newMark<gmds::Node>();
+	TInt markFrontNodesOut = m.newMark<gmds::Node>();
 	for (auto n_id:m.nodes()){
 		Node n = m.get<Node>(n_id);
 		double coord_x = n.X() ;
@@ -161,19 +163,16 @@ TEST(PointFollowingVectorFieldTestClass, AdvectedPointRK4_3D_Test1)
 	LeastSquaresGradientComputation::STATUS result_grad = grad2D.execute();
 	ASSERT_EQ(LeastSquaresGradientComputation::SUCCESS, result_grad);
 
+	FastLocalize fl(&m);
+
 	// Placement du point P à la distance souhaitée suivant le champ de gradient
 	std::cout << " -> Calcul de trajectoire d'un point " << std::endl;
 	double ang(M_PI/4);
 	math::Point M(0.5*cos(ang), 0.5*sin(ang), 0.0);
 	double distance = 1.0;
-	time_t t1;
-	t1 = time(NULL);
-	AdvectedPointRK4_3D advpoint(&m, M, distance, m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	AdvectedPointRK4_3D advpoint(&m, &fl, M, distance, m.getVariable<double,GMDS_NODE>("GMDS_Distance"),
 	                             m.getVariable<math::Vector3d ,GMDS_NODE>("GMDS_Gradient"));
 	AdvectedPointRK4_3D::STATUS result = advpoint.execute();
-	time_t t2;
-	t2 = time(NULL);
-	std::cout << "Temps AdvectedPointRK4_3D : " << t2-t1 << std::endl;
 
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);

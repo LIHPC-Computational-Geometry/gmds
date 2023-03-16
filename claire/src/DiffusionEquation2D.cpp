@@ -9,12 +9,14 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-DiffusionEquation2D::DiffusionEquation2D(Mesh *AMesh, int AmarkFrontNodes_int, int AmarkFrontNodes_out, Variable<double>* Adistance) :
+DiffusionEquation2D::DiffusionEquation2D(Mesh *AMesh, TInt AmarkFrontNodes_int, TInt AmarkFrontNodes_out, Variable<double>* Adistance) :
   m_mesh(AMesh),
   m_mass(m_mesh->getNbNodes(), m_mesh->getNbNodes()),
   m_stiffness(m_mesh->getNbNodes(), m_mesh->getNbNodes()),
   m_sol_0(m_mesh->getNbNodes()),
-  m_sol_n(m_mesh->getNbNodes())
+  m_sol_n(m_mesh->getNbNodes()),
+  m_t(0),
+  m_it(0)
 {
 	m_markNodes_int = AmarkFrontNodes_int;
 	m_markNodes_out = AmarkFrontNodes_out;
@@ -120,7 +122,7 @@ Eigen::Vector2d DiffusionEquation2D::grad_phi_hat(int hat_i)
 /*------------------------------------------------------------------------*/
 // Construction de la fonction de transformation
 // du triangle de référence K_hat en K
-Eigen::Vector2d DiffusionEquation2D::FK(TCellID triK_id, math::Point X_hat)
+Eigen::Vector2d DiffusionEquation2D::FK(TCellID triK_id, const math::Point& X_hat)
 {
 	Face triK = m_mesh->get<Face>(triK_id);
 	std::vector<Node> tri_nodes = triK.get<Node>() ;
@@ -181,13 +183,13 @@ Eigen::Vector2d DiffusionEquation2D::grad_phi(int i_hat, TCellID triK_id)
 // Points et poids de quadrature de la formule des sommets (intégration 2D)
 void DiffusionEquation2D::quadraturePointsAndWeightsSummitpointFormula(std::vector<double> &weights, std::vector<math::Point> &points)
 {
-	weights.push_back(1./3.);
-	weights.push_back(1./3.);
-	weights.push_back(1./3.);
+	weights.emplace_back(1./3.);
+	weights.emplace_back(1./3.);
+	weights.emplace_back(1./3.);
 
-	points.push_back(math::Point(0.,0.));
-	points.push_back(math::Point(1.,0.));
-	points.push_back(math::Point(0.,1.));
+	points.emplace_back(math::Point(0.,0.));
+	points.emplace_back(math::Point(1.,0.));
+	points.emplace_back(math::Point(0.,1.));
 }
 /*------------------------------------------------------------------------*/
 

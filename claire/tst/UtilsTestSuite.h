@@ -47,7 +47,6 @@ TEST(UtilsTestClass, Utils_Test1)
 
 }
 
-
 TEST(UtilsTestClass, Utils_Test2)
 {
 	// Test de la méthode math::Utils::CommonEdge
@@ -109,7 +108,6 @@ TEST(UtilsTestClass, Utils_Test2)
 
 }
 
-
 TEST(UtilsTestClass, Utils_Test3)
 {
 	// Test de la méthode math::Utils::MeshCleaner
@@ -157,7 +155,6 @@ TEST(UtilsTestClass, Utils_Test3)
 	writer_geom.write("Utils_Test3.vtk");
 
 }
-
 
 TEST(ClaireTestClass, Utils_AdjacentNodes)
 {
@@ -213,7 +210,6 @@ TEST(ClaireTestClass, Utils_AdjacentNodes)
 
 }
 
-
 TEST(ClaireTestClass, Utils_BuildMesh2DFromBlocking2D)
 {
 	// Test
@@ -238,9 +234,9 @@ TEST(ClaireTestClass, Utils_BuildMesh2DFromBlocking2D)
 	b1.setNbDiscretizationJ(11);
 	b.initializeGridPoints();
 
-	int mark_block_nodes = m.newMark<Node>();
-	int mark_first_layer = m.newMark<Node>();
-	int mark_farfield_nodes = m.newMark<Node>();
+	TInt mark_block_nodes = m.newMark<Node>();
+	TInt mark_first_layer = m.newMark<Node>();
+	TInt mark_farfield_nodes = m.newMark<Node>();
 	math::Utils::BuildMesh2DFromBlocking2D(&b, &m, mark_block_nodes, mark_first_layer, mark_farfield_nodes);
 	m.unmarkAll<Node>(mark_block_nodes);
 	m.freeMark<Node>(mark_block_nodes);
@@ -266,7 +262,6 @@ TEST(ClaireTestClass, Utils_BuildMesh2DFromBlocking2D)
 	writer_geom_mesh.write("Utils_BuildMesh2DFromBlocking2D_Mesh.vtk");
 
 }
-
 
 TEST(ClaireTestClass, Utils_WeightedPointOnBranch)
 {
@@ -296,5 +291,195 @@ TEST(ClaireTestClass, Utils_WeightedPointOnBranch)
 		ASSERT_FLOAT_EQ(D.X(), 1.0);
 		ASSERT_FLOAT_EQ(D.Y(), 2.0);
 	}
+
+}
+
+TEST(ClaireTestClass, Utils_isInTriangle)
+{
+	{
+		math::Point T1({0.0, 0.0, 0.0});
+		math::Point T2({1.0, 0.0, 0.0});
+		math::Point T3({0.0, 1.0, 0.0});
+		ASSERT_EQ(math::Utils::isInTriangle(T1, T2, T3, {0.25, 0.25, 0.0}), true);
+		ASSERT_EQ(math::Utils::isInTriangle(T1, T2, T3, {1.0, 1.0, 0.0}), false);
+		ASSERT_EQ(math::Utils::isInTriangle(T1, T2, T3, {0.5, 0.0, 0.0}), true);
+	}
+
+}
+
+TEST(ClaireTestClass, Utils_isInTetra)
+{
+	{
+		math::Point T1({0.0, 0.0, 0.0});
+		math::Point T2({1.0, 0.0, 0.0});
+		math::Point T3({0.0, 1.0, 0.0});
+		math::Point T4({0.0, 0.0, 1.0});
+
+		ASSERT_EQ(math::Utils::isInTetra(T1, T2, T3, T4, {0.25, 0.25, 0.0}), true);
+		ASSERT_EQ(math::Utils::isInTetra(T1, T2, T3, T4, {0, 0.25, 0.0}), true);
+		ASSERT_EQ(math::Utils::isInTetra(T1, T2, T3, T4, {1.0, 1.0, 1.0}), false);
+	}
+
+	{
+		math::Point T1({-1.76213, -1.12673, -0.129545});
+		math::Point T2({-1.28791, -1.47346, -0.211251});
+		math::Point T3({-1, -1, -0.5});
+		math::Point T4({-1.45698, -0.699361, -0.0343749});
+
+		math::Point M({-1, -1, -0.333333});
+
+		ASSERT_EQ(math::Utils::isInTetra(T1, T2, T3, T4, M), false);
+	}
+
+}
+
+TEST(ClaireTestClass, Utils_CreateQuadAndConnectivities)
+{
+	// Test
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
+
+	Node n0 = m.newNode({0,0,0});
+	Node n1 = m.newNode({0,1,0});
+	Node n2 = m.newNode({1,1,0});
+	Node n3 = m.newNode({1,0,0});
+
+	Node n4 = m.newNode({2,0,0});
+	Node n5 = m.newNode({2,1,0});
+
+	ASSERT_EQ(m.getNbFaces(), 0);
+
+	TCellID f_id = math::Utils::GetOrCreateQuadAndConnectivities(&m, n0.id(), n1.id(), n2.id(), n3.id());
+	ASSERT_EQ(m.getNbFaces(), 1);
+	ASSERT_EQ((n0.get<Face>()).size(), 1);
+	ASSERT_EQ((n0.get<Edge>()).size(), 2);
+	ASSERT_EQ((n3.get<Face>()).size(), 1);
+	ASSERT_EQ((n3.get<Edge>()).size(), 2);
+
+	TCellID f2_id = math::Utils::GetOrCreateQuadAndConnectivities(&m,n2.id(), n3.id(), n4.id(), n5.id());
+	ASSERT_EQ(m.getNbFaces(), 2);
+	ASSERT_EQ((n0.get<Face>()).size(), 1);
+	ASSERT_EQ((n0.get<Edge>()).size(), 2);
+	ASSERT_EQ((n3.get<Face>()).size(), 2);
+	ASSERT_EQ((n3.get<Edge>()).size(), 3);
+
+}
+
+TEST(ClaireTestClass, Utils_CreateHexaNConnectivities)
+{
+	// Test
+	gmds::Mesh m(gmds::MeshModel(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
+																F2E | E2F | R2E | E2R | N2R | N2F | N2E )));
+
+	Node n0 = m.newNode({0,0,0});
+	Node n1 = m.newNode({1,0,0});
+	Node n2 = m.newNode({1,1,0});
+	Node n3 = m.newNode({0,1,0});
+
+	Node n4 = m.newNode({0,0,1});
+	Node n5 = m.newNode({1,0,1});
+	Node n6 = m.newNode({1,1,1});
+	Node n7 = m.newNode({0,1,1});
+
+	Node n8 = m.newNode({2,0,0});
+	Node n9 = m.newNode({2,1,0});
+
+	Node n10 = m.newNode({2,0,1});
+	Node n11 = m.newNode({2,1,1});
+
+	ASSERT_EQ(m.getNbFaces(), 0);
+	ASSERT_EQ(m.getNbNodes(), 12);
+
+	// Create a first hexa will all the connectivities
+	TCellID r1_id = math::Utils::CreateHexaNConnectivities(&m, n0, n1, n2, n3, n4, n5, n6, n7);
+
+	ASSERT_EQ(m.getNbEdges(), 12);
+	ASSERT_EQ(m.getNbFaces(), 6);
+	ASSERT_EQ(m.getNbRegions(), 1);
+	ASSERT_EQ((n0.get<Edge>()).size(), 3);
+	ASSERT_EQ((n0.get<Face>()).size(), 3);
+	ASSERT_EQ((n0.get<Region>()).size(), 1);
+	ASSERT_EQ((n1.get<Edge>()).size(), 3);
+	ASSERT_EQ((n1.get<Face>()).size(), 3);
+	ASSERT_EQ((n1.get<Region>()).size(), 1);
+	ASSERT_EQ((n8.get<Edge>()).size(), 0);
+	ASSERT_EQ((n8.get<Face>()).size(), 0);
+	ASSERT_EQ((n8.get<Region>()).size(), 0);
+
+	// Create a second hexa will all the connectivities
+	TCellID r2_id = math::Utils::CreateHexaNConnectivities(&m, n1, n8, n9, n2, n5, n10, n11, n6);
+
+	ASSERT_EQ(m.getNbEdges(), 20);
+	ASSERT_EQ(m.getNbFaces(), 11);
+	ASSERT_EQ(m.getNbRegions(), 2);
+	ASSERT_EQ((n0.get<Edge>()).size(), 3);
+	ASSERT_EQ((n0.get<Face>()).size(), 3);
+	ASSERT_EQ((n0.get<Region>()).size(), 1);
+	ASSERT_EQ((n1.get<Edge>()).size(), 4);
+	ASSERT_EQ((n1.get<Face>()).size(), 5);
+	ASSERT_EQ((n1.get<Region>()).size(), 2);
+	ASSERT_EQ((n8.get<Edge>()).size(), 3);
+	ASSERT_EQ((n8.get<Face>()).size(), 3);
+	ASSERT_EQ((n8.get<Region>()).size(), 1);
+
+}
+
+TEST(ClaireTestClass, Utils_minEdgeLenght)
+{
+	// Test
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
+
+	Node n0 = m.newNode({0,0,0});
+	Node n1 = m.newNode({1,0,0});
+	Node n2 = m.newNode({1,1,0});
+	Node n3 = m.newNode({0,1,0});
+
+	m.newTriangle(n0,n1,n3);
+	m.newTriangle(n3,n1,n2);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	ASSERT_FLOAT_EQ(1.0, math::Utils::minEdgeLenght(&m));
+
+}
+
+TEST(ClaireTestClass, Utils_getFacesAdjToEdgeInHexa)
+{
+	// Test
+	gmds::Mesh m(gmds::MeshModel(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
+	                                             F2E | E2F | R2E | E2R | N2R | N2F | N2E )));
+
+	Node n0 = m.newNode({0,0,0});
+	Node n1 = m.newNode({1,0,0});
+	Node n2 = m.newNode({1,1,0});
+	Node n3 = m.newNode({0,1,0});
+
+	Node n4 = m.newNode({0,0,1});
+	Node n5 = m.newNode({1,0,1});
+	Node n6 = m.newNode({1,1,1});
+	Node n7 = m.newNode({0,1,1});
+
+	Node n8 = m.newNode({2,0,0});
+	Node n9 = m.newNode({2,1,0});
+
+	Node n10 = m.newNode({2,0,1});
+	Node n11 = m.newNode({2,1,1});
+
+	ASSERT_EQ(m.getNbFaces(), 0);
+	ASSERT_EQ(m.getNbNodes(), 12);
+
+	// Create a first hexa will all the connectivities
+	TCellID r1_id = math::Utils::CreateHexaNConnectivities(&m, n0, n1, n2, n3, n4, n5, n6, n7);
+
+	// Create a second hexa will all the connectivities
+	TCellID r2_id = math::Utils::CreateHexaNConnectivities(&m, n1, n8, n9, n2, n5, n10, n11, n6);
+
+	ASSERT_EQ(m.getNbRegions(), 2);
+
+	TCellID e_id = math::Utils::CommonEdge(&m, n0.id(), n1.id());
+	std::vector<Face> adj_faces = math::Utils::getFacesAdjToEdgeInHexa(&m, e_id, r1_id);
+
+	ASSERT_EQ(adj_faces.size(), 2);
 
 }

@@ -13,11 +13,14 @@ add_executable(GMDS_CLAIRE_TEST
         SU2WriterTestSuite.h
         RefinementBetaTestSuite.h
         SmoothLineSweepingTestSuite.h
-        DiffusionEquation2DTestSuite.h)
+        DiffusionEquation2DTestSuite.h
+        NodeNeighbourhoodOnFront_3DTestSuite.h
+        MeshAlignmentTestSuite.h)
 
 target_link_libraries(GMDS_CLAIRE_TEST PUBLIC
         ${GMDS_LIB}
         ${LIB_GMDS_IG_ALGO}
+        #${LIB_GMDS_BLOCKING}
         gtest)
 
 target_include_directories(GMDS_CLAIRE_TEST PRIVATE .)

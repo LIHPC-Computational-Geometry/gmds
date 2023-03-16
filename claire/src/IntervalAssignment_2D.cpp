@@ -5,12 +5,11 @@
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/IntervalAssignment_2D.h>
 #include <gmds/ig/Mesh.h>
-#include <gmds/claire/AeroExtrusion_2D.h>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-IntervalAssignment_2D::IntervalAssignment_2D(Blocking2D* ABlocking2D, ParamsAero Aparams_aero) {
+IntervalAssignment_2D::IntervalAssignment_2D(Blocking2D* ABlocking2D, ParamsAero& Aparams_aero) {
 	m_blocking = ABlocking2D;
 	m_params_aero = Aparams_aero;
 }
@@ -27,7 +26,7 @@ IntervalAssignment_2D::execute()
 
 	Variable<int>* var_NbrCells = m_blocking->getOrCreateVariable<int, GMDS_EDGE>("NbrCells");
 
-	for (auto chord:map_chords)
+	for (auto & chord:map_chords)
 	{
 		int Nb_cells = ComputeChordDiscretization(chord.second);
 		//std::cout << "Nombre de cellules dans la corde " << chord.first << " : " << Nb_cells << std::endl;
@@ -70,7 +69,7 @@ IntervalAssignment_2D::ComputeChords(){
 
 	std::map<int, std::vector<TCellID>> map_chords;
 
-	int mark_isTreated = m_blocking->newMark<Edge>();
+	TInt mark_isTreated = m_blocking->newMark<Edge>();
 	int color_chord(0);
 
 	for (auto e_id:m_blocking->edges()) {
@@ -130,10 +129,10 @@ IntervalAssignment_2D::ComputeOppositeEdges(TCellID e_id)
 
 	std::vector<Face> e_blocks = e.get<Face>();
 
-	for (auto f:e_blocks)
+	for (auto const& f:e_blocks)
 	{
 		std::vector<Edge> f_edges = f.get<Edge>();
-		for (auto f_edge:f_edges)
+		for (auto const& f_edge:f_edges)
 		{
 			std::vector<Node> f_edge_nodes = f_edge.get<Node>();
 			if (e_nodes[0].id() != f_edge_nodes[0].id() && e_nodes[0].id() != f_edge_nodes[1].id()
@@ -214,7 +213,7 @@ IntervalAssignment_2D::EdgeConstraint(TCellID e_id, int &N_ideal, bool &hardCons
 
 /*-------------------------------------------------------------------*/
 int
-IntervalAssignment_2D::ComputeChordDiscretization(std::vector<TCellID> chord)
+IntervalAssignment_2D::ComputeChordDiscretization(std::vector<TCellID>& chord)
 {
 	int Nbr_cells;
 
@@ -239,7 +238,7 @@ IntervalAssignment_2D::ComputeChordDiscretization(std::vector<TCellID> chord)
 
 	if (!chord_hardConstrained)
 	{
-		Nbr_cells = int(1.0*sum_num/chord.size());
+		Nbr_cells = int(1.0*sum_num/double(chord.size()));
 	}
 
 	return Nbr_cells;

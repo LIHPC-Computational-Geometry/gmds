@@ -3,10 +3,8 @@
 //
 
 /*------------------------------------------------------------------------*/
-#include <gmds/claire/Utils.h>
 #include <gmds/claire/AeroBoundaries_2D.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
-#include <iostream>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -149,13 +147,13 @@ std::vector<TCellID> AeroBoundaries_2D::BndNodesOrdered(int color){
 	bnd_nodes_id_ordered.push_back(n0_id);
 
 	// Initialisation des valeurs pour le parcours du bord
-	TCellID n1_id = n0_id;
+	TCellID n1_id;
 	TCellID n2_id = n0_id;
 	TCellID n3_id = n0_id;
 
 	Node n0 = m_mesh->get<Node>(n0_id);
 	std::vector<Edge> adj_edges = n0.get<Edge>();
-	for (auto e:adj_edges){
+	for (auto const &e:adj_edges){
 		Node ne = e.getOppositeNode(n0);
 		if ( m_mesh->isMarked<Node>(ne.id(), m_markNodesParoi) ){
 			n3_id = ne.id();
@@ -171,7 +169,7 @@ std::vector<TCellID> AeroBoundaries_2D::BndNodesOrdered(int color){
 		n2_id = n3_id;
 		Node n2 = m_mesh->get<Node>(n2_id);
 		adj_edges = n2.get<Edge>();
-		for (auto e:adj_edges){
+		for (auto const &e:adj_edges){
 			Node ne = e.getOppositeNode(n2);
 			if ( m_mesh->isMarked<Node>(ne.id(), m_markNodesParoi) &&
 			    ne.id() != n1_id ){

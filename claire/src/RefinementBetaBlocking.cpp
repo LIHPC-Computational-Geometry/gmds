@@ -10,7 +10,7 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-RefinementBetaBlocking::RefinementBetaBlocking(Blocking2D *ABlocking2D, ParamsAero Aparams_aero) {
+RefinementBetaBlocking::RefinementBetaBlocking(Blocking2D *ABlocking2D, ParamsAero& Aparams_aero) {
 	m_blocking = ABlocking2D;
 	m_params_aero = Aparams_aero;
 }
@@ -26,7 +26,7 @@ RefinementBetaBlocking::execute()
 	Variable<int>* var_couche = m_blocking->getVariable<int, GMDS_NODE>("GMDS_Couche");
 
 	// Compute the chords to refine and store them in the vector chords_to_refined
-	for (auto chord:m_map_chords)
+	for (auto & chord:m_map_chords)
 	{
 		/*
 		for (auto b_id:chord.second)
@@ -535,7 +535,6 @@ RefinementBetaBlocking::ChordRefinement(int ind_chord){
 		int Nx = b.getNbDiscretizationI();
 		int Ny = b.getNbDiscretizationJ();
 
-		Variable<int>* var_couche = m_blocking->getVariable<int, GMDS_NODE>("GMDS_Couche");
 		Node n0 = b.getNode(0);
 		Node n1 = b.getNode(1);
 		Node n2 = b.getNode(2);
@@ -626,7 +625,7 @@ RefinementBetaBlocking::ComputeChords(){
 	std::map<int, std::vector<TCellID>> map_chords;
 	std::map<int, std::vector<TCellID>> map_chords_blocs;
 
-	int mark_isTreated = m_blocking->newMark<Edge>();
+	TInt mark_isTreated = m_blocking->newMark<Edge>();
 	int color_chord(0);
 
 	for (auto e_id:m_blocking->edges()) {
@@ -671,9 +670,9 @@ RefinementBetaBlocking::ComputeChords(){
 	m_blocking->freeMark<Edge>(mark_isTreated);
 
 	// Créé les cordes sous forme de blocs
-	for (auto chord:map_chords)
+	for (auto &chord:map_chords)
 	{
-		int mark_isOnChord = m_blocking->newMark<Face>();
+		TInt mark_isOnChord = m_blocking->newMark<Face>();
 
 		std::vector<TCellID> chord_blocks;
 
@@ -681,7 +680,7 @@ RefinementBetaBlocking::ComputeChords(){
 		{
 			Edge e = m_blocking->get<Edge>(e_id);
 			std::vector<Face> blocks = e.get<Face>();
-			for (auto b:blocks)
+			for (auto const& b:blocks)
 			{
 				m_blocking->mark(b, mark_isOnChord);
 			}
@@ -721,10 +720,10 @@ RefinementBetaBlocking::ComputeOppositeEdges(TCellID e_id)
 
 	std::vector<Face> e_blocks = e.get<Face>();
 
-	for (auto f:e_blocks)
+	for (auto const& f:e_blocks)
 	{
 		std::vector<Edge> f_edges = f.get<Edge>();
-		for (auto f_edge:f_edges)
+		for (auto const& f_edge:f_edges)
 		{
 			std::vector<Node> f_edge_nodes = f_edge.get<Node>();
 			if (e_nodes[0].id() != f_edge_nodes[0].id() && e_nodes[0].id() != f_edge_nodes[1].id()

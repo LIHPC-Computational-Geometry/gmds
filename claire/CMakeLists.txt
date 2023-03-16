@@ -33,6 +33,20 @@ set(GMDS_INC
 		inc/gmds/claire/Front.h
 		inc/gmds/claire/SmoothingPaving_2D.h
 		inc/gmds/claire/FastLocalize.h
+		inc/gmds/claire/SU2Writer.h
+		inc/gmds/claire/IntervalAssignment_2D.h
+		inc/gmds/claire/AbstractSmoothLineSweeping_2D.h
+		inc/gmds/claire/SmoothLineSweepingYao.h
+		inc/gmds/claire/SmoothLineSweepingOrtho.h
+		inc/gmds/claire/RefinementBeta.h
+		inc/gmds/claire/RefinementBetaBlocking.h
+		inc/gmds/claire/AeroEllipticSmoothing_2D.h
+		inc/gmds/claire/DiffusionEquation2D.h
+		inc/gmds/claire/Front_3D.h
+		inc/gmds/claire/AeroExtrusion_3D.h
+		inc/gmds/claire/FrontEdgesNodesClassification_3D.h
+		inc/gmds/claire/NodeNeighbourhoodOnFront_3D.h
+		inc/gmds/claire/MeshAlignment_2D.h
 		)
 set(GMDS_SRC
 		src/main.cpp
@@ -62,22 +76,19 @@ set(GMDS_SRC
 		src/FastLocalize.cpp
 		src/SmoothingPaving_2D.cpp
         src/SU2Writer.cpp
-		inc/gmds/claire/SU2Writer.h
-		inc/gmds/claire/IntervalAssignment_2D.h
 		src/IntervalAssignment_2D.cpp
-		inc/gmds/claire/AbstractSmoothLineSweeping_2D.h
 		src/AbstractSmoothLineSweeping_2D.cpp
-		inc/gmds/claire/SmoothLineSweepingYao.h
 		src/SmoothLineSweepingYao.cpp
-		inc/gmds/claire/SmoothLineSweepingOrtho.h
 		src/SmoothLineSweepingOrtho.cpp
-		inc/gmds/claire/RefinementBeta.h src/RefinementBeta.cpp
-		inc/gmds/claire/RefinementBetaBlocking.h
+		src/RefinementBeta.cpp
 		src/RefinementBetaBlocking.cpp
-		inc/gmds/claire/AeroEllipticSmoothing_2D.h
 		src/AeroEllipticSmoothing_2D.cpp
 		src/DiffusionEquation2D.cpp
-		inc/gmds/claire/DiffusionEquation2D.h)
+		src/Front_3D.cpp
+		src/AeroExtrusion_3D.cpp
+		src/FrontEdgesNodesClassification_3D.cpp
+		src/NodeNeighbourhoodOnFront_3D.cpp
+		src/MeshAlignment_2D.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
@@ -98,6 +109,7 @@ target_link_libraries(${GMDS_LIB} PUBLIC
 		${LIB_GMDS_CAD}
 		${LIB_GMDS_CADFAC}
 		${LIB_GMDS_SMOOTHY}
+		#${LIB_GMDS_BLOCKING}
 		ANN
 		)
 

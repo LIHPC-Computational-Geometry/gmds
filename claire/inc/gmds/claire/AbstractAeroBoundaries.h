@@ -34,7 +34,7 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	/** @brief Constructor.
          *  @param
 	 */
-	AbstractAeroBoundaries(Mesh *AMesh);
+	explicit AbstractAeroBoundaries(Mesh *AMesh);
 	/*--------------------------------------------------------------------*/
 	/** @brief Default destructor.
          *  @param
@@ -60,15 +60,15 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	/*-------------------------------------------------------------------*/
 	/** \brief Récupère la marque sur les noeuds de bord.
 	 */
-	int getMarkBnd();
+	TInt getMarkBnd();
 	/*-------------------------------------------------------------------*/
 	/** \brief Récupère la marque sur les noeuds de la frontière amont.
 	 */
-	int getMarkAmont();
+	TInt getMarkAmont();
 	/*-------------------------------------------------------------------*/
 	/** \brief Récupère la marque sur les noeuds de la paroi.
 	 */
-	int getMarkParoi();
+	TInt getMarkParoi();
 	/*-------------------------------------------------------------------*/
 	/** \brief Vérifie si le/les objet/s sont immergés.
 	 */
@@ -98,7 +98,7 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	 * @return Retourne l'id du noeud du bord color le plus proche du point
 	 * p
 	 */
-	TCellID ClosestNodeOnBnd(int color, math::Point p);
+	TCellID ClosestNodeOnBnd(int color, const math::Point& p);
 	/*-------------------------------------------------------------------*/
 	/** @brief Donne l'id d'un noeud sur le bord de couleur color.
 	 * @param color Couleur du bord regardé
@@ -135,10 +135,8 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	Mesh* m_mesh;
 	/** Booléen qui vérifie si le maillage correspond à un/des objet/s immergé/s */
 	bool m_isImmerged;
-	/** Nombre de bords distincts de bords */
+	/** Nombre de bords distincts */
 	int m_nbrBords;
-	/** Nombre de bords distincts sur la paroi */
-	int m_nbrBordsParoi;
 	/** Couleur qui correspond au bord extérieur */
 	int m_color_Amont;
 	/** Colorie chaque bord d'une couleur != */

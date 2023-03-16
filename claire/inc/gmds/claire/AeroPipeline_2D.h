@@ -23,12 +23,12 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_2D : public AbstractAeroPipeline {
 	/*------------------------------------------------------------------------*/
 	/** \brief Default constructor
 	 */
-	AeroPipeline_2D(ParamsAero Aparams);
+	explicit AeroPipeline_2D(std::string &Aparams, std::string &Aworking_dir);
 
 	/*------------------------------------------------------------------------*/
 	/** \brief Function to be called for mesh generation
 	 */
-	virtual AbstractAeroPipeline::STATUS execute();
+	AbstractAeroPipeline::STATUS execute() override;
 	/*------------------------------------------------------------------------*/
 
  private:
@@ -53,13 +53,13 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_2D : public AbstractAeroPipeline {
 	/*----------------------------------------------------------------------------*/
 	/** @brief Update the second linker at the node n2 with de datas of the first
 	 * linker.
-	 * @param linker_1 the reference linker
-	 * @param n_1 the node in the mesh on the linker_1
-	 * @param linker_2 the linker to update
-	 * @param n_2 the node in the second mesh to initialize the classification
+	 * @param[in] linker_1 the reference linker
+	 * @param[in] n_1 the node in the mesh on the linker_1
+	 * @param[in] linker_2 the linker to update
+	 * @param[in] n_2 the node in the second mesh to initialize the classification
 	 * @return void
 	 */
-	void UpdateLinker(cad::GeomMeshLinker* linker_1, Node n_1, cad::GeomMeshLinker* linker_2, Node n_2);
+	static void UpdateLinker(cad::GeomMeshLinker* linker_1, const Node& n_1, cad::GeomMeshLinker* linker_2, const Node& n_2);
 	/*----------------------------------------------------------------------------*/
 	/** @brief Update the linker for the last layer (on amont boundary)
 	 * @return void
@@ -84,12 +84,6 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_2D : public AbstractAeroPipeline {
 	 * @return void
 	 */
 	void MeshRefinement();
-	/*----------------------------------------------------------------------------*/
-	/** @brief Check the mesh alignement with a vector field.
-	 * @param
-	 * @return void
-	 */
-	void MeshAlignement();
 	/*----------------------------------------------------------------------------*/
  protected:
 	/** blocking 2D */

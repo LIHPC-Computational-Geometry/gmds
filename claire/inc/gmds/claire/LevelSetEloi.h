@@ -23,7 +23,7 @@ class LIB_GMDS_CLAIRE_API LevelSetEloi: public AbstractLevelSet {
 	*	 @param AmarkFrontNodes marque sur les noeuds sur front
 	*	 @param Adistance variable distance
 	 */
-	LevelSetEloi(Mesh *AMesh, int AmarkFrontNodes, Variable<double> *Adistance);
+	LevelSetEloi(Mesh *AMesh, TInt AmarkFrontNodes, Variable<double> *Adistance);
 
 	/*------------------------------------------------------------------------*/
 
@@ -33,7 +33,7 @@ class LIB_GMDS_CLAIRE_API LevelSetEloi: public AbstractLevelSet {
 	 * @param n
 	 * @return a vector of nodes
 	 */
-	virtual std::vector<Node> getNeighbors(Node n);
+	std::vector<Node> getNeighbors(Node n) override;
 
 };
 /*----------------------------------------------------------------------------*/

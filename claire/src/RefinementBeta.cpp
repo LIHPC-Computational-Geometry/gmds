@@ -9,7 +9,7 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-RefinementBeta::RefinementBeta(std::vector<math::Point> APoints, double Asize_first_edge)
+RefinementBeta::RefinementBeta(std::vector<math::Point>& APoints, double Asize_first_edge)
 {
 	m_Points = APoints;
 	m_size_first_edge = Asize_first_edge;
@@ -112,7 +112,7 @@ double RefinementBeta::ComputeBeta(double first_edge_size, double sum_edge_sizes
 		{
 			std::cout << "ERREUR : Division par 0 dans RefinementBeta." << std::endl;
 			F = 0;
-			iter = pow(10,8);
+			iter = int(pow(10,8));
 		}
 
 	}

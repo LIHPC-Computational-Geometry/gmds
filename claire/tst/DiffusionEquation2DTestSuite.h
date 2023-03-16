@@ -39,11 +39,11 @@ TEST(DiffusionEquation2DTestClass, DiffusionEquation2D)
 
 	math::Utils::MeshCleaner(&m);
 
-	AeroBoundaries_2D* Bnd = new AeroBoundaries_2D(&m) ;
+	auto Bnd = new AeroBoundaries_2D(&m) ;
 	Bnd->execute();
 
-	int mark_Farfiel = Bnd->getMarkAmont();
-	int mark_Paroi = Bnd->getMarkParoi();
+	TInt mark_Farfiel = Bnd->getMarkAmont();
+	TInt mark_Paroi = Bnd->getMarkParoi();
 
 	Variable<double>* var_ls_test = m.newVariable<double,GMDS_NODE>("GMDS_Distance_TEST");
 	DiffusionEquation2D ls_test(&m, mark_Paroi, mark_Farfiel, var_ls_test);

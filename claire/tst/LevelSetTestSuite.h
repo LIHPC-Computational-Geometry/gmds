@@ -51,8 +51,8 @@ TEST(LevelSetTestClass, LevelSet_Test_Unit_Carre)
 
 	double tol(pow(10,-6));
 
-	int markFrontNodesInt = m.newMark<gmds::Node>();
-	int markFrontNodesOut = m.newMark<gmds::Node>();
+	TInt markFrontNodesInt = m.newMark<gmds::Node>();
+	TInt markFrontNodesOut = m.newMark<gmds::Node>();
 	for(auto id:bnd_node_ids){
 		Node n = m.get<Node>(id);
 		double coord_y = n.Y() ;
@@ -439,8 +439,8 @@ TEST(LevelSetTestClass, LevelSet_Test_Unit_C1_3D)
 	double eps = pow(10, -5);
 	double eps_2 = pow(10, -3);
 
-	int markFrontNodesInt = m.newMark<gmds::Node>();
-	int markFrontNodesOut = m.newMark<gmds::Node>();
+	TInt markFrontNodesInt = m.newMark<gmds::Node>();
+	TInt markFrontNodesOut = m.newMark<gmds::Node>();
 
 	for(auto id:m.nodes()){
 		Node n = m.get<Node>(id);

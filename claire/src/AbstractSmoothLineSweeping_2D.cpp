@@ -5,6 +5,7 @@
 /*------------------------------------------------------------------------*/
 #include<gmds/math/Line.h>
 #include <gmds/claire/AbstractSmoothLineSweeping_2D.h>
+#include <gmds/claire/Utils.h>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -28,9 +29,6 @@ AbstractSmoothLineSweeping_2D::AbstractSmoothLineSweeping_2D(Blocking2D::Block* 
 		}
 	}
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 AbstractSmoothLineSweeping_2D::STATUS AbstractSmoothLineSweeping_2D::execute()
 {
@@ -58,11 +56,6 @@ AbstractSmoothLineSweeping_2D::STATUS AbstractSmoothLineSweeping_2D::execute()
 	return AbstractSmoothLineSweeping_2D::SUCCESS;
 }
 /*------------------------------------------------------------------------*/
-
-
-
-
-/*------------------------------------------------------------------------*/
 void AbstractSmoothLineSweeping_2D::One_Step_Smoothing(){
 
 	for (int i=1; i < m_Nx; i++)
@@ -79,18 +72,15 @@ void AbstractSmoothLineSweeping_2D::One_Step_Smoothing(){
 
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 void AbstractSmoothLineSweeping_2D::BoundarySlipping()
 {
 
 	for (int i=1;i<m_Nx;i++)
 	{
-		//math::Point Mid = WeightedPointOnBranch((*m_B)(i-1,0).point(), (*m_B)(i,0).point(), (*m_B)(i+1,0).point(), 0.5);
+		//math::Point Mid = math::Utils::WeightedPointOnBranch((*m_B)(i-1,0).point(), (*m_B)(i,0).point(), (*m_B)(i+1,0).point(), 0.5);
 		//m_P_new(i,0) =( m_theta*(*m_B)(i, 0).point() + (1.0-m_theta)*Mid ) ;
 
-		math::Point Mid = WeightedPointOnBranch((*m_B)(i-1,m_Ny).point(), (*m_B)(i,m_Ny).point(), (*m_B)(i+1,m_Ny).point(), 0.5);
+		math::Point Mid = math::Utils::WeightedPointOnBranch((*m_B)(i-1,m_Ny).point(), (*m_B)(i,m_Ny).point(), (*m_B)(i+1,m_Ny).point(), 0.5);
 		m_P_new(i,m_Ny) =( m_theta*(*m_B)(i, m_Ny).point() + (1.0-m_theta)*Mid ) ;
 
 		/*
@@ -106,7 +96,7 @@ void AbstractSmoothLineSweeping_2D::BoundarySlipping()
 		}
 		if (!int_found)
 		{
-			P_intersection = WeightedPointOnBranch((*m_B)(i-1,m_Ny).point(), (*m_B)(i,m_Ny).point(), (*m_B)(i+1,m_Ny).point(), 0.5);
+			P_intersection = math::Utils::WeightedPointOnBranch((*m_B)(i-1,m_Ny).point(), (*m_B)(i,m_Ny).point(), (*m_B)(i+1,m_Ny).point(), 0.5);
 		}
 
 		m_P_new(i,m_Ny) = ( m_theta*(*m_B)(i, m_Ny).point() + (1.0-m_theta)*P_intersection ) ;
@@ -116,46 +106,14 @@ void AbstractSmoothLineSweeping_2D::BoundarySlipping()
 
 	for (int j=1;j<m_Ny;j++)
 	{
-		math::Point Mid = WeightedPointOnBranch((*m_B)(0,j-1).point(), (*m_B)(0,j).point(), (*m_B)(0,j+1).point(), 0.5);
+		math::Point Mid = math::Utils::WeightedPointOnBranch((*m_B)(0,j-1).point(), (*m_B)(0,j).point(), (*m_B)(0,j+1).point(), 0.5);
 		m_P_new(0,j) = ( m_theta*(*m_B)(0, j).point() + (1.0-m_theta)*Mid ) ;
 
-		Mid = WeightedPointOnBranch((*m_B)(m_Nx,j-1).point(), (*m_B)(m_Nx,j).point(), (*m_B)(m_Nx,j+1).point(), 0.5);
+		Mid = math::Utils::WeightedPointOnBranch((*m_B)(m_Nx,j-1).point(), (*m_B)(m_Nx,j).point(), (*m_B)(m_Nx,j+1).point(), 0.5);
 		m_P_new(m_Nx,j) = ( m_theta*(*m_B)(m_Nx, j).point() + (1.0-m_theta)*Mid ) ;
 	}
 
 }
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
-math::Point AbstractSmoothLineSweeping_2D::WeightedPointOnBranch(const math::Point A, const math::Point B, const math::Point C, double alpha) {
-	math::Point P_Weighted;
-	math::Vector3d Vec_AB = B-A ;
-	math::Vector3d Vec_BC = C-B ;
-	double norme_1 = Vec_AB.norm() ;
-	double norme_2 = Vec_BC.norm() ;
-	double norme_branche = norme_1 + norme_2 ;
-	double norme_cible = alpha*norme_branche ;
-
-	if (norme_cible <= norme_1){
-		Vec_AB.normalize();
-		P_Weighted = A + norme_cible*Vec_AB ;
-	}
-	else if (norme_cible > norme_1){
-		math::Vector3d Vec_CB = - Vec_BC ;
-		Vec_CB.normalize();
-		P_Weighted = C + (norme_branche-norme_cible)*Vec_CB ;
-	}
-	else
-	{
-		P_Weighted = B ;
-	}
-
-	return P_Weighted;
-}
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 double AbstractSmoothLineSweeping_2D::L2_norm_relative_error()
 {
@@ -176,9 +134,6 @@ double AbstractSmoothLineSweeping_2D::L2_norm_relative_error()
 
 	return sqrt(num/denom);
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 void AbstractSmoothLineSweeping_2D::Update_new_coords()
 {

@@ -11,6 +11,7 @@
 #include <gmds/claire/AeroException.h>
 #include <gmds/claire/Front.h>
 #include <gmds/claire/Params.h>
+#include <gmds/claire/FastLocalize.h>
 #include <string>
 #include <map>
 #include <fstream>
@@ -35,7 +36,7 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
          *  @param[in] A_VectorField vector field for extrusion
          *
 	 */
-	AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero Aparams_aero, Variable<math::Vector3d>* A_VectorField);
+	AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero& Aparams_aero, Variable<math::Vector3d>* A_VectorField);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -120,12 +121,16 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
  private:
 	/** triangular mesh we work on */
 	Mesh *m_meshT;
+	/** k-d tree */
+	FastLocalize m_fl;
 	/** quad mesh to generate */
 	Mesh *m_meshQ;
 	/** Params pour l'aéro */
 	ParamsAero m_params_aero;
 	/** Vector Field for extrusion */
 	Variable<math::Vector3d>* m_VectorField;
+	/** Compteur d'hexa */
+	int m_iteration;
 
 };
 /*----------------------------------------------------------------------------*/
