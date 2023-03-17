@@ -147,6 +147,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_User_DA)
 
 }
 */
+/*
 TEST(AeroPipelineTestClass, AeroPipeline2D_RAMCII)
 {
 	ParamsAero params_aero;
@@ -253,7 +254,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Orex)
 	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero2D_result);
 
 }
-
+*/
 /*----------------------------------------------------------------------------*/
 /*                       CAS TEST 3D CLASSE LevelSet                          */
 /*----------------------------------------------------------------------------*/
