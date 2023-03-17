@@ -34,7 +34,7 @@ set(GMDS_SRC
         src/NodeContainer.cpp
         src/Region.cpp
         src/RegionContainer.cpp
-        inc/gmds/ig/Blocking2D.h src/Blocking2D.cpp)
+        )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

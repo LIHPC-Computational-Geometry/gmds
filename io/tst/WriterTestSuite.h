@@ -3,13 +3,13 @@
 //
 
 /*----------------------------------------------------------------------------*/
-#include <gtest/gtest.h>
 #include <gmds/ig/Mesh.h>
-#include <gmds/io/VTKWriter.h>
-#include <gmds/io/VTKReader.h>
-#include <gmds/io/MeditReader.h>
 #include <gmds/io/IGMeshIOService.h>
+#include <gmds/io/MeditReader.h>
+#include <gmds/io/VTKReader.h>
+#include <gmds/io/VTKWriter.h>
 #include <gmds/math/Point.h>
+#include <gtest/gtest.h>
 #include <iostream>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;

@@ -109,7 +109,7 @@ target_link_libraries(${GMDS_LIB} PUBLIC
 		${LIB_GMDS_CAD}
 		${LIB_GMDS_CADFAC}
 		${LIB_GMDS_SMOOTHY}
-		#${LIB_GMDS_BLOCKING}
+		${LIB_GMDS_BLOCKING}
 		ANN
 		)
 
