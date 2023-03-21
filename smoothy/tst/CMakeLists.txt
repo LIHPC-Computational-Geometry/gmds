@@ -1,6 +1,7 @@
 add_executable(GMDS_SMOOTHY_TEST
         LaplacianSmootherTestSuite.h
         AngleBasedQuadSmootherTestSuite.h
+        ElliptingSmoothingTestSuite.h
         main_test.cpp)
 
 target_link_libraries(GMDS_SMOOTHY_TEST PUBLIC
