@@ -7,6 +7,7 @@ target_link_libraries(GMDS_ELGMORPHING_TEST PUBLIC
         ${GMDS_LIB}
         ${LIB_GMDS_IO}
         ${LIB_GMDS_BLOCKING}
+        ${LIB_GMDS_SMOOTHY}
         gtest)
 
 target_include_directories(GMDS_ELGMORPHING_TEST PRIVATE .)
