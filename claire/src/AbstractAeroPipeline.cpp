@@ -57,6 +57,7 @@ AbstractAeroPipeline::AbstractAeroPipeline(std::string &Aparams, std::string &Aw
 	p.parseIni(Aparams);
 
 	p.get("section_Dimension", "dim", m_params.dimension);
+	p.get("section_Dimension", "axisymetry", m_params.axisymetry);
 
 	std::string input;
 	p.get("section_INPUT_files","input_mesh",  input);
