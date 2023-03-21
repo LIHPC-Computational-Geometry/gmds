@@ -37,16 +37,22 @@ class LIB_GMDS_ELGMORPHING_API ElgMorphing{
 	 */
 	virtual ~ElgMorphing() =default;
 	/*-------------------------------------------------------------------------*/
-	/** \brief Function to be called for initializing datas on the
-	 * boundaries
+	/** \brief
 	 */
 	ElgMorphing::STATUS execute();
 	/*-------------------------------------------------------------------------*/
+	/** \brief Boundingbox computation
+	 */
+	void computeBoundingBox(gmds::Mesh* AMesh,
+	                        std::string AGroupName,
+									gmds::TCoord minXYZ[3],
+	                        gmds::TCoord maxXYZ[3]) const;
+	/*-------------------------------------------------------------------------*/
 	/** \brief Boundingbox transform.
 	 */
-	gmds::math::Point bbtransform(gmds::math::Point APt,
-	                              gmds::TCoord min_orig[3], gmds::TCoord max_orig[3],
-	                              gmds::TCoord min_dest[3], gmds::TCoord max_dest[3]);
+	gmds::math::Point bbtransform2d(gmds::math::Point APt,
+	                              gmds::TCoord minXYZ_orig[3], gmds::TCoord maxXYZ_orig[3],
+	                              gmds::TCoord minXYZ_dest[3], gmds::TCoord maxXYZ_dest[3]) const;
 	/*-------------------------------------------------------------------------*/
 
  protected:
