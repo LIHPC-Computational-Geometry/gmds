@@ -566,13 +566,14 @@ AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<T
 	Node n = m_meshH->get<Node>(n_id);
 	Node n6 = m_meshH->get<Node>(map_new_nodes[n_id]);
 
-	Node n_adj_1 = ec_0.getOppositeNode(n);
-	Node n_adj_2 = ec_1.getOppositeNode(n);
-	Node n_adj_3 = ec_2.getOppositeNode(n);
+	Node n_c0 = ec_0.getOppositeNode(n);
+	Node n_c1 = ec_1.getOppositeNode(n);
+	Node n_c2 = ec_2.getOppositeNode(n);
 
-	math::Vector3d v1 = n_adj_1.point()-n.point() ;
-	math::Vector3d v2 = n_adj_2.point()-n.point() ;
-	math::Vector3d v3 = n_adj_3.point()-n.point() ;
+	/*
+	math::Vector3d v1 = n_c0.point()-n.point() ;
+	math::Vector3d v2 = n_c1.point()-n.point() ;
+	math::Vector3d v3 = n_c2.point()-n.point() ;
 
 	// Compute positions of new nodes
 	v1.normalize();
@@ -584,6 +585,19 @@ AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<T
 	math::Point p2 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, -v1-v2); // (p3-n.point()) + (p1-n.point()) ;
 	math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, -v1-v3); // p4 + (p1-n.point()) ;
 	math::Point p7 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, -v2-v3); //p4 + (p3-n.point()) ;
+	*/
+	math::Vector3d v1 = AFront.outgoingNormal(m_meshH, n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec_1.id(), ec_2.id(), ec_0.id())) ;
+	math::Vector3d v2 = AFront.outgoingNormal(m_meshH, n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec_0.id(), ec_2.id(), ec_1.id())) ;
+	math::Vector3d v3 = AFront.outgoingNormal(m_meshH, n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec_0.id(), ec_1.id(), ec_2.id())) ;
+	v1.normalize();
+	v2.normalize();
+	v3.normalize();
+	math::Point p1 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v1);
+	math::Point p3 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v2);
+	math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v3);
+	math::Point p2 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v1+v2);
+	math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v1+v3);
+	math::Point p7 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v2+v3);
 
 	Node n1 = m_meshH->newNode(p1);
 	Node n2 = m_meshH->newNode(p2);
@@ -620,9 +634,9 @@ AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<T
 		m_FaceInfo[f_adj_id].next_nodes[n_id] = n3.id() ;
 	}
 
-	TCellID f_1 = math::Utils::CommonFace3Nodes(m_meshH, n_id, n_adj_1.id(), n_adj_2.id());
-	TCellID f_2 = math::Utils::CommonFace3Nodes(m_meshH, n_id,  n_adj_2.id(), n_adj_3.id());
-	TCellID f_3 = math::Utils::CommonFace3Nodes(m_meshH, n_id,  n_adj_3.id(), n_adj_1.id());
+	TCellID f_1 = math::Utils::CommonFace3Nodes(m_meshH, n_id, n_c0.id(), n_c1.id());
+	TCellID f_2 = math::Utils::CommonFace3Nodes(m_meshH, n_id, n_c1.id(), n_c2.id());
+	TCellID f_3 = math::Utils::CommonFace3Nodes(m_meshH, n_id, n_c2.id(), n_c0.id());
 	/*
 	m_FaceInfo[f_1].next_nodes[n_id] = n4.id() ;
 	m_FaceInfo[f_2].next_nodes[n_id] = n1.id() ;
@@ -633,9 +647,9 @@ AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<T
 	// Update the corner edges   //
 	// information					  //
 	//---------------------------//
-	TCellID e1_id = math::Utils::CommonEdge(m_meshH, n.id(), n_adj_1.id());
-	TCellID e2_id = math::Utils::CommonEdge(m_meshH, n.id(), n_adj_2.id());
-	TCellID e3_id = math::Utils::CommonEdge(m_meshH, n.id(), n_adj_3.id());
+	TCellID e1_id = math::Utils::CommonEdge(m_meshH, n.id(), n_c0.id());
+	TCellID e2_id = math::Utils::CommonEdge(m_meshH, n.id(), n_c1.id());
+	TCellID e3_id = math::Utils::CommonEdge(m_meshH, n.id(), n_c2.id());
 
 	m_EdgeInfo[e1_id].CORNER_n_face_created[n.id()] = true ;
 	m_EdgeInfo[e2_id].CORNER_n_face_created[n.id()] = true ;
