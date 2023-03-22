@@ -97,6 +97,14 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	 */
 	Front_3D Compute1stLayer(Front_3D A_Front_IN, Variable<double>* A_distance, Variable<math::Vector3d>* A_vectors);
 	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	* \param[in] Front_IN the front before
+   	* \param[in] A_distance the distance variable on the first mesh
+		*
+		* \return
+	 */
+	double ComputeMaxDistOnFront(Front_3D Front_IN, Variable<double>* A_distance);
+	/*-------------------------------------------------------------------*/
 	/** @brief Init the faces struct info for the Front, according to the
 	 	* ideal position of each node computed.
 	 	*
