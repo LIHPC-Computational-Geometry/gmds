@@ -36,7 +36,7 @@ FrontEdgesNodesClassification_3D::execute()
 	m_global_feature_edges = ComputeAllGlobalFeatureEdge();
 	ComputeNodesEdgesForTemplates();
 	 */
-	m_All_global_feature_edges = ComputeAllGFE();
+	//m_All_global_feature_edges = ComputeAllGFE();
 	ComputeValid_GFE();
 
 	return FrontEdgesNodesClassification_3D::SUCCESS;
@@ -52,12 +52,6 @@ TInt
 FrontEdgesNodesClassification_3D::getMarkNodesTemplates()
 {
 	return m_mark_NodesForTemplates;
-}
-/*------------------------------------------------------------------------*/
-std::vector<std::vector<TCellID>>
-FrontEdgesNodesClassification_3D::getGlobalFeatureEdge()
-{
-	return m_global_feature_edges;
 }
 /*------------------------------------------------------------------------*/
 int
@@ -383,10 +377,36 @@ FrontEdgesNodesClassification_3D::ComputeAllGFE()
 	return All_GFE;
 }
 /*------------------------------------------------------------------------*/
+bool
+FrontEdgesNodesClassification_3D::isThisPathValidForTemplates(Global_Feature_Edge& GFE)
+{
+	bool isValid(true);
+
+	if (m_NodesClassification->value(GFE.Start_n_id) <= 2
+	    || m_NodesClassification->value(GFE.End_n_id) <= 2)
+	{
+		isValid = false;
+	}
+	if (!isValidNodeForTemplate(GFE.Start_n_id)
+	    || !isValidNodeForTemplate(GFE.End_n_id))
+	{
+		isValid = false;
+	}
+	if (GFE.edges_id.size() < 3)	// To improve: if the number of edges is under 3, in some case, the algorithm can perform. (ex: if the 2 opposite nodes are corners). Need to list the valid cases.
+	{
+		isValid = false;
+	}
+
+	return isValid;
+}
+/*------------------------------------------------------------------------*/
 void
 FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 {
 	// Init
+	m_All_global_feature_edges = ComputeAllGFE();
+
+	/*
 	for (auto const& GFE:m_All_global_feature_edges)
 	{
 		if (m_NodesClassification->value(GFE.End_n_id) >= 3
@@ -404,7 +424,45 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 			m_mesh->mark(m_mesh->get<Edge>(e_loc_id), m_mark_EdgesForTemplates);
 		}
 	}
+	*/
 
+	// NEW METHOD
+
+	bool isAllTreated(false);
+
+	while (!isAllTreated && !m_All_global_feature_edges.empty())
+	{
+		isAllTreated = true;
+		for (auto GFE:m_All_global_feature_edges)
+		{
+			if (!isThisPathValidForTemplates(GFE))
+			{
+				m_NodesClassification->set(GFE.Start_n_id, m_NodesClassification->value(GFE.Start_n_id)-1);
+				m_NodesClassification->set(GFE.End_n_id, m_NodesClassification->value(GFE.End_n_id)-1);
+				for (auto edge_id:GFE.edges_id)
+				{
+					m_EdgesClassification->set(edge_id, 0);
+				}
+			}
+		}
+		// Re-compute the list of Global Feature Edges
+		m_All_global_feature_edges = ComputeAllGFE();
+	}
+
+	// Mark the final selected nodes and edges for the templates
+	for (auto const &GFE:m_All_global_feature_edges)
+	{
+		m_mesh->mark(m_mesh->get<Node>(GFE.Start_n_id), m_mark_NodesForTemplates);
+		m_mesh->mark(m_mesh->get<Node>(GFE.End_n_id), m_mark_NodesForTemplates);
+		for (auto edge_id:GFE.edges_id)
+		{
+			m_mesh->mark(m_mesh->get<Edge>(edge_id), m_mark_EdgesForTemplates);
+		}
+	}
+
+	// OLD WAY
+
+	/*
 	bool isAllTreated(false);
 
 	while (!isAllTreated && !m_All_global_feature_edges.empty())
@@ -433,6 +491,9 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 			}
 		}
 	}
+
+	 */
+
 	/*
 	for (auto GFE:m_All_global_feature_edges)
 	{
@@ -441,5 +502,6 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 		std::cout << "Ending point: " << GFE.End_n_id << std::endl;
 	}
 	 */
+
 }
 /*------------------------------------------------------------------------*/
