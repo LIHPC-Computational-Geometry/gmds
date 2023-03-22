@@ -63,13 +63,6 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	 */
 	TInt getMarkNodesTemplates();
 	/*-------------------------------------------------------------------*/
-	/** @brief
-	 	* \param[in]
-		*
-		* \return  return the global feature edges
-	 */
-	std::vector<std::vector<TCellID>> getGlobalFeatureEdge();
-	/*-------------------------------------------------------------------*/
 
  private:
 	/*-------------------------------------------------------------------*/
@@ -94,10 +87,11 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	 */
 	void FrontNodesClassification();
 	/*-------------------------------------------------------------------*/
-	/** @brief
+	/** @brief Return true if the configuration around the node n is valid
+	 * to apply one of the implemented templates on nodes.
 	 	* \param[in] n_id id of the node
 		*
-		* \return
+		* \return true if the node is valid for a template, false otherwise.
 	 */
 	bool isValidNodeForTemplate(TCellID n_id);
 	/*-------------------------------------------------------------------*/
@@ -116,6 +110,13 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 		* \return
 	 */
 	std::vector<Global_Feature_Edge> ComputeAllGFE();
+	/*-------------------------------------------------------------------*/
+	/** @brief Return true if the path is valid to apply templates.
+	 	* \param[in] GFE the "path"
+		*
+		* \return true if the path is valid for templates, false otherwise.
+	 */
+	bool isThisPathValidForTemplates(Global_Feature_Edge& GFE);
 	/*-------------------------------------------------------------------*/
 	/** @brief
 	 	* \param[in]
