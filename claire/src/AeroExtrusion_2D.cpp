@@ -36,13 +36,14 @@ AeroExtrusion_2D::execute()
 	Front Current_Front = Compute1stLayer(m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), m_params_aero.delta_cl,
 	                m_VectorField);
 
-	double pas_couche = 1.0/m_params_aero.nbr_couches ;
+	double max_distance = ComputeMaxDistOnFront(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"));
+	double pas_couche = (1.0-max_distance)/(m_params_aero.nbr_couches-1) ;
 
 	for (int i=2; i <= m_params_aero.nbr_couches; i++)
 	{
-		Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), i*pas_couche,
+		Current_Front = ComputeLayer(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), max_distance+(i-1)*pas_couche,
 	                             m_VectorField);
-		std::cout << "distance : " << i*pas_couche << std::endl;
+		std::cout << "distance : " << max_distance+(i-1)*pas_couche << std::endl;
 	}
 
 	return AeroExtrusion_2D::SUCCESS;
@@ -212,6 +213,27 @@ AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cibl
 
 	return First_Front;
 
+}
+/*------------------------------------------------------------------------*/
+double
+AeroExtrusion_2D::ComputeMaxDistOnFront(Front Front_IN, Variable<double>* A_distance)
+{
+	double max_distance(0.0);
+
+	for (auto n_id:Front_IN.getNodes())
+	{
+		Node n = m_meshQ->get<Node>(n_id) ;
+
+		gmds::Cell::Data data = m_fl.find(n.point());
+		TCellID n_closest_id = data.id;
+		Node n_closest = m_meshT->get<Node>(n_closest_id);
+		if (A_distance->value(n_closest_id) > max_distance)
+		{
+			max_distance = A_distance->value(n_closest_id);
+		}
+	}
+
+	return max_distance;
 }
 /*------------------------------------------------------------------------*/
 Front
