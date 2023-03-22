@@ -52,20 +52,6 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	/** @brief
 	 	* \param[in]
 		*
-		* \return  return the mark on semi edges
-	 */
-	TInt getMarkSemiEdges();
-	/*-------------------------------------------------------------------*/
-	/** @brief
-	 	* \param[in]
-		*
-		* \return  return the mark on semi nodes
-	 */
-	TInt getMarkSemiNodes();
-	/*-------------------------------------------------------------------*/
-	/** @brief
-	 	* \param[in]
-		*
 		* \return  return the mark
 	 */
 	TInt getMarkEdgesTemplates();
@@ -108,13 +94,6 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	 */
 	void FrontNodesClassification();
 	/*-------------------------------------------------------------------*/
-	/** @brief Init the mark on semi edges, and the one on semi nodes
-	 	* \param[in]
-		*
-		* \return
-	 */
-	void MarkSemiEdgesandNodes();
-	/*-------------------------------------------------------------------*/
 	/** @brief
 	 	* \param[in] n_id id of the node
 		*
@@ -154,10 +133,6 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	Variable<int>* m_EdgesClassification;
 	/** Nodes classification */
 	Variable<int>* m_NodesClassification;
-	/** Mark on semi edges */
-	TInt m_mark_semiEdges;
-	/** Mark on semi nodes */
-	TInt m_mark_semiNodes;
 	/** Mark edges for templates */
 	TInt m_mark_EdgesForTemplates;
 	/** Mark nodes for templates */

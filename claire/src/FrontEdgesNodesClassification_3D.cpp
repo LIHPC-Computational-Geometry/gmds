@@ -15,18 +15,12 @@ FrontEdgesNodesClassification_3D::FrontEdgesNodesClassification_3D(Mesh *AMesh, 
 {
 	m_EdgesClassification = A_EdgesClassification;
 	m_NodesClassification = A_NodesClassification;
-	m_mark_semiEdges = m_mesh->newMark<Edge>();
-	m_mark_semiNodes = m_mesh->newMark<Node>();
 	m_mark_EdgesForTemplates = m_mesh->newMark<Edge>();
 	m_mark_NodesForTemplates = m_mesh->newMark<Node>();
 }
 /*------------------------------------------------------------------------*/
 FrontEdgesNodesClassification_3D::~FrontEdgesNodesClassification_3D()
 {
-	m_mesh->unmarkAll<Edge>(m_mark_semiEdges);
-	m_mesh->freeMark<Edge>(m_mark_semiEdges);
-	m_mesh->unmarkAll<Node>(m_mark_semiNodes);
-	m_mesh->freeMark<Node>(m_mark_semiNodes);
 	m_mesh->unmarkAll<Edge>(m_mark_EdgesForTemplates);
 	m_mesh->freeMark<Edge>(m_mark_EdgesForTemplates);
 	m_mesh->unmarkAll<Node>(m_mark_NodesForTemplates);
@@ -38,7 +32,6 @@ FrontEdgesNodesClassification_3D::execute()
 {
 	FrontEdgesClassification();	// Fill the variable m_EdgesClassification
 	FrontNodesClassification();	// Fill the variable m_NodesClassification
-	MarkSemiEdgesandNodes();		// Mark the semi nodes, and the semi edges
 	/*
 	m_global_feature_edges = ComputeAllGlobalFeatureEdge();
 	ComputeNodesEdgesForTemplates();
@@ -47,18 +40,6 @@ FrontEdgesNodesClassification_3D::execute()
 	ComputeValid_GFE();
 
 	return FrontEdgesNodesClassification_3D::SUCCESS;
-}
-/*------------------------------------------------------------------------*/
-TInt
-FrontEdgesNodesClassification_3D::getMarkSemiEdges()
-{
-	return m_mark_semiEdges;
-}
-/*------------------------------------------------------------------------*/
-TInt
-FrontEdgesNodesClassification_3D::getMarkSemiNodes()
-{
-	return m_mark_semiNodes;
 }
 /*------------------------------------------------------------------------*/
 TInt
@@ -233,27 +214,6 @@ FrontEdgesNodesClassification_3D::FrontNodesClassification()
 		m_NodesClassification->set(n_id, compteur_local_feature_edges);
 	}
 
-}
-/*------------------------------------------------------------------------*/
-void
-FrontEdgesNodesClassification_3D::MarkSemiEdgesandNodes()
-{
-	for (auto n_id:m_Front->getNodes())
-	{
-		if (m_NodesClassification->value(n_id) == 1)
-		{
-			Node n = m_mesh->get<Node>(n_id);
-			m_mesh->mark(n, m_mark_semiNodes);	// Mark the semi node
-			std::vector<Edge> n_edges = n.get<Edge>();
-			for (auto const& e:n_edges)
-			{
-				if (m_EdgesClassification->value(e.id()) > 0)
-				{
-					m_mesh->mark(e, m_mark_semiEdges);	// Mark the semi edge
-				}
-			}
-		}
-	}
 }
 /*------------------------------------------------------------------------*/
 bool
