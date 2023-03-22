@@ -208,6 +208,15 @@ GMDS_ADD_COMPONENT(
 )
 
 GMDS_ADD_COMPONENT(
+        ELGMORPHING
+        elgmorphing
+        GMDSelgmorphing
+        "morphing the mesh"
+        ON
+        ON                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
         HYBRIDMESHADAPT
         hybridMeshAdapt
         GMDSHybridMeshAdapt
