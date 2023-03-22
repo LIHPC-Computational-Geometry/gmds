@@ -66,6 +66,14 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
 	 */
 	Front Compute1stLayer(Variable<double>* A_distance, double dist_cible, Variable<math::Vector3d>* A_vectors);
 	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	* \param[in] Front_IN the front before
+   	* \param[in] A_distance the distance variable on the first mesh
+		*
+		* \return
+	 */
+	double ComputeMaxDistOnFront(Front Front_IN, Variable<double>* A_distance);
+	/*-------------------------------------------------------------------*/
 	/** @brief Construit une couche de mailles à partir d'un front. Ici,
 	 	* des mailles peuvent être fusionnées ou insérées.
 	 	* \param[in] Front_IN the front before
