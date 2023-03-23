@@ -286,6 +286,8 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	std::map<TCellID, edge_info> m_EdgeInfo;
 	/** Compteur d'hexa */
 	int m_iteration;
+	/** Variable on patterns */
+	Variable<int>* m_Patterns;
 
 };
 /*----------------------------------------------------------------------------*/

@@ -66,10 +66,10 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 
  private:
 	/*-------------------------------------------------------------------*/
-	/** @brief
+	/** @brief Return the classification of a single edge e
 	 	* \param[in] e_id the id of the edge considered
 		*
-		* \return  return the edge classification
+		* \return  return the edge classification (0: side, 1: corner, 2:end, 3:reversal)
 	 */
 	int SingleEdgeClassification(TCellID e_id);
 	/*-------------------------------------------------------------------*/
@@ -86,6 +86,13 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 		* \return fill the node classification variable
 	 */
 	void FrontNodesClassification();
+	/*-------------------------------------------------------------------*/
+	/** @brief Return the classification of the front node n
+	 	* \param[in] n_id the id of the node considered
+		*
+		* \return  return the node classification (0: regular, 1: 3 CORNER, ...)
+	 */
+	int singleNodeClassification(TCellID n_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Return true if the configuration around the node n is valid
 	 * to apply one of the implemented templates on nodes.
