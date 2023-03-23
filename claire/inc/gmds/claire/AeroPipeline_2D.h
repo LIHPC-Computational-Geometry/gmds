@@ -30,8 +30,10 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_2D : public AbstractAeroPipeline {
 	 */
 	AbstractAeroPipeline::STATUS execute() override;
 	/*------------------------------------------------------------------------*/
-
+	/** \brief Return the Blocking structure
+	 */
 	Blocking2D* getBlocking();
+	/*------------------------------------------------------------------------*/
 
 
  private:
