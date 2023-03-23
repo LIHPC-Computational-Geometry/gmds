@@ -210,6 +210,87 @@ FrontEdgesNodesClassification_3D::FrontNodesClassification()
 
 }
 /*------------------------------------------------------------------------*/
+int
+FrontEdgesNodesClassification_3D::singleNodeClassification(TCellID n_id){
+	int classification(0);
+
+	NodeNeighbourhoodOnFront_3D n_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n_id);
+	n_neighbourhood.execute();
+
+	// Compute the number or corner, end and reversal edges around the node n
+	// on the front
+	int compteur_corner(0);
+	int compteur_end(0);
+	int compteur_reversal(0);
+	for (auto e_id: n_neighbourhood.getOrderedEdges())
+	{
+		Edge e = m_mesh->get<Edge>(e_id);
+		if (m_EdgesClassification->value(e_id) == 1)
+		{
+			compteur_corner +=1;
+		}
+		else if (m_EdgesClassification->value(e_id) == 2)
+		{
+			compteur_end +=1;
+		}
+		else if (m_EdgesClassification->value(e_id) == 3)
+		{
+			compteur_reversal +=1;
+		}
+	}
+
+	// Check the ordering of the singular edges around the node n
+	if (compteur_corner == 3 && compteur_end == 0 && compteur_reversal == 0)
+	{
+		classification = 1;
+	}
+	else if (compteur_corner==2 && compteur_end==1)
+	{
+		classification = 2;
+	}
+	else if (compteur_corner==1 && compteur_end==2)
+	{
+		classification = 3;
+	}
+	else if (compteur_end == 3 && n_neighbourhood.getOrderedEdges().size()==3)
+	{
+		classification = 4;
+	}
+	else if (n_neighbourhood.getOrderedEdges().size() == 6
+	         && ( ( m_EdgesClassification->value(n_neighbourhood.getOrderedEdges()[0]) == 1
+	              && m_EdgesClassification->value(n_neighbourhood.getOrderedEdges()[2]) == 1
+	              && m_EdgesClassification->value(n_neighbourhood.getOrderedEdges()[4]) == 1
+	              && m_EdgesClassification->value(n_neighbourhood.getOrderedEdges()[1]) == 2
+	              && m_EdgesClassification->value(n_neighbourhood.getOrderedEdges()[3]) == 2
+	              && m_EdgesClassification->value(n_neighbourhood.getOrderedEdges()[5]) == 2 )
+	             || ( m_EdgesClassification->value(n_neighbourhood.getOrderedEdges()[1]) == 1
+	                 && m_EdgesClassification->value(n_neighbourhood.getOrderedEdges()[3]) == 1
+	                 && m_EdgesClassification->value(n_neighbourhood.getOrderedEdges()[5]) == 1
+	                 && m_EdgesClassification->value(n_neighbourhood.getOrderedEdges()[0]) == 2
+	                 && m_EdgesClassification->value(n_neighbourhood.getOrderedEdges()[2]) == 2
+	                 && m_EdgesClassification->value(n_neighbourhood.getOrderedEdges()[4]) == 2 ) ) )
+	{
+		classification = 5;
+	}
+	else if (n_neighbourhood.getOrderedEdges().size() == 6
+	         && compteur_corner == 2 && compteur_end==2 && compteur_reversal==0)
+	{
+		classification = 6;
+	}
+	else if (n_neighbourhood.getOrderedEdges().size() == 3
+	         && compteur_corner == 2 && compteur_end==0 && compteur_reversal==1)
+	{
+		classification = 7;
+	}
+	else if (n_neighbourhood.getOrderedEdges().size() == 6
+	         && compteur_corner == 0 && compteur_end==2 && compteur_reversal==1)
+	{
+		classification = 8;
+	}
+
+	return classification;
+}
+/*------------------------------------------------------------------------*/
 bool
 FrontEdgesNodesClassification_3D::isValidNodeForTemplate(TCellID n_id)
 {
@@ -395,6 +476,12 @@ FrontEdgesNodesClassification_3D::isThisPathValidForTemplates(Global_Feature_Edg
 	if (GFE.edges_id.size() < 3)	// To improve: if the number of edges is under 3, in some case, the algorithm can perform. (ex: if the 2 opposite nodes are corners). Need to list the valid cases.
 	{
 		isValid = false;
+	}
+	if (GFE.edges_id.size() < 3
+	    && singleNodeClassification(GFE.Start_n_id) == 1
+	    && singleNodeClassification(GFE.End_n_id) == 1)
+	{
+		isValid = true;
 	}
 
 	return isValid;
