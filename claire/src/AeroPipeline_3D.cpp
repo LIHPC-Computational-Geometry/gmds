@@ -774,6 +774,9 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 	m_linker_HG->setGeometry(m_manager);
 	m_linker_HG->setMesh(m_meshHex);
 
+	//------------------------------//
+	//	BLOCK CORNERS CLASSIFICATION //
+	//------------------------------//
 	for (auto n_id:m_meshHex->nodes())
 	{
 		std::vector<cad::GeomPoint*> points;
@@ -791,7 +794,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 
 		double min_dist(std::numeric_limits<double>::max());
 		int geom_dim = surfaces[0]->dim();
-		int geom_id = surfaces[0]->id();
+		int geom_id = 3;
 
 		// Check on the geometrical points first
 		for (auto point:points)
@@ -801,7 +804,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 			if ( (n.point()-p_proj).norm() < min_dist )
 			{
 				min_dist = (n.point()-p_proj).norm();
-				geom_dim = point->dim();
+				geom_dim = 1;
 				geom_id = point->id();
 			}
 		}
@@ -814,7 +817,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 			if ( (n.point()-p_proj).norm() < min_dist )
 			{
 				min_dist = (n.point()-p_proj).norm();
-				geom_dim = curve->dim();
+				geom_dim = 2;
 				geom_id = curve->id();
 			}
 		}
@@ -827,7 +830,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 			if ( (n.point()-p_proj).norm() < min_dist )
 			{
 				min_dist = (n.point()-p_proj).norm();
-				geom_dim = surface->dim();
+				geom_dim = 3;
 				geom_id = surface->id();
 			}
 		}
@@ -845,5 +848,101 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		}
 
 	}
+
+	//------------------------------//
+	//	 BLOCK EDGES CLASSIFICATION  //
+	//------------------------------//
+	for (auto e_id:m_meshHex->edges())
+	{
+		std::vector<Node> e_nodes = m_meshHex->get<Edge>(e_id).get<Node>();
+		int geom_id_n0 = m_linker_HG->getGeomId<Node>(e_nodes[0].id()) ;
+		int geom_id_n1 = m_linker_HG->getGeomId<Node>(e_nodes[1].id()) ;
+		int geom_dim_n0 = m_linker_HG->getGeomDim<Node>(e_nodes[0].id()) ;
+		int geom_dim_n1 = m_linker_HG->getGeomDim<Node>(e_nodes[1].id());
+
+		int geom_dim;
+		int geom_id;
+
+		if (geom_dim_n0 > geom_dim_n1)
+		{
+			geom_dim = geom_dim_n0;
+			geom_id = geom_id_n0;
+		}
+		else if (geom_dim_n1 > geom_dim_n0)
+		{
+			geom_dim = geom_dim_n1;
+			geom_id = geom_id_n1;
+		}
+		else if (geom_dim_n0 == geom_dim_n1
+		         && geom_id_n0 == geom_id_n1)
+		{
+			geom_dim = geom_dim_n0;
+			geom_id = geom_id_n0;
+		}
+		else if (geom_dim_n0 == geom_dim_n1
+		         && geom_dim_n1 == 1)	// Find the common curve between the two geometrical points
+		{
+			cad::GeomPoint* geom_p0 = m_manager->getPoint(geom_id_n0);
+			cad::GeomPoint* geom_p1 = m_manager->getPoint(geom_id_n1);
+			geom_id = m_manager->getCommonCurve(geom_p0, geom_p1 );
+			geom_dim = 2;
+		}
+
+		// Link the edge of the Blocking to the geometrical entity
+		if(geom_dim==2){
+			m_linker_HG->linkEdgeToCurve(e_id, geom_id);
+		}
+		else if(geom_dim==3){
+			m_linker_HG->linkEdgeToSurface(e_id, geom_id);
+		}
+
+	}
+
+	//------------------------------//
+	//	 BLOCK FACES CLASSIFICATION  //
+	//------------------------------//
+	for (auto f_id:m_meshHex->faces())
+	{
+		std::vector<Edge> f_edges = m_meshHex->get<Face>(f_id).get<Edge>();
+		int geom_id_e0 = m_linker_HG->getGeomId<Edge>(f_edges[0].id()) ;
+		int geom_id_e1 = m_linker_HG->getGeomId<Edge>(f_edges[1].id()) ;
+		int geom_id_e2 = m_linker_HG->getGeomId<Edge>(f_edges[2].id()) ;
+		int geom_id_e3 = m_linker_HG->getGeomId<Edge>(f_edges[3].id()) ;
+		int geom_dim_e0 = m_linker_HG->getGeomDim<Edge>(f_edges[0].id()) ;
+		int geom_dim_e1 = m_linker_HG->getGeomDim<Edge>(f_edges[1].id()) ;
+		int geom_dim_e2 = m_linker_HG->getGeomDim<Edge>(f_edges[2].id()) ;
+		int geom_dim_e3 = m_linker_HG->getGeomDim<Edge>(f_edges[3].id()) ;
+
+		int geom_dim(3);
+		int geom_id;
+
+		if (geom_dim_e0 == 3)
+		{
+			geom_id = geom_id_e0;
+		}
+		else if (geom_dim_e1 == 3)
+		{
+			geom_id = geom_id_e1;
+		}
+		else if (geom_dim_e2 == 3)
+		{
+			geom_id = geom_id_e2;
+		}
+		else if (geom_dim_e3 == 3)
+		{
+			geom_id = geom_id_e3;
+		}
+		else
+		{
+			cad::GeomCurve* curve_0 = m_manager->getCurve(geom_id_e0);
+			cad::GeomCurve* curve_1 = m_manager->getCurve(geom_id_e1);
+			geom_id = m_manager->getCommonSurface(curve_0, curve_1);
+		}
+
+		// Link the face to the surface
+		m_linker_HG->linkFaceToSurface(f_id, geom_id);
+
+	}
+
 }
 /*------------------------------------------------------------------------*/
