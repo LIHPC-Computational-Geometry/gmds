@@ -77,6 +77,8 @@ AeroPipeline_3D::execute(){
 
 	// Generate the blocking of the geometry surface.
 	GeometrySurfaceBlockingGeneration();
+	// Link the surface blocking to the geometry.
+	SurfaceBlockingClassification();
 
 	// Extrusion
 	std::cout << "-> Extrusion" << std::endl;
@@ -760,5 +762,88 @@ AeroPipeline_3D::PreTraitementMeshTet()
 	vtkWriter.setCellOptions(gmds::N|gmds::R);
 	vtkWriter.setDataOptions(gmds::N|gmds::R);
 	vtkWriter.write("AeroPipeline3D_Tetra_PreTraite.vtk");
+}
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_3D::SurfaceBlockingClassification()
+{
+	// Init the geometry manager and the linker
+	m_manager->initAndLinkFrom3DMesh(m_meshTet, m_linker_TG);
+
+	// Init the linker for the Blocking
+	m_linker_HG->setGeometry(m_manager);
+	m_linker_HG->setMesh(m_meshHex);
+
+	for (auto n_id:m_meshHex->nodes())
+	{
+		std::vector<cad::GeomPoint*> points;
+		m_manager->getPoints(points);
+
+		std::vector<cad::GeomCurve*> curves;
+		m_manager->getCurves(curves);
+
+		std::vector<cad::GeomSurface*> surfaces;
+		m_manager->getSurfaces(surfaces);
+
+		Node n = m_meshHex->get<Node>(n_id);
+		math::Point p = n.point();
+		math::Point p_proj = n.point();
+
+		double min_dist(std::numeric_limits<double>::max());
+		int geom_dim = surfaces[0]->dim();
+		int geom_id = surfaces[0]->id();
+
+		// Check on the geometrical points first
+		for (auto point:points)
+		{
+			p_proj = n.point();
+			point->project(p_proj);
+			if ( (n.point()-p_proj).norm() < min_dist )
+			{
+				min_dist = (n.point()-p_proj).norm();
+				geom_dim = point->dim();
+				geom_id = point->id();
+			}
+		}
+
+		// Check on the geometrical curves
+		for (auto curve:curves)
+		{
+			p_proj = n.point();
+			curve->project(p_proj);
+			if ( (n.point()-p_proj).norm() < min_dist )
+			{
+				min_dist = (n.point()-p_proj).norm();
+				geom_dim = curve->dim();
+				geom_id = curve->id();
+			}
+		}
+
+		// Check on the geometrical surfaces
+		for (auto surface:surfaces)
+		{
+			p_proj = n.point();
+			surface->project(p_proj);
+			if ( (n.point()-p_proj).norm() < min_dist )
+			{
+				min_dist = (n.point()-p_proj).norm();
+				geom_dim = surface->dim();
+				geom_id = surface->id();
+			}
+		}
+
+		// Link the node of the Blocking to the geometrical entity that
+		// minimize the distance
+		if(geom_dim == 1){
+			m_linker_HG->linkNodeToPoint(n_id, geom_id);
+		}
+		else if(geom_dim==2){
+			m_linker_HG->linkNodeToCurve(n_id, geom_id);
+		}
+		else if(geom_dim==3){
+			m_linker_HG->linkNodeToSurface(n_id, geom_id);
+		}
+
+	}
 }
 /*------------------------------------------------------------------------*/
