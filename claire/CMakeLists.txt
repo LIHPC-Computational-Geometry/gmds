@@ -47,6 +47,7 @@ set(GMDS_INC
 		inc/gmds/claire/FrontEdgesNodesClassification_3D.h
 		inc/gmds/claire/NodeNeighbourhoodOnFront_3D.h
 		inc/gmds/claire/MeshAlignment_2D.h
+		inc/gmds/claire/IntervalAssignment_3D.h
 		)
 set(GMDS_SRC
 		src/main.cpp
@@ -88,7 +89,8 @@ set(GMDS_SRC
 		src/AeroExtrusion_3D.cpp
 		src/FrontEdgesNodesClassification_3D.cpp
 		src/NodeNeighbourhoodOnFront_3D.cpp
-		src/MeshAlignment_2D.cpp)
+		src/MeshAlignment_2D.cpp
+		src/IntervalAssignment_3D.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
