@@ -9,6 +9,7 @@
 #include <gmds/claire/AeroExtrusion_3D.h>
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
+#include <gmds/claire/IntervalAssignment_3D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/io/IGMeshIOService.h>
@@ -88,6 +89,16 @@ AeroPipeline_3D::execute(){
 	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
+	// Interval Assignment
+	std::cout << "-> Interval Assignment" << std::endl;
+	t_start = clock();
+	IntervalAssignment_3D intAss(m_meshHex, m_params,
+	                                m_meshHex->newVariable<int,GMDS_EDGE>("GMDS_EdgeDiscretization"));
+	intAss.execute();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
+
 	// Write the final mesh.
 	EcritureMaillage();
 
@@ -132,6 +143,11 @@ AeroPipeline_3D::EcritureMaillage(){
 	vtkWriter.setCellOptions(gmds::N|gmds::R);
 	vtkWriter.setDataOptions(gmds::N|gmds::R);
 	vtkWriter.write(m_params.output_file);
+
+	gmds::VTKWriter vtkWriter_edges(&ioService);
+	vtkWriter_edges.setCellOptions(gmds::N|gmds::E);
+	vtkWriter_edges.setDataOptions(gmds::N|gmds::E);
+	vtkWriter_edges.write("EdgesDiscretization.vtk");
 
 	// Ecriture du maillage initial (tetra)
 	ioService = IGMeshIOService(m_meshTet);
