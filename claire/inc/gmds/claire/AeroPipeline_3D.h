@@ -43,9 +43,13 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_3D : public AbstractAeroPipeline {
 	 */
 	void GeometrySurfaceBlockingGeneration();
 	/*------------------------------------------------------------------------*/
-	/** \brief
+	/** \brief Split the tets with the 4 nodes on the wall into 3 different tets.
 	 */
 	void PreTraitementMeshTet();
+	/*------------------------------------------------------------------------*/
+	/** \brief  Classify the surface blocking on the geometry.
+	 */
+	void SurfaceBlockingClassification();
 	/*------------------------------------------------------------------------*/
 
  protected:
