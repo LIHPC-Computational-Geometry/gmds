@@ -247,8 +247,13 @@ class LIB_GMDS_CLAIRE_API Utils {
 		* \return
 	 */
 	static double minEdgeLenght(Mesh *Amesh);
-	/*-------------------------------------------------------------------*/
 
+	/*-------------------------------------------------------------------*/
+	/** @brief Remove all cells under the X axis
+	 	*
+	 	* \param[in] AMesh the mesh
+	 */
+	static void cutAxiBlocking2D(Mesh *Amesh);
 };
 /*----------------------------------------------------------------------------*/
 }  // namespace math

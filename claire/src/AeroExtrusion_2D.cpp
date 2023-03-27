@@ -72,6 +72,7 @@ std::map<TCellID, TCellID>
 		if(m_params_aero.axisymetry) {
 			if(node_axis->value(n_id) == 1){
 				node_axis->set(n_new.id(), 1);
+				n_new.setY(0);
 			}
 		}
 		map_optnexpoint[n_id] = n_new.id() ;

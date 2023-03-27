@@ -246,15 +246,6 @@ AeroPipeline_2D::execute(){
 	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
-	if(m_params.axisymetry) {
-		Variable<int> *axis = m_meshHex->getVariable<int, GMDS_NODE>("Axis_nodes");
-		for (auto n : m_meshHex->nodes()) {
-			Node node = m_meshHex->get<Node>(n);
-			if(axis->value(n) == 1)
-				node.setY(0);
-		}
-	}
-
 
 	std::cout<<"Nb Blocks "<<m_meshHex->getNbFaces()<<std::endl;
 
@@ -271,7 +262,15 @@ AeroPipeline_2D::execute(){
 	//AeroEllipticSmoothing_2D smooth2D(m_meshHex, m_meshHex->getVariable<int, GMDS_NODE>("GMDS_Couche_Id"), m_manager, m_linker_HG);
 	//smooth2D.execute();
 
-
+	if(m_params.axisymetry) {
+		Variable<int> *axis = m_meshHex->getVariable<int, GMDS_NODE>("Axis_nodes");
+		for (auto n : m_meshHex->nodes()) {
+			Node node = m_meshHex->get<Node>(n);
+			if(axis->value(n) == 1)
+				node.setY(0);
+		}
+		math::Utils::cutAxiBlocking2D(m_meshHex);
+	}
 
 	std::cout << "-> Conversion maillage en blocking" << std::endl;
 	t_start = clock();
@@ -772,12 +771,22 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 
 	Variable<TCellID>* var_new_id = m_meshHex->newVariable<TCellID,GMDS_NODE>("New_ID");
 	Variable<int>* var_couche = m_Blocking2D.newVariable<int, GMDS_NODE>("GMDS_Couche");
+	Variable<int>* axi;
+	Variable<int>* axiB;
+
+	if(m_params.axisymetry){
+		axi = m_meshHex->getVariable<int, GMDS_NODE>("Axis_nodes");
+		axiB = m_Blocking2D.newVariable<int, GMDS_NODE>("Axis_nodes");
+	}
 
 	for (auto n_id:m_meshHex->nodes()){
 		Node n = m_meshHex->get<Node>(n_id);
 		Node n_blocking = m_Blocking2D.newBlockCorner(n.point());
 		var_new_id->set(n_id, n_blocking.id());
 		var_couche->set(n_blocking.id(), m_couche_id->value(n_id));
+		if(m_params.axisymetry){
+			axiB->set(n_blocking.id(), axi->value(n_id));
+		}
 
 		UpdateLinker(m_linker_HG, n, m_linker_BG, n_blocking); // Init linker_BG
 	}
@@ -791,18 +800,10 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 		//B0.setNbDiscretizationJ(10);
 	}
 
-	gmds::IGMeshIOService ioService(&m_Blocking2D);
-	gmds::VTKWriter vtkWriter_Blocking(&ioService);
-	vtkWriter_Blocking.setCellOptions(gmds::N|gmds::F);
-	vtkWriter_Blocking.setDataOptions(gmds::N|gmds::F);
-	std::string dir(".");
-	vtkWriter_Blocking.write("AeroPipeline2D_Blocking.vtk");
-
 	IntervalAssignment_2D IntAss(&m_Blocking2D, m_params);
 	IntAss.execute();
 
 	m_Blocking2D.initializeGridPoints();	// Maillage des blocs par transfinies
-
 
 	// Add the id of the layer at all the nodes of the blocking
 	for (auto b:m_Blocking2D.allBlocks())
@@ -838,7 +839,6 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 	}
 
 	m_meshHex->deleteVariable(GMDS_NODE, "New_ID");
-
 
 	BlockingClassification();
 
@@ -1041,10 +1041,14 @@ AeroPipeline_2D::BlockingClassification(){
 		}
 	}
 
-
-
 	// Curved the block edges in the tangent direction of the wall
 	Variable<math::Vector3d>* var_vec_tangent_layer = m_Blocking2D.newVariable<math::Vector3d, GMDS_NODE>("GMDS_Vec_Tan_Layer");
+
+	Variable<int>* axi;
+	if(m_params.axisymetry){
+		axi = m_Blocking2D.getVariable<int, GMDS_NODE>("Axis_nodes");
+	}
+
 	for (auto n_id:m_Blocking2D.nodes())
 	{
 		int node_dim = m_Blocking2D.getBlockingDim(n_id);
@@ -1053,6 +1057,12 @@ AeroPipeline_2D::BlockingClassification(){
 			Node n = m_Blocking2D.get<Node>(n_id);
 			std::vector<Edge> block_edges = n.get<Edge>() ;
 			std::vector<Node> n_neighbor;
+			if(axi->value(n_id) == 1 && m_params.axisymetry){
+				math::Vector3d v;
+				v.setXYZ(0,1,0);
+				v.normalize();
+				var_vec_tangent_layer->set(n_id, v);
+			}
 			for (auto const &e:block_edges)
 			{
 				std::vector<Node> e_nodes = e.get<Node>();
@@ -1073,10 +1083,8 @@ AeroPipeline_2D::BlockingClassification(){
 				v.normalize();
 				var_vec_tangent_layer->set(n_id, v);
 			}
-
 		}
 	}
-
 
 	//Variable<int>* var_couche_id = m_Blocking2D.getVariable<int, GMDS_NODE>("GMDS_Couche");
 	for (auto e_id:m_Blocking2D.edges())
@@ -1121,7 +1129,6 @@ AeroPipeline_2D::BlockingClassification(){
 
 					int Nx = b.getNbDiscretizationI();
 					int Ny = b.getNbDiscretizationJ();
-
 
 					if (b.isEdgeOnI(e_id)) {
 						if (e_nodes[0].id() == corner_0.id() && e_nodes[1].id() == corner_1.id())
@@ -1185,21 +1192,13 @@ AeroPipeline_2D::BlockingClassification(){
 								b(Nx-1,j).setPoint(new_pos[Ny-1-j]);
 							}
 						}
-
 					}
-
-
-
 				}
 			}
 		}
-
 	}
 
 	m_Blocking2D.deleteVariable(GMDS_NODE, "GMDS_Vec_Tan_Layer");
-
-
-
 
 	// New mesh of the interior points of the blocks
 	for(auto B0:m_Blocking2D.allBlocks()) {
@@ -1225,9 +1224,6 @@ AeroPipeline_2D::BlockingClassification(){
 			}
 		}
 	}
-
-
-
 
 }
 /*------------------------------------------------------------------------*/
