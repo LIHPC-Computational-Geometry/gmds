@@ -212,8 +212,8 @@ GMDS_ADD_COMPONENT(
         elgmorphing
         GMDSelgmorphing
         "morphing the mesh"
-        ON
-        ON                                 # must be covered
+        OFF
+        OFF                                 # must be covered
 )
 
 GMDS_ADD_COMPONENT(
