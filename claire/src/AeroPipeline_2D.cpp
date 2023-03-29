@@ -1057,11 +1057,13 @@ AeroPipeline_2D::BlockingClassification(){
 			Node n = m_Blocking2D.get<Node>(n_id);
 			std::vector<Edge> block_edges = n.get<Edge>() ;
 			std::vector<Node> n_neighbor;
-			if(axi->value(n_id) == 1 && m_params.axisymetry){
-				math::Vector3d v;
-				v.setXYZ(0,1,0);
-				v.normalize();
-				var_vec_tangent_layer->set(n_id, v);
+			if(m_params.axisymetry){
+				if(axi->value(n_id) == 1) {
+					math::Vector3d v;
+					v.setXYZ(0, 1, 0);
+					v.normalize();
+					var_vec_tangent_layer->set(n_id, v);
+				}
 			}
 			for (auto const &e:block_edges)
 			{

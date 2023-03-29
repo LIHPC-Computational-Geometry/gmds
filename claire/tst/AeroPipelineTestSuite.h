@@ -31,7 +31,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 
 
 	blocking::CGNSWriter writer(algo_aero2D.getBlocking());
-	writer.write("FIREII_2D.cgns");
+	writer.write("Apollo_2D.cgns");
 
 	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero2D_result);
 }
