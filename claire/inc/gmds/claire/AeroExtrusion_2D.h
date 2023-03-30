@@ -12,6 +12,7 @@
 #include <gmds/claire/Front.h>
 #include <gmds/claire/Params.h>
 #include <gmds/claire/FastLocalize.h>
+#include <gmds/cadfac/FACManager.h>
 #include <string>
 #include <map>
 #include <fstream>
@@ -36,7 +37,7 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
          *  @param[in] A_VectorField vector field for extrusion
          *
 	 */
-	AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero& Aparams_aero, Variable<math::Vector3d>* A_VectorField);
+	AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero& Aparams_aero, Variable<math::Vector3d>* A_VectorField, cad::GeomMeshLinker* A_linker_BG);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -139,6 +140,8 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_2D
 	Variable<math::Vector3d>* m_VectorField;
 	/** Compteur d'hexa */
 	int m_iteration;
+	/** Linker of the hex mesh to the geometry */
+	cad::GeomMeshLinker* m_linker_BG;
 
 };
 /*----------------------------------------------------------------------------*/

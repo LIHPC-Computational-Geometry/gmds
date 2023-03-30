@@ -18,11 +18,12 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AeroExtrusion_2D::AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero& Aparams_aero, Variable<math::Vector3d>* A_VectorField) :
+AeroExtrusion_2D::AeroExtrusion_2D(Mesh *AMeshT, Mesh *AMeshQ, ParamsAero& Aparams_aero, Variable<math::Vector3d>* A_VectorField, cad::GeomMeshLinker* A_linker_BG) :
 	m_meshT(AMeshT),
   	m_meshQ(AMeshQ),
   	m_fl(m_meshT),
-  	m_iteration(1)
+  	m_iteration(1),
+  	m_linker_BG(A_linker_BG)
 {
 	m_params_aero = Aparams_aero;
 	m_VectorField = A_VectorField;
@@ -91,9 +92,6 @@ AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cibl
 	Front_Paroi.setFrontID(0);
 	Front_Paroi.initializeFromLayerId(m_meshQ, 0);
 
-	//Front First_Front;
-	//First_Front.setFrontID(Front_Paroi.getFrontID()+1);
-
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_Paroi, dist_cible, A_distance, A_vectors);
 
 	// Mise à jour de l'indice de couche
@@ -107,79 +105,6 @@ AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cibl
 	std::vector<TCellID> front_nodes = Front_Paroi.getNodes();
 	std::vector<TCellID> front_edges = Front_Paroi.getEdges();
 
-	/*
-	// Remarque : on pourait initialiser les arêtes e0 et e1 qui relient les deux couches dans cette boucle.
-	for (auto n_id:front_nodes){
-		// Ajout de la nouvelle arête du front dans l'objet concerné
-		First_Front.addNodeId(map_new_nodes[n_id]);
-		couche_id->set(map_new_nodes[n_id], First_Front.getFrontID());
-	}
-	 */
-
-	/*
-	for (auto e_id:front_edges){
-
-		Edge e = m_meshQ->get<Edge>(e_id);
-		std::vector<Node> nodes = e.get<Node>();
-
-		Node n0 = m_meshQ->get<Node>(map_new_nodes[nodes[0].id()]);
-		Node n1 = m_meshQ->get<Node>(map_new_nodes[nodes[1].id()]);
-
-
-		// On créé la face associée à l'arête
-		Face f = m_meshQ->newQuad(nodes[0], nodes[1], n1, n0) ; // F->N (x4)
-		nodes[0].add<Face>(f);	// N->F
-		nodes[1].add<Face>(f);	// N->F
-		n0.add<Face>(f);			// N->F
-		n1.add<Face>(f);			// N->F
-
-		// Création de l'arête sur le nouveau front
-		Edge e_opp = m_meshQ->newEdge(n0, n1);	// E->N (x2)
-		n0.add<Edge>(e_opp);										// N->E
-		n1.add<Edge>(e_opp);										// N->E
-
-		TCellID e0_id = math::Utils::CommonEdge(m_meshQ, nodes[0].id(), n0.id());
-		TCellID e1_id = math::Utils::CommonEdge(m_meshQ, nodes[1].id(), n1.id());
-		Edge e0, e1;
-		if ( e0_id == NullID ){
-			// Si l'arête n'existe pas, on la créé et on initialise les connectivités N->E
-			e0 = m_meshQ->newEdge(nodes[0].id(), n0.id());		// E->N (x2)
-			nodes[0].add<Edge>(e0);												// N->E
-			n0.add<Edge>(e0);														// N->E
-		}
-		else{
-			e0 = m_meshQ->get<Edge>(e0_id);
-		}
-
-		// Idem pour l'arête e1
-		if ( e1_id == NullID ){
-			e1 = m_meshQ->newEdge(nodes[1].id(), n1.id());		// E->N (x2)
-			nodes[1].add<Edge>(e1);												// N->E
-			n1.add<Edge>(e1);														// N->E
-		}
-		else{
-			e1 = m_meshQ->get<Edge>(e1_id);
-		}
-
-		// Connectivités F->E
-		f.add<Edge>(e);		// F->E
-		f.add<Edge>(e0);		// F->E
-		f.add<Edge>(e1);		// F->E
-		f.add<Edge>(e_opp);	// F->E
-
-		// Connectivités E->F
-		e.add<Face>(f);		// E->F
-		e0.add<Face>(f);		// E->F
-		e1.add<Face>(f);		// E->F
-		e_opp.add<Face>(f);	// E->F
-
-
-		// Ajout de la nouvelle arête du front dans l'objet concerné
-		First_Front.addEdgeId(e_opp.id());
-
-	}
-	 */
-
 	for (auto n_id:front_nodes){
 
 		std::vector<TCellID> neighbor_nodes_id = Front_Paroi.getNeighbors(n_id) ;
@@ -192,10 +117,11 @@ AeroExtrusion_2D::Compute1stLayer(Variable<double>* A_distance, double dist_cibl
 
 		double angle = (acos(v1.dot(v2))*180/M_PI) ;
 
-		if (abs(angle) < 40)
+		if (abs(angle) < 40
+		    && m_linker_BG->getGeomDim(n) == cad::GeomMeshLinker::LinkPoint)
 		{
 			std::cout << "Angle : " << angle << std::endl;
-			//Insertion_Double(Front_Paroi, n_id, A_distance, dist_cible, A_vectors);
+			Insertion_Double(Front_Paroi, n_id, A_distance, dist_cible, A_vectors);
 		}
 
 	}
