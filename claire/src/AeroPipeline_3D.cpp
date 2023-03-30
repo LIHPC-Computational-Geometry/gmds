@@ -79,6 +79,12 @@ AeroPipeline_3D::execute(){
 	GeometrySurfaceBlockingGeneration();
 	// Link the surface blocking to the geometry.
 	SurfaceBlockingClassification();
+	// Write the surface blocking to check the classification
+	gmds::IGMeshIOService ioService(m_meshHex);
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("Surface_3D_TEST_CLASSIFICATION.vtk");
 
 	// Extrusion
 	std::cout << "-> Extrusion" << std::endl;
@@ -336,12 +342,6 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 			m_couche_id->set(n_id, 0);
 		}
 
-		gmds::IGMeshIOService ioService(m_meshHex);
-		gmds::VTKWriter vtkWriter(&ioService);
-		vtkWriter.setCellOptions(gmds::N|gmds::F);
-		vtkWriter.setDataOptions(gmds::N|gmds::F);
-		vtkWriter.write("test.vtk");
-
 	}
 
 
@@ -438,12 +438,6 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 		for (auto n_id : m_meshHex->nodes()) {
 			m_couche_id->set(n_id, 0);
 		}
-
-		gmds::IGMeshIOService ioService(m_meshHex);
-		gmds::VTKWriter vtkWriter(&ioService);
-		vtkWriter.setCellOptions(gmds::N|gmds::F);
-		vtkWriter.setDataOptions(gmds::N|gmds::F);
-		vtkWriter.write("Surface_3D.vtk");
 
 	}
 
@@ -598,13 +592,14 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 			m_couche_id->set(n_id, 0);
 		}
 
-		gmds::IGMeshIOService ioService(m_meshHex);
-		gmds::VTKWriter vtkWriter(&ioService);
-		vtkWriter.setCellOptions(gmds::N|gmds::F);
-		vtkWriter.setDataOptions(gmds::N|gmds::F);
-		vtkWriter.write("Surface_3D.vtk");
-
 	}
+
+	// Write the surface block structure
+	gmds::IGMeshIOService ioService(m_meshHex);
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("Surface_3D.vtk");
 
 }
 /*------------------------------------------------------------------------*/
@@ -806,6 +801,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 				min_dist = (n.point()-p_proj).norm();
 				geom_dim = 1;
 				geom_id = point->id();
+				//std::cout << "point " << geom_id << ", distance " << min_dist << std::endl;
 			}
 		}
 
@@ -819,6 +815,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 				min_dist = (n.point()-p_proj).norm();
 				geom_dim = 2;
 				geom_id = curve->id();
+				//std::cout << "curve " << geom_id << ", distance " << min_dist << std::endl;
 			}
 		}
 
@@ -827,11 +824,13 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		{
 			p_proj = n.point();
 			surface->project(p_proj);
-			if ( (n.point()-p_proj).norm() < min_dist )
+			if ( (n.point()-p_proj).norm() < min_dist
+			    && min_dist > pow(10,-20))		// Need to add a tolerence here.
 			{
 				min_dist = (n.point()-p_proj).norm();
 				geom_dim = 3;
 				geom_id = surface->id();
+				//std::cout << "surface " << geom_id << ", distance " << min_dist << std::endl;
 			}
 		}
 
@@ -839,12 +838,15 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		// minimize the distance
 		if(geom_dim == 1){
 			m_linker_HG->linkNodeToPoint(n_id, geom_id);
+			//std::cout << "Node " << n_id << " classified on POINT " << geom_id << std::endl;
 		}
 		else if(geom_dim==2){
 			m_linker_HG->linkNodeToCurve(n_id, geom_id);
+			//std::cout << "Node " << n_id << " classified on CURVE " << geom_id << std::endl;
 		}
 		else if(geom_dim==3){
 			m_linker_HG->linkNodeToSurface(n_id, geom_id);
+			//std::cout << "Node " << n_id << " classified on SURFACE " << geom_id << std::endl;
 		}
 
 	}

@@ -238,9 +238,10 @@ AeroPipeline_2D::execute(){
 	vtkWriter_TetMesh.setDataOptions(gmds::N|gmds::F);
 	vtkWriter_TetMesh.write("AeroPipeline2D_TriMesh.vtk");
 
+
 	std::cout << "-> Extrusion" << std::endl;
 	t_start = clock();
-	AeroExtrusion_2D aero_extrusion(m_meshTet, m_meshHex, m_params, var_VectorField);
+	AeroExtrusion_2D aero_extrusion(m_meshTet, m_meshHex, m_params, var_VectorField, m_linker_HG);
 	aero_extrusion.execute();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
@@ -714,7 +715,6 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 	m_meshTet->freeMark<Node>(markPointNodes);
 
 	// Classification géométrique des arêtes de la paroi
-
 	for (auto e_id:m_meshHex->edges())
 	{
 		Edge e_loc = m_meshHex->get<Edge>(e_id);
@@ -727,11 +727,11 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 
 		if (dim_node_0 == 2)
 		{
-			m_linker_HG->linkNodeToCurve(e_id, geom_id_node_0);
+			m_linker_HG->linkEdgeToCurve(e_id, geom_id_node_0);
 		}
 		else if (dim_node_1 == 2)
 		{
-			m_linker_HG->linkNodeToCurve(e_id, geom_id_node_1);
+			m_linker_HG->linkEdgeToCurve(e_id, geom_id_node_1);
 		}
 		else if (dim_node_0 == 1 && dim_node_1 == 1)
 		{
@@ -743,12 +743,12 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 			if (PG_0_Curves[0]->id() == PG_1_Curves[0]->id()
 			    || PG_0_Curves[0]->id() == PG_1_Curves[1]->id() )
 			{
-				m_linker_HG->linkNodeToCurve(e_id, PG_0_Curves[0]->id());
+				m_linker_HG->linkEdgeToCurve(e_id, PG_0_Curves[0]->id());
 			}
 			else if (PG_0_Curves[1]->id() == PG_1_Curves[0]->id()
 			         || PG_0_Curves[1]->id() == PG_1_Curves[1]->id() )
 			{
-				m_linker_HG->linkNodeToCurve(e_id, PG_0_Curves[1]->id());
+				m_linker_HG->linkEdgeToCurve(e_id, PG_0_Curves[1]->id());
 			}
 
 		}
