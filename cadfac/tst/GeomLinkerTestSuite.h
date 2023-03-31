@@ -152,5 +152,7 @@ TEST(GeomLinkerTestSuite, linkUsingTypes){
 	 ASSERT_EQ(cad::GeomMeshLinker::LinkSurface, linker.getGeomDim<Face>(145));
 	 ASSERT_EQ(6, linker.getGeomId<Face>(90));
 	 ASSERT_EQ(1, linker.getGeomId<Face>(145));
+
+	 linker.writeVTKDebugMesh("toto_type_link_debug.vtk");
 }
 
