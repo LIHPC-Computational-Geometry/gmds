@@ -46,7 +46,7 @@ TEST(UtilsTestClass, Utils_Test1)
 	writer_geom.write("Utils_Test1.vtk");
 
 }
-
+/*----------------------------------------------------------------------------*/
 TEST(UtilsTestClass, Utils_Test2)
 {
 	// Test de la méthode math::Utils::CommonEdge
@@ -107,7 +107,7 @@ TEST(UtilsTestClass, Utils_Test2)
 	writer_geom.write("Utils_Test2.vtk");
 
 }
-
+/*----------------------------------------------------------------------------*/
 TEST(UtilsTestClass, Utils_Test3)
 {
 	// Test de la méthode math::Utils::MeshCleaner
@@ -155,7 +155,7 @@ TEST(UtilsTestClass, Utils_Test3)
 	writer_geom.write("Utils_Test3.vtk");
 
 }
-
+/*----------------------------------------------------------------------------*/
 TEST(ClaireTestClass, Utils_AdjacentNodes)
 {
 	// Test
@@ -209,7 +209,7 @@ TEST(ClaireTestClass, Utils_AdjacentNodes)
 	writer_geom.write("Utils_Test4.vtk");
 
 }
-
+/*----------------------------------------------------------------------------*/
 TEST(ClaireTestClass, Utils_BuildMesh2DFromBlocking2D)
 {
 	// Test
@@ -262,7 +262,7 @@ TEST(ClaireTestClass, Utils_BuildMesh2DFromBlocking2D)
 	writer_geom_mesh.write("Utils_BuildMesh2DFromBlocking2D_Mesh.vtk");
 
 }
-
+/*----------------------------------------------------------------------------*/
 TEST(ClaireTestClass, Utils_WeightedPointOnBranch)
 {
 	{
@@ -293,7 +293,7 @@ TEST(ClaireTestClass, Utils_WeightedPointOnBranch)
 	}
 
 }
-
+/*----------------------------------------------------------------------------*/
 TEST(ClaireTestClass, Utils_isInTriangle)
 {
 	{
@@ -306,7 +306,7 @@ TEST(ClaireTestClass, Utils_isInTriangle)
 	}
 
 }
-
+/*----------------------------------------------------------------------------*/
 TEST(ClaireTestClass, Utils_isInTetra)
 {
 	{
@@ -332,7 +332,7 @@ TEST(ClaireTestClass, Utils_isInTetra)
 	}
 
 }
-
+/*----------------------------------------------------------------------------*/
 TEST(ClaireTestClass, Utils_CreateQuadAndConnectivities)
 {
 	// Test
@@ -363,7 +363,7 @@ TEST(ClaireTestClass, Utils_CreateQuadAndConnectivities)
 	ASSERT_EQ((n3.get<Edge>()).size(), 3);
 
 }
-
+/*----------------------------------------------------------------------------*/
 TEST(ClaireTestClass, Utils_CreateHexaNConnectivities)
 {
 	// Test
@@ -422,7 +422,7 @@ TEST(ClaireTestClass, Utils_CreateHexaNConnectivities)
 	ASSERT_EQ((n8.get<Region>()).size(), 1);
 
 }
-
+/*----------------------------------------------------------------------------*/
 TEST(ClaireTestClass, Utils_minEdgeLenght)
 {
 	// Test
@@ -443,7 +443,7 @@ TEST(ClaireTestClass, Utils_minEdgeLenght)
 	ASSERT_FLOAT_EQ(1.0, math::Utils::minEdgeLenght(&m));
 
 }
-
+/*----------------------------------------------------------------------------*/
 TEST(ClaireTestClass, Utils_getFacesAdjToEdgeInHexa)
 {
 	// Test
@@ -482,4 +482,54 @@ TEST(ClaireTestClass, Utils_getFacesAdjToEdgeInHexa)
 
 	ASSERT_EQ(adj_faces.size(), 2);
 
+}
+/*----------------------------------------------------------------------------*/
+TEST(ClaireTestClass, Utils_cutMeshUnderXAxis)
+{
+	gmds::Mesh m(gmds::MeshModel(gmds::MeshModel(DIM2 | F | E | N | F2N | E2N |
+	                                             F2E | E2F | N2F | N2E )));
+
+	Node n0 = m.newNode({0,0,0});
+	Node n1 = m.newNode({1,0,0});
+	Node n2 = m.newNode({1,1,0});
+	Node n3 = m.newNode({0,1,0});
+
+	Node n4 = m.newNode({1,-1,0});
+	Node n5 = m.newNode({0,-1,0});
+
+	Node n6 = m.newNode({2,0,0});
+	Node n7 = m.newNode({2,1,0});
+
+	m.newQuad(n0,n1,n2,n3);
+	m.newQuad(n0,n1,n4,n5);
+	m.newQuad(n1,n6,n7,n2);
+
+	ASSERT_EQ(m.getNbNodes(), 8);
+	ASSERT_EQ(m.getNbFaces(), 3);
+
+	math::Utils::cutAxiBlocking2D(&m);
+
+	ASSERT_EQ(m.getNbNodes(), 6);
+	ASSERT_EQ(m.getNbFaces(), 2);
+}
+/*----------------------------------------------------------------------------*/
+TEST(ClaireTestClass, Utils_oppositeEdgeInFace)
+{
+	gmds::Mesh m(gmds::MeshModel(gmds::MeshModel(DIM2 | F | E | N | F2N | E2N |
+	                                             F2E | E2F | N2F | N2E )));
+
+	Node n0 = m.newNode({0,0,0});
+	Node n1 = m.newNode({1,0,0});
+	Node n2 = m.newNode({1,1,0});
+	Node n3 = m.newNode({0,1,0});
+
+	m.newQuad(n0,n1,n2,n3);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	Edge e_opp = math::Utils::oppositeEdgeInFace(&m,0,0);
+
+	ASSERT_EQ(e_opp.id(), 2);
 }

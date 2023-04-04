@@ -181,21 +181,22 @@ IntervalAssignment_2D::EdgeConstraint(TCellID e_id, int &N_ideal, bool &hardCons
 	    ^ (var_layer_id->value(e_nodes[1].id()) == 0))
 	{
 		bool inserted_edge(false);
-		std::vector<Node> f0_nodes = e_faces[0].get<Node>();
-		std::vector<Node> f1_nodes = e_faces[1].get<Node>();
-		if ( ( (var_layer_id->value(f0_nodes[0].id()) == 0)
-		    ^ (var_layer_id->value(f0_nodes[1].id()) == 0)
-		    ^ (var_layer_id->value(f0_nodes[2].id()) == 0)
-		    ^ (var_layer_id->value(f0_nodes[3].id()) == 0) )
-		    &&
-		    ( (var_layer_id->value(f1_nodes[0].id()) == 0)
-		     ^ (var_layer_id->value(f1_nodes[1].id()) == 0)
-		     ^ (var_layer_id->value(f1_nodes[2].id()) == 0)
-		     ^ (var_layer_id->value(f1_nodes[3].id()) == 0) ) )
-		{
-			inserted_edge = true;
+		if(e_faces.size() == 1 && m_params_aero.axisymetry){
+			//Case in 2D axi
+			std::vector<Node> f0_nodes = e_faces[0].get<Node>();
+			if (((var_layer_id->value(f0_nodes[0].id()) == 0) ^ (var_layer_id->value(f0_nodes[1].id()) == 0) ^ (var_layer_id->value(f0_nodes[2].id()) == 0)
+			     ^ (var_layer_id->value(f0_nodes[3].id()) == 0)))
+				inserted_edge = true;
+		}else {
+			std::vector<Node> f0_nodes = e_faces[0].get<Node>();
+			std::vector<Node> f1_nodes = e_faces[1].get<Node>();
+			if (((var_layer_id->value(f0_nodes[0].id()) == 0) ^ (var_layer_id->value(f0_nodes[1].id()) == 0) ^ (var_layer_id->value(f0_nodes[2].id()) == 0)
+			     ^ (var_layer_id->value(f0_nodes[3].id()) == 0))
+			    && ((var_layer_id->value(f1_nodes[0].id()) == 0) ^ (var_layer_id->value(f1_nodes[1].id()) == 0) ^ (var_layer_id->value(f1_nodes[2].id()) == 0)
+			        ^ (var_layer_id->value(f1_nodes[3].id()) == 0))) {
+				inserted_edge = true;
+			}
 		}
-
 		if (!inserted_edge) {
 			N_ideal = m_params_aero.nbrCellsInCL;
 			hardConstraint = true;

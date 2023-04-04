@@ -784,6 +784,43 @@ double Utils::minEdgeLenght(Mesh *Amesh){
 	return minLenght;
 }
 /*----------------------------------------------------------------------------*/
+void Utils::cutAxiBlocking2D(Mesh *Amesh){
+	std::vector<TCellID> faces2remove;
+	for(auto f : Amesh->faces()){
+		Face face = Amesh->get<Face>(f);
+
+		if(face.center().Y() < 0){
+			faces2remove.push_back(f);
+		}
+	}
+	for(auto f : faces2remove){
+		Amesh->deleteFace(f);
+	}
+
+	std::vector<TCellID> edges2remove;
+	for(auto e : Amesh->edges()){
+		Edge edge = Amesh->get<Edge>(e);
+
+		if(edge.center().Y() < 0){
+			edges2remove.push_back(e);
+		}
+	}
+	for(auto e : edges2remove){
+		Amesh->deleteEdge(e);
+	}
+	std::vector<TCellID> nodes2remove;
+	for(auto n : Amesh->nodes()){
+		Node node = Amesh->get<Node>(n);
+
+		if(node.Y() < 0){
+			nodes2remove.push_back(n);
+		}
+	}
+	for(auto n : nodes2remove){
+		Amesh->deleteNode(n);
+	}
+}
+/*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/
 }  // namespace gmds
