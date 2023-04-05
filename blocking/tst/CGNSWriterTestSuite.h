@@ -31,9 +31,10 @@ TEST(CGNSWriterTestSuite, test_monobloc){
 	m.initializeGridPoints();
 
 	gmds::blocking::CGNSWriter writer(&m);
-	writer.write("test_monobloc");
+	writer.write("test_monobloc","");
 
 }
+/*----------------------------------------------------------------------------*/
 TEST(CGNSWriterTestSuite, test_monobloc_2){
 
 	gmds::Blocking2D m;
@@ -64,7 +65,7 @@ TEST(CGNSWriterTestSuite, test_monobloc_2){
 	m.initializeGridPoints();
 
 	gmds::blocking::CGNSWriter writer(&m);
-	writer.write("test_monobloc");
+	writer.write("test_monobloc","");
 
 }
 /*----------------------------------------------------------------------------*/
@@ -89,7 +90,7 @@ TEST(CGNSWriterTestSuite, DISABLED_test_triangles){
 	writer1.write("test_monobloc_tri.vtk");
 
 	gmds::blocking::CGNSWriter writer(&m);
-	writer.write("test_monobloc_tri");
+	writer.write("test_monobloc_tri","");
 
 }
 /*----------------------------------------------------------------------------*/

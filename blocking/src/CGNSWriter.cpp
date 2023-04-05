@@ -19,11 +19,11 @@ using namespace blocking;
 #define TRI_3 CG_TRI_3
 /*----------------------------------------------------------------------------*/
 CGNSWriter::CGNSWriter(Blocking2D *ABlocking)
-			:m_blocks(ABlocking),m_mesh(nullptr)
+	:m_blocks(ABlocking),m_mesh(nullptr)
 {}
 /*----------------------------------------------------------------------------*/
 CGNSWriter::CGNSWriter(Mesh *AMesh)
-  :m_mesh(AMesh),m_blocks(nullptr)
+	:m_mesh(AMesh),m_blocks(nullptr)
 {}
 /*----------------------------------------------------------------------------*/
 CGNSWriter::~CGNSWriter()
@@ -42,7 +42,6 @@ void CGNSWriter::initialize(const std::string &AFileName){
 	}
 
 	char path[21];
-	strcpy(path,"/home/calderans/dev/");
 
 	cg_set_path(path);
 
@@ -139,7 +138,7 @@ void CGNSWriter::writeZones(){
 			char interface[33];
 			std::stringstream interface_ss;
 			interface_ss << "C" << std::setw(5) << std::setfill('0') << edge_id << " (F" << std::setw(5) << std::setfill('0') << b.id() << " & F" << std::setw(5)
-			             << std::setfill('0') << id << ")";
+							 << std::setfill('0') << id << ")";
 			std::string interface_s = interface_ss.str();
 			strcpy(interface, interface_s.c_str());
 			std::cout << "\t -> connection " << interface_s << std::endl;
@@ -222,67 +221,74 @@ void CGNSWriter::writeZones(){
 
 		try {
 			cgsize_t pts_bc[4];
-            Variable<int> *couche = m_blocks->getVariable<int, GMDS_NODE>("GMDS_Couche");
+			Variable<int> *couche = m_blocks->getVariable<int, GMDS_NODE>("GMDS_Couche");
 
-            int couche_max = 0;
-            for (auto n : m_blocks->nodes()) {
-                if (couche->value(n) > couche_max) couche_max = couche->value(n);
-            }
+			int couche_max = 0;
+			for (auto n : m_blocks->nodes()) {
+				if (couche->value(n) > couche_max) couche_max = couche->value(n);
+			}
 
-            // The next steps can be rewrited using a design pattern
-            //  -> maybe putting the BoundaryCondition writing in a separated class
+			// The next steps can be rewrited using a design pattern
+			//  -> maybe putting the BoundaryCondition writing in a separated class
 
-            Face b_face = m_blocks->get<Face>(b.id());
-            int i_e = 0;
-            for (auto const &e : b_face.get<Edge>()) {
-                int n0 = e.getIDs<Node>()[0];
-                int n1 = e.getIDs<Node>()[1];
+			Face b_face = m_blocks->get<Face>(b.id());
+			int i_e = 0;
+			for (auto const &e : b_face.get<Edge>()) {
+				int n0 = e.getIDs<Node>()[0];
+				int n1 = e.getIDs<Node>()[1];
 
-                // L'indice local de l'arête dans le bloc
-                switch (i_e) {
-                case 0:
-                    pts_bc[0] = 1;
-                    pts_bc[1] = 1;
-                    pts_bc[2] = discrI;
-                    pts_bc[3] = 1;
-                    break;
-                case 1:
-                    pts_bc[0] = discrI;
-                    pts_bc[1] = 1;
-                    pts_bc[2] = discrI;
-                    pts_bc[3] = discrJ;
-                    break;
-                case 2:
-                    pts_bc[0] = 1;
-                    pts_bc[1] = discrJ;
-                    pts_bc[2] = discrI;
-                    pts_bc[3] = discrJ;
-                    break;
-                case 3:
-                    pts_bc[0] = 1;
-                    pts_bc[1] = 1;
-                    pts_bc[2] = 1;
-                    pts_bc[3] = discrJ;
-                    break;
-                default: break;
-                }
+				// L'indice local de l'arête dans le bloc
+				switch (i_e) {
+				case 0:
+					pts_bc[0] = 1;
+					pts_bc[1] = 1;
+					pts_bc[2] = discrI;
+					pts_bc[3] = 1;
+					break;
+				case 1:
+					pts_bc[0] = discrI;
+					pts_bc[1] = 1;
+					pts_bc[2] = discrI;
+					pts_bc[3] = discrJ;
+					break;
+				case 2:
+					pts_bc[0] = 1;
+					pts_bc[1] = discrJ;
+					pts_bc[2] = discrI;
+					pts_bc[3] = discrJ;
+					break;
+				case 3:
+					pts_bc[0] = 1;
+					pts_bc[1] = 1;
+					pts_bc[2] = 1;
+					pts_bc[3] = discrJ;
+					break;
+				default: break;
+				}
 
-                std::string bcType_s = "ORFN";
-                if (couche->value(n0) == couche_max && couche->value(n1) == couche_max) {
-                    bcType_s = "FARFIELD";
-                }
-                else if (couche->value(n0) == 0 && couche->value(n1) == 0) {
-                    bcType_s = "PAROI";
-                }
+				std::string bcType_s;
+				if (couche->value(n0) == couche_max && couche->value(n1) == couche_max) {
+					bcType_s = "FARFIELD";
+				}
+				else if (couche->value(n0) == 0 && couche->value(n1) == 0) {
+					bcType_s = "PAROI";
+				}
+				else{
+					bcType_s = "ORFN";
+					Variable<int> *axi = m_blocks->getVariable<int, GMDS_NODE>("Axis_nodes");
+					if(axi->value(n0) == 1 && axi->value(n1) == 1) bcType_s = "SYMETRIE";
+				}
 
-                // Family name
-                char bc_type[32];
-                strcpy(bc_type, bcType_s.c_str());
-                writeBoundaryCondition(id_bc, pts_bc, b.id() + 1, bc_type, e.id());
+				// Family name
+				char bc_type[32];
+				strcpy(bc_type, bcType_s.c_str());
+				writeBoundaryCondition(id_bc, pts_bc, b.id() + 1, bc_type, e.id());
 
-                i_e++;
-            }
-        }catch (GMDSException &e){}
+				i_e++;
+			}
+		}catch (GMDSException &e){
+			std::cout<<"No CFD boundary condition found"<<std::endl;
+		}
 	}
 }
 /*----------------------------------------------------------------------------*/
@@ -298,15 +304,15 @@ void CGNSWriter::writeBoundaryCondition(int &num_bc, cgsize_t* pts, int id_zone,
 	strcpy(bc_name,bctype_s.c_str());
 
 	if(cg_boco_write(m_indexFile,m_indexBase,id_zone,bc_name,BCTypeUserDefined,PointRange,2,pts,&num_bc)
-	    != CG_OK) {
+		!= CG_OK) {
 		std::cout<<cg_get_error()<<std::endl;
 	}
 	if(cg_goto(m_indexFile,m_indexBase,"Zone_t", id_zone, "ZoneBC_t", 1, "BC_t", num_bc, "end")
-	    != CG_OK) {
+		!= CG_OK) {
 		std::cout<<cg_get_error()<<std::endl;
 	}
 	if(cg_famname_write(ABCtype)
-	    != CG_OK) {
+		!= CG_OK) {
 		std::cout<<cg_get_error()<<std::endl;
 	}
 }
@@ -334,9 +340,9 @@ void CGNSWriter::writeTri(){
 	double z_coords[nbNodes];
 
 	for(int i = 0; i<nbNodes; i++){
-			x_coords[i] = m_mesh->get<Node>(i).X();
-			y_coords[i] = m_mesh->get<Node>(i).Y();
-			z_coords[i] = 0;
+		x_coords[i] = m_mesh->get<Node>(i).X();
+		y_coords[i] = m_mesh->get<Node>(i).Y();
+		z_coords[i] = 0;
 	}
 
 
@@ -375,22 +381,22 @@ void CGNSWriter::writeTri(){
 	}
 }
 /*----------------------------------------------------------------------------*/
-void CGNSWriter::finalize() const{
+void CGNSWriter::finalize(const std::string &AWorkingDir) const{
 
 	std::cout<<"========================================================="<<std::endl;
 	std::cout<<"Finalize CGNS Writer"<<std::endl;
 	std::cout<<"========================================================="<<std::endl;
 
-	char path[32];
-	strcpy(path,"/home/dev/aeropipeline.cgns");
+	char path[AWorkingDir.length()+1];
+	strcpy(path,AWorkingDir.c_str());
 
 	cg_save_as(m_indexFile,path,CG_FILE_HDF5,0);
 
 	cg_close(m_indexFile);
 }
 /*----------------------------------------------------------------------------*/
-void CGNSWriter::write(const std::string &AFileName){
+void CGNSWriter::write(const std::string &AFileName, const std::string &AWorkingDir){
 	initialize(AFileName);
 	writeZones();
-	finalize();
+	finalize(AWorkingDir);
 }

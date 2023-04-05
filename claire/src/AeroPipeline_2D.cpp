@@ -570,11 +570,9 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 	Node n0_quad = m_meshHex->newNode(n0_tri.point()); // Premier noeud du nouveau maillage
 
 	if(m_params.axisymetry) {
-		if (n0_tri.Y() * m_meshTet->get<Node>(bnd_nodes_id_ordered[bnd_nodes_id_ordered.size() - 1]).Y() < 0) {
-			if (n0_quad.Y() != 0) {
-				n0_quad.setY(0);
-				node_axis->set(n0_quad.id(), 1);
-			}
+		if ((n0_tri.Y() * m_meshTet->get<Node>(bnd_nodes_id_ordered[bnd_nodes_id_ordered.size() - 1]).Y() < 0) || n0_tri.Y() == 0) {
+			n0_quad.setY(0);
+			node_axis->set(n0_quad.id(), 1);
 		}
 	}
 

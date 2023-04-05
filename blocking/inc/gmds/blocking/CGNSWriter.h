@@ -32,7 +32,7 @@ class LIB_GMDS_BLOCKING_API CGNSWriter
 	/** \brief Destructor. */
 	virtual ~CGNSWriter();
 
-	void write(const std::string &AFileName);
+	void write(const std::string &AFileName, const std::string &AWorkingDir);
 
 	void writeBoundaryCondition(int &id_bc, cgsize_t *pts, int id_zone, char ABCtype[32], int AEdgeID) const;
 
@@ -43,7 +43,7 @@ class LIB_GMDS_BLOCKING_API CGNSWriter
 
 	void writeTri();
 
-	void finalize() const;
+	void finalize(const std::string &AWorkingDir) const;
 
 	Blocking2D *m_blocks;
 	Mesh *m_mesh;
