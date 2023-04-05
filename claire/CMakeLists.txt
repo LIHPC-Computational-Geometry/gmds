@@ -122,6 +122,12 @@ target_include_directories(${GMDS_LIB} PUBLIC
 		)
 set_target_properties(${GMDS_LIB} PROPERTIES PUBLIC_HEADER "${GMDS_INC}")
 
+install(TARGETS ${GMDS_LIB}
+		EXPORT GMDS_SUITE
+		PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${GMDS_LIB_PREFIX}
+		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 #==============================================================================
 if(WITH_TEST)
@@ -131,9 +137,10 @@ endif(WITH_TEST)
 #==============================================================================
 # EXECUTABLE
 #==============================================================================
-add_executable(Claire src/main.cpp)
-target_link_libraries(Claire PRIVATE ${GMDS_LIB})
-target_compile_features(Claire PUBLIC cxx_std_14)
+add_executable(Aero src/main.cpp)
+target_link_libraries(Aero PRIVATE ${GMDS_LIB})
+target_compile_features(Aero PUBLIC cxx_std_14)
+install(TARGETS Aero)
 
 add_executable(Claire_dev src/main_dev.cpp)
 target_link_libraries(Claire_dev PRIVATE ${GMDS_LIB})
