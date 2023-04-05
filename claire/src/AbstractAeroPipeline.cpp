@@ -22,6 +22,7 @@ AbstractAeroPipeline::AbstractAeroPipeline(std::string &Aparams, std::string &Aw
 
 	Parameters p;
 	p.add("section_Dimension","dim", Parameters::INT_P);
+	p.add("section_Dimension","axisymetry", Parameters::BOOL_P);
 
 	p.add("section_INPUT_files","input_mesh",  Parameters::STRING_P);
 	p.add("section_INPUT_files","input_surface_mesh",  Parameters::STRING_P);
