@@ -17,13 +17,13 @@ using namespace gmds;
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/*                       CAS TEST 2D CLASSE LevelSet                          */
+/*                     CAS TEST 2D CLASSE AeroPipeline                        */
 /*----------------------------------------------------------------------------*/
 
 TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 {
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string input_file=dir+"/Aero/2D/param_NACA_2D.ini";
+	std::string input_file=dir+"/Aero/2D/param_Apollo_2D.ini";
 
 	// Mesh Generation
 	AeroPipeline_2D algo_aero2D(input_file, dir);
@@ -38,7 +38,7 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 }
 */
 /*----------------------------------------------------------------------------*/
-/*                       CAS TEST 3D CLASSE LevelSet                          */
+/*                    CAS TEST 3D CLASSE AeroPipeline                         */
 /*----------------------------------------------------------------------------*/
 
 TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
@@ -57,7 +57,7 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 
 
 /*----------------------------------------------------------------------------*/
-/*              CAS TEST 3D CLASSE LevelSet avec Exceptions                   */
+/*            CAS TEST 3D CLASSE AeroPipeline avec Exceptions                 */
 /*----------------------------------------------------------------------------*/
 
 /*

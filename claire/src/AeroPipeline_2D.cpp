@@ -501,13 +501,11 @@ AeroPipeline_2D::EcritureMaillage(){
 
 	std::cout << "			1. Ecriture Blocking en .vtk ..." << std::endl;
 	gmds::IGMeshIOService ioService(&m_Blocking2D);
-	/*
 	gmds::VTKWriter vtkWriter_Blocking(&ioService);
 	vtkWriter_Blocking.setCellOptions(gmds::N|gmds::F);
 	vtkWriter_Blocking.setDataOptions(gmds::N|gmds::F);
 	std::string dir(".");
 	vtkWriter_Blocking.write("AeroPipeline2D_Blocking.vtk");
-	 */
 
 	std::cout << "			2. Ecriture Maillage Quad en .vtk ..." << std::endl;
 	ioService = IGMeshIOService(m_meshHex);
