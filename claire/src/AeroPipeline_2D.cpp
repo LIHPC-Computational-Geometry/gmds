@@ -328,7 +328,6 @@ AeroPipeline_2D::execute(){
 	std::cout << " " << std::endl;
 
 
-
 	std::cout << "-> Beta Refinement on the first layer" << std::endl;
 	t_start = clock();
 	RefinementBetaBlocking block_refinement(&m_Blocking2D, m_params);
@@ -336,6 +335,13 @@ AeroPipeline_2D::execute(){
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
+
+	gmds::IGMeshIOService ioService_TEST(&m_Blocking2D);
+	gmds::VTKWriter vtkWriter_TEST(&ioService_TEST);
+	vtkWriter_TEST.setCellOptions(gmds::N|gmds::F);
+	vtkWriter_TEST.setDataOptions(gmds::N|gmds::F);
+	std::string dir(".");
+	vtkWriter_TEST.write("AeroPipeline2D_TEST.vtk");
 
 	// Compute the quality criterions of the blocking
 	math::Utils::AnalyseQuadMeshQuality(&m_Blocking2D);
@@ -495,11 +501,13 @@ AeroPipeline_2D::EcritureMaillage(){
 
 	std::cout << "			1. Ecriture Blocking en .vtk ..." << std::endl;
 	gmds::IGMeshIOService ioService(&m_Blocking2D);
+	/*
 	gmds::VTKWriter vtkWriter_Blocking(&ioService);
 	vtkWriter_Blocking.setCellOptions(gmds::N|gmds::F);
 	vtkWriter_Blocking.setDataOptions(gmds::N|gmds::F);
 	std::string dir(".");
 	vtkWriter_Blocking.write("AeroPipeline2D_Blocking.vtk");
+	 */
 
 	std::cout << "			2. Ecriture Maillage Quad en .vtk ..." << std::endl;
 	ioService = IGMeshIOService(m_meshHex);
