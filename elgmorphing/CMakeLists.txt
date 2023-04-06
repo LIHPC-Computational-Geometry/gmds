@@ -41,6 +41,12 @@ target_include_directories(${GMDS_LIB} PUBLIC
 		)
 set_target_properties(${GMDS_LIB} PROPERTIES PUBLIC_HEADER "${GMDS_INC}")
 
+install(TARGETS ${GMDS_LIB}
+		EXPORT GMDS_SUITE
+		PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${GMDS_LIB_PREFIX}
+		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 #==============================================================================
 if(WITH_TEST)
@@ -53,3 +59,4 @@ endif(WITH_TEST)
 add_executable(elgmorphing src/main.cpp)
 target_link_libraries(elgmorphing PRIVATE ${GMDS_LIB})
 target_compile_features(elgmorphing PUBLIC cxx_std_14)
+install(TARGETS elgmorphing)
