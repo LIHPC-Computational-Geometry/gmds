@@ -23,7 +23,7 @@ void MdlReader::read(const std::string &AFileName){
 	//===============================================================
 	// First, we check if we can read the file
 	m_stream= new std::ifstream(AFileName.c_str(),std::ios::in);
-	if(!m_stream){
+	if(!m_stream->is_open()){
 		std::string mess ="Impossible to read file "+AFileName;
 		throw GMDSException(mess);
 	}
@@ -70,7 +70,8 @@ bool MdlReader::moveStreamOntoSupport(std::string &AString){
 	bool found = false;
 	std::string line;
 	while (!found && std::getline(*m_stream,line))  {
-		found = std::regex_match(line, std::regex(m_name2find+"(.*)(Support)"));
+		// some of our input files contain a whitespace at the end of the line after Support
+		found = std::regex_match(line, std::regex(m_name2find+"(.*)(Support)([' ']?)"));
 	}
 
 	AString = line.substr(0, line.find_first_of("_ "));
