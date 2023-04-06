@@ -4371,18 +4371,24 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, Octree* octree) 
   Eigen::Matrix3d m = Eigen::MatrixXd::Identity(3, 3);
   std::vector<double> borders = octree->getBorderOctree();
   double x_min = borders[0], x_max = borders[1];
+  double y_min = borders[2], y_max = borders[3];
   double tx = (pt.X() - x_min ) / (x_max - x_min);
+  double ty = (pt.Y() - y_min ) / (y_max - y_min);
+
+  //NON CONSTANT ISOTROPE METRIC
+
+  ty = (pt.Y() >= 0.5) ? pt.Y() - 0.5 : -(pt.Y() - 0.5);
+  double metricX = 0.09 / 0.5 * ty + 0.01;
+  double metricY = 0.09 / 0.5 * ty + 0.01;
+  double metricZ = 0.09 / 0.5 * ty + 0.01;
+
   //CONSTANT ISOTROPE METRIC
-  /*double metricX = 0.05*(1.0 - tx) + 0.1*tx;
-  double metricY = 0.05*(1.0 - tx) + 0.1*tx;
-  double metricZ = 0.05*(1.0 - tx) + 0.1*tx;*/
-  //CONSTANT ISOTROPE METRIC
-  /*double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();*/
-  double metricX = 4.0;
-  double metricY = 4.0;
-  double metricZ = 4.0;
+  /*double metricX = 0.05*(1.0 - ty) + 0.1*ty;
+  double metricY = 0.05*(1.0 - ty) + 0.1*ty;
+  double metricZ = 0.05*(1.0 - ty) + 0.1*ty;*/
+  /*double metricX = 0.1;
+  double metricY = 0.1;
+  double metricZ = 0.1;*/
 
   m(0,0) = 1.0 / (metricX*metricX);
   m(1,1) = 1.0 / (metricY*metricY);
@@ -4408,18 +4414,21 @@ void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
   //mesh 's octree information
   std::vector<double> borders = octree->getBorderOctree();
   double x_min = borders[0], x_max = borders[1];
+  double y_min = borders[2], y_max = borders[3];
   double tx = (pt.X() - x_min ) / (x_max - x_min);
-  //CONSTANT ISOTROPE METRIC
-  (*metric)[node] =  Eigen::MatrixXd::Identity(3, 3);
-  /*double metricX = 0.05*(1.0 - tx) + 0.1*tx;
-  double metricY = 0.05*(1.0 - tx) + 0.1*tx;
-  double metricZ = 0.05*(1.0 - tx) + 0.1*tx;*/
-  /*double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();*/
-  double metricX = 4.0;
-  double metricY = 4.0;
-  double metricZ = 4.0;
+  double ty = (pt.Y() - y_min ) / (y_max - y_min);
+
+  //NON CONSTANT ISOTROPE METRIC
+  ty = (pt.Y() >= 0.5) ? pt.Y() - 0.5 : -(pt.Y() - 0.5);
+  double metricX = 0.09 / 0.5 * ty + 0.01;
+  double metricY = 0.09 / 0.5 * ty + 0.01;
+  double metricZ = 0.09 / 0.5 * ty + 0.01;
+  /*double metricX = 0.05*(1.0 - ty) + 0.1*ty;
+  double metricY = 0.05*(1.0 - ty) + 0.1*ty;
+  double metricZ = 0.05*(1.0 - ty) + 0.1*ty;*/
+  /*double metricX = 0.1;
+  double metricY = 0.1;
+  double metricZ = 0.1;*/
 
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
   (*metric)[node](1,1) = 1.0 / (metricY*metricY);

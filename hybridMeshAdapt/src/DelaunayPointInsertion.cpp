@@ -13,9 +13,9 @@ using namespace math;
 /******************************************************************/
 DelaunayPointInsertion::DelaunayPointInsertion(SimplexMesh* simplexMesh, const simplicesNode::SimplicesNode& simpliceNode, const CriterionRAIS& criterion,
                                               std::vector<TSimplexID>& initialCavity, bool& status, const gmds::BitVector& markedNodes,std::vector<TSimplexID>& deletedSimplex,
-                                              const std::multimap<TInt, TInt>& facesAlreadyBuilt, std::vector<TSimplexID> markedSimplex)
+                                              const std::multimap<TInt, TInt>& facesAlreadyBuilt, std::vector<TSimplexID> markedSimplex, bool UseDelaunay)
 {
-  if(simplexMesh != nullptr)
+  if(simplexMesh != nullptr && UseDelaunay)
   {
     /*Si simpliceNode n'est pas a linterrieur de simplexMeshon ne fait rien*/
     std::vector<TSimplexID> initCavity;
@@ -84,6 +84,10 @@ DelaunayPointInsertion::DelaunayPointInsertion(SimplexMesh* simplexMesh, const s
       }
       PointInsertion pi(simplexMesh, simpliceNode, criterion, status, cavity, markedNodes, deletedSimplex, facesAlreadyBuilt, markedSimplex/*, cavReduction*/);
     }
+  }
+  else if(simplexMesh != nullptr && !UseDelaunay)
+  {
+    PointInsertion pi(simplexMesh, simpliceNode, criterion, status, initialCavity, markedNodes, deletedSimplex, facesAlreadyBuilt, markedSimplex/*, cavReduction*/);
   }
   else
   {
@@ -180,6 +184,7 @@ bool DelaunayPointInsertion::isNodeInCircumSphere(SimplexMesh* simplexMesh, cons
         Metric<Eigen::Matrix3d> metric0 =  Metric<Eigen::Matrix3d>(m0);
         const math::Vector3d O = math::Vector3d({Ox, Oy, Oz});
         double dist = metric0.metricDist(vec(node.getCoords()), O, metric0);
+        std::cout << "dist -> " << dist << std::endl;
         double alpha = dist / metric0.metricDist(vec(S0.getCoords()), O, metric0);
         flag = (alpha <= 1.0)? true : false;
     }

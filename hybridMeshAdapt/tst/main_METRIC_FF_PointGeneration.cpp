@@ -57,7 +57,6 @@ int main(int argc, char* argv[])
 
     Octree oc(&simplexMesh, 50);
     simplexMesh.setOctree(&oc);
-    //Variable<int>* BND_METRIC = simplexMesh.getVariable<Eigen::Matrix3d,SimplicesNode>("metric");
 
     //==================================================================
     // MODIFICATION OF THE INPUT MESH'S METRIC

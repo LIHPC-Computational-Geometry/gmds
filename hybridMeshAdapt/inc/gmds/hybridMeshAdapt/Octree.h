@@ -32,7 +32,8 @@ namespace gmds
              const unsigned int numbersMaxSimplices);
 
       Octree(SimplexMesh* simplexMesh,
-             const unsigned int numbersMaxSimplices);
+             const unsigned int numbersMaxSimplices,
+             std::string strName = "Octree");
 
       Octree(SimplexMesh* simplexMesh,
               unsigned int subdivision,

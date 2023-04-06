@@ -13,6 +13,8 @@
 #include <gmds/hybridMeshAdapt/ISimplexMeshIOService.h>
 #include "gmds/hybridMeshAdapt/PointInsertion.h"
 #include "gmds/hybridMeshAdapt/Octree.h"
+#include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
 /*****************************************************************************/
 namespace gmds{
   namespace hybrid{
@@ -36,6 +38,16 @@ namespace gmds{
         ~MetricFFPointgeneration();
 
         std::map<unsigned int, std::vector<TInt>> buildSortedEdges() const;
+
+        std::vector<TInt> findBoundedNode(const double t, const std::vector<TInt>& edgeNodes) const;
+
+        Eigen::VectorXd findCubicInterpolation(const double t, const std::vector<TInt>& edgeNodes, std::vector<int>& subEdgeIdx) const;
+
+        double curvature(const double t, const std::vector<TInt>& edgeNodes) const;
+
+        Eigen::Matrix3d computeIntersectionMetric(const Eigen::Matrix3d& m1, const Eigen::Matrix3d& m2) const;
+
+        Eigen::VectorXd interpolateCubicCurve(double global_t, unsigned int edgeId);
 
         std::vector<std::vector<double>> buildParamEdgeU(const std::map<unsigned int, std::vector<TInt>>& sortedEdge, std::vector<double> & length_edges) const;
 

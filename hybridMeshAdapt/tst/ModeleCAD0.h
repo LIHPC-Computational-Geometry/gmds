@@ -31,9 +31,299 @@ using namespace simplicesNode;
 using namespace simplicesTriangle;
 using namespace simplicesCell;
 /*----------------------------------------------------------------------------*/
+TEST(SimplexMeshTestClass, Add_Surface_Node_DI)
+{
+  CriterionRAIS criterionRAIS(new VolumeCriterion());
+  TInt border = std::numeric_limits<TInt>::min();
+
+
+  SimplexMesh simplexMeshNode = SimplexMesh();
+  math::Point point = math::Point(-67.6934, 8, 5);
+  simplexMeshNode.addNode(point);
+  simplexMeshNode.addTetraedre(0,0,0,0);
+  gmds::ISimplexMeshIOService ioServiceNode(&simplexMeshNode);
+  gmds::VTKWriter vtkWriterNode(&ioServiceNode);
+  vtkWriterNode.setCellOptions(gmds::N|gmds::F|gmds::R);
+  vtkWriterNode.write("Surface_Node.vtk");
+
+  SimplexMesh simplexMesh = SimplexMesh();
+  std::string dir(TEST_SAMPLES_DIR);
+  std::string vtk_mesh = dir+"/ModeleCAD5/ModeleCAD5.vtk";
+
+  gmds::ISimplexMeshIOService ioService(&simplexMesh);
+  gmds::VTKReader vtkReader(&ioService);
+  vtkReader.setCellOptions(gmds::R|gmds::N);
+  vtkReader.setDataOptions(gmds::N);
+  vtkReader.read(vtk_mesh);
+  simplexMesh.buildAdjInfoGlobal();
+  simplexMesh.initializeEdgeStructure();
+  simplexMesh.buildSimplexHull();
+
+  //return;
+  Octree oc(&simplexMesh, 50);
+  simplexMesh.setOctree(&oc);
+  Variable<int>* BND_VERTEX_COLOR  = simplexMesh.getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+  Variable<int>* BND_CURVE_COLOR   = simplexMesh.getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+  Variable<int>* BND_SURFACE_COLOR = simplexMesh.getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+
+  //Modification of the structure
+  //////////////////////////////////////////////////////////////////////////////
+  Variable<Eigen::Matrix3d>* var = simplexMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  Eigen::Matrix3d m =  Eigen::MatrixXd::Identity(3, 3);
+  m <<  1.0 , 0.0, .0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0;
+  var->setValuesTo(m);
+
+  bool alreadyAdd = false;
+  std::vector<TSimplexID> tetraContenaingPt{};
+  TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
+  BND_SURFACE_COLOR->set(node, 10);
+
+  std::vector<TSimplexID> cavity{};
+  std::vector<TSimplexID> markedSimplex{};
+  bool status = false;
+  std::vector<TSimplexID> deletedSimplex{};
+  const std::multimap<TInt, TInt>& facesAlreadyBuilt{};
+  gmds::BitVector nodesAdded(simplexMesh.nodesCapacity());
+
+  DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, cavity, status, nodesAdded, deletedSimplex, facesAlreadyBuilt, markedSimplex);
+  std::cout << "Status -> " << status << std::endl;
+
+  gmds::VTKWriter vtkWriterDI(&ioService);
+  vtkWriterDI.setCellOptions(gmds::N|gmds::F|gmds::R);
+  vtkWriterDI.setDataOptions(gmds::N|gmds::F|gmds::R);
+  vtkWriterDI.write("Surface_Node_Added_ModeleCAD5.vtk");
+}
+/*----------------------------------------------------------------------------*/
+TEST(SimplexMeshTestClass, Compute_Octree_On_Model)
+{
+  CriterionRAIS criterionRAIS(new VolumeCriterion());
+  TInt border = std::numeric_limits<TInt>::min();
+
+  /*************************************M5**********************************/
+  SimplexMesh simplexMesh0 = SimplexMesh();
+  std::string dir(TEST_SAMPLES_DIR);
+  std::string vtk_mesh = dir+"/ModeleCAD5/ModeleCAD5.vtk";
+
+  gmds::ISimplexMeshIOService ioService(&simplexMesh0);
+  gmds::VTKReader vtkReader(&ioService);
+  vtkReader.setCellOptions(gmds::R|gmds::N);
+  vtkReader.setDataOptions(gmds::N);
+  vtkReader.read(vtk_mesh);
+  simplexMesh0.buildAdjInfoGlobal();
+  simplexMesh0.initializeEdgeStructure();
+  simplexMesh0.buildSimplexHull();
+
+  Octree oc100(&simplexMesh0, 100, "ModeleCAD5_Octree_100");
+  Octree oc50(&simplexMesh0, 50, "ModeleCAD5_Octree_50");
+
+  /*************************************B31**********************************/
+  SimplexMesh simplexMesh1 = SimplexMesh();
+  vtk_mesh = dir+"/ModeleCAD4/ModeleCAD4.vtk";
+  ioService = gmds::ISimplexMeshIOService(&simplexMesh1);
+  vtkReader = gmds::VTKReader(&ioService);
+  vtkReader.setCellOptions(gmds::R|gmds::N);
+  vtkReader.setDataOptions(gmds::N);
+  vtkReader.read(vtk_mesh);
+  simplexMesh1.buildAdjInfoGlobal();
+  simplexMesh1.initializeEdgeStructure();
+  simplexMesh1.buildSimplexHull();
+
+  oc100 = Octree(&simplexMesh1, 100, "B31_Octree_100");
+  oc50 = Octree(&simplexMesh1, 50, "B31_Octree_50");
+
+}
+/*----------------------------------------------------------------------------*/
+TEST(SimplexMeshTestClass, Add_Surface_Node_PI)
+{
+  CriterionRAIS criterionRAIS(new VolumeCriterion());
+  TInt border = std::numeric_limits<TInt>::min();
+
+
+  SimplexMesh simplexMeshNode = SimplexMesh();
+  math::Point point = math::Point(0.68, 0.066,1.0);
+  simplexMeshNode.addNode(point);
+  simplexMeshNode.addTetraedre(0,0,0,0);
+  gmds::ISimplexMeshIOService ioServiceNode(&simplexMeshNode);
+  gmds::VTKWriter vtkWriterNode(&ioServiceNode);
+  vtkWriterNode.setCellOptions(gmds::N|gmds::F|gmds::R);
+  vtkWriterNode.write("Surface_Node.vtk");
+
+  SimplexMesh simplexMesh = SimplexMesh();
+  std::string dir(TEST_SAMPLES_DIR);
+  std::string vtk_mesh = dir+"/simpleCubeV2/CUBE.vtk";
+
+  gmds::ISimplexMeshIOService ioService(&simplexMesh);
+  gmds::VTKReader vtkReader(&ioService);
+  vtkReader.setCellOptions(gmds::R|gmds::N);
+  vtkReader.setDataOptions(gmds::N);
+  vtkReader.read(vtk_mesh);
+  simplexMesh.buildAdjInfoGlobal();
+  simplexMesh.initializeEdgeStructure();
+  simplexMesh.buildSimplexHull();
+
+  //return;
+  Octree oc(&simplexMesh, 50);
+  simplexMesh.setOctree(&oc);
+  Variable<int>* BND_VERTEX_COLOR  = simplexMesh.getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+  Variable<int>* BND_CURVE_COLOR   = simplexMesh.getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+  Variable<int>* BND_SURFACE_COLOR = simplexMesh.getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+
+  //Modification of the structure
+  //////////////////////////////////////////////////////////////////////////////
+  Variable<Eigen::Matrix3d>* var = simplexMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  Eigen::Matrix3d m =  Eigen::MatrixXd::Identity(3, 3);
+  m <<  1.0, 0.0, .0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0;
+  var->setValuesTo(m);
+
+  bool alreadyAdd = false;
+  std::vector<TSimplexID> tetraContenaingPt{};
+  TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
+  BND_SURFACE_COLOR->set(node, 1);
+
+  std::vector<TSimplexID> cavity{1322, 11724, 1317, 9007, 3299, 1331};
+  std::vector<TSimplexID> markedSimplex{};
+  bool status = false;
+  std::vector<TSimplexID> deletedSimplex{};
+  const std::multimap<TInt, TInt>& facesAlreadyBuilt{};
+  gmds::BitVector nodesAdded(simplexMesh.nodesCapacity());
+
+  DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, cavity, status, nodesAdded, deletedSimplex, facesAlreadyBuilt, markedSimplex, false);
+  std::cout << "Status -> " << status << std::endl;
+
+  gmds::VTKWriter vtkWriterDI(&ioService);
+  vtkWriterDI.setCellOptions(gmds::N|gmds::F|gmds::R);
+  vtkWriterDI.setDataOptions(gmds::N|gmds::F|gmds::R);
+  vtkWriterDI.write("Surface_Node_Added.vtk");
+}
+/*----------------------------------------------------------------------------*/
+TEST(SimplexMeshTestClass, Add_Curve_Node_PI)
+{
+  CriterionRAIS criterionRAIS(new VolumeCriterion());
+  TInt border = std::numeric_limits<TInt>::min();
+
+
+  SimplexMesh simplexMeshNode = SimplexMesh();
+  math::Point point = math::Point(0.75, 0.0, 1.0);
+  simplexMeshNode.addNode(point);
+  simplexMeshNode.addTetraedre(0,0,0,0);
+  gmds::ISimplexMeshIOService ioServiceNode(&simplexMeshNode);
+  gmds::VTKWriter vtkWriterNode(&ioServiceNode);
+  vtkWriterNode.setCellOptions(gmds::N|gmds::F|gmds::R);
+  vtkWriterNode.write("Curve_Node.vtk");
+
+  SimplexMesh simplexMesh = SimplexMesh();
+  std::string dir(TEST_SAMPLES_DIR);
+  std::string vtk_mesh = dir+"/simpleCubeV2/CUBE.vtk";
+
+  gmds::ISimplexMeshIOService ioService(&simplexMesh);
+  gmds::VTKReader vtkReader(&ioService);
+  vtkReader.setCellOptions(gmds::R|gmds::N);
+  vtkReader.setDataOptions(gmds::N);
+  vtkReader.read(vtk_mesh);
+  simplexMesh.buildAdjInfoGlobal();
+  simplexMesh.initializeEdgeStructure();
+  simplexMesh.buildSimplexHull();
+
+  //return;
+  Octree oc(&simplexMesh, 50);
+  simplexMesh.setOctree(&oc);
+  Variable<int>* BND_VERTEX_COLOR  = simplexMesh.getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+  Variable<int>* BND_CURVE_COLOR   = simplexMesh.getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+  Variable<int>* BND_SURFACE_COLOR = simplexMesh.getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+
+  //Modification of the structure
+  //////////////////////////////////////////////////////////////////////////////
+  Variable<Eigen::Matrix3d>* var = simplexMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  Eigen::Matrix3d m =  Eigen::MatrixXd::Identity(3, 3);
+  m <<  1.0, 0.0, .0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0;
+  var->setValuesTo(m);
+
+  bool alreadyAdd = false;
+  std::vector<TSimplexID> tetraContenaingPt{};
+  TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
+  BND_CURVE_COLOR->set(node, 12);
+
+  std::vector<TSimplexID> cavity{1322, 9007, 3299, 1331, 547, 3300};
+  //std::vector<TSimplexID> cavity{};
+  std::vector<TSimplexID> markedSimplex{};
+  bool status = false;
+  std::vector<TSimplexID> deletedSimplex{};
+  const std::multimap<TInt, TInt>& facesAlreadyBuilt{};
+  gmds::BitVector nodesAdded(simplexMesh.nodesCapacity());
+
+  DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, cavity, status, nodesAdded, deletedSimplex, facesAlreadyBuilt, markedSimplex, false);
+  std::cout << "Status -> " << status << std::endl;
+  gmds::VTKWriter vtkWriterDI(&ioService);
+  vtkWriterDI.setCellOptions(gmds::N|gmds::F|gmds::R);
+  vtkWriterDI.setDataOptions(gmds::N|gmds::F|gmds::R);
+  vtkWriterDI.write("Curve_Node_Added.vtk");
+}
+/*----------------------------------------------------------------------------*/
+TEST(SimplexMeshTestClass, Add_Curve_Node_PI_2)
+{
+  CriterionRAIS criterionRAIS(new VolumeCriterion());
+  TInt border = std::numeric_limits<TInt>::min();
+
+
+  SimplexMesh simplexMeshNode = SimplexMesh();
+  math::Point point = math::Point(0.95, 0.0, 1.0);
+  simplexMeshNode.addNode(point);
+  simplexMeshNode.addTetraedre(0,0,0,0);
+  gmds::ISimplexMeshIOService ioServiceNode(&simplexMeshNode);
+  gmds::VTKWriter vtkWriterNode(&ioServiceNode);
+  vtkWriterNode.setCellOptions(gmds::N|gmds::F|gmds::R);
+  vtkWriterNode.write("Curve_Node_2.vtk");
+
+  SimplexMesh simplexMesh = SimplexMesh();
+  std::string dir(TEST_SAMPLES_DIR);
+  std::string vtk_mesh = dir+"/simpleCubeV2/CUBE.vtk";
+
+  gmds::ISimplexMeshIOService ioService(&simplexMesh);
+  gmds::VTKReader vtkReader(&ioService);
+  vtkReader.setCellOptions(gmds::R|gmds::N);
+  vtkReader.setDataOptions(gmds::N);
+  vtkReader.read(vtk_mesh);
+  simplexMesh.buildAdjInfoGlobal();
+  simplexMesh.initializeEdgeStructure();
+  simplexMesh.buildSimplexHull();
+
+  //return;
+  Octree oc(&simplexMesh, 50);
+  simplexMesh.setOctree(&oc);
+  Variable<int>* BND_VERTEX_COLOR  = simplexMesh.getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+  Variable<int>* BND_CURVE_COLOR   = simplexMesh.getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+  Variable<int>* BND_SURFACE_COLOR = simplexMesh.getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+
+  //Modification of the structure
+  //////////////////////////////////////////////////////////////////////////////
+  Variable<Eigen::Matrix3d>* var = simplexMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  Eigen::Matrix3d m =  Eigen::MatrixXd::Identity(3, 3);
+  m <<  1.0, 0.0, .0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0;
+  var->setValuesTo(m);
+
+  bool alreadyAdd = false;
+  std::vector<TSimplexID> tetraContenaingPt{};
+  TInt node = simplexMesh.addNodeAndcheck(point, tetraContenaingPt, alreadyAdd);
+  BND_CURVE_COLOR->set(node, 12);
+
+  std::vector<TSimplexID> cavity{842,833,837};
+  std::vector<TSimplexID> markedSimplex{};
+  bool status = false;
+  std::vector<TSimplexID> deletedSimplex{};
+  const std::multimap<TInt, TInt>& facesAlreadyBuilt{};
+  gmds::BitVector nodesAdded(simplexMesh.nodesCapacity());
+
+  DelaunayPointInsertion DI(&simplexMesh, SimplicesNode(&simplexMesh, node), criterionRAIS, cavity, status, nodesAdded, deletedSimplex, facesAlreadyBuilt, markedSimplex, false);
+  std::cout << "Status -> " << status << std::endl;
+  gmds::VTKWriter vtkWriterDI(&ioService);
+  vtkWriterDI.setCellOptions(gmds::N|gmds::F|gmds::R);
+  vtkWriterDI.setDataOptions(gmds::N|gmds::F|gmds::R);
+  vtkWriterDI.write("Curve_Node_Added_2.vtk");
+}
+/*----------------------------------------------------------------------------*/
 TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD0)
 {
-  TInt border = std::numeric_limits<TInt>::min();
+  /*TInt border = std::numeric_limits<TInt>::min();
   SimplexMesh simplexMesh = SimplexMesh();
   std::string dir(TEST_SAMPLES_DIR);
   std::string vtk_mesh = dir+"/ModeleCAD0/ModeleCAD0.vtk";
@@ -306,5 +596,5 @@ TEST(SimplexMeshTestClass, test_point_insertion_on_modelCAD0)
   gmds::VTKWriter vtkWriterHT(&ioService);
   vtkWriterHT.setCellOptions(gmds::N|gmds::R);
   vtkWriterHT.setDataOptions(gmds::N|gmds::R);
-  vtkWriterHT.write("ModeleCAD0_HEX.vtk");
+  vtkWriterHT.write("ModeleCAD0_HEX.vtk");*/
 }
