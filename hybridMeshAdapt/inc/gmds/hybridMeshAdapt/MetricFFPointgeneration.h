@@ -24,14 +24,22 @@ namespace gmds{
     class MetricFFPointgeneration
     {
       public:
+
+        struct DataEdges {
+          std::vector<int> subEdge {};
+          std::vector<double> subEdgeU {};
+          double sizeEdge = 0;
+        };
+
         //structure will permit us to sort the sampling node in order to
         //saple low metric first
         //node is the node where coord came from
-        struct nodeSamplingData{
+        struct nodeSamplingData {
           TInt node;
           double m;
           math::Point coord;
         };
+
 
         MetricFFPointgeneration(SimplexMesh* m_simplexMesh);
 
@@ -51,13 +59,15 @@ namespace gmds{
 
         std::vector<std::vector<double>> buildParamEdgeU(const std::map<unsigned int, std::vector<TInt>>& sortedEdge, std::vector<double> & length_edges) const;
 
+        std::vector<DataEdges> subdivideEdge(const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) const;
+
         void subdivideEdgeUsingMetric_Relaxation(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge, const unsigned int edgeId) ;
 
         void nodesSpreading(std::vector<TInt>& nodesAdded, bool surfaceFlag = false);
 
         void execute();
 
-        void metricSamplingEdge(const unsigned int n, std::vector<double>& res, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const;
+        bool metricSamplingEdge(const unsigned int n, std::vector<double>& res, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const;
 
         math::Point computeTheEdgeNodeCoordinate(const double u, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const;
 

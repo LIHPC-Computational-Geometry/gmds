@@ -74,23 +74,36 @@ void MetricFFPointgeneration::execute()
   const std::map<unsigned int, std::vector<TInt>> sortedEdges = buildSortedEdges();
   const std::vector<std::vector<double>> edgesU = buildParamEdgeU(sortedEdges, edges_length);
 
-  const std::vector<TInt> edge1 = sortedEdges.at(11);
-  curvature(1.0 / static_cast<double>(edge1.size()-1), edge1);
-  computeIntersectionMetric(m1, m2);
 
   std::vector<TInt> nodeAdded{};
   unsigned int i = 0;
   for(auto const & sortedEdge : sortedEdges)
   {
-    const unsigned int edgeId = sortedEdge.first;
-    std::vector<TInt> edge = sortedEdge.second;
-    std::vector<double> edgeU = edgesU[i];
-    double edge_length = edges_length[i];
-    subdivideEdgeUsingMetric_Relaxation(nodeAdded, edge, edgeU, edge_length, edgeId);
+    //if(i == 8)
+    {
+      const unsigned int edgeId = sortedEdge.first;
+      std::vector<TInt> edge = sortedEdge.second;
+      std::vector<double> edgeU = edgesU[i];
+      double edge_length = edges_length[i];
+      subdivideEdgeUsingMetric_Relaxation(nodeAdded, edge, edgeU, edge_length, edgeId);
+    }
     i++;
   }
-  std::cout << "EDGE NODES CREATED " << std::endl;
 
+  std::cout << "EDGE NODES CREATED " << std::endl;
+  for(unsigned int n = 0 ; n < m_nodesMesh.getBitVectorNodes().capacity() ; n++)
+  {
+    if(m_nodesMesh.getBitVectorNodes()[n] != 0)
+    {
+      m_nodesMesh.addTetraedre(n,n,n,n);
+    }
+  }
+  gmds::ISimplexMeshIOService ioServiceEDGE(&m_nodesMesh);
+  gmds::VTKWriter vtkWriterEGE(&ioServiceEDGE);
+  vtkWriterEGE.setCellOptions(gmds::N|gmds::R);
+  vtkWriterEGE.setDataOptions(gmds::N|gmds::R);
+  vtkWriterEGE.write("metricFF_EDGE.vtk");
+  throw gmds::GMDSException("END");
 
   while(nodeAdded.size() != 0)
   {
@@ -513,6 +526,9 @@ Point MetricFFPointgeneration::computeTheEdgeNodeCoordinate(const double u, cons
   }
   if(!(u >= edgeU.front() && u <= edgeU.back()))
   {
+    std::cout << "edgeU.front() -> " << edgeU.front() << std::endl;
+    std::cout << "edgeU.back() -> " << edgeU.back() << std::endl;
+    std::cout << "u -> " << u << std::endl;
     throw gmds::GMDSException("!(u >= edgeU.front() && u <= edgeU.back())");
   }
 
@@ -811,9 +827,88 @@ void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point
   }
 }
 /*----------------------------------------------------------------------------*/
-void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge, const unsigned int edgeId)
+std::vector<gmds::hybrid::MetricFFPointgeneration::DataEdges> MetricFFPointgeneration::subdivideEdge(const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) const
 {
-  double den = 0.0;
+  //This function will subdivide the current edge if the metric is to much discontinue because of the curvature
+  std::vector<DataEdges> dataEdges{};
+  std::list<int> ts{};
+  double epsilon = 1E-4;
+  bool flag = true;
+  /*for(int i = 1 ; i < edge.size() - 1 ; i++)
+  {
+    double tA = static_cast<double>(i) / static_cast<double>(edge.size()-1);
+    double curvatureValueA = std::abs(curvature(tA, edge));
+    if((curvatureValueA > epsilon) == flag)// the edge presente curvature at tA
+    {
+      ts.push_back(i-1);
+      flag = !flag;
+    }
+  }*/
+
+  for(int i = 1 ; i < edge.size() - 1 ; i++)
+  {
+    double tA = static_cast<double>(i) / static_cast<double>(edge.size()-1);
+    double tB = static_cast<double>(i-1) / static_cast<double>(edge.size()-1);
+    double curvatureValueA = std::abs(curvature(tA, edge));
+    double curvatureValueB = std::abs(curvature(tB, edge));
+    if(std::abs(curvatureValueA - curvatureValueB) > 1E-4)// the edge presente curvature at tA
+    {
+      ts.push_back(i);
+    }
+  }
+
+  if(ts.size() % 2 != 0 && ts.size() != 1)
+    throw gmds::GMDSException("ts.size() % 2 != 0 && ts.size() != 1");
+
+
+
+  if(ts.front() != 0 || ts.size() == 0)
+      ts.push_front(0);
+
+  if(ts.back() != edge.size() - 1)
+      ts.push_back(edge.size() - 1);
+
+  for(std::list<int>::iterator it = ts.begin() ; it != ts.end() ; ++it)
+  {
+    if(it != ts.begin())
+    {
+      int val = *it;
+      int p_val = *(std::next(it,-1));
+      if(p_val + 1 == val)
+      {
+        ts.erase(it);
+      }
+    }
+  }
+
+  for(std::list<int>::iterator it = ts.begin() ; it != --(ts.end()) ; ++it)
+  {
+    int t0 = *it;
+    int t1 = *(std::next(it,1));
+    double ratio = (t1 - t0) / static_cast<double>(edge.size());
+    double sizeSubEdge = ratio * sizeEdge;
+    std::vector<int> SubEdge {};
+    std::vector<double> SubEdgeU {};
+    int cpt = 0;
+    for(unsigned int j = t0 ; j <= t1; ++j)
+    {
+      SubEdgeU.push_back(static_cast<double>(cpt) / static_cast<double>(t1 - t0));
+      SubEdge.push_back(edge[j]);
+      ++cpt;
+    }
+    DataEdges dEdges;
+    dEdges.subEdge = SubEdge;
+    dEdges.subEdgeU = SubEdgeU;
+    dEdges.sizeEdge = sizeSubEdge;
+    dataEdges.push_back(dEdges);
+  }
+
+  return dataEdges;
+}
+/*----------------------------------------------------------------------------*/
+void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge_, const std::vector<double>& edgeU_, const double sizeEdge_, const unsigned int edgeId)
+{
+  double epsilon = 1E-3;
   Variable<Eigen::Matrix3d>* metric  = nullptr;
   Variable<Eigen::Matrix3d>* metricNode  = nullptr;
   gmds::Variable<int>* BND_CURVE_COLOR_NODE = nullptr;
@@ -828,82 +923,135 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TI
   {
     throw gmds::GMDSException(e);
   }
-  /*const std::vector<TInt> edge1 = sortedEdges.at(11);
-  curvature(1.0 / static_cast<double>(edge1.size()-1), edge1);
-  computeIntersectionMetric(m1, m2);*/
 
+  //subdivide the edge if nedded ..
+  std::vector<DataEdges> dataEdges = subdivideEdge(edge_, edgeU_, sizeEdge_);
   //compute the how many node should be in the edge  (depending on the Metric define on the mesh 's edges')
-  for(unsigned int i = 0 ; i < edge.size() - 1 ; i++)
+  for(auto const &d : dataEdges)
   {
-    const TInt nodeA = edge[i];
-    const TInt nodeB = edge[i + 1];
+    double den = 0.0;
+    std::vector<double> edgeU = d.subEdgeU;
+    std::vector<TInt> edge = d.subEdge;
+    double sizeEdge = d.sizeEdge;
 
-    const math::Point ptA = SimplicesNode(m_simplexMesh, nodeA).getCoords();
-    const math::Point ptB = SimplicesNode(m_simplexMesh, nodeB).getCoords();
-
-    Eigen::Vector3d dir = Eigen::Vector3d(ptB.X() - ptA.X(), ptB.Y() - ptA.Y(), ptB.Z() - ptA.Z());
-    //dir.normalize();
-
-    //find the metric of the space inA and B
-    const Eigen::Matrix3d MA = metric->value(nodeA);
-    const Eigen::Matrix3d MB = metric->value(nodeB);
-
-    Eigen::Matrix3d MA_modified = metric->value(nodeA);
-    Eigen::Matrix3d MB_modified = metric->value(nodeB);
-
-    MA_modified(0,0) = 1.0 /sqrt(MA(0,0)); MA_modified(1,1) = 1.0 /sqrt(MA(1,1)); MA_modified(2,2) = 1.0 /sqrt(MA(2,2));
-    MB_modified(0,0) = 1.0 /sqrt(MB(0,0)); MB_modified(1,1) = 1.0 /sqrt(MB(1,1)); MB_modified(2,2) = 1.0 /sqrt(MB(2,2));
-
-
-    const Eigen::Vector3d vecA = MA_modified * dir;
-    const Eigen::Vector3d vecB = MB_modified * dir;
-
-    const double mA = vecA.norm();
-    const double mB = vecB.norm();
-
-    //const double sizeInterval = edgeU[i + 1] - edgeU[i];
-    const double sizeInterval = 1.0;
-
-    //https://fr.wikipedia.org/wiki/Calcul_num%C3%A9rique_d%27une_int%C3%A9grale
-    //basic discret square integral
-    den += sizeInterval *  (0.5 * mA + 0.5 * mB);
-  }
-
-  if(den == 0.0)
-  {
-    throw gmds::GMDSException("den == 0.0");
-  }
-
-  const unsigned int n = std::ceil(static_cast<double>(sizeEdge) / den);
-  std::vector<double>res{};
-  metricSamplingEdge(n, res, edge, edgeU);
-
-  for(unsigned int i = 0 ; i < res.size()  ; i++)
-  {
-    const double u = res[i];
-    Point pt = computeTheEdgeNodeCoordinate(u, edge, edgeU);
-    std::vector<TSimplexID> tetraContenaingPt{};
-    bool status = false;
-    TInt newNodeId = m_nodesMesh.addNodeAndcheck(pt, tetraContenaingPt, status);
-    if(!status)
+    for(unsigned int i = 0 ; i < edge.size() - 1 ; i++)
     {
-      (*BND_CURVE_COLOR_NODE)[newNodeId] = edgeId;
-      m_nodesMesh.setAnalyticMetric(newNodeId, m_simplexMesh->getOctree());
-      nodesAdded.push_back(newNodeId);
-      std::unordered_set<TInt> seen{};
-      m_nodesMesh.getOctree()->addNode(newNodeId, seen);
+      double tA = static_cast<double>(i) / static_cast<double>(edge.size()-1);
+      double tB = static_cast<double>(i+1) / static_cast<double>(edge.size()-1);
+
+      const TInt nodeA = edge[i];
+      const TInt nodeB = edge[i + 1];
+
+
+      const math::Point ptA = SimplicesNode(m_simplexMesh, nodeA).getCoords();
+      const math::Point ptB = SimplicesNode(m_simplexMesh, nodeB).getCoords();
+
+      Eigen::Vector3d dir = Eigen::Vector3d(ptB.X() - ptA.X(), ptB.Y() - ptA.Y(), ptB.Z() - ptA.Z());
+      dir.normalize();
+
+      //find the metric of the space in A and B
+      Eigen::Matrix3d MA = metric->value(nodeA);
+      Eigen::Matrix3d MB = metric->value(nodeB);
+
+      //find the metric associate to the node (because of the curvature of the edge)
+      double curvatureValueA = std::abs(curvature(tA, edge));
+      double curvatureValueB = std::abs(curvature(tB, edge));
+      double alpha = 0.1;
+
+      if(curvatureValueA > epsilon)
+      {
+        //we built the isotrope metric on the canonical basis
+        //on the adge at t with the curvatureValue (1/rayon de courbure)
+        double curvatureRadiusA =  alpha * (1.0 / curvatureValueA);
+        Eigen::Matrix3d curveMetricA;
+        curveMetricA(0,0) = 1.0 / std::pow(curvatureRadiusA,2);
+        curveMetricA(1,1) = 1.0 / std::pow(curvatureRadiusA,2);
+        curveMetricA(2,2) = 1.0 / std::pow(curvatureRadiusA,2);
+
+        MA = computeIntersectionMetric(curveMetricA, MA);
+      }
+      if(curvatureValueB > epsilon)
+      {
+        //we built the isotrope metric on the canonical basis
+        //on the adge at t with the curvatureValue (1/rayon de courbure)
+        double curvatureRadiusB =  alpha * (1.0 / curvatureValueB);
+        Eigen::Matrix3d curveMetricB;
+        curveMetricB(0,0) = 1.0 / std::pow(curvatureRadiusB,2);
+        curveMetricB(1,1) = 1.0 / std::pow(curvatureRadiusB,2);
+        curveMetricB(2,2) = 1.0 / std::pow(curvatureRadiusB,2);
+
+        MB = computeIntersectionMetric(curveMetricB, MB);
+      }
+      Eigen::Matrix3d MA_modified;
+      Eigen::Matrix3d MB_modified;
+
+      MA_modified(0,0) = 1.0 /sqrt(MA(0,0)); MA_modified(1,1) = 1.0 /sqrt(MA(1,1)); MA_modified(2,2) = 1.0 /sqrt(MA(2,2));
+      MB_modified(0,0) = 1.0 /sqrt(MB(0,0)); MB_modified(1,1) = 1.0 /sqrt(MB(1,1)); MB_modified(2,2) = 1.0 /sqrt(MB(2,2));
+
+
+
+      const Eigen::Vector3d vecA = MA_modified * dir;
+      const Eigen::Vector3d vecB = MB_modified * dir;
+
+      const double mA = vecA.norm();
+      const double mB = vecB.norm();
+
+      const double sizeInterval = edgeU[i + 1] - edgeU[i];
+      //const double sizeInterval = 1.0;
+
+      //https://fr.wikipedia.org/wiki/Calcul_num%C3%A9rique_d%27une_int%C3%A9grale
+      //basic discret square integral
+      den += sizeInterval *  (0.5 * mA + 0.5 * mB);
+    }
+
+    if(den == 0.0)
+    {
+      throw gmds::GMDSException("den == 0.0");
+    }
+
+    //std::cout << "sizeEdge -> " << sizeEdge << std::endl;
+    //std::cout << "den -> " << den << std::endl;
+    unsigned int n = std::ceil(static_cast<double>(sizeEdge) / den);
+    //std::cout << "n -> " << n << std::endl;
+
+    //throw gmds::GMDSException("END");
+    std::vector<double>res{};
+    //std::cout << "init n -> " << n << std::endl;
+    while(!metricSamplingEdge(n, res, edge, edgeU)){
+      ++n;
+      //std::cout << "n -> " << n << std::endl;
+    }
+
+    for(unsigned int i = 0 ; i < res.size()  ; i++)
+    {
+      const double u = res[i];
+      Point pt = computeTheEdgeNodeCoordinate(u, edge, edgeU);
+      std::vector<TSimplexID> tetraContenaingPt{};
+      bool status = false;
+      TInt newNodeId = m_nodesMesh.addNodeAndcheck(pt, tetraContenaingPt, status);
+      if(!status)
+      {
+        (*BND_CURVE_COLOR_NODE)[newNodeId] = edgeId;
+        m_nodesMesh.setAnalyticMetric(newNodeId, m_simplexMesh->getOctree());
+        nodesAdded.push_back(newNodeId);
+        std::unordered_set<TInt> seen{};
+        m_nodesMesh.getOctree()->addNode(newNodeId, seen);
+      }
     }
   }
+  //throw gmds::GMDSException("END");
+
 }
 /*----------------------------------------------------------------------------*/
-void MetricFFPointgeneration::metricSamplingEdge(const unsigned int n, std::vector<double>& res, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const
+bool MetricFFPointgeneration::metricSamplingEdge(const unsigned int n, std::vector<double>& res, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const
 {
-
   if(edge.size() < 2)
   {
     throw gmds::GMDSException("edge.size < 2");
   }
-  double epsilon = 0.0001;
+  double epsilon = 1E-4;
+  double minimumPercentageError = 0.05;
+  //double epsilon = 0.0001;
   //first we subdivide the edge uniformly (whitout using any random generator for the position)
   std::vector<double> params_u{};
   const double e = 1.0 / static_cast<double>(n);
@@ -913,11 +1061,14 @@ void MetricFFPointgeneration::metricSamplingEdge(const unsigned int n, std::vect
   }
   //Compute the right sample node position in u coordinate with Loyd methodes in CVT -> Fast Methods for Computing Centroidal Voronoi Tessellations
   //compute V(zk) & the corresponding zk -> [0, 1]
-  unsigned int cpt = 0;
-  double error_max = 0.0;
+  static unsigned int cpt = 0;
+  double error_max_prev = 0.0;
+  double error_max = error_max_prev;
+  double error_moy = 0.0;
   do
   {
     error_max = 0.0;
+    error_moy = 0.0;
     std::vector<std::vector<double>> V{};
     std::vector<double> p{0.0};
     for(unsigned int i = 1 ; i < params_u.size() - 1; i++)
@@ -935,6 +1086,10 @@ void MetricFFPointgeneration::metricSamplingEdge(const unsigned int n, std::vect
     {
       const double u_min = V[i][0];
       const double u_max = V[i][1];
+      const double zk_1 = (u_min + u_max) * 0.5;
+
+      const double tA = u_min;
+      const double tB = u_max;
 
       const Point pt_min = computeTheEdgeNodeCoordinate(u_min, edge, edgeU);
       const Point pt_max = computeTheEdgeNodeCoordinate(u_max, edge, edgeU);
@@ -945,6 +1100,35 @@ void MetricFFPointgeneration::metricSamplingEdge(const unsigned int n, std::vect
       Eigen::Matrix3d M_min  = m_simplexMesh->getAnalyticMetric(pt_min, m_simplexMesh->getOctree());
       Eigen::Matrix3d M_max  = m_simplexMesh->getAnalyticMetric(pt_max, m_simplexMesh->getOctree());
 
+      //////////////////////////////////////////////////////////////////////////
+      double curvatureValueA = std::abs(curvature(tA, edge));
+      double curvatureValueB = std::abs(curvature(tB, edge));
+      double alpha = 0.1;
+      if(curvatureValueA > epsilon)
+      {
+        //we built the isotrope metric on the canonical basis
+        //on the adge at t with the curvatureValue (1/rayon de courbure)
+        double curvatureRadiusA =  alpha * (1.0 / curvatureValueA);
+        Eigen::Matrix3d curveMetricA = Eigen::Matrix3d::Zero();
+        curveMetricA(0,0) = 1.0 / std::pow(curvatureRadiusA,2);
+        curveMetricA(1,1) = 1.0 / std::pow(curvatureRadiusA,2);
+        curveMetricA(2,2) = 1.0 / std::pow(curvatureRadiusA,2);
+
+        M_min = computeIntersectionMetric(curveMetricA, M_min);
+      }
+      if(curvatureValueB > epsilon)
+      {
+        //we built the isotrope metric on the canonical basis
+        //on the adge at t with the curvatureValue (1/rayon de courbure)
+        double curvatureRadiusB =  alpha * (1.0 / curvatureValueB);
+        Eigen::Matrix3d curveMetricB = Eigen::Matrix3d::Zero();
+        curveMetricB(0,0) = 1.0 / std::pow(curvatureRadiusB,2);
+        curveMetricB(1,1) = 1.0 / std::pow(curvatureRadiusB,2);
+        curveMetricB(2,2) = 1.0 / std::pow(curvatureRadiusB,2);
+
+        M_max = computeIntersectionMetric(curveMetricB, M_max);
+      }
+      //////////////////////////////////////////////////////////////////////////
 
       M_min(0,0) = 1.0 /sqrt(M_min(0,0)); M_min(1,1) = 1.0 /sqrt(M_min(1,1)); M_min(2,2) = 1.0 /sqrt(M_min(2,2));
       M_max(0,0) = 1.0 /sqrt(M_max(0,0)); M_max(1,1) = 1.0 /sqrt(M_max(1,1)); M_max(2,2) = 1.0 /sqrt(M_max(2,2));
@@ -965,16 +1149,21 @@ void MetricFFPointgeneration::metricSamplingEdge(const unsigned int n, std::vect
       }
 
       const double zk = num / den;
-
-
       p.push_back(zk);
-      error_max = std::max(error_max, std::abs(zk - params_u[i + 1]));
+
+      error_max = std::max(error_max, std::abs(zk - zk_1));
+      error_moy += std::abs(zk - zk_1) / params_u.size();
     }
+    if(std::abs(error_max_prev - error_moy) / std::abs(error_moy) < minimumPercentageError)
+      return false;
+
+    //error_max_prev = error_max;
+    error_max_prev = error_moy;
     p.push_back(1.0);
     params_u = p;
 
     /**************************************************************************/
-    SimplexMesh sm;
+    /*SimplexMesh sm;
     for(auto const u : params_u)
     {
       Point pt = computeTheEdgeNodeCoordinate(u, edge, edgeU);
@@ -987,15 +1176,30 @@ void MetricFFPointgeneration::metricSamplingEdge(const unsigned int n, std::vect
     gmds::VTKWriter vtkWriterM0(&ioServiceM0);
     vtkWriterM0.setCellOptions(gmds::N|gmds::R);
     vtkWriterM0.write("Loyd_Relaxation_" + std::to_string(cpt)+ ".vtk");
-    ++cpt;
+    ++cpt;*/
     /**************************************************************************/
 
-  }while(error_max > epsilon);
+  }while(error_moy > epsilon);//while(error_max > epsilon);
 
+      /**************************************************************************/
+      /*static SimplexMesh sm;
+      for(auto const u : params_u)
+      {
+        Point pt = computeTheEdgeNodeCoordinate(u, edge, edgeU);
+        std::vector<TSimplexID> tetraContenaingPt{};
+        bool status = false;
+        TInt newNodeId = sm.addNode(pt);
+        sm.addTetraedre(newNodeId, newNodeId, newNodeId, newNodeId);
+      }
+      static gmds::ISimplexMeshIOService ioServiceM0(&sm);
+      gmds::VTKWriter vtkWriterM0(&ioServiceM0);
+      vtkWriterM0.setCellOptions(gmds::N|gmds::R);
+      vtkWriterM0.write("Loyd_Relaxation_" + std::to_string(cpt)+ ".vtk");
+      ++cpt;*/
+      /**************************************************************************/
 
-
-  throw gmds::GMDSException("END");
   res = params_u;
+  return true;
 }
 /*----------------------------------------------------------------------------*/
 Eigen::VectorXd MetricFFPointgeneration::findCubicInterpolation(const double t, const std::vector<TInt>& edgeNodes, std::vector<int>& subEdgeIdx) const
@@ -1051,11 +1255,21 @@ double MetricFFPointgeneration::curvature(const double t, const std::vector<TInt
     double c10 = coefficients[5]; double c11 = coefficients[6]; double c12 = coefficients[7];
     double c20 = coefficients[9]; double c21 = coefficients[10]; double c22 = coefficients[11];
 
+    //dérivée premiere
+    double dX = c00 +  2.0*c01*new_t + 3.0*c02*new_t*new_t;
+    double dY = c10 +  2.0*c11*new_t + 3.0*c12*new_t*new_t;
+    double dZ = c20 +  2.0*c21*new_t + 3.0*c22*new_t*new_t;
+
     //dérivée seconde
-    double X = 2*c01 + 3*2*c02*new_t;
-    double Y = 2*c11 + 3*2*c12*new_t;
-    double Z = 2*c21 + 3*2*c22*new_t;
-    courbureValue = sqrt(X*X + Y*Y + Z*Z);
+    double ddX = 2.0*c01 + 3.0*2.0*c02*new_t;
+    double ddY = 2.0*c11 + 3.0*2.0*c12*new_t;
+    double ddZ = 2.0*c21 + 3.0*2.0*c22*new_t;
+
+    Eigen::Vector3d dXYZ(dX, dY, dZ);
+    Eigen::Vector3d ddXYZ(ddX, ddY, ddZ);
+
+    Eigen::Vector3d crossProduct = dXYZ.cross(ddXYZ);
+    courbureValue = crossProduct.norm() / std::pow(dXYZ.norm(), 3);
   }
   else if (coefficients.size() == 9) //interpolation quadratique because we are on boder edge
   {
@@ -1063,14 +1277,25 @@ double MetricFFPointgeneration::curvature(const double t, const std::vector<TInt
     double c10 = coefficients[4]; double c11 = coefficients[5];
     double c20 = coefficients[7]; double c21 = coefficients[8];
 
+    //dérivée premiere
+    double dX = c00 + 2*c01*new_t;
+    double dY = c10 + 2*c11*new_t;
+    double dZ = c20 + 2*c21*new_t;
+
     //dérivée seconde
-    double X = 2*c01;
-    double Y = 2*c11;
-    double Z = 2*c21;
-    courbureValue = sqrt(X*X + Y*Y + Z*Z);
+    double ddX = 2*c01;
+    double ddY = 2*c11;
+    double ddZ = 2*c21;
+
+    Eigen::Vector3d dXYZ(dX, dY, dZ);
+    Eigen::Vector3d ddXYZ(ddX, ddY, ddZ);
+
+    Eigen::Vector3d crossProduct = dXYZ.cross(ddXYZ);
+    courbureValue = crossProduct.norm() / std::pow(dXYZ.norm(), 3);
   }
   else
   {
+    std::cout << "coefficients.size() -> " << coefficients.size() << std::endl;
     throw gmds::GMDSException("wrong coefficients.size()");
   }
 
@@ -1089,7 +1314,9 @@ Eigen::Matrix3d MetricFFPointgeneration::computeIntersectionMetric(const Eigen::
   std::complex<double>(m2(1,0), 0), std::complex<double>(m2(1,1), 0), std::complex<double>(m2(1,2), 0),
   std::complex<double>(m2(2,0), 0), std::complex<double>(m2(2,1), 0), std::complex<double>(m2(2,2), 0);
 
+
   Eigen::Matrix3d N = m1.inverse()*m2;
+
   Eigen::EigenSolver<Eigen::Matrix3d> es(N);
   Eigen::MatrixXcd V_ = es.eigenvectors();
 
@@ -1105,8 +1332,9 @@ Eigen::Matrix3d MetricFFPointgeneration::computeIntersectionMetric(const Eigen::
   d_(0,0) = std::max(lambda0_m1_.real(), lambda0_m2_.real());
   d_(1,1) = std::max(lambda1_m1_.real(), lambda1_m2_.real());
   d_(2,2) = std::max(lambda2_m1_.real(), lambda2_m2_.real());
-  std::cout << "V_.transpose() * d_ * V_ -> " << std::endl << V_.real().inverse().transpose() * d_.real() * V_.real().inverse() << std::endl;
-  //return V_.transpose() * d_ * V_;
+
+  //std::cout << "d -> " << std::endl << d_ << std::endl;
+  return V_.real().inverse().transpose() * d_.real() * V_.real().inverse();
 }
 /*----------------------------------------------------------------------------*/
 std::map<unsigned int, std::vector<TInt>> MetricFFPointgeneration::buildSortedEdges() const

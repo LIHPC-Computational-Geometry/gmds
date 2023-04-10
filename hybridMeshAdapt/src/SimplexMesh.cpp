@@ -4376,19 +4376,18 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, Octree* octree) 
   double ty = (pt.Y() - y_min ) / (y_max - y_min);
 
   //NON CONSTANT ISOTROPE METRIC
-
-  ty = (pt.Y() >= 0.5) ? pt.Y() - 0.5 : -(pt.Y() - 0.5);
+  /*ty = (pt.Y() >= 0.5) ? pt.Y() - 0.5 : -(pt.Y() - 0.5);
   double metricX = 0.09 / 0.5 * ty + 0.01;
   double metricY = 0.09 / 0.5 * ty + 0.01;
-  double metricZ = 0.09 / 0.5 * ty + 0.01;
+  double metricZ = 0.09 / 0.5 * ty + 0.01;*/
 
   //CONSTANT ISOTROPE METRIC
   /*double metricX = 0.05*(1.0 - ty) + 0.1*ty;
   double metricY = 0.05*(1.0 - ty) + 0.1*ty;
   double metricZ = 0.05*(1.0 - ty) + 0.1*ty;*/
-  /*double metricX = 0.1;
-  double metricY = 0.1;
-  double metricZ = 0.1;*/
+  double metricX = 0.5;
+  double metricY = 0.5;
+  double metricZ = 0.5;
 
   m(0,0) = 1.0 / (metricX*metricX);
   m(1,1) = 1.0 / (metricY*metricY);
@@ -4419,16 +4418,16 @@ void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
   double ty = (pt.Y() - y_min ) / (y_max - y_min);
 
   //NON CONSTANT ISOTROPE METRIC
-  ty = (pt.Y() >= 0.5) ? pt.Y() - 0.5 : -(pt.Y() - 0.5);
+  /*ty = (pt.Y() >= 0.5) ? pt.Y() - 0.5 : -(pt.Y() - 0.5);
   double metricX = 0.09 / 0.5 * ty + 0.01;
   double metricY = 0.09 / 0.5 * ty + 0.01;
-  double metricZ = 0.09 / 0.5 * ty + 0.01;
+  double metricZ = 0.09 / 0.5 * ty + 0.01;*/
   /*double metricX = 0.05*(1.0 - ty) + 0.1*ty;
   double metricY = 0.05*(1.0 - ty) + 0.1*ty;
   double metricZ = 0.05*(1.0 - ty) + 0.1*ty;*/
-  /*double metricX = 0.1;
-  double metricY = 0.1;
-  double metricZ = 0.1;*/
+  double metricX = 0.5;
+  double metricY = 0.5;
+  double metricZ = 0.5;
 
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
   (*metric)[node](1,1) = 1.0 / (metricY*metricY);
