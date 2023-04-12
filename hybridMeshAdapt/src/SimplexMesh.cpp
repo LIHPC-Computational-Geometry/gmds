@@ -4398,26 +4398,29 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, Octree* octree) 
 /******************************************************************************/
 void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
 {
+  Eigen::Matrix3d m =  Eigen::Matrix3d::Zero();
   Variable<Eigen::Matrix3d>* metric = nullptr;
   try{
     metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    (*metric)[node] = m;
   }catch (gmds::GMDSException e)
   {
     metric = newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
-    (*metric)[node] = Eigen::Matrix3d::Zero();
+    (*metric)[node] = m;
     //throw gmds::GMDSException(e);
   }
 
+
   //analytic isotrope metric here !
-  gmds::math::Point pt = m_coords[node];
-  double epsilon = 0.01;
+  //gmds::math::Point pt = m_coords[node];
+
 
   //mesh 's octree information
-  std::vector<double> borders = octree->getBorderOctree();
+  /*std::vector<double> borders = octree->getBorderOctree();
   double x_min = borders[0], x_max = borders[1];
   double y_min = borders[2], y_max = borders[3];
   double tx = (pt.X() - x_min ) / (x_max - x_min);
-  double ty = (pt.Y() - y_min ) / (y_max - y_min);
+  double ty = (pt.Y() - y_min ) / (y_max - y_min);*/
 
   //NON CONSTANT ISOTROPE METRIC
   /*ty = (pt.Y() >= 0.5) ? pt.Y() - 0.5 : -(pt.Y() - 0.5);
@@ -4431,9 +4434,11 @@ void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
   double metricY = 0.1;
   double metricZ = 0.1;
 
+
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
   (*metric)[node](1,1) = 1.0 / (metricY*metricY);
   (*metric)[node](2,2) = 1.0 / (metricZ*metricZ);
+
 }
 /******************************************************************************/
 bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>& frames)

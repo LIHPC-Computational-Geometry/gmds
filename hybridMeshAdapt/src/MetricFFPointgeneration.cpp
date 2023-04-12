@@ -110,20 +110,20 @@ void MetricFFPointgeneration::execute()
     nodesSpreading(nodeAdded, true);
     //break;
   }
-  for(unsigned int n = 0 ; n < m_nodesMesh.getBitVectorNodes().capacity() ; n++)
+  /*for(unsigned int n = 0 ; n < m_nodesMesh.getBitVectorNodes().capacity() ; n++)
   {
     if(m_nodesMesh.getBitVectorNodes()[n] != 0)
     {
       m_nodesMesh.addTetraedre(n,n,n,n);
     }
-  }
+  }*/
   gmds::ISimplexMeshIOService ioServiceSURFACE(&m_nodesMesh);
   gmds::VTKWriter vtkWriterSURFACE(&ioServiceSURFACE);
   vtkWriterSURFACE.setCellOptions(gmds::N|gmds::R);
   vtkWriterSURFACE.setDataOptions(gmds::N|gmds::R);
   vtkWriterSURFACE.write("metricFF_SURFACE.vtk");
   std::cout << "SURFACE NODES CREATED " << std::endl;
-  throw gmds::GMDSException("END");
+
   const gmds::BitVector& m_nodes = m_nodesMesh.getBitVectorNodes();
   for(unsigned int n = 0 ; n < m_nodes.capacity() ; n++)
   {
@@ -738,6 +738,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
           TInt newNodeId = -1;
           //compute the metric lentgh based on newNodeId and the metric at node
           findOptimimalPosition(node, newCoord);
+
           //compute the nearest Simplices of newCoord with octree
           std::vector<TSimplexID> simplices = m_oc.findSimplicesInOc(newCoord);
           bool inCell = false;
@@ -788,9 +789,9 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
                 newCoord = goodProjection;
             }
 
-            bool onSurface = true;
+            /*bool onSurface = true;
             int surfaceLabel = 0;
-            m_simplexMesh->onSurface(newCoord, surfaceLabel);
+            m_simplexMesh->onSurface(newCoord, surfaceLabel);*/
 
             if(surfaceLabel == 0)
               onSurface = false;
@@ -803,11 +804,11 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
                 if(neighboorNodes.size() == 0)
                 {
                   newNodeId = m_nodesMesh.addNode(newCoord);
+                  newNodes.push_back(newNodeId);
                   if(surfaceFlag == true)
                     BND_SURFACE_COLOR->set(newNodeId, surfaceLabel);
 
                   m_nodesMesh.setAnalyticMetric(newNodeId, m_simplexMesh->getOctree());
-                  newNodes.push_back(newNodeId);
                   std::unordered_set<TInt> seen{};
                   m_nodesMesh.getOctree()->addNode(newNodeId, seen);
 
@@ -817,7 +818,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
                   gmds::VTKWriter vtkWriterVOLUME(&ioServiceVOLUME);
                   vtkWriterVOLUME.setCellOptions(gmds::N|gmds::R);
                   vtkWriterVOLUME.setDataOptions(gmds::N|gmds::R);
-                  vtkWriterVOLUME.write("testSurfaceNode1_" + std::to_string(j) + ".vtk");
+                  vtkWriterVOLUME.write("testSurfaceNode_" + std::to_string(j) + ".vtk");
                   ++j;
                 }
               }
@@ -826,13 +827,13 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
         }
       }
     }
+    std::cout << "(" << node << " , " << newNodes.size() << ")" << " | ";
   }
-
+  throw gmds::GMDSException("END");
   //double duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
   //std::cout << "DURATION -> " << duration << std::endl;;
-
   nodesAdded.clear();
-  nodesAdded = newNodes;
+  std::copy(newNodes.begin(), newNodes.end(), std::back_inserter(nodesAdded));
 }
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::processNodesStructure()
@@ -921,7 +922,7 @@ void MetricFFPointgeneration::nodeFiltering(const math::Point& pt, std::vector<T
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point& initialCoord)
 {
-  double epsilon = 0.01;
+  double epsilon = 0.001;
   Variable<Eigen::Matrix3d>* metricNodes  = nullptr;
   try{
     metricNodes = m_nodesMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
@@ -941,13 +942,19 @@ void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point
 
   //compute the current length based on the metric atached to the mesh
   const double metricLenght = 0.5 * sqrt(dir.dot(m0*dir)) +  0.5 * sqrt(dir.dot(m1*dir));
-
-  if(metricLenght < 1.0 - epsilon)
+  if(node == 1)
+  {
+    std::cout << "pt  : " << pt  << std::endl;
+    std::cout << "initialCoord  : " << initialCoord  << std::endl;
+    std::cout << "dir.norm()  : " << dir.norm()  << std::endl;
+    std::cout << "metricLenght  : " << metricLenght << std::endl;
+  }
+  if(metricLenght < (1.0 - epsilon))
   {
     initialCoord = pt + 1.5 * math::Vector3d({dir.x(), dir.y(), dir.z()});
     findOptimimalPosition(node, initialCoord);
   }
-  else if(metricLenght > 1.0 + epsilon)
+  else if(metricLenght > (1.0 + epsilon))
   {
     initialCoord = 0.5 * (pt + initialCoord);
     findOptimimalPosition(node, initialCoord);
@@ -1136,7 +1143,7 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TI
 
     //std::cout << "sizeEdge -> " << sizeEdge << std::endl;
     //std::cout << "den -> " << den << std::endl;
-    unsigned int n = std::ceil(static_cast<double>(sizeEdge) / den);
+    unsigned int n = std::ceil(static_cast<double>(sizeEdge) / den) + 1;
     //std::cout << "n -> " << n << std::endl;
 
     //throw gmds::GMDSException("END");

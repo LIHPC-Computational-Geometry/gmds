@@ -78,7 +78,7 @@ namespace gmds{
 
         void findOptimimalPosition(const TInt node, math::Point &newCoord) ;
 
-        void nodeFiltering(const math::Point& pt, std::vector<TInt> & neighboorNode, double k = 1.1 * (sqrt(2.0) * 0.5), bool flag = false);
+        void nodeFiltering(const math::Point& pt, std::vector<TInt> & neighboorNode, double k = 0.98 * (sqrt(2.0) * 0.5), bool flag = false);
 
         void computeQuadFaces(std::set<std::vector<TInt>> & faces) const ;
 
