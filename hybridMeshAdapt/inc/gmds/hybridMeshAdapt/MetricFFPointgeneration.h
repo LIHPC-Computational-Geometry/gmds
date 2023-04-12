@@ -13,6 +13,7 @@
 #include <gmds/hybridMeshAdapt/ISimplexMeshIOService.h>
 #include "gmds/hybridMeshAdapt/PointInsertion.h"
 #include "gmds/hybridMeshAdapt/Octree.h"
+/*****************************************************************************/
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
 /*****************************************************************************/
@@ -62,6 +63,10 @@ namespace gmds{
         std::vector<DataEdges> subdivideEdge(const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge) const;
 
         void subdivideEdgeUsingMetric_Relaxation(std::vector<TInt>& nodesAdded, const std::vector<TInt>& edge, const std::vector<double>& edgeU, const double sizeEdge, const unsigned int edgeId) ;
+
+        Eigen::Matrix3d metricInterpolationWithDistorsion(const Eigen::Matrix3d  & metric, const Eigen::Matrix3d  & frameField) const;
+
+        double computeDistorsionMetric(const Eigen::Matrix3d  & m) const;
 
         void nodesSpreading(std::vector<TInt>& nodesAdded, bool surfaceFlag = false);
 

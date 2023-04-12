@@ -19,7 +19,7 @@ using namespace simplicesCell;
 /*----------------------------------------------------------------------------*/
 MetricFFPointgeneration::MetricFFPointgeneration(SimplexMesh* simplexMesh):m_simplexMesh(simplexMesh),m_oc(Octree(simplexMesh, 10))
 {
-  m_nodesMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  //m_nodesMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
   m_nodesMesh.newVariable<int,SimplicesNode>("BND_CURVE_COLOR");
   m_nodesMesh.newVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
   m_nodesMesh.newVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
@@ -103,12 +103,12 @@ void MetricFFPointgeneration::execute()
   vtkWriterEGE.setCellOptions(gmds::N|gmds::R);
   vtkWriterEGE.setDataOptions(gmds::N|gmds::R);
   vtkWriterEGE.write("metricFF_EDGE.vtk");
-  throw gmds::GMDSException("END");
 
   while(nodeAdded.size() != 0)
   {
     std::cout << "    nodeAdded.size() -> " << nodeAdded.size() << std::endl;
     nodesSpreading(nodeAdded, true);
+    //break;
   }
   for(unsigned int n = 0 ; n < m_nodesMesh.getBitVectorNodes().capacity() ; n++)
   {
@@ -117,13 +117,13 @@ void MetricFFPointgeneration::execute()
       m_nodesMesh.addTetraedre(n,n,n,n);
     }
   }
-  gmds::ISimplexMeshIOService ioServiceNODE(&m_nodesMesh);
-  gmds::VTKWriter vtkWriterNODE(&ioServiceNODE);
-  vtkWriterNODE.setCellOptions(gmds::N|gmds::R);
-  vtkWriterNODE.setDataOptions(gmds::N|gmds::R);
-  vtkWriterNODE.write("metricFF_SURFACE.vtk");
+  gmds::ISimplexMeshIOService ioServiceSURFACE(&m_nodesMesh);
+  gmds::VTKWriter vtkWriterSURFACE(&ioServiceSURFACE);
+  vtkWriterSURFACE.setCellOptions(gmds::N|gmds::R);
+  vtkWriterSURFACE.setDataOptions(gmds::N|gmds::R);
+  vtkWriterSURFACE.write("metricFF_SURFACE.vtk");
   std::cout << "SURFACE NODES CREATED " << std::endl;
-
+  throw gmds::GMDSException("END");
   const gmds::BitVector& m_nodes = m_nodesMesh.getBitVectorNodes();
   for(unsigned int n = 0 ; n < m_nodes.capacity() ; n++)
   {
@@ -141,7 +141,8 @@ void MetricFFPointgeneration::execute()
     std::cout << "    nodeAdded.size() -> " << nodeAdded.size() << std::endl;
     nodesSpreading(nodeAdded);
   }
-  gmds::VTKWriter vtkWriterVOLUME(&ioServiceNODE);
+  gmds::ISimplexMeshIOService ioServiceVOLUME(&m_nodesMesh);
+  gmds::VTKWriter vtkWriterVOLUME(&ioServiceVOLUME);
   vtkWriterVOLUME.setCellOptions(gmds::N|gmds::R);
   vtkWriterVOLUME.setDataOptions(gmds::N|gmds::R);
   vtkWriterVOLUME.write("metricFF_VOLUME.vtk");
@@ -579,8 +580,108 @@ Point MetricFFPointgeneration::computeTheEdgeNodeCoordinate(const double u, cons
   return pt;
 }
 /*----------------------------------------------------------------------------*/
+Eigen::Matrix3d MetricFFPointgeneration::metricInterpolationWithDistorsion(const Eigen::Matrix3d  & metric, const Eigen::Matrix3d  & frameField) const
+{
+  auto signLambda = [=](const double a){
+    double ans = (a < 0.0)?-1.0:1.0;
+    return ans;
+  };
+
+  Eigen::Matrix3d ans = Eigen::Matrix3d::Zero();
+
+  double distorsion = computeDistorsionMetric(metric);
+  //std::cout << "distorsion -> " << distorsion << std::endl;
+  distorsion = (distorsion < 1E-4)? 0.0 : distorsion;
+  //distorsion = 0.5;//1E-4;
+
+  /*Eigen::EigenSolver<Eigen::Matrix3d> es_metric(metric);
+  Eigen::EigenSolver<Eigen::Matrix3d> es_ff(frameField);
+
+  Eigen::MatrixXcd P_metric = es_metric.eigenvectors();
+  Eigen::MatrixXcd D_metric = es_metric.eigenvalues().asDiagonal();
+  std::cout << "P_metric : " << std::endl << P_metric << std::endl;
+  std::cout << "P_metric.inverse() : " << std::endl << P_metric.inverse() << std::endl;
+  std::cout << std::endl;
+
+  Eigen::MatrixXcd P_ff = es_ff.eigenvectors();
+  Eigen::MatrixXcd D_ff = es_ff.eigenvalues().asDiagonal();
+  std::cout << "P_ff : " << std::endl << P_ff << std::endl;
+  std::cout << "P_ff.inverse() : " << std::endl << P_ff.inverse() << std::endl;
+  std::cout << std::endl;
+
+  D_metric(0,0) = std::complex<double>(signLambda(D_metric(0,0).real()) * std::pow(std::abs(D_metric(0,0).real()), 1.0 - distorsion), signLambda(D_metric(0,0).imag()) * std::pow(std::abs(D_metric(0,0).imag()), 1.0 - distorsion));
+  D_metric(1,1) = std::complex<double>(signLambda(D_metric(1,1).real()) * std::pow(std::abs(D_metric(1,1).real()), 1.0 - distorsion), signLambda(D_metric(1,1).imag()) * std::pow(std::abs(D_metric(1,1).imag()), 1.0 - distorsion));
+  D_metric(2,2) = std::complex<double>(signLambda(D_metric(2,2).real()) * std::pow(std::abs(D_metric(2,2).real()), 1.0 - distorsion), signLambda(D_metric(2,2).imag()) * std::pow(std::abs(D_metric(2,2).imag()), 1.0 - distorsion));
+  std::cout << "D_metric after: " << std::endl << D_metric << std::endl;
+  std::cout << std::endl;
+
+  D_ff(0,0) = std::complex<double>(signLambda(D_ff(0,0).real()) * std::pow(std::abs(D_ff(0,0).real()), distorsion), signLambda(D_ff(0,0).imag()) * std::pow(std::abs(D_ff(0,0).imag()), distorsion));
+  D_ff(1,1) = std::complex<double>(signLambda(D_ff(1,1).real()) * std::pow(std::abs(D_ff(1,1).real()), distorsion), signLambda(D_ff(1,1).imag()) * std::pow(std::abs(D_ff(1,1).imag()), distorsion));
+  D_ff(2,2) = std::complex<double>(signLambda(D_ff(2,2).real()) * std::pow(std::abs(D_ff(2,2).real()), distorsion), signLambda(D_ff(2,2).imag()) * std::pow(std::abs(D_ff(2,2).imag()), distorsion));
+  std::cout << "D_ff after: " << std::endl << D_ff << std::endl;
+
+
+  std::cout << std::endl;
+  std::cout << std::endl;
+  std::cout << "(P_metric.inverse() * D_metric * P_metric) : " << std::endl << (P_metric.inverse() * D_metric * P_metric) << std::endl;
+  std::cout << std::endl;
+  std::cout << "(P_ff * D_ff * P_ff.inverse()) : " << std::endl << (P_ff * D_ff * P_ff.inverse()) << std::endl;
+  //Eigen::Matrix3cd t = (P_metric.inverse() * D_metric * P_metric) * (P_ff.inverse() * D_ff * P_ff);*/
+
+  Eigen::Vector3d col0 = frameField.col(0).real();
+  Eigen::Vector3d col1 = frameField.col(1).real();
+  Eigen::Vector3d col2 = frameField.col(2).real();
+
+  double a = sqrt(col0.transpose() * metric * col0);
+  double b = sqrt(col1.transpose() * metric * col1);
+  double c = sqrt(col2.transpose() * metric * col2);
+
+  Eigen::Matrix3d scalarReduction = Eigen::Matrix3d::Identity();
+  scalarReduction(0,0) = 1.0/a;
+  scalarReduction(1,1) = 1.0/b;
+  scalarReduction(2,2) = 1.0/c;
+
+  Eigen::Matrix3cd t = (1-distorsion)*metric + distorsion*scalarReduction*frameField;
+  //std::cout << "t : " << std::endl << t << std::endl;
+  //std::cout << std::endl;
+  //std::cout << "t.real() : " << std::endl << t.real() << std::endl;
+
+  return t.real();
+
+}
+/*----------------------------------------------------------------------------*/
+double MetricFFPointgeneration::computeDistorsionMetric(const Eigen::Matrix3d & m) const
+{
+  Eigen::Matrix3cd m_;
+  m_ << std::complex<double>(m(0,0), 0), std::complex<double>(m(0,1), 0), std::complex<double>(m(0,2), 0),
+  std::complex<double>(m(1,0), 0), std::complex<double>(m(1,1), 0), std::complex<double>(m(1,2), 0),
+  std::complex<double>(m(2,0), 0), std::complex<double>(m(2,1), 0), std::complex<double>(m(2,2), 0);
+
+
+  Eigen::EigenSolver<Eigen::Matrix3d> es(m);
+  Eigen::MatrixXcd L_ = es.eigenvalues();
+
+  const double lambda0 = L_(0).real();
+  const double lambda1 = L_(1).real();
+  const double lambda2 = L_(2).real();
+
+  const double h0 = 1.0/sqrt(lambda0);
+  const double h1 = 1.0/sqrt(lambda1);
+  const double h2 = 1.0/sqrt(lambda2);
+
+  const double distorsion0 = std::pow(lambda0/lambda1 - 1, 2);
+  const double distorsion1 = std::pow(lambda0/lambda2 - 1, 2);
+  const double distorsion2 = std::pow(lambda1/lambda2 - 1, 2);
+
+  double distorsion = exp(-(distorsion0 + distorsion1 + distorsion2));
+
+  return distorsion;
+}
+/*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool surfaceFlag)
 {
+  static int j = 0;
+  static SimplexMesh test_mesh;
   std::vector<TInt> newNodes{};
 
   Variable<Eigen::Matrix3d>* metric  = nullptr;
@@ -600,100 +701,125 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
   //std::clock_t start = std::clock();
   for(auto const node : nodesAdded)
   {
+    Eigen::Matrix3d M = metricNodes->value(node);
+    Eigen::Matrix3d FF = Eigen::Matrix3d::Zero();
+
     std::vector<math::Vector3d> frames{};
     const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
+
     m_simplexMesh->getFrameAt(pt, frames);
+    FF << frames[0].X() , frames[1].X() , frames[2].X(),
+    frames[0].Y() , frames[1].Y() , frames[2].Y(),
+    frames[0].Z() , frames[1].Z() , frames[2].Z();
 
-    for(auto & f : frames)
+    //std::cout << "FF : " << std::endl << FF << std::endl;
+    //std::cout << "M : " << std::endl << M << std::endl;
+    Eigen::Matrix3d t = metricInterpolationWithDistorsion(M, FF);
+    std::vector<Eigen::Matrix3d> M_result{t, -t};
+
+    //for(auto & f : frames)
+    for(auto & t : M_result)
     {
-      Eigen::Vector3d d(f.X(), f.Y(), f.Z());
-      d = d.normalized();
-      Eigen::Matrix3d M = metricNodes->value(node);
-      M(0,0) = 1.0 /sqrt(M(0,0)); M(1,1) = 1.0 /sqrt(M(1,1)); M(2,2) = 1.0 /sqrt(M(2,2));
-      const Eigen::Vector3d vec = M * d;
-      const double m = vec.norm();
-      math::Point newCoord = pt + m*math::Point(d.x(), d.y(), d.z());
-      nodeSamplingData samplingData{};
-
-      if(m != 0.0)
+      for(unsigned i = 0 ; i < 3 ; i++)
       {
-        const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
-        TInt newNodeId = -1;
-        //compute the metric lentgh based on newNodeId and the metric at node
-        findOptimimalPosition(node, newCoord);
-        //compute the nearest Simplices of newCoord with octree
-        std::vector<TSimplexID> simplices = m_oc.findSimplicesInOc(newCoord);
-        bool inCell = false;
-        for(auto const simplex : simplices)
-        {
-          if(simplex >= 0)
-          {
-            std::vector<double> UVWT{};
-            //inCell = SimplicesCell(m_simplexMesh, simplex).isCellClose(newCoord, UVWT, 0.001);
-            inCell = SimplicesCell(m_simplexMesh, simplex).isInCell(newCoord);
-            if(inCell)
-            {
-              break;
-            }
-          }
-        }
+        //Eigen::Vector3d d(f.X(), f.Y(), f.Z());
+        Eigen::Vector3d d = t.col(i);
+        //d = d.normalized();
+        //M(0,0) = 1.0 /sqrt(M(0,0)); M(1,1) = 1.0 /sqrt(M(1,1)); M(2,2) = 1.0 /sqrt(M(2,2));
+        //const Eigen::Vector3d vec = M * d;
+        //const double m = vec.norm();
+        //math::Point newCoord = pt + m*math::Point(d.x(), d.y(), d.z());
+        math::Point newCoord = pt + math::Point(d.x(), d.y(), d.z());
+        nodeSamplingData samplingData{};
 
-        //we project initiale node on surface
-        //the good projection is determine by the minimum distance
-        if(simplices.size() != 0)
+        //if(m != 0.0)
         {
-          double minDistance = std::numeric_limits<int>::max();
-          if(!inCell)
+          const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
+          TInt newNodeId = -1;
+          //compute the metric lentgh based on newNodeId and the metric at node
+          findOptimimalPosition(node, newCoord);
+          //compute the nearest Simplices of newCoord with octree
+          std::vector<TSimplexID> simplices = m_oc.findSimplicesInOc(newCoord);
+          bool inCell = false;
+          for(auto const simplex : simplices)
           {
-            double distance;
-            math::Point goodProjection;
-            for(auto const simplex : simplices)
+            if(simplex >= 0)
             {
-              if(simplex < 0)
+              std::vector<double> UVWT{};
+              //inCell = SimplicesCell(m_simplexMesh, simplex).isCellClose(newCoord, UVWT, 0.001);
+              inCell = SimplicesCell(m_simplexMesh, simplex).isInCell(newCoord);
+              if(inCell)
               {
-                math::Point projectedPoint;
-                const SimplicesTriangle t(m_simplexMesh, simplex);
-                const std::vector<TInt> nodes = t.getNodes();
-                inCell = m_simplexMesh->pointInTriangle(newCoord,
-                                     SimplicesNode(m_simplexMesh, nodes[0]).getCoords(),
-                                     SimplicesNode(m_simplexMesh, nodes[1]).getCoords(),
-                                     SimplicesNode(m_simplexMesh, nodes[2]).getCoords(),
-                                     distance,projectedPoint);
-                if(inCell && distance < minDistance)
-                {
-                  goodProjection = projectedPoint;
-                  minDistance = distance;
-                }
+                break;
               }
             }
-
-            if(minDistance != std::numeric_limits<int>::max())
-              newCoord = goodProjection;
           }
 
-          bool onSurface = true;
-          int surfaceLabel = 0;
-          m_simplexMesh->onSurface(newCoord, surfaceLabel);
-
-          if(surfaceLabel == 0)
-            onSurface = false;
-          if(surfaceFlag == onSurface)
+          //we project initiale node on surface
+          //the good projection is determine by the minimum distance
+          if(simplices.size() != 0)
           {
-            if(minDistance != std::numeric_limits<int>::max() || inCell)
+            double minDistance = std::numeric_limits<int>::max();
+            if(!inCell)
             {
-              std::vector<TInt> neighboorNodes;
-
-              nodeFiltering(newCoord, neighboorNodes);
-              if(neighboorNodes.size() == 0)
+              double distance;
+              math::Point goodProjection;
+              for(auto const simplex : simplices)
               {
-                newNodeId = m_nodesMesh.addNode(newCoord);
-                if(surfaceFlag == true)
-                  BND_SURFACE_COLOR->set(newNodeId, surfaceLabel);
+                if(simplex < 0)
+                {
+                  math::Point projectedPoint;
+                  const SimplicesTriangle t(m_simplexMesh, simplex);
+                  const std::vector<TInt> nodes = t.getNodes();
+                  inCell = m_simplexMesh->pointInTriangle(newCoord,
+                                       SimplicesNode(m_simplexMesh, nodes[0]).getCoords(),
+                                       SimplicesNode(m_simplexMesh, nodes[1]).getCoords(),
+                                       SimplicesNode(m_simplexMesh, nodes[2]).getCoords(),
+                                       distance,projectedPoint);
+                  if(inCell && distance < minDistance)
+                  {
+                    goodProjection = projectedPoint;
+                    minDistance = distance;
+                  }
+                }
+              }
 
-                m_nodesMesh.setAnalyticMetric(newNodeId, m_simplexMesh->getOctree());
-                newNodes.push_back(newNodeId);
-                std::unordered_set<TInt> seen{};
-                m_nodesMesh.getOctree()->addNode(newNodeId, seen);
+              if(minDistance != std::numeric_limits<int>::max())
+                newCoord = goodProjection;
+            }
+
+            bool onSurface = true;
+            int surfaceLabel = 0;
+            m_simplexMesh->onSurface(newCoord, surfaceLabel);
+
+            if(surfaceLabel == 0)
+              onSurface = false;
+            if(surfaceFlag == onSurface)
+            {
+              if(minDistance != std::numeric_limits<int>::max() || inCell)
+              {
+                std::vector<TInt> neighboorNodes;
+                nodeFiltering(newCoord, neighboorNodes);
+                if(neighboorNodes.size() == 0)
+                {
+                  newNodeId = m_nodesMesh.addNode(newCoord);
+                  if(surfaceFlag == true)
+                    BND_SURFACE_COLOR->set(newNodeId, surfaceLabel);
+
+                  m_nodesMesh.setAnalyticMetric(newNodeId, m_simplexMesh->getOctree());
+                  newNodes.push_back(newNodeId);
+                  std::unordered_set<TInt> seen{};
+                  m_nodesMesh.getOctree()->addNode(newNodeId, seen);
+
+                  TInt nnn = test_mesh.addNode(newCoord);
+                  test_mesh.addTetraedre(nnn, nnn, nnn, nnn);
+                  gmds::ISimplexMeshIOService ioServiceVOLUME(&test_mesh);
+                  gmds::VTKWriter vtkWriterVOLUME(&ioServiceVOLUME);
+                  vtkWriterVOLUME.setCellOptions(gmds::N|gmds::R);
+                  vtkWriterVOLUME.setDataOptions(gmds::N|gmds::R);
+                  vtkWriterVOLUME.write("testSurfaceNode1_" + std::to_string(j) + ".vtk");
+                  ++j;
+                }
               }
             }
           }
@@ -718,7 +844,8 @@ void MetricFFPointgeneration::processNodesStructure()
     {
       std::vector<TInt> neighboorNodes{};
       const math::Point pt = SimplicesNode(&m_nodesMesh, nodeId).getCoords();
-      const double k = 1.2 * sqrt(2.0);
+      const double k = 1.2 * sqrt(2.0) ;
+      //const double k = 0.7 * sqrt(2.0) * 0.5;
       nodeFiltering(pt, neighboorNodes, k);
 
       //comparing the distance and the angle divergence with the all the vector from frames
@@ -910,13 +1037,11 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TI
 {
   double epsilon = 1E-3;
   Variable<Eigen::Matrix3d>* metric  = nullptr;
-  Variable<Eigen::Matrix3d>* metricNode  = nullptr;
   gmds::Variable<int>* BND_CURVE_COLOR_NODE = nullptr;
   gmds::Variable<int>* BND_CURVE_VERTEX_NODE = nullptr;
 
   try{
     metric = m_simplexMesh->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
-    metricNode = m_nodesMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
     BND_CURVE_COLOR_NODE = m_nodesMesh.getVariable<int, SimplicesNode>("BND_CURVE_COLOR");
     BND_CURVE_VERTEX_NODE = m_nodesMesh.getVariable<int, SimplicesNode>("BND_VERTEX_COLOR");
   }catch (gmds::GMDSException e)

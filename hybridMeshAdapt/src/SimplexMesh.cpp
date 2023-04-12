@@ -4368,7 +4368,7 @@ void SimplexMesh::getEdgeSizeInfowithMetric(double& meanEdges, double& minEdge, 
 Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, Octree* octree) const
 {
   double epsilon = 0.01;
-  Eigen::Matrix3d m = Eigen::MatrixXd::Identity(3, 3);
+  Eigen::Matrix3d m = Eigen::MatrixXd::Zero(3, 3);
   std::vector<double> borders = octree->getBorderOctree();
   double x_min = borders[0], x_max = borders[1];
   double y_min = borders[2], y_max = borders[3];
@@ -4385,9 +4385,9 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, Octree* octree) 
   /*double metricX = 0.05*(1.0 - ty) + 0.1*ty;
   double metricY = 0.05*(1.0 - ty) + 0.1*ty;
   double metricZ = 0.05*(1.0 - ty) + 0.1*ty;*/
-  double metricX = 0.5;
-  double metricY = 0.5;
-  double metricZ = 0.5;
+  double metricX = 0.1;
+  double metricY = 0.1;
+  double metricZ = 0.1;
 
   m(0,0) = 1.0 / (metricX*metricX);
   m(1,1) = 1.0 / (metricY*metricY);
@@ -4403,7 +4403,9 @@ void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
     metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
   }catch (gmds::GMDSException e)
   {
-    throw gmds::GMDSException(e);
+    metric = newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    (*metric)[node] = Eigen::Matrix3d::Zero();
+    //throw gmds::GMDSException(e);
   }
 
   //analytic isotrope metric here !
@@ -4425,9 +4427,9 @@ void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
   /*double metricX = 0.05*(1.0 - ty) + 0.1*ty;
   double metricY = 0.05*(1.0 - ty) + 0.1*ty;
   double metricZ = 0.05*(1.0 - ty) + 0.1*ty;*/
-  double metricX = 0.5;
-  double metricY = 0.5;
-  double metricZ = 0.5;
+  double metricX = 0.1;
+  double metricY = 0.1;
+  double metricZ = 0.1;
 
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
   (*metric)[node](1,1) = 1.0 / (metricY*metricY);
@@ -4436,6 +4438,15 @@ void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
 /******************************************************************************/
 bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>& frames)
 {
+  frames.clear();
+  math::Vector3d e1 = math::Vector3d({sqrt(2.0)/2, 0.0, -sqrt(2.0)/2});
+  math::Vector3d e2({0.0, 1.0, 0.0});
+  math::Vector3d e3({sqrt(2.0)/2, 0.0, sqrt(2.0)/2});
+  frames.push_back(e1);
+  frames.push_back(e2);
+  frames.push_back(e3);
+  return false;
+
   frames.clear();
   frames.resize(6);
   Variable<math::Vector3d>* FF_X_NEG = nullptr;
@@ -4503,6 +4514,7 @@ bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>&
 
     }
   }
+
   return false;
 }
 /******************************************************************************/
