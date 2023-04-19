@@ -158,6 +158,9 @@ void Octree::initialize()
         {
           s.insert(simplex);
           m_simplices.push_back(simplex);
+          if(simplex < 0){
+            m_triangles.push_back(simplex);
+          }
         }
       }
 
@@ -225,6 +228,9 @@ void Octree::preprocess()
           {
             s.insert(simplex);
             m_simplices.push_back(simplex);
+            if(simplex < 0){
+              m_triangles.push_back(simplex);
+            }
           }
         }
       }
@@ -324,6 +330,30 @@ std::vector<TSimplexID> Octree::findSimplicesInOc(const math::Point& pt)
     return m_parentOc->m_simplices;
 
   return m_parentOc->m_parentOc->m_simplices;
+
+}
+/******************************************************************************/
+std::vector<TSimplexID> Octree::findTriangleInOc(const math::Point& pt)
+{
+  //return std::vector<TInt>{-1};
+  for(auto const & oc : m_ocs)
+  {
+    if(oc != nullptr)
+    {
+      if(oc->belongToOc(pt))
+      {
+        return oc->findTriangleInOc(pt);
+      }
+    }
+  }
+
+  if(m_parentOc == nullptr)
+    return m_triangles;
+
+  if(m_parentOc->m_parentOc == nullptr)
+    return m_parentOc->m_triangles;
+
+  return m_parentOc->m_parentOc->m_triangles;
 
 }
 /******************************************************************************/

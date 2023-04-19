@@ -55,9 +55,22 @@ int main(int argc, char* argv[])
     simplexMesh.buildSimplexHull();
     simplexMesh.setSurfacesAndCurvesIndx();
 
-    Octree oc(&simplexMesh, 50);
+    //Octree oc(&simplexMesh, 50);
+    Octree oc(&simplexMesh, 20);
     simplexMesh.setOctree(&oc);
 
+    /*const math::Point coord = math::Point(0.0, 0.5, -5.0);
+    const std::vector<TInt> simplices = simplexMesh.getOctree()->findTriangleInOc(coord);
+    std::cout << "simplices.size() -> " << simplices.size() << std::endl;
+    for(auto const s : simplices)
+      std::cout << "s -> " << s << std::endl;
+    simplexMesh.deleteAllSimplicesBut(simplices);
+    gmds::ISimplexMeshIOService ioServiceTriangles(&simplexMesh);
+    gmds::VTKWriter vtkWriter(&ioServiceTriangles);
+  	vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
+  	vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
+  	vtkWriter.write("triangles.vtk");
+    throw gmds::GMDSException("END");*/
     //==================================================================
     // MODIFICATION OF THE INPUT MESH'S METRIC
     //==================================================================

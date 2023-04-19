@@ -58,6 +58,8 @@ namespace gmds
 
       std::vector<TSimplexID> findSimplicesInOc(const math::Point& pt);
 
+      std::vector<TSimplexID> findTriangleInOc(const math::Point& pt);
+
       void writeOctree(Mesh& mesh, std::vector<std::vector<Node>>& nodes) const ;
 
       void setRootOctree(Octree* rootOc){m_rootOc = rootOc;}
@@ -66,6 +68,10 @@ namespace gmds
 
       std::vector<double> getBorderOctree() const;
 
+      std::vector<int> getSimplices() const {return m_simplices;}
+
+      std::vector<int> getTriangles() const {return m_triangles;}
+
     private:
       double m_xmin, m_xmax, m_ymin, m_ymax, m_zmin, m_zmax;
       unsigned int m_numbersMaxSimplices;
@@ -73,6 +79,7 @@ namespace gmds
 
       std::vector<TInt> m_nodes;
       std::vector<TInt> m_simplices;
+      std::vector<TInt> m_triangles;
       std::vector<Octree*> m_ocs{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
       Octree* m_rootOc = nullptr;
       Octree* m_parentOc = nullptr;

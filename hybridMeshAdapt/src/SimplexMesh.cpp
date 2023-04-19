@@ -4472,12 +4472,12 @@ void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
 bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>& frames)
 {
   frames.clear();
-  math::Vector3d e1 = math::Vector3d({sqrt(2.0)/2, 0.0, -sqrt(2.0)/2});
+  /*math::Vector3d e1 = math::Vector3d({sqrt(2.0)/2, 0.0, -sqrt(2.0)/2});
   math::Vector3d e2({0.0, 1.0, 0.0});
-  math::Vector3d e3({sqrt(2.0)/2, 0.0, sqrt(2.0)/2});
-  /*math::Vector3d e1 = math::Vector3d({1.0, 0.0, 0.0});
+  math::Vector3d e3({sqrt(2.0)/2, 0.0, sqrt(2.0)/2});*/
+  math::Vector3d e1 = math::Vector3d({1.0, 0.0, 0.0});
   math::Vector3d e2({0.0, 1.0, 0.0});
-  math::Vector3d e3({0.0, 0.0, 1.0});*/
+  math::Vector3d e3({0.0, 0.0, 1.0});
   frames.push_back(e1);
   frames.push_back(e2);
   frames.push_back(e3);

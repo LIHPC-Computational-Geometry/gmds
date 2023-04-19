@@ -1077,6 +1077,10 @@ double MetricFFPointgeneration::computeDistorsionMetric(const Eigen::Matrix3d & 
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool surfaceFlag)
 {
+  std::clock_t c_start = std::clock();
+  double durationTOT;
+  double durationRec;
+
   const double epsilon = 1E-2;
   std::vector<TInt> newNodes{};
   Variable<Eigen::Matrix3d>* metric  = nullptr;
@@ -1096,6 +1100,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
 
   for(auto const node : nodesAdded)
   {
+    std::cout << "node -> " << node << std::endl;
     Eigen::Matrix3d M = metricNodes->value(node);
     Eigen::Matrix3d FF = Eigen::Matrix3d::Zero();
 
@@ -1119,8 +1124,9 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
         nodeSamplingData samplingData{};
         const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
         TInt newNodeId = -1;
+        std::clock_t c_start1 = std::clock();
         findOptimimalPosition(node, newCoord, surfaceFlag);
-        //if(belongToEdge(newCoord))
+        durationRec += std::clock() - c_start1;        //if(belongToEdge(newCoord))
           //continue;
 
         std::vector<TSimplexID> simplices = m_oc.findSimplicesInOc(newCoord);
@@ -1210,7 +1216,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
                 m_nodesMesh.getOctree()->addNode(newNodeId, seen);
 
                 //////
-                static int c = 0;
+                /*static int c = 0;
                 for(auto const & d : m_nodeStructure)
                 {
                   TInt node = d.first;
@@ -1227,7 +1233,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
                 vtkWriterGRIDTEST.setCellOptions(gmds::N|gmds::R|gmds::F);
                 vtkWriterGRIDTEST.setDataOptions(gmds::N|gmds::R|gmds::F);
                 vtkWriterGRIDTEST.write("test_" + std::to_string(c) + ".vtk");
-                c++;
+                c++;*/
                 //////
               }
               else
@@ -1262,6 +1268,11 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
       }
     }
   }
+
+  durationTOT = ( std::clock() - c_start ) / (double) CLOCKS_PER_SEC;
+  std::cout<<"durationTOT : "<< durationTOT << std::endl;;
+  std::cout<<"durationRec : "<< durationRec / (double) CLOCKS_PER_SEC << std::endl;;
+
 
   nodesAdded.clear();
   std::copy(newNodes.begin(), newNodes.end(), std::back_inserter(nodesAdded));
@@ -1434,11 +1445,13 @@ void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point
     double minDistance = std::numeric_limits<int>::max();
     double distance;
     math::Point goodProjection;
-    const gmds::BitVector& triangleVec = m_simplexMesh->getBitVectorTri();
-    //for(auto const simplex : simplices)
-    for(unsigned int triangle = 1 ; triangle < triangleVec.capacity() ; triangle++)
+    //const gmds::BitVector& triangleVec = m_simplexMesh->getBitVectorTri();
+    //for(unsigned int triangle = 1 ; triangle < triangleVec.capacity() ; triangle++)
+    std::vector<TInt> triangles = m_simplexMesh->getOctree()->findTriangleInOc(newCoord);
+    for(auto const triangle : triangles)
     {
-      if(triangleVec[triangle] != 0)
+      //if(triangleVec[triangle] != 0)
+      if(triangle < 0)
       {
         math::Point projectedPoint;
         const SimplicesTriangle t(m_simplexMesh, triangle);

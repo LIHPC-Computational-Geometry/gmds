@@ -76,9 +76,11 @@ namespace gmds{
 
         math::Point computeTheEdgeNodeCoordinate(const double u, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const;
 
-        void findOptimimalPosition(const TInt node, math::Point &newCoord, bool surfaceFlag = false, int cpt = 10, double epsilon = 0.01) ;
+        void findOptimimalPosition0(const TInt node, math::Point &newCoord, bool surfaceFlag = false, int cpt = 10, double epsilon = 0.1/*0.01*/) ;
 
-        void nodeFiltering(const math::Point& pt, std::vector<TInt> & neighboorNode, double k = 1.1 * (sqrt(2.0) * 0.5), bool flag = false);
+        void findOptimimalPosition(const TInt node, math::Point &newCoord, bool surfaceFlag = false, int cpt = 10, double epsilon = 0.1/*0.01*/) ;
+
+        void nodeFiltering(const math::Point& pt, std::vector<TInt> & neighboorNode, double k = 0.9 * (sqrt(2.0) * 0.5), bool flag = false);
 
         void computeQuadFaces(std::set<std::vector<TInt>> & faces) const ;
 
@@ -101,6 +103,9 @@ namespace gmds{
         void sortBySurfaceNodeAdded(std::vector<TInt>& nodesAdded);
 
         bool belongToEdge(const math::Point & nodeCoord);
+
+        //This function will order the first curve nodes
+        void swapNodeInLayer(std::vector<TInt>& nodesAdded);
 
       private:
 
