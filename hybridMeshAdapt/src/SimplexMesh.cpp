@@ -183,6 +183,34 @@ SimplexMesh::~SimplexMesh()
   }*/
 }
 /*****************************************************************************/
+void SimplexMesh::setSurfacesAndCurvesIndx()
+{
+  Variable<TInt>* BND_CURVE_COLOR = nullptr;
+  Variable<TInt>* BND_VERTEX_COLOR = nullptr;
+  Variable<TInt>* BND_SURFACE_COLOR = nullptr;
+  try {
+    BND_CURVE_COLOR = getVariable<TInt,SimplicesNode>("BND_CURVE_COLOR");
+    BND_SURFACE_COLOR = getVariable<TInt,SimplicesNode>("BND_SURFACE_COLOR");
+  }catch (GMDSException e) {
+    throw gmds::GMDSException(e);
+  }
+
+  for(unsigned int i = 0 ; i < m_node_ids.capacity() ; i++)
+  {
+    if(m_node_ids[i] != 0)
+    {
+      if((*BND_CURVE_COLOR)[i] != 0)
+      {
+        curvesIndx.insert((*BND_CURVE_COLOR)[i]);
+      }
+      else if((*BND_SURFACE_COLOR)[i] != 0)
+      {
+        surfacesIndx.insert((*BND_SURFACE_COLOR)[i]);
+      }
+    }
+  }
+}
+/*****************************************************************************/
 void SimplexMesh::deleteAllSimplicesBut(const std::vector<TSimplexID> & simplices)
 {
   if(simplices.size() != 0)
@@ -810,7 +838,7 @@ void SimplexMesh::buildTriBaseAndAdjLocal(const TSimplexID & triIndx)
     else
     {
       //TODO exception
-      std::cout << "otherNode.size() != 1 -> " << otherNode.size() << std::endl;
+      //std::cout << "otherNode.size() != 1 -> " << otherNode.size() << std::endl;
     }
   }
 }
@@ -4385,9 +4413,9 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, Octree* octree) 
   /*double metricX = 0.05*(1.0 - ty) + 0.1*ty;
   double metricY = 0.05*(1.0 - ty) + 0.1*ty;
   double metricZ = 0.05*(1.0 - ty) + 0.1*ty;*/
-  double metricX = 0.1;
-  double metricY = 0.1;
-  double metricZ = 0.1;
+  double metricX = 0.30;
+  double metricY = 0.30;
+  double metricZ = 0.30;
 
   m(0,0) = 1.0 / (metricX*metricX);
   m(1,1) = 1.0 / (metricY*metricY);
@@ -4430,9 +4458,9 @@ void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
   /*double metricX = 0.05*(1.0 - ty) + 0.1*ty;
   double metricY = 0.05*(1.0 - ty) + 0.1*ty;
   double metricZ = 0.05*(1.0 - ty) + 0.1*ty;*/
-  double metricX = 0.1;
-  double metricY = 0.1;
-  double metricZ = 0.1;
+  double metricX = 0.30;
+  double metricY = 0.30;
+  double metricZ = 0.30;
 
 
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
@@ -4447,6 +4475,9 @@ bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>&
   math::Vector3d e1 = math::Vector3d({sqrt(2.0)/2, 0.0, -sqrt(2.0)/2});
   math::Vector3d e2({0.0, 1.0, 0.0});
   math::Vector3d e3({sqrt(2.0)/2, 0.0, sqrt(2.0)/2});
+  /*math::Vector3d e1 = math::Vector3d({1.0, 0.0, 0.0});
+  math::Vector3d e2({0.0, 1.0, 0.0});
+  math::Vector3d e3({0.0, 0.0, 1.0});*/
   frames.push_back(e1);
   frames.push_back(e2);
   frames.push_back(e3);

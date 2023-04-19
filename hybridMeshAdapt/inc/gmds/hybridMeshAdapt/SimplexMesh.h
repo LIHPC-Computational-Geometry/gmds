@@ -390,7 +390,7 @@ class SimplexMesh
 
   /*getting  properties of the diffferent data of the mesh*/
   template<typename T, class C>
-  gmds::Variable<T>* getVariable(const std::string&& AName);
+  gmds::Variable<T>* getVariable(const std::string&& AName) const;
 
   std::vector<VariableItf*> getAllVariables(ECellType AType) const;
 
@@ -449,7 +449,16 @@ class SimplexMesh
 
   void onSurface(const math::Point& pt, int& surfaceLabel) ;
 
+  void setSurfacesAndCurvesIndx();
+
+  std::set<unsigned int> getSurfacesIndx() const {return surfacesIndx;}
+
+  std::set<unsigned int> getCurveIndx() const {return curvesIndx;}
+
 private:
+
+  std::set<unsigned int> surfacesIndx{};
+  std::set<unsigned int> curvesIndx{};
 
   //node coordinates with bitvector
   TInt nodeIndx = 0;
@@ -574,7 +583,7 @@ gmds::Variable<T>* SimplexMesh::newVariable(const std::string& AName)
 }
 /******************************************************************************/
 template<typename T, class C>
-gmds::Variable<T>* SimplexMesh::getVariable(const std::string&& AName)
+gmds::Variable<T>* SimplexMesh::getVariable(const std::string&& AName) const 
 {
   gmds::Variable<T>* var = nullptr;
 

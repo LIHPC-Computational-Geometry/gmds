@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
     simplexMesh.buildAdjInfoGlobal();
     simplexMesh.initializeEdgeStructure();
     simplexMesh.buildSimplexHull();
-
+    simplexMesh.setSurfacesAndCurvesIndx();
 
     Octree oc(&simplexMesh, 50);
     simplexMesh.setOctree(&oc);
@@ -65,6 +65,7 @@ int main(int argc, char* argv[])
     Eigen::Matrix3d m =  Eigen::MatrixXd::Identity(3, 3);
     metricNode->setValuesTo(m);
     const gmds::BitVector& meshNode = simplexMesh.getBitVectorNodes();
+
     for(unsigned int nodeId = 0 ; nodeId < meshNode.capacity() ; nodeId++)
     {
       if(meshNode[nodeId] == 1)

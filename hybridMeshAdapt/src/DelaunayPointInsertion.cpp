@@ -184,7 +184,6 @@ bool DelaunayPointInsertion::isNodeInCircumSphere(SimplexMesh* simplexMesh, cons
         Metric<Eigen::Matrix3d> metric0 =  Metric<Eigen::Matrix3d>(m0);
         const math::Vector3d O = math::Vector3d({Ox, Oy, Oz});
         double dist = metric0.metricDist(vec(node.getCoords()), O, metric0);
-        std::cout << "dist -> " << dist << std::endl;
         double alpha = dist / metric0.metricDist(vec(S0.getCoords()), O, metric0);
         flag = (alpha <= 1.0)? true : false;
     }

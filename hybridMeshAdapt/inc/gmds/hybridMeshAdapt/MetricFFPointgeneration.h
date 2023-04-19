@@ -76,9 +76,9 @@ namespace gmds{
 
         math::Point computeTheEdgeNodeCoordinate(const double u, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const;
 
-        void findOptimimalPosition(const TInt node, math::Point &newCoord) ;
+        void findOptimimalPosition(const TInt node, math::Point &newCoord, bool surfaceFlag = false, int cpt = 10, double epsilon = 0.01) ;
 
-        void nodeFiltering(const math::Point& pt, std::vector<TInt> & neighboorNode, double k = 0.98 * (sqrt(2.0) * 0.5), bool flag = false);
+        void nodeFiltering(const math::Point& pt, std::vector<TInt> & neighboorNode, double k = 1.1 * (sqrt(2.0) * 0.5), bool flag = false);
 
         void computeQuadFaces(std::set<std::vector<TInt>> & faces) const ;
 
@@ -88,7 +88,30 @@ namespace gmds{
 
         void processNodesStructure();
 
+        void addNodeToLayer(const TInt nodeId, const TInt fromNode = -1, bool flag = false);
+
+        void incrementLayer();
+
+        void initializeGridWithEdge();
+
+        void correctionNodeStructure();
+
+        void correctionVertexNode();
+
+        void sortBySurfaceNodeAdded(std::vector<TInt>& nodesAdded);
+
+        bool belongToEdge(const math::Point & nodeCoord);
+
       private:
+
+        unsigned int m_layerNbr;
+
+        std::unordered_map<TInt, std::list<TInt>> m_layers;
+
+        std::unordered_map<TInt, int> m_nodeLayerNbr;
+
+        std::unordered_map<TInt, std::vector<TInt>> m_listEdge;
+
         std::unordered_map<TInt, std::vector<TInt>> m_nodeStructure;
 
         SimplexMesh* m_simplexMesh = nullptr;
