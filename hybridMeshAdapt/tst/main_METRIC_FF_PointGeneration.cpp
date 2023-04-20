@@ -56,20 +56,23 @@ int main(int argc, char* argv[])
     simplexMesh.setSurfacesAndCurvesIndx();
 
     //Octree oc(&simplexMesh, 50);
-    Octree oc(&simplexMesh, 20);
+    Octree oc(&simplexMesh, 10);
     simplexMesh.setOctree(&oc);
 
-    /*const math::Point coord = math::Point(0.0, 0.5, -5.0);
-    const std::vector<TInt> simplices = simplexMesh.getOctree()->findTriangleInOc(coord);
-    std::cout << "simplices.size() -> " << simplices.size() << std::endl;
-    for(auto const s : simplices)
-      std::cout << "s -> " << s << std::endl;
-    simplexMesh.deleteAllSimplicesBut(simplices);
-    gmds::ISimplexMeshIOService ioServiceTriangles(&simplexMesh);
+    /*const math::Point coord0 = math::Point(0.172988, -0.492472, -5.0016);
+    const math::Point coord1 = math::Point(0.0829878, -0.492472, -5.0016);
+    //const std::vector<TInt> simplices = simplexMesh.getOctree()->findTriangleInOc(coord);
+    //std::cout << "simplices.size() -> " << simplices.size() << std::endl;
+    SimplexMesh meshTest;
+    TInt n0 = meshTest.addNode(coord0);
+    TInt n1 = meshTest.addNode(coord1);
+    meshTest.addTetraedre(n0, n0, n0, n0);
+    meshTest.addTetraedre(n1, n1, n1, n1);
+    gmds::ISimplexMeshIOService ioServiceTriangles(&meshTest);
     gmds::VTKWriter vtkWriter(&ioServiceTriangles);
   	vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
   	vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
-  	vtkWriter.write("triangles.vtk");
+  	vtkWriter.write("test0.vtk");
     throw gmds::GMDSException("END");*/
     //==================================================================
     // MODIFICATION OF THE INPUT MESH'S METRIC

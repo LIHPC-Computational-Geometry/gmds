@@ -139,7 +139,7 @@ void Octree::writeOctree(Mesh& mesh, std::vector<std::vector<Node>>& nodes) cons
 void Octree::initialize()
 {
   const BitVector& nodesVector = m_simplexMesh->getBitVectorNodes();
-  double epsilon = 10E-4;
+  double epsilon = 1E-1;
   double min = std::numeric_limits<double>::min();
   double max = std::numeric_limits<double>::max();
   std::set<TSimplexID> s{};

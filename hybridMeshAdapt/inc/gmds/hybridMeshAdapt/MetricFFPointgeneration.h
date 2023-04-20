@@ -80,15 +80,13 @@ namespace gmds{
 
         void findOptimimalPosition(const TInt node, math::Point &newCoord, bool surfaceFlag = false, int cpt = 10, double epsilon = 0.1/*0.01*/) ;
 
-        void nodeFiltering(const math::Point& pt, std::vector<TInt> & neighboorNode, double k = 0.9 * (sqrt(2.0) * 0.5), bool flag = false);
+        void nodeFiltering(const math::Point& pt, const TInt fromNode, std::vector<TInt> & neighboorNode, double k = 1.1 * (sqrt(2.0) * 0.5), bool flag = false);
 
         void computeQuadFaces(std::set<std::vector<TInt>> & faces) const ;
 
         void computeHexa(std::set<std::vector<TInt>> & hexas) ;
 
         void correctNodeLabel() ;
-
-        void processNodesStructure();
 
         void addNodeToLayer(const TInt nodeId, const TInt fromNode = -1, bool flag = false);
 
