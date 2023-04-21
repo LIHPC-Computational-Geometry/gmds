@@ -132,6 +132,13 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	 */
 	void ComputeValid_GFE();
 	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	* \param[in]
+		*
+		* \return
+	 */
+	void ComputeValidLoop_GFE();
+	/*-------------------------------------------------------------------*/
  private:
 	/** the quad mesh we work on */
 	Mesh *m_mesh;
