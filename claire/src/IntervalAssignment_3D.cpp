@@ -69,8 +69,8 @@ IntervalAssignment_3D::ComputeSingleSheet(TCellID e_id)
 
 	}
 
-	m_mesh->unmarkAll<Node>(mark_isTreated);
-	m_mesh->freeMark<Node>(mark_isTreated);
+	m_mesh->unmarkAll<Edge>(mark_isTreated);
+	m_mesh->freeMark<Edge>(mark_isTreated);
 
 	return sheet;
 }
@@ -100,8 +100,8 @@ IntervalAssignment_3D::ComputeSheets(){
 		}
 	}
 
-	m_mesh->unmarkAll<Node>(mark_isTreated);
-	m_mesh->freeMark<Node>(mark_isTreated);
+	m_mesh->unmarkAll<Edge>(mark_isTreated);
+	m_mesh->freeMark<Edge>(mark_isTreated);
 
 	return map_chords;
 
