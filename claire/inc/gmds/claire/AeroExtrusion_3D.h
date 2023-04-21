@@ -267,6 +267,12 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	 */
 	void TemplateFace(TCellID f_id, Front_3D &Front_IN, std::map<TCellID, TCellID>& map_new_nodes);
 	/*-------------------------------------------------------------------*/
+	/** @brief Write a file for debug
+		*
+		* \return
+	 */
+	void WriteVTKforDebug();
+	/*-------------------------------------------------------------------*/
  private:
 	/** triangular mesh we work on */
 	Mesh *m_meshT;
