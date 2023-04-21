@@ -78,7 +78,7 @@ AeroPipeline_3D::execute(){
 	// Generate the blocking of the geometry surface.
 	GeometrySurfaceBlockingGeneration();
 	// Link the surface blocking to the geometry.
-	SurfaceBlockingClassification();
+	//SurfaceBlockingClassification();
 	// Write the surface blocking to check the classification
 	gmds::IGMeshIOService ioService(m_meshHex);
 	gmds::VTKWriter vtkWriter(&ioService);
