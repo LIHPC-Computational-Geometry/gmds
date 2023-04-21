@@ -703,12 +703,10 @@ AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<T
 	var_face_couche_id->set(f_2_new_id, AFront.getFrontID()+1);
 	var_face_couche_id->set(f_3_new_id, AFront.getFrontID()+1);
 
-	gmds::IGMeshIOService ioService(m_meshH);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::R);
-	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
-	m_iteration++;
+	if (m_params_aero.with_debug_files)
+	{
+		WriteVTKforDebug();
+	}
 
 	return r_id;
 }
@@ -853,12 +851,10 @@ AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double
 		}
 	}
 
-	gmds::IGMeshIOService ioService(m_meshH);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::R);
-	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
-	m_iteration++;
+	if (m_params_aero.with_debug_files)
+	{
+		WriteVTKforDebug();
+	}
 
 	return r_id;
 }
@@ -984,12 +980,10 @@ AeroExtrusion_3D::TemplateNode1Corner2End(Front_3D &AFront, TCellID n_id, double
 	//<----
 
 	// Write the new hexa in a VTK file <----
-	gmds::IGMeshIOService ioService(m_meshH);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::R);
-	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
-	m_iteration++;
+	if (m_params_aero.with_debug_files)
+	{
+		WriteVTKforDebug();
+	}
 	//<----
 
 	return r_id;
@@ -1139,12 +1133,10 @@ AeroExtrusion_3D::TemplateNode3End(Front_3D &AFront, TCellID n_id, TInt mark_edg
 		m_FaceInfo[face_id].next_nodes[n_f2_diag.id()] = n_new.id();
 	}
 
-	gmds::IGMeshIOService ioService(m_meshH);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::R);
-	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
-	m_iteration++;
+	if (m_params_aero.with_debug_files)
+	{
+		WriteVTKforDebug();
+	}
 
 	return r_id;
 }
@@ -1311,12 +1303,10 @@ AeroExtrusion_3D::TemplateNode3Corner3End(Front_3D &AFront, TCellID n_id, double
 	m_meshH->mark(ec[2], mark_edgesTreated);
 
 	// Write the new hexa in a VTK file <----
-	gmds::IGMeshIOService ioService(m_meshH);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::R);
-	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
-	m_iteration++;
+	if (m_params_aero.with_debug_files)
+	{
+		WriteVTKforDebug();
+	}
 	//<----
 
 	return r_id;
@@ -1481,12 +1471,10 @@ AeroExtrusion_3D::TemplateNode2Corner2End(Front_3D &AFront, TCellID n_id, double
 	// <----
 
 	// Write the new hexa in a VTK file <----
-	gmds::IGMeshIOService ioService(m_meshH);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::R);
-	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
-	m_iteration++;
+	if (m_params_aero.with_debug_files)
+	{
+		WriteVTKforDebug();
+	}
 	//<----
 
 	return hexas_id;
@@ -1652,12 +1640,10 @@ AeroExtrusion_3D::TemplateNode2Corner1Reversal(Front_3D &AFront, TCellID n_id, d
 	// <----
 
 	// Write the new hexa in a VTK file <----
-	gmds::IGMeshIOService ioService(m_meshH);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::R);
-	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
-	m_iteration++;
+	if (m_params_aero.with_debug_files)
+	{
+		WriteVTKforDebug();
+	}
 	//<----
 
 	return hexas_id;
@@ -1784,12 +1770,10 @@ AeroExtrusion_3D::TemplateNode2End1Reversal(Front_3D &AFront, TCellID n_id, doub
 	// <----
 
 	// Write the new hexa in a VTK file <----
-	gmds::IGMeshIOService ioService(m_meshH);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::R);
-	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
-	m_iteration++;
+	if (m_params_aero.with_debug_files)
+	{
+		WriteVTKforDebug();
+	}
 	//<----
 
 	return hexas_id;
@@ -2028,12 +2012,10 @@ AeroExtrusion_3D::TemplateEdgeCorner(Front_3D &AFront, TCellID e_id, double dc)
 	var_face_couche_id->set(f_1_new_id, AFront.getFrontID()+1);
 	var_face_couche_id->set(f_2_new_id, AFront.getFrontID()+1);
 
-	gmds::IGMeshIOService ioService(m_meshH);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::R);
-	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
-	m_iteration++;
+	if (m_params_aero.with_debug_files)
+	{
+		WriteVTKforDebug();
+	}
 
 	return r_id;
 }
@@ -2128,12 +2110,10 @@ AeroExtrusion_3D::TemplateEdgeEnd(Front_3D &AFront, TCellID e_id, double dc, TIn
 	m_meshH->mark(m_meshH->get<Face>(e_front_faces[0]), mark_facesTreated);
 	m_meshH->mark(m_meshH->get<Face>(e_front_faces[1]), mark_facesTreated);
 
-	gmds::IGMeshIOService ioService(m_meshH);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::R);
-	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
-	m_iteration++;
+	if (m_params_aero.with_debug_files)
+	{
+		WriteVTKforDebug();
+	}
 
 	return r_id;
 }
@@ -2365,12 +2345,10 @@ AeroExtrusion_3D::TemplateEdgeReversal(Front_3D &AFront, TCellID e_id, double dc
 	// <----
 
 	// Write the new hexa in a VTK file <----
-	gmds::IGMeshIOService ioService(m_meshH);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::R);
-	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
-	m_iteration++;
+	if (m_params_aero.with_debug_files)
+	{
+		WriteVTKforDebug();
+	}
 	//<----
 
 	return hexas_id;
@@ -2407,12 +2385,19 @@ AeroExtrusion_3D::TemplateFace(TCellID f_id, Front_3D &Front_IN, std::map<TCellI
 	TCellID f_new_layer_id = math::Utils::GetOrCreateQuadAndConnectivities(m_meshH, n0.id(), n1.id(), n2.id(), n3.id());
 	var_face_couche_id->set(f_new_layer_id, Front_IN.getFrontID()+1);
 
+	if (m_params_aero.with_debug_files)
+	{
+		WriteVTKforDebug();
+	}
+}
+/*------------------------------------------------------------------------*/
+void AeroExtrusion_3D::WriteVTKforDebug()
+{
 	gmds::IGMeshIOService ioService(m_meshH);
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::R);
 	vtkWriter.setDataOptions(gmds::N|gmds::R);
 	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
 	m_iteration++;
-
 }
 /*------------------------------------------------------------------------*/
