@@ -396,7 +396,8 @@ FrontEdgesNodesClassification_3D::ComputeOneGFE(TCellID n_id, TCellID e_id)
 	Edge e_loc = m_mesh->get<Edge>(e_id);
 	Node n_loc = e_loc.getOppositeNode(m_mesh->get<Node>(n_id));
 	while (m_NodesClassification->value(n_loc.id()) == 2
-	       && !m_mesh->isMarked(e_loc, mark_EdgeUsed))
+	       && !m_mesh->isMarked(e_loc, mark_EdgeUsed)
+	       && m_EdgesClassification->value(e_loc.id()) == m_EdgesClassification->value(new_GFE.edges_id[0]))
 	{
 	   m_mesh->mark(e_loc, mark_EdgeUsed);
 	   std::vector<Edge> n_loc_edges = n_loc.get<Edge>();
@@ -480,6 +481,11 @@ FrontEdgesNodesClassification_3D::isThisPathValidForTemplates(Global_Feature_Edg
 	if (GFE.edges_id.size() < 3
 	    && singleNodeClassification(GFE.Start_n_id) == 1
 	    && singleNodeClassification(GFE.End_n_id) == 1)
+	{
+		isValid = true;
+	}
+	if (GFE.Start_n_id == GFE.End_n_id
+	    && GFE.edges_id.size() >= 2)		// Loop paths
 	{
 		isValid = true;
 	}
