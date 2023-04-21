@@ -38,6 +38,7 @@ FrontEdgesNodesClassification_3D::execute()
 	 */
 	//m_All_global_feature_edges = ComputeAllGFE();
 	ComputeValid_GFE();
+	ComputeValidLoop_GFE();
 
 	return FrontEdgesNodesClassification_3D::SUCCESS;
 }
@@ -397,6 +398,7 @@ FrontEdgesNodesClassification_3D::ComputeOneGFE(TCellID n_id, TCellID e_id)
 	Node n_loc = e_loc.getOppositeNode(m_mesh->get<Node>(n_id));
 	while (m_NodesClassification->value(n_loc.id()) == 2
 	       && !m_mesh->isMarked(e_loc, mark_EdgeUsed)
+	       && n_loc.id() != new_GFE.Start_n_id
 	       && m_EdgesClassification->value(e_loc.id()) == m_EdgesClassification->value(new_GFE.edges_id[0]))
 	{
 	   m_mesh->mark(e_loc, mark_EdgeUsed);
@@ -596,5 +598,41 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 	}
 	 */
 
+}
+/*------------------------------------------------------------------------*/
+void FrontEdgesNodesClassification_3D::ComputeValidLoop_GFE()
+{
+	Variable<int>* var_node_couche_id = m_mesh->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	int mark_EdgesUsed = m_mesh->newMark<Edge>();
+	for (auto e_id:m_mesh->edges())
+	{
+		Edge e = m_mesh->get<Edge>(e_id);
+		std::vector<Node> e_nodes = e.get<Node>();
+		if (var_node_couche_id->value(e_nodes[0].id()) == m_Front->getFrontID()
+		    && var_node_couche_id->value(e_nodes[1].id()) == m_Front->getFrontID()
+		    && !m_mesh->isMarked(e, mark_EdgesUsed)
+		    && !m_mesh->isMarked(e, m_mark_EdgesForTemplates))
+		{
+			Global_Feature_Edge GFE = ComputeOneGFE(e_nodes[0].id(), e_id);
+			if (isThisPathValidForTemplates(GFE))
+			{
+				m_All_global_feature_edges.push_back(GFE);
+				for (auto e_loc_id:GFE.edges_id)
+				{
+					m_mesh->mark(m_mesh->get<Edge>(e_loc_id), m_mark_EdgesForTemplates);
+					m_mesh->mark(m_mesh->get<Edge>(e_loc_id), mark_EdgesUsed);
+				}
+			}
+			else
+			{
+				for (auto e_loc_id:GFE.edges_id)
+				{
+					std::cout << e_loc_id << std::endl;
+				}
+			}
+		}
+	}
+	m_mesh->unmarkAll<Edge>(mark_EdgesUsed);
+	m_mesh->freeMark<Edge>(mark_EdgesUsed);
 }
 /*------------------------------------------------------------------------*/
