@@ -80,7 +80,7 @@ namespace gmds{
 
         void findOptimimalPosition(const TInt node, math::Point &newCoord, bool surfaceFlag = false, int cpt = 10, double epsilon = 0.1/*0.01*/) ;
 
-        void nodeFiltering(const math::Point& pt, const TInt fromNode, std::vector<TInt> & neighboorNode, double k = 1.1 * (sqrt(2.0) * 0.5), bool flag = false);
+        void nodeFiltering(const math::Point& pt, const TInt fromNode, std::vector<TInt> & neighboorNode);
 
         void computeQuadFaces(std::set<std::vector<TInt>> & faces) const ;
 
@@ -88,7 +88,7 @@ namespace gmds{
 
         void correctNodeLabel() ;
 
-        void addNodeToLayer(const TInt nodeId, const TInt fromNode = -1, bool flag = false);
+        void addNodeToLayer(const TInt nodeId, const TInt fromNode = -1, bool surfaceFlag = false);
 
         void incrementLayer();
 
@@ -103,7 +103,9 @@ namespace gmds{
         bool belongToEdge(const math::Point & nodeCoord);
 
         //This function will order the first curve nodes
-        void swapNodeInLayer(std::vector<TInt>& nodesAdded);
+        void correctUnwantedConnection();
+
+        void connectionWithNeighbor(const std::vector<TInt>& nodesAdded);
 
       private:
 
@@ -112,6 +114,9 @@ namespace gmds{
         std::unordered_map<TInt, std::list<TInt>> m_layers;
 
         std::unordered_map<TInt, int> m_nodeLayerNbr;
+
+        //this map will help us to corret the different unwanted connection in m_nodeStructure
+        std::unordered_map<TInt, TInt> m_nodeGeneratedBy;
 
         std::unordered_map<TInt, std::vector<TInt>> m_listEdge;
 
@@ -122,6 +127,8 @@ namespace gmds{
         SimplexMesh m_nodesMesh;
 
         Octree m_oc;
+
+        double m_minDistance;
     };
   }
 }
