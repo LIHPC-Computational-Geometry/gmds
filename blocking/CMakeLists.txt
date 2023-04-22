@@ -4,23 +4,32 @@
 # Nommer tout en GMDS_MODULE_NAME, GMDS_SRC, ... dans les composants
 set(GMDS_LIB ${LIB_GMDS_BLOCKING})
 set(GMDS_LIB_PREFIX gmds/blocking)
-
+#==============================================================================
+# Compilation options
+#==============================================================================
+option(WITH_CGNS "Allows the CGNS export" ON)
+#==============================================================================
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/blocking/Blocking.h
         inc/gmds/blocking/InputMarkedDarts.h
         inc/gmds/blocking/SheetInsert.h
         inc/gmds/blocking/WriterDartsVTK.h
-        inc/gmds/blocking/SheetCollapse.h
-        inc/gmds/blocking/CGNSWriter.h)
+        inc/gmds/blocking/SheetCollapse.h)
+if(WITH_CGNS)
+    set(GMDS_INC ${GMDS_INC} inc/gmds/blocking/CGNSWriter.h)
+endif()
 set(GMDS_SRC
         src/Blocking.cpp
         src/InputMarkedDarts.cpp
         src/SheetInsert.cpp
         src/WriterDartsVTK.cpp
         src/SheetCollapse.cpp
-        src/CGNSWriter.cpp
         )
+
+if(WITH_CGNS)
+    set(GMDS_SRC ${GMDS_SRC} src/CGNSWriter.cpp)
+endif()
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
@@ -38,8 +47,9 @@ include(GNUInstallDirs)
 # TODO it does not seem to work, the message is still displayed ?
 set (CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 
-include (${CMAKE_SOURCE_DIR}/cmake/FindCgns.cmake)
-
+if(WITH_CGNS)
+    include (${CMAKE_SOURCE_DIR}/cmake/FindCgns.cmake)
+endif()
 
 # dependencies
 if (WITH_CGAL_QT5)
@@ -60,9 +70,13 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         #${LIB_GMDS_SMOOTHY})
         ${LIB_GMDS_MATH}
         CGAL::CGAL_Core
-        cgns::cgns
         )
 
+if(WITH_CGNS)
+    target_link_libraries(${GMDS_LIB} PUBLIC
+            cgns::cgns
+            )
+endif()
 if (WITH_CGAL_QT5)
     target_link_libraries(${GMDS_LIB} PUBLIC
             CGAL::CGAL_Qt5

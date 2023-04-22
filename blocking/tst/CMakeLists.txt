@@ -1,10 +1,17 @@
-add_executable(GMDS_BLOCKING_TEST
+set(GMDS_BLOCKING_TEST_FILES
         BlockingTestSuite.h
         CGALTestSuite.h
         InputMarkedDartsTestSuite.h
         SheetInsertTestSuite.h
-        WriterDartsVTKTestSuite.h
-        CGNSWriterTestSuite.h
+        WriterDartsVTKTestSuite.h)
+
+if(WITH_CGNS)
+    set(GMDS_BLOCKING_TEST_FILES ${GMDS_BLOCKING_TEST_FILES} CGNSWriterTestSuite.h)
+    target_compile_definitions(main PRIVATE USE_CGNS)
+endif()
+
+add_executable(GMDS_BLOCKING_TEST
+        ${GMDS_BLOCKING_TEST_FILES}
         main_test.cpp
         )
 
@@ -14,8 +21,13 @@ target_link_libraries(GMDS_BLOCKING_TEST PUBLIC
         ${GMDS_LIB}
         ${LIB_GMDS_IG}
         CGAL::CGAL_Core
-        gtest
-        cgns::cgns)
+        gtest)
+
+if(WITH_CGNS)
+    target_link_libraries(${GMDS_LIB} PUBLIC
+            cgns::cgns
+            )
+endif()
 
 if (WITH_CGAL_QT5)
     target_link_libraries(${GMDS_LIB} PUBLIC
