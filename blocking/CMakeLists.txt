@@ -12,6 +12,7 @@ option(WITH_CGNS "Allows the CGNS export" ON)
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/blocking/Blocking.h
+        inc/gmds/blocking/CurvedBlocking.h
         inc/gmds/blocking/InputMarkedDarts.h
         inc/gmds/blocking/SheetInsert.h
         inc/gmds/blocking/WriterDartsVTK.h
@@ -21,6 +22,7 @@ if(WITH_CGNS)
 endif()
 set(GMDS_SRC
         src/Blocking.cpp
+        src/CurvedBlocking.cpp
         src/InputMarkedDarts.cpp
         src/SheetInsert.cpp
         src/WriterDartsVTK.cpp

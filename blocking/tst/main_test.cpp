@@ -3,6 +3,7 @@
 /*----------------------------------------------------------------------------*/
 // Files containing the different test suites to launch
 #include "BlockingTestSuite.h"
+#include "CurvedBlockingTestSuite.h"
 #include "CGALTestSuite.h"
 #include "InputMarkedDartsTestSuite.h"
 #include "SheetInsertTestSuite.h"
