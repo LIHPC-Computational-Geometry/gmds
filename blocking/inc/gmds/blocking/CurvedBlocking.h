@@ -5,6 +5,8 @@
 #include <CGAL/Generalized_map.h>
 #include <CGAL/Cell_attribute.h>
 #include <string>
+#include <gmds/utils/Exception.h>
+#include <gmds/utils/CommonTypes.h>
 #include <LIB_GMDS_BLOCKING_export.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds{
@@ -14,26 +16,45 @@ namespace blocking{
 struct ClassificationInfo{
 	int dim; // O: point, 1: curve, 2: surface, 3:volume, 4: non classified
 	int id; // id of the geometric entity
-	ClassificationInfo(const int ADim, const int AId)
+	ClassificationInfo(const int ADim=4, const int AId=NullID)
 	: dim(ADim), id(AId){}
 };
 /*----------------------------------------------------------------------------*/
+/** When we merge two cells,
+ */
 struct MergeFunctor {
 	template<class Cell_attribute>
 	void operator()(Cell_attribute& ca1,Cell_attribute& ca2)
-	{ ca1.info().id=ca1.info().id+ca2.info().id; }
+	{
+		if (ca1.info().dim == ca2.info().dim) {
+			// the cells are classifed on the same dim geom entity
+			if (ca1.info().id == ca2.info().id) {
+				ca1.info().dim = ca2.info().dim;
+			}
+			else
+				throw GMDSException("Classification error!!!");
+		}
+		else if (ca1.info().dim < ca2.info().dim) {
+			// the cells are classifed on the same dim geom entity
+			ca1.info().dim = ca1.info().dim;
+			ca1.info().id = ca1.info().id;
+		}
+		else {     // third case: ca1.info().dim>ca2.info().dim
+			ca1.info().dim = ca2.info().dim;
+			ca1.info().id = ca2.info().id;
+		}
+	}
 };
 /*----------------------------------------------------------------------------*/
-struct SplitFunctor
-{
+struct SplitFunctor{
 	template<class Cell_attribute>
-	void operator()(Cell_attribute& ca1,Cell_attribute& ca2)
-	{
+	void operator()(Cell_attribute& ca1,Cell_attribute& ca2) {
 		ca1.info().dim=ca1.info().dim;
 		ca1.info().id=ca1.info().id;
 		ca2.info()=ca1.info();
 	}
 };
+/*----------------------------------------------------------------------------*/
 
 struct CellData{
 	template<class GMap>
