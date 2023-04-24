@@ -11,7 +11,7 @@ endif()
 #==============================================================================
 include (cmake/version.cmake)
 
-project(gmds 
+project(gmds
   LANGUAGES C CXX
   VERSION ${GMDS_VERSION})
 #==============================================================================

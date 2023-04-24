@@ -547,8 +547,8 @@ TEST(ClaireTestClass, Utils_buildEfromFandConnectivies)
 	Node n4 = m.newNode({2,0,0});
 	Node n5 = m.newNode({2,1,0});
 
-	m.newQuad(n0,n1,n2,n3);
-	m.newQuad(n1,n4,n5,n2);
+	Face f0 = m.newQuad(n0,n1,n2,n3);
+	Face f1 = m.newQuad(n1,n4,n5,n2);
 
 	math::Utils::buildEfromFandConnectivies(&m);
 
@@ -556,5 +556,14 @@ TEST(ClaireTestClass, Utils_buildEfromFandConnectivies)
 	ASSERT_EQ(n0.get<Face>().size(), 1);
 	ASSERT_EQ(n1.get<Face>().size(), 2);
 	ASSERT_EQ(n1.get<Edge>().size(), 3);
+
+	TCellID e_id = math::Utils::CommonEdge(&m, n1.id(), n2.id());
+	Edge e = m.get<Edge>(e_id);
+	ASSERT_EQ(e.get<Face>().size(), 2);
+	ASSERT_EQ(e.get<Node>().size(), 2);
+
+	ASSERT_EQ(f0.get<Node>().size(), 4);
+	ASSERT_EQ(f1.get<Edge>().size(), 4);
+
 }
 /*----------------------------------------------------------------------------*/

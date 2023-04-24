@@ -880,7 +880,7 @@ Utils::buildEfromFandConnectivies(Mesh *Amesh)
 
 		if (e_3_id == NullID)
 		{
-			Edge e = Amesh->newEdge(f_nodes[0], f_nodes[1]);
+			Edge e = Amesh->newEdge(f_nodes[3], f_nodes[0]);
 			e_3_id = e.id();
 			f_nodes[3].add<Edge>(e_3_id);
 			f_nodes[0].add<Edge>(e_3_id);

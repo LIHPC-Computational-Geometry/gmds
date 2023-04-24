@@ -172,10 +172,6 @@ AeroPipeline_3D::EcritureMaillage(){
 void
 AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 {
-	//-------------------------------------//
-	// Special case of the C2_3D geometry  //
-	//	Surface Blocking 1						//
-	//-------------------------------------//
 	if (m_params.block_surface_3D==0)
 	{
 		// Lecture du maillage
@@ -191,6 +187,11 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 		}
 
 	}
+
+	//-------------------------------------//
+	// Special case of the C2_3D geometry  //
+	//	Surface Blocking 1						//
+	//-------------------------------------//
 	else if (m_params.block_surface_3D==1)
 	{
 		Node n0 = m_meshHex->newNode({-0.5, -0.5, -0.5});
@@ -593,6 +594,9 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 		}
 
 	}
+
+	// Build the edges and the connectivities
+	math::Utils::buildEfromFandConnectivies(m_meshHex);
 
 	// Write the surface block structure
 	gmds::IGMeshIOService ioService(m_meshHex);
