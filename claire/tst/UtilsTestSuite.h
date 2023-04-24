@@ -533,3 +533,28 @@ TEST(ClaireTestClass, Utils_oppositeEdgeInFace)
 
 	ASSERT_EQ(e_opp.id(), 2);
 }
+/*----------------------------------------------------------------------------*/
+TEST(ClaireTestClass, Utils_buildEfromFandConnectivies)
+{
+	gmds::Mesh m(gmds::MeshModel(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
+	                                             F2E | E2F | R2E | E2R | N2R | N2F | N2E)));
+
+	Node n0 = m.newNode({0,0,0});
+	Node n1 = m.newNode({1,0,0});
+	Node n2 = m.newNode({1,1,0});
+	Node n3 = m.newNode({0,1,0});
+
+	Node n4 = m.newNode({2,0,0});
+	Node n5 = m.newNode({2,1,0});
+
+	m.newQuad(n0,n1,n2,n3);
+	m.newQuad(n1,n4,n5,n2);
+
+	math::Utils::buildEfromFandConnectivies(&m);
+
+	ASSERT_EQ(m.getNbEdges(), 7);
+	ASSERT_EQ(n0.get<Face>().size(), 1);
+	ASSERT_EQ(n1.get<Face>().size(), 2);
+	ASSERT_EQ(n1.get<Edge>().size(), 3);
+}
+/*----------------------------------------------------------------------------*/
