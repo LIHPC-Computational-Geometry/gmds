@@ -441,13 +441,17 @@ class SimplexMesh
 
   void setAnalyticMetric(const TInt node, Octree* octree);
 
-  Eigen::Matrix3d getAnalyticMetric(const math::Point& pt, Octree* octree) const;
+  void setAnalyticMetricFromMesh(const TInt node, SimplexMesh* sm, std::unordered_map<TInt, TSimplexID>& umap);
+
+  Eigen::Matrix3d getAnalyticMetric(const math::Point& pt, SimplexMesh* sm, bool& status);
+
+  Eigen::Matrix3d getAnalyticMetricFromSimplex(const math::Point& pt, SimplexMesh* sm, TSimplexID simplex);
 
   bool getFrameAt(const math::Point& pt, std::vector<math::Vector3d>& frames) ;
 
   void setColorsSurfaceFromSimplex(SimplexMesh* simplexMesh) ;
 
-  void onSurface(const math::Point& pt, int& surfaceLabel) ;
+  void onSurface(const math::Point& pt, int& surfaceLabel, TSimplexID & simplex) ;
 
   void setSurfacesAndCurvesIndx();
 
@@ -583,7 +587,7 @@ gmds::Variable<T>* SimplexMesh::newVariable(const std::string& AName)
 }
 /******************************************************************************/
 template<typename T, class C>
-gmds::Variable<T>* SimplexMesh::getVariable(const std::string&& AName) const 
+gmds::Variable<T>* SimplexMesh::getVariable(const std::string&& AName) const
 {
   gmds::Variable<T>* var = nullptr;
 

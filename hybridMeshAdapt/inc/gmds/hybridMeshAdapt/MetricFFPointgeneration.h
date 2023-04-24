@@ -74,13 +74,13 @@ namespace gmds{
 
         bool metricSamplingEdge(const unsigned int n, std::vector<double>& res, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const;
 
-        math::Point computeTheEdgeNodeCoordinate(const double u, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const;
+        math::Point computeTheEdgeNodeCoordinate(const double u, const std::vector<TInt>& edge, const std::vector<double>& edgeU, TInt& NodeA, TInt& NodeB) const;
 
         void findOptimimalPosition0(const TInt node, math::Point &newCoord, bool surfaceFlag = false, int cpt = 10, double epsilon = 0.1/*0.01*/) ;
 
-        void findOptimimalPosition(const TInt node, math::Point &newCoord, bool surfaceFlag = false, int cpt = 10, double epsilon = 0.1/*0.01*/) ;
+        bool findOptimimalPosition(const TInt node, math::Point &newCoord, bool surfaceFlag = false, int cpt = 10, double epsilon = 0.1/*0.01*/) ;
 
-        void nodeFiltering(const math::Point& pt, const TInt fromNode, std::vector<TInt> & neighboorNode);
+        bool nodeFiltering(const math::Point& pt, const TInt fromNode, const TSimplexID simplex, std::vector<TInt> & neighboorNode);
 
         void computeQuadFaces(std::set<std::vector<TInt>> & faces) const ;
 
@@ -108,6 +108,7 @@ namespace gmds{
         void connectionWithNeighbor(const std::vector<TInt>& nodesAdded);
 
       private:
+        std::unordered_map<TInt, TSimplexID> nodeBelongingTO;
 
         unsigned int m_layerNbr;
 
@@ -116,7 +117,7 @@ namespace gmds{
         std::unordered_map<TInt, int> m_nodeLayerNbr;
 
         //this map will help us to corret the different unwanted connection in m_nodeStructure
-        std::unordered_map<TInt, TInt> m_nodeGeneratedBy;
+        std::unordered_map<TInt, std::vector<TInt>> m_nodeGeneratedBy;
 
         std::unordered_map<TInt, std::vector<TInt>> m_listEdge;
 

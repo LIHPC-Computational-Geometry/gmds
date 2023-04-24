@@ -483,15 +483,28 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
               //rebuild the edge structure with the node to connect and the border edge STRUCTURE
               if(borderNodesEdge.size() != 2)
               {
+                std::cout << "node being inserted -> " << simpliceNode.getGlobalNode() << std::endl;
+                std::cout << "surface -> " << (*BND_SURFACE_COLOR)[simpliceNode.getGlobalNode()] << std::endl;
+                std::cout << "curve -> " << (*BND_CURVE_COLOR)[simpliceNode.getGlobalNode()] << std::endl;
+                std::cout << "borderNodesEdge.size() -> " << borderNodesEdge.size() << std::endl;
+
+                SimplexMesh N;
+                TInt NodeId = N.addNode(simpliceNode.getCoords());
+                N.addTetraedre(NodeId, NodeId, NodeId, NodeId);
+
+                gmds::ISimplexMeshIOService ioServiceN(&N);
+                gmds::VTKWriter vtkWriterN(&ioServiceN);
+                vtkWriterN.setCellOptions(gmds::N|gmds::R|gmds::F);
+                vtkWriterN.setDataOptions(gmds::N|gmds::R|gmds::F);
+                vtkWriterN.write("NODE.vtk");
+
+
                 gmds::ISimplexMeshIOService ioServiceMesh(simplexMesh);
                 gmds::VTKWriter vtkWriterCS(&ioServiceMesh);
                 vtkWriterCS.setCellOptions(gmds::N|gmds::R|gmds::F);
                 vtkWriterCS.setDataOptions(gmds::N|gmds::R|gmds::F);
                 vtkWriterCS.write("no_borderNodesEdge.vtk");
-                std::cout << "node being inserted -> " << simpliceNode.getGlobalNode() << std::endl;
-                std::cout << "surface -> " << (*BND_SURFACE_COLOR)[simpliceNode.getGlobalNode()] << std::endl;
-                std::cout << "curve -> " << (*BND_CURVE_COLOR)[simpliceNode.getGlobalNode()] << std::endl;
-                std::cout << "borderNodesEdge.size() -> " << borderNodesEdge.size() << std::endl;
+
                 throw gmds::GMDSException("borderNodesEdge.size() != 2");
               }
 

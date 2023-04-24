@@ -41,18 +41,14 @@ void MetricFFPointgeneration::connectionWithNeighbor(const std::vector<TInt>& no
   {
     throw gmds::GMDSException(e);
   }
-  for(auto const n : m_nodeStructure[2076])
-    std::cout << "neighbor of 2076 -> " << n << std::endl;
+
   const gmds::BitVector& nodesBitVector = m_nodesMesh.getBitVectorNodes();
   for(auto const & n : nodesAdded)
   {
     if(nodesBitVector[n] != 0)
     {
       //look the predecessor who creat n
-      TInt pred = m_nodeGeneratedBy[n];
-      if(n == 3580){
-        std::cout << "pred of 3580 -> " << pred << std::endl;
-      }
+      TInt pred = m_nodeGeneratedBy[n].front();
       std::vector<TInt> connected_neigbors = m_nodeStructure[pred];
       for(auto const connected_neigbor : connected_neigbors)
       {
@@ -70,18 +66,11 @@ void MetricFFPointgeneration::connectionWithNeighbor(const std::vector<TInt>& no
 
         if(connected_neigbor != n)
         {
-          if(n == 3580){
-            std::cout << "connected_neigbor of 3580 -> " << connected_neigbor << std::endl;
-          }
           std::vector<TInt> neigbors = m_nodeStructure[connected_neigbor];
           for(auto const neigbor : neigbors)
           {
             if(neigbor != pred)
               s.insert(neigbor);
-          }
-          if(n == 3580){
-            for(auto const nn : s)
-              std::cout << "    nn --> " << nn << std::endl;
           }
         }
 
@@ -114,34 +103,6 @@ void MetricFFPointgeneration::addNodeToLayer(const TInt nodeId, const TInt fromN
 
   if(m_layerNbr != 0) //recombine node for the grid structure
   {
-
-    std::vector<TInt> connected_neigbors = m_nodeStructure[fromNode];
-    for(auto const connected_neigbor : connected_neigbors)
-    {
-      if(connected_neigbor != fromNode)
-      {
-        std::vector<TInt> neigbors = m_nodeStructure[connected_neigbor];
-        for(auto const n : neigbors)
-        {
-          if(m_nodeLayerNbr[n] == m_layerNbr)
-          {
-            if((*BND_SURFACE_COLOR)[nodeId] != 0)
-            {
-              if((*BND_SURFACE_COLOR)[nodeId] == (*BND_SURFACE_COLOR)[n])
-              {
-                //m_nodeStructure[nodeId].push_back(n);
-                //m_nodeStructure[n].push_back(nodeId);
-              }
-            }
-            else
-            {
-              //m_nodeStructure[nodeId].push_back(n);
-              //m_nodeStructure[n].push_back(nodeId);
-            }
-          }
-        }
-      }
-    }
     m_nodeStructure[nodeId].push_back(fromNode);
     m_nodeStructure[fromNode].push_back(nodeId);
   }
@@ -277,7 +238,6 @@ void MetricFFPointgeneration::correctionNodeStructure()
       }
       else if((*BND_SURFACE_COLOR)[n] != 0)
       {
-        //check if n have 4 neigbors
         while(m_nodeStructure[n].size() < 4)
         {
           TInt nodeToConnect = -1;
@@ -286,7 +246,8 @@ void MetricFFPointgeneration::correctionNodeStructure()
           std::vector<TInt> neighborNodes = m_nodesMesh.getOctree()->findNodesNextTo(p0);
           for(auto const m : neighborNodes) // first layer after edge is layer : 1
           {
-            if(n != m && (*BND_SURFACE_COLOR)[n] == (*BND_SURFACE_COLOR)[m] && std::find(m_nodeStructure[n].begin(), m_nodeStructure[n].end(), m) == m_nodeStructure[n].end())
+            if(n != m && (*BND_SURFACE_COLOR)[n] == (*BND_SURFACE_COLOR)[m] && std::find(m_nodeStructure[n].begin(), m_nodeStructure[n].end(), m) == m_nodeStructure[n].end()&&
+            m_nodeLayerNbr[n] >= m_nodeLayerNbr[m])
             {
               math::Point p1 = SimplicesNode(&m_nodesMesh, m).getCoords();
 
@@ -305,6 +266,8 @@ void MetricFFPointgeneration::correctionNodeStructure()
             if(std::find(m_nodeStructure[nodeToConnect].begin(), m_nodeStructure[nodeToConnect].end(), n) == m_nodeStructure[nodeToConnect].end())
             m_nodeStructure[nodeToConnect].push_back(n);
           }
+          else
+            break;
         }
       }
       else if((*BND_VERTEX_COLOR)[n] != 0)
@@ -352,9 +315,6 @@ void MetricFFPointgeneration::correctUnwantedConnection()
 {
   const gmds::BitVector& nodeBitVector = m_nodesMesh.getBitVectorNodes();
 
-  for(auto const n : m_nodeStructure[2076])
-    std::cout << " BEFORE -> " << n << std::endl;
-  std::cout << std::endl;
   for(unsigned int n = 0 ; n < nodeBitVector.capacity() ; n++)
   {
     if(nodeBitVector[n] != 0)
@@ -367,8 +327,10 @@ void MetricFFPointgeneration::correctUnwantedConnection()
         std::vector<TInt> nodesConnectedToNextLayer{};
         std::vector<TInt> nodeToDelete{};
 
+
+
         m_nodeStructure[n].erase(std::remove_if(m_nodeStructure[n].begin(), m_nodeStructure[n].end(), [&](const TInt node){
-          if(m_nodeLayerNbr[node] > currentLayer && m_nodeGeneratedBy[node] != n ){
+          if(m_nodeLayerNbr[node] > currentLayer && std::find(m_nodeGeneratedBy[node].begin(), m_nodeGeneratedBy[node].end(), n) == m_nodeGeneratedBy[node].end() ){
             nodeToDelete.push_back(node);
             return true;
           }
@@ -386,9 +348,6 @@ void MetricFFPointgeneration::correctUnwantedConnection()
       }
     }
   }
-
-  for(auto const n : m_nodeStructure[2076])
-    std::cout << " BEFORE -> " << n << std::endl;
 }
 /*----------------------------------------------------------------------------*/
 void MetricFFPointgeneration::sortBySurfaceNodeAdded(std::vector<TInt>& nodesAdded)
@@ -451,6 +410,8 @@ bool MetricFFPointgeneration::belongToEdge(const math::Point & nodeCoord)
 void MetricFFPointgeneration::execute()
 {
   std::clock_t start = std::clock();
+  gmds::Variable<int>* BND_VERTEX_COLOR = nullptr;
+  gmds::Variable<int>* BND_CURVE_COLOR = nullptr;
   gmds::Variable<int>* BND_SURFACE_COLOR = nullptr;
 
   std::vector<double> simplexMesh_Borders = m_oc.getBorderOctree();
@@ -482,6 +443,8 @@ void MetricFFPointgeneration::execute()
       //////////////////////////////////////////////////////////////////////////////
 
       try{
+        BND_VERTEX_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+        BND_CURVE_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
         BND_SURFACE_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
       }catch (gmds::GMDSException e)
       {
@@ -550,7 +513,9 @@ void MetricFFPointgeneration::execute()
         vtkWriterGRIDTEST.setDataOptions(gmds::N|gmds::R|gmds::F);
         vtkWriterGRIDTEST.write("metricFF_Grid_LAYER_SORTING_COLOR_NEIGHBOR_" + std::to_string(m_layerNbr) + ".vtk");
       }
+      std::cout << "correctionNodeStructure()" << std::endl;
       correctionNodeStructure();
+      std::cout << "correctUnwantedConnection()" << std::endl;
       correctUnwantedConnection();
 
       for(auto const & d : m_nodeStructure)
@@ -651,13 +616,6 @@ void MetricFFPointgeneration::execute()
       vtkWriterGRIDTES2.write("metricFF_Grid_TEST2.vtk");
 
 
-      gmds::ISimplexMeshIOService ioServiceVOLUME(&m_nodesMesh);
-      gmds::VTKWriter vtkWriterVOLUME(&ioServiceVOLUME);
-      vtkWriterVOLUME.setCellOptions(gmds::N|gmds::R);
-      vtkWriterVOLUME.setDataOptions(gmds::N|gmds::R);
-      vtkWriterVOLUME.write("metricFF_VOLUME.vtk");
-      std::cout << "VOLUME NODES CREATED " << std::endl;
-
       //processNodesStructure();
       std::set<std::vector<TInt>> hexs{};
       computeHexa(hexs);
@@ -668,31 +626,63 @@ void MetricFFPointgeneration::execute()
         R2N | F2N | E2N | R2F | F2R |
         F2E | E2F | R2E | N2R | N2F | N2E));
 
+        Variable<int>* BND_VERTEX_COLOR_END = m.newVariable<int, GMDS_NODE>("BND_VERTEX_COLOR"  );
+        Variable<int>* BND_CURVE_COLOR_END = m.newVariable<int, GMDS_NODE>("BND_CURVE_COLOR"  );
+        Variable<int>* BND_SURFACE_COLOR_END = m.newVariable<int, GMDS_NODE>("BND_SURFACE_COLOR");
 
-        const gmds::BitVector& nodesMeshBitVector = m_nodesMesh.getBitVectorNodes();
-        std::vector<Node> seenNodes(nodesMeshBitVector.capacity(), Node());
+        BND_VERTEX_COLOR_END->setValuesTo(-1);
+        BND_CURVE_COLOR_END->setValuesTo(-1);
+        BND_SURFACE_COLOR_END->setValuesTo(-1);
+
+
+        const gmds::BitVector& m_nodesEND = m_nodesMesh.getBitVectorNodes();
+        unsigned int cpt = 0;
+        std::unordered_map<TInt, Node> map{};
+        for(unsigned int n = 0 ; n < m_nodesEND.capacity() ; n++)
+        {
+          if(m_nodesEND[n] != 0)
+          {
+            const Node nodeHEX =  m.newNode(SimplicesNode(&m_nodesMesh, n).getCoords());
+            m.newTet(nodeHEX,nodeHEX,nodeHEX,nodeHEX);
+            map[n] = nodeHEX;
+            if((*BND_VERTEX_COLOR)[n] != 0)
+            {
+              BND_VERTEX_COLOR_END->set(cpt, (*BND_VERTEX_COLOR)[n]);
+            }
+            else if((*BND_CURVE_COLOR)[n] != 0)
+            {
+              BND_CURVE_COLOR_END->set(cpt, (*BND_CURVE_COLOR)[n]);
+            }
+            else if((*BND_SURFACE_COLOR)[n] != 0)
+            {
+              BND_SURFACE_COLOR_END->set(cpt, (*BND_SURFACE_COLOR)[n]);
+            }
+            ++cpt;
+          }
+        }
+
+
         for(auto const & hex : hexs)
         {
-          std::vector<Node> nodesHex{};
-          for(unsigned int n = 0 ; n < 8 ; n++)
-          {
-            if(seenNodes[hex[n]] == Node())
-            {
-              const Node n0 = m.newNode(SimplicesNode(&m_nodesMesh, hex[n]).getCoords());
-              seenNodes[hex[n]] = n0;
-              nodesHex.push_back(n0);
-            }
-            else
-            nodesHex.push_back(seenNodes[hex[n]]);
-          }
-          m.newHex(nodesHex[0], nodesHex[1], nodesHex[2], nodesHex[3], nodesHex[4], nodesHex[5], nodesHex[6], nodesHex[7]);
+          m.newHex(map[hex[0]], map[hex[1]], map[hex[2]], map[hex[3]], map[hex[4]], map[hex[5]], map[hex[6]], map[hex[7]]);
         }
+
 
         gmds::IGMeshIOService ioService(&m);
         gmds::VTKWriter vtkWriter(&ioService);
         vtkWriter.setCellOptions(gmds::N|gmds::R);
         vtkWriter.setDataOptions(gmds::N|gmds::R);
         vtkWriter.write("HEX.vtk");
+        std::cout << "HEX CREATED " << std::endl;
+
+        gmds::ISimplexMeshIOService ioServiceVOLUME(&m_nodesMesh);
+        gmds::VTKWriter vtkWriterVOLUME(&ioServiceVOLUME);
+        vtkWriterVOLUME.setCellOptions(gmds::N|gmds::R|gmds::F);
+        vtkWriterVOLUME.setDataOptions(gmds::N|gmds::R|gmds::F);
+        vtkWriterVOLUME.write("metricFF_VOLUME.vtk");
+        std::cout << "VOLUME NODES CREATED " << std::endl;
+
+
 
         for(auto const & d : m_nodeStructure)
         {
@@ -766,7 +756,7 @@ void MetricFFPointgeneration::execute()
             if((*BND_SURFACE_COLOR)[n] == 0 || (*BND_CURVE_COLOR)[n] == 0 /*add vertex color*/)
             {
               int surfaceLabel = 0;
-              m_simplexMesh->onSurface(SimplicesNode(&m_nodesMesh,n).getCoords(), surfaceLabel);
+              //m_simplexMesh->onSurface(SimplicesNode(&m_nodesMesh,n).getCoords(), surfaceLabel);
               if(surfaceLabel != 0)
               m_nodesMesh.deleteNode(n);
             }
@@ -1028,7 +1018,7 @@ void MetricFFPointgeneration::computeQuadFaces(std::set<std::vector<TInt>> & fac
   }
 }
 /*----------------------------------------------------------------------------*/
-Point MetricFFPointgeneration::computeTheEdgeNodeCoordinate(const double u, const std::vector<TInt>& edge, const std::vector<double>& edgeU) const
+Point MetricFFPointgeneration::computeTheEdgeNodeCoordinate(const double u, const std::vector<TInt>& edge, const std::vector<double>& edgeU, TInt& nodeA_, TInt& nodeB_) const
 {
   Point pt;
   if(edgeU.size() < 2)
@@ -1042,7 +1032,8 @@ Point MetricFFPointgeneration::computeTheEdgeNodeCoordinate(const double u, cons
     std::cout << "u -> " << u << std::endl;
     throw gmds::GMDSException("!(u >= edgeU.front() && u <= edgeU.back())");
   }
-
+  TInt nodeA;
+  TInt nodeB;
   for(unsigned int i = 0 ; i < edgeU.size() - 1 ; i++)
   {
     const double uA = edgeU[i];
@@ -1052,8 +1043,8 @@ Point MetricFFPointgeneration::computeTheEdgeNodeCoordinate(const double u, cons
       //interpolation (linear) of the middle position using the interval ua, ub and u = 0.5
       if(uB != uA)
       {
-        const TInt nodeA = edge[i];
-        const TInt nodeB = edge[i + 1];
+        nodeA = edge[i];
+        nodeB = edge[i + 1];
 
         const Point ptA = SimplicesNode(m_simplexMesh, nodeA).getCoords();
         const Point ptB = SimplicesNode(m_simplexMesh, nodeB).getCoords();
@@ -1087,6 +1078,8 @@ Point MetricFFPointgeneration::computeTheEdgeNodeCoordinate(const double u, cons
     }
   }
 
+  nodeA_ = nodeA;
+  nodeB_ = nodeB;
   return pt;
 }
 /*----------------------------------------------------------------------------*/
@@ -1200,6 +1193,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
   SimplexMesh testMesh0;
   for(auto const node : nodesAdded)
   {
+
     Eigen::Matrix3d M = metricNodes->value(node);
     Eigen::Matrix3d FF = Eigen::Matrix3d::Zero();
 
@@ -1224,10 +1218,12 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
         const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
         TInt newNodeId = -1;
         std::clock_t c_start1 = std::clock();
-        findOptimimalPosition(node, newCoord, surfaceFlag);
+        if(!findOptimimalPosition(node, newCoord, surfaceFlag))
+          continue;
         durationRec += std::clock() - c_start1;
         //check if the node is on the mesh during the volume propagation
         bool flag = false;
+        TSimplexID simplex = std::numeric_limits<TSimplexID>::min();
         if(!surfaceFlag)
         {
           std::vector<TSimplexID> simplices = m_oc.findSimplicesInOc(newCoord);
@@ -1250,26 +1246,30 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
 
         //if(belongToEdge(newCoord))
         //continue;
+
         bool onSurface = true;
         int surfaceLabel = 0;
-        m_simplexMesh->onSurface(newCoord, surfaceLabel);
+        if(surfaceFlag)
+          m_simplexMesh->onSurface(newCoord, surfaceLabel, simplex);
 
         if(surfaceLabel == 0)
         onSurface = false;
         if(surfaceFlag == onSurface)
         {
           std::vector<TInt> neighboorNodes;
-          nodeFiltering(newCoord, node, neighboorNodes);
+          if(!nodeFiltering(newCoord, node, simplex, neighboorNodes))
+            continue;
           if(neighboorNodes.size() == 0)
           {
             newNodeId = m_nodesMesh.addNode(newCoord);
-            m_nodeGeneratedBy[newNodeId] = node;
+            nodeBelongingTO[newNodeId] = simplex;
+            m_nodeGeneratedBy[newNodeId].push_back(node);
             if(surfaceFlag == true)
               BND_SURFACE_COLOR->set(newNodeId, surfaceLabel);
 
             newNodes.push_back(newNodeId);
             addNodeToLayer(newNodeId, node, surfaceFlag);
-            m_nodesMesh.setAnalyticMetric(newNodeId, m_simplexMesh->getOctree());
+            m_nodesMesh.setAnalyticMetricFromMesh(newNodeId, m_simplexMesh, nodeBelongingTO);
             std::unordered_set<TInt> seen{};
             m_nodesMesh.getOctree()->addNode(newNodeId, seen);
           }
@@ -1297,14 +1297,9 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
               {
 
                 m_nodeStructure[node].push_back(neigborNode);
-                /*m_nodeGeneratedBy[node]*/
+                m_nodeGeneratedBy[neigborNode].push_back(node);
                 if(std::find(m_nodeStructure[neigborNode].begin(), m_nodeStructure[neigborNode].end(), node) == m_nodeStructure[neigborNode].end())
                   m_nodeStructure[neigborNode].push_back(node);
-                if(node == 2021)
-                {
-                  std::cout << "neigborNode of 2021-> " << neigborNode << std::endl;
-                  std::cout << "m_nodeStructure[neigborNode].back() -> " << m_nodeStructure[neigborNode].back() << std::endl;
-                }
               }
             }
           }
@@ -1322,8 +1317,9 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
   std::copy(newNodes.begin(), newNodes.end(), std::back_inserter(nodesAdded));
 }
 /*----------------------------------------------------------------------------*/
-void MetricFFPointgeneration::nodeFiltering(const math::Point& pt, const TInt fromNode, std::vector<TInt> & neighboorNode)
+bool MetricFFPointgeneration::nodeFiltering(const math::Point& pt, const TInt fromNode, const TSimplexID simplex, std::vector<TInt> & neighboorNode)
 {
+  //std::cout << "nodeFiltering START" << std::endl;
   Variable<Eigen::Matrix3d>* metric  = nullptr;
   gmds::Variable<int>* BND_CURVE_COLOR_NODE = nullptr;
 
@@ -1339,6 +1335,18 @@ void MetricFFPointgeneration::nodeFiltering(const math::Point& pt, const TInt fr
   //for(unsigned int nodeId = 0 ; nodeId < nodesMesh.capacity() ; nodeId++)
 
   std::vector<TInt> nodes = m_nodesMesh.getOctree()->findNodesNextTo(pt);
+  Eigen::Matrix3d m0;
+  if(simplex != std::numeric_limits<TSimplexID>::min()){
+    m0 = m_nodesMesh.getAnalyticMetricFromSimplex(pt, m_simplexMesh, simplex);
+  }
+  else{
+    bool status = true;
+    m0 = m_simplexMesh->getAnalyticMetric(pt, m_simplexMesh, status);
+    if(!status)
+      return status;
+  }
+
+
   for(auto const nodeId : nodes)
   {
     if(nodesMesh[nodeId] != 0/* && nodeId != fromNode*/)
@@ -1347,8 +1355,8 @@ void MetricFFPointgeneration::nodeFiltering(const math::Point& pt, const TInt fr
       Eigen::Vector3d v(pt.X() - nodeCoord.X(), pt.Y() - nodeCoord.Y(), pt.Z() - nodeCoord.Z());
       const double euclidianNorm = v.norm();
       //the metric being analytique we do not have to interpolate the metric at point
-      const Eigen::Matrix3d m0 = m_nodesMesh.getAnalyticMetric(pt, m_simplexMesh->getOctree());
-      const Eigen::Matrix3d m1 = m_nodesMesh.getAnalyticMetric(nodeCoord, m_simplexMesh->getOctree());
+      //const Eigen::Matrix3d m1 = m_nodesMesh.getAnalyticMetricFromSimplex(nodeCoord, m_simplexMesh, );
+      const Eigen::Matrix3d m1 = (*metric)[nodeId];
       //compute the current length based on the metric atached to the mesh
       const double metricLenght = 0.5 * sqrt(v.dot(m0*v)) + 0.5 * sqrt(v.dot(m1*v));
       if(metricLenght <= m_minDistance)
@@ -1357,9 +1365,11 @@ void MetricFFPointgeneration::nodeFiltering(const math::Point& pt, const TInt fr
       }
     }
   }
+  //std::cout << "nodeFiltering END" << std::endl;
+  return true;
 }
 /*----------------------------------------------------------------------------*/
-void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point& initialCoord, bool surfaceFlag, int cpt, double epsilon)
+bool MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point& initialCoord, bool surfaceFlag, int cpt, double epsilon)
 {
   if(cpt == 0){
     epsilon *= 2.0;
@@ -1380,6 +1390,7 @@ void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point
   //////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////
   math::Point newCoord = initialCoord;
+  TSimplexID triangleProj;
   if(surfaceFlag)
   {
     double minDistance = std::numeric_limits<int>::max();
@@ -1393,7 +1404,6 @@ void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point
       //if(triangleVec[triangle] != 0)
       if(triangle < 0)
       {
-
         math::Point projectedPoint;
         const SimplicesTriangle t(m_simplexMesh, triangle);
         const std::vector<TInt> nodes = t.getNodes();
@@ -1407,17 +1417,16 @@ void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point
           {
             goodProjection = projectedPoint;
             minDistance = std::abs(distance);
+            triangleProj = triangle;
           }
         }
       }
-
-
 
       if(minDistance != std::numeric_limits<int>::max()){
         newCoord = goodProjection;
       }
       else{
-        return;
+        return false;
       }
     }
     //////////////////////////////////////////////////////////////////////////////
@@ -1430,35 +1439,46 @@ void MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point
 
     if(dir.norm() <= DistanceMin){
       initialCoord = newCoord;
-      return;
+      return false;
     }
 
     //the metric being analytique we do not have to interpolate the metric at point
     const Eigen::Matrix3d m0 = (*metricNodes)[node];
-    const Eigen::Matrix3d m1 = m_simplexMesh->getAnalyticMetric(initialCoord, m_simplexMesh->getOctree());
+    Eigen::Matrix3d m1;
 
-    /*std::cout << "initialCoord -> " << initialCoord << std::endl;
-    std::cout << "node -> " << node << std::endl;
-    std::cout << "node -> " << SimplicesNode(&m_nodesMesh, node) << std::endl;*/
+    if(surfaceFlag){
+      m1 = m_simplexMesh->getAnalyticMetricFromSimplex(initialCoord, m_simplexMesh, SimplicesTriangle(m_simplexMesh, triangleProj).neighborSimplex()[0]);
+    }
+    else{
+      bool status = true;
+      m1 = m_simplexMesh->getAnalyticMetric(initialCoord, m_simplexMesh, status);
+
+      if(!status) // the node is probably outside the mesh so there is no metric
+        return status;
+    }
+    /*bool status = true;
+    const Eigen::Matrix3d m1 = m_simplexMesh->getAnalyticMetric(initialCoord, m_simplexMesh->getOctree(), status);
+
+    if(!status) // the node is probably outside the mesh so there is no metric
+      return status;*/
+
     //compute the current length based on the metric atached to the mesh
     const double metricLenght = 0.5 * sqrt(dir.dot(m0*dir)) +  0.5 * sqrt(dir.dot(m1*dir));
-    /*std::cout << "m0 -> " << std::endl << m0 << std::endl;
-    std::cout << "m1 -> " << std::endl << m1 << std::endl;
-    std::cout << "metricLenght -> " << metricLenght << std::endl;*/
 
     if(metricLenght < (1.0 - epsilon))
     {
       initialCoord = pt + 1.5 * math::Vector3d({dir.x(), dir.y(), dir.z()});
-      findOptimimalPosition(node, initialCoord, surfaceFlag, --cpt, epsilon);
+      return findOptimimalPosition(node, initialCoord, surfaceFlag, --cpt, epsilon);
     }
     else if(metricLenght > (1.0 + epsilon))
     {
       initialCoord = 0.5 * (pt + initialCoord);
-      findOptimimalPosition(node, initialCoord, surfaceFlag, --cpt, epsilon);
+      return findOptimimalPosition(node, initialCoord, surfaceFlag, --cpt, epsilon);
     }
     else
     {
       initialCoord = newCoord;
+      return true;
     }
   }
   /*----------------------------------------------------------------------------*/
@@ -1588,8 +1608,10 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TI
       //std::cout << "MA_modified -> " << std::endl << MA << std::endl;
       //std::cout << "MB_modified -> " << std::endl << MB << std::endl;
 
+      //use it if you want to add curvature information for the metric computation
+      //for the edge subdivision
       //find the metric associate to the node (because of the curvature of the edge)
-      double curvatureValueA = std::abs(curvature(tA, edge));
+      /*double curvatureValueA = std::abs(curvature(tA, edge));
       double curvatureValueB = std::abs(curvature(tB, edge));
       double alpha = 0.1;
 
@@ -1616,7 +1638,7 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TI
         curveMetricB(2,2) = 1.0 / std::pow(curvatureRadiusB,2);
 
         MB = computeIntersectionMetric(curveMetricB, MB);
-      }
+      }*/
       Eigen::Matrix3d MA_modified;
       Eigen::Matrix3d MB_modified;
 
@@ -1637,32 +1659,43 @@ void MetricFFPointgeneration::subdivideEdgeUsingMetric_Relaxation(std::vector<TI
 
       //https://fr.wikipedia.org/wiki/Calcul_num%C3%A9rique_d%27une_int%C3%A9grale
       //basic discret square integral
-      den += sizeInterval *  (0.5 * mA + 0.5 * mB);
+      //den += sizeInterval  *  (0.5 * mA + 0.5 * mB);
+      den += (tB - tA)  *  (0.5 * mA + 0.5 * mB);
     }
     if(den == 0.0)
     {
       throw gmds::GMDSException("den == 0.0");
     }
 
-    unsigned int n = std::ceil(static_cast<double>(sizeEdge) / den) + 1;
-
+    unsigned int n = std::ceil(sizeEdge / den) + 1;
     std::vector<double>res{};
-    while(!metricSamplingEdge(n, res, edge, edgeU)){
+    /*while(!metricSamplingEdge(n, res, edge, edgeU)){
       ++n;
-    }
-
+    }*/
+    metricSamplingEdge(n, res, edge, edgeU);
     for(unsigned int i = 0 ; i < res.size()  ; i++)
     {
       const double u = res[i];
-      Point pt = computeTheEdgeNodeCoordinate(u, edge, edgeU);
+      TInt nodeA; TInt nodeB;
+      Point pt = computeTheEdgeNodeCoordinate(u, edge, edgeU, nodeA, nodeB);
       std::vector<TSimplexID> tetraContenaingPt{};
       bool status = false;
       TInt newNodeId = m_nodesMesh.addNodeAndcheck(pt, tetraContenaingPt, status);
-      if(!status)
-      {
+      if(!status){
         addNodeToLayer(newNodeId);
+        std::vector<TSimplexID> shell = SimplicesNode(m_simplexMesh, nodeA).shell(SimplicesNode(m_simplexMesh, nodeB));
+        if(shell.size() == 0)
+          throw gmds::GMDSException("shell.size() == 0 in subdivideEdgeUsingMetric_Relaxation function");
+
+        for(auto const s : shell){
+          if(s >= 0)
+          {
+            nodeBelongingTO[newNodeId] = s;
+            break;
+          }
+        }
         (*BND_CURVE_COLOR_NODE)[newNodeId] = edgeId;
-        m_nodesMesh.setAnalyticMetric(newNodeId, m_simplexMesh->getOctree());
+        m_nodesMesh.setAnalyticMetricFromMesh(newNodeId, m_simplexMesh, nodeBelongingTO);
         nodesAdded.push_back(newNodeId);
         std::unordered_set<TInt> seen{};
         m_nodesMesh.getOctree()->addNode(newNodeId, seen);
@@ -1718,14 +1751,18 @@ bool MetricFFPointgeneration::metricSamplingEdge(const unsigned int n, std::vect
       const double tA = u_min;
       const double tB = u_max;
 
-      const Point pt_min = computeTheEdgeNodeCoordinate(u_min, edge, edgeU);
-      const Point pt_max = computeTheEdgeNodeCoordinate(u_max, edge, edgeU);
+      TInt nodeA_; TInt nodeB_; //useless here
+      const Point pt_min = computeTheEdgeNodeCoordinate(u_min, edge, edgeU, nodeA_, nodeB_);
+      const Point pt_max = computeTheEdgeNodeCoordinate(u_max, edge, edgeU, nodeA_, nodeB_);
 
       Eigen::Vector3d dir = Eigen::Vector3d(pt_max.X() - pt_min.X(), pt_max.Y() - pt_min.Y(), pt_max.Z() - pt_min.Z());
       dir.normalize();
 
-      Eigen::Matrix3d M_min  = m_simplexMesh->getAnalyticMetric(pt_min, m_simplexMesh->getOctree());
-      Eigen::Matrix3d M_max  = m_simplexMesh->getAnalyticMetric(pt_max, m_simplexMesh->getOctree());
+      //std::cout << "OK3" << std::endl;
+      bool status0, status1;
+      Eigen::Matrix3d M_min  = m_simplexMesh->getAnalyticMetric(pt_min, m_simplexMesh, status0);
+      //std::cout << "OK4" << std::endl;
+      Eigen::Matrix3d M_max  = m_simplexMesh->getAnalyticMetric(pt_max, m_simplexMesh,status1);
 
       //////////////////////////////////////////////////////////////////////////
       double curvatureValueA = std::abs(curvature(tA, edge));

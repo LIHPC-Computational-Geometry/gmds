@@ -4393,35 +4393,142 @@ void SimplexMesh::getEdgeSizeInfowithMetric(double& meanEdges, double& minEdge, 
   }
 }
 /******************************************************************************/
-Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, Octree* octree) const
+Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, SimplexMesh* sm, bool& status)
 {
-  double epsilon = 0.01;
-  Eigen::Matrix3d m = Eigen::MatrixXd::Zero(3, 3);
-  std::vector<double> borders = octree->getBorderOctree();
-  double x_min = borders[0], x_max = borders[1];
-  double y_min = borders[2], y_max = borders[3];
-  double tx = (pt.X() - x_min ) / (x_max - x_min);
-  double ty = (pt.Y() - y_min ) / (y_max - y_min);
+  //std::cout << "getAnalyticMetric" << std::endl;
+  double epsilon = 1E-3;
+  Eigen::Matrix3d m =  Eigen::Matrix3d::Zero();
+  Variable<Eigen::Matrix3d>* metric = nullptr;
+  try{
+    metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
 
-  //NON CONSTANT ISOTROPE METRIC
-  /*ty = (pt.Y() >= 0.5) ? pt.Y() - 0.5 : -(pt.Y() - 0.5);
-  double metricX = 0.09 / 0.5 * ty + 0.01;
-  double metricY = 0.09 / 0.5 * ty + 0.01;
-  double metricZ = 0.09 / 0.5 * ty + 0.01;*/
+  //compute the interpolation metric in a simplex
+  //std::vector<TSimplexID> simplices = octree->findSimplicesInOc(pt);
+  //std::vector<TSimplexID> simplices = m_octree->findSimplicesInOc(pt);
+  std::vector<TSimplexID> simplices = sm->getOctree()->findSimplicesInOc(pt);
+  //outside the octree
+  if(simplices.size() == 0) {
+    SimplexMesh meshTest;
+    TInt n0 = meshTest.addNode(pt);
+    meshTest.addTetraedre(n0, n0, n0, n0);
+    gmds::ISimplexMeshIOService ioServiceTriangles(&meshTest);
+    gmds::VTKWriter vtkWriter(&ioServiceTriangles);
+    vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
+    vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
+    vtkWriter.write("node_outside.vtk");
+    throw gmds::GMDSException("outside octree");
+  }
 
-  //CONSTANT ISOTROPE METRIC
-  /*double metricX = 0.05*(1.0 - ty) + 0.1*ty;
-  double metricY = 0.05*(1.0 - ty) + 0.1*ty;
-  double metricZ = 0.05*(1.0 - ty) + 0.1*ty;*/
-  double metricX = 0.30;
-  double metricY = 0.30;
-  double metricZ = 0.30;
+  const gmds::BitVector& bitvectorTet = sm->getBitVectorTet();
+  std::vector<TInt> nodes{};
+  std::vector<double> uvwt_{};
+  std::vector<double> uvwt{};
+  bool flag;
+  for(auto const & s : simplices)
+  {
+    //std::cout << "s : " << s << std::endl;
+    if(s >= 0)
+    {
+      if(bitvectorTet[s] != 0)
+      {
+        SimplicesCell cell(sm, s);
+        //std::cout << "cell : " << cell << std::endl;
 
-  m(0,0) = 1.0 / (metricX*metricX);
-  m(1,1) = 1.0 / (metricY*metricY);
-  m(2,2) = 1.0 / (metricZ*metricZ);
-  return m;
+        //isInCell function is a bad habbit because it can cause problem if the node is extremely near the border mesh
+        //if(cell.isInCell(pt))
+        {
+          uvwt_ = cell.uvwt(pt);
+          if(uvwt_[0] > -epsilon && uvwt_[1] > -epsilon && uvwt_[2] > -epsilon && uvwt_[3] > -epsilon){
+            nodes = cell.getNodes();
+            uvwt = uvwt_ ;
+            break;
+          }
+        }
+      }
+    }
+  }
 
+  if(uvwt.size() == 0)
+  {
+    status = false;
+    return Eigen::Matrix3d::Zero();
+    /*SimplexMesh meshTest;
+    TInt n0 = meshTest.addNode(pt);
+    meshTest.addTetraedre(n0, n0, n0, n0);
+    gmds::ISimplexMeshIOService ioServiceTriangles(&meshTest);
+    gmds::VTKWriter vtkWriter(&ioServiceTriangles);
+    vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
+    vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
+    vtkWriter.write("uvwt_size0.vtk");
+    throw gmds::GMDSException("uvwt.size() == 0 Node not in any simplices");*/
+  }
+
+  Eigen::Matrix3d m0 = (*metric)[nodes[0]];
+  Eigen::Matrix3d m1 = (*metric)[nodes[1]];
+  Eigen::Matrix3d m2 = (*metric)[nodes[2]];
+  Eigen::Matrix3d m3 = (*metric)[nodes[3]];
+
+  //std::cout << "getAnalyticMetric END" << std::endl;
+  return uvwt[0]*m0 + uvwt[1]*m1 + uvwt[2]*m2 + uvwt[3]*m3;
+}
+/******************************************************************************/
+Eigen::Matrix3d SimplexMesh::getAnalyticMetricFromSimplex(const math::Point& pt, SimplexMesh* sm, TSimplexID simplex)
+{
+  //std::cout << "getAnalyticMetricFromSimplex" << std::endl;
+  double epsilon = 1E-3;
+  Eigen::Matrix3d m =  Eigen::Matrix3d::Zero();
+  Variable<Eigen::Matrix3d>* metric = nullptr;
+  try{
+    metric = sm->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  //std::cout << "simplex -> "<< simplex << std::endl;
+  std::vector<double> uvwt = SimplicesCell(sm, simplex).uvwt(pt);
+  std::vector<TInt> nodes =  SimplicesCell(sm, simplex).getNodes();
+
+  Eigen::Matrix3d m0 = (*metric)[nodes[0]];
+  Eigen::Matrix3d m1 = (*metric)[nodes[1]];
+  Eigen::Matrix3d m2 = (*metric)[nodes[2]];
+  Eigen::Matrix3d m3 = (*metric)[nodes[3]];
+  //std::cout << "getAnalyticMetricFromSimplex END" << std::endl;
+  return uvwt[0]*m0 + uvwt[1]*m1 + uvwt[2]*m2 + uvwt[3]*m3;
+}
+/******************************************************************************/
+void SimplexMesh::setAnalyticMetricFromMesh(const TInt node, SimplexMesh* sm, std::unordered_map<TInt, TSimplexID>& umap)
+{
+  //std::cout << "setAnalyticMetricFromMesh" << std::endl;
+
+  Eigen::Matrix3d m =  Eigen::Matrix3d::Zero();
+  Variable<Eigen::Matrix3d>* metric = nullptr;
+  try{
+    metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    (*metric)[node] = m;
+  }catch (gmds::GMDSException e)
+  {
+    metric = newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    (*metric)[node] = m;
+  }
+
+  if(umap[node] != std::numeric_limits<TSimplexID>::min()){
+    m = getAnalyticMetricFromSimplex(SimplicesNode(this, node).getCoords(), sm, umap[node]);
+  }
+  else{
+    bool status = true;
+    m = getAnalyticMetric(SimplicesNode(this, node).getCoords(), sm, status);
+    if(!status)
+      throw gmds::GMDSException("can no set analytic metric in setAnalyticMetricFromMesh function.");
+  }
+
+  //m = sm->getAnalyticMetricFromSimplex(SimplicesNode(this, node).getCoords(), sm, umap[node]);
+  (*metric)[node] = m;
+  //std::cout << "setAnalyticMetricFromMesh END" << std::endl;
 }
 /******************************************************************************/
 void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
@@ -4461,6 +4568,10 @@ void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
   double metricX = 0.30;
   double metricY = 0.30;
   double metricZ = 0.30;
+
+  /*double metricX = 2.0;
+  double metricY = 2.0;
+  double metricZ = 2.0;*/
 
 
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
@@ -4612,7 +4723,7 @@ void SimplexMesh::setColorsSurfaceFromSimplex(SimplexMesh* simplexMesh)
   }
 }
 /******************************************************************************/
-void SimplexMesh::onSurface(const math::Point& pt, int& surfaceLabel)
+void SimplexMesh::onSurface(const math::Point& pt, int& surfaceLabel, TSimplexID& simplex)
 {
   double epsilon = 0.1;
   gmds::Variable<int>* BND_TRIANGLES  = nullptr;
@@ -4626,16 +4737,17 @@ void SimplexMesh::onSurface(const math::Point& pt, int& surfaceLabel)
 
   std::vector<TSimplexID> simplices = getOctree()->findSimplicesInOc(pt);
   surfaceLabel = 0;
-  for(auto const simplex : simplices)
+  for(auto const simplex_ : simplices)
   {
-    if(simplex >= 0)
+    if(simplex_ >= 0)
     {
       std::vector<double> UVWT;
-      if(SimplicesCell(this, simplex).isCellClose(pt, UVWT, epsilon))
+      if(SimplicesCell(this, simplex_).isCellClose(pt, UVWT, epsilon))
       {
+        simplex = simplex_;
         for(unsigned int c = 0; c < UVWT.size() ; c++)
         {
-          TSimplexID t = SimplicesCell(this, simplex).oppositeTetraIdx(c);
+          TSimplexID t = SimplicesCell(this, simplex_).oppositeTetraIdx(c);
           if(t < 0 && (UVWT[c] > - epsilon && UVWT[c] <  epsilon))
           {
             surfaceLabel = (*BND_TRIANGLES)[-t];
