@@ -6,17 +6,24 @@
 #include <gmds/ig/Mesh.h>
 #include <gmds/claire/FrontEdgesNodesClassification_3D.h>
 #include <gmds/claire/NodeNeighbourhoodOnFront_3D.h>
+#include <gmds/io/IGMeshIOService.h>
+#include <gmds/io/VTKWriter.h>
+#include <iostream>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
-FrontEdgesNodesClassification_3D::FrontEdgesNodesClassification_3D(Mesh *AMesh, Front_3D *AFront, Variable<int>* A_EdgesClassification, Variable<int>* A_NodesClassification) :
+FrontEdgesNodesClassification_3D::FrontEdgesNodesClassification_3D(Mesh *AMesh, Front_3D *AFront, Variable<int>* A_EdgesClassification, Variable<int>* A_NodesClassification,
+                                                                   Mesh *AMesh_T, FastLocalize *Afl, Variable<math::Vector3d>* A_VectorField) :
   m_mesh(AMesh),
+  m_mesh_T(AMesh_T),
+  m_fl(Afl),
   m_Front(AFront)
 {
 	m_EdgesClassification = A_EdgesClassification;
 	m_NodesClassification = A_NodesClassification;
 	m_mark_EdgesForTemplates = m_mesh->newMark<Edge>();
 	m_mark_NodesForTemplates = m_mesh->newMark<Node>();
+	m_VectorField = A_VectorField;
 }
 /*------------------------------------------------------------------------*/
 FrontEdgesNodesClassification_3D::~FrontEdgesNodesClassification_3D()
@@ -31,12 +38,15 @@ FrontEdgesNodesClassification_3D::STATUS
 FrontEdgesNodesClassification_3D::execute()
 {
 	FrontEdgesClassification();	// Fill the variable m_EdgesClassification
+
+	gmds::IGMeshIOService ioService(m_mesh);
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::E);
+	vtkWriter.setDataOptions(gmds::N|gmds::E);
+	vtkWriter.write("AeroEdgesClassification_3D_"+std::to_string(m_Front->getFrontID())+".vtk");
+
 	FrontNodesClassification();	// Fill the variable m_NodesClassification
-	/*
-	m_global_feature_edges = ComputeAllGlobalFeatureEdge();
-	ComputeNodesEdgesForTemplates();
-	 */
-	//m_All_global_feature_edges = ComputeAllGFE();
+
 	ComputeValid_GFE();
 	ComputeValidLoop_GFE();
 
@@ -80,19 +90,32 @@ FrontEdgesNodesClassification_3D::SingleEdgeClassification(TCellID e_id)
 	math::Vector3d n1 = e_faces_on_front[0].normal();
 	math::Vector3d n2 = e_faces_on_front[1].normal();
 
-	// Each face of the front is connected to a unique region
-	// So the size of the vector e_faces_on_front[0].get<Region>() is 1.
-	Region r1 = (e_faces_on_front[0].get<Region>())[0];
-	Region r2 = (e_faces_on_front[1].get<Region>())[0];
-
-	math::Point r1_center = r1.center();
-	math::Point r2_center = r2.center();
-
 	math::Point f1_center = e_faces_on_front[0].center();
 	math::Point f2_center = e_faces_on_front[1].center();
 
-	math::Vector3d v1 = (f1_center-r1.center()).normalize() ;
-	math::Vector3d v2 = (f2_center-r2.center()).normalize() ;
+	math::Vector3d v1;
+	math::Vector3d v2;
+
+	if (m_Front->getFrontID() > 0) {
+		// Each face of the front is connected to a unique region
+		// So the size of the vector e_faces_on_front[0].get<Region>() is 1.
+		Region r1 = (e_faces_on_front[0].get<Region>())[0];
+		Region r2 = (e_faces_on_front[1].get<Region>())[0];
+
+		math::Point r1_center = r1.center();
+		math::Point r2_center = r2.center();
+
+		v1 = (f1_center - r1.center()).normalize();
+		v2 = (f2_center - r2.center()).normalize();
+	}
+	else
+	{	// If we are on the first front, there is no region in the mesh.
+		gmds::Cell::Data data_1 = m_fl->find(e_faces_on_front[0].center());
+		gmds::Cell::Data data_2 = m_fl->find(e_faces_on_front[1].center());
+
+		v1 = m_VectorField->value(data_1.id);
+		v2 = m_VectorField->value(data_2.id);
+	}
 
 	// Compute if the vectors n1 and n2 are well oriented.
 	if ( n1.dot(v1) < 0 )
@@ -501,28 +524,6 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 	// Init
 	m_All_global_feature_edges = ComputeAllGFE();
 
-	/*
-	for (auto const& GFE:m_All_global_feature_edges)
-	{
-		if (m_NodesClassification->value(GFE.End_n_id) >= 3
-		    && isValidNodeForTemplate(GFE.End_n_id))
-		{
-			m_mesh->mark(m_mesh->get<Node>(GFE.End_n_id), m_mark_NodesForTemplates);
-		}
-		if (m_NodesClassification->value(GFE.Start_n_id) >= 3
-		    && isValidNodeForTemplate(GFE.Start_n_id))
-		{
-			m_mesh->mark(m_mesh->get<Node>(GFE.Start_n_id), m_mark_NodesForTemplates);
-		}
-		for (auto e_loc_id:GFE.edges_id)
-		{
-			m_mesh->mark(m_mesh->get<Edge>(e_loc_id), m_mark_EdgesForTemplates);
-		}
-	}
-	*/
-
-	// NEW METHOD
-
 	bool isAllTreated(false);
 
 	while (!isAllTreated && !m_All_global_feature_edges.empty())
@@ -555,40 +556,6 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 		}
 	}
 
-	// OLD WAY
-
-	/*
-	bool isAllTreated(false);
-
-	while (!isAllTreated && !m_All_global_feature_edges.empty())
-	{
-		isAllTreated = true;
-		auto it=m_All_global_feature_edges.begin();
-		while (it != m_All_global_feature_edges.end())
-		{
-			Global_Feature_Edge GFE = *it;
-			if (!m_mesh->isMarked(m_mesh->get<Node>(GFE.Start_n_id), m_mark_NodesForTemplates)
-			    || !m_mesh->isMarked(m_mesh->get<Node>(GFE.End_n_id), m_mark_NodesForTemplates)
-			    || (GFE.edges_id.size() <= 1 && m_Front->getFrontID() > 2))		// In this work, we can't ensure the topology validity of the patterns in case there is only one edge between two singular nodes
-			{
-					it = m_All_global_feature_edges.erase(it);
-				   m_mesh->unmark(m_mesh->get<Node>(GFE.Start_n_id), m_mark_NodesForTemplates);
-				   m_mesh->unmark(m_mesh->get<Node>(GFE.End_n_id), m_mark_NodesForTemplates);
-				   for (auto e_loc_id:GFE.edges_id)
-				   {
-					   m_mesh->unmark(m_mesh->get<Edge>(e_loc_id), m_mark_EdgesForTemplates);
-				   }
-				   isAllTreated = false;
-			}
-			else
-			{
-				it++;
-			}
-		}
-	}
-
-	 */
-
 	/*
 	for (auto GFE:m_All_global_feature_edges)
 	{
@@ -600,10 +567,11 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 
 }
 /*------------------------------------------------------------------------*/
-void FrontEdgesNodesClassification_3D::ComputeValidLoop_GFE()
+void
+FrontEdgesNodesClassification_3D::ComputeValidLoop_GFE()
 {
 	Variable<int>* var_node_couche_id = m_mesh->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-	int mark_EdgesUsed = m_mesh->newMark<Edge>();
+	TInt mark_EdgesUsed = m_mesh->newMark<Edge>();
 	for (auto e_id:m_mesh->edges())
 	{
 		Edge e = m_mesh->get<Edge>(e_id);
@@ -627,7 +595,7 @@ void FrontEdgesNodesClassification_3D::ComputeValidLoop_GFE()
 			{
 				for (auto e_loc_id:GFE.edges_id)
 				{
-					std::cout << e_loc_id << std::endl;
+					//std::cout << e_loc_id << std::endl;
 				}
 			}
 		}

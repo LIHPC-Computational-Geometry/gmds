@@ -9,6 +9,7 @@
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/claire/Front_3D.h>
+#include <gmds/claire/FastLocalize.h>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
 class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
@@ -37,7 +38,8 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
          *  @param[in] A_NodesClassification variable for the nodes classification
          *
 	 */
-	FrontEdgesNodesClassification_3D(Mesh *AMesh, Front_3D *AFront, Variable<int>* A_EdgesClassification, Variable<int>* A_NodesClassification);
+	FrontEdgesNodesClassification_3D(Mesh *AMesh, Front_3D *AFront, Variable<int>* A_EdgesClassification, Variable<int>* A_NodesClassification,
+	                                 Mesh *AMesh_T, FastLocalize *Afl, Variable<math::Vector3d>* A_VectorField);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Destructor.
@@ -142,6 +144,12 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
  private:
 	/** the quad mesh we work on */
 	Mesh *m_mesh;
+	/** the tet mesh we work on */
+	Mesh *m_mesh_T;
+	/** k-d tree */
+	FastLocalize *m_fl;
+	/** Vector Field for extrusion */
+	Variable<math::Vector3d>* m_VectorField;
 	/** the front */
 	Front_3D *m_Front;
 	/** Edges classification */
