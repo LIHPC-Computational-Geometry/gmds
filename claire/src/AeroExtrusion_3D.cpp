@@ -54,9 +54,18 @@ AeroExtrusion_3D::execute()
 
 	Front_3D Front_Geom = Front_3D(0, surface_block_corners_Id, surface_block_faces_Id);
 
-	//Front_3D Current_Front = Compute1stLayer(Front_Geom, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), m_VectorField);
-	Front_3D Current_Front = ComputeLayer(Front_Geom, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), m_params_aero.delta_cl,
-	                                      m_VectorField);
+	Front_3D Current_Front = Front_Geom;
+	if (m_params_aero.insertions_allowed_on_first_layer)
+	{
+		// Compute the first layer of blocks with patterns
+		Current_Front = ComputeLayer(Front_Geom, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), m_params_aero.delta_cl,
+		                             m_VectorField);
+	}
+	else
+	{
+		// Compute the first layer of blocks without patterns
+		Current_Front = Compute1stLayer(Front_Geom, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), m_VectorField);
+	}
 
 	double max_distance = ComputeMaxDistOnFront(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	double pas_couche = (1.0-max_distance)/(m_params_aero.nbr_couches-1) ;
@@ -153,13 +162,13 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		if (singu_type==1 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
 			std::cout << "Template NODE: 3 Corner" << std::endl;
-			TCellID r_id = TemplateNode3Corner(Front_IN, n_id, map_new_nodes, dist_cible);
+			TCellID r_id = TemplateNode3Corner(Front_IN, n_id, map_new_nodes, dist_cible, A_distance);
 			m_Patterns->set(r_id, 1);
 		}
 		else if (singu_type==2 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
 			std::cout << "Template NODE: 2 Corner, 1 End" << std::endl;
-			TCellID r_id = TemplateNode2Corner1End(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated);
+			TCellID r_id = TemplateNode2Corner1End(Front_IN, n_id, dist_cible, A_distance, mark_edgesTreated, mark_facesTreated);
 			m_Patterns->set(r_id, 2);
 		}
 		else if (singu_type==3 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
@@ -177,7 +186,7 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		else if (singu_type==5 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
 			std::cout << "Template NODE: 3 Corner, 3 End" << std::endl;
-			TCellID r_id = TemplateNode3Corner3End(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated);
+			TCellID r_id = TemplateNode3Corner3End(Front_IN, n_id, dist_cible, A_distance, mark_edgesTreated, mark_facesTreated);
 			m_Patterns->set(r_id, 5);
 		}
 		else if (singu_type==6 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
@@ -190,7 +199,7 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		else if (singu_type==7 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
 			std::cout << "Template NODE: 2 Corner, 1 Reversal" << std::endl;
-			std::vector<TCellID> r_id = TemplateNode2Corner1Reversal(Front_IN, n_id, dist_cible); // Create 2 hexas
+			std::vector<TCellID> r_id = TemplateNode2Corner1Reversal(Front_IN, n_id, dist_cible, A_distance); // Create 2 hexas
 			m_Patterns->set(r_id[0], 7);
 			m_Patterns->set(r_id[1], 7);
 		}
@@ -218,7 +227,7 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		    && !m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_edgesTreated)
 		    && m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_EdgesTemplates))
 		{
-			TCellID r_id = TemplateEdgeCorner(Front_IN, e_id, dist_cible);
+			TCellID r_id = TemplateEdgeCorner(Front_IN, e_id, dist_cible, A_distance);
 			m_Patterns->set(r_id, -1);
 		}
 		else if (singu_type==2
@@ -232,7 +241,7 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		         && !m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_edgesTreated)
 		         && m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_EdgesTemplates))
 		{
-			std::vector<TCellID> r_id = TemplateEdgeReversal(Front_IN, e_id, dist_cible, mark_edgesTreated, mark_facesTreated);
+			std::vector<TCellID> r_id = TemplateEdgeReversal(Front_IN, e_id, dist_cible, A_distance, mark_edgesTreated, mark_facesTreated);
 			m_Patterns->set(r_id[0], -3);
 			m_Patterns->set(r_id[1], -3);
 		}
@@ -554,7 +563,7 @@ AeroExtrusion_3D::getSingularEdges(Front_3D &AFront, Variable<int>* front_edges_
 }
 /*------------------------------------------------------------------------*/
 TCellID
-AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<TCellID, TCellID> map_new_nodes, double dc)
+AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<TCellID, TCellID> map_new_nodes, double dc, Variable<double>* var_distance_field)
 {
 	//std::cout << "Template Node 3 Corner au noeud " << n_id << std::endl;
 	TCellID r_id;
@@ -599,18 +608,21 @@ AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<T
 	math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, -v1-v3); // p4 + (p1-n.point()) ;
 	math::Point p7 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, -v2-v3); //p4 + (p3-n.point()) ;
 	*/
-	math::Vector3d v1 = AFront.outgoingNormal(m_meshH, n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec_1.id(), ec_2.id(), ec_0.id())) ;
-	math::Vector3d v2 = AFront.outgoingNormal(m_meshH, n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec_0.id(), ec_2.id(), ec_1.id())) ;
-	math::Vector3d v3 = AFront.outgoingNormal(m_meshH, n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec_0.id(), ec_1.id(), ec_2.id())) ;
+	//math::Vector3d v1 = AFront.outgoingNormal(m_meshH, n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec_1.id(), ec_2.id(), ec_0.id())) ;
+	//math::Vector3d v2 = AFront.outgoingNormal(m_meshH, n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec_0.id(), ec_2.id(), ec_1.id())) ;
+	//math::Vector3d v3 = AFront.outgoingNormal(m_meshH, n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec_0.id(), ec_1.id(), ec_2.id())) ;
+	math::Vector3d v1 = AFront.outgoingNormal(m_meshH, m_meshT, &m_fl, m_VectorField, n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec_1.id(), ec_2.id(), ec_0.id())) ;
+	math::Vector3d v2 = AFront.outgoingNormal(m_meshH, m_meshT, &m_fl, m_VectorField, n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec_0.id(), ec_2.id(), ec_1.id())) ;
+	math::Vector3d v3 = AFront.outgoingNormal(m_meshH, m_meshT, &m_fl, m_VectorField, n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec_0.id(), ec_1.id(), ec_2.id())) ;
 	v1.normalize();
 	v2.normalize();
 	v3.normalize();
-	math::Point p1 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v1);
-	math::Point p3 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v2);
-	math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v3);
-	math::Point p2 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v1+v2);
-	math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v1+v3);
-	math::Point p7 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v2+v3);
+	math::Point p1 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, v1);
+	math::Point p3 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, v2);
+	math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, v3);
+	math::Point p2 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, v1+v2);
+	math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, v1+v3);
+	math::Point p7 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, v2+v3);
 
 	Node n1 = m_meshH->newNode(p1);
 	Node n2 = m_meshH->newNode(p2);
@@ -709,7 +721,7 @@ AeroExtrusion_3D::TemplateNode3Corner(Front_3D &AFront, TCellID n_id, std::map<T
 }
 /*------------------------------------------------------------------------*/
 TCellID
-AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double dc, TInt mark_edgesTreated, TInt mark_facesTreated)
+AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double dc, Variable<double>* var_distance_field, TInt mark_edgesTreated, TInt mark_facesTreated)
 {
 	//std::cout << "Template Node 2 Corner 1 End au noeud " << n_id << std::endl;
 	TCellID r_id;
@@ -744,21 +756,21 @@ AeroExtrusion_3D::TemplateNode2Corner1End(Front_3D &AFront, TCellID n_id, double
 	TCellID f_end1_id = math::Utils::CommonFace3Nodes(m_meshH, n_c1.id(), n_id, ee.getOppositeNode(n).id()) ;
 
 	math::Vector3d ve = ( ( n_c0.point() - n.point() ).normalize() + ( n_c1.point() - n.point() ).normalize() ).normalize() ;
-	math::Point pe = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, ve);
+	math::Point pe = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, ve);
 	Node n_e = m_meshH->newNode(pe);
 
 	math::Vector3d v1 = (n.point()- (ee.getOppositeNode(n)).point() ).normalize() ;
-	math::Point p1 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v1);
+	math::Point p1 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, v1);
 	Node n_1 = m_meshH->newNode(p1);
 
-	math::Point p2 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n_c0.point(), dc, m_DistanceField, v1);
+	math::Point p2 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n_c0.point(), dc, var_distance_field, v1);
 	Node n_2 = m_meshH->newNode(p2);
 
-	math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n_c1.point(), dc, m_DistanceField, v1);
+	math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n_c1.point(), dc, var_distance_field, v1);
 	Node n_4 = m_meshH->newNode(p4);
 
 	math::Vector3d v3 = ( ( n_c0.point() - n.point() ).normalize() + ( n_c1.point() - n.point() ).normalize() + v1 ).normalize() ;
-	math::Point p3 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v3);
+	math::Point p3 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, v3);
 	Node n_3 = m_meshH->newNode(p3);
 
 	// Create the new hexa
@@ -1139,7 +1151,7 @@ AeroExtrusion_3D::TemplateNode3End(Front_3D &AFront, TCellID n_id, TInt mark_edg
 }
 /*------------------------------------------------------------------------*/
 TCellID
-AeroExtrusion_3D::TemplateNode3Corner3End(Front_3D &AFront, TCellID n_id, double dc, TInt mark_edgesTreated, TInt mark_facesTreated)
+AeroExtrusion_3D::TemplateNode3Corner3End(Front_3D &AFront, TCellID n_id, double dc, Variable<double>* var_distance_field, TInt mark_edgesTreated, TInt mark_facesTreated)
 {
 	//std::cout << "Template Node 3 Corner 3 End au noeud " << n_id << std::endl;
 	TCellID r_id;
@@ -1182,9 +1194,9 @@ AeroExtrusion_3D::TemplateNode3Corner3End(Front_3D &AFront, TCellID n_id, double
 	math::Vector3d v12 = ( (nc1.point() - n.point()).normalize() + (nc2.point() - n.point()).normalize() + (n1.point() - n.point()).normalize() ).normalize() ;
 	math::Vector3d v02 = ( (nc0.point() - n.point()).normalize() + (nc2.point() - n.point()).normalize() + (n1.point() - n.point()).normalize() ).normalize() ;
 
-	math::Point pe0 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v01);
-	math::Point pe1 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v12);
-	math::Point pe2 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v02);
+	math::Point pe0 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, v01);
+	math::Point pe1 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, v12);
+	math::Point pe2 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, v02);
 
 	Node ne0 = m_meshH->newNode(pe0);
 	Node ne1 = m_meshH->newNode(pe1);
@@ -1478,7 +1490,7 @@ AeroExtrusion_3D::TemplateNode2Corner2End(Front_3D &AFront, TCellID n_id, double
 }
 /*------------------------------------------------------------------------*/
 std::vector<TCellID>
-AeroExtrusion_3D::TemplateNode2Corner1Reversal(Front_3D &AFront, TCellID n_id, double dc)
+AeroExtrusion_3D::TemplateNode2Corner1Reversal(Front_3D &AFront, TCellID n_id, double dc, Variable<double>* var_distance_field)
 {
 	//std::cout << "Template Node 2 Corner 1 Reversal au noeud " << n_id << std::endl;
 	std::vector<TCellID> hexas_id;
@@ -1547,17 +1559,17 @@ AeroExtrusion_3D::TemplateNode2Corner1Reversal(Front_3D &AFront, TCellID n_id, d
 		v_c0c1 = - v_c0c1;
 	}
 
-	math::Point p1 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, vr);
-	math::Point p3 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (vc0+vc1).normalize());
-	math::Point p7 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, v_rc0);
-	math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (vr+v_rc0).normalize());
-	math::Point p6 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (vc0+vc1+v_rc0).normalize());
-	math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (vr+vc0+vc1+v_rc0).normalize());
+	math::Point p1 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, vr);
+	math::Point p3 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, (vc0+vc1).normalize());
+	math::Point p7 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, v_rc0);
+	math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, (vr+v_rc0).normalize());
+	math::Point p6 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, (vc0+vc1+v_rc0).normalize());
+	math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, (vr+vc0+vc1+v_rc0).normalize());
 
-	math::Point p11 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (v_rc1).normalize());
-	math::Point p8 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (vr+v_rc1).normalize());
-	math::Point p10 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (vc0+vc1+v_rc1).normalize());
-	math::Point p9 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, m_DistanceField, (vr+vc0+vc1+v_rc1).normalize());
+	math::Point p11 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, (v_rc1).normalize());
+	math::Point p8 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, (vr+v_rc1).normalize());
+	math::Point p10 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, (vc0+vc1+v_rc1).normalize());
+	math::Point p9 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n.point(), dc, var_distance_field, (vr+vc0+vc1+v_rc1).normalize());
 
 	n1 = m_meshH->newNode(p1);
 	n3 = m_meshH->newNode(p3);
@@ -1777,7 +1789,7 @@ AeroExtrusion_3D::TemplateNode2End1Reversal(Front_3D &AFront, TCellID n_id, doub
 }
 /*------------------------------------------------------------------------*/
 TCellID
-AeroExtrusion_3D::TemplateEdgeCorner(Front_3D &AFront, TCellID e_id, double dc)
+AeroExtrusion_3D::TemplateEdgeCorner(Front_3D &AFront, TCellID e_id, double dc, Variable<double>* var_distance_field)
 {
 	//std::cout << "Template Edge Corner" << std::endl;
 	TCellID r_id(NullID);
@@ -1810,11 +1822,11 @@ AeroExtrusion_3D::TemplateEdgeCorner(Front_3D &AFront, TCellID e_id, double dc)
 		// We create the 3 new nodes	//
 		//============================//
 
-		math::Vector3d f0_normal = AFront.outgoingNormal(m_meshH, e_front_faces[0]) ;
+		math::Vector3d f0_normal = AFront.outgoingNormal(m_meshH, m_meshT, &m_fl, m_VectorField, e_front_faces[0]) ;
 		f0_normal.normalize();
 		f0_normal = e.length()*f0_normal ;
 
-		math::Vector3d f1_normal = AFront.outgoingNormal(m_meshH, e_front_faces[1]) ;
+		math::Vector3d f1_normal = AFront.outgoingNormal(m_meshH, m_meshT, &m_fl, m_VectorField, e_front_faces[1]) ;
 		f1_normal.normalize();
 		f1_normal = e.length()*f1_normal ;
 
@@ -1823,8 +1835,8 @@ AeroExtrusion_3D::TemplateEdgeCorner(Front_3D &AFront, TCellID e_id, double dc)
 		n0_2_id = m_FaceInfo[e_front_faces[0]].next_ideal_nodes[e_nodes[0].id()];
 		Node n0_2_new = m_meshH->get<Node>(n0_2_id);
 		math::Point p0_2_new = n0_2_new.point() ;
-		math::Point p0_1_new = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, e_nodes[0].point(), dc, m_DistanceField, f0_normal.normalize());
-		math::Point p0_3_new = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, e_nodes[0].point(), dc, m_DistanceField, f1_normal.normalize());
+		math::Point p0_1_new = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, e_nodes[0].point(), dc, var_distance_field, f0_normal.normalize());
+		math::Point p0_3_new = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, e_nodes[0].point(), dc, var_distance_field, f1_normal.normalize());
 
 		Node n0_1_new = m_meshH->newNode(p0_1_new);
 		Node n0_3_new = m_meshH->newNode(p0_3_new);
@@ -1910,11 +1922,11 @@ AeroExtrusion_3D::TemplateEdgeCorner(Front_3D &AFront, TCellID e_id, double dc)
 		// We create the 3 new nodes	//
 		//============================//
 
-		math::Vector3d f0_normal = AFront.outgoingNormal(m_meshH, e_front_faces[0]) ;
+		math::Vector3d f0_normal = AFront.outgoingNormal(m_meshH, m_meshT, &m_fl, m_VectorField, e_front_faces[0]) ;
 		f0_normal.normalize();
 		f0_normal = e.length()*f0_normal ;
 
-		math::Vector3d f1_normal = AFront.outgoingNormal(m_meshH, e_front_faces[1]) ;
+		math::Vector3d f1_normal = AFront.outgoingNormal(m_meshH, m_meshT, &m_fl, m_VectorField, e_front_faces[1]) ;
 		f1_normal.normalize();
 		f1_normal = e.length()*f1_normal ;
 
@@ -1923,8 +1935,8 @@ AeroExtrusion_3D::TemplateEdgeCorner(Front_3D &AFront, TCellID e_id, double dc)
 		n1_2_id = m_FaceInfo[e_front_faces[0]].next_ideal_nodes[e_nodes[1].id()];
 		Node n1_2_new = m_meshH->get<Node>(n1_2_id);
 		math::Point p1_2_new = n1_2_new.point() ;
-		math::Point p1_1_new = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, e_nodes[1].point(), dc, m_DistanceField, f0_normal.normalize());
-		math::Point p1_3_new = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, e_nodes[1].point(), dc, m_DistanceField, f1_normal.normalize());
+		math::Point p1_1_new = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, e_nodes[1].point(), dc, var_distance_field, f0_normal.normalize());
+		math::Point p1_3_new = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, e_nodes[1].point(), dc, var_distance_field, f1_normal.normalize());
 
 		Node n1_1_new = m_meshH->newNode(p1_1_new);
 		Node n1_3_new = m_meshH->newNode(p1_3_new);
@@ -2116,7 +2128,7 @@ AeroExtrusion_3D::TemplateEdgeEnd(Front_3D &AFront, TCellID e_id, double dc, TIn
 }
 /*------------------------------------------------------------------------*/
 std::vector<TCellID>
-AeroExtrusion_3D::TemplateEdgeReversal(Front_3D &AFront, TCellID e_id, double dc, TInt mark_edgesTreated, TInt mark_facesTreated)
+AeroExtrusion_3D::TemplateEdgeReversal(Front_3D &AFront, TCellID e_id, double dc, Variable<double>* var_distance_field, TInt mark_edgesTreated, TInt mark_facesTreated)
 {
 	//std::cout << "Template Edge Reversal " << e_id << std::endl;
 	std::vector<TCellID> hexas_id;
@@ -2155,8 +2167,8 @@ AeroExtrusion_3D::TemplateEdgeReversal(Front_3D &AFront, TCellID e_id, double dc
 			f0_normale = - f0_normale;
 		}
 
-		math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n0.point(), dc, m_DistanceField, f0_normale);
-		math::Point p7 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n0.point(), dc, m_DistanceField, (f0_normale+v).normalize());
+		math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n0.point(), dc, var_distance_field, f0_normale);
+		math::Point p7 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n0.point(), dc, var_distance_field, (f0_normale+v).normalize());
 
 		n4 = m_meshH->newNode(p4);
 		n7 = m_meshH->newNode(p7);
@@ -2171,8 +2183,8 @@ AeroExtrusion_3D::TemplateEdgeReversal(Front_3D &AFront, TCellID e_id, double dc
 			f1_normale = - f1_normale;
 		}
 
-		math::Point p8 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n0.point(), dc, m_DistanceField, f1_normale);
-		math::Point p11 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n0.point(), dc, m_DistanceField, (f1_normale+v).normalize());
+		math::Point p8 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n0.point(), dc, var_distance_field, f1_normale);
+		math::Point p11 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n0.point(), dc, var_distance_field, (f1_normale+v).normalize());
 
 		n8 = m_meshH->newNode(p8);
 		n11 = m_meshH->newNode(p11);
@@ -2243,8 +2255,8 @@ AeroExtrusion_3D::TemplateEdgeReversal(Front_3D &AFront, TCellID e_id, double dc
 			f0_normale = - f0_normale;
 		}
 
-		math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n1.point(), dc, m_DistanceField, f0_normale);
-		math::Point p6 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n1.point(), dc, m_DistanceField, (f0_normale+v).normalize());
+		math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n1.point(), dc, var_distance_field, f0_normale);
+		math::Point p6 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n1.point(), dc, var_distance_field, (f0_normale+v).normalize());
 
 		n5 = m_meshH->newNode(p5);
 		n6 = m_meshH->newNode(p6);
@@ -2259,8 +2271,8 @@ AeroExtrusion_3D::TemplateEdgeReversal(Front_3D &AFront, TCellID e_id, double dc
 			f1_normale = - f1_normale;
 		}
 
-		math::Point p9 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n1.point(), dc, m_DistanceField, f1_normale);
-		math::Point p10 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n1.point(), dc, m_DistanceField, (f1_normale+v).normalize());
+		math::Point p9 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n1.point(), dc, var_distance_field, f1_normale);
+		math::Point p10 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, &m_fl, n1.point(), dc, var_distance_field, (f1_normale+v).normalize());
 
 		n9 = m_meshH->newNode(p9);
 		n10 = m_meshH->newNode(p10);

@@ -72,6 +72,8 @@ namespace gmds {
 	     double z_lim;
 	     /** Nombre de couches lors de l'extrusion */
 	     int nbr_couches;
+	     /** Allows or not the insertions on the first layer of blocks */
+	     bool insertions_allowed_on_first_layer=false;
 
 	     /** Choose the way the vectors field is computed for the extrusion */
 	     int vectors_field;
