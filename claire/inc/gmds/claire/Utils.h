@@ -256,9 +256,11 @@ class LIB_GMDS_CLAIRE_API Utils {
 	static void cutAxiBlocking2D(Mesh *Amesh);
 	/*-------------------------------------------------------------------*/
 	/** @brief Build the edges of the mesh from the faces, and init the
-	 * missing connectivities.
+	 * missing connectivities for a 3D surface mesh. Initially, we only
+	 * have Nodes, Faces, and the connectivities F->N.
+	 * Work only on quad meshes.
 	 *
-	 * \param[in] AMesh the mesh
+	 * \param[in] AMesh the QUAD 3D surface mesh
 	 */
 	static void buildEfromFandConnectivies(Mesh *Amesh);
 	/*-------------------------------------------------------------------*/
