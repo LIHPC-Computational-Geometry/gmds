@@ -821,6 +821,77 @@ void Utils::cutAxiBlocking2D(Mesh *Amesh){
 	}
 }
 /*----------------------------------------------------------------------------*/
+void
+Utils::buildEfromFandConnectivies(Mesh *Amesh)
+{
+	// N->F
+	for (auto f_id:Amesh->faces())
+	{
+		Face f = Amesh->get<Face>(f_id);
+		std::vector<Node> f_nodes = f.get<Node>();
+		for (auto n:f_nodes)
+		{
+			n.add<Face>(f_id);
+		}
+	}
+
+	// Build E
+	for (auto f_id:Amesh->faces())
+	{
+		Face f = Amesh->get<Face>(f_id);
+		std::vector<Node> f_nodes = f.get<Node>();
+		TCellID e_0_id = math::Utils::CommonEdge(Amesh, f_nodes[0].id(), f_nodes[1].id());
+		TCellID e_1_id = math::Utils::CommonEdge(Amesh, f_nodes[1].id(), f_nodes[2].id());
+		TCellID e_2_id = math::Utils::CommonEdge(Amesh, f_nodes[2].id(), f_nodes[3].id());
+		TCellID e_3_id = math::Utils::CommonEdge(Amesh, f_nodes[3].id(), f_nodes[0].id());
+
+		if (e_0_id == NullID)
+		{
+			Edge e = Amesh->newEdge(f_nodes[0], f_nodes[1]);
+			e_0_id = e.id();
+			f_nodes[0].add<Edge>(e_0_id);
+			f_nodes[1].add<Edge>(e_0_id);
+		}
+		Edge e_0 = Amesh->get<Edge>(e_0_id);
+		e_0.add<Face>(f_id);
+		f.add<Edge>(e_0);
+
+		if (e_1_id == NullID)
+		{
+			Edge e = Amesh->newEdge(f_nodes[1], f_nodes[2]);
+			e_1_id = e.id();
+			f_nodes[1].add<Edge>(e_1_id);
+			f_nodes[2].add<Edge>(e_1_id);
+		}
+		Edge e_1 = Amesh->get<Edge>(e_1_id);
+		e_1.add<Face>(f_id);
+		f.add<Edge>(e_1);
+
+		if (e_2_id == NullID)
+		{
+			Edge e = Amesh->newEdge(f_nodes[2], f_nodes[3]);
+			e_2_id = e.id();
+			f_nodes[2].add<Edge>(e_2_id);
+			f_nodes[3].add<Edge>(e_2_id);
+		}
+		Edge e_2 = Amesh->get<Edge>(e_2_id);
+		e_2.add<Face>(f_id);
+		f.add<Edge>(e_2);
+
+		if (e_3_id == NullID)
+		{
+			Edge e = Amesh->newEdge(f_nodes[0], f_nodes[1]);
+			e_3_id = e.id();
+			f_nodes[3].add<Edge>(e_3_id);
+			f_nodes[0].add<Edge>(e_3_id);
+		}
+		Edge e_3 = Amesh->get<Edge>(e_3_id);
+		e_3.add<Face>(f_id);
+		f.add<Edge>(e_3);
+
+	}
+}
+/*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/
 }  // namespace gmds

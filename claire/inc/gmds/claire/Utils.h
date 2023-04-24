@@ -254,6 +254,15 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 	* \param[in] AMesh the mesh
 	 */
 	static void cutAxiBlocking2D(Mesh *Amesh);
+	/*-------------------------------------------------------------------*/
+	/** @brief Build the edges of the mesh from the faces, and init the
+	 * missing connectivities.
+	 *
+	 * \param[in] AMesh the mesh
+	 */
+	static void buildEfromFandConnectivies(Mesh *Amesh);
+	/*-------------------------------------------------------------------*/
+
 };
 /*----------------------------------------------------------------------------*/
 }  // namespace math
