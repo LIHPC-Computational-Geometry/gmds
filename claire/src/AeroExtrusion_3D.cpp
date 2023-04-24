@@ -54,7 +54,9 @@ AeroExtrusion_3D::execute()
 
 	Front_3D Front_Geom = Front_3D(0, surface_block_corners_Id, surface_block_faces_Id);
 
-	Front_3D Current_Front = Compute1stLayer(Front_Geom, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), m_VectorField);
+	//Front_3D Current_Front = Compute1stLayer(Front_Geom, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"), m_VectorField);
+	Front_3D Current_Front = ComputeLayer(Front_Geom, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"), m_params_aero.delta_cl,
+	                                      m_VectorField);
 
 	double max_distance = ComputeMaxDistOnFront(Current_Front, m_meshT->getVariable<double,GMDS_NODE>("GMDS_Distance"));
 	double pas_couche = (1.0-max_distance)/(m_params_aero.nbr_couches-1) ;
@@ -126,12 +128,14 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	FrontEdgesNodesClassification_3D Classification = FrontEdgesNodesClassification_3D(m_meshH,
 	                                                                                   &Front_IN,
 	                                                                                   var_front_edges_classification,
-	                                                                                   var_front_nodes_classification);
+	                                                                                   var_front_nodes_classification,
+	                                                                                   m_meshT,
+	                                                                                   &m_fl,
+	                                                                                   m_VectorField);
 	Classification.execute();
 
 	// Init the edge_info type for the edges of the front
 	InitEdgeStructInfo(Front_IN);
-
 	TInt mark_edgesTreated = m_meshH->newMark<Edge>();
 	TInt mark_facesTreated = m_meshH->newMark<Face>();
 
@@ -148,43 +152,51 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		int singu_type = singu_node.second;
 		if (singu_type==1 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
+			std::cout << "Template NODE: 3 Corner" << std::endl;
 			TCellID r_id = TemplateNode3Corner(Front_IN, n_id, map_new_nodes, dist_cible);
 			m_Patterns->set(r_id, 1);
 		}
 		else if (singu_type==2 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
+			std::cout << "Template NODE: 2 Corner, 1 End" << std::endl;
 			TCellID r_id = TemplateNode2Corner1End(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated);
 			m_Patterns->set(r_id, 2);
 		}
 		else if (singu_type==3 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
+			std::cout << "Template NODE: 1 Corner, 2 End" << std::endl;
 			TCellID r_id = TemplateNode1Corner2End(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated);
 			m_Patterns->set(r_id, 3);
 		}
 		else if (singu_type==4 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
+			std::cout << "Template NODE: 3 End" << std::endl;
 			TCellID r_id = TemplateNode3End(Front_IN, n_id, mark_edgesTreated, mark_facesTreated);
 			m_Patterns->set(r_id, 4);
 		}
 		else if (singu_type==5 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
+			std::cout << "Template NODE: 3 Corner, 3 End" << std::endl;
 			TCellID r_id = TemplateNode3Corner3End(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated);
 			m_Patterns->set(r_id, 5);
 		}
 		else if (singu_type==6 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
+			std::cout << "Template NODE: 2 Corner, 2 End" << std::endl;
 			std::vector<TCellID> r_id = TemplateNode2Corner2End(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated); // Create 2 hexas
 			m_Patterns->set(r_id[0], 6);
 			m_Patterns->set(r_id[1], 6);
 		}
 		else if (singu_type==7 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
+			std::cout << "Template NODE: 2 Corner, 1 Reversal" << std::endl;
 			std::vector<TCellID> r_id = TemplateNode2Corner1Reversal(Front_IN, n_id, dist_cible); // Create 2 hexas
 			m_Patterns->set(r_id[0], 7);
 			m_Patterns->set(r_id[1], 7);
 		}
 		else if (singu_type==8 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
 		{
+			std::cout << "Template NODE: 2 End, 1 Reversal" << std::endl;
 			std::vector<TCellID> r_id = TemplateNode2End1Reversal(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated); // Create 2 hexas
 			m_Patterns->set(r_id[0], 8);
 			m_Patterns->set(r_id[1], 8);
@@ -195,7 +207,6 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 			var_TEST->set(n_id, 1);
 		}
 	}
-
 
 	// Create the HEXA on each EDGE classified
 	std::map<TCellID, int> singular_edges = getSingularEdges(Front_IN, var_front_edges_classification, mark_edgesTreated);
@@ -323,20 +334,6 @@ AeroExtrusion_3D::Compute1stLayer(Front_3D A_Front_IN, Variable<double>* A_dista
 
 		}
 	}
-
-	/*
-	for (auto n_id:Front_OUT.getNodes())
-	{
-		Node n = m_meshH->get<Node>(n_id);
-		TCellID r_id = m_fl.findTetra(n.point());
-		Region r = m_meshT->get<Region>(r_id);
-		std::vector<Node> r_nodes = r.get<Node>();
-		double dist = math::Utils::linearInterpolation2D3Pt(r_nodes[0].point(), r_nodes[1].point(), r_nodes[2].point(), r_nodes[3].point(), n.point(),
-		                                      m_DistanceField->value(r_nodes[0].id()), m_DistanceField->value(r_nodes[1].id()),
-		                                      m_DistanceField->value(r_nodes[2].id()), m_DistanceField->value(r_nodes[3].id()));
-	}
-	 */
-
 
 	return Front_OUT;
 
