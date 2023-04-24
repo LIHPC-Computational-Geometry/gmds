@@ -717,6 +717,9 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 
 	}
 
+	// Build the edges and the connectivities
+	math::Utils::buildEfromFandConnectivies(m_meshHex);
+
 	// Write the surface block structure
 	gmds::IGMeshIOService ioService(m_meshHex);
 	gmds::VTKWriter vtkWriter(&ioService);
