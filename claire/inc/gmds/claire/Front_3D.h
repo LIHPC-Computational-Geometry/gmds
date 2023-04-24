@@ -8,6 +8,7 @@
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/ig/Mesh.h>
+#include <gmds/claire/FastLocalize.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -77,12 +78,14 @@ class LIB_GMDS_CLAIRE_API Front_3D {
 	std::vector<TCellID> edgeFacesOnFront(Mesh *m, TCellID e_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Returns the outgoing normal to a face on the front.
-	 * 	@param m	the mesh
+	 * 	@param mesh_H	the hex mesh that knows the front
+	 * 	@param mesh_T	the tet mesh used as a support in our algorithm
+	 * 	@param fl the kd tree of the mesh_T
 	 *		@param f_id id of the face
 	 *
 	 *		\return  a 3d vector
 	 */
-	static math::Vector3d outgoingNormal(Mesh *m, TCellID f_id);
+	math::Vector3d outgoingNormal(Mesh *mesh_H, Mesh *mesh_T, FastLocalize* fl, Variable<math::Vector3d>* A_VectorField, TCellID f_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Returns the face of the front adjacent to the face f_id
 	 * 	and the edge e_id.

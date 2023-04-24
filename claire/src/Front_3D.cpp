@@ -131,26 +131,32 @@ Front_3D::edgeFacesOnFront(Mesh *m, TCellID e_id)
 }
 /*-------------------------------------------------------------------*/
 math::Vector3d
-Front_3D::outgoingNormal(Mesh *m, TCellID f_id)
+Front_3D::outgoingNormal(Mesh *mesh_H, Mesh *mesh_T, FastLocalize* fl, Variable<math::Vector3d>* A_VectorField, TCellID f_id)
 {
-	Face f = m->get<Face>(f_id);
+	Face f = mesh_H->get<Face>(f_id);
 	math::Vector3d f_normal = f.normal();
 
-	if (f.get<Region>().empty())
+	math::Vector3d v;
+	if (m_FrontID!=0)
 	{
-		std::cout << "ATTENTION Front_3D, outgoingNormal: La face n'est connectée à aucune région." << std::endl;
+		// Each face of the front is connected to a unique region
+		// So the size of the vector f.get<Region>() is 1.
+		Region r = (f.get<Region>())[0];
+
+		math::Point r_center = r.center();
+		math::Point f_center = f.center();
+		v = (f_center-r.center()).normalize() ;
+	}
+	else
+	{
+		// There is no hexa yet, so we need to use the first tet mesh to
+		// compute the outgoing normal to the front
+		gmds::Cell::Data data = fl->find(f.center());
+		v = A_VectorField->value(data.id);
 	}
 
-	// Each face of the front is connected to a unique region
-	// So the size of the vector f.get<Region>() is 1.
-	Region r = (f.get<Region>())[0];
-
-	math::Point r_center = r.center();
-	math::Point f_center = f.center();
-	math::Vector3d v_in_volume = (f_center-r.center()).normalize() ;
-
 	// Compute if the vectors n1 and n2 are well oriented.
-	if ( f_normal.dot(v_in_volume) < 0 )
+	if ( f_normal.dot(v) < 0 )
 	{
 		f_normal=-f_normal;
 	}
@@ -198,3 +204,4 @@ Front_3D::adjacentFaceOnFront(Mesh *m, TCellID f_id, TCellID e_id)
 
 	return f_adj_id;
 }
+/*-------------------------------------------------------------------*/

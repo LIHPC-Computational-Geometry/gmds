@@ -48,6 +48,10 @@ FrontEdgesNodesClassification_3D::execute()
 	FrontNodesClassification();	// Fill the variable m_NodesClassification
 
 	ComputeValid_GFE();
+
+	// Reclassify all the edges and nodes
+	//FrontEdgesClassification();
+	//FrontNodesClassification();
 	ComputeValidLoop_GFE();
 
 	return FrontEdgesNodesClassification_3D::SUCCESS;
@@ -458,7 +462,8 @@ FrontEdgesNodesClassification_3D::ComputeAllGFE()
 
 	for (auto n_id:m_Front->getNodes())
 	{
-		if (m_NodesClassification->value(n_id) >= 3)
+		if (m_NodesClassification->value(n_id) >= 3
+		    && isValidNodeForTemplate(n_id))
 		{
 			Node n = m_mesh->get<Node>(n_id);
 			std::vector<Edge> n_edges = n.get<Edge>();
@@ -489,8 +494,8 @@ FrontEdgesNodesClassification_3D::isThisPathValidForTemplates(Global_Feature_Edg
 {
 	bool isValid(true);
 
-	if (m_NodesClassification->value(GFE.Start_n_id) <= 2
-	    || m_NodesClassification->value(GFE.End_n_id) <= 2)
+	if (m_NodesClassification->value(GFE.Start_n_id) < 3
+	    || m_NodesClassification->value(GFE.End_n_id) < 3)
 	{
 		isValid = false;
 	}
@@ -510,7 +515,7 @@ FrontEdgesNodesClassification_3D::isThisPathValidForTemplates(Global_Feature_Edg
 		isValid = true;
 	}
 	if (GFE.Start_n_id == GFE.End_n_id
-	    && GFE.edges_id.size() >= 2)		// Loop paths
+	    && GFE.edges_id.size() > 4)		// Loop paths
 	{
 		isValid = true;
 	}
@@ -539,6 +544,7 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 				{
 					m_EdgesClassification->set(edge_id, 0);
 				}
+				isAllTreated = false;
 			}
 		}
 		// Re-compute the list of Global Feature Edges
@@ -562,8 +568,13 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 		std::cout << "---------" << std::endl;
 		std::cout << "Starting point: " << GFE.Start_n_id << std::endl;
 		std::cout << "Ending point: " << GFE.End_n_id << std::endl;
+		std::cout << "Nbr edges: " << GFE.edges_id.size() << std::endl;
+		std::cout << "Node " << GFE.Start_n_id << ", adj to " << m_NodesClassification->value(GFE.Start_n_id) << std::endl;
+		std::cout << "Node " << GFE.End_n_id << ", adj to " << m_NodesClassification->value(GFE.End_n_id) << std::endl;
+		std::cout << "Valid ? " << isThisPathValidForTemplates(GFE) << std::endl;
+		std::cout << "---------" << std::endl;
 	}
-	 */
+	*/
 
 }
 /*------------------------------------------------------------------------*/
@@ -602,5 +613,15 @@ FrontEdgesNodesClassification_3D::ComputeValidLoop_GFE()
 	}
 	m_mesh->unmarkAll<Edge>(mark_EdgesUsed);
 	m_mesh->freeMark<Edge>(mark_EdgesUsed);
+
+	/*
+	std::cout << "Feature edges loop..." << std::endl;
+	for (auto GFE:m_All_global_feature_edges)
+	{
+	   std::cout << "---------" << std::endl;
+	   std::cout << "Starting point: " << GFE.Start_n_id << std::endl;
+	   std::cout << "Ending point: " << GFE.End_n_id << std::endl;
+	}
+	*/
 }
 /*------------------------------------------------------------------------*/
