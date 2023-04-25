@@ -4400,7 +4400,7 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, SimplexMesh* sm,
   Eigen::Matrix3d m =  Eigen::Matrix3d::Zero();
   Variable<Eigen::Matrix3d>* metric = nullptr;
   try{
-    metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    metric = sm->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
   }catch (gmds::GMDSException e)
   {
     throw gmds::GMDSException(e);
@@ -4430,23 +4430,16 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, SimplexMesh* sm,
   bool flag;
   for(auto const & s : simplices)
   {
-    //std::cout << "s : " << s << std::endl;
     if(s >= 0)
     {
       if(bitvectorTet[s] != 0)
       {
         SimplicesCell cell(sm, s);
-        //std::cout << "cell : " << cell << std::endl;
-
-        //isInCell function is a bad habbit because it can cause problem if the node is extremely near the border mesh
-        //if(cell.isInCell(pt))
-        {
-          uvwt_ = cell.uvwt(pt);
-          if(uvwt_[0] > -epsilon && uvwt_[1] > -epsilon && uvwt_[2] > -epsilon && uvwt_[3] > -epsilon){
-            nodes = cell.getNodes();
-            uvwt = uvwt_ ;
-            break;
-          }
+        uvwt_ = cell.uvwt(pt);
+        if(uvwt_[0] > -epsilon && uvwt_[1] > -epsilon && uvwt_[2] > -epsilon && uvwt_[3] > -epsilon){
+          nodes = cell.getNodes();
+          uvwt = uvwt_ ;
+          break;
         }
       }
     }
@@ -4472,13 +4465,12 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, SimplexMesh* sm,
   Eigen::Matrix3d m2 = (*metric)[nodes[2]];
   Eigen::Matrix3d m3 = (*metric)[nodes[3]];
 
-  //std::cout << "getAnalyticMetric END" << std::endl;
+
   return uvwt[0]*m0 + uvwt[1]*m1 + uvwt[2]*m2 + uvwt[3]*m3;
 }
 /******************************************************************************/
 Eigen::Matrix3d SimplexMesh::getAnalyticMetricFromSimplex(const math::Point& pt, SimplexMesh* sm, TSimplexID simplex)
 {
-  //std::cout << "getAnalyticMetricFromSimplex" << std::endl;
   double epsilon = 1E-3;
   Eigen::Matrix3d m =  Eigen::Matrix3d::Zero();
   Variable<Eigen::Matrix3d>* metric = nullptr;
@@ -4489,7 +4481,7 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetricFromSimplex(const math::Point& pt,
     throw gmds::GMDSException(e);
   }
 
-  //std::cout << "simplex -> "<< simplex << std::endl;
+
   std::vector<double> uvwt = SimplicesCell(sm, simplex).uvwt(pt);
   std::vector<TInt> nodes =  SimplicesCell(sm, simplex).getNodes();
 
@@ -4497,14 +4489,12 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetricFromSimplex(const math::Point& pt,
   Eigen::Matrix3d m1 = (*metric)[nodes[1]];
   Eigen::Matrix3d m2 = (*metric)[nodes[2]];
   Eigen::Matrix3d m3 = (*metric)[nodes[3]];
-  //std::cout << "getAnalyticMetricFromSimplex END" << std::endl;
+
   return uvwt[0]*m0 + uvwt[1]*m1 + uvwt[2]*m2 + uvwt[3]*m3;
 }
 /******************************************************************************/
 void SimplexMesh::setAnalyticMetricFromMesh(const TInt node, SimplexMesh* sm, std::unordered_map<TInt, TSimplexID>& umap)
 {
-  //std::cout << "setAnalyticMetricFromMesh" << std::endl;
-
   Eigen::Matrix3d m =  Eigen::Matrix3d::Zero();
   Variable<Eigen::Matrix3d>* metric = nullptr;
   try{
@@ -4526,9 +4516,7 @@ void SimplexMesh::setAnalyticMetricFromMesh(const TInt node, SimplexMesh* sm, st
       throw gmds::GMDSException("can no set analytic metric in setAnalyticMetricFromMesh function.");
   }
 
-  //m = sm->getAnalyticMetricFromSimplex(SimplicesNode(this, node).getCoords(), sm, umap[node]);
   (*metric)[node] = m;
-  //std::cout << "setAnalyticMetricFromMesh END" << std::endl;
 }
 /******************************************************************************/
 void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
@@ -4580,22 +4568,67 @@ void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
 
 }
 /******************************************************************************/
+void SimplexMesh::setAnalyticMetric(const TInt node, const Eigen::Matrix3d &m)
+{
+  Variable<Eigen::Matrix3d>* metric = nullptr;
+  try{
+    metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }catch (gmds::GMDSException e)
+  {
+    metric = newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    //throw gmds::GMDSException(e);
+  }
+
+  (*metric)[node] = m;
+}
+/******************************************************************************/
+void SimplexMesh::setFrames(const TInt node, const std::vector<math::Vector3d>& frames)
+{
+  Variable<math::Vector3d>* FF_X_NEG = nullptr;
+  Variable<math::Vector3d>* FF_X_POS = nullptr;
+  Variable<math::Vector3d>* FF_Y_NEG = nullptr;
+  Variable<math::Vector3d>* FF_Y_POS = nullptr;
+  Variable<math::Vector3d>* FF_Z_NEG = nullptr;
+  Variable<math::Vector3d>* FF_Z_POS = nullptr;
+
+  try{
+    FF_X_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_X_NEG");
+    FF_X_POS = getVariable<math::Vector3d, SimplicesNode>("FF_X_POS");
+    FF_Y_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_Y_NEG");
+    FF_Y_POS = getVariable<math::Vector3d, SimplicesNode>("FF_Y_POS");
+    FF_Z_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_Z_NEG");
+    FF_Z_POS = getVariable<math::Vector3d, SimplicesNode>("FF_Z_POS");
+  }catch (gmds::GMDSException e)
+  {
+    FF_X_NEG = newVariable<math::Vector3d, SimplicesNode>("FF_X_NEG");
+    FF_X_POS = newVariable<math::Vector3d, SimplicesNode>("FF_X_POS");
+    FF_Y_NEG = newVariable<math::Vector3d, SimplicesNode>("FF_Y_NEG");
+    FF_Y_POS = newVariable<math::Vector3d, SimplicesNode>("FF_Y_POS");
+    FF_Z_NEG = newVariable<math::Vector3d, SimplicesNode>("FF_Z_NEG");
+    FF_Z_POS = newVariable<math::Vector3d, SimplicesNode>("FF_Z_POS");
+  }
+
+  FF_X_POS->set(node, frames[0]);FF_X_NEG->set(node, -frames[0]);
+  FF_Y_POS->set(node, frames[1]);FF_Y_NEG->set(node, -frames[1]);
+  FF_Z_POS->set(node, frames[2]);FF_Z_NEG->set(node, -frames[2]);
+}
+/******************************************************************************/
 bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>& frames)
 {
-  frames.clear();
-  /*math::Vector3d e1 = math::Vector3d({sqrt(2.0)/2, 0.0, -sqrt(2.0)/2});
+  /*frames.clear();
+  math::Vector3d e1 = math::Vector3d({sqrt(2.0)/2, 0.0, -sqrt(2.0)/2});
   math::Vector3d e2({0.0, 1.0, 0.0});
-  math::Vector3d e3({sqrt(2.0)/2, 0.0, sqrt(2.0)/2});*/
-  math::Vector3d e1 = math::Vector3d({1.0, 0.0, 0.0});
-  math::Vector3d e2({0.0, 1.0, 0.0});
-  math::Vector3d e3({0.0, 0.0, 1.0});
+  math::Vector3d e3({sqrt(2.0)/2, 0.0, sqrt(2.0)/2});
+  //math::Vector3d e1 = math::Vector3d({1.0, 0.0, 0.0});
+  //math::Vector3d e2({0.0, 1.0, 0.0});
+  //math::Vector3d e3({0.0, 0.0, 1.0});
   frames.push_back(e1);
   frames.push_back(e2);
   frames.push_back(e3);
   return false;
 
   frames.clear();
-  frames.resize(6);
+  frames.resize(3);*/
   Variable<math::Vector3d>* FF_X_NEG = nullptr;
   Variable<math::Vector3d>* FF_X_POS = nullptr;
   Variable<math::Vector3d>* FF_Y_NEG = nullptr;
@@ -4614,6 +4647,14 @@ bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>&
   {
     throw gmds::GMDSException(e);
   }
+
+  frames.clear();
+  frames.resize(3);
+  TInt n = 0;
+  frames[0] = (*FF_X_POS)[n];
+  frames[1] = (*FF_Y_POS)[n];
+  frames[2] = (*FF_Z_POS)[n];
+  return false;
 
   std::vector<TSimplexID> tetraContainingPt{};
   unsigned int sizeCell = 4;

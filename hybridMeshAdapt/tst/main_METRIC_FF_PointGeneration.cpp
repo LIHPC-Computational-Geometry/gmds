@@ -43,20 +43,19 @@ int main(int argc, char* argv[])
 
     //vector of lambda that capture metric and ffield
     std::vector<std::function<std::vector<double>()>> metricXYZ_functors{};
-    metricXYZ_functors.push_back([] { return std::vector<double>{0.1, 0.1, 0.1}; });
-    metricXYZ_functors.push_back([] { return std::vector<double>{0.2, 0.2, 0.2}; });
+    metricXYZ_functors.push_back([] { return std::vector<double>{0.30, 0.30, 0.30}; });
+    //metricXYZ_functors.push_back([] { return std::vector<double>{0.20, 0.20, 0.20}; });
 
     std::vector<std::function<std::vector<math::Vector3d>()>> frameXYZ_functor{};
+    //frameXYZ_functor.push_back([] { return std::vector<math::Vector3d>{ math::Vector3d({sqrt(2.0)/2, 0.0, -sqrt(2.0)/2}) , math::Vector3d({0.0, 1.0, 0.0}) , math::Vector3d({sqrt(2.0)/2, 0.0, sqrt(2.0)/2})}; });
     frameXYZ_functor.push_back([] { return std::vector<math::Vector3d>{ math::Vector3d({1.0, 0.0, 0.0}),  math::Vector3d({0.0, 1.0, 0.0}),  math::Vector3d({0.0, 0.0, 1.0})}; });
-    frameXYZ_functor.push_back([] { return std::vector<math::Vector3d>{ math::Vector3d({sqrt(2.0)/2, 0.0, -sqrt(2.0)/2}) , math::Vector3d({0.0, 1.0, 0.0}) , math::Vector3d({sqrt(2.0)/2, 0.0, sqrt(2.0)/2})}; });
     //==================================================================
     // MODIFICATION OF THE INPUT MESH'S METRIC
     //==================================================================
-    std::vector<std::vector<double>> metricXYZ{};
-    std::vector<std::vector<math::Vector3d>> frameXYZ{};
-    //for(auto const ff : frameXYZ)
+    unsigned int cpt = 0;
+    for(auto const ff : frameXYZ_functor)
     {
-      //for(auto const metric : metricXYZ)
+      for(auto const metric : metricXYZ_functors)
       {
         //==================================================================
         // MESH READING
@@ -83,16 +82,23 @@ int main(int argc, char* argv[])
 
         for(unsigned int nodeId = 0 ; nodeId < meshNode.capacity() ; nodeId++)
         {
-          if(meshNode[nodeId] == 1)
+          if(meshNode[nodeId] != 0)
           {
-            simplexMesh.setAnalyticMetric(nodeId, simplexMesh.getOctree());
+            //simplexMesh.setAnalyticMetric(nodeId, simplexMesh.getOctree());
+            Eigen::Matrix3d m = Eigen::Matrix3d::Zero();
+            m(0, 0) = 1.0/(metric()[0]*metric()[0]); m(1, 1) = 1.0/(metric()[1]*metric()[1]) ; m(2, 2) = 1.0/(metric()[2]*metric()[2]);
+            simplexMesh.setAnalyticMetric(nodeId, m);
+            simplexMesh.setFrames(nodeId, ff());
           }
         }
         //////////////////////////////////////////////////////////////////////////////
         std::cout << "FRONTAL ALGO STARTING ..." << std::endl;
-        MetricFFPointgeneration p(&simplexMesh);
+        std::string name = "HEXTEST_" + std::to_string(cpt);
+        MetricFFPointgeneration p(&simplexMesh, name);
         p.execute();
-
+        ++cpt;
+        std::cout << std::endl;
+        std::cout << std::endl;
       }
     }
 

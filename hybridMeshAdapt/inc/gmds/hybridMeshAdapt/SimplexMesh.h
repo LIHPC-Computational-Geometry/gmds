@@ -443,6 +443,8 @@ class SimplexMesh
 
   void setAnalyticMetricFromMesh(const TInt node, SimplexMesh* sm, std::unordered_map<TInt, TSimplexID>& umap);
 
+  void setAnalyticMetric(const TInt node, const Eigen::Matrix3d &m);
+
   Eigen::Matrix3d getAnalyticMetric(const math::Point& pt, SimplexMesh* sm, bool& status);
 
   Eigen::Matrix3d getAnalyticMetricFromSimplex(const math::Point& pt, SimplexMesh* sm, TSimplexID simplex);
@@ -458,6 +460,8 @@ class SimplexMesh
   std::set<unsigned int> getSurfacesIndx() const {return surfacesIndx;}
 
   std::set<unsigned int> getCurveIndx() const {return curvesIndx;}
+
+  void setFrames(const TInt node, const std::vector<math::Vector3d>& frames);
 
 private:
 
