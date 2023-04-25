@@ -240,6 +240,10 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	virtual ~CurvedBlocking();
 
+	template<int TDim>
+	int get_nb_cells() const{
+	   return m_gmap.number_of_attributes<TDim>();
+	}
 	/** Create a single hexahedral block in the blocking structure
 	 * @return The created block
 	 */

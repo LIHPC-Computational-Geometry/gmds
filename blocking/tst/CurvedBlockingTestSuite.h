@@ -22,13 +22,15 @@ TEST(CurvedBlockingTestSuite, init)
 	gmds::math::Point p102(1,0,2);
 	auto b1 = bl.createBlock(p000, p010, p110, p100, p001, p011, p111, p101);
 	auto b2 = bl.createBlock(p001, p011, p111, p101, p002, p012, p112, p102);
-	std::cout<<" ---------- before sewing 2 hexes ------------"<<std::endl;
-	std::cout<<bl.info()<<std::endl;
-
+	ASSERT_EQ(16,bl.get_nb_cells<0>());
+	ASSERT_EQ(24,bl.get_nb_cells<1>());
+	ASSERT_EQ(12,bl.get_nb_cells<2>());
+	ASSERT_EQ(2,bl.get_nb_cells<3>());
 	bl.sew<3>(b1->dart(),b2->dart());
-	std::cout<<" ---------- and after now!!  ------------"<<std::endl;
-	std::cout<<bl.info()<<std::endl;
-	ASSERT_EQ(0, 0);
+	ASSERT_EQ(12,bl.get_nb_cells<0>());
+	ASSERT_EQ(20,bl.get_nb_cells<1>());
+	ASSERT_EQ(11,bl.get_nb_cells<2>());
+	ASSERT_EQ(2,bl.get_nb_cells<3>());
 }
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, single_block)
