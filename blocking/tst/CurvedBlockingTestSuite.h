@@ -25,7 +25,7 @@ TEST(CurvedBlockingTestSuite, init)
 	std::cout<<" ---------- before sewing 2 hexes ------------"<<std::endl;
 	std::cout<<bl.info()<<std::endl;
 
-	bl.sew(b1->dart(),b2->dart());
+	bl.sew<3>(b1->dart(),b2->dart());
 	std::cout<<" ---------- and after now!!  ------------"<<std::endl;
 	std::cout<<bl.info()<<std::endl;
 	ASSERT_EQ(0, 0);
