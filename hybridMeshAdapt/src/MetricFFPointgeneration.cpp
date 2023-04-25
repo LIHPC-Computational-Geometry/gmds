@@ -168,11 +168,13 @@ void MetricFFPointgeneration::correctionNodeStructure()
   gmds::Variable<int>* BND_SURFACE_COLOR = nullptr;
   gmds::Variable<int>* BND_CURVE_COLOR = nullptr;
   gmds::Variable<int>* BND_VERTEX_COLOR = nullptr;
+  gmds::Variable<Eigen::Matrix3d>* metric = nullptr;
 
   try{
     BND_SURFACE_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
     BND_CURVE_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
     BND_VERTEX_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+    metric = m_nodesMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
   }catch (gmds::GMDSException e)
   {
     throw gmds::GMDSException(e);
@@ -242,18 +244,22 @@ void MetricFFPointgeneration::correctionNodeStructure()
         {
           TInt nodeToConnect = -1;
           //double minDistance = std::numeric_limits<double>::max();
-          double minDistance = std::numeric_limits<double>::max();
+          double minDistance = 2.1*m_minDistance;
           math::Point p0 = SimplicesNode(&m_nodesMesh, n).getCoords();
+          Eigen::Matrix3d m0 = (*metric)[n];
           std::vector<TInt> neighborNodes = m_nodesMesh.getOctree()->findNodesNextTo(p0);
           for(auto const m : neighborNodes) // first layer after edge is layer : 1
           {
             if(n != m && (*BND_SURFACE_COLOR)[n] == (*BND_SURFACE_COLOR)[m] && std::find(m_nodeStructure[n].begin(), m_nodeStructure[n].end(), m) == m_nodeStructure[n].end()&&
-              m_nodeLayerNbr[n] >= m_nodeLayerNbr[m] /*m_nodeLayerNbr[n] == m_nodeLayerNbr[m] */)
+              m_nodeLayerNbr[n] == m_nodeLayerNbr[m] /*m_nodeLayerNbr[n] >= m_nodeLayerNbr[m] */)
             {
               math::Point p1 = SimplicesNode(&m_nodesMesh, m).getCoords();
-
-              math::Vector3d v = p0 - p1;
-              double dist = v.norm();
+              Eigen::Matrix3d m1 = (*metric)[m];
+              math::Vector3d v_ = p0 - p1;
+              Eigen::Vector3d v(v_.X(), v_.Y(), v_.Z());
+              double dist = 0.5 * sqrt(v.dot(m0*v)) + 0.5 * sqrt(v.dot(m1*v));
+              /*math::Vector3d v = p0 - p1;
+              double dist = v.norm();*/
               if(dist < minDistance)
               {
                 nodeToConnect = m;
@@ -268,7 +274,7 @@ void MetricFFPointgeneration::correctionNodeStructure()
             m_nodeStructure[nodeToConnect].push_back(n);
           }
           else
-          break;
+            break;
         }
       }
       else if((*BND_VERTEX_COLOR)[n] != 0)

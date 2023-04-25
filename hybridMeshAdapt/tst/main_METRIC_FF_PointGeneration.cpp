@@ -47,8 +47,8 @@ int main(int argc, char* argv[])
     //metricXYZ_functors.push_back([] { return std::vector<double>{0.20, 0.20, 0.20}; });
 
     std::vector<std::function<std::vector<math::Vector3d>()>> frameXYZ_functor{};
-    //frameXYZ_functor.push_back([] { return std::vector<math::Vector3d>{ math::Vector3d({sqrt(2.0)/2, 0.0, -sqrt(2.0)/2}) , math::Vector3d({0.0, 1.0, 0.0}) , math::Vector3d({sqrt(2.0)/2, 0.0, sqrt(2.0)/2})}; });
-    frameXYZ_functor.push_back([] { return std::vector<math::Vector3d>{ math::Vector3d({1.0, 0.0, 0.0}),  math::Vector3d({0.0, 1.0, 0.0}),  math::Vector3d({0.0, 0.0, 1.0})}; });
+    frameXYZ_functor.push_back([] { return std::vector<math::Vector3d>{ math::Vector3d({sqrt(2.0)/2, 0.0, -sqrt(2.0)/2}) , math::Vector3d({0.0, 1.0, 0.0}) , math::Vector3d({sqrt(2.0)/2, 0.0, sqrt(2.0)/2})}; });
+    //frameXYZ_functor.push_back([] { return std::vector<math::Vector3d>{ math::Vector3d({1.0, 0.0, 0.0}),  math::Vector3d({0.0, 1.0, 0.0}),  math::Vector3d({0.0, 0.0, 1.0})}; });
     //==================================================================
     // MODIFICATION OF THE INPUT MESH'S METRIC
     //==================================================================
