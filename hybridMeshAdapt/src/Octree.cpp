@@ -381,7 +381,6 @@ std::vector<TInt> Octree::findNodesNextTo(const math::Point& pt)
   std::vector<TInt> ans{};
   std::unordered_set<TSimplexID> seen{};
 
-  //ans =  m_parentOc->m_nodes;
   for(auto const oc : m_parentOc->m_parentOc->m_ocs)
   {
     for(auto const o : oc->m_ocs)

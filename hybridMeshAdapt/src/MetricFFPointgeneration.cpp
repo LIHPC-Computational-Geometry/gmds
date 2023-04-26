@@ -1259,7 +1259,6 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
 
     for(auto & t : M_result)
     {
-      std::clock_t c_start8 = std::clock();
       for(unsigned i = 0 ; i < 3 ; i++)
       {
         Eigen::Vector3d d = t.col(i);
@@ -1368,7 +1367,6 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
             }
           }
         }
-        durationFOR += std::clock() - c_start8;
       }
     }
 
@@ -1380,7 +1378,6 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
     std::cout<<"        durationAddNode : "<< durationAddNode / (double) CLOCKS_PER_SEC << std::endl;
     std::cout<<"        durationExistingNode : "<< durationExistingNode / (double) CLOCKS_PER_SEC << std::endl;;
     std::cout<<"        durationGetFrame : "<< durationGetFrame / (double) CLOCKS_PER_SEC << std::endl;;
-    std::cout<<"        durationFOR : "<< durationFOR / (double) CLOCKS_PER_SEC << std::endl;;
     std::cout<<"        durationSurface : "<< durationSurface / (double) CLOCKS_PER_SEC << std::endl;;
     std::cout << std::endl;
     std::cout << std::endl;
