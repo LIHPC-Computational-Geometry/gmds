@@ -326,12 +326,12 @@ std::vector<TSimplexID> Octree::findSimplicesInOc(const math::Point& pt)
   if(m_parentOc == nullptr)
     return m_simplices;
 
-  return m_parentOc->m_simplices;
+  //return m_parentOc->m_simplices;
 
-  /*if(m_parentOc->m_parentOc == nullptr)
+  if(m_parentOc->m_parentOc == nullptr)
     return m_parentOc->m_simplices;
 
-  return m_parentOc->m_parentOc->m_simplices;*/
+  return m_parentOc->m_parentOc->m_simplices;
 
 }
 /******************************************************************************/
@@ -352,11 +352,11 @@ std::vector<TSimplexID> Octree::findTriangleInOc(const math::Point& pt)
   if(m_parentOc == nullptr)
     return m_triangles;
 
-  return m_parentOc->m_triangles;
-  /*if(m_parentOc->m_parentOc == nullptr)
+  //return m_parentOc->m_triangles;
+  if(m_parentOc->m_parentOc == nullptr)
     return m_parentOc->m_triangles;
 
-  return m_parentOc->m_parentOc->m_triangles;*/
+  return m_parentOc->m_parentOc->m_triangles;
 
 }
 /******************************************************************************/
@@ -381,13 +381,11 @@ std::vector<TInt> Octree::findNodesNextTo(const math::Point& pt)
   std::vector<TInt> ans{};
   std::unordered_set<TSimplexID> seen{};
 
-  ans =  m_parentOc->m_nodes;
-  /*for(auto const oc : m_parentOc->m_parentOc->m_ocs)
+  //ans =  m_parentOc->m_nodes;
+  for(auto const oc : m_parentOc->m_parentOc->m_ocs)
   {
-    std::cout << "  oc -> " << oc << std::endl;
     for(auto const o : oc->m_ocs)
     {
-      std::cout << "  o -> " << o << std::endl;
       double xmin = o->getBorderOctree()[0] ; double xmax = o->getBorderOctree()[1] ;
       double ymin = o->getBorderOctree()[2] ; double ymax = o->getBorderOctree()[3] ;
       double zmin = o->getBorderOctree()[4] ; double zmax = o->getBorderOctree()[5] ;
@@ -404,7 +402,7 @@ std::vector<TInt> Octree::findNodesNextTo(const math::Point& pt)
           }        }
       }
     }
-  }*/
+  }
 
   return ans;
 

@@ -51,14 +51,16 @@ int main(int argc, char* argv[])
     simplexMesh.buildSimplexHull();
     simplexMesh.setSurfacesAndCurvesIndx();
 
-    double minSizeEdge = simplexMesh.findMinSizeEdgeSurface();
-    std::cout << "minimum size Edge on surfaces is : " << minSizeEdge << std::endl;
+    //double minSizeEdge = simplexMesh.findMinSizeEdgeSurface();
+    double meanSizeEdge = simplexMesh.findMeanSizeEdgeSurface();
+
+    std::cout << "minimum size Edge on surfaces is : " << meanSizeEdge << std::endl;
     //vector of lambda that capture metric and ffield
     std::vector<std::function<std::vector<double>()>> metricXYZ_functors{};
-    metricXYZ_functors.push_back([&] { return std::vector<double>{minSizeEdge, minSizeEdge, minSizeEdge}; });
-    metricXYZ_functors.push_back([&] { return std::vector<double>{0.5*minSizeEdge, 0.5*minSizeEdge, 0.5*minSizeEdge}; });
-    metricXYZ_functors.push_back([&] { return std::vector<double>{0.25*minSizeEdge, 0.25*minSizeEdge, 0.25*minSizeEdge}; });
-    metricXYZ_functors.push_back([&] { return std::vector<double>{0.1*minSizeEdge, 0.1*minSizeEdge, 0.1*minSizeEdge}; });
+    metricXYZ_functors.push_back([&] { return std::vector<double>{meanSizeEdge, meanSizeEdge, meanSizeEdge}; });
+    metricXYZ_functors.push_back([&] { return std::vector<double>{0.5*meanSizeEdge, 0.5*meanSizeEdge, 0.5*meanSizeEdge}; });
+    metricXYZ_functors.push_back([&] { return std::vector<double>{0.25*meanSizeEdge, 0.25*meanSizeEdge, 0.25*meanSizeEdge}; });
+    metricXYZ_functors.push_back([&] { return std::vector<double>{0.1*meanSizeEdge, 0.1*meanSizeEdge, 0.1*meanSizeEdge}; });
 
     std::vector<std::function<std::vector<math::Vector3d>()>> frameXYZ_functor{};
     frameXYZ_functor.push_back([] { return std::vector<math::Vector3d>{ math::Vector3d({1.0, 0.0, 0.0}),  math::Vector3d({0.0, 1.0, 0.0}),  math::Vector3d({0.0, 0.0, 1.0})}; });

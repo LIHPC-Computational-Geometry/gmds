@@ -210,6 +210,34 @@ double SimplexMesh::findMinSizeEdgeSurface()
   return *(s.begin());
 }
 /*****************************************************************************/
+double SimplexMesh::findMeanSizeEdgeSurface()
+{
+  double mean = 0.0;
+  unsigned int cpt = 0;
+  for(unsigned int t = 1 ; t < m_tri_ids.capacity() ; t++)
+  {
+    if(m_tri_ids[t] != 0)
+    {
+      ++cpt;
+      const std::vector<TInt> nodes = SimplicesTriangle(this, t).getNodes();
+      math::Point p0 = SimplicesNode(this, nodes[0]).getCoords();
+      math::Point p1 = SimplicesNode(this, nodes[1]).getCoords();
+      math::Point p2 = SimplicesNode(this, nodes[2]).getCoords();
+
+      //compute size of the edgfe of t
+      math::Vector3d v01 = p1-p0; math::Vector3d v12 = p2-p1;
+      math::Vector3d v20 = p2-p0;
+
+      double dist01 = v01.norm(); double dist12 = v12.norm();
+      double dist20 = v20.norm();
+
+      mean += (dist01 + dist12 + dist20) / 3.0;
+    }
+  }
+
+  return mean / static_cast<double>(cpt);
+}
+/*****************************************************************************/
 void SimplexMesh::setSurfacesAndCurvesIndx()
 {
   Variable<TInt>* BND_CURVE_COLOR = nullptr;

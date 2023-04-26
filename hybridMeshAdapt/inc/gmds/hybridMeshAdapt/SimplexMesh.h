@@ -146,6 +146,8 @@ class SimplexMesh
 
   double findMinSizeEdgeSurface() ;
 
+  double findMeanSizeEdgeSurface() ; 
+
   const std::multimap<TInt, std::pair<TInt,TInt>> & getConstEdgeStructure() {return m_edgesStructure;}
 
   std::multimap<TInt, std::pair<TInt,TInt>> & getEdgeStructure() {return m_edgesStructure;}
