@@ -189,7 +189,10 @@ void MetricFFPointgeneration::correctionNodeStructure()
   {
     if(nodeBitVector[n] != 0)
     {
-      if((*BND_CURVE_COLOR)[n] != 0)
+      if((*BND_VERTEX_COLOR)[n] != 0)
+      {
+      }
+      else if((*BND_CURVE_COLOR)[n] != 0)
       {
         //check if n have 4 neigbors
         const std::map<unsigned int, std::pair<unsigned int, unsigned int>>&  e2s = m_simplexMesh->getEdgeTianglesIndices();
@@ -243,7 +246,6 @@ void MetricFFPointgeneration::correctionNodeStructure()
         while(m_nodeStructure[n].size() < 4)
         {
           TInt nodeToConnect = -1;
-          //double minDistance = std::numeric_limits<double>::max();
           double minDistance = 2.1*m_minDistance;
           math::Point p0 = SimplicesNode(&m_nodesMesh, n).getCoords();
           Eigen::Matrix3d m0 = (*metric)[n];
@@ -258,8 +260,6 @@ void MetricFFPointgeneration::correctionNodeStructure()
               math::Vector3d v_ = p0 - p1;
               Eigen::Vector3d v(v_.X(), v_.Y(), v_.Z());
               double dist = 0.5 * sqrt(v.dot(m0*v)) + 0.5 * sqrt(v.dot(m1*v));
-              /*math::Vector3d v = p0 - p1;
-              double dist = v.norm();*/
               if(dist < minDistance)
               {
                 nodeToConnect = m;
@@ -277,28 +277,26 @@ void MetricFFPointgeneration::correctionNodeStructure()
             break;
         }
       }
-      else if((*BND_VERTEX_COLOR)[n] != 0)
-      {
-      }
       else //volume node
       {
         //check if n have 4 neigbors
         while(m_nodeStructure[n].size() < 5)
         {
           TInt nodeToConnect = -1;
-          double minDistance = std::numeric_limits<double>::max();
+          double minDistance = 2.1*m_minDistance;
           math::Point p0 = SimplicesNode(&m_nodesMesh, n).getCoords();
+          Eigen::Matrix3d m0 = (*metric)[n];
           std::vector<TInt> neighborNodes = m_nodesMesh.getOctree()->findNodesNextTo(p0);
-
           for(auto const m : neighborNodes) // first layer after edge is layer : 1
           {
-            if(n != m && std::find(m_nodeStructure[n].begin(), m_nodeStructure[n].end(), m) == m_nodeStructure[n].end())
+            if(n != m && std::find(m_nodeStructure[n].begin(), m_nodeStructure[n].end(), m) == m_nodeStructure[n].end() && m_nodeLayerNbr[n] == m_nodeLayerNbr[m])
             {
               math::Point p1 = SimplicesNode(&m_nodesMesh, m).getCoords();
-
-              math::Vector3d v = p0 - p1;
-              double dist = v.norm();
-              if(dist < minDistance /*&& m_nodeLayerNbr[m] >= m_nodeLayerNbr[n]*/)
+              Eigen::Matrix3d m1 = (*metric)[m];
+              math::Vector3d v_ = p0 - p1;
+              Eigen::Vector3d v(v_.X(), v_.Y(), v_.Z());
+              double dist = 0.5 * sqrt(v.dot(m0*v)) + 0.5 * sqrt(v.dot(m1*v));
+              if(dist < minDistance)
               {
                 nodeToConnect = m;
                 minDistance = dist;
@@ -308,9 +306,65 @@ void MetricFFPointgeneration::correctionNodeStructure()
           if(nodeToConnect != -1)
           {
             m_nodeStructure[n].push_back(nodeToConnect);
-            if(std::find(m_nodeStructure[nodeToConnect].begin(), m_nodeStructure[nodeToConnect].end(), n) == m_nodeStructure[nodeToConnect].end() &&
-            m_nodeStructure[nodeToConnect].size() < 6)
+            if(std::find(m_nodeStructure[nodeToConnect].begin(), m_nodeStructure[nodeToConnect].end(), n) == m_nodeStructure[nodeToConnect].end())
             m_nodeStructure[nodeToConnect].push_back(n);
+          }
+          else
+            break;
+        }
+      }
+    }
+  }
+}
+/*----------------------------------------------------------------------------*/
+void MetricFFPointgeneration::correctUnwantedConnectionVOLUME()
+{
+  gmds::Variable<int>* BND_SURFACE_COLOR = nullptr;
+  gmds::Variable<int>* BND_CURVE_COLOR = nullptr;
+  gmds::Variable<int>* BND_VERTEX_COLOR = nullptr;
+  gmds::Variable<Eigen::Matrix3d>* metric = nullptr;
+
+  try{
+    BND_SURFACE_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+    BND_CURVE_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+    BND_VERTEX_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+    metric = m_nodesMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  const gmds::BitVector& nodeBitVector = m_nodesMesh.getBitVectorNodes();
+
+  for(unsigned int n = 0 ; n < nodeBitVector.capacity() ; n++)
+  {
+    if(nodeBitVector[n] != 0)
+    {
+      if((*BND_SURFACE_COLOR)[n] == 0 && (*BND_CURVE_COLOR)[n] == 0 && (*BND_VERTEX_COLOR)[n] == 0)
+      {
+        //delete the next node not directly created by the nodesSpreading function
+        //because of the correctionNodeStructure
+        if(m_nodeStructure[n].size() > 5)
+        {
+          int currentLayer = m_nodeLayerNbr[n];
+          std::vector<TInt> nodesConnectedToNextLayer{};
+          std::vector<TInt> nodeToDelete{};
+
+          m_nodeStructure[n].erase(std::remove_if(m_nodeStructure[n].begin(), m_nodeStructure[n].end(), [&](const TInt node){
+            if(m_nodeLayerNbr[node] > currentLayer && std::find(m_nodeGeneratedBy[node].begin(), m_nodeGeneratedBy[node].end(), n) == m_nodeGeneratedBy[node].end() ){
+              nodeToDelete.push_back(node);
+              return true;
+            }
+            return false;
+          }), m_nodeStructure[n].end());
+
+          for(auto const next : nodeToDelete)
+          {
+            m_nodeStructure[next].erase(std::remove_if(m_nodeStructure[next].begin(), m_nodeStructure[next].end(), [&](const TInt beforeNode){
+              if(beforeNode == n)
+              return true;
+              return false;
+            }), m_nodeStructure[next].end());
           }
         }
       }
@@ -318,23 +372,38 @@ void MetricFFPointgeneration::correctionNodeStructure()
   }
 }
 /*----------------------------------------------------------------------------*/
-void MetricFFPointgeneration::correctUnwantedConnection()
+void MetricFFPointgeneration::correctUnwantedConnectionSURFACE()
 {
+  gmds::Variable<int>* BND_SURFACE_COLOR = nullptr;
+  gmds::Variable<int>* BND_CURVE_COLOR = nullptr;
+  gmds::Variable<int>* BND_VERTEX_COLOR = nullptr;
+  gmds::Variable<Eigen::Matrix3d>* metric = nullptr;
+
+  try{
+    BND_SURFACE_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+    BND_CURVE_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+    BND_VERTEX_COLOR = m_nodesMesh.getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
+    metric = m_nodesMesh.getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
   const gmds::BitVector& nodeBitVector = m_nodesMesh.getBitVectorNodes();
 
   for(unsigned int n = 0 ; n < nodeBitVector.capacity() ; n++)
   {
     if(nodeBitVector[n] != 0)
     {
+      if((*BND_SURFACE_COLOR)[n] == 0)
+        continue;
       //delete the next node not directly created by the nodesSpreading function
       //because of the correctionNodeStructure
-      if(m_nodeStructure[n].size() > 4)
+      if(m_nodeStructure[n].size() > 3)
       {
         int currentLayer = m_nodeLayerNbr[n];
         std::vector<TInt> nodesConnectedToNextLayer{};
         std::vector<TInt> nodeToDelete{};
-
-
 
         m_nodeStructure[n].erase(std::remove_if(m_nodeStructure[n].begin(), m_nodeStructure[n].end(), [&](const TInt node){
           if(m_nodeLayerNbr[node] > currentLayer && std::find(m_nodeGeneratedBy[node].begin(), m_nodeGeneratedBy[node].end(), n) == m_nodeGeneratedBy[node].end() ){
@@ -478,7 +547,6 @@ void MetricFFPointgeneration::execute()
       //fill the stack (change after the nodesSpreading function)
       for(unsigned int i = 0 ; i < nodeAdded.size() ; i++)
       q.push(nodeAdded[i]);
-
       std::cout << "    nodeAdded.size() -> " << nodeAdded.size() << std::endl;
       nodesSpreading(nodeAdded, true);
       incrementLayer();
@@ -500,10 +568,12 @@ void MetricFFPointgeneration::execute()
       vtkWriterGRIDTEST.setDataOptions(gmds::N|gmds::R|gmds::F);
       vtkWriterGRIDTEST.write("metricFF_Grid_LAYER_SORTING_COLOR_NEIGHBOR_" + m_name + "_" + std::to_string(m_layerNbr) + ".vtk");
     }
-    std::cout << "correctionNodeStructure()" << std::endl;
+
     correctionNodeStructure();
-    std::cout << "correctUnwantedConnection()" << std::endl;
-    correctUnwantedConnection();
+    std::cout << "correctionNodeStructure() for SURFACE END" << std::endl;
+    correctUnwantedConnectionSURFACE();
+    std::cout << "correctUnwantedConnection() for SURFACE END " << std::endl;
+
 
     for(auto const & d : m_nodeStructure)
     {
@@ -559,9 +629,6 @@ void MetricFFPointgeneration::execute()
     {
       std::cout << "    nodeAdded.size() -> " << nodeAdded.size() << std::endl;
       nodesSpreading(nodeAdded);
-      connectionWithNeighbor(nodeAdded);
-      //correctionNodeStructure();
-      //correctUnwantedConnection();
       incrementLayer();
 
 
@@ -583,6 +650,13 @@ void MetricFFPointgeneration::execute()
       vtkWriterGRIDTEST.write("metricFF_Grid_LAYER_SORTING_COLOR_NEIGHBOR_" + m_name + "_" + std::to_string(m_layerNbr) + ".vtk");
     }
 
+    correctionNodeStructure();
+    std::cout << "correctionNodeStructure() for VOLUME END" << std::endl;
+    correctUnwantedConnectionVOLUME();
+    std::cout << "correctUnwantedConnection() for VOLUME END " << std::endl;
+
+
+    std::cout << "END COMPUTING " << std::endl;
     for(auto const & d : m_nodeStructure)
     {
       TInt node = d.first;
@@ -1258,7 +1332,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
 
               if(distanceMin <= epsilon &&  neigborNode!= -1 &&
                 std::find(m_nodeStructure[node].begin(), m_nodeStructure[node].end(), neigborNode) == m_nodeStructure[node].end()
-                && node != neigborNode)
+                && node != neigborNode && m_nodeLayerNbr[node] == m_nodeLayerNbr[neigborNode])
                 {
 
                   m_nodeStructure[node].push_back(neigborNode);

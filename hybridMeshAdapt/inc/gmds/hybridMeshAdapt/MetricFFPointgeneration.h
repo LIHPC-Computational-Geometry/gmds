@@ -103,7 +103,9 @@ namespace gmds{
         bool belongToEdge(const math::Point & nodeCoord);
 
         //This function will order the first curve nodes
-        void correctUnwantedConnection();
+        void correctUnwantedConnectionSURFACE();
+
+        void correctUnwantedConnectionVOLUME();
 
         void connectionWithNeighbor(const std::vector<TInt>& nodesAdded);
 
