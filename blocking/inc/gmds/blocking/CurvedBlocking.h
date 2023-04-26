@@ -8,8 +8,11 @@
 #	include <gmds/math/Point.h>
 #	include <gmds/utils/CommonTypes.h>
 #	include <gmds/utils/Exception.h>
-# include <gmds/cad/GeomManager.h>
+#  include <gmds/ig/Mesh.h>
+#  include <gmds/cad/GeomManager.h>
+/*----------------------------------------------------------------------------*/
 #	include <string>
+#  include <type_traits>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -240,6 +243,12 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	virtual ~CurvedBlocking();
 
+	/**@brief Gives the number of @p TDim-cells in the blocking structure.
+	 * 		 @p TDIM must be comprised in [0,3].
+	 *
+	 * @tparam TDim the dimension of cells we want the number
+	 * @return the number of @p TDim-cells in the block structure
+	 */
 	template<int TDim>
 	int get_nb_cells() const{
 	   return m_gmap.number_of_attributes<TDim>();
@@ -255,44 +264,56 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	/** Get all the faces of a block. If it is a hexahedral block,
 	 * we have 6 faces, the first and the second are opposite, idem
 	 * for the third and fourth, and the fifth and sixth.
-	 * @param AB a block
+	 * @param[in] AB a block
 	 * @return the set of faces of the block.
 	 */
 	std::vector<Face> get_faces_of_block(const Block AB);
 	/** Get all the nodes of a block. If it is a hexahedral block,
 	 * we have 8 nodes, given as usual in gmds
-	 * @param AB a block
+	 * @param[in] AB a block
 	 * @return the set of nodes of the block.
 	 * */
 	std::vector<Node> get_nodes_of_block(const Block AB);
 	/** Get all the nodes of a face (ordered).
-	 * @param AF a face
+	 * @param[in] AF a face
 	 * @return the set of nodes of the face.
 	 * */
 	std::vector<Node> get_nodes_of_face(const Face AF);
+	/** Get the ending nodes of an edge.
+	* @param[in] AE an edge
+	* @return the ending nodes of the edge
+	* */
+	std::vector<Node> get_nodes_of_edge(const Edge AE);
 	/** Return the face center
 	 * @param AF a face
 	 * @return the center point of AF
 	 * */
 	math::Point get_center_of_face(const Face AF);
 	/** Return the face center
-	 * @param AF a face
+	 * @param[in] AF a face
 	 * @return a point which is the center of AF
 	 * */
 	math::Point get_center_of_block(const Block AB);
 
 	/**@brief Low level operation that @p TDim-sew two darts
 	 * @tparam TDim sewing dimension
-	 * @param AD1 First dart
-	 * @param AD2 Second dart
+	 * @param[in] AD1 First dart
+	 * @param[in] AD2 Second dart
 	 */
 	 template<int TDim> void sew(Dart3 AD1, Dart3 AD2)
 	{
+		static_assert(TDim>=0 && TDim<4,"The parameter must be included in [0,3]");
 		m_gmap.sew<TDim>(AD1, AD2);
 	}
-
-	/**@brief Provides a list of information about the blocking structure
+	/**@brief Convert the block structure into a gmds cellular mesh. The provided
+	 * 		 mesh @p ACellMesh must have the following characteristics:
+	 * 		 - DIM3, N, E, F, R, R2N, F2N, E2N
+	 * 		 Attributes are exported into @p ACellMesh as variable
 	 *
+	 * @param[in,out] ACellMesh A cellular mesh
+	 */
+	void convert_to_mesh(Mesh& ACellMesh);
+	/**@brief Provides a list of information about the blocking structure
 	 * @return a string containing the expected pieces of information
 	 */
 	std::string info() const;
@@ -306,9 +327,9 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
  private:
 	/**@brief Create a node attribute in the n-gmap
 	 *
-	 * @param AGeomDim dimension of the associated geometric cell
-	 * @param AGeomId id of the associated geometric cell
-	 * @param APoint  spatial location of the node
+	 * @param[in] AGeomDim dimension of the associated geometric cell
+	 * @param[in] AGeomId id of the associated geometric cell
+	 * @param[in] APoint  spatial location of the node
 	 * @return the created node attribute
 	 */
 	Node createNode(const int AGeomDim, const int AGeomId, math::Point &APoint);

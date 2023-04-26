@@ -86,6 +86,17 @@ CurvedBlocking::get_nodes_of_face(const CurvedBlocking::Face AF)
 	return nodes;
 }
 /*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Node>
+CurvedBlocking::get_nodes_of_edge(const CurvedBlocking::Edge AE)
+{
+	std::vector<CurvedBlocking::Node> nodes;
+	nodes.reserve(2);
+	Dart3 d= AE->dart();
+	nodes[0] = m_gmap.attribute<0>(d);
+	nodes[1] = m_gmap.attribute<0>(m_gmap.alpha<0>(d));
+	return nodes;
+}
+/*----------------------------------------------------------------------------*/
 math::Point
 CurvedBlocking::get_center_of_face(const Face AF)
 {
@@ -175,3 +186,103 @@ CurvedBlocking::info() const
 	return mess.str();
 }
 /*----------------------------------------------------------------------------*/
+void CurvedBlocking::convert_to_mesh(Mesh &AMesh)
+{
+	MeshModel model = AMesh.getModel();
+	if(!model.has(N) || !model.has(E) ||!model.has(F) ||!model.has(R) ||
+	    !model.has(E2N) ||!model.has(F2N) ||!model.has(R2N))
+		throw GMDSException("Wrong mesh model for block->mesh conversion");
+
+	AMesh.clear();
+
+	Variable<int>* var_node_topo_id  = AMesh.getOrCreateVariable<int, GMDS_NODE>("blocking_topo_id");
+	Variable<int>* var_node_topo_dim = AMesh.getOrCreateVariable<int, GMDS_NODE>("blocking_topo_dim");
+	Variable<int>* var_node_geom_id  = AMesh.getOrCreateVariable<int, GMDS_NODE>("blocking_geom_id");
+	Variable<int>* var_node_geom_dim = AMesh.getOrCreateVariable<int, GMDS_NODE>("blocking_geom_dim");
+
+	Variable<int>* var_edge_topo_id  = AMesh.getOrCreateVariable<int, GMDS_EDGE>("blocking_topo_id");
+	Variable<int>* var_edge_topo_dim = AMesh.getOrCreateVariable<int, GMDS_EDGE>("blocking_topo_dim");
+	Variable<int>* var_edge_geom_id  = AMesh.getOrCreateVariable<int, GMDS_EDGE>("blocking_geom_id");
+	Variable<int>* var_edge_geom_dim = AMesh.getOrCreateVariable<int, GMDS_EDGE>("blocking_geom_dim");
+
+	Variable<int>* var_face_topo_id  = AMesh.getOrCreateVariable<int, GMDS_FACE>("blocking_topo_id");
+	Variable<int>* var_face_topo_dim = AMesh.getOrCreateVariable<int, GMDS_FACE>("blocking_topo_dim");
+	Variable<int>* var_face_geom_id  = AMesh.getOrCreateVariable<int, GMDS_FACE>("blocking_geom_id");
+	Variable<int>* var_face_geom_dim = AMesh.getOrCreateVariable<int, GMDS_FACE>("blocking_geom_dim");
+
+	Variable<int>* var_region_topo_id  = AMesh.getOrCreateVariable<int, GMDS_REGION>("blocking_topo_id");
+	Variable<int>* var_region_topo_dim = AMesh.getOrCreateVariable<int, GMDS_REGION>("blocking_topo_dim");
+	Variable<int>* var_region_geom_id  = AMesh.getOrCreateVariable<int, GMDS_REGION>("blocking_geom_id");
+	Variable<int>* var_region_geom_dim = AMesh.getOrCreateVariable<int, GMDS_REGION>("blocking_geom_dim");
+
+	//mapping from blocking node ids to mesh node ids
+	std::map<int,TCellID> n2n;
+
+	//nodes
+	for (auto it = m_gmap.attributes<0>().begin(),
+	          itend = m_gmap.attributes<0>().end(); it != itend; ++it)
+	{
+		auto att = m_gmap.info_of_attribute<0>(it);
+		gmds::Node n = AMesh.newNode(att.point);
+		var_node_topo_id->set(n.id(),att.topo_id);
+		var_node_topo_dim->set(n.id(),att.topo_dim);
+		var_node_geom_id->set(n.id(),att.geom_id);
+		var_node_geom_dim->set(n.id(),att.geom_dim);
+		n2n[att.topo_id]=n.id();
+	}
+	//edges
+	for (auto it = m_gmap.attributes<1>().begin(),
+	          itend = m_gmap.attributes<1>().end(); it != itend; ++it)
+	{
+		auto att = m_gmap.info_of_attribute<1>(it);
+		std::vector<Node> cell_nodes = get_nodes_of_edge(it);
+		gmds::Edge e = AMesh.newEdge(n2n[cell_nodes[0]->info().topo_id],
+		                             n2n[cell_nodes[1]->info().topo_id]);
+		var_edge_topo_id->set(e.id(),att.topo_id);
+		var_edge_topo_dim->set(e.id(),att.topo_dim);
+		var_edge_geom_id->set(e.id(),att.geom_id);
+		var_edge_geom_dim->set(e.id(),att.geom_dim);
+	}
+	//faces
+	for (auto it = m_gmap.attributes<2>().begin(),
+	          itend = m_gmap.attributes<2>().end(); it != itend; ++it)
+	{
+		auto att = m_gmap.info_of_attribute<2>(it);
+		std::vector<Node> cell_nodes = get_nodes_of_face(it);
+		if(cell_nodes.size()!=4)
+			throw GMDSException("Only quad blocking faces can be converted into mesh");
+
+		gmds::Face f = AMesh.newQuad(n2n[cell_nodes[0]->info().topo_id],
+		                             n2n[cell_nodes[1]->info().topo_id],
+		                             n2n[cell_nodes[2]->info().topo_id],
+		                             n2n[cell_nodes[3]->info().topo_id]);
+
+		var_face_topo_id->set(f.id(),att.topo_id);
+		var_face_topo_dim->set(f.id(),att.topo_dim);
+		var_face_geom_id->set(f.id(),att.geom_id);
+		var_face_geom_dim->set(f.id(),att.geom_dim);
+	}
+	//blocks
+	for (auto it = m_gmap.attributes<3>().begin(),
+	          itend = m_gmap.attributes<3>().end(); it != itend; ++it)
+	{
+		auto att = m_gmap.info_of_attribute<3>(it);
+		std::vector<Node> cell_nodes = get_nodes_of_block(it);
+		if(cell_nodes.size()!=8)
+			throw GMDSException("Only hex blocks can be converted into mesh");
+
+		gmds::Region r = AMesh.newHex(n2n[cell_nodes[0]->info().topo_id],
+		                             n2n[cell_nodes[1]->info().topo_id],
+		                             n2n[cell_nodes[2]->info().topo_id],
+		                             n2n[cell_nodes[3]->info().topo_id],
+		                               n2n[cell_nodes[4]->info().topo_id],
+		                               n2n[cell_nodes[5]->info().topo_id],
+		                               n2n[cell_nodes[6]->info().topo_id],
+		                               n2n[cell_nodes[7]->info().topo_id]);
+
+		var_region_topo_id->set(r.id(),att.topo_id);
+		var_region_topo_dim->set(r.id(),att.topo_dim);
+		var_region_geom_id->set(r.id(),att.geom_id);
+		var_region_geom_dim->set(r.id(),att.geom_dim);
+	}
+}
