@@ -10,7 +10,34 @@ int CurvedBlocking::m_counter_edges = 0;
 int CurvedBlocking::m_counter_faces = 0;
 int CurvedBlocking::m_counter_blocks = 0;
 /*----------------------------------------------------------------------------*/
-CurvedBlocking::CurvedBlocking() {}
+CurvedBlocking::CurvedBlocking(cad::GeomManager *AGeomModel, bool AInitAsBoundingBox):
+m_geom_model(AGeomModel)
+{
+	if(AInitAsBoundingBox){
+		TCoord min[3]={MAXFLOAT,MAXFLOAT,MAXFLOAT};
+		TCoord max[3]={-MAXFLOAT,-MAXFLOAT,-MAXFLOAT};
+		std::vector<cad::GeomVolume*> vols;
+		m_geom_model->getVolumes(vols);
+		for(auto v:vols){
+			TCoord v_min[3], v_max[3];
+			v->computeBoundingBox(v_min,v_max);
+			for(auto i=0;i<2;i++)
+				if (v_min[i]<min[i]) min[i]=v_min[i];
+			for(auto i=0;i<2;i++)
+				if (v_max[i]>max[i]) max[i]=v_max[i];
+		}
+		math::Point p1(min[0],min[1],min[2]);
+		math::Point p2(min[0],max[1],min[2]);
+		math::Point p3(max[0],max[1],min[2]);
+		math::Point p4(max[0],min[1],min[2]);
+		math::Point p5(min[0],min[1],max[2]);
+		math::Point p6(min[0],max[1],max[2]);
+		math::Point p7(max[0],max[1],max[2]);
+		math::Point p8(max[0],min[1],max[2]);
+		createBlock(p1,p2,p3,p4,p5,p6,p7,p8);
+	}
+
+}
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::~CurvedBlocking() {}
 /*----------------------------------------------------------------------------*/

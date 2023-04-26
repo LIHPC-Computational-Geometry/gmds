@@ -93,10 +93,11 @@ struct MergeFunctor
 {
 	/** @brief Merging function for general cells (not a node).
 	 * @tparam Cell_attribute
-	 * @param ACA1 the first attribute
-	 * @param ACA2 the second attribute
+	 * @param[in] ACA1 the first attribute
+	 * @param[in] ACA2 the second attribute
 	 */
-	template<class Cell_attribute> void operator()(Cell_attribute &ACA1, Cell_attribute &ACA2)
+	template<class Cell_attribute> void operator()(Cell_attribute &ACA1,
+	                                               Cell_attribute &ACA2)
 	{
 		if (ACA1.info().geom_dim == ACA2.info().geom_dim) {
 			// the cells are classifed on the same dim geom entity
@@ -139,7 +140,14 @@ struct MergeFunctor
  */
 struct MergeFunctorNode
 {
-	template<class Cell_attribute> void operator()(Cell_attribute &ACA1, Cell_attribute &ACA2)
+
+	/** @brief Merging function for nodes
+	 * @tparam Cell_attribute
+	 * @param[in] ACA1 the first node attribute
+	 * @param[in] ACA2 the second node attribute
+	 */
+	template<class Cell_attribute> void operator()(Cell_attribute &ACA1,
+	                                               Cell_attribute &ACA2)
 	{
 		if (ACA1.info().geom_dim == ACA2.info().geom_dim) {
 			if (ACA1.info().geom_id == ACA2.info().geom_id) {
@@ -163,7 +171,6 @@ struct MergeFunctorNode
 		}
 	}
 };
-
 /*----------------------------------------------------------------------------*/
 /** @struct SplitFunctor
  * @brief This structure provides a function for the Gmap class in order to
@@ -172,7 +179,14 @@ struct MergeFunctorNode
  */
  struct SplitFunctor
 {
-	template<class Cell_attribute> void operator()(Cell_attribute &ca1, Cell_attribute &ca2)
+
+	/** @brief Splitting function for general cells (including nodes).
+	 * @tparam Cell_attribute
+	 * @param[in] ACA1 the first cell attribute
+	 * @param[in] ACA2 the second cell attribute
+	 */
+	template<class Cell_attribute> void operator()(Cell_attribute &ca1,
+	                                               Cell_attribute &ca2)
 	{
 		ca1.info().geom_dim = ca1.info().geom_dim;
 		ca1.info().geom_id = ca1.info().geom_id;
@@ -235,9 +249,13 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	using Edge  = GMap3::Attribute_handle<1>::type;
 	using Node  = GMap3::Attribute_handle<0>::type;
 
-	/** @brief  Default Constructor
+	/** @brief Constructor that takes a geom model as an input. A
+	 * blocking is always used for partitioning a geometric domain.
+	 * @param[in] AGeomModel the geometric model we want to block
+	 * @param[in] AInitAsBoundingBox indicates that the block structure must remain
+	 * empty (false) or be initialized as the bounding box of @p AGeomModel
 	 */
-	CurvedBlocking();
+	CurvedBlocking(cad::GeomManager* AGeomModel, bool AInitAsBoundingBox=false);
 
 	/** @brief  Destructor
 	 */
@@ -356,6 +374,8 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	Block createBlock(const int AGeomDim, const int AGeomId);
 
  private:
+	/*** the associated geometric model*/
+	cad::GeomManager* m_geom_model;
 	/*** the underlying n-g-map model*/
 	GMap3 m_gmap;
 	/*** global counter used to assign an unique id to each node */

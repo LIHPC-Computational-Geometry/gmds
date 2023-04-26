@@ -2,10 +2,37 @@
 #include <gtest/gtest.h>
 /*----------------------------------------------------------------------------*/
 #include <gmds/blocking/CurvedBlocking.h>
+#include <gmds/cadfac/FACManager.h>
+#include <gmds/ig/MeshDoctor.h>
+#include <gmds/io/IGMeshIOService.h>
+#include <gmds/io/VTKReader.h>
+#include <unit_test_config.h>
+/*----------------------------------------------------------------------------*/
+void
+setUp(gmds::cad::FACManager &AGeomManager)
+{
+	gmds::Mesh m_vol(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::F | gmds::E | gmds::N | gmds::R2N | gmds::R2F | gmds::R2E | gmds::F2N | gmds::F2R | gmds::F2E
+	                                 | gmds::E2F | gmds::E2N | gmds::N2E));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir + "/tet_in_box.vtk";
+	gmds::IGMeshIOService ioService(&m_vol);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N | gmds::R);
+	vtkReader.read(vtk_file);
+	gmds::MeshDoctor doc(&m_vol);
+	doc.buildFacesAndR2F();
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	AGeomManager.initFrom3DMesh(&m_vol);
+}
+
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, init)
 {
-	gmds::blocking::CurvedBlocking bl;
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model);
 	gmds::math::Point p000(0, 0, 0);
 	gmds::math::Point p010(0, 1, 0);
 	gmds::math::Point p110(1, 1, 0);
@@ -35,7 +62,9 @@ TEST(CurvedBlockingTestSuite, init)
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, single_block)
 {
-	gmds::blocking::CurvedBlocking bl;
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model);
 	gmds::math::Point p000(0, 0, 0);
 	gmds::math::Point p010(0, 1, 0);
 	gmds::math::Point p110(1, 1, 0);
@@ -62,9 +91,23 @@ TEST(CurvedBlockingTestSuite, single_block)
 	}
 }
 /*----------------------------------------------------------------------------*/
+TEST(CurvedBlockingTestSuite, init_from_geom_bounding_box)
+{
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+	ASSERT_EQ(8, bl.get_nb_cells<0>());
+	ASSERT_EQ(12, bl.get_nb_cells<1>());
+	ASSERT_EQ(6, bl.get_nb_cells<2>());
+	ASSERT_EQ(1, bl.get_nb_cells<3>());
+}
+/*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, single_block_to_mesh)
 {
-	gmds::blocking::CurvedBlocking bl;
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model);
+
 	gmds::math::Point p000(0, 0, 0);
 	gmds::math::Point p010(0, 1, 0);
 	gmds::math::Point p110(1, 1, 0);
