@@ -43,7 +43,8 @@ int main(int argc, char* argv[])
 
     //vector of lambda that capture metric and ffield
     std::vector<std::function<std::vector<double>()>> metricXYZ_functors{};
-    metricXYZ_functors.push_back([] { return std::vector<double>{0.30, 0.30, 0.30}; });
+    metricXYZ_functors.push_back([] { return std::vector<double>{0.70, 0.70, 0.70}; }); //B36
+    //metricXYZ_functors.push_back([] { return std::vector<double>{0.30, 0.30, 0.30}; });
     //metricXYZ_functors.push_back([] { return std::vector<double>{0.20, 0.20, 0.20}; });
 
     std::vector<std::function<std::vector<math::Vector3d>()>> frameXYZ_functor{};
@@ -93,7 +94,7 @@ int main(int argc, char* argv[])
         }
         //////////////////////////////////////////////////////////////////////////////
         std::cout << "FRONTAL ALGO STARTING ..." << std::endl;
-        std::string name = "HEXTEST_" + std::to_string(cpt);
+        std::string name = "HEX_" + std::to_string(cpt);
         MetricFFPointgeneration p(&simplexMesh, name);
         p.execute();
         ++cpt;

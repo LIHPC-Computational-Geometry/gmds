@@ -487,7 +487,9 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
                 std::cout << "surface -> " << (*BND_SURFACE_COLOR)[simpliceNode.getGlobalNode()] << std::endl;
                 std::cout << "curve -> " << (*BND_CURVE_COLOR)[simpliceNode.getGlobalNode()] << std::endl;
                 std::cout << "borderNodesEdge.size() -> " << borderNodesEdge.size() << std::endl;
-
+                for(auto const bn : borderNodesEdge)
+                  std::cout << "borderNodesEdge -> " << bn << std::endl;
+                  
                 SimplexMesh N;
                 TInt NodeId = N.addNode(simpliceNode.getCoords());
                 N.addTetraedre(NodeId, NodeId, NodeId, NodeId);
