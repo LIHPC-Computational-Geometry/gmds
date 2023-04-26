@@ -183,30 +183,27 @@ SimplexMesh::~SimplexMesh()
   }*/
 }
 /*****************************************************************************/
-double SimplexMesh::findMinSizeEdge()
+double SimplexMesh::findMinSizeEdgeSurface()
 {
   std::set<double> s;
-  for(unsigned int t = 0 ; t <m_tet_ids.capacity() ; t++)
+
+  for(unsigned int t = 1 ; t < m_tri_ids.capacity() ; t++)
   {
-    if(m_tet_ids[t] != 0)
+    if(m_tri_ids[t] != 0)
     {
-      const std::vector<TInt> nodes = SimplicesCell(this, t).getNodes();
+      const std::vector<TInt> nodes = SimplicesTriangle(this, t).getNodes();
       math::Point p0 = SimplicesNode(this, nodes[0]).getCoords();
       math::Point p1 = SimplicesNode(this, nodes[1]).getCoords();
       math::Point p2 = SimplicesNode(this, nodes[2]).getCoords();
-      math::Point p3 = SimplicesNode(this, nodes[3]).getCoords();
 
       //compute size of the edgfe of t
       math::Vector3d v01 = p1-p0; math::Vector3d v12 = p2-p1;
-      math::Vector3d v02 = p2-p0; math::Vector3d v23 = p3-p2;
-      math::Vector3d v03 = p3-p0; math::Vector3d v31 = p3-p1;
+      math::Vector3d v20 = p2-p0;
 
-      double dist01 = v01.norm(); double dist12 = v01.norm();
-      double dist02 = v02.norm(); double dist23 = v01.norm();
-      double dist03 = v03.norm(); double dist31 = v01.norm();
+      double dist01 = v01.norm(); double dist12 = v12.norm();
+      double dist20 = v20.norm();
 
-      s.insert(dist01); s.insert(dist02); s.insert(dist03);
-      s.insert(dist12); s.insert(dist23); s.insert(dist31);
+      s.insert(dist01); s.insert(dist12); s.insert(dist20);
     }
   }
 
@@ -4807,6 +4804,7 @@ void SimplexMesh::onSurface(const math::Point& pt, int& surfaceLabel, TSimplexID
   }
 
   std::vector<TSimplexID> simplices = getOctree()->findSimplicesInOc(pt);
+
   surfaceLabel = 0;
   for(auto const simplex_ : simplices)
   {

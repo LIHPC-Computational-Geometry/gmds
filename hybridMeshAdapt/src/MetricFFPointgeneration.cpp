@@ -1210,6 +1210,14 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
   std::clock_t c_start = std::clock();
   double durationTOT;
   double durationRec;
+  double durationInSim;
+  double durationFiltering;
+  double durationAddNode;
+  double durationSurface;
+  double durationExistingNode;
+  double durationGetFrame;
+  double durationFOR;
+  double duration;
 
   const double epsilon = 5E-2;
   std::vector<TInt> newNodes{};
@@ -1239,7 +1247,9 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
     std::vector<math::Vector3d> frames{};
     const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
 
+    std::clock_t c_start7 = std::clock();
     m_simplexMesh->getFrameAt(pt, frames);
+    durationGetFrame +=  std::clock() - c_start7;
     FF << frames[0].X() , frames[1].X() , frames[2].X(),
     frames[0].Y() , frames[1].Y() , frames[2].Y(),
     frames[0].Z() , frames[1].Z() , frames[2].Z();
@@ -1249,6 +1259,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
 
     for(auto & t : M_result)
     {
+      std::clock_t c_start8 = std::clock();
       for(unsigned i = 0 ; i < 3 ; i++)
       {
         Eigen::Vector3d d = t.col(i);
@@ -1258,9 +1269,10 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
         TInt newNodeId = -1;
         std::clock_t c_start1 = std::clock();
         if(!findOptimimalPosition(node, newCoord, surfaceFlag))
-        continue;
+          continue;
         durationRec += std::clock() - c_start1;
         //check if the node is on the mesh during the volume propagation
+        std::clock_t c_start2 = std::clock();
         bool flag = false;
         TSimplexID simplex = std::numeric_limits<TSimplexID>::min();
         if(!surfaceFlag)
@@ -1282,24 +1294,33 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
           if(!flag)
           continue;
         }
+        durationInSim += std::clock() - c_start2;
 
         //if(belongToEdge(newCoord))
-        //continue;
+          //continue;
+
 
         bool onSurface = true;
         int surfaceLabel = 0;
+
+        std::clock_t c_start5 = std::clock();
         if(surfaceFlag)
-        m_simplexMesh->onSurface(newCoord, surfaceLabel, simplex);
+          m_simplexMesh->onSurface(newCoord, surfaceLabel, simplex);
+        durationSurface += std::clock() - c_start5;
 
         if(surfaceLabel == 0)
-        onSurface = false;
+          onSurface = false;
         if(surfaceFlag == onSurface)
         {
+          std::clock_t c_start3 = std::clock();
           std::vector<TInt> neighboorNodes;
           if(!nodeFiltering(newCoord, node, simplex, neighboorNodes))
-          continue;
+            continue;
+          durationFiltering += std::clock() - c_start3;
+
           if(neighboorNodes.size() == 0)
           {
+            std::clock_t c_start4 = std::clock();
             newNodeId = m_nodesMesh.addNode(newCoord);
             nodeBelongingTO[newNodeId] = simplex;
             m_nodeGeneratedBy[newNodeId].push_back(node);
@@ -1311,9 +1332,11 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
             m_nodesMesh.setAnalyticMetricFromMesh(newNodeId, m_simplexMesh, nodeBelongingTO);
             std::unordered_set<TInt> seen{};
             m_nodesMesh.getOctree()->addNode(newNodeId, seen);
+            durationAddNode += std::clock() - c_start4;
           }
           else
           {
+            std::clock_t c_start6 = std::clock();
             //if(!surfaceFlag)
             {
               int neigborNode = -1;
@@ -1341,16 +1364,26 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
                   m_nodeStructure[neigborNode].push_back(node);
                 }
               }
+              durationExistingNode += std::clock() - c_start6;
             }
           }
         }
+        durationFOR += std::clock() - c_start8;
       }
     }
 
-    /*durationTOT = ( std::clock() - c_start ) / (double) CLOCKS_PER_SEC;
-    std::cout<<"durationTOT : "<< durationTOT << std::endl;;
-    std::cout<<"durationRec : "<< durationRec / (double) CLOCKS_PER_SEC << std::endl;;*/
-
+    durationTOT = ( std::clock() - c_start ) / (double) CLOCKS_PER_SEC;
+    std::cout<<"      durationTOT : "<< durationTOT << std::endl;;
+    std::cout<<"        durationRec : "<< durationRec / (double) CLOCKS_PER_SEC << std::endl;;
+    std::cout<<"        durationInSim : "<< durationInSim / (double) CLOCKS_PER_SEC << std::endl;;
+    std::cout<<"        durationFiltering : "<< durationFiltering / (double) CLOCKS_PER_SEC << std::endl;;
+    std::cout<<"        durationAddNode : "<< durationAddNode / (double) CLOCKS_PER_SEC << std::endl;
+    std::cout<<"        durationExistingNode : "<< durationExistingNode / (double) CLOCKS_PER_SEC << std::endl;;
+    std::cout<<"        durationGetFrame : "<< durationGetFrame / (double) CLOCKS_PER_SEC << std::endl;;
+    std::cout<<"        durationFOR : "<< durationFOR / (double) CLOCKS_PER_SEC << std::endl;;
+    std::cout<<"        durationSurface : "<< durationSurface / (double) CLOCKS_PER_SEC << std::endl;;
+    std::cout << std::endl;
+    std::cout << std::endl;
 
     nodesAdded.clear();
     std::copy(newNodes.begin(), newNodes.end(), std::back_inserter(nodesAdded));
