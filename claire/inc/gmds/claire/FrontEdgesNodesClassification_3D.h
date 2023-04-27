@@ -65,7 +65,27 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	 */
 	TInt getMarkNodesTemplates();
 	/*-------------------------------------------------------------------*/
-
+	/** @brief Return the classification of the front node n
+	 	* \param[in] n_id the id of the node considered
+		*
+		* \return  return the node classification (0: regular, 1: 3 CORNER, ...)
+	 */
+	int singleNodeClassification(TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	* \param[in] n_id node id
+		*
+		* \return  return the mark
+	 */
+	int getNbrSingularEdgesAroundNode(TCellID n_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	* \param[in] e_id edge id
+		*
+		* \return  return the mark
+	 */
+	int getEdgeType(TCellID e_id);
+	/*-------------------------------------------------------------------*/
  private:
 	/*-------------------------------------------------------------------*/
 	/** @brief Return the classification of a single edge e
@@ -88,13 +108,6 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 		* \return fill the node classification variable
 	 */
 	void FrontNodesClassification();
-	/*-------------------------------------------------------------------*/
-	/** @brief Return the classification of the front node n
-	 	* \param[in] n_id the id of the node considered
-		*
-		* \return  return the node classification (0: regular, 1: 3 CORNER, ...)
-	 */
-	int singleNodeClassification(TCellID n_id);
 	/*-------------------------------------------------------------------*/
 	/** @brief Return true if the configuration around the node n is valid
 	 * to apply one of the implemented templates on nodes.
@@ -141,6 +154,24 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	 */
 	void ComputeValidLoop_GFE();
 	/*-------------------------------------------------------------------*/
+	/** @brief Return true if the node is valid for being internal to a
+	 * path of edges of type type_path.
+	 * \param[in] n_id id of the node
+	 * \param[in] type_path type of the path (1: CORNER, 2: END, 3: REVERSAL)
+	 *
+	 * \return
+	 */
+	bool isValidNodeForInsidePath(TCellID n_id, int type_path);
+	/*-------------------------------------------------------------------*/
+	/** @brief Return true if the node is valid for being a limit to a
+	 * path of edges of type type_path.
+	 * \param[in] n_id id of the node
+	 * \param[in] type_path type of the path (1: CORNER, 2: END, 3: REVERSAL)
+	 *
+	 * \return
+	 */
+	bool isValidNodeForPathLimit(TCellID n_id, int type_path);
+	/*-------------------------------------------------------------------*/
  private:
 	/** the quad mesh we work on */
 	Mesh *m_mesh;
@@ -155,7 +186,7 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	/** Edges classification */
 	Variable<int>* m_EdgesClassification;
 	/** Nodes classification */
-	Variable<int>* m_NodesClassification;
+	Variable<int>*m_NodesClassification;
 	/** Mark edges for templates */
 	TInt m_mark_EdgesForTemplates;
 	/** Mark nodes for templates */
