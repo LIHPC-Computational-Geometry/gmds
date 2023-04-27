@@ -326,7 +326,8 @@ std::vector<TSimplexID> Octree::findSimplicesInOc(const math::Point& pt)
   if(m_parentOc == nullptr)
     return m_simplices;
 
-  //return m_parentOc->m_simplices;
+  return m_parentOc->m_simplices;
+  //return m_simplices;
 
   if(m_parentOc->m_parentOc == nullptr)
     return m_parentOc->m_simplices;

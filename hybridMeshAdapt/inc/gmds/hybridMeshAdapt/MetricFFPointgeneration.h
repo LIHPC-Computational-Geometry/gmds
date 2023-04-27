@@ -78,7 +78,7 @@ namespace gmds{
 
         void findOptimimalPosition0(const TInt node, math::Point &newCoord, bool surfaceFlag = false, int cpt = 10, double epsilon = 0.1/*0.01*/) ;
 
-        bool findOptimimalPosition(const TInt node, math::Point &newCoord, bool surfaceFlag = false, int cpt = 10, double epsilon = 0.1/*0.01*/) ;
+        bool findOptimimalPosition(const TInt node, math::Point &newCoord, TSimplexID& simplex, int& surfaceLabel, bool surfaceFlag = false, int cpt = 10, double epsilon = 0.1/*0.01*/) ;
 
         bool nodeFiltering(const math::Point& pt, const TInt fromNode, const TSimplexID simplex, std::vector<TInt> & neighboorNode);
 

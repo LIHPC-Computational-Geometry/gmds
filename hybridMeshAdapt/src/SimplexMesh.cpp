@@ -4462,12 +4462,13 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, SimplexMesh* sm,
   }
 
   //compute the interpolation metric in a simplex
-  //std::vector<TSimplexID> simplices = octree->findSimplicesInOc(pt);
-  //std::vector<TSimplexID> simplices = m_octree->findSimplicesInOc(pt);
   std::vector<TSimplexID> simplices = sm->getOctree()->findSimplicesInOc(pt);
+  //std::cout << "simplices.size() -> " << simplices.size() << std::endl;
   //outside the octree
   if(simplices.size() == 0) {
-    SimplexMesh meshTest;
+    status = false;
+    return Eigen::Matrix3d::Zero();
+    /*SimplexMesh meshTest;
     TInt n0 = meshTest.addNode(pt);
     meshTest.addTetraedre(n0, n0, n0, n0);
     gmds::ISimplexMeshIOService ioServiceTriangles(&meshTest);
@@ -4475,13 +4476,12 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, SimplexMesh* sm,
     vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
     vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
     vtkWriter.write("node_outside.vtk");
-    throw gmds::GMDSException("outside octree");
+    throw gmds::GMDSException("outside octree");*/
   }
 
   const gmds::BitVector& bitvectorTet = sm->getBitVectorTet();
   std::vector<TInt> nodes{};
   std::vector<double> uvwt_{};
-  std::vector<double> uvwt{};
   bool flag;
   for(auto const & s : simplices)
   {
@@ -4536,9 +4536,12 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetricFromSimplex(const math::Point& pt,
     throw gmds::GMDSException(e);
   }
 
+  TSimplexID tet = simplex;
+  if(simplex < 0)
+    tet = SimplicesTriangle(sm, simplex).neighborTetra()[0];
 
-  std::vector<double> uvwt = SimplicesCell(sm, simplex).uvwt(pt);
-  std::vector<TInt> nodes =  SimplicesCell(sm, simplex).getNodes();
+  std::vector<double> uvwt = SimplicesCell(sm, tet).uvwt(pt);
+  std::vector<TInt> nodes =  SimplicesCell(sm, tet).getNodes();
 
   Eigen::Matrix3d m0 = (*metric)[nodes[0]];
   Eigen::Matrix3d m1 = (*metric)[nodes[1]];

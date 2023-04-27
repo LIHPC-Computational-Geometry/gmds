@@ -1,3 +1,4 @@
+
 #ifndef SIMPLICESTRIANGLE_H_
 #define SIMPLICESTRIANGLE_H_
 /*----------------------------------------------------------------------------*/

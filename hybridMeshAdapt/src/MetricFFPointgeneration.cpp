@@ -1208,16 +1208,16 @@ double MetricFFPointgeneration::computeDistorsionMetric(const Eigen::Matrix3d & 
 void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool surfaceFlag)
 {
   std::clock_t c_start = std::clock();
-  double durationTOT;
-  double durationRec;
-  double durationInSim;
-  double durationFiltering;
-  double durationAddNode;
-  double durationSurface;
-  double durationExistingNode;
-  double durationGetFrame;
-  double durationFOR;
-  double duration;
+  double durationTOT = 0.0;
+  double durationRec = 0.0;
+  double durationInSim = 0.0;
+  double durationFiltering = 0.0;
+  double durationAddNode = 0.0;
+  double durationSurface = 0.0;
+  double durationExistingNode = 0.0;
+  double durationGetFrame = 0.0;
+  double durationFOR = 0.0;
+  double duration = 0.0;
 
   const double epsilon = 5E-2;
   std::vector<TInt> newNodes{};
@@ -1261,19 +1261,23 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
     {
       for(unsigned i = 0 ; i < 3 ; i++)
       {
+        std::clock_t c_start11 = std::clock();
+        TSimplexID simplex = std::numeric_limits<TSimplexID>::min();
+        bool onSurface = true;
+        int surfaceLabel = 0;
+
         Eigen::Vector3d d = t.col(i);
         math::Point newCoord = pt + math::Point(d.x(), d.y(), d.z());
         nodeSamplingData samplingData{};
         const math::Point pt = SimplicesNode(&m_nodesMesh, node).getCoords();
         TInt newNodeId = -1;
         std::clock_t c_start1 = std::clock();
-        if(!findOptimimalPosition(node, newCoord, surfaceFlag))
+        if(!findOptimimalPosition(node, newCoord, simplex, surfaceLabel, surfaceFlag))
           continue;
         durationRec += std::clock() - c_start1;
         //check if the node is on the mesh during the volume propagation
         std::clock_t c_start2 = std::clock();
         bool flag = false;
-        TSimplexID simplex = std::numeric_limits<TSimplexID>::min();
         if(!surfaceFlag)
         {
           std::vector<TSimplexID> simplices = m_oc.findSimplicesInOc(newCoord);
@@ -1294,19 +1298,17 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
           continue;
         }
         durationInSim += std::clock() - c_start2;
-
         //if(belongToEdge(newCoord))
           //continue;
 
 
-        bool onSurface = true;
-        int surfaceLabel = 0;
+
+        durationFOR += std::clock() - c_start11;
 
         std::clock_t c_start5 = std::clock();
-        if(surfaceFlag)
-          m_simplexMesh->onSurface(newCoord, surfaceLabel, simplex);
+        //if(surfaceFlag)
+          //m_simplexMesh->onSurface(newCoord, surfaceLabel, simplex);
         durationSurface += std::clock() - c_start5;
-
         if(surfaceLabel == 0)
           onSurface = false;
         if(surfaceFlag == onSurface)
@@ -1324,7 +1326,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
             nodeBelongingTO[newNodeId] = simplex;
             m_nodeGeneratedBy[newNodeId].push_back(node);
             if(surfaceFlag == true)
-            BND_SURFACE_COLOR->set(newNodeId, surfaceLabel);
+              BND_SURFACE_COLOR->set(newNodeId, surfaceLabel);
 
             newNodes.push_back(newNodeId);
             addNodeToLayer(newNodeId, node, surfaceFlag);
@@ -1379,6 +1381,7 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
     std::cout<<"        durationExistingNode : "<< durationExistingNode / (double) CLOCKS_PER_SEC << std::endl;;
     std::cout<<"        durationGetFrame : "<< durationGetFrame / (double) CLOCKS_PER_SEC << std::endl;;
     std::cout<<"        durationSurface : "<< durationSurface / (double) CLOCKS_PER_SEC << std::endl;;
+    std::cout<<"        durationFOR : "<< durationFOR / (double) CLOCKS_PER_SEC << std::endl;;
     std::cout << std::endl;
     std::cout << std::endl;
 
@@ -1438,8 +1441,17 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
     return true;
   }
   /*----------------------------------------------------------------------------*/
-  bool MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point& initialCoord, bool surfaceFlag, int cpt, double epsilon)
+  bool MetricFFPointgeneration::findOptimimalPosition(const TInt node, math::Point& initialCoord, TSimplexID& simplex, int& surfaceLabel, bool surfaceFlag, int cpt, double epsilon)
   {
+    gmds::Variable<int>* BND_TRIANGLES  = nullptr;
+
+    try{
+      BND_TRIANGLES = m_simplexMesh->getVariable<int, SimplicesTriangle>("BND_TRIANGLES");
+    } catch (gmds::GMDSException e)
+    {
+      throw gmds::GMDSException(e);
+    }
+
     if(cpt == 0){
       epsilon *= 2.0;
       cpt = 10;
@@ -1493,6 +1505,8 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
 
         if(minDistance != std::numeric_limits<int>::max()){
           newCoord = goodProjection;
+          surfaceLabel = (*BND_TRIANGLES)[-triangleProj];
+          simplex = triangleProj;
         }
         else{
           return false;
@@ -1537,12 +1551,12 @@ void MetricFFPointgeneration::nodesSpreading(std::vector<TInt>& nodesAdded, bool
       if(metricLenght < (1.0 - epsilon))
       {
         initialCoord = pt + 1.5 * math::Vector3d({dir.x(), dir.y(), dir.z()});
-        return findOptimimalPosition(node, initialCoord, surfaceFlag, --cpt, epsilon);
+        return findOptimimalPosition(node, initialCoord, simplex, surfaceLabel, surfaceFlag, --cpt, epsilon);
       }
       else if(metricLenght > (1.0 + epsilon))
       {
         initialCoord = 0.5 * (pt + initialCoord);
-        return findOptimimalPosition(node, initialCoord, surfaceFlag, --cpt, epsilon);
+        return findOptimimalPosition(node, initialCoord, simplex, surfaceLabel, surfaceFlag, --cpt, epsilon);
       }
       else
       {
