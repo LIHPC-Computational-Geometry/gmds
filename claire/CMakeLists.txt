@@ -90,7 +90,7 @@ set(GMDS_SRC
 		src/FrontEdgesNodesClassification_3D.cpp
 		src/NodeNeighbourhoodOnFront_3D.cpp
 		src/MeshAlignment_2D.cpp
-		src/IntervalAssignment_3D.cpp inc/gmds/claire/FrontPaths_3D.h src/FrontPaths_3D.cpp)
+		src/IntervalAssignment_3D.cpp inc/gmds/claire/FrontPaths_3D.h src/FrontPaths_3D.cpp inc/gmds/claire/LayerStructureManager_3D.h src/LayerStructureManager_3D.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

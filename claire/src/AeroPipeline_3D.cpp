@@ -186,6 +186,9 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 			m_couche_id->set(n_id, 0);
 		}
 
+		// Build the edges and the connectivities
+		math::Utils::buildEfromFandConnectivies(m_meshHex);
+
 	}
 
 	//-------------------------------------//
@@ -594,9 +597,6 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 		}
 
 	}
-
-	// Build the edges and the connectivities
-	math::Utils::buildEfromFandConnectivies(m_meshHex);
 
 	// Write the surface block structure
 	gmds::IGMeshIOService ioService(m_meshHex);
