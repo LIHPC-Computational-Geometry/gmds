@@ -58,6 +58,8 @@ namespace gmds
 
       std::vector<TSimplexID> findSimplicesInOc(const math::Point& pt);
 
+      std::vector<TSimplexID> findSimplicesInOcWithDepth(const math::Point& pt, unsigned int& depth);
+
       std::vector<TSimplexID> findTriangleInOc(const math::Point& pt);
 
       void writeOctree(Mesh& mesh, std::vector<std::vector<Node>>& nodes) const ;

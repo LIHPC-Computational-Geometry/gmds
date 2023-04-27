@@ -4482,6 +4482,7 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, SimplexMesh* sm,
   const gmds::BitVector& bitvectorTet = sm->getBitVectorTet();
   std::vector<TInt> nodes{};
   std::vector<double> uvwt_{};
+  std::vector<double> uvwt{};
   bool flag;
   for(auto const & s : simplices)
   {

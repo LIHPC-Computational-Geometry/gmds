@@ -551,7 +551,7 @@ void MetricFFPointgeneration::execute()
       nodesSpreading(nodeAdded, true);
       incrementLayer();
 
-      for(auto const & d : m_nodeStructure)
+      /*for(auto const & d : m_nodeStructure)
       {
         TInt node = d.first;
         for(auto const n : d.second)
@@ -566,7 +566,7 @@ void MetricFFPointgeneration::execute()
       gmds::VTKWriter vtkWriterGRIDTEST(&ioServiceGRIDTEST);
       vtkWriterGRIDTEST.setCellOptions(gmds::N|gmds::R|gmds::F);
       vtkWriterGRIDTEST.setDataOptions(gmds::N|gmds::R|gmds::F);
-      vtkWriterGRIDTEST.write("metricFF_Grid_LAYER_SORTING_COLOR_NEIGHBOR_" + m_name + "_" + std::to_string(m_layerNbr) + ".vtk");
+      vtkWriterGRIDTEST.write("metricFF_Grid_LAYER_SORTING_COLOR_NEIGHBOR_" + m_name + "_" + std::to_string(m_layerNbr) + ".vtk");*/
     }
 
     correctionNodeStructure();
@@ -632,7 +632,7 @@ void MetricFFPointgeneration::execute()
       incrementLayer();
 
 
-      for(auto const & d : m_nodeStructure)
+      /*for(auto const & d : m_nodeStructure)
       {
         TInt node = d.first;
         for(auto const n : d.second)
@@ -647,7 +647,7 @@ void MetricFFPointgeneration::execute()
       gmds::VTKWriter vtkWriterGRIDTEST(&ioServiceGRIDTEST);
       vtkWriterGRIDTEST.setCellOptions(gmds::N|gmds::R|gmds::F);
       vtkWriterGRIDTEST.setDataOptions(gmds::N|gmds::R|gmds::F);
-      vtkWriterGRIDTEST.write("metricFF_Grid_LAYER_SORTING_COLOR_NEIGHBOR_" + m_name + "_" + std::to_string(m_layerNbr) + ".vtk");
+      vtkWriterGRIDTEST.write("metricFF_Grid_LAYER_SORTING_COLOR_NEIGHBOR_" + m_name + "_" + std::to_string(m_layerNbr) + ".vtk");*/
     }
 
     correctionNodeStructure();
@@ -655,6 +655,22 @@ void MetricFFPointgeneration::execute()
     correctUnwantedConnectionVOLUME();
     std::cout << "correctUnwantedConnection() for VOLUME END " << std::endl;
 
+    for(auto const & d : m_nodeStructure)
+    {
+      TInt node = d.first;
+      for(auto const n : d.second)
+      {
+        if(n != -1)
+        {
+          m_nodesMesh.addTriangle(d.first, n, n);
+        }
+      }
+    }
+    gmds::ISimplexMeshIOService ioServiceGRIDTEST2(&m_nodesMesh);
+    gmds::VTKWriter vtkWriterGRIDTEST2(&ioServiceGRIDTEST2);
+    vtkWriterGRIDTEST2.setCellOptions(gmds::N|gmds::R|gmds::F);
+    vtkWriterGRIDTEST2.setDataOptions(gmds::N|gmds::R|gmds::F);
+    vtkWriterGRIDTEST2.write("metricFF_Grid_LAYER_SORTING_COLOR_NEIGHBOR_" + m_name + "_" + std::to_string(m_layerNbr) + ".vtk");
 
     std::cout << "END COMPUTING " << std::endl;
     for(auto const & d : m_nodeStructure)

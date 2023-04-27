@@ -336,6 +336,39 @@ std::vector<TSimplexID> Octree::findSimplicesInOc(const math::Point& pt)
 
 }
 /******************************************************************************/
+std::vector<TSimplexID> Octree::findSimplicesInOcWithDepth(const math::Point& pt, unsigned int& depth)
+{
+  for(auto const & oc : m_ocs)
+  {
+    if(oc != nullptr)
+    {
+      if(oc->belongToOc(pt))
+      {
+        return oc->findSimplicesInOcWithDepth(pt, depth);
+      }
+    }
+    else
+      break;
+  }
+
+  Octree* oc_temp = this;
+  //std::cout << "root oc_temp -> " << oc_temp << std::endl;
+  for(unsigned int d = 0 ; d < depth ;d++){
+    if(oc_temp->m_parentOc != nullptr){
+      oc_temp = oc_temp->m_parentOc;
+      //std::cout << "   oc_temp" << oc_temp << std::endl;
+    }
+    else{
+      depth = -1;
+      break;
+    }
+  }
+
+
+  return oc_temp->m_simplices;
+
+}
+/******************************************************************************/
 std::vector<TSimplexID> Octree::findTriangleInOc(const math::Point& pt)
 {
   //return std::vector<TInt>{-1};
