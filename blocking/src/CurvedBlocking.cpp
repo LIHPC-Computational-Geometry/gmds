@@ -21,9 +21,9 @@ m_geom_model(AGeomModel)
 		for(auto v:vols){
 			TCoord v_min[3], v_max[3];
 			v->computeBoundingBox(v_min,v_max);
-			for(auto i=0;i<2;i++)
+			for(auto i=0;i<3;i++)
 				if (v_min[i]<min[i]) min[i]=v_min[i];
-			for(auto i=0;i<2;i++)
+			for(auto i=0;i<3;i++)
 				if (v_max[i]>max[i]) max[i]=v_max[i];
 		}
 		math::Point p1(min[0],min[1],min[2]);
@@ -40,6 +40,12 @@ m_geom_model(AGeomModel)
 }
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::~CurvedBlocking() {}
+/*----------------------------------------------------------------------------*/
+GMap3 *
+CurvedBlocking::gmap()
+{
+	return &m_gmap;
+}
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Node
 CurvedBlocking::createNode(const int AGeomDim, const int AGeomId, math::Point &APoint)
@@ -191,24 +197,30 @@ CurvedBlocking::info() const
 	m_gmap.display_characteristics(mess);
 	mess << ", validity=" << (isValidTopology() ? "true" : "false");
 	mess << "\nOd-attributes: ";
-	for (auto it = m_gmap.attributes<0>().begin(), itend = m_gmap.attributes<0>().end(); it != itend; ++it) {
-		auto at = m_gmap.info_of_attribute<0>(it);
-		mess << "[" << at.point << ",(dim:" << at.geom_dim << ",id:" << at.geom_id << ")]; ";
+	for (auto at:m_gmap.attributes<0>()) {
+		mess << "["
+		     << at.info().point << ",(dim:"
+		     << at.info().geom_dim << ",id:"
+		     << at.info().geom_id
+		     << ")]; ";
 	}
 	mess << "\n1d-attributes: ";
-	for (auto it = m_gmap.attributes<1>().begin(), itend = m_gmap.attributes<1>().end(); it != itend; ++it) {
-		auto at = m_gmap.info_of_attribute<1>(it);
-		mess << "(dim:" << at.geom_dim << ",id:" << at.geom_id << "); ";
+	for (auto at : m_gmap.attributes<1>()){
+		mess << "(dim:" << at.info().geom_dim
+		     << ",id:" << at.info().geom_id
+		     << "); ";
 	}
 	mess << "\n2d-attributes: ";
-	for (auto it = m_gmap.attributes<2>().begin(), itend = m_gmap.attributes<2>().end(); it != itend; ++it) {
-		auto at = m_gmap.info_of_attribute<2>(it);
-		mess << "(dim:" << at.geom_dim << ",id:" << at.geom_id << "); ";
+	for (auto at : m_gmap.attributes<2>()){
+		mess << "(dim:" << at.info().geom_dim
+		     << ",id:" << at.info().geom_id
+		     << "); ";
 	}
 	mess << "\n3d-attributes: ";
-	for (auto it = m_gmap.attributes<3>().begin(), itend = m_gmap.attributes<3>().end(); it != itend; ++it) {
-		auto at = m_gmap.info_of_attribute<3>(it);
-		mess << "(dim:" << at.geom_dim << ",id:" << at.geom_id << "); ";
+	for (auto at : m_gmap.attributes<3>()){
+		mess << "(dim:" << at.info().geom_dim
+		     << ",id:" << at.info().geom_id
+		     << "); ";
 	}
 	return mess.str();
 }
@@ -246,16 +258,14 @@ void CurvedBlocking::convert_to_mesh(Mesh &AMesh)
 	std::map<int,TCellID> n2n;
 
 	//nodes
-	for (auto it = m_gmap.attributes<0>().begin(),
-	          itend = m_gmap.attributes<0>().end(); it != itend; ++it)
+	for (auto at: m_gmap.attributes<0>())
 	{
-		auto att = m_gmap.info_of_attribute<0>(it);
-		gmds::Node n = AMesh.newNode(att.point);
-		var_node_topo_id->set(n.id(),att.topo_id);
-		var_node_topo_dim->set(n.id(),att.topo_dim);
-		var_node_geom_id->set(n.id(),att.geom_id);
-		var_node_geom_dim->set(n.id(),att.geom_dim);
-		n2n[att.topo_id]=n.id();
+		gmds::Node n = AMesh.newNode(at.info().point);
+		var_node_topo_id->set(n.id(),at.info().topo_id);
+		var_node_topo_dim->set(n.id(),at.info().topo_dim);
+		var_node_geom_id->set(n.id(),at.info().geom_id);
+		var_node_geom_dim->set(n.id(),at.info().geom_dim);
+		n2n[at.info().topo_id]=n.id();
 	}
 	//edges
 	for (auto it = m_gmap.attributes<1>().begin(),

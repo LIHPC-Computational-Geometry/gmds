@@ -100,6 +100,14 @@ TEST(CurvedBlockingTestSuite, init_from_geom_bounding_box)
 	ASSERT_EQ(12, bl.get_nb_cells<1>());
 	ASSERT_EQ(6, bl.get_nb_cells<2>());
 	ASSERT_EQ(1, bl.get_nb_cells<3>());
+
+	for (auto a: bl.gmap()->attributes<0>()){
+	       gmds::math::Point p = a.info().point;
+			 ASSERT_NEAR(5, std::abs(p.X()),1e-8);
+		    ASSERT_NEAR(5, std::abs(p.Y()),1e-8);
+		    ASSERT_NEAR(5, std::abs(p.Z()),1e-8);
+	}
+
 }
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, single_block_to_mesh)

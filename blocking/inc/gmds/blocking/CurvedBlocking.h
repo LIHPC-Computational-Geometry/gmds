@@ -244,11 +244,10 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * to handle in practice (considering a cellular view of the block structure
 	 * and not its underlying topological maps).
 	 */
-	using Block = GMap3::Attribute_handle<3>::type;
-	using Face  = GMap3::Attribute_handle<2>::type;
-	using Edge  = GMap3::Attribute_handle<1>::type;
-	using Node  = GMap3::Attribute_handle<0>::type;
-
+	using Block = GMap3::Attribute_descriptor<3>::type;
+	using Face  = GMap3::Attribute_descriptor<2>::type;
+	using Edge  = GMap3::Attribute_descriptor<1>::type;
+	using Node  = GMap3::Attribute_descriptor<0>::type;
 	/** @brief Constructor that takes a geom model as an input. A
 	 * blocking is always used for partitioning a geometric domain.
 	 * @param[in] AGeomModel the geometric model we want to block
@@ -260,7 +259,10 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	/** @brief  Destructor
 	 */
 	virtual ~CurvedBlocking();
-
+	/**@brief gives access to the underlying gmap structure
+	 * @return the internal 3-G-map
+	 */
+	GMap3* gmap();
 	/**@brief Gives the number of @p TDim-cells in the blocking structure.
 	 * 		 @p TDIM must be comprised in [0,3].
 	 *
