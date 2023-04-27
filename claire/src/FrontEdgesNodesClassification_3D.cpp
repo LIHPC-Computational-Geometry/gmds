@@ -21,6 +21,7 @@ FrontEdgesNodesClassification_3D::FrontEdgesNodesClassification_3D(Mesh *AMesh, 
 {
 	m_EdgesClassification = A_EdgesClassification;
 	m_NodesClassification = A_NodesClassification;
+	m_NodesClassification = A_NodesClassification;
 	m_mark_EdgesForTemplates = m_mesh->newMark<Edge>();
 	m_mark_NodesForTemplates = m_mesh->newMark<Node>();
 	m_VectorField = A_VectorField;
@@ -74,7 +75,7 @@ FrontEdgesNodesClassification_3D::SingleEdgeClassification(TCellID e_id)
 {
 	int edge_classification(0);
 
-	Variable<int>* var_node_couche_id = m_mesh->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	//Variable<int>* var_node_couche_id = m_mesh->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	Variable<int>* var_face_couche_id = m_mesh->getOrCreateVariable<int, GMDS_FACE>("GMDS_FACE_Couche_Id");
 
 	Edge e = m_mesh->get<Edge>(e_id);
@@ -234,6 +235,7 @@ FrontEdgesNodesClassification_3D::FrontNodesClassification()
 		}
 
 		m_NodesClassification->set(n_id, compteur_local_feature_edges);
+		//m_NodesClassification->set(n_id, singleNodeClassification(n_id));
 	}
 
 }
@@ -419,14 +421,19 @@ FrontEdgesNodesClassification_3D::ComputeOneGFE(TCellID n_id, TCellID e_id)
 	new_GFE.Start_n_id = n_id;
 	new_GFE.edges_id.push_back(e_id);
 
+	int path_type = m_EdgesClassification->value(e_id) ;
+
 	TInt mark_EdgeUsed = m_mesh->newMark<Edge>();
 
 	Edge e_loc = m_mesh->get<Edge>(e_id);
 	Node n_loc = e_loc.getOppositeNode(m_mesh->get<Node>(n_id));
-	while (m_NodesClassification->value(n_loc.id()) == 2
-	       && !m_mesh->isMarked(e_loc, mark_EdgeUsed)
-	       && n_loc.id() != new_GFE.Start_n_id
-	       && m_EdgesClassification->value(e_loc.id()) == m_EdgesClassification->value(new_GFE.edges_id[0]))
+	//while (m_NodesClassification->value(n_loc.id()) == 2
+	//       && !m_mesh->isMarked(e_loc, mark_EdgeUsed)
+	//       && n_loc.id() != new_GFE.Start_n_id
+	//       && m_EdgesClassification->value(e_loc.id()) == m_EdgesClassification->value(new_GFE.edges_id[0]))
+	while (!isValidNodeForPathLimit(n_loc.id(), path_type)
+	       && isValidNodeForInsidePath(n_loc.id(), path_type)
+	       && !m_mesh->isMarked(e_loc, mark_EdgeUsed))
 	{
 	   m_mesh->mark(e_loc, mark_EdgeUsed);
 	   std::vector<Edge> n_loc_edges = n_loc.get<Edge>();
@@ -434,7 +441,7 @@ FrontEdgesNodesClassification_3D::ComputeOneGFE(TCellID n_id, TCellID e_id)
 	   for (auto const& e_adj:n_loc_edges)
 	   {
 	      if ( e_adj.id() != e_loc.id()
-	          && m_EdgesClassification->value(e_adj.id()) > 0
+	          && m_EdgesClassification->value(e_adj.id()) == path_type
 	          && !nextEdgeFound)
 	      {
 	         e_loc = e_adj ;
@@ -494,13 +501,12 @@ FrontEdgesNodesClassification_3D::isThisPathValidForTemplates(Global_Feature_Edg
 {
 	bool isValid(true);
 
-	if (m_NodesClassification->value(GFE.Start_n_id) < 3
-	    || m_NodesClassification->value(GFE.End_n_id) < 3)
-	{
-		isValid = false;
-	}
-	if (!isValidNodeForTemplate(GFE.Start_n_id)
-	    || !isValidNodeForTemplate(GFE.End_n_id))
+	int type_path = m_EdgesClassification->value(GFE.edges_id[0]);
+	bool StartValidForTemplate = isValidNodeForPathLimit(GFE.Start_n_id, type_path);
+	bool EndValidForTemplate = isValidNodeForPathLimit(GFE.End_n_id, type_path);
+
+	if (!StartValidForTemplate
+	    || !EndValidForTemplate)
 	{
 		isValid = false;
 	}
@@ -508,9 +514,19 @@ FrontEdgesNodesClassification_3D::isThisPathValidForTemplates(Global_Feature_Edg
 	{
 		isValid = false;
 	}
-	if (GFE.edges_id.size() < 3
+	if (StartValidForTemplate
+	    && EndValidForTemplate
+	    && GFE.edges_id.size() < 3
 	    && singleNodeClassification(GFE.Start_n_id) == 1
 	    && singleNodeClassification(GFE.End_n_id) == 1)
+	{
+		isValid = true;
+	}
+	if (StartValidForTemplate
+	    && EndValidForTemplate
+	    && GFE.edges_id.size() > 1
+	    && (singleNodeClassification(GFE.Start_n_id) == 1
+	    || singleNodeClassification(GFE.End_n_id) == 1))
 	{
 		isValid = true;
 	}
@@ -528,25 +544,47 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 {
 	// Init
 	m_All_global_feature_edges = ComputeAllGFE();
+	/*
+	for (auto GFE:m_All_global_feature_edges)
+	{
+		std::cout << "---------" << std::endl;
+		std::cout << "Starting point: " << GFE.Start_n_id << std::endl;
+		std::cout << "Ending point: " << GFE.End_n_id << std::endl;
+		std::cout << "Nbr edges: " << GFE.edges_id.size() << std::endl;
+		std::cout << "Node " << GFE.Start_n_id << ", adj to " << m_NodesClassification->value(GFE.Start_n_id) << std::endl;
+		std::cout << "Node " << GFE.End_n_id << ", adj to " << m_NodesClassification->value(GFE.End_n_id) << std::endl;
+		std::cout << "Valid ? " << isThisPathValidForTemplates(GFE) << std::endl;
+		std::cout << "---------" << std::endl;
+	}
+	 */
 
 	bool isAllTreated(false);
 
 	while (!isAllTreated && !m_All_global_feature_edges.empty())
 	{
+		// It is important to desactivate only one GFE per iteration. If we desactivate a GFE,
+		// we need to recompute all the potentials.
 		isAllTreated = true;
+		Global_Feature_Edge GFE_Invalid;
 		for (auto GFE:m_All_global_feature_edges)
 		{
 			if (!isThisPathValidForTemplates(GFE))
 			{
-				m_NodesClassification->set(GFE.Start_n_id, m_NodesClassification->value(GFE.Start_n_id)-1);
-				m_NodesClassification->set(GFE.End_n_id, m_NodesClassification->value(GFE.End_n_id)-1);
-				for (auto edge_id:GFE.edges_id)
-				{
-					m_EdgesClassification->set(edge_id, 0);
-				}
+				GFE_Invalid = GFE;
 				isAllTreated = false;
 			}
 		}
+
+		if (!isAllTreated)
+		{
+			m_NodesClassification->set(GFE_Invalid.Start_n_id, m_NodesClassification->value(GFE_Invalid.Start_n_id)-1);
+			m_NodesClassification->set(GFE_Invalid.End_n_id, m_NodesClassification->value(GFE_Invalid.End_n_id)-1);
+			for (auto edge_id:GFE_Invalid.edges_id)
+			{
+				m_EdgesClassification->set(edge_id, 0);
+			}
+		}
+
 		// Re-compute the list of Global Feature Edges
 		m_All_global_feature_edges = ComputeAllGFE();
 	}
@@ -563,6 +601,7 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 	}
 
 	/*
+	std::cout << "VALID" << std::endl;
 	for (auto GFE:m_All_global_feature_edges)
 	{
 		std::cout << "---------" << std::endl;
@@ -623,5 +662,98 @@ FrontEdgesNodesClassification_3D::ComputeValidLoop_GFE()
 	   std::cout << "Ending point: " << GFE.End_n_id << std::endl;
 	}
 	*/
+}
+/*------------------------------------------------------------------------*/
+bool
+FrontEdgesNodesClassification_3D::isValidNodeForInsidePath(TCellID n_id, int type_path)
+{
+	bool isValid(false);
+
+	NodeNeighbourhoodOnFront_3D n_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n_id);
+	n_neighbourhood.execute();
+
+	int compteur_corner(0);
+	int compteur_end(0);
+	int compteur_reversal(0);
+
+	// Compute the number of each singular edges around the node n
+	for (auto e_id:n_neighbourhood.getOrderedEdges()) {
+		Edge e = m_mesh->get<Edge>(e_id);
+		if (m_EdgesClassification->value(e_id) == 1) {
+			compteur_corner += 1;
+		}
+		else if (m_EdgesClassification->value(e_id) == 2) {
+			compteur_end += 1;
+		}
+		else if (m_EdgesClassification->value(e_id) == 3) {
+			compteur_reversal += 1;
+		}
+	}
+
+	if (type_path == 1 && compteur_corner > 1)
+	{
+		isValid = true;
+	}
+	else if (type_path == 2 && compteur_end > 1)
+	{
+		isValid = true;
+	}
+	else if (type_path == 3 && compteur_reversal > 1)
+	{
+		isValid = true;
+	}
+
+
+	return isValid;
+}
+/*------------------------------------------------------------------------*/
+bool
+FrontEdgesNodesClassification_3D::isValidNodeForPathLimit(TCellID n_id, int type_path)
+{
+	bool isValid(false);
+
+	isValid = isValidNodeForTemplate(n_id);
+
+	NodeNeighbourhoodOnFront_3D n_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n_id);
+	n_neighbourhood.execute();
+
+	int compteur_corner(0);
+	int compteur_end(0);
+	int compteur_reversal(0);
+
+	// Compute the number of each singular edges around the node n
+	for (auto e_id:n_neighbourhood.getOrderedEdges()) {
+		Edge e = m_mesh->get<Edge>(e_id);
+		if (m_EdgesClassification->value(e_id) == 1) {
+			compteur_corner += 1;
+		}
+		else if (m_EdgesClassification->value(e_id) == 2) {
+			compteur_end += 1;
+		}
+		else if (m_EdgesClassification->value(e_id) == 3) {
+			compteur_reversal += 1;
+		}
+	}
+
+	if ( (type_path == 1 && compteur_corner == 0)
+	    || (type_path == 2 && compteur_end == 0)
+	    || (type_path == 3 && compteur_reversal == 0) )
+	{
+		isValid = false;
+	}
+
+	return isValid;
+}
+/*------------------------------------------------------------------------*/
+int
+FrontEdgesNodesClassification_3D::getNbrSingularEdgesAroundNode(TCellID n_id)
+{
+	return m_NodesClassification->value(n_id);
+}
+/*------------------------------------------------------------------------*/
+int
+FrontEdgesNodesClassification_3D::getEdgeType(TCellID e_id)
+{
+	return m_EdgesClassification->value(e_id);
 }
 /*------------------------------------------------------------------------*/
