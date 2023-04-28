@@ -3603,12 +3603,8 @@ TSimplexID SimplexMesh::nextSimplexToCheck(const TSimplexID currentSimplex, cons
 void SimplexMesh::checkSimplicesContenaing_TetOnly(const gmds::math::Point& pt, TSimplexID& tetraContainingPt, TSimplexID simplexToCheckFirst)
 {
   TSimplexID border = std::numeric_limits<int>::min();
-  TSimplexID nextTet = border;
   tetraContainingPt = border;
-  bool flag = false;
-  double u = 0.0 ; double v = 0.0 ; double w = 0.0 ; double t = 0.0 ;
-  closestSimplex closestSimplex;
-  std::vector<math::Orientation::Sign> uvwt;
+  double epsilon = 1E-2;
 
   TSimplexID simplexNextToPt = (simplexToCheckFirst == border)?m_octree->findSimplexNextTo(pt):simplexToCheckFirst;
   BitVector cyclingCheck(getBitVectorTet().capacity());
@@ -3616,24 +3612,34 @@ void SimplexMesh::checkSimplicesContenaing_TetOnly(const gmds::math::Point& pt, 
   if(simplexNextToPt != border)
   {
     tetraContainingPt = simplexBarycentricLookUp(simplexNextToPt, pt, cyclingCheck);
-    if(nextTet >= 0)
+  }
+
+  if(tetraContainingPt == border) // if tetraContainingPt was not find with simplexBarycentricLookUp we use full tet loop to find the tet that contain pt
+  {
+    for(unsigned int t = 0; t < m_tet_ids.capacity(); ++t)
     {
-      tetraContainingPt = nextTet;
+      if(m_tet_ids[t] != 0)
+      {
+        std::vector<double> uvwt_ = SimplicesCell(this, t).uvwt(pt);
+        if(uvwt_[0] >= -epsilon  && uvwt_[1] >= -epsilon && uvwt_[2] >= -epsilon && uvwt_[3] >= -epsilon)
+        {
+          tetraContainingPt = t;
+          break;
+        }
+      }
     }
   }
 }
 /*---------------------------------------------------------------------------*/
 TSimplexID SimplexMesh::simplexBarycentricLookUp(const TSimplexID currentSimplex, const math::Point& pt, BitVector& cyclingCheck)
 {
-  double epsilon = 1E-3;
+  double epsilon = 1E-2;
   std::vector<double> uvwt{};
   cyclingCheck.assign(currentSimplex);
   std::vector<double> uvwt_ = SimplicesCell(this, currentSimplex).uvwt(pt);
-  //std::cout << "currentSimplex -> " << currentSimplex << std::endl;
 
   if(uvwt_[0] >= -epsilon  && uvwt_[1] >= -epsilon && uvwt_[2] >= -epsilon && uvwt_[3] >= -epsilon)
   {
-    //std::cout << "  RESULTAT -> " << currentSimplex << std::endl;
     return currentSimplex;
   }
 
@@ -4523,7 +4529,7 @@ void SimplexMesh::getEdgeSizeInfowithMetric(double& meanEdges, double& minEdge, 
 /******************************************************************************/
 Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const math::Point& pt, SimplexMesh* sm, bool& status, TSimplexID nearSimplex)
 {
-  //std::cout << "getAnalyticMetric" << std::endl;
+  status = true;
   Eigen::Matrix3d m =  Eigen::Matrix3d::Zero();
   Variable<Eigen::Matrix3d>* metric = nullptr;
   try{
