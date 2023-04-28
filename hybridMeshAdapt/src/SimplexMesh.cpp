@@ -3295,29 +3295,6 @@ bool SimplexMesh::simplexContaining(const Point& pt, TSimplexID& tetraContaining
 
 }
 /*---------------------------------------------------------------------------*/
-void SimplexMesh::checkSimplicesContenaing_TetOnly(const gmds::math::Point& pt, TSimplexID& tetraContainingPt, TSimplexID simplexToCheckFirst)
-{
-  TSimplexID border = std::numeric_limits<int>::min();
-  TSimplexID nextTet = border;
-  bool flag = false;
-  double u = 0.0 ; double v = 0.0 ; double w = 0.0 ; double t = 0.0 ;
-  closestSimplex closestSimplex;
-  std::vector<math::Orientation::Sign> uvwt;
-
-  TSimplexID simplexNextToPt = (simplexToCheckFirst == border)?m_octree->findSimplexNextTo(pt):simplexToCheckFirst;
-  BitVector cyclingCheck(getBitVectorTet().capacity());
-
-  if(simplexNextToPt != border)
-  {
-    nextTet = nextSimplexToCheckOrientation(simplexNextToPt, pt, uvwt, cyclingCheck);
-    std::cout << "nextTet -> " << nextTet << std::endl;
-    if(nextTet >= 0)
-    {
-      tetraContainingPt = nextTet;
-    }
-  }
-}
-/*---------------------------------------------------------------------------*/
 bool SimplexMesh::checkSimplicesContenaing(const gmds::math::Point& pt, std::vector<TSimplexID>& tetraContainingPt, TSimplexID simplexToCheckFirst)
 {
   TSimplexID border = std::numeric_limits<int>::min();
@@ -3623,15 +3600,40 @@ TSimplexID SimplexMesh::nextSimplexToCheck(const TSimplexID currentSimplex, cons
   return nextSimplexToCheck(nextTet, pt, u, v, w, t, cyclingCheck, closestSimplexInfo);
 }
 /*---------------------------------------------------------------------------*/
+void SimplexMesh::checkSimplicesContenaing_TetOnly(const gmds::math::Point& pt, TSimplexID& tetraContainingPt, TSimplexID simplexToCheckFirst)
+{
+  TSimplexID border = std::numeric_limits<int>::min();
+  TSimplexID nextTet = border;
+  tetraContainingPt = border;
+  bool flag = false;
+  double u = 0.0 ; double v = 0.0 ; double w = 0.0 ; double t = 0.0 ;
+  closestSimplex closestSimplex;
+  std::vector<math::Orientation::Sign> uvwt;
+
+  TSimplexID simplexNextToPt = (simplexToCheckFirst == border)?m_octree->findSimplexNextTo(pt):simplexToCheckFirst;
+  BitVector cyclingCheck(getBitVectorTet().capacity());
+
+  if(simplexNextToPt != border)
+  {
+    tetraContainingPt = simplexBarycentricLookUp(simplexNextToPt, pt, cyclingCheck);
+    if(nextTet >= 0)
+    {
+      tetraContainingPt = nextTet;
+    }
+  }
+}
+/*---------------------------------------------------------------------------*/
 TSimplexID SimplexMesh::simplexBarycentricLookUp(const TSimplexID currentSimplex, const math::Point& pt, BitVector& cyclingCheck)
 {
-  double epsilon = 1E-2;
+  double epsilon = 1E-3;
   std::vector<double> uvwt{};
   cyclingCheck.assign(currentSimplex);
   std::vector<double> uvwt_ = SimplicesCell(this, currentSimplex).uvwt(pt);
+  //std::cout << "currentSimplex -> " << currentSimplex << std::endl;
 
-  if(uvwt_[0] >= epsilon  && uvwt_[1] >= epsilon && uvwt_[2] >= epsilon && uvwt_[3] >= epsilon)
+  if(uvwt_[0] >= -epsilon  && uvwt_[1] >= -epsilon && uvwt_[2] >= -epsilon && uvwt_[3] >= -epsilon)
   {
+    //std::cout << "  RESULTAT -> " << currentSimplex << std::endl;
     return currentSimplex;
   }
 
@@ -4522,7 +4524,6 @@ void SimplexMesh::getEdgeSizeInfowithMetric(double& meanEdges, double& minEdge, 
 Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const math::Point& pt, SimplexMesh* sm, bool& status, TSimplexID nearSimplex)
 {
   //std::cout << "getAnalyticMetric" << std::endl;
-  double epsilon = 1E-3;
   Eigen::Matrix3d m =  Eigen::Matrix3d::Zero();
   Variable<Eigen::Matrix3d>* metric = nullptr;
   try{
@@ -4533,63 +4534,22 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const math::Point& pt, SimplexMes
   }
 
   //compute the interpolation metric in a simplex
+  TSimplexID tetraContainingPt = std::numeric_limits<TSimplexID>::min();
   std::vector<TInt> nodes{};
   std::vector<double> uvwt{};
-  if(nearSimplex == std::numeric_limits<TSimplexID>::min()){
+  if(nearSimplex == std::numeric_limits<TSimplexID>::min())
     std::vector<TSimplexID> simplices = sm->getOctree()->findSimplicesInOc(pt);
 
+  sm->checkSimplicesContenaing_TetOnly(pt, tetraContainingPt, nearSimplex);
 
-    //outside the octree
-    if(simplices.size() == 0) {
-      status = false;
-      return Eigen::Matrix3d::Zero();
-    }
-
-
-    const gmds::BitVector& bitvectorTet = sm->getBitVectorTet();
-    std::vector<double> uvwt_{};
-    bool flag;
-    TSimplexID ss = std::numeric_limits<TSimplexID>::min();
-    for(auto const & s : simplices)
-    {
-      if(s >= 0)
-      {
-        if(bitvectorTet[s] != 0)
-        {
-          SimplicesCell cell(sm, s);
-          uvwt_ = cell.uvwt(pt);
-          if(uvwt_[0] > -epsilon && uvwt_[1] > -epsilon && uvwt_[2] > -epsilon && uvwt_[3] > -epsilon){
-            nodes = cell.getNodes();
-            uvwt = uvwt_ ;
-            ss = s;
-            break;
-          }
-        }
-      }
-    }
-  }
-  else
-  {
-    std::vector<TSimplexID> tetraContainingPt{};
-    sm->checkSimplicesContenaing(pt, tetraContainingPt, nearSimplex);
-
-    if(tetraContainingPt.size() == 0){
-      status = false;
-      return Eigen::Matrix3d::Zero();
-    }
-
-    SimplicesCell cell(sm, tetraContainingPt.front());
-    uvwt = cell.uvwt(pt);
-    nodes = cell.getNodes();
-  }
-
-
-  if(uvwt.size() == 0)
-  {
+  if(tetraContainingPt == std::numeric_limits<TSimplexID>::min()){
     status = false;
     return Eigen::Matrix3d::Zero();
   }
 
+  SimplicesCell cell(sm, tetraContainingPt);
+  uvwt = cell.uvwt(pt);
+  nodes = cell.getNodes();
 
   Eigen::Matrix3d m0 = (*metric)[nodes[0]];
   Eigen::Matrix3d m1 = (*metric)[nodes[1]];
