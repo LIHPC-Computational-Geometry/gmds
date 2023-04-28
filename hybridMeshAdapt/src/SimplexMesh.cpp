@@ -3295,6 +3295,29 @@ bool SimplexMesh::simplexContaining(const Point& pt, TSimplexID& tetraContaining
 
 }
 /*---------------------------------------------------------------------------*/
+void SimplexMesh::checkSimplicesContenaing_TetOnly(const gmds::math::Point& pt, TSimplexID& tetraContainingPt, TSimplexID simplexToCheckFirst)
+{
+  TSimplexID border = std::numeric_limits<int>::min();
+  TSimplexID nextTet = border;
+  bool flag = false;
+  double u = 0.0 ; double v = 0.0 ; double w = 0.0 ; double t = 0.0 ;
+  closestSimplex closestSimplex;
+  std::vector<math::Orientation::Sign> uvwt;
+
+  TSimplexID simplexNextToPt = (simplexToCheckFirst == border)?m_octree->findSimplexNextTo(pt):simplexToCheckFirst;
+  BitVector cyclingCheck(getBitVectorTet().capacity());
+
+  if(simplexNextToPt != border)
+  {
+    nextTet = nextSimplexToCheckOrientation(simplexNextToPt, pt, uvwt, cyclingCheck);
+    std::cout << "nextTet -> " << nextTet << std::endl;
+    if(nextTet >= 0)
+    {
+      tetraContainingPt = nextTet;
+    }
+  }
+}
+/*---------------------------------------------------------------------------*/
 bool SimplexMesh::checkSimplicesContenaing(const gmds::math::Point& pt, std::vector<TSimplexID>& tetraContainingPt, TSimplexID simplexToCheckFirst)
 {
   TSimplexID border = std::numeric_limits<int>::min();
@@ -3600,9 +3623,58 @@ TSimplexID SimplexMesh::nextSimplexToCheck(const TSimplexID currentSimplex, cons
   return nextSimplexToCheck(nextTet, pt, u, v, w, t, cyclingCheck, closestSimplexInfo);
 }
 /*---------------------------------------------------------------------------*/
+TSimplexID SimplexMesh::simplexBarycentricLookUp(const TSimplexID currentSimplex, const math::Point& pt, BitVector& cyclingCheck)
+{
+  double epsilon = 1E-2;
+  std::vector<double> uvwt{};
+  cyclingCheck.assign(currentSimplex);
+  std::vector<double> uvwt_ = SimplicesCell(this, currentSimplex).uvwt(pt);
+
+  if(uvwt_[0] >= epsilon  && uvwt_[1] >= epsilon && uvwt_[2] >= epsilon && uvwt_[3] >= epsilon)
+  {
+    return currentSimplex;
+  }
+
+  std::vector<TSimplexID> adjSimplices = SimplicesCell(this, currentSimplex).adjacentTetra();
+  if(uvwt_[0] < epsilon){
+    if(adjSimplices[0] >= 0){
+      if(cyclingCheck[adjSimplices[0]] == 0){
+          return simplexBarycentricLookUp(adjSimplices[0], pt, cyclingCheck);
+      }
+    }
+  }
+
+  if(uvwt_[1] < epsilon){
+    if(adjSimplices[1] >= 0){
+      if(cyclingCheck[adjSimplices[1]] == 0){
+          return simplexBarycentricLookUp(adjSimplices[1], pt, cyclingCheck);
+      }
+    }
+  }
+
+  if(uvwt_[2] < epsilon){
+    if(adjSimplices[2] >= 0){
+      if(cyclingCheck[adjSimplices[2]] == 0){
+          return simplexBarycentricLookUp(adjSimplices[2], pt, cyclingCheck);
+      }
+    }
+  }
+
+  if(uvwt_[3] < epsilon){
+    if(adjSimplices[3] >= 0){
+      if(cyclingCheck[adjSimplices[3]] == 0){
+          return simplexBarycentricLookUp(adjSimplices[3], pt, cyclingCheck);
+      }
+    }
+  }
+
+  return std::numeric_limits<TSimplexID>::min();
+}
+/*---------------------------------------------------------------------------*/
 TSimplexID SimplexMesh::nextSimplexToCheckOrientation(const TSimplexID currentSimplex, const math::Point& pt, std::vector<math::Orientation::Sign>& uvwt, BitVector& cyclingCheck)
 {
-  //std::cout << "  currentSimplex -> " << SimplicesCell(this,currentSimplex) << std::endl;
+
+
  TSimplexID cycling = std::numeric_limits<int>::min();
  TSimplexID border  = cycling;
  TSimplexID nextTet = currentSimplex;
@@ -3612,13 +3684,12 @@ TSimplexID SimplexMesh::nextSimplexToCheckOrientation(const TSimplexID currentSi
  uvwt.push_back(SimplicesCell(this, currentSimplex).orientation(1, pt));
  uvwt.push_back(SimplicesCell(this, currentSimplex).orientation(2, pt));
  uvwt.push_back(SimplicesCell(this, currentSimplex).orientation(3, pt));
- //std::cout << "  uvwt -> " << uvwt[0] << " | " << uvwt[1] << " | " << uvwt[2] << " | " << uvwt[3] << " | " << std::endl;
 
  std::vector<TInt> nodes = SimplicesCell(this, currentSimplex).getNodes();
 
  if(cyclingCheck[currentSimplex] == 0)
  {
-   if(uvwt[0] > 0  && uvwt[1]  > 0 && uvwt[2]  > 0 && uvwt[3]  > 0)
+   if(uvwt[0] >= 0  && uvwt[1]  >= 0 && uvwt[2]  >= 0 && uvwt[3]  >= 0)
    {
      return currentSimplex;
    }
@@ -4448,7 +4519,7 @@ void SimplexMesh::getEdgeSizeInfowithMetric(double& meanEdges, double& minEdge, 
   }
 }
 /******************************************************************************/
-Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, SimplexMesh* sm, bool& status)
+Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const math::Point& pt, SimplexMesh* sm, bool& status, TSimplexID nearSimplex)
 {
   //std::cout << "getAnalyticMetric" << std::endl;
   double epsilon = 1E-3;
@@ -4462,59 +4533,63 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt, SimplexMesh* sm,
   }
 
   //compute the interpolation metric in a simplex
-  std::vector<TSimplexID> simplices = sm->getOctree()->findSimplicesInOc(pt);
-  //std::cout << "simplices.size() -> " << simplices.size() << std::endl;
-  //outside the octree
-  if(simplices.size() == 0) {
-    status = false;
-    return Eigen::Matrix3d::Zero();
-    /*SimplexMesh meshTest;
-    TInt n0 = meshTest.addNode(pt);
-    meshTest.addTetraedre(n0, n0, n0, n0);
-    gmds::ISimplexMeshIOService ioServiceTriangles(&meshTest);
-    gmds::VTKWriter vtkWriter(&ioServiceTriangles);
-    vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
-    vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
-    vtkWriter.write("node_outside.vtk");
-    throw gmds::GMDSException("outside octree");*/
-  }
-
-  const gmds::BitVector& bitvectorTet = sm->getBitVectorTet();
   std::vector<TInt> nodes{};
-  std::vector<double> uvwt_{};
   std::vector<double> uvwt{};
-  bool flag;
-  for(auto const & s : simplices)
-  {
-    if(s >= 0)
+  if(nearSimplex == std::numeric_limits<TSimplexID>::min()){
+    std::vector<TSimplexID> simplices = sm->getOctree()->findSimplicesInOc(pt);
+
+
+    //outside the octree
+    if(simplices.size() == 0) {
+      status = false;
+      return Eigen::Matrix3d::Zero();
+    }
+
+
+    const gmds::BitVector& bitvectorTet = sm->getBitVectorTet();
+    std::vector<double> uvwt_{};
+    bool flag;
+    TSimplexID ss = std::numeric_limits<TSimplexID>::min();
+    for(auto const & s : simplices)
     {
-      if(bitvectorTet[s] != 0)
+      if(s >= 0)
       {
-        SimplicesCell cell(sm, s);
-        uvwt_ = cell.uvwt(pt);
-        if(uvwt_[0] > -epsilon && uvwt_[1] > -epsilon && uvwt_[2] > -epsilon && uvwt_[3] > -epsilon){
-          nodes = cell.getNodes();
-          uvwt = uvwt_ ;
-          break;
+        if(bitvectorTet[s] != 0)
+        {
+          SimplicesCell cell(sm, s);
+          uvwt_ = cell.uvwt(pt);
+          if(uvwt_[0] > -epsilon && uvwt_[1] > -epsilon && uvwt_[2] > -epsilon && uvwt_[3] > -epsilon){
+            nodes = cell.getNodes();
+            uvwt = uvwt_ ;
+            ss = s;
+            break;
+          }
         }
       }
     }
   }
+  else
+  {
+    std::vector<TSimplexID> tetraContainingPt{};
+    sm->checkSimplicesContenaing(pt, tetraContainingPt, nearSimplex);
+
+    if(tetraContainingPt.size() == 0){
+      status = false;
+      return Eigen::Matrix3d::Zero();
+    }
+
+    SimplicesCell cell(sm, tetraContainingPt.front());
+    uvwt = cell.uvwt(pt);
+    nodes = cell.getNodes();
+  }
+
 
   if(uvwt.size() == 0)
   {
     status = false;
     return Eigen::Matrix3d::Zero();
-    /*SimplexMesh meshTest;
-    TInt n0 = meshTest.addNode(pt);
-    meshTest.addTetraedre(n0, n0, n0, n0);
-    gmds::ISimplexMeshIOService ioServiceTriangles(&meshTest);
-    gmds::VTKWriter vtkWriter(&ioServiceTriangles);
-    vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
-    vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
-    vtkWriter.write("uvwt_size0.vtk");
-    throw gmds::GMDSException("uvwt.size() == 0 Node not in any simplices");*/
   }
+
 
   Eigen::Matrix3d m0 = (*metric)[nodes[0]];
   Eigen::Matrix3d m1 = (*metric)[nodes[1]];
