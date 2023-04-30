@@ -530,6 +530,14 @@ FrontEdgesNodesClassification_3D::isThisPathValidForTemplates(Global_Feature_Edg
 	{
 		isValid = true;
 	}
+	if (StartValidForTemplate
+	    && EndValidForTemplate
+	    && GFE.edges_id.size() > 1
+	    && (singleNodeClassification(GFE.Start_n_id) == 2
+	        || singleNodeClassification(GFE.End_n_id) == 2))
+	{
+		isValid = true;
+	}
 	if (GFE.Start_n_id == GFE.End_n_id
 	    && GFE.edges_id.size() > 4)		// Loop paths
 	{
