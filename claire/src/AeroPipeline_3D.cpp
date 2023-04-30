@@ -77,8 +77,10 @@ AeroPipeline_3D::execute(){
 
 	// Generate the blocking of the geometry surface.
 	GeometrySurfaceBlockingGeneration();
+	std::cout << "1" << std::endl;
 	// Link the surface blocking to the geometry.
 	SurfaceBlockingClassification();
+	std::cout << "2" << std::endl;
 	// Write the surface blocking to check the classification
 	gmds::IGMeshIOService ioService(m_meshHex);
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -942,12 +944,13 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		{
 			cad::GeomCurve* curve_0 = m_manager->getCurve(geom_id_e0);
 			cad::GeomCurve* curve_1 = m_manager->getCurve(geom_id_e1);
+			std::cout << geom_id_e0 << std::endl;
+			std::cout << geom_id_e1 << std::endl;
 			geom_id = m_manager->getCommonSurface(curve_0, curve_1);
+			std::cout << geom_id << std::endl;
 		}
-
 		// Link the face to the surface
 		m_linker_HG->linkFaceToSurface(f_id, geom_id);
-
 	}
 
 }

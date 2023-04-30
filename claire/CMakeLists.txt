@@ -90,7 +90,7 @@ set(GMDS_SRC
 		src/FrontEdgesNodesClassification_3D.cpp
 		src/NodeNeighbourhoodOnFront_3D.cpp
 		src/MeshAlignment_2D.cpp
-		src/IntervalAssignment_3D.cpp inc/gmds/claire/FrontPaths_3D.h src/FrontPaths_3D.cpp inc/gmds/claire/LayerStructureManager_3D.h src/LayerStructureManager_3D.cpp)
+		src/IntervalAssignment_3D.cpp inc/gmds/claire/FrontPaths_3D.h src/FrontPaths_3D.cpp inc/gmds/claire/LayerStructureManager_3D.h src/LayerStructureManager_3D.cpp inc/gmds/claire/AbstractPatternNode.h src/AbstractPatternNode.cpp inc/gmds/claire/PatternNode3Corner.h src/PatternNode3Corner.cpp inc/gmds/claire/AbstractPatternEdge.h src/AbstractPatternEdge.cpp inc/gmds/claire/PatternEdgeCorner.h src/PatternEdgeCorner.cpp inc/gmds/claire/PatternFace.h src/PatternFace.cpp inc/gmds/claire/PatternEdgeEnd.h src/PatternEdgeEnd.cpp inc/gmds/claire/PatternEdgeReversal.h src/PatternEdgeReversal.cpp inc/gmds/claire/PatternNode2Corner1End.h src/PatternNode2Corner1End.cpp inc/gmds/claire/PatternNode1Corner2End.h src/PatternNode1Corner2End.cpp inc/gmds/claire/PatternNode3End.h src/PatternNode3End.cpp inc/gmds/claire/PatternNode3Corner3End.h src/PatternNode3Corner3End.cpp inc/gmds/claire/PatternNode2Corner2End.h src/PatternNode2Corner2End.cpp inc/gmds/claire/PatternNode2Corner1Reversal.h src/PatternNode2Corner1Reversal.cpp inc/gmds/claire/PatternNode2End1Reversal.h src/PatternNode2End1Reversal.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
