@@ -1,5 +1,7 @@
 set(GMDS_BLOCKING_TEST_FILES
         BlockingTestSuite.h
+        CurvedBlockingTestSuite.h
+        CurvedBlockingClassificationTestSuite.h
         CGALTestSuite.h
         InputMarkedDartsTestSuite.h
         SheetInsertTestSuite.h

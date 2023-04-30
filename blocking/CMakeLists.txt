@@ -13,6 +13,7 @@ set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/blocking/Blocking.h
         inc/gmds/blocking/CurvedBlocking.h
+        inc/gmds/blocking/CurvedBlockingClassifier.h
         inc/gmds/blocking/InputMarkedDarts.h
         inc/gmds/blocking/SheetInsert.h
         inc/gmds/blocking/WriterDartsVTK.h
@@ -23,6 +24,7 @@ endif()
 set(GMDS_SRC
         src/Blocking.cpp
         src/CurvedBlocking.cpp
+        src/CurvedBlockingClassifier.cpp
         src/InputMarkedDarts.cpp
         src/SheetInsert.cpp
         src/WriterDartsVTK.cpp

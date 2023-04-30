@@ -4,6 +4,7 @@
 // Files containing the different test suites to launch
 #include "BlockingTestSuite.h"
 #include "CurvedBlockingTestSuite.h"
+#include "CurvedBlockingClassificationTestSuite.h"
 #include "CGALTestSuite.h"
 #include "InputMarkedDartsTestSuite.h"
 #include "SheetInsertTestSuite.h"

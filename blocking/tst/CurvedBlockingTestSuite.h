@@ -47,8 +47,8 @@ TEST(CurvedBlockingTestSuite, init)
 	gmds::math::Point p012(0, 1, 2);
 	gmds::math::Point p112(1, 1, 2);
 	gmds::math::Point p102(1, 0, 2);
-	auto b1 = bl.createBlock(p000, p010, p110, p100, p001, p011, p111, p101);
-	auto b2 = bl.createBlock(p001, p011, p111, p101, p002, p012, p112, p102);
+	auto b1 = bl.create_block(p000, p010, p110, p100, p001, p011, p111, p101);
+	auto b2 = bl.create_block(p001, p011, p111, p101, p002, p012, p112, p102);
 	ASSERT_EQ(16, bl.get_nb_cells<0>());
 	ASSERT_EQ(24, bl.get_nb_cells<1>());
 	ASSERT_EQ(12, bl.get_nb_cells<2>());
@@ -79,7 +79,7 @@ TEST(CurvedBlockingTestSuite, single_block)
 	gmds::math::Point p012(0, 1, 2);
 	gmds::math::Point p112(1, 1, 2);
 	gmds::math::Point p102(1, 0, 2);
-	auto b = bl.createBlock(p000, p010, p110, p100, p001, p011, p111, p101);
+	auto b = bl.create_block(p000, p010, p110, p100, p001, p011, p111, p101);
 	ASSERT_EQ(b->info().geom_dim, 4);
 	ASSERT_EQ(b->info().geom_id, -1);
 	auto fs = bl.get_faces_of_block(b);
@@ -107,7 +107,6 @@ TEST(CurvedBlockingTestSuite, init_from_geom_bounding_box)
 		    ASSERT_NEAR(5, std::abs(p.Y()),1e-8);
 		    ASSERT_NEAR(5, std::abs(p.Z()),1e-8);
 	}
-
 }
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, single_block_to_mesh)
@@ -130,7 +129,7 @@ TEST(CurvedBlockingTestSuite, single_block_to_mesh)
 	gmds::math::Point p012(0, 1, 2);
 	gmds::math::Point p112(1, 1, 2);
 	gmds::math::Point p102(1, 0, 2);
-	auto b = bl.createBlock(p000, p010, p110, p100, p001, p011, p111, p101);
+	auto b = bl.create_block(p000, p010, p110, p100, p001, p011, p111, p101);
 
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::N | gmds::E | gmds::F | gmds::R | gmds::E2N | gmds::F2N | gmds::R2N));
 	bl.convert_to_mesh(m);

@@ -68,15 +68,6 @@ namespace gmds{
              */
 			void project(math::Point& AP) const override = 0;
 
-			/*------------------------------------------------------------------------*/
-			/** \brief Get the closest point from AP on the surface
-             *  \param AP a 3D point
-             *
-             *  \return the closest point of APoint on the surface
-             */
-			virtual math::Point closestPoint(const math::Point& AP) const =0;
-
-
 			/** @brief  Return whether the curve is a loop or not
              *  @return a boolean
              */

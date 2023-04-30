@@ -8,11 +8,13 @@
 #	include <gmds/math/Point.h>
 #	include <gmds/utils/CommonTypes.h>
 #	include <gmds/utils/Exception.h>
-#  include <gmds/ig/Mesh.h>
-#  include <gmds/cad/GeomManager.h>
+#	include <gmds/cad/GeomManager.h>
+#	include <gmds/ig/Mesh.h>
 /*----------------------------------------------------------------------------*/
 #	include <string>
-#  include <type_traits>
+#	include <type_traits>
+#  include <tuple>
+
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -21,16 +23,16 @@ namespace blocking {
 /**@struct CellInfo
  * @brief This structure gather the pieces of data that are shared by any
  * 		 blocking cell. Each cell is defined by:
-* 		 	- its dimension @p topo_dim, which is 0 for a node, 1 for an edge, 2
-* 		     for a face, and 3 for a block
-* 		   - its id @p topo_id, which is unique. Each time a cell is created, the
+ * 		 	- its dimension @p topo_dim, which is 0 for a node, 1 for an edge, 2
+ * 		     for a face, and 3 for a block
+ * 		   - its id @p topo_id, which is unique. Each time a cell is created, the
  * 		  blocking structure assigns an id to it.
-* 		   - The data relative to the geometric cell it is classified on. A
+ * 		   - The data relative to the geometric cell it is classified on. A
  * 		  geometrical cell is defined by the couple (@p geom_dim, @p geom_id).
  * 		  A value of 4 for @p geom_dim means that the block cell is not classified.
- *
  */
-struct CellInfo {
+struct CellInfo
+{
 	/*** dimension of the topological cell */
 	int topo_dim;
 	/*** unique id of the topological cell */
@@ -45,17 +47,18 @@ struct CellInfo {
 	 * @param AGeomDim on-classify geometric cell dimension (4 if not classified)
 	 * @param AGeomId on-classify geometric cell unique id
 	 */
-	CellInfo(const int ATopoDim = 4, const int ATopoId = NullID,
-	         const int AGeomDim = 4, const int AGeomId = NullID) :
+	CellInfo(const int ATopoDim = 4, const int ATopoId = NullID, const int AGeomDim = 4, const int AGeomId = NullID) :
 	  topo_dim(ATopoDim), topo_id(ATopoId), geom_dim(AGeomDim), geom_id(AGeomId)
-	{}
+	{
+	}
 };
 /*----------------------------------------------------------------------------*/
 /**@struct NodeInfo
  * @brief Specific structure for describing a node. It extends the "CellInfo"
  *        structure by giving a location (x,y,z).
  */
-struct NodeInfo:CellInfo{
+struct NodeInfo : CellInfo
+{
 	/*** node location in space, i.e. a single point */
 	math::Point point;
 	/** @brief Constructor
@@ -63,12 +66,10 @@ struct NodeInfo:CellInfo{
 	 * @param AGeomDim on-classify geometric cell dimension (4 if not classified)
 	 * @param AGeomId  on-classify geometric cell unique id
 	 */
-	NodeInfo(const int ATopoId = NullID,
-	         const int AGeomDim = 4,
-	         const int AGeomId = NullID,
-	         const math::Point &APoint = math::Point(0, 0, 0)) :
-	  CellInfo(0,ATopoId,AGeomDim,AGeomId), point(APoint)
-	{}
+	NodeInfo(const int ATopoId = NullID, const int AGeomDim = 4, const int AGeomId = NullID, const math::Point &APoint = math::Point(0, 0, 0)) :
+	  CellInfo(0, ATopoId, AGeomDim, AGeomId), point(APoint)
+	{
+	}
 };
 /*----------------------------------------------------------------------------*/
 /** @struct MergeFunctor
@@ -96,8 +97,7 @@ struct MergeFunctor
 	 * @param[in] ACA1 the first attribute
 	 * @param[in] ACA2 the second attribute
 	 */
-	template<class Cell_attribute> void operator()(Cell_attribute &ACA1,
-	                                               Cell_attribute &ACA2)
+	template<class Cell_attribute> void operator()(Cell_attribute &ACA1, Cell_attribute &ACA2)
 	{
 		if (ACA1.info().geom_dim == ACA2.info().geom_dim) {
 			// the cells are classifed on the same dim geom entity
@@ -116,7 +116,7 @@ struct MergeFunctor
 			ACA1.info().geom_dim = ACA2.info().geom_dim;
 			ACA1.info().geom_id = ACA2.info().geom_id;
 		}
-		//nothing to do for the topological information of
+		// nothing to do for the topological information of
 	}
 };
 /*----------------------------------------------------------------------------*/
@@ -146,12 +146,11 @@ struct MergeFunctorNode
 	 * @param[in] ACA1 the first node attribute
 	 * @param[in] ACA2 the second node attribute
 	 */
-	template<class Cell_attribute> void operator()(Cell_attribute &ACA1,
-	                                               Cell_attribute &ACA2)
+	template<class Cell_attribute> void operator()(Cell_attribute &ACA1, Cell_attribute &ACA2)
 	{
 		if (ACA1.info().geom_dim == ACA2.info().geom_dim) {
 			if (ACA1.info().geom_id == ACA2.info().geom_id) {
-				//nodes are clasified on the same geometrical entity!
+				// nodes are clasified on the same geometrical entity!
 				ACA1.info().point = 0.5 * (ACA1.info().point + ACA2.info().point);
 				// TODO: add the projection stage on the geometric entity
 			}
@@ -177,7 +176,7 @@ struct MergeFunctorNode
  * handle attributes when i-cells are split. It simply consists in duplicating
  * the attributes.
  */
- struct SplitFunctor
+struct SplitFunctor
 {
 
 	/** @brief Splitting function for general cells (including nodes).
@@ -185,8 +184,7 @@ struct MergeFunctorNode
 	 * @param[in] ACA1 the first cell attribute
 	 * @param[in] ACA2 the second cell attribute
 	 */
-	template<class Cell_attribute> void operator()(Cell_attribute &ca1,
-	                                               Cell_attribute &ca2)
+	template<class Cell_attribute> void operator()(Cell_attribute &ca1, Cell_attribute &ca2)
 	{
 		ca1.info().geom_dim = ca1.info().geom_dim;
 		ca1.info().geom_id = ca1.info().geom_id;
@@ -199,7 +197,8 @@ struct MergeFunctorNode
  * @brief This structure provides a function for the Gmap class in order to
  * handle attributes when nodes are split. It simply consists in duplicating
  * the attributes.
- */struct SplitFunctorNode
+ */
+struct SplitFunctorNode
 {
 	template<class Cell_attribute> void operator()(Cell_attribute &ca1, Cell_attribute &ca2)
 	{
@@ -218,19 +217,19 @@ struct CellData
 {
 	template<class GMap> struct Dart_wrapper
 	{
-		using Node_attribute  = CGAL::Cell_attribute<GMap, NodeInfo, CGAL::Tag_true, MergeFunctorNode, SplitFunctorNode>;
-		using Edge_attribute  = CGAL::Cell_attribute<GMap, CellInfo, CGAL::Tag_true, MergeFunctor, SplitFunctor>;
-		using Face_attribute  = CGAL::Cell_attribute<GMap, CellInfo, CGAL::Tag_true, MergeFunctor, SplitFunctor>;
-		using Block_attribute = CGAL::Cell_attribute<GMap, CellInfo, CGAL::Tag_true, MergeFunctor, SplitFunctor> ;
+		using Node_attribute = CGAL::Cell_attribute<GMap, NodeInfo, CGAL::Tag_true, MergeFunctorNode, SplitFunctorNode>;
+		using Edge_attribute = CGAL::Cell_attribute<GMap, CellInfo, CGAL::Tag_true, MergeFunctor, SplitFunctor>;
+		using Face_attribute = CGAL::Cell_attribute<GMap, CellInfo, CGAL::Tag_true, MergeFunctor, SplitFunctor>;
+		using Block_attribute = CGAL::Cell_attribute<GMap, CellInfo, CGAL::Tag_true, MergeFunctor, SplitFunctor>;
 		/** ordered tuple of attributes to indicate to the GMap what attribute corresponds to each cell.*/
-		using Attributes = std::tuple<Node_attribute, Edge_attribute, Face_attribute, Block_attribute> ;
+		using Attributes = std::tuple<Node_attribute, Edge_attribute, Face_attribute, Block_attribute>;
 	};
 };
 /*----------------------------------------------------------------------------*/
 /** Definition of my generalized map.*/
 using GMap3 = CGAL::Generalized_map<3, CellData>;
 /** Definition of the dart type.*/
-using Dart3 = GMap3::Dart_descriptor;
+using Dart3 = GMap3::Dart_handle;
 /*----------------------------------------------------------------------------*/
 /**@class CurvedBlocking
  * @brief Provide a curved blocking data structure using the 3-G-Map model
@@ -244,17 +243,17 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * to handle in practice (considering a cellular view of the block structure
 	 * and not its underlying topological maps).
 	 */
-	using Block = GMap3::Attribute_descriptor<3>::type;
-	using Face  = GMap3::Attribute_descriptor<2>::type;
-	using Edge  = GMap3::Attribute_descriptor<1>::type;
-	using Node  = GMap3::Attribute_descriptor<0>::type;
+	using Block = GMap3::Attribute_handle<3>::type;
+	using Face = GMap3::Attribute_handle<2>::type;
+	using Edge = GMap3::Attribute_handle<1>::type;
+	using Node = GMap3::Attribute_handle<0>::type;
 	/** @brief Constructor that takes a geom model as an input. A
 	 * blocking is always used for partitioning a geometric domain.
 	 * @param[in] AGeomModel the geometric model we want to block
 	 * @param[in] AInitAsBoundingBox indicates that the block structure must remain
 	 * empty (false) or be initialized as the bounding box of @p AGeomModel
 	 */
-	CurvedBlocking(cad::GeomManager* AGeomModel, bool AInitAsBoundingBox=false);
+	CurvedBlocking(cad::GeomManager *AGeomModel, bool AInitAsBoundingBox = false);
 
 	/** @brief  Destructor
 	 */
@@ -262,25 +261,35 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	/**@brief gives access to the underlying gmap structure
 	 * @return the internal 3-G-map
 	 */
-	GMap3* gmap();
+	GMap3 *gmap();
+	/**@brief gives access to the associated geom model
+	 * @return the internal geom model
+	 */
+	cad::GeomManager *geom_model();
 	/**@brief Gives the number of @p TDim-cells in the blocking structure.
 	 * 		 @p TDIM must be comprised in [0,3].
 	 *
 	 * @tparam TDim the dimension of cells we want the number
 	 * @return the number of @p TDim-cells in the block structure
 	 */
-	template<int TDim>
-	int get_nb_cells() const{
-	   return m_gmap.number_of_attributes<TDim>();
+	template<int TDim> int get_nb_cells() const
+	{
+		return m_gmap.number_of_attributes<TDim>();
 	}
 	/** Create a single hexahedral block in the blocking structure
 	 * @return The created block
 	 */
-	Block createBlock(math::Point &AP1, math::Point &AP2,
-	                  math::Point &AP3, math::Point &AP4,
-	                  math::Point &AP5, math::Point &AP6,
-	                  math::Point &AP7, math::Point &AP8);
-
+	Block create_block(
+	   math::Point &AP1, math::Point &AP2, math::Point &AP3, math::Point &AP4, math::Point &AP5, math::Point &AP6, math::Point &AP7, math::Point &AP8);
+	/**@brief moves node @p AN towards the expected new location @p ALoc.
+	 * If @p AN is classified onto a geometrical cell, the node @p AN
+	 * is first moved to @p ALoc, then it is projected onto the
+	 * geometrical cell it is classified on.
+	 *
+	 * @param AN the node to move
+	 * @param ALoc the new node location
+	 */
+	void move_node(Node AN, math::Point& ALoc);
 	/** Get all the faces of a block. If it is a hexahedral block,
 	 * we have 6 faces, the first and the second are opposite, idem
 	 * for the third and fourth, and the fifth and sixth.
@@ -292,27 +301,27 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * we have 8 nodes, given as usual in gmds
 	 * @param[in] AB a block
 	 * @return the set of nodes of the block.
-	 * */
+	 */
 	std::vector<Node> get_nodes_of_block(const Block AB);
 	/** Get all the nodes of a face (ordered).
 	 * @param[in] AF a face
 	 * @return the set of nodes of the face.
-	 * */
+	 */
 	std::vector<Node> get_nodes_of_face(const Face AF);
 	/** Get the ending nodes of an edge.
-	* @param[in] AE an edge
-	* @return the ending nodes of the edge
-	* */
+	 * @param[in] AE an edge
+	 * @return the ending nodes of the edge
+	 */
 	std::vector<Node> get_nodes_of_edge(const Edge AE);
 	/** Return the face center
 	 * @param AF a face
 	 * @return the center point of AF
-	 * */
+	 */
 	math::Point get_center_of_face(const Face AF);
 	/** Return the face center
 	 * @param[in] AF a face
 	 * @return a point which is the center of AF
-	 * */
+	 */
 	math::Point get_center_of_block(const Block AB);
 
 	/**@brief Low level operation that @p TDim-sew two darts
@@ -320,9 +329,9 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in] AD1 First dart
 	 * @param[in] AD2 Second dart
 	 */
-	 template<int TDim> void sew(Dart3 AD1, Dart3 AD2)
+	template<int TDim> void sew(Dart3 AD1, Dart3 AD2)
 	{
-		static_assert(TDim>=0 && TDim<4,"The parameter must be included in [0,3]");
+		static_assert(TDim >= 0 && TDim < 4, "The parameter must be included in [0,3]");
 		m_gmap.sew<TDim>(AD1, AD2);
 	}
 	/**@brief Convert the block structure into a gmds cellular mesh. The provided
@@ -332,7 +341,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 *
 	 * @param[in,out] ACellMesh A cellular mesh
 	 */
-	void convert_to_mesh(Mesh& ACellMesh);
+	void convert_to_mesh(Mesh &ACellMesh);
 	/**@brief Provides a list of information about the blocking structure
 	 * @return a string containing the expected pieces of information
 	 */
@@ -342,7 +351,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 *
 	 * @return true if valid, false otherwise
 	 */
-	bool isValidTopology() const;
+	bool is_valid_topology() const;
 
  private:
 	/**@brief Create a node attribute in the n-gmap
@@ -352,32 +361,33 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in] APoint  spatial location of the node
 	 * @return the created node attribute
 	 */
-	Node createNode(const int AGeomDim, const int AGeomId, math::Point &APoint);
+	Node create_node(const int AGeomDim, const int AGeomId, math::Point &APoint);
 	/**@brief Create an edge attribute in the n-gmap
 	 *
 	 * @param AGeomDim dimension of the associated geometric cell
 	 * @param AGeomId id of the associated geometric cell
 	 * @return the created edge attribute
 	 */
-	Edge createEdge(const int AGeomDim, const int AGeomId);
+	Edge create_edge(const int AGeomDim, const int AGeomId);
 	/**@brief Create a face attribute in the n-gmap
 	 *
 	 * @param AGeomDim dimension of the associated geometric cell
 	 * @param AGeomId id of the associated geometric cell
 	 * @return the created face attribute
 	 */
-	Face createFace(const int AGeomDim, const int AGeomId);
+	Face create_face(const int AGeomDim, const int AGeomId);
 	/**@brief Create a block attribute in the n-gmap
 	 *
 	 * @param AGeomDim dimension of the associated geometric cell
 	 * @param AGeomId id of the associated geometric cell
 	 * @return the created block attribute
 	 */
-	Block createBlock(const int AGeomDim, const int AGeomId);
+	Block create_block(const int AGeomDim, const int AGeomId);
+
 
  private:
 	/*** the associated geometric model*/
-	cad::GeomManager* m_geom_model;
+	cad::GeomManager *m_geom_model;
 	/*** the underlying n-g-map model*/
 	GMap3 m_gmap;
 	/*** global counter used to assign an unique id to each node */
@@ -393,7 +403,5 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 }     // namespace blocking
 /*----------------------------------------------------------------------------*/
 }     // namespace gmds
-
 /*----------------------------------------------------------------------------*/
-#endif     // GMDS_BLOCKING_H
-/*----------------------------------------------------------------------------*/
+#endif// GMDS_BLOCKING_H
