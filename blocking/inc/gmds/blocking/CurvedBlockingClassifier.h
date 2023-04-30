@@ -69,13 +69,17 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 * The @p AMaxDistance parameter is used to accept the projection. If the
 	 * distance to the potential geometric cell to project on is greater than
 	 * @p AMaxDistance, the projection is not done, and the cell can remain
-	 * unclassified (geom_dim = 4)
+	 * unclassified (geom_dim = 4). After projecting the node, a correction
+	 * stage is done to check the distance to point. If this distance is lower
+	 * than @p APointSnapDistance, the node is snapped onto the corresponding
+	 * point
 	 *
 	 * @param[in] AMaxDistance maximal distance to allow projections
+	 * @param[in] APointSnapDistance under this distance we collapse to the point
 	 * @return list of errors. If empty, it means that the classification is
 	 * a complete success.
 	 */
-	ClassificationErrors classify(double AMaxDistance=0.01);
+	ClassificationErrors classify(const double AMaxDistance=0.01, const double APointSnapDistance=0.1);
 
  private:
 	/**@brief This method check if a 0-cell of the blocking structure is classified
@@ -88,9 +92,10 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 * to the method *classify*.
 	 *
 	 * @param[in] AMaxDistance maximal distance to allow projections.
+	 * @param[in] APointSnapDistance under this distance we collapse to the point
 	 * @param[out] AErrors 		list of errors done during the classification
 	 */
-	void classify_nodes(ClassificationErrors& AErrors, double AMaxDistance);
+	void classify_nodes(ClassificationErrors& AErrors, const double AMaxDistance,const double APointSnapDistance);
 	/**@brief Generic method that gives among a collection of geometrical entities of same
 	 * dimension, the cloest entity to point @p AP.
 	 *

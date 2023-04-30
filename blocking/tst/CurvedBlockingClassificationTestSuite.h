@@ -54,3 +54,25 @@ TEST(CurvedBlockingClassifierTestSuite, simple_box)
 	vtk_writer.write("debug_blocking.vtk");
 
 }
+
+/*----------------------------------------------------------------------------*/
+TEST(CurvedBlockingClassifierTestSuite, b80)
+{
+	gmds::cad::FACManager geom_model;
+	set_up(&geom_model,"B80.vtk");
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+	classifier.clear_classification();
+	classifier.classify(4,0.5);
+
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
+	bl.convert_to_mesh(m);
+
+	gmds::IGMeshIOService ios(&m);
+	gmds::VTKWriter vtk_writer(&ios);
+	vtk_writer.setCellOptions(gmds::N|gmds::R);
+	vtk_writer.setDataOptions(gmds::N|gmds::R);
+	vtk_writer.write("debug_blocking.vtk");
+
+}

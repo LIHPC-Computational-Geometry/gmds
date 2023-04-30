@@ -44,60 +44,79 @@ void CurvedBlockingClassifier::clear_classification()
 	}
 }
 /*----------------------------------------------------------------------------*/
-void CurvedBlockingClassifier::classify_nodes(ClassificationErrors& AErrors, double AMaxDistance)
+void CurvedBlockingClassifier::classify_nodes(ClassificationErrors& AErrors, const double AMaxDistance,const double APointSnapDistance)
 {
-	GMap3* gm = m_blocking->gmap();
-	std::vector<cad::GeomPoint*> geom_points;
-	std::vector<cad::GeomCurve*> geom_curves;
-	std::vector<cad::GeomSurface*> geom_surfaces;
+	GMap3 *gm = m_blocking->gmap();
+	std::vector<cad::GeomPoint *> geom_points;
+	std::vector<cad::GeomCurve *> geom_curves;
+	std::vector<cad::GeomSurface *> geom_surfaces;
 	m_geom_model->getPoints(geom_points);
 	m_geom_model->getCurves(geom_curves);
 	m_geom_model->getSurfaces(geom_surfaces);
 
-	for(auto& current_node:gm->attributes<0>()){
+	// initial projection stage
+	for (auto &current_node : gm->attributes<0>()) {
 		math::Point p = current_node.info().point;
 
-		std::vector<cad::GeomEntity*> cells;
-		cells.insert(cells.end(),geom_points.begin(),geom_points.end());
-		auto [closest_pnt_dist,closest_pnt_id, closest_pnt_loc] = get_closest_cell(p,cells);
+		std::vector<cad::GeomEntity *> cells;
+		cells.insert(cells.end(), geom_points.begin(), geom_points.end());
+		auto [closest_pnt_dist, closest_pnt_id, closest_pnt_loc] = get_closest_cell(p, cells);
 		cells.clear();
-		cells.insert(cells.end(),geom_curves.begin(),geom_curves.end());
-		auto [closest_curv_dist,closest_curv_id, closest_curv_loc] = get_closest_cell(p,cells);
+		cells.insert(cells.end(), geom_curves.begin(), geom_curves.end());
+		auto [closest_curv_dist, closest_curv_id, closest_curv_loc] = get_closest_cell(p, cells);
 		cells.clear();
-		cells.insert(cells.end(),geom_surfaces.begin(),geom_surfaces.end());
-		auto [closest_surf_dist,closest_surf_id, closest_surf_loc] = get_closest_cell(p,cells);
+		cells.insert(cells.end(), geom_surfaces.begin(), geom_surfaces.end());
+		auto [closest_surf_dist, closest_surf_id, closest_surf_loc] = get_closest_cell(p, cells);
 
-		if(closest_pnt_dist <= closest_curv_dist && closest_pnt_dist <= closest_surf_dist && closest_pnt_dist <= AMaxDistance)
-		{ // On point
+		if (closest_pnt_dist <= closest_curv_dist && closest_pnt_dist <= closest_surf_dist && closest_pnt_dist <= AMaxDistance) {     // On point
 			current_node.info().geom_dim = 0;
 			current_node.info().geom_id = closest_pnt_id;
+			// projection is done next line
 			current_node.info().point = closest_pnt_loc;
 		}
-		else if(closest_curv_dist < closest_pnt_dist && closest_curv_dist <= closest_surf_dist && closest_curv_dist <= AMaxDistance)
-		{ // On curve
+		else if (closest_curv_dist < closest_pnt_dist && closest_curv_dist <= closest_surf_dist && closest_curv_dist <= AMaxDistance) {     // On curve
 			current_node.info().geom_dim = 1;
 			current_node.info().geom_id = closest_curv_id;
+			// projection is done next line
 			current_node.info().point = closest_curv_loc;
 		}
-		else if(closest_surf_dist < closest_pnt_dist && closest_surf_dist < closest_curv_dist && closest_surf_dist <= AMaxDistance)
-		{ // On surface
+		else if (closest_surf_dist < closest_pnt_dist && closest_surf_dist < closest_curv_dist && closest_surf_dist <= AMaxDistance) {     // On surface
 			current_node.info().geom_dim = 2;
 			current_node.info().geom_id = closest_surf_id;
+			// projection is done next line
 			current_node.info().point = closest_surf_loc;
 		}
-		else{
-			current_node.info().geom_dim =4;
-			current_node.info().geom_id =NullID;
+		else {
+			// the node is not classified and keep is location
+			current_node.info().geom_dim = 4;
+			current_node.info().geom_id = NullID;
 			AErrors.non_classified_nodes.push_back(current_node.info().topo_id);
+		}
+	}
+	// snapping to the closest point if mandatory
+	for (auto &current_node : gm->attributes<0>()) {
+		//we only consider nodes that are not classified on points
+		if(current_node.info().geom_dim!=0) {
+			math::Point p = current_node.info().point;
+			std::vector<cad::GeomEntity *> cells;
+			cells.insert(cells.end(), geom_points.begin(), geom_points.end());
+			auto [closest_pnt_dist, closest_pnt_id, closest_pnt_loc] = get_closest_cell(p, cells);
+			std::cout << "Distance = " << closest_pnt_dist << std::endl;
+			if (closest_pnt_dist < APointSnapDistance) {     // On point
+				current_node.info().geom_dim = 0;
+				current_node.info().geom_id = closest_pnt_id;
+				// projection is done next line
+				current_node.info().point = closest_pnt_loc;
+			}
 		}
 	}
 }
 /*----------------------------------------------------------------------------*/
-ClassificationErrors CurvedBlockingClassifier::classify(double AMaxDistance){
+ClassificationErrors CurvedBlockingClassifier::classify(const double AMaxDistance,const double APointSnapDistance){
 	ClassificationErrors errors;
 
 	//============ (1) We classify nodes =================
-	classify_nodes(errors,AMaxDistance);
+	classify_nodes(errors,AMaxDistance, APointSnapDistance);
 
 	return errors;
 }
