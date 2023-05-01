@@ -1,19 +1,19 @@
 /*----------------------------------------------------------------------------*/
 #ifndef GMDS_CURVED_BLOCKING_H
-#	define GMDS_CURVED_BLOCKING_H
+#define GMDS_CURVED_BLOCKING_H
 /*----------------------------------------------------------------------------*/
-#	include <CGAL/Cell_attribute.h>
-#	include <CGAL/Generalized_map.h>
-#	include <LIB_GMDS_BLOCKING_export.h>
-#	include <gmds/math/Point.h>
-#	include <gmds/utils/CommonTypes.h>
-#	include <gmds/utils/Exception.h>
-#	include <gmds/cad/GeomManager.h>
-#	include <gmds/ig/Mesh.h>
+#include <CGAL/Cell_attribute.h>
+#include <CGAL/Generalized_map.h>
+#include <LIB_GMDS_BLOCKING_export.h>
+#include <gmds/math/Point.h>
+#include <gmds/utils/CommonTypes.h>
+#include <gmds/utils/Exception.h>
+#include <gmds/cad/GeomManager.h>
+#include <gmds/ig/Mesh.h>
 /*----------------------------------------------------------------------------*/
-#	include <string>
-#	include <type_traits>
-#  include <tuple>
+#include <string>
+#include <type_traits>
+#include <tuple>
 
 /*----------------------------------------------------------------------------*/
 namespace gmds {
@@ -289,7 +289,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param AN the node to move
 	 * @param ALoc the new node location
 	 */
-	void move_node(Node AN, math::Point& ALoc);
+	void move_node(Node AN, math::Point &ALoc);
 	/** Get all the faces of a block. If it is a hexahedral block,
 	 * we have 6 faces, the first and the second are opposite, idem
 	 * for the third and fourth, and the fifth and sixth.
@@ -323,7 +323,21 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @return a point which is the center of AF
 	 */
 	math::Point get_center_of_block(const Block AB);
-
+	/**@brief Get all the parallel edges composing the sheet defined from edge @p AE
+	 * @param[in]  AE			the edge we start from
+	 * @param[out] AEdges	all the edges of the sheet defined by @p AE
+	 */
+	void get_all_sheet_edges(const Edge AE, std::vector<Edge> &AEdges);
+	/**@brief Get one dart per  parallel edges composing the sheet defined from edge
+	 * @p AE. Darts are given in such a way that a recurent pattern occurs
+	 * @param[in]  AE			the edge we start from
+	 * @param[out] ADarts	one dart per edge of the sheet defined by @p AE
+	 */
+	void get_all_sheet_edges(const Edge AE, std::vector<Dart3> &ADarts);
+	/**@brief Split the sheet defined by edge @p AE
+	 * @param AE an edge we want to split in two edges
+	 */
+	void split_sheet(const Edge AE);
 	/**@brief Low level operation that @p TDim-sew two darts
 	 * @tparam TDim sewing dimension
 	 * @param[in] AD1 First dart
@@ -384,7 +398,6 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	Block create_block(const int AGeomDim, const int AGeomId);
 
-
  private:
 	/*** the associated geometric model*/
 	cad::GeomManager *m_geom_model;
@@ -404,4 +417,4 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 /*----------------------------------------------------------------------------*/
 }     // namespace gmds
 /*----------------------------------------------------------------------------*/
-#endif// GMDS_BLOCKING_H
+#endif     // GMDS_BLOCKING_H

@@ -321,3 +321,66 @@ CurvedBlocking::convert_to_mesh(Mesh &AMesh)
 		var_region_geom_dim->set(r.id(), att.geom_dim);
 	}
 }
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::get_all_sheet_edges(const Edge AE, std::vector<Edge> &AEdges)
+{
+	AEdges.clear();
+	std::vector<Dart3> sheet_darts;
+	get_all_sheet_edges(AE,sheet_darts);
+	AEdges.resize(sheet_darts.size());
+	for(auto i=0;i<sheet_darts.size();i++){
+		AEdges[i] = m_gmap.attribute<1>(sheet_darts[i]);
+	}
+}
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::get_all_sheet_edges(const Edge AE, std::vector<Dart3> &ADarts)
+{
+	ADarts.clear();
+	//we allocate a mark to know all the edges we go through
+	auto edge_mark = m_gmap.get_new_mark();
+
+	std::vector<Dart3> front;
+	front.push_back(AE->dart());
+	// the current dart belongs to the final set of darts
+	ADarts.push_back(AE->dart());
+	//we mark all the dart of the inital edge to avoid to traverse it twice
+	m_gmap.mark_cell<1>(AE->dart(),edge_mark);
+
+	//Now we propagate along topological parallel edges in each adjacent hexahedral cell
+	while (!front.empty()){
+		//we pick the last dart of the front
+		Dart3 d = front.back();
+		front.pop_back();
+
+		//we traverse all the darts of the orbit<2,3> starting from d
+
+		for (GMap3::Dart_of_orbit_range<2,3>::iterator
+		        it( m_gmap.darts_of_orbit<2,3>(d).begin()),
+		     itend( m_gmap.darts_of_orbit<2,3>(d).end()); it!=itend; ++it)
+		{
+			auto d_next_edge = m_gmap.alpha<1,0,1>(it);
+			if(!m_gmap.is_marked(d_next_edge,edge_mark)){
+				//it means that the edge containing the dart d_next_edge has not been traversed already.
+				//We mark the dart of the corresponding edge, and we add it to the front
+				front.push_back(d_next_edge);
+				m_gmap.mark_cell<1>(d_next_edge,edge_mark);
+				//We also add it to the set of darts to return
+				ADarts.push_back(d_next_edge);
+			}
+
+		}
+	}
+	// We must unmark all the marked edges. As we stored one dart per edge, it is straightforward
+	for(auto d:ADarts){
+		m_gmap.unmark_cell<1>(d,edge_mark);
+	}
+	m_gmap.free_mark(edge_mark);
+}
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::split_sheet(const Edge AE)
+{
+
+}
