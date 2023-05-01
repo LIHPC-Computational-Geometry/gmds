@@ -120,7 +120,7 @@ class SimplexMesh
 
   bool checkSimplicesContenaing(const gmds::math::Point& pt, std::vector<TSimplexID>& tetraContainingPt, TSimplexID simplexToCheckFirst = std::numeric_limits<TSimplexID>::min());
 
-  void checkSimplicesContenaing_TetOnly(const gmds::math::Point& pt, TSimplexID& tetraContainingPt, TSimplexID simplexToCheckFirst = std::numeric_limits<TSimplexID>::min());
+  void checkSimplicesContenaing_TetOnly(const gmds::math::Point& pt, TSimplexID& tetraContainingPt, bool flag, TSimplexID simplexToCheckFirst = std::numeric_limits<TSimplexID>::min());
 
   TSimplexID simplexBarycentricLookUp(const TSimplexID currentSimplex, const math::Point& pt, BitVector& cyclingCheck);
 
@@ -453,7 +453,7 @@ class SimplexMesh
 
   void setAnalyticMetric(const TInt node, const Eigen::Matrix3d &m);
 
-  Eigen::Matrix3d getAnalyticMetric(const math::Point& pt, SimplexMesh* sm, bool& status, TSimplexID nearSimplex = std::numeric_limits<TSimplexID>::min());
+  Eigen::Matrix3d getAnalyticMetric(const math::Point& pt, SimplexMesh* sm, bool& status, TSimplexID& simplexInPt, TSimplexID nearSimplex = std::numeric_limits<TSimplexID>::min(), bool force = true);
 
   Eigen::Matrix3d getAnalyticMetricFromSimplex(const math::Point& pt, SimplexMesh* sm, TSimplexID simplex);
 

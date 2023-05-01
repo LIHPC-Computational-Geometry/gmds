@@ -3600,7 +3600,7 @@ TSimplexID SimplexMesh::nextSimplexToCheck(const TSimplexID currentSimplex, cons
   return nextSimplexToCheck(nextTet, pt, u, v, w, t, cyclingCheck, closestSimplexInfo);
 }
 /*---------------------------------------------------------------------------*/
-void SimplexMesh::checkSimplicesContenaing_TetOnly(const gmds::math::Point& pt, TSimplexID& tetraContainingPt, TSimplexID simplexToCheckFirst)
+void SimplexMesh::checkSimplicesContenaing_TetOnly(const gmds::math::Point& pt, TSimplexID& tetraContainingPt, bool flag, TSimplexID simplexToCheckFirst)
 {
   TSimplexID border = std::numeric_limits<int>::min();
   tetraContainingPt = border;
@@ -3608,11 +3608,13 @@ void SimplexMesh::checkSimplicesContenaing_TetOnly(const gmds::math::Point& pt, 
 
   TSimplexID simplexNextToPt = (simplexToCheckFirst == border)?m_octree->findSimplexNextTo(pt):simplexToCheckFirst;
   BitVector cyclingCheck(getBitVectorTet().capacity());
-
   if(simplexNextToPt != border)
   {
     tetraContainingPt = simplexBarycentricLookUp(simplexNextToPt, pt, cyclingCheck);
   }
+
+  if(!flag)
+    return;
 
   if(tetraContainingPt == border) // if tetraContainingPt was not find with simplexBarycentricLookUp we use full tet loop to find the tet that contain pt
   {
@@ -4527,7 +4529,7 @@ void SimplexMesh::getEdgeSizeInfowithMetric(double& meanEdges, double& minEdge, 
   }
 }
 /******************************************************************************/
-Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const math::Point& pt, SimplexMesh* sm, bool& status, TSimplexID nearSimplex)
+Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const math::Point& pt, SimplexMesh* sm, bool& status,TSimplexID& simplexInPt, TSimplexID nearSimplex, bool flag)
 {
   status = true;
   Eigen::Matrix3d m =  Eigen::Matrix3d::Zero();
@@ -4546,12 +4548,13 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const math::Point& pt, SimplexMes
   if(nearSimplex == std::numeric_limits<TSimplexID>::min())
     std::vector<TSimplexID> simplices = sm->getOctree()->findSimplicesInOc(pt);
 
-  sm->checkSimplicesContenaing_TetOnly(pt, tetraContainingPt, nearSimplex);
+  sm->checkSimplicesContenaing_TetOnly(pt, tetraContainingPt, flag, nearSimplex);
 
   if(tetraContainingPt == std::numeric_limits<TSimplexID>::min()){
     status = false;
     return Eigen::Matrix3d::Zero();
   }
+  simplexInPt = tetraContainingPt;
 
   SimplicesCell cell(sm, tetraContainingPt);
   uvwt = cell.uvwt(pt);
@@ -4561,7 +4564,6 @@ Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const math::Point& pt, SimplexMes
   Eigen::Matrix3d m1 = (*metric)[nodes[1]];
   Eigen::Matrix3d m2 = (*metric)[nodes[2]];
   Eigen::Matrix3d m3 = (*metric)[nodes[3]];
-
 
   return uvwt[0]*m0 + uvwt[1]*m1 + uvwt[2]*m2 + uvwt[3]*m3;
 }
@@ -4611,7 +4613,8 @@ void SimplexMesh::setAnalyticMetricFromMesh(const TInt node, SimplexMesh* sm, st
   }
   else{
     bool status = true;
-    m = getAnalyticMetric(SimplicesNode(this, node).getCoords(), sm, status);
+    TSimplexID simplexInPt = std::numeric_limits<TSimplexID>::min();
+    m = getAnalyticMetric(SimplicesNode(this, node).getCoords(), sm, status, simplexInPt);
     if(!status)
       throw gmds::GMDSException("can no set analytic metric in setAnalyticMetricFromMesh function.");
   }

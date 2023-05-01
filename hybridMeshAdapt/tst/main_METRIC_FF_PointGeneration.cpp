@@ -57,8 +57,8 @@ int main(int argc, char* argv[])
     std::cout << "minimum size Edge on surfaces is : " << meanSizeEdge << std::endl;
     //vector of lambda that capture metric and ffield
     std::vector<std::function<std::vector<double>()>> metricXYZ_functors{};
-    metricXYZ_functors.push_back([&] { return std::vector<double>{meanSizeEdge, meanSizeEdge, meanSizeEdge}; });
-    metricXYZ_functors.push_back([&] { return std::vector<double>{0.5*meanSizeEdge, 0.5*meanSizeEdge, 0.5*meanSizeEdge}; });
+    //metricXYZ_functors.push_back([&] { return std::vector<double>{meanSizeEdge, meanSizeEdge, meanSizeEdge}; });
+    //metricXYZ_functors.push_back([&] { return std::vector<double>{0.5*meanSizeEdge, 0.5*meanSizeEdge, 0.5*meanSizeEdge}; });
     metricXYZ_functors.push_back([&] { return std::vector<double>{0.25*meanSizeEdge, 0.25*meanSizeEdge, 0.25*meanSizeEdge}; });
     //metricXYZ_functors.push_back([&] { return std::vector<double>{0.1*meanSizeEdge, 0.1*meanSizeEdge, 0.1*meanSizeEdge}; });
 
