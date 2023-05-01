@@ -132,12 +132,18 @@ public:
          *  \return A volume
          */
         virtual GeomVolume* getVolume(TInt AID)=0;
-		/*------------------------------------------------------------------------*/
-		/** \brief  Get the curve common to 2 points
+	     /*------------------------------------------------------------------------*/
+	     /** \brief  Get the curve common to 2 points
          *
          *  \param return the id of the common curve, and -1 if it doesn't exist
-         */
-		virtual int getCommonCurve(GeomPoint* AP1, GeomPoint* AP2) const =0;
+	      */
+	     virtual int getCommonCurve(GeomPoint* AP1, GeomPoint* AP2) const =0;
+	     /*------------------------------------------------------------------------*/
+	     /** \brief  Get the surfaces common to 2 points
+         *
+         *  \param return the ids of the common surfaces (potentially empty)
+	      */
+	     virtual std::vector<int> getCommonSurfaces(GeomPoint* AP1, GeomPoint* AP2) const =0;
 
 		/*------------------------------------------------------------------------*/
 		/** \brief  Get the surface common to 2 curves

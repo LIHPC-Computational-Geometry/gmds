@@ -52,7 +52,10 @@ TEST(CurvedBlockingClassifierTestSuite, simple_box)
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
 	vtk_writer.write("debug_blocking.vtk");
-
+	gmds::VTKWriter vtk_writer_edges(&ios);
+	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
+	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
+	vtk_writer_edges.write("debug_blocking_edges.vtk");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -74,5 +77,9 @@ TEST(CurvedBlockingClassifierTestSuite, b80)
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
 	vtk_writer.write("debug_blocking.vtk");
+	gmds::VTKWriter vtk_writer_edges(&ios);
+	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
+	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
+	vtk_writer_edges.write("debug_blocking_edges.vtk");
 
 }

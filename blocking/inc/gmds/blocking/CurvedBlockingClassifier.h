@@ -89,16 +89,19 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 */
 	std::pair<bool, CurvedBlocking::Node> find_node_classified_on(cad::GeomPoint* AP);
 	/**@brief This methods classify all nodes onto the geometric model. It is called internally
-	 * to the method *classify*.
-	 *
+	 * vy the method *classify*.
+	 * @param[out] AErrors 		list of errors done during the classification
 	 * @param[in] AMaxDistance maximal distance to allow projections.
 	 * @param[in] APointSnapDistance under this distance we collapse to the point
-	 * @param[out] AErrors 		list of errors done during the classification
 	 */
 	void classify_nodes(ClassificationErrors& AErrors, const double AMaxDistance,const double APointSnapDistance);
+	/**@brief This methods classify all eges onto the geometric model. It is called internally
+	 * by the method *classify*.
+	 * @param[out] AErrors 		list of errors done during the classification
+	 */
+	void classify_edges(ClassificationErrors& AErrors);
 	/**@brief Generic method that gives among a collection of geometrical entities of same
 	 * dimension, the cloest entity to point @p AP.
-	 *
 	 * @param[in] AP the point we consider
 	 * @param[in] AGeomCells the list of geometrical cells we want to project @p AP on
 	 * @return a tuple containing the distance to the closest cell in @p AGeomCells, the id of
