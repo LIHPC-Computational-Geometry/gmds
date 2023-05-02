@@ -9,7 +9,7 @@ set(GMDS_BLOCKING_TEST_FILES
 
 if(WITH_CGNS)
     set(GMDS_BLOCKING_TEST_FILES ${GMDS_BLOCKING_TEST_FILES} CGNSWriterTestSuite.h)
-    target_compile_definitions(main PRIVATE USE_CGNS)
+    target_compile_definitions(main_test.cpp PRIVATE USE_CGNS)
 endif()
 
 add_executable(GMDS_BLOCKING_TEST
