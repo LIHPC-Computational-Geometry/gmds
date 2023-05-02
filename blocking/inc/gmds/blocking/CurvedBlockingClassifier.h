@@ -1,0 +1,124 @@
+/*----------------------------------------------------------------------------*/
+#ifndef GMDS_CURVED_BLOCKING_CLASSIFIER_H
+#	define GMDS_CURVED_BLOCKING_CLASSIFIER_H
+/*----------------------------------------------------------------------------*/
+#	include <LIB_GMDS_BLOCKING_export.h>
+#	include <gmds/blocking/CurvedBlocking.h>
+/*----------------------------------------------------------------------------*/
+#	include <string>
+#	include <type_traits>
+#  include <tuple>
+
+/*----------------------------------------------------------------------------*/
+namespace gmds {
+/*----------------------------------------------------------------------------*/
+namespace blocking {
+/*----------------------------------------------------------------------------*/
+/**@struct ClassificationErrors
+ * @brief This structure lists the classification errors when a curved blocking
+ * 		 structure is classified onto a geometrical model.
+ */
+struct ClassificationErrors
+{
+	/*** ids of geometric points that are not captured by the blocking */
+	std::vector<int> non_captured_points;
+	/*** ids of geometric curves that are not captured by the blocking */
+	std::vector<int> non_captured_curves;
+	/*** ids of geometric surfaces that are not captured by the blocking */
+	std::vector<int> non_captured_surfaces;
+	/*** ids of block nodes thar are not classified  */
+	std::vector<int> non_classified_nodes;
+	/*** ids of block edges thar are not classified  */
+	std::vector<int> non_classified_edges;
+	/*** ids of block faces thar are not classified  */
+	std::vector<int> non_classified_faces;
+};
+/*----------------------------------------------------------------------------*/
+/**@class CurvedBlockingClassifier
+ * @brief Provide functions to check and update the classification of a curved
+ * 		 blocking structure onto a geometrical model.
+ *
+ */
+class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
+{
+ public:
+	/** @brief Constructor that a curve blocking
+	 * @param[in] ABlocking a blocking structure
+	 */
+	CurvedBlockingClassifier(CurvedBlocking* ABlocking);
+
+	/** @brief  Destructor
+	 */
+	virtual ~CurvedBlockingClassifier();
+
+	/**@brief This operation detects error in the classification.
+	 * Errors are geometrical cells that are not catch by the
+	 * blocking cells.
+	 */
+	ClassificationErrors detect_classification_errors();
+
+	/**@brief this method clears the classification of the blocking
+	 * structure. All the cells are then unclassified (geom_dim=4
+	 * and geom_id=NullID)
+	 *
+	 */
+	void clear_classification();
+	/**@brief This methods classify the cells of the blocking structure
+	 * on the geometrical model. This classification process implies to
+	 * project block nodes, edges, faces when mandatory.
+	 * The @p AMaxDistance parameter is used to accept the projection. If the
+	 * distance to the potential geometric cell to project on is greater than
+	 * @p AMaxDistance, the projection is not done, and the cell can remain
+	 * unclassified (geom_dim = 4). After projecting the node, a correction
+	 * stage is done to check the distance to point. If this distance is lower
+	 * than @p APointSnapDistance, the node is snapped onto the corresponding
+	 * point
+	 *
+	 * @param[in] AMaxDistance maximal distance to allow projections
+	 * @param[in] APointSnapDistance under this distance we collapse to the point
+	 * @return list of errors. If empty, it means that the classification is
+	 * a complete success.
+	 */
+	ClassificationErrors classify(const double AMaxDistance=0.01, const double APointSnapDistance=0.1);
+
+ private:
+	/**@brief This method check if a 0-cell of the blocking structure is classified
+	 * on the geometrical point @p AP.
+	 * @param AP a geometrical point
+	 * @return true and the node classified on @p AP, false otherwise and a random node
+	 */
+	std::pair<bool, CurvedBlocking::Node> find_node_classified_on(cad::GeomPoint* AP);
+	/**@brief This methods classify all nodes onto the geometric model. It is called internally
+	 * vy the method *classify*.
+	 * @param[out] AErrors 		list of errors done during the classification
+	 * @param[in] AMaxDistance maximal distance to allow projections.
+	 * @param[in] APointSnapDistance under this distance we collapse to the point
+	 */
+	void classify_nodes(ClassificationErrors& AErrors, const double AMaxDistance,const double APointSnapDistance);
+	/**@brief This methods classify all eges onto the geometric model. It is called internally
+	 * by the method *classify*.
+	 * @param[out] AErrors 		list of errors done during the classification
+	 */
+	void classify_edges(ClassificationErrors& AErrors);
+	/**@brief Generic method that gives among a collection of geometrical entities of same
+	 * dimension, the cloest entity to point @p AP.
+	 * @param[in] AP the point we consider
+	 * @param[in] AGeomCells the list of geometrical cells we want to project @p AP on
+	 * @return a tuple containing the distance to the closest cell in @p AGeomCells, the id of
+	 * this cell and the projection of @p AP on @p AGeomCells
+	 */
+	std::tuple<double, int, math::Point> get_closest_cell(const math::Point& AP,
+	                                         const std::vector<cad::GeomEntity*>& AGeomCells);
+
+ private:
+	/*** the associated geometric model*/
+	CurvedBlocking* m_blocking;
+	/*** the associated geometric model*/
+	cad::GeomManager* m_geom_model;
+};
+/*----------------------------------------------------------------------------*/
+}     // namespace blocking
+/*----------------------------------------------------------------------------*/
+}     // namespace gmds
+/*----------------------------------------------------------------------------*/
+#endif// GMDS_BLOCKING_H

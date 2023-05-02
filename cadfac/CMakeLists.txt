@@ -40,7 +40,7 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_IO}
         ANN)
 
-target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)
+target_compile_features(${GMDS_LIB} PUBLIC cxx_std_17)
 
 # INCLUDE TO INSTALL
 target_include_directories(${GMDS_LIB} PUBLIC

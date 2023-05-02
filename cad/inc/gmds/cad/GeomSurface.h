@@ -61,14 +61,6 @@ namespace gmds{
                                            math::Vector3d& AV) const =0;
 
             /*------------------------------------------------------------------------*/
-            /** \brief Get the closest point from AP on the surface
-             *  \param AP a 3D point
-             *
-             *  \return the closest point of APoint on the surface
-             */
-            virtual math::Point closestPoint(const math::Point& AP) const =0;
-
-            /*------------------------------------------------------------------------*/
             /** \brief  computes the bounding box
              *
              *  \param minXYZ The minimum coordinate of the bounding box.

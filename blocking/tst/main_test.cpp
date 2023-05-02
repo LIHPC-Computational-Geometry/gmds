@@ -3,11 +3,15 @@
 /*----------------------------------------------------------------------------*/
 // Files containing the different test suites to launch
 #include "BlockingTestSuite.h"
+#include "CurvedBlockingTestSuite.h"
+#include "CurvedBlockingClassificationTestSuite.h"
 #include "CGALTestSuite.h"
-#include "CGNSWriterTestSuite.h"
 #include "InputMarkedDartsTestSuite.h"
 #include "SheetInsertTestSuite.h"
 #include "WriterDartsVTKTestSuite.h"
+#ifdef USE_CGNS
+#include "CGNSWriterTestSuite.h"
+#endif
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
