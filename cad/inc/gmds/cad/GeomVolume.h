@@ -52,7 +52,16 @@ namespace gmds{
 
                 throw GMDSException("GeomVolume::project not implemented");
             };
+	         /*------------------------------------------------------------------------*/
+	         /** \brief Get the closest point from AP on the surface
+             *  \param AP a 3D point
+             *
+             *  \return the closest point of APoint on the surface
+	          */
+	         math::Point closestPoint(const math::Point& AP) const override{
 
+		          throw GMDSException("GeomVolume::closestPoint not implemented");
+	         };
             /**@brief Accessor to the adjacent points. Warning, there is no
              *  assumption about the ordering
              * @return points that are adjacent to this point

@@ -60,12 +60,20 @@ namespace gmds{
              */
 			virtual void computeBoundingBox(TCoord minXYZ[3], TCoord maxXYZ[3]) const=0;
 
-			/*------------------------------------------------------------------------*/
-			/** \brief Project the point AP unto the geometric entity.
+	      /*------------------------------------------------------------------------*/
+	      /** \brief Project the point AP unto the geometric entity.
           *
           *  \param AP the point to project
-             */
-			virtual void project(gmds::math::Point& AP) const =0;
+	       */
+	      virtual void project(gmds::math::Point& AP) const =0;
+
+	      /*------------------------------------------------------------------------*/
+	      /** \brief Get the closest point from AP on the surface
+             *  \param AP a 3D point
+             *
+             *  \return the closest point of APoint on the surface
+	       */
+	      virtual math::Point closestPoint(const math::Point& AP) const =0;
 
 			virtual int id() const=0;
 
