@@ -10,13 +10,18 @@ set(GMDS_INC
         inc/gmds/blocking_Quality/BlockingQuality.h
         inc/gmds/blocking_Quality/LinkerBlockingGeom.h
         inc/gmds/blocking_Quality/mainBis1.h
+        inc/gmds/blocking_Quality/ValidBlocking.h
+        inc/gmds/blocking_Quality/BlockGeomClassifier.h
+        inc/gmds/blocking_Quality/ParamBlockGeomRL.h
         )
 message($GMDS INC)
 set(GMDS_SRC
         src/BlockingQuality.cpp
         src/main_BlockingQuality.cpp
         src/mainBis1.cpp
-        src/LinkerBlockingGeom.cpp inc/gmds/blocking_Quality/ValidBlocking.h src/ValidBlocking.cpp)
+        src/LinkerBlockingGeom.cpp
+        src/ValidBlocking.cpp
+        src/BlockGeomClassifier.cpp)
 message($GMDS SRC)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})

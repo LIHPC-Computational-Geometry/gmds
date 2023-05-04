@@ -123,6 +123,27 @@ void GeomMeshLinker::linkFaceToSurface(const TCellID &AF, const int AGeomId) {
     (*m_face_classification_id )[AF]=AGeomId;
 
 }
+
+void GeomMeshLinker::linkNodeToNothing(const gmds::TCellID &AN)
+{
+	 (*m_node_classification_dim)[AN]=NO_LINK;
+	 (*m_node_classification_id )[AN]=0;
+
+}
+
+void GeomMeshLinker::linkEdgeToNothing(const gmds::TCellID &AE)
+{
+	 (*m_edge_classification_dim)[AE]=NO_LINK;
+	 (*m_edge_classification_id )[AE]=0;
+
+}
+
+void GeomMeshLinker::linkFaceToNothing(const gmds::TCellID &AF)
+{
+	 (*m_face_classification_dim)[AF]=NO_LINK;
+	 (*m_face_classification_id )[AF]=0;
+
+}
 /*----------------------------------------------------------------------------*/
 GeomMeshLinker::ELink GeomMeshLinker::getGeomDim(const Node& AN){return getGeomDim<Node>(AN.id());}
 /*----------------------------------------------------------------------------*/

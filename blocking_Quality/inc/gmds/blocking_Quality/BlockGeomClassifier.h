@@ -1,0 +1,8 @@
+//
+// Created by bourmaudp on 13/04/23.
+//
+
+#ifndef GMDS_BLOCKGEOMCLASSIFIER_H
+#define GMDS_BLOCKGEOMCLASSIFIER_H
+
+#endif     // GMDS_BLOCKGEOMCLASSIFIER_H

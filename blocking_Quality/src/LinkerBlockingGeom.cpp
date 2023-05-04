@@ -21,6 +21,8 @@ LinkerBlockingGeom::execute(cad::GeomMeshLinker *ALinker)
 	m_geom->getCurves(curves);
 	m_geom->getPoints(points);
 
+	Parameters parameters;
+
 
 	//==================================================================
 	// MARK ALL THE BOUNDARY CELL OF THE INIT MESH
@@ -45,6 +47,18 @@ LinkerBlockingGeom::execute(cad::GeomMeshLinker *ALinker)
 	                      mark_node_on_pnt,
 	                      mark_node_NAN);
 	//==================================================================
+	//Add parameters from param.ini
+
+	parameters.add("parameters_Classifier","min_dist_face_class",Parameters::DOUBLE_P);
+	parameters.add("parameters_Classifier","min_dist_edge_class",Parameters::DOUBLE_P);
+	parameters.add("parameters_Classifier","min_dist_node_class",Parameters::DOUBLE_P);
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string init_file = dir+"/rlBlocks/param_BlockGeomClassifier.ini";
+	parameters.parseIni(init_file);
+
+
+	//==================================================================
 	//First, we classify each face
 
 
@@ -66,8 +80,10 @@ LinkerBlockingGeom::execute(cad::GeomMeshLinker *ALinker)
 
 			v.normalize();
 			std::cout<<"FACE TO PROJECT "<<f_id<<" with center point  "<<p<<" and normal direction "<<v<<std::endl;
-			double min_dist = 100000;
-			int min_entity_dim=-1;
+
+			double min_dist;
+			parameters.get("parameters_Classifier","min_dist_face_class",min_dist);
+			int min_entity_dim= -1;
 			int min_entity_id = -1;
 			std::map<TCellID , double> surf_dist;
 			std::map<TCellID , double> surf_dot;
@@ -130,7 +146,7 @@ LinkerBlockingGeom::execute(cad::GeomMeshLinker *ALinker)
 				}
 			}
 			if(!found_surf){
-				min_dist = 100000;
+				parameters.get("parameters_Classifier","min_dist_face_class",min_dist);
 				min_entity_dim=-1;
 				min_entity_id = -1;
 				//means we have a block face in a concave area
@@ -158,7 +174,8 @@ LinkerBlockingGeom::execute(cad::GeomMeshLinker *ALinker)
 			}
 			else{
 				std::cout<<"\t ====> Link error for classifying a face"<<std::endl;
-				throw GMDSException("Link error for classifying a face");
+				ALinker->linkFaceToNothing(f_id);
+				//throw GMDSException("Link error for classifying a face");
 			}
 
 		}
@@ -217,7 +234,8 @@ LinkerBlockingGeom::execute(cad::GeomMeshLinker *ALinker)
 					}
 					else{
 						//we project on each of curve and keep the closest one
-						double min_dist = 1e6;
+						double min_dist;
+						parameters.get("parameters_Classifier","min_dist_edge_class",min_dist);
 						cad::GeomCurve* selected_curve = NULL;
 						math::Point center_edge = e.center();
 						for(auto ci:candidate_curves) {
@@ -235,7 +253,9 @@ LinkerBlockingGeom::execute(cad::GeomMeshLinker *ALinker)
 					}
 				}
 				else{
-					throw GMDSException("BlockMesher error: impossible to link a block edge onto the geometry");
+					std::cout<<"\t ====> Link error for classifying a edge"<<std::endl;
+					ALinker->linkEdgeToNothing(e_id);
+					//throw GMDSException("BlockMesher error: impossible to link a block edge onto the geometry");
 				}
 			}
 		}
@@ -268,7 +288,8 @@ LinkerBlockingGeom::execute(cad::GeomMeshLinker *ALinker)
 			}
 			int min_entity_dim=-1;
 			int min_entity_id = -1;
-			double min_dist = 100000;
+			double min_dist;
+			parameters.get("parameters_Classifier","min_dist_node_class",min_dist);
 
 			if(bnd_surfaces.size()==1){
 				//on a single surface

@@ -4,6 +4,7 @@
 
 #ifndef GMDS_LINKERBLOCKINGGEOM_H
 #define GMDS_LINKERBLOCKINGGEOM_H
+#include <unit_test_config.h>
 
 #include "gmds/cad/GeomMeshLinker.h"
 #include "gmds/ig/Mesh.h"
@@ -16,6 +17,8 @@
 #include <gmds/cad/GeomSurface.h>
 #include <gmds/igalgo/BoundaryOperator.h>
 #include <gmds/smoothy/LaplacianSmoother.h>
+#include <gmds/utils/Parameters.h>
+
 
 
 #include <gmds/io/IGMeshIOService.h>

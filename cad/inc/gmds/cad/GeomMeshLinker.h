@@ -44,11 +44,11 @@ namespace gmds{
         public:
 
             enum ELink{
-                NO_LINK=0,
-                LINK_POINT=1,
-                LINK_CURVE=2,
-                LINK_SURFACE=3,
-                LINK_VOLUME=4
+                NO_LINK=4,
+                LINK_POINT=0,
+                LINK_CURVE=1,
+                LINK_SURFACE=2,
+                LINK_VOLUME=3
             };
             GeomMeshLinker();
             /*------------------------------------------------------------------------*/
@@ -173,6 +173,26 @@ namespace gmds{
              * @param AGeomId   surface id in the geom manager
              */
             void linkFaceToSurface(const TCellID & AF, const int AGeomId);
+
+	         /*------------------------------------------------------------------------*/
+	         /**@brief classify node AN onto nothing
+             *
+             * @param AN        A node id of m_mesh
+	          */
+	         void linkNodeToNothing(const TCellID & AN);
+	         /*------------------------------------------------------------------------*/
+	         /**@brief classify edge AE onto nothing
+             *
+             * @param AE        A edge id of m_mesh
+	          */
+	         void linkEdgeToNothing(const TCellID & AE);
+
+	         /*------------------------------------------------------------------------*/
+	         /**@brief classify face AF onto nothing
+             *
+             * @param AF        A face id of m_mesh
+	          */
+	         void linkFaceToNothing(const TCellID & AF);
 
             /*------------------------------------------------------------------------*/
             /**@ brief accessor on the dimension of the geom entity AN is classified on.

@@ -111,10 +111,20 @@ int main(int argc, char* argv[])
 	LinkerBlockingGeom lkbg(&blocking,&geom_manager);
 	cad::GeomMeshLinker linker(&blocking,&geom_manager);
 
+	std::vector<cad::GeomVolume*> vols;
+	geom_manager.getVolumes(vols);
+	TCoord bb_min[3], bb_max[3];
+	vols[0]->computeBoundingBox(bb_min,bb_max);
+	math::Point pmin(bb_min[0], bb_min[1],bb_min[2]);
+	math::Point pmax(bb_max[0], bb_max[1],bb_max[2]);
+	std::cout<<"Min "<<pmin<<", max "<<pmax<<std::endl;
+
+
+
 
 	lkbg.execute(&linker);
 
-	linker.writeVTKDebugMesh("linker_debug.vtk");
+	linker.writeVTKDebugMesh("linker_debug_bridge.vtk");
 
 /*
 	for(auto n_id : blocking.nodes()){
@@ -132,10 +142,13 @@ int main(int argc, char* argv[])
 		}
 
 	}*/
-
-	ValidBlocking vb(&blocking,&geom_manager,&linker);
-	vb.execute();
+	std::map<std::vector<TCellID>,int> elements_No_Classified;
+	ValidBlocking vb(&blocking,&geom_manager,&linker,&elements_No_Classified);
+	//vb.execute();
 	std::cout<<"Return validity : "<<vb.execute()<<std::endl;
+	std::cout<<"NB Points Geometry: "<<geometry.getNbNodes()<<std::endl;
+	std::cout<<"NB Points GeomManager "<<geom_manager.getNbPoints()<<std::endl;
+
 
 	return 0;
 }
