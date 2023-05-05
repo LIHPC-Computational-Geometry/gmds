@@ -271,6 +271,15 @@ GMDS_ADD_COMPONENT(
 )
 
 GMDS_ADD_COMPONENT(
+        MORPHMESH
+        morphMesh
+        GMDSmorphMesh
+        "morphing the mesh"
+        ON
+        OFF                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
         RLBLOCKING                       # cmake variable
         rlBlocking                       # src subdirectory name
         GMDSRlBlocking                    # name of the generated library
