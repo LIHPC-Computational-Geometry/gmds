@@ -251,6 +251,15 @@ GMDS_ADD_COMPONENT(
         ON                                # must be covered
 )
 
+GMDS_ADD_COMPONENT(
+        MORPHMESH
+        morphMesh
+        GMDSmorphMesh
+        "morphing the mesh"
+        ON
+        OFF                                 # must be covered
+)
+
 
 #==============================================================================
 #mettre les find package uniquement ou necessaire
