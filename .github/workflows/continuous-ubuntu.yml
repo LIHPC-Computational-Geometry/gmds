@@ -51,9 +51,7 @@ jobs:
         -DENABLE_BLOCKING=true
         -DENABLE_ELGMoRpHING=true
         -DENABLE_KMDS=true
-        -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/pybind11;${{github.workspace}}/spack/opt/spack/kokkos;${{github.workspace}}/spack/opt/spack/cgal;${{github.workspace}}/spack/opt/spack/gmp;${{github.workspace}}/spack/opt/spack/mpfr;${{github.workspace}}/spack/opt/spack/boost;${{github.workspace}}/spack/opt/spack/cgns"
-        -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib 
-        -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
+        -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/glpk;${{github.workspace}}/spack/opt/spack/googletest;${{github.workspace}}/spack/opt/spack/pybind11;${{github.workspace}}/spack/opt/spack/kokkos;${{github.workspace}}/spack/opt/spack/cgal;${{github.workspace}}/spack/opt/spack/gmp;${{github.workspace}}/spack/opt/spack/mpfr;${{github.workspace}}/spack/opt/spack/boost;${{github.workspace}}/spack/opt/spack/cgns"
         -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/buildinstall
 
     - name: Build
