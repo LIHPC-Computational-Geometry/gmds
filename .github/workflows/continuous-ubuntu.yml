@@ -48,12 +48,13 @@ jobs:
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.config }} 
         -DWITH_CODE_COVERAGE=ON
         -DWITH_PYTHON_API=ON
-        -DENABLE_BLOCKING=true
-        -DENABLE_ELGMoRpHING=true
-        -DENABLE_KMDS=true
-        -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/glpk;${{github.workspace}}/spack/opt/spack/googletest;${{github.workspace}}/spack/opt/spack/pybind11;${{github.workspace}}/spack/opt/spack/kokkos;${{github.workspace}}/spack/opt/spack/cgal;${{github.workspace}}/spack/opt/spack/gmp;${{github.workspace}}/spack/opt/spack/mpfr;${{github.workspace}}/spack/opt/spack/boost;${{github.workspace}}/spack/opt/spack/cgns"
-        -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/buildinstall
-
+        -DENABLE_BLOCKING=ON
+        -DENABLE_ELGMoRpHING=ON
+        -DENABLE_KMDS=ON
+        -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/glpk;${{github.workspace}}/spack/opt/spack/googletest;${{github.workspace}}/spack/opt/spack/py-pybind11;${{github.workspace}}/spack/opt/spack/kokkos;${{github.workspace}}/spack/opt/spack/cgal;${{github.workspace}}/spack/opt/spack/gmp;${{github.workspace}}/spack/opt/spack/mpfr;${{github.workspace}}/spack/opt/spack/boost;${{github.workspace}}/spack/opt/spack/cgns"
+        -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/buildinstall 
+        -DGLPK_LIB=${{github:workspace}}/spack/opt/spack/glpk/lib
+        -DGLPK_INC=${{github:workspace}}/spack/opt/spack/glpk/include
     - name: Build
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
