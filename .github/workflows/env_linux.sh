@@ -11,4 +11,7 @@ spack repo add ./spack_recipes_meshing/supersede_repo
 
 spack external find cmake
 spack install lcov
+spack install pybind11
+spack install glpk
+spack install googletest
 spack install --only dependencies gmds+kmds+blocking ^kokkos+openmp ^cgns~mpi

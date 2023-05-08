@@ -1,7 +1,9 @@
 /*------------------------------------------------------------------------*/
 // Created by Claire Roche on 21/10/2021.
 /*------------------------------------------------------------------------*/
-#include "gmds/blocking/CGNSWriter.h"
+#ifdef USE_CGNS
+   #include <gmds/blocking/CGNSWriter.h>
+#endif
 #include <gmds/claire/AbstractAeroPipeline.h>
 #include <gmds/claire/AeroPipeline_2D.h>
 #include <gmds/claire/AeroPipeline_3D.h>
@@ -35,8 +37,12 @@ int main(int argc, char* argv[])
 	AbstractAeroPipeline::STATUS aero2D_result = algo_aero2D.execute();
 
 	if(aero2D_result == AbstractAeroPipeline::SUCCESS) {
+#ifdef USE_CGNS
 		blocking::CGNSWriter writer(algo_aero2D.getBlocking());
 		writer.write(output_file, dir);
+#else
+		std::cout<<"CGNS export is desactivated"<<std::endl;
+#endif
 	}else{
 		std::cout<<"Erreur dans le pipeline Aero"<<std::endl;
 	}

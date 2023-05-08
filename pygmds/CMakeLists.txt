@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 #==============================================================================
-#find_package(PythonInterp REQUIRED)
-#find_package(PythonLibs REQUIRED)
-
-add_subdirectory(pybind11)
+find_package(pybind11 REQUIRED)
 
 pybind11_add_module(pygmds src/gmds_wrapper.cpp)
 
@@ -12,9 +9,11 @@ target_compile_definitions(pygmds PUBLIC cxx_std_14)
 
 install(TARGETS pygmds
         COMPONENT python
-        LIBRARY DESTINATION .#"${PYTHON_LIBRARY_DIR}"
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
+
+
 #==============================================================================
 if(WITH_TEST)
-#    add_subdirectory(tst)
+    add_subdirectory(tst)
 endif(WITH_TEST)

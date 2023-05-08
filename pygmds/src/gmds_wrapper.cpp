@@ -43,7 +43,7 @@ PYBIND11_MODULE(pygmds, m) {
     py::class_<gmds::Variable<int>>(m, "VariableInt")
             .def(py::init<const std::string&>())
             .def("set", &gmds::Variable<int>::set)
-            .def("value", static_cast<int& (gmds::Variable<int>::*)(const int&)>(&gmds::Variable<int>::value));
+            .def("value", static_cast<int& (gmds::Variable<int>::*)(const gmds::TCellID &)>(&gmds::Variable<int>::value));
 
 
 

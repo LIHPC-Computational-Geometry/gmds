@@ -28,51 +28,28 @@ if(WIN32) # always build shared on windows for now
     install(FILES "${GLPK_LIB}/glpk_4_65.lib" DESTINATION  ${CMAKE_INSTALL_LIBDIR})
     install(FILES "${GLPK_INC}/glpk.h" DESTINATION  ${CMAKE_INSTALL_INCLUDEDIR})
 
-else() # unix
+else() # unix and macos
 
-    # Issue to compile on MacOS so give the path to lib and inc
-    set(GLPK_LIB "NOT_DEFINED" CACHE PATH "Glpk lib location")
-    set(GLPK_INC "NOT_DEFINED" CACHE PATH "Glpk headers location")
-    if( (NOT IS_ABSOLUTE ${GLPK_LIB}) OR (NOT IS_ABSOLUTE ${GLPK_INC}))
-        MESSAGE(STATUS "GLPK NOT DEFINED > require to build it as an external project")
-        ExternalProject_Add(buildGlpk
-                PREFIX ${CMAKE_BINARY_DIR}/external/glpk
-                URL ${CMAKE_SOURCE_DIR}/external/glpk-4.65.tar.gz
-                PATCH_COMMAND autoreconf -if
-                CONFIGURE_COMMAND /${CMAKE_BINARY_DIR}/external/glpk/src/buildGlpk/configure --enable-silent-rules
-                CC=${CMAKE_C_COMPILER}
-                CXX=${CMAKE_CXX_COMPILER}
-                "CXXFLAGS=${EXTERNAL_CXX_FLAGS}"
-                "LDFLAGS=${EXTERNAL_LD_FLAGS}"
-                --prefix=${CMAKE_BINARY_DIR}/glpk
-                ${SHARED_LIB_CONFIG_COMMAND}
-                BUILD_COMMAND make V=0
-                INSTALL_COMMAND make install)
-        add_dependencies(glpk buildGlpk)
-
-        set(GLPK_INC ${CMAKE_SOURCE_DIR}/external/glpk/src/glpk/src CACHE PATH "Glpk headers location" FORCE)
-        set(GLPK_LIB ${CMAKE_BINARY_DIR}/glpk/lib CACHE PATH "Glpk lib location" FORCE)  
-           
-    endif()
-    
     if(BUILD_SHARED_LIBS)
-	if(APPLE)
-          set(GLPK_LIBNAME "libglpk.dylib")
-	else()
-	  set(GLPK_LIBNAME "libglpk.so")
-        endif()	  
-    else()        
+    	if(APPLE)
+            set(GLPK_LIBNAME "libglpk.dylib")
+	    else()
+	        set(GLPK_LIBNAME "libglpk.so")
+        endif()
+    else()
         set(GLPK_LIBNAME "libglpk.a")
     endif()
 
     set_target_properties(glpk PROPERTIES
              IMPORTED_LOCATION ${GLPK_LIB}/${GLPK_LIBNAME}
-             INTERFACE_INCLUDE_DIRECTORIES ${GLPK_INC})    
+             INTERFACE_INCLUDE_DIRECTORIES ${GLPK_INC})
 
     install(FILES ${GLPK_LIB}/${GLPK_LIBNAME} DESTINATION  ${CMAKE_INSTALL_LIBDIR})
     install(FILES "${GLPK_INC}/glpk.h" DESTINATION  ${CMAKE_INSTALL_INCLUDEDIR})
 
     message(STATUS "============= GLPK  ===============")
     message(STATUS "lib path = ${GLPK_LIB}")
-    message(STATUS "inc path = ${GLPK_INC}")  
+    message(STATUS "inc path = ${GLPK_INC}")
+    message(STATUS "===================================")
+
 endif()
