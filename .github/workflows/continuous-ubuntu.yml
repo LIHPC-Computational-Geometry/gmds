@@ -15,8 +15,6 @@ jobs:
     # well on Linux, Windows or Mac. 
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on:  ubuntu-latest
-    container:
-      image: ghcr.io/lihpc-computational-geometry/spack-cgcore-mgx:latest
     strategy:
       fail-fast: false
       matrix:
