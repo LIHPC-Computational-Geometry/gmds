@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.10.0)
 # Operating System specificities (must be put at first)
 #==============================================================================
 if(APPLE)
-    set(CMAKE_OSX_ARCHITECTURES x86_64)
+    set(CMAKE_OSX_ARCHITECTURES arm64)
 endif()
 #==============================================================================
 project(gmds VERSION 1.0 LANGUAGES CXX)
@@ -44,7 +44,10 @@ option(WITH_DOC "Build documentation"                                           
 option(WITH_TEST "Build test"                                                           OFF)
 option(WITH_CODE_COVERAGE "Perform code coverage with avail. test suites"               OFF)
 option(WITH_CODE_COVERAGE_HTML_REPORT "Activate html reporting during code covering"    OFF)
+option(WITH_PYTHON_API "Build the gmds python API"                                      ON)
 option(BUILD_SHARED_LIBS ""                                                             ON)
+option(WITH_CGNS "Allows the CGNS export (blocking and aero components)"                ON)
+
 #==============================================================================
 if(BUILD_SHARED_LIBS)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
@@ -53,6 +56,10 @@ if(BUILD_SHARED_LIBS)
 elseif(WIN32)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+endif()
+#==============================================================================
+if(WITH_CGNS)
+    add_definitions(-DUSE_CGNS)
 endif()
 #==============================================================================
 if (WITH_CODE_COVERAGE_HTML_REPORT)
@@ -112,6 +119,18 @@ macro(GMDS_ADD_COMPONENT COMP_NAME DIR_NAME LIB_NAME  MESSAGE ACTIVATE COVER)
 
 endmacro()
 
+
+#==============================================================================
+include(ExternalProject)
+include(GNUInstallDirs)
+
+add_subdirectory(external/ANN)
+add_subdirectory(external/Predicates_psm)
+add_subdirectory(external/inih)
+add_subdirectory(external/OpenNL)
+add_subdirectory(external/gco-v3)
+add_subdirectory(external/glpk)
+add_subdirectory(external/HLBFGS)
 #==============================================================================
 # OPTIONAL COMPONENTS
 #==============================================================================
@@ -335,17 +354,6 @@ if (WITH_CODE_COVERAGE)
 
 endif(WITH_CODE_COVERAGE)
 
-#==============================================================================
-include(ExternalProject)
-include(GNUInstallDirs)
-
-add_subdirectory(external/ANN)
-add_subdirectory(external/Predicates_psm)
-add_subdirectory(external/inih)
-add_subdirectory(external/OpenNL)
-add_subdirectory(external/gco-v3)
-add_subdirectory(external/glpk)
-add_subdirectory(external/HLBFGS)
 
 #==============================================================================
 # PROJECT STRUCTURE
@@ -372,7 +380,9 @@ add_subdirectory(smoothy)
 set(LIB_GMDS_IG_SHEET GMDSSheet)
 add_subdirectory(sheet)
 
-#add_subdirectory(pygmds)
+if(WITH_PYTHON_API)
+    add_subdirectory(pygmds)
+endif ()
 #==============================================================================
 list(LENGTH GMDS_ACTIVE_COMPONENTS count)
 math(EXPR count "${count}-1")
