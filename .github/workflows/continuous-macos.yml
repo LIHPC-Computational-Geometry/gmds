@@ -52,7 +52,7 @@ jobs:
         -DWITH_CODE_COVERAGE=OFF
         -DWITH_PYTHON_API=ON
         -DENABLE_BLOCKING=true
-        -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/glpk;${{github.workspace}}/spack/opt/spack/googletest;${{github.workspace}}/spack/opt/spack/pybind11;${{github.workspace}}/spack/opt/spack/cgal;${{github.workspace}}/spack/opt/spack/gmp;${{github.workspace}}/spack/opt/spack/mpfr;${{github.workspace}}/spack/opt/spack/boost;${{github.workspace}}/spack/opt/spack/cgns"
+        -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/glpk;${{github.workspace}}/spack/opt/spack/googletest;${{github.workspace}}/spack/opt/spack/py-pybind11;${{github.workspace}}/spack/opt/spack/cgal;${{github.workspace}}/spack/opt/spack/gmp;${{github.workspace}}/spack/opt/spack/mpfr;${{github.workspace}}/spack/opt/spack/boost;${{github.workspace}}/spack/opt/spack/cgns"
         -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/buildinstall
 
     - name: Build
