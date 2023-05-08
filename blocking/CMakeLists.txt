@@ -5,10 +5,6 @@
 set(GMDS_LIB ${LIB_GMDS_BLOCKING})
 set(GMDS_LIB_PREFIX gmds/blocking)
 #==============================================================================
-# Compilation options
-#==============================================================================
-option(WITH_CGNS "Allows the CGNS export" ON)
-#==============================================================================
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/blocking/Blocking.h
@@ -108,11 +104,3 @@ if(WITH_TEST)
     add_subdirectory(tst)
 endif(WITH_TEST)
 #==============================================================================
-
-#==============================================================================
-# EXECUTABLE
-#==============================================================================
-#add_executable(blockMesher src/main_blockmesher.cpp)
-#target_link_libraries(blockMesher PRIVATE ${GMDS_LIB})
-#target_compile_features(blockMesher PUBLIC cxx_std_14)
-
