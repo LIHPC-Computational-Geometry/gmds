@@ -18,7 +18,7 @@ set(UT_KMDS_SRC_FILES
 
 add_executable(UT_kmds main.cpp ${UT_KMDS_SRC_FILES})
 
-target_link_libraries(UT_kmds GTest::gtest gmock kmds ${LIB_GMDS_IG})
+target_link_libraries(UT_kmds GTest::gtest kmds ${LIB_GMDS_IG})
 
 #add_custom_command(
 #   TARGET UT_kmds
