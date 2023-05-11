@@ -281,6 +281,11 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	Block create_block(
 	   math::Point &AP1, math::Point &AP2, math::Point &AP3, math::Point &AP4, math::Point &AP5, math::Point &AP6, math::Point &AP7, math::Point &AP8);
+	/** Removes the block @AB from the structure
+	 * @param[in] AB the block to remove
+	 */
+	void remove_block(Block AB);
+
 	/**@brief moves node @p AN towards the expected new location @p ALoc.
 	 * If @p AN is classified onto a geometrical cell, the node @p AN
 	 * is first moved to @p ALoc, then it is projected onto the
