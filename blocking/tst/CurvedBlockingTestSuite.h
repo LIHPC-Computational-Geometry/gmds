@@ -28,7 +28,7 @@ setUp(gmds::cad::FACManager &AGeomManager)
 }
 
 /*----------------------------------------------------------------------------*/
-TEST(CurvedBlockingTestSuite, init)
+TEST(CurvedBlockingTestSuite, global_cell_accessors)
 {
 	gmds::cad::FACManager geom_model;
 	setUp(geom_model);
@@ -52,12 +52,20 @@ TEST(CurvedBlockingTestSuite, init)
 	ASSERT_EQ(16, bl.get_nb_cells<0>());
 	ASSERT_EQ(24, bl.get_nb_cells<1>());
 	ASSERT_EQ(12, bl.get_nb_cells<2>());
-	ASSERT_EQ(2, bl.get_nb_cells<3>());
+	ASSERT_EQ(2,  bl.get_nb_cells<3>());
+	ASSERT_EQ(16, bl.get_all_nodes().size());
+	ASSERT_EQ(24, bl.get_all_edges().size());
+	ASSERT_EQ(12, bl.get_all_faces().size());
+	ASSERT_EQ(2,  bl.get_all_blocks().size());
 	bl.sew<3>(b1->dart(), b2->dart());
 	ASSERT_EQ(12, bl.get_nb_cells<0>());
 	ASSERT_EQ(20, bl.get_nb_cells<1>());
 	ASSERT_EQ(11, bl.get_nb_cells<2>());
 	ASSERT_EQ(2, bl.get_nb_cells<3>());
+	ASSERT_EQ(12, bl.get_all_nodes().size());
+	ASSERT_EQ(20, bl.get_all_edges().size());
+	ASSERT_EQ(11, bl.get_all_faces().size());
+	ASSERT_EQ(2,  bl.get_all_blocks().size());
 }
 
 /*----------------------------------------------------------------------------*/
@@ -135,10 +143,6 @@ TEST(CurvedBlockingTestSuite, single_block_parallel_edges)
 	gmds::math::Point p111(1, 1, 1);
 	gmds::math::Point p101(1, 0, 1);
 
-	gmds::math::Point p002(0, 0, 2);
-	gmds::math::Point p012(0, 1, 2);
-	gmds::math::Point p112(1, 1, 2);
-	gmds::math::Point p102(1, 0, 2);
 	bl.create_block(p000, p010, p110, p100, p001, p011, p111, p101);
 
 	for (auto it = bl.gmap()->attributes<1>().begin(), itend = bl.gmap()->attributes<1>().end(); it != itend; ++it) {
@@ -146,6 +150,15 @@ TEST(CurvedBlockingTestSuite, single_block_parallel_edges)
 		bl.get_all_sheet_edges(it,parallel_edges);
 		ASSERT_EQ(4, parallel_edges.size());
 	}
+}
+/*----------------------------------------------------------------------------*/
+TEST(CurvedBlockingTestSuite, get_edges_of_a_block)
+{
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model, true);
+
+	//auto edges = bl.get_edges_of_block(b);
 }
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, init_from_geom_bounding_box)
