@@ -35,10 +35,10 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
          *  @param[in] AMeshT the triangular mesh where we work on
          *  @param[in] AFront front 3D
          *  @param[in] A_EdgesClassification variable for the edges classification
-         *  @param[in] A_NodesClassification variable for the nodes classification
+         *  @param[in] A_NbrFeatureEdgesAroundNode variable for the nodes classification
          *
 	 */
-	FrontEdgesNodesClassification_3D(Mesh *AMesh, Front_3D *AFront, Variable<int>* A_EdgesClassification, Variable<int>* A_NodesClassification,
+	FrontEdgesNodesClassification_3D(Mesh *AMesh, Front_3D *AFront, Variable<int>* A_EdgesClassification, Variable<int>*A_NbrFeatureEdgesAroundNode,
 	                                 Mesh *AMesh_T, FastLocalize *Afl, Variable<math::Vector3d>* A_VectorField);
 
 	/*-------------------------------------------------------------------*/
@@ -64,6 +64,13 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 		* \return  return the mark
 	 */
 	TInt getMarkNodesTemplates();
+	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	* \param[in]
+		*
+		* \return  return the variable on nodes of the nodes classification
+	 */
+	Variable<int>* getVarNodesClassification();
 	/*-------------------------------------------------------------------*/
 	/** @brief Return the classification of the front node n
 	 	* \param[in] n_id the id of the node considered
@@ -185,8 +192,10 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	Front_3D *m_Front;
 	/** Edges classification */
 	Variable<int>* m_EdgesClassification;
+	/** Edges classification */
+	Variable<int>* m_NodesClassification;
 	/** Nodes classification */
-	Variable<int>*m_NodesClassification;
+	Variable<int>*m_NbrFeatureEdgesAroundNode;
 	/** Mark edges for templates */
 	TInt m_mark_EdgesForTemplates;
 	/** Mark nodes for templates */

@@ -28,6 +28,8 @@ class LIB_GMDS_CLAIRE_API LayerStructureManager_3D
 	/** @brief Constructor.
     *  @param[in] AMeshH the quad mesh to generate
     *  @param[in] AFront the front
+    *  @param[in] A_map_new_nodes the map of the TCellID of the ideal next node
+    *  				for each node of the front AFront
     *
 	 */
 	LayerStructureManager_3D(Mesh *AMeshH, Front_3D *AFront, std::map<TCellID, TCellID> &A_map_new_nodes);
@@ -36,10 +38,6 @@ class LIB_GMDS_CLAIRE_API LayerStructureManager_3D
     *  @param
 	 */
 	~LayerStructureManager_3D();
-	/*-------------------------------------------------------------------*/
-	/** @brief Execute the algorithm
-	 */
-	//STATUS execute();
 	/*-------------------------------------------------------------------*/
 
 	struct face_info

@@ -12,7 +12,7 @@
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
-FrontEdgesNodesClassification_3D::FrontEdgesNodesClassification_3D(Mesh *AMesh, Front_3D *AFront, Variable<int>* A_EdgesClassification, Variable<int>* A_NodesClassification,
+FrontEdgesNodesClassification_3D::FrontEdgesNodesClassification_3D(Mesh *AMesh, Front_3D *AFront, Variable<int>* A_EdgesClassification, Variable<int>*A_NbrFeatureEdgesAroundNode,
                                                                    Mesh *AMesh_T, FastLocalize *Afl, Variable<math::Vector3d>* A_VectorField) :
   m_mesh(AMesh),
   m_mesh_T(AMesh_T),
@@ -20,8 +20,8 @@ FrontEdgesNodesClassification_3D::FrontEdgesNodesClassification_3D(Mesh *AMesh, 
   m_Front(AFront)
 {
 	m_EdgesClassification = A_EdgesClassification;
-	m_NodesClassification = A_NodesClassification;
-	m_NodesClassification = A_NodesClassification;
+	m_NodesClassification = m_mesh->getOrCreateVariable<int, GMDS_NODE>("Nodes_Classification");
+	m_NbrFeatureEdgesAroundNode = A_NbrFeatureEdgesAroundNode;
 	m_mark_EdgesForTemplates = m_mesh->newMark<Edge>();
 	m_mark_NodesForTemplates = m_mesh->newMark<Node>();
 	m_VectorField = A_VectorField;
@@ -46,7 +46,7 @@ FrontEdgesNodesClassification_3D::execute()
 	vtkWriter.setDataOptions(gmds::N|gmds::E);
 	vtkWriter.write("AeroEdgesClassification_3D_"+std::to_string(m_Front->getFrontID())+".vtk");
 
-	FrontNodesClassification();	// Fill the variable m_NodesClassification
+	FrontNodesClassification();	// Fill the variable m_NbrFeatureEdgesAroundNode
 
 	ComputeValid_GFE();
 
@@ -68,6 +68,12 @@ TInt
 FrontEdgesNodesClassification_3D::getMarkNodesTemplates()
 {
 	return m_mark_NodesForTemplates;
+}
+/*------------------------------------------------------------------------*/
+Variable<int>*
+FrontEdgesNodesClassification_3D::getVarNodesClassification()
+{
+	return m_NodesClassification;
 }
 /*------------------------------------------------------------------------*/
 int
@@ -234,8 +240,8 @@ FrontEdgesNodesClassification_3D::FrontNodesClassification()
 			}
 		}
 
-		m_NodesClassification->set(n_id, compteur_local_feature_edges);
-		//m_NodesClassification->set(n_id, singleNodeClassification(n_id));
+		m_NbrFeatureEdgesAroundNode->set(n_id, compteur_local_feature_edges);
+		//m_NbrFeatureEdgesAroundNode->set(n_id, singleNodeClassification(n_id));
 	}
 
 }
@@ -427,7 +433,7 @@ FrontEdgesNodesClassification_3D::ComputeOneGFE(TCellID n_id, TCellID e_id)
 
 	Edge e_loc = m_mesh->get<Edge>(e_id);
 	Node n_loc = e_loc.getOppositeNode(m_mesh->get<Node>(n_id));
-	//while (m_NodesClassification->value(n_loc.id()) == 2
+	//while (m_NbrFeatureEdgesAroundNode->value(n_loc.id()) == 2
 	//       && !m_mesh->isMarked(e_loc, mark_EdgeUsed)
 	//       && n_loc.id() != new_GFE.Start_n_id
 	//       && m_EdgesClassification->value(e_loc.id()) == m_EdgesClassification->value(new_GFE.edges_id[0]))
@@ -469,7 +475,7 @@ FrontEdgesNodesClassification_3D::ComputeAllGFE()
 
 	for (auto n_id:m_Front->getNodes())
 	{
-		if (m_NodesClassification->value(n_id) >= 3
+		if (m_NbrFeatureEdgesAroundNode->value(n_id) >= 3
 		    && isValidNodeForTemplate(n_id))
 		{
 			Node n = m_mesh->get<Node>(n_id);
@@ -559,8 +565,8 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 		std::cout << "Starting point: " << GFE.Start_n_id << std::endl;
 		std::cout << "Ending point: " << GFE.End_n_id << std::endl;
 		std::cout << "Nbr edges: " << GFE.edges_id.size() << std::endl;
-		std::cout << "Node " << GFE.Start_n_id << ", adj to " << m_NodesClassification->value(GFE.Start_n_id) << std::endl;
-		std::cout << "Node " << GFE.End_n_id << ", adj to " << m_NodesClassification->value(GFE.End_n_id) << std::endl;
+		std::cout << "Node " << GFE.Start_n_id << ", adj to " << m_NbrFeatureEdgesAroundNode->value(GFE.Start_n_id) << std::endl;
+		std::cout << "Node " << GFE.End_n_id << ", adj to " << m_NbrFeatureEdgesAroundNode->value(GFE.End_n_id) << std::endl;
 		std::cout << "Valid ? " << isThisPathValidForTemplates(GFE) << std::endl;
 		std::cout << "---------" << std::endl;
 	}
@@ -585,8 +591,8 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 
 		if (!isAllTreated)
 		{
-			m_NodesClassification->set(GFE_Invalid.Start_n_id, m_NodesClassification->value(GFE_Invalid.Start_n_id)-1);
-			m_NodesClassification->set(GFE_Invalid.End_n_id, m_NodesClassification->value(GFE_Invalid.End_n_id)-1);
+			m_NbrFeatureEdgesAroundNode->set(GFE_Invalid.Start_n_id, m_NbrFeatureEdgesAroundNode->value(GFE_Invalid.Start_n_id)-1);
+			m_NbrFeatureEdgesAroundNode->set(GFE_Invalid.End_n_id, m_NbrFeatureEdgesAroundNode->value(GFE_Invalid.End_n_id)-1);
 			for (auto edge_id:GFE_Invalid.edges_id)
 			{
 				m_EdgesClassification->set(edge_id, 0);
@@ -616,8 +622,8 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 		std::cout << "Starting point: " << GFE.Start_n_id << std::endl;
 		std::cout << "Ending point: " << GFE.End_n_id << std::endl;
 		std::cout << "Nbr edges: " << GFE.edges_id.size() << std::endl;
-		std::cout << "Node " << GFE.Start_n_id << ", adj to " << m_NodesClassification->value(GFE.Start_n_id) << std::endl;
-		std::cout << "Node " << GFE.End_n_id << ", adj to " << m_NodesClassification->value(GFE.End_n_id) << std::endl;
+		std::cout << "Node " << GFE.Start_n_id << ", adj to " << m_NbrFeatureEdgesAroundNode->value(GFE.Start_n_id) << std::endl;
+		std::cout << "Node " << GFE.End_n_id << ", adj to " << m_NbrFeatureEdgesAroundNode->value(GFE.End_n_id) << std::endl;
 		std::cout << "Valid ? " << isThisPathValidForTemplates(GFE) << std::endl;
 		std::cout << "---------" << std::endl;
 	}
@@ -756,7 +762,7 @@ FrontEdgesNodesClassification_3D::isValidNodeForPathLimit(TCellID n_id, int type
 int
 FrontEdgesNodesClassification_3D::getNbrSingularEdgesAroundNode(TCellID n_id)
 {
-	return m_NodesClassification->value(n_id);
+	return m_NbrFeatureEdgesAroundNode->value(n_id);
 }
 /*------------------------------------------------------------------------*/
 int
