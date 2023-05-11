@@ -42,7 +42,7 @@ namespace gmds{
         };
 
 
-        MetricFFPointgeneration(SimplexMesh* m_simplexMesh, const std::string& name);
+        MetricFFPointgeneration(SimplexMesh* m_simplexMesh, const std::string& name, const double d);
 
         ~MetricFFPointgeneration();
 
@@ -134,6 +134,8 @@ namespace gmds{
         double m_minDistance;
 
         std::string m_name;
+
+        double m_d;
     };
   }
 }

@@ -1,3 +1,6 @@
+add_executable(GMDS_SIMPLEX_STAT
+        main_STAT.cpp)
+
 add_executable(GMDS_SIMPLEX_INSERTION_TEST
         main_INSERTION_TEST.cpp)
 
@@ -31,7 +34,10 @@ add_executable(GMDS_SIMPLEX_TEST
         ModeleCAD5.h
         main_test.cpp)
 
-
+target_link_libraries(GMDS_SIMPLEX_STAT PUBLIC
+        ${GMDS_LIB}
+        ${LIB_GMDS_IO}
+        gtest)
 
 target_link_libraries(GMDS_SIMPLEX_TEST PUBLIC
         ${GMDS_LIB}

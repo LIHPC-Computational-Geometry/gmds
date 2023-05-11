@@ -18,7 +18,7 @@ using namespace simplicesNode;
 using namespace simplicesTriangle;
 using namespace simplicesCell;
 /*----------------------------------------------------------------------------*/
-MetricFFPointgeneration::MetricFFPointgeneration(SimplexMesh* simplexMesh, const std::string & name):m_simplexMesh(simplexMesh),m_oc(Octree(simplexMesh, 10)),m_layerNbr(0),m_minDistance(1.0 * (sqrt(2.0) * 0.5)), m_name(name)
+MetricFFPointgeneration::MetricFFPointgeneration(SimplexMesh* simplexMesh, const std::string & name, double d):m_simplexMesh(simplexMesh),m_oc(Octree(simplexMesh, 10)),m_layerNbr(0),m_minDistance(1.0 * (sqrt(2.0) * 0.5)), m_name(name),m_d(d)
 {
   //m_nodesMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
   m_nodesMesh.newVariable<int,SimplicesNode>("BND_CURVE_COLOR");
@@ -527,7 +527,7 @@ void MetricFFPointgeneration::execute()
     incrementLayer();
 
     std::cout << "EDGE NODES CREATED " << std::endl;
-    for(unsigned int n = 0 ; n < m_nodesMesh.getBitVectorNodes().capacity() ; n++)
+    /*for(unsigned int n = 0 ; n < m_nodesMesh.getBitVectorNodes().capacity() ; n++)
     {
       if(m_nodesMesh.getBitVectorNodes()[n] != 0)
       {
@@ -539,7 +539,7 @@ void MetricFFPointgeneration::execute()
     gmds::VTKWriter vtkWriterEGE(&ioServiceEDGE);
     vtkWriterEGE.setCellOptions(gmds::N|gmds::R|gmds::F);
     vtkWriterEGE.setDataOptions(gmds::N|gmds::R|gmds::F);
-    vtkWriterEGE.write("metricFF_EDGE_" + m_name + ".vtk");
+    vtkWriterEGE.write("metricFF_EDGE_" + m_name + ".vtk");*/
 
     std::queue<TInt> q{};
     while(nodeAdded.size() != 0)
@@ -575,7 +575,7 @@ correctUnwantedConnectionSURFACE();
 std::cout << "correctUnwantedConnection() for SURFACE END " << std::endl;
 
 
-for(auto const & d : m_nodeStructure)
+/*for(auto const & d : m_nodeStructure)
 {
   TInt node = d.first;
   if(node != -1)
@@ -594,14 +594,14 @@ gmds::ISimplexMeshIOService ioServiceGRIDTEST(&m_nodesMesh);
 gmds::VTKWriter vtkWriterGRIDTEST(&ioServiceGRIDTEST);
 vtkWriterGRIDTEST.setCellOptions(gmds::N|gmds::R|gmds::F);
 vtkWriterGRIDTEST.setDataOptions(gmds::N|gmds::R|gmds::F);
-vtkWriterGRIDTEST.write("metricFF_Grid_LAYER_SORTING_COLOR_NEIGHBOR_" + m_name + "_" + std::to_string(m_layerNbr) + ".vtk");
+vtkWriterGRIDTEST.write("metricFF_Grid_LAYER_SORTING_COLOR_NEIGHBOR_" + m_name + "_" + std::to_string(m_layerNbr) + ".vtk");*/
 
 
-gmds::ISimplexMeshIOService ioServiceSURFACE(&m_nodesMesh);
+/*gmds::ISimplexMeshIOService ioServiceSURFACE(&m_nodesMesh);
 gmds::VTKWriter vtkWriterSURFACE(&ioServiceSURFACE);
 vtkWriterSURFACE.setCellOptions(gmds::N|gmds::R);
 vtkWriterSURFACE.setDataOptions(gmds::N|gmds::R);
-vtkWriterSURFACE.write("metricFF_SURFACE_" + m_name + ".vtk");
+vtkWriterSURFACE.write("metricFF_SURFACE_" + m_name + ".vtk");*/
 std::cout << "SURFACE NODES CREATED " << std::endl;
 
 const gmds::BitVector& m_nodes = m_nodesMesh.getBitVectorNodes();
@@ -656,7 +656,7 @@ std::cout << "correctionNodeStructure() for VOLUME END" << std::endl;
 correctUnwantedConnectionVOLUME();
 std::cout << "correctUnwantedConnection() for VOLUME END " << std::endl;
 
-for(auto const & d : m_nodeStructure)
+/*for(auto const & d : m_nodeStructure)
 {
   TInt node = d.first;
   for(auto const n : d.second)
@@ -671,7 +671,7 @@ gmds::ISimplexMeshIOService ioServiceGRIDTEST2(&m_nodesMesh);
 gmds::VTKWriter vtkWriterGRIDTEST2(&ioServiceGRIDTEST2);
 vtkWriterGRIDTEST2.setCellOptions(gmds::N|gmds::R|gmds::F);
 vtkWriterGRIDTEST2.setDataOptions(gmds::N|gmds::R|gmds::F);
-vtkWriterGRIDTEST2.write("metricFF_Grid_LAYER_SORTING_COLOR_NEIGHBOR_" + m_name + "_" + std::to_string(m_layerNbr) + ".vtk");
+vtkWriterGRIDTEST2.write("metricFF_Grid_LAYER_SORTING_COLOR_NEIGHBOR_" + m_name + "_" + std::to_string(m_layerNbr) + ".vtk");*/
 
 std::cout << "END COMPUTING " << std::endl;
 for(auto const & d : m_nodeStructure)

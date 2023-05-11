@@ -42,15 +42,24 @@ int main(int argc, char* argv[])
   if (pIn.find('.vtk') == std::string::npos) {
     throw gmds::GMDSException("<point_file> NOT A .vtk FILE");
   }
-  std::cout << "INPUT FILE: " << fIn << std::endl;
 
   std::string extansion(".vtk");
-  std::size_t position = fIn.find(extansion);
+  /*std::size_t position = fIn.find(extansion);
   fDI = fIn.substr(0,position) +  "_DELAUNAY_INSERTION.vtk";
   fER = fIn.substr(0,position) +  "_EDGES_REMOVE.vtk";
   fHEX = fIn.substr(0,position) + "_HEX_DOMINANT.vtk";
   fFF = fIn.substr(0,position) + "_FORCE_FACE.vtk";
-  fEI = fIn.substr(0,position) + "_EDGE_INSERTION.vtk";
+  fEI = fIn.substr(0,position) + "_EDGE_INSERTION.vtk";*/
+
+  std::size_t position = pIn.find(extansion);
+  fDI = pIn.substr(0,position) +  "_DELAUNAY_INSERTION.vtk";
+  fER = pIn.substr(0,position) +  "_EDGES_REMOVE.vtk";
+  fHEX = pIn.substr(0,position) + "_HEX_DOMINANT.vtk";
+  fFF = pIn.substr(0,position) + "_FORCE_FACE.vtk";
+  fEI = pIn.substr(0,position) + "_EDGE_INSERTION.vtk";
+
+  std::cout << "INPUT FILE: " << fIn << std::endl;
+  std::cout << "OUTPUT FILE: " << fHEX << std::endl;
 
   //==================================================================
   // MESH FILE READING
@@ -248,15 +257,15 @@ int main(int argc, char* argv[])
 
 
   ///////////////////////////EDGE BUILDER START HERE///////////////////////////
-  std::multimap<TInt, TInt> edges{};
   const gmds::BitVector triIdx = simplexNodes.getBitVectorTri();
+  std::multimap<TInt, TInt> edges{};
   unsigned int cptEdgeNotBuilt = 0;
   for(unsigned int tri = 1 ; tri < triIdx.capacity() ; tri++)
   {
     if(triIdx[tri] != 0)
     {
       std::vector<TInt> e  = SimplicesTriangle(&simplexNodes,tri).getNodes();
-      if(!(nodes[e[0]] == -1 || nodes[e[1]] == -1))
+      if(nodes[e[0]] != -1 && nodes[e[1]] != -1)
       {
         std::vector<TInt> oe{std::min(nodes[e[0]], nodes[e[1]]), std::max(nodes[e[0]], nodes[e[1]])};
         std::pair<std::multimap<TInt, TInt>::iterator, std::multimap<TInt, TInt>::iterator> p;
@@ -295,7 +304,8 @@ int main(int argc, char* argv[])
   start = std::clock();
   std::cout << "HEX GENERATION START " << std::endl;
   std::multimap<TInt, TInt> edgeAlreadyBuilt{};
-  for(;;)
+  //////////////////////////////////////////////////////////////////////////////
+  //for(;;)
   {
     hexBuiltCpt = 0;
     hexesNodes.clear();
@@ -314,7 +324,7 @@ int main(int argc, char* argv[])
     gmds::VTKWriter vtkWriterEI(&ioService);
     vtkWriterEI.setCellOptions(gmds::N|gmds::R);
     vtkWriterEI.setDataOptions(gmds::N|gmds::R);
-    vtkWriterEI.write(fEI);
+    //vtkWriterEI.write(fEI);
     /////////////////////HEXA'S FACES BUILDER START HERE /////////////////////////
 
 
@@ -329,16 +339,15 @@ int main(int argc, char* argv[])
       {
         if(simplexMesh.buildFace(hexeNodes, nodesAdded, edgeAlreadyBuilt))
         {
-
           faceBuiltTmp++;
         }
       }
     }
-    gmds::VTKWriter vtkWriterFF(&ioService);
+    /*gmds::VTKWriter vtkWriterFF(&ioService);
     vtkWriterFF.setCellOptions(gmds::N|gmds::R);
     vtkWriterFF.setDataOptions(gmds::N|gmds::R);
     vtkWriterFF.write(fFF);
-    std::cout << "BUILD FACE DONE " << std::endl;
+    std::cout << "BUILD FACE DONE " << std::endl;*/
     markedTet = simplexMesh.getBitVectorTet();
 
     for(auto const h : nodesHex)
@@ -358,11 +367,11 @@ int main(int argc, char* argv[])
       }
     }
     std::cout << "HEX 2 TET DONE " << std::endl;
-    if(faceBuiltTmp == faceBuildCpt || faceBuiltTmp == 0)
+    /*if(faceBuiltTmp == faceBuildCpt || faceBuiltTmp == 0)
     {
       break;
     }
-    faceBuildCpt = faceBuiltTmp;
+    faceBuildCpt = faceBuiltTmp;*/
   }
 
   //RESULT DATA
@@ -378,7 +387,7 @@ int main(int argc, char* argv[])
 
   gmds::VTKWriter vtkWriterHT(&ioService);
   vtkWriterHT.setCellOptions(gmds::N|gmds::R);
-  vtkWriterHT.setDataOptions(gmds::N|gmds::R);
+  //vtkWriterHT.setDataOptions(gmds::N|gmds::R);
   vtkWriterHT.write(fHEX);
 }
 

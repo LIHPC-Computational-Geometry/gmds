@@ -441,7 +441,7 @@ TSimplexID SimplexMesh::getSimplexFromBase(const TInt ANodeID)
 TInt SimplexMesh::addNodeAndcheck(const math::Point& pt, std::vector<TSimplexID>& tetraContainingPt, bool& alreadyAdd, TSimplexID simplexToCheckFirst)
 {
   bool flag = false;
-  double epsilon = 10E-4;
+  double epsilon = 1E-4;
 
   //check if the point pt is on any other node already in the mesh;
   if(tetraContainingPt.size() == 0)
@@ -3623,12 +3623,24 @@ void SimplexMesh::checkSimplicesContenaing_TetOnly(const gmds::math::Point& pt, 
       if(m_tet_ids[t] != 0)
       {
         std::vector<double> uvwt_ = SimplicesCell(this, t).uvwt(pt);
+        //std::cout << "uvwt_ -> " << uvwt_[0] << " | " << uvwt_[1] << " | " << uvwt_[2] << " | " << uvwt_[3] << std::endl;
         if(uvwt_[0] >= -epsilon  && uvwt_[1] >= -epsilon && uvwt_[2] >= -epsilon && uvwt_[3] >= -epsilon)
         {
           tetraContainingPt = t;
           break;
         }
       }
+    }
+  }
+}
+/*---------------------------------------------------------------------------*/
+void SimplexMesh::setMarkedTet(const gmds::BitVector& markedTet)
+{
+  for(unsigned int i = 0 ; i < markedTet.capacity() ; i++)
+  {
+    if(markedTet[i] == 0)
+    {
+      m_tet_ids.unselect(i);
     }
   }
 }
@@ -4710,16 +4722,104 @@ void SimplexMesh::setFrames(const TInt node, const std::vector<math::Vector3d>& 
     FF_Z_NEG = newVariable<math::Vector3d, SimplicesNode>("FF_Z_NEG");
     FF_Z_POS = newVariable<math::Vector3d, SimplicesNode>("FF_Z_POS");
   }
-
-  FF_X_POS->set(node, frames[0]);FF_X_NEG->set(node, -frames[0]);
-  FF_Y_POS->set(node, frames[1]);FF_Y_NEG->set(node, -frames[1]);
-  FF_Z_POS->set(node, frames[2]);FF_Z_NEG->set(node, -frames[2]);
+  if(frames.size() != 0){
+    FF_X_POS->set(node, frames[0]);FF_X_NEG->set(node, -frames[0]);
+    FF_Y_POS->set(node, frames[1]);FF_Y_NEG->set(node, -frames[1]);
+    FF_Z_POS->set(node, frames[2]);FF_Z_NEG->set(node, -frames[2]);
+  }
 }
 /******************************************************************************/
-bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>& frames)
+void SimplexMesh::reorderFrame()
 {
-  /*frames.clear();
-  math::Vector3d e1 = math::Vector3d({sqrt(2.0)/2, 0.0, -sqrt(2.0)/2});
+  //reorder frames field over the mesh because the local framecan differ from another in the same cell
+  Variable<math::Vector3d>* FF_X_NEG = nullptr;
+  Variable<math::Vector3d>* FF_X_POS = nullptr;
+  Variable<math::Vector3d>* FF_Y_NEG = nullptr;
+  Variable<math::Vector3d>* FF_Y_POS = nullptr;
+  Variable<math::Vector3d>* FF_Z_NEG = nullptr;
+  Variable<math::Vector3d>* FF_Z_POS = nullptr;
+
+  try{
+    FF_X_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_X_NEG");
+    FF_X_POS = getVariable<math::Vector3d, SimplicesNode>("FF_X_POS");
+    FF_Y_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_Y_NEG");
+    FF_Y_POS = getVariable<math::Vector3d, SimplicesNode>("FF_Y_POS");
+    FF_Z_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_Z_NEG");
+    FF_Z_POS = getVariable<math::Vector3d, SimplicesNode>("FF_Z_POS");
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  std::unordered_set<TInt> seen{};
+  for(unsigned int t = 0 ; t < m_tet_ids.capacity() ; t++)
+  {
+    if(m_tet_ids[t] != 0)
+    {
+      std::vector<TInt> nodes = SimplicesCell(this, t).getNodes();
+      for(unsigned int n = 0 ; n < nodes.size()-1; n++)
+      {
+        TInt nodeA = nodes[n]; TInt nodeB = nodes[n+1];
+        if(seen.find(nodeB) == seen.end())
+        {
+          if((*FF_X_POS)[nodeA].dot((*FF_X_POS)[nodeB]) < (*FF_X_POS)[nodeA].dot((*FF_X_NEG)[nodeB]))
+          {
+            math::Vector3d vecTMP = (*FF_X_POS)[nodeB];
+            FF_X_POS->set(nodeB, (*FF_X_NEG)[nodeB]);
+            FF_X_NEG->set(nodeB, vecTMP);
+          }
+          if((*FF_Y_POS)[nodeA].dot((*FF_Y_POS)[nodeB]) < (*FF_Y_POS)[nodeA].dot((*FF_Y_NEG)[nodeB]))
+          {
+            math::Vector3d vecTMP = (*FF_Y_POS)[nodeB];
+            FF_Y_POS->set(nodeB, (*FF_Y_NEG)[nodeB]);
+            FF_Y_NEG->set(nodeB, vecTMP);
+          }
+          if((*FF_Z_POS)[nodeA].dot((*FF_Z_POS)[nodeB]) < (*FF_Z_POS)[nodeA].dot((*FF_Z_NEG)[nodeB]))
+          {
+            math::Vector3d vecTMP = (*FF_Z_POS)[nodeB];
+            FF_Z_POS->set(nodeB, (*FF_Z_NEG)[nodeB]);
+            FF_Z_NEG->set(nodeB, vecTMP);
+          }
+        }
+        else if(seen.find(nodeA) == seen.end())
+        {
+          if((*FF_X_POS)[nodeA].dot((*FF_X_POS)[nodeB]) < (*FF_X_POS)[nodeA].dot((*FF_X_NEG)[nodeB]))
+          {
+            math::Vector3d vecTMP = (*FF_X_POS)[nodeA];
+            FF_X_POS->set(nodeA, (*FF_X_NEG)[nodeA]);
+            FF_X_NEG->set(nodeA, vecTMP);
+          }
+          if((*FF_Y_POS)[nodeA].dot((*FF_Y_POS)[nodeB]) < (*FF_Y_POS)[nodeA].dot((*FF_Y_NEG)[nodeB]))
+          {
+            math::Vector3d vecTMP = (*FF_Y_POS)[nodeA];
+            FF_Y_POS->set(nodeA, (*FF_Y_NEG)[nodeA]);
+            FF_Y_NEG->set(nodeA, vecTMP);
+          }
+          if((*FF_Z_POS)[nodeA].dot((*FF_Z_POS)[nodeB]) < (*FF_Z_POS)[nodeA].dot((*FF_Z_NEG)[nodeB]))
+          {
+            math::Vector3d vecTMP = (*FF_Z_POS)[nodeA];
+            FF_Z_POS->set(nodeA, (*FF_Z_NEG)[nodeA]);
+            FF_Z_NEG->set(nodeA, vecTMP);
+          }
+        }
+        seen.insert(nodeA);
+        seen.insert(nodeB);
+      }
+    }
+  }
+  gmds::ISimplexMeshIOService ioService(this);
+  gmds::VTKWriter vtkW(&ioService);
+  vtkW.setCellOptions(gmds::R|gmds::N);
+  vtkW.setDataOptions(gmds::N);
+  vtkW.write("reorderFrame.vtk");
+}
+/******************************************************************************/
+bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>& frames, TSimplexID nearSimplex)
+{
+  frames.clear();
+  frames.resize(3, math::Vector3d{0.0, 0.0, 0.0});
+  //frames.resize(6, math::Vector3d{0.0, 0.0, 0.0});
+  /*math::Vector3d e1 = math::Vector3d({sqrt(2.0)/2, 0.0, -sqrt(2.0)/2});
   math::Vector3d e2({0.0, 1.0, 0.0});
   math::Vector3d e3({sqrt(2.0)/2, 0.0, sqrt(2.0)/2});
   //math::Vector3d e1 = math::Vector3d({1.0, 0.0, 0.0});
@@ -4751,21 +4851,27 @@ bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>&
     throw gmds::GMDSException(e);
   }
 
-  frames.clear();
+  /*frames.clear();
   frames.resize(3);
   TInt n = 0;
   frames[0] = (*FF_X_POS)[n];
   frames[1] = (*FF_Y_POS)[n];
   frames[2] = (*FF_Z_POS)[n];
-  return false;
+  return false;*/
 
-  std::vector<TSimplexID> tetraContainingPt{};
-  unsigned int sizeCell = 4;
-  checkSimplicesContenaing(pt, tetraContainingPt, std::numeric_limits<int>::min());
+  TSimplexID tetraContainingPt = std::numeric_limits<TSimplexID>::min();
+  bool flag = true;
+  checkSimplicesContenaing_TetOnly(pt, tetraContainingPt, flag, nearSimplex);
+  if(!flag){
+    return false;
+  }
 
-  if(tetraContainingPt.size() != 0)
+  //checkSimplicesContenaing(pt, tetraContainingPt, std::numeric_limits<int>::min());
+
+  if(tetraContainingPt != std::numeric_limits<TSimplexID>::min())
   {
-    TSimplexID tet = tetraContainingPt.front();
+    unsigned int sizeCell = 4;
+    TSimplexID tet = tetraContainingPt;
     std::vector<double> uvwt{};
     std::vector<std::vector<math::Vector3d>> framesNode{};
 
@@ -4773,7 +4879,10 @@ bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>&
     std::vector<TInt> nodes = cell.getNodes();
     double volumeTotal = cell.getVolumeOfCell();
 
-
+    frames[0] = (*FF_X_POS)[nodes[0]];
+    frames[1] = (*FF_Y_POS)[nodes[0]];
+    frames[2] = (*FF_Z_POS)[nodes[0]];
+    return true;
     for(unsigned int nodeId = 0 ; nodeId < sizeCell ; nodeId++)
     {
       framesNode.push_back(std::vector<math::Vector3d>{(*FF_X_NEG)[nodes[nodeId]], (*FF_X_POS)[nodes[nodeId]], (*FF_Y_NEG)[nodes[nodeId]],
@@ -4787,23 +4896,23 @@ bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>&
     //sort the frame data occording to the first one to have all frames data in correct direction (based on dot product between frame0's vector and other frame's vector)
     for(unsigned int nodeId = 1 ; nodeId < sizeCell ; nodeId++)
     {
-      std::sort(framesNode[nodeId].begin(), framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[0][0].dot(vA) > framesNode[0][0].dot(vB));});
-      std::sort(framesNode[nodeId].begin()+1, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[0][1].dot(vA) > framesNode[0][1].dot(vB));});
-      std::sort(framesNode[nodeId].begin()+2, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[0][2].dot(vA) > framesNode[0][2].dot(vB));});
-      std::sort(framesNode[nodeId].begin()+3, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[0][3].dot(vA) > framesNode[0][3].dot(vB));});
-      std::sort(framesNode[nodeId].begin()+4, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[0][4].dot(vA) > framesNode[0][4].dot(vB));});
-      std::sort(framesNode[nodeId].begin()+5, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[0][5].dot(vA) > framesNode[0][5].dot(vB));});
+      std::sort(framesNode[nodeId].begin(), framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[nodeId][0].dot(vA) > framesNode[nodeId][0].dot(vB));});
+      std::sort(framesNode[nodeId].begin()+1, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[nodeId][1].dot(vA) > framesNode[nodeId][1].dot(vB));});
+      std::sort(framesNode[nodeId].begin()+2, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[nodeId][2].dot(vA) > framesNode[nodeId][2].dot(vB));});
+      std::sort(framesNode[nodeId].begin()+3, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[nodeId][3].dot(vA) > framesNode[nodeId][3].dot(vB));});
+      std::sort(framesNode[nodeId].begin()+4, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[nodeId][4].dot(vA) > framesNode[nodeId][4].dot(vB));});
+      std::sort(framesNode[nodeId].begin()+5, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[nodeId][5].dot(vA) > framesNode[nodeId][5].dot(vB));});
     }
 
-    //throw gmds::GMDSException("OK");
     for(unsigned int nodeId = 0 ; nodeId < sizeCell ; nodeId++)
     {
       double r = uvwt[nodeId];
       std::vector<math::Vector3d> f = framesNode[nodeId];
       frames[0] += f[0] * r ; frames[1] += f[1] * r ; frames[2] += f[2] * r ;
       frames[3] += f[3] * r ; frames[4] += f[4] * r ; frames[5] += f[5] * r ;
-
+      break;
     }
+    return true;
   }
 
   return false;
@@ -6543,15 +6652,6 @@ unsigned int SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, co
     TInt nodeAidx = edge.first;
     TInt nodeBidx = edge.second;
 
-    /*std::cout << "nodeAidx -> " << nodeAidx << std::endl;
-    std::cout << "nodeBidx -> " << nodeBidx << std::endl;
-    if(nodeAidx == 23517 && nodeBidx == 72468)
-    {
-      gmds::VTKWriter vtkWriter(&ioService);
-      vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
-      vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
-      vtkWriter.write("TEST.vtk");
-    }*/
     if(nodeAidx != border && nodeBidx != border)
     {
       if(bitNodes[nodeAidx] != 0 && bitNodes[nodeBidx] != 0)

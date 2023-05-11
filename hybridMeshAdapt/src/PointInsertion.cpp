@@ -489,7 +489,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
                 std::cout << "borderNodesEdge.size() -> " << borderNodesEdge.size() << std::endl;
                 for(auto const bn : borderNodesEdge)
                   std::cout << "borderNodesEdge -> " << bn << std::endl;
-                  
+
                 SimplexMesh N;
                 TInt NodeId = N.addNode(simpliceNode.getCoords());
                 N.addTetraedre(NodeId, NodeId, NodeId, NodeId);
@@ -506,8 +506,9 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
                 vtkWriterCS.setCellOptions(gmds::N|gmds::R|gmds::F);
                 vtkWriterCS.setDataOptions(gmds::N|gmds::R|gmds::F);
                 vtkWriterCS.write("no_borderNodesEdge.vtk");
-
-                throw gmds::GMDSException("borderNodesEdge.size() != 2");
+                status = false;
+                return;
+                //throw gmds::GMDSException("borderNodesEdge.size() != 2");
               }
 
               if(borderNodesEdge.front() == simpliceNode.getGlobalNode() || borderNodesEdge.back() == simpliceNode.getGlobalNode())
@@ -553,7 +554,7 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
           simplexMesh->rebuildCavity(cavityIO, deleted_Tet, deleted_Tri, simpliceNode.getGlobalNode(), createdCells);
 
           //simplexMesh->rebuildCav(cavityIO, deleted_Tet, deleted_Tri, simpliceNode.getGlobalNode(), createdCells);
-          simplexMesh->checkMeshCavity(createdCells);
+          //simplexMesh->checkMeshCavity(createdCells);
           status = true;
         }
       }

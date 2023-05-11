@@ -237,7 +237,7 @@ class SimplexMesh
   void setHexadronData(std::vector<std::vector<TInt>>& hexahedronData){m_hexahedronData = hexahedronData;}
 
 
-  void setMarkedTet(const gmds::BitVector& markedTet){m_markedTet = markedTet;}
+  void setMarkedTet(const gmds::BitVector& markedTet);
 
   void checkMesh();
 
@@ -457,7 +457,7 @@ class SimplexMesh
 
   Eigen::Matrix3d getAnalyticMetricFromSimplex(const math::Point& pt, SimplexMesh* sm, TSimplexID simplex);
 
-  bool getFrameAt(const math::Point& pt, std::vector<math::Vector3d>& frames) ;
+  bool getFrameAt(const math::Point& pt, std::vector<math::Vector3d>& frames, TSimplexID nearSimplex = std::numeric_limits<TSimplexID>::min()) ;
 
   void setColorsSurfaceFromSimplex(SimplexMesh* simplexMesh) ;
 
@@ -471,6 +471,7 @@ class SimplexMesh
 
   void setFrames(const TInt node, const std::vector<math::Vector3d>& frames);
 
+  void reorderFrame();
 private:
 
   std::set<unsigned int> surfacesIndx{};

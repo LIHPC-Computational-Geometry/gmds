@@ -28,13 +28,16 @@ int main(int argc, char* argv[])
 {
     std::cout << "==== METRIC BASED ADAPTATION  ====" << std::endl;
     std::string fIn, fOut;
-    if(argc != 2)
+    if(argc != 3)
     {
-        throw gmds::GMDSException("MISSING PARAMETERS : <mesh_in> ");
+        throw gmds::GMDSException("MISSING PARAMETERS : <mesh_in> <interpolation_value>");
     }
     fIn = std::string(argv[1]);
     if (fIn.find('.vtk') == std::string::npos) {
       throw gmds::GMDSException("<mesh_in> NOT A .vtk FILE");
+    }
+    if(std::atoi(argv[2]) > 1.0 || std::atoi(argv[2]) < 0.0) {
+      throw gmds::GMDSException("<interpolation_value> should be higher that 0 and lower than 1 !");
     }
     std::cout << "Reading " << std::endl;
     std::string extansion(".vtk");
@@ -50,6 +53,7 @@ int main(int argc, char* argv[])
     simplexMesh.initializeEdgeStructure();
     simplexMesh.buildSimplexHull();
     simplexMesh.setSurfacesAndCurvesIndx();
+    //simplexMesh.reorderFrame();
 
     //double minSizeEdge = simplexMesh.findMinSizeEdgeSurface();
     double meanSizeEdge = simplexMesh.findMeanSizeEdgeSurface();
@@ -58,64 +62,77 @@ int main(int argc, char* argv[])
     //vector of lambda that capture metric and ffield
     std::vector<std::function<std::vector<double>()>> metricXYZ_functors{};
     //metricXYZ_functors.push_back([&] { return std::vector<double>{meanSizeEdge, meanSizeEdge, meanSizeEdge}; });
-    //metricXYZ_functors.push_back([&] { return std::vector<double>{0.5*meanSizeEdge, 0.5*meanSizeEdge, 0.5*meanSizeEdge}; });
-    metricXYZ_functors.push_back([&] { return std::vector<double>{0.25*meanSizeEdge, 0.25*meanSizeEdge, 0.25*meanSizeEdge}; });
-    //metricXYZ_functors.push_back([&] { return std::vector<double>{0.1*meanSizeEdge, 0.1*meanSizeEdge, 0.1*meanSizeEdge}; });
+    metricXYZ_functors.push_back([&] { return std::vector<double>{0.5*meanSizeEdge, 0.5*meanSizeEdge, 0.5*meanSizeEdge}; });
+    metricXYZ_functors.push_back([&] { return std::vector<double>{0.5*meanSizeEdge, 0.25*meanSizeEdge, 0.5*meanSizeEdge}; });
+
 
     std::vector<std::function<std::vector<math::Vector3d>()>> frameXYZ_functor{};
-    frameXYZ_functor.push_back([] { return std::vector<math::Vector3d>{ math::Vector3d({1.0, 0.0, 0.0}),  math::Vector3d({0.0, 1.0, 0.0}),  math::Vector3d({0.0, 0.0, 1.0})}; });
-    //frameXYZ_functor.push_back([] { return std::vector<math::Vector3d>{ math::Vector3d({sqrt(2.0)/2, 0.0, -sqrt(2.0)/2}) , math::Vector3d({0.0, 1.0, 0.0}) , math::Vector3d({sqrt(2.0)/2, 0.0, sqrt(2.0)/2})}; });
+    //frameXYZ_functor.push_back([] { return std::vector<math::Vector3d>{}; });
+    const double alpha0 = 0.0;
+    const double alpha1 = M_PI / 8.0;
+    const double alpha2 = M_PI / 4.0;
+    //frameXYZ_functor.push_back([&] { return std::vector<math::Vector3d>{ math::Vector3d({1.0, 0.0, 0.0}),  math::Vector3d({0.0, cos(alpha0), sin(alpha0)}),  math::Vector3d({0.0, -sin(alpha0), cos(alpha0)})}; });
+    frameXYZ_functor.push_back([&] { return std::vector<math::Vector3d>{ math::Vector3d({1.0, 0.0, 0.0}),  math::Vector3d({0.0, cos(alpha1), sin(alpha1)}),  math::Vector3d({0.0, -sin(alpha1), cos(alpha1)})}; });
+    //frameXYZ_functor.push_back([&] { return std::vector<math::Vector3d>{ math::Vector3d({1.0, 0.0, 0.0}),  math::Vector3d({0.0, cos(alpha2), sin(alpha2)}),  math::Vector3d({0.0, -sin(alpha2), cos(alpha2)})}; });
 
     //==================================================================
     // MODIFICATION OF THE INPUT MESH'S METRIC
     //==================================================================
     unsigned int cpt = 0;
-    for(auto const ff : frameXYZ_functor)
+    //std::vector<double> D{/*0.0, 0.25, 0.5, 0.75, */1.0};
+    //for(auto const d : D)
     {
-      for(auto const metric : metricXYZ_functors)
+      const double d = std::atoi(argv[2]);
+      std::cout << "interpolation factor -> " << d << std::endl;
+      for(auto const ff : frameXYZ_functor)
       {
-        //==================================================================
-        // MESH READING
-        //==================================================================
-        SimplexMesh simplexMesh = SimplexMesh();
-        gmds::ISimplexMeshIOService ioService(&simplexMesh);
-        gmds::VTKReader vtkReader(&ioService);
-        vtkReader.setCellOptions(gmds::R|gmds::N);
-        vtkReader.setDataOptions(gmds::N);
-        vtkReader.read(fIn);
-        simplexMesh.buildAdjInfoGlobal();
-        simplexMesh.initializeEdgeStructure();
-        simplexMesh.buildSimplexHull();
-        simplexMesh.setSurfacesAndCurvesIndx();
-
-        Octree oc(&simplexMesh, 10);
-        simplexMesh.setOctree(&oc);
-
-
-        Variable<Eigen::Matrix3d>* metricNode = simplexMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
-        Eigen::Matrix3d m = Eigen::MatrixXd::Identity(3, 3);
-        metricNode->setValuesTo(m);
-        const gmds::BitVector& meshNode = simplexMesh.getBitVectorNodes();
-
-        for(unsigned int nodeId = 0 ; nodeId < meshNode.capacity() ; nodeId++)
+        for(auto const metric : metricXYZ_functors)
         {
-          if(meshNode[nodeId] != 0)
+          //==================================================================
+          // MESH READING
+          //==================================================================
+          SimplexMesh simplexMesh = SimplexMesh();
+          gmds::ISimplexMeshIOService ioService(&simplexMesh);
+          gmds::VTKReader vtkReader(&ioService);
+          vtkReader.setCellOptions(gmds::R|gmds::N);
+          vtkReader.setDataOptions(gmds::N);
+          vtkReader.read(fIn);
+          simplexMesh.buildAdjInfoGlobal();
+          simplexMesh.initializeEdgeStructure();
+          simplexMesh.buildSimplexHull();
+          simplexMesh.setSurfacesAndCurvesIndx();
+
+          Octree oc(&simplexMesh, 10);
+          simplexMesh.setOctree(&oc);
+
+
+          Variable<Eigen::Matrix3d>* metricNode = simplexMesh.newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+          Eigen::Matrix3d m = Eigen::MatrixXd::Identity(3, 3);
+          metricNode->setValuesTo(m);
+          const gmds::BitVector& meshNode = simplexMesh.getBitVectorNodes();
+
+          for(unsigned int nodeId = 0 ; nodeId < meshNode.capacity() ; nodeId++)
           {
-            //simplexMesh.setAnalyticMetric(nodeId, simplexMesh.getOctree());
-            Eigen::Matrix3d m = Eigen::Matrix3d::Zero();
-            m(0, 0) = 1.0/(metric()[0]*metric()[0]); m(1, 1) = 1.0/(metric()[1]*metric()[1]) ; m(2, 2) = 1.0/(metric()[2]*metric()[2]);
-            simplexMesh.setAnalyticMetric(nodeId, m);
-            simplexMesh.setFrames(nodeId, ff());
+            if(meshNode[nodeId] != 0)
+            {
+              //simplexMesh.setAnalyticMetric(nodeId, simplexMesh.getOctree());
+              Eigen::Matrix3d m = Eigen::Matrix3d::Zero();
+              m(0, 0) = 1.0/(metric()[0]*metric()[0]); m(1, 1) = 1.0/(metric()[1]*metric()[1]) ; m(2, 2) = 1.0/(metric()[2]*metric()[2]);
+              simplexMesh.setAnalyticMetric(nodeId, m);
+              simplexMesh.setFrames(nodeId, ff());
+            }
           }
+          //////////////////////////////////////////////////////////////////////////////
+          std::cout << "FRONTAL ALGO STARTING ..." << std::endl;
+          std::string name =+ "HEX_" + std::to_string(cpt);
+          std::cout << " name -> " << name << std::endl;
+
+          MetricFFPointgeneration p(&simplexMesh, name, d);
+          p.execute();
+          ++cpt;
+          std::cout << std::endl;
+          std::cout << std::endl;
         }
-        //////////////////////////////////////////////////////////////////////////////
-        std::cout << "FRONTAL ALGO STARTING ..." << std::endl;
-        std::string name = "HEX_" + std::to_string(cpt);
-        MetricFFPointgeneration p(&simplexMesh, name);
-        p.execute();
-        ++cpt;
-        std::cout << std::endl;
-        std::cout << std::endl;
       }
     }
 
