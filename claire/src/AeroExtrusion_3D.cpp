@@ -138,7 +138,7 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	// Variables
 	Variable<int>* var_NODE_couche_id = m_meshH->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	Variable<int>* var_front_edges_classification = m_meshH->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
-	Variable<int>* var_front_nodes_classification = m_meshH->getOrCreateVariable<int, GMDS_NODE>("Nodes_Classification");
+	Variable<int>*var_front_NbrFeatureEdgesAroundNode = m_meshH->getOrCreateVariable<int, GMDS_NODE>("NbrFeatureEdgesAroundNode");
 
 
 	// Mise à jour de l'indice de couche
@@ -150,7 +150,7 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	FrontEdgesNodesClassification_3D Classification = FrontEdgesNodesClassification_3D(m_meshH,
 	                                                                                   &Front_IN,
 	                                                                                   var_front_edges_classification,
-	                                                                                   var_front_nodes_classification,
+	                                                                                   var_front_NbrFeatureEdgesAroundNode,
 	                                                                                   m_meshT,
 	                                                                                   &m_fl,
 	                                                                                   m_VectorField);
