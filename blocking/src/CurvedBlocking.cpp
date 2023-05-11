@@ -208,6 +208,13 @@ CurvedBlocking::create_block(
 	return b;
 }
 /*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::remove_block(CurvedBlocking::Block AB)
+{
+	Dart3 d = AB->dart();
+	m_gmap.remove_cell<3>(d);
+}
+/*----------------------------------------------------------------------------*/
 bool
 CurvedBlocking::is_valid_topology() const
 {
