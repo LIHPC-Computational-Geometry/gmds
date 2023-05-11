@@ -157,8 +157,9 @@ TEST(CurvedBlockingTestSuite, get_edges_of_a_block)
 	gmds::cad::FACManager geom_model;
 	setUp(geom_model);
 	gmds::blocking::CurvedBlocking bl(&geom_model, true);
-
-	//auto edges = bl.get_edges_of_block(b);
+	auto b = bl.get_all_blocks()[0];
+	auto edges = bl.get_edges_of_block(b);
+	ASSERT_EQ(12,edges.size());
 }
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, init_from_geom_bounding_box)

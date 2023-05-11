@@ -1,5 +1,6 @@
 # A C++ library for writing meshing algorithms
 ![CI Ubuntu](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/continuous-ubuntu.yml/badge.svg)
+![CI Ubuntu](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/continuous-macos.yml/badge.svg)
 ![CI Windows](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/continuous-windows.yml/badge.svg)
 ![CI Doxygen](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/code_docs.yml/badge.svg)
 

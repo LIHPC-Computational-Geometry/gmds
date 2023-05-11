@@ -1,4 +1,4 @@
-name: continuous-macos
+name: macos-ci
 
 on:
   workflow_dispatch:
