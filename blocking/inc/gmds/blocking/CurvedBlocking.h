@@ -286,6 +286,30 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	void remove_block(Block AB);
 
+	/**@brief Non-optimal method to get all the blocks of the structure. The
+	 * best option is to traverse the block structure through the gmap
+	 * structure (iterators on attributes)
+	 * @return a vector of blocks
+	 */
+	std::vector<Block> get_all_blocks();
+	/**@brief Non-optimal method to get all the faces of the structure. The
+	 * best option is to traverse the block structure through the gmap
+	 * structure (iterators on attributes)
+	 * @return a vector of faces
+	 */
+	std::vector<Face> get_all_faces();
+	/**@brief Non-optimal method to get all the edges of the structure. The
+	 * best option is to traverse the block structure through the gmap
+	 * structure (iterators on attributes)
+	 * @return a vector of edges
+	 */
+	std::vector<Edge> get_all_edges();
+	/**@brief Non-optimal method to get all the nodes of the structure. The
+	 * best option is to traverse the block structure through the gmap
+	 * structure (iterators on attributes)
+	 * @return a vector of nodes
+	 */
+	std::vector<Node> get_all_nodes();
 	/**@brief moves node @p AN towards the expected new location @p ALoc.
 	 * If @p AN is classified onto a geometrical cell, the node @p AN
 	 * is first moved to @p ALoc, then it is projected onto the
@@ -302,6 +326,12 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @return the set of faces of the block.
 	 */
 	std::vector<Face> get_faces_of_block(const Block AB);
+	/** Get all the edges of a block. If it is a hexahedral block,
+	 * we have 12 faces.
+	 * @param[in] AB a block
+	 * @return the set of edges of the block.
+	 */
+	std::vector<Edge> get_edges_of_block(const Block AB);
 	/** Get all the nodes of a block. If it is a hexahedral block,
 	 * we have 8 nodes, given as usual in gmds
 	 * @param[in] AB a block
