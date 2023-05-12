@@ -1,4 +1,4 @@
-name: continuous-ubuntu
+name: ubuntu-ci
 
 on:
   workflow_dispatch:
@@ -47,7 +47,7 @@ jobs:
       run: >
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.config }} 
         -DWITH_CODE_COVERAGE=ON
-        -DWITH_PYTHON_API=ON
+        -DWITH_PYTHON_API=OFF
         -DENABLE_BLOCKING=ON
         -DENABLE_ELGMoRpHING=ON
         -DENABLE_KMDS=ON

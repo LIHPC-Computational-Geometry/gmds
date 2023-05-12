@@ -90,6 +90,71 @@ CurvedBlocking::get_faces_of_block(const CurvedBlocking::Block AB)
 	return faces;
 }
 /*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Block>
+CurvedBlocking::get_all_blocks()
+{
+	std::vector<CurvedBlocking::Block> blocks;
+	for (auto it = m_gmap.attributes<3>().begin(), itend = m_gmap.attributes<3>().end(); it != itend; ++it) {
+		blocks.push_back(it);
+	}
+	return blocks;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Face>
+CurvedBlocking::get_all_faces()
+{
+	std::vector<CurvedBlocking::Face> faces;
+	for (auto it = m_gmap.attributes<2>().begin(), itend = m_gmap.attributes<2>().end(); it != itend; ++it) {
+		faces.push_back(it);
+	}
+	return faces;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Edge>
+CurvedBlocking::get_all_edges()
+{
+	std::vector<CurvedBlocking::Edge> edges;
+	for (auto it = m_gmap.attributes<1>().begin(), itend = m_gmap.attributes<1>().end(); it != itend; ++it) {
+		edges.push_back(it);
+	}
+	return edges;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Node>
+CurvedBlocking::get_all_nodes()
+{
+	std::vector<CurvedBlocking::Node> nodes;
+	for (auto it = m_gmap.attributes<0>().begin(), itend = m_gmap.attributes<0>().end(); it != itend; ++it) {
+		nodes.push_back(it);
+	}
+	return nodes;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Edge>
+CurvedBlocking::get_edges_of_block(const CurvedBlocking::Block AB)
+{
+	Dart3 d = AB->dart();
+	std::vector<CurvedBlocking::Edge> edges;
+	edges.resize(12);
+
+	edges[0] = m_gmap.attribute<1>(d);
+	edges[1] = m_gmap.attribute<1>(m_gmap.alpha<1, 0, 1>(d));
+	edges[2] = m_gmap.attribute<1>(m_gmap.alpha<2, 1, 0, 1>(d));
+	edges[3] = m_gmap.attribute<1>(m_gmap.alpha<1, 0, 1, 2, 1, 0, 1>(d));
+	d = m_gmap.alpha<1>(d);
+	edges[4] = m_gmap.attribute<1>(d);
+	edges[5] = m_gmap.attribute<1>(m_gmap.alpha<1, 0, 1>(d));
+	edges[6] = m_gmap.attribute<1>(m_gmap.alpha<2, 1, 0, 1>(d));
+	edges[7] = m_gmap.attribute<1>(m_gmap.alpha<1, 0, 1, 2, 1, 0, 1>(d));	d = m_gmap.alpha<1>(d);
+	d = m_gmap.alpha<2, 1>(d);
+	edges[8 ] = m_gmap.attribute<1>(d);
+	edges[9 ] = m_gmap.attribute<1>(m_gmap.alpha<1, 0, 1>(d));
+	edges[10] = m_gmap.attribute<1>(m_gmap.alpha<2, 1, 0, 1>(d));
+	edges[11] = m_gmap.attribute<1>(m_gmap.alpha<1, 0, 1, 2, 1, 0, 1>(d));
+
+	return edges;
+}
+/*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Node>
 CurvedBlocking::get_nodes_of_block(const CurvedBlocking::Block AB)
 {

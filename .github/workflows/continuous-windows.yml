@@ -1,4 +1,4 @@
-name: continuous-windows
+name: windows-ci
 
 on:
   workflow_dispatch:
