@@ -20,9 +20,6 @@
 #include "NodeNeighbourhoodOnFront_3DTestSuite.h"
 #include "MeshAlignmentTestSuite.h"
 #include "Front_3DTestSuite.h"
-#include "FrontTestSuite.h"
-#include "MFEMMeshWriterTestSuite.h"
-#include "LayerStructureManager_3DTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
