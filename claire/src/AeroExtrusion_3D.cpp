@@ -10,6 +10,7 @@
 #include <gmds/claire/AeroExtrusion_3D.h>
 #include <gmds/claire/AdvectedPointRK4_3D.h>
 #include <gmds/claire/FrontEdgesNodesClassification_3D.h>
+#include <gmds/claire/FrontPaths_3D.h>
 #include <gmds/claire/NodeNeighbourhoodOnFront_3D.h>
 #include <gmds/claire/LayerStructureManager_3D.h>
 #include <gmds/claire/PatternFace.h>
@@ -156,13 +157,23 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	                                                                                   m_VectorField);
 	Classification.execute();
 
+	/*
+	FrontPaths_3D Paths = FrontPaths_3D(m_meshH, &Front_IN, &Classification);
+	Paths.execute();
+	TInt mark_EdgesTemplates = Paths.getMarkEdgesForTemplates();
+	TInt mark_NodesTemplates = Paths.getMarkNodesForTemplates();
+	*/
+
 	// Init the edge_info type for the edges of the front
 	//InitEdgeStructInfo(Front_IN);
 	TInt mark_edgesTreated = m_meshH->newMark<Edge>();
 	TInt mark_facesTreated = m_meshH->newMark<Face>();
 
+
 	TInt mark_EdgesTemplates = Classification.getMarkEdgesTemplates();
 	TInt mark_NodesTemplates = Classification.getMarkNodesTemplates();
+	
+
 
 	Variable<int>* var_TEST = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_TEST_NODES");
 
