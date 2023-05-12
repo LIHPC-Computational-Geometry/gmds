@@ -72,6 +72,13 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	 */
 	Variable<int>* getVarNodesClassification();
 	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	* \param[in]
+		*
+		* \return  return the variable on nodes of the nodes classification
+	 */
+	Variable<int>* getVarNbrFeatureEdgesAroundNode();
+	/*-------------------------------------------------------------------*/
 	/** @brief Return the classification of the front node n
 	 	* \param[in] n_id the id of the node considered
 		*

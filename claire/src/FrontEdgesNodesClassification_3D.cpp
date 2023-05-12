@@ -76,6 +76,12 @@ FrontEdgesNodesClassification_3D::getVarNodesClassification()
 	return m_NodesClassification;
 }
 /*------------------------------------------------------------------------*/
+Variable<int>*
+FrontEdgesNodesClassification_3D::getVarNbrFeatureEdgesAroundNode()
+{
+	return m_NbrFeatureEdgesAroundNode;
+}
+/*------------------------------------------------------------------------*/
 int
 FrontEdgesNodesClassification_3D::SingleEdgeClassification(TCellID e_id)
 {
