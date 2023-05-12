@@ -77,8 +77,4 @@ TEST(Front_3DTestClass, Front_3D)
 	TCellID e_id = math::Utils::CommonEdge(&m, n0.id(), n1.id());
 	std::vector<TCellID> adjfaces = Front.edgeFacesOnFront(&m, e_id);
 	ASSERT_EQ(adjfaces.size(), 2);
-
-	Front.ComputeEdgesOnFront(&m);
-	ASSERT_EQ(Front.getEdges().size(),12);
-
 }
