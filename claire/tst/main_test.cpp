@@ -19,6 +19,7 @@
 #include "DiffusionEquation2DTestSuite.h"
 #include "NodeNeighbourhoodOnFront_3DTestSuite.h"
 #include "MeshAlignmentTestSuite.h"
+#include "Front_3DTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
