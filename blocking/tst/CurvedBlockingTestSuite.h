@@ -162,6 +162,27 @@ TEST(CurvedBlockingTestSuite, get_edges_of_a_block)
 	ASSERT_EQ(12,edges.size());
 }
 /*----------------------------------------------------------------------------*/
+TEST(CurvedBlockingTestSuite, split_one_block_twice)
+{
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model, true);
+	auto e = bl.get_all_edges()[0];
+	auto e2 = bl.gmap()->attribute<1>(bl.gmap()->alpha<1>(e->dart()));
+	bl.split_sheet(e);
+	ASSERT_EQ(12,bl.get_nb_cells<0>());
+	ASSERT_EQ(20,bl.get_nb_cells<1>());
+	ASSERT_EQ(11,bl.get_nb_cells<2>());
+	ASSERT_EQ(2,bl.get_nb_cells<3>());
+	ASSERT_TRUE(bl.gmap()->is_valid());
+	//we check the attribute values
+	bl.split_sheet(e2);
+	ASSERT_EQ(18,bl.get_nb_cells<0>());
+	ASSERT_EQ(33,bl.get_nb_cells<1>());
+	ASSERT_EQ(20,bl.get_nb_cells<2>());
+	ASSERT_EQ(4,bl.get_nb_cells<3>());
+}
+/*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, init_from_geom_bounding_box)
 {
 	gmds::cad::FACManager geom_model;
