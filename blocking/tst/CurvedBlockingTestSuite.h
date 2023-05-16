@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 /*----------------------------------------------------------------------------*/
 #include <gmds/blocking/CurvedBlocking.h>
+#include <gmds/blocking/CurvedBlockingClassifier.h>
 #include <gmds/cadfac/FACManager.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/io/IGMeshIOService.h>
@@ -167,7 +168,13 @@ TEST(CurvedBlockingTestSuite, split_one_block_twice)
 	gmds::cad::FACManager geom_model;
 	setUp(geom_model);
 	gmds::blocking::CurvedBlocking bl(&geom_model, true);
+	gmds::blocking::CurvedBlockingClassifier cl(&bl);
+	cl.classify();
+
 	auto e = bl.get_all_edges()[0];
+	auto e_id = e->info().geom_id;
+	auto e_dim = e->info().geom_dim;
+
 	auto e2 = bl.gmap()->attribute<1>(bl.gmap()->alpha<1>(e->dart()));
 	bl.split_sheet(e);
 	ASSERT_EQ(12,bl.get_nb_cells<0>());
@@ -175,6 +182,20 @@ TEST(CurvedBlockingTestSuite, split_one_block_twice)
 	ASSERT_EQ(11,bl.get_nb_cells<2>());
 	ASSERT_EQ(2,bl.get_nb_cells<3>());
 	ASSERT_TRUE(bl.gmap()->is_valid());
+
+	//after splitting e, one node and 2 edges must be classified on its original geometric cell
+	auto classified_nodes = 0;
+	auto classified_edges = 0;
+	for(auto cur_edge:bl.get_all_edges()){
+		if(cur_edge->info().geom_id==e_id && cur_edge->info().geom_dim==e_dim)
+			classified_edges++;
+	}
+	for(auto cur_node:bl.get_all_nodes()){
+		if(cur_node->info().geom_id==e_id && cur_node->info().geom_dim==e_dim)
+			classified_nodes++;
+	}
+	ASSERT_EQ(2, classified_edges);
+	ASSERT_EQ(1, classified_nodes);
 	//we check the attribute values
 	bl.split_sheet(e2);
 	ASSERT_EQ(18,bl.get_nb_cells<0>());
