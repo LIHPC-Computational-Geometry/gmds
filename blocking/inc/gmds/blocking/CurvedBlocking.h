@@ -372,7 +372,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	/**@brief Split the sheet defined by edge @p AE
 	 * @param AE an edge we want to split in two edges
 	 */
-	void split_sheet(const Edge AE);
+	void cut_sheet(const Edge AE);
 	/**@brief Low level operation that @p TDim-sew two darts
 	 * @tparam TDim sewing dimension
 	 * @param[in] AD1 First dart

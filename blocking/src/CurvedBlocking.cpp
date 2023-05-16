@@ -450,7 +450,7 @@ CurvedBlocking::get_all_sheet_darts(const Edge AE, std::vector<Dart3> &ADarts)
 }
 /*----------------------------------------------------------------------------*/
 void
-CurvedBlocking::split_sheet(const Edge AE)
+CurvedBlocking::cut_sheet(const Edge AE)
 {
 	// We get a dart pe sheet edge
 	std::vector<Dart3> sheet_darts;
