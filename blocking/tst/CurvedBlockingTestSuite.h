@@ -197,7 +197,13 @@ TEST(CurvedBlockingTestSuite, split_one_block_twice)
 	ASSERT_EQ(2, classified_edges);
 	ASSERT_EQ(1, classified_nodes);
 	//we check the attribute values
-	bl.cut_sheet(e2);
+	gmds::math::Point p_cut(-5,5,2);
+	bl.cut_sheet(e2,p_cut);
+	//We cut along Z axis and point are so located on Z-plane with Z=5, -5, or 2.
+	for(auto n: bl.get_all_nodes()){
+		auto nz = n->info().point.Z();
+		ASSERT_TRUE((nz-5<1e-4) || (nz+5<1e-4) || (nz-2<1e-4));
+	}
 	ASSERT_EQ(18,bl.get_nb_cells<0>());
 	ASSERT_EQ(33,bl.get_nb_cells<1>());
 	ASSERT_EQ(20,bl.get_nb_cells<2>());
