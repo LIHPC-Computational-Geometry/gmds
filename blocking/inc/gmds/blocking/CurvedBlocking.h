@@ -364,11 +364,11 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	void get_all_sheet_edges(const Edge AE, std::vector<Edge> &AEdges);
 	/**@brief Get one dart per  parallel edges composing the sheet defined from edge
-	 * @p AE. Darts are given in such a way that a recurent pattern occurs
+	 * @p AE. All the returned darts are on the same side of each edge.
 	 * @param[in]  AE			the edge we start from
 	 * @param[out] ADarts	one dart per edge of the sheet defined by @p AE
 	 */
-	void get_all_sheet_edges(const Edge AE, std::vector<Dart3> &ADarts);
+	void get_all_sheet_darts(const Edge AE, std::vector<Dart3> &ADarts);
 	/**@brief Split the sheet defined by edge @p AE
 	 * @param AE an edge we want to split in two edges
 	 */
