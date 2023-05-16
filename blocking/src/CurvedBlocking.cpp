@@ -474,6 +474,14 @@ CurvedBlocking::split_sheet(const Edge AE)
 		}
 
 		math::Point pc = 0.5 * (pa + pb);
+		if(edge_att.geom_dim==1) {
+			auto curve = m_geom_model->getCurve(edge_att.geom_id);
+			curve->project(pc);
+		}
+		else if(edge_att.geom_dim==2) {
+			auto surf = m_geom_model->getSurface(edge_att.geom_id);
+			surf->project(pc);
+		}
 		m_gmap.set_attribute<0>(d_edge, create_node(edge_att.geom_dim, edge_att.geom_id, pc));
 	}
 
