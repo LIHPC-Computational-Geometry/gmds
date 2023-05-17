@@ -27,15 +27,13 @@ jobs:
         vcpkg install --triplet x64-windows gtest pybind11
         vcpkg list
         vcpkg integrate install
-        ls vcpkg\scripts\buildsystems
-        ls ${{github.workspace}}/vcpkg/scripts/buildsystems
-        #ls ${{github.workspace}}/vcpkg/installed
 
     - name: Configure
       run: >
         cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -Ax64
         -DVCPKG_TARGET_TRIPLET=x64-windows
         -DWITH_TEST=ON 
+        -DWITH_PYTHON_API=OFF
         -DENABLE_BLOCKING=OFF
         -DENABLE_CLAIRE=OFF
         -DENABLE_ELG3D=OFF
