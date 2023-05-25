@@ -350,12 +350,17 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	std::vector<Node> get_nodes_of_edge(const Edge AE);
 	/** Return the face center
 	 * @param AF a face
-	 * @return the center point of AF
+	 * @return the center point of @p AF
 	 */
 	math::Point get_center_of_face(const Face AF);
-	/** Return the face center
-	 * @param[in] AF a face
-	 * @return a point which is the center of AF
+	/** Return the edge center
+	 * @param AE an edge
+	 * @return the center point of @p AE
+	 */
+	math::Point get_center_of_edge(const Edge AE);
+	/** Return the block center
+	 * @param[in] AB a block
+	 * @return a point which is the center of @p AB
 	 */
 	math::Point get_center_of_block(const Block AB);
 	/**@brief Get all the parallel edges composing the sheet defined from edge @p AE
@@ -369,10 +374,24 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[out] ADarts	one dart per edge of the sheet defined by @p AE
 	 */
 	void get_all_sheet_darts(const Edge AE, std::vector<Dart3> &ADarts);
-	/**@brief Split the sheet defined by edge @p AE
-	 * @param AE an edge we want to split in two edges
+	/**@brief Split the sheet defined by edge @p AE at the closest position of @p AP.
+	 * 		 The method project @p AP on @p AE. It gives us a cut ratio, we use on
+	 * 		 all the parallel edges.
+	 * @param[in] AE an edge we want to split in two edges
+	 * @param[in] AP a point we use to define where AE must be cut.
 	 */
-	void split_sheet(const Edge AE);
+	void cut_sheet(const Edge AE, const math::Point& AP);
+	/**@brief Split the sheet defined by edge @p AE at the parameter @p AParam, which is included
+	 * 		 in ]0,1[. The first end point of @p AE is at parameter 0, the second one at parameter 1.
+	 *
+	 * @param[in] AE an edge we want to split in two edges
+	 * @param[in] AParam a parameter included in ]0,1[
+	 */
+	void cut_sheet(const Edge AE, const double AParam);
+	/**@brief Split the sheet defined by edge @p AE
+	 * @param[in] AE an edge we want to split in two edges
+	 */
+	void cut_sheet(const Edge AE);
 	/**@brief Low level operation that @p TDim-sew two darts
 	 * @tparam TDim sewing dimension
 	 * @param[in] AD1 First dart

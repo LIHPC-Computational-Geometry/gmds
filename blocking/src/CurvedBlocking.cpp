@@ -200,6 +200,13 @@ CurvedBlocking::get_nodes_of_edge(const CurvedBlocking::Edge AE)
 }
 /*----------------------------------------------------------------------------*/
 math::Point
+CurvedBlocking::get_center_of_edge(const Edge AE)
+{
+	std::vector<Node> n = get_nodes_of_edge(AE);
+	return 0.5 * (n[0]->info().point + n[1]->info().point );
+}
+/*----------------------------------------------------------------------------*/
+math::Point
 CurvedBlocking::get_center_of_face(const Face AF)
 {
 	std::vector<Node> nodes = get_nodes_of_face(AF);
@@ -448,11 +455,34 @@ CurvedBlocking::get_all_sheet_darts(const Edge AE, std::vector<Dart3> &ADarts)
 	}
 	m_gmap.free_mark(edge_mark);
 }
+
 /*----------------------------------------------------------------------------*/
 void
-CurvedBlocking::split_sheet(const Edge AE)
+CurvedBlocking::cut_sheet(const Edge AE)
 {
-	// We get a dart pe sheet edge
+	cut_sheet(AE,0.5);
+}
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::cut_sheet(const Edge AE, const math::Point& AP)
+{
+	std::vector<Node> n = get_nodes_of_edge(AE);
+	math::Point p0 = n[0]->info().point;
+	math::Point p1 = n[1]->info().point;
+	math::Segment s01(p0,p1);
+	math::Point p = s01.project(AP);
+	double param = math::Segment(p0,p).computeLength() / s01.computeLength();
+	cut_sheet(AE, param);
+}
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::cut_sheet(const Edge AE, const double AParam)
+{
+	assert(AParam>0 && AParam<1);
+	//Note: the parameterization starts from the first node of AE, which is the one containing AE->dart().
+	//As a consequence, our orientation is consistent in the algorithm.
+
+	// We get a dart per sheet edge
 	std::vector<Dart3> sheet_darts;
 	get_all_sheet_darts(AE, sheet_darts);
 
@@ -473,7 +503,7 @@ CurvedBlocking::split_sheet(const Edge AE)
 			m_gmap.mark(d_edge_23, mark_edge_darts);
 		}
 
-		math::Point pc = 0.5 * (pa + pb);
+		math::Point pc = (1-AParam)*pa + AParam*pb;
 		if(edge_att.geom_dim==1) {
 			auto curve = m_geom_model->getCurve(edge_att.geom_id);
 			curve->project(pc);
@@ -539,4 +569,5 @@ CurvedBlocking::split_sheet(const Edge AE)
 	m_gmap.free_mark(mark_edge_darts);
 	m_gmap.unmark_all(mark_done);
 	m_gmap.free_mark(mark_done);
+
 }
