@@ -28,21 +28,6 @@ jobs:
         fetch-depth: 2 # seems to be needed by codecov
         submodules: recursive
 
-    - name: Initialize the dev env with spack
-      run : |
-        git clone --depth=1 -b releases/latest https://github.com/spack/spack.git
-        sed -i 's#"${ARCHITECTURE}/${COMPILERNAME}-${COMPILERVER}/${PACKAGE}-${VERSION}-${HASH}"#"${PACKAGE}"#g' spack/etc/spack/defaults/config.yaml
-        . ./spack/share/spack/setup-env.sh
-        git clone --branch gmds_temp --depth=1 https://github.com/LIHPC-Computational-Geometry/spack_recipes_meshing.git
-        spack repo add ./spack_recipes_meshing/meshing_repo
-        spack repo add ./spack_recipes_meshing/supersede_repo
-        spack external find cmake
-        spack install lcov
-        spack install py-pybind11
-        spack install glpk
-        spack install googletest
-        spack install --only dependencies gmds+kmds+blocking ^kokkos+openmp ^cgns~mpi
-
     - name: Create Build Environment
       # We create a subdirectory that will stand as our working directory for all 
       # subsequent commands
