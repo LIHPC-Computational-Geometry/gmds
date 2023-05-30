@@ -269,6 +269,15 @@ GMDS_ADD_COMPONENT(
         ON                                # must be covered
 )
 
+GMDS_ADD_COMPONENT(
+        RLBLOCKING                       # cmake variable
+        rlBlocking                       # src subdirectory name
+        GMDSRlBlocking                    # name of the generated library
+        " "  # description
+        ON                                 # is activated
+        ON                                 # must be covered
+)
+
 
 #==============================================================================
 #mettre les find package uniquement ou necessaire
