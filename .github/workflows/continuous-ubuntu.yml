@@ -49,7 +49,7 @@ jobs:
       run: >
         pwd;
         ls;
-        cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=${{ matrix.config }} 
+        cmake /__w/gmds/gmds -DCMAKE_BUILD_TYPE=${{ matrix.config }} 
         -DWITH_CODE_COVERAGE=ON
         -DWITH_PYTHON_API=OFF
         -DENABLE_BLOCKING=ON
