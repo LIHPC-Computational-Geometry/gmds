@@ -32,7 +32,7 @@ jobs:
       # We create a subdirectory that will stand as our working directory for all 
       # subsequent commands
       run: >
-        cmake -E make_directory ${{github.workspace}}/build;
+        cmake -E make_directory /build;
         pwd;
         ls;
 
@@ -40,7 +40,7 @@ jobs:
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
       shell: bash
-      working-directory: ${{github.workspace}}/build
+      working-directory: /build
       # Note the current convention is to use the -S and -B options here to specify source
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
@@ -56,7 +56,7 @@ jobs:
         -DENABLE_ELGMoRpHING=ON
         -DENABLE_KMDS=ON
         -DCMAKE_PREFIX_PATH="/spack/opt/spack/lcov;/spack/opt/spack/glpk;/spack/opt/spack/googletest;/spack/opt/spack/py-pybind11;/spack/opt/spack/kokkos;/spack/opt/spack/cgal;/spack/opt/spack/gmp;/spack/opt/spack/mpfr;/spack/opt/spack/boost;/spack/opt/spack/cgns"
-        -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/buildinstall 
+        -DCMAKE_INSTALL_PREFIX=/buildinstall 
         -DGLPK_LIB=/spack/opt/spack/glpk/lib
         -DGLPK_INC=/spack/opt/spack/glpk/include
 
@@ -64,12 +64,12 @@ jobs:
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
       shell: bash
-      working-directory: ${{github.workspace}}/build
+      working-directory: /build
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config ${{ matrix.config }}
 
     - name: C++ Test
-      working-directory: ${{github.workspace}}/build
+      working-directory: /build
       shell: bash
       run: |
         if ${{ matrix.config == 'Release'}}; then
@@ -85,9 +85,9 @@ jobs:
     - name: Install
       run: |
         if ${{ matrix.config == 'Release'}}; then
-            cmake --install build --prefix ${{github.workspace}}/buildinstall --config Release
+            cmake --install build --prefix /buildinstall --config Release
         else
-            cmake --install build --prefix ${{github.workspace}}/buildinstall --config Debug
+            cmake --install build --prefix /buildinstall --config Debug
         fi
 
     - name: C++ Test lib install
