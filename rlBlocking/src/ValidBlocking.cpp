@@ -2,7 +2,7 @@
 // Created by bourmaudp on 21/02/23.
 //
 
-#include <gmds/rl_Blocking/ValidBlocking.h>
+#include <gmds/rlBlocking/ValidBlocking.h>
 
 using namespace gmds;
 

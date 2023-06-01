@@ -2,7 +2,7 @@
 // Created by bourmaudp on 04/01/23.
 //
 
-#include <gmds/rl_Blocking/LinkerBlockingGeom.h>
+#include <gmds/rlBlocking/LinkerBlockingGeom.h>
 
 using namespace gmds;
 
