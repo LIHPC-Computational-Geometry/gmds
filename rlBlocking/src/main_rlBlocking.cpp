@@ -11,7 +11,7 @@
 #include <gmds/ig/Node.h>
 #include <gmds/quality/QuadQuality.h>
 #include <gmds/quality/HexQuality.h>
-#include <gmds/rl_Blocking/BlockingQuality.h>
+#include <gmds/rlBlocking/BlockingQuality.h>
 #include <gmds/igalgo/GridBuilder.h>
 
 #include <gmds/blockMesher/BlockMesher.h>
@@ -21,8 +21,8 @@
 #include <gmds/cad/GeomSurface.h>
 #include <gmds/igalgo/BoundaryOperator.h>
 #include <gmds/smoothy/LaplacianSmoother.h>
-#include <gmds/rl_Blocking/LinkerBlockingGeom.h>
-#include <gmds/rl_Blocking/ValidBlocking.h>
+#include <gmds/rlBlocking/LinkerBlockingGeom.h>
+#include <gmds/rlBlocking/ValidBlocking.h>
 
 
 #include <gmds/io/IGMeshIOService.h>
@@ -59,7 +59,39 @@ int main(int argc, char* argv[])
 
 	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
 	classifier.clear_classification();
-	classifier.classify();
+	auto errors = classifier.classify();
+
+	std::cout<<"Nb points Geom : "<<geom_model.getNbPoints()<<std::endl;
+	std::cout<<"Nb points Blocking : "<<bl.get_all_nodes().size()<<std::endl;
+
+	std::cout<<"liste points non capturés : "<<std::endl;
+	for(auto pointsNoClass : errors.non_captured_points){
+		std::cout<<"Point :"<<pointsNoClass<<std::endl;
+	}
+	std::cout<<"liste courbes non capturées : "<<std::endl;
+	for(auto curvesNoClass : errors.non_captured_curves){
+		std::cout<<curvesNoClass<<std::endl;
+	}
+	std::cout<<"liste surfaces non capturées : "<<std::endl;
+	for(auto surfacesNoClass :errors.non_captured_surfaces){
+		std::cout<<surfacesNoClass<<std::endl;
+	}
+	std::cout<<"Class do"<<std::endl;
+
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
+	bl.convert_to_mesh(m);
+
+
+	gmds::IGMeshIOService ios(&m);
+	gmds::VTKWriter vtk_writer(&ios);
+	vtk_writer.setCellOptions(gmds::N|gmds::R);
+	vtk_writer.setDataOptions(gmds::N|gmds::R);
+	vtk_writer.write("debug_blocking.vtk");
+	gmds::VTKWriter vtk_writer_edges(&ios);
+	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
+	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
+	vtk_writer_edges.write("debug_blocking_edges.vtk");
+
 
 
 

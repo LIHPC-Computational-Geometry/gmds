@@ -236,7 +236,7 @@ CurvedBlockingClassifier::classify(const double AMaxDistance, const double APoin
 	//============ (1) We classify nodes =================
 	classify_nodes(errors, AMaxDistance, APointSnapDistance);
 
-	//============ (1) We classify nodes =================
+	//============ (2) We classify edges =================
 	classify_edges(errors);
 
 	return errors;
