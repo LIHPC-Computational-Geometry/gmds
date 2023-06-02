@@ -22,6 +22,16 @@ CurvedBlockingClassifier::detect_classification_errors()
 			errors.non_captured_points.push_back(p->id());
 		}
 	}
+	// 1) We check the geometric issues first
+	std::vector<cad::GeomCurve *> geom_curves;
+	m_geom_model->getCurves(geom_curves);
+	for (auto c : geom_curves) {
+		auto [found, n] = find_edge_classified_on(c);
+		if (!found) {
+			errors.non_captured_curves.push_back(c->id());
+		}
+	}
+	return errors;
 }
 /*----------------------------------------------------------------------------*/
 void
@@ -254,6 +264,70 @@ CurvedBlockingClassifier::find_node_classified_on(cad::GeomPoint *AP)
 }
 
 /*----------------------------------------------------------------------------*/
+
+
+std::pair<bool, CurvedBlocking::Edge>
+CurvedBlockingClassifier::find_edge_classified_on(cad::GeomCurve *AC)
+{
+
+	GMap3 *gm = m_blocking->gmap();
+
+	std::vector<CurvedBlocking::Edge> edgesOnCurve;
+	std::vector<GMap3::Attribute_handle<0>::type> nodesOnCurve;
+
+	for (auto it = gm->attributes<0>().begin(), itend = gm->attributes<0>().end(); it != itend; ++it) {
+		if (it->info().geom_dim == 1 && it->info().geom_id == AC->id()){
+			nodesOnCurve.push_back(it);
+		}
+	}
+	for (auto it = gm->attributes<1>().begin(), itend = gm->attributes<1>().end(); it != itend; ++it) {
+		if (it->info().geom_dim == 1 && it->info().geom_id == AC->id()){
+			edgesOnCurve.push_back(it);
+		}
+	}
+	for(auto edge : edgesOnCurve){
+		std::vector<CurvedBlocking::Node> nodes;
+		nodes.reserve(2);
+		Dart3 d = edge->dart();
+		nodes[0] = gm->attribute<0>(d);
+		nodes[1] = gm->attribute<0>(gm->alpha<0>(d));
+
+		auto point0 = AC->points()[0];
+		auto point1 = AC->points()[1];
+
+		if(nodes[0]->info().geom_dim=0 && (nodes[0]->info().geom_id==point0->id() || nodes[0]->info().geom_id==point1->id())){
+			std::vector<CurvedBlocking::Edge> edgesOnN1;
+			Dart3 d1 = nodes[1]->dart();
+			edgesOnN1[0] = gm->attribute<1>(d1);
+			edgesOnN1[1] = gm->attribute<1>(d1);
+
+
+
+		}
+		else if(nodes[1]->info().geom_dim=0 && (nodes[1]->info().geom_id==point0->id() || nodes[1]->info().geom_id==point1->id()) ){
+
+		}
+		else if(nodes[0]->info().geom_dim=1){
+
+		}
+		else if(nodes[1]->info().geom_dim=1){
+
+		}
+		else{
+			return {false, gm->attributes<1>().begin()};
+		}
+
+		if (!std::count(nodesOnCurve.begin(), nodesOnCurve.end(),nodes[0]) || !std::count(nodesOnCurve.begin(), nodesOnCurve.end(),nodes[1])) {
+			std::cout << "Edge no";
+		}
+
+	}
+	return {false, gm->attributes<1>().begin()};
+}
+
+/*----------------------------------------------------------------------------*/
+
+
 std::tuple<double, int, math::Point>
 CurvedBlockingClassifier::get_closest_cell(const math::Point &AP, const std::vector<cad::GeomEntity *> &AGeomCells)
 {
