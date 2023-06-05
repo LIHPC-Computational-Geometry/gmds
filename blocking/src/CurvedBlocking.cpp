@@ -332,10 +332,8 @@ CurvedBlocking::get_edges_of_node(const CurvedBlocking::Node AN)
 	auto vectDartsEdges = m_gmap.one_dart_per_incident_cell<1,0>(d);
 
 	for(auto it = vectDartsEdges.begin(),itend = vectDartsEdges.end(); it!= itend ; ++it){
-		std::cout<<"arete : "<<m_gmap.attribute<1>(it)->info().topo_id<<std::endl;
-
+		edges.push_back(m_gmap.attribute<1>(it));
 	}
-	auto e = m_gmap.darts_of_orbit<1,2,3>(d);
 	return edges;
 }
 /*----------------------------------------------------------------------------*/

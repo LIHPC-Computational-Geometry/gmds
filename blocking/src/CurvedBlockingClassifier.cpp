@@ -294,22 +294,20 @@ CurvedBlockingClassifier::find_edge_classified_on(cad::GeomCurve *AC)
 
 		auto point0 = AC->points()[0];
 		auto point1 = AC->points()[1];
-		std::cout<<"test get edges of node 0 : "<<std::endl;
-		m_blocking->get_edges_of_node(nodes[0]);
-		std::cout<<"test get edges of node 1: "<<std::endl;
-		m_blocking->get_edges_of_node(nodes[1]);
 
-		if(nodes[0]->info().geom_dim=0 && (nodes[0]->info().geom_id==point0->id() || nodes[0]->info().geom_id==point1->id())){
+		auto edgesOfN0 = m_blocking->get_edges_of_node(nodes[0]);
+		auto edgesOfN1 = m_blocking->get_edges_of_node(nodes[1]);
+		
+		if(nodes[0]->info().geom_dim == 0 &&
+		                                (nodes[0]->info().geom_id==point0->id() || nodes[0]->info().geom_id == point1->id()) &&
+		                                (nodes[1]->info().geom_dim == 1  && nodes[1]->info().geom_id == AC->id())){
 
-			std::vector<CurvedBlocking::Edge> edgesOnN1;
-			Dart3 d1 = nodes[1]->dart();
-			edgesOnN1[0] = gm->attribute<1>(d1);
-			edgesOnN1[1] = gm->attribute<1>(d1);
 
 
 
 		}
-		else if(nodes[1]->info().geom_dim=0 && (nodes[1]->info().geom_id==point0->id() || nodes[1]->info().geom_id==point1->id()) ){
+		else if(nodes[1]->info().geom_dim == 0 &&
+		         (nodes[1]->info().geom_id == point0->id() || nodes[1]->info().geom_id==point1->id()) ){
 
 		}
 		else if((nodes[0]->info().geom_dim=1) && (nodes[1]->info().geom_dim=1)){
