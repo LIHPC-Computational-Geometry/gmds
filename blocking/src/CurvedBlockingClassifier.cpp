@@ -29,6 +29,7 @@ CurvedBlockingClassifier::detect_classification_errors()
 		auto [found, n] = find_edge_classified_on(c);
 		if (!found) {
 			errors.non_captured_curves.push_back(c->id());
+			std::cout<<"Courbe non capt : "<<c->id()<<std::endl;
 		}
 	}
 	return errors;
@@ -134,10 +135,12 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 	// initial projection stage
 	for (auto it = gm->attributes<1>().begin(), itend = gm->attributes<1>().end(); it != itend; ++it) {
 		std::vector<CurvedBlocking::Node> ending_nodes = m_blocking->get_nodes_of_edge(it);
- 		auto geo_d0 = ending_nodes[0]->info().geom_dim;
+		auto geo_d0 = ending_nodes[0]->info().geom_dim;
 		auto geo_d1 = ending_nodes[1]->info().geom_dim;
 		auto geo_i0 = ending_nodes[0]->info().geom_id;
 		auto geo_i1 = ending_nodes[1]->info().geom_id;
+
+		std::cout<<"node 0 : "<<  << " et node 1 : "<<geo_i1<<std::endl;
 
 		/* We list possible configuration of ending nodes classification:
 		 * 1) Nodes are on different geom points. If those points have a common curve, then the
@@ -155,9 +158,12 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 			//We look for a common curve
 			cad::GeomPoint* p0 = m_geom_model->getPoint(geo_i0);
 			cad::GeomPoint* p1 = m_geom_model->getPoint(geo_i1);
+			std::cout<<"point 0 : "<<p0->id()<< " et point 1 : "<<p1->id()<<std::endl;
 			auto curve_id = m_geom_model->getCommonCurve(p0,p1);
+			std::cout<<" Courbe : "<<curve_id<<std::endl;
 			if(curve_id!=-1){
 				//We have a common curve (CONFIGURATION 1)
+				std::cout<<"DANS CONFIG 1"<<std::endl;
 				it->info().geom_dim = 1;
 				it->info().geom_id = curve_id;
 			}
@@ -166,6 +172,7 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 				auto surf_ids = m_geom_model->getCommonSurfaces(p0,p1);
 				if(surf_ids.size()==1){
 					//We have a common surface (CONFIGURATION 2)
+					std::cout<<"DANS CONFIG 2"<<std::endl;
 					it->info().geom_dim = 2;
 					it->info().geom_id = surf_ids[0];
 				}
@@ -173,16 +180,19 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 		}
 		else if (geo_d0==1 && geo_d1==1 && geo_i0==geo_i1){
 			// On the same curve (CONFIGURATION 3.a)
+			std::cout<<"DANS CONFIG 3.a"<<std::endl;
 			it->info().geom_dim = 1;
 			it->info().geom_id = geo_i0;
 		}
 		else if (geo_d0==2 && geo_d1==2 && geo_i0==geo_i1){
 			// On the same surface (CONFIGURATION 3.b)
+			std::cout<<"DANS CONFIG 3.b"<<std::endl;
 			it->info().geom_dim = 2;
 			it->info().geom_id = geo_i0;
 		}
 		else if (geo_d0==2 && geo_d1==2 && geo_i0==geo_i1){
 			// On the same surface (CONFIGURATION 3.b)
+			std::cout<<"DANS CONFIG 3.b"<<std::endl;
 			it->info().geom_dim = 2;
 			it->info().geom_id = geo_i0;
 		}
@@ -195,6 +205,7 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 			std::vector<cad::GeomPoint*> c_points = c->points();
 			if(c_points[0]==p ||c_points[1]==p){
 				// On a curve (CONFIGURATION 4.a)
+				std::cout<<"DANS CONFIG 4.A"<<std::endl;
 				it->info().geom_dim = 1;
 				it->info().geom_id = c_id;
 			}
@@ -209,6 +220,7 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 			for(auto s_p : s_points){
 				if(s_p==p){
 					// On a surface (CONFIGURATION 4.b)
+					std::cout<<"DANS CONFIG 4.b"<<std::endl;
 					it->info().geom_dim = 2;
 					it->info().geom_id = s_id;
 				}
@@ -224,6 +236,7 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 			for(auto s_c : s_curves){
 				if(s_c==c){
 					// On a surface (CONFIGURATION 5)
+					std::cout<<"DANS CONFIG 5"<<std::endl;
 					it->info().geom_dim = 2;
 					it->info().geom_id = s_id;
 				}
@@ -233,6 +246,7 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 			// Nothing (CONFIGURATION 6)
 			it->info().geom_dim = 4;
 			it->info().geom_id = NullID;
+			std::cout<<"DANS CONFIG 6"<<std::endl;
 			AErrors.non_classified_edges.push_back(it->info().topo_id);
 		}
 	}
@@ -266,7 +280,7 @@ CurvedBlockingClassifier::find_node_classified_on(cad::GeomPoint *AP)
 /*----------------------------------------------------------------------------*/
 
 
-std::pair<bool, CurvedBlocking::Edge>
+std::pair<bool, std::vector<CurvedBlocking::Edge>>
 CurvedBlockingClassifier::find_edge_classified_on(cad::GeomCurve *AC)
 {
 
@@ -295,34 +309,65 @@ CurvedBlockingClassifier::find_edge_classified_on(cad::GeomCurve *AC)
 		auto point0 = AC->points()[0];
 		auto point1 = AC->points()[1];
 
-		auto edgesOfN0 = m_blocking->get_edges_of_node(nodes[0]);
-		auto edgesOfN1 = m_blocking->get_edges_of_node(nodes[1]);
-		
-		if(nodes[0]->info().geom_dim == 0 &&
-		                                (nodes[0]->info().geom_id==point0->id() || nodes[0]->info().geom_id == point1->id()) &&
-		                                (nodes[1]->info().geom_dim == 1  && nodes[1]->info().geom_id == AC->id())){
+		if(nodes[0]->info().geom_dim == 0 && (nodes[1]->info().geom_dim == 0 )
+			&& ((nodes[0]->info().geom_id == point0->id() ) ||(nodes[0]->info().geom_id == point1->id() ))
+			&& ((nodes[1]->info().geom_id == point0->id() ) ||(nodes[1]->info().geom_id == point1->id() )) ){
 
-
-
-
+			return {true,edgesOnCurve};
 		}
+
+		else if(nodes[0]->info().geom_dim == 0 &&
+				  (nodes[0]->info().geom_id==point0->id() || nodes[0]->info().geom_id == point1->id()) &&
+				  (nodes[1]->info().geom_dim == 1  && nodes[1]->info().geom_id == AC->id())){
+
+			auto edgesOfN1 = m_blocking->get_edges_of_node(nodes[1]);
+			unsigned int nbEdgesOnCurve=0;
+			for(auto e : edgesOfN1){
+				if(e->info().geom_dim == 1 && e->info().geom_id==AC->id()){
+					nbEdgesOnCurve++;
+				}
+			}
+			if(nbEdgesOnCurve==2){
+				return{ true,edgesOnCurve};
+			}
+		}
+
 		else if(nodes[1]->info().geom_dim == 0 &&
-		         (nodes[1]->info().geom_id == point0->id() || nodes[1]->info().geom_id==point1->id()) ){
+				  (nodes[1]->info().geom_id == point0->id() || nodes[1]->info().geom_id==point1->id()) ){
+
+			auto edgesOfN0 = m_blocking->get_edges_of_node(nodes[0]);
+			unsigned int nbEdgesOnCurve=0;
+			for(auto e : edgesOfN0){
+				if(e->info().geom_dim == 1 && e->info().geom_id==AC->id()){
+					nbEdgesOnCurve++;
+				}
+			}
+			if(nbEdgesOnCurve==2){
+				return{ true,edgesOnCurve};
+			}
 
 		}
 		else if((nodes[0]->info().geom_dim=1) && (nodes[1]->info().geom_dim=1)){
+			unsigned int nbEdgesOnCurve=0;
+			auto edgesOfN0 = m_blocking->get_edges_of_node(nodes[0]);
+			for(auto e : edgesOfN0){
+				if(e->info().geom_dim == 1 && e->info().geom_id==AC->id()){
+					nbEdgesOnCurve++;
+				}
+			}
+			auto edgesOfN1 = m_blocking->get_edges_of_node(nodes[1]);
+			for(auto e : edgesOfN1){
+				if(e->info().geom_dim == 1 && e->info().geom_id==AC->id()){
+					nbEdgesOnCurve++;
+				}
+			}
 
+			if(nbEdgesOnCurve==4){
+				return{ true,edgesOnCurve};
+			}
 		}
-		else{
-			return {false, gm->attributes<1>().begin()};
-		}
-
-		if (!std::count(nodesOnCurve.begin(), nodesOnCurve.end(),nodes[0]) || !std::count(nodesOnCurve.begin(), nodesOnCurve.end(),nodes[1])) {
-			std::cout << "Edge no"<<std::endl;
-		}
-
 	}
-	return {false, gm->attributes<1>().begin()};
+	return {false, edgesOnCurve};
 }
 
 /*----------------------------------------------------------------------------*/

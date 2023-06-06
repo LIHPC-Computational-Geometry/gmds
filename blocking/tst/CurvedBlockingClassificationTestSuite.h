@@ -141,22 +141,26 @@ TEST(CurvedBlockingClassifierTestSuite,ReturnErrors){
 
 
 	classifier.clear_classification();
-	auto errors = classifier.classify();
 
-	errors = classifier.detect_classification_errors();
 	//Check nb points of the geometry and nb nodes of the blocking
 	ASSERT_EQ(12,geom_model.getNbPoints());
 	ASSERT_EQ(8,bl.get_all_nodes().size());
 
-	//Check nb points/curves/surfaces no captured
-	ASSERT_EQ(4,errors.non_captured_points.size());
-	ASSERT_EQ(6,errors.non_captured_curves.size());
-	//ASSERT_EQ(5,errors.non_captured_surfaces.size());
+
+	auto errors = classifier.classify();
+
 
 	//Check nb nodes/edges/faces no classified
 	ASSERT_EQ(0,errors.non_classified_nodes.size());
 	ASSERT_EQ(2,errors.non_classified_edges.size());
 	//ASSERT_EQ(3,errors.non_classified_faces.size());
+
+	errors = classifier.detect_classification_errors();
+	//Check nb points/curves/surfaces no captured
+	ASSERT_EQ(4,errors.non_captured_points.size());
+	ASSERT_EQ(8,errors.non_captured_curves.size());
+	//ASSERT_EQ(5,errors.non_captured_surfaces.size());
+
 
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
 	bl.convert_to_mesh(m);
