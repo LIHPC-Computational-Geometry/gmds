@@ -93,9 +93,9 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	/**@brief This method check if a 1-cell of the blocking structure is classified
 	 * on the geometrical curve @c AC.
 	 * @param AC a geometrical curve
-	 * @return true and the edge classified on @c AC, false otherwise
+	 * @return true and the edges classified on @c AC, false otherwise
 	 */
-	std::pair<bool, CurvedBlocking::Edge> find_edge_classified_on(cad::GeomCurve* AC);
+	std::pair<bool, std::vector<CurvedBlocking::Edge>> find_edge_classified_on(cad::GeomCurve* AC);
 
 
 	/**@brief This methods classify all nodes onto the geometric model. It is called internally
