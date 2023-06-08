@@ -135,6 +135,7 @@ TEST(CurvedBlockingClassifierTestSuite,ReturnErrors){
 	set_up(&geom_model,"B0.vtk");
 	gmds::blocking::CurvedBlocking bl(&geom_model,true);
 
+	geom_model.write_surfaces("debug_classify.vtk");
 	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
 
 

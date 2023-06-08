@@ -134,13 +134,14 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 
 	// initial projection stage
 	for (auto it = gm->attributes<1>().begin(), itend = gm->attributes<1>().end(); it != itend; ++it) {
+		std::cout<<">>>>>>> EDGE "<<it->info().topo_id<<std::endl;
 		std::vector<CurvedBlocking::Node> ending_nodes = m_blocking->get_nodes_of_edge(it);
 		auto geo_d0 = ending_nodes[0]->info().geom_dim;
 		auto geo_d1 = ending_nodes[1]->info().geom_dim;
 		auto geo_i0 = ending_nodes[0]->info().geom_id;
 		auto geo_i1 = ending_nodes[1]->info().geom_id;
 
-		std::cout<<"node 0 : "<<  << " et node 1 : "<<geo_i1<<std::endl;
+		std::cout<<"node 0 : "<<  geo_i0<< " et node 1 : "<<geo_i1<<std::endl;
 
 		/* We list possible configuration of ending nodes classification:
 		 * 1) Nodes are on different geom points. If those points have a common curve, then the
@@ -168,14 +169,19 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 				it->info().geom_id = curve_id;
 			}
 			else{
+				// Nothing (CONFIGURATION 6)
+				it->info().geom_dim = 4;
+				it->info().geom_id = NullID;
+				std::cout<<"DANS CONFIG 6"<<std::endl;
+				AErrors.non_classified_edges.push_back(it->info().topo_id);
 				//We look for a common surface
-				auto surf_ids = m_geom_model->getCommonSurfaces(p0,p1);
-				if(surf_ids.size()==1){
+				//auto surf_ids = m_geom_model->getCommonSurfaces(p0,p1);
+				/*if(surf_ids.size()==1){
 					//We have a common surface (CONFIGURATION 2)
 					std::cout<<"DANS CONFIG 2"<<std::endl;
 					it->info().geom_dim = 2;
 					it->info().geom_id = surf_ids[0];
-				}
+				}*/
 			}
 		}
 		else if (geo_d0==1 && geo_d1==1 && geo_i0==geo_i1){

@@ -897,7 +897,7 @@ FACManager::getCommonCurve(GeomPoint *AP1, GeomPoint *AP2) const
 
 	for (auto e1_edge : e1) {
 		for (auto e2_edge : e2) {
-			if ((*edge_on_crv)[e1_edge] == (*edge_on_crv)[e2_edge]) {
+			if (((*edge_on_crv)[e1_edge] == (*edge_on_crv)[e2_edge] ) && (*edge_on_crv)[e2_edge]!=0) {
 				return (*edge_on_crv)[e1_edge];
 			}
 		}
@@ -909,6 +909,7 @@ std::vector<int>
 FACManager::getCommonSurfaces(gmds::cad::GeomPoint *AP1, gmds::cad::GeomPoint *AP2) const
 {
 	std::vector<int> common_surfaces;
+	std::set<int> common_surfaces_set;
 	FACPoint *p1 = dynamic_cast<FACPoint *>(AP1);
 	FACPoint *p2 = dynamic_cast<FACPoint *>(AP2);
 
@@ -921,12 +922,15 @@ FACManager::getCommonSurfaces(gmds::cad::GeomPoint *AP1, gmds::cad::GeomPoint *A
 	std::vector<TCellID> face_ids2 = n2.getIDs<Face>();
 
 	for (auto id1 : face_ids1) {
-		for (auto id2 : face_ids1) {
+		for (auto id2 : face_ids2) {
 			if ((*face_on_surf)[id1] == (*face_on_surf)[id2]) {
-				common_surfaces.push_back((*face_on_surf)[id1]);
+				common_surfaces_set.insert((*face_on_surf)[id1]);
 			}
 		}
 	}
+	for(auto i:common_surfaces_set)
+		common_surfaces.push_back(i);
+
 	return common_surfaces;
 }
 /*----------------------------------------------------------------------------*/
