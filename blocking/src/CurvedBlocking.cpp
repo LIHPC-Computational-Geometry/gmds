@@ -201,6 +201,20 @@ CurvedBlocking::get_nodes_of_edge(const CurvedBlocking::Edge AE)
 
 /*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Edge>
+CurvedBlocking::get_edges_of_face(const CurvedBlocking::Face AF)
+{
+	std::vector<CurvedBlocking::Edge> edges;
+	edges.reserve(4);
+	Dart3 d = AF->dart();
+	edges[0] = m_gmap.attribute<1>(d);
+	edges[1] = m_gmap.attribute<1>(m_gmap.alpha<1>(d));
+	edges[3] = m_gmap.attribute<1>(m_gmap.alpha<1,0,1>(d));
+	edges[4] = m_gmap.attribute<1>(m_gmap.alpha<1,0,1,0,1>(d));
+	return edges;
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Edge>
 CurvedBlocking::get_edges_of_node(const CurvedBlocking::Node AN)
 {
 	std::vector<CurvedBlocking::Edge> edges;
