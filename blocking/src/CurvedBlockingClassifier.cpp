@@ -140,16 +140,15 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 		auto geo_i1 = ending_nodes[1]->info().geom_id;
 
 		/* We list possible configuration of ending nodes classification:
+		 * We decide to don't classified an edge on a surface during this process. We'll classify the edges in this case, when we'll classify the faces
 		 * 1) Nodes are on different geom points. If those points have a common curve, then the
 		 *    edge is on this curve. If they have several common curves,we don't know.
 		 * 2) Nodes are on different geom points. If those points have no common curve, but a
-		 *    common surface, then the edge is on this surface.
-		 * 3) Nodes are on the same curve or surface, then is the edge.
-		 * 4) One node is on a point P and the other on a curve or a surface, then the edge is
-       *    on this curve or surface if it is adjacent to point P
-		 * 5) One node is on a curve C and the other on a surface S, then the edge is
-		 *    on S if S is adjacent to point C
-		 * 6) Otherwise we don't know how to classify the edge
+		 *    common surface, then the edge is not classified.
+		 * 3) Nodes are on the same curve, then is the edge.
+		 * 4) One node is on a point P and the other on a curve, then the edge is
+       *    on this curve if it is adjacent to point P
+		 * 5) Otherwise we don't know how to classify the edge
 		 */
 		if (geo_d0==0 && geo_d1==0 && geo_i0!=geo_i1){
 			//We look for a common curve
@@ -166,26 +165,13 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 				it->info().geom_dim = 4;
 				it->info().geom_id = NullID;
 				AErrors.non_classified_edges.push_back(it->info().topo_id);
-				//We look for a common surface
-				//auto surf_ids = m_geom_model->getCommonSurfaces(p0,p1);
-				/*if(surf_ids.size()==1){
-					//We have a common surface (CONFIGURATION 2)
-					std::cout<<"DANS CONFIG 2"<<std::endl;
-					it->info().geom_dim = 2;
-					it->info().geom_id = surf_ids[0];
-				}*/
 			}
 		}
 		else if (geo_d0==1 && geo_d1==1 && geo_i0==geo_i1){
-			// On the same curve (CONFIGURATION 3.a)
+			// On the same curve (CONFIGURATION 3)
 			it->info().geom_dim = 1;
 			it->info().geom_id = geo_i0;
 		}
-		/*else if (geo_d0==2 && geo_d1==2 && geo_i0==geo_i1){
-			// On the same surface (CONFIGURATION 3.b), we decide to don't classify right now, if the surface is not captured
-			it->info().geom_dim = 2;
-			it->info().geom_id = geo_i0;
-		}*/
 
 		else if ((geo_d0==0 && geo_d1==1) || (geo_d0==1 && geo_d1==0)){
 			//we check if the point is adjacent to the curve
@@ -195,43 +181,13 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 			cad::GeomCurve* c = m_geom_model->getCurve(c_id);
 			std::vector<cad::GeomPoint*> c_points = c->points();
 			if(c_points[0]==p ||c_points[1]==p){
-				// On a curve (CONFIGURATION 4.a)
+				// On a curve (CONFIGURATION 4)
 				it->info().geom_dim = 1;
 				it->info().geom_id = c_id;
 			}
 		}
-		else if ((geo_d0==0 && geo_d1==2) || (geo_d0==2 && geo_d1==0)){
-			//we check if the point is adjacent to the surface
-			auto p_id = (geo_d0<geo_d1)?geo_d0:geo_d1;
-			auto s_id = (geo_d0>geo_d1)?geo_d0:geo_d1;
-			cad::GeomPoint* p = m_geom_model->getPoint(p_id);
-			cad::GeomSurface* s = m_geom_model->getSurface(s_id);
-			std::vector<cad::GeomPoint*> s_points = s->points();
-			for(auto s_p : s_points){
-				if(s_p==p){
-					// On a surface (CONFIGURATION 4.b)
-					it->info().geom_dim = 2;
-					it->info().geom_id = s_id;
-				}
-			}
-		}
-		else if ((geo_d0==1 && geo_d1==2) || (geo_d0==2 && geo_d1==1)){
-			//we check if the point is adjacent to the surface
-			auto c_id = (geo_d0<geo_d1)?geo_d0:geo_d1;
-			auto s_id = (geo_d0>geo_d1)?geo_d0:geo_d1;
-			cad::GeomCurve* c = m_geom_model->getCurve(c_id);
-			cad::GeomSurface* s = m_geom_model->getSurface(s_id);
-			std::vector<cad::GeomCurve*> s_curves = s->curves();
-			for(auto s_c : s_curves){
-				if(s_c==c){
-					// On a surface (CONFIGURATION 5)
-					it->info().geom_dim = 2;
-					it->info().geom_id = s_id;
-				}
-			}
-		}
 		else {
-			// Nothing (CONFIGURATION 6)
+			// Nothing (CONFIGURATION 5)
 			it->info().geom_dim = 4;
 			it->info().geom_id = NullID;
 			AErrors.non_classified_edges.push_back(it->info().topo_id);
@@ -320,7 +276,7 @@ CurvedBlockingClassifier::classify(const double AMaxDistance, const double APoin
 	classify_edges(errors);
 
 	//============ (2) We classify faces =================
-	classify_faces(errors);
+	//classify_faces(errors);
 
 	return errors;
 }
