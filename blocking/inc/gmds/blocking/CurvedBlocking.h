@@ -408,6 +408,11 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @return the ending nodes of the edge
 	 */
 	std::vector<Node> get_nodes_of_edge(const Edge AE);
+	/** Get the edges from a face.
+	 * @param[in] AF a face
+	 * @return the edges of a face
+	 */
+	std::vector<Edge> get_edges_of_face(const Face AF);
 	/** Get the edges from a node
 	 * @param[in] AN a node
 	 * @return the edges of a node

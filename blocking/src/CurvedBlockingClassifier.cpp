@@ -22,14 +22,13 @@ CurvedBlockingClassifier::detect_classification_errors()
 			errors.non_captured_points.push_back(p->id());
 		}
 	}
-	// 1) We check the geometric issues first
+	// 2) We check the geometric curves
 	std::vector<cad::GeomCurve *> geom_curves;
 	m_geom_model->getCurves(geom_curves);
 	for (auto c : geom_curves) {
 		auto [found, n] = find_edge_classified_on(c);
 		if (!found) {
 			errors.non_captured_curves.push_back(c->id());
-			std::cout<<"Courbe non capt : "<<c->id()<<std::endl;
 		}
 	}
 	return errors;
@@ -134,14 +133,11 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 
 	// initial projection stage
 	for (auto it = gm->attributes<1>().begin(), itend = gm->attributes<1>().end(); it != itend; ++it) {
-		std::cout<<">>>>>>> EDGE "<<it->info().topo_id<<std::endl;
 		std::vector<CurvedBlocking::Node> ending_nodes = m_blocking->get_nodes_of_edge(it);
 		auto geo_d0 = ending_nodes[0]->info().geom_dim;
 		auto geo_d1 = ending_nodes[1]->info().geom_dim;
 		auto geo_i0 = ending_nodes[0]->info().geom_id;
 		auto geo_i1 = ending_nodes[1]->info().geom_id;
-
-		std::cout<<"node 0 : "<<  geo_i0<< " et node 1 : "<<geo_i1<<std::endl;
 
 		/* We list possible configuration of ending nodes classification:
 		 * 1) Nodes are on different geom points. If those points have a common curve, then the
@@ -159,12 +155,9 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 			//We look for a common curve
 			cad::GeomPoint* p0 = m_geom_model->getPoint(geo_i0);
 			cad::GeomPoint* p1 = m_geom_model->getPoint(geo_i1);
-			std::cout<<"point 0 : "<<p0->id()<< " et point 1 : "<<p1->id()<<std::endl;
 			auto curve_id = m_geom_model->getCommonCurve(p0,p1);
-			std::cout<<" Courbe : "<<curve_id<<std::endl;
 			if(curve_id!=-1){
 				//We have a common curve (CONFIGURATION 1)
-				std::cout<<"DANS CONFIG 1"<<std::endl;
 				it->info().geom_dim = 1;
 				it->info().geom_id = curve_id;
 			}
@@ -172,7 +165,6 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 				// Nothing (CONFIGURATION 6)
 				it->info().geom_dim = 4;
 				it->info().geom_id = NullID;
-				std::cout<<"DANS CONFIG 6"<<std::endl;
 				AErrors.non_classified_edges.push_back(it->info().topo_id);
 				//We look for a common surface
 				//auto surf_ids = m_geom_model->getCommonSurfaces(p0,p1);
@@ -186,22 +178,15 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 		}
 		else if (geo_d0==1 && geo_d1==1 && geo_i0==geo_i1){
 			// On the same curve (CONFIGURATION 3.a)
-			std::cout<<"DANS CONFIG 3.a"<<std::endl;
 			it->info().geom_dim = 1;
 			it->info().geom_id = geo_i0;
 		}
-		else if (geo_d0==2 && geo_d1==2 && geo_i0==geo_i1){
-			// On the same surface (CONFIGURATION 3.b)
-			std::cout<<"DANS CONFIG 3.b"<<std::endl;
+		/*else if (geo_d0==2 && geo_d1==2 && geo_i0==geo_i1){
+			// On the same surface (CONFIGURATION 3.b), we decide to don't classify right now, if the surface is not captured
 			it->info().geom_dim = 2;
 			it->info().geom_id = geo_i0;
-		}
-		else if (geo_d0==2 && geo_d1==2 && geo_i0==geo_i1){
-			// On the same surface (CONFIGURATION 3.b)
-			std::cout<<"DANS CONFIG 3.b"<<std::endl;
-			it->info().geom_dim = 2;
-			it->info().geom_id = geo_i0;
-		}
+		}*/
+
 		else if ((geo_d0==0 && geo_d1==1) || (geo_d0==1 && geo_d1==0)){
 			//we check if the point is adjacent to the curve
 			auto p_id = (geo_d0<geo_d1)?geo_d0:geo_d1;
@@ -211,7 +196,6 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 			std::vector<cad::GeomPoint*> c_points = c->points();
 			if(c_points[0]==p ||c_points[1]==p){
 				// On a curve (CONFIGURATION 4.a)
-				std::cout<<"DANS CONFIG 4.A"<<std::endl;
 				it->info().geom_dim = 1;
 				it->info().geom_id = c_id;
 			}
@@ -226,7 +210,6 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 			for(auto s_p : s_points){
 				if(s_p==p){
 					// On a surface (CONFIGURATION 4.b)
-					std::cout<<"DANS CONFIG 4.b"<<std::endl;
 					it->info().geom_dim = 2;
 					it->info().geom_id = s_id;
 				}
@@ -242,7 +225,6 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 			for(auto s_c : s_curves){
 				if(s_c==c){
 					// On a surface (CONFIGURATION 5)
-					std::cout<<"DANS CONFIG 5"<<std::endl;
 					it->info().geom_dim = 2;
 					it->info().geom_id = s_id;
 				}
@@ -252,11 +234,79 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 			// Nothing (CONFIGURATION 6)
 			it->info().geom_dim = 4;
 			it->info().geom_id = NullID;
-			std::cout<<"DANS CONFIG 6"<<std::endl;
 			AErrors.non_classified_edges.push_back(it->info().topo_id);
 		}
 	}
 }
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &AErrors)
+{
+
+	GMap3 *gm = m_blocking->gmap();
+	std::vector<cad::GeomPoint *> geom_points;
+	std::vector<cad::GeomCurve *> geom_curves;
+	std::vector<cad::GeomSurface *> geom_surfaces;
+	m_geom_model->getPoints(geom_points);
+	m_geom_model->getCurves(geom_curves);
+	m_geom_model->getSurfaces(geom_surfaces);
+
+
+	auto errors_Capt = detect_classification_errors();
+	//check if all points and all curves are captured
+	if(detect_classification_errors().non_captured_surfaces.empty() && detect_classification_errors().non_captured_points.empty()){
+
+	}
+
+
+	// initial projection stage
+	for (auto it = gm->attributes<2>().begin(), itend = gm->attributes<2>().end(); it != itend; ++it) {
+
+		std::vector<CurvedBlocking::Node> face_nodes = m_blocking->get_nodes_of_face(it);
+		std::vector<CurvedBlocking::Edge> face_edges = m_blocking->get_edges_of_face(it);
+		auto geo_n_d0 = face_nodes[0]->info().geom_dim;
+		auto geo_n_d1 = face_nodes[1]->info().geom_dim;
+		auto geo_n_d2 = face_nodes[2]->info().geom_dim;
+		auto geo_n_d3 = face_nodes[3]->info().geom_dim;
+		auto geo_n_i0 = face_nodes[0]->info().geom_id;
+		auto geo_n_i1 = face_nodes[1]->info().geom_id;
+		auto geo_n_i2 = face_nodes[2]->info().geom_id;
+		auto geo_n_i3 = face_nodes[3]->info().geom_id;
+
+
+		auto geo_e_d0 = face_edges[0]->info().geom_dim;
+		auto geo_e_d1 = face_edges[1]->info().geom_dim;
+		auto geo_e_d2 = face_edges[2]->info().geom_dim;
+		auto geo_e_d3 = face_edges[3]->info().geom_dim;
+		auto geo_e_i0 = face_edges[0]->info().geom_id;
+		auto geo_e_i1 = face_edges[1]->info().geom_id;
+		auto geo_e_i2 = face_edges[2]->info().geom_id;
+		auto geo_e_i3 = face_edges[3]->info().geom_id;
+
+		std::cout<<"Noeud"<<std::endl;
+		for(int i=0;i<4;i++){
+			std::cout<<face_nodes[i]->info().geom_id<<std::endl;
+		}
+		std::cout<<"Arete"<<std::endl;
+		for(int i=0;i<4;i++){
+			std::cout<<face_edges[i]->info().geom_id<<std::endl;
+		}
+
+		/* We list possible configuration of elements classification:
+		 * 1) Nodes are on different geom points. If those points have a common curve, then the
+		 *    edge is on this curve. If they have several common curves,we don't know.
+		 * 2) Nodes are on different geom points. If those points have no common curve, but a
+		 *    common surface, then the edge is on this surface.
+		 * 3) Nodes are on the same curve or surface, then is the edge.
+		 * 4) One node is on a point P and the other on a curve or a surface, then the edge is
+       *    on this curve or surface if it is adjacent to point P
+		 * 5) One node is on a curve C and the other on a surface S, then the edge is
+		 *    on S if S is adjacent to point C
+		 * 6) Otherwise we don't know how to classify the edge
+		 */
+	}
+}
+
 /*----------------------------------------------------------------------------*/
 ClassificationErrors
 CurvedBlockingClassifier::classify(const double AMaxDistance, const double APointSnapDistance)
@@ -268,6 +318,9 @@ CurvedBlockingClassifier::classify(const double AMaxDistance, const double APoin
 
 	//============ (2) We classify edges =================
 	classify_edges(errors);
+
+	//============ (2) We classify faces =================
+	classify_faces(errors);
 
 	return errors;
 }
@@ -395,5 +448,17 @@ CurvedBlockingClassifier::get_closest_cell(const math::Point &AP, const std::vec
 		}
 	}
 	return {closest_distance, closest_id, closest_point};
+}
+
+/*----------------------------------------------------------------------------*/
+bool CurvedBlockingClassifier::boundary_surface_captured(cad::GeomSurface *AS){
+	auto curves = AS->curves();
+	for(auto c : curves){
+		auto [found, n] = find_edge_classified_on(c);
+		if (!found) {
+			return false ;
+		}
+	}
+	return true;
 }
 /*----------------------------------------------------------------------------*/
