@@ -209,57 +209,15 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 
 	auto errors_Capt = detect_classification_errors();
 	//check if all points and all curves are captured
-	if(detect_classification_errors().non_captured_surfaces.empty() && detect_classification_errors().non_captured_points.empty()){
-
+	if(detect_classification_errors().non_captured_surfaces.empty() && detect_classification_errors().non_captured_points.empty()) {
+		auto faces = m_blocking->get_all_faces();
+		auto map_faces_colored = exterior_faces_coloration(faces);
 	}
 
 
-	// initial projection stage
-	for (auto it = gm->attributes<2>().begin(), itend = gm->attributes<2>().end(); it != itend; ++it) {
-
-		std::vector<CurvedBlocking::Node> face_nodes = m_blocking->get_nodes_of_face(it);
-		std::vector<CurvedBlocking::Edge> face_edges = m_blocking->get_edges_of_face(it);
-		auto geo_n_d0 = face_nodes[0]->info().geom_dim;
-		auto geo_n_d1 = face_nodes[1]->info().geom_dim;
-		auto geo_n_d2 = face_nodes[2]->info().geom_dim;
-		auto geo_n_d3 = face_nodes[3]->info().geom_dim;
-		auto geo_n_i0 = face_nodes[0]->info().geom_id;
-		auto geo_n_i1 = face_nodes[1]->info().geom_id;
-		auto geo_n_i2 = face_nodes[2]->info().geom_id;
-		auto geo_n_i3 = face_nodes[3]->info().geom_id;
 
 
-		auto geo_e_d0 = face_edges[0]->info().geom_dim;
-		auto geo_e_d1 = face_edges[1]->info().geom_dim;
-		auto geo_e_d2 = face_edges[2]->info().geom_dim;
-		auto geo_e_d3 = face_edges[3]->info().geom_dim;
-		auto geo_e_i0 = face_edges[0]->info().geom_id;
-		auto geo_e_i1 = face_edges[1]->info().geom_id;
-		auto geo_e_i2 = face_edges[2]->info().geom_id;
-		auto geo_e_i3 = face_edges[3]->info().geom_id;
 
-		std::cout<<"Noeud"<<std::endl;
-		for(int i=0;i<4;i++){
-			std::cout<<face_nodes[i]->info().geom_id<<std::endl;
-		}
-		std::cout<<"Arete"<<std::endl;
-		for(int i=0;i<4;i++){
-			std::cout<<face_edges[i]->info().geom_id<<std::endl;
-		}
-
-		/* We list possible configuration of elements classification:
-		 * 1) Nodes are on different geom points. If those points have a common curve, then the
-		 *    edge is on this curve. If they have several common curves,we don't know.
-		 * 2) Nodes are on different geom points. If those points have no common curve, but a
-		 *    common surface, then the edge is on this surface.
-		 * 3) Nodes are on the same curve or surface, then is the edge.
-		 * 4) One node is on a point P and the other on a curve or a surface, then the edge is
-       *    on this curve or surface if it is adjacent to point P
-		 * 5) One node is on a curve C and the other on a surface S, then the edge is
-		 *    on S if S is adjacent to point C
-		 * 6) Otherwise we don't know how to classify the edge
-		 */
-	}
 }
 
 /*----------------------------------------------------------------------------*/
