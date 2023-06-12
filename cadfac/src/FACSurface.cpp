@@ -4,6 +4,7 @@
  *  \date    30/05/2011
  */
 /*----------------------------------------------------------------------------*/
+#include <algorithm>
 #include <map>
 #include <set>
 /*----------------------------------------------------------------------------*/
@@ -30,7 +31,7 @@ namespace gmds{
         void FACSurface::resetIdCounter() {m_next_id=1;}
 /*----------------------------------------------------------------------------*/
         FACSurface::FACSurface(Mesh* AMesh)
-                : m_support(AMesh), m_kd_tree(nullptr)
+                : m_support(AMesh), m_id(m_next_id++), m_kd_tree(nullptr)
         {}
 /*----------------------------------------------------------------------------*/
 
@@ -87,20 +88,12 @@ namespace gmds{
             maxXYZ[2]=pi.Z();
             for(auto i:node_ids){
                 math::Point pi = m_support->get<Node>(i).point();
-                if (pi.X()<minXYZ[0])
-                    minXYZ[0]=pi.X();
-                else if (pi.X()>maxXYZ[0])
-                    maxXYZ[0]=pi.X();
-
-                if (pi.Y()<minXYZ[1])
-                    minXYZ[1]=pi.Y();
-                else if (pi.Y()>maxXYZ[1])
-                    maxXYZ[1]=pi.Y();
-
-                if (pi.Z()<minXYZ[2])
-                    minXYZ[2]=pi.Z();
-                else if (pi.Z()>maxXYZ[2])
-                    maxXYZ[2]=pi.Z();
+		          minXYZ[0] = std::min(minXYZ[0],pi.X());
+		          minXYZ[1] = std::min(minXYZ[1],pi.Y());
+		          minXYZ[2] = std::min(minXYZ[2],pi.Z());
+		          maxXYZ[0] = std::max(maxXYZ[0],pi.X());
+		          maxXYZ[1] = std::max(maxXYZ[1],pi.Y());
+		          maxXYZ[2] = std::max(maxXYZ[2],pi.Z());
             }
         }
 /*----------------------------------------------------------------------------*/
