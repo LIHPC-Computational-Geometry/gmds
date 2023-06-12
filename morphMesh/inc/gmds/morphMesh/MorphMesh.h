@@ -34,7 +34,8 @@ class LIB_GMDS_MORPHMESH_API MorphMesh
 	 /*Surement a retirer plus tard*/
 	 void markLockedCells();
 
-	 math::Point computeLocalOrigin(const math::Point& AP);
+	 bool computeLocalOrigin(const math::Point& AP, math::Point& AResult);
+	 bool computeLocalOriginZ(const math::Point& AP, math::Point& AResult);
 
 	 double findHomothetyRatio(const math::Point& AP, const Node& ANode);
 
@@ -42,12 +43,17 @@ class LIB_GMDS_MORPHMESH_API MorphMesh
 
 	 /* Locked nodes */
 	 int m_locked;
+	 Variable<int>* locked_faces;
 	 /* List of "homothetic points" that will define the mesh deformation */
 	 std::vector<math::Point> m_targets;
 	 /* The radius of an area that will be modified by a homothetic point*/
 	 double m_radius;
 	 /* Nodes on the surface of the mesh */
 	 std::vector<TCellID> m_surfNodes;
+	 std::vector<TCellID> m_locked_faces;
+	 //std::map<TCellID,bool> is_locked_node;
+	 //std::map<TCellID,math::Point> nodes_origins;
+
 
 	 /* The mesh to deform */
 	 Mesh* m_mesh;
