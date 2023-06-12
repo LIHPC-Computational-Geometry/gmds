@@ -11,6 +11,7 @@
 #include <gmds/math/Constants.h>
 #include <gmds/math/Plane.h>
 #include <gmds/ig/Mesh.h>
+#include <algorithm>
 #include <set>
 #include <map>
 #include <gmds/math/Line.h>
@@ -205,20 +206,12 @@ namespace gmds{
             maxXYZ[2]=pi.Z();
             for(unsigned int i=1;i<pnts.size();i++){
                 pi = pnts[i];
-                if (pi.X()<minXYZ[0])
-                    minXYZ[0]=pi.X();
-                else if (pi.X()>maxXYZ[0])
-                    maxXYZ[0]=pi.X();
-
-                if (pi.Y()<minXYZ[1])
-                    minXYZ[1]=pi.Y();
-                else if (pi.Y()>maxXYZ[1])
-                    maxXYZ[1]=pi.Y();
-
-                if (pi.Z()<minXYZ[2])
-                    minXYZ[2]=pi.Z();
-                else if (pi.Z()>maxXYZ[2])
-                    maxXYZ[2]=pi.Z();
+		          minXYZ[0] = std::min(minXYZ[0],pi.X());
+		          minXYZ[1] = std::min(minXYZ[1],pi.Y());
+		          minXYZ[2] = std::min(minXYZ[2],pi.Z());
+		          maxXYZ[0] = std::max(maxXYZ[0],pi.X());
+		          maxXYZ[1] = std::max(maxXYZ[1],pi.Y());
+		          maxXYZ[2] = std::max(maxXYZ[2],pi.Z());
             }
         }
 /*----------------------------------------------------------------------------*/
