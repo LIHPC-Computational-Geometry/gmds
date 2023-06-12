@@ -351,6 +351,18 @@ CurvedBlocking::get_edges_of_node(const CurvedBlocking::Node AN)
 	return edges;
 }
 /*----------------------------------------------------------------------------*/
+std::set<CurvedBlocking::Face>
+CurvedBlocking::get_faces_of_edge(const CurvedBlocking::Edge AE)
+{
+	std::set<CurvedBlocking::Face> faces;
+	Dart3 d = AE->dart();
+	auto vectDartsEdges = m_gmap.one_dart_per_incident_cell<1,0>(d);
+	  for(auto it = vectDartsEdges.begin(),itend = vectDartsEdges.end(); it!= itend ; ++it){
+		faces.insert(m_gmap.attribute<2>(it));
+	}
+	return faces;
+}
+/*----------------------------------------------------------------------------*/
 math::Point
 CurvedBlocking::get_center_of_edge(const Edge AE)
 {

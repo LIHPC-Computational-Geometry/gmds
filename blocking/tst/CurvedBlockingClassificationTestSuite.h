@@ -116,7 +116,8 @@ TEST(CurvedBlockingClassifierTestSuite,ReturnErrors){
 	ASSERT_EQ(4,errors.non_captured_points.size());
 	ASSERT_EQ(8,errors.non_captured_curves.size());
 	//ASSERT_EQ(5,errors.non_captured_surfaces.size());
-
+	auto all_faces = bl.get_all_faces();
+	classifier.exterior_faces_coloration(all_faces);
 
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
 	bl.convert_to_mesh(m);
