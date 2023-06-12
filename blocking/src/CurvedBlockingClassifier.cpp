@@ -207,7 +207,6 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 	m_geom_model->getCurves(geom_curves);
 	m_geom_model->getSurfaces(geom_surfaces);
 
-
 	auto errors_Capt = detect_classification_errors();
 	//check if all points and all curves are captured
 	if(detect_classification_errors().non_captured_surfaces.empty() && detect_classification_errors().non_captured_points.empty()){
@@ -417,4 +416,73 @@ bool CurvedBlockingClassifier::boundary_surface_captured(cad::GeomSurface *AS){
 	}
 	return true;
 }
+/*----------------------------------------------------------------------------*/
+std::map<gmds::TCellID,int>
+   CurvedBlockingClassifier::exterior_faces_coloration(std::vector<CurvedBlocking::Face> &Faces){
+
+	GMap3 *gm = m_blocking->gmap();
+
+	std::vector<CurvedBlocking::Face> ext_faces;
+
+	std::map<gmds::TCellID,int> faces_colored;
+
+	int color = 1;
+	for (auto it = gm->attributes<2>().begin(), itend = gm->attributes<2>().end(); it != itend; ++it) {
+		Dart3 d = it->dart();
+
+		if (gm->alpha<3>(d) == d){
+			ext_faces.push_back(it);
+		}
+	}
+	while(!ext_faces.empty()){
+		//take a face and color this face, after remove from the original list
+		CurvedBlocking::Face aF_Init = ext_faces[0];
+
+		faces_colored.insert(std::pair<gmds::TCellID,int>(aF_Init->info().topo_id,color));
+		auto edges_of_aF_Init = m_blocking->get_edges_of_face(aF_Init);
+
+		std::set<CurvedBlocking::Face> faces_to_check ;
+
+
+		for(auto e : edges_of_aF_Init){
+			std::set<CurvedBlocking::Face> faces_of_e = m_blocking->get_faces_of_edge(e);
+			if(faces_of_e.size()!=2) {
+				for (auto f : faces_of_e) {
+					if (f->info().topo_id != aF_Init->info().topo_id && (f->dart() == gm->alpha<3>(f->dart()))) {
+						faces_to_check.insert(f);
+					}
+				}
+			}
+		}
+		int iterator = 0;
+		while(faces_to_check.size()<iterator && (faces_to_check.size()!=0)){
+			CurvedBlocking::Face aF = *std::next(faces_to_check.begin(), iterator);
+			faces_colored.insert(std::pair<gmds::TCellID,int>(aF->info().topo_id,color));
+			auto edges_of_aF = m_blocking->get_edges_of_face(aF);
+
+			for(auto e : edges_of_aF){
+				std::set<CurvedBlocking::Face> faces_of_e = m_blocking->get_faces_of_edge(e);
+				if(faces_of_e.size()!=2) {
+					for (auto f : faces_of_e) {
+						if (f->info().topo_id != aF_Init->info().topo_id && (f->dart() == gm->alpha<3>(f->dart()))) {
+							faces_to_check.insert(f);
+						}
+					}
+				}
+			}
+			iterator++;
+		}
+
+
+		color++;
+		ext_faces.erase(ext_faces.begin());
+
+	}
+
+
+	return faces_colored;
+
+}
+
+
 /*----------------------------------------------------------------------------*/

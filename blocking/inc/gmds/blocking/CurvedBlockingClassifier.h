@@ -82,6 +82,11 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	ClassificationErrors classify(const double AMaxDistance=0.01, const double APointSnapDistance=0.1);
 
 
+	/**@brief This methods colored all the faces with the same color by surfaces
+	 */
+	std::map<gmds::TCellID,int> exterior_faces_coloration(std::vector<CurvedBlocking::Face>& Faces);
+
+
 
  private:
 	/**@brief This method check if a 0-cell of the blocking structure is classified
@@ -132,6 +137,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 * @return True if the boundary is captured
 	 */
 	bool boundary_surface_captured(cad::GeomSurface* AS);
+
 
 
 
