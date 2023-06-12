@@ -7,6 +7,7 @@
 // GMDS File Headers
 /*----------------------------------------------------------------------------*/
 #include <gmds/cadfac/FACVolume.h>
+#include <algorithm>
 #include <set>
 /*----------------------------------------------------------------------------*/
 namespace gmds{
@@ -18,7 +19,7 @@ namespace gmds{
         void FACVolume::resetIdCounter() {m_next_id=1;}
 /*----------------------------------------------------------------------------*/
         FACVolume::FACVolume(const std::string& AName)
-                :GeomVolume(AName)
+                :GeomVolume(AName),m_id(m_next_id++)
         {}
 /*----------------------------------------------------------------------------*/
         FACVolume::~FACVolume()
@@ -40,15 +41,12 @@ namespace gmds{
                 GeomSurface* s = m_adjacent_surfaces[s_id];
                 TCoord  min_s[3], max_s[3];
                 s->computeBoundingBox(min_s,max_s);
-                for(auto i=0;i<3;i++){
-                    if(min_s[i]<minXYZ[i]){
-                        minXYZ[i]=min_s[i];
-                    }
-                    if(max_s[i]>maxXYZ[i]){
-                        maxXYZ[i]=max_s[i];
-                    }
-
-                }
+		          minXYZ[0] = std::min(minXYZ[0],min_s[0]);
+		          minXYZ[1] = std::min(minXYZ[1],min_s[1]);
+		          minXYZ[2] = std::min(minXYZ[2],min_s[2]);
+		          maxXYZ[0] = std::max(maxXYZ[0],max_s[0]);
+		          maxXYZ[1] = std::max(maxXYZ[1],max_s[1]);
+		          maxXYZ[2] = std::max(maxXYZ[2],max_s[2]);
             }
         }
 /*----------------------------------------------------------------------------*/
