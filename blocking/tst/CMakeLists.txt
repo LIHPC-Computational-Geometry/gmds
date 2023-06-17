@@ -20,11 +20,11 @@ target_link_libraries(GMDS_BLOCKING_TEST PUBLIC
         ${LIB_GMDS_IG}
         CGAL::CGAL_Core
         GTest::gtest)
+
 if(WITH_CGNS)
-    target_link_libraries(GMDS_BLOCKING_TEST PUBLIC
-            cgns::cgns
-            )
+target_link_libraries(GMDS_BLOCKING_TEST PUBLIC cgns::cgns)
 endif()
+
 if (WITH_CGAL_QT5)
     target_link_libraries(GMDS_BLOCKING_TEST PUBLIC
             CGAL::CGAL_Basic_viewer

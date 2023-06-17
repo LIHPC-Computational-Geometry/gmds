@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 /*----------------------------------------------------------------------------*/
 #include <gmds/blocking/CurvedBlocking.h>
+#include <gmds/blocking/CurvedBlockingClassifier.h>
 #include <gmds/cadfac/FACManager.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/io/IGMeshIOService.h>
@@ -11,7 +12,9 @@
 void
 setUp(gmds::cad::FACManager &AGeomManager)
 {
-	gmds::Mesh m_vol(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::F | gmds::E | gmds::N | gmds::R2N | gmds::R2F | gmds::R2E | gmds::F2N | gmds::F2R | gmds::F2E
+	gmds::Mesh m_vol(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::F | gmds::E | gmds::N |
+	                                 gmds::R2N | gmds::R2F | gmds::R2E | gmds::F2N |
+	                                 gmds::F2R | gmds::F2E
 	                                 | gmds::E2F | gmds::E2N | gmds::N2E));
 	std::string dir(TEST_SAMPLES_DIR);
 	std::string vtk_file = dir + "/tet_in_box.vtk";
@@ -28,7 +31,7 @@ setUp(gmds::cad::FACManager &AGeomManager)
 }
 
 /*----------------------------------------------------------------------------*/
-TEST(CurvedBlockingTestSuite, init)
+TEST(CurvedBlockingTestSuite, global_cell_accessors)
 {
 	gmds::cad::FACManager geom_model;
 	setUp(geom_model);
@@ -52,12 +55,20 @@ TEST(CurvedBlockingTestSuite, init)
 	ASSERT_EQ(16, bl.get_nb_cells<0>());
 	ASSERT_EQ(24, bl.get_nb_cells<1>());
 	ASSERT_EQ(12, bl.get_nb_cells<2>());
-	ASSERT_EQ(2, bl.get_nb_cells<3>());
+	ASSERT_EQ(2,  bl.get_nb_cells<3>());
+	ASSERT_EQ(16, bl.get_all_nodes().size());
+	ASSERT_EQ(24, bl.get_all_edges().size());
+	ASSERT_EQ(12, bl.get_all_faces().size());
+	ASSERT_EQ(2,  bl.get_all_blocks().size());
 	bl.sew<3>(b1->dart(), b2->dart());
 	ASSERT_EQ(12, bl.get_nb_cells<0>());
 	ASSERT_EQ(20, bl.get_nb_cells<1>());
 	ASSERT_EQ(11, bl.get_nb_cells<2>());
 	ASSERT_EQ(2, bl.get_nb_cells<3>());
+	ASSERT_EQ(12, bl.get_all_nodes().size());
+	ASSERT_EQ(20, bl.get_all_edges().size());
+	ASSERT_EQ(11, bl.get_all_faces().size());
+	ASSERT_EQ(2,  bl.get_all_blocks().size());
 }
 
 /*----------------------------------------------------------------------------*/
@@ -135,10 +146,6 @@ TEST(CurvedBlockingTestSuite, single_block_parallel_edges)
 	gmds::math::Point p111(1, 1, 1);
 	gmds::math::Point p101(1, 0, 1);
 
-	gmds::math::Point p002(0, 0, 2);
-	gmds::math::Point p012(0, 1, 2);
-	gmds::math::Point p112(1, 1, 2);
-	gmds::math::Point p102(1, 0, 2);
 	bl.create_block(p000, p010, p110, p100, p001, p011, p111, p101);
 
 	for (auto it = bl.gmap()->attributes<1>().begin(), itend = bl.gmap()->attributes<1>().end(); it != itend; ++it) {
@@ -146,6 +153,63 @@ TEST(CurvedBlockingTestSuite, single_block_parallel_edges)
 		bl.get_all_sheet_edges(it,parallel_edges);
 		ASSERT_EQ(4, parallel_edges.size());
 	}
+}
+/*----------------------------------------------------------------------------*/
+TEST(CurvedBlockingTestSuite, get_edges_of_a_block)
+{
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model, true);
+	auto b = bl.get_all_blocks()[0];
+	auto edges = bl.get_edges_of_block(b);
+	ASSERT_EQ(12,edges.size());
+}
+/*----------------------------------------------------------------------------*/
+TEST(CurvedBlockingTestSuite, split_one_block_twice)
+{
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model, true);
+	gmds::blocking::CurvedBlockingClassifier cl(&bl);
+	cl.classify();
+
+	auto e = bl.get_all_edges()[0];
+	auto e_id = e->info().geom_id;
+	auto e_dim = e->info().geom_dim;
+
+	auto e2 = bl.gmap()->attribute<1>(bl.gmap()->alpha<1>(e->dart()));
+	bl.cut_sheet(e);
+	ASSERT_EQ(12,bl.get_nb_cells<0>());
+	ASSERT_EQ(20,bl.get_nb_cells<1>());
+	ASSERT_EQ(11,bl.get_nb_cells<2>());
+	ASSERT_EQ(2,bl.get_nb_cells<3>());
+	ASSERT_TRUE(bl.gmap()->is_valid());
+
+	//after splitting e, one node and 2 edges must be classified on its original geometric cell
+	auto classified_nodes = 0;
+	auto classified_edges = 0;
+	for(auto cur_edge:bl.get_all_edges()){
+		if(cur_edge->info().geom_id==e_id && cur_edge->info().geom_dim==e_dim)
+			classified_edges++;
+	}
+	for(auto cur_node:bl.get_all_nodes()){
+		if(cur_node->info().geom_id==e_id && cur_node->info().geom_dim==e_dim)
+			classified_nodes++;
+	}
+	ASSERT_EQ(2, classified_edges);
+	ASSERT_EQ(1, classified_nodes);
+	//we check the attribute values
+	gmds::math::Point p_cut(-5,5,2);
+	bl.cut_sheet(e2, p_cut);
+	//We cut along Z axis and point are so located on Z-plane with Z=5, -5, or 2.
+	for(auto n: bl.get_all_nodes()){
+		auto nz = n->info().point.Z();
+		ASSERT_TRUE((nz-5<1e-4) || (nz+5<1e-4) || (nz-2<1e-4));
+	}
+	ASSERT_EQ(18,bl.get_nb_cells<0>());
+	ASSERT_EQ(33,bl.get_nb_cells<1>());
+	ASSERT_EQ(20,bl.get_nb_cells<2>());
+	ASSERT_EQ(4,bl.get_nb_cells<3>());
 }
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, init_from_geom_bounding_box)

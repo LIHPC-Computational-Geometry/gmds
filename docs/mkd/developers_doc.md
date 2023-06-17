@@ -1,11 +1,78 @@
 # Developer documentation
 
-Once a component created, we use a [github workflow](git_workflow.md) in order to structure the code development. 
+## Setting your development environment
+gmds depends on many external components. In order to develop gmds, they need to be installed properly in
+order to be used with CMake.
+
+On linux systems, and macos, we suggest to use [spack](https://spack.io/) for installing your depencies. 
+We use this system for our CI workflows. In a nutshell, spack allows you to install a set of libraries in a 
+specific directory. You can see it as an equivalent of *Python environment*. In our context,
+we will simply install the set of dependencies we need and use them in our CMake build system. As an example,
+let's take a look how to install the basic set of gmds components, plus the blocking component with the Python API and 
+without CGNS dependency.
+
+### Raw installation of dependencies with spack
+First of all, we download spack and change its way of installing libraries (second line with the `sed` command).
+After that, any library `toto` installed with spack will be located in  `absolute_path/spack/opt/spack/toto/`.
+```bash
+git clone --depth=1 -b releases/latest https://github.com/spack/spack.git
+sed -i 's#"${ARCHITECTURE}/${COMPILERNAME}-${COMPILERVER}/${PACKAGE}-${VERSION}-${HASH}"#"${PACKAGE}"#g' spack/etc/spack/defaults/config.yaml
+. ./spack/share/spack/setup-env.sh
+```
+Now, we can install the different packages that are required by *gmds*. There are many ways of doing it. 
+We use here the most basic one, that consists in successively asking spack to install all the
+required dependencies. Here:
+- `lcov` is used to perform code coverage locally to your computer;
+- `py-pybind11` is mandatory for the python API;
+- `glpk` is a linear programming solver that we used in some of our *gmds* basic components;
+- `googletest` is used for our testing infrastructure;
+- `cgal` is required for the blocking component.
+
+```bash
+spack external find cmake
+spack install lcov
+spack install py-pybind11
+spack install glpk
+spack install googletest
+spack install cgal
+spack install --only dependencies gmds+kmds+blocking ^kokkos+openmp ^cgns~mpi
+```
+Once all those libraries installed, *gmds* can be compiled with CMake using the following options
+```cmake
+-DWITH_PYTHON_API=ON
+-DENABLE_BLOCKING=ON
+-DWITH_CGNS=OFF
+-DWITH_TEST=ON
+-DGLPK_INC=/absolute_path/spack/opt/spack/glpk/include
+-DGLPK_LIB=/absolute_path/spack/opt/spack/glpk/lib
+-DCMAKE_PREFIX_PATH=/absolute_path/spack/opt/spack/googletest;/absolute_path/spack/opt/spack/py-pybind11;/absolute_path/spack/opt/spack/cgal;/absolute_path/spack/opt/spack/gmp;/absolute_path/spack/opt/spack/mpfr;/absolute_path/spack/opt/spack/boost
+```
+
+### Usage of specific spack recipes
+
+Instead of manually and individually installing all the *gmds* dependencies, we can gather *gmds* requirements
+into a *spack recipe*. This recipe will be used by the spack engine to prepare and build the full environment. 
+
+Our meshing recipes are stored in a github repository that you have to clone and add in the list of spack repositories.
+```bash
+git clone --branch gmds_temp --depth=1 https://github.com/LIHPC-Computational-Geometry/spack_recipes_meshing.git
+spack repo add ./spack_recipes_meshing/meshing_repo
+spack repo add ./spack_recipes_meshing/supersede_repo
+```
+Then you can install the gmds dependencies using lines like:
+```bash
+spack external find cmake
+spack install py-pybind11
+spack install --only dependencies gmds+blocking 
+```
+Right now, the python binding configuration, as well as the CGNS options, are not managed in the gmds spack recipe. That's
+why, we separately install `pybind11` and the last line will install `cgns` too.
+## Creation of an optional module
+
+Once a component created, we use a [github workflow](git_workflow.md) in order to structure the code development.
 We also intensively use [unit tests](unit_testing.md) to valid our codes and also to perform code coverage when we merge developments.
 
 The creation of a new GMDS component requires to follow the guideline given below.
-
-## Creation of an optional module
 
 ### How to write/update a CMakeLists.txt file for a module
 

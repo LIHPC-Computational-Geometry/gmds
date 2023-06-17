@@ -90,6 +90,72 @@ CurvedBlocking::get_faces_of_block(const CurvedBlocking::Block AB)
 	return faces;
 }
 /*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Block>
+CurvedBlocking::get_all_blocks()
+{
+	std::vector<CurvedBlocking::Block> blocks;
+	for (auto it = m_gmap.attributes<3>().begin(), itend = m_gmap.attributes<3>().end(); it != itend; ++it) {
+		blocks.push_back(it);
+	}
+	return blocks;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Face>
+CurvedBlocking::get_all_faces()
+{
+	std::vector<CurvedBlocking::Face> faces;
+	for (auto it = m_gmap.attributes<2>().begin(), itend = m_gmap.attributes<2>().end(); it != itend; ++it) {
+		faces.push_back(it);
+	}
+	return faces;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Edge>
+CurvedBlocking::get_all_edges()
+{
+	std::vector<CurvedBlocking::Edge> edges;
+	for (auto it = m_gmap.attributes<1>().begin(), itend = m_gmap.attributes<1>().end(); it != itend; ++it) {
+		edges.push_back(it);
+	}
+	return edges;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Node>
+CurvedBlocking::get_all_nodes()
+{
+	std::vector<CurvedBlocking::Node> nodes;
+	for (auto it = m_gmap.attributes<0>().begin(), itend = m_gmap.attributes<0>().end(); it != itend; ++it) {
+		nodes.push_back(it);
+	}
+	return nodes;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Edge>
+CurvedBlocking::get_edges_of_block(const CurvedBlocking::Block AB)
+{
+	Dart3 d = AB->dart();
+	std::vector<CurvedBlocking::Edge> edges;
+	edges.resize(12);
+
+	edges[0] = m_gmap.attribute<1>(d);
+	edges[1] = m_gmap.attribute<1>(m_gmap.alpha<1, 0, 1>(d));
+	edges[2] = m_gmap.attribute<1>(m_gmap.alpha<2, 1, 0, 1>(d));
+	edges[3] = m_gmap.attribute<1>(m_gmap.alpha<1, 0, 1, 2, 1, 0, 1>(d));
+	d = m_gmap.alpha<1>(d);
+	edges[4] = m_gmap.attribute<1>(d);
+	edges[5] = m_gmap.attribute<1>(m_gmap.alpha<1, 0, 1>(d));
+	edges[6] = m_gmap.attribute<1>(m_gmap.alpha<2, 1, 0, 1>(d));
+	edges[7] = m_gmap.attribute<1>(m_gmap.alpha<1, 0, 1, 2, 1, 0, 1>(d));
+	d = m_gmap.alpha<1>(d);
+	d = m_gmap.alpha<2, 1>(d);
+	edges[8] = m_gmap.attribute<1>(d);
+	edges[9] = m_gmap.attribute<1>(m_gmap.alpha<1, 0, 1>(d));
+	edges[10] = m_gmap.attribute<1>(m_gmap.alpha<2, 1, 0, 1>(d));
+	edges[11] = m_gmap.attribute<1>(m_gmap.alpha<1, 0, 1, 2, 1, 0, 1>(d));
+
+	return edges;
+}
+/*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Node>
 CurvedBlocking::get_nodes_of_block(const CurvedBlocking::Block AB)
 {
@@ -131,6 +197,13 @@ CurvedBlocking::get_nodes_of_edge(const CurvedBlocking::Edge AE)
 	nodes[0] = m_gmap.attribute<0>(d);
 	nodes[1] = m_gmap.attribute<0>(m_gmap.alpha<0>(d));
 	return nodes;
+}
+/*----------------------------------------------------------------------------*/
+math::Point
+CurvedBlocking::get_center_of_edge(const Edge AE)
+{
+	std::vector<Node> n = get_nodes_of_edge(AE);
+	return 0.5 * (n[0]->info().point + n[1]->info().point );
 }
 /*----------------------------------------------------------------------------*/
 math::Point
@@ -334,60 +407,167 @@ CurvedBlocking::get_all_sheet_edges(const Edge AE, std::vector<Edge> &AEdges)
 {
 	AEdges.clear();
 	std::vector<Dart3> sheet_darts;
-	get_all_sheet_edges(AE,sheet_darts);
+	get_all_sheet_darts(AE, sheet_darts);
 	AEdges.resize(sheet_darts.size());
-	for(auto i=0;i<sheet_darts.size();i++){
+	for (auto i = 0; i < sheet_darts.size(); i++) {
 		AEdges[i] = m_gmap.attribute<1>(sheet_darts[i]);
 	}
 }
 /*----------------------------------------------------------------------------*/
 void
-CurvedBlocking::get_all_sheet_edges(const Edge AE, std::vector<Dart3> &ADarts)
+CurvedBlocking::get_all_sheet_darts(const Edge AE, std::vector<Dart3> &ADarts)
 {
 	ADarts.clear();
-	//we allocate a mark to know all the edges we go through
+	// we allocate a mark to know all the edges we go through
 	auto edge_mark = m_gmap.get_new_mark();
 
 	std::vector<Dart3> front;
 	front.push_back(AE->dart());
 	// the current dart belongs to the final set of darts
 	ADarts.push_back(AE->dart());
-	//we mark all the dart of the inital edge to avoid to traverse it twice
-	m_gmap.mark_cell<1>(AE->dart(),edge_mark);
+	// we mark all the dart of the inital edge to avoid to traverse it twice
+	m_gmap.mark_cell<1>(AE->dart(), edge_mark);
 
-	//Now we propagate along topological parallel edges in each adjacent hexahedral cell
-	while (!front.empty()){
-		//we pick the last dart of the front
+	// Now we propagate along topological parallel edges in each adjacent hexahedral cell
+	while (!front.empty()) {
+		// we pick the last dart of the front
 		Dart3 d = front.back();
 		front.pop_back();
 
-		//we traverse all the darts of the orbit<2,3> starting from d
+		// we traverse all the darts of the orbit<2,3> starting from d
 
-		for (GMap3::Dart_of_orbit_range<2,3>::iterator
-		        it( m_gmap.darts_of_orbit<2,3>(d).begin()),
-		     itend( m_gmap.darts_of_orbit<2,3>(d).end()); it!=itend; ++it)
-		{
-			auto d_next_edge = m_gmap.alpha<1,0,1>(it);
-			if(!m_gmap.is_marked(d_next_edge,edge_mark)){
-				//it means that the edge containing the dart d_next_edge has not been traversed already.
-				//We mark the dart of the corresponding edge, and we add it to the front
+		for (GMap3::Dart_of_orbit_range<2, 3>::iterator it(m_gmap.darts_of_orbit<2, 3>(d).begin()), itend(m_gmap.darts_of_orbit<2, 3>(d).end()); it != itend;
+		     ++it) {
+			auto d_next_edge = m_gmap.alpha<1, 0, 1>(it);
+			if (!m_gmap.is_marked(d_next_edge, edge_mark)) {
+				// it means that the edge containing the dart d_next_edge has not been traversed already.
+				// We mark the dart of the corresponding edge, and we add it to the front
 				front.push_back(d_next_edge);
-				m_gmap.mark_cell<1>(d_next_edge,edge_mark);
-				//We also add it to the set of darts to return
+				m_gmap.mark_cell<1>(d_next_edge, edge_mark);
+				// We also add it to the set of darts to return
 				ADarts.push_back(d_next_edge);
 			}
-
 		}
 	}
 	// We must unmark all the marked edges. As we stored one dart per edge, it is straightforward
-	for(auto d:ADarts){
-		m_gmap.unmark_cell<1>(d,edge_mark);
+	for (auto d : ADarts) {
+		m_gmap.unmark_cell<1>(d, edge_mark);
 	}
 	m_gmap.free_mark(edge_mark);
 }
+
 /*----------------------------------------------------------------------------*/
 void
-CurvedBlocking::split_sheet(const Edge AE)
+CurvedBlocking::cut_sheet(const Edge AE)
 {
+	cut_sheet(AE, 0.5);
+}
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::cut_sheet(const Edge AE, const math::Point& AP)
+{
+	std::vector<Node> n = get_nodes_of_edge(AE);
+	math::Point p0 = n[0]->info().point;
+	math::Point p1 = n[1]->info().point;
+	math::Segment s01(p0,p1);
+	math::Point p = s01.project(AP);
+	double param = math::Segment(p0,p).computeLength() / s01.computeLength();
+	cut_sheet(AE, param);
+}
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::cut_sheet(const Edge AE, const double AParam)
+{
+	assert(AParam>0 && AParam<1);
+	//Note: the parameterization starts from the first node of AE, which is the one containing AE->dart().
+	//As a consequence, our orientation is consistent in the algorithm.
+
+	// We get a dart per sheet edge
+	std::vector<Dart3> sheet_darts;
+	get_all_sheet_darts(AE, sheet_darts);
+
+	// then we insert a node in the middle of each edge, and we keep one of its darts
+	std::vector<Dart3> in_edge_darts;
+	auto mark_edge_darts = m_gmap.get_new_mark();
+
+	for (auto d : sheet_darts) {
+		Dart3 d0 = m_gmap.alpha<0>(d);
+		math::Point pa = m_gmap.attribute<0>(d)->info().point;
+		math::Point pb = m_gmap.attribute<0>(d0)->info().point;
+		auto edge_att = m_gmap.attribute<1>(d)->info();
+
+		Dart3 d_edge = m_gmap.insert_cell_0_in_cell_1(d);     // d_edge = alpha<0,1>(d)
+		auto darts_23 = m_gmap.darts_of_orbit<2, 3>(d_edge);
+		for (auto d_edge_23 = darts_23.begin(); d_edge_23 != darts_23.end(); d_edge_23++) {
+			in_edge_darts.push_back(d_edge_23);
+			m_gmap.mark(d_edge_23, mark_edge_darts);
+		}
+
+		math::Point pc = (1-AParam)*pa + AParam*pb;
+		if(edge_att.geom_dim==1) {
+			auto curve = m_geom_model->getCurve(edge_att.geom_id);
+			curve->project(pc);
+		}
+		else if(edge_att.geom_dim==2) {
+			auto surf = m_geom_model->getSurface(edge_att.geom_id);
+			surf->project(pc);
+		}
+		m_gmap.set_attribute<0>(d_edge, create_node(edge_att.geom_dim, edge_att.geom_id, pc));
+	}
+
+	// then we cut faces by inserting an edge
+	auto mark_done = m_gmap.get_new_mark();
+	std::vector<Dart3> in_face_darts;
+	for (auto d : in_edge_darts) {
+		if (!m_gmap.is_marked(d, mark_done)) {
+			// as the node is not marked, it means we didn't insert an edge in this face
+			// WARNING wrong pattern for self-intersecting sheet
+			Dart3 d2 = m_gmap.alpha<0, 1, 0, 1, 0>(d);
+			if (!m_gmap.is_marked(d2, mark_edge_darts)) {
+				d2 = m_gmap.alpha<1, 0>(d2);
+			}
+			auto face_att = m_gmap.attribute<2>(d)->info();
+
+			Dart3 d_face = m_gmap.insert_cell_1_in_cell_2(d, d2);
+
+			m_gmap.set_attribute<1>(d_face, create_edge(face_att.geom_dim, face_att.geom_id));
+
+			in_face_darts.push_back(d_face);
+			m_gmap.mark(d, mark_done);
+			m_gmap.mark(d2, mark_done);
+			//the face can be shared by two regions and so, we must mark the right darts
+			if(!m_gmap.is_free<3>(d)){
+				m_gmap.mark(m_gmap.alpha<3>(d), mark_done);
+				m_gmap.mark(m_gmap.alpha<3>(d2), mark_done);
+
+			}
+		}
+	}
+	// We unmark all the darts, and we reuse the mark mark_done for faces now
+	m_gmap.unmark_all(mark_done);
+
+	// and finally, we cut blocks
+	for (auto d : in_face_darts) {
+		if (!m_gmap.is_marked(d, mark_done)) {
+			// we get the loop of darts we are going to use to cut the block
+			// one dart per edge must be given (see the implementation of insert_cell_2_in_cell_3 in CGAL)
+			std::vector<Dart3> loop_darts;
+			Dart3 current_dart = d;
+			do {
+				loop_darts.push_back(current_dart);
+				m_gmap.mark(current_dart,mark_done);
+				m_gmap.mark(m_gmap.alpha<0>(current_dart),mark_done);
+				current_dart = m_gmap.alpha<0,1,2,1>(current_dart);
+			} while (current_dart != d);
+			auto face_att = m_gmap.attribute<2>(d)->info();
+			Dart3 d_block = m_gmap.insert_cell_2_in_cell_3(loop_darts.begin(),loop_darts.end());
+			m_gmap.set_attribute<2>(d_block, create_face(face_att.geom_dim, face_att.geom_id));
+		}
+	}
+	// we free the mark after unmarking all the darts. This is not optimal.
+	m_gmap.unmark_all(mark_edge_darts);
+	m_gmap.free_mark(mark_edge_darts);
+	m_gmap.unmark_all(mark_done);
+	m_gmap.free_mark(mark_done);
 
 }

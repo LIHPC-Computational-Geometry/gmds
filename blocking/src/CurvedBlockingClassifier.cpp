@@ -22,6 +22,7 @@ CurvedBlockingClassifier::detect_classification_errors()
 			errors.non_captured_points.push_back(p->id());
 		}
 	}
+	return errors;
 }
 /*----------------------------------------------------------------------------*/
 void

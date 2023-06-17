@@ -1,4 +1,4 @@
-name: continuous-windows
+name: windows-ci
 
 on:
   workflow_dispatch:
@@ -21,16 +21,27 @@ jobs:
         cmake-version: '3.21.x'
 
     - name: Create Build Environment
+      run: |
+        git clone https://github.com/Microsoft/vcpkg.git
+        .\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+        vcpkg install --triplet x64-windows gtest pybind11
+        vcpkg list
+        vcpkg integrate install
+
+    - name: Configure
       run: >
-        cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -Ax64 
-        -DWITH_TEST="ON"
-        -DENABLE_BLOCKING="OFF"
-        -DENABLE_CLAIRE="OFF"
-        -DENABLE_ELG3D="OFF"
-        -DENABLE_HYBRIDMESHADAPT="OFF"
-        -DENABLE_PADDING="OFF"
-        -DENABLE_POLYBLOCK="OFF"
-        -DBUILD_SHARED_LIBS="ON"
+        cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -Ax64
+        -DVCPKG_TARGET_TRIPLET=x64-windows
+        -DWITH_TEST=ON 
+        -DWITH_PYTHON_API=OFF
+        -DENABLE_BLOCKING=OFF
+        -DENABLE_CLAIRE=OFF
+        -DENABLE_ELG3D=OFF
+        -DENABLE_HYBRIDMESHADAPT=OFF
+        -DENABLE_PADDING=OFF
+        -DENABLE_POLYBLOCK=OFF
+        -DBUILD_SHARED_LIBS=ON
+        -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
         
     - name: Build Environment 
       run: cmake --build ${{github.workspace}}/build --config Release

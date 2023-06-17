@@ -286,6 +286,30 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	void remove_block(Block AB);
 
+	/**@brief Non-optimal method to get all the blocks of the structure. The
+	 * best option is to traverse the block structure through the gmap
+	 * structure (iterators on attributes)
+	 * @return a vector of blocks
+	 */
+	std::vector<Block> get_all_blocks();
+	/**@brief Non-optimal method to get all the faces of the structure. The
+	 * best option is to traverse the block structure through the gmap
+	 * structure (iterators on attributes)
+	 * @return a vector of faces
+	 */
+	std::vector<Face> get_all_faces();
+	/**@brief Non-optimal method to get all the edges of the structure. The
+	 * best option is to traverse the block structure through the gmap
+	 * structure (iterators on attributes)
+	 * @return a vector of edges
+	 */
+	std::vector<Edge> get_all_edges();
+	/**@brief Non-optimal method to get all the nodes of the structure. The
+	 * best option is to traverse the block structure through the gmap
+	 * structure (iterators on attributes)
+	 * @return a vector of nodes
+	 */
+	std::vector<Node> get_all_nodes();
 	/**@brief moves node @p AN towards the expected new location @p ALoc.
 	 * If @p AN is classified onto a geometrical cell, the node @p AN
 	 * is first moved to @p ALoc, then it is projected onto the
@@ -302,6 +326,12 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @return the set of faces of the block.
 	 */
 	std::vector<Face> get_faces_of_block(const Block AB);
+	/** Get all the edges of a block. If it is a hexahedral block,
+	 * we have 12 faces.
+	 * @param[in] AB a block
+	 * @return the set of edges of the block.
+	 */
+	std::vector<Edge> get_edges_of_block(const Block AB);
 	/** Get all the nodes of a block. If it is a hexahedral block,
 	 * we have 8 nodes, given as usual in gmds
 	 * @param[in] AB a block
@@ -320,12 +350,17 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	std::vector<Node> get_nodes_of_edge(const Edge AE);
 	/** Return the face center
 	 * @param AF a face
-	 * @return the center point of AF
+	 * @return the center point of @p AF
 	 */
 	math::Point get_center_of_face(const Face AF);
-	/** Return the face center
-	 * @param[in] AF a face
-	 * @return a point which is the center of AF
+	/** Return the edge center
+	 * @param AE an edge
+	 * @return the center point of @p AE
+	 */
+	math::Point get_center_of_edge(const Edge AE);
+	/** Return the block center
+	 * @param[in] AB a block
+	 * @return a point which is the center of @p AB
 	 */
 	math::Point get_center_of_block(const Block AB);
 	/**@brief Get all the parallel edges composing the sheet defined from edge @p AE
@@ -334,15 +369,29 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	void get_all_sheet_edges(const Edge AE, std::vector<Edge> &AEdges);
 	/**@brief Get one dart per  parallel edges composing the sheet defined from edge
-	 * @p AE. Darts are given in such a way that a recurent pattern occurs
+	 * @p AE. All the returned darts are on the same side of each edge.
 	 * @param[in]  AE			the edge we start from
 	 * @param[out] ADarts	one dart per edge of the sheet defined by @p AE
 	 */
-	void get_all_sheet_edges(const Edge AE, std::vector<Dart3> &ADarts);
-	/**@brief Split the sheet defined by edge @p AE
-	 * @param AE an edge we want to split in two edges
+	void get_all_sheet_darts(const Edge AE, std::vector<Dart3> &ADarts);
+	/**@brief Split the sheet defined by edge @p AE at the closest position of @p AP.
+	 * 		 The method project @p AP on @p AE. It gives us a cut ratio, we use on
+	 * 		 all the parallel edges.
+	 * @param[in] AE an edge we want to split in two edges
+	 * @param[in] AP a point we use to define where AE must be cut.
 	 */
-	void split_sheet(const Edge AE);
+	void cut_sheet(const Edge AE, const math::Point& AP);
+	/**@brief Split the sheet defined by edge @p AE at the parameter @p AParam, which is included
+	 * 		 in ]0,1[. The first end point of @p AE is at parameter 0, the second one at parameter 1.
+	 *
+	 * @param[in] AE an edge we want to split in two edges
+	 * @param[in] AParam a parameter included in ]0,1[
+	 */
+	void cut_sheet(const Edge AE, const double AParam);
+	/**@brief Split the sheet defined by edge @p AE
+	 * @param[in] AE an edge we want to split in two edges
+	 */
+	void cut_sheet(const Edge AE);
 	/**@brief Low level operation that @p TDim-sew two darts
 	 * @tparam TDim sewing dimension
 	 * @param[in] AD1 First dart
