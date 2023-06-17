@@ -16,7 +16,7 @@ jobs:
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
     container:
-      image: lihpccg/gmds-ubuntu-ci:1.0.0
+      image: lihpccg/gmds-ubuntu-ci:1.1.0
     strategy:
       fail-fast: false
       matrix:
