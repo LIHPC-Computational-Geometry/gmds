@@ -14,9 +14,11 @@ set(GMDS_INC
         inc/gmds/blocking/SheetInsert.h
         inc/gmds/blocking/WriterDartsVTK.h
         inc/gmds/blocking/SheetCollapse.h)
+
 if(WITH_CGNS)
     set(GMDS_INC ${GMDS_INC} inc/gmds/blocking/CGNSWriter.h)
 endif()
+
 set(GMDS_SRC
         src/Blocking.cpp
         src/CurvedBlocking.cpp
