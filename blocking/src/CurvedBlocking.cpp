@@ -460,7 +460,7 @@ CurvedBlocking::get_all_sheet_darts(const Edge AE, std::vector<Dart3> &ADarts)
 void
 CurvedBlocking::cut_sheet(const Edge AE)
 {
-	cut_sheet(AE,0.5);
+	cut_sheet(AE, 0.5);
 }
 /*----------------------------------------------------------------------------*/
 void

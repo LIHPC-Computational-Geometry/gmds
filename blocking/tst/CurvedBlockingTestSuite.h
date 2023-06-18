@@ -12,7 +12,9 @@
 void
 setUp(gmds::cad::FACManager &AGeomManager)
 {
-	gmds::Mesh m_vol(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::F | gmds::E | gmds::N | gmds::R2N | gmds::R2F | gmds::R2E | gmds::F2N | gmds::F2R | gmds::F2E
+	gmds::Mesh m_vol(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::F | gmds::E | gmds::N |
+	                                 gmds::R2N | gmds::R2F | gmds::R2E | gmds::F2N |
+	                                 gmds::F2R | gmds::F2E
 	                                 | gmds::E2F | gmds::E2N | gmds::N2E));
 	std::string dir(TEST_SAMPLES_DIR);
 	std::string vtk_file = dir + "/tet_in_box.vtk";
@@ -198,7 +200,7 @@ TEST(CurvedBlockingTestSuite, split_one_block_twice)
 	ASSERT_EQ(1, classified_nodes);
 	//we check the attribute values
 	gmds::math::Point p_cut(-5,5,2);
-	bl.cut_sheet(e2,p_cut);
+	bl.cut_sheet(e2, p_cut);
 	//We cut along Z axis and point are so located on Z-plane with Z=5, -5, or 2.
 	for(auto n: bl.get_all_nodes()){
 		auto nz = n->info().point.Z();

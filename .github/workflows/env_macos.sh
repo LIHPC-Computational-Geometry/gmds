@@ -1,6 +1,5 @@
 #!/bin/bash
 
-brew install autoconf automake libtool gcc
 
 git clone --depth=1 -b v0.19.2 https://github.com/spack/spack.git
 
