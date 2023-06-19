@@ -5,15 +5,15 @@
 #include <CGAL/Cell_attribute.h>
 #include <CGAL/Generalized_map.h>
 #include <LIB_GMDS_BLOCKING_export.h>
+#include <gmds/cad/GeomManager.h>
+#include <gmds/ig/Mesh.h>
 #include <gmds/math/Point.h>
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/utils/Exception.h>
-#include <gmds/cad/GeomManager.h>
-#include <gmds/ig/Mesh.h>
 /*----------------------------------------------------------------------------*/
 #include <string>
-#include <type_traits>
 #include <tuple>
+#include <type_traits>
 
 /*----------------------------------------------------------------------------*/
 namespace gmds {
@@ -373,7 +373,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * 		 edges is an item pf @p ASheetEdges
 	 * @param[out] ASheetEdges	all the edges gathered by sheet
 	 */
-	void get_all_sheet_edges(std::vector<std::vector<Edge> >&ASheetEdges);
+	void get_all_sheet_edges(std::vector<std::vector<Edge>> &ASheetEdges);
 	/**@brief Get one dart per  parallel edges composing the sheet defined from edge
 	 * @p AE. All the returned darts are on the same side of each edge.
 	 * @param[in]  AE			the edge we start from
@@ -386,7 +386,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in] AE an edge we want to split in two edges
 	 * @param[in] AP a point we use to define where AE must be cut.
 	 */
-	void cut_sheet(const Edge AE, const math::Point& AP);
+	void cut_sheet(const Edge AE, const math::Point &AP);
 	/**@brief Split the sheet defined by edge @p AE at the parameter @p AParam, which is included
 	 * 		 in ]0,1[. The first end point of @p AE is at parameter 0, the second one at parameter 1.
 	 *
@@ -426,6 +426,15 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @return true if valid, false otherwise
 	 */
 	bool is_valid_topology() const;
+	/**\brief Order the edges of @p AEdges accordingly to their distance to @p AP.
+	 * 		 More specifically, we orthogonnaly project @p AP on each edge of @p AEdges.
+	 * 		 For each edge, we store the distance between @p AP and the edge and the coordinate
+	 * 		 the projected point inside the edge (between 0 and 1).
+	 * @param[in] AP 		A Point to project on each edge
+	 * @param[in] AEdges 	A set of edges
+	 * @return for each edge, we get the distance (first) and the coordinate (second)
+	 */
+	std::vector<std::pair<double, double>> get_projection_info(math::Point &AP, std::vector<CurvedBlocking::Edge> &AEdges);
 
  private:
 	/**@brief Create a node attribute in the n-gmap
