@@ -33,6 +33,7 @@ jobs:
       # subsequent commands
       run: >
         cmake -E make_directory /build;
+        cmake -E make_directory /buildinstall;
         pwd;
         ls;
 
