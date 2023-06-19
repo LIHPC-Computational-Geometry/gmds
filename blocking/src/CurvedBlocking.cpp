@@ -403,6 +403,44 @@ CurvedBlocking::convert_to_mesh(Mesh &AMesh)
 }
 /*----------------------------------------------------------------------------*/
 void
+CurvedBlocking::get_all_sheet_edges(std::vector<std::vector<Edge> > &AEdges)
+{
+	AEdges.clear();
+	std::vector<Edge> all_edges = get_all_edges();
+	std::map<TCellID , bool> edge_done;
+	for (auto e : all_edges){
+		edge_done[e->info().topo_id]=false;
+	}
+
+	bool remain_edge_to_do = true;
+	while (remain_edge_to_do){
+		remain_edge_to_do=false;
+		//we try and find the first that is not already put into a sheet set
+		bool found_edge=false;
+		auto edge_index=0;
+		for (auto i=0; i<all_edges.size() && !found_edge; i++){
+			//we found an edge to treat
+			if(edge_done[all_edges[i]->info().topo_id]==false){
+				found_edge=true;
+				edge_index = i;
+			}
+		}
+		if(found_edge){
+			//work to do, we will do another iteration
+			remain_edge_to_do = true;
+			std::vector<Edge> sh_edges;
+			get_all_sheet_edges(all_edges[edge_index], sh_edges);
+			//we store the sheet edges
+			AEdges.push_back(sh_edges);
+			//now we mark them as treated
+			for (auto e : sh_edges){
+				edge_done[e->info().topo_id]=true;
+			}
+		}
+	}
+}
+/*----------------------------------------------------------------------------*/
+void
 CurvedBlocking::get_all_sheet_edges(const Edge AE, std::vector<Edge> &AEdges)
 {
 	AEdges.clear();

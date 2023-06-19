@@ -153,6 +153,13 @@ TEST(CurvedBlockingTestSuite, single_block_parallel_edges)
 		bl.get_all_sheet_edges(it,parallel_edges);
 		ASSERT_EQ(4, parallel_edges.size());
 	}
+
+	std::vector<std::vector<gmds::blocking::CurvedBlocking::Edge> > all_edges;
+	bl.get_all_sheet_edges(all_edges);
+	ASSERT_EQ(3, all_edges.size());
+	for(auto sh_edges: all_edges){
+		ASSERT_EQ(4, sh_edges.size());
+	}
 }
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, get_edges_of_a_block)

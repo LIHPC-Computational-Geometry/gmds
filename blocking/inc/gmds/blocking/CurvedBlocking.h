@@ -368,6 +368,12 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[out] AEdges	all the edges of the sheet defined by @p AE
 	 */
 	void get_all_sheet_edges(const Edge AE, std::vector<Edge> &AEdges);
+
+	/**@brief Get all the parallel edges composing sheets. Each set of parallel
+	 * 		 edges is an item pf @p ASheetEdges
+	 * @param[out] ASheetEdges	all the edges gathered by sheet
+	 */
+	void get_all_sheet_edges(std::vector<std::vector<Edge> >&ASheetEdges);
 	/**@brief Get one dart per  parallel edges composing the sheet defined from edge
 	 * @p AE. All the returned darts are on the same side of each edge.
 	 * @param[in]  AE			the edge we start from
