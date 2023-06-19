@@ -34,8 +34,6 @@ jobs:
       run: >
         cmake -E make_directory /build;
         cmake -E make_directory /buildinstall;
-        pwd;
-        ls;
 
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable
@@ -48,8 +46,6 @@ jobs:
       # CMAKE_INSTALL_PREFIX is specified here because of issue 20565 where CMAKE_INSTALL_LIBDIR
       # does not seem to be re-evaluated during the call to cmake --install
       run: >
-        pwd;
-        ls;
         cmake /__w/gmds/gmds -DCMAKE_BUILD_TYPE=${{ matrix.config }} 
         -DWITH_CODE_COVERAGE=ON
         -DWITH_PYTHON_API=OFF
