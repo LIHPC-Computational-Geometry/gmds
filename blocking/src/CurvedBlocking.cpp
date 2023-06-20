@@ -111,6 +111,54 @@ CurvedBlocking::get_all_faces()
 }
 /*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Edge>
+CurvedBlocking::get_edges_of_node(const Node AN)
+{
+	throw GMDSException("Not yet implemented");
+	std::vector<Edge> edges;
+	return edges;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Face>
+CurvedBlocking::get_faces_of_node(const Node AN)
+{
+	throw GMDSException("Not yet implemented");
+	std::vector<Face> faces;
+	return faces;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Block>
+CurvedBlocking::get_blocks_of_node(const Node AN)
+{
+	throw GMDSException("Not yet implemented");
+	std::vector<Block> blocks;
+	return blocks;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Face>
+CurvedBlocking::get_faces_of_edge(const Edge AE)
+{
+	throw GMDSException("Not yet implemented");
+	std::vector<Face> faces;
+	return faces;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Block>
+CurvedBlocking::get_blocks_of_edge(const Edge AE)
+{
+	throw GMDSException("Not yet implemented");
+	std::vector<Block> blocks;
+	return blocks;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Block>
+CurvedBlocking::get_blocks_of_face(const Face AF)
+{
+	throw GMDSException("Not yet implemented");
+	std::vector<Block> blocks;
+	return blocks;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Edge>
 CurvedBlocking::get_all_edges()
 {
 	std::vector<CurvedBlocking::Edge> edges;

@@ -319,6 +319,37 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param ALoc the new node location
 	 */
 	void move_node(Node AN, math::Point &ALoc);
+	/** Get all the edges adjacent to a node
+	 * @param[in] AN a node
+	 * @return the set of edges adjacent to the node.
+	 */
+	std::vector<Edge> get_edges_of_node(const Node AN);
+	/** Get all the faces adjacent to a node
+	 * @param[in] AN a node
+	 * @return the set of faces adjacent to the node.
+	 */
+	std::vector<Face> get_faces_of_node(const Node AN);
+	/** Get all the blocks adjacent to a node
+	 * @param[in] AN a node
+	 * @return the set of blocks adjacent to the node.
+	 */
+	std::vector<Block> get_blocks_of_node(const Node AN);
+	/** Get all the faces adjacent to an edge
+	 * @param[in] AE an edge
+	 * @return the set of faces adjacent to the edge.
+	 */
+	std::vector<Face> get_faces_of_edge(const Edge AE);
+	/** Get all the blocks adjacent to an edge
+	 * @param[in] AE an edge
+	 * @return the set of blocks adjacent to the edge.
+	 */
+	std::vector<Block> get_blocks_of_edge(const Edge AE);
+	/** Get all the blocks adjacent to a face
+	 * @param[in] AF a face
+	 * @return the set of blocks adjacent to the face.
+	 */
+	std::vector<Block> get_blocks_of_face(const Face AF);
+
 	/** Get all the faces of a block. If it is a hexahedral block,
 	 * we have 6 faces, the first and the second are opposite, idem
 	 * for the third and fourth, and the fifth and sixth.
