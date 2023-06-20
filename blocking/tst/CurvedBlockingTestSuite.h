@@ -153,6 +153,13 @@ TEST(CurvedBlockingTestSuite, single_block_parallel_edges)
 		bl.get_all_sheet_edges(it,parallel_edges);
 		ASSERT_EQ(4, parallel_edges.size());
 	}
+
+	std::vector<std::vector<gmds::blocking::CurvedBlocking::Edge> > all_edges;
+	bl.get_all_sheet_edges(all_edges);
+	ASSERT_EQ(3, all_edges.size());
+	for(auto sh_edges: all_edges){
+		ASSERT_EQ(4, sh_edges.size());
+	}
 }
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, get_edges_of_a_block)
@@ -259,4 +266,27 @@ TEST(CurvedBlockingTestSuite, single_block_to_mesh)
 	ASSERT_EQ(m.getNbEdges(), 12);
 	ASSERT_EQ(m.getNbFaces(), 6);
 	ASSERT_EQ(m.getNbRegions(), 1);
+}
+
+
+/*----------------------------------------------------------------------------*/
+TEST(CurvedBlockingTestSuite, projection_point_to_edges)
+{
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model, true);
+
+	std::vector<std::vector<gmds::blocking::CurvedBlocking::Edge> > all_edges;
+	bl.get_all_sheet_edges(all_edges);
+	gmds::math::Point p(5,5,5);
+	for(auto sh_edges: all_edges){
+		    ASSERT_EQ(4, sh_edges.size());
+		    auto dist_coord = bl.get_projection_info(p,sh_edges);
+		    double min_dist = MAXFLOAT;
+		    for (auto dc: dist_coord){
+				if (dc.first<min_dist)
+				   min_dist = dc.first;
+		    }
+		    ASSERT_NEAR(min_dist,0,0.01);
+	}
 }

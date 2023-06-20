@@ -5,15 +5,15 @@
 #include <CGAL/Cell_attribute.h>
 #include <CGAL/Generalized_map.h>
 #include <LIB_GMDS_BLOCKING_export.h>
+#include <gmds/cad/GeomManager.h>
+#include <gmds/ig/Mesh.h>
 #include <gmds/math/Point.h>
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/utils/Exception.h>
-#include <gmds/cad/GeomManager.h>
-#include <gmds/ig/Mesh.h>
 /*----------------------------------------------------------------------------*/
 #include <string>
-#include <type_traits>
 #include <tuple>
+#include <type_traits>
 
 /*----------------------------------------------------------------------------*/
 namespace gmds {
@@ -319,6 +319,37 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param ALoc the new node location
 	 */
 	void move_node(Node AN, math::Point &ALoc);
+	/** Get all the edges adjacent to a node
+	 * @param[in] AN a node
+	 * @return the set of edges adjacent to the node.
+	 */
+	std::vector<Edge> get_edges_of_node(const Node AN);
+	/** Get all the faces adjacent to a node
+	 * @param[in] AN a node
+	 * @return the set of faces adjacent to the node.
+	 */
+	std::vector<Face> get_faces_of_node(const Node AN);
+	/** Get all the blocks adjacent to a node
+	 * @param[in] AN a node
+	 * @return the set of blocks adjacent to the node.
+	 */
+	std::vector<Block> get_blocks_of_node(const Node AN);
+	/** Get all the faces adjacent to an edge
+	 * @param[in] AE an edge
+	 * @return the set of faces adjacent to the edge.
+	 */
+	std::vector<Face> get_faces_of_edge(const Edge AE);
+	/** Get all the blocks adjacent to an edge
+	 * @param[in] AE an edge
+	 * @return the set of blocks adjacent to the edge.
+	 */
+	std::vector<Block> get_blocks_of_edge(const Edge AE);
+	/** Get all the blocks adjacent to a face
+	 * @param[in] AF a face
+	 * @return the set of blocks adjacent to the face.
+	 */
+	std::vector<Block> get_blocks_of_face(const Face AF);
+
 	/** Get all the faces of a block. If it is a hexahedral block,
 	 * we have 6 faces, the first and the second are opposite, idem
 	 * for the third and fourth, and the fifth and sixth.
@@ -368,6 +399,12 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[out] AEdges	all the edges of the sheet defined by @p AE
 	 */
 	void get_all_sheet_edges(const Edge AE, std::vector<Edge> &AEdges);
+
+	/**@brief Get all the parallel edges composing sheets. Each set of parallel
+	 * 		 edges is an item pf @p ASheetEdges
+	 * @param[out] ASheetEdges	all the edges gathered by sheet
+	 */
+	void get_all_sheet_edges(std::vector<std::vector<Edge>> &ASheetEdges);
 	/**@brief Get one dart per  parallel edges composing the sheet defined from edge
 	 * @p AE. All the returned darts are on the same side of each edge.
 	 * @param[in]  AE			the edge we start from
@@ -380,7 +417,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in] AE an edge we want to split in two edges
 	 * @param[in] AP a point we use to define where AE must be cut.
 	 */
-	void cut_sheet(const Edge AE, const math::Point& AP);
+	void cut_sheet(const Edge AE, const math::Point &AP);
 	/**@brief Split the sheet defined by edge @p AE at the parameter @p AParam, which is included
 	 * 		 in ]0,1[. The first end point of @p AE is at parameter 0, the second one at parameter 1.
 	 *
@@ -420,6 +457,15 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @return true if valid, false otherwise
 	 */
 	bool is_valid_topology() const;
+	/**\brief Order the edges of @p AEdges accordingly to their distance to @p AP.
+	 * 		 More specifically, we orthogonnaly project @p AP on each edge of @p AEdges.
+	 * 		 For each edge, we store the distance between @p AP and the edge and the coordinate
+	 * 		 the projected point inside the edge (between 0 and 1).
+	 * @param[in] AP 		A Point to project on each edge
+	 * @param[in] AEdges 	A set of edges
+	 * @return for each edge, we get the distance (first) and the coordinate (second)
+	 */
+	std::vector<std::pair<double, double>> get_projection_info(math::Point &AP, std::vector<CurvedBlocking::Edge> &AEdges);
 
  private:
 	/**@brief Create a node attribute in the n-gmap

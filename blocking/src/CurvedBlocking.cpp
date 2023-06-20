@@ -111,6 +111,54 @@ CurvedBlocking::get_all_faces()
 }
 /*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Edge>
+CurvedBlocking::get_edges_of_node(const Node AN)
+{
+	throw GMDSException("Not yet implemented");
+	std::vector<Edge> edges;
+	return edges;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Face>
+CurvedBlocking::get_faces_of_node(const Node AN)
+{
+	throw GMDSException("Not yet implemented");
+	std::vector<Face> faces;
+	return faces;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Block>
+CurvedBlocking::get_blocks_of_node(const Node AN)
+{
+	throw GMDSException("Not yet implemented");
+	std::vector<Block> blocks;
+	return blocks;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Face>
+CurvedBlocking::get_faces_of_edge(const Edge AE)
+{
+	throw GMDSException("Not yet implemented");
+	std::vector<Face> faces;
+	return faces;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Block>
+CurvedBlocking::get_blocks_of_edge(const Edge AE)
+{
+	throw GMDSException("Not yet implemented");
+	std::vector<Block> blocks;
+	return blocks;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Block>
+CurvedBlocking::get_blocks_of_face(const Face AF)
+{
+	throw GMDSException("Not yet implemented");
+	std::vector<Block> blocks;
+	return blocks;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Edge>
 CurvedBlocking::get_all_edges()
 {
 	std::vector<CurvedBlocking::Edge> edges;
@@ -403,6 +451,44 @@ CurvedBlocking::convert_to_mesh(Mesh &AMesh)
 }
 /*----------------------------------------------------------------------------*/
 void
+CurvedBlocking::get_all_sheet_edges(std::vector<std::vector<Edge> > &AEdges)
+{
+	AEdges.clear();
+	std::vector<Edge> all_edges = get_all_edges();
+	std::map<TCellID , bool> edge_done;
+	for (auto e : all_edges){
+		edge_done[e->info().topo_id]=false;
+	}
+
+	bool remain_edge_to_do = true;
+	while (remain_edge_to_do){
+		remain_edge_to_do=false;
+		//we try and find the first that is not already put into a sheet set
+		bool found_edge=false;
+		auto edge_index=0;
+		for (auto i=0; i<all_edges.size() && !found_edge; i++){
+			//we found an edge to treat
+			if(edge_done[all_edges[i]->info().topo_id]==false){
+				found_edge=true;
+				edge_index = i;
+			}
+		}
+		if(found_edge){
+			//work to do, we will do another iteration
+			remain_edge_to_do = true;
+			std::vector<Edge> sh_edges;
+			get_all_sheet_edges(all_edges[edge_index], sh_edges);
+			//we store the sheet edges
+			AEdges.push_back(sh_edges);
+			//now we mark them as treated
+			for (auto e : sh_edges){
+				edge_done[e->info().topo_id]=true;
+			}
+		}
+	}
+}
+/*----------------------------------------------------------------------------*/
+void
 CurvedBlocking::get_all_sheet_edges(const Edge AE, std::vector<Edge> &AEdges)
 {
 	AEdges.clear();
@@ -569,5 +655,39 @@ CurvedBlocking::cut_sheet(const Edge AE, const double AParam)
 	m_gmap.free_mark(mark_edge_darts);
 	m_gmap.unmark_all(mark_done);
 	m_gmap.free_mark(mark_done);
+
+}
+/*----------------------------------------------------------------------------*/
+std::vector<std::pair<double,double> >
+CurvedBlocking::get_projection_info(math::Point& AP, std::vector<CurvedBlocking::Edge>& AEdges)
+{
+	std::vector<std::pair<double,double> > dist_coord;
+	for(auto e: AEdges){
+		std::vector<Node> end_points = get_nodes_of_edge(e);
+		math::Point end0 = end_points[0]->info().point;
+		math::Point end1 = end_points[1]->info().point;
+		math::Vector3d v1=end1-end0;
+		math::Vector3d v2=AP-end0;
+		double coord = 0.0;
+		double distance=0.0;
+		auto a = v1.dot(v2);
+		if (a <= 0.0) {
+			coord=0.0;
+			distance = AP.distance(end0);
+		}
+		else {
+			auto b = v1.dot(v1);
+			if (a >= b) {
+				coord = 1.0;
+				distance = AP.distance(end1);
+			}
+			else{
+				coord = a /b;
+				distance = AP.distance(end0 + coord * v1);
+			}
+		}
+		dist_coord.push_back(std::make_pair(distance,coord));
+	}
+	return dist_coord;
 
 }
