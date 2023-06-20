@@ -42,7 +42,7 @@ jobs:
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
       shell: bash
-      working-directory: ${GITHUB_WORKSPACE}/build
+      working-directory: build
       # Note the current convention is to use the -S and -B options here to specify source
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
@@ -66,12 +66,12 @@ jobs:
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
       shell: bash
-      working-directory: ${GITHUB_WORKSPACE}/build
+      working-directory: build
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config ${{ matrix.config }} --parallel 4
 
     - name: C++ Test
-      working-directory: ${GITHUB_WORKSPACE}/build
+      working-directory: build
       shell: bash
       run: |
         if ${{ matrix.config == 'Release'}}; then
@@ -85,7 +85,7 @@ jobs:
         fi
 
     - name: Install
-      working-directory: ${GITHUB_WORKSPACE}/build
+      working-directory: build
       run: |
         if ${{ matrix.config == 'Release'}}; then
             cmake --install build --prefix ${GITHUB_WORKSPACE}/install  --config Release
@@ -95,8 +95,8 @@ jobs:
 
     - name: C++ Test lib install
       run: |
-        cmake -E make_directory ${GITHUB_WORKSPACE}//user_exe_build
+        cmake -E make_directory ${GITHUB_WORKSPACE}/user_exe_build
         cd ${GITHUB_WORKSPACE}//user_exe_build/
-        cmake -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}//install" $${GITHUB_WORKSPACE}/docs/example
+        cmake -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/install" $${GITHUB_WORKSPACE}/docs/example
         make
         ./examplegmds
