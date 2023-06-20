@@ -110,51 +110,127 @@ CurvedBlocking::get_all_faces()
 	return faces;
 }
 /*----------------------------------------------------------------------------*/
+std::vector<TCellID> CurvedBlocking::get_all_id_nodes()
+{
+	auto nodes = get_all_nodes();
+	std::vector<TCellID> ids;
+	ids.reserve(nodes.size());
+	for(auto n:nodes)
+		ids.push_back(n->info().topo_id);
+	return ids;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<TCellID> CurvedBlocking::get_all_id_edges()
+{
+	auto edges = get_all_edges();
+	std::vector<TCellID> ids;
+	ids.reserve(edges.size());
+	for(auto e:edges)
+		ids.push_back(e->info().topo_id);
+	return ids;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<TCellID> CurvedBlocking::get_all_id_faces()
+{
+	auto faces = get_all_faces();
+	std::vector<TCellID> ids;
+	ids.reserve(faces.size());
+	for(auto f:faces)
+		ids.push_back(f->info().topo_id);
+	return ids;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<TCellID> CurvedBlocking::get_all_id_blocks()
+{
+	auto blocks = get_all_blocks();
+	std::vector<TCellID> ids;
+	ids.reserve(blocks.size());
+	for(auto b:blocks)
+		ids.push_back(b->info().topo_id);
+	return ids;
+}
+/*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Edge>
 CurvedBlocking::get_edges_of_node(const Node AN)
 {
-	throw GMDSException("Not yet implemented");
 	std::vector<Edge> edges;
+	Dart3 d = AN->dart();
+	for (auto it = m_gmap.one_dart_per_incident_cell<1, 0>(d).begin(),
+	          itend = m_gmap.one_dart_per_incident_cell<1, 0>(d).end(); it != itend; ++it) {
+		edges.push_back(m_gmap.attribute<1>(it));
+	}
 	return edges;
 }
 /*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Face>
 CurvedBlocking::get_faces_of_node(const Node AN)
 {
-	throw GMDSException("Not yet implemented");
 	std::vector<Face> faces;
+	Dart3 d = AN->dart();
+	for (auto it = m_gmap.one_dart_per_incident_cell<2, 0>(d).begin(),
+	          itend = m_gmap.one_dart_per_incident_cell<2, 0>(d).end(); it != itend; ++it) {
+		faces.push_back(m_gmap.attribute<2>(it));
+	}
 	return faces;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<CurvedBlocking::Edge>
+CurvedBlocking::get_edges_of_face(const Face AF)
+{
+	std::vector<Edge> edges;
+	Dart3 d = AF->dart();
+	for (auto it = m_gmap.one_dart_per_incident_cell<1, 2>(d).begin(),
+	          itend = m_gmap.one_dart_per_incident_cell<1, 2>(d).end(); it != itend; ++it) {
+		edges.push_back(m_gmap.attribute<1>(it));
+	}
+	return edges;
 }
 /*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Block>
 CurvedBlocking::get_blocks_of_node(const Node AN)
 {
-	throw GMDSException("Not yet implemented");
 	std::vector<Block> blocks;
+	Dart3 d = AN->dart();
+	for (auto it = m_gmap.one_dart_per_incident_cell<3, 0>(d).begin(),
+	          itend = m_gmap.one_dart_per_incident_cell<3, 0>(d).end(); it != itend; ++it) {
+		blocks.push_back(m_gmap.attribute<3>(it));
+	}
 	return blocks;
 }
 /*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Face>
 CurvedBlocking::get_faces_of_edge(const Edge AE)
 {
-	throw GMDSException("Not yet implemented");
 	std::vector<Face> faces;
+	Dart3 d = AE->dart();
+	for (auto it = m_gmap.one_dart_per_incident_cell<2, 1>(d).begin(),
+	          itend = m_gmap.one_dart_per_incident_cell<2, 1>(d).end(); it != itend; ++it) {
+		faces.push_back(m_gmap.attribute<2>(it));
+	}
 	return faces;
 }
 /*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Block>
 CurvedBlocking::get_blocks_of_edge(const Edge AE)
 {
-	throw GMDSException("Not yet implemented");
 	std::vector<Block> blocks;
+	Dart3 d = AE->dart();
+	for (auto it = m_gmap.one_dart_per_incident_cell<3, 1>(d).begin(),
+	          itend = m_gmap.one_dart_per_incident_cell<3, 1>(d).end(); it != itend; ++it) {
+		blocks.push_back(m_gmap.attribute<3>(it));
+	}
 	return blocks;
 }
 /*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Block>
 CurvedBlocking::get_blocks_of_face(const Face AF)
 {
-	throw GMDSException("Not yet implemented");
 	std::vector<Block> blocks;
+	Dart3 d = AF->dart();
+	for (auto it = m_gmap.one_dart_per_incident_cell<3, 2>(d).begin(),
+	          itend = m_gmap.one_dart_per_incident_cell<3, 2>(d).end(); it != itend; ++it) {
+		blocks.push_back(m_gmap.attribute<3>(it));
+	}
 	return blocks;
 }
 /*----------------------------------------------------------------------------*/
@@ -240,7 +316,7 @@ std::vector<CurvedBlocking::Node>
 CurvedBlocking::get_nodes_of_edge(const CurvedBlocking::Edge AE)
 {
 	std::vector<CurvedBlocking::Node> nodes;
-	nodes.reserve(2);
+	nodes.resize(2);
 	Dart3 d = AE->dart();
 	nodes[0] = m_gmap.attribute<0>(d);
 	nodes[1] = m_gmap.attribute<0>(m_gmap.alpha<0>(d));
@@ -335,6 +411,51 @@ CurvedBlocking::remove_block(CurvedBlocking::Block AB)
 	Dart3 d = AB->dart();
 	m_gmap.remove_cell<3>(d);
 }
+
+/*----------------------------------------------------------------------------*/
+std::tuple<int,int,math::Point>
+CurvedBlocking::get_node_info(const int ANodeId)
+{
+	for (auto it = m_gmap.attributes<0>().begin(), itend = m_gmap.attributes<0>().end(); it != itend; ++it) {
+		if(it->info().topo_id==ANodeId){
+			return std::make_tuple(it->info().geom_dim,it->info().geom_id,it->info().point);
+		}
+	}
+	return std::make_tuple(-1,-1,math::Point(0,0,0));
+}
+/*----------------------------------------------------------------------------*/
+std::tuple<int,int>
+CurvedBlocking::get_edge_info(const int AEdgeId)
+{
+	for (auto it = m_gmap.attributes<1>().begin(), itend = m_gmap.attributes<1>().end(); it != itend; ++it) {
+		if(it->info().topo_id==AEdgeId){
+			return std::make_tuple(it->info().geom_dim,it->info().geom_id);
+		}
+	}
+	return std::make_tuple(-1,-1);
+}
+/*----------------------------------------------------------------------------*/
+std::tuple<int,int>
+CurvedBlocking::get_face_info(const int AFaceId)
+{
+	for (auto it = m_gmap.attributes<2>().begin(), itend = m_gmap.attributes<2>().end(); it != itend; ++it) {
+		if(it->info().topo_id==AFaceId){
+			return std::make_tuple(it->info().geom_dim,it->info().geom_id);
+		}
+	}
+	return std::make_tuple(-1,-1);
+}
+/*----------------------------------------------------------------------------*/
+std::tuple<int,int>
+CurvedBlocking::get_block_info(const int ABlockId)
+{
+	for (auto it = m_gmap.attributes<3>().begin(), itend = m_gmap.attributes<3>().end(); it != itend; ++it) {
+		if(it->info().topo_id==ABlockId){
+			return std::make_tuple(it->info().geom_dim,it->info().geom_id);
+		}
+	}
+	return std::make_tuple(-1,-1);
+}
 /*----------------------------------------------------------------------------*/
 bool
 CurvedBlocking::is_valid_topology() const
@@ -377,25 +498,25 @@ CurvedBlocking::convert_to_mesh(Mesh &AMesh)
 
 	AMesh.clear();
 
-	Variable<int> *var_node_topo_id = AMesh.getOrCreateVariable<int, GMDS_NODE>("blocking_topo_id");
-	Variable<int> *var_node_topo_dim = AMesh.getOrCreateVariable<int, GMDS_NODE>("blocking_topo_dim");
-	Variable<int> *var_node_geom_id = AMesh.getOrCreateVariable<int, GMDS_NODE>("blocking_geom_id");
-	Variable<int> *var_node_geom_dim = AMesh.getOrCreateVariable<int, GMDS_NODE>("blocking_geom_dim");
+	Variable<int> *var_node_topo_id = AMesh.newVariable<int, GMDS_NODE>("blocking_topo_id");
+	Variable<int> *var_node_topo_dim = AMesh.newVariable<int, GMDS_NODE>("blocking_topo_dim");
+	Variable<int> *var_node_geom_id = AMesh.newVariable<int, GMDS_NODE>("blocking_geom_id");
+	Variable<int> *var_node_geom_dim = AMesh.newVariable<int, GMDS_NODE>("blocking_geom_dim");
 
-	Variable<int> *var_edge_topo_id = AMesh.getOrCreateVariable<int, GMDS_EDGE>("blocking_topo_id");
-	Variable<int> *var_edge_topo_dim = AMesh.getOrCreateVariable<int, GMDS_EDGE>("blocking_topo_dim");
-	Variable<int> *var_edge_geom_id = AMesh.getOrCreateVariable<int, GMDS_EDGE>("blocking_geom_id");
-	Variable<int> *var_edge_geom_dim = AMesh.getOrCreateVariable<int, GMDS_EDGE>("blocking_geom_dim");
+	Variable<int> *var_edge_topo_id = AMesh.newVariable<int, GMDS_EDGE>("blocking_topo_id");
+	Variable<int> *var_edge_topo_dim = AMesh.newVariable<int, GMDS_EDGE>("blocking_topo_dim");
+	Variable<int> *var_edge_geom_id = AMesh.newVariable<int, GMDS_EDGE>("blocking_geom_id");
+	Variable<int> *var_edge_geom_dim = AMesh.newVariable<int, GMDS_EDGE>("blocking_geom_dim");
 
-	Variable<int> *var_face_topo_id = AMesh.getOrCreateVariable<int, GMDS_FACE>("blocking_topo_id");
-	Variable<int> *var_face_topo_dim = AMesh.getOrCreateVariable<int, GMDS_FACE>("blocking_topo_dim");
-	Variable<int> *var_face_geom_id = AMesh.getOrCreateVariable<int, GMDS_FACE>("blocking_geom_id");
-	Variable<int> *var_face_geom_dim = AMesh.getOrCreateVariable<int, GMDS_FACE>("blocking_geom_dim");
+	Variable<int> *var_face_topo_id = AMesh.newVariable<int, GMDS_FACE>("blocking_topo_id");
+	Variable<int> *var_face_topo_dim = AMesh.newVariable<int, GMDS_FACE>("blocking_topo_dim");
+	Variable<int> *var_face_geom_id = AMesh.newVariable<int, GMDS_FACE>("blocking_geom_id");
+	Variable<int> *var_face_geom_dim = AMesh.newVariable<int, GMDS_FACE>("blocking_geom_dim");
 
-	Variable<int> *var_region_topo_id = AMesh.getOrCreateVariable<int, GMDS_REGION>("blocking_topo_id");
-	Variable<int> *var_region_topo_dim = AMesh.getOrCreateVariable<int, GMDS_REGION>("blocking_topo_dim");
-	Variable<int> *var_region_geom_id = AMesh.getOrCreateVariable<int, GMDS_REGION>("blocking_geom_id");
-	Variable<int> *var_region_geom_dim = AMesh.getOrCreateVariable<int, GMDS_REGION>("blocking_geom_dim");
+	Variable<int> *var_region_topo_id = AMesh.newVariable<int, GMDS_REGION>("blocking_topo_id");
+	Variable<int> *var_region_topo_dim = AMesh.newVariable<int, GMDS_REGION>("blocking_topo_dim");
+	Variable<int> *var_region_geom_id = AMesh.newVariable<int, GMDS_REGION>("blocking_geom_id");
+	Variable<int> *var_region_geom_dim = AMesh.newVariable<int, GMDS_REGION>("blocking_geom_dim");
 
 	// mapping from blocking node ids to mesh node ids
 	std::map<int, TCellID> n2n;
@@ -450,10 +571,10 @@ CurvedBlocking::convert_to_mesh(Mesh &AMesh)
 	}
 }
 /*----------------------------------------------------------------------------*/
-void
-CurvedBlocking::get_all_sheet_edges(std::vector<std::vector<Edge> > &AEdges)
+std::vector<std::vector<CurvedBlocking::Edge> >
+CurvedBlocking::get_all_sheet_edge_sets()
 {
-	AEdges.clear();
+	std::vector<std::vector<Edge> > edges;
 	std::vector<Edge> all_edges = get_all_edges();
 	std::map<TCellID , bool> edge_done;
 	for (auto e : all_edges){
@@ -479,13 +600,14 @@ CurvedBlocking::get_all_sheet_edges(std::vector<std::vector<Edge> > &AEdges)
 			std::vector<Edge> sh_edges;
 			get_all_sheet_edges(all_edges[edge_index], sh_edges);
 			//we store the sheet edges
-			AEdges.push_back(sh_edges);
+			edges.push_back(sh_edges);
 			//now we mark them as treated
 			for (auto e : sh_edges){
 				edge_done[e->info().topo_id]=true;
 			}
 		}
 	}
+	return edges;
 }
 /*----------------------------------------------------------------------------*/
 void

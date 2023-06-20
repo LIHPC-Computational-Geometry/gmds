@@ -6,6 +6,4 @@ add_test(NAME test_pygmds
  )
 set_tests_properties(test_pygmds
         PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/pygmds:$ENV{PYTHONPATH}")
-
-
 #==============================================================================

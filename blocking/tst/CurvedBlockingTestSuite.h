@@ -154,8 +154,7 @@ TEST(CurvedBlockingTestSuite, single_block_parallel_edges)
 		ASSERT_EQ(4, parallel_edges.size());
 	}
 
-	std::vector<std::vector<gmds::blocking::CurvedBlocking::Edge> > all_edges;
-	bl.get_all_sheet_edges(all_edges);
+	std::vector<std::vector<gmds::blocking::CurvedBlocking::Edge> > all_edges= bl.get_all_sheet_edge_sets();
 	ASSERT_EQ(3, all_edges.size());
 	for(auto sh_edges: all_edges){
 		ASSERT_EQ(4, sh_edges.size());
@@ -276,8 +275,7 @@ TEST(CurvedBlockingTestSuite, projection_point_to_edges)
 	setUp(geom_model);
 	gmds::blocking::CurvedBlocking bl(&geom_model, true);
 
-	std::vector<std::vector<gmds::blocking::CurvedBlocking::Edge> > all_edges;
-	bl.get_all_sheet_edges(all_edges);
+	std::vector<std::vector<gmds::blocking::CurvedBlocking::Edge> > all_edges = bl.get_all_sheet_edge_sets();
 	gmds::math::Point p(5,5,5);
 	for(auto sh_edges: all_edges){
 		    ASSERT_EQ(4, sh_edges.size());
@@ -288,5 +286,40 @@ TEST(CurvedBlockingTestSuite, projection_point_to_edges)
 				   min_dist = dc.first;
 		    }
 		    ASSERT_NEAR(min_dist,0,0.01);
+	}
+}
+/*----------------------------------------------------------------------------*/
+TEST(CurvedBlockingTestSuite, test_topological_queries)
+{
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model, true);
+	std::vector<gmds::blocking::CurvedBlocking::Node> bl_nodes = bl.get_all_nodes();
+	std::vector<gmds::blocking::CurvedBlocking::Edge> bl_edges = bl.get_all_edges();
+	std::vector<gmds::blocking::CurvedBlocking::Face> bl_faces = bl.get_all_faces();
+
+	for(auto n: bl_nodes){
+		    std::vector<gmds::blocking::CurvedBlocking::Face> fs = bl.get_faces_of_node(n);
+		    ASSERT_EQ(3, fs.size());
+		    std::vector<gmds::blocking::CurvedBlocking::Edge> es = bl.get_edges_of_node(n);
+		    ASSERT_EQ(3, es.size());
+		    std::vector<gmds::blocking::CurvedBlocking::Block> bs = bl.get_blocks_of_node(n);
+		    ASSERT_EQ(1, bs.size());
+	}
+	for(auto e: bl_edges){
+		    std::vector<gmds::blocking::CurvedBlocking::Node> ns = bl.get_nodes_of_edge(e);
+		    ASSERT_EQ(2, ns.size());
+		    std::vector<gmds::blocking::CurvedBlocking::Face> fs = bl.get_faces_of_edge(e);
+		    ASSERT_EQ(2, fs.size());
+		    std::vector<gmds::blocking::CurvedBlocking::Block> bs = bl.get_blocks_of_edge(e);
+		    ASSERT_EQ(1, bs.size());
+	}
+	for(auto f: bl_faces){
+		    std::vector<gmds::blocking::CurvedBlocking::Node> ns = bl.get_nodes_of_face(f);
+		    ASSERT_EQ(4, ns.size());
+		    std::vector<gmds::blocking::CurvedBlocking::Edge> es = bl.get_edges_of_face(f);
+		    ASSERT_EQ(4, es.size());
+		    std::vector<gmds::blocking::CurvedBlocking::Block> bs = bl.get_blocks_of_face(f);
+		    ASSERT_EQ(1, bs.size());
 	}
 }
