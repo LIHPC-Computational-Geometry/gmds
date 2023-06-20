@@ -286,30 +286,54 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	void remove_block(Block AB);
 
+	/** Return the info for the node of id @p ANodeId
+	 * @param[in] ANodeId topological node id
+	 * @return a tuple where the first parameter is the geom_dim, the second its geom_id, and the third is location
+	 */
+	std::tuple<int, int, math::Point> get_node_info(const int ANodeId);
+	/** Return the info for the edge of id @p AEdgeId
+	 * @param[in] AEdgeId topological edge id
+	 * @return a tuple where the first parameter is the geom_dim, the second its geom_id
+	 */
+	std::tuple<int, int> get_edge_info(const int AEdgeId);
+	/** Return the info for the face of id @p AFaceId
+	 * @param[in] AFaceId topological face id
+	 * @return a tuple where the first parameter is the geom_dim, the second its geom_id
+	 */
+	std::tuple<int, int> get_face_info(const int AEdgeId);
+	/** Return the info for the block of id @p ABlockId
+	 * @param[in] ABlockId topological block id
+	 * @return a tuple where the first parameter is the geom_dim, the second its geom_id
+	 */
+	std::tuple<int, int> get_block_info(const int ABlockId);
 	/**@brief Non-optimal method to get all the blocks of the structure. The
 	 * best option is to traverse the block structure through the gmap
 	 * structure (iterators on attributes)
 	 * @return a vector of blocks
 	 */
 	std::vector<Block> get_all_blocks();
+	std::vector<TCellID> get_all_id_blocks();
 	/**@brief Non-optimal method to get all the faces of the structure. The
 	 * best option is to traverse the block structure through the gmap
 	 * structure (iterators on attributes)
 	 * @return a vector of faces
 	 */
 	std::vector<Face> get_all_faces();
+	std::vector<TCellID> get_all_id_faces();
 	/**@brief Non-optimal method to get all the edges of the structure. The
 	 * best option is to traverse the block structure through the gmap
 	 * structure (iterators on attributes)
 	 * @return a vector of edges
 	 */
 	std::vector<Edge> get_all_edges();
+	std::vector<TCellID> get_all_id_edges();
 	/**@brief Non-optimal method to get all the nodes of the structure. The
 	 * best option is to traverse the block structure through the gmap
 	 * structure (iterators on attributes)
 	 * @return a vector of nodes
 	 */
 	std::vector<Node> get_all_nodes();
+	std::vector<TCellID> get_all_id_nodes();
 	/**@brief moves node @p AN towards the expected new location @p ALoc.
 	 * If @p AN is classified onto a geometrical cell, the node @p AN
 	 * is first moved to @p ALoc, then it is projected onto the
@@ -344,6 +368,11 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @return the set of blocks adjacent to the edge.
 	 */
 	std::vector<Block> get_blocks_of_edge(const Edge AE);
+	/** Get all the edges adjacent to a face
+	 * @param[in] AF a face
+	 * @return the set of edges adjacent to the face.
+	 */
+	std::vector<Edge> get_edges_of_face(const Face AF);
 	/** Get all the blocks adjacent to a face
 	 * @param[in] AF a face
 	 * @return the set of blocks adjacent to the face.
@@ -402,9 +431,9 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 
 	/**@brief Get all the parallel edges composing sheets. Each set of parallel
 	 * 		 edges is an item pf @p ASheetEdges
-	 * @param[out] ASheetEdges	all the edges gathered by sheet
+	 * return all the edges gathered by sheet
 	 */
-	void get_all_sheet_edges(std::vector<std::vector<Edge>> &ASheetEdges);
+	std::vector<std::vector<Edge> > get_all_sheet_edge_sets();
 	/**@brief Get one dart per  parallel edges composing the sheet defined from edge
 	 * @p AE. All the returned darts are on the same side of each edge.
 	 * @param[in]  AE			the edge we start from
