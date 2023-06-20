@@ -48,7 +48,11 @@ PYBIND11_MODULE(gmds, m)
 
 	py::class_<gmds::MeshModel>(m, "MeshModel").def(py::init<const int &>());
 
-	py::class_<gmds::math::Point>(m, "Point").def(py::init<gmds::TCoord &, gmds::TCoord &, gmds::TCoord &>());
+	py::class_<gmds::math::Point>(m, "Point")
+	   .def(py::init<gmds::TCoord &, gmds::TCoord &, gmds::TCoord &>())
+	   .def("x", static_cast<gmds::TCoord &(gmds::math::Point::*)()>(&gmds::math::Point::X))
+	   .def("y", static_cast<gmds::TCoord &(gmds::math::Point::*)()>(&gmds::math::Point::Y))
+	   .def("z", static_cast<gmds::TCoord &(gmds::math::Point::*)()>(&gmds::math::Point::Z));
 
 	py::class_<gmds::Variable<int>>(m, "VariableInt")
 	   .def(py::init<const std::string &>())
@@ -101,9 +105,16 @@ PYBIND11_MODULE(gmds, m)
 	   .def("get_point", &gmds::cad::FACManager::getPoint)
 	   .def("init_from_3d_mesh", &gmds::cad::FACManager::initFrom3DMesh);
 
-
 	py::class_<gmds::blocking::CurvedBlocking>(m, "Blocking")
 	   .def(py::init<gmds::cad::GeomManager *, bool>())
+	   .def("get_node_info", &gmds::blocking::CurvedBlocking::get_node_info)
+	   .def("get_edge_info", &gmds::blocking::CurvedBlocking::get_edge_info)
+	   .def("get_face_info", &gmds::blocking::CurvedBlocking::get_face_info)
+	   .def("get_block_info", &gmds::blocking::CurvedBlocking::get_block_info)
+	   .def("get_all_id_nodes", &gmds::blocking::CurvedBlocking::get_all_id_nodes)
+	   .def("get_all_id_edges", &gmds::blocking::CurvedBlocking::get_all_id_edges)
+	   .def("get_all_id_faces", &gmds::blocking::CurvedBlocking::get_all_id_faces)
+	   .def("get_all_id_blocks", &gmds::blocking::CurvedBlocking::get_all_id_blocks)
 	   .def("get_nb_blocks", &gmds::blocking::CurvedBlocking::get_nb_cells<3>)
 	   .def("get_nb_faces", &gmds::blocking::CurvedBlocking::get_nb_cells<2>)
 	   .def("get_nb_edges", &gmds::blocking::CurvedBlocking::get_nb_cells<1>)
@@ -112,17 +123,26 @@ PYBIND11_MODULE(gmds, m)
 	   .def("get_all_faces", &gmds::blocking::CurvedBlocking::get_all_faces)
 	   .def("get_all_edges", &gmds::blocking::CurvedBlocking::get_all_edges)
 	   .def("get_all_nodes", &gmds::blocking::CurvedBlocking::get_all_nodes)
-	   .def("get_edges_of_block", &gmds::blocking::CurvedBlocking::get_edges_of_block)
+	   .def("get_edges_of_node", &gmds::blocking::CurvedBlocking::get_edges_of_node)
+	   .def("get_faces_of_node", &gmds::blocking::CurvedBlocking::get_faces_of_node)
+	   .def("get_blocks_of_node", &gmds::blocking::CurvedBlocking::get_blocks_of_node)
 	   .def("get_nodes_of_edge", &gmds::blocking::CurvedBlocking::get_nodes_of_edge)
+	   .def("get_faces_of_edge", &gmds::blocking::CurvedBlocking::get_faces_of_edge)
+	   .def("get_blocks_of_edge", &gmds::blocking::CurvedBlocking::get_blocks_of_edge)
 	   .def("get_nodes_of_face", &gmds::blocking::CurvedBlocking::get_nodes_of_face)
+	   .def("get_edges_of_face", &gmds::blocking::CurvedBlocking::get_edges_of_face)
+	   .def("get_blocks_of_face", &gmds::blocking::CurvedBlocking::get_blocks_of_face)
+	   .def("get_edges_of_block", &gmds::blocking::CurvedBlocking::get_edges_of_block)
+	   .def("get_faces_of_block", &gmds::blocking::CurvedBlocking::get_faces_of_block)
 	   .def("get_nodes_of_block", &gmds::blocking::CurvedBlocking::get_nodes_of_block)
-	   .def("get_all_sheet_edges", &gmds::blocking::CurvedBlocking::get_all_sheet_edges)
 	   .def("cut_sheet",
 	        static_cast<void (gmds::blocking::CurvedBlocking::*)(const gmds::blocking::CurvedBlocking::Edge)>(&gmds::blocking::CurvedBlocking::cut_sheet))
 	   .def("cut_sheet_with_point", static_cast<void (gmds::blocking::CurvedBlocking::*)(const gmds::blocking::CurvedBlocking::Edge, const gmds::math::Point &)>(
 	                                   &gmds::blocking::CurvedBlocking::cut_sheet))
 	   .def("cut_sheet_with_param", static_cast<void (gmds::blocking::CurvedBlocking::*)(const gmds::blocking::CurvedBlocking::Edge, const double)>(
 	                                   &gmds::blocking::CurvedBlocking::cut_sheet))
+	   .def("get_all_sheet_edge_sets",&gmds::blocking::CurvedBlocking::get_all_sheet_edge_sets)
+	   .def("get_projection_info",&gmds::blocking::CurvedBlocking::get_projection_info)
 	   .def("create_block", static_cast<gmds::blocking::CurvedBlocking::Block (gmds::blocking::CurvedBlocking::*)(
 	                           gmds::math::Point &, gmds::math::Point &, gmds::math::Point &, gmds::math::Point &, gmds::math::Point &, gmds::math::Point &,
 	                           gmds::math::Point &, gmds::math::Point &)>(&gmds::blocking::CurvedBlocking::create_block))
@@ -130,7 +150,7 @@ PYBIND11_MODULE(gmds, m)
 	   .def("info", &gmds::blocking::CurvedBlocking::info)
 	   .def("convert_to_mesh", &gmds::blocking::CurvedBlocking::convert_to_mesh);
 
-		py::class_<gmds::blocking::CurvedBlocking::Block>(m, "Block");
+	py::class_<gmds::blocking::CurvedBlocking::Block>(m, "Block");
 
 	py::class_<gmds::blocking::ClassificationErrors>(m, "ClassificationErrors")
 	   .def_readonly("non_captured_points", &gmds::blocking::ClassificationErrors::non_captured_points)
@@ -144,6 +164,4 @@ PYBIND11_MODULE(gmds, m)
 	   .def(py::init<gmds::blocking::CurvedBlocking *>())
 	   .def("clear_classification", &gmds::blocking::CurvedBlockingClassifier::clear_classification)
 	   .def("classify", &gmds::blocking::CurvedBlockingClassifier::classify);
-
-
 }
