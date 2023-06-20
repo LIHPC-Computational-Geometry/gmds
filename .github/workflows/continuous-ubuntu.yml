@@ -87,11 +87,7 @@ jobs:
     - name: Install
       working-directory: build
       run: |
-        if ${{ matrix.config == 'Release'}}; then
-            cmake --install build --prefix ${GITHUB_WORKSPACE}/install  --config Release
-        else
-            cmake --install build --prefix ${GITHUB_WORKSPACE}/install  --config Debug
-        fi
+        make install
 
     - name: C++ Test lib install
       run: |
