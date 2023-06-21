@@ -81,6 +81,13 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 */
 	ClassificationErrors classify(const double AMaxDistance=0.01, const double APointSnapDistance=0.1);
 
+
+	/**@brief This methods colored all the faces with the same color by surfaces
+	 */
+	std::map<gmds::TCellID,int> exterior_faces_coloration(std::vector<CurvedBlocking::Face>& Faces);
+
+
+
  private:
 	/**@brief This method check if a 0-cell of the blocking structure is classified
 	 * on the geometrical point @p AP.
@@ -88,6 +95,16 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 * @return true and the node classified on @p AP, false otherwise and a random node
 	 */
 	std::pair<bool, CurvedBlocking::Node> find_node_classified_on(cad::GeomPoint* AP);
+
+
+	/**@brief This method check if a 1-cell of the blocking structure is classified
+	 * on the geometrical curve @c AC.
+	 * @param AC a geometrical curve
+	 * @return true and the edges classified on @c AC, false otherwise
+	 */
+	std::pair<bool, std::vector<CurvedBlocking::Edge>> find_edge_classified_on(cad::GeomCurve* AC);
+
+
 	/**@brief This methods classify all nodes onto the geometric model. It is called internally
 	 * vy the method *classify*.
 	 * @param[out] AErrors 		list of errors done during the classification
@@ -100,6 +117,12 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 * @param[out] AErrors 		list of errors done during the classification
 	 */
 	void classify_edges(ClassificationErrors& AErrors);
+
+	/**@brief This methods classify all faces onto the geometric model. It is called internally
+	 * by the method *classify*.
+	 * @param[out] AErrors 		list of errors done during the classification
+	 */
+	void classify_faces(ClassificationErrors& AErrors);
 	/**@brief Generic method that gives among a collection of geometrical entities of same
 	 * dimension, the cloest entity to point @p AP.
 	 * @param[in] AP the point we consider
@@ -109,6 +132,14 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 */
 	std::tuple<double, int, math::Point> get_closest_cell(const math::Point& AP,
 	                                         const std::vector<cad::GeomEntity*>& AGeomCells);
+
+	/**@brief This methods check if all boundary elements of a surface are captured.
+	 * @return True if the boundary is captured
+	 */
+	bool boundary_surface_captured(cad::GeomSurface* AS);
+
+
+
 
  private:
 	/*** the associated geometric model*/
