@@ -5,7 +5,7 @@ add_executable(GMDS_BLOCKINGQUALITY_TEST
 target_link_libraries(GMDS_BLOCKINGQUALITY_TEST PUBLIC
         ${GMDS_LIB}
         ${LIB_GMDS_IG_ALGO}
-        gtest)
+        GTest::gtest)
 
 target_include_directories(GMDS_BLOCKINGQUALITY_TEST PRIVATE .)
 

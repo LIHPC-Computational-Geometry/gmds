@@ -10,6 +10,7 @@
 #include <gmds/igalgo/BoundaryExtractor3D.h>
 #include <gmds/math/Matrix.h>
 #include <gmds/quality/HexQuality.h>
+#include <unordered_map>
 /*----------------------------------------------------------------------------------------*/
 namespace gmds {
 /*--------------------------------------------------------------------------------------	--*/

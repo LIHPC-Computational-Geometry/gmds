@@ -322,46 +322,6 @@ CurvedBlocking::get_nodes_of_edge(const CurvedBlocking::Edge AE)
 	nodes[1] = m_gmap.attribute<0>(m_gmap.alpha<0>(d));
 	return nodes;
 }
-
-/*----------------------------------------------------------------------------*/
-std::vector<CurvedBlocking::Edge>
-CurvedBlocking::get_edges_of_face(const CurvedBlocking::Face AF)
-{
-	std::vector<CurvedBlocking::Edge> edges;
-	edges.reserve(4);
-	Dart3 d = AF->dart();
-	edges[0] = m_gmap.attribute<1>(d);
-	edges[1] = m_gmap.attribute<1>(m_gmap.alpha<1>(d));
-	edges[3] = m_gmap.attribute<1>(m_gmap.alpha<1,0,1>(d));
-	edges[4] = m_gmap.attribute<1>(m_gmap.alpha<1,0,1,0,1>(d));
-	return edges;
-}
-
-/*----------------------------------------------------------------------------*/
-std::vector<CurvedBlocking::Edge>
-CurvedBlocking::get_edges_of_node(const CurvedBlocking::Node AN)
-{
-	std::vector<CurvedBlocking::Edge> edges;
-	Dart3 d = AN->dart();
-	auto vectDartsEdges = m_gmap.one_dart_per_incident_cell<1,0>(d);
-
-	for(auto it = vectDartsEdges.begin(),itend = vectDartsEdges.end(); it!= itend ; ++it){
-		edges.push_back(m_gmap.attribute<1>(it));
-	}
-	return edges;
-}
-/*----------------------------------------------------------------------------*/
-std::set<CurvedBlocking::Face>
-CurvedBlocking::get_faces_of_edge(const CurvedBlocking::Edge AE)
-{
-	std::set<CurvedBlocking::Face> faces;
-	Dart3 d = AE->dart();
-	auto vectDartsEdges = m_gmap.one_dart_per_incident_cell<1,0>(d);
-	  for(auto it = vectDartsEdges.begin(),itend = vectDartsEdges.end(); it!= itend ; ++it){
-		faces.insert(m_gmap.attribute<2>(it));
-	}
-	return faces;
-}
 /*----------------------------------------------------------------------------*/
 math::Point
 CurvedBlocking::get_center_of_edge(const Edge AE)

@@ -403,7 +403,7 @@ std::map<gmds::TCellID,int>
 
 
 		for(auto e : edges_of_aF_Init){
-			std::set<CurvedBlocking::Face> faces_of_e = m_blocking->get_faces_of_edge(e);
+			std::vector<CurvedBlocking::Face> faces_of_e = m_blocking->get_faces_of_edge(e);
 			if(faces_of_e.size()!=2) {
 				for (auto f : faces_of_e) {
 					if (f->info().topo_id != aF_Init->info().topo_id && (f->dart() == gm->alpha<3>(f->dart()))) {
@@ -419,7 +419,7 @@ std::map<gmds::TCellID,int>
 			auto edges_of_aF = m_blocking->get_edges_of_face(aF);
 
 			for(auto e : edges_of_aF){
-				std::set<CurvedBlocking::Face> faces_of_e = m_blocking->get_faces_of_edge(e);
+				std::vector<CurvedBlocking::Face> faces_of_e = m_blocking->get_faces_of_edge(e);
 				if(faces_of_e.size()!=2) {
 					for (auto f : faces_of_e) {
 						if (f->info().topo_id != aF_Init->info().topo_id && (f->dart() == gm->alpha<3>(f->dart()))) {
