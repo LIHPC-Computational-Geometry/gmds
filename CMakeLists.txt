@@ -274,8 +274,8 @@ GMDS_ADD_COMPONENT(
         rlBlocking                       # src subdirectory name
         GMDSRlBlocking                    # name of the generated library
         " "  # description
-        ON                                 # is activated
-        ON                                 # must be covered
+        OFF                                 # is activated
+        OFF                                 # must be covered
 )
 
 
