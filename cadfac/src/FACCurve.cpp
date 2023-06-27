@@ -37,25 +37,11 @@ FACCurve::FACCurve(Mesh *AMeshSupport) : m_support(AMeshSupport), m_id(m_next_id
 FACCurve::FACCurve(Mesh *AMeshSupport, std::vector<TCellID> &APoints, std::vector<TCellID> &AEdges, const std::string &AName) :
   GeomCurve(AName), m_support(AMeshSupport), m_id(m_next_id++), m_mesh_nodes(APoints), m_mesh_edges(AEdges)
 {
-
-	for (unsigned int i = 0; i < APoints.size() - 1; i++) {
-		Node n1 = m_support->get<Node>(APoints[i]);
-		Node n2 = m_support->get<Node>(APoints[i + 1]);
-		math::Point p1(n1.X(), n1.Y(), n1.Z());
-		math::Point p2(n2.X(), n2.Y(), n2.Z());
-	}
 }
 /*----------------------------------------------------------------------------*/
 FACCurve::FACCurve(Mesh *AMeshSupport, FACPoint *AP1, FACPoint *AP2, std::vector<TCellID> &APoints, std::vector<TCellID> &AEdges, const std::string &AName) :
   GeomCurve(AName), m_support(AMeshSupport), m_id(m_next_id++), m_mesh_nodes(APoints), m_mesh_edges(AEdges)
 {
-
-	for (unsigned int i = 0; i < APoints.size() - 1; i++) {
-		Node n1 = m_support->get<Node>(APoints[i]);
-		Node n2 = m_support->get<Node>(APoints[i + 1]);
-		math::Point p1(n1.X(), n1.Y(), n1.Z());
-		math::Point p2(n2.X(), n2.Y(), n2.Z());
-	}
 }
 /*----------------------------------------------------------------------------*/
 FACCurve::~FACCurve() {}
@@ -77,6 +63,76 @@ FACCurve::project(math::Point &AP) const
 {
 
 	AP = closestPoint(AP);
+}
+/*----------------------------------------------------------------------------*/
+math::Vector3d
+FACCurve::computeTangent(const int AParam) const
+{
+	int p = AParam;
+	if (p < 0) p = 0;
+	if (p > 1) p = 1;
+
+	if (m_adjacent_points.size() == 0) {
+		// we've got a loop
+		Edge e = m_support->get<Edge>(m_mesh_edges[0]);
+		std::vector<Node> e_nodes = e.get<Node>();
+		return (e_nodes[1].point() - e_nodes[0].point()).getNormalize();
+	}
+
+	// Not a loop, we have two end points
+	if (m_adjacent_points.size() != 2) throw GMDSException("Error a FAC curve which is not a loop doesn't have two end points");
+
+	FACPoint *end_p0 = static_cast<FACPoint *>(m_adjacent_points[0]);
+	FACPoint *end_p1 = static_cast<FACPoint *>(m_adjacent_points[1]);
+	TCellID end0_node_id = end_p0->getNode().id();
+	TCellID end1_node_id = end_p1->getNode().id();
+
+	// we determinate the end points
+	std::map<TCellID, int> nb_node_occurrences;
+	for (auto e_i : m_mesh_edges) {
+		Edge e = m_support->get<Edge>(e_i);
+		std::vector<TCellID> e_node_ids = e.getIDs<Node>();
+		nb_node_occurrences[e_node_ids[0]]++;
+		nb_node_occurrences[e_node_ids[1]]++;
+	}
+	// now we look for the right end points
+	for (auto e_i : m_mesh_edges) {
+		Edge e = m_support->get<Edge>(e_i);
+		std::vector<TCellID> e_node_ids = e.getIDs<Node>();
+		if (nb_node_occurrences[e_node_ids[0]] == 1) {
+			// end point
+			// We check which end point it is and if it the expected on
+			if (e_node_ids[0] == end0_node_id && p == 0) {
+				// return edge vector
+				Node n0 = m_support->get<Node>(e_node_ids[0]);
+				Node n1 = m_support->get<Node>(e_node_ids[1]);
+				return (n1.point() - n0.point()).getNormalize();
+			}
+			else if (e_node_ids[0] == end1_node_id && p == 1) {
+				// return edge vector
+				Node n0 = m_support->get<Node>(e_node_ids[0]);
+				Node n1 = m_support->get<Node>(e_node_ids[1]);
+				return (n1.point() - n0.point()).getNormalize();
+			}
+		}
+		else if (nb_node_occurrences[e_node_ids[1]] == 1) {
+				// end point
+				// We check which end point it is and if it the expected on
+				if (e_node_ids[1] == end0_node_id && p == 0) {
+					// return edge vector
+					Node n0 = m_support->get<Node>(e_node_ids[0]);
+					Node n1 = m_support->get<Node>(e_node_ids[1]);
+					return (n0.point() - n1.point()).getNormalize();
+				}
+				else if (e_node_ids[1] == end1_node_id && p == 1) {
+					// return edge vector
+					Node n0 = m_support->get<Node>(e_node_ids[0]);
+					Node n1 = m_support->get<Node>(e_node_ids[1]);
+					return (n0.point() - n1.point()).getNormalize();
+				}
+			}
+		}
+	throw GMDSException("Error to compute tangent vector on a FAC curve");
 }
 /*----------------------------------------------------------------------------*/
 GeomCurve::CurvatureInfo
@@ -139,17 +195,6 @@ FACCurve::closestPoint(const math::Point &AP) const
 	math::Segment seg(e_nodes[0].point(), e_nodes[1].point());
 
 	return seg.project(AP);
-
-	/*            math::Point closest = e.center();
-	            double d= AP.distance2(closest);
-	            if(AP.distance2(e_nodes[0].point()) < d){
-	                closest = e_nodes[0].point();
-	                d = AP.distance2(e_nodes[0].point());
-	            }
-	            if (AP.distance2(e_nodes[1].point()) < d){
-	                closest = e_nodes[1].point();
-	            }
-	            return closest;*/
 }
 /*----------------------------------------------------------------------------*/
 void
@@ -184,7 +229,7 @@ FACCurve::computeArea() const
 void
 FACCurve::computeBoundingBox(TCoord minXYZ[3], TCoord maxXYZ[3]) const
 {
-	auto [min_x, min_y, min_z,max_x,max_y,max_z] = BBox();
+	auto [min_x, min_y, min_z, max_x, max_y, max_z] = BBox();
 	minXYZ[0] = min_x;
 	maxXYZ[0] = max_x;
 	minXYZ[1] = min_y;
@@ -209,13 +254,12 @@ FACCurve::BBox() const
 	auto maxZ = pi.Z();
 	for (unsigned int i = 1; i < pnts.size(); i++) {
 		pi = pnts[i];
-		minX= std::min(minX, pi.X());
-		maxX= std::min(maxX, pi.X());
-		minY= std::min(minY, pi.Y());
-		maxY= std::min(maxY, pi.Y());
-		minZ= std::min(minZ, pi.Z());
-		maxZ= std::min(maxZ, pi.Z());
-
+		minX = std::min(minX, pi.X());
+		maxX = std::min(maxX, pi.X());
+		minY = std::min(minY, pi.Y());
+		maxY = std::min(maxY, pi.Y());
+		minZ = std::min(minZ, pi.Z());
+		maxZ = std::min(maxZ, pi.Z());
 	}
 	return {minX, minY, minZ, maxX, maxY, maxZ};
 }

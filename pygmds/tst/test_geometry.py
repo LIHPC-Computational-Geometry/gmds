@@ -42,6 +42,14 @@ def test_curve_queries():
         assert len(c.points()) == 2
         assert len(c.surfaces()) == 2
         assert len(c.volumes()) == 1
+        tangent_0 = c.tangent(0)
+        tangent_1 = c.tangent(1)
+        p0 = c.points()[0]
+        p1 = c.points()[1]
+        v01 = Vector3d(p1.x()-p0.x(),p1.y()-p0.y(),p1.z()-p0.z())
+        v01 = v01.get_normalize()
+        assert abs(tangent_0.dot(v01))-1<0.001
+        assert abs(tangent_1.dot(v01))-1<0.001
 def test_surface_queries():
     input_geom_file = str(sys.argv[2]) + "/tet_in_box.vtk"
     fm = FACManager()
