@@ -87,6 +87,7 @@ public:
 	 *  \param points the points of the model.
 	 */
 	virtual void getPoints(std::vector<GeomPoint*>& points) const =0;
+	virtual std::vector<GeomPoint*> getPoints() const =0;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Access to the curves of the model.
@@ -94,6 +95,7 @@ public:
 	 *  \param curves the curves of the model.
 	 */
 	virtual void getCurves(std::vector<GeomCurve*>& curves) const =0;
+	virtual std::vector<GeomCurve*> getCurves() const =0;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Access to the surface of the model.
@@ -101,12 +103,14 @@ public:
 	 *  \param surfaces the surfaces of the model.
 	 */
 	virtual void getSurfaces(std::vector<GeomSurface*>& surfaces)const=0;
+	virtual std::vector<GeomSurface*> getSurfaces()const =0;
 
 		/*------------------------------------------------------------------------*/
 		/** \brief  Access to the volumes of the model.
          *  \param volumes the volumes of the model.
          */
 		virtual void getVolumes(std::vector<GeomVolume*>& volumes) const =0;
+	   virtual  std::vector<GeomVolume*> getVolumes() const =0;
 
         /*------------------------------------------------------------------------*/
         /** \brief  Gives access to the point of id @AID, Return NullPtr if it does
