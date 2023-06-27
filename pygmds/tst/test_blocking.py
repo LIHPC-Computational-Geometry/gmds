@@ -105,3 +105,18 @@ def test_all_ids():
         assert abs(p.x()) == 5
         assert abs(p.y()) == 5
         assert abs(p.z()) == 5
+
+
+def test_face_center_normal():
+    input_geom_file = str(sys.argv[2]) + "/tet_in_box.vtk"
+    fm = FACManager()
+    setUp(fm, input_geom_file)
+    blocking = Blocking(fm,True)
+    assert blocking.get_nb_faces() == 6
+    faces = blocking.get_all_faces()
+    assert len(faces) == 6
+    for f in faces:
+        n = blocking.get_normal_of_face(f)
+        assert (abs(n.x()) < 0.001) or (abs(n.x())-1 < 0.001)
+        assert (abs(n.y()) < 0.001) or (abs(n.y())-1 < 0.001)
+        assert (abs(n.z()) < 0.001) or (abs(n.z())-1 < 0.001)

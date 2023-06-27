@@ -20,6 +20,28 @@ PYBIND11_MODULE(gmds, m)
 	// module description
 	m.doc() = "gmds is the python binding to a set of features provided by the gmds project";
 
+	//=============================================================
+	// MATH NOTIONS
+	//=============================================================
+	py::class_<gmds::math::Vector3d>(m, "Vector3d")
+	   .def(py::init<gmds::TCoord &, gmds::TCoord &, gmds::TCoord &>())
+	   .def("x", &gmds::math::Vector3d::X)
+	   .def("y", &gmds::math::Vector3d::Y)
+	   .def("z", &gmds::math::Vector3d::Z)
+	   .def("get_normalize", &gmds::math::Vector3d::getNormalize)
+	   .def("dot", &gmds::math::Vector3d::dot)
+	   .def("cross", &gmds::math::Vector3d::cross);
+
+	py::class_<gmds::math::Point>(m, "Point")
+	   .def(py::init<gmds::TCoord &, gmds::TCoord &, gmds::TCoord &>())
+	   .def("distance", &gmds::math::Point::distance)
+	   .def("x", static_cast<gmds::TCoord &(gmds::math::Point::*) ()>(&gmds::math::Point::X))
+	   .def("y", static_cast<gmds::TCoord &(gmds::math::Point::*) ()>(&gmds::math::Point::Y))
+	   .def("z", static_cast<gmds::TCoord &(gmds::math::Point::*) ()>(&gmds::math::Point::Z));
+
+	//=============================================================
+	// MESH
+	//=============================================================
 	py::enum_<gmds::ECellType>(m, "CellType")
 	   .value("GMDS_NODE", gmds::ECellType::GMDS_NODE)
 	   .value("GMDS_EDGE", gmds::ECellType::GMDS_EDGE)
@@ -48,12 +70,6 @@ PYBIND11_MODULE(gmds, m)
 	   .export_values();
 
 	py::class_<gmds::MeshModel>(m, "MeshModel").def(py::init<const int &>());
-
-	py::class_<gmds::math::Point>(m, "Point")
-	   .def(py::init<gmds::TCoord &, gmds::TCoord &, gmds::TCoord &>())
-	   .def("x", static_cast<gmds::TCoord &(gmds::math::Point::*)()>(&gmds::math::Point::X))
-	   .def("y", static_cast<gmds::TCoord &(gmds::math::Point::*)()>(&gmds::math::Point::Y))
-	   .def("z", static_cast<gmds::TCoord &(gmds::math::Point::*)()>(&gmds::math::Point::Z));
 
 	py::class_<gmds::Variable<int>>(m, "VariableInt")
 	   .def(py::init<const std::string &>())
@@ -88,7 +104,9 @@ PYBIND11_MODULE(gmds, m)
 	   .def("set_cell_options", &gmds::VTKReader::setCellOptions)
 	   .def("set_data_options", &gmds::VTKReader::setDataOptions);
 
-
+	//=============================================================
+	// GEOMETRY
+	//=============================================================
 
 	py::enum_<gmds::cad::GeomCurve::CurvatureInfo>(m, "CurvatureInfo")
 	   .value("CURVATURE_FLAT", gmds::cad::GeomCurve::Flat)
@@ -100,68 +118,74 @@ PYBIND11_MODULE(gmds, m)
 
 	py::class_<gmds::cad::GeomManager>(m, "GeomManager");
 
-		py::class_<gmds::cad::FACManager, gmds::cad::GeomManager>(m, "FACManager")
-			.def(py::init<>())
-			.def("get_nb_volumes", &gmds::cad::FACManager::getNbVolumes)
-			.def("get_nb_surfaces", &gmds::cad::FACManager::getNbSurfaces)
-			.def("get_nb_curves", &gmds::cad::FACManager::getNbCurves)
-			.def("get_nb_points", &gmds::cad::FACManager::getNbPoints)
-			.def("get_volumes", static_cast< std::vector<gmds::cad::GeomVolume*> (gmds::cad::FACManager::*) ()const>(&gmds::cad::FACManager::getVolumes), py::return_value_policy::reference)
-			.def("get_surfaces", static_cast< std::vector<gmds::cad::GeomSurface*> (gmds::cad::FACManager::*) ()const>(&gmds::cad::FACManager::getSurfaces),py::return_value_policy::reference)
-			.def("get_curves", static_cast< std::vector<gmds::cad::GeomCurve*> (gmds::cad::FACManager::*)() const>(&gmds::cad::FACManager::getCurves), py::return_value_policy::reference)
-			.def("get_points", static_cast< std::vector<gmds::cad::GeomPoint*> (gmds::cad::FACManager::*)() const>(&gmds::cad::FACManager::getPoints), py::return_value_policy::reference)
-			.def("get_volume", &gmds::cad::FACManager::getVolume)
-			.def("get_surface", &gmds::cad::FACManager::getSurface)
-			.def("get_curve", &gmds::cad::FACManager::getCurve)
-			.def("get_point", &gmds::cad::FACManager::getPoint)
-			.def("init_from_3d_mesh", &gmds::cad::FACManager::initFrom3DMesh);
+	py::class_<gmds::cad::FACManager, gmds::cad::GeomManager>(m, "FACManager")
+	   .def(py::init<>())
+	   .def("get_nb_volumes", &gmds::cad::FACManager::getNbVolumes)
+	   .def("get_nb_surfaces", &gmds::cad::FACManager::getNbSurfaces)
+	   .def("get_nb_curves", &gmds::cad::FACManager::getNbCurves)
+	   .def("get_nb_points", &gmds::cad::FACManager::getNbPoints)
+	   .def("get_volumes", static_cast<std::vector<gmds::cad::GeomVolume *> (gmds::cad::FACManager::*)() const>(&gmds::cad::FACManager::getVolumes),
+	        py::return_value_policy::reference)
+	   .def("get_surfaces", static_cast<std::vector<gmds::cad::GeomSurface *> (gmds::cad::FACManager::*)() const>(&gmds::cad::FACManager::getSurfaces),
+	        py::return_value_policy::reference)
+	   .def("get_curves", static_cast<std::vector<gmds::cad::GeomCurve *> (gmds::cad::FACManager::*)() const>(&gmds::cad::FACManager::getCurves),
+	        py::return_value_policy::reference)
+	   .def("get_points", static_cast<std::vector<gmds::cad::GeomPoint *> (gmds::cad::FACManager::*)() const>(&gmds::cad::FACManager::getPoints),
+	        py::return_value_policy::reference)
+	   .def("get_volume", &gmds::cad::FACManager::getVolume)
+	   .def("get_surface", &gmds::cad::FACManager::getSurface)
+	   .def("get_curve", &gmds::cad::FACManager::getCurve)
+	   .def("get_point", &gmds::cad::FACManager::getPoint)
+	   .def("init_from_3d_mesh", &gmds::cad::FACManager::initFrom3DMesh);
 
-	   py::class_<gmds::cad::GeomPoint>(m, "GeomPoint");
-	   py::class_<gmds::cad::FACPoint, gmds::cad::GeomPoint>(m, "FACPoint")
-	      .def("x", &gmds::cad::FACPoint::X)
-	      .def("y", &gmds::cad::FACPoint::Y)
-	      .def("z", &gmds::cad::FACPoint::Z)
-	      .def("id", &gmds::cad::FACPoint::id)
-	      .def("bbox", &gmds::cad::FACPoint::BBox)
-	      .def("curves", &gmds::cad::FACPoint::curves, py::return_value_policy::reference)
-	      .def("surfaces", &gmds::cad::FACPoint::surfaces, py::return_value_policy::reference)
-	      .def("volumes", &gmds::cad::FACPoint::volumes, py::return_value_policy::reference);
+	py::class_<gmds::cad::GeomPoint>(m, "GeomPoint");
+	py::class_<gmds::cad::FACPoint, gmds::cad::GeomPoint>(m, "FACPoint")
+	   .def("x", &gmds::cad::FACPoint::X)
+	   .def("y", &gmds::cad::FACPoint::Y)
+	   .def("z", &gmds::cad::FACPoint::Z)
+	   .def("id", &gmds::cad::FACPoint::id)
+	   .def("bbox", &gmds::cad::FACPoint::BBox)
+	   .def("curves", &gmds::cad::FACPoint::curves, py::return_value_policy::reference)
+	   .def("surfaces", &gmds::cad::FACPoint::surfaces, py::return_value_policy::reference)
+	   .def("volumes", &gmds::cad::FACPoint::volumes, py::return_value_policy::reference);
 
+	py::class_<gmds::cad::GeomCurve>(m, "GeomCurve");
+	py::class_<gmds::cad::FACCurve, gmds::cad::GeomCurve>(m, "FACCurve")
+	   .def("id", &gmds::cad::FACCurve::id)
+	   .def("length", &gmds::cad::FACCurve::length)
+	   .def("closest_point", &gmds::cad::FACCurve::closestPoint)
+	   .def("bbox", &gmds::cad::FACCurve::BBox)
+	   .def("is_loop", &gmds::cad::FACCurve::isALoop)
+	   .def("curvature_info", &gmds::cad::FACCurve::getCurvatureInfo)
+	   .def("dihedral_angle", &gmds::cad::FACCurve::computeDihedralAngle)
+	   .def("points", &gmds::cad::FACCurve::points, py::return_value_policy::reference)
+	   .def("surfaces", &gmds::cad::FACCurve::surfaces, py::return_value_policy::reference)
+	   .def("volumes", &gmds::cad::FACCurve::volumes, py::return_value_policy::reference);
 
-	   py::class_<gmds::cad::GeomCurve>(m, "GeomCurve");
-	   py::class_<gmds::cad::FACCurve, gmds::cad::GeomCurve>(m, "FACCurve")
-	      .def("id", &gmds::cad::FACCurve::id)
-	      .def("length", &gmds::cad::FACCurve::length)
-	      .def("closest_point", &gmds::cad::FACCurve::closestPoint)
-	      .def("bbox", &gmds::cad::FACCurve::BBox)
-	      .def("is_loop", &gmds::cad::FACCurve::isALoop)
-	      .def("curvature_info", &gmds::cad::FACCurve::getCurvatureInfo)
-	      .def("dihedral_angle", &gmds::cad::FACCurve::computeDihedralAngle)
-	      .def("points", &gmds::cad::FACCurve::points, py::return_value_policy::reference)
-	      .def("surfaces", &gmds::cad::FACCurve::surfaces, py::return_value_policy::reference)
-	      .def("volumes", &gmds::cad::FACCurve::volumes, py::return_value_policy::reference);
+	py::class_<gmds::cad::GeomSurface>(m, "GeomSurface");
+	py::class_<gmds::cad::FACSurface, gmds::cad::GeomSurface>(m, "FACSurface")
+	   .def("id", &gmds::cad::FACSurface::id)
+	   .def("area", &gmds::cad::FACSurface::computeArea)
+	   .def("center", &gmds::cad::FACSurface::center)
+	   .def("closest_point", &gmds::cad::FACSurface::closestPoint)
+	   .def("bbox", &gmds::cad::FACSurface::BBox)
+	   .def("points", &gmds::cad::FACSurface::points, py::return_value_policy::reference)
+	   .def("curves", &gmds::cad::FACSurface::curves, py::return_value_policy::reference)
+	   .def("volumes", &gmds::cad::FACSurface::volumes, py::return_value_policy::reference);
 
-	   py::class_<gmds::cad::GeomSurface>(m, "GeomSurface");
-	   py::class_<gmds::cad::FACSurface, gmds::cad::GeomSurface>(m, "FACSurface")
-	      .def("id", &gmds::cad::FACSurface::id)
-	      .def("area", &gmds::cad::FACSurface::computeArea)
-	      .def("center", &gmds::cad::FACSurface::center)
-	      .def("closest_point", &gmds::cad::FACSurface::closestPoint)
-	      .def("bbox", &gmds::cad::FACSurface::BBox)
-	      .def("points", &gmds::cad::FACSurface::points, py::return_value_policy::reference)
-	      .def("curves", &gmds::cad::FACSurface::curves, py::return_value_policy::reference)
-	      .def("volumes", &gmds::cad::FACSurface::volumes, py::return_value_policy::reference);
+	py::class_<gmds::cad::GeomVolume>(m, "GeomVolume");
+	py::class_<gmds::cad::FACVolume, gmds::cad::GeomVolume>(m, "FACVolume")
+	   .def("id", &gmds::cad::FACVolume::id)
+	   .def("bbox", &gmds::cad::FACVolume::BBox)
+	   .def("points", &gmds::cad::FACVolume::points, py::return_value_policy::reference)
+	   .def("curves", &gmds::cad::FACVolume::curves, py::return_value_policy::reference)
+	   .def("surfaces", &gmds::cad::FACVolume::surfaces, py::return_value_policy::reference);
 
-	   py::class_<gmds::cad::GeomVolume>(m, "GeomVolume");
-	   py::class_<gmds::cad::FACVolume, gmds::cad::GeomVolume>(m, "FACVolume")
-	      .def("id", &gmds::cad::FACVolume::id)
-	      .def("bbox", &gmds::cad::FACVolume::BBox)
-	      .def("points", &gmds::cad::FACVolume::points, py::return_value_policy::reference)
-	      .def("curves", &gmds::cad::FACVolume::curves, py::return_value_policy::reference)
-	      .def("surfaces", &gmds::cad::FACVolume::surfaces, py::return_value_policy::reference);
+	//=============================================================
+	// BLOCKING
+	//=============================================================
 
-
-	         py::class_<gmds::blocking::CurvedBlocking>(m, "Blocking")
+	py::class_<gmds::blocking::CurvedBlocking>(m, "Blocking")
 	   .def(py::init<gmds::cad::GeomManager *, bool>())
 	   .def("get_node_info", &gmds::blocking::CurvedBlocking::get_node_info)
 	   .def("get_edge_info", &gmds::blocking::CurvedBlocking::get_edge_info)
@@ -191,14 +215,15 @@ PYBIND11_MODULE(gmds, m)
 	   .def("get_edges_of_block", &gmds::blocking::CurvedBlocking::get_edges_of_block)
 	   .def("get_faces_of_block", &gmds::blocking::CurvedBlocking::get_faces_of_block)
 	   .def("get_nodes_of_block", &gmds::blocking::CurvedBlocking::get_nodes_of_block)
+	   .def("get_normal_of_face", &gmds::blocking::CurvedBlocking::get_normal_of_face)
 	   .def("cut_sheet",
 	        static_cast<void (gmds::blocking::CurvedBlocking::*)(const gmds::blocking::CurvedBlocking::Edge)>(&gmds::blocking::CurvedBlocking::cut_sheet))
 	   .def("cut_sheet_with_point", static_cast<void (gmds::blocking::CurvedBlocking::*)(const gmds::blocking::CurvedBlocking::Edge, const gmds::math::Point &)>(
 	                                   &gmds::blocking::CurvedBlocking::cut_sheet))
 	   .def("cut_sheet_with_param", static_cast<void (gmds::blocking::CurvedBlocking::*)(const gmds::blocking::CurvedBlocking::Edge, const double)>(
 	                                   &gmds::blocking::CurvedBlocking::cut_sheet))
-	   .def("get_all_sheet_edge_sets",&gmds::blocking::CurvedBlocking::get_all_sheet_edge_sets)
-	   .def("get_projection_info",&gmds::blocking::CurvedBlocking::get_projection_info)
+	   .def("get_all_sheet_edge_sets", &gmds::blocking::CurvedBlocking::get_all_sheet_edge_sets)
+	   .def("get_projection_info", &gmds::blocking::CurvedBlocking::get_projection_info)
 	   .def("create_block", static_cast<gmds::blocking::CurvedBlocking::Block (gmds::blocking::CurvedBlocking::*)(
 	                           gmds::math::Point &, gmds::math::Point &, gmds::math::Point &, gmds::math::Point &, gmds::math::Point &, gmds::math::Point &,
 	                           gmds::math::Point &, gmds::math::Point &)>(&gmds::blocking::CurvedBlocking::create_block))
