@@ -413,6 +413,12 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @return the center point of @p AF
 	 */
 	math::Point get_center_of_face(const Face AF);
+	/** Return the face normal. No orientation is provided the
+	 *  normal can be in any direction.
+	 * @param AF a face
+	 * @return the normal to @p AF.
+	 */
+	math::Vector3d get_normal_of_face(const Face AF);
 	/** Return the edge center
 	 * @param AE an edge
 	 * @return the center point of @p AE

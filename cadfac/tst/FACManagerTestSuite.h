@@ -78,6 +78,12 @@ TEST(FacManagerTestSuite, fromSurfMesh)
         math::Point c(0,0,0);
         ASSERT_NEAR(c.distance(p->point()),8.66,0.01);
     }
+
+	 ASSERT_EQ(8, manager.getPoints().size());
+	 ASSERT_EQ(12, manager.getCurves().size());
+	 ASSERT_EQ(6, manager.getSurfaces().size());
+	 ASSERT_EQ(1, manager.getVolumes().size());
+
 }
 /*----------------------------------------------------------------------------*/
 TEST(FacManagerTestSuite, surf_projection)
