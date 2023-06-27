@@ -123,6 +123,7 @@ public:
 	 *	\param maxXYZ The maximum coordinate of the bounding box.
 	 */
 	virtual void computeBoundingBox(TCoord minXYZ[3], TCoord maxXYZ[3]) const;
+	virtual std::tuple<TCoord,TCoord,TCoord,TCoord,TCoord,TCoord>  BBox() const;
 
     /** \brief  Return whether the curve is a loop or not
      *  \return a boolean

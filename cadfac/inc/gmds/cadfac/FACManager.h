@@ -155,13 +155,14 @@ class GMDSCadFac_API FACManager : public GeomManager
 	 *  \param points the points of the model.
 	 */
 	void getPoints(std::vector<GeomPoint *> &points) const;
-
+	std::vector<GeomPoint*> getPoints() const;
 	/*------------------------------------------------------------------------*/
 	/** \brief  Access to the curves of the model.
 	 *
 	 *  \param curves the curves of the model.
 	 */
 	void getCurves(std::vector<GeomCurve *> &curves) const;
+	std::vector<GeomCurve *> getCurves() const;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Access to the surface of the model.
@@ -169,6 +170,7 @@ class GMDSCadFac_API FACManager : public GeomManager
 	 *  \param surfaces the surfaces of the model.
 	 */
 	void getSurfaces(std::vector<GeomSurface *> &surfaces) const;
+	std::vector<GeomSurface *> getSurfaces() const;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Access to the volumes of the model.
@@ -176,6 +178,7 @@ class GMDSCadFac_API FACManager : public GeomManager
 	 *  \param volumes the volumes of the model.
 	 */
 	void getVolumes(std::vector<GeomVolume *> &volumes) const;
+	std::vector<GeomVolume *> getVolumes() const;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Gives access to the point of id @AID, Return NullPtr if it does

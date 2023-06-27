@@ -341,6 +341,23 @@ CurvedBlocking::get_center_of_face(const Face AF)
 	return (1.0 / nodes.size()) * center;
 }
 /*----------------------------------------------------------------------------*/
+math::Vector3d
+CurvedBlocking::get_normal_of_face(const Face AF)
+{
+	std::vector<Node> nodes = get_nodes_of_face(AF);
+	math::Point center = get_center_of_face(AF);
+	math::Vector3d n({0,0,0});
+	for(auto i=0; i<nodes.size();i++){
+		Node prev_node = (i==0)?nodes[nodes.size()-1]:nodes[i-1];
+		Node curr_node = nodes[i];
+		math::Vector3d vp = prev_node->info().point-center;
+		math::Vector3d vc = curr_node->info().point-center;
+		n = n + vp.cross(vc);
+	}
+	n.normalize();
+	return n;
+}
+/*----------------------------------------------------------------------------*/
 math::Point
 CurvedBlocking::get_center_of_block(const Block AB)
 {
