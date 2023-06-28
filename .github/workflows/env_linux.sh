@@ -14,4 +14,4 @@ spack install lcov
 spack install py-pybind11
 spack install glpk
 spack install googletest
-spack install --only dependencies gmds+kmds+blocking ^kokkos+openmp ^cgns~mpi
+spack install --only dependencies gmds+kmds+blocking+cgns ^kokkos+openmp ^cgns~mpi
