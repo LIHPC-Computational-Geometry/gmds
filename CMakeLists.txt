@@ -129,6 +129,7 @@ add_subdirectory(external/Predicates_psm)
 add_subdirectory(external/inih)
 add_subdirectory(external/OpenNL)
 add_subdirectory(external/gco-v3)
+find_package(glpk)
 add_subdirectory(external/glpk)
 add_subdirectory(external/HLBFGS)
 #==============================================================================
