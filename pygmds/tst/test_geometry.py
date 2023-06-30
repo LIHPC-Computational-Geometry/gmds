@@ -1,5 +1,8 @@
 import sys
-from gmds import *
+from gmds.math import *
+from gmds.mesh import *
+from gmds.blocking import *
+from gmds.cad import *
 
 
 def setUp(fac_mng, file_name):
