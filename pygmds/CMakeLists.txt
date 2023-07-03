@@ -4,7 +4,11 @@ cmake_minimum_required(VERSION 3.10)
 find_package(pybind11 REQUIRED)
 
 pybind11_add_module(gmds
-        src/gmds_binding.cpp
+        pygmds/binding_math.cpp
+        pygmds/binding_mesh.cpp
+        pygmds/binding_geometry.cpp
+        pygmds/binding_blocking.cpp
+        pygmds/gmds_facade.cpp
         )
 
 target_link_libraries(gmds PRIVATE
