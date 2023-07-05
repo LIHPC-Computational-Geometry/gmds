@@ -120,6 +120,10 @@ class SimplexMesh
 
   bool checkSimplicesContenaing(const gmds::math::Point& pt, std::vector<TSimplexID>& tetraContainingPt, TSimplexID simplexToCheckFirst = std::numeric_limits<TSimplexID>::min());
 
+  void checkSimplicesContenaing_TetOnly(const gmds::math::Point& pt, TSimplexID& tetraContainingPt, bool flag, TSimplexID simplexToCheckFirst = std::numeric_limits<TSimplexID>::min());
+
+  TSimplexID simplexBarycentricLookUp(const TSimplexID currentSimplex, const math::Point& pt, BitVector& cyclingCheck);
+
   TSimplexID nextSimplexToCheck(const TSimplexID currentSimplex, const math::Point& pt, double& u, double& v, double& w, double& t, BitVector& cyclingCheck, closestSimplex& closerSimplexInfo);
 
   TSimplexID nextSimplexToCheckOrientation(const TSimplexID currentSimplex, const math::Point& pt, std::vector<math::Orientation::Sign>& uvwt, BitVector& cyclingCheck);
@@ -143,6 +147,10 @@ class SimplexMesh
   void buildAdjInfoGlobal();
 
   void initializeEdgeStructure();
+
+  double findMinSizeEdgeSurface() ;
+
+  double findMeanSizeEdgeSurface() ;
 
   const std::multimap<TInt, std::pair<TInt,TInt>> & getConstEdgeStructure() {return m_edgesStructure;}
 
@@ -208,6 +216,9 @@ class SimplexMesh
   /*return true if the triangle wad deleting with sucess*/
   std::vector<TInt> deleteTriangle(const TInt ATriangleIndex);
 
+  /*return the minimum coordinates value*/
+  std::vector<double> getMinMaxCoord();
+
   /*adding some tetrahedre to the mesh with existing SimplicesNode in the mesh*/
   TSimplexID addTetraedre(const simplicesNode::SimplicesNode&& ANode0,
                          const simplicesNode::SimplicesNode&& ANode1,
@@ -229,7 +240,7 @@ class SimplexMesh
   void setHexadronData(std::vector<std::vector<TInt>>& hexahedronData){m_hexahedronData = hexahedronData;}
 
 
-  void setMarkedTet(const gmds::BitVector& markedTet){m_markedTet = markedTet;}
+  void setMarkedTet(const gmds::BitVector& markedTet);
 
   void checkMesh();
 
@@ -362,7 +373,7 @@ class SimplexMesh
 
   void fillBNDVariable();
 
-  unsigned int edgesRemove(const gmds::BitVector& nodeBitVector, std::vector<TSimplexID>& deletedNodes);
+  unsigned int edgesRemove(const gmds::BitVector& nodeBitVector, std::vector<TSimplexID>& deletedNodes, std::vector<TInt>& nodeNotDeleted);
 
   bool edgeRemove(const TInt nodeA, const TInt nodeB);
 
@@ -382,8 +393,7 @@ class SimplexMesh
                        const math::Point& triangle_vertex_0,
                        const math::Point& triangle_vertex_1,
                        const math::Point& triangle_vertex_2,
-                       double& distance,
-                       math::Point& projectedPoint);
+                       double& distance, math::Point& projectedPoint);
 
   /*adding some properties to the diffferent data of the mesh*/
   template<typename T, class C>
@@ -391,7 +401,7 @@ class SimplexMesh
 
   /*getting  properties of the diffferent data of the mesh*/
   template<typename T, class C>
-  gmds::Variable<T>* getVariable(const std::string&& AName);
+  gmds::Variable<T>* getVariable(const std::string&& AName) const;
 
   std::vector<VariableItf*> getAllVariables(ECellType AType) const;
 
@@ -416,7 +426,7 @@ class SimplexMesh
 
   void setOctree(Octree* octree){m_octree = octree;}
 
-  Octree* getOctree(){return m_octree;}
+  Octree* getOctree() const {return m_octree;}
 
   double subSurfaceFactor(const std::vector<std::vector<TInt>>& faces);
 
@@ -440,11 +450,37 @@ class SimplexMesh
 
   void getEdgeSizeInfowithMetric(double& meanEdges, double& maxEdge, double& minEdge) ;
 
-  void setAnalyticMetric(const TInt node);
+  void setMetric(const TInt node, const Eigen::Matrix3d& m);
 
-  Eigen::Matrix3d getAnalyticMetric(const math::Point& pt) const;
+  void setAnalyticMetric(const TInt node, Octree* octree);
 
+  void setAnalyticMetricFromMesh(const TInt node, SimplexMesh* sm, std::unordered_map<TInt, TSimplexID>& umap);
+
+  void setAnalyticMetric(const TInt node, const Eigen::Matrix3d &m);
+
+  Eigen::Matrix3d getAnalyticMetric(const math::Point& pt, SimplexMesh* sm, bool& status, TSimplexID& simplexInPt, TSimplexID nearSimplex = std::numeric_limits<TSimplexID>::min(), bool force = true);
+
+  Eigen::Matrix3d getAnalyticMetricFromSimplex(const math::Point& pt, SimplexMesh* sm, TSimplexID simplex);
+
+  bool getFrameAt(const math::Point& pt, std::vector<math::Vector3d>& frames, TSimplexID nearSimplex = std::numeric_limits<TSimplexID>::min()) ;
+
+  void setColorsSurfaceFromSimplex(SimplexMesh* simplexMesh) ;
+
+  void onSurface(const math::Point& pt, int& surfaceLabel, TSimplexID & simplex) ;
+
+  void setSurfacesAndCurvesIndx();
+
+  std::set<unsigned int> getSurfacesIndx() const {return surfacesIndx;}
+
+  std::set<unsigned int> getCurveIndx() const {return curvesIndx;}
+
+  void setFrames(const TInt node, const std::vector<math::Vector3d>& frames);
+
+  void reorderFrame();
 private:
+
+  std::set<unsigned int> surfacesIndx{};
+  std::set<unsigned int> curvesIndx{};
 
   //node coordinates with bitvector
   TInt nodeIndx = 0;
@@ -569,7 +605,7 @@ gmds::Variable<T>* SimplexMesh::newVariable(const std::string& AName)
 }
 /******************************************************************************/
 template<typename T, class C>
-gmds::Variable<T>* SimplexMesh::getVariable(const std::string&& AName)
+gmds::Variable<T>* SimplexMesh::getVariable(const std::string&& AName) const
 {
   gmds::Variable<T>* var = nullptr;
 

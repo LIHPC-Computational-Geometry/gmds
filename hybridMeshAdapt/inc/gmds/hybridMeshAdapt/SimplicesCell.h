@@ -81,7 +81,7 @@ namespace gmds
 
         /*return all the direct simplex connected this*/
         std::vector<TSimplexID> directConnectedSimplex () const;
-        
+
         /*return a vector of nodes conain in this and tetra (intersection nodes of both tetra)*/
         std::vector<TInt> intersectionNodes(const SimplicesCell& simplicesCell) const;
 
@@ -103,6 +103,8 @@ namespace gmds
         /*return the faces that have negative dot with the vector*/
         //std::vector<std::vector<TInt>> facesNormalDotVec(const std::vector<std::vector<TInt>>& nodes, const math::Vector3d & vec);
 
+        /*return the uvwt*/
+        std::vector<double> uvwt(const math::Point& pt) const ;
 
         /*return the signed volume of the cell p,p1,p2,p3 with p1,p2,p3 are the node of the cell \ index */
         double signedBarycentricNormalized     (const TInt faceIdx, const gmds::math::Point& pt) const ;
@@ -115,6 +117,10 @@ namespace gmds
 
         /*return true if the pt is in the cell, false otherwise*/
         math::Orientation::Sign orientation(const TInt faceIdx, const gmds::math::Point& pt, bool inverseOrientation = false) const ;
+
+        bool isInCell(const gmds::math::Point& pt, bool inverseOrientation = false) const;
+
+        bool isCellClose(const gmds::math::Point& pt, std::vector<double>& UVWT, double epsilon) const;
 
         /*return the dihedral angle between the localNode0 & localNode1*/
         double dihedralAngle(const unsigned int localNode0, const unsigned int localNode1) const ;
@@ -152,6 +158,9 @@ namespace gmds
         /*return the nbr of face that are not visible by the node : simpliceNode*/
         unsigned int checkFaceNbrVisibility(std::vector<std::vector<TInt>>& facesId, const simplicesNode::SimplicesNode & simpliceNode);
 
+        std::vector<double> getBestNodeJacobianNormalise() ;
+
+        std::vector<TInt> commonNode(SimplicesCell cell1);
 
         friend std::ostream&  operator<<(std::ostream& os, const SimplicesCell& simpliceCell)
         {

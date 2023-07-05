@@ -11,6 +11,8 @@
 /*----------------------------------------------------------------------------*/
 #include <set>
 /*----------------------------------------------------------------------------*/
+#include <Eigen/Eigen>
+/*----------------------------------------------------------------------------*/
 #include "Cell.h"
 #include "GMDSIg_export.h"
 #include <gmds/math/Point.h>
@@ -92,26 +94,26 @@ public:
     /** \brief  Accesor to the cell dim.
      */
 	virtual int dim() const {return 3;}
-    
+
     /*------------------------------------------------------------------------*/
     /** \brief  Compute the center of the region
      *
      * \return the center of the region
      */
     math::Point center() const;
-    
-    
+
+
     /*------------------------------------------------------------------------*/
-    /** \brief  Compute the volume of the region. Only works for tet, hex, 
+    /** \brief  Compute the volume of the region. Only works for tet, hex,
      *         prism3 and pyramid. The computation is simply based on the
      *         decomposition of the region into tetrahedral elements.
      *
      * \return the center of the region
      */
     TCoord volume() const;
-    
+
         /*------------------------------------------------------------------------*/
-        /** \brief  Compute interpolation points of the region. 
+        /** \brief  Compute interpolation points of the region.
  	 *	RIGHT NOW ONLY RETURNS THE NODES OF THE REGION
          *
          * \return the interpolation points
@@ -124,6 +126,22 @@ public:
          * \return the scaled jacobian
          */
         double computeScaledJacobian() const;
+
+
+				/*------------------------------------------------------------------------*/
+				/** \brief  Compute the common quality of a tetrahedron
+				 *
+				 * \return quality of a tetrahedron with euclidean metric
+				 */
+				double computeQuality() const;
+
+				/*------------------------------------------------------------------------*/
+				/** \brief  Compute the common quality of a tetrahedron
+				 *
+				 * \return quality of a tetrahedron with euclidean metric
+				 */
+				double computeQualityWithMetric(const Eigen::Matrix3d& m0, const Eigen::Matrix3d& m1,
+									const Eigen::Matrix3d& m2, const Eigen::Matrix3d& m3) const;
 
         /*------------------------------------------------------------------------*/
         /** \brief  Compute the scaled jacobian of the region
@@ -141,7 +159,7 @@ public:
         double computeMeanRatio() const;
 
 	/*------------------------------------------------------------------------*/
-        /** \brief  Return the faces composing the region in the form of 
+        /** \brief  Return the faces composing the region in the form of
  	 * 	vectors of ordered nodes oriented outwards
          *
          * \return the ordered nodes of the faces
@@ -149,7 +167,7 @@ public:
         std::vector<std::vector<Node> > getOrderedNodesFaces() const;
 
 	/*------------------------------------------------------------------------*/
-        /** \brief  Return the faces composing the region in the form of 
+        /** \brief  Return the faces composing the region in the form of
          *      vectors of ordered nodes oriented outwards
          *
          * \return the ordered nodes ids of the faces
@@ -261,8 +279,3 @@ private:
 /*----------------------------------------------------------------------------*/
 #endif /* GMDS_REGION_H_ */
 /*----------------------------------------------------------------------------*/
-
-
-
-
-

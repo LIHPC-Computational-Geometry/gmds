@@ -16,6 +16,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // STL Headers
 #include <vector>
+#include <unordered_set>
 
 namespace gmds
 {
@@ -31,7 +32,16 @@ namespace gmds
              const unsigned int numbersMaxSimplices);
 
       Octree(SimplexMesh* simplexMesh,
-             const unsigned int numbersMaxSimplices);
+             const unsigned int numbersMaxSimplices,
+             std::string strName = "Octree");
+
+      Octree(SimplexMesh* simplexMesh,
+              unsigned int subdivision,
+              double xmin, double xmax,
+              double ymin, double ymax,
+              double zmin, double zmax);
+
+      void addNode(TInt node, std::unordered_set<TInt>& seen);
 
       ~Octree();
 
@@ -46,9 +56,23 @@ namespace gmds
 
       std::vector<TInt> findNodesNextTo(const math::Point& pt);
 
+      std::vector<TSimplexID> findSimplicesInOc(const math::Point& pt);
+
+      std::vector<TSimplexID> findSimplicesInOcWithDepth(const math::Point& pt, unsigned int& depth);
+
+      std::vector<TSimplexID> findTriangleInOc(const math::Point& pt);
+
       void writeOctree(Mesh& mesh, std::vector<std::vector<Node>>& nodes) const ;
 
-      void setRootOctree(Octree* rootOc){m_rootOc = rootOc;} 
+      void setRootOctree(Octree* rootOc){m_rootOc = rootOc;}
+
+      void setParentOctree(Octree* parentOc){m_parentOc = parentOc;}
+
+      std::vector<double> getBorderOctree() const;
+
+      const std::vector<TInt> getSimplices() const {return m_simplices;}
+
+      const std::vector<TInt> getTriangles() const {return m_triangles;}
 
     private:
       double m_xmin, m_xmax, m_ymin, m_ymax, m_zmin, m_zmax;
@@ -56,8 +80,11 @@ namespace gmds
       SimplexMesh* m_simplexMesh;// = nullptr;
 
       std::vector<TInt> m_nodes;
+      std::vector<TInt> m_simplices;
+      std::vector<TInt> m_triangles;
       std::vector<Octree*> m_ocs{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
       Octree* m_rootOc = nullptr;
+      Octree* m_parentOc = nullptr;
     };
   }
 }

@@ -6,10 +6,12 @@ using namespace simplicesNode;
 using namespace math;
 ////////////////////////////////////////////////////////////////////////////////
 Octree::Octree(SimplexMesh* simplexMesh,
-       const unsigned int numbersMaxSimplices) :
+       const unsigned int numbersMaxSimplices,
+        std::string strName) :
        m_simplexMesh(simplexMesh),
        m_numbersMaxSimplices(numbersMaxSimplices),
-       m_rootOc(nullptr)
+       m_rootOc(nullptr),
+       m_parentOc(nullptr)
 {
   std::vector<std::vector<Node>> nodes{};
   initialize();
@@ -29,7 +31,64 @@ Octree::Octree(SimplexMesh* simplexMesh,
   gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::R);
 	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("Octree.vtk");
+  std::cout << "OCTREE writing" << std::endl;
+	vtkWriter.write(strName + ".vtk");
+}
+/******************************************************************************/
+Octree::Octree(SimplexMesh* simplexMesh,
+      unsigned int subdivision,
+      double xmin, double xmax,
+      double ymin, double ymax,
+      double zmin, double zmax):
+    m_xmin(xmin), m_xmax(xmax),
+    m_ymin(ymin), m_ymax(ymax),
+    m_zmin(zmin), m_zmax(zmax),
+    m_simplexMesh(simplexMesh)
+{
+  --subdivision;
+  if(subdivision < 1)
+    return;
+
+  Octree * oc0 = new Octree(simplexMesh, subdivision, m_xmin, (m_xmax + m_xmin) / 2.0, m_ymin, (m_ymin + m_ymax) / 2.0, m_zmin, (m_zmin + m_zmax) /2.0);
+  Octree * oc1 = new Octree(simplexMesh, subdivision, (m_xmax + m_xmin) / 2.0, m_xmax, m_ymin, (m_ymin + m_ymax) / 2.0, m_zmin, (m_zmin + m_zmax) /2.0);
+  Octree * oc2 = new Octree(simplexMesh, subdivision, m_xmin, (m_xmax + m_xmin) / 2.0, m_ymin, (m_ymin + m_ymax) / 2.0, (m_zmin + m_zmax) /2.0, m_zmax);
+  Octree * oc3 = new Octree(simplexMesh, subdivision, (m_xmax + m_xmin) / 2.0, m_xmax, m_ymin, (m_ymin + m_ymax) / 2.0, (m_zmin + m_zmax) /2.0, m_zmax);
+
+  Octree * oc4 = new Octree(simplexMesh, subdivision, m_xmin, (m_xmax + m_xmin) / 2.0, (m_ymin + m_ymax) / 2.0, m_ymax, m_zmin, (m_zmin + m_zmax) /2.0);
+  Octree * oc5 = new Octree(simplexMesh, subdivision, (m_xmax + m_xmin) / 2.0, m_xmax, (m_ymin + m_ymax) / 2.0, m_ymax, m_zmin, (m_zmin + m_zmax) /2.0);
+  Octree * oc6 = new Octree(simplexMesh, subdivision, m_xmin, (m_xmax + m_xmin) / 2.0, (m_ymin + m_ymax) / 2.0, m_ymax, (m_zmin + m_zmax) /2.0, m_zmax);
+  Octree * oc7 = new Octree(simplexMesh, subdivision, (m_xmax + m_xmin) / 2.0, m_xmax, (m_ymin + m_ymax) / 2.0, m_ymax, (m_zmin + m_zmax) /2.0, m_zmax);
+
+  oc0->setParentOctree(this); oc1->setParentOctree(this); oc2->setParentOctree(this); oc3->setParentOctree(this);
+  oc4->setParentOctree(this); oc5->setParentOctree(this); oc6->setParentOctree(this); oc7->setParentOctree(this);
+
+  m_ocs[0] = oc0 ; m_ocs[1] = oc1 ; m_ocs[2] = oc2 ; m_ocs[3] = oc3 ; m_ocs[4] = oc4 ; m_ocs[5] = oc5 ; m_ocs[6] = oc6 ; m_ocs[7] = oc7;
+}
+/******************************************************************************/
+void Octree::addNode(TInt node, std::unordered_set<TInt>& seen)
+{
+  const math::Point pt = SimplicesNode(m_simplexMesh, node).getCoords();
+
+  for(Octree* oc : m_ocs)
+  {
+    if(oc != nullptr)
+    {
+      if(oc->belongToOc(pt))
+      {
+        oc->addNode(node, seen);
+      }
+
+    }
+    else
+    {
+      if(seen.find(node) == seen.end())
+      {
+        seen.insert(node);
+        m_nodes.push_back(node);
+      }
+      return;
+    }
+  }
 }
 /******************************************************************************/
 Octree::Octree(
@@ -80,12 +139,11 @@ void Octree::writeOctree(Mesh& mesh, std::vector<std::vector<Node>>& nodes) cons
 void Octree::initialize()
 {
   const BitVector& nodesVector = m_simplexMesh->getBitVectorNodes();
-  double epsilon = 10E-4;
+  double epsilon = 1E-1;
   double min = std::numeric_limits<double>::min();
   double max = std::numeric_limits<double>::max();
-
+  std::set<TSimplexID> s{};
   std::vector<double> nodes{max, min, max, min, max, min}; // --> xmin, xmax, ymin, ymax, zmin, zmax
-  m_nodes.reserve(nodesVector.size());
 
   for(unsigned int nodeIds = 0; nodeIds < nodesVector.capacity(); nodeIds++)
   {
@@ -93,6 +151,19 @@ void Octree::initialize()
     {
       m_nodes.push_back(nodeIds);
       math::Point pt = SimplicesNode(m_simplexMesh, nodeIds).getCoords();
+      std::vector<TSimplexID> ball = SimplicesNode(m_simplexMesh, nodeIds).ballOf();
+      for(auto const simplex : ball)
+      {
+        if(s.find(simplex) == s.end())
+        {
+          s.insert(simplex);
+          m_simplices.push_back(simplex);
+          if(simplex < 0){
+            m_triangles.push_back(simplex);
+          }
+        }
+      }
+
       double x = pt.X();
       double y = pt.Y();
       double z = pt.Z();
@@ -128,6 +199,10 @@ void Octree::initialize()
     oc0->setRootOctree(this); oc1->setRootOctree(this); oc2->setRootOctree(this); oc3->setRootOctree(this);
     oc4->setRootOctree(this); oc5->setRootOctree(this); oc6->setRootOctree(this); oc7->setRootOctree(this);
 
+    oc0->setParentOctree(this); oc1->setParentOctree(this); oc2->setParentOctree(this); oc3->setParentOctree(this);
+    oc4->setParentOctree(this); oc5->setParentOctree(this); oc6->setParentOctree(this); oc7->setParentOctree(this);
+    //root and parent is the same for direct child of root
+
     m_ocs[0] = oc0 ; m_ocs[1] = oc1 ; m_ocs[2] = oc2 ; m_ocs[3] = oc3 ; m_ocs[4] = oc4 ; m_ocs[5] = oc5 ; m_ocs[6] = oc6 ; m_ocs[7] = oc7;
   }
 }
@@ -136,6 +211,7 @@ void Octree::preprocess()
 {
   const BitVector& nodesVector = m_simplexMesh->getBitVectorNodes();
   std::vector<TInt> nodesTmp{};
+  std::set<TSimplexID> s{};
 
   for(unsigned int nodeIds = 0; nodeIds < nodesVector.capacity(); nodeIds++)
   {
@@ -145,6 +221,18 @@ void Octree::preprocess()
       if(belongToOc(pt))
       {
         nodesTmp.push_back(nodeIds);
+        std::vector<TSimplexID> ball = SimplicesNode(m_simplexMesh, nodeIds).ballOf();
+        for(auto const simplex : ball)
+        {
+          if(s.find(simplex) == s.end())
+          {
+            s.insert(simplex);
+            m_simplices.push_back(simplex);
+            if(simplex < 0){
+              m_triangles.push_back(simplex);
+            }
+          }
+        }
       }
     }
   }
@@ -161,6 +249,12 @@ void Octree::preprocess()
     Octree * oc6 = new Octree(m_xmin, (m_xmax + m_xmin) / 2.0, (m_ymin + m_ymax) / 2.0, m_ymax, (m_zmin + m_zmax) /2.0, m_zmax, m_simplexMesh, m_numbersMaxSimplices);
     Octree * oc7 = new Octree((m_xmax + m_xmin) / 2.0, m_xmax, (m_ymin + m_ymax) / 2.0, m_ymax, (m_zmin + m_zmax) /2.0, m_zmax, m_simplexMesh, m_numbersMaxSimplices);
 
+    oc0->setRootOctree(this->m_rootOc); oc1->setRootOctree(this->m_rootOc); oc2->setRootOctree(this->m_rootOc); oc3->setRootOctree(this->m_rootOc);
+    oc4->setRootOctree(this->m_rootOc); oc5->setRootOctree(this->m_rootOc); oc6->setRootOctree(this->m_rootOc); oc7->setRootOctree(this->m_rootOc);
+
+    oc0->setParentOctree(this); oc1->setParentOctree(this); oc2->setParentOctree(this); oc3->setParentOctree(this);
+    oc4->setParentOctree(this); oc5->setParentOctree(this); oc6->setParentOctree(this); oc7->setParentOctree(this);
+
     m_ocs[0] = oc0 ; m_ocs[1] = oc1 ; m_ocs[2] = oc2 ; m_ocs[3] = oc3 ; m_ocs[4] = oc4 ; m_ocs[5] = oc5 ; m_ocs[6] = oc6 ; m_ocs[7] = oc7;
   }
   else
@@ -171,6 +265,7 @@ void Octree::preprocess()
 /******************************************************************************/
 bool Octree::belongToOc(const math::Point& pt) const
 {
+
   double x = pt.X();
   double y = pt.Y();
   double z = pt.Z();
@@ -215,24 +310,141 @@ TSimplexID Octree::findSimplexNextTo(const math::Point& pt)
   return simplex;
 }
 /******************************************************************************/
-std::vector<TInt> Octree::findNodesNextTo(const math::Point& pt)
+std::vector<TSimplexID> Octree::findSimplicesInOc(const math::Point& pt)
 {
-  std::vector<TSimplexID> nodes{};
   for(auto const & oc : m_ocs)
   {
     if(oc != nullptr)
     {
       if(oc->belongToOc(pt))
       {
-        nodes = oc->findNodesNextTo(pt);
+        return oc->findSimplicesInOc(pt);
       }
     }
-    /*else
-    {
-      return m_nodes;
-    }*/
   }
 
-  return m_nodes;
+  //return m_simplices;
+  if(m_parentOc == nullptr)
+    return m_simplices;
+
+  return m_parentOc->m_simplices;
+  //return m_simplices;
+
+  if(m_parentOc->m_parentOc == nullptr)
+    return m_parentOc->m_simplices;
+
+  return m_parentOc->m_parentOc->m_simplices;
+
 }
 /******************************************************************************/
+std::vector<TSimplexID> Octree::findSimplicesInOcWithDepth(const math::Point& pt, unsigned int& depth)
+{
+  for(auto const & oc : m_ocs)
+  {
+    if(oc != nullptr)
+    {
+      if(oc->belongToOc(pt))
+      {
+        return oc->findSimplicesInOcWithDepth(pt, depth);
+      }
+    }
+    else
+      break;
+  }
+
+  Octree* oc_temp = this;
+  //std::cout << "root oc_temp -> " << oc_temp << std::endl;
+  for(unsigned int d = 0 ; d < depth ;d++){
+    if(oc_temp->m_parentOc != nullptr){
+      oc_temp = oc_temp->m_parentOc;
+      //std::cout << "   oc_temp" << oc_temp << std::endl;
+    }
+    else{
+      depth = -1;
+      break;
+    }
+  }
+
+
+  return oc_temp->m_simplices;
+
+}
+/******************************************************************************/
+std::vector<TSimplexID> Octree::findTriangleInOc(const math::Point& pt)
+{
+  //return std::vector<TInt>{-1};
+  for(auto const & oc : m_ocs)
+  {
+    if(oc != nullptr)
+    {
+      if(oc->belongToOc(pt))
+      {
+        return oc->findTriangleInOc(pt);
+      }
+    }
+  }
+
+  if(m_parentOc == nullptr)
+    return m_triangles;
+
+  //return m_parentOc->m_triangles;
+  if(m_parentOc->m_parentOc == nullptr)
+    return m_parentOc->m_triangles;
+
+  return m_parentOc->m_parentOc->m_triangles;
+
+}
+/******************************************************************************/
+std::vector<TInt> Octree::findNodesNextTo(const math::Point& pt)
+{
+  for(auto const & oc : m_ocs)
+  {
+    if(oc != nullptr)
+    {
+      if(oc->belongToOc(pt))
+      {
+        return oc->findNodesNextTo(pt);
+      }
+    }
+  }
+
+  //return m_nodes;
+  if(m_parentOc == nullptr)
+    return m_nodes;
+  if(m_parentOc->m_parentOc == nullptr)
+    return m_parentOc->m_nodes;
+
+  std::vector<TInt> ans{};
+  std::unordered_set<TSimplexID> seen{};
+
+  for(auto const oc : m_parentOc->m_parentOc->m_ocs)
+  {
+    for(auto const o : oc->m_ocs)
+    {
+      double xmin = o->getBorderOctree()[0] ; double xmax = o->getBorderOctree()[1] ;
+      double ymin = o->getBorderOctree()[2] ; double ymax = o->getBorderOctree()[3] ;
+      double zmin = o->getBorderOctree()[4] ; double zmax = o->getBorderOctree()[5] ;
+      if((xmax == m_xmin || xmin == m_xmin || xmin == m_xmax) &&
+      (ymax == m_ymin || ymin == m_ymin || ymin == m_ymax) &&
+      (zmax == m_zmin || zmin == m_zmin || zmin == m_zmax))
+      {
+        for(auto const n : o->m_nodes)
+        {
+          //if(seen.find(n) == seen.end())
+          {
+            //seen.insert(n);
+            ans.push_back(n);
+          }        }
+      }
+    }
+  }
+
+  return ans;
+
+}
+/******************************************************************************/
+std::vector<double> Octree::getBorderOctree() const
+{
+  std::vector<double> ans{m_xmin, m_xmax, m_ymin, m_ymax, m_zmin, m_zmax};
+  return ans;
+}
