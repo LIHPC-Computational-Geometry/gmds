@@ -37,7 +37,7 @@ add_executable(GMDS_SIMPLEX_METRIC_FF_POINTGEN
 target_link_libraries(GMDS_SIMPLEX_STAT PUBLIC
         ${GMDS_LIB}
         ${LIB_GMDS_IO}
-        gtest)
+        GTest::gtest)
 
 target_link_libraries(GMDS_SIMPLEX_HIST PUBLIC
         ${GMDS_LIB}
