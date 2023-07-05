@@ -13,9 +13,9 @@ using namespace math;
 /******************************************************************/
 DelaunayPointInsertion::DelaunayPointInsertion(SimplexMesh* simplexMesh, const simplicesNode::SimplicesNode& simpliceNode, const CriterionRAIS& criterion,
                                               std::vector<TSimplexID>& initialCavity, bool& status, const gmds::BitVector& markedNodes,std::vector<TSimplexID>& deletedSimplex,
-                                              const std::multimap<TInt, TInt>& facesAlreadyBuilt, std::vector<TSimplexID> markedSimplex)
+                                              const std::multimap<TInt, TInt>& facesAlreadyBuilt, std::vector<TSimplexID> markedSimplex, bool UseDelaunay)
 {
-  if(simplexMesh != nullptr)
+  if(simplexMesh != nullptr && UseDelaunay)
   {
     /*Si simpliceNode n'est pas a linterrieur de simplexMeshon ne fait rien*/
     std::vector<TSimplexID> initCavity;
@@ -84,6 +84,10 @@ DelaunayPointInsertion::DelaunayPointInsertion(SimplexMesh* simplexMesh, const s
       }
       PointInsertion pi(simplexMesh, simpliceNode, criterion, status, cavity, markedNodes, deletedSimplex, facesAlreadyBuilt, markedSimplex/*, cavReduction*/);
     }
+  }
+  else if(simplexMesh != nullptr && !UseDelaunay)
+  {
+    PointInsertion pi(simplexMesh, simpliceNode, criterion, status, initialCavity, markedNodes, deletedSimplex, facesAlreadyBuilt, markedSimplex/*, cavReduction*/);
   }
   else
   {

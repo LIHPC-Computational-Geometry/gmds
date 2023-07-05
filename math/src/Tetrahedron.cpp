@@ -73,7 +73,7 @@ const Point& Tetrahedron::getPoint(const TInt& AIndex) const
         TCoord coordX = 0.;
         TCoord coordY = 0.;
         TCoord coordZ = 0.;
-        
+
         for(int iPoint=0; iPoint<4; iPoint++) {
             coordX += m_pnts[iPoint].X();
             coordY += m_pnts[iPoint].Y();
@@ -81,8 +81,8 @@ const Point& Tetrahedron::getPoint(const TInt& AIndex) const
         }
         coordX /= 4.;
         coordY /= 4.;
-        coordZ /= 4.;	
-        
+        coordZ /= 4.;
+
         return Point(coordX,coordY,coordZ);
     }
     /*----------------------------------------------------------------------------*/
@@ -152,6 +152,70 @@ Tetrahedron::computeScaledJacobian() const
 }
 /*----------------------------------------------------------------------------*/
 double
+Tetrahedron::computeQuality() const
+{
+	const math::Point p0 = m_pnts[0];
+	const math::Point p1 = m_pnts[1];
+	const math::Point p2 = m_pnts[2];
+	const math::Point p3 = m_pnts[3];
+
+	const math::Vector3d v01 = p1-p0;
+	const math::Vector3d v21 = p2-p1;
+	const math::Vector3d v02 = p0-p2;
+	const math::Vector3d v30 = p3-p0;
+	const math::Vector3d v31 = p3-p1;
+	const math::Vector3d v32 = p3-p2;
+
+	const double l01 = v01.norm();
+	const double l21 = v21.norm();
+	const double l02 = v02.norm();
+	const double l30 = v30.norm();
+	const double l31 = v31.norm();
+	const double l32 = v32.norm();
+  double volume = std::abs(getVolume());
+
+	return (36.0 / std::pow(3.0, 1.0/3.0)) * std::pow(volume, 2.0/3.0) / (l01*l01 + l21*l21 +
+					l02*l02 + l30*l30 + l31*l31 + l32*l32);
+}
+double
+Tetrahedron::computeQualityWithMetric(const Eigen::Matrix3d& m0, const Eigen::Matrix3d& m1,
+					const Eigen::Matrix3d& m2, const Eigen::Matrix3d& m3) const
+{
+	const math::Point p0 = m_pnts[0];
+	const math::Point p1 = m_pnts[1];
+	const math::Point p2 = m_pnts[2];
+	const math::Point p3 = m_pnts[3];
+
+	const math::Vector3d v01_ = p1-p0;
+	const math::Vector3d v21_ = p2-p1;
+	const math::Vector3d v02_ = p2-p0;
+	const math::Vector3d v30_ = p3-p0;
+	const math::Vector3d v31_ = p3-p1;
+	const math::Vector3d v32_ = p3-p2;
+
+	const Eigen::Vector3d v01 = Eigen::Vector3d(v01_.X(), v01_.Y(), v01_.Z());
+	const Eigen::Vector3d v21 = Eigen::Vector3d(v21_.X(), v21_.Y(), v21_.Z());
+	const Eigen::Vector3d v02 = Eigen::Vector3d(v02_.X(), v02_.Y(), v02_.Z());
+	const Eigen::Vector3d v30 = Eigen::Vector3d(v30_.X(), v30_.Y(), v30_.Z());
+	const Eigen::Vector3d v31 = Eigen::Vector3d(v31_.X(), v31_.Y(), v31_.Z());
+	const Eigen::Vector3d v32 = Eigen::Vector3d(v32_.X(), v32_.Y(), v32_.Z());
+
+	const double l01_m = 0.5*sqrt(v01.transpose() * (m0*v01)) + 0.5*sqrt(v01.transpose() * (m1*v01));
+	const double l21_m = 0.5*sqrt(v21.transpose() * (m1*v21)) + 0.5*sqrt(v21.transpose() * (m2*v21));
+	const double l02_m = 0.5*sqrt(v02.transpose() * (m0*v02)) + 0.5*sqrt(v02.transpose() * (m2*v02));
+	const double l30_m = 0.5*sqrt(v30.transpose() * (m0*v30)) + 0.5*sqrt(v30.transpose() * (m3*v30));
+	const double l31_m = 0.5*sqrt(v31.transpose() * (m1*v31)) + 0.5*sqrt(v31.transpose() * (m3*v31));
+	const double l32_m = 0.5*sqrt(v32.transpose() * (m2*v32)) + 0.5*sqrt(v32.transpose() * (m3*v32));
+
+	//I use uniform interpolation to compute the volume in the metric see aulauzet summer school
+	double volume = std::abs(getVolume());
+	double vol_m = volume * (sqrt(m0.determinant()) + sqrt(m1.determinant()) + sqrt(m2.determinant()) + sqrt(m3.determinant())) * 0.25;
+
+	return (36.0 / std::pow(3.0, 1.0/3.0)) * std::pow(vol_m, 2.0/3.0) / (l01_m*l01_m+ l21_m*l21_m +
+					l02_m*l02_m + l30_m*l30_m + l31_m*l31_m + l32_m*l32_m);
+}
+/*----------------------------------------------------------------------------*/
+double
 Tetrahedron::computeMeanRatio() const
 {
 	throw GMDSException("Tetrahedron::computeMeanRatio not available yet.");
@@ -163,7 +227,7 @@ Tetrahedron::computeMeanRatio() const
                 {0,1,3},
                 {0,1,2},
         };
- 
+
 	TCoord matValues[3][3];
 	matValues[0][0] = 1.;
         matValues[1][0] = 0.;
@@ -178,12 +242,12 @@ Tetrahedron::computeMeanRatio() const
 
 	double meanRatio = 0.;
 
-        for (int iVertex = 0; iVertex < 4; iVertex++) {                
+        for (int iVertex = 0; iVertex < 4; iVertex++) {
 
                 int i0    = neighbors[iVertex][0];
                 int i1    = neighbors[iVertex][1];
                 int i2    = neighbors[iVertex][2];
-		
+
 		math::Vector v0(m_pnts[i0] - m_pnts[iVertex]);
 		math::Vector v1(m_pnts[i1] - m_pnts[iVertex]);
 		math::Vector v2(m_pnts[i2] - m_pnts[iVertex]);
@@ -200,10 +264,10 @@ Tetrahedron::computeMeanRatio() const
 		matValues_dtk[2][2] = v2.Z();
 		const math::Matrix<3,3,double> dtk (matValues_dtk);
 		const math::Matrix<3,3,double> sk (dtk * inverseW);
-		
+
 		double det = sk.det();
 		double frob = sk.frobeniusNorm2();
-		
+
 		if(frob == 0.) {
 			throw GMDSException("Tetrahedron::computeMeanRatio frob is zero.");
 		}
@@ -225,7 +289,7 @@ Tetrahedron::computeMeanEdgeLength() const
   sumLength += m_pnts[1].distance(m_pnts[3]);
   sumLength += m_pnts[2].distance(m_pnts[3]);
 
-  sumLength /= 6.;  
+  sumLength /= 6.;
   return sumLength;
 }
 /*----------------------------------------------------------------------------*/
@@ -273,7 +337,7 @@ Tetrahedron::intersect(const Triangle& ATri, const bool AProper) const
 		return true;
 	}
 
-	return false;	
+	return false;
 }
 /*---------------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& AStr, const Tetrahedron& ATet){
@@ -288,7 +352,3 @@ std::ostream& operator<<(std::ostream& AStr, const Tetrahedron& ATet){
 /*----------------------------------------------------------------------------*/
 } // namespace gmds
 /*----------------------------------------------------------------------------*/
-
-
-
-

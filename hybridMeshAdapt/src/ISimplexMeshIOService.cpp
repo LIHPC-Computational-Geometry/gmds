@@ -184,14 +184,14 @@ void ISimplexMeshIOService::getDataNodes(DataID& ADataID,
       switch (IMeshIOService::getType(current_var)){
           case(IMeshIOService::var_double_vec) :
           {
-              Variable<math::Vector3d>* v_vec = dynamic_cast<Variable<math::Vector3d>*> (current_var);
-              IMeshIOService::DataVector data;
-              data.name = v_vec->getName();
-              for(auto i_node : bitVecNode) {
-                  data.values[i_node] = (*v_vec)[i_node];
-              }
-              ADataVec.push_back(data);
-              break;
+            Variable<math::Vector3d>* v_vec = dynamic_cast<Variable<math::Vector3d>*> (current_var);
+            IMeshIOService::DataVector data;
+            data.name = v_vec->getName();
+            for(auto i_node : bitVecNode) {
+                data.values[i_node] = (*v_vec)[i_node];
+            }
+            ADataVec.push_back(data);
+            break;
           }
           case(IMeshIOService::var_double) :
           {
@@ -394,7 +394,10 @@ void ISimplexMeshIOService::addDataIntNodes(DataInt& AData)
 }
 /*----------------------------------------------------------------------------*/
 void ISimplexMeshIOService::addDataRealNodes(DataReal& AData) {}
-void ISimplexMeshIOService::addDataVectorNodes(DataVector& AData) {}
+void ISimplexMeshIOService::addDataVectorNodes(DataVector& AData) {
+  addDataPolicy<math::Vector3d, GMDS_NODE,IMeshIOService::DataVector> policy;
+  policy.execute(m_simplex_mesh,AData);
+}
 
 void ISimplexMeshIOService::addDataIntEdges(DataInt& AData) {}
 void ISimplexMeshIOService::addDataRealEdges(DataReal& AData) {}

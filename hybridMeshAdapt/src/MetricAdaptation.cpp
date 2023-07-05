@@ -129,7 +129,7 @@ bool MetricAdaptation::computeSlicing(const TInt nodeA, const TInt nodeB)
       return false;
     }
 
-    m_simplexMesh->setAnalyticMetric(newNodeId);
+    //m_simplexMesh->setAnalyticMetric(newNodeId, m_simplexMesh->getOctree());
     //labelization of the node being inserted
     if(newNodeDim == SimplexMesh::topo::CORNER)
     {
@@ -687,7 +687,7 @@ unsigned int MetricAdaptation::computePointSmoothing()
       }
 
       m_simplexMesh->moveNodeCoord(nodeId, new_P);
-      m_simplexMesh->setAnalyticMetric(nodeId);
+      //m_simplexMesh->setAnalyticMetric(nodeId, m_simplexMesh->getOctree());
       computePointSmoothing++;
       /*gmds::ISimplexMeshIOService ioServiceMesh(m_simplexMesh);
       gmds::VTKWriter vtkWriterCS(&ioServiceMesh);
@@ -879,7 +879,7 @@ void MetricAdaptation::executeCustomMethod()
           TInt newNodeId = m_simplexMesh->addNodeAndcheck(pt, tetraContenaingPt, alreadyAdd);
           if(!alreadyAdd)
           {
-            m_simplexMesh->setAnalyticMetric(newNodeId);
+            //m_simplexMesh->setAnalyticMetric(newNodeId, m_simplexMesh->getOctree());
             if(nodeDim == SimplexMesh::topo::CORNER)
             {
               BND_VERTEX_COLOR->set(newNodeId, nodeLabel);

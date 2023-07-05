@@ -183,6 +183,89 @@ SimplexMesh::~SimplexMesh()
   }*/
 }
 /*****************************************************************************/
+double SimplexMesh::findMinSizeEdgeSurface()
+{
+  std::set<double> s;
+
+  for(unsigned int t = 1 ; t < m_tri_ids.capacity() ; t++)
+  {
+    if(m_tri_ids[t] != 0)
+    {
+      const std::vector<TInt> nodes = SimplicesTriangle(this, t).getNodes();
+      math::Point p0 = SimplicesNode(this, nodes[0]).getCoords();
+      math::Point p1 = SimplicesNode(this, nodes[1]).getCoords();
+      math::Point p2 = SimplicesNode(this, nodes[2]).getCoords();
+
+      //compute size of the edgfe of t
+      math::Vector3d v01 = p1-p0; math::Vector3d v12 = p2-p1;
+      math::Vector3d v20 = p2-p0;
+
+      double dist01 = v01.norm(); double dist12 = v12.norm();
+      double dist20 = v20.norm();
+
+      s.insert(dist01); s.insert(dist12); s.insert(dist20);
+    }
+  }
+
+  return *(s.begin());
+}
+/*****************************************************************************/
+double SimplexMesh::findMeanSizeEdgeSurface()
+{
+  double mean = 0.0;
+  unsigned int cpt = 0;
+  for(unsigned int t = 1 ; t < m_tri_ids.capacity() ; t++)
+  {
+    if(m_tri_ids[t] != 0)
+    {
+      ++cpt;
+      const std::vector<TInt> nodes = SimplicesTriangle(this, t).getNodes();
+      math::Point p0 = SimplicesNode(this, nodes[0]).getCoords();
+      math::Point p1 = SimplicesNode(this, nodes[1]).getCoords();
+      math::Point p2 = SimplicesNode(this, nodes[2]).getCoords();
+
+      //compute size of the edgfe of t
+      math::Vector3d v01 = p1-p0; math::Vector3d v12 = p2-p1;
+      math::Vector3d v20 = p2-p0;
+
+      double dist01 = v01.norm(); double dist12 = v12.norm();
+      double dist20 = v20.norm();
+
+      mean += (dist01 + dist12 + dist20) / 3.0;
+    }
+  }
+
+  return mean / static_cast<double>(cpt);
+}
+/*****************************************************************************/
+void SimplexMesh::setSurfacesAndCurvesIndx()
+{
+  Variable<TInt>* BND_CURVE_COLOR = nullptr;
+  Variable<TInt>* BND_VERTEX_COLOR = nullptr;
+  Variable<TInt>* BND_SURFACE_COLOR = nullptr;
+  try {
+    BND_CURVE_COLOR = getVariable<TInt,SimplicesNode>("BND_CURVE_COLOR");
+    BND_SURFACE_COLOR = getVariable<TInt,SimplicesNode>("BND_SURFACE_COLOR");
+  }catch (GMDSException e) {
+    throw gmds::GMDSException(e);
+  }
+
+  for(unsigned int i = 0 ; i < m_node_ids.capacity() ; i++)
+  {
+    if(m_node_ids[i] != 0)
+    {
+      if((*BND_CURVE_COLOR)[i] != 0)
+      {
+        curvesIndx.insert((*BND_CURVE_COLOR)[i]);
+      }
+      else if((*BND_SURFACE_COLOR)[i] != 0)
+      {
+        surfacesIndx.insert((*BND_SURFACE_COLOR)[i]);
+      }
+    }
+  }
+}
+/*****************************************************************************/
 void SimplexMesh::deleteAllSimplicesBut(const std::vector<TSimplexID> & simplices)
 {
   if(simplices.size() != 0)
@@ -358,7 +441,7 @@ TSimplexID SimplexMesh::getSimplexFromBase(const TInt ANodeID)
 TInt SimplexMesh::addNodeAndcheck(const math::Point& pt, std::vector<TSimplexID>& tetraContainingPt, bool& alreadyAdd, TSimplexID simplexToCheckFirst)
 {
   bool flag = false;
-  double epsilon = 10E-4;
+  double epsilon = 1E-4;
 
   //check if the point pt is on any other node already in the mesh;
   if(tetraContainingPt.size() == 0)
@@ -594,8 +677,33 @@ TSimplexID SimplexMesh::addTriangle(const simplicesNode::SimplicesNode& ANode0,
 
   return idx;
 }
+/*---------------------------------------------------------------------------*/
+std::vector<double> SimplexMesh::getMinMaxCoord()
+{
+  std::vector<double> ans{};
+  std::set<double> x_;
+  std::set<double> y_;
+  std::set<double> z_;
+  for(unsigned int n = 0 ; n < m_node_ids.capacity(); n++)
+  {
+    if(m_node_ids[n] != 0)
+    {
+      x_.insert(SimplicesNode(this, n).getCoords().X());
+      y_.insert(SimplicesNode(this, n).getCoords().Y());
+      z_.insert(SimplicesNode(this, n).getCoords().Z());
+    }
+  }
 
+  ans.push_back(*(x_.begin()));
+  ans.push_back(*(x_.end()));
 
+  ans.push_back(*(y_.begin()));
+  ans.push_back(*(y_.end()));
+
+  ans.push_back(*(z_.begin()));
+  ans.push_back(*(z_.end()));
+  return ans;
+}
 /*---------------------------------------------------------------------------*/
 TSimplexID SimplexMesh::addTriangle(const TInt AIndexPoint_0,
                        const TInt AIndexPoint_1,
@@ -810,7 +918,7 @@ void SimplexMesh::buildTriBaseAndAdjLocal(const TSimplexID & triIndx)
     else
     {
       //TODO exception
-      std::cout << "otherNode.size() != 1 -> " << otherNode.size() << std::endl;
+      //std::cout << "otherNode.size() != 1 -> " << otherNode.size() << std::endl;
     }
   }
 }
@@ -3517,9 +3625,106 @@ TSimplexID SimplexMesh::nextSimplexToCheck(const TSimplexID currentSimplex, cons
   return nextSimplexToCheck(nextTet, pt, u, v, w, t, cyclingCheck, closestSimplexInfo);
 }
 /*---------------------------------------------------------------------------*/
+void SimplexMesh::checkSimplicesContenaing_TetOnly(const gmds::math::Point& pt, TSimplexID& tetraContainingPt, bool flag, TSimplexID simplexToCheckFirst)
+{
+  TSimplexID border = std::numeric_limits<int>::min();
+  tetraContainingPt = border;
+  double epsilon = 1E-2;
+
+  TSimplexID simplexNextToPt = (simplexToCheckFirst == border)?m_octree->findSimplexNextTo(pt):simplexToCheckFirst;
+  BitVector cyclingCheck(getBitVectorTet().capacity());
+  if(simplexNextToPt != border)
+  {
+    tetraContainingPt = simplexBarycentricLookUp(simplexNextToPt, pt, cyclingCheck);
+  }
+
+  if(!flag)
+    return;
+
+  if(tetraContainingPt == border) // if tetraContainingPt was not find with simplexBarycentricLookUp we use full tet loop to find the tet that contain pt
+  {
+    for(unsigned int t = 0; t < m_tet_ids.capacity(); ++t)
+    {
+      if(m_tet_ids[t] != 0)
+      {
+        std::vector<double> uvwt_ = SimplicesCell(this, t).uvwt(pt);
+        if(uvwt_[0] >= -epsilon  && uvwt_[1] >= -epsilon && uvwt_[2] >= -epsilon && uvwt_[3] >= -epsilon)
+        {
+          tetraContainingPt = t;
+          break;
+        }
+      }
+    }
+  }
+}
+/*---------------------------------------------------------------------------*/
+void SimplexMesh::setMarkedTet(const gmds::BitVector& markedTet)
+{
+  std::cout << "setMarkedTet " << std::endl;
+  std::cout << "markedTet.size() -> "<<  markedTet.size()<< std::endl;
+  std::cout << "m_tet_ids.size() -> "<<  m_tet_ids.size()<< std::endl;
+  for(unsigned int i = 0 ; i < markedTet.capacity() ; i++)
+  {
+    if(markedTet[i] == 0)
+    {
+      m_tet_ids.unselect(i);
+    }
+  }
+  std::cout << "m_tet_ids.size() -> "<<  m_tet_ids.size()<< std::endl;
+}
+/*---------------------------------------------------------------------------*/
+TSimplexID SimplexMesh::simplexBarycentricLookUp(const TSimplexID currentSimplex, const math::Point& pt, BitVector& cyclingCheck)
+{
+  double epsilon = 1E-2;
+  std::vector<double> uvwt{};
+  cyclingCheck.assign(currentSimplex);
+  std::vector<double> uvwt_ = SimplicesCell(this, currentSimplex).uvwt(pt);
+
+  if(uvwt_[0] >= -epsilon  && uvwt_[1] >= -epsilon && uvwt_[2] >= -epsilon && uvwt_[3] >= -epsilon)
+  {
+    return currentSimplex;
+  }
+
+  std::vector<TSimplexID> adjSimplices = SimplicesCell(this, currentSimplex).adjacentTetra();
+  if(uvwt_[0] < epsilon){
+    if(adjSimplices[0] >= 0){
+      if(cyclingCheck[adjSimplices[0]] == 0){
+          return simplexBarycentricLookUp(adjSimplices[0], pt, cyclingCheck);
+      }
+    }
+  }
+
+  if(uvwt_[1] < epsilon){
+    if(adjSimplices[1] >= 0){
+      if(cyclingCheck[adjSimplices[1]] == 0){
+          return simplexBarycentricLookUp(adjSimplices[1], pt, cyclingCheck);
+      }
+    }
+  }
+
+  if(uvwt_[2] < epsilon){
+    if(adjSimplices[2] >= 0){
+      if(cyclingCheck[adjSimplices[2]] == 0){
+          return simplexBarycentricLookUp(adjSimplices[2], pt, cyclingCheck);
+      }
+    }
+  }
+
+  if(uvwt_[3] < epsilon){
+    if(adjSimplices[3] >= 0){
+      if(cyclingCheck[adjSimplices[3]] == 0){
+          return simplexBarycentricLookUp(adjSimplices[3], pt, cyclingCheck);
+      }
+    }
+  }
+
+  return std::numeric_limits<TSimplexID>::min();
+}
+/*---------------------------------------------------------------------------*/
 TSimplexID SimplexMesh::nextSimplexToCheckOrientation(const TSimplexID currentSimplex, const math::Point& pt, std::vector<math::Orientation::Sign>& uvwt, BitVector& cyclingCheck)
 {
-  //std::cout << "  currentSimplex -> " << SimplicesCell(this,currentSimplex) << std::endl;
+
+
  TSimplexID cycling = std::numeric_limits<int>::min();
  TSimplexID border  = cycling;
  TSimplexID nextTet = currentSimplex;
@@ -3529,13 +3734,12 @@ TSimplexID SimplexMesh::nextSimplexToCheckOrientation(const TSimplexID currentSi
  uvwt.push_back(SimplicesCell(this, currentSimplex).orientation(1, pt));
  uvwt.push_back(SimplicesCell(this, currentSimplex).orientation(2, pt));
  uvwt.push_back(SimplicesCell(this, currentSimplex).orientation(3, pt));
- //std::cout << "  uvwt -> " << uvwt[0] << " | " << uvwt[1] << " | " << uvwt[2] << " | " << uvwt[3] << " | " << std::endl;
 
  std::vector<TInt> nodes = SimplicesCell(this, currentSimplex).getNodes();
 
  if(cyclingCheck[currentSimplex] == 0)
  {
-   if(uvwt[0] > 0  && uvwt[1]  > 0 && uvwt[2]  > 0 && uvwt[3]  > 0)
+   if(uvwt[0] >= 0  && uvwt[1]  >= 0 && uvwt[2]  >= 0 && uvwt[3]  >= 0)
    {
      return currentSimplex;
    }
@@ -4365,104 +4569,472 @@ void SimplexMesh::getEdgeSizeInfowithMetric(double& meanEdges, double& minEdge, 
   }
 }
 /******************************************************************************/
-Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const Point& pt) const
+Eigen::Matrix3d SimplexMesh::getAnalyticMetric(const math::Point& pt, SimplexMesh* sm, bool& status,TSimplexID& simplexInPt, TSimplexID nearSimplex, bool flag)
 {
-  double epsilon = 0.01;
-  Eigen::Matrix3d m = Eigen::MatrixXd::Identity(3, 3);
-
-  //CONSTANT ISOTROPE METRIC
-  double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-
-  
-  /*if(pt.Y() <= 0.5)
-  {
-    metricX = 0.1;
-    metricY = 0.1;
-    metricZ = 0.1;
-  }
-  else
-  {
-    metricX = 0.2;
-    metricY = 0.2;
-    metricZ = 0.2;
-  }*/
-
-
-  /*metricX = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();
-  metricY = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();
-  metricZ = 0.01*(1.0 - pt.Y()) + 0.1*pt.Y();*/
-
-  //double metricX = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
-  //double metricY = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
-  //double metricZ = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
-
-  /*double metricX = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
-  double metricY = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
-  double metricZ = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;*/
-
-
-  m(0,0) = 1.0 / (metricX*metricX);
-  m(1,1) = 1.0 / (metricY*metricY);
-  m(2,2) = 1.0 / (metricZ*metricZ);
-  return m;
-
-}
-/******************************************************************************/
-void SimplexMesh::setAnalyticMetric(const TInt node)
-{
-  //std::cout << "NODE  -> " << node << std::endl;
+  status = true;
+  Eigen::Matrix3d m =  Eigen::Matrix3d::Zero();
   Variable<Eigen::Matrix3d>* metric = nullptr;
   try{
-    metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    metric = sm->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
   }catch (gmds::GMDSException e)
   {
     throw gmds::GMDSException(e);
   }
 
-  //analytic isotrope metric here !
-  gmds::math::Point pt = m_coords[node];
-  double epsilon = 0.01;
+  //compute the interpolation metric in a simplex
+  TSimplexID tetraContainingPt = std::numeric_limits<TSimplexID>::min();
+  std::vector<TInt> nodes{};
+  std::vector<double> uvwt{};
+  if(nearSimplex == std::numeric_limits<TSimplexID>::min())
+    std::vector<TSimplexID> simplices = sm->getOctree()->findSimplicesInOc(pt);
 
-  //CONSTANT ISOTROPE METRIC
-  (*metric)[node] =  Eigen::MatrixXd::Identity(3, 3);
-  double metricX = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  double metricY = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  double metricZ = 0.05*(1.0 - pt.X()) + 0.1*pt.X();
-  /*std::cout << "pt -> " << pt << std::endl;
-  std::cout << "metricX -> " << metricX << std::endl;
-  std::cout << "metricY -> " << metricY << std::endl;
-  std::cout << "metricZ -> " << metricZ << std::endl;*/
+  sm->checkSimplicesContenaing_TetOnly(pt, tetraContainingPt, flag, nearSimplex);
 
-  /*if(pt.Y() <= 0.5)
-  {
-    metricX = 0.1;
-    metricY = 0.1;
-    metricZ = 0.1;
+  if(tetraContainingPt == std::numeric_limits<TSimplexID>::min()){
+    status = false;
+    return Eigen::Matrix3d::Zero();
   }
-  else
+  simplexInPt = tetraContainingPt;
+
+  SimplicesCell cell(sm, tetraContainingPt);
+  uvwt = cell.uvwt(pt);
+  nodes = cell.getNodes();
+
+  Eigen::Matrix3d m0 = (*metric)[nodes[0]];
+  Eigen::Matrix3d m1 = (*metric)[nodes[1]];
+  Eigen::Matrix3d m2 = (*metric)[nodes[2]];
+  Eigen::Matrix3d m3 = (*metric)[nodes[3]];
+
+  return uvwt[0]*m0 + uvwt[1]*m1 + uvwt[2]*m2 + uvwt[3]*m3;
+}
+/******************************************************************************/
+Eigen::Matrix3d SimplexMesh::getAnalyticMetricFromSimplex(const math::Point& pt, SimplexMesh* sm, TSimplexID simplex)
+{
+  double epsilon = 1E-3;
+  Eigen::Matrix3d m =  Eigen::Matrix3d::Zero();
+  Variable<Eigen::Matrix3d>* metric = nullptr;
+  try{
+    metric = sm->getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }catch (gmds::GMDSException e)
   {
-    metricX = 0.2;
-    metricY = 0.2;
-    metricZ = 0.2;
-  }*/
+    throw gmds::GMDSException(e);
+  }
 
-  //double metricX = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
-  //double metricY = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
-  //double metricZ = std::atan(80.0* (std::pow(pt.X(), 4) /** std::pow(pt.Y(), 4)*/));
+  TSimplexID tet = simplex;
+  if(simplex < 0)
+    tet = SimplicesTriangle(sm, simplex).neighborTetra()[0];
 
-  /*double metricX = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
-  double metricY = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;
-  double metricZ = (1.0 - std::exp(-1.0*(std::pow(pt.X() - 0.5, 2) + std::pow(pt.Y() - 0.5, 2)))) + epsilon;*/
+  std::vector<double> uvwt = SimplicesCell(sm, tet).uvwt(pt);
+  std::vector<TInt> nodes =  SimplicesCell(sm, tet).getNodes();
+
+  Eigen::Matrix3d m0 = (*metric)[nodes[0]];
+  Eigen::Matrix3d m1 = (*metric)[nodes[1]];
+  Eigen::Matrix3d m2 = (*metric)[nodes[2]];
+  Eigen::Matrix3d m3 = (*metric)[nodes[3]];
+
+  return uvwt[0]*m0 + uvwt[1]*m1 + uvwt[2]*m2 + uvwt[3]*m3;
+}
+/******************************************************************************/
+void SimplexMesh::setAnalyticMetricFromMesh(const TInt node, SimplexMesh* sm, std::unordered_map<TInt, TSimplexID>& umap)
+{
+  Eigen::Matrix3d m =  Eigen::Matrix3d::Zero();
+  Variable<Eigen::Matrix3d>* metric = nullptr;
+  try{
+    metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    (*metric)[node] = m;
+  }catch (gmds::GMDSException e)
+  {
+    metric = newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    (*metric)[node] = m;
+  }
+
+  if(umap[node] != std::numeric_limits<TSimplexID>::min()){
+    m = getAnalyticMetricFromSimplex(SimplicesNode(this, node).getCoords(), sm, umap[node]);
+  }
+  else{
+    bool status = true;
+    TSimplexID simplexInPt = std::numeric_limits<TSimplexID>::min();
+    m = getAnalyticMetric(SimplicesNode(this, node).getCoords(), sm, status, simplexInPt);
+    if(!status)
+      throw gmds::GMDSException("can no set analytic metric in setAnalyticMetricFromMesh function.");
+  }
+
+  (*metric)[node] = m;
+}
+/******************************************************************************/
+void SimplexMesh::setMetric(const TInt node, const Eigen::Matrix3d& m)
+{
+  Variable<Eigen::Matrix3d>* metric = nullptr;
+  try{
+    metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }catch (gmds::GMDSException e)
+  {
+    metric = newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }
+
+  (*metric)[node] = m;
+}
+/******************************************************************************/
+void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
+{
+  Eigen::Matrix3d m =  Eigen::Matrix3d::Zero();
+  Variable<Eigen::Matrix3d>* metric = nullptr;
+  try{
+    metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    (*metric)[node] = m;
+  }catch (gmds::GMDSException e)
+  {
+    metric = newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    (*metric)[node] = m;
+    //throw gmds::GMDSException(e);
+  }
+
+
+  //analytic isotrope metric here !
+  //gmds::math::Point pt = m_coords[node];
+
+
+  //mesh 's octree information
+  /*std::vector<double> borders = octree->getBorderOctree();
+  double x_min = borders[0], x_max = borders[1];
+  double y_min = borders[2], y_max = borders[3];
+  double tx = (pt.X() - x_min ) / (x_max - x_min);
+  double ty = (pt.Y() - y_min ) / (y_max - y_min);*/
+
+  //NON CONSTANT ISOTROPE METRIC
+  /*ty = (pt.Y() >= 0.5) ? pt.Y() - 0.5 : -(pt.Y() - 0.5);
+  double metricX = 0.09 / 0.5 * ty + 0.01;
+  double metricY = 0.09 / 0.5 * ty + 0.01;
+  double metricZ = 0.09 / 0.5 * ty + 0.01;*/
+  /*double metricX = 0.05*(1.0 - ty) + 0.1*ty;
+  double metricY = 0.05*(1.0 - ty) + 0.1*ty;
+  double metricZ = 0.05*(1.0 - ty) + 0.1*ty;*/
+  double metricX = 0.30;
+  double metricY = 0.30;
+  double metricZ = 0.30;
+
+  /*double metricX = 2.0;
+  double metricY = 2.0;
+  double metricZ = 2.0;*/
+
 
   (*metric)[node](0,0) = 1.0 / (metricX*metricX);
   (*metric)[node](1,1) = 1.0 / (metricY*metricY);
   (*metric)[node](2,2) = 1.0 / (metricZ*metricZ);
-  //std::cout << "*metric -> " << (*metric)[node] << std::endl;
+
 }
 /******************************************************************************/
-void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)
+void SimplexMesh::setAnalyticMetric(const TInt node, const Eigen::Matrix3d &m)
+{
+  Variable<Eigen::Matrix3d>* metric = nullptr;
+  try{
+    metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }catch (gmds::GMDSException e)
+  {
+    metric = newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+    //throw gmds::GMDSException(e);
+  }
+
+  (*metric)[node] = m;
+}
+/******************************************************************************/
+void SimplexMesh::setFrames(const TInt node, const std::vector<math::Vector3d>& frames)
+{
+  Variable<math::Vector3d>* FF_X_NEG = nullptr;
+  Variable<math::Vector3d>* FF_X_POS = nullptr;
+  Variable<math::Vector3d>* FF_Y_NEG = nullptr;
+  Variable<math::Vector3d>* FF_Y_POS = nullptr;
+  Variable<math::Vector3d>* FF_Z_NEG = nullptr;
+  Variable<math::Vector3d>* FF_Z_POS = nullptr;
+
+  try{
+    FF_X_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_X_NEG");
+    FF_X_POS = getVariable<math::Vector3d, SimplicesNode>("FF_X_POS");
+    FF_Y_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_Y_NEG");
+    FF_Y_POS = getVariable<math::Vector3d, SimplicesNode>("FF_Y_POS");
+    FF_Z_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_Z_NEG");
+    FF_Z_POS = getVariable<math::Vector3d, SimplicesNode>("FF_Z_POS");
+  }catch (gmds::GMDSException e)
+  {
+    FF_X_NEG = newVariable<math::Vector3d, SimplicesNode>("FF_X_NEG");
+    FF_X_POS = newVariable<math::Vector3d, SimplicesNode>("FF_X_POS");
+    FF_Y_NEG = newVariable<math::Vector3d, SimplicesNode>("FF_Y_NEG");
+    FF_Y_POS = newVariable<math::Vector3d, SimplicesNode>("FF_Y_POS");
+    FF_Z_NEG = newVariable<math::Vector3d, SimplicesNode>("FF_Z_NEG");
+    FF_Z_POS = newVariable<math::Vector3d, SimplicesNode>("FF_Z_POS");
+  }
+  if(frames.size() != 0){
+    FF_X_POS->set(node, frames[0]);FF_X_NEG->set(node, -frames[0]);
+    FF_Y_POS->set(node, frames[1]);FF_Y_NEG->set(node, -frames[1]);
+    FF_Z_POS->set(node, frames[2]);FF_Z_NEG->set(node, -frames[2]);
+  }
+}
+/******************************************************************************/
+void SimplexMesh::reorderFrame()
+{
+  //reorder frames field over the mesh because the local framecan differ from another in the same cell
+  Variable<math::Vector3d>* FF_X_NEG = nullptr;
+  Variable<math::Vector3d>* FF_X_POS = nullptr;
+  Variable<math::Vector3d>* FF_Y_NEG = nullptr;
+  Variable<math::Vector3d>* FF_Y_POS = nullptr;
+  Variable<math::Vector3d>* FF_Z_NEG = nullptr;
+  Variable<math::Vector3d>* FF_Z_POS = nullptr;
+
+  try{
+    FF_X_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_X_NEG");
+    FF_X_POS = getVariable<math::Vector3d, SimplicesNode>("FF_X_POS");
+    FF_Y_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_Y_NEG");
+    FF_Y_POS = getVariable<math::Vector3d, SimplicesNode>("FF_Y_POS");
+    FF_Z_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_Z_NEG");
+    FF_Z_POS = getVariable<math::Vector3d, SimplicesNode>("FF_Z_POS");
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  std::unordered_set<TInt> seen{};
+  for(unsigned int t = 0 ; t < m_tet_ids.capacity() ; t++)
+  {
+    if(m_tet_ids[t] != 0)
+    {
+      std::vector<TInt> nodes = SimplicesCell(this, t).getNodes();
+      for(unsigned int n = 0 ; n < nodes.size()-1; n++)
+      {
+        TInt nodeA = nodes[n]; TInt nodeB = nodes[n+1];
+        if(seen.find(nodeB) == seen.end())
+        {
+          if((*FF_X_POS)[nodeA].dot((*FF_X_POS)[nodeB]) < (*FF_X_POS)[nodeA].dot((*FF_X_NEG)[nodeB]))
+          {
+            math::Vector3d vecTMP = (*FF_X_POS)[nodeB];
+            FF_X_POS->set(nodeB, (*FF_X_NEG)[nodeB]);
+            FF_X_NEG->set(nodeB, vecTMP);
+          }
+          if((*FF_Y_POS)[nodeA].dot((*FF_Y_POS)[nodeB]) < (*FF_Y_POS)[nodeA].dot((*FF_Y_NEG)[nodeB]))
+          {
+            math::Vector3d vecTMP = (*FF_Y_POS)[nodeB];
+            FF_Y_POS->set(nodeB, (*FF_Y_NEG)[nodeB]);
+            FF_Y_NEG->set(nodeB, vecTMP);
+          }
+          if((*FF_Z_POS)[nodeA].dot((*FF_Z_POS)[nodeB]) < (*FF_Z_POS)[nodeA].dot((*FF_Z_NEG)[nodeB]))
+          {
+            math::Vector3d vecTMP = (*FF_Z_POS)[nodeB];
+            FF_Z_POS->set(nodeB, (*FF_Z_NEG)[nodeB]);
+            FF_Z_NEG->set(nodeB, vecTMP);
+          }
+        }
+        else if(seen.find(nodeA) == seen.end())
+        {
+          if((*FF_X_POS)[nodeA].dot((*FF_X_POS)[nodeB]) < (*FF_X_POS)[nodeA].dot((*FF_X_NEG)[nodeB]))
+          {
+            math::Vector3d vecTMP = (*FF_X_POS)[nodeA];
+            FF_X_POS->set(nodeA, (*FF_X_NEG)[nodeA]);
+            FF_X_NEG->set(nodeA, vecTMP);
+          }
+          if((*FF_Y_POS)[nodeA].dot((*FF_Y_POS)[nodeB]) < (*FF_Y_POS)[nodeA].dot((*FF_Y_NEG)[nodeB]))
+          {
+            math::Vector3d vecTMP = (*FF_Y_POS)[nodeA];
+            FF_Y_POS->set(nodeA, (*FF_Y_NEG)[nodeA]);
+            FF_Y_NEG->set(nodeA, vecTMP);
+          }
+          if((*FF_Z_POS)[nodeA].dot((*FF_Z_POS)[nodeB]) < (*FF_Z_POS)[nodeA].dot((*FF_Z_NEG)[nodeB]))
+          {
+            math::Vector3d vecTMP = (*FF_Z_POS)[nodeA];
+            FF_Z_POS->set(nodeA, (*FF_Z_NEG)[nodeA]);
+            FF_Z_NEG->set(nodeA, vecTMP);
+          }
+        }
+        seen.insert(nodeA);
+        seen.insert(nodeB);
+      }
+    }
+  }
+  gmds::ISimplexMeshIOService ioService(this);
+  gmds::VTKWriter vtkW(&ioService);
+  vtkW.setCellOptions(gmds::R|gmds::N);
+  vtkW.setDataOptions(gmds::N);
+  vtkW.write("reorderFrame.vtk");
+}
+/******************************************************************************/
+bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>& frames, TSimplexID nearSimplex)
+{
+  frames.clear();
+  frames.resize(3, math::Vector3d{0.0, 0.0, 0.0});
+
+  Variable<math::Vector3d>* FF_X_NEG = nullptr;
+  Variable<math::Vector3d>* FF_X_POS = nullptr;
+  Variable<math::Vector3d>* FF_Y_NEG = nullptr;
+  Variable<math::Vector3d>* FF_Y_POS = nullptr;
+  Variable<math::Vector3d>* FF_Z_NEG = nullptr;
+  Variable<math::Vector3d>* FF_Z_POS = nullptr;
+
+  try{
+    FF_X_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_X_NEG");
+    FF_X_POS = getVariable<math::Vector3d, SimplicesNode>("FF_X_POS");
+    FF_Y_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_Y_NEG");
+    FF_Y_POS = getVariable<math::Vector3d, SimplicesNode>("FF_Y_POS");
+    FF_Z_NEG = getVariable<math::Vector3d, SimplicesNode>("FF_Z_NEG");
+    FF_Z_POS = getVariable<math::Vector3d, SimplicesNode>("FF_Z_POS");
+  }catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  TSimplexID tetraContainingPt = std::numeric_limits<TSimplexID>::min();
+  bool flag = true;
+  checkSimplicesContenaing_TetOnly(pt, tetraContainingPt, flag, nearSimplex);
+
+  if(!flag){
+    return false;
+  }
+
+
+
+  if(tetraContainingPt != std::numeric_limits<TSimplexID>::min())
+  {
+    unsigned int sizeCell = 4;
+    TSimplexID tet = tetraContainingPt;
+    std::vector<double> uvwt{};
+    std::vector<std::vector<math::Vector3d>> framesNode{};
+
+    SimplicesCell cell(this,tet);
+    std::vector<TInt> nodes = cell.getNodes();
+    double volumeTotal = cell.getVolumeOfCell();
+
+    frames[0] = (*FF_X_POS)[nodes[0]];
+    frames[1] = (*FF_Y_POS)[nodes[0]];
+    frames[2] = (*FF_Z_POS)[nodes[0]];
+    return true;
+
+    for(unsigned int nodeId = 0 ; nodeId < sizeCell ; nodeId++)
+    {
+      framesNode.push_back(std::vector<math::Vector3d>{(*FF_X_NEG)[nodes[nodeId]], (*FF_X_POS)[nodes[nodeId]], (*FF_Y_NEG)[nodes[nodeId]],
+                                                    (*FF_Y_POS)[nodes[nodeId]], (*FF_Z_NEG)[nodes[nodeId]], (*FF_Z_POS)[nodes[nodeId]]});
+      std::vector<TInt> orderedFace = cell.getOrderedFace(nodeId);
+      Tetrahedron tetrahedron(pt, SimplicesNode(this, orderedFace[0]).getCoords(),
+       SimplicesNode(this, orderedFace[1]).getCoords(), SimplicesNode(this, orderedFace[2]).getCoords());
+      uvwt.push_back(std::abs(tetrahedron.getVolume() / volumeTotal));
+    }
+
+    //sort the frame data occording to the first one to have all frames data in correct direction (based on dot product between frame0's vector and other frame's vector)
+    for(unsigned int nodeId = 1 ; nodeId < sizeCell ; nodeId++)
+    {
+      std::sort(framesNode[nodeId].begin(), framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[nodeId][0].dot(vA) > framesNode[nodeId][0].dot(vB));});
+      std::sort(framesNode[nodeId].begin()+1, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[nodeId][1].dot(vA) > framesNode[nodeId][1].dot(vB));});
+      std::sort(framesNode[nodeId].begin()+2, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[nodeId][2].dot(vA) > framesNode[nodeId][2].dot(vB));});
+      std::sort(framesNode[nodeId].begin()+3, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[nodeId][3].dot(vA) > framesNode[nodeId][3].dot(vB));});
+      std::sort(framesNode[nodeId].begin()+4, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[nodeId][4].dot(vA) > framesNode[nodeId][4].dot(vB));});
+      std::sort(framesNode[nodeId].begin()+5, framesNode[nodeId].end(), [&](const math::Vector3d& vA, const math::Vector3d& vB){ return (framesNode[nodeId][5].dot(vA) > framesNode[nodeId][5].dot(vB));});
+    }
+
+    for(unsigned int nodeId = 0 ; nodeId < sizeCell ; nodeId++)
+    {
+      double r = uvwt[nodeId];
+      std::vector<math::Vector3d> f = framesNode[nodeId];
+      frames[0] += f[0] * r ; frames[1] += f[1] * r ; frames[2] += f[2] * r ;
+      frames[3] += f[3] * r ; frames[4] += f[4] * r ; frames[5] += f[5] * r ;
+      break;
+    }
+    return true;
+  }
+
+  return false;
+}
+/******************************************************************************/
+void SimplexMesh::setColorsSurfaceFromSimplex(SimplexMesh* simplexMesh)
+{
+  double epsilon = 0.1;
+  unsigned int sizeFace = 4;
+
+  gmds::Variable<int>* BND_SURFACE_COLOR    = nullptr;
+  gmds::Variable<int>* BND_CURVE_COLOR      = nullptr;
+  gmds::Variable<int>* BND_TRIANGLES        = nullptr;
+  gmds::Variable<int>* BND_SURFACE_COLOR_MESH = nullptr;
+
+  try{
+    BND_SURFACE_COLOR_MESH = simplexMesh->getVariable<int, SimplicesNode>("BND_SURFACE_COLOR");
+    BND_TRIANGLES        = simplexMesh->getVariable<int, SimplicesTriangle>("BND_TRIANGLES");
+    BND_CURVE_COLOR      = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
+    BND_SURFACE_COLOR    = getVariable<int,SimplicesNode>("BND_SURFACE_COLOR");
+  } catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  for(unsigned int n = 0 ; n < m_node_ids.capacity() ; n++)
+  {
+    if(m_node_ids[n] != 0)
+    {
+      if((*BND_CURVE_COLOR)[n] != 0 || (*BND_SURFACE_COLOR)[n] != 0)
+        continue;
+
+      const SimplicesNode node(this, n);
+      std::vector<TSimplexID> simplices = simplexMesh->getOctree()->findSimplicesInOc(node.getCoords());
+      unsigned int surfaceColorId = 0;
+
+      for(auto const simplex : simplices)
+      {
+        if(simplex >= 0)
+        {
+          std::vector<double> UVWT;
+          if(SimplicesCell(simplexMesh, simplex).isCellClose(node.getCoords(), UVWT, epsilon))
+          {
+            for(unsigned int c = 0; c < UVWT.size() ; c++)
+            {
+              TSimplexID t = SimplicesCell(simplexMesh, simplex).oppositeTetraIdx(c);
+              if(t < 0 && (UVWT[c] > - epsilon && UVWT[c] <  epsilon))
+              {
+                surfaceColorId = (*BND_TRIANGLES)[-t];
+              }
+            }
+          }
+        }
+      }
+
+      if(simplices.size() == 0 || surfaceColorId == 0)
+        continue;
+
+      BND_SURFACE_COLOR->set(n, surfaceColorId);
+    }
+  }
+}
+/******************************************************************************/
+void SimplexMesh::onSurface(const math::Point& pt, int& surfaceLabel, TSimplexID& simplex)
+{
+  double epsilon = 0.1;
+  gmds::Variable<int>* BND_TRIANGLES  = nullptr;
+
+  try{
+    BND_TRIANGLES        = getVariable<int, SimplicesTriangle>("BND_TRIANGLES");
+  } catch (gmds::GMDSException e)
+  {
+    throw gmds::GMDSException(e);
+  }
+
+  std::vector<TSimplexID> simplices = getOctree()->findSimplicesInOc(pt);
+
+  surfaceLabel = 0;
+  for(auto const simplex_ : simplices)
+  {
+    if(simplex_ >= 0)
+    {
+      std::vector<double> UVWT;
+      if(SimplicesCell(this, simplex_).isCellClose(pt, UVWT, epsilon))
+      {
+        simplex = simplex_;
+        for(unsigned int c = 0; c < UVWT.size() ; c++)
+        {
+          TSimplexID t = SimplicesCell(this, simplex_).oppositeTetraIdx(c);
+          if(t < 0 && (UVWT[c] > - epsilon && UVWT[c] <  epsilon))
+          {
+            surfaceLabel = (*BND_TRIANGLES)[-t];
+          }
+        }
+      }
+    }
+  }
+}
+/******************************************************************************/
+/*void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)
 {
   gmds::Variable<int>* BND_SURFACE_COLOR = nullptr;
   gmds::Variable<int>* BND_CURVE_COLOR = nullptr;
@@ -4865,7 +5437,7 @@ void SimplexMesh::rebuildCav(CavityOperator::CavityIO& cavityIO, const std::vect
       hash_edge.erase(it0);
     }
   }
-}
+}*/
 /******************************************************************************/
 void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const std::vector<std::vector<TInt>>& deleted_Tet, const std::vector<std::vector<TInt>>& deleted_Tri,  const TInt nodeToConnect, std::vector<TSimplexID>& createdCells)
 {
@@ -5887,11 +6459,11 @@ bool SimplexMesh::edgeRemove(const TInt nodeA, const TInt nodeB)
   return status;
 }
 /******************************************************************************/
-unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std::vector<TInt>& deletedNodes)
+unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std::vector<TInt>& deletedNodes, std::vector<TInt>& nodesNotDeleted)
 {
   gmds::ISimplexMeshIOService ioService(this);
   static int cpt = 0;
-  unsigned int edgesRemovedNbr = 0;
+  unsigned int nodeRemovedNbr = 0;
   TInt border = std::numeric_limits<TInt>::min();
   Variable<int>* BND_VERTEX_COLOR = getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
   Variable<int>* BND_CURVE_COLOR = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
@@ -6002,30 +6574,26 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
                 }
               }
               SimplicesNode nodeToInsert(this, data.node);
-              //std::cout << "node being inserted --> " << data.node << " Of dimension -> " <<  data.dim_Nj << " and label -> " << data.index_Nj << std::endl;
-              //std::cout << "from node --> " << node << " Of dimension -> " <<  dim_Ni << " and label -> " << index_Ni << std::endl;
-
-              //if(dim_Ni == 4 && (data.dim_Nj == 0 || data.dim_Nj == 1 || data.dim_Nj == 2)){continue;}
               const std::multimap<TInt, TInt> facesAlreadyBuilt{};
               std::vector<TSimplexID> cellsCreated{};
               PointInsertion(this, nodeToInsert, criterionRAIS, status, ball, surfaceNodesAdded, deletedNodes, facesAlreadyBuilt, cellsCreated);
               if(status)
               {
-                edgesRemovedNbr++;
+                nodeRemovedNbr++;
                 break;
               }
             }
           }
           if(!status)
           {
-            nodeNotInserted++;
+            nodesNotDeleted.push_back(node);
           }
         }
       }
     }
   }
 
-  return edgesRemovedNbr;
+  return nodeRemovedNbr;
 }
 /******************************************************************************/
 std::vector<TSimplexID> SimplexMesh::initializeCavityWith(const TInt nodeAidx, const TInt nodeBidx)
@@ -6102,15 +6670,6 @@ unsigned int SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, co
     TInt nodeAidx = edge.first;
     TInt nodeBidx = edge.second;
 
-    /*std::cout << "nodeAidx -> " << nodeAidx << std::endl;
-    std::cout << "nodeBidx -> " << nodeBidx << std::endl;
-    if(nodeAidx == 23517 && nodeBidx == 72468)
-    {
-      gmds::VTKWriter vtkWriter(&ioService);
-      vtkWriter.setCellOptions(gmds::N|gmds::R|gmds::F);
-      vtkWriter.setDataOptions(gmds::N|gmds::R|gmds::F);
-      vtkWriter.write("TEST.vtk");
-    }*/
     if(nodeAidx != border && nodeBidx != border)
     {
       if(bitNodes[nodeAidx] != 0 && bitNodes[nodeBidx] != 0)
@@ -6121,32 +6680,30 @@ unsigned int SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, co
         if(nodeA.shell(nodeB).size() == 0)
         {
           std::vector<TInt> cavity = initializeCavityWith(nodeA.getGlobalNode(), nodeB.getGlobalNode());
-          //for(auto const & tet : cavity){std::cout << "tet in cav -> " << tet << std::endl;}
           CriterionRAIS criterionRAIS(new VolumeCriterion());
           bool status = false;
           std::vector<TInt> deletedNodes{};
           const std::multimap<TInt, TInt> facesAlreadyBuilt{};
           std::vector<TSimplexID> createdCells{};
-          //std::cout << SimplicesNode(this, edge.first) << std::endl;
-          //std::cout << SimplicesNode(this, edge.second) << std::endl;
-          //if(cpt > 500)
-          {
-
-            //gmds::VTKWriter vtkWriterTEST(&ioService);
-            //vtkWriterTEST.setCellOptions(gmds::N|gmds::R|gmds::F);
-            //vtkWriterTEST.setDataOptions(gmds::N|gmds::R|gmds::F);
-            //vtkWriterTEST.write("testEdge4_CPT_" + std::to_string(cpt) +  ".vtk");
-            //std::cout << "CPT -> " << cpt << std::endl;
-          }
           PointInsertion(this, nodeB, criterionRAIS, status, cavity, nodeBitVector, deletedNodes, facesAlreadyBuilt, createdCells);
           //cpt++;
-          if(!status)
+          if(status)
           {
-            //std::cout << "edge [" << nodeAidx << " ; " << nodeBidx << "] was not built " << std::endl;
+            cpt_EdgeBuilt = cpt_EdgeBuilt + 1.0;
           }
           else
           {
-            cpt_EdgeBuilt = cpt_EdgeBuilt + 1.0;
+            std::vector<TInt> cavity = initializeCavityWith(nodeB.getGlobalNode(), nodeA.getGlobalNode());
+            CriterionRAIS criterionRAIS(new VolumeCriterion());
+            bool status = false;
+            std::vector<TInt> deletedNodes{};
+            const std::multimap<TInt, TInt> facesAlreadyBuilt{};
+            std::vector<TSimplexID> createdCells{};
+            PointInsertion(this, nodeA, criterionRAIS, status, cavity, nodeBitVector, deletedNodes, facesAlreadyBuilt, createdCells);
+            if(status)
+            {
+              cpt_EdgeBuilt = cpt_EdgeBuilt + 1.0;
+            }
           }
         }
         else
@@ -6157,6 +6714,7 @@ unsigned int SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, co
     }
   }
 
+  std::cout << "cpt_EdgeAlreadyBuild -> " << cpt_EdgeAlreadyBuild << std::endl;
   return cpt_EdgeBuilt;
 }
 /******************************************************************************/
@@ -6864,6 +7422,7 @@ bool SimplexMesh::pointInTriangle(const math::Point& query_point,
     math::Vector3d normal = n;
     normal.normalize();
     distance = w.dot(normal);
+
     // The point P′ lies inside T if:
     //std::cout << "ABG -> " << alpha << " | " << beta << " | " << gamma << std::endl;
     return ((-epsilon <= alpha) && (alpha <= 1.0 + epsilon) &&

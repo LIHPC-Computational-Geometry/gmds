@@ -273,6 +273,16 @@ void SimplicesCell::reorientTet()
   }
 }
 /*----------------------------------------------------------------------------*/
+std::vector<double> SimplicesCell::uvwt(const gmds::math::Point& pt) const
+{
+  std::vector<double> uvwt;
+  unsigned int sizeFACE = 4;
+  for(unsigned int face = 0 ; face < sizeFACE ; face++)
+    uvwt.push_back(signedBarycentricNormalized(face, pt));
+
+  return uvwt;
+}
+/*----------------------------------------------------------------------------*/
 double SimplicesCell::signedBarycentricNormalized(const TInt index, const gmds::math::Point& pt) const
 {
   double signedBarNormalized = 0.0;
@@ -319,6 +329,51 @@ double SimplicesCell::signedBarycentric(const TInt index, const gmds::math::Poin
     /*TODO THROW*/
   }
   return signedBar;
+}
+
+/*----------------------------------------------------------------------------*/
+bool SimplicesCell::isInCell(const gmds::math::Point& pt, bool inverseOrientation) const
+{
+  math::Orientation::Sign sign;
+  unsigned int sizeCell = 4;
+  for(unsigned int face = 0 ; face < sizeCell ; face++)
+  {
+    const TInt Node0 = m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[face][0]];
+    const TInt Node1 = m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[face][1]];
+    const TInt Node2 = m_simplex_mesh->m_tet_nodes[m_simplexId][FacesOrientation[face][2]];
+
+
+    const math::Point pt0 = m_simplex_mesh->m_coords[Node0];
+    const math::Point pt1 = m_simplex_mesh->m_coords[Node1];
+    const math::Point pt2 = m_simplex_mesh->m_coords[Node2];
+    if(inverseOrientation)
+    {
+      sign = math::Orientation::orient3d(pt0, pt2, pt1, pt);
+
+    }
+    else
+    {
+      sign = math::Orientation::orient3d(pt0, pt1, pt2, pt);
+    }
+
+    if(sign == math::Orientation::Sign::NEGATIVE)
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+/*----------------------------------------------------------------------------*/
+bool SimplicesCell::isCellClose(const gmds::math::Point& pt, std::vector<double>& UVWT, double epsilon) const
+{
+  UVWT =  uvwt(pt);
+
+  for(double c : UVWT)
+    if(c < - epsilon)
+      return false;
+
+  return true;
 }
 /*----------------------------------------------------------------------------*/
 math::Orientation::Sign SimplicesCell::orientation(const TInt faceIdx, const gmds::math::Point& pt, bool inverseOrientation) const
@@ -1086,3 +1141,51 @@ unsigned int SimplicesCell::checkFaceNbrVisibility(std::vector<std::vector<TInt>
 
   return nbrFaceNotVisible;
 }
+/*----------------------------------------------------------------------------*/
+std::vector<double> SimplicesCell::getBestNodeJacobianNormalise()
+{
+  std::vector<double> ans {};
+  std::vector<TInt> nodes = getNodes();
+  for(unsigned int lN = 0 ; lN < 4 ; lN++)
+  {
+    unsigned int lN1 = (lN+1) % 4;
+    unsigned int lN2 = (lN+2) % 4;
+    unsigned int lN3 = (lN+3) % 4;
+
+    //compute the jacobian for each node of the tetra
+    TInt A = nodes[lN1] ; TInt B = nodes[lN2] ; TInt C = nodes[lN3];
+    TInt P = nodes[lN];
+    const math::Point pt = SimplicesNode(m_simplex_mesh, P).getCoords();
+    const math::Point ptA = SimplicesNode(m_simplex_mesh, A).getCoords();
+    const math::Point ptB = SimplicesNode(m_simplex_mesh, B).getCoords();
+    const math::Point ptC = SimplicesNode(m_simplex_mesh, C).getCoords();
+
+    const math::Vector3d v0 = ptA - pt;
+    const math::Vector3d v1 = ptB - pt;
+    const math::Vector3d v2 = ptC - pt;
+    double num = std::fabs((v0.dot(v1.cross(v2))));
+    double den = v0.norm()*v1.norm()*v2.norm();
+    ans.push_back(num / den);
+  }
+  return ans;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<TInt> SimplicesCell::commonNode(SimplicesCell cell1)
+{
+  std::vector<TInt> ans{};
+  std::vector<TInt> nodes0 = getNodes();
+  std::vector<TInt> nodes1 = cell1.getNodes();
+  std::vector<TInt>::iterator it;
+  std::vector<TInt>::iterator end;
+  std::vector<TInt> inter(nodes0.size() + nodes1.size());
+
+  end = std::set_intersection(
+        nodes0.begin(), nodes0.end(),
+        nodes1.begin(), nodes1.end(),
+        inter.begin());
+
+  std::copy(inter.begin(), end, std::back_inserter(ans));
+  return ans;
+
+}
+/*----------------------------------------------------------------------------*/
