@@ -551,6 +551,9 @@ PointInsertion::PointInsertion(SimplexMesh* simplexMesh, const SimplicesNode& si
               }
             }
           }
+          for(auto const t : cavityIO.cellInCavity()){
+            std::cout << "simplex in cavity -> " << t << std::endl;
+          }
           simplexMesh->rebuildCavity(cavityIO, deleted_Tet, deleted_Tri, simpliceNode.getGlobalNode(), createdCells);
 
           //simplexMesh->rebuildCav(cavityIO, deleted_Tet, deleted_Tri, simpliceNode.getGlobalNode(), createdCells);

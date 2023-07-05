@@ -45,7 +45,7 @@ namespace gmds{
             m_regions_container = 0;
             m_type_id = NullID;
         }
-        
+
     }
     /*----------------------------------------------------------------------------*/
     Region::
@@ -56,7 +56,7 @@ namespace gmds{
             m_regions_container = m_owner->m_regions_container;
         else
             m_regions_container = 0;
-        
+
         m_type_id = AReg.m_type_id;
     }
     /*----------------------------------------------------------------------------*/
@@ -107,7 +107,7 @@ namespace gmds{
             val=cells.size();
         }
         return val;
-        
+
     }
     /*----------------------------------------------------------------------------*/
     TInt Region::nbFaces() const
@@ -124,7 +124,7 @@ namespace gmds{
             val=cells.size();
         }
         return val;
-        
+
     }
     /*----------------------------------------------------------------------------*/
     TInt Region::nbRegions() const
@@ -147,10 +147,10 @@ namespace gmds{
     Region::center() const
     {
         TCoord p_coords[3] = {0.0,0.0,0.0};
-        
+
         std::vector<Node> nodes = this->get<Node>();
         unsigned  nb_nodes = nodes.size();
-        
+
         for(unsigned int i=0; i<nb_nodes; i++)
         {
             Node n = nodes[i];
@@ -158,16 +158,16 @@ namespace gmds{
             p_coords[1] += n.Y();
             p_coords[2] += n.Z();
         }
-        
+
         p_coords[0] = p_coords[0] / nodes.size();
         p_coords[1] = p_coords[1] / nodes.size();
         p_coords[2] = p_coords[2] / nodes.size();
-        
+
         math::Point p(p_coords[0],p_coords[1],p_coords[2]);
-        
+
         return p;
     }
-    
+
     /*----------------------------------------------------------------------------*/
     TCoord Region::volume() const
     {
@@ -207,7 +207,7 @@ namespace gmds{
 	else {
 	  throw GMDSException("Region::volume can not be computed for this value type.");
 	}
-        
+
         return vol;
     }
     /*----------------------------------------------------------------------------*/
@@ -215,16 +215,16 @@ namespace gmds{
     Region::computeNGLLPoints(int ADegree) const
     {
         //	throw GMDSException("Region::computeNGLLPoints not implemented yet.");
-        
+
         std::vector<math::Point> points;
-        
+
         std::vector<Node> nodes = this->get<Node>();
-        
+
         switch(this->type()) {
             case GMDS_HEX:
             {
                 points.resize(27);
-                
+
                 // we value the 8 corners of the hex
                 gmds::math::Point p[8];
                 for(unsigned int iNode=0; iNode<nodes.size(); iNode++)
@@ -232,12 +232,12 @@ namespace gmds{
                     p[iNode] = nodes[iNode].point();
                 }
                 // Now we build an inner grid of  27 points
-                
+
                 // we build intermediate nodes to create our 27 inner points
                 // middle of edge
                 gmds::math::Point p01, p12, p23, p03,
                 p45, p56, p67, p47, p04, p15, p26, p37;
-                
+
                 p01 = (p[0]+p[1])*0.5;
                 p12 = (p[1]+p[2])*0.5;
                 p23 = (p[2]+p[3])*0.5;
@@ -310,15 +310,52 @@ namespace gmds{
                 throw GMDSException("Region::computeNGLLPoints not implemented yet for this value type.");
                 break;
         }
-        
+
         return points;
+    }
+    /*----------------------------------------------------------------------------*/
+    double
+    Region::computeQuality() const
+    {
+      std::vector<Node> nodes = this->get<Node>();
+
+      switch(this->type()) {
+          case GMDS_TETRA:
+          {
+              math::Tetrahedron tet(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
+              return tet.computeQuality();
+          }
+          default:
+              throw GMDSException("Region::computeQuality not implemented yet for this value type.");
+              break;
+      }
+return 0.0;
+    }
+    /*----------------------------------------------------------------------------*/
+    double
+    Region::computeQualityWithMetric(const Eigen::Matrix3d& m0, const Eigen::Matrix3d& m1,
+              const Eigen::Matrix3d& m2, const Eigen::Matrix3d& m3) const
+    {
+      std::vector<Node> nodes = this->get<Node>();
+
+      switch(this->type()) {
+          case GMDS_TETRA:
+          {
+              math::Tetrahedron tet(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
+              return tet.computeQualityWithMetric(m0, m1, m2, m3);
+          }
+          default:
+              throw GMDSException("Region::computeQualityWithMetric not implemented yet for this value type.");
+              break;
+      }
+return 0.0;
     }
     /*----------------------------------------------------------------------------*/
     double
     Region::computeScaledJacobian() const
     {
         std::vector<Node> nodes = this->get<Node>();
-        
+
         switch(this->type()) {
             case GMDS_HEX:
             {
@@ -398,7 +435,7 @@ return 0;
     Region::computeMeanRatio() const
     {
         std::vector<Node> nodes = this->get<Node>();
-        
+
         switch(this->type()) {
             case GMDS_HEX:
             {
@@ -438,9 +475,9 @@ return 0;
     Region::getOrderedNodesFaces() const
     {
         std::vector<std::vector<Node> > orderedNodesFaces;
-        
+
         std::vector<Node> nodes = this->get<Node>();
-        
+
         switch(this->type()) {
             case GMDS_HEX:
                 orderedNodesFaces.resize(6);
@@ -548,7 +585,7 @@ return 0;
                 throw GMDSException("Region::getOrderedNodesFaces not implemented for this region type");
                 break;
         }
-        
+
         return orderedNodesFaces;
     }
     /*----------------------------------------------------------------------------*/
@@ -556,9 +593,9 @@ return 0;
     Region::getOrderedNodesFacesIDs() const
     {
         std::vector<std::vector<TCellID> > orderedNodesFaces;
-        
+
         std::vector<TCellID> nodes = this->getIDs<Node>();
-        
+
         switch(this->type()) {
             case GMDS_HEX:
                 orderedNodesFaces.resize(6);
@@ -666,7 +703,7 @@ return 0;
                 throw GMDSException("Region::getOrderedNodesFacesIDs not implemented for this region type");
                 break;
         }
-        
+
         return orderedNodesFaces;
     }
     /*----------------------------------------------------------------------------*/
@@ -816,21 +853,21 @@ return 0;
       } catch(GMDSException& e) {
 	throw e;
       }
-      
+
     }
     /*----------------------------------------------------------------------------*/
     bool
     Region::isFaceOrientedOutward(std::vector<TCellID> AIDs) const
     {
         std::vector<std::vector<TCellID> > orderedNodesFaces = this->getOrderedNodesFacesIDs();
-        
+
         // first find the face
         for(unsigned int iFace=0; iFace<orderedNodesFaces.size(); iFace++) {
 
             if(AIDs.size() == orderedNodesFaces[iFace].size()) {
-                
+
                 unsigned int nbNodesMatched = 0;
-                
+
                 for(unsigned int iNode1=0; iNode1<orderedNodesFaces[iFace].size(); iNode1++) {
                     for(unsigned int iNode2=0; iNode2<AIDs.size(); iNode2++) {
                         if(AIDs[iNode2] == orderedNodesFaces[iFace][iNode1]) {
@@ -845,7 +882,7 @@ return 0;
                     }
                     TCellID firstNode = orderedNodesFaces[iFace][0];
                     TCellID secondNode = orderedNodesFaces[iFace][1];
-                    
+
                     for(unsigned int iNode2=0; iNode2<AIDs.size(); iNode2++) {
                         if(AIDs[iNode2] == firstNode) {
                             if(AIDs[(iNode2+1)%AIDs.size()] == secondNode) {
@@ -860,7 +897,7 @@ return 0;
                 }
             }
         }
-        
+
         throw GMDSException("Region::isFaceOrientedOutward face not found.");
     }
    /*----------------------------------------------------------------------------*/
@@ -887,9 +924,9 @@ return 0;
     Region::getFakeEdges() const
     {
         std::vector<VirtualEdge> fakeEdges;
-        
+
         std::vector<Node> nodes = this->get<Node>();
-        
+
         switch(this->type()) {
             case GMDS_HEX:
                 fakeEdges.resize(12);
@@ -942,7 +979,7 @@ return 0;
                 throw GMDSException("Region::getFakeEdges not implemented for this region type");
                 break;
         }
-        
+
         return fakeEdges;
     }
     /*----------------------------------------------------------------------------*/
@@ -1143,7 +1180,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2N))
             throw GMDSException("R2N adjacency is not supported by the mesh model");
-        
+
         std::vector<TCellID> cellIDs;
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2N)[m_type_id].values(cellIDs);
@@ -1162,7 +1199,7 @@ return 0;
         }
         else
             throw GMDSException("Not yet implemented");
-        
+
         ACells.resize(cellIDs.size());
         for(unsigned int i=0;i<cellIDs.size();i++){
             ACells[i] =m_owner->m_nodes_container->buildNode(cellIDs[i]);
@@ -1173,7 +1210,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2E))
             throw GMDSException("R2E adjacency is not supported by the mesh model");
-        
+
         std::vector<TCellID> cellIDs;
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2E)[m_type_id].values(cellIDs);
@@ -1192,7 +1229,7 @@ return 0;
         }
         else
             throw GMDSException("Not yet implemented");
-        
+
         ACells.resize(cellIDs.size());
         for(unsigned int i=0;i<cellIDs.size();i++){
             ACells[i] =m_owner->m_edges_container->buildEdge(cellIDs[i]);
@@ -1203,7 +1240,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2F))
             throw GMDSException("R2F adjacency is not supported by the mesh model");
-        
+
         std::vector<TCellID> cellIDs;
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2F)[m_type_id].values(cellIDs);
@@ -1222,7 +1259,7 @@ return 0;
         }
         else
             throw GMDSException("Not yet implemented");
-        
+
         ACells.resize(cellIDs.size());
         for(unsigned int i=0;i<cellIDs.size();i++){
             ACells[i] =m_owner->m_faces_container->buildFace(cellIDs[i]);
@@ -1233,7 +1270,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2R))
             throw GMDSException("R2R adjacency is not supported by the mesh model");
-        
+
         std::vector<TCellID> cellIDs;
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2R)[m_type_id].values(cellIDs);
@@ -1252,7 +1289,7 @@ return 0;
         }
         else
             throw GMDSException("Not yet implemented");
-        
+
         ACells.resize(cellIDs.size());
         for(unsigned int i=0;i<cellIDs.size();i++){
             ACells[i] =m_regions_container->buildRegion(cellIDs[i]);
@@ -1263,7 +1300,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2N))
             throw GMDSException("R2N adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2N)[m_type_id].values(ACells);
         }
@@ -1285,7 +1322,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2E))
             throw GMDSException("R2E adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2E)[m_type_id].values(ACells);
         }
@@ -1307,7 +1344,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2F))
             throw GMDSException("R2F adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2F)[m_type_id].values(ACells);
         }
@@ -1329,7 +1366,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2R))
             throw GMDSException("R2R adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2R)[m_type_id].values(ACells);
         }
@@ -1351,7 +1388,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2N))
             throw GMDSException("R2N adjacency is not supported by the mesh model");
-        
+
         std::vector<TCellID> cellIDs;
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2N)[m_type_id].allValues(cellIDs);
@@ -1370,7 +1407,7 @@ return 0;
         }
         else
             throw GMDSException("Not yet implemented");
-        
+
         ACells.resize(cellIDs.size());
         for(unsigned int i=0;i<cellIDs.size();i++){
             ACells[i] =m_owner->m_nodes_container->buildNode(cellIDs[i]);
@@ -1381,7 +1418,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2E))
             throw GMDSException("R2E adjacency is not supported by the mesh model");
-        
+
         std::vector<TCellID> cellIDs;
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2E)[m_type_id].allValues(cellIDs);
@@ -1400,7 +1437,7 @@ return 0;
         }
         else
             throw GMDSException("Not yet implemented");
-        
+
         ACells.resize(cellIDs.size());
         for(unsigned int i=0;i<cellIDs.size();i++){
             ACells[i] =m_owner->m_edges_container->buildEdge(cellIDs[i]);
@@ -1411,7 +1448,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2F))
             throw GMDSException("R2F adjacency is not supported by the mesh model");
-        
+
         std::vector<TCellID> cellIDs;
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2F)[m_type_id].allValues(cellIDs);
@@ -1430,7 +1467,7 @@ return 0;
         }
         else
             throw GMDSException("Not yet implemented");
-        
+
         ACells.resize(cellIDs.size());
         for(unsigned int i=0;i<cellIDs.size();i++){
             ACells[i] =m_owner->m_faces_container->buildFace(cellIDs[i]);
@@ -1441,7 +1478,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2R))
             throw GMDSException("R2R adjacency is not supported by the mesh model");
-        
+
         std::vector<TCellID> cellIDs;
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2R)[m_type_id].allValues(cellIDs);
@@ -1460,7 +1497,7 @@ return 0;
         }
         else
             throw GMDSException("Not yet implemented");
-        
+
         ACells.resize(cellIDs.size());
         for(unsigned int i=0;i<cellIDs.size();i++){
             ACells[i] =m_regions_container->buildRegion(cellIDs[i]);
@@ -1495,16 +1532,16 @@ return 0;
     {
         if(!m_owner->m_model.has(R2E))
             throw GMDSException("R2E adjacency is not supported by the mesh model");
-            
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2E)[m_type_id].allValues(ACells);
-        }   
+        }
         else if (m_type==GMDS_HEX){
             (*m_regions_container->m_H2E)[m_type_id].allValues(ACells);
-        }   
+        }
         else if (m_type==GMDS_PYRAMID){
             (*m_regions_container->m_PY2E)[m_type_id].allValues(ACells);
-        }   
+        }
         else if (m_type==GMDS_PRISM3){
             (*m_regions_container->m_PR2E)[m_type_id].allValues(ACells);
         }
@@ -1519,16 +1556,16 @@ return 0;
     {
         if(!m_owner->m_model.has(R2F))
             throw GMDSException("R2F adjacency is not supported by the mesh model");
-            
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2F)[m_type_id].allValues(ACells);
-        }   
+        }
         else if (m_type==GMDS_HEX){
             (*m_regions_container->m_H2F)[m_type_id].allValues(ACells);
-        }   
+        }
         else if (m_type==GMDS_PYRAMID){
             (*m_regions_container->m_PY2F)[m_type_id].allValues(ACells);
-        }   
+        }
         else if (m_type==GMDS_PRISM3){
             (*m_regions_container->m_PR2F)[m_type_id].allValues(ACells);
         }
@@ -1543,16 +1580,16 @@ return 0;
     {
         if(!m_owner->m_model.has(R2R))
             throw GMDSException("R2R adjacency is not supported by the mesh model");
-            
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2R)[m_type_id].allValues(ACells);
-        }   
+        }
         else if (m_type==GMDS_HEX){
             (*m_regions_container->m_H2R)[m_type_id].allValues(ACells);
-        }   
+        }
         else if (m_type==GMDS_PYRAMID){
             (*m_regions_container->m_PY2R)[m_type_id].allValues(ACells);
-        }   
+        }
         else if (m_type==GMDS_PRISM3){
             (*m_regions_container->m_PR2R)[m_type_id].allValues(ACells);
         }
@@ -1572,25 +1609,25 @@ return 0;
         if(m_type==GMDS_TETRA){
             if(nb_cells!=ACells.size())
                 throw GMDSException("Invalid number of adj. entities");
-            
+
             (*m_regions_container->m_T2N)[m_type_id]=ACells;
         }
         else if (m_type==GMDS_HEX){
             if(nb_cells!=ACells.size())
                 throw GMDSException("Invalid number of adj. entities");
-            
+
             (*m_regions_container->m_H2N)[m_type_id]=ACells;
         }
         else if (m_type==GMDS_PYRAMID){
             if(nb_cells!=ACells.size())
                 throw GMDSException("Invalid number of adj. entities");
-            
+
             (*m_regions_container->m_PY2N)[m_type_id]=ACells;
         }
         else if (m_type==GMDS_PRISM3){
             if(nb_cells!=ACells.size())
                 throw GMDSException("Invalid number of adj. entities");
-            
+
             (*m_regions_container->m_PR2N)[m_type_id]=ACells;
         }
         else if (m_type==GMDS_POLYHEDRA){
@@ -1608,7 +1645,7 @@ return 0;
         if(m_type==GMDS_TETRA){
             if(nb_cells!=ACells.size())
                 throw GMDSException("Invalid number of adj. entities");
-            
+
             (*m_regions_container->m_T2E)[m_type_id]=ACells;
         }
         else if (m_type==GMDS_HEX){
@@ -1640,7 +1677,7 @@ return 0;
         if(m_type==GMDS_TETRA){
             if(nb_cells!=ACells.size())
                 throw GMDSException("Invalid number of adj. entities");
-            
+
             (*m_regions_container->m_T2F)[m_type_id]=ACells;
         }
         else if (m_type==GMDS_HEX){
@@ -1660,13 +1697,13 @@ return 0;
         else if (m_type==GMDS_PYRAMID){
             if(nb_cells!=ACells.size())
                 throw GMDSException("Invalid number of adj. entities");
-            
+
             (*m_regions_container->m_PY2F)[m_type_id]=ACells;
         }
         else if (m_type==GMDS_PRISM3){
             if(nb_cells!=ACells.size())
                 throw GMDSException("Invalid number of adj. entities");
-            
+
             (*m_regions_container->m_PR2F)[m_type_id]=ACells;
         }
         else if (m_type==GMDS_POLYHEDRA){
@@ -1684,29 +1721,29 @@ return 0;
         if(m_type==GMDS_TETRA){
             if(nb_cells!=ACells.size())
                 throw GMDSException("Invalid number of adj. entities");
-            
+
             (*m_regions_container->m_T2R)[m_type_id]=ACells;
         }
         else if (m_type==GMDS_HEX){
             if(nb_cells!=ACells.size())
                 throw GMDSException("Invalid number of adj. entities");
-            
+
             (*m_regions_container->m_H2R)[m_type_id]=ACells;
         }
         else if (m_type==GMDS_PYRAMID){
             if(nb_cells!=ACells.size())
                 throw GMDSException("Invalid number of adj. entities");
-            
+
             (*m_regions_container->m_PY2R)[m_type_id]=ACells;
         }
         else if (m_type==GMDS_PRISM3){
             if(nb_cells!=ACells.size())
                 throw GMDSException("Invalid number of adj. entities");
-            
+
             (*m_regions_container->m_PR2R)[m_type_id]=ACells;
         }
         else if (m_type==GMDS_POLYHEDRA){
-            
+
             (*m_regions_container->m_P2R)[m_type_id]=ACells;
         }
     }
@@ -1715,7 +1752,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2N))
             throw GMDSException("R2N adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2N)[m_type_id].add(AID);
         }
@@ -1737,7 +1774,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2E))
             throw GMDSException("R2E adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2E)[m_type_id].add(AID);
         }
@@ -1759,7 +1796,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2F))
             throw GMDSException("R2F adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2F)[m_type_id].add(AID);
         }
@@ -1781,7 +1818,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2R))
             throw GMDSException("R2R adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2R)[m_type_id].add(AID);
         }
@@ -1803,7 +1840,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2N))
             throw GMDSException("R2N adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2N)[m_type_id].del(AID);
         }
@@ -1825,7 +1862,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2E))
             throw GMDSException("R2N adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2E)[m_type_id].del(AID);
         }
@@ -1847,7 +1884,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2F))
             throw GMDSException("R2F adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2F)[m_type_id].del(AID);
         }
@@ -1869,7 +1906,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2R))
             throw GMDSException("R2R adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2R)[m_type_id].del(AID);
         }
@@ -1891,7 +1928,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2N))
             throw GMDSException("R2R adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2N)[m_type_id].replace(AID1, AID2);
         }
@@ -1913,7 +1950,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2E))
             throw GMDSException("R2R adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2E)[m_type_id].replace(AID1, AID2);
         }
@@ -1935,7 +1972,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2F))
             throw GMDSException("R2R adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2F)[m_type_id].replace(AID1, AID2);
         }
@@ -1957,7 +1994,7 @@ return 0;
     {
         if(!m_owner->m_model.has(R2R))
             throw GMDSException("R2R adjacency is not supported by the mesh model");
-        
+
         if(m_type==GMDS_TETRA){
             (*m_regions_container->m_T2R)[m_type_id].replace(AID1, AID2);
         }

@@ -11,6 +11,8 @@
 /*----------------------------------------------------------------------------*/
 #include <iostream>
 /*----------------------------------------------------------------------------*/
+#include <Eigen/Eigen>
+/*----------------------------------------------------------------------------*/
 // gmds file headers
 /*----------------------------------------------------------------------------*/
 #include <gmds/utils/CommonTypes.h>
@@ -129,6 +131,21 @@ public:
          * \return the scaled jacobian
          */
         double computeNormalizedScaledJacobian() const;
+	/*------------------------------------------------------------------------*/
+			        /** \brief  Compute the quality of cell based on the common
+							 * tetrahedron quality (see summer school alauzet)
+			         *
+			         * \return the scaled jacobian
+			    */
+			 double computeQuality() const;
+	/*------------------------------------------------------------------------*/
+		 			    /** \brief  Compute the quality of cell based on the common
+		 					 * tetrahedron quality (see summer school alauzet)
+		 			     *
+		 			     * \return the scaled jacobian
+		 			  */
+		 		double computeQualityWithMetric(const Eigen::Matrix3d& m0, const Eigen::Matrix3d& m1,
+									const Eigen::Matrix3d& m2, const Eigen::Matrix3d& m3) const;
 
 	/*------------------------------------------------------------------------*/
         /** \brief  Compute the mean ratio of the tetrahedron.

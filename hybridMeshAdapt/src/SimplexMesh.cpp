@@ -677,8 +677,33 @@ TSimplexID SimplexMesh::addTriangle(const simplicesNode::SimplicesNode& ANode0,
 
   return idx;
 }
+/*---------------------------------------------------------------------------*/
+std::vector<double> SimplexMesh::getMinMaxCoord()
+{
+  std::vector<double> ans{};
+  std::set<double> x_;
+  std::set<double> y_;
+  std::set<double> z_;
+  for(unsigned int n = 0 ; n < m_node_ids.capacity(); n++)
+  {
+    if(m_node_ids[n] != 0)
+    {
+      x_.insert(SimplicesNode(this, n).getCoords().X());
+      y_.insert(SimplicesNode(this, n).getCoords().Y());
+      z_.insert(SimplicesNode(this, n).getCoords().Z());
+    }
+  }
 
+  ans.push_back(*(x_.begin()));
+  ans.push_back(*(x_.end()));
 
+  ans.push_back(*(y_.begin()));
+  ans.push_back(*(y_.end()));
+
+  ans.push_back(*(z_.begin()));
+  ans.push_back(*(z_.end()));
+  return ans;
+}
 /*---------------------------------------------------------------------------*/
 TSimplexID SimplexMesh::addTriangle(const TInt AIndexPoint_0,
                        const TInt AIndexPoint_1,
@@ -3623,7 +3648,6 @@ void SimplexMesh::checkSimplicesContenaing_TetOnly(const gmds::math::Point& pt, 
       if(m_tet_ids[t] != 0)
       {
         std::vector<double> uvwt_ = SimplicesCell(this, t).uvwt(pt);
-        //std::cout << "uvwt_ -> " << uvwt_[0] << " | " << uvwt_[1] << " | " << uvwt_[2] << " | " << uvwt_[3] << std::endl;
         if(uvwt_[0] >= -epsilon  && uvwt_[1] >= -epsilon && uvwt_[2] >= -epsilon && uvwt_[3] >= -epsilon)
         {
           tetraContainingPt = t;
@@ -3636,6 +3660,9 @@ void SimplexMesh::checkSimplicesContenaing_TetOnly(const gmds::math::Point& pt, 
 /*---------------------------------------------------------------------------*/
 void SimplexMesh::setMarkedTet(const gmds::BitVector& markedTet)
 {
+  std::cout << "setMarkedTet " << std::endl;
+  std::cout << "markedTet.size() -> "<<  markedTet.size()<< std::endl;
+  std::cout << "m_tet_ids.size() -> "<<  m_tet_ids.size()<< std::endl;
   for(unsigned int i = 0 ; i < markedTet.capacity() ; i++)
   {
     if(markedTet[i] == 0)
@@ -3643,6 +3670,7 @@ void SimplexMesh::setMarkedTet(const gmds::BitVector& markedTet)
       m_tet_ids.unselect(i);
     }
   }
+  std::cout << "m_tet_ids.size() -> "<<  m_tet_ids.size()<< std::endl;
 }
 /*---------------------------------------------------------------------------*/
 TSimplexID SimplexMesh::simplexBarycentricLookUp(const TSimplexID currentSimplex, const math::Point& pt, BitVector& cyclingCheck)
@@ -4634,6 +4662,19 @@ void SimplexMesh::setAnalyticMetricFromMesh(const TInt node, SimplexMesh* sm, st
   (*metric)[node] = m;
 }
 /******************************************************************************/
+void SimplexMesh::setMetric(const TInt node, const Eigen::Matrix3d& m)
+{
+  Variable<Eigen::Matrix3d>* metric = nullptr;
+  try{
+    metric = getVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }catch (gmds::GMDSException e)
+  {
+    metric = newVariable<Eigen::Matrix3d, SimplicesNode>("NODE_METRIC");
+  }
+
+  (*metric)[node] = m;
+}
+/******************************************************************************/
 void SimplexMesh::setAnalyticMetric(const TInt node, Octree* octree)
 {
   Eigen::Matrix3d m =  Eigen::Matrix3d::Zero();
@@ -4818,20 +4859,7 @@ bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>&
 {
   frames.clear();
   frames.resize(3, math::Vector3d{0.0, 0.0, 0.0});
-  //frames.resize(6, math::Vector3d{0.0, 0.0, 0.0});
-  /*math::Vector3d e1 = math::Vector3d({sqrt(2.0)/2, 0.0, -sqrt(2.0)/2});
-  math::Vector3d e2({0.0, 1.0, 0.0});
-  math::Vector3d e3({sqrt(2.0)/2, 0.0, sqrt(2.0)/2});
-  //math::Vector3d e1 = math::Vector3d({1.0, 0.0, 0.0});
-  //math::Vector3d e2({0.0, 1.0, 0.0});
-  //math::Vector3d e3({0.0, 0.0, 1.0});
-  frames.push_back(e1);
-  frames.push_back(e2);
-  frames.push_back(e3);
-  return false;
 
-  frames.clear();
-  frames.resize(3);*/
   Variable<math::Vector3d>* FF_X_NEG = nullptr;
   Variable<math::Vector3d>* FF_X_POS = nullptr;
   Variable<math::Vector3d>* FF_Y_NEG = nullptr;
@@ -4851,22 +4879,15 @@ bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>&
     throw gmds::GMDSException(e);
   }
 
-  /*frames.clear();
-  frames.resize(3);
-  TInt n = 0;
-  frames[0] = (*FF_X_POS)[n];
-  frames[1] = (*FF_Y_POS)[n];
-  frames[2] = (*FF_Z_POS)[n];
-  return false;*/
-
   TSimplexID tetraContainingPt = std::numeric_limits<TSimplexID>::min();
   bool flag = true;
   checkSimplicesContenaing_TetOnly(pt, tetraContainingPt, flag, nearSimplex);
+
   if(!flag){
     return false;
   }
 
-  //checkSimplicesContenaing(pt, tetraContainingPt, std::numeric_limits<int>::min());
+
 
   if(tetraContainingPt != std::numeric_limits<TSimplexID>::min())
   {
@@ -4883,6 +4904,7 @@ bool SimplexMesh::getFrameAt(const math::Point& pt, std::vector<math::Vector3d>&
     frames[1] = (*FF_Y_POS)[nodes[0]];
     frames[2] = (*FF_Z_POS)[nodes[0]];
     return true;
+
     for(unsigned int nodeId = 0 ; nodeId < sizeCell ; nodeId++)
     {
       framesNode.push_back(std::vector<math::Vector3d>{(*FF_X_NEG)[nodes[nodeId]], (*FF_X_POS)[nodes[nodeId]], (*FF_Y_NEG)[nodes[nodeId]],
@@ -6437,11 +6459,11 @@ bool SimplexMesh::edgeRemove(const TInt nodeA, const TInt nodeB)
   return status;
 }
 /******************************************************************************/
-unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std::vector<TInt>& deletedNodes)
+unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std::vector<TInt>& deletedNodes, std::vector<TInt>& nodesNotDeleted)
 {
   gmds::ISimplexMeshIOService ioService(this);
   static int cpt = 0;
-  unsigned int edgesRemovedNbr = 0;
+  unsigned int nodeRemovedNbr = 0;
   TInt border = std::numeric_limits<TInt>::min();
   Variable<int>* BND_VERTEX_COLOR = getVariable<int,SimplicesNode>("BND_VERTEX_COLOR");
   Variable<int>* BND_CURVE_COLOR = getVariable<int,SimplicesNode>("BND_CURVE_COLOR");
@@ -6552,30 +6574,26 @@ unsigned int SimplexMesh::edgesRemove(const gmds::BitVector& nodeBitVector, std:
                 }
               }
               SimplicesNode nodeToInsert(this, data.node);
-              //std::cout << "node being inserted --> " << data.node << " Of dimension -> " <<  data.dim_Nj << " and label -> " << data.index_Nj << std::endl;
-              //std::cout << "from node --> " << node << " Of dimension -> " <<  dim_Ni << " and label -> " << index_Ni << std::endl;
-
-              //if(dim_Ni == 4 && (data.dim_Nj == 0 || data.dim_Nj == 1 || data.dim_Nj == 2)){continue;}
               const std::multimap<TInt, TInt> facesAlreadyBuilt{};
               std::vector<TSimplexID> cellsCreated{};
               PointInsertion(this, nodeToInsert, criterionRAIS, status, ball, surfaceNodesAdded, deletedNodes, facesAlreadyBuilt, cellsCreated);
               if(status)
               {
-                edgesRemovedNbr++;
+                nodeRemovedNbr++;
                 break;
               }
             }
           }
           if(!status)
           {
-            nodeNotInserted++;
+            nodesNotDeleted.push_back(node);
           }
         }
       }
     }
   }
 
-  return edgesRemovedNbr;
+  return nodeRemovedNbr;
 }
 /******************************************************************************/
 std::vector<TSimplexID> SimplexMesh::initializeCavityWith(const TInt nodeAidx, const TInt nodeBidx)
@@ -6662,32 +6680,30 @@ unsigned int SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, co
         if(nodeA.shell(nodeB).size() == 0)
         {
           std::vector<TInt> cavity = initializeCavityWith(nodeA.getGlobalNode(), nodeB.getGlobalNode());
-          //for(auto const & tet : cavity){std::cout << "tet in cav -> " << tet << std::endl;}
           CriterionRAIS criterionRAIS(new VolumeCriterion());
           bool status = false;
           std::vector<TInt> deletedNodes{};
           const std::multimap<TInt, TInt> facesAlreadyBuilt{};
           std::vector<TSimplexID> createdCells{};
-          //std::cout << SimplicesNode(this, edge.first) << std::endl;
-          //std::cout << SimplicesNode(this, edge.second) << std::endl;
-          //if(cpt > 500)
-          {
-
-            //gmds::VTKWriter vtkWriterTEST(&ioService);
-            //vtkWriterTEST.setCellOptions(gmds::N|gmds::R|gmds::F);
-            //vtkWriterTEST.setDataOptions(gmds::N|gmds::R|gmds::F);
-            //vtkWriterTEST.write("testEdge4_CPT_" + std::to_string(cpt) +  ".vtk");
-            //std::cout << "CPT -> " << cpt << std::endl;
-          }
           PointInsertion(this, nodeB, criterionRAIS, status, cavity, nodeBitVector, deletedNodes, facesAlreadyBuilt, createdCells);
           //cpt++;
-          if(!status)
+          if(status)
           {
-            //std::cout << "edge [" << nodeAidx << " ; " << nodeBidx << "] was not built " << std::endl;
+            cpt_EdgeBuilt = cpt_EdgeBuilt + 1.0;
           }
           else
           {
-            cpt_EdgeBuilt = cpt_EdgeBuilt + 1.0;
+            std::vector<TInt> cavity = initializeCavityWith(nodeB.getGlobalNode(), nodeA.getGlobalNode());
+            CriterionRAIS criterionRAIS(new VolumeCriterion());
+            bool status = false;
+            std::vector<TInt> deletedNodes{};
+            const std::multimap<TInt, TInt> facesAlreadyBuilt{};
+            std::vector<TSimplexID> createdCells{};
+            PointInsertion(this, nodeA, criterionRAIS, status, cavity, nodeBitVector, deletedNodes, facesAlreadyBuilt, createdCells);
+            if(status)
+            {
+              cpt_EdgeBuilt = cpt_EdgeBuilt + 1.0;
+            }
           }
         }
         else
@@ -6698,6 +6714,7 @@ unsigned int SimplexMesh::buildEdges(const std::multimap<TInt, TInt>& AEdges, co
     }
   }
 
+  std::cout << "cpt_EdgeAlreadyBuild -> " << cpt_EdgeAlreadyBuild << std::endl;
   return cpt_EdgeBuilt;
 }
 /******************************************************************************/
