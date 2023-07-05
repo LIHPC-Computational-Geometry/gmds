@@ -56,8 +56,8 @@ namespace gmds{
             Vector3d X() const { return m_v[0];}
             Vector3d Y() const { return m_v[1];}
             Vector3d Z() const { return m_v[2];}
-            Vector3d get(const int AIndex) const;
-            Vector3d operator[](const int AIndex) const;
+            Vector3d get(int AIndex) const;
+            Vector3d operator[](int AIndex) const;
             /*------------------------------------------------------------*/
             /*  \brief Return the six vector corresponding to the chirral
              *  rotation group of this

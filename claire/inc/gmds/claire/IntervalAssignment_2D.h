@@ -32,7 +32,7 @@ class LIB_GMDS_CLAIRE_API IntervalAssignment_2D
          *  @param[in] Aparams_aero parameters for aero algorithm
          *
 	 */
-	IntervalAssignment_2D(Blocking2D* ABlocking2D, ParamsAero Aparams_aero);
+	IntervalAssignment_2D(Blocking2D* ABlocking2D, ParamsAero& Aparams_aero);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -72,7 +72,7 @@ class LIB_GMDS_CLAIRE_API IntervalAssignment_2D
 		*
 		* \return the number of cells for all the edges of the chord
 	 */
-	int ComputeChordDiscretization(std::vector<TCellID> chord);
+	int ComputeChordDiscretization(std::vector<TCellID>& chord);
 	/*-------------------------------------------------------------------*/
 
  private:

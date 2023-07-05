@@ -28,7 +28,7 @@ namespace gmds{
 		friend class Region;
 		friend class Mesh;
 	public:
-		NodeContainer(Mesh* AMesh);
+		explicit NodeContainer(Mesh* AMesh);
 
 		virtual ~NodeContainer();
 
@@ -54,7 +54,7 @@ namespace gmds{
          *  \param ADim the dimension of the cells we want to store the adjacency
          *  			to
          */
-		void addConnectivityContainers(const TInt ADim);
+		void addConnectivityContainers(TInt ADim);
 
 		/*------------------------------------------------------------------------*/
 		/** \brief remove the containers for accessing to ADim-dimensional cells
@@ -62,7 +62,7 @@ namespace gmds{
          *  \param ADim the dimension of the cells we want to suppress the
          *  			adjacency to
          */
-		void removeConnectivityContainers(const TInt ADim);
+		void removeConnectivityContainers(TInt ADim);
 
 		Node add(const TCoord& AX, const TCoord& AY, const TCoord& AZ);
 
@@ -75,17 +75,15 @@ namespace gmds{
 
 
             using self_type = iterator;
-            using iterator_category = std::forward_iterator_tag;
-            using value_type = TInt;
-            using difference_type = int;
-            using pointer = TInt*;
-            using reference = TInt&;
+            using value_type = TCellID;
+            using pointer = TCellID*;
+            using reference = TCellID&;
 
             iterator(NodeContainer* AContainer, bool ABegin):m_it(AContainer->m_node_ids.begin()) {
                 if(!ABegin)
                     m_it=AContainer->m_node_ids.end();
             }
-            iterator(const iterator& AIt):m_it(AIt.m_it){}
+            iterator(const iterator& AIt)= default;
 
 
             self_type operator++() {
@@ -106,12 +104,12 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief Provide an iterator onto the first element of this container
          */
-        iterator begin() {return iterator(this,true);};
+        iterator begin() {return {this,true};};
 
         /*------------------------------------------------------------------------*/
         /** \brief Provide an iterator onto the last element of this container
          */
-         iterator end() {return iterator(this,false);};
+         iterator end() {return {this,false};};
 
 		/*------------------------------------------------------------------------*/
 		/** \brief Get the node infos for the node of id AID
@@ -148,7 +146,7 @@ namespace gmds{
 		}
 
 		void clear();
-		void resize(const TInt);
+		void resize(TInt);
 
 		/*------------------------------------------------------------------------*/
 		/** \brief  This method is necessary when you want to regularize the
@@ -184,7 +182,7 @@ namespace gmds{
 	protected:
 		Node add(const TCoord& AX, const TCoord& AY, const TCoord& AZ, const TCellID&);
 
-		Node buildNode(const TInt) const;
+		Node buildNode(TInt) const;
 	protected:
 
 		Mesh* m_mesh;

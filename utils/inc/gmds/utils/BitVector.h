@@ -22,7 +22,7 @@ namespace gmds{
     {
     public:
 
-        typedef int size_type;
+        typedef TCellID size_type;
 
 
         class iterator {
@@ -31,11 +31,9 @@ namespace gmds{
             friend class BitVector;
 
             using self_type = iterator;
-            using iterator_category = std::forward_iterator_tag;
-            using value_type = TInt;
-            using difference_type = int;
-            using pointer = TInt*;
-            using reference = TInt&;
+            using value_type = size_type;
+            using pointer = size_type*;
+            using reference = size_type&;
 
             iterator(BitVector* AContainer):container_(AContainer),current_(0){
                 // we value the location of the first real item
@@ -68,10 +66,10 @@ namespace gmds{
         public:
             using self_type= const_iterator;
             using iterator_category = std::forward_iterator_tag;
-            using value_type = TInt;
+            using value_type = size_type;
             using difference_type = int;
-            using pointer = TInt*;
-            using reference = TInt&;
+            using pointer = size_type*;
+            using reference = size_type&;
 
 
             const_iterator(const BitVector* AContainer):container_(AContainer),current_(0){

@@ -16,7 +16,7 @@ namespace gmds{
 /*----------------------------------------------------------------------------*/
 Cell::Cell(Mesh* AMesh,const ECellType& AType, const TCellID& AID)
 :m_owner(AMesh), m_type(AType), m_id(AID)
-{;}
+{}
 /*----------------------------------------------------------------------------*/
 TCellID Cell::id() const
 {
@@ -35,22 +35,22 @@ Cell::computeBoundingBox(TCoord minXYZ[3], TCoord maxXYZ[3]) const
 		throw GMDSException("Cell::computeBoundingBox not available for nodes.");
 	}
 
-        minXYZ[0] =  HUGE_VALF;
-        minXYZ[1] =  HUGE_VALF;
-        minXYZ[2] =  HUGE_VALF;
-        maxXYZ[0] = -HUGE_VALF;
-        maxXYZ[1] = -HUGE_VALF;
-        maxXYZ[2] = -HUGE_VALF;
+        minXYZ[0] =  HUGE_VAL;
+        minXYZ[1] =  HUGE_VAL;
+        minXYZ[2] =  HUGE_VAL;
+        maxXYZ[0] = -HUGE_VAL;
+        maxXYZ[1] = -HUGE_VAL;
+        maxXYZ[2] = -HUGE_VAL;
 
 	std::vector<Node> nodes = get<Node>();
 
-        for(int iNode=0; iNode<nodes.size(); iNode++) {
-                if(nodes[iNode].X() < minXYZ[0]) minXYZ[0] = nodes[iNode].X();
-                if(nodes[iNode].Y() < minXYZ[1]) minXYZ[1] = nodes[iNode].Y();
-                if(nodes[iNode].Z() < minXYZ[2]) minXYZ[2] = nodes[iNode].Z();
-                if(nodes[iNode].X() > maxXYZ[0]) maxXYZ[0] = nodes[iNode].X();
-                if(nodes[iNode].Y() > maxXYZ[1]) maxXYZ[1] = nodes[iNode].Y();
-                if(nodes[iNode].Z() > maxXYZ[2]) maxXYZ[2] = nodes[iNode].Z();
+        for(auto & node : nodes) {
+                if(node.X() < minXYZ[0]) minXYZ[0] = node.X();
+                if(node.Y() < minXYZ[1]) minXYZ[1] = node.Y();
+                if(node.Z() < minXYZ[2]) minXYZ[2] = node.Z();
+                if(node.X() > maxXYZ[0]) maxXYZ[0] = node.X();
+                if(node.Y() > maxXYZ[1]) maxXYZ[1] = node.Y();
+                if(node.Z() > maxXYZ[2]) maxXYZ[2] = node.Z();
         }
 }
 /*------------------------------------------------------------------------*/

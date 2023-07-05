@@ -32,7 +32,7 @@ class LIB_GMDS_CLAIRE_API AbstractLevelSet{
 	/** @brief Constructor.
          *  @param
 	 */
-	AbstractLevelSet(Mesh *AMesh, int AmarkFrontNodes, Variable<double>* Adistance);
+	AbstractLevelSet(Mesh *AMesh, TInt AmarkFrontNodes, Variable<double>* Adistance);
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
 	 */
@@ -62,7 +62,7 @@ class LIB_GMDS_CLAIRE_API AbstractLevelSet{
 	/** mesh we work on */
 	Mesh* m_mesh;
 	/** ids of the nodes on the front to advance */
-	int m_markFrontNodes;
+	TInt m_markFrontNodes;
 	/** Tas des couple (distance provisoire, liste d'id) */
 	DistanceMap m_DistanceMap;
 	/** carte des distances par rapport au front concerné */

@@ -3,9 +3,7 @@
 //
 
 /*------------------------------------------------------------------------*/
-#include <gmds/claire/Utils.h>
 #include <gmds/claire/AeroBoundaries_3D.h>
-#include <iostream>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
@@ -28,7 +26,7 @@ void AeroBoundaries_3D::MarkBoundariesNodes(){
 		if (f.get<Region>().size() == 1)
 		{
 			std::vector<Node> face_nodes = f.get<Node>() ;
-			for (auto n:face_nodes){
+			for (auto const &n:face_nodes){
 				m_bnd_nodes_ids.push_back(n.id());
 			}
 		}

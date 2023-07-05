@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/sheet/Pillow2D.h>
-#include <gmds/utils/LocalCellTopology.h>
 /*----------------------------------------------------------------------------*/
 #include <gmds/math/Triangle.h>
 /*----------------------------------------------------------------------------*/
@@ -177,7 +176,7 @@ bool Pillow2D::execute(const std::vector<TCellID>& AFaceIDs, bool AWithCheck)
             std::vector<TCellID> adj_fac = getAdjacentFaces(ei);
             if(adj_fac.size()==1){
                 //means boundary face
-                if(m_escape_bnd==false){
+                if(!m_escape_bnd){
                     bnd_edges.insert(ei);
                 }
             }

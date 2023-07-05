@@ -67,7 +67,7 @@ namespace kmds {
                 init(AID1,AID2);
             }
 
-            ~FakeEdge(){;}
+            ~FakeEdge(){}
 
             std::vector<TCellID> node_ids() const {
                 std::vector<TCellID> node_ids;
@@ -128,7 +128,7 @@ namespace kmds {
              */
             struct FaceID{
 
-                FaceID(){;}
+                FaceID(){}
                 FaceID(const std::vector<TCellID>& AIDs){tab_ = AIDs;}
 
                 void set(const std::vector<TCellID>& AIDs){tab_ = AIDs;}
@@ -165,7 +165,7 @@ namespace kmds {
                 init(ANodeIDs);
             }
 
-            ~FakeFace(){;}
+            ~FakeFace(){}
 
             FaceID getID() const {return id_;}
 

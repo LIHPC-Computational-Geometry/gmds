@@ -78,7 +78,7 @@ public:
          * \param APoints an array of points
          *
          */
-	Hexahedron(Point APoints[8]);
+	explicit Hexahedron(Point APoints[8]);
 
 	/*------------------------------------------------------------------------*/
         /** \brief  constructor
@@ -86,7 +86,7 @@ public:
          * \param APoints a vector of points
          *
          */
-        Hexahedron(const std::vector<Point>& APoints);
+        explicit Hexahedron(const std::vector<Point>& APoints);
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  copy constructor
@@ -121,7 +121,7 @@ public:
          *
          * \return a point
          */
-        const Point getCenter() const;
+        Point getCenter() const;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Compute the signed volume of the hexahedron. It is computed as
@@ -158,7 +158,7 @@ public:
          *
          * \return the mean ratio
          */
-        double computeMeanRatio() const;
+        static double computeMeanRatio() ;
 
 	/*------------------------------------------------------------------------*/
         /** \brief  Compute the mean edge length of the hexahedron.
@@ -180,7 +180,7 @@ public:
  	 	 *          other.
          * \param AT a triangle
          */
-        bool intersect(const Triangle& AT, const bool AProper = false) const;
+        bool intersect(const Triangle& AT, bool AProper = false) const;
 
 				bool isValid() const;
 

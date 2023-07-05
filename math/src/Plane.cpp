@@ -15,9 +15,7 @@ namespace gmds{
     namespace math{
         /*----------------------------------------------------------------------------*/
         Plane::Plane()
-        {
-            
-        }
+        = default;
         /*----------------------------------------------------------------------------*/
         Plane::Plane(const Point&AP, const Vector3d& AN)
         : m_pnt(AP),m_normal(AN)
@@ -113,12 +111,10 @@ namespace gmds{
         bool Plane::intersect(const Segment& AS, const bool AProper) const
         {
             if (isIn(AS.getPoint(0)) && isIn(AS.getPoint(1)))
-                return (AProper) ? false : true;
+                return !(AProper);
             
-            if((this->isStrictlyOnLeft(AS.getPoint(0)) == true &&
-                this->isStrictlyOnLeft(AS.getPoint(1)) == false) ||
-               (this->isStrictlyOnLeft(AS.getPoint(0)) == false &&
-                this->isStrictlyOnLeft(AS.getPoint(1)) == true))
+            if((this->isStrictlyOnLeft(AS.getPoint(0)) && !this->isStrictlyOnLeft(AS.getPoint(1))) ||
+               (!this->isStrictlyOnLeft(AS.getPoint(0)) && this->isStrictlyOnLeft(AS.getPoint(1))))
                 return true;
 
             return false;
@@ -167,7 +163,7 @@ namespace gmds{
             {
                 //we have parallel planes
                 if (isZero(m_normal.dot(AP.m_pnt-m_pnt)))
-                    return (AProper) ? false : true; // the same plane !)
+                    return !(AProper); // the same plane !)
                 else
                     return false; //different planes
             }

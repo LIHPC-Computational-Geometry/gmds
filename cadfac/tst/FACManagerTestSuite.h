@@ -78,6 +78,12 @@ TEST(FacManagerTestSuite, fromSurfMesh)
         math::Point c(0,0,0);
         ASSERT_NEAR(c.distance(p->point()),8.66,0.01);
     }
+
+	 ASSERT_EQ(8, manager.getPoints().size());
+	 ASSERT_EQ(12, manager.getCurves().size());
+	 ASSERT_EQ(6, manager.getSurfaces().size());
+	 ASSERT_EQ(1, manager.getVolumes().size());
+
 }
 /*----------------------------------------------------------------------------*/
 TEST(FacManagerTestSuite, surf_projection)
@@ -175,4 +181,43 @@ TEST(FacManagerTestSuite, project)
 	c->project(pc);
 	//std::cout<<ps<<std::endl;
 	ASSERT_NEAR(pc.distance(pc_on), 0., 10e-15);
+}
+/*----------------------------------------------------------------------------*/
+TEST(FacManagerTestSuite, boundingbox)
+{
+	// WE WRITE
+	gmds::Mesh m_vol(gmds::MeshModel(DIM3|R|F|E|N|
+	                                 R2N|R2F|R2E|
+	                                 F2N|F2R|F2E|
+	                                 E2F|E2N|N2E));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/B1_tet.vtk";
+
+	gmds::IGMeshIOService ioService(&m_vol);
+
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::R);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m_vol);
+	doc.buildFacesAndR2F();
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+
+	cad::FACManager manager;
+	manager.initFrom3DMesh(&m_vol);
+
+	cad::GeomVolume* v0 = manager.getVolume(1);
+	ASSERT_EQ(v0->id(), 1);
+
+	TCoord minXYZ[3];
+	TCoord maxXYZ[3];
+	v0->computeBoundingBox(minXYZ,maxXYZ);
+	ASSERT_DOUBLE_EQ(minXYZ[0], -245.405);
+	ASSERT_DOUBLE_EQ(minXYZ[1], -245.407);
+	ASSERT_DOUBLE_EQ(minXYZ[2], -122.702);
+	ASSERT_DOUBLE_EQ(maxXYZ[0],  638.053);
+	ASSERT_DOUBLE_EQ(maxXYZ[1],  245.405);
+	ASSERT_DOUBLE_EQ(maxXYZ[2],  368.107);
 }

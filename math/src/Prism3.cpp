@@ -73,23 +73,23 @@ Prism3::Prism3(const Prism3& APrsm)
 	m_pnts[5] = APrsm.m_pnts[5];
 }
 /*----------------------------------------------------------------------------*/
-Prism3::~Prism3(){;}
+Prism3::~Prism3(){}
 /*----------------------------------------------------------------------------*/
 const Point& Prism3::getPoint(const TInt& AIndex) const
 {
 	return m_pnts[AIndex];
 }
 /*----------------------------------------------------------------------------*/
-const Point Prism3::getCenter() const
+Point Prism3::getCenter() const
 {
 	TCoord coordX = 0.;
 	TCoord coordY = 0.;
 	TCoord coordZ = 0.;
 	
-	for(int iPoint=0; iPoint<6; iPoint++) {
-		coordX += m_pnts[iPoint].X();
-		coordY += m_pnts[iPoint].Y();
-		coordZ += m_pnts[iPoint].Z();
+	for(const auto & m_pnt : m_pnts) {
+		coordX += m_pnt.X();
+		coordY += m_pnt.Y();
+		coordZ += m_pnt.Z();
 	}
 	coordX /= 6.;
     coordY /= 6.;
@@ -145,9 +145,9 @@ const Point Prism3::getCenter() const
                 scaledJ[iVertex] = det/l012;
         }
         double scaledJmin = HUGE_VALF;
-        for(int iVertex = 0; iVertex < 6; iVertex++) {
-            if(scaledJ[iVertex] < scaledJmin) {
-                scaledJmin = scaledJ[iVertex];
+        for(double iVertex : scaledJ) {
+            if(iVertex < scaledJmin) {
+                scaledJmin = iVertex;
             }
         }
 
@@ -167,7 +167,7 @@ Prism3::computeNormalizedScaledJacobian() const
 }
 /*----------------------------------------------------------------------------*/
 double
-Prism3::computeMeanRatio() const
+Prism3::computeMeanRatio()
 {
 	throw GMDSException("Prism3::computeMeanRatio not available yet.");
 

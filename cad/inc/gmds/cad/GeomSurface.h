@@ -37,19 +37,19 @@ namespace gmds{
             /*------------------------------------------------------------------------*/
             /** \brief  Constructor
              */
-            GeomSurface(const std::string& AName = "Unknown surface")
-                    :GeomEntity(AName){;}
+            explicit GeomSurface(const std::string& AName = "Unknown surface")
+                    :GeomEntity(AName){}
 
             /*------------------------------------------------------------------------*/
             /** \brief  provides the dimension of the geometrical entity.
              */
-            int dim() const {return 2;}
+            int dim() const override {return 2;}
 
             /** \brief Move a point AP near the surface to the closest point on the
              * 		   surface.
              *  \param AP
              */
-            virtual void project(math::Point& AP) const;
+            void project(math::Point& AP) const override;
 
             /*------------------------------------------------------------------------*/
             /** \brief  computes normal at the closest point to AP in 3D.
@@ -61,20 +61,12 @@ namespace gmds{
                                            math::Vector3d& AV) const =0;
 
             /*------------------------------------------------------------------------*/
-            /** \brief Get the closest point from AP on the surface
-             *  \param AP a 3D point
-             *
-             *  \return the closest point of APoint on the surface
-             */
-            virtual math::Point closestPoint(const math::Point& AP) const =0;
-
-            /*------------------------------------------------------------------------*/
             /** \brief  computes the bounding box
              *
              *  \param minXYZ The minimum coordinate of the bounding box.
              *  \param maxXYZ The maximum coordinate of the bounding box.
              */
-            virtual void computeBoundingBox(TCoord minXYZ[3], TCoord maxXYZ[3]) const =0;
+            void computeBoundingBox(TCoord minXYZ[3], TCoord maxXYZ[3]) const override =0;
 
             /**@brief Accessor to the adjacent points. Warning, there is no
              *  assumption about the ordering

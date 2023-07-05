@@ -78,3 +78,8 @@ add_executable(invertibleMapper2D src/invertibleMapper2D.cpp)
 target_link_libraries(invertibleMapper2D PRIVATE ${GMDS_LIB})
 target_compile_features(invertibleMapper2D PUBLIC cxx_std_14)
 
+
+add_executable(morph2d src/morph2d.cpp)
+target_link_libraries(morph2d PRIVATE ${GMDS_LIB})
+target_compile_features(morph2d PUBLIC cxx_std_14)
+

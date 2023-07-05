@@ -42,17 +42,17 @@ target_link_libraries(GMDS_SIMPLEX_STAT PUBLIC
 target_link_libraries(GMDS_SIMPLEX_HIST PUBLIC
         ${GMDS_LIB}
         ${LIB_GMDS_IO}
-        gtest)
+        GTest::gtest)
 
 target_link_libraries(GMDS_SIMPLEX_METRIC_FF_POINTGEN PUBLIC
         ${GMDS_LIB}
         ${LIB_GMDS_IO}
-        gtest)
+        GTest::gtest)
 
 target_link_libraries(GMDS_SIMPLEX_METRIC_BASED_ADAPTATION PUBLIC
         ${GMDS_LIB}
         ${LIB_GMDS_IO}
-        gtest)
+        GTest::gtest)
 
 target_link_libraries(GMDS_SIMPLEX_INDEXING PUBLIC
       ${GMDS_LIB}
@@ -75,12 +75,12 @@ target_link_libraries(GMDS_SIMPLEX_POINT_GENERATION PUBLIC
 target_link_libraries(GMDS_SIMPLEX_HEX_GENERATION PUBLIC
       ${GMDS_LIB}
       ${LIB_GMDS_IO}
-      gtest)
+      GTest::gtest)
 
 target_link_libraries(GMDS_SIMPLEX_INSERTION_TEST PUBLIC
       ${GMDS_LIB}
       ${LIB_GMDS_IO}
-      gtest)
+      GTest::gtest)
 
 
 set_target_properties(GMDS_SIMPLEX_INDEXING PROPERTIES

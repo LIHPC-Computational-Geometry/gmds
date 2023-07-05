@@ -52,7 +52,7 @@ namespace gmds{
              *	\param maxXYZ The maximum coordinate of the bounding box.
              */
             virtual void computeBoundingBox(TCoord minXYZ[3], TCoord maxXYZ[3]) const;
-
+				virtual std::tuple<TCoord,TCoord,TCoord,TCoord,TCoord,TCoord>  BBox() const;
 
             int id() const {return m_id;}
 

@@ -8,17 +8,12 @@ add_executable(GMDS_MATH_TEST
         QuaternionTestSuite.h
         OrientationTestSuite.h
         TransfiniteInterpolationTestSuite.h
-        main_test.cpp)
-
+        main_test.cpp
+        BezierSurfaceTestSuite.h)
+#==============================================================================
 target_link_libraries(GMDS_MATH_TEST PUBLIC
         ${GMDS_LIB}
-        gtest)
-
-target_include_directories(GMDS_MATH_TEST PRIVATE .)
-
-set_target_properties(GMDS_MATH_TEST PROPERTIES
-        CXX_STANDARD 14
-        CXX_STANDARD_REQUIRED YES)
+        GTest::gtest)
 #==============================================================================
 gtest_discover_tests(GMDS_MATH_TEST
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})

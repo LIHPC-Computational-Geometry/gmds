@@ -87,6 +87,7 @@ public:
 	 *  \param points the points of the model.
 	 */
 	virtual void getPoints(std::vector<GeomPoint*>& points) const =0;
+	virtual std::vector<GeomPoint*> getPoints() const =0;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Access to the curves of the model.
@@ -94,6 +95,7 @@ public:
 	 *  \param curves the curves of the model.
 	 */
 	virtual void getCurves(std::vector<GeomCurve*>& curves) const =0;
+	virtual std::vector<GeomCurve*> getCurves() const =0;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Access to the surface of the model.
@@ -101,43 +103,51 @@ public:
 	 *  \param surfaces the surfaces of the model.
 	 */
 	virtual void getSurfaces(std::vector<GeomSurface*>& surfaces)const=0;
+	virtual std::vector<GeomSurface*> getSurfaces()const =0;
 
 		/*------------------------------------------------------------------------*/
 		/** \brief  Access to the volumes of the model.
          *  \param volumes the volumes of the model.
          */
 		virtual void getVolumes(std::vector<GeomVolume*>& volumes) const =0;
+	   virtual  std::vector<GeomVolume*> getVolumes() const =0;
 
         /*------------------------------------------------------------------------*/
         /** \brief  Gives access to the point of id @AID, Return NullPtr if it does
          *          not exist.
          *  \return A point
          */
-        virtual GeomPoint* getPoint(const TInt AID)=0;
+        virtual GeomPoint* getPoint(TInt AID)=0;
         /*------------------------------------------------------------------------*/
         /** \brief  Gives access to the curve of id @AID, Return NullPtr if it does
          *          not exist.
          *  \return A curve
          */
-        virtual GeomCurve* getCurve(const TInt AID)=0;
+        virtual GeomCurve* getCurve(TInt AID)=0;
         /*------------------------------------------------------------------------*/
         /** \brief  Gives access to the surface of id @AID, Return NullPtr if it
          *          does not exist.
          *  \return A surface
          */
-        virtual GeomSurface* getSurface(const TInt AID)=0;
+        virtual GeomSurface* getSurface(TInt AID)=0;
         /*------------------------------------------------------------------------*/
         /** \brief  Gives access to the volume of id @AID, Return NullPtr if it
          *          does not exist.
          *  \return A volume
          */
-        virtual GeomVolume* getVolume(const TInt AID)=0;
-		/*------------------------------------------------------------------------*/
-		/** \brief  Get the curve common to 2 points
+        virtual GeomVolume* getVolume(TInt AID)=0;
+	     /*------------------------------------------------------------------------*/
+	     /** \brief  Get the curve common to 2 points
          *
          *  \param return the id of the common curve, and -1 if it doesn't exist
-         */
-		virtual int getCommonCurve(GeomPoint* AP1, GeomPoint* AP2) const =0;
+	      */
+	     virtual int getCommonCurve(GeomPoint* AP1, GeomPoint* AP2) const =0;
+	     /*------------------------------------------------------------------------*/
+	     /** \brief  Get the surfaces common to 2 points
+         *
+         *  \param return the ids of the common surfaces (potentially empty)
+	      */
+	     virtual std::vector<int> getCommonSurfaces(GeomPoint* AP1, GeomPoint* AP2) const =0;
 
 		/*------------------------------------------------------------------------*/
 		/** \brief  Get the surface common to 2 curves

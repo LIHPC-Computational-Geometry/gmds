@@ -30,7 +30,7 @@ namespace gmds{
              * \brief Constructor
              * \param AX x coordinnate
              */
-            Point(const TCoord& AX=0.0, const TCoord& AY=0.0, const TCoord& AZ=0.0);
+	       Point(TCoord AX=0.0, TCoord AY=0.0, TCoord AZ=0.0);
 
             virtual ~Point();
             
@@ -176,7 +176,7 @@ namespace gmds{
                                              const math::Point& AT3,	const math::Point& AP,
                                              TCoord& AX, TCoord& AY, TCoord& AZ);
         protected:
-            TCoord m_coord[3];
+            TCoord m_coord[3]{};
         };
         /*--------------------------------------------------------------------*/
     } // namespace math

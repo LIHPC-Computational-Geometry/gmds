@@ -10,7 +10,7 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-LevelSetCombined::LevelSetCombined(Mesh *AMesh, int AmarkFrontNodesInt, int AmarkFrontNodesOut,
+LevelSetCombined::LevelSetCombined(Mesh *AMesh, TInt AmarkFrontNodesInt, TInt AmarkFrontNodesOut,
                                    Variable<double>* Adistance, Variable<double>* Adistance_Int, Variable<double>* Adistance_Out) {
 	m_mesh = AMesh;
 	m_markFrontNodesInt = AmarkFrontNodesInt;
@@ -62,5 +62,5 @@ LevelSetCombined::execute()
 void
 LevelSetCombined::setValue(TCellID n_id, double v0){
 	m_distance->value(n_id) = v0 ;
-};
+}
 /*-------------------------------------------------------------------*/

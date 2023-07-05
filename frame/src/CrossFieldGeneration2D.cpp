@@ -6,7 +6,6 @@
 /*---------------------------------------------------------------------------*/
 #include <gmds/io/VTKWriter.h>
 #include <gmds/io/IGMeshIOService.h>
-#include <sstream>
 /*---------------------------------------------------------------------------*/
 #include "gmds/frame/CrossFieldGeneration2D.h"
 //#include "StabilityBallCross2D.h"
@@ -220,8 +219,8 @@ void CrossFieldGeneration2D::markBoundaryCells()
       throw GMDSException("Invalid model for boundary operations");
     }
   
-  int mark_edge_on_surf = m_mesh->newMark<Edge>();
-  int mark_node_on_surf = m_mesh->newMark<Node>();
+  TInt mark_edge_on_surf = m_mesh->newMark<Edge>();
+  TInt mark_node_on_surf = m_mesh->newMark<Node>();
  
   boundaryOp.markCellOnGeometry(
 				m_markEdgeOnCurv, 
@@ -252,7 +251,7 @@ getEdgesOnCurve(const Node& ANode) const
 }
 /*---------------------------------------------------------------------------*/
 Node CrossFieldGeneration2D::
-getNeighboorOn(const Node& ANode, const Edge& AEdge) const
+getNeighboorOn(const Node& ANode, const Edge& AEdge)
 {
   std::vector<Node> nodes = AEdge.get<Node>();
   if (nodes[0].id() == ANode.id())//if (nodes[0].getID() == ANode.getID())
@@ -280,7 +279,7 @@ void  CrossFieldGeneration2D::initCrossesOnCurves()
 	if (ridges.size() == 1) {
 	  Edge current_edge = ridges[0];
 	  Node node1 = getNeighboorOn(current_node, current_edge);
-	  Node node2 = current_node;
+	  const Node& node2 = current_node;
 
 	  //we build the direction vector of the current edge
 	  math::Point p1 = node1.point();
@@ -348,7 +347,7 @@ void CrossFieldGeneration2D::initCrossesOnPoints()
 /*----------------------------------------------------------------------------*/
 void CrossFieldGeneration2D::smoothAll()
 {
-  int mark_smooth = m_mesh->newMark<Node>();
+  TInt mark_smooth = m_mesh->newMark<Node>();
   for(auto n_id:m_mesh->nodes()){
     Node n = m_mesh->get<Node>(n_id);
       if (!m_mesh->isMarked(n, m_markNodeOnCurv) &&
@@ -432,14 +431,14 @@ void CrossFieldGeneration2D::colorSimplices()
 }
 
 /*---------------------------------------------------------------------------*/
-void CrossFieldGeneration2D::writeForDebug(const std::string AFileName)
+void CrossFieldGeneration2D::writeForDebug(const std::string& AFileName)
 {
   static int nb_file = 0;
-  Variable<double>* var_angle = 0;
-  Variable<math::Vector3d>* var_X = 0;
-  Variable<math::Vector3d>* var_Y = 0;
-  Variable<math::Vector3d>* var_XM = 0;
-  Variable<math::Vector3d>* var_YM = 0;
+  Variable<double>* var_angle = nullptr;
+  Variable<math::Vector3d>* var_X = nullptr;
+  Variable<math::Vector3d>* var_Y = nullptr;
+  Variable<math::Vector3d>* var_XM = nullptr;
+  Variable<math::Vector3d>* var_YM = nullptr;
   try{
     var_angle = m_mesh->getVariable<double,GMDS_NODE>("angle");
     var_X     = m_mesh->getVariable<math::Vector3d,GMDS_NODE>("cross_X");
@@ -469,7 +468,7 @@ void CrossFieldGeneration2D::writeForDebug(const std::string AFileName)
     writer.setCellOptions(gmds::N|gmds::F);
     writer.setDataOptions(gmds::N|gmds::F);
   //VTKWriter<Mesh> writer(*m_mesh);
-  if (AFileName != "")
+  if (!AFileName.empty())
     { 
       std::stringstream file_name;
       file_name <<m_debug_output<<"_"<<AFileName;     
@@ -559,9 +558,9 @@ void CrossFieldGeneration2D::writeForDebug(const std::string AFileName)
 /*---------------------------------------------------------------------------*/
 void CrossFieldGeneration2D::computeReferenceVectorDeviationPerFace(){
     
-     Variable<double>* var_alpha = 0;
+     Variable<double>* var_alpha = nullptr;
      var_alpha     = m_mesh->newVariable<double,GMDS_FACE>("angleDeviation");
-	Variable<double>* var_alpha_max = 0;
+	Variable<double>* var_alpha_max = nullptr;
      var_alpha_max     = m_mesh->newVariable<double,GMDS_FACE>("maxAngleDeviation");
      
     for(auto f_id:m_mesh->faces()){

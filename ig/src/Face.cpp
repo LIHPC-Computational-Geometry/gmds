@@ -1,11 +1,4 @@
 /*----------------------------------------------------------------------------*/
-/*
- * Face.cpp
- *
- *  Created on: 20 févr. 2014
- *      Author: ledouxf
- */
-/*----------------------------------------------------------------------------*/
 #include <map>
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Face.h>
@@ -21,8 +14,8 @@
 namespace gmds {
 /*----------------------------------------------------------------------------*/
     Face::Face()
-            : Cell(0, GMDS_FACE, NullID)
-            , m_faces_container(0)
+            : Cell(nullptr, GMDS_FACE, NullID)
+            , m_faces_container(nullptr)
             , m_type_id(NullID)
     {
     }
@@ -64,7 +57,7 @@ namespace gmds {
     {
             math::Vector3d n;
             std::vector<Node> nodes = this->get<Node>();
-            int nb_nodes = nodes.size();
+            auto nb_nodes = nodes.size();
 
             if (nb_nodes == 3) {
                     math::Point p1 = nodes[0].point();
@@ -132,7 +125,7 @@ namespace gmds {
     Face::area() const {
             math::Vector3d n;
             std::vector<Node> nodes = this->get<Node>();
-            int nb_nodes = nodes.size();
+            auto nb_nodes = nodes.size();
 
             if (nb_nodes == 3) {
 
@@ -170,9 +163,9 @@ namespace gmds {
             TCoord p_coords[3] = {0.0, 0.0, 0.0};
 
             std::vector<Node> nodes = this->get<Node>();
-            int nb_nodes = nodes.size();
+            auto nb_nodes = nodes.size();
 
-            for (int i = 0; i < nb_nodes; i++) {
+            for (auto i = 0; i < nb_nodes; i++) {
                     Node n = nodes[i];
                     p_coords[0] += n.X();
                     p_coords[1] += n.Y();
@@ -253,10 +246,10 @@ namespace gmds {
                 math::Point p1 = nodes[1].point();
                 math::Point p2 = nodes[2].point();
                 math::Point p3 = nodes[3].point();
-                ts.push_back(math::Triangle(p0,p1,p2));
-                ts.push_back(math::Triangle(p0,p2,p3));
+                ts.emplace_back(p0,p1,p2);
+                ts.emplace_back(p0,p2,p3);
                 bool found_project=false;
-                for(auto t:ts){
+                for(const auto& t:ts){
                     math::Point p0 = t.getPoint(0);
                     math::Point p1 = t.getPoint(1);
                     math::Point p2 = t.getPoint(2);
@@ -305,7 +298,7 @@ namespace gmds {
                     candidates.push_back(math::Segment(p3, p0).project(AP));
                     math::Point res = p0;
                     TCoord  dist = p0.distance2(AP);
-                    for(auto c:candidates){
+                    for(const auto& c:candidates){
                         TCoord  dc = c.distance2(AP);
                         if(dc<dist){
                             dc = dist;
@@ -441,9 +434,9 @@ namespace gmds {
             std::map<VirtualEdge, Edge> fakeEdgeMap;
 
             std::vector<Edge> edges = this->get<Edge>();
-            for (unsigned int iEdge = 0; iEdge < edges.size(); iEdge++) {
-                    std::vector<Node> nodes = edges[iEdge].get<Node>();
-                    fakeEdgeMap[VirtualEdge(nodes[0].id(), nodes[1].id())] = edges[iEdge];
+            for (auto & edge : edges) {
+                    std::vector<Node> nodes = edge.get<Node>();
+                    fakeEdgeMap[VirtualEdge(nodes[0].id(), nodes[1].id())] = edge;
             }
 
             std::vector<Node> nodes = this->get<Node>();
@@ -468,11 +461,11 @@ namespace gmds {
     {
             //============================================
             // we keep a reference on the face container
-            if (AMesh != 0) {
+            if (AMesh != nullptr) {
                     m_faces_container = AMesh->m_faces_container;
                     m_type_id = m_faces_container->getTypeID(AID);
             } else {
-                    m_faces_container = 0;
+                    m_faces_container = nullptr;
                     m_type_id = NullID;
             }
     }
@@ -480,10 +473,10 @@ namespace gmds {
     Face::Face(const Face& AF)
             : Cell(AF.m_owner, AF.m_type, AF.m_id)
     {
-            if (m_owner != 0)
+            if (m_owner != nullptr)
                     m_faces_container = m_owner->m_faces_container;
             else
-                    m_faces_container = 0;
+                    m_faces_container = nullptr;
 
             m_type_id = AF.m_type_id;
     }
@@ -494,10 +487,10 @@ namespace gmds {
             m_owner = AF.m_owner;
             m_type = AF.m_type;
             m_id = AF.m_id;
-            if (m_owner != 0)
+            if (m_owner != nullptr)
                     m_faces_container = m_owner->m_faces_container;
             else
-                    m_faces_container = 0;
+                    m_faces_container = nullptr;
             m_type_id = AF.m_type_id;
     }
 /*----------------------------------------------------------------------------*/
@@ -514,8 +507,7 @@ namespace gmds {
     }
 /*----------------------------------------------------------------------------*/
     Face::~Face()
-    {
-    }
+    = default;
 /*----------------------------------------------------------------------------*/
     void
     Face::delegateGet(std::vector<Node>& ACells) const

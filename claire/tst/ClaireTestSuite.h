@@ -758,3 +758,16 @@ TEST(ClaireTestClass, test_Bug_3)
 	ASSERT_FLOAT_EQ( 1.0, 1.0);
 
 }
+
+
+TEST(ClaireTestClass, test_Bug_4)
+{
+	math::Vector3d v({1.0, 0.0, 0.0});
+
+	math::Point p({0,0,0});
+	math::Point p1 = p + -v;
+	//math::Point p1 = p - v;		// This line is considered as an error, but the upper line is correct
+
+	ASSERT_FLOAT_EQ( p1.X(), -1.0);
+
+}

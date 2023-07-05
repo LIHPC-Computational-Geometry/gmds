@@ -8,6 +8,8 @@
 #define GMDS_GEOM_GEOMENTITY_H_
 /*----------------------------------------------------------------------------*/
 #include <string>
+#include <utility>
+#include <utility>
 /*----------------------------------------------------------------------------*/
 #include <gmds/math/Point.h>
 #include "GMDSCad_export.h"
@@ -27,13 +29,13 @@ namespace gmds{
 			/*------------------------------------------------------------------------*/
 			/** \brief  Default constructor
              */
-			GeomEntity(const std::string& AName = "Unknown entity"):
-					name_(AName){;}
+			explicit GeomEntity(std::string  AName = "Unknown entity"):
+					name_(std::move(AName)){}
 
 			/*------------------------------------------------------------------------*/
             /** \brief  sets the name of the geometrical entity.
              */
-            void setName(std::string AName) {name_ = AName;}
+            void setName(std::string AName) {name_ = std::move(AName);}
 
 			/*------------------------------------------------------------------------*/
 			/** \brief  provides the name f the geometrical entity.
@@ -57,13 +59,22 @@ namespace gmds{
              *	\param maxXYZ The maximum coordinate of the bounding box.
              */
 			virtual void computeBoundingBox(TCoord minXYZ[3], TCoord maxXYZ[3]) const=0;
+	      virtual std::tuple<TCoord,TCoord,TCoord,TCoord,TCoord,TCoord>  BBox() const =0;
 
-			/*------------------------------------------------------------------------*/
-			/** \brief Project the point AP unto the geometric entity.
+	      /*------------------------------------------------------------------------*/
+	      /** \brief Project the point AP unto the geometric entity.
           *
           *  \param AP the point to project
-             */
-			virtual void project(gmds::math::Point& AP) const =0;
+	       */
+	      virtual void project(gmds::math::Point& AP) const =0;
+
+	      /*------------------------------------------------------------------------*/
+	      /** \brief Get the closest point from AP on the surface
+             *  \param AP a 3D point
+             *
+             *  \return the closest point of APoint on the surface
+	       */
+	      virtual math::Point closestPoint(const math::Point& AP) const =0;
 
 			virtual int id() const=0;
 

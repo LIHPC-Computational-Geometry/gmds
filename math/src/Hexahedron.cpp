@@ -85,23 +85,23 @@ Hexahedron::Hexahedron(const Hexahedron& AHex)
 	m_pnts[7] = AHex.m_pnts[7];
 }
 /*----------------------------------------------------------------------------*/
-Hexahedron::~Hexahedron(){;}
+Hexahedron::~Hexahedron(){}
 /*----------------------------------------------------------------------------*/
 const Point& Hexahedron::getPoint(const TInt& AIndex) const
 {
 	return m_pnts[AIndex];
 }
 /*----------------------------------------------------------------------------*/
-const Point Hexahedron::getCenter() const
+Point Hexahedron::getCenter() const
 {
 	TCoord coordX = 0.;
 	TCoord coordY = 0.;
 	TCoord coordZ = 0.;
 
-	for(int iPoint=0; iPoint<8; iPoint++) {
-		coordX += m_pnts[iPoint].X();
-		coordY += m_pnts[iPoint].Y();
-		coordZ += m_pnts[iPoint].Z();
+	for(const auto & m_pnt : m_pnts) {
+		coordX += m_pnt.X();
+		coordY += m_pnt.Y();
+		coordZ += m_pnt.Z();
 	}
 	coordX /= 8.;
 	coordY /= 8.;
@@ -181,9 +181,9 @@ Hexahedron::computeScaledJacobian() const
 			scaledJ[iVertex] = det/l012;
     	}
 	double scaledJmin = HUGE_VALF;
-	for(int iVertex = 0; iVertex < 8; iVertex++) {
-		if(scaledJ[iVertex] < scaledJmin) {
-			scaledJmin = scaledJ[iVertex];
+	for(double iVertex : scaledJ) {
+		if(iVertex < scaledJmin) {
+			scaledJmin = iVertex;
 		}
 	}
 
@@ -239,7 +239,7 @@ Hexahedron::computeScaledJacobianAt(int AVert) const
     }
 /*----------------------------------------------------------------------------*/
 double
-Hexahedron::computeMeanRatio() const
+Hexahedron::computeMeanRatio()
 {
 	throw GMDSException("Hexahedron::computeMeanRatio not available.");
 

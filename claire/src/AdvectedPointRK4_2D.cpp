@@ -4,14 +4,15 @@
 
 /*------------------------------------------------------------------------*/
 #include <gmds/claire/AdvectedPointRK4_2D.h>
-#include <limits>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------*/
-AdvectedPointRK4_2D::AdvectedPointRK4_2D(Mesh *AMesh, math::Point A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D) {
-	m_mesh = AMesh;
+AdvectedPointRK4_2D::AdvectedPointRK4_2D(Mesh *AMesh, FastLocalize *A_fl, const math::Point& A_Pstart, double A_d0, Variable<double>* A_distance, Variable<math::Vector3d>* A_gradient2D) :
+	m_mesh(AMesh),
+  	m_fl(A_fl)
+{
 	m_Pstart = A_Pstart;
 	m_Pend = A_Pstart;
 	m_d0 = A_d0;
@@ -26,7 +27,6 @@ AdvectedPointRK4_2D::AdvectedPointRK4_2D(Mesh *AMesh, math::Point A_Pstart, doub
 AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 {
 	double minLenght = minEdgeLenght();
-	//std::cout << "min : " << minLenght << std::endl;
 
 	double dt = 0.9*minLenght;
 	double err = pow(10,-6);
@@ -43,14 +43,7 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 	dist = interpolationDistance(face_id, Mat_A_Inv, m_Pstart);	// A quelle distance est le point de départ
 	Grad = interpolationGradient(face_id, Mat_A_Inv, m_Pstart);	// Quel est le gradient à ce point
 
-	/*
-	std::cout << "distance initiale : " << dist << std::endl;
-	std::cout << "gradient initial  : " << Grad << std::endl;
-	std::cout << "Noeud dans le triangle : " << face_id << std::endl;
-	 */
-
 	while ( (abs(dist-m_d0) > err) && iterations < max_iterations ) {
-		//std::cout << "-------- ITERATION " << iterations << " ---------" << std::endl;
 		math::Point M = RungeKutta4(m_Pend, Grad.normalize(), dt);	// Calcule la position du point à l'itération n+1 avec un RK4
 		// On vérifie ensuite si cette position est "valide"
 		face_id = inWhichTriangle(M, face_id) ;
@@ -91,13 +84,8 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 	face_id = inWhichTriangle(m_Pend, face_id) ;
 	Mat_A_Inv = getInvMatrixA(face_id);
 	dist = interpolationDistance(face_id, Mat_A_Inv, m_Pend);
-	/*
-	std::cout << "----------------------------------" << std::endl;
-	std::cout << "Point final : " << m_Pend << std::endl;
-	std::cout << "Distance finale : " << dist << std::endl;
-	 */
 
-	//writeDiscretePathInVTK();
+	writeDiscretePathInVTK();
 
 	return AdvectedPointRK4_2D::SUCCESS;
 }
@@ -105,7 +93,7 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 
 
 /*------------------------------------------------------------------------*/
-bool AdvectedPointRK4_2D::isInTriangle(TCellID face_id, math::Point M){
+bool AdvectedPointRK4_2D::isInTriangle(TCellID face_id, math::Point &M){
 	bool isInFace(false);
 	Face face = m_mesh->get<Face>(face_id);
 	std::vector<TCellID> face_nodes_ids = face.getIDs<Node>();
@@ -141,7 +129,7 @@ bool AdvectedPointRK4_2D::isInTriangle(TCellID face_id, math::Point M){
 
 
 /*------------------------------------------------------------------------*/
-TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M, TCellID f0_id){
+TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point &M, TCellID f0_id){
 	TCellID face_id;
 	bool isInFace(false);
 
@@ -152,11 +140,11 @@ TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M, TCellID f0_id){
 		std::vector<TCellID> adjacent_faces;
 		Face f0 = m_mesh->get<Face>(f0_id);
 		std::vector<Node> face_nodes = f0.get<Node>();
-		for (auto n:face_nodes){
+		for (auto const& n:face_nodes){
 			std::vector<Face> node_faces = n.get<Face>();
-			for (auto f1:node_faces){
+			for (auto const& f1:node_faces){
 				bool alreadyinvector(false);
-				for (auto fv_id:adjacent_faces){
+				for (auto const& fv_id:adjacent_faces){
 					if(f1.id() == fv_id){
 						alreadyinvector = true;
 					}
@@ -167,7 +155,7 @@ TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M, TCellID f0_id){
 			}
 		}
 		// On regarde si le point M est dans un des triangles
-		for (auto f_adj_id:adjacent_faces){
+		for (auto const& f_adj_id:adjacent_faces){
 			if(!isInFace){
 				isInFace = isInTriangle(f_adj_id, M);
 				if(isInFace){
@@ -178,7 +166,26 @@ TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M, TCellID f0_id){
 	}
 
 
+	// Use FastLocalize to check the tetras around the closest node
+	// to the point M
+	if (!isInFace)
+	{
+		gmds::Cell::Data data = m_fl->find(M);
+		TCellID n_closest_id = data.id;
+		Node n_closest = m_mesh->get<Node>(n_closest_id);
+		std::vector<Face> n_closest_tri = n_closest.get<Face>();
+		for (auto const& f:n_closest_tri)
+		{
+			if (!isInFace) {
+				isInFace = isInTriangle(f.id(), M);
+				if (isInFace) {
+					face_id = f.id();
+				}
+			}
+		}
+	}
 
+	/*
 	for(auto f_it = m_mesh->faces_begin(); f_it!= m_mesh->faces_end() && !isInFace;++f_it){
 		TCellID f_id = *f_it;
 		isInFace = isInTriangle(f_id, M);
@@ -186,6 +193,8 @@ TCellID AdvectedPointRK4_2D::inWhichTriangle(math::Point M, TCellID f0_id){
 			face_id = f_id;
 		}
 	}
+	 */
+
 
 	if (!isInFace){
 		face_id = NullID;
@@ -201,7 +210,7 @@ double AdvectedPointRK4_2D::minEdgeLenght(){
 	// retirée
 	Edge edge_0 = m_mesh->get<Edge>(0);
 	double minLenght(edge_0.length());
-	for (auto edge_id:m_mesh->edges()){
+	for (auto const& edge_id:m_mesh->edges()){
 		Edge edge = m_mesh->get<Edge>(edge_id);
 		if(edge.length() < minLenght){
 			minLenght = edge.length() ;
@@ -224,10 +233,6 @@ Eigen::Matrix3d AdvectedPointRK4_2D::getInvMatrixA(TCellID face_id){
 	math::Point p1 = nodes[1].point() ;
 	math::Point p2 = nodes[2].point() ;
 
-	TCellID n0_id = nodes[0].id();
-	TCellID n1_id = nodes[1].id();
-	TCellID n2_id = nodes[2].id();
-
 	// x1 y1 1
 	// x2 y2 1
 	// x3 y3 1
@@ -249,7 +254,7 @@ Eigen::Matrix3d AdvectedPointRK4_2D::getInvMatrixA(TCellID face_id){
 
 
 /*------------------------------------------------------------------------*/
-double AdvectedPointRK4_2D::interpolationDistance(TCellID face_id, Eigen::Matrix3d Mat_A_Inv, math::Point M){
+double AdvectedPointRK4_2D::interpolationDistance(TCellID face_id, Eigen::Matrix3d &Mat_A_Inv, math::Point M){
 	double dist_interpolee;
 
 	Face f = m_mesh->get<Face>(face_id);
@@ -274,7 +279,7 @@ double AdvectedPointRK4_2D::interpolationDistance(TCellID face_id, Eigen::Matrix
 
 
 /*------------------------------------------------------------------------*/
-math::Vector3d AdvectedPointRK4_2D::interpolationGradient(TCellID face_id, Eigen::Matrix3d Mat_A_Inv, math::Point M){
+math::Vector3d AdvectedPointRK4_2D::interpolationGradient(TCellID face_id, Eigen::Matrix3d &Mat_A_Inv, math::Point M){
 	math::Vector3d Gradient_M;
 
 	Face f = m_mesh->get<Face>(face_id);
@@ -313,7 +318,7 @@ math::Vector3d AdvectedPointRK4_2D::interpolationGradient(TCellID face_id, Eigen
 
 
 /*------------------------------------------------------------------------*/
-math::Point AdvectedPointRK4_2D::RungeKutta4(math::Point yn, math::Vector3d grad_yn, double dt){
+math::Point AdvectedPointRK4_2D::RungeKutta4(math::Point &yn, math::Vector3d grad_yn, double dt){
 	math::Point ynew;
 
 	math::Vector3d k1 = grad_yn ;
@@ -347,8 +352,8 @@ void AdvectedPointRK4_2D::writeDiscretePathInVTK(){
 	stream << "POINTS ";
 	stream << m_discrete_path.size() ;
 	stream << " float\n";
-	for (int i=0; i< m_discrete_path.size(); i++){
-		stream << m_discrete_path[i].X() << " " << m_discrete_path[i].Y() << " " << m_discrete_path[i].Z() << "\n";
+	for (auto const& point_local:m_discrete_path){
+		stream << point_local.X() << " " << point_local.Y() << " " << point_local.Z() << "\n";
 	}
 
 	stream << "\n";

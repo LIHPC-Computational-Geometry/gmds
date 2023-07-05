@@ -9,7 +9,6 @@
 // GMDS header files
 #include <gmds/math/Constants.h>
 #include <gmds/math/Vector.h>
-#include <gmds/math/Segment.h>
 #include <gmds/math/Numerics.h>
 /*----------------------------------------------------------------------------*/
 // Eigen header files
@@ -149,7 +148,7 @@ namespace gmds{
                                         std::vector<double>& AX)
         {
             AX.clear();
-            int nb_solutions = 0;
+            int nb_solutions;
 
             double a = AA;
             double b = AB;

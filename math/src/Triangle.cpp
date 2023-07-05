@@ -41,7 +41,7 @@ Triangle::Triangle(const Triangle& AT)
 	m_pnts[2] = AT.m_pnts[2];
 }
 /*----------------------------------------------------------------------------*/
-Triangle::~Triangle(){;}
+Triangle::~Triangle(){}
 /*----------------------------------------------------------------------------*/
     const Point& Triangle::getPoint(const TInt& AIndex) const
     {
@@ -416,7 +416,8 @@ Triangle::intersect(const Segment& AS, const bool AProper) const {
             return false;
 
 	// we have no to check if the segment line lies onto the plane
-	if (AS.getPoint(0).areCoplanar(this->getPoint(0), this->getPoint(1), this->getPoint(2)) == false || AS.getPoint(1).areCoplanar(this->getPoint(0), this->getPoint(1), this->getPoint(2)) == false) {
+	if (!AS.getPoint(0).areCoplanar(this->getPoint(0), this->getPoint(1), this->getPoint(2))
+	         || !AS.getPoint(1).areCoplanar(this->getPoint(0), this->getPoint(1), this->getPoint(2))) {
 		// no coplanar
 		Point p;
         double w0=0, w1=0;
@@ -492,7 +493,7 @@ Triangle::intersect(const Ray& ARay, const bool AProper) const
 	/* Check the case where the directional vector is null */
 	if (ARay.getDir().isZero()) {
 		// we have now to check if the point lies onto the plane
-		if (ARay.getPoint().areCoplanar(this->getPoint(0), this->getPoint(1), this->getPoint(2)) == false) {
+		if (!ARay.getPoint().areCoplanar(this->getPoint(0), this->getPoint(1), this->getPoint(2))) {
 			return false;
 		} else {
 		// coplanar
@@ -514,7 +515,7 @@ Triangle::intersect(const Ray& ARay, const bool AProper) const
 /*----------------------------------------------------------------------------*/
 bool Triangle::isIn(const Point& AP) const
 {
-	if(this->getPlaneIncluding().isIn(AP) == false) {
+	if(!this->getPlaneIncluding().isIn(AP)) {
 		return false;
 	}
 	
@@ -549,7 +550,7 @@ bool Triangle::isIn(const Point& AP) const
 /*----------------------------------------------------------------------------*/
 bool Triangle::isIn2ndMethod(const Point& AP) const
 {
-	if(this->getPlaneIncluding().isIn(AP) == false) {
+	if(!this->getPlaneIncluding().isIn(AP)) {
 		return false;
 	}
 	
@@ -575,7 +576,7 @@ bool Triangle::isIn2ndMethod(const Point& AP) const
 bool
 Triangle::isStrictlyIn(const Point& AP) const
 {
-        if(this->getPlaneIncluding().isIn(AP) == false) {
+        if(!this->getPlaneIncluding().isIn(AP)) {
                 return false;
         }
 

@@ -47,9 +47,9 @@ namespace gmds
             /*return a vector of node that are in the cavity*/
             bool                                 nodeInCavity(const TInt node);
 
-            const std::vector<TInt> &            getNodeInCavity(){return m_nodeInCavity;}
+            const std::vector<TSimplexID> &            getNodeInCavity(){return m_nodeInCavity;}
 
-            const std::vector<TInt> &            getSurfaceNodeInCavity(){return m_surfaceNodeInCavity;}
+            const std::vector<TSimplexID> &            getSurfaceNodeInCavity(){return m_surfaceNodeInCavity;}
 
             void addNodeInCavity           (const TInt node){m_nodeInCavity.push_back(node);}
 
@@ -67,9 +67,9 @@ namespace gmds
 
             const std::vector<std::vector<TSimplexID>>  &  getoppositeTriangle          () const {return m_oppositeTriangle;}
 
-            const std::vector<std::vector<TInt>>  &  getTriangleIndices           () const {return m_triangleIndices;}
+            const std::vector<std::vector<TSimplexID>>  &  getTriangleIndices           () const {return m_triangleIndices;}
 
-            const std::vector<std::vector<TInt>>  &  getBorderEdges               () const {return m_borderSurfaceNode;}
+            const std::vector<std::vector<TSimplexID>>  &  getBorderEdges               () const {return m_borderSurfaceNode;}
 
             void setEdgeContainingNode                                   (const TInt node0, const TInt node1){m_edgeContainingNode = std::make_pair(node0, node1);};
 
@@ -108,13 +108,13 @@ namespace gmds
 
             std::vector<std::vector<TSimplexID>> m_oppositeTriangle;
 
-            std::vector<std::vector<TInt>> m_triangleIndices;
+            std::vector<std::vector<TSimplexID>> m_triangleIndices;
 
-            std::vector<std::vector<TInt>> m_borderSurfaceNode;
+            std::vector<std::vector<TSimplexID>> m_borderSurfaceNode;
 
-            std::vector<TInt> m_nodeInCavity;
+            std::vector<TSimplexID> m_nodeInCavity;
 
-            std::vector<TInt> m_surfaceNodeInCavity;
+            std::vector<TSimplexID> m_surfaceNodeInCavity;
 
             std::pair<TInt, TInt> m_edgeContainingNode{};
 

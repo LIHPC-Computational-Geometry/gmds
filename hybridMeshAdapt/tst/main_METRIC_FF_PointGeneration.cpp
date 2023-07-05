@@ -75,10 +75,10 @@ int main(int argc, char* argv[])
       std::cout << "size 0.5 * meanSizeEdge -> " << 0.5 * meanSizeEdge << std::endl;
       std::cout << "size 0.75 * meanSizeEdge -> " << 0.75 * meanSizeEdge << std::endl;
       std::cout << "size meanSizeEdge -> " <<  meanSizeEdge << std::endl;
+      metricXYZ_functors.push_back([&](double x_) { return std::vector<double>{0.5*meanSizeEdge, 0.5*meanSizeEdge, 0.5*meanSizeEdge}; });
       //metricXYZ_functors.push_back([&](double x_) { return std::vector<double>{0.1*x_ + 0.0125*(1.0 - x_), 0.1, 0.1};});
       //metricXYZ_functors.push_back([&](double x_) { return std::vector<double>{0.05, 0.05, 0.05};});
       //metricXYZ_functors.push_back([&](double x_) { return std::vector<double>{0.5*meanSizeEdge, 0.5*meanSizeEdge, 0.5*meanSizeEdge}; });
-      metricXYZ_functors.push_back([&](double x_) { return std::vector<double>{0.5*meanSizeEdge, 0.5*meanSizeEdge, 0.5*meanSizeEdge}; });
       //metricXYZ_functors.push_back([&](double x_) { return std::vector<double>{0.5*meanSizeEdge, 0.25*meanSizeEdge, 0.5*meanSizeEdge}; });
       //metricXYZ_functors.push_back([&](double x_) { return std::vector<double>{0.5*meanSizeEdge, 0.35*meanSizeEdge, 0.25*meanSizeEdge}; });
     }
@@ -139,7 +139,7 @@ int main(int argc, char* argv[])
             simplexMesh.setFrames(nodeId, ff());
           }
         }
-        
+
         //////////////////////////////////////////////////////////////////////////////
         std::cout << "FRONTAL ALGO STARTING ..." << std::endl;
         std::string name =+ "HEX_" + std::to_string(cpt);

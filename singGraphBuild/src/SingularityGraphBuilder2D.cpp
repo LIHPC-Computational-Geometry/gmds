@@ -1,47 +1,4 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright: CEA
- * contributors: F. Ledoux (2015)
- *
- * franck.ledoux@cea.fr
- *
- * The FRAME software is a computer program whose purpose is to provide a set
- * of algorithms to build 2D and 3D meshes using frame field concept. The main
- * focus of these algorithms is quadrilateral and hexahedral meshing.
- *
- * This software is governed by the CeCILL-C license under French law and
- * abiding by the rules of distribution of free software.  You can  use,
- * modify and/ or redistribute the software under the terms of the CeCILL-C
- * license as circulated by CEA, CNRS and INRIA at the following URL
- * "http://www.cecill.info".
- *
- * As a counterpart to the access to the source code and  rights to copy,
- * modify and redistribute granted by the license, users are provided only
- * with a limited warranty  and the software's author,  the holder of the
- * economic rights,  and the successive licensors  have only  limited
- * liability.
- *
- * In this respect, the user's attention is drawn to the risks associated
- * with loading,  using,  modifying and/or developing or reproducing the
- * software by the user in light of its specific status of free software,
- * that may mean  that it is complicated to manipulate,  and  that  also
- * therefore means  that it is reserved for developers  and  experienced
- * professionals having in-depth computer knowledge. Users are therefore
- * encouraged to load and test the software's suitability as regards their
- * requirements in conditions enabling the security of their systems and/or
- * data to be ensured and,  more generally, to use and operate it in the
- * same conditions as regards security.
- *
- * The fact that you are presently reading this means that you have had
- * knowledge of the CeCILL-C license and that you accept its terms.
- */
-/*----------------------------------------------------------------------------*/
-/*
- * SingularityGraphBuilder2D.cpp
- *
- *  Created on: 13 juil. 2014
- *      Author: bibi
- */
-/*----------------------------------------------------------------------------*/
 //#include <gmds/ig/IG.h>
 #include "gmds/math/Constants.h"
 #include <gmds/ig/MeshDoctor.h>
@@ -1251,12 +1208,12 @@ SingularityGraphBuilder2D::createLineFrom(VertexSingularityPoint *AFrom, const d
 		throw GMDSException("unable to create the required number of slot," + std::to_string(baseSlots.size()) + " instead of " + std::to_string(ANbLines));
 	}
 	if (ANbLines == 3) {     // building 3 slots might have been a mistake if the cross field is grid like: (at least two slots with close directions)
-		bool recompute = baseSlots[0].direction.angle(baseSlots[1].direction) < M_PI_4     //
-		                 || baseSlots[1].direction.angle(baseSlots[2].direction) < M_PI_4;
+		bool recompute = baseSlots[0].direction.angle(baseSlots[1].direction) < math::Constants::PIDIV4     //
+		                 || baseSlots[1].direction.angle(baseSlots[2].direction) < math::Constants::PIDIV4  ;
 		if (recompute) return createLineFrom(AFrom, AAngle * 4 / 3, 2);     // create 2 slots instead
 	}
 	else if (ANbLines == 2) {     // building 2 slots might also have been a mistake (close slots directions)
-		bool recompute = baseSlots[0].direction.angle(baseSlots[1].direction) < M_PI_4;
+		bool recompute = baseSlots[0].direction.angle(baseSlots[1].direction) < math::Constants::PIDIV4  ;
 		if (recompute) return createLineFrom(AFrom, AAngle * 3 / 2, 1);     // create 1 slot instead. Might actually be 0 slot here.
 	}
 	for (const auto baseSlot : baseSlots)
@@ -3155,9 +3112,9 @@ LineRelaxator::MoveIfNewLocationIsWorthTheAnglePenalty(SingularityPoint *singPoi
 	const auto newAngles = computeAngleAtSingularity(singPoint);
 	const auto &oldAngles = m_angleAtSingularity[singPoint->getNumber()];
 	for (int i = 0; i < newAngles.size(); ++i) {
-		const double newGap = fabs(M_PI_2 - newAngles[i]);
+		const double newGap = fabs(math::Constants::PIDIV2   - newAngles[i]);
 		if (newGap > 0.349065) {     // 20°
-			const double oldGap = fabs(M_PI_2 - oldAngles[i]) + 1e-8;
+			const double oldGap = fabs(math::Constants::PIDIV2 - oldAngles[i]) + 1e-8;
 			if (newGap > oldGap) {
 				// the move is cancel
 				singPoint->setLocation(oldLocation);
@@ -3246,7 +3203,7 @@ double
 LineRelaxator::getWorstAngle()
 {
 	double worstDiff90 = 0;
-	double worstAngle = M_PI_2;
+	double worstAngle = math::Constants::PIDIV2;
 	math::Point worstPoint;
 	for (const auto patch : m_graph->getSurfacePatchs()) {
 
@@ -3263,7 +3220,7 @@ LineRelaxator::getWorstAngle()
 		angles.push_back(v4.angle(v3.opp()));
 		int count = 0;
 		for (const auto angle : angles) {
-			double diff90 = std::abs(M_PI_2 - angle);
+			double diff90 = std::abs(math::Constants::PIDIV2 - angle);
 			if (diff90 > worstDiff90) {
 				worstDiff90 = diff90;
 				worstAngle = angle;

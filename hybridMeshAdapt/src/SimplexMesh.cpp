@@ -5445,7 +5445,7 @@ void SimplexMesh::rebuildCavity(CavityOperator::CavityIO& cavityIO, const std::v
   const std::vector<std::vector<TInt>>&         pointsToConnect          = cavityIO.getNodesToReconnect();
   const std::vector<TSimplexID>&                extSimplexBorder         = cavityIO.getOppositesSimplex();
   const std::vector<TSimplexID>&                trianglesConnectedToP    = cavityIO.getTrianglesConnectedToPInCavity();
-  const std::vector<std::vector<int>>&          localsInfoForTriangles   = cavityIO.getTriangleReconstructionInfo();
+  const std::vector<std::vector<TInt>>&          localsInfoForTriangles   = cavityIO.getTriangleReconstructionInfo();
   const std::vector<std::vector<TSimplexID>>&   oppositeTriangles        = cavityIO.getoppositeTriangle();
   const std::vector<std::vector<TInt>>&         trianglesIndices         = cavityIO.getTriangleIndices();
 

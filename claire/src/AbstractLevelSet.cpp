@@ -8,7 +8,7 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-AbstractLevelSet::AbstractLevelSet(Mesh *AMesh, int AmarkFrontNodes, Variable<double>* Adistance) {
+AbstractLevelSet::AbstractLevelSet(Mesh *AMesh, TInt AmarkFrontNodes, Variable<double>* Adistance) {
 	m_mesh = AMesh;
 	m_markFrontNodes = AmarkFrontNodes;
 	m_distance = Adistance;
@@ -29,7 +29,7 @@ AbstractLevelSet::STATUS AbstractLevelSet::execute()
 		Node n0 = m_mesh->get<Node>(n0_id);
 		math::Point p0 = n0.point();
 		std::vector<Node> Neighbors_Nodes = getNeighbors(n0);
-		for(auto n:Neighbors_Nodes){
+		for(auto const &n:Neighbors_Nodes){
 			TCellID n_id = n.id();
 			math::Point p = n.point();
 			math::Vector3d vec = p-p0;
@@ -59,23 +59,21 @@ void AbstractLevelSet::initialisationDistances(){
 		else{
 			m_DistanceMap.add(std::numeric_limits<double>::max(), id);
 			m_distance->set(id, std::numeric_limits<double>::max());
-			//m_DistanceMap.add(1000, id);
-			//m_distance->set(id, 1000);
 		}
 	}
-};
+}
 /*-------------------------------------------------------------------*/
 
 
 /*-------------------------------------------------------------------*/
 void AbstractLevelSet::getValue(TCellID n_id, double &v0){
 	v0 = m_distance->value(n_id);
-};
+}
 /*-------------------------------------------------------------------*/
 
 
 /*-------------------------------------------------------------------*/
 void AbstractLevelSet::setValue(TCellID n_id, double v0){
 	m_distance->value(n_id) = v0 ;
-};
+}
 /*-------------------------------------------------------------------*/

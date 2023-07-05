@@ -41,7 +41,7 @@ namespace gmds{
 		 * 			variable is initialized to [0,initSize].
 		 */
 		template<typename T> Variable<T>* newVariable(const std::string& AName,
-			const int initSize = 2, const std::vector<int>* ref = 0);
+			const int initSize = 2, const std::vector<TInt>* ref = 0);
 
 		/*------------------------------------------------------------------------*/
 		/** \brief  Returns whether a variable exists.
@@ -130,7 +130,7 @@ namespace gmds{
 	/*----------------------------------------------------------------------------*/
 	template<typename T>
 	Variable<T>* VariableManager::newVariable(const std::string& AName,
-		const int initSize, const std::vector<int>* ref){
+		const int initSize, const std::vector<TInt>* ref){
 
 		for (unsigned int k = 0; k < m_variables.size(); k++)
             if (m_variables[k]->getName() == AName){

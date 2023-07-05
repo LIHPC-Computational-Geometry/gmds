@@ -50,7 +50,7 @@ namespace gmds{
 
         std::vector<TInt> findBoundedNode(const double t, const std::vector<TInt>& edgeNodes) const;
 
-        Eigen::VectorXd findCubicInterpolation(const double t, const std::vector<TInt>& edgeNodes, std::vector<int>& subEdgeIdx) const;
+        Eigen::VectorXd findCubicInterpolation(const double t, const std::vector<TInt>& edgeNodes, std::vector<TInt>& subEdgeIdx) const;
 
         double curvature(const double t, const std::vector<TInt>& edgeNodes) const;
 
@@ -82,8 +82,6 @@ namespace gmds{
 
         bool nodeFiltering(const math::Point& pt, const TInt fromNode, const TSimplexID simplex, std::vector<TInt> & neighboorNode);
 
-        void computeQuadFaces(std::set<std::vector<TInt>> & faces) const ;
-
         void computeHexa(std::set<std::vector<TInt>> & hexas) ;
 
         void correctNodeLabel() ;
@@ -112,6 +110,10 @@ namespace gmds{
         bool validHex(const std::vector<TInt>& hex);
 
         bool wronglyOriented(const std::vector<TInt>& hex);
+
+        void computeQuadFaces(std::set<std::vector<TInt>> & faces) const ;
+
+        void computeHexa(std::set<std::vector<TInt>> & hexa) const ;
 
       private:
         std::unordered_map<TInt, std::vector<TInt>> neighborsdNodes{};

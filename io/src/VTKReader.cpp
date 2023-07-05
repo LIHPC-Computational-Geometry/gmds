@@ -344,7 +344,7 @@ void VTKReader::readDataNodes(){
             }
             m_mesh_service->addDataVectorNodes(d);
         }
-    };
+    }
 
 }
 /*----------------------------------------------------------------------------*/
@@ -466,7 +466,7 @@ void VTKReader::readDataEdges(){
                 m_mesh_service->addDataVectorEdges(d);
             }
         }
-    };
+    }
 }
 /*----------------------------------------------------------------------------*/
 void VTKReader::readDataFaces(){

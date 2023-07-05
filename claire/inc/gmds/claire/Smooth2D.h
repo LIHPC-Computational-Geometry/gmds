@@ -29,13 +29,13 @@ namespace gmds {
          */
         Smooth2D(Mesh *AMesh,
                  const Variable<int> *AVarBnd,
-                 const int ANbIterations = 100);
+                 int ANbIterations = 100);
 
         /*-------------------------------------------------------------------*/
         /** @brief Set the max number of iterations
          *  @param[in] ANbIterations
          */
-        void setNbIterations(const int ANbIterations);
+        void setNbIterations(int ANbIterations);
 
         /*-------------------------------------------------------------------*/
         /** @brief Execute the algorithm
@@ -48,13 +48,13 @@ namespace gmds {
          */
         void buildStencils();
 	     //void PerturbationMaillage(const Variable<int>* var_bnd, const double dx, const double dy);
-	     math::Point FindMidBranche(const math::Point A, const math::Point B, const math::Point C);
+	     static math::Point FindMidBranche(const math::Point& A, const math::Point& B, const math::Point& C);
 	     bool CheckStructuredMesh();
 	     void write_debug_txt(int n_id, const Variable<math::Point> *old_coords,
 	                          math::Point H1, math::Point H2, math::Point H3,
 	                          math::Point V1, math::Point V2, math::Point V3,
 	                          math::Point Point_Intersection,
-	                          std::string AFileName);
+	                          const std::string& AFileName);
     private:
         /** mesh we work on */
         Mesh *m_mesh;

@@ -39,7 +39,7 @@ namespace gmds{
 		 * \param AType the type of cell
 		 * \param AID the cell id
 		 */
-		Face(Mesh* AMesh, const ECellType AType, const TCellID& AID);
+		Face(Mesh* AMesh, ECellType AType, const TCellID& AID);
 
 		/*------------------------------------------------------------------------*/
 		/** \brief Copy Constructor
@@ -75,22 +75,22 @@ namespace gmds{
 		/*------------------------------------------------------------------------*/
 		/** \brief Destructor
 		 */
-		virtual ~Face();
+		~Face() override;
 
 		inline TInt getTypeID() const { return m_type_id; }
 		/*------------------------------------------------------------------------*/
 		/** \brief  Accesor to the cell dim.
 		 */
-		virtual int dim() const { return 2; }
+		int dim() const override { return 2; }
 
 		/*------------------------------------------------------------------------*/
 		/** \brief Accessor th the number of incident nodes, edges, faces and
 		 * 		   adjacent regions
 		 */
-		virtual TInt nbNodes()   const;
-		virtual TInt nbEdges()   const;
-		virtual TInt nbFaces()   const;
-		virtual TInt nbRegions() const;
+		TInt nbNodes()   const override;
+		TInt nbEdges()   const override;
+		TInt nbFaces()   const override;
+		TInt nbRegions() const override;
 
 		/*------------------------------------------------------------------------*/
                 /** \brief Compute the normal of the face.
@@ -107,7 +107,7 @@ namespace gmds{
 		/*------------------------------------------------------------------------*/
                 /** \brief Compute the center of the face
                  */
-		math::Point center() const;
+		math::Point center() const override;
 
 		/*------------------------------------------------------------------------*/
                 /** \brief Compute the area of the face
@@ -170,45 +170,45 @@ namespace gmds{
 		/** \brief  Accessor to the incident cells. Only the non-null cells are
 		 * 			provided. T can be Node, Edge, Face or Region.
 		 */
-		virtual void delegateGet(std::vector<Node>&   ACells) const;
-		virtual void delegateGet(std::vector<Edge>&   ACells) const;
-		virtual void delegateGet(std::vector<Face>&   ACells) const;
-		virtual void delegateGet(std::vector<Region>& ACells) const;
+		void delegateGet(std::vector<Node>&   ACells) const override;
+		void delegateGet(std::vector<Edge>&   ACells) const override;
+		void delegateGet(std::vector<Face>&   ACells) const override;
+		void delegateGet(std::vector<Region>& ACells) const override;
 
-		virtual void delegateGetNodeIDs(std::vector<TCellID>& ACells) const;
-		virtual void delegateGetEdgeIDs(std::vector<TCellID>& ACells) const;
-		virtual void delegateGetFaceIDs(std::vector<TCellID>& ACells) const;
-		virtual void delegateGetRegionIDs(std::vector<TCellID>& ACells) const;
+		void delegateGetNodeIDs(std::vector<TCellID>& ACells) const override;
+		void delegateGetEdgeIDs(std::vector<TCellID>& ACells) const override;
+		void delegateGetFaceIDs(std::vector<TCellID>& ACells) const override;
+		void delegateGetRegionIDs(std::vector<TCellID>& ACells) const override;
 
-		virtual void delegateGetAll(std::vector<Node>&   ACells) const;
-		virtual void delegateGetAll(std::vector<Edge>&   ACells) const;
-		virtual void delegateGetAll(std::vector<Face>&   ACells) const;
-		virtual void delegateGetAll(std::vector<Region>& ACells) const;
+		void delegateGetAll(std::vector<Node>&   ACells) const override;
+		void delegateGetAll(std::vector<Edge>&   ACells) const override;
+		void delegateGetAll(std::vector<Face>&   ACells) const override;
+		void delegateGetAll(std::vector<Region>& ACells) const override;
 
-		virtual void delegateGetAllNodeIDs  (std::vector<TCellID>& ACells) const;
-        virtual void delegateGetAllEdgeIDs  (std::vector<TCellID>& ACells) const;
-        virtual void delegateGetAllFaceIDs  (std::vector<TCellID>& ACells) const;
-        virtual void delegateGetAllRegionIDs(std::vector<TCellID>& ACells) const;
+		void delegateGetAllNodeIDs  (std::vector<TCellID>& ACells) const override;
+        void delegateGetAllEdgeIDs  (std::vector<TCellID>& ACells) const override;
+        void delegateGetAllFaceIDs  (std::vector<TCellID>& ACells) const override;
+        void delegateGetAllRegionIDs(std::vector<TCellID>& ACells) const override;
 
-		virtual void delegateSetNodeIDs(const std::vector<TCellID>& ACells);
-		virtual void delegateSetEdgeIDs(const std::vector<TCellID>& ACells);
-		virtual void delegateSetFaceIDs(const std::vector<TCellID>& ACells);
-		virtual void delegateSetRegionIDs(const std::vector<TCellID>& ACells);
+		void delegateSetNodeIDs(const std::vector<TCellID>& ACells) override;
+		void delegateSetEdgeIDs(const std::vector<TCellID>& ACells) override;
+		void delegateSetFaceIDs(const std::vector<TCellID>& ACells) override;
+		void delegateSetRegionIDs(const std::vector<TCellID>& ACells) override;
 
-		virtual void delegateNodeAdd(TCellID AElt);
-		virtual void delegateEdgeAdd(TCellID AElt);
-		virtual void delegateFaceAdd(TCellID AElt);
-		virtual void delegateRegionAdd(TCellID AElt);
+		void delegateNodeAdd(TCellID AElt) override;
+		void delegateEdgeAdd(TCellID AElt) override;
+		void delegateFaceAdd(TCellID AElt) override;
+		void delegateRegionAdd(TCellID AElt) override;
 
-		virtual void delegateNodeRemove(TCellID AElt);
-		virtual void delegateEdgeRemove(TCellID AElt);
-		virtual void delegateFaceRemove(TCellID AElt);
-		virtual void delegateRegionRemove(TCellID AElt);
+		void delegateNodeRemove(TCellID AElt) override;
+		void delegateEdgeRemove(TCellID AElt) override;
+		void delegateFaceRemove(TCellID AElt) override;
+		void delegateRegionRemove(TCellID AElt) override;
 
-		virtual void delegateNodeReplace(TCellID AID1, TCellID AID2);
-		virtual void delegateEdgeReplace(TCellID AID1, TCellID AID2);
-		virtual void delegateFaceReplace(TCellID AID1, TCellID AID2);
-		virtual void delegateRegionReplace(TCellID AID1, TCellID AID2);
+		void delegateNodeReplace(TCellID AID1, TCellID AID2) override;
+		void delegateEdgeReplace(TCellID AID1, TCellID AID2) override;
+		void delegateFaceReplace(TCellID AID1, TCellID AID2) override;
+		void delegateRegionReplace(TCellID AID1, TCellID AID2) override;
 
 		GMDSIg_API friend std::ostream & operator << (std::ostream & AStream, const Face& AN);
 

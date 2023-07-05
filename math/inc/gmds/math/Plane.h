@@ -64,12 +64,12 @@ public:
          *
          * \param AT A 3D Triangle
          */
-        Plane(const Triangle& AT);
+        explicit Plane(const Triangle& AT);
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Overloaded operator=
 	 */
-	virtual Plane& operator= (const Plane&);
+	 Plane& operator= (const Plane&);
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Overloaded operator==
@@ -165,7 +165,7 @@ public:
 	 * 			other.
 	 * \param AS a segment
 	 */
-	bool intersect(const Segment& AS, const bool AProper = false) const;
+	bool intersect(const Segment& AS, bool AProper = false) const;
 
 	/**
 	 * @brief checf it the current plan intersect segment @AS
@@ -180,7 +180,7 @@ public:
     IntersectionType intersect(const Segment& AS, Point &PI,
     		double& AW0,
     		double& AW1,
-    		const bool AProper = false) const;
+    		bool AProper = false) const;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  predicate indicating if two planes intersect each other.
@@ -189,7 +189,7 @@ public:
 	 * \param AProper indicates if limit cases must be true or false
 	 *
 	 */
-	bool intersect(const Plane& AP, const bool AProper = false) const;
+	bool intersect(const Plane& AP, bool AProper = false) const;
 
 
 

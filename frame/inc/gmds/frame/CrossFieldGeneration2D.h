@@ -30,7 +30,7 @@ class LIB_GMDS_FRAME_API CrossFieldGeneration2D {
    *
    *  \param AMesh the mesh where we work on
    */
-  CrossFieldGeneration2D(gmds::Mesh* AMesh);
+  explicit CrossFieldGeneration2D(gmds::Mesh* AMesh);
      
   /*------------------------------------------------------------------------*/
   /** \brief specify the prefix of output files for debug
@@ -45,9 +45,9 @@ class LIB_GMDS_FRAME_API CrossFieldGeneration2D {
    *		   means that it drives the global execution algorithm, each 
    *		   specific part being delegated to child classes.
    */
-  void execute(const Strategy AStrategy);
+  void execute(Strategy AStrategy);
 
-    void writeForDebug(const std::string AFileName="");
+    void writeForDebug(const std::string& AFileName="");
 
  private:
     
@@ -111,8 +111,8 @@ class LIB_GMDS_FRAME_API CrossFieldGeneration2D {
    *
    * \return the node of AEdge, which is opposite to ANode
    */
-   gmds::Node getNeighboorOn(const gmds::Node& ANode, 
-			     const gmds::Edge& AEdge) const;
+   static gmds::Node getNeighboorOn(const gmds::Node& ANode,
+			     const gmds::Edge& AEdge) ;
                              
 /*------------------------------------------------------------------------*/
   /** \brief Computes the deviation per face as the mean between the angle deviation of the refence vectors at the corners of the face
@@ -123,7 +123,7 @@ class LIB_GMDS_FRAME_API CrossFieldGeneration2D {
    void computeReferenceVectorDeviationPerFace();
 
    /*------------------------------------------------------------------------*/
-   void smooth(const int AMark);
+   void smooth(int AMark);
    void smoothAll();
    void colorSimplices();
 
@@ -138,15 +138,15 @@ class LIB_GMDS_FRAME_API CrossFieldGeneration2D {
   std::string m_debug_output;
 
   /** mark for nodes on curves */
-  int m_markNodeOnCurv;
+  gmds::TInt m_markNodeOnCurv;
   /** mark for nodes on points */
-  int m_markNodeOnPnt;
+  gmds::TInt m_markNodeOnPnt;
   /** mark for edges on curves */
-  int m_markEdgeOnCurv;
+  gmds::TInt m_markEdgeOnCurv;
   /** mark for faces we work on */
-  int m_markFace;
+  gmds::TInt m_markFace;
   /** mark for isolated nodes (connected to nothing) */
-  int m_markIsolated;
+  gmds::TInt m_markIsolated;
 
   /** all the nodes on a curve (but not on a point) */
   std::vector<gmds::Node> m_curve_nodes;

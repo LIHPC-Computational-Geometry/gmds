@@ -8,9 +8,10 @@
 #define GMDS_CELLGROUP_H_
 /*----------------------------------------------------------------------------*/
 // STL File Headers
+#include <utility>
 #include <vector>
 #include <string>
-#include <math.h>
+#include <cmath>
 /*----------------------------------------------------------------------------*/
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/ig/Mesh.h>
@@ -33,14 +34,14 @@ namespace gmds {
 		/*--------------------------------------------------------------------*/
 		/** \brief  Constructor.
          */
-		CellGroup(Mesh* AMesh, const std::string& AName="")
-				: m_mesh(AMesh), m_name(AName){;}
+		explicit CellGroup(Mesh* AMesh, std::string  AName="")
+				: m_mesh(AMesh), m_name(std::move(AName)){}
 
 		/*------------------------------------------------------------------------*/
 		/** \brief  Copy constructor.
          */
 		CellGroup(const CellGroup<TCellType>& ACGroup)
-				: m_mesh(ACGroup.m_mesh), m_name(ACGroup.m_name), m_cells(ACGroup.m_cells){;}
+				: m_mesh(ACGroup.m_mesh), m_name(ACGroup.m_name), m_cells(ACGroup.m_cells){}
 
 
 		bool operator==(const CellGroup<TCellType>& ACGroup)
@@ -53,7 +54,7 @@ namespace gmds {
 		/*------------------------------------------------------------------------*/
 		/** \brief  Destructor.
          */
-		virtual ~CellGroup(){;}
+		virtual ~CellGroup(){}
 
 		/*------------------------------------------------------------------------*/
 		/** \brief  Add a cell into the group. Warning, A cell can be twice inside

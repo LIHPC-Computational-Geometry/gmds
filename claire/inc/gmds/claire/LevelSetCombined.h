@@ -31,8 +31,8 @@ class LIB_GMDS_CLAIRE_API LevelSetCombined
          *  @param AmarkFrontNodesOut the nodes on the exterior front to advance
 	 */
 	LevelSetCombined(Mesh *AMesh,
-	                 int AmarkFrontNodesInt,
-	                 int AmarkFrontNodesOut,
+	                 TInt AmarkFrontNodesInt,
+	                 TInt AmarkFrontNodesOut,
 	                 Variable<double>* Adistance,
 	                 Variable<double>* Adistance_Int,
 	                 Variable<double>* Adistance_Out);
@@ -54,9 +54,9 @@ class LIB_GMDS_CLAIRE_API LevelSetCombined
 	/** mesh we work on */
 	Mesh *m_mesh;
 	/** ids of the nodes on the interior front to advance */
-	int m_markFrontNodesInt;
+	TInt m_markFrontNodesInt;
 	/** ids of the nodes on the exterior front to advance */
-	int m_markFrontNodesOut;
+	TInt m_markFrontNodesOut;
 	/** carte des distances par rapport au front concerné */
 	Variable<double>* m_distance;
 	/** carte des distances par rapport au front concerné */

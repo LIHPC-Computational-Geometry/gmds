@@ -40,14 +40,14 @@ Quadrilateral::Quadrilateral(const Quadrilateral& AQ)
 	m_pnts[3] = AQ.m_pnts[3];
 }
 /*----------------------------------------------------------------------------*/
-Quadrilateral::~Quadrilateral(){;}
+Quadrilateral::~Quadrilateral(){}
 /*----------------------------------------------------------------------------*/
 const Point& Quadrilateral::getPoint(const TInt& AIndex) const
 {
 	return m_pnts[AIndex];
 }
 /*----------------------------------------------------------------------------*/
-int Quadrilateral::getNbPoints() const
+int Quadrilateral::getNbPoints()
 {
         return 4;
 }
@@ -115,9 +115,9 @@ Quadrilateral::computeScaledJacobian2D() const
                         scaledJ[iVertex] = det/l01;
         }
         double scaledJmin = HUGE_VALF; 
-        for(int iVertex = 0; iVertex < 4; iVertex++) {
-                if(scaledJ[iVertex] < scaledJmin) {
-                        scaledJmin = scaledJ[iVertex];
+        for(double iVertex : scaledJ) {
+                if(iVertex < scaledJmin) {
+                        scaledJmin = iVertex;
                 }
         }
         

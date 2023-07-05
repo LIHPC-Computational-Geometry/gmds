@@ -105,14 +105,14 @@ bool BlockMesher::meshEdges() {
         if(m_with_geometry){
             //all nodes internal to the block edges are classified as the edge
             for (auto i = 1; i < m_nb_edges_in_discretization; i++) {
-                if(m_linker->getGeomDim(e)==cad::GeomMeshLinker::LINK_CURVE) {
+                if(m_linker->getGeomDim(e)==cad::GeomMeshLinker::LinkCurve) {
                     m_mesh_node_classification[discretization_ids[i]] = Cell::Data(1, m_linker->getGeomId(e));
-                } else  if(m_linker->getGeomDim(e)==cad::GeomMeshLinker::LINK_SURFACE) {
+                } else  if(m_linker->getGeomDim(e)==cad::GeomMeshLinker::LinkSurface) {
                     m_mesh_node_classification[discretization_ids[i]] = Cell::Data(2, m_linker->getGeomId(e));
                 }
             }
             //now, we create the edge and link them
-            if(m_linker->getGeomDim(e)==cad::GeomMeshLinker::LINK_CURVE){
+            if(m_linker->getGeomDim(e)==cad::GeomMeshLinker::LinkCurve){
                 //we create mesh edges and we classified them on the curve!
                 for (auto i = 1; i <= m_nb_edges_in_discretization; i++) {
                     Edge e_i = m_mesh->newEdge(discretization_ids[i-1],discretization_ids[i]);
@@ -241,7 +241,7 @@ bool BlockMesher::meshFaces()  {
             for(auto j=1; j<N-1;j++) {
                 Node nij = m_mesh->newNode(discretization_pnts[i][j]);
                 discretization_ids[i][j]= nij.id();
-                if(m_with_geometry && m_linker->getGeomDim(f)==cad::GeomMeshLinker::LINK_SURFACE){
+                if(m_with_geometry && m_linker->getGeomDim(f)==cad::GeomMeshLinker::LinkSurface){
                     //classified on a surface and so the node too
                     m_mesh_node_classification[nij.id()]=Cell::Data(2, m_linker->getGeomId(f));
 
@@ -262,7 +262,7 @@ bool BlockMesher::meshFaces()  {
                 Face q = m_mesh->newQuad(n_ids[i][j],n_ids[i+1][j],n_ids[i+1][j+1],n_ids[i][j+1]);
                 face_ids.push_back(q.id());
                 var_mesh_surf->value(q.id())=f_id;
-                if(m_with_geometry && m_linker->getGeomDim<Face>(f_id)==cad::GeomMeshLinker::GeomMeshLinker::LINK_SURFACE){
+                if(m_with_geometry && m_linker->getGeomDim<Face>(f_id)==cad::GeomMeshLinker::GeomMeshLinker::LinkSurface){
                     //classified on a surface and so the node too
                     m_mesh_face_classification[q.id()]=Cell::Data(2, m_linker->getGeomId<Face>(f_id));
                 }

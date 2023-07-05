@@ -35,25 +35,33 @@ namespace gmds{
             /*------------------------------------------------------------------------*/
             /** \brief  Constructor
              */
-            GeomVolume(const std::string& AName = "Unknown volume")
-                    :GeomEntity(AName){;}
+            explicit GeomVolume(const std::string& AName = "Unknown volume")
+                    :GeomEntity(AName){}
 
             /*------------------------------------------------------------------------*/
             /** \brief  provides the dimension of the geometrical entity.
              */
-            int dim() const {return 3;}
+            int dim() const override {return 3;}
 
             /*------------------------------------------------------------------------*/
             /** \brief Project the point AP unto the geometric entity.
              *
              *  \param AP the point to project
              */
-            virtual void project(gmds::math::Point& AP) const{
-                math::Point p=AP;
+            void project(gmds::math::Point& AP) const override{
 
                 throw GMDSException("GeomVolume::project not implemented");
             };
+	         /*------------------------------------------------------------------------*/
+	         /** \brief Get the closest point from AP on the surface
+             *  \param AP a 3D point
+             *
+             *  \return the closest point of APoint on the surface
+	          */
+	         math::Point closestPoint(const math::Point& AP) const override{
 
+		          throw GMDSException("GeomVolume::closestPoint not implemented");
+	         };
             /**@brief Accessor to the adjacent points. Warning, there is no
              *  assumption about the ordering
              * @return points that are adjacent to this point

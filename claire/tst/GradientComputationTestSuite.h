@@ -53,7 +53,7 @@ TEST(GradientComputationTestClass, GradientComputation2D_Test1)
 	std::vector<TCellID> bnd_node_ids;
 	bnd_op.getBoundaryNodes(bnd_node_ids);
 
-	int markFrontNodes = m.newMark<gmds::Node>();
+	TInt markFrontNodes = m.newMark<gmds::Node>();
 	for(auto id:bnd_node_ids){
 		Node n = m.get<Node>(id);
 		double coord_y = n.Y() ;
@@ -110,7 +110,7 @@ TEST(GradientComputationTestClass, GradientComputation3D_Test1)
 	doctor.buildEdgesAndX2E();
 	doctor.updateUpwardConnectivity();
 
-	int markFrontNodes = m.newMark<gmds::Node>();
+	TInt markFrontNodes = m.newMark<gmds::Node>();
 
 	// Initialisation de la marque pour noter quels fronts sont à avancer
 	for(auto id:m.nodes()){
@@ -176,7 +176,7 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_2D_Test1)
 	std::vector<TCellID> bnd_node_ids;
 	bnd_op.getBoundaryNodes(bnd_node_ids);
 
-	int markFrontNodes = m.newMark<gmds::Node>();
+	TInt markFrontNodes = m.newMark<gmds::Node>();
 	for(auto id:bnd_node_ids){
 		Node n = m.get<Node>(id);
 		double coord_y = n.Y() ;
@@ -234,7 +234,7 @@ TEST(GradientComputationTestClass, LeastSquaresGradientComputation_3D_Test1)
 	doctor.buildEdgesAndX2E();
 	doctor.updateUpwardConnectivity();
 
-	int markFrontNodes = m.newMark<gmds::Node>();
+	TInt markFrontNodes = m.newMark<gmds::Node>();
 
 	// Initialisation de la marque pour noter quels fronts sont à avancer
 	for(auto id:m.nodes()){

@@ -204,8 +204,8 @@ std::vector<std::string> Parameters::parseIni(const std::string& AFileName)
         }
         // ----------- STRING VALUE -----------------------------
         else {
-            const char* v = iniparser_getstring(dico,param_ch, NULL);
-            if(v==NULL){
+            const char* v = iniparser_getstring(dico,param_ch, nullptr);
+            if(v== nullptr){
                 wrong.push_back(param_s);
             }
             else{

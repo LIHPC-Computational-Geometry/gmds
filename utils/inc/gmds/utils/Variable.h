@@ -24,8 +24,8 @@ namespace gmds{
     class GMDSUtils_API VariableItf{
     public:
 
-        VariableItf() {;}
-        virtual ~VariableItf() {;}
+        VariableItf() {}
+        virtual ~VariableItf() {}
 
         /*------------------------------------------------------------------------*/
         /** \brief  Accessor to the variable name
@@ -34,15 +34,15 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief  Add a new entry for this variable
          */
-        virtual void addEntry(const int& i) = 0;
+        virtual void addEntry(const TCellID& i) = 0;
         /*------------------------------------------------------------------------*/
         /** \brief  Remove an entry for this variable
          */
-        virtual void removeEntry(const int& i) = 0;
+        virtual void removeEntry(const TCellID& i) = 0;
         /*------------------------------------------------------------------------*/
         /** \brief Set the domain entry to [0,i]
          */
-        virtual void setDomain(const int& i) = 0;
+        virtual void setDomain(const TCellID& i) = 0;
         /*------------------------------------------------------------------------*/
         /** \brief Get the domain size
          */
@@ -50,7 +50,7 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** \brief Set the domain entry to [0,i] with some default values
          */
-        virtual void setDomainWithDefault(const int& i, const std::vector<int>& def) = 0;
+        virtual void setDomainWithDefault(const TCellID& i, const std::vector<TInt>& def) = 0;
         /*------------------------------------------------------------------------*/
         /** \brief Clear all the domain
          */
@@ -83,29 +83,29 @@ namespace gmds{
 /** \brief  Constructor. Every variable has a name
  */
         Variable(const std::string& AName = "no name")
-                : m_name(AName) {;}
+                : m_name(AName) {}
 
 /*------------------------------------------------------------------------*/
 /** \brief  Destructor.
  */
-        virtual ~Variable() {;}
+        virtual ~Variable() {}
 
 /*------------------------------------------------------------------------*/
 /** \brief  overload operator[] const
  */
-        T const& operator[](const int& i) const { return m_data[i]; }
+        T const& operator[](const TCellID& i) const { return m_data[i]; }
 /*------------------------------------------------------------------------*/
 /** \brief  overload operator[]. It allows to modify a variable value
  */
-        T& operator[](const int& i) { return m_data[i]; }
+        T& operator[](const TCellID& i) { return m_data[i]; }
         /*------------------------------------------------------------------------*/
 /** \brief  overload operator[] const
  */
-        T const& value(const int &i) const { return m_data[i]; }
+        T const& value(const TCellID &i) const { return m_data[i]; }
 /*------------------------------------------------------------------------*/
 /** \brief  overload operator[]. It allows to modify a variable value
  */
-        T& value(const int &i) { return m_data[i]; }
+        T& value(const TCellID &i) { return m_data[i]; }
 
 
 /*------------------------------------------------------------------------*/
@@ -134,7 +134,7 @@ namespace gmds{
 /** \brief  Add a new entry for this variable
  */
         virtual void
-        addEntry(const int& i) {
+        addEntry(const TCellID& i) {
             if (m_data.isOutOfContainer(i))
                 m_data.resize(2 * i);
             // This choice is maybe too expensive
@@ -144,16 +144,16 @@ namespace gmds{
 /** \brief  Remove an entry for the variable
  */
         virtual void
-        removeEntry(const int& i) { m_data.remove(i); }
+        removeEntry(const TCellID& i) { m_data.remove(i); }
 /*------------------------------------------------------------------------*/
 /** \brief Set entry i to value val
  */
-        void set(const int& i, const T& val) { m_data.assign(val, i); }
+        void set(const TCellID& i, const T& val) { m_data.assign(val, i); }
 
 /*------------------------------------------------------------------------*/
 /** \brief Set the domain entry to [0,i]
  */
-        void setDomain(const int& i) { m_data.resize(i); }
+        void setDomain(const TCellID& i) { m_data.resize(i); }
 
 /*------------------------------------------------------------------------*/
 /** \brief Get the domain size
@@ -164,7 +164,7 @@ namespace gmds{
 /** \brief Set the domain entry to [0,i] with some default values
  */
         void
-        setDomainWithDefault(const int& i, const std::vector<int>& def)
+        setDomainWithDefault(const TCellID& i, const std::vector<TInt>& def)
         {
             m_data.resize(i);
             if (def.size() > (unsigned int)i)

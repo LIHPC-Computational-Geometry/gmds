@@ -21,12 +21,12 @@ TopologyGraph::TopologyGraph(cad::FACManager* Amanager, cad::GeomMeshLinker* Ali
     BND_COLOR = m_mesh->getVariable<int,GMDS_FACE>("BND_SURFACE_COLOR");
     try {
         m_surface_color = m_mesh->newVariable<int, GMDS_FACE>("surface_color");
-    }catch (GMDSException e) {
+    }catch (GMDSException& e) {
         m_surface_color = m_mesh->getVariable<int, GMDS_FACE>("surface_color");
     }
     try {
         m_isomorph = m_mesh->newVariable<int, GMDS_FACE>("isomorph");
-    }catch (GMDSException e) {
+    }catch (GMDSException& e) {
         m_isomorph = m_mesh->getVariable<int, GMDS_FACE>("isomorph");
     }
     m_isomorph_tet = m_mesh->newVariable<int, GMDS_REGION>("isomorph_tet");

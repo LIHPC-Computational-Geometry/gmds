@@ -1,6 +1,9 @@
 /*------------------------------------------------------------------------*/
 // Created by Claire Roche on 21/10/2021.
 /*------------------------------------------------------------------------*/
+#ifdef USE_CGNS
+   #include <gmds/blocking/CGNSWriter.h>
+#endif
 #include <gmds/claire/AbstractAeroPipeline.h>
 #include <gmds/claire/AeroPipeline_2D.h>
 #include <gmds/claire/AeroPipeline_3D.h>
@@ -15,25 +18,32 @@ using namespace gmds;
 /*----------------------------------------------------------------------------*/
 int main(int argc, char* argv[])
 {
-	std::cout << "=== CLAIRE ALGO ====" << std::endl;
+	std::cout << "=== AERO ALGO ====" << std::endl;
 
-	ParamsAero params;
-	params.dim=ParamsAero::DIM_2D;
-	params.input_file="...";
-
-	AbstractAeroPipeline* algo = NULL;
-	if(params.dim==ParamsAero::DIM_2D){
-		algo = new AeroPipeline_2D(params);
-	}
-	else if(params.dim==ParamsAero::DIM_3D){
-		algo = new AeroPipeline_3D(params);
-	}
-	else{
-		std::cout<<" Wrong dimension "<<std::endl;
+	if (argc != 4 )
+	{
+		std::cout << "Merci de préciser <repertoire/de/travail> <fichier_param.ini> <fichier_sorti.cgns>" << std::endl;
 		exit(0);
 	}
-	algo->execute();
 
-	delete algo;
+	std::string dir(argv[1]);
+	std::string param_file(argv[2]);
+	std::string output_file(argv[3]);
 
+	std::string input_file=dir+param_file;
+
+	// Mesh Generation
+	AeroPipeline_2D algo_aero2D(input_file, dir);
+	AbstractAeroPipeline::STATUS aero2D_result = algo_aero2D.execute();
+
+	if(aero2D_result == AbstractAeroPipeline::SUCCESS) {
+#ifdef USE_CGNS
+		blocking::CGNSWriter writer(algo_aero2D.getBlocking());
+		writer.write(output_file, dir);
+#else
+		std::cout<<"CGNS export is desactivated"<<std::endl;
+#endif
+	}else{
+		std::cout<<"Erreur dans le pipeline Aero"<<std::endl;
+	}
 }

@@ -24,7 +24,7 @@ namespace gmds{
          *
          *  @param AMesh the mesh where sheet operations are performed.
          */
-        BoundaryOperator(Mesh* AMesh,const double AAngle=0.72);
+        explicit BoundaryOperator(Mesh* AMesh,double AAngle=0.72);
 
         /*------------------------------------------------------------------------*/
         /** @brief  Destructor.	*/
@@ -33,12 +33,12 @@ namespace gmds{
         /*------------------------------------------------------------------------*/
         /** @brief  Setter to the angle value used to determine if an edge is sharp
          *          enough to separate two surfaces*/
-        void setSurfaceAngleDot(const double AD);
+        void setSurfaceAngleDot( double AD);
 
         /*------------------------------------------------------------------------*/
         /** @brief  Getter to the angle value used to determine if an edge is sharp
          *          enough to separate two surfaces*/
-        double getSurfaceAngleDot();
+        double getSurfaceAngleDot() const;
 
 
         bool isValid() const;
@@ -57,13 +57,13 @@ namespace gmds{
          * 	@param AMarkAN isolated nodes (connected to nothing) are marked with it
          */
 
-        void markCellOnGeometry(const int AMarkFOnSurf,
-                                const int AMarkEOnSurf,
-                                const int AMarkNOnSurf,
-                                const int AMarkEOnCurve,
-                                const int AMarkNOnCurve,
-                                const int AMarkNOnPnt,
-                                const int AMarkAN);
+        void markCellOnGeometry( int AMarkFOnSurf,
+                                 int AMarkEOnSurf,
+                                 int AMarkNOnSurf,
+                                 int AMarkEOnCurve,
+                                 int AMarkNOnCurve,
+                                 int AMarkNOnPnt,
+                                 int AMarkAN);
 
         /*------------------------------------------------------------------------*/
         /** @brief  Mark cells on the boundary surface
@@ -73,7 +73,7 @@ namespace gmds{
          * 	@param AMarkBE edges on the boundary surfs are marked with it
          */
 
-        void markCellsOnSurfaces(const int AMarkBF, const int AMarkBE, const int AMarkBN);
+        void markCellsOnSurfaces( int AMarkBF,  int AMarkBE,  int AMarkBN);
 
         /*------------------------------------------------------------------------*/
         /** @brief  Mark the boundary edges that fit geometric curves
@@ -82,8 +82,8 @@ namespace gmds{
          * @param  AMarkCE OUT edges on geom curves
          * @param  AMarkCN OUT nodes on geom curves
          */
-        void markCellsOnCurves(const int AMarkBF , const int AMarkBE,
-                               const int AMarkCE, const int AMarkCN);
+        void markCellsOnCurves( int AMarkBF ,  int AMarkBE,
+                                int AMarkCE,  int AMarkCN);
 
         /*------------------------------------------------------------------------*/
         /** @brief Mark the boundary edges that fit geometric curves for surface
@@ -91,7 +91,7 @@ namespace gmds{
          * @param  AMarkCE OUT edges on geom curves
          * @param  AMarkCN OUT nodes on geom curves
          */
-        void markCellsOnCurves(const int AMarkCE, const int AMarkCN);
+        void markCellsOnCurves( int AMarkCE,  int AMarkCN);
 
 
         /*------------------------------------------------------------------------*/
@@ -100,14 +100,14 @@ namespace gmds{
          * @param  AMarkCN IN  nodes on geom curves
          * @param  AMarkPN OUT nodes on geom points
          */
-        void markNodesOnPoint(const int AMarkCE, const int AMarkCN,
-                              const int AMarkPN);
+        void markNodesOnPoint( int AMarkCE,  int AMarkCN,
+                               int AMarkPN);
 
         /*------------------------------------------------------------------------*/
         /** @brief  Mark the boundary nodes that do not have adjacent edges
          * @param  AMarkAlone IN mark of alone nodes
          */
-        void markAloneNodes(const int AMarkAlone);
+        void markAloneNodes( int AMarkAlone);
 
         /*------------------------------------------------------------------------*/
         /** @brief  Color the boundary faces with different colors to get one color
@@ -119,8 +119,8 @@ namespace gmds{
          * @param[in] AColor color variable to be used. Otherwise, variable named
          *            "BND_SURFACE_COLOR" will be retrieved or created.
          */
-        void colorFaces(const int AMarkFOnSurf, const int AMarkEOnCurv,
-                        Variable<int>* AColor=NULL);
+        void colorFaces( int AMarkFOnSurf,  int AMarkEOnCurv,
+                        Variable<int>* AColor=nullptr);
 
         /*------------------------------------------------------------------------*/
         /** @brief  Color the boundary edges with different colors to get one
@@ -132,8 +132,8 @@ namespace gmds{
          * @param[in] AColor color variable to be used. Otherwise, variable named
          *            "BND_CURVE_COLOR" will be retrieved or created.
          */
-        void colorEdges(const int AMarkEOnCurv, const int AMarkNOnPnt,
-                        Variable<int>* AColor=NULL);
+        void colorEdges( int AMarkEOnCurv,  int AMarkNOnPnt,
+                        Variable<int>* AColor=nullptr);
 
         /*------------------------------------------------------------------------*/
         /** @brief  Color the boundary  nodes to get one color per geometric vertex
@@ -143,8 +143,8 @@ namespace gmds{
          * @param[in] AColor color variable to be used. Otherwise, variable named
          *            "BND_VERTEX_COLOR" will be retrieved or created.
          */
-        void colorNodes(const int AMarkNOnPnt,
-                        Variable<int>* AColor=NULL);
+        void colorNodes(int AMarkNOnPnt,
+                        Variable<int>* AColor= nullptr);
         /*------------------------------------------------------------------------*/
         /** @brief Return the boundary nodes
          *
@@ -158,7 +158,7 @@ namespace gmds{
          * @param  ARegion a region adj. to AFace
          * @return the normal to AFace going out of ARegion
          */
-        math::Vector3d getOutputNormal(Face& AFace, Region& ARegion);
+        static math::Vector3d getOutputNormal(Face& AFace, Region& ARegion);
 
         /*------------------------------------------------------------------------*/
         /** @brief Compute the normal to AFace going out of a mesh

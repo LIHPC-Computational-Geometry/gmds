@@ -7,7 +7,7 @@
 namespace gmds{
    namespace hybrid{
 
-using TSimplexID = int32_t;
+using TSimplexID = long; //FIXME: warning FL did that change to avoid type imcompatibilities
   }
 }
 /*----------------------------------------------------------------------------*/

@@ -34,7 +34,7 @@ namespace gmds {
                 PointVolumetricData(const gmds::math::Point& AP,
                                     const gmds::math::Vector3d& AV,
                                     const gmds::Region& AR)
-                        :pnt(AP),dir(AV),tet(AR){;}
+                        :pnt(AP),dir(AV),tet(AR){}
             };
 
             /*------------------------------------------------------------------------*/

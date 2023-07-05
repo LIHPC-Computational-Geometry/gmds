@@ -18,7 +18,7 @@ set(UT_KMDS_SRC_FILES
 
 add_executable(UT_kmds main.cpp ${UT_KMDS_SRC_FILES})
 
-target_link_libraries(UT_kmds gtest gmock kmds ${LIB_GMDS_IG})
+target_link_libraries(UT_kmds GTest::gtest kmds ${LIB_GMDS_IG})
 
 #add_custom_command(
 #   TARGET UT_kmds
@@ -35,6 +35,5 @@ target_link_libraries(UT_kmds gtest gmock kmds ${LIB_GMDS_IG})
 
 
 #add_subdirectory(Samples)
-
 gtest_discover_tests(UT_kmds
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})

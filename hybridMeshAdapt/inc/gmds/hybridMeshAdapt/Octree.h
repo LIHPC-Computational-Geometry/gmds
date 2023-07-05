@@ -70,9 +70,9 @@ namespace gmds
 
       std::vector<double> getBorderOctree() const;
 
-      std::vector<int> getSimplices() const {return m_simplices;}
+      const std::vector<TInt> getSimplices() const {return m_simplices;}
 
-      std::vector<int> getTriangles() const {return m_triangles;}
+      const std::vector<TInt> getTriangles() const {return m_triangles;}
 
     private:
       double m_xmin, m_xmax, m_ymin, m_ymax, m_zmin, m_zmax;

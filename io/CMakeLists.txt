@@ -6,6 +6,11 @@ set(GMDS_LIB ${LIB_GMDS_IO})
 set(GMDS_LIB_PREFIX gmds/io)
 
 
+
+#==============================================================================
+# Compilation options mainly for testing purpose
+#==============================================================================
+option(WITH_LIMA "Activate LIMA format support"        OFF)
 option(WITH_MESHB "Activate Meshb.7 format support"    OFF)
 
 set(GMDS_INC
@@ -17,7 +22,8 @@ set(GMDS_INC
         inc/gmds/io/MeditReader.h
         inc/gmds/io/VTKReader.h
         inc/gmds/io/VTKWriter.h
-        inc/gmds/io/GMSHWriter.h )
+        inc/gmds/io/GMSHWriter.h
+        inc/gmds/io/MdlReader.h)
 set(GMDS_SRC
         src/IGMeshIOService.cpp
         src/IMeshIOService.cpp
@@ -26,7 +32,8 @@ set(GMDS_SRC
         src/MeditReader.cpp
         src/VTKReader.cpp
         src/VTKWriter.cpp
-        src/GMSHWriter.cpp )
+        src/GMSHWriter.cpp
+        src/MdlReader.cpp)
 
 if(WITH_MESHB)
    list(APPEND GMDS_INC inc/gmds/io/MeshBWriter.h)
@@ -42,6 +49,17 @@ if(WITH_MESHB)
    endif()
 endif()
 
+
+if(WITH_LIMA)
+    find_package(Lima REQUIRED)
+    list(APPEND GMDS_INC
+            inc/gmds/io/LimaWriter.h
+            inc/gmds/io/LimaReader.h)
+    list(APPEND GMDS_SRC
+            src/LimaWriter.cpp
+            src/LimaReader.cpp)
+
+endif()
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
@@ -55,15 +73,21 @@ generate_export_header(${GMDS_LIB}
 include(GNUInstallDirs)
 
 #LIBRARY TO INSTALL
-if(WITH_MESHB)
-   target_link_libraries(${GMDS_LIB} PUBLIC
-           ${LIB_GMDS_IG}
-           ${LIB_GMDS_SOFIANE}
-           PRIVATE
-           ${libMeshb_LIBRARIES})
+if(WITH_LIMA)
+    target_link_libraries(${GMDS_LIB} PUBLIC
+            ${LIB_GMDS_IG}
+            ${LIB_GMDS_SOFIANE}
+            Lima::Lima)
+elseif(WITH_MESHB)
+        target_link_libraries(${GMDS_LIB} PUBLIC
+                ${LIB_GMDS_IG}
+                ${LIB_GMDS_SOFIANE}
+                PRIVATE
+                ${libMeshb_LIBRARIES})
 else()
    target_link_libraries(${GMDS_LIB} PUBLIC
            ${LIB_GMDS_IG}
+           ${LIB_GMDS_IGALGO}
            ${LIB_GMDS_SOFIANE})
 endif()
 

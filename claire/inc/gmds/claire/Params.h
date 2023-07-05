@@ -37,6 +37,8 @@ namespace gmds {
 
         /** algo type */
         Dimension dim;
+	     /** */
+	     int dimension;
         /** phase we start from */
         AlgoPhaseType start_from;
         /** last phase we do */
@@ -49,6 +51,11 @@ namespace gmds {
         std::string output_file;
         /** Output directory */
         std::string output_dir;
+
+	     /** Input 3D surface mesh file name */
+	     std::string input_file_3D_surface;		// 3D parameter
+	     /** Block Surface 3D */
+	     int block_surface_3D;							// 3D parameter
 
 	     /** Epaisseur de couche limite */
 	     double delta_cl;
@@ -89,6 +96,9 @@ namespace gmds {
 
 	     /** Limit between inlet and outlet for SU2 writer */
 	     double x_lim_SU2_inoutlet;
+
+	     /** If true the result mesh will have a cut on the X axis */
+	     bool axisymetry;
     };
 /*------------------------------------------------------------------------*/
 }
