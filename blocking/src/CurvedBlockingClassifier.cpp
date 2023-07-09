@@ -140,11 +140,12 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 		auto geo_i1 = ending_nodes[1]->info().geom_id;
 
 		/* We list possible configuration of ending nodes classification:
-		 * We decide to don't classified an edge on a surface during this process. We'll classify the edges in this case, when we'll classify the faces
+		 * We decide to not classify an edge on a surface during this process.
+		 * IMPORTANT: We'll classify the edges in this case, when we'll classify the faces
 		 * 1) Nodes are on different geom points. If those points have a common curve, then the
 		 *    edge is on this curve. If they have several common curves,we don't know.
 		 * 2) Nodes are on different geom points. If those points have no common curve, but a
-		 *    common surface, then the edge is not classified.
+		 *    common surface, then the edge is on the surface.
 		 * 3) Nodes are on the same curve, then is the edge.
 		 * 4) One node is on a point P and the other on a curve, then the edge is
        *    on this curve if it is adjacent to point P
@@ -161,7 +162,7 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 				it->info().geom_id = curve_id;
 			}
 			else{
-				// Nothing (CONFIGURATION 6)
+				// Nothing (CONFIGURATION 5)
 				it->info().geom_dim = 4;
 				it->info().geom_id = NullID;
 				AErrors.non_classified_edges.push_back(it->info().topo_id);
@@ -172,7 +173,6 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 			it->info().geom_dim = 1;
 			it->info().geom_id = geo_i0;
 		}
-
 		else if ((geo_d0==0 && geo_d1==1) || (geo_d0==1 && geo_d1==0)){
 			//we check if the point is adjacent to the curve
 			auto p_id = (geo_d0<geo_d1)?geo_d0:geo_d1;
@@ -193,12 +193,13 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 			AErrors.non_classified_edges.push_back(it->info().topo_id);
 		}
 	}
+
+	//Now that edges are clasified on curves
 }
 /*----------------------------------------------------------------------------*/
 void
 CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &AErrors)
 {
-
 	GMap3 *gm = m_blocking->gmap();
 	std::vector<cad::GeomPoint *> geom_points;
 	std::vector<cad::GeomCurve *> geom_curves;
@@ -207,19 +208,13 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 	m_geom_model->getCurves(geom_curves);
 	m_geom_model->getSurfaces(geom_surfaces);
 
-	auto errors_Capt = detect_classification_errors();
+	auto errors_capt = detect_classification_errors();
 	//check if all points and all curves are captured
-	if(detect_classification_errors().non_captured_surfaces.empty() && detect_classification_errors().non_captured_points.empty()) {
+	if(errors_capt.non_captured_surfaces.empty() && errors_capt.non_captured_points.empty()) {
 		auto faces = m_blocking->get_all_faces();
 		auto map_faces_colored = exterior_faces_coloration(faces);
 	}
-
-
-
-
-
 }
-
 /*----------------------------------------------------------------------------*/
 ClassificationErrors
 CurvedBlockingClassifier::classify(const double AMaxDistance, const double APointSnapDistance)
@@ -250,8 +245,6 @@ CurvedBlockingClassifier::find_node_classified_on(cad::GeomPoint *AP)
 }
 
 /*----------------------------------------------------------------------------*/
-
-
 std::pair<bool, std::vector<CurvedBlocking::Edge>>
 CurvedBlockingClassifier::find_edge_classified_on(cad::GeomCurve *AC)
 {
@@ -341,10 +334,7 @@ CurvedBlockingClassifier::find_edge_classified_on(cad::GeomCurve *AC)
 	}
 	return {false, edgesOnCurve};
 }
-
 /*----------------------------------------------------------------------------*/
-
-
 std::tuple<double, int, math::Point>
 CurvedBlockingClassifier::get_closest_cell(const math::Point &AP, const std::vector<cad::GeomEntity *> &AGeomCells)
 {
@@ -376,12 +366,10 @@ bool CurvedBlockingClassifier::boundary_surface_captured(cad::GeomSurface *AS){
 }
 /*----------------------------------------------------------------------------*/
 std::map<gmds::TCellID,int>
-   CurvedBlockingClassifier::exterior_faces_coloration(std::vector<CurvedBlocking::Face> &Faces){
-
+CurvedBlockingClassifier::exterior_faces_coloration(std::vector<CurvedBlocking::Face> &Faces)
+{
 	GMap3 *gm = m_blocking->gmap();
-
 	std::vector<CurvedBlocking::Face> ext_faces;
-
 	std::map<gmds::TCellID,int> faces_colored;
 
 	int color = 1;
@@ -431,15 +419,10 @@ std::map<gmds::TCellID,int>
 			iterator++;
 		}
 
-
 		color++;
 		ext_faces.erase(ext_faces.begin());
-
 	}
-
-
 	return faces_colored;
-
 }
 
 

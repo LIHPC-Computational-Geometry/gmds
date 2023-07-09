@@ -70,5 +70,6 @@ void bind_blocking(py::module &m){
 	   .def(py::init<gmds::blocking::CurvedBlocking *>())
 	   .def("clear_classification", &gmds::blocking::CurvedBlockingClassifier::clear_classification)
 	   .def("classify", &gmds::blocking::CurvedBlockingClassifier::classify);
+		.def("detect_classification_errors", &gmds::blocking::CurvedBlockingClassifier::detect_classification_errors);
 
 }
