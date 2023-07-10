@@ -281,21 +281,7 @@ GMDS_ADD_COMPONENT(
 
 
 #==============================================================================
-#mettre les find package uniquement ou necessaire
-# faire pareil en dessous avec External project
-#find_package(Eigen3)
-if(NOT EIGEN3_FOUND)
-    include_directories(${CMAKE_SOURCE_DIR}/external/Eigen)
-    message(STATUS "Eigen3 not found, we use a local copy located in the external directory")
-else()
-    message(STATUS "Eigen3 found in ${EIGEN3_INCLUDE_DIR}")
-    # should be replaced by target_link_libraries (example Eigen3::Eigen)
-    include_directories(${EIGEN3_INCLUDE_DIR})
-endif(NOT EIGEN3_FOUND)
-
 set (GMDS_INCLUDE_DIRS APPEND)
-
-
 #==============================================================================
 # TESTING AND CODE COVERAGE
 #
