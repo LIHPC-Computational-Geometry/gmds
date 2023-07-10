@@ -1,5 +1,5 @@
 set (GMDS_VERSION x.y.z)
-
+include(CMakeFindDependencyMacro)
 find_dependency(Eigen3)
 
 @PACKAGE_INIT@
