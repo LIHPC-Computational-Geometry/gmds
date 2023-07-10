@@ -133,3 +133,55 @@ TEST(CurvedBlockingClassifierTestSuite,ReturnErrors){
 	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
 	vtk_writer_edges.write("debug_blocking_edges.vtk");
 }
+
+
+TEST(CurvedBlockingClassifierTestSuite,classifyFace){
+
+	gmds::cad::FACManager geom_model;
+	set_up(&geom_model,"Cube.vtk");
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+
+
+
+
+	classifier.clear_classification();
+
+	//Check nb points of the geometry and nb nodes of the blocking
+	ASSERT_EQ(8,geom_model.getNbPoints());
+	ASSERT_EQ(12,geom_model.getNbCurves());
+	ASSERT_EQ(6,geom_model.getNbSurfaces());
+	ASSERT_EQ(8,bl.get_all_nodes().size());
+	ASSERT_EQ(12,bl.get_all_edges().size());
+	ASSERT_EQ(6,bl.get_all_faces().size());
+
+
+	auto errors = classifier.classify();
+
+
+	//Check nb nodes/edges/faces no classified
+	ASSERT_EQ(0,errors.non_classified_nodes.size());
+	ASSERT_EQ(0,errors.non_classified_edges.size());
+	ASSERT_EQ(0,errors.non_classified_faces.size());
+
+	//Check nb points/curves/surfaces no captured
+	ASSERT_EQ(0,errors.non_captured_points.size());
+	ASSERT_EQ(0,errors.non_captured_curves.size());
+	//ASSERT_EQ(0,errors.non_captured_surfaces.size());
+	auto all_faces = bl.get_all_faces();
+	classifier.exterior_faces_coloration(all_faces);
+
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
+	bl.convert_to_mesh(m);
+
+
+	gmds::IGMeshIOService ios(&m);
+	gmds::VTKWriter vtk_writer(&ios);
+	vtk_writer.setCellOptions(gmds::N|gmds::R);
+	vtk_writer.setDataOptions(gmds::N|gmds::R);
+	vtk_writer.write("debug_blocking.vtk");
+	gmds::VTKWriter vtk_writer_edges(&ios);
+	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
+	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
+	vtk_writer_edges.write("debug_blocking_edges.vtk");
+}

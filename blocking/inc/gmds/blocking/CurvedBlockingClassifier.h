@@ -84,7 +84,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 
 	/**@brief This methods colored all the faces with the same color by surfaces
 	 */
-	std::map<gmds::TCellID,int> exterior_faces_coloration(std::vector<CurvedBlocking::Face>& Faces);
+	std::map<CurvedBlocking::Face,int> exterior_faces_coloration(std::vector<CurvedBlocking::Face>& Faces);
 
 
 
