@@ -3,6 +3,7 @@
 #include "gmds/ig/MeshDoctor.h"
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKReader.h"
+#include "gmds/io/VTKWriter.h"
 #include "gmds/utils/CommonTypes.h"
 /*----------------------------------------------------------------------------*/
 #include <pybind11/pybind11.h>
@@ -10,7 +11,9 @@
 /*----------------------------------------------------------------------------*/
 namespace py = pybind11;
 /*----------------------------------------------------------------------------*/
-void bind_mesh(py::module &m){
+void
+bind_mesh(py::module &m)
+{
 	py::enum_<gmds::ECellType>(m, "CellType")
 	   .value("GMDS_NODE", gmds::ECellType::GMDS_NODE)
 	   .value("GMDS_EDGE", gmds::ECellType::GMDS_EDGE)
@@ -73,5 +76,9 @@ void bind_mesh(py::module &m){
 	   .def("set_cell_options", &gmds::VTKReader::setCellOptions)
 	   .def("set_data_options", &gmds::VTKReader::setDataOptions);
 
-
+	py::class_<gmds::VTKWriter>(m, "VTKWriter")
+	   .def(py::init<gmds::IMeshIOService *>())
+	   .def("write", &gmds::VTKWriter::write)
+	   .def("set_cell_options", &gmds::VTKWriter::setCellOptions)
+	   .def("set_data_options", &gmds::VTKWriter::setDataOptions);
 }
