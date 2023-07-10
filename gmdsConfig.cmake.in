@@ -1,5 +1,7 @@
 set (GMDS_VERSION x.y.z)
 
+find_depency(Eigen3)
+
 @PACKAGE_INIT@
 
 set_and_check(GMDS_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")

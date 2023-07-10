@@ -83,9 +83,11 @@ generate_export_header(${GMDS_LIB}
 include(GNUInstallDirs)
 
 #LIBRARY TO INSTALL
-target_link_libraries(${GMDS_LIB} PUBLIC
+target_link_libraries(${GMDS_LIB}
+        PUBLIC
         ${LIB_GMDS_UTILS}
-        Predicates_psm Eigen3::Eigen)
+        Predicates_psm
+        Eigen3::Eigen)
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)
 
