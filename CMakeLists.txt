@@ -164,7 +164,7 @@ GMDS_ADD_COMPONENT(
         blocking                        # src subdirectory name
         GMDSBlocking                    # name of the generated library
         "This module provides a data structure for a blocking representation"  # description
-        OFF                                # is activated
+        ON                                 # is activated
         ON                                 # must be covered
 )
 
