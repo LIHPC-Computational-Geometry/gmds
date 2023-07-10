@@ -1,6 +1,6 @@
 set (GMDS_VERSION x.y.z)
 
-find_depency(Eigen3)
+find_dependency(Eigen3)
 
 @PACKAGE_INIT@
 
