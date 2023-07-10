@@ -69,6 +69,8 @@ set(GMDS_SRC
         src/Vector.cpp
         src/TransfiniteInterpolation.cpp inc/gmds/math/BezierSurface.h src/BezierSurface.cpp)
 #==============================================================================
+find_package(Eigen3 3.3 REQUIRED)
+#==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
 include(GenerateExportHeader)
@@ -81,9 +83,12 @@ generate_export_header(${GMDS_LIB}
 include(GNUInstallDirs)
 
 #LIBRARY TO INSTALL
-target_link_libraries(${GMDS_LIB} PUBLIC
+target_link_libraries(${GMDS_LIB}
+        PUBLIC
         ${LIB_GMDS_UTILS}
-        Predicates_psm)
+        Predicates_psm
+        Eigen3::Eigen)
+
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)
 
 # INCLUDE TO INSTALL
