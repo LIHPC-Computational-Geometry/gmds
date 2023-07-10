@@ -212,6 +212,9 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 		auto faces = m_blocking->get_all_faces();
 		auto map_faces_colored = exterior_faces_coloration(faces);
 
+		for(auto m : map_faces_colored){
+			std::cout<<"la face : "<<m.first->info().geom_dim <<" avec la couleur : "<<m.second<<std::endl;
+		}
 		for(auto s : geom_surfaces){
 			std::vector<cad::GeomPoint *> s_points = s->points();
 			std::vector<cad::GeomCurve *> s_curves = s->curves();
@@ -277,24 +280,31 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 		}
 	}
 	auto nodes = m_blocking->get_all_nodes();
-	auto edges = m_blocking->get_all_edges();
-	auto faces = m_blocking->get_all_faces();
-	AErrors.non_classified_nodes.clear();
-	for(auto n : nodes){
-		if(n->info().geom_dim == 4){
-			AErrors.non_classified_nodes.push_back(n->info().topo_id);
+	if(!AErrors.non_classified_nodes.empty()){
+		AErrors.non_classified_nodes.clear();
+	   for(auto n : nodes) {
+			if (n->info().geom_dim == 4) {
+				AErrors.non_classified_nodes.push_back(n->info().topo_id);
+			}
 		}
 	}
 	AErrors.non_classified_edges.clear();
+
+	auto edges = m_blocking->get_all_edges();
 	for(auto e : edges){
+
 		if(e->info().geom_dim == 4){
 			AErrors.non_classified_edges.push_back(e->info().topo_id);
 		}
 	}
 	AErrors.non_classified_faces.clear();
+
+	auto faces = m_blocking->get_all_faces();
+	std::cout<<"AZFZFZAFZAEFZAFEZAFZEA"<<std::endl;
 	for(auto f : faces){
+		std::cout<<"Class Face : "<<f->info().topo_id<<" class sur id : "<<f->info().geom_id<< " et dim : "<<f->info().geom_dim<<std::endl;
 		if(f->info().geom_dim == 4){
-			AErrors.non_classified_edges.push_back(f->info().topo_id);
+			AErrors.non_classified_faces.push_back(f->info().topo_id);
 		}
 	}
 }
