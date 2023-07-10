@@ -55,7 +55,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 * Errors are geometrical cells that are not catch by the
 	 * blocking cells.
 	 */
-	ClassificationErrors detect_classification_errors();
+	ClassificationErrors detect_classification_errors(ClassificationErrors& AErrors);
 
 	/**@brief this method clears the classification of the blocking
 	 * structure. All the cells are then unclassified (geom_dim=4

@@ -10,16 +10,15 @@ CurvedBlockingClassifier::CurvedBlockingClassifier(gmds::blocking::CurvedBlockin
 CurvedBlockingClassifier::~CurvedBlockingClassifier() {}
 /*----------------------------------------------------------------------------*/
 ClassificationErrors
-CurvedBlockingClassifier::detect_classification_errors()
+CurvedBlockingClassifier::detect_classification_errors(ClassificationErrors &AErrors)
 {
-	ClassificationErrors errors;
 	// 1) We check the geometric issues first
 	std::vector<cad::GeomPoint *> geom_points;
 	m_geom_model->getPoints(geom_points);
 	for (auto p : geom_points) {
 		auto [found, n] = find_node_classified_on(p);
 		if (!found) {
-			errors.non_captured_points.push_back(p->id());
+			AErrors.non_captured_points.push_back(p->id());
 		}
 	}
 	// 2) We check the geometric curves
@@ -28,10 +27,10 @@ CurvedBlockingClassifier::detect_classification_errors()
 	for (auto c : geom_curves) {
 		auto [found, n] = find_edge_classified_on(c);
 		if (!found) {
-			errors.non_captured_curves.push_back(c->id());
+			AErrors.non_captured_curves.push_back(c->id());
 		}
 	}
-	return errors;
+	return AErrors;
 }
 /*----------------------------------------------------------------------------*/
 void
@@ -208,7 +207,7 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 	m_geom_model->getCurves(geom_curves);
 	m_geom_model->getSurfaces(geom_surfaces);
 
-	auto errors_capt = detect_classification_errors();
+	auto errors_capt = detect_classification_errors(AErrors);
 	//check if all points and all curves are captured
 	if(errors_capt.non_captured_surfaces.empty() && errors_capt.non_captured_points.empty()) {
 		auto faces = m_blocking->get_all_faces();
@@ -229,6 +228,8 @@ CurvedBlockingClassifier::classify(const double AMaxDistance, const double APoin
 
 	//============ (2) We classify faces =================
 	//classify_faces(errors);
+
+	detect_classification_errors(errors);
 
 	return errors;
 }
@@ -424,6 +425,4 @@ CurvedBlockingClassifier::exterior_faces_coloration(std::vector<CurvedBlocking::
 	}
 	return faces_colored;
 }
-
-
 /*----------------------------------------------------------------------------*/

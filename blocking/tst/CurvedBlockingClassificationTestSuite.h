@@ -111,7 +111,7 @@ TEST(CurvedBlockingClassifierTestSuite,ReturnErrors){
 	ASSERT_EQ(2,errors.non_classified_edges.size());
 	//ASSERT_EQ(3,errors.non_classified_faces.size());
 
-	errors = classifier.detect_classification_errors();
+	//errors = classifier.detect_classification_errors();
 	//Check nb points/curves/surfaces no captured
 	ASSERT_EQ(4,errors.non_captured_points.size());
 	ASSERT_EQ(8,errors.non_captured_curves.size());
