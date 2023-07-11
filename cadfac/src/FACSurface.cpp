@@ -266,6 +266,47 @@ FACSurface::curves()
 	return m_adjacent_curves;
 }
 /*----------------------------------------------------------------------------*/
+std::vector<std::vector<GeomCurve *> >
+FACSurface::loops(){
+  std::vector<std::vector<GeomCurve *> > loops;
+  // first, we put a boolean flag on each curve to indicate we do not have
+  // traversed it
+  std::map<int,bool> traversed_curves;
+  for(auto c:m_adjacent_curves)
+		traversed_curves[c->id()]=false;
+
+  bool remain_curves = true;
+  while(remain_curves){
+		remain_curves=false;
+		//we pick a non-traversed curve
+		int curve_id=-1;
+		for (auto i=0;i<m_adjacent_curves.size() & remain_curves==false;i++){
+			if(traversed_curves[m_adjacent_curves[i]->id()]==false){
+				remain_curves=true;
+				curve_id=i;
+			}
+		}
+		if(remain_curves){
+			//means, we start a new loop
+			std::vector<GeomCurve*> cur_loop;
+			GeomCurve* seed = m_adjacent_curves[curve_id];
+			cur_loop.push_back(seed);
+			traversed_curves[seed->id()]=true;
+			std::vector<GeomPoint*> front;
+			front.insert(front.end(),seed->points().begin(),seed->points().end());
+			if(front.size()<2){
+				//meahs the current curve form a loop itself
+				loops.push_back(cur_loop);
+			}
+			else{
+				// the current loop has two end points and we are going to access to adjacent curves
+				// in the boundary surface
+			}
+
+		}
+  }
+}
+/*----------------------------------------------------------------------------*/
 std::vector<GeomVolume *> &
 FACSurface::volumes()
 {

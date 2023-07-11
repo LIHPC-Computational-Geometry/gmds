@@ -146,6 +146,14 @@ namespace gmds{
              */
             virtual std::vector<GeomCurve*>& curves();
 
+	         /**@brief Accessor to the bounding loop. A loop is
+	          * a set of curves that bounds the surface. A surface with a
+	          * hole has 2 loops: the outside one and the one that bounds the
+	          * hole.
+	          * Warning, there is no assumption about the ordering
+	          * @return loops
+	          */
+	         std::vector<std::vector<GeomCurve *> > loops();
             /**@brief Accessor to the adjacent volumes. Warning, there is no
              *  assumption about the ordering
              * @return volumes that are adjacent to this point
