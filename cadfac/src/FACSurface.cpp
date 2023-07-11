@@ -266,6 +266,69 @@ FACSurface::curves()
 	return m_adjacent_curves;
 }
 /*----------------------------------------------------------------------------*/
+std::vector<std::vector<GeomCurve *> >
+FACSurface::loops(){
+  std::vector<std::vector<GeomCurve *> > loops;
+  // first, we put a boolean flag on each curve to indicate we do not have
+  // traversed it
+  std::map<int,bool> traversed_curves;
+  for(auto c:m_adjacent_curves)
+		traversed_curves[c->id()]=false;
+
+  bool remain_curves = true;
+  while(remain_curves){
+		remain_curves=false;
+		//we pick a non-traversed curve
+		int curve_id=-1;
+		for (auto i=0;i<m_adjacent_curves.size() & remain_curves==false;i++){
+			if(traversed_curves[m_adjacent_curves[i]->id()]==false){
+				remain_curves=true;
+				curve_id=i;
+			}
+		}
+		if(remain_curves){
+			//means, we start a new loop
+			std::vector<GeomCurve*> cur_loop;
+			GeomCurve* seed = m_adjacent_curves[curve_id];
+			cur_loop.push_back(seed);
+			traversed_curves[seed->id()]=true;
+			std::vector<GeomPoint*> front;
+			front.insert(front.end(),seed->points().begin(),seed->points().end());
+			if(front.size()>1){
+				// the current loop has two end points and we are going to access to adjacent curves
+				// in the boundary surface
+                while(!front.empty()){
+                    auto pnt = front.back();front.pop_back();
+                    std::vector<GeomCurve*> curves_of_pnt = pnt->curves();
+                    for(auto c: curves_of_pnt){
+                        //we get curves that are adjacent to the current surface only
+                        std::vector<GeomSurface*> surfaces_of_c = c->surfaces();
+                        bool find_current_surface = false;
+                        for(auto s:surfaces_of_c){
+                            if (s->id()== this->id())
+                                find_current_surface=true;
+                        }
+                        if(find_current_surface){
+                            //this curve bounds the current surface and share a point with the previous curve
+                            if(!traversed_curves[c->id()]) {
+                                cur_loop.push_back(c);
+                                traversed_curves[c->id()]= true;
+                                std::vector<GeomPoint *> c_pnts = c->points();
+                                for (auto c_p: c_pnts)
+                                    if (c_p->id() != pnt->id())
+                                        front.push_back(c_p);
+                            }
+                        }
+                    }
+                }
+			}
+            //means the current curve form a loop itself
+            loops.push_back(cur_loop);
+		}
+  }
+  return loops;
+}
+/*----------------------------------------------------------------------------*/
 std::vector<GeomVolume *> &
 FACSurface::volumes()
 {
