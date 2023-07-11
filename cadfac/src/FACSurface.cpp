@@ -294,17 +294,39 @@ FACSurface::loops(){
 			traversed_curves[seed->id()]=true;
 			std::vector<GeomPoint*> front;
 			front.insert(front.end(),seed->points().begin(),seed->points().end());
-			if(front.size()<2){
-				//meahs the current curve form a loop itself
-				loops.push_back(cur_loop);
-			}
-			else{
+			if(front.size()>1){
 				// the current loop has two end points and we are going to access to adjacent curves
 				// in the boundary surface
+                while(!front.empty()){
+                    auto pnt = front.back();front.pop_back();
+                    std::vector<GeomCurve*> curves_of_pnt = pnt->curves();
+                    for(auto c: curves_of_pnt){
+                        //we get curves that are adjacent to the current surface only
+                        std::vector<GeomSurface*> surfaces_of_c = c->surfaces();
+                        bool find_current_surface = false;
+                        for(auto s:surfaces_of_c){
+                            if (s->id()== this->id())
+                                find_current_surface=true;
+                        }
+                        if(find_current_surface){
+                            //this curve bounds the current surface and share a point with the previous curve
+                            if(!traversed_curves[c->id()]) {
+                                cur_loop.push_back(c);
+                                traversed_curves[c->id()]= true;
+                                std::vector<GeomPoint *> c_pnts = c->points();
+                                for (auto c_p: c_pnts)
+                                    if (c_p->id() != pnt->id())
+                                        front.push_back(c_p);
+                            }
+                        }
+                    }
+                }
 			}
-
+            //means the current curve form a loop itself
+            loops.push_back(cur_loop);
 		}
   }
+  return loops;
 }
 /*----------------------------------------------------------------------------*/
 std::vector<GeomVolume *> &
