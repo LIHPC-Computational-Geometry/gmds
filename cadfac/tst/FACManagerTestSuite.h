@@ -54,6 +54,7 @@ TEST(FacManagerTestSuite, fromSurfMesh)
         ASSERT_NEAR(s->computeArea(),100, 0.1);
         math::Point c(0,0,0);
         ASSERT_EQ(c.distance(s->closestPoint(c)),5);
+        ASSERT_EQ(s->loops().size(),1);
     }
 
     std::vector<cad::GeomCurve*> curvs;
@@ -126,61 +127,61 @@ TEST(FacManagerTestSuite, surf_projection)
 /*----------------------------------------------------------------------------*/
 TEST(FacManagerTestSuite, project)
 {
-	gmds::Mesh m_vol(gmds::MeshModel(DIM3|R|F|E|N|
-	                                 R2N|R2F|R2E|
-	                                 F2N|F2R|F2E|
-	                                 E2F|E2N|N2E));
-	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/simpleCube.vtk";
+gmds::Mesh m_vol(gmds::MeshModel(DIM3|R|F|E|N|
+                                 R2N|R2F|R2E|
+                                 F2N|F2R|F2E|
+                                 E2F|E2N|N2E));
+std::string dir(TEST_SAMPLES_DIR);
+std::string vtk_file = dir+"/simpleCube.vtk";
 
-	gmds::IGMeshIOService ioService(&m_vol);
+gmds::IGMeshIOService ioService(&m_vol);
 
-	gmds::VTKReader vtkReader(&ioService);
-	vtkReader.setCellOptions(gmds::N|gmds::R);
-	vtkReader.read(vtk_file);
+gmds::VTKReader vtkReader(&ioService);
+vtkReader.setCellOptions(gmds::N|gmds::R);
+vtkReader.read(vtk_file);
 
-	gmds::MeshDoctor doc(&m_vol);
-	doc.buildFacesAndR2F();
-	doc.buildEdgesAndX2E();
-	doc.updateUpwardConnectivity();
+gmds::MeshDoctor doc(&m_vol);
+doc.buildFacesAndR2F();
+doc.buildEdgesAndX2E();
+doc.updateUpwardConnectivity();
 
 
-	cad::FACManager manager;
-	manager.initFrom3DMesh(&m_vol);
+cad::FACManager manager;
+manager.initFrom3DMesh(&m_vol);
 
-	cad::GeomSurface* s = manager.getSurface(2);
+cad::GeomSurface* s = manager.getSurface(2);
 
-	TCoord min_s[3];
-	TCoord max_s[3];
-	s->computeBoundingBox(min_s,max_s);
+TCoord min_s[3];
+TCoord max_s[3];
+s->computeBoundingBox(min_s,max_s);
 
-	//math::Point p0(min_s1[0], min_s1[1], min_s1[2]);
-	//math::Point p1(max_s1[0], max_s1[1], max_s1[2]);
-	//std::cout <<p0<<" "<<p1<<std::endl;
+//math::Point p0(min_s1[0], min_s1[1], min_s1[2]);
+//math::Point p1(max_s1[0], max_s1[1], max_s1[2]);
+//std::cout <<p0<<" "<<p1<<std::endl;
 
-	math::Point ps(0.1, -0.1, 0.1);
-	math::Point ps_on(0.1, 0., 0.1);
+math::Point ps(0.1, -0.1, 0.1);
+math::Point ps_on(0.1, 0., 0.1);
 
-	s->project(ps);
-	//std::cout<<ps<<std::endl;
-	ASSERT_NEAR(ps.distance(ps_on), 0., 10e-15);
+s->project(ps);
+//std::cout<<ps<<std::endl;
+ASSERT_NEAR(ps.distance(ps_on), 0., 10e-15);
 
-	cad::GeomCurve* c = manager.getCurve(1);
+cad::GeomCurve* c = manager.getCurve(1);
 
-	TCoord min_c[3];
-	TCoord max_c[3];
-	c->computeBoundingBox(min_c,max_c);
+TCoord min_c[3];
+TCoord max_c[3];
+c->computeBoundingBox(min_c,max_c);
 
 //	math::Point p0(min_c[0], min_c[1], min_c[2]);
 //	math::Point p1(max_c[0], max_c[1], max_c[2]);
 //	std::cout <<p0<<" "<<p1<<std::endl;
 
-	math::Point pc(-0.1, 0.2, 3);
-	math::Point pc_on(0., 0.2, 0.);
+math::Point pc(-0.1, 0.2, 3);
+math::Point pc_on(0., 0.2, 0.);
 
-	c->project(pc);
-	//std::cout<<ps<<std::endl;
-	ASSERT_NEAR(pc.distance(pc_on), 0., 10e-15);
+c->project(pc);
+//std::cout<<ps<<std::endl;
+ASSERT_NEAR(pc.distance(pc_on), 0., 10e-15);
 }
 /*----------------------------------------------------------------------------*/
 TEST(FacManagerTestSuite, boundingbox)
