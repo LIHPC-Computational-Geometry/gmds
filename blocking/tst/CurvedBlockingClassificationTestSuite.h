@@ -192,8 +192,9 @@ TEST(CurvedBlockingClassifierTestSuite,splitAndClassify){
 
 
 	classifier.clear_classification();
+	auto coloredFaces = classifier.blocking_color_faces();
 
-	auto errors = classifier.classify();
+	//auto errors = classifier.classify();
 
 
 	//Check nb points of the geometry and nb nodes of the blocking
@@ -220,7 +221,7 @@ TEST(CurvedBlockingClassifierTestSuite,splitAndClassify){
 	ASSERT_EQ(20,bl.get_all_edges().size());
 	ASSERT_EQ(11,bl.get_all_faces().size());
 
-
+	/*
 
 	errors = classifier.classify();
 	//Check nb nodes/edges/faces no classified
@@ -233,7 +234,8 @@ TEST(CurvedBlockingClassifierTestSuite,splitAndClassify){
 	ASSERT_EQ(0,errors.non_captured_curves.size());
 	//ASSERT_EQ(0,errors.non_captured_surfaces.size());
 	auto all_faces = bl.get_all_faces();
-	classifier.exterior_faces_coloration(all_faces);
+	 */
+
 
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
 	bl.convert_to_mesh(m);

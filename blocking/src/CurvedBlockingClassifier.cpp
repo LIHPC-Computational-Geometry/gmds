@@ -213,7 +213,7 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 		auto map_faces_colored = exterior_faces_coloration(faces);
 
 		for(auto m : map_faces_colored){
-			std::cout<<"la face : "<<m.first->info().geom_dim <<" avec la couleur : "<<m.second<<std::endl;
+			std::cout<<"la face : "<<m.first->info().topo_id <<" avec la couleur : "<<m.second<<std::endl;
 		}
 		for(auto s : geom_surfaces){
 			std::vector<cad::GeomPoint *> s_points = s->points();
@@ -519,3 +519,70 @@ CurvedBlockingClassifier::exterior_faces_coloration(std::vector<CurvedBlocking::
 	return faces_colored;
 }
 /*----------------------------------------------------------------------------*/
+std::map<CurvedBlocking::Face,int>
+   CurvedBlockingClassifier::blocking_color_faces()
+{
+	std::map<CurvedBlocking::Face,int> faces_colored;
+	auto allFaces = m_blocking->get_all_faces();
+	std::cout<<"SIZE allFaces : "<<allFaces.size()<<std::endl;
+	for(auto aF : allFaces){
+		std::cout<<" la FACE  "<<aF->info().topo_id<<std::endl;
+		faces_colored.insert(std::pair<CurvedBlocking::Face,int>(aF,0));
+	}
+	std::cout<<"RZZDDADADADADADADADDDZDZAFAFZAFAZ"<<std::endl;
+	for(auto aFC : faces_colored){
+		std::cout<<" la face "<<aFC.first->info().topo_id<<" de couleur "<<aFC.second<<std::endl;
+	}
+
+	int current_color = 0;
+
+	bool finish = false;
+
+	while(!finish){
+		current_color ++;
+		CurvedBlocking::Face currentFace = NULL;
+		for(auto aFC : faces_colored){
+			if(aFC.second == 0 && (m_blocking->get_blocks_of_face(aFC.first).size() == 1)){
+				//std::cout<<"LA face "<<aFC.first->info().topo_id<<" est au bord"<<std::endl;
+				currentFace = aFC.first;
+				break;
+			}
+		}
+		if(currentFace==NULL){
+			finish=true;
+		}
+		else{
+			std::set<TCellID> front;
+			front.insert(currentFace->info().topo_id);
+			while (!front.empty()){
+				TCellID current_id = *front.begin();
+				front.erase(front.begin());
+				CurvedBlocking::Face aFace;
+				for(auto f : allFaces) {
+					if (f->info().topo_id == current_id) {
+						aFace = f;
+						break;
+					}
+				}
+				faces_colored[aFace]=current_color;
+				auto edges_f = m_blocking->get_edges_of_face(aFace);
+				for(auto e : edges_f){
+					//if edge not classified on a curve
+					if(e->info().geom_dim!=1){
+						//We get her faces
+						auto faces_e = m_blocking->get_faces_of_edge(e);
+						for(auto f : faces_e){
+							if(faces_colored[f]==0 && m_blocking->get_blocks_of_face(f).size()==1){
+								front.insert(f->info().topo_id);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return faces_colored;
+}
+/*----------------------------------------------------------------------------*/
+
+

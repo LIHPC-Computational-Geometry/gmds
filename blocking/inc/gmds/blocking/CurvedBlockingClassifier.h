@@ -87,6 +87,12 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	std::map<CurvedBlocking::Face,int> exterior_faces_coloration(std::vector<CurvedBlocking::Face>& Faces);
 
 
+	/**@brief This methods colored all the faces with the same color by surfaces
+	 * @return a map with the boundary faces colored
+	 */
+	std::map<CurvedBlocking::Face,int> blocking_color_faces();
+
+
 
  private:
 	/**@brief This method check if a 0-cell of the blocking structure is classified
