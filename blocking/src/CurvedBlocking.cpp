@@ -4,10 +4,7 @@
 using namespace gmds;
 using namespace gmds::blocking;
 /*----------------------------------------------------------------------------*/
-int CurvedBlocking::m_counter_nodes = 0;
-int CurvedBlocking::m_counter_edges = 0;
-int CurvedBlocking::m_counter_faces = 0;
-int CurvedBlocking::m_counter_blocks = 0;
+int CellInfo::m_counter_global_id=0;
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::CurvedBlocking(cad::GeomManager *AGeomModel, bool AInitAsBoundingBox) : m_geom_model(AGeomModel)
 {
@@ -53,25 +50,25 @@ CurvedBlocking::geom_model()
 CurvedBlocking::Node
 CurvedBlocking::create_node(const int AGeomDim, const int AGeomId, math::Point &APoint)
 {
-	return m_gmap.create_attribute<0>(NodeInfo(m_counter_nodes++, AGeomDim, AGeomId, APoint));
+	return m_gmap.create_attribute<0>(NodeInfo(AGeomDim, AGeomId, APoint));
 }
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Edge
 CurvedBlocking::create_edge(const int AGeomDim, const int AGeomId)
 {
-	return m_gmap.create_attribute<1>(CellInfo(1, m_counter_edges++, AGeomDim, AGeomId));
+	return m_gmap.create_attribute<1>(CellInfo(1,  AGeomDim, AGeomId));
 }
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Face
 CurvedBlocking::create_face(const int AGeomDim, const int AGeomId)
 {
-	return m_gmap.create_attribute<2>(CellInfo(2, m_counter_faces++, AGeomDim, AGeomId));
+	return m_gmap.create_attribute<2>(CellInfo(2, AGeomDim, AGeomId));
 }
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Block
 CurvedBlocking::create_block(const int AGeomDim, const int AGeomId)
 {
-	return m_gmap.create_attribute<3>(CellInfo(3, m_counter_blocks++, AGeomDim, AGeomId));
+	return m_gmap.create_attribute<3>(CellInfo(3, AGeomDim, AGeomId));
 }
 /*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Face>

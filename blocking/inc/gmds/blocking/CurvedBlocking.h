@@ -41,14 +41,16 @@ struct CellInfo
 	int geom_dim;
 	/*** unique id of the geomtrical cell */
 	int geom_id;
+	/*** global counter used to assign an unique id to each block */
+	static int m_counter_global_id;
+
 	/** @brief Constructor
 	 * @param ATopoDim Cell dimension
-	 * @param ATopoId  Cell unique id
 	 * @param AGeomDim on-classify geometric cell dimension (4 if not classified)
 	 * @param AGeomId on-classify geometric cell unique id
 	 */
-	CellInfo(const int ATopoDim = 4, const int ATopoId = NullID, const int AGeomDim = 4, const int AGeomId = NullID) :
-	  topo_dim(ATopoDim), topo_id(ATopoId), geom_dim(AGeomDim), geom_id(AGeomId)
+	CellInfo(const int ATopoDim = 4, const int AGeomDim = 4, const int AGeomId = NullID) :
+	  topo_dim(ATopoDim), topo_id(m_counter_global_id++), geom_dim(AGeomDim), geom_id(AGeomId)
 	{
 	}
 };
@@ -62,12 +64,11 @@ struct NodeInfo : CellInfo
 	/*** node location in space, i.e. a single point */
 	math::Point point;
 	/** @brief Constructor
-	 * @param ATopoId  Node unique id
 	 * @param AGeomDim on-classify geometric cell dimension (4 if not classified)
 	 * @param AGeomId  on-classify geometric cell unique id
 	 */
-	NodeInfo(const int ATopoId = NullID, const int AGeomDim = 4, const int AGeomId = NullID, const math::Point &APoint = math::Point(0, 0, 0)) :
-	  CellInfo(0, ATopoId, AGeomDim, AGeomId), point(APoint)
+	NodeInfo(const int AGeomDim = 4, const int AGeomId = NullID, const math::Point &APoint = math::Point(0, 0, 0)) :
+	  CellInfo(0, AGeomDim, AGeomId), point(APoint)
 	{
 	}
 };
@@ -188,7 +189,12 @@ struct SplitFunctor
 	{
 		ca1.info().geom_dim = ca1.info().geom_dim;
 		ca1.info().geom_id = ca1.info().geom_id;
-		ca2.info() = ca1.info();
+
+		ca2.info().geom_dim = ca1.info().geom_dim;
+		ca2.info().geom_id = ca1.info().geom_id;
+		ca2.info().topo_dim = ca1.info().topo_dim;
+		ca2.info().topo_id = CellInfo::m_counter_global_id++;
+
 	}
 };
 
@@ -205,6 +211,8 @@ struct SplitFunctorNode
 		ca2.info().geom_dim = ca1.info().geom_dim;
 		ca2.info().geom_id = ca1.info().geom_id;
 		ca2.info().point = ca1.info().point;
+		ca2.info().topo_dim = ca1.info().topo_dim;
+		ca2.info().topo_id = CellInfo::m_counter_global_id++;
 	}
 };
 /*----------------------------------------------------------------------------*/
@@ -538,14 +546,6 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	cad::GeomManager *m_geom_model;
 	/*** the underlying n-g-map model*/
 	GMap3 m_gmap;
-	/*** global counter used to assign an unique id to each node */
-	static int m_counter_nodes;
-	/*** global counter used to assign an unique id to each edge */
-	static int m_counter_edges;
-	/*** global counter used to assign an unique id to each face */
-	static int m_counter_faces;
-	/*** global counter used to assign an unique id to each block */
-	static int m_counter_blocks;
 };
 /*----------------------------------------------------------------------------*/
 }     // namespace blocking
