@@ -524,6 +524,11 @@ std::map<CurvedBlocking::Face,int>
 {
 	std::map<CurvedBlocking::Face,int> faces_colored;
 	auto allFaces = m_blocking->get_all_faces();
+	auto allEdges = m_blocking->get_all_edges();
+	std::cout<<"ALL EDGES"<<std::endl;
+	for(auto e : allEdges){
+		std::cout<<"arete id :"<<e->info().topo_id<<std::endl;
+	}
 	std::cout<<"SIZE allFaces : "<<allFaces.size()<<std::endl;
 	for(auto aF : allFaces){
 		std::cout<<" la FACE  "<<aF->info().topo_id<<std::endl;
@@ -533,6 +538,7 @@ std::map<CurvedBlocking::Face,int>
 	for(auto aFC : faces_colored){
 		std::cout<<" la face "<<aFC.first->info().topo_id<<" de couleur "<<aFC.second<<std::endl;
 	}
+	std::cout<<"RZZDDADADADADADADADDDZDZAFAFZAFAZ"<<std::endl;
 
 	int current_color = 0;
 
@@ -579,6 +585,14 @@ std::map<CurvedBlocking::Face,int>
 					}
 				}
 			}
+		}
+	}
+	for(auto f : faces_colored ){
+		std::cout<<" la face "<<f.first->info().topo_id<<" de couleur "<<f.second<<std::endl;
+		std::cout<<"Avec les aretes : "<<std::endl;
+		auto edges = m_blocking->get_edges_of_face(f.first);
+		for(auto e : edges){
+			std::cout<<e->info().topo_id<<std::endl;
 		}
 	}
 	return faces_colored;
