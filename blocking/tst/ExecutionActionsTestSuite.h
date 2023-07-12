@@ -138,17 +138,30 @@ TEST(ExecutionActionsTestSuite,cb1){
 	ASSERT_EQ(8,bl.get_all_nodes().size());
 	ASSERT_EQ(12,bl.get_all_edges().size());
 	ASSERT_EQ(6,bl.get_all_faces().size());
-	/*
+
+
+	//Check elements class and captured
+	//Check nb nodes/edges/faces no classified
+	ASSERT_EQ(2,errors.non_classified_nodes.size());
+	ASSERT_EQ(5,errors.non_classified_edges.size());
+	ASSERT_EQ(6,errors.non_classified_faces.size());
+
+	//Check nb points/curves/surfaces no captured
+	ASSERT_EQ(6,errors.non_captured_points.size());
+	ASSERT_EQ(11,errors.non_captured_curves.size());
+	ASSERT_EQ(8,errors.non_captured_surfaces.size());
+
+
 	//Do 1 cut
-	auto e = bl.get_all_edges()[0];
+	auto e = bl.get_all_edges()[1];
 
 	auto e2 = bl.gmap()->attribute<1>(bl.gmap()->alpha<1>(e->dart()));
 	bl.cut_sheet(e);
 	auto coloredFaces = classifier.blocking_color_faces();
 	//Check nb points of the geometry and nb nodes of the blocking after the split
-	ASSERT_EQ(8,geom_model.getNbPoints());
-	ASSERT_EQ(12,geom_model.getNbCurves());
-	ASSERT_EQ(6,geom_model.getNbSurfaces());
+	ASSERT_EQ(12,geom_model.getNbPoints());
+	ASSERT_EQ(18,geom_model.getNbCurves());
+	ASSERT_EQ(8,geom_model.getNbSurfaces());
 	ASSERT_EQ(12,bl.get_all_nodes().size());
 	ASSERT_EQ(20,bl.get_all_edges().size());
 	ASSERT_EQ(11,bl.get_all_faces().size());
@@ -157,33 +170,43 @@ TEST(ExecutionActionsTestSuite,cb1){
 
 	errors = classifier.classify();
 	//Check nb nodes/edges/faces no classified after the first split
-	ASSERT_EQ(0,errors.non_classified_nodes.size());
-	ASSERT_EQ(0,errors.non_classified_edges.size());
-	ASSERT_EQ(1,errors.non_classified_faces.size());
+	ASSERT_EQ(2,errors.non_classified_nodes.size());
+	ASSERT_EQ(8,errors.non_classified_edges.size());
+	ASSERT_EQ(11,errors.non_classified_faces.size());
 
 	//Check nb points/curves/surfaces no captured
-	ASSERT_EQ(0,errors.non_captured_points.size());
-	ASSERT_EQ(0,errors.non_captured_curves.size());
-	//ASSERT_EQ(0,errors.non_captured_surfaces.size());
+	ASSERT_EQ(4,errors.non_captured_points.size());
+	ASSERT_EQ(8,errors.non_captured_curves.size());
+	ASSERT_EQ(8,errors.non_captured_surfaces.size());
 
+
+	//Second Split
 	bl.cut_sheet(e2);
+
 	//Check nb points of the geometry and nb nodes of the blocking after the split
-	ASSERT_EQ(8,geom_model.getNbPoints());
-	ASSERT_EQ(12,geom_model.getNbCurves());
-	ASSERT_EQ(6,geom_model.getNbSurfaces());
+	ASSERT_EQ(12,geom_model.getNbPoints());
+	ASSERT_EQ(18,geom_model.getNbCurves());
+	ASSERT_EQ(8,geom_model.getNbSurfaces());
 	ASSERT_EQ(18,bl.get_all_nodes().size());
 	ASSERT_EQ(33,bl.get_all_edges().size());
 	ASSERT_EQ(20,bl.get_all_faces().size());
+
+
+	std::cout<<"AFAZFZAEFZAFZAFaz"<<std::endl;
 
 	errors = classifier.classify();
 
 
 	//Check nb nodes/edges/faces no classified after the second split
-	ASSERT_EQ(0,errors.non_classified_nodes.size());
-	ASSERT_EQ(1,errors.non_classified_edges.size());
-	ASSERT_EQ(4,errors.non_classified_faces.size());
+	ASSERT_EQ(2,errors.non_classified_nodes.size());
+	ASSERT_EQ(5,errors.non_classified_edges.size());
+	ASSERT_EQ(6,errors.non_classified_faces.size());
 
-	*/
+	//Check nb points/curves/surfaces no captured
+	ASSERT_EQ(0,errors.non_captured_points.size());
+	ASSERT_EQ(0,errors.non_captured_curves.size());
+	ASSERT_EQ(0,errors.non_captured_surfaces.size());
+
 
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
 	bl.convert_to_mesh(m);
