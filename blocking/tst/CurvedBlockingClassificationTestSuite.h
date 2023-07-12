@@ -221,10 +221,10 @@ TEST(CurvedBlockingClassifierTestSuite,splitAndClassify){
 	ASSERT_EQ(20,bl.get_all_edges().size());
 	ASSERT_EQ(11,bl.get_all_faces().size());
 
-	/*
+
 
 	errors = classifier.classify();
-	//Check nb nodes/edges/faces no classified
+	//Check nb nodes/edges/faces no classified after the first split
 	ASSERT_EQ(0,errors.non_classified_nodes.size());
 	ASSERT_EQ(0,errors.non_classified_edges.size());
 	ASSERT_EQ(1,errors.non_classified_faces.size());
@@ -233,7 +233,24 @@ TEST(CurvedBlockingClassifierTestSuite,splitAndClassify){
 	ASSERT_EQ(0,errors.non_captured_points.size());
 	ASSERT_EQ(0,errors.non_captured_curves.size());
 	//ASSERT_EQ(0,errors.non_captured_surfaces.size());
-	 */
+
+	bl.cut_sheet(e2);
+	//Check nb points of the geometry and nb nodes of the blocking after the split
+	ASSERT_EQ(8,geom_model.getNbPoints());
+	ASSERT_EQ(12,geom_model.getNbCurves());
+	ASSERT_EQ(6,geom_model.getNbSurfaces());
+	ASSERT_EQ(18,bl.get_all_nodes().size());
+	ASSERT_EQ(33,bl.get_all_edges().size());
+	ASSERT_EQ(20,bl.get_all_faces().size());
+
+	errors = classifier.classify();
+
+
+	//Check nb nodes/edges/faces no classified after the second split
+	ASSERT_EQ(0,errors.non_classified_nodes.size());
+	ASSERT_EQ(1,errors.non_classified_edges.size());
+	ASSERT_EQ(4,errors.non_classified_faces.size());
+
 
 
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
