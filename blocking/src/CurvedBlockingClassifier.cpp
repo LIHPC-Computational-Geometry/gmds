@@ -30,6 +30,22 @@ CurvedBlockingClassifier::detect_classification_errors(ClassificationErrors &AEr
 			AErrors.non_captured_curves.push_back(c->id());
 		}
 	}
+	// 3) We check the geometric surfaces
+	std::vector<cad::GeomSurface *> geom_surfaces;
+	m_geom_model->getSurfaces(geom_surfaces);
+	for (auto s : geom_surfaces) {
+		auto [found, n] = find_face_classified_on(s);
+		//if all points and all curves are not captured, we dont class the faces so, the surfaces are not captured
+		if(AErrors.non_captured_points.size()!=0 && AErrors.non_captured_curves.size()!=0){
+			AErrors.non_captured_surfaces.push_back(s->id());
+			continue;
+		}
+		else if (!found) {
+			std::cout<<"POINTS ET CURVES CAPT"<<std::endl;
+			std::cout<<"ET SURFACE PAS CAPT : "<<s->id()<<std::endl;
+			AErrors.non_captured_surfaces.push_back(s->id());
+		}
+	}
 	return AErrors;
 }
 /*----------------------------------------------------------------------------*/
@@ -281,14 +297,13 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 		}
 	}
 	auto nodes = m_blocking->get_all_nodes();
-	if(!AErrors.non_classified_nodes.empty()){
-		AErrors.non_classified_nodes.clear();
-		for(auto n : nodes) {
-			if (n->info().geom_dim == 4) {
-				AErrors.non_classified_nodes.push_back(n->info().topo_id);
-			}
+	AErrors.non_classified_nodes.clear();
+	for(auto n : nodes) {
+		if (n->info().geom_dim == 4) {
+			AErrors.non_classified_nodes.push_back(n->info().topo_id);
 		}
 	}
+
 	AErrors.non_classified_edges.clear();
 
 	auto edges = m_blocking->get_all_edges();
@@ -317,10 +332,39 @@ CurvedBlockingClassifier::classify(const double AMaxDistance, const double APoin
 	//============ (2) We classify edges =================
 	classify_edges(errors);
 
+
 	detect_classification_errors(errors);
 
-	//============ (2) We classify faces =================
-	classify_faces(errors);
+	if(errors.non_captured_points.empty() && errors.non_captured_curves.empty()){
+
+		std::cout<<"VIDE "<<std::endl;
+
+		//============ (2) We classify faces =================
+		classify_faces(errors);
+
+		errors.non_captured_surfaces.clear();
+
+		detect_classification_errors(errors);
+	}
+	else{
+		std::cout<<"PAS VIDE "<<std::endl;
+		errors.non_classified_nodes.clear();
+		for(auto n : m_blocking->get_all_nodes()){
+			if(n->info().geom_dim==4) {
+				errors.non_classified_nodes.push_back(n->info().topo_id);
+			}
+		}
+		errors.non_classified_edges.clear();
+		for(auto e : m_blocking->get_all_edges()){
+			if(e->info().geom_dim==4) {
+				errors.non_classified_edges.push_back(e->info().topo_id);
+			}
+		}
+		for(auto f : m_blocking->get_all_faces()){
+			errors.non_classified_faces.push_back(f->info().topo_id);
+		}
+	}
+
 
 	return errors;
 }
@@ -425,6 +469,66 @@ CurvedBlockingClassifier::find_edge_classified_on(cad::GeomCurve *AC)
 		}
 	}
 	return {false, edgesOnCurve};
+}
+/*----------------------------------------------------------------------------*/
+std::pair<bool, std::vector<CurvedBlocking::Face>>
+CurvedBlockingClassifier::find_face_classified_on(cad::GeomSurface *AS)
+{
+	std::vector<CurvedBlocking::Face> facesOnSurface;
+	auto allFaces = m_blocking->get_all_faces();
+
+	for(auto f : allFaces){
+		/*
+		std::cout<<"f dim :  "<<f->info().topo_dim<<" id : " << f->info().topo_id<<std::endl;
+		std::cout<<"f class sur dim :  "<<f->info().geom_dim<<" id : " << f->info().geom_id<<std::endl;
+		std::cout<<"AS dim :  "<<AS->dim()<<" id : " << AS->id()<<std::endl;
+		 */
+		if(f->info().geom_dim == AS->dim() && f->info().geom_id == AS->id()){
+			facesOnSurface.push_back(f);
+		}
+	}
+	auto loopOfS = AS->loops();
+	auto pointsOfS = AS->points();
+	auto curvesOfS = AS->curves();
+	std::set<int> listCurvesCapt;
+
+
+	std::cout<<"taille facesOnSurface : "<<facesOnSurface.size()<<" Sur la surface : "<<AS->id()<< " de dim " <<AS->dim()<<std::endl;
+	if(facesOnSurface.size()==0){
+		std::cout<<"noFACESonSurface"<<std::endl;
+		return {false, facesOnSurface};
+	}
+
+	//We get all id curves capt by the edges of all the faces class on the surface
+	for(auto f_S : facesOnSurface){
+		auto edges_F = m_blocking->get_edges_of_face(f_S);
+		for (auto e : edges_F){
+			if(e->info().geom_dim == 1){
+				std::cout<<"Arete class sur courbe "<<e->info().geom_id<<std::endl;
+				listCurvesCapt.insert(e->info().geom_id);
+			}
+		}
+	}
+	std::cout<<" LES COURBES DE LA LOOP"<<std::endl;
+	for(auto l : loopOfS){
+		for(auto c : l){
+			std::cout<<c->id()<<std::endl;
+		}
+	}
+
+	for(auto l : loopOfS){
+		for(auto c : l){
+			std::cout<<"Courbe c : "<<c->id()<<std::endl;
+			if(listCurvesCapt.count(c->id()) ==0){
+				std::cout<<"PAS DE COURBE CAPT"<<std::endl;
+				return {false, facesOnSurface};
+			}
+		}
+	}
+	return {true, facesOnSurface};
+
+
+
 }
 /*----------------------------------------------------------------------------*/
 std::tuple<double, int, math::Point>
