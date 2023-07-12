@@ -216,6 +216,9 @@ class SimplexMesh
   /*return true if the triangle wad deleting with sucess*/
   std::vector<TInt> deleteTriangle(const TInt ATriangleIndex);
 
+  /*return the minimum coordinates value*/
+  std::vector<double> getMinMaxCoord();
+
   /*adding some tetrahedre to the mesh with existing SimplicesNode in the mesh*/
   TSimplexID addTetraedre(const simplicesNode::SimplicesNode&& ANode0,
                          const simplicesNode::SimplicesNode&& ANode1,
@@ -370,7 +373,7 @@ class SimplexMesh
 
   void fillBNDVariable();
 
-  unsigned int edgesRemove(const gmds::BitVector& nodeBitVector, std::vector<TSimplexID>& deletedNodes);
+  unsigned int edgesRemove(const gmds::BitVector& nodeBitVector, std::vector<TSimplexID>& deletedNodes, std::vector<TInt>& nodeNotDeleted);
 
   bool edgeRemove(const TInt nodeA, const TInt nodeB);
 
@@ -446,6 +449,8 @@ class SimplexMesh
   void getEdgeSizeInfo(double& meanEdges, double& maxedge, double& minEdge) ;
 
   void getEdgeSizeInfowithMetric(double& meanEdges, double& maxEdge, double& minEdge) ;
+
+  void setMetric(const TInt node, const Eigen::Matrix3d& m);
 
   void setAnalyticMetric(const TInt node, Octree* octree);
 

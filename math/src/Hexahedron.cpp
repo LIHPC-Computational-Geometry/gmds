@@ -14,6 +14,8 @@
 #include <gmds/math/Pyramid.h>
 #include <gmds/math/Matrix.h>
 /*----------------------------------------------------------------------------*/
+#include <Eigen/Dense> // bibliothèque de calcul matriciel
+/*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
 namespace math{
@@ -162,12 +164,9 @@ Hexahedron::computeScaledJacobian() const
 		{5,7,2},
 		{6,4,3}
 	};
-
 	double scaledJ[8];
 	for (int iVertex = 0; iVertex < 8; iVertex++) {
-
 		Matrix<3,3,double> A = this->jacobian(iVertex);
-
 		int i0    = neighbors[iVertex][0];
 		int i1    = neighbors[iVertex][1];
 		int i2    = neighbors[iVertex][2];
@@ -442,7 +441,7 @@ Hexahedron::jacobian(const int iVertex) const
 			break;
 	}
 
-	return mat;
+	return mat.transpose();
 }
 /*---------------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& AStr, const Hexahedron& AHex){

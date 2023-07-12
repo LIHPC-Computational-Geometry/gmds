@@ -158,6 +158,9 @@ namespace gmds
         /*return the nbr of face that are not visible by the node : simpliceNode*/
         unsigned int checkFaceNbrVisibility(std::vector<std::vector<TInt>>& facesId, const simplicesNode::SimplicesNode & simpliceNode);
 
+        std::vector<double> getBestNodeJacobianNormalise() ;
+
+        std::vector<TInt> commonNode(SimplicesCell cell1);
 
         friend std::ostream&  operator<<(std::ostream& os, const SimplicesCell& simpliceCell)
         {

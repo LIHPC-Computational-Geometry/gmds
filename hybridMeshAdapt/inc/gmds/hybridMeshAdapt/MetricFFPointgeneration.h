@@ -109,7 +109,13 @@ namespace gmds{
 
         void connectionWithNeighbor(const std::vector<TInt>& nodesAdded);
 
+        bool validHex(const std::vector<TInt>& hex);
+
+        bool wronglyOriented(const std::vector<TInt>& hex);
+
       private:
+        std::unordered_map<TInt, std::vector<TInt>> neighborsdNodes{};
+
         std::unordered_map<TInt, TSimplexID> nodeBelongingTO;
 
         unsigned int m_layerNbr;
