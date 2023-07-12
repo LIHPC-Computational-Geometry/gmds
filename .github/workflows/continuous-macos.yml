@@ -33,7 +33,7 @@ jobs:
         submodules: recursive
 
     - name: Initialize the dev environement
-      run : chmod +x ./.github/workflows/env_macos.sh; ./.github/workflows/env_macos.sh
+      run : ./.github/workflows/env_macos.sh
     
     - name: Create Build Environment
       # We create a subdirectory that will stand as our working directory for all 
@@ -53,7 +53,7 @@ jobs:
         -DWITH_CODE_COVERAGE=OFF
         -DWITH_PYTHON_API=ON
         -DENABLE_BLOCKING=true
-        -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/glpk;${{github.workspace}}/spack/opt/spack/googletest;${{github.workspace}}/spack/opt/spack/py-pybind11;${{github.workspace}}/spack/opt/spack/cgal;${{github.workspace}}/spack/opt/spack/gmp;${{github.workspace}}/spack/opt/spack/mpfr;${{github.workspace}}/spack/opt/spack/boost"
+        -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/glpk;${{github.workspace}}/spack/opt/spack/googletest;${{github.workspace}}/spack/opt/spack/py-pybind11;${{github.workspace}}/spack/opt/spack/cgal;${{github.workspace}}/spack/opt/spack/gmp;${{github.workspace}}/spack/opt/spack/mpfr;${{github.workspace}}/spack/opt/spack/boost;${{github.workspace}}/spack/opt/spack/eigen"
         -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/
         -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib
         -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
