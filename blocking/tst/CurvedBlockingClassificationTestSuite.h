@@ -117,7 +117,6 @@ TEST(CurvedBlockingClassifierTestSuite,ReturnErrors){
 	ASSERT_EQ(8,errors.non_captured_curves.size());
 	//ASSERT_EQ(5,errors.non_captured_surfaces.size());
 	auto all_faces = bl.get_all_faces();
-	classifier.exterior_faces_coloration(all_faces);
 
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
 	bl.convert_to_mesh(m);
@@ -166,7 +165,6 @@ TEST(CurvedBlockingClassifierTestSuite,classifyFace){
 	ASSERT_EQ(0,errors.non_captured_curves.size());
 	//ASSERT_EQ(0,errors.non_captured_surfaces.size());
 	auto all_faces = bl.get_all_faces();
-	classifier.exterior_faces_coloration(all_faces);
 
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
 	bl.convert_to_mesh(m);
@@ -207,8 +205,6 @@ TEST(CurvedBlockingClassifierTestSuite,splitAndClassify){
 
 	//Do 1 cut
 	auto e = bl.get_all_edges()[0];
-	auto e_id = e->info().geom_id;
-	auto e_dim = e->info().geom_dim;
 
 	auto e2 = bl.gmap()->attribute<1>(bl.gmap()->alpha<1>(e->dart()));
 	bl.cut_sheet(e);
