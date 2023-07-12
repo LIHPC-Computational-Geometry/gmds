@@ -119,7 +119,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	void classify_edges(ClassificationErrors& AErrors);
 
 	/**@brief This methods classify all faces onto the geometric model. It is called internally
-	 * by the method *classify*.
+	 * by the method *classify*. We do this method after all points and curves are captured
 	 * @param[out] AErrors 		list of errors done during the classification
 	 */
 	void classify_faces(ClassificationErrors& AErrors);

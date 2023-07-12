@@ -248,7 +248,7 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 				}
 			}
 			for(auto f : map_faces_colored){
-				//We do nothing if the color of the face is 0 because the face is not on the boundary, we do this because before 
+				//We do nothing if the color of the face is 0 because the face is not on the boundary, we do this because before
 				if(f.second == 0){
 					f.first->info().geom_id = -1;
 					f.first->info().geom_dim= 4;
