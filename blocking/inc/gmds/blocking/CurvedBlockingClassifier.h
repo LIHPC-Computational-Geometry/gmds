@@ -81,10 +81,10 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 */
 	ClassificationErrors classify(const double AMaxDistance=0.01, const double APointSnapDistance=0.1);
 
-
 	/**@brief This methods colored all the faces with the same color by surfaces
+	 * @return a map with the boundary faces colored
 	 */
-	std::map<gmds::TCellID,int> exterior_faces_coloration(std::vector<CurvedBlocking::Face>& Faces);
+	std::map<CurvedBlocking::Face,int> blocking_color_faces();
 
 
 
@@ -119,7 +119,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	void classify_edges(ClassificationErrors& AErrors);
 
 	/**@brief This methods classify all faces onto the geometric model. It is called internally
-	 * by the method *classify*.
+	 * by the method *classify*. We do this method after all points and curves are captured
 	 * @param[out] AErrors 		list of errors done during the classification
 	 */
 	void classify_faces(ClassificationErrors& AErrors);
