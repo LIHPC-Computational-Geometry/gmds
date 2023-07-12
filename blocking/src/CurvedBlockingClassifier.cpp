@@ -217,52 +217,59 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 			std::vector<cad::GeomPoint *> s_points = s->points();
 			std::vector<cad::GeomCurve *> s_curves = s->curves();
 			int color_of_this_surface=-1;
-
 			for(auto f : map_faces_colored) {
-					int nb_edges_on_curve = 0;
-					int nb_nodes_on_point = 0;
+				int nb_edges_on_curve = 0;
+				int nb_nodes_on_point = 0;
 
-					auto nodes_f = m_blocking->get_nodes_of_face(f.first);
-					auto edges_f = m_blocking->get_edges_of_face(f.first);
-					// We check if the face have 1 node class on a point and 2 edges class on curves
-					for (auto n : nodes_f) {
-						if (n->info().geom_dim == 0) {
-							for (auto p : s_points) {
-								if (p->id() == n->info().geom_id) {
-									nb_nodes_on_point++;
-								}
+				auto nodes_f = m_blocking->get_nodes_of_face(f.first);
+				auto edges_f = m_blocking->get_edges_of_face(f.first);
+				// We check if the face have 1 node class on a point and 2 edges class on curves
+				for (auto n : nodes_f) {
+					if (n->info().geom_dim == 0) {
+						for (auto p : s_points) {
+							if (p->id() == n->info().geom_id) {
+								nb_nodes_on_point++;
 							}
 						}
 					}
-					for (auto e : edges_f) {
-						if (e->info().geom_dim == 1) {
-							for (auto c : s_curves) {
-								if (c->id() == e->info().geom_id) {
-									nb_edges_on_curve++;
-								}
+				}
+				for (auto e : edges_f) {
+					if (e->info().geom_dim == 1) {
+						for (auto c : s_curves) {
+							if (c->id() == e->info().geom_id) {
+								nb_edges_on_curve++;
 							}
 						}
 					}
+				}
 
-					if (nb_nodes_on_point >= 1 && nb_edges_on_curve >= 2) {
-						color_of_this_surface = f.second;
-					}
+				if (nb_nodes_on_point >= 1 && nb_edges_on_curve >= 2) {
+					color_of_this_surface = f.second;
+				}
 			}
 			for(auto f : map_faces_colored){
-				if(f.second == color_of_this_surface){
-					f.first->info().geom_id = s->id();
-					f.first->info().geom_dim= s->dim();
+				//We do nothing if the color of the face is 0 because the face is not on the boundary, we do this because before 
+				if(f.second == 0){
+					f.first->info().geom_id = -1;
+					f.first->info().geom_dim= 4;
+				}
 
+				else if(f.second == color_of_this_surface){
+					if(f.first->info().geom_dim==4) {
+						f.first->info().geom_id = s->id();
+						f.first->info().geom_dim = s->dim();
+					}
+					//We classify the element of the face not class on the surface
 					auto nodes_f = m_blocking->get_nodes_of_face(f.first);
 					auto edges_f = m_blocking->get_edges_of_face(f.first);
-
+					//First, the nodes
 					for(auto n : nodes_f){
 						if(n->info().geom_dim ==4){
 							n->info().geom_dim =s->dim();
 							n->info().geom_id =s->id();
 						}
 					}
-
+					//And the edges
 					for(auto e : edges_f){
 						if(e->info().geom_dim ==4){
 							e->info().geom_dim =s->dim();
@@ -270,10 +277,6 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 						}
 					}
 				}
-				else if(f.second == 0){
-						f.first->info().geom_id = -1;
-						f.first->info().geom_dim= 4;
-					}
 			}
 		}
 	}
@@ -474,7 +477,6 @@ CurvedBlockingClassifier::blocking_color_faces()
 		CurvedBlocking::Face currentFace = NULL;
 		for(auto aFC : faces_colored){
 			if(aFC.second == 0 && (m_blocking->get_blocks_of_face(aFC.first).size() == 1)){
-				//std::cout<<"LA face "<<aFC.first->info().topo_id<<" est au bord"<<std::endl;
 				currentFace = aFC.first;
 				break;
 			}
