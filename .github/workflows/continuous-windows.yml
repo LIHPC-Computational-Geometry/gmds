@@ -24,7 +24,7 @@ jobs:
       run: |
         git clone https://github.com/Microsoft/vcpkg.git
         .\vcpkg\bootstrap-vcpkg.bat -disableMetrics
-        vcpkg install --triplet x64-windows gtest pybind11
+        vcpkg install --triplet x64-windows gtest pybind11 eigen3
         vcpkg list
         vcpkg integrate install
 
