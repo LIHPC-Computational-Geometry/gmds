@@ -696,7 +696,9 @@ CurvedBlocking::cut_sheet(const Edge AE, const math::Point& AP)
 	double param = math::Segment(p0,p).computeLength() / s01.computeLength();
 	cut_sheet(AE, param);
 }
+
 /*----------------------------------------------------------------------------*/
+
 void
 CurvedBlocking::cut_sheet(const Edge AE, const double AParam)
 {
@@ -793,6 +795,8 @@ CurvedBlocking::cut_sheet(const Edge AE, const double AParam)
 	m_gmap.free_mark(mark_done);
 
 }
+
+
 /*----------------------------------------------------------------------------*/
 std::vector<std::pair<double,double> >
 CurvedBlocking::get_projection_info(math::Point& AP, std::vector<CurvedBlocking::Edge>& AEdges)
