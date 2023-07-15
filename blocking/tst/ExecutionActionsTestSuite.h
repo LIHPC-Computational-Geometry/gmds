@@ -274,94 +274,32 @@ TEST(ExecutionActionsTestSuite,cb2){
 	ASSERT_EQ(12,errors.non_captured_curves.size());
 	ASSERT_EQ(10,errors.non_captured_surfaces.size());
 
-	auto noCaptPoint0 = geom_model.getPoint(errors.non_captured_points[0]);
-	gmds::math::Point p(noCaptPoint0->X(),noCaptPoint0->Y(),noCaptPoint0->Z());
-
 	auto listEdgesPara = bl.get_all_sheet_edge_sets();
-	std::vector<gmds::blocking::CurvedBlocking::Edge > listEdgesSplitable;
-	unsigned int distMini = 1000;
-	gmds::blocking::CurvedBlocking::Edge edgeSelect;
-	double paramCutSaved;
-	for(auto edges : listEdgesPara){
-		auto projInfo = bl.get_projection_info(p,edges);
-		for(int i =0; i< projInfo.size();i++){
-			if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
-				edgeSelect = edges.at(i);
-				paramCutSaved = projInfo[i].second;
-			}
-		}
-	}
-
-
+	auto paramCut = classifier.get_cut_info(errors.non_captured_points[0],listEdgesPara);
 	//Do 1 cut
-	bl.cut_sheet(edgeSelect,paramCutSaved);
+	bl.cut_sheet(paramCut.first,paramCut.second);
 
 
 	//============================================
-	auto noCaptPoint1 = geom_model.getPoint(errors.non_captured_points[1]);
-	gmds::math::Point p1(noCaptPoint1->X(),noCaptPoint1->Y(),noCaptPoint1->Z());
-
 	listEdgesPara = bl.get_all_sheet_edge_sets();
-	listEdgesSplitable.clear();
-	distMini = 1000;
-	for(auto edges : listEdgesPara){
-		auto projInfo = bl.get_projection_info(p1,edges);
-		for(int i =0; i< projInfo.size();i++){
-			if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
-				edgeSelect = edges.at(i);
-				paramCutSaved = projInfo[i].second;
-			}
-		}
-	}
-
-
+	paramCut = classifier.get_cut_info(errors.non_captured_points[1],listEdgesPara);
 	//Do 2 cut
-	bl.cut_sheet(edgeSelect,paramCutSaved);
+	bl.cut_sheet(paramCut.first,paramCut.second);
 
 
 	//============================================
-	auto noCaptPoint2 = geom_model.getPoint(errors.non_captured_points[2]);
-	gmds::math::Point p2(noCaptPoint2->X(),noCaptPoint2->Y(),noCaptPoint2->Z());
-
 	listEdgesPara = bl.get_all_sheet_edge_sets();
-	listEdgesSplitable.clear();
-	distMini = 1000;
-	for(auto edges : listEdgesPara){
-		auto projInfo = bl.get_projection_info(p2,edges);
-		for(int i =0; i< projInfo.size();i++){
-			if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
-				edgeSelect = edges.at(i);
-				paramCutSaved = projInfo[i].second;
-			}
-		}
-	}
-
-
+	paramCut = classifier.get_cut_info(errors.non_captured_points[2],listEdgesPara);
 	//Do 3 cut
-	bl.cut_sheet(edgeSelect,paramCutSaved);
+	bl.cut_sheet(paramCut.first,paramCut.second);
 
 
 
 	//============================================
-	auto noCaptPoint3 = geom_model.getPoint(errors.non_captured_points[6]);
-	gmds::math::Point p3(noCaptPoint3->X(),noCaptPoint3->Y(),noCaptPoint3->Z());
-
 	listEdgesPara = bl.get_all_sheet_edge_sets();
-	listEdgesSplitable.clear();
-	distMini = 1000;
-	for(auto edges : listEdgesPara){
-		auto projInfo = bl.get_projection_info(p3,edges);
-		for(int i =0; i< projInfo.size();i++){
-			if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
-				edgeSelect = edges.at(i);
-				paramCutSaved = projInfo[i].second;
-			}
-		}
-	}
-
-
+	paramCut = classifier.get_cut_info(errors.non_captured_points[6],listEdgesPara);
 	//Do 4 cut
-	bl.cut_sheet(edgeSelect,paramCutSaved);
+	bl.cut_sheet(paramCut.first,paramCut.second);
 
 
 
