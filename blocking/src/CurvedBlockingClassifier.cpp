@@ -228,9 +228,11 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 
 		//We class the faces with a surface
 		for(auto s : geom_surfaces){
+
 			std::vector<cad::GeomPoint *> s_points = s->points();
 			std::vector<cad::GeomCurve *> s_curves = s->curves();
 			int color_of_this_surface=-1;
+
 			for(auto f : map_faces_colored) {
 				int nb_edges_on_curve = 0;
 				int nb_nodes_on_point = 0;
@@ -248,7 +250,7 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 					}
 				}
 				for (auto e : edges_f) {
-					if (e->info().geom_dim == 1) {
+					if (e->info().geom_dim == 1 && m_blocking->get_faces_of_edge(e).size() ==2) {
 						for (auto c : s_curves) {
 							if (c->id() == e->info().geom_id) {
 								nb_edges_on_curve++;

@@ -157,7 +157,6 @@ TEST(ExecutionActionsTestSuite,cb1){
 
 	auto e2 = bl.gmap()->attribute<1>(bl.gmap()->alpha<1>(e->dart()));
 	bl.cut_sheet(e);
-	auto coloredFaces = classifier.blocking_color_faces();
 	//Check nb points of the geometry and nb nodes of the blocking after the split
 	ASSERT_EQ(12,geom_model.getNbPoints());
 	ASSERT_EQ(18,geom_model.getNbCurves());
@@ -201,8 +200,6 @@ TEST(ExecutionActionsTestSuite,cb1){
 	bl.remove_block(bl.get_blocks_of_face(fe[0])[0]);
 	 */
 
-	std::cout<<"AFAZFZAEFZAFZAFaz"<<std::endl;
-
 	errors = classifier.classify();
 
 
@@ -218,7 +215,7 @@ TEST(ExecutionActionsTestSuite,cb1){
 
 
 
-// For delete the useless block
+	// To delete the useless block
 	auto eS = bl.get_all_edges()[5];
 	auto ed = bl.get_edges_of_node(bl.get_all_nodes()[7]);
 	auto fe = bl.get_faces_of_edge(ed[1]);
@@ -265,6 +262,7 @@ TEST(ExecutionActionsTestSuite,cb2){
 	ASSERT_EQ(6,bl.get_all_faces().size());
 
 
+
 	//Check elements class and captured
 	//Check nb nodes/edges/faces no classified
 	ASSERT_EQ(0,errors.non_classified_nodes.size());
@@ -275,6 +273,147 @@ TEST(ExecutionActionsTestSuite,cb2){
 	ASSERT_EQ(8,errors.non_captured_points.size());
 	ASSERT_EQ(12,errors.non_captured_curves.size());
 	ASSERT_EQ(10,errors.non_captured_surfaces.size());
+
+	auto noCaptPoint0 = geom_model.getPoint(errors.non_captured_points[0]);
+	gmds::math::Point p(noCaptPoint0->X(),noCaptPoint0->Y(),noCaptPoint0->Z());
+
+	auto listEdgesPara = bl.get_all_sheet_edge_sets();
+	std::vector<gmds::blocking::CurvedBlocking::Edge > listEdgesSplitable;
+	unsigned int distMini = 1000;
+	gmds::blocking::CurvedBlocking::Edge edgeSelect;
+	double paramCutSaved;
+	for(auto edges : listEdgesPara){
+		auto projInfo = bl.get_projection_info(p,edges);
+		for(int i =0; i< projInfo.size();i++){
+			if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
+				edgeSelect = edges.at(i);
+				paramCutSaved = projInfo[i].second;
+			}
+		}
+	}
+
+
+	//Do 1 cut
+	bl.cut_sheet(edgeSelect,paramCutSaved);
+
+
+	//============================================
+	auto noCaptPoint1 = geom_model.getPoint(errors.non_captured_points[1]);
+	gmds::math::Point p1(noCaptPoint1->X(),noCaptPoint1->Y(),noCaptPoint1->Z());
+
+	listEdgesPara = bl.get_all_sheet_edge_sets();
+	listEdgesSplitable.clear();
+	distMini = 1000;
+	for(auto edges : listEdgesPara){
+		auto projInfo = bl.get_projection_info(p1,edges);
+		for(int i =0; i< projInfo.size();i++){
+			if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
+				edgeSelect = edges.at(i);
+				paramCutSaved = projInfo[i].second;
+			}
+		}
+	}
+
+
+	//Do 2 cut
+	bl.cut_sheet(edgeSelect,paramCutSaved);
+
+
+	//============================================
+	auto noCaptPoint2 = geom_model.getPoint(errors.non_captured_points[2]);
+	gmds::math::Point p2(noCaptPoint2->X(),noCaptPoint2->Y(),noCaptPoint2->Z());
+
+	listEdgesPara = bl.get_all_sheet_edge_sets();
+	listEdgesSplitable.clear();
+	distMini = 1000;
+	for(auto edges : listEdgesPara){
+		auto projInfo = bl.get_projection_info(p2,edges);
+		for(int i =0; i< projInfo.size();i++){
+			if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
+				edgeSelect = edges.at(i);
+				paramCutSaved = projInfo[i].second;
+			}
+		}
+	}
+
+
+	//Do 3 cut
+	bl.cut_sheet(edgeSelect,paramCutSaved);
+
+
+
+	//============================================
+	auto noCaptPoint3 = geom_model.getPoint(errors.non_captured_points[6]);
+	gmds::math::Point p3(noCaptPoint3->X(),noCaptPoint3->Y(),noCaptPoint3->Z());
+
+	listEdgesPara = bl.get_all_sheet_edge_sets();
+	listEdgesSplitable.clear();
+	distMini = 1000;
+	for(auto edges : listEdgesPara){
+		auto projInfo = bl.get_projection_info(p3,edges);
+		for(int i =0; i< projInfo.size();i++){
+			if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
+				edgeSelect = edges.at(i);
+				paramCutSaved = projInfo[i].second;
+			}
+		}
+	}
+
+
+	//Do 4 cut
+	bl.cut_sheet(edgeSelect,paramCutSaved);
+
+
+
+
+	//Try class after spliting
+
+	errors = classifier.classify();
+
+
+	//Check nb points of the geometry and nb nodes of the blocking
+	ASSERT_EQ(16,geom_model.getNbPoints());
+	ASSERT_EQ(24,geom_model.getNbCurves());
+	ASSERT_EQ(10,geom_model.getNbSurfaces());
+	ASSERT_EQ(32,bl.get_all_nodes().size());
+	ASSERT_EQ(64,bl.get_all_edges().size());
+	ASSERT_EQ(42,bl.get_all_faces().size());
+
+
+	//Check nb points/curves/surfaces no captured
+	ASSERT_EQ(0,errors.non_captured_points.size());
+	ASSERT_EQ(0,errors.non_captured_curves.size());
+	ASSERT_EQ(4,errors.non_captured_surfaces.size());
+
+
+
+
+	auto listB = bl.get_all_blocks();
+	/*
+	for(int i =0; i<listB.size();i++){
+		std::cout<<"Block : "<<listB[i]->info().topo_id<<" a la position : "<<i<<std::endl;
+	}*/
+	//Delete the useless block
+	bl.remove_block(listB[0]);
+
+
+	//Try class after spliting
+	errors = classifier.classify();
+
+
+	//Check nb points of the geometry and nb nodes of the blocking
+	ASSERT_EQ(16,geom_model.getNbPoints());
+	ASSERT_EQ(24,geom_model.getNbCurves());
+	ASSERT_EQ(10,geom_model.getNbSurfaces());
+	ASSERT_EQ(32,bl.get_all_nodes().size());
+	ASSERT_EQ(64,bl.get_all_edges().size());
+	ASSERT_EQ(40,bl.get_all_faces().size());
+
+
+	//Check nb points/curves/surfaces no captured
+	ASSERT_EQ(0,errors.non_captured_points.size());
+	ASSERT_EQ(0,errors.non_captured_curves.size());
+	//ASSERT_EQ(0,errors.non_captured_surfaces.size());
 
 
 
@@ -291,7 +430,12 @@ TEST(ExecutionActionsTestSuite,cb2){
 	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
 	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
 	vtk_writer_edges.write("debug_blocking_edges.vtk");
+	gmds::VTKWriter vtk_writer_faces(&ios);
+	vtk_writer_faces.setCellOptions(gmds::N|gmds::F);
+	vtk_writer_faces.setDataOptions(gmds::N|gmds::F);
+	vtk_writer_faces.write("debug_blocking_faces.vtk");
 }
+
 
 
 

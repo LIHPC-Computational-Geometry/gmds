@@ -508,7 +508,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in] AEdges 	A set of edges
 	 * @return for each edge, we get the distance (first) and the coordinate (second)
 	 */
-	std::vector<std::pair<double, double>> get_projection_info(math::Point &AP, std::vector<CurvedBlocking::Edge> &AEdges);
+	std::vector<std::pair<double, double>> 	get_projection_info(math::Point &AP, std::vector<CurvedBlocking::Edge> &AEdges);
 
  private:
 	/**@brief Create a node attribute in the n-gmap
