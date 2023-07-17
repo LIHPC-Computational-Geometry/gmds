@@ -74,16 +74,16 @@ int main(int argc, char* argv[])
     //hard->set(23,1);
 
     //test_padding.vtk
-    hard->set(0,1);
-    hard->set(1,1);
-    hard->set(6,1);
+    hard->set(1201,1);
+    hard->set(1202,1);
+    /*hard->set(6,1);
     hard->set(7,1);
     hard->set(11,1);
     hard->set(12,1);
     hard->set(16,1);
     hard->set(17,1);
     hard->set(21,1);
-    hard->set(22,1);
+    hard->set(22,1);*/
 
 
     //==================================================================
