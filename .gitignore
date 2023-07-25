@@ -27,3 +27,4 @@ external/
 
 # spack files when dev-build
 spack-*
+/spack
