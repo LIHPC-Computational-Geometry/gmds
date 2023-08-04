@@ -447,7 +447,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * 		 edges is an item pf @p ASheetEdges
 	 * return all the edges gathered by sheet
 	 */
-	std::vector<std::vector<Edge> > get_all_sheet_edge_sets();
+	std::vector<std::vector<Edge>> get_all_sheet_edge_sets();
 	/**@brief Get one dart per  parallel edges composing the sheet defined from edge
 	 * @p AE. All the returned darts are on the same side of each edge.
 	 * @param[in]  AE			the edge we start from
@@ -472,6 +472,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in] AE an edge we want to split in two edges
 	 */
 	void cut_sheet(const Edge AE);
+
 	/**@brief Low level operation that @p TDim-sew two darts
 	 * @tparam TDim sewing dimension
 	 * @param[in] AD1 First dart
@@ -508,7 +509,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in] AEdges 	A set of edges
 	 * @return for each edge, we get the distance (first) and the coordinate (second)
 	 */
-	std::vector<std::pair<double, double>> get_projection_info(math::Point &AP, std::vector<CurvedBlocking::Edge> &AEdges);
+	std::vector<std::pair<double, double>> 	get_projection_info(math::Point &AP, std::vector<CurvedBlocking::Edge> &AEdges);
 
  private:
 	/**@brief Create a node attribute in the n-gmap

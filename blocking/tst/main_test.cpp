@@ -9,6 +9,7 @@
 #include "InputMarkedDartsTestSuite.h"
 #include "SheetInsertTestSuite.h"
 #include "WriterDartsVTKTestSuite.h"
+#include "ExecutionActionsTestSuite.h"
 #ifdef USE_CGNS
 #include "CGNSWriterTestSuite.h"
 #endif

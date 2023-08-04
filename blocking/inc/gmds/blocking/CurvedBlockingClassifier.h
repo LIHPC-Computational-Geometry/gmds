@@ -86,6 +86,13 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 */
 	std::map<CurvedBlocking::Face,int> blocking_color_faces();
 
+	/**\brief return the parameters for do the cut_sheet
+	 * @param[in] pointId 		A point id
+	 * @param[in] AllEdges 	all the edges of the blocking
+	 * @return return the parameters for the cut, we get the edge (first) and the parameter included in ]0,1[(second)
+	 */
+	std::pair<CurvedBlocking::Edge, double> get_cut_info(int pointId, std::vector<std::vector<CurvedBlocking::Edge>> &AllEdges);
+
 
 
  private:
@@ -103,6 +110,13 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 * @return true and the edges classified on @c AC, false otherwise
 	 */
 	std::pair<bool, std::vector<CurvedBlocking::Edge>> find_edge_classified_on(cad::GeomCurve* AC);
+
+	/**@brief This method check if a 2-cell of the blocking structure is classified
+	 * on the geometrical curve @s AS.
+	 * @param AS a geometrical surface
+	 * @return true and the faces classified on @s AS, false otherwise
+	 */
+	std::pair<bool, std::vector<CurvedBlocking::Face>> find_face_classified_on(cad::GeomSurface* AS);
 
 
 	/**@brief This methods classify all nodes onto the geometric model. It is called internally

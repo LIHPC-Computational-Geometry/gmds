@@ -30,6 +30,20 @@ CurvedBlockingClassifier::detect_classification_errors(ClassificationErrors &AEr
 			AErrors.non_captured_curves.push_back(c->id());
 		}
 	}
+	// 3) We check the geometric surfaces
+	std::vector<cad::GeomSurface *> geom_surfaces;
+	m_geom_model->getSurfaces(geom_surfaces);
+	for (auto s : geom_surfaces) {
+		auto [found, n] = find_face_classified_on(s);
+		//if all points and all curves are not captured, we dont class the faces so, the surfaces are not captured
+		if(AErrors.non_captured_points.size()!=0 && AErrors.non_captured_curves.size()!=0){
+			AErrors.non_captured_surfaces.push_back(s->id());
+			continue;
+		}
+		else if (!found) {
+			AErrors.non_captured_surfaces.push_back(s->id());
+		}
+	}
 	return AErrors;
 }
 /*----------------------------------------------------------------------------*/
@@ -214,9 +228,11 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 
 		//We class the faces with a surface
 		for(auto s : geom_surfaces){
+
 			std::vector<cad::GeomPoint *> s_points = s->points();
 			std::vector<cad::GeomCurve *> s_curves = s->curves();
 			int color_of_this_surface=-1;
+
 			for(auto f : map_faces_colored) {
 				int nb_edges_on_curve = 0;
 				int nb_nodes_on_point = 0;
@@ -234,7 +250,7 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 					}
 				}
 				for (auto e : edges_f) {
-					if (e->info().geom_dim == 1) {
+					if (e->info().geom_dim == 1 && m_blocking->get_faces_of_edge(e).size() ==2) {
 						for (auto c : s_curves) {
 							if (c->id() == e->info().geom_id) {
 								nb_edges_on_curve++;
@@ -248,10 +264,10 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 				}
 			}
 			for(auto f : map_faces_colored){
-				//We do nothing if the color of the face is 0 because the face is not on the boundary, we do this because before
+				//We do nothing if the color of the face is 0, and any edges is class on a curve, because the face is not on the boundary, but its poss
 				if(f.second == 0){
-					f.first->info().geom_id = -1;
-					f.first->info().geom_dim= 4;
+						f.first->info().geom_id = -1;
+						f.first->info().geom_dim= 4;
 				}
 
 				else if(f.second == color_of_this_surface){
@@ -281,14 +297,13 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 		}
 	}
 	auto nodes = m_blocking->get_all_nodes();
-	if(!AErrors.non_classified_nodes.empty()){
-		AErrors.non_classified_nodes.clear();
-		for(auto n : nodes) {
-			if (n->info().geom_dim == 4) {
-				AErrors.non_classified_nodes.push_back(n->info().topo_id);
-			}
+	AErrors.non_classified_nodes.clear();
+	for(auto n : nodes) {
+		if (n->info().geom_dim == 4) {
+			AErrors.non_classified_nodes.push_back(n->info().topo_id);
 		}
 	}
+
 	AErrors.non_classified_edges.clear();
 
 	auto edges = m_blocking->get_all_edges();
@@ -317,10 +332,37 @@ CurvedBlockingClassifier::classify(const double AMaxDistance, const double APoin
 	//============ (2) We classify edges =================
 	classify_edges(errors);
 
+
 	detect_classification_errors(errors);
 
-	//============ (2) We classify faces =================
-	classify_faces(errors);
+	if(errors.non_captured_points.empty() && errors.non_captured_curves.empty()){
+
+
+		//============ (2) We classify faces =================
+		classify_faces(errors);
+
+		errors.non_captured_surfaces.clear();
+
+		detect_classification_errors(errors);
+	}
+	else{
+		errors.non_classified_nodes.clear();
+		for(auto n : m_blocking->get_all_nodes()){
+			if(n->info().geom_dim==4) {
+				errors.non_classified_nodes.push_back(n->info().topo_id);
+			}
+		}
+		errors.non_classified_edges.clear();
+		for(auto e : m_blocking->get_all_edges()){
+			if(e->info().geom_dim==4) {
+				errors.non_classified_edges.push_back(e->info().topo_id);
+			}
+		}
+		for(auto f : m_blocking->get_all_faces()){
+			errors.non_classified_faces.push_back(f->info().topo_id);
+		}
+	}
+
 
 	return errors;
 }
@@ -427,6 +469,49 @@ CurvedBlockingClassifier::find_edge_classified_on(cad::GeomCurve *AC)
 	return {false, edgesOnCurve};
 }
 /*----------------------------------------------------------------------------*/
+std::pair<bool, std::vector<CurvedBlocking::Face>>
+CurvedBlockingClassifier::find_face_classified_on(cad::GeomSurface *AS)
+{
+	std::vector<CurvedBlocking::Face> facesOnSurface;
+	auto allFaces = m_blocking->get_all_faces();
+
+	for(auto f : allFaces){
+				if(f->info().geom_dim == AS->dim() && f->info().geom_id == AS->id()){
+			facesOnSurface.push_back(f);
+		}
+	}
+	auto loopOfS = AS->loops();
+	auto pointsOfS = AS->points();
+	auto curvesOfS = AS->curves();
+	std::set<int> listCurvesCapt;
+
+
+	if(facesOnSurface.size()==0){
+		return {false, facesOnSurface};
+	}
+
+	//We get all id curves capt by the edges of all the faces class on the surface
+	for(auto f_S : facesOnSurface){
+		auto edges_F = m_blocking->get_edges_of_face(f_S);
+		for (auto e : edges_F){
+			if(e->info().geom_dim == 1){
+				listCurvesCapt.insert(e->info().geom_id);
+			}
+		}
+	}
+	for(auto l : loopOfS){
+		for(auto c : l){
+			if(listCurvesCapt.count(c->id()) ==0){
+				return {false, facesOnSurface};
+			}
+		}
+	}
+	return {true, facesOnSurface};
+
+
+
+}
+/*----------------------------------------------------------------------------*/
 std::tuple<double, int, math::Point>
 CurvedBlockingClassifier::get_closest_cell(const math::Point &AP, const std::vector<cad::GeomEntity *> &AGeomCells)
 {
@@ -518,4 +603,29 @@ CurvedBlockingClassifier::blocking_color_faces()
 }
 /*----------------------------------------------------------------------------*/
 
+std::pair<CurvedBlocking::Edge, double>
+CurvedBlockingClassifier::get_cut_info(int pointId, std::vector<std::vector<CurvedBlocking::Edge>>& AllEdges)
+{
+	std::pair<CurvedBlocking::Edge,double> paramCut;
+
+	//============================================
+	auto noCaptPoint0 = m_geom_model->getPoint(pointId);
+	gmds::math::Point p(noCaptPoint0->X(),noCaptPoint0->Y(),noCaptPoint0->Z());
+
+	auto listEdgesPara = m_blocking->get_all_sheet_edge_sets();
+	std::vector<gmds::blocking::CurvedBlocking::Edge > listEdgesSplitable;
+	unsigned int distMini = 1000;
+	for(auto edges : listEdgesPara){
+		auto projInfo = m_blocking->get_projection_info(p,edges);
+		for(int i =0; i< projInfo.size();i++){
+			if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
+				paramCut.first = edges.at(i);
+				paramCut.second = projInfo[i].second;
+			}
+		}
+	}
+
+	return paramCut;
+}
+/*----------------------------------------------------------------------------*/
 
