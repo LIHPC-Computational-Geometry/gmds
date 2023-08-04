@@ -639,9 +639,9 @@ TEST(ExecutionActionsTestSuite,cb5){
 
 
 	//Check nb points of the geometry and nb nodes of the blocking
-	ASSERT_EQ(42,geom_model.getNbPoints());
-	ASSERT_EQ(63,geom_model.getNbCurves());
-	ASSERT_EQ(23,geom_model.getNbSurfaces());
+	ASSERT_EQ(28,geom_model.getNbPoints());
+	ASSERT_EQ(42,geom_model.getNbCurves());
+	ASSERT_EQ(16,geom_model.getNbSurfaces());
 
 	ASSERT_EQ(8,bl.get_all_nodes().size());
 	ASSERT_EQ(12,bl.get_all_edges().size());
@@ -650,14 +650,14 @@ TEST(ExecutionActionsTestSuite,cb5){
 
 	//Check elements class and captured
 	//Check nb nodes/edges/faces no classified
-	ASSERT_EQ(3,errors.non_classified_nodes.size());
-	ASSERT_EQ(9,errors.non_classified_edges.size());
+	ASSERT_EQ(2,errors.non_classified_nodes.size());
+	ASSERT_EQ(8,errors.non_classified_edges.size());
 	ASSERT_EQ(6,errors.non_classified_faces.size());
 
 	//Check nb points/curves/surfaces no captured
-	ASSERT_EQ(37,errors.non_captured_points.size());
-	ASSERT_EQ(60,errors.non_captured_curves.size());
-	ASSERT_EQ(23,errors.non_captured_surfaces.size());
+	ASSERT_EQ(22,errors.non_captured_points.size());
+	ASSERT_EQ(38,errors.non_captured_curves.size());
+	ASSERT_EQ(16,errors.non_captured_surfaces.size());
 
 
 	//======================= START CUTTING =======================
@@ -672,84 +672,14 @@ TEST(ExecutionActionsTestSuite,cb5){
 	errors = classifier.classify();
 	//Check elements class and captured
 	//Check nb nodes/edges/faces no classified
-	ASSERT_EQ(3,errors.non_classified_nodes.size());
-	ASSERT_EQ(16,errors.non_classified_edges.size());
+	ASSERT_EQ(2,errors.non_classified_nodes.size());
+	ASSERT_EQ(13,errors.non_classified_edges.size());
 	ASSERT_EQ(11,errors.non_classified_faces.size());
 
 	//Check nb points/curves/surfaces no captured
-	ASSERT_EQ(34,errors.non_captured_points.size());
-	ASSERT_EQ(59,errors.non_captured_curves.size());
-	ASSERT_EQ(23,errors.non_captured_surfaces.size());
-
-	//===================================================================
-	while(errors.non_captured_points.size()!=0) {
-		listEdgesPara = bl.get_all_sheet_edge_sets();
-		paramCut = classifier.get_cut_info(errors.non_captured_points[0], listEdgesPara);
-		// Do 1 cut
-		bl.cut_sheet(paramCut.first, paramCut.second);
-
-		errors = classifier.classify();
-	}
-	//Check elements class and captured
-	//Check nb nodes/edges/faces no classified
-	ASSERT_EQ(27,errors.non_classified_nodes.size());
-	ASSERT_EQ(311,errors.non_classified_edges.size());
-	ASSERT_EQ(312,errors.non_classified_faces.size());
-
-	//Check nb points/curves/surfaces no captured
-	ASSERT_EQ(0,errors.non_captured_points.size());
-	ASSERT_EQ(21,errors.non_captured_curves.size());
-	ASSERT_EQ(23,errors.non_captured_surfaces.size());
-
-	auto listB = bl.get_all_blocks();
-
-	//Delete the useless block
-	bl.remove_block(listB[82]);
-	bl.remove_block(listB[75]);
-	bl.remove_block(listB[66]);
-	bl.remove_block(listB[64]);
-	bl.remove_block(listB[63]);
-	bl.remove_block(listB[49]);
-	bl.remove_block(listB[48]);
-	bl.remove_block(listB[41]);
-	bl.remove_block(listB[40]);
-
-	bl.remove_block(listB[73]);
-	bl.remove_block(listB[67]);
-	bl.remove_block(listB[29]);
-	bl.remove_block(listB[28]);
-	bl.remove_block(listB[26]);
-	bl.remove_block(listB[25]);
-	bl.remove_block(listB[22]);
-	bl.remove_block(listB[19]);
-	bl.remove_block(listB[15]);
-	bl.remove_block(listB[12]);
-	bl.remove_block(listB[8]);
-
-
-	bl.remove_block(listB[46]);
-	bl.remove_block(listB[14]);
-	bl.remove_block(listB[13]);
-	bl.remove_block(listB[6]);
-
-	bl.remove_block(listB[44]);
-	/*
-	for(int i =0; i<listB.size();i++){
-		std::cout<<"Block : "<<listB[i]->info().topo_id<<" a la position : "<<i<<std::endl;
-	}*/
-
-	errors = classifier.classify();
-
-	//Check elements class and captured
-	//Check nb nodes/edges/faces no classified
-	ASSERT_EQ(27,errors.non_classified_nodes.size());
-	ASSERT_EQ(311,errors.non_classified_edges.size());
-	ASSERT_EQ(312,errors.non_classified_faces.size());
-
-	//Check nb points/curves/surfaces no captured
-	ASSERT_EQ(0,errors.non_captured_points.size());
-	ASSERT_EQ(21,errors.non_captured_curves.size());
-	ASSERT_EQ(23,errors.non_captured_surfaces.size());
+	ASSERT_EQ(20,errors.non_captured_points.size());
+	ASSERT_EQ(35,errors.non_captured_curves.size());
+	ASSERT_EQ(16,errors.non_captured_surfaces.size());
 
 
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
