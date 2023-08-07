@@ -323,3 +323,11 @@ TEST(CurvedBlockingTestSuite, test_topological_queries)
 		    ASSERT_EQ(1, bs.size());
 	}
 }
+TEST(CurvedBlockingTestSuite, save_vtk_blocking){
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+
+	bl.save_vtk_blocking("testSaveWork.vtk");
+}

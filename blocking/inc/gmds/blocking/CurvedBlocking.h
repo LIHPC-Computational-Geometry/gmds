@@ -10,6 +10,8 @@
 #include <gmds/math/Point.h>
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/utils/Exception.h>
+#include <gmds/io/IGMeshIOService.h>
+#include <gmds/io/VTKWriter.h>
 /*----------------------------------------------------------------------------*/
 #include <string>
 #include <tuple>
@@ -491,6 +493,12 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in,out] ACellMesh A cellular mesh
 	 */
 	void convert_to_mesh(Mesh &ACellMesh);
+
+	/**\brief save the blocking on vtk. During the process, the curved blocking is convert on a mesh.
+	 * @param[in] AFileName 		the name used for the file
+	 */
+	void save_vtk_blocking(const std::string &AFileName);
+
 	/**@brief Provides a list of information about the blocking structure
 	 * @return a string containing the expected pieces of information
 	 */
@@ -510,6 +518,8 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @return for each edge, we get the distance (first) and the coordinate (second)
 	 */
 	std::vector<std::pair<double, double>> 	get_projection_info(math::Point &AP, std::vector<CurvedBlocking::Edge> &AEdges);
+
+
 
  private:
 	/**@brief Create a node attribute in the n-gmap

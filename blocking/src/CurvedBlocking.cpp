@@ -585,6 +585,18 @@ CurvedBlocking::convert_to_mesh(Mesh &AMesh)
 	}
 }
 /*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::save_vtk_blocking(const std::string &AFileName)
+{
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
+	convert_to_mesh(m);
+	gmds::IGMeshIOService ios(&m);
+	gmds::VTKWriter vtk_writer(&ios);
+	vtk_writer.setCellOptions(gmds::N|gmds::R);
+	vtk_writer.setDataOptions(gmds::N|gmds::R);
+	vtk_writer.write(AFileName);
+}
+/*----------------------------------------------------------------------------*/
 std::vector<std::vector<CurvedBlocking::Edge> >
 CurvedBlocking::get_all_sheet_edge_sets()
 {

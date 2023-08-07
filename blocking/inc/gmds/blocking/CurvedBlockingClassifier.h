@@ -95,6 +95,8 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 
 
 
+
+
  private:
 	/**@brief This method check if a 0-cell of the blocking structure is classified
 	 * on the geometrical point @p AP.
