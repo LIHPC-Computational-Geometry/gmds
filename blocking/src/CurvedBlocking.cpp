@@ -471,6 +471,25 @@ CurvedBlocking::get_block_info(const int ABlockId)
 	return std::make_tuple(-1,-1);
 }
 /*----------------------------------------------------------------------------*/
+CurvedBlocking::Block
+CurvedBlocking::get_block(const int ABlockId)
+{
+	auto listBlocks = get_all_blocks();
+	bool found = false;
+	for(auto b : listBlocks){
+		if(b->info().topo_id == ABlockId){
+			return b;
+		}
+	}
+	std::cout<<"ID NO VALIDE"<<std::endl;
+	assert(found);
+}
+/*----------------------------------------------------------------------------*/
+int
+CurvedBlocking::get_block_id(CurvedBlocking::Block &ABlock){
+	return ABlock->info().topo_id;
+}
+/*----------------------------------------------------------------------------*/
 bool
 CurvedBlocking::is_valid_topology() const
 {

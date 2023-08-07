@@ -331,3 +331,18 @@ TEST(CurvedBlockingTestSuite, save_vtk_blocking){
 
 	bl.save_vtk_blocking("testSaveWork.vtk");
 }
+
+TEST(CurvedBlockingTestSuite, get_Id_block){
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+
+	auto listBlocks = bl.get_all_blocks();
+	auto block = bl.get_block(listBlocks[0]->info().topo_id);
+
+	std::cout<<"LE BLOCK "<< block->info().topo_id<<std::endl;
+
+	std::cout<<"LE BLOCK TEST "<<bl.get_block_id(block)<<std::endl;
+
+}

@@ -55,7 +55,8 @@ void bind_blocking(py::module &m){
 	   .def("remove_block", &gmds::blocking::CurvedBlocking::remove_block)
 	   .def("info", &gmds::blocking::CurvedBlocking::info)
 	   .def("convert_to_mesh", &gmds::blocking::CurvedBlocking::convert_to_mesh)
-		.def("save_vtk_blocking", &gmds::blocking::CurvedBlocking::save_vtk_blocking);
+		.def("save_vtk_blocking", &gmds::blocking::CurvedBlocking::save_vtk_blocking)
+		.def("get_block_id", &gmds::blocking::CurvedBlocking::get_block_id);
 
 	py::class_<gmds::blocking::CurvedBlocking::Block>(m, "Block");
 
@@ -71,6 +72,6 @@ void bind_blocking(py::module &m){
 	   .def(py::init<gmds::blocking::CurvedBlocking *>())
 	   .def("clear_classification", &gmds::blocking::CurvedBlockingClassifier::clear_classification)
 	   .def("classify", &gmds::blocking::CurvedBlockingClassifier::classify)
-		.def("detect_classification_errors", &gmds::blocking::CurvedBlockingClassifier::detect_classification_errors);
-
+		.def("detect_classification_errors", &gmds::blocking::CurvedBlockingClassifier::detect_classification_errors)
+	   .def("get_param_cut", &gmds::blocking::CurvedBlockingClassifier::get_cut_info);
 }

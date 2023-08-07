@@ -316,6 +316,21 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @return a tuple where the first parameter is the geom_dim, the second its geom_id
 	 */
 	std::tuple<int, int> get_block_info(const int ABlockId);
+
+	/** Return the block for the block of id @p ABlockId
+	 * @param[in] ABlockId topological block id
+	 * @return a block object
+	 */
+	CurvedBlocking::Block get_block(const int ABlockId);
+
+	/** Return the id block for the block
+	 * @param[in] ABlockId a block
+	 * @return an id block
+	 */
+	int get_block_id(CurvedBlocking::Block &ABlock);
+
+
+
 	/**@brief Non-optimal method to get all the blocks of the structure. The
 	 * best option is to traverse the block structure through the gmap
 	 * structure (iterators on attributes)
@@ -517,7 +532,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in] AEdges 	A set of edges
 	 * @return for each edge, we get the distance (first) and the coordinate (second)
 	 */
-	std::vector<std::pair<double, double>> 	get_projection_info(math::Point &AP, std::vector<CurvedBlocking::Edge> &AEdges);
+	std::vector<std::pair<double, double>> get_projection_info(math::Point &AP, std::vector<CurvedBlocking::Edge> &AEdges);
 
 
 
