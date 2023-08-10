@@ -603,29 +603,4 @@ CurvedBlockingClassifier::blocking_color_faces()
 }
 /*----------------------------------------------------------------------------*/
 
-std::pair<CurvedBlocking::Edge, double>
-CurvedBlockingClassifier::get_cut_info(int pointId, std::vector<std::vector<CurvedBlocking::Edge>>& AllEdges)
-{
-	std::pair<CurvedBlocking::Edge,double> paramCut;
-
-	//============================================
-	auto noCaptPoint0 = m_geom_model->getPoint(pointId);
-	gmds::math::Point p(noCaptPoint0->X(),noCaptPoint0->Y(),noCaptPoint0->Z());
-
-	auto listEdgesPara = m_blocking->get_all_sheet_edge_sets();
-	std::vector<gmds::blocking::CurvedBlocking::Edge > listEdgesSplitable;
-	unsigned int distMini = 1000;
-	for(auto edges : listEdgesPara){
-		auto projInfo = m_blocking->get_projection_info(p,edges);
-		for(int i =0; i< projInfo.size();i++){
-			if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
-				paramCut.first = edges.at(i);
-				paramCut.second = projInfo[i].second;
-			}
-		}
-	}
-
-	return paramCut;
-}
-/*----------------------------------------------------------------------------*/
 

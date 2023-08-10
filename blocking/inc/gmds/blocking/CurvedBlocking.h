@@ -490,6 +490,20 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	void cut_sheet(const Edge AE);
 
+
+    /**@brief Split the sheet defined by edge @p AE
+	 * @param[in] AnIdPoint an id of a none captured point, we want to split something to captured it
+	 */
+    void cut_sheet(const int AnIdPoint);
+
+    /**\brief return the parameters for do the cut_sheet
+	 * @param[in] pointId 		A point id
+	 * @param[in] AllEdges 	all the edges of the blocking
+	 * @return return the parameters for the cut, we get the edge (first) and the parameter included in ]0,1[(second)
+	 */
+    std::pair<CurvedBlocking::Edge, double> get_cut_info(int pointId, std::vector<std::vector<CurvedBlocking::Edge>> &AllEdges);
+
+
 	/**@brief Low level operation that @p TDim-sew two darts
 	 * @tparam TDim sewing dimension
 	 * @param[in] AD1 First dart

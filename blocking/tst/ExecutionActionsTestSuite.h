@@ -275,21 +275,21 @@ TEST(ExecutionActionsTestSuite,cb2){
 	ASSERT_EQ(10,errors.non_captured_surfaces.size());
 
 	auto listEdgesPara = bl.get_all_sheet_edge_sets();
-	auto paramCut = classifier.get_cut_info(errors.non_captured_points[0],listEdgesPara);
+	auto paramCut = bl.get_cut_info(errors.non_captured_points[0],listEdgesPara);
 	//Do 1 cut
 	bl.cut_sheet(paramCut.first,paramCut.second);
 
 
 	//============================================
 	listEdgesPara = bl.get_all_sheet_edge_sets();
-	paramCut = classifier.get_cut_info(errors.non_captured_points[1],listEdgesPara);
+	paramCut = bl.get_cut_info(errors.non_captured_points[1],listEdgesPara);
 	//Do 2 cut
 	bl.cut_sheet(paramCut.first,paramCut.second);
 
 
 	//============================================
 	listEdgesPara = bl.get_all_sheet_edge_sets();
-	paramCut = classifier.get_cut_info(errors.non_captured_points[2],listEdgesPara);
+	paramCut = bl.get_cut_info(errors.non_captured_points[2],listEdgesPara);
 	//Do 3 cut
 	bl.cut_sheet(paramCut.first,paramCut.second);
 
@@ -297,7 +297,7 @@ TEST(ExecutionActionsTestSuite,cb2){
 
 	//============================================
 	listEdgesPara = bl.get_all_sheet_edge_sets();
-	paramCut = classifier.get_cut_info(errors.non_captured_points[6],listEdgesPara);
+	paramCut = bl.get_cut_info(errors.non_captured_points[6],listEdgesPara);
 	//Do 4 cut
 	bl.cut_sheet(paramCut.first,paramCut.second);
 
@@ -413,7 +413,7 @@ TEST(ExecutionActionsTestSuite,cb3){
 	//===================================================================
 
 	auto listEdgesPara = bl.get_all_sheet_edge_sets();
-	auto paramCut = classifier.get_cut_info(errors.non_captured_points[3],listEdgesPara);
+	auto paramCut = bl.get_cut_info(errors.non_captured_points[3],listEdgesPara);
 	//Do 1 cut
 	bl.cut_sheet(paramCut.first,paramCut.second);
 
@@ -432,7 +432,7 @@ TEST(ExecutionActionsTestSuite,cb3){
 
 	//========================================================================
 	listEdgesPara = bl.get_all_sheet_edge_sets();
-	paramCut = classifier.get_cut_info(errors.non_captured_points[3],listEdgesPara);
+	paramCut = bl.get_cut_info(errors.non_captured_points[3],listEdgesPara);
 	//Do 2 cut
 	bl.cut_sheet(paramCut.first,paramCut.second);
 
@@ -451,7 +451,7 @@ TEST(ExecutionActionsTestSuite,cb3){
 
 	//========================================================================
 	listEdgesPara = bl.get_all_sheet_edge_sets();
-	paramCut = classifier.get_cut_info(errors.non_captured_points[0],listEdgesPara);
+	paramCut = bl.get_cut_info(errors.non_captured_points[0],listEdgesPara);
 	//Do 2 cut
 	bl.cut_sheet(paramCut.first,paramCut.second);
 
@@ -536,7 +536,7 @@ TEST(ExecutionActionsTestSuite,cb4){
 	//===================================================================
 
 	auto listEdgesPara = bl.get_all_sheet_edge_sets();
-	auto paramCut = classifier.get_cut_info(errors.non_captured_points[0],listEdgesPara);
+	auto paramCut = bl.get_cut_info(errors.non_captured_points[0],listEdgesPara);
 	//Do 1 cut
 	bl.cut_sheet(paramCut.first,paramCut.second);
 
@@ -556,7 +556,7 @@ TEST(ExecutionActionsTestSuite,cb4){
 
 	//===================================================================
 	listEdgesPara = bl.get_all_sheet_edge_sets();
-	paramCut = classifier.get_cut_info(errors.non_captured_points[0],listEdgesPara);
+	paramCut = bl.get_cut_info(errors.non_captured_points[0],listEdgesPara);
 	//Do 2 cut
 	bl.cut_sheet(paramCut.first,paramCut.second);
 
@@ -575,7 +575,7 @@ TEST(ExecutionActionsTestSuite,cb4){
 
 	//===================================================================
 	listEdgesPara = bl.get_all_sheet_edge_sets();
-	paramCut = classifier.get_cut_info(errors.non_captured_points[0],listEdgesPara);
+	paramCut = bl.get_cut_info(errors.non_captured_points[0],listEdgesPara);
 	//Do 3 cut
 	bl.cut_sheet(paramCut.first,paramCut.second);
 
@@ -664,7 +664,7 @@ TEST(ExecutionActionsTestSuite,cb5){
 	//===================================================================
 
 	auto listEdgesPara = bl.get_all_sheet_edge_sets();
-	auto paramCut = classifier.get_cut_info(errors.non_captured_points[0],listEdgesPara);
+	auto paramCut = bl.get_cut_info(errors.non_captured_points[0],listEdgesPara);
 	//Do 1 cut
 	bl.cut_sheet(paramCut.first,paramCut.second);
 
