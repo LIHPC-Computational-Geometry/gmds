@@ -263,3 +263,58 @@ TEST(CurvedBlockingClassifierTestSuite,splitAndClassify){
 	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
 	vtk_writer_edges.write("debug_blocking_edges.vtk");
 }
+TEST(CurvedBlockingClassifierTestSuite, testCurveBBox)
+{
+    gmds::cad::FACManager geom_model;
+    set_up(&geom_model,"B80.vtk");
+    gmds::blocking::CurvedBlocking bl(&geom_model,true);
+
+    gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+    classifier.clear_classification();
+    auto errors = classifier.classify();
+
+    std::cout<<"taille erros ncc : "<<errors.non_captured_curves.size()<<std::endl;
+    auto aCurv = geom_model.getCurve(errors.non_captured_curves[0]);
+    std::cout<<"LA BBOX :"<<std::endl;
+
+    auto bbox = aCurv->BBox();
+
+    gmds::TCoord minXYX[3];
+    gmds::TCoord maxXYX[3];
+
+    aCurv->computeBoundingBox(minXYX,maxXYX);
+
+    std::cout<<std::get<0>(bbox)<<std::endl;
+    std::cout<<std::get<1>(bbox)<<std::endl;
+    std::cout<<std::get<2>(bbox)<<std::endl;
+    std::cout<<std::get<3>(bbox)<<std::endl;
+    std::cout<<std::get<4>(bbox)<<std::endl;
+    std::cout<<std::get<5>(bbox)<<std::endl;
+
+    auto pointsCurve = aCurv->points();
+    std::cout<<"ComputeBBOX :"<<std::endl;
+
+    std::cout<<"min point : "<< minXYX[0] <<" "<< minXYX[1]<< " "<<minXYX[2]<<std::endl;
+    std::cout<<"max point : "<< maxXYX[0] <<" "<< maxXYX[1]<< " "<<maxXYX[2]<<std::endl;
+
+    for(auto p : pointsCurve){
+        std::cout<<"le point : "<< p->X() <<" "<< p->Y()<< " "<<p->Z()<<std::endl;
+    }
+
+
+
+    gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
+    bl.convert_to_mesh(m);
+
+    gmds::IGMeshIOService ios(&m);
+    gmds::VTKWriter vtk_writer(&ios);
+    vtk_writer.setCellOptions(gmds::N|gmds::R);
+    vtk_writer.setDataOptions(gmds::N|gmds::R);
+    vtk_writer.write("debug_blocking.vtk");
+    gmds::VTKWriter vtk_writer_edges(&ios);
+    vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
+    vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
+    vtk_writer_edges.write("debug_blocking_edges.vtk");
+
+}
+

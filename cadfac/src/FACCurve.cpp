@@ -255,11 +255,11 @@ FACCurve::BBox() const
 	for (unsigned int i = 1; i < pnts.size(); i++) {
 		pi = pnts[i];
 		minX = std::min(minX, pi.X());
-		maxX = std::min(maxX, pi.X());
+		maxX = std::max(maxX, pi.X());
 		minY = std::min(minY, pi.Y());
-		maxY = std::min(maxY, pi.Y());
+		maxY = std::max(maxY, pi.Y());
 		minZ = std::min(minZ, pi.Z());
-		maxZ = std::min(maxZ, pi.Z());
+		maxZ = std::max(maxZ, pi.Z());
 	}
 	return {minX, minY, minZ, maxX, maxY, maxZ};
 }

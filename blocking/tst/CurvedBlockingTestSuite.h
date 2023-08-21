@@ -17,7 +17,7 @@ setUp(gmds::cad::FACManager &AGeomManager)
 	                                 gmds::F2R | gmds::F2E
 	                                 | gmds::E2F | gmds::E2N | gmds::N2E));
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir + "/tet_in_box.vtk";
+	std::string vtk_file = dir + "/B0.vtk";
 	gmds::IGMeshIOService ioService(&m_vol);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N | gmds::R);
@@ -338,11 +338,39 @@ TEST(CurvedBlockingTestSuite, get_Id_block){
 	gmds::blocking::CurvedBlocking bl(&geom_model,true);
 	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
 
+    classifier.clear_classification();
+
+    auto errors = classifier.classify();
+
 	auto listBlocks = bl.get_all_blocks();
 	auto block = bl.get_block(listBlocks[0]->info().topo_id);
+
 
 	std::cout<<"LE BLOCK "<< block->info().topo_id<<std::endl;
 
 	std::cout<<"LE BLOCK TEST "<<bl.get_block_id(block)<<std::endl;
 
+}
+
+TEST(CurvedBlockingTestSuite, check_capt_Element){
+    gmds::cad::FACManager geom_model;
+    setUp(geom_model);
+    gmds::blocking::CurvedBlocking bl(&geom_model,true);
+    gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+
+    classifier.clear_classification();
+
+    auto allNodes = bl.get_all_nodes();
+    auto allEdges = bl.get_all_edges();
+
+    auto allPoints = geom_model.getPoints();
+    auto allCurves = geom_model.getCurves();
+
+    for (auto p : allPoints){
+        std::cout<<"Check capt possible for the point "<< p->id()<<"  : "<<bl.check_capt_element(p->id(),p->dim())<<std::endl;
+    }
+
+    for (auto c : allCurves){
+        std::cout<<"Check capt possible for the curve "<< c->id()<<"  : "<<bl.check_capt_element(c->id(),c->dim())<<std::endl;
+    }
 }

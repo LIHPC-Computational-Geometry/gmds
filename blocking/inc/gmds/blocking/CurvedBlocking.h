@@ -490,11 +490,19 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	void cut_sheet(const Edge AE);
 
+    /**\brief return if the capt is possible
+	 * * @param[in] AnIdElement an id of a not captured element, we want to split something to captured it
+     * @param[in] ADim the dim of the element not capt
+	 * @return return true if the capt is possible, else, return false
+	 */
+    bool check_capt_element(const int AnIdElement, const int ADim);
+
 
     /**@brief Split the sheet defined by edge @p AE
-	 * @param[in] AnIdPoint an id of a none captured point, we want to split something to captured it
+	 * @param[in] AnIdElement an id of a not captured element, we want to split something to captured it
+     * @param[in] ADim the dim of the element not captured
 	 */
-    void cut_sheet(const int AnIdPoint);
+    void capt_element(const int AnIdElement, const int ADim);
 
     /**\brief return the parameters for do the cut_sheet
 	 * @param[in] pointId 		A point id
@@ -502,6 +510,20 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @return return the parameters for the cut, we get the edge (first) and the parameter included in ]0,1[(second)
 	 */
     std::pair<CurvedBlocking::Edge, double> get_cut_info(int pointId, std::vector<std::vector<CurvedBlocking::Edge>> &AllEdges);
+
+    /**\brief return if a cut is possible
+	 * @param[in] pointId 		A point id
+	 * @param[in] AllEdges 	all the edges of the blocking
+	 * @return return true if a cut is possible, else, return false
+	 */
+    bool check_cut_possible(int pointId,std::vector<std::vector<CurvedBlocking::Edge>> &AllEdges);
+
+    /**\brief return the parameters for do the cut_sheet
+   * @param[in] APoint 		A math point
+   * @param[in] AllEdges 	all the edges of the blocking
+   * @return return the parameters for the cut, we get the edge (first) and the parameter included in ]0,1[(second)
+   */
+    std::pair<CurvedBlocking::Edge, double> get_cut_info(gmds::math::Point APoint, std::vector<std::vector<CurvedBlocking::Edge>> &AllEdges);
 
 
 	/**@brief Low level operation that @p TDim-sew two darts
