@@ -4,10 +4,10 @@ git clone --depth=1 -b v0.19.2 https://github.com/spack/spack.git
 sed -i 's#"${ARCHITECTURE}/${COMPILERNAME}-${COMPILERVER}/${PACKAGE}-${VERSION}-${HASH}"#"${PACKAGE}"#g' spack/etc/spack/defaults/config.yaml
 . ./spack/share/spack/setup-env.sh
 
-git clone --branch gmds_temp --depth=1 https://github.com/LIHPC-Computational-Geometry/spack_recipes_meshing.git
+git clone --branch gmds_temp --depth=1 https://github.com/LIHPC-Computational-Geometry/spack_recipes.git
 
-spack repo add ./spack_recipes_meshing/meshing_repo
-spack repo add ./spack_recipes_meshing/supersede_repo
+spack repo add ./spack_recipes/meshing_repo
+spack repo add ./spack_recipes/supersede_repo
 
 spack external find cmake
 spack install lcov
