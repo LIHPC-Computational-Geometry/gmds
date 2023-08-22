@@ -17,7 +17,7 @@ setUp(gmds::cad::FACManager &AGeomManager)
 	                                 gmds::F2R | gmds::F2E
 	                                 | gmds::E2F | gmds::E2N | gmds::N2E));
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir + "/B0.vtk";
+	std::string vtk_file = dir + "/tet_in_box.vtk";
 	gmds::IGMeshIOService ioService(&m_vol);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N | gmds::R);

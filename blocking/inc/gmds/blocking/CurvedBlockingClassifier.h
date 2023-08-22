@@ -81,10 +81,16 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 */
 	ClassificationErrors classify(const double AMaxDistance=0.01, const double APointSnapDistance=0.1);
 
-	/**@brief This methods colored all the faces with the same color by surfaces
+	/**@brief This method colored all the faces with the same color by surfaces
 	 * @return a map with the boundary faces colored
 	 */
 	std::map<CurvedBlocking::Face,int> blocking_color_faces();
+
+    /**@brief This method return all the possible cut
+	 * @return a vector with only pair in, the first (pair.first) is the edge, and the second (pair.second) is the param to cut
+	 */
+
+    std::vector<std::pair<CurvedBlocking::Edge ,double>> list_Possible_Cuts();
 
 
 

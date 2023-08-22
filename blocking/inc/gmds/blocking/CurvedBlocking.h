@@ -506,10 +506,9 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 
     /**\brief return the parameters for do the cut_sheet
 	 * @param[in] pointId 		A point id
-	 * @param[in] AllEdges 	all the edges of the blocking
 	 * @return return the parameters for the cut, we get the edge (first) and the parameter included in ]0,1[(second)
 	 */
-    std::pair<CurvedBlocking::Edge, double> get_cut_info(int pointId, std::vector<std::vector<CurvedBlocking::Edge>> &AllEdges);
+    std::pair<CurvedBlocking::Edge, double> get_cut_info(int pointId);
 
     /**\brief return if a cut is possible
 	 * @param[in] pointId 		A point id
@@ -523,7 +522,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
    * @param[in] AllEdges 	all the edges of the blocking
    * @return return the parameters for the cut, we get the edge (first) and the parameter included in ]0,1[(second)
    */
-    std::pair<CurvedBlocking::Edge, double> get_cut_info(gmds::math::Point APoint, std::vector<std::vector<CurvedBlocking::Edge>> &AllEdges);
+    std::pair<CurvedBlocking::Edge, double> get_cut_info(gmds::math::Point APoint);
 
 
 	/**@brief Low level operation that @p TDim-sew two darts

@@ -743,7 +743,7 @@ CurvedBlocking::check_capt_element(const int AnIdElement, const int ADim) {
         }
 
         gmds::math::Point maxPoint(maxXYX[0],maxXYX[1],maxXYX[2]);
-        auto paramCutMaxPoint = get_cut_info(maxPoint,listEdgesPara);
+        auto paramCutMaxPoint = get_cut_info(maxPoint);
         auto projMaxPoint = get_projection_info(maxPoint,allEdges);
         for(int i =0; i< projMaxPoint.size();i++){
             if(projMaxPoint[i].second<1 && projMaxPoint[i].second>0){
@@ -761,7 +761,7 @@ CurvedBlocking::capt_element(const int AnIdElement, const int ADim) {
 
 
     if(ADim == 0){
-        auto paramCut = get_cut_info(AnIdElement,listEdgesPara);
+        auto paramCut = get_cut_info(AnIdElement);
         cut_sheet(paramCut.first,paramCut.second);
     }
     else{
@@ -773,11 +773,11 @@ CurvedBlocking::capt_element(const int AnIdElement, const int ADim) {
 
         gmds::math::Point minPoint(minXYX[0],minXYX[1],minXYX[2]);
 
-        auto paramCutMinPoint = get_cut_info(minPoint,listEdgesPara);
+        auto paramCutMinPoint = get_cut_info(minPoint);
 
 
         gmds::math::Point maxPoint(maxXYX[0],maxXYX[1],maxXYX[2]);
-        auto paramCutMaxPoint = get_cut_info(maxPoint,listEdgesPara);
+        auto paramCutMaxPoint = get_cut_info(maxPoint);
 
 
     }
@@ -808,7 +808,7 @@ CurvedBlocking::check_cut_possible(int pointId, std::vector<std::vector<CurvedBl
 /*----------------------------------------------------------------------------*/
 
 std::pair<CurvedBlocking::Edge, double>
-CurvedBlocking::get_cut_info(int pointId, std::vector<std::vector<CurvedBlocking::Edge>>& AllEdges)
+CurvedBlocking::get_cut_info(int pointId)
 {
     std::pair<CurvedBlocking::Edge,double> paramCut;
 
@@ -832,7 +832,7 @@ CurvedBlocking::get_cut_info(int pointId, std::vector<std::vector<CurvedBlocking
 }
 /*----------------------------------------------------------------------------*/
 std::pair<CurvedBlocking::Edge, double>
-CurvedBlocking::get_cut_info(gmds::math::Point APoint, std::vector<std::vector<CurvedBlocking::Edge>>& AllEdges)
+CurvedBlocking::get_cut_info(gmds::math::Point APoint)
 {
     std::pair<CurvedBlocking::Edge,double> paramCut;
     CurvedBlocking::Edge e = get_all_edges()[0];
