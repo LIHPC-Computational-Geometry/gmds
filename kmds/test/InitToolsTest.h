@@ -29,11 +29,8 @@ class InitToolsTest : public ::testing::Test
     {
             // Kokkos::Serial::initialize();
             // Kokkos::Threads::initialize();
-            Kokkos::InitArguments kargs;
-            kargs.num_threads = 3;
-//            int num_threads = 4;
-//            int use_numa = 1;
-//            int use_core = 1;
+		          Kokkos::InitializationSettings kargs;
+		          kargs.set_num_threads(3);
 //            Kokkos::OpenMP::initialize(num_threads, use_numa, use_core);
             Kokkos::initialize(kargs);
     }
