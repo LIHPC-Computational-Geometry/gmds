@@ -420,10 +420,19 @@ CurvedBlocking::create_block(
 }
 /*----------------------------------------------------------------------------*/
 void
-CurvedBlocking::remove_block(CurvedBlocking::Block AB)
+CurvedBlocking::remove_block(const TCellID ABlockId)
 {
+    Block AB = get_block(ABlockId);
 	Dart3 d = AB->dart();
 	m_gmap.remove_cell<3>(d);
+}
+
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::remove_block(CurvedBlocking::Block AB)
+{
+    Dart3 d = AB->dart();
+    m_gmap.remove_cell<3>(d);
 }
 
 /*----------------------------------------------------------------------------*/

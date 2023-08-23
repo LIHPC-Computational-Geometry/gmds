@@ -54,7 +54,10 @@ void bind_blocking(py::module &m){
             .def("create_block", static_cast<gmds::blocking::CurvedBlocking::Block (gmds::blocking::CurvedBlocking::*)(
                     gmds::math::Point &, gmds::math::Point &, gmds::math::Point &, gmds::math::Point &, gmds::math::Point &, gmds::math::Point &,
                     gmds::math::Point &, gmds::math::Point &)>(&gmds::blocking::CurvedBlocking::create_block))
-            .def("remove_block", &gmds::blocking::CurvedBlocking::remove_block)
+            .def("remove_block", static_cast<void (gmds::blocking::CurvedBlocking::*)(gmds::blocking::CurvedBlocking::Block)>(
+                    &gmds::blocking::CurvedBlocking::remove_block))
+            .def("remove_block_with_id", static_cast<void (gmds::blocking::CurvedBlocking::*)(const gmds::TCellID)>(
+                    &gmds::blocking::CurvedBlocking::remove_block))
             .def("info", &gmds::blocking::CurvedBlocking::info)
             .def("convert_to_mesh", &gmds::blocking::CurvedBlocking::convert_to_mesh)
             .def("save_vtk_blocking", &gmds::blocking::CurvedBlocking::save_vtk_blocking)
