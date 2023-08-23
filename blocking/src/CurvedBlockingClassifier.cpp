@@ -696,7 +696,7 @@ CurvedBlockingClassifier::list_Possible_Cuts()
             }
         }
     }
-    
+
     return list_actions;
 }
 /*----------------------------------------------------------------------------*/

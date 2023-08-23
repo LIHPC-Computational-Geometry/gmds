@@ -328,8 +328,9 @@ TEST(CurvedBlockingClassifierTestSuite, testActionsList)
     classifier.clear_classification();
     auto errors = classifier.classify();
     ASSERT_EQ(3,classifier.list_Possible_Cuts().size());
+    auto listActions = classifier.list_Possible_Cuts();
 
-
+    bl.cut_sheet(listActions[0].first,listActions[0].second);
 
 
     gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));

@@ -984,7 +984,18 @@ CurvedBlocking::cut_sheet(const Edge AE, const double AParam)
 
 }
 
+/*----------------------------------------------------------------------------*/
 
+void
+CurvedBlocking::cut_sheet(const TCellID AnEdgeId, const double AParam)
+{
+    auto allEdges = get_all_edges();
+    for (auto e : allEdges){
+        if(e->info().topo_id == AnEdgeId){
+            cut_sheet(e,AParam);
+        }
+    }
+}
 /*----------------------------------------------------------------------------*/
 std::vector<std::pair<double,double> >
 CurvedBlocking::get_projection_info(math::Point& AP, std::vector<CurvedBlocking::Edge>& AEdges)

@@ -502,6 +502,15 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in] AParam a parameter included in ]0,1[
 	 */
 	void cut_sheet(const Edge AE, const double AParam);
+
+    /**@brief Split the sheet defined by edge @p AnEdgeId at the parameter @p AParam, which is included
+	 * 		 in ]0,1[. The first end point of @p AE is at parameter 0, the second one at parameter 1.
+	 *
+	 * @param[in] AnEdgeId an edge id we want to split in two edges
+	 * @param[in] AParam a parameter included in ]0,1[
+	 */
+    void cut_sheet(const TCellID AnEdgeId, const double AParam);
+
 	/**@brief Split the sheet defined by edge @p AE
 	 * @param[in] AE an edge we want to split in two edges
 	 */

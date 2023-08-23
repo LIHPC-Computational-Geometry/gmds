@@ -45,7 +45,7 @@ void bind_blocking(py::module &m){
                  static_cast<void (gmds::blocking::CurvedBlocking::*)(const gmds::blocking::CurvedBlocking::Edge)>(&gmds::blocking::CurvedBlocking::cut_sheet))
             .def("cut_sheet_with_point", static_cast<void (gmds::blocking::CurvedBlocking::*)(const gmds::blocking::CurvedBlocking::Edge, const gmds::math::Point &)>(
                     &gmds::blocking::CurvedBlocking::cut_sheet))
-            .def("cut_sheet_with_param", static_cast<void (gmds::blocking::CurvedBlocking::*)(const gmds::blocking::CurvedBlocking::Edge, const double)>(
+            .def("cut_sheet_with_param", static_cast<void (gmds::blocking::CurvedBlocking::*)(const gmds::TCellID, const double)>(
                     &gmds::blocking::CurvedBlocking::cut_sheet))
             .def("check_capt_element",&gmds::blocking::CurvedBlocking::check_capt_element)
             .def("capt_element",&gmds::blocking::CurvedBlocking::capt_element)
