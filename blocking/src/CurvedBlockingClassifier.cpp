@@ -696,10 +696,7 @@ CurvedBlockingClassifier::list_Possible_Cuts()
             }
         }
     }
-
-    for(auto e : list_actions){
-        std::cout<<"LES ACTIONS AVEC EDGE : "<<e.first<<" et le param : "<<e.second<<std::endl;
-    }
+    
     return list_actions;
 }
 /*----------------------------------------------------------------------------*/
