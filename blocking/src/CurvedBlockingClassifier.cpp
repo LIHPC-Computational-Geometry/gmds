@@ -602,10 +602,10 @@ CurvedBlockingClassifier::blocking_color_faces()
 	return faces_colored;
 }
 /*----------------------------------------------------------------------------*/
-std::vector<std::pair<CurvedBlocking::Edge ,double>>
+std::vector<std::pair<TCellID ,double>>
 CurvedBlockingClassifier::list_Possible_Cuts()
 {
-    std::vector<std::pair<CurvedBlocking::Edge ,double>> list_actions;
+    std::vector<std::pair<TCellID ,double>> list_actions;
     auto no_capt_elements = classify();
     auto no_points_capt = no_capt_elements.non_captured_points;
     auto no_curves_capt = no_capt_elements.non_captured_curves;
@@ -621,12 +621,13 @@ CurvedBlockingClassifier::list_Possible_Cuts()
             auto action = m_blocking->get_cut_info(p);
                 bool pairOnList = false;
                 for(auto it : list_actions) {
-                    if (it.first == action.first && it.second == action.second) {
+                    if (it.first == action.first->info().topo_id && it.second == action.second) {
                         pairOnList = true;
                     }
                 }
                 if(pairOnList == false){
-                    list_actions.push_back(action);
+                    std::pair<TCellID ,double> actionG (action.first->info().topo_id,action.second);
+                    list_actions.push_back(actionG);
                 }
         }
     }
@@ -684,15 +685,20 @@ CurvedBlockingClassifier::list_Possible_Cuts()
             for(auto i : list_actions_curve){
                 bool pairOnList = false;
                 for(auto it : list_actions) {
-                    if (it.first == i.first && it.second == i.second) {
+                    if (it.first == i.first->info().topo_id && it.second == i.second) {
                         pairOnList = true;
                     }
                 }
                 if(pairOnList == false){
-                    list_actions.push_back(i);
+                    std::pair<TCellID ,double> actionG (i.first->info().topo_id,i.second);
+                    list_actions.push_back(actionG);
                 }
             }
         }
+    }
+
+    for(auto e : list_actions){
+        std::cout<<"LES ACTIONS AVEC EDGE : "<<e.first<<" et le param : "<<e.second<<std::endl;
     }
     return list_actions;
 }

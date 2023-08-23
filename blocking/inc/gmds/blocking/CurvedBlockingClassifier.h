@@ -90,7 +90,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 * @return a vector with only pair in, the first (pair.first) is the edge, and the second (pair.second) is the param to cut
 	 */
 
-    std::vector<std::pair<CurvedBlocking::Edge ,double>> list_Possible_Cuts();
+    std::vector<std::pair<TCellID ,double>> list_Possible_Cuts();
 
 
 

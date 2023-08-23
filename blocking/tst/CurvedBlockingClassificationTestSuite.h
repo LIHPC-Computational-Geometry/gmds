@@ -321,13 +321,13 @@ TEST(CurvedBlockingClassifierTestSuite, testCurveBBox)
 TEST(CurvedBlockingClassifierTestSuite, testActionsList)
 {
     gmds::cad::FACManager geom_model;
-    set_up(&geom_model,"B45.vtk");
+    set_up(&geom_model,"M1.vtk");
     gmds::blocking::CurvedBlocking bl(&geom_model,true);
 
     gmds::blocking::CurvedBlockingClassifier classifier(&bl);
     classifier.clear_classification();
     auto errors = classifier.classify();
-    ASSERT_EQ(4,classifier.list_Possible_Cuts().size());
+    ASSERT_EQ(3,classifier.list_Possible_Cuts().size());
 
 
 
