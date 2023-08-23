@@ -58,9 +58,10 @@ void bind_blocking(py::module &m){
             .def("info", &gmds::blocking::CurvedBlocking::info)
             .def("convert_to_mesh", &gmds::blocking::CurvedBlocking::convert_to_mesh)
             .def("save_vtk_blocking", &gmds::blocking::CurvedBlocking::save_vtk_blocking)
+            .def("get_node_id", &gmds::blocking::CurvedBlocking::get_node_id)
+            .def("get_edge_id", &gmds::blocking::CurvedBlocking::get_edge_id)
+            .def("get_face_id", &gmds::blocking::CurvedBlocking::get_face_id)
             .def("get_block_id", &gmds::blocking::CurvedBlocking::get_block_id);
-
-    py::class_<gmds::blocking::CurvedBlocking::Block>(m, "Block");
 
     py::class_<gmds::blocking::ClassificationErrors>(m, "ClassificationErrors")
             .def_readonly("non_captured_points", &gmds::blocking::ClassificationErrors::non_captured_points)

@@ -486,6 +486,21 @@ CurvedBlocking::get_block(const int ABlockId)
 }
 /*----------------------------------------------------------------------------*/
 int
+CurvedBlocking::get_node_id(CurvedBlocking::Node &ANode){
+    return ANode->info().topo_id;
+}
+/*----------------------------------------------------------------------------*/
+int
+CurvedBlocking::get_edge_id(CurvedBlocking::Edge &AEdge){
+    return AEdge->info().topo_id;
+}
+/*----------------------------------------------------------------------------*/
+int
+CurvedBlocking::get_face_id(CurvedBlocking::Face &AFace){
+    return AFace->info().topo_id;
+}
+/*----------------------------------------------------------------------------*/
+int
 CurvedBlocking::get_block_id(CurvedBlocking::Block &ABlock){
 	return ABlock->info().topo_id;
 }

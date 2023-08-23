@@ -323,12 +323,29 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	CurvedBlocking::Block get_block(const int ABlockId);
 
-	/** Return the id block for the block
-	 * @param[in] ABlockId a block
+    /** Return the id node for a node object
+	 * @param[in] ANode a node object
+	 * @return an id node
+	 */
+    int get_node_id(CurvedBlocking::Node &ANode);
+
+    /** Return the id edge for an edge object
+	 * @param[in] AEdge an edge object
+	 * @return an id edge
+	 */
+    int get_edge_id(CurvedBlocking::Edge &AEdge);
+
+    /** Return the id face for a face object
+	 * @param[in] AFace a face object
+	 * @return an id face
+	 */
+    int get_face_id(CurvedBlocking::Face &AFace);
+
+	/** Return the id block for a block object
+	 * @param[in] ABlock a block object
 	 * @return an id block
 	 */
 	int get_block_id(CurvedBlocking::Block &ABlock);
-
 
 
 	/**@brief Non-optimal method to get all the blocks of the structure. The
