@@ -32,19 +32,19 @@ jobs:
       run: >
         cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -Ax64
         -DVCPKG_TARGET_TRIPLET=x64-windows
-        -DWITH_TEST=ON 
-        -DWITH_PYTHON_API=OFF
-        -DENABLE_BLOCKING=OFF
-        -DENABLE_CLAIRE=OFF
-        -DENABLE_ELG3D=OFF
-        -DENABLE_HYBRIDMESHADAPT=OFF
-        -DENABLE_PADDING=OFF
-        -DENABLE_POLYBLOCK=OFF
-        -DBUILD_SHARED_LIBS=ON
+        -DWITH_TEST:BOOL=ON 
+        -DWITH_PYTHON_API:BOOL=OFF
+        -DENABLE_BLOCKING:BOOL=OFF
+        -DENABLE_CLAIRE:BOOL=OFF
+        -DENABLE_ELG3D:BOOL=OFF
+        -DENABLE_HYBRIDMESHADAPT:BOOL=OFF
+        -DENABLE_PADDING:BOOL=OFF
+        -DENABLE_POLYBLOCK:BOOL=OFF
+        -DBUILD_SHARED_LIBS:BOOL=ON
         -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
         
     - name: Build Environment 
-      run: cmake --build ${{github.workspace}}/build --config Release
+      run: cmake --build ${{github.workspace}}/build --config Release --parallel 2
 
     - name: Run tests
       run: cmake --build build --target RUN_TESTS --config Release

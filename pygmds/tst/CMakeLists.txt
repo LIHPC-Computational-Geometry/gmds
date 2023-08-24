@@ -1,5 +1,5 @@
 #==============================================================================
-find_package(Python COMPONENTS Interpreter REQUIRED)
+message("ENVIRONMENT ENVPYTHONPATH $ENV{PYTHONPATH}")
 
 add_test(NAME test_pygmds
         COMMAND pytest ${CMAKE_CURRENT_SOURCE_DIR} ${TEST_SAMPLES_DIR} -v
