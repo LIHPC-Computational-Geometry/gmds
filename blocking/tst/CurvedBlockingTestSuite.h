@@ -323,3 +323,45 @@ TEST(CurvedBlockingTestSuite, test_topological_queries)
 		    ASSERT_EQ(1, bs.size());
 	}
 }
+
+
+/*----------------------------------------------------------------------------*/
+TEST(CurvedBlockingTestSuite, test_init_from_ig_mesh)
+{
+
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model, false);
+
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::N |  gmds::R | gmds::R2N));
+	gmds::Node n0 = m.newNode(gmds::math::Point(0,0,0));
+	gmds::Node n1 = m.newNode(gmds::math::Point(1,0,0));
+	gmds::Node n2 = m.newNode(gmds::math::Point(1,1,0));
+	gmds::Node n3 = m.newNode(gmds::math::Point(0,1,0));
+
+	gmds::Node n4 = m.newNode(gmds::math::Point(0,0,1));
+	gmds::Node n5 = m.newNode(gmds::math::Point(1,0,1));
+	gmds::Node n6 = m.newNode(gmds::math::Point(1,1,1));
+	gmds::Node n7 = m.newNode(gmds::math::Point(0,1,1));
+
+	gmds::Node n8 = m.newNode(gmds::math::Point(0,0,2));
+	gmds::Node n9 = m.newNode(gmds::math::Point(1,0,2));
+	gmds::Node n10= m.newNode(gmds::math::Point(1,1,2));
+	gmds::Node n11= m.newNode(gmds::math::Point(0,1,2));
+
+
+	gmds::Node n12= m.newNode(gmds::math::Point(0,0,3));
+	gmds::Node n13= m.newNode(gmds::math::Point(1,0,3));
+	gmds::Node n14= m.newNode(gmds::math::Point(1,1,3));
+	gmds::Node n15= m.newNode(gmds::math::Point(0,1,3));
+
+	m.newHex(n0,n1,n2,n3,n4,n5,n6,n7);
+	m.newHex(n4,n5,n6,n7,n8,n9,n10,n11);
+	m.newHex(n8,n9,n10,n11,n12,n13,n14,n15);
+	bl.init_from_mesh(m);
+
+	ASSERT_EQ(16,bl.get_all_nodes().size());
+	ASSERT_EQ(28,bl.get_all_edges().size());
+	ASSERT_EQ(16,bl.get_all_faces().size());
+	ASSERT_EQ(3,bl.get_all_blocks().size());
+}
