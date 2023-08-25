@@ -48,7 +48,7 @@ CurvedBlocking::geom_model()
 }
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Node
-CurvedBlocking::create_node(const int AGeomDim, const int AGeomId, math::Point &APoint)
+CurvedBlocking::create_node(const int AGeomDim, const int AGeomId, const math::Point &APoint)
 {
 	return m_gmap.create_attribute<0>(NodeInfo(AGeomDim, AGeomId, APoint));
 }
@@ -293,6 +293,8 @@ CurvedBlocking::get_nodes_of_block(const CurvedBlocking::Block AB)
 	nodes[5] = m_gmap.attribute<0>(m_gmap.alpha<0, 1>(d2));
 	nodes[6] = m_gmap.attribute<0>(m_gmap.alpha<0, 1, 0, 1>(d2));
 	nodes[7] = m_gmap.attribute<0>(m_gmap.alpha<1, 0>(d2));
+
+
 	return nodes;
 }
 /*----------------------------------------------------------------------------*/
@@ -390,7 +392,10 @@ CurvedBlocking::move_node(Node AN, math::Point &ALoc)
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Block
 CurvedBlocking::create_block(
-   math::Point &AP1, math::Point &AP2, math::Point &AP3, math::Point &AP4, math::Point &AP5, math::Point &AP6, math::Point &AP7, math::Point &AP8)
+   const math::Point &AP1, const math::Point &AP2,
+   const math::Point &AP3, const math::Point &AP4,
+   const math::Point &AP5, const math::Point &AP6,
+   const math::Point &AP7, const math::Point &AP8)
 {
 	// Initialize attribute for the created hexahedron
 	Dart3 d1 = m_gmap.make_combinatorial_hexahedron();
@@ -584,6 +589,86 @@ CurvedBlocking::convert_to_mesh(Mesh &AMesh)
 		var_region_geom_dim->set(r.id(), att.geom_dim);
 	}
 }
+
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::init_from_mesh(Mesh &AMesh)
+{
+	MeshModel model = AMesh.getModel();
+	if (!model.has(N) ||  !model.has(R) || !model.has(R2N))
+		throw GMDSException("Wrong mesh model for mesh->block->mesh conversion");
+
+	//map from gmap node ids to init mesh id
+	std::map<TCellID,TCellID> n2n;
+	for(auto r_id:AMesh.regions()){
+		Region r = AMesh.get<Region>(r_id);
+		//only hex cells are converted
+		if(r.type()==GMDS_HEX){
+			std::vector<gmds::Node> ns=r.get<gmds::Node>();
+			Block b = create_block(ns[0].point(),ns[1].point(),ns[2].point(),ns[3].point(),
+			             ns[4].point(),ns[5].point(),ns[6].point(),ns[7].point());
+			std::vector<Node> b_nodes = get_nodes_of_block(b);
+			for(auto i=0;i<8;i++){
+				n2n[b_nodes[i]->info().topo_id]=ns[i].id();
+			}
+		}
+	}
+
+	// now we glue blocks;
+	for (auto it = m_gmap.attributes<3>().begin(), itend = m_gmap.attributes<3>().end(); it != itend; ++it) {
+		auto att = m_gmap.info_of_attribute<3>(it);
+		std::vector<Face> cell_faces = get_faces_of_block(it);
+		for(auto f: cell_faces){
+			Dart3 d = f->dart();
+			if(m_gmap.is_free<3>(d)){
+				//means the face is not connected
+				std::vector<Node> f_nodes = get_nodes_of_face(f);
+				//We go through all the 3-face and try to connect to f
+				bool found_and_glue=false;
+				for (auto it = m_gmap.attributes<2>().begin(), itend = m_gmap.attributes<2>().end(); it != itend; ++it) {
+					auto att = m_gmap.info_of_attribute<2>(it);
+					Dart3 d2 = it->dart();
+					if(d2!= d && m_gmap.is_free<3>(d2)) {
+						//free dart and different face, we check if this face can be connected
+						std::vector<Node> f2_nodes = get_nodes_of_face(it);
+						//same nodes?
+						bool one_missing = false;
+						for(auto i=0; i<f_nodes.size() && !one_missing; i++){
+							bool found_same = false;
+							for(auto j=0; j<f2_nodes.size() && !found_same; j++){
+								if(n2n[f_nodes[i]->info().topo_id]==n2n[f2_nodes[j]->info().topo_id]) {
+									found_same = true;
+								}
+							}
+							if(!found_same)
+								one_missing=true;
+						}
+
+						if(!one_missing){
+							//we have the same ids, we need to glue in the right order
+							found_and_glue=true;
+							//Dart of the initial face d, and the face to glue d2
+							TCellID ref_id = n2n[m_gmap.attribute<0>(d)->info().topo_id];
+							TCellID ref_id_0 = n2n[m_gmap.attribute<0>(m_gmap.alpha<0>(d))->info().topo_id];
+
+							//starting from d2, we move to find the one that correspond to ref_id
+							Dart3 d_glue = d2;
+							while (n2n[m_gmap.attribute<0>(d_glue)->info().topo_id]!=ref_id){
+								d_glue = m_gmap.alpha<1,0>(d_glue);
+							}
+							if(n2n[m_gmap.attribute<0>(m_gmap.alpha<0>(d_glue))->info().topo_id]==ref_id_0){
+								m_gmap.sew<3>(d_glue,d);
+							}
+							else{
+								m_gmap.sew<3>(m_gmap.alpha<1>(d_glue),d);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
 /*----------------------------------------------------------------------------*/
 std::vector<std::vector<CurvedBlocking::Edge> >
 CurvedBlocking::get_all_sheet_edge_sets()
@@ -678,6 +763,43 @@ CurvedBlocking::get_all_sheet_darts(const Edge AE, std::vector<Dart3> &ADarts)
 	m_gmap.free_mark(edge_mark);
 }
 
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::get_all_chord_darts(const Face AF, std::vector<Dart3> &ADarts)
+{
+	ADarts.clear();
+	// we allocate a mark to know all the faces we go through
+	auto face_mark = m_gmap.get_new_mark();
+
+	std::vector<Dart3> front;
+	front.push_back(AF->dart());
+	// the current dart belongs to the final set of darts
+	ADarts.push_back(AF->dart());
+	// we mark all the dart of the initial face to avoid to traverse it twice
+	m_gmap.mark_cell<2>(AF->dart(), face_mark);
+
+	// Now we propagate along topological parallel faces in each adjacent block
+	while (!front.empty()) {
+		// we pick the last dart of the front
+		Dart3 d = front.back();
+		front.pop_back();
+
+			auto d_next_face = m_gmap.alpha<2,1, 0, 1,2,3>(d);
+			if (!m_gmap.is_marked(d_next_face, face_mark)) {
+				// it means that the edge containing the dart d_next_edge has not been traversed already.
+				// We mark the dart of the corresponding edge, and we add it to the front
+				front.push_back(d_next_face);
+				m_gmap.mark_cell<2>(d_next_face, face_mark);
+				// We also add it to the set of darts to return
+				ADarts.push_back(d_next_face);
+			}
+	}
+	// We must unmark all the marked edges. As we stored one dart per edge, it is straightforward
+	for (auto d : ADarts) {
+		m_gmap.unmark_cell<2>(d, face_mark);
+	}
+	m_gmap.free_mark(face_mark);
+}
 /*----------------------------------------------------------------------------*/
 void
 CurvedBlocking::cut_sheet(const Edge AE)

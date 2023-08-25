@@ -288,7 +288,14 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @return The created block
 	 */
 	Block create_block(
-	   math::Point &AP1, math::Point &AP2, math::Point &AP3, math::Point &AP4, math::Point &AP5, math::Point &AP6, math::Point &AP7, math::Point &AP8);
+	   const math::Point &AP1,
+	   const math::Point &AP2,
+	   const math::Point &AP3,
+	   const math::Point &AP4,
+	   const math::Point &AP5,
+	   const math::Point &AP6,
+	   const math::Point &AP7,
+	   const math::Point &AP8);
 	/** Removes the block @AB from the structure
 	 * @param[in] AB the block to remove
 	 */
@@ -454,6 +461,12 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[out] ADarts	one dart per edge of the sheet defined by @p AE
 	 */
 	void get_all_sheet_darts(const Edge AE, std::vector<Dart3> &ADarts);
+	/**@brief Get one dart per parallel face composing the chord defined from face
+	 * @p AF. All the returned darts belong to different blocks.
+	 * @param[in]  AF			the face we start from
+	 * @param[out] ADarts	one dart per face of the sheet defined by @p AE
+	 */
+	void get_all_chord_darts(const Face AF, std::vector<Dart3> &ADarts);
 	/**@brief Split the sheet defined by edge @p AE at the closest position of @p AP.
 	 * 		 The method project @p AP on @p AE. It gives us a cut ratio, we use on
 	 * 		 all the parallel edges.
@@ -482,6 +495,14 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 		static_assert(TDim >= 0 && TDim < 4, "The parameter must be included in [0,3]");
 		m_gmap.sew<TDim>(AD1, AD2);
 	}
+	/**@brief intiialize the block structure from a gmds cellular mesh. The provided
+	 * 		 mesh @p ACellMesh must have the following characteristics:
+	 * 		 - DIM3, N, E, F, R, R2N, F2N, E2N
+	 *
+	 * @param[in,out] ACellMesh A cellular mesh
+	 */
+	void init_from_mesh(Mesh &ACellMesh);
+
 	/**@brief Convert the block structure into a gmds cellular mesh. The provided
 	 * 		 mesh @p ACellMesh must have the following characteristics:
 	 * 		 - DIM3, N, E, F, R, R2N, F2N, E2N
@@ -518,7 +539,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in] APoint  spatial location of the node
 	 * @return the created node attribute
 	 */
-	Node create_node(const int AGeomDim, const int AGeomId, math::Point &APoint);
+	Node create_node(const int AGeomDim, const int AGeomId, const math::Point &APoint);
 	/**@brief Create an edge attribute in the n-gmap
 	 *
 	 * @param AGeomDim dimension of the associated geometric cell
