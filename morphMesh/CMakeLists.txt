@@ -7,11 +7,12 @@ set(GMDS_LIB_PREFIX gmds/morphMesh)
 
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
+        inc/gmds/morphMesh/FastLocalize.h
         inc/gmds/morphMesh/MorphMesh.h
         )
 set(GMDS_SRC
+        src/FastLocalize.cpp
         src/MorphMesh.cpp
-        src/main.cpp
         )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
@@ -46,6 +47,10 @@ install(TARGETS ${GMDS_LIB}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+#==============================================================================
+if(WITH_TEST)
+        add_subdirectory(tst)
+endif(WITH_TEST)
 #==============================================================================
 add_executable(morphing src/main.cpp)
 target_link_libraries(morphing PRIVATE ${GMDS_LIB})
