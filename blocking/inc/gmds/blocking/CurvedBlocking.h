@@ -5,15 +5,15 @@
 #include <CGAL/Cell_attribute.h>
 #include <CGAL/Generalized_map.h>
 #include <LIB_GMDS_BLOCKING_export.h>
+#include <gmds/cad/GeomManager.h>
+#include <gmds/ig/Mesh.h>
 #include <gmds/math/Point.h>
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/utils/Exception.h>
-#include <gmds/cad/GeomManager.h>
-#include <gmds/ig/Mesh.h>
 /*----------------------------------------------------------------------------*/
 #include <string>
-#include <type_traits>
 #include <tuple>
+#include <type_traits>
 
 /*----------------------------------------------------------------------------*/
 namespace gmds {
@@ -41,14 +41,16 @@ struct CellInfo
 	int geom_dim;
 	/*** unique id of the geomtrical cell */
 	int geom_id;
+	/*** global counter used to assign an unique id to each block */
+	static int m_counter_global_id;
+
 	/** @brief Constructor
 	 * @param ATopoDim Cell dimension
-	 * @param ATopoId  Cell unique id
 	 * @param AGeomDim on-classify geometric cell dimension (4 if not classified)
 	 * @param AGeomId on-classify geometric cell unique id
 	 */
-	CellInfo(const int ATopoDim = 4, const int ATopoId = NullID, const int AGeomDim = 4, const int AGeomId = NullID) :
-	  topo_dim(ATopoDim), topo_id(ATopoId), geom_dim(AGeomDim), geom_id(AGeomId)
+	CellInfo(const int ATopoDim = 4, const int AGeomDim = 4, const int AGeomId = NullID) :
+	  topo_dim(ATopoDim), topo_id(m_counter_global_id++), geom_dim(AGeomDim), geom_id(AGeomId)
 	{
 	}
 };
@@ -62,12 +64,11 @@ struct NodeInfo : CellInfo
 	/*** node location in space, i.e. a single point */
 	math::Point point;
 	/** @brief Constructor
-	 * @param ATopoId  Node unique id
 	 * @param AGeomDim on-classify geometric cell dimension (4 if not classified)
 	 * @param AGeomId  on-classify geometric cell unique id
 	 */
-	NodeInfo(const int ATopoId = NullID, const int AGeomDim = 4, const int AGeomId = NullID, const math::Point &APoint = math::Point(0, 0, 0)) :
-	  CellInfo(0, ATopoId, AGeomDim, AGeomId), point(APoint)
+	NodeInfo(const int AGeomDim = 4, const int AGeomId = NullID, const math::Point &APoint = math::Point(0, 0, 0)) :
+	  CellInfo(0, AGeomDim, AGeomId), point(APoint)
 	{
 	}
 };
@@ -188,7 +189,12 @@ struct SplitFunctor
 	{
 		ca1.info().geom_dim = ca1.info().geom_dim;
 		ca1.info().geom_id = ca1.info().geom_id;
-		ca2.info() = ca1.info();
+
+		ca2.info().geom_dim = ca1.info().geom_dim;
+		ca2.info().geom_id = ca1.info().geom_id;
+		ca2.info().topo_dim = ca1.info().topo_dim;
+		ca2.info().topo_id = CellInfo::m_counter_global_id++;
+
 	}
 };
 
@@ -205,6 +211,8 @@ struct SplitFunctorNode
 		ca2.info().geom_dim = ca1.info().geom_dim;
 		ca2.info().geom_id = ca1.info().geom_id;
 		ca2.info().point = ca1.info().point;
+		ca2.info().topo_dim = ca1.info().topo_dim;
+		ca2.info().topo_id = CellInfo::m_counter_global_id++;
 	}
 };
 /*----------------------------------------------------------------------------*/
@@ -281,6 +289,59 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	Block create_block(
 	   math::Point &AP1, math::Point &AP2, math::Point &AP3, math::Point &AP4, math::Point &AP5, math::Point &AP6, math::Point &AP7, math::Point &AP8);
+	/** Removes the block @AB from the structure
+	 * @param[in] AB the block to remove
+	 */
+	void remove_block(Block AB);
+
+	/** Return the info for the node of id @p ANodeId
+	 * @param[in] ANodeId topological node id
+	 * @return a tuple where the first parameter is the geom_dim, the second its geom_id, and the third is location
+	 */
+	std::tuple<int, int, math::Point> get_node_info(const int ANodeId);
+	/** Return the info for the edge of id @p AEdgeId
+	 * @param[in] AEdgeId topological edge id
+	 * @return a tuple where the first parameter is the geom_dim, the second its geom_id
+	 */
+	std::tuple<int, int> get_edge_info(const int AEdgeId);
+	/** Return the info for the face of id @p AFaceId
+	 * @param[in] AFaceId topological face id
+	 * @return a tuple where the first parameter is the geom_dim, the second its geom_id
+	 */
+	std::tuple<int, int> get_face_info(const int AEdgeId);
+	/** Return the info for the block of id @p ABlockId
+	 * @param[in] ABlockId topological block id
+	 * @return a tuple where the first parameter is the geom_dim, the second its geom_id
+	 */
+	std::tuple<int, int> get_block_info(const int ABlockId);
+	/**@brief Non-optimal method to get all the blocks of the structure. The
+	 * best option is to traverse the block structure through the gmap
+	 * structure (iterators on attributes)
+	 * @return a vector of blocks
+	 */
+	std::vector<Block> get_all_blocks();
+	std::vector<TCellID> get_all_id_blocks();
+	/**@brief Non-optimal method to get all the faces of the structure. The
+	 * best option is to traverse the block structure through the gmap
+	 * structure (iterators on attributes)
+	 * @return a vector of faces
+	 */
+	std::vector<Face> get_all_faces();
+	std::vector<TCellID> get_all_id_faces();
+	/**@brief Non-optimal method to get all the edges of the structure. The
+	 * best option is to traverse the block structure through the gmap
+	 * structure (iterators on attributes)
+	 * @return a vector of edges
+	 */
+	std::vector<Edge> get_all_edges();
+	std::vector<TCellID> get_all_id_edges();
+	/**@brief Non-optimal method to get all the nodes of the structure. The
+	 * best option is to traverse the block structure through the gmap
+	 * structure (iterators on attributes)
+	 * @return a vector of nodes
+	 */
+	std::vector<Node> get_all_nodes();
+	std::vector<TCellID> get_all_id_nodes();
 	/**@brief moves node @p AN towards the expected new location @p ALoc.
 	 * If @p AN is classified onto a geometrical cell, the node @p AN
 	 * is first moved to @p ALoc, then it is projected onto the
@@ -290,6 +351,42 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param ALoc the new node location
 	 */
 	void move_node(Node AN, math::Point &ALoc);
+	/** Get all the edges adjacent to a node
+	 * @param[in] AN a node
+	 * @return the set of edges adjacent to the node.
+	 */
+	std::vector<Edge> get_edges_of_node(const Node AN);
+	/** Get all the faces adjacent to a node
+	 * @param[in] AN a node
+	 * @return the set of faces adjacent to the node.
+	 */
+	std::vector<Face> get_faces_of_node(const Node AN);
+	/** Get all the blocks adjacent to a node
+	 * @param[in] AN a node
+	 * @return the set of blocks adjacent to the node.
+	 */
+	std::vector<Block> get_blocks_of_node(const Node AN);
+	/** Get all the faces adjacent to an edge
+	 * @param[in] AE an edge
+	 * @return the set of faces adjacent to the edge.
+	 */
+	std::vector<Face> get_faces_of_edge(const Edge AE);
+	/** Get all the blocks adjacent to an edge
+	 * @param[in] AE an edge
+	 * @return the set of blocks adjacent to the edge.
+	 */
+	std::vector<Block> get_blocks_of_edge(const Edge AE);
+	/** Get all the edges adjacent to a face
+	 * @param[in] AF a face
+	 * @return the set of edges adjacent to the face.
+	 */
+	std::vector<Edge> get_edges_of_face(const Face AF);
+	/** Get all the blocks adjacent to a face
+	 * @param[in] AF a face
+	 * @return the set of blocks adjacent to the face.
+	 */
+	std::vector<Block> get_blocks_of_face(const Face AF);
+
 	/** Get all the faces of a block. If it is a hexahedral block,
 	 * we have 6 faces, the first and the second are opposite, idem
 	 * for the third and fourth, and the fifth and sixth.
@@ -297,6 +394,12 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @return the set of faces of the block.
 	 */
 	std::vector<Face> get_faces_of_block(const Block AB);
+	/** Get all the edges of a block. If it is a hexahedral block,
+	 * we have 12 faces.
+	 * @param[in] AB a block
+	 * @return the set of edges of the block.
+	 */
+	std::vector<Edge> get_edges_of_block(const Block AB);
 	/** Get all the nodes of a block. If it is a hexahedral block,
 	 * we have 8 nodes, given as usual in gmds
 	 * @param[in] AB a block
@@ -315,12 +418,23 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	std::vector<Node> get_nodes_of_edge(const Edge AE);
 	/** Return the face center
 	 * @param AF a face
-	 * @return the center point of AF
+	 * @return the center point of @p AF
 	 */
 	math::Point get_center_of_face(const Face AF);
-	/** Return the face center
-	 * @param[in] AF a face
-	 * @return a point which is the center of AF
+	/** Return the face normal. No orientation is provided the
+	 *  normal can be in any direction.
+	 * @param AF a face
+	 * @return the normal to @p AF.
+	 */
+	math::Vector3d get_normal_of_face(const Face AF);
+	/** Return the edge center
+	 * @param AE an edge
+	 * @return the center point of @p AE
+	 */
+	math::Point get_center_of_edge(const Edge AE);
+	/** Return the block center
+	 * @param[in] AB a block
+	 * @return a point which is the center of @p AB
 	 */
 	math::Point get_center_of_block(const Block AB);
 	/**@brief Get all the parallel edges composing the sheet defined from edge @p AE
@@ -328,16 +442,37 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[out] AEdges	all the edges of the sheet defined by @p AE
 	 */
 	void get_all_sheet_edges(const Edge AE, std::vector<Edge> &AEdges);
+
+	/**@brief Get all the parallel edges composing sheets. Each set of parallel
+	 * 		 edges is an item pf @p ASheetEdges
+	 * return all the edges gathered by sheet
+	 */
+	std::vector<std::vector<Edge>> get_all_sheet_edge_sets();
 	/**@brief Get one dart per  parallel edges composing the sheet defined from edge
-	 * @p AE. Darts are given in such a way that a recurent pattern occurs
+	 * @p AE. All the returned darts are on the same side of each edge.
 	 * @param[in]  AE			the edge we start from
 	 * @param[out] ADarts	one dart per edge of the sheet defined by @p AE
 	 */
-	void get_all_sheet_edges(const Edge AE, std::vector<Dart3> &ADarts);
-	/**@brief Split the sheet defined by edge @p AE
-	 * @param AE an edge we want to split in two edges
+	void get_all_sheet_darts(const Edge AE, std::vector<Dart3> &ADarts);
+	/**@brief Split the sheet defined by edge @p AE at the closest position of @p AP.
+	 * 		 The method project @p AP on @p AE. It gives us a cut ratio, we use on
+	 * 		 all the parallel edges.
+	 * @param[in] AE an edge we want to split in two edges
+	 * @param[in] AP a point we use to define where AE must be cut.
 	 */
-	void split_sheet(const Edge AE);
+	void cut_sheet(const Edge AE, const math::Point &AP);
+	/**@brief Split the sheet defined by edge @p AE at the parameter @p AParam, which is included
+	 * 		 in ]0,1[. The first end point of @p AE is at parameter 0, the second one at parameter 1.
+	 *
+	 * @param[in] AE an edge we want to split in two edges
+	 * @param[in] AParam a parameter included in ]0,1[
+	 */
+	void cut_sheet(const Edge AE, const double AParam);
+	/**@brief Split the sheet defined by edge @p AE
+	 * @param[in] AE an edge we want to split in two edges
+	 */
+	void cut_sheet(const Edge AE);
+
 	/**@brief Low level operation that @p TDim-sew two darts
 	 * @tparam TDim sewing dimension
 	 * @param[in] AD1 First dart
@@ -366,6 +501,15 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @return true if valid, false otherwise
 	 */
 	bool is_valid_topology() const;
+	/**\brief Order the edges of @p AEdges accordingly to their distance to @p AP.
+	 * 		 More specifically, we orthogonnaly project @p AP on each edge of @p AEdges.
+	 * 		 For each edge, we store the distance between @p AP and the edge and the coordinate
+	 * 		 the projected point inside the edge (between 0 and 1).
+	 * @param[in] AP 		A Point to project on each edge
+	 * @param[in] AEdges 	A set of edges
+	 * @return for each edge, we get the distance (first) and the coordinate (second)
+	 */
+	std::vector<std::pair<double, double>> 	get_projection_info(math::Point &AP, std::vector<CurvedBlocking::Edge> &AEdges);
 
  private:
 	/**@brief Create a node attribute in the n-gmap
@@ -403,14 +547,6 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	cad::GeomManager *m_geom_model;
 	/*** the underlying n-g-map model*/
 	GMap3 m_gmap;
-	/*** global counter used to assign an unique id to each node */
-	static int m_counter_nodes;
-	/*** global counter used to assign an unique id to each edge */
-	static int m_counter_edges;
-	/*** global counter used to assign an unique id to each face */
-	static int m_counter_faces;
-	/*** global counter used to assign an unique id to each block */
-	static int m_counter_blocks;
 };
 /*----------------------------------------------------------------------------*/
 }     // namespace blocking

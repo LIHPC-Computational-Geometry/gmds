@@ -11,7 +11,9 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <unit_test_config.h>
-#include <gmds/blocking/CGNSWriter.h>
+#ifdef USE_CGNS
+   #include <gmds/blocking/CGNSWriter.h>
+#endif
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -29,10 +31,10 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 	AeroPipeline_2D algo_aero2D(input_file, dir);
 	AbstractAeroPipeline::STATUS aero2D_result = algo_aero2D.execute();
 
-
+#ifdef USE_CGNS
 	blocking::CGNSWriter writer(algo_aero2D.getBlocking());
 	writer.write("Apollo_2D.cgns","");
-
+#endif
 	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero2D_result);
 }
 

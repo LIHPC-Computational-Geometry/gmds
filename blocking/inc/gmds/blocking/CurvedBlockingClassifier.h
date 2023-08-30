@@ -55,7 +55,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 * Errors are geometrical cells that are not catch by the
 	 * blocking cells.
 	 */
-	ClassificationErrors detect_classification_errors();
+	ClassificationErrors detect_classification_errors(ClassificationErrors& AErrors);
 
 	/**@brief this method clears the classification of the blocking
 	 * structure. All the cells are then unclassified (geom_dim=4
@@ -81,6 +81,20 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 */
 	ClassificationErrors classify(const double AMaxDistance=0.01, const double APointSnapDistance=0.1);
 
+	/**@brief This methods colored all the faces with the same color by surfaces
+	 * @return a map with the boundary faces colored
+	 */
+	std::map<CurvedBlocking::Face,int> blocking_color_faces();
+
+	/**\brief return the parameters for do the cut_sheet
+	 * @param[in] pointId 		A point id
+	 * @param[in] AllEdges 	all the edges of the blocking
+	 * @return return the parameters for the cut, we get the edge (first) and the parameter included in ]0,1[(second)
+	 */
+	std::pair<CurvedBlocking::Edge, double> get_cut_info(int pointId, std::vector<std::vector<CurvedBlocking::Edge>> &AllEdges);
+
+
+
  private:
 	/**@brief This method check if a 0-cell of the blocking structure is classified
 	 * on the geometrical point @p AP.
@@ -88,6 +102,23 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 * @return true and the node classified on @p AP, false otherwise and a random node
 	 */
 	std::pair<bool, CurvedBlocking::Node> find_node_classified_on(cad::GeomPoint* AP);
+
+
+	/**@brief This method check if a 1-cell of the blocking structure is classified
+	 * on the geometrical curve @c AC.
+	 * @param AC a geometrical curve
+	 * @return true and the edges classified on @c AC, false otherwise
+	 */
+	std::pair<bool, std::vector<CurvedBlocking::Edge>> find_edge_classified_on(cad::GeomCurve* AC);
+
+	/**@brief This method check if a 2-cell of the blocking structure is classified
+	 * on the geometrical curve @s AS.
+	 * @param AS a geometrical surface
+	 * @return true and the faces classified on @s AS, false otherwise
+	 */
+	std::pair<bool, std::vector<CurvedBlocking::Face>> find_face_classified_on(cad::GeomSurface* AS);
+
+
 	/**@brief This methods classify all nodes onto the geometric model. It is called internally
 	 * vy the method *classify*.
 	 * @param[out] AErrors 		list of errors done during the classification
@@ -100,6 +131,12 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 * @param[out] AErrors 		list of errors done during the classification
 	 */
 	void classify_edges(ClassificationErrors& AErrors);
+
+	/**@brief This methods classify all faces onto the geometric model. It is called internally
+	 * by the method *classify*. We do this method after all points and curves are captured
+	 * @param[out] AErrors 		list of errors done during the classification
+	 */
+	void classify_faces(ClassificationErrors& AErrors);
 	/**@brief Generic method that gives among a collection of geometrical entities of same
 	 * dimension, the cloest entity to point @p AP.
 	 * @param[in] AP the point we consider
@@ -109,6 +146,14 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 */
 	std::tuple<double, int, math::Point> get_closest_cell(const math::Point& AP,
 	                                         const std::vector<cad::GeomEntity*>& AGeomCells);
+
+	/**@brief This methods check if all boundary elements of a surface are captured.
+	 * @return True if the boundary is captured
+	 */
+	bool boundary_surface_captured(cad::GeomSurface* AS);
+
+
+
 
  private:
 	/*** the associated geometric model*/

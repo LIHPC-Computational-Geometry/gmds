@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
     {
       if(meshNode[nodeId] == 1)
       {
-        simplexMesh.setAnalyticMetric(nodeId);
+        simplexMesh.setAnalyticMetric(nodeId, simplexMesh.getOctree());
       }
     }
     //////////////////////////////////////////////////////////////////////////////

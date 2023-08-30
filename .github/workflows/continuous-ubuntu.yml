@@ -1,4 +1,4 @@
-name: continuous-ubuntu
+name: ubuntu-ci
 
 on:
   workflow_dispatch:
@@ -14,7 +14,9 @@ jobs:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Linux, Windows or Mac. 
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on:  ubuntu-latest
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/lihpc-computational-geometry/spack-gmds:latest
     strategy:
       fail-fast: false
       matrix:
@@ -26,45 +28,53 @@ jobs:
         fetch-depth: 2 # seems to be needed by codecov
         submodules: recursive
 
-    - name: Initialize the dev environement
-      run : chmod +x ./.github/workflows/env_linux.sh; ./.github/workflows/env_linux.sh
-    
     - name: Create Build Environment
       # We create a subdirectory that will stand as our working directory for all 
       # subsequent commands
-      run: cmake -E make_directory ${{github.workspace}}/build
+      run: >
+        cmake -E make_directory build; 
+        cmake -E make_directory install;
+        pwd;
+        ls;
+        
 
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
       shell: bash
-      working-directory: ${{github.workspace}}/build
+      working-directory: build
       # Note the current convention is to use the -S and -B options here to specify source
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       # CMAKE_INSTALL_PREFIX is specified here because of issue 20565 where CMAKE_INSTALL_LIBDIR
       # does not seem to be re-evaluated during the call to cmake --install
       run: >
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.config }} 
-        -DWITH_CODE_COVERAGE=ON
-        -DENABLE_BLOCKING=true
-        -DENABLE_ELGMoRpHING=true
-        -DENABLE_KMDS=true
-        -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/kokkos;${{github.workspace}}/spack/opt/spack/cgal;${{github.workspace}}/spack/opt/spack/gmp;${{github.workspace}}/spack/opt/spack/mpfr;${{github.workspace}}/spack/opt/spack/boost;${{github.workspace}}/spack/opt/spack/cgns"
-        -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib 
-        -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
-        -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/buildinstall
+        pwd;
+        ls;
+        . /spack/share/spack/setup-env.sh;
+        spack load py-pytest;
+        cmake /__w/gmds/gmds -DCMAKE_BUILD_TYPE=${{ matrix.config }} 
+        -DWITH_CODE_COVERAGE:BOOL=ON
+        -DWITH_TEST:BOOL=ON
+        -DWITH_PYTHON_API:BOOL=ON
+        -DENABLE_BLOCKING:BOOL=ON
+        -DENABLE_ELGMORPHING:BOOL=OFF
+        -DENABLE_KMDS:BOOL=ON
+        -DCMAKE_PREFIX_PATH="/spack/opt/spack/lcov;/spack/opt/spack/glpk;/spack/opt/spack/eigen;/spack/opt/spack/googletest;/spack/opt/spack/py-pybind11;/spack/opt/spack/kokkos;/spack/opt/spack/cgal;/spack/opt/spack/gmp;/spack/opt/spack/mpfr;/spack/opt/spack/boost;/spack/opt/spack/cgns"
+        -DCMAKE_INSTALL_PREFIX= ${GITHUB_WORKSPACE}/install
+        -DGLPK_LIB=/spack/opt/spack/glpk/lib
+        -DGLPK_INC=/spack/opt/spack/glpk/include
 
     - name: Build
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
       shell: bash
-      working-directory: ${{github.workspace}}/build
+      working-directory: build
       # Execute the build.  You can specify a specific target with "--target <NAME>"
-      run: cmake --build . --config ${{ matrix.config }}
+      run: cmake --build . --config ${{ matrix.config }} --parallel 2
 
-    - name: Test
-      working-directory: ${{github.workspace}}/build
+    - name: C++ Test
+      working-directory: build
       shell: bash
       run: |
         if ${{ matrix.config == 'Release'}}; then
@@ -78,17 +88,14 @@ jobs:
         fi
 
     - name: Install
+      working-directory: build
       run: |
-        if ${{ matrix.config == 'Release'}}; then
-            cmake --install build --prefix ${{github.workspace}}/buildinstall --config Release
-        else
-            cmake --install build --prefix ${{github.workspace}}/buildinstall --config Debug
-        fi
+        make install
 
-    - name: Test lib install
+    - name: C++ Test lib install
       run: |
-        cmake -E make_directory ${{github.workspace}}/user_exe_build
-        cd ${{github.workspace}}/user_exe_build/
-        cmake -DCMAKE_PREFIX_PATH="${{github.workspace}}/buildinstall" ${{github.workspace}}/docs/example
-        make
+        cmake -E make_directory user_exe_build
+        cd user_exe_build/
+        cmake -DCMAKE_PREFIX_PATH="/spack/opt/spack/eigen;${GITHUB_WORKSPACE}/install" ${GITHUB_WORKSPACE}/docs/example
+        make 
         ./examplegmds

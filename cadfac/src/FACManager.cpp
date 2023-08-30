@@ -817,6 +817,14 @@ FACManager::getVolumes(std::vector<GeomVolume *> &volumes) const
 		volumes[i] = m_volumes[i];
 }
 /*----------------------------------------------------------------------------*/
+std::vector<GeomVolume *>
+FACManager::getVolumes() const
+{
+	std::vector<GeomVolume*> vols;
+	getVolumes(vols);
+	return vols;
+}
+/*----------------------------------------------------------------------------*/
 void
 FACManager::getSurfaces(std::vector<GeomSurface *> &surfaces) const
 {
@@ -824,6 +832,14 @@ FACManager::getSurfaces(std::vector<GeomSurface *> &surfaces) const
 	surfaces.resize(m_surfaces.size());
 	for (unsigned int i = 0; i < m_surfaces.size(); i++)
 		surfaces[i] = m_surfaces[i];
+}
+/*----------------------------------------------------------------------------*/
+std::vector<GeomSurface *>
+FACManager::getSurfaces() const
+{
+	std::vector<GeomSurface*> surfs;
+	getSurfaces(surfs);
+	return surfs;
 }
 /*----------------------------------------------------------------------------*/
 void
@@ -835,6 +851,14 @@ FACManager::getCurves(std::vector<GeomCurve *> &curves) const
 		curves[i] = m_curves[i];
 }
 /*----------------------------------------------------------------------------*/
+std::vector<GeomCurve *>
+FACManager::getCurves() const
+{
+	std::vector<GeomCurve*> crvs;
+	getCurves(crvs);
+	return crvs;
+}
+/*----------------------------------------------------------------------------*/
 void
 FACManager::getPoints(std::vector<GeomPoint *> &points) const
 {
@@ -842,6 +866,14 @@ FACManager::getPoints(std::vector<GeomPoint *> &points) const
 	points.resize(m_points.size());
 	for (unsigned int i = 0; i < m_points.size(); i++)
 		points[i] = m_points[i];
+}
+/*----------------------------------------------------------------------------*/
+std::vector<GeomPoint *>
+FACManager::getPoints() const
+{
+	std::vector<GeomPoint*> pnts;
+	getPoints(pnts);
+	return pnts;
 }
 /*----------------------------------------------------------------------------*/
 GeomPoint *
@@ -897,7 +929,7 @@ FACManager::getCommonCurve(GeomPoint *AP1, GeomPoint *AP2) const
 
 	for (auto e1_edge : e1) {
 		for (auto e2_edge : e2) {
-			if ((*edge_on_crv)[e1_edge] == (*edge_on_crv)[e2_edge]) {
+			if (((*edge_on_crv)[e1_edge] == (*edge_on_crv)[e2_edge] ) && (*edge_on_crv)[e2_edge]!=0) {
 				return (*edge_on_crv)[e1_edge];
 			}
 		}
@@ -909,6 +941,7 @@ std::vector<int>
 FACManager::getCommonSurfaces(gmds::cad::GeomPoint *AP1, gmds::cad::GeomPoint *AP2) const
 {
 	std::vector<int> common_surfaces;
+	std::set<int> common_surfaces_set;
 	FACPoint *p1 = dynamic_cast<FACPoint *>(AP1);
 	FACPoint *p2 = dynamic_cast<FACPoint *>(AP2);
 
@@ -921,12 +954,15 @@ FACManager::getCommonSurfaces(gmds::cad::GeomPoint *AP1, gmds::cad::GeomPoint *A
 	std::vector<TCellID> face_ids2 = n2.getIDs<Face>();
 
 	for (auto id1 : face_ids1) {
-		for (auto id2 : face_ids1) {
+		for (auto id2 : face_ids2) {
 			if ((*face_on_surf)[id1] == (*face_on_surf)[id2]) {
-				common_surfaces.push_back((*face_on_surf)[id1]);
+				common_surfaces_set.insert((*face_on_surf)[id1]);
 			}
 		}
 	}
+	for(auto i:common_surfaces_set)
+		common_surfaces.push_back(i);
+
 	return common_surfaces;
 }
 /*----------------------------------------------------------------------------*/

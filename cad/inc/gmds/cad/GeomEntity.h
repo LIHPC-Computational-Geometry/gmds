@@ -59,6 +59,7 @@ namespace gmds{
              *	\param maxXYZ The maximum coordinate of the bounding box.
              */
 			virtual void computeBoundingBox(TCoord minXYZ[3], TCoord maxXYZ[3]) const=0;
+	      virtual std::tuple<TCoord,TCoord,TCoord,TCoord,TCoord,TCoord>  BBox() const =0;
 
 	      /*------------------------------------------------------------------------*/
 	      /** \brief Project the point AP unto the geometric entity.

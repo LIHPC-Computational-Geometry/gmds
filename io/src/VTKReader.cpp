@@ -337,7 +337,6 @@ void VTKReader::readDataNodes(){
 
             IMeshIOService::DataVector d;
             d.name = vector_name;
-
             for (int i = 0; i < nb_values; i++){
                 double x, y, z;
                 *m_stream >> x >> y >> z;

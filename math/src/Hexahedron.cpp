@@ -14,6 +14,8 @@
 #include <gmds/math/Pyramid.h>
 #include <gmds/math/Matrix.h>
 /*----------------------------------------------------------------------------*/
+#include <Eigen/Dense> // bibliothèque de calcul matriciel
+/*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
 namespace math{
@@ -95,7 +97,7 @@ Point Hexahedron::getCenter() const
 	TCoord coordX = 0.;
 	TCoord coordY = 0.;
 	TCoord coordZ = 0.;
-	
+
 	for(const auto & m_pnt : m_pnts) {
 		coordX += m_pnt.X();
 		coordY += m_pnt.Y();
@@ -103,7 +105,7 @@ Point Hexahedron::getCenter() const
 	}
 	coordX /= 8.;
 	coordY /= 8.;
-	coordZ /= 8.;	
+	coordZ /= 8.;
 
         return Point(coordX,coordY,coordZ);
 }
@@ -111,7 +113,7 @@ Point Hexahedron::getCenter() const
 double
 Hexahedron::getVolume() const
 {
-        
+
         Point center(getCenter());
 	Pyramid p0(m_pnts[0],m_pnts[1],m_pnts[2],m_pnts[3],center);
 	Pyramid p1(m_pnts[7],m_pnts[6],m_pnts[5],m_pnts[4],center);
@@ -119,15 +121,39 @@ Hexahedron::getVolume() const
 	Pyramid p3(m_pnts[0],m_pnts[3],m_pnts[7],m_pnts[4],center);
 	Pyramid p4(m_pnts[1],m_pnts[0],m_pnts[4],m_pnts[5],center);
 	Pyramid p5(m_pnts[3],m_pnts[2],m_pnts[6],m_pnts[7],center);
-	
+
 	double vol = p0.getVolume() + p1.getVolume() + p2.getVolume() + p3.getVolume() + p4.getVolume() + p5.getVolume();
 	return vol;
+}
+/*----------------------------------------------------------------------------*/
+bool
+Hexahedron::isValid() const
+{
+	double epsilon = 0.0;
+
+	Point center(getCenter());
+	Pyramid p0(m_pnts[0],m_pnts[1],m_pnts[2],m_pnts[3],center);
+	Pyramid p1(m_pnts[7],m_pnts[6],m_pnts[5],m_pnts[4],center);
+	Pyramid p2(m_pnts[2],m_pnts[1],m_pnts[5],m_pnts[6],center);
+	Pyramid p3(m_pnts[0],m_pnts[3],m_pnts[7],m_pnts[4],center);
+	Pyramid p4(m_pnts[1],m_pnts[0],m_pnts[4],m_pnts[5],center);
+	Pyramid p5(m_pnts[3],m_pnts[2],m_pnts[6],m_pnts[7],center);
+
+	if((p0.getVolume() < 0.0 && p1.getVolume() < 0.0 && p2.getVolume() < 0.0 &&
+		p3.getVolume() < 0.0 && p4.getVolume() < 0.0 && p5.getVolume() < 0.0) ||
+		(p0.getVolume() > 0.0 && p1.getVolume() > 0.0 && p2.getVolume() > 0.0 &&
+			p3.getVolume() > 0.0 && p4.getVolume() > 0.0 && p5.getVolume() > 0.0))
+		{
+			return true;
+		}
+
+		return false;
 }
 /*----------------------------------------------------------------------------*/
 double
 Hexahedron::computeScaledJacobian() const
 {
-	const int neighbors[8][3] = 
+	const int neighbors[8][3] =
 	{
 		{1,3,4},
 		{2,0,5},
@@ -138,12 +164,9 @@ Hexahedron::computeScaledJacobian() const
 		{5,7,2},
 		{6,4,3}
 	};
-	
 	double scaledJ[8];
 	for (int iVertex = 0; iVertex < 8; iVertex++) {
-		
 		Matrix<3,3,double> A = this->jacobian(iVertex);
-		
 		int i0    = neighbors[iVertex][0];
 		int i1    = neighbors[iVertex][1];
 		int i2    = neighbors[iVertex][2];
@@ -167,7 +190,7 @@ Hexahedron::computeScaledJacobian() const
 	if(scaledJmin >  1.) scaledJmin =  1.;
 	if(scaledJmin < -1.) scaledJmin = -1.;
 
-	return scaledJmin;	
+	return scaledJmin;
 }
 /*----------------------------------------------------------------------------*/
 double
@@ -221,7 +244,7 @@ Hexahedron::computeMeanRatio()
 	throw GMDSException("Hexahedron::computeMeanRatio not available.");
 
 	/*const int neighbors[8][3] =
-        {       
+        {
                 {1,3,4},
                 {2,0,5},
                 {3,1,6},
@@ -231,13 +254,13 @@ Hexahedron::computeMeanRatio()
                 {5,7,2},
                 {6,4,3}
         };
-       
+
 	double meanRatio = 0.;
- 
+
         for (int iVertex = 0; iVertex < 8; iVertex++) {
-                
+
                 Matrix<3,3,double> A = this->jacobian(iVertex);
-                
+
                 int i0    = neighbors[iVertex][0];
                 int i1    = neighbors[iVertex][1];
                 int i2    = neighbors[iVertex][2];
@@ -273,7 +296,7 @@ Hexahedron::computeMeanEdgeLength() const
   sumLength += m_pnts[1].distance(m_pnts[5]);
   sumLength += m_pnts[2].distance(m_pnts[6]);
   sumLength += m_pnts[3].distance(m_pnts[7]);
-  
+
   sumLength /= 12.;
   return sumLength;
 }
@@ -343,7 +366,7 @@ Hexahedron::intersect(const Triangle& ATri, const bool AProper) const
 	Triangle T9(m_pnts[0], m_pnts[1], m_pnts[5]);
 	inter = ATri.intersect(T9, AProper);
 	if (inter) {
-		return true;	
+		return true;
 	}
 
 	Triangle T10(m_pnts[0], m_pnts[5], m_pnts[4]);
@@ -364,7 +387,7 @@ Hexahedron::intersect(const Triangle& ATri, const bool AProper) const
 		return true;
 	}
 
-	return false;	
+	return false;
 }
 /*---------------------------------------------------------------------------*/
 math::Matrix<3,3,double>
@@ -416,9 +439,9 @@ Hexahedron::jacobian(const int iVertex) const
 		default:
 			throw GMDSException("Hexahedron::jacobian invalid vertex number.");
 			break;
-	}	
-	
-	return mat;
+	}
+
+	return mat.transpose();
 }
 /*---------------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& AStr, const Hexahedron& AHex){
@@ -433,7 +456,3 @@ std::ostream& operator<<(std::ostream& AStr, const Hexahedron& AHex){
 /*----------------------------------------------------------------------------*/
 } // namespace gmds
 /*----------------------------------------------------------------------------*/
-
-
-
-

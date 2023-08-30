@@ -280,7 +280,31 @@ int main(int argc, char* argv[])
 
     for(auto const h : AHexes)
     {
-      point_mesh.newHex(h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7]);
+      math::Point coord0 = point_mesh.get<Node>(h[0]).point();
+      math::Point coord1 = point_mesh.get<Node>(h[1]).point();
+      math::Point coord2 = point_mesh.get<Node>(h[2]).point();
+      math::Point coord3 = point_mesh.get<Node>(h[3]).point();
+      math::Point coord4 = point_mesh.get<Node>(h[4]).point();
+      math::Point coord5 = point_mesh.get<Node>(h[5]).point();
+      math::Point coord6 = point_mesh.get<Node>(h[6]).point();
+      math::Point coord7 = point_mesh.get<Node>(h[7]).point();
+
+      math::Point coordCenterHex = 1.0 / 8.0 * (coord0 + coord1 + coord2 +
+                                            coord3 + coord4 + coord5 +
+                                            coord6 + coord7);
+      math::Vector3d n = coordCenterHex - coord0;
+      math::Vector3d v0 = coord1 - coord0;
+      math::Vector3d v1 = coord2 - coord1;
+      math::Vector3d v = v0.cross(v1);
+
+      if(v.dot(n) > 0.0){
+
+        point_mesh.newHex(h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7]);
+      }
+      else{
+        point_mesh.newHex(h[0], h[3], h[2], h[1], h[4], h[7], h[6], h[5]);
+      }
+
     }
 
     IGMeshIOService ioService2(&point_mesh);

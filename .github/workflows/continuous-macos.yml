@@ -1,4 +1,4 @@
-name: continuous-macos
+name: macos-ci
 
 on:
   workflow_dispatch:
@@ -16,24 +16,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config: [Release, Debug]
-        #include:
-        #  - os: macos-latest
-        #    name: macOS
-        #    script_name: ./.github/workflows/env_macos.sh
-        #  - os: ubuntu-latest
-        #    name: Linux
-        #    script_name: ./.github/workflows/env_linux.sh
-        #  - os: windows-latest
-        #    name: Windows
-        #    script_name: ./.github/workflows/env_win.cmd
+        config: [Release]
     steps:
     - uses: actions/checkout@v3
       with:
         submodules: recursive
 
     - name: Initialize the dev environement
-      run : chmod +x ./.github/workflows/env_macos.sh; ./.github/workflows/env_macos.sh
+      run : ./.github/workflows/env_macos.sh
     
     - name: Create Build Environment
       # We create a subdirectory that will stand as our working directory for all 
@@ -48,12 +38,19 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.config }}
-           -DWITH_CODE_COVERAGE=OFF
-           -DENABLE_BLOCKING=true
-           -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/cgal;${{github.workspace}}/spack/opt/spack/gmp;${{github.workspace}}/spack/opt/spack/mpfr;${{github.workspace}}/spack/opt/spack/boost;${{github.workspace}}/spack/opt/spack/cgns"
-           -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib
-           -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
+      run: >
+        . ${{github.workspace}}/spack/share/spack/setup-env.sh;
+        spack load py-pytest;
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+        -DWITH_TEST:BOOL=ON
+        -DWITH_CGNS:BOOL=OFF
+        -DWITH_CODE_COVERAGE:BOOL=OFF
+        -DWITH_PYTHON_API:BOOL=ON
+        -DENABLE_BLOCKING:BOOL=ON
+        -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/glpk;${{github.workspace}}/spack/opt/spack/googletest;${{github.workspace}}/spack/opt/spack/py-pybind11;${{github.workspace}}/spack/opt/spack/cgal;${{github.workspace}}/spack/opt/spack/gmp;${{github.workspace}}/spack/opt/spack/mpfr;${{github.workspace}}/spack/opt/spack/boost;${{github.workspace}}/spack/opt/spack/eigen"
+        -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/
+        -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib
+        -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
 
     - name: Build
       # Use a bash shell so we can use the same syntax for environment variable
@@ -63,14 +60,15 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake --build . --config ${{ matrix.config }}
+      run: cmake --build . --config ${{ matrix.config }}  --parallel 3
 
     - name: Test
-      working-directory: ${{github.workspace}}/build
+      working-directory: build
       shell: bash
       run: |
-        if ${{ matrix.config == 'Release'}}; then
-            ctest -E SingGraphBuilder2DTest.halfDisk
-        else
-            ctest -E SingGraphBuilder2DTest.halfDisk
-        fi
+        . ${{github.workspace}}/spack/share/spack/setup-env.sh
+        spack load py-pytest
+        echo $PYTHONPATH
+        ctest -C $BUILD_TYPE
+
+

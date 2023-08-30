@@ -347,10 +347,8 @@ main(int argc, char* argv[])
 //        int nb_nodes = 1000000;
 //        int nb_faces = 998001;
         std::cout << "Kokkos::init" << std::endl;
-	Kokkos::InitArguments kargs;
-	kargs.num_threads = num_threads;
-	//kargs.use_numa = use_numa;
-	//kargs.use_core = use_core;
+	Kokkos::InitializationSettings kargs;
+	kargs.set_num_threads(num_threads);
 	Kokkos::initialize(kargs);
 	
       

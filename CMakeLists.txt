@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.10.0)
 # Operating System specificities (must be put at first)
 #==============================================================================
 if(APPLE)
-    set(CMAKE_OSX_ARCHITECTURES x86_64)
+    set(CMAKE_OSX_ARCHITECTURES arm64)
 endif()
 #==============================================================================
 project(gmds VERSION 1.0 LANGUAGES CXX)
@@ -44,7 +44,10 @@ option(WITH_DOC "Build documentation"                                           
 option(WITH_TEST "Build test"                                                           OFF)
 option(WITH_CODE_COVERAGE "Perform code coverage with avail. test suites"               OFF)
 option(WITH_CODE_COVERAGE_HTML_REPORT "Activate html reporting during code covering"    OFF)
+option(WITH_PYTHON_API "Build the gmds python API"                                      ON)
 option(BUILD_SHARED_LIBS ""                                                             ON)
+option(WITH_CGNS "Allows the CGNS export (blocking and aero components)"                ON)
+
 #==============================================================================
 if(BUILD_SHARED_LIBS)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
@@ -53,6 +56,10 @@ if(BUILD_SHARED_LIBS)
 elseif(WIN32)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+endif()
+#==============================================================================
+if(WITH_CGNS)
+    add_definitions(-DUSE_CGNS)
 endif()
 #==============================================================================
 if (WITH_CODE_COVERAGE_HTML_REPORT)
@@ -74,8 +81,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/exports)
 # Fait un projet dont on depend et pas inclus
 if(WITH_TEST)
     enable_testing()
-    add_subdirectory(external/googletest)
-    include(GoogleTest)
+    find_package(GTest REQUIRED)
     set(TEST_SAMPLES_DIR "${CMAKE_SOURCE_DIR}/test_samples")
 
     configure_file(
@@ -113,6 +119,19 @@ macro(GMDS_ADD_COMPONENT COMP_NAME DIR_NAME LIB_NAME  MESSAGE ACTIVATE COVER)
 
 endmacro()
 
+
+#==============================================================================
+include(ExternalProject)
+include(GNUInstallDirs)
+
+add_subdirectory(external/ANN)
+add_subdirectory(external/Predicates_psm)
+add_subdirectory(external/inih)
+add_subdirectory(external/OpenNL)
+add_subdirectory(external/gco-v3)
+find_package(glpk)
+add_subdirectory(external/glpk)
+add_subdirectory(external/HLBFGS)
 #==============================================================================
 # OPTIONAL COMPONENTS
 #==============================================================================
@@ -122,8 +141,8 @@ GMDS_ADD_COMPONENT(
         blocking                        # src subdirectory name
         GMDSBlocking                    # name of the generated library
         "This module provides a data structure for a blocking representation"  # description
-        OFF                                 # is activated
-        OFF                                 # must be covered
+        ON                                 # is activated
+        ON                                 # must be covered
 )
 
 GMDS_ADD_COMPONENT(
@@ -252,31 +271,27 @@ GMDS_ADD_COMPONENT(
 )
 
 GMDS_ADD_COMPONENT(
+        RLBLOCKING                       # cmake variable
+        rlBlocking                       # src subdirectory name
+        GMDSRlBlocking                    # name of the generated library
+        " "  # description
+        OFF                                 # is activated
+        OFF                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
         MORPHMESH
         morphMesh
         GMDSmorphMesh
         "morphing the mesh"
-        ON
+	OFF
         OFF                                 # must be covered
 )
 
 
+
 #==============================================================================
-#mettre les find package uniquement ou necessaire
-# faire pareil en dessous avec External project
-#find_package(Eigen3)
-if(NOT EIGEN3_FOUND)
-    include_directories(${CMAKE_SOURCE_DIR}/external/Eigen)
-    message(STATUS "Eigen3 not found, we use a local copy located in the external directory")
-else()
-    message(STATUS "Eigen3 found in ${EIGEN3_INCLUDE_DIR}")
-    # should be replaced by target_link_libraries (example Eigen3::Eigen)
-    include_directories(${EIGEN3_INCLUDE_DIR})
-endif(NOT EIGEN3_FOUND)
-
 set (GMDS_INCLUDE_DIRS APPEND)
-
-
 #==============================================================================
 # TESTING AND CODE COVERAGE
 #
@@ -345,17 +360,6 @@ if (WITH_CODE_COVERAGE)
 
 endif(WITH_CODE_COVERAGE)
 
-#==============================================================================
-include(ExternalProject)
-include(GNUInstallDirs)
-
-add_subdirectory(external/ANN)
-add_subdirectory(external/Predicates_psm)
-add_subdirectory(external/inih)
-add_subdirectory(external/OpenNL)
-add_subdirectory(external/gco-v3)
-add_subdirectory(external/glpk)
-add_subdirectory(external/HLBFGS)
 
 #==============================================================================
 # PROJECT STRUCTURE
@@ -381,10 +385,10 @@ set(LIB_GMDS_SMOOTHY GMDSSmoothy)
 add_subdirectory(smoothy)
 set(LIB_GMDS_IG_SHEET GMDSSheet)
 add_subdirectory(sheet)
-set(LIB_GMDS_SERVICES GMDSServices)
-add_subdirectory(services)
 
-#add_subdirectory(pygmds)
+if(WITH_PYTHON_API)
+    add_subdirectory(pygmds)
+endif ()
 #==============================================================================
 list(LENGTH GMDS_ACTIVE_COMPONENTS count)
 math(EXPR count "${count}-1")

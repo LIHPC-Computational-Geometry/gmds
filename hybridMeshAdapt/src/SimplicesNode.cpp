@@ -64,7 +64,6 @@ std::vector<TSimplexID> SimplicesNode::ballOf(bool boundariesAccepted) const
         while(!to_do.empty())
         {
           TSimplexID tetraId =  to_do.back();
-          //std::cout << "tetraId --> " << tetraId << std::endl;
           if(tetraId != border)
           {
             /*contain tet(>= 0) and triangle( < 0)*/
