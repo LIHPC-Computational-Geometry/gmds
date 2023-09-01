@@ -4,8 +4,8 @@
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
-FastLocalize::FastLocalize(Mesh *AMesh): m_mesh(AMesh) {
-	int nb_pnts 	= m_mesh->getNbNodes();
+FastLocalize::FastLocalize(const std::vector<Node> &ANodes): m_nodes(ANodes){
+	int nb_pnts 	= m_nodes.size();
 	int	k			= 20;      // max number of nearest neighbors
 	int	dim		= 3;       // dimension
 	int	maxPts	= nb_pnts; // maximum number of data points
@@ -24,14 +24,14 @@ FastLocalize::FastLocalize(Mesh *AMesh): m_mesh(AMesh) {
 	// same index.
 	//========================================================
 	nPts = 0;
-	for(auto n_id: m_mesh->nodes()){
-		math::Point p = m_mesh->get<Node>(n_id).point();
+	for(auto const &n: m_nodes){
+		math::Point p = n.point();
 		m_dataPts[nPts][0] = p.X();
 		m_dataPts[nPts][1] = p.Y();
 		m_dataPts[nPts][2] = p.Z();
-		m_ann2gmds_id[nPts]=n_id;
+		m_ann2gmds_id[nPts]=n.id();
 		nPts++;
-	};
+	}
 
 	//========================================================
 	// (2) Build the search structure
@@ -51,7 +51,7 @@ FastLocalize::~FastLocalize(){
 
 }
 /*------------------------------------------------------------------------*/
-Cell::Data
+TCellID
 FastLocalize::find(const math::Point &APoint)
 {
 	int	k			= 5;      // max number of nearest neighbors
@@ -65,6 +65,6 @@ FastLocalize::find(const math::Point &APoint)
 	   m_nnIdx,
 	   m_dists,
 	   0.01);
-	return Cell::Data(0,m_ann2gmds_id[m_nnIdx[0]]);
+	return m_ann2gmds_id[m_nnIdx[0]];
 }
 /*------------------------------------------------------------------------*/

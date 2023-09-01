@@ -9,10 +9,12 @@ set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/morphMesh/FastLocalize.h
         inc/gmds/morphMesh/MorphMesh.h
+        inc/gmds/morphMesh/EllipticMorph.h
         )
 set(GMDS_SRC
         src/FastLocalize.cpp
         src/MorphMesh.cpp
+        src/EllipticMorph.cpp
         )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})

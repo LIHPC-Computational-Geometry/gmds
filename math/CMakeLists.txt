@@ -37,6 +37,7 @@ set(GMDS_INC
         inc/gmds/math/Vector.h
         inc/gmds/math/VectorDyn.h
         inc/gmds/math/StreamComputation.h
+        inc/gmds/math/BezierSurface.h
         )
 set(GMDS_SRC
         src/AxisAngleRotation.cpp
@@ -67,10 +68,11 @@ set(GMDS_SRC
         src/VectorDyn.cpp
         src/Orientation.cpp
         src/Vector.cpp
-        src/TransfiniteInterpolation.cpp inc/gmds/math/BezierSurface.h src/BezierSurface.cpp)
+        src/TransfiniteInterpolation.cpp
+        src/BezierSurface.cpp)
 #==============================================================================
 find_package(Eigen3 3.3 REQUIRED)
-#==============================================================================
+#==============================================================================k
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
 include(GenerateExportHeader)
