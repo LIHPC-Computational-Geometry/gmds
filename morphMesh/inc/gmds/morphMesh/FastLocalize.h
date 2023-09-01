@@ -17,7 +17,7 @@ class LIB_GMDS_MORPHMESH_API FastLocalize {
 	/** @brief Constructor.
 		*  @param AMesh the mesh where we work on
 	 */
-	FastLocalize(Mesh *AMesh);
+	FastLocalize(const std::vector<Node> &ANodes);
 	/*-------------------------------------------------------------------*/
 	/** @brief Destructor.
 	 */
@@ -30,14 +30,14 @@ class LIB_GMDS_MORPHMESH_API FastLocalize {
 	*  @param APoint point to localize
 	*  @return the cell data indicating where \p APoint is in this->m_mesh
 	 */
-	Cell::Data find(const math::Point& APoint);
+	TCellID find(const math::Point& APoint);
 	/*-------------------------------------------------------------------*/
 
  private:
 	void buildANNTree();
  private:
 	/** mesh we work on */
-	Mesh *m_mesh;
+	std::vector<Node> m_nodes;
 	std::map<int,TCellID > m_ann2gmds_id;
 	ANNkd_tree*	 m_kdTree;
 	ANNidxArray	 m_nnIdx;					// near neighbor indices
