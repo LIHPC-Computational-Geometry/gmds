@@ -32,39 +32,46 @@ CurvedBlocking::CurvedBlocking(cad::GeomManager *AGeomModel, bool AInitAsBoundin
         create_block(p1, p2, p3, p4, p5, p6, p7, p8);
     }
 }
+
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::~CurvedBlocking() {}
+
 /*----------------------------------------------------------------------------*/
 GMap3 *
 CurvedBlocking::gmap() {
     return &m_gmap;
 }
+
 /*----------------------------------------------------------------------------*/
 cad::GeomManager *
-CurvedBlocking::geom_model()
-{
-	return m_geom_model;
+CurvedBlocking::geom_model() {
+    return m_geom_model;
 }
+
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Node
 CurvedBlocking::create_node(const int AGeomDim, const int AGeomId, const math::Point &APoint) {
     return m_gmap.create_attribute<0>(NodeInfo(AGeomDim, AGeomId, APoint));
 }
+
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Edge
 CurvedBlocking::create_edge(const int AGeomDim, const int AGeomId) {
     return m_gmap.create_attribute<1>(CellInfo(1, AGeomDim, AGeomId));
 }
+
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Face
 CurvedBlocking::create_face(const int AGeomDim, const int AGeomId) {
     return m_gmap.create_attribute<2>(CellInfo(2, AGeomDim, AGeomId));
 }
+
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Block
 CurvedBlocking::create_block(const int AGeomDim, const int AGeomId) {
     return m_gmap.create_attribute<3>(CellInfo(3, AGeomDim, AGeomId));
 }
+
 /*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Face>
 CurvedBlocking::get_faces_of_block(const CurvedBlocking::Block AB) {
@@ -90,6 +97,7 @@ CurvedBlocking::get_all_blocks() {
     }
     return blocks;
 }
+
 /*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Face>
 CurvedBlocking::get_all_faces() {
@@ -99,36 +107,37 @@ CurvedBlocking::get_all_faces() {
     }
     return faces;
 }
+
 /*----------------------------------------------------------------------------*/
-std::vector<TCellID> CurvedBlocking::get_all_id_nodes()
-{
-	auto nodes = get_all_nodes();
-	std::vector<TCellID> ids;
-	ids.reserve(nodes.size());
-	for(auto n:nodes)
-		ids.push_back(n->info().topo_id);
-	return ids;
+std::vector<TCellID> CurvedBlocking::get_all_id_nodes() {
+    auto nodes = get_all_nodes();
+    std::vector<TCellID> ids;
+    ids.reserve(nodes.size());
+    for (auto n: nodes)
+        ids.push_back(n->info().topo_id);
+    return ids;
 }
+
 /*----------------------------------------------------------------------------*/
-std::vector<TCellID> CurvedBlocking::get_all_id_edges()
-{
-	auto edges = get_all_edges();
-	std::vector<TCellID> ids;
-	ids.reserve(edges.size());
-	for(auto e:edges)
-		ids.push_back(e->info().topo_id);
-	return ids;
+std::vector<TCellID> CurvedBlocking::get_all_id_edges() {
+    auto edges = get_all_edges();
+    std::vector<TCellID> ids;
+    ids.reserve(edges.size());
+    for (auto e: edges)
+        ids.push_back(e->info().topo_id);
+    return ids;
 }
+
 /*----------------------------------------------------------------------------*/
-std::vector<TCellID> CurvedBlocking::get_all_id_faces()
-{
-	auto faces = get_all_faces();
-	std::vector<TCellID> ids;
-	ids.reserve(faces.size());
-	for(auto f:faces)
-		ids.push_back(f->info().topo_id);
-	return ids;
+std::vector<TCellID> CurvedBlocking::get_all_id_faces() {
+    auto faces = get_all_faces();
+    std::vector<TCellID> ids;
+    ids.reserve(faces.size());
+    for (auto f: faces)
+        ids.push_back(f->info().topo_id);
+    return ids;
 }
+
 /*----------------------------------------------------------------------------*/
 std::vector<TCellID> CurvedBlocking::get_all_id_blocks() {
     auto blocks = get_all_blocks();
@@ -950,6 +959,7 @@ CurvedBlocking::cut_sheet(const Edge AE, const double AParam) {
     m_gmap.free_mark(mark_done);
 
 }
+
 /*----------------------------------------------------------------------------*/
 std::vector<std::pair<double, double> >
 CurvedBlocking::get_projection_info(math::Point &AP, std::vector<CurvedBlocking::Edge> &AEdges) {
