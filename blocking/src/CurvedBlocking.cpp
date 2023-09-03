@@ -1046,6 +1046,23 @@ CurvedBlocking::collapse_chord(const Face AF, const Node AN1, const Node AN2) {
         chord_darts_opp.push_back(m_gmap.alpha<0,1,0>(d));
     }
 
+    //Before going further, we check that all the pair of opposite nodes can be merged (geometric conditions)
+    for(auto i=0; i<chord_darts.size();i++) {
+        Node ni = m_gmap.attribute<0>(chord_darts[i]);
+        Node nj = m_gmap.attribute<0>(chord_darts_opp[i]);
+        if(ni->info().geom_dim==0 && nj->info().geom_dim==0){
+            //two nodes can not be merged together
+            return false;
+        }
+        else if(ni->info().geom_dim==1 && nj->info().geom_dim==1 && ni->info().geom_id!=nj->info().geom_id){
+            //two nodes on different curves cannot be merged
+            return false;
+        }
+        else if(ni->info().geom_dim==2 && nj->info().geom_dim==2 && ni->info().geom_id!=nj->info().geom_id){
+            //two nodes on different surfaces cannot be merged
+            return false;
+        }
+    }
     //Now we have pairs of darts that belongs to opposite nodes that must be collapsed. We get nodes of adjacent faces
     //to 3-sew
     std::vector<std::pair<Dart3,Dart3> > to_sew;
