@@ -467,6 +467,13 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[out] ADarts	one dart per face of the sheet defined by @p AE
 	 */
 	void get_all_chord_darts(const Face AF, std::vector<Dart3> &ADarts);
+
+    /**@brief Get all the blocks of the chord defined from face @p AF. All the returned darts
+     * belong to different blocks.
+     * @param[in]  AF			the face we start from
+     * @param[out] ADarts	one dart per face of the sheet defined by @p AE
+     */
+    std::vector<Block>  get_all_chord_blocks(const Face AF);
 	/**@brief Split the sheet defined by edge @p AE at the closest position of @p AP.
 	 * 		 The method project @p AP on @p AE. It gives us a cut ratio, we use on
 	 * 		 all the parallel edges.
@@ -481,10 +488,21 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in] AParam a parameter included in ]0,1[
 	 */
 	void cut_sheet(const Edge AE, const double AParam);
-	/**@brief Split the sheet defined by edge @p AE
-	 * @param[in] AE an edge we want to split in two edges
-	 */
-	void cut_sheet(const Edge AE);
+    /**@brief Split the sheet defined by edge @p AE
+     * @param[in] AE an edge we want to split in two edges
+     */
+    void cut_sheet(const Edge AE);
+
+    /**@brief Collapse the chord starting from face @p AF by merging
+     * nodes @p AN1 and @p AN2. The operation is possible if and only if:
+     * - @p AN1 and @p AN2 are opposite nodes in face @p AF.
+     * - the chord defined from @p AF is simple, i.e. it doesn't intersect itself
+     * - Classification doesn't prevent the collapse
+     * @param[in] AE an edge we want to split in two edges
+     * @return true if the operation succeeded, false if the operation
+     */
+    bool collapse_chord(const Face AF, const Node AN1, const Node AN2);
+
 	/**@brief Low level operation that @p TDim-sew two darts
 	 * @tparam TDim sewing dimension
 	 * @param[in] AD1 First dart
@@ -532,6 +550,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	std::vector<std::pair<double, double>> get_projection_info(math::Point &AP, std::vector<CurvedBlocking::Edge> &AEdges);
 
  private:
+
 	/**@brief Create a node attribute in the n-gmap
 	 *
 	 * @param[in] AGeomDim dimension of the associated geometric cell
