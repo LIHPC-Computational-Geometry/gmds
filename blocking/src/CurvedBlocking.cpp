@@ -1066,7 +1066,6 @@ CurvedBlocking::collapse_chord(const Face AF, const Node AN1, const Node AN2) {
             to_sew.push_back(std::make_pair(m_gmap.alpha<3,1,2,3>(di),m_gmap.alpha<3,1,2,3>(dj)));
         }
     }
-
     //We remove chord blocks
     std::vector<Block> chord_blocks = get_all_chord_blocks(AF);
     for(auto b:chord_blocks) {
