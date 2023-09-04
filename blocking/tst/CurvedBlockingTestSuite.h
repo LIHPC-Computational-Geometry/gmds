@@ -5,8 +5,10 @@
 #include <gmds/blocking/CurvedBlockingClassifier.h>
 #include <gmds/cadfac/FACManager.h>
 #include <gmds/ig/MeshDoctor.h>
+#include <gmds/igalgo/GridBuilder.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKReader.h>
+#include <gmds/io/VTKWriter.h>
 #include <unit_test_config.h>
 /*----------------------------------------------------------------------------*/
 void
@@ -322,4 +324,145 @@ TEST(CurvedBlockingTestSuite, test_topological_queries)
 		    std::vector<gmds::blocking::CurvedBlocking::Block> bs = bl.get_blocks_of_face(f);
 		    ASSERT_EQ(1, bs.size());
 	}
+}
+
+/*----------------------------------------------------------------------------*/
+TEST(CurvedBlockingTestSuite, test_init_from_ig_mesh)
+{
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model, false);
+
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::N |  gmds::R | gmds::R2N));
+	gmds::Node n0 = m.newNode(gmds::math::Point(0,0,0));
+	gmds::Node n1 = m.newNode(gmds::math::Point(1,0,0));
+	gmds::Node n2 = m.newNode(gmds::math::Point(1,1,0));
+	gmds::Node n3 = m.newNode(gmds::math::Point(0,1,0));
+
+	gmds::Node n4 = m.newNode(gmds::math::Point(0,0,1));
+	gmds::Node n5 = m.newNode(gmds::math::Point(1,0,1));
+	gmds::Node n6 = m.newNode(gmds::math::Point(1,1,1));
+	gmds::Node n7 = m.newNode(gmds::math::Point(0,1,1));
+
+	gmds::Node n8 = m.newNode(gmds::math::Point(0,0,2));
+	gmds::Node n9 = m.newNode(gmds::math::Point(1,0,2));
+	gmds::Node n10= m.newNode(gmds::math::Point(1,1,2));
+	gmds::Node n11= m.newNode(gmds::math::Point(0,1,2));
+
+
+	gmds::Node n12= m.newNode(gmds::math::Point(0,0,3));
+	gmds::Node n13= m.newNode(gmds::math::Point(1,0,3));
+	gmds::Node n14= m.newNode(gmds::math::Point(1,1,3));
+	gmds::Node n15= m.newNode(gmds::math::Point(0,1,3));
+
+	m.newHex(n0,n1,n2,n3,n4,n5,n6,n7);
+	m.newHex(n4,n5,n6,n7,n8,n9,n10,n11);
+	m.newHex(n8,n9,n10,n11,n12,n13,n14,n15);
+	bl.init_from_mesh(m);
+
+	ASSERT_EQ(16,bl.get_all_nodes().size());
+	ASSERT_EQ(28,bl.get_all_edges().size());
+	ASSERT_EQ(16,bl.get_all_faces().size());
+	ASSERT_EQ(3,bl.get_all_blocks().size());
+}
+
+/*----------------------------------------------------------------------------*/
+TEST(CurvedBlockingTestSuite, test_chord_query)
+{
+    gmds::cad::FACManager geom_model;
+    setUp(geom_model);
+    gmds::blocking::CurvedBlocking bl(&geom_model, false);
+
+    gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::N |  gmds::R | gmds::R2N));
+    gmds::Node n0 = m.newNode(gmds::math::Point(0,0,0));
+    gmds::Node n1 = m.newNode(gmds::math::Point(1,0,0));
+    gmds::Node n2 = m.newNode(gmds::math::Point(1,1,0));
+    gmds::Node n3 = m.newNode(gmds::math::Point(0,1,0));
+
+    gmds::Node n4 = m.newNode(gmds::math::Point(0,0,1));
+    gmds::Node n5 = m.newNode(gmds::math::Point(1,0,1));
+    gmds::Node n6 = m.newNode(gmds::math::Point(1,1,1));
+    gmds::Node n7 = m.newNode(gmds::math::Point(0,1,1));
+
+    gmds::Node n8 = m.newNode(gmds::math::Point(0,0,2));
+    gmds::Node n9 = m.newNode(gmds::math::Point(1,0,2));
+    gmds::Node n10= m.newNode(gmds::math::Point(1,1,2));
+    gmds::Node n11= m.newNode(gmds::math::Point(0,1,2));
+
+    gmds::Node n12= m.newNode(gmds::math::Point(0,0,3));
+    gmds::Node n13= m.newNode(gmds::math::Point(1,0,3));
+    gmds::Node n14= m.newNode(gmds::math::Point(1,1,3));
+    gmds::Node n15= m.newNode(gmds::math::Point(0,1,3));
+
+    m.newHex(n0,n1,n2,n3,n4,n5,n6,n7);
+    m.newHex(n4,n5,n6,n7,n8,n9,n10,n11);
+    m.newHex(n8,n9,n10,n11,n12,n13,n14,n15);
+    bl.init_from_mesh(m);
+
+
+    std::vector<gmds::blocking::Dart3> darts;
+    std::vector<gmds::blocking::CurvedBlocking::Face> bl_faces = bl.get_all_faces();
+    for(auto f:bl_faces){
+        std::cout<<bl.get_center_of_face(f)<<std::endl;
+        gmds::math::Point center = bl.get_center_of_face(f);
+        double z_integer_part = std::floor(center.Z());
+        double z_decimal_part = center.Z()-z_integer_part;
+        if(z_decimal_part==0){
+            bl.get_all_chord_darts(f, darts);
+            ASSERT_EQ(darts.size(),4);
+            ASSERT_EQ(bl.get_all_chord_blocks(f).size(),3);
+        }
+        else{
+            bl.get_all_chord_darts(f, darts);
+            ASSERT_EQ(darts.size(),2);
+            ASSERT_EQ(bl.get_all_chord_blocks(f).size(),1);
+        }
+    }
+}
+/*----------------------------------------------------------------------------*/
+TEST(CurvedBlockingTestSuite, test_chord_collapse)
+{
+    gmds::cad::FACManager geom_model;
+    setUp(geom_model);
+    gmds::blocking::CurvedBlocking bl(&geom_model, false);
+
+    gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::R|gmds::R2N));
+
+    gmds::GridBuilder gb(&m,3);
+
+    gb.execute(4,1.0, 4, 1.0, 4, 1.0);
+
+    bl.init_from_mesh(m);
+
+    std::vector<gmds::blocking::Dart3> darts;
+    std::vector<gmds::blocking::CurvedBlocking::Face> bl_faces = bl.get_all_faces();
+
+    ASSERT_EQ(bl.get_nb_cells<3>(),27);
+
+    bool found_face = false;
+    auto face_id = -1;
+    gmds::math::Point seed(1.5,1.5,0.0);
+    for(auto i=0; i<bl_faces.size() && !found_face;i++){
+        gmds::blocking::CurvedBlocking::Face fi = bl_faces[i];
+        gmds::math::Point ci = bl.get_center_of_face(fi);
+        if(ci.distance2(seed)<0.1){
+            found_face = true;
+            face_id=i;
+        }
+    }
+
+    std::vector<gmds::blocking::CurvedBlocking::Node> f_nodes = bl.get_nodes_of_face(bl_faces[face_id]);
+    bl.collapse_chord(bl_faces[face_id],f_nodes[0],f_nodes[2]);
+
+    ASSERT_EQ(bl.get_nb_cells<3>(),24);
+
+    gmds::Mesh m_out(gmds::MeshModel(gmds::DIM3 | gmds::N | gmds::E | gmds::F | gmds::R | gmds::E2N | gmds::F2N | gmds::R2N));
+    bl.convert_to_mesh(m_out);
+
+    gmds::IGMeshIOService ioService(&m_out);
+    gmds::VTKWriter writer(&ioService);
+    writer.setCellOptions(gmds::N | gmds::F);
+    writer.setDataOptions(gmds::N |gmds::F );
+    writer.write("collapse.vtk");
+
 }
