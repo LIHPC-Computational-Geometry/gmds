@@ -402,67 +402,23 @@ TEST(CurvedBlockingTestSuite, test_chord_query)
 
     std::vector<gmds::blocking::Dart3> darts;
     std::vector<gmds::blocking::CurvedBlocking::Face> bl_faces = bl.get_all_faces();
-    bl.get_all_chord_darts(bl_faces[0], darts);
-    ASSERT_EQ(darts.size(),4);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[0]).size(),3);
-
-    bl.get_all_chord_darts(bl_faces[1], darts);
-    ASSERT_EQ(darts.size(),2);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[1]).size(),1);
-
-    bl.get_all_chord_darts(bl_faces[2], darts);
-    ASSERT_EQ(darts.size(),2);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[2]).size(),1);
-
-    bl.get_all_chord_darts(bl_faces[3], darts);
-    ASSERT_EQ(darts.size(),2);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[3]).size(),1);
-
-    bl.get_all_chord_darts(bl_faces[5], darts);
-    ASSERT_EQ(darts.size(),4);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[5]).size(),3);
-
-    bl.get_all_chord_darts(bl_faces[6], darts);
-    ASSERT_EQ(darts.size(),2);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[6]).size(),1);
-
-    bl.get_all_chord_darts(bl_faces[7], darts);
-    ASSERT_EQ(darts.size(),2);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[7]).size(),1);
-
-    bl.get_all_chord_darts(bl_faces[8], darts);
-    ASSERT_EQ(darts.size(),2);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[8]).size(),1);
-
-    bl.get_all_chord_darts(bl_faces[9], darts);
-    ASSERT_EQ(darts.size(),2);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[9]).size(),1);
-
-    bl.get_all_chord_darts(bl_faces[10], darts);
-    ASSERT_EQ(darts.size(),4);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[10]).size(),3);
-
-    bl.get_all_chord_darts(bl_faces[11], darts);
-    ASSERT_EQ(darts.size(),2);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[11]).size(),1);
-
-    bl.get_all_chord_darts(bl_faces[12], darts);
-    ASSERT_EQ(darts.size(),2);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[12]).size(),1);
-
-    bl.get_all_chord_darts(bl_faces[13], darts);
-    ASSERT_EQ(darts.size(),2);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[13]).size(),1);
-
-    bl.get_all_chord_darts(bl_faces[14], darts);
-    ASSERT_EQ(darts.size(),4);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[14]).size(),3);
-
-    bl.get_all_chord_darts(bl_faces[15], darts);
-    ASSERT_EQ(darts.size(),2);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[15]).size(),1);
+    for(auto f:bl_faces){
+        std::cout<<bl.get_center_of_face(f)<<std::endl;
+        gmds::math::Point center = bl.get_center_of_face(f);
+        double z_integer_part = std::floor(center.Z());
+        double z_decimal_part = center.Z()-z_integer_part;
+        if(z_decimal_part==0){
+            bl.get_all_chord_darts(f, darts);
+            ASSERT_EQ(darts.size(),4);
+            ASSERT_EQ(bl.get_all_chord_blocks(f).size(),3);
+        }
+        else{
+            bl.get_all_chord_darts(f, darts);
+            ASSERT_EQ(darts.size(),2);
+            ASSERT_EQ(bl.get_all_chord_blocks(f).size(),1);
+        }
+    }
 }
-
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, test_chord_collapse)
 {
@@ -483,9 +439,20 @@ TEST(CurvedBlockingTestSuite, test_chord_collapse)
 
     ASSERT_EQ(bl.get_nb_cells<3>(),27);
 
-    gmds::blocking::CurvedBlocking::Face f = bl_faces[43];
-    std::vector<gmds::blocking::CurvedBlocking::Node> f_nodes = bl.get_nodes_of_face(f);
-    bl.collapse_chord(f,f_nodes[0],f_nodes[2]);
+    bool found_face = false;
+    auto face_id = -1;
+    gmds::math::Point seed(1.5,1.5,0.0);
+    for(auto i=0; i<bl_faces.size() && !found_face;i++){
+        gmds::blocking::CurvedBlocking::Face fi = bl_faces[i];
+        gmds::math::Point ci = bl.get_center_of_face(fi);
+        if(ci.distance2(seed)<0.1){
+            found_face = true;
+            face_id=i;
+        }
+    }
+
+    std::vector<gmds::blocking::CurvedBlocking::Node> f_nodes = bl.get_nodes_of_face(bl_faces[face_id]);
+    bl.collapse_chord(bl_faces[face_id],f_nodes[0],f_nodes[2]);
 
     ASSERT_EQ(bl.get_nb_cells<3>(),24);
 
