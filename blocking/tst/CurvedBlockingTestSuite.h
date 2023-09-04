@@ -403,8 +403,8 @@ TEST(CurvedBlockingTestSuite, test_chord_query)
     std::vector<gmds::blocking::Dart3> darts;
     std::vector<gmds::blocking::CurvedBlocking::Face> bl_faces = bl.get_all_faces();
     bl.get_all_chord_darts(bl_faces[0], darts);
-    ASSERT_EQ(darts.size(),2);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[0]).size(),1);
+    ASSERT_EQ(darts.size(),4);
+    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[0]).size(),3);
 
     bl.get_all_chord_darts(bl_faces[1], darts);
     ASSERT_EQ(darts.size(),2);
@@ -415,12 +415,12 @@ TEST(CurvedBlockingTestSuite, test_chord_query)
     ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[2]).size(),1);
 
     bl.get_all_chord_darts(bl_faces[3], darts);
-    ASSERT_EQ(darts.size(),4);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[3]).size(),3);
+    ASSERT_EQ(darts.size(),2);
+    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[3]).size(),1);
 
     bl.get_all_chord_darts(bl_faces[5], darts);
-    ASSERT_EQ(darts.size(),2);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[5]).size(),1);
+    ASSERT_EQ(darts.size(),4);
+    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[5]).size(),3);
 
     bl.get_all_chord_darts(bl_faces[6], darts);
     ASSERT_EQ(darts.size(),2);
@@ -431,8 +431,8 @@ TEST(CurvedBlockingTestSuite, test_chord_query)
     ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[7]).size(),1);
 
     bl.get_all_chord_darts(bl_faces[8], darts);
-    ASSERT_EQ(darts.size(),4);
-    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[8]).size(),3);
+    ASSERT_EQ(darts.size(),2);
+    ASSERT_EQ(bl.get_all_chord_blocks(bl_faces[8]).size(),1);
 
     bl.get_all_chord_darts(bl_faces[9], darts);
     ASSERT_EQ(darts.size(),2);
