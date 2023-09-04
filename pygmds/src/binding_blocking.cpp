@@ -50,8 +50,8 @@ void bind_blocking(py::module &m){
 	   .def("get_all_sheet_edge_sets", &gmds::blocking::CurvedBlocking::get_all_sheet_edge_sets)
 	   .def("get_projection_info", &gmds::blocking::CurvedBlocking::get_projection_info)
 	   .def("create_block", static_cast<gmds::blocking::CurvedBlocking::Block (gmds::blocking::CurvedBlocking::*)(
-	                           gmds::math::Point &, gmds::math::Point &, gmds::math::Point &, gmds::math::Point &, gmds::math::Point &, gmds::math::Point &,
-	                           gmds::math::Point &, gmds::math::Point &)>(&gmds::blocking::CurvedBlocking::create_block))
+	                           const gmds::math::Point &, const gmds::math::Point &, const gmds::math::Point &, const gmds::math::Point &, const gmds::math::Point &, const gmds::math::Point &,
+	                           const gmds::math::Point &, const gmds::math::Point &)>(&gmds::blocking::CurvedBlocking::create_block))
 	   .def("remove_block", &gmds::blocking::CurvedBlocking::remove_block)
 	   .def("info", &gmds::blocking::CurvedBlocking::info)
 	   .def("convert_to_mesh", &gmds::blocking::CurvedBlocking::convert_to_mesh);
