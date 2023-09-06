@@ -67,9 +67,11 @@ namespace gmds{
         void  buildF() const;
 
         /*------------------------------------------------------------------------*/
-        /** \brief create faces
+        /** \brief create edges, from R if present in the model, or from F if R is not present
          */
         void  buildE() const;
+	     void  buildEfromF() const;
+	     void  buildEfromR() const;
 
         /*------------------------------------------------------------------------*/
         /** \brief Fill up the X2Y connectivity for m_mesh

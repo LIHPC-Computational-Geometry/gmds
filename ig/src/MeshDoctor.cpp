@@ -246,112 +246,143 @@ namespace gmds {
         
         std::map<VirtualEdge::EdgeID, TCellID> tmp_edges;
         
-        // first register the existing edges
-        if(mod.has(E) && mod.has(E2N)) {
-            for(auto id_e : m_mesh->edges())
-            {
-                Edge e = m_mesh->get<Edge>(id_e);
-                std::vector<TCellID> e_nodes = e.getIDs<Node>();
-                VirtualEdge fke(e_nodes[0], e_nodes[1]);
-                tmp_edges[fke.getID()] = e.id();
-            }
-        } else {
+        // check model validity
+        if(!(mod.has(E) && mod.has(E2N))) {
             throw GMDSException("MeshDoctor::buildE E or E2N missing.");
         }
         
         if(mod.has(R) && mod.has(R2N)){
-            for(auto r_id : m_mesh->regions()){
-                Region r = m_mesh->get<Region>(r_id);
-                ECellType r_type = r.type();
-                std::vector<TCellID> r_nodes = r.getIDs<Node>();
-                if(r_type==GMDS_TETRA){
-                    //EDGE 1
-                    addEdge(r_nodes[0],r_nodes[1],tmp_edges);
-                    //EDGE 2
-                    addEdge(r_nodes[0],r_nodes[2],tmp_edges);
-                    //EDGE 3
-                    addEdge(r_nodes[0],r_nodes[3],tmp_edges);
-                    //EDGE 4
-                    addEdge(r_nodes[1],r_nodes[2],tmp_edges);
-                    //EDGE 5
-                    addEdge(r_nodes[1],r_nodes[3],tmp_edges);
-                    //EDGE 6
-                    addEdge(r_nodes[2],r_nodes[3],tmp_edges);
-                }
-                else if(r_type==GMDS_HEX){
-                    addEdge(r_nodes[0],r_nodes[1],tmp_edges);
-                    addEdge(r_nodes[1],r_nodes[2],tmp_edges);
-                    addEdge(r_nodes[2],r_nodes[3],tmp_edges);
-                    addEdge(r_nodes[3],r_nodes[0],tmp_edges);
-                    addEdge(r_nodes[4],r_nodes[5],tmp_edges);
-                    addEdge(r_nodes[5],r_nodes[6],tmp_edges);
-                    addEdge(r_nodes[6],r_nodes[7],tmp_edges);
-                    addEdge(r_nodes[7],r_nodes[4],tmp_edges);
-                    addEdge(r_nodes[0],r_nodes[4],tmp_edges);
-                    addEdge(r_nodes[1],r_nodes[5],tmp_edges);
-                    addEdge(r_nodes[2],r_nodes[6],tmp_edges);
-                    addEdge(r_nodes[3],r_nodes[7],tmp_edges);
-                }
-                else if(r_type==GMDS_PYRAMID){
-                    addEdge(r_nodes[0],r_nodes[1],tmp_edges);
-                    addEdge(r_nodes[1],r_nodes[2],tmp_edges);
-                    addEdge(r_nodes[2],r_nodes[3],tmp_edges);
-                    addEdge(r_nodes[3],r_nodes[0],tmp_edges);
-                    addEdge(r_nodes[0],r_nodes[4],tmp_edges);
-                    addEdge(r_nodes[1],r_nodes[4],tmp_edges);
-                    addEdge(r_nodes[2],r_nodes[4],tmp_edges);
-                    addEdge(r_nodes[3],r_nodes[4],tmp_edges);
-                }
-                else if(r_type==GMDS_PRISM3){
-                    addEdge(r_nodes[0],r_nodes[1],tmp_edges);
-                    addEdge(r_nodes[1],r_nodes[2],tmp_edges);
-                    addEdge(r_nodes[2],r_nodes[0],tmp_edges);
-                    addEdge(r_nodes[3],r_nodes[4],tmp_edges);
-                    addEdge(r_nodes[4],r_nodes[5],tmp_edges);
-                    addEdge(r_nodes[5],r_nodes[3],tmp_edges);
-                    addEdge(r_nodes[0],r_nodes[3],tmp_edges);
-                    addEdge(r_nodes[1],r_nodes[4],tmp_edges);
-                    addEdge(r_nodes[2],r_nodes[5],tmp_edges);
-                }
-                else
-                    throw GMDSException("MeshDoctor::buildE Cell type unknown.");
-            }
+            buildEfromR();
         }
         else if(mod.has(F) && mod.has(F2N)){
-            for(auto f_id: m_mesh->faces()){
-                Face f = m_mesh->get<Face>(f_id);
-                ECellType f_type = f.type();
-                std::vector<TCellID> f_nodes = f.getIDs<Node>();
-                if(f_type==GMDS_TRIANGLE){
-                    //EDGE 1
-                    addEdge(f_nodes[0],f_nodes[1],tmp_edges);
-                    //EDGE 2
-                    addEdge(f_nodes[1],f_nodes[2],tmp_edges);
-                    //EDGE 3
-                    addEdge(f_nodes[2],f_nodes[0],tmp_edges);
-                }
-                else if(f_type==GMDS_QUAD){
-                    //EDGE 1
-                    addEdge(f_nodes[0],f_nodes[1],tmp_edges);
-                    //EDGE 2
-                    addEdge(f_nodes[1],f_nodes[2],tmp_edges);
-                    //EDGE 3
-                    addEdge(f_nodes[2],f_nodes[3],tmp_edges);
-                    //EDGE 4
-                    addEdge(f_nodes[3],f_nodes[0],tmp_edges);
-                }
-                else if(f_type==GMDS_POLYGON){
-                    unsigned int nb_nodes = f_nodes.size();
-                    for(unsigned int i_node=0;i_node<nb_nodes;i_node++){
-                        addEdge(f_nodes[i_node],f_nodes[(i_node+1)%nb_nodes],tmp_edges);
-                    }
-                }
-                else
-                    throw GMDSException("MeshDoctor::buildE Cell type unknown.");
-            }
+		      buildEfromF();
         }
         else
-            throw GMDSException("MeshDoctor::buildE Not yet implemented");
+            throw GMDSException("MeshDoctor::buildE R or F missing");
+    }
+    /*----------------------------------------------------------------------------*/
+    void MeshDoctor::buildEfromF() const
+    {
+	     MeshModel mod = m_mesh->getModel();
+
+	     std::map<VirtualEdge::EdgeID, TCellID> tmp_edges;
+
+	     // first register the existing edges
+	     if(mod.has(E) && mod.has(E2N)) {
+		      for(auto id_e : m_mesh->edges())
+		      {
+			       Edge e = m_mesh->get<Edge>(id_e);
+			       std::vector<TCellID> e_nodes = e.getIDs<Node>();
+			       VirtualEdge fke(e_nodes[0], e_nodes[1]);
+			       tmp_edges[fke.getID()] = e.id();
+		      }
+	     } else {
+		      throw GMDSException("MeshDoctor::buildEfromF E or E2N missing.");
+	     }
+
+	     if(mod.has(F) && mod.has(F2N)){
+		      for(auto f_id: m_mesh->faces()){
+			       Face f = m_mesh->get<Face>(f_id);
+			       ECellType f_type = f.type();
+			       std::vector<TCellID> f_nodes = f.getIDs<Node>();
+			       if(f_type==GMDS_TRIANGLE){
+				        addEdge(f_nodes[0],f_nodes[1],tmp_edges);
+				        addEdge(f_nodes[1],f_nodes[2],tmp_edges);
+				        addEdge(f_nodes[2],f_nodes[0],tmp_edges);
+			       }
+			       else if(f_type==GMDS_QUAD){
+				        addEdge(f_nodes[0],f_nodes[1],tmp_edges);
+				        addEdge(f_nodes[1],f_nodes[2],tmp_edges);
+				        addEdge(f_nodes[2],f_nodes[3],tmp_edges);
+				        addEdge(f_nodes[3],f_nodes[0],tmp_edges);
+			       }
+			       else if(f_type==GMDS_POLYGON){
+				        unsigned int nb_nodes = f_nodes.size();
+				        for(unsigned int i_node=0;i_node<nb_nodes;i_node++){
+					         addEdge(f_nodes[i_node],f_nodes[(i_node+1)%nb_nodes],tmp_edges);
+				        }
+			       }
+			       else
+				        throw GMDSException("MeshDoctor::buildEfromF Cell type unknown.");
+		      }
+	     }
+	     else
+		      throw GMDSException("MeshDoctor::buildEfromF F or F2N missing");
+    }
+    /*----------------------------------------------------------------------------*/
+    void MeshDoctor::buildEfromR() const
+    {
+	     MeshModel mod = m_mesh->getModel();
+
+	     std::map<VirtualEdge::EdgeID, TCellID> tmp_edges;
+
+	     // first register the existing edges
+	     if(mod.has(E) && mod.has(E2N)) {
+		      for(auto id_e : m_mesh->edges())
+		      {
+			       Edge e = m_mesh->get<Edge>(id_e);
+			       std::vector<TCellID> e_nodes = e.getIDs<Node>();
+			       VirtualEdge fke(e_nodes[0], e_nodes[1]);
+			       tmp_edges[fke.getID()] = e.id();
+		      }
+	     } else {
+		      throw GMDSException("MeshDoctor::buildEfromR E or E2N missing.");
+	     }
+
+	     if(mod.has(R) && mod.has(R2N)){
+		      for(auto r_id : m_mesh->regions()){
+			       Region r = m_mesh->get<Region>(r_id);
+			       ECellType r_type = r.type();
+			       std::vector<TCellID> r_nodes = r.getIDs<Node>();
+			       if(r_type==GMDS_TETRA){
+				        addEdge(r_nodes[0],r_nodes[1],tmp_edges);
+				        addEdge(r_nodes[0],r_nodes[2],tmp_edges);
+				        addEdge(r_nodes[0],r_nodes[3],tmp_edges);
+				        addEdge(r_nodes[1],r_nodes[2],tmp_edges);
+				        addEdge(r_nodes[1],r_nodes[3],tmp_edges);
+				        addEdge(r_nodes[2],r_nodes[3],tmp_edges);
+			       }
+			       else if(r_type==GMDS_HEX){
+				        addEdge(r_nodes[0],r_nodes[1],tmp_edges);
+				        addEdge(r_nodes[1],r_nodes[2],tmp_edges);
+				        addEdge(r_nodes[2],r_nodes[3],tmp_edges);
+				        addEdge(r_nodes[3],r_nodes[0],tmp_edges);
+				        addEdge(r_nodes[4],r_nodes[5],tmp_edges);
+				        addEdge(r_nodes[5],r_nodes[6],tmp_edges);
+				        addEdge(r_nodes[6],r_nodes[7],tmp_edges);
+				        addEdge(r_nodes[7],r_nodes[4],tmp_edges);
+				        addEdge(r_nodes[0],r_nodes[4],tmp_edges);
+				        addEdge(r_nodes[1],r_nodes[5],tmp_edges);
+				        addEdge(r_nodes[2],r_nodes[6],tmp_edges);
+				        addEdge(r_nodes[3],r_nodes[7],tmp_edges);
+			       }
+			       else if(r_type==GMDS_PYRAMID){
+				        addEdge(r_nodes[0],r_nodes[1],tmp_edges);
+				        addEdge(r_nodes[1],r_nodes[2],tmp_edges);
+				        addEdge(r_nodes[2],r_nodes[3],tmp_edges);
+				        addEdge(r_nodes[3],r_nodes[0],tmp_edges);
+				        addEdge(r_nodes[0],r_nodes[4],tmp_edges);
+				        addEdge(r_nodes[1],r_nodes[4],tmp_edges);
+				        addEdge(r_nodes[2],r_nodes[4],tmp_edges);
+				        addEdge(r_nodes[3],r_nodes[4],tmp_edges);
+			       }
+			       else if(r_type==GMDS_PRISM3){
+				        addEdge(r_nodes[0],r_nodes[1],tmp_edges);
+				        addEdge(r_nodes[1],r_nodes[2],tmp_edges);
+				        addEdge(r_nodes[2],r_nodes[0],tmp_edges);
+				        addEdge(r_nodes[3],r_nodes[4],tmp_edges);
+				        addEdge(r_nodes[4],r_nodes[5],tmp_edges);
+				        addEdge(r_nodes[5],r_nodes[3],tmp_edges);
+				        addEdge(r_nodes[0],r_nodes[3],tmp_edges);
+				        addEdge(r_nodes[1],r_nodes[4],tmp_edges);
+				        addEdge(r_nodes[2],r_nodes[5],tmp_edges);
+			       }
+			       else
+				        throw GMDSException("MeshDoctor::buildEfromR Cell type unknown.");
+		      }
+	     }
+	     else
+		      throw GMDSException("MeshDoctor::buildEfromR R or R2N missing");
     }
     /*----------------------------------------------------------------------------*/
     void MeshDoctor::addEdge(TCellID AN1, TCellID AN2,
