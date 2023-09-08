@@ -280,6 +280,16 @@ GMDS_ADD_COMPONENT(
 )
 
 
+
+GMDS_ADD_COMPONENT(
+        ANT_COLONY
+        ant_colony
+        GMDSAntColony
+        "Selective padding using ACO ants colony"
+        ON
+        ON                                 # must be covered
+)
+
 #==============================================================================
 set (GMDS_INCLUDE_DIRS APPEND)
 #==============================================================================
