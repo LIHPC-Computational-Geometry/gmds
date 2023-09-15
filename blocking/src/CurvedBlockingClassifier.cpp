@@ -700,3 +700,19 @@ CurvedBlockingClassifier::list_Possible_Cuts()
     return list_actions;
 }
 /*----------------------------------------------------------------------------*/
+bool
+CurvedBlockingClassifier::checkValidity(ClassificationErrors &AErrors) {
+    if(m_blocking->get_all_nodes().size() < m_geom_model->getNbPoints() ||
+        m_blocking->get_all_edges().size() < m_geom_model->getNbCurves() ||
+        m_blocking->get_all_faces().size() < m_geom_model->getNbSurfaces()){
+
+        return false;
+    }
+    else if(AErrors.non_captured_points.size() != 0 ||
+            AErrors.non_captured_curves.size() != 0 ||
+            AErrors.non_captured_surfaces.size() != 0){
+        return false;
+    }
+    return true;
+}
+/*----------------------------------------------------------------------------*/

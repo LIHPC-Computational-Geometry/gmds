@@ -76,5 +76,6 @@ void bind_blocking(py::module &m){
             .def("clear_classification", &gmds::blocking::CurvedBlockingClassifier::clear_classification)
             .def("classify", &gmds::blocking::CurvedBlockingClassifier::classify)
             .def("detect_classification_errors", &gmds::blocking::CurvedBlockingClassifier::detect_classification_errors)
-            .def("actions_cut_current_state", &gmds::blocking::CurvedBlockingClassifier::list_Possible_Cuts);
+            .def("actions_cut_current_state", &gmds::blocking::CurvedBlockingClassifier::list_Possible_Cuts)
+            .def("checkValidity",&gmds::blocking::CurvedBlockingClassifier::checkValidity);
 }

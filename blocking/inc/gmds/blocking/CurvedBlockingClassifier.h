@@ -91,6 +91,10 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 */
 
     std::vector<std::pair<TCellID ,double>> list_Possible_Cuts();
+    /**@brief This method check if the classification between the model and the blocking is valid (all the elements of the model are captured)
+	 * @return If valid, return True, else, return False;
+	 */
+    bool checkValidity(ClassificationErrors& AErrors);
 
 
 
