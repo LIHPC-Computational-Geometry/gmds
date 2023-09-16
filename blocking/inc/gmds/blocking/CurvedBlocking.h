@@ -117,8 +117,10 @@ struct MergeFunctor
 			ACA1.info().geom_dim = ACA2.info().geom_dim;
 			ACA1.info().geom_id = ACA2.info().geom_id;
 		}
-		// nothing to do for the topological information of
-	}
+		// We keep the topological characteristics of the ACA1 cell
+        ACA1.info().topo_dim = ACA1.info().topo_dim;
+        ACA1.info().topo_id = ACA1.info().topo_id;
+    }
 };
 /*----------------------------------------------------------------------------*/
 /** @struct MergeFunctorNode
@@ -144,7 +146,7 @@ struct MergeFunctorNode
 
 	/** @brief Merging function for nodes
 	 * @tparam Cell_attribute
-	 * @param[in] ACA1 the first node attribute
+	 * @param[in/out] ACA1 the first node attribute
 	 * @param[in] ACA2 the second node attribute
 	 */
 	template<class Cell_attribute> void operator()(Cell_attribute &ACA1, Cell_attribute &ACA2)
@@ -169,7 +171,11 @@ struct MergeFunctorNode
 			ACA1.info().geom_id = ACA2.info().geom_id;
 			ACA1.info().point = ACA2.info().point;
 		}
-	}
+        // We keep the topological characteristics of the ACA1 cell
+        ACA1.info().topo_dim = ACA1.info().topo_dim;
+        ACA1.info().topo_id = ACA1.info().topo_id;
+
+    }
 };
 /*----------------------------------------------------------------------------*/
 /** @struct SplitFunctor
@@ -502,6 +508,40 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
      * @return true if the operation succeeded, false if the operation
      */
     bool collapse_chord(const Face AF, const Node AN1, const Node AN2);
+
+    /**@brief Indicates if the set of faces provided in @p AFaces is
+     * a manifold surface that splits the mesh in two pillow-compatible
+     * regions
+     * @param[in] AFaces a set of faces
+     * @return true if we have a manifold surface
+     */
+    bool validate_pillowing_surface(std::vector<Face>& AFaces);
+
+    /**@brief Pillow the set of faces @p AFaces.
+     * @param[in] AFaces a set of faces
+     * @return true if we have a manifold surface, false otherwise.
+     */
+    bool pillow(std::vector<Face>& AFaces);
+
+    /**@brief Smooth the classified block structure along curves.
+     * Simple implementation using a Laplacian-kind approach.
+     * @param[in] ANbIterations number of smoothing stages along curves
+     */
+    void smooth_curves(const int ANbIterations);
+    /**@brief Smooth the classified block structure on surfaces.
+     * Simple implementation using a Laplacian-kind approach.
+     * @param[in] ANbIterations number of smoothing stages on surfaces
+     */
+    void smooth_surfaces(const int ANbIterations);
+    /**@brief Smooth the classified block structure inside the volume
+     * Simple implementation using a Laplacian-kind approach.
+     * @param[in] ANbIterations number of smoothing stages
+     */
+    void smooth_volumes(const int ANbIterations);
+    /**@brief Smooth the whole classified block structure. Simple implementation using a Laplacian-kind approach.
+     * @param[in] ANbIterations number of smoothing stages in each dimension (curves, surfaces, volume)
+     */
+    void smooth(const int ANbIterations);
 	/**@brief Low level operation that @p TDim-sew two darts
 	 * @tparam TDim sewing dimension
 	 * @param[in] AD1 First dart
@@ -550,6 +590,20 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 
  private:
 
+    /**@brief Mark with @p AMark all the darts of orbit <0,1>(@p ADart)
+     * @param[in] ADart  dimension of the associated geometric cell
+     * @param[in] AMark the mark we use
+     */
+    void mark_half_face(Dart3 ADart, int AMark);
+
+    /**@brief During the pillowing operation, we have to duplicate nodes. This procedure encapsulates this single
+     *        algorithm. Starting from a node @p ANode and a boolean mark @p AMark, we information to know where to move
+     *        the node
+     * @param[in] ANode the node to duplicate
+     * @param[in] AMark the mark that indicates where to pillow. Some darts of @p Anode are marked with this mark
+     * @return a tuple [topo_dim, topo_id, geom_dim, geom_id] that fully describes the cells where to move @p ANode
+     */
+    std::tuple<int,int,int,int> compute_pillow_twin_node(const Node& ANode, const int AMark);
 	/**@brief Create a node attribute in the n-gmap
 	 *
 	 * @param[in] AGeomDim dimension of the associated geometric cell
