@@ -69,10 +69,10 @@ namespace gmds{
 	      virtual void project(gmds::math::Point& AP) const =0;
 
 	      /*------------------------------------------------------------------------*/
-	      /** \brief Get the closest point from AP on the surface
+	      /** \brief Get the closest point from AP on the entity
              *  \param AP a 3D point
              *
-             *  \return the closest point of APoint on the surface
+             *  \return the closest point of APoint on the entity
 	       */
 	      virtual math::Point closestPoint(const math::Point& AP) const =0;
 

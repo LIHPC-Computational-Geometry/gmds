@@ -875,6 +875,21 @@ FACManager::getPoints() const
 	getPoints(pnts);
 	return pnts;
 }
+
+/*----------------------------------------------------------------------------*/
+GeomEntity *
+FACManager::getEntity(gmds::TInt AID, gmds::TInt ADim)
+{
+    if(ADim==0)
+        return getPoint(AID);
+    else if(ADim==1)
+        return getCurve(AID);
+    else if(ADim==2)
+        return getSurface(AID);
+    else if(ADim==3)
+        return getVolume(AID);
+    return nullptr;
+}
 /*----------------------------------------------------------------------------*/
 GeomPoint *
 FACManager::getPoint(const gmds::TInt AID)

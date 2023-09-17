@@ -180,6 +180,13 @@ class GMDSCadFac_API FACManager : public GeomManager
 	void getVolumes(std::vector<GeomVolume *> &volumes) const;
 	std::vector<GeomVolume *> getVolumes() const;
 
+
+    /*------------------------------------------------------------------------*/
+    /** \brief  Gives access to the entity of id @AID and dimension @p ADim.
+     *          Return NullPtr if it does not exist.
+     *  \return A point
+     */
+    virtual GeomEntity* getEntity(TInt AID, TInt ADim);
 	/*------------------------------------------------------------------------*/
 	/** \brief  Gives access to the point of id @AID, Return NullPtr if it does
 	 *          not exist.
