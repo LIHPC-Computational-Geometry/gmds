@@ -37,6 +37,8 @@ struct CellInfo
 	int topo_dim;
 	/*** unique id of the topological cell */
 	int topo_id;
+    /*** link to the cad manager to have access to geometric cells */
+    cad::GeomManager* geom_manager;
 	/*** dimension of the geometrical cell we are classifid on */
 	int geom_dim;
 	/*** unique id of the geomtrical cell */
@@ -45,12 +47,13 @@ struct CellInfo
 	static int m_counter_global_id;
 
 	/** @brief Constructor
+	 * @param AManager the geometric manager to access cells
 	 * @param ATopoDim Cell dimension
 	 * @param AGeomDim on-classify geometric cell dimension (4 if not classified)
 	 * @param AGeomId on-classify geometric cell unique id
 	 */
-	CellInfo(const int ATopoDim = 4, const int AGeomDim = 4, const int AGeomId = NullID) :
-	  topo_dim(ATopoDim), topo_id(m_counter_global_id++), geom_dim(AGeomDim), geom_id(AGeomId)
+	CellInfo(cad::GeomManager* AManager, const int ATopoDim = 4, const int AGeomDim = 4, const int AGeomId = NullID) :
+	  topo_dim(ATopoDim), topo_id(m_counter_global_id++), geom_manager(AManager),geom_dim(AGeomDim), geom_id(AGeomId)
 	{
 	}
 };
@@ -64,11 +67,13 @@ struct NodeInfo : CellInfo
 	/*** node location in space, i.e. a single point */
 	math::Point point;
 	/** @brief Constructor
+	 * @param AManager the geometric manager to access cells
 	 * @param AGeomDim on-classify geometric cell dimension (4 if not classified)
 	 * @param AGeomId  on-classify geometric cell unique id
+	 * @param APoint   geometric location
 	 */
-	NodeInfo(const int AGeomDim = 4, const int AGeomId = NullID, const math::Point &APoint = math::Point(0, 0, 0)) :
-	  CellInfo(0, AGeomDim, AGeomId), point(APoint)
+	NodeInfo(cad::GeomManager* AManager, const int AGeomDim = 4, const int AGeomId = NullID, const math::Point &APoint = math::Point(0, 0, 0)) :
+	  CellInfo(AManager, 0, AGeomDim, AGeomId), point(APoint)
 	{
 	}
 };
@@ -155,7 +160,10 @@ struct MergeFunctorNode
 			if (ACA1.info().geom_id == ACA2.info().geom_id) {
 				// nodes are clasified on the same geometrical entity!
 				ACA1.info().point = 0.5 * (ACA1.info().point + ACA2.info().point);
-				// TODO: add the projection stage on the geometric entity
+				//projection on the geom entity
+                cad::GeomEntity * geom_cell = ACA1.info().geom_manager->getEntity(ACA1.info().geom_id,ACA1.info().geom_dim);
+                if(geom_cell!= nullptr)
+                    ACA1.info().point = geom_cell->closestPoint(ACA1.info().point);
 			}
 			else
 				throw GMDSException("Classification error!!!");
@@ -174,7 +182,6 @@ struct MergeFunctorNode
         // We keep the topological characteristics of the ACA1 cell
         ACA1.info().topo_dim = ACA1.info().topo_dim;
         ACA1.info().topo_id = ACA1.info().topo_id;
-
     }
 };
 /*----------------------------------------------------------------------------*/

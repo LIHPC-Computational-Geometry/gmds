@@ -113,6 +113,12 @@ public:
 	   virtual  std::vector<GeomVolume*> getVolumes() const =0;
 
         /*------------------------------------------------------------------------*/
+        /** \brief  Gives access to the entity of id @AID and dimension @p ADim.
+         *          Return NullPtr if it does not exist.
+         *  \return A point
+         */
+        virtual GeomEntity* getEntity(TInt AID, TInt ADim)=0;
+        /*------------------------------------------------------------------------*/
         /** \brief  Gives access to the point of id @AID, Return NullPtr if it does
          *          not exist.
          *  \return A point

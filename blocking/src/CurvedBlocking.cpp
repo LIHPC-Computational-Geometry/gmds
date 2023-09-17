@@ -51,25 +51,25 @@ CurvedBlocking::geom_model() {
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Node
 CurvedBlocking::create_node(const int AGeomDim, const int AGeomId, const math::Point &APoint) {
-    return m_gmap.create_attribute<0>(NodeInfo(AGeomDim, AGeomId, APoint));
+    return m_gmap.create_attribute<0>(NodeInfo(m_geom_model,AGeomDim, AGeomId, APoint));
 }
 
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Edge
 CurvedBlocking::create_edge(const int AGeomDim, const int AGeomId) {
-    return m_gmap.create_attribute<1>(CellInfo(1, AGeomDim, AGeomId));
+    return m_gmap.create_attribute<1>(CellInfo(m_geom_model,1, AGeomDim, AGeomId));
 }
 
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Face
 CurvedBlocking::create_face(const int AGeomDim, const int AGeomId) {
-    return m_gmap.create_attribute<2>(CellInfo(2, AGeomDim, AGeomId));
+    return m_gmap.create_attribute<2>(CellInfo(m_geom_model,2, AGeomDim, AGeomId));
 }
 
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Block
 CurvedBlocking::create_block(const int AGeomDim, const int AGeomId) {
-    return m_gmap.create_attribute<3>(CellInfo(3, AGeomDim, AGeomId));
+    return m_gmap.create_attribute<3>(CellInfo(m_geom_model,3, AGeomDim, AGeomId));
 }
 
 /*----------------------------------------------------------------------------*/
