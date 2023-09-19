@@ -154,6 +154,13 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	 */
 	bool isThisPathValidForTemplates(Global_Feature_Edge& GFE);
 	/*-------------------------------------------------------------------*/
+	/** @brief Return true if the path is a valid loop path to apply templates.
+	 	* \param[in] GFE the "path"
+		*
+		* \return true if the path is valid for templates, false otherwise.
+	 */
+	bool isThisValidLoopPath(Global_Feature_Edge& GFE);
+	/*-------------------------------------------------------------------*/
 	/** @brief
 	 	* \param[in]
 		*
@@ -185,6 +192,13 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	 * \return
 	 */
 	bool isValidNodeForPathLimit(TCellID n_id, int type_path);
+	/*-------------------------------------------------------------------*/
+	/** @brief Clean the edges classification of the front
+	 	* \param[in]
+		*
+		* \return
+	 */
+	void FrontEdgesClassificationCleaner();
 	/*-------------------------------------------------------------------*/
  private:
 	/** the quad mesh we work on */

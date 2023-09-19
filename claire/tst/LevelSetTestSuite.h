@@ -953,6 +953,170 @@ TEST(LevelSetTestClass, LevelSet_Test_Unit_C1_3D)
 
 /*----------------------------------------------------------------------------*/
 
+TEST(LevelSetTestClass, LevelSet_Apollo_TEST)
+{
+	Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Aero/2D/Apollo_2D_100k.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.setDataOptions(gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	Variable<int> *var_material = m.getVariable<int, GMDS_FACE>("CellEntityIds");
+	Variable<double> *var_dist = m.newVariable<double, GMDS_NODE>("GMDS_Distance");
+	std::vector<TCellID> bnd;
+	std::vector<TCellID> bnd_edges;
+	TInt markTreatedNodes = m.newMark<gmds::Node>();
+
+	for (auto n_id:m.nodes())
+	{
+		Node n = m.get<Node>(n_id);
+		//std::cout << n.get<Face>().size() << std::endl;
+		int compteur_mat1(0);
+		int compteur_mat2(0);
+		for (auto f:n.get<Face>())
+		{
+			//std::cout << "Face 1, mat " << var_material->value(f.id()) << std::endl;
+			if (var_material->value(f.id()) == 1)
+			{
+				compteur_mat1++;
+			}
+			else if (var_material->value(f.id())==-1)
+			{
+				compteur_mat2++;
+			}
+		}
+		//std::cout << "Hello" << std::endl;
+		if (compteur_mat1 != 0 && compteur_mat2 != 0)
+		{
+			bnd.push_back(n_id);
+			var_dist->set(n_id, 0);
+			m.mark(n, markTreatedNodes);
+		}
+	}
+
+	// Compute boundary edges
+	for (auto e_id:m.edges())
+	{
+		Edge e = m.get<Edge>(e_id);
+		std::vector<Face> e_faces = e.get<Face>();
+		if ( e_faces.size() == 2
+		   && (var_material->value(e_faces[0].id()) != var_material->value(e_faces[1].id())) )
+		{
+			bnd_edges.push_back(e.id());
+		}
+	}
+
+	// Compute dist for other nodes
+	for (auto n_id:m.nodes())
+	{
+		Node n = m.get<Node>(n_id);
+		if (!m.isMarked(n, markTreatedNodes))
+		{
+			double min_dist = std::numeric_limits<double>::max() ;
+			// Check the dist to the nodes
+			/*
+			for (auto n_bnd_id:bnd)
+			{
+				Node n_bnd = m.get<Node>(n_bnd_id);
+				if ((n.point()-n_bnd.point()).norm() < min_dist)
+				{
+					min_dist = (n.point()-n_bnd.point()).norm() ;
+				}
+			}
+			 */
+			// Check the dist to the edges
+			for (auto e_id:bnd_edges)
+			{
+				math::Segment e_seg = m.get<Edge>(e_id).segment();
+				math::Point p_proj = n.point();
+				p_proj = e_seg.project(p_proj);
+				if ((n.point()-p_proj).norm() < min_dist)
+				{
+					min_dist = (n.point()-p_proj).norm() ;
+				}
+			}
+			var_dist->set(n_id, var_material->value(n.get<Face>()[0].id())*min_dist);
+			m.mark(n, markTreatedNodes);
+		}
+	}
+
+
+	m.unmarkAll<Node>(markTreatedNodes);
+	m.freeMark<Node>(markTreatedNodes);
+
+	ASSERT_EQ(0,0);
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("APOLLO_100k_Mesh.vtk");
+
+	for (auto n_id:m.nodes())
+	{
+		Node n = m.get<Node>(n_id);
+		n.setY(var_dist->value(n_id));
+	}
+
+	gmds::VTKWriter vtkWriter2(&ioService);
+	vtkWriter2.setCellOptions(gmds::N|gmds::F);
+	vtkWriter2.setDataOptions(gmds::N|gmds::F);
+	vtkWriter2.write("APOLLO_100k_LS_Trick.vtk");
+
+}
+
+
+TEST(LevelSetTestClass, MFEM_Test)
+{
+	// Mesh
+	Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir+"/Aero/2D/Apollo_Ext_20k.vtk";
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N|gmds::F);
+	vtkReader.read(vtk_file);
+
+	gmds::MeshDoctor doc(&m);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+	/*
+	// Mesh 2
+	Mesh m2(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
+	std::string vtk_file2 = dir+"/Aero/2D/APOLLO_100k_LS_Trick.vtk";
+
+	gmds::IGMeshIOService ioService2(&m2);
+	gmds::VTKReader vtkReader2(&ioService2);
+	vtkReader2.setCellOptions(gmds::N|gmds::F);
+	vtkReader2.read(vtk_file2);
+
+	gmds::MeshDoctor doc2(&m2);
+	doc2.buildEdgesAndX2E();
+	doc2.updateUpwardConnectivity();
+
+	Variable<double> *var_dist = m.newVariable<double, GMDS_NODE>("GMDS_Distance");
+
+	for (auto n_id:m.nodes())
+	{
+		var_dist->set(n_id, m2.get<Node>(n_id).Y());
+	}
+	*/
+	ASSERT_EQ(0,0);
+
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("APOLLO_Ext_20k.vtk");
+}
+
 
 
 
