@@ -106,3 +106,10 @@ if(WITH_TEST)
     add_subdirectory(tst)
 endif(WITH_TEST)
 #==============================================================================
+
+#==============================================================================
+# EXECUTABLES
+#==============================================================================
+add_executable(blocking src/blocking_exe.cpp)
+target_link_libraries(blocking PRIVATE ${GMDS_LIB})
+target_compile_features(blocking PUBLIC cxx_std_14)
