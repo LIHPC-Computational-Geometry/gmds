@@ -110,11 +110,11 @@ TEST(ExecutionActionsTestSuite,cube){
 	gmds::VTKWriter vtk_writer(&ios);
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	vtk_writer.write("debug_blocking.vtk");
+	vtk_writer.write("cube_blocking.vtk");
 	gmds::VTKWriter vtk_writer_edges(&ios);
 	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
 	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
-	vtk_writer_edges.write("debug_blocking_edges.vtk");
+	vtk_writer_edges.write("cube_blocking_edges.vtk");
 }
 
 TEST(ExecutionActionsTestSuite,cb1){
@@ -231,11 +231,11 @@ TEST(ExecutionActionsTestSuite,cb1){
 	gmds::VTKWriter vtk_writer(&ios);
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	vtk_writer.write("debug_blocking.vtk");
+	vtk_writer.write("cb1_blocking.vtk");
 	gmds::VTKWriter vtk_writer_edges(&ios);
 	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
 	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
-	vtk_writer_edges.write("debug_blocking_edges.vtk");
+	vtk_writer_edges.write("cb1_blocking_edges.vtk");
 }
 
 
@@ -363,15 +363,15 @@ TEST(ExecutionActionsTestSuite,cb2){
 	gmds::VTKWriter vtk_writer(&ios);
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	vtk_writer.write("debug_blocking.vtk");
+	vtk_writer.write("cb2_blocking.vtk");
 	gmds::VTKWriter vtk_writer_edges(&ios);
 	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
 	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
-	vtk_writer_edges.write("debug_blocking_edges.vtk");
+	vtk_writer_edges.write("cb2_blocking_edges.vtk");
 	gmds::VTKWriter vtk_writer_faces(&ios);
 	vtk_writer_faces.setCellOptions(gmds::N|gmds::F);
 	vtk_writer_faces.setDataOptions(gmds::N|gmds::F);
-	vtk_writer_faces.write("debug_blocking_faces.vtk");
+	vtk_writer_faces.write("cb2_blocking_faces.vtk");
 }
 
 
@@ -489,11 +489,11 @@ TEST(ExecutionActionsTestSuite,cb3){
 	gmds::VTKWriter vtk_writer(&ios);
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	vtk_writer.write("debug_blocking.vtk");
+	vtk_writer.write("cb3_blocking.vtk");
 	gmds::VTKWriter vtk_writer_edges(&ios);
 	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
 	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
-	vtk_writer_edges.write("debug_blocking_edges.vtk");
+	vtk_writer_edges.write("cb3_blocking_edges.vtk");
 }
 
 
@@ -618,11 +618,11 @@ TEST(ExecutionActionsTestSuite,cb4){
 	gmds::VTKWriter vtk_writer(&ios);
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	vtk_writer.write("debug_blocking.vtk");
+	vtk_writer.write("cb4_blocking.vtk");
 	gmds::VTKWriter vtk_writer_edges(&ios);
 	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
 	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
-	vtk_writer_edges.write("debug_blocking_edges.vtk");
+	vtk_writer_edges.write("cb4_blocking_edges.vtk");
 }
 
 TEST(ExecutionActionsTestSuite,cb5){
@@ -690,10 +690,10 @@ TEST(ExecutionActionsTestSuite,cb5){
 	gmds::VTKWriter vtk_writer(&ios);
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	vtk_writer.write("debug_blocking.vtk");
+	vtk_writer.write("cb5_blocking.vtk");
 	gmds::VTKWriter vtk_writer_edges(&ios);
 	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
 	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
-	vtk_writer_edges.write("debug_blocking_edges.vtk");
+	vtk_writer_edges.write("cb5_blocking_edges.vtk");
 }
 
