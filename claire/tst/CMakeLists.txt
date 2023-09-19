@@ -17,7 +17,7 @@ add_executable(GMDS_CLAIRE_TEST
         NodeNeighbourhoodOnFront_3DTestSuite.h
         MeshAlignmentTestSuite.h
         Front_3DTestSuite.h
-        FrontTestSuite.h)
+        FrontTestSuite.h PatternEdgeTestSuite.h)
 
 target_link_libraries(GMDS_CLAIRE_TEST PUBLIC
         ${GMDS_LIB}

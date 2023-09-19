@@ -40,7 +40,7 @@ AdvectedPointRK4_3D::STATUS AdvectedPointRK4_3D::execute()
 
 	if (region_id == NullID)
 	{
-		std::cout << "Tetra pas trouvé, point: " << m_Pstart << std::endl;
+		//std::cout << "Tetra pas trouvé, point: " << m_Pstart << std::endl;
 		//exit(1);
 		// The node considered is not in the domain. Then, we replace it by the closest node of the tetra mesh.
 		gmds::Cell::Data data = m_fl->find(m_Pstart);

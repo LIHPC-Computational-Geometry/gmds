@@ -169,11 +169,8 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	TInt mark_edgesTreated = m_meshH->newMark<Edge>();
 	TInt mark_facesTreated = m_meshH->newMark<Face>();
 
-
 	TInt mark_EdgesTemplates = Classification.getMarkEdgesTemplates();
 	TInt mark_NodesTemplates = Classification.getMarkNodesTemplates();
-	
-
 
 	Variable<int>* var_TEST = m_meshH->getOrCreateVariable<int, GMDS_NODE>("GMDS_TEST_NODES");
 
@@ -192,6 +189,8 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 			                                          m_meshT, &m_fl,
 			                                          dist_cible, A_distance, A_vectors) ;
 			p.execute();
+			std::vector<Region> r_newHex = p.getNewHex() ;
+			m_Patterns->set(r_newHex[0].id(), 1);
 			if (m_params_aero.with_debug_files)
 			{
 				WriteVTKforDebug();
@@ -208,6 +207,8 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 			                     m_meshT, &m_fl,
 			                     dist_cible, A_distance, A_vectors) ;
 			p.execute();
+			std::vector<Region> r_newHex = p.getNewHex() ;
+			m_Patterns->set(r_newHex[0].id(), 2);
 			if (m_params_aero.with_debug_files)
 			{
 				WriteVTKforDebug();
@@ -222,6 +223,8 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 			                     m_meshT, &m_fl,
 			                     dist_cible, A_distance, A_vectors) ;
 			p.execute();
+			std::vector<Region> r_newHex = p.getNewHex() ;
+			m_Patterns->set(r_newHex[0].id(), 3);
 			if (m_params_aero.with_debug_files)
 			{
 				WriteVTKforDebug();
@@ -236,6 +239,8 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 			                     m_meshT, &m_fl,
 			                     dist_cible, A_distance, A_vectors) ;
 			p.execute();
+			std::vector<Region> r_newHex = p.getNewHex() ;
+			m_Patterns->set(r_newHex[0].id(), 4);
 			if (m_params_aero.with_debug_files)
 			{
 				WriteVTKforDebug();
@@ -250,6 +255,8 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 			                  m_meshT, &m_fl,
 			                  dist_cible, A_distance, A_vectors) ;
 			p.execute();
+			std::vector<Region> r_newHex = p.getNewHex() ;
+			m_Patterns->set(r_newHex[0].id(), 5);
 			if (m_params_aero.with_debug_files)
 			{
 				WriteVTKforDebug();
@@ -265,6 +272,9 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 			                         m_meshT, &m_fl,
 			                         dist_cible, A_distance, A_vectors) ;
 			p.execute();
+			std::vector<Region> r_newHex = p.getNewHex() ;
+			m_Patterns->set(r_newHex[0].id(), 6);
+			m_Patterns->set(r_newHex[1].id(), 6);
 			if (m_params_aero.with_debug_files)
 			{
 				WriteVTKforDebug();
@@ -280,6 +290,9 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 			                         m_meshT, &m_fl,
 			                         dist_cible, A_distance, A_vectors) ;
 			p.execute();
+			std::vector<Region> r_newHex = p.getNewHex() ;
+			m_Patterns->set(r_newHex[0].id(), 7);
+			m_Patterns->set(r_newHex[1].id(), 7);
 			if (m_params_aero.with_debug_files)
 			{
 				WriteVTKforDebug();
@@ -295,6 +308,9 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 			                              m_meshT, &m_fl,
 			                              dist_cible, A_distance, A_vectors) ;
 			p.execute();
+			std::vector<Region> r_newHex = p.getNewHex() ;
+			m_Patterns->set(r_newHex[0].id(), 8);
+			m_Patterns->set(r_newHex[1].id(), 8);
 			if (m_params_aero.with_debug_files)
 			{
 				WriteVTKforDebug();
@@ -317,11 +333,13 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		    && !StructManager.isEdgeTreated(e_id)
 		    && m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_EdgesTemplates))
 		{
-			std::cout << "Template EDGE: Corner" << std::endl;
+			//std::cout << "Template EDGE: Corner" << std::endl;
 			PatternEdgeCorner p(m_meshH, &Front_IN, e_id, &StructManager,
 			                     m_meshT, &m_fl,
 			                     dist_cible, A_distance, A_vectors) ;
 			p.execute();
+			std::vector<Region> r_newHex = p.getNewHex() ;
+			m_Patterns->set(r_newHex[0].id(), -1);
 			if (m_params_aero.with_debug_files)
 			{
 				WriteVTKforDebug();
@@ -335,11 +353,13 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		{
 			//TCellID r_id = TemplateEdgeEnd(Front_IN, e_id, dist_cible, mark_edgesTreated, mark_facesTreated);
 			//m_Patterns->set(r_id, -2);
-			std::cout << "Template EDGE: END" << std::endl;
+			//std::cout << "Template EDGE: END" << std::endl;
 			PatternEdgeEnd p(m_meshH, &Front_IN, e_id, &StructManager,
 			                    m_meshT, &m_fl,
 			                    dist_cible, A_distance, A_vectors) ;
 			p.execute();
+			std::vector<Region> r_newHex = p.getNewHex() ;
+			m_Patterns->set(r_newHex[0].id(), -2);
 			if (m_params_aero.with_debug_files)
 			{
 				WriteVTKforDebug();
@@ -352,11 +372,14 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 			//std::vector<TCellID> r_id = TemplateEdgeReversal(Front_IN, e_id, dist_cible, A_distance, mark_edgesTreated, mark_facesTreated);
 			//m_Patterns->set(r_id[0], -3);
 			//m_Patterns->set(r_id[1], -3);
-			std::cout << "Template EDGE: Reversal" << std::endl;
+			//std::cout << "Template EDGE: Reversal" << std::endl;
 			PatternEdgeReversal p(m_meshH, &Front_IN, e_id, &StructManager,
 			                    m_meshT, &m_fl,
 			                    dist_cible, A_distance, A_vectors) ;
 			p.execute();
+			std::vector<Region> r_newHex = p.getNewHex() ;
+			m_Patterns->set(r_newHex[0].id(), -3);
+			m_Patterns->set(r_newHex[1].id(), -3);
 			if (m_params_aero.with_debug_files)
 			{
 				WriteVTKforDebug();
@@ -411,6 +434,7 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		    && Front_OUT.edgeFacesOnFront(m_meshH, e_id).size() != 2)
 		{
 			std::cout << "ATTENTION: the layer is not valid. At least one edge of the front has not 2 faces." << std::endl;
+			std::cout << "Edge... " << e_id << std::endl;
 			exit(1);
 		}
 	}
