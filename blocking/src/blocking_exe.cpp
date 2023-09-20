@@ -36,13 +36,29 @@ int main(int argc, char* argv[])
 {
 	std::cout << "============== CLASSIFICATION ================" << std::endl;
 
+	/*
+	 * The folder with the shapes to test needs to be defined like that :
+	 * DataFolder/
+	 * 	||
+	 *   	\/
+	 * -folderShape1 / folderShape1.vtk (the geometry file) folderShape1_blocking.vtk (the blocking file)
+	 * -folderShape2 / folderShape2.vtk (the geometry file) folderShape2_blocking.vtk (the blocking file)
+	 * ....
+	 * -folderShapeX / folderShapeX.vtk (the geometry file) folderShapeX_blocking.vtk (the blocking file)
+	 *
+	 * The file on entry is just a list of the folder's name:
+	 * folderShape1
+	 * folderShape2
+	 * ...
+	 * folderShapeX
+	*/
 	if (argc != 2) {
 		std::cout << "Require one paramater : \n";
 		std::cout << "  - [IN ] the file with the name of the folder to go, \n";
 		throw gmds::GMDSException("Wrong number of parameters");
 	}
 	auto file = std::string(argv[1]);
-
+	//We browse the file until the end
 	std::ifstream m_stream(file);
 	std::string line;
 	while(std::getline(m_stream,line)){
@@ -52,10 +68,15 @@ int main(int argc, char* argv[])
 		//==================================================================
 		std::string file_geom, file_mesh, file_out;
 
-		std::string path_folder = "/home/bourmaudp/Documents/DATA/Easy_Shapes_Class/";
-		std::string path_folder_shape = path_folder+line+"/";
+		//The path of the data folder
+		std::string path_data_folder = "/home/bourmaudp/Documents/DATA/Easy_Shapes_Class/";
+		//Path of the current folder with the geometry and the blocking
+		std::string path_folder_shape = path_data_folder+line+"/";
+		//Geometry file
 		file_geom = path_folder_shape+line+".vtk";
+		//Blocking file
 		file_mesh = path_folder_shape+line+"_blocking.vtk";
+		//The path to save the classification and the name of the file
 		file_out = path_folder_shape+line+"_blocking_class_save.vtk";
 		std::cout << "Parameters " << std::endl;
 		std::cout << "  - Geometry file: " << file_geom << std::endl;
@@ -73,7 +94,7 @@ int main(int argc, char* argv[])
 		// MESH READING
 		//==================================================================
 		std::cout<<"> Start mesh reading"<<std::endl;
-		//the used model is specified according to the geom smoother requirements.
+		//the used model is specified according to the class requirements.
 		Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::R|gmds::R2N));
 
 		IGMeshIOService ioService2(&m);
