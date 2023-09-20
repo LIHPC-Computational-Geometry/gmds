@@ -8,6 +8,8 @@
 #include <gmds/blocking/Blocking.h>
 #include <gmds/blocking/CurvedBlocking.h>
 #include <gmds/blocking/CurvedBlockingClassifier.h>
+
+#include "fstream"
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -34,71 +36,76 @@ int main(int argc, char* argv[])
 {
 	std::cout << "============== CLASSIFICATION ================" << std::endl;
 
-	//==================================================================
-	// PARAMETERS' PARSING
-	//==================================================================
-	std::string file_geom, file_mesh, file_out;
-	if (argc != 4) {
-		std::cout << "Require three paramaters : \n";
-		std::cout << "  - [IN ] tetrahedral mesh (.vtk) that describes the geometry, \n";
-		std::cout << "  - [IN ] mesh (.vtk) that describes the blocking to be classified, \n";
-		std::cout << "  - [OUT] the name of the classified blocking (.vtk). \n" << std::endl;
+	if (argc != 2) {
+		std::cout << "Require one paramater : \n";
+		std::cout << "  - [IN ] the file with the name of the folder to go, \n";
 		throw gmds::GMDSException("Wrong number of parameters");
 	}
+	auto file = std::string(argv[1]);
 
-	file_geom = std::string(argv[1]);
-	file_mesh = std::string(argv[2]);
-	file_out = std::string(argv[3]);
-	std::cout << "Parameters " << std::endl;
-	std::cout << "  - Geometry file: " << file_geom << std::endl;
-	std::cout << "  - Mesh file    : " << file_mesh << std::endl;
-	std::cout << "  - Output file  : " << file_out << std::endl;
-	std::cout << "=======================================" << std::endl;
+	std::ifstream m_stream(file);
+	std::string line;
+	while(std::getline(m_stream,line)){
 
-	//==================================================================
-	// GEOMETRY READING
-	//==================================================================
-	gmds::cad::FACManager geom_model;
-	set_up_geom_model(&geom_model,file_geom);
+		//==================================================================
+		// PARAMETERS PARSING
+		//==================================================================
+		std::string file_geom, file_mesh, file_out;
 
-	//==================================================================
-	// MESH READING
-	//==================================================================
-	std::cout<<"> Start mesh reading"<<std::endl;
-	//the used model is specified according to the geom smoother requirements.
-	Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::R|gmds::R2N));
+		std::string path_folder = "/home/bourmaudp/Documents/DATA/Easy_Shapes_Class/";
+		std::string path_folder_shape = path_folder+line+"/";
+		file_geom = path_folder_shape+line+".vtk";
+		file_mesh = path_folder_shape+line+"_blocking.vtk";
+		file_out = path_folder_shape+line+"_blocking_class_save.vtk";
+		std::cout << "Parameters " << std::endl;
+		std::cout << "  - Geometry file: " << file_geom << std::endl;
+		std::cout << "  - Mesh file    : " << file_mesh << std::endl;
+		std::cout << "  - Output file  : " << file_out << std::endl;
+		std::cout << "=======================================" << std::endl;
 
-	IGMeshIOService ioService2(&m);
-	VTKReader vtkReader2(&ioService2);
-	vtkReader2.setCellOptions(N|R);
-	vtkReader2.read(file_mesh);
-	MeshDoctor doc2(&m);
-	doc2.updateUpwardConnectivity();
+		//==================================================================
+		// GEOMETRY READING
+		//==================================================================
+		gmds::cad::FACManager geom_model;
+		set_up_geom_model(&geom_model,file_geom);
 
-	//==================================================================
-	// CREATE THE BLOCKING FROM THE MESH
-	//==================================================================
-	gmds::blocking::CurvedBlocking bl(&geom_model, false);
-	bl.init_from_mesh(m);
+		//==================================================================
+		// MESH READING
+		//==================================================================
+		std::cout<<"> Start mesh reading"<<std::endl;
+		//the used model is specified according to the geom smoother requirements.
+		Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::R|gmds::R2N));
 
-	//==================================================================
-	// CLASSIFICATION BETWEEN THE BLOCKING AND THE GEOMETRY
-	//==================================================================
-	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
-	classifier.clear_classification();
-	auto errors = classifier.classify();
+		IGMeshIOService ioService2(&m);
+		VTKReader vtkReader2(&ioService2);
+		vtkReader2.setCellOptions(N|R);
+		vtkReader2.read(file_mesh);
+		MeshDoctor doc2(&m);
+		doc2.updateUpwardConnectivity();
 
-	//==================================================================
-	// SAVE CLASSIFICATION
-	//==================================================================
-	gmds::Mesh blockingMesh(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
-	bl.convert_to_mesh(blockingMesh);
+		//==================================================================
+		// CREATE THE BLOCKING FROM THE MESH
+		//==================================================================
+		gmds::blocking::CurvedBlocking bl(&geom_model, false);
+		bl.init_from_mesh(m);
 
-	gmds::IGMeshIOService ios(&blockingMesh);
-	gmds::VTKWriter vtk_writer(&ios);
-	vtk_writer.setCellOptions(gmds::N|gmds::R);
-	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	vtk_writer.write(file_out);
+		//==================================================================
+		// CLASSIFICATION BETWEEN THE BLOCKING AND THE GEOMETRY
+		//==================================================================
+		gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+		classifier.clear_classification();
+		auto errors = classifier.classify();
 
+		//==================================================================
+		// SAVE CLASSIFICATION
+		//==================================================================
+		gmds::Mesh blockingMesh(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
+		bl.convert_to_mesh(blockingMesh);
 
+		gmds::IGMeshIOService ios(&blockingMesh);
+		gmds::VTKWriter vtk_writer(&ios);
+		vtk_writer.setCellOptions(gmds::N|gmds::R);
+		vtk_writer.setDataOptions(gmds::N|gmds::R);
+		vtk_writer.write(file_out);
+	}
 }
