@@ -54,6 +54,7 @@ namespace gmds{
         GMDS_FACE, GMDS_QUAD, GMDS_TRIANGLE, GMDS_POLYGON, 		/* 2D*/
         GMDS_REGION, GMDS_HEX, GMDS_TETRA, GMDS_PRISM3, GMDS_PRISM5,	/* 3D*/
         GMDS_PRISM6, GMDS_PYRAMID, GMDS_POLYHEDRA,			/* 3D*/
+	     GMDS_VOXEL, /* 3D*/ // not used, read as hex from vtk files
         GMDS_UNKNOWN
     } ECellType;
     /*----------------------------------------------------------------------------*/

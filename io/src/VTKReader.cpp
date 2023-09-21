@@ -58,6 +58,9 @@ bool VTKReader::preCheckFormat() {
             case 10://TET
                 m_cell_types[i]=GMDS_TETRA;
                 break;
+		      case 11://VOXEL
+			       m_cell_types[i]=GMDS_VOXEL;
+			       break;
             case 12://HEX
                 m_cell_types[i]=GMDS_HEX;
                 break;
@@ -255,6 +258,15 @@ void VTKReader::readRegions()
                                       nodes[1],
                                       nodes[2],
                                       nodes[3]);
+		  } else if (m_cell_types[i] == GMDS_VOXEL) {
+			   m_mesh_service->createHex(nodes[0],
+			                             nodes[1],
+			                             nodes[3],
+			                             nodes[2],
+			                             nodes[4],
+			                             nodes[5],
+			                             nodes[7],
+			                             nodes[6]);
         } else if (m_cell_types[i] == GMDS_HEX) {
             m_mesh_service->createHex(nodes[0],
                                       nodes[1],
