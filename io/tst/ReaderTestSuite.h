@@ -24,7 +24,8 @@ TEST(MeshClass, testIOVTK_NF)
     ASSERT_EQ(m.getNbNodes(),29);
     ASSERT_EQ(m.getNbFaces(),40);
 
-}/*----------------------------------------------------------------------------*/
+}
+/*----------------------------------------------------------------------------*/
 TEST(MeshClass, testIOVTK_NR)
 {
     gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::R|gmds::N));
@@ -39,7 +40,6 @@ TEST(MeshClass, testIOVTK_NR)
 
     ASSERT_EQ(m.getNbNodes(),29);
     ASSERT_EQ(m.getNbRegions(),61);
-
 }
 /*----------------------------------------------------------------------------*/
 TEST(MeshClass, testIOVTK_NEF)
@@ -77,5 +77,23 @@ TEST(MeshClass, testIOMedit)
     ASSERT_EQ(m.getNbNodes(),29);
     ASSERT_EQ(m.getNbFaces(),40);
 
+}
+/*----------------------------------------------------------------------------*/
+TEST(MeshClass, testIOVTK_several_types)
+{
+	 gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::N | gmds::R2N));
+
+	 std::string dir(TEST_SAMPLES_DIR);
+	 std::string vtk_file = dir+"/several_types.vtk";
+
+	 gmds::IGMeshIOService ioService(&m);
+	 gmds::VTKReader vtkReader(&ioService);
+	 vtkReader.setCellOptions(gmds::N|gmds::R);
+	 vtkReader.read(vtk_file);
+
+	 ASSERT_EQ(m.getNbNodes(),14);
+	 ASSERT_EQ(m.getNbRegions(),4);
+	 ASSERT_EQ(m.getNbTetrahedra(),1);
+	 ASSERT_EQ(m.getNbHexahedra(),2);
 }
 /*----------------------------------------------------------------------------*/
