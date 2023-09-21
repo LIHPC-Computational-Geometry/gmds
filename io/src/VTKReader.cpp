@@ -58,9 +58,12 @@ bool VTKReader::preCheckFormat() {
             case 10://TET
                 m_cell_types[i]=GMDS_TETRA;
                 break;
-            case 12://HEX
-                m_cell_types[i]=GMDS_HEX;
-                break;
+		      case 11://CUBE
+			       m_cell_types[i]=GMDS_HEX;
+			       break;
+		      case 12://HEX
+			       m_cell_types[i]=GMDS_HEX;
+			       break;
             case 14://PYRAMID
                 m_cell_types[i]=GMDS_PYRAMID;
                 break;

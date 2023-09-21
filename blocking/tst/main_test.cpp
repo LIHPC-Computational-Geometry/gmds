@@ -10,6 +10,7 @@
 #include "SheetInsertTestSuite.h"
 #include "WriterDartsVTKTestSuite.h"
 #include "ExecutionActionsTestSuite.h"
+#include "PolyCubePipelineTestSuite.h"
 #ifdef USE_CGNS
 #include "CGNSWriterTestSuite.h"
 #endif
