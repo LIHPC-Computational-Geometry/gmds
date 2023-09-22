@@ -200,6 +200,13 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	 */
 	void FrontEdgesClassificationCleaner();
 	/*-------------------------------------------------------------------*/
+	/** @brief
+	 	* \param[in]
+		*
+		* \return
+	 */
+	void SemiEdgesCleaner();
+	/*-------------------------------------------------------------------*/
  private:
 	/** the quad mesh we work on */
 	Mesh *m_mesh;

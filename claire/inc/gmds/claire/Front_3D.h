@@ -51,6 +51,10 @@ class LIB_GMDS_CLAIRE_API Front_3D {
 	 */
 	std::vector<TCellID> getFaces();
 	/*-------------------------------------------------------------------*/
+	/** @brief Returns the front edges id
+	 */
+	std::vector<TCellID> getEdges();
+	/*-------------------------------------------------------------------*/
 	/** @brief Add the node id to the front
 	 * 	@param n_id id of the node to add
 	 */
@@ -97,14 +101,23 @@ class LIB_GMDS_CLAIRE_API Front_3D {
 	 */
 	TCellID adjacentFaceOnFront(Mesh *m, TCellID f_id, TCellID e_id);
 	/*-------------------------------------------------------------------*/
+	/** @brief Compute the edges of the front and store them in m_edgesId.
+	 * 	@param m	the mesh
+	 *
+	 *		\return
+	 */
+	void ComputeEdgesOnFront(Mesh *m);
+	/*-------------------------------------------------------------------*/
 
  private:
 	/** Id du front, de la couche */
 	int m_FrontID;
 	/** Liste d'id des noeuds du front */
 	std::vector<TCellID> m_nodesId;
-	/** Liste d'id des arêtes du front */
+	/** Liste d'id des faces du front */
 	std::vector<TCellID> m_facesId;
+	/** Liste d'id des arêtes du front */
+	std::vector<TCellID> m_edgesId;
 
 };
 /*----------------------------------------------------------------------------*/
