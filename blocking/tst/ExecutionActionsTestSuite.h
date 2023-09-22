@@ -702,7 +702,7 @@ TEST(ExecutionActionsTestSuite,B2)
 {
 
 
-	std::string line = "B4";
+	std::string line = "B11";
 	std::string file_geom, file_mesh, file_out;
 
 	//The path of the data folder
@@ -721,6 +721,7 @@ TEST(ExecutionActionsTestSuite,B2)
 	//==================================================================
 	gmds::cad::FACManager geom_model;
 	set_up_file(&geom_model, file_geom);
+	std::cout << "GEOM INFO : N, " << geom_model.getNbPoints() <<" , R, " << geom_model.getNbVolumes() << std::endl;
 
 	//==================================================================
 	// MESH READING
@@ -751,6 +752,7 @@ TEST(ExecutionActionsTestSuite,B2)
 	for(auto p : geom_model.getPoints()){
 		std::cout<<p->id()<<std::endl;
 	}
+	std::cout<<"size points : "<<geom_model.getPoints().size()<<std::endl;
 	//==================================================================
 	// CLASSIFICATION BETWEEN THE BLOCKING AND THE GEOMETRY
 	//==================================================================
