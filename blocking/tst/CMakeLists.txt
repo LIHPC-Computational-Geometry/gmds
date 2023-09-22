@@ -8,7 +8,8 @@ add_executable(GMDS_BLOCKING_TEST
         WriterDartsVTKTestSuite.h
         main_test.cpp
         ExecutionActionsTestSuite.h
-        )
+        ClassificationTestSuite.h
+)
 #==============================================================================
 
 if(WITH_CGNS)

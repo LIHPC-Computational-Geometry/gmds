@@ -21,7 +21,8 @@ void set_up_file(gmds::cad::FACManager* AGeomModel, const std::string AFileName)
 	gmds::Mesh vol_mesh(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::F | gmds::E | gmds::N | gmds::R2N | gmds::R2F | gmds::R2E | gmds::F2N | gmds::F2R | gmds::F2E
 													| gmds::E2F | gmds::E2N | gmds::N2E));
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir +"/"+ AFileName;
+	//std::string vtk_file = dir +"/"+ AFileName;
+	std::string vtk_file = AFileName;
 	gmds::IGMeshIOService ioService(&vol_mesh);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N | gmds::R);
@@ -110,11 +111,11 @@ TEST(ExecutionActionsTestSuite,cube){
 	gmds::VTKWriter vtk_writer(&ios);
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	vtk_writer.write("debug_blocking.vtk");
+	vtk_writer.write("cube_blocking.vtk");
 	gmds::VTKWriter vtk_writer_edges(&ios);
 	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
 	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
-	vtk_writer_edges.write("debug_blocking_edges.vtk");
+	vtk_writer_edges.write("cube_blocking_edges.vtk");
 }
 
 TEST(ExecutionActionsTestSuite,cb1){
@@ -231,11 +232,11 @@ TEST(ExecutionActionsTestSuite,cb1){
 	gmds::VTKWriter vtk_writer(&ios);
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	vtk_writer.write("debug_blocking.vtk");
+	vtk_writer.write("cb1_blocking.vtk");
 	gmds::VTKWriter vtk_writer_edges(&ios);
 	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
 	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
-	vtk_writer_edges.write("debug_blocking_edges.vtk");
+	vtk_writer_edges.write("cb1_blocking_edges.vtk");
 }
 
 
@@ -363,15 +364,15 @@ TEST(ExecutionActionsTestSuite,cb2){
 	gmds::VTKWriter vtk_writer(&ios);
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	vtk_writer.write("debug_blocking.vtk");
+	vtk_writer.write("cb2_blocking.vtk");
 	gmds::VTKWriter vtk_writer_edges(&ios);
 	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
 	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
-	vtk_writer_edges.write("debug_blocking_edges.vtk");
+	vtk_writer_edges.write("cb2_blocking_edges.vtk");
 	gmds::VTKWriter vtk_writer_faces(&ios);
 	vtk_writer_faces.setCellOptions(gmds::N|gmds::F);
 	vtk_writer_faces.setDataOptions(gmds::N|gmds::F);
-	vtk_writer_faces.write("debug_blocking_faces.vtk");
+	vtk_writer_faces.write("cb2_blocking_faces.vtk");
 }
 
 
@@ -489,11 +490,11 @@ TEST(ExecutionActionsTestSuite,cb3){
 	gmds::VTKWriter vtk_writer(&ios);
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	vtk_writer.write("debug_blocking.vtk");
+	vtk_writer.write("cb3_blocking.vtk");
 	gmds::VTKWriter vtk_writer_edges(&ios);
 	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
 	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
-	vtk_writer_edges.write("debug_blocking_edges.vtk");
+	vtk_writer_edges.write("cb3_blocking_edges.vtk");
 }
 
 
@@ -618,11 +619,11 @@ TEST(ExecutionActionsTestSuite,cb4){
 	gmds::VTKWriter vtk_writer(&ios);
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	vtk_writer.write("debug_blocking.vtk");
+	vtk_writer.write("cb4_blocking.vtk");
 	gmds::VTKWriter vtk_writer_edges(&ios);
 	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
 	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
-	vtk_writer_edges.write("debug_blocking_edges.vtk");
+	vtk_writer_edges.write("cb4_blocking_edges.vtk");
 }
 
 TEST(ExecutionActionsTestSuite,cb5){
@@ -690,10 +691,85 @@ TEST(ExecutionActionsTestSuite,cb5){
 	gmds::VTKWriter vtk_writer(&ios);
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	vtk_writer.write("debug_blocking.vtk");
+	vtk_writer.write("cb5_blocking.vtk");
 	gmds::VTKWriter vtk_writer_edges(&ios);
 	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
 	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
-	vtk_writer_edges.write("debug_blocking_edges.vtk");
+	vtk_writer_edges.write("cb5_blocking_edges.vtk");
 }
 
+TEST(ExecutionActionsTestSuite,B2)
+{
+
+
+	std::string line = "B11";
+	std::string file_geom, file_mesh, file_out;
+
+	//The path of the data folder
+	std::string path_data_folder = "/home/bourmaudp/Documents/DATA/Easy_Shapes_Class/";
+	//Path of the current folder with the geometry and the blocking
+	std::string path_folder_shape = path_data_folder+line+"/";
+	//Geometry file
+	file_geom = path_folder_shape+line+".vtk";
+	//Blocking file
+	file_mesh = path_folder_shape+line+"_blocking.vtk";
+	//The path to save the classification and the name of the file
+	file_out = path_folder_shape+line+"_blocking_class_save_TEST.vtk";
+
+	//==================================================================
+	// GEOMETRY READING
+	//==================================================================
+	gmds::cad::FACManager geom_model;
+	set_up_file(&geom_model, file_geom);
+	std::cout << "GEOM INFO : N, " << geom_model.getNbPoints() <<" , R, " << geom_model.getNbVolumes() << std::endl;
+
+	//==================================================================
+	// MESH READING
+	//==================================================================
+	std::cout << "> Start mesh reading" << std::endl;
+	///the used model is specified according to the class requirements.
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::R|gmds::R2N));
+
+	gmds::IGMeshIOService ioService2(&m);
+	gmds::VTKReader vtkReader2(&ioService2);
+	vtkReader2.setCellOptions(gmds::N|gmds::R);
+	vtkReader2.read(file_mesh);
+	gmds::MeshDoctor doc2(&m);
+	doc2.updateUpwardConnectivity();
+
+	std::cout << "MESH Blocking INFO : N, " << m.getNbNodes() <<" ,E, "<<m.getNbEdges() <<" , R, " << m.getNbRegions() << std::endl;
+
+	//==================================================================
+	// CREATE THE BLOCKING FROM THE MESH
+	//==================================================================
+	gmds::blocking::CurvedBlocking bl(&geom_model, false);
+	bl.init_from_mesh(m);
+	std::cout << "BL INFO : N, " << bl.get_all_nodes().size() << " , B, " << bl.get_all_blocks().size() << std::endl;
+
+
+
+	std::cout << "CHECK GEOMETRY POINTS" <<std::endl;
+	for(auto p : geom_model.getPoints()){
+		std::cout<<p->id()<<std::endl;
+	}
+	std::cout<<"size points : "<<geom_model.getPoints().size()<<std::endl;
+	//==================================================================
+	// CLASSIFICATION BETWEEN THE BLOCKING AND THE GEOMETRY
+	//==================================================================
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+	classifier.clear_classification();
+	auto errors = classifier.classify();
+
+	//==================================================================
+	// SAVE CLASSIFICATION
+	//==================================================================
+	gmds::Mesh blockingMesh(gmds::MeshModel(gmds::DIM3 | gmds::N | gmds::E | gmds::F | gmds::R | gmds::E2N | gmds::F2N | gmds::R2N));
+	bl.convert_to_mesh(blockingMesh);
+	std::cout << "BL CONVERT MESH INFO : N, " << blockingMesh.getNbNodes() << " , R, " << blockingMesh.getNbRegions() << std::endl;
+
+	gmds::IGMeshIOService ios(&blockingMesh);
+	gmds::VTKWriter vtk_writer(&ios);
+	vtk_writer.setCellOptions(gmds::N | gmds::R);
+	vtk_writer.setDataOptions(gmds::N | gmds::R);
+	vtk_writer.write(file_out);
+}
