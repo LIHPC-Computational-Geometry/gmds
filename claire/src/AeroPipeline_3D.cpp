@@ -68,19 +68,18 @@ AeroPipeline_3D::execute(){
 	// Calcul du gradient du champ de Level Set
 	std::cout << "-> Calcul du gradient du champ des Level Sets" << std::endl;
 	t_start = clock();
-	m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-	LeastSquaresGradientComputation grad3D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
-	                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	grad3D.execute();
+	//m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	//LeastSquaresGradientComputation grad3D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	//                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	//grad3D.execute();
+	ComputeVectorFieldForExtrusion();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
 	// Generate the blocking of the geometry surface.
 	GeometrySurfaceBlockingGeneration();
-	std::cout << "1" << std::endl;
 	// Link the surface blocking to the geometry.
 	SurfaceBlockingClassification();
-	std::cout << "2" << std::endl;
 	// Write the surface blocking to check the classification
 	gmds::IGMeshIOService ioService(m_meshHex);
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -953,5 +952,14 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		m_linker_HG->linkFaceToSurface(f_id, geom_id);
 	}
 
+}
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_3D::ComputeVectorFieldForExtrusion()
+{
+	m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+	LeastSquaresGradientComputation grad3D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+	                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	grad3D.execute();
 }
 /*------------------------------------------------------------------------*/

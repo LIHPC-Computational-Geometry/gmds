@@ -46,6 +46,7 @@ FrontEdgesNodesClassification_3D::execute()
 	vtkWriter.setDataOptions(gmds::N|gmds::E);
 	vtkWriter.write("AeroEdgesClassification_3D_"+std::to_string(m_Front->getFrontID())+".vtk");
 
+
 	FrontNodesClassification();	// Fill the variable m_NbrFeatureEdgesAroundNode
 
 	ComputeValid_GFE();
@@ -520,6 +521,7 @@ FrontEdgesNodesClassification_3D::isThisPathValidForTemplates(Global_Feature_Edg
 	int type_path = m_EdgesClassification->value(GFE.edges_id[0]);
 	bool StartValidForTemplate = isValidNodeForPathLimit(GFE.Start_n_id, type_path);
 	bool EndValidForTemplate = isValidNodeForPathLimit(GFE.End_n_id, type_path);
+	Variable<int>* var_node_couche_id = m_mesh->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 
 	if (!StartValidForTemplate
 	    || !EndValidForTemplate)
@@ -534,7 +536,9 @@ FrontEdgesNodesClassification_3D::isThisPathValidForTemplates(Global_Feature_Edg
 	    && EndValidForTemplate
 	    && GFE.edges_id.size() < 3
 	    && singleNodeClassification(GFE.Start_n_id) == 1
-	    && singleNodeClassification(GFE.End_n_id) == 1)
+	    && singleNodeClassification(GFE.End_n_id) == 1
+	    && (var_node_couche_id->value(GFE.Start_n_id) == 0
+	        || var_node_couche_id->value(GFE.Start_n_id) == 1 ))
 	{
 		isValid = true;
 	}
@@ -542,7 +546,9 @@ FrontEdgesNodesClassification_3D::isThisPathValidForTemplates(Global_Feature_Edg
 	    && EndValidForTemplate
 	    && GFE.edges_id.size() > 1
 	    && (singleNodeClassification(GFE.Start_n_id) == 1
-	    || singleNodeClassification(GFE.End_n_id) == 1))
+	    || singleNodeClassification(GFE.End_n_id) == 1)
+	    && (var_node_couche_id->value(GFE.Start_n_id) == 0
+	        || var_node_couche_id->value(GFE.Start_n_id) == 1 ))
 	{
 		isValid = true;
 	}
@@ -550,7 +556,9 @@ FrontEdgesNodesClassification_3D::isThisPathValidForTemplates(Global_Feature_Edg
 	    && EndValidForTemplate
 	    && GFE.edges_id.size() > 1
 	    && (singleNodeClassification(GFE.Start_n_id) == 2
-	        || singleNodeClassification(GFE.End_n_id) == 2))
+	        || singleNodeClassification(GFE.End_n_id) == 2)
+	    && (var_node_couche_id->value(GFE.Start_n_id) == 0
+	    || var_node_couche_id->value(GFE.Start_n_id) == 1 ))
 	{
 		isValid = true;
 	}
@@ -559,6 +567,14 @@ FrontEdgesNodesClassification_3D::isThisPathValidForTemplates(Global_Feature_Edg
 	{
 		isValid = true;
 	}
+
+	/*
+	std::cout << "====================" << std::endl;
+	std::cout << "Nbr edges: " << GFE.edges_id.size() << std::endl;
+	std::cout << "Start Node: " << singleNodeClassification(GFE.Start_n_id) << std::endl;
+	std::cout << "End Node: " << singleNodeClassification(GFE.End_n_id) << std::endl;
+	std::cout << "is valid ? " << isValid << std::endl;
+	 */
 
 	return isValid;
 }
@@ -571,11 +587,16 @@ FrontEdgesNodesClassification_3D::isThisValidLoopPath(Global_Feature_Edge& GFE)
 	int type_path = m_EdgesClassification->value(GFE.edges_id[0]);
 	bool StartValidForTemplate = isValidNodeForPathLimit(GFE.Start_n_id, type_path);
 	bool EndValidForTemplate = isValidNodeForPathLimit(GFE.End_n_id, type_path);
+	Variable<int>* var_node_couche_id = m_mesh->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 
 	if (GFE.Start_n_id == GFE.End_n_id
 	    && GFE.edges_id.size() > 4)		// Loop paths
 	{
 		isValid = true;
+	}
+	if (var_node_couche_id->value(GFE.Start_n_id) > 1)
+	{
+		isValid = false;	// For now, you can't insert patterns for loops if the layer is not the first one or the second one.
 	}
 
 	return isValid;
