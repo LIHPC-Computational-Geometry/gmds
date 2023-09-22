@@ -89,10 +89,11 @@ AeroPipeline_3D::execute(){
 
 	// Extrusion
 	std::cout << "-> Extrusion" << std::endl;
+	Variable<math::Vector3d>* var_VectorsForExtrusion = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
 	t_start = clock();
 	AeroExtrusion_3D aero_extrusion(m_meshTet, m_meshHex, m_params,
 	                                m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
-	                                m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
+	                                var_VectorsForExtrusion);
 	aero_extrusion.execute();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
@@ -957,9 +958,72 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 void
 AeroPipeline_3D::ComputeVectorFieldForExtrusion()
 {
-	m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-	LeastSquaresGradientComputation grad3D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
-	                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	grad3D.execute();
+	Variable<math::Vector3d>* var_VectorsForExtrusion = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
+
+	if (m_params.vectors_field <= 0 || m_params.vectors_field > 4)
+	{
+		//m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+		LeastSquaresGradientComputation grad3D(m_meshTet,
+		                                       m_meshTet->getVariable<double, GMDS_NODE>("GMDS_Distance"),
+		   												var_VectorsForExtrusion);
+		grad3D.execute();
+	}
+
+	else if (m_params.vectors_field == 1)
+	{
+		//m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+		LeastSquaresGradientComputation grad3D(m_meshTet,
+		                                       m_meshTet->getVariable<double, GMDS_NODE>("GMDS_Distance_Int"),
+		   									var_VectorsForExtrusion);
+		grad3D.execute();
+	}
+
+	else if (m_params.vectors_field == 2)
+	{
+		Variable<math::Vector3d>* var_VectorField_1 = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_1");
+		Variable<math::Vector3d>* var_VectorField_2 = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_2");
+
+		LeastSquaresGradientComputation grad2D_1(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
+		                                         var_VectorField_1);
+		grad2D_1.execute();
+		LeastSquaresGradientComputation grad2D_2(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
+		                                         var_VectorField_2);
+		grad2D_2.execute();
+
+		for (auto n_id:m_meshTet->nodes())
+		{
+			math::Vector3d vec_1 = var_VectorField_1->value(n_id);
+			math::Vector3d vec_2 = var_VectorField_2->value(n_id);
+
+			vec_1.normalize();
+			vec_2.normalize();
+
+			Node n = m_meshTet->get<Node>(n_id);
+			math::Point p = n.point();
+
+			if (p.X() <= m_params.x_VectorField_Z1)
+			{
+				var_VectorsForExtrusion->set(n_id, vec_1);
+			}
+			else if (p.X() >= m_params.x_VectorField_Z2)
+			{
+				var_VectorsForExtrusion->set(n_id, vec_2);
+			}
+			else
+			{
+				// Compute the transition field
+				double alpha = (p.X() - m_params.x_VectorField_Z1)/(m_params.x_VectorField_Z2-m_params.x_VectorField_Z1) ;
+				math::Vector3d v_transit = alpha*vec_2 + (1.0-alpha)*vec_1 ;
+				v_transit.normalize();
+				var_VectorsForExtrusion->set(n_id, v_transit);
+			}
+
+		}
+
+		m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_1);
+		m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_2);
+
+	}
+
 }
 /*------------------------------------------------------------------------*/

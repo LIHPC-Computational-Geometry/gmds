@@ -47,10 +47,16 @@ The insertions are not allowed on the last layer of blocks, to avoid flattened b
 #### Vector Field
 
 * **Vector_Field_Computation_Method** choose the method to compute the vector field that will lead the direction of the extrusion (ex: = 3)
+  * 0 (_default_): gradient of the distance from the vehicule
+  * 1: gradient of the combined distance field
+  * 2: mixt between the gradient of the distance from the vehicule (if x < **x_lim_Vector_Field_Zone1**), and the gradient of the combined distance field (if x > **x_lim_Vector_Field_Zone2**), with a damping zone in between.
+  * 3: mixt between the gradient of the distance from the vehicule (if x < **x_lim_Vector_Field_Zone1**), and the angle of attack (if x > **x_lim_Vector_Field_Zone2**), with a damping zone in between.
+  * 4: mixt between the gradient of the combined distance field (if x < **x_lim_Vector_Field_Zone1**), and the angle of attack (if x > **x_lim_Vector_Field_Zone2**), with a damping zone in between.
 * **x_lim_Vector_Field_Zone1** is the limit along the x-axis to compute the first zone of the vector field (ex: = 100)
 * **x_lim_Vector_Field_Zone2** is the limit along the x-axis to compute the second zone of the vector field (ex: = 250)
 
 I highly recommend you to check on the [IMR paper](https://internationalmeshingroundtable.com/assets/papers/2023/11-Roche-compressed.pdf) to understand well this section.
+You'll find some pictures to understand the differents parameters.
 
 #### Smoothing
 These are the parameters for the Yao Smoothing on the first layer of blocks.
@@ -74,26 +80,37 @@ The main difference for the 3D case is that you have to give in INPUT the blocki
 * **input_surface_mesh** is the path to the surface blocking (ex: = /Aero/3D/C5_3D_Surface.vtk)
 * **block_surface_3D**, let equal to the default value 0 if you give the surface blocking as an INPUT.
 
+#### Vector Field
+* **Vector_Field_Computation_Method** choose the method to compute the vector field that will lead the direction of the extrusion (ex: = 3)
+    * 0 (_default_): gradient of the combined distance field
+    * 1: gradient of the distance from the vehicule
+    * 2: mixt between the gradient of the distance from the vehicule (if x < **x_lim_Vector_Field_Zone1**), and the gradient of the combined distance field (if x > **x_lim_Vector_Field_Zone2**), with a damping zone in between.
+* **x_lim_Vector_Field_Zone1** is the limit along the x-axis to compute the first zone of the vector field (ex: = 100)
+* **x_lim_Vector_Field_Zone2** is the limit along the x-axis to compute the second zone of the vector field (ex: = 250)
+
 #### Useless parameters for the 3D
 * **axisymetry**, let the default value (= false)
 * **Number_of_Blocks_on_Wall**, because the surface blocking is given as an input
 * **x_lim_insertions**
 * **y_lim_insertions**
 * **z_lim_insertions**
-* **Vector_Field_Computation_Method**
-* **x_lim_Vector_Field_Zone1**
-* **x_lim_Vector_Field_Zone2**
 * **Number_of_iterations_Yao** 
 * **Damping_Smoothing_Yao**
 
 ## WARNINGS
-For now, you will not be able to generate a final mesh with the 3D algorithm. However, you can generate a first blocking.
-
-Pay attention to the _param.ini_ file: it seems like if you want to set a parameter to a tiny value, it can be converted to 0 when reading in the algorithm.
+* For now, you will not be able to generate a final mesh with the 3D algorithm. However, you can generate a first blocking.
+* Pay attention to the _param.ini_ file: it seems like if you want to set a parameter to a tiny value, it can be converted to 0 when reading in the algorithm.
 Example: if _Edge_Size_First_Ortho_Wall_ is set to 1e-6, the value will be read as 1e-6. But if you decide to put 1e-7, the value read will be 0.
+* The methods for vector field computation 0 and 1 are inverted between the 2D and 3D algorithm.
+
+## Advices
+* The tri/tet INPUT mesh has to be refined around the geometry.
+This improves the representation of the geometry in the algorithm, as we only work with a discretized representation of the geometry. 
+This also increases the computation of the distance field.
 
 ## Communications linked to this work
 
-* ["Block-Structured Quad Meshing for Supersonic Flow Simulations" in IMR proceedings](https://internationalmeshingroundtable.com/assets/papers/2023/11-Roche-compressed.pdf)
-* [Presentation at IMR 2023](https://hal-cea.archives-ouvertes.fr/cea-04028060)
-* [Poster at IMR 2023](https://hal-cea.archives-ouvertes.fr/cea-04028054)
+* ["Block-Structured Quad Meshing for Supersonic Flow Simulations" in SIAM IMR 2023 proceedings](https://internationalmeshingroundtable.com/assets/papers/2023/11-Roche-compressed.pdf)
+* [Talk - SIAM IMR 2023](https://hal-cea.archives-ouvertes.fr/cea-04028060)
+* [Poster - SIAM IMR 2023](https://hal-cea.archives-ouvertes.fr/cea-04028054)
+* [Talk - 3AF 2023](https://www.3af-aerodynamics.com/images/Public/DOCS_CONFERENCE/2023/PRESENTATIONS/DAY%2001/SESSION%201B/AERO2023_38_C.%20ROCHE_PR.pdf)
