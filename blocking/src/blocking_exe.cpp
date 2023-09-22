@@ -110,6 +110,7 @@ int main(int argc, char* argv[])
 		gmds::blocking::CurvedBlocking bl(&geom_model, false);
 		bl.init_from_mesh(m);
 
+
 		//==================================================================
 		// CLASSIFICATION BETWEEN THE BLOCKING AND THE GEOMETRY
 		//==================================================================
