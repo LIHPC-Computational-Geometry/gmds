@@ -25,6 +25,8 @@ FrontEdgesNodesClassification_3D::FrontEdgesNodesClassification_3D(Mesh *AMesh, 
 	m_mark_EdgesForTemplates = m_mesh->newMark<Edge>();
 	m_mark_NodesForTemplates = m_mesh->newMark<Node>();
 	m_VectorField = A_VectorField;
+
+	m_Front->ComputeEdgesOnFront(m_mesh);
 }
 /*------------------------------------------------------------------------*/
 FrontEdgesNodesClassification_3D::~FrontEdgesNodesClassification_3D()
@@ -54,6 +56,7 @@ FrontEdgesNodesClassification_3D::execute()
 	// Reclassify all the edges and nodes
 	FrontEdgesClassification();
 	FrontNodesClassification();
+	SemiEdgesCleaner();
 	ComputeValidLoop_GFE();
 
 	// Declassify the edges not used for paths. If not used, the patterns can fail.
@@ -828,17 +831,47 @@ FrontEdgesNodesClassification_3D::getEdgeType(TCellID e_id)
 void
 FrontEdgesNodesClassification_3D::FrontEdgesClassificationCleaner()
 {
-	Variable<int>* var_node_couche_id = m_mesh->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
-	for (auto e_id:m_mesh->edges())
+	for (auto e_id:m_Front->getEdges())
 	{
 		Edge e = m_mesh->get<Edge>(e_id);
 		std::vector<Node> e_nodes = e.get<Node>();
-		if (var_node_couche_id->value(e_nodes[0].id()) == m_Front->getFrontID()
-		    && var_node_couche_id->value(e_nodes[1].id()) == m_Front->getFrontID()
-		    && !m_mesh->isMarked(e, m_mark_EdgesForTemplates))
+		if (!m_mesh->isMarked(e, m_mark_EdgesForTemplates))
 		{
 			// So, the edge is on the front.
 			m_EdgesClassification->set(e_id, 0);
+		}
+	}
+}
+/*------------------------------------------------------------------------*/
+void
+FrontEdgesNodesClassification_3D::SemiEdgesCleaner()
+{
+	bool isAllTreated(false);
+	while (!isAllTreated)
+	{
+		isAllTreated = true;
+		for (auto e_id : m_Front->getEdges())
+		{
+			Edge e = m_mesh->get<Edge>(e_id);
+			std::vector<Node> e_nodes = e.get<Node>();
+			if (m_EdgesClassification->value(e_id) != 0 ) 	// If the edge is on the front
+			{
+				// So, the edge is on the front.
+				if (m_NbrFeatureEdgesAroundNode->value(e_nodes[0].id()) == 1)
+				{
+					m_NbrFeatureEdgesAroundNode->set(e_nodes[0].id(), m_NbrFeatureEdgesAroundNode->value(e_nodes[0].id())-1);
+					m_NbrFeatureEdgesAroundNode->set(e_nodes[1].id(), m_NbrFeatureEdgesAroundNode->value(e_nodes[1].id())-1);
+					m_EdgesClassification->set(e_id, 0);
+					isAllTreated = false;
+				}
+				else if (m_NbrFeatureEdgesAroundNode->value(e_nodes[1].id()) == 1)
+				{
+					m_NbrFeatureEdgesAroundNode->set(e_nodes[0].id(), m_NbrFeatureEdgesAroundNode->value(e_nodes[0].id())-1);
+					m_NbrFeatureEdgesAroundNode->set(e_nodes[1].id(), m_NbrFeatureEdgesAroundNode->value(e_nodes[1].id())-1);
+					m_EdgesClassification->set(e_id, 0);
+					isAllTreated = false;
+				}
+			}
 		}
 	}
 }

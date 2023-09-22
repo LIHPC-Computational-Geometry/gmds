@@ -9,7 +9,8 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------*/
-Front_3D::Front_3D(int front_id, std::vector<TCellID>& nodes_Id, std::vector<TCellID>& faces_Id) {
+Front_3D::Front_3D(int front_id, std::vector<TCellID>& nodes_Id, std::vector<TCellID>& faces_Id)
+{
 	m_FrontID = front_id;
 	m_nodesId = nodes_Id;
 	m_facesId = faces_Id;
@@ -32,6 +33,10 @@ std::vector<TCellID> Front_3D::getNodes(){
 /*-------------------------------------------------------------------*/
 std::vector<TCellID> Front_3D::getFaces(){
 	return m_facesId;
+}
+/*-------------------------------------------------------------------*/
+std::vector<TCellID> Front_3D::getEdges(){
+	return m_edgesId;
 }
 /*-------------------------------------------------------------------*/
 void Front_3D::addNodeId(TCellID n_id){
@@ -203,5 +208,28 @@ Front_3D::adjacentFaceOnFront(Mesh *m, TCellID f_id, TCellID e_id)
 	}
 
 	return f_adj_id;
+}
+/*-------------------------------------------------------------------*/
+void
+Front_3D::ComputeEdgesOnFront(Mesh *m)
+{
+	m_edgesId.clear();
+	TInt mark_isTreated = m->newMark<Edge>();
+
+	for (auto f_id:m_facesId)
+	{
+		std::vector<Edge> f_edges = m->get<Face>(f_id).get<Edge>() ;
+		for (auto e:f_edges)
+		{
+			if (!m->isMarked(e, mark_isTreated))
+			{
+				m_edgesId.push_back(e.id());
+				m->mark(e, mark_isTreated);
+			}
+		}
+	}
+
+	m->unmarkAll<Edge>(mark_isTreated);
+	m->freeMark<Edge>(mark_isTreated);
 }
 /*-------------------------------------------------------------------*/
