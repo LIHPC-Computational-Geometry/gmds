@@ -188,8 +188,8 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 		}
 		else if ((geo_d0==0 && geo_d1==1) || (geo_d0==1 && geo_d1==0)){
 			//we check if the point is adjacent to the curve
-			auto p_id = (geo_d0<geo_d1)?geo_d0:geo_d1;
-			auto c_id = (geo_d0>geo_d1)?geo_d0:geo_d1;
+			auto p_id = (geo_d0<geo_d1)?geo_i0:geo_i1;
+			auto c_id = (geo_d0>geo_d1)?geo_i0:geo_i1;
 			cad::GeomPoint* p = m_geom_model->getPoint(p_id);
 			cad::GeomCurve* c = m_geom_model->getCurve(c_id);
 			std::vector<cad::GeomPoint*> c_points = c->points();

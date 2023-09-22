@@ -34,7 +34,7 @@ void set_up_geom_model(gmds::cad::FACManager* AGeomModel, const std::string AFil
 
 int main(int argc, char* argv[])
 {
-	std::cout << "============== CLASSIFICATION ================" << std::endl;
+	std::cout << "============== CLASSIFICATION SHAPES ================" << std::endl;
 
 	/*
 	 * The folder with the shapes to test needs to be defined like that :
@@ -62,6 +62,8 @@ int main(int argc, char* argv[])
 	std::ifstream m_stream(file);
 	std::string line;
 	while(std::getline(m_stream,line)){
+		std::cout << "============== CLASSIFICATION ================" << std::endl;
+		std::cout << "============== "<<line<<" ================" << std::endl;
 
 		//==================================================================
 		// PARAMETERS PARSING
@@ -103,12 +105,15 @@ int main(int argc, char* argv[])
 		vtkReader2.read(file_mesh);
 		MeshDoctor doc2(&m);
 		doc2.updateUpwardConnectivity();
+		std::cout << "MESH Blocking INFO : N, " << m.getNbNodes() <<" ,E, "<<m.getNbEdges() <<" , R, " << m.getNbRegions() << std::endl;
+
 
 		//==================================================================
 		// CREATE THE BLOCKING FROM THE MESH
 		//==================================================================
 		gmds::blocking::CurvedBlocking bl(&geom_model, false);
 		bl.init_from_mesh(m);
+		std::cout << "BL INFO : N, " << bl.get_all_nodes().size() << " , B, " << bl.get_all_blocks().size() << std::endl;
 
 
 		//==================================================================
@@ -123,6 +128,7 @@ int main(int argc, char* argv[])
 		//==================================================================
 		gmds::Mesh blockingMesh(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
 		bl.convert_to_mesh(blockingMesh);
+		std::cout << "BL CONVERT MESH INFO : N, " << blockingMesh.getNbNodes() << " , R, " << blockingMesh.getNbRegions() << std::endl;
 
 		gmds::IGMeshIOService ios(&blockingMesh);
 		gmds::VTKWriter vtk_writer(&ios);

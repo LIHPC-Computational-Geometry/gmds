@@ -698,11 +698,11 @@ TEST(ExecutionActionsTestSuite,cb5){
 	vtk_writer_edges.write("cb5_blocking_edges.vtk");
 }
 
-TEST(ExecutionActionsTestSuite,B0)
+TEST(ExecutionActionsTestSuite,B2)
 {
 
 
-	std::string line = "B0";
+	std::string line = "B4";
 	std::string file_geom, file_mesh, file_out;
 
 	//The path of the data folder
@@ -726,15 +726,14 @@ TEST(ExecutionActionsTestSuite,B0)
 	// MESH READING
 	//==================================================================
 	std::cout << "> Start mesh reading" << std::endl;
-	// the used model is specified according to the class requirements.
-	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::N | gmds::E | gmds::E2N |gmds::R | gmds::R2N));
+	///the used model is specified according to the class requirements.
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::R|gmds::R2N));
 
 	gmds::IGMeshIOService ioService2(&m);
 	gmds::VTKReader vtkReader2(&ioService2);
-	vtkReader2.setCellOptions(gmds::N | gmds::E);
+	vtkReader2.setCellOptions(gmds::N|gmds::R);
 	vtkReader2.read(file_mesh);
 	gmds::MeshDoctor doc2(&m);
-	doc2.buildE();
 	doc2.updateUpwardConnectivity();
 
 	std::cout << "MESH Blocking INFO : N, " << m.getNbNodes() <<" ,E, "<<m.getNbEdges() <<" , R, " << m.getNbRegions() << std::endl;
@@ -746,6 +745,12 @@ TEST(ExecutionActionsTestSuite,B0)
 	bl.init_from_mesh(m);
 	std::cout << "BL INFO : N, " << bl.get_all_nodes().size() << " , B, " << bl.get_all_blocks().size() << std::endl;
 
+
+
+	std::cout << "CHECK GEOMETRY POINTS" <<std::endl;
+	for(auto p : geom_model.getPoints()){
+		std::cout<<p->id()<<std::endl;
+	}
 	//==================================================================
 	// CLASSIFICATION BETWEEN THE BLOCKING AND THE GEOMETRY
 	//==================================================================
