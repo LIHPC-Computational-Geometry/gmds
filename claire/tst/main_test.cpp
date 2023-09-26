@@ -21,6 +21,7 @@
 #include "MeshAlignmentTestSuite.h"
 #include "Front_3DTestSuite.h"
 #include "FrontTestSuite.h"
+#include "MFEMMeshWriterTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
