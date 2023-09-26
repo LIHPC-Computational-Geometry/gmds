@@ -957,7 +957,7 @@ TEST(LevelSetTestClass, LevelSet_Apollo_TEST)
 {
 	Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Aero/2D/Apollo_2D_100k.vtk";
+	std::string vtk_file = dir+"/Aero/2D/Apollo_2D_20k.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -981,7 +981,7 @@ TEST(LevelSetTestClass, LevelSet_Apollo_TEST)
 		//std::cout << n.get<Face>().size() << std::endl;
 		int compteur_mat1(0);
 		int compteur_mat2(0);
-		for (auto f:n.get<Face>())
+		for (auto const f:n.get<Face>())
 		{
 			//std::cout << "Face 1, mat " << var_material->value(f.id()) << std::endl;
 			if (var_material->value(f.id()) == 1)
@@ -1057,8 +1057,9 @@ TEST(LevelSetTestClass, LevelSet_Apollo_TEST)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("APOLLO_100k_Mesh.vtk");
+	vtkWriter.write("APOLLO_2D_20k_MESH.vtk");
 
+	/*
 	for (auto n_id:m.nodes())
 	{
 		Node n = m.get<Node>(n_id);
@@ -1069,6 +1070,24 @@ TEST(LevelSetTestClass, LevelSet_Apollo_TEST)
 	vtkWriter2.setCellOptions(gmds::N|gmds::F);
 	vtkWriter2.setDataOptions(gmds::N|gmds::F);
 	vtkWriter2.write("APOLLO_100k_LS_Trick.vtk");
+	*/
+
+
+	// .gf writing for MFEM
+	std::ofstream stream= std::ofstream("APOLLO_2D_20k_LS.gf", std::ios::out);
+	stream.precision(15);
+
+	// Header
+	stream << "FiniteElementSpace\n";
+	stream << "FiniteElementCollection: H1_2D_P1\n";
+	stream << "VDim: 1\n";
+	stream << "Ordering: 0\n";
+	stream << "\n";
+
+	for (auto n:m.nodes())
+	{
+		stream << var_dist->value(n) << "\n";
+	}
 
 }
 
@@ -1078,7 +1097,7 @@ TEST(LevelSetTestClass, MFEM_Test)
 	// Mesh
 	Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Aero/2D/Apollo_Ext_20k.vtk";
+	std::string vtk_file = dir+"/Aero/2D/APOLLO_2D_toFit.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -1114,7 +1133,76 @@ TEST(LevelSetTestClass, MFEM_Test)
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("APOLLO_Ext_20k.vtk");
+	vtkWriter.write("APOLLO_2D_toFit.vtk");
+
+	// .mesh writing for MFEM
+	std::ofstream stream= std::ofstream("APOLLO_2D_toFit.mesh", std::ios::out);
+	stream.precision(15);
+
+	// Header
+	stream << "MFEM NC mesh v1.0\n";
+	stream << "\n";
+	stream << "# NCMesh supported geometry types:\n";
+	stream << "# SEGMENT     = 1\n";
+	stream << "# TRIANGLE    = 2\n";
+	stream << "# SQUARE      = 3\n";
+	stream << "# TETRAHEDRON = 4\n";
+	stream << "# CUBE        = 5\n";
+	stream << "# PRISM       = 6\n";
+	stream << "# PYRAMID     = 7\n";
+	stream << "\n";
+	stream << "dimension\n";
+	stream << "2\n";
+	stream << "\n";
+	stream << "# rank attr geom ref_type nodes/children\n";
+	stream << "elements\n";
+	stream << m.getNbFaces() << "\n";
+
+	for (auto f_id:m.faces())
+	{
+		Face f = m.get<Face>(f_id);
+		std::vector<Node> f_nodes = f.get<Node>();
+		stream << 0 << " " << 1 << " " << 2 << " " << 0 << " " << f_nodes[0].id() << " " << f_nodes[1].id() << " " << f_nodes[2].id() << "\n";
+	}
+
+	std::vector<Edge> bnd_edges;
+	for (auto e_id:m.edges())
+	{
+		Edge e = m.get<Edge>(e_id);
+		if (e.get<Face>().size() == 1)
+		{
+			bnd_edges.push_back(e);
+		}
+	}
+
+	stream << "\n";
+	stream << "# attr geom nodes\n";
+	stream << "boundary\n";
+	stream << bnd_edges.size() << "\n";
+	for (auto e:bnd_edges)
+	{
+		std::vector<Node> e_nodes = e.get<Node>();
+		stream << 1 << " " << 1 << " " << e_nodes[0].id() << " " << e_nodes[1].id() << "\n";
+	}
+
+	stream << "\n";
+	stream << "# mesh curvature GridFunction\n";
+	stream << "nodes\n";
+	stream << "FiniteElementSpace\n";
+	stream << "FiniteElementCollection: H1_2D_P1\n";
+	stream << "VDim: 2\n";
+	stream << "Ordering: 1\n";
+	stream << "\n";
+	for (auto n_id:m.nodes())
+	{
+		//std::cout << "Node " << n_id << std::endl;
+		Node n = m.get<Node>(n_id);
+		stream << n.X() << " " << n.Y() << "\n";
+	}
+
+	stream << "\n";
+	stream << "mfem_mesh_end\n";
+
 }
 
 
