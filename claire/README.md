@@ -97,9 +97,7 @@ The main difference for the 3D case is that you have to give in INPUT the blocki
 * **Number_of_iterations_Yao** 
 * **Damping_Smoothing_Yao**
 
-___
 ## WARNINGS
-___
 * The number of layers can not be less than at least 2.
 * Insertions/Contractions of blocks are not allowed on the **first** and **last** layer of blocks for the 2D algorithm. Therefore, if you want to generate a mesh with only two layers of blocks, there will not be any insertions.
 * If you don't use the axisymmetric mode, there is no reason to have block corners on the **y axis**.
@@ -108,34 +106,31 @@ ___
 Example: if _Edge_Size_First_Ortho_Wall_ is set to 1e-6, the value will be read as 1e-6. But if you decide to put 1e-7, the value read will be 0.
 * The methods for vector field computation 0 and 1 are inverted between the 2D and 3D algorithm.
 
-___
 ## Advices
-___
 * The tri/tet INPUT mesh has to be refined around the geometry.
 This improves the representation of the geometry in the algorithm, as we only work with a discretized representation of the geometry. 
 This also increases the computation of the distance field.
 
-___
 ## OUTPUT 
 ___
 #### OUTPUT 2D
-
+___
 * _AeroPipeline2D_TriMesh.vtk_ : VTK input triangular mesh, written with the fields we computed for the extrusion
 * _AeroPipeline2D_QuadMesh.vtk_ : VTK file of the final mesh, written as unstructured mesh.
 * _AeroPipeline2D_Blocking.vtk_ : VTK file of the linear blocking structure only.
 * _AeroPipeline2D_CurvedBlocks.vtk_ : VTK trick file to visualize the curved blocking structure. This is not a real mesh. Please, use it just for visualization.
 * _AeroPipeline_2D.cgns_ : Final block-structured mesh written in CGNS format
 
+___
 #### OUTPUT 3D
-
+___
 * _AeroEdgesClassification_3D\_?.vtk_ : VTK file of the block edges with the geometric classification. The ? is for the index of the front.
 * _AeroExtrusion_3D\_?.vtk_ :  VTK file of the blocking already built, where i is the last set of hexa created by a pattern (regular face, or irregular edge or node). Only if **with_debug_files** is set to true in _param.ini_.
 * _AeroPipeline3D_Tetra_PreTraite.vtk_ : VTK file of the input tetrahedral mesh, after being pre-treated, with the distance and vector fields computed.
 * _AeroPipeline3D_Hexa.vtk_ : VTK file of the linear hex blocking.
+* _Surface_3D.vtk_ : VTK file of the quad surface blocking.
 
-___
 ## Communications linked to this work
-___
 
 * ["Block-Structured Quad Meshing for Supersonic Flow Simulations" in SIAM IMR 2023 proceedings](https://internationalmeshingroundtable.com/assets/papers/2023/11-Roche-compressed.pdf)
 * [Talk - SIAM IMR 2023](https://hal-cea.archives-ouvertes.fr/cea-04028060)
