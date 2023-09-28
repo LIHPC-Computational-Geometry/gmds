@@ -7,6 +7,7 @@
 #include <gmds/claire/LevelSetExtended.h>
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/GradientComputation_2D.h>
+#include <gmds/claire/MFEMMeshWriter.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator.h>
@@ -957,7 +958,9 @@ TEST(LevelSetTestClass, LevelSet_Apollo_TEST)
 {
 	Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Aero/2D/Apollo_2D_20k.vtk";
+	std::string vtk_file = dir+"/Aero/2D/Apollo_2D_BG.vtk";
+
+	std::string output_file = "Apollo_2D_inCircle" ;
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -1052,12 +1055,14 @@ TEST(LevelSetTestClass, LevelSet_Apollo_TEST)
 	m.unmarkAll<Node>(markTreatedNodes);
 	m.freeMark<Node>(markTreatedNodes);
 
+	/*
 	ASSERT_EQ(0,0);
 
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
 	vtkWriter.setDataOptions(gmds::N|gmds::F);
 	vtkWriter.write("APOLLO_2D_20k_MESH.vtk");
+	 */
 
 	/*
 	for (auto n_id:m.nodes())
@@ -1072,22 +1077,47 @@ TEST(LevelSetTestClass, LevelSet_Apollo_TEST)
 	vtkWriter2.write("APOLLO_100k_LS_Trick.vtk");
 	*/
 
+	// .mesh writing of background mesh
+	MFEMMeshWriter mfemWriter = MFEMMeshWriter(&m, output_file+"_BG");
+	MFEMMeshWriter::STATUS res_writing = mfemWriter.execute();
+	ASSERT_EQ(res_writing, MFEMMeshWriter::SUCCESS);
 
-	// .gf writing for MFEM
-	std::ofstream stream= std::ofstream("APOLLO_2D_20k_LS.gf", std::ios::out);
-	stream.precision(15);
-
-	// Header
-	stream << "FiniteElementSpace\n";
-	stream << "FiniteElementCollection: H1_2D_P1\n";
-	stream << "VDim: 1\n";
-	stream << "Ordering: 0\n";
-	stream << "\n";
-
-	for (auto n:m.nodes())
 	{
-		stream << var_dist->value(n) << "\n";
+		// .gf writing for MFEM
+		std::ofstream stream = std::ofstream(output_file+"_LS.gf", std::ios::out);
+		stream.precision(15);
+
+		// Header
+		stream << "FiniteElementSpace\n";
+		stream << "FiniteElementCollection: H1_2D_P1\n";
+		stream << "VDim: 1\n";
+		stream << "Ordering: 0\n";
+		stream << "\n";
+
+		for (auto n : m.nodes()) {
+			stream << var_dist->value(n) << "\n";
+		}
 	}
+
+
+	// Mesh to Fit
+	Mesh m_toFit(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
+	std::string vtk_file_toFit = dir+"/Aero/2D/Apollo_2D_inCircle_toFit.vtk";
+
+	gmds::IGMeshIOService ioService_toFit(&m_toFit);
+	gmds::VTKReader vtkReader_toFit(&ioService_toFit);
+	vtkReader_toFit.setCellOptions(gmds::N|gmds::F);
+	//vtkReader_toFit.setDataOptions(gmds::F);
+	vtkReader_toFit.read(vtk_file_toFit);
+
+	gmds::MeshDoctor doc_toFit(&m_toFit);
+	doc_toFit.buildEdgesAndX2E();
+	doc_toFit.updateUpwardConnectivity();
+
+	// .mesh writing of mesh to fit
+	MFEMMeshWriter mfemWriter_toFit = MFEMMeshWriter(&m_toFit, output_file+"_toFit");
+	MFEMMeshWriter::STATUS res_writing_toFit = mfemWriter_toFit.execute();
+	ASSERT_EQ(res_writing_toFit, MFEMMeshWriter::SUCCESS);
 
 }
 

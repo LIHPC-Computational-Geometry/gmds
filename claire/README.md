@@ -33,7 +33,7 @@ All the input files need to be VTK files.
 * **Number_of_Blocks_on_Wall** is the minimum number of block edges on the wall (ex: = 4)
 * **Number_of_Cells_in_Boundary_layer** is the number of cells in the first layer of blocks (ex: = 30)
 * **Edge_Size_on_Wall** is the default size for the edges located on the wall (ex: = 3.0)
-* **Edge_Size_Default** is the default mesh size in the rest of the domain (ex: = 3.0)
+* **Edge_Size_Default** is the default mesh size in the rest of the domain (ex: = 3.0). As we generate block-structured meshes, two opposite block edges share the same discretization. Thus, the size of some edges will be slightly larger in some part of the domain, while the size of some other edges will be smaller in other parts.
 * **Edge_Size_First_Ortho_Wall** is the size of the first mesh edge in the first layer of blocks. This value is used to compute the refinement law (ex: = 1e-5). ATTENTION: this parameter will take the tiny values such as 1e-7 as equal to 0, and the algorithm will fail. You should resize your inputs.
 
 #### Extrusion
@@ -97,7 +97,12 @@ The main difference for the 3D case is that you have to give in INPUT the blocki
 * **Number_of_iterations_Yao** 
 * **Damping_Smoothing_Yao**
 
+### INPUT Tri/Tet mesh
+
 ## WARNINGS
+* The number of layers can not be less than at least 2.
+* Insertions/Contractions of blocks are not allowed on the **first** and **last** layer of blocks for the 2D algorithm. Therefore, if you want to generate a mesh with only two layers of blocks, there will not be any insertions.
+* If you don't use the axisymmetric mode, there is no reason to have block corners on the **y axis**.
 * For now, you will not be able to generate a final mesh with the 3D algorithm. However, you can generate a first blocking.
 * Pay attention to the _param.ini_ file: it seems like if you want to set a parameter to a tiny value, it can be converted to 0 when reading in the algorithm.
 Example: if _Edge_Size_First_Ortho_Wall_ is set to 1e-6, the value will be read as 1e-6. But if you decide to put 1e-7, the value read will be 0.
@@ -107,6 +112,11 @@ Example: if _Edge_Size_First_Ortho_Wall_ is set to 1e-6, the value will be read 
 * The tri/tet INPUT mesh has to be refined around the geometry.
 This improves the representation of the geometry in the algorithm, as we only work with a discretized representation of the geometry. 
 This also increases the computation of the distance field.
+
+## OUTPUT
+* _AeroPipeline2D_QuadMesh.vtk_ : .vtk file of the final mesh, written as unstructured mesh.
+* _AeroPipeline2D_Blocking.vtk_ : .vtk file of the linear blocking structure only.
+* _AeroPipeline2D_CurvedBlocks.vtk_ : .vtk file of the curved blocking structure.
 
 ## Communications linked to this work
 

@@ -20,8 +20,9 @@ TEST(MFEMMeshWriterTestClass, MFEM_Test)
 	// Mesh
 	Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Aero/2D/APOLLO_2D_toFit.vtk";
+	//std::string vtk_file = dir+"/Aero/2D/APOLLO_2D_toFit.vtk";
 	//std::string vtk_file = dir+"/Aero/2D/APOLLO_2D_20k_MESH.vtk";
+	std::string vtk_file = dir+"/Aero/2D/Test2.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -32,8 +33,9 @@ TEST(MFEMMeshWriterTestClass, MFEM_Test)
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
 
-	MFEMMeshWriter MeshWriter(&m, "APOLLO_2D_toFit");
+	//MFEMMeshWriter MeshWriter(&m, "APOLLO_2D_toFit");
 	//MFEMMeshWriter MeshWriter(&m, "APOLLO_2D_20k_MESH");
+	MFEMMeshWriter MeshWriter(&m, "Test2");
 	MFEMMeshWriter::STATUS res = MeshWriter.execute();
 
 	ASSERT_EQ(res, MeshWriter.SUCCESS);
