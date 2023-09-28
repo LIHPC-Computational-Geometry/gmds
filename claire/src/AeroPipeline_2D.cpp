@@ -26,6 +26,7 @@
 #include <gmds/claire/AeroMeshQuality.h>
 #include <gmds/claire/FastLocalize.h>
 #include <gmds/claire/MeshAlignment_2D.h>
+#include <gmds/claire/MFEMMeshWriter.h>
 
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -845,6 +846,58 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 	m_meshHex->deleteVariable(GMDS_NODE, "New_ID");
 
 	BlockingClassification();
+
+	// TEST FOR MFEM
+	/*
+	math::Point p;
+	int compteur(0);
+	for (auto n_id:m_meshHex->nodes())
+	{
+		if (var_couche->value(n_id)==0)
+		{
+			Node n = m_meshHex->get<Node>(n_id);
+			p = p + n.point();
+			compteur++;
+		}
+	}
+	if (compteur != 0)
+	{
+		p.setX(p.X() / compteur);
+		p.setY(p.Y() / compteur);
+	}
+	Node n_new = m_meshHex->newNode(p);
+	for (auto e_id:m_meshHex->edges())
+	{
+		Edge e = m_meshHex->get<Edge>(e_id);
+		std::vector<Node> e_nodes = e.get<Node>();
+		if (var_couche->value(e_nodes[0].id())==0
+		    && var_couche->value(e_nodes[1].id())==0)
+		{
+
+			//math::Point p_new = p+e_nodes[0].point()+e_nodes[1].point();
+			//p_new.setX(p_new.X()/3.0);
+			//p_new.setY(p_new.Y()/3.0);
+			//Node n_new_loc = m_meshHex->newNode(p_new) ;
+
+			m_meshHex->newTriangle(e_nodes[0],e_nodes[1], n_new);
+		}
+	}
+
+	MeshDoctor doc(m_meshHex);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+	doc.orient2DFaces();
+
+	gmds::IGMeshIOService ioService_MFEM(m_meshHex);
+	gmds::VTKWriter vtkWriter_MFEM(&ioService_MFEM);
+	vtkWriter_MFEM.setCellOptions(gmds::N|gmds::F);
+	vtkWriter_MFEM.setDataOptions(gmds::N|gmds::F);
+	std::string dir(".");
+	vtkWriter_MFEM.write("AeroPipeline2D_MFEM_INPUT.vtk");
+
+	MFEMMeshWriter mfemwriter = MFEMMeshWriter(m_meshHex, "Apollo_MFEM_INPUT_toFit");
+	mfemwriter.execute();
+	 */
 
 }
 /*------------------------------------------------------------------------*/

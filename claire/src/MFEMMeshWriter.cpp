@@ -16,6 +16,12 @@ MFEMMeshWriter::MFEMMeshWriter(Mesh *AMesh, std::string AFileName) :
 {
 	m_stream= std::ofstream(AFileName+".mesh", std::ios::out);
 	m_manager->initAndLinkFrom2DMesh(m_mesh, m_linker);
+
+	// Build edges and connectivities
+	MeshDoctor doc(m_mesh);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+	doc.orient2DFaces();	// Orient all the faces. WARNING: The orientation is important in .mesh file for MFEM.
 }
 
 
@@ -25,9 +31,11 @@ MFEMMeshWriter::STATUS MFEMMeshWriter::execute()
 	std::cout << "MFEM WRITER ONLY FOR 2D..." << std::endl;	// Because the dimension is set to 2 in header() method
 
 	// Build edges and connectivities
+	/*
 	gmds::MeshDoctor doc(m_mesh);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
+	 */
 
 	// Build the ordering node map
 	orderingNodes();
@@ -86,16 +94,34 @@ void MFEMMeshWriter::writeElements()
 		Face f = m_mesh->get<Face>(f_id);
 		std::vector<Node> f_nodes = f.get<Node>();
 		int geom(0);
-		if (f_nodes.size()==3){geom=2;}			// geom= TRIANGLE
-		else if (f_nodes.size()==4){geom=3;}	// geom= QUAD
+		int attrib(0);
+		if (f_nodes.size()==3){geom=2;attrib=1;}			// geom= TRIANGLE
+		else if (f_nodes.size()==4){geom=3;attrib=2;}	// geom= QUAD
 		m_stream << 0 << " ";				// RANK
-		m_stream << 1 << " ";		// Attribute
+		m_stream << attrib << " ";		// Attribute
 		m_stream << geom << " ";	// Geom
 		m_stream << 0;		// Ref type
-		for (auto n:f_nodes)
+		if (geom==2)
 		{
-			m_stream << " " << m_ordering_nodes[n.id()];
+			m_stream << " " << m_ordering_nodes[f_nodes[0].id()];
+			m_stream << " " << m_ordering_nodes[f_nodes[2].id()];
+			m_stream << " " << m_ordering_nodes[f_nodes[1].id()];
 		}
+		else if (geom==3)
+		{
+			m_stream << " " << m_ordering_nodes[f_nodes[0].id()];
+			m_stream << " " << m_ordering_nodes[f_nodes[3].id()];
+			m_stream << " " << m_ordering_nodes[f_nodes[2].id()];
+			m_stream << " " << m_ordering_nodes[f_nodes[1].id()];
+		}
+		else
+		{
+			for (auto const n:f_nodes)
+			{
+				m_stream << " " << m_ordering_nodes[n.id()];
+			}
+		}
+
 		m_stream << "\n";
 	}
 	m_stream << "\n";
@@ -119,7 +145,7 @@ void MFEMMeshWriter::writeBnd()
 	for (auto e:bnd_edges)
 	{
 		std::vector<Node> e_nodes = e.get<Node>();
-		int geom_id = m_linker->getGeomId(e);
+		int geom_id = m_linker->getGeomId(e)+1;
 		/*
 		// Test with control on the boundary labeling
 		int geom_id(0);
