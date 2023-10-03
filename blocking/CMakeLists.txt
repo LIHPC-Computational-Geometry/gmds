@@ -107,10 +107,14 @@ if(WITH_TEST)
 endif(WITH_TEST)
 #==============================================================================
 
-
 #==============================================================================
 # EXECUTABLE
 #==============================================================================
 add_executable(ant_colony_input_gen src/main_ant_colony_prep.cpp)
 target_link_libraries(ant_colony_input_gen PRIVATE ${GMDS_LIB})
 target_compile_features(ant_colony_input_gen PUBLIC cxx_std_14)
+
+
+add_executable(tetrahedron src/main_S3.cpp)
+target_link_libraries(tetrahedron PRIVATE ${GMDS_LIB})
+target_compile_features(tetrahedron PUBLIC cxx_std_14)
