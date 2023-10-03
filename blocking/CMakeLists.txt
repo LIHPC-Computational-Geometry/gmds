@@ -106,3 +106,11 @@ if(WITH_TEST)
     add_subdirectory(tst)
 endif(WITH_TEST)
 #==============================================================================
+
+
+#==============================================================================
+# EXECUTABLE
+#==============================================================================
+add_executable(ant_colony_input_gen src/main_ant_colony_prep.cpp)
+target_link_libraries(ant_colony_input_gen PRIVATE ${GMDS_LIB})
+target_compile_features(ant_colony_input_gen PUBLIC cxx_std_14)
