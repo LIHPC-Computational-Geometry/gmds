@@ -64,6 +64,8 @@ namespace gmds {
 
 	     /** Nombre mini de blocs */
         int nbrMinBloc;
+	     /** Allows or not the insertions on the blocking */
+	     bool insertions_allowed=true;
 	     /** Limite x amont/aval */
 	     double x_lim;
 	     /** Limite y amont/aval */

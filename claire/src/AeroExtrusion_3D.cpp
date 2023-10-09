@@ -177,216 +177,168 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	LayerStructureManager_3D StructManager = LayerStructureManager_3D(m_meshH, &Front_IN, map_new_nodes);
 
 	// Create the HEXA on each NODE classified
-	std::map<TCellID, int> singular_nodes = getSingularNodes(Front_IN, var_front_edges_classification);
-	for (auto singu_node:singular_nodes)
+	if (m_params_aero.insertions_allowed)
 	{
-		TCellID n_id = singu_node.first ;
-		int singu_type = singu_node.second;
-		if (singu_type==1 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
-		{
-			std::cout << "Template NODE: 3 Corner" << std::endl;
-			PatternNode3Corner p(m_meshH, &Front_IN, n_id, &StructManager,
-			                                          m_meshT, &m_fl,
-			                                          dist_cible, A_distance, A_vectors) ;
-			p.execute();
-			std::vector<Region> r_newHex = p.getNewHex() ;
-			m_Patterns->set(r_newHex[0].id(), 1);
-			if (m_params_aero.with_debug_files)
-			{
-				WriteVTKforDebug();
+		std::map<TCellID, int> singular_nodes = getSingularNodes(Front_IN, var_front_edges_classification);
+		for (auto singu_node : singular_nodes) {
+			TCellID n_id = singu_node.first;
+			int singu_type = singu_node.second;
+			if (singu_type == 1 && m_meshH->isMarked(m_meshH->get<Node>(n_id), mark_NodesTemplates)) {
+				std::cout << "Template NODE: 3 Corner" << std::endl;
+				PatternNode3Corner p(m_meshH, &Front_IN, n_id, &StructManager, m_meshT, &m_fl, dist_cible, A_distance, A_vectors);
+				p.execute();
+				std::vector<Region> r_newHex = p.getNewHex();
+				m_Patterns->set(r_newHex[0].id(), 1);
+				if (m_params_aero.with_debug_files) {
+					WriteVTKforDebug();
+				}
+				// TCellID r_id = TemplateNode3Corner(Front_IN, n_id, map_new_nodes, dist_cible, A_distance);
+				// m_Patterns->set(r_id, 1);
 			}
-			//TCellID r_id = TemplateNode3Corner(Front_IN, n_id, map_new_nodes, dist_cible, A_distance);
-			//m_Patterns->set(r_id, 1);
-		}
-		else if (singu_type==2 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
-		{
-			//std::cout << "Template NODE: 2 Corner, 1 End" << std::endl;
-			//TCellID r_id = TemplateNode2Corner1End(Front_IN, n_id, dist_cible, A_distance, mark_edgesTreated, mark_facesTreated);
-			//m_Patterns->set(r_id, 2);
-			PatternNode2Corner1End p(m_meshH, &Front_IN, n_id, &StructManager,
-			                     m_meshT, &m_fl,
-			                     dist_cible, A_distance, A_vectors) ;
-			p.execute();
-			std::vector<Region> r_newHex = p.getNewHex() ;
-			m_Patterns->set(r_newHex[0].id(), 2);
-			if (m_params_aero.with_debug_files)
-			{
-				WriteVTKforDebug();
+			else if (singu_type == 2 && m_meshH->isMarked(m_meshH->get<Node>(n_id), mark_NodesTemplates)) {
+				// std::cout << "Template NODE: 2 Corner, 1 End" << std::endl;
+				// TCellID r_id = TemplateNode2Corner1End(Front_IN, n_id, dist_cible, A_distance, mark_edgesTreated, mark_facesTreated);
+				// m_Patterns->set(r_id, 2);
+				PatternNode2Corner1End p(m_meshH, &Front_IN, n_id, &StructManager, m_meshT, &m_fl, dist_cible, A_distance, A_vectors);
+				p.execute();
+				std::vector<Region> r_newHex = p.getNewHex();
+				m_Patterns->set(r_newHex[0].id(), 2);
+				if (m_params_aero.with_debug_files) {
+					WriteVTKforDebug();
+				}
 			}
-		}
-		else if (singu_type==3 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
-		{
-			std::cout << "Template NODE: 1 Corner, 2 End" << std::endl;
-			//TCellID r_id = TemplateNode1Corner2End(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated);
-			//m_Patterns->set(r_id, 3);
-			PatternNode1Corner2End p(m_meshH, &Front_IN, n_id, &StructManager,
-			                     m_meshT, &m_fl,
-			                     dist_cible, A_distance, A_vectors) ;
-			p.execute();
-			std::vector<Region> r_newHex = p.getNewHex() ;
-			m_Patterns->set(r_newHex[0].id(), 3);
-			if (m_params_aero.with_debug_files)
-			{
-				WriteVTKforDebug();
+			else if (singu_type == 3 && m_meshH->isMarked(m_meshH->get<Node>(n_id), mark_NodesTemplates)) {
+				std::cout << "Template NODE: 1 Corner, 2 End" << std::endl;
+				// TCellID r_id = TemplateNode1Corner2End(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated);
+				// m_Patterns->set(r_id, 3);
+				PatternNode1Corner2End p(m_meshH, &Front_IN, n_id, &StructManager, m_meshT, &m_fl, dist_cible, A_distance, A_vectors);
+				p.execute();
+				std::vector<Region> r_newHex = p.getNewHex();
+				m_Patterns->set(r_newHex[0].id(), 3);
+				if (m_params_aero.with_debug_files) {
+					WriteVTKforDebug();
+				}
 			}
-		}
-		else if (singu_type==4 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
-		{
-			std::cout << "Template NODE: 3 End" << std::endl;
-			//TCellID r_id = TemplateNode3End(Front_IN, n_id, mark_edgesTreated, mark_facesTreated);
-			//m_Patterns->set(r_id, 4);
-			PatternNode3End p(m_meshH, &Front_IN, n_id, &StructManager,
-			                     m_meshT, &m_fl,
-			                     dist_cible, A_distance, A_vectors) ;
-			p.execute();
-			std::vector<Region> r_newHex = p.getNewHex() ;
-			m_Patterns->set(r_newHex[0].id(), 4);
-			if (m_params_aero.with_debug_files)
-			{
-				WriteVTKforDebug();
+			else if (singu_type == 4 && m_meshH->isMarked(m_meshH->get<Node>(n_id), mark_NodesTemplates)) {
+				std::cout << "Template NODE: 3 End" << std::endl;
+				// TCellID r_id = TemplateNode3End(Front_IN, n_id, mark_edgesTreated, mark_facesTreated);
+				// m_Patterns->set(r_id, 4);
+				PatternNode3End p(m_meshH, &Front_IN, n_id, &StructManager, m_meshT, &m_fl, dist_cible, A_distance, A_vectors);
+				p.execute();
+				std::vector<Region> r_newHex = p.getNewHex();
+				m_Patterns->set(r_newHex[0].id(), 4);
+				if (m_params_aero.with_debug_files) {
+					WriteVTKforDebug();
+				}
 			}
-		}
-		else if (singu_type==5 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
-		{
-			std::cout << "Template NODE: 3 Corner, 3 End" << std::endl;
-			//TCellID r_id = TemplateNode3Corner3End(Front_IN, n_id, dist_cible, A_distance, mark_edgesTreated, mark_facesTreated);
-			//m_Patterns->set(r_id, 5);
-			PatternNode3Corner3End p(m_meshH, &Front_IN, n_id, &StructManager,
-			                  m_meshT, &m_fl,
-			                  dist_cible, A_distance, A_vectors) ;
-			p.execute();
-			std::vector<Region> r_newHex = p.getNewHex() ;
-			m_Patterns->set(r_newHex[0].id(), 5);
-			if (m_params_aero.with_debug_files)
-			{
-				WriteVTKforDebug();
+			else if (singu_type == 5 && m_meshH->isMarked(m_meshH->get<Node>(n_id), mark_NodesTemplates)) {
+				std::cout << "Template NODE: 3 Corner, 3 End" << std::endl;
+				// TCellID r_id = TemplateNode3Corner3End(Front_IN, n_id, dist_cible, A_distance, mark_edgesTreated, mark_facesTreated);
+				// m_Patterns->set(r_id, 5);
+				PatternNode3Corner3End p(m_meshH, &Front_IN, n_id, &StructManager, m_meshT, &m_fl, dist_cible, A_distance, A_vectors);
+				p.execute();
+				std::vector<Region> r_newHex = p.getNewHex();
+				m_Patterns->set(r_newHex[0].id(), 5);
+				if (m_params_aero.with_debug_files) {
+					WriteVTKforDebug();
+				}
 			}
-		}
-		else if (singu_type==6 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
-		{
-			std::cout << "Template NODE: 2 Corner, 2 End" << std::endl;
-			//std::vector<TCellID> r_id = TemplateNode2Corner2End(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated); // Create 2 hexas
-			//m_Patterns->set(r_id[0], 6);
-			//m_Patterns->set(r_id[1], 6);
-			PatternNode2Corner2End p(m_meshH, &Front_IN, n_id, &StructManager,
-			                         m_meshT, &m_fl,
-			                         dist_cible, A_distance, A_vectors) ;
-			p.execute();
-			std::vector<Region> r_newHex = p.getNewHex() ;
-			m_Patterns->set(r_newHex[0].id(), 6);
-			m_Patterns->set(r_newHex[1].id(), 6);
-			if (m_params_aero.with_debug_files)
-			{
-				WriteVTKforDebug();
+			else if (singu_type == 6 && m_meshH->isMarked(m_meshH->get<Node>(n_id), mark_NodesTemplates)) {
+				std::cout << "Template NODE: 2 Corner, 2 End" << std::endl;
+				// std::vector<TCellID> r_id = TemplateNode2Corner2End(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated); // Create 2 hexas
+				// m_Patterns->set(r_id[0], 6);
+				// m_Patterns->set(r_id[1], 6);
+				PatternNode2Corner2End p(m_meshH, &Front_IN, n_id, &StructManager, m_meshT, &m_fl, dist_cible, A_distance, A_vectors);
+				p.execute();
+				std::vector<Region> r_newHex = p.getNewHex();
+				m_Patterns->set(r_newHex[0].id(), 6);
+				m_Patterns->set(r_newHex[1].id(), 6);
+				if (m_params_aero.with_debug_files) {
+					WriteVTKforDebug();
+				}
 			}
-		}
-		else if (singu_type==7 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
-		{
-			std::cout << "Template NODE: 2 Corner, 1 Reversal" << std::endl;
-			//std::vector<TCellID> r_id = TemplateNode2Corner1Reversal(Front_IN, n_id, dist_cible, A_distance); // Create 2 hexas
-			//m_Patterns->set(r_id[0], 7);
-			//m_Patterns->set(r_id[1], 7);
-			PatternNode2Corner1Reversal p(m_meshH, &Front_IN, n_id, &StructManager,
-			                         m_meshT, &m_fl,
-			                         dist_cible, A_distance, A_vectors) ;
-			p.execute();
-			std::vector<Region> r_newHex = p.getNewHex() ;
-			m_Patterns->set(r_newHex[0].id(), 7);
-			m_Patterns->set(r_newHex[1].id(), 7);
-			if (m_params_aero.with_debug_files)
-			{
-				WriteVTKforDebug();
+			else if (singu_type == 7 && m_meshH->isMarked(m_meshH->get<Node>(n_id), mark_NodesTemplates)) {
+				std::cout << "Template NODE: 2 Corner, 1 Reversal" << std::endl;
+				// std::vector<TCellID> r_id = TemplateNode2Corner1Reversal(Front_IN, n_id, dist_cible, A_distance); // Create 2 hexas
+				// m_Patterns->set(r_id[0], 7);
+				// m_Patterns->set(r_id[1], 7);
+				PatternNode2Corner1Reversal p(m_meshH, &Front_IN, n_id, &StructManager, m_meshT, &m_fl, dist_cible, A_distance, A_vectors);
+				p.execute();
+				std::vector<Region> r_newHex = p.getNewHex();
+				m_Patterns->set(r_newHex[0].id(), 7);
+				m_Patterns->set(r_newHex[1].id(), 7);
+				if (m_params_aero.with_debug_files) {
+					WriteVTKforDebug();
+				}
 			}
-		}
-		else if (singu_type==8 && m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
-		{
-			std::cout << "Template NODE: 2 End, 1 Reversal" << std::endl;
-			//std::vector<TCellID> r_id = TemplateNode2End1Reversal(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated); // Create 2 hexas
-			//m_Patterns->set(r_id[0], 8);
-			//m_Patterns->set(r_id[1], 8);
-			PatternNode2End1Reversal p(m_meshH, &Front_IN, n_id, &StructManager,
-			                              m_meshT, &m_fl,
-			                              dist_cible, A_distance, A_vectors) ;
-			p.execute();
-			std::vector<Region> r_newHex = p.getNewHex() ;
-			m_Patterns->set(r_newHex[0].id(), 8);
-			m_Patterns->set(r_newHex[1].id(), 8);
-			if (m_params_aero.with_debug_files)
-			{
-				WriteVTKforDebug();
+			else if (singu_type == 8 && m_meshH->isMarked(m_meshH->get<Node>(n_id), mark_NodesTemplates)) {
+				std::cout << "Template NODE: 2 End, 1 Reversal" << std::endl;
+				// std::vector<TCellID> r_id = TemplateNode2End1Reversal(Front_IN, n_id, dist_cible, mark_edgesTreated, mark_facesTreated); // Create 2 hexas
+				// m_Patterns->set(r_id[0], 8);
+				// m_Patterns->set(r_id[1], 8);
+				PatternNode2End1Reversal p(m_meshH, &Front_IN, n_id, &StructManager, m_meshT, &m_fl, dist_cible, A_distance, A_vectors);
+				p.execute();
+				std::vector<Region> r_newHex = p.getNewHex();
+				m_Patterns->set(r_newHex[0].id(), 8);
+				m_Patterns->set(r_newHex[1].id(), 8);
+				if (m_params_aero.with_debug_files) {
+					WriteVTKforDebug();
+				}
 			}
-		}
-		if (m_meshH->isMarked(m_meshH->get<Node>(n_id),mark_NodesTemplates))
-		{
-			//std::cout << "Noeud marqué pour template" << std::endl;
-			var_TEST->set(n_id, 1);
+			if (m_meshH->isMarked(m_meshH->get<Node>(n_id), mark_NodesTemplates)) {
+				// std::cout << "Noeud marqué pour template" << std::endl;
+				var_TEST->set(n_id, 1);
+			}
 		}
 	}
 
 	// Create the HEXA on each EDGE classified
-	std::map<TCellID, int> singular_edges = getSingularEdges(Front_IN, var_front_edges_classification, mark_edgesTreated);
-	for (auto singu_edge:singular_edges)
+	if (m_params_aero.insertions_allowed)
 	{
-		TCellID e_id = singu_edge.first ;
-		int singu_type = singu_edge.second;
-		if (singu_type==1
-		    && !StructManager.isEdgeTreated(e_id)
-		    && m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_EdgesTemplates))
-		{
-			//std::cout << "Template EDGE: Corner" << std::endl;
-			PatternEdgeCorner p(m_meshH, &Front_IN, e_id, &StructManager,
-			                     m_meshT, &m_fl,
-			                     dist_cible, A_distance, A_vectors) ;
-			p.execute();
-			std::vector<Region> r_newHex = p.getNewHex() ;
-			m_Patterns->set(r_newHex[0].id(), -1);
-			if (m_params_aero.with_debug_files)
-			{
-				WriteVTKforDebug();
+		std::map<TCellID, int> singular_edges = getSingularEdges(Front_IN, var_front_edges_classification, mark_edgesTreated);
+		for (auto singu_edge : singular_edges) {
+			TCellID e_id = singu_edge.first;
+			int singu_type = singu_edge.second;
+			if (singu_type == 1 && !StructManager.isEdgeTreated(e_id) && m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_EdgesTemplates)) {
+				// std::cout << "Template EDGE: Corner" << std::endl;
+				PatternEdgeCorner p(m_meshH, &Front_IN, e_id, &StructManager, m_meshT, &m_fl, dist_cible, A_distance, A_vectors);
+				p.execute();
+				std::vector<Region> r_newHex = p.getNewHex();
+				m_Patterns->set(r_newHex[0].id(), -1);
+				if (m_params_aero.with_debug_files) {
+					WriteVTKforDebug();
+				}
+				// TCellID r_id = TemplateEdgeCorner(Front_IN, e_id, dist_cible, A_distance);
+				// m_Patterns->set(r_id, -1);
 			}
-			//TCellID r_id = TemplateEdgeCorner(Front_IN, e_id, dist_cible, A_distance);
-			//m_Patterns->set(r_id, -1);
-		}
-		else if (singu_type==2
-		         && !StructManager.isEdgeTreated(e_id)
-		         && m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_EdgesTemplates))
-		{
-			//TCellID r_id = TemplateEdgeEnd(Front_IN, e_id, dist_cible, mark_edgesTreated, mark_facesTreated);
-			//m_Patterns->set(r_id, -2);
-			//std::cout << "Template EDGE: END" << std::endl;
-			PatternEdgeEnd p(m_meshH, &Front_IN, e_id, &StructManager,
-			                    m_meshT, &m_fl,
-			                    dist_cible, A_distance, A_vectors) ;
-			p.execute();
-			std::vector<Region> r_newHex = p.getNewHex() ;
-			m_Patterns->set(r_newHex[0].id(), -2);
-			if (m_params_aero.with_debug_files)
-			{
-				WriteVTKforDebug();
+			else if (singu_type == 2 && !StructManager.isEdgeTreated(e_id) && m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_EdgesTemplates)) {
+				// TCellID r_id = TemplateEdgeEnd(Front_IN, e_id, dist_cible, mark_edgesTreated, mark_facesTreated);
+				// m_Patterns->set(r_id, -2);
+				// std::cout << "Template EDGE: END" << std::endl;
+				PatternEdgeEnd p(m_meshH, &Front_IN, e_id, &StructManager, m_meshT, &m_fl, dist_cible, A_distance, A_vectors);
+				p.execute();
+				std::vector<Region> r_newHex = p.getNewHex();
+				m_Patterns->set(r_newHex[0].id(), -2);
+				if (m_params_aero.with_debug_files) {
+					WriteVTKforDebug();
+				}
 			}
-		}
-		else if (singu_type==3
-		         && !StructManager.isEdgeTreated(e_id)
-		         && m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_EdgesTemplates))
-		{
-			//std::vector<TCellID> r_id = TemplateEdgeReversal(Front_IN, e_id, dist_cible, A_distance, mark_edgesTreated, mark_facesTreated);
-			//m_Patterns->set(r_id[0], -3);
-			//m_Patterns->set(r_id[1], -3);
-			//std::cout << "Template EDGE: Reversal" << std::endl;
-			PatternEdgeReversal p(m_meshH, &Front_IN, e_id, &StructManager,
-			                    m_meshT, &m_fl,
-			                    dist_cible, A_distance, A_vectors) ;
-			p.execute();
-			std::vector<Region> r_newHex = p.getNewHex() ;
-			m_Patterns->set(r_newHex[0].id(), -3);
-			m_Patterns->set(r_newHex[1].id(), -3);
-			if (m_params_aero.with_debug_files)
-			{
-				WriteVTKforDebug();
+			else if (singu_type == 3 && !StructManager.isEdgeTreated(e_id) && m_meshH->isMarked(m_meshH->get<Edge>(e_id), mark_EdgesTemplates)) {
+				// std::vector<TCellID> r_id = TemplateEdgeReversal(Front_IN, e_id, dist_cible, A_distance, mark_edgesTreated, mark_facesTreated);
+				// m_Patterns->set(r_id[0], -3);
+				// m_Patterns->set(r_id[1], -3);
+				// std::cout << "Template EDGE: Reversal" << std::endl;
+				PatternEdgeReversal p(m_meshH, &Front_IN, e_id, &StructManager, m_meshT, &m_fl, dist_cible, A_distance, A_vectors);
+				p.execute();
+				std::vector<Region> r_newHex = p.getNewHex();
+				m_Patterns->set(r_newHex[0].id(), -3);
+				m_Patterns->set(r_newHex[1].id(), -3);
+				if (m_params_aero.with_debug_files) {
+					WriteVTKforDebug();
+				}
 			}
 		}
 	}
-
 
 	// Create the HEXA on each FACE of the front
 	for (auto f_id:Front_IN.getFaces()){

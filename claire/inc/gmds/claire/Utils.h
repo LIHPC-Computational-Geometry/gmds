@@ -264,6 +264,13 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static void buildEfromFandConnectivies(Mesh *Amesh);
 	/*-------------------------------------------------------------------*/
+	/** @brief
+	 *
+	 * \param[in] m the mesh
+	 * \param[in] r the region to reorient
+	 */
+	static void orientRegion(Mesh *m, Region r);
+	/*-------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/

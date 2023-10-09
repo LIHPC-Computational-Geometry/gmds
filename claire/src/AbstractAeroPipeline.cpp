@@ -35,6 +35,7 @@ AbstractAeroPipeline::AbstractAeroPipeline(std::string &Aparams, std::string &Aw
 	p.add("section_Physical","Angle_of_Attack", Parameters::DOUBLE_P);
 
 	p.add("section_Extrusion","Number_of_layers", Parameters::INT_P);
+	p.add("section_Extrusion","insertions_allowed", Parameters::BOOL_P);
 	p.add("section_Extrusion","x_lim_insertions", Parameters::DOUBLE_P);
 	p.add("section_Extrusion","y_lim_insertions", Parameters::DOUBLE_P);
 	p.add("section_Extrusion","z_lim_insertions", Parameters::DOUBLE_P);
@@ -74,6 +75,7 @@ AbstractAeroPipeline::AbstractAeroPipeline(std::string &Aparams, std::string &Aw
 	p.get("section_Physical","Angle_of_Attack", m_params.angle_attack);
 
 	p.get("section_Extrusion","Number_of_layers", m_params.nbr_couches);
+	p.get("section_Extrusion","insertions_allowed", m_params.insertions_allowed);
 	p.get("section_Extrusion","x_lim_insertions", m_params.x_lim);
 	p.get("section_Extrusion","y_lim_insertions", m_params.y_lim);
 	p.get("section_Extrusion","z_lim_insertions", m_params.z_lim);

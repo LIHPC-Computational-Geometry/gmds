@@ -892,6 +892,146 @@ Utils::buildEfromFandConnectivies(Mesh *Amesh)
 	}
 }
 /*----------------------------------------------------------------------------*/
+void
+Utils::orientRegion(Mesh *m, Region r)
+{
+	std::vector<Node> r_nodes = r.get<Node>();
+	math::Point r_center = r.center();
+
+	if (r.type()==GMDS_HEX)	// Hexa
+	{
+		// Check the orientation of one quad
+		math::Vector3d v1 = r_nodes[1].point() - r_nodes[0].point() ;
+		math::Vector3d v2 = r_nodes[2].point() - r_nodes[0].point() ;
+
+		math::Point p = (r_nodes[0].point() + r_nodes[1].point() + r_nodes[2].point()) ;
+		p.setX(p.X()/3.0);
+		p.setY(p.Y()/3.0);
+		p.setZ(p.Z()/3.0);
+		double orient = (v1.cross(v2)).dot(p-r_center);
+		if (orient >= 0)	// Normales sortantes je crois ?
+		{
+			std::cout << "Hexa reoriented" << std::endl;
+			std::vector<Node> r_nodes_new;
+			r_nodes_new.push_back(r_nodes[0]);
+			r_nodes_new.push_back(r_nodes[3]);
+			r_nodes_new.push_back(r_nodes[2]);
+			r_nodes_new.push_back(r_nodes[1]);
+			r_nodes_new.push_back(r_nodes[4]);
+			r_nodes_new.push_back(r_nodes[7]);
+			r_nodes_new.push_back(r_nodes[6]);
+			r_nodes_new.push_back(r_nodes[5]);
+			r.set(r_nodes_new);
+		}
+
+		/*
+		// Check the orientation of one quad
+		math::Vector3d v1 = r_nodes[1].point() - r_nodes[0].point() ;
+		math::Vector3d v2 = r_nodes[2].point() - r_nodes[0].point() ;
+
+		math::Point p = (r_nodes[0].point() + r_nodes[1].point() + r_nodes[2].point()) ;
+		p.setX(p.X()/3.0);
+		p.setY(p.Y()/3.0);
+		p.setZ(p.Z()/3.0);
+		double orient = (v1.cross(v2)).dot(p-r_nodes[0].point());
+		if (orient >= 0)	// Sens trigo
+		{
+			std::cout << "Hexa reoriented" << std::endl;
+			std::vector<Node> r_nodes_new;
+			r_nodes_new.push_back(r_nodes[0]);
+			r_nodes_new.push_back(r_nodes[3]);
+			r_nodes_new.push_back(r_nodes[2]);
+			r_nodes_new.push_back(r_nodes[1]);
+			r_nodes_new.push_back(r_nodes[4]);
+			r_nodes_new.push_back(r_nodes[7]);
+			r_nodes_new.push_back(r_nodes[6]);
+			r_nodes_new.push_back(r_nodes[5]);
+			r.set(r_nodes_new);
+		}
+
+		// Other faces
+		r_nodes = r.get<Node>();
+		std::cout << "r nodes size: " << r_nodes.size() << std::endl;
+		p = (r_nodes[0].point() + r_nodes[1].point() + r_nodes[5].point()) ;
+		p.setX(p.X()/3.0);
+		p.setY(p.Y()/3.0);
+		p.setZ(p.Z()/3.0);
+		v1 = r_nodes[1].point() - r_nodes[0].point() ;
+		v2 = r_nodes[5].point() - r_nodes[0].point() ;
+		orient = (v1.cross(v2)).dot(p-r_nodes[0].point());
+		if (orient >= 0)	// Sens trigo
+		{
+			std::cout << "Hexa reoriented" << std::endl;
+			std::vector<Node> r_nodes_new;
+			r_nodes_new.push_back(r_nodes[4]);
+			r_nodes_new.push_back(r_nodes[5]);
+			r_nodes_new.push_back(r_nodes[6]);
+			r_nodes_new.push_back(r_nodes[7]);
+			r_nodes_new.push_back(r_nodes[0]);
+			r_nodes_new.push_back(r_nodes[1]);
+			r_nodes_new.push_back(r_nodes[2]);
+			r_nodes_new.push_back(r_nodes[3]);
+			r.set(r_nodes_new);
+		}
+		 */
+
+		 /*
+		// Other faces
+		r_nodes = r.get<Node>();
+		p = (r_nodes[1].point() + r_nodes[2].point() + r_nodes[5].point() + r_nodes[6].point()) ;
+		p.setX(p.X()/4.0);
+		p.setY(p.Y()/4.0);
+		p.setZ(p.Z()/4.0);
+		v1 = r_nodes[1].point() - r_nodes[5].point() ;
+		v2 = r_nodes[2].point() - r_nodes[5].point() ;
+		orient = (v1.cross(v2)).dot(p-r_nodes[5].point());
+		if (orient >= 0)	// Sens trigo
+		{
+			std::cout << "Hexa reoriented" << std::endl;
+			std::vector<Node> r_nodes_new;
+			r_nodes_new.push_back(r_nodes[4]);
+			r_nodes_new.push_back(r_nodes[5]);
+			r_nodes_new.push_back(r_nodes[6]);
+			r_nodes_new.push_back(r_nodes[7]);
+			r_nodes_new.push_back(r_nodes[0]);
+			r_nodes_new.push_back(r_nodes[1]);
+			r_nodes_new.push_back(r_nodes[2]);
+			r_nodes_new.push_back(r_nodes[3]);
+			r.set(r_nodes_new);
+		}
+		 */
+
+	}
+	else if (r.type()==GMDS_PYRAMID)
+	{
+		// Check the orientation of the base
+		math::Vector3d v1 = r_nodes[1].point() - r_nodes[0].point() ;
+		math::Vector3d v2 = r_nodes[2].point() - r_nodes[0].point() ;
+
+		math::Point p = (r_nodes[0].point() + r_nodes[1].point() + r_nodes[2].point()) ;
+		p.setX(p.X()/3.0);
+		p.setY(p.Y()/3.0);
+		p.setZ(p.Z()/3.0);
+		double orient = (v1.cross(v2)).dot(p-r_center);
+		if (orient >= 0)	// Sens trigo
+		{
+			std::cout << "Pyramid reoriented" << std::endl;
+			std::vector<Node> r_nodes_new;
+			r_nodes_new.push_back(r_nodes[0]);
+			r_nodes_new.push_back(r_nodes[3]);
+			r_nodes_new.push_back(r_nodes[2]);
+			r_nodes_new.push_back(r_nodes[1]);
+			r_nodes_new.push_back(r_nodes[4]);
+			r.set(r_nodes_new);
+		}
+	}
+	else
+	{
+		std::cout << "WARNING in orientRegion: Region type not supported." << std::endl;
+		std::cout << "Type: " << r.type() << std::endl;
+	}
+}
+/*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/
 }  // namespace gmds
