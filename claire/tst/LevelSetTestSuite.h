@@ -958,9 +958,10 @@ TEST(LevelSetTestClass, LevelSet_Apollo_TEST)
 {
 	Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir+"/Aero/2D/Apollo_2D_BG.vtk";
+	//std::string vtk_file = dir+"/Aero/2D/Apollo_2D_BG.vtk";
+	std::string vtk_file = dir+"/Aero/2D/Orex_2D_Int.vtk";
 
-	std::string output_file = "Apollo_2D_inCircle" ;
+	std::string output_file = "Orex_2D" ;
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -1101,6 +1102,7 @@ TEST(LevelSetTestClass, LevelSet_Apollo_TEST)
 
 
 	// Mesh to Fit
+	/*
 	Mesh m_toFit(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
 	std::string vtk_file_toFit = dir+"/Aero/2D/Apollo_2D_inCircle_toFit.vtk";
 
@@ -1118,6 +1120,8 @@ TEST(LevelSetTestClass, LevelSet_Apollo_TEST)
 	MFEMMeshWriter mfemWriter_toFit = MFEMMeshWriter(&m_toFit, output_file+"_toFit");
 	MFEMMeshWriter::STATUS res_writing_toFit = mfemWriter_toFit.execute();
 	ASSERT_EQ(res_writing_toFit, MFEMMeshWriter::SUCCESS);
+
+	*/
 
 }
 

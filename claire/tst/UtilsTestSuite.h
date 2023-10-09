@@ -567,3 +567,55 @@ TEST(ClaireTestClass, Utils_buildEfromFandConnectivies)
 
 }
 /*----------------------------------------------------------------------------*/
+TEST(ClaireTestClass, Utils_orientRegion)
+{
+	// Test 1: re-orient hex
+	{
+		gmds::Mesh m(gmds::MeshModel(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R | F2E | E2F | R2E | E2R | N2R | N2F | N2E)));
+
+		Node n0 = m.newNode({0, 0, 0});
+		Node n1 = m.newNode({1, 0, 0});
+		Node n2 = m.newNode({1, 1, 0});
+		Node n3 = m.newNode({0, 1, 0});
+
+		Node n4 = m.newNode({0, 0, 1});
+		Node n5 = m.newNode({1, 0, 1});
+		Node n6 = m.newNode({1, 1, 1});
+		Node n7 = m.newNode({0, 1, 1});
+
+		Region r = m.newHex(n0, n1, n2, n3, n4, n5, n6, n7);
+		math::Utils::orientRegion(&m, r);
+
+		std::vector<Node> r_nodes = r.get<Node>();
+		ASSERT_EQ(r_nodes[1].Y(), 1);
+
+		/*
+		IGMeshIOService ioService_geom(&m);
+		VTKWriter writer_geom(&ioService_geom);
+		writer_geom.setCellOptions(N|R);
+		writer_geom.setDataOptions(N|R);
+		writer_geom.write("Utils_orientRegion.vtk");
+		 */
+	}
+
+	// Test 2: re-orient pyramid
+	{
+		gmds::Mesh m(gmds::MeshModel(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R | F2E | E2F | R2E | E2R | N2R | N2F | N2E)));
+
+		Node n0 = m.newNode({0, 0, 0});
+		Node n1 = m.newNode({1, 0, 0});
+		Node n2 = m.newNode({1, 1, 0});
+		Node n3 = m.newNode({0, 1, 0});
+
+		Node n4 = m.newNode({0.5, 0.5, 1});
+
+		Region r = m.newPyramid(n0, n1, n2, n3, n4);
+		math::Utils::orientRegion(&m, r);
+
+		std::vector<Node> r_nodes = r.get<Node>();
+		ASSERT_EQ(r_nodes[1].Y(), 1);
+
+	}
+
+}
+/*----------------------------------------------------------------------------*/

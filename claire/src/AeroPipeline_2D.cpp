@@ -848,7 +848,7 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 	BlockingClassification();
 
 	// TEST FOR MFEM
-	/*
+
 	math::Point p;
 	int compteur(0);
 	for (auto n_id:m_meshHex->nodes())
@@ -888,16 +888,19 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 	doc.updateUpwardConnectivity();
 	doc.orient2DFaces();
 
-	gmds::IGMeshIOService ioService_MFEM(m_meshHex);
-	gmds::VTKWriter vtkWriter_MFEM(&ioService_MFEM);
-	vtkWriter_MFEM.setCellOptions(gmds::N|gmds::F);
-	vtkWriter_MFEM.setDataOptions(gmds::N|gmds::F);
-	std::string dir(".");
-	vtkWriter_MFEM.write("AeroPipeline2D_MFEM_INPUT.vtk");
+	if (m_params.with_debug_files)
+	{
+		gmds::IGMeshIOService ioService_MFEM(m_meshHex);
+		gmds::VTKWriter vtkWriter_MFEM(&ioService_MFEM);
+		vtkWriter_MFEM.setCellOptions(gmds::N | gmds::F);
+		vtkWriter_MFEM.setDataOptions(gmds::N | gmds::F);
+		std::string dir(".");
+		vtkWriter_MFEM.write("AeroPipeline2D_MFEM_INPUT.vtk");
+	}
 
 	MFEMMeshWriter mfemwriter = MFEMMeshWriter(m_meshHex, "Apollo_MFEM_INPUT_toFit");
 	mfemwriter.execute();
-	 */
+
 
 }
 /*------------------------------------------------------------------------*/

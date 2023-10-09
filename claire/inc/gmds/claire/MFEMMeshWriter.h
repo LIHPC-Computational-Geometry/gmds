@@ -52,13 +52,25 @@ class LIB_GMDS_CLAIRE_API MFEMMeshWriter
 	 */
 	void writeElements();
 	/*-------------------------------------------------------------------*/
+	/** @brief Write the elements (regions in 3D)
+	 */
+	void writeElements3D();
+	/*-------------------------------------------------------------------*/
 	/** @brief Write boundary elements (segments in 2D)
 	 */
 	void writeBnd();
 	/*-------------------------------------------------------------------*/
+	/** @brief Write boundary elements (faces in 3D)
+	 */
+	void writeBnd3D();
+	/*-------------------------------------------------------------------*/
 	/** @brief Write the nodes
 	 */
 	void writeNodes();
+	/*-------------------------------------------------------------------*/
+	/** @brief Write the nodes
+	 */
+	void writeNodes3D();
 	/*-------------------------------------------------------------------*/
 
  private:

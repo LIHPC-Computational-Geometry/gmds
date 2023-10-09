@@ -10,6 +10,7 @@
 #include <gmds/claire/LevelSetCombined.h>
 #include <gmds/claire/LeastSquaresGradientComputation.h>
 #include <gmds/claire/IntervalAssignment_3D.h>
+#include <gmds/claire/MFEMMeshWriter.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/io/IGMeshIOService.h>
@@ -165,6 +166,90 @@ AeroPipeline_3D::EcritureMaillage(){
 	vtkWriter2.setCellOptions(gmds::N|gmds::F);
 	vtkWriter2.setDataOptions(gmds::N|gmds::F);
 	vtkWriter2.write("AeroPipeline3D_Tetra.vtk");
+
+	// TEST FOR MFEM
+	/*
+	if (m_params.with_debug_files)
+	{
+		MeshDoctor doc(m_meshHex);
+		doc.buildFacesAndR2F();
+		doc.updateUpwardConnectivity();
+		doc.orient2DFaces();
+
+		std::cout << "Nbr elements avant: " << m_meshHex->getNbRegions() << std::endl;
+		for (auto r_id:m_meshHex->regions())
+		{
+			math::Utils::orientRegion(m_meshHex, m_meshHex->get<Region>(r_id));
+		}
+		std::cout << "Nbr elements après: " << m_meshHex->getNbRegions() << std::endl;
+
+		gmds::IGMeshIOService ioService_MFEM(m_meshHex);
+		gmds::VTKWriter vtkWriter_MFEM(&ioService_MFEM);
+		vtkWriter_MFEM.setCellOptions(gmds::N | gmds::R);
+		vtkWriter_MFEM.setDataOptions(gmds::N | gmds::R);
+		std::string dir(".");
+		vtkWriter_MFEM.write("Apollo_3D_Blocks.vtk");
+	}
+	 */
+
+	{
+		std::cout << "MFEM writing..." << std::endl;
+		Variable<int>* var_couche = m_meshHex->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+		math::Point p;
+		int compteur(0);
+		for (auto n_id:m_meshHex->nodes())
+		{
+			if (var_couche->value(n_id)==0)
+			{
+				Node n = m_meshHex->get<Node>(n_id);
+				p = p + n.point();
+				compteur++;
+			}
+		}
+		if (compteur != 0)
+		{
+			p.setX(p.X() / compteur);
+			p.setY(p.Y() / compteur);
+		}
+		Node n_new = m_meshHex->newNode(p);
+		for (auto f_id:m_meshHex->faces())
+		{
+			Face f = m_meshHex->get<Face>(f_id);
+			std::vector<Node> f_nodes = f.get<Node>();
+			if (var_couche->value(f_nodes[0].id())==0
+			    && var_couche->value(f_nodes[1].id())==0
+			    && var_couche->value(f_nodes[2].id())==0
+			    && var_couche->value(f_nodes[3].id())==0)
+			{
+				m_meshHex->newPyramid(f_nodes[0], f_nodes[1], f_nodes[2], f_nodes[3], n_new);
+			}
+		}
+
+		if (m_params.with_debug_files)
+		{
+			MeshDoctor doc(m_meshHex);
+			doc.buildFacesAndR2F();
+			doc.updateUpwardConnectivity();
+			doc.orient2DFaces();
+
+			std::cout << "Nbr elements avant: " << m_meshHex->getNbRegions() << std::endl;
+			for (auto r_id:m_meshHex->regions())
+			{
+				math::Utils::orientRegion(m_meshHex, m_meshHex->get<Region>(r_id));
+			}
+			std::cout << "Nbr elements après: " << m_meshHex->getNbRegions() << std::endl;
+
+			gmds::IGMeshIOService ioService_MFEM(m_meshHex);
+			gmds::VTKWriter vtkWriter_MFEM(&ioService_MFEM);
+			vtkWriter_MFEM.setCellOptions(gmds::N | gmds::R);
+			vtkWriter_MFEM.setDataOptions(gmds::N | gmds::R);
+			std::string dir(".");
+			vtkWriter_MFEM.write("AeroPipeline3D_Blocking_withPyramids.vtk");
+		}
+
+		MFEMMeshWriter mfemwriter = MFEMMeshWriter(m_meshHex, "AeroPipeline3D_Blocking_toFit");
+		mfemwriter.execute();
+	}
 
 }
 /*------------------------------------------------------------------------*/
