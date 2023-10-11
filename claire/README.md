@@ -99,11 +99,13 @@ The main difference for the 3D case is that you have to give in INPUT the blocki
 
 ## WARNINGS
 * The number of layers can not be less than at least 2.
+* **Boundary_layer_thicnkess** value has to be in the same unit as your input tri/tet mesh.
+* In 2D, no matter if you want an **axisymetry** blocking as a result, and if you put the parameter to **True**, the input triangular mesh has to be of the whole fluid domain.
 * Insertions/Contractions of blocks are not allowed on the **first** and **last** layer of blocks for the 2D algorithm. Therefore, if you want to generate a mesh with only two layers of blocks, there will not be any insertions.
 * If you don't use the axisymmetric mode, there is no reason to have block corners on the **y axis**.
 * For now, you will not be able to generate a final mesh with the 3D algorithm. However, you can generate a first blocking.
 * Pay attention to the _param.ini_ file: it seems like if you want to set a parameter to a tiny value, it can be converted to 0 when reading in the algorithm.
-Example: if _Edge_Size_First_Ortho_Wall_ is set to 1e-6, the value will be read as 1e-6. But if you decide to put 1e-7, the value read will be 0.
+Example: if _Edge_Size_First_Ortho_Wall_ is set to 1e-6, the value will be read as 1e-6. But if you decide to put 1e-7, the value read will be 0. To work with lower value, you should consider to change the scale of your input mesh.
 * The methods for vector field computation 0 and 1 are inverted between the 2D and 3D algorithm.
 
 ## Advices
