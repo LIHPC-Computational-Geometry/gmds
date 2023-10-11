@@ -10,6 +10,7 @@
 #include <gmds/ig/Mesh.h>
 #include <gmds/claire/Front_3D.h>
 #include <gmds/claire/FastLocalize.h>
+#include <gmds/claire/Params.h>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
 class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
@@ -32,14 +33,24 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	};
 	/*-------------------------------------------------------------------*/
 	/** @brief Constructor.
-         *  @param[in] AMeshT the triangular mesh where we work on
+         *  @param[in] AMesh the hex mesh we're building
          *  @param[in] AFront front 3D
+         *  @param[in] Aparams params aero
          *  @param[in] A_EdgesClassification variable for the edges classification
          *  @param[in] A_NbrFeatureEdgesAroundNode variable for the nodes classification
+         *  @param[in] AMeshT the tet background mesh
+         *  @param[in] Afl fast localize on the tet mesh
+         *  @param[in] A_VectorField vector field defined on the tet mesh, used for the extrusion
          *
 	 */
-	FrontEdgesNodesClassification_3D(Mesh *AMesh, Front_3D *AFront, Variable<int>* A_EdgesClassification, Variable<int>*A_NbrFeatureEdgesAroundNode,
-	                                 Mesh *AMesh_T, FastLocalize *Afl, Variable<math::Vector3d>* A_VectorField);
+	FrontEdgesNodesClassification_3D(Mesh *AMesh,
+	                                 Front_3D *AFront,
+	                                 ParamsAero &Aparams,
+	                                 Variable<int>* A_EdgesClassification,
+	                                 Variable<int>*A_NbrFeatureEdgesAroundNode,
+	                                 Mesh *AMesh_T,
+	                                 FastLocalize *Afl,
+	                                 Variable<math::Vector3d>* A_VectorField);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Destructor.
@@ -208,10 +219,12 @@ class LIB_GMDS_CLAIRE_API FrontEdgesNodesClassification_3D
 	void SemiEdgesCleaner();
 	/*-------------------------------------------------------------------*/
  private:
-	/** the quad mesh we work on */
+	/** the hex mesh we're building */
 	Mesh *m_mesh;
 	/** the tet mesh we work on */
 	Mesh *m_mesh_T;
+	/** Params pour l'aéro */
+	ParamsAero m_params_aero;
 	/** k-d tree */
 	FastLocalize *m_fl;
 	/** Vector Field for extrusion */
