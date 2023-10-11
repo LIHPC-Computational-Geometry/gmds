@@ -10,7 +10,6 @@
 #include <gmds/claire/AeroExtrusion_3D.h>
 #include <gmds/claire/AdvectedPointRK4_3D.h>
 #include <gmds/claire/FrontEdgesNodesClassification_3D.h>
-#include <gmds/claire/FrontPaths_3D.h>
 #include <gmds/claire/NodeNeighbourhoodOnFront_3D.h>
 #include <gmds/claire/LayerStructureManager_3D.h>
 #include <gmds/claire/PatternFace.h>
@@ -52,8 +51,6 @@ AeroExtrusion_3D::AeroExtrusion_3D(Mesh *AMeshT, Mesh *AMeshH, ParamsAero& Apara
 AeroExtrusion_3D::STATUS
 AeroExtrusion_3D::execute()
 {
-	//double pas_couche = 1.0/m_params_aero.nbr_couches ;
-
 	std::vector<TCellID> surface_block_corners_Id;
 	std::vector<TCellID> surface_block_faces_Id;
 
@@ -133,9 +130,6 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_IN, dist_cible, A_distance, A_vectors);
 
-	// Init the face_info type for the faces of the front
-	//InitFaceStructInfo(Front_IN, map_new_nodes);
-
 	// Variables
 	Variable<int>* var_NODE_couche_id = m_meshH->getVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	Variable<int>* var_front_edges_classification = m_meshH->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
@@ -165,8 +159,6 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 	TInt mark_NodesTemplates = Paths.getMarkNodesForTemplates();
 	*/
 
-	// Init the edge_info type for the edges of the front
-	//InitEdgeStructInfo(Front_IN);
 	TInt mark_edgesTreated = m_meshH->newMark<Edge>();
 	TInt mark_facesTreated = m_meshH->newMark<Face>();
 
@@ -401,9 +393,6 @@ AeroExtrusion_3D::Compute1stLayer(Front_3D Front_IN, Variable<double>* A_distanc
 	std::cout << "---------> build layer: " << Front_IN.getFrontID()+1 << std::endl;
 
 	std::map<TCellID, TCellID> map_new_nodes = ComputeIdealPositions(Front_IN, m_params_aero.delta_cl, A_distance, A_vectors);
-
-	// Init the face_info type
-	//InitFaceStructInfo(Front_IN, map_new_nodes);
 
 	LayerStructureManager_3D StructManager = LayerStructureManager_3D(m_meshH, &Front_IN, map_new_nodes);
 
