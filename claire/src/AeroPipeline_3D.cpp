@@ -69,18 +69,13 @@ AeroPipeline_3D::execute(){
 	// Calcul du gradient du champ de Level Set
 	std::cout << "-> Calcul du gradient du champ des Level Sets" << std::endl;
 	t_start = clock();
-	//m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
-	//LeastSquaresGradientComputation grad3D(m_meshTet, m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
-	//                                       m_meshTet->getVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient"));
-	//grad3D.execute();
 	ComputeVectorFieldForExtrusion();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 
-	// Generate the blocking of the geometry surface.
-	GeometrySurfaceBlockingGeneration();
-	// Link the surface blocking to the geometry.
-	SurfaceBlockingClassification();
+	GeometrySurfaceBlockingGeneration();	// Generate the blocking of the geometry surface.
+	SurfaceBlockingClassification();			// Link the surface blocking to the geometry.
+
 	// Write the surface blocking to check the classification
 	gmds::IGMeshIOService ioService(m_meshHex);
 	gmds::VTKWriter vtkWriter(&ioService);
@@ -140,9 +135,6 @@ AeroPipeline_3D::LectureMaillage(){
 
 }
 /*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
 void
 AeroPipeline_3D::EcritureMaillage(){
 
@@ -194,7 +186,39 @@ AeroPipeline_3D::EcritureMaillage(){
 
 	{
 		std::cout << "MFEM writing..." << std::endl;
+		FastLocalize fl = FastLocalize(m_meshTet);
 		Variable<int>* var_couche = m_meshHex->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+		Variable<math::Vector3d>* var_VectorsForExtrusion = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
+		std::map<TCellID,TCellID> new_nodes;
+		for (auto n_id:m_meshHex->nodes())
+		{
+			if (var_couche->value(n_id)==0)
+			{
+				Cell::Data data = fl.find(m_meshHex->get<Node>(n_id).point());
+				//Node n_closest = m_meshHex->get<Node>(data.id);
+				math::Vector3d v = var_VectorsForExtrusion->value(data.id).normalize();
+				math::Point p_new = m_meshHex->get<Node>(n_id).point() + -1*(m_params.delta_cl/2.0)*v;
+				Node n_new = m_meshHex->newNode(p_new);
+				new_nodes[n_id] = n_new.id();
+				var_couche->set(n_new.id(), -1);
+			}
+		}
+		for (auto f_id:m_meshHex->faces())
+		{
+			Face f = m_meshHex->get<Face>(f_id);
+			std::vector<Node> f_nodes = f.get<Node>();
+			if (var_couche->value(f_nodes[0].id())==0
+			    && var_couche->value(f_nodes[1].id())==0
+			    && var_couche->value(f_nodes[2].id())==0
+			    && var_couche->value(f_nodes[3].id())==0)
+			{
+				Region r = m_meshHex->newHex(f_nodes[0].id(), f_nodes[1].id(), f_nodes[2].id(), f_nodes[3].id(),
+				                  new_nodes[f_nodes[0].id()], new_nodes[f_nodes[1].id()], new_nodes[f_nodes[2].id()], new_nodes[f_nodes[3].id()]);
+				var_couche->set(r.id(), -1);
+			}
+		}
+
+		/*
 		math::Point p;
 		int compteur(0);
 		for (auto n_id:m_meshHex->nodes())
@@ -224,6 +248,7 @@ AeroPipeline_3D::EcritureMaillage(){
 				m_meshHex->newPyramid(f_nodes[0], f_nodes[1], f_nodes[2], f_nodes[3], n_new);
 			}
 		}
+		*/
 
 		if (m_params.with_debug_files)
 		{
@@ -252,9 +277,6 @@ AeroPipeline_3D::EcritureMaillage(){
 	}
 
 }
-/*------------------------------------------------------------------------*/
-
-
 /*------------------------------------------------------------------------*/
 void
 AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
@@ -892,7 +914,6 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 				min_dist = (n.point()-p_proj).norm();
 				geom_dim = 1;
 				geom_id = point->id();
-				//std::cout << "point " << geom_id << ", distance " << min_dist << std::endl;
 			}
 		}
 
@@ -906,7 +927,6 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 				min_dist = (n.point()-p_proj).norm();
 				geom_dim = 2;
 				geom_id = curve->id();
-				//std::cout << "curve " << geom_id << ", distance " << min_dist << std::endl;
 			}
 		}
 
@@ -921,7 +941,6 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 				min_dist = (n.point()-p_proj).norm();
 				geom_dim = 3;
 				geom_id = surface->id();
-				//std::cout << "surface " << geom_id << ", distance " << min_dist << std::endl;
 			}
 		}
 
@@ -929,15 +948,12 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		// minimize the distance
 		if(geom_dim == 1){
 			m_linker_HG->linkNodeToPoint(n_id, geom_id);
-			//std::cout << "Node " << n_id << " classified on POINT " << geom_id << std::endl;
 		}
 		else if(geom_dim==2){
 			m_linker_HG->linkNodeToCurve(n_id, geom_id);
-			//std::cout << "Node " << n_id << " classified on CURVE " << geom_id << std::endl;
 		}
 		else if(geom_dim==3){
 			m_linker_HG->linkNodeToSurface(n_id, geom_id);
-			//std::cout << "Node " << n_id << " classified on SURFACE " << geom_id << std::endl;
 		}
 
 	}
@@ -1029,10 +1045,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		{
 			cad::GeomCurve* curve_0 = m_manager->getCurve(geom_id_e0);
 			cad::GeomCurve* curve_1 = m_manager->getCurve(geom_id_e1);
-			std::cout << geom_id_e0 << std::endl;
-			std::cout << geom_id_e1 << std::endl;
 			geom_id = m_manager->getCommonSurface(curve_0, curve_1);
-			std::cout << geom_id << std::endl;
 		}
 		// Link the face to the surface
 		m_linker_HG->linkFaceToSurface(f_id, geom_id);

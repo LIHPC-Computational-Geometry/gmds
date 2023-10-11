@@ -12,9 +12,16 @@
 /*------------------------------------------------------------------------*/
 using namespace gmds;
 /*------------------------------------------------------------------------*/
-FrontEdgesNodesClassification_3D::FrontEdgesNodesClassification_3D(Mesh *AMesh, Front_3D *AFront, Variable<int>* A_EdgesClassification, Variable<int>*A_NbrFeatureEdgesAroundNode,
-                                                                   Mesh *AMesh_T, FastLocalize *Afl, Variable<math::Vector3d>* A_VectorField) :
+FrontEdgesNodesClassification_3D::FrontEdgesNodesClassification_3D(Mesh *AMesh,
+                                                                   Front_3D *AFront,
+                                                                   ParamsAero &Aparams,
+                                                                   Variable<int>* A_EdgesClassification,
+                                                                   Variable<int>*A_NbrFeatureEdgesAroundNode,
+                                                                   Mesh *AMesh_T,
+                                                                   FastLocalize *Afl,
+                                                                   Variable<math::Vector3d>* A_VectorField) :
   m_mesh(AMesh),
+  m_params_aero(Aparams),
   m_mesh_T(AMesh_T),
   m_fl(Afl),
   m_Front(AFront)
@@ -430,6 +437,15 @@ FrontEdgesNodesClassification_3D::isValidNodeForTemplate(TCellID n_id)
 		isValid = true;	// Template 2 END, 1 REVERSAL
 	}
 
+	/*
+	if (m_mesh->get<Node>(n_id).X() < m_params_aero.x_lim
+	    or m_mesh->get<Node>(n_id).Y() < m_params_aero.y_lim
+	    or m_mesh->get<Node>(n_id).Z() < m_params_aero.z_lim)
+	{
+		isValid = false;
+	}
+	 */
+
 	return isValid;
 }
 /*------------------------------------------------------------------------*/
@@ -812,6 +828,15 @@ FrontEdgesNodesClassification_3D::isValidNodeForPathLimit(TCellID n_id, int type
 	{
 		isValid = false;
 	}
+
+	/*
+	if (m_mesh->get<Node>(n_id).X() < m_params_aero.x_lim
+	    or m_mesh->get<Node>(n_id).Y() < m_params_aero.y_lim
+	    or m_mesh->get<Node>(n_id).Z() < m_params_aero.z_lim)
+	{
+		isValid = false;
+	}
+	 */
 
 	return isValid;
 }

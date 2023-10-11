@@ -911,7 +911,7 @@ Utils::orientRegion(Mesh *m, Region r)
 		double orient = (v1.cross(v2)).dot(p-r_center);
 		if (orient >= 0)	// Normales entrantes je crois ?
 		{
-			std::cout << "Hexa reoriented 1" << std::endl;
+			//std::cout << "Hexa reoriented 1" << std::endl;
 			std::vector<Node> r_nodes_new;
 			r_nodes_new.push_back(r_nodes[0]);
 			r_nodes_new.push_back(r_nodes[3]);
@@ -935,7 +935,7 @@ Utils::orientRegion(Mesh *m, Region r)
 		orient = (v1.cross(v2)).dot(p-r_center);
 		if (orient >= 0)	// Normales entrantes je crois
 		{
-			std::cout << "Hexa reoriented 2" << std::endl;
+			//std::cout << "Hexa reoriented 2" << std::endl;
 			std::vector<Node> r_nodes_new;
 			r_nodes_new.push_back(r_nodes[4]);
 			r_nodes_new.push_back(r_nodes[5]);
@@ -962,7 +962,7 @@ Utils::orientRegion(Mesh *m, Region r)
 		double orient = (v1.cross(v2)).dot(p-r_center);
 		if (orient <= 0)	// Normales entrantes
 		{
-			std::cout << "Pyramid reoriented" << std::endl;
+			//std::cout << "Pyramid reoriented" << std::endl;
 			std::vector<Node> r_nodes_new;
 			r_nodes_new.push_back(r_nodes[0]);
 			r_nodes_new.push_back(r_nodes[3]);
