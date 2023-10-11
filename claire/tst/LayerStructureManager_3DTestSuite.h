@@ -4,9 +4,6 @@
 #include <gmds/claire/LayerStructureManager_3D.h>
 #include <gmds/claire/Utils.h>
 #include <gmds/ig/Mesh.h>
-#include <gmds/ig/MeshDoctor.h>
-#include <gmds/igalgo/BoundaryOperator2D.h>
-#include <gmds/igalgo/GridBuilder.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>
 #include <gmds/io/VTKReader.h>
@@ -18,7 +15,7 @@ using namespace gmds;
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-TEST(ClaireTestClass, LayerStructureManager_3D)
+TEST(ClaireTestClass, test_LayerStructureManager_3D)
 {
 	gmds::Mesh m(gmds::MeshModel(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R | F2E | E2F | R2E | E2R | N2R | N2F | N2E)));
 
@@ -71,6 +68,14 @@ TEST(ClaireTestClass, LayerStructureManager_3D)
 	// Create the Front
 	Front_3D F0 = Front_3D(0, F0_nodes, F0_faces);
 
+	Variable<int>* var_front_edges_classification = m.getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
+	Variable<int>* var_node_couche_id = m.getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+
+	for (auto n_id:F0_nodes)
+	{
+		var_node_couche_id->set(n_id, 0);
+	}
+
 	// Write the front F0
 	IGMeshIOService ioService_geom(&m);
 	VTKWriter writer_geom(&ioService_geom);
@@ -84,14 +89,91 @@ TEST(ClaireTestClass, LayerStructureManager_3D)
 	{
 		Node n_new = m.newNode(m.get<Node>(n_id).point());
 		map_new_nodes[n_id] = n_new.id() ;
+		var_node_couche_id->set(n_new.id(), 1);
 	}
+
+	// Classify some edges
+	TCellID e_corner_id = math::Utils::CommonEdge(&m, n8.id(), n14.id());
+	TCellID e_end_id = math::Utils::CommonEdge(&m, n4.id(), n5.id());
+	TCellID e_reversal_id = math::Utils::CommonEdge(&m, n0.id(), n1.id());
+
+	var_front_edges_classification->set(e_corner_id, 1);
+	var_front_edges_classification->set(e_end_id, 2);
+	var_front_edges_classification->set(e_reversal_id, 3);
 
 	// Create Structure Manager
 	LayerStructureManager_3D lsm = LayerStructureManager_3D(&m, &F0, map_new_nodes);
 
 	ASSERT_EQ(lsm.isFaceTreated(f0_id), false);
+	lsm.setFaceTreated(f0_id);
+	ASSERT_EQ(lsm.isFaceTreated(f0_id), true);
 
-	ASSERT_EQ(0, 0);
+	TCellID e_id = math::Utils::CommonEdge(&m, n0.id(), n1.id());
+	ASSERT_EQ(lsm.isEdgeTreated(e_id), false);
+	lsm.setEdgeTreated(e_id);
+	ASSERT_EQ(lsm.isEdgeTreated(e_id), true);
+
+	ASSERT_EQ(lsm.getFaceIdealNextNode(f0_id, n0.id()), map_new_nodes[n0.id()]);
+	lsm.setFaceNextNode(f0_id, n0.id(), n1.id());
+	ASSERT_EQ(lsm.getFaceNextNode(f0_id, n0.id()), n1.id());
+	lsm.setFaceNextNode(f0_id, n0.id(), map_new_nodes[n0.id()]);
+
+	// Create fake nodes to test structure
+	Node n_8_5 = m.newNode(n8.point());
+	Node n_8_8 = m.newNode(n8.point());
+	Node n_14_5 = m.newNode(n14.point());
+	Node n_14_8 = m.newNode(n14.point());
+
+	// Test END structure
+	ASSERT_EQ(lsm.isEndFaceCreated(e_end_id, n6.id()), false);
+	lsm.setEndFaceCreated(e_end_id, n6.id());
+	ASSERT_EQ(lsm.isEndFaceCreated(e_end_id, n6.id()), true);
+
+	// Test CORNER structure
+	ASSERT_EQ(lsm.isCornerFaceCreated(e_corner_id, n8.id()), false);
+	ASSERT_EQ(lsm.isCornerFaceCreated(e_corner_id, n14.id()), false);
+	lsm.setCornerFaceCreated(e_corner_id, n8.id());
+	lsm.setCornerFaceCreated(e_corner_id, n14.id());
+	ASSERT_EQ(lsm.isCornerFaceCreated(e_corner_id, n8.id()), true);
+	ASSERT_EQ(lsm.isCornerFaceCreated(e_corner_id, n14.id()), true);
+	lsm.setCornerNextAdjNode(e_corner_id, f5_id, n8.id(), n_8_5.id());
+	lsm.setCornerNextAdjNode(e_corner_id, f8_id, n8.id(), n_8_8.id());
+	ASSERT_EQ(lsm.getCornerNextAdjNode(e_corner_id, f5_id, n8.id()), n_8_5.id());
+	ASSERT_EQ(lsm.getCornerNextAdjNode(e_corner_id, f8_id, n8.id()), n_8_8.id());
+	lsm.setNextDiagNode(e_corner_id, n8.id(), lsm.getFaceIdealNextNode(f8_id, n8.id()));
+	lsm.setNextDiagNode(e_corner_id, n14.id(), lsm.getFaceIdealNextNode(f8_id, n14.id()));
+	ASSERT_EQ(lsm.getNextDiagNode(e_corner_id, n8.id()), map_new_nodes[n8.id()]);
+	ASSERT_EQ(lsm.getNextDiagNode(e_corner_id, n14.id()), map_new_nodes[n14.id()]);
+
+	// Test REVERSAL structure
+	// Create fake nodes to test data structure
+	Node n_adj_0_1 = m.newNode(n0.point());	// Adjacent node of n0 in face f1 side
+	Node n_adj_1_1 = m.newNode(n1.point());
+	Node n_adj_0_0 = m.newNode(n0.point());
+	Node n_adj_1_0 = m.newNode(n1.point());
+	Node n_diag_0_1 = m.newNode(n0.point());	// Diag node of node n0 in face f1 side
+	Node n_diag_1_1 = m.newNode(n1.point());
+	Node n_diag_0_0 = m.newNode(n0.point());
+	Node n_diag_1_0 = m.newNode(n1.point());
+
+	ASSERT_EQ(lsm.areReversalFacesCreated(e_reversal_id, n0.id()), false);
+	ASSERT_EQ(lsm.areReversalFacesCreated(e_reversal_id, n1.id()), false);
+	lsm.setReversalFacesCreated(e_reversal_id, n0.id());
+	lsm.setReversalFacesCreated(e_reversal_id, n1.id());
+	ASSERT_EQ(lsm.areReversalFacesCreated(e_reversal_id, n0.id()), true);
+	ASSERT_EQ(lsm.areReversalFacesCreated(e_reversal_id, n1.id()), true);
+	lsm.setReversalNextAdjNode(e_reversal_id, f0_id, n0.id(), n_adj_0_0.id());
+	lsm.setReversalNextAdjNode(e_reversal_id, f0_id, n1.id(), n_adj_1_0.id());
+	lsm.setReversalNextAdjNode(e_reversal_id, f1_id, n0.id(), n_adj_0_1.id());
+	lsm.setReversalNextAdjNode(e_reversal_id, f1_id, n1.id(), n_adj_1_1.id());
+	ASSERT_EQ(lsm.getReversalNextAdjNode(e_reversal_id, f0_id, n0.id()), n_adj_0_0.id());
+	ASSERT_EQ(lsm.getReversalNextAdjNode(e_reversal_id, f0_id, n1.id()), n_adj_1_0.id());
+	ASSERT_EQ(lsm.getReversalNextAdjNode(e_reversal_id, f1_id, n0.id()), n_adj_0_1.id());
+	ASSERT_EQ(lsm.getReversalNextAdjNode(e_reversal_id, f1_id, n1.id()), n_adj_1_1.id());
+	lsm.setReversalNextMediumNode(e_reversal_id, n0.id(), map_new_nodes[n0.id()]);
+	lsm.setReversalNextMediumNode(e_reversal_id, n1.id(), map_new_nodes[n1.id()]);
+	ASSERT_EQ(lsm.getReversalNextMediumNode(e_reversal_id, n0.id()), map_new_nodes[n0.id()]);
+	ASSERT_EQ(lsm.getReversalNextMediumNode(e_reversal_id, n1.id()), map_new_nodes[n1.id()]);
 
 }
 /*----------------------------------------------------------------------------*/
