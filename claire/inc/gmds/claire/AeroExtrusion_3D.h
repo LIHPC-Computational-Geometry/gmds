@@ -43,27 +43,6 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	STATUS execute();
 	/*-------------------------------------------------------------------*/
 
-	struct face_info
-	{
-		TCellID     					f_id;
-		std::map<TCellID, TCellID> next_ideal_nodes;	// (f_node_id, next_ideal_n_id)
-		std::map<TCellID, TCellID> next_nodes;			// (f_node_id, next_n_id)
-	};
-	struct edge_info
-	{
-		TCellID     					e_id;
-		int 								singularity_type;
-		std::map<TCellID, bool>		CORNER_n_face_created;
-		std::map<TCellID, bool>		END_n_face_created;
-		std::map<std::pair<TCellID, TCellID>, TCellID> CORNER_next_nodes;			// ((f_adj_id, e_node_id), next_n_id)
-		std::map<TCellID, TCellID> diag_next_node;
-
-		std::map<TCellID, bool>		REVERSAL_n_faces_created;
-		std::map<std::pair<TCellID, TCellID>, TCellID> REVERSAL_diag_nodes;
-		std::map<std::pair<TCellID, TCellID>, TCellID> REVERSAL_adj_nodes;
-		std::map<TCellID, TCellID> REVERSAL_medium_node;
-	};
-
  private:
 	/*-------------------------------------------------------------------*/
 	/** @brief Calcule la position idéale du prochain noeud pour chaque
@@ -150,10 +129,6 @@ class LIB_GMDS_CLAIRE_API AeroExtrusion_3D
 	Variable<double>* m_DistanceField;
 	/** Vector Field for extrusion */
 	Variable<math::Vector3d>* m_VectorField;
-	/** Infos sur les noeuds auxquels se connecter pour chaque face du front */
-	std::map<TCellID, face_info> m_FaceInfo;
-	/** Infos sur les noeuds auxquels se connecter pour chaque edge du front */
-	std::map<TCellID, edge_info> m_EdgeInfo;
 	/** Compteur d'hexa */
 	int m_iteration;
 	/** Variable on patterns */
