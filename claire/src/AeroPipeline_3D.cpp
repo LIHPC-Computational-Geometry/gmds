@@ -16,6 +16,7 @@
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>
 #include <gmds/io/VTKReader.h>
+#include <gmds/smoothy/LaplacianSmoother.h>
 #include <iostream>
 #include <chrono>
 /*------------------------------------------------------------------------*/
@@ -77,11 +78,14 @@ AeroPipeline_3D::execute(){
 	SurfaceBlockingClassification();			// Link the surface blocking to the geometry.
 
 	// Write the surface blocking to check the classification
-	gmds::IGMeshIOService ioService(m_meshHex);
-	gmds::VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(gmds::N|gmds::F);
-	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("Surface_3D_TEST_CLASSIFICATION.vtk");
+	if (m_params.with_debug_files)
+	{
+		gmds::IGMeshIOService ioService(m_meshHex);
+		gmds::VTKWriter vtkWriter(&ioService);
+		vtkWriter.setCellOptions(gmds::N | gmds::F);
+		vtkWriter.setDataOptions(gmds::N | gmds::F);
+		vtkWriter.write("Surface_3D_GEOM_CLASSIFICATION.vtk");
+	}
 
 	// Extrusion
 	std::cout << "-> Extrusion" << std::endl;
@@ -94,6 +98,12 @@ AeroPipeline_3D::execute(){
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
+
+	BlockingGeometricClassification();	// Geometric classification of the final blocking, according to the geometric classification of the input tet mesh
+	//smoothy::LaplacianSmoother smoother(m_linker_HG);
+	//smoother.smoothCurves();
+	//smoother.smoothSurfaces();
+	//smoother.smoothVolumes(10);
 
 	// Interval Assignment
 	std::cout << "-> Interval Assignment" << std::endl;
@@ -1121,6 +1131,80 @@ AeroPipeline_3D::ComputeVectorFieldForExtrusion()
 		m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_1);
 		m_meshTet->deleteVariable(GMDS_NODE, var_VectorField_2);
 
+	}
+
+}
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_3D::BlockingGeometricClassification()
+{
+	std::vector<cad::GeomSurface*> surfaces;
+	m_manager->getSurfaces(surfaces);
+
+	// Get the exterior surface
+	double xyz_min[3];
+	double xyz_max[3];
+	cad::GeomSurface* surf_ext = surfaces[0];
+	surf_ext->computeBoundingBox(xyz_min, xyz_max);
+	for (auto const surf:surfaces)
+	{
+		double xyz_min_surf[3];
+		double xyz_max_surf[3];
+		surf->computeBoundingBox(xyz_min_surf, xyz_max_surf);
+		if (xyz_min_surf[0] <= xyz_min[0]
+		    && xyz_max[0] <= xyz_max_surf[0]
+		    && xyz_min_surf[1] <= xyz_min[1]
+		    && xyz_max[1] <= xyz_max_surf[1]
+		    && xyz_min_surf[2] <= xyz_min[2]
+		    && xyz_max[2] <= xyz_max_surf[2])
+		{
+			surf_ext = surf;
+			xyz_min[0] = xyz_min_surf[0];
+			xyz_min[1] = xyz_min_surf[1];
+			xyz_min[2] = xyz_min_surf[2];
+			xyz_max[0] = xyz_max_surf[0];
+			xyz_max[1] = xyz_max_surf[1];
+			xyz_max[2] = xyz_max_surf[2];
+		}
+	}
+
+	//--------------------------------//
+	//	  BLOCK NODES CLASSIFICATION   //
+	//--------------------------------//
+	for (auto const n_id:m_meshHex->nodes())
+	{
+		if (m_couche_id->value(n_id) == m_params.nbr_couches)
+		{
+			m_linker_HG->linkNodeToSurface(n_id, surf_ext->id());
+		}
+	}
+
+	//--------------------------------//
+	//	  BLOCK EDGES CLASSIFICATION   //
+	//--------------------------------//
+	for (auto const e_id:m_meshHex->edges())
+	{
+		std::vector<Node> e_nodes = m_meshHex->get<Edge>(e_id).get<Node>();
+		if (m_couche_id->value(e_nodes[0].id()) == m_params.nbr_couches
+		    && m_couche_id->value(e_nodes[1].id()) == m_params.nbr_couches)
+		{
+			m_linker_HG->linkEdgeToSurface(e_id, surf_ext->id());
+		}
+	}
+
+	//--------------------------------//
+	//	  BLOCK FACES CLASSIFICATION   //
+	//--------------------------------//
+	for (auto const f_id:m_meshHex->faces())
+	{
+		std::vector<Node> f_nodes = m_meshHex->get<Face>(f_id).get<Node>();
+		if (m_couche_id->value(f_nodes[0].id()) == m_params.nbr_couches
+		    && m_couche_id->value(f_nodes[1].id()) == m_params.nbr_couches
+		    && m_couche_id->value(f_nodes[2].id()) == m_params.nbr_couches
+		    && m_couche_id->value(f_nodes[3].id()) == m_params.nbr_couches)
+		{
+			m_linker_HG->linkFaceToSurface(f_id, surf_ext->id());
+		}
 	}
 
 }

@@ -176,13 +176,12 @@ TEST(MFEMMeshWriterTestClass, MFEM_BG_and_LS_3D)
 	vtkReader.read(vtk_file);
 
 	gmds::MeshDoctor doc(&m);
-	doc.buildEdgesAndX2E();
+	doc.buildFacesAndR2F();		// 3D
 	doc.updateUpwardConnectivity();
 
 	Variable<int> *var_material = m.getVariable<int, GMDS_REGION>("CellEntityIds");
 	Variable<double> *var_dist = m.newVariable<double, GMDS_NODE>("GMDS_Distance");
 	std::vector<TCellID> bnd;
-	std::vector<TCellID> bnd_faces;
 	TInt markTreatedNodes = m.newMark<gmds::Node>();
 
 	for (auto n_id:m.nodes())
@@ -191,19 +190,19 @@ TEST(MFEMMeshWriterTestClass, MFEM_BG_and_LS_3D)
 		//std::cout << n.get<Face>().size() << std::endl;
 		int compteur_mat1(0);
 		int compteur_mat2(0);
-		for (auto const f:n.get<Face>())
+		for (auto const r:n.get<Region>())
 		{
-			//std::cout << "Face 1, mat " << var_material->value(f.id()) << std::endl;
-			if (var_material->value(f.id()) == 1)
+			//std::cout << "Region, mat " << var_material->value(r.id()) << std::endl;
+			if (var_material->value(r.id()) == 1)
 			{
 				compteur_mat1++;
 			}
-			else if (var_material->value(f.id())==-1)
+			else if (var_material->value(r.id()) == -1)
 			{
 				compteur_mat2++;
 			}
 		}
-		//std::cout << "Hello" << std::endl;
+
 		if (compteur_mat1 != 0 && compteur_mat2 != 0)
 		{
 			bnd.push_back(n_id);
@@ -211,18 +210,7 @@ TEST(MFEMMeshWriterTestClass, MFEM_BG_and_LS_3D)
 			m.mark(n, markTreatedNodes);
 		}
 	}
-
-	// Compute boundary faces
-	for (auto f_id:m.faces())
-	{
-		Face f = m.get<Face>(f_id);
-		std::vector<Region> f_regions = f.get<Region>();
-		if ( f_regions.size() == 2
-		    && (var_material->value(f_regions[0].id()) != var_material->value(f_regions[1].id())) )
-		{
-			bnd_faces.push_back(f.id());
-		}
-	}
+	std::cout << "Bnd nodes: " << bnd.size() << std::endl;
 
 	// Compute dist for other nodes
 	for (auto n_id:m.nodes())
@@ -231,15 +219,12 @@ TEST(MFEMMeshWriterTestClass, MFEM_BG_and_LS_3D)
 		if (!m.isMarked(n, markTreatedNodes))
 		{
 			double min_dist = std::numeric_limits<double>::max() ;
-			// Check the dist to the edges
-			for (auto f_id:bnd_faces)
+			// Check the dist to the nodes of the boundary
+			for (auto n_bnd_id:bnd)
 			{
-				Face f = m.get<Face>(f_id);
-				math::Point p_proj = n.point();
-				p_proj = f.project(p_proj);
-				if ((n.point()-p_proj).norm() < min_dist)
+				if ( (n.point() - m.get<Node>(n_bnd_id).point()).norm() < min_dist)
 				{
-					min_dist = (n.point()-p_proj).norm() ;
+					min_dist = (n.point() - m.get<Node>(n_bnd_id).point()).norm();
 				}
 			}
 			var_dist->set(n_id, var_material->value(n.get<Region>()[0].id())*min_dist);

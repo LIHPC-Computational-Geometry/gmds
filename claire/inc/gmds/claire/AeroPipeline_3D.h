@@ -56,7 +56,11 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_3D : public AbstractAeroPipeline {
 	 * @return void
 	 */
 	void ComputeVectorFieldForExtrusion();
-	/*----------------------------------------------------------------------------*/
+	/*------------------------------------------------------------------------*/
+	/** \brief  Classify the surface blocking on the geometry.
+	 */
+	void BlockingGeometricClassification();
+	/*------------------------------------------------------------------------*/
 
  protected:
 	/** Données des bords */
