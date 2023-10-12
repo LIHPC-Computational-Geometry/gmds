@@ -11,40 +11,44 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <unit_test_config.h>
-#include <gmds/blocking/CGNSWriter.h>
+#ifdef USE_CGNS
+	#include <gmds/blocking/CGNSWriter.h>
+#endif
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/*                       CAS TEST 2D CLASSE LevelSet                          */
+/*                     CAS TEST 2D CLASSE AeroPipeline                        */
 /*----------------------------------------------------------------------------*/
 
 TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 {
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string input_file=dir+"/Aero/2D/param_Apollo_2D.ini";
+	//std::string input_file=dir+"/Aero/2D/param_Orex_2D.ini";
+	std::string input_file=dir+"/Aero/2D/param_Stardust_2D_TEST.ini";
 
 	// Mesh Generation
 	AeroPipeline_2D algo_aero2D(input_file, dir);
 	AbstractAeroPipeline::STATUS aero2D_result = algo_aero2D.execute();
 
-
-	blocking::CGNSWriter writer(algo_aero2D.getBlocking());
-	writer.write("AeroPipeline_2D.cgns");
+	#ifdef USE_CGNS
+		blocking::CGNSWriter writer(algo_aero2D.getBlocking());
+		writer.write("AeroPipeline_2D.cgns", "");
+	#endif
 
 	ASSERT_EQ(AbstractAeroPipeline::SUCCESS, aero2D_result);
 
 }
-*/
+
 /*----------------------------------------------------------------------------*/
-/*                       CAS TEST 3D CLASSE LevelSet                          */
+/*                    CAS TEST 3D CLASSE AeroPipeline                         */
 /*----------------------------------------------------------------------------*/
 
-TEST(AeroPipelineTestClass, DISABLED_AeroPipeline3D_Test1)
+TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 {
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string input_file=dir+"/Aero/3D/param_C7_3D.ini";
+	std::string input_file=dir+"/Aero/3D/param_Modified_CCF_3D.ini";
 
 	//---------------------//
 	//    AERO PIPELINE    //
@@ -57,7 +61,7 @@ TEST(AeroPipelineTestClass, DISABLED_AeroPipeline3D_Test1)
 
 
 /*----------------------------------------------------------------------------*/
-/*              CAS TEST 3D CLASSE LevelSet avec Exceptions                   */
+/*            CAS TEST 3D CLASSE AeroPipeline avec Exceptions                 */
 /*----------------------------------------------------------------------------*/
 
 /*

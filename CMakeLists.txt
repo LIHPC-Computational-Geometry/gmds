@@ -74,8 +74,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/exports)
 # Fait un projet dont on depend et pas inclus
 if(WITH_TEST)
     enable_testing()
-    add_subdirectory(external/googletest)
-    include(GoogleTest)
+    find_package(GTest REQUIRED)
     set(TEST_SAMPLES_DIR "${CMAKE_SOURCE_DIR}/test_samples")
 
     configure_file(
@@ -372,8 +371,6 @@ set(LIB_GMDS_SMOOTHY GMDSSmoothy)
 add_subdirectory(smoothy)
 set(LIB_GMDS_IG_SHEET GMDSSheet)
 add_subdirectory(sheet)
-set(LIB_GMDS_SERVICES GMDSServices)
-add_subdirectory(services)
 
 #add_subdirectory(pygmds)
 #==============================================================================
