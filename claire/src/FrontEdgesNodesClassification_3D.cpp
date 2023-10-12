@@ -215,6 +215,18 @@ FrontEdgesNodesClassification_3D::SingleEdgeClassification(TCellID e_id)
 		edge_classification = 3;
 	}
 
+	// Classifies edge as side if below physical limits allowed for insertions
+	std::vector<Node> e_nodes = e.get<Node>();
+	if (e_nodes[0].X() < m_params_aero.x_lim
+	    or e_nodes[0].Y() < m_params_aero.y_lim
+	    or e_nodes[0].Z() < m_params_aero.z_lim
+	    or e_nodes[1].X() < m_params_aero.x_lim
+	    or e_nodes[1].Y() < m_params_aero.y_lim
+	    or e_nodes[1].Z() < m_params_aero.z_lim)
+	{
+		edge_classification = 0;
+	}
+
 	return edge_classification;
 }
 /*------------------------------------------------------------------------*/
@@ -684,7 +696,7 @@ FrontEdgesNodesClassification_3D::ComputeValid_GFE()
 	}
 
 	/*
-	std::cout << "VALID" << std::endl;
+	std::cout << "Global Feature Edges Selected:" << std::endl;
 	for (auto GFE:m_All_global_feature_edges)
 	{
 		std::cout << "---------" << std::endl;
@@ -836,7 +848,7 @@ FrontEdgesNodesClassification_3D::isValidNodeForPathLimit(TCellID n_id, int type
 	{
 		isValid = false;
 	}
-	 */
+	*/
 
 	return isValid;
 }

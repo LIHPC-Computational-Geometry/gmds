@@ -71,11 +71,8 @@ MFEMMeshWriter::STATUS MFEMMeshWriter::execute()
 	{
 		std::cout << "3D writing..." << std::endl;
 		writeElements3D();
-		std::cout << "2." << std::endl;
 		writeBnd3D();
-		std::cout << "3." << std::endl;
 		writeNodes3D();
-		std::cout << "4." << std::endl;
 	}
 
 	m_stream << "mfem_mesh_end\n";
@@ -96,8 +93,8 @@ void MFEMMeshWriter::orderingNodes()
 void MFEMMeshWriter::header()
 {
 	// Header
-	m_stream << "MFEM NC mesh v1.0\n";
-	//m_stream << "MFEM mesh v1.0\n";
+	//m_stream << "MFEM NC mesh v1.0\n";
+	m_stream << "MFEM mesh v1.0\n";
 	m_stream << "\n";
 	m_stream << "# NCMesh supported geometry types:\n";
 	m_stream << "# SEGMENT     = 1\n";
@@ -196,10 +193,10 @@ void MFEMMeshWriter::writeElements3D()
 		{
 			std::cout << "WARNING MFEMMeshWriter: 3D Region not implemented yet." << std::endl;
 		}
-		m_stream << 0 << " ";          // RANK
+		//m_stream << 0 << " ";          // RANK
 		m_stream << attrib << " ";     // Attribute
 		m_stream << geom << " ";       // Geom
-		m_stream << 0;
+		//m_stream << 0;
 		if (geom == 5)
 		{
 			m_stream << " " << m_ordering_nodes[r_nodes[0].id()];
@@ -340,7 +337,10 @@ void MFEMMeshWriter::writeNodes()
 /*------------------------------------------------------------------------*/
 void MFEMMeshWriter::writeNodes3D()
 {
-	m_stream << "# mesh curvature GridFunction\n";
+	m_stream << "vertices\n";
+	m_stream << m_mesh->getNbNodes() << "\n";
+	m_stream << "\n";
+	//m_stream << "# mesh curvature GridFunction\n";
 	m_stream << "nodes\n";
 	m_stream << "FiniteElementSpace\n";
 	m_stream << "FiniteElementCollection: H1_3D_P1\n";
