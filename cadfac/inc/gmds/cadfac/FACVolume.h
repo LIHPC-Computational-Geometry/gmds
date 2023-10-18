@@ -14,6 +14,7 @@
 #include "gmds/cad/GeomVolume.h"
 #include "gmds/cadfac/FACSurface.h"
 #include "GMDSCadFac_export.h"
+#include <tuple>
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
