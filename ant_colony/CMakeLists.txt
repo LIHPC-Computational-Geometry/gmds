@@ -4,6 +4,7 @@
 # Nommer tout en GMDS_MODULE_NAME, GMDS_SRC, ... dans les composants
 set(GMDS_LIB ${LIB_GMDS_ANT_COLONY})
 set(GMDS_LIB_PREFIX gmds/ant_colony)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(GMDS_INC
 	inc/gmds/ant_colony/Env.h

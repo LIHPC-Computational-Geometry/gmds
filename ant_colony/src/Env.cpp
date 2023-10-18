@@ -22,31 +22,33 @@ std::string format_number(int number, int max_digit) {
 }
 
 void Env::writeVTK(std::string fname) {
-    if(this->write_vtk) {
+    if (this->write_vtk) {
         IGMeshIOService ios(&(this->m));
         VTKWriter writer(&ios);
-        writer.setCellOptions(N | R);
-        writer.setDataOptions(N | R);
-        writer.write(fname); // paraview ctrl + space (Shrink) pour avoir uniquement les hex (enlever les F dans l'écriture)
+        writer.setCellOptions(gmds::N | gmds::E | gmds::F);
+        writer.setDataOptions(gmds::N | gmds::E | gmds::F);
+        writer.write(
+                fname); // paraview ctrl + space (Shrink) pour avoir uniquement les hex (enlever les F dans l'écriture)
     }
 }
 
 void Env::writeSolution(std::vector<char> solution, std::string fname,
-                        std::vector<float> pheromones,std::vector<TCellID> history_faces, std::vector<TCellID> history_edges) {
+                        std::vector<float> pheromones, std::vector<TCellID> history_faces,
+                        std::vector<TCellID> history_edges) {
 
 
-    Variable<int> * history_faces_visu = m.newVariable<int, gmds::GMDS_FACE>("history_faces");
-    Variable<int> * history_edges_visu = m.newVariable<int, gmds::GMDS_EDGE>("history_edges");
+    Variable<int> *history_faces_visu = m.newVariable<int, gmds::GMDS_FACE>("history_faces");
+    Variable<int> *history_edges_visu = m.newVariable<int, gmds::GMDS_EDGE>("history_edges");
     history_faces_visu->setValuesTo(0);
     history_edges_visu->setValuesTo(0);
     int cpt = 0;
-    for(auto x : history_faces){
-        history_faces_visu->set(x,cpt);
+    for (auto x: history_faces) {
+        history_faces_visu->set(x, cpt);
         cpt++;
     }
-    cpt=0;
-    for(auto x : history_edges){
-        history_edges_visu->set(x,cpt);
+    cpt = 0;
+    for (auto x: history_edges) {
+        history_edges_visu->set(x, cpt);
         cpt++;
     }
     for (auto it = solution.begin(); it != solution.end(); ++it) {
@@ -60,9 +62,224 @@ void Env::writeSolution(std::vector<char> solution, std::string fname,
     }
     writeVTK(fname);
     resetVariables();
-    m.deleteVariable(gmds::GMDS_FACE,"history_faces");
-    m.deleteVariable(gmds::GMDS_EDGE,"history_edges");
+    m.deleteVariable(gmds::GMDS_FACE, "history_faces");
+    m.deleteVariable(gmds::GMDS_EDGE, "history_edges");
 }
+
+Env::Env(std::string fname) : m(gmds::MeshModel(
+        DIM3 | F | R | R2N | R2F | F2R | E | N | F2N | E2N |
+        F2E | E2F | N2F | N2E)) {
+    std::string vtk_file = fname;
+    gmds::IGMeshIOService ioService(&m);
+    gmds::VTKReader vtkReader(&ioService);
+    vtkReader.setCellOptions(gmds::N | gmds::E | gmds::F | R);
+    vtkReader.setDataOptions(gmds::N | gmds::E | gmds::F | R);
+    vtkReader.read(vtk_file);
+
+    std::cout << "#Nodes " << m.getNbFaces() << std::endl;
+    std::cout << "Filename " << fname << std::endl;
+    std::cout << "Nodes " << m.getNbNodes() << std::endl;
+    std::cout << "Regions " << m.getNbRegions() << std::endl;
+    std::cout << "Edges " << m.getNbEdges() << std::endl;
+    std::cout << "Faces " << m.getNbFaces() << std::endl;
+    for (auto it = m.faces().begin(); it != m.faces().end(); ++it) {
+        Face f = m.get<Face>(*it);
+        std::cout << "(" << f.get<Region>().size() << ", " << f.get<Edge>().size() << ") ";
+    }
+    std::cout << std::endl;
+
+    gmds::MeshDoctor doc(&m);
+    doc.buildFacesAndR2F();
+    doc.buildEdgesAndX2E();
+    doc.updateUpwardConnectivity();
+    std::size_t mcpt = 0;
+    std::cout << "#Nodes " << m.getNbFaces() << std::endl;
+    std::cout << "Filename " << fname << std::endl;
+    std::cout << "Nodes " << m.getNbNodes() << std::endl;
+    std::cout << "Regions " << m.getNbRegions() << std::endl;
+    std::cout << "Edges " << m.getNbEdges() << std::endl;
+    std::cout << "Faces " << m.getNbFaces() << std::endl;
+    //std::cout << "Hexaedra " << m.getNbHexahedra() << std::endl;
+    for (auto it = m.faces().begin(); it != m.faces().end(); ++it) {
+        Face f = m.get<Face>(*it);
+        std::cout << "(" << f.get<Region>().size() << ", " << f.get<Edge>().size() << ") ";
+    }
+    std::cout << std::endl;
+
+    // Compute
+    if (m.hasVariable(gmds::GMDS_EDGE, "edge_boundary")) {
+        this->edge_boundary = m.getVariable<int, gmds::GMDS_EDGE>("edge_boundary");
+    } else {
+        this->edge_boundary = m.newVariable<int, gmds::GMDS_EDGE>("edge_boundary");
+    }
+    if (m.hasVariable(gmds::GMDS_FACE, "face_boundary")) {
+        this->face_boundary = m.getVariable<int, gmds::GMDS_FACE>("face_boundary");
+    } else {
+        this->face_boundary = m.newVariable<int, gmds::GMDS_FACE>("face_boundary");
+    }
+    // Get
+    this->face_in_solution = m.getVariable<int, gmds::GMDS_FACE>("face_in_solution");
+    // useless
+    if (m.hasVariable(gmds::GMDS_FACE, "face_id")) {
+        this->face_id = m.getVariable<int, gmds::GMDS_FACE>("face_id");
+    } else {
+        this->face_id = m.newVariable<int, gmds::GMDS_FACE>("face_id");
+    }
+
+    //auto blblbl = m.getVariable<int, gmds::GMDS_FACE>("fblblblbl");
+    //! ^--- make the program crash if variable not found whereas it is not rly a problem if we can compute it
+
+    //this->face_constraint = m.getVariable<int, gmds::GMDS_FACE>("face_constraint");
+    //this->front = m.getVariable<int, gmds::GMDS_FACE>("front");
+
+    if (m.hasVariable(gmds::GMDS_EDGE, "hex_number_edge")) {
+        this->hex_number_edge = m.getVariable<int, gmds::GMDS_EDGE>("hex_number_edge");
+    } else {
+        assert(1 == 0);
+    }
+    if (m.hasVariable(gmds::GMDS_FACE, "hex_number_face")) {
+        this->hex_number_face = m.getVariable<int, gmds::GMDS_FACE>("hex_number_face");
+    } else {
+        assert(1 == 0);
+    }
+    if (m.hasVariable(gmds::GMDS_EDGE, "classification_edge")) {
+        this->classification_edge = m.getVariable<int, gmds::GMDS_EDGE>("classification_edge");
+    } else {
+        this->classification_edge = m.newVariable<int, gmds::GMDS_EDGE>("classification_edge");
+        this->classification_edge->setValuesTo(0);
+        do_classification_edge();
+    }
+    if (m.hasVariable(gmds::GMDS_FACE, "classification_face")) {
+        this->classification_face = m.getVariable<int, gmds::GMDS_FACE>("classification_face");
+    } else {
+        this->classification_face = m.newVariable<int, gmds::GMDS_FACE>("classification_face");
+        this->classification_face->setValuesTo(0);
+        do_classification_face();
+    }
+    this->bnd_solution = m.newVariable<int, gmds::GMDS_EDGE>("bnd_solution");
+    this->bnd_solution->setValuesTo(0);
+
+    if (m.hasVariable(gmds::GMDS_FACE, "pheromone")) {
+        this->pheromone = m.getVariable<double, gmds::GMDS_FACE>("pheromone");
+    } else {
+        this->pheromone = m.newVariable<double, gmds::GMDS_FACE>("pheromone");
+        pheromone->setValuesTo(0.0f);
+    }
+
+    if (m.hasVariable(gmds::GMDS_FACE, "heuristic")) {
+        this->heuristic = m.getVariable<double, gmds::GMDS_FACE>("heuristic");
+    } else {
+        this->heuristic = m.newVariable<double, gmds::GMDS_FACE>("heuristic");
+        heuristic->setValuesTo(0.0f);
+    }
+
+    if (m.hasVariable(gmds::GMDS_FACE, "face_candidates")) {
+        this->face_candidates = m.getVariable<int, gmds::GMDS_FACE>("face_candidates");
+    } else {
+        this->face_candidates = m.newVariable<int, gmds::GMDS_FACE>("face_candidates");
+        this->face_candidates->setValuesTo(0.0f);
+    }
+    if (m.hasVariable(gmds::GMDS_FACE, "face_constraint")) {
+        this->face_constraint = m.getVariable<int, gmds::GMDS_FACE>("face_constraint");
+    } else {
+        this->face_constraint = m.newVariable<int, gmds::GMDS_FACE>("face_constraint");
+        this->face_constraint->setValuesTo(0.0f);
+    }
+    // Check stuff
+    // Number hex for
+    // faces
+    for (auto it = m.faces().begin(); it != m.faces().end(); ++it) {
+        assert(this->hex_number_face->value(*it) > 0);
+    }
+    //  edges
+    for (auto it = m.edges().begin(); it != m.edges().end(); ++it) {
+        assert(this->hex_number_edge->value(*it) > 0);
+    }
+    // Check connectivity
+    // E2N
+    for (auto it = m.edges().begin(); it != m.edges().end(); ++it) {
+        Edge e = m.get<Edge>(*it);
+        std::cout << *it << std::endl;
+        assert(e.nbNodes() > 0);
+    }
+    // F2E
+    for (auto it = m.faces().begin(); it != m.faces().end(); ++it) {
+        Face f = m.get<Face>(*it);
+        std::cout << *it << std::endl;
+        assert(f.nbEdges() > 0);
+    }
+    // E2F
+    for (auto it = m.edges().begin(); it != m.edges().end(); ++it) {
+        Edge e = m.get<Edge>(*it);
+        std::cout << *it << " " << e.getIDs<Face>().size() << std::endl;
+        assert(e.nbFaces() > 0);
+    }
+
+    for (auto i = 0; i < this->face_in_solution->getNbValues(); i++) {
+        if (this->face_in_solution->value(i) != 0) {
+            this->face_in_solution->set(i, 3);
+        }
+        std::cout << this->face_in_solution->value(i) << " ";
+    }
+
+    writeVTK("test.vtk");
+    srand(time(NULL));
+}
+
+void Env::do_classification_edge(){
+    int s_region = m.getNbRegions();
+    for (auto e: m.edges()) {
+        Edge edge = m.get<Edge>(e);
+        std::vector<TCellID> regions;
+        //edge.getIDs<Region>(regions);
+        //assert(edge.nbRegions() == regions.size());
+        //int size_e = m.edges().getNbElements();
+        //int size_e_r = edge.nbRegions();
+        //int size_e_r0 = regions.size();
+        int classification;
+        switch (this->hex_number_edge->value(e)) {
+            case 3:
+                classification = (int) edge_classification::concave;    // 0
+                break;
+            case 1:
+                classification = (int) edge_classification::convex;     // 1
+                break;
+            case 2:
+                classification = (int) edge_classification::surface;    // 2
+                break;
+            case 4:
+                classification = (int) edge_classification::volume;     // 3
+                break;
+            default:
+                assert(1 == 0);
+        }
+        classification_edge->set(e, classification);
+    }
+}
+
+void Env::do_classification_face(){
+    for (auto f: m.faces()) {
+        Face face = m.get<Face>(f);
+        //std::vector<TCellID> regions;
+        //face.getIDs<Region>(regions);
+        int classification;
+        //std::cout << "here " << regions.size() << " " << this->hex_number_face->value(f) << " " << face.nbRegions() << std::endl;
+        //assert(regions.size() == this->hex_number_face->value(f));
+        switch (this->hex_number_face->value(f)){
+            case 1:
+                classification = (int) face_classification::surface;
+                break;
+            case 2:
+                classification = (int) face_classification::volume;
+                break;
+            default:
+                assert(1 == 0);
+        }
+        //std::cout << f << " " << face.nbRegions() << " " << regions.size() <<  std::endl;
+        classification_face->set(f, classification);
+    }
+}
+
 
 Env::Env(TInt x_n, TInt y_n, TInt z_n, const int *exist_flatten) : m(
         gmds::Mesh(gmds::MeshModel(
@@ -164,7 +381,6 @@ Env::Env(TInt x_n, TInt y_n, TInt z_n, const int *exist_flatten) : m(
     for (auto i: m.faces()) {
         this->face_id->set(i, i);
     }
-
     this->front = m.newVariable<int, gmds::GMDS_FACE>("front");
     this->front->setValuesTo(0);
     std::cout << "#Front " << front->getNbValues() << std::endl;
@@ -186,88 +402,40 @@ Env::Env(TInt x_n, TInt y_n, TInt z_n, const int *exist_flatten) : m(
     this->classification_face = m.newVariable<int, gmds::GMDS_FACE>("classification_face");
     this->classification_edge->setValuesTo(0);
     this->classification_face->setValuesTo(0);
-    this->bnd_solution = m.newVariable<int,gmds::GMDS_EDGE>("bnd_solution");
+    this->bnd_solution = m.newVariable<int, gmds::GMDS_EDGE>("bnd_solution");
     this->bnd_solution->setValuesTo(0);
+
+    this->hex_number_edge = m.newVariable<int, gmds::GMDS_EDGE>("hex_number_edge");
+    this->hex_number_edge->setValuesTo(0);
+    this->hex_number_face = m.newVariable<int, gmds::GMDS_FACE>("hex_number_face");
+    this->hex_number_face->setValuesTo(0);
+
+    initialize_hex_number_edge();
+    initialize_hex_number_face();
 
     do_classification_edge();
     do_classification_face();
+
     srand(time(NULL));
-}
 
-std::vector<gmds::TCellID> Env::getEdgesOfFront(std::vector<gmds::TCellID> front, std::vector<char> solution) {
-    // Ajouter selection
-    std::set<TCellID> edges_set;
-    int count;
-    for (auto face: front) {
-        gmds::Face f = this->m.get<gmds::Face>(face);
-        std::vector<gmds::Edge> v_edges;
-        std::vector<TCellID> incident_faces;
-        f.delegateGet(v_edges);
-        //f.getIDs<gmds::Edge>(v_edges);
-        for (auto e: v_edges) {
-            count = 0;
-            e.getIDs<gmds::Face>(incident_faces);
-            for (auto face: incident_faces) {
-                //if (face_candidates->value(face) != 0) {
-                //if (this->front->value(face) > FaceStatus::Candidate) {
-                if (solution[face] == 1) {
-                    count++;
-                }
-            }
-            if (count > 1) { //! Edge the 'border' of the selecion only
-                break;
-            }
-            if (!this->face_boundary->value(face) && incident_faces.size() == 3) {        //! Case(1)
-                break;
-            } else if (this->face_boundary->value(face) && incident_faces.size() == 2) {    //! Case(2)
-                break;
-            }
-            edges_set.insert(e.id());
-        }
+    for (auto it = m.edges().begin(); it != m.edges().end(); ++it) {
+        Edge e = m.get<Edge>(*it);
+        assert(this->hex_number_edge != 0);
     }
-    std::vector<TCellID> edges(edges_set.begin(), edges_set.end());
-    return edges;
-}
-
-std::vector<gmds::TCellID> Env::getFacesCandidates(std::vector<gmds::TCellID> edges, std::vector<char> solution) {
-    std::vector<char> cand(m.getNbFaces(), 0);
-    std::set<TCellID> candidates_set;
-    int valid = 0;
-    for (auto e: edges) { // Edges of front
-        std::vector<TCellID> v_face;
-        gmds::Edge edg = m.get<gmds::Edge>(e);
-        edg.getIDs<gmds::Face>(v_face);
-        for (auto f: v_face) { // Candidates
-            /*if (solution[f] == 0){
-                candidates_set.insert(f);
-                cand[f] = 1;
-            }*/
-            // Remove that thing pls
-            gmds::Face face = m.get<gmds::Face>(f);
-            std::vector<TCellID> edge_bis;
-            face.getIDs<gmds::Edge>(edge_bis);
-            for (auto ebis: edge_bis) { // Edges of candidates
-                gmds::Edge edge_bis2 = m.get<gmds::Edge>(ebis);
-
-                std::vector<TCellID> v_face_bis;
-                edge_bis2.getIDs<gmds::Face>(v_face_bis);
-                int counter = 0;
-                for (auto fbis: v_face_bis) { // Faces of candidate edges
-                    if (solution[fbis] == 1) {
-                        counter++;
-                    }
-                }
-                if (counter >= 2) {
-                    break;
-                }
-                if (solution[f] == 0) {
-                    candidates_set.insert(f);
-                }
-            }
-        }
+    for (auto it = m.faces().begin(); it != m.faces().end(); ++it) {
+        Face f = m.get<Face>(*it);
+        assert(this->hex_number_face != 0);
     }
-    std::vector<TCellID> candidates(candidates_set.begin(), candidates_set.end());
-    return candidates;
+    for (auto it = m.edges().begin(); it != m.edges().end(); ++it) {
+        Edge e = m.get<Edge>(*it);
+        std::cout << *it << " " << e.getIDs<Face>().size() << std::endl;
+        assert(e.nbFaces() > 0);
+    }
+    for (auto it = m.edges().begin(); it != m.edges().end(); ++it) {
+        Edge e = m.get<Edge>(*it);
+        std::cout << *it << std::endl;
+        assert(e.nbNodes() > 0);
+    }
 }
 
 void Env::updateFront(std::vector<TCellID> Front) {
@@ -303,16 +471,9 @@ std::list<gmds::TCellID> Env::getFirstEdgeFront(std::vector<gmds::TCellID> front
 
 }
 
-std::vector<char> Env::runAnts(std::vector<gmds::TCellID> front_initial) {
-    std::vector<char> solution(m.getNbFaces(), false);
-    for (auto x: front_initial) {
-        solution[x] = 1;
-    }
-    this->face_constraint_ids = front_initial;
-    std::list<gmds::TCellID> edge_front = getFirstEdgeFront(front_initial, solution);//(src.begin(), src.end());
-}
 
-void Env::setup_ant_colony_params(int alpha, int beta, float p, float tmin, float tmax, int nb_ants, int iter_global,int n_run) {
+void Env::setup_ant_colony_params(int alpha, int beta, float p, float tmin, float tmax, int nb_ants, int iter_global,
+                                  int n_run, int nb_elite, float tau_initial) {
     this->alpha = alpha;
     this->beta = beta;
     this->p = p;
@@ -321,6 +482,8 @@ void Env::setup_ant_colony_params(int alpha, int beta, float p, float tmin, floa
     this->nb_ants = nb_ants;
     this->iter_global = iter_global;
     this->n_run = n_run;
+    this->nb_elite = nb_elite;
+    this->tau_initial = tau_initial;
 }
 
 void Env::resetVariables() {
@@ -397,41 +560,66 @@ void Env::show_normals(std::vector<TCellID> faces) {
 }
 
 void Env::execute() {
-    std::ofstream results_file, all_solutions;
+    std::ofstream results_file, all_solutions,myfile,file_csv,pheromones_csv,recap_file;
+    recap_file.open("recap_file.txt");
+    recap_file << "\np" << this->p << "\ntmin " << this->tmin << "\ntmax " << this->tmax << "\niteration " << this->iter_global << "\nnb_ants " << this->nb_ants << "\nn_run " << this->n_run << "\ntini " << this->tau_initial << "\nn_elite " << this->nb_elite << std::endl;
+    recap_file << "\nModel:\n#Hexa " << m.getNbRegions() << "\n#F " << m.getNbFaces() << "\n#E " << m.getNbEdges() << "\n#N " << m.getNbNodes() << std::endl;
     results_file.open("results_file.txt");
-    results_file << "#Parameters " << "p " << this->p << " tmin " << this->tmin << " tmax " << this->tmax << " iteration "
-           << this->iter_global << " nb_ants " << this->nb_ants << " n_run " << this->n_run << std::endl;
-    results_file << "Run;Iteration;Solution;Quality;Validity;NbEdgeTurn;NbVertexTurn;FaceSelected" << std::endl;
+
+    results_file << "#Parameters " << "p " << this->p << " tmin " << this->tmin << " tmax " << this->tmax
+                 << " iteration "
+                 << this->iter_global << " nb_ants " << this->nb_ants << " n_run " << this->n_run << std::endl;
+    results_file
+            << "Run;Iteration;BestSolution;BestQuality;Validity;NbEdgeTurn;NbVertexTurn;FaceSelected;Mean;Q1;Q3;Median;"
+            << std::endl;
 
     all_solutions.open("all_solutions.txt");
-    all_solutions << "Run;" << "Iter;" << "AntNb;" << "Solution;" << std::endl;
+    all_solutions << "Run;" << "Iter;" << "AntNb;" << "Solution;" << "NewSolution;" << "Quality;" << std::endl;
+
+    std::ofstream discovered_per_iteration;
+    discovered_per_iteration.open("discovered_per_iteration.txt");
+    discovered_per_iteration << "Run;" << "Iter;" << "NbSolutionDiscovered;" << std::endl;
 
     std::vector<std::vector<char>> best_solution_history;
     std::vector<float> best_solution_quality_history;
     std::vector<int> solution_validity_history;
-    /*std::set<gmds::TCellID> ini_faces;
-    for(auto s: initial_faces ){
-        ini_faces.insert(s.first);
-        ini_faces.insert(s.second);
-    }
-    std::vector<TCellID> initial_faces_vec(ini_faces.begin(), ini_faces.end());*/
-    std::ofstream myfile;
+
+    best_solution_history.reserve(this->iter_global * this->nb_ants);
+    best_solution_quality_history.reserve(this->iter_global * this->nb_ants);
+
     myfile.open("solution_logs.txt");
+    file_csv.open("run_results.csv");
+    file_csv << "#n_run=" << this->n_run << std::endl;
+    file_csv << "i;Q1;Q3;Med;Avg;Best;Valid" << std::endl;
+    // Dec
+
+    std::set<std::string> solution_set;
+
+
     std::vector<std::vector<char>> solution;
-    std::vector<int> pheromone_add(getNbFaces(), 0);
-    std::vector<char> s_best(getNbFaces(), 0);
     float quality_s_best;
     std::vector<int> ids_solutions;
-    std::vector<float> pheromones(getNbFaces(), tmax);
+    std::vector<float> pheromones(getNbFaces(), this->tau_initial);
     std::vector<std::size_t> valid_solution;
     std::vector<float> qualities;
     std::vector<char> sk_best_solution;
+    std::vector<char> s_best(getNbFaces(), 0);
+    std::vector<float> pheromone_add(getNbFaces(), 0.0);
     float sk_best_quality;
     int counter = 0;
-    quality_s_best = 0.0f, sk_best_quality = 0.0f;
     std::size_t nb_solution = 0;
     std::vector<char> current_solution;
-    for(std::size_t r=0 ; r < this->n_run ; r++ ) {
+    std::vector<float> q1, q2, mean, median;
+    std::vector<float> all_solution;
+    /** Stat **/
+    std::vector<std::vector<float>> all_qualities(this->iter_global);
+
+    for (std::size_t r = 0; r < this->n_run; r++) {
+        quality_s_best = 0.0f, sk_best_quality = 0.0f;
+        std::size_t nb_unique_solution = 0;
+        std::fill(pheromones.begin(), pheromones.end(), this->tau_initial);
+        pheromones_csv.open(std::to_string(r)+"pheromone.csv" );
+        pheromones_csv << "iteration;total;added;part;maximum_ph;maximum_ph_add;" << std::endl;
         for (int i = 0; i < iter_global; i++) {
             // Generate Solutions
             solution.clear();
@@ -439,10 +627,8 @@ void Env::execute() {
             std::cout << "#Iter " << i << ' ' << this->iter_global << std::endl;
             myfile << "#Iter " << i << std::endl;
             for (int j = 0; j < nb_ants; j++) {
-                //solution.push_back(this->run_ant(pheromones)); // Build solution
                 current_solution = this->run_ant_bis(pheromones);
                 solution.push_back(current_solution); // Build solution
-                all_solutions << r << ";" <<  i << ";" << j << ";" << solution_to_string(current_solution) << ";" << std::endl; ;
                 ids_solutions.push_back(counter);
                 std::cout << "#Solution " << counter << std::endl;
                 counter++;
@@ -469,16 +655,25 @@ void Env::execute() {
             }
             //myfile << "#\tvalid solution " << valid_solution.size() << " / " << solution.size() << std::endl;
             myfile << "#\tvalid solution " << nb_valid_solution << " / " << solution.size() << std::endl;
+
             if (!valid_solution.empty()) {
-                int elite_k = 10;
                 // Recuperation des k meilleurs uniques solutions dans un vecteur unique_solution
                 std::vector<float> qualities(valid_solution.size(), 0.0f);
                 for (auto i_val = 0; i_val < valid_solution.size(); i_val++) {
                     qualities[i_val] = solution_quality(solution[i_val]);
+                    std::cout << qualities[i_val] << std::endl;
+                    std::string str_sol = solution_to_string(solution[i_val]);
+                    auto inserted = solution_set.insert(str_sol);
+                    if( inserted.second){
+                        nb_unique_solution++;
+                    }
+                    all_solutions << r << ";" << i << ";" << str_sol << ";" << inserted.second << ";" << qualities[i_val] << ";" << std::endl;
+                    //assert(qualities[i_val] <= 3.0 && qualities[i_val] >= 0.0);
                 }
+                discovered_per_iteration << r << ";" << i << ";" << nb_unique_solution << ";" << std::endl ;
                 std::cout << "Valid " << valid_solution.size() << " Total sol " << solution.size() << std::endl;
                 assert(valid_solution.size() == solution.size());
-                auto x = get_k_best_solutions(10, solution, qualities);
+                auto x = get_k_best_solutions(nb_elite, solution, qualities);
                 float quality = 0.0f;
                 sk_best_quality = 0.0f;
                 std::size_t sk_best_index;
@@ -489,28 +684,26 @@ void Env::execute() {
                         sk_best_solution = it->first;
                         sk_best_index = std::distance(x.begin(), it);
                     }
-
                     myfile << "\t\t" << solution_to_string(it->first) << " " << quality << " "
                            << best_quality(it->first) << std::endl;
                 }
                 // Update pheromon with the new best if exist
-                if ((sk_best_quality >= quality_s_best) &&
-                    !std::equal(sk_best_solution.begin(), sk_best_solution.end(), s_best.begin())) {
+                if ((sk_best_quality >= quality_s_best)){
+                    //&& !std::equal(sk_best_solution.begin(), sk_best_solution.end(), s_best.begin())) {
                     quality_s_best = sk_best_quality;
                     s_best = sk_best_solution;
                     // Remove the new best from the set
-                    std::swap(x[sk_best_index], x[x.size() - 1]);
-                    x.pop_back();
+                    //std::swap(x[sk_best_index], x[x.size() - 1]);
+                    //x.pop_back();
                 }
                 // Update pheromons with others
                 for (auto s: x) {
                     for (auto it = sk_best_solution.begin(); it != sk_best_solution.end(); ++it) {
-                        if (*it == 1) {
-                            pheromone_add[std::distance(sk_best_solution.begin(), it)] =
-                                    1.0 / (1.0 + quality_s_best - sk_best_quality);
-                        }
+                        std::size_t index =std::distance(sk_best_solution.begin(), it);
+                        pheromone_add[index] += 1.0 / (1.0 + quality_s_best - sk_best_quality);
                     }
                 }
+                std::copy(qualities.begin(), qualities.end(), std::back_inserter(all_qualities[i]));
             }
             best_solution_history.push_back(s_best);
             best_solution_quality_history.push_back(quality_s_best);
@@ -533,6 +726,11 @@ void Env::execute() {
             myfile << buff + "\n";
             updatePheromones(pheromones);
             //writeSolution(s_best, "best" + format_number(i, 5) + ".vtk", pheromones, {}, {});
+            float ph_tot =  std::accumulate(pheromones.begin(),pheromones.end(),0.0);
+            float ph_add =  std::accumulate(pheromone_add.begin(),pheromone_add.end(),0.0);
+            float maximum_ph_on_face = *std::max_element(pheromones.begin(),pheromones.end());
+            float maximum_ph_add = *std::max_element(pheromone_add.begin(),pheromone_add.end());
+            pheromones_csv << i << ";" << ph_tot << ";" << ph_add << ";" << ph_tot / ph_add << ";" << maximum_ph_on_face << ";" << maximum_ph_add << ";" << std::endl;
             std::fill(pheromone_add.begin(), pheromone_add.end(), 0.0f);
         }
 
@@ -541,254 +739,43 @@ void Env::execute() {
                << nb_edge_turn(s_best) << std::endl;
         myfile.close();
         set_write(true);
-        writeSolution(s_best, std::to_string(r)+"best_solution.vtk", {}, {}, {});
+        writeSolution(s_best, std::to_string(r) + "best_solution.vtk", {}, {}, {});
         set_write(false);
         std::cout << "#Best solution\t" << solution_to_string(s_best) << " Q= " << solution_quality(s_best) << " valid "
                   << is_solution_valid(s_best) << std::endl;
         for (std::size_t i = 0; i < best_solution_history.size(); i++) {
             results_file << r << ";" << i << ";" << solution_to_string(best_solution_history[i]) << ";"
-                   << best_solution_quality_history[i]
-                   << ";" << solution_validity_history[i] << ";" << nb_edge_turn(best_solution_history[i]) << ";"
-                   << nb_vertex_turn(best_solution_history[i]) << ";"
-                   << std::count(best_solution_history[i].begin(), best_solution_history[i].end(), 1) << std::endl;
+                         << best_solution_quality_history[i]
+                         << ";" << solution_validity_history[i] << ";" << nb_edge_turn(best_solution_history[i]) << ";"
+                         << nb_vertex_turn(best_solution_history[i]) << ";"
+                         << std::count(best_solution_history[i].begin(), best_solution_history[i].end(), 1)
+                         << std::endl;
         }
+        pheromones_csv.close();
         best_solution_history.clear();
         solution_validity_history.clear();
+    }
+    int count = 0;
+    for (auto x: all_qualities) {
+        std::sort(x.begin(), x.end());
+    }
+    std::size_t med, quart1, quart3;
+    float avg;
+    for (std::size_t x = 0; x < all_qualities.size(); x++) {
+        std::sort(all_qualities[x].begin(), all_qualities[x].end());
+        med = static_cast<int>((all_qualities[x].size() + 1) / 2);
+        quart1 = static_cast<int>((all_qualities[x].size() + 1) / 4);
+        quart3 = static_cast<int>(med + quart1);//"i;Q1;Q3;Med;Avg;Best;Valid"
+        avg = std::accumulate(all_qualities[x].begin(), all_qualities[x].end(), 0.0) / all_qualities[x].size();
+        file_csv << x << ";" << all_qualities[x][quart1] << ";" << all_qualities[x][quart3] << ";"
+                 << all_qualities[x][med] << ";" << avg << ";" << all_qualities[x].back() << ";"
+                 << all_qualities[x].size() << std::endl; // i Q1 Q3 Med Avg Best
     }
     myfile.close();
     results_file.close();
     all_solutions.close();
+    file_csv.close();
+    discovered_per_iteration.close();
+
 }
 
-
-std::vector<char> Env::run_ant(std::vector<float> pheromones) {
-    std::ofstream myfile;
-    myfile.open("logs.txt");
-    // current date/time based on current system
-    time_t now = time(0);
-    // convert now to string form
-    char *dt = ctime(&now);
-    std::vector<std::pair<TCellID, TCellID>> edge_front(this->initial_front);
-    myfile << dt << "\n";
-
-    std::vector<char> solution = constructInitialSolution(this->initial_faces);
-    std::vector<char> processed_edge(m.getNbEdges());
-    std::vector<TCellID> init_faces = solution_to_faces(solution);
-
-    std::fill(processed_edge.begin(), processed_edge.end(), 0);
-    std::cout << "run_ant" << std::endl;
-    std::vector<TCellID> history_face;
-    std::vector<TCellID> history_edge;
-    init_disable_faces();
-
-    int count = 0;
-    bool run = true;
-    while (!edge_front.empty() && run ) {
-        myfile << "Step " << count << " edges_in_front: ";
-        for (auto e: edge_front) {
-            myfile << e.first << ' ';
-        }
-        myfile << '\n';
-        std::vector<std::pair<TCellID, TCellID>> candidates;
-        std::map<TCellID ,std::vector<TCellID>> candidates_map;
-        candidates_map = getCandidate_v3(edge_front,solution);
-        myfile << "#candidates " << candidates_map.size() << std::endl;
-        /*for (auto c: candidates) {
-            myfile << c.first << ' ';
-        }*/
-        for (auto c: candidates_map) {
-            myfile << c.first << "\n\t";
-            for(auto e : c.second) {
-                myfile << e << ' ';
-            }
-            myfile << "\n" ;
-        }
-        myfile << std::endl;
-        myfile << "S: ";
-        for (auto s: solution) {
-            myfile << std::to_string(s);
-        }
-        myfile << "\n";
-        std::cout << "here" << std::endl;
-        std::vector<std::pair<TCellID, TCellID>> new_edges;
-        std::vector<std::pair<TCellID, float>> proba;
-        if (!candidates_map.empty()) {
-            //std::pair<TCellID,TCellID> selected = candidates[0],tmp;
-            std::pair<TCellID, TCellID> selected, tmp;
-            if (count == 0) {
-                myfile << "Random selection " ;
-                selected = random_selection(candidates_map);
-            } else {
-
-                for(auto f_es : candidates_map){
-                    candidates.push_back(std::make_pair(f_es.first,f_es.second[0]));
-                }
-                selected = selectCandidate(candidates, solution, pheromones, proba);
-                myfile << "Face:Proba ," ;
-                for(auto f_p : proba){
-                    myfile << f_p.first << ":" << f_p.second << ", " ;
-                }
-                myfile << "\n" ;
-            }
-            //selectCandidate_bis(candidates,solution);
-            myfile << "selected " << selected.first << " from edge " << selected.second << "\n";
-            solution[selected.first] = 1;
-            history_face.push_back(selected.first);
-            history_edge.push_back(selected.second);
-            auto it = std::find_if(edge_front.begin(), edge_front.end(),
-                                   [&selected](const std::pair<TCellID, TCellID> &element) {
-                                       return element.first == selected.second;
-                                   });
-
-
-            myfile << "removed edge" << " " ;
-            disable_faces_of_selected(candidates,selected);
-            // Remove the edge of the candidate processed
-            auto edge_to_remove = candidates_map[selected.first];
-            for( auto rmv : edge_to_remove ){
-                auto it = std::find_if( edge_front.begin(), edge_front.end(),
-                                        [&rmv](const std::pair<TCellID , TCellID>& element){ return element.first == rmv;} );
-                if( it != edge_front.end()) {
-                    tmp = edge_front.back();
-                    std::swap(edge_front[std::distance(edge_front.begin(), it)],edge_front[edge_front.size()-1]);
-                    myfile << it->first << " " ;
-                    edge_front.pop_back();
-                    processed_edge[it->first] = 1;
-                }else{
-                    assert(1==2);
-                }
-            }
-            //new_edges = getEdges_v2(selected.first, processed_edge, solution);
-            new_edges = getEdges_v3(selected.first,selected.second,processed_edge);
-            myfile << "\nedges to add: ";
-            for (auto e: new_edges) {
-                myfile << e.first << ' ';
-            }
-            myfile << '\n';
-            edge_front.insert(edge_front.end(), new_edges.begin(), new_edges.end());
-
-        } else {
-            run = false;
-        }
-        count++;
-        std::cout << proba.size() << std::endl;
-
-        /*
-        update_probabilities(proba);
-        updatePheromones(pheromones);
-        updateCandidates(cdt);
-        updateFront(faces_history);
-        writeSolution(solution, "exec" + format_number(count, 5) + ".vtk", {});
-        std::cout << "#S valid, run, edge_front " << !is_solution_valid(solution) << ", " << run << ", "
-                  << edge_front.size() << std::endl;
-        myfile << "#S valid, run, edge_front " << !is_solution_valid(solution) << ", " << run << ", "
-               << edge_front.size() << std::endl;
-        */
-        std::cout << "loop done" << std::endl;
-    }
-
-    // Last write
-
-    //updateCandidates(cdt);
-    updateFront(history_face);
-    assert(this->initial_front.size()!=0);
-    writeSolution(solution, "exec" + format_number(count, 5) + ".vtk", {},history_face,history_edge);
-
-    myfile << " Nb_edge_turn " << nb_edge_turn(solution) << " nb edg " << m.getNbEdges() << std::endl;
-    myfile << " Nb_vtx_turn " << nb_vertex_turn(solution) << std::endl;
-    myfile << " Selection validity " << is_selection_valid(solution) << std::endl;
-    myfile << " Solution validity " << is_solution_valid(solution) << std::endl;
-    myfile << " Quality " << solution_quality(solution) << "/" << best_quality(solution) << std::endl;
-    for (auto s: solution) {
-        myfile << std::to_string(s);
-    }
-    myfile.close();
-    return solution;
-}
-
-std::pair<gmds::TCellID, gmds::TCellID>
-Env::selectCandidate(std::vector<std::pair<gmds::TCellID, gmds::TCellID>> candidates, std::vector<char> solution,
-                         std::vector<float> pheromones, std::vector<std::pair<TCellID, float>> &face_proba) {
-    assert(candidates.size() != 0);
-    std::cout << "#Candidates " << candidates.size() << " ";
-    for (auto c: candidates) {
-        std::cout << c.first << " ";
-    }
-    float sum_all = 0.0f;
-    //! Compute total pheromones
-    float sum_pheromones = 0.0f;
-    for (auto c: candidates) {
-        sum_pheromones += pheromones[c.first];
-    }
-    std::cout << "sum pheromones " << sum_pheromones << " for " << candidates.size() << " candidates" << std::endl;
-    std::accumulate(pheromones.begin(), pheromones.end(), 0);
-    std::vector<std::pair<float, float>> intervals;
-    intervals.reserve(candidates.size());
-    std::vector<float> proba;
-    std::vector<float> heuristic;
-    proba.reserve(candidates.size());
-    float prev = 0.0f, cur;
-
-    // Pheromone factor
-    float pheromones_sum = 0.0f;
-    for (auto c: candidates) {
-        pheromones_sum += pheromones[c.first];
-    }
-    // heuristicfactor
-    float heuristic_sum = 0.0f;
-    for (auto c: candidates) {
-        if (same_orientation(c.first, c.second, solution)) {
-            heuristic.push_back(2.0);
-        } else {
-            heuristic.push_back(1.0);
-        }
-    }
-    for (std::size_t i = 0; i < candidates.size(); i++) {
-        sum_all += pow(pheromones[candidates[i].first], alpha) * pow(heuristic[i], beta);
-    }
-    for (auto h: heuristic) {
-        heuristic_sum += pow(h, beta);
-    }
-
-    // Compute probability
-    float previous = 0.0f, current;
-    for (std::size_t i = 0; i < candidates.size(); i++) {
-        float ph = pheromones[candidates[i].first];
-        float h = heuristic[i];
-        current = (pow(ph, alpha) * pow(h, beta)) / sum_all;
-        assert(0.0 <= current && current <= 1.0);
-        proba.push_back(current);
-        face_proba.push_back(std::make_pair(candidates[i].first, current));
-        previous = current;
-    }
-    assert(heuristic.size() == candidates.size());
-    std::cout << "PB1";
-    float sum = 0.f;
-    previous = 0.f, current = 0.0f;
-    for (auto it: proba) {
-        current = it;
-        sum += current;
-        intervals.push_back(std::make_pair(previous, sum));
-        previous = sum;
-    }
-    std::cout << "Total " << sum << std::endl;
-    std::cout << "PB2";
-    for (auto it: intervals) {
-        std::cout << '(' << it.first << ", " << it.second << ") ";
-    }
-    float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX); // Float in  [0,1]
-    std::cout << "Interval " << r << std::endl;
-    assert(0.f <= r && r <= 1.0f);
-    std::pair<gmds::TCellID, gmds::TCellID> selected;
-    bool found = false;
-    for (auto it = intervals.begin(); it != intervals.end(); ++it) {
-        if (((*it).first <= r) && (r <= (*it).second)) {
-            selected = candidates[std::distance(intervals.begin(), it)];
-            std::cout << "selected " << selected.first << std::endl;
-            found = true;
-            break;
-        }
-    }
-    assert(found == true);
-    return selected;
-}

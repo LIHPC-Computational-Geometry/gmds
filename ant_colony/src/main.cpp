@@ -43,92 +43,21 @@ typedef enum {
     not_in_set,
 } FaceStatus;
 
-/* DEP
-void test() {
-    // Problem initialize
-    // Pb 1
-    int exist_tens[3][3][3] = {{{0, 0, 0}, {0, 1, 0}, {0, 0, 0}},
-                               {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}},
-                               {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}};
-    int *exist_flatten = &exist_tens[0][0][0];
-    // Env test
-    gmds::Env env(3, 3, 3, exist_flatten);
-    env.writeVTK("env.vtk");
-    std::vector<TCellID> frontb = {45};
-    std::vector<char> solution(env.getNbFaces(), 0);
-    for (auto x: frontb) {
-        solution[x] = 1;
-    }
-
-    auto edges_of_front = env.getEdgesOfFront(frontb, solution);
-    for (auto e: edges_of_front) {
-        std::cout << e << " ";
-    }
-    std::cout << std::endl;
-
-    auto candidates = env.getFacesCandidates(edges_of_front, solution);
-    for (auto c: candidates) {
-        std::cout << c << " ";
-    }
-    std::cout << std::endl;
-
-    frontb = {29};
-
-    env.updateFront(frontb);
-    edges_of_front = env.getEdgesOfFront(frontb, solution);
-    std::cout << "edges " << edges_of_front.size() << " : ";
-    for (auto e: edges_of_front) {
-        std::cout << e << " ";
-    }
-    std::cout << std::endl;
-    candidates = env.getFacesCandidates(edges_of_front, solution);
-    std::cout << "faces " << candidates.size() << " : ";
-    for (auto c: candidates) {
-        std::cout << c << " ";
-    }
-    std::cout << std::endl;
-    std::cout << "\n\n#Start Front " << std::endl;
-    env.resetVariables();
-
-    env.setVerbosity(Verbosity::No);
-    std::vector<TCellID> front_initial = {42, 40};
-    env.execute(front_initial);
-    //std::cout << "Edge turn " << env.numberEdgeTurn(solu) << std::endl;
-
-    std::vector<char> s;
-    env.setVerbosity(Verbosity::Yes);
-    s = env.run(front_initial);
-    env.writeSolution(s, front_initial, "Inspect.vtk");
-    std::cout << "Solution" << ' ';
-    for (auto x: s) {
-        std::cout << x << ' ';
-    }
-    std::cout << std::endl;
-}*/
-
-void model1() { // 1*3*3
-
-    int exist_tens[3][3][3] = {{{0, 0, 0}, {0, 1, 0}, {0, 0, 0}},
-                               {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}},
-                               {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}};
-    // Flatten
-    int *exist_flatten = &exist_tens[0][0][0];
-    gmds::Env env(3, 3, 3, exist_flatten);
-    env.setup_ant_colony_params(1, 1, 0.5f, 0.0f, 1.0f, 10, 2);
-    std::vector<std::pair<TCellID, TCellID>> front = {std::pair<TCellID, TCellID>(46, 44)};
-    env.setup_intial_front_and_edges(front);
-    std::vector<float> pheromone(env.getNbFaces(), 0.0f);
-
-    //env.run_ant(front, pheromone);
-    env.execute();
-}
-
 void prepare_model(){
     // pointer, dim
     std::vector<std::pair<int*,int>> models;
     std::vector<std::vector<TCellID>> initial_faces;
     std::vector<std::string> filename;
     int dim;
+
+
+    int et[2][2][2] = {{{1,1},{1,1}},
+                       {{1,1},{1,1}}};
+    dim = 2;
+    models.push_back(std::make_pair(&et[0][0][0],dim));
+    initial_faces.push_back({0});
+    filename.push_back("cube2_2_2.vtk");
+
     // 1_3_3 SLICE MODEL
     int exist_tens0[3][3][3] = {{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}},
                                {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}},
@@ -220,7 +149,8 @@ void prepare_model(){
     dim=5;
     models.push_back(std::make_pair(&exist_tens9[0][0][0],dim));
     filename.push_back("cube_5_5_5.vtk");
-    initial_faces.push_back({0,1,4});
+    //initial_faces.push_back({0,1,4});
+    initial_faces.push_back({0,1,4,6,9,11,14,16,19,21,24,26,29,47,50,68,71,89,92,111,110,195,196,280,281,366,365});
 
     int exist_tens10[10][10][10] = {
             {{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1}},
@@ -237,14 +167,54 @@ void prepare_model(){
     dim=10;
     models.push_back(std::make_pair(&exist_tens10[0][0][0],dim));
     filename.push_back("cube_10_10_10.vtk");
-    initial_faces.push_back({0,1,4});
+    //initial_faces.push_back({0,1,4,6,9,11,14,16,19,21,24,26,29,31,34,36,39,41,44,46,49,51,54,92,95,133,136,174,177,215,218,256,259,297,300,338,341,379,382,420,421,740,741,1060,1061,1380,1381,1700,1701,2020,2021,2340,2341,2660,2661,2980,2981});
+    initial_faces.push_back({0,1,4,14,11,19,21,6,9,16,24,26,29,31,34,36,39,41,44,46,49,51,54,92,95,133,136,174,177,215,218,256,259,297,300,338,341,379,382,420,421,740,741,1060,1061,1380,1381,1700,1701,2020,2021,2340,2341,2660,2661,2980,2981});
 
-    //!
-    for( int i= 0; i < initial_faces.size() ; i++) {
+    int exist_tens11[10][10][10] = {
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,1,1,1,1,1,1,1,0},{0,0,1,1,1,1,1,1,1,0},{0,0,1,1,1,1,1,1,1,0},{0,1,1,1,1,1,1,1,1,0},{1,1,1,1,1,1,1,1,1,0},{1,1,1,1,1,1,1,1,1,0},{1,1,1,1,1,1,1,1,1,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+    };
+    dim=10;
+    models.push_back(std::make_pair(&exist_tens11[0][0][0],dim));
+    initial_faces.push_back({95,94});
+    filename.push_back("model_f.vtk");
+
+    int exist_tens12[10][10][10] = {
+            {{0,0,1,1,1,1,1,1,0,0},{0,0,1,1,1,1,1,1,0,0},{0,0,1,1,1,1,1,1,0,0},{0,0,1,1,1,1,1,1,0,0},{0,0,1,1,1,1,1,1,0,0},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+            {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+    };
+    dim=10;
+    models.push_back(std::make_pair(&exist_tens12[0][0][0],dim));
+    initial_faces.push_back({0,1,26,30});
+    filename.push_back("column_2D.vtk");
+
+    auto it = std::find(filename.begin(),filename.end(),"cube_3_3_3.vtk");
+    int itermax = initial_faces.size();
+    for( int i= 0; i < itermax ; i++){
+        std::cout << filename[i] << std::endl;
         gmds::Env env(models[i].second, models[i].second, models[i].second, models[i].first);
+        env.status();
+        env.set_write(1);
         env.set_initial_faces(initial_faces[i]);
         env.initialize_ant_bis(initial_faces[i]);
-        env.writeVTK(filename[i]);
+        env.setup_ant_colony_params(1.0,2.0,0.9,0.1,4.0,20,100,10);
+        env.writeVTK("modelsLast/"+filename[i]);
     }
 
 }
@@ -479,91 +449,15 @@ void model_column() { // not working with 3 faces selected
 
     int *exist_flatten = &exist_tens[0][0][0];
     gmds::Env env(15, 15, 15, exist_flatten); // 8 8 8 is fun
+    std::vector<TCellID> v({1635,1636,1660,1663,1774,1776,1794,1795,1796,1797,1821,1824,1935,1937,1955,1956,1957,1958,1982,1985,2096,2098,2116,2117,2118,2119,2143,2146,2257,2259,2277,2278,2279,2280,2304,2307,2418,2420,2438,2439,2440,2441,2465,2468,2579,2581,2599,2600,2601,2602,2626,2629,2740,2742,2760,2761,2762,2763,2787,2790,2901,2903,2921,2922,2923,2924,2948,2951,3062,3064,3082,3083,3084,3085,3109,3112,3223,3225,3243,3244,3245,3246,3270,3273,3384,3386,3404,3405,3406,3407,3431,3434,3545,3547,3565,3566});
+    env.set_initial_faces(v);
+    env.initialize_ant_bis(v);
     env.setup_ant_colony_params(1, 1, 0.5f, 0.0f, 2.0f, 1, 1);
-    //env.writeVTK("model_column_3D.vtk");
-    //env.write_R("R_model_column_3D.vtk"); dont work
-    std::string dir("data/");
-    std::vector<std::string> files = {"0.csv", "1.csv", "2.csv", "3.csv", "4.csv", "5.csv", "6.csv", "7.csv"};
-    auto p = get_pair(dir, files);
-    env.setup_intial_front_and_edges(p);
-    //env.setup_intial_front_and_edges("selection_column.csv");
-
+    env.writeVTK("model_column_3D.vtk");
     env.status();
-    std::vector<char> solution(env.getNbFaces(), 0);
-    std::vector<TCellID> faces = get_faces(dir, files);
-    for (auto f: faces) {
-        solution[f] = 1;
-    }
-
-    //env.writeSolution(solution,"column_init.vtk",{});
-    //env.execute();
-
 }
 
-void cube_3_3_3(){
 
-    /* Writing the best solution known
-    std::string best_solution = "111110111101111000010001000100001000100010010001000100000000000000000000000010001000100000000000000000000000";
-    std::vector<char> bs;
-    for (std::size_t i = 0; i < best_solution.size(); i++) {
-        // Simply convert char '0' or '1' to int
-        bs.push_back(static_cast<int>(best_solution[i]) - '0');
-    }
-    std::vector<char> flip_on = {42,55,65, 75, 88, 98, 16, 29};
-    for(auto x : flip_on){
-        bs[x] = 1;
-    }
-    std::vector<char> flip_off ={3, 8, 13,2, 7 ,12};
-    for(auto x : flip_off){
-        bs[x] = 0;
-    }
-    std::cout << "SOLUTION QUALITY " << env.solution_quality(bs) << std::endl;
-    */
-}
-
-void cube_3_3_3_newalg(){
-    int exist_tens[3][3][3] = {{{1,1,1},{1,1,1},{1,1,1}},{{1,1,1},{1,1,1},{1,1,1}},{{1,1,1},{1,1,1},{1,1,1}}};
-    int *exist_flatten = &exist_tens[0][0][0];
-    float tmin = 1.0, tmax = 10.0;
-    gmds::Env env(3, 3, 3, exist_flatten); // 8 8 8 is fun
-    env.setup_ant_colony_params(1, 1, 0.9f, 1.0f, 10.0f,100,100,3);
-    float tau_min = 1.0, tau_max = 2.0;
-    std::vector<float> pheromone(env.getNbFaces(), tau_max);
-    env.writeVTK("cube_3_3_3.vtk");
-    env.set_write(false);
-    env.status();
-    std::vector<TCellID> initial_faces = {0,1,4};
-    env.set_initial_faces(initial_faces);
-    env.execute();
-}
-
-void cube_10_10_10_new_alg(){
-    int exist_tens[10][10][10] = {
-            {{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1}},
-            {{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1}},
-            {{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1}},
-            {{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1}},
-            {{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1}},
-            {{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1}},
-            {{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1}},
-            {{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1}},
-            {{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1}},
-            {{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1}}
-    };
-
-    int *exist_flatten = &exist_tens[0][0][0];
-    gmds::Env env(10, 10, 10, exist_flatten); // 8 8 8 is fun
-    env.setup_ant_colony_params(1, 1, 0.9f, 1.0f, 10.0f,3,3,1);
-    float tau_min = 1.0, tau_max = 2.0;
-    std::vector<float> pheromone(env.getNbFaces(), tau_max);
-    env.writeVTK("cube_10_10_10.vtk");
-    env.set_write(true);
-    env.status();
-    std::vector<TCellID> frontbis = {0,1,4};
-    env.set_initial_faces(frontbis);
-    //env.execute(frontbis);
-    env.execute();
-}
 /*
  * Filename have to be in VTK format
  * Write file with face ids
@@ -669,58 +563,7 @@ std::vector<std::pair<TCellID, TCellID>> get_pair(std::string dir, std::vector<s
     return pairs;
 }
 
-std::vector<TCellID> get_faces(std::string dir, std::vector<std::string> filenames) {
-    std::vector<TCellID> res, tmp;
-    for (auto f: filenames) {
-        tmp = get_face_of_file(dir + f);
-        res.insert(res.end(), tmp.begin(), tmp.end());
-    }
-    return res;
-}
-int *column_easy_pb() {
-    static int exist_tens[4][4][4] = {{{1, 1, 1, 1},
-                                              {1, 1, 1, 1},
-                                              {1, 1, 1, 1},
-                                              {1, 1, 1, 1}},
-                                      {{0, 0, 0, 0},
-                                              {0, 1, 1, 0},
-                                              {0, 1, 1, 0},
-                                              {0, 0, 0, 0}},
-                                      {{0, 0, 0, 0},
-                                              {0, 0, 0, 0},
-                                              {0, 0, 0, 0},
-                                              {0, 0, 0, 0}},
-                                      {{0, 0, 0, 0},
-                                              {0, 0, 0, 0},
-                                              {0, 0, 0, 0},
-                                              {0, 0, 0, 0}}};
-    return &exist_tens[0][0][0];
-}
-std::vector<std::pair<TCellID, TCellID>> column_easy_initial_faces() {
-    return {std::pair<TCellID, TCellID>(72, 73),
-            std::pair<TCellID, TCellID>(77, 80),
-            std::pair<TCellID, TCellID>(87, 86),
-            std::pair<TCellID, TCellID>(83, 81)};
-}
-
 void test(){
-    /*int exist_tens[4][4][4] = {{{0, 0, 1, 0},
-                                       {0, 0, 1, 1},
-                                       {0, 0, 1, 1},
-                                       {0, 0, 0, 0}},
-                               {{0, 0, 0, 0},
-                                       {0, 0, 0, 0},
-                                       {0, 0, 0, 0},
-                                       {0, 0, 0, 0}},
-                               {{0, 0, 0, 0},
-                                       {0, 0, 0, 0},
-                                       {0, 0, 0, 0},
-                                       {0, 0, 0, 0}},
-                               {{0, 0, 0, 0},
-                                       {0, 0, 0, 0},
-                                       {0, 0, 0, 0},
-                                       {0, 0, 0, 0}}};
-    */
     int exist_tens[4][4][4] = {{{0, 0, 1, 0},
                                        {0, 0, 0, 0},
                                        {0, 0, 0, 0},
@@ -743,76 +586,101 @@ void test(){
     env.writeVTK("test_end_condition.vtk");
 }
 
-void test2_2(){
-    int exist_tens[4][4][4] = {{{0, 0, 1, 0},
-                                       {0, 0, 1, 1},
-                                       {0, 0, 1, 1},
-                                       {0, 0, 0, 0}},
-                               {{0, 0, 0, 0},
-                                       {0, 0, 0, 0},
-                                       {0, 0, 0, 0},
-                                       {0, 0, 0, 0}},
-                               {{0, 0, 0, 0},
-                                       {0, 0, 0, 0},
-                                       {0, 0, 0, 0},
-                                       {0, 0, 0, 0}},
-                               {{0, 0, 0, 0},
-                                       {0, 0, 0, 0},
-                                       {0, 0, 0, 0},
-                                       {0, 0, 0, 0}}};
 
-    int *exist_flatten = &exist_tens[0][0][0];
-    gmds::Env env(4, 4, 4, exist_flatten);
-    env.writeVTK("test_end_condition.vtk");
-    env.edges_to_add();
+void read_to_fix(){
+    gmds::Mesh m(gmds::MeshModel(gmds::MeshModel(gmds::DIM3 | gmds::N | gmds::F | gmds::E |
+                                                 gmds::F2N | gmds::E2N | gmds::E2F | gmds::F2E)));
+    std::string fname = "1_3_3slice.vtk";
+    gmds::IGMeshIOService ioService(&m);
+    gmds::VTKReader vtkReader(&ioService);
+    vtkReader.setCellOptions(gmds::N | gmds::E | gmds::F);
+    vtkReader.read(fname);
+
+    std::cout << m.getNbEdges() << std::endl;
+
+    gmds::MeshDoctor doc(&m);
+    doc.buildEdgesAndX2E();
+    doc.buildEfromF();
+    doc.updateUpwardConnectivity();
+
+    std::cout << m.getNbEdges() << std::endl;
+
+    for(auto e : m.edges()){
+        Edge edge = m.get<Edge>(e);
+        assert(edge.nbFaces() > 0);
+    }
 }
-
 
 int main(int argc, char *argv[]) {
     std::cout << "==== Main Valentin Postat ====" << std::endl;
-    std::cout << "./main [n_run] [n_iter] [n_ants] [tau_min] [tau_max] [alpha] [beta]" << std::endl;
-    //int *c = column_easy_pb();
-    //std::cout << c[0];
-    /* work
-    test2_2();
-    model_column_easy();
-    */
-    //model_weak();
-    //cube_2_2_2();
-    //cube_3_3_3();
-    prepare_model();
-    Env e("1_3_3slice.vtk");
+    std::cout << "./main [filename] [n_run] [n_iter] [n_ants] [tau_min] [tau_max] [alpha] [beta] [verbosity]" << std::endl;
+
+    //prepare_model();
+
+    //Env e("1_3_3slice.vtk");
+    //Env e("models/B17_coarse_ants.vtk");
+    /*Env e("models/B17_refine_ants.vtk");
+    Env e("models/B17_coarse_ants.vtk");
     e.status();
-    e.set_write(0);
-    e.setup_ant_colony_params(1,1,0.9,1.0,10.0,10,10,10);
+    e.set_write(2);
+    e.setup_ant_colony_params(1,30,0.9,0.1,4.0,1,1,1);
     e.execute();
     std::cout << "Program finished" << std::endl;
-    //e.writeVTK("1_3_3slice_read_write.vtk");
-    //cube_3_3_3_newalg();
-    //cube_10_10_10_new_alg();
-    return 0;
 
-    //return 0;
-    if (argc == 8 + 1) {
+    std::vector<char> solution(e.getNbFaces(),0);
+    solution[27] = 3 ;
+    solution[19] = 3 ;
+    solution[10] = 1 ;
+    solution[12] = 1 ;
+    std::vector<char> solution2(e.getNbFaces(),0);
+    solution2[27] = 3 ;
+    solution2[19] = 3 ;
+    solution2[11] = 1 ;
+    float q1 = e.solution_quality(solution);
+    float q2 = e.solution_qualitysolution_quality(solution2);
+    std::cout << q1 << std::endl;
+    std::cout << q2 << std::endl;
+    return 0;
+    */
+    std::cout << argc << std::endl;
+    /*Env e("models/B17_coarse_ants.vtk");
+    e.status();
+    e.set_write(2);
+    e.setup_ant_colony_params(1,30,0.9,0.1,4.0,1,1,1);
+    e.execute();
+    */
+    prepare_model();
+    //model_column();
+
+    /* TODO check stuff with topology
+    Env e("model_R/ant_coarse.vtk");
+    e.execute();
+    */
+    if(argc >= 2) {
+        std::string stuff(argv[1]);
+        std::cout << stuff << std::endl;
+    }
+    if (argc == 12 + 1) {
         std::map<std::string, int *> models;
         std::map<std::string, std::vector<std::pair<TCellID, TCellID>>> initial_faces;
         std::map<std::string, std::vector<int>> dims;
-
-        int nb_run = atoi(argv[1]), nb_iter = atoi(argv[2]), nb_ants = atoi(argv[3]);
+        std::string filename(argv[1]);
+        int nb_run = atoi(argv[2]), nb_iter = atoi(argv[3]), nb_ants = atoi(argv[4]);
         assert(nb_run >= 0 && nb_iter >= 0 && nb_ants >= 0);
-        float tmin = atof(argv[4]), tmax = atof(argv[5]), p = atof(argv[6]), alpha = atof(argv[7]), beta = atof(
-                argv[8]);
+        float tmin = atof(argv[5]), tmax = atof(argv[6]), p = atof(argv[7]), alpha = atof(argv[8]), beta = atof(
+                argv[9]);
+        int nb_elite = atoi(argv[10]), verbosity = atoi(argv[12]);
+        float tau_initial  = atof(argv[11]);
         std::cout << "Parameters: " << std::endl;
-        std::cout << "\tnb_run " << nb_run << "\n\tnb_iter " << nb_iter << "\n\tnb_ants " << nb_ants
+        std::cout << "\tfilename " << filename << "\n\tnb_run " << nb_run << "\n\tnb_iter " << nb_iter << "\n\tnb_ants " << nb_ants
                   << "\n\t[tmin,tmax] [" << tmin << "," << tmax << "]\n\tp " << p << "\n\t[alpha,beta] [" << alpha
-                  << "," << beta << "]" << std::endl;
-    } else if (argc == 1) {
-        std::cout << "Default execution" << std::endl;
-        //model1();
-        //model2();
-        //model_strong();
-        //model_column_easy();
-        //model_weak_3D();
+                  << "," << beta << "]" << "\n\tnb_elite " << nb_elite << "\n\t" << tau_initial <<  "\n\tverbosity(writer) " << verbosity << std::endl;
+        Env e(filename);
+        e.status();
+
+        e.set_write(verbosity);
+        e.setup_ant_colony_params(alpha,beta,p,tmin,tmax,nb_ants,nb_iter,nb_run,nb_elite,tau_initial);
+        e.execute();
     } else if (argc == 4) {
         std::string filename(argv[1]);
         std::string dirname_in(argv[2]);
@@ -835,14 +703,5 @@ int main(int argc, char *argv[]) {
         std::cout << "usage ./main [solution] [filename].vtk " << std::endl;
     }
 
-
-
-
-    //model_column_easy();
-    /*Env env("model_column_3D.vtk");
-    env.setup_intial_front_and_edges("selection_column.csv");
-    env.status();*/
-    //model_weak();
-    //model_column();
     return 0;
 }

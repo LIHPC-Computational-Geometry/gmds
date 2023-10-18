@@ -2,6 +2,7 @@
 # GMDS Project
 #==============================================================================
 cmake_minimum_required(VERSION 3.10.0)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #==============================================================================
 # Operating System specificities (must be put at first)
 #==============================================================================
@@ -44,9 +45,9 @@ option(WITH_DOC "Build documentation"                                           
 option(WITH_TEST "Build test"                                                           OFF)
 option(WITH_CODE_COVERAGE "Perform code coverage with avail. test suites"               OFF)
 option(WITH_CODE_COVERAGE_HTML_REPORT "Activate html reporting during code covering"    OFF)
-option(WITH_PYTHON_API "Build the gmds python API"                                      ON)
-option(BUILD_SHARED_LIBS ""                                                             ON)
-option(WITH_CGNS "Allows the CGNS export (blocking and aero components)"                ON)
+option(WITH_PYTHON_API "Build the gmds python API"                                      OFF)
+option(BUILD_SHARED_LIBS ""                                                             OFF)
+option(WITH_CGNS "Allows the CGNS export (blocking and aero components)"                OFF)
 
 #==============================================================================
 if(BUILD_SHARED_LIBS)
@@ -141,8 +142,8 @@ GMDS_ADD_COMPONENT(
         blocking                        # src subdirectory name
         GMDSBlocking                    # name of the generated library
         "This module provides a data structure for a blocking representation"  # description
-        ON                                 # is activated
-        ON                                 # must be covered
+        OFF                                 # is activated
+        OFF                                 # must be covered
 )
 
 GMDS_ADD_COMPONENT(
@@ -150,8 +151,8 @@ GMDS_ADD_COMPONENT(
         claire                        # src subdirectory name
         GMDSClaire                    # name of the generated library
         " "  # description
-        ON                                 # is activated
-        ON                                 # must be covered
+        OFF                                 # is activated
+        OFF                                 # must be covered
 )
 
 GMDS_ADD_COMPONENT(
@@ -159,8 +160,8 @@ GMDS_ADD_COMPONENT(
         blockMesher                        # src subdirectory name
         GMDSBlockMesher                    # name of the generated library
         "Provide the mesh of a block structure classified on a CAD geometry"  # description
-        ON                                 # is activated
-        ON                                 # must be covered
+        OFF                                 # is activated
+        OFF                                 # must be covered
 )
 
 GMDS_ADD_COMPONENT(
@@ -186,8 +187,8 @@ GMDS_ADD_COMPONENT(
         singGraphBuild
         GMDSSingGraphBuild
         "Singularity graph building component"
-        ON
-        ON                                 # must be covered
+        OFF
+        OFF                                 # must be covered
 )
 
 GMDS_ADD_COMPONENT(
@@ -240,8 +241,8 @@ GMDS_ADD_COMPONENT(
         hybridMeshAdapt
         GMDSHybridMeshAdapt
         "Hybrid remeshing component"
-        ON
-        ON                                 # must be covered
+        OFF
+        OFF                                 # must be covered
 )
 
 GMDS_ADD_COMPONENT(
@@ -249,8 +250,8 @@ GMDS_ADD_COMPONENT(
         padding
         GMDSPadding
         "Smart Padding/Pillowing algorithm"
-        ON
-        ON                                # must be covered
+        OFF
+        OFF                                # must be covered
 )
 
 GMDS_ADD_COMPONENT(
@@ -258,16 +259,16 @@ GMDS_ADD_COMPONENT(
         polyblock
         GMDSPolyblock
         "Polycube_like algorithms for hexahedral blocking"
-        ON
-        ON                                # must be covered
+        OFF
+        OFF                                # must be covered
 )
 GMDS_ADD_COMPONENT(
         GEOD_HONEY_COMB
         geodHoneyComb
         GMDSGeodHoneyComb
         "Algorithms to create honeycomb like meshes for spherical geometries"
-        ON
-        ON                                # must be covered
+        OFF
+        OFF                                # must be covered
 )
 
 GMDS_ADD_COMPONENT(

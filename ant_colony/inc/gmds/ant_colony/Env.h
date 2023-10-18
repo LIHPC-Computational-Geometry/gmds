@@ -15,6 +15,7 @@
 #include <numeric>
 #include <iostream>
 #include <stdio.h>
+#include <iterator>
 
 #include <fstream>
 #include <ctime>
@@ -90,7 +91,8 @@ namespace gmds {
         Variable<double> *pheromone;
         Variable<double> *probabilities;
         Variable<double> *heuristic;
-
+        Variable<int> *hex_number_edge;
+        Variable<int> *hex_number_face;
 
 
         Variable<int>* bnd_solution;
@@ -101,10 +103,10 @@ namespace gmds {
         std::vector<char> disable_faces;
 
         // Experiment params
-        int n_run;
+        int n_run,nb_elite;
         // Ant colony params
         int alpha, beta, nb_ants, iter_global;
-        float p, tmin, tmax;
+        float p, tmin, tmax, tau_initial;
         // Write vtk verbosity
         int write_vtk=1; //! 0 no  write 1 write only one result 2 write all the build step of the selection (high cost)
 
@@ -125,6 +127,7 @@ namespace gmds {
                     face_in_solution->value(i) = 0;
                 }
             }
+
         }
 
         int nb_faces_in_solutions(TCellID edge) {
@@ -141,18 +144,22 @@ namespace gmds {
         }
 
         void build_bnd_solution(){
+            this->bnd_solution->setValuesTo(0);
             for(auto f : m.faces()){
                 Face face = m.get<Face>(f);
                 std::vector<TCellID> edges = face.getIDs<gmds::Edge>();
-                for(auto e: edges){
-                    if(this->face_in_solution->value(f) != 0 && edge_to_add(static_cast<face_classification>(classification_face->value(f)),static_cast<edge_classification>(classification_edge->value(e)))){
-                        int nb = nb_faces_in_solutions(e);
-                        this->bnd_solution->set(e,nb);
-                        std::cout << nb << std::endl;
-                        // 1 bord
-                        // 0 externe
-                        // 2 in solution
-                        // 3 err
+                if(this->face_in_solution->value(f) != 0) {
+                    for (auto e: edges) {
+                        if (edge_to_add(static_cast<face_classification>(classification_face->value(f)),
+                                        static_cast<edge_classification>(classification_edge->value(e)))) {
+                            int nb = nb_faces_in_solutions(e);
+                            this->bnd_solution->set(e, nb);
+                            std::cout << nb << std::endl;
+                            // 1 bord
+                            // 0 externe
+                            // 2 in solution
+                            // 3 err
+                        }
                     }
                 }
             }
@@ -176,11 +183,13 @@ namespace gmds {
         }
 
         void initialize_ant_bis(std::vector<TCellID> faces){
+            assert(!faces.empty());
             if(!faces.empty()) {
                 for (auto f: faces) {
                     this->face_in_solution->set(f, 3);
                 }
             }
+
         }
 
         void initialize_ant_bis(std::vector<std::pair<TCellID,TCellID>> faces){
@@ -190,37 +199,42 @@ namespace gmds {
             }
         }
 
-        void execute(std::vector<TCellID> faces){
-            initialize_ant_bis(faces);
-            std::vector<float> pheromones(m.getNbFaces(),this->tmax);
-            std::vector<char> solution = run_ant_bis(pheromones);
+        TCellID select_random(){
+            int min = 0, max = m.getNbFaces() - 1;
+            int randNum = rand() % (max - min + 1) + min;
+            return randNum;
         }
 
+
         std::vector<char> run_ant_bis(std::vector<float> pheromones) {
-            initialize_ant_bis(this->initial_faces);
             reset_solution();
             std::vector<char> solution;
             std::set<std::pair<TCellID, TCellID>> candidates;
             TCellID selected;
             int i=0;
             std::vector<std::pair<TCellID, float>> face_proba;
+            selected = select_random();
+            if( this->face_in_solution->value(selected) != 3 ) {
+                this->face_in_solution->set(selected, 1);
+            }
             build_bnd_solution();
             candidates = getCandidates();
             for(auto c : candidates){
                 this->face_candidates->set(c.first,1);
             }
             writeVTK(format_number(i, 5)+"test_run_ant_bis.vtk");
+            this->face_candidates->setValuesTo(0);
             std::cout << "Candidates" << candidates.size() << std::endl;
             while (!candidates.empty()){
                 selected = select_Candidate(candidates, pheromones, face_proba);
                 this->face_in_solution->set(selected,1);
+                build_bnd_solution();
                 candidates = getCandidates();
                 i++;
                 for(auto c : candidates){
                     this->face_candidates->set(c.first,1);
                 }
                 writeVTK(format_number(i, 5)+"test_run_ant_bis.vtk");
-                build_bnd_solution();
                 this->face_candidates->setValuesTo(0);
             }
             for(std::size_t i = 0; i < face_in_solution->getNbValues() ; i++){
@@ -261,9 +275,9 @@ namespace gmds {
             float heuristic_sum = 0.0f;
             for (auto c: candidates) {
                 if (same_orientation(c.first, c.second)) {
-                    heuristic.push_back(2.0);
-                } else {
                     heuristic.push_back(1.0);
+                } else {
+                    heuristic.push_back(0.5);
                 }
             }
             for (std::size_t i = 0; i < candidates.size(); i++) {
@@ -314,6 +328,7 @@ namespace gmds {
                 }
             }
             assert(found == true);
+            assert( selected.first < m.getNbFaces());
             return selected.first;
         }
 
@@ -338,8 +353,51 @@ namespace gmds {
                 same_orientation = true;
             }
             return same_orientation;
+
+        }
+        /** Return true if f1 f2 have a region in common.
+         * */
+        bool edge_turn_topo(TCellID f1, TCellID f2){
+            Face face1,face2;
+            std::vector<TCellID> r1,r2,res;
+            face1 = m.get<Face>(f1);
+            face2 = m.get<Face>(f2);
+            r1 = face1.getIDs<Region>();
+            r2 = face2.getIDs<Region>();
+            std::sort(r1.begin(),r1.end());
+            std::sort(r2.begin(),r2.end());
+            std::set_intersection(r1.begin(), r1.end(),r2.begin(),r2.end(), res.begin());
+            if( res.empty() ){
+                return false;
+            }else{
+                return true;
+            }
         }
 
+        /**
+         * Return true if the
+        */
+        bool is_vertex_valid( TCellID node ){
+            bool res;
+            Node n = m.get<Node>(node);
+            std::vector<TCellID> edges = n.getIDs<Edge>(),face_in_s;
+            for(auto e : edges){
+                Edge edge = m.get<Edge>(e);
+                std::vector<TCellID> faces = edge.getIDs<Face>(),in_solution;
+                for(auto f : faces){
+                    if(face_in_solution->value(f) != 0){
+                        in_solution.push_back(f);
+                    }
+                }
+                // Différents cas selon position du sommet
+                //nb_faces_in_solutions(e)
+            }
+            return res;
+        }
+
+        /* Return 1 if it's ok to have this face as a candidate and 0 if it's not
+         * 2 faces in solution for the edge already
+         * */
         int edge_of_faces_solution(TCellID face){
             gmds::Face f = m.get<gmds::Face>(face);
             std::vector<TCellID> edges;
@@ -371,54 +429,25 @@ namespace gmds {
         // Bloc existance
         Env(TInt x_n, TInt y_n, TInt z_n, const int *exist_tens);
 
-
-        void do_classification_edge(){
+        void initialize_hex_number_edge() {
             for (auto e: m.edges()) {
                 Edge edge = m.get<Edge>(e);
-                std::vector<TCellID> regions;
-                edge.getIDs<Region>(regions);
-                assert(edge.nbRegions() == regions.size());
-                int classification;
-                switch (regions.size()) {
-                    case 3:
-                        classification = (int) edge_classification::concave;    // 0
-                        break;
-                    case 1:
-                        classification = (int) edge_classification::convex;     // 1
-                        break;
-                    case 2:
-                        classification = (int) edge_classification::surface;    // 2
-                        break;
-                    case 4:
-                        classification = (int) edge_classification::volume;     // 3
-                        break;
-                    default:
-                        assert(1 == 0);
-                }
-                classification_edge->set(e, classification);
+                this->hex_number_edge->set(e, edge.nbRegions());
             }
         }
 
-        void do_classification_face(){
+        void initialize_hex_number_face() {
             for (auto f: m.faces()) {
                 Face face = m.get<Face>(f);
                 std::vector<TCellID> regions;
                 face.getIDs<Region>(regions);
-                int classification;
-                switch (regions.size()) {
-                    case 1:
-                        classification = (int) face_classification::surface;
-                        break;
-                    case 2:
-                        classification = (int) face_classification::volume;
-                        break;
-                    default:
-                        assert(1 == 0);
-                }
-                //std::cout << f << " " << face.nbRegions() << " " << regions.size() <<  std::endl;
-                classification_face->set(f, classification);
+                this->hex_number_face->set(f, regions.size());
             }
         }
+
+        void do_classification_edge();
+
+        void do_classification_face();
 
         void init_disable_faces(){
             disable_faces = std::vector<char>(m.getNbFaces(),0);
@@ -436,115 +465,10 @@ namespace gmds {
             }
         }
 
-        /** Simply read a vtk file and set if a face is in the solution or not
+        /** Read a vtk file and set if a face is in the solution or not
+         * Still not working
          * **/
-        Env(std::string fname) : m(gmds::MeshModel(
-                DIM3 | R | F | E | N | R2N | R2F | R2E | F2N | F2R | F2E | E2F | E2N | N2E | N2R | E2R)) {
-            std::string vtk_file = fname;
-            gmds::IGMeshIOService ioService(&m);
-
-            gmds::VTKReader vtkReader(&ioService);
-            vtkReader.setCellOptions(gmds::N |gmds::E | gmds::F);
-            vtkReader.setDataOptions(gmds::N |gmds::E | gmds::F);
-
-            vtkReader.read(vtk_file);
-
-
-
-            std::cout << "Nodes " << m.getNbNodes() << std::endl;
-            std::cout << "Regions " << m.getNbRegions() << std::endl;
-            std::cout << "Edges " << m.getNbEdges() << std::endl;
-            std::cout << "Faces " << m.getNbFaces() << std::endl;
-            std::cout << "Hexaedra " << m.getNbHexahedra() << std::endl;
-
-            // Compute
-            this->edge_boundary = m.getVariable<int, gmds::GMDS_EDGE>("edge_boundary");
-            // Compute
-            this->face_boundary = m.getVariable<int, gmds::GMDS_FACE>("face_boundary");
-            // Get
-            this->face_in_solution = m.getVariable<int, gmds::GMDS_FACE>("face_in_solution");
-            // useless
-            this->face_id = m.getVariable<int, gmds::GMDS_FACE>("face_id");
-
-            //auto blblbl = m.getVariable<int, gmds::GMDS_FACE>("fblblblbl");
-            //! ^--- make the program crash if variable not found whereas it is not rly a problem if we can compute it
-
-            //this->face_constraint = m.getVariable<int, gmds::GMDS_FACE>("face_constraint");
-            //this->front = m.getVariable<int, gmds::GMDS_FACE>("front");
-
-
-            if(m.hasVariable(gmds::GMDS_EDGE,"classification_edge")){
-                m.deleteVariable(gmds::GMDS_EDGE,"classification_edge");
-            }
-            this->classification_edge = m.newVariable<int, gmds::GMDS_EDGE>("classification_edge");
-            do_classification_edge();
-
-            if(m.hasVariable(gmds::GMDS_FACE,"classification_face")){
-                m.deleteVariable(gmds::GMDS_FACE,"classification_face");
-            }
-            this->classification_face = m.newVariable<int, gmds::GMDS_FACE>("classification_face");
-            do_classification_face();
-            // get or Compute
-
-            // get or Compute or
-            this->classification_face = m.getVariable<int, gmds::GMDS_FACE>("classification_face");
-            this->bnd_solution = m.newVariable<int,gmds::GMDS_EDGE>("bnd_solution");
-            this->bnd_solution->setValuesTo(0);
-
-            if(m.hasVariable(gmds::GMDS_FACE,"pheromone")){
-                this->pheromone = m.getVariable<double, gmds::GMDS_FACE>("pheromone");
-            }else{
-                this->pheromone = m.newVariable<double, gmds::GMDS_FACE>("pheromone");
-                pheromone->setValuesTo(0.0f);
-            }
-
-            if(m.hasVariable(gmds::GMDS_FACE,"heuristic")){
-                this->heuristic = m.getVariable<double, gmds::GMDS_FACE>("heuristic");
-            }else{
-                this->heuristic = m.newVariable<double, gmds::GMDS_FACE>("heuristic");
-                heuristic->setValuesTo(0.0f);
-            }
-
-            if(m.hasVariable(gmds::GMDS_FACE,"face_candidates")){
-                this->face_candidates = m.getVariable<int, gmds::GMDS_FACE>("face_candidates");
-            }else{
-                this->face_candidates = m.newVariable<int,gmds::GMDS_FACE>("face_candidates");
-                this->face_candidates->setValuesTo(0.0f);
-            }
-
-            if(m.hasVariable(gmds::GMDS_FACE,"face_constraint")){
-                this->face_constraint = m.getVariable<int, gmds::GMDS_FACE>("face_constraint");
-            }else{
-                this->face_constraint = m.newVariable<int,gmds::GMDS_FACE>("face_constraint");
-                this->face_constraint->setValuesTo(0.0f);
-            }
-
-            //
-
-            /*
-            bloc_exist->setValuesTo(0);
-            var_delete->setValuesTo(0);
-            face_in_solution->setValuesTo(0);
-            face_id->setValuesTo(0);
-            face_candidates->setValuesTo(0);
-            face_constraint->setValuesTo(0);
-
-            front->setValuesTo(0);
-
-            face_in_solution->setValuesTo(0);
-
-            this->classification_edge->setValuesTo(0);
-            this->classification_face->setValuesTo(0);
-
-
-            */
-            std::cout << "BUILDING" << std::endl;
-            for(auto i= 0; i < this->face_in_solution->getNbValues(); i++ ){
-                std::cout << i << " " << face_in_solution->value(i) << std::endl;
-            }
-
-            srand(time(NULL));
-        }
+        Env(std::string filename);
 
         /** alpha,
          *  beta,
@@ -591,7 +515,7 @@ namespace gmds {
 
 
         void
-        setup_ant_colony_params(int alpha, int beta, float p, float tmin, float tmax, int nb_ants, int iter_global,int n_run=1);
+        setup_ant_colony_params(int alpha, int beta, float p, float tmin, float tmax, int nb_ants, int iter_global,int n_run=1,int nb_elite=1,float tau_initial=1.0);
 
         ~Env(){}
 
@@ -639,7 +563,6 @@ namespace gmds {
             }
             return v;
         }
-
 
         void setup_solution_from_string(std::string solution) {
             std::vector<char> v_solution;
@@ -722,11 +645,6 @@ namespace gmds {
             std::cout << "#Edges " << m.getNbEdges() << std::endl;
             std::cout << "#Faces " << m.getNbFaces() << std::endl;
             std::cout << "#Regions " << m.getNbRegions() << std::endl;
-            std::cout << "Faces:" << std::endl;
-            for (auto f: m.faces()) {
-                std::cout << f << " ";
-            }
-
         }
 
         /** Return number of edge of 'face_id' in common with the front*/
@@ -777,10 +695,6 @@ namespace gmds {
 
         void updateCandidates(std::vector<gmds::TCellID> candidates);
 
-        /*
-         * PREFERED NOW */
-        std::vector<char> runAnts(std::vector<gmds::TCellID> front_initial);
-
         void write_R(std::string filename) {
             IGMeshIOService ios(&this->m);
             VTKWriter writer(&ios);
@@ -789,7 +703,6 @@ namespace gmds {
             writer.write(
                     filename); // paraview ctrl + space (Shrink) pour avoir uniquement les hex (enlever les F dans l'écriture)
         }
-
 
         std::list<gmds::TCellID>
         getFirstEdgeFront(std::vector<gmds::TCellID> front_initial, std::vector<char> solution);
@@ -819,15 +732,18 @@ namespace gmds {
 
         int evaluate(std::vector<char> solution) {
             resetVariables();
-            for (auto it = m.faces().begin(); it != m.faces().end(); ++it) {
-                if (solution[std::distance(m.faces().begin(), it)] == 1) {
+
+            for (gmds::FaceContainer::iterator it = m.faces().begin(); it != m.faces().end(); ++it) {
+                /**if (solution[std::distance(m.faces.begin(), it)] == 1) {
                     front->set(*it, FaceStatus::Front);
                 }
+                */
             }
             for (auto it = solution.begin(); it != solution.end(); ++it) {
                 front->set(*it, FaceStatus::Initial);
             }
             return 1;//numberEdgeTurn(solution);
+
         }
 
         int numberEdgeTurn(std::vector<char> solution) {
@@ -859,13 +775,15 @@ namespace gmds {
             // Where are our marked faces
             for (auto f: faces) {
                 //if (this->front->value(f) > FaceStatus::Candidate) {
-                if (solution[f] == 1) {
+                if (solution[f] != 0) {
                     fac[count] = f;
                     count++;
                 }
             }
             // assert(count < 3);
-            if (count == 2) { // 2 faces in front
+            if( count == 2 && solution[fac[0]] == 3 && solution[fac[1]] == 3 ){
+                return false;
+            }else if (count == 2 ) { // 2 faces in front
                 gmds::Face f1 = m.get<gmds::Face>(fac[0]), f2 = m.get<gmds::Face>(fac[1]);
                 if (f1.normal() == f2.normal() || f1.normal() == f2.normal().opp()) {
                     edge_turn = false;
@@ -1024,12 +942,12 @@ namespace gmds {
             return res;
         }
 
-        int faces_in_solutions(TCellID edge, std::vector<char> Solution) {
+        int faces_in_solutions(TCellID edge, std::vector<char> solution) {
             gmds::Edge edges = m.get<gmds::Edge>(edge);
             std::vector<TCellID> faces = edges.getIDs<gmds::Face>();
             int cpt = 0;
             for (auto f: faces) {
-                if (Solution[f] == true) {
+                if (solution[f] != 0 ) {
                     cpt++;
                     std::cout << f << std::endl;
                 }
@@ -1043,7 +961,7 @@ namespace gmds {
             TCellID face;
             bool found = false;
             for (auto f: faces) {
-                if (Solution[f] == true) {
+                if (Solution[f] != 0) {
                     face = f;
                     found = true;
                 }
@@ -1077,83 +995,6 @@ namespace gmds {
             }
             assert(!initial_front.empty());
             return initial_front;
-        }
-
-
-        /***    Return  candidate(face) and the edge root
-         *      A candidate is not in Solution and
-         *      valence(current) >= valence(opposite) -> candidate
-         *      empty vector if no candidate
-         *      return face,edge as candidate
-         *      return empty vec if no candidates
-        ***/
-        std::vector<std::pair<TCellID, TCellID>>
-        getCandidate_v2(std::pair<TCellID, TCellID> edges_id, std::vector<char> Solution,
-                        std::vector<char> processed_edge) {
-            std::cout << "Beg candidates " << Solution.size() << std::endl;
-            gmds::Edge edge = m.get<gmds::Edge>(edges_id.first), opposite = m.get<gmds::Edge>(edges_id.second);
-            std::vector<std::pair<TCellID, TCellID>> face_candidates;
-            std::cout << "end candidates " << edge.nbFAces() << " " << opposite.nbFAces() << std::endl;
-            //! Valence(e) >= Valence(opposite(e))
-            //
-            // edge.nbRegions() >= opposite.nbRegions() && edge.nbRegions() > 1
-            if (edge.nbFAces() >= opposite.nbFAces() && edge.nbRegions() > 1) {
-                std::cout << "in if" << std::endl;
-                std::vector<TCellID> faces;
-                edge.getIDs<gmds::Face>(faces);
-                /*TCellID previous_face;
-                for(auto f : faces){
-                    if(Solution[f] == true){
-                        previous_face = f;
-                        break;
-                    }
-                }
-                assert(Solution[previous_face] == true);
-                */
-                // For an edge we get all faces
-                for (auto f: faces) {
-                    bool allowed_faces = true;
-                    std::cout << f << std::endl;
-                    gmds::Face face_admissible = m.get<Face>(f);
-                    std::vector<gmds::TCellID> edge_to_evaluate;
-                    face_admissible.getIDs<gmds::Edge>(edge_to_evaluate);
-                    // For all faces we get their edges
-                    for (auto e: edge_to_evaluate) {
-                        // Not processed
-                        if (processed_edge[e] == true) {
-                            allowed_faces = false;
-                            break;
-                            // Not 2 faces in solution
-                        } else if (faces_in_solutions(e, Solution) == 2) {
-                            processed_edge[e] = true;
-                            allowed_faces = false;
-                            break;
-                        }
-                    }
-                    if (Solution[f] == false && allowed_faces) {
-                        face_candidates.push_back(std::pair<TCellID, TCellID>(f, edge.id()));
-                    }
-                }
-            }
-            std::cout << "end candidates" << std::endl;
-            return face_candidates;
-        }
-        //TCellID face ,std::vector<TCellID> edges
-        std::map<TCellID ,std::vector<TCellID>> getCandidate_v3(std::vector<std::pair<TCellID,TCellID>> front,std::vector<char> solution){
-            std::map<TCellID ,std::vector<TCellID>> candidates;
-            std::map<TCellID ,std::set<TCellID>> candidates_2;
-
-            for( auto e_f : front ){
-                Edge e = m.get<Edge>(e_f.first);
-                std::vector<TCellID> faces;
-                e.getIDs<gmds::Face>(faces);
-                for(auto f : faces){
-                    if( solution[f] != 1 && disable_faces[f] == 0 && edge_of_faces_solution(f,solution) ) {
-                        candidates[f].push_back(e_f.first);
-                    }
-                }
-            }
-            return candidates;
         }
 
         /** Get if a face have an edge with faces in solution 0 if ok to be a candidate 1 else*/
@@ -1321,7 +1162,7 @@ namespace gmds {
             }
             std::set<TCellID> vertex_set;
             for(auto f : m.faces() ) {
-                if (solution[f]){
+                if (solution[f] != 0){
                     gmds::Face face = m.get<Face>(f);
                     std::vector<TCellID> nodes;
                     face.getIDs<Node>(nodes);
@@ -1331,10 +1172,6 @@ namespace gmds {
                 }
             }
 
-            //std::cout << "Qfaces " << solution_to_faces(solution).size() << "/" << nb_face << " impact " << nb_face/(nb_face + total_edges + nb_node) << std::endl;
-            //std::cout << "Qedge " << nb_edge_turn(solution) << "/" << total_edges << " impact " << nb_edge_turn(solution)/(nb_face + total_edges + nb_node) << std::endl;
-            //std::cout << "Qvtx " << nb_node << "/" << nb_vertex_turn(solution) << " impact " << nb_vertex_turn(solution)/(nb_face + total_edges + nb_node) << std::endl;
-            // total - edge_turn / total edge
 
             float edge_part = static_cast< float >(total_edges - nb_edge_turn(solution)) /
                               static_cast< float >(total_edges);
@@ -1343,12 +1180,16 @@ namespace gmds {
 
             float element_part = static_cast<float >(nb_face - nb_element) / static_cast<float >(nb_face);
 
-            std::cout << " edge_turn " << nb_edge_turn(solution) << " edge_in " << total_edges << std::endl;
-            std::cout << " vertex_turn " << nb_vertex_turn(solution) << " vtx_in " << nb_node << std::endl;
             if(vertex_part < 0.1) {
                 vertex_part = 0.1;
             }
-            return edge_part + vertex_part + element_part;// + nb_node - nb_vertex_turn(solution));
+            //float res=edge_part + vertex_part + element_part;
+            std::cout << "Recap" << std::endl;
+            std::cout << total_edges << " " << nb_edge_turn(solution) << std::endl ;
+            std::cout << nb_node << " " << nb_vertex_turn(solution) << std::endl ;
+            std::cout << edge_part << " " << element_part << std::endl;
+            float res=30*(edge_part+0.1*element_part);
+            return res;
         }
 
         bool is_solution_valid(std::vector<char> solution) {
@@ -1361,10 +1202,11 @@ namespace gmds {
             for (auto e: edge_border) {
                 TCellID face = face_id_in_solutions(e, solution);
                 gmds::Edge edge = m.get<gmds::Edge>(e);
-                if (edge.nbRegions() > 3) {
+
+                if (this->hex_number_edge->value(e) > 3) {
                     return false;
                 }
-                if ((face_boundary->value(face) == 1) && (edge.nbRegions() != 1)) {
+                if ((face_boundary->value(face) == 1) && (this->hex_number_edge->value(e) != 1)) {
                     return false;
                 }
             }
@@ -1412,8 +1254,8 @@ namespace gmds {
                 nodes_tmp = edge.getIDs<Node>();
                 Node n0 = m.get<Node>(nodes_tmp[0]);
                 Node n1 = m.get<Node>(nodes_tmp[1]);
-                points_a.push_back(n0.getPoint());
-                points_b.push_back(n1.getPoint());
+                points_a.push_back(n0.point());
+                points_b.push_back(n1.point());
                 math::VectorDyn a = math::VectorDyn(n0.X() - n1.X(), n0.Y() - n1.Y(), n0.Z() - n1.Z());
                 vdyn.push_back(a);
             }
