@@ -58,7 +58,9 @@ AeroPipeline_3D::execute(){
 	m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance");
 	m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
 	m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
-	LevelSetCombined lsCombined(m_meshTet, m_Bnd->getMarkParoi(), m_Bnd->getMarkAmont(),
+	LevelSetCombined lsCombined(m_meshTet,
+	                            m_Bnd->getMarkParoi(),
+	                            m_Bnd->getMarkAmont(),
 	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
 	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int"),
 	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Out"));
@@ -91,7 +93,9 @@ AeroPipeline_3D::execute(){
 	std::cout << "-> Extrusion" << std::endl;
 	Variable<math::Vector3d>* var_VectorsForExtrusion = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
 	t_start = clock();
-	AeroExtrusion_3D aero_extrusion(m_meshTet, m_meshHex, m_params,
+	AeroExtrusion_3D aero_extrusion(m_meshTet,
+	                                m_meshHex,
+	                                m_params,
 	                                m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
 	                                var_VectorsForExtrusion);
 	aero_extrusion.execute();
@@ -108,12 +112,21 @@ AeroPipeline_3D::execute(){
 	// Interval Assignment
 	std::cout << "-> Interval Assignment" << std::endl;
 	t_start = clock();
-	IntervalAssignment_3D intAss(m_meshHex, m_params,
+	IntervalAssignment_3D intAss(m_meshHex,
+	                             m_params,
 	                                m_meshHex->newVariable<int,GMDS_EDGE>("GMDS_EdgeDiscretization"));
 	intAss.execute();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
+
+	// Stat of the blocking
+	std::cout << "=============================================" << std::endl;
+	std::cout << "|| Number of Blocks: " << m_meshHex->getNbRegions() << std::endl;
+	std::cout << "|| Number of Block Faces: " << m_meshHex->getNbFaces() << std::endl;
+	std::cout << "|| Number of Block Edges: " << m_meshHex->getNbEdges() << std::endl;
+	std::cout << "|| Number of Block Nodes: " << m_meshHex->getNbNodes() << std::endl;
+	std::cout << "=============================================" << std::endl;
 
 	// Write the final mesh.
 	EcritureMaillage();
