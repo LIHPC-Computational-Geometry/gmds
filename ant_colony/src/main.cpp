@@ -849,11 +849,51 @@ void read_to_fix(){
     }
 }
 
+/** Move this in /tst
+ * Verify if topological function work to detect edge turn
+ * */
+
+void test_topo_1(){
+    Env e("modelsLast/cube_2_2_2.vtk");
+    e.status();
+    assert( e.same_orientation_topological(0, 11) == true );
+    assert( e.same_orientation_topological(0, 20) == true );
+    assert( e.same_orientation_topological(0, 1) == false );
+    assert( e.same_orientation_topological(0, 4) == false );
+    std::vector<char> solution(e.getNbFaces());
+    // e 10
+    solution[3] = 1;
+    solution[12] = 1;
+    // e 18
+    solution[27] = 1;
+    solution[8] = 1;
+    assert( e.edgeTurnTopological(10,solution) == true );
+    assert( e.edgeTurnTopological(18,solution) == false );
+}
+
+void test_topo_2(){
+    Env e("model_R/ant_coarse.vtk");
+    e.status();
+    assert( e.same_orientation_topological(19, 10) == true );
+    assert( e.same_orientation_topological(19, 30) == true );
+    assert( e.same_orientation_topological(19, 18) == false );
+    assert( e.same_orientation_topological(19, 22) == false );
+    std::vector<char> solution(e.getNbFaces());
+    // e 39
+    solution[30] = 1;
+    solution[22] = 1;
+    // e 16
+    solution[10] = 1;
+    solution[15] = 1;
+    assert( e.edgeTurnTopological(39,solution) == true );
+    assert( e.edgeTurnTopological(16,solution) == false );
+}
+
 int main(int argc, char *argv[]) {
     std::cout << "==== Main Valentin Postat ====" << std::endl;
     std::cout << "./main [filename] [n_run] [n_iter] [n_ants] [tau_min] [tau_max] [alpha] [beta] [verbosity]" << std::endl;
 
-    //prepare_model();
+    prepare_model();
 
     //Env e("1_3_3slice.vtk");
     //Env e("models/B17_coarse_ants.vtk");
@@ -887,6 +927,10 @@ int main(int argc, char *argv[]) {
     e.setup_ant_colony_params(1,30,0.9,0.1,4.0,1,1,1);
     e.execute();
     */
+    test_topo_1();
+    test_topo_2();
+    exit(0);
+
     prepare_model();
     model_column();
     model_half_column();
