@@ -25,8 +25,8 @@ void Env::writeVTK(std::string fname) {
     if (this->write_vtk) {
         IGMeshIOService ios(&(this->m));
         VTKWriter writer(&ios);
-        writer.setCellOptions(gmds::N | gmds::E | gmds::F);
-        writer.setDataOptions(gmds::N | gmds::E | gmds::F);
+        writer.setCellOptions(gmds::N | gmds::E | gmds::F | gmds::R);
+        writer.setDataOptions(gmds::N | gmds::E | gmds::F | gmds::R);
         writer.write(
                 fname); // paraview ctrl + space (Shrink) pour avoir uniquement les hex (enlever les F dans l'écriture)
     }
