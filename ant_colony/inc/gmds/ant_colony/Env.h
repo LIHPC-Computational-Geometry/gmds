@@ -282,6 +282,7 @@ namespace gmds {
                 pheromones_sum += pheromones[c.first];
             }
             // heuristicfactor
+
             float heuristic_sum = 0.0f;
             for (auto c: candidates) {
                 if (same_orientation(c.first, c.second)) {
@@ -367,7 +368,7 @@ namespace gmds {
         }
         /** Return true if f1 f2 have a region in common.
          * */
-        bool edge_turn_topo(TCellID f1, TCellID f2){
+        bool same_orientation_topological(TCellID f1, TCellID f2){
             Face face1,face2;
             std::vector<TCellID> r1,r2,res;
             face1 = m.get<Face>(f1);
@@ -377,13 +378,44 @@ namespace gmds {
             assert(r1.size() != 0 && r2.size() != 0);
             std::sort(r1.begin(),r1.end());
             std::sort(r2.begin(),r2.end());
-            std::set_intersection(r1.begin(), r1.end(),r2.begin(),r2.end(), res.begin());
+            std::set_intersection(r1.begin(), r1.end(),r2.begin(),r2.end(), std::back_inserter(res));
             if( res.empty() ){
-                return false;
-            }else{
                 return true;
+            }else{
+                return false;
             }
         }
+
+        bool edgeTurnTopological(TCellID edge, std::vector<char> solution) {
+            bool edge_turn = true;
+            gmds::Edge edg = m.get<gmds::Edge>(edge);
+            std::vector<gmds::TCellID> faces;
+            edg.getIDs<gmds::Face>(faces);
+            TCellID fac[2];
+            int count = 0;
+            // Where are our marked faces
+            for (auto f: faces) {
+                //if (this->front->value(f) > FaceStatus::Candidate) {
+                if (solution[f] != 0) {
+                    fac[count] = f;
+                    count++;
+                }
+            }
+            // assert(count < 3);
+            if( count == 2 && solution[fac[0]] == 3 && solution[fac[1]] == 3 ){
+                return false;
+            }else if (count == 2 ) { // 2 faces in front
+                gmds::Face f1 = m.get<gmds::Face>(fac[0]), f2 = m.get<gmds::Face>(fac[1]);
+                //if (f1.normal() == f2.normal() || f1.normal() == f2.normal().opp()) {
+                if (same_orientation_topological(fac[0],fac[1])) {
+                    edge_turn = false;
+                }
+            } else {
+                edge_turn = false;
+            }
+            return edge_turn;
+        }
+
 
         /**
          * Return true if the
@@ -1122,7 +1154,6 @@ namespace gmds {
             std::cout << "Nb edges: " << m.getNbEdges() << std::endl;
             std::cout << "Nb nodes: " << m.getNbNodes() << std::endl;
             std::vector<TCellID> E1H, E2H, E3H, E4H;
-
             for (auto edge_id: m.edges()) {
                 Edge e = m.get<Edge>(edge_id);
                 std::vector<TCellID> regions_of_e = e.getIDs<Region>();
@@ -1141,7 +1172,6 @@ namespace gmds {
             std::cout << "|E3H|=" << E3H.size() << std::endl;
             std::cout << "|E3H|=" << E4H.size() << std::endl;
             assert((E1H.size() + E2H.size() + E3H.size() + E4H.size()) == m.getNbEdges());
-
             for (auto e: E4H) {
                 gmds::Edge edg = m.get<Edge>(e);
                 if (faces_in_solutions(e, solution) % 2 != 0) {
@@ -1149,8 +1179,6 @@ namespace gmds {
                     break;
                 }
             }
-
-
             return is_valid;
         }
 
