@@ -684,8 +684,7 @@ void Env::execute() {
                         sk_best_solution = it->first;
                         sk_best_index = std::distance(x.begin(), it);
                     }
-                    myfile << "\t\t" << solution_to_string(it->first) << " " << quality << " "
-                           << best_quality(it->first) << std::endl;
+                    myfile << "\t\t" << solution_to_string(it->first) << " " << quality << " " << best_quality(it->first) << std::endl;
                 }
                 // Update pheromon with the new best if exist
                 if ((sk_best_quality >= quality_s_best)){
@@ -697,10 +696,12 @@ void Env::execute() {
                     //x.pop_back();
                 }
                 // Update pheromons with others
-                for (auto s: x) {
-                    for (auto it = sk_best_solution.begin(); it != sk_best_solution.end(); ++it) {
-                        std::size_t index =std::distance(sk_best_solution.begin(), it);
-                        pheromone_add[index] += 1.0 / (1.0 + quality_s_best - sk_best_quality);
+                for (auto s: x){
+                    for( auto face_it = s.first.begin() ; face_it != s.first.end() ; ++face_it ){
+                        if( *face_it == 1 ){
+                            std::size_t index = std::distance(s.first.begin(), face_it);
+                            pheromone_add[index] += 1.0 / (1.0 + quality_s_best - s.second);
+                        }
                     }
                 }
                 std::copy(qualities.begin(), qualities.end(), std::back_inserter(all_qualities[i]));

@@ -137,7 +137,6 @@ namespace gmds {
             for (auto f: faces) {
                 if (this->face_in_solution->value(f) != 0) {
                     cpt++;
-                    std::cout << f << std::endl;
                 }
             }
             return cpt;
@@ -154,7 +153,7 @@ namespace gmds {
                                         static_cast<edge_classification>(classification_edge->value(e)))) {
                             int nb = nb_faces_in_solutions(e);
                             this->bnd_solution->set(e, nb);
-                            std::cout << nb << std::endl;
+                            //std::cout << nb << std::endl;
                             // 1 bord
                             // 0 externe
                             // 2 in solution
@@ -205,6 +204,15 @@ namespace gmds {
             return randNum;
         }
 
+        /** Return a face randomly but not on the boundary only*/
+        TCellID select_random_but_not_bnd(){
+            TCellID rand_face = select_random();
+            while ( this->face_boundary->value(rand_face) == 1 ){
+                rand_face = select_random();
+            }
+            return rand_face;
+        }
+
 
         std::vector<char> run_ant_bis(std::vector<float> pheromones) {
             reset_solution();
@@ -213,10 +221,12 @@ namespace gmds {
             TCellID selected;
             int i=0;
             std::vector<std::pair<TCellID, float>> face_proba;
-            selected = select_random();
+
+            /*selected = select_random_but_not_bnd();
             if( this->face_in_solution->value(selected) != 3 ) {
                 this->face_in_solution->set(selected, 1);
             }
+            */
             build_bnd_solution();
             candidates = getCandidates();
             for(auto c : candidates){
@@ -364,6 +374,7 @@ namespace gmds {
             face2 = m.get<Face>(f2);
             r1 = face1.getIDs<Region>();
             r2 = face2.getIDs<Region>();
+            assert(r1.size() != 0 && r2.size() != 0);
             std::sort(r1.begin(),r1.end());
             std::sort(r2.begin(),r2.end());
             std::set_intersection(r1.begin(), r1.end(),r2.begin(),r2.end(), res.begin());
@@ -551,7 +562,7 @@ namespace gmds {
                 }
                 std::cout << std::endl;
             }
-            std::cout << "Solutoins size " << solutions.size() << " Unique solutions " << k_best.size() << std::endl;
+            std::cout << "Solutions size " << solutions.size() << " Unique solutions " << k_best.size() << std::endl;
             return k_best;
         }
 
@@ -1114,7 +1125,6 @@ namespace gmds {
 
             for (auto edge_id: m.edges()) {
                 Edge e = m.get<Edge>(edge_id);
-
                 std::vector<TCellID> regions_of_e = e.getIDs<Region>();
                 if (regions_of_e.size() == 1) {
                     E1H.push_back(edge_id);
