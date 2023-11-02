@@ -1,10 +1,12 @@
 add_executable(GMDS_BLOCKING_TEST
+        util_functions.h
         BlockingTestSuite.h
         CurvedBlockingTestSuite.h
         CurvedBlockingClassificationTestSuite.h
         CGALTestSuite.h
         InputMarkedDartsTestSuite.h
         SheetInsertTestSuite.h
+        SheetOperationTestSuite.h
         WriterDartsVTKTestSuite.h
         main_test.cpp
         ExecutionActionsTestSuite.h

@@ -144,8 +144,6 @@ TEST(BlockingTestSuite, getSheet_3d)
 	gmds::blocking::Blocking bl3d;
 	bl3d.createGrid3d();
 	std::vector<gmds::blocking::Dart_handle> sheet = bl3d.getSheet(bl3d.lcc()->darts().begin());
-
-	std::cout<<"Nb darts "<<sheet.size()<<std::endl;
 }
 /*----------------------------------------------------------------------------*/
 TEST(BlockingTestSuite, collapseSheet_3d)

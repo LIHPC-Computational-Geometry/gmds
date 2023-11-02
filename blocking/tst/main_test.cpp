@@ -8,6 +8,7 @@
 #include "CGALTestSuite.h"
 #include "InputMarkedDartsTestSuite.h"
 #include "SheetInsertTestSuite.h"
+#include "SheetOperationTestSuite.h"
 #include "WriterDartsVTKTestSuite.h"
 #include "ExecutionActionsTestSuite.h"
 #ifdef USE_CGNS
