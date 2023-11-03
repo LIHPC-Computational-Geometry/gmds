@@ -81,7 +81,7 @@ TEST(SheetOperationTestSuite, test_pillow)
     ASSERT_TRUE(bl.pillow(surf));
 
     bl.smooth(1);
-//    export_vtk(bl,gmds::N | gmds::F, "pillow_1_surf.vtk");
+    //export_vtk(bl,gmds::N | gmds::F, "pillow_1_surf.vtk");
     ASSERT_EQ(bl.get_nb_cells<3>(),2);
     auto [nb_nodes_on_vertex,nb_nodes_on_curve,nb_nodes_on_surface,nb_nodes_in_volume] = get_node_statistics(bl);
     ASSERT_EQ(nb_nodes_on_vertex, 8);
@@ -495,7 +495,7 @@ TEST(SheetOperationTestSuite, test_pillow_10)
 
     bl.smooth(10);
 
-    export_vtk(bl,gmds::N | gmds::E, "pillow_10_surf.vtk");
+    //export_vtk(bl,gmds::N | gmds::E, "pillow_10_surf.vtk");
 
     ASSERT_EQ(bl.get_nb_cells<3>(),12);
     auto [nb_nodes_on_vertex,nb_nodes_on_curve,nb_nodes_on_surface,nb_nodes_in_volume] = get_node_statistics(bl);
@@ -551,7 +551,7 @@ TEST(SheetOperationTestSuite, test_pillow_11)
 
     bl.smooth(10);
 
-   // export_vtk(bl,gmds::N | gmds::E, "pillow_11_surf.vtk");
+	 //export_vtk(bl,gmds::N | gmds::E, "pillow_11_surf.vtk");
 
     ASSERT_EQ(bl.get_nb_cells<3>(),11);
     auto [nb_nodes_on_vertex,nb_nodes_on_curve,nb_nodes_on_surface,nb_nodes_in_volume] = get_node_statistics(bl);
@@ -619,4 +619,91 @@ TEST(SheetOperationTestSuite, test_pillow_12)
     auto [nb_faces_on_surface,nb_faces_in_volume] = get_face_statistics(bl);
     ASSERT_EQ(nb_faces_on_surface, 34);
     ASSERT_EQ(nb_faces_in_volume, 25);
+}
+/*----------------------------------------------------------------------------*/
+TEST(SheetOperationTestSuite, test_notch)
+{
+	 gmds::cad::FACManager geom_model;
+	 set_up(&geom_model,"/Notch/notch_tet.vtk");
+	 gmds::blocking::CurvedBlocking bl(&geom_model, false);
+
+	 gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::R|gmds::R2N));
+
+	 gmds::IGMeshIOService ioService(&m);
+	 gmds::VTKReader vtkReader(&ioService);
+	 vtkReader.setCellOptions(gmds::N | gmds::R);
+	 std::string dir(TEST_SAMPLES_DIR);
+	 vtkReader.read(dir+"/Notch/notch_blocks.vtk");
+
+	 bl.init_from_mesh(m);
+	 gmds::blocking::CurvedBlockingClassifier cl(&bl);
+	 cl.classify();
+
+	 //the classification does not consider volume right now. We enforce unclassified cells to be on volume 1 so.
+	 std::vector<gmds::blocking::CurvedBlocking::Edge> all_edges = bl.get_all_edges();
+	 std::vector<gmds::blocking::CurvedBlocking::Face> all_faces = bl.get_all_faces();
+	 std::vector<gmds::blocking::CurvedBlocking::Block> all_blocks = bl.get_all_blocks();
+	 for(auto &c:all_edges){
+		  if(c->info().geom_dim==4){
+			   c->info().geom_dim=3;
+			   c->info().geom_id=1;
+		  }
+	 }
+	 for(auto &c:all_faces){
+		  if(c->info().geom_dim==4){
+			   c->info().geom_dim=3;
+			   c->info().geom_id=1;
+		  }
+	 }	 for(auto &c:all_blocks){
+		  if(c->info().geom_dim==4){
+			   c->info().geom_dim=3;
+			   c->info().geom_id=1;
+		  }
+	 }
+	 ASSERT_EQ(bl.get_nb_cells<3>(),7);
+	 auto [nb_nodes_on_vertex,nb_nodes_on_curve,nb_nodes_on_surface,nb_nodes_in_volume] = get_node_statistics(bl);
+	 ASSERT_EQ(nb_nodes_on_vertex, 12);
+	 ASSERT_EQ(nb_nodes_on_curve, 11);
+	 ASSERT_EQ(nb_nodes_on_surface, 3);
+	 ASSERT_EQ(nb_nodes_in_volume, 0);
+	 auto [nb_edges_on_curve,nb_edges_on_surface,nb_edges_in_volume] = get_edge_statistics(bl);
+	 ASSERT_EQ(nb_edges_on_curve, 29);
+	 ASSERT_EQ(nb_edges_on_surface, 19);
+	 ASSERT_EQ(nb_edges_in_volume, 3);
+	 auto [nb_faces_on_surface,nb_faces_in_volume] = get_face_statistics(bl);
+	 ASSERT_EQ(nb_faces_on_surface, 24);
+	 ASSERT_EQ(nb_faces_in_volume, 9);
+
+	 std::vector<gmds::blocking::CurvedBlocking::Face> surf;
+	 //We pick the set of faces we want to use to pillow
+	 gmds::math::Point ref[4] = {gmds::math::Point(3.29331, 3, 1.70669),
+		                          gmds::math::Point(2.29331, 3, 0.706695),
+		                          gmds::math::Point(3.19709, 1, 1.79022),
+		                          gmds::math::Point(2.24882, 1, 0.824707)};
+	 for(auto f:all_faces){
+		  gmds::math::Point ci = bl.get_center_of_face(f);
+		  if(ci.distance(ref[0])<0.1 ||
+		      ci.distance(ref[1])<0.1 ||
+		      ci.distance(ref[2])<0.1 ||
+		      ci.distance(ref[3])<0.1 ){
+			   surf.push_back(f);
+		  }
+	 }
+	 ASSERT_EQ(surf.size(),4);
+	 ASSERT_TRUE(bl.pillow(surf));
+	 bl.smooth(10);
+
+	 auto [nb_nodes_on_vertex2,nb_nodes_on_curve2,nb_nodes_on_surface2,nb_nodes_in_volume2] = get_node_statistics(bl);
+	 ASSERT_EQ(nb_nodes_on_vertex2, 12);
+	 ASSERT_EQ(nb_nodes_on_curve2, 15);
+	 ASSERT_EQ(nb_nodes_on_surface2, 7);
+	 ASSERT_EQ(nb_nodes_in_volume2, 1);
+	 auto [nb_edges_on_curve2,nb_edges_on_surface2,nb_edges_in_volume2] = get_edge_statistics(bl);
+	 ASSERT_EQ(nb_edges_on_curve2, 33);
+	 ASSERT_EQ(nb_edges_on_surface2, 31);
+	 ASSERT_EQ(nb_edges_in_volume2, 8);
+	 auto [nb_faces_on_surface2,nb_faces_in_volume2] = get_face_statistics(bl);
+	 ASSERT_EQ(nb_faces_on_surface2, 32);
+	 ASSERT_EQ(nb_faces_in_volume2, 17);
+	 //export_vtk(bl,gmds::N | gmds::E, "pillow_notch.vtk");
 }

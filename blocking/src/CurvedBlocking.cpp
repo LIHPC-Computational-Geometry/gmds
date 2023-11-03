@@ -518,25 +518,25 @@ CurvedBlocking::convert_to_mesh(Mesh &AMesh) {
 
     AMesh.clear();
 
-    Variable<int> *var_node_topo_id = AMesh.newVariable<int, GMDS_NODE>("blocking_topo_id");
-    Variable<int> *var_node_topo_dim = AMesh.newVariable<int, GMDS_NODE>("blocking_topo_dim");
-    Variable<int> *var_node_geom_id = AMesh.newVariable<int, GMDS_NODE>("blocking_geom_id");
-    Variable<int> *var_node_geom_dim = AMesh.newVariable<int, GMDS_NODE>("blocking_geom_dim");
+    Variable<int> *var_node_topo_id = AMesh.newVariable<int, GMDS_NODE>("node_blocking_topo_id");
+    Variable<int> *var_node_topo_dim = AMesh.newVariable<int, GMDS_NODE>("node_blocking_topo_dim");
+    Variable<int> *var_node_geom_id = AMesh.newVariable<int, GMDS_NODE>("node_blocking_geom_id");
+    Variable<int> *var_node_geom_dim = AMesh.newVariable<int, GMDS_NODE>("node_blocking_geom_dim");
 
-    Variable<int> *var_edge_topo_id = AMesh.newVariable<int, GMDS_EDGE>("blocking_topo_id");
-    Variable<int> *var_edge_topo_dim = AMesh.newVariable<int, GMDS_EDGE>("blocking_topo_dim");
-    Variable<int> *var_edge_geom_id = AMesh.newVariable<int, GMDS_EDGE>("blocking_geom_id");
-    Variable<int> *var_edge_geom_dim = AMesh.newVariable<int, GMDS_EDGE>("blocking_geom_dim");
+    Variable<int> *var_edge_topo_id = AMesh.newVariable<int, GMDS_EDGE>("edge_blocking_topo_id");
+    Variable<int> *var_edge_topo_dim = AMesh.newVariable<int, GMDS_EDGE>("edge_blocking_topo_dim");
+    Variable<int> *var_edge_geom_id = AMesh.newVariable<int, GMDS_EDGE>("edge_blocking_geom_id");
+    Variable<int> *var_edge_geom_dim = AMesh.newVariable<int, GMDS_EDGE>("edge_blocking_geom_dim");
 
-    Variable<int> *var_face_topo_id = AMesh.newVariable<int, GMDS_FACE>("blocking_topo_id");
-    Variable<int> *var_face_topo_dim = AMesh.newVariable<int, GMDS_FACE>("blocking_topo_dim");
-    Variable<int> *var_face_geom_id = AMesh.newVariable<int, GMDS_FACE>("blocking_geom_id");
-    Variable<int> *var_face_geom_dim = AMesh.newVariable<int, GMDS_FACE>("blocking_geom_dim");
+    Variable<int> *var_face_topo_id = AMesh.newVariable<int, GMDS_FACE>("face_blocking_topo_id");
+    Variable<int> *var_face_topo_dim = AMesh.newVariable<int, GMDS_FACE>("face_blocking_topo_dim");
+    Variable<int> *var_face_geom_id = AMesh.newVariable<int, GMDS_FACE>("face_blocking_geom_id");
+    Variable<int> *var_face_geom_dim = AMesh.newVariable<int, GMDS_FACE>("face_blocking_geom_dim");
 
-    Variable<int> *var_region_topo_id = AMesh.newVariable<int, GMDS_REGION>("blocking_topo_id");
-    Variable<int> *var_region_topo_dim = AMesh.newVariable<int, GMDS_REGION>("blocking_topo_dim");
-    Variable<int> *var_region_geom_id = AMesh.newVariable<int, GMDS_REGION>("blocking_geom_id");
-    Variable<int> *var_region_geom_dim = AMesh.newVariable<int, GMDS_REGION>("blocking_geom_dim");
+    Variable<int> *var_region_topo_id = AMesh.newVariable<int, GMDS_REGION>("region_blocking_topo_id");
+    Variable<int> *var_region_topo_dim = AMesh.newVariable<int, GMDS_REGION>("region_blocking_topo_dim");
+    Variable<int> *var_region_geom_id = AMesh.newVariable<int, GMDS_REGION>("region_blocking_geom_id");
+    Variable<int> *var_region_geom_dim = AMesh.newVariable<int, GMDS_REGION>("region_blocking_geom_dim");
 
     // mapping from blocking node ids to mesh node ids
     std::map<int, TCellID> n2n;

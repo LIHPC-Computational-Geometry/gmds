@@ -673,7 +673,7 @@ TEST(ExecutionActionsTestSuite,cb5){
 	//Check elements class and captured
 	//Check nb nodes/edges/faces no classified
 	ASSERT_EQ(2,errors.non_classified_nodes.size());
-	ASSERT_EQ(13,errors.non_classified_edges.size());
+	ASSERT_EQ(11,errors.non_classified_edges.size());
 	ASSERT_EQ(11,errors.non_classified_faces.size());
 
 	//Check nb points/curves/surfaces no captured
