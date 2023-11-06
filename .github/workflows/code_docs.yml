@@ -50,7 +50,7 @@ jobs:
         # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
         run: >
           cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Release
-          -DWITH_TEST=ON
+          -DWITH_TEST=OFF
           -DWITH_DOC=ON
           -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib
           -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
