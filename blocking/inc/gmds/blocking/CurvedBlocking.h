@@ -575,7 +575,7 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in,out] ACellMesh A cellular mesh
 	 */
 	void convert_to_mesh(Mesh &ACellMesh);
-
+    
 	/**\brief save the blocking on vtk. During the process, the curved blocking is convert on a mesh.
 	 * @param[in] AFileName 		the name used for the file
 	 */
