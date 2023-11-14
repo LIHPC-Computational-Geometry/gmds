@@ -82,30 +82,19 @@ void CGNSWriter3D::writeZones()
 
 	Variable<int>* farfield = m_blocks->getVariable<int,GMDS_NODE>("Farfield");
 	Variable<int>* paroi = m_blocks->getVariable<int,GMDS_NODE>("Paroi");
+	Variable<int>* out = m_blocks->getOrCreateVariable<int,GMDS_NODE>("Sortie");
+	Variable<int>* solid = m_blocks->getOrCreateVariable<int,GMDS_REGION>("Solide");
 
 
 	for (auto bid : m_blocks->regions()) {
 		Region b = m_blocks->get<Region>(bid);
-
-		/*std::cout<<"bloc nodes"<<std::endl;
-		for(auto n : b.getIDs<Node>()){
-			std::cout<<n<<",";
-		}
-		std::cout<<std::endl;
-		for(auto f : b.get<Face>()){
-			std::cout<<f.id()<<":"<<std::endl;
-			for(auto n : f.getIDs<Node>()){
-				std::cout<<n<<",";
-			}
-			std::cout<<std::endl;
-		}*/
 
 		std::cout << "Writing zone " << b.id()+1 << std::endl;
 
 		// Le nom de la zone correspond au nom du bloc, dans notre cas on l'appel juste
 		//  "Block_<Block_ID>"
 		std::stringstream ss;
-		ss << "FLUIDE " << std::setw(5) << std::setfill('0') << b.id()+1;     // Pour le moment on utilise les faces du mesh comme bloc
+		ss << (solid->value(b.id()) == 1 ? "SOLIDE" : "FLUIDE ") << std::setw(5) << std::setfill('0') << b.id()+1;     // Pour le moment on utilise les faces du mesh comme bloc
 		std::string name = ss.str();
 		char zonename[32];
 		strcpy(zonename, name.c_str());
@@ -492,10 +481,12 @@ void CGNSWriter3D::writeZones()
 			int cpt_ff = 0;
 			int cpt_par = 0;
 			int cpt_axis = 0;
+			int cpt_out = 0;
 			for(auto n : face.getIDs<Node>()){
 				if(farfield->value(n) == 1) cpt_ff++;
 				if(paroi->value(n) == 1) cpt_par++;
 				if (axis->value(n) == 1) cpt_axis++;
+				if (out->value(n) == 1) cpt_out++;
 			}
 			if(cpt_ff == 4){
 				type_bc = 1;
@@ -503,6 +494,8 @@ void CGNSWriter3D::writeZones()
 				type_bc = 2;
 			}else if(cpt_axis == 4){
 				type_bc = 3;
+			}else if(cpt_out == 4){
+				type_bc = 4;
 			}
 
 			switch (iFace) {
@@ -572,6 +565,9 @@ void CGNSWriter3D::writeZones()
 			}
 			else if (type_bc == 3) {
 				bcType_s = "AXISYMETRIE";
+			}
+			else if (type_bc == 4) {
+				bcType_s = "SORTIE";
 			}
 			else{
 				bcType_s = "ORFN";
