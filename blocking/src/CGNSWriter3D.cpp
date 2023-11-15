@@ -564,7 +564,7 @@ void CGNSWriter3D::writeZones()
 				bcType_s = "PAROI";
 			}
 			else if (type_bc == 3) {
-				bcType_s = "AXISYMETRIE";
+				bcType_s = "SYMETRIE";
 			}
 			else if (type_bc == 4) {
 				bcType_s = "SORTIE";
@@ -648,7 +648,7 @@ void CGNSWriter3D::write(const std::string &AInFileName, const std::string &AOut
 		}
 	}
 
-	axis = m_blocks->getOrCreateVariable<int,GMDS_NODE>("Axisymetrie");
+	axis = m_blocks->getOrCreateVariable<int,GMDS_NODE>("Symetrie");
 
 	initialize(AOutFileName,AWorkingDir);
 	writeZones();
