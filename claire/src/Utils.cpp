@@ -981,6 +981,37 @@ Utils::orientRegion(Mesh *m, Region r)
 	 */
 }
 /*----------------------------------------------------------------------------*/
+double
+Utils::BinomialCoefficient(int An, int Ak)
+{
+	double factorial_n(1);
+	double factorial_k(1);
+	double factorial_n_k(1);
+
+	for (int i=2; i <= An; i++)
+	{
+		factorial_n = factorial_n*i;
+		if (i <= Ak)
+		{
+			factorial_k = factorial_k*i;
+		}
+		if (i <= An-Ak)
+		{
+			factorial_n_k = factorial_n_k*i;
+		}
+	}
+
+	return factorial_n/(factorial_k*factorial_n_k);
+
+}
+/*------------------------------------------------------------------------*/
+double
+Utils::BernsteinPolynomial(int An, int Ai, double Au)
+{
+	double C_n_i = BinomialCoefficient(An, Ai);
+	return C_n_i* pow(Au, Ai)* pow(1-Au, An-Ai);
+}
+/*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/
 }  // namespace gmds
