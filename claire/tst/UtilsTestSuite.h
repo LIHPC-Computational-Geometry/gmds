@@ -8,12 +8,15 @@
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator2D.h>
 #include <gmds/igalgo/GridBuilder.h>
+#include <gmds/math/BezierSurface.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>
 #include <gmds/io/VTKReader.h>
 #include <gtest/gtest.h>
 #include <iostream>
 #include <unit_test_config.h>
+#include <Eigen/Sparse>
+#include <Eigen/Eigen>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -564,6 +567,208 @@ TEST(ClaireTestClass, Utils_buildEfromFandConnectivies)
 
 	ASSERT_EQ(f0.get<Node>().size(), 4);
 	ASSERT_EQ(f1.get<Edge>().size(), 4);
+
+}
+/*----------------------------------------------------------------------------*/
+TEST(ClaireTestClass, Test_BlockingControlPoints)
+{
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
+
+	Node n1 = m.newNode(0,0);
+	Node n2 = m.newNode(1,0);
+	Node n3 = m.newNode(1,1);
+	Node n4 = m.newNode(0,1);
+
+	Node n5 = m.newNode(2,0);
+	Node n6 = m.newNode(2,1);
+
+	m.newQuad(n1, n2, n3, n4);
+	m.newQuad(n2, n5, n6, n3);
+
+	Blocking2D b(m);
+	Blocking2D b_controlpoints(m);
+
+	int degree_Bezier(3);
+	int bloc_discretization(20);
+
+	for (auto bloc:b_controlpoints.allBlocks())
+	{
+		bloc.setNbDiscretizationI(degree_Bezier+1);
+		bloc.setNbDiscretizationJ(degree_Bezier+1);
+	}
+
+	for (auto bloc:b.allBlocks())
+	{
+		bloc.setNbDiscretizationI(bloc_discretization);
+		bloc.setNbDiscretizationJ(bloc_discretization);
+	}
+
+	b.initializeGridPoints();
+	b_controlpoints.initializeGridPoints();
+	srand(time(NULL));
+
+	Variable<int>* var_couche_b = b.newVariable<int, GMDS_NODE>("GMDS_Couche");
+	for (auto bloc:b.allBlocks())
+	{
+		for (int i=0;i<bloc.getNbDiscretizationI();i++)
+		{
+			for (int j=1;j<bloc.getNbDiscretizationJ();j++)
+			{
+				var_couche_b->set(bloc(i,j).id(), 1);
+			}
+		}
+	}
+
+	for (auto bloc:b_controlpoints.allBlocks())
+	{
+		// Control Points on EDGES
+		for (int j=1;j<=degree_Bezier-1;j++)
+		{
+			double random_x = rand()/(5.0*RAND_MAX) -0.1 ;
+			double random_y = rand()/(5.0*RAND_MAX) -0.1 ;
+			bloc(0,j).setX(bloc(0,j).X()+random_x);
+			bloc(0,j).setY(bloc(0,j).Y()+random_y);
+
+			random_x = rand()/(5.0*RAND_MAX) -0.1 ;
+			random_y = rand()/(5.0*RAND_MAX) -0.1 ;
+			bloc(degree_Bezier,j).setX(bloc(degree_Bezier,j).X()+random_x);
+			bloc(degree_Bezier,j).setY(bloc(degree_Bezier,j).Y()+random_y);
+		}
+		for (int i=1;i<=degree_Bezier-1;i++)
+		{
+			double random_x = rand()/(5.0*RAND_MAX) -0.1 ;
+			double random_y = rand()/(5.0*RAND_MAX) -0.1 ;
+			bloc(i,0).setX(bloc(i,0).X()+random_x);
+			bloc(i,0).setY(bloc(i,0).Y()+random_y);
+
+			random_x = rand()/(5.0*RAND_MAX) -0.1 ;
+			random_y = rand()/(5.0*RAND_MAX) -0.1 ;
+			bloc(i,degree_Bezier).setX(bloc(i,degree_Bezier).X()+random_x);
+			bloc(i,degree_Bezier).setY(bloc(i,degree_Bezier).Y()+random_y);
+		}
+		// Control Points on SURFACE
+		for (int i=1;i<=degree_Bezier-1;i++)
+		{
+		   for (int j=1;j<=degree_Bezier-1;j++)
+		   {
+		      double random_x = rand()/(5.0*RAND_MAX) -0.1 ;
+		      double random_y = rand()/(5.0*RAND_MAX) -0.1 ;
+		      bloc(i,j).setX(bloc(i,j).X()+random_x);
+		      bloc(i,j).setY(bloc(i,j).Y()+random_y);
+		   }
+		}
+	}
+
+
+	// Try to compute the control points to interpolate
+	Eigen::Matrix4d mat_B;
+	Eigen::Vector4d ctrl_points_x;
+	Eigen::Vector4d ctrl_points_y;
+	Eigen::Vector4d interp_points_x;
+	Eigen::Vector4d interp_points_y;
+
+	interp_points_x[0] = 0.0 ;
+	interp_points_y[0] = 0.0 ;
+
+	interp_points_x[1] = 0.33 ;
+	interp_points_y[1] = 0.05 ;
+
+	interp_points_x[2] = 0.66 ;
+	interp_points_y[2] = -0.05 ;
+
+	interp_points_x[3] = 1.0 ;
+	interp_points_y[3] = 0.0 ;
+
+	// Matrix Assembly
+	for (int i=0;i<=degree_Bezier;i++)
+	{
+		for (int j=0;j<=degree_Bezier;j++)
+		{
+			//std::cout << "Degree " << degree_Bezier << ", " << j << ", u: " << 1.0*i/degree_Bezier << std::endl;
+			double bij = math::Utils::BernsteinPolynomial(degree_Bezier, j, 1.0*i/degree_Bezier);
+			mat_B(i,j) = bij;
+		}
+	}
+
+	std::cout << mat_B << std::endl;
+
+	Eigen::Matrix4d mat_B_inv = mat_B.inverse();
+
+	std::cout << mat_B_inv << std::endl;
+
+	ctrl_points_x = mat_B_inv*interp_points_x;
+	ctrl_points_y = mat_B_inv*interp_points_y;
+
+	Blocking2D::Block bloc = b_controlpoints.block(0) ;
+	for (int i=0;i<=degree_Bezier;i++)
+	{
+		bloc(i,0).setX(ctrl_points_x[i]);
+		bloc(i,0).setY(ctrl_points_y[i]);
+	}
+
+
+
+
+	// Set the bloc discretization
+	// Rely on the fact the blocks have the same IDs between b and b_controlpoints
+	for (auto bloc:b.allBlocks())
+	{
+		Array2D<math::Point> Ctrl_Pts(degree_Bezier+1,degree_Bezier+1);
+		Blocking2D::Block b_ctrl_pts = b_controlpoints.block(bloc.id()) ;
+		for (int i=0;i<=degree_Bezier;i++)
+		{
+			for (int j=0;j<=degree_Bezier;j++)
+			{
+				Ctrl_Pts(i,j) = b_ctrl_pts(i,j).point();
+			}
+		}
+		math::BezierSurface curved_bezier_surface(Ctrl_Pts);
+		for (int i=0;i<bloc.getNbDiscretizationI();i++)
+		{
+			for (int j=0;j<bloc.getNbDiscretizationJ();j++)
+			{
+				double u = 1.0*i/(bloc.getNbDiscretizationI()-1) ;
+				double v = 1.0*j/(bloc.getNbDiscretizationJ()-1.0) ;
+				bloc(i,j).setPoint(curved_bezier_surface(u,v));
+			}
+		}
+	}
+
+
+
+
+	// Write the mesh results
+	IGMeshIOService ioService(&b);
+	VTKWriter writer(&ioService);
+	writer.setCellOptions(N|F);
+	writer.setDataOptions(N|F);
+	writer.write("Utils_Test_BlockingControlPoints.vtk");
+
+	IGMeshIOService ioService_ctrl_points(&b_controlpoints);
+	VTKWriter writer_ctrl_points(&ioService_ctrl_points);
+	writer_ctrl_points.setCellOptions(N|F);
+	writer_ctrl_points.setDataOptions(N|F);
+	writer_ctrl_points.write("Utils_Test_BlockingControlPoints_CtrlPoints.vtk");
+
+	gmds::Mesh m_Blocking(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
+	TInt mark_block_nodes = m_Blocking.newMark<Node>();
+	TInt mark_first_layer = m_Blocking.newMark<Node>();
+	TInt mark_farfield_nodes = m_Blocking.newMark<Node>();
+	math::Utils::BuildMesh2DFromBlocking2D(&b, &m_Blocking, mark_block_nodes, mark_first_layer, mark_farfield_nodes);
+	m_Blocking.unmarkAll<Node>(mark_block_nodes);
+	m_Blocking.freeMark<Node>(mark_block_nodes);
+	m_Blocking.unmarkAll<Node>(mark_first_layer);
+	m_Blocking.freeMark<Node>(mark_first_layer);
+	m_Blocking.unmarkAll<Node>(mark_farfield_nodes);
+	m_Blocking.freeMark<Node>(mark_farfield_nodes);
+
+	IGMeshIOService ioService_m_blocking(&m_Blocking);
+	VTKWriter writer_m_blocking(&ioService_m_blocking);
+	writer_m_blocking.setCellOptions(N|F);
+	writer_m_blocking.setDataOptions(N|F);
+	writer_m_blocking.write("Utils_Test_BlockingControlPoints_Mesh.vtk");
+
+	ASSERT_EQ(0, 0);
 
 }
 /*----------------------------------------------------------------------------*/

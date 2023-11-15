@@ -17,6 +17,7 @@
 #include <gmds/io/VTKWriter.h>
 #include <gmds/io/VTKReader.h>
 #include <gmds/smoothy/LaplacianSmoother.h>
+#include <gmds/blocking/CurvedBlocking.h>
 #include <iostream>
 #include <chrono>
 /*------------------------------------------------------------------------*/
@@ -107,7 +108,79 @@ AeroPipeline_3D::execute(){
 	//smoothy::LaplacianSmoother smoother(m_linker_HG);
 	//smoother.smoothCurves();
 	//smoother.smoothSurfaces();
-	//smoother.smoothVolumes(10);
+	//smoother.smoothVolumes(2);
+
+
+	int nbr_iter_smoothing(3);
+	for (int i=0;i<nbr_iter_smoothing;i++)
+	{
+		std::map<TCellID, math::Point> new_pos;
+		// Smooth node position in volume
+		for (auto n_id:m_meshHex->nodes())
+		{
+			if (m_couche_id->value(n_id) > 1
+			    && m_couche_id->value(n_id) < m_params.nbr_couches)
+			{
+				double theta = 0.3*m_couche_id->value(n_id)/m_params.nbr_couches ;
+				Node n = m_meshHex->get<Node>(n_id);
+				std::vector<Edge> n_edges = n.get<Edge>();
+				//math::Point p(0.0, 0.0, 0.0);
+				math::Point p(n.point());
+				for (auto e:n_edges)
+				{
+					Node n_opp = e.getOppositeNode(n_id);
+					p = p + n_opp.point();
+				}
+				p.setX(p.X()/(n_edges.size()+1));
+				p.setY(p.Y()/(n_edges.size()+1));
+				p.setZ(p.Z()/(n_edges.size()+1));
+				new_pos[n_id] = theta*p+(1.0-theta)*n.point();
+			}
+		}
+
+		// Smooth node position on last front (could be improve by using Front3D class)
+		for (auto n_id:m_meshHex->nodes())
+		{
+			if (m_couche_id->value(n_id) == m_params.nbr_couches)
+			{
+				double theta = 0.3 ;
+				Node n = m_meshHex->get<Node>(n_id);
+				std::vector<Edge> n_edges = n.get<Edge>();
+				math::Point p(0.0, 0.0, 0.0);
+				int nbr_adj(0);
+				for (auto e:n_edges)
+				{
+					Node n_opp = e.getOppositeNode(n_id);
+					if (m_couche_id->value(n_opp.id()) == m_params.nbr_couches)
+					{
+						p = p + e.getOppositeNode(n_id).point();
+						nbr_adj++;
+					}
+				}
+				p.setX(p.X()/nbr_adj);
+				p.setY(p.Y()/nbr_adj);
+				p.setZ(p.Z()/nbr_adj);
+				new_pos[n_id] = theta*p+(1.0-theta)*n.point();
+			}
+		}
+
+		// Update positions
+		for (auto n_update:new_pos)
+		{
+			Node n = m_meshHex->get<Node>(n_update.first);
+			if (m_couche_id->value(n.id()) == m_params.nbr_couches)
+			{
+				// Re-projection on exterior front
+				int geom_id = m_linker_HG->getGeomId<Node>(n.id()) ;
+				int geom_dim = m_linker_HG->getGeomDim<Node>(n.id()) ;
+				cad::GeomSurface* surface = m_manager->getSurface(geom_id);
+				surface->project(n_update.second);
+			}
+			n.setPoint(n_update.second);
+		}
+
+	}
+
 
 	// Interval Assignment
 	std::cout << "-> Interval Assignment" << std::endl;
@@ -119,6 +192,20 @@ AeroPipeline_3D::execute(){
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
+
+	// Convert to CurvedBlocking structure
+	gmds::blocking::CurvedBlocking blocking(m_manager) ;
+	blocking.init_from_mesh(*m_meshHex);
+
+	gmds::Mesh m_out(gmds::MeshModel(gmds::DIM3 | gmds::N | gmds::E | gmds::F | gmds::R | gmds::E2N | gmds::F2N | gmds::R2N));
+	blocking.convert_to_mesh(m_out);
+
+	gmds::IGMeshIOService ioService(&m_out);
+	gmds::VTKWriter writer(&ioService);
+	writer.setCellOptions(gmds::N | gmds::R);
+	writer.setDataOptions(gmds::N | gmds::R);
+	writer.write("TEST_CURVED.vtk");
+
 
 	// Stat of the blocking
 	std::cout << "=============================================" << std::endl;
@@ -729,9 +816,6 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 		}
 
 	}
-
-	// Build the edges and the connectivities
-	math::Utils::buildEfromFandConnectivies(m_meshHex);
 
 	// Write the surface block structure
 	gmds::IGMeshIOService ioService(m_meshHex);

@@ -271,6 +271,28 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static void orientRegion(Mesh *m, Region r);
 	/*-------------------------------------------------------------------*/
+	/** \brief Returns the binomial coefficient C_Ak^An. This is the number of
+	    *		part of Ak elements in a set of An elements.
+       *
+       * \param[in] An the number of elements in the set
+       * \param[in] Ak
+       *
+       * \return The binomial coefficient C_Ak^An.
+	 */
+	static double BinomialCoefficient(int An, int Ak);
+
+	/*-------------------------------------------------------------------*/
+	/** \brief Returns the value of the Bernstein's Ai-th polynomial of degree An
+	    * 	for Au in [0,1].
+       *
+       * \param[in] An degree of the Bernstein's polynomial
+       * \param[in] Ai Bernstein's i-th polynomial of degree n
+       * \param[in] Au parameter in [0,1]
+       *
+       * \return Bernstein's Ai-th polynomial of degree An evaluated at Au
+	 */
+	static double BernsteinPolynomial(int An, int Ai, double Au);
+	/*-------------------------------------------------------------------*/
 
 };
 /*----------------------------------------------------------------------------*/

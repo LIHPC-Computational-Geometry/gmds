@@ -48,7 +48,10 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 {
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string input_file=dir+"/Aero/3D/param_Modified_CCF_3D.ini";
+	//std::string input_file=dir+"/Aero/3D/param_Modified_CCF_3D.ini";
+	//std::string input_file=dir+"/Aero/3D/param_Stardust_3D.ini";
+	//std::string input_file=dir+"/Aero/3D/param_Apollo_3D.ini";
+	std::string input_file=dir+"/Aero/3D/param_C9_3D.ini";
 
 	//---------------------//
 	//    AERO PIPELINE    //
