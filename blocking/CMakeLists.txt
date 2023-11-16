@@ -16,7 +16,9 @@ set(GMDS_INC
         inc/gmds/blocking/SheetCollapse.h)
 
 if(WITH_CGNS)
-    set(GMDS_INC ${GMDS_INC} inc/gmds/blocking/CGNSWriter.h)
+    message(TEST)
+    set(GMDS_INC ${GMDS_INC} inc/gmds/blocking/CGNSWriter.h
+            inc/gmds/blocking/CGNSWriter3D.h)
 endif()
 
 set(GMDS_SRC
@@ -30,7 +32,8 @@ set(GMDS_SRC
         )
 
 if(WITH_CGNS)
-    set(GMDS_SRC ${GMDS_SRC} src/CGNSWriter.cpp)
+    set(GMDS_SRC ${GMDS_SRC} src/CGNSWriter.cpp
+            src/CGNSWriter3D.cpp)
 endif()
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
@@ -106,3 +109,11 @@ if(WITH_TEST)
     add_subdirectory(tst)
 endif(WITH_TEST)
 #==============================================================================
+add_executable(blocking
+        src/main.cpp)
+target_link_libraries(blocking PUBLIC ${LIB_GMDS_BLOCKING})
+
+add_executable(CGNSWriter src/main_cgns.cpp)
+target_link_libraries(CGNSWriter PRIVATE ${GMDS_LIB})
+target_compile_features(CGNSWriter PUBLIC cxx_std_14)
+install(TARGETS CGNSWriter)
