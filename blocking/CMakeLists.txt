@@ -109,11 +109,13 @@ if(WITH_TEST)
     add_subdirectory(tst)
 endif(WITH_TEST)
 #==============================================================================
-add_executable(blocking
-        src/main.cpp)
-target_link_libraries(blocking PUBLIC ${LIB_GMDS_BLOCKING})
+if(WITH_CGNS)
+    add_executable(blocking
+            src/main.cpp)
+    target_link_libraries(blocking PUBLIC ${LIB_GMDS_BLOCKING})
 
-add_executable(CGNSWriter src/main_cgns.cpp)
-target_link_libraries(CGNSWriter PRIVATE ${GMDS_LIB})
-target_compile_features(CGNSWriter PUBLIC cxx_std_14)
-install(TARGETS CGNSWriter)
+    add_executable(CGNSWriter src/main_cgns.cpp)
+    target_link_libraries(CGNSWriter PRIVATE ${GMDS_LIB})
+    target_compile_features(CGNSWriter PUBLIC cxx_std_14)
+    install(TARGETS CGNSWriter)
+endif(WITH_CGNS)
