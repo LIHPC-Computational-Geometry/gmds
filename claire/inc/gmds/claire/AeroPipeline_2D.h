@@ -90,9 +90,23 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_2D : public AbstractAeroPipeline {
 	 */
 	void MeshRefinement();
 	/*----------------------------------------------------------------------------*/
+	/** @brief
+	 * @param
+	 * @return
+	 */
+	void BoundaryCurvedBlocking();
+	/*----------------------------------------------------------------------------*/
+	/** @brief
+	 * @param
+	 * @return
+	 */
+	void BlockingDiscretizationFromCurvedBlocking();
+	/*----------------------------------------------------------------------------*/
  protected:
 	/** blocking 2D */
 	Blocking2D m_Blocking2D;
+	/** control points of the 2D blocking */
+	Blocking2D m_Blocking2D_CtrlPts;
 	/** Données des bords */
 	AeroBoundaries_2D* m_Bnd;
 	/** Linker Blocking à la géométrie */

@@ -1012,6 +1012,37 @@ Utils::BernsteinPolynomial(int An, int Ai, double Au)
 	return C_n_i* pow(Au, Ai)* pow(1-Au, An-Ai);
 }
 /*----------------------------------------------------------------------------*/
+double
+Utils::DerivativeBernsteinPolynomial(int An, int Ai, double Au)
+{
+	if (Ai == 0)
+	{
+		return -An*BernsteinPolynomial(An-1, 0, Au);
+	}
+	else if (Ai==An)
+	{
+		return An*BernsteinPolynomial(An-1, An-1, Au);
+	}
+	else
+	{
+		return An*(BernsteinPolynomial(An-1, Ai-1, Au)-BernsteinPolynomial(An-1, Ai, Au));
+	}
+
+}
+/*----------------------------------------------------------------------------*/
+math::Vector3d
+Utils::DerivativeBezierCurve(std::vector<math::Point> &Pts, double Au)
+{
+	math::Point deriv;
+	for (int i=0;i<Pts.size();i++)
+	{
+		deriv = deriv + DerivativeBernsteinPolynomial(Pts.size()-1, i, Au)*Pts[i] ;
+	}
+	math::Vector3d dev;
+	dev.setXYZ(deriv.X(), deriv.Y(), deriv.Z());
+	return dev;
+}
+/*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/
 }  // namespace gmds

@@ -23,10 +23,12 @@
 #include <gmds/smoothy/EllipticSmoother2D.h>
 #include<gmds/math/Line.h>
 #include<gmds/math/BezierCurve.h>
+#include <gmds/math/BezierSurface.h>
 #include <gmds/claire/AeroMeshQuality.h>
 #include <gmds/claire/FastLocalize.h>
 #include <gmds/claire/MeshAlignment_2D.h>
 #include <gmds/claire/MFEMMeshWriter.h>
+#include <gmds/claire/ControlPointsSmoothing_2D.h>
 
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -776,6 +778,7 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 
 	Variable<TCellID>* var_new_id = m_meshHex->newVariable<TCellID,GMDS_NODE>("New_ID");
 	Variable<int>* var_couche = m_Blocking2D.newVariable<int, GMDS_NODE>("GMDS_Couche");
+	Variable<int>* var_couche_ctrlpts = m_Blocking2D_CtrlPts.newVariable<int, GMDS_NODE>("GMDS_Couche");
 	Variable<int>* axi;
 	Variable<int>* axiB;
 
@@ -787,8 +790,10 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 	for (auto n_id:m_meshHex->nodes()){
 		Node n = m_meshHex->get<Node>(n_id);
 		Node n_blocking = m_Blocking2D.newBlockCorner(n.point());
+		m_Blocking2D_CtrlPts.newBlockCorner(n.point());
 		var_new_id->set(n_id, n_blocking.id());
 		var_couche->set(n_blocking.id(), m_couche_id->value(n_id));
+		var_couche_ctrlpts->set(n_blocking.id(), m_couche_id->value(n_id));
 		if(m_params.axisymetry){
 			axiB->set(n_blocking.id(), axi->value(n_id));
 		}
@@ -801,8 +806,8 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 		std::vector<Node> quad_nodes = f.get<Node>() ;
 		Blocking2D::Block B0 = m_Blocking2D.newBlock( var_new_id->value(quad_nodes[0].id()), var_new_id->value(quad_nodes[1].id()),
 		                      var_new_id->value(quad_nodes[2].id()), var_new_id->value(quad_nodes[3].id()));
-		//B0.setNbDiscretizationI(10);
-		//B0.setNbDiscretizationJ(10);
+		m_Blocking2D_CtrlPts.newBlock( var_new_id->value(quad_nodes[0].id()), var_new_id->value(quad_nodes[1].id()),
+		                              var_new_id->value(quad_nodes[2].id()), var_new_id->value(quad_nodes[3].id()));
 	}
 
 	IntervalAssignment_2D IntAss(&m_Blocking2D, m_params);
@@ -902,6 +907,19 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 	mfemwriter.execute();
 
 
+	BoundaryCurvedBlocking();
+	BlockingDiscretizationFromCurvedBlocking();
+
+
+	//
+	gmds::IGMeshIOService ioService(&m_Blocking2D_CtrlPts);
+	gmds::VTKWriter vtkWriter_Blocking(&ioService);
+	vtkWriter_Blocking.setCellOptions(gmds::N|gmds::F);
+	vtkWriter_Blocking.setDataOptions(gmds::N|gmds::F);
+	std::string dir(".");
+	vtkWriter_Blocking.write("AeroPipeline2D_Blocking_CtrlPts.vtk");
+
+
 }
 /*------------------------------------------------------------------------*/
 void
@@ -956,6 +974,7 @@ AeroPipeline_2D::BlockingClassification(){
 
 	Variable<int>* var_couche = m_Blocking2D.getVariable<int, GMDS_NODE>("GMDS_Couche");
 
+	// Classification of the block corners (in 2D, an edge can be classified on a point or a curve)
 	for (auto B0:m_Blocking2D.allBlocks())
 	{
 		int Nx = B0.getNbDiscretizationI()-1;
@@ -1075,6 +1094,36 @@ AeroPipeline_2D::BlockingClassification(){
 		}
 
 	}
+
+	// Classification of the block edges (in 2D, an edge is classified on a curve)
+	for (auto e_id:m_Blocking2D.edges())
+	{
+		std::vector<Node> e_nodes = m_Blocking2D.get<Edge>(e_id).get<Node>();
+		if (var_couche->value(e_nodes[0].id()) == var_couche->value(e_nodes[1].id()))
+		{
+			int geom_id_corner_0 = m_linker_BG->getGeomId<Node>(e_nodes[0].id());
+			int geom_id_corner_1 = m_linker_BG->getGeomId<Node>(e_nodes[1].id());
+			int dim_corner_0 = m_linker_BG->getGeomDim<Node>(e_nodes[0].id());
+			int dim_corner_1 = m_linker_BG->getGeomDim<Node>(e_nodes[1].id());
+
+			if (dim_corner_0 == 2)
+			{
+				m_linker_BG->linkEdgeToCurve(e_id, geom_id_corner_0);
+			}
+			else if (dim_corner_1 == 2)
+			{
+				m_linker_BG->linkEdgeToCurve(e_id, geom_id_corner_1);
+			}
+			else if (dim_corner_0 == 1 && dim_corner_1 == 1)
+			{
+				cad::GeomPoint *geom_p0 = m_manager->getPoint(geom_id_corner_0);
+				cad::GeomPoint *geom_p1 = m_manager->getPoint(geom_id_corner_1);
+				int geom_curve_id = m_manager->getCommonCurve(geom_p0, geom_p1);
+				m_linker_BG->linkEdgeToCurve(e_id, geom_curve_id);
+			}
+		}
+	}
+
 
 	// New mesh of the interior points of the blocks
 	for(auto B0:m_Blocking2D.allBlocks()) {
@@ -1286,6 +1335,8 @@ AeroPipeline_2D::BlockingClassification(){
 			}
 		}
 	}
+
+	//BlockingDiscretizationFromCurvedBlocking();
 
 }
 /*------------------------------------------------------------------------*/
@@ -1653,4 +1704,409 @@ AeroPipeline_2D::MeshRefinement()
 	m_Blocking2D.freeMark<Node>(mark_refinementNeeded);
 }
 /*------------------------------------------------------------------------*/
+void
+AeroPipeline_2D::BoundaryCurvedBlocking()
+{
+	std::cout << "Boundary Curved Blocking..." << std::endl;
+	Variable<int>* var_couche_ctrlpts = m_Blocking2D_CtrlPts.getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche");
 
+	int degree(6);
+	for (auto bloc:m_Blocking2D_CtrlPts.allBlocks())
+	{
+		bloc.setNbDiscretizationI(degree+1);
+		bloc.setNbDiscretizationJ(degree+1);
+	}
+	m_Blocking2D_CtrlPts.initializeGridPoints();
+
+	// Init the var couche on each control points of the blocking
+	for (auto bloc:m_Blocking2D_CtrlPts.allBlocks())
+	{
+		Node n0 = bloc(0,0);
+		Node n1 = bloc(bloc.getNbDiscretizationI()-1,0);
+		Node n2 = bloc(bloc.getNbDiscretizationI()-1,bloc.getNbDiscretizationJ()-1);
+		Node n3 = bloc(0,bloc.getNbDiscretizationJ()-1);
+
+		int couche_e0 = std::max(var_couche_ctrlpts->value(n0.id()), var_couche_ctrlpts->value(n1.id())) ;
+		int couche_e1 = std::max(var_couche_ctrlpts->value(n1.id()), var_couche_ctrlpts->value(n2.id())) ;
+		int couche_e3 = std::max(var_couche_ctrlpts->value(n2.id()), var_couche_ctrlpts->value(n3.id())) ;
+		int couche_e4 = std::max(var_couche_ctrlpts->value(n3.id()), var_couche_ctrlpts->value(n0.id())) ;
+		for (int i=1;i<bloc.getNbDiscretizationI()-1;i++)
+		{
+		   var_couche_ctrlpts->set(bloc(i,0).id(), couche_e0);
+		   var_couche_ctrlpts->set(bloc(i,bloc.getNbDiscretizationJ()-1).id(), couche_e3);
+		}
+		for (int j=1;j<bloc.getNbDiscretizationJ()-1;j++)
+		{
+		   var_couche_ctrlpts->set(bloc(bloc.getNbDiscretizationI()-1,j).id(), couche_e1);
+		   var_couche_ctrlpts->set(bloc(0,j).id(), couche_e4);
+		}
+		for (int i=1;i<bloc.getNbDiscretizationI()-1;i++)
+		{
+			for (int j=1;j<bloc.getNbDiscretizationJ()-1;j++)
+			{
+				var_couche_ctrlpts->set(bloc(i,j).id(), std::max(couche_e0, couche_e3));
+			}
+		}
+
+	}
+
+	Eigen::MatrixXd mat_B(degree+1, degree+1);
+	Eigen::VectorXd ctrl_points_x(degree+1);
+	Eigen::VectorXd ctrl_points_y(degree+1);
+	Eigen::VectorXd interp_points_x(degree+1);
+	Eigen::VectorXd interp_points_y(degree+1);
+
+	// Try to compute the control points to interpolate
+	for (auto bloc:m_Blocking2D_CtrlPts.allBlocks())
+	{
+
+		if ( (var_couche_ctrlpts->value(bloc(0,0).id()) == 0 || var_couche_ctrlpts->value(bloc(0,0).id()) == m_params.nbr_couches )
+		    && var_couche_ctrlpts->value(bloc(0,0).id()) == var_couche_ctrlpts->value(bloc(bloc.getNbDiscretizationI()-1,0).id()))
+		{
+			TCellID e_id = math::Utils::CommonEdge(&m_Blocking2D, bloc(0,0).id(), bloc(bloc.getNbDiscretizationI()-1,0).id());
+			int geom_id = m_linker_BG->getGeomId<Edge>(e_id) ;
+			int dim = m_linker_BG->getGeomDim<Edge>(e_id) ;
+			cad::GeomCurve* curve = m_manager->getCurve(geom_id);
+			for (int i=0;i<bloc.getNbDiscretizationI();i++)
+			{
+				math::Point p = bloc(i,0).point();
+				if (0 < i < bloc.getNbDiscretizationI()-1)
+				{
+					curve->project(p);
+				}
+				interp_points_x[i] = p.X();
+				interp_points_y[i] = p.Y();
+			}
+			// Matrix Assembly
+			for (int i=0;i<bloc.getNbDiscretizationI();i++)
+			{
+				for (int j=0;j<bloc.getNbDiscretizationJ();j++)
+				{
+					double bij = math::Utils::BernsteinPolynomial(bloc.getNbDiscretizationI()-1, j, 1.0*i/(bloc.getNbDiscretizationI()-1));
+					mat_B(i,j) = bij;
+				}
+			}
+
+			Eigen::MatrixXd mat_B_inv = mat_B.inverse();
+			ctrl_points_x = mat_B_inv*interp_points_x;
+			ctrl_points_y = mat_B_inv*interp_points_y;
+			for (int i=0;i<bloc.getNbDiscretizationI();i++)
+			{
+				bloc(i,0).setX(ctrl_points_x[i]);
+				bloc(i,0).setY(ctrl_points_y[i]);
+			}
+		}
+
+
+		if ( (var_couche_ctrlpts->value(bloc(0,bloc.getNbDiscretizationJ()-1).id()) == 0 || var_couche_ctrlpts->value(bloc(0,bloc.getNbDiscretizationJ()-1).id()) == m_params.nbr_couches)
+		    && var_couche_ctrlpts->value(bloc(0,bloc.getNbDiscretizationJ()-1).id()) == var_couche_ctrlpts->value(bloc(bloc.getNbDiscretizationI()-1,bloc.getNbDiscretizationJ()-1).id()))
+		{
+			TCellID e_id = math::Utils::CommonEdge(&m_Blocking2D, bloc(0,bloc.getNbDiscretizationJ()-1).id(), bloc(bloc.getNbDiscretizationI()-1,bloc.getNbDiscretizationJ()-1).id());
+			int geom_id = m_linker_BG->getGeomId<Edge>(e_id) ;
+			int dim = m_linker_BG->getGeomDim<Edge>(e_id) ;
+			cad::GeomCurve* curve = m_manager->getCurve(geom_id);
+
+			for (int i=0;i<bloc.getNbDiscretizationI();i++)
+			{
+				math::Point p = bloc(i,bloc.getNbDiscretizationJ()-1).point();
+				if (0 < i < bloc.getNbDiscretizationI()-1)
+				{
+					curve->project(p);
+				}
+				interp_points_x[i] = p.X();
+				interp_points_y[i] = p.Y();
+			}
+
+			// Matrix Assembly
+			for (int i=0;i<bloc.getNbDiscretizationI();i++)
+			{
+				for (int j=0;j<bloc.getNbDiscretizationJ();j++)
+				{
+					double bij = math::Utils::BernsteinPolynomial(bloc.getNbDiscretizationI()-1, j, 1.0*i/(bloc.getNbDiscretizationI()-1));
+					mat_B(i,j) = bij;
+				}
+			}
+
+			Eigen::MatrixXd mat_B_inv = mat_B.inverse();
+			ctrl_points_x = mat_B_inv*interp_points_x;
+			ctrl_points_y = mat_B_inv*interp_points_y;
+
+			for (int i=0;i<bloc.getNbDiscretizationI();i++)
+			{
+				bloc(i,bloc.getNbDiscretizationJ()-1).setX(ctrl_points_x[i]);
+				bloc(i,bloc.getNbDiscretizationJ()-1).setY(ctrl_points_y[i]);
+			}
+		}
+
+
+		/*
+		if (var_couche_ctrlpts->value(bloc(0,0).id()) == 0
+		    && var_couche_ctrlpts->value(bloc(0,0).id()) == var_couche_ctrlpts->value(bloc(0,bloc.getNbDiscretizationJ()).id()))
+		{
+			TCellID e_id = math::Utils::CommonEdge(&m_Blocking2D, bloc(0,0).id(), bloc(0,bloc.getNbDiscretizationJ()).id());
+			int geom_id = m_linker_BG->getGeomId<Edge>(e_id) ;
+			int dim = m_linker_BG->getGeomDim<Edge>(e_id) ;
+			cad::GeomCurve* curve = m_manager->getCurve(geom_id);
+
+			for (int j=0;j<=bloc.getNbDiscretizationJ();j++)
+			{
+				math::Point p = bloc(0,j).point();
+				if (0 < j < bloc.getNbDiscretizationJ())
+				{
+					curve->project(p);
+				}
+				interp_points_x[j] = p.X();
+				interp_points_y[j] = p.Y();
+			}
+
+			// Matrix Assembly
+			for (int i=0;i<bloc.getNbDiscretizationI();i++)
+			{
+				for (int j=0;j<bloc.getNbDiscretizationJ();j++)
+				{
+					double bij = math::Utils::BernsteinPolynomial(bloc.getNbDiscretizationJ()-1, j, 1.0*i/(bloc.getNbDiscretizationJ()-1));
+					mat_B(i,j) = bij;
+				}
+			}
+
+			Eigen::Matrix4d mat_B_inv = mat_B.inverse();
+			ctrl_points_x = mat_B_inv*interp_points_x;
+			ctrl_points_y = mat_B_inv*interp_points_y;
+
+			for (int j=0;j<=bloc.getNbDiscretizationJ()-1;j++)
+			{
+				bloc(0,j).setX(ctrl_points_x[j]);
+				bloc(0,j).setY(ctrl_points_y[j]);
+			}
+		}
+		 */
+
+	}
+
+	// Try smoothing ctrl points on edges between two different layers
+	FastLocalize fl(m_meshTet);
+	Variable<double>* var_distance = m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance");
+	Variable<double>* var_distance_int = m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int");
+	Variable<math::Vector3d>* var_VectorsForExtrusion = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
+	for (auto bloc:m_Blocking2D_CtrlPts.allBlocks())
+	{
+		Node n0 = bloc(0,0);
+		Node n1 = bloc(bloc.getNbDiscretizationI()-1,0);
+		if ( var_couche_ctrlpts->value(n0.id()) > 1
+		    && var_couche_ctrlpts->value(n0.id()) < m_params.nbr_couches
+		    && var_couche_ctrlpts->value(n0.id()) == var_couche_ctrlpts->value(n1.id()))
+		{
+			// Here, we're not accurate enough, as we use the closest point of the block corners on the TET Mesh.
+			// As this tet mesh can be coarse far from the vehicle, this method is not good.
+			// We should interpolate the value of the distance field at the block corners.
+			gmds::Cell::Data data = fl.find(n0.point());
+			TCellID n_closest_id_0 = data.id;
+			Node n_closest_0 = m_meshTet->get<Node>(n_closest_id_0);
+
+			std::vector<Face> n_faces = n_closest_0.get<Face>();
+			TCellID face_n0_id(NullID);
+			for (auto f:n_faces)
+			{
+				std::vector<Node> f_nodes = f.get<Node>();
+				if (math::Utils::isInTriangle(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point(), n0.point()))
+				{
+					face_n0_id = f.id();
+				}
+			}
+
+			double distance(var_distance->value(n_closest_id_0));
+			if (face_n0_id != NullID)
+			{
+				Face f = m_meshTet->get<Face>(face_n0_id);
+				std::vector<Node> f_nodes = f.get<Node>();
+				distance = math::Utils::linearInterpolation2D3Pt(f_nodes[0].point(), f_nodes[1].point(), f_nodes[2].point(), n0.point(),
+				                                      var_distance->value(f_nodes[0].id()),
+				                                      var_distance->value(f_nodes[1].id()),
+				                                      var_distance->value(f_nodes[2].id()));
+			}
+
+			data = fl.find(n1.point());
+			TCellID n_closest_id_1 = data.id;
+			Node n_closest_1 = m_meshTet->get<Node>(n_closest_id_1);
+			//double distance = std::min(var_distance->value(n_closest_id_0), var_distance->value(n_closest_id_1));
+
+			for (int i=1;i<bloc.getNbDiscretizationI()-1;i++)
+			{
+				AdvectedPointRK4_2D advpoint(m_meshTet, &fl, bloc(i,0).point(), distance, var_distance, var_VectorsForExtrusion);
+				advpoint.execute();
+				bloc(i,0).setPoint(advpoint.getPend());
+			}
+		}
+		else if ( var_couche_ctrlpts->value(n0.id()) == 1
+		    && var_couche_ctrlpts->value(n0.id()) == var_couche_ctrlpts->value(n1.id()))
+		{
+			// For front 1: the distance field is the one from the vehicle, and not the combined one.
+			for (int i=1;i<bloc.getNbDiscretizationI()-1;i++)
+			{
+				AdvectedPointRK4_2D advpoint(m_meshTet, &fl, bloc(i,0).point(), m_params.delta_cl,
+				                             var_distance_int, var_VectorsForExtrusion);
+				advpoint.execute();
+				bloc(i,0).setPoint(advpoint.getPend());
+			}
+		}
+
+	}
+
+
+
+	// Update the positions of the interior control points in blocks
+	for(auto B0:m_Blocking2D_CtrlPts.allBlocks()) {
+		auto Nx = B0.getNbDiscretizationI();
+		auto Ny = B0.getNbDiscretizationJ();
+		Array2D<math::Point> pnts(Nx, Ny);
+
+		for (auto i = 0; i < Nx; i++)
+		{
+			pnts(i, 0) = B0(i,0).point();
+			pnts(i, Ny - 1) = B0(i,Ny-1).point();
+		}
+		for (auto j = 0; j < Ny; j++)
+		{
+			pnts(0, j) = B0(0,j).point();
+			pnts(Nx - 1, j) = B0(Nx-1,j).point();
+		}
+
+		math::TransfiniteInterpolation::computeQuad(pnts);
+		for (auto i = 1; i < Nx - 1; i++)
+		{
+			for (auto j = 1; j < Ny - 1; j++)
+			{
+				B0(i,j).setPoint(pnts(i,j));
+			}
+		}
+	}
+
+
+
+
+
+
+	// Smoothing of the control points
+	/*
+	int iter_max(20);
+	for (auto iter=0;iter<iter_max;iter++)
+	{
+		for (auto bloc:m_Blocking2D_CtrlPts.allBlocks())
+		{
+			Node n0 = bloc(0,0);
+			Node n1 = bloc(bloc.getNbDiscretizationI()-1,0);
+			Node n2 = bloc(bloc.getNbDiscretizationI()-1,bloc.getNbDiscretizationJ()-1);
+			Node n3 = bloc(0,bloc.getNbDiscretizationJ()-1);
+
+			int couche_e0 = std::max(var_couche_ctrlpts->value(n0.id()), var_couche_ctrlpts->value(n1.id())) ;
+			int couche_e1 = std::max(var_couche_ctrlpts->value(n1.id()), var_couche_ctrlpts->value(n2.id())) ;
+			int couche_e3 = std::max(var_couche_ctrlpts->value(n2.id()), var_couche_ctrlpts->value(n3.id())) ;
+			int couche_e4 = std::max(var_couche_ctrlpts->value(n3.id()), var_couche_ctrlpts->value(n0.id())) ;
+
+			for (int i=1;i<bloc.getNbDiscretizationI()-1;i++)
+			{
+				for (int j=1;j<bloc.getNbDiscretizationJ()-1;j++)
+				{
+					if (var_couche_ctrlpts->value(bloc(i,j).id()) != 0
+				    && var_couche_ctrlpts->value(bloc(i,j).id()) != m_params.nbr_couches)
+					{
+						bloc(i, j).setX((bloc(i - 1, j).X() + bloc(i + 1, j).X() + bloc(i, j - 1).X() + bloc(i, j + 1).X()) / 4.0);
+						bloc(i, j).setY((bloc(i - 1, j).Y() + bloc(i + 1, j).Y() + bloc(i, j - 1).Y() + bloc(i, j + 1).Y()) / 4.0);
+					}
+				}
+			}
+
+			// Boundary
+
+			for (int i=1;i<bloc.getNbDiscretizationI()-1;i++)
+			{
+				if ( 1 < var_couche_ctrlpts->value(bloc(0,0).id())
+				    && var_couche_ctrlpts->value(bloc(0,0).id()) < m_params.nbr_couches
+				    && 1 < var_couche_ctrlpts->value(bloc(bloc.getNbDiscretizationI()-1,0).id())
+				    && var_couche_ctrlpts->value(bloc(bloc.getNbDiscretizationI()-1,0).id()) < m_params.nbr_couches )
+				{
+					std::cout << "---------------" << std::endl;
+					std::cout << "Bloc " << bloc.id() << std::endl;
+					std::cout << "i " << i << std::endl;
+					std::cout << var_couche_ctrlpts->value(bloc(0,0).id()) << std::endl;
+					std::cout << var_couche_ctrlpts->value(bloc(bloc.getNbDiscretizationI()-1,0).id()) << std::endl;
+					int j(0);
+					std::cout << "i:" << std::endl;
+					bloc(i - 1, j).X();
+					bloc(i + 1, j).X();
+					std::cout << "j:" << std::endl;
+					bloc(i, j-1).X();
+					bloc(i, j+1).X();
+					std::cout << "fin test" << std::endl;
+					bloc(i, j).setX((bloc(i - 1, j).X() + bloc(i + 1, j).X() + bloc(i, j-1).X() + bloc(i, j+1).X()) / 4.0);
+					bloc(i, j).setY((bloc(i - 1, j).Y() + bloc(i + 1, j).Y() + bloc(i, j-1).Y() + bloc(i, j+1).Y()) / 4.0);
+				}
+			}
+
+		}
+	}
+	*/
+	ControlPointsSmoothing_2D ctrlpoints_smoothy(&m_Blocking2D_CtrlPts);
+	ctrlpoints_smoothy.execute();
+
+	// Update the positions of the interior control points in blocks
+	for(auto B0:m_Blocking2D_CtrlPts.allBlocks())
+	{
+		auto Nx = B0.getNbDiscretizationI();
+		auto Ny = B0.getNbDiscretizationJ();
+		Array2D<math::Point> pnts(Nx-2, Ny-2);
+
+		for (auto i = 1; i < Nx-1; i++)
+		{
+			pnts(i-1, 0) = B0(i,1).point();
+			pnts(i-1, Ny - 3) = B0(i,Ny-2).point();
+		}
+		for (auto j = 1; j < Ny-1; j++)
+		{
+			pnts(0, j-1) = B0(1,j).point();
+			pnts(Nx - 3, j-1) = B0(Nx-2,j).point();
+		}
+
+		math::TransfiniteInterpolation::computeQuad(pnts);
+		for (auto i = 2; i < Nx - 2; i++)
+		{
+			for (auto j = 2; j < Ny - 2; j++)
+			{
+				B0(i,j).setPoint(pnts(i-1,j-1));
+			}
+		}
+
+	}
+
+}
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_2D::BlockingDiscretizationFromCurvedBlocking()
+{
+	std::cout << "Blocking Discretization from Curved Blocking..." << std::endl;
+	int degree(6);
+	for (auto bloc:m_Blocking2D.allBlocks())
+	{
+		//int degree(bloc.getNbDiscretizationI()-1);	// We assume here that the order is uniform on the blocking in all directions.
+		Array2D<math::Point> Ctrl_Pts(degree+1,degree+1);
+		Blocking2D::Block b_ctrl_pts = m_Blocking2D_CtrlPts.block(bloc.id()) ;
+		for (int i=0;i<=degree;i++)
+		{
+			for (int j=0;j<=degree;j++)
+			{
+				Ctrl_Pts(i,j) = b_ctrl_pts(i,j).point();
+			}
+		}
+		math::BezierSurface curved_bezier_surface(Ctrl_Pts);
+		for (int i=0;i<bloc.getNbDiscretizationI();i++)
+		{
+			for (int j=0;j<bloc.getNbDiscretizationJ();j++)
+			{
+				double u = 1.0*i/(bloc.getNbDiscretizationI()-1.0) ;
+				double v = 1.0*j/(bloc.getNbDiscretizationJ()-1.0) ;
+				bloc(i,j).setPoint(curved_bezier_surface(u,v));
+			}
+		}
+	}
+}
+/*------------------------------------------------------------------------*/
