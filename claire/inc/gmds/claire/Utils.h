@@ -33,7 +33,7 @@ class LIB_GMDS_CLAIRE_API Utils {
 	static double distFromNodeIds(Mesh *AMesh, TCellID n0_id, TCellID n1_id);
 
 	/*------------------------------------------------------------------------*/
-	/** \brief  Return the common edge between 2 points if it exists, NullID
+	/** \brief  Return the common edge between 2 nodes if it exists, NullID
 	 		* otherwise (ou si la connectivité n'est pas renseignée)
          *
          * \param[in] n0_id first node id
@@ -293,7 +293,26 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static double BernsteinPolynomial(int An, int Ai, double Au);
 	/*-------------------------------------------------------------------*/
-
+	/** \brief Returns the value of the derivative of the Bernstein's Ai-th polynomial of degree An
+	    * 	for Au in [0,1]. (According to the def Rémi Feuillet 2019 PhD)
+       *
+       * \param[in] An degree of the Bernstein's polynomial
+       * \param[in] Ai Bernstein's i-th polynomial of degree n
+       * \param[in] Au parameter in [0,1]
+       *
+       * \return Bernstein's Ai-th polynomial of degree An evaluated at Au
+	 */
+	static double DerivativeBernsteinPolynomial(int An, int Ai, double Au);
+	/*-------------------------------------------------------------------*/
+	/** \brief
+       *
+       * \param[in] Abc the bezier curve
+       * \param[in] Au parameter in [0,1]
+       *
+       * \return
+	 */
+	static math::Vector3d DerivativeBezierCurve(std::vector<math::Point> &Pts, double Au);
+	/*-------------------------------------------------------------------*/
 };
 /*----------------------------------------------------------------------------*/
 }  // namespace math

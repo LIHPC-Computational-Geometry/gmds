@@ -25,7 +25,8 @@ using namespace gmds;
 TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 {
 	std::string dir(TEST_SAMPLES_DIR);
-	//std::string input_file=dir+"/Aero/2D/param_Orex_2D.ini";
+	//std::string input_file=dir+"/Aero/2D/param_Apollo_2D.ini";
+	//std::string input_file=dir+"/Aero/2D/param_NACA_2D.ini";
 	std::string input_file=dir+"/Aero/2D/param_Stardust_2D_TEST.ini";
 
 	// Mesh Generation

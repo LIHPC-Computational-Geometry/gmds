@@ -588,7 +588,7 @@ TEST(ClaireTestClass, Test_BlockingControlPoints)
 	Blocking2D b(m);
 	Blocking2D b_controlpoints(m);
 
-	int degree_Bezier(3);
+	int degree_Bezier(5);
 	int bloc_discretization(20);
 
 	for (auto bloc:b_controlpoints.allBlocks())
@@ -619,6 +619,7 @@ TEST(ClaireTestClass, Test_BlockingControlPoints)
 		}
 	}
 
+	/*
 	for (auto bloc:b_controlpoints.allBlocks())
 	{
 		// Control Points on EDGES
@@ -658,26 +659,43 @@ TEST(ClaireTestClass, Test_BlockingControlPoints)
 		   }
 		}
 	}
-
+	*/
 
 	// Try to compute the control points to interpolate
-	Eigen::Matrix4d mat_B;
-	Eigen::Vector4d ctrl_points_x;
-	Eigen::Vector4d ctrl_points_y;
-	Eigen::Vector4d interp_points_x;
-	Eigen::Vector4d interp_points_y;
+	//Eigen::Matrix4d mat_B;
+	//Eigen::Vector4d ctrl_points_x;
+	//Eigen::Vector4d ctrl_points_y;
+	//Eigen::VectorXd interp_points_x;
+	//Eigen::Vector4d interp_points_y;
+
+	Eigen::MatrixXd mat_B(degree_Bezier+1, degree_Bezier+1);
+	Eigen::VectorXd ctrl_points_x(degree_Bezier+1);
+	Eigen::VectorXd ctrl_points_y(degree_Bezier+1);
+	Eigen::VectorXd interp_points_x(degree_Bezier+1);
+	Eigen::VectorXd interp_points_y(degree_Bezier+1);
 
 	interp_points_x[0] = 0.0 ;
 	interp_points_y[0] = 0.0 ;
 
-	interp_points_x[1] = 0.33 ;
+	for (int i=1;i<degree_Bezier;i++)
+	{
+		interp_points_x[i] = 1.0*i/degree_Bezier;
+		interp_points_y[i] = 0.05;
+	}
+
+	/*
+	interp_points_x[1] = 0.25 ;
 	interp_points_y[1] = 0.05 ;
 
-	interp_points_x[2] = 0.66 ;
-	interp_points_y[2] = -0.05 ;
+	interp_points_x[2] = 0.5 ;
+	interp_points_y[2] = 0.05 ;
 
-	interp_points_x[3] = 1.0 ;
-	interp_points_y[3] = 0.0 ;
+	interp_points_x[3] = 0.75 ;
+	interp_points_y[3] = 0.05 ;
+	 */
+
+	interp_points_x[degree_Bezier] = 1.0 ;
+	interp_points_y[degree_Bezier] = 0.0 ;
 
 	// Matrix Assembly
 	for (int i=0;i<=degree_Bezier;i++)
@@ -692,7 +710,8 @@ TEST(ClaireTestClass, Test_BlockingControlPoints)
 
 	std::cout << mat_B << std::endl;
 
-	Eigen::Matrix4d mat_B_inv = mat_B.inverse();
+	//Eigen::Matrix4d mat_B_inv = mat_B.inverse();
+	Eigen::MatrixXd mat_B_inv = mat_B.inverse();
 
 	std::cout << mat_B_inv << std::endl;
 
