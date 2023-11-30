@@ -65,6 +65,8 @@ set(GMDS_INC
 		inc/gmds/claire/PatternNode2Corner1Reversal.h
 		inc/gmds/claire/PatternNode2End1Reversal.h
 		inc/gmds/claire/MFEMMeshWriter.h
+		inc/gmds/claire/ControlPointsSmoothing_2D.h
+		inc/gmds/claire/Blocking3D.h
 		)
 set(GMDS_SRC
 		src/main.cpp
@@ -124,7 +126,9 @@ set(GMDS_SRC
 		src/PatternNode2Corner2End.cpp
 		src/PatternNode2Corner1Reversal.cpp
 		src/PatternNode2End1Reversal.cpp
-		src/MFEMMeshWriter.cpp inc/gmds/claire/ControlPointsSmoothing_2D.h src/ControlPointsSmoothing_2D.cpp)
+		src/MFEMMeshWriter.cpp
+		src/ControlPointsSmoothing_2D.cpp
+		src/Blocking3D.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

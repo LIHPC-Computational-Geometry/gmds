@@ -20,7 +20,8 @@ add_executable(GMDS_CLAIRE_TEST
         FrontTestSuite.h
         PatternEdgeTestSuite.h
         MFEMMeshWriterTestSuite.h
-        LayerStructureManager_3DTestSuite.h)
+        LayerStructureManager_3DTestSuite.h
+        Blocking3DTestSuite.h)
 #==============================================================================
 target_link_libraries(GMDS_CLAIRE_TEST PUBLIC
         ${GMDS_LIB}
