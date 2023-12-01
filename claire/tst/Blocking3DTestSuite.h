@@ -26,9 +26,9 @@ TEST(Blocking3DTestSuite, test_blocking3D_1)
 	Blocking3D::Block b1 = b.newBlock(n2,n9,n11,n3,n6,n10,n12,n7);
 
 	ASSERT_EQ(b0.id(), b.block(0).id());
-	int nb_I(6);
+	int nb_I(5);
 	int nb_J(5);
-	int nb_K(5);
+	int nb_K(11);
 	b0.setNbDiscretizationI(nb_I);
 	b0.setNbDiscretizationJ(nb_J);
 	b0.setNbDiscretizationK(nb_K);
@@ -51,30 +51,17 @@ TEST(Blocking3DTestSuite, test_blocking3D_1)
 	ASSERT_EQ(b0.getNbDiscretizationJ(),nb_J);
 	ASSERT_EQ(b0.getNbDiscretizationK(),nb_K);
 
-	b.initializeEdgesPoints();
-	b.initializeFacesPoints();
-	b.initializeBlocksPoints();
+	b.initializeGridPoints();
 
-	/*
+	b0 = b.block(0);
+	ASSERT_FLOAT_EQ(b0(1,1,1).X(), 0.25);
+	ASSERT_FLOAT_EQ(b0(1,1,1).Y(), 0.25);
+	ASSERT_FLOAT_EQ(b0(1,1,1).Z(), 0.1);
 
-	m.initializeGridPoints();
-	b0 = m.block(0);
-	math::Point p00 = b0(0,0).point();
-	ASSERT_FLOAT_EQ(p00.X(),0);
-	ASSERT_FLOAT_EQ(p00.Y(),0);
+	ASSERT_FLOAT_EQ(b0(3,2,8).X(), 0.75);
+	ASSERT_FLOAT_EQ(b0(3,2,8).Y(), 0.5);
+	ASSERT_FLOAT_EQ(b0(3,2,8).Z(), 0.8);
 
-	math::Point p04 = b0(0,4).point();
-	ASSERT_FLOAT_EQ(p04.X(),0);
-	ASSERT_FLOAT_EQ(p04.Y(),0.4);
-
-	math::Point p31 = b0(3,1).point();
-	ASSERT_FLOAT_EQ(p31.X(),0.3);
-	ASSERT_FLOAT_EQ(p31.Y(),0.1);
-
-	math::Point p76 = b0(7,6).point();
-	ASSERT_FLOAT_EQ(p76.X(),0.7);
-	ASSERT_FLOAT_EQ(p76.Y(),0.6);
-	 */
 
 	gmds::IGMeshIOService ioService(&b);
 	gmds::VTKWriter vtkWriter(&ioService);

@@ -522,19 +522,6 @@ void Blocking3D::initializeBlocksPoints(){
 			   }
 		   }
 
-		   /*
-		   for (auto i=0;i<nb_I;i++)
-		   {
-				for (auto j=0;j<nb_J;j++)
-			   {
-					for (auto k=0;k<nb_K;k++)
-					{
-						std::cout << "i,j,k: " << i << ", " << j << ", " << k << ", point: " << pnts(i,j,k) << std::endl;
-					}
-				}
-		   }
-		    */
-
 		   TransfiniteInterpolation_3D::computeHex(pnts);
 
 		   for(auto i=1; i<nb_I-1;i++){
@@ -548,8 +535,14 @@ void Blocking3D::initializeBlocksPoints(){
 			   }
 		   }
 		   m_region_grids->set(r_id,a);
-
 	}
+}
+/*----------------------------------------------------------------------------*/
+void Blocking3D::initializeGridPoints()
+{
+	initializeEdgesPoints();
+	initializeFacesPoints();
+	initializeBlocksPoints();
 }
 /*----------------------------------------------------------------------------*/
 Array2D<TCellID>
@@ -677,6 +670,7 @@ Array2D<TCellID>
 	return reOrient;
 
 }
+/*----------------------------------------------------------------------------*/
 
 
 /*============================================================================*/
@@ -711,6 +705,13 @@ Node Blocking3D::Block::operator()(const int AI, const int AJ, const int AK) {
 	 *      |___________|  I=0
 	 *  Origin   e0
 	 */
+	if(AI<0 || AJ<0 || AK<0){
+		throw GMDSException("Index has to be at least 0");
+	}
+	else if (AI>getNbDiscretizationI()-1 || AJ>getNbDiscretizationJ()-1 || AK>getNbDiscretizationK()-1)
+	{
+		throw GMDSException("Index out of range");
+	}
 	return m_support->get<Node>((*m_grid_view)(AI,AJ,AK));
 }
 /*----------------------------------------------------------------------------*/

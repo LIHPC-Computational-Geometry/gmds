@@ -152,21 +152,21 @@ class GMDSIg_API Blocking3D : public Mesh
 	Node newBlockCorner(const math::Point& APnt);
 	Node newBlockCorner(const TCoord AX,const TCoord AY, const TCoord AZ=0);
 
-	/** Block creation from 8 nodes. The region is oriented according to the nodes.
+	/** @brief Block creation from 8 nodes. The region is oriented according to the nodes.
          *  the origin node is the first one and the I direction is given by @p AN1 -> @p AN2,
          *  the J direction by @p AN1 -> @p AN3 and the K direction by @p AN1 -> @p AN5.
          *  Once created, it can not be changed.
          *
          *  Block edges are created on the fly if it wasn't yet available in the mesh
          *
-         * @param AN1 a first node
-         * @param AN2 a second node
-         * @param AN3 a third node
-         * @param AN4 a fourth node
-         * @param AN5 a fifth node
-         * @param AN6 a sixth node
-         * @param AN7 a seventh node
-         * @param AN8 a eighth node
+         * @param[in] AN1 a first node
+         * @param[in] AN2 a second node
+         * @param[in] AN3 a third node
+         * @param[in] AN4 a fourth node
+         * @param[in] AN5 a fifth node
+         * @param[in] AN6 a sixth node
+         * @param[in] AN7 a seventh node
+         * @param[in] AN8 a eighth node
          * @return A 3D block, which is a hex region with extra attributes
 	 */
 	Block newBlock(const Node& AN1, const Node& AN2, const Node& AN3, const Node& AN4,
@@ -174,67 +174,72 @@ class GMDSIg_API Blocking3D : public Mesh
 	Block newBlock(const TCellID AN1, const TCellID AN2, const TCellID AN3, const TCellID AN4,
 	               const TCellID AN5, const TCellID AN6, const TCellID AN7, const TCellID AN8);
 
-	/** Return a handle block for block of id @p AId
-         * @param AId block id
+	/** @brief Return a handle block for block of id @p AId
+         * @param[in] AId block id
          * @return the expected block
 	 */
 	Block block(const TCellID AId);
-	/** Returns all the blocks
+	/** @brief Returns all the blocks
          * @return a collection of block handlers
 	 */
 	std::vector<Block> allBlocks();
-	/** Create all the edge nodes. Once this method call the block structure
+	/** @brief Create all the edge nodes. Once this method call the block structure
          * can not be modified anymore. We should check the conditions to allow it in the future.
 	 */
 	void initializeEdgesPoints();
-	/** Create all the inner faces nodes, requires initializeEdgesPoints. Once this method call the block structure
+	/** @brief Create all the inner faces nodes, requires initializeEdgesPoints. Once this method call the block structure
          * can not be modified anymore. We should check the conditions to allow it in the future.
 	 */
 	void initializeFacesPoints();
-	/** Create all the inner blocks nodes, requires initializeFacesPoints. Once this method call the block structure
+	/** @brief Create all the inner blocks nodes, requires initializeFacesPoints. Once this method call the block structure
          * can not be modified anymore. We should check the conditions to allow it in the future.
 	 */
 	void initializeBlocksPoints();
+	/** @brief Create all the edge and block inner nodes. Once this method call the block structure
+         * can not be modified anymore. We should check the conditions to allow it in the future.
+	 */
+	void initializeGridPoints();
 
  private:
-	/** Give the number of subdivision for edge @p AEdge in region @p ARegion
+	/** @brief Give the number of subdivision for edge @p AEdge in region @p ARegion
           *
-          * @param ARegion the region we look into
-          * @param AEdge the edge that must be adjacent to @p ARegion
+          * @param[in] ARegion the region we look into
+          * @param[in] AEdge the edge that must be adjacent to @p ARegion
           * @return the discretisation of @p AEdge
 	 */
 	int getNbDiscretization(const Region& ARegion, const Edge& AEdge) const;
-	/** Check if the discretization of an edge is set the same in each adjacent face.
+	/** @brief Check if the discretization of an edge is set the same in each adjacent face.
          *
 	 */
 	bool checkDiscretizationValidity() const;
-	/** Check if the edge [@p AN1, @p AN2] exists in the mesh. If not, it is created.
+	/** @brief Check if the edge [@p AN1, @p AN2] exists in the mesh. If not, it is created.
          * We use and update the variable m_n2e to do that.
          *
-         * @param AN1 first node
-         * @param AN2 second node
+         * @param[in] AN1 first node
+         * @param[in] AN2 second node
          * @return the id of the edge connecting @p AN1 and @p AN2
 	 */
 	TCellID getEdge(const TCellID AN1, const TCellID AN2);
-	/** Check if the face [@p AN1, @p AN2, @p AN3, @p AN4] exists in the mesh. If not, it is created.
+	/** @brief Check if the face [@p AN1, @p AN2, @p AN3, @p AN4] exists in the mesh. If not, it is created.
          * We use and update the variable m_n2e to do that.
          *
-         * @param AN1 first node
-         * @param AN2 second node
-         * @param AN3 third node
-         * @param AN4 fourth node
+         * @param[in] AN1 first node
+         * @param[in] AN2 second node
+         * @param[in] AN3 third node
+         * @param[in] AN4 fourth node
          * @return the id of the face connecting @p AN1, @p AN2, @p AN3 and @p AN4
 	 */
 	TCellID getFace(const TCellID AN1, const TCellID AN2, const TCellID AN3, const TCellID AN4);
 
-	/** Re-orient the face grid.
+	/** @brief Re-orient the face grid, according to a specific numbering.
          *
-         * @param Af_id face id
-         * @param An0_id first node id
-         * @param An1_id second node id
-         * @param An2_id third node id
-         * @param An3_id fourth node id
-         * @return
+         * @param[in] Af_id face id
+         * @param[in] An0_id first node id
+         * @param[in] An1_id second node id
+         * @param[in] An2_id third node id
+         * @param[in] An3_id fourth node id
+         * @return The face grid of the face, re-oriented in the way that the edge I is
+         * 			@p An0_id @p An1_id and the edge J is @p An0_id @p An3_id.
 	 */
 	Array2D<TCellID> reorientFaceGrid(const TCellID Af_id, const TCellID An0_id, const TCellID An1_id, const TCellID An2_id, const TCellID An3_id);
  private:
