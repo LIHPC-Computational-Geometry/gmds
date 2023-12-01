@@ -226,6 +226,17 @@ class GMDSIg_API Blocking3D : public Mesh
          * @return the id of the face connecting @p AN1, @p AN2, @p AN3 and @p AN4
 	 */
 	TCellID getFace(const TCellID AN1, const TCellID AN2, const TCellID AN3, const TCellID AN4);
+
+	/** Re-orient the face grid.
+         *
+         * @param Af_id face id
+         * @param An0_id first node id
+         * @param An1_id second node id
+         * @param An2_id third node id
+         * @param An3_id fourth node id
+         * @return
+	 */
+	Array2D<TCellID> reorientFaceGrid(const TCellID Af_id, const TCellID An0_id, const TCellID An1_id, const TCellID An2_id, const TCellID An3_id);
  private:
 	/** the embedding variable, which allows us to know where each mesh node is*/
 	Variable<int> *m_embedding_dim;

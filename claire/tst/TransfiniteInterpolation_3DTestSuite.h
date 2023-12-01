@@ -11,8 +11,8 @@ using namespace gmds;
 TEST(TransfiniteInterpolation_3DTest, testUnitHex)
 {
 	int nb_i(5);
-	int nb_j(5);
-	int nb_k(5);
+	int nb_j(7);
+	int nb_k(9);
 	Array3D<math::Point> pnts(nb_i,nb_j,nb_k);
 
 	double di = 1.0/(double(nb_i)-1.0) ;

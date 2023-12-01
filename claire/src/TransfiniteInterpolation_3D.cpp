@@ -38,7 +38,7 @@ bool TransfiniteInterpolation_3D::
 				   + i*di*(1.0-j*dj)*AG(nb_i-1,0,k) + (1.0-i*di)*j*dj*AG(0,nb_j-1,k) ;
 
 				math::Point VW = (1.0-j*dj)*(1.0-k*dk)*AG(i,0,0) + (1.0-j*dj)*k*dk*AG(i,0,nb_k-1)
-					+ j*dj*(1.0-k*dk)*AG(i,nb_k-1,0) + j*dj*k*dk*AG(i,nb_j-1,nb_k-1) ;
+					+ j*dj*(1.0-k*dk)*AG(i,nb_j-1,0) + j*dj*k*dk*AG(i,nb_j-1,nb_k-1) ;
 
 				math::Point UVW = (1.0-i*di)*(1.0-j*dj)*(1.0-k*dk)*AG(0,0,0) + (1.0-i*di)*(1.0-j*dj)*k*dk*AG(0,0,nb_k-1)
 				   + (1.0-i*di)*j*dj*(1.0-k*dk)*AG(0,nb_j-1,0) + i*di*(1.0-j*dj)*k*dk*AG(nb_i-1,0,nb_k-1)
