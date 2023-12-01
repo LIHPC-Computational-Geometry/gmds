@@ -3,7 +3,8 @@
 //
 /*----------------------------------------------------------------------------*/
 #include <gmds/claire/Blocking3D.h>
-//#include <gmds/math/TransfiniteInterpolation.h>
+#include <gmds/claire/Utils.h>
+#include <gmds/math/TransfiniteInterpolation.h>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -233,36 +234,36 @@ int Blocking3D::getNbDiscretization(const Region& ARegion, const Edge &AEdge) co
 	std::vector<TCellID> region_nids = ARegion.getIDs<Node>();
 	std::vector<TCellID> edge_nids = AEdge.getIDs<Node>();
 
-	if ( (edge_nids[0] == region_nids[0] && edge_nids[0] == region_nids[1])
-	    || (edge_nids[0] == region_nids[1] && edge_nids[0] == region_nids[0])
-	    || (edge_nids[0] == region_nids[3] && edge_nids[0] == region_nids[2])
-	    || (edge_nids[0] == region_nids[2] && edge_nids[0] == region_nids[3])
-	    || (edge_nids[0] == region_nids[4] && edge_nids[0] == region_nids[5])
-	    || (edge_nids[0] == region_nids[5] && edge_nids[0] == region_nids[4])
-	    || (edge_nids[0] == region_nids[7] && edge_nids[0] == region_nids[6])
-	    || (edge_nids[0] == region_nids[6] && edge_nids[0] == region_nids[7]))
+	if ( (edge_nids[0] == region_nids[0] && edge_nids[1] == region_nids[1])
+	    || (edge_nids[0] == region_nids[1] && edge_nids[1] == region_nids[0])
+	    || (edge_nids[0] == region_nids[3] && edge_nids[1] == region_nids[2])
+	    || (edge_nids[0] == region_nids[2] && edge_nids[1] == region_nids[3])
+	    || (edge_nids[0] == region_nids[4] && edge_nids[1] == region_nids[5])
+	    || (edge_nids[0] == region_nids[5] && edge_nids[1] == region_nids[4])
+	    || (edge_nids[0] == region_nids[7] && edge_nids[1] == region_nids[6])
+	    || (edge_nids[0] == region_nids[6] && edge_nids[1] == region_nids[7]))
 	{
 		return m_discretization_I->value(ARegion.id());
 	}
-	else if ( (edge_nids[0] == region_nids[0] && edge_nids[0] == region_nids[3])
-	    || (edge_nids[0] == region_nids[3] && edge_nids[0] == region_nids[0])
-	    || (edge_nids[0] == region_nids[1] && edge_nids[0] == region_nids[2])
-	    || (edge_nids[0] == region_nids[2] && edge_nids[0] == region_nids[1])
-	    || (edge_nids[0] == region_nids[4] && edge_nids[0] == region_nids[7])
-	    || (edge_nids[0] == region_nids[7] && edge_nids[0] == region_nids[4])
-	    || (edge_nids[0] == region_nids[5] && edge_nids[0] == region_nids[6])
-	    || (edge_nids[0] == region_nids[6] && edge_nids[0] == region_nids[5]))
+	else if ( (edge_nids[0] == region_nids[0] && edge_nids[1] == region_nids[3])
+	    || (edge_nids[0] == region_nids[3] && edge_nids[1] == region_nids[0])
+	    || (edge_nids[0] == region_nids[1] && edge_nids[1] == region_nids[2])
+	    || (edge_nids[0] == region_nids[2] && edge_nids[1] == region_nids[1])
+	    || (edge_nids[0] == region_nids[4] && edge_nids[1] == region_nids[7])
+	    || (edge_nids[0] == region_nids[7] && edge_nids[1] == region_nids[4])
+	    || (edge_nids[0] == region_nids[5] && edge_nids[1] == region_nids[6])
+	    || (edge_nids[0] == region_nids[6] && edge_nids[1] == region_nids[5]))
 	{
 		return m_discretization_J->value(ARegion.id());
 	}
-	else if ((edge_nids[0] == region_nids[0] && edge_nids[0] == region_nids[4])
-	         || (edge_nids[0] == region_nids[4] && edge_nids[0] == region_nids[0])
-	         || (edge_nids[0] == region_nids[1] && edge_nids[0] == region_nids[5])
-	         || (edge_nids[0] == region_nids[5] && edge_nids[0] == region_nids[1])
-	         || (edge_nids[0] == region_nids[3] && edge_nids[0] == region_nids[7])
-	         || (edge_nids[0] == region_nids[7] && edge_nids[0] == region_nids[3])
-	         || (edge_nids[0] == region_nids[2] && edge_nids[0] == region_nids[6])
-	         || (edge_nids[0] == region_nids[6] && edge_nids[0] == region_nids[2]))
+	else if ((edge_nids[0] == region_nids[0] && edge_nids[1] == region_nids[4])
+	         || (edge_nids[0] == region_nids[4] && edge_nids[1] == region_nids[0])
+	         || (edge_nids[0] == region_nids[1] && edge_nids[1] == region_nids[5])
+	         || (edge_nids[0] == region_nids[5] && edge_nids[1] == region_nids[1])
+	         || (edge_nids[0] == region_nids[3] && edge_nids[1] == region_nids[7])
+	         || (edge_nids[0] == region_nids[7] && edge_nids[1] == region_nids[3])
+	         || (edge_nids[0] == region_nids[2] && edge_nids[1] == region_nids[6])
+	         || (edge_nids[0] == region_nids[6] && edge_nids[1] == region_nids[2]))
 	{
 		return m_discretization_K->value(ARegion.id());
 	}
@@ -292,7 +293,152 @@ bool Blocking3D::checkDiscretizationValidity() const {
 return true;
 }
 /*----------------------------------------------------------------------------*/
+void Blocking3D::initializeEdgesPoints()
+{
+	// first we check that edges are discretiezd similarly by blocks sharing
+	// them
+	checkDiscretizationValidity();
+	// then we mesh edges
+	for (auto e_id : edges()) {
+			Edge ei = get<Edge>(e_id);
+			int nb_subdiv = getNbDiscretization(ei.get<Region>()[0], ei);
+			// We use a discrete linear interpolation along the edge
+			std::vector<Node> ei_end_nodes = ei.get<Node>();
+			Node n0 = ei_end_nodes[0];
+			Node n1 = ei_end_nodes[1];
+			math::DiscretizationScheme1DUniform d(n0.point(), n1.point(), nb_subdiv);
+			auto *edge_disc = new std::vector<TCellID>();
+			edge_disc->push_back(n0.id());
+			for (auto i = 1; i < nb_subdiv - 1; i++) {
+				Node ni = newNode(d(i));
+				m_embedding_dim->set(ni.id(), 1);
+				m_embedding_id->set(ni.id(), e_id);
+				edge_disc->push_back(ni.id());
+			}
+			edge_disc->push_back(n1.id());
+			m_edge_grids->set(e_id, edge_disc);
+	}
+}
+/*----------------------------------------------------------------------------*/
+void Blocking3D::initializeFacesPoints(){
+	for(auto f_id:faces()){
+		   Face f = get<Face>(f_id);
+		   Block bi(f.get<Region>()[0], this);
 
+		   Node n0 = f.get<Node>()[0];
+		   Node n1 = f.get<Node>()[1];
+		   Node n2 = f.get<Node>()[2];
+		   Node n3 = f.get<Node>()[3];
+
+		   TCellID e01_id = math::Utils::CommonEdge(this, n0.id(), n1.id());
+		   TCellID e03_id = math::Utils::CommonEdge(this, n0.id(), n3.id());
+		   TCellID e12_id = math::Utils::CommonEdge(this, n1.id(), n2.id());
+		   TCellID e23_id = math::Utils::CommonEdge(this, n2.id(), n3.id());
+
+		   int nb_I;
+		   int nb_J;
+
+		   if (bi.isEdgeOnI(e01_id))
+		   {
+			   nb_I = bi.getNbDiscretizationI();
+		   }
+		   else if (bi.isEdgeOnJ(e01_id))
+		   {
+			   nb_I = bi.getNbDiscretizationJ();
+		   }
+		   else
+		   {
+			   nb_I = bi.getNbDiscretizationK();
+		   }
+
+		   if (bi.isEdgeOnI(e03_id))
+		   {
+			   nb_J = bi.getNbDiscretizationI();
+		   }
+		   else if (bi.isEdgeOnJ(e03_id))
+		   {
+			   nb_J = bi.getNbDiscretizationJ();
+		   }
+		   else
+		   {
+			   nb_J = bi.getNbDiscretizationK();
+		   }
+
+		   auto* a = new Array2D<TCellID>(nb_I,nb_J);
+		   Array2D<math::Point> pnts(nb_I,nb_J);
+
+		   (*a)(0,0)           =n0.id();
+		   (*a)(nb_I-1,0)      =n1.id();
+		   (*a)(nb_I-1,nb_J-1) =n2.id();
+		   (*a)(0,nb_J-1)      =n3.id();
+
+		   pnts(0,0)           =n0.point();
+		   pnts(nb_I-1,0)      =n1.point();
+		   pnts(nb_I-1,nb_J-1) =n2.point();
+		   pnts(0,nb_J-1)      =n3.point();
+
+		   //Edge e01 = bi.getEdge(0,1);
+		   Edge e01 = get<Edge>(math::Utils::CommonEdge(this, n0.id(), n1.id()));
+		   std::vector<TCellID>* e01_nodes = m_edge_grids->value(e01.id());
+		   if((*e01_nodes)[0]==n1.id()){
+			   //need to reverse
+			   std::reverse(e01_nodes->begin(),e01_nodes->end());
+		   }
+
+		   //Edge e12 = bi.getEdge(1,2);
+		   Edge e12 = get<Edge>(e12_id);
+		   std::vector<TCellID>* e12_nodes = m_edge_grids->value(e12.id());
+		   if((*e12_nodes)[0]==n2.id()){
+			   //need to reverse
+			   std::reverse(e12_nodes->begin(),e12_nodes->end());
+		   }
+
+		   //Edge e32 = bi.getEdge(3,2);
+		   Edge e32 = get<Edge>(e23_id);
+		   std::vector<TCellID>* e32_nodes = m_edge_grids->value(e32.id());
+		   if((*e32_nodes)[0]==n2.id()){
+			   //need to reverse
+			   std::reverse(e32_nodes->begin(),e32_nodes->end());
+		   }
+
+		   //Edge e03 = bi.getEdge(0,3);
+		   Edge e03 = get<Edge>(e03_id);
+		   std::vector<TCellID>* e03_nodes = m_edge_grids->value(e03.id());
+		   if((*e03_nodes)[0]==n3.id()){
+			   //need to reverse
+			   std::reverse(e03_nodes->begin(),e03_nodes->end());
+		   }
+
+		   for(auto i=1; i<e01_nodes->size()-1;i++){
+			   (*a)(i,0) =(*e01_nodes)[i];
+			   pnts(i,0)= get<Node>((*e01_nodes)[i]).point();
+		   }
+		   for(auto i=1; i<e32_nodes->size()-1;i++){
+			   (*a)(i,nb_J-1) =(*e32_nodes)[i];
+			   pnts(i,nb_J-1)= get<Node>((*e32_nodes)[i]).point();
+		   }
+		   for(auto i=1; i<e03_nodes->size()-1;i++){
+			   (*a)(0,i) =(*e03_nodes)[i];
+			   pnts(0,i)= get<Node>((*e03_nodes)[i]).point();
+		   }
+		   for(auto i=1; i<e12_nodes->size()-1;i++){
+			   (*a)(nb_I-1,i) =(*e12_nodes)[i];
+			   pnts(nb_I-1,i)= get<Node>((*e12_nodes)[i]).point();
+		   }
+
+		   math::TransfiniteInterpolation::computeQuad(pnts);
+		   for(auto i=1; i<nb_I-1;i++){
+			   for(auto j=1; j<nb_J-1;j++) {
+				Node nij = newNode(pnts(i,j));
+				(*a)(i,j)=nij.id();
+				m_embedding_dim->set(nij.id(),2);
+				m_embedding_id->set(nij.id(),f_id);
+			   }
+		   }
+		   m_face_grids->set(f_id,a);
+	}
+}
+/*----------------------------------------------------------------------------*/
 
 
 
