@@ -27,8 +27,8 @@ TEST(Blocking3DTestSuite, test_blocking3D_1)
 
 	ASSERT_EQ(b0.id(), b.block(0).id());
 	int nb_I(6);
-	int nb_J(3);
-	int nb_K(11);
+	int nb_J(5);
+	int nb_K(5);
 	b0.setNbDiscretizationI(nb_I);
 	b0.setNbDiscretizationJ(nb_J);
 	b0.setNbDiscretizationK(nb_K);
@@ -53,6 +53,7 @@ TEST(Blocking3DTestSuite, test_blocking3D_1)
 
 	b.initializeEdgesPoints();
 	b.initializeFacesPoints();
+	b.initializeBlocksPoints();
 
 	/*
 

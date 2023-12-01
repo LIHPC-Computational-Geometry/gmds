@@ -5,6 +5,7 @@
 #include <gmds/claire/Blocking3D.h>
 #include <gmds/claire/Utils.h>
 #include <gmds/math/TransfiniteInterpolation.h>
+#include <gmds/claire/TransfiniteInterpolation_3D.h>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -439,7 +440,243 @@ void Blocking3D::initializeFacesPoints(){
 	}
 }
 /*----------------------------------------------------------------------------*/
+void Blocking3D::initializeBlocksPoints(){
+	for(auto r_id:regions()) {
+		   Block bi(r_id, this);
+		   auto nb_I = bi.getNbDiscretizationI();
+		   auto nb_J = bi.getNbDiscretizationJ();
+		   auto nb_K = bi.getNbDiscretizationK();
 
+		   auto *a = new Array3D<TCellID>(nb_I, nb_J, nb_K);
+		   Array3D<math::Point> pnts(nb_I, nb_J, nb_K);
+
+		   Node n0 = bi.getNode(0);
+		   Node n1 = bi.getNode(1);
+		   Node n2 = bi.getNode(2);
+		   Node n3 = bi.getNode(3);
+		   Node n4 = bi.getNode(4);
+		   Node n5 = bi.getNode(5);
+		   Node n6 = bi.getNode(6);
+		   Node n7 = bi.getNode(7);
+
+		   (*a)(0, 0,0) = n0.id();
+		   (*a)(nb_I-1, 0, 0) = n1.id();
+		   (*a)(nb_I-1, nb_J-1, 0) = n2.id();
+		   (*a)(0, nb_J-1, 0) = n3.id();
+			(*a)(0, 0,nb_K-1) = n4.id();
+		   (*a)(nb_I-1, 0, nb_K-1) = n5.id();
+		   (*a)(nb_I-1, nb_J-1, nb_K-1) = n6.id();
+		   (*a)(0, nb_J-1, nb_K-1) = n7.id();
+
+		   pnts(0, 0, 0) = n0.point();
+		   pnts(nb_I-1, 0, 0) = n1.point();
+		   pnts(nb_I-1, nb_J-1, 0) = n2.point();
+		   pnts(0, nb_J-1, 0) = n3.point();
+		   pnts(0, 0, nb_K-1) = n4.point();
+		   pnts(nb_I-1, 0, nb_K-1) = n5.point();
+		   pnts(nb_I-1, nb_J-1, nb_K-1) = n6.point();
+		   pnts(0, nb_J-1, nb_K-1) = n7.point();
+
+		   Face f0123 = bi.getFace(0,1,2,3);
+		   Array2D<TCellID> face_grid_K0 = reorientFaceGrid(f0123.id(), n0.id(),n1.id(),n2.id(),n3.id());
+		   Face f4567 = bi.getFace(4,5,6,7);
+		   Array2D<TCellID> face_grid_Kmax = reorientFaceGrid(f4567.id(), n4.id(),n5.id(),n6.id(),n7.id());
+		   for (auto i=0;i<nb_I;i++)
+		   {
+			   for (auto j=0;j<nb_J;j++)
+			   {
+				(*a)(i,j,0) = face_grid_K0(i,j);
+				pnts(i,j,0) = get<Node>(face_grid_K0(i,j)).point();
+				(*a)(i,j,nb_K-1) = face_grid_Kmax(i,j);
+				pnts(i,j,nb_K-1) = get<Node>(face_grid_Kmax(i,j)).point();
+			   }
+		   }
+
+		   Face f0154 = bi.getFace(0,1,5,4);
+		   Array2D<TCellID> face_grid_J0 = reorientFaceGrid(f0154.id(), n0.id(),n1.id(),n5.id(),n4.id());
+		   Face f3267 = bi.getFace(3,2,6,7);
+		   Array2D<TCellID> face_grid_Jmax = reorientFaceGrid(f3267.id(), n3.id(),n2.id(),n6.id(),n7.id());
+		   for (auto i=0;i<nb_I;i++)
+		   {
+			   for (auto k=0;k<nb_K;k++)
+			   {
+				(*a)(i,0,k) = face_grid_J0(i,k);
+				pnts(i,0,k) = get<Node>(face_grid_J0(i,k)).point();
+				(*a)(i,nb_J-1,k) = face_grid_Jmax(i,k);
+				pnts(i,nb_J-1,k) = get<Node>(face_grid_Jmax(i,k)).point();
+			   }
+		   }
+
+		   Face f0374 = bi.getFace(0,3,7,4);
+		   Array2D<TCellID> face_grid_I0 = reorientFaceGrid(f0374.id(), n0.id(),n3.id(),n7.id(),n4.id());
+		   Face f1265 = bi.getFace(1,2,6,5);
+		   Array2D<TCellID> face_grid_Imax = reorientFaceGrid(f1265.id(), n1.id(),n2.id(),n6.id(),n5.id());
+		   for (auto j=0;j<nb_J;j++)
+		   {
+			   for (auto k=0;k<nb_K;k++)
+			   {
+				(*a)(0,j,k) = face_grid_I0(j,k);
+				pnts(0,j,k) = get<Node>(face_grid_I0(j,k)).point();
+				(*a)(nb_I-1,j,k) = face_grid_Imax(j,k);
+				pnts(nb_I-1,j,k) = get<Node>(face_grid_Imax(j,k)).point();
+			   }
+		   }
+
+		   /*
+		   for (auto i=0;i<nb_I;i++)
+		   {
+				for (auto j=0;j<nb_J;j++)
+			   {
+					for (auto k=0;k<nb_K;k++)
+					{
+						std::cout << "i,j,k: " << i << ", " << j << ", " << k << ", point: " << pnts(i,j,k) << std::endl;
+					}
+				}
+		   }
+		    */
+
+		   TransfiniteInterpolation_3D::computeHex(pnts);
+
+		   for(auto i=1; i<nb_I-1;i++){
+			   for(auto j=1; j<nb_J-1;j++) {
+					for (auto k=1; k<nb_K-1;k++) {
+						Node nijk = newNode(pnts(i, j, k));
+						(*a)(i, j, k) = nijk.id();
+						m_embedding_dim->set(nijk.id(), 3);
+						m_embedding_id->set(nijk.id(), r_id);
+					}
+			   }
+		   }
+		   m_region_grids->set(r_id,a);
+
+	}
+}
+/*----------------------------------------------------------------------------*/
+Array2D<TCellID>
+   Blocking3D::reorientFaceGrid(const TCellID Af_id, const TCellID An0_id, const TCellID An1_id, const TCellID An2_id, const TCellID An3_id)
+{
+	Array2D<TCellID>* f_grid = m_face_grids->value(Af_id);
+
+	Face f = get<Face>(Af_id);
+	std::vector<Node> f_nodes = f.get<Node>() ;
+
+	int nb_I;
+	int nb_J;
+
+	if ( (An0_id == f_nodes[0].id() && An1_id == f_nodes[1].id())
+	    || (An0_id == f_nodes[1].id() && An1_id == f_nodes[0].id())
+	    || (An0_id == f_nodes[2].id() && An1_id == f_nodes[3].id())
+	    || (An0_id == f_nodes[3].id() && An1_id == f_nodes[2].id()))
+	{
+		   nb_I = f_grid->nbLines();
+		   nb_J = f_grid->nbColumns();
+	}
+	else
+	{
+		   nb_I = f_grid->nbColumns();
+		   nb_J = f_grid->nbLines();
+	}
+
+	Array2D<TCellID> reOrient(nb_I, nb_J);
+
+	if (An0_id == f_nodes[0].id())
+	{
+		   if (An1_id == f_nodes[1].id())
+		   {
+			   for (auto i=0;i<nb_I;i++)
+			   {
+					for (auto j=0;j<nb_J;j++)
+					{
+						reOrient(i,j) = (*f_grid)(i,j) ;
+				   }
+			   }
+		   }
+		   else
+		   {
+			   for (auto i=0;i<nb_I;i++)
+			   {
+					for (auto j=0;j<nb_J;j++)
+					{
+						reOrient(i,j) = (*f_grid)(j,i) ;
+				   }
+			   }
+		   }
+	}
+	else if (An0_id == f_nodes[1].id())
+	{
+		   if (An1_id == f_nodes[2].id())
+		   {
+			   for (auto i=0;i<nb_I;i++)
+			   {
+					for (auto j=0;j<nb_J;j++)
+					{
+						reOrient(i,j) = (*f_grid)(nb_J-j,i) ;
+				   }
+			   }
+		   }
+		   else
+		   {
+			   for (auto i=0;i<nb_I;i++)
+			   {
+					for (auto j=0;j<nb_J;j++)
+					{
+						reOrient(i,j) = (*f_grid)(nb_I-i,j) ;
+				   }
+			   }
+		   }
+	}
+	else if (An0_id == f_nodes[2].id())
+	{
+		if (An1_id == f_nodes[3].id())
+		{
+			for (auto i=0;i<nb_I;i++)
+			{
+				for (auto j=0;j<nb_J;j++)
+				{
+					reOrient(i,j) = (*f_grid)(nb_I-i,nb_J-j) ;
+				}
+			}
+		}
+		else
+		{
+			for (auto i=0;i<nb_I;i++)
+			{
+				for (auto j=0;j<nb_J;j++)
+				{
+					reOrient(i,j) = (*f_grid)(nb_J-j,nb_I-i) ;
+				}
+			}
+		}
+
+	}
+	else if (An0_id == f_nodes[3].id())
+	{
+		if (An1_id == f_nodes[0].id())
+		{
+			for (auto i=0;i<nb_I;i++)
+			{
+				for (auto j=0;j<nb_J;j++)
+				{
+					reOrient(i,j) = (*f_grid)(j,nb_I-i) ;
+				}
+			}
+		}
+		else
+		{
+			for (auto i=0;i<nb_I;i++)
+			{
+				for (auto j=0;j<nb_J;j++)
+				{
+					reOrient(i,j) = (*f_grid)(i,nb_J-j) ;
+				}
+			}
+		}
+
+	}
+
+	return reOrient;
+
+}
 
 
 /*============================================================================*/
