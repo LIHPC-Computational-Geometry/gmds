@@ -123,7 +123,7 @@ class GMDSIg_API Blocking3D : public Mesh
 		/** @brief private constructor, only a Blocking2D instance can
              *         construct such an object.
 		 */
-		Block(const Region&   ARegion  , Blocking3D* ASupport);
+		Block(const Region&   ARegion, Blocking3D* ASupport);
 		Block(const TCellID ARegionID, Blocking3D* ASupport);
 
 		/** Face at the block level. We keep it instead of the id because
@@ -183,6 +183,18 @@ class GMDSIg_API Blocking3D : public Mesh
          * @return a collection of block handlers
 	 */
 	std::vector<Block> allBlocks();
+	/** Create all the edge nodes. Once this method call the block structure
+         * can not be modified anymore. We should check the conditions to allow it in the future.
+	 */
+	void initializeEdgesPoints();
+	/** Create all the inner faces nodes, requires initializeEdgesPoints. Once this method call the block structure
+         * can not be modified anymore. We should check the conditions to allow it in the future.
+	 */
+	void initializeFacesPoints();
+	/** Create all the inner blocks nodes, requires initializeFacesPoints. Once this method call the block structure
+         * can not be modified anymore. We should check the conditions to allow it in the future.
+	 */
+	void initializeBlocksPoints();
 
  private:
 	/** Give the number of subdivision for edge @p AEdge in region @p ARegion
