@@ -603,7 +603,7 @@ Array2D<TCellID>
 			   {
 					for (auto j=0;j<nb_J;j++)
 					{
-						reOrient(i,j) = (*f_grid)(nb_J-j,i) ;
+						reOrient(i,j) = (*f_grid)((nb_J-1)-j,i) ;
 				   }
 			   }
 		   }
@@ -613,7 +613,7 @@ Array2D<TCellID>
 			   {
 					for (auto j=0;j<nb_J;j++)
 					{
-						reOrient(i,j) = (*f_grid)(nb_I-i,j) ;
+						reOrient(i,j) = (*f_grid)((nb_I-1)-i,j) ;
 				   }
 			   }
 		   }
@@ -626,7 +626,7 @@ Array2D<TCellID>
 			{
 				for (auto j=0;j<nb_J;j++)
 				{
-					reOrient(i,j) = (*f_grid)(nb_I-i,nb_J-j) ;
+					reOrient(i,j) = (*f_grid)((nb_I-1)-i,(nb_J-1)-j) ;
 				}
 			}
 		}
@@ -636,7 +636,7 @@ Array2D<TCellID>
 			{
 				for (auto j=0;j<nb_J;j++)
 				{
-					reOrient(i,j) = (*f_grid)(nb_J-j,nb_I-i) ;
+					reOrient(i,j) = (*f_grid)((nb_J-1)-j,(nb_I-1)-i) ;
 				}
 			}
 		}
@@ -650,7 +650,7 @@ Array2D<TCellID>
 			{
 				for (auto j=0;j<nb_J;j++)
 				{
-					reOrient(i,j) = (*f_grid)(j,nb_I-i) ;
+					reOrient(i,j) = (*f_grid)(j,(nb_I-1)-i) ;
 				}
 			}
 		}
@@ -660,7 +660,7 @@ Array2D<TCellID>
 			{
 				for (auto j=0;j<nb_J;j++)
 				{
-					reOrient(i,j) = (*f_grid)(i,nb_J-j) ;
+					reOrient(i,j) = (*f_grid)(i,(nb_J-1)-j) ;
 				}
 			}
 		}

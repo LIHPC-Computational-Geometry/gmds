@@ -277,6 +277,70 @@ void Utils::BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m, TInt mark
 
 }
 /*------------------------------------------------------------------------*/
+void
+Utils::BuildMesh3DFromBlocking3D(Blocking3D* Ablocking, Mesh* Am)
+{
+	std::map<TCellID, TCellID> map_new_node_ids;
+	Variable<int>* var_couche = Ablocking->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche");
+	Variable<int>* var_couche_mesh = Am->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+
+	// Create all the nodes in the mesh m
+	for (auto n_id:Ablocking->nodes())
+	{
+		Node n_blocking = Ablocking->get<Node>(n_id);
+		Node n_mesh = Am->newNode(n_blocking.point());
+		map_new_node_ids[n_blocking.id()] = n_mesh.id();
+		var_couche_mesh->set(n_mesh.id(), var_couche->value(n_id));
+	}
+
+	// Create all the faces in the mesh m
+	for (auto b:Ablocking->allBlocks())
+	{
+		int Nx = b.getNbDiscretizationI();
+		int Ny = b.getNbDiscretizationJ();
+		int Nz = b.getNbDiscretizationK();
+		for (int i=0; i < Nx-1; i++)
+		{
+			for (int j=0; j < Ny-1; j++)
+			{
+				for (int k=0; k<Nz-1; k++)
+				{
+					Node n0_inBlocking = b(i, j, k);
+					Node n1_inBlocking = b(i+1, j, k);
+					Node n2_inBlocking = b(i+1, j+1,k);
+					Node n3_inBlocking = b(i, j+1,k);
+					Node n4_inBlocking = b(i, j, k+1);
+					Node n5_inBlocking = b(i+1, j, k+1);
+					Node n6_inBlocking = b(i+1, j+1,k+1);
+					Node n7_inBlocking = b(i, j+1,k+1);
+
+					Node n0_inMesh = Am->get<Node>(map_new_node_ids[n0_inBlocking.id()]);
+					Node n1_inMesh = Am->get<Node>(map_new_node_ids[n1_inBlocking.id()]);
+					Node n2_inMesh = Am->get<Node>(map_new_node_ids[n2_inBlocking.id()]);
+					Node n3_inMesh = Am->get<Node>(map_new_node_ids[n3_inBlocking.id()]);
+					Node n4_inMesh = Am->get<Node>(map_new_node_ids[n4_inBlocking.id()]);
+					Node n5_inMesh = Am->get<Node>(map_new_node_ids[n5_inBlocking.id()]);
+					Node n6_inMesh = Am->get<Node>(map_new_node_ids[n6_inBlocking.id()]);
+					Node n7_inMesh = Am->get<Node>(map_new_node_ids[n7_inBlocking.id()]);
+
+					Region r = Am->newHex(n0_inMesh, n1_inMesh, n2_inMesh, n3_inMesh,
+					                      n4_inMesh, n5_inMesh, n6_inMesh, n7_inMesh);
+					// Connectivities N->R (x8)
+					n0_inMesh.add<Region>(r.id());     // N->R
+					n1_inMesh.add<Region>(r.id());     // N->R
+					n2_inMesh.add<Region>(r.id());     // N->R
+					n3_inMesh.add<Region>(r.id());     // N->R
+					n4_inMesh.add<Region>(r.id());     // N->R
+					n5_inMesh.add<Region>(r.id());     // N->R
+					n6_inMesh.add<Region>(r.id());     // N->R
+					n7_inMesh.add<Region>(r.id());     // N->R
+				}
+			}
+		}
+	}
+
+}
+/*------------------------------------------------------------------------*/
 math::Point Utils::WeightedPointOnBranch(const math::Point& A, const math::Point& B, const math::Point& C, double alpha) {
 	math::Point P_Weighted;
 	math::Vector3d Vec_AB = B-A ;

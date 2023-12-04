@@ -8,6 +8,7 @@
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_CLAIRE_export.h"
 #include "gmds/ig/Mesh.h"
+#include <gmds/claire/Blocking3D.h>
 #include <gmds/claire/Params.h>
 #include <string>
 #include <map>
@@ -27,11 +28,11 @@ class LIB_GMDS_CLAIRE_API IntervalAssignment_3D
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Constructor.
-         *  @param[in] ABlocking2D the blocking 2D
+         *  @param[in] ABlocking3D the blocking 3D
          *  @param[in] Aparams_aero parameters for aero algorithm
          *
 	 */
-	IntervalAssignment_3D(Mesh* AMesh, ParamsAero& Aparams_aero, Variable<int>* AedgesDiscretization);
+	IntervalAssignment_3D(Blocking3D* ABlocking3D, ParamsAero& Aparams_aero, Variable<int>* AedgesDiscretization);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -41,7 +42,7 @@ class LIB_GMDS_CLAIRE_API IntervalAssignment_3D
 
  private:
 	/*-------------------------------------------------------------------*/
-	/** @brief Compute the map of chords of the blocking.
+	/** @brief Compute the map of chords of the 3D blocking.
 	 	* \param[in] e_id starting edge id
 		*
 		* \return a map with (int, std::vector<TCellID>) where the int is the id
@@ -49,7 +50,7 @@ class LIB_GMDS_CLAIRE_API IntervalAssignment_3D
 	 */
 	std::vector<TCellID> ComputeSingleSheet(TCellID e_id);
 	/*-------------------------------------------------------------------*/
-	/** @brief Compute the map of sheets of the mesh.
+	/** @brief Compute the map of sheets of the 3D blocking.
 	 	* \param[in]
 		*
 		* \return  a map with (int, std::vector<TCellID>) where the int is the id
@@ -75,8 +76,7 @@ class LIB_GMDS_CLAIRE_API IntervalAssignment_3D
 	/*-------------------------------------------------------------------*/
 
  private:
-	/** 3D Mesh */
-	Mesh *m_mesh;
+	Blocking3D *m_Blocking3D;
 	/** Params pour l'aéro */
 	ParamsAero m_params_aero;
 	/** Variable on the edges, filled with the edge discretization */

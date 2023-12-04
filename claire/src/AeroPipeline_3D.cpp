@@ -182,18 +182,8 @@ AeroPipeline_3D::execute(){
 	}
 
 
-	// Interval Assignment
-	std::cout << "-> Interval Assignment" << std::endl;
-	t_start = clock();
-	IntervalAssignment_3D intAss(m_meshHex,
-	                             m_params,
-	                                m_meshHex->newVariable<int,GMDS_EDGE>("GMDS_EdgeDiscretization"));
-	intAss.execute();
-	t_end = clock();
-	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
-	std::cout << " " << std::endl;
-
 	// Convert to CurvedBlocking structure
+	/*
 	gmds::blocking::CurvedBlocking blocking(m_manager) ;
 	blocking.init_from_mesh(*m_meshHex);
 
@@ -205,9 +195,27 @@ AeroPipeline_3D::execute(){
 	writer.setCellOptions(gmds::N | gmds::R);
 	writer.setDataOptions(gmds::N | gmds::R);
 	writer.write("TEST_CURVED.vtk");
+	 */
+
+	initBlocking3DfromMesh();
+
+	// Interval Assignment
+	std::cout << "-> Interval Assignment" << std::endl;
+	t_start = clock();
+	IntervalAssignment_3D intAss(&m_Blocking3D,
+	                             m_params,
+	                             m_Blocking3D.newVariable<int,GMDS_EDGE>("GMDS_EdgeDiscretization"));
+	intAss.execute();
+	t_end = clock();
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
+
+	m_Blocking3D.initializeGridPoints();
 
 
 	// Stat of the blocking
+	std::cout << "=============================================" << std::endl;
+	std::cout << "			BLOCKING STATISTICS:" << std::endl;
 	std::cout << "=============================================" << std::endl;
 	std::cout << "|| Number of Blocks: " << m_meshHex->getNbRegions() << std::endl;
 	std::cout << "|| Number of Block Faces: " << m_meshHex->getNbFaces() << std::endl;
@@ -257,17 +265,28 @@ AeroPipeline_3D::EcritureMaillage(){
 	vtkWriter.setDataOptions(gmds::N|gmds::R);
 	vtkWriter.write(m_params.output_file);
 
-	gmds::VTKWriter vtkWriter_edges(&ioService);
+	// Write the edges of the blocking to vizualize the edge
+	// discretization
+	gmds::IGMeshIOService ioService_edges(&m_Blocking3D);
+	gmds::VTKWriter vtkWriter_edges(&ioService_edges);
 	vtkWriter_edges.setCellOptions(gmds::N|gmds::E);
 	vtkWriter_edges.setDataOptions(gmds::N|gmds::E);
 	vtkWriter_edges.write("EdgesDiscretization.vtk");
 
-	// Ecriture du maillage initial (tetra)
+	// Write the initial tet mesh (with fields computed on it)
 	ioService = IGMeshIOService(m_meshTet);
 	gmds::VTKWriter vtkWriter2(&ioService);
-	vtkWriter2.setCellOptions(gmds::N|gmds::F);
-	vtkWriter2.setDataOptions(gmds::N|gmds::F);
+	vtkWriter2.setCellOptions(gmds::N|gmds::R);
+	vtkWriter2.setDataOptions(gmds::N|gmds::R);
 	vtkWriter2.write("AeroPipeline3D_Tetra.vtk");
+
+	// Write the Blocking
+	gmds::IGMeshIOService ioService_blocking(&m_Blocking3D);
+	gmds::VTKWriter vtkWriter_blocking(&ioService_blocking);
+	vtkWriter_blocking.setCellOptions(gmds::N|gmds::R);
+	vtkWriter_blocking.setDataOptions(gmds::N|gmds::R);
+	vtkWriter_blocking.write("AeroPipeline3D_Blocking.vtk");
+
 
 	// TEST FOR MFEM
 	/*
@@ -385,6 +404,15 @@ AeroPipeline_3D::EcritureMaillage(){
 		MFEMMeshWriter mfemwriter = MFEMMeshWriter(m_meshHex, "AeroPipeline3D_Blocking_toFit");
 		mfemwriter.execute();
 	}
+
+	// Write the Blocking3D as a mesh
+	m_meshHex->clear();
+	math::Utils::BuildMesh3DFromBlocking3D(&m_Blocking3D, m_meshHex);
+	gmds::IGMeshIOService ioService_mesh3D(m_meshHex);
+	gmds::VTKWriter vtkWriter_mesh3D(&ioService_mesh3D);
+	vtkWriter_mesh3D.setCellOptions(gmds::N|gmds::R);
+	vtkWriter_mesh3D.setDataOptions(gmds::N|gmds::R);
+	vtkWriter_mesh3D.write("AeroPipeline3D_HexMesh.vtk");
 
 }
 /*------------------------------------------------------------------------*/
@@ -1306,6 +1334,79 @@ AeroPipeline_3D::BlockingGeometricClassification()
 			m_linker_HG->linkFaceToSurface(f_id, surf_ext->id());
 		}
 	}
+
+}
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_3D::initBlocking3DfromMesh()
+{
+	Variable<int>* var_couche_blocking = m_Blocking3D.newVariable<int, GMDS_NODE>("GMDS_Couche");
+	Variable<int>* var_couche_ctrlpts = m_CtrlPts.newVariable<int, GMDS_NODE>("GMDS_Couche");
+	std::map<TCellID,TCellID> map_new_nodes_IDS_blocking;
+	std::map<TCellID,TCellID> map_new_nodes_IDS_ctrlpts;
+
+	// Copy the block corners
+	for (auto n_id:m_meshHex->nodes())
+	{
+		Node n = m_meshHex->get<Node>(n_id);
+		Node n_blocking = m_Blocking3D.newBlockCorner(n.point());
+		Node n_ctrlpts = m_CtrlPts.newBlockCorner(n.point());
+
+		map_new_nodes_IDS_blocking[n.id()] = n_blocking.id() ;
+		map_new_nodes_IDS_ctrlpts[n.id()] = n_ctrlpts.id() ;
+
+		var_couche_blocking->set(n_blocking.id(), m_couche_id->value(n_id));
+		var_couche_ctrlpts->set(n_ctrlpts.id(), m_couche_id->value(n_id));
+	}
+
+	// Create the Blocks from the Block Corners
+	for (auto r_id:m_meshHex->regions())
+	{
+		Region r = m_meshHex->get<Region>(r_id);
+		std::vector<Node> r_nodes = r.get<Node>();
+		Node n0 = m_meshHex->get<Node>(map_new_nodes_IDS_blocking[r_nodes[0].id()]);
+		Node n1 = m_meshHex->get<Node>(map_new_nodes_IDS_blocking[r_nodes[1].id()]);
+		Node n2 = m_meshHex->get<Node>(map_new_nodes_IDS_blocking[r_nodes[2].id()]);
+		Node n3 = m_meshHex->get<Node>(map_new_nodes_IDS_blocking[r_nodes[3].id()]);
+		Node n4 = m_meshHex->get<Node>(map_new_nodes_IDS_blocking[r_nodes[4].id()]);
+		Node n5 = m_meshHex->get<Node>(map_new_nodes_IDS_blocking[r_nodes[5].id()]);
+		Node n6 = m_meshHex->get<Node>(map_new_nodes_IDS_blocking[r_nodes[6].id()]);
+		Node n7 = m_meshHex->get<Node>(map_new_nodes_IDS_blocking[r_nodes[7].id()]);
+		Blocking3D::Block b_blocking = m_Blocking3D.newBlock(n0, n1, n2, n3, n4, n5, n6, n7);
+
+		n0 = m_meshHex->get<Node>(map_new_nodes_IDS_ctrlpts[r_nodes[0].id()]);
+		n1 = m_meshHex->get<Node>(map_new_nodes_IDS_ctrlpts[r_nodes[1].id()]);
+		n2 = m_meshHex->get<Node>(map_new_nodes_IDS_ctrlpts[r_nodes[2].id()]);
+		n3 = m_meshHex->get<Node>(map_new_nodes_IDS_ctrlpts[r_nodes[3].id()]);
+		n4 = m_meshHex->get<Node>(map_new_nodes_IDS_ctrlpts[r_nodes[4].id()]);
+		n5 = m_meshHex->get<Node>(map_new_nodes_IDS_ctrlpts[r_nodes[5].id()]);
+		n6 = m_meshHex->get<Node>(map_new_nodes_IDS_ctrlpts[r_nodes[6].id()]);
+		n7 = m_meshHex->get<Node>(map_new_nodes_IDS_ctrlpts[r_nodes[7].id()]);
+		Blocking3D::Block b_ctrlpts = m_CtrlPts.newBlock(n0, n1, n2, n3, n4, n5, n6, n7);
+
+	}
+
+	// Init the discretization of each Block
+	/*
+	for (auto bloc:m_mesh.allBlocks())
+	{
+		bloc.setNbDiscretizationI(10);
+		bloc.setNbDiscretizationJ(10);
+		bloc.setNbDiscretizationK(10);
+	}
+	m_mesh.initializeGridPoints();
+	*/
+
+	// Init the control points of each Block
+	/*
+	for (auto bloc:m_CtrlPts.allBlocks())
+	{
+		bloc.setNbDiscretizationI(4);
+		bloc.setNbDiscretizationJ(4);
+		bloc.setNbDiscretizationK(4);
+	}
+	m_CtrlPts.initializeGridPoints();
+	 */
 
 }
 /*------------------------------------------------------------------------*/

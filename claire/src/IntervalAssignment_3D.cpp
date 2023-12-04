@@ -9,8 +9,8 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-IntervalAssignment_3D::IntervalAssignment_3D(Mesh* AMesh, ParamsAero& Aparams_aero, Variable<int>* AedgesDiscretization) {
-	m_mesh = AMesh;
+IntervalAssignment_3D::IntervalAssignment_3D(Blocking3D* ABlocking3D, ParamsAero& Aparams_aero, Variable<int>* AedgesDiscretization) {
+	m_Blocking3D = ABlocking3D;
 	m_params_aero = Aparams_aero;
 	m_edgesDiscretization = AedgesDiscretization;
 }
@@ -32,6 +32,17 @@ IntervalAssignment_3D::execute()
 		}
 	}
 
+	// Set the discretization on each edge of each block
+	for (auto bloc: m_Blocking3D->allBlocks())
+	{
+		Edge e_i = bloc.getEdgeI();
+		Edge e_j = bloc.getEdgeJ();
+		Edge e_k = bloc.getEdgeK();
+		bloc.setNbDiscretizationI(m_edgesDiscretization->value(e_i.id())+1);
+		bloc.setNbDiscretizationJ(m_edgesDiscretization->value(e_j.id())+1);
+		bloc.setNbDiscretizationK(m_edgesDiscretization->value(e_k.id())+1);
+	}
+
 	return IntervalAssignment_3D::SUCCESS;
 }
 /*------------------------------------------------------------------------*/
@@ -40,7 +51,7 @@ IntervalAssignment_3D::ComputeSingleSheet(TCellID e_id)
 {
 	std::vector<TCellID> sheet;
 
-	TInt mark_isTreated = m_mesh->newMark<Edge>();
+	TInt mark_isTreated = m_Blocking3D->newMark<Edge>();
 
 	// Propagation à tous les noeuds connexes qui sont sur le bord
 	std::vector<TCellID> next_edges;
@@ -53,15 +64,15 @@ IntervalAssignment_3D::ComputeSingleSheet(TCellID e_id)
 		next_edges.pop_back();
 		sheet.push_back(current_e_id);
 
-		Edge current_e = m_mesh->get<Edge>(current_e_id);
-		m_mesh->mark(current_e, mark_isTreated);	// Mark the current edge as treated
+		Edge current_e = m_Blocking3D->get<Edge>(current_e_id);
+		m_Blocking3D->mark(current_e, mark_isTreated);	// Mark the current edge as treated
 
 		// Get the opposite edges of the edge current_e
 		std::vector<Face> current_e_faces = current_e.get<Face>();
 		for (auto const &f:current_e_faces)
 		{
-			Edge e_opp = math::Utils::oppositeEdgeInFace(m_mesh, current_e_id, f.id());
-			if (!m_mesh->isMarked(e_opp, mark_isTreated))
+			Edge e_opp = math::Utils::oppositeEdgeInFace(m_Blocking3D, current_e_id, f.id());
+			if (!m_Blocking3D->isMarked(e_opp, mark_isTreated))
 			{
 				next_edges.push_back(e_opp.id());
 			}
@@ -69,8 +80,8 @@ IntervalAssignment_3D::ComputeSingleSheet(TCellID e_id)
 
 	}
 
-	m_mesh->unmarkAll<Edge>(mark_isTreated);
-	m_mesh->freeMark<Edge>(mark_isTreated);
+	m_Blocking3D->unmarkAll<Edge>(mark_isTreated);
+	m_Blocking3D->freeMark<Edge>(mark_isTreated);
 
 	return sheet;
 }
@@ -80,18 +91,18 @@ IntervalAssignment_3D::ComputeSheets(){
 
 	std::map<int, std::vector<TCellID>> map_chords;
 
-	TInt mark_isTreated = m_mesh->newMark<Edge>();
+	TInt mark_isTreated = m_Blocking3D->newMark<Edge>();
 	int color_sheet(0);
 
-	for (auto e_id:m_mesh->edges()) {
+	for (auto e_id: m_Blocking3D->edges()) {
 		// If an edge is marked not treated
-		if (!m_mesh->isMarked<Edge>(e_id, mark_isTreated))
+		if (!m_Blocking3D->isMarked<Edge>(e_id, mark_isTreated))
 		{
 			std::vector<TCellID> sheet_edges_ids = ComputeSingleSheet(e_id);
 			for (auto sheet_edge_id:sheet_edges_ids)
 			{
-				Edge sheet_edge = m_mesh->get<Edge>(sheet_edge_id);
-				m_mesh->mark(sheet_edge, mark_isTreated);
+				Edge sheet_edge = m_Blocking3D->get<Edge>(sheet_edge_id);
+				m_Blocking3D->mark(sheet_edge, mark_isTreated);
 			}
 
 			map_chords[color_sheet] = sheet_edges_ids;
@@ -100,8 +111,8 @@ IntervalAssignment_3D::ComputeSheets(){
 		}
 	}
 
-	m_mesh->unmarkAll<Edge>(mark_isTreated);
-	m_mesh->freeMark<Edge>(mark_isTreated);
+	m_Blocking3D->unmarkAll<Edge>(mark_isTreated);
+	m_Blocking3D->freeMark<Edge>(mark_isTreated);
 
 	return map_chords;
 
@@ -110,8 +121,8 @@ IntervalAssignment_3D::ComputeSheets(){
 void
 IntervalAssignment_3D::EdgeConstraint(TCellID e_id, int &N_ideal, bool &hardConstraint)
 {
-	Edge e = m_mesh->get<Edge>(e_id) ;
-	Variable<int>* var_layer_id = m_mesh->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	Edge e = m_Blocking3D->get<Edge>(e_id) ;
+	Variable<int>* var_layer_id = m_Blocking3D->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 
 	// Default parameters
 	hardConstraint = false;
