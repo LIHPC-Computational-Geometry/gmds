@@ -10,6 +10,7 @@
 #include "LIB_GMDS_CLAIRE_export.h"
 #include "gmds/ig/Mesh.h"
 #include "gmds/ig/Blocking2D.h"
+#include <gmds/claire/Blocking3D.h>
 #include <gmds/claire/FastLocalize.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
@@ -102,6 +103,14 @@ class LIB_GMDS_CLAIRE_API Utils {
 		* \return  the mesh
 	 */
 	static void BuildMesh2DFromBlocking2D(Blocking2D* blocking2D, Mesh* m, TInt mark_block_nodes, TInt mark_first_layer_nodes, TInt mark_farfield_nodes);
+	/*----------------------------------------------------------------------------*/
+	/** @brief Build a mesh 3D from a Blocking3D.
+	 	*
+		* \param[in] Ablocking the blocking
+		*
+		* \return the mesh
+	 */
+	static void BuildMesh3DFromBlocking3D(Blocking3D* Ablocking, Mesh* Am);
 	/*----------------------------------------------------------------------------*/
 	/** @brief Return the point at position alpha of the branch. alpha = 0.5 returns
 	 * the mid point on the branch.

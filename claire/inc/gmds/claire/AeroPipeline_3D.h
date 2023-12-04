@@ -9,6 +9,7 @@
 #include "LIB_GMDS_CLAIRE_export.h"
 #include <gmds/claire/AbstractAeroPipeline.h>
 #include <gmds/claire/AeroBoundaries_3D.h>
+#include <gmds/claire/Blocking3D.h>
 /*----------------------------------------------------------------------------*/
 namespace  gmds {
 /*----------------------------------------------------------------------------*/
@@ -61,11 +62,19 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_3D : public AbstractAeroPipeline {
 	 */
 	void BlockingGeometricClassification();
 	/*------------------------------------------------------------------------*/
+	/** @brief Init the Blocking3D and the Control Points structure from the
+	 * hex mesh built using the AeroPipeline.
+	 */
+	void initBlocking3DfromMesh();
+	/*----------------------------------------------------------------------------*/
 
  protected:
 	/** Données des bords */
 	AeroBoundaries_3D* m_Bnd ;
-
+	/** blocking 3D */
+	Blocking3D m_Blocking3D;
+	/** control points of the 3D blocking */
+	Blocking3D m_CtrlPts;
 
 };
 /*----------------------------------------------------------------------------*/
