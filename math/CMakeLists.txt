@@ -67,7 +67,7 @@ set(GMDS_SRC
         src/VectorDyn.cpp
         src/Orientation.cpp
         src/Vector.cpp
-        src/TransfiniteInterpolation.cpp inc/gmds/math/BezierSurface.h src/BezierSurface.cpp)
+        src/TransfiniteInterpolation.cpp inc/gmds/math/BezierSurface.h src/BezierSurface.cpp inc/gmds/math/BezierHex.h src/BezierHex.cpp)
 #==============================================================================
 find_package(Eigen3 3.3 REQUIRED)
 #==============================================================================

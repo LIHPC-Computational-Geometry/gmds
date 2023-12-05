@@ -17,7 +17,7 @@
 #include <gmds/io/VTKWriter.h>
 #include <gmds/io/VTKReader.h>
 #include <gmds/smoothy/LaplacianSmoother.h>
-#include <gmds/blocking/CurvedBlocking.h>
+//#include <gmds/blocking/CurvedBlocking.h>
 #include <iostream>
 #include <chrono>
 /*------------------------------------------------------------------------*/
@@ -25,7 +25,8 @@ using namespace gmds;
 /*------------------------------------------------------------------------*/
 
 AeroPipeline_3D::AeroPipeline_3D(std::string Aparams, std::string &Aworking_dir) :
-	AbstractAeroPipeline(Aparams, Aworking_dir)
+	AbstractAeroPipeline(Aparams, Aworking_dir),
+  m_linker_BG(new cad::GeomMeshLinker())
 {
 	m_meshTet = new Mesh(gmds::MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
 	                                  F2E | E2F | R2E | E2R | N2R | N2F | N2E));
@@ -126,14 +127,14 @@ AeroPipeline_3D::execute(){
 				std::vector<Edge> n_edges = n.get<Edge>();
 				//math::Point p(0.0, 0.0, 0.0);
 				math::Point p(n.point());
-				for (auto e:n_edges)
+				for (auto const& e:n_edges)
 				{
 					Node n_opp = e.getOppositeNode(n_id);
 					p = p + n_opp.point();
 				}
-				p.setX(p.X()/(n_edges.size()+1));
-				p.setY(p.Y()/(n_edges.size()+1));
-				p.setZ(p.Z()/(n_edges.size()+1));
+				p.setX(p.X()/(double(n_edges.size())+1));
+				p.setY(p.Y()/(double(n_edges.size())+1));
+				p.setZ(p.Z()/(double(n_edges.size())+1));
 				new_pos[n_id] = theta*p+(1.0-theta)*n.point();
 			}
 		}
@@ -148,7 +149,7 @@ AeroPipeline_3D::execute(){
 				std::vector<Edge> n_edges = n.get<Edge>();
 				math::Point p(0.0, 0.0, 0.0);
 				int nbr_adj(0);
-				for (auto e:n_edges)
+				for (auto const& e:n_edges)
 				{
 					Node n_opp = e.getOppositeNode(n_id);
 					if (m_couche_id->value(n_opp.id()) == m_params.nbr_couches)
@@ -197,20 +198,14 @@ AeroPipeline_3D::execute(){
 	writer.write("TEST_CURVED.vtk");
 	 */
 
-	initBlocking3DfromMesh();
-
-	// Interval Assignment
-	std::cout << "-> Interval Assignment" << std::endl;
+	// Init the Blocking3D from the hex mesh
+	std::cout << "-> Init the Blocking3D structure from the Hex mesh" << std::endl;
 	t_start = clock();
-	IntervalAssignment_3D intAss(&m_Blocking3D,
-	                             m_params,
-	                             m_Blocking3D.newVariable<int,GMDS_EDGE>("GMDS_EdgeDiscretization"));
-	intAss.execute();
+	initBlocking3DfromMesh();
+	updateLayerValues();
 	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
-
-	m_Blocking3D.initializeGridPoints();
 
 
 	// Stat of the blocking
@@ -271,7 +266,7 @@ AeroPipeline_3D::EcritureMaillage(){
 	gmds::VTKWriter vtkWriter_edges(&ioService_edges);
 	vtkWriter_edges.setCellOptions(gmds::N|gmds::E);
 	vtkWriter_edges.setDataOptions(gmds::N|gmds::E);
-	vtkWriter_edges.write("EdgesDiscretization.vtk");
+	vtkWriter_edges.write("AeroPipeline3D_EdgesDiscretization.vtk");
 
 	// Write the initial tet mesh (with fields computed on it)
 	ioService = IGMeshIOService(m_meshTet);
@@ -413,6 +408,16 @@ AeroPipeline_3D::EcritureMaillage(){
 	vtkWriter_mesh3D.setCellOptions(gmds::N|gmds::R);
 	vtkWriter_mesh3D.setDataOptions(gmds::N|gmds::R);
 	vtkWriter_mesh3D.write("AeroPipeline3D_HexMesh.vtk");
+
+	// Stat of the blocking
+	std::cout << "=============================================" << std::endl;
+	std::cout << "	FINAL HEX MESH STATISTICS:" << std::endl;
+	std::cout << "=============================================" << std::endl;
+	std::cout << "|| Number of Hex: " << m_meshHex->getNbRegions() << std::endl;
+	//std::cout << "|| Number of Block Faces: " << m_meshHex->getNbFaces() << std::endl;
+	//std::cout << "|| Number of Block Edges: " << m_meshHex->getNbEdges() << std::endl;
+	std::cout << "|| Number of Nodes: " << m_meshHex->getNbNodes() << std::endl;
+	std::cout << "=============================================" << std::endl;
 
 }
 /*------------------------------------------------------------------------*/
@@ -1181,9 +1186,27 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		}
 		else
 		{
+			std::vector<cad::GeomSurface*> surfs = m_manager->getSurfaces();
+			Face f = m_meshHex->get<Face>(f_id);
+			math::Point p = f.center() ;
+			surfs[0]->project(p);
+			double dist = (f.center()-p).norm();
+			geom_id = surfs[0]->id();
+			for (int i=1;i<surfs.size();i++)
+			{
+				p = f.center();
+				surfs[i]->project(p);
+				if ((f.center()-p).norm() < dist)
+				{
+					dist = (f.center()-p).norm();
+					geom_id = surfs[i]->id();
+				}
+			}
+			/*
 			cad::GeomCurve* curve_0 = m_manager->getCurve(geom_id_e0);
 			cad::GeomCurve* curve_1 = m_manager->getCurve(geom_id_e1);
 			geom_id = m_manager->getCommonSurface(curve_0, curve_1);
+			 */
 		}
 		// Link the face to the surface
 		m_linker_HG->linkFaceToSurface(f_id, geom_id);
@@ -1340,11 +1363,20 @@ AeroPipeline_3D::BlockingGeometricClassification()
 void
 AeroPipeline_3D::initBlocking3DfromMesh()
 {
+	std::cout << "-> init Blocking3D structure from the mesh..." << std::endl;
+
+	m_linker_BG->setGeometry(m_manager);
+	m_linker_BG->setMesh(&m_Blocking3D);
+
 	Variable<int>* var_couche_blocking = m_Blocking3D.newVariable<int, GMDS_NODE>("GMDS_Couche");
 	Variable<int>* var_couche_ctrlpts = m_CtrlPts.newVariable<int, GMDS_NODE>("GMDS_Couche");
 	std::map<TCellID,TCellID> map_new_nodes_IDS_blocking;
 	std::map<TCellID,TCellID> map_new_nodes_IDS_ctrlpts;
 
+	//=========================================
+	// Create the Block Corners and Blocks in
+	// m_Blocking3D
+	//=========================================
 	// Copy the block corners
 	for (auto n_id:m_meshHex->nodes())
 	{
@@ -1357,6 +1389,8 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 
 		var_couche_blocking->set(n_blocking.id(), m_couche_id->value(n_id));
 		var_couche_ctrlpts->set(n_ctrlpts.id(), m_couche_id->value(n_id));
+
+		math::Utils::UpdateLinker3D(m_linker_HG, n, m_linker_BG, n_blocking); // Init linker_BG
 	}
 
 	// Create the Blocks from the Block Corners
@@ -1386,27 +1420,711 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 
 	}
 
-	// Init the discretization of each Block
-	/*
-	for (auto bloc:m_mesh.allBlocks())
+
+	//=========================================
+	// Update classification of Block edges
+	// and Block faces of m_Blocking3D
+	//=========================================
+	// Update the classification of the block edges
+	for (auto e_id:m_meshHex->edges())
 	{
-		bloc.setNbDiscretizationI(10);
-		bloc.setNbDiscretizationJ(10);
-		bloc.setNbDiscretizationK(10);
+		Edge e = m_meshHex->get<Edge>(e_id);
+		std::vector<Node> e_nodes = e.get<Node>();
+		if ( (m_couche_id->value(e_nodes[0].id()) == 0
+		    && m_couche_id->value(e_nodes[1].id()) == 0)
+		    || (m_couche_id->value(e_nodes[0].id()) == m_params.nbr_couches
+		    && m_couche_id->value(e_nodes[1].id()) == m_params.nbr_couches) )
+		{
+			TCellID e_blocking_id = math::Utils::CommonEdge(&m_Blocking3D, map_new_nodes_IDS_blocking[e_nodes[0].id()], map_new_nodes_IDS_blocking[e_nodes[1].id()]);
+			int geom_dim = m_linker_HG->getGeomDim<Edge>(e_id);
+			if (geom_dim==2)
+			{
+				m_linker_BG->linkEdgeToCurve(e_blocking_id, m_linker_HG->getGeomId<Edge>(e_id));
+			}
+			else if (geom_dim==3)
+			{
+				m_linker_BG->linkEdgeToSurface(e_blocking_id, m_linker_HG->getGeomId<Edge>(e_id));
+			}
+		}
 	}
-	m_mesh.initializeGridPoints();
+
+	// Update the classification of the block faces
+	for (auto f_id:m_meshHex->faces())
+	{
+		Face f = m_meshHex->get<Face>(f_id);
+		std::vector<Node> f_nodes = f.get<Node>();
+		if ( (m_couche_id->value(f_nodes[0].id()) == 0
+		    && m_couche_id->value(f_nodes[1].id()) == 0
+		    && m_couche_id->value(f_nodes[2].id()) == 0
+		    && m_couche_id->value(f_nodes[3].id()) == 0)
+		    || (m_couche_id->value(f_nodes[0].id()) == m_params.nbr_couches
+		    && m_couche_id->value(f_nodes[1].id()) == m_params.nbr_couches
+		    && m_couche_id->value(f_nodes[2].id()) == m_params.nbr_couches
+		    && m_couche_id->value(f_nodes[3].id()) == m_params.nbr_couches))
+		{
+			TCellID f_blocking_id = math::Utils::CommonFace(&m_Blocking3D,
+			                                                map_new_nodes_IDS_blocking[f_nodes[0].id()],
+			                                                map_new_nodes_IDS_blocking[f_nodes[1].id()],
+			                                                map_new_nodes_IDS_blocking[f_nodes[2].id()],
+			                                                map_new_nodes_IDS_blocking[f_nodes[3].id()]);
+			m_linker_BG->linkFaceToSurface(f_blocking_id, m_linker_HG->getGeomId<Face>(f_id));
+		}
+	}
+
+	//=========================================
+	// Interval Assignment:
+	// Init the discretization of each Block
+	//=========================================
+	/*
+	std::cout << "-> Interval Assignment" << std::endl;
+	IntervalAssignment_3D intAss(&m_Blocking3D,
+	                             m_params,
+	                             m_Blocking3D.newVariable<int,GMDS_EDGE>("GMDS_EdgeDiscretization"));
+	intAss.execute();
 	*/
 
+	for (auto b:m_Blocking3D.allBlocks())
+	{
+		b.setNbDiscretizationI(5);
+		b.setNbDiscretizationJ(5);
+		b.setNbDiscretizationK(5);
+	}
+
+	// Init the grid points (the inner nodes of each block edge, face and hex)
+	m_Blocking3D.initializeGridPoints();
+
+	//=========================================
+	// Update classification of Block edges
+	// and Block faces inner nodes of
+	// m_Blocking3D
+	//=========================================
+	for (auto b:m_Blocking3D.allBlocks())
+	{
+		int Nb_i = b.getNbDiscretizationI();
+		int Nb_j = b.getNbDiscretizationJ();
+		int Nb_k = b.getNbDiscretizationK();
+		//--------------------------------
+		// Classification of the node on
+		// block faces
+		//--------------------------------
+		// Face k=0
+		if ( (var_couche_blocking->value(b.getNode(0).id()) == 0
+		    && var_couche_blocking->value(b.getNode(1).id()) == 0
+		    && var_couche_blocking->value(b.getNode(2).id()) == 0
+		    && var_couche_blocking->value(b.getNode(3).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(0).id()) == m_params.nbr_couches
+		    && var_couche_blocking->value(b.getNode(1).id()) == m_params.nbr_couches
+		    && var_couche_blocking->value(b.getNode(2).id()) == m_params.nbr_couches
+		    && var_couche_blocking->value(b.getNode(3).id()) == m_params.nbr_couches))
+		{
+			TCellID f0123_id = math::Utils::CommonFace(&m_Blocking3D,
+			                                           b.getNode(0).id(),
+			                                           b.getNode(1).id(),
+			                                           b.getNode(2).id(),
+			                                           b.getNode(3).id()) ;
+			for (auto i=1;i<Nb_i-1;i++)
+			{
+				for (auto j=1;j<Nb_j-1;j++)
+				{
+					m_linker_BG->linkNodeToSurface(b(i,j,0).id(), m_linker_BG->getGeomId<Face>(f0123_id));
+				}
+			}
+		}
+		// Face k=Nb_k-1
+		if ( (var_couche_blocking->value(b.getNode(4).id()) == 0
+		    && var_couche_blocking->value(b.getNode(5).id()) == 0
+		    && var_couche_blocking->value(b.getNode(6).id()) == 0
+		    && var_couche_blocking->value(b.getNode(7).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(4).id()) == m_params.nbr_couches
+		    && var_couche_blocking->value(b.getNode(5).id()) == m_params.nbr_couches
+		    && var_couche_blocking->value(b.getNode(6).id()) == m_params.nbr_couches
+		    && var_couche_blocking->value(b.getNode(7).id()) == m_params.nbr_couches))
+		{
+			TCellID f4567_id = math::Utils::CommonFace(&m_Blocking3D,
+			                                           b.getNode(4).id(),
+			                                           b.getNode(5).id(),
+			                                           b.getNode(6).id(),
+			                                           b.getNode(7).id()) ;
+			for (auto i=1;i<Nb_i-1;i++)
+			{
+				for (auto j=1;j<Nb_j-1;j++)
+				{
+					m_linker_BG->linkNodeToSurface(b(i,j,Nb_k-1).id(), m_linker_BG->getGeomId<Face>(f4567_id));
+				}
+			}
+		}
+		// Face j=0
+		if ( (var_couche_blocking->value(b.getNode(0).id()) == 0
+		     && var_couche_blocking->value(b.getNode(1).id()) == 0
+		     && var_couche_blocking->value(b.getNode(5).id()) == 0
+		     && var_couche_blocking->value(b.getNode(4).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(0).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(1).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(5).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(4).id()) == m_params.nbr_couches))
+		{
+			TCellID f0154_id = math::Utils::CommonFace(&m_Blocking3D,
+			                                           b.getNode(0).id(),
+			                                           b.getNode(1).id(),
+			                                           b.getNode(5).id(),
+			                                           b.getNode(4).id()) ;
+			for (auto i=1;i<Nb_i-1;i++)
+			{
+				for (auto k=1;k<Nb_k-1;k++)
+				{
+					m_linker_BG->linkNodeToSurface(b(i,0,k).id(), m_linker_BG->getGeomId<Face>(f0154_id));
+				}
+			}
+		}
+		// Face j=Nb_j-1
+		if ( (var_couche_blocking->value(b.getNode(3).id()) == 0
+		     && var_couche_blocking->value(b.getNode(2).id()) == 0
+		     && var_couche_blocking->value(b.getNode(6).id()) == 0
+		     && var_couche_blocking->value(b.getNode(7).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(3).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(2).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(6).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(7).id()) == m_params.nbr_couches))
+		{
+			TCellID f3267_id = math::Utils::CommonFace(&m_Blocking3D,
+			                                           b.getNode(3).id(),
+			                                           b.getNode(2).id(),
+			                                           b.getNode(6).id(),
+			                                           b.getNode(7).id()) ;
+			for (auto i=1;i<Nb_i-1;i++)
+			{
+				for (auto k=1;k<Nb_k-1;k++)
+				{
+					m_linker_BG->linkNodeToSurface(b(i,Nb_j-1,k).id(), m_linker_BG->getGeomId<Face>(f3267_id));
+				}
+			}
+		}
+		// Face i=0
+		if ( (var_couche_blocking->value(b.getNode(0).id()) == 0
+		     && var_couche_blocking->value(b.getNode(3).id()) == 0
+		     && var_couche_blocking->value(b.getNode(7).id()) == 0
+		     && var_couche_blocking->value(b.getNode(4).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(0).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(3).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(7).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(4).id()) == m_params.nbr_couches))
+		{
+			TCellID f0374_id = math::Utils::CommonFace(&m_Blocking3D,
+			                                           b.getNode(0).id(),
+			                                           b.getNode(3).id(),
+			                                           b.getNode(7).id(),
+			                                           b.getNode(4).id()) ;
+			for (auto j=1;j<Nb_j-1;j++)
+			{
+				for (auto k=1;k<Nb_k-1;k++)
+				{
+					m_linker_BG->linkNodeToSurface(b(0,j,k).id(), m_linker_BG->getGeomId<Face>(f0374_id));
+				}
+			}
+		}
+		// Face i=Nb_i-1
+		if ( (var_couche_blocking->value(b.getNode(1).id()) == 0
+		     && var_couche_blocking->value(b.getNode(2).id()) == 0
+		     && var_couche_blocking->value(b.getNode(6).id()) == 0
+		     && var_couche_blocking->value(b.getNode(5).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(1).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(2).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(6).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(5).id()) == m_params.nbr_couches))
+		{
+			TCellID f1265_id = math::Utils::CommonFace(&m_Blocking3D,
+			                                           b.getNode(1).id(),
+			                                           b.getNode(2).id(),
+			                                           b.getNode(6).id(),
+			                                           b.getNode(5).id()) ;
+			for (auto j=1;j<Nb_j-1;j++)
+			{
+				for (auto k=1;k<Nb_k-1;k++)
+				{
+					m_linker_BG->linkNodeToSurface(b(Nb_i-1,j,k).id(), m_linker_BG->getGeomId<Face>(f1265_id));
+				}
+			}
+		}
+		//--------------------------------
+		// Classification of the node on
+		// block edges
+		//--------------------------------
+		// Edge I: 0,1
+		if ( (var_couche_blocking->value(b.getNode(0).id()) == 0
+		     && var_couche_blocking->value(b.getNode(1).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(0).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(1).id()) == m_params.nbr_couches))
+		{
+			TCellID e01_id = math::Utils::CommonEdge(&m_Blocking3D,
+			                                         b.getNode(0).id(),
+			                                         b.getNode(1).id());
+			int geom_dim = m_linker_BG->getGeomDim<Edge>(e01_id);
+			if (geom_dim == 2)
+			{
+				for (auto i=1;i<Nb_i-1;i++)
+				{
+					m_linker_BG->linkNodeToCurve(b(i,0,0).id(), m_linker_BG->getGeomId<Edge>(e01_id));
+				}
+			}
+			else if (geom_dim == 3)
+			{
+				for (auto i=1;i<Nb_i-1;i++)
+				{
+					m_linker_BG->linkNodeToSurface(b(i,0,0).id(), m_linker_BG->getGeomId<Edge>(e01_id));
+				}
+			}
+		}
+		// Edge I: 2,3
+		if ( (var_couche_blocking->value(b.getNode(2).id()) == 0
+		     && var_couche_blocking->value(b.getNode(3).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(2).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(3).id()) == m_params.nbr_couches))
+		{
+			TCellID e23_id = math::Utils::CommonEdge(&m_Blocking3D,
+			                                         b.getNode(2).id(),
+			                                         b.getNode(3).id());
+			int geom_dim = m_linker_BG->getGeomDim<Edge>(e23_id);
+			if (geom_dim == 2)
+			{
+				for (auto i=1;i<Nb_i-1;i++)
+				{
+					m_linker_BG->linkNodeToCurve(b(i,Nb_j-1,0).id(), m_linker_BG->getGeomId<Edge>(e23_id));
+				}
+			}
+			else if (geom_dim == 3)
+			{
+				for (auto i=1;i<Nb_i-1;i++)
+				{
+					m_linker_BG->linkNodeToSurface(b(i,Nb_j-1,0).id(), m_linker_BG->getGeomId<Edge>(e23_id));
+				}
+			}
+		}
+		// Edge I: 4,5
+		if ( (var_couche_blocking->value(b.getNode(4).id()) == 0
+		     && var_couche_blocking->value(b.getNode(5).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(4).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(5).id()) == m_params.nbr_couches))
+		{
+			TCellID e45_id = math::Utils::CommonEdge(&m_Blocking3D,
+			                                         b.getNode(4).id(),
+			                                         b.getNode(5).id());
+			int geom_dim = m_linker_BG->getGeomDim<Edge>(e45_id);
+			if (geom_dim == 2)
+			{
+				for (auto i=1;i<Nb_i-1;i++)
+				{
+					m_linker_BG->linkNodeToCurve(b(i,0,Nb_k-1).id(), m_linker_BG->getGeomId<Edge>(e45_id));
+				}
+			}
+			else if (geom_dim == 3)
+			{
+				for (auto i=1;i<Nb_i-1;i++)
+				{
+					m_linker_BG->linkNodeToSurface(b(i,0,Nb_k-1).id(), m_linker_BG->getGeomId<Edge>(e45_id));
+				}
+			}
+		}
+		// Edge I: 7,6
+		if ( (var_couche_blocking->value(b.getNode(7).id()) == 0
+		     && var_couche_blocking->value(b.getNode(6).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(7).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(6).id()) == m_params.nbr_couches))
+		{
+			TCellID e76_id = math::Utils::CommonEdge(&m_Blocking3D,
+			                                         b.getNode(7).id(),
+			                                         b.getNode(6).id());
+			int geom_dim = m_linker_BG->getGeomDim<Edge>(e76_id);
+			if (geom_dim == 2)
+			{
+				for (auto i=1;i<Nb_i-1;i++)
+				{
+					m_linker_BG->linkNodeToCurve(b(i,Nb_j-1,Nb_k-1).id(), m_linker_BG->getGeomId<Edge>(e76_id));
+				}
+			}
+			else if (geom_dim == 3)
+			{
+				for (auto i=1;i<Nb_i-1;i++)
+				{
+					m_linker_BG->linkNodeToSurface(b(i,Nb_j-1,Nb_k-1).id(), m_linker_BG->getGeomId<Edge>(e76_id));
+				}
+			}
+		}
+		// Edge J: 0,3
+		if ( (var_couche_blocking->value(b.getNode(0).id()) == 0
+		     && var_couche_blocking->value(b.getNode(3).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(0).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(3).id()) == m_params.nbr_couches))
+		{
+			TCellID e03_id = math::Utils::CommonEdge(&m_Blocking3D,
+			                                         b.getNode(0).id(),
+			                                         b.getNode(3).id());
+			int geom_dim = m_linker_BG->getGeomDim<Edge>(e03_id);
+			if (geom_dim == 2)
+			{
+				for (auto j=1;j<Nb_j-1;j++)
+				{
+					m_linker_BG->linkNodeToCurve(b(0,j,0).id(), m_linker_BG->getGeomId<Edge>(e03_id));
+				}
+			}
+			else if (geom_dim == 3)
+			{
+				for (auto j=1;j<Nb_j-1;j++)
+				{
+					m_linker_BG->linkNodeToSurface(b(0,j,0).id(), m_linker_BG->getGeomId<Edge>(e03_id));
+				}
+			}
+		}
+		// Edge J: 1,2
+		if ( (var_couche_blocking->value(b.getNode(1).id()) == 0
+		     && var_couche_blocking->value(b.getNode(2).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(1).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(2).id()) == m_params.nbr_couches))
+		{
+			TCellID e12_id = math::Utils::CommonEdge(&m_Blocking3D,
+			                                         b.getNode(1).id(),
+			                                         b.getNode(2).id());
+			int geom_dim = m_linker_BG->getGeomDim<Edge>(e12_id);
+			if (geom_dim == 2)
+			{
+				for (auto j=1;j<Nb_j-1;j++)
+				{
+					m_linker_BG->linkNodeToCurve(b(Nb_i-1,j,0).id(), m_linker_BG->getGeomId<Edge>(e12_id));
+				}
+			}
+			else if (geom_dim == 3)
+			{
+				for (auto j=1;j<Nb_j-1;j++)
+				{
+					m_linker_BG->linkNodeToSurface(b(Nb_i-1,j,0).id(), m_linker_BG->getGeomId<Edge>(e12_id));
+				}
+			}
+		}
+		// Edge J: 5,6
+		if ( (var_couche_blocking->value(b.getNode(5).id()) == 0
+		     && var_couche_blocking->value(b.getNode(6).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(5).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(6).id()) == m_params.nbr_couches))
+		{
+			TCellID e56_id = math::Utils::CommonEdge(&m_Blocking3D,
+			                                         b.getNode(5).id(),
+			                                         b.getNode(6).id());
+			int geom_dim = m_linker_BG->getGeomDim<Edge>(e56_id);
+			if (geom_dim == 2)
+			{
+				for (auto j=1;j<Nb_j-1;j++)
+				{
+					m_linker_BG->linkNodeToCurve(b(Nb_i-1,j,Nb_k-1).id(), m_linker_BG->getGeomId<Edge>(e56_id));
+				}
+			}
+			else if (geom_dim == 3)
+			{
+				for (auto j=1;j<Nb_j-1;j++)
+				{
+					m_linker_BG->linkNodeToSurface(b(Nb_i-1,j,Nb_k-1).id(), m_linker_BG->getGeomId<Edge>(e56_id));
+				}
+			}
+		}
+		// Edge J: 4,7
+		if ( (var_couche_blocking->value(b.getNode(4).id()) == 0
+		     && var_couche_blocking->value(b.getNode(7).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(4).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(7).id()) == m_params.nbr_couches))
+		{
+			TCellID e47_id = math::Utils::CommonEdge(&m_Blocking3D,
+			                                         b.getNode(4).id(),
+			                                         b.getNode(7).id());
+			int geom_dim = m_linker_BG->getGeomDim<Edge>(e47_id);
+			if (geom_dim == 2)
+			{
+				for (auto j=1;j<Nb_j-1;j++)
+				{
+					m_linker_BG->linkNodeToCurve(b(0,j,Nb_k-1).id(), m_linker_BG->getGeomId<Edge>(e47_id));
+				}
+			}
+			else if (geom_dim == 3)
+			{
+				for (auto j=1;j<Nb_j-1;j++)
+				{
+					m_linker_BG->linkNodeToSurface(b(0,j,Nb_k-1).id(), m_linker_BG->getGeomId<Edge>(e47_id));
+				}
+			}
+		}
+		// Edge K: 0,4
+		if ( (var_couche_blocking->value(b.getNode(0).id()) == 0
+		     && var_couche_blocking->value(b.getNode(4).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(0).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(4).id()) == m_params.nbr_couches))
+		{
+			TCellID e04_id = math::Utils::CommonEdge(&m_Blocking3D,
+			                                         b.getNode(0).id(),
+			                                         b.getNode(4).id());
+			int geom_dim = m_linker_BG->getGeomDim<Edge>(e04_id);
+			if (geom_dim == 2)
+			{
+				for (auto k=1;k<Nb_k-1;k++)
+				{
+					m_linker_BG->linkNodeToCurve(b(0,0,k).id(), m_linker_BG->getGeomId<Edge>(e04_id));
+				}
+			}
+			else if (geom_dim == 3)
+			{
+				for (auto k=1;k<Nb_k-1;k++)
+				{
+					m_linker_BG->linkNodeToSurface(b(0,0,k).id(), m_linker_BG->getGeomId<Edge>(e04_id));
+				}
+			}
+		}
+		// Edge K: 1,5
+		if ( (var_couche_blocking->value(b.getNode(1).id()) == 0
+		     && var_couche_blocking->value(b.getNode(5).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(1).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(5).id()) == m_params.nbr_couches))
+		{
+			TCellID e15_id = math::Utils::CommonEdge(&m_Blocking3D,
+			                                         b.getNode(1).id(),
+			                                         b.getNode(5).id());
+			int geom_dim = m_linker_BG->getGeomDim<Edge>(e15_id);
+			if (geom_dim == 2)
+			{
+				for (auto k=1;k<Nb_k-1;k++)
+				{
+					m_linker_BG->linkNodeToCurve(b(Nb_i-1,0,k).id(), m_linker_BG->getGeomId<Edge>(e15_id));
+				}
+			}
+			else if (geom_dim == 3)
+			{
+				for (auto k=1;k<Nb_k-1;k++)
+				{
+					m_linker_BG->linkNodeToSurface(b(Nb_i-1,0,k).id(), m_linker_BG->getGeomId<Edge>(e15_id));
+				}
+			}
+		}
+		// Edge K: 2,6
+		if ( (var_couche_blocking->value(b.getNode(2).id()) == 0
+		     && var_couche_blocking->value(b.getNode(6).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(2).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(6).id()) == m_params.nbr_couches))
+		{
+			TCellID e26_id = math::Utils::CommonEdge(&m_Blocking3D,
+			                                         b.getNode(2).id(),
+			                                         b.getNode(6).id());
+			int geom_dim = m_linker_BG->getGeomDim<Edge>(e26_id);
+			if (geom_dim == 2)
+			{
+				for (auto k=1;k<Nb_k-1;k++)
+				{
+					m_linker_BG->linkNodeToCurve(b(Nb_i-1,Nb_j-1,k).id(), m_linker_BG->getGeomId<Edge>(e26_id));
+				}
+			}
+			else if (geom_dim == 3)
+			{
+				for (auto k=1;k<Nb_k-1;k++)
+				{
+					m_linker_BG->linkNodeToSurface(b(Nb_i-1,Nb_j-1,k).id(), m_linker_BG->getGeomId<Edge>(e26_id));
+				}
+			}
+		}
+		// Edge K: 3,7
+		if ( (var_couche_blocking->value(b.getNode(3).id()) == 0
+		     && var_couche_blocking->value(b.getNode(7).id()) == 0)
+		    || (var_couche_blocking->value(b.getNode(3).id()) == m_params.nbr_couches
+		        && var_couche_blocking->value(b.getNode(7).id()) == m_params.nbr_couches))
+		{
+			TCellID e37_id = math::Utils::CommonEdge(&m_Blocking3D,
+			                                         b.getNode(3).id(),
+			                                         b.getNode(7).id());
+			int geom_dim = m_linker_BG->getGeomDim<Edge>(e37_id);
+			if (geom_dim == 2)
+			{
+				for (auto k=1;k<Nb_k-1;k++)
+				{
+					m_linker_BG->linkNodeToCurve(b(0,Nb_j-1,k).id(), m_linker_BG->getGeomId<Edge>(e37_id));
+				}
+			}
+			else if (geom_dim == 3)
+			{
+				for (auto k=1;k<Nb_k-1;k++)
+				{
+					m_linker_BG->linkNodeToSurface(b(0,Nb_j-1,k).id(), m_linker_BG->getGeomId<Edge>(e37_id));
+				}
+			}
+		}
+
+	}
+
+
 	// Init the control points of each Block
-	/*
+	int degree_Bezier(3);
 	for (auto bloc:m_CtrlPts.allBlocks())
 	{
-		bloc.setNbDiscretizationI(4);
-		bloc.setNbDiscretizationJ(4);
-		bloc.setNbDiscretizationK(4);
+		bloc.setNbDiscretizationI(degree_Bezier+1);
+		bloc.setNbDiscretizationJ(degree_Bezier+1);
+		bloc.setNbDiscretizationK(degree_Bezier+1);
 	}
 	m_CtrlPts.initializeGridPoints();
-	 */
 
+
+	// Project nodes
+	for (auto n_id:m_Blocking3D.nodes())
+	{
+		if (var_couche_blocking->value(n_id) == 0
+		    || var_couche_blocking->value(n_id) == m_params.nbr_couches )
+		{
+			Node n =  m_Blocking3D.get<Node>(n_id);
+			int geom_dim = m_linker_BG->getGeomDim<Node>(n_id);
+			if (geom_dim == 2)
+			{
+				cad::GeomCurve* curve = m_manager->getCurve(m_linker_BG->getGeomId<Node>(n_id));
+				math::Point p = n.point();
+				curve->project(p);
+				n.setPoint(p);
+			}
+			else if (geom_dim == 3)
+			{
+				cad::GeomSurface* surface = m_manager->getSurface(m_linker_BG->getGeomId<Node>(n_id));
+				math::Point p = n.point();
+				surface->project(p);
+				n.setPoint(p);
+			}
+		}
+	}
+
+}
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_3D::updateLayerValues()
+{
+	Variable<int>* var_couche_blocking = m_Blocking3D.getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche");
+
+	// Update the "Couche" variable on nodes
+	for (auto b:m_Blocking3D.allBlocks())
+	{
+		int layer(0);
+		layer = std::max(var_couche_blocking->value(b.getNode(0).id()), var_couche_blocking->value(b.getNode(1).id()));
+		layer = std::max(layer, var_couche_blocking->value(b.getNode(2).id()));
+		layer = std::max(layer, var_couche_blocking->value(b.getNode(3).id()));
+		layer = std::max(layer, var_couche_blocking->value(b.getNode(4).id()));
+		layer = std::max(layer, var_couche_blocking->value(b.getNode(5).id()));
+		layer = std::max(layer, var_couche_blocking->value(b.getNode(6).id()));
+		layer = std::max(layer, var_couche_blocking->value(b.getNode(7).id()));
+		int Nb_i = b.getNbDiscretizationI();
+		int Nb_j = b.getNbDiscretizationJ();
+		int Nb_k = b.getNbDiscretizationK();
+		for (auto i=1; i < Nb_i-1; i++)
+		{
+			for (auto j=1; j<Nb_j-1; j++)
+			{
+				for (auto k=1; k<Nb_k-1; k++)
+				{
+					var_couche_blocking->set(b(i,j,k).id(), layer);
+				}
+			}
+		}
+
+		// -------------------
+		// Update face nodes
+		// -------------------
+		// Faces k=0 and k=Nb_k-1
+		int layer_k0 = std::max(var_couche_blocking->value(b.getNode(0).id()), var_couche_blocking->value(b.getNode(1).id()));
+		layer_k0 = std::max(layer_k0, var_couche_blocking->value(b.getNode(2).id()));
+		layer_k0 = std::max(layer_k0, var_couche_blocking->value(b.getNode(3).id()));
+		int layer_kmax = std::max(var_couche_blocking->value(b.getNode(4).id()), var_couche_blocking->value(b.getNode(5).id()));
+		layer_kmax = std::max(layer_kmax, var_couche_blocking->value(b.getNode(6).id()));
+		layer_kmax = std::max(layer_kmax, var_couche_blocking->value(b.getNode(7).id()));
+		for (auto i=1; i < Nb_i-1; i++)
+		{
+			for (auto j=1; j<Nb_j-1; j++)
+			{
+				var_couche_blocking->set(b(i,j,0).id(), layer_k0);
+				var_couche_blocking->set(b(i,j,Nb_k-1).id(), layer_kmax);
+			}
+		}
+
+		// Faces j=0 and j=Nb_j-1
+		int layer_j0 = std::max(var_couche_blocking->value(b.getNode(0).id()), var_couche_blocking->value(b.getNode(1).id()));
+		layer_j0 = std::max(layer_j0, var_couche_blocking->value(b.getNode(5).id()));
+		layer_j0 = std::max(layer_j0, var_couche_blocking->value(b.getNode(4).id()));
+		int layer_jmax = std::max(var_couche_blocking->value(b.getNode(3).id()), var_couche_blocking->value(b.getNode(2).id()));
+		layer_jmax = std::max(layer_jmax, var_couche_blocking->value(b.getNode(6).id()));
+		layer_jmax = std::max(layer_jmax, var_couche_blocking->value(b.getNode(7).id()));
+		for (auto i=1; i < Nb_i-1; i++)
+		{
+			for (auto k=1; k<Nb_k-1; k++)
+			{
+				var_couche_blocking->set(b(i,0,k).id(), layer_j0);
+				var_couche_blocking->set(b(i,Nb_j-1,k).id(), layer_jmax);
+			}
+		}
+
+		// Faces i=0 and i=Nb_i-1
+		int layer_i0 = std::max(var_couche_blocking->value(b.getNode(0).id()), var_couche_blocking->value(b.getNode(3).id()));
+		layer_i0 = std::max(layer_i0, var_couche_blocking->value(b.getNode(7).id()));
+		layer_i0 = std::max(layer_i0, var_couche_blocking->value(b.getNode(4).id()));
+		int layer_imax = std::max(var_couche_blocking->value(b.getNode(1).id()), var_couche_blocking->value(b.getNode(2).id()));
+		layer_imax = std::max(layer_imax, var_couche_blocking->value(b.getNode(6).id()));
+		layer_imax = std::max(layer_imax, var_couche_blocking->value(b.getNode(5).id()));
+		for (auto j=1; j < Nb_j-1; j++)
+		{
+			for (auto k=1; k<Nb_k-1; k++)
+			{
+				var_couche_blocking->set(b(0,j,k).id(), layer_i0);
+				var_couche_blocking->set(b(Nb_i-1,j,k).id(), layer_imax);
+			}
+		}
+
+
+		// -------------------
+		// Update edge nodes
+		// -------------------
+		// Edges i
+		int layer_e01 =  std::max(var_couche_blocking->value(b.getNode(0).id()), var_couche_blocking->value(b.getNode(1).id()));
+		int layer_e23 =  std::max(var_couche_blocking->value(b.getNode(2).id()), var_couche_blocking->value(b.getNode(3).id()));
+		int layer_e67 =  std::max(var_couche_blocking->value(b.getNode(6).id()), var_couche_blocking->value(b.getNode(7).id()));
+		int layer_e45 =  std::max(var_couche_blocking->value(b.getNode(4).id()), var_couche_blocking->value(b.getNode(5).id()));
+		for (auto i=1; i<Nb_i-1; i++)
+		{
+			var_couche_blocking->set(b(i,0,0).id(), layer_e01);
+			var_couche_blocking->set(b(i,Nb_j-1,0).id(), layer_e23);
+			var_couche_blocking->set(b(i,Nb_j-1,Nb_k-1).id(), layer_e67);
+			var_couche_blocking->set(b(i,0,Nb_k-1).id(), layer_e45);
+
+		}
+
+		// Edges j
+		int layer_e03 =  std::max(var_couche_blocking->value(b.getNode(0).id()), var_couche_blocking->value(b.getNode(3).id()));
+		int layer_e12 =  std::max(var_couche_blocking->value(b.getNode(1).id()), var_couche_blocking->value(b.getNode(2).id()));
+		int layer_e56 =  std::max(var_couche_blocking->value(b.getNode(5).id()), var_couche_blocking->value(b.getNode(6).id()));
+		int layer_e47 =  std::max(var_couche_blocking->value(b.getNode(4).id()), var_couche_blocking->value(b.getNode(7).id()));
+		for (auto j=1; j<Nb_j-1; j++)
+		{
+			var_couche_blocking->set(b(0,j,0).id(), layer_e03);
+			var_couche_blocking->set(b(Nb_i-1,j,0).id(), layer_e12);
+			var_couche_blocking->set(b(Nb_i-1,j,Nb_k-1).id(), layer_e56);
+			var_couche_blocking->set(b(0,j,Nb_k-1).id(), layer_e47);
+		}
+
+		// Edges k
+		int layer_e04 =  std::max(var_couche_blocking->value(b.getNode(0).id()), var_couche_blocking->value(b.getNode(4).id()));
+		int layer_e15 =  std::max(var_couche_blocking->value(b.getNode(1).id()), var_couche_blocking->value(b.getNode(5).id()));
+		int layer_e62 =  std::max(var_couche_blocking->value(b.getNode(6).id()), var_couche_blocking->value(b.getNode(2).id()));
+		int layer_e37 =  std::max(var_couche_blocking->value(b.getNode(3).id()), var_couche_blocking->value(b.getNode(7).id()));
+		for (auto k=1; k<Nb_k-1; k++)
+		{
+			var_couche_blocking->set(b(0,0,k).id(), layer_e04);
+			var_couche_blocking->set(b(Nb_i-1,0,k).id(), layer_e15);
+			var_couche_blocking->set(b(Nb_i-1,Nb_j-1,k).id(), layer_e62);
+			var_couche_blocking->set(b(0,Nb_j-1,k).id(), layer_e37);
+		}
+
+	}
+}
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_3D::computeBlockNodesPositionsFromCtrlPoints()
+{
+	for (auto b:m_Blocking3D.allBlocks())
+	{
+
+	}
 }
 /*------------------------------------------------------------------------*/
