@@ -53,19 +53,25 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_3D : public AbstractAeroPipeline {
 	void SurfaceBlockingClassification();
 	/*------------------------------------------------------------------------*/
 	/** @brief Compute the vector field used for the extrusion.
-	 * @param
-	 * @return void
 	 */
 	void ComputeVectorFieldForExtrusion();
 	/*------------------------------------------------------------------------*/
-	/** \brief  Classify the surface blocking on the geometry.
+	/** \brief  Classify all the entities (nodes, edges, faces) of the blocking
+	 * (stored in a mesh) on the geometry.
 	 */
 	void BlockingGeometricClassification();
 	/*------------------------------------------------------------------------*/
 	/** @brief Init the Blocking3D and the Control Points structure from the
-	 * hex mesh built using the AeroPipeline.
+	 * hex mesh built using the AeroPipeline3D algorithm. Initialize the
+	 * geometric classification of the block corners too in m_linker_BG.
 	 */
 	void initBlocking3DfromMesh();
+	/*----------------------------------------------------------------------------*/
+	/** @brief
+	 */
+	void updateLayerValues();
+	/*----------------------------------------------------------------------------*/
+	void computeBlockNodesPositionsFromCtrlPoints();
 	/*----------------------------------------------------------------------------*/
 
  protected:
@@ -75,6 +81,8 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_3D : public AbstractAeroPipeline {
 	Blocking3D m_Blocking3D;
 	/** control points of the 3D blocking */
 	Blocking3D m_CtrlPts;
+	/** Linker Blocking à la géométrie */
+	cad::GeomMeshLinker* m_linker_BG;
 
 };
 /*----------------------------------------------------------------------------*/

@@ -1107,6 +1107,24 @@ Utils::DerivativeBezierCurve(std::vector<math::Point> &Pts, double Au)
 	return dev;
 }
 /*----------------------------------------------------------------------------*/
+void
+Utils::UpdateLinker3D(cad::GeomMeshLinker* linker_1, const Node& n_1, cad::GeomMeshLinker* linker_2, const Node& n_2)
+{
+	int geom_dim = linker_1->getGeomDim<Node>(n_1.id());
+	if(geom_dim == 1)
+	{
+		linker_2->linkNodeToPoint(n_2.id(), linker_1->getGeomId<Node>(n_1.id()));
+	}
+	else if(geom_dim==2)
+	{
+		linker_2->linkNodeToCurve(n_2.id(), linker_1->getGeomId<Node>(n_1.id()));
+	}
+	else if(geom_dim==3)
+	{
+		linker_2->linkNodeToSurface(n_2.id(), linker_1->getGeomId<Node>(n_1.id()));
+	}
+}
+/*------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/
 }  // namespace gmds

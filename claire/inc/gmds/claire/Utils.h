@@ -12,6 +12,8 @@
 #include "gmds/ig/Blocking2D.h"
 #include <gmds/claire/Blocking3D.h>
 #include <gmds/claire/FastLocalize.h>
+#include <gmds/cadfac/FACManager.h>
+#include <gmds/cad/GeomMeshLinker.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -322,6 +324,16 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static math::Vector3d DerivativeBezierCurve(std::vector<math::Point> &Pts, double Au);
 	/*-------------------------------------------------------------------*/
+	/** @brief Update the second linker at the node n2 with de datas of the first
+	 * linker.
+	 * @param[in] linker_1 the reference linker
+	 * @param[in] n_1 the node in the mesh on the linker_1
+	 * @param[in] linker_2 the linker to update
+	 * @param[in] n_2 the node in the second mesh to initialize the classification
+	 * @return void
+	 */
+	static void UpdateLinker3D(cad::GeomMeshLinker* linker_1, const Node& n_1, cad::GeomMeshLinker* linker_2, const Node& n_2);
+	/*----------------------------------------------------------------------------*/
 };
 /*----------------------------------------------------------------------------*/
 }  // namespace math
