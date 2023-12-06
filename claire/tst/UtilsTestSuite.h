@@ -9,6 +9,8 @@
 #include <gmds/igalgo/BoundaryOperator2D.h>
 #include <gmds/igalgo/GridBuilder.h>
 #include <gmds/math/BezierSurface.h>
+#include <gmds/math/BezierHex.h>
+#include <gmds/claire/Blocking3D.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>
 #include <gmds/io/VTKReader.h>
@@ -572,7 +574,8 @@ TEST(ClaireTestClass, Utils_buildEfromFandConnectivies)
 /*----------------------------------------------------------------------------*/
 TEST(ClaireTestClass, Test_BlockingControlPoints)
 {
-	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
+	gmds::Mesh m = Mesh(MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
+	                        F2E | E2F | R2E | E2R | N2R | N2F | N2E));
 
 	Node n1 = m.newNode(0,0);
 	Node n2 = m.newNode(1,0);

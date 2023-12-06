@@ -95,6 +95,19 @@ class GMDSIg_API Blocking3D : public Mesh
 		       * @return true if the edge is on K, false otherwise
 		 */
 		bool isEdgeOnK(TCellID AID);
+		/** Compute positions of nodes of the Face (AI, AJ, AK, AL), according to the positions
+		 * of the nodes on each edges.
+             * @param AI local index of a node in the face
+             * @param AJ local index of a node in the face
+             * @param AK local index of a node in the face
+             * @param AL local index of a node in the face
+             * @return
+		 */
+		void computeFaceNodesPoints(const int AI, const int AJ, const int AK, const int AL);
+		/** Compute positions of nodes inside the block using transfinite, based on the
+		 * positions of the nodes on each face.
+		 */
+		void computeInnerBlockNodesPoints();
 
 	 private:
 		/** Access to the edge with local index @p AI and @p AJ in the

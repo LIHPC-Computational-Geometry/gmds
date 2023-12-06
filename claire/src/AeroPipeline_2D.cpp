@@ -533,7 +533,7 @@ AeroPipeline_2D::EcritureMaillage(){
 
 
 	gmds::Mesh meshReavel(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
-	math::Utils::CurveBlockEdgesReavel(&m_Blocking2D, &meshReavel);
+	math::Utils::CurveBlockEdgesReveal(&m_Blocking2D, &meshReavel);
 	std::cout << "			5. Ecriture Maillage Reavel en .vtk ..." << std::endl;
 	ioService = IGMeshIOService(&meshReavel);
 	gmds::VTKWriter vtkWriter_CurvedReavel(&ioService);

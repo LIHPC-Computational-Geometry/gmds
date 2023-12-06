@@ -7,6 +7,7 @@
 #include <gmds/claire/AdvectedPointRK4_3D.h>
 #include <gmds/ig/Blocking2D.h>
 #include <gmds/ig/MeshDoctor.h>
+#include <gmds/math/BezierHex.h>
 #include <Eigen/Sparse>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
@@ -506,7 +507,49 @@ double Utils::linearInterpolation2D3Pt(const math::Point& P1, const math::Point&
 
 }
 /*------------------------------------------------------------------------*/
-void Utils::CurveBlockEdgesReavel(Blocking2D* blocking2D, Mesh* m){
+double
+Utils::linearInterpolation3D4Pt(const math::Point& P1, const math::Point& P2, const math::Point& P3, const math::Point& P4, const math::Point& M,
+                                       double c1, double c2, double c3, double c4)
+{
+	Eigen::Matrix4d Mat_A;
+
+	// x1 y1 z1 1
+	// x2 y2 z2 1
+	// x3 y3 z3 1
+	// x4 y4 z4 1
+	// Remplissage de la matrice A du système Ax=b
+	Mat_A(0,0) = P1.X() ;
+	Mat_A(0,1) = P1.Y() ;
+	Mat_A(0,2) = P1.Z() ;
+	Mat_A(0,3) = 1.0 ;
+	Mat_A(1,0) = P2.X() ;
+	Mat_A(1,1) = P2.Y() ;
+	Mat_A(1,2) = P2.Z() ;
+	Mat_A(1,3) = 1.0 ;
+	Mat_A(2,0) = P3.X() ;
+	Mat_A(2,1) = P3.Y() ;
+	Mat_A(2,2) = P3.Z() ;
+	Mat_A(2,3) = 1.0 ;
+	Mat_A(3,0) = P4.X() ;
+	Mat_A(3,1) = P4.Y() ;
+	Mat_A(3,2) = P4.Z() ;
+	Mat_A(3,3) = 1.0 ;
+
+	Eigen::Matrix4d Inv_Mat_A = Mat_A.inverse();
+
+	Eigen::Vector4d b;
+	b[0] = c1 ;
+	b[1] = c2 ;
+	b[2] = c3 ;
+	b[3] = c4 ;
+
+	Eigen::Vector4d coef = Inv_Mat_A * b;
+
+	return coef[0]*M.X() + coef[1]*M.Y() + coef[2]*M.Z() + coef[3];
+
+}
+/*------------------------------------------------------------------------*/
+void Utils::CurveBlockEdgesReveal(Blocking2D* blocking2D, Mesh* m){
 
 	m->clear();
 
@@ -540,6 +583,95 @@ void Utils::CurveBlockEdgesReavel(Blocking2D* blocking2D, Mesh* m){
 		}
 
 
+	}
+
+
+}
+/*------------------------------------------------------------------------*/
+void Utils::CurveBlockEdgesReveal3D(Blocking3D* Ablocking3D, Mesh* Am, int Asample)
+{
+	Am->clear();
+
+	Blocking3D m_VisuBlocking;
+
+	// Create all the faces in the mesh m
+	for (auto b:Ablocking3D->allBlocks())
+	{
+		int nb_I = b.getNbDiscretizationI();
+		int nb_J = b.getNbDiscretizationJ();
+		int nb_K = b.getNbDiscretizationK();
+
+		Array3D<math::Point> ctrl_pts(nb_I,nb_J,nb_K);
+
+		for (auto i=0;i<nb_I;i++)
+		{
+			for (auto j=0;j<nb_J;j++)
+			{
+				for (auto k=0;k<nb_K;k++)
+				{
+					ctrl_pts(i,j,k) = b(i,j,k).point();
+				}
+			}
+		}
+
+		gmds::math::BezierHex bezier_hex(ctrl_pts);
+
+		Array3D<math::Point> pts = bezier_hex.getDiscretization(Asample-1, Asample-1, Asample-1);
+
+		for (auto i=0;i<Asample-1;i++)
+		{
+			Node n0 = Am->newNode(pts(i,0,0));
+			Node n1 = Am->newNode(pts(i+1,0,0));
+			Am->newTriangle(n0,n1,n1);
+
+			n0 = Am->newNode(pts(i,0,Asample-1));
+			n1 = Am->newNode(pts(i+1,0,Asample-1));
+			Am->newTriangle(n0,n1,n1);
+
+			n0 = Am->newNode(pts(i,Asample-1,Asample-1));
+			n1 = Am->newNode(pts(i+1,Asample-1,Asample-1));
+			Am->newTriangle(n0,n1,n1);
+
+			n0 = Am->newNode(pts(i,Asample-1,0));
+			n1 = Am->newNode(pts(i+1,Asample-1,0));
+			Am->newTriangle(n0,n1,n1);
+		}
+		for (auto j=0;j<Asample-1;j++)
+		{
+			Node n0 = Am->newNode(pts(0,j,0));
+			Node n1 = Am->newNode(pts(0,j+1,0));
+			Am->newTriangle(n0,n1,n1);
+
+			n0 = Am->newNode(pts(0,j,Asample-1));
+			n1 = Am->newNode(pts(0,j+1,Asample-1));
+			Am->newTriangle(n0,n1,n1);
+
+			n0 = Am->newNode(pts(Asample-1,j,Asample-1));
+			n1 = Am->newNode(pts(Asample-1,j+1,Asample-1));
+			Am->newTriangle(n0,n1,n1);
+
+			n0 = Am->newNode(pts(Asample-1,j,0));
+			n1 = Am->newNode(pts(Asample-1,j+1,0));
+			Am->newTriangle(n0,n1,n1);
+		}
+		for (auto k=0;k<Asample-1;k++)
+		{
+			Node n0 = Am->newNode(pts(0,0,k));
+			Node n1 = Am->newNode(pts(0,0,k+1));
+			Am->newTriangle(n0,n1,n1);
+
+			n0 = Am->newNode(pts(0,Asample-1,k));
+			n1 = Am->newNode(pts(0,Asample-1,k+1));
+			Am->newTriangle(n0,n1,n1);
+
+			n0 = Am->newNode(pts(Asample-1,Asample-1,k));
+			n1 = Am->newNode(pts(Asample-1,Asample-1,k+1));
+			Am->newTriangle(n0,n1,n1);
+
+			n0 = Am->newNode(pts(Asample-1,0,k));
+			n1 = Am->newNode(pts(Asample-1,0,k+1));
+			Am->newTriangle(n0,n1,n1);
+		}
 	}
 
 

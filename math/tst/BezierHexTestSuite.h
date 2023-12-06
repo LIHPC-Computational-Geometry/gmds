@@ -4,6 +4,7 @@
 /*----------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 #include <gmds/math/BezierHex.h>
+#include <iostream>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -37,7 +38,10 @@ TEST(BezierHexClass, testBasic_1)
 /*----------------------------------------------------------------------------*/
 TEST(BezierHexClass, testBasic_2)
 {
-	Array3D<math::Point> ctrl_pts(2,2,3);
+	int nb_i(2);
+	int nb_j(2);
+	int nb_k(3);
+	Array3D<math::Point> ctrl_pts(nb_i,nb_j,nb_k);
 
 	ctrl_pts(0,0,0) = {0,0,0};
 	ctrl_pts(0,1,0) = {0,1,0};
@@ -65,5 +69,6 @@ TEST(BezierHexClass, testBasic_2)
 	ASSERT_NEAR(pts(5,5,5).X(), 0.5, pow(10,-6));
 	ASSERT_NEAR(pts(5,5,5).Y(), 0.5, pow(10,-6));
 	ASSERT_NEAR(pts(5,5,5).Z(), 0.5, pow(10,-6));
+
 }
 /*----------------------------------------------------------------------------*/

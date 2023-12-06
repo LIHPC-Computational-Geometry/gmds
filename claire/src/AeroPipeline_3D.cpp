@@ -18,6 +18,9 @@
 #include <gmds/io/VTKReader.h>
 #include <gmds/smoothy/LaplacianSmoother.h>
 //#include <gmds/blocking/CurvedBlocking.h>
+#include <gmds/math/BezierHex.h>
+#include <gmds/claire/AdvectedPointRK4_3D.h>
+#include <gmds/claire/TransfiniteInterpolation_3D.h>
 #include <iostream>
 #include <chrono>
 /*------------------------------------------------------------------------*/
@@ -112,6 +115,7 @@ AeroPipeline_3D::execute(){
 	//smoother.smoothVolumes(2);
 
 
+	// Smoothy
 	int nbr_iter_smoothing(3);
 	for (int i=0;i<nbr_iter_smoothing;i++)
 	{
@@ -282,6 +286,13 @@ AeroPipeline_3D::EcritureMaillage(){
 	vtkWriter_blocking.setDataOptions(gmds::N|gmds::R);
 	vtkWriter_blocking.write("AeroPipeline3D_Blocking.vtk");
 
+	// Write the Blocking
+	gmds::IGMeshIOService ioService_ctrlpts(&m_CtrlPts);
+	gmds::VTKWriter vtkWriter_ctrlpts(&ioService_ctrlpts);
+	vtkWriter_ctrlpts.setCellOptions(gmds::N|gmds::R);
+	vtkWriter_ctrlpts.setDataOptions(gmds::N|gmds::R);
+	vtkWriter_ctrlpts.write("AeroPipeline3D_ControlPoints.vtk");
+
 
 	// TEST FOR MFEM
 	/*
@@ -418,6 +429,15 @@ AeroPipeline_3D::EcritureMaillage(){
 	//std::cout << "|| Number of Block Edges: " << m_meshHex->getNbEdges() << std::endl;
 	std::cout << "|| Number of Nodes: " << m_meshHex->getNbNodes() << std::endl;
 	std::cout << "=============================================" << std::endl;
+
+	// Write a trick file to visualize the curved block edges
+	m_meshHex->clear();
+	math::Utils::CurveBlockEdgesReveal3D(&m_CtrlPts, m_meshHex, 10);
+	gmds::IGMeshIOService ioService_visuCurved(m_meshHex);
+	gmds::VTKWriter vtkWriter_visuCurved(&ioService_visuCurved);
+	vtkWriter_visuCurved.setCellOptions(gmds::N|gmds::F);
+	vtkWriter_visuCurved.setDataOptions(gmds::N|gmds::F);
+	vtkWriter_visuCurved.write("AeroPipeline3D_CurvedBlockEdges.vtk");
 
 }
 /*------------------------------------------------------------------------*/
@@ -1483,6 +1503,7 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 	intAss.execute();
 	*/
 
+	// Temporary: set the discretization of each block in an uniform way
 	for (auto b:m_Blocking3D.allBlocks())
 	{
 		b.setNbDiscretizationI(5);
@@ -1954,7 +1975,7 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 
 
 	// Init the control points of each Block
-	int degree_Bezier(3);
+	int degree_Bezier(2);
 	for (auto bloc:m_CtrlPts.allBlocks())
 	{
 		bloc.setNbDiscretizationI(degree_Bezier+1);
@@ -1988,6 +2009,11 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 			}
 		}
 	}
+
+
+	computeControlPointstoInterpolateBoundaries();
+	// Test new method to compute the block nodes positions from ctrl points positions
+	computeBlockNodesPositionsFromCtrlPoints();
 
 }
 /*------------------------------------------------------------------------*/
@@ -2124,7 +2150,530 @@ AeroPipeline_3D::computeBlockNodesPositionsFromCtrlPoints()
 {
 	for (auto b:m_Blocking3D.allBlocks())
 	{
+		Blocking3D::Block b_ctrlpoints = m_CtrlPts.block(b.id());	// Because we suppose the numbering of blocks is the same between m_Blocking3D and m_CtrlPts, but we could use a variable to store the corresponding numbering
+		Array3D<math::Point> ctrl_points(b_ctrlpoints.getNbDiscretizationI(), b_ctrlpoints.getNbDiscretizationJ(), b_ctrlpoints.getNbDiscretizationK());
+		for (auto i=0;i<b_ctrlpoints.getNbDiscretizationI();i++)
+		{
+			for (auto j=0;j<b_ctrlpoints.getNbDiscretizationJ();j++)
+			{
+				for (auto k=0;k<b_ctrlpoints.getNbDiscretizationK();k++)
+				{
+					ctrl_points(i,j,k) = b_ctrlpoints(i,j,k).point();
+				}
+			}
+		}
+
+		math::BezierHex bezier_hex(ctrl_points);
+		Array3D<math::Point> b_points = bezier_hex.getDiscretization(b.getNbDiscretizationI(), b.getNbDiscretizationJ(), b.getNbDiscretizationK());
+		for (auto i=0;i<b.getNbDiscretizationI();i++)
+		{
+			for (auto j=0;j<b.getNbDiscretizationJ();j++)
+			{
+				for (auto k=0;k<b.getNbDiscretizationK();k++)
+				{
+					//b(i,j,k).setPoint(b_points(i,j,k));
+					double u = 1.0*i/(b.getNbDiscretizationI()-1.0) ;
+					double v = 1.0*j/(b.getNbDiscretizationJ()-1.0) ;
+					double w = 1.0*k/(b.getNbDiscretizationK()-1.0) ;
+					b(i,j,k).setPoint(bezier_hex(u,v,w));
+				}
+			}
+		}
 
 	}
+}
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_3D::computeControlPointstoInterpolateBoundaries()
+{
+	Variable<int>* var_couche_b = m_Blocking3D.getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche");
+
+	int degree = m_CtrlPts.block(0).getNbDiscretizationI()-1;
+
+	// On each face of the boundary, there are (degree+1)*(degree+1) points to interpolate
+	Eigen::MatrixXd mat_B((degree+1)*(degree+1), (degree+1)*(degree+1));
+	Eigen::VectorXd ctrl_points_x((degree+1)*(degree+1));
+	Eigen::VectorXd ctrl_points_y((degree+1)*(degree+1));
+	Eigen::VectorXd ctrl_points_z((degree+1)*(degree+1));
+	Eigen::VectorXd interp_points_x((degree+1)*(degree+1));
+	Eigen::VectorXd interp_points_y((degree+1)*(degree+1));
+	Eigen::VectorXd interp_points_z((degree+1)*(degree+1));
+
+	for (auto b:m_Blocking3D.allBlocks())
+	{
+		Blocking3D::Block b_ctrlpts = m_CtrlPts.block(b.id()) ;
+
+		// Face K=0
+		if ( (var_couche_b->value(b.getNode(0).id()) == 0
+		    && var_couche_b->value(b.getNode(1).id()) == 0
+		    && var_couche_b->value(b.getNode(2).id()) == 0
+		    && var_couche_b->value(b.getNode(3).id()) == 0)
+		    || (var_couche_b->value(b.getNode(0).id()) == m_params.nbr_couches
+		    && var_couche_b->value(b.getNode(1).id()) == m_params.nbr_couches
+		    && var_couche_b->value(b.getNode(2).id()) == m_params.nbr_couches
+		    && var_couche_b->value(b.getNode(3).id()) == m_params.nbr_couches) )
+		{
+			TCellID f0123_id = math::Utils::CommonFace(&m_Blocking3D, b.getNode(0).id(), b.getNode(1).id(), b.getNode(2).id(), b.getNode(3).id());
+			int geom_id = m_linker_BG->getGeomId<Face>(f0123_id) ;
+			cad::GeomSurface* surf = m_manager->getSurface(geom_id);
+			// Compute positions of points to interpolate and fill interp_points_* vectors
+			for (int i=0;i<b_ctrlpts.getNbDiscretizationI();i++)
+			{
+				for (int j=0;j<b_ctrlpts.getNbDiscretizationJ();j++)
+				{
+					math::Point p = b_ctrlpts(i, j, 0).point();
+					surf->project(p);
+					interp_points_x[i+j*(b_ctrlpts.getNbDiscretizationJ())] = p.X();
+					interp_points_y[i+j*(b_ctrlpts.getNbDiscretizationJ())] = p.Y();
+					interp_points_z[i+j*(b_ctrlpts.getNbDiscretizationJ())] = p.Z();
+				}
+			}
+			// Matrix Assembly
+			for (int i=0;i<b_ctrlpts.getNbDiscretizationI();i++)
+			{
+				for (int j=0;j<b_ctrlpts.getNbDiscretizationJ();j++)
+				{
+					double u = 1.0*i/(b_ctrlpts.getNbDiscretizationI()-1) ;
+					double v = 1.0*j/(b_ctrlpts.getNbDiscretizationJ()-1) ;
+					for (int i2=0;i2<b_ctrlpts.getNbDiscretizationI();i2++)
+					{
+						for (int j2=0;j2<b_ctrlpts.getNbDiscretizationJ();j2++)
+						{
+							double Bi2n = math::Utils::BernsteinPolynomial(b_ctrlpts.getNbDiscretizationI()-1, i2, u) ;
+							double Bj2m = math::Utils::BernsteinPolynomial(b_ctrlpts.getNbDiscretizationJ()-1, j2, v) ;
+							mat_B(i+j*b_ctrlpts.getNbDiscretizationJ(), i2+j2*b_ctrlpts.getNbDiscretizationJ()) = Bi2n*Bj2m ;
+						}
+					}
+				}
+			}
+			Eigen::MatrixXd mat_B_inv = mat_B.inverse();
+			ctrl_points_x = mat_B_inv*interp_points_x;
+			ctrl_points_y = mat_B_inv*interp_points_y;
+			ctrl_points_z = mat_B_inv*interp_points_z;
+			for (int i=0;i<b_ctrlpts.getNbDiscretizationI();i++)
+			{
+				for (int j=0;j<b_ctrlpts.getNbDiscretizationJ();j++)
+				{
+					// Set the same offset on the opposite face control points
+					math::Point p_opp = b_ctrlpts(i,j,b_ctrlpts.getNbDiscretizationK()-1).point();
+					p_opp.setX(p_opp.X() + (ctrl_points_x[i+j*b_ctrlpts.getNbDiscretizationJ()] - b_ctrlpts(i,j,0).X()) );
+					p_opp.setY(p_opp.Y() + (ctrl_points_y[i+j*b_ctrlpts.getNbDiscretizationJ()] - b_ctrlpts(i,j,0).Y()) );
+					p_opp.setZ(p_opp.Z() + (ctrl_points_z[i+j*b_ctrlpts.getNbDiscretizationJ()] - b_ctrlpts(i,j,0).Z()) );
+					b_ctrlpts(i,j,b_ctrlpts.getNbDiscretizationK()-1).setPoint(p_opp);
+					// Set the value of the new control point on the boundary
+					b_ctrlpts(i, j, 0).setX(ctrl_points_x[i+j*b_ctrlpts.getNbDiscretizationJ()]);
+					b_ctrlpts(i, j, 0).setY(ctrl_points_y[i+j*b_ctrlpts.getNbDiscretizationJ()]);
+					b_ctrlpts(i, j, 0).setZ(ctrl_points_z[i+j*b_ctrlpts.getNbDiscretizationJ()]);
+				}
+			}
+
+			b_ctrlpts.computeFaceNodesPoints(1,2,5,6);
+			b_ctrlpts.computeFaceNodesPoints(2,3,6,7);
+			b_ctrlpts.computeFaceNodesPoints(0,3,4,7);
+			b_ctrlpts.computeFaceNodesPoints(0,1,4,5);
+		}
+		// Face K=max
+		if ( (var_couche_b->value(b.getNode(4).id()) == 0
+		     && var_couche_b->value(b.getNode(5).id()) == 0
+		     && var_couche_b->value(b.getNode(6).id()) == 0
+		     && var_couche_b->value(b.getNode(7).id()) == 0)
+		    || (var_couche_b->value(b.getNode(4).id()) == m_params.nbr_couches
+		        && var_couche_b->value(b.getNode(5).id()) == m_params.nbr_couches
+		        && var_couche_b->value(b.getNode(6).id()) == m_params.nbr_couches
+		        && var_couche_b->value(b.getNode(7).id()) == m_params.nbr_couches) )
+		{
+			TCellID f4567_id = math::Utils::CommonFace(&m_Blocking3D, b.getNode(4).id(), b.getNode(5).id(),
+			                                           b.getNode(6).id(), b.getNode(7).id());
+			int geom_id = m_linker_BG->getGeomId<Face>(f4567_id) ;
+			cad::GeomSurface* surf = m_manager->getSurface(geom_id);
+			// Compute positions of points to interpolate and fill interp_points_* vectors
+			for (int i=0;i<b_ctrlpts.getNbDiscretizationI();i++)
+			{
+				for (int j=0;j<b_ctrlpts.getNbDiscretizationJ();j++)
+				{
+					math::Point p = b_ctrlpts(i, j, b_ctrlpts.getNbDiscretizationK()-1).point();
+					surf->project(p);
+					interp_points_x[i+j*(b_ctrlpts.getNbDiscretizationJ())] = p.X();
+					interp_points_y[i+j*(b_ctrlpts.getNbDiscretizationJ())] = p.Y();
+					interp_points_z[i+j*(b_ctrlpts.getNbDiscretizationJ())] = p.Z();
+				}
+			}
+			// Matrix Assembly
+			for (int i=0;i<b_ctrlpts.getNbDiscretizationI();i++)
+			{
+				for (int j=0;j<b_ctrlpts.getNbDiscretizationJ();j++)
+				{
+					double u = 1.0*i/(b_ctrlpts.getNbDiscretizationI()-1) ;
+					double v = 1.0*j/(b_ctrlpts.getNbDiscretizationJ()-1) ;
+					for (int i2=0;i2<b_ctrlpts.getNbDiscretizationI();i2++)
+					{
+						for (int j2=0;j2<b_ctrlpts.getNbDiscretizationJ();j2++)
+						{
+							double Bi2n = math::Utils::BernsteinPolynomial(b_ctrlpts.getNbDiscretizationI()-1, i2, u) ;
+							double Bj2m = math::Utils::BernsteinPolynomial(b_ctrlpts.getNbDiscretizationJ()-1, j2, v) ;
+							mat_B(i+j*b_ctrlpts.getNbDiscretizationJ(), i2+j2*b_ctrlpts.getNbDiscretizationJ()) = Bi2n*Bj2m ;
+						}
+					}
+				}
+			}
+			Eigen::MatrixXd mat_B_inv = mat_B.inverse();
+			ctrl_points_x = mat_B_inv*interp_points_x;
+			ctrl_points_y = mat_B_inv*interp_points_y;
+			ctrl_points_z = mat_B_inv*interp_points_z;
+			for (int i=0;i<b_ctrlpts.getNbDiscretizationI();i++)
+			{
+				for (int j=0;j<b_ctrlpts.getNbDiscretizationJ();j++)
+				{
+					// Set the same offset on the opposite face control points
+					math::Point p_opp = b_ctrlpts(i,j,0).point();
+					p_opp.setX(p_opp.X() + (ctrl_points_x[i+j*b_ctrlpts.getNbDiscretizationJ()] - b_ctrlpts(i,j,b_ctrlpts.getNbDiscretizationK()-1).X()) );
+					p_opp.setY(p_opp.Y() + (ctrl_points_y[i+j*b_ctrlpts.getNbDiscretizationJ()] - b_ctrlpts(i,j,b_ctrlpts.getNbDiscretizationK()-1).Y()) );
+					p_opp.setZ(p_opp.Z() + (ctrl_points_z[i+j*b_ctrlpts.getNbDiscretizationJ()] - b_ctrlpts(i,j,b_ctrlpts.getNbDiscretizationK()-1).Z()) );
+					b_ctrlpts(i,j,0).setPoint(p_opp);
+					// Set the value of the new control point on the boundary
+					b_ctrlpts(i, j, b_ctrlpts.getNbDiscretizationK()-1).setX(ctrl_points_x[i+j*b_ctrlpts.getNbDiscretizationJ()]);
+					b_ctrlpts(i, j, b_ctrlpts.getNbDiscretizationK()-1).setY(ctrl_points_y[i+j*b_ctrlpts.getNbDiscretizationJ()]);
+					b_ctrlpts(i, j, b_ctrlpts.getNbDiscretizationK()-1).setZ(ctrl_points_z[i+j*b_ctrlpts.getNbDiscretizationJ()]);
+				}
+			}
+
+			b_ctrlpts.computeFaceNodesPoints(1,2,5,6);
+			b_ctrlpts.computeFaceNodesPoints(2,3,6,7);
+			b_ctrlpts.computeFaceNodesPoints(0,3,4,7);
+			b_ctrlpts.computeFaceNodesPoints(0,1,4,5);
+		}
+		// Face J=0
+		if ( (var_couche_b->value(b.getNode(0).id()) == 0
+		     && var_couche_b->value(b.getNode(1).id()) == 0
+		     && var_couche_b->value(b.getNode(5).id()) == 0
+		     && var_couche_b->value(b.getNode(4).id()) == 0)
+		    || (var_couche_b->value(b.getNode(0).id()) == m_params.nbr_couches
+		        && var_couche_b->value(b.getNode(1).id()) == m_params.nbr_couches
+		        && var_couche_b->value(b.getNode(5).id()) == m_params.nbr_couches
+		        && var_couche_b->value(b.getNode(4).id()) == m_params.nbr_couches) )
+		{
+			TCellID f0154_id = math::Utils::CommonFace(&m_Blocking3D, b.getNode(0).id(), b.getNode(1).id(),
+			                                           b.getNode(5).id(), b.getNode(4).id());
+			int geom_id = m_linker_BG->getGeomId<Face>(f0154_id) ;
+			cad::GeomSurface* surf = m_manager->getSurface(geom_id);
+			// Compute positions of points to interpolate and fill interp_points_* vectors
+			for (int i=0;i<b_ctrlpts.getNbDiscretizationI();i++)
+			{
+				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
+				{
+					math::Point p = b_ctrlpts(i, 0, k).point();
+					surf->project(p);
+					interp_points_x[i+k*(b_ctrlpts.getNbDiscretizationK())] = p.X();
+					interp_points_y[i+k*(b_ctrlpts.getNbDiscretizationK())] = p.Y();
+					interp_points_z[i+k*(b_ctrlpts.getNbDiscretizationK())] = p.Z();
+				}
+			}
+			// Matrix Assembly
+			for (int i=0;i<b_ctrlpts.getNbDiscretizationI();i++)
+			{
+				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
+				{
+					double u = 1.0*i/(b_ctrlpts.getNbDiscretizationI()-1) ;
+					double v = 1.0*k/(b_ctrlpts.getNbDiscretizationK()-1) ;
+					for (int i2=0;i2<b_ctrlpts.getNbDiscretizationI();i2++)
+					{
+						for (int k2=0;k2<b_ctrlpts.getNbDiscretizationK();k2++)
+						{
+							double Bi2n = math::Utils::BernsteinPolynomial(b_ctrlpts.getNbDiscretizationI()-1, i2, u) ;
+							double Bk2m = math::Utils::BernsteinPolynomial(b_ctrlpts.getNbDiscretizationK()-1, k2, v) ;
+							mat_B(i+k*b_ctrlpts.getNbDiscretizationK(), i2+k2*b_ctrlpts.getNbDiscretizationK()) = Bi2n*Bk2m ;
+						}
+					}
+				}
+			}
+			Eigen::MatrixXd mat_B_inv = mat_B.inverse();
+			ctrl_points_x = mat_B_inv*interp_points_x;
+			ctrl_points_y = mat_B_inv*interp_points_y;
+			ctrl_points_z = mat_B_inv*interp_points_z;
+			for (int i=0;i<b_ctrlpts.getNbDiscretizationI();i++)
+			{
+				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
+				{
+					// Set the same offset on the opposite face control points
+					math::Point p_opp = b_ctrlpts(i,b_ctrlpts.getNbDiscretizationJ()-1,k).point();
+					p_opp.setX(p_opp.X() + (ctrl_points_x[i+k*b_ctrlpts.getNbDiscretizationK()] - b_ctrlpts(i,0,k).X()) );
+					p_opp.setY(p_opp.Y() + (ctrl_points_y[i+k*b_ctrlpts.getNbDiscretizationK()] - b_ctrlpts(i,0,k).Y()) );
+					p_opp.setZ(p_opp.Z() + (ctrl_points_z[i+k*b_ctrlpts.getNbDiscretizationK()] - b_ctrlpts(i,0,k).Z()) );
+					b_ctrlpts(i,b_ctrlpts.getNbDiscretizationJ()-1,k).setPoint(p_opp);
+					// Set the value of the new control point on the boundary
+					b_ctrlpts(i, 0, k).setX(ctrl_points_x[i+k*b_ctrlpts.getNbDiscretizationK()]);
+					b_ctrlpts(i, 0, k).setY(ctrl_points_y[i+k*b_ctrlpts.getNbDiscretizationK()]);
+					b_ctrlpts(i, 0, k).setZ(ctrl_points_z[i+k*b_ctrlpts.getNbDiscretizationK()]);
+				}
+			}
+
+			b_ctrlpts.computeFaceNodesPoints(0,1,2,3);
+			b_ctrlpts.computeFaceNodesPoints(1,2,5,6);
+			b_ctrlpts.computeFaceNodesPoints(4,5,6,7);
+			b_ctrlpts.computeFaceNodesPoints(0,3,4,7);
+		}
+		// Face J=max
+		if ( (var_couche_b->value(b.getNode(3).id()) == 0
+		     && var_couche_b->value(b.getNode(2).id()) == 0
+		     && var_couche_b->value(b.getNode(6).id()) == 0
+		     && var_couche_b->value(b.getNode(7).id()) == 0)
+		    || (var_couche_b->value(b.getNode(3).id()) == m_params.nbr_couches
+		        && var_couche_b->value(b.getNode(2).id()) == m_params.nbr_couches
+		        && var_couche_b->value(b.getNode(6).id()) == m_params.nbr_couches
+		        && var_couche_b->value(b.getNode(7).id()) == m_params.nbr_couches) )
+		{
+			TCellID f3267_id = math::Utils::CommonFace(&m_Blocking3D, b.getNode(3).id(), b.getNode(2).id(),
+			                                           b.getNode(6).id(), b.getNode(7).id());
+			int geom_id = m_linker_BG->getGeomId<Face>(f3267_id) ;
+			cad::GeomSurface* surf = m_manager->getSurface(geom_id);
+			// Compute positions of points to interpolate and fill interp_points_* vectors
+			for (int i=0;i<b_ctrlpts.getNbDiscretizationI();i++)
+			{
+				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
+				{
+					math::Point p = b_ctrlpts(i, b_ctrlpts.getNbDiscretizationJ()-1, k).point();
+					surf->project(p);
+					interp_points_x[i+k*(b_ctrlpts.getNbDiscretizationK())] = p.X();
+					interp_points_y[i+k*(b_ctrlpts.getNbDiscretizationK())] = p.Y();
+					interp_points_z[i+k*(b_ctrlpts.getNbDiscretizationK())] = p.Z();
+				}
+			}
+			// Matrix Assembly
+			for (int i=0;i<b_ctrlpts.getNbDiscretizationI();i++)
+			{
+				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
+				{
+					double u = 1.0*i/(b_ctrlpts.getNbDiscretizationI()-1) ;
+					double v = 1.0*k/(b_ctrlpts.getNbDiscretizationK()-1) ;
+					for (int i2=0;i2<b_ctrlpts.getNbDiscretizationI();i2++)
+					{
+						for (int k2=0;k2<b_ctrlpts.getNbDiscretizationK();k2++)
+						{
+							double Bi2n = math::Utils::BernsteinPolynomial(b_ctrlpts.getNbDiscretizationI()-1, i2, u) ;
+							double Bk2m = math::Utils::BernsteinPolynomial(b_ctrlpts.getNbDiscretizationK()-1, k2, v) ;
+							mat_B(i+k*b_ctrlpts.getNbDiscretizationK(), i2+k2*b_ctrlpts.getNbDiscretizationK()) = Bi2n*Bk2m ;
+						}
+					}
+				}
+			}
+			Eigen::MatrixXd mat_B_inv = mat_B.inverse();
+			ctrl_points_x = mat_B_inv*interp_points_x;
+			ctrl_points_y = mat_B_inv*interp_points_y;
+			ctrl_points_z = mat_B_inv*interp_points_z;
+			for (int i=0;i<b_ctrlpts.getNbDiscretizationI();i++)
+			{
+				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
+				{
+					// Set the same offset on the opposite face control points
+					math::Point p_opp = b_ctrlpts(i,0,k).point();
+					p_opp.setX(p_opp.X() + (ctrl_points_x[i+k*b_ctrlpts.getNbDiscretizationK()] - b_ctrlpts(i,b_ctrlpts.getNbDiscretizationJ()-1,k).X()) );
+					p_opp.setY(p_opp.Y() + (ctrl_points_y[i+k*b_ctrlpts.getNbDiscretizationK()] - b_ctrlpts(i,b_ctrlpts.getNbDiscretizationJ()-1,k).Y()) );
+					p_opp.setZ(p_opp.Z() + (ctrl_points_z[i+k*b_ctrlpts.getNbDiscretizationK()] - b_ctrlpts(i,b_ctrlpts.getNbDiscretizationJ()-1,k).Z()) );
+					b_ctrlpts(i,0,k).setPoint(p_opp);
+					// Set the value of the new control point on the boundary
+					b_ctrlpts(i, b_ctrlpts.getNbDiscretizationJ()-1, k).setX(ctrl_points_x[i+k*b_ctrlpts.getNbDiscretizationK()]);
+					b_ctrlpts(i, b_ctrlpts.getNbDiscretizationJ()-1, k).setY(ctrl_points_y[i+k*b_ctrlpts.getNbDiscretizationK()]);
+					b_ctrlpts(i, b_ctrlpts.getNbDiscretizationJ()-1, k).setZ(ctrl_points_z[i+k*b_ctrlpts.getNbDiscretizationK()]);
+				}
+			}
+
+			b_ctrlpts.computeFaceNodesPoints(0,1,2,3);
+			b_ctrlpts.computeFaceNodesPoints(1,2,5,6);
+			b_ctrlpts.computeFaceNodesPoints(4,5,6,7);
+			b_ctrlpts.computeFaceNodesPoints(0,3,4,7);
+		}
+		// Face I=0
+		if ( (var_couche_b->value(b.getNode(0).id()) == 0
+		     && var_couche_b->value(b.getNode(3).id()) == 0
+		     && var_couche_b->value(b.getNode(7).id()) == 0
+		     && var_couche_b->value(b.getNode(4).id()) == 0)
+		    || (var_couche_b->value(b.getNode(0).id()) == m_params.nbr_couches
+		        && var_couche_b->value(b.getNode(3).id()) == m_params.nbr_couches
+		        && var_couche_b->value(b.getNode(7).id()) == m_params.nbr_couches
+		        && var_couche_b->value(b.getNode(4).id()) == m_params.nbr_couches) )
+		{
+			TCellID f0374_id = math::Utils::CommonFace(&m_Blocking3D, b.getNode(0).id(), b.getNode(3).id(),
+			                                           b.getNode(7).id(), b.getNode(4).id());
+			int geom_id = m_linker_BG->getGeomId<Face>(f0374_id) ;
+			cad::GeomSurface* surf = m_manager->getSurface(geom_id);
+			// Compute positions of points to interpolate and fill interp_points_* vectors
+			for (int j=0;j<b_ctrlpts.getNbDiscretizationJ();j++)
+			{
+				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
+				{
+					math::Point p = b_ctrlpts(0, j, k).point();
+					surf->project(p);
+					interp_points_x[j+k*(b_ctrlpts.getNbDiscretizationK())] = p.X();
+					interp_points_y[j+k*(b_ctrlpts.getNbDiscretizationK())] = p.Y();
+					interp_points_z[j+k*(b_ctrlpts.getNbDiscretizationK())] = p.Z();
+				}
+			}
+			// Matrix Assembly
+			for (int j=0;j<b_ctrlpts.getNbDiscretizationJ();j++)
+			{
+				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
+				{
+					double u = 1.0*j/(b_ctrlpts.getNbDiscretizationJ()-1) ;
+					double v = 1.0*k/(b_ctrlpts.getNbDiscretizationK()-1) ;
+					for (int j2=0;j2<b_ctrlpts.getNbDiscretizationJ();j2++)
+					{
+						for (int k2=0;k2<b_ctrlpts.getNbDiscretizationK();k2++)
+						{
+							double Bj2n = math::Utils::BernsteinPolynomial(b_ctrlpts.getNbDiscretizationJ()-1, j2, u) ;
+							double Bk2m = math::Utils::BernsteinPolynomial(b_ctrlpts.getNbDiscretizationK()-1, k2, v) ;
+							mat_B(j+k*b_ctrlpts.getNbDiscretizationK(), j2+k2*b_ctrlpts.getNbDiscretizationK()) = Bj2n*Bk2m ;
+						}
+					}
+				}
+			}
+			Eigen::MatrixXd mat_B_inv = mat_B.inverse();
+			ctrl_points_x = mat_B_inv*interp_points_x;
+			ctrl_points_y = mat_B_inv*interp_points_y;
+			ctrl_points_z = mat_B_inv*interp_points_z;
+			for (int j=0;j<b_ctrlpts.getNbDiscretizationJ();j++)
+			{
+				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
+				{
+					// Set the same offset on the opposite face control points
+					math::Point p_opp = b_ctrlpts(b_ctrlpts.getNbDiscretizationI()-1,j,k).point();
+					p_opp.setX(p_opp.X() + (ctrl_points_x[j+k*b_ctrlpts.getNbDiscretizationK()] - b_ctrlpts(0,j,k).X()) );
+					p_opp.setY(p_opp.Y() + (ctrl_points_y[j+k*b_ctrlpts.getNbDiscretizationK()] - b_ctrlpts(0,j,k).Y()) );
+					p_opp.setZ(p_opp.Z() + (ctrl_points_z[j+k*b_ctrlpts.getNbDiscretizationK()] - b_ctrlpts(0,j,k).Z()) );
+					b_ctrlpts(b_ctrlpts.getNbDiscretizationI()-1,j,k).setPoint(p_opp);
+					// Set the value of the new control point on the boundary
+					b_ctrlpts(0, j, k).setX(ctrl_points_x[j+k*b_ctrlpts.getNbDiscretizationK()]);
+					b_ctrlpts(0, j, k).setY(ctrl_points_y[j+k*b_ctrlpts.getNbDiscretizationK()]);
+					b_ctrlpts(0, j, k).setZ(ctrl_points_z[j+k*b_ctrlpts.getNbDiscretizationK()]);
+				}
+			}
+
+			b_ctrlpts.computeFaceNodesPoints(0,1,4,5);
+			b_ctrlpts.computeFaceNodesPoints(0,1,2,3);
+			b_ctrlpts.computeFaceNodesPoints(4,5,6,7);
+			b_ctrlpts.computeFaceNodesPoints(2,3,6,7);
+		}
+		// Face I=max
+		if ( (var_couche_b->value(b.getNode(1).id()) == 0
+		     && var_couche_b->value(b.getNode(2).id()) == 0
+		     && var_couche_b->value(b.getNode(6).id()) == 0
+		     && var_couche_b->value(b.getNode(5).id()) == 0)
+		    || (var_couche_b->value(b.getNode(1).id()) == m_params.nbr_couches
+		        && var_couche_b->value(b.getNode(2).id()) == m_params.nbr_couches
+		        && var_couche_b->value(b.getNode(6).id()) == m_params.nbr_couches
+		        && var_couche_b->value(b.getNode(5).id()) == m_params.nbr_couches) )
+		{
+			TCellID f1265_id = math::Utils::CommonFace(&m_Blocking3D, b.getNode(1).id(), b.getNode(2).id(),
+			                                           b.getNode(6).id(), b.getNode(5).id());
+			int geom_id = m_linker_BG->getGeomId<Face>(f1265_id) ;
+			cad::GeomSurface* surf = m_manager->getSurface(geom_id);
+			// Compute positions of points to interpolate and fill interp_points_* vectors
+			for (int j=0;j<b_ctrlpts.getNbDiscretizationJ();j++)
+			{
+				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
+				{
+					math::Point p = b_ctrlpts(b_ctrlpts.getNbDiscretizationI()-1, j, k).point();
+					surf->project(p);
+					interp_points_x[j+k*(b_ctrlpts.getNbDiscretizationK())] = p.X();
+					interp_points_y[j+k*(b_ctrlpts.getNbDiscretizationK())] = p.Y();
+					interp_points_z[j+k*(b_ctrlpts.getNbDiscretizationK())] = p.Z();
+				}
+			}
+			// Matrix Assembly
+			for (int j=0;j<b_ctrlpts.getNbDiscretizationJ();j++)
+			{
+				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
+				{
+					double u = 1.0*j/(b_ctrlpts.getNbDiscretizationJ()-1) ;
+					double v = 1.0*k/(b_ctrlpts.getNbDiscretizationK()-1) ;
+					for (int j2=0;j2<b_ctrlpts.getNbDiscretizationJ();j2++)
+					{
+						for (int k2=0;k2<b_ctrlpts.getNbDiscretizationK();k2++)
+						{
+							double Bj2n = math::Utils::BernsteinPolynomial(b_ctrlpts.getNbDiscretizationJ()-1, j2, u) ;
+							double Bk2m = math::Utils::BernsteinPolynomial(b_ctrlpts.getNbDiscretizationK()-1, k2, v) ;
+							mat_B(j+k*b_ctrlpts.getNbDiscretizationK(), j2+k2*b_ctrlpts.getNbDiscretizationK()) = Bj2n*Bk2m ;
+						}
+					}
+				}
+			}
+			Eigen::MatrixXd mat_B_inv = mat_B.inverse();
+			ctrl_points_x = mat_B_inv*interp_points_x;
+			ctrl_points_y = mat_B_inv*interp_points_y;
+			ctrl_points_z = mat_B_inv*interp_points_z;
+			for (int j=0;j<b_ctrlpts.getNbDiscretizationJ();j++)
+			{
+				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
+				{
+					// Set the same offset on the opposite face control points
+					math::Point p_opp = b_ctrlpts(0,j,k).point();
+					p_opp.setX(p_opp.X() + (ctrl_points_x[j+k*b_ctrlpts.getNbDiscretizationK()] - b_ctrlpts(b_ctrlpts.getNbDiscretizationI()-1,j,k).X()) );
+					p_opp.setY(p_opp.Y() + (ctrl_points_y[j+k*b_ctrlpts.getNbDiscretizationK()] - b_ctrlpts(b_ctrlpts.getNbDiscretizationI()-1,j,k).Y()) );
+					p_opp.setZ(p_opp.Z() + (ctrl_points_z[j+k*b_ctrlpts.getNbDiscretizationK()] - b_ctrlpts(b_ctrlpts.getNbDiscretizationI()-1,j,k).Z()) );
+					b_ctrlpts(0,j,k).setPoint(p_opp);
+					// Set the value of the new control point on the boundary
+					b_ctrlpts(b_ctrlpts.getNbDiscretizationI()-1, j, k).setX(ctrl_points_x[j+k*b_ctrlpts.getNbDiscretizationK()]);
+					b_ctrlpts(b_ctrlpts.getNbDiscretizationI()-1, j, k).setY(ctrl_points_y[j+k*b_ctrlpts.getNbDiscretizationK()]);
+					b_ctrlpts(b_ctrlpts.getNbDiscretizationI()-1, j, k).setZ(ctrl_points_z[j+k*b_ctrlpts.getNbDiscretizationK()]);
+				}
+			}
+
+			b_ctrlpts.computeFaceNodesPoints(0,1,4,5);
+			b_ctrlpts.computeFaceNodesPoints(0,1,2,3);
+			b_ctrlpts.computeFaceNodesPoints(4,5,6,7);
+			b_ctrlpts.computeFaceNodesPoints(2,3,6,7);
+		}
+	}
+
+	// TODO: devoir de nouveau interpoler les arêtes ?
+	//  Pas sûr puisqu'on projette, pour chaque arête, sur les deux faces adjacentes
+
+	// Recompute the positions of the inner control points
+	for (auto b:m_CtrlPts.allBlocks())
+	{
+		b.computeInnerBlockNodesPoints();
+		/*
+		auto nb_I = b.getNbDiscretizationI();
+		auto nb_J = b.getNbDiscretizationJ();
+		auto nb_K = b.getNbDiscretizationK();
+		Array3D<math::Point> pnts(nb_I, nb_J, nb_K);
+		for (auto i=0;i<nb_I;i++)
+		{
+			for (auto j=0;j<nb_J;j++)
+			{
+				pnts(i,j,0) = b(i,j,0).point();
+				pnts(i,j,nb_K-1) = b(i,j,nb_K-1).point();
+			}
+		}
+		for (auto i=0;i<nb_I;i++)
+		{
+			for (auto k=0;k<nb_K;k++)
+			{
+				pnts(i,0,k) = b(i,0,k).point();
+				pnts(i,nb_J-1,k) = b(i,nb_J-1,k).point();
+			}
+		}
+		for (auto j=0;j<nb_J;j++)
+		{
+			for (auto k=0;k<nb_K;k++)
+			{
+				pnts(0,j,k) = b(0,j,k).point();
+				pnts(nb_I-1,j,k) = b(nb_I-1,j,k).point();
+			}
+		}
+		TransfiniteInterpolation_3D::computeHex(pnts);
+		for(auto i=1; i<nb_I-1;i++)
+		{
+			for(auto j=1; j<nb_J-1;j++)
+			{
+				for (auto k=1; k<nb_K-1;k++)
+				{
+					b(i,j,k).setPoint(pnts(i,j,k));
+				}
+			}
+		}
+		 */
+	}
+
+
 }
 /*------------------------------------------------------------------------*/

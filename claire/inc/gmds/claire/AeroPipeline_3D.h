@@ -67,11 +67,22 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_3D : public AbstractAeroPipeline {
 	 */
 	void initBlocking3DfromMesh();
 	/*----------------------------------------------------------------------------*/
-	/** @brief
+	/** @brief Update the Variable "Couche" for each inner nodes of the blocking
+	 * m_Blocking3D.
 	 */
 	void updateLayerValues();
 	/*----------------------------------------------------------------------------*/
+	/** @brief Compute the position of the inner nodes of each block of the
+	 * m_Blocking3D, using the parametric space [0,1]x[0,1]x[0,1] for each block
+	 * considered as Bezier Hex defined by the control points stored in
+	 * m_CtrlPts
+	 */
 	void computeBlockNodesPositionsFromCtrlPoints();
+	/*----------------------------------------------------------------------------*/
+	/** @brief Compute the position of the boundary control points stored in
+	 * m_CtrlPts, in order to interpolate the physical boundaries of the geometry.
+	 */
+	void computeControlPointstoInterpolateBoundaries();
 	/*----------------------------------------------------------------------------*/
 
  protected:
