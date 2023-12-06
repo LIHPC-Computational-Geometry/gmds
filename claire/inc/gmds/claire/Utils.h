@@ -161,13 +161,37 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static double linearInterpolation2D3Pt(const math::Point& P1, const math::Point& P2, const math::Point& P3, const math::Point& M, double c1, double c2, double c3);
 	/*----------------------------------------------------------------------------*/
-	/** @brief Reavel the curved block edges
+	/** @brief Linear 3D interpolation with 4 points
+	 	*
+		* \param[in] P1, P2, P3, P4 the 4 points were the value is known
+	 	* \param[in] c1, c2, c3, c4 the 4 values à the points P1, P2, P3 and P4
+	 	* \param[in] M the position we want to interpolate the value
+		*
+		* \return  the interpolated value
+	 */
+	static double linearInterpolation3D4Pt(const math::Point& P1, const math::Point& P2, const math::Point& P3, const math::Point& P4, const math::Point& M,
+	                                       double c1, double c2, double c3, double c4);
+	/*----------------------------------------------------------------------------*/
+	/** @brief Reveal the curved block edges
 	 	*
 		* \param[in] blocking2D the blocking
 		*
 		* \return  the mesh
 	 */
-	static void CurveBlockEdgesReavel(Blocking2D* blocking2D, Mesh* m);
+	static void CurveBlockEdgesReveal(Blocking2D* blocking2D, Mesh* m);
+	/*----------------------------------------------------------------------------*/
+	/** @brief Reveal the curved block edges. The aim of this method is to store in
+	 * the mesh @p Am false flat faces among the block edges of the curved blocking
+	 * represented by its control points, stored in Ablocking3D. The @p Am mesh
+	 * should only be used for visualization.
+	 	*
+		* \param[in] Ablocking3D the control points of the curved blocking
+		* \param[inout] Amesh the mesh is which the false faces are stored
+	 	* \param[in] Asample the number of nodes per block edges
+		*
+		* \return the trick mesh to use for visualization
+	 */
+	static void CurveBlockEdgesReveal3D(Blocking3D* Ablocking3D, Mesh* Am, int Asample);
 	/*----------------------------------------------------------------------------*/
 	/** \brief  Create the edge defined by the two nodes to the mesh, and create the
 	 		* connectivities N<->E.

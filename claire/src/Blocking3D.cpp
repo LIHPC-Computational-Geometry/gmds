@@ -874,3 +874,197 @@ bool Blocking3D::Block::isEdgeOnK(const TCellID AID) {
 	//CAUTION : if the edge does not belong the bloc it will return false instead of an error
 }
 /*----------------------------------------------------------------------------*/
+void Blocking3D::Block::computeFaceNodesPoints(const int AI, const int AJ, const int AK, const int AL)
+{
+	if (AI >= AJ || AJ >= AK || AK >= AL)
+	{
+		throw GMDSException("Error: please set the node index in an ordered way");
+	}
+
+	int nb_I = (*this).getNbDiscretizationI();
+	int nb_J = (*this).getNbDiscretizationJ();
+	int nb_K = (*this).getNbDiscretizationK();
+
+	if (AI==0 && AJ == 1 && AK == 2 && AL == 3)	// Face K=0
+	{
+		Array2D<math::Point> pnts(nb_I, nb_J);
+		for (auto i=0;i<nb_I;i++)
+		{
+			pnts(i,0) = (*this)(i,0,0).point();
+			pnts(i,nb_J-1) = (*this)(i,nb_J-1,0).point();
+		}
+		for (auto j=0;j<nb_J;j++)
+		{
+			pnts(0,j) = (*this)(0,j,0).point();
+			pnts(nb_I-1,j) = (*this)(nb_I-1,j,0).point();
+		}
+		math::TransfiniteInterpolation::computeQuad(pnts);
+		for (auto i=1;i<nb_I-1;i++)
+		{
+			for (auto j=1;j<nb_J-1;j++)
+			{
+				(*this)(i,j,0).setPoint(pnts(i,j));
+			}
+		}
+
+	}
+	else if (AI==4 && AJ == 5 && AK == 6 && AL == 7)	// Face K=max
+	{
+		Array2D<math::Point> pnts(nb_I, nb_J);
+		for (auto i=0;i<nb_I;i++)
+		{
+			pnts(i,0) = (*this)(i,0,nb_K-1).point();
+			pnts(i,nb_J-1) = (*this)(i,nb_J-1,nb_K-1).point();
+		}
+		for (auto j=0;j<nb_J;j++)
+		{
+			pnts(0,j) = (*this)(0,j,nb_K-1).point();
+			pnts(nb_I-1,j) = (*this)(nb_I-1,j,nb_K-1).point();
+		}
+		math::TransfiniteInterpolation::computeQuad(pnts);
+		for (auto i=1;i<nb_I-1;i++)
+		{
+			for (auto j=1;j<nb_J-1;j++)
+			{
+				(*this)(i,j,nb_K-1).setPoint(pnts(i,j));
+			}
+		}
+
+	}
+	else if (AI==0 && AJ == 1 && AK == 4 && AL == 5)	// Face J=0
+	{
+		Array2D<math::Point> pnts(nb_I, nb_K);
+		for (auto i=0;i<nb_I;i++)
+		{
+			pnts(i,0) = (*this)(i,0,0).point();
+			pnts(i,nb_K-1) = (*this)(i,0,nb_K-1).point();
+		}
+		for (auto k=0;k<nb_K;k++)
+		{
+			pnts(0,k) = (*this)(0,0,k).point();
+			pnts(nb_I-1,k) = (*this)(nb_I-1,0,k).point();
+		}
+		math::TransfiniteInterpolation::computeQuad(pnts);
+		for (auto i=1;i<nb_I-1;i++)
+		{
+			for (auto k=1;k<nb_K-1;k++)
+			{
+				(*this)(i,0,k).setPoint(pnts(i,k));
+			}
+		}
+
+	}
+	else if (AI==2 && AJ == 3 && AK == 6 && AL == 7)	// Face J=max
+	{
+		Array2D<math::Point> pnts(nb_I, nb_K);
+		for (auto i=0;i<nb_I;i++)
+		{
+			pnts(i,0) = (*this)(i,nb_J-1,0).point();
+			pnts(i,nb_K-1) = (*this)(i,nb_J-1,nb_K-1).point();
+		}
+		for (auto k=0;k<nb_K;k++)
+		{
+			pnts(0,k) = (*this)(0,nb_J-1,k).point();
+			pnts(nb_I-1,k) = (*this)(nb_I-1,nb_J-1,k).point();
+		}
+		math::TransfiniteInterpolation::computeQuad(pnts);
+		for (auto i=1;i<nb_I-1;i++)
+		{
+			for (auto k=1;k<nb_K-1;k++)
+			{
+				(*this)(i,nb_J-1,k).setPoint(pnts(i,k));
+			}
+		}
+
+	}
+	else if (AI==0 && AJ == 3 && AK == 4 && AL == 7)	// Face I=0
+	{
+		Array2D<math::Point> pnts(nb_J, nb_K);
+		for (auto j=0;j<nb_J;j++)
+		{
+			pnts(j,0) = (*this)(0,j,0).point();
+			pnts(j,nb_K-1) = (*this)(0,j,nb_K-1).point();
+		}
+		for (auto k=0;k<nb_K;k++)
+		{
+			pnts(0,k) = (*this)(0,0,k).point();
+			pnts(nb_J-1,k) = (*this)(0,nb_J-1,k).point();
+		}
+		math::TransfiniteInterpolation::computeQuad(pnts);
+		for (auto j=1;j<nb_J-1;j++)
+		{
+			for (auto k=1;k<nb_K-1;k++)
+			{
+				(*this)(0,j,k).setPoint(pnts(j,k));
+			}
+		}
+
+	}
+	else if (AI==1 && AJ == 2 && AK == 5 && AL == 6)	// Face I=max
+	{
+		Array2D<math::Point> pnts(nb_J, nb_K);
+		for (auto j=0;j<nb_J;j++)
+		{
+			pnts(j,0) = (*this)(nb_I-1,j,0).point();
+			pnts(j,nb_K-1) = (*this)(nb_I-1,j,nb_K-1).point();
+		}
+		for (auto k=0;k<nb_K;k++)
+		{
+			pnts(0,k) = (*this)(nb_I-1,0,k).point();
+			pnts(nb_J-1,k) = (*this)(nb_I-1,nb_J-1,k).point();
+		}
+		math::TransfiniteInterpolation::computeQuad(pnts);
+		for (auto j=1;j<nb_J-1;j++)
+		{
+			for (auto k=1;k<nb_K-1;k++)
+			{
+				(*this)(nb_I-1,j,k).setPoint(pnts(j,k));
+			}
+		}
+
+	}
+}
+/*----------------------------------------------------------------------------*/
+void Blocking3D::Block::computeInnerBlockNodesPoints()
+{
+	auto nb_I = (*this).getNbDiscretizationI();
+	auto nb_J = (*this).getNbDiscretizationJ();
+	auto nb_K = (*this).getNbDiscretizationK();
+	Array3D<math::Point> pnts(nb_I, nb_J, nb_K);
+	for (auto i=0;i<nb_I;i++)
+	{
+		for (auto j=0;j<nb_J;j++)
+		{
+			pnts(i,j,0) = (*this)(i,j,0).point();
+			pnts(i,j,nb_K-1) = (*this)(i,j,nb_K-1).point();
+		}
+	}
+	for (auto i=0;i<nb_I;i++)
+	{
+		for (auto k=0;k<nb_K;k++)
+		{
+			pnts(i,0,k) = (*this)(i,0,k).point();
+			pnts(i,nb_J-1,k) = (*this)(i,nb_J-1,k).point();
+		}
+	}
+	for (auto j=0;j<nb_J;j++)
+	{
+		for (auto k=0;k<nb_K;k++)
+		{
+			pnts(0,j,k) = (*this)(0,j,k).point();
+			pnts(nb_I-1,j,k) = (*this)(nb_I-1,j,k).point();
+		}
+	}
+	TransfiniteInterpolation_3D::computeHex(pnts);
+	for(auto i=1; i<nb_I-1;i++)
+	{
+		for(auto j=1; j<nb_J-1;j++)
+		{
+			for (auto k=1; k<nb_K-1;k++)
+			{
+				(*this)(i,j,k).setPoint(pnts(i,j,k));
+			}
+		}
+	}
+}
+/*----------------------------------------------------------------------------*/
