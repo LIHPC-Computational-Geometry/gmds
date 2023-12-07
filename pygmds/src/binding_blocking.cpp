@@ -60,6 +60,7 @@ void bind_blocking(py::module &m){
                     &gmds::blocking::CurvedBlocking::remove_block))
             .def("info", &gmds::blocking::CurvedBlocking::info)
             .def("convert_to_mesh", &gmds::blocking::CurvedBlocking::convert_to_mesh)
+            .def("init_from_mesh", &gmds::blocking::CurvedBlocking::init_from_mesh)
             .def("save_vtk_blocking", &gmds::blocking::CurvedBlocking::save_vtk_blocking)
             .def("get_block_id", &gmds::blocking::CurvedBlocking::get_block_id);
 

@@ -627,6 +627,97 @@ CurvedBlocking::convert_to_mesh(Mesh &AMesh)
 		var_region_geom_dim->set(r.id(), att.geom_dim);
 	}
 }
+
+
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::init_from_mesh(Mesh &AMesh) {
+    MeshModel model = AMesh.getModel();
+    if (!model.has(N) || !model.has(R) || !model.has(R2N))
+        throw GMDSException("Wrong mesh model for mesh->block->mesh conversion");
+
+    //map from gmap node ids to init mesh id
+    std::map<TCellID, TCellID> n2n;
+    for (auto r_id: AMesh.regions()) {
+        Region r = AMesh.get<Region>(r_id);
+        //only hex cells are converted
+        if (r.type() == GMDS_HEX) {
+            std::vector<gmds::Node> ns = r.get<gmds::Node>();
+            Block b = create_block(ns[0].point(), ns[1].point(), ns[2].point(), ns[3].point(),
+                                   ns[4].point(), ns[5].point(), ns[6].point(), ns[7].point());
+            std::vector<Node> b_nodes = get_nodes_of_block(b);
+            for (auto i = 0; i < 8; i++) {
+                math::Point pi = ns[i].point();
+                auto min_dist = pi.distance2(b_nodes[0]->info().point);
+                auto min_id = b_nodes[0]->info().topo_id;
+                for (auto j = 1; j < 8; j++) {
+                    auto dist_j = pi.distance2(b_nodes[j]->info().point);
+                    if (dist_j < min_dist) {
+                        min_dist = dist_j;
+                        min_id = b_nodes[j]->info().topo_id;
+                    }
+                }
+                n2n[min_id] = ns[i].id();
+            }
+        }
+    }
+
+    // now we glue blocks;
+    for (auto it_r = m_gmap.attributes<3>().begin(), it_rend = m_gmap.attributes<3>().end(); it_r != it_rend; ++it_r) {
+        std::vector<Face> cell_faces = get_faces_of_block(it_r);
+        for (auto f: cell_faces) {
+            Dart3 d = f->dart();
+            if (m_gmap.is_free<3>(d)) {
+                //means the face is not connected
+                std::vector<Node> f_nodes = get_nodes_of_face(f);
+                //We go through all the 3-free faces and try to connect to f
+                bool found_and_glue = false;
+                for (auto it_f = m_gmap.attributes<2>().begin(), it_fend = m_gmap.attributes<2>().end();
+                     it_f != it_fend; ++it_f) {
+                    auto att = m_gmap.info_of_attribute<2>(it_f);
+                    Dart3 d2 = it_f->dart();
+                    if (d2 != d && m_gmap.is_free<3>(d2)) {
+                        //free dart and different face, we check if this face can be connected
+                        std::vector<Node> f2_nodes = get_nodes_of_face(it_f);
+                        //same nodes?
+                        bool one_missing = false;
+                        for (auto i = 0; i < f_nodes.size() && !one_missing; i++) {
+                            bool found_same = false;
+                            for (auto j = 0; j < f2_nodes.size() && !found_same; j++) {
+                                if (n2n[f_nodes[i]->info().topo_id] == n2n[f2_nodes[j]->info().topo_id]) {
+                                    found_same = true;
+                                }
+                            }
+                            if (!found_same)
+                                one_missing = true;
+                        }
+
+                        if (!one_missing) {
+                            //we have the same ids, we need to glue in the right order
+                            found_and_glue = true;
+                            //Dart of the initial face d, and the face to glue d2
+                            TCellID ref_id = n2n[m_gmap.attribute<0>(d)->info().topo_id];
+                            TCellID ref_id_0 = n2n[m_gmap.attribute<0>(m_gmap.alpha<0>(d))->info().topo_id];
+
+                            //starting from d2, we move to find the one that correspond to ref_id
+                            Dart3 d_glue = d2;
+                            while (n2n[m_gmap.attribute<0>(d_glue)->info().topo_id] != ref_id) {
+                                d_glue = m_gmap.alpha<1, 0>(d_glue);
+                            }
+                            if (n2n[m_gmap.attribute<0>(m_gmap.alpha<0>(d_glue))->info().topo_id] == ref_id_0) {
+                                m_gmap.sew<3>(d_glue, d);
+                            } else {
+                                m_gmap.sew<3>(m_gmap.alpha<1>(d_glue), d);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 /*----------------------------------------------------------------------------*/
 void
 CurvedBlocking::save_vtk_blocking(const std::string &AFileName)

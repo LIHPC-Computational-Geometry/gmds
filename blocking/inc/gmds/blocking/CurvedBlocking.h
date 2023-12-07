@@ -575,6 +575,14 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in,out] ACellMesh A cellular mesh
 	 */
 	void convert_to_mesh(Mesh &ACellMesh);
+
+    /**@brief intiialize the block structure from a gmds cellular mesh. The provided
+	 * 		 mesh @p ACellMesh must have the following characteristics:
+	 * 		 - DIM3, N, E, F, R, R2N, F2N, E2N
+	 *
+	 * @param[in,out] ACellMesh A cellular mesh
+	 */
+    void init_from_mesh(Mesh &ACellMesh);
     
 	/**\brief save the blocking on vtk. During the process, the curved blocking is convert on a mesh.
 	 * @param[in] AFileName 		the name used for the file
