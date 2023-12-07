@@ -794,3 +794,23 @@ TEST(ClaireTestClass, Test_BlockingControlPoints)
 
 }
 /*----------------------------------------------------------------------------*/
+TEST(ClaireTestClass, Test_resizeMesh)
+{
+	gmds::Mesh m = Mesh(MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
+	                              F2E | E2F | R2E | E2R | N2R | N2F | N2E));
+
+	Node n1 = m.newNode(0,0);
+	Node n2 = m.newNode(1,0);
+	Node n3 = m.newNode(1,1);
+	Node n4 = m.newNode(0,1);
+
+	Face f = m.newQuad(n1, n2, n3, n4);
+
+	math::Utils::resizeMesh(&m, 10.0);
+
+	ASSERT_FLOAT_EQ(f.get<Node>()[1].X(), 10.0);
+	ASSERT_FLOAT_EQ(f.get<Node>()[2].X(), 10.0);
+	ASSERT_FLOAT_EQ(f.get<Node>()[2].Y(), 10.0);
+
+}
+/*----------------------------------------------------------------------------*/
