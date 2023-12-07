@@ -94,7 +94,8 @@ TCellID Utils::CommonFace3Nodes(Mesh *AMesh, TCellID n0_id, TCellID n1_id, TCell
 	return f_id;
 }
 /*------------------------------------------------------------------------*/
-void Utils::MeshCleaner(Mesh *AMesh){
+void Utils::MeshCleaner(Mesh *AMesh)
+{
 	for (auto n_id:AMesh->nodes())
 	{
 		Node n = AMesh->get<Node>(n_id);
@@ -1257,6 +1258,18 @@ Utils::UpdateLinker3D(cad::GeomMeshLinker* linker_1, const Node& n_1, cad::GeomM
 	}
 }
 /*------------------------------------------------------------------------*/
+void
+Utils::resizeMesh(Mesh* Amesh, double Ascale)
+{
+	for (auto n_id:Amesh->nodes())
+	{
+		Node n = Amesh->get<Node>(n_id);
+		n.setX(n.X()*Ascale);
+		n.setY(n.Y()*Ascale);
+		n.setZ(n.Z()*Ascale);
+	}
+}
+/*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/
 }  // namespace gmds

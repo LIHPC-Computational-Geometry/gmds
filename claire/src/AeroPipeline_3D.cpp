@@ -447,7 +447,7 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 	if (m_params.block_surface_3D==0)
 	{
 		// Lecture du maillage
-		std::cout << "-> Lecture du maillage de surface ..." << std::endl;
+		std::cout << "-> Read the input quad surface blocking ..." << std::endl;
 
 		gmds::IGMeshIOService ioService(m_meshHex);
 		gmds::VTKReader vtkReader(&ioService);
@@ -1038,8 +1038,17 @@ AeroPipeline_3D::PreTraitementMeshTet()
 void
 AeroPipeline_3D::SurfaceBlockingClassification()
 {
+	std::cout << "-> Classify the input quad surface blocking on the geometry ..." << std::endl;
+
 	// Init the geometry manager and the linker
 	m_manager->initAndLinkFrom3DMesh(m_meshTet, m_linker_TG);
+
+	// Write the initial tet mesh (with fields computed on it)
+	gmds::IGMeshIOService ioService = IGMeshIOService(m_meshTet);
+	gmds::VTKWriter vtkWriter2(&ioService);
+	vtkWriter2.setCellOptions(gmds::N|gmds::F);
+	vtkWriter2.setDataOptions(gmds::N|gmds::F);
+	vtkWriter2.write("AeroPipeline3D_Tetra_CLASSIFICATION.vtk");
 
 	// Init the linker for the Blocking
 	m_linker_HG->setGeometry(m_manager);
@@ -1067,6 +1076,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		int geom_dim = surfaces[0]->dim();
 		int geom_id = 3;
 
+		std::cout << "Test 0" << std::endl;
 		// Check on the geometrical points first
 		for (auto point:points)
 		{
@@ -1079,6 +1089,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 				geom_id = point->id();
 			}
 		}
+		std::cout << "Test 1" << std::endl;
 
 		// Check on the geometrical curves
 		for (auto curve:curves)
@@ -1092,12 +1103,23 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 				geom_id = curve->id();
 			}
 		}
+		std::cout << "Test 2" << std::endl;
 
+		std::cout << "Nbr surfaces: " << surfaces.size() << std::endl;
+		std::cout << "Node: " << n_id << std::endl;
+		std::cout << "Pos: " << n.point() << std::endl;
+		std::cout << "Regions: " << n.get<Region>().size() << std::endl;
+		std::cout << "Faces: " << n.get<Face>().size() << std::endl;
 		// Check on the geometrical surfaces
 		for (auto surface:surfaces)
 		{
+			std::cout << "Surface ID: " << surface->id() << std::endl;
+			std::cout << "Surface area: " << surface->computeArea() << std::endl;
+			std::cout << "t1" << std::endl;
 			p_proj = n.point();
+			std::cout << "t2" << std::endl;
 			surface->project(p_proj);
+			std::cout << "t3" << std::endl;
 			if ( (n.point()-p_proj).norm() < min_dist
 			    && min_dist > pow(10,-20))		// Need to add a tolerence here.
 			{
@@ -1106,6 +1128,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 				geom_id = surface->id();
 			}
 		}
+		std::cout << "Test 3" << std::endl;
 
 		// Link the node of the Blocking to the geometrical entity that
 		// minimize the distance
@@ -1188,6 +1211,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		int geom_dim(3);
 		int geom_id;
 
+		/*
 		if (geom_dim_e0 == 3)
 		{
 			geom_id = geom_id_e0;
@@ -1206,6 +1230,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		}
 		else
 		{
+		 */
 			std::vector<cad::GeomSurface*> surfs = m_manager->getSurfaces();
 			Face f = m_meshHex->get<Face>(f_id);
 			math::Point p = f.center() ;
@@ -1227,7 +1252,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 			cad::GeomCurve* curve_1 = m_manager->getCurve(geom_id_e1);
 			geom_id = m_manager->getCommonSurface(curve_0, curve_1);
 			 */
-		}
+		//}
 		// Link the face to the surface
 		m_linker_HG->linkFaceToSurface(f_id, geom_id);
 	}
@@ -1387,6 +1412,9 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 
 	m_linker_BG->setGeometry(m_manager);
 	m_linker_BG->setMesh(&m_Blocking3D);
+
+	//std::cout << "Nbr curves " << m_manager->getCurves().size() << std::endl;
+	//std::cout << "Nbr surfaces " << m_manager->getSurfaces().size() << std::endl;
 
 	Variable<int>* var_couche_blocking = m_Blocking3D.newVariable<int, GMDS_NODE>("GMDS_Couche");
 	Variable<int>* var_couche_ctrlpts = m_CtrlPts.newVariable<int, GMDS_NODE>("GMDS_Couche");
@@ -1986,6 +2014,7 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 
 
 	// Project nodes
+	/*
 	for (auto n_id:m_Blocking3D.nodes())
 	{
 		if (var_couche_blocking->value(n_id) == 0
@@ -2009,7 +2038,7 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 			}
 		}
 	}
-
+	*/
 
 	computeControlPointstoInterpolateBoundaries();
 	// Test new method to compute the block nodes positions from ctrl points positions
@@ -2222,7 +2251,13 @@ AeroPipeline_3D::computeControlPointstoInterpolateBoundaries()
 				for (int j=0;j<b_ctrlpts.getNbDiscretizationJ();j++)
 				{
 					math::Point p = b_ctrlpts(i, j, 0).point();
-					surf->project(p);
+					if ( !(i==0 && j==0)
+					    && !(i==0 && j==b_ctrlpts.getNbDiscretizationJ()-1)
+					    && !(i==b_ctrlpts.getNbDiscretizationI()-1 && j==0 )
+					    && !(i==b_ctrlpts.getNbDiscretizationI()-1 && j==b_ctrlpts.getNbDiscretizationJ()-1) )
+					{
+						surf->project(p);
+					}
 					interp_points_x[i+j*(b_ctrlpts.getNbDiscretizationJ())] = p.X();
 					interp_points_y[i+j*(b_ctrlpts.getNbDiscretizationJ())] = p.Y();
 					interp_points_z[i+j*(b_ctrlpts.getNbDiscretizationJ())] = p.Z();
@@ -2292,7 +2327,13 @@ AeroPipeline_3D::computeControlPointstoInterpolateBoundaries()
 				for (int j=0;j<b_ctrlpts.getNbDiscretizationJ();j++)
 				{
 					math::Point p = b_ctrlpts(i, j, b_ctrlpts.getNbDiscretizationK()-1).point();
-					surf->project(p);
+					if ( !(i==0 && j==0)
+					    && !(i==0 && j==b_ctrlpts.getNbDiscretizationJ()-1)
+					    && !(i==b_ctrlpts.getNbDiscretizationI()-1 && j==0 )
+					    && !(i==b_ctrlpts.getNbDiscretizationI()-1 && j==b_ctrlpts.getNbDiscretizationJ()-1) )
+					{
+						surf->project(p);
+					}
 					interp_points_x[i+j*(b_ctrlpts.getNbDiscretizationJ())] = p.X();
 					interp_points_y[i+j*(b_ctrlpts.getNbDiscretizationJ())] = p.Y();
 					interp_points_z[i+j*(b_ctrlpts.getNbDiscretizationJ())] = p.Z();
@@ -2362,7 +2403,13 @@ AeroPipeline_3D::computeControlPointstoInterpolateBoundaries()
 				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
 				{
 					math::Point p = b_ctrlpts(i, 0, k).point();
-					surf->project(p);
+					if ( !(i==0 && k==0)
+					    && !(i==0 && k==b_ctrlpts.getNbDiscretizationK()-1)
+					    && !(i==b_ctrlpts.getNbDiscretizationI()-1 && k==0 )
+					    && !(i==b_ctrlpts.getNbDiscretizationI()-1 && k==b_ctrlpts.getNbDiscretizationK()-1) )
+					{
+						surf->project(p);
+					}
 					interp_points_x[i+k*(b_ctrlpts.getNbDiscretizationK())] = p.X();
 					interp_points_y[i+k*(b_ctrlpts.getNbDiscretizationK())] = p.Y();
 					interp_points_z[i+k*(b_ctrlpts.getNbDiscretizationK())] = p.Z();
@@ -2432,7 +2479,13 @@ AeroPipeline_3D::computeControlPointstoInterpolateBoundaries()
 				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
 				{
 					math::Point p = b_ctrlpts(i, b_ctrlpts.getNbDiscretizationJ()-1, k).point();
-					surf->project(p);
+					if ( !(i==0 && k==0)
+					    && !(i==0 && k==b_ctrlpts.getNbDiscretizationK()-1)
+					    && !(i==b_ctrlpts.getNbDiscretizationI()-1 && k==0 )
+					    && !(i==b_ctrlpts.getNbDiscretizationI()-1 && k==b_ctrlpts.getNbDiscretizationK()-1) )
+					{
+						surf->project(p);
+					}
 					interp_points_x[i+k*(b_ctrlpts.getNbDiscretizationK())] = p.X();
 					interp_points_y[i+k*(b_ctrlpts.getNbDiscretizationK())] = p.Y();
 					interp_points_z[i+k*(b_ctrlpts.getNbDiscretizationK())] = p.Z();
@@ -2502,7 +2555,13 @@ AeroPipeline_3D::computeControlPointstoInterpolateBoundaries()
 				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
 				{
 					math::Point p = b_ctrlpts(0, j, k).point();
-					surf->project(p);
+					if ( !(k==0 && j==0)
+					    && !(k==0 && j==b_ctrlpts.getNbDiscretizationJ()-1)
+					    && !(k==b_ctrlpts.getNbDiscretizationK()-1 && j==0 )
+					    && !(k==b_ctrlpts.getNbDiscretizationK()-1 && j==b_ctrlpts.getNbDiscretizationJ()-1) )
+					{
+						surf->project(p);
+					}
 					interp_points_x[j+k*(b_ctrlpts.getNbDiscretizationK())] = p.X();
 					interp_points_y[j+k*(b_ctrlpts.getNbDiscretizationK())] = p.Y();
 					interp_points_z[j+k*(b_ctrlpts.getNbDiscretizationK())] = p.Z();
@@ -2572,7 +2631,13 @@ AeroPipeline_3D::computeControlPointstoInterpolateBoundaries()
 				for (int k=0;k<b_ctrlpts.getNbDiscretizationK();k++)
 				{
 					math::Point p = b_ctrlpts(b_ctrlpts.getNbDiscretizationI()-1, j, k).point();
-					surf->project(p);
+					if ( !(k==0 && j==0)
+					    && !(k==0 && j==b_ctrlpts.getNbDiscretizationJ()-1)
+					    && !(k==b_ctrlpts.getNbDiscretizationK()-1 && j==0 )
+					    && !(k==b_ctrlpts.getNbDiscretizationK()-1 && j==b_ctrlpts.getNbDiscretizationJ()-1) )
+					{
+						surf->project(p);
+					}
 					interp_points_x[j+k*(b_ctrlpts.getNbDiscretizationK())] = p.X();
 					interp_points_y[j+k*(b_ctrlpts.getNbDiscretizationK())] = p.Y();
 					interp_points_z[j+k*(b_ctrlpts.getNbDiscretizationK())] = p.Z();
@@ -2623,9 +2688,6 @@ AeroPipeline_3D::computeControlPointstoInterpolateBoundaries()
 			b_ctrlpts.computeFaceNodesPoints(2,3,6,7);
 		}
 	}
-
-	// TODO: devoir de nouveau interpoler les arêtes ?
-	//  Pas sûr puisqu'on projette, pour chaque arête, sur les deux faces adjacentes
 
 	// Recompute the positions of the inner control points
 	for (auto b:m_CtrlPts.allBlocks())

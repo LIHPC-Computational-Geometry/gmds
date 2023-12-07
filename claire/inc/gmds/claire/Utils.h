@@ -358,6 +358,15 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static void UpdateLinker3D(cad::GeomMeshLinker* linker_1, const Node& n_1, cad::GeomMeshLinker* linker_2, const Node& n_2);
 	/*----------------------------------------------------------------------------*/
+	/** @brief Resize a mesh.
+	 *
+	 * @param[inout] Amesh the mesh to resize
+	 * @param[in] Ascale the scale factor used to resize
+	 *
+	 * @return void
+	 */
+	static void resizeMesh(Mesh* Amesh, double Ascale);
+	/*----------------------------------------------------------------------------*/
 };
 /*----------------------------------------------------------------------------*/
 }  // namespace math
