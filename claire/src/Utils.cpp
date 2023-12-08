@@ -7,6 +7,7 @@
 #include <gmds/claire/AdvectedPointRK4_3D.h>
 #include <gmds/ig/Blocking2D.h>
 #include <gmds/ig/MeshDoctor.h>
+#include <gmds/math/BezierCurve.h>
 #include <gmds/math/BezierHex.h>
 #include <Eigen/Sparse>
 /*----------------------------------------------------------------------------*/
@@ -1257,7 +1258,7 @@ Utils::UpdateLinker3D(cad::GeomMeshLinker* linker_1, const Node& n_1, cad::GeomM
 		linker_2->linkNodeToSurface(n_2.id(), linker_1->getGeomId<Node>(n_1.id()));
 	}
 }
-/*------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void
 Utils::resizeMesh(Mesh* Amesh, double Ascale)
 {
@@ -1268,6 +1269,19 @@ Utils::resizeMesh(Mesh* Amesh, double Ascale)
 		n.setY(n.Y()*Ascale);
 		n.setZ(n.Z()*Ascale);
 	}
+}
+/*----------------------------------------------------------------------------*/
+double
+Utils::lengthBezierCurve(BezierCurve* Abc)
+{
+	int Asample_size(101);
+	std::vector<math::Point> sample = Abc->getDiscretization(Asample_size-1);
+	double length(0);
+	for (int i=0;i<Asample_size-1;i++)
+	{
+		length += (sample[i+1]-sample[i]).norm();
+	}
+	return length;
 }
 /*----------------------------------------------------------------------------*/
 }  // namespace math

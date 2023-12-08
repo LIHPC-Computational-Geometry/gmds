@@ -9,8 +9,12 @@
 using namespace gmds;
 /*------------------------------------------------------------------------*/
 
-IntervalAssignment_3D::IntervalAssignment_3D(Blocking3D* ABlocking3D, ParamsAero& Aparams_aero, Variable<int>* AedgesDiscretization) {
+IntervalAssignment_3D::IntervalAssignment_3D(Blocking3D* ABlocking3D,
+                                             Blocking3D* ACtrlPnts3D,
+                                             ParamsAero& Aparams_aero,
+                                             Variable<int>* AedgesDiscretization) {
 	m_Blocking3D = ABlocking3D;
+	m_CtrlPts3D = ACtrlPnts3D;
 	m_params_aero = Aparams_aero;
 	m_edgesDiscretization = AedgesDiscretization;
 }
@@ -121,12 +125,15 @@ IntervalAssignment_3D::ComputeSheets(){
 void
 IntervalAssignment_3D::EdgeConstraint(TCellID e_id, int &N_ideal, bool &hardConstraint)
 {
+
 	Edge e = m_Blocking3D->get<Edge>(e_id) ;
-	Variable<int>* var_layer_id = m_Blocking3D->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	Variable<int>* var_layer_id = m_Blocking3D->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche");
 
 	// Default parameters
 	hardConstraint = false;
-	N_ideal = int(e.length()/m_params_aero.edge_size_default)+1;
+	double edge_length = BezierEdgeLength(e);
+	N_ideal = int(edge_length/m_params_aero.edge_size_default)+1;
+	//N_ideal = int(e.length()/m_params_aero.edge_size_default)+1;
 
 	std::vector<Face> e_faces = e.get<Face>() ;
 	std::vector<Node> e_nodes = e.get<Node>() ;
@@ -135,8 +142,9 @@ IntervalAssignment_3D::EdgeConstraint(TCellID e_id, int &N_ideal, bool &hardCons
 	if (var_layer_id->value(e_nodes[0].id()) == 0
 	    && var_layer_id->value(e_nodes[1].id()) == 0)
 	{
-		N_ideal = int(e.length()/m_params_aero.edge_size_wall)+1 ;
-		hardConstraint = true;
+		//N_ideal = int(e.length()/m_params_aero.edge_size_wall)+1 ;
+		N_ideal = int(edge_length/m_params_aero.edge_size_wall)+1 ;
+		//hardConstraint = true;
 	}
 
 	// If the edge is ortho to the wall, in the boundary layer
@@ -185,5 +193,127 @@ IntervalAssignment_3D::ComputeSheetDiscretization(const std::vector<TCellID>& sh
 	}
 
 	return Nbr_cells;
+}
+/*------------------------------------------------------------------------*/
+double
+IntervalAssignment_3D::BezierEdgeLength(const Edge Ae)
+{
+	/*
+	std::vector<Region> e_blocks = Ae.get<Region>();
+
+	Blocking3D::Block b = m_Blocking3D->block(e_blocks[0].id());
+	Blocking3D::Block b_ctrlpts = m_CtrlPts3D->block(e_blocks[0].id());
+
+	std::vector<math::Point> ctrlpts(b_ctrlpts.getNbDiscretizationI());
+	int nb_I = b_ctrlpts.getNbDiscretizationI();
+	int nb_J = b_ctrlpts.getNbDiscretizationJ();
+	int nb_K = b_ctrlpts.getNbDiscretizationK();
+
+	if ( (b_ctrlpts.getNode(0).id() == e_nodes[0].id() && b_ctrlpts.getNode(1).id() == e_nodes[1].id())
+	    || (b_ctrlpts.getNode(0).id() == e_nodes[1].id() && b_ctrlpts.getNode(1).id() == e_nodes[0].id()))
+	{
+		for (int i=0;i<nb_I;i++)
+		{
+			ctrlpts[i] = b_ctrlpts(i,0,0).point();
+		}
+	}
+	else if ( (b_ctrlpts.getNode(2).id() == e_nodes[0].id() && b_ctrlpts.getNode(3).id() == e_nodes[1].id())
+	    || (b_ctrlpts.getNode(2).id() == e_nodes[1].id() && b_ctrlpts.getNode(3).id() == e_nodes[0].id()))
+	{
+		for (int i=0;i<nb_I;i++)
+		{
+			ctrlpts[i] = b_ctrlpts(i,nb_J-1,0).point();
+		}
+	}
+	else if ( (b_ctrlpts.getNode(7).id() == e_nodes[0].id() && b_ctrlpts.getNode(6).id() == e_nodes[1].id())
+	    || (b_ctrlpts.getNode(7).id() == e_nodes[1].id() && b_ctrlpts.getNode(6).id() == e_nodes[0].id()))
+	{
+		for (int i=0;i<nb_I;i++)
+		{
+			ctrlpts[i] = b_ctrlpts(i,nb_J-1,nb_K-1).point();
+		}
+	}
+	else if ( (b_ctrlpts.getNode(4).id() == e_nodes[0].id() && b_ctrlpts.getNode(5).id() == e_nodes[1].id())
+	         || (b_ctrlpts.getNode(4).id() == e_nodes[1].id() && b_ctrlpts.getNode(5).id() == e_nodes[0].id()))
+	{
+		for (int i=0;i<nb_I;i++)
+		{
+			ctrlpts[i] = b_ctrlpts(i,0,nb_K-1).point();
+		}
+	}
+	else if ( (b_ctrlpts.getNode(0).id() == e_nodes[0].id() && b_ctrlpts.getNode(3).id() == e_nodes[1].id())
+	         || (b_ctrlpts.getNode(0).id() == e_nodes[1].id() && b_ctrlpts.getNode(3).id() == e_nodes[0].id()))
+	{
+		for (int j=0;j<nb_J;j++)
+		{
+			ctrlpts[j] = b_ctrlpts(0,j,0).point();
+		}
+	}
+	else if ( (b_ctrlpts.getNode(1).id() == e_nodes[0].id() && b_ctrlpts.getNode(2).id() == e_nodes[1].id())
+	         || (b_ctrlpts.getNode(1).id() == e_nodes[1].id() && b_ctrlpts.getNode(2).id() == e_nodes[0].id()))
+	{
+		for (int j=0;j<nb_J;j++)
+		{
+			ctrlpts[j] = b_ctrlpts(nb_I-1,j,0).point();
+		}
+	}
+	else if ( (b_ctrlpts.getNode(5).id() == e_nodes[0].id() && b_ctrlpts.getNode(6).id() == e_nodes[1].id())
+	         || (b_ctrlpts.getNode(5).id() == e_nodes[1].id() && b_ctrlpts.getNode(6).id() == e_nodes[0].id()))
+	{
+		for (int j=0;j<nb_J;j++)
+		{
+			ctrlpts[j] = b_ctrlpts(nb_I-1,j,nb_K-1).point();
+		}
+	}
+	else if ( (b_ctrlpts.getNode(4).id() == e_nodes[0].id() && b_ctrlpts.getNode(7).id() == e_nodes[1].id())
+	         || (b_ctrlpts.getNode(4).id() == e_nodes[1].id() && b_ctrlpts.getNode(7).id() == e_nodes[0].id()))
+	{
+		for (int j=0;j<nb_J;j++)
+		{
+			ctrlpts[j] = b_ctrlpts(0,j,nb_K-1).point();
+		}
+	}
+	else if ( (b_ctrlpts.getNode(0).id() == e_nodes[0].id() && b_ctrlpts.getNode(4).id() == e_nodes[1].id())
+	         || (b_ctrlpts.getNode(0).id() == e_nodes[1].id() && b_ctrlpts.getNode(4).id() == e_nodes[0].id()))
+	{
+		for (int k=0;k<nb_K;k++)
+		{
+			ctrlpts[k] = b_ctrlpts(0,0,k).point();
+		}
+	}
+	else if ( (b_ctrlpts.getNode(1).id() == e_nodes[0].id() && b_ctrlpts.getNode(5).id() == e_nodes[1].id())
+	         || (b_ctrlpts.getNode(1).id() == e_nodes[1].id() && b_ctrlpts.getNode(5).id() == e_nodes[0].id()))
+	{
+		for (int k=0;k<nb_K;k++)
+		{
+			ctrlpts[k] = b_ctrlpts(nb_I-1,0,k).point();
+		}
+	}
+	else if ( (b_ctrlpts.getNode(2).id() == e_nodes[0].id() && b_ctrlpts.getNode(6).id() == e_nodes[1].id())
+	         || (b_ctrlpts.getNode(2).id() == e_nodes[1].id() && b_ctrlpts.getNode(6).id() == e_nodes[0].id()))
+	{
+		for (int k=0;k<nb_K;k++)
+		{
+			ctrlpts[k] = b_ctrlpts(nb_I-1,nb_J-1,k).point();
+		}
+	}
+	else if ( (b_ctrlpts.getNode(3).id() == e_nodes[0].id() && b_ctrlpts.getNode(7).id() == e_nodes[1].id())
+	         || (b_ctrlpts.getNode(3).id() == e_nodes[1].id() && b_ctrlpts.getNode(7).id() == e_nodes[0].id()))
+	{
+		for (int k=0;k<nb_K;k++)
+		{
+			ctrlpts[k] = b_ctrlpts(0,nb_J-1,k).point();
+		}
+	}
+	else
+	{
+		throw GMDSException("ERROR in IntervalAssignment_3D: the edge does not exist");
+	}
+	 */
+
+	std::vector<math::Point> ctrlpts = m_CtrlPts3D->getEdgeNodesPoints(Ae.id());
+	math::BezierCurve bc = math::BezierCurve(ctrlpts);
+	return math::Utils::lengthBezierCurve(&bc);
+
 }
 /*------------------------------------------------------------------------*/

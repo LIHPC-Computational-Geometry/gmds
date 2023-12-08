@@ -1076,7 +1076,6 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		int geom_dim = surfaces[0]->dim();
 		int geom_id = 3;
 
-		std::cout << "Test 0" << std::endl;
 		// Check on the geometrical points first
 		for (auto point:points)
 		{
@@ -1089,7 +1088,6 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 				geom_id = point->id();
 			}
 		}
-		std::cout << "Test 1" << std::endl;
 
 		// Check on the geometrical curves
 		for (auto curve:curves)
@@ -1103,23 +1101,12 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 				geom_id = curve->id();
 			}
 		}
-		std::cout << "Test 2" << std::endl;
 
-		std::cout << "Nbr surfaces: " << surfaces.size() << std::endl;
-		std::cout << "Node: " << n_id << std::endl;
-		std::cout << "Pos: " << n.point() << std::endl;
-		std::cout << "Regions: " << n.get<Region>().size() << std::endl;
-		std::cout << "Faces: " << n.get<Face>().size() << std::endl;
 		// Check on the geometrical surfaces
 		for (auto surface:surfaces)
 		{
-			std::cout << "Surface ID: " << surface->id() << std::endl;
-			std::cout << "Surface area: " << surface->computeArea() << std::endl;
-			std::cout << "t1" << std::endl;
 			p_proj = n.point();
-			std::cout << "t2" << std::endl;
 			surface->project(p_proj);
-			std::cout << "t3" << std::endl;
 			if ( (n.point()-p_proj).norm() < min_dist
 			    && min_dist > pow(10,-20))		// Need to add a tolerence here.
 			{
@@ -1128,7 +1115,6 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 				geom_id = surface->id();
 			}
 		}
-		std::cout << "Test 3" << std::endl;
 
 		// Link the node of the Blocking to the geometrical entity that
 		// minimize the distance
@@ -1519,25 +1505,44 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 		}
 	}
 
-	//=========================================
+
+	// Init the control points of each Block
+	int degree_Bezier(3);
+	for (auto bloc:m_CtrlPts.allBlocks())
+	{
+		bloc.setNbDiscretizationI(degree_Bezier+1);
+		bloc.setNbDiscretizationJ(degree_Bezier+1);
+		bloc.setNbDiscretizationK(degree_Bezier+1);
+	}
+	m_CtrlPts.initializeGridPoints();
+
+	// Compute the positions of the control points around boundaries
+	// to interpolate the boundary geometry
+	computeControlPointstoInterpolateBoundaries();
+
+
+	//===========================================
 	// Interval Assignment:
-	// Init the discretization of each Block
-	//=========================================
-	/*
+	// Compute the discretization of each Block
+	//===========================================
+
 	std::cout << "-> Interval Assignment" << std::endl;
 	IntervalAssignment_3D intAss(&m_Blocking3D,
+	                             &m_CtrlPts,
 	                             m_params,
 	                             m_Blocking3D.newVariable<int,GMDS_EDGE>("GMDS_EdgeDiscretization"));
 	intAss.execute();
-	*/
+
 
 	// Temporary: set the discretization of each block in an uniform way
+	/*
 	for (auto b:m_Blocking3D.allBlocks())
 	{
-		b.setNbDiscretizationI(5);
-		b.setNbDiscretizationJ(5);
-		b.setNbDiscretizationK(5);
+		b.setNbDiscretizationI(11);
+		b.setNbDiscretizationJ(11);
+		b.setNbDiscretizationK(11);
 	}
+	 */
 
 	// Init the grid points (the inner nodes of each block edge, face and hex)
 	m_Blocking3D.initializeGridPoints();
@@ -2002,19 +2007,8 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 	}
 
 
-	// Init the control points of each Block
-	int degree_Bezier(2);
-	for (auto bloc:m_CtrlPts.allBlocks())
-	{
-		bloc.setNbDiscretizationI(degree_Bezier+1);
-		bloc.setNbDiscretizationJ(degree_Bezier+1);
-		bloc.setNbDiscretizationK(degree_Bezier+1);
-	}
-	m_CtrlPts.initializeGridPoints();
 
-
-	// Project nodes
-	/*
+	// Project boundary nodes onto the geometry
 	for (auto n_id:m_Blocking3D.nodes())
 	{
 		if (var_couche_blocking->value(n_id) == 0
@@ -2038,9 +2032,7 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 			}
 		}
 	}
-	*/
 
-	computeControlPointstoInterpolateBoundaries();
 	// Test new method to compute the block nodes positions from ctrl points positions
 	computeBlockNodesPositionsFromCtrlPoints();
 
