@@ -213,6 +213,14 @@ class GMDSIg_API Blocking3D : public Mesh
 	 */
 	void initializeGridPoints();
 
+	/** @brief .
+         *
+         * @param[in] Ae_id
+         *
+         * @return the id of the edge connecting @p AN1 and @p AN2
+	 */
+	std::vector<math::Point> getEdgeNodesPoints(const TCellID Ae_id);
+
  private:
 	/** @brief Give the number of subdivision for edge @p AEdge in region @p ARegion
           *

@@ -671,6 +671,19 @@ Array2D<TCellID>
 
 }
 /*----------------------------------------------------------------------------*/
+std::vector<math::Point>
+   Blocking3D::getEdgeNodesPoints(const TCellID Ae_id)
+{
+	Edge e = get<Edge>(Ae_id);
+	std::vector<TCellID>* n_ids = m_edge_grids->value(Ae_id);
+	std::vector<math::Point> pts(m_edge_grids->value(Ae_id)->size());
+	for (int i=0;i<m_edge_grids->value(Ae_id)->size();i++)
+	{
+		pts[i] = get<Node>((*n_ids)[i]).point();
+	}
+	return pts;
+}
+/*----------------------------------------------------------------------------*/
 
 
 /*============================================================================*/

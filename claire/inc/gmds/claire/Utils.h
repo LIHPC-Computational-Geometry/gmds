@@ -14,6 +14,7 @@
 #include <gmds/claire/FastLocalize.h>
 #include <gmds/cadfac/FACManager.h>
 #include <gmds/cad/GeomMeshLinker.h>
+#include <gmds/math/BezierCurve.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -366,6 +367,14 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 * @return void
 	 */
 	static void resizeMesh(Mesh* Amesh, double Ascale);
+	/*----------------------------------------------------------------------------*/
+	/** @brief
+	 *
+	 * @param[in] Abc
+	 *
+	 * @return
+	 */
+	static double lengthBezierCurve(BezierCurve* Abc);
 	/*----------------------------------------------------------------------------*/
 };
 /*----------------------------------------------------------------------------*/

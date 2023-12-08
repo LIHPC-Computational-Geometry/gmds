@@ -29,10 +29,15 @@ class LIB_GMDS_CLAIRE_API IntervalAssignment_3D
 	/*-------------------------------------------------------------------*/
 	/** @brief Constructor.
          *  @param[in] ABlocking3D the blocking 3D
+         *  @param[in] ACtrlPnts3D the control points of the curved blocking 3D @p ABlocking3D
          *  @param[in] Aparams_aero parameters for aero algorithm
+         *  @param[in] AedgesDiscretization variable to store the discretization of each edge of the blocking @p ABlocking3D
          *
 	 */
-	IntervalAssignment_3D(Blocking3D* ABlocking3D, ParamsAero& Aparams_aero, Variable<int>* AedgesDiscretization);
+	IntervalAssignment_3D(Blocking3D* ABlocking3D,
+	                      Blocking3D* ACtrlPnts3D,
+	                      ParamsAero& Aparams_aero,
+	                      Variable<int>* AedgesDiscretization);
 
 	/*-------------------------------------------------------------------*/
 	/** @brief Execute the algorithm
@@ -74,9 +79,20 @@ class LIB_GMDS_CLAIRE_API IntervalAssignment_3D
 	 */
 	int ComputeSheetDiscretization(const std::vector<TCellID>& sheet);
 	/*-------------------------------------------------------------------*/
+	/** @brief Get the length of the curved Bezier block edge
+	 	*
+	 	* \param[in] Ae the block edge
+		*
+		* \return
+	 */
+	double BezierEdgeLength(const Edge Ae);
+	/*-------------------------------------------------------------------*/
 
  private:
+	/** 3D Blocking */
 	Blocking3D *m_Blocking3D;
+	/** Control Points of the 3D curved Blocking m_Blocking3D */
+	Blocking3D *m_CtrlPts3D;
 	/** Params pour l'aéro */
 	ParamsAero m_params_aero;
 	/** Variable on the edges, filled with the edge discretization */
