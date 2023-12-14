@@ -188,8 +188,8 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 		}
 		else if ((geo_d0==0 && geo_d1==1) || (geo_d0==1 && geo_d1==0)){
 			//we check if the point is adjacent to the curve
-			auto p_id = (geo_d0<geo_d1)?geo_d0:geo_d1;
-			auto c_id = (geo_d0>geo_d1)?geo_d0:geo_d1;
+			auto p_id = (geo_d0<geo_d1)?geo_i0:geo_i1;
+			auto c_id = (geo_d0>geo_d1)?geo_i0:geo_i1;
 			cad::GeomPoint* p = m_geom_model->getPoint(p_id);
 			cad::GeomCurve* c = m_geom_model->getCurve(c_id);
 			std::vector<cad::GeomPoint*> c_points = c->points();
@@ -296,6 +296,9 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 			}
 		}
 	}
+
+	// When classifying faces, we have classified some incident edges and nodes on the fly
+	// As a consequence, we update the error lists. First, for nodes
 	auto nodes = m_blocking->get_all_nodes();
 	AErrors.non_classified_nodes.clear();
 	for(auto n : nodes) {
@@ -303,17 +306,16 @@ CurvedBlockingClassifier::classify_faces(gmds::blocking::ClassificationErrors &A
 			AErrors.non_classified_nodes.push_back(n->info().topo_id);
 		}
 	}
-
+	// then for edges
 	AErrors.non_classified_edges.clear();
-
 	auto edges = m_blocking->get_all_edges();
 	for(auto e : edges){
 		if(e->info().geom_dim == 4){
 			AErrors.non_classified_edges.push_back(e->info().topo_id);
 		}
 	}
+	// and we finish with unclassified faces
 	AErrors.non_classified_faces.clear();
-
 	auto faces = m_blocking->get_all_faces();
 	for(auto f : faces){
 		if(f->info().geom_dim == 4){
@@ -332,17 +334,12 @@ CurvedBlockingClassifier::classify(const double AMaxDistance, const double APoin
 	//============ (2) We classify edges =================
 	classify_edges(errors);
 
-
 	detect_classification_errors(errors);
-
 	if(errors.non_captured_points.empty() && errors.non_captured_curves.empty()){
 
-
-		//============ (2) We classify faces =================
+		//============ (3) We classify faces =================
 		classify_faces(errors);
-
 		errors.non_captured_surfaces.clear();
-
 		detect_classification_errors(errors);
 	}
 	else{
@@ -362,8 +359,6 @@ CurvedBlockingClassifier::classify(const double AMaxDistance, const double APoin
 			errors.non_classified_faces.push_back(f->info().topo_id);
 		}
 	}
-
-
 	return errors;
 }
 

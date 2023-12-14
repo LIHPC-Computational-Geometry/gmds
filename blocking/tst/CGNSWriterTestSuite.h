@@ -59,8 +59,8 @@ TEST(CGNSWriterTestSuite, test_monobloc_2){
 	b0.computeT();
 	b1.computeT();
 
-	std::cout<<"b0.T = ("<<b0.getT()[1][0]<<","<<b0.getT()[1][1]<<")"<<std::endl;
-	std::cout<<"b1.T = ("<<b1.getT()[0][0]<<","<<b1.getT()[0][1]<<")"<<std::endl;
+	//std::cout<<"b0.T = ("<<b0.getT()[1][0]<<","<<b0.getT()[1][1]<<")"<<std::endl;
+	//std::cout<<"b1.T = ("<<b1.getT()[0][0]<<","<<b1.getT()[0][1]<<")"<<std::endl;
 
 	m.initializeGridPoints();
 

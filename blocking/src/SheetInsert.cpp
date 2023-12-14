@@ -31,7 +31,7 @@ SheetInsert::execute(LCC_3::size_type AMark)
 	// TODO check the validity of the shrink set
 
 
-	std::cout<<"SheetInsert::execute nbMarked "<< lcc()->number_of_marked_darts(AMark)<<std::endl;
+//	std::cout<<"SheetInsert::execute nbMarked "<< lcc()->number_of_marked_darts(AMark)<<std::endl;
 
 	// TODO check validity of the marked darts
 //	// check that on orbit<2,3> two and only two darts are marked
@@ -71,7 +71,7 @@ SheetInsert::execute(LCC_3::size_type AMark)
 			old_alpha3.emplace(d0, d3);
 		}
 	}
-	std::cout<<"old_alpha3.size() "<< old_alpha3.size()<<std::endl;
+//	std::cout<<"old_alpha3.size() "<< old_alpha3.size()<<std::endl;
 
 	// unsew the alpha3
 	for(auto d: old_alpha3) {
@@ -399,7 +399,7 @@ SheetInsert::execute(LCC_3::size_type AMark)
 
 	// TODO clear the orphaned darts and flat cells
 	int nbRemoved = cleanup_flat_cells(AMark);
-	std::cout<<"insertsheet nbRemoved "<<nbRemoved<<std::endl;
+//	std::cout<<"insertsheet nbRemoved "<<nbRemoved<<std::endl;
 
 	lcc()->correct_invalid_attributes();
 
@@ -414,23 +414,23 @@ SheetInsert::execute(LCC_3::size_type AMark)
 			if (bl()->lcc()->is_free(d10, 3)) {
 				// consider only darts from hex
 				if (bl()->lcc()->darts_of_orbit<0, 1, 2>(d10).size() == 48) {
-					std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAA " << lcc()->darts_of_orbit<2, 3>(d10).size() << std::endl;
+				//	std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAA " << lcc()->darts_of_orbit<2, 3>(d10).size() << std::endl;
 
 					for (LCC_3::Dart_of_orbit_range<2, 3>::iterator itbis(lcc()->darts_of_orbit<2, 3>(d10).begin()), itend(lcc()->darts_of_orbit<2, 3>(d10).end());
 					     itbis != itend; ++itbis) {
 
 						if (bl()->lcc()->is_marked(itbis,mark_chord)) {
 							if (bl()->lcc()->alpha(itbis, 3) == itbis) {
-								std::cout << "FREE" << std::endl;
+						//		std::cout << "FREE" << std::endl;
 								if ((d10 != itbis)) {
-									std::cout << "DIFFERENT " << bl()->lcc()->darts_of_orbit<0, 1, 2>(itbis).size() << std::endl;
+						//			std::cout << "DIFFERENT " << bl()->lcc()->darts_of_orbit<0, 1, 2>(itbis).size() << std::endl;
 									// check that itbis is a dart from an hex
 									if (bl()->lcc()->darts_of_orbit<0, 1, 2>(itbis).size() == 48) {
 
 										//						bl()->lcc()->link_alpha<3>(d10, itbis);
 										//						bl()->lcc()->link_alpha<3>(d11, bl()->lcc()->alpha(itbis, 0));
 										bl()->lcc()->sew<3>(d10, itbis);
-										std::cout << "QQQQQQQQQQQQQQQQQQQQQQQQQQ" << std::endl;
+								//		std::cout << "QQQQQQQQQQQQQQQQQQQQQQQQQQ" << std::endl;
 									}
 								}
 							}
@@ -465,7 +465,7 @@ SheetInsert::pillow(LCC_3::size_type AMark)
 	// TODO check the validity of the shrink set
 
 
-	std::cout<<"SheetInsert::pillow nbMarked "<< lcc()->number_of_marked_darts(AMark)<<std::endl;
+//	std::cout<<"SheetInsert::pillow nbMarked "<< lcc()->number_of_marked_darts(AMark)<<std::endl;
 
 	// check that on orbit<2,3> two and only two darts are marked
 	for (LCC_3::Dart_range::iterator it(lcc()->darts().begin()),
@@ -504,7 +504,7 @@ SheetInsert::pillow(LCC_3::size_type AMark)
 			old_alpha3.emplace(d0, d3);
 		}
 	}
-	std::cout<<"old_alpha3.size() "<< old_alpha3.size()<<std::endl;
+	//std::cout<<"old_alpha3.size() "<< old_alpha3.size()<<std::endl;
 
 	// unsew the alpha3
 	for(auto d: old_alpha3) {
@@ -694,7 +694,7 @@ SheetInsert::pillow(LCC_3::size_type AMark)
 		}
 	}
 
-	std::cout<<"nbBlocks "<<bl()->nbBlocks()<<std::endl;
+//	std::cout<<"nbBlocks "<<bl()->nbBlocks()<<std::endl;
 //	lcc()->correct_invalid_attributes();
 
 	// alpha3 for the marked darts
@@ -714,12 +714,12 @@ SheetInsert::pillow(LCC_3::size_type AMark)
 	// TODO try to get rid of this automatic correction
 	lcc()->correct_invalid_attributes();
 
-	std::cout<<"nbVertices "<<bl()->nbVertices()<<std::endl;
-	std::cout<<"nbBlocks "<<bl()->nbBlocks()<<std::endl;
+	//std::cout<<"nbVertices "<<bl()->nbVertices()<<std::endl;
+//	std::cout<<"nbBlocks "<<bl()->nbBlocks()<<std::endl;
 
 	// TODO clear the orphaned darts and flat cells
 	int nbRemoved = cleanup_flat_cells(AMark);
-	std::cout<<"pillow nbRemoved "<<nbRemoved<<std::endl;
+	//std::cout<<"pillow nbRemoved "<<nbRemoved<<std::endl;
 
 	// free the marks
 	lcc()->free_mark(m_new);
