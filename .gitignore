@@ -4,6 +4,7 @@
 *.swp
 \#*\#
 *.icloud
+pygmds/tst/__pycache__
 
 # OS junk files
 [Tt]humbs.db
