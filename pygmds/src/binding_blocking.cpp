@@ -52,15 +52,15 @@ void bind_blocking(py::module &m){
 	   .def("create_block", static_cast<gmds::blocking::CurvedBlocking::Block (gmds::blocking::CurvedBlocking::*)(
 	                           const gmds::math::Point &, const gmds::math::Point &, const gmds::math::Point &, const gmds::math::Point &, const gmds::math::Point &, const gmds::math::Point &,
 	                           const gmds::math::Point &, const gmds::math::Point &)>(&gmds::blocking::CurvedBlocking::create_block))
-            .def("remove_block", static_cast<void (gmds::blocking::CurvedBlocking::*)(gmds::blocking::CurvedBlocking::Block)>(
+	   .def("remove_block", static_cast<void (gmds::blocking::CurvedBlocking::*)(gmds::blocking::CurvedBlocking::Block)>(
                     &gmds::blocking::CurvedBlocking::remove_block))
-           .def("remove_block_with_id", static_cast<void (gmds::blocking::CurvedBlocking::*)(const gmds::TCellID)>(
+	   .def("remove_block_with_id", static_cast<void (gmds::blocking::CurvedBlocking::*)(const gmds::TCellID)>(
                    &gmds::blocking::CurvedBlocking::remove_block))
 	   .def("info", &gmds::blocking::CurvedBlocking::info)
 	   .def("convert_to_mesh", &gmds::blocking::CurvedBlocking::convert_to_mesh)
-           .def("init_from_mesh", &gmds::blocking::CurvedBlocking::init_from_mesh)
-           .def("save_vtk_blocking", &gmds::blocking::CurvedBlocking::save_vtk_blocking)
-           .def("get_block_id", &gmds::blocking::CurvedBlocking::get_block_id);
+	   .def("init_from_mesh", &gmds::blocking::CurvedBlocking::init_from_mesh)
+	   .def("save_vtk_blocking", &gmds::blocking::CurvedBlocking::save_vtk_blocking)
+	   .def("get_block_id", &gmds::blocking::CurvedBlocking::get_block_id);
 
 	py::class_<gmds::blocking::CurvedBlocking::Block>(m, "Block");
 
@@ -76,7 +76,7 @@ void bind_blocking(py::module &m){
 	   .def(py::init<gmds::blocking::CurvedBlocking *>())
 	   .def("clear_classification", &gmds::blocking::CurvedBlockingClassifier::clear_classification)
 	   .def("classify", &gmds::blocking::CurvedBlockingClassifier::classify)
-            .def("detect_classification_errors", &gmds::blocking::CurvedBlockingClassifier::detect_classification_errors)
-            .def("actions_cut_current_state", &gmds::blocking::CurvedBlockingClassifier::list_Possible_Cuts)
-            .def("checkValidity",&gmds::blocking::CurvedBlockingClassifier::checkValidity);
+	   .def("detect_classification_errors", &gmds::blocking::CurvedBlockingClassifier::detect_classification_errors)
+      .def("actions_cut_current_state", &gmds::blocking::CurvedBlockingClassifier::list_Possible_Cuts)
+      .def("checkValidity",&gmds::blocking::CurvedBlockingClassifier::checkValidity);
 }
