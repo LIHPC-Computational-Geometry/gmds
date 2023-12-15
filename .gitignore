@@ -28,3 +28,5 @@ external/
 
 # spack files when dev-build
 spack-*
+# add it just in case because someone happened to pushed it once
+spack/
