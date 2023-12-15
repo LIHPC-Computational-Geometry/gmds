@@ -32,6 +32,12 @@ class LIB_GMDS_CLAIRE_API PatternEdgeCorner: public AbstractPatternEdge {
 	 */
 	void computeNewHex() override;
 	/*-------------------------------------------------------------------*/
+	/** \brief
+	 * @param
+	 * @return
+	 */
+	math::Vector3d computeNormaltoFacesAroundNodeSideFace(TCellID n_id, TCellID f_id);
+	/*-------------------------------------------------------------------*/
 };
 /*----------------------------------------------------------------------------*/
 }

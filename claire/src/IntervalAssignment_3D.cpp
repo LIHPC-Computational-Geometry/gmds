@@ -47,6 +47,13 @@ IntervalAssignment_3D::execute()
 		bloc.setNbDiscretizationK(m_edgesDiscretization->value(e_k.id())+1);
 	}
 
+	int node_compteur(0);
+	for (auto bloc:m_Blocking3D->allBlocks())
+	{
+		node_compteur += (bloc.getNbDiscretizationI()-2)*(bloc.getNbDiscretizationJ()-2)*(bloc.getNbDiscretizationK()-2) ;
+	}
+	std::cout << "Underestimated predicted approximative number of final nodes: " << node_compteur << std::endl;
+
 	return IntervalAssignment_3D::SUCCESS;
 }
 /*------------------------------------------------------------------------*/

@@ -158,8 +158,8 @@ Blocking3D::Block Blocking3D::newBlock(const Node &AN1, const Node &AN2,
 	                AN5.id(),AN6.id(),AN7.id(),AN8.id());
 }
 /*----------------------------------------------------------------------------*/
-Blocking3D::Block  Blocking3D::
-   block(const TCellID AId) {
+Blocking3D::Block
+Blocking3D::block(const TCellID AId) {
 	return Block(get<Region>(AId),this);
 }
 /*----------------------------------------------------------------------------*/
@@ -169,6 +169,11 @@ std::vector<Blocking3D::Block> Blocking3D::allBlocks() {
 		blocks.push_back(block(r_id));
 	}
 	return blocks;
+}
+/*----------------------------------------------------------------------------*/
+Blocking3D::BlockFace
+Blocking3D::blockFace(const TCellID AId) {
+	return BlockFace(get<Face>(AId),this);
 }
 /*----------------------------------------------------------------------------*/
 TCellID Blocking3D::getEdge(const TCellID AN1, const TCellID AN2) {
@@ -440,8 +445,10 @@ void Blocking3D::initializeFacesPoints(){
 	}
 }
 /*----------------------------------------------------------------------------*/
-void Blocking3D::initializeBlocksPoints(){
-	for(auto r_id:regions()) {
+void Blocking3D::initializeBlocksPoints()
+{
+	for(auto r_id:regions())
+	{
 		   Block bi(r_id, this);
 		   auto nb_I = bi.getNbDiscretizationI();
 		   auto nb_J = bi.getNbDiscretizationJ();
@@ -546,7 +553,7 @@ void Blocking3D::initializeGridPoints()
 }
 /*----------------------------------------------------------------------------*/
 Array2D<TCellID>
-   Blocking3D::reorientFaceGrid(const TCellID Af_id, const TCellID An0_id, const TCellID An1_id, const TCellID An2_id, const TCellID An3_id)
+Blocking3D::reorientFaceGrid(const TCellID Af_id, const TCellID An0_id, const TCellID An1_id, const TCellID An2_id, const TCellID An3_id)
 {
 	Array2D<TCellID>* f_grid = m_face_grids->value(Af_id);
 
@@ -672,7 +679,7 @@ Array2D<TCellID>
 }
 /*----------------------------------------------------------------------------*/
 std::vector<math::Point>
-   Blocking3D::getEdgeNodesPoints(const TCellID Ae_id)
+Blocking3D::getEdgeNodesPoints(const TCellID Ae_id)
 {
 	Edge e = get<Edge>(Ae_id);
 	std::vector<TCellID>* n_ids = m_edge_grids->value(Ae_id);
@@ -684,6 +691,108 @@ std::vector<math::Point>
 	return pts;
 }
 /*----------------------------------------------------------------------------*/
+std::vector<TCellID>
+Blocking3D::computeSheet(TCellID e_id)
+{
+	std::vector<TCellID> sheet;
+	TInt mark_isTreated = (*this).newMark<Edge>();
+
+	// Propagation à tous les noeuds connexes qui sont sur le bord
+	std::vector<TCellID> next_edges;
+	next_edges.push_back(e_id);
+
+	while (!next_edges.empty())
+	{
+		// On récupère un noeud de la liste de noeuds next à traiter
+		TCellID current_e_id = next_edges.back();
+		next_edges.pop_back();
+		sheet.push_back(current_e_id);
+
+		Edge current_e = (*this).get<Edge>(current_e_id);
+		(*this).mark(current_e, mark_isTreated);	// Mark the current edge as treated
+
+		// Get the opposite edges of the edge current_e
+		std::vector<Face> current_e_faces = current_e.get<Face>();
+		for (auto const &f:current_e_faces)
+		{
+			Edge e_opp = math::Utils::oppositeEdgeInFace(this, current_e_id, f.id());
+			if (!(*this).isMarked(e_opp, mark_isTreated))
+			{
+				next_edges.push_back(e_opp.id());
+			}
+		}
+
+	}
+
+	(*this).unmarkAll<Edge>(mark_isTreated);
+	(*this).freeMark<Edge>(mark_isTreated);
+
+	return sheet;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<TCellID>
+Blocking3D::computeSheetBlocks(TCellID e_id)
+{
+	std::vector<TCellID> sheet_faces;
+	std::vector<TCellID> sheet = computeSheet(e_id);
+	TInt mark_isFaceOnSheet = (*this).newMark<Face>();
+
+	for (auto e_id:sheet)
+	{
+		Edge e = (*this).get<Edge>(e_id);
+		std::vector<Face> e_faces = e.get<Face>();
+		for (auto const& f:e_faces)
+		{
+			(*this).mark(f, mark_isFaceOnSheet);
+		}
+	}
+
+	for (auto f_id:(*this).faces())
+	{
+		Face b = (*this).get<Face>(f_id) ;
+		if ((*this).isMarked(b, mark_isFaceOnSheet))
+		{
+			sheet_faces.push_back(f_id);
+		}
+	}
+
+	(*this).unmarkAll<Face>(mark_isFaceOnSheet);
+	(*this).freeMark<Face>(mark_isFaceOnSheet);
+
+	return sheet;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<std::vector<TCellID>>
+Blocking3D::computeAllSheets()
+{
+	std::vector<std::vector<TCellID>> sheets;
+	TInt mark_isTreated = (*this).newMark<Edge>();
+
+	for (auto e_id: (*this).edges())
+	{
+		// If an edge is marked as not treated
+		if (!(*this).isMarked<Edge>(e_id, mark_isTreated))
+		{
+			// We compute the sheet
+			std::vector<TCellID> sheet_edges_ids = computeSheet(e_id);
+			// We mark all of the edges of the sheet as treated
+			for (auto sheet_edge_id:sheet_edges_ids)
+			{
+				Edge sheet_edge = (*this).get<Edge>(sheet_edge_id);
+				(*this).mark(sheet_edge, mark_isTreated);
+			}
+			// We add the new sheet to the vector of sheets
+			sheets.push_back(sheet_edges_ids);
+		}
+	}
+
+	(*this).unmarkAll<Edge>(mark_isTreated);
+	(*this).freeMark<Edge>(mark_isTreated);
+
+	return sheets;
+
+}
+/*----------------------------------------------------------------------------*/
 
 
 /*============================================================================*/
@@ -693,7 +802,8 @@ Blocking3D::Block::Block(const Region &ARegion,  Blocking3D* ASupport)
   : m_region(ARegion), m_support(ASupport), m_grid_view(ASupport->m_region_grids->value(ARegion.id()))
 {}
 /*----------------------------------------------------------------------------*/
-Blocking3D::Block::Block(const TCellID ARegionID, Blocking3D *ASupport) {
+Blocking3D::Block::Block(const TCellID ARegionID, Blocking3D *ASupport)
+{
 	m_support= ASupport;
 	m_region = m_support->get<Region>(ARegionID);
 	m_grid_view=m_support->m_region_grids->value(ARegionID);
@@ -701,14 +811,16 @@ Blocking3D::Block::Block(const TCellID ARegionID, Blocking3D *ASupport) {
 /*----------------------------------------------------------------------------*/
 TCellID Blocking3D::Block::origin() {return m_region.getIDs<Node>()[0];}
 /*----------------------------------------------------------------------------*/
-Node Blocking3D::Block::getNode(const int &AIndex) {
+Node Blocking3D::Block::getNode(const int &AIndex)
+{
 	if(AIndex<0 || AIndex>7){
 		throw GMDSException("A 3D block has exactly 8 nodes in range [0,7]");
 	}
 	return m_region.get<Node>()[AIndex];
 }
 /*----------------------------------------------------------------------------*/
-Node Blocking3D::Block::operator()(const int AI, const int AJ, const int AK) {
+Node Blocking3D::Block::operator()(const int AI, const int AJ, const int AK)
+{
 	/**
 	 *   J = 0    e2
 	 *       ____________
@@ -1079,5 +1191,169 @@ void Blocking3D::Block::computeInnerBlockNodesPoints()
 			}
 		}
 	}
+}
+/*----------------------------------------------------------------------------*/
+
+
+
+/*============================================================================*/
+//Methods for the friend class BlockFace
+/*============================================================================*/
+Blocking3D::BlockFace::BlockFace(const Face &AFace,  Blocking3D* ASupport):
+  m_face(AFace),
+  m_support(ASupport),
+  m_grid_view(ASupport->m_face_grids->value(AFace.id()))
+{}
+/*----------------------------------------------------------------------------*/
+Blocking3D::BlockFace::BlockFace(const TCellID AFaceID, Blocking3D *ASupport)
+{
+	m_support= ASupport;
+	m_face = m_support->get<Face>(AFaceID);
+	m_grid_view=m_support->m_face_grids->value(AFaceID);
+}
+/*----------------------------------------------------------------------------*/
+TCellID Blocking3D::BlockFace::origin() {return m_face.getIDs<Node>()[0];}
+/*----------------------------------------------------------------------------*/
+Node Blocking3D::BlockFace::getNode(const int &AIndex)
+{
+	if(AIndex<0 || AIndex>3){
+		throw GMDSException("A 3D block face has exactly 4 nodes in range [0,3]");
+	}
+	return m_face.get<Node>()[AIndex];
+}
+/*----------------------------------------------------------------------------*/
+Node Blocking3D::BlockFace::operator()(const int AI, const int AJ)
+{
+	/**
+	 *   J = 0    e2
+	 *       ____________
+	 *      |			  |
+	 *  e3  |			  |  e1
+	 *      |			  |
+	 *      |___________|  I=0
+	 *  Origin   e0
+	 */
+	if(AI<0 || AJ<0){
+		throw GMDSException("Index has to be at least 0");
+	}
+	else if (AI>getNbDiscretizationI()-1 || AJ>getNbDiscretizationJ()-1)
+	{
+		throw GMDSException("Index out of range");
+	}
+	return m_support->get<Node>((*m_grid_view)(AI,AJ));
+}
+/*----------------------------------------------------------------------------*/
+Edge Blocking3D::BlockFace::getEdge(const int AI, const int AJ)  {
+	if(AI==AJ)
+		throw GMDSException("Error in local numbering for getting an edge: same node value");
+	if(AI<0 || AJ<0)
+		throw GMDSException("Error in local numbering for getting an edge: negative local numbering");
+	if(AI>3 || AJ>3)
+		throw GMDSException("Error in local numbering for getting an edge: a local number can not exceed 3");
+	std::vector<TCellID> nids = m_face.getIDs<Node>();
+	std::vector<TCellID> edges_1 = m_support->get<Node>(nids[AI]).getIDs<Edge>();
+	std::vector<TCellID> edges_2 = m_support->get<Node>(nids[AJ]).getIDs<Edge>();
+
+	for(auto e1:edges_1){
+		for(auto e2:edges_2){
+			if(e1==e2){
+				//found common edge
+				return m_support->get<Edge>(e1);
+			}
+		}
+	}
+	throw GMDSException("error no edge found!");
+}
+/*----------------------------------------------------------------------------*/
+Edge Blocking3D::BlockFace::getEdgeI()
+{
+	return getEdge(0,1);
+}
+/*----------------------------------------------------------------------------*/
+Edge Blocking3D::BlockFace::getEdgeJ()
+{
+	return getEdge(0,3);
+}
+/*----------------------------------------------------------------------------*/
+bool Blocking3D::BlockFace::isEdgeOnI(const TCellID AID)
+{
+	std::vector<TCellID> e_nodes = m_support->get<Edge>(AID).getIDs<Node>();
+	std::vector<TCellID> nids = m_face.getIDs<Node>();
+	//Same as getEdge, we use the node indices (more suitable for class changes?)
+	return (e_nodes[0] == nids[0] && e_nodes[1] == nids[1]) || (e_nodes[0] == nids[1] && e_nodes[1] == nids[0])
+	       || (e_nodes[0] == nids[2] && e_nodes[1] == nids[3]) || (e_nodes[0] == nids[3] && e_nodes[1] == nids[2]);
+	//CAUTION : if the edge does not belong the bloc it will return false instead of an error
+}
+/*----------------------------------------------------------------------------*/
+bool Blocking3D::BlockFace::isEdgeOnJ(const TCellID AID)
+{
+	std::vector<TCellID> e_nodes = m_support->get<Edge>(AID).getIDs<Node>();
+	std::vector<TCellID> nids = m_face.getIDs<Node>();
+	//Same as getEdge, we use the node indices (more suitable for class changes?)
+	return (e_nodes[0] == nids[1] && e_nodes[1] == nids[2]) || (e_nodes[0] == nids[2] && e_nodes[1] == nids[1])
+	       || (e_nodes[0] == nids[0] && e_nodes[1] == nids[3]) || (e_nodes[0] == nids[3] && e_nodes[1] == nids[0]);
+	//CAUTION : if the edge does not belong the bloc it will return false instead of an error
+}
+/*----------------------------------------------------------------------------*/
+int Blocking3D::BlockFace::getNbDiscretizationI() const{
+	return m_grid_view->nbLines();
+}
+/*----------------------------------------------------------------------------*/
+int Blocking3D::BlockFace::getNbDiscretizationJ() const{
+	return m_grid_view->nbColumns();
+}
+/*----------------------------------------------------------------------------*/
+
+
+
+/*============================================================================*/
+//Methods for the friend class BlockEdge
+/*============================================================================*/
+Blocking3D::BlockEdge::BlockEdge(const Edge &AEdge,  Blocking3D* ASupport):
+  m_edge(AEdge),
+  m_support(ASupport),
+  m_grid_view(ASupport->m_edge_grids->value(AEdge.id()))
+{}
+/*----------------------------------------------------------------------------*/
+Blocking3D::BlockEdge::BlockEdge(const TCellID AEdgeID, Blocking3D *ASupport)
+{
+	m_support= ASupport;
+	m_edge = m_support->get<Edge>(AEdgeID);
+	m_grid_view=m_support->m_edge_grids->value(AEdgeID);
+}
+/*----------------------------------------------------------------------------*/
+TCellID Blocking3D::BlockEdge::origin() {return m_edge.getIDs<Node>()[0];}
+/*----------------------------------------------------------------------------*/
+Node Blocking3D::BlockEdge::getNode(const int &AIndex)
+{
+	if(AIndex<0 || AIndex>1){
+		throw GMDSException("A 3D block edge has exactly 2 nodes in range [0,1]");
+	}
+	return m_edge.get<Node>()[AIndex];
+}
+/*----------------------------------------------------------------------------*/
+Node Blocking3D::BlockEdge::operator()(const int AI)
+{
+	/**
+	 *   J = 0    e2
+	 *       ____________
+	 *      |			  |
+	 *  e3  |			  |  e1
+	 *      |			  |
+	 *      |___________|  I=0
+	 *  Origin   e0
+	 */
+	if(AI<0){
+		throw GMDSException("Index has to be at least 0");
+	}
+	else if (AI>getNbDiscretizationI()-1)
+	{
+		throw GMDSException("Index out of range");
+	}
+	return m_support->get<Node>((*m_grid_view)[AI]);
+}
+/*----------------------------------------------------------------------------*/
+int Blocking3D::BlockEdge::getNbDiscretizationI() const{
+	return m_grid_view->size();
 }
 /*----------------------------------------------------------------------------*/

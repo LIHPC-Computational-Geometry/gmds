@@ -149,6 +149,102 @@ class GMDSIg_API Blocking3D : public Mesh
 
 	};
 
+	class GMDSIg_API BlockFace{
+	 public:
+		friend class Blocking3D;
+		/**
+             *
+             * @return the id of the origin corner node, which the first face node
+		 */
+		TCellID origin();
+
+		Node getNode(const int& AIndex);
+		Node operator()(const int AI, const int AJ);
+		Edge getEdgeI();
+		Edge getEdgeJ();
+
+		TCellID id() {return m_face.id();}
+		/**@brief You can only check the discretization of each edge of the BlockFace.
+		 */
+		int getNbDiscretizationI() const;
+		int getNbDiscretizationJ() const;
+
+		/** @brief Use to know if the edge @p AID is one of the two edges on the I axe.
+		       *
+		       * @param AID an edge id
+		       * @return true if the edge is on I, false otherwise
+		 */
+		bool isEdgeOnI(TCellID AID);
+		/** @brief Use to know if the edge @p AID is one of the two edges on the J axe.
+		       *
+		       * @param AID an edge id
+		       * @return true if the edge is on J, false otherwise
+		 */
+		bool isEdgeOnJ(TCellID AID);
+
+	 private:
+		/** Access to the edge with local index @p AI and @p AJ in the
+             *  current face
+             *
+             *  An exception is throww if @p AI==@p AJ and if @p AI or @p AJ is not included in [0,3]
+             *
+             * @param AI local index of a node in the face
+             * @param AJ local index of a node in the face
+             * @return the edge connecting the two input nodes
+		 */
+		Edge getEdge(const int AI, const int AJ);
+
+	 private:
+		/** @brief private constructor, only a Blocking2D instance can
+             *         construct such an object.
+		 */
+		BlockFace(const Face&   AFace, Blocking3D* ASupport);
+		BlockFace(const TCellID AFaceID, Blocking3D* ASupport);
+
+		/** Face at the block level. We keep it instead of the id because
+             * it is more rich and in particular stores the reference to the
+             * mesh it belongs to.
+		 */
+		Face m_face;
+		Blocking3D* m_support;
+		Array2D<TCellID>* m_grid_view;
+
+	};
+
+	class GMDSIg_API BlockEdge{
+	 public:
+		friend class Blocking3D;
+		/**
+             *
+             * @return the id of the origin corner node, which the first edge node
+		 */
+		TCellID origin();
+
+		Node getNode(const int& AIndex);
+		Node operator()(const int AI);
+
+		TCellID id() {return m_edge.id();}
+		/**@brief You can only check the discretization of the BlockEdge.
+		 */
+		int getNbDiscretizationI() const;
+
+	 private:
+		/** @brief private constructor, only a Blocking2D instance can
+             *         construct such an object.
+		 */
+		BlockEdge(const Edge&   AEdge, Blocking3D* ASupport);
+		BlockEdge(const TCellID AEdgeID, Blocking3D* ASupport);
+
+		/** Face at the block level. We keep it instead of the id because
+             * it is more rich and in particular stores the reference to the
+             * mesh it belongs to.
+		 */
+		Edge m_edge;
+		Blocking3D* m_support;
+		std::vector<TCellID>* m_grid_view;
+
+	};
+
 	/** @brief Constructor
 	 */
 	Blocking3D();
@@ -187,32 +283,44 @@ class GMDSIg_API Blocking3D : public Mesh
 	Block newBlock(const TCellID AN1, const TCellID AN2, const TCellID AN3, const TCellID AN4,
 	               const TCellID AN5, const TCellID AN6, const TCellID AN7, const TCellID AN8);
 
+	/*-------------------------------------------------------------------*/
 	/** @brief Return a handle block for block of id @p AId
          * @param[in] AId block id
          * @return the expected block
 	 */
 	Block block(const TCellID AId);
+	/*-------------------------------------------------------------------*/
 	/** @brief Returns all the blocks
          * @return a collection of block handlers
 	 */
 	std::vector<Block> allBlocks();
+	/*-------------------------------------------------------------------*/
+	/** @brief Return a handle block face for block face of id @p AId
+         * @param[in] AId block id
+         * @return the expected block
+	 */
+	BlockFace blockFace(const TCellID AId);
+	/*-------------------------------------------------------------------*/
 	/** @brief Create all the edge nodes. Once this method call the block structure
          * can not be modified anymore. We should check the conditions to allow it in the future.
 	 */
 	void initializeEdgesPoints();
+	/*-------------------------------------------------------------------*/
 	/** @brief Create all the inner faces nodes, requires initializeEdgesPoints. Once this method call the block structure
          * can not be modified anymore. We should check the conditions to allow it in the future.
 	 */
 	void initializeFacesPoints();
+	/*-------------------------------------------------------------------*/
 	/** @brief Create all the inner blocks nodes, requires initializeFacesPoints. Once this method call the block structure
          * can not be modified anymore. We should check the conditions to allow it in the future.
 	 */
 	void initializeBlocksPoints();
+	/*-------------------------------------------------------------------*/
 	/** @brief Create all the edge and block inner nodes. Once this method call the block structure
          * can not be modified anymore. We should check the conditions to allow it in the future.
 	 */
 	void initializeGridPoints();
-
+	/*-------------------------------------------------------------------*/
 	/** @brief .
          *
          * @param[in] Ae_id
@@ -220,6 +328,36 @@ class GMDSIg_API Blocking3D : public Mesh
          * @return the id of the edge connecting @p AN1 and @p AN2
 	 */
 	std::vector<math::Point> getEdgeNodesPoints(const TCellID Ae_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Compute and store the set of opposite edges to e_id through
+	   * the hex blocks of the 3D blocking. Those edges are characterised
+	   * by the fact they will share the same discretization in the final
+	   * mesh.
+	   *
+	 	* \param[in] e_id starting edge id
+		*
+		* \return a vector containing the ids of all the edges from the
+	 	* sheet, starting by the ID of edge e_id
+	 */
+	std::vector<TCellID> computeSheet(TCellID e_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Compute and store the set of blocks that shares an edge of
+	 	* computeSheet(e_id).
+	   *
+	 	* \param[in] e_id starting edge id
+		*
+		* \return a vector containing the ids of all the blocks of the
+	 	* sheet of e_id
+	 */
+	std::vector<TCellID> computeSheetBlocks(TCellID e_id);
+	/*-------------------------------------------------------------------*/
+	/** @brief Compute the set of sheets of the Blocking.
+	 	*
+		* \return  a vector to store the vector of edge ids of each sheet of the
+	 	* Blocking.
+	 */
+	std::vector<std::vector<TCellID>> computeAllSheets();
+	/*----------------------------------------------------------------------------*/
 
  private:
 	/** @brief Give the number of subdivision for edge @p AEdge in region @p ARegion
@@ -229,10 +367,12 @@ class GMDSIg_API Blocking3D : public Mesh
           * @return the discretisation of @p AEdge
 	 */
 	int getNbDiscretization(const Region& ARegion, const Edge& AEdge) const;
+	/*-------------------------------------------------------------------*/
 	/** @brief Check if the discretization of an edge is set the same in each adjacent face.
          *
 	 */
 	bool checkDiscretizationValidity() const;
+	/*-------------------------------------------------------------------*/
 	/** @brief Check if the edge [@p AN1, @p AN2] exists in the mesh. If not, it is created.
          * We use and update the variable m_n2e to do that.
          *
@@ -241,6 +381,7 @@ class GMDSIg_API Blocking3D : public Mesh
          * @return the id of the edge connecting @p AN1 and @p AN2
 	 */
 	TCellID getEdge(const TCellID AN1, const TCellID AN2);
+	/*-------------------------------------------------------------------*/
 	/** @brief Check if the face [@p AN1, @p AN2, @p AN3, @p AN4] exists in the mesh. If not, it is created.
          * We use and update the variable m_n2e to do that.
          *
@@ -251,7 +392,7 @@ class GMDSIg_API Blocking3D : public Mesh
          * @return the id of the face connecting @p AN1, @p AN2, @p AN3 and @p AN4
 	 */
 	TCellID getFace(const TCellID AN1, const TCellID AN2, const TCellID AN3, const TCellID AN4);
-
+	/*-------------------------------------------------------------------*/
 	/** @brief Re-orient the face grid, according to a specific numbering.
          *
          * @param[in] Af_id face id
@@ -263,6 +404,7 @@ class GMDSIg_API Blocking3D : public Mesh
          * 			@p An0_id @p An1_id and the edge J is @p An0_id @p An3_id.
 	 */
 	Array2D<TCellID> reorientFaceGrid(const TCellID Af_id, const TCellID An0_id, const TCellID An1_id, const TCellID An2_id, const TCellID An3_id);
+	/*-------------------------------------------------------------------*/
  private:
 	/** the embedding variable, which allows us to know where each mesh node is*/
 	Variable<int> *m_embedding_dim;

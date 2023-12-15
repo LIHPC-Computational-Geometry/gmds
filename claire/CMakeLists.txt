@@ -128,7 +128,7 @@ set(GMDS_SRC
 		src/PatternNode2End1Reversal.cpp
 		src/MFEMMeshWriter.cpp
 		src/ControlPointsSmoothing_2D.cpp
-		src/Blocking3D.cpp inc/gmds/claire/TransfiniteInterpolation_3D.h src/TransfiniteInterpolation_3D.cpp)
+		src/Blocking3D.cpp inc/gmds/claire/TransfiniteInterpolation_3D.h src/TransfiniteInterpolation_3D.cpp inc/gmds/claire/RefinementBetaBlocking3D.h src/RefinementBetaBlocking3D.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

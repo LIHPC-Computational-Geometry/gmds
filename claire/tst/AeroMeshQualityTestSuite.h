@@ -575,4 +575,19 @@ TEST(ClaireTestClass, Test_StretchQUAD)
 
 }
 
+TEST(ClaireTestClass, Test_ScaledJacobianHEX)
+{
+	math::Point p0(0,0,0);
+	math::Point p1(1,0,0);
+	math::Point p2(1,1,0);
+	math::Point p3(0,1,0);
+	math::Point p4(0,0,1);
+	math::Point p5(1,0,1);
+	math::Point p6(1,1,1);
+	math::Point p7(0,1,1);
+
+	ASSERT_FLOAT_EQ( math::AeroMeshQuality::ScaledJacobianHEX(p0,p1,p2,p3,p4,p5,p6,p7) ,1.0);
+
+}
+
 #endif     // GMDS_AEROMESHQUALITYTESTSUITE_H
