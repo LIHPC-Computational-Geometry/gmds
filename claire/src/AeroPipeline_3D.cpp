@@ -21,6 +21,8 @@
 #include <gmds/math/BezierHex.h>
 #include <gmds/claire/AdvectedPointRK4_3D.h>
 #include <gmds/claire/TransfiniteInterpolation_3D.h>
+#include <gmds/claire/RefinementBetaBlocking3D.h>
+#include <gmds/claire/AeroMeshQuality.h>
 #include <iostream>
 #include <chrono>
 /*------------------------------------------------------------------------*/
@@ -414,6 +416,7 @@ AeroPipeline_3D::EcritureMaillage(){
 	// Write the Blocking3D as a mesh
 	m_meshHex->clear();
 	math::Utils::BuildMesh3DFromBlocking3D(&m_Blocking3D, m_meshHex);
+	computeHexMeshQuality();
 	gmds::IGMeshIOService ioService_mesh3D(m_meshHex);
 	gmds::VTKWriter vtkWriter_mesh3D(&ioService_mesh3D);
 	vtkWriter_mesh3D.setCellOptions(gmds::N|gmds::R);
@@ -1396,16 +1399,29 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 {
 	std::cout << "-> init Blocking3D structure from the mesh..." << std::endl;
 
+	// re-orient the block hex of the mesh before to convert them into Blocks
+	MeshDoctor doc(m_meshHex);
+	doc.buildFacesAndR2F();
+	doc.updateUpwardConnectivity();
+	doc.orient2DFaces();
+	for (auto r_id:m_meshHex->regions())
+	{
+		math::Utils::orientRegion(m_meshHex, m_meshHex->get<Region>(r_id));
+	}
+
+	// Init linker of the Blocking to the Geometry
 	m_linker_BG->setGeometry(m_manager);
 	m_linker_BG->setMesh(&m_Blocking3D);
-
-	//std::cout << "Nbr curves " << m_manager->getCurves().size() << std::endl;
-	//std::cout << "Nbr surfaces " << m_manager->getSurfaces().size() << std::endl;
 
 	Variable<int>* var_couche_blocking = m_Blocking3D.newVariable<int, GMDS_NODE>("GMDS_Couche");
 	Variable<int>* var_couche_ctrlpts = m_CtrlPts.newVariable<int, GMDS_NODE>("GMDS_Couche");
 	std::map<TCellID,TCellID> map_new_nodes_IDS_blocking;
 	std::map<TCellID,TCellID> map_new_nodes_IDS_ctrlpts;
+
+	Variable<int>* var_patterns = m_meshHex->getOrCreateVariable<int, GMDS_REGION>("GMDS_Patterns");
+
+	Variable<int>* var_layer_blocking = m_Blocking3D.newVariable<int, GMDS_REGION>("GMDS_Layer");
+	Variable<int>* var_patterns_blocking = m_Blocking3D.newVariable<int, GMDS_REGION>("GMDS_Patterns");
 
 	//=========================================
 	// Create the Block Corners and Blocks in
@@ -1452,6 +1468,16 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 		n7 = m_meshHex->get<Node>(map_new_nodes_IDS_ctrlpts[r_nodes[7].id()]);
 		Blocking3D::Block b_ctrlpts = m_CtrlPts.newBlock(n0, n1, n2, n3, n4, n5, n6, n7);
 
+		// Set the ID of the layer on a region variable on the Blocking
+		int layer_id = std::max(var_couche_blocking->value(n0.id()), var_couche_blocking->value(n1.id()));
+		layer_id = std::max(layer_id, var_couche_blocking->value(n2.id()));
+		layer_id = std::max(layer_id, var_couche_blocking->value(n3.id()));
+		layer_id = std::max(layer_id, var_couche_blocking->value(n4.id()));
+		layer_id = std::max(layer_id, var_couche_blocking->value(n5.id()));
+		layer_id = std::max(layer_id, var_couche_blocking->value(n6.id()));
+		layer_id = std::max(layer_id, var_couche_blocking->value(n7.id()));
+		var_layer_blocking->set(b_blocking.id(), layer_id);
+		var_patterns_blocking->set(b_blocking.id(), var_patterns->value(r_id));
 	}
 
 
@@ -1507,7 +1533,7 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 
 
 	// Init the control points of each Block
-	int degree_Bezier(3);
+	int degree_Bezier(2);
 	for (auto bloc:m_CtrlPts.allBlocks())
 	{
 		bloc.setNbDiscretizationI(degree_Bezier+1);
@@ -1525,14 +1551,12 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 	// Interval Assignment:
 	// Compute the discretization of each Block
 	//===========================================
-
 	std::cout << "-> Interval Assignment" << std::endl;
 	IntervalAssignment_3D intAss(&m_Blocking3D,
 	                             &m_CtrlPts,
 	                             m_params,
 	                             m_Blocking3D.newVariable<int,GMDS_EDGE>("GMDS_EdgeDiscretization"));
 	intAss.execute();
-
 
 	// Temporary: set the discretization of each block in an uniform way
 	/*
@@ -1542,10 +1566,15 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 		b.setNbDiscretizationJ(11);
 		b.setNbDiscretizationK(11);
 	}
-	 */
+	*/
 
 	// Init the grid points (the inner nodes of each block edge, face and hex)
 	m_Blocking3D.initializeGridPoints();
+
+	//RefinementBetaBlocking3D block_refinement(&m_Blocking3D, &m_CtrlPts, m_params);
+	//block_refinement.execute();
+
+	//m_Blocking3D.
 
 	//=========================================
 	// Update classification of Block edges
@@ -2033,8 +2062,34 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 		}
 	}
 
+
 	// Test new method to compute the block nodes positions from ctrl points positions
 	computeBlockNodesPositionsFromCtrlPoints();
+
+	// Project boundary nodes onto the geometry
+	for (auto n_id:m_Blocking3D.nodes())
+	{
+		if (var_couche_blocking->value(n_id) == 0
+		    || var_couche_blocking->value(n_id) == m_params.nbr_couches )
+		{
+			Node n =  m_Blocking3D.get<Node>(n_id);
+			int geom_dim = m_linker_BG->getGeomDim<Node>(n_id);
+			if (geom_dim == 2)
+			{
+				cad::GeomCurve* curve = m_manager->getCurve(m_linker_BG->getGeomId<Node>(n_id));
+				math::Point p = n.point();
+				curve->project(p);
+				n.setPoint(p);
+			}
+			else if (geom_dim == 3)
+			{
+				cad::GeomSurface* surface = m_manager->getSurface(m_linker_BG->getGeomId<Node>(n_id));
+				math::Point p = n.point();
+				surface->project(p);
+				n.setPoint(p);
+			}
+		}
+	}
 
 }
 /*------------------------------------------------------------------------*/
@@ -2729,5 +2784,23 @@ AeroPipeline_3D::computeControlPointstoInterpolateBoundaries()
 	}
 
 
+}
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_3D::computeHexMeshQuality()
+{
+	std::cout << "-> Compute final mesh quality" << std::endl;
+	Variable<double>* var_scaledjacobian = m_meshHex->newVariable<double, GMDS_REGION>("GMDS_ScaledJacobian");
+
+	for (auto r_id:m_meshHex->regions())
+	{
+		Region r = m_meshHex->get<Region>(r_id);
+		std::vector<Node> r_nodes = r.get<Node>();
+		//std::cout << "Region " << r_id << ", nodes " << r_nodes.size() << std::endl;
+		var_scaledjacobian->set(r_id, math::AeroMeshQuality::ScaledJacobianHEX(r_nodes[0].point(), r_nodes[1].point(),
+		                                                                       r_nodes[2].point(), r_nodes[3].point(),
+		                                                                       r_nodes[4].point(), r_nodes[5].point(),
+		                                                                       r_nodes[6].point(), r_nodes[7].point()));
+	}
 }
 /*------------------------------------------------------------------------*/

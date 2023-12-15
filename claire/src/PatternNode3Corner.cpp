@@ -70,6 +70,9 @@ PatternNode3Corner::computeNewHex()
 	Node n5 = m_mesh->newNode(p5);
 	Node n7 = m_mesh->newNode(p7);
 
+	math::Point p6 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc,  m_DistanceField, v1+v2+v3);
+	n6.setPoint(p6);
+
 	// Update the layer ids
 	Variable<int>* var_node_couche_id = m_mesh->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	var_node_couche_id->set(n1.id(), m_Front->getFrontID()+1);

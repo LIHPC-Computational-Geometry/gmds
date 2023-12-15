@@ -277,6 +277,74 @@ double AeroMeshQuality::StretchQUAD(const math::Point& p0, const math::Point& p1
 	return sqrt(2.0)*lmin/Dmax ;
 }
 /*------------------------------------------------------------------------*/
+double
+AeroMeshQuality::ScaledJacobianHEX(const math::Point& p0, const math::Point& p1, const math::Point& p2, const math::Point& p3,
+                  const math::Point& p4, const math::Point& p5, const math::Point& p6, const math::Point& p7)
+{
+	Vector3d L0 = (p1-p0).normalize() ;
+	Vector3d L1 = (p2-p1).normalize() ;
+	Vector3d L2 = (p3-p2).normalize() ;
+	Vector3d L3 = (p3-p0).normalize() ;
+	Vector3d L4 = (p4-p0).normalize() ;
+	Vector3d L5 = (p5-p1).normalize() ;
+	Vector3d L6 = (p6-p2).normalize() ;
+	Vector3d L7 = (p7-p3).normalize() ;
+	Vector3d L8 = (p5-p4).normalize() ;
+	Vector3d L9 = (p6-p5).normalize() ;
+	Vector3d L10 = (p7-p6).normalize() ;
+	Vector3d L11 = (p7-p4).normalize() ;
+
+	Vector3d X1 = ((p1-p0) + (p2-p3) + (p5-p4) + (p6-p7)).normalize() ;
+	Vector3d X2 = ((p3-p0) + (p2-p1) + (p7-p4) + (p6-p5)).normalize() ;
+	Vector3d X3 = ((p4-p0) + (p5-p1) + (p6-p2) + (p7-p3)).normalize() ;
+
+	Eigen::Matrix3d A0;
+	Eigen::Matrix3d A1;
+	Eigen::Matrix3d A2;
+	Eigen::Matrix3d A3;
+	Eigen::Matrix3d A4;
+	Eigen::Matrix3d A5;
+	Eigen::Matrix3d A6;
+	Eigen::Matrix3d A7;
+	Eigen::Matrix3d A8;
+
+	// Fill the 3x3 Jacobian matrices
+	for (int i=0;i<3;i++)
+	{
+		A0(i,0) = L0[i];
+		A0(i,1) = L3[i];
+		A0(i,2) = L4[i];
+		A1(i,0) = L1[i];
+		A1(i,1) = -L0[i];
+		A1(i,2) = L5[i];
+		A2(i,0) = L2[i];
+		A2(i,1) = -L1[i];
+		A2(i,2) = L6[i];
+		A3(i,0) = -L3[i];
+		A3(i,1) = -L2[i];
+		A3(i,2) = L7[i];
+		A4(i,0) = L11[i];
+		A4(i,1) = L8[i];
+		A4(i,2) = -L4[i];
+		A5(i,0) = -L8[i];
+		A5(i,1) = L9[i];
+		A5(i,2) = -L5[i];
+		A6(i,0) = -L9[i];
+		A6(i,1) = L10[i];
+		A6(i,2) = -L6[i];
+		A7(i,0) = -L10[i];
+		A7(i,1) = -L11[i];
+		A7(i,2) = -L7[i];
+		A8(i,0) = X1[i];
+		A8(i,1) = X2[i];
+		A8(i,2) = X3[i];
+	}
+
+	return std::min({A0.determinant(), A1.determinant(), A2.determinant(), A3.determinant(), A4.determinant(),
+	                       A5.determinant(), A6.determinant(), A7.determinant(), A8.determinant()}) ;
+
+}
+/*------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
 }  // namespace math

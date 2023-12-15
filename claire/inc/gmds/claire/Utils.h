@@ -368,11 +368,13 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static void resizeMesh(Mesh* Amesh, double Ascale);
 	/*----------------------------------------------------------------------------*/
-	/** @brief
+	/** @brief Method to compute the length of a Bezier Curve. To do so, from the
+	 * control points, we discretize the Bezier Curve in a set of for instead 100
+	 * points, then we sum the lengths of the subsets.
 	 *
-	 * @param[in] Abc
+	 * @param[in] Abc Bezier Curve
 	 *
-	 * @return
+	 * @return the length of the bezier curve
 	 */
 	static double lengthBezierCurve(BezierCurve* Abc);
 	/*----------------------------------------------------------------------------*/

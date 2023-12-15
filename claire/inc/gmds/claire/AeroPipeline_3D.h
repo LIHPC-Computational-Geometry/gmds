@@ -84,6 +84,10 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_3D : public AbstractAeroPipeline {
 	 */
 	void computeControlPointstoInterpolateBoundaries();
 	/*----------------------------------------------------------------------------*/
+	/** @brief Compute the mesh quality.
+	 */
+	void computeHexMeshQuality();
+	/*----------------------------------------------------------------------------*/
 
  protected:
 	/** Données des bords */

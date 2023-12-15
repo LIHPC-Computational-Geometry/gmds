@@ -625,6 +625,24 @@ FrontEdgesNodesClassification_3D::isThisValidLoopPath(Global_Feature_Edge& GFE)
 	{
 		isValid = true;
 	}
+	if (GFE.Start_n_id == GFE.End_n_id
+	    && type_path == 2)		// End loop paths
+	{
+		for (auto e_id:GFE.edges_id)
+		{
+			Edge e = m_mesh->get<Edge>(e_id);
+			std::vector<Node> e_nodes = e.get<Node>() ;
+			NodeNeighbourhoodOnFront_3D n0_nb = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, e_nodes[0].id());
+			n0_nb.execute();
+			NodeNeighbourhoodOnFront_3D n1_nb = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, e_nodes[1].id());
+			n1_nb.execute();
+			if (n0_nb.getOrderedFaces().size() !=4
+			    || n1_nb.getOrderedFaces().size() != 4)
+			{
+				isValid = false;
+			}
+		}
+	}
 	if (var_node_couche_id->value(GFE.Start_n_id) > 1)
 	{
 		isValid = false;	// For now, you can't insert patterns for loops if the layer is not the first one or the second one.

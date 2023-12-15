@@ -161,6 +161,25 @@ class LIB_GMDS_CLAIRE_API AeroMeshQuality {
 	 */
 	static double StretchQUAD(const math::Point& p0, const math::Point& p1, const math::Point& p2, const math::Point& p3);
 	/*------------------------------------------------------------------------*/
+	/** \brief  Scaled Jacobian for HEX (cf The Verdict Geometric Quality Library from SANDIA)
+	 		* This metric is the minimum determinant of the Jacobian matrix evaluated at each
+	 		* corner and the center of the element, divided by the corresponding edge lengths.
+	 		* Defined between -1 et 1, a value between 0.5 and 1 is acceptable.
+         *
+         * \param[in] p0 first point
+			* \param[in] p1 second point
+			* \param[in] p2 third point
+			* \param[in] p3 fourth point
+			* \param[in] p4 first point
+			* \param[in] p5 second point
+			* \param[in] p6 third point
+			* \param[in] p7 fourth point
+         *
+         * \return the scaled jacobian of the hex
+	 */
+	static double ScaledJacobianHEX(const math::Point& p0, const math::Point& p1, const math::Point& p2, const math::Point& p3,
+	                                const math::Point& p4, const math::Point& p5, const math::Point& p6, const math::Point& p7);
+	/*------------------------------------------------------------------------*/
 
 
 };

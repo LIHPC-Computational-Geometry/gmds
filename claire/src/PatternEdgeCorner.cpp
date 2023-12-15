@@ -53,19 +53,28 @@ PatternEdgeCorner::computeNewHex()
 		// We create the 3 new nodes	//
 		//============================//
 
+		/*
 		math::Vector3d f0_normal = m_Front->outgoingNormal(m_mesh, m_meshT, m_fl, m_VectorField, e_front_faces[0]) ;
 		f0_normal.normalize();
 		f0_normal = e.length()*f0_normal ;
+		 */
+		math::Vector3d f0_normal = computeNormaltoFacesAroundNodeSideFace(n0_id, e_front_faces[0]);
 
+		/*
 		math::Vector3d f1_normal = m_Front->outgoingNormal(m_mesh, m_meshT, m_fl, m_VectorField, e_front_faces[1]) ;
 		f1_normal.normalize();
 		f1_normal = e.length()*f1_normal ;
+		 */
+		math::Vector3d f1_normal = computeNormaltoFacesAroundNodeSideFace(n0_id, e_front_faces[1]);
 
 		math::Point p_n0 = e_nodes[0].point();
 
 		n0_2_id = m_StructManager->getFaceIdealNextNode(e_front_faces[0], e_nodes[0].id());
-		Node n0_2_new = m_mesh->get<Node>(n0_2_id);
-		math::Point p0_2_new = n0_2_new.point() ;
+		//Node n0_2_new = m_mesh->get<Node>(n0_2_id);
+		//math::Point p0_2_new = n0_2_new.point() ;
+		math::Point p0_2_new = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, e_nodes[0].point(), m_dc, m_DistanceField, f0_normal.normalize()+f1_normal.normalize());
+		Node n0_2_new = m_mesh->newNode(p0_2_new);
+		n0_2_id = n0_2_new.id();
 		math::Point p0_1_new = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, e_nodes[0].point(), m_dc, m_DistanceField, f0_normal.normalize());
 		math::Point p0_3_new = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, e_nodes[0].point(), m_dc, m_DistanceField, f1_normal.normalize());
 
@@ -144,19 +153,30 @@ PatternEdgeCorner::computeNewHex()
 		// We create the 3 new nodes	//
 		//============================//
 
+		/*
 		math::Vector3d f0_normal = m_Front->outgoingNormal(m_mesh, m_meshT, m_fl, m_VectorField, e_front_faces[0]) ;
 		f0_normal.normalize();
 		f0_normal = e.length()*f0_normal ;
+		 */
+		math::Vector3d f0_normal = computeNormaltoFacesAroundNodeSideFace(n1_id, e_front_faces[0]);
 
+		/*
 		math::Vector3d f1_normal = m_Front->outgoingNormal(m_mesh, m_meshT, m_fl, m_VectorField, e_front_faces[1]) ;
 		f1_normal.normalize();
 		f1_normal = e.length()*f1_normal ;
+		 */
+		math::Vector3d f1_normal = computeNormaltoFacesAroundNodeSideFace(n1_id, e_front_faces[1]);
 
 		math::Point p_n1 = e_nodes[1].point();
 
+		/*
 		n1_2_id = m_StructManager->getFaceIdealNextNode(e_front_faces[0], e_nodes[1].id());
 		Node n1_2_new = m_mesh->get<Node>(n1_2_id);
 		math::Point p1_2_new = n1_2_new.point() ;
+		 */
+		math::Point p1_2_new = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, e_nodes[1].point(), m_dc, m_DistanceField, f0_normal.normalize()+f1_normal.normalize());
+		Node n1_2_new = m_mesh->newNode(p1_2_new);
+		//n1_2_id = n1_2_new.id();
 		math::Point p1_1_new = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, e_nodes[1].point(), m_dc, m_DistanceField, f0_normal.normalize());
 		math::Point p1_3_new = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, e_nodes[1].point(), m_dc, m_DistanceField, f1_normal.normalize());
 
@@ -237,3 +257,36 @@ PatternEdgeCorner::computeNewHex()
 	var_face_couche_id->set(f_2_new_id, m_Front->getFrontID()+1);
 
 }
+/*------------------------------------------------------------------------*/
+math::Vector3d
+PatternEdgeCorner::computeNormaltoFacesAroundNodeSideFace(TCellID n_id, TCellID f_id)
+{
+	Node n = m_mesh->get<Node>(n_id);
+	NodeNeighbourhoodOnFront_3D n_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n_id);
+	n_neighbourhood.execute();
+
+	Variable<int>* var_front_edges_classification = m_mesh->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
+
+	// Compute the next corner edge, to know when to stop
+	TCellID next_corner_edge_id(m_e_id);
+	for (auto e_id:n_neighbourhood.getOrderedEdges())
+	{
+		if (e_id != m_e_id
+		    && var_front_edges_classification->value(e_id)==1)
+		{
+			next_corner_edge_id = e_id;
+		}
+	}
+
+	std::vector<TCellID> faces = n_neighbourhood.facesBtwEdge1nEdge2inFaceSide(m_e_id, next_corner_edge_id, f_id) ;
+
+	math::Vector3d normal;
+	for (auto face_id:faces)
+	{
+		normal += m_Front->outgoingNormal(m_mesh, m_meshT, m_fl, m_VectorField, face_id).normalize() ;
+	}
+
+	return normal.normalize();
+
+}
+/*------------------------------------------------------------------------*/

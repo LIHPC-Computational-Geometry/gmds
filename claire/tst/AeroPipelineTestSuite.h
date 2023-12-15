@@ -53,8 +53,10 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 	//std::string input_file=dir+"/Aero/3D/param_Stardust_3D.ini";
 	//std::string input_file=dir+"/Aero/3D/param_Apollo_3D.ini";
 	//std::string input_file=dir+"/Aero/3D/param_Double_Ellipsoid_3D.ini";
-	std::string input_file=dir+"/Aero/3D/param_HyTRV_3D.ini";
-	//std::string input_file=dir+"/Aero/3D/param_C9_3D.ini";
+	//std::string input_file=dir+"/Aero/3D/param_HyTRV_3D.ini";
+	//std::string input_file=dir+"/Aero/3D/param_RAMCII_3D.ini";
+	//std::string input_file=dir+"/Aero/3D/param_Caretwing_3D.ini";
+	std::string input_file=dir+"/Aero/3D/param_C8_3D.ini";
 
 	//---------------------//
 	//    AERO PIPELINE    //
