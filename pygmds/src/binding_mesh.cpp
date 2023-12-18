@@ -63,6 +63,8 @@ bind_mesh(py::module &m)
 	py::class_<gmds::MeshDoctor>(m, "MeshDoctor")
 	   .def(py::init<gmds::Mesh *>())
 	   .def("build_faces_and_R2F", &gmds::MeshDoctor::buildFacesAndR2F)
+	   .def("build_R2E", &gmds::MeshDoctor::buildR2E)
+	   .def("build_N2R", &gmds::MeshDoctor::buildN2R)
 	   .def("build_edges_and_X2E", &gmds::MeshDoctor::buildEdgesAndX2E)
 	   .def("update_upward_connectivity", &gmds::MeshDoctor::updateUpwardConnectivity);
 
