@@ -628,4 +628,117 @@ CurvedBlockingClassifier::get_cut_info(int pointId, std::vector<std::vector<Curv
 	return paramCut;
 }
 /*----------------------------------------------------------------------------*/
+std::vector<std::pair<TCellID ,double>>
+CurvedBlockingClassifier::list_Possible_Cuts()
+{
+    std::vector<std::pair<TCellID ,double>> list_actions;
+    auto no_capt_elements = classify();
+    auto no_points_capt = no_capt_elements.non_captured_points;
+    auto no_curves_capt = no_capt_elements.non_captured_curves;
 
+    auto allEdges = m_blocking->get_all_edges();
+
+
+    for(auto p : no_points_capt){
+        if(m_blocking->check_capt_element(p,0)){
+            auto point = m_geom_model->getPoint(p);
+            math::Point mathPoint(point->X(),point->Y(),point->Z());
+            auto projInfo = m_blocking->get_projection_info(mathPoint,allEdges);
+            auto action = m_blocking->get_cut_info(p);
+                bool pairOnList = false;
+                for(auto it : list_actions) {
+                    if (it.first == action.first->info().topo_id && it.second == action.second) {
+                        pairOnList = true;
+                    }
+                }
+                if(pairOnList == false){
+                    std::pair<TCellID ,double> actionG (action.first->info().topo_id,action.second);
+                    list_actions.push_back(actionG);
+                }
+        }
+    }
+
+    for(auto c : no_curves_capt){
+        if(m_blocking->check_capt_element(c,1)){
+            std::vector<std::pair<CurvedBlocking::Edge ,double>> list_actions_curve;
+            auto theCurve = m_geom_model->getCurve(c);
+            gmds::TCoord minXYX[3];
+            gmds::TCoord maxXYX[3];
+
+            theCurve->computeBoundingBox(minXYX,maxXYX);
+
+            gmds::math::Point minPoint(minXYX[0],minXYX[1],minXYX[2]);
+            if(m_blocking->get_cut_info(minPoint).second!=2){
+                list_actions_curve.push_back(m_blocking->get_cut_info(minPoint));
+            }
+
+            gmds::math::Point maxPoint(maxXYX[0],maxXYX[1],maxXYX[2]);
+            if(m_blocking->get_cut_info(maxPoint).second!=2){
+                list_actions_curve.push_back(m_blocking->get_cut_info(maxPoint));
+            }
+
+            gmds::math::Point p0 (minXYX[0],minXYX[1],maxXYX[2]);
+            if(m_blocking->get_cut_info(p0).second!=2){
+                list_actions_curve.push_back(m_blocking->get_cut_info(p0));
+            }
+
+            gmds::math::Point p1 (maxXYX[0],minXYX[1],maxXYX[2]);
+            if(m_blocking->get_cut_info(p1).second!=2){
+                list_actions_curve.push_back(m_blocking->get_cut_info(p1));
+            }
+
+            gmds::math::Point p2 (maxXYX[0],minXYX[1],minXYX[2]);
+            if(m_blocking->get_cut_info(p2).second!=2){
+                list_actions_curve.push_back(m_blocking->get_cut_info(p2));
+            }
+
+            gmds::math::Point p3 (minXYX[0],maxXYX[1],maxXYX[2]);
+            if(m_blocking->get_cut_info(p3).second!=2){
+                list_actions_curve.push_back(m_blocking->get_cut_info(p3));
+            }
+
+            gmds::math::Point p4 (minXYX[0],maxXYX[1],minXYX[2]);
+            if(m_blocking->get_cut_info(p4).second!=2){
+                list_actions_curve.push_back(m_blocking->get_cut_info(p4));
+            }
+
+            gmds::math::Point p5 (maxXYX[0],maxXYX[1],minXYX[2]);
+            if(m_blocking->get_cut_info(p5).second!=2){
+                list_actions_curve.push_back(m_blocking->get_cut_info(p5));
+            }
+
+
+            for(auto i : list_actions_curve){
+                bool pairOnList = false;
+                for(auto it : list_actions) {
+                    if (it.first == i.first->info().topo_id && it.second == i.second) {
+                        pairOnList = true;
+                    }
+                }
+                if(pairOnList == false){
+                    std::pair<TCellID ,double> actionG (i.first->info().topo_id,i.second);
+                    list_actions.push_back(actionG);
+                }
+            }
+        }
+    }
+
+    return list_actions;
+}
+/*----------------------------------------------------------------------------*/
+bool
+CurvedBlockingClassifier::checkValidity(ClassificationErrors &AErrors) {
+    if(m_blocking->get_all_nodes().size() < m_geom_model->getNbPoints() ||
+        m_blocking->get_all_edges().size() < m_geom_model->getNbCurves() ||
+        m_blocking->get_all_faces().size() < m_geom_model->getNbSurfaces()){
+
+        return false;
+    }
+    else if(AErrors.non_captured_points.size() != 0 ||
+            AErrors.non_captured_curves.size() != 0 ||
+            AErrors.non_captured_surfaces.size() != 0){
+        return false;
+    }
+    return true;
+}
+/*----------------------------------------------------------------------------*/

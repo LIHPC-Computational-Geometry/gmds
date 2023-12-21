@@ -1129,3 +1129,54 @@ TEST(CurvedBlockingTestSuite, test_pillow_12)
     ASSERT_EQ(nb_faces_on_surface, 34);
     ASSERT_EQ(nb_faces_in_volume, 25);
 }
+TEST(CurvedBlockingTestSuite, save_vtk_blocking){
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+
+	bl.save_vtk_blocking("testSaveWork.vtk");
+}
+
+TEST(CurvedBlockingTestSuite, get_Id_block){
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+
+    classifier.clear_classification();
+
+    auto errors = classifier.classify();
+
+	auto listBlocks = bl.get_all_blocks();
+	auto block = bl.get_block(listBlocks[0]->info().topo_id);
+
+
+	std::cout<<"LE BLOCK "<< block->info().topo_id<<std::endl;
+
+	std::cout<<"LE BLOCK TEST "<<bl.get_block_id(block)<<std::endl;
+
+}
+
+TEST(CurvedBlockingTestSuite, check_capt_Element){
+    gmds::cad::FACManager geom_model;
+    setUp(geom_model);
+    gmds::blocking::CurvedBlocking bl(&geom_model,true);
+    gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+
+    classifier.clear_classification();
+
+    auto allNodes = bl.get_all_nodes();
+    auto allEdges = bl.get_all_edges();
+
+    auto allPoints = geom_model.getPoints();
+    auto allCurves = geom_model.getCurves();
+
+    for (auto p : allPoints){
+        std::cout<<"Check capt possible for the point "<< p->id()<<"  : "<<bl.check_capt_element(p->id(),p->dim())<<std::endl;
+    }
+
+    for (auto c : allCurves){
+        std::cout<<"Check capt possible for the curve "<< c->id()<<"  : "<<bl.check_capt_element(c->id(),c->dim())<<std::endl;
+    }
+}

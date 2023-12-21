@@ -4,6 +4,7 @@
 *.swp
 \#*\#
 *.icloud
+pygmds/tst/__pycache__
 
 # OS junk files
 [Tt]humbs.db
@@ -27,3 +28,5 @@ external/
 
 # spack files when dev-build
 spack-*
+# add it just in case because someone happened to pushed it once
+spack/

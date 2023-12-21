@@ -424,6 +424,14 @@ CurvedBlocking::create_block(
     m_gmap.set_attribute<3>(d1, b);
     return b;
 }
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::remove_block(const TCellID ABlockId)
+{
+    Block AB = get_block(ABlockId);
+	Dart3 d = AB->dart();
+	m_gmap.remove_cell<3>(d);
+}
 
 /*----------------------------------------------------------------------------*/
 void
@@ -475,7 +483,40 @@ CurvedBlocking::get_block_info(const int ABlockId) {
     }
     return std::make_tuple(-1, -1);
 }
-
+/*----------------------------------------------------------------------------*/
+CurvedBlocking::Block
+CurvedBlocking::get_block(const int ABlockId)
+{
+	auto listBlocks = get_all_blocks();
+	bool found = false;
+	for(auto b : listBlocks){
+		if(b->info().topo_id == ABlockId){
+			return b;
+		}
+	}
+	std::cout<<"ID NO VALIDE"<<std::endl;
+	assert(found);
+}
+/*----------------------------------------------------------------------------*/
+int
+CurvedBlocking::get_node_id(CurvedBlocking::Node &ANode){
+    return ANode->info().topo_id;
+}
+/*----------------------------------------------------------------------------*/
+int
+CurvedBlocking::get_edge_id(CurvedBlocking::Edge &AEdge){
+    return AEdge->info().topo_id;
+}
+/*----------------------------------------------------------------------------*/
+int
+CurvedBlocking::get_face_id(CurvedBlocking::Face &AFace){
+    return AFace->info().topo_id;
+}
+/*----------------------------------------------------------------------------*/
+int
+CurvedBlocking::get_block_id(CurvedBlocking::Block &ABlock){
+	return ABlock->info().topo_id;
+}
 /*----------------------------------------------------------------------------*/
 bool
 CurvedBlocking::is_valid_topology() const {
@@ -682,6 +723,19 @@ CurvedBlocking::init_from_mesh(Mesh &AMesh) {
     }
 }
 
+
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::save_vtk_blocking(const std::string &AFileName)
+{
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
+	convert_to_mesh(m);
+	gmds::IGMeshIOService ios(&m);
+	gmds::VTKWriter vtk_writer(&ios);
+	vtk_writer.setCellOptions(gmds::N|gmds::R);
+	vtk_writer.setDataOptions(gmds::N|gmds::R);
+	vtk_writer.write(AFileName);
+}
 /*----------------------------------------------------------------------------*/
 std::vector<std::vector<CurvedBlocking::Edge> >
 CurvedBlocking::get_all_sheet_edge_sets() {
@@ -846,6 +900,149 @@ CurvedBlocking::get_all_chord_darts(const Face AF, std::vector<Dart3> &ADarts) {
 }
 
 /*----------------------------------------------------------------------------*/
+bool
+CurvedBlocking::check_capt_element(const int AnIdElement, const int ADim) {
+    bool captPossible = false;
+    auto listEdgesPara = get_all_sheet_edge_sets();
+    auto allEdges = get_all_edges();
+    if(ADim == 0){
+       if(check_cut_possible(AnIdElement,listEdgesPara)){
+           captPossible=true;
+       }
+    }
+    else{
+        auto theCurve = m_geom_model->getCurve(AnIdElement);
+        gmds::TCoord minXYX[3];
+        gmds::TCoord maxXYX[3];
+
+        theCurve->computeBoundingBox(minXYX,maxXYX);
+
+        gmds::math::Point minPoint(minXYX[0],minXYX[1],minXYX[2]);
+        auto projMinPoint = get_projection_info(minPoint,allEdges);
+        for(int i =0; i< projMinPoint.size();i++){
+            if(projMinPoint[i].second<1 && projMinPoint[i].second>0){
+                captPossible=true;
+                break;
+            }
+        }
+
+        gmds::math::Point maxPoint(maxXYX[0],maxXYX[1],maxXYX[2]);
+        auto paramCutMaxPoint = get_cut_info(maxPoint);
+        auto projMaxPoint = get_projection_info(maxPoint,allEdges);
+        for(int i =0; i< projMaxPoint.size();i++){
+            if(projMaxPoint[i].second<1 && projMaxPoint[i].second>0){
+                captPossible=true;
+                break;
+            }
+        }
+    }
+    return captPossible;
+}
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::capt_element(const int AnIdElement, const int ADim) {
+    auto listEdgesPara = get_all_sheet_edge_sets();
+
+
+    if(ADim == 0){
+        auto paramCut = get_cut_info(AnIdElement);
+        cut_sheet(paramCut.first,paramCut.second);
+    }
+    else{
+        auto theCurve = m_geom_model->getCurve(AnIdElement);
+        gmds::TCoord minXYX[3];
+        gmds::TCoord maxXYX[3];
+
+        theCurve->computeBoundingBox(minXYX,maxXYX);
+
+        gmds::math::Point minPoint(minXYX[0],minXYX[1],minXYX[2]);
+
+        auto paramCutMinPoint = get_cut_info(minPoint);
+
+
+        gmds::math::Point maxPoint(maxXYX[0],maxXYX[1],maxXYX[2]);
+        auto paramCutMaxPoint = get_cut_info(maxPoint);
+
+
+    }
+
+}
+/*----------------------------------------------------------------------------*/
+bool
+CurvedBlocking::check_cut_possible(int pointId, std::vector<std::vector<CurvedBlocking::Edge>> &AllEdges) {
+    bool cutPossible = false;
+
+    //============================================
+    auto noCaptPoint0 = m_geom_model->getPoint(pointId);
+    gmds::math::Point p(noCaptPoint0->X(),noCaptPoint0->Y(),noCaptPoint0->Z());
+
+    auto listEdgesPara = get_all_sheet_edge_sets();
+    std::vector<gmds::blocking::CurvedBlocking::Edge > listEdgesSplitable;
+    for(auto edges : listEdgesPara){
+        auto projInfo = get_projection_info(p,edges);
+        for(int i =0; i< projInfo.size();i++){
+            if(projInfo[i].second<1 && projInfo[i].second>0){
+                cutPossible = true;
+            }
+        }
+    }
+    return cutPossible;
+
+}
+/*----------------------------------------------------------------------------*/
+
+std::pair<CurvedBlocking::Edge, double>
+CurvedBlocking::get_cut_info(int pointId)
+{
+    std::pair<CurvedBlocking::Edge,double> paramCut;
+
+    //============================================
+    auto noCaptPoint0 = m_geom_model->getPoint(pointId);
+    gmds::math::Point p(noCaptPoint0->X(),noCaptPoint0->Y(),noCaptPoint0->Z());
+
+    auto listEdgesPara = get_all_sheet_edge_sets();
+    std::vector<gmds::blocking::CurvedBlocking::Edge > listEdgesSplitable;
+    unsigned int distMini = 1000;
+    for(auto edges : listEdgesPara){
+        auto projInfo = get_projection_info(p,edges);
+        for(int i =0; i< projInfo.size();i++){
+            if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
+                paramCut.first = edges.at(i);
+                paramCut.second = projInfo[i].second;
+            }
+        }
+    }
+    return paramCut;
+}
+/*----------------------------------------------------------------------------*/
+std::pair<CurvedBlocking::Edge, double>
+CurvedBlocking::get_cut_info(gmds::math::Point APoint)
+{
+    std::pair<CurvedBlocking::Edge,double> paramCut;
+    CurvedBlocking::Edge e = get_all_edges()[0];
+    paramCut.first = e;
+    paramCut.second = 2;
+
+    //============================================
+
+    auto listEdgesPara = get_all_sheet_edge_sets();
+    std::vector<gmds::blocking::CurvedBlocking::Edge > listEdgesSplitable;
+    unsigned int distMini = 1000;
+    for(auto edges : listEdgesPara){
+        auto projInfo = get_projection_info(APoint,edges);
+        for(int i =0; i< projInfo.size();i++){
+            if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
+                paramCut.first = edges.at(i);
+                paramCut.second = projInfo[i].second;
+            }
+        }
+    }
+
+
+    return paramCut;
+}
+
+/*----------------------------------------------------------------------------*/
 void
 CurvedBlocking::cut_sheet(const Edge AE) {
     cut_sheet(AE, 0.5);
@@ -958,6 +1155,19 @@ CurvedBlocking::cut_sheet(const Edge AE, const double AParam) {
     m_gmap.unmark_all(mark_done);
     m_gmap.free_mark(mark_done);
 
+}
+
+/*----------------------------------------------------------------------------*/
+
+void
+CurvedBlocking::cut_sheet(const TCellID AnEdgeId, const double AParam)
+{
+    auto allEdges = get_all_edges();
+    for (auto e : allEdges){
+        if(e->info().topo_id == AnEdgeId){
+            cut_sheet(e,AParam);
+        }
+    }
 }
 
 /*----------------------------------------------------------------------------*/

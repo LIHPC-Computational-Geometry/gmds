@@ -10,6 +10,8 @@
 #include <gmds/math/Point.h>
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/utils/Exception.h>
+#include <gmds/io/IGMeshIOService.h>
+#include <gmds/io/VTKWriter.h>
 /*----------------------------------------------------------------------------*/
 #include <string>
 #include <tuple>
@@ -309,6 +311,12 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	   const math::Point &AP6,
 	   const math::Point &AP7,
 	   const math::Point &AP8);
+
+	/** Removes the block @AB from the structure
+	 * @param[in] ABlockId the block id to remove
+	 */
+	void remove_block(const gmds::TCellID ABlockId);
+
 	/** Removes the block @AB from the structure
 	 * @param[in] AB the block to remove
 	 */
@@ -334,6 +342,38 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @return a tuple where the first parameter is the geom_dim, the second its geom_id
 	 */
 	std::tuple<int, int> get_block_info(const int ABlockId);
+
+	/** Return the block for the block of id @p ABlockId
+	 * @param[in] ABlockId topological block id
+	 * @return a block object
+	 */
+	CurvedBlocking::Block get_block(const int ABlockId);
+
+    /** Return the id node for a node object
+	 * @param[in] ANode a node object
+	 * @return an id node
+	 */
+    int get_node_id(CurvedBlocking::Node &ANode);
+
+    /** Return the id edge for an edge object
+	 * @param[in] AEdge an edge object
+	 * @return an id edge
+	 */
+    int get_edge_id(CurvedBlocking::Edge &AEdge);
+
+    /** Return the id face for a face object
+	 * @param[in] AFace a face object
+	 * @return an id face
+	 */
+    int get_face_id(CurvedBlocking::Face &AFace);
+
+	/** Return the id block for a block object
+	 * @param[in] ABlock a block object
+	 * @return an id block
+	 */
+	int get_block_id(CurvedBlocking::Block &ABlock);
+
+
 	/**@brief Non-optimal method to get all the blocks of the structure. The
 	 * best option is to traverse the block structure through the gmap
 	 * structure (iterators on attributes)
@@ -501,6 +541,15 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in] AParam a parameter included in ]0,1[
 	 */
 	void cut_sheet(const Edge AE, const double AParam);
+
+    /**@brief Split the sheet defined by edge @p AnEdgeId at the parameter @p AParam, which is included
+	 * 		 in ]0,1[. The first end point of @p AE is at parameter 0, the second one at parameter 1.
+	 *
+	 * @param[in] AnEdgeId an edge id we want to split in two edges
+	 * @param[in] AParam a parameter included in ]0,1[
+	 */
+    void cut_sheet(const TCellID AnEdgeId, const double AParam);
+
     /**@brief Split the sheet defined by edge @p AE
      * @param[in] AE an edge we want to split in two edges
      */
@@ -549,6 +598,41 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
      * @param[in] ANbIterations number of smoothing stages in each dimension (curves, surfaces, volume)
      */
     void smooth(const int ANbIterations);
+
+    /**\brief return if the capt is possible
+	 * * @param[in] AnIdElement an id of a not captured element, we want to split something to captured it
+     * @param[in] ADim the dim of the element not capt
+	 * @return return true if the capt is possible, else, return false
+	 */
+    bool check_capt_element(const int AnIdElement, const int ADim);
+
+
+    /**@brief Split the sheet defined by edge @p AE
+	 * @param[in] AnIdElement an id of a not captured element, we want to split something to captured it
+     * @param[in] ADim the dim of the element not captured
+	 */
+    void capt_element(const int AnIdElement, const int ADim);
+
+    /**\brief return the parameters for do the cut_sheet
+	 * @param[in] pointId 		A point id
+	 * @return return the parameters for the cut, we get the edge (first) and the parameter included in ]0,1[(second)
+	 */
+    std::pair<CurvedBlocking::Edge, double> get_cut_info(int pointId);
+
+    /**\brief return if a cut is possible
+	 * @param[in] pointId 		A point id
+	 * @param[in] AllEdges 	all the edges of the blocking
+	 * @return return true if a cut is possible, else, return false
+	 */
+    bool check_cut_possible(int pointId,std::vector<std::vector<CurvedBlocking::Edge>> &AllEdges);
+
+    /**\brief return the parameters for do the cut_sheet
+   * @param[in] APoint 		A math point
+   * @param[in] AllEdges 	all the edges of the blocking
+   * @return return the parameters for the cut, we get the edge (first) and the parameter included in ]0,1[(second)
+   */
+    std::pair<CurvedBlocking::Edge, double> get_cut_info(gmds::math::Point APoint);
+
 	/**@brief Low level operation that @p TDim-sew two darts
 	 * @tparam TDim sewing dimension
 	 * @param[in] AD1 First dart
@@ -575,6 +659,12 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param[in,out] ACellMesh A cellular mesh
 	 */
 	void convert_to_mesh(Mesh &ACellMesh);
+    
+	/**\brief save the blocking on vtk. During the process, the curved blocking is convert on a mesh.
+	 * @param[in] AFileName 		the name used for the file
+	 */
+	void save_vtk_blocking(const std::string &AFileName);
+
 	/**@brief Provides a list of information about the blocking structure
 	 * @return a string containing the expected pieces of information
 	 */
