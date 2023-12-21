@@ -9,11 +9,21 @@ set(GMDS_INC
         inc/gmds/rlBlocking/BlockingQuality.h
         inc/gmds/rlBlocking/LinkerBlockingGeom.h
         inc/gmds/rlBlocking/ValidBlocking.h
+        inc/gmds/rlBlocking/MCTSAlgorithm.h
+        inc/gmds/rlBlocking/MCTSState.h
+        inc/gmds/rlBlocking/MCTSTree.h
+        inc/gmds/rlBlocking/MCTSMove.h
+        inc/gmds/rlBlocking/MCTSMovePolycube.h
+        inc/gmds/rlBlocking/MCTSStatePolycube.h
         )
 set(GMDS_SRC
         src/BlockingQuality.cpp
         src/LinkerBlockingGeom.cpp
-        src/ValidBlocking.cpp)
+        src/ValidBlocking.cpp
+        src/MCTSTree.cpp
+        src/MCTSAlgorithm.cpp
+        src/MCTSMovePolycube.cpp
+        src/MCTSStatePolycube.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

@@ -1,5 +1,6 @@
 add_executable(GMDS_BLOCKINGQUALITY_TEST
         BlockQualityTestSuite.h
+        MCTSTestSuite.h
         main_test.cpp)
 
 target_link_libraries(GMDS_BLOCKINGQUALITY_TEST PUBLIC
