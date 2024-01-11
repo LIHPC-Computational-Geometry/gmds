@@ -15,6 +15,7 @@ set(GMDS_INC
         inc/gmds/rlBlocking/MCTSMove.h
         inc/gmds/rlBlocking/MCTSMovePolycube.h
         inc/gmds/rlBlocking/MCTSStatePolycube.h
+        inc/gmds/rlBlocking/MCTSAgent.h
         )
 set(GMDS_SRC
         src/BlockingQuality.cpp
@@ -23,7 +24,9 @@ set(GMDS_SRC
         src/MCTSTree.cpp
         src/MCTSAlgorithm.cpp
         src/MCTSMovePolycube.cpp
-        src/MCTSStatePolycube.cpp)
+        src/MCTSStatePolycube.cpp
+        src/MCTSAgent.cpp
+)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

@@ -6,6 +6,7 @@
 #define GMDS_MCTSMOVE_H
 /*----------------------------------------------------------------------------------------*/
 #include "LIB_GMDS_RLBLOCKING_export.h"
+#include <string>
 /*----------------------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------------------*/
@@ -21,6 +22,7 @@ struct LIB_GMDS_RLBLOCKING_API MCTSMove {
 	/** @brief  Overloaded ==
 	 */
 	virtual bool operator==(const MCTSMove& AOther) const = 0;
+	virtual std::string sprint() const { return "Not implemented"; }   // and optionally this
 };
 /*----------------------------------------------------------------------------*/
 }

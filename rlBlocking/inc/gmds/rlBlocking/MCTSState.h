@@ -7,6 +7,7 @@
 /*----------------------------------------------------------------------------------------*/
 #include "LIB_GMDS_RLBLOCKING_export.h"
 #include <gmds/rlBlocking/MCTSMove.h>
+#include <iostream>
 /*----------------------------------------------------------------------------------------*/
 #include <queue>
 /*----------------------------------------------------------------------------------------*/
@@ -43,12 +44,26 @@ class LIB_GMDS_RLBLOCKING_API MCTSState {
 	/** @brief Rollout from this state (random simulation)
 	 *  @return the rollout status
 	 */
-	virtual ROLLOUT_STATUS rollout() const = 0;
+	virtual double state_rollout() const = 0;
+	/*------------------------------------------------------------------------*/
+	/** @brief check the result of a terminal state
+	 *  @return the value of the result: Win, Lose, Draw
+	 */
+	virtual ROLLOUT_STATUS result_terminal() const = 0;
 	/*------------------------------------------------------------------------*/
 	/** @brief  Indicate if we have a terminal state (win=true, fail=false)
 	 * @return true if we have a leaf (in the sense of a traditional tree)
 	 */
 	virtual bool is_terminal() const = 0;
+	/*------------------------------------------------------------------------*/
+	/** @brief  Indicate if we have a terminal state (win=true, fail=false)
+	 * @return true if we have a leaf (in the sense of a traditional tree)
+	 */
+	virtual double get_quality() const = 0;
+
+	virtual void print() const {
+		std::cout << "Printing not implemented" << std::endl;
+	}
 };
 /*----------------------------------------------------------------------------*/
 }
