@@ -2,6 +2,11 @@ site_name: GMDS
 repo_url: https://github.com/LIHPC-Computational-Geometry/gmds
 repo_name: gmds/gmds
 docs_dir: docs/mkdocs/
+
+theme:
+  features:
+    - toc.follow
+  
 nav:
   - Home: 'index.md'
   - 'User Guide':
