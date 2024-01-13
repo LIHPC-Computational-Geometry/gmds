@@ -6,4 +6,4 @@ The aim of this module is to gather some smoothing algorithms. Mesh smoothing al
 
 ## Elliptic smoothing
 The elliptic smoother provides an implementation of the ACM TOG paper **Foldover-free maps in 50 lines of code** (https://dl.acm.org/doi/abs/10.1145/3450626.3459847).
-This algoriths allows to smooth a mesh with some nodes that are locked. Example of usages are given in the unit tests.
+This algoriths allows to smooth a 2D mesh with some nodes that are locked. Example of usages are given in the unit tests.

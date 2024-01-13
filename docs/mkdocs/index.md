@@ -1,18 +1,6 @@
-# A C++ library for writing meshing algorithms
-![CI Ubuntu](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/continuous-ubuntu.yml/badge.svg)
-![CI Macoc](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/continuous-macos.yml/badge.svg)
-![CI Windows](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/continuous-windows.yml/badge.svg)
-![CI Doxygen](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/code_docs.yml/badge.svg)
-![CI_GH](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/deplou_gh.yml/badge.svg)
+# GMDS Documentation  
 
-[![GitHub issues](https://img.shields.io/github/issues/LIHPC-Computational-Geometry/gmds)](https://github.com/LIHPC-Computational-Geometry/gmds/issues)
-[![GitHub license](https://img.shields.io/github/license/LIHPC-Computational-Geometry/gmds)](https://github.com/LIHPC-Computational-Geometry/gmds/blob/main/LICENSE)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/bf6ad23f6a3c452ab6f7f3f63d9fdb89)](https://www.codacy.com/gh/LIHPC-Computational-Geometry/gmds/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=LIHPC-Computational-Geometry/gmds&amp;utm_campaign=Badge_Grade)
-[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/bf6ad23f6a3c452ab6f7f3f63d9fdb89)](https://www.codacy.com/gh/LIHPC-Computational-Geometry/gmds/dashboard?utm_source=github.com&utm_medium=referral&utm_content=LIHPC-Computational-Geometry/gmds&utm_campaign=Badge_Coverage)
-[![codecov](https://codecov.io/gh/LIHPC-Computational-Geometry/gmds/branch/main/graph/badge.svg?token=QA3AS0MLDN)](https://codecov.io/gh/LIHPC-Computational-Geometry/gmds)
-
-
-## Last changes
+# Last changes
 - We currently change our installation procedure. In particular, we externalize some of gmds depencies. See the [developer documentation](docs/mkd/developers_doc.md) for more details.
 - Important work is done on the Python API, see the the [pygmds](pygmds/README.md) module.
 - Our blocking structure is evolving to be more robust and efficient for the blocking procedure. See the [blocking](blocking/README.md) module.
@@ -44,11 +32,11 @@ for(auto node_id: m->nodes()){
 ```
 *gmds* provides a framework for developing new algorithms and our current interest is about structured quadrilateral and hexahedral meshing. To generate such meshes, we focus on the following *technologies*:
 - **Frame Fields**. 3 modules are currenly dedicated to the usage of frame fields fo meshing
-    - the [frame](docs/mkdocs/user-guide/frame.md) module provides algorithms for 2D meshing. It relies on the notion of cross fields (see the [math](math/README.md) component for cross definitions). Output of this module are 2D cross fields defined on an input simplex mesh.
-    - the [singGraphBuild](docs/mkdocs/user-guide/singgraphbuild.md) module provides algorithm to extract the **base complex** structure of a 2D frame field
-    - the [frame3d](docs/mkdocs/user-guide/frame3d.md) module provides algorithms for 3D frame field generation. Unlike the 2D case, we are not able to generate a full block structure but such fields are used to drive hybrid mesh generation and point generation algorithms. 
-- [Overlay grids algorithms](docs/mkdocs/user-guide/elg3d.md).
-- [Sheet operations](docs/mkdocs/user-guide/sheet.md). This module provides sheet operations for quad and hex meshes.
+    - the [frame](frame.md) module provides algorithms for 2D meshing. It relies on the notion of cross fields (see the [math](math/README.md) component for cross definitions). Output of this module are 2D cross fields defined on an input simplex mesh.
+    - the [singGraphBuild](singGraphBuild/README.md) module provides algorithm to extract the **base complex** structure of a 2D frame field
+    - the [frame3d](frame/README.md) module provides algorithms for 3D frame field generation. Unlike the 2D case, we are not able to generate a full block structure but such fields are used to drive hybrid mesh generation and point generation algorithms.
+- [Overlay grids algorithms](Elg3D/README.md).
+- [Sheet operations](sheet/README.md). This module provides sheet operations for quad and hex meshes.
 ### A service-based approach
 In order to build and prototype secure pipeline algorithms, we propose a **service** module to assemble our algorithms into a verified and dynamically-secured pipeline. We strongly believe that a main drawback of research but also production codes is that they're are written by researchers in mathematics, physics or computer science who focuses on the application "business" without taking care of "software engineering". This is quite usual and understandable but such a behaviour has 2 main consequences:
 1. Codes are not
@@ -64,4 +52,10 @@ Documentation is under construction. we just start to write it. It is split betw
 - [Users documentation](docs/mkd/users_doc.md), which is dedicated to people who want to use **gmds** as a set of libraries but do not expect to contribute to it.
 - [Developers documentation](docs/mkd/developers_doc.md), which is dedicated to developers who would like to create a new *gmds* module for instance. In particular, we explain the [git workflow](docs/mkd/git_workflow.md) that we adopted.
 - Gitub pages are under construction and available [here](https://lihpc-computational-geometry.github.io/gmds).
-- The associated doygen documenation is [here](https://lihpc-computational-geometry.github.io/gmds/doxygen/index.html).
+- The asso
+
+
+# Coding Guidelines and Tips
+GMDS follows strict coding guidelines, please take a look here before submitting your pull requests. We also have a set of general coding tips on how to code a geometry processing research project.
+# Built with MkDocs
+This documentation uses MkDocs. For full documentation visit [mkdocs.org](https://www.mkdocs.org).

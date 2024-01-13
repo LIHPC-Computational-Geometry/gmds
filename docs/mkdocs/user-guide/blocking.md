@@ -35,7 +35,7 @@ In order to automatically classify cells, we use two parameters:
 
 ### Geometrical and topological operations
 
-It is possible to move a node with method `CurvedBlocking::move_node`. This methods takes classification into
+It is possible to move a node with the method `CurvedBlocking::move_node`. This methods takes classification into
 account:
 - A node classified onto a geometrical point cannot move;
 - A node classified onto a geometrical curve will be moved to the expected location then projected onto the curve;

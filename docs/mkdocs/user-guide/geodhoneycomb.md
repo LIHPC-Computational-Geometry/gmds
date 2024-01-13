@@ -35,4 +35,4 @@ if(res == GeodHexMesher::GEOD_SUCCESS)
 
 We get the following resulting mesh with one color per layer.
 
-![image info](..//docs/img/honeycomb.png)
+![image info](../img/honeycomb.png)

@@ -1,1 +1,0 @@
-# Medusa module description

@@ -1,6 +1,6 @@
-#IG module
+# IG module
 
-**IG**, for incidence graph, is the main and historic mesh data structure provided in *gmds*.
+**IG**, for incidence graph, is the main and legacy mesh data structure provided in *gmds*.
 
 The **ig** module provides basic data structure for handling meshes based on an "*Incident Graph*" representation (which explains why it is called *ig*). Traditionally a graph G=(V,A) is made of vertices and arcs that connect vertices. For giving a model to represent mesh data structures, we use such a graph model, where vertices are the dimensions of cells explicitly stored in the data structure. In other words, vertices are denoted:
 1. **R** for regions or 3-dimensional cells (for short 3-cells),

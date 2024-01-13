@@ -1,4 +1,5 @@
-#Test directory structure
+
+# Test directory structure
 Every gmds component has a *tst* directory that contains test suites to perform. All our tests are based on Google test. The classical structure of a test directory is :
 ```Shell
 AFirstTestSuite.h
