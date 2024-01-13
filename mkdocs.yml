@@ -1,0 +1,35 @@
+site_name: GMDS
+docs_dir: docs/mkdocs/
+nav:
+  - Home: 'index.md'
+  - 'User Guide':
+      - 'How to use gmds': 'user-guide/users_doc.md'
+      - 'Core modules':
+          - 'cad ': 'user-guide/cad.md'
+          - 'cadfac ': 'user-guide/cadfac.md'
+          - 'ig': 'user-guide/ig.md'
+          - 'igalgo ': 'user-guide/igalgo.md'
+          - 'io ': 'user-guide/io.md'
+          - 'quality ': 'user-guide/quality.md'
+          - 'math ': 'user-guide/math.md'
+          - 'smoothy': 'user-guide/smoothy.md'
+          - 'utils': 'user-guide/utils.md'
+      - 'Optional modules':
+          - 'Blocking': 'user-guide/blocking.md'
+          - 'Elg3D': 'user-guide/elg3d.md'
+          - 'elgmorphing': 'user-guide/elgmorphing.md'
+          - 'Frame': 'user-guide/frame.md'
+          - 'Frame3d': 'user-guide/frame3d.md'
+          - 'GeodHoneyComb': 'user-guide/geodhoneycomb.md'
+          - 'HybridMeshAdapt': 'user-guide/hybridmeshadapt.md'
+          - 'kmds': 'user-guide/kmds.md'
+          - 'padding': 'user-guide/padding.md'
+          - 'polyblock': 'user-guide/polyblock.md'
+          - 'sheet': 'user-guide/sheet.md'
+          - 'SingGraphBuild': 'user-guide/singgraphbuild.md'
+  - 'Developer Guide':
+      - 'How to develop a gmds module': 'dev-guide/developers_doc.md'
+      - 'Test-driven development': 'dev-guide/unit_test.md'
+  - About:
+      - 'License': 'license.md'
+      - 'Release Notes': 'release-notes.md'
