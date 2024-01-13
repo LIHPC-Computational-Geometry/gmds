@@ -3,7 +3,7 @@
 ![CI Macoc](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/continuous-macos.yml/badge.svg)
 ![CI Windows](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/continuous-windows.yml/badge.svg)
 ![CI Doxygen](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/code_docs.yml/badge.svg)
-![CI_GH](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/deplou_gh.yml/badge.svg)
+![CI_GH](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/deploy-gh.yml/badge.svg)
 
 [![GitHub issues](https://img.shields.io/github/issues/LIHPC-Computational-Geometry/gmds)](https://github.com/LIHPC-Computational-Geometry/gmds/issues)
 [![GitHub license](https://img.shields.io/github/license/LIHPC-Computational-Geometry/gmds)](https://github.com/LIHPC-Computational-Geometry/gmds/blob/main/LICENSE)
