@@ -1,4 +1,6 @@
 site_name: GMDS
+repo_url: https://github.com/LIHPC-Computational-Geometry/gmds
+repo_name: gmds/gmds
 docs_dir: docs/mkdocs/
 nav:
   - Home: 'index.md'
