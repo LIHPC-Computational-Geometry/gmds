@@ -10,7 +10,8 @@ add_executable(GMDS_MATH_TEST
         TransfiniteInterpolationTestSuite.h
         main_test.cpp
         BezierSurfaceTestSuite.h
-        BezierCurveTestSuite.h)
+        BezierCurveTestSuite.h
+        BezierTriangleTestSuite.h)
 #==============================================================================
 target_link_libraries(GMDS_MATH_TEST PUBLIC
         ${GMDS_LIB}
