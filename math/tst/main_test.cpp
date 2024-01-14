@@ -21,6 +21,7 @@
 #include "LineTestSuite.h"
 #include "NumericsTestSuite.h"
 #include "QuadrilateralTestSuite.h"
+#include "PlaneTestSuite.h"
 
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {

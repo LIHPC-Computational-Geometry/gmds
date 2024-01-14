@@ -17,7 +17,8 @@ add_executable(GMDS_MATH_TEST
         HexahedronTestSuite.h
         LineTestSuite.h
         NumericsTestSuite.h
-        QuadrilateralTestSuite.h)
+        QuadrilateralTestSuite.h
+        PlaneTestSuite.h)
 #==============================================================================
 target_link_libraries(GMDS_MATH_TEST PUBLIC
         ${GMDS_LIB}
