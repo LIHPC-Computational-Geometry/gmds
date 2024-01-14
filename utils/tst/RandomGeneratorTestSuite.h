@@ -1,6 +1,9 @@
-#include "gmds/utils/RandomGenerator.h"
-#include "gtest/gtest.h"
-#include <unit_test_config.h>
+#ifndef GMDS_RANDOM_GENERATOR_TESTSUITE_H
+#	define GMDS_RANDOM_GENERATOR_TESTSUITE_H
+
+#	include "gmds/utils/RandomGenerator.h"
+#	include "gtest/gtest.h"
+#	include <unit_test_config.h>
 
 TEST(RandomGeneratorTestSuite, ValueInRange)
 {

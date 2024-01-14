@@ -1,8 +1,8 @@
-#ifndef VARIABLE_MANAGER_TESTSUITE_H
-#define VARIABLE_MANAGER_TESTSUITE_H
+#ifndef GMDS_VARIABLE_MANAGER_TESTSUITE_H
+#define GMDS_VARIABLE_MANAGER_TESTSUITE_H
 
-#include "gmds/utils/VariableManager.h"
 #include "gtest/gtest.h"
+#include <gmds/utils/VariableManager.h>
 #include <unit_test_config.h>
 
 using namespace gmds;

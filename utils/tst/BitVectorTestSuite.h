@@ -1,8 +1,9 @@
-#ifndef BIT_VECTOR_TESTSUITE_H
-#define BIT_VECTOR_TESTSUITE_H
+#ifndef GMDS_BIT_VECTOR_TESTSUITE_H
+#define GMDS_BIT_VECTOR_TESTSUITE_H
 
-#include "gmds/utils/BitVector.h"
 #include "gtest/gtest.h"
+#include <gmds/utils/BitVector.h>
+#include <unit_test_config.h>
 using namespace gmds;
 
 TEST(BitVectorTestSuite, DefaultConstructor)

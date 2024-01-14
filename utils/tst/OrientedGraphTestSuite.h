@@ -1,8 +1,8 @@
-#ifndef ORIENTED_GRAPH_TESTSUITE_H
-#define ORIENTED_GRAPH_TESTSUITE_H
+#ifndef GMDS_ORIENTED_GRAPH_TESTSUITE_H
+#define GMDS_ORIENTED_GRAPH_TESTSUITE_H
 
-#include "gmds/utils/OrientedGraph.h"
 #include "gtest/gtest.h"
+#include <gmds/utils/OrientedGraph.h>
 #include <unit_test_config.h>
 
 using namespace gmds;

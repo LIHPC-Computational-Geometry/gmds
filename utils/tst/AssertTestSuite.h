@@ -1,8 +1,9 @@
 #ifndef GMDS_ASSERT_TEST_H
 #define GMDS_ASSERT_TEST_H
 
-#include "gmds/utils/Assert.h"
 #include "gtest/gtest.h"
+#include <gmds/utils/Assert.h>
+#include <unit_test_config.h>
 using namespace gmds;
 
 #define STR(x) #x

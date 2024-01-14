@@ -1,9 +1,9 @@
-#ifndef LOG_TEST_SUITE_H
-#	define LOG_TEST_SUITE_H
+#ifndef GMDS_LOG_TEST_SUITE_H
+#	define GMDS_LOG_TEST_SUITE_H
 
-#	include "gmds/utils/Log.h"
-#	include "gmds/utils/LogStream.h"
 #	include "gtest/gtest.h"
+#	include <gmds/utils/Log.h>
+#	include <gmds/utils/LogStream.h>
 #	include <unit_test_config.h>
 
 using namespace gmds;

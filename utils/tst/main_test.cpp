@@ -4,7 +4,7 @@
 // Files containing the different test suites to launch
 #include "ArrayTestSuite.h"
 // #include "AssertTestSuite.h"
-// #include "BitVectorTestSuite.h"
+#include "BitVectorTestSuite.h"
 // #include "CommonTypesTestSuite.h"
 // #include "LogTestSuite.h"
 // #include "OrientedGraphTestSuite.h"

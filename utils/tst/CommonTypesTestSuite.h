@@ -1,8 +1,8 @@
 #ifndef COMMON_TYPES_TEST_SUITE_H
 #define COMMON_TYPES_TEST_SUITE_H
 
-#include "gmds/utils/CommonTypes.h"
 #include "gtest/gtest.h"
+#include <gmds/utils/CommonTypes.h>
 #include <unit_test_config.h>
 
 // Test for getCommonBut
