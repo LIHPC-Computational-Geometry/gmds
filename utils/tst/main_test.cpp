@@ -3,6 +3,7 @@
 /*----------------------------------------------------------------------------*/
 // Files containing the different test suites to launch
 #include "ArrayTestSuite.h"
+#include "BitVectorTestSuite.h"
 #include "ParamTestSuite.h"
 #include "RandomGeneratorTest.h"
 #include "UtilsTestSuite.h"

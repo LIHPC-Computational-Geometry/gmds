@@ -3,6 +3,7 @@ add_executable(GMDS_UTILS_TEST
         ParamTestSuite.h
         ArrayTestSuite.h
         RandomGeneratorTest.h
+        BitVectorTestSuite
         main_test.cpp)
 #==============================================================================
 target_link_libraries(GMDS_UTILS_TEST PUBLIC
