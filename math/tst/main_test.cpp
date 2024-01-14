@@ -24,6 +24,9 @@
 #include "PlaneTestSuite.h"
 #include "Prism3TestSuite.h"
 #include "PyramidTestSuite.h"
+#include "Prism3TestSuite.h"
+#include "QualityMeasureTestSuite.h"
+#include "RayTestSuite.h"
 
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {

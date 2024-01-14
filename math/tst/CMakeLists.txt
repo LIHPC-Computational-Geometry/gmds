@@ -20,7 +20,9 @@ add_executable(GMDS_MATH_TEST
         QuadrilateralTestSuite.h
         PlaneTestSuite.h
         Prism3TestSuite.h
-        PyramidTestSuite.h)
+        PyramidTestSuite.h
+        QualityMeasureTestSuite.h
+        RayTestSuite.h)
 #==============================================================================
 target_link_libraries(GMDS_MATH_TEST PUBLIC
         ${GMDS_LIB}
