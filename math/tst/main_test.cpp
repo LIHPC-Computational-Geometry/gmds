@@ -23,6 +23,7 @@
 #include "QuadrilateralTestSuite.h"
 #include "PlaneTestSuite.h"
 #include "Prism3TestSuite.h"
+#include "PyramidTestSuite.h"
 
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
