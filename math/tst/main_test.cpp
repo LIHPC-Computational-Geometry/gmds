@@ -15,6 +15,7 @@
 #include "TransfiniteInterpolationTestSuite.h"
 #include "BezierCurveTestSuite.h"
 #include "BezierTriangleTestSuite.h"
+#include "AxisAngleRotationTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
