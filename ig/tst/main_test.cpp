@@ -10,6 +10,7 @@
 #include "MeshTestSuite.h"
 #include "CellTestSuite.h"
 #include "EdgeContainerTestSuite.h"
+#include "NodeTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
