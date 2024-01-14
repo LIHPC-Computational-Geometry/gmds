@@ -8,6 +8,7 @@
 #include "EdgeTestSuite.h"
 #include "MeshDoctorTestSuite.h"
 #include "MeshTestSuite.h"
+#include "CellTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
