@@ -20,6 +20,7 @@
 #include "HexahedronTestSuite.h"
 #include "LineTestSuite.h"
 #include "NumericsTestSuite.h"
+#include "QuadrilateralTestSuite.h"
 
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
