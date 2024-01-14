@@ -16,6 +16,8 @@
 #include "BezierCurveTestSuite.h"
 #include "BezierTriangleTestSuite.h"
 #include "AxisAngleRotationTestSuite.h"
+#include "FETestSuite.h"
+
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
