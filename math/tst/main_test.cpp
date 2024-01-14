@@ -19,6 +19,7 @@
 #include "FETestSuite.h"
 #include "HexahedronTestSuite.h"
 #include "LineTestSuite.h"
+#include "NumericsTestSuite.h"
 
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
