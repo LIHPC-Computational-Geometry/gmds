@@ -7,7 +7,7 @@
 
 using namespace gmds;
 
-TEST(OrientedGraphTest, GraphNodeAddOutEdge)
+TEST(OrientedGraphTestSuite, GraphNodeAddOutEdge)
 {
 	GraphNode node1(1);
 	GraphNode node2(2);
@@ -18,7 +18,7 @@ TEST(OrientedGraphTest, GraphNodeAddOutEdge)
 	ASSERT_EQ(node1.outEdges()[0]->id(), edge.id());
 }
 
-TEST(OrientedGraphTest, GraphNodeAddInEdge)
+TEST(OrientedGraphTestSuite, GraphNodeAddInEdge)
 {
 	GraphNode node1(1);
 	GraphNode node2(2);
@@ -29,7 +29,7 @@ TEST(OrientedGraphTest, GraphNodeAddInEdge)
 	ASSERT_EQ(node2.inEdges()[0]->id(), edge.id());
 }
 
-TEST(OrientedGraphTest, GraphEdgeGetEdgesStartingFrom)
+TEST(OrientedGraphTestSuite, GraphEdgeGetEdgesStartingFrom)
 {
 	GraphNode node1(1);
 	GraphNode node2(2);
@@ -42,14 +42,14 @@ TEST(OrientedGraphTest, GraphEdgeGetEdgesStartingFrom)
 	ASSERT_EQ(edge2.getEdgesStartingFrom(&node2).size(), 0);
 }
 
-TEST(OrientedGraphTest, OrientedGraphAddEdge)
+TEST(OrientedGraphTestSuite, OrientedGraphAddEdge)
 {
 	OrientedGraph graph(3);
 	ASSERT_TRUE(graph.addEdge(1, 0, 1));
 	ASSERT_EQ(graph.nbEdges(), 1);
 }
 
-TEST(OrientedGraphTest, OrientedGraphUpdateNodes)
+TEST(OrientedGraphTestSuite, OrientedGraphUpdateNodes)
 {
 	OrientedGraph graph(3);
 	graph.addEdge(1, 0, 1);
@@ -59,14 +59,14 @@ TEST(OrientedGraphTest, OrientedGraphUpdateNodes)
 	ASSERT_EQ(graph.node(1)->inEdges().size(), 1);
 }
 
-TEST(OrientedGraphTest, OrientedGraphNode)
+TEST(OrientedGraphTestSuite, OrientedGraphNode)
 {
 	OrientedGraph graph(3);
 	GraphNode *node = graph.node(1);
 	ASSERT_EQ(node->id(), 1);
 }
 
-TEST(OrientedGraphTest, OrientedGraphEdge)
+TEST(OrientedGraphTestSuite, OrientedGraphEdge)
 {
 	OrientedGraph graph(3);
 	graph.addEdge(1, 0, 1);

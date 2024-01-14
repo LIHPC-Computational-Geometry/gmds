@@ -136,4 +136,4 @@ TEST(VariableManagerTestSuite, Compact)
 	ASSERT_EQ(variableManager.getNbVariables(), 1);
 }
 
-#endif     // VARIABLE_MANAGER_TEST_H
+#endif     // GMDS_VARIABLE_MANAGER_TESTSUITE_H

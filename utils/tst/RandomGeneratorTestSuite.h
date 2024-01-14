@@ -1,9 +1,9 @@
 #ifndef GMDS_RANDOM_GENERATOR_TESTSUITE_H
-#	define GMDS_RANDOM_GENERATOR_TESTSUITE_H
+#define GMDS_RANDOM_GENERATOR_TESTSUITE_H
 
-#	include <gmds/utils/RandomGenerator.h>
-#	include "gtest/gtest.h"
-#	include <unit_test_config.h>
+#include "gtest/gtest.h"
+#include <gmds/utils/RandomGenerator.h>
+#include <unit_test_config.h>
 
 using namespace gmds;
 
@@ -30,3 +30,5 @@ TEST(RandomGeneratorTestSuite, Initialization)
 	// Test if two instances have different seed values
 	EXPECT_NE(randomGen1.value(), randomGen2.value());
 }
+
+#endif     // GMDS_RANDOM_GENERATOR_TESTSUITE_H

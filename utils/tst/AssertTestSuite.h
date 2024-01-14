@@ -1,12 +1,13 @@
-#ifndef GMDS_ASSERT_TEST_H
-#define GMDS_ASSERT_TEST_H
+#ifndef GMDS_ASSERT_TESTSUITE_H
+#define GMDS_ASSERT_TESTSUITE_H
 
 #include "gtest/gtest.h"
 #include <gmds/utils/Assert.h>
 #include <unit_test_config.h>
 using namespace gmds;
 
-#define STR(x) #x
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
 
 TEST(AssertTestSuite, SetAndGetAssertMode)
 {
@@ -71,7 +72,7 @@ TEST(AssertTestSuite, SetAssertModeAndRangeAssert)
 
 	setAssertMode(ASSERT_MODE_ABORT);
 	// Replace the exit(0) test with output to a file or other mechanism
-	ASSERT_EXIT(GMDS_RANGE_ASSERT(5.0, 0.0, 2.0), ::testing::ExitedWithCode(0), "");
+	ASSERT_EXIT(GMDS_RANGE_ASSERT(5.0, 0.0, 2.0, STR(test_file.cpp), 42), ::testing::ExitedWithCode(0), "");
 }
 
 #endif     // GMDS_ASSERT_TEST_H

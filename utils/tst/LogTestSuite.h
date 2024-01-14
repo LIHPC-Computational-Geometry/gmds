@@ -1,10 +1,10 @@
 #ifndef GMDS_LOG_TEST_SUITE_H
-#	define GMDS_LOG_TEST_SUITE_H
+#define GMDS_LOG_TEST_SUITE_H
 
-#	include "gtest/gtest.h"
-#	include <gmds/utils/Log.h>
-#	include <gmds/utils/LogStream.h>
-#	include <unit_test_config.h>
+#include "gtest/gtest.h"
+#include <gmds/utils/Log.h>
+#include <gmds/utils/LogStream.h>
+#include <unit_test_config.h>
 
 using namespace gmds;
 
@@ -73,3 +73,5 @@ TEST(LogTestSuite, OperatorStreamTest)
 		EXPECT_EQ(outStream.str(), oss.str());
 	}
 }
+
+#endif     // GMDS_LOG_TESTSUITE_H
