@@ -27,6 +27,7 @@
 #include "Prism3TestSuite.h"
 #include "QualityMeasureTestSuite.h"
 #include "RayTestSuite.h"
+#include "SegmentTestSuite.h"
 
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {

@@ -22,7 +22,8 @@ add_executable(GMDS_MATH_TEST
         Prism3TestSuite.h
         PyramidTestSuite.h
         QualityMeasureTestSuite.h
-        RayTestSuite.h)
+        RayTestSuite.h
+        SegmentTestSuite.h)
 #==============================================================================
 target_link_libraries(GMDS_MATH_TEST PUBLIC
         ${GMDS_LIB}
