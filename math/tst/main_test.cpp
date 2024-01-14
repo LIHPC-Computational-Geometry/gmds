@@ -17,6 +17,7 @@
 #include "BezierTriangleTestSuite.h"
 #include "AxisAngleRotationTestSuite.h"
 #include "FETestSuite.h"
+#include "HexahedronTestSuite.h"
 
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {

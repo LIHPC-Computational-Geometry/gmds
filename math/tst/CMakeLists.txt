@@ -13,7 +13,8 @@ add_executable(GMDS_MATH_TEST
         BezierCurveTestSuite.h
         BezierTriangleTestSuite.h
         AxisAngleRotationTestSuite.h
-        FETestSuite.h)
+        FETestSuite.h
+        HexahedronTestSuite.h)
 #==============================================================================
 target_link_libraries(GMDS_MATH_TEST PUBLIC
         ${GMDS_LIB}
