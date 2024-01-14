@@ -2,7 +2,7 @@ add_executable(GMDS_UTILS_TEST
         UtilsTestSuite.h
         ParamTestSuite.h
         ArrayTestSuite.h
-        RandomGeneratorTest.h
+        RandomGeneratorTestSuite.h
         BitVectorTestSuite.h
         AssertTestSuite.h
         OrientedGraphTestSuite.h

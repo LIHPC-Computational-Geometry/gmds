@@ -8,7 +8,7 @@
 #include "CommonTypesTestSuite"
 #include "OrientedGraphTestSuite.h"
 #include "ParamTestSuite.h"
-#include "RandomGeneratorTest.h"
+#include "RandomGeneratorTestSuite.h"
 #include "UtilsTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int

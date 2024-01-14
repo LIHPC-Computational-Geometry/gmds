@@ -7,8 +7,6 @@
 
 using namespace gmds;
 
-// Global functions for testing
-
 TEST(OrientedGraphTest, GraphNodeAddOutEdge)
 {
 	GraphNode node1(1);

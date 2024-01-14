@@ -2,7 +2,7 @@
 #include "gtest/gtest.h"
 #include <unit_test_config.h>
 
-TEST(RandomGeneratorTest, ValueInRange)
+TEST(RandomGeneratorTestSuite, ValueInRange)
 {
 	gmds::RandomGenerator randomGen;
 	randomGen.init();
@@ -14,7 +14,7 @@ TEST(RandomGeneratorTest, ValueInRange)
 	}
 }
 
-TEST(RandomGeneratorTest, Initialization)
+TEST(RandomGeneratorTestSuite, Initialization)
 {
 	gmds::RandomGenerator randomGen1;
 	gmds::RandomGenerator randomGen2;
