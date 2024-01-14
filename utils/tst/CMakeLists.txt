@@ -7,6 +7,7 @@ add_executable(GMDS_UTILS_TEST
         AssertTestSuite.h
         OrientedGraphTestSuite.h
         CommonTypesTestSuite.h
+        VariableManagerTestSuite.h
         main_test.cpp)
 #==============================================================================
 target_link_libraries(GMDS_UTILS_TEST PUBLIC
