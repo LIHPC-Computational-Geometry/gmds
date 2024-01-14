@@ -7,8 +7,6 @@
 
 using namespace gmds;
 
-// Global functions for testing
-
 TEST(VariableManagerTestSuite, NewVariable)
 {
 	VariableManager variableManager;

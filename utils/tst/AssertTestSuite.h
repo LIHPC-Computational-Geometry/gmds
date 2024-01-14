@@ -5,6 +5,8 @@
 #include "gtest/gtest.h"
 using namespace gmds;
 
+#define STR(x) #x
+
 TEST(AssertTestSuite, SetAndGetAssertMode)
 {
 	// Test setAssertMode and getAssertMode functions
@@ -20,8 +22,7 @@ TEST(AssertTestSuite, AssertFailedThrow)
 	// Test assertFailed with ASSERT_MODE_THROW
 	setAssertMode(ASSERT_MODE_THROW);
 
-	EXPECT_THROW(assertFailed("1 == 2", "test_file.cpp", 42), GMDSException);
-	// Add more tests based on your assertion logic
+	EXPECT_THROW(assertFailed("1 == 2", STR(test_file.cpp), 42), GMDSException);
 }
 
 TEST(AssertTestSuite, AssertFailedAbort)
@@ -30,8 +31,7 @@ TEST(AssertTestSuite, AssertFailedAbort)
 	setAssertMode(ASSERT_MODE_ABORT);
 
 	// Replace the exit(0) test with output to a file or other mechanism
-	ASSERT_EXIT(assertFailed("1 == 2", "test_file.cpp", 42), ::testing::ExitedWithCode(0), "");
-	// Add more tests based on your assertion logic
+	ASSERT_EXIT(assertFailed("1 == 2", STR(test_file.cpp), 42), ::testing::ExitedWithCode(0), "");
 }
 
 TEST(AssertTestSuite, AssertRangeFailedThrow)
@@ -39,7 +39,7 @@ TEST(AssertTestSuite, AssertRangeFailedThrow)
 	// Test assertRangeFailed with ASSERT_MODE_THROW
 	setAssertMode(ASSERT_MODE_THROW);
 
-	EXPECT_THROW(assertRangeFailed(5.0, 0.0, 2.0, "test_file.cpp", 42), GMDSException);
+	EXPECT_THROW(assertRangeFailed(5.0, 0.0, 2.0, STR(test_file.cpp), 42), GMDSException);
 }
 
 TEST(AssertTestSuite, AssertRangeFailedAbort)
@@ -48,7 +48,7 @@ TEST(AssertTestSuite, AssertRangeFailedAbort)
 	setAssertMode(ASSERT_MODE_ABORT);
 
 	// Replace the exit(0) test with output to a file or other mechanism
-	ASSERT_EXIT(assertRangeFailed(5.0, 0.0, 2.0, "test_file.cpp", 42), ::testing::ExitedWithCode(0), "");
+	ASSERT_EXIT(assertRangeFailed(5.0, 0.0, 2.0, STR(test_file.cpp), 42), ::testing::ExitedWithCode(0), "");
 }
 
 TEST(AssertTestSuite, SetAssertModeAndAssertFailed)

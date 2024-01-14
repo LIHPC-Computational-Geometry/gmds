@@ -32,6 +32,4 @@ TEST(CommonTypesTestSuite, KeepFilterTest)
 	ASSERT_TRUE(std::find(result.begin(), result.end(), 3) != result.end());
 }
 
-// Ajoutez d'autres tests pour les fonctions de CommonTypes.cpp
-
 #endif     // COMMON_TYPES_TEST_SUITE_H
