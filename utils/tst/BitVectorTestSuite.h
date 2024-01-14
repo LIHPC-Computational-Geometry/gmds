@@ -1,8 +1,9 @@
-#ifndef BIT_VECTOR_TEST_H
-#define BIT_VECTOR_TEST_H
+#ifndef BIT_VECTOR_TESTSUITE_H
+#define BIT_VECTOR_TESTSUITE_H
 
 #include "gmds/utils/BitVector.h"
 #include "gtest/gtest.h"
+using namespace gmds;
 
 TEST(BitVectorTestSuite, DefaultConstructor)
 {
@@ -13,7 +14,7 @@ TEST(BitVectorTestSuite, DefaultConstructor)
 	EXPECT_TRUE(bv.empty());
 }
 
-TEST(BitVectorTest, CopyConstructor)
+TEST(BitVectorTestSuite, CopyConstructor)
 {
 	gmds::BitVector bv;
 	gmds::BitVector bv_copy(bv);
@@ -23,14 +24,14 @@ TEST(BitVectorTest, CopyConstructor)
 	EXPECT_TRUE(bv_copy.empty());
 }
 
-TEST(BitVectorTest, Resize)
+TEST(BitVectorTestSuite, Resize)
 {
 	gmds::BitVector bv;
 	bv.resize(10);
 	EXPECT_EQ(bv.capacity(), 10);
 }
 
-TEST(BitVectorTest, FillAll)
+TEST(BitVectorTestSuite, FillAll)
 {
 	gmds::BitVector bv;
 	bv.resize(5);

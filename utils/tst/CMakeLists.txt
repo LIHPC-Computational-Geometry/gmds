@@ -5,6 +5,7 @@ add_executable(GMDS_UTILS_TEST
         RandomGeneratorTest.h
         BitVectorTestSuite.h
         AssertTestSuite.h
+        OrientedGraphTestSuite.h
         main_test.cpp)
 #==============================================================================
 target_link_libraries(GMDS_UTILS_TEST PUBLIC

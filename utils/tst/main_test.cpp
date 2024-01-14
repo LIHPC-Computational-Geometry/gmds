@@ -5,6 +5,7 @@
 #include "ArrayTestSuite.h"
 #include "AssertTestSuite.h"
 #include "BitVectorTestSuite.h"
+#include "OrientedGraphTestSuite.h"
 #include "ParamTestSuite.h"
 #include "RandomGeneratorTest.h"
 #include "UtilsTestSuite.h"
