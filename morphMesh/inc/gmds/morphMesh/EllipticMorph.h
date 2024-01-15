@@ -42,6 +42,9 @@ class LIB_GMDS_MORPHMESH_API EllipticMorph
 	/* Nodes on the surface of the mesh */
 	std::vector<TCellID> m_surfNodes;
 	std::vector<TCellID> m_locked_faces;
+	std::vector<Node> m_morphed;
+	std::vector<Node> m_lockedIn;
+	std::vector<Node> m_lockedOut;
 
 
 	/* The mesh to deform */

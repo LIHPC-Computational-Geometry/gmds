@@ -19,6 +19,8 @@ int main(int argc, char* argv[]){
 	vtkReader.setDataOptions(gmds::N|gmds::R);
 	vtkReader.read(param_file);
 
+
+
 	gmds::MeshDoctor doc(&m_mesh);
 	doc.buildN2R(m_mesh.getModel());
 	doc.buildFacesAndR2F();
@@ -30,13 +32,15 @@ int main(int argc, char* argv[]){
 	morphmesh::EllipticMorph emorph(&m_mesh);
 
 	std::vector<std::vector<double>> ellipses;
-	//ellipses.push_back({2,1,1,1});
-	ellipses.push_back({2,1,1,1});
-	ellipses.push_back({3,1.2,1.5,1});
-	ellipses.push_back({4,1.2,1.5,1});
-	ellipses.push_back({5,1.4,1.75,1.5});
-	ellipses.push_back({7,1.4,1.75,1.5});
-	ellipses.push_back({8,1,1,1});
+	ellipses.push_back({4,1,1,1});
+	ellipses.push_back({5,1,1.2,1});
+	ellipses.push_back({6,1,1,1});
+	//ellipses.push_back({0.2,1,1,1});
+	//ellipses.push_back({3,1.2,1.5,1});
+	//ellipses.push_back({4,1.2,1.5,1});
+	//ellipses.push_back({5,1.4,1.75,1.5});
+	//ellipses.push_back({7,1.4,1.75,1.5});
+	//ellipses.push_back({8,1,1,1});
 	//ellipses.push_back({5.6,1.2,1.5,1});
 	//ellipses.push_back({8.5,1.2,1.5,1});
 
