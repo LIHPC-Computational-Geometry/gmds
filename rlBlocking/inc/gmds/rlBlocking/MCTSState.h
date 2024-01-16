@@ -34,7 +34,7 @@ class LIB_GMDS_RLBLOCKING_API MCTSState {
 	/*------------------------------------------------------------------------*/
 	/** @brief  Gives the set of actions that can be tried from the current state
 	 */
-	virtual std::queue<MCTSMove *> *actions_to_try() const = 0;
+	virtual std::deque<MCTSMove *> *actions_to_try() const = 0;
 	/*------------------------------------------------------------------------*/
 	/** @brief  Performs the @p AMove to change of states
 	 * @param[in] AMove the movement to apply to get to a new state

@@ -1,44 +1,61 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/rlBlocking/MCTSStatePolycube.h>
+#include <queue>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
+
 
 /*----------------------------------------------------------------------------*/
 MCTSStatePolycube::MCTSStatePolycube(gmds::cad::GeomManager* AGeom, gmds::blocking::CurvedBlocking* ABlocking,
                                      std::vector<double> hist )
-	:m_geom(AGeom),m_blocking(ABlocking),m_history(hist)
+	:m_geom(AGeom),m_history(hist)
 {
+	m_blocking = new blocking::CurvedBlocking(*ABlocking);
 	gmds::blocking::CurvedBlockingClassifier classifier(m_blocking);
 	m_class_blocking = new blocking::CurvedBlockingClassifier(classifier);
-	m_class_errors = m_class_blocking->classify();
+	m_class_errors = m_class_blocking->classify(0.2);
 	;}
 /*----------------------------------------------------------------------------*/
 MCTSStatePolycube::~MCTSStatePolycube() noexcept
-{ delete m_class_blocking;}
+{
+	delete m_class_blocking;
+	delete m_blocking;
+}
 /*----------------------------------------------------------------------------*/
-std::queue<MCTSMove *> *
+std::deque<MCTSMove *> *
 MCTSStatePolycube::actions_to_try() const
 {
-	std::queue<MCTSMove *> *Q = new std::queue<MCTSMove *>();
+	std::deque<MCTSMove *> *Q = new std::deque<MCTSMove *>();
 	if (m_class_errors.non_captured_points.size()== 0){
+		std::cout<<"POINTS CAPT :"<<std::endl;
 		if(m_class_errors.non_captured_curves.size()==0){
+			std::cout<<"CURVES CAPT :"<<std::endl;
 			auto blocks = m_blocking->get_all_id_blocks();
 			for(auto b : blocks){
-				Q->push(new MCTSMovePolycube(NullID,b,0,0));
+				Q->push_back(new MCTSMovePolycube(NullID,b,0,2));
 			}
 		}
 		else{
+			std::cout<<"NB CURVES CAPT :"<< m_class_errors.non_captured_curves.size()<<std::endl;
 			auto listPossibleCuts = m_class_blocking->list_Possible_Cuts();
 			for(auto c : listPossibleCuts){
-				Q->push(new MCTSMovePolycube(c.first,NullID,c.second,1));
+				Q->push_back(new MCTSMovePolycube(c.first,NullID,c.second,1));
 			}
 		}
 	}
 	else{
+		std::cout<<"POINTS NO CAPT :"<<std::endl;
+		for(auto p : m_class_errors.non_captured_points){
+			std::cout<<"p :"<<p<<std::endl;
+		}
 		auto listPossibleCuts = m_class_blocking->list_Possible_Cuts();
 		for(auto c : listPossibleCuts){
-			Q->push(new MCTSMovePolycube(c.first,NullID,c.second,1));
+			Q->push_back(new MCTSMovePolycube(c.first,NullID,c.second,1));
 		}
+	}
+	std::cout<<"LIST ACTIONS :"<<std::endl;
+	for(auto &m : *Q){
+		m->print();
 	}
 	return Q;
 }
@@ -46,22 +63,58 @@ MCTSStatePolycube::actions_to_try() const
 MCTSState
    *MCTSStatePolycube::next_state(const gmds::MCTSMove *AMove) const
 {
+	std::cout<<"==================== EXECUTE ACTION ! ===================="<<std::endl;
 	MCTSMovePolycube *m = (MCTSMovePolycube *) AMove;
 	std::vector<double> hist_update = get_history();
 	hist_update.push_back(get_quality());
-	MCTSStatePolycube *new_state = new MCTSStatePolycube(this->m_geom,this->m_blocking,hist_update);
-	if(m->m_typeMove == 0){
-		new_state->m_blocking->remove_block(m->m_AIdBlock);
+	gmds::blocking::CurvedBlocking* new_b = new gmds::blocking::CurvedBlocking(*m_blocking);
+	MCTSStatePolycube *new_state = new MCTSStatePolycube(this->m_geom,new_b,hist_update);
+	if(m->m_typeMove == 2){
+		//TODO ERROR, sometimes, block select not in the current blocks list...Check why !!!
+		std::cout<<"LIST BLOCK BLOCKING : "<<std::endl;
+		bool b_in_list = false;
+		for(auto b : m_blocking->get_all_id_blocks()){
+			std::cout<<b<<std::endl;
+			if(b == m->m_AIdBlock){
+				b_in_list = true;
+				break;
+			}
+		}
+		if(b_in_list){
+			std::cout<<"BLOCK A DELETE :"<<m->m_AIdBlock<<std::endl;
+			new_state->m_blocking->remove_block(m->m_AIdBlock);
+		}
+		else{
+			std::cout<<"BLOCK A DELETE :"<<m_blocking->get_all_id_blocks().front()<<std::endl;
+			new_state->m_blocking->remove_block(m_blocking->get_all_id_blocks().front());
+		}
+
+		new_state->update_class();
+		//SAVE Blocking vtk
+		std::string name_save_folder = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/cb2/";
+		std::string id_act = std::to_string(m->m_AIdEdge);
+		std::string name_file = "cb2_action"+ id_act +".vtk";
+		new_state->m_blocking->save_vtk_blocking(name_save_folder+name_file);
 		return new_state;
 	}
 	else if(m->m_typeMove ==1) {
 		new_state->m_blocking->cut_sheet(m->m_AIdEdge,m->m_AParamCut);
+		new_state->update_class();
+		//SAVE Blocking vtk
+		std::string name_save_folder = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/cb2/";
+		std::string id_act = std::to_string(m->m_AIdEdge);
+		std::string name_file = "cb2_action"+ id_act +".vtk";
+		new_state->m_blocking->save_vtk_blocking(name_save_folder+name_file);
 		return new_state;
 	}
 	else{
-		std::cerr << "Warning: Bad type move !" << std::endl;
+		std::cerr << "Warning: Bad type move ! \n Type move :" << m->m_typeMove << " & ID " << m->m_AIdEdge<< std::endl;
 		return new_state;
 	}
+	std::string name_save_folder = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/";
+	std::string id_act = std::to_string(m->m_AIdEdge);
+	std::string name_file = "M1_action"+ id_act +".vtk";
+	m_blocking->save_vtk_blocking(name_save_folder+name_file);
 
 }
 /*----------------------------------------------------------------------------*/
@@ -69,6 +122,7 @@ double
 MCTSStatePolycube::state_rollout() const
 {
 	std::cout<<"STATE ROLLOUT"<<std::endl;
+	std::cout<<"VAL TERMINAL begin "<<is_terminal()<<std::endl;
 	double res;
 	if(is_terminal()){
 		if(MCTSStatePolycube::result_terminal() == WIN){
@@ -85,23 +139,21 @@ MCTSStatePolycube::state_rollout() const
 			return res;
 		}
 	}
-	std::queue<MCTSMove *> *list_action = actions_to_try();
+
 	long long r;
 	int a;
 	MCTSStatePolycube *curstate = (MCTSStatePolycube *) this;   // TODO: ignore const...
 	srand(time(NULL));
 	bool first = true;
 	do {
-		if (list_action->empty()) {
-			std::cerr << "Warning: Ran out of available moves and state is not terminal?";
-			return 0.0;
-		}
+		std::deque<MCTSMove *> *list_action = actions_to_try();
 		//Get first move/action
 		//But, maybe, better to take rand move if its a delete move...
 		MCTSMove *firstMove = list_action->front(); //TODO: implement random move when only delete moves is possible
-		list_action->pop();
+		list_action->pop_front();
 
 		MCTSStatePolycube *old = curstate;
+		std::cout<<"===== SIZE UNTRIED ACTIONS : "<<list_action->size()+1<<" ====="<<std::endl;
 		curstate = (MCTSStatePolycube *) curstate->next_state(firstMove);
 		if (!first) {
 			delete old;
@@ -109,10 +161,10 @@ MCTSStatePolycube::state_rollout() const
 		first = false;
 	} while (!curstate->is_terminal());
 
-	if(MCTSStatePolycube::result_terminal() == WIN){
+	if(curstate->result_terminal() == WIN){
 		res=1;
 	}
-	else if (MCTSStatePolycube::result_terminal() == LOSE) {
+	else if (curstate->result_terminal() == LOSE) {
 		res=-1;
 	}
 	else{
@@ -126,17 +178,19 @@ MCTSStatePolycube::state_rollout() const
 MCTSStatePolycube::ROLLOUT_STATUS
 MCTSStatePolycube::result_terminal() const
 {
-	int max_nb_same = 3;
-	if (get_quality() == 0) {
+	if (m_class_errors.non_captured_points.empty() && m_class_errors.non_captured_curves.empty() && m_class_errors.non_captured_surfaces.empty()) {
 		return WIN;
 	}
-	else if (check_nb_same_quality() >= max_nb_same){
+	else if (check_nb_same_quality() >= 3){
 		return DRAW;
 	}
-	else if (m_history.back() < get_quality()){
+	else if (!m_history.empty() && m_history.back() < this->get_quality()){
 		return LOSE;
 	}
-	std::cerr << "ERROR: NOT terminal state !" << std::endl;
+	else if (this->actions_to_try()->empty()){
+		return LOSE;
+	}
+	std::cerr << "ERROR: NOT terminal state ..." << std::endl;
 	return DRAW;
 }
 /*----------------------------------------------------------------------------*/
@@ -164,7 +218,10 @@ MCTSStatePolycube::is_terminal() const
 	else if(check_nb_same_quality() >= 3){
 		return true;
 	}
-	else if(!m_history.empty() && m_history.back() < get_quality()){
+	else if(!m_history.empty() && m_history.back() < this->get_quality()){
+		return true;
+	}
+	else if(this->actions_to_try()->empty()){
 		return true;
 	}
 	else {
@@ -178,7 +235,7 @@ double
 {
 	return m_class_errors.non_captured_points.size() * 0.8 + m_class_errors.non_captured_curves.size() * 0.6 +
 	       m_class_errors.non_captured_surfaces.size() * 0.4;
-}
+	}
 /*----------------------------------------------------------------------------*/
 gmds::cad::GeomManager* MCTSStatePolycube::get_geom(){
 	return m_blocking->geom_model();
@@ -204,5 +261,12 @@ gmds::blocking::ClassificationErrors MCTSStatePolycube::get_errors()
 std::vector<double> MCTSStatePolycube::get_history() const
 {
 	return m_history;
+}
+/*----------------------------------------------------------------------------*/
+void MCTSStatePolycube::update_class()
+{
+	gmds::blocking::CurvedBlockingClassifier classifier(m_blocking);
+	m_class_blocking = new blocking::CurvedBlockingClassifier(classifier);
+	m_class_errors = m_class_blocking->classify(0.2);
 }
 /*----------------------------------------------------------------------------*/

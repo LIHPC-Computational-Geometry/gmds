@@ -29,7 +29,7 @@ class LIB_GMDS_RLBLOCKING_API MCTSStatePolycube: public MCTSState{
 	/*------------------------------------------------------------------------*/
 	/** @brief  Gives the set of actions that can be tried from the current state
 	 */
-	std::queue<MCTSMove *> *actions_to_try() const ;
+	std::deque<MCTSMove *> *actions_to_try() const ;
 	/*------------------------------------------------------------------------*/
 	/** @brief  Performs the @p AMove to change of states
 	 * @param[in] AMove the movement to apply to get to a new state
@@ -68,6 +68,9 @@ class LIB_GMDS_RLBLOCKING_API MCTSStatePolycube: public MCTSState{
 	gmds::blocking::ClassificationErrors get_errors();
 	/** @brief return the history of the parents quality */
 	std::vector<double> get_history() const;
+
+	/** @brief update the classification of a state */
+	void update_class();
 
  private :
 	/** @brief the curved blocking of the current state */

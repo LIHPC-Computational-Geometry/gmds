@@ -14,7 +14,8 @@ MCTSAgent::~MCTSAgent(){
 	delete tree;
 }
 /*----------------------------------------------------------------------------*/
-const MCTSMove *MCTSAgent::genmove() {
+const MCTSMove *MCTSAgent::genmove()
+{
 	// If game ended from opponent move, we can't do anything
 	if (tree->get_current_state()->is_terminal()) {
 		return NULL;

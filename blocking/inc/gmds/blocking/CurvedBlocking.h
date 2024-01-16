@@ -54,7 +54,7 @@ struct CellInfo
 	 * @param AGeomDim on-classify geometric cell dimension (4 if not classified)
 	 * @param AGeomId on-classify geometric cell unique id
 	 */
-	CellInfo(cad::GeomManager* AManager, const int ATopoDim = 4, const int AGeomDim = 4, const int AGeomId = NullID) :
+	CellInfo(cad::GeomManager* AManager=NULL, const int ATopoDim = 4, const int AGeomDim = 4, const int AGeomId = NullID) :
 	  topo_dim(ATopoDim), topo_id(m_counter_global_id++), geom_manager(AManager),geom_dim(AGeomDim), geom_id(AGeomId)
 	{
 	}
@@ -74,7 +74,7 @@ struct NodeInfo : CellInfo
 	 * @param AGeomId  on-classify geometric cell unique id
 	 * @param APoint   geometric location
 	 */
-	NodeInfo(cad::GeomManager* AManager, const int AGeomDim = 4, const int AGeomId = NullID, const math::Point &APoint = math::Point(0, 0, 0)) :
+	NodeInfo(cad::GeomManager* AManager=NULL, const int AGeomDim = 4, const int AGeomId = NullID, const math::Point &APoint = math::Point(0, 0, 0)) :
 	  CellInfo(AManager, 0, AGeomDim, AGeomId), point(APoint)
 	{
 	}

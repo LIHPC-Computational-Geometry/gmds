@@ -28,7 +28,7 @@ MCTSNode::~MCTSNode() {
 	delete children;
 	while (!untried_actions->empty()) {
 		delete untried_actions->front();    // if a move is here then it is not a part of a child node and needs to be deleted here
-		untried_actions->pop();
+		untried_actions->pop_front();
 	}
 	delete untried_actions;
 }
@@ -44,7 +44,7 @@ void MCTSNode::expand() {
 	}
 	// get next untried action
 	MCTSMove *next_move = untried_actions->front();     // get value
-	untried_actions->pop();                              // remove it
+	untried_actions->pop_front();                              // remove it
 	MCTSState *next_state = state->next_state(next_move);
 
 	if(state->get_quality() == next_state->get_quality()){
@@ -64,6 +64,12 @@ void MCTSNode::expand() {
 const MCTSState *MCTSNode::get_current_state() const
 {
 	return state;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<MCTSNode *>
+*MCTSNode::get_children()
+{
+	return children;
 }
 /*----------------------------------------------------------------------------*/
 bool
@@ -89,7 +95,9 @@ unsigned int MCTSNode::get_size() const {
 /*----------------------------------------------------------------------------*/
 MCTSNode *MCTSNode::select_best_child(double c) const {
 	/** selects best child based on the winrate of whose turn it is to play */
-	if (children->empty()) return NULL;
+	if (children->empty()) {
+		return NULL;
+	}
 	else if (children->size() == 1) return children->at(0);
 	else {
 		double uct, max = -1;
@@ -166,11 +174,25 @@ void MCTSNode::print_stats() const {
 	     << "Tree size: " << size << std::endl
 	     << "Number of simulations: " << number_of_simulations << std::endl
 	     << "Branching factor at root: " << children->size() << std::endl;
-	// print TOPK of them along with their winrates
-//	std::cout << "Best moves:" << std::endl;
-//	for (int i = 0 ; i < children->size() && i < TOPK ; i++) {
-//		std::cout << "  " << i + 1 << ". " << children->at(i)->move->sprint() << "  -->  "
-//		     << std::setprecision(4) << 100.0 * children->at(i)->calculate_winrate(state->player1_turn()) << "%" << endl;
+	// Print the best move for a current node
+//	MCTSNode *bestChild;
+//	bool first = true;
+//	double winRateChild = 0;
+//	if(!children->empty()) {
+//		for (int i = 0; i < children->size(); i++) {
+//			if (first) {
+//				bestChild = children->at(i);
+//				winRateChild = bestChild->calculate_winrate();
+//				first = false;
+//			}
+//
+//			else if (winRateChild < children->at(i)->calculate_winrate()) {
+//				bestChild = children->at(i);
+//				winRateChild = bestChild->calculate_winrate();
+//			}
+//		}
+//		std::cout << "Best Move :" << std::endl;
+//		bestChild->move->print();
 //	}
 	std::cout << "________________________________" << std::endl;
 }

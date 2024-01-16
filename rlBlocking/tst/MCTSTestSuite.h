@@ -37,22 +37,19 @@ TEST(MCTSTestSuite, testExAglo)
 {
 
 	gmds::cad::FACManager geom_model;
-	set_up_MCTS(&geom_model,"M1.vtk");
+	set_up_MCTS(&geom_model,"cb2.vtk");
 	gmds::blocking::CurvedBlocking bl(&geom_model,true);
-	bl.save_vtk_blocking("/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/M1_init_blocking.vtk");
-	std::cout<<"NB points : "<< geom_model.getPoints().size()<<std::endl;
+	bl.save_vtk_blocking("/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/cb2/cb2_init_blocking.vtk");
 
 	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
-
-
-	auto listCuts = classifier.list_Possible_Cuts();
-	for (auto c : listCuts){
-		std::cout<<c.first<< " &&&&&& "<<c.second<<std::endl;
-	}
+	std::cout<<"==================== BEGIN TEST : ===================="<<std::endl;
 
 	MCTSAlgorithm *algo = new MCTSAlgorithm(&geom_model,&bl);
-	std::cout<<"bef ex"<<std::endl;
 	algo->execute();
+
+
+	std::cout<<"==================== END TEST ! ===================="<<std::endl;
+
 
 }
 /*----------------------------------------------------------------------------*/

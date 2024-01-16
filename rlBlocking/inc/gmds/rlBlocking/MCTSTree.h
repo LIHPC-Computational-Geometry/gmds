@@ -34,7 +34,7 @@ class LIB_GMDS_RLBLOCKING_API MCTSNode {
 	/** @brief  the parent for the current node*/
 	MCTSNode *parent;
 	/** @brief  queue of untried actions*/
-	std::queue<MCTSMove *> *untried_actions;
+	std::deque<MCTSMove *> *untried_actions;
 	/** @brief  update the nb simulations and the score after a rollout*/
 	void backpropagate(double w, int n);
  public:
@@ -72,6 +72,8 @@ class LIB_GMDS_RLBLOCKING_API MCTSNode {
 	MCTSNode *advance_tree(const MCTSMove *m);
 	/** @brief  Return the state of the node.	*/
 	const MCTSState *get_current_state() const;
+	/** @brief  Return the children of the node.	*/
+	std::vector<MCTSNode *> *get_children();
 	/** @brief  Print the tree and the stats.	*/
 	void print_stats() const;
 	/** @brief  Calculate the q rate of a node. It's: wins-looses	*/

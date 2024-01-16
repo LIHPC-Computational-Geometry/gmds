@@ -22,7 +22,8 @@ struct LIB_GMDS_RLBLOCKING_API MCTSMove {
 	/** @brief  Overloaded ==
 	 */
 	virtual bool operator==(const MCTSMove& AOther) const = 0;
-	virtual std::string sprint() const { return "Not implemented"; }   // and optionally this
+	virtual std::string sprint() const { return "Not implemented"; }
+	virtual void print() const =0;   // and optionally this
 };
 /*----------------------------------------------------------------------------*/
 }

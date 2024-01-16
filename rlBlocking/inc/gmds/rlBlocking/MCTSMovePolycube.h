@@ -20,14 +20,15 @@ struct LIB_GMDS_RLBLOCKING_API MCTSMovePolycube: public MCTSMove {
 	TCellID m_AIdEdge;
 	TCellID m_AIdBlock;
 	double m_AParamCut;
-	/** @brief if typeMove=0: delete block, typeMove=1 cut block
+	/** @brief if typeMove=2: delete block, typeMove=1 cut block
 	 */
-	bool m_typeMove;
+	unsigned int m_typeMove;
 
 	/** @brief  Overloaded ==
 	 */
-	MCTSMovePolycube(TCellID AIdEdge,TCellID AIdBlock, double AParamCut,bool ATypeMove);
+	MCTSMovePolycube(TCellID AIdEdge = -1,TCellID AIdBlock = -1 , double AParamCut = 0,unsigned int ATypeMove = -1);
 	bool operator==(const MCTSMove& AOther) const;
+	void print() const;
 
 };
 /*----------------------------------------------------------------------------*/
