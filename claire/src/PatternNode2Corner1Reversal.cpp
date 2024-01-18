@@ -59,6 +59,7 @@ PatternNode2Corner1Reversal::computeNewHex()
 	Face f_rc1 = m_mesh->get<Face>(n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(er.id(), ec[1].id(), ec[0].id()));
 	Face f_c0c1 = m_mesh->get<Face>(n_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(ec[0].id(), ec[1].id(), er.id()));
 
+	/*
 	math::Vector3d v_rc0 = f_rc0.normal();
 	gmds::Cell::Data data_rc0 = m_fl->find(f_rc0.center());
 	Node n_closest_f_rc0 = m_meshT->get<Node>(data_rc0.id);
@@ -85,18 +86,35 @@ PatternNode2Corner1Reversal::computeNewHex()
 	{
 		v_c0c1 = - v_c0c1;
 	}
+	*/
 
-	math::Point p1 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, vr);
-	math::Point p3 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, (vc0+vc1).normalize());
+	math::Vector3d v_rc0 = m_Front->outgoingNormal(m_mesh, m_meshT, m_fl, m_VectorField, f_rc0.id()).normalize() ;
+	math::Vector3d v_rc1 = m_Front->outgoingNormal(m_mesh, m_meshT, m_fl, m_VectorField, f_rc1.id()).normalize() ;
+	math::Vector3d v_c0c1 = m_Front->outgoingNormal(m_mesh, m_meshT, m_fl, m_VectorField, f_c0c1.id()).normalize() ;
+
+	math::Point p2 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, (v_rc0+v_rc1).normalize()+v_c0c1);
+	n2.setPoint(p2);
+
+	// Old way to compute new nodes position
+	//math::Point p1 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, vr);
+	//math::Point p3 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, (vc0+vc1).normalize());
+	//math::Point p6 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, (vc0+vc1+v_rc0).normalize());
+	//math::Point p10 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, (vc0+vc1+v_rc1).normalize());
+	//math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, (vr+vc0+vc1+v_rc0).normalize());
+	//math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, (vr+v_rc0).normalize());
+	//math::Point p8 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, (vr+v_rc1).normalize());
+
+	math::Point p1 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, v_c0c1);
+	math::Point p3 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, v_rc0+v_rc1);
 	math::Point p7 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, v_rc0);
-	math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, (vr+v_rc0).normalize());
-	math::Point p6 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, (vc0+vc1+v_rc0).normalize());
-	math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, (vr+vc0+vc1+v_rc0).normalize());
+	math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, v_c0c1+v_rc0);
+	math::Point p6 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, v_rc0+(v_rc0+v_rc1).normalize());
+	math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, v_c0c1+(v_rc0+v_rc1).normalize()+v_rc0);
 
-	math::Point p11 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, (v_rc1).normalize());
-	math::Point p8 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, (vr+v_rc1).normalize());
-	math::Point p10 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, (vc0+vc1+v_rc1).normalize());
-	math::Point p9 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, (vr+vc0+vc1+v_rc1).normalize());
+	math::Point p11 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, v_rc1);
+	math::Point p8 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, v_c0c1+v_rc1);
+	math::Point p10 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, v_rc1+(v_rc0+v_rc1).normalize());
+	math::Point p9 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n.point(), m_dc, m_DistanceField, v_c0c1+(v_rc0+v_rc1).normalize()+v_rc1);
 
 	n1 = m_mesh->newNode(p1);
 	n3 = m_mesh->newNode(p3);

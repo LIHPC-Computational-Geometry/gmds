@@ -23,6 +23,7 @@
 #include <gmds/claire/TransfiniteInterpolation_3D.h>
 #include <gmds/claire/RefinementBetaBlocking3D.h>
 #include <gmds/claire/AeroMeshQuality.h>
+#include <gmds/claire/SU2Writer_3D.h>
 #include <iostream>
 #include <chrono>
 /*------------------------------------------------------------------------*/
@@ -110,6 +111,8 @@ AeroPipeline_3D::execute(){
 	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
+	smoothingSingularBlockCorner();
+
 	BlockingGeometricClassification();	// Geometric classification of the final blocking, according to the geometric classification of the input tet mesh
 	//smoothy::LaplacianSmoother smoother(m_linker_HG);
 	//smoother.smoothCurves();
@@ -118,6 +121,7 @@ AeroPipeline_3D::execute(){
 
 
 	// Smoothy
+	/*
 	int nbr_iter_smoothing(3);
 	for (int i=0;i<nbr_iter_smoothing;i++)
 	{
@@ -187,6 +191,7 @@ AeroPipeline_3D::execute(){
 		}
 
 	}
+	 */
 
 
 	// Convert to CurvedBlocking structure
@@ -416,12 +421,18 @@ AeroPipeline_3D::EcritureMaillage(){
 	// Write the Blocking3D as a mesh
 	m_meshHex->clear();
 	math::Utils::BuildMesh3DFromBlocking3D(&m_Blocking3D, m_meshHex);
+	//gmds::math::Utils::resizeMesh(m_meshHex, 0.5);
 	computeHexMeshQuality();
 	gmds::IGMeshIOService ioService_mesh3D(m_meshHex);
 	gmds::VTKWriter vtkWriter_mesh3D(&ioService_mesh3D);
 	vtkWriter_mesh3D.setCellOptions(gmds::N|gmds::R);
 	vtkWriter_mesh3D.setDataOptions(gmds::N|gmds::R);
 	vtkWriter_mesh3D.write("AeroPipeline3D_HexMesh.vtk");
+
+	// Write the final mesh in SU2 3D mesh format
+	std::cout << "-> SU2 writing..." << std::endl;
+	gmds::SU2Writer_3D su2_writer(m_meshHex, "AeroPipeline3D_HexMesh.su2");
+	su2_writer.execute();
 
 	// Stat of the blocking
 	std::cout << "=============================================" << std::endl;
@@ -1046,6 +1057,15 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 	// Init the geometry manager and the linker
 	m_manager->initAndLinkFrom3DMesh(m_meshTet, m_linker_TG);
 
+	// Stat of the blocking
+	std::cout << "=============================================" << std::endl;
+	std::cout << "			GEOMETRIC CLASSIFICATION STATISTICS:" << std::endl;
+	std::cout << "=============================================" << std::endl;
+	std::cout << "|| Number of Surfaces: " << m_manager->getNbSurfaces() << std::endl;
+	std::cout << "|| Number of Curves: " << m_manager->getNbCurves() << std::endl;
+	std::cout << "|| Number of Points: " << m_manager->getNbPoints() << std::endl;
+	std::cout << "=============================================" << std::endl;
+
 	// Write the initial tet mesh (with fields computed on it)
 	gmds::IGMeshIOService ioService = IGMeshIOService(m_meshTet);
 	gmds::VTKWriter vtkWriter2(&ioService);
@@ -1111,7 +1131,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 			p_proj = n.point();
 			surface->project(p_proj);
 			if ( (n.point()-p_proj).norm() < min_dist
-			    && min_dist > pow(10,-20))		// Need to add a tolerence here.
+			    && min_dist > pow(10,-3))		// Need to add a tolerence here.
 			{
 				min_dist = (n.point()-p_proj).norm();
 				geom_dim = 3;
@@ -1245,6 +1265,13 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		// Link the face to the surface
 		m_linker_HG->linkFaceToSurface(f_id, geom_id);
 	}
+
+	// Write the initial tet mesh (with fields computed on it)
+	gmds::IGMeshIOService ioService_edges = IGMeshIOService(m_meshHex);
+	gmds::VTKWriter vtkWriter_edge(&ioService_edges);
+	vtkWriter_edge.setCellOptions(gmds::N|gmds::E);
+	vtkWriter_edge.setDataOptions(gmds::N|gmds::E);
+	vtkWriter_edge.write("AeroPipeline3D_Surface_EDGES_CLASSIFICATION.vtk");
 
 }
 /*------------------------------------------------------------------------*/
@@ -2801,6 +2828,59 @@ AeroPipeline_3D::computeHexMeshQuality()
 		                                                                       r_nodes[2].point(), r_nodes[3].point(),
 		                                                                       r_nodes[4].point(), r_nodes[5].point(),
 		                                                                       r_nodes[6].point(), r_nodes[7].point()));
+	}
+}
+/*------------------------------------------------------------------------*/
+void
+AeroPipeline_3D::smoothingSingularBlockCorner()
+{
+	Variable<int>* var_patterns = m_meshHex->getOrCreateVariable<int, GMDS_REGION>("GMDS_Patterns");
+	std::map<TCellID,math::Point> map_init_pts;
+	for (auto n_id:m_meshHex->nodes())
+	{
+		map_init_pts[n_id] = m_meshHex->get<Node>(n_id).point();
+	}
+
+	for (auto const& b_id:m_meshHex->regions())
+	{
+		if (var_patterns->value(b_id) != 0)
+		{
+			Region b = m_meshHex->get<Region>(b_id);
+			std::vector<Node> b_nodes = b.get<Node>();
+			int max_layer = m_couche_id->value(b_nodes[0].id()) ;	// Compute the max layer id on block
+			for (auto n:b_nodes)
+			{
+				if (m_couche_id->value(n.id()) > max_layer)
+				{
+					max_layer = m_couche_id->value(n.id()) ;
+				}
+			}
+			for (auto n:b_nodes)
+			{
+				if (m_couche_id->value(n.id()) != 0
+				    && m_couche_id->value(n.id()) != m_params.nbr_couches
+				    && m_couche_id->value(n.id()) == max_layer)
+				{
+					//std::cout << "Singular node" << std::endl;
+					math::Point p_new = map_init_pts[n.id()];
+					std::vector<Edge> n_edges = n.get<Edge>();
+					int nbr_contrib(1);
+					for (auto const& e:n_edges)
+					{
+						//if (m_couche_id->value(e.getOppositeNodeId(n)) != m_couche_id->value(n.id()))
+						//{
+							math::Point p_add = map_init_pts[e.getOppositeNode(n).id()];
+							p_new = p_new + p_add;
+							nbr_contrib++;
+						//}
+					}
+					n.setPoint(p_new);
+					n.setX(n.X()/nbr_contrib);
+					n.setY(n.Y()/nbr_contrib);
+					n.setZ(n.Z()/nbr_contrib);
+				}
+			}
+		}
 	}
 }
 /*------------------------------------------------------------------------*/

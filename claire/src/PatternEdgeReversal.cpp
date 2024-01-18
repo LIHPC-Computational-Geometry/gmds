@@ -42,8 +42,10 @@ PatternEdgeReversal::computeNewHex()
 	else	// Create the faces
 	{
 		n3 = m_mesh->get<Node>(m_StructManager->getFaceIdealNextNode(e_faces[0], n0.id()));
-		math::Vector3d v = (n3.point()-n0.point()).normalize() ;
+		//math::Vector3d v = (n3.point()-n0.point()).normalize() ;
 
+		/*
+      // Old way to compute f0_normale
 		math::Point f0_barycentre = m_mesh->get<Face>(e_faces[0]).center() ;
 		math::Vector3d f0_normale = m_mesh->get<Face>(e_faces[0]).normal();
 		gmds::Cell::Data data = m_fl->find(f0_barycentre);
@@ -53,13 +55,10 @@ PatternEdgeReversal::computeNewHex()
 		{
 			f0_normale = - f0_normale;
 		}
+		*/
 
-		math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n0.point(), m_dc, m_DistanceField, f0_normale);
-		math::Point p7 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n0.point(), m_dc, m_DistanceField, (f0_normale+v).normalize());
-
-		n4 = m_mesh->newNode(p4);
-		n7 = m_mesh->newNode(p7);
-
+		/*
+      // Old way to compute f1_normale
 		math::Point f1_barycentre = m_mesh->get<Face>(e_faces[1]).center() ;
 		math::Vector3d f1_normale = m_mesh->get<Face>(e_faces[1]).normal();
 		gmds::Cell::Data data_f1 = m_fl->find(f1_barycentre);
@@ -67,14 +66,30 @@ PatternEdgeReversal::computeNewHex()
 		math::Vector3d v_f1 = m_VectorField->value(n_closest_f1.id()).normalize() ;
 		if (f1_normale.dot(v_f1) <= 0)
 		{
-			f1_normale = - f1_normale;
+		   f1_normale = - f1_normale;
 		}
+		 */
+
+		math::Vector3d f0_normale = computeNormaltoFacesAroundNodeSideFace(n0.id(), e_faces[0]);
+		math::Vector3d f1_normale = computeNormaltoFacesAroundNodeSideFace(n0.id(), e_faces[1]);
+		math::Vector3d v = (f0_normale.normalize() + f1_normale.normalize()).normalize() ;
+
+		math::Point p4 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n0.point(), m_dc, m_DistanceField, f0_normale);
+		//math::Point p7 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n0.point(), m_dc, m_DistanceField, (f0_normale+v).normalize());
+		math::Point p7 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n0.point(), m_dc, m_DistanceField, v+f0_normale);
 
 		math::Point p8 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n0.point(), m_dc, m_DistanceField, f1_normale);
-		math::Point p11 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n0.point(), m_dc, m_DistanceField, (f1_normale+v).normalize());
+		//math::Point p11 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n0.point(), m_dc, m_DistanceField, (f1_normale+v).normalize());
+		math::Point p11 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n0.point(), m_dc, m_DistanceField, v+f1_normale);
+
+		n4 = m_mesh->newNode(p4);
+		n7 = m_mesh->newNode(p7);
 
 		n8 = m_mesh->newNode(p8);
 		n11 = m_mesh->newNode(p11);
+
+		math::Point p3 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n0.point(), m_dc, m_DistanceField, f0_normale+f1_normale);
+		n3.setPoint(p3);
 
 		//=====================//
 		// Update the REVERSAL //
@@ -124,8 +139,10 @@ PatternEdgeReversal::computeNewHex()
 	else	// Create the faces
 	{
 		n2 = m_mesh->get<Node>(m_StructManager->getFaceIdealNextNode(e_faces[0], n1.id())) ;
-		math::Vector3d v = (n2.point()-n1.point()).normalize() ;
+		//math::Vector3d v = (n2.point()-n1.point()).normalize() ;
 
+		/*
+      // Old way to compute f0_normale
 		math::Point f0_barycentre = m_mesh->get<Face>(e_faces[0]).center() ;
 		math::Vector3d f0_normale = m_mesh->get<Face>(e_faces[0]).normal();
 		gmds::Cell::Data data = m_fl->find(f0_barycentre);
@@ -135,13 +152,10 @@ PatternEdgeReversal::computeNewHex()
 		{
 			f0_normale = - f0_normale;
 		}
+		 */
 
-		math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n1.point(), m_dc, m_DistanceField, f0_normale);
-		math::Point p6 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n1.point(), m_dc, m_DistanceField, (f0_normale+v).normalize());
-
-		n5 = m_mesh->newNode(p5);
-		n6 = m_mesh->newNode(p6);
-
+		/*
+      // Old way to compute f1_normale
 		math::Point f1_barycentre = m_mesh->get<Face>(e_faces[1]).center() ;
 		math::Vector3d f1_normale = m_mesh->get<Face>(e_faces[1]).normal();
 		gmds::Cell::Data data_f1 = m_fl->find(f1_barycentre);
@@ -149,14 +163,26 @@ PatternEdgeReversal::computeNewHex()
 		math::Vector3d v_f1 = m_VectorField->value(n_closest_f1.id()).normalize() ;
 		if (f1_normale.dot(v_f1) <= 0)
 		{
-			f1_normale = - f1_normale;
+		   f1_normale = - f1_normale;
 		}
+		 */
 
+		math::Vector3d f0_normale = computeNormaltoFacesAroundNodeSideFace(n1.id(), e_faces[0]);
+		math::Vector3d f1_normale = computeNormaltoFacesAroundNodeSideFace(n1.id(), e_faces[1]);
+		math::Vector3d v = (f0_normale.normalize()+f1_normale.normalize()).normalize();
+
+		math::Point p5 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n1.point(), m_dc, m_DistanceField, f0_normale);
+		math::Point p6 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n1.point(), m_dc, m_DistanceField, v+f0_normale);
 		math::Point p9 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n1.point(), m_dc, m_DistanceField, f1_normale);
-		math::Point p10 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n1.point(), m_dc, m_DistanceField, (f1_normale+v).normalize());
+		math::Point p10 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n1.point(), m_dc, m_DistanceField, v+f1_normale);
 
+		n5 = m_mesh->newNode(p5);
+		n6 = m_mesh->newNode(p6);
 		n9 = m_mesh->newNode(p9);
 		n10 = m_mesh->newNode(p10);
+
+		math::Point p2 = math::Utils::AdvectedPointRK4_UniqVector_3D(m_meshT, m_fl, n1.point(), m_dc, m_DistanceField, f0_normale+f1_normale);
+		n2.setPoint(p2);
 
 		//=====================//
 		// Update the REVERSAL //
@@ -231,3 +257,36 @@ PatternEdgeReversal::computeNewHex()
 	m_StructManager->setFaceNextNode(e_faces[1], n1.id(), n9.id());
 	// <----
 }
+/*------------------------------------------------------------------------*/
+math::Vector3d
+PatternEdgeReversal::computeNormaltoFacesAroundNodeSideFace(TCellID n_id, TCellID f_id)
+{
+	Node n = m_mesh->get<Node>(n_id);
+	NodeNeighbourhoodOnFront_3D n_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n_id);
+	n_neighbourhood.execute();
+
+	Variable<int>* var_front_edges_classification = m_mesh->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
+
+	// Compute the next corner edge, to know when to stop
+	TCellID next_reversal_edge_id(m_e_id);
+	for (auto e_id:n_neighbourhood.getOrderedEdges())
+	{
+		if (e_id != m_e_id
+		    && var_front_edges_classification->value(e_id)==3)
+		{
+			next_reversal_edge_id = e_id;
+		}
+	}
+
+	std::vector<TCellID> faces = n_neighbourhood.facesBtwEdge1nEdge2inFaceSide(m_e_id, next_reversal_edge_id, f_id) ;
+
+	math::Vector3d normal;
+	for (auto face_id:faces)
+	{
+		normal += m_Front->outgoingNormal(m_mesh, m_meshT, m_fl, m_VectorField, face_id).normalize() ;
+	}
+
+	return normal.normalize();
+
+}
+/*------------------------------------------------------------------------*/

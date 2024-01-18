@@ -98,7 +98,8 @@ IntervalAssignment_3D::ComputeSingleSheet(TCellID e_id)
 }
 /*------------------------------------------------------------------------*/
 std::map<int, std::vector<TCellID>>
-IntervalAssignment_3D::ComputeSheets(){
+IntervalAssignment_3D::ComputeSheets()
+{
 
 	std::map<int, std::vector<TCellID>> map_chords;
 

@@ -23,6 +23,11 @@ class LIB_GMDS_CLAIRE_API AeroBoundaries_3D: public AbstractAeroBoundaries {
 	explicit AeroBoundaries_3D(Mesh *AMesh);
 
 	/*------------------------------------------------------------------------*/
+	/** @brief Retourne un vecteur des id des faces du bord
+	 * correspondant à la couleur color.
+	 */
+	std::vector<TCellID> BndFaces(int color);
+	/*------------------------------------------------------------------------*/
 
  protected:
 	/*-------------------------------------------------------------------*/

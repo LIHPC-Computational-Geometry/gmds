@@ -15,6 +15,7 @@
 #include <gmds/cadfac/FACManager.h>
 #include <gmds/cad/GeomMeshLinker.h>
 #include <gmds/math/BezierCurve.h>
+#include <gmds/math/BezierSurface.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
