@@ -15,6 +15,27 @@ AeroBoundaries_3D::AeroBoundaries_3D(Mesh *AMesh) :
 }
 /*------------------------------------------------------------------------*/
 
+/*------------------------------------------------------------------------*/
+std::vector<TCellID> AeroBoundaries_3D::BndFaces(int color)
+{
+	std::vector<TCellID> faces_id;
+
+	for (auto f_id:m_mesh->faces())
+	{
+		Face f = m_mesh->get<Face>(f_id);
+		std::vector<Node> nodes = f.get<Node>();
+		if (m_var_color_bords->value(nodes[0].id()) == color
+		    && m_var_color_bords->value(nodes[1].id()) == color
+		    && m_var_color_bords->value(nodes[2].id()) == color
+		    && m_var_color_bords->value(nodes[3].id()) == color)
+		{
+			faces_id.push_back(f_id);
+		}
+	}
+
+	return faces_id;
+}
+/*------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------*/
 void AeroBoundaries_3D::MarkBoundariesNodes(){

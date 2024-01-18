@@ -285,7 +285,9 @@ Utils::BuildMesh3DFromBlocking3D(Blocking3D* Ablocking, Mesh* Am)
 {
 	std::map<TCellID, TCellID> map_new_node_ids;
 	Variable<int>* var_couche = Ablocking->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche");
+	Variable<int>* var_couche_block = Ablocking->getOrCreateVariable<int, GMDS_REGION>("GMDS_Layer");
 	Variable<int>* var_couche_mesh = Am->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
+	Variable<int>* var_couche_mesh_hex = Am->getOrCreateVariable<int, GMDS_REGION>("GMDS_Layer");
 
 	// Create all the nodes in the mesh m
 	for (auto n_id:Ablocking->nodes())
@@ -337,6 +339,8 @@ Utils::BuildMesh3DFromBlocking3D(Blocking3D* Ablocking, Mesh* Am)
 					n5_inMesh.add<Region>(r.id());     // N->R
 					n6_inMesh.add<Region>(r.id());     // N->R
 					n7_inMesh.add<Region>(r.id());     // N->R
+
+					var_couche_mesh_hex->set(r.id(), var_couche_block->value(b.id()));
 				}
 			}
 		}

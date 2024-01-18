@@ -7,6 +7,7 @@
 
 /*----------------------------------------------------------------------------*/
 #include <gmds/claire/SU2Writer.h>
+#include <gmds/claire/SU2Writer_3D.h>
 #include <gmds/claire/AeroBoundaries_2D.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
@@ -87,5 +88,6 @@ TEST(ClaireTestClass, SU2Writer)
 	ASSERT_EQ(SU2Writer::SUCCESS, result);
 }
 */
+
 
 #endif     // GMDS_SU2WRITERTESTSUITE_H

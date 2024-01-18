@@ -22,6 +22,7 @@
 #include "Front_3DTestSuite.h"
 #include "Blocking3DTestSuite.h"
 #include "TransfiniteInterpolation_3DTestSuite.h"
+#include "ComputeBezierDegree_3DTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

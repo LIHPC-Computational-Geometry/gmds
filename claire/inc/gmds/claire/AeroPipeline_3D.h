@@ -88,6 +88,11 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_3D : public AbstractAeroPipeline {
 	 */
 	void computeHexMeshQuality();
 	/*----------------------------------------------------------------------------*/
+	/** @brief Light smoothing of singular block corners (i.e. block corners in the
+	 * volume that are not adjacent to 8 hexahedral blocks).
+	 */
+	void smoothingSingularBlockCorner();
+	/*----------------------------------------------------------------------------*/
 
  protected:
 	/** Données des bords */

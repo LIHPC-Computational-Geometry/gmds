@@ -32,9 +32,17 @@ class LIB_GMDS_CLAIRE_API PatternEdgeCorner: public AbstractPatternEdge {
 	 */
 	void computeNewHex() override;
 	/*-------------------------------------------------------------------*/
-	/** \brief
-	 * @param
-	 * @return
+	/** \brief Compute the normal vector to the faces around the node @p n_id
+	 * of the front, but only on the same side than the face @p f_id. We
+	 * consider here that around each node of the edge m_e_id, there are two
+	 * sides, separeted by the corner edges path.
+	 *
+	 * @param[in] n_id id of one node of the corner edge @p m_e_id
+	 * @param[in] f_id id of one face adjacent to the corner edge @p m_e_id to
+	 * 			define the side
+	 *
+	 * @return A 3D vector corresponding to the mean of the normals of the faces
+	 * 		around @p n_id of the side @p f_id
 	 */
 	math::Vector3d computeNormaltoFacesAroundNodeSideFace(TCellID n_id, TCellID f_id);
 	/*-------------------------------------------------------------------*/
