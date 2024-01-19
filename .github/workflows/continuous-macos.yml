@@ -41,16 +41,23 @@ jobs:
       run: >
         . ${{github.workspace}}/spack/share/spack/setup-env.sh;
         spack load py-pytest;
+        export lcov_ROOT=`spack find -p lcov | awk 'NR==2 {print $2}'`;
+        export glpk_ROOT=`spack find -p glpk | awk 'NR==2 {print $2}'`;
+        export googletest_ROOT=`spack find -p googletest | awk 'NR==2 {print $2}'`;
+        export pybind11_ROOT=`spack find -p py-pybind11 | awk 'NR==2 {print $2}'`;
+        export cgal_ROOT=`spack find -p cgal | awk 'NR==2 {print $2}'`;
+        export gmp_ROOT=`spack find -p gmp | awk 'NR==2 {print $2}'`;
+        export mpfr_ROOT=`spack find -p mpfr | awk 'NR==2 {print $2}'`;
+        export boost_ROOT=`spack find -p boost | awk 'NR==2 {print $2}'`;
+        export eigen_ROOT=`spack find -p eigen | awk 'NR==2 {print $2}'`;
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.config }}
         -DWITH_TEST:BOOL=ON
         -DWITH_CGNS:BOOL=OFF
         -DWITH_CODE_COVERAGE:BOOL=OFF
         -DWITH_PYTHON_API:BOOL=ON
         -DENABLE_BLOCKING:BOOL=ON
-        -DCMAKE_PREFIX_PATH="${{github.workspace}}/spack/opt/spack/lcov;${{github.workspace}}/spack/opt/spack/glpk;${{github.workspace}}/spack/opt/spack/googletest;${{github.workspace}}/spack/opt/spack/py-pybind11;${{github.workspace}}/spack/opt/spack/cgal;${{github.workspace}}/spack/opt/spack/gmp;${{github.workspace}}/spack/opt/spack/mpfr;${{github.workspace}}/spack/opt/spack/boost;${{github.workspace}}/spack/opt/spack/eigen"
+        -DCMAKE_PREFIX_PATH="$lcov_ROOT;$glpk_ROOT;$googletest_ROOT;$pybind11_ROOT;$cgal_ROOT;$gmp_ROOT;$mpfr_ROOT;$boost_ROOT;$eigen_ROOT"
         -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/
-        -DGLPK_LIB=${{github.workspace}}/spack/opt/spack/glpk/lib
-        -DGLPK_INC=${{github.workspace}}/spack/opt/spack/glpk/include
 
     - name: Build
       # Use a bash shell so we can use the same syntax for environment variable
