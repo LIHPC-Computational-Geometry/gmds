@@ -4,10 +4,12 @@
 using namespace gmds;
 using namespace gmds::blocking;
 /*----------------------------------------------------------------------------*/
-int CellInfo::m_counter_global_id = 0;
+//int CellInfo::m_counter_global_id = 0;
 
 /*----------------------------------------------------------------------------*/
-CurvedBlocking::CurvedBlocking(cad::GeomManager *AGeomModel, bool AInitAsBoundingBox) : m_geom_model(AGeomModel) {
+CurvedBlocking::CurvedBlocking(cad::GeomManager *AGeomModel, bool AInitAsBoundingBox)
+  : m_geom_model(AGeomModel), m_counter(0)
+{
     if (AInitAsBoundingBox) {
         TCoord min[3] = {MAXFLOAT, MAXFLOAT, MAXFLOAT};
         TCoord max[3] = {-MAXFLOAT, -MAXFLOAT, -MAXFLOAT};
@@ -32,7 +34,27 @@ CurvedBlocking::CurvedBlocking(cad::GeomManager *AGeomModel, bool AInitAsBoundin
         create_block(p1, p2, p3, p4, p5, p6, p7, p8);
     }
 }
-
+/*----------------------------------------------------------------------------*/
+CurvedBlocking::CurvedBlocking(const CurvedBlocking &ABl)
+: m_geom_model(ABl.m_geom_model), m_gmap(ABl.m_gmap), m_counter(ABl.m_counter)
+{
+	auto listBlocks = get_all_blocks();
+	for(auto b : listBlocks){
+		  b->info().counter = &m_counter;
+	}
+	auto listFaces = get_all_faces();
+	for(auto b : listFaces){
+		  b->info().counter = &m_counter;
+	}
+	auto listEdges = get_all_edges();
+	for(auto b : listEdges){
+		  b->info().counter = &m_counter;
+	}
+	auto listNodes = get_all_nodes();
+	for(auto b : listNodes){
+		  b->info().counter = &m_counter;
+	}
+}
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::~CurvedBlocking() {}
 
@@ -51,25 +73,25 @@ CurvedBlocking::geom_model() {
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Node
 CurvedBlocking::create_node(const int AGeomDim, const int AGeomId, const math::Point &APoint) {
-    return m_gmap.create_attribute<0>(NodeInfo(m_geom_model,AGeomDim, AGeomId, APoint));
+    return m_gmap.create_attribute<0>(NodeInfo(this->getCounter(),m_geom_model,AGeomDim, AGeomId, APoint));
 }
 
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Edge
 CurvedBlocking::create_edge(const int AGeomDim, const int AGeomId) {
-    return m_gmap.create_attribute<1>(CellInfo(m_geom_model,1, AGeomDim, AGeomId));
+    return m_gmap.create_attribute<1>(CellInfo(this->getCounter(),m_geom_model,1, AGeomDim, AGeomId));
 }
 
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Face
 CurvedBlocking::create_face(const int AGeomDim, const int AGeomId) {
-    return m_gmap.create_attribute<2>(CellInfo(m_geom_model,2, AGeomDim, AGeomId));
+    return m_gmap.create_attribute<2>(CellInfo(this->getCounter(),m_geom_model,2, AGeomDim, AGeomId));
 }
 
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Block
 CurvedBlocking::create_block(const int AGeomDim, const int AGeomId) {
-    return m_gmap.create_attribute<3>(CellInfo(m_geom_model,3, AGeomDim, AGeomId));
+    return m_gmap.create_attribute<3>(CellInfo(this->getCounter(),m_geom_model,3, AGeomDim, AGeomId));
 }
 
 /*----------------------------------------------------------------------------*/
