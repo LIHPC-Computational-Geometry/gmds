@@ -33,11 +33,12 @@ void set_up_MCTS(gmds::cad::FACManager* AGeomModel, const std::string AFileName)
 
 }
 /*----------------------------------------------------------------------------*/
-TEST(MCTSTestSuite, testExAglo)
+TEST(MCTSTestSuite, testExAgloCb2)
 {
 
 	gmds::cad::FACManager geom_model;
-	set_up_MCTS(&geom_model,"cb2.vtk");
+	std::string nameM= "cb2";
+	set_up_MCTS(&geom_model,nameM+".vtk");
 	gmds::blocking::CurvedBlocking bl(&geom_model,true);
 	bl.save_vtk_blocking("/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/cb2/cb2_init_blocking.vtk");
 
@@ -45,7 +46,135 @@ TEST(MCTSTestSuite, testExAglo)
 	std::cout<<"==================== BEGIN TEST : ===================="<<std::endl;
 
 	MCTSAlgorithm *algo = new MCTSAlgorithm(&geom_model,&bl);
-	algo->execute();
+	algo->execute(nameM);
+
+
+	std::cout<<"==================== END TEST ! ===================="<<std::endl;
+
+
+}
+
+/*----------------------------------------------------------------------------*/
+TEST(MCTSTestSuite, testExAgloM1)
+{
+
+	gmds::cad::FACManager geom_model;
+	std::string nameM= "M1";
+	set_up_MCTS(&geom_model,nameM+".vtk");
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+	bl.save_vtk_blocking("/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/M1/M1_init_blocking.vtk");
+
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+	std::cout<<"==================== BEGIN TEST : ===================="<<std::endl;
+
+	MCTSAlgorithm *algo = new MCTSAlgorithm(&geom_model,&bl);
+	algo->execute(nameM);
+
+
+	std::cout<<"==================== END TEST ! ===================="<<std::endl;
+
+
+}
+/*----------------------------------------------------------------------------*/
+TEST(MCTSTestSuite, testExAgloCb1)
+{
+
+	gmds::cad::FACManager geom_model;
+	std::string nameM= "cb1";
+	set_up_MCTS(&geom_model,nameM+".vtk");
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+	bl.save_vtk_blocking("/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/cb1/cb1_init_blocking.vtk");
+
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+	std::cout<<"==================== BEGIN TEST : ===================="<<std::endl;
+
+	MCTSAlgorithm *algo = new MCTSAlgorithm(&geom_model,&bl);
+	algo->execute(nameM);
+
+
+	std::cout<<"==================== END TEST ! ===================="<<std::endl;
+
+
+}
+/*----------------------------------------------------------------------------*/
+TEST(MCTSTestSuite, testExAgloCb3)
+{
+
+	gmds::cad::FACManager geom_model;
+	std::string nameM= "cb3";
+	set_up_MCTS(&geom_model,nameM+".vtk");
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+	bl.save_vtk_blocking("/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/cb3/cb3_init_blocking.vtk");
+
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+	std::cout<<"==================== BEGIN TEST : ===================="<<std::endl;
+
+	MCTSAlgorithm *algo = new MCTSAlgorithm(&geom_model,&bl);
+	algo->execute(nameM);
+
+
+	std::cout<<"==================== END TEST ! ===================="<<std::endl;
+
+
+}
+/*----------------------------------------------------------------------------*/
+TEST(MCTSTestSuite, testExAgloCb4)
+{
+
+	gmds::cad::FACManager geom_model;
+	std::string nameM= "cb4";
+	set_up_MCTS(&geom_model,nameM+".vtk");
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+	bl.save_vtk_blocking("/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/cb4/cb4_init_blocking.vtk");
+
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+	std::cout<<"==================== BEGIN TEST : ===================="<<std::endl;
+
+	MCTSAlgorithm *algo = new MCTSAlgorithm(&geom_model,&bl);
+	algo->execute(nameM);
+
+
+	std::cout<<"==================== END TEST ! ===================="<<std::endl;
+
+
+}
+/*----------------------------------------------------------------------------*/
+TEST(MCTSTestSuite, testExAgloCb5)
+{
+
+	gmds::cad::FACManager geom_model;
+	std::string nameM= "cb5";
+	set_up_MCTS(&geom_model,nameM+".vtk");
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+	bl.save_vtk_blocking("/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/cb5/cb5_init_blocking.vtk");
+
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+	std::cout<<"==================== BEGIN TEST : ===================="<<std::endl;
+
+	MCTSAlgorithm *algo = new MCTSAlgorithm(&geom_model,&bl);
+	algo->execute(nameM);
+
+
+	std::cout<<"==================== END TEST ! ===================="<<std::endl;
+
+
+}
+
+/*----------------------------------------------------------------------------*/
+TEST(MCTSTestSuite, testExAgloB0)
+{
+
+	gmds::cad::FACManager geom_model;
+	std::string nameM= "B0";
+	set_up_MCTS(&geom_model,nameM+".vtk");
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+	bl.save_vtk_blocking("/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/B0/B0_init_blocking.vtk");
+
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+	std::cout<<"==================== BEGIN TEST : ===================="<<std::endl;
+
+	MCTSAlgorithm *algo = new MCTSAlgorithm(&geom_model,&bl);
+	algo->execute(nameM);
 
 
 	std::cout<<"==================== END TEST ! ===================="<<std::endl;

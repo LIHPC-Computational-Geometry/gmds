@@ -31,14 +31,13 @@ class LIB_GMDS_RLBLOCKING_API MCTSAlgorithm
 	/*------------------------------------------------------------------------*/
 	/** @brief  Performs the MCTS algorithm
 	 */
-	void execute();
+	void execute(std::string ANameGeo);
 
  private:
 	/** a geom */
 	gmds::cad::GeomManager *m_geom;
 	/** a blocking */
 	gmds::blocking::CurvedBlocking *m_blocking;
-
 };
 /*----------------------------------------------------------------------------*/
 }

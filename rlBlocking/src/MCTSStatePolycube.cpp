@@ -7,8 +7,8 @@ using namespace gmds;
 
 /*----------------------------------------------------------------------------*/
 MCTSStatePolycube::MCTSStatePolycube(gmds::cad::GeomManager* AGeom, gmds::blocking::CurvedBlocking* ABlocking,
-                                     std::vector<double> hist )
-	:m_geom(AGeom),m_history(hist)
+                                     std::vector<double> hist,std::string ANameGeom )
+	:m_geom(AGeom),m_history(hist),m_name_geom(ANameGeom)
 {
 	m_blocking = new blocking::CurvedBlocking(*ABlocking);
 	gmds::blocking::CurvedBlockingClassifier classifier(m_blocking);
@@ -68,7 +68,7 @@ MCTSState
 	std::vector<double> hist_update = get_history();
 	hist_update.push_back(get_quality());
 	gmds::blocking::CurvedBlocking* new_b = new gmds::blocking::CurvedBlocking(*m_blocking);
-	MCTSStatePolycube *new_state = new MCTSStatePolycube(this->m_geom,new_b,hist_update);
+	MCTSStatePolycube *new_state = new MCTSStatePolycube(this->m_geom,new_b,hist_update,this->m_name_geom);
 	if(m->m_typeMove == 2){
 		//TODO ERROR, sometimes, block select not in the current blocks list...Check why !!!
 		std::cout<<"LIST BLOCK BLOCKING : "<<std::endl;
@@ -90,21 +90,21 @@ MCTSState
 		}
 
 		new_state->update_class();
-		//SAVE Blocking vtk
-		std::string name_save_folder = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/cb2/";
-		std::string id_act = std::to_string(m->m_AIdEdge);
-		std::string name_file = "cb2_action"+ id_act +".vtk";
-		new_state->m_blocking->save_vtk_blocking(name_save_folder+name_file);
+//		//SAVE Blocking vtk
+//		std::string name_save_folder = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/cb2/";
+//		std::string id_act = std::to_string(m->m_AIdEdge);
+//		std::string name_file = "cb2_action"+ id_act +".vtk";
+//		new_state->m_blocking->save_vtk_blocking(name_save_folder+name_file);
 		return new_state;
 	}
 	else if(m->m_typeMove ==1) {
 		new_state->m_blocking->cut_sheet(m->m_AIdEdge,m->m_AParamCut);
 		new_state->update_class();
-		//SAVE Blocking vtk
-		std::string name_save_folder = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/cb2/";
-		std::string id_act = std::to_string(m->m_AIdEdge);
-		std::string name_file = "cb2_action"+ id_act +".vtk";
-		new_state->m_blocking->save_vtk_blocking(name_save_folder+name_file);
+//		//SAVE Blocking vtk
+//		std::string name_save_folder = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/cb2/";
+//		std::string id_act = std::to_string(m->m_AIdEdge);
+//		std::string name_file = "cb2_action"+ id_act +".vtk";
+//		new_state->m_blocking->save_vtk_blocking(name_save_folder+name_file);
 		return new_state;
 	}
 	else{
@@ -126,6 +126,11 @@ MCTSStatePolycube::state_rollout() const
 	double res;
 	if(is_terminal()){
 		if(MCTSStatePolycube::result_terminal() == WIN){
+			//SAVE Blocking vtk
+			std::string name_save_folder = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/B0/";
+			//std::string id_act = std::to_string(m->m_AIdEdge);
+			std::string name_file = "B0_action_win.vtk";
+			this->m_blocking->save_vtk_blocking(name_save_folder+name_file);
 			res=1;
 			return res;
 		}
@@ -162,6 +167,11 @@ MCTSStatePolycube::state_rollout() const
 	} while (!curstate->is_terminal());
 
 	if(curstate->result_terminal() == WIN){
+		//SAVE Blocking vtk
+		std::string name_save_folder = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/B0/";
+		//std::string id_act = std::to_string(m->m_AIdEdge);
+		std::string name_file = "B0_action_win.vtk";
+		curstate->m_blocking->save_vtk_blocking(name_save_folder+name_file);
 		res=1;
 	}
 	else if (curstate->result_terminal() == LOSE) {

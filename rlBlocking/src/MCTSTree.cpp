@@ -34,7 +34,7 @@ MCTSNode::~MCTSNode() {
 }
 
 /*----------------------------------------------------------------------------*/
-void MCTSNode::expand() {
+void MCTSNode::expand(std::string ANameGeo) {
 	if (is_terminal()) {              // can legitimately happen in end-game situations
 		rollout();                    // keep rolling out, eventually causing UCT to pick another node to expand due to exploration
 		return;
@@ -47,12 +47,6 @@ void MCTSNode::expand() {
 	untried_actions->pop_front();                              // remove it
 	MCTSState *next_state = state->next_state(next_move);
 
-	if(state->get_quality() == next_state->get_quality()){
-		const unsigned int nb_same_quality = this->nb_same_quality + 1;
-	}
-	else{
-		const unsigned int nb_same_quality = 0;
-	}
 	// build a new MCTS node from it
 	MCTSNode *new_node = new MCTSNode(this,next_move,next_state);
 	// rollout, updating its stats
@@ -136,7 +130,7 @@ void MCTSNode::backpropagate(double w, int n) {
 }
 
 /*----------------------------------------------------------------------------*/
-MCTSNode *MCTSNode::advance_tree(const MCTSMove *m) {
+MCTSNode *MCTSNode::advance_tree(const MCTSMove *m,std::string ANameGeom) {
 	//TODO
 	// Find child with this m and delete all others
 	MCTSNode *next = NULL;
@@ -229,7 +223,7 @@ MCTSNode *MCTSTree::select(double c) {
 	return node;
 }
 /*----------------------------------------------------------------------------*/
-void MCTSTree::grow_tree(int max_iter, double max_time_in_seconds) {
+void MCTSTree::grow_tree(int max_iter, double max_time_in_seconds,std::string ANameGeo) {
 	MCTSNode *node;
 	double dt;
 #ifdef DEBUG
@@ -241,7 +235,7 @@ void MCTSTree::grow_tree(int max_iter, double max_time_in_seconds) {
 		// select node to expand according to tree policy
 		node = select();
 		// expand it (this will perform a rollout and backpropagate the results)
-		node->expand();
+		node->expand(ANameGeo);
 		// check if we need to stop
 		time(&now_t);
 		dt = difftime(now_t, start_t);
@@ -263,9 +257,9 @@ MCTSNode *MCTSTree::select_best_child() {
 	return root->select_best_child(0.0);
 }
 /*----------------------------------------------------------------------------*/
-void MCTSTree::advance_tree(const MCTSMove *move) {
+void MCTSTree::advance_tree(const MCTSMove *move, std::string ANameGeom) {
 	MCTSNode *old_root = root;
-	root = root->advance_tree(move);
+	root = root->advance_tree(move,ANameGeom);
 	delete old_root;       // this won't delete the new root since we have emptied old_root's children
 }
 

@@ -61,7 +61,7 @@ class LIB_GMDS_RLBLOCKING_API MCTSNode {
 	/** @brief  Return the size.	*/
 	unsigned int get_size() const;
 	/** @brief  Expand the node.	*/
-	void expand();
+	void expand(std::string ANameGeo);
 	/** @brief  Do a rollout.	*/
 	void rollout();
 	/** @brief  Select the most promising child of the root node	*/
@@ -69,7 +69,7 @@ class LIB_GMDS_RLBLOCKING_API MCTSNode {
 	/** @brief  Find child with this m and delete all others.
 	 * @param m the selected move
 	 * @return the next root*/
-	MCTSNode *advance_tree(const MCTSMove *m);
+	MCTSNode *advance_tree(const MCTSMove *m,std::string ANameGeom);
 	/** @brief  Return the state of the node.	*/
 	const MCTSState *get_current_state() const;
 	/** @brief  Return the children of the node.	*/
@@ -115,11 +115,11 @@ class LIB_GMDS_RLBLOCKING_API MCTSTree
 	 */
 	MCTSNode *select(double c=1.41);
 	MCTSNode *select_best_child();
-	void grow_tree(int max_iter, double max_time_in_seconds);
+	void grow_tree(int max_iter, double max_time_in_seconds,std::string ANameGeo);
 	/** @brief if the move is applicable advance the tree, else start over
          * @param move the move to do
          * */
-	void advance_tree(const MCTSMove *move);
+	void advance_tree(const MCTSMove *move,std::string ANameGeom);
 	/** @brief get the size of the tree. */
 	unsigned int get_size() const;
 	/** @brief get the size of the tree. */

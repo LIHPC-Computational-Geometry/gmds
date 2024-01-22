@@ -21,7 +21,7 @@ class LIB_GMDS_RLBLOCKING_API MCTSStatePolycube: public MCTSState{
 	/** @brief  Constructore
 	 */
 	MCTSStatePolycube(gmds::cad::GeomManager *Ageom, gmds::blocking::CurvedBlocking *ABlocking,
-	                  std::vector<double> AHist);
+	                  std::vector<double> AHist,std::string ANameGeom);
 	   /*------------------------------------------------------------------------*/
 	/** @brief  Destructor
 	 */
@@ -79,6 +79,7 @@ class LIB_GMDS_RLBLOCKING_API MCTSStatePolycube: public MCTSState{
 	gmds::blocking::CurvedBlockingClassifier* m_class_blocking;
 	gmds::blocking::ClassificationErrors m_class_errors;
 	std::vector<double> m_history;
+	std::string m_name_geom;
 };
 /*----------------------------------------------------------------------------*/
 }

@@ -3,8 +3,8 @@
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
-MCTSAgent::MCTSAgent(gmds::MCTSState *starting_state, int max_iter, int max_seconds, int max_same_quality)
-	:max_iter(max_iter),max_seconds(max_seconds),max_same_quality(max_same_quality)
+MCTSAgent::MCTSAgent(gmds::MCTSState *starting_state,std::string ANameGeo, int max_iter, int max_seconds, int max_same_quality)
+	:m_NameGeo(ANameGeo),max_iter(max_iter),max_seconds(max_seconds),max_same_quality(max_same_quality)
 {
 	tree = new MCTSTree(starting_state);
 }
@@ -24,7 +24,7 @@ const MCTSMove *MCTSAgent::genmove()
 	std::cout << "___ DEBUG ______________________" << endl
 	     << "Growing tree..." << std::endl;
 #endif
-	tree->grow_tree(max_iter, max_seconds);
+	tree->grow_tree(max_iter, max_seconds,m_NameGeo);
 #ifdef DEBUG
 	cout << "Tree size: " << tree->get_size() << endl
 	     << "________________________________" << endl;
@@ -35,7 +35,7 @@ const MCTSMove *MCTSAgent::genmove()
 		return NULL;
 	}
 	const MCTSMove *best_move = best_child->get_move();
-	tree->advance_tree(best_move);
+	tree->advance_tree(best_move,m_NameGeo);
 	return best_move;
 }
 /*----------------------------------------------------------------------------*/
