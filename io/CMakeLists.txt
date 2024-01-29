@@ -10,7 +10,7 @@ set(GMDS_LIB_PREFIX gmds/io)
 #==============================================================================
 # Compilation options mainly for testing purpose
 #==============================================================================
-option(WITH_LIMA "Activate LIMA format support"        OFF)
+option(WITH_LIMA "Activate LIMA format support"        ON)
 option(WITH_MESHB "Activate Meshb.7 format support"    OFF)
 
 set(GMDS_INC

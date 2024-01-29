@@ -5,6 +5,8 @@
 set(GMDS_LIB ${LIB_GMDS_MORPHMESH})
 set(GMDS_LIB_PREFIX gmds/morphMesh)
 
+option(WITH_LIMA "Activate LIMA format support"        OFF)
+
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/morphMesh/FastLocalize.h
@@ -16,6 +18,7 @@ set(GMDS_SRC
         src/MorphMesh.cpp
         src/EllipticMorph.cpp
         )
+
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
@@ -33,6 +36,12 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_IG}
         ${LIB_GMDS_IG_ALGO}
         ${LIB_GMDS_IO} ANN)
+if(WITH_LIMA)
+        target_compile_definitions(${GMDS_LIB} PRIVATE WITH_LIMA)
+        find_package(Lima REQUIRED)
+        target_link_libraries(${GMDS_LIB} PUBLIC
+                Lima::Lima)
+endif()
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)
 

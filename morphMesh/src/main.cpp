@@ -17,7 +17,7 @@ int main(int argc, char* argv[]){
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N|gmds::R);
 	vtkReader.setDataOptions(gmds::N|gmds::R);
-	vtkReader.read(param_file);
+	//vtkReader.read("test_morph.vtk");
 
 
 
@@ -29,12 +29,12 @@ int main(int argc, char* argv[]){
 	//gmds::morphmesh::MorphMesh morph(&m_mesh,points,2.5);
 	//morph.execute();
 
-	morphmesh::EllipticMorph emorph(&m_mesh);
+	morphmesh::EllipticMorph emorph(param_file, &m_mesh);
 
 	std::vector<std::vector<double>> ellipses;
-	ellipses.push_back({4,1,1,1});
+	ellipses.push_back({4.5,1,1,1});
 	ellipses.push_back({5,1,1.2,1});
-	ellipses.push_back({6,1,1,1});
+	ellipses.push_back({5.5,1,1,1});
 	//ellipses.push_back({0.2,1,1,1});
 	//ellipses.push_back({3,1.2,1.5,1});
 	//ellipses.push_back({4,1.2,1.5,1});
@@ -44,14 +44,5 @@ int main(int argc, char* argv[]){
 	//ellipses.push_back({5.6,1.2,1.5,1});
 	//ellipses.push_back({8.5,1.2,1.5,1});
 
-	emorph.execute(ellipses);
-
-	std::cout<<"test"<<std::endl;
-
-	gmds::VTKWriter w(&ioService);
-	w.setCellOptions(gmds::N|gmds::R);
-	w.setDataOptions(gmds::N|gmds::R);
-	w.write("morphingtest.vtk");
-
-
+	emorph.execute();
 }
