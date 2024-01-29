@@ -288,15 +288,6 @@ GMDS_ADD_COMPONENT(
         OFF                                 # must be covered
 )
 
-GMDS_ADD_COMPONENT(
-        MORPHMESH
-        morphMesh
-        GMDSmorphMesh
-        "morphing the mesh"
-	OFF
-        OFF                                 # must be covered
-)
-
 
 
 #==============================================================================
