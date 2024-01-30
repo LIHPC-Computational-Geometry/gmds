@@ -27,16 +27,18 @@ TEST(MorphMesh_FastLocalizeTestSuite, test_FastLocalize_2D)
    for(auto i: m.faces()) {
 		m.deleteFace(i);
 	}
+	// FastLocalize needs a vector of nodes
+	std::vector<gmds::Node> nodes;
+	for(auto n : m.nodes()){
+		nodes.push_back(m.get<gmds::Node>(n));
+	}
+	gmds::FastLocalize fl(nodes);
 
-	gmds::FastLocalize fl(&m);
+	gmds::TCellID id = fl.find(gmds::math::Point({-0.0338,0.74,0}));
+	ASSERT_EQ(id, 734);
 
-	gmds::Cell::Data data = fl.find(gmds::math::Point({-0.0338,0.74,0}));
-	ASSERT_EQ(data.dim, 0);
-	ASSERT_EQ(data.id, 734);
-
-	data = fl.find(gmds::math::Point({-0.2,0.46,0}));
-	ASSERT_EQ(data.dim, 0);
-	ASSERT_EQ(data.id, 11);
+	id = fl.find(gmds::math::Point({-0.2,0.46,0}));
+	ASSERT_EQ(id, 11);
 }
 
 
@@ -58,15 +60,18 @@ TEST(MorphMesh_FastLocalizeTestSuite, test_FastLocalize_3D)
 		m.deleteFace(i);
 	}
 
-	gmds::FastLocalize fl(&m);
+	// FastLocalize needs a vector of nodes
+	std::vector<gmds::Node> nodes;
+	for(auto n : m.nodes()){
+		nodes.push_back(m.get<gmds::Node>(n));
+	}
+	gmds::FastLocalize fl(nodes);
 
-	gmds::Cell::Data data = fl.find(gmds::math::Point({-1.0,0.0,0}));
-	ASSERT_EQ(data.dim, 0);
-	ASSERT_EQ(data.id, 14322);
+	gmds::TCellID id = fl.find(gmds::math::Point({-1.0,0.0,0}));
+	ASSERT_EQ(id, 14322);
 
-	data = fl.find(gmds::math::Point({-1.33,0.678,-1.89}));
-	ASSERT_EQ(data.dim, 0);
-	ASSERT_EQ(data.id, 4048);
+	id = fl.find(gmds::math::Point({-1.33,0.678,-1.89}));
+	ASSERT_EQ(id, 4048);
 }
 
 
@@ -78,10 +83,13 @@ TEST(MorphMesh_FastLocalizeTestSuite, test_FastLocalize_nodes)
 	for(int i=0; i<50; i++) {
 		m.newNode(i,1,1);
 	}
+	// FastLocalize needs a vector of nodes
+	std::vector<gmds::Node> nodes;
+	for(auto n : m.nodes()){
+		nodes.push_back(m.get<gmds::Node>(n));
+	}
+	gmds::FastLocalize fl(nodes);
 
-	gmds::FastLocalize fl(&m);
-
-	gmds::Cell::Data data = fl.find(gmds::math::Point({1.9,0.0,0}));
-	ASSERT_EQ(data.dim, 0);
-	ASSERT_EQ(data.id, 2);
+	gmds::TCellID id = fl.find(gmds::math::Point({1.9,0.0,0}));
+	ASSERT_EQ(id, 2);
 }
