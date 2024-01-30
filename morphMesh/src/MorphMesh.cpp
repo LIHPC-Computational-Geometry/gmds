@@ -3,6 +3,7 @@
 #include "gmds/math/Plane.h"
 #include "gmds/math/Triangle.h"
 #include <iomanip>
+#include <limits>
 
 /*----------------------------------------------------------------------------*/
 namespace gmds {
@@ -40,7 +41,7 @@ void MorphMesh::execute()
 	for(const auto& p : m_targets){
 		std::cout<<"Target point "<<p<<std::endl;
 		TCellID n0;
-		double min_dist = MAXFLOAT;
+		double min_dist = std::numeric_limits<double>::max();
 		//On cherche le noeud sur le bord du maillage le plus proche, ça sera notre noeud initial
 		for(auto n : m_surfNodes){
 			math::Point n_point = m_mesh->get<Node>(n).point();
