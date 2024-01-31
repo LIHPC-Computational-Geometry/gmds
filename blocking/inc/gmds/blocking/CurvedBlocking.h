@@ -22,6 +22,15 @@ namespace gmds {
 /*----------------------------------------------------------------------------*/
 namespace blocking {
 /*----------------------------------------------------------------------------*/
+class Counter{
+ public:
+	Counter(int c)
+	  : m_counter_global_id(c){}
+	int get_and_increment_id(){return m_counter_global_id++;}
+	int value(){return m_counter_global_id;}
+ private:
+	int m_counter_global_id;
+};
 /**@struct CellInfo
  * @brief This structure gather the pieces of data that are shared by any
  * 		 blocking cell. Each cell is defined by:
@@ -41,22 +50,29 @@ struct CellInfo
 	int topo_id;
     /*** link to the cad manager to have access to geometric cells */
     cad::GeomManager* geom_manager;
+	/*** link to the counter used to assign a unique id to each entity */
+	Counter* counter;
 	/*** dimension of the geometrical cell we are classifid on */
 	int geom_dim;
 	/*** unique id of the geomtrical cell */
 	int geom_id;
-	/*** global counter used to assign an unique id to each block */
-	static int m_counter_global_id;
 
 	/** @brief Constructor
+	 * @param Ac the id counter; the CGAL gmap copy constructor requires a CellInfo() 
+	 *           call with no params
 	 * @param AManager the geometric manager to access cells
 	 * @param ATopoDim Cell dimension
 	 * @param AGeomDim on-classify geometric cell dimension (4 if not classified)
 	 * @param AGeomId on-classify geometric cell unique id
 	 */
-	CellInfo(cad::GeomManager* AManager, const int ATopoDim = 4, const int AGeomDim = 4, const int AGeomId = NullID) :
-	  topo_dim(ATopoDim), topo_id(m_counter_global_id++), geom_manager(AManager),geom_dim(AGeomDim), geom_id(AGeomId)
+	CellInfo(Counter* Ac=nullptr, cad::GeomManager* AManager=nullptr, const int ATopoDim = 4, const int AGeomDim = 4, const int AGeomId = NullID) :
+	  topo_dim(ATopoDim), geom_manager(AManager), counter(Ac), geom_dim(AGeomDim), geom_id(AGeomId)
 	{
+		if(Ac != nullptr) {
+			topo_id = Ac->get_and_increment_id();
+		} else {
+			topo_id = -1;
+		}
 	}
 };
 /*----------------------------------------------------------------------------*/
@@ -69,13 +85,15 @@ struct NodeInfo : CellInfo
 	/*** node location in space, i.e. a single point */
 	math::Point point;
 	/** @brief Constructor
+	 * @param Ac the id counter; the CGAL gmap copy constructor requires a CellInfo() 
+	 *           call with no params
 	 * @param AManager the geometric manager to access cells
 	 * @param AGeomDim on-classify geometric cell dimension (4 if not classified)
 	 * @param AGeomId  on-classify geometric cell unique id
 	 * @param APoint   geometric location
 	 */
-	NodeInfo(cad::GeomManager* AManager, const int AGeomDim = 4, const int AGeomId = NullID, const math::Point &APoint = math::Point(0, 0, 0)) :
-	  CellInfo(AManager, 0, AGeomDim, AGeomId), point(APoint)
+	NodeInfo(Counter* Ac=nullptr, cad::GeomManager* AManager=nullptr, const int AGeomDim = 4, const int AGeomId = NullID, const math::Point &APoint = math::Point(0, 0, 0)) :
+	  CellInfo(Ac, AManager, 0, AGeomDim, AGeomId), point(APoint)
 	{
 	}
 };
@@ -208,8 +226,7 @@ struct SplitFunctor
 		ca2.info().geom_dim = ca1.info().geom_dim;
 		ca2.info().geom_id = ca1.info().geom_id;
 		ca2.info().topo_dim = ca1.info().topo_dim;
-		ca2.info().topo_id = CellInfo::m_counter_global_id++;
-
+		ca2.info().topo_id = ca1.info().counter->get_and_increment_id();
 	}
 };
 
@@ -227,7 +244,7 @@ struct SplitFunctorNode
 		ca2.info().geom_id = ca1.info().geom_id;
 		ca2.info().point = ca1.info().point;
 		ca2.info().topo_dim = ca1.info().topo_dim;
-		ca2.info().topo_id = CellInfo::m_counter_global_id++;
+		ca2.info().topo_id = ca1.info().counter->get_and_increment_id();
 	}
 };
 /*----------------------------------------------------------------------------*/
@@ -277,6 +294,8 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * empty (false) or be initialized as the bounding box of @p AGeomModel
 	 */
 	CurvedBlocking(cad::GeomManager *AGeomModel, bool AInitAsBoundingBox = false);
+
+	CurvedBlocking(const CurvedBlocking &ABl);
 
 	/** @brief  Destructor
 	 */
@@ -685,6 +704,11 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	std::vector<std::pair<double, double>> 	get_projection_info(math::Point &AP, std::vector<CurvedBlocking::Edge> &AEdges);
 
+	Counter* getCounter()
+	{
+		return &m_counter;
+	}
+
  private:
 
     /**@brief Mark with @p AMark all the darts of orbit <0,1>(@p ADart)
@@ -736,6 +760,9 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	cad::GeomManager *m_geom_model;
 	/*** the underlying n-g-map model*/
 	GMap3 m_gmap;
+
+	/*** id counter*/
+	Counter m_counter;
 };
 /*----------------------------------------------------------------------------*/
 }     // namespace blocking

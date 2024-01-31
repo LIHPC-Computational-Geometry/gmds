@@ -4,6 +4,7 @@
 // Files containing the different test suites to launch
 
 #include "BlockQualityTestSuite.h"
+#include "MCTSTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
 	::testing::InitGoogleTest(&argc, argv);

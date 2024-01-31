@@ -706,3 +706,84 @@ TEST(ExecutionActionsTestSuite,cb5){
 	vtk_writer_edges.write("debug_blocking_edges.vtk");
 }
 
+
+
+TEST(ExecutionActionsTestSuite,cb2_auto) {
+	gmds::cad::FACManager geom_model;
+	set_up_file(&geom_model,"cb2.vtk");
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+
+
+	classifier.clear_classification();
+
+	auto errors = classifier.classify();
+
+
+	//Check nb points of the geometry and nb nodes of the blocking
+	ASSERT_EQ(16,geom_model.getNbPoints());
+	ASSERT_EQ(24,geom_model.getNbCurves());
+	ASSERT_EQ(10,geom_model.getNbSurfaces());
+	ASSERT_EQ(8,bl.get_all_nodes().size());
+	ASSERT_EQ(12,bl.get_all_edges().size());
+	ASSERT_EQ(6,bl.get_all_faces().size());
+
+
+
+	//Check elements class and captured
+	//Check nb nodes/edges/faces no classified
+	ASSERT_EQ(0,errors.non_classified_nodes.size());
+	ASSERT_EQ(0,errors.non_classified_edges.size());
+	ASSERT_EQ(6,errors.non_classified_faces.size());
+
+	//Check nb points/curves/surfaces no captured
+	ASSERT_EQ(8,errors.non_captured_points.size());
+	ASSERT_EQ(12,errors.non_captured_curves.size());
+	ASSERT_EQ(10,errors.non_captured_surfaces.size());
+
+	auto listEdgesCut = classifier.list_Possible_Cuts();
+	//Do 1 cut
+	bl.cut_sheet(listEdgesCut.front().first,listEdgesCut.front().second);
+
+
+	classifier.classify();
+
+	listEdgesCut = classifier.list_Possible_Cuts();
+	//Do 1 cut
+	bl.cut_sheet(listEdgesCut.front().first,listEdgesCut.front().second);
+
+	classifier.classify();
+
+	listEdgesCut = classifier.list_Possible_Cuts();
+	//Do 1 cut
+	bl.cut_sheet(listEdgesCut.front().first,listEdgesCut.front().second);
+
+	classifier.classify();
+
+	listEdgesCut = classifier.list_Possible_Cuts();
+	//Do 1 cut
+	bl.cut_sheet(listEdgesCut.front().first,listEdgesCut.front().second);
+
+
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
+	bl.convert_to_mesh(m);
+
+
+	gmds::IGMeshIOService ios(&m);
+	gmds::VTKWriter vtk_writer(&ios);
+	vtk_writer.setCellOptions(gmds::N|gmds::R);
+	vtk_writer.setDataOptions(gmds::N|gmds::R);
+	vtk_writer.write("cb2_debug_blocking.vtk");
+	gmds::VTKWriter vtk_writer_edges(&ios);
+	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
+	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
+	vtk_writer_edges.write("cb2_debug_blocking_edges.vtk");
+	gmds::VTKWriter vtk_writer_faces(&ios);
+	vtk_writer_faces.setCellOptions(gmds::N|gmds::F);
+	vtk_writer_faces.setDataOptions(gmds::N|gmds::F);
+	vtk_writer_faces.write("cb2_debug_blocking_faces.vtk");
+
+
+}
+
+

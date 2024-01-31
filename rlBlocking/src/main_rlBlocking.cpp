@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 	gmds::Mesh vol_mesh(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::F | gmds::E | gmds::N | gmds::R2N | gmds::R2F | gmds::R2E | gmds::F2N | gmds::F2R | gmds::F2E
 	                                    | gmds::E2F | gmds::E2N | gmds::N2E));
 
-	std::string vtk_file = "/home/bourmaudp/Documents/mambo-master/Basic/vtk/B0.vtk";
+	std::string vtk_file = "/home/bourmaudp/Documents/mambo-master/Basic/vtk/cb3.vtk";
 	gmds::IGMeshIOService ioServiceA(&vol_mesh);
 	gmds::VTKReader vtkReaderA(&ioServiceA);
 	vtkReaderA.setCellOptions(gmds::N | gmds::R);

@@ -1,8 +1,6 @@
 #ifndef GMDS_BLOCKQUALITYTESTSUITE_H
 #define GMDS_BLOCKQUALITYTESTSUITE_H
 
-#endif     // GMDS_BLOCKQUALITYTESTSUITE_H
-
 
 //
 // Created by ledouxf on 1/22/19.
@@ -102,3 +100,5 @@ TEST(BlockQualityTestSuite, test_Rubiks)
 	ASSERT_EQ(2, 2);//linker.getGeomId(n1));
 
 }
+
+#endif     // GMDS_BLOCKQUALITYTESTSUITE_H
