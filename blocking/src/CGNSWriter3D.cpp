@@ -108,9 +108,10 @@ void CGNSWriter3D::writeZones()
 
 		cg_zone_write(m_indexFile, m_indexBase, zonename, zone_size, Structured, &m_indexZone);
 
-		double x_coords[discrI * discrJ * discrK];
-		double y_coords[discrI * discrJ * discrK];
-		double z_coords[discrI * discrJ * discrK];
+		int size = discrI * discrJ * discrK;
+		auto x_coords = new double[size];
+		auto y_coords = new double[size];
+		auto z_coords = new double[size];
 
 		std::vector<TCellID> b_grid = m_block_grid->value(b.id());
 
@@ -132,9 +133,9 @@ void CGNSWriter3D::writeZones()
 		char coord_nameZ[32];
 		strcpy(coord_nameZ, "CoordinateZ");
 
-		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, RealDouble, coord_nameX, &x_coords, &index_coord);
-		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, RealDouble, coord_nameY, &y_coords, &index_coord);
-		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, RealDouble, coord_nameZ, &z_coords, &index_coord);
+		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, RealDouble, coord_nameX, x_coords, &index_coord);
+		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, RealDouble, coord_nameY, y_coords, &index_coord);
+		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, RealDouble, coord_nameZ, z_coords, &index_coord);
 
 
 		//Writing Boundary Condition
@@ -579,7 +580,9 @@ void CGNSWriter3D::writeZones()
 			writeBoundaryCondition(id_bc, pts_bc, b.id() + 1, bc_type, face.id()+1);
 		}
 
-		//break;
+		delete[] x_coords;
+		delete[] y_coords;
+		delete[] z_coords;
 	}
 }
 /*----------------------------------------------------------------------------*/
@@ -610,11 +613,15 @@ void CGNSWriter3D::writeBoundaryCondition(int &num_bc, cgsize_t* pts, int id_zon
 /*----------------------------------------------------------------------------*/
 void CGNSWriter3D::write(const std::string &AInFileName, const std::string &AOutFileName, const std::string &AWorkingDir){
 
+	std::cout<<"Start reading"<<std::endl;
+
 	gmds::IGMeshIOService ioService(m_blocks);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N|gmds::R);
 	vtkReader.setDataOptions(gmds::N|gmds::R);
 	vtkReader.read(AInFileName);
+
+	std::cout<<"End reading"<<std::endl;
 
 	MeshDoctor doc(m_blocks);
 	doc.buildFacesAndR2F();
