@@ -756,7 +756,15 @@ CurvedBlocking::save_vtk_blocking(const std::string &AFileName)
 	gmds::VTKWriter vtk_writer(&ios);
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	vtk_writer.write(AFileName);
+	std::string RegionAFileName = AFileName+"_N2R.vtk";
+	std::string EdgeAFileName = AFileName+"_N2E.vtk";
+	vtk_writer.write(RegionAFileName);
+
+	gmds::IGMeshIOService ios2(&m);
+	gmds::VTKWriter vtk_writer2(&ios2);
+	vtk_writer2.setCellOptions(gmds::N|gmds::E);
+	vtk_writer2.setDataOptions(gmds::N|gmds::E);
+	vtk_writer2.write(EdgeAFileName);
 }
 /*----------------------------------------------------------------------------*/
 std::vector<std::vector<CurvedBlocking::Edge> >

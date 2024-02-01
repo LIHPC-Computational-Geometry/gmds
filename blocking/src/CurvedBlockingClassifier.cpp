@@ -65,6 +65,8 @@ CurvedBlockingClassifier::clear_classification()
 	}
 }
 /*----------------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------------*/
 void
 CurvedBlockingClassifier::classify_nodes(ClassificationErrors &AErrors, const double AMaxDistance, const double APointSnapDistance)
 {
@@ -157,22 +159,70 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 		 * IMPORTANT: We'll classify the edges in this case, when we'll classify the faces
 		 * 1) Nodes are on different geom points. If those points have a common curve, then the
 		 *    edge is on this curve. If they have several common curves,we don't know.
+		 * 1bis) We decide to don't
 		 * 2) Nodes are on different geom points. If those points have no common curve, but a
 		 *    common surface, then the edge is on the surface.
 		 * 3) Nodes are on the same curve, then is the edge.
 		 * 4) One node is on a point P and the other on a curve, then the edge is
        *    on this curve if it is adjacent to point P
 		 * 5) Otherwise we don't know how to classify the edge
+		 * 6) One node n0 is on a point P and an edge e0 part of the node is almost tangent of a curve, \\TODO
+		 * we check if the other node n1 of the edge is unclassified. If that is the case, we classify
+		 * the edge e0 and the node n1 on the curve
+		 * 7) Close to the configuration 6, but the first node is on a curve. We can use the same principle \\TODO
 		 */
 		if (geo_d0==0 && geo_d1==0 && geo_i0!=geo_i1){
 			//We look for a common curve
+			if((geo_i0==2 && geo_i1==4) || (geo_i0==4 && geo_i1==2)){
+				std::cout<<"Cas à tester"<<std::endl;
+			}
 			cad::GeomPoint* p0 = m_geom_model->getPoint(geo_i0);
 			cad::GeomPoint* p1 = m_geom_model->getPoint(geo_i1);
 			auto curve_id = m_geom_model->getCommonCurve(p0,p1);
 			if(curve_id!=-1){
+//				//We need to check if the classification is available. Check the angle between the curve take and the edge
+//				//Compute the unit vector of the curve
+//				int AParam = 0;
+//				auto vectorTang = m_geom_model->getCurve(curve_id)->computeTangent(AParam);
+//
+//				if(AParam == 0){
+//					std::cout<<"check vect : "<<vectorTang<<std::endl;
+//				}
+//
+//				//Do the same for the edge take
+//				auto vectEdge = ending_nodes[1]->info().point-ending_nodes[0]->info().point;
+//
+//				std::cout<<"check vect edge : "<<vectEdge<<std::endl;
+//
+//				//Compute angle between the 2 vectors
+//
+//				double scalarProduct = vectorTang.dot(vectEdge.normalize());
+//
+//				std::cout<<"check scalar product : "<<scalarProduct<<std::endl;
+//
+//				//check if the scalar product is under [-0.5,0.5]
+//
+//				if(scalarProduct<=0.5 && scalarProduct>=-0.5){
+//					// Nothing (CONFIGURATION 1bis)
+//					it->info().geom_dim = 4;
+//					it->info().geom_id = NullID;
+//					AErrors.non_classified_edges.push_back(it->info().topo_id);
+//				}
+//				else{
+//					//We have a common curve (CONFIGURATION 1)
+//					it->info().geom_dim = 1;
+//					it->info().geom_id = curve_id;
+//				}
+
 				//We have a common curve (CONFIGURATION 1)
 				it->info().geom_dim = 1;
 				it->info().geom_id = curve_id;
+
+
+
+
+
+
 			}
 			else{
 				// Nothing (CONFIGURATION 5)

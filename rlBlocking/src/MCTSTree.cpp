@@ -12,8 +12,8 @@ MCTSNode::MCTSNode(gmds::MCTSNode *AParent, const gmds::MCTSMove *AMove, MCTSSta
 	:parent(AParent), move(AMove),state(AState), score(0.0), number_of_simulations(0), size(0)
 {
 	children = new std::vector<MCTSNode *>();
-	untried_actions = state->actions_to_try();
 	terminal = state->is_terminal();
+	untried_actions = state->actions_to_try();
 
 
 

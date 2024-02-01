@@ -182,5 +182,26 @@ TEST(MCTSTestSuite, testExAgloB0)
 
 }
 /*----------------------------------------------------------------------------*/
+TEST(MCTSTestSuite, testExPolycubeShape)
+{
+
+	gmds::cad::FACManager geom_model;
+	std::string nameM= "cb2";
+	set_up_MCTS(&geom_model,nameM+".vtk");
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+	bl.save_vtk_blocking("/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/"+nameM+"/"+nameM+"_init_blocking.vtk");
+
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+	std::cout<<"==================== BEGIN TEST : ===================="<<std::endl;
+
+	MCTSAlgorithm *algo = new MCTSAlgorithm(&geom_model,&bl);
+	algo->execute(nameM);
+
+
+	std::cout<<"==================== END TEST ! ===================="<<std::endl;
+
+
+}
+/*----------------------------------------------------------------------------*/
 
 #endif     // GMDS_MCTSTESTSUITE_H

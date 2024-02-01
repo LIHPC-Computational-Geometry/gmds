@@ -25,7 +25,7 @@ void MCTSAlgorithm::execute(std::string ANameGeo)
 
 	MCTSState *state = new MCTSStatePolycube(this->m_geom, this->m_blocking, std::vector<double> (),ANameGeo);
 	//state->print();                           // IMPORTANT: state will be garbage after advance_tree()
-	MCTSAgent agent(state,ANameGeo, 1000);
+	MCTSAgent agent(state,ANameGeo, 10000);
 	do {
 		agent.feedback();
 		agent.genmove();
