@@ -34,7 +34,7 @@ All the input files need to be VTK files.
 * **Number_of_Cells_in_Boundary_layer** is the number of cells in the first layer of blocks (ex: = 30)
 * **Edge_Size_on_Wall** is the default size for the edges located on the wall (ex: = 3.0)
 * **Edge_Size_Default** is the default mesh size in the rest of the domain (ex: = 3.0). As we generate block-structured meshes, two opposite block edges share the same discretization. Thus, the size of some edges will be slightly larger in some part of the domain, while the size of some other edges will be smaller in other parts.
-* **Edge_Size_First_Ortho_Wall** is the size of the first mesh edge in the first layer of blocks. This value is used to compute the refinement law (ex: = 1e-5). ATTENTION: this parameter will take the tiny values such as 1e-7 as equal to 0, and the algorithm will fail. You should resize your inputs.
+* **Edge_Size_First_Ortho_Wall** is the size of the first mesh edge in the first layer of blocks. This value is used to compute the refinement law (ex: = 1e-5). WARNING: this parameter will take the tiny values such as 1e-7 as equal to 0, and the algorithm will fail. You should resize your inputs.
 
 #### Extrusion
 * **Number_of_layers** is the number of layers (ex: =4)

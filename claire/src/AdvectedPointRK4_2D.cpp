@@ -39,9 +39,26 @@ AdvectedPointRK4_2D::STATUS AdvectedPointRK4_2D::execute()
 
 	// Initialisation
 	TCellID face_id = inWhichTriangle(m_Pstart, NullID) ;		// Dans quel triangle est le point de départ
+	std::cout << "Face id " << face_id << std::endl;
+	if (face_id==NullID)
+	{
+		gmds::Cell::Data data = m_fl->find(m_Pstart);
+		TCellID n_closest_id = data.id;
+		Node n_closest = m_mesh->get<Node>(n_closest_id);
+		m_Pstart = n_closest.point() ;
+		m_Pend = n_closest.point() ;
+		Face f = n_closest.get<Face>()[0] ;
+		face_id = f.id() ;
+		std::cout << "Face id " << face_id << std::endl;
+	}
+
 	Mat_A_Inv = getInvMatrixA(face_id);
+	std::cout << "Mat inversée" << std::endl;
 	dist = interpolationDistance(face_id, Mat_A_Inv, m_Pstart);	// A quelle distance est le point de départ
+	std::cout << "dist " << dist << std::endl;
 	Grad = interpolationGradient(face_id, Mat_A_Inv, m_Pstart);	// Quel est le gradient à ce point
+
+	std::cout << "grad " << Grad << std::endl;
 
 	while ( (abs(dist-m_d0) > err) && iterations < max_iterations ) {
 		math::Point M = RungeKutta4(m_Pend, Grad.normalize(), dt);	// Calcule la position du point à l'itération n+1 avec un RK4

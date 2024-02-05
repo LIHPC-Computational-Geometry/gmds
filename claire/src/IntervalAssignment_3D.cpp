@@ -141,18 +141,16 @@ IntervalAssignment_3D::EdgeConstraint(TCellID e_id, int &N_ideal, bool &hardCons
 	hardConstraint = false;
 	double edge_length = BezierEdgeLength(e);
 	N_ideal = int(edge_length/m_params_aero.edge_size_default)+1;
-	//N_ideal = int(e.length()/m_params_aero.edge_size_default)+1;
 
 	std::vector<Face> e_faces = e.get<Face>() ;
 	std::vector<Node> e_nodes = e.get<Node>() ;
 
-	// If the edge is on the geometry surface (on the layer 0)
+	// If the edge is on the geometry surface (on the front 0)
 	if (var_layer_id->value(e_nodes[0].id()) == 0
 	    && var_layer_id->value(e_nodes[1].id()) == 0)
 	{
-		//N_ideal = int(e.length()/m_params_aero.edge_size_wall)+1 ;
 		N_ideal = int(edge_length/m_params_aero.edge_size_wall)+1 ;
-		//hardConstraint = true;
+		hardConstraint = true;
 	}
 
 	// If the edge is ortho to the wall, in the boundary layer
@@ -174,7 +172,7 @@ IntervalAssignment_3D::EdgeConstraint(TCellID e_id, int &N_ideal, bool &hardCons
 int
 IntervalAssignment_3D::ComputeSheetDiscretization(const std::vector<TCellID>& sheet)
 {
-	int Nbr_cells;
+	int Nbr_cells(0.0);
 
 	bool sheet_hardConstrained(false);
 	double sum_num(0.0);
@@ -184,7 +182,7 @@ IntervalAssignment_3D::ComputeSheetDiscretization(const std::vector<TCellID>& sh
 		int N_ideal;
 		bool hardConstraint;
 		EdgeConstraint(e_id, N_ideal, hardConstraint);
-		if (hardConstraint)
+		if (hardConstraint && N_ideal > Nbr_cells)
 		{
 			Nbr_cells = N_ideal;
 			sheet_hardConstrained = true;
