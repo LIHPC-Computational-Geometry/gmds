@@ -378,8 +378,9 @@ AeroExtrusion_3D::ComputeLayer(Front_3D Front_IN, Variable<double>* A_distance, 
 		    && var_NODE_couche_id->value(e.get<Node>()[1].id()) == Front_OUT.getFrontID()
 		    && Front_OUT.edgeFacesOnFront(m_meshH, e_id).size() != 2)
 		{
-			std::cout << "ATTENTION: the layer is not valid. At least one edge of the front has not 2 faces." << std::endl;
+			std::cout << "ATTENTION: the layer is not valid. At least one edge of the front is not adjacent to 2 faces of the front." << std::endl;
 			std::cout << "Edge... " << e_id << std::endl;
+			std::cout << "Nodes... " << e.get<Node>()[0].id() << ", and " << e.get<Node>()[1].id() << std::endl;
 			exit(1);
 		}
 	}

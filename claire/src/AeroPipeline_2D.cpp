@@ -1710,14 +1710,15 @@ AeroPipeline_2D::BoundaryCurvedBlocking()
 	std::cout << "Boundary Curved Blocking..." << std::endl;
 	Variable<int>* var_couche_ctrlpts = m_Blocking2D_CtrlPts.getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche");
 
-	int degree(6);
+	int degree(4);
+	std::cout << "1..." << std::endl;
 	for (auto bloc:m_Blocking2D_CtrlPts.allBlocks())
 	{
 		bloc.setNbDiscretizationI(degree+1);
 		bloc.setNbDiscretizationJ(degree+1);
 	}
 	m_Blocking2D_CtrlPts.initializeGridPoints();
-
+	std::cout << "2..." << std::endl;
 	// Init the var couche on each control points of the blocking
 	for (auto bloc:m_Blocking2D_CtrlPts.allBlocks())
 	{
@@ -1749,7 +1750,7 @@ AeroPipeline_2D::BoundaryCurvedBlocking()
 		}
 
 	}
-
+	std::cout << "3..." << std::endl;
 	Eigen::MatrixXd mat_B(degree+1, degree+1);
 	Eigen::VectorXd ctrl_points_x(degree+1);
 	Eigen::VectorXd ctrl_points_y(degree+1);
@@ -1882,20 +1883,23 @@ AeroPipeline_2D::BoundaryCurvedBlocking()
 		 */
 
 	}
-
+	std::cout << "4..." << std::endl;
 	// Try smoothing ctrl points on edges between two different layers
 	FastLocalize fl(m_meshTet);
+	std::cout << "4.1..." << std::endl;
 	Variable<double>* var_distance = m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance");
 	Variable<double>* var_distance_int = m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance_Int");
 	Variable<math::Vector3d>* var_VectorsForExtrusion = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
 	for (auto bloc:m_Blocking2D_CtrlPts.allBlocks())
 	{
+		std::cout << "Bloc " << bloc.id() << std::endl;
 		Node n0 = bloc(0,0);
 		Node n1 = bloc(bloc.getNbDiscretizationI()-1,0);
 		if ( var_couche_ctrlpts->value(n0.id()) > 1
 		    && var_couche_ctrlpts->value(n0.id()) < m_params.nbr_couches
 		    && var_couche_ctrlpts->value(n0.id()) == var_couche_ctrlpts->value(n1.id()))
 		{
+			std::cout << "opt 1..." << std::endl;
 			// Here, we're not accurate enough, as we use the closest point of the block corners on the TET Mesh.
 			// As this tet mesh can be coarse far from the vehicle, this method is not good.
 			// We should interpolate the value of the distance field at the block corners.
@@ -1940,18 +1944,21 @@ AeroPipeline_2D::BoundaryCurvedBlocking()
 		else if ( var_couche_ctrlpts->value(n0.id()) == 1
 		    && var_couche_ctrlpts->value(n0.id()) == var_couche_ctrlpts->value(n1.id()))
 		{
+			std::cout << "opt 2..." << std::endl;
 			// For front 1: the distance field is the one from the vehicle, and not the combined one.
 			for (int i=1;i<bloc.getNbDiscretizationI()-1;i++)
 			{
 				AdvectedPointRK4_2D advpoint(m_meshTet, &fl, bloc(i,0).point(), m_params.delta_cl,
 				                             var_distance_int, var_VectorsForExtrusion);
+				std::cout << "t1" << std::endl;
 				advpoint.execute();
+				std::cout << "t2" << std::endl;
 				bloc(i,0).setPoint(advpoint.getPend());
 			}
 		}
 
 	}
-
+	std::cout << "5..." << std::endl;
 
 
 	// Update the positions of the interior control points in blocks
@@ -1980,7 +1987,7 @@ AeroPipeline_2D::BoundaryCurvedBlocking()
 			}
 		}
 	}
-
+	std::cout << "6..." << std::endl;
 
 
 
@@ -2048,6 +2055,7 @@ AeroPipeline_2D::BoundaryCurvedBlocking()
 	*/
 	ControlPointsSmoothing_2D ctrlpoints_smoothy(&m_Blocking2D_CtrlPts);
 	ctrlpoints_smoothy.execute();
+	std::cout << "7..." << std::endl;
 
 	// Update the positions of the interior control points in blocks
 	for(auto B0:m_Blocking2D_CtrlPts.allBlocks())
@@ -2077,14 +2085,14 @@ AeroPipeline_2D::BoundaryCurvedBlocking()
 		}
 
 	}
-
+	std::cout << "8..." << std::endl;
 }
 /*------------------------------------------------------------------------*/
 void
 AeroPipeline_2D::BlockingDiscretizationFromCurvedBlocking()
 {
 	std::cout << "Blocking Discretization from Curved Blocking..." << std::endl;
-	int degree(6);
+	int degree(4);
 	for (auto bloc:m_Blocking2D.allBlocks())
 	{
 		//int degree(bloc.getNbDiscretizationI()-1);	// We assume here that the order is uniform on the blocking in all directions.

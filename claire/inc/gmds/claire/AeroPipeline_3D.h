@@ -93,6 +93,11 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_3D : public AbstractAeroPipeline {
 	 */
 	void smoothingSingularBlockCorner();
 	/*----------------------------------------------------------------------------*/
+	/** @brief Light naive geometric and iterative smoothing of the linear block
+	 * structure.
+	 */
+	void smoothingLinearBlocks(int nb_iteration);
+	/*----------------------------------------------------------------------------*/
 
  protected:
 	/** Données des bords */
