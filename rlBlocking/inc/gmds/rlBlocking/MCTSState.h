@@ -61,6 +61,9 @@ class LIB_GMDS_RLBLOCKING_API MCTSState {
 	 */
 	virtual double get_quality() const = 0;
 
+	virtual MCTSMove* randomMove(std::deque<MCTSMove *> AListActions) const=0;
+
+
 	virtual void print() const {
 		std::cout << "Printing not implemented" << std::endl;
 	}

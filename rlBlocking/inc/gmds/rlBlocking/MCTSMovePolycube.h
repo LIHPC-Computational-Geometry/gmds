@@ -5,6 +5,8 @@
 #include "LIB_GMDS_RLBLOCKING_export.h"
 #include <gmds/rlBlocking/MCTSMove.h>
 #include <gmds/utils/CommonTypes.h>
+#include <deque>
+#include <random>
 /*----------------------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------------------*/
@@ -29,6 +31,8 @@ struct LIB_GMDS_RLBLOCKING_API MCTSMovePolycube: public MCTSMove {
 	MCTSMovePolycube(TCellID AIdEdge = -1,TCellID AIdBlock = -1 , double AParamCut = 0,unsigned int ATypeMove = -1);
 	bool operator==(const MCTSMove& AOther) const;
 	void print() const;
+
+
 
 };
 /*----------------------------------------------------------------------------*/

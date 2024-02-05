@@ -23,4 +23,5 @@ void MCTSMovePolycube::print() const
 	std::cout<<"m_AIdEdge : "<< m_AIdEdge<<" ; m_AIdBlock : "<<m_AIdBlock<<" ; m_AParamCut : "<<
 	m_AParamCut<<" ; m_typeMove : "<<m_typeMove<<std::endl;
 }
+
 /*----------------------------------------------------------------------------*/

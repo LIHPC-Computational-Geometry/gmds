@@ -58,6 +58,9 @@ class LIB_GMDS_RLBLOCKING_API MCTSStatePolycube: public MCTSState{
 	/** @brief return the blocking quality
 	 * */
 	double get_quality() const;
+
+MCTSMove* randomMove(std::deque<MCTSMove *> AListActions) const;
+
 	/** @brief return the geom */
 	gmds::cad::GeomManager *get_geom();
 	/** @brief return the current blocking */
@@ -71,6 +74,7 @@ class LIB_GMDS_RLBLOCKING_API MCTSStatePolycube: public MCTSState{
 
 	/** @brief update the classification of a state */
 	void update_class();
+
 
  private :
 	/** @brief the curved blocking of the current state */

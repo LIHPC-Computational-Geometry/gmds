@@ -25,39 +25,23 @@ MCTSStatePolycube::~MCTSStatePolycube() noexcept
 std::deque<MCTSMove *> *
 MCTSStatePolycube::actions_to_try() const
 {
-	std::deque<MCTSMove *> *Q = new std::deque<MCTSMove *>();
-	if (m_class_errors.non_captured_points.size()== 0){
-		std::cout<<"POINTS CAPT :"<<std::endl;
-		if(m_class_errors.non_captured_curves.size()==0){
-			std::cout<<"CURVES CAPT :"<<std::endl;
-			auto blocks = m_blocking->get_all_id_blocks();
-			for(auto b : blocks){
-				Q->push_back(new MCTSMovePolycube(NullID,b,0,2));
-			}
-		}
-		else{
-			std::cout<<"NB CURVES CAPT :"<< m_class_errors.non_captured_curves.size()<<std::endl;
-			auto listPossibleCuts = m_class_blocking->list_Possible_Cuts();
-			for(auto c : listPossibleCuts){
-				Q->push_back(new MCTSMovePolycube(c.first,NullID,c.second,1));
-			}
-		}
-	}
-	else{
-		std::cout<<"POINTS NO CAPT :"<<std::endl;
-		for(auto p : m_class_errors.non_captured_points){
-			std::cout<<"p :"<<p<<std::endl;
-		}
-		auto listPossibleCuts = m_class_blocking->list_Possible_Cuts();
-		for(auto c : listPossibleCuts){
-			Q->push_back(new MCTSMovePolycube(c.first,NullID,c.second,1));
-		}
-	}
+	std::deque<MCTSMove *> *listActions = new std::deque<MCTSMove *>();
+		//Add cuts in the list of actions
+	   auto listPossibleCuts = m_class_blocking->list_Possible_Cuts();
+	   for(auto c : listPossibleCuts){
+		   listActions->push_back(new MCTSMovePolycube(c.first,NullID,c.second,1));
+	   }
+	   //Add deletes block in the list of actions
+	   auto blocks = m_blocking->get_all_id_blocks();
+	   for(auto b : blocks){
+		   listActions->push_back(new MCTSMovePolycube(NullID,b,0,2));
+	   }
+
 	std::cout<<"LIST ACTIONS :"<<std::endl;
-	for(auto &m : *Q){
+	for(auto &m : *listActions){
 		m->print();
 	}
-	return Q;
+	return listActions;
 }
 /*----------------------------------------------------------------------------*/
 MCTSState
@@ -158,8 +142,9 @@ MCTSStatePolycube::state_rollout() const
 		}
 		//Get first move/action
 		//But, maybe, better to take rand move if its a delete move...
-		MCTSMove *firstMove = list_action->front(); //TODO: implement random move when only delete moves is possible
-		list_action->pop_front();
+		MCTSMove *firstMove = randomMove(*list_action) ; //TODO: implement random move when only delete moves is possible
+		std::cout<<"ACTION SELECT : "<<std::endl;
+		firstMove->print();
 
 		MCTSStatePolycube *old = curstate;
 		std::cout<<"===== SIZE UNTRIED ACTIONS : "<<list_action->size()+1<<" ====="<<std::endl;
@@ -287,5 +272,23 @@ void MCTSStatePolycube::update_class()
 	gmds::blocking::CurvedBlockingClassifier classifier(m_blocking);
 	m_class_blocking = new blocking::CurvedBlockingClassifier(classifier);
 	m_class_errors = m_class_blocking->classify(0.5);
+}
+/*----------------------------------------------------------------------------*/
+MCTSMove* MCTSStatePolycube::randomMove(std::deque<MCTSMove *> AListActions) const
+{
+	if (AListActions.empty()) {
+		return nullptr; //The deque is empty
+	}
+	// Générateur de nombres aléatoires
+	std::random_device rd;
+	std::mt19937 gen(rd());
+
+	// Sélection d'un index aléatoire dans la deque
+	std::uniform_int_distribution<size_t> distribution(0, AListActions.size() - 1);
+	size_t randomIndex = distribution(gen);
+
+	// Retourne l'élément correspondant à l'index sélectionné
+	return AListActions[randomIndex];
+
 }
 /*----------------------------------------------------------------------------*/

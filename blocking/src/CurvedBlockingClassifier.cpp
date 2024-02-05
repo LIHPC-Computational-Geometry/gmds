@@ -701,7 +701,7 @@ CurvedBlockingClassifier::list_Possible_Cuts()
                         pairOnList = true;
                     }
                 }
-                if(pairOnList == false){
+                if(pairOnList == false && action.second > 0.01 && action.second<0.99){
                     std::pair<TCellID ,double> actionG (action.first->info().topo_id,action.second);
                     list_actions.push_back(actionG);
                 }
