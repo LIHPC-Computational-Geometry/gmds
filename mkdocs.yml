@@ -3,9 +3,21 @@ repo_url: https://github.com/LIHPC-Computational-Geometry/gmds
 repo_name: gmds/gmds
 docs_dir: docs/mkdocs/
 
+markdown_extensions:
+    - tables
+    - toc
+    - pymdownx.highlight:
+          anchor_linenums: true
+          line_spans: __span
+          pygments_lang_class: true
+    - pymdownx.inlinehilite
+    - pymdownx.snippets
+    - pymdownx.superfences
+
 theme:
-  features:
-    - toc.follow
+    name: material
+    features:
+        - navigation.top
   
 nav:
   - Home: 'index.md'
@@ -37,6 +49,4 @@ nav:
   - 'Developer Guide':
       - 'How to develop a gmds module': 'dev-guide/developers_doc.md'
       - 'Test-driven development': 'dev-guide/unit_test.md'
-  - About:
-      - 'License': 'license.md'
-      - 'Release Notes': 'release-notes.md'
+  - 'Python binding': 'python-binding/pygmds.md'
