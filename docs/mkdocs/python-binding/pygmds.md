@@ -5,11 +5,11 @@ on machine learning and blocking subject right now.
 
 ## Structure
 The python binding provide a python module **gmds** and several submodules relative to gmds components:
-- [blocking](src/binding_blocking.cpp) - provides blocking operations.
-- [geometry](src/binding_geometry.cpp) - provides access to the geometrical kernel to queries faceted geometric model to write meshing algorithms.
-- [math](src/binding_math.cpp) - gives access to some basic mathematical concepts handled by gmds.
-- [mesh](src/binding_mesh.cpp) - provides meshing operations including vtk IO.
 
+- [blocking](https://github.com/LIHPC-Computational-Geometry/gmds/tree/main/pygmds/src/binding_blocking.cpp) - provides blocking operations.
+- [geometry](https://github.com/LIHPC-Computational-Geometry/gmds/tree/main/pygmds/src/binding_geometry.cpp) - provides access to the geometrical kernel to queries faceted geometric model to write meshing algorithms.
+- [math](https://github.com/LIHPC-Computational-Geometry/gmds/tree/main/pygmds/src/binding_math.cpp) - gives access to some basic mathematical concepts handled by gmds.
+- [mesh](https://github.com/LIHPC-Computational-Geometry/gmds/tree/main/pygmds/src/binding_mesh.cpp) - provides meshing operations including vtk IO.
 
 ## How to use the gmds Python API?
 
