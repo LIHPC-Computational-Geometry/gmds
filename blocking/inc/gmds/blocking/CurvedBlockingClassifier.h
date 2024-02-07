@@ -134,6 +134,15 @@ class LIB_GMDS_BLOCKING_API CurvedBlockingClassifier
 	 * @param[in] APointSnapDistance under this distance we collapse to the point
 	 */
 	void classify_nodes(ClassificationErrors& AErrors, const double AMaxDistance,const double APointSnapDistance);
+
+
+	/**@brief This methods try to capture all points of the geometric model. It is called internally
+	 * vy the method *classify*.
+	 * @param[out] AErrors 		list of errors done during the classification
+	 * @param[in] AMaxDistance maximal distance to allow projections.
+	 * @param[in] APointSnapDistance under this distance we collapse the node to the point
+	 */
+	void captured_points(ClassificationErrors& AErrors, const double AMaxDistance,const double APointSnapDistance);
 	/**@brief This methods classify all eges onto the geometric model. It is called internally
 	 * by the method *classify*.
 	 * @param[out] AErrors 		list of errors done during the classification

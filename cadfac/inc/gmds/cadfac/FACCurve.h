@@ -132,7 +132,7 @@ class GMDSCadFac_API FACCurve : public GeomCurve
 	 */
 	virtual CurvatureInfo getCurvatureInfo() const;
 
-	/** @brief  Compute the tangent vector at the enod point of a curve. The vector is oriented towards the curve
+	/** @brief  Compute the tangent vector at the end point of a curve. The vector is oriented towards the curve
 	 * 			If the curve is a loop, the starting point (param=0) is
 	 * 			at param 1 too.
 	 *  @param[in] AParam parameter equals to 0 or 1
