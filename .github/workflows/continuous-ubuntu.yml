@@ -23,7 +23,7 @@ jobs:
         config: [Release, Debug]
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 2 # seems to be needed by codecov
         submodules: recursive
@@ -62,8 +62,6 @@ jobs:
         -DENABLE_KMDS:BOOL=ON
         -DCMAKE_PREFIX_PATH="/spack/opt/spack/lcov;/spack/opt/spack/glpk;/spack/opt/spack/eigen;/spack/opt/spack/googletest;/spack/opt/spack/py-pybind11;/spack/opt/spack/kokkos;/spack/opt/spack/cgal;/spack/opt/spack/gmp;/spack/opt/spack/mpfr;/spack/opt/spack/boost;/spack/opt/spack/cgns"
         -DCMAKE_INSTALL_PREFIX= ${GITHUB_WORKSPACE}/install
-        -DGLPK_LIB=/spack/opt/spack/glpk/lib
-        -DGLPK_INC=/spack/opt/spack/glpk/include
 
     - name: Build
       # Use a bash shell so we can use the same syntax for environment variable
