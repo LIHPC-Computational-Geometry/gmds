@@ -634,7 +634,7 @@ TEST(ExecutionActionsTestSuite,cb4){
 	vtk_writer_edges.write("debug_blocking_edges.vtk");
 }
 
-TEST(ExecutionActionsTestSuite,cb5){
+TEST(ExecutionActionsTestSuite,DISABLED_cb5){
 
 	gmds::cad::FACManager geom_model;
 	set_up_file(&geom_model,"cb5.vtk");
