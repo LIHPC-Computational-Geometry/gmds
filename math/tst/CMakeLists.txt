@@ -9,7 +9,21 @@ add_executable(GMDS_MATH_TEST
         OrientationTestSuite.h
         TransfiniteInterpolationTestSuite.h
         main_test.cpp
-        BezierSurfaceTestSuite.h)
+        BezierSurfaceTestSuite.h
+        BezierCurveTestSuite.h
+        BezierTriangleTestSuite.h
+        AxisAngleRotationTestSuite.h
+        FETestSuite.h
+        HexahedronTestSuite.h
+        LineTestSuite.h
+        NumericsTestSuite.h
+        QuadrilateralTestSuite.h
+        PlaneTestSuite.h
+        Prism3TestSuite.h
+        PyramidTestSuite.h
+        QualityMeasureTestSuite.h
+        RayTestSuite.h
+        SegmentTestSuite.h)
 #==============================================================================
 target_link_libraries(GMDS_MATH_TEST PUBLIC
         ${GMDS_LIB}
