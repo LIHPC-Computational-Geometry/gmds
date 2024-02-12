@@ -1,0 +1,78 @@
+#ifndef GMDS_ASSERT_TESTSUITE_H
+#define GMDS_ASSERT_TESTSUITE_H
+
+#include "gtest/gtest.h"
+#include <gmds/utils/Assert.h>
+#include <unit_test_config.h>
+using namespace gmds;
+
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+
+TEST(AssertTestSuite, SetAndGetAssertMode)
+{
+	// Test setAssertMode and getAssertMode functions
+	setAssertMode(ASSERT_MODE_THROW);
+	EXPECT_EQ(getAssertMode(), ASSERT_MODE_THROW);
+
+	setAssertMode(ASSERT_MODE_ABORT);
+	EXPECT_EQ(getAssertMode(), ASSERT_MODE_ABORT);
+}
+
+TEST(AssertTestSuite, AssertFailedThrow)
+{
+	// Test assertFailed with ASSERT_MODE_THROW
+	setAssertMode(ASSERT_MODE_THROW);
+
+	EXPECT_THROW(assertFailed("1 == 2", STR(test_file.cpp), 42), GMDSException);
+}
+
+TEST(AssertTestSuite, AssertFailedAbort)
+{
+	// Test assertFailed with ASSERT_MODE_ABORT
+	setAssertMode(ASSERT_MODE_ABORT);
+
+	// Replace the exit(0) test with output to a file or other mechanism
+	ASSERT_EXIT(assertFailed("1 == 2", STR(test_file.cpp), 42), ::testing::ExitedWithCode(0), "");
+}
+
+TEST(AssertTestSuite, AssertRangeFailedThrow)
+{
+	// Test assertRangeFailed with ASSERT_MODE_THROW
+	setAssertMode(ASSERT_MODE_THROW);
+
+	EXPECT_THROW(assertRangeFailed(5.0, 0.0, 2.0, STR(test_file.cpp), 42), GMDSException);
+}
+
+TEST(AssertTestSuite, AssertRangeFailedAbort)
+{
+	// Test assertRangeFailed with ASSERT_MODE_ABORT
+	setAssertMode(ASSERT_MODE_ABORT);
+
+	// Replace the exit(0) test with output to a file or other mechanism
+	ASSERT_EXIT(assertRangeFailed(5.0, 0.0, 2.0, STR(test_file.cpp), 42), ::testing::ExitedWithCode(0), "");
+}
+
+TEST(AssertTestSuite, SetAssertModeAndAssertFailed)
+{
+	// Test setting assertion mode and calling assertFailed
+	setAssertMode(ASSERT_MODE_THROW);
+	GMDS_ASSERT(1 == 1);     // Should not throw
+
+	setAssertMode(ASSERT_MODE_ABORT);
+	// Replace the exit(0) test with output to a file or other mechanism
+	ASSERT_EXIT(GMDS_ASSERT(1 == 2), ::testing::ExitedWithCode(0), "");
+}
+
+TEST(AssertTestSuite, SetAssertModeAndRangeAssert)
+{
+	// Test setting assertion mode and calling range assertion
+	setAssertMode(ASSERT_MODE_THROW);
+	GMDS_RANGE_ASSERT(1.0, 0.0, 2.0);     // Should not throw
+
+	setAssertMode(ASSERT_MODE_ABORT);
+	// Replace the exit(0) test with output to a file or other mechanism
+	ASSERT_EXIT(GMDS_RANGE_ASSERT(5.0, 0.0, 2.0, STR(test_file.cpp), 42), ::testing::ExitedWithCode(0), "");
+}
+
+#endif     // GMDS_ASSERT_TEST_H
