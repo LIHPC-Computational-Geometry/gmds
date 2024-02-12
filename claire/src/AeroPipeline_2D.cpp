@@ -541,6 +541,16 @@ AeroPipeline_2D::EcritureMaillage(){
 	vtkWriter_CurvedReavel.setDataOptions(gmds::N|gmds::F);
 	vtkWriter_CurvedReavel.write("AeroPipeline2D_CurvedBlocks.vtk");
 
+	// Test 2 Ctrl Pts
+	/*
+	gmds::IGMeshIOService ioService_TEST(&m_Blocking2D_CtrlPts);
+	gmds::VTKWriter vtkWriter_Blocking_TEST(&ioService_TEST);
+	vtkWriter_Blocking_TEST.setCellOptions(gmds::N|gmds::F);
+	vtkWriter_Blocking_TEST.setDataOptions(gmds::N|gmds::F);
+	//std::string dir(".");
+	vtkWriter_Blocking_TEST.write("AeroPipeline2D_Blocking_CtrlPts_2.vtk");
+	 */
+
 
 }
 /*------------------------------------------------------------------------*/

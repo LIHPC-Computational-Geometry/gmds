@@ -41,6 +41,9 @@ AbstractAeroPipeline::AbstractAeroPipeline(std::string &Aparams, std::string &Aw
 	p.add("section_Extrusion","z_lim_insertions", Parameters::DOUBLE_P);
 	p.add("section_Extrusion","insertions_allowed_on_first_layer", Parameters::BOOL_P);
 
+	p.add("section_Curved_Blocks","max_degree", Parameters::INT_P);
+	p.add("section_Curved_Blocks","max_error", Parameters::DOUBLE_P);
+
 	p.add("section_Cell_Size","Number_of_Blocks_on_Wall", Parameters::INT_P);
 	p.add("section_Cell_Size","Number_of_Cells_in_Boundary_Layer", Parameters::INT_P);
 	p.add("section_Cell_Size","Edge_Size_on_Wall", Parameters::DOUBLE_P);
@@ -80,6 +83,9 @@ AbstractAeroPipeline::AbstractAeroPipeline(std::string &Aparams, std::string &Aw
 	p.get("section_Extrusion","y_lim_insertions", m_params.y_lim);
 	p.get("section_Extrusion","z_lim_insertions", m_params.z_lim);
 	p.get("section_Extrusion","insertions_allowed_on_first_layer", m_params.insertions_allowed_on_first_layer);
+
+	p.get("section_Curved_Blocks","max_degree", m_params.max_degree);
+	p.get("section_Curved_Blocks","max_error", m_params.max_error);
 
 	p.get("section_Cell_Size","Number_of_Blocks_on_Wall", m_params.nbrMinBloc);
 	p.get("section_Cell_Size","Number_of_Cells_in_Boundary_Layer", m_params.nbrCellsInCL);
