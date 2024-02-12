@@ -32,6 +32,27 @@ setUp(gmds::cad::FACManager &AGeomManager)
 	AGeomManager.initFrom3DMesh(&m_vol);
 }
 /*----------------------------------------------------------------------------*/
+void
+setUpCb2(gmds::cad::FACManager &AGeomManager)
+{
+	gmds::Mesh m_vol(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::F | gmds::E | gmds::N |
+	                                 gmds::R2N | gmds::R2F | gmds::R2E | gmds::F2N |
+	                                 gmds::F2R | gmds::F2E
+	                                 | gmds::E2F | gmds::E2N | gmds::N2E));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir + "/cb2.vtk";
+	gmds::IGMeshIOService ioService(&m_vol);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N | gmds::R);
+	vtkReader.read(vtk_file);
+	gmds::MeshDoctor doc(&m_vol);
+	doc.buildFacesAndR2F();
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	AGeomManager.initFrom3DMesh(&m_vol);
+}
+/*----------------------------------------------------------------------------*/
 std::tuple<int,int,int,int> get_node_statistics(gmds::blocking::CurvedBlocking& ABlocking){
     auto nb_on_vertex=0;
     auto nb_on_curve=0;
@@ -1179,4 +1200,22 @@ TEST(CurvedBlockingTestSuite, check_capt_Element){
     for (auto c : allCurves){
         std::cout<<"Check capt possible for the curve "<< c->id()<<"  : "<<bl.check_capt_element(c->id(),c->dim())<<std::endl;
     }
+}
+
+
+TEST(CurvedTestSuite, verif_cut_conservation){
+	gmds::cad::FACManager geom_model;
+	setUpCb2(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model, true);
+
+	bl.save_vtk_blocking("check_copy_init");
+
+	gmds::blocking::CurvedBlocking* bl2 = new gmds::blocking::CurvedBlocking(bl);
+	bl2->save_vtk_blocking("check_copy_inti2");
+
+	bl.cut_sheet(18, 0.25);
+	bl.save_vtk_blocking("check_copy_cut");
+
+	bl2->cut_sheet(18, 0.25);
+	bl2->save_vtk_blocking("check_copy_cut2");
 }
