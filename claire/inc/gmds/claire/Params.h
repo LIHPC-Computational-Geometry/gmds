@@ -77,6 +77,11 @@ namespace gmds {
 	     /** Allows or not the insertions on the first layer of blocks */
 	     bool insertions_allowed_on_first_layer=false;
 
+	     /** Max blocks degree */
+	     int max_degree;
+	     /** Max fitting error allowed */
+	     double max_error;
+
 	     /** Choose the way the vectors field is computed for the extrusion */
 	     int vectors_field;
 	     /** Choose the x value of the first zone [-inf, x_VectorField_Z1] */
