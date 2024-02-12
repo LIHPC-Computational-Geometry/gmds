@@ -48,6 +48,7 @@ FACSurface::~FACSurface()
 {
 	// got to clean some technical attributes used by ANN
 	delete m_kd_tree;
+	annDeallocPts(m_dataPts);
 	annClose();     // done with ANN
 }
 /*----------------------------------------------------------------------------*/
@@ -166,7 +167,10 @@ FACSurface::setMeshFaces(const std::vector<Face> &AFaces)
 		m_mesh_faces[i] = AFaces[i].id();
 	}
 
-	if (m_kd_tree != NULL) delete m_kd_tree;
+	if (m_kd_tree != nullptr) {
+		delete m_kd_tree;
+		annDeallocPts(m_dataPts);
+	}
 
 	buildANNTree();
 }
@@ -338,11 +342,11 @@ FACSurface::volumes()
 void
 FACSurface::buildANNTree()
 {
+	if (m_kd_tree != nullptr) throw GMDSException("FACSurface Issue: the kd tree structure was previously initialized");
 
 	int dim = 3;                            // dimension
 	int maxPts = m_mesh_faces.size();       // maximum number of data points
-	ANNpointArray dataPts;                  // data points
-	dataPts = annAllocPts(maxPts, dim);     // allocate data points
+	m_dataPts = annAllocPts(maxPts, dim);     // allocate data points
 
 	//========================================================
 	// (1) Fill in the  ANN structure for storing points
@@ -353,16 +357,15 @@ FACSurface::buildANNTree()
 
 	while (nPts < maxPts) {
 		math::Point p = m_support->get<Face>(m_mesh_faces[nPts]).center();
-		dataPts[nPts][0] = p.X();
-		dataPts[nPts][1] = p.Y();
-		dataPts[nPts][2] = p.Z();
+		m_dataPts[nPts][0] = p.X();
+		m_dataPts[nPts][1] = p.Y();
+		m_dataPts[nPts][2] = p.Z();
 		nPts++;
 	};
 	//========================================================
 	// (2) Build the search structure
 	//========================================================
-	if (m_kd_tree != NULL) throw GMDSException("FACSurface Issue: the kd tree structure was previously initialized");
-	m_kd_tree = new ANNkd_tree(dataPts,     // the data points
+	m_kd_tree = new ANNkd_tree(m_dataPts,     // the data points
 	                           nPts,        // number of points
 	                           dim);        // dimension of space
 }
@@ -388,6 +391,8 @@ FACSurface::getANNClosestTriangle(const math::Point &AP) const
 	   queryPt,                // query point
 	   k, nnIdx, dists, 0.01);
 	int idx = nnIdx[0];
+
+	annDeallocPt(queryPt);
 	delete[] nnIdx;
 	delete[] dists;
 

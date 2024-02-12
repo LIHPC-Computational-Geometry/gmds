@@ -16,9 +16,8 @@
 #include <gmds/math/Triangle.h>
 #include "GMDSCadFac_export.h"
 /*----------------------------------------------------------------------------*/
+#include <ANN/ANN.h>
 #include <tuple>
-/*----------------------------------------------------------------------------*/
-class ANNkd_tree;
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -198,6 +197,7 @@ namespace gmds{
             std::vector<GeomVolume*> m_adjacent_volumes;
 
             /** kd tree structure used to make geometric queries faster*/
+	         ANNpointArray m_dataPts;
             ANNkd_tree* m_kd_tree;
         };
 /*----------------------------------------------------------------------------*/
