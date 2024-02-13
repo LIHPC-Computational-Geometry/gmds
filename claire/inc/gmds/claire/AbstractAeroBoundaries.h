@@ -86,6 +86,10 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	 */
 	int getNodeColor(TCellID n_id);
 	/*-------------------------------------------------------------------*/
+	/** \brief Return a characteristic length of the geometry.
+	 */
+	double getCharacteristicLength();
+	/*-------------------------------------------------------------------*/
 	/** @brief Donne l'id d'un noeud "le plus à gauche" sur le bord de couleur
 	 * color, correspondant en aéro au point d'arrêt.
 	 */
@@ -129,7 +133,10 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	 */
 	void MarkAmontAndParoiNodes();
 	/*-------------------------------------------------------------------*/
-
+	/** \brief Compute Characteristic length of the geometry.
+	 */
+	void computeCharacteristicLength();
+	/*-------------------------------------------------------------------*/
  protected:
 	/** pointer to mesh we work on */
 	Mesh* m_mesh;
@@ -151,6 +158,8 @@ class LIB_GMDS_CLAIRE_API AbstractAeroBoundaries{
 	TInt m_markNodesParoi;
 	/** Marque sur les noeuds de la frontière amont */
 	TInt m_markNodesAmont;
+	/** Characteristic length of the geometry */
+	double m_charact_length;
 
 };
 /*----------------------------------------------------------------------------*/
