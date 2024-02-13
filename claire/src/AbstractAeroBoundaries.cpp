@@ -42,11 +42,10 @@ AbstractAeroBoundaries::execute()
 	ColoriageBordsConnexes();
 	WhichColorIsAmont();
 	MarkAmontAndParoiNodes();
+	computeCharacteristicLength();
 
 	return AbstractAeroBoundaries::SUCCESS;
 }
-/*------------------------------------------------------------------------*/
-
 /*------------------------------------------------------------------------*/
 bool
 AbstractAeroBoundaries::isBnd(TCellID n_id)
@@ -54,15 +53,11 @@ AbstractAeroBoundaries::isBnd(TCellID n_id)
 	return m_mesh->isMarked<Node>(n_id, m_markBoundaryNodes);
 }
 /*------------------------------------------------------------------------*/
-
-/*------------------------------------------------------------------------*/
 bool
 AbstractAeroBoundaries::isAmont(TCellID n_id)
 {
 	return m_mesh->isMarked<Node>(n_id, m_markNodesAmont);
 }
-/*------------------------------------------------------------------------*/
-
 /*------------------------------------------------------------------------*/
 bool
 AbstractAeroBoundaries::isParoi(TCellID n_id)
@@ -70,15 +65,11 @@ AbstractAeroBoundaries::isParoi(TCellID n_id)
 	return m_mesh->isMarked<Node>(n_id, m_markNodesParoi);
 }
 /*------------------------------------------------------------------------*/
-
-/*------------------------------------------------------------------------*/
 TInt
 AbstractAeroBoundaries::getMarkBnd()
 {
 	return m_markBoundaryNodes;
 }
-/*------------------------------------------------------------------------*/
-
 /*------------------------------------------------------------------------*/
 TInt
 AbstractAeroBoundaries::getMarkAmont()
@@ -86,15 +77,11 @@ AbstractAeroBoundaries::getMarkAmont()
 	return m_markNodesAmont;
 }
 /*------------------------------------------------------------------------*/
-
-/*------------------------------------------------------------------------*/
 TInt
 AbstractAeroBoundaries::getMarkParoi()
 {
 	return m_markNodesParoi;
 }
-/*------------------------------------------------------------------------*/
-
 /*------------------------------------------------------------------------*/
 bool
 AbstractAeroBoundaries::isImmerged()
@@ -102,15 +89,11 @@ AbstractAeroBoundaries::isImmerged()
 	return m_isImmerged;
 }
 /*------------------------------------------------------------------------*/
-
-/*------------------------------------------------------------------------*/
 int
 AbstractAeroBoundaries::getNbrBords()
 {
 	return m_nbrBords;
 }
-/*------------------------------------------------------------------------*/
-
 /*------------------------------------------------------------------------*/
 int
 AbstractAeroBoundaries::getColorAmont()
@@ -118,15 +101,17 @@ AbstractAeroBoundaries::getColorAmont()
 	return m_color_Amont;
 }
 /*------------------------------------------------------------------------*/
-
+double
+AbstractAeroBoundaries::getCharacteristicLength()
+{
+	return m_charact_length;
+}
 /*------------------------------------------------------------------------*/
 int
 AbstractAeroBoundaries::getNodeColor(TCellID n_id)
 {
 	return m_var_color_bords->value(n_id);
 }
-/*------------------------------------------------------------------------*/
-
 /*------------------------------------------------------------------------*/
 TCellID
 AbstractAeroBoundaries::PointArret(int color)
@@ -146,8 +131,6 @@ AbstractAeroBoundaries::PointArret(int color)
 	}
 	return n_arret_id;
 }
-/*------------------------------------------------------------------------*/
-
 /*------------------------------------------------------------------------*/
 void
 AbstractAeroBoundaries::ColoriageBordsConnexes()
@@ -210,8 +193,6 @@ AbstractAeroBoundaries::ColoriageBordsConnexes()
 	m_mesh->freeMark<Node>(markTreated);
 }
 /*------------------------------------------------------------------------*/
-
-/*------------------------------------------------------------------------*/
 void
 AbstractAeroBoundaries::MarkAmontAndParoiNodes()
 {
@@ -226,8 +207,6 @@ AbstractAeroBoundaries::MarkAmontAndParoiNodes()
 		}
 	}
 }
-/*------------------------------------------------------------------------*/
-
 /*------------------------------------------------------------------------*/
 TCellID
 AbstractAeroBoundaries::ClosestNodeOnBnd(int color, const math::Point& p)
@@ -246,8 +225,6 @@ AbstractAeroBoundaries::ClosestNodeOnBnd(int color, const math::Point& p)
 	return closest_node_id;
 }
 /*------------------------------------------------------------------------*/
-
-/*------------------------------------------------------------------------*/
 TCellID
 AbstractAeroBoundaries::RandomNodeOnBnd(int color)
 {
@@ -257,5 +234,66 @@ AbstractAeroBoundaries::RandomNodeOnBnd(int color)
 		}
 	}
 	return NullID;
+}
+/*------------------------------------------------------------------------*/
+void
+AbstractAeroBoundaries::computeCharacteristicLength()
+{
+	// Compute Bounding Boxes
+	std::vector<double> x_min(m_nbrBords,0.0);
+	std::vector<double> y_min(m_nbrBords,0.0);
+	std::vector<double> z_min(m_nbrBords,0.0);
+	std::vector<double> x_max(m_nbrBords,0.0);
+	std::vector<double> y_max(m_nbrBords,0.0);
+	std::vector<double> z_max(m_nbrBords,0.0);
+
+	for (auto n_id:m_bnd_nodes_ids ) {
+		Node n = m_mesh->get<Node>(n_id);
+		math::Point p = n.point();
+		// A quel bord appartient le noeud n_id
+		int couleur = m_var_color_bords->value(n_id);
+		if(p.X() < x_min[couleur-1]){
+			x_min[couleur-1] = p.X();
+		}
+		if(p.X() > x_max[couleur-1]){
+			x_max[couleur-1] = p.X();
+		}
+		if(p.Y() < y_min[couleur-1]){
+			y_min[couleur-1] = p.Y();
+		}
+		if(p.Y() > y_max[couleur-1]){
+			y_max[couleur-1] = p.Y();
+		}
+		if(p.Z() < z_min[couleur-1]){
+			z_min[couleur-1] = p.Z();
+		}
+		if(p.Z() > z_max[couleur-1]){
+			z_max[couleur-1] = p.Z();
+		}
+	}
+
+	double x_charact(0.0);
+	double y_charact(0.0);
+	double z_charact(0.0);
+	for (int i=0; i<m_nbrBords; i++)
+	{
+		if ( (i+1) != m_color_Amont)
+		{
+			if (abs(x_max[i]-x_min[i]) > x_charact)
+			{
+				x_charact = abs(x_max[i]-x_min[i]) ;
+			}
+			if (abs(y_max[i]-y_min[i]) > y_charact)
+			{
+				y_charact = abs(y_max[i]-y_min[i]) ;
+			}
+			if (abs(z_max[i]-z_min[i]) > z_charact)
+			{
+				z_charact = abs(z_max[i]-z_min[i]) ;
+			}
+		}
+	}
+
+	m_charact_length = std::max(std::max(x_charact, y_charact), z_charact) ;
 }
 /*------------------------------------------------------------------------*/
