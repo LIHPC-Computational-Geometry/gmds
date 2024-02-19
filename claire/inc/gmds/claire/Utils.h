@@ -387,7 +387,8 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 * @param[in] Acurve Geometric Curve
 	 * @param[in] Asamle Sample
 	 *
-	 * @return
+	 * @return the maximum error between the Bézier Curve and the Geometric curve
+	 * on the sample.
 	 */
 	static double maxErrorBtwBezierCurveandGeomCurve(BezierCurve* Abc, cad::GeomCurve* Acurve, int Asample);
 	/*----------------------------------------------------------------------------*/
