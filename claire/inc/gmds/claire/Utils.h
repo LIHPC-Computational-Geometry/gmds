@@ -341,7 +341,8 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 */
 	static double DerivativeBernsteinPolynomial(int An, int Ai, double Au);
 	/*-------------------------------------------------------------------*/
-	/** \brief
+	/** \brief Compute the derivative value of the Bézier Curve at parameter
+	 	* @p Au.
        *
        * \param[in] Abc the bezier curve
        * \param[in] Au parameter in [0,1]
@@ -378,6 +379,17 @@ class LIB_GMDS_CLAIRE_API Utils {
 	 * @return the length of the bezier curve
 	 */
 	static double lengthBezierCurve(BezierCurve* Abc);
+	/*----------------------------------------------------------------------------*/
+	/** @brief Compute the maximal error between the Bézier Curve @p Abc and the
+	 * geometric curve @p Acurve.
+	 *
+	 * @param[in] Abc Bezier Curve
+	 * @param[in] Acurve Geometric Curve
+	 * @param[in] Asamle Sample
+	 *
+	 * @return
+	 */
+	static double maxErrorBtwBezierCurveandGeomCurve(BezierCurve* Abc, cad::GeomCurve* Acurve, int Asample);
 	/*----------------------------------------------------------------------------*/
 };
 /*----------------------------------------------------------------------------*/

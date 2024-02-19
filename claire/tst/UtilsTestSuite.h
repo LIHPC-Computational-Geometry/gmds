@@ -2,6 +2,7 @@
 // Created by rochec on 22/03/2022.
 //
 
+#include <gmds/claire/ComputeBezierCurveCtrlPtstoInterpolateCurve.h>
 #include <gmds/math/Line.h>
 #include <gmds/claire/Utils.h>
 #include <gmds/ig/Mesh.h>
@@ -811,6 +812,101 @@ TEST(ClaireTestClass, Test_resizeMesh)
 	ASSERT_FLOAT_EQ(f.get<Node>()[1].X(), 10.0);
 	ASSERT_FLOAT_EQ(f.get<Node>()[2].X(), 10.0);
 	ASSERT_FLOAT_EQ(f.get<Node>()[2].Y(), 10.0);
+
+}
+/*----------------------------------------------------------------------------*/
+TEST(ClaireTestClass, Test_maxErrorBtwBezierCurveandGeomCurve)
+{
+	//---> Build the GEOMETRIC CURVE
+	int Nx(60);
+	double ymax(0.4);
+
+	std::vector<math::Point> curve_discrete(Nx);
+	std::vector<math::Point> curve_discrete_opp(Nx);
+	for (int i=0;i<Nx;i++)
+	{
+		double theta = M_PI;
+		curve_discrete[i].setX(float(i)/float(Nx-1));
+		curve_discrete[i].setY(ymax*sin(theta*float(i)/float(Nx-1)));
+		curve_discrete[i].setZ(0.0);
+
+		curve_discrete_opp[i].setX(float(i)/float(Nx-1));
+		curve_discrete_opp[i].setY(ymax+ymax*sin(theta*float(i)/float(Nx-1)));
+		curve_discrete_opp[i].setZ(0.0);
+	}
+
+	gmds::Mesh m_curve = Mesh(MeshModel(DIM3 | F | E | N | F2N | E2N | F2E | E2F | N2F | N2E));
+	std::map<int,TCellID> curve_nodes;
+	std::map<int,TCellID> curve_nodes_opp;
+	for (int i=0;i<curve_discrete.size();i++)
+	{
+		Node n = m_curve.newNode(curve_discrete[i]);
+		curve_nodes[i] = n.id() ;
+		n = m_curve.newNode(curve_discrete_opp[i]);
+		curve_nodes_opp[i] = n.id() ;
+	}
+	for (int i=0;i<curve_discrete.size()-1;i++)
+	{
+		Face f = m_curve.newQuad(curve_nodes[i], curve_nodes[i+1], curve_nodes_opp[i+1], curve_nodes_opp[i]);
+	}
+	// <--- GEOMETRIC CURVE built
+
+	MeshDoctor doc(&m_curve);
+	doc.buildEfromF();
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+
+	cad::FACManager manager;
+	cad::GeomMeshLinker linker;
+	manager.initAndLinkFrom2DMesh(&m_curve, &linker);
+
+	//std::cout << "Nbr curves " << manager.getNbCurves() << std::endl;
+
+	// Init the control points of the curve
+	cad::GeomCurve* geom_curve = manager.getCurve(1);
+
+	math::Vector3d t0 = geom_curve->computeTangent(0);
+	math::Vector3d t1 = geom_curve->computeTangent(1);
+
+	math::Point p0(0.0,0.0,0.0) ;
+	math::Point p1(1.0,0.0,0.0) ;
+	math::Line l0 = math::Line(p0, t0);
+	math::Line l1 = math::Line(p1, t1);
+
+	math::Point pi ;
+	double param;
+	l0.intersect2D(l1, pi, param);
+	//std::cout << l0.intersect2D(l1, pi, param) << std::endl;
+
+	std::vector<math::Point> ctrl_pts_1(3);
+	ctrl_pts_1[0].setX(0.0);
+	ctrl_pts_1[0].setY(0.0);
+	ctrl_pts_1[0].setZ(0.0);
+	ctrl_pts_1[1].setX(pi.X());
+	ctrl_pts_1[1].setY(pi.Y());
+	ctrl_pts_1[1].setZ(0.0);
+	ctrl_pts_1[2].setX(1.0);
+	ctrl_pts_1[2].setY(0.0);
+	ctrl_pts_1[2].setZ(0.0);
+
+	math::BezierCurve bc = math::BezierCurve(ctrl_pts_1);
+	double max_error = math::Utils::maxErrorBtwBezierCurveandGeomCurve(&bc, geom_curve, 100) ;
+	//std::cout << max_error << std::endl;
+	//std::cout << "Error Bézier Curve 1: " << max_error << std::endl;
+	//std::cout << "Pi: " << pi << std::endl;
+	ASSERT_FLOAT_EQ(max_error, 0.085879676);
+
+	std::vector<math::Point> ctrl_pts_2(3);
+	ctrl_pts_2[0] = ctrl_pts_1[0];
+	ctrl_pts_2[1].setX(0.5);
+	ctrl_pts_2[1].setY(0.799716);
+	ctrl_pts_2[1].setZ(0.0);
+	ctrl_pts_2[2] = ctrl_pts_1[2];
+	math::BezierCurve bc_2 = math::BezierCurve(ctrl_pts_2);
+	max_error = math::Utils::maxErrorBtwBezierCurveandGeomCurve(&bc_2, geom_curve, 100) ;
+	//std::cout << "Error Bézier Curve 2: " << max_error << std::endl;
+	ASSERT_FLOAT_EQ(max_error, 0.015092757);
+
 
 }
 /*----------------------------------------------------------------------------*/
