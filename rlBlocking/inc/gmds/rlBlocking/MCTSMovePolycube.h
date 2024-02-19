@@ -22,7 +22,7 @@ struct LIB_GMDS_RLBLOCKING_API MCTSMovePolycube: public MCTSMove {
 	TCellID m_AIdEdge;
 	TCellID m_AIdBlock;
 	double m_AParamCut;
-	/** @brief if typeMove=2: delete block, typeMove=1 cut block
+	/** @brief if typeMove=2: delete block, typeMove=1 cut block, typeMove=3 updateClassification,
 	 */
 	unsigned int m_typeMove;
 

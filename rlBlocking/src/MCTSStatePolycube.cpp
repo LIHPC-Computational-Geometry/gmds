@@ -13,7 +13,8 @@ MCTSStatePolycube::MCTSStatePolycube(gmds::cad::GeomManager* AGeom, gmds::blocki
 	m_blocking = new blocking::CurvedBlocking(*ABlocking);
 	gmds::blocking::CurvedBlockingClassifier classifier(m_blocking);
 	m_class_blocking = new blocking::CurvedBlockingClassifier(classifier);
-	m_class_errors = m_class_blocking->classify(0.2);
+	m_class_blocking->detect_classification_errors(m_class_errors);
+	//m_class_errors = m_class_blocking->classify(0.2); /TODO add detected_errors()
 	;}
 /*----------------------------------------------------------------------------*/
 MCTSStatePolycube::~MCTSStatePolycube() noexcept
@@ -37,6 +38,8 @@ MCTSStatePolycube::actions_to_try() const
 		   listActions->push_back(new MCTSMovePolycube(NullID,b,0,2));
 	   }
 
+	   listActions->push_back(new MCTSMovePolycube(NullID,NullID,0,3));
+
 	std::cout<<"LIST ACTIONS :"<<std::endl;
 	for(auto &m : *listActions){
 		m->print();
@@ -54,6 +57,7 @@ MCTSState
 	gmds::blocking::CurvedBlocking* new_b = new gmds::blocking::CurvedBlocking(*m_blocking);
 	MCTSStatePolycube *new_state = new MCTSStatePolycube(this->m_geom,new_b,hist_update,this->m_name_geom);
 	if(m->m_typeMove == 2){
+		//Delete block action
 		//TODO ERROR, sometimes, block select not in the current blocks list...Check why !!!
 		std::cout<<"LIST BLOCK BLOCKING : "<<std::endl;
 		bool b_in_list = false;
@@ -67,13 +71,14 @@ MCTSState
 		if(b_in_list){
 			std::cout<<"BLOCK A DELETE :"<<m->m_AIdBlock<<std::endl;
 			new_state->m_blocking->remove_block(m->m_AIdBlock);
+			new_state->m_class_errors = this->m_class_errors;
 		}
 		else{
 			std::cout<<"BLOCK A DELETE not in :"<<m_blocking->get_all_id_blocks().front()<<std::endl;
 			new_state->m_blocking->remove_block(m_blocking->get_all_id_blocks().front());
 		}
 
-		new_state->update_class();
+		//new_state->update_class();
 		//SAVE Blocking vtk
 		std::string name_save_folder = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/"+m_name_geom+"/";
 		std::string id_act = std::to_string(m->m_AIdBlock);
@@ -82,6 +87,7 @@ MCTSState
 		return new_state;
 	}
 	else if(m->m_typeMove ==1) {
+		//Cut sheet action
 		new_state->m_blocking->cut_sheet(m->m_AIdEdge,m->m_AParamCut);
 		new_state->update_class();
 		//SAVE Blocking vtk
@@ -91,11 +97,15 @@ MCTSState
 		//new_state->m_blocking->save_vtk_blocking(name_save_folder+name_file);
 		return new_state;
 	}
+	else if(m->m_typeMove == 3){
+		//Update Classification
+		new_state->update_class();
+		return new_state;
+	}
 	else{
 		std::cerr << "Warning: Bad type move ! \n Type move :" << m->m_typeMove << " & ID " << m->m_AIdEdge<< std::endl;
 		return new_state;
 	}
-
 }
 /*----------------------------------------------------------------------------*/
 double
@@ -140,15 +150,14 @@ MCTSStatePolycube::state_rollout() const
 		if(list_action->size()==1){
 			std::cout<<list_action->front()<<std::endl;
 		}
-		//Get first move/action
-		//But, maybe, better to take rand move if its a delete move...
-		MCTSMove *firstMove = randomMove(*list_action) ; //TODO: implement random move when only delete moves is possible
+		//Get random move/action
+		MCTSMove *randMove = randomMove(*list_action) ; //TODO: implement random move when only delete moves is possible
 		std::cout<<"ACTION SELECT : "<<std::endl;
-		firstMove->print();
+		randMove->print();
 
 		MCTSStatePolycube *old = curstate;
 		std::cout<<"===== SIZE UNTRIED ACTIONS : "<<list_action->size()+1<<" ====="<<std::endl;
-		curstate = (MCTSStatePolycube *) curstate->next_state(firstMove);
+		curstate = (MCTSStatePolycube *) curstate->next_state(randMove);
 		if (!first) {
 			delete old;
 		}
@@ -157,7 +166,7 @@ MCTSStatePolycube::state_rollout() const
 
 	if(curstate->result_terminal() == WIN){
 		//SAVE Blocking vtk
-		std::string name_save_folder = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/"+m_name_geom+"/";
+		std::string name_save_folder = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_fix_cut_sheet/saveResults/"+m_name_geom+"/";
 		//std::string id_act = std::to_string(m->m_AIdEdge);
 		std::string name_file = m_name_geom+"_action_win.vtk";
 		curstate->m_blocking->save_vtk_blocking(name_save_folder+name_file);
@@ -165,7 +174,7 @@ MCTSStatePolycube::state_rollout() const
 	}
 	else if (curstate->result_terminal() == LOSE) {
 		//SAVE Blocking vtk
-		std::string name_save_folder = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/"+m_name_geom+"/";
+		std::string name_save_folder = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_fix_cut_sheet/saveResults/"+m_name_geom+"/";
 		//std::string id_act = std::to_string(m->m_AIdEdge);
 		std::string name_file = m_name_geom+"_action_lose.vtk";
 		curstate->m_blocking->save_vtk_blocking(name_save_folder+name_file);
@@ -213,12 +222,24 @@ int MCTSStatePolycube::check_nb_same_quality() const
 	return nb_same;
 }
 /*----------------------------------------------------------------------------*/
+void MCTSStatePolycube::update_class()
+{
+	gmds::blocking::CurvedBlockingClassifier classifier(m_blocking);
+	m_class_blocking = new blocking::CurvedBlockingClassifier(classifier);
+	m_class_blocking->classify(0.2);
+	m_class_errors.non_captured_points.clear();
+	m_class_errors.non_captured_curves.clear();
+	m_class_errors.non_captured_surfaces.clear();
+	m_class_blocking->detect_classification_errors(m_class_errors);
+}
+/*----------------------------------------------------------------------------*/
 bool
 MCTSStatePolycube::is_terminal() const
 {
-	if (m_class_errors.non_captured_points.empty() && m_class_errors.non_captured_curves.empty() && m_class_errors.non_captured_surfaces.empty()) {
+	if (this->get_quality() == 0) {
 		return true;
 	}
+
 	else if(check_nb_same_quality() >= 3){
 		return true;
 	}
@@ -265,13 +286,6 @@ gmds::blocking::ClassificationErrors MCTSStatePolycube::get_errors()
 std::vector<double> MCTSStatePolycube::get_history() const
 {
 	return m_history;
-}
-/*----------------------------------------------------------------------------*/
-void MCTSStatePolycube::update_class()
-{
-	gmds::blocking::CurvedBlockingClassifier classifier(m_blocking);
-	m_class_blocking = new blocking::CurvedBlockingClassifier(classifier);
-	m_class_errors = m_class_blocking->classify(0.5);
 }
 /*----------------------------------------------------------------------------*/
 MCTSMove* MCTSStatePolycube::randomMove(std::deque<MCTSMove *> AListActions) const

@@ -32,6 +32,7 @@ void MCTSAlgorithm::execute(std::string ANameGeo)
 		// TODO: This way we don't check if the enemy move ends the game but it's our responsibility to check that, not the tree's...
 		const MCTSState *new_state = agent.get_current_state();
 		new_state->print();
+		std::cout<<"PRINT quality : "<<new_state->get_quality()<<std::endl;
 //		if (new_state->is_terminal()) {
 //			winner = ((const TicTacToe_state *) new_state)->get_winner();
 //			break;

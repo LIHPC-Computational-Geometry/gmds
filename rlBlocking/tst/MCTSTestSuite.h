@@ -5,6 +5,8 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/rlBlocking/MCTSAlgorithm.h>
 #include <unit_test_config.h>
+
+std::string PATH_FOLDER = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_fix_cut_sheet/saveResults/";
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -40,7 +42,7 @@ TEST(MCTSTestSuite, testExAgloCb2)
 	std::string nameM= "cb2";
 	set_up_MCTS(&geom_model,nameM+".vtk");
 	gmds::blocking::CurvedBlocking bl(&geom_model,true);
-	bl.save_vtk_blocking("/home/bourmaudp/Documents/PROJETS/gmds/gmds_Correction_Class_Dev/saveResults/cb2/cb2_init_blocking.vtk");
+	bl.save_vtk_blocking(PATH_FOLDER+"cb2/cb2_init_blocking.vtk");
 
 	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
 	std::cout<<"==================== BEGIN TEST : ===================="<<std::endl;

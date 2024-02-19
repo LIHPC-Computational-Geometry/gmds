@@ -76,6 +76,7 @@ MCTSMove* randomMove(std::deque<MCTSMove *> AListActions) const;
 	void update_class();
 
 
+
  private :
 	/** @brief the curved blocking of the current state */
 	gmds::blocking::CurvedBlocking* m_blocking;
