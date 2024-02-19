@@ -1288,6 +1288,24 @@ Utils::lengthBezierCurve(BezierCurve* Abc)
 	return length;
 }
 /*----------------------------------------------------------------------------*/
+double
+Utils::maxErrorBtwBezierCurveandGeomCurve(BezierCurve* Abc, cad::GeomCurve* Acurve, int Asample)
+{
+	double max_error(0.0);
+	for (int i=0;i<Asample;i++)
+	{
+		double param = double(i)/double(Asample-1.0);
+		math::Point p_bc = (*Abc)(param) ;
+		math::Point p_curve = p_bc;
+		Acurve->project(p_curve);
+		if (abs( (p_bc-p_curve).norm() ) > max_error)
+		{
+			max_error = abs( (p_bc-p_curve).norm() );
+		}
+	}
+	return max_error;
+}
+/*----------------------------------------------------------------------------*/
 }  // namespace math
 /*----------------------------------------------------------------------------*/
 }  // namespace gmds
