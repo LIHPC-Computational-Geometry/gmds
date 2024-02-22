@@ -64,6 +64,10 @@ class LIB_GMDS_MORPHMESH_API EllipticMorph
 
  private:
 
+	std::vector<TCellID> withExteriorLock();
+
+	std::vector<TCellID> noExteriorLock();
+
 	/*Surement a retirer plus tard*/
 	void markLockedCells();
 
@@ -107,9 +111,12 @@ class LIB_GMDS_MORPHMESH_API EllipticMorph
 	 */
 	std::vector<std::vector<double>> m_ellipses;
 
+	std::map<TCellID, math::Vector3d> m_vecs;
+
 
 	/* The mesh to deform */
 	Mesh* m_mesh;
+
 };
 /*----------------------------------------------------------------------------*/
 }// namespace morphmesh

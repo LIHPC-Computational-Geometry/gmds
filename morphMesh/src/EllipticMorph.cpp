@@ -134,15 +134,37 @@ void EllipticMorph::execute()
 
 	markLockedCells();
 
-	std::vector<Node> nodes_int;
-	std::vector<Node> nodes_ext;
+	std::vector<TCellID> modified_nodes;
+
+	if(m_ext_lock.empty()){
+		modified_nodes = noExteriorLock();
+	}else{
+		modified_nodes = withExteriorLock();
+	}
+
+	for(auto n : modified_nodes){
+
+		math::Vector3d vec(m_vecs[n]);
+		Node node = m_mesh->get<Node>(n);
+		double y = node.Y();
+		double z = node.Z();
+
+		node.setY(y+vec.Y());
+		node.setZ(z+vec.Z());
+	}
+
+	finalize();
+
+	std::cout<<"============================== Elliptic Morphing Finished =============================="<<std::endl;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<TCellID> EllipticMorph::withExteriorLock(){
 
 	FastLocalize fl_int(m_lockedIn);
 	FastLocalize fl_ext(m_lockedOut);
 	FastLocalize fl_morphed(m_morphed);
 
-	std::map<TCellID, math::Vector3d> vecs;
-	std::set<TCellID> modified_nodes;
+	std::set<TCellID> internal_modified_nodes;
 
 	for(int i = 0; i < m_ellipses.size()-1; i++) {
 
@@ -193,8 +215,8 @@ void EllipticMorph::execute()
 
 			math::Vector3d vec;
 			vec.setXYZ(0, newY - p.Y(), newZ - p.Z());
-			vecs[n.id()] = vec;
-			modified_nodes.insert(n.id());
+			m_vecs[n.id()] = vec;
+			internal_modified_nodes.insert(n.id());
 		}
 	}
 
@@ -215,7 +237,7 @@ void EllipticMorph::execute()
 		}
 
 		for (const auto& n : execution) {
-			modified_nodes.insert(n.id());
+			internal_modified_nodes.insert(n.id());
 
 			math::Point p = n.point();
 
@@ -249,27 +271,135 @@ void EllipticMorph::execute()
 			}
 
 			math::Vector3d vec;
-			vec = vecs[nearest_morphed.id()];
+			vec = m_vecs[nearest_morphed.id()];
 			vec *= omega;
 
-			vecs[n.id()] = vec;
+			m_vecs[n.id()] = vec;
 		}
 	}
 
-	for(auto n : modified_nodes){
+	std::vector<TCellID> node_list(internal_modified_nodes.begin(),internal_modified_nodes.end());
 
-		math::Vector3d vec(vecs[n]);
-		Node node = m_mesh->get<Node>(n);
-		double y = node.Y();
-		double z = node.Z();
+	return node_list;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<TCellID> EllipticMorph::noExteriorLock(){
 
-		node.setY(y+vec.Y());
-		node.setZ(z+vec.Z());
+	FastLocalize fl_int(m_lockedIn);
+	FastLocalize fl_morphed(m_morphed);
+
+	std::set<TCellID> internal_modified_nodes;
+
+	for(int i = 0; i < m_ellipses.size()-1; i++) {
+
+		double Xmin = m_ellipses[i][0];
+		double Xmax = m_ellipses[i + 1][0];
+
+		std::vector<Node> interval_morphed;
+
+		for (auto n : m_morphed) {
+			if (n.X() >= Xmin && n.X() < Xmax) {
+				interval_morphed.push_back(n);
+			}
+		}
+
+		double coefa_min = m_ellipses[i][1];
+		double coefb_min = m_ellipses[i][2];
+		double coefc_min = m_ellipses[i][3];
+
+		double coefa_max = m_ellipses[i + 1][1];
+		double coefb_max = m_ellipses[i + 1][2];
+		double coefc_max = m_ellipses[i + 1][3];
+
+		for (auto n : interval_morphed) {
+			math::Point p = n.point();
+
+			math::Point p_int = m_mesh->get<Node>(fl_int.find(p)).point();
+
+			double distXmin = p.X() - Xmin;
+			double distXmax = Xmax - Xmin;
+			double w = distXmin / distXmax;
+
+			double coefy_min = p.Y() >= 0 ? coefa_min : coefc_min;
+			double coefy_max = p.Y() >= 0 ? coefa_max : coefc_max;
+
+			double coefy_test = coefy_min * (3 * pow(1 - w, 2) - 2 * pow(1 - w, 3)) + coefy_max * (3 * pow(w, 2) - 2 * pow(w, 3));
+			double coefz_test = coefb_min * (3 * pow(1 - w, 2) - 2 * pow(1 - w, 3)) + coefb_max * (3 * pow(w, 2) - 2 * pow(w, 3));
+
+			double theta = atan(n.Y() / n.Z());
+			if (theta < 0) {
+				theta *= -1;
+			}
+
+			double sinus = sin(theta);
+			double cosinus = cos(theta);
+
+			double newY = (p.Y() * ((coefy_test * sinus) + coefz_test * (1 - sinus)));
+			double newZ = (p.Z() * ((coefz_test * cosinus) + coefy_test * (1 - cosinus)));
+
+			math::Vector3d vec;
+			vec.setXYZ(0, newY - p.Y(), newZ - p.Z());
+			m_vecs[n.id()] = vec;
+			internal_modified_nodes.insert(n.id());
+		}
 	}
 
-	finalize();
+	for(int i = 0; i < m_ellipses.size()-1; i++) {
 
-	std::cout<<"============================== Elliptic Morphing Finished =============================="<<std::endl;
+		double Xmin = m_ellipses[i][0];
+		double Xmax = m_ellipses[i+1][0];
+
+		std::vector<Node> execution;
+
+		for(auto n : m_mesh->nodes()){
+
+			Node node = m_mesh->get<Node>(n);
+
+			if (node.X() >= Xmin && node.X() < Xmax && !m_mesh->isMarked<Node>(n, m_locked)) {
+				execution.push_back(node);
+			}
+		}
+
+		for (const auto& n : execution) {
+			internal_modified_nodes.insert(n.id());
+
+			math::Point p = n.point();
+
+			Node nearest_morphed = m_mesh->get<Node>(fl_morphed.find(p));
+
+			math::Point p_int = m_mesh->get<Node>(fl_int.find(p)).point();
+			math::Point p_m = nearest_morphed.point();
+			math::Point p_axe(p.X(), 0, 0);
+
+			math::Point p_origin = p.distance(p_int) < p.distance(p_axe) ? p_int : p_axe;
+
+			double dist_p = p.distance(p_axe);
+			double dist_pm = p_m.distance(p_axe);
+
+			double dist1;
+			double dist2;
+			double omega;
+
+
+			if(dist_p < dist_pm){
+				dist1 = p.distance(p_origin);
+				dist2 = p_m.distance(p_origin);
+				omega = dist1 / dist2;
+			}else{
+				std::cout<<"error where is p ?"<<std::endl;
+			}
+
+			math::Vector3d vec;
+			vec = m_vecs[nearest_morphed.id()];
+			vec *= omega;
+
+			m_vecs[n.id()] = vec;
+		}
+	}
+
+	std::vector<TCellID> node_list(internal_modified_nodes.begin(),internal_modified_nodes.end());
+
+	return node_list;
 }
 /*----------------------------------------------------------------------------*/
 void EllipticMorph::markLockedCells()
