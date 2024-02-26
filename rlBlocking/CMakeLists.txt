@@ -16,6 +16,12 @@ set(GMDS_INC
         inc/gmds/rlBlocking/MCTSMovePolycube.h
         inc/gmds/rlBlocking/MCTSStatePolycube.h
         inc/gmds/rlBlocking/MCTSAgent.h
+        inc/gmds/rlBlocking/Takuzu.h
+        inc/gmds/rlBlocking/MCTSTreeSPAM.h
+        inc/gmds/rlBlocking/MCTSAgentSPAM.h
+        inc/gmds/rlBlocking/IActionSPAM.h
+        inc/gmds/rlBlocking/IRewardFunctionSPAM.h
+        inc/gmds/rlBlocking/IStateSPAM.h
         )
 set(GMDS_SRC
         src/BlockingQuality.cpp
@@ -26,6 +32,9 @@ set(GMDS_SRC
         src/MCTSMovePolycube.cpp
         src/MCTSStatePolycube.cpp
         src/MCTSAgent.cpp
+        src/MCTSAgentSPAM.cpp
+        src/MCTSTreeSPAM.cpp
+        src/Takuzu.cpp
 )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
@@ -67,6 +76,9 @@ endif(WITH_TEST)
 #==============================================================================
 # EXECUTABLE
 #==============================================================================
-add_executable(RlBlocking src/main_rlBlocking.cpp)
+add_executable(RlBlocking src/mainSPAM.cpp)
+#add_executable(RlBlocking src/main_rlBlocking.cpp)
 target_link_libraries(RlBlocking PRIVATE ${GMDS_LIB} )
 target_compile_features(RlBlocking PUBLIC cxx_std_14)
+
+
