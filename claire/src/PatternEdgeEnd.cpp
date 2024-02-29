@@ -23,6 +23,7 @@ PatternEdgeEnd::PatternEdgeEnd(Mesh *AMesh, Front_3D *AFront, TCellID Ae_id, Lay
 void
 PatternEdgeEnd::computeNewHex()
 {
+
 	Edge e = m_mesh->get<Edge>(m_e_id);
 	std::vector<Node> e_nodes = e.get<Node>();
 
@@ -50,11 +51,13 @@ PatternEdgeEnd::computeNewHex()
 	Node n_01 = e_01.getOppositeNode(m_mesh->get<Node>(n0_id));
 
 	Node n_02;
+	bool side_n0_needUpdates(false);
 	if (!m_StructManager->isEndFaceCreated(m_e_id, n0_id))
 	{
 		n_02 = m_mesh->get<Node>(m_StructManager->getFaceIdealNextNode(e_front_faces[0], n0_id));
 		m_StructManager->setEndFaceCreated(m_e_id, n0_id);
 		m_StructManager->setNextDiagNode(m_e_id, n0_id, n_02.id());
+		side_n0_needUpdates = true;
 	}
 	else
 	{
@@ -71,11 +74,13 @@ PatternEdgeEnd::computeNewHex()
 	Node n_11 = e_11.getOppositeNode(m_mesh->get<Node>(n1_id));
 
 	Node n_12;
+	bool side_n1_needUpdates(false);
 	if (!m_StructManager->isEndFaceCreated(m_e_id, n1_id))
 	{
 		n_12 = m_mesh->get<Node>(m_StructManager->getFaceIdealNextNode(e_front_faces[0], n1_id));
 		m_StructManager->setEndFaceCreated(m_e_id, n1_id);
 		m_StructManager->setNextDiagNode(m_e_id, n1_id, n_12.id());
+		side_n1_needUpdates = true;
 	}
 	else
 	{
@@ -93,30 +98,37 @@ PatternEdgeEnd::computeNewHex()
 	var_node_couche_id->set(n_12.id(), m_Front->getFrontID()+1);
 
 	// Update the FaceInfo structures
-	NodeNeighbourhoodOnFront_3D n00_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n_00.id());
-	n00_neighbourhood.execute();
-	NodeNeighbourhoodOnFront_3D n01_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n_01.id());
-	n01_neighbourhood.execute();
-	NodeNeighbourhoodOnFront_3D n10_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n_10.id());
-	n10_neighbourhood.execute();
-	NodeNeighbourhoodOnFront_3D n11_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n_11.id());
-	n11_neighbourhood.execute();
-	for (auto f_id:n00_neighbourhood.getOrderedFaces())
+	if (side_n0_needUpdates)
 	{
-		m_StructManager->setFaceNextNode(f_id, n_00.id(), n_02.id());
+		NodeNeighbourhoodOnFront_3D n00_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n_00.id());
+		n00_neighbourhood.execute();
+		NodeNeighbourhoodOnFront_3D n01_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n_01.id());
+		n01_neighbourhood.execute();
+		for (auto f_id:n00_neighbourhood.getOrderedFaces())
+		{
+			m_StructManager->setFaceNextNode(f_id, n_00.id(), n_02.id());
+		}
+		for (auto f_id:n01_neighbourhood.getOrderedFaces())
+		{
+			m_StructManager->setFaceNextNode(f_id, n_01.id(), n_02.id());
+		}
 	}
-	for (auto f_id:n01_neighbourhood.getOrderedFaces())
+	if (side_n1_needUpdates)
 	{
-		m_StructManager->setFaceNextNode(f_id, n_01.id(), n_02.id());
+		NodeNeighbourhoodOnFront_3D n10_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n_10.id());
+		n10_neighbourhood.execute();
+		NodeNeighbourhoodOnFront_3D n11_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n_11.id());
+		n11_neighbourhood.execute();
+		for (auto f_id:n10_neighbourhood.getOrderedFaces())
+		{
+			m_StructManager->setFaceNextNode(f_id, n_10.id(), n_12.id());
+		}
+		for (auto f_id:n11_neighbourhood.getOrderedFaces())
+		{
+			m_StructManager->setFaceNextNode(f_id, n_11.id(), n_12.id());
+		}
 	}
-	for (auto f_id:n10_neighbourhood.getOrderedFaces())
-	{
-		m_StructManager->setFaceNextNode(f_id, n_10.id(), n_12.id());
-	}
-	for (auto f_id:n11_neighbourhood.getOrderedFaces())
-	{
-		m_StructManager->setFaceNextNode(f_id, n_11.id(), n_12.id());
-	}
+
 	/*
 	Edge e_opp_0 = math::Utils::oppositeEdgeInFace(m_mesh, m_e_id, e_front_faces[0]);
 	TCellID f_opp_0 = m_Front->adjacentFaceOnFront(m_mesh, e_front_faces[0], e_opp_0.id());
@@ -132,5 +144,6 @@ PatternEdgeEnd::computeNewHex()
 	// Mark the two faces of the front as treated
 	m_StructManager->setFaceTreated(e_front_faces[0]);
 	m_StructManager->setFaceTreated(e_front_faces[1]);
+
 }
 /*------------------------------------------------------------------------*/

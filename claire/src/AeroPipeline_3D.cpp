@@ -23,6 +23,7 @@
 #include <gmds/claire/AeroMeshQuality.h>
 #include <gmds/claire/SU2Writer_3D.h>
 #include <gmds/claire/ComputeBezierDegree_3D.h>
+#include <gmds/claire/ComputeBezierCtrlPtstoInterpolateSurface.h>
 #include <iostream>
 #include <chrono>
 /*------------------------------------------------------------------------*/
@@ -121,7 +122,7 @@ AeroPipeline_3D::execute(){
 
 
 	// Smoothing Linear Block Structure
-	int nbr_iter_smoothing(14);
+	int nbr_iter_smoothing(20);
 	for (int i=0;i<nbr_iter_smoothing;i++)
 	{
 		std::map<TCellID, math::Point> new_pos;
@@ -262,23 +263,27 @@ AeroPipeline_3D::EcritureMaillage(){
 	std::cout << "-> Ecriture du maillage ..." << std::endl;
 
 	// Ecriture du maillage généré
+	/*
 	gmds::IGMeshIOService ioService(m_meshHex);
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::R);
 	vtkWriter.setDataOptions(gmds::N|gmds::R);
 	vtkWriter.write(m_params.output_file);
+	 */
 
 	// Write the edges of the blocking to vizualize the edge
 	// discretization
+	/*
 	gmds::IGMeshIOService ioService_edges(&m_Blocking3D);
 	gmds::VTKWriter vtkWriter_edges(&ioService_edges);
 	vtkWriter_edges.setCellOptions(gmds::N|gmds::E);
 	vtkWriter_edges.setDataOptions(gmds::N|gmds::E);
 	vtkWriter_edges.write("AeroPipeline3D_EdgesDiscretization.vtk");
+	 */
 
 	// Write the initial tet mesh (with fields computed on it)
-	ioService = IGMeshIOService(m_meshTet);
-	gmds::VTKWriter vtkWriter2(&ioService);
+	gmds::IGMeshIOService ioService_Tet = IGMeshIOService(m_meshTet);
+	gmds::VTKWriter vtkWriter2(&ioService_Tet);
 	vtkWriter2.setCellOptions(gmds::N|gmds::R);
 	vtkWriter2.setDataOptions(gmds::N|gmds::R);
 	vtkWriter2.write("AeroPipeline3D_Tetra.vtk");
@@ -290,7 +295,7 @@ AeroPipeline_3D::EcritureMaillage(){
 	vtkWriter_blocking.setDataOptions(gmds::N|gmds::R);
 	vtkWriter_blocking.write("AeroPipeline3D_Blocking.vtk");
 
-	// Write the Blocking
+	// Write the Control Points
 	gmds::IGMeshIOService ioService_ctrlpts(&m_CtrlPts);
 	gmds::VTKWriter vtkWriter_ctrlpts(&ioService_ctrlpts);
 	vtkWriter_ctrlpts.setCellOptions(gmds::N|gmds::R);
@@ -323,6 +328,7 @@ AeroPipeline_3D::EcritureMaillage(){
 	}
 	 */
 
+	/*
 	{
 		std::cout << "MFEM writing..." << std::endl;
 		FastLocalize fl = FastLocalize(m_meshTet);
@@ -357,38 +363,6 @@ AeroPipeline_3D::EcritureMaillage(){
 			}
 		}
 
-		/*
-		math::Point p;
-		int compteur(0);
-		for (auto n_id:m_meshHex->nodes())
-		{
-			if (var_couche->value(n_id)==0)
-			{
-				Node n = m_meshHex->get<Node>(n_id);
-				p = p + n.point();
-				compteur++;
-			}
-		}
-		if (compteur != 0)
-		{
-			p.setX(p.X() / compteur);
-			p.setY(p.Y() / compteur);
-		}
-		Node n_new = m_meshHex->newNode(p);
-		for (auto f_id:m_meshHex->faces())
-		{
-			Face f = m_meshHex->get<Face>(f_id);
-			std::vector<Node> f_nodes = f.get<Node>();
-			if (var_couche->value(f_nodes[0].id())==0
-			    && var_couche->value(f_nodes[1].id())==0
-			    && var_couche->value(f_nodes[2].id())==0
-			    && var_couche->value(f_nodes[3].id())==0)
-			{
-				m_meshHex->newPyramid(f_nodes[0], f_nodes[1], f_nodes[2], f_nodes[3], n_new);
-			}
-		}
-		*/
-
 		if (m_params.with_debug_files)
 		{
 			MeshDoctor doc(m_meshHex);
@@ -414,6 +388,7 @@ AeroPipeline_3D::EcritureMaillage(){
 		MFEMMeshWriter mfemwriter = MFEMMeshWriter(m_meshHex, "AeroPipeline3D_Blocking_toFit");
 		mfemwriter.execute();
 	}
+	*/
 
 	// Write the Blocking3D as a mesh
 	m_meshHex->clear();
@@ -438,14 +413,12 @@ AeroPipeline_3D::EcritureMaillage(){
 	std::cout << "	FINAL HEX MESH STATISTICS:" << std::endl;
 	std::cout << "=============================================" << std::endl;
 	std::cout << "|| Number of Hex: " << m_meshHex->getNbRegions() << std::endl;
-	//std::cout << "|| Number of Block Faces: " << m_meshHex->getNbFaces() << std::endl;
-	//std::cout << "|| Number of Block Edges: " << m_meshHex->getNbEdges() << std::endl;
 	std::cout << "|| Number of Nodes: " << m_meshHex->getNbNodes() << std::endl;
 	std::cout << "=============================================" << std::endl;
 
 	// Write a trick file to visualize the curved block edges
 	m_meshHex->clear();
-	math::Utils::CurveBlockEdgesReveal3D(&m_CtrlPts, m_meshHex, 10);
+	math::Utils::CurveBlockEdgesReveal3D(&m_CtrlPts, m_meshHex, 20);
 	gmds::IGMeshIOService ioService_visuCurved(m_meshHex);
 	gmds::VTKWriter vtkWriter_visuCurved(&ioService_visuCurved);
 	vtkWriter_visuCurved.setCellOptions(gmds::N|gmds::F);
@@ -1313,7 +1286,7 @@ AeroPipeline_3D::ComputeVectorFieldForExtrusion()
 {
 	Variable<math::Vector3d>* var_VectorsForExtrusion = m_meshTet->getOrCreateVariable<math::Vector3d, GMDS_NODE>("VectorField_Extrusion");
 
-	if (m_params.vectors_field <= 0 || m_params.vectors_field > 4)
+	if (m_params.vectors_field <= 0 || m_params.vectors_field > 2)
 	{
 		//m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
 		LeastSquaresGradientComputation grad3D(m_meshTet,
@@ -2144,7 +2117,6 @@ AeroPipeline_3D::initBlocking3DfromMesh()
 		}
 	}
 
-
 	// Test new method to compute the block nodes positions from ctrl points positions
 	computeBlockNodesPositionsFromCtrlPoints();
 
@@ -2356,6 +2328,7 @@ AeroPipeline_3D::computeControlPointstoInterpolateBoundaries()
 	Eigen::VectorXd interp_points_x((degree+1)*(degree+1));
 	Eigen::VectorXd interp_points_y((degree+1)*(degree+1));
 	Eigen::VectorXd interp_points_z((degree+1)*(degree+1));
+
 
 	for (auto b:m_Blocking3D.allBlocks())
 	{
@@ -2854,51 +2827,49 @@ AeroPipeline_3D::computeControlPointstoInterpolateBoundaries()
 		}
 	}
 
+	/*
+	// Write the Control Points
+	gmds::IGMeshIOService ioService_ctrlpts(&m_CtrlPts);
+	gmds::VTKWriter vtkWriter_ctrlpts(&ioService_ctrlpts);
+	vtkWriter_ctrlpts.setCellOptions(gmds::N|gmds::R);
+	vtkWriter_ctrlpts.setDataOptions(gmds::N|gmds::R);
+	vtkWriter_ctrlpts.write("AeroPipeline3D_ControlPoints_BEFORE.vtk");
+
+	for (auto bf_id:m_Blocking3D.faces())
+	{
+		if (m_linker_BG->getGeomDim<Face>(bf_id) == 3)
+		{
+			int geom_id = m_linker_BG->getGeomId<Face>(bf_id);
+			cad::GeomSurface* surf = m_manager->getSurface(geom_id);
+			Blocking3D::BlockFace bf = m_CtrlPts.blockFace(bf_id) ;
+			Array2D<math::Point> ctrlpts(bf.getNbDiscretizationI(), bf.getNbDiscretizationJ()) ;
+			for (auto i=0;i<bf.getNbDiscretizationI();i++)
+			{
+				for (auto j=0;j<bf.getNbDiscretizationJ();j++)
+				{
+					ctrlpts(i,j) = bf(i,j).point() ;
+				}
+			}
+			ComputeBezierCtrlPtstoInterpolateSurface algo_bezier = ComputeBezierCtrlPtstoInterpolateSurface(surf,
+			                                                                                                &ctrlpts);
+			algo_bezier.execute();
+			Array2D<math::Point> ctrlpts_new(bf.getNbDiscretizationI(), bf.getNbDiscretizationJ()) ;
+			ctrlpts_new = algo_bezier.getCtrlPts();
+			for (auto i=0;i<bf.getNbDiscretizationI();i++)
+			{
+				for (auto j=0;j<bf.getNbDiscretizationJ();j++)
+				{
+					bf(i,j).setPoint(ctrlpts_new(i,j));
+				}
+			}
+		}
+	}
+	*/
+
 	// Recompute the positions of the inner control points
 	for (auto b:m_CtrlPts.allBlocks())
 	{
 		b.computeInnerBlockNodesPoints();
-		/*
-		auto nb_I = b.getNbDiscretizationI();
-		auto nb_J = b.getNbDiscretizationJ();
-		auto nb_K = b.getNbDiscretizationK();
-		Array3D<math::Point> pnts(nb_I, nb_J, nb_K);
-		for (auto i=0;i<nb_I;i++)
-		{
-			for (auto j=0;j<nb_J;j++)
-			{
-				pnts(i,j,0) = b(i,j,0).point();
-				pnts(i,j,nb_K-1) = b(i,j,nb_K-1).point();
-			}
-		}
-		for (auto i=0;i<nb_I;i++)
-		{
-			for (auto k=0;k<nb_K;k++)
-			{
-				pnts(i,0,k) = b(i,0,k).point();
-				pnts(i,nb_J-1,k) = b(i,nb_J-1,k).point();
-			}
-		}
-		for (auto j=0;j<nb_J;j++)
-		{
-			for (auto k=0;k<nb_K;k++)
-			{
-				pnts(0,j,k) = b(0,j,k).point();
-				pnts(nb_I-1,j,k) = b(nb_I-1,j,k).point();
-			}
-		}
-		TransfiniteInterpolation_3D::computeHex(pnts);
-		for(auto i=1; i<nb_I-1;i++)
-		{
-			for(auto j=1; j<nb_J-1;j++)
-			{
-				for (auto k=1; k<nb_K-1;k++)
-				{
-					b(i,j,k).setPoint(pnts(i,j,k));
-				}
-			}
-		}
-		 */
 	}
 
 
@@ -2910,16 +2881,60 @@ AeroPipeline_3D::computeHexMeshQuality()
 	std::cout << "-> Compute final mesh quality" << std::endl;
 	Variable<double>* var_scaledjacobian = m_meshHex->newVariable<double, GMDS_REGION>("GMDS_ScaledJacobian");
 
+	double min_sj(1.0);
+	std::map<double,int> map_sj;
+	std::vector<int> sj(21);
+	for (auto i=0;i<=20;i++)
+	{
+		sj[i] = 0;
+	}
+
 	for (auto r_id:m_meshHex->regions())
 	{
 		Region r = m_meshHex->get<Region>(r_id);
 		std::vector<Node> r_nodes = r.get<Node>();
 		//std::cout << "Region " << r_id << ", nodes " << r_nodes.size() << std::endl;
-		var_scaledjacobian->set(r_id, -math::AeroMeshQuality::ScaledJacobianHEX(r_nodes[0].point(), r_nodes[1].point(),
-		                                                                       r_nodes[2].point(), r_nodes[3].point(),
-		                                                                       r_nodes[4].point(), r_nodes[5].point(),
-		                                                                       r_nodes[6].point(), r_nodes[7].point()));
+		double loc_sj = -math::AeroMeshQuality::ScaledJacobianHEX(r_nodes[0].point(), r_nodes[1].point(),
+		                                                          r_nodes[2].point(), r_nodes[3].point(),
+		                                                          r_nodes[4].point(), r_nodes[5].point(),
+		                                                          r_nodes[6].point(), r_nodes[7].point()) ;
+		var_scaledjacobian->set(r_id, loc_sj);
+		if (loc_sj < min_sj)
+		{
+			min_sj = loc_sj;
+			//std::cout << "Min SJ: " << min_sj << std::endl;
+		}
+		for (auto i=0;i<20;i++)
+		{
+			if (i*0.1 -1 < loc_sj
+			    && loc_sj <= (i+1)*0.1 -1)
+			{
+				int compteur = sj[i] ;
+				sj[i] = compteur+1;
+			}
+		}
+		if (-1.0 == loc_sj)
+		{
+			sj[0]++;
+		}
 	}
+	sj[20] = sj[19];
+
+	int cpt_hex(0);
+	std::ofstream stream= std::ofstream("GMDS_Histogram_ScaledJacobian.table", std::ios::out);
+	//set the numerical precision (number of digits)
+	stream.precision(15);
+	for (auto i=0;i<=20;i++)
+	{
+		stream << i*0.1 -1 << " " << sj[i] << "\n";
+		cpt_hex += sj[i] ;
+	}
+	stream.close();
+	cpt_hex -= sj[20];
+	std::cout << "Nbr cells: " << cpt_hex << std::endl;
+
+	std::cout << "minimal scaled jacobian: " << min_sj << std::endl;
+
 }
 /*------------------------------------------------------------------------*/
 void

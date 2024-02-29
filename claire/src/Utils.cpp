@@ -598,8 +598,6 @@ void Utils::CurveBlockEdgesReveal3D(Blocking3D* Ablocking3D, Mesh* Am, int Asamp
 {
 	Am->clear();
 
-	Blocking3D m_VisuBlocking;
-
 	// Create all the faces in the mesh m
 	for (auto b:Ablocking3D->allBlocks())
 	{

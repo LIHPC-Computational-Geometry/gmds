@@ -127,6 +127,27 @@ NodeNeighbourhoodOnFront_3D::adjFaceToEdge1InEdge2SideAvoidingEdge3(TCellID e1_i
 	return face_id;
 }
 /*------------------------------------------------------------------------*/
+TCellID
+NodeNeighbourhoodOnFront_3D::adjFaceToEdge1InFaceSideStartingFromEdge2(TCellID e1_id, TCellID f_id, TCellID e2_id)
+{
+	TCellID f_adj_id(f_id);
+	TCellID e_next_id(e2_id);
+	while ((*this).nextEdgeOfFace(f_adj_id, e_next_id) != e1_id)
+	{
+		e_next_id = (*this).nextEdgeOfFace(f_adj_id, e_next_id);
+		std::vector<TCellID> adj_faces = (*this).adjFacesToEdge(e_next_id) ;
+		if (adj_faces[0] == f_adj_id)
+		{
+			f_adj_id = adj_faces[1];
+		}
+		else
+		{
+			f_adj_id = adj_faces[0];
+		}
+	}
+	return f_adj_id;
+}
+/*------------------------------------------------------------------------*/
 std::vector<TCellID>
 NodeNeighbourhoodOnFront_3D::facesBtwEdge1nEdge2AvoidingEdge3(TCellID e1_id, TCellID e2_id, TCellID e3_id)
 {
