@@ -23,13 +23,11 @@ PatternEdgeCorner::PatternEdgeCorner(Mesh *AMesh, Front_3D *AFront, TCellID Ae_i
 void
 PatternEdgeCorner::computeNewHex()
 {
-
-	// std::cout << "Template Edge Corner on edge " << e_id << std::endl;
-
 	Edge e = m_mesh->get<Edge>(m_e_id);
 	std::vector<Node> e_nodes = e.get<Node>();
 
 	std::vector<TCellID> e_front_faces = m_Front->edgeFacesOnFront(m_mesh, m_e_id) ;
+
 
 	Variable<int>* var_node_couche_id = m_mesh->getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche_Id");
 	Variable<int>* var_front_edges_classification = m_mesh->getOrCreateVariable<int, GMDS_EDGE>("Edges_Classification");
@@ -110,11 +108,12 @@ PatternEdgeCorner::computeNewHex()
 				NodeNeighbourhoodOnFront_3D n0_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n0_id);
 				n0_neighbourhood.execute();
 
-				TCellID next_edge_id_0side = n0_neighbourhood.nextEdgeOfFace(e_front_faces[0], m_e_id) ;
-				TCellID next_edge_id_1side = n0_neighbourhood.nextEdgeOfFace(e_front_faces[1], m_e_id) ;
-
-				TCellID f_adj_0 = n0_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(e_adj_id, next_edge_id_0side, next_edge_id_1side);
-				TCellID f_adj_1 = n0_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(e_adj_id, next_edge_id_1side, next_edge_id_0side);
+				//TCellID next_edge_id_0side = n0_neighbourhood.nextEdgeOfFace(e_front_faces[0], m_e_id) ;
+				//TCellID next_edge_id_1side = n0_neighbourhood.nextEdgeOfFace(e_front_faces[1], m_e_id) ;
+				//TCellID f_adj_0 = n0_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(e_adj_id, next_edge_id_0side, next_edge_id_1side);
+				//TCellID f_adj_1 = n0_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(e_adj_id, next_edge_id_1side, next_edge_id_0side);
+				TCellID f_adj_0 = n0_neighbourhood.adjFaceToEdge1InFaceSideStartingFromEdge2(e_adj_id, e_front_faces[0], m_e_id);
+				TCellID f_adj_1 = n0_neighbourhood.adjFaceToEdge1InFaceSideStartingFromEdge2(e_adj_id, e_front_faces[1], m_e_id);
 
 				m_StructManager->setCornerNextAdjNode(e_adj_id, f_adj_0, n0_id, n0_1_id);
 				m_StructManager->setCornerNextAdjNode(e_adj_id, f_adj_1, n0_id, n0_3_id);
@@ -212,11 +211,12 @@ PatternEdgeCorner::computeNewHex()
 				NodeNeighbourhoodOnFront_3D n1_neighbourhood = NodeNeighbourhoodOnFront_3D(m_mesh, m_Front, n1_id);
 				n1_neighbourhood.execute();
 
-				TCellID next_edge_id_0side = n1_neighbourhood.nextEdgeOfFace(e_front_faces[0], m_e_id) ;
-				TCellID next_edge_id_1side = n1_neighbourhood.nextEdgeOfFace(e_front_faces[1], m_e_id) ;
-
-				TCellID f_adj_0 = n1_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(e_adj_id, next_edge_id_0side, next_edge_id_1side);
-				TCellID f_adj_1 = n1_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(e_adj_id, next_edge_id_1side, next_edge_id_0side);
+				//TCellID next_edge_id_0side = n1_neighbourhood.nextEdgeOfFace(e_front_faces[0], m_e_id) ;
+				//TCellID next_edge_id_1side = n1_neighbourhood.nextEdgeOfFace(e_front_faces[1], m_e_id) ;
+				//TCellID f_adj_0 = n1_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(e_adj_id, next_edge_id_0side, next_edge_id_1side);
+				//TCellID f_adj_1 = n1_neighbourhood.adjFaceToEdge1InEdge2SideAvoidingEdge3(e_adj_id, next_edge_id_1side, next_edge_id_0side);
+				TCellID f_adj_0 = n1_neighbourhood.adjFaceToEdge1InFaceSideStartingFromEdge2(e_adj_id, e_front_faces[0], m_e_id);
+				TCellID f_adj_1 = n1_neighbourhood.adjFaceToEdge1InFaceSideStartingFromEdge2(e_adj_id, e_front_faces[1], m_e_id);
 
 				m_StructManager->setCornerNextAdjNode(e_adj_id, f_adj_0, n1_id, n1_1_id);
 				m_StructManager->setCornerNextAdjNode(e_adj_id, f_adj_1, n1_id, n1_3_id);
@@ -244,7 +244,8 @@ PatternEdgeCorner::computeNewHex()
 	Node n1_3 = m_mesh->get<Node>(n1_3_id);
 
 	// Create the hexa
-	m_hex.push_back(m_mesh->get<Region>( math::Utils::CreateHexaNConnectivities(m_mesh, e_nodes[0], n0_1, n0_2, n0_3, e_nodes[1], n1_1, n1_2, n1_3)));
+	m_hex.push_back(m_mesh->get<Region>( math::Utils::CreateHexaNConnectivities(m_mesh, e_nodes[0], n0_1, n0_2, n0_3,
+	                                                                           e_nodes[1], n1_1, n1_2, n1_3)));
 
 	//---------------------------//
 	// Update the two new faces  //

@@ -123,6 +123,19 @@ IntervalAssignment_3D::ComputeSheets()
 		}
 	}
 
+	/*
+	Variable<int>* var_sheet = m_Blocking3D->newVariable<int,GMDS_REGION>("tmp_sheet");
+	std::vector<TCellID> sheet_edges_ids = ComputeSingleSheet(70);
+	for (auto e_id:sheet_edges_ids)
+	{
+		std::vector<Region> blocs = m_Blocking3D->get<Edge>(e_id).get<Region>() ;
+		for (auto b_loc:blocs)
+		{
+			var_sheet->set(b_loc.id(), 10);
+		}
+	}
+	 */
+
 	m_Blocking3D->unmarkAll<Edge>(mark_isTreated);
 	m_Blocking3D->freeMark<Edge>(mark_isTreated);
 

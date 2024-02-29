@@ -69,6 +69,13 @@ class LIB_GMDS_CLAIRE_API NodeNeighbourhoodOnFront_3D
 	 */
 	TCellID adjFaceToEdge1InEdge2SideAvoidingEdge3(TCellID e1_id, TCellID e2_id, TCellID e3_id);
 	/*-------------------------------------------------------------------*/
+	/** @brief Adjacent face to Edge_1 on the front, in the side of Face f,
+	 * starting from edge Edge_2
+	 *
+	 * 	\return a face id
+	 */
+	TCellID adjFaceToEdge1InFaceSideStartingFromEdge2(TCellID e1_id, TCellID f_id, TCellID e2_id);
+	/*-------------------------------------------------------------------*/
 	/** @brief Adjacent face to Edge_1 on the front, in the side of Edge_2
 	 * 	\param[in] e1_id first edge
 	 * 	\param[in] e2_id second edge
