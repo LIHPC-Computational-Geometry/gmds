@@ -682,7 +682,8 @@ std::vector<std::pair<TCellID ,double>>
 CurvedBlockingClassifier::list_Possible_Cuts()
 {
     std::vector<std::pair<TCellID ,double>> list_actions;
-    auto no_capt_elements = this->classify();
+    ClassificationErrors no_capt_elements;
+	 this->detect_classification_errors(no_capt_elements);
     auto no_points_capt = no_capt_elements.non_captured_points;
     auto no_curves_capt = no_capt_elements.non_captured_curves;
 

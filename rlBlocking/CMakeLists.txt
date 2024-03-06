@@ -22,6 +22,7 @@ set(GMDS_INC
         inc/gmds/rlBlocking/IActionSPAM.h
         inc/gmds/rlBlocking/IRewardFunctionSPAM.h
         inc/gmds/rlBlocking/IStateSPAM.h
+        inc/gmds/rlBlocking/PolyCut.h
         )
 set(GMDS_SRC
         src/BlockingQuality.cpp
@@ -35,6 +36,7 @@ set(GMDS_SRC
         src/MCTSAgentSPAM.cpp
         src/MCTSTreeSPAM.cpp
         src/Takuzu.cpp
+        src/PolyCut.cpp
 )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})

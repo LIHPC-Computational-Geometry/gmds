@@ -35,7 +35,7 @@ void set_up_MCTS(gmds::cad::FACManager* AGeomModel, const std::string AFileName)
 
 }
 /*----------------------------------------------------------------------------*/
-TEST(MCTSTestSuite, testExAgloCb2)
+TEST(MCTSTestSuite, testExAlgoCb2)
 {
 
 	gmds::cad::FACManager geom_model;
@@ -57,7 +57,7 @@ TEST(MCTSTestSuite, testExAgloCb2)
 }
 
 /*----------------------------------------------------------------------------*/
-TEST(MCTSTestSuite, testExAgloM1)
+TEST(MCTSTestSuite, testExAlgoM1)
 {
 
 	gmds::cad::FACManager geom_model;
@@ -78,7 +78,7 @@ TEST(MCTSTestSuite, testExAgloM1)
 
 }
 /*----------------------------------------------------------------------------*/
-TEST(MCTSTestSuite, testExAgloCb1)
+TEST(MCTSTestSuite, testExAlgoCb1)
 {
 
 	gmds::cad::FACManager geom_model;
@@ -99,7 +99,7 @@ TEST(MCTSTestSuite, testExAgloCb1)
 
 }
 /*----------------------------------------------------------------------------*/
-TEST(MCTSTestSuite, testExAgloCb3)
+TEST(MCTSTestSuite, testExAlgoCb3)
 {
 
 	gmds::cad::FACManager geom_model;
@@ -120,7 +120,7 @@ TEST(MCTSTestSuite, testExAgloCb3)
 
 }
 /*----------------------------------------------------------------------------*/
-TEST(MCTSTestSuite, testExAgloCb4)
+TEST(MCTSTestSuite, testExAlgoCb4)
 {
 
 	gmds::cad::FACManager geom_model;
@@ -141,7 +141,7 @@ TEST(MCTSTestSuite, testExAgloCb4)
 
 }
 /*----------------------------------------------------------------------------*/
-TEST(MCTSTestSuite, testExAgloCb5)
+TEST(MCTSTestSuite, testExAlgoCb5)
 {
 
 	gmds::cad::FACManager geom_model;
@@ -163,7 +163,7 @@ TEST(MCTSTestSuite, testExAgloCb5)
 }
 
 /*----------------------------------------------------------------------------*/
-TEST(MCTSTestSuite, testExAgloB0)
+TEST(MCTSTestSuite, testExAlgoB0)
 {
 
 	gmds::cad::FACManager geom_model;

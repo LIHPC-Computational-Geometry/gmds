@@ -59,7 +59,7 @@ class LIB_GMDS_RLBLOCKING_API MCTSStatePolycube: public MCTSState{
 	 * */
 	double get_quality() const;
 
-MCTSMove* randomMove(std::deque<MCTSMove *> AListActions) const;
+	MCTSMove* randomMove(std::deque<MCTSMove *> AListActions) const;
 
 	/** @brief return the geom */
 	gmds::cad::GeomManager *get_geom();

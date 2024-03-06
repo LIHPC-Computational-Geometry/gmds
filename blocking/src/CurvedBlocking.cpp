@@ -1003,6 +1003,7 @@ CurvedBlocking::check_cut_possible(int pointId, std::vector<std::vector<CurvedBl
 	bool cutPossible = false;
 
 	//============================================
+	auto pointsGeom = m_geom_model->getPoints();
 	auto noCaptPoint0 = m_geom_model->getPoint(pointId);
 	gmds::math::Point p(noCaptPoint0->X(),noCaptPoint0->Y(),noCaptPoint0->Z());
 
