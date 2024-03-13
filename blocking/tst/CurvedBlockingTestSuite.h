@@ -129,7 +129,6 @@ TEST(CurvedBlockingTestSuite, global_cell_accessors)
 	ASSERT_EQ(11, bl.get_all_faces().size());
 	ASSERT_EQ(2,  bl.get_all_blocks().size());
 }
-
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, remove_block)
 {
@@ -188,7 +187,6 @@ TEST(CurvedBlockingTestSuite, single_block)
 		ASSERT_NEAR(block_center.distance(face_center), 0.5, 1e-8);
 	}
 }
-
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, single_block_parallel_edges)
 {
@@ -276,6 +274,44 @@ TEST(CurvedBlockingTestSuite, split_one_block_twice)
 	ASSERT_EQ(20,bl.get_nb_cells<2>());
 	ASSERT_EQ(4,bl.get_nb_cells<3>());
 }
+
+/*----------------------------------------------------------------------------*/
+TEST(CurvedBlockingTestSuite, cut_sheet_param_propag)
+{
+
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model, true);
+	gmds::blocking::CurvedBlockingClassifier cl(&bl);
+	cl.classify();
+
+	std::vector<gmds::blocking::CurvedBlocking::Face> all_faces = bl.get_all_faces();
+	std::vector<gmds::blocking::CurvedBlocking::Face> surf;
+
+	surf.clear();
+	//We pick a full boundary surface on coord X=5.0 and Y=5.0
+	for(auto f:all_faces){
+		gmds::math::Point ci = bl.get_center_of_face(f);
+		if(fabs(ci.X()-5)<0.1){
+			surf.push_back(f);
+		}
+		else if(fabs(ci.Y()-5)<0.1){
+			surf.push_back(f);
+		}
+		else if(fabs(ci.Z()-5)<0.1){
+			surf.push_back(f);
+		}
+	}
+	ASSERT_TRUE(bl.pillow(surf));
+
+	bl.smooth(10);
+
+	//now we get the edge having end points of ids 1 and 2
+	auto e = bl.get_edge(0,3);
+	bl.cut_sheet(e,0.25);
+
+	ASSERT_EQ(7,bl.get_nb_cells<3>());
+}
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, init_from_geom_bounding_box)
 {
@@ -325,8 +361,6 @@ TEST(CurvedBlockingTestSuite, single_block_to_mesh)
 	ASSERT_EQ(m.getNbFaces(), 6);
 	ASSERT_EQ(m.getNbRegions(), 1);
 }
-
-
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, projection_point_to_edges)
 {
@@ -382,7 +416,6 @@ TEST(CurvedBlockingTestSuite, test_topological_queries)
 		    ASSERT_EQ(1, bs.size());
 	}
 }
-
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, test_init_from_ig_mesh)
 {
@@ -422,7 +455,6 @@ TEST(CurvedBlockingTestSuite, test_init_from_ig_mesh)
 	ASSERT_EQ(16,bl.get_all_faces().size());
 	ASSERT_EQ(3,bl.get_all_blocks().size());
 }
-
 /*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, test_chord_query)
 {
@@ -1129,6 +1161,7 @@ TEST(CurvedBlockingTestSuite, test_pillow_12)
     ASSERT_EQ(nb_faces_on_surface, 34);
     ASSERT_EQ(nb_faces_in_volume, 25);
 }
+/*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, save_vtk_blocking){
 	gmds::cad::FACManager geom_model;
 	setUp(geom_model);
@@ -1137,7 +1170,7 @@ TEST(CurvedBlockingTestSuite, save_vtk_blocking){
 
 	bl.save_vtk_blocking("testSaveWork.vtk");
 }
-
+/*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, get_Id_block){
 	gmds::cad::FACManager geom_model;
 	setUp(geom_model);
@@ -1157,7 +1190,7 @@ TEST(CurvedBlockingTestSuite, get_Id_block){
 	std::cout<<"LE BLOCK TEST "<<bl.get_block_id(block)<<std::endl;
 
 }
-
+/*----------------------------------------------------------------------------*/
 TEST(CurvedBlockingTestSuite, check_capt_Element){
     gmds::cad::FACManager geom_model;
     setUp(geom_model);
@@ -1180,3 +1213,4 @@ TEST(CurvedBlockingTestSuite, check_capt_Element){
         std::cout<<"Check capt possible for the curve "<< c->id()<<"  : "<<bl.check_capt_element(c->id(),c->dim())<<std::endl;
     }
 }
+/*----------------------------------------------------------------------------*/
