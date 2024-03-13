@@ -253,7 +253,26 @@ CurvedBlocking::get_blocks_of_face(const Face AF) {
     }
     return blocks;
 }
-
+/*----------------------------------------------------------------------------*/
+CurvedBlocking::Edge CurvedBlocking::get_edge(const CurvedBlocking::Node AN1, const CurvedBlocking::Node AN2)
+{
+	 return get_edge(AN1->info().topo_id,AN2->info().topo_id);
+}
+/*----------------------------------------------------------------------------*/
+CurvedBlocking::Edge CurvedBlocking::get_edge(const int AN1, const int AN2)
+{
+	 auto edges = get_all_edges();
+	 for(auto e: edges){
+		  auto nodes_of_e = get_nodes_of_edge(e);
+		  if(	nodes_of_e[0]->info().topo_id == AN1 &&
+		      nodes_of_e[1]->info().topo_id == AN2)
+			   return e;
+		  else if(	nodes_of_e[0]->info().topo_id == AN2 &&
+		           nodes_of_e[1]->info().topo_id == AN1)
+			   return e;
+	 }
+	 throw GMDSException("No edge with given end points");
+}
 /*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Edge>
 CurvedBlocking::get_all_edges() {
@@ -825,9 +844,15 @@ CurvedBlocking::get_all_sheet_darts(const Edge AE, std::vector<Dart3> &ADarts) {
     auto edge_mark = m_gmap.get_new_mark();
 
     std::vector<Dart3> front;
-    front.push_back(AE->dart());
+	 // For all the sheet operations, we orient the edges using its end point ids (from the lowest to the highest).
+	 // We order that here!!
+	 auto first_dart = AE->dart();
+	 if(m_gmap.attribute<0>(first_dart)->info().topo_id>m_gmap.attribute<0>(m_gmap.alpha<0>(first_dart))->info().topo_id)
+		  first_dart = m_gmap.alpha<0>(first_dart);
+
+    front.push_back(first_dart);
     // the current dart belongs to the final set of darts
-    ADarts.push_back(AE->dart());
+    ADarts.push_back(first_dart);
     // we mark all the dart of the inital edge to avoid to traverse it twice
     m_gmap.mark_cell<1>(AE->dart(), edge_mark);
 
