@@ -414,12 +414,11 @@ install(EXPORT GMDS_SUITE
         )
 
 set(INCLUDE_INSTALL_DIR include/)
-set(LIB_INSTALL_DIR lib/)
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
         gmdsConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/gmdsConfig.cmake
-        INSTALL_DESTINATION ${LIB_INSTALL_DIR}/gmds/cmake
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/gmds/cmake
         PATH_VARS INCLUDE_INSTALL_DIR
 )
 
@@ -432,5 +431,5 @@ write_basic_package_version_file(
 install(FILES
         ${CMAKE_CURRENT_BINARY_DIR}/gmdsConfig.cmake
 #       ${CMAKE_CURRENT_BINARY_DIR}/gmdsConfigVersion.cmake
-        DESTINATION ${LIB_INSTALL_DIR}/gmds/cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/gmds/cmake
 )
