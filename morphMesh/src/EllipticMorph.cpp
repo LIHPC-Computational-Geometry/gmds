@@ -265,6 +265,14 @@ std::vector<TCellID> EllipticMorph::withExteriorLock(){
 			math::Point p_m = nearest_morphed.point();
 			math::Point p_axe(p.X(), 0, 0);
 
+			math::Ray ray(p_axe, p);
+
+			Face nearest_locked_face;
+			Edge nearest_locked_edge;
+			math::Point p_intersect;
+			bool intersectedFace = false;
+			bool intersectedEdge = false;
+
 			math::Point p_origin = p.distance(p_int) < p.distance(p_axe) ? p_int : p_axe;
 
 			double dist_p = p.distance(p_axe);
@@ -276,10 +284,82 @@ std::vector<TCellID> EllipticMorph::withExteriorLock(){
 
 
 			if(dist_p < dist_pm){
+				std::vector<Face> nearest_locked_faces;
+				for(const auto& f : nearest_morphed.get<Face>()){
+					if (f.getIDs<Region>().size() == 2) {
+						if ((m_mesh->isMarked<Region>(f.getIDs<Region>()[0],m_morphRegions) && !m_mesh->isMarked<Region>(f.getIDs<Region>()[1],m_morphRegions))
+						    || (!m_mesh->isMarked<Region>(f.getIDs<Region>()[0],m_morphRegions) && m_mesh->isMarked<Region>(f.getIDs<Region>()[1],m_morphRegions))){
+							nearest_locked_faces.push_back(f);
+						}
+					}
+				}
+				for(const auto& f : nearest_locked_faces) {
+					math::Triangle t1(f.get<Node>()[0].point(),f.get<Node>()[1].point(),f.get<Node>()[2].point());
+					math::Triangle t2(f.get<Node>()[0].point(),f.get<Node>()[2].point(),f.get<Node>()[3].point());
+
+					if(ray.intersect3D(t1, p_intersect)){
+						nearest_locked_face = f;
+						intersectedFace = true;
+						break;
+					}else if(ray.intersect3D(t2, p_intersect)) {
+						nearest_locked_face = f;
+						intersectedFace = true;
+						break;
+					}
+				}
+				if(!intersectedFace){
+					for (const auto& e : nearest_morphed.get<Edge>()) {
+						double paramSeg;
+						double paramRay;
+						if(ray.intersect3D(e.segment(),p_intersect, paramSeg,paramRay)){
+							intersectedEdge = true;
+							nearest_locked_edge = e;
+							break;
+						}
+					}
+				}
+				if(!intersectedFace && !intersectedEdge){
+					std::cout<<"ERROR"<<std::endl;
+				}
+
+				p_m = p_intersect;
+
 				dist1 = p.distance(p_origin);
 				dist2 = p_m.distance(p_origin);
 				omega = dist1 / dist2;
 			}else if(dist_p > dist_pm){
+
+				for(const auto& f : outerSkin) {
+					math::Triangle t1(f.get<Node>()[0].point(),f.get<Node>()[1].point(),f.get<Node>()[2].point());
+					math::Triangle t2(f.get<Node>()[0].point(),f.get<Node>()[2].point(),f.get<Node>()[3].point());
+
+					if(ray.intersect3D(t1, p_intersect)){
+						nearest_locked_face = f;
+						intersectedFace = true;
+						break;
+					}else if(ray.intersect3D(t2, p_intersect)) {
+						nearest_locked_face = f;
+						intersectedFace = true;
+						break;
+					}
+				}
+				if(!intersectedFace){
+					for (const auto& e : nearest_morphed.get<Edge>()) {
+						double paramSeg;
+						double paramRay;
+						if(ray.intersect3D(e.segment(),p_intersect, paramSeg,paramRay)){
+							intersectedEdge = true;
+							nearest_locked_edge = e;
+							break;
+						}
+					}
+				}
+				if(!intersectedFace && !intersectedEdge){
+					std::cout<<"ERROR"<<std::endl;
+				}
+
+				p_m = p_intersect;
+
 				dist1 = p.distance(p_ext);
 				dist2 = p_m.distance(p_ext);
 				omega = dist1 / dist2;
@@ -288,7 +368,90 @@ std::vector<TCellID> EllipticMorph::withExteriorLock(){
 			}
 
 			math::Vector3d vec;
-			vec = m_vecs[nearest_morphed.id()];
+			vec.setXYZ(0,0,0);
+			if(intersectedFace){
+
+				std::vector<math::Point> points012 = {nearest_locked_face.get<Node>()[0].point(),nearest_locked_face.get<Node>()[1].point(),
+				                                      nearest_locked_face.get<Node>()[2].point()};
+				std::vector<math::Point> points023 = {nearest_locked_face.get<Node>()[0].point(),nearest_locked_face.get<Node>()[2].point(),
+				                                      nearest_locked_face.get<Node>()[3].point()};
+				std::vector<math::Point> points013 = {nearest_locked_face.get<Node>()[0].point(),nearest_locked_face.get<Node>()[1].point(),
+				                                      nearest_locked_face.get<Node>()[3].point()};
+				std::vector<math::Point> points123 = {nearest_locked_face.get<Node>()[1].point(),nearest_locked_face.get<Node>()[2].point(),
+				                                      nearest_locked_face.get<Node>()[3].point()};
+
+
+				math::Triangle t0(points012[0],points012[1],points012[2]);
+				math::Triangle t1(points023[0],points023[1],points023[2]);
+				math::Triangle t2(points013[0],points013[1],points013[2]);
+				math::Triangle t3(points123[0],points123[1],points123[2]);
+
+				std::vector<double> coefs012 = {0,0,0};
+
+				math::Vector3d vec0;
+				math::Vector3d vec1;
+				math::Vector3d vec2;
+				math::Vector3d vec3;
+
+				math::Point refined_intersect;
+				int nb_intersection = 0;
+				if(ray.intersect3D(t0,refined_intersect)){
+					math::Point::computeBarycentric(points012,p_intersect,coefs012);
+
+					vec0 = m_vecs[nearest_locked_face.getIDs<Node>()[0]]*(coefs012[0]);
+					vec1 = m_vecs[nearest_locked_face.getIDs<Node>()[1]]*coefs012[1];
+					vec2 = m_vecs[nearest_locked_face.getIDs<Node>()[2]]*(coefs012[2]);
+
+					vec += vec0+vec1+vec2;
+					nb_intersection++;
+				}
+				if(ray.intersect3D(t1,refined_intersect)){
+					math::Point::computeBarycentric(points023,p_intersect,coefs012);
+
+					vec0 = m_vecs[nearest_locked_face.getIDs<Node>()[0]]*(coefs012[0]);
+					vec1 = m_vecs[nearest_locked_face.getIDs<Node>()[2]]*coefs012[1];
+					vec2 = m_vecs[nearest_locked_face.getIDs<Node>()[3]]*(coefs012[2]);
+					vec += vec0+vec1+vec2;
+					nb_intersection++;
+				}
+				if(ray.intersect3D(t2,refined_intersect)){
+					math::Point::computeBarycentric(points013,p_intersect,coefs012);
+
+					vec0 = m_vecs[nearest_locked_face.getIDs<Node>()[0]]*(coefs012[0]);
+					vec1 = m_vecs[nearest_locked_face.getIDs<Node>()[1]]*coefs012[1];
+					vec2 = m_vecs[nearest_locked_face.getIDs<Node>()[3]]*(coefs012[2]);
+					vec += vec0+vec1+vec2;
+					nb_intersection++;
+				}
+				if(ray.intersect3D(t3,refined_intersect)){
+					math::Point::computeBarycentric(points123,p_intersect,coefs012);
+
+					vec0 = m_vecs[nearest_locked_face.getIDs<Node>()[1]]*(coefs012[0]);
+					vec1 = m_vecs[nearest_locked_face.getIDs<Node>()[2]]*coefs012[1];
+					vec2 = m_vecs[nearest_locked_face.getIDs<Node>()[3]]*(coefs012[2]);
+					vec += vec0+vec1+vec2;
+					nb_intersection++;
+				}
+
+				vec = vec/nb_intersection;
+
+				/*math::Vector3d vec0 = m_vecs[nearest_locked_face.getIDs<Node>()[0]]*((coefs012[0]+coefs023[0])/2);
+				math::Vector3d vec1 = m_vecs[nearest_locked_face.getIDs<Node>()[1]]*coefs012[1];
+				math::Vector3d vec2 = m_vecs[nearest_locked_face.getIDs<Node>()[2]]*((coefs012[2]+coefs023[2])/2);
+				math::Vector3d vec3 = m_vecs[nearest_locked_face.getIDs<Node>()[3]]*coefs023[2];*/
+
+				//vec = m_vecs[nearest_morphed.id()];
+				//vec = vec0+vec1+vec2;
+
+			}else if(intersectedEdge){
+
+				math::Vector3d vec0 = m_vecs[nearest_locked_edge.getIDs<Node>()[0]];
+				math::Vector3d vec1 = m_vecs[nearest_locked_edge.getIDs<Node>()[1]];
+
+				//vec = m_vecs[nearest_morphed.id()];
+				vec = (vec0+vec1)/2;
+
+			}
 			vec *= omega;
 
 			m_vecs[n.id()] = vec;
@@ -386,9 +549,6 @@ std::vector<TCellID> EllipticMorph::noExteriorLock(){
 
 			std::vector<Face> nearest_locked_faces;
 			for(const auto& f : nearest_morphed.get<Face>()){
-				/*if(m_mesh->isMarked<Face>(f.id(), m_innerSkin)){
-					nearest_locked_faces.push_back(f);
-				}*/
 				if (f.getIDs<Region>().size() == 2) {
 					if ((m_mesh->isMarked<Region>(f.getIDs<Region>()[0],m_morphRegions) && !m_mesh->isMarked<Region>(f.getIDs<Region>()[1],m_morphRegions))
 					    || (!m_mesh->isMarked<Region>(f.getIDs<Region>()[0],m_morphRegions) && m_mesh->isMarked<Region>(f.getIDs<Region>()[1],m_morphRegions))){
