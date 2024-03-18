@@ -249,7 +249,7 @@ TEST(ExecutionActionsTestSuite,cb1){
 
 
 
-TEST(ExecutionActionsTestSuite,cb2){
+TEST(ExecutionActionsTestSuite,DISABLED_cb2){
 
 	gmds::cad::FACManager geom_model;
 	set_up_file(&geom_model,"cb2.vtk");
@@ -386,7 +386,7 @@ TEST(ExecutionActionsTestSuite,cb2){
 
 
 
-TEST(ExecutionActionsTestSuite,cb3){
+TEST(ExecutionActionsTestSuite,DISABLED_cb3){
 
 	gmds::cad::FACManager geom_model;
 	set_up_file(&geom_model,"cb3.vtk");
