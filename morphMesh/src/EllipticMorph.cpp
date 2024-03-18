@@ -15,10 +15,9 @@
 #ifdef WITH_LIMA
 	#include "gmds/io/LimaReader.h"
 	#include "gmds/io/LimaWriter.h"
+#endif //WITH_LIMA
 #	include "gmds/math/Ray.h"
 #	include "gmds/math/Triangle.h"
-#endif //WITH_LIMA
-
 
 /*----------------------------------------------------------------------------*/
 
