@@ -820,9 +820,6 @@ void EllipticMorph::markLockedCells()
 		}
 	}
 
-	Variable<int>* var_int = m_mesh->getVariable<int, GMDS_REGION>("int");
-	Variable<int>* var_couche = m_mesh->getVariable<int, GMDS_REGION>("couche");
-
 	/*for(auto f : m_mesh->faces()) {
 		Face face = m_mesh->get<Face>(f);
 		if (face.getIDs<Region>().size() == 2) {
