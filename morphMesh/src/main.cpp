@@ -15,7 +15,7 @@ int main(int argc, char* argv[]){
 	/*
 	 * Mesh model needs to be changed to reduce mesh cells and memory usage
 	 */
-	gmds::Mesh m_mesh(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::F | gmds::N | gmds::N2R | gmds::R2N | gmds::R2F | gmds::F2N | gmds::F2R));
+	gmds::Mesh m_mesh(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::F | gmds::E | gmds::N | gmds::N2E | gmds::N2F | gmds::N2R | gmds::E2N  | gmds::E2R | gmds::R2N | gmds::R2F | gmds::F2N | gmds::F2R));
 
 	morphmesh::EllipticMorph emorph(param_file, &m_mesh);
 
