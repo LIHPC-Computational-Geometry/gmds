@@ -13,8 +13,8 @@
 
 
 ## Last changes
-- We currently change our installation procedure. In particular, we externalize some of gmds depencies. See the [developer documentation](docs/mkd/developers_doc.md) for more details.
-- Important work is done on the Python API, see the the [pygmds](pygmds/README.md) module.
+- We changed our installation procedure. In particular, we externalized some of gmds depencies. See the [developer documentation](docs/mkdocs/dev-guide/developers_doc.md) for more details.
+- Important work is done on the Python API, see the [pygmds](pygmds/README.md) module.
 - Our blocking structure is evolving to be more robust and efficient for the blocking procedure. See the [blocking](blocking/README.md) module.
 
 ## GMDS in a nuthsell

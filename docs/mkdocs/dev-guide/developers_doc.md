@@ -1,72 +1,145 @@
 # Developer documentation
 
 ## Setting your development environment
-gmds depends on many external components. In order to develop gmds, they need to be installed properly in
+gmds depends on many external components. In order to compile gmds they need to be installed properly in
 order to be used with CMake.
 
-On linux systems, and macos, we suggest to use [spack](https://spack.io/) for installing your depencies. 
-We use this system for our CI workflows. In a nutshell, spack allows you to install a set of libraries in a 
-specific directory. You can see it as an equivalent of *Python environment*. In our context,
-we will simply install the set of dependencies we need and use them in our CMake build system. As an example,
-let's take a look how to install the basic set of gmds components, plus the blocking component with the Python API and 
-without CGNS dependency.
-
-### Raw installation of dependencies with spack
-First of all, we download spack and change its way of installing libraries (second line with the `sed` command).
-After that, any library `toto` installed with spack will be located in  `absolute_path/spack/opt/spack/toto/`.
-```bash
-git clone --depth=1 -b releases/latest https://github.com/spack/spack.git
-sed -i 's#"${ARCHITECTURE}/${COMPILERNAME}-${COMPILERVER}/${PACKAGE}-${VERSION}-${HASH}"#"${PACKAGE}"#g' spack/etc/spack/defaults/config.yaml
-. ./spack/share/spack/setup-env.sh
-```
-Now, we can install the different packages that are required by *gmds*. There are many ways of doing it. 
-We use here the most basic one, that consists in successively asking spack to install all the
-required dependencies. Here:
+Some are optionnal depending on the gmds functionnalities we want to activate;
+they include for example:
 - `lcov` is used to perform code coverage locally to your computer;
 - `py-pybind11` is mandatory for the python API;
 - `glpk` is a linear programming solver that we used in some of our *gmds* basic components;
 - `googletest` is used for our testing infrastructure;
 - `cgal` is required for the blocking component.
 
+On linux systems and macos we suggest using [spack](https://spack.io/) for installing the dependencies. 
+We use this system for our CI workflows. In a nutshell, spack allows you to install a set of libraries in a 
+specific directory. You can see it as an equivalent of *Python environment*. In our context,
+we will simply install the set of dependencies we need and use them in our CMake build system. As an example,
+let's take a look at how to install the basic set of gmds components, plus the blocking component with the Python API and 
+with the CGNS writer.
+
+### Installation of dependencies with spack
+The following procedure can be found in the [build_spack_gmds.sh](https://github.com/LIHPC-Computational-Geometry/spack_recipes/blob/main/build_spack_gmds.sh)
+script. You can run the following commands from an empty directory; you will end up with three directories `spack, spack_recipes and gmds`.
+Spack's [prerequisites](https://spack.readthedocs.io/en/v0.20.3/getting_started.html) for the version of your choice 
+should be installed.
+
+We download a spack release; optionally you can remove the configuration files 
+stored in the `.spack` directory located in your home if you have previously used spack and want a fresh start:
 ```bash
-spack external find cmake
-spack install lcov
-spack install py-pybind11
-spack install glpk
-spack install googletest
-spack install cgal
-spack install --only dependencies gmds+kmds+blocking ^kokkos+openmp ^cgns~mpi
+#==========================================
+# First get a spack release
+git clone --depth=1 -b v0.20.3  https://github.com/spack/spack.git
+
+#==========================================
+# can be mandatory if you have already used spack on your computer
+# delete the .spack directory in the home of the user in order to 
+# have a fresh start
 ```
-Once all those libraries installed, *gmds* can be compiled with CMake using the following options
+
+The way to build software in spack is described in what is called `recipes`, and ours 
+are located in this project:
+```bash
+#==========================================
+# get our recipes
+git clone --branch gmds_temp --depth=1 https://github.com/LIHPC-Computational-Geometry/spack_recipes.git
+````
+
+Spack can be configured; you can modify the installation directory to shorten the paths at the cost
+of disabling the possibility to have several installations of a same package with differing
+options/versions (if choosing that any library `toto` installed with spack will be located in  `absolute_path/spack/opt/spack/toto/`.)
+```bash
+# Optionnal: modifying the install_tree variable to make it shorter and more human readable;
+# the HASH part in install directory names is removed which can lead to collisions.
+# The spack/etc/spack/defaults/config.yaml file can be modified by hand
+# - in spack version 0.20
+#sed -i 's#"{architecture}/{compiler.name}-{compiler.version}/{name}-{version}-{hash}"#"{name}"#g' spack/etc/spack/defaults/config.yaml
+```
+
+Spack comes with builtin recipes; still we have to register additional ones: 
+- recipes for our own software, in particular gmds itself;
+- superseded recipes that replace the builtin ones; we aim to keep this number low and directly contribute 
+to the spack upstream project
+```bash
+# to register our recipes; it assumes that spack_recipes and spack are located at
+# the same level. You can use the "spack repo add" commands instead of copying the repos.yaml file
+#spack repo add ./spack_recipes/meshing_repo
+#spack repo add ./spack_recipes/supersede_repo
+cp spack_recipes/config/repos.yaml spack/etc/spack/defaults/repos.yaml
+```
+
+We will start using spack itself
+```bash
+#==========================================
+# configure spack using spack commands; it modifies the .spack directory in the user home
+source spack/share/spack/setup-env.sh
+spack clean -a
+```
+
+First register cmake
+```bash
+# registering cmake
+spack external find cmake
+```
+
+And then compilers; you need a compiler that handles both C and CXX:
+```bash
+# registering compilers
+spack compiler find
+# spack uses the highest version of the compiler found by default; if it is incomplete,
+# for example the C compiler is installed but not the CXX one the installations will fail.
+# Compilers found can be investigated by (see `spack help compiler` commands)
+#spack compiler list
+#spack compiler info gcc
+# An undesirable version can be removed by editing ~/.spack/linux/compilers.yaml or using
+#spack compiler remove gcc@12
+```
+
+Now we get gmds:
+```bash
+# install for dev purposes
+git clone git@github.com:LIHPC-Computational-Geometry/gmds.git
+```
+
+And we build gmds from the sources we just cloned, including all the necessary dependencies
+
+```bash
+# you will probably want build_type=Debug or RelWithDebInfo.
+# Choose the variants you need, you can check them using `spack info gmds`.
+# The dev_path option does not seem to handle relative paths.
+
+# +mpi should actually be ok, but currently the default openmpi install fails
+# It is activated by default in the hdf5 and cgns recipes, so choose not to use it if necessary
+spack install gmds+python+blocking+cgns dev_path=$PWD/gmds build_type=Debug ^cgns~mpi ^hdf5~mpi
+```
+
+### Configuring the IDE
+Now in order to develop we need to configure an IDE. This can be done in two ways:
+1. Extracting the options from spack. Files named `gmds/spack-*` were created in the gmds directory; we can extract the necessary 
+data to configure an IDE, in particular the `CMAKE_PREFIX_PATH` and the cmake options given to gmds.
+```bash
+# to configure an IDE
+# spack created files and directories named gmds/spack-* in the gmds source tree, where the necessary
+# options are set up
+# get the CMAKE_PREFIX_PATH with ';' as separators
+cat gmds/spack-build-env.txt  | grep CMAKE_PREFIX_PATH | awk -F "=" {'print $2'} | awk -F ";" {'print $1'} | sed 's/:/;/g'
+
+# get the cmake options that were explicitly set by spack; add -DWITH_TEST:BOOL=ON
+# to activate the tests
+cat gmds/spack-configure-args.txt
+```
+
+2. Specifying the options by hand; note that you can proceed this way whatever the method used to install
+the dependencies:
 ```cmake
--DWITH_PYTHON_API=ON
--DENABLE_BLOCKING=ON
--DWITH_CGNS=OFF
--DWITH_TEST=ON
--DGLPK_INC=/absolute_path/spack/opt/spack/glpk/include
--DGLPK_LIB=/absolute_path/spack/opt/spack/glpk/lib
--DCMAKE_PREFIX_PATH=/absolute_path/spack/opt/spack/googletest;/absolute_path/spack/opt/spack/py-pybind11;/absolute_path/spack/opt/spack/cgal;/absolute_path/spack/opt/spack/gmp;/absolute_path/spack/opt/spack/mpfr;/absolute_path/spack/opt/spack/boost
+-DWITH_PYTHON_API:BOOL=ON
+-DENABLE_BLOCKING:BOOL=ON
+-DWITH_CGNS:BOOL=ON
+-DWITH_TEST:BOOL=ON
+-DCMAKE_PREFIX_PATH=/absolute_path/spack/opt/spack/googletest;/absolute_path/spack/opt/spack/py-pybind11;/absolute_path/spack/opt/spack/cgal;/absolute_path/spack/opt/spack/gmp;/absolute_path/spack/opt/spack/mpfr;/absolute_path/spack/opt/spack/boost;/absolute_path/spack/opt/spack/glpk;/absolute_path/spack/opt/spack/cgns
 ```
 
-### Usage of specific spack recipes
-
-Instead of manually and individually installing all the *gmds* dependencies, we can gather *gmds* requirements
-into a *spack recipe*. This recipe will be used by the spack engine to prepare and build the full environment. 
-
-Our meshing recipes are stored in a github repository that you have to clone and add in the list of spack repositories.
-```bash
-git clone --branch gmds_temp --depth=1 https://github.com/LIHPC-Computational-Geometry/spack_recipes_meshing.git
-spack repo add ./spack_recipes_meshing/meshing_repo
-spack repo add ./spack_recipes_meshing/supersede_repo
-```
-Then you can install the gmds dependencies using lines like:
-```bash
-spack external find cmake
-spack install py-pybind11
-spack install --only dependencies gmds+blocking 
-```
-Right now, the python binding configuration, as well as the CGNS options, are not managed in the gmds spack recipe. That's
-why, we separately install `pybind11` and the last line will install `cgns` too.
 ## Creation of an optional module
 
 Once a component created, we use a [github workflow](git_workflow.md) in order to structure the code development.
