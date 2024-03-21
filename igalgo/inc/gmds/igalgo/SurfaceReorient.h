@@ -53,11 +53,10 @@ namespace gmds{
     private:
         /** a mesh */
         Mesh* m_mesh;
-        /** Grid dimension*/
+        /** problem dimension. 2 means we have a pure (X,Y,0) plan*/
         TInt  m_dim;
     };
     /*----------------------------------------------------------------------------*/
 }
 /*----------------------------------------------------------------------------*/
-
-#endif //GMDS_GRID_BUILDER_H
+#endif //GMDS_SURFACE_REORIENT_H

@@ -15,7 +15,7 @@ SurfaceReorient::~SurfaceReorient()
 bool SurfaceReorient::isValid() const
 {
     if(m_dim==3)
-        return (m_mesh->getModel()==(DIM3|R|N|R2N));
+        return (m_mesh->getModel()==(DIM3|F|N|F2N|N2F));
     else if(m_dim==2)
         return (m_mesh->getModel()==(DIM3|F|N|F2N) ||
                 m_mesh->getModel()==(DIM2|F|N|F2N));
@@ -96,13 +96,69 @@ TCoord SurfaceReorient::isLeft(Node& AN1, Node& AN2, Node& AN3)
 int SurfaceReorient::orient3d()
 {
 	 auto nb_reorientation =0;
-	 //We take the first face as the orientation reference seed
-	 auto seed = m_mesh->get<Face>(*m_mesh->faces_begin());
-	 // And now, we go through all the faces in an advancing-front manner to
-	 // orient faces according to the seed
 	 auto mark_done = m_mesh->newMark<Face>();
 
+	 bool keep_working =true;
+	 while (keep_working) {
+		 //We look for the first unmarked face
 
+		 auto it_face = m_mesh->faces_begin();
+		 while (m_mesh->isMarked<Face>(*it_face,mark_done) &&
+		    it_face!=m_mesh->faces_end()){
+			 ++it_face;
+		 }
+		 if(it_face==m_mesh->faces_end()){
+			 keep_working=false;
+		 }
+		 if(keep_working) {
+			 // We take the first face as the orientation reference seed
+			 auto seed_id = *it_face;
+			 Face seed = m_mesh->get<Face>(seed_id);
+			    // And now, we go through all the faces in an advancing-front manner to
+			    // orient faces according to the seed
+			    std::vector<TCellID> front;
+			 front.push_back(seed.id());
+			 m_mesh->mark(seed, mark_done);
+			 while (!front.empty()) {
+				 auto current_id = front.back();
+				 front.pop_back();
+				 auto current_face = m_mesh->get<Face>(current_id);
+				 // the current face is considered as well oriented and we orient the face sharing
+				 //  an edge with it in a valid manner
+				 std::vector<Node> node_faces = current_face.get<Node>();
+				 for (auto i = 0; i < node_faces.size(); i++) {
+					 Node ni = node_faces[i];
+					 Node nj = node_faces[(i + 1) % node_faces.size()];
+					 auto fij_ids = m_mesh->getCommonFaces(ni, nj);
+					 if (fij_ids.size() == 2) {
+						 // means there is another face
+						 auto other_face_id = (fij_ids[0] == current_id) ? fij_ids[1] : fij_ids[0];
+						 auto other_face = m_mesh->get<Face>(other_face_id);
+						 if (!m_mesh->isMarked(other_face, mark_done)) {
+							 std::vector<TCellID> other_face_node_ids = other_face.getIDs<Node>();
+							 // we check if the node ni and nj are traversed in the same way.
+							 bool same_direction = false;
+							 for (auto k = 0; k < other_face_node_ids.size(); k++) {
+
+								 auto id_k = other_face_node_ids[k];
+								 auto id_l = other_face_node_ids[(k + 1) % other_face_node_ids.size()];
+								 if (id_k == ni.id() && id_l == nj.id()) same_direction = true;
+							 }
+							 if (same_direction) {
+								 std::reverse(other_face_node_ids.begin(), other_face_node_ids.end());
+								 other_face.set<Node>(other_face_node_ids);
+								 nb_reorientation++;
+							 }
+							 m_mesh->mark(other_face, mark_done);
+							 front.push_back(other_face_id);
+						 }
+					 }
+				 }
+			 }
+		 }
+	 }
+	 m_mesh->negateMaskMark<Node>(mark_done);
+	 m_mesh->freeMark<Node>(mark_done);
 	 //warning, we must ensure that the mesh is reoriented even if it has several
 	 //connex part
 	 return nb_reorientation;
