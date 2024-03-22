@@ -42,7 +42,7 @@ int main() {
 	auto s = std::make_shared<PolyCutState>(&geom_model,&bl,hist_empty);
 
 	PolyCutRewardFunction reward_function;
-	MCTSAgent agent(&reward_function,1000);
+	MCTSAgent agent(&reward_function,100000);
 	agent.run(s);
 
 	std::cout<<"Nb runs: "<<agent.get_nb_iterations()-1,
@@ -60,11 +60,11 @@ int main() {
 		std::cout<<"Visits: "<<current_node->number_visits<<std::endl;
 		std::cout<<"Nb children:"<<current_node->get_children().size()<<std::endl;
 		auto current_state = std::dynamic_pointer_cast<PolyCutState> (current_node->get_state());
-		current_state->m_blocking->save_vtk_blocking(std::to_string(numSave) + "OutPutCb0.vtk");
+		current_state->m_blocking->save_vtk_blocking(std::to_string(numSave) + "OutPutCb0");
 		numSave++;
 		current_node = current_node->get_parent();
 	}
 
-	best->m_blocking->save_vtk_blocking("bestOutputCb0.vtk");
+	best->m_blocking->save_vtk_blocking("bestOutputCb0");
 
 }

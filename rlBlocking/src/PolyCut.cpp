@@ -147,6 +147,7 @@ bool PolyCutState::win() const
 {
 	if(m_class_errors.non_captured_points.empty() && m_class_errors.non_captured_curves.empty() && m_class_errors.non_captured_surfaces.empty()){
 		std::cout<<"WIN"<<std::endl;
+		this->m_blocking->save_vtk_blocking("WinOutputCheck");
 		return true;
 	}
 	return false;

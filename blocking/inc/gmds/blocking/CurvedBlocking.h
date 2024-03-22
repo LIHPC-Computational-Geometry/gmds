@@ -430,6 +430,22 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 * @param ALoc the new node location
 	 */
 	void move_node(Node AN, math::Point &ALoc);
+
+		/** Returns the edge that connects nodes of ids @p AN1 and @p AN2
+		 *
+		 * @param AN1 a first node id
+		 * @param AN2 a second node id
+		 * @return the edge connecting @p AN1 and @p AN2
+		 */
+		CurvedBlocking::Edge get_edge(const int AN1, const int AN2);
+		/** Returns the edge that connects nodes @p AN1 and @p AN2
+		 *
+		 * @param AN1 a first node
+		 * @param AN2 a second node
+		 * @return the edge connecting @p AN1 and @p AN2
+		 */
+		CurvedBlocking::Edge get_edge(const CurvedBlocking::Node AN1, const CurvedBlocking::Node AN2);
+
 	/** Get all the edges adjacent to a node
 	 * @param[in] AN a node
 	 * @return the set of edges adjacent to the node.
@@ -554,7 +570,8 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	void cut_sheet(const Edge AE, const math::Point &AP);
 	/**@brief Split the sheet defined by edge @p AE at the parameter @p AParam, which is included
-	 * 		 in ]0,1[. The first end point of @p AE is at parameter 0, the second one at parameter 1.
+	 * 		 in ]0,1[. The end point of @p AE with the lowest id is at parameter 0,
+	 * 		 the second one at parameter 1.
 	 *
 	 * @param[in] AE an edge we want to split in two edges
 	 * @param[in] AParam a parameter included in ]0,1[

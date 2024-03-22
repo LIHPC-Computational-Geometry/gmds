@@ -10,49 +10,49 @@ using namespace gmds::blocking;
 CurvedBlocking::CurvedBlocking(cad::GeomManager *AGeomModel, bool AInitAsBoundingBox)
   : m_geom_model(AGeomModel), m_counter(0)
 {
-	if (AInitAsBoundingBox) {
-		TCoord min[3] = {MAXFLOAT, MAXFLOAT, MAXFLOAT};
-		TCoord max[3] = {-MAXFLOAT, -MAXFLOAT, -MAXFLOAT};
-		std::vector<cad::GeomVolume *> vols;
-		m_geom_model->getVolumes(vols);
-		for (auto v: vols) {
-			TCoord v_min[3], v_max[3];
-			v->computeBoundingBox(v_min, v_max);
-			for (auto i = 0; i < 3; i++)
-				if (v_min[i] < min[i]) min[i] = v_min[i];
-			for (auto i = 0; i < 3; i++)
-				if (v_max[i] > max[i]) max[i] = v_max[i];
-		}
-		math::Point p1(min[0], min[1], min[2]);
-		math::Point p2(min[0], max[1], min[2]);
-		math::Point p3(max[0], max[1], min[2]);
-		math::Point p4(max[0], min[1], min[2]);
-		math::Point p5(min[0], min[1], max[2]);
-		math::Point p6(min[0], max[1], max[2]);
-		math::Point p7(max[0], max[1], max[2]);
-		math::Point p8(max[0], min[1], max[2]);
-		create_block(p1, p2, p3, p4, p5, p6, p7, p8);
-	}
+    if (AInitAsBoundingBox) {
+        TCoord min[3] = {MAXFLOAT, MAXFLOAT, MAXFLOAT};
+        TCoord max[3] = {-MAXFLOAT, -MAXFLOAT, -MAXFLOAT};
+        std::vector<cad::GeomVolume *> vols;
+        m_geom_model->getVolumes(vols);
+        for (auto v: vols) {
+            TCoord v_min[3], v_max[3];
+            v->computeBoundingBox(v_min, v_max);
+            for (auto i = 0; i < 3; i++)
+                if (v_min[i] < min[i]) min[i] = v_min[i];
+            for (auto i = 0; i < 3; i++)
+                if (v_max[i] > max[i]) max[i] = v_max[i];
+        }
+        math::Point p1(min[0], min[1], min[2]);
+        math::Point p2(min[0], max[1], min[2]);
+        math::Point p3(max[0], max[1], min[2]);
+        math::Point p4(max[0], min[1], min[2]);
+        math::Point p5(min[0], min[1], max[2]);
+        math::Point p6(min[0], max[1], max[2]);
+        math::Point p7(max[0], max[1], max[2]);
+        math::Point p8(max[0], min[1], max[2]);
+        create_block(p1, p2, p3, p4, p5, p6, p7, p8);
+    }
 }
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::CurvedBlocking(const CurvedBlocking &ABl)
-  : m_geom_model(ABl.m_geom_model), m_gmap(ABl.m_gmap), m_counter(ABl.m_counter)
+: m_geom_model(ABl.m_geom_model), m_gmap(ABl.m_gmap), m_counter(ABl.m_counter)
 {
 	auto listBlocks = get_all_blocks();
 	for(auto b : listBlocks){
-		b->info().counter = &m_counter;
+		  b->info().counter = &m_counter;
 	}
 	auto listFaces = get_all_faces();
 	for(auto b : listFaces){
-		b->info().counter = &m_counter;
+		  b->info().counter = &m_counter;
 	}
 	auto listEdges = get_all_edges();
 	for(auto b : listEdges){
-		b->info().counter = &m_counter;
+		  b->info().counter = &m_counter;
 	}
 	auto listNodes = get_all_nodes();
 	for(auto b : listNodes){
-		b->info().counter = &m_counter;
+		  b->info().counter = &m_counter;
 	}
 }
 /*----------------------------------------------------------------------------*/
@@ -61,37 +61,37 @@ CurvedBlocking::~CurvedBlocking() {}
 /*----------------------------------------------------------------------------*/
 GMap3 *
 CurvedBlocking::gmap() {
-	return &m_gmap;
+    return &m_gmap;
 }
 
 /*----------------------------------------------------------------------------*/
 cad::GeomManager *
 CurvedBlocking::geom_model() {
-	return m_geom_model;
+    return m_geom_model;
 }
 
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Node
 CurvedBlocking::create_node(const int AGeomDim, const int AGeomId, const math::Point &APoint) {
-	return m_gmap.create_attribute<0>(NodeInfo(this->getCounter(),m_geom_model,AGeomDim, AGeomId, APoint));
+    return m_gmap.create_attribute<0>(NodeInfo(this->getCounter(),m_geom_model,AGeomDim, AGeomId, APoint));
 }
 
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Edge
 CurvedBlocking::create_edge(const int AGeomDim, const int AGeomId) {
-	return m_gmap.create_attribute<1>(CellInfo(this->getCounter(),m_geom_model,1, AGeomDim, AGeomId));
+    return m_gmap.create_attribute<1>(CellInfo(this->getCounter(),m_geom_model,1, AGeomDim, AGeomId));
 }
 
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Face
 CurvedBlocking::create_face(const int AGeomDim, const int AGeomId) {
-	return m_gmap.create_attribute<2>(CellInfo(this->getCounter(),m_geom_model,2, AGeomDim, AGeomId));
+    return m_gmap.create_attribute<2>(CellInfo(this->getCounter(),m_geom_model,2, AGeomDim, AGeomId));
 }
 
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Block
 CurvedBlocking::create_block(const int AGeomDim, const int AGeomId) {
-	return m_gmap.create_attribute<3>(CellInfo(this->getCounter(),m_geom_model,3, AGeomDim, AGeomId));
+    return m_gmap.create_attribute<3>(CellInfo(this->getCounter(),m_geom_model,3, AGeomDim, AGeomId));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -253,7 +253,26 @@ CurvedBlocking::get_blocks_of_face(const Face AF) {
 	}
 	return blocks;
 }
-
+/*----------------------------------------------------------------------------*/
+CurvedBlocking::Edge CurvedBlocking::get_edge(const CurvedBlocking::Node AN1, const CurvedBlocking::Node AN2)
+{
+	 return get_edge(AN1->info().topo_id,AN2->info().topo_id);
+}
+/*----------------------------------------------------------------------------*/
+CurvedBlocking::Edge CurvedBlocking::get_edge(const int AN1, const int AN2)
+{
+	 auto edges = get_all_edges();
+	 for(auto e: edges){
+		  auto nodes_of_e = get_nodes_of_edge(e);
+		  if(	nodes_of_e[0]->info().topo_id == AN1 &&
+		      nodes_of_e[1]->info().topo_id == AN2)
+			   return e;
+		  else if(	nodes_of_e[0]->info().topo_id == AN2 &&
+		           nodes_of_e[1]->info().topo_id == AN1)
+			   return e;
+	 }
+	 throw GMDSException("No edge with given end points");
+}
 /*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Edge>
 CurvedBlocking::get_all_edges() {
@@ -825,9 +844,15 @@ CurvedBlocking::get_all_sheet_darts(const Edge AE, std::vector<Dart3> &ADarts) {
 	auto edge_mark = m_gmap.get_new_mark();
 
 	std::vector<Dart3> front;
-	front.push_back(AE->dart());
+	 // For all the sheet operations, we orient the edges using its end point ids (from the lowest to the highest).
+	 // We order that here!!
+	 auto first_dart = AE->dart();
+	 if(m_gmap.attribute<0>(first_dart)->info().topo_id>m_gmap.attribute<0>(m_gmap.alpha<0>(first_dart))->info().topo_id)
+		  first_dart = m_gmap.alpha<0>(first_dart);
+
+    front.push_back(first_dart);
 	// the current dart belongs to the final set of darts
-	ADarts.push_back(AE->dart());
+    ADarts.push_back(first_dart);
 	// we mark all the dart of the inital edge to avoid to traverse it twice
 	m_gmap.mark_cell<1>(AE->dart(), edge_mark);
 
@@ -1110,18 +1135,8 @@ CurvedBlocking::cut_sheet(const Edge AE, const double AParam) {
 
 	for (auto d: sheet_darts) {
 		Dart3 d0 = m_gmap.alpha<0>(d);
-		math::Point pa;
-		math::Point pb;
-
-		//Choose the point order to build the edge
-		if(m_gmap.attribute<0>(d)->info().topo_id < m_gmap.attribute<0>(d0)->info().topo_id){
-			pa = m_gmap.attribute<0>(d)->info().point;
-			pb = m_gmap.attribute<0>(d0)->info().point;
-		}
-		else{
-			pa = m_gmap.attribute<0>(d0)->info().point;
-			pb = m_gmap.attribute<0>(d)->info().point;
-		}
+        math::Point pa = m_gmap.attribute<0>(d)->info().point;
+        math::Point pb = m_gmap.attribute<0>(d0)->info().point;
 		auto edge_att = m_gmap.attribute<1>(d)->info();
 
 		Dart3 d_edge = m_gmap.insert_cell_0_in_cell_1(d);     // d_edge = alpha<0,1>(d)
