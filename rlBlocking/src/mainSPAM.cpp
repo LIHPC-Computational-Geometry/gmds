@@ -29,7 +29,7 @@ void set_up_SPAM(gmds::cad::FACManager* AGeomModel, const std::string AFileName)
 }
 int main() {
 	gmds::cad::FACManager geom_model;
-	std::string nameM= "cb0";
+	std::string nameM= "cb2";
 	set_up_SPAM(&geom_model,nameM+".vtk");
 	gmds::blocking::CurvedBlocking bl(&geom_model,true);
 
@@ -42,7 +42,7 @@ int main() {
 	auto s = std::make_shared<PolyCutState>(&geom_model,&bl,hist_empty);
 
 	PolyCutRewardFunction reward_function;
-	MCTSAgent agent(&reward_function,100000);
+	MCTSAgent agent(&reward_function,1000000,1000);
 	agent.run(s);
 
 	std::cout<<"Nb runs: "<<agent.get_nb_iterations()-1,
@@ -64,7 +64,5 @@ int main() {
 		numSave++;
 		current_node = current_node->get_parent();
 	}
-
 	best->m_blocking->save_vtk_blocking("bestOutputCb0");
-
 }

@@ -40,6 +40,10 @@ void MCTSAgent::run(std::shared_ptr<IState> ARootState) {
 	std::chrono::duration<double, std::ratio<1>> elapsed= std::chrono::steady_clock::now()-time0;
 
 	while (i<=m_max_iterations && elapsed.count() <= m_max_seconds){
+		if(i%1000==0){
+			std::cout<<"iteration : "<<i<<std::endl;
+			std::cout<<"temps : "<<elapsed.count()<<std::endl;
+		}
 		// 1 SELECTION - we explore/exploit the existing tree to find a node to work on
 		auto node = select(m_tree);
 		// 2. EXPAND by adding a single child (if not terminal or not fully expanded)
@@ -73,9 +77,11 @@ std::shared_ptr<IState> MCTSAgent::get_best_solution_visited() {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 MCTSTree* MCTSAgent::get_best_node_uct(){
-	const MCTSTree* node = m_tree;
-
-	return node->get_best_uct_child();
+	MCTSTree* node = m_tree;
+	while (!node->is_terminal() && node->has_children()){
+		node=node->get_best_uct_child();
+	}
+	return node;
 }
 /*---------------------------------------------------------------------------*/
 std::shared_ptr<IState> MCTSAgent::get_best_solution_uct(){

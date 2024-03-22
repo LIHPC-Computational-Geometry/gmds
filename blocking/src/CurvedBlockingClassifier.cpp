@@ -174,7 +174,8 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 		if (geo_d0==0 && geo_d1==0 && geo_i0!=geo_i1){
 			//We look for a common curve
 			if((geo_i0==2 && geo_i1==4) || (geo_i0==4 && geo_i1==2)){
-				std::cout<<"Cas à tester"<<std::endl;
+				//TODO check utility because maybe useless, we classified all the unclassified edges on
+				// the volume at the end of the classification
 			}
 			cad::GeomPoint* p0 = m_geom_model->getPoint(geo_i0);
 			cad::GeomPoint* p1 = m_geom_model->getPoint(geo_i1);
