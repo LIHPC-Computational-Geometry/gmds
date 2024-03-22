@@ -27,6 +27,8 @@ class LIB_GMDS_RLBLOCKING_API PolyCutAction : public IAction{
 	PolyCutAction(gmds::TCellID AIdEdge = -1,gmds::TCellID AIdBlock = -1 , double AParamCut = 0,ActionType ATypeAction = None );
 	bool operator==(const IAction& AOther) const override;
 	friend std::ostream& operator<<(std::ostream& os, const PolyCutAction& PCA);
+
+	void print();
 };
 /*---------------------------------------------------------------------------*/
 class LIB_GMDS_RLBLOCKING_API PolyCutState : public IState{
@@ -39,6 +41,7 @@ class LIB_GMDS_RLBLOCKING_API PolyCutState : public IState{
 	/** @brief points, curves, surfaces not yet captured */
 	gmds::blocking::ClassificationErrors m_class_errors;
 	std::vector<double> m_history;
+	std::vector<std::shared_ptr<IAction>> m_actions_list;
 
 
 	PolyCutState(gmds::cad::GeomManager *AGeom, gmds::blocking::CurvedBlocking *ABlocking, std::vector<double> AHist);
@@ -48,6 +51,7 @@ class LIB_GMDS_RLBLOCKING_API PolyCutState : public IState{
 	 ~PolyCutState();
 
 
+	std::vector<std::shared_ptr<IAction>> creat_actions_list();
 	std::vector<std::shared_ptr<IAction>> get_actions() const override;
 	/**@brief Computes the state reach from the current one when applying @p AAction
      * @param AAction the action to apply
@@ -60,6 +64,20 @@ class LIB_GMDS_RLBLOCKING_API PolyCutState : public IState{
 	bool  win() const;
 	bool  draw(int nbSameQuality) const;
 
+	int get_nb_blocks();
+
+	void write(const std::string& AFileName,
+	                   const int AStageIndex,
+	                   const int ANodeId,
+	                   const int ADepth) const;
+
+
+	std::vector<gmds::TCellID> get_blocks_id() const;
+	std::vector<gmds::TCellID> get_faces_id() const;
+	std::vector<gmds::TCellID> get_edges_id() const;
+	std::vector<gmds::TCellID> get_nodes_id() const;
+
+	void get_info_blocking() const;
 	friend std::ostream& operator<<(std::ostream& os, const PolyCutState& PCS);
 
 

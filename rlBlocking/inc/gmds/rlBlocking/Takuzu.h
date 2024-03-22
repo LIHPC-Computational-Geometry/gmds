@@ -41,6 +41,10 @@ public:
     std::shared_ptr<IState> apply(std::shared_ptr<IAction>  AAction) const override;
 
     bool is_terminal() const override;
+	 void write(const std::string& AFileName,
+	            const int AStageIndex,
+	            const int ANodeId,
+	            const int ADepth) const override;
     bool  lost() const;
     bool  win() const;
 

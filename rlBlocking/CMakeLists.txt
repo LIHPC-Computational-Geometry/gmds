@@ -9,13 +9,6 @@ set(GMDS_INC
         inc/gmds/rlBlocking/BlockingQuality.h
         inc/gmds/rlBlocking/LinkerBlockingGeom.h
         inc/gmds/rlBlocking/ValidBlocking.h
-        inc/gmds/rlBlocking/MCTSAlgorithm.h
-        inc/gmds/rlBlocking/MCTSState.h
-        inc/gmds/rlBlocking/MCTSTree.h
-        inc/gmds/rlBlocking/MCTSMove.h
-        inc/gmds/rlBlocking/MCTSMovePolycube.h
-        inc/gmds/rlBlocking/MCTSStatePolycube.h
-        inc/gmds/rlBlocking/MCTSAgent.h
         inc/gmds/rlBlocking/Takuzu.h
         inc/gmds/rlBlocking/MCTSTreeSPAM.h
         inc/gmds/rlBlocking/MCTSAgentSPAM.h
@@ -28,11 +21,6 @@ set(GMDS_SRC
         src/BlockingQuality.cpp
         src/LinkerBlockingGeom.cpp
         src/ValidBlocking.cpp
-        src/MCTSTree.cpp
-        src/MCTSAlgorithm.cpp
-        src/MCTSMovePolycube.cpp
-        src/MCTSStatePolycube.cpp
-        src/MCTSAgent.cpp
         src/MCTSAgentSPAM.cpp
         src/MCTSTreeSPAM.cpp
         src/Takuzu.cpp
@@ -58,7 +46,8 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_QUALITY}
         ${LIB_GMDS_BLOCK_MESHER}
         ${LIB_GMDS_BLOCKING}
-        )
+        nlohmann_json::nlohmann_json
+)
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)
 

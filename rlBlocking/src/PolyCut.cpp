@@ -20,24 +20,26 @@ PolyCutState::PolyCutState(gmds::cad::GeomManager *AGeom, gmds::blocking::Curved
 	gmds::blocking::CurvedBlockingClassifier classifier(m_blocking);
 	m_class_blocking = new gmds::blocking::CurvedBlockingClassifier(classifier);
 	m_class_blocking->detect_classification_errors(m_class_errors);
+	m_actions_list = creat_actions_list();
 }
 /*---------------------------------------------------------------------------*/
 PolyCutState::PolyCutState(const PolyCutState &AState)
 {
-	m_blocking = AState.m_blocking;
+	m_blocking = new gmds::blocking::CurvedBlocking(*AState.m_blocking);
 	m_geom = AState.m_geom;
-	m_class_blocking = AState.m_class_blocking;
+	m_class_blocking = new gmds::blocking::CurvedBlockingClassifier(*AState.m_class_blocking);
 	m_class_errors = AState.m_class_errors;
 	m_history = AState.m_history;
 }
 /*---------------------------------------------------------------------------*/
 PolyCutState::~PolyCutState() noexcept
 {
-	delete m_class_blocking;
-	delete m_blocking;
+	//delete m_class_blocking;
+	//delete m_blocking;
 }
 /*---------------------------------------------------------------------------*/
-std::vector<std::shared_ptr<IAction>> PolyCutState::get_actions() const
+std::vector<std::shared_ptr<IAction>>
+PolyCutState::creat_actions_list()
 {
 	std::vector<std::shared_ptr<IAction>> actions;
 	//Add cuts in the actions list
@@ -53,6 +55,12 @@ std::vector<std::shared_ptr<IAction>> PolyCutState::get_actions() const
 	actions.push_back(std::make_shared<PolyCutAction>(gmds::NullID,gmds::NullID,0,PolyCutAction::Classification));
 
 	return actions;
+
+}
+/*---------------------------------------------------------------------------*/
+std::vector<std::shared_ptr<IAction>> PolyCutState::get_actions() const
+{
+	return m_actions_list;
 }
 /*----------------------------------------------------------------------------*/
 double
@@ -74,18 +82,23 @@ void PolyCutState::update_class()
 }
 /*---------------------------------------------------------------------------*/
 std::shared_ptr<IState> PolyCutState::apply(const std::shared_ptr<IAction> AAction) const {
+	//std::cout<<"BLOCKING INIT THIS : "<<std::endl;
+	//this->get_info_blocking();
 	auto next_state = std::make_shared<PolyCutState>(*this);
+	//std::cout<<"BLOCKING NEXT_STATE BEFORE APPLY : "<<std::endl;
+	//next_state->get_info_blocking();
 	auto a = std::dynamic_pointer_cast<PolyCutAction>(AAction);
 	if(a->m_typeAction == PolyCutAction::Cut){
-
+		//std::cout<<"Cut"<<std::endl;
+		next_state->m_blocking->cut_sheet(a->m_AIdEdge,a->m_AParamCut);
 	}
 	else if(a->m_typeAction==PolyCutAction::Delete){
 		//Delete block action
 		//TODO ERROR, sometimes, block select not in the current blocks list...Check why !!!
-		std::cout<<"LIST BLOCK BLOCKING : "<<std::endl;
+		//std::cout<<"LIST BLOCK BLOCKING : "<<m_blocking->get_all_blocks().size()<<std::endl;
 		bool b_in_list = false;
 		for(auto b : m_blocking->get_all_id_blocks()) {
-			std::cout << b << std::endl;
+			//std::cout << b << std::endl;
 			if (b == a->m_AIdBlock) {
 				b_in_list = true;
 				break;
@@ -107,6 +120,12 @@ std::shared_ptr<IState> PolyCutState::apply(const std::shared_ptr<IAction> AActi
 	else{
 		std::cerr << "Warning: Bad type action ! \n Type action :"<<a->m_typeAction<<std::endl;
 	}
+
+	//std::cout<<"BLOCKING AFTER APPLY : "<<std::endl;
+	//next_state->get_info_blocking();
+
+	next_state->m_actions_list = next_state->creat_actions_list();
+	next_state->m_history.push_back(next_state->get_quality());
 	return next_state;
 }
 /*---------------------------------------------------------------------------*/
@@ -118,12 +137,16 @@ bool PolyCutState::lost() const
 	else if (get_actions().empty()){
 		return true;
 	}
+	else if(get_blocks_id().size()==0){
+		return true;
+	}
 	return false;
 }
 /*---------------------------------------------------------------------------*/
 bool PolyCutState::win() const
 {
 	if(m_class_errors.non_captured_points.empty() && m_class_errors.non_captured_curves.empty() && m_class_errors.non_captured_surfaces.empty()){
+		std::cout<<"WIN"<<std::endl;
 		return true;
 	}
 	return false;
@@ -144,6 +167,69 @@ int PolyCutState::check_nb_same_quality() const
 	return nb_same;
 }
 /*---------------------------------------------------------------------------*/
+int
+PolyCutState::get_nb_blocks()
+{
+	return m_blocking->get_all_blocks().size();
+}
+
+/*---------------------------------------------------------------------------*/
+void PolyCutState::write(const std::string& AFileName,const int AStageIndex,const int ANodeId,const int ADepth) const
+{
+	//TODO
+}
+/*---------------------------------------------------------------------------*/
+std::vector<gmds::TCellID>
+PolyCutState::get_blocks_id() const
+{
+	return m_blocking->get_all_id_blocks();
+}
+/*---------------------------------------------------------------------------*/
+std::vector<gmds::TCellID>
+PolyCutState::get_faces_id() const
+{
+	return m_blocking->get_all_id_faces();
+}
+/*---------------------------------------------------------------------------*/
+std::vector<gmds::TCellID>
+PolyCutState::get_edges_id() const
+{
+	return m_blocking->get_all_id_edges();
+}
+/*---------------------------------------------------------------------------*/
+std::vector<gmds::TCellID>
+PolyCutState::get_nodes_id() const
+{
+	return m_blocking->get_all_id_nodes();
+}
+/*---------------------------------------------------------------------------*/
+void
+PolyCutState::get_info_blocking() const
+{
+	auto blocks = get_blocks_id();
+	auto faces = get_faces_id();
+	auto edges = get_edges_id();
+	auto nodes = get_nodes_id();
+	std::cout<<"============================= INFO BLOCKING ============================="<<std::endl;
+	std::cout<<"BLOCKS ID :"<<std::endl;
+	for(auto b : blocks){
+		std::cout<<b<<std::endl;
+	}
+	std::cout<<"FACES ID :"<<std::endl;
+	for(auto f : faces){
+		std::cout<<f<<std::endl;
+	}
+	std::cout<<"EDGES ID :"<<std::endl;
+	for(auto e : edges){
+		std::cout<<e<<std::endl;
+	}
+	std::cout<<"NODES ID :"<<std::endl;
+	for(auto n : nodes){
+		std::cout<<n<<std::endl;
+	}
+	std::cout<<"========================================================================="<<std::endl;
+}
+/*---------------------------------------------------------------------------*/
 bool PolyCutState::draw(int nbSameQuality) const
 {
 	if(check_nb_same_quality() >= nbSameQuality){
@@ -157,6 +243,9 @@ bool PolyCutState::is_terminal() const
 	//the state is terminal if
 	// 1. The quality is egal to 0, so, all the points, the curves and the surfaces are captured
 	// 2.
+	auto l = lost();
+	auto w = win();
+	auto d = draw(3);
 	return lost() || win() || draw(3);
 }
 /*---------------------------------------------------------------------------*/
@@ -180,6 +269,20 @@ std::ostream& operator<<(std::ostream& os, const PolyCutAction& PCA){
 	}
 
 	return os;
+}
+/*---------------------------------------------------------------------------*/
+void
+PolyCutAction::print()
+{
+	if(this->m_typeAction== PolyCutAction::Cut){
+		std::cout<<"$$$$ Edge id : "<<this->m_AIdEdge<<" - Cut Action with param : "<<this->m_AParamCut<<std::endl;
+	}
+	else if(this->m_typeAction== PolyCutAction::Delete){
+		std::cout<<"$$$$ Block id : "<<this->m_AIdBlock<<" - Delete Action"<<std::endl;
+	}
+	else if(this->m_typeAction== PolyCutAction::Classification){
+		std::cout<<"$$$$ Classification Action"<<std::endl;
+	}
 }
 /*---------------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const PolyCutState& PCS){

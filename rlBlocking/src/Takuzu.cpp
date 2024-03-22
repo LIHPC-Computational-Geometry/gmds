@@ -32,6 +32,7 @@ std::vector<std::shared_ptr<IAction>> TakuzuState::get_actions() const
     return actions;
 }
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 std::shared_ptr<IState> TakuzuState::
 apply(const std::shared_ptr<IAction> AAction) const {
     auto next_state = std::make_shared<TakuzuState>(*this);
@@ -107,6 +108,9 @@ bool TakuzuState::is_terminal() const {
     // 2. a rule is violated (then it loses)
     return lost() || win();
 }
+/*---------------------------------------------------------------------------*/
+void TakuzuState::write(const std::string &AFileName, const int AStageIndex,
+                   const int ANodeId, const int ADepth) const {;}
 /*---------------------------------------------------------------------------*/
 double TakuzuRewardFunction::evaluate(std::shared_ptr<IState> AState) const {
     if(std::dynamic_pointer_cast<TakuzuState>(AState)->win())

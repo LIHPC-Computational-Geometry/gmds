@@ -5,6 +5,7 @@
 
 #include "BlockQualityTestSuite.h"
 #include "MCTSTestSuite.h"
+#include "SPAMTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
 	::testing::InitGoogleTest(&argc, argv);

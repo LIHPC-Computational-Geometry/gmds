@@ -1113,6 +1113,7 @@ CurvedBlocking::cut_sheet(const Edge AE, const double AParam) {
 		math::Point pa;
 		math::Point pb;
 
+		//Choose the point order to build the edge
 		if(m_gmap.attribute<0>(d)->info().topo_id < m_gmap.attribute<0>(d0)->info().topo_id){
 			pa = m_gmap.attribute<0>(d)->info().point;
 			pb = m_gmap.attribute<0>(d0)->info().point;
