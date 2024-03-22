@@ -12,6 +12,7 @@ set(GMDS_INC
         inc/gmds/igalgo/BoundaryOperator.h
         inc/gmds/igalgo/BoundaryOperator2D.h
         inc/gmds/igalgo/GridBuilder.h
+        inc/gmds/igalgo/SurfaceReorient.h
         inc/gmds/igalgo/THexBuilder.h)
 set(GMDS_SRC
         src/BoundaryExtractor3D.cpp
@@ -19,6 +20,7 @@ set(GMDS_SRC
         src/BoundaryOperator.cpp
         src/BoundaryOperator2D.cpp
         src/GridBuilder.cpp
+        src/SurfaceReorient.cpp
         src/THexBuilder.cpp)
 
 #==============================================================================

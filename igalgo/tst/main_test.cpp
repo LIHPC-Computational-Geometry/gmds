@@ -6,6 +6,7 @@
 #include "BoundaryOpTestSuite.h"
 #include "BoundaryExtractorTestSuite.h"
 #include "GridBuilderTestSuite.h"
+#include "SurfaceReorientTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
