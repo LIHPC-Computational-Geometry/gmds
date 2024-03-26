@@ -698,8 +698,9 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
     
 	/**\brief save the blocking on vtk. During the process, the curved blocking is convert on a mesh.
 	 * @param[in] AFileName 		the name used for the file
+	 * @param[in] AParamWrite 		If its egal to 0 write vtk N2R and N2E, If 1 only N2R, if 2 only N2E
 	 */
-	void save_vtk_blocking(const std::string &AFileName);
+	void save_vtk_blocking(const std::string &AFileName,const unsigned int AParamWrite=0);
 
 	/**@brief Provides a list of information about the blocking structure
 	 * @return a string containing the expected pieces of information

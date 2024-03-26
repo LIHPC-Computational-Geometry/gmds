@@ -767,23 +767,35 @@ CurvedBlocking::init_from_mesh(Mesh &AMesh) {
 
 /*----------------------------------------------------------------------------*/
 void
-CurvedBlocking::save_vtk_blocking(const std::string &AFileName)
+CurvedBlocking::save_vtk_blocking(const std::string &AFileName, const unsigned int AParamWrite)
 {
+	std::string RegionAFileName = AFileName+"_N2R.vtk";
+	std::string EdgeAFileName = AFileName+"_N2E.vtk";
+
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
 	convert_to_mesh(m);
+	//N2R
 	gmds::IGMeshIOService ios(&m);
 	gmds::VTKWriter vtk_writer(&ios);
 	vtk_writer.setCellOptions(gmds::N|gmds::R);
 	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	std::string RegionAFileName = AFileName+"_N2R.vtk";
-	std::string EdgeAFileName = AFileName+"_N2E.vtk";
-	vtk_writer.write(RegionAFileName);
 
+	//N2E
 	gmds::IGMeshIOService ios2(&m);
 	gmds::VTKWriter vtk_writer2(&ios2);
 	vtk_writer2.setCellOptions(gmds::N|gmds::E);
 	vtk_writer2.setDataOptions(gmds::N|gmds::E);
-	vtk_writer2.write(EdgeAFileName);
+	if(AParamWrite==1){
+		vtk_writer.write(RegionAFileName);
+	}
+	else if(AParamWrite==2){
+		vtk_writer2.write(EdgeAFileName);
+	}
+	else{
+		vtk_writer.write(RegionAFileName);
+		vtk_writer2.write(EdgeAFileName);
+	}
+
 }
 /*----------------------------------------------------------------------------*/
 std::vector<std::vector<CurvedBlocking::Edge> >

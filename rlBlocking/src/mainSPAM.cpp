@@ -31,7 +31,26 @@ int main() {
 	gmds::cad::FACManager geom_model;
 	std::string nameM= "cb2";
 	set_up_SPAM(&geom_model,nameM+".vtk");
-	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+	std::string blockingInput = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_fix_cut_sheet/gmds/cmake-build-debug/bin/oldBis/inputCb2cut1.vtk";
+	gmds::blocking::CurvedBlocking bl(&geom_model, false);
+
+	//==================================================================
+	   // MESH READING
+	   //==================================================================
+	   std::cout<<"> Start mesh reading"<<std::endl;
+	//the used model is specified according to the class requirements.
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::R|gmds::R2N));
+
+	gmds::IGMeshIOService ioService2(&m);
+	gmds::VTKReader vtkReader2(&ioService2);
+	vtkReader2.setCellOptions(gmds::N|gmds::R);
+	vtkReader2.read(blockingInput);
+	gmds::MeshDoctor doc2(&m);
+	doc2.updateUpwardConnectivity();
+
+	//==================================================================
+
+	bl.init_from_mesh(m);
 
 	std::cout<<"list points geom size : "<<bl.geom_model()->getPoints().size()<<std::endl;
 
@@ -42,7 +61,8 @@ int main() {
 	auto s = std::make_shared<PolyCutState>(&geom_model,&bl,hist_empty);
 
 	PolyCutRewardFunction reward_function;
-	MCTSAgent agent(&reward_function,1000000,1000);
+	MCTSAgent agent(&reward_function,10,100000);
+	agent.activate_debug_mode("cb2_debug",MCTSAgent::OUT_ITERATION,1);
 	agent.run(s);
 
 	std::cout<<"Nb runs: "<<agent.get_nb_iterations()-1,
@@ -60,7 +80,7 @@ int main() {
 		std::cout<<"Visits: "<<current_node->number_visits<<std::endl;
 		std::cout<<"Nb children:"<<current_node->get_children().size()<<std::endl;
 		auto current_state = std::dynamic_pointer_cast<PolyCutState> (current_node->get_state());
-		current_state->m_blocking->save_vtk_blocking(std::to_string(numSave) + "OutPutCb0");
+		//current_state->m_blocking->save_vtk_blocking(std::to_string(numSave) + "OutPutCb0");
 		numSave++;
 		current_node = current_node->get_parent();
 	}

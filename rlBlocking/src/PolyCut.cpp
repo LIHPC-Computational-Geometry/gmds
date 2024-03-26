@@ -177,6 +177,9 @@ PolyCutState::get_nb_blocks()
 void PolyCutState::write(const std::string& AFileName,const int AStageIndex,const int ANodeId,const int ADepth) const
 {
 	//TODO
+
+	std::string AIdUnique = std::to_string(ADepth)+"_"+std::to_string(ANodeId);
+	m_blocking -> save_vtk_blocking(AFileName+"_"+AIdUnique,1);
 }
 /*---------------------------------------------------------------------------*/
 std::vector<gmds::TCellID>

@@ -341,11 +341,28 @@ TEST(ExecutionActionsTestSuite,cb2){
 		std::cout<<"Block : "<<listB[i]->info().topo_id<<" a la position : "<<i<<std::endl;
 	}*/
 	//Delete the useless block
-	bl.remove_block(listB[0]);
+	bl.remove_block(143);
 
 
 	//Try class after spliting
 	errors = classifier.classify();
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
+	bl.convert_to_mesh(m);
+
+
+	gmds::IGMeshIOService ios(&m);
+	gmds::VTKWriter vtk_writer(&ios);
+	vtk_writer.setCellOptions(gmds::N|gmds::R);
+	vtk_writer.setDataOptions(gmds::N|gmds::R);
+	vtk_writer.write("debug_blocking.vtk");
+	gmds::VTKWriter vtk_writer_edges(&ios);
+	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
+	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
+	vtk_writer_edges.write("debug_blocking_edges.vtk");
+	gmds::VTKWriter vtk_writer_faces(&ios);
+	vtk_writer_faces.setCellOptions(gmds::N|gmds::F);
+	vtk_writer_faces.setDataOptions(gmds::N|gmds::F);
+	vtk_writer_faces.write("debug_blocking_faces.vtk");
 
 
 	//Check nb points of the geometry and nb nodes of the blocking
@@ -364,23 +381,7 @@ TEST(ExecutionActionsTestSuite,cb2){
 
 
 
-	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
-	bl.convert_to_mesh(m);
 
-
-	gmds::IGMeshIOService ios(&m);
-	gmds::VTKWriter vtk_writer(&ios);
-	vtk_writer.setCellOptions(gmds::N|gmds::R);
-	vtk_writer.setDataOptions(gmds::N|gmds::R);
-	vtk_writer.write("debug_blocking.vtk");
-	gmds::VTKWriter vtk_writer_edges(&ios);
-	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
-	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
-	vtk_writer_edges.write("debug_blocking_edges.vtk");
-	gmds::VTKWriter vtk_writer_faces(&ios);
-	vtk_writer_faces.setCellOptions(gmds::N|gmds::F);
-	vtk_writer_faces.setDataOptions(gmds::N|gmds::F);
-	vtk_writer_faces.write("debug_blocking_faces.vtk");
 }
 
 

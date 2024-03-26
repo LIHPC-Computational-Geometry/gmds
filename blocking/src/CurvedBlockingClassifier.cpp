@@ -697,16 +697,16 @@ CurvedBlockingClassifier::list_Possible_Cuts()
             math::Point mathPoint(point->X(),point->Y(),point->Z());
             auto projInfo = m_blocking->get_projection_info(mathPoint,allEdges);
             auto action = m_blocking->get_cut_info(p);
-                bool pairOnList = false;
-                for(auto it : list_actions) {
-                    if (it.first == action.first->info().topo_id && it.second == action.second) {
-                        pairOnList = true;
-                    }
-                }
-                if(pairOnList == false && action.second > 0.01 && action.second<0.99){
-                    std::pair<TCellID ,double> actionG (action.first->info().topo_id,action.second);
-                    list_actions.push_back(actionG);
-                }
+			   bool pairOnList = false;
+			   for(auto it : list_actions) {
+				   if (it.first == action.first->info().topo_id && it.second == action.second) {
+					   pairOnList = true;
+				   }
+			   }
+			   if(pairOnList == false && action.second > 0.01 && action.second<0.99){
+				   std::pair<TCellID ,double> actionG (action.first->info().topo_id,action.second);
+				   list_actions.push_back(actionG);
+			   }
         }
     }
 
