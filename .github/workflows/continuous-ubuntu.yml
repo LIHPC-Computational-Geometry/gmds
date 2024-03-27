@@ -57,10 +57,11 @@ jobs:
         -DWITH_CODE_COVERAGE:BOOL=ON
         -DWITH_TEST:BOOL=ON
         -DWITH_PYTHON_API:BOOL=ON
-        -DENABLE_BLOCKING:BOOL=ON
+        -DENABLE_BLOCKING:BOOL=OFF
+        -DENABLE_CLAIRE:BOOL=OFF
         -DENABLE_ELGMORPHING:BOOL=OFF
         -DENABLE_KMDS:BOOL=ON
-        -DCMAKE_PREFIX_PATH="/spack/opt/spack/lcov;/spack/opt/spack/glpk;/spack/opt/spack/eigen;/spack/opt/spack/googletest;/spack/opt/spack/py-pybind11;/spack/opt/spack/kokkos;/spack/opt/spack/cgal;/spack/opt/spack/gmp;/spack/opt/spack/mpfr;/spack/opt/spack/boost;/spack/opt/spack/cgns"
+        -DCMAKE_PREFIX_PATH="/spack/opt/spack/lcov;/spack/opt/spack/glpk;/spack/opt/spack/eigen;/spack/opt/spack/googletest;/spack/opt/spack/py-pybind11;/spack/opt/spack/kokkos;/spack/opt/spack/gmp;/spack/opt/spack/mpfr;/spack/opt/spack/boost;/spack/opt/spack/cgns"
         -DCMAKE_INSTALL_PREFIX= ${GITHUB_WORKSPACE}/install
 
     - name: Build
