@@ -45,6 +45,7 @@ PolyCutState::creat_actions_list()
 	//Add cuts in the actions list
 	auto listCuts = m_class_blocking->list_Possible_Cuts();
 	for(auto c : listCuts){
+		std::cout<<"listCuts "<<c.first<<" "<<c.second<<std::endl;
 		actions.push_back(std::make_shared<PolyCutAction>(c.first,gmds::NullID,c.second,PolyCutAction::Cut));
 	}
 	//Add deletes block in the list of actions

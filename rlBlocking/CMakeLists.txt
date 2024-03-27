@@ -72,4 +72,6 @@ add_executable(RlBlocking src/mainSPAM.cpp)
 target_link_libraries(RlBlocking PRIVATE ${GMDS_LIB} )
 target_compile_features(RlBlocking PUBLIC cxx_std_14)
 
-
+add_executable(RlBlocking_debug src/mainSPAM_debug.cpp)
+target_link_libraries(RlBlocking_debug PRIVATE ${GMDS_LIB} )
+target_compile_features(RlBlocking_debug PUBLIC cxx_std_14)
