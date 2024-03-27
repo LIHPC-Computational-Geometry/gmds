@@ -1,0 +1,14 @@
+name: Spack CI
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+  # Allows you to run this workflow manually
+  workflow_dispatch:
+
+jobs:
+  call:
+    name: Call Spack CI
+    uses: LIHPC-Computational-Geometry/spack_recipes/.github/workflows/spack-reusable.yml@main

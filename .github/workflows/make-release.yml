@@ -1,0 +1,11 @@
+name: Make release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  call:
+    name: Call check version CI
+    uses: LIHPC-Computational-Geometry/spack_recipes/.github/workflows/make-release-reusable.yml@main
