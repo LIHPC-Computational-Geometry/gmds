@@ -27,7 +27,7 @@ PolyCutState::PolyCutState(const PolyCutState &AState)
 {
 	m_blocking = new gmds::blocking::CurvedBlocking(*AState.m_blocking);
 	m_geom = AState.m_geom;
-	m_class_blocking = new gmds::blocking::CurvedBlockingClassifier(*AState.m_class_blocking);
+	m_class_blocking = new gmds::blocking::CurvedBlockingClassifier(m_blocking);
 	m_class_errors = AState.m_class_errors;
 	m_history = AState.m_history;
 }
