@@ -1,4 +1,7 @@
-# A C++ library for writing meshing algorithms
+# GMDS: a C++ library for writing meshing algorithms
+
+![spack-ci](https://github.com/LIHPC-Computational-Geometry/qqualif/actions/workflows/spack-ci.yml/badge.svg)
+
 ![CI Ubuntu](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/continuous-ubuntu.yml/badge.svg)
 ![CI Macoc](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/continuous-macos.yml/badge.svg)
 ![CI Windows](https://github.com//LIHPC-Computational-Geometry/gmds/actions/workflows/continuous-windows.yml/badge.svg)
@@ -11,6 +14,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/bf6ad23f6a3c452ab6f7f3f63d9fdb89)](https://www.codacy.com/gh/LIHPC-Computational-Geometry/gmds/dashboard?utm_source=github.com&utm_medium=referral&utm_content=LIHPC-Computational-Geometry/gmds&utm_campaign=Badge_Coverage)
 [![codecov](https://codecov.io/gh/LIHPC-Computational-Geometry/gmds/branch/main/graph/badge.svg?token=QA3AS0MLDN)](https://codecov.io/gh/LIHPC-Computational-Geometry/gmds)
 
+This project is part of the [magix3d](https://github.com/LIHPC-Computational-Geometry/magix3d) ecosystem and conforms to its [CI policy](https://github.com/LIHPC-Computational-Geometry/spack_recipes#development-in-magix3d-ecosystem-projects).
 
 ## Last changes
 - We changed our installation procedure. In particular, we externalized some of gmds depencies. See the [developer documentation](docs/mkdocs/dev-guide/developers_doc.md) for more details.
