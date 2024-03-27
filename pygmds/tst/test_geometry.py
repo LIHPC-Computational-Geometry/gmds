@@ -1,7 +1,6 @@
 import sys
 from gmds.math import *
 from gmds.mesh import *
-from gmds.blocking import *
 from gmds.cad import *
 
 
