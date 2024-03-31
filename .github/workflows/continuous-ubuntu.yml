@@ -55,11 +55,27 @@ jobs:
         spack load py-pytest;
         cmake /__w/gmds/gmds -DCMAKE_BUILD_TYPE=${{ matrix.config }} 
         -DWITH_CODE_COVERAGE:BOOL=ON
-        -DWITH_TEST:BOOL=ON
+        -DWITH_CGNS:BOOL=OFF
         -DWITH_PYTHON_API:BOOL=ON
+        -DWITH_TEST:BOOL=ON
+        -DENABLE_BLOCK_MESHER:BOOL=ON
         -DENABLE_BLOCKING:BOOL=ON
+        -DENABLE_CLAIRE:BOOL=ON
+        -DENABLE_DUAL_BLOCKING:BOOL=OFF
+        -DENABLE_ELG3D:BOOL=OFF
         -DENABLE_ELGMORPHING:BOOL=OFF
+        -DENABLE_FRAME:BOOL=ON
+        -DENABLE_FRAME_3D:BOOL=ON
+        -DENABLE_GEOD_HONEY_COMB:BOOL=ON
+        -DENABLE_HYBRIDMESHADAPT:BOOL=ON
         -DENABLE_KMDS:BOOL=ON
+        -DENABLE_MEDUSA:BOOL=OFF
+        -DENABLE_MORPHMESH:BOOL=ON
+        -DENABLE_PADDINGs:BOOL=ON
+        -DENABLE_POLYBLOCK:BOOL=ON
+        -DENABLE_QUADFRONT:BOOL=OFF
+        -DENABLE_RLBLOCKING:BOOL=OFF
+        -DENABLE_SINGGRAPHBUILD:BOOL=ON
         -DCMAKE_PREFIX_PATH="/spack/opt/spack/lcov;/spack/opt/spack/glpk;/spack/opt/spack/eigen;/spack/opt/spack/googletest;/spack/opt/spack/py-pybind11;/spack/opt/spack/kokkos;/spack/opt/spack/cgal;/spack/opt/spack/gmp;/spack/opt/spack/mpfr;/spack/opt/spack/boost;/spack/opt/spack/cgns"
         -DCMAKE_INSTALL_PREFIX= ${GITHUB_WORKSPACE}/install
 
