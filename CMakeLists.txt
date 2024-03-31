@@ -141,7 +141,7 @@ GMDS_ADD_COMPONENT(
         blocking                        # src subdirectory name
         GMDSBlocking                    # name of the generated library
         "This module provides a data structure for a blocking representation"  # description
-        ON                                 # is activated
+        OFF                                # is activated
         ON                                 # must be covered
 )
 
@@ -150,7 +150,7 @@ GMDS_ADD_COMPONENT(
         claire                        # src subdirectory name
         GMDSClaire                    # name of the generated library
         " "  # description
-        ON                                 # is activated
+        OFF                                # is activated
         ON                                 # must be covered
 )
 
@@ -159,7 +159,7 @@ GMDS_ADD_COMPONENT(
         blockMesher                        # src subdirectory name
         GMDSBlockMesher                    # name of the generated library
         "Provide the mesh of a block structure classified on a CAD geometry"  # description
-        ON                                 # is activated
+        OFF                                # is activated
         ON                                 # must be covered
 )
 
@@ -168,7 +168,7 @@ GMDS_ADD_COMPONENT(
         frame                               # src subdirectory name
         GMDSFrame                           # name of the generated library
         "Frame field generation component"  # description
-        ON                                  # is activated
+        OFF                                 # is activated
         ON                                 # must be covered
 )
 
@@ -177,7 +177,7 @@ GMDS_ADD_COMPONENT(
         frame3d
         GMDSFrame3d
         "3D Frame field generation component"
-        ON
+        OFF
         ON                                 # must be covered
 )
 
@@ -186,7 +186,7 @@ GMDS_ADD_COMPONENT(
         singGraphBuild
         GMDSSingGraphBuild
         "Singularity graph building component"
-        ON
+        OFF
         ON                                 # must be covered
 )
 
@@ -240,7 +240,7 @@ GMDS_ADD_COMPONENT(
         hybridMeshAdapt
         GMDSHybridMeshAdapt
         "Hybrid remeshing component"
-        ON
+        OFF
         ON                                 # must be covered
 )
 
@@ -249,7 +249,7 @@ GMDS_ADD_COMPONENT(
         padding
         GMDSPadding
         "Smart Padding/Pillowing algorithm"
-        ON
+        OFF
         ON                                # must be covered
 )
 
@@ -258,15 +258,25 @@ GMDS_ADD_COMPONENT(
         polyblock
         GMDSPolyblock
         "Polycube_like algorithms for hexahedral blocking"
-        ON
+        OFF
         ON                                # must be covered
 )
+
+GMDS_ADD_COMPONENT(
+        QUADFRONT                               # cmake variable
+        quadfront                               # src subdirectory name
+        GMDSquadfront                           # name of the generated library
+        "advancing-front quad mesher"  # description
+        OFF                                 # is activated
+        ON                                 # must be covered
+)
+
 GMDS_ADD_COMPONENT(
         GEOD_HONEY_COMB
         geodHoneyComb
         GMDSGeodHoneyComb
         "Algorithms to create honeycomb like meshes for spherical geometries"
-        ON
+        OFF
         ON                                # must be covered
 )
 
@@ -275,7 +285,7 @@ GMDS_ADD_COMPONENT(
         morphMesh
         GMDSmorphMesh
         "morphing the mesh"
-        ON
+        OFF
         OFF                                 # must be covered
 )
 
@@ -283,7 +293,7 @@ GMDS_ADD_COMPONENT(
         RLBLOCKING                       # cmake variable
         rlBlocking                       # src subdirectory name
         GMDSRlBlocking                    # name of the generated library
-        " "  # description
+        "MCTS-guided blocking modifications"  # description
         OFF                                 # is activated
         OFF                                 # must be covered
 )
