@@ -137,11 +137,20 @@ add_subdirectory(external/HLBFGS)
 #==============================================================================
 
 GMDS_ADD_COMPONENT(
+        BLOCK_MESHER                       # cmake variable
+        blockMesher                        # src subdirectory name
+        GMDSBlockMesher                    # name of the generated library
+        "Provide the mesh of a block structure classified on a CAD geometry"  # description
+        OFF                                # is activated
+        ON                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
         BLOCKING                       # cmake variable
         blocking                        # src subdirectory name
         GMDSBlocking                    # name of the generated library
         "This module provides a data structure for a blocking representation"  # description
-        ON                                 # is activated
+        OFF                                # is activated
         ON                                 # must be covered
 )
 
@@ -150,43 +159,7 @@ GMDS_ADD_COMPONENT(
         claire                        # src subdirectory name
         GMDSClaire                    # name of the generated library
         " "  # description
-        ON                                 # is activated
-        ON                                 # must be covered
-)
-
-GMDS_ADD_COMPONENT(
-        BLOCK_MESHER                       # cmake variable
-        blockMesher                        # src subdirectory name
-        GMDSBlockMesher                    # name of the generated library
-        "Provide the mesh of a block structure classified on a CAD geometry"  # description
-        ON                                 # is activated
-        ON                                 # must be covered
-)
-
-GMDS_ADD_COMPONENT(
-        FRAME                               # cmake variable
-        frame                               # src subdirectory name
-        GMDSFrame                           # name of the generated library
-        "Frame field generation component"  # description
-        ON                                  # is activated
-        ON                                 # must be covered
-)
-
-GMDS_ADD_COMPONENT(
-        FRAME_3D
-        frame3d
-        GMDSFrame3d
-        "3D Frame field generation component"
-        ON
-        ON                                 # must be covered
-)
-
-GMDS_ADD_COMPONENT(
-        SINGGRAPHBUILD
-        singGraphBuild
-        GMDSSingGraphBuild
-        "Singularity graph building component"
-        ON
+        ON                                # is activated
         ON                                 # must be covered
 )
 
@@ -195,24 +168,6 @@ GMDS_ADD_COMPONENT(
         dualBlocking
         GMDSDualBlocking
         "Dual blocking component"
-        OFF
-        OFF                                 # must be covered
-)
-
-GMDS_ADD_COMPONENT(
-        MEDUSA
-        medusa
-        GMDSMedusa
-        "Visualization component"
-        OFF
-        OFF                                 # must be covered
-)
-
-GMDS_ADD_COMPONENT(
-        KMDS
-        kmds
-        GMDSkmds
-        "kokkos-based mesh structure"
         OFF
         OFF                                 # must be covered
 )
@@ -236,31 +191,23 @@ GMDS_ADD_COMPONENT(
 )
 
 GMDS_ADD_COMPONENT(
-        HYBRIDMESHADAPT
-        hybridMeshAdapt
-        GMDSHybridMeshAdapt
-        "Hybrid remeshing component"
-        ON
+        FRAME                               # cmake variable
+        frame                               # src subdirectory name
+        GMDSFrame                           # name of the generated library
+        "Frame field generation component"  # description
+        ON                                 # is activated
         ON                                 # must be covered
 )
 
 GMDS_ADD_COMPONENT(
-        PADDING
-        padding
-        GMDSPadding
-        "Smart Padding/Pillowing algorithm"
+        FRAME_3D
+        frame3d
+        GMDSFrame3d
+        "3D Frame field generation component"
         ON
-        ON                                # must be covered
+        ON                                 # must be covered
 )
 
-GMDS_ADD_COMPONENT(
-        POLYBLOCK
-        polyblock
-        GMDSPolyblock
-        "Polycube_like algorithms for hexahedral blocking"
-        ON
-        ON                                # must be covered
-)
 GMDS_ADD_COMPONENT(
         GEOD_HONEY_COMB
         geodHoneyComb
@@ -268,6 +215,33 @@ GMDS_ADD_COMPONENT(
         "Algorithms to create honeycomb like meshes for spherical geometries"
         ON
         ON                                # must be covered
+)
+
+GMDS_ADD_COMPONENT(
+        HYBRIDMESHADAPT
+        hybridMeshAdapt
+        GMDSHybridMeshAdapt
+        "Hybrid remeshing component"
+        OFF
+        ON                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
+        KMDS
+        kmds
+        GMDSkmds
+        "kokkos-based mesh structure"
+        OFF
+        OFF                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
+        MEDUSA
+        medusa
+        GMDSMedusa
+        "Visualization component"
+        OFF
+        OFF                                 # must be covered
 )
 
 GMDS_ADD_COMPONENT(
@@ -280,15 +254,49 @@ GMDS_ADD_COMPONENT(
 )
 
 GMDS_ADD_COMPONENT(
+        PADDING
+        padding
+        GMDSPadding
+        "Smart Padding/Pillowing algorithm"
+        OFF
+        ON                                # must be covered
+)
+
+GMDS_ADD_COMPONENT(
+        POLYBLOCK
+        polyblock
+        GMDSPolyblock
+        "Polycube_like algorithms for hexahedral blocking"
+        OFF
+        ON                                # must be covered
+)
+
+GMDS_ADD_COMPONENT(
+        QUADFRONT                               # cmake variable
+        quadfront                               # src subdirectory name
+        GMDSquadfront                           # name of the generated library
+        "advancing-front quad mesher"  # description
+        OFF                                 # is activated
+        ON                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
         RLBLOCKING                       # cmake variable
         rlBlocking                       # src subdirectory name
         GMDSRlBlocking                    # name of the generated library
-        " "  # description
+        "MCTS-guided blocking modifications"  # description
         OFF                                 # is activated
         OFF                                 # must be covered
 )
 
-
+GMDS_ADD_COMPONENT(
+        SINGGRAPHBUILD
+        singGraphBuild
+        GMDSSingGraphBuild
+        "Singularity graph building component"
+        ON
+        ON                                 # must be covered
+)
 
 #==============================================================================
 set (GMDS_INCLUDE_DIRS APPEND)

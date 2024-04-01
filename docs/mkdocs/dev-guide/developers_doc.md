@@ -4,7 +4,7 @@
 gmds depends on many external components. In order to compile gmds they need to be installed properly in
 order to be used with CMake.
 
-Some are optionnal depending on the gmds functionnalities we want to activate;
+Some are optional depending on the gmds functionalities we want to activate;
 they include for example:
 - `lcov` is used to perform code coverage locally to your computer;
 - `py-pybind11` is mandatory for the python API;
@@ -12,7 +12,7 @@ they include for example:
 - `googletest` is used for our testing infrastructure;
 - `cgal` is required for the blocking component.
 
-On linux systems and macos we suggest using [spack](https://spack.io/) for installing the dependencies. 
+On linux systems and macOS we suggest using [spack](https://spack.io/) for installing the dependencies. 
 We use this system for our CI workflows. In a nutshell, spack allows you to install a set of libraries in a 
 specific directory. You can see it as an equivalent of *Python environment*. In our context,
 we will simply install the set of dependencies we need and use them in our CMake build system. As an example,
@@ -50,7 +50,7 @@ Spack can be configured; you can modify the installation directory to shorten th
 of disabling the possibility to have several installations of a same package with differing
 options/versions (if choosing that any library `toto` installed with spack will be located in  `absolute_path/spack/opt/spack/toto/`.)
 ```bash
-# Optionnal: modifying the install_tree variable to make it shorter and more human readable;
+# Optional: modifying the install_tree variable to make it shorter and more human readable;
 # the HASH part in install directory names is removed which can lead to collisions.
 # The spack/etc/spack/defaults/config.yaml file can be modified by hand
 # - in spack version 0.20
@@ -142,8 +142,8 @@ the dependencies:
 
 ## Creation of an optional module
 
-Once a component created, we use a [github workflow](git_workflow.md) in order to structure the code development.
-We also intensively use [unit tests](unit_testing.md) to valid our codes and also to perform code coverage when we merge developments.
+Once a component is created, we use a [github workflow](git_workflow.md) in order to structure the code development.
+We also intensively use [unit tests](unit_test.md) to valid our codes and also to perform code coverage when we merge developments.
 
 The creation of a new GMDS component requires to follow the guideline given below.
 
@@ -183,9 +183,9 @@ GMDS_ADD_COMPONENT(
 ```cmake
 
 #==============================================================================
-# LIBRARY DEFINTION (SOURCE FILES)
+# LIBRARY DEFINITION (SOURCE FILES)
 #==============================================================================
-# Explicity used the name given in this preamble
+# Explicitly used the name given in this preamble
 set(GMDS_LIB ${LIB_GMDS_XXX})
 set(GMDS_LIB_PREFIX gmds/xxx)
 
@@ -235,11 +235,23 @@ endif(WITH_TEST)
 ```
 
 This file deserves a few comments:
-- You must set the two first variable using the name of your component (XXX) and the name of the subdirectory (xxx).
+- You must set the two first variables using the name of your component (XXX) and the name of the subdirectory (xxx).
 - Each time you create a new class, the corresponding header and src files must be added to the lists *GMDS_INC* and *GMDS_SRC* respectively.
-- Note that the *inc* subidrectory is always structured with two subdirectories, i.e. *inc/gmds/xxx/* for getting a homogeneous way of accessing to gmds header files.
+- Note that the *inc* subdirectory is always structured with two subdirectories, i.e. *inc/gmds/xxx/* for getting a homogeneous way of accessing to gmds header files.
 - The command **target_link_libraries(${GMDS_LIB} PUBLIC ....)** is very important. It is where you give the dependency of your module to other GDMS module or to external libraries.
 - The remainder of the CMakefiles.txt should not be edited. It is used to generate libraries and to define the install procedure
 
 ### How to create an executable in a GMDS module
-A GMDS module is associated to a library. But sometimes, for debug and test reasons, we can generate an executable. Considering the module *XXX*, you can do it by adding the next lines in the *CMakeLists.txt" file. 
+A GMDS module is associated to a library, but an executable can also be produced.
+Considering the module *XXX*, you can do so it by adding the next lines at the end 
+of the *CMakeLists.txt* file. 
+
+```cmake
+#==============================================================================
+# EXECUTABLE
+#==============================================================================
+add_executable(xxx src/main.cpp)
+target_link_libraries(xxx PRIVATE ${GMDS_LIB})
+target_compile_features(xxx PUBLIC cxx_std_14)
+install(TARGETS xxx)
+```
