@@ -236,10 +236,28 @@ GMDS_ADD_COMPONENT(
 )
 
 GMDS_ADD_COMPONENT(
+        MEDIALAXIS
+        medialaxis
+        GMDSMedialaxis
+        "Medial-axis component"
+        OFF
+        OFF                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
         MEDUSA
         medusa
         GMDSMedusa
         "Visualization component"
+        OFF
+        OFF                                 # must be covered
+)
+
+GMDS_ADD_COMPONENT(
+        MILP
+        milp
+        GMDSmilp
+        "Mixed-Integer Linear Programming component"
         OFF
         OFF                                 # must be covered
 )
