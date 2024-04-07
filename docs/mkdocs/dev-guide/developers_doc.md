@@ -24,7 +24,7 @@ The following procedure can be found in the [build_spack_gmds.sh](https://github
 script. You can run the following commands from an empty directory; you will end up with three directories `spack, spack_recipes and gmds`.
 Spack's [prerequisites](https://spack.readthedocs.io/en/v0.20.3/getting_started.html) for the version of your choice 
 should be installed.
-
+ 
 We download a spack release; optionally you can remove the configuration files 
 stored in the `.spack` directory located in your home if you have previously used spack and want a fresh start:
 ```bash
@@ -77,20 +77,22 @@ source spack/share/spack/setup-env.sh
 spack clean -a
 ```
 
-First register cmake
+First register cmake (`cmake` should be available in your `PATH`, 
+for example by installing the system package)
 ```bash
 # registering cmake
 spack external find cmake
 ```
 
-And then compilers; you need a compiler that handles both C and CXX:
+And then compilers; you need a compiler that handles both C and CXX. Check that the highest version of the
+compiler returned by `spack compiler list` does indeed provide both, using the command `spack compiler info gcc`
 ```bash
 # registering compilers
 spack compiler find
 # spack uses the highest version of the compiler found by default; if it is incomplete,
 # for example the C compiler is installed but not the CXX one the installations will fail.
 # Compilers found can be investigated by (see `spack help compiler` commands)
-#spack compiler list
+spack compiler list
 #spack compiler info gcc
 # An undesirable version can be removed by editing ~/.spack/linux/compilers.yaml or using
 #spack compiler remove gcc@12
@@ -102,7 +104,13 @@ Now we get gmds:
 git clone git@github.com:LIHPC-Computational-Geometry/gmds.git
 ```
 
-And we build gmds from the sources we just cloned, including all the necessary dependencies
+And we build gmds from the sources we just cloned, including all the necessary dependencies.
+The options given as parameters in this example are :
+- `~python~blocking~cgns` deactivates the corresponding variants, which will result in
+a lighter gmds with less dependencies
+- `dev_path` the path where the gmds sources are located
+- `build_type` the build type, `Debug` being most likely what one will need when developing
+
 
 ```bash
 # you will probably want build_type=Debug or RelWithDebInfo.
@@ -111,12 +119,13 @@ And we build gmds from the sources we just cloned, including all the necessary d
 
 # +mpi should actually be ok, but currently the default openmpi install fails
 # It is activated by default in the hdf5 and cgns recipes, so choose not to use it if necessary
-spack install gmds+python+blocking+cgns dev_path=$PWD/gmds build_type=Debug ^cgns~mpi ^hdf5~mpi
+#spack install gmds+python+blocking+cgns dev_path=$PWD/gmds build_type=Debug ^cgns~mpi ^hdf5~mpi
+spack install gmds~python~blocking~cgns dev_path=$PWD/gmds build_type=Debug
 ```
 
 ### Configuring the IDE
 Now in order to develop we need to configure an IDE. This can be done in two ways:
-1. Extracting the options from spack. Files named `gmds/spack-*` were created in the gmds directory; we can extract the necessary 
+1. Extracting the options from spack. Files named `gmds/spack-*` or `gmds/Buildxxx/spack-*` were created in the gmds directory; we can extract the necessary 
 data to configure an IDE, in particular the `CMAKE_PREFIX_PATH` and the cmake options given to gmds.
 ```bash
 # to configure an IDE
