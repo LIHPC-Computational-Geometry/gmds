@@ -101,6 +101,10 @@ spack compiler list
 Now we get gmds:
 ```bash
 # install for dev purposes
+# choose one URL depending on your authentication on github
+# web URL
+git clone https://github.com/LIHPC-Computational-Geometry/gmds.git
+# SSH key
 git clone git@github.com:LIHPC-Computational-Geometry/gmds.git
 ```
 
