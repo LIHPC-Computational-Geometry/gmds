@@ -71,8 +71,8 @@ int main(int argc, char* argv[]) {
     std::istringstream iss_5(argv[5]);
     iss_5 >> chosen_method;
 
-    Kokkos::InitArguments kargs;
-    kargs.num_threads = num_threads;
+	 Kokkos::InitializationSettings kargs;
+	 kargs.set_num_threads(num_threads);
     Kokkos::initialize(kargs);
 
     std::cout<<"num_threads "<<num_threads<<std::endl;

@@ -478,7 +478,7 @@ namespace elg3d {
         // =======================================
 
         // build the hexahedron that represents the first half-space
-        gmds::math::Vector p(triangles_kept[0].getPoint(0), triangles_kept[0].getPoint(1));
+        gmds::math::Vector3d p(triangles_kept[0].getPoint(1) - triangles_kept[0].getPoint(0));
         p.normalize();
         const gmds::math::Vector q = p.cross(normals_kept[0]);
 

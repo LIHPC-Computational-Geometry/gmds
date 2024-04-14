@@ -173,7 +173,7 @@ namespace elg3d {
                 for (int i_c = 0; i_c < cells.size(); i_c++) {
                     if (ma->getMaterial(cells(i_c)) == mat) {
                         gmds::math::Point pt_midpoint = mesh->getFace(cells(i_c)).midpoint();
-                        gmds::math::Point pt_tmp(pt_old + (1 / 5.) * gmds::math::Vector(pt_old, pt_midpoint));
+                        gmds::math::Point pt_tmp(pt_old + (1 / 5.) * gmds::math::Vector3d(pt_midpoint - pt_old));
                         pt_new = pt_new + pt_tmp;
                         nbContrib++;
                     }
@@ -1343,8 +1343,8 @@ namespace elg3d {
                                          gmds::math::Point pt0_1 = AMesh->getNodeLocation(nids0[1]);
                                          gmds::math::Point pt1_0 = AMesh->getNodeLocation(nids1[0]);
                                          gmds::math::Point pt1_1 = AMesh->getNodeLocation(nids1[1]);
-                                         gmds::math::Vector n0(pt0_0.Y() - pt0_1.Y(), pt0_1.X() - pt0_0.X(), 0.);
-                                         gmds::math::Vector n1(pt1_0.Y() - pt1_1.Y(), pt1_1.X() - pt1_0.X(), 0.);
+                                         gmds::math::Vector3d n0({pt0_0.Y() - pt0_1.Y(), pt0_1.X() - pt0_0.X(), 0.});
+                                         gmds::math::Vector3d n1({pt1_0.Y() - pt1_1.Y(), pt1_1.X() - pt1_0.X(), 0.});
 
                                          n0.normalize();
                                          n1.normalize();
@@ -1610,7 +1610,7 @@ namespace elg3d {
                                          // now to compute the position of the duplicate
                                          double surf_min = HUGE_VALF;
 
-                                         gmds::math::Vector v(0., 0., 0.);
+                                         gmds::math::Vector3d v({0., 0., 0.});
 
 
                                          for(int i_f=0; i_f<areasF[i_n].size(); i_f++) {

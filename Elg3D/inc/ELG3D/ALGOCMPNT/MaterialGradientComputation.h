@@ -57,7 +57,7 @@ namespace elg3d {
         MaterialGradientComputation_midcellGradients () {
             for(int i=0; i<MaterialGradientComputation_MAXNBMATPERCELLBALL; i++) {
                 this->m_matindex[i] = -1;
-                this->m_grad[i] = gmds::math::Vector (-HUGE_VALF, -HUGE_VALF, -HUGE_VALF);
+                this->m_grad[i] = gmds::math::Vector3d ({-HUGE_VALF, -HUGE_VALF, -HUGE_VALF});
             }
         }
     };

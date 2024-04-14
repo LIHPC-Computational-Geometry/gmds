@@ -81,7 +81,7 @@ namespace elg3d {
             int imat = 0;
             for(auto mat: materials) {
 
-                gmds::math::Vector grad(0.,0.,0.);
+                gmds::math::Vector3d grad({0.,0.,0.});
                 bool success = MaterialGradientComputation_computeGrad_leastsquare_onecell_onemat_2D(
                         cid,
                         mat,
@@ -144,7 +144,7 @@ namespace elg3d {
 
             for(int imat=0; imat<nbMat; imat++) {
 
-                gmds::math::Vector grad(0.,0.,0.);
+                gmds::math::Vector3d grad({0.,0.,0.});
                 bool success = MaterialGradientComputation_computeGrad_leastsquare_onecell_onemat_2D(
                         cid,
                         imat,
@@ -205,7 +205,7 @@ namespace elg3d {
 
             for(int imat=0; imat<nbMat; imat++) {
 
-                gmds::math::Vector grad(0.,0.,0.);
+                gmds::math::Vector3d grad({0.,0.,0.});
                 bool success = MaterialGradientComputation_computeGrad_leastsquare_onecell_onemat_3D(
                         cid,
                         imat,
@@ -428,7 +428,7 @@ namespace elg3d {
             for(int imat=0; imat<MaterialGradientComputation_MAXNBMATPERCELLBALL; imat++) {
 
                 assert((*varGrads)[cid].m_matindex[imat] == -1);
-                assert((*varGrads)[cid].m_grad[imat] == gmds::math::Vector (-HUGE_VALF, -HUGE_VALF, -HUGE_VALF));
+                assert((*varGrads)[cid].m_grad[imat] == gmds::math::Vector3d ({-HUGE_VALF, -HUGE_VALF, -HUGE_VALF}));
             }
         }
     };
@@ -485,7 +485,7 @@ namespace elg3d {
             int imat = 0;
             for(auto mat: materials) {
 
-                gmds::math::Vector grad(0.,0.,0.);
+                gmds::math::Vector3d grad({0.,0.,0.});
                 bool success = MaterialGradientComputation_computeGrad_leastsquare_onecell_onemat_3D(
                         cid,
                         mat,

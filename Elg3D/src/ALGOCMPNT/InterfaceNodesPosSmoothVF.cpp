@@ -44,14 +44,14 @@ namespace elg3d {
 
     double InterfaceNodesPosSmoothVF_gco_smoothCost_interface(int p, int q, int label_p, int label_q,void *extraData){
 
-        gmds::math::Vector n(1., -0.5);
+        gmds::math::Vector3d n({1., -0.5, 0.});
         n.normalize();
 
         std::map<int, gmds::math::Point>* index2pts = reinterpret_cast<std::map<int, gmds::math::Point>* > (extraData);
         gmds::math::Point pt_p = (*index2pts)[p];
         gmds::math::Point pt_q = (*index2pts)[q];
 
-        gmds::math::Vector v(pt_p, pt_q);
+        gmds::math::Vector3d v(pt_q - pt_p);
         v.normalize();
 
         double dotproduct = n.dot(v);
@@ -2294,12 +2294,12 @@ namespace elg3d {
         int nbFixed = 0;
         Kokkos::View<bool *> isfixed("isFixed", nbVert);
         std::vector<int> mat(nbVert, -1);
-//        std::vector<gmds::math::VectorDyn> vf_current(nbVert, gmds::math::VectorDyn(nbMat));
-//        std::vector<gmds::math::VectorDyn> vf_next(nbVert, gmds::math::VectorDyn(nbMat));
+        std::vector<gmds::math::VectorDyn> vf_current(nbVert, gmds::math::VectorDyn(nbMat));
+        std::vector<gmds::math::VectorDyn> vf_next(nbVert, gmds::math::VectorDyn(nbMat));
 //        Kokkos::View<double *[nbMat]> vf_current("vf_current", nbVert);
 //        Kokkos::View<double *[2]> vf_next_tmp("vf_next", nbVert);
-        std::vector<gmds::math::Vector> vf_current(nbVert, gmds::math::Vector(nbMat));
-        std::vector<gmds::math::Vector> vf_next(nbVert, gmds::math::Vector(nbMat));
+//	     std::vector<gmds::math::Vector> vf_current(nbVert, gmds::math::Vector(nbMat));
+//        std::vector<gmds::math::Vector> vf_next(nbVert, gmds::math::Vector(nbMat));
 
 //        Kokkos::parallel_for(nbVert,
 //                             KOKKOS_LAMBDA(const int i) {
@@ -2439,8 +2439,8 @@ namespace elg3d {
                 for (int p = 0; p < nbVert; p++) {
 
                     if (!isfixed[p]) {
-//                        gmds::math::VectorDyn v(vf_current[p]);
-                        gmds::math::Vector v(vf_current[p]);
+                        gmds::math::VectorDyn v(vf_current[p]);
+//                        gmds::math::Vector v(vf_current[p]);
 
                         // do not smooth if one component is higher than threshold
                         bool isAboveThres = false;
@@ -2806,12 +2806,12 @@ namespace elg3d {
         int nbFixed = 0;
         Kokkos::View<bool *> isfixed("isFixed", nbVert);
         std::vector<int> mat(nbVert, -1);
-//        std::vector<gmds::math::VectorDyn> vf_current(nbVert, gmds::math::VectorDyn(nbMat));
-//        std::vector<gmds::math::VectorDyn> vf_next(nbVert, gmds::math::VectorDyn(nbMat));
+        std::vector<gmds::math::VectorDyn> vf_current(nbVert, gmds::math::VectorDyn(nbMat));
+        std::vector<gmds::math::VectorDyn> vf_next(nbVert, gmds::math::VectorDyn(nbMat));
 //        Kokkos::View<double *[nbMat]> vf_current("vf_current", nbVert);
 //        Kokkos::View<double *[2]> vf_next_tmp("vf_next", nbVert);
-        std::vector<gmds::math::Vector> vf_current(nbVert, gmds::math::Vector(nbMat));
-        std::vector<gmds::math::Vector> vf_next(nbVert, gmds::math::Vector(nbMat));
+//        std::vector<gmds::math::Vector> vf_current(nbVert, gmds::math::Vector(nbMat));
+//        std::vector<gmds::math::Vector> vf_next(nbVert, gmds::math::Vector(nbMat));
 
 //        Kokkos::parallel_for(nbVert,
 //                             KOKKOS_LAMBDA(const int i) {
@@ -3037,8 +3037,8 @@ namespace elg3d {
                 for (int p = 0; p < nbVert; p++) {
 
                     if (!isfixed[p]) {
-//                        gmds::math::VectorDyn v(vf_current[p]);
-                        gmds::math::Vector v(vf_current[p]);
+                        gmds::math::VectorDyn v(vf_current[p]);
+//                        gmds::math::Vector v(vf_current[p]);
 
                         // do not smooth if one component is higher than threshold
                         bool isAboveThres = false;
@@ -3061,7 +3061,7 @@ namespace elg3d {
                         double max_dist = 0;
                         for (int i = 0; i < nbNeighbors; i++) {
                             const gmds::math::Point pt_n = midpoints[nids[i]];
-                            double dist = gmds::math::Vector(pt_v,pt_n).norm();
+                            double dist = gmds::math::Vector3d(pt_n - pt_v).norm();
                             if(dist > max_dist) {
                                 max_dist = dist;
                             }
@@ -3070,8 +3070,8 @@ namespace elg3d {
                         for (int i = 0; i < nbNeighbors; i++) {
 
                             const gmds::math::Point pt_n = midpoints[nids[i]];
-                            const double horizontal_weight = 1. - (0.8 * std::abs(gmds::math::Vector(1.,0.,0.).dot(gmds::math::Vector(pt_v,pt_n).getNormalize())));
-                            const double dist = gmds::math::Vector(pt_v,pt_n).norm();
+                            const double horizontal_weight = 1. - (0.8 * std::abs(gmds::math::Vector3d({1.,0.,0.}).dot(gmds::math::Vector3d(pt_n - pt_v).getNormalize())));
+                            const double dist = gmds::math::Vector3d(pt_n - pt_v).norm();
 
 //                            v = v + vf_current[nids[i]];
                             v = v + ((dist * horizontal_weight)/max_dist) * vf_current[nids[i]];
@@ -3149,12 +3149,12 @@ namespace elg3d {
         int nbFixed = 0;
         Kokkos::View<bool *> isfixed("isFixed", nbVert);
         std::vector<int> mat(nbVert, -1);
-//        std::vector<gmds::math::VectorDyn> vf_current(nbVert, gmds::math::VectorDyn(nbMat));
-//        std::vector<gmds::math::VectorDyn> vf_next(nbVert, gmds::math::VectorDyn(nbMat));
+        std::vector<gmds::math::VectorDyn> vf_current(nbVert, gmds::math::VectorDyn(nbMat));
+        std::vector<gmds::math::VectorDyn> vf_next(nbVert, gmds::math::VectorDyn(nbMat));
 //        Kokkos::View<double *[nbMat]> vf_current("vf_current", nbVert);
 //        Kokkos::View<double *[2]> vf_next_tmp("vf_next", nbVert);
-        std::vector<gmds::math::Vector> vf_current(nbVert, gmds::math::Vector(nbMat));
-        std::vector<gmds::math::Vector> vf_next(nbVert, gmds::math::Vector(nbMat));
+//        std::vector<gmds::math::Vector> vf_current(nbVert, gmds::math::Vector(nbMat));
+//        std::vector<gmds::math::Vector> vf_next(nbVert, gmds::math::Vector(nbMat));
 
 //        Kokkos::parallel_for(nbVert,
 //                             KOKKOS_LAMBDA(const int i) {
@@ -3345,8 +3345,8 @@ namespace elg3d {
                 for (int p = 0; p < nbVert; p++) {
 
                     if (!isfixed[p]) {
-//                        gmds::math::VectorDyn v(vf_current[p]);
-                        gmds::math::Vector v(vf_current[p]);
+                        gmds::math::VectorDyn v(vf_current[p]);
+//                        gmds::math::Vector v(vf_current[p]);
 
                         // do not smooth if one component is higher than threshold
                         bool isAboveThres = false;
@@ -4964,7 +4964,7 @@ namespace elg3d {
                 gmds::math::Point pt = midpoints[neighbors_0[in]];
 
                 // vertical material changes do not count as much energy-wise
-                double horizontal_weight = 1. - (0.8 * std::abs(gmds::math::Vector(0,1,0).dot(gmds::math::Vector(pt_0,pt).getNormalize())));
+                double horizontal_weight = 1. - (0.8 * std::abs(gmds::math::Vector3d({0,1,0}).dot(gmds::math::Vector3d(pt - pt_0).getNormalize())));
 
                 if(mat_0 != matassignment[neighbors_0[in]]) {
                     e_before += (1. / pt_0.distance(pt)) * horizontal_weight;
@@ -4984,7 +4984,7 @@ namespace elg3d {
                 gmds::math::Point pt = midpoints[neighbors_1[in]];
 
                 // vertical material changes do not count as much energy-wise
-                double horizontal_weight = 1. - (0.8 * std::abs(gmds::math::Vector(0,1,0).dot(gmds::math::Vector(pt_1,pt).getNormalize())));
+                double horizontal_weight = 1. - (0.8 * std::abs(gmds::math::Vector3d({0,1,0}).dot(gmds::math::Vector3d(pt - pt_1).getNormalize())));
 
                 if(mat_1 != matassignment[neighbors_1[in]]) {
                     e_before += (1. / pt_1.distance(pt)) * horizontal_weight;
