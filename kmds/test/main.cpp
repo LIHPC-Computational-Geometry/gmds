@@ -31,8 +31,10 @@ main(int argc, char** argv)
 	Kokkos::initialize(kargs);
 
 	::testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+	int ret = RUN_ALL_TESTS();
 
 	Kokkos::finalize();
+
+	return ret;
 }
 /*----------------------------------------------------------------------------*/
