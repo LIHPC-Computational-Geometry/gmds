@@ -1,6 +1,9 @@
 /*----------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 /*----------------------------------------------------------------------------*/
+// Kokkos headers
+#include <Kokkos_Core.hpp>
+/*----------------------------------------------------------------------------*/
 // Files containing the different test suites to launch
 #include "ConnectivityPerfTest.h"
 #include "ConnectivityTest.h"
@@ -23,7 +26,13 @@
 int
 main(int argc, char** argv)
 {
-        ::testing::InitGoogleTest(&argc, argv);
-        return RUN_ALL_TESTS();
+	Kokkos::InitializationSettings kargs;
+	kargs.set_num_threads(3);
+	Kokkos::initialize(kargs);
+
+	::testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
+
+	Kokkos::finalize();
 }
 /*----------------------------------------------------------------------------*/

@@ -27,21 +27,11 @@ class InitToolsTest : public ::testing::Test
     static void
     SetUpTestCase()
     {
-            // Kokkos::Serial::initialize();
-            // Kokkos::Threads::initialize();
-		          Kokkos::InitializationSettings kargs;
-		          kargs.set_num_threads(3);
-//            Kokkos::OpenMP::initialize(num_threads, use_numa, use_core);
-            Kokkos::initialize(kargs);
     }
 
     static void
     TearDownTestCase()
     {
-            // Kokkos::Serial::finalize();
-            // Kokkos::Threads::finalize();
-//            Kokkos::OpenMP::finalize();
-            Kokkos::finalize();
     }
 };
 /*----------------------------------------------------------------------------*/
