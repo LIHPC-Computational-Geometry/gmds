@@ -29,7 +29,7 @@
 namespace elg3d {
 /*----------------------------------------------------------------------------*/
 
-    const int InterfaceNodesPosSmoothVF_NBSUB = 3;
+    const int InterfaceNodesPosSmoothVF_NBSUB = 10;
 
     const int InterfaceNodesPosSmoothVF_NBSUB2 = InterfaceNodesPosSmoothVF_NBSUB * InterfaceNodesPosSmoothVF_NBSUB;
 

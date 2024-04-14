@@ -44,7 +44,7 @@ namespace elg3d {
 
     double InterfaceNodesPosSmoothVF_gco_smoothCost_interface(int p, int q, int label_p, int label_q,void *extraData){
 
-        gmds::math::Vector n(1., -0.5);
+        gmds::math::Vector3d n({1., -0.5, 0.});
         n.normalize();
 
         std::map<int, gmds::math::Point>* index2pts = reinterpret_cast<std::map<int, gmds::math::Point>* > (extraData);
@@ -2294,12 +2294,12 @@ namespace elg3d {
         int nbFixed = 0;
         Kokkos::View<bool *> isfixed("isFixed", nbVert);
         std::vector<int> mat(nbVert, -1);
-//        std::vector<gmds::math::VectorDyn> vf_current(nbVert, gmds::math::VectorDyn(nbMat));
-//        std::vector<gmds::math::VectorDyn> vf_next(nbVert, gmds::math::VectorDyn(nbMat));
+        std::vector<gmds::math::VectorDyn> vf_current(nbVert, gmds::math::VectorDyn(nbMat));
+        std::vector<gmds::math::VectorDyn> vf_next(nbVert, gmds::math::VectorDyn(nbMat));
 //        Kokkos::View<double *[nbMat]> vf_current("vf_current", nbVert);
 //        Kokkos::View<double *[2]> vf_next_tmp("vf_next", nbVert);
-        std::vector<gmds::math::Vector> vf_current(nbVert, gmds::math::Vector(nbMat));
-        std::vector<gmds::math::Vector> vf_next(nbVert, gmds::math::Vector(nbMat));
+//	     std::vector<gmds::math::Vector> vf_current(nbVert, gmds::math::Vector(nbMat));
+//        std::vector<gmds::math::Vector> vf_next(nbVert, gmds::math::Vector(nbMat));
 
 //        Kokkos::parallel_for(nbVert,
 //                             KOKKOS_LAMBDA(const int i) {
@@ -2439,8 +2439,8 @@ namespace elg3d {
                 for (int p = 0; p < nbVert; p++) {
 
                     if (!isfixed[p]) {
-//                        gmds::math::VectorDyn v(vf_current[p]);
-                        gmds::math::Vector v(vf_current[p]);
+                        gmds::math::VectorDyn v(vf_current[p]);
+//                        gmds::math::Vector v(vf_current[p]);
 
                         // do not smooth if one component is higher than threshold
                         bool isAboveThres = false;
@@ -2806,12 +2806,12 @@ namespace elg3d {
         int nbFixed = 0;
         Kokkos::View<bool *> isfixed("isFixed", nbVert);
         std::vector<int> mat(nbVert, -1);
-//        std::vector<gmds::math::VectorDyn> vf_current(nbVert, gmds::math::VectorDyn(nbMat));
-//        std::vector<gmds::math::VectorDyn> vf_next(nbVert, gmds::math::VectorDyn(nbMat));
+        std::vector<gmds::math::VectorDyn> vf_current(nbVert, gmds::math::VectorDyn(nbMat));
+        std::vector<gmds::math::VectorDyn> vf_next(nbVert, gmds::math::VectorDyn(nbMat));
 //        Kokkos::View<double *[nbMat]> vf_current("vf_current", nbVert);
 //        Kokkos::View<double *[2]> vf_next_tmp("vf_next", nbVert);
-        std::vector<gmds::math::Vector> vf_current(nbVert, gmds::math::Vector(nbMat));
-        std::vector<gmds::math::Vector> vf_next(nbVert, gmds::math::Vector(nbMat));
+//        std::vector<gmds::math::Vector> vf_current(nbVert, gmds::math::Vector(nbMat));
+//        std::vector<gmds::math::Vector> vf_next(nbVert, gmds::math::Vector(nbMat));
 
 //        Kokkos::parallel_for(nbVert,
 //                             KOKKOS_LAMBDA(const int i) {
@@ -3037,8 +3037,8 @@ namespace elg3d {
                 for (int p = 0; p < nbVert; p++) {
 
                     if (!isfixed[p]) {
-//                        gmds::math::VectorDyn v(vf_current[p]);
-                        gmds::math::Vector v(vf_current[p]);
+                        gmds::math::VectorDyn v(vf_current[p]);
+//                        gmds::math::Vector v(vf_current[p]);
 
                         // do not smooth if one component is higher than threshold
                         bool isAboveThres = false;
@@ -3149,12 +3149,12 @@ namespace elg3d {
         int nbFixed = 0;
         Kokkos::View<bool *> isfixed("isFixed", nbVert);
         std::vector<int> mat(nbVert, -1);
-//        std::vector<gmds::math::VectorDyn> vf_current(nbVert, gmds::math::VectorDyn(nbMat));
-//        std::vector<gmds::math::VectorDyn> vf_next(nbVert, gmds::math::VectorDyn(nbMat));
+        std::vector<gmds::math::VectorDyn> vf_current(nbVert, gmds::math::VectorDyn(nbMat));
+        std::vector<gmds::math::VectorDyn> vf_next(nbVert, gmds::math::VectorDyn(nbMat));
 //        Kokkos::View<double *[nbMat]> vf_current("vf_current", nbVert);
 //        Kokkos::View<double *[2]> vf_next_tmp("vf_next", nbVert);
-        std::vector<gmds::math::Vector> vf_current(nbVert, gmds::math::Vector(nbMat));
-        std::vector<gmds::math::Vector> vf_next(nbVert, gmds::math::Vector(nbMat));
+//        std::vector<gmds::math::Vector> vf_current(nbVert, gmds::math::Vector(nbMat));
+//        std::vector<gmds::math::Vector> vf_next(nbVert, gmds::math::Vector(nbMat));
 
 //        Kokkos::parallel_for(nbVert,
 //                             KOKKOS_LAMBDA(const int i) {
@@ -3345,8 +3345,8 @@ namespace elg3d {
                 for (int p = 0; p < nbVert; p++) {
 
                     if (!isfixed[p]) {
-//                        gmds::math::VectorDyn v(vf_current[p]);
-                        gmds::math::Vector v(vf_current[p]);
+                        gmds::math::VectorDyn v(vf_current[p]);
+//                        gmds::math::Vector v(vf_current[p]);
 
                         // do not smooth if one component is higher than threshold
                         bool isAboveThres = false;
