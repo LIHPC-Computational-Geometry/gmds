@@ -81,7 +81,7 @@ namespace elg3d {
 
                 if(pcrosspt != gmds::math::Point(-HUGE_VALF, -HUGE_VALF, -HUGE_VALF)) {
 
-                    gmds::math::Vector pcrossvec_orth(-pcrossvec.Y(), pcrossvec.X(), 0.);
+                    gmds::math::Vector3d pcrossvec_orth({-pcrossvec.Y(), pcrossvec.X(), 0.});
 
                     gmds::math::Line pl(pcrosspt, pcrossvec_orth);
                     gmds::math::Point proj = pl.project(oldPos);
@@ -283,10 +283,10 @@ namespace elg3d {
                 (*varPCrossPt)[fid] = gmds::math::Point(-HUGE_VALF, -HUGE_VALF, -HUGE_VALF);
                 return;
             }
-            if((v0m0 == gmds::math::Vector(-HUGE_VALF, -HUGE_VALF, -HUGE_VALF))
-            || (v1m0 == gmds::math::Vector(-HUGE_VALF, -HUGE_VALF, -HUGE_VALF))
-            || (v0m1 == gmds::math::Vector(-HUGE_VALF, -HUGE_VALF, -HUGE_VALF))
-            || (v1m1 == gmds::math::Vector(-HUGE_VALF, -HUGE_VALF, -HUGE_VALF))) {
+            if((v0m0 == gmds::math::Vector3d({-HUGE_VALF, -HUGE_VALF, -HUGE_VALF}))
+            || (v1m0 == gmds::math::Vector3d({-HUGE_VALF, -HUGE_VALF, -HUGE_VALF}))
+            || (v0m1 == gmds::math::Vector3d({-HUGE_VALF, -HUGE_VALF, -HUGE_VALF}))
+            || (v1m1 == gmds::math::Vector3d({-HUGE_VALF, -HUGE_VALF, -HUGE_VALF}))) {
                 (*varPCrossPt)[fid] = gmds::math::Point(-HUGE_VALF, -HUGE_VALF, -HUGE_VALF);
                 return;
             }
@@ -402,7 +402,7 @@ namespace elg3d {
         kmds::Variable<gmds::math::Point>* AVarPCrossPt =
                 AMesh->createVariable<gmds::math::Point>(gmds::math::Point (-HUGE_VALF, -HUGE_VALF, -HUGE_VALF), kmds::KMDS_EDGE, "tmp_pcrosspt");
         kmds::Variable<gmds::math::Vector>* AVarPCrossVec =
-                AMesh->createVariable<gmds::math::Vector>(gmds::math::Vector (-HUGE_VALF, -HUGE_VALF, -HUGE_VALF), kmds::KMDS_EDGE, "tmp_pcrossvec");
+                AMesh->createVariable<gmds::math::Vector>(gmds::math::Vector3d ({-HUGE_VALF, -HUGE_VALF, -HUGE_VALF}), kmds::KMDS_EDGE, "tmp_pcrossvec");
         kmds::TSize nbInterfaceEdges =  edgesInterfaces.getNbElems();
 
 
@@ -491,7 +491,7 @@ namespace elg3d {
         kmds::Variable<gmds::math::Point>* AVarPCrossPt =
                 AMesh->createVariable<gmds::math::Point>(gmds::math::Point (-HUGE_VALF, -HUGE_VALF, -HUGE_VALF), kmds::KMDS_FACE, "tmp_pcrosspt");
         kmds::Variable<gmds::math::Vector>* AVarPCrossVec =
-                AMesh->createVariable<gmds::math::Vector>(gmds::math::Vector (-HUGE_VALF, -HUGE_VALF, -HUGE_VALF), kmds::KMDS_FACE, "tmp_pcrossvec");
+                AMesh->createVariable<gmds::math::Vector>(gmds::math::Vector3d ({-HUGE_VALF, -HUGE_VALF, -HUGE_VALF}), kmds::KMDS_FACE, "tmp_pcrossvec");
 
 
         kmds::TSize nbInterfaceFaces =  facesInterfaces.getNbElems();

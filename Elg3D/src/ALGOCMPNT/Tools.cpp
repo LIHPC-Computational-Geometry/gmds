@@ -475,7 +475,7 @@ maxDist);
 
             std::string varname = std::string("gradvec_mat_") + mat.second;
             kmds::Variable<gmds::math::Vector>* var =
-                    AMesh->createVariable<gmds::math::Vector>(gmds::math::Vector (0., 0., 0.), kmds::KMDS_FACE, varname);
+                    AMesh->createVariable<gmds::math::Vector>(gmds::math::Vector3d ({0., 0., 0.}), kmds::KMDS_FACE, varname);
 
             for(int icell=0; icell<nbCells; icell++) {
                 kmds::TCellID cid = cellIDs.get(icell);
@@ -547,7 +547,7 @@ maxDist);
 
             std::string varname = std::string("gradvec_mat_") + mat.second;
             kmds::Variable<gmds::math::Vector>* var =
-                    AMesh->createVariable<gmds::math::Vector>(gmds::math::Vector (0., 0., 0.), kmds::KMDS_FACE, varname);
+                    AMesh->createVariable<gmds::math::Vector>(gmds::math::Vector3d ({0., 0., 0.}), kmds::KMDS_FACE, varname);
 
             for(int icell=0; icell<nbCells; icell++) {
                 kmds::TCellID cid = cellIDs.get(icell);
@@ -645,7 +645,7 @@ maxDist);
 
             std::string varname = std::string("gradvec_mat_") + mat.second;
             kmds::Variable<gmds::math::Vector>* var =
-                    AMesh->createVariable<gmds::math::Vector>(gmds::math::Vector (0., 0., 0.), kmds::KMDS_REGION, varname);
+                    AMesh->createVariable<gmds::math::Vector>(gmds::math::Vector3d ({0., 0., 0.}), kmds::KMDS_REGION, varname);
 
             for(int icell=0; icell<nbCells; icell++) {
                 kmds::TCellID cid = cellIDs.get(icell);
@@ -720,7 +720,7 @@ maxDist);
 
             std::string varname = std::string("gradvec_mat_") + mat.second;
             kmds::Variable<gmds::math::Vector>* var =
-                    AMesh->createVariable<gmds::math::Vector>(gmds::math::Vector (0., 0., 0.), kmds::KMDS_REGION, varname);
+                    AMesh->createVariable<gmds::math::Vector>(gmds::math::Vector3d ({0., 0., 0.}), kmds::KMDS_REGION, varname);
 
             for(int icell=0; icell<nbCells; icell++) {
                 kmds::TCellID cid = cellIDs.get(icell);

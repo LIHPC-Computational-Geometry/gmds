@@ -194,7 +194,7 @@ namespace elg3d {
                             ffTriangles[icell][i_f] = t;
 
                         } else {
-                            ffNormals[icell][i_f] = gmds::math::Vector(0., 0., 0.);
+                            ffNormals[icell][i_f] = gmds::math::Vector3d({0., 0., 0.});
                         }
                     }
                 }

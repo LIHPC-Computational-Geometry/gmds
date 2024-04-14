@@ -248,7 +248,7 @@ namespace elg3d {
 //            qual_z /= cells.size();
 
 //            gmds::math::Vector grad(qual_x - qual, qual_y - qual, qual_z - qual);
-            gmds::math::Vector grad(qual_x - qual, qual_y - qual, 0.);
+            gmds::math::Vector3d grad({qual_x - qual, qual_y - qual, 0.});
 
             if(grad.isZero()) {
                 // we have no direction along which to move the node
@@ -741,7 +741,7 @@ namespace elg3d {
 //            qual_y /= cells.size();
 //            qual_z /= cells.size();
 
-            gmds::math::Vector grad(qual_x - qual, qual_y - qual, qual_z - qual);
+            gmds::math::Vector3d grad({qual_x - qual, qual_y - qual, qual_z - qual});
 
             if(grad.isZero()) {
                 // we have no direction along which to move the node

@@ -88,7 +88,7 @@ namespace elg3d {
             double gain = minEdgeLength / dist;
 
             // horizontal weight
-            const double weight = (1./1.1) * (.1 + std::abs(gmds::math::Vector(pt_v, pt_n).getNormalize().dot(gmds::math::Vector (1., 0., 0.))));
+            const double weight = (1./1.1) * (.1 + std::abs(gmds::math::Vector3d(pt_n - pt_v).getNormalize().dot(gmds::math::Vector3d ({1., 0., 0.}))));
 //            gain *= weight;
 //            gmds::math::Vector dir_hor(0., 1., 0.);
 //            gmds::math::Vector dir(0., 1., 0.);
@@ -156,7 +156,7 @@ namespace elg3d {
 
             double weight = 1.;
             if(!dir.isZero()) {
-                weight = (1./1.1) * (1.1 - std::abs(gmds::math::Vector(pt_v, pt_n).getNormalize().dot(dir)));
+                weight = (1./1.1) * (1.1 - std::abs(gmds::math::Vector3d(pt_n - pt_v).getNormalize().dot(dir)));
             }
             gain *= weight;
 

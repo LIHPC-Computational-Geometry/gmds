@@ -51,7 +51,7 @@ namespace elg3d {
         gmds::math::Point pt_p = (*index2pts)[p];
         gmds::math::Point pt_q = (*index2pts)[q];
 
-        gmds::math::Vector v(pt_p, pt_q);
+        gmds::math::Vector3d v(pt_q - pt_p);
         v.normalize();
 
         double dotproduct = n.dot(v);
@@ -3061,7 +3061,7 @@ namespace elg3d {
                         double max_dist = 0;
                         for (int i = 0; i < nbNeighbors; i++) {
                             const gmds::math::Point pt_n = midpoints[nids[i]];
-                            double dist = gmds::math::Vector(pt_v,pt_n).norm();
+                            double dist = gmds::math::Vector3d(pt_n - pt_v).norm();
                             if(dist > max_dist) {
                                 max_dist = dist;
                             }
@@ -3070,8 +3070,8 @@ namespace elg3d {
                         for (int i = 0; i < nbNeighbors; i++) {
 
                             const gmds::math::Point pt_n = midpoints[nids[i]];
-                            const double horizontal_weight = 1. - (0.8 * std::abs(gmds::math::Vector(1.,0.,0.).dot(gmds::math::Vector(pt_v,pt_n).getNormalize())));
-                            const double dist = gmds::math::Vector(pt_v,pt_n).norm();
+                            const double horizontal_weight = 1. - (0.8 * std::abs(gmds::math::Vector3d({1.,0.,0.}).dot(gmds::math::Vector3d(pt_n - pt_v).getNormalize())));
+                            const double dist = gmds::math::Vector3d(pt_n - pt_v).norm();
 
 //                            v = v + vf_current[nids[i]];
                             v = v + ((dist * horizontal_weight)/max_dist) * vf_current[nids[i]];
@@ -4964,7 +4964,7 @@ namespace elg3d {
                 gmds::math::Point pt = midpoints[neighbors_0[in]];
 
                 // vertical material changes do not count as much energy-wise
-                double horizontal_weight = 1. - (0.8 * std::abs(gmds::math::Vector(0,1,0).dot(gmds::math::Vector(pt_0,pt).getNormalize())));
+                double horizontal_weight = 1. - (0.8 * std::abs(gmds::math::Vector3d({0,1,0}).dot(gmds::math::Vector3d(pt - pt_0).getNormalize())));
 
                 if(mat_0 != matassignment[neighbors_0[in]]) {
                     e_before += (1. / pt_0.distance(pt)) * horizontal_weight;
@@ -4984,7 +4984,7 @@ namespace elg3d {
                 gmds::math::Point pt = midpoints[neighbors_1[in]];
 
                 // vertical material changes do not count as much energy-wise
-                double horizontal_weight = 1. - (0.8 * std::abs(gmds::math::Vector(0,1,0).dot(gmds::math::Vector(pt_1,pt).getNormalize())));
+                double horizontal_weight = 1. - (0.8 * std::abs(gmds::math::Vector3d({0,1,0}).dot(gmds::math::Vector3d(pt - pt_1).getNormalize())));
 
                 if(mat_1 != matassignment[neighbors_1[in]]) {
                     e_before += (1. / pt_1.distance(pt)) * horizontal_weight;
