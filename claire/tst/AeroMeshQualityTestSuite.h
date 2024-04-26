@@ -586,7 +586,18 @@ TEST(ClaireTestClass, Test_ScaledJacobianHEX)
 	math::Point p6(1,1,1);
 	math::Point p7(0,1,1);
 
+	//std::cout << "Scaled Jacobian Hex 1: " << math::AeroMeshQuality::ScaledJacobianHEX(p0,p1,p2,p3,p4,p5,p6,p7) << std::endl;
+	//std::cout << "Scaled Jacobian Hex 2: " << math::AeroMeshQuality::ScaledJacobianHEX(p0,p3,p2,p1,p4,p7,p6,p5) << std::endl;
+
+	std::cout << "SJ HEX: " << math::AeroMeshQuality::ScaledJacobianHEX(p0,p1,p2,p3,p4,p5,p6,p7) << std::endl;
 	ASSERT_FLOAT_EQ( math::AeroMeshQuality::ScaledJacobianHEX(p0,p1,p2,p3,p4,p5,p6,p7) ,1.0);
+
+
+	math::Point p10(0,0,0);
+	math::Point p11(1,0,0);
+	math::Point p12(1,1,0);
+	math::Point p13(0,1,0);
+	std::cout << "SJ QUAD: " << math::AeroMeshQuality::ScaledJacobianQUAD(p10,p11,p12,p13);
 
 }
 

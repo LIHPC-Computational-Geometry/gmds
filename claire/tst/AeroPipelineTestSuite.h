@@ -26,9 +26,10 @@ TEST(AeroPipelineTestClass, AeroPipeline2D_Test1)
 {
 	std::string dir(TEST_SAMPLES_DIR);
 	//std::string input_file=dir+"/Aero/2D/param_Apollo_2D.ini";
-	//std::string input_file=dir+"/Aero/2D/param_NACA_2D.ini";
+	std::string input_file=dir+"/Aero/2D/param_NACA_2D.ini";
 	//std::string input_file=dir+"/Aero/2D/param_Stardust_2D_TEST.ini";
-	std::string input_file=dir+"/Aero/2D/param_Stardust_2D_param1.ini";
+	//std::string input_file=dir+"/Aero/2D/param_Stardust_2D_param1.ini";
+	//std::string input_file=dir+"/Aero/2D/param_Diamond_Airfoil_2D.ini";
 
 	// Mesh Generation
 	AeroPipeline_2D algo_aero2D(input_file, dir);
@@ -59,7 +60,9 @@ TEST(AeroPipelineTestClass, AeroPipeline3D_Test1)
 	//std::string input_file=dir+"/Aero/3D/param_Caretwing_3D.ini";
 	//std::string input_file=dir+"/Aero/3D/param_C8_3D.ini";
 	//std::string input_file=dir+"/Aero/3D/param_Ailerons_3D.ini";
-	std::string input_file=dir+"/Aero/3D/param_Ailerons3_3D.ini";
+	//std::string input_file=dir+"/Aero/3D/param_Ailerons3_3D.ini";
+	//std::string input_file=dir+"/Aero/3D/param_TintinRocket_3D.ini";
+	std::string input_file=dir+"/Aero/3D/param_HiFIRE5_3D.ini";
 
 	//---------------------//
 	//    AERO PIPELINE    //

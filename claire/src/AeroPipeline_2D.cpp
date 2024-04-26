@@ -774,6 +774,12 @@ AeroPipeline_2D::DiscretisationParoi(int color){
 
 	}
 
+	gmds::IGMeshIOService ioService = IGMeshIOService(m_meshHex);
+	gmds::VTKWriter vtkWriter_HexMesh(&ioService);
+	vtkWriter_HexMesh.setCellOptions(gmds::N|gmds::E);
+	vtkWriter_HexMesh.setDataOptions(gmds::N|gmds::E);
+	vtkWriter_HexMesh.write("AeroPipeline2D_Front_0.vtk");
+
 }
 /*------------------------------------------------------------------------*/
 void
@@ -788,6 +794,7 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 
 	Variable<TCellID>* var_new_id = m_meshHex->newVariable<TCellID,GMDS_NODE>("New_ID");
 	Variable<int>* var_couche = m_Blocking2D.newVariable<int, GMDS_NODE>("GMDS_Couche");
+	Variable<int>* var_couche_block = m_Blocking2D.newVariable<int, GMDS_FACE>("GMDS_Layer");
 	Variable<int>* var_couche_ctrlpts = m_Blocking2D_CtrlPts.newVariable<int, GMDS_NODE>("GMDS_Couche");
 	Variable<int>* axi;
 	Variable<int>* axiB;
@@ -818,6 +825,11 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 		                      var_new_id->value(quad_nodes[2].id()), var_new_id->value(quad_nodes[3].id()));
 		m_Blocking2D_CtrlPts.newBlock( var_new_id->value(quad_nodes[0].id()), var_new_id->value(quad_nodes[1].id()),
 		                              var_new_id->value(quad_nodes[2].id()), var_new_id->value(quad_nodes[3].id()));
+		int layer_block = std::max(var_couche->value(var_new_id->value(quad_nodes[0].id())),
+		                           var_couche->value(var_new_id->value(quad_nodes[1].id())));
+		layer_block = std::max(layer_block, var_couche->value(var_new_id->value(quad_nodes[2].id())));
+		layer_block = std::max(layer_block, var_couche->value(var_new_id->value(quad_nodes[3].id())));
+		var_couche_block->set(B0.id(),layer_block);
 	}
 
 	IntervalAssignment_2D IntAss(&m_Blocking2D, m_params);

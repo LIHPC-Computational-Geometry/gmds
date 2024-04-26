@@ -122,7 +122,7 @@ AeroPipeline_3D::execute(){
 
 
 	// Smoothing Linear Block Structure
-	int nbr_iter_smoothing(20);
+	int nbr_iter_smoothing(4);
 	for (int i=0;i<nbr_iter_smoothing;i++)
 	{
 		std::map<TCellID, math::Point> new_pos;
@@ -1058,7 +1058,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 	m_linker_HG->setMesh(m_meshHex);
 
 	//double tol(10.0);
-	double tol = m_Bnd->getCharacteristicLength() ;
+	double tol = m_Bnd->getCharacteristicLength()*2.0 ;
 
 	//------------------------------//
 	//	BLOCK CORNERS CLASSIFICATION //
