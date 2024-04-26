@@ -4,7 +4,6 @@
       {
         "name": "ci",
         "cacheVariables": {
-          "ENABLE_BLOCKING": "ON",
           "WITH_LIMA": "ON",
           "Lima_ROOT": "$env{INSTALL_DIR}/lima"
         }
