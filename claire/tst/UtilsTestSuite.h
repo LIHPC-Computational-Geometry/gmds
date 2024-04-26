@@ -910,3 +910,111 @@ TEST(ClaireTestClass, Test_maxErrorBtwBezierCurveandGeomCurve)
 
 }
 /*----------------------------------------------------------------------------*/
+TEST(ClaireTestClass, Utils_img_Manuscrit_THex)
+{
+	// Test
+	gmds::Mesh m_tet(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::N | gmds::R2N));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir + "/Aero/3D/DoubleEllipsoid_THEX_test.vtk";
+
+	gmds::IGMeshIOService ioService(&m_tet);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N | gmds::R);
+	vtkReader.read(vtk_file);
+
+	/*
+	Node n0 = m_tet.newNode(0,0,0);
+	Node n1 = m_tet.newNode(1,0.2,0);
+	Node n2 = m_tet.newNode(0.2,1,0);
+	Node n3=  m_tet.newNode(0.4,0.4,0.6);
+
+	gmds::Region r_tet = m_tet.newTet(n0,n1,n2,n3);
+
+	ASSERT_EQ(m_tet.getNbNodes(), 4);
+
+	IGMeshIOService ioService_geom(&m_tet);
+	VTKWriter writer_geom(&ioService_geom);
+	writer_geom.setCellOptions(N|R);
+	writer_geom.setDataOptions(N|R);
+	writer_geom.write("Utils_img_Tet.vtk");
+
+	 */
+
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::N | gmds::R2N));
+
+	ASSERT_EQ(m.getNbNodes(), 0);
+
+	for (auto r_tet:m_tet.regions())
+	{
+		Region r = m_tet.get<Region>(r_tet);
+		std::vector<Node> r_nodes = r.get<Node>();
+
+		/*
+		n0 = m.newNode(n0.point());
+		n1 = m.newNode(n1.point());
+		n2 = m.newNode(n2.point());
+		n3 = m.newNode(n3.point());
+		 */
+		Node n0 = m.newNode(r_nodes[0].point());
+		Node n1 = m.newNode(r_nodes[1].point());
+		Node n2 = m.newNode(r_nodes[2].point());
+		Node n3 = m.newNode(r_nodes[3].point());
+
+		math::Point p01 = n0.point() + n1.point();
+		p01.setXYZ(p01.X() / 2.0, p01.Y() / 2.0, p01.Z() / 2.0);
+		Node n01 = m.newNode(p01);
+
+		math::Point p02 = n0.point() + n2.point();
+		p02.setXYZ(p02.X() / 2.0, p02.Y() / 2.0, p02.Z() / 2.0);
+		Node n02 = m.newNode(p02);
+
+		math::Point p03 = n0.point() + n3.point();
+		p03.setXYZ(p03.X() / 2.0, p03.Y() / 2.0, p03.Z() / 2.0);
+		Node n03 = m.newNode(p03);
+
+		math::Point p12 = n1.point() + n2.point();
+		p12.setXYZ(p12.X() / 2.0, p12.Y() / 2.0, p12.Z() / 2.0);
+		Node n12 = m.newNode(p12);
+
+		math::Point p13 = n1.point() + n3.point();
+		p13.setXYZ(p13.X() / 2.0, p13.Y() / 2.0, p13.Z() / 2.0);
+		Node n13 = m.newNode(p13);
+
+		math::Point p23 = n2.point() + n3.point();
+		p23.setXYZ(p23.X() / 2.0, p23.Y() / 2.0, p23.Z() / 2.0);
+		Node n23 = m.newNode(p23);
+
+		math::Point p012 = n0.point() + n1.point() + n2.point();
+		p012.setXYZ(p012.X() / 3.0, p012.Y() / 3.0, p012.Z() / 3.0);
+		Node n012 = m.newNode(p012);
+
+		math::Point p123 = n1.point() + n2.point() + n3.point();
+		p123.setXYZ(p123.X() / 3.0, p123.Y() / 3.0, p123.Z() / 3.0);
+		Node n123 = m.newNode(p123);
+
+		math::Point p013 = n0.point() + n1.point() + n3.point();
+		p013.setXYZ(p013.X() / 3.0, p013.Y() / 3.0, p013.Z() / 3.0);
+		Node n013 = m.newNode(p013);
+
+		math::Point p023 = n0.point() + n2.point() + n3.point();
+		p023.setXYZ(p023.X() / 3.0, p023.Y() / 3.0, p023.Z() / 3.0);
+		Node n023 = m.newNode(p023);
+
+		math::Point p_mid = r.center();
+		Node n_center = m.newNode(p_mid);
+
+		m.newHex(n0, n01, n013, n03, n02, n012, n_center, n023);
+		m.newHex(n1, n01, n013, n13, n12, n012, n_center, n123);
+		m.newHex(n2, n02, n023, n23, n12, n012, n_center, n123);
+		m.newHex(n3, n13, n013, n03, n23, n123, n_center, n023);
+	}
+
+	IGMeshIOService ioService_geom_mesh(&m);
+	VTKWriter writer_geom_mesh(&ioService_geom_mesh);
+	writer_geom_mesh.setCellOptions(N|R);
+	writer_geom_mesh.setDataOptions(N|R);
+	writer_geom_mesh.write("Utils_img_THex.vtk");
+
+}
+/*----------------------------------------------------------------------------*/
