@@ -1,7 +1,7 @@
 #==============================================================================
 # GMDS Project
 #==============================================================================
-cmake_minimum_required(VERSION 3.10.0)
+cmake_minimum_required(VERSION 3.14)
 #==============================================================================
 # Operating System specificities (must be put at first)
 #==============================================================================
@@ -9,7 +9,11 @@ if(APPLE)
     set(CMAKE_OSX_ARCHITECTURES arm64)
 endif()
 #==============================================================================
-project(gmds VERSION 1.0 LANGUAGES CXX)
+include (cmake/version.cmake)
+
+project(gmds 
+  LANGUAGES CXX
+  VERSION ${GMDS_VERSION})
 #==============================================================================
 # RPATH handling according to :
 # https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling

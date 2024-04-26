@@ -1,0 +1,10 @@
+#
+# version.cmake : version du projet
+#
+
+set (GMDS_MAJOR_VERSION "1")
+set (GMDS_MINOR_VERSION "3")
+set (GMDS_RELEASE_VERSION "1")
+set (GMDS_VERSION ${GMDS_MAJOR_VERSION}.${GMDS_MINOR_VERSION}.${GMDS_RELEASE_VERSION})
+
+
