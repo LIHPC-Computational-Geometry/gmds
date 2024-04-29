@@ -48,9 +48,9 @@ option(WITH_DOC "Build documentation"                                           
 option(WITH_TEST "Build test"                                                           OFF)
 option(WITH_CODE_COVERAGE "Perform code coverage with avail. test suites"               OFF)
 option(WITH_CODE_COVERAGE_HTML_REPORT "Activate html reporting during code covering"    OFF)
-option(WITH_PYTHON_API "Build the gmds python API"                                      ON)
+option(WITH_PYTHON_API "Build the gmds python API"                                      OFF)
 option(BUILD_SHARED_LIBS ""                                                             ON)
-option(WITH_CGNS "Allows the CGNS export (blocking and aero components)"                ON)
+option(WITH_CGNS "Allows the CGNS export (blocking and aero components)"                OFF)
 
 #==============================================================================
 if(BUILD_SHARED_LIBS)
