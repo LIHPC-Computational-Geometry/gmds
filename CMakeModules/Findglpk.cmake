@@ -4,7 +4,7 @@ if (GLPK_INC AND GLPK_LIB)
 else()
 	if(NOT WIN32)
 		find_path (GLPK_INC NAMES glpk.h PATH_SUFFIXES include)
-		find_path (GLPK_LIB NAMES libglpk.so libglpk.dylib PATH_SUFFIXES lib)
+		find_path (GLPK_LIB NAMES libglpk.so libglpk.dylib PATH_SUFFIXES lib HINTS /usr/lib/x86_64-linux-gnu)
 
 		if (GLPK_INC AND GLPK_LIB)
 			message (STATUS "==>GLPK FOUND : GLPK_INC=${GLPK_INC} GLPK_LIB=${GLPK_LIB}")
