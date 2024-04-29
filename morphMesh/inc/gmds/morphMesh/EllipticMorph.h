@@ -113,11 +113,14 @@ class LIB_GMDS_MORPHMESH_API EllipticMorph
 
 	std::map<TCellID, math::Vector3d> m_vecs;
 
-	Variable<int>* var_morhR;
 	int m_morphRegions;
 
 	int m_lockRegions;
 	std::vector<Face> outerSkin;
+
+	std::vector<TCellID> m_not_treated_nodes;
+
+	double m_minEdgeLength;
 
 	/* The mesh to deform */
 	Mesh* m_mesh;
