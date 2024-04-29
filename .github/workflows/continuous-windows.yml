@@ -16,7 +16,7 @@ jobs:
       uses: actions/checkout@v4
         
     - name: Setup cmake
-      uses: jwlawson/actions-setup-cmake@v1.13.1
+      uses: jwlawson/actions-setup-cmake@v2.0.2
       with:
         cmake-version: '3.21.x'
 
