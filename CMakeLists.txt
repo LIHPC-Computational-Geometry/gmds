@@ -12,7 +12,7 @@ endif()
 include (cmake/version.cmake)
 
 project(gmds 
-  LANGUAGES CXX
+  LANGUAGES C CXX
   VERSION ${GMDS_VERSION})
 #==============================================================================
 # RPATH handling according to :
