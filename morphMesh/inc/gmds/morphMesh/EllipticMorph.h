@@ -75,6 +75,8 @@ class LIB_GMDS_MORPHMESH_API EllipticMorph
 	 */
 	void finalize();
 
+	void writeMesh(std::string AFilename) const;
+
  private:
 
 	/* Mesh mark for locked nodes */

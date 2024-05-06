@@ -10,7 +10,7 @@
 #include "gmds/morphMesh/FastLocalize.h"
 #include <fstream>
 #include <regex>
-
+#include <limits>
 
 #ifdef WITH_LIMA
 	#include "gmds/io/LimaReader.h"
@@ -22,7 +22,7 @@
 /*----------------------------------------------------------------------------*/
 
 using namespace gmds;
-using  namespace morphmesh;
+using namespace morphmesh;
 
 /*----------------------------------------------------------------------------*/
 EllipticMorph::EllipticMorph(const std::string& AFilename, Mesh* AMesh):
@@ -130,7 +130,7 @@ EllipticMorph::EllipticMorph(const std::string& AFilename, Mesh* AMesh):
 	   m_morphRegions = m_mesh->newMark<Region>();
 	   m_lockRegions = m_mesh->newMark<Region>();
 
-	   m_minEdgeLength = MAXFLOAT;
+	   m_minEdgeLength = std::numeric_limits<double>::max();
 	   for(const auto& e : m_mesh->edges()){
 		   Edge edge = m_mesh->get<Edge>(e);
 		   if(edge.length() < m_minEdgeLength){
@@ -738,7 +738,7 @@ std::vector<TCellID> EllipticMorph::noExteriorLock(){
 					}
 
 					if (!intersectedFaces.empty()) {
-						double distance = MAXFLOAT;
+						double distance = std::numeric_limits<double>::max();
 						for (int i_f = 0; i_f < intersectedFaces.size(); i_f++) {
 							if (points[i_f].distance(p) < distance) {
 								distance = points[i_f].distance(p);
@@ -1012,3 +1012,15 @@ void EllipticMorph::finalize(){
 		throw GMDSException("File format not supported, only .vtk or .mli2 supported");
 	}
 }
+/*----------------------------------------------------------------------------*/
+void EllipticMorph::writeMesh(std::string AFilename) const
+{
+	std::cout<<"------------- PRINT ------------- "<<AFilename<<std::endl;
+
+	gmds::IGMeshIOService ioService(m_mesh);
+	gmds::VTKWriter w(&ioService);
+	w.setCellOptions(gmds::N | gmds::R);
+	w.setDataOptions(gmds::N | gmds::R);
+	w.write(AFilename);
+}
+/*----------------------------------------------------------------------------*/
