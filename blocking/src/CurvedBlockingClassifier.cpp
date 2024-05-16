@@ -2,6 +2,8 @@
 #include <gmds/blocking/CurvedBlockingClassifier.h>
 #include <gmds/utils/Exception.h>
 /*----------------------------------------------------------------------------*/
+#include <limits>
+/*----------------------------------------------------------------------------*/
 using namespace gmds;
 using namespace gmds::blocking;
 /*----------------------------------------------------------------------------*/
@@ -173,57 +175,13 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 		 */
 		if (geo_d0==0 && geo_d1==0 && geo_i0!=geo_i1){
 			//We look for a common curve
-			if((geo_i0==2 && geo_i1==4) || (geo_i0==4 && geo_i1==2)){
-				//TODO check utility because maybe useless, we classified all the unclassified edges on
-				// the volume at the end of the classification
-			}
 			cad::GeomPoint* p0 = m_geom_model->getPoint(geo_i0);
 			cad::GeomPoint* p1 = m_geom_model->getPoint(geo_i1);
 			auto curve_id = m_geom_model->getCommonCurve(p0,p1);
 			if(curve_id!=-1){
-//				//We need to check if the classification is available. Check the angle between the curve take and the edge
-//				//Compute the unit vector of the curve
-//				int AParam = 0;
-//				auto vectorTang = m_geom_model->getCurve(curve_id)->computeTangent(AParam);
-//
-//				if(AParam == 0){
-//					std::cout<<"check vect : "<<vectorTang<<std::endl;
-//				}
-//
-//				//Do the same for the edge take
-//				auto vectEdge = ending_nodes[1]->info().point-ending_nodes[0]->info().point;
-//
-//				std::cout<<"check vect edge : "<<vectEdge<<std::endl;
-//
-//				//Compute angle between the 2 vectors
-//
-//				double scalarProduct = vectorTang.dot(vectEdge.normalize());
-//
-//				std::cout<<"check scalar product : "<<scalarProduct<<std::endl;
-//
-//				//check if the scalar product is under [-0.5,0.5]
-//
-//				if(scalarProduct<=0.5 && scalarProduct>=-0.5){
-//					// Nothing (CONFIGURATION 1bis)
-//					it->info().geom_dim = 4;
-//					it->info().geom_id = NullID;
-//					AErrors.non_classified_edges.push_back(it->info().topo_id);
-//				}
-//				else{
-//					//We have a common curve (CONFIGURATION 1)
-//					it->info().geom_dim = 1;
-//					it->info().geom_id = curve_id;
-//				}
-
 				//We have a common curve (CONFIGURATION 1)
 				it->info().geom_dim = 1;
 				it->info().geom_id = curve_id;
-
-
-
-
-
-
 			}
 			else{
 				// Nothing (CONFIGURATION 5)
@@ -239,8 +197,8 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 		}
 		else if ((geo_d0==0 && geo_d1==1) || (geo_d0==1 && geo_d1==0)){
 			//we check if the point is adjacent to the curve
-			auto p_id = (geo_d0<geo_d1)?geo_d0:geo_d1;
-			auto c_id = (geo_d0>geo_d1)?geo_d0:geo_d1;
+			auto p_id = (geo_d0<geo_d1)?geo_i0:geo_i1;
+			auto c_id = (geo_d0>geo_d1)?geo_i0:geo_i1;
 			cad::GeomPoint* p = m_geom_model->getPoint(p_id);
 			cad::GeomCurve* c = m_geom_model->getCurve(c_id);
 			std::vector<cad::GeomPoint*> c_points = c->points();
@@ -665,13 +623,14 @@ CurvedBlockingClassifier::get_cut_info(int pointId, std::vector<std::vector<Curv
 
 	auto listEdgesPara = m_blocking->get_all_sheet_edge_sets();
 	std::vector<gmds::blocking::CurvedBlocking::Edge > listEdgesSplitable;
-	unsigned int distMini = 1000;
+	double distMini = std::numeric_limits<double>::max();
 	for(auto edges : listEdgesPara){
 		auto projInfo = m_blocking->get_projection_info(p,edges);
 		for(int i =0; i< projInfo.size();i++){
 			if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
 				paramCut.first = edges.at(i);
 				paramCut.second = projInfo[i].second;
+				distMini=projInfo[i].first;
 			}
 		}
 	}
@@ -705,7 +664,7 @@ CurvedBlockingClassifier::list_Possible_Cuts()
 			   }
 			   if(pairOnList == false && action.second > 0.01 && action.second<0.99){
 				   std::pair<TCellID ,double> actionG (action.first->info().topo_id,action.second);
-				   list_actions.push_back(actionG);
+					   list_actions.push_back(actionG);
 			   }
         }
     }

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*/
 #ifndef GMDS_CURVED_BLOCKING_CLASSIFIER_H
-#	define GMDS_CURVED_BLOCKING_CLASSIFIER_H
+#define GMDS_CURVED_BLOCKING_CLASSIFIER_H
 /*----------------------------------------------------------------------------*/
 #	include <LIB_GMDS_BLOCKING_export.h>
 #	include <gmds/blocking/CurvedBlocking.h>

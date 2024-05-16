@@ -15,7 +15,7 @@ void set_up_SPAM(gmds::cad::FACManager* AGeomModel, const std::string AFileName)
 	gmds::Mesh vol_mesh(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::F | gmds::E | gmds::N | gmds::R2N | gmds::R2F | gmds::R2E | gmds::F2N | gmds::F2R | gmds::F2E
 	                                    | gmds::E2F | gmds::E2N | gmds::N2E));
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir +"/"+ AFileName;
+	std::string vtk_file = dir +"/rlBlockingShapes/"+ AFileName;
 	gmds::IGMeshIOService ioService(&vol_mesh);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N | gmds::R);
@@ -29,14 +29,14 @@ void set_up_SPAM(gmds::cad::FACManager* AGeomModel, const std::string AFileName)
 }
 int main() {
 	gmds::cad::FACManager geom_model;
-	std::string nameM= "cb2";
+	std::string nameM= "B21";
 	set_up_SPAM(&geom_model,nameM+".vtk");
-	std::string blockingInput = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_fix_cut_sheet/gmds/cmake-build-debug/bin/oldBis/inputCb2cut1.vtk";
-	gmds::blocking::CurvedBlocking bl(&geom_model, false);
-
+	gmds::blocking::CurvedBlocking bl(&geom_model, true);
+/*
 	//==================================================================
 	   // MESH READING
 	   //==================================================================
+	std::string blockingInput = "/home/bourmaudp/Documents/PROJETS/gmds/gmds_fix_cut_sheet/gmds/cmake-build-debug/bin/oldBis/inputCb0cut1.vtk";
 	   std::cout<<"> Start mesh reading"<<std::endl;
 	//the used model is specified according to the class requirements.
 	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::R|gmds::R2N));
@@ -47,10 +47,10 @@ int main() {
 	vtkReader2.read(blockingInput);
 	gmds::MeshDoctor doc2(&m);
 	doc2.updateUpwardConnectivity();
-
 	//==================================================================
 
-	bl.init_from_mesh(m);
+	//bl.init_from_mesh(m);
+	*/
 
 	std::cout<<"list points geom size : "<<bl.geom_model()->getPoints().size()<<std::endl;
 
@@ -61,15 +61,15 @@ int main() {
 	auto s = std::make_shared<PolyCutState>(&geom_model,&bl,hist_empty);
 
 	PolyCutRewardFunction reward_function;
-	MCTSAgent agent(&reward_function,10,100000);
-	agent.activate_debug_mode("cb2_debug",MCTSAgent::OUT_ITERATION,1);
+	MCTSAgent agent(&reward_function,9000000,100000);
+	//agent.activate_debug_mode("cb2_debug",MCTSAgent::OUT_ITERATION,1);
 	agent.run(s);
 
 	std::cout<<"Nb runs: "<<agent.get_nb_iterations()-1,
 	   std::cout<<", timing: "<<agent.get_nb_seconds()<<" s."<<std::endl;
 	std::cout<<"==================== END TEST ! ===================="<<std::endl;
-	auto best = std::dynamic_pointer_cast<PolyCutState> (agent.get_best_solution_uct());
-	auto best_node = agent.get_best_node_uct();
+	auto best = std::dynamic_pointer_cast<PolyCutState> (agent.get_best_solution_visited());
+	/*auto best_node = agent.get_best_node_uct();
 	auto current_node =best_node;
 	unsigned int numSave =0;
 	while(current_node != nullptr){
@@ -83,6 +83,6 @@ int main() {
 		//current_state->m_blocking->save_vtk_blocking(std::to_string(numSave) + "OutPutCb0");
 		numSave++;
 		current_node = current_node->get_parent();
-	}
-	best->m_blocking->save_vtk_blocking("bestOutputCb0");
+	}*/
+	best->m_blocking->save_vtk_blocking("bestOutput"+nameM);
 }

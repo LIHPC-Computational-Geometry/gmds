@@ -84,6 +84,8 @@ TEST(CurvedBlockingClassifierTestSuite, b80)
 
 }
 
+
+
 TEST(CurvedBlockingClassifierTestSuite,ReturnErrors){
 
 	gmds::cad::FACManager geom_model;
@@ -348,6 +350,96 @@ TEST(CurvedBlockingClassifierTestSuite, testActionsList)
     vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
     vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
     vtk_writer_edges.write("debug_blocking_edges.vtk");
+
+}
+
+TEST(CurvedBlockingClassifierTestSuite, testClassConservationCb2){
+	gmds::cad::FACManager geom_model;
+	set_up(&geom_model,"cb2.vtk");
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+	classifier.clear_classification();
+	auto errors = classifier.classify();
+	auto listActions = classifier.list_Possible_Cuts();
+
+	bl.cut_sheet(listActions[0].first,listActions[0].second);
+	errors = classifier.classify();
+
+	ASSERT_EQ(0,errors.non_classified_nodes.size());
+	ASSERT_EQ(4,errors.non_classified_edges.size());
+
+}
+
+
+
+TEST(CurvedBlockingClassifierTestSuite, testClassAfterCutCb2){
+	gmds::cad::FACManager geom_model;
+	set_up(&geom_model,"cb2.vtk");
+	gmds::blocking::CurvedBlocking bl(&geom_model,true);
+
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+	classifier.clear_classification();
+	auto listActions = classifier.list_Possible_Cuts();
+
+	bl.cut_sheet(listActions[0].first,listActions[0].second);
+
+	for(auto a : listActions){
+		std::cout<<"action : "<<a.first <<" & "<<a.second<<std::endl;
+	}
+
+	auto errors = classifier.classify();
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
+	bl.convert_to_mesh(m);
+
+	gmds::IGMeshIOService ios(&m);
+	gmds::VTKWriter vtk_writer(&ios);
+	vtk_writer.setCellOptions(gmds::N|gmds::R);
+	vtk_writer.setDataOptions(gmds::N|gmds::R);
+	vtk_writer.write("cb2_debug_blocking.vtk");
+	gmds::VTKWriter vtk_writer_edges(&ios);
+	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
+	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
+	vtk_writer_edges.write("cb2_debug_blocking_edges.vtk");
+}
+
+
+TEST(CurvedBlockingClassifierTestSuite, b21TryClass)
+{
+	gmds::cad::FACManager geom_model;
+	set_up(&geom_model,"rlBlockingShapes/B21.vtk");
+	gmds::Mesh b21Unclass(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::R|gmds::E|gmds::R2N));
+
+	gmds::IGMeshIOService ioService2(&b21Unclass);
+	gmds::VTKReader vtkReader2(&ioService2);
+	vtkReader2.setCellOptions(gmds::N|gmds::R);
+	vtkReader2.read("/home/bourmaudp/Documents/PROJETS/gmds/gmds_fix_cut_sheet/saveResults/b21TryClass.vtk");
+	gmds::MeshDoctor doc2(&b21Unclass);
+	doc2.updateUpwardConnectivity();
+
+	gmds::blocking::CurvedBlocking bl(&geom_model,false);
+
+	bl.init_from_mesh(b21Unclass);
+	
+	std::cout<<"nb points B21 : "<<geom_model.getNbPoints()<<" ; nb curves : "<<geom_model.getNbCurves()<<std::endl;
+
+	gmds::blocking::CurvedBlockingClassifier classifier(&bl);
+	classifier.clear_classification();
+	classifier.classify();
+
+	gmds::Mesh m(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::E|gmds::F|gmds::R|gmds::E2N|gmds::F2N|gmds::R2N));
+	bl.convert_to_mesh(m);
+
+	gmds::IGMeshIOService ios(&m);
+	gmds::VTKWriter vtk_writer(&ios);
+	vtk_writer.setCellOptions(gmds::N|gmds::R);
+	vtk_writer.setDataOptions(gmds::N|gmds::R);
+	vtk_writer.write("debug_blockingB21.vtk");
+	gmds::VTKWriter vtk_writer_edges(&ios);
+	vtk_writer_edges.setCellOptions(gmds::N|gmds::E);
+	vtk_writer_edges.setDataOptions(gmds::N|gmds::E);
+	vtk_writer_edges.write("debug_blocking_edgesB21.vtk");
+	geom_model.write_surfaces("b21Surface.vtk");
 
 }
 

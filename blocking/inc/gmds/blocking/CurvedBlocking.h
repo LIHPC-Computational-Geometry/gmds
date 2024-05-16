@@ -7,20 +7,45 @@
 #include <LIB_GMDS_BLOCKING_export.h>
 #include <gmds/cad/GeomManager.h>
 #include <gmds/ig/Mesh.h>
-#include <gmds/math/Point.h>
-#include <gmds/utils/CommonTypes.h>
-#include <gmds/utils/Exception.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>
+#include <gmds/math/Point.h>
+#include <gmds/utils/CommonTypes.h>
+#include <gmds/utils/DijkstraGraph.h>
+#include <gmds/utils/Exception.h>
 /*----------------------------------------------------------------------------*/
 #include <string>
 #include <tuple>
 #include <type_traits>
+/*----------------------------------------------------------------------------*/
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/graphviz.hpp>
+#include <boost/graph/properties.hpp>
+#include <boost/graph/copy.hpp>
+#include <boost/graph/named_function_params.hpp>
+#include <boost/graph/dijkstra_shortest_paths.hpp>
+#include <boost/property_map/property_map.hpp>
+
+
+#define MAX_WEIGHT 1000
+
+/**@struct EdgeInfos
+ * @brief Specific structure for describing a edge graph in boost.
+ */
+struct EdgeInfos {
+	double weight;
+	int id;
+	gmds::math::Point middlePoint;
+};
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,boost::no_property,EdgeInfos> Graph;
+typedef boost::graph_traits<Graph>::vertex_descriptor Vertex;
+
 
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
 namespace blocking {
+/*----------------------------------------------------------------------------*
 /*----------------------------------------------------------------------------*/
 class Counter{
  public:
@@ -75,6 +100,7 @@ struct CellInfo
 		}
 	}
 };
+
 /*----------------------------------------------------------------------------*/
 /**@struct NodeInfo
  * @brief Specific structure for describing a node. It extends the "CellInfo"
@@ -178,7 +204,7 @@ struct MergeFunctorNode
 	{
 		if (ACA1.info().geom_dim == ACA2.info().geom_dim) {
 			if (ACA1.info().geom_id == ACA2.info().geom_id) {
-				// nodes are clasified on the same geometrical entity!
+				// nodes are classified on the same geometrical entity!
 				ACA1.info().point = 0.5 * (ACA1.info().point + ACA2.info().point);
 				//projection on the geom entity
                 cad::GeomEntity * geom_cell = ACA1.info().geom_manager->getEntity(ACA1.info().geom_id,ACA1.info().geom_dim);
@@ -726,6 +752,11 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	{
 		return &m_counter;
 	}
+	void get_boundary_edges(std::set<int> &ASetEdges, std::set<int> &ASetNodes);
+
+	void creat_boundary_graph(Graph &AGraph, DijkstraGraph &ADijGraph);
+
+	void add_weight_graph(gmds::cad::GeomCurve &ACurve, Graph &AInitGraph, Graph &APonderedGraph, DijkstraGraph &ADijGraph);
 
  private:
 

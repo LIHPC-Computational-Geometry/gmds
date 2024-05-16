@@ -17,8 +17,8 @@ PolyCutState::PolyCutState(gmds::cad::GeomManager *AGeom, gmds::blocking::Curved
 	:m_geom(AGeom),m_history(AHist)
 {
 	m_blocking = new gmds::blocking::CurvedBlocking(*ABlocking);
-	gmds::blocking::CurvedBlockingClassifier classifier(m_blocking);
-	m_class_blocking = new gmds::blocking::CurvedBlockingClassifier(classifier);
+	//gmds::blocking::CurvedBlockingClassifier classifier(m_blocking);
+	m_class_blocking = new gmds::blocking::CurvedBlockingClassifier(m_blocking);
 	m_class_blocking->detect_classification_errors(m_class_errors);
 	m_actions_list = creat_actions_list();
 }
@@ -27,7 +27,7 @@ PolyCutState::PolyCutState(const PolyCutState &AState)
 {
 	m_blocking = new gmds::blocking::CurvedBlocking(*AState.m_blocking);
 	m_geom = AState.m_geom;
-	m_class_blocking = new gmds::blocking::CurvedBlockingClassifier(*AState.m_class_blocking);
+	m_class_blocking = new gmds::blocking::CurvedBlockingClassifier(m_blocking);
 	m_class_errors = AState.m_class_errors;
 	m_history = AState.m_history;
 }
@@ -43,16 +43,18 @@ PolyCutState::creat_actions_list()
 {
 	std::vector<std::shared_ptr<IAction>> actions;
 	//Add cuts in the actions list
-	auto listCuts = m_class_blocking->list_Possible_Cuts();
-	for(auto c : listCuts){
-		actions.push_back(std::make_shared<PolyCutAction>(c.first,gmds::NullID,c.second,PolyCutAction::Cut));
+	if(m_blocking->get_all_id_edges().size()!=0) {
+		auto listCuts = m_class_blocking->list_Possible_Cuts();
+		for (auto c : listCuts) {
+			actions.push_back(std::make_shared<PolyCutAction>(c.first, gmds::NullID, c.second, PolyCutAction::Cut));
+		}
+		// Add deletes block in the list of actions
+		auto blocks = m_blocking->get_all_id_blocks();
+		for (auto b : blocks) {
+			actions.push_back(std::make_shared<PolyCutAction>(gmds::NullID, b, 0, PolyCutAction::Delete));
+		}
+		actions.push_back(std::make_shared<PolyCutAction>(gmds::NullID, gmds::NullID, 0, PolyCutAction::Classification));
 	}
-	//Add deletes block in the list of actions
-	auto blocks = m_blocking->get_all_id_blocks();
-	for(auto b : blocks){
-		actions.push_back(std::make_shared<PolyCutAction>(gmds::NullID,b,0,PolyCutAction::Delete));
-	}
-	actions.push_back(std::make_shared<PolyCutAction>(gmds::NullID,gmds::NullID,0,PolyCutAction::Classification));
 
 	return actions;
 
@@ -125,19 +127,20 @@ std::shared_ptr<IState> PolyCutState::apply(const std::shared_ptr<IAction> AActi
 	//next_state->get_info_blocking();
 
 	next_state->m_actions_list = next_state->creat_actions_list();
-	next_state->m_history.push_back(next_state->get_quality());
+	next_state->m_history.push_back(this->get_quality());
 	return next_state;
 }
 /*---------------------------------------------------------------------------*/
 bool PolyCutState::lost() const
 {
+	auto quality = this->get_quality();
 	if (!m_history.empty() && m_history.back() < this->get_quality()){
 		return true;
 	}
-	else if (get_actions().empty()){
+	else if(get_blocks_id().size()==0){
 		return true;
 	}
-	else if(get_blocks_id().size()==0){
+	else if (get_actions().empty()){
 		return true;
 	}
 	return false;
@@ -179,7 +182,7 @@ void PolyCutState::write(const std::string& AFileName,const int AStageIndex,cons
 	//TODO
 
 	std::string AIdUnique = std::to_string(ADepth)+"_"+std::to_string(ANodeId);
-	m_blocking -> save_vtk_blocking(AFileName+"_"+AIdUnique,1);
+	m_blocking -> save_vtk_blocking(AFileName+"_"+AIdUnique);
 }
 /*---------------------------------------------------------------------------*/
 std::vector<gmds::TCellID>
@@ -244,11 +247,9 @@ bool PolyCutState::draw(int nbSameQuality) const
 bool PolyCutState::is_terminal() const
 {
 	//the state is terminal if
-	// 1. The quality is egal to 0, so, all the points, the curves and the surfaces are captured
-	// 2.
-	auto l = lost();
-	auto w = win();
-	auto d = draw(3);
+	//1.
+	// 2. The quality is egal to 0, so, all the points, the curves and the surfaces are captured (WIN)
+	// 3.
 	return lost() || win() || draw(3);
 }
 /*---------------------------------------------------------------------------*/

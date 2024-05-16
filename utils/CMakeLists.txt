@@ -23,6 +23,7 @@ set(GMDS_INC
         inc/gmds/utils/VariableManager.h
         inc/gmds/utils/FileSystem.h
         inc/gmds/utils/RandomGenerator.h
+        inc/gmds/utils/DijkstraGraph.h
         )
 set(GMDS_SRC
         inc/gmds/utils/Array.h
@@ -34,7 +35,8 @@ set(GMDS_SRC
         src/LocalCellTopology.cpp
         src/OrientedGraph.cpp
         src/Parameters.cpp
-        src/RandomGenerator.cpp)
+        src/RandomGenerator.cpp
+        src/DijkstraGraph.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

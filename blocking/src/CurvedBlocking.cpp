@@ -8,51 +8,51 @@ using namespace gmds::blocking;
 
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::CurvedBlocking(cad::GeomManager *AGeomModel, bool AInitAsBoundingBox)
-  : m_geom_model(AGeomModel), m_counter(0)
+	: m_geom_model(AGeomModel), m_counter(0)
 {
-    if (AInitAsBoundingBox) {
-        TCoord min[3] = {MAXFLOAT, MAXFLOAT, MAXFLOAT};
-        TCoord max[3] = {-MAXFLOAT, -MAXFLOAT, -MAXFLOAT};
-        std::vector<cad::GeomVolume *> vols;
-        m_geom_model->getVolumes(vols);
-        for (auto v: vols) {
-            TCoord v_min[3], v_max[3];
-            v->computeBoundingBox(v_min, v_max);
-            for (auto i = 0; i < 3; i++)
-                if (v_min[i] < min[i]) min[i] = v_min[i];
-            for (auto i = 0; i < 3; i++)
-                if (v_max[i] > max[i]) max[i] = v_max[i];
-        }
-        math::Point p1(min[0], min[1], min[2]);
-        math::Point p2(min[0], max[1], min[2]);
-        math::Point p3(max[0], max[1], min[2]);
-        math::Point p4(max[0], min[1], min[2]);
-        math::Point p5(min[0], min[1], max[2]);
-        math::Point p6(min[0], max[1], max[2]);
-        math::Point p7(max[0], max[1], max[2]);
-        math::Point p8(max[0], min[1], max[2]);
-        create_block(p1, p2, p3, p4, p5, p6, p7, p8);
-    }
+	if (AInitAsBoundingBox) {
+		TCoord min[3] = {MAXFLOAT, MAXFLOAT, MAXFLOAT};
+		TCoord max[3] = {-MAXFLOAT, -MAXFLOAT, -MAXFLOAT};
+		std::vector<cad::GeomVolume *> vols;
+		m_geom_model->getVolumes(vols);
+		for (auto v: vols) {
+			TCoord v_min[3], v_max[3];
+			v->computeBoundingBox(v_min, v_max);
+			for (auto i = 0; i < 3; i++)
+				if (v_min[i] < min[i]) min[i] = v_min[i];
+			for (auto i = 0; i < 3; i++)
+				if (v_max[i] > max[i]) max[i] = v_max[i];
+		}
+		math::Point p1(min[0], min[1], min[2]);
+		math::Point p2(min[0], max[1], min[2]);
+		math::Point p3(max[0], max[1], min[2]);
+		math::Point p4(max[0], min[1], min[2]);
+		math::Point p5(min[0], min[1], max[2]);
+		math::Point p6(min[0], max[1], max[2]);
+		math::Point p7(max[0], max[1], max[2]);
+		math::Point p8(max[0], min[1], max[2]);
+		create_block(p1, p2, p3, p4, p5, p6, p7, p8);
+	}
 }
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::CurvedBlocking(const CurvedBlocking &ABl)
-: m_geom_model(ABl.m_geom_model), m_gmap(ABl.m_gmap), m_counter(ABl.m_counter)
+	: m_geom_model(ABl.m_geom_model), m_gmap(ABl.m_gmap), m_counter(ABl.m_counter)
 {
 	auto listBlocks = get_all_blocks();
 	for(auto b : listBlocks){
-		  b->info().counter = &m_counter;
+		b->info().counter = &m_counter;
 	}
 	auto listFaces = get_all_faces();
 	for(auto b : listFaces){
-		  b->info().counter = &m_counter;
+		b->info().counter = &m_counter;
 	}
 	auto listEdges = get_all_edges();
 	for(auto b : listEdges){
-		  b->info().counter = &m_counter;
+		b->info().counter = &m_counter;
 	}
 	auto listNodes = get_all_nodes();
 	for(auto b : listNodes){
-		  b->info().counter = &m_counter;
+		b->info().counter = &m_counter;
 	}
 }
 /*----------------------------------------------------------------------------*/
@@ -61,37 +61,37 @@ CurvedBlocking::~CurvedBlocking() {}
 /*----------------------------------------------------------------------------*/
 GMap3 *
 CurvedBlocking::gmap() {
-    return &m_gmap;
+	return &m_gmap;
 }
 
 /*----------------------------------------------------------------------------*/
 cad::GeomManager *
 CurvedBlocking::geom_model() {
-    return m_geom_model;
+	return m_geom_model;
 }
 
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Node
 CurvedBlocking::create_node(const int AGeomDim, const int AGeomId, const math::Point &APoint) {
-    return m_gmap.create_attribute<0>(NodeInfo(this->getCounter(),m_geom_model,AGeomDim, AGeomId, APoint));
+	return m_gmap.create_attribute<0>(NodeInfo(this->getCounter(),m_geom_model,AGeomDim, AGeomId, APoint));
 }
 
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Edge
 CurvedBlocking::create_edge(const int AGeomDim, const int AGeomId) {
-    return m_gmap.create_attribute<1>(CellInfo(this->getCounter(),m_geom_model,1, AGeomDim, AGeomId));
+	return m_gmap.create_attribute<1>(CellInfo(this->getCounter(),m_geom_model,1, AGeomDim, AGeomId));
 }
 
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Face
 CurvedBlocking::create_face(const int AGeomDim, const int AGeomId) {
-    return m_gmap.create_attribute<2>(CellInfo(this->getCounter(),m_geom_model,2, AGeomDim, AGeomId));
+	return m_gmap.create_attribute<2>(CellInfo(this->getCounter(),m_geom_model,2, AGeomDim, AGeomId));
 }
 
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Block
 CurvedBlocking::create_block(const int AGeomDim, const int AGeomId) {
-    return m_gmap.create_attribute<3>(CellInfo(this->getCounter(),m_geom_model,3, AGeomDim, AGeomId));
+	return m_gmap.create_attribute<3>(CellInfo(this->getCounter(),m_geom_model,3, AGeomDim, AGeomId));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -176,7 +176,7 @@ CurvedBlocking::get_edges_of_node(const Node AN) {
 	std::vector<Edge> edges;
 	Dart3 d = AN->dart();
 	for (auto it = m_gmap.one_dart_per_incident_cell<1, 0>(d).begin(),
-	          itend = m_gmap.one_dart_per_incident_cell<1, 0>(d).end(); it != itend; ++it) {
+			  itend = m_gmap.one_dart_per_incident_cell<1, 0>(d).end(); it != itend; ++it) {
 		edges.push_back(m_gmap.attribute<1>(it));
 	}
 	return edges;
@@ -188,7 +188,7 @@ CurvedBlocking::get_faces_of_node(const Node AN) {
 	std::vector<Face> faces;
 	Dart3 d = AN->dart();
 	for (auto it = m_gmap.one_dart_per_incident_cell<2, 0>(d).begin(),
-	          itend = m_gmap.one_dart_per_incident_cell<2, 0>(d).end(); it != itend; ++it) {
+			  itend = m_gmap.one_dart_per_incident_cell<2, 0>(d).end(); it != itend; ++it) {
 		faces.push_back(m_gmap.attribute<2>(it));
 	}
 	return faces;
@@ -200,7 +200,7 @@ CurvedBlocking::get_edges_of_face(const Face AF) {
 	std::vector<Edge> edges;
 	Dart3 d = AF->dart();
 	for (auto it = m_gmap.one_dart_per_incident_cell<1, 2>(d).begin(),
-	          itend = m_gmap.one_dart_per_incident_cell<1, 2>(d).end(); it != itend; ++it) {
+			  itend = m_gmap.one_dart_per_incident_cell<1, 2>(d).end(); it != itend; ++it) {
 		edges.push_back(m_gmap.attribute<1>(it));
 	}
 	return edges;
@@ -212,7 +212,7 @@ CurvedBlocking::get_blocks_of_node(const Node AN) {
 	std::vector<Block> blocks;
 	Dart3 d = AN->dart();
 	for (auto it = m_gmap.one_dart_per_incident_cell<3, 0>(d).begin(),
-	          itend = m_gmap.one_dart_per_incident_cell<3, 0>(d).end(); it != itend; ++it) {
+			  itend = m_gmap.one_dart_per_incident_cell<3, 0>(d).end(); it != itend; ++it) {
 		blocks.push_back(m_gmap.attribute<3>(it));
 	}
 	return blocks;
@@ -224,7 +224,7 @@ CurvedBlocking::get_faces_of_edge(const Edge AE) {
 	std::vector<Face> faces;
 	Dart3 d = AE->dart();
 	for (auto it = m_gmap.one_dart_per_incident_cell<2, 1>(d).begin(),
-	          itend = m_gmap.one_dart_per_incident_cell<2, 1>(d).end(); it != itend; ++it) {
+			  itend = m_gmap.one_dart_per_incident_cell<2, 1>(d).end(); it != itend; ++it) {
 		faces.push_back(m_gmap.attribute<2>(it));
 	}
 	return faces;
@@ -236,7 +236,7 @@ CurvedBlocking::get_blocks_of_edge(const Edge AE) {
 	std::vector<Block> blocks;
 	Dart3 d = AE->dart();
 	for (auto it = m_gmap.one_dart_per_incident_cell<3, 1>(d).begin(),
-	          itend = m_gmap.one_dart_per_incident_cell<3, 1>(d).end(); it != itend; ++it) {
+			  itend = m_gmap.one_dart_per_incident_cell<3, 1>(d).end(); it != itend; ++it) {
 		blocks.push_back(m_gmap.attribute<3>(it));
 	}
 	return blocks;
@@ -248,7 +248,7 @@ CurvedBlocking::get_blocks_of_face(const Face AF) {
 	std::vector<Block> blocks;
 	Dart3 d = AF->dart();
 	for (auto it = m_gmap.one_dart_per_incident_cell<3, 2>(d).begin(),
-	          itend = m_gmap.one_dart_per_incident_cell<3, 2>(d).end(); it != itend; ++it) {
+			  itend = m_gmap.one_dart_per_incident_cell<3, 2>(d).end(); it != itend; ++it) {
 		blocks.push_back(m_gmap.attribute<3>(it));
 	}
 	return blocks;
@@ -256,22 +256,22 @@ CurvedBlocking::get_blocks_of_face(const Face AF) {
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Edge CurvedBlocking::get_edge(const CurvedBlocking::Node AN1, const CurvedBlocking::Node AN2)
 {
-	 return get_edge(AN1->info().topo_id,AN2->info().topo_id);
+	return get_edge(AN1->info().topo_id,AN2->info().topo_id);
 }
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Edge CurvedBlocking::get_edge(const int AN1, const int AN2)
 {
-	 auto edges = get_all_edges();
-	 for(auto e: edges){
-		  auto nodes_of_e = get_nodes_of_edge(e);
-		  if(	nodes_of_e[0]->info().topo_id == AN1 &&
-		      nodes_of_e[1]->info().topo_id == AN2)
-			   return e;
-		  else if(	nodes_of_e[0]->info().topo_id == AN2 &&
-		           nodes_of_e[1]->info().topo_id == AN1)
-			   return e;
-	 }
-	 throw GMDSException("No edge with given end points");
+	auto edges = get_all_edges();
+	for(auto e: edges){
+		auto nodes_of_e = get_nodes_of_edge(e);
+		if(	nodes_of_e[0]->info().topo_id == AN1 &&
+				nodes_of_e[1]->info().topo_id == AN2)
+			return e;
+		else if(	nodes_of_e[0]->info().topo_id == AN2 &&
+					  nodes_of_e[1]->info().topo_id == AN1)
+			return e;
+	}
+	throw GMDSException("No edge with given end points");
 }
 /*----------------------------------------------------------------------------*/
 std::vector<CurvedBlocking::Edge>
@@ -433,10 +433,10 @@ CurvedBlocking::move_node(Node AN, math::Point &ALoc) {
 /*----------------------------------------------------------------------------*/
 CurvedBlocking::Block
 CurvedBlocking::create_block(
-   const math::Point &AP1, const math::Point &AP2,
-   const math::Point &AP3, const math::Point &AP4,
-   const math::Point &AP5, const math::Point &AP6,
-   const math::Point &AP7, const math::Point &AP8) {
+	const math::Point &AP1, const math::Point &AP2,
+	const math::Point &AP3, const math::Point &AP4,
+	const math::Point &AP5, const math::Point &AP6,
+	const math::Point &AP7, const math::Point &AP8) {
 	// Initialize attribute for the created hexahedron
 	Dart3 d1 = m_gmap.make_combinatorial_hexahedron();
 
@@ -452,13 +452,13 @@ CurvedBlocking::create_block(
 
 	// go through all the edges
 	for (auto it = m_gmap.one_dart_per_incident_cell<1, 3>(d1).begin(), itend = m_gmap.one_dart_per_incident_cell<1, 3>(
-	                                                                                     d1).end(); it != itend; ++it) {
+		d1).end(); it != itend; ++it) {
 		m_gmap.set_attribute<1>(it, create_edge(4, NullID));
 	}
 
 	// go through all the faces
 	for (auto it = m_gmap.one_dart_per_incident_cell<2, 3>(d1).begin(), itend = m_gmap.one_dart_per_incident_cell<2, 3>(
-	                                                                                     d1).end(); it != itend; ++it) {
+		d1).end(); it != itend; ++it) {
 		m_gmap.set_attribute<2>(it, create_face(4, NullID));
 	}
 	Block b = create_block(3, NullID);
@@ -595,7 +595,7 @@ void
 CurvedBlocking::convert_to_mesh(Mesh &AMesh) {
 	MeshModel model = AMesh.getModel();
 	if (!model.has(N) || !model.has(E) || !model.has(F) || !model.has(R) || !model.has(E2N) || !model.has(F2N) ||
-	    !model.has(R2N))
+		 !model.has(R2N))
 		throw GMDSException("Wrong mesh model for block->mesh conversion");
 
 	AMesh.clear();
@@ -649,8 +649,8 @@ CurvedBlocking::convert_to_mesh(Mesh &AMesh) {
 		if (cell_nodes.size() != 4) throw GMDSException("Only quad blocking faces can be converted into mesh");
 
 		gmds::Face f = AMesh.newQuad(n2n[cell_nodes[0]->info().topo_id], n2n[cell_nodes[1]->info().topo_id],
-		                             n2n[cell_nodes[2]->info().topo_id],
-		                             n2n[cell_nodes[3]->info().topo_id]);
+											  n2n[cell_nodes[2]->info().topo_id],
+											  n2n[cell_nodes[3]->info().topo_id]);
 
 		var_face_topo_id->set(f.id(), att.topo_id);
 		var_face_topo_dim->set(f.id(), att.topo_dim);
@@ -664,10 +664,10 @@ CurvedBlocking::convert_to_mesh(Mesh &AMesh) {
 		if (cell_nodes.size() != 8) throw GMDSException("Only hex blocks can be converted into mesh");
 
 		gmds::Region r = AMesh.newHex(n2n[cell_nodes[0]->info().topo_id], n2n[cell_nodes[1]->info().topo_id],
-		                              n2n[cell_nodes[2]->info().topo_id],
-		                              n2n[cell_nodes[3]->info().topo_id], n2n[cell_nodes[4]->info().topo_id],
-		                              n2n[cell_nodes[5]->info().topo_id],
-		                              n2n[cell_nodes[6]->info().topo_id], n2n[cell_nodes[7]->info().topo_id]);
+												n2n[cell_nodes[2]->info().topo_id],
+												n2n[cell_nodes[3]->info().topo_id], n2n[cell_nodes[4]->info().topo_id],
+												n2n[cell_nodes[5]->info().topo_id],
+												n2n[cell_nodes[6]->info().topo_id], n2n[cell_nodes[7]->info().topo_id]);
 
 		var_region_topo_id->set(r.id(), att.topo_id);
 		var_region_topo_dim->set(r.id(), att.topo_dim);
@@ -691,7 +691,7 @@ CurvedBlocking::init_from_mesh(Mesh &AMesh) {
 		if (r.type() == GMDS_HEX) {
 			std::vector<gmds::Node> ns = r.get<gmds::Node>();
 			Block b = create_block(ns[0].point(), ns[1].point(), ns[2].point(), ns[3].point(),
-			                       ns[4].point(), ns[5].point(), ns[6].point(), ns[7].point());
+										  ns[4].point(), ns[5].point(), ns[6].point(), ns[7].point());
 			std::vector<Node> b_nodes = get_nodes_of_block(b);
 			for (auto i = 0; i < 8; i++) {
 				math::Point pi = ns[i].point();
@@ -720,7 +720,7 @@ CurvedBlocking::init_from_mesh(Mesh &AMesh) {
 				//We go through all the 3-free faces and try to connect to f
 				bool found_and_glue = false;
 				for (auto it_f = m_gmap.attributes<2>().begin(), it_fend = m_gmap.attributes<2>().end();
-				     it_f != it_fend; ++it_f) {
+					  it_f != it_fend; ++it_f) {
 					auto att = m_gmap.info_of_attribute<2>(it_f);
 					Dart3 d2 = it_f->dart();
 					if (d2 != d && m_gmap.is_free<3>(d2)) {
@@ -856,15 +856,15 @@ CurvedBlocking::get_all_sheet_darts(const Edge AE, std::vector<Dart3> &ADarts) {
 	auto edge_mark = m_gmap.get_new_mark();
 
 	std::vector<Dart3> front;
-	 // For all the sheet operations, we orient the edges using its end point ids (from the lowest to the highest).
-	 // We order that here!!
-	 auto first_dart = AE->dart();
-	 if(m_gmap.attribute<0>(first_dart)->info().topo_id>m_gmap.attribute<0>(m_gmap.alpha<0>(first_dart))->info().topo_id)
-		  first_dart = m_gmap.alpha<0>(first_dart);
+	// For all the sheet operations, we orient the edges using its end point ids (from the lowest to the highest).
+	// We order that here!!
+	auto first_dart = AE->dart();
+	if(m_gmap.attribute<0>(first_dart)->info().topo_id>m_gmap.attribute<0>(m_gmap.alpha<0>(first_dart))->info().topo_id)
+		first_dart = m_gmap.alpha<0>(first_dart);
 
-    front.push_back(first_dart);
+	front.push_back(first_dart);
 	// the current dart belongs to the final set of darts
-    ADarts.push_back(first_dart);
+	ADarts.push_back(first_dart);
 	// we mark all the dart of the inital edge to avoid to traverse it twice
 	m_gmap.mark_cell<1>(AE->dart(), edge_mark);
 
@@ -877,8 +877,8 @@ CurvedBlocking::get_all_sheet_darts(const Edge AE, std::vector<Dart3> &ADarts) {
 		// we traverse all the darts of the orbit<2,3> starting from d
 
 		for (GMap3::Dart_of_orbit_range<2, 3>::iterator it(m_gmap.darts_of_orbit<2, 3>(d).begin()), itend(
-		                                                                                               m_gmap.darts_of_orbit<2, 3>(d).end()); it != itend;
-		     ++it) {
+			m_gmap.darts_of_orbit<2, 3>(d).end()); it != itend;
+			  ++it) {
 			auto d_next_edge = m_gmap.alpha<1, 0, 1>(it);
 			if (!m_gmap.is_marked(d_next_edge, edge_mark)) {
 				// it means that the edge containing the dart d_next_edge has not been traversed already.
@@ -1072,6 +1072,7 @@ CurvedBlocking::get_cut_info(int pointId)
 	std::vector<gmds::blocking::CurvedBlocking::Edge > listEdgesSplitable;
 	double distMini = 1000;
 	for(auto edges : listEdgesPara){
+		distMini = 100000;
 		auto projInfo = get_projection_info(p,edges);
 		for(int i =0; i< projInfo.size();i++){
 			if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
@@ -1079,6 +1080,9 @@ CurvedBlocking::get_cut_info(int pointId)
 				paramCut.second = projInfo[i].second;
 				distMini = projInfo[i].first;
 			}
+		}
+		if(distMini!=100000){
+			//Add pair in list
 		}
 	}
 	return paramCut;
@@ -1147,8 +1151,8 @@ CurvedBlocking::cut_sheet(const Edge AE, const double AParam) {
 
 	for (auto d: sheet_darts) {
 		Dart3 d0 = m_gmap.alpha<0>(d);
-        math::Point pa = m_gmap.attribute<0>(d)->info().point;
-        math::Point pb = m_gmap.attribute<0>(d0)->info().point;
+		math::Point pa = m_gmap.attribute<0>(d)->info().point;
+		math::Point pb = m_gmap.attribute<0>(d0)->info().point;
 		auto edge_att = m_gmap.attribute<1>(d)->info();
 
 		Dart3 d_edge = m_gmap.insert_cell_0_in_cell_1(d);     // d_edge = alpha<0,1>(d)
@@ -1315,7 +1319,7 @@ CurvedBlocking::validate_pillowing_surface(std::vector<Face> &AFaces) {
 					found_error = true;
 				//if the face is inside the volume, the edge must be on curve or a surface
 				if (nb_faces_in_pillow_surface_on_boundary == 0 &&
-				    !(e->info().geom_dim != 1 || e->info().geom_dim != 2))
+					 !(e->info().geom_dim != 1 || e->info().geom_dim != 2))
 					found_error = true;
 			}
 			//else we have two faces, it is okay.
@@ -1346,8 +1350,8 @@ CurvedBlocking::compute_pillow_twin_node(const Node &ANode, const int AMark) {
 	bool found_blue_dart = false;
 	Dart3 blue_dart;
 	for (auto it(m_gmap.darts_of_orbit<1, 2, 3>(d).begin()),
-	     itend(m_gmap.darts_of_orbit<1, 2, 3>(d).end());
-	     it != itend && !found_blue_dart; ++it) {
+			  itend(m_gmap.darts_of_orbit<1, 2, 3>(d).end());
+		  it != itend && !found_blue_dart; ++it) {
 		if (m_gmap.is_marked(it, AMark)) {
 			found_blue_dart = true;
 			blue_dart = it;
@@ -1357,7 +1361,7 @@ CurvedBlocking::compute_pillow_twin_node(const Node &ANode, const int AMark) {
 	//we get one dart for each face (2) incident to the vertex (0) containing d
 	auto nb_incident_blue_faces = 0;
 	for (auto it = m_gmap.one_dart_per_incident_cell<2, 0>(blue_dart).begin(),
-	          itend = m_gmap.one_dart_per_incident_cell<2, 0>(blue_dart).end(); it != itend; ++it) {
+			  itend = m_gmap.one_dart_per_incident_cell<2, 0>(blue_dart).end(); it != itend; ++it) {
 
 		auto fi = m_gmap.attribute<2>(it);
 		if (m_gmap.is_marked(it, AMark) || m_gmap.is_marked(m_gmap.alpha<3>(it), AMark)) {
@@ -1367,17 +1371,17 @@ CurvedBlocking::compute_pillow_twin_node(const Node &ANode, const int AMark) {
 	auto nb_incident_blue_blocks = 0;
 	auto mark_block = m_gmap.get_new_mark();
 	for (auto it = m_gmap.one_dart_per_incident_cell<3, 0>(blue_dart).begin(),
-	          itend = m_gmap.one_dart_per_incident_cell<3, 0>(blue_dart).end(); it != itend; ++it) {
+			  itend = m_gmap.one_dart_per_incident_cell<3, 0>(blue_dart).end(); it != itend; ++it) {
 		//We have one dart of the block (the dart belongs to the vertex too
 		auto found_blue_dart_in_block = false;
 		m_gmap.mark_cell<3>(it, mark_block);
 		for (auto it2 = m_gmap.one_dart_per_incident_cell<2, 0>(it).begin(),
-		          it2end = m_gmap.one_dart_per_incident_cell<2, 0>(it).end(); it2 != it2end; ++it2) {
+				  it2end = m_gmap.one_dart_per_incident_cell<2, 0>(it).end(); it2 != it2end; ++it2) {
 			//the provided dart does not necessary belong to the block
 			if (m_gmap.is_marked(it2, AMark) && m_gmap.is_marked(it2, mark_block)) {
 				found_blue_dart_in_block = true;
 			} else if (m_gmap.is_marked(m_gmap.alpha<3>(it2), AMark) &&
-			         m_gmap.is_marked(m_gmap.alpha<3>(it2), mark_block)) {
+						  m_gmap.is_marked(m_gmap.alpha<3>(it2), mark_block)) {
 				found_blue_dart_in_block = true;
 			}
 		}
@@ -1393,9 +1397,9 @@ CurvedBlocking::compute_pillow_twin_node(const Node &ANode, const int AMark) {
 	int cell_geom_id = 0;
 	//We know the number of incident blue faces and blue blocks
 	if ((nb_incident_blue_faces == 1 && nb_incident_blue_blocks == 1) ||
-	    (nb_incident_blue_faces == 2 && nb_incident_blue_blocks == 2) ||
-	    (nb_incident_blue_faces == 3 && nb_incident_blue_blocks == 3) ||
-	    (nb_incident_blue_faces > 3 && nb_incident_blue_blocks == nb_incident_blue_faces)) {
+		 (nb_incident_blue_faces == 2 && nb_incident_blue_blocks == 2) ||
+		 (nb_incident_blue_faces == 3 && nb_incident_blue_blocks == 3) ||
+		 (nb_incident_blue_faces > 3 && nb_incident_blue_blocks == nb_incident_blue_faces)) {
 		//slide along a boundary edge
 		//the blue dart belongs to the node, the face and block
 		Dart3 edge_dart = m_gmap.alpha<2, 1>(blue_dart);
@@ -1405,7 +1409,7 @@ CurvedBlocking::compute_pillow_twin_node(const Node &ANode, const int AMark) {
 		cell_geom_dim = edge_info->info().geom_dim;
 		cell_geom_id = edge_info->info().geom_id;
 	} else if ((nb_incident_blue_faces == 2 && nb_incident_blue_blocks == 1) ||
-	         (nb_incident_blue_faces == 4 && nb_incident_blue_blocks == 2)) {
+				  (nb_incident_blue_faces == 4 && nb_incident_blue_blocks == 2)) {
 		//slide along a  face
 		//the blue dart belongs to the node, the face and block
 		Dart3 face_dart = m_gmap.alpha<2>(blue_dart);
@@ -1501,7 +1505,7 @@ CurvedBlocking::pillow(std::vector<Face> &AFaces) {
 								edge_dart = m_gmap.alpha<3, 2>(edge_dart);
 							}
 						} while (edge_dart != current_dart && edge_dart != m_gmap.alpha<2>(current_dart) &&
-						         !found_blue && !found_red);
+									!found_blue && !found_red);
 						// color the face?
 						if (found_blue) {
 							color_current_face = true;
@@ -1541,7 +1545,7 @@ CurvedBlocking::pillow(std::vector<Face> &AFaces) {
 					throw GMDSException("Error during blue-red coloring of face");
 			}
 			else if ((m_gmap.is_marked(d,mark_blue_side) && m_gmap.is_marked(m_gmap.alpha<3>(d),mark_red_side)) ||
-			         (m_gmap.is_marked(d,mark_red_side) && m_gmap.is_marked(m_gmap.alpha<3>(d),mark_blue_side))){
+						(m_gmap.is_marked(d,mark_red_side) && m_gmap.is_marked(m_gmap.alpha<3>(d),mark_blue_side))){
 				nb_blue_and_red++;
 			}
 			else
@@ -1584,7 +1588,7 @@ CurvedBlocking::pillow(std::vector<Face> &AFaces) {
 	for (auto n: surf_nodes) {
 		auto pillow_data = compute_pillow_twin_node(n, mark_blue_side);
 		for (GMap3::Dart_of_orbit_range<1, 2, 3>::iterator it(m_gmap.darts_of_orbit<1, 2, 3>(n->dart()).begin()), itend(
-		                                                                                                             m_gmap.darts_of_orbit<1, 2, 3>(n->dart()).end()); it != itend; ++it) {
+			m_gmap.darts_of_orbit<1, 2, 3>(n->dart()).end()); it != itend; ++it) {
 			pillow_node_data[it] = pillow_data;
 		}
 	}
@@ -1626,7 +1630,7 @@ CurvedBlocking::pillow(std::vector<Face> &AFaces) {
 			edge_id = n0_gid;
 		}
 		for (GMap3::Dart_of_orbit_range<0, 2, 3>::iterator it(m_gmap.darts_of_orbit<0, 2, 3>(d_edge).begin()), itend(
-		                                                                                                          m_gmap.darts_of_orbit<0, 2, 3>(d_edge).end()); it != itend; ++it) {
+			m_gmap.darts_of_orbit<0, 2, 3>(d_edge).end()); it != itend; ++it) {
 			pillow_edge_data[it] = std::make_pair(edge_dim, edge_id);
 			//         std::cout << "Edge data (" << edge_dim << ", " << edge_id << ")" << std::endl;
 		}
@@ -1670,9 +1674,9 @@ CurvedBlocking::pillow(std::vector<Face> &AFaces) {
 		//df is blue
 		std::vector<Node> nodes_of_f = get_nodes_of_face(f);
 		Block b = create_block(nodes_of_f[0]->info().point, nodes_of_f[1]->info().point, nodes_of_f[2]->info().point,
-		                       nodes_of_f[3]->info().point,
-		                       nodes_of_f[0]->info().point, nodes_of_f[1]->info().point, nodes_of_f[2]->info().point,
-		                       nodes_of_f[3]->info().point);
+									  nodes_of_f[3]->info().point,
+									  nodes_of_f[0]->info().point, nodes_of_f[1]->info().point, nodes_of_f[2]->info().point,
+									  nodes_of_f[3]->info().point);
 		Dart3 db = b->dart();
 		//we must find the dart to 3-sew with df
 		math::Point df_point = m_gmap.attribute<0>(df)->info().point;
@@ -1831,7 +1835,7 @@ void CurvedBlocking::smooth_curves(const int ANbIterations) {
 		auto ball_size = 0;
 		//We get one dart per 1-cell adjacent to the 0-cell that contains d
 		for (auto it = m_gmap.one_dart_per_incident_cell<1, 0>(d).begin(),
-		          itend = m_gmap.one_dart_per_incident_cell<1, 0>(d).end(); it != itend; ++it) {
+				  itend = m_gmap.one_dart_per_incident_cell<1, 0>(d).end(); it != itend; ++it) {
 			Edge e = m_gmap.attribute<1>(it);
 			if (e->info().geom_dim == 1) {
 				//we keep the opposite node
@@ -1868,7 +1872,7 @@ void CurvedBlocking::smooth_surfaces(const int ANbIterations) {
 		auto ball_size = 0;
 		//We get one dart per 1-cell adjacent to the 0-cell that contains d
 		for (auto it = m_gmap.one_dart_per_incident_cell<1, 0>(d).begin(),
-		          itend = m_gmap.one_dart_per_incident_cell<1, 0>(d).end(); it != itend; ++it) {
+				  itend = m_gmap.one_dart_per_incident_cell<1, 0>(d).end(); it != itend; ++it) {
 			Edge e = m_gmap.attribute<1>(it);
 			if (e->info().geom_dim == 2) {
 				//we keep the opposite node
@@ -1905,7 +1909,7 @@ void CurvedBlocking::smooth_volumes(const int ANbIterations) {
 		auto ball_size = 0;
 		//We get one dart per 1-cell adjacent to the 0-cell that contains d
 		for (auto it = m_gmap.one_dart_per_incident_cell<1, 0>(d).begin(),
-		          itend = m_gmap.one_dart_per_incident_cell<1, 0>(d).end(); it != itend; ++it) {
+				  itend = m_gmap.one_dart_per_incident_cell<1, 0>(d).end(); it != itend; ++it) {
 			Edge e = m_gmap.attribute<1>(it);
 			if (e->info().geom_dim == 3) {
 				//we keep the opposite node
@@ -1934,17 +1938,17 @@ CurvedBlocking::collapse_chord(const Face AF, const Node AN1, const Node AN2) {
 	bool found_n1 = false, found_n2 = false;
 	std::vector<Dart3> all_darts_n1, all_darts_n2;
 	for (GMap3::Dart_of_orbit_range<1, 2, 3>::iterator it(m_gmap.darts_of_orbit<1, 2, 3>(dart_n1).begin()), itend(
-	                                                                                                           m_gmap.darts_of_orbit<1, 2, 3>(dart_n1).end()); it != itend; ++it) {
+		m_gmap.darts_of_orbit<1, 2, 3>(dart_n1).end()); it != itend; ++it) {
 		all_darts_n1.push_back(it);
 	}
 	for (GMap3::Dart_of_orbit_range<1, 2, 3>::iterator it(m_gmap.darts_of_orbit<1, 2, 3>(dart_n2).begin()), itend(
-	                                                                                                           m_gmap.darts_of_orbit<1, 2, 3>(dart_n2).end()); it != itend; ++it) {
+		m_gmap.darts_of_orbit<1, 2, 3>(dart_n2).end()); it != itend; ++it) {
 		all_darts_n2.push_back(it);
 	}
 	//We traverse all the darts of the face
 	for (GMap3::Dart_of_orbit_range<0, 1, 3>::iterator it(m_gmap.darts_of_orbit<0, 1, 3>(dart_f).begin()), itend(
-	                                                                                                          m_gmap.darts_of_orbit<0, 1, 3>(dart_f).end()); it != itend;
-	     ++it) {
+		m_gmap.darts_of_orbit<0, 1, 3>(dart_f).end()); it != itend;
+		  ++it) {
 		//Now we go through the dart of the current node
 		for (auto d: all_darts_n1) {
 			if (it == d)
@@ -2018,3 +2022,68 @@ CurvedBlocking::collapse_chord(const Face AF, const Node AN1, const Node AN2) {
 	}
 	return true;
 }
+/*----------------------------------------------------------------------------*/
+void
+CurvedBlocking::get_boundary_edges(std::set<int> &ASetEdges, std::set<int> &ASetNodes)
+{
+	for(auto it = m_gmap.attributes<1>().begin(), itend = m_gmap.attributes<1>().end(); it != itend; ++it){
+		auto d = it->dart();
+		bool found_boundary_dart = false;
+		for (auto it_edge(m_gmap.darts_of_orbit<0, 2, 3>(d).begin()),
+				  itend_edge(m_gmap.darts_of_orbit<0, 2, 3>(d).end());
+			  it_edge != itend_edge && !found_boundary_dart; ++it_edge) {
+			if(m_gmap.is_free(it_edge,3)){
+				found_boundary_dart=true;
+			}
+		}
+		if(found_boundary_dart && it->info().geom_dim==4){
+			ASetEdges.insert(it->info().topo_id);
+			ASetNodes.insert(m_gmap.attribute<0>(it->dart())->info().topo_id);
+			ASetNodes.insert(m_gmap.attribute<0>(m_gmap.alpha<0>(it->dart()))->info().topo_id);
+		}
+	}
+}
+/*----------------------------------------------------------------------------*/
+void CurvedBlocking::creat_boundary_graph(Graph &AGraph, DijkstraGraph &ADijGraph)
+{
+	std::set<int> boundaryEdges, boundaryNodes;
+
+	get_boundary_edges(boundaryEdges,boundaryNodes);
+
+	for(auto AN : get_all_nodes()){
+		if(boundaryNodes.find(AN->info().topo_id) != boundaryNodes.end()) {
+			auto edges = get_edges_of_node(AN);
+			for(auto e : edges){
+			}
+		}
+	}
+	for(auto it = m_gmap.attributes<1>().begin(), itend = m_gmap.attributes<1>().end(); it != itend; ++it) {
+		if(boundaryEdges.find(it->info().topo_id) != boundaryEdges.end()){
+			auto nodes = get_nodes_of_edge(it);
+
+			auto coordMidPX = (nodes[0]->info().point.X() + nodes[1]->info().point.X())/2;
+			auto coordMidPY = (nodes[0]->info().point.Y() + nodes[1]->info().point.Y())/2;
+			auto coordMidPZ = (nodes[0]->info().point.Z() + nodes[1]->info().point.Z())/2;
+
+			math::Point midP(coordMidPX,coordMidPY,coordMidPZ);
+
+			Vertex v1 = boost::vertex(nodes[0]->info().topo_id,AGraph);
+			Vertex v2 = boost::vertex(nodes[1]->info().topo_id,AGraph);
+			boost::add_edge(v1,v2,EdgeInfos{MAX_WEIGHT,it->info().topo_id,midP},AGraph);
+
+			ADijGraph.addEdge(nodes[0]->info().topo_id,nodes[1]->info().topo_id,MAX_WEIGHT,it->info().topo_id);
+		}
+	}
+}
+/*----------------------------------------------------------------------------*/
+void CurvedBlocking::add_weight_graph(gmds::cad::GeomCurve &ACurve, Graph &AInitGraph, Graph &APonderedGraph, DijkstraGraph &ADijGraph)
+{
+	APonderedGraph.copy_impl(AInitGraph);
+	for(auto &e : APonderedGraph.m_edges){
+		math::Point closest_pnt = ACurve.closestPoint(e.get_property().middlePoint);
+		auto weight = closest_pnt.distance(e.get_property().middlePoint);
+		e.get_property().weight = weight;
+		ADijGraph.setWeightEdge(e.m_property.id,weight);
+	}
+}
+/*----------------------------------------------------------------------------*/

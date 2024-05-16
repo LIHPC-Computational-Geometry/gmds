@@ -32,6 +32,24 @@ setUp(gmds::cad::FACManager &AGeomManager)
 	AGeomManager.initFrom3DMesh(&m_vol);
 }
 /*----------------------------------------------------------------------------*/
+void set_up_bis(gmds::cad::FACManager* AGeomModel, const std::string AFileName)
+{
+	gmds::Mesh vol_mesh(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::F | gmds::E | gmds::N | gmds::R2N | gmds::R2F | gmds::R2E | gmds::F2N | gmds::F2R | gmds::F2E
+	                                    | gmds::E2F | gmds::E2N | gmds::N2E));
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir +"/"+ AFileName;
+	gmds::IGMeshIOService ioService(&vol_mesh);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N | gmds::R);
+	vtkReader.read(vtk_file);
+	gmds::MeshDoctor doc(&vol_mesh);
+	doc.buildFacesAndR2F();
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+	AGeomModel->initFrom3DMesh(&vol_mesh);
+
+}
+/*----------------------------------------------------------------------------*/
 void
 setUpCb2(gmds::cad::FACManager &AGeomManager)
 {
@@ -1218,4 +1236,103 @@ TEST(CurvedTestSuite, verif_cut_conservation){
 
 	bl2->cut_sheet(18, 0.25);
 	bl2->save_vtk_blocking("check_copy_cut2");
+}
+
+TEST(CurvedBlockingTestSuite, test_boundary_graph){
+	using namespace boost;
+	gmds::cad::FACManager geom_model;
+	setUp(geom_model);
+	gmds::blocking::CurvedBlocking bl(&geom_model, true);
+
+
+	auto c = geom_model.getCurves()[0];
+
+	std::set<int> boundaryEdges;
+	std::set<int> boundaryNodes;
+
+	bl.get_boundary_edges(boundaryEdges,boundaryNodes);
+
+	gmds::DijkstraGraph ADijGraph(boundaryNodes);
+	Graph g;
+	Graph g_bis;
+
+
+	bl.creat_boundary_graph(g,ADijGraph);
+
+	bl.add_weight_graph(*c,g,g_bis,ADijGraph);
+
+
+	ADijGraph.shortestPath(5);
+
+
+	/*
+	auto listEdges = g.m_edges;
+
+	std::cout<<"nb Edges Graph "<<listEdges.size()<<std::endl;
+	std::cout<<"nb Edges blocking "<<bl.get_all_edges().size()<<std::endl;
+
+	for(auto e : listEdges){
+		std::cout<<"ID edge : "<<e.get_property().id<<" with n1 : "<<e.m_source<<" & n2 : "<<e.m_target<<std::endl;
+		std::cout<<"MidPoint X: "<<e.get_property().middlePoint.X()<<" & Y: "<<e.get_property().middlePoint.Y()<<" & Z: "<<e.get_property().middlePoint.Z()<<std::endl;
+		std::cout<<"Weight : "<<e.get_property().weight<<std::endl;
+	}
+
+	std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
+
+	for(auto e : g_bis.m_edges){
+		std::cout<<"ID edge : "<<e.get_property().id<<" with n1 : "<<e.m_source<<" & n2 : "<<e.m_target<<std::endl;
+		std::cout<<"MidPoint X: "<<e.get_property().middlePoint.X()<<" & Y: "<<e.get_property().middlePoint.Y()<<" & Z: "<<e.get_property().middlePoint.Z()<<std::endl;
+		std::cout<<"Weight : "<<e.get_property().weight<<std::endl;
+	}
+	const int numVertices = num_vertices(g_bis);
+	std::vector<double> distances(numVertices);
+	std::vector<Vertex> pMap(numVertices);
+
+
+	auto distanceMap = predecessor_map(
+	                      make_iterator_property_map(pMap.begin(), get(vertex_index, g_bis))).distance_map(
+	                         make_iterator_property_map(distances.begin(), get(vertex_index, g_bis)));
+
+
+	Vertex start = boost::vertex(4,g_bis);
+	Vertex end = boost::vertex(0,g_bis);
+	std::vector<Vertex> p(num_vertices(g));
+	std::vector<double> d(num_vertices(g));
+	//boost::dijkstra_shortest_paths(g_bis,start,distanceMap);
+
+	std::string fileName = "boundGraph";
+
+	write_graphviz(std::cout, g_bis, make_label_writer("namepaul"));
+
+	std::cout<<"Distance MAP"<<std::endl;
+	 */
+
+
+	bl.save_vtk_blocking("debug_graph_box");
+}
+
+
+
+TEST(CurvedBlockingTestSuite, testOriginGraph){
+	// create the graph given in above figure
+	int V = 9;
+	gmds::GraphOrigin g(V);
+
+	//    making above shown graph
+	g.addEdgeGraph(0, 1, 4);
+	g.addEdgeGraph(0, 7, 8);
+	g.addEdgeGraph(1, 2, 8);
+	g.addEdgeGraph(1, 7, 11);
+	g.addEdgeGraph(2, 3, 7);
+	g.addEdgeGraph(2, 8, 2);
+	g.addEdgeGraph(2, 5, 4);
+	g.addEdgeGraph(3, 4, 9);
+	g.addEdgeGraph(3, 5, 14);
+	g.addEdgeGraph(4, 5, 10);
+	g.addEdgeGraph(5, 6, 2);
+	g.addEdgeGraph(6, 7, 1);
+	g.addEdgeGraph(6, 8, 6);
+	g.addEdgeGraph(7, 8, 7);
+
+	g.shortestPathGraph(0);
 }
