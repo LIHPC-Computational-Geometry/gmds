@@ -31,6 +31,7 @@
 #include <ELG3D/ALGOCMPNT/ExtractGeomModel.h>
 #include <ELG3D/ALGOCMPNT/InitData.h>
 #include "gmds/milp/milp_InterfaceNodesPosSmoothVF.h"
+#include "gmds/milp/ortools_InterfaceNodesPosSmoothVF.h"
 #include <ELG3D/ALGOCMPNT/InterfaceNodesPosSmoothVF.h>
 #include <ELG3D/ALGOCMPNT/PixelsRepartitioning.h>
 #include <ELG3D/ALGOCMPNT/Tools.h>
@@ -188,17 +189,27 @@ int main(int argc, char* argv[]) {
     switch (chosen_method) {
         case 1 :
 
-            milp::InterfaceNodesPosSmoothVF_assignMIP_xD(&cellsIDs_source,
-                                                          &cellsIDs_target,
-                                                          &fp_source,
-                                                          &ma_target,
-                                                          varSubCells2oldCells,
-                                                          varOldCells2firstSubCells,
-                                                          varMixedCells_source,
-                                                          varCells2vertices,
-                                                          &graph,
-                                                          nbSubPixels
-            );
+//            milp::InterfaceNodesPosSmoothVF_assignMIP_xD(&cellsIDs_source,
+//                                                          &cellsIDs_target,
+//                                                          &fp_source,
+//                                                          &ma_target,
+//                                                          varSubCells2oldCells,
+//                                                          varOldCells2firstSubCells,
+//                                                          varMixedCells_source,
+//                                                          varCells2vertices,
+//                                                          &graph,
+//                                                          nbSubPixels
+		 milp::InterfaceNodesPosSmoothVF_assignORTOOLS_xD(&cellsIDs_source,
+																	 &cellsIDs_target,
+																	 &fp_source,
+																	 &ma_target,
+																	 varSubCells2oldCells,
+																	 varOldCells2firstSubCells,
+																	 varMixedCells_source,
+																	 varCells2vertices,
+																	 &graph,
+																	 nbSubPixels
+		 );
             break;
         default:
             break;

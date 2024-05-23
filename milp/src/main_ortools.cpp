@@ -1,12 +1,14 @@
 #include <iostream>
 #include <memory>
-
 #include <ortools/linear_solver/linear_solver.h>
+#include "absl/log/log.h"
+#include "InitializeLog.h"
+using namespace operations_research;
+
 
 int main() {
-	std::cout<<"hello world ortools"<<std::endl;
-
-// Create the mip solver with the SCIP backend.
+	InitializeLog();
+	// Create the mip solver with the SCIP backend.
 	std::unique_ptr<operations_research::MPSolver> solver(operations_research::MPSolver::CreateSolver("SCIP"));
 	if (!solver) {
 		LOG(WARNING) << "SCIP solver unavailable.";
@@ -48,4 +50,6 @@ int main() {
 	LOG(INFO) << "Objective value = " << objective->Value();
 	LOG(INFO) << "x = " << x->solution_value();
 	LOG(INFO) << "y = " << y->solution_value();
+
+	return 0;
 }
