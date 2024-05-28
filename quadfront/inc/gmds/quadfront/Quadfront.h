@@ -37,86 +37,86 @@ class LIB_GMDS_QUADFRONT_API Quadfront{
 	Quadfront::STATUS execute();
 
 	/*-------------------------------------------------------------------------*/
-	/** @enum set the number of the  Boundary of a edge
+	/** \brief set the number of the  Boundary of a edge
 	 */
 	void set_edgeBoundary(Edge& Aedge, int i );
 	/*-------------------------------------------------------------------------*/
-	/** @enum get the number of the Boundary of a edge
+	/** \brief get the number of the Boundary of a edge
 	 */
 	int get_edgeBoundary(Edge& edge);
 	/*-------------------------------------------------------------------------*/
-	/** @enum set in the repertory the adjacent edge on the Boundary and the status of the node
+	/** \brief set in m_nodeBoundary the adjacent edge on the Boundary and the status of the node
 	 */
 	void set_nodeBoundary(Node& Anode, int& i, Edge& Aedge0, Edge& Aedge1);
 	/*-------------------------------------------------------------------------*/
-	/** @enum get from the repertory the adjacent edge on the Boundary and the status of the node
+	/** \brief get from m_nodeBoundary the adjacent edge on the Boundary and the status of the node
 	 */
 	std::tuple<int, Edge, Edge> get_nodeBoundary(Node& Anode);
 	/*-------------------------------------------------------------------------*/
-	/** @enum Test if a node is on a boundary
+	/** \brief Test if a node is on a boundary
 	 */
 	bool find_nodeBoundary(Node& Anode);
 	/*-------------------------------------------------------------------------*/
-	/** @enum Test if a edge is on a boundary
+	/** \brief Test if a edge is on a boundary
 	 */
 	bool find_edgeBoundary(Edge& Aedge);
 	/*-------------------------------------------------------------------------*/
-	/** @brief get the adjacent the adjacent edge of a node inside a face
+	/** \brief get the map of adjacents edges of a node inside a face
 	 */
 	std::map<Node, std::pair<Edge,Edge>> get_edgeInFace(Face Aface);
 	/*-------------------------------------------------------------------------*/
-	/** @enum convert Edge to vector
+	/** \brief get the opposit edge of a node inside a face
 	 */
 	Edge get_opposit2Node(Node& Anode, Face& Aface);
 	/*-------------------------------------------------------------------------*/
-	/** @enum convert Edge to vector
+	/** \brief get the opposit node of an edge inside a face
 	 */
 	static Node get_opposit2Edge(Edge& Aedge, Face& Aface);
 	/*-------------------------------------------------------------------------*/
-	/** @brief convert Edge to vector
+	/** \brief convert Edge to vector
 	 */
 	math::Vector3d node2Vector(Edge& Aedge, Node& Anode);
 	/*-------------------------------------------------------------------------*/
-	/** @enum  Status code for executing algorithms
+	/** \brief  compute angle on a node between two boundary edge
 	 */
 	double angle(Node Anode);
 	/*-------------------------------------------------------------------------*/
-	/** @enum  Status code for executing algorithms
+	/** \brief  get the bissectrice of two vectors
 	 */
 	math::Vector3d get_bissectrice(math::Vector3d Avec1, math::Vector3d Avec2);
 	/*-------------------------------------------------------------------------*/
-	/** @enum  Status code for executing algorithms
+	/** \brief set status of a node in m_nodeBoundary
 	 */
 	void initialise_nodeBoundary();
 	/*-------------------------------------------------------------------------*/
-	/** @enum  Status code for executing algorithms
+	/** \brief  get the intersection bet
 	 */
 	 std::tuple<double, double, double> intersectionVec2Edge(math::Vector3d& vec, Node& Anode, Edge& Aedge);
 	/*-------------------------------------------------------------------------*/
-	/** @enum  Status code for executing algorithms
+	/** \brief  Status code for executing algorithms
 	 */
 	Edge  sideEdge(Node& Anode, Edge& Aedge);
 	/*-------------------------------------------------------------------------*/
-	/** @enum  Status code for executing algorithms
+	/** \brief  Status code for executing algorithms
 	 */
 	void removeFace(Face& Aface);
 	/*-------------------------------------------------------------------------*/
-	/** @enum  Status code for executing algorithms
+	/** \brief  Status code for executing algorithms
 	 */
 	void removeEdge(Edge& Aedge);
 	/*-------------------------------------------------------------------------*/
-	/** @enum  Status code for executing algorithms
+	/** \brief  Status code for executing algorithms
 	 */
-	void swap(Edge& Aedge_inter,
+	Edge swap(Edge& Aedge_inter,
 				 Node& Anode,
 				 Node& Anode_opposit,
 				 std::map<Node, std::pair<Edge, Edge>>& node2edge_opposit,
 				 Edge& Aedge_min1,
 				 Edge& Aedge_min2);
 	/*-------------------------------------------------------------------------*/
-	/** @enum  Status code for executing algorithms
+	/** \brief  Status code for executing algorithms
 	 */
-	void split(Node& AnewNode,
+	Edge split(Node& AnewNode,
 	           Edge& Aedge_inter,
 	           Node& Anode,
 	           Node& Anode_opposit,
@@ -124,11 +124,23 @@ class LIB_GMDS_QUADFRONT_API Quadfront{
 	           Edge& Aedge_min1,
 	           Edge& Aedge_min2);
 	/*-------------------------------------------------------------------------*/
-	/** @enum  Status code for executing algorithms
+	/** \brief  Status code for executing algorithms
+	 */
+	std::vector<Face> get_superposed(Node& Anode, Edge& Aedge, Edge& sideEdge0, Edge& sideEdge1, Edge& upEdge);
+	/*-------------------------------------------------------------------------*/
+	/** \brief  Status code for executing algorithms
 	 */
 	std::vector<Edge>  interestionS(Node& AnodeRecovery0, Node& AnodeRecovery1);
 	/*-------------------------------------------------------------------------*/
-	/** @enum  Status code for executing algorithms
+	/** \brief  create Quad
+	 */
+	void testInside(Face& faceRef, Face& faceInside, std::vector<Face>& listInside);
+	/*-------------------------------------------------------------------------*/
+	/** \brief  create Quad
+	 */
+	std::vector<Face> createQuad(Node& Anode, Edge& Aedge, Edge& sideEdge0, Edge& sideEdge1, Edge& recoveryEdge);
+	/*-------------------------------------------------------------------------*/
+	/** \brief  Status code for executing algorithms
 	 */
 	void  edgeRecovery(Edge Aedge);
 	/*-------------------------------------------------------------------------*/

@@ -18,7 +18,14 @@ TEST(DummyTestClass, aaa)
 
 	quad.initialise_nodeBoundary();
 
+
+
+
 	for (auto n : quad.m_edgeBoundary){
+
+		std::cout<<"---------- edge_boundary --------"<<std::endl;
+		std::cout<<n.first.id()<<" : "<<n.first.get<Node>()[0]<<" ; "<<n.first.get<Node>()[1]<<std::endl;
+		std::cout<<"\n"<<std::endl;
 		quad.edgeRecovery(n.first);
 		}
 
@@ -165,5 +172,76 @@ TEST(DummyTestClass, split){
 		}
 		std::cout<<"\n"<<std::endl;
 	}
+}
+
+TEST(DummyTestClass, intersection){
+
+	quadfront::Quadfront quad("/home/pagea/Documents/Travail/data/intersection.vtk");
+
+	Node node = quad.m_mesh->get<Node>(9);
+	std::cout<<node<<std::endl;
+
+	Node AnodeRecovery0 = quad.m_mesh->get<Node>(1);
+	std::cout<<AnodeRecovery0<<std::endl;
+	Node AnodeRecovery1 = quad.m_mesh->get<Node>(3);
+	std::cout<<AnodeRecovery1<<std::endl;
+
+	std::vector<Edge> vEdgeIntersect = quad.interestionS(AnodeRecovery0, AnodeRecovery1);
+
+	gmds::IGMeshIOService ioService(quad.m_mesh);
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F|gmds::E);
+	vtkWriter.setDataOptions(gmds::N|gmds::F|gmds::E);
+	vtkWriter.write("/home/pagea/Documents/Travail/data/toto_link.vtk");
+
+	std::cout<<"intersection : "<<vEdgeIntersect.size()<<std::endl;
+}
+
+TEST(DummyTestClass, edgeRecovery) {
+	quadfront::Quadfront quad("/home/pagea/Documents/Travail/data/intersection.vtk");
+
+	quad.initialise_nodeBoundary();
+
+	Edge edge0 = quad.m_mesh->get<Edge>(0);
+	std::cout<<" edge id 0 : "<<edge0.get<Node>()[0]<<" ; "<<edge0.get<Node>()[1]<<std::endl;
+	std::cout<<"\n=== Voisin de Edge 0 ===\n "<<std::endl;
+	for (auto& e : edge0.get<Face>()){
+		std::cout<<e<<std::endl;
+	}
+
+
+	Edge edge = quad.m_edgeBoundary.begin()->first;
+
+	std::cout<<"edge m_edge boundary "<<edge.id()<<" : "<< edge.get<Node>()[0]<<" ; "<<edge.get<Node>()[1]<<std::endl;
+
+
+	quad.edgeRecovery(edge);
+
+	gmds::IGMeshIOService ioService(quad.m_mesh);
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F|gmds::E);
+	vtkWriter.setDataOptions(gmds::N|gmds::F|gmds::E);
+	vtkWriter.write("/home/pagea/Documents/Travail/data/toto_link.vtk");
+
+}
+
+TEST(DummyTestClass, superpose) {
+	quadfront::Quadfront quad("/home/pagea/Documents/Travail/data/swap.vtk");
+
+	Edge edge0 = quad.m_mesh->get<Edge>(3);
+	std::cout<<" edge0 : "<<edge0.get<Node>()[0]<<" ; "<<edge0.get<Node>()[1]<<std::endl;
+	Edge edge1 = quad.m_mesh->get<Edge>(0);
+	std::cout<<" edge1 : "<<edge1.get<Node>()[0]<<" ; "<<edge1.get<Node>()[1]<<std::endl;
+	Edge edge2 = quad.m_mesh->get<Edge>(1);
+	std::cout<<" edge2 : "<<edge2.get<Node>()[0]<<" ; "<<edge2.get<Node>()[1]<<std::endl;
+	Edge edge3 = quad.m_mesh->get<Edge>(4);
+	std::cout<<" edge3 : "<<edge3.get<Node>()[0]<<" ; "<<edge3.get<Node>()[1]<<std::endl;
+	Node node0 = quad.m_mesh->get<Node>(2);
+
+
+	std::vector<Face> vFace = quad.createQuad(node0, edge0, edge1, edge3, edge2);
+	std::cout<<" size : "<<vFace.size()<<std::endl;
+
+
 }
 
