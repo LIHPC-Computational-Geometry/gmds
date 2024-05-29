@@ -813,6 +813,27 @@ TEST(ClaireTestClass, Test_resizeMesh)
 	ASSERT_FLOAT_EQ(f.get<Node>()[2].X(), 10.0);
 	ASSERT_FLOAT_EQ(f.get<Node>()[2].Y(), 10.0);
 
+	// Test
+	/*
+	gmds::Mesh m_surf(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::N | gmds::R2N));
+
+	std::string dir(TEST_SAMPLES_DIR);
+	std::string vtk_file = dir + "/Aero/3D/HiFIRE5_3D_Tet.vtk";
+
+	gmds::IGMeshIOService ioService(&m_surf);
+	gmds::VTKReader vtkReader(&ioService);
+	vtkReader.setCellOptions(gmds::N | gmds::R);
+	vtkReader.read(vtk_file);
+
+	math::Utils::resizeMesh(&m_surf, 0.001);
+
+	IGMeshIOService ioService_geom_mesh(&m_surf);
+	VTKWriter writer_geom_mesh(&ioService_geom_mesh);
+	writer_geom_mesh.setCellOptions(N|R);
+	writer_geom_mesh.setDataOptions(N|R);
+	writer_geom_mesh.write("HiFIRE5_3D_Tet.vtk");
+	*/
+
 }
 /*----------------------------------------------------------------------------*/
 TEST(ClaireTestClass, Test_maxErrorBtwBezierCurveandGeomCurve)
