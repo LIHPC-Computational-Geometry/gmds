@@ -999,6 +999,42 @@ bool Blocking3D::Block::isEdgeOnK(const TCellID AID) {
 	//CAUTION : if the edge does not belong the bloc it will return false instead of an error
 }
 /*----------------------------------------------------------------------------*/
+bool Blocking3D::Block::isFaceI0(TCellID AfID)
+{
+	Face f = (*this).getFace(0,3,4,7);
+	return (AfID == f.id());
+}
+/*----------------------------------------------------------------------------*/
+bool Blocking3D::Block::isFaceImax(TCellID AfID)
+{
+	Face f = (*this).getFace(1,2,5,6);
+	return (AfID == f.id());
+}
+/*----------------------------------------------------------------------------*/
+bool Blocking3D::Block::isFaceJ0(TCellID AfID)
+{
+	Face f = (*this).getFace(0,1,4,5);
+	return (AfID == f.id());
+}
+/*----------------------------------------------------------------------------*/
+bool Blocking3D::Block::isFaceJmax(TCellID AfID)
+{
+	Face f = (*this).getFace(2,3,6,7);
+	return (AfID == f.id());
+}
+/*----------------------------------------------------------------------------*/
+bool Blocking3D::Block::isFaceK0(TCellID AfID)
+{
+	Face f = (*this).getFace(0,1,2,3);
+	return (AfID == f.id());
+}
+/*----------------------------------------------------------------------------*/
+bool Blocking3D::Block::isFaceKmax(TCellID AfID)
+{
+	Face f = (*this).getFace(4,5,6,7);
+	return (AfID == f.id());
+}
+/*----------------------------------------------------------------------------*/
 void Blocking3D::Block::computeFaceNodesPoints(const int AI, const int AJ, const int AK, const int AL)
 {
 	if (AI >= AJ || AJ >= AK || AK >= AL)

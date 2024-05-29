@@ -95,6 +95,42 @@ class GMDSIg_API Blocking3D : public Mesh
 		       * @return true if the edge is on K, false otherwise
 		 */
 		bool isEdgeOnK(TCellID AID);
+		/** @brief Use to know if the face @p AfID is the face corresponding to index I=0.
+		       *
+		       * @param AfID a face id
+		       * @return true if the edge is on I=0, false otherwise
+		 */
+		bool isFaceI0(TCellID AfID);
+		/** @brief Use to know if the face @p AfID is the face corresponding to index I=max.
+		       *
+		       * @param AfID a face id
+		       * @return true if the face is on I=max, false otherwise
+		 */
+		bool isFaceImax(TCellID AfID);
+		/** @brief Use to know if the face @p AfID is the face corresponding to index I=0.
+		       *
+		       * @param AfID a face id
+		       * @return true if the face is on J=0, false otherwise
+		 */
+		bool isFaceJ0(TCellID AfID);
+		/** @brief Use to know if the face @p AfID is the face corresponding to index J=max.
+		       *
+		       * @param AfID a face id
+		       * @return true if the face is on J=max, false otherwise
+		 */
+		bool isFaceJmax(TCellID AfID);
+		/** @brief Use to know if the face @p AfID is the face corresponding to index K=0.
+		       *
+		       * @param AfID a face id
+		       * @return true if the face is on K=0, false otherwise
+		 */
+		bool isFaceK0(TCellID AfID);
+		/** @brief Use to know if the face @p AfID is the face corresponding to index K=max.
+		       *
+		       * @param AfID a face id
+		       * @return true if the face is on K=max, false otherwise
+		 */
+		bool isFaceKmax(TCellID AfID);
 		/** Compute positions of nodes of the Face (AI, AJ, AK, AL), according to the positions
 		 * of the nodes on each edges.
              * @param AI local index of a node in the face
