@@ -24,7 +24,8 @@ add_executable(GMDS_CLAIRE_TEST
         Blocking3DTestSuite.h
         TransfiniteInterpolation_3DTestSuite.h
         ComputeBezierDegree_3DTestSuite.h
-        ComputeBezierCurveCtrlPtstoInterpolateCurveTestSuite.h)
+        ComputeBezierCurveCtrlPtstoInterpolateCurveTestSuite.h
+        RefinementBetaBlock3DTestSuite.h)
 #==============================================================================
 target_link_libraries(GMDS_CLAIRE_TEST PUBLIC
         ${GMDS_LIB}

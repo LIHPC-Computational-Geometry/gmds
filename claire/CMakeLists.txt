@@ -67,6 +67,12 @@ set(GMDS_INC
 		inc/gmds/claire/MFEMMeshWriter.h
 		inc/gmds/claire/ControlPointsSmoothing_2D.h
 		inc/gmds/claire/Blocking3D.h
+		inc/gmds/claire/RefinementBetaBlocking3D.h
+		inc/gmds/claire/SU2Writer_3D.h
+		inc/gmds/claire/ComputeBezierDegree_3D.h
+		inc/gmds/claire/ComputeBezierCtrlPtstoInterpolateSurface.h
+		inc/gmds/claire/ComputeBezierCurveCtrlPtstoInterpolateCurve.h
+		inc/gmds/claire/RefinementBetaBlock3D.h
 		)
 set(GMDS_SRC
 		src/main.cpp
@@ -128,7 +134,14 @@ set(GMDS_SRC
 		src/PatternNode2End1Reversal.cpp
 		src/MFEMMeshWriter.cpp
 		src/ControlPointsSmoothing_2D.cpp
-		src/Blocking3D.cpp inc/gmds/claire/TransfiniteInterpolation_3D.h src/TransfiniteInterpolation_3D.cpp inc/gmds/claire/RefinementBetaBlocking3D.h src/RefinementBetaBlocking3D.cpp inc/gmds/claire/SU2Writer_3D.h src/SU2Writer_3D.cpp inc/gmds/claire/ComputeBezierDegree_3D.h src/ComputeBezierDegree_3D.cpp inc/gmds/claire/ComputeBezierCtrlPtstoInterpolateSurface.h src/ComputeBezierCtrlPtstoInterpolateSurface.cpp inc/gmds/claire/ComputeBezierCurveCtrlPtstoInterpolateCurve.h src/ComputeBezierCurveCtrlPtstoInterpolateCurve.cpp)
+		src/Blocking3D.cpp inc/gmds/claire/TransfiniteInterpolation_3D.h
+		src/TransfiniteInterpolation_3D.cpp
+		src/RefinementBetaBlocking3D.cpp
+		src/SU2Writer_3D.cpp
+		src/ComputeBezierDegree_3D.cpp
+		src/ComputeBezierCtrlPtstoInterpolateSurface.cpp
+		src/ComputeBezierCurveCtrlPtstoInterpolateCurve.cpp
+		src/RefinementBetaBlock3D.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

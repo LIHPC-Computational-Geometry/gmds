@@ -24,6 +24,7 @@
 #include "TransfiniteInterpolation_3DTestSuite.h"
 #include "ComputeBezierDegree_3DTestSuite.h"
 #include "ComputeBezierCurveCtrlPtstoInterpolateCurveTestSuite.h"
+#include "RefinementBetaBlock3DTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);

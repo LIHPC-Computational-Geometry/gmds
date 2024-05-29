@@ -62,6 +62,25 @@ TEST(Blocking3DTestSuite, test_blocking3D_1)
 	ASSERT_FLOAT_EQ(b0(3,2,8).Y(), 0.5);
 	ASSERT_FLOAT_EQ(b0(3,2,8).Z(), 0.8);
 
+	TCellID f0 = math::Utils::CommonFace(&b, n9.id(), n10.id(), n11.id(), n12.id());
+	TCellID f1 = math::Utils::CommonFace(&b, n9.id(), n11.id(), n3.id(), n2.id());
+	TCellID f2 = math::Utils::CommonFace(&b, n5.id(), n6.id(), n7.id(), n8.id());
+	TCellID f3 = math::Utils::CommonFace(&b, n5.id(), n1.id(), n4.id(), n8.id());
+	TCellID f4 = math::Utils::CommonFace(&b, n2.id(), n6.id(), n7.id(), n3.id());
+	TCellID f5 = math::Utils::CommonFace(&b, n3.id(), n7.id(), n12.id(), n11.id());
+	ASSERT_EQ(b1.isFaceI0(f0), false);
+	ASSERT_EQ(b1.isFaceI0(f1), false);
+	ASSERT_EQ(b1.isFaceK0(f1), true);
+	ASSERT_EQ(b0.isFaceImax(f2), false);
+	ASSERT_EQ(b0.isFaceKmax(f2), true);
+	ASSERT_EQ(b0.isFaceImax(f3), false);
+	ASSERT_EQ(b0.isFaceJ0(f3), false);
+	ASSERT_EQ(b0.isFaceI0(f3), true);
+	ASSERT_EQ(b0.isFaceImax(f4), true);
+	ASSERT_EQ(b1.isFaceI0(f4), true);
+	ASSERT_EQ(b1.isFaceJmax(f5), true);
+	ASSERT_EQ(b1.isFaceJmax(f4), false);
+
 
 	gmds::IGMeshIOService ioService(&b);
 	gmds::VTKWriter vtkWriter(&ioService);
