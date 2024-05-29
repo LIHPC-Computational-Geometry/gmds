@@ -1113,6 +1113,9 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		for (auto surface:surfaces)
 		{
 			p_proj = n.point();
+			//std::cout << "Node pos: " << n.point() << std::endl;
+			//std::cout << "min distance: " << min_dist << std::endl;
+			//std::cout << "Tol: " << tol*pow(10,-3) << std::endl;
 			surface->project(p_proj);
 			if ( (n.point()-p_proj).norm() < min_dist
 			    && min_dist > tol*pow(10,-3))		// Need to add a tolerence here.
@@ -1122,6 +1125,7 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 				geom_id = surface->id();
 			}
 		}
+		//std::cout << "4" << std::endl;
 
 		// Link the node of the Blocking to the geometrical entity that
 		// minimize the distance
