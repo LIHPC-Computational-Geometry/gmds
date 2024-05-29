@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
-TEST(RefinementBetaBlock3DTestSuite, RefinementBetaBlock3D_1)
+TEST(RefinementBetaBlock3DTestClass, RefinementBetaBlock3D_1)
 {
 	Blocking3D b;
 	Node n1 = b.newBlockCorner(0,0, 0);
