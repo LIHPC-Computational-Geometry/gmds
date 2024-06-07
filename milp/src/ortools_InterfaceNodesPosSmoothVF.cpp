@@ -98,18 +98,19 @@ namespace milp {
 		       }
 	       },
 	       nbMixedCells_source);
+/*
 
-	    // =======================================
-	    // GLPK
-	    // =======================================
+	    // code convertit
+	    //  =======================================
+	    //  ORTOOLS
+	    //  =======================================
 	    // Initialisation de GLPK/on cherche aussi à minimiser la fonction objective
-	    glp_prob *lp;     // creation d'un pointeur de structure de donnée GLPK représentant le problème linéaire
-	    int *ia, *ja;     // déclaration de pointeurs utilisés pour stocker les indices des lignes et colonnes des contraintes dans la matrice de contraintes
-	    double *ar;       // ce pointeur sera utilisé pour stocker les valeurs des coefficients dans la matrice de contraintes
-
-	    lp = glp_create_prob();           // création d'un nvx pb GLPK et retourne un pointeur vers celui-ci
-	    glp_set_obj_dir(lp, GLP_MIN);     // cette fonction définit l'objectif du problème comme étant une minimisation(GLP_MIN) signifie minimisation
-
+	    operations_research::MPSolver solver("InterfaceNodesPosSmoothVF", operations_research::MPSolver::SCIP_MIXED_INTEGER_PROGRAMMING);
+	   /* if (!solver) {
+		    std::cerr << "echec dans la création du solver." << std::endl;
+		    return;
+	    }
+*/
 	    // compute problem size
 	    // Détermination du nb total de variables et de contraintes
 	    int nbRows = 0;     // initialise le compteur du nb de lignes à 0
@@ -139,51 +140,8 @@ namespace milp {
 	    nbRows += vert2puremat.size();     // ajoute au compteur de lignes un contrinte pour chaque pixel pur( où la couleur est fixée à un matériau spécifique)
 	    nnz += vert2puremat.size();     // ajoute au compteur d'éléments non nuls les contributions de chaque pixel pur.
 
-	    // code convertit
-	    //  =======================================
-	    //  ORTOOLS
-	    //  =======================================
-	    // Initialisation de GLPK/on cherche aussi à minimiser la fonction objective
-	    operations_research::MPSolver solver("InterfaceNodesPosSmoothVF", operations_research::MPSolver::SCIP_MIXED_INTEGER_PROGRAMMING);
-	    /*if (!solver) {
-		    std::cerr << "echec dans la création du solver." << std::endl;
-		    return;
-	    }*/
 
-	    // compute problem size
-	    // Détermination du nb total de variables et de contraintes
-	    /*int nbRows = 0;     // initialise le compteur du nb de lignes à 0
-	    int nbCols = 0;     // initialise le compteur de nb de colonnes à 0
-	    int nnz = 0;        // initialise le compteur du nb d'éléments non nuls dans la matrice des contraintes à 0
-
-	    // pixel color variables/variables de couleur des pixels
-	    nbCols += nbVert * nbMat;     // ajoute au compteur de colonnes le nb tot de variables de couleur des pixels, soit nbVert*nbMat
-
-	    // color unicity per pixel/unicité de la couleur par pixel: 1 pixel ne peut avoir qu'une seule couleur attribuée
-	    nbRows += nbVert;          // ajout au compteur  de ligne une contrainte pour chaque pixel, -> chaque pixel n'a qu'une seule couleure
-	    nnz += nbVert * nbMat;     // ajoute au compteur d'éléments != 0 le produit du nb de pixels par le nb de matériaux
-
-	    // vf per coarse mixed cell	/ calcul du pourcentage de matériaux  par cellule mixte: la somme des fractions volumiques des matériaux dans une seule cellule est égale à un nombre spécifique.
-	    nbRows += nbMixedCells_source
-	              * nbMat;     // ajoute au compteur lignes des contraintes pour les fractions volumiques de chaque cellule mixte et chaque matériaux
-	    nnz += nbMixedCells_source * nbMat * ANbSubPixels;     // ajoute au compteur d'éléments !=0 les contributions de chaque cellule mixte et de chaque matériau multiplié par le nombre de sius-pixels
-
-	    // neighboring similarity/ cette contrainte assure que les couleurs des pixels voisins sont les mêmes
-	    nbRows += nbVert * nbMat;         // ajoute au compteur de ligne des contraintes pour la similarité de voisinge entre les pixels.
-	    nbCols += 2 * nbVert * nbMat;     // ajoute au compteur des colonnes des variables supplémentaires pour les contraintes de voisinage
-	    nnz += 3 * nbVert * nbMat
-	           + nbMat * AGraph->getNbEdges();     // ajoute au compteur d'éléments des contraintes de similarité de voisinage et des arêtes du graphe des pixels
-
-	    // ajouts des contraintes des variables dans GLPK
-	    // pure pixels
-	    nbRows += vert2puremat.size();     // ajoute au compteur de lignes un contrinte pour chaque pixel pur( où la couleur est fixée à un matériau spécifique)
-	    nnz += vert2puremat.size();     // ajoute au compteur d'éléments non nuls les contributions de chaque pixel pur.
-
-	    std::vector<operations_research::MPVariable *> variables;
-	    for (int i = 0; i < nbCols; i++) {
-		    variables.push_back(solver.MakeIntVar(0.0, 1.0, "var" + std::to_string(i)));
-	    }*/
-
+/*
 	    //===================================================================================================================================================================================================================================================
 	    // enforce constraints
 	    glp_add_rows(lp, nbRows);     //
@@ -217,22 +175,24 @@ namespace milp {
 			    // declarer un tableau ou je mets les valeurs et les variables sans déranger le code
 		    }
 	    }
+	    */
 	    // code convertit
 	    //  =======================================
 	    //  ORTOOLS
 	    //  =======================================
+	    std::vector<operations_research::MPVariable*> variables;
 	    for (int p = 0; p < nbVert; p++) {
 		    for (int imat = 0; imat < nbMat; imat++) {
 			    std::string col_name = "pixelColor_" + std::to_string(p) + "_" + std::to_string(imat);
 			    operations_research::MPVariable *var = solver.MakeIntVar(0.0, 1.0, col_name);
-			    variables.push_back(var);
+			       variables.push_back(var);
 			    var->SetInteger(true);                                   // on définit la variable comme binaire
 			    solver.MutableObjective()->SetCoefficient(var, 0.0);     // définir le coefficient de l'objectif pour cette variable à 0
 		    }
 	    }
 
 	    //==============================================================================================================================================================================================================================================================================================
-	    // color unicity per pixel/contraintes d'unicité de la couleur par pixel
+	   /* // color unicity per pixel/contraintes d'unicité de la couleur par pixel
 	    for (int p = 0; p < nbVert; p++) {                                 // parcours chaque pixel
 		    std::string row_name = "colorunicity_" + std::to_string(p);     // construit un nom unoqie  pour chaque contrainte de couleur unie par pixel
 		    glp_set_row_name(lp, irow, row_name.c_str());                   // assigne le nom de la ligne irow dans le pb glpk, avec irow l'index de la ligne
@@ -248,8 +208,10 @@ namespace milp {
 
 		    irow++;     // on incrémente également le compteur de lignes irow pour la prochaine contrainte de couleur unie
 	    }
+	    */
 	    // code convertit
 	    // contraintes de couleur d'unicité par pixel
+
 	    for (int p = 0; p < nbVert; p++) {
 		    std::string row_name = "colorunicity_" + std::to_string(p);
 		    operations_research::MPConstraint *const constraint = solver.MakeRowConstraint(1.0, 1.0, row_name);
@@ -261,7 +223,8 @@ namespace milp {
 	    //=================================================================================================================================================================================================================================================================================================
 
 	    // vf per coarse mixed cell per material/contraintes du pourcentage de la fraction volumique par cellule
-	    const int nbCells_source = ACellsIDs_source->getNbElems();                 // on obtient le nb total de cellules sources
+	    const int nbCells_source = ACellsIDs_source->getNbElems();
+	    /*// on obtient le nb total de cellules sources
 	    for (int i = 0; i < nbCells_source; i++) {                                 // parcours chaque cellule source.
 		    kmds::TCellID cid = ACellsIDs_source->get(i);                           // cid obtinent l'id de la cellule source
 		    if ((*AVarMixedCells_source)[cid]) {                                    // on verifie si la cellule cid est une cellule mixte
@@ -301,7 +264,7 @@ namespace milp {
 			    }
 		    }
 	    }
-
+*/
 	    // code convertit
 	    //  =======================================
 	    //  vf per coarse mixed cell per material/contraintes du pourcentage de la fraction volumique par cellule
@@ -330,7 +293,7 @@ namespace milp {
 	    }
 
 	    //======================================================================================================================================================================================================================================================================================================================================
-
+/*
 	    // neighboring similarity/ définition des contraintes pour la Similarité des couleurs voisines
 	    for (int p = 0; p < nbVert; p++) {     // Boucle sur chaque pixel p et chaque matériau imat
 		    for (int imat = 0; imat < nbMat; imat++) {
@@ -394,7 +357,7 @@ namespace milp {
 		    }
 	    }
 	    //============================================================================================================================================================================================
-	    for (int p = 0; p < nbVert; p++) {
+	    */for (int p = 0; p < nbVert; p++) {
 		    for (int imat = 0; imat < nbMat; imat++) {
 			    std::string col_pos_name = "neighbourcolor_pos_" + std::to_string(p) + "_" + std::to_string(imat);
 			    operations_research::MPVariable *var_pos = solver.MakeNumVar(0.0, solver.infinity(), col_pos_name);
@@ -417,7 +380,7 @@ namespace milp {
 
 	    }
 	    //========================================================================================================================================================================================================================================================
-
+/*
 	    // known color for subpixels of pure cells/ définition des contraintes des pixels purs
 	    for (int p = 0; p < nbVert; p++) {     // Boucle sur chaque pixel p pour vérifier s’il est dans vert2puremat.
 		    if (vert2puremat.find(p) != vert2puremat.end()) {
@@ -435,7 +398,7 @@ namespace milp {
 			    irow++;
 		    }
 	    }
-
+*/
 	    for (int p = 0; p < nbVert; p++) {     // Boucle sur chaque pixel p pour vérifier s’il est dans vert2puremat.
 		    if (vert2puremat.find(p) != vert2puremat.end()) {
 			    int imat = vert2puremat[p];     // Définit les contraintes pour les pixels purs en associant les pixels aux matériaux connus.
@@ -446,7 +409,7 @@ namespace milp {
 
 	    }
 
-	    //===========================================================================================================================================================================================================================================================================
+	   /* //===========================================================================================================================================================================================================================================================================
 	    // Affiche les informations sur les lignes, colonnes et coefficients non nuls.
 	    std::cout << "row " << nbRows << " irow " << irow << std::endl;
 	    std::cout << "col " << nbCols << " icol " << icol << std::endl;
@@ -457,7 +420,7 @@ namespace milp {
 	    for (int j = 1; j <= nnz; j++) {
 		    ja[j]++;
 	    }
-
+*/
 	    // convertit
 	    std::cout <<"row"<< solver.NumConstraints() <<" irow " << irow << std::endl;
 	    std::cout << "col" << solver.NumVariables() << " icol " << icol << std::endl;
@@ -472,7 +435,7 @@ namespace milp {
 
 
 
-
+/*
 
 //================================================================================================================================================================================================================================================================================================
 //Charge la matrice de contraintes dans GLPK.
@@ -550,27 +513,64 @@ namespace milp {
 //                Ama_target->setMaterial(nbMat, cid);
             }
         }
+*/
 
-/*
 	     //converit
-	     operations_research::MPSolver::OptimizationProblemType problem_type=operations_research::MPSolver::CBC_MIXED_INTEGER_PROGRAMMING;
-	     std::unique_ptr<operations_research::MPSolver> solver(operations_research::MPSolver::CreateSolver(problem_type));
 	     operations_research::MPSolverParameters param;
 	     param.SetIntegerParam(operations_research::MPSolverParameters::PRESOLVE,operations_research::MPSolverParameters::PRESOLVE_ON);
 	     solver.SetTimeLimit(absl::Duration 300000);
-	     solver.ExportModelAsLpFormat(false,"cplex.txt");
-	     solver.ExportModelAsMpsFormat(false,"mps.txt");
-	     const operations_research::MPSolver::ResultStatus result_status = solver.Solve();
 	     if (result_status !=operations_research::MPSolver::OPTIMAL && result_status!= operations_research::MPSolver::FEASIBLE){
 		     std::cout << "Le probleme n'a pas de solution optimale." << std::endl;
 	     } // a mettre en commentaires puis tester code en haut
+	     switch (result_status) {
+	     case operations_research::MPSolver::OPTIMAL:
+		     std::cout << "MIP solution est un entier" << std::endl;
+		     break;
+	     case operations_research::MPSolver:: FEASIBLE:
+		     std::cout<<"La solution MIP  est un entier, est faisable "<< std::endl;
+		     break;
+	     default;
+		      throw kmds::KException("SubMapping::boundaryDiscretization glp_intopt unknown return code.");
+	     }
+	     std::ofstream solution_file("pixelAssignment.txt");
+	     if(!solution_file){
+		     std::cout<<"No such file";
+	     }
+	     if(solution_file.is_open()){
+		     for(int i=0;i<solver.NumVariables();i++){
+			     solution_file<<"variable"<<i<<":Value="<<solver.variable(i)-> solution_value()<<std::endl;
+		     }
+		     solution_file.close();
+	     }
+
+	     for (int i = 0; i < nbCells_target; i++) { //boucle pour chaque cellule cible
+		     kmds::TCellID cid = ACellsIDs_target->get(i);
+
+		     kmds::TCellID vert = (*AVarCells2vertices)[cid]; // pour chaque cellule, récupère le sommet(vert) associé
+		     if (vert != kmds::NullID) {// si le sommet est valide (cad vert != NullID), on détermine le matériau(mat) en vérifiant les valeurs des colonnes du modèle GLPK
+			     int mat = nbMat; // default;
+			     bool found = false;
+			     for(int imat=0; imat<nbMat; imat++) {
+				     int color = solver.variable(vert*nbMat + imat)->solution_value();
+				     if(color == 1) { // si on trouve une couleur pour un matériau alors cette couleur est assignée à la cellule
+					     if(found) {
+						     std::cout<<"QQQQQQQQQQQQQQQQ"<<std::endl;
+					     }
+					     mat = imat;
+					     found = true;
+				     }
+			     }
+			     Ama_target->setMaterial(mat, cid); // mise à jour du matériau de la cellule cible avec Ama_target-> setMaterial(mat,cid)
+		     } else {
+			     //                Ama_target->setMaterial(nbMat, cid);
+		     }
+	     }
 
 
 
 
 
-
-
+	     /*
 //=================================================================================================================================================================================================================================================================================================================
 //libère la mémoire allouée pour les tableau ia,ja et ar
         free(ia);
