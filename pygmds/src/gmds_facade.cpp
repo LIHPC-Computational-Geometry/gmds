@@ -6,7 +6,9 @@ namespace py = pybind11;
 void bind_math(py::module &);
 void bind_mesh(py::module &);
 void bind_geometry(py::module &);
+#if ENABLE_BLOCKING
 void bind_blocking(py::module &);
+#endif
 /*----------------------------------------------------------------------------*/
 // ig is the submodule name
 PYBIND11_MODULE(gmds, m)
@@ -22,6 +24,8 @@ PYBIND11_MODULE(gmds, m)
 	bind_mesh(sub_mesh);
 	auto sub_geom = m.def_submodule("cad", "cad interface");
 	bind_geometry(sub_geom);
+#if ENABLE_BLOCKING
 	auto sub_block = m.def_submodule("blocking", "blocking kernel");
 	bind_blocking(sub_block);
+#endif
 }
