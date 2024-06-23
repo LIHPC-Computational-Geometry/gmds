@@ -71,7 +71,7 @@ set(GMDS_SRC
         src/TransfiniteInterpolation.cpp
         src/BezierSurface.cpp)
 #==============================================================================
-find_package(Eigen3 3.3 REQUIRED)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 #==============================================================================k
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
