@@ -13,10 +13,25 @@
 #include "QuaternionTestSuite.h"
 #include "OrientationTestSuite.h"
 #include "TransfiniteInterpolationTestSuite.h"
+#include "BezierCurveTestSuite.h"
+#include "BezierTriangleTestSuite.h"
+#include "AxisAngleRotationTestSuite.h"
+#include "FETestSuite.h"
+#include "HexahedronTestSuite.h"
+#include "LineTestSuite.h"
+#include "NumericsTestSuite.h"
+#include "QuadrilateralTestSuite.h"
+#include "PlaneTestSuite.h"
+#include "Prism3TestSuite.h"
+#include "PyramidTestSuite.h"
+#include "Prism3TestSuite.h"
+#include "QualityMeasureTestSuite.h"
+#include "RayTestSuite.h"
+#include "SegmentTestSuite.h"
+
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
 /*----------------------------------------------------------------------------*/
-
