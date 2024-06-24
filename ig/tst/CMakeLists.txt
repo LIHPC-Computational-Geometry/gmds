@@ -4,6 +4,10 @@ add_executable(GMDS_IG_TEST
         EdgeTestSuite.h
         MeshTestSuite.h
         MeshDoctorTestSuite.h
+        CellTestSuite.h
+        EdgeContainerTestSuite.h
+        NodeTestSuite.h
+        NodeContainerTestSuite.h
         main_test.cpp)
 #==============================================================================
 target_link_libraries(GMDS_IG_TEST PUBLIC
