@@ -1,5 +1,5 @@
 include(CMakeFindDependencyMacro)
-find_dependency(Eigen3)
+find_dependency(Eigen3 REQUIRED NO_MODULE)
 
 @PACKAGE_INIT@
 
