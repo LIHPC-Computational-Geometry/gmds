@@ -1035,6 +1035,33 @@ bool Blocking3D::Block::isFaceKmax(TCellID AfID)
 	return (AfID == f.id());
 }
 /*----------------------------------------------------------------------------*/
+std::vector<TCellID>
+Blocking3D::Block::getEdgeFaces(TCellID AeID)
+{
+	std::vector<TCellID> adj_faces;
+
+	std::vector<TCellID> b_faces = m_region.getIDs<Face>();
+	for (auto f_id:b_faces)
+	{
+		Face f = m_support->get<Face>(f_id);
+		std::vector<Edge> f_edges = f.get<Edge>();
+		for (auto e:f_edges)
+		{
+			if (e.id() == AeID)
+			{
+				adj_faces.push_back(f_id);
+			}
+		}
+	}
+	if (adj_faces.size() != 2)
+	{
+		std::cout << "Blocking3D::Block::getEdgeFaces warning: not 2 adjacent faces." << std::endl;
+	}
+
+	return adj_faces;
+
+}
+/*----------------------------------------------------------------------------*/
 void Blocking3D::Block::computeFaceNodesPoints(const int AI, const int AJ, const int AK, const int AL)
 {
 	if (AI >= AJ || AJ >= AK || AK >= AL)

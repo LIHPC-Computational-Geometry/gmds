@@ -54,6 +54,7 @@ TEST(Blocking3DTestSuite, test_blocking3D_1)
 	b.initializeGridPoints();
 
 	b0 = b.block(0);
+	b1 = b.block(1);
 	ASSERT_FLOAT_EQ(b0(1,1,1).X(), 0.25);
 	ASSERT_FLOAT_EQ(b0(1,1,1).Y(), 0.25);
 	ASSERT_FLOAT_EQ(b0(1,1,1).Z(), 0.1);
@@ -80,6 +81,16 @@ TEST(Blocking3DTestSuite, test_blocking3D_1)
 	ASSERT_EQ(b1.isFaceI0(f4), true);
 	ASSERT_EQ(b1.isFaceJmax(f5), true);
 	ASSERT_EQ(b1.isFaceJmax(f4), false);
+
+	TCellID e0 = math::Utils::CommonEdge(&b, n2.id(), n3.id());
+	std::vector<TCellID> adj_faces = b0.getEdgeFaces(e0);
+	ASSERT_TRUE(adj_faces.size()==2);
+	ASSERT_TRUE(adj_faces[0] == f4 || adj_faces[1] == f4);
+
+	TCellID e1 = math::Utils::CommonEdge(&b, n3.id(), n11.id());
+	adj_faces = b1.getEdgeFaces(e1);
+	ASSERT_TRUE(adj_faces.size()==2);
+	ASSERT_TRUE(adj_faces[0] == f5 || adj_faces[1] == f5);
 
 
 	gmds::IGMeshIOService ioService(&b);
