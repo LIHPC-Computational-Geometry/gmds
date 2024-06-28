@@ -34,6 +34,7 @@ TEST(QuadQualityTestClass, test1)
 	ASSERT_NEAR(qe.aspectRatio(),1,0.01);
 	ASSERT_NEAR(qe.signedArea(),1,0.01);
 	ASSERT_NEAR(qe.angleDeviation(),0,0.01);
+	ASSERT_NEAR(qe.skew(),0,0.01);
 
 	QuadQuality qe2 = QuadQuality::build(math::Point(0,0,0),
 	                               math::Point(2,0,0),
@@ -50,5 +51,12 @@ TEST(QuadQualityTestClass, test1)
 	ASSERT_NEAR(qe2.aspectRatio(),6,0.01);
 	ASSERT_NEAR(qe2.signedArea(),2,0.01);
 	ASSERT_NEAR(qe2.angleDeviation(),0,0.01);
+	ASSERT_NEAR(qe2.skew(),0,0.01);
+
+	QuadQuality qe3 = QuadQuality::build(math::Point(0,0,0),
+	                                     math::Point(2,0,0),
+	                                     math::Point(2,1,0),
+	                                     math::Point(1,1,0));
+	std::cout << "Skew: " << qe3.skew() << std::endl;
 
 }
