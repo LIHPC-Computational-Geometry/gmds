@@ -24,10 +24,13 @@
 #include <gmds/claire/SU2Writer_3D.h>
 #include <gmds/claire/ComputeBezierDegree_3D.h>
 #include <gmds/claire/ComputeBezierCtrlPtstoInterpolateSurface.h>
+#include <gmds/claire/RefinementBetaBlocking3D.h>
+#include <gmds/quality/HexQuality.h>
 #include <iostream>
 #include <chrono>
 /*------------------------------------------------------------------------*/
 using namespace gmds;
+using namespace gmds::quality;
 /*------------------------------------------------------------------------*/
 
 AeroPipeline_3D::AeroPipeline_3D(std::string Aparams, std::string &Aworking_dir) :
@@ -226,6 +229,20 @@ AeroPipeline_3D::execute(){
 	std::cout << "|| Number of Block Edges: " << m_meshHex->getNbEdges() << std::endl;
 	std::cout << "|| Number of Block Nodes: " << m_meshHex->getNbNodes() << std::endl;
 	std::cout << "=============================================" << std::endl;
+
+	// Init the Blocking3D from the hex mesh
+
+	std::cout << "-> Boundary Layer Refinement" << std::endl;
+	/*
+	t_start = clock();
+	Variable<int>* var_couche_blocking = m_Blocking3D.getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche");
+	RefinementBetaBlocking3D algo_ref = RefinementBetaBlocking3D(&m_Blocking3D, var_couche_blocking, m_params.edge_size_first_ortho_wall);
+	algo_ref.execute();
+	t_end = clock();
+	 */
+	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << " " << std::endl;
+
 
 	// Write the final mesh.
 	EcritureMaillage();
@@ -1047,11 +1064,18 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 	std::cout << "=============================================" << std::endl;
 
 	// Write the initial tet mesh (with fields computed on it)
-	gmds::IGMeshIOService ioService = IGMeshIOService(m_meshTet);
-	gmds::VTKWriter vtkWriter2(&ioService);
-	vtkWriter2.setCellOptions(gmds::N|gmds::F);
-	vtkWriter2.setDataOptions(gmds::N|gmds::F);
-	vtkWriter2.write("AeroPipeline3D_Tetra_CLASSIFICATION.vtk");
+	//if (m_params.with_debug_files)
+	//{
+		gmds::IGMeshIOService ioService = IGMeshIOService(m_meshTet);
+		gmds::VTKWriter vtkWriter2(&ioService);
+		vtkWriter2.setCellOptions(gmds::N|gmds::F);
+		vtkWriter2.setDataOptions(gmds::N|gmds::F);
+		vtkWriter2.write("AeroPipeline3D_Tetra_SURFACES_CLASSIFICATION.vtk");
+
+		vtkWriter2.setCellOptions(gmds::N|gmds::E);
+		vtkWriter2.setDataOptions(gmds::N|gmds::E);
+		vtkWriter2.write("AeroPipeline3D_Tetra_EDGES_CLASSIFICATION.vtk");
+	//}
 
 	// Init the linker for the Blocking
 	m_linker_HG->setGeometry(m_manager);
@@ -2884,13 +2908,18 @@ AeroPipeline_3D::computeHexMeshQuality()
 {
 	std::cout << "-> Compute final mesh quality" << std::endl;
 	Variable<double>* var_scaledjacobian = m_meshHex->newVariable<double, GMDS_REGION>("GMDS_ScaledJacobian");
+	Variable<double>* var_skew = m_meshHex->newVariable<double, GMDS_REGION>("GMDS_Skew");
 
 	double min_sj(1.0);
+	double min_skew(1.0);
 	std::map<double,int> map_sj;
+	std::map<double,int> map_skew;
 	std::vector<int> sj(21);
+	std::vector<int> skew(21);
 	for (auto i=0;i<=20;i++)
 	{
 		sj[i] = 0;
+		skew[i] = 0;
 	}
 
 	for (auto r_id:m_meshHex->regions())
@@ -2898,11 +2927,24 @@ AeroPipeline_3D::computeHexMeshQuality()
 		Region r = m_meshHex->get<Region>(r_id);
 		std::vector<Node> r_nodes = r.get<Node>();
 		//std::cout << "Region " << r_id << ", nodes " << r_nodes.size() << std::endl;
-		double loc_sj = -math::AeroMeshQuality::ScaledJacobianHEX(r_nodes[0].point(), r_nodes[1].point(),
+		/*double loc_sj = -math::AeroMeshQuality::ScaledJacobianHEX(r_nodes[0].point(), r_nodes[1].point(),
 		                                                          r_nodes[2].point(), r_nodes[3].point(),
 		                                                          r_nodes[4].point(), r_nodes[5].point(),
-		                                                          r_nodes[6].point(), r_nodes[7].point()) ;
+		                                                          r_nodes[6].point(), r_nodes[7].point()) ;*/
+
+		HexQuality hq = HexQuality::build(r_nodes[0].point(),
+		                                  r_nodes[1].point(),
+		                                  r_nodes[2].point(),
+		                                  r_nodes[3].point(),
+		                                  r_nodes[4].point(),
+		                                  r_nodes[5].point(),
+		                                  r_nodes[6].point(),
+		                                  r_nodes[7].point());
+		double loc_sj = -hq.scaledJacobian() ;	// We take the opposite value due to our hex orientations
 		var_scaledjacobian->set(r_id, loc_sj);
+		double loc_skew = hq.skew() ;
+		var_skew->set(r_id, loc_skew);
+
 		if (loc_sj < min_sj)
 		{
 			min_sj = loc_sj;
@@ -2910,11 +2952,19 @@ AeroPipeline_3D::computeHexMeshQuality()
 		}
 		for (auto i=0;i<20;i++)
 		{
+			// Scaled Jacobian
 			if (i*0.1 -1 < loc_sj
 			    && loc_sj <= (i+1)*0.1 -1)
 			{
 				int compteur = sj[i] ;
 				sj[i] = compteur+1;
+			}
+			// Skew
+			if (i*0.1 -1 < loc_skew
+			    && loc_skew <= (i+1)*0.1 -1)
+			{
+				int compteur = skew[i] ;
+				skew[i] = compteur+1;
 			}
 		}
 		if (-1.0 == loc_sj)
@@ -2923,17 +2973,21 @@ AeroPipeline_3D::computeHexMeshQuality()
 		}
 	}
 	sj[20] = sj[19];
+	skew[20] = skew[19];
 
 	int cpt_hex(0);
 	std::ofstream stream= std::ofstream("GMDS_Histogram_ScaledJacobian.table", std::ios::out);
+	std::ofstream stream_skew = std::ofstream("GMDS_Histogram_Skew.table", std::ios::out);
 	//set the numerical precision (number of digits)
 	stream.precision(15);
 	for (auto i=0;i<=20;i++)
 	{
 		stream << i*0.1 -1 << " " << sj[i] << "\n";
+		stream_skew << i*0.1 -1 << " " << skew[i] << "\n";
 		cpt_hex += sj[i] ;
 	}
 	stream.close();
+	stream_skew.close();
 	cpt_hex -= sj[20];
 	std::cout << "Nbr cells: " << cpt_hex << std::endl;
 

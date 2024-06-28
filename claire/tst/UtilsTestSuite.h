@@ -937,7 +937,7 @@ TEST(ClaireTestClass, Utils_img_Manuscrit_THex)
 	gmds::Mesh m_tet(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::N | gmds::R2N));
 
 	std::string dir(TEST_SAMPLES_DIR);
-	std::string vtk_file = dir + "/Aero/3D/DoubleEllipsoid_THEX_test.vtk";
+	std::string vtk_file = dir + "/Aero/3D/Apollo3D_Tet_forTHex.vtk";
 
 	gmds::IGMeshIOService ioService(&m_tet);
 	gmds::VTKReader vtkReader(&ioService);

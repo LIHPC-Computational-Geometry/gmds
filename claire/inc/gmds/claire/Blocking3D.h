@@ -36,6 +36,18 @@ namespace gmds {
  *
  *         Add a gridview that is linked to a blocking2D objet and starting
  *         from a node encapsulates the grid view traversal.
+ *
+ * 	     Nodes index in block:
+ *                            4             5
+ *                             +----------+.
+ *                             |`. 7      | `.
+ *        K axis               |  `+----------+  6
+ *       |                     |   |      |   |
+ *       |                     |   |    1 |   |
+ *       |_____  I axis     0  +---|------+.  |
+ *      /                       `. |        `.|
+ *     /  J axis                  `+----------+
+ *                                3            2
  */
 /*----------------------------------------------------------------------------*/
 class GMDSIg_API Blocking3D : public Mesh
@@ -51,6 +63,29 @@ class GMDSIg_API Blocking3D : public Mesh
 		TCellID origin();
 
 		Node getNode(const int& AIndex);
+		/** Access to the edge with local index @p AI and @p AJ in the
+             *  current face
+             *
+             *  An exception is throww if @p AI==@p AJ and if @p AI or @p AJ is not included in [0,3]
+             *
+             * @param AI local index of a node in the face
+             * @param AJ local index of a node in the face
+             * @return the edge connecting the two input nodes
+		 */
+		Edge getEdge(const int AI, const int AJ);
+		/** Access to the face with local index @p AI, @p AJ, @p AK and @p AL in the
+             *  current hex
+             *
+             *  An exception is throww if @p AI==@p AJ and if @p AI, @p AJ, @p AK or @p AL is not included in [0,7]
+             *
+             * @param AI local index of a node in the face
+             * @param AJ local index of a node in the face
+             * @param AK local index of a node in the face
+             * @param AL local index of a node in the face
+             * @return the edge connecting the two input nodes
+		 */
+		Face getFace(const int AI, const int AJ, const int AK, const int AL);
+
 		Node operator()(const int AI, const int AJ, const int AK);
 		Edge getEdgeI();
 		Edge getEdgeJ();
@@ -131,6 +166,11 @@ class GMDSIg_API Blocking3D : public Mesh
 		       * @return true if the face is on K=max, false otherwise
 		 */
 		bool isFaceKmax(TCellID AfID);
+		/** @brief Return the two adjacent block faces to edge @p AeID in the block.
+		       *
+		       * @param AeID a edge id
+		 */
+		std::vector<TCellID> getEdgeFaces(TCellID AeID);
 		/** Compute positions of nodes of the Face (AI, AJ, AK, AL), according to the positions
 		 * of the nodes on each edges.
              * @param AI local index of a node in the face
@@ -146,28 +186,7 @@ class GMDSIg_API Blocking3D : public Mesh
 		void computeInnerBlockNodesPoints();
 
 	 private:
-		/** Access to the edge with local index @p AI and @p AJ in the
-             *  current face
-             *
-             *  An exception is throww if @p AI==@p AJ and if @p AI or @p AJ is not included in [0,3]
-             *
-             * @param AI local index of a node in the face
-             * @param AJ local index of a node in the face
-             * @return the edge connecting the two input nodes
-		 */
-		Edge getEdge(const int AI, const int AJ);
-		/** Access to the face with local index @p AI, @p AJ, @p AK and @p AL in the
-             *  current hex
-             *
-             *  An exception is throww if @p AI==@p AJ and if @p AI, @p AJ, @p AK or @p AL is not included in [0,7]
-             *
-             * @param AI local index of a node in the face
-             * @param AJ local index of a node in the face
-             * @param AK local index of a node in the face
-             * @param AL local index of a node in the face
-             * @return the edge connecting the two input nodes
-		 */
-		Face getFace(const int AI, const int AJ, const int AK, const int AL);
+
 	 private:
 		/** @brief private constructor, only a Blocking2D instance can
              *         construct such an object.

@@ -925,8 +925,9 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 		vtkWriter_MFEM.write("AeroPipeline2D_MFEM_INPUT.vtk");
 	}
 
-	MFEMMeshWriter mfemwriter = MFEMMeshWriter(m_meshHex, "Apollo_MFEM_INPUT_toFit");
-	mfemwriter.execute();
+
+	//MFEMMeshWriter mfemwriter = MFEMMeshWriter(m_meshHex, "Apollo_MFEM_INPUT_toFit");
+	//mfemwriter.execute();
 
 
 	BoundaryCurvedBlocking();
@@ -1732,7 +1733,7 @@ AeroPipeline_2D::BoundaryCurvedBlocking()
 	std::cout << "Boundary Curved Blocking..." << std::endl;
 	Variable<int>* var_couche_ctrlpts = m_Blocking2D_CtrlPts.getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche");
 
-	int degree(4);
+	int degree(m_params.max_degree);
 	for (auto bloc:m_Blocking2D_CtrlPts.allBlocks())
 	{
 		bloc.setNbDiscretizationI(degree+1);
@@ -1904,6 +1905,7 @@ AeroPipeline_2D::BoundaryCurvedBlocking()
 	}
 
 	// Try smoothing ctrl points on edges between two different layers
+	/*
 	FastLocalize fl(m_meshTet);
 
 	Variable<double>* var_distance = m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance");
@@ -2003,7 +2005,7 @@ AeroPipeline_2D::BoundaryCurvedBlocking()
 			}
 		}
 	}
-
+	*/
 
 
 
@@ -2107,7 +2109,7 @@ void
 AeroPipeline_2D::BlockingDiscretizationFromCurvedBlocking()
 {
 	std::cout << "Blocking Discretization from Curved Blocking..." << std::endl;
-	int degree(4);
+	int degree(m_params.max_degree);
 	for (auto bloc:m_Blocking2D.allBlocks())
 	{
 		//int degree(bloc.getNbDiscretizationI()-1);	// We assume here that the order is uniform on the blocking in all directions.

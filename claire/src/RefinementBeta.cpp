@@ -33,6 +33,9 @@ RefinementBeta::execute()
 		longueurs.push_back(sum_size_edges);
 	}
 
+	if (sum_size_edges/Nbr_Points > m_size_first_edge)
+	{
+
 	double Beta = ComputeBeta(m_size_first_edge, sum_size_edges, Nbr_Points) ;
 
 	m_PointsRefined.clear();
@@ -62,6 +65,13 @@ RefinementBeta::execute()
 	}
 
 	m_PointsRefined.push_back(m_Points[Nbr_Points-1]);		// The last position is fixed
+
+	}
+	else
+	{
+		std::cout << "RefinementBeta: init uniform cell size higher than requested first normal cell size." << std::endl;
+		m_PointsRefined = m_Points ;
+	}
 
 	return RefinementBeta::SUCCESS;
 }
