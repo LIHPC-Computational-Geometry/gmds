@@ -2,6 +2,8 @@
 #include <gmds/blocking/CurvedBlockingClassifier.h>
 #include <gmds/utils/Exception.h>
 /*----------------------------------------------------------------------------*/
+#include <limits>
+/*----------------------------------------------------------------------------*/
 using namespace gmds;
 using namespace gmds::blocking;
 /*----------------------------------------------------------------------------*/
@@ -238,8 +240,8 @@ CurvedBlockingClassifier::classify_edges(gmds::blocking::ClassificationErrors &A
 		}
 		else if ((geo_d0==0 && geo_d1==1) || (geo_d0==1 && geo_d1==0)){
 			//we check if the point is adjacent to the curve
-			auto p_id = (geo_d0<geo_d1)?geo_d0:geo_d1;
-			auto c_id = (geo_d0>geo_d1)?geo_d0:geo_d1;
+			auto p_id = (geo_d0<geo_d1)?geo_i0:geo_i1;
+			auto c_id = (geo_d0>geo_d1)?geo_i0:geo_i1;
 			cad::GeomPoint* p = m_geom_model->getPoint(p_id);
 			cad::GeomCurve* c = m_geom_model->getCurve(c_id);
 			std::vector<cad::GeomPoint*> c_points = c->points();
@@ -664,13 +666,14 @@ CurvedBlockingClassifier::get_cut_info(int pointId, std::vector<std::vector<Curv
 
 	auto listEdgesPara = m_blocking->get_all_sheet_edge_sets();
 	std::vector<gmds::blocking::CurvedBlocking::Edge > listEdgesSplitable;
-	unsigned int distMini = 1000;
+	double distMini = std::numeric_limits<double>::max();
 	for(auto edges : listEdgesPara){
 		auto projInfo = m_blocking->get_projection_info(p,edges);
 		for(int i =0; i< projInfo.size();i++){
 			if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
 				paramCut.first = edges.at(i);
 				paramCut.second = projInfo[i].second;
+				distMini=projInfo[i].first;
 			}
 		}
 	}
