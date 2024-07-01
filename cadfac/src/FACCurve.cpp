@@ -217,7 +217,7 @@ FACCurve::project(math::Point &AP, math::Vector3d &AV) const
 	std::vector<Node> e_nodes = e.get<Node>();
 	math::Segment s(e_nodes[0].point(), e_nodes[1].point());
 	AP = s.project(AP);
-	AV = e_nodes[1].point() - e_nodes[1].point();
+	AV = e_nodes[1].point() - e_nodes[0].point();
 }
 /*----------------------------------------------------------------------------*/
 TCoord
