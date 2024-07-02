@@ -649,12 +649,6 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
     void capt_element(const int AnIdElement, const int ADim);
 
-    /**\brief return the parameters for do the cut_sheet
-	 * @param[in] pointId 		A point id
-	 * @return return the parameters for the cut, we get the edge (first) and the parameter included in ]0,1[(second)
-	 */
-    std::pair<CurvedBlocking::Edge, double> get_cut_info(int pointId);
-
     /**\brief return if a cut is possible
 	 * @param[in] pointId 		A point id
 	 * @param[in] AllEdges 	all the edges of the blocking
