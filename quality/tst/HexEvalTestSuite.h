@@ -75,4 +75,14 @@ TEST(HexQualityTestClass, test2)
 		ASSERT_NEAR(he.oddy(), 2.3811, 0.01);
 		ASSERT_NEAR(he.taper(), 0, 0.01);
 
+	   HexQuality hq = HexQuality::build(math::Point(0,0,0),
+	                                     math::Point(0,1,0),
+	                                     math::Point(1,1,0),
+	                                     math::Point(1,0,0),
+	                                     math::Point(-0.7,0,0.4),
+	                                     math::Point(-0.7,1,0.4),
+	                                     math::Point(0.3,1,0.4),
+	                                     math::Point(0.3,0,0.4));
+	   std::cout << "Skew: " << hq.skew() << std::endl;
+
 }
