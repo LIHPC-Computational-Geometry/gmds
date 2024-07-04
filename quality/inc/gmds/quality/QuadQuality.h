@@ -31,6 +31,7 @@ struct GMDSQuality_API QuadQuality
 	double angleDeviation() const;
 	double minAngle() const;
 	double maxAngle() const;
+	double skew() const;
 
 	math::Vector3d L0() const { return p[1]- p[0];}
 	math::Vector3d L1() const { return p[2]- p[1];}

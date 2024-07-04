@@ -79,3 +79,15 @@ QuadQuality::maxAngle() const {
 	throw GMDSException("Not yet implemented!");
 }
 /*---------------------------------------------------------------------------*/
+double
+QuadQuality::skew() const {
+
+	if(X1().norm() <= std::numeric_limits<double>::min())
+		return 0;
+	if(X2().norm() <= std::numeric_limits<double>::min())
+		return 0;
+
+	return std::fabs(X1().normalize().dot(X2().normalize()));
+}
+
+/*---------------------------------------------------------------------------*/
