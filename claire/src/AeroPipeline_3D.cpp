@@ -125,7 +125,7 @@ AeroPipeline_3D::execute(){
 
 
 	// Smoothing Linear Block Structure
-	int nbr_iter_smoothing(4);
+	int nbr_iter_smoothing(0);
 	for (int i=0;i<nbr_iter_smoothing;i++)
 	{
 		std::map<TCellID, math::Point> new_pos;
@@ -211,7 +211,7 @@ AeroPipeline_3D::execute(){
 	 */
 
 	// Init the Blocking3D from the hex mesh
-	std::cout << "-> Init the Blocking3D structure from the Hex mesh" << std::endl;
+	std::cout << "-> Init & Curve the Blocking3D structure from the Hex mesh" << std::endl;
 	t_start = clock();
 	initBlocking3DfromMesh();
 	updateLayerValues();
@@ -233,13 +233,13 @@ AeroPipeline_3D::execute(){
 	// Init the Blocking3D from the hex mesh
 
 	std::cout << "-> Boundary Layer Refinement" << std::endl;
-	/*
 	t_start = clock();
+	/*
 	Variable<int>* var_couche_blocking = m_Blocking3D.getOrCreateVariable<int, GMDS_NODE>("GMDS_Couche");
 	RefinementBetaBlocking3D algo_ref = RefinementBetaBlocking3D(&m_Blocking3D, var_couche_blocking, m_params.edge_size_first_ortho_wall);
 	algo_ref.execute();
-	t_end = clock();
 	 */
+	t_end = clock();
 	std::cout << "........................................ temps : " << 1.0*double(t_end-t_start)/CLOCKS_PER_SEC << "s" << std::endl;
 	std::cout << " " << std::endl;
 
