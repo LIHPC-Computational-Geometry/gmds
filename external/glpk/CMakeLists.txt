@@ -39,6 +39,8 @@ else() # unix and macos
     else()
         set(GLPK_LIBNAME "libglpk.a")
     endif()
+    set(GLPK_INC ${CMAKE_SOURCE_DIR}/external/glpk/src/glpk/src)
+    message(${GLPK_INC})
 
     set_target_properties(glpk PROPERTIES
              IMPORTED_LOCATION ${GLPK_LIB}/${GLPK_LIBNAME}

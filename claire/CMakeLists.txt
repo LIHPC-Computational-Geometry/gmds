@@ -48,7 +48,6 @@ set(GMDS_INC
 		inc/gmds/claire/NodeNeighbourhoodOnFront_3D.h
 		inc/gmds/claire/MeshAlignment_2D.h
 		inc/gmds/claire/IntervalAssignment_3D.h
-		inc/gmds/claire/FrontPaths_3D.h
 		inc/gmds/claire/LayerStructureManager_3D.h
 		inc/gmds/claire/AbstractPatternNode.h
 		inc/gmds/claire/PatternNode3Corner.h
@@ -67,11 +66,8 @@ set(GMDS_INC
 		inc/gmds/claire/MFEMMeshWriter.h
 		inc/gmds/claire/ControlPointsSmoothing_2D.h
 		inc/gmds/claire/Blocking3D.h
-		inc/gmds/claire/RefinementBetaBlocking3D.h
 		inc/gmds/claire/SU2Writer_3D.h
 		inc/gmds/claire/ComputeBezierDegree_3D.h
-		inc/gmds/claire/ComputeBezierCtrlPtstoInterpolateSurface.h
-		inc/gmds/claire/ComputeBezierCurveCtrlPtstoInterpolateCurve.h
 		inc/gmds/claire/RefinementBetaBlock3D.h
 		)
 set(GMDS_SRC
@@ -116,7 +112,6 @@ set(GMDS_SRC
 		src/NodeNeighbourhoodOnFront_3D.cpp
 		src/MeshAlignment_2D.cpp
 		src/IntervalAssignment_3D.cpp
-		src/FrontPaths_3D.cpp
 		src/LayerStructureManager_3D.cpp
 		src/AbstractPatternNode.cpp
 		src/PatternNode3Corner.cpp
@@ -136,11 +131,8 @@ set(GMDS_SRC
 		src/ControlPointsSmoothing_2D.cpp
 		src/Blocking3D.cpp inc/gmds/claire/TransfiniteInterpolation_3D.h
 		src/TransfiniteInterpolation_3D.cpp
-		src/RefinementBetaBlocking3D.cpp
 		src/SU2Writer_3D.cpp
 		src/ComputeBezierDegree_3D.cpp
-		src/ComputeBezierCtrlPtstoInterpolateSurface.cpp
-		src/ComputeBezierCurveCtrlPtstoInterpolateCurve.cpp
 		src/RefinementBetaBlock3D.cpp)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})

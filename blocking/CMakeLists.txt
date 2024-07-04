@@ -16,7 +16,9 @@ set(GMDS_INC
         inc/gmds/blocking/SheetCollapse.h)
 
 if(WITH_CGNS)
-    set(GMDS_INC ${GMDS_INC} inc/gmds/blocking/CGNSWriter.h)
+    set(GMDS_INC ${GMDS_INC}
+            inc/gmds/blocking/CGNSWriter.h
+            inc/gmds/blocking/CGNSWriter3D.h)
 endif()
 
 set(GMDS_SRC
@@ -30,7 +32,9 @@ set(GMDS_SRC
         )
 
 if(WITH_CGNS)
-    set(GMDS_SRC ${GMDS_SRC} src/CGNSWriter.cpp)
+    set(GMDS_SRC ${GMDS_SRC}
+            src/CGNSWriter.cpp
+            src/CGNSWriter3D.cpp)
 endif()
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
