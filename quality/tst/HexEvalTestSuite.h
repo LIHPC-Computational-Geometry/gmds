@@ -76,3 +76,18 @@ TEST(HexQualityTestClass, test2)
 		ASSERT_NEAR(he.taper(), 0, 0.01);
 
 }
+/*----------------------------------------------------------------------------*/
+TEST(HexQualityTestClass, test3)
+{
+	   HexQuality he = HexQuality::build(math::Point(188,28,29),
+	                                     math::Point(191,28,29),
+	                                     math::Point(191,31,26),
+	                                     math::Point(188,31,26),
+	                                     math::Point(188,27,28),
+	                                     math::Point(191,27,28),
+	                                     math::Point(191,29,25),
+	                                     math::Point(188,29,25));
+
+	   ASSERT_NEAR(he.skew(), 0.106, 0.01);
+
+}
