@@ -186,9 +186,9 @@ double HexQuality::skew() const {
 		return 0;
 
 	double sk[3] ={
-	      std::fabs(X1().dot(X2())),
-	      std::fabs(X1().dot(X3())),
-	      std::fabs(X2().dot(X3()))};
+	      std::fabs(X1().normalize().dot(X2().normalize())),
+	      std::fabs(X1().normalize().dot(X3().normalize())),
+	      std::fabs(X2().normalize().dot(X3().normalize()))};
 
 	return *std::max_element(sk,sk+3);
 }
