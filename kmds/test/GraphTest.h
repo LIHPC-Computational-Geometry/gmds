@@ -98,17 +98,17 @@ TEST_F(GraphTest, neighbors)
 {
     kmds::Graph gr("GRAPH_TEST", 5, 20);
     EXPECT_EQ(gr.getNbVec(), 5);
-    EXPECT_EQ(gr.getNbEdges(), 0);
+    EXPECT_EQ(gr.getNbEdges(0), 0);
 
     std::set<kmds::TCellID> nids0 = {1,4};
     gr.setNeighbors(0, nids0);
-    EXPECT_EQ(gr.getNbEdges(), 2);
+    EXPECT_EQ(gr.getNbEdges(0), 2);
     EXPECT_TRUE(gr.isNeighbor(0,4));
     EXPECT_FALSE(gr.isNeighbor(0,3));
 
     std::vector<kmds::TCellID> nids3 = {0,1,4};
     gr.setNeighbors(3, nids3);
-    EXPECT_EQ(gr.getNbEdges(), 5);
+    EXPECT_EQ(gr.getNbEdges(0), 5);
     EXPECT_TRUE(gr.isNeighbor(3,0));
     EXPECT_FALSE(gr.isNeighbor(0,3));
 
@@ -136,7 +136,7 @@ TEST_F(GraphTest, neighbors)
     EXPECT_TRUE(gr.isNeighbor(3,1));
     std::vector<kmds::TCellID> nids3_bis = {0,4};
     gr.setNeighbors(3, nids3_bis);
-    EXPECT_EQ(gr.getNbEdges(), 4);
+    EXPECT_EQ(gr.getNbEdges(0), 4);
     EXPECT_TRUE(gr.isNeighbor(3,0));
     EXPECT_FALSE(gr.isNeighbor(0,3));
     EXPECT_FALSE(gr.isNeighbor(3,1));

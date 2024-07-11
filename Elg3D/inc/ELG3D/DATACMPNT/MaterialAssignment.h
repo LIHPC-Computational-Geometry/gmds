@@ -151,7 +151,11 @@ namespace elg3d {
          */
         void updateCapacity(const kmds::TSize ASize);
 
-    private:
+	     void reset();
+
+	     void assign(kmds::TCellID i, int i1);
+
+	   private:
 
         /* mapping between material ids and their names */
         std::map<int, std::string> m_matId2Name;
@@ -165,8 +169,6 @@ namespace elg3d {
         /* mapping between cells and their material assignment, for each material */
         //std::map<kmds::TCellID, int> m_cells2Mat;
         Kokkos::View<int *> m_cells2Mat;
-
-
     };
 /*----------------------------------------------------------------------------*/
 }  // end namespace elg3d

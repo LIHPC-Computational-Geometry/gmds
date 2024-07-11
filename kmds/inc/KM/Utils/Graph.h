@@ -55,7 +55,7 @@ class Graph
      *
      *  \return the number of edges
      */
-    TCellID getNbEdges() const;
+	     TCellID getNbEdges(TCellID i) const;
 
         /*------------------------------------------------------------------------*/
         /** \brief Set the neighbors of a vertex
@@ -151,6 +151,9 @@ class Graph
         Kokkos::View<TCellID**> m_neighbors;
 
         std::vector<kmds::GrowingView<kmds::TCellID> > m_colorsets;
+	     kmds::TCellID vecID(int i);
+	     kmds::TCellID getVecID(int i, TCellID i1);
+	     kmds::TCellID getEdgeDest(int i, int i1);
 };
 /*----------------------------------------------------------------------------*/
 }  // end namespace kmds

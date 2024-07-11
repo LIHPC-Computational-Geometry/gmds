@@ -1,4 +1,8 @@
-add_library(glpk SHARED IMPORTED GLOBAL)
+add_library(glpk SHARED IMPORTED GLOBAL
+        src/glpk/examples/exemple_glpk_solveurMIP.cpp
+        src/glpk/examples/exemple_glpk_solveurMIP.h
+        src/glpk/examples/exemple_glpk_solveurMIP.h
+        src/glpk/examples/exemple_glpk_solveurMIP.h)
 
 # CMake doesn't allow to install IMPORTED libraries as TARGETS
 # -> https://stackoverflow.com/questions/41175354/can-i-install-shared-imported-library

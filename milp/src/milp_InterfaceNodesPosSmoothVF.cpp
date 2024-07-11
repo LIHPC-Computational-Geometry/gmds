@@ -2329,7 +2329,7 @@ namespace milp {
         // neighboring similarity
         nbRows += nbVert * nbMat;
         nbCols += 2 * nbVert * nbMat;
-        nnz += 3 * nbVert * nbMat + nbMat * AGraph->getNbEdges();
+        nnz += 3 * nbVert * nbMat + nbMat * AGraph->getNbEdges(0);
 
         // pure pixels
         nbRows += vert2puremat.size();
@@ -2514,7 +2514,7 @@ namespace milp {
         glp_init_iocp(&glpParams);
         glpParams.presolve = GLP_ON;
 
-        glpParams.tm_lim = 300000;
+        glpParams.tm_lim = 600000;
 //        glpParams.ps_heur = GLP_ON;
 
         glp_write_lp(lp, NULL, "cplex.txt");

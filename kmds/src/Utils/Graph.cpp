@@ -23,7 +23,7 @@ namespace kmds {
     }
 /*----------------------------------------------------------------------------*/
     TCellID
-    Graph::getNbEdges() const
+    Graph::getNbEdges(TCellID i) const
     {
         int s = 0;
         Kokkos::parallel_reduce(this->getNbVec(),
@@ -536,6 +536,21 @@ namespace kmds {
             std::cout<<std::endl;
         }
     }
-/*----------------------------------------------------------------------------*/
+    kmds::TCellID
+    Graph::vecID(int i)
+    {
+	    return 0;
+    }
+    kmds::TCellID
+    Graph::getVecID(int i, TCellID i1)
+    {
+	    return 0;
+    }
+    kmds::TCellID
+    Graph::getEdgeDest(int i, int i1)
+    {
+	    return 0;
+    }
+    /*----------------------------------------------------------------------------*/
 }  // namespace kmds
 /*----------------------------------------------------------------------------*/

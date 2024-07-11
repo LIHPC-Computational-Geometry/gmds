@@ -40,7 +40,7 @@ namespace milp {
                                            const kmds::Variable<kmds::TCellID> *AVarOldCells2firstSubCells,
                                            const kmds::Variable<bool> *AVarMixedCells_source,
                                            const kmds::Variable<kmds::TCellID> *AVarCells2vertices,
-                                           const kmds::Graph *AGraph,
+                                           kmds::Graph *AGraph,
                                            const int ANbSubPixels);
 
 

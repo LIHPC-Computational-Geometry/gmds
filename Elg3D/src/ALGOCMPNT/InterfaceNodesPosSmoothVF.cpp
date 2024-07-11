@@ -3827,7 +3827,7 @@ namespace elg3d {
         // neighboring similarity
         nbRows += nbVert * nbMat;
         nbCols += 2 * nbVert * nbMat;
-        nnz += 3 * nbVert * nbMat + nbMat * AGraph->getNbEdges();
+        nnz += 3 * nbVert * nbMat + nbMat * AGraph->getNbEdges(0);
 
         // pure pixels
         nbRows += vert2puremat.size();
@@ -4164,7 +4164,7 @@ namespace elg3d {
         // neighboring similarity
         nbRows += nbVert * nbMat;
         nbCols += 2 * nbVert * nbMat;
-        nnz += 3 * nbVert * nbMat + nbMat * AGraph->getNbEdges();
+        nnz += 3 * nbVert * nbMat + nbMat * AGraph->getNbEdges(0);
 
         // pure pixels
         nbRows += vert2puremat.size();
