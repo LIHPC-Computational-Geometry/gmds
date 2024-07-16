@@ -2514,7 +2514,7 @@ namespace milp {
         glp_init_iocp(&glpParams);
         glpParams.presolve = GLP_ON;
 
-        glpParams.tm_lim = 600000;
+        glpParams.tm_lim = 3600000;// limite de temps de 1 heure
 //        glpParams.ps_heur = GLP_ON;
 
         glp_write_lp(lp, NULL, "cplex.txt");
@@ -2551,7 +2551,8 @@ namespace milp {
             default:
                 throw kmds::KException("SubMapping::boundaryDiscretization glp_intopt unknown return code.");
         }
-
+        double z = glp_mip_obj_val(lp);
+	     std::cout << "Objective value après 1 heure:"<<z << std::endl;
         glp_print_mip(lp, "pixelAssignment.txt");
 
         for (int i = 0; i < nbCells_target; i++) {
