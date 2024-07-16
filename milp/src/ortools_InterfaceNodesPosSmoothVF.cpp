@@ -6,7 +6,7 @@
  *  \author  legoff
  *  \date    09/30/2018
  */
-/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/  
 #include "ELG3D/ALGOCMPNT/InterfaceNodesPosSmoothVF.h"
 /*----------------------------------------------------------------------------*/
 // stl File Headers
@@ -191,51 +191,51 @@ InterfaceNodesPosSmoothVF_assignORTOOLS_xD(const kmds::GrowingView<kmds::TCellID
 			kmds::TCellID subCid_first = (*AVarOldCells2firstSubCells)[cid];     // si oui , subCid_first obtient l'id de la 1ère sous-cellule associée à cid
 			int sum_vf2int = 0;                                                  // on initialise une somme pour vérifier les fractions volumiques
 			for (int imat = 0; imat < nbMat; imat++) {                           // parcours chaque matériau imat
-				std::string row_name = "vfpreserve_" + std::to_string(cid) + "_" + std::to_string(imat);
+				std::string row_name = "vfpreserve_" + std::to_string(cid) + "_" + std::to_string(imat);//  Crée un nom pour la contrainte
 				operations_research::MPConstraint *C0 =
-				   solver.MakeRowConstraint(ANbSubPixels * Afp_source->getFracPres(imat, cid), ANbSubPixels * Afp_source->getFracPres(imat, cid), row_name);
+				   solver.MakeRowConstraint(ANbSubPixels * Afp_source->getFracPres(imat, cid), ANbSubPixels * Afp_source->getFracPres(imat, cid), row_name);// ajoute une contrainte sur la fraction volumique du matériau dans la cellule
 				if (C0 == nullptr) {     // on vérifie si la contrainte a bien été créée
 					std::cerr << "Failed to create constraint for" << row_name << std::endl;
 					return;
 				}
-				int vf2int = ANbSubPixels * Afp_source->getFracPres(imat, cid);
-				for (int isub = 0; isub < ANbSubPixels; isub++) {
+				int vf2int = ANbSubPixels * Afp_source->getFracPres(imat, cid);// Calcul la fraction volumique du matériau
+				for (int isub = 0; isub < ANbSubPixels; isub++) { // parcoirs chaque sous-cellule
 					kmds::TCellID vert = (*AVarCells2vertices)[subCid_first + isub];
-					C0->SetCoefficient(variables[vert * nbMat + imat], 1.0);
+					C0->SetCoefficient(variables[vert * nbMat + imat], 1.0);//ajoute les coefficients à la contrainte
 				}
-				sum_vf2int += vf2int;
+				sum_vf2int += vf2int;// Ajoute la fraction volumique à la somme
 			}
-			if (sum_vf2int != ANbSubPixels) {
+			if (sum_vf2int != ANbSubPixels) {// vérifie si la somme des fractions volumiques est égale au nombre de sous-pixels
 				std::cout << "sum_vf2int " << sum_vf2int << std::endl;
 				throw kmds::KException("InterfaceNodesPosSmoothVF_buildSubGraph_glpk_2D : sum_vf2int not equal to number of pixels.");
 			}
 		}
 	}
-	std::cout << "Contraintes du pourcentage de la fraction volumique par cellule ajoutées avec succès" << std::endl;
+	std::cout << "Contraintes du pourcentage de la fraction volumique par cellule ajoutées avec succès" << std::endl;// fin de la boucle et affiche un message de confirmation
 
 	//============================================================================================================================================================================================
 
-	operations_research::MPObjective *const objective = solver.MutableObjective();
-	for (int p = 0; p < nbVert; p++) {
-		for (int imat = 0; imat < nbMat; imat++) {
-			std::string col_pos_name = "neighbourcolor_pos_" + std::to_string(p) + "_" + std::to_string(imat);
-			operations_research::MPVariable *var_pos = solver.MakeNumVar(0.0, solver.infinity(), col_pos_name);
-			variables.push_back(var_pos);
-			solver.MutableObjective()->SetCoefficient(var_pos, 1.0);
-			std::string col_neg_name = "neighbourcolor_neg_" + std::to_string(p) + "_" + std::to_string(imat);
-			operations_research::MPVariable *var_neg = solver.MakeNumVar(0.0, solver.infinity(), col_neg_name);
-			variables.push_back(var_neg);
-			solver.MutableObjective()->SetCoefficient(var_neg, 1.0);
+	operations_research::MPObjective *const objective = solver.MutableObjective();// Initialise l'objectif du solveur
+	for (int p = 0; p < nbVert; p++) {// parcours chaque pixel p
+		for (int imat = 0; imat < nbMat; imat++) {// parcours chaque matériau imat
+			std::string col_pos_name = "neighbourcolor_pos_" + std::to_string(p) + "_" + std::to_string(imat);/ Crée une variable var_pos pour la contrainte de couleur positive du voisin
+			operations_research::MPVariable *var_pos = solver.MakeNumVar(0.0, solver.infinity(), col_pos_name);// crée une variable avec les bornes de 0 à l'infini
+			variables.push_back(var_pos);// ajoute un élément à la fin du vecteur variables ce qui augmente la taille du vecteur de un à chaque ajout(le nouvel élément est placé à la fin du vecteur)
+			solver.MutableObjective()->SetCoefficient(var_pos, 1.0);//définit son coefficient comme 1
+			std::string col_neg_name = "neighbourcolor_neg_" + std::to_string(p) + "_" + std::to_string(imat);// Crée une variable var_pos pour la contrainte de couleur négative du voisin
+			operations_research::MPVariable *var_neg = solver.MakeNumVar(0.0, solver.infinity(), col_neg_name);// crée une variable avec les bornes de 0 à l'infini
+			variables.push_back(var_neg);// ajoute un élément à la fin du vecteur variables ce qui augmente la taille du vecteur de un à chaque ajout(le nouvel élément est placé à la fin du vecteur)
+			solver.MutableObjective()->SetCoefficient(var_neg, 1.0);//définit son coefficient comme 1
 			std::string row_name = "neighbourcolor_abs_" + std::to_string(p) + "_" + std::to_string(imat);
-			operations_research::MPConstraint *C1 = solver.MakeRowConstraint(0.0, 0.0, row_name);
+			operations_research::MPConstraint *C1 = solver.MakeRowConstraint(0.0, 0.0, row_name);//crée une contrainte C1 pour la couleur absolue du voisin et où la somme des coefficient doit être égale à 0
 			if (C1 == nullptr) {     // on vérifie si la contrainte a bien été créée
 				std::cerr << "Failed to create constraint for" << row_name << std::endl;
 				return;
 			}
-			C1->SetCoefficient(variables[p * nbMat + imat], 1.0);
+			C1->SetCoefficient(variables[p * nbMat + imat], 1.0);//définit les coefficient de la contrainte C1
 			C1->SetCoefficient(variables[nbVert * nbMat + 2 * (p * nbMat + imat) + 0], 1.0);
 			C1->SetCoefficient(variables[nbVert * nbMat + 2 * (p * nbMat + imat) + 1], -1.0);
-			Kokkos::View<kmds::TCellID *> neighbors;
+			Kokkos::View<kmds::TCellID *> neighbors; // gère les contributions des voisins dans la contrainte C1
 			int nb = AGraph->getNeighbors(p, neighbors);
 
 			for (int in = 0; in < neighbors.size(); in++) {
@@ -244,8 +244,8 @@ InterfaceNodesPosSmoothVF_assignORTOOLS_xD(const kmds::GrowingView<kmds::TCellID
 		}
 	}
 
-	objective->SetMinimization();
-	std::cout << "Contraintes d'ajout des voisins ajoutées avec succès" << std::endl;
+	objective->SetMinimization();//indique au solveur que l'objectif est de minimiser la somme des coefficient définis
+	std::cout << "Contraintes d'ajout des voisins ajoutées avec succès" << std::endl;// affiche un message de confirmation
 	for (int p = 0; p < nbVert; p++) {     // Boucle sur chaque pixel p pour vérifier s’il est dans vert2puremat.
 		if (vert2puremat.find(p) != vert2puremat.end()) {
 			int imat = vert2puremat[p];     // Définit les contraintes pour les pixels purs en associant les pixels aux matériaux connus.
@@ -254,29 +254,29 @@ InterfaceNodesPosSmoothVF_assignORTOOLS_xD(const kmds::GrowingView<kmds::TCellID
 			C2->SetCoefficient(variables[p * nbMat + imat], 1.0);
 		}
 	}
-	std::cout << "Contraintes de vérifications des pixels purs  ajoutées avec succès" << std::endl;
+	std::cout << "Contraintes de vérifications des pixels purs  ajoutées avec succès" << std::endl;// affiche un message de confirmation de l'ajout des contraintes
 
 	// convertit
-	std::cout << "row" << solver.NumConstraints() << " irow " << irow << std::endl;
+	std::cout << "row" << solver.NumConstraints() << " irow " << irow << std::endl;//Affiche le nombre de contraintes, de variables, et d'éléments non nuls
 	std::cout << "col" << solver.NumVariables() << " icol " << icol << std::endl;
 	std::cout << "nnz " << nnz << " innz " << innz << std::endl;
 
-	solver.SetTimeLimit(absl::Milliseconds(600000));
-	operations_research::MPSolver::ResultStatus result_status = solver.Solve();
+	solver.SetTimeLimit(absl::Milliseconds(600000));// définit une limite de temps de 10 minutes pour la résolution
+	operations_research::MPSolver::ResultStatus result_status = solver.Solve(); // lance la résolution et retourne un status du résultat
 	// Check that the problem has an optimal solution.
-	if (result_status != operations_research::MPSolver::OPTIMAL) {
+	if (result_status != operations_research::MPSolver::OPTIMAL) {//vérifie si le problème a une solution optimale
 		std::cerr << "le problème n'a pas de solution optimal." << std::endl;
 	}
-	std::cout << "Objective value =" << solver.Objective().Value() << std::endl;
+	std::cout << "Objective value =" << solver.Objective().Value() << std::endl;//affiche la valeur de l'objectif obtenue
 
 	// converit
-	operations_research::MPSolverParameters param;
+	operations_research::MPSolverParameters param;//définit des paramètres supplémentaires pour le solveur et vérifie si le résultat est optimal ou faisable
 	param.SetIntegerParam(operations_research::MPSolverParameters::PRESOLVE, operations_research::MPSolverParameters::PRESOLVE_ON);
 	if (result_status != operations_research::MPSolver::OPTIMAL && result_status != operations_research::MPSolver::FEASIBLE) {
 		std::cout << "Le probleme n'a pas de solution optimale." << std::endl;
 	}     // a mettre en commentaires puis tester code en haut
 
-	switch (result_status) {
+	switch (result_status) {//affiche des messages en fonction du statut du résultat
 	case operations_research::MPSolver::OPTIMAL: std::cout << "MIP solution est un entier" << std::endl; break;
 	case operations_research::MPSolver::FEASIBLE: std::cout << "La solution MIP est un entier, est faisable" << std::endl; break;
 	case operations_research::MPSolver::INFEASIBLE: std::cerr << "Le problème est infaisable." << std::endl; break;
@@ -284,24 +284,24 @@ InterfaceNodesPosSmoothVF_assignORTOOLS_xD(const kmds::GrowingView<kmds::TCellID
 	default: throw std::runtime_error("SubMapping::boundaryDiscretization unknown return code.");
 	}
 
-	if (result_status == operations_research::MPSolver::OPTIMAL || result_status == operations_research::MPSolver::FEASIBLE) {
+	if (result_status == operations_research::MPSolver::OPTIMAL || result_status == operations_research::MPSolver::FEASIBLE) {// si le résultat est optimal ou faisable, écrit les valeurs des variables dans un fichier qui aura été ouvert au préalable
 		// Continuez avec votre logique actuelle.
 		std::ofstream solution_file("pixelAssignment.txt");
 		if (!solution_file) {
 			std::cout << "No such file";
 		}
-		if (solution_file.is_open()) {
+		if (solution_file.is_open()) {// comme précdemment, ouvre un fichier pour écrire les résultats et parcours chaque variable pour écrire sa valeur dans le fichier
 			for (int i = 0; i < solver.NumVariables(); i++) {
 				solution_file << "variable" << i << ":Value=" << solver.variable(i)->solution_value() << std::endl;
 			}
-			solution_file.close();
+			solution_file.close();// ferme le fichier
 		}
 
-		for (int i = 0; i < nbCells_target; i++) {
+		for (int i = 0; i < nbCells_target; i++) { // parcours chaque cellule cible
 			kmds::TCellID cid = ACellsIDs_target->get(i);
 
 			kmds::TCellID vert = (*AVarCells2vertices)[cid];
-			if (vert != kmds::NullID) {
+			if (vert != kmds::NullID) {// si un matériau est trouvé pour une cellule,l'assigne a cette cellule
 				int mat = nbMat;     // default
 				bool found = false;
 				for (int imat = 0; imat < nbMat; imat++) {
@@ -317,11 +317,11 @@ InterfaceNodesPosSmoothVF_assignORTOOLS_xD(const kmds::GrowingView<kmds::TCellID
 				Ama_target->setMaterial(mat, cid);
 			}
 		}
-		std::cout << "Assignation des matériaux effectuée" << std::endl;
+		std::cout << "Assignation des matériaux effectuée" << std::endl;// affiche un message de confirmation à la fin
 	}
 	else {
 		// Gérer les cas où le problème n'est pas résolu de manière optimale ou faisable.
-		std::cerr << "Le problème n'a pas été résolu de manière optimale ou faisable." << std::endl;
+		std::cerr << "Le problème n'a pas été résolu de manière optimale ou faisable." << std::endl;//affiche  un message d'erreur si le problème n'a pas été résolu de manière optimale ou faisable
 	}
 }
 }
