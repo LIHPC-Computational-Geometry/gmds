@@ -94,7 +94,7 @@ jobs:
       shell: bash
       run: |
         if ${{ matrix.config == 'Release'}}; then
-            ctest -C $BUILD_TYPE
+            ctest -C ${{ matrix.config }}
         else
             export CODACY_PROJECT_TOKEN=6812888e69b348239217c607f514f024
             make code_cover_gmds
