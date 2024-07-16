@@ -220,9 +220,11 @@ InterfaceNodesPosSmoothVF_assignORTOOLS_xD(const kmds::GrowingView<kmds::TCellID
 		for (int imat = 0; imat < nbMat; imat++) {
 			std::string col_pos_name = "neighbourcolor_pos_" + std::to_string(p) + "_" + std::to_string(imat);
 			operations_research::MPVariable *var_pos = solver.MakeNumVar(0.0, solver.infinity(), col_pos_name);
+			variables.push_back(var_pos);
 			solver.MutableObjective()->SetCoefficient(var_pos, 1.0);
 			std::string col_neg_name = "neighbourcolor_neg_" + std::to_string(p) + "_" + std::to_string(imat);
 			operations_research::MPVariable *var_neg = solver.MakeNumVar(0.0, solver.infinity(), col_neg_name);
+			variables.push_back(var_neg);
 			solver.MutableObjective()->SetCoefficient(var_neg, 1.0);
 			std::string row_name = "neighbourcolor_abs_" + std::to_string(p) + "_" + std::to_string(imat);
 			operations_research::MPConstraint *C1 = solver.MakeRowConstraint(0.0, 0.0, row_name);
@@ -231,15 +233,17 @@ InterfaceNodesPosSmoothVF_assignORTOOLS_xD(const kmds::GrowingView<kmds::TCellID
 				return;
 			}
 			C1->SetCoefficient(variables[p * nbMat + imat], 1.0);
-			C1->SetCoefficient(variables[nbVert * nbMat], 1.0);
-			C1->SetCoefficient(variables[nbVert * nbMat], -1.0);
+			C1->SetCoefficient(variables[nbVert * nbMat + 2 * (p * nbMat + imat) + 0], 1.0);
+			C1->SetCoefficient(variables[nbVert * nbMat + 2 * (p * nbMat + imat) + 1], -1.0);
 			Kokkos::View<kmds::TCellID *> neighbors;
+			int nb = AGraph->getNeighbors(p, neighbors);
 
 			for (int in = 0; in < neighbors.size(); in++) {
 				C1->SetCoefficient(variables[neighbors[in] * nbMat + imat], -(1.0 / neighbors.size()));
 			}
 		}
 	}
+
 	objective->SetMinimization();
 	std::cout << "Contraintes d'ajout des voisins ajoutées avec succès" << std::endl;
 	for (int p = 0; p < nbVert; p++) {     // Boucle sur chaque pixel p pour vérifier s’il est dans vert2puremat.
@@ -257,6 +261,7 @@ InterfaceNodesPosSmoothVF_assignORTOOLS_xD(const kmds::GrowingView<kmds::TCellID
 	std::cout << "col" << solver.NumVariables() << " icol " << icol << std::endl;
 	std::cout << "nnz " << nnz << " innz " << innz << std::endl;
 
+	solver.SetTimeLimit(absl::Milliseconds(600000));
 	operations_research::MPSolver::ResultStatus result_status = solver.Solve();
 	// Check that the problem has an optimal solution.
 	if (result_status != operations_research::MPSolver::OPTIMAL) {
@@ -267,7 +272,6 @@ InterfaceNodesPosSmoothVF_assignORTOOLS_xD(const kmds::GrowingView<kmds::TCellID
 	// converit
 	operations_research::MPSolverParameters param;
 	param.SetIntegerParam(operations_research::MPSolverParameters::PRESOLVE, operations_research::MPSolverParameters::PRESOLVE_ON);
-	solver.SetTimeLimit(absl::Milliseconds(300000));
 	if (result_status != operations_research::MPSolver::OPTIMAL && result_status != operations_research::MPSolver::FEASIBLE) {
 		std::cout << "Le probleme n'a pas de solution optimale." << std::endl;
 	}     // a mettre en commentaires puis tester code en haut
