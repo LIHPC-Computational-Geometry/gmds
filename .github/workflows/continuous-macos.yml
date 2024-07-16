@@ -95,6 +95,6 @@ jobs:
         . ${{github.workspace}}/spack/share/spack/setup-env.sh
         spack load py-pytest
         echo $PYTHONPATH
-        ctest -C $BUILD_TYPE
+        ctest -C ${{ matrix.config }}
 
 
