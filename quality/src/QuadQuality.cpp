@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------*/
 #include <gmds/quality/QuadQuality.h>
 #include <iostream>
+#include <limits>
 /*---------------------------------------------------------------------------*/
 using namespace gmds;
 using namespace gmds::quality;
