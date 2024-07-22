@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------*/
 #include <gmds/quality/HexQuality.h>
 #include <algorithm>
+#include <limits>
 /*---------------------------------------------------------------------------*/
 using namespace gmds;
 using namespace gmds::quality;
