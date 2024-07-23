@@ -13,12 +13,11 @@ set(GMDS_INC
         inc/gmds/blocking/InputMarkedDarts.h
         inc/gmds/blocking/SheetInsert.h
         inc/gmds/blocking/WriterDartsVTK.h
-        inc/gmds/blocking/SheetCollapse.h)
+        )
 
 if(WITH_CGNS)
     set(GMDS_INC ${GMDS_INC}
-            inc/gmds/blocking/CGNSWriter.h
-            inc/gmds/blocking/CGNSWriter3D.h)
+            inc/gmds/blocking/CGNSWriter.h)
 endif()
 
 set(GMDS_SRC
@@ -34,7 +33,7 @@ set(GMDS_SRC
 if(WITH_CGNS)
     set(GMDS_SRC ${GMDS_SRC}
             src/CGNSWriter.cpp
-            src/CGNSWriter3D.cpp)
+            )
 endif()
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
@@ -80,6 +79,7 @@ target_link_libraries(${GMDS_LIB} PUBLIC
 
 if(WITH_CGNS)
     target_link_libraries(${GMDS_LIB} PUBLIC
+            ${LIB_GMDS_CLAIRE}
             cgns::cgns
             )
 endif()

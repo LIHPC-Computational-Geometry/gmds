@@ -69,6 +69,8 @@ set(GMDS_INC
 		inc/gmds/claire/SU2Writer_3D.h
 		inc/gmds/claire/ComputeBezierDegree_3D.h
 		inc/gmds/claire/RefinementBetaBlock3D.h
+		inc/gmds/claire/CGNSWriter3D.h
+		inc/gmds/claire/TransfiniteInterpolation_3D.h
 		)
 set(GMDS_SRC
 		src/main.cpp
@@ -129,11 +131,13 @@ set(GMDS_SRC
 		src/PatternNode2End1Reversal.cpp
 		src/MFEMMeshWriter.cpp
 		src/ControlPointsSmoothing_2D.cpp
-		src/Blocking3D.cpp inc/gmds/claire/TransfiniteInterpolation_3D.h
+		src/Blocking3D.cpp
 		src/TransfiniteInterpolation_3D.cpp
 		src/SU2Writer_3D.cpp
 		src/ComputeBezierDegree_3D.cpp
-		src/RefinementBetaBlock3D.cpp)
+		src/RefinementBetaBlock3D.cpp
+		src/CGNSWriter3D.cpp
+		)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

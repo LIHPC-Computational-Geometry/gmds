@@ -29,6 +29,8 @@ class LIB_GMDS_CLAIRE_API AeroPipeline_3D : public AbstractAeroPipeline {
 	AbstractAeroPipeline::STATUS execute() override;
 	/*------------------------------------------------------------------------*/
 
+	Blocking3D* getBlocking();
+
  private:
 	/*------------------------------------------------------------------------*/
 	/** \brief Function to read the initial mesh

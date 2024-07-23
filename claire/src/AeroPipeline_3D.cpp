@@ -23,8 +23,6 @@
 #include <gmds/claire/AeroMeshQuality.h>
 #include <gmds/claire/SU2Writer_3D.h>
 #include <gmds/claire/ComputeBezierDegree_3D.h>
-#include <gmds/claire/ComputeBezierCtrlPtstoInterpolateSurface.h>
-#include <gmds/claire/RefinementBetaBlocking3D.h>
 #include <gmds/quality/HexQuality.h>
 #include <iostream>
 #include <chrono>
@@ -299,25 +297,25 @@ AeroPipeline_3D::EcritureMaillage(){
 	 */
 
 	// Write the initial tet mesh (with fields computed on it)
-	gmds::IGMeshIOService ioService_Tet = IGMeshIOService(m_meshTet);
+	/*gmds::IGMeshIOService ioService_Tet = IGMeshIOService(m_meshTet);
 	gmds::VTKWriter vtkWriter2(&ioService_Tet);
 	vtkWriter2.setCellOptions(gmds::N|gmds::R);
-	vtkWriter2.setDataOptions(gmds::N|gmds::R);
-	vtkWriter2.write("AeroPipeline3D_Tetra.vtk");
+	vtkWriter2.setDataOptions(gmds::N|gmds::R);*/
+	//vtkWriter2.write("AeroPipeline3D_Tetra.vtk");
 
 	// Write the Blocking
-	gmds::IGMeshIOService ioService_blocking(&m_Blocking3D);
+	/*gmds::IGMeshIOService ioService_blocking(&m_Blocking3D);
 	gmds::VTKWriter vtkWriter_blocking(&ioService_blocking);
 	vtkWriter_blocking.setCellOptions(gmds::N|gmds::R);
 	vtkWriter_blocking.setDataOptions(gmds::N|gmds::R);
-	vtkWriter_blocking.write("AeroPipeline3D_Blocking.vtk");
+	vtkWriter_blocking.write("AeroPipeline3D_Blocking.vtk");*/
 
 	// Write the Control Points
-	gmds::IGMeshIOService ioService_ctrlpts(&m_CtrlPts);
+	/*gmds::IGMeshIOService ioService_ctrlpts(&m_CtrlPts);
 	gmds::VTKWriter vtkWriter_ctrlpts(&ioService_ctrlpts);
 	vtkWriter_ctrlpts.setCellOptions(gmds::N|gmds::R);
-	vtkWriter_ctrlpts.setDataOptions(gmds::N|gmds::R);
-	vtkWriter_ctrlpts.write("AeroPipeline3D_ControlPoints.vtk");
+	vtkWriter_ctrlpts.setDataOptions(gmds::N|gmds::R);*/
+	//vtkWriter_ctrlpts.write("AeroPipeline3D_ControlPoints.vtk");
 
 
 	// TEST FOR MFEM
@@ -412,11 +410,11 @@ AeroPipeline_3D::EcritureMaillage(){
 	math::Utils::BuildMesh3DFromBlocking3D(&m_Blocking3D, m_meshHex);
 	//gmds::math::Utils::resizeMesh(m_meshHex, 0.5);
 	computeHexMeshQuality();
-	gmds::IGMeshIOService ioService_mesh3D(m_meshHex);
+	/*gmds::IGMeshIOService ioService_mesh3D(m_meshHex);
 	gmds::VTKWriter vtkWriter_mesh3D(&ioService_mesh3D);
 	vtkWriter_mesh3D.setCellOptions(gmds::N|gmds::R);
-	vtkWriter_mesh3D.setDataOptions(gmds::N|gmds::R);
-	vtkWriter_mesh3D.write("AeroPipeline3D_HexMesh.vtk");
+	vtkWriter_mesh3D.setDataOptions(gmds::N|gmds::R);*/
+	//vtkWriter_mesh3D.write("AeroPipeline3D_HexMesh.vtk");
 
 	// Write the final mesh in SU2 3D mesh format
 	/*
@@ -436,11 +434,11 @@ AeroPipeline_3D::EcritureMaillage(){
 	// Write a trick file to visualize the curved block edges
 	m_meshHex->clear();
 	math::Utils::CurveBlockEdgesReveal3D(&m_CtrlPts, m_meshHex, 20);
-	gmds::IGMeshIOService ioService_visuCurved(m_meshHex);
+	/*gmds::IGMeshIOService ioService_visuCurved(m_meshHex);
 	gmds::VTKWriter vtkWriter_visuCurved(&ioService_visuCurved);
 	vtkWriter_visuCurved.setCellOptions(gmds::N|gmds::F);
-	vtkWriter_visuCurved.setDataOptions(gmds::N|gmds::F);
-	vtkWriter_visuCurved.write("AeroPipeline3D_CurvedBlockEdges.vtk");
+	vtkWriter_visuCurved.setDataOptions(gmds::N|gmds::F);*/
+	//vtkWriter_visuCurved.write("AeroPipeline3D_CurvedBlockEdges.vtk");
 
 }
 /*------------------------------------------------------------------------*/
@@ -874,11 +872,11 @@ AeroPipeline_3D::GeometrySurfaceBlockingGeneration()
 	}
 
 	// Write the surface block structure
-	gmds::IGMeshIOService ioService(m_meshHex);
+	/*gmds::IGMeshIOService ioService(m_meshHex);
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::F);
-	vtkWriter.setDataOptions(gmds::N|gmds::F);
-	vtkWriter.write("Surface_3D.vtk");
+	vtkWriter.setDataOptions(gmds::N|gmds::F);*/
+	//vtkWriter.write("Surface_3D.vtk");
 
 	// Stat of the blocking
 	std::cout << "=============================================" << std::endl;
@@ -1039,11 +1037,11 @@ AeroPipeline_3D::PreTraitementMeshTet()
 	}
 
 	// Ecriture du maillage initial (tetra)
-	gmds::IGMeshIOService ioService(m_meshTet);
+	/*gmds::IGMeshIOService ioService(m_meshTet);
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::R);
-	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("AeroPipeline3D_Tetra_PreTraite.vtk");
+	vtkWriter.setDataOptions(gmds::N|gmds::R);*/
+	//vtkWriter.write("AeroPipeline3D_Tetra_PreTraite.vtk");
 }
 /*------------------------------------------------------------------------*/
 void
@@ -1066,15 +1064,15 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 	// Write the initial tet mesh (with fields computed on it)
 	//if (m_params.with_debug_files)
 	//{
-		gmds::IGMeshIOService ioService = IGMeshIOService(m_meshTet);
+		/*gmds::IGMeshIOService ioService = IGMeshIOService(m_meshTet);
 		gmds::VTKWriter vtkWriter2(&ioService);
 		vtkWriter2.setCellOptions(gmds::N|gmds::F);
 		vtkWriter2.setDataOptions(gmds::N|gmds::F);
-		vtkWriter2.write("AeroPipeline3D_Tetra_SURFACES_CLASSIFICATION.vtk");
+		//vtkWriter2.write("AeroPipeline3D_Tetra_SURFACES_CLASSIFICATION.vtk");
 
 		vtkWriter2.setCellOptions(gmds::N|gmds::E);
-		vtkWriter2.setDataOptions(gmds::N|gmds::E);
-		vtkWriter2.write("AeroPipeline3D_Tetra_EDGES_CLASSIFICATION.vtk");
+		vtkWriter2.setDataOptions(gmds::N|gmds::E);*/
+		//vtkWriter2.write("AeroPipeline3D_Tetra_EDGES_CLASSIFICATION.vtk");
 	//}
 
 	// Init the linker for the Blocking
@@ -1281,18 +1279,18 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 	// Write the surface blocking to check the classification
 	//if (m_params.with_debug_files)
 	{
-		gmds::IGMeshIOService ioService(m_meshHex);
+		/*gmds::IGMeshIOService ioService(m_meshHex);
 		gmds::VTKWriter vtkWriter(&ioService);
 		vtkWriter.setCellOptions(gmds::N|gmds::F);
-		vtkWriter.setDataOptions(gmds::N|gmds::F);
-		vtkWriter.write("AeroPipeline3D_Surface_FACES_CLASSIFICATION.vtk");
+		vtkWriter.setDataOptions(gmds::N|gmds::F);*/
+		//vtkWriter.write("AeroPipeline3D_Surface_FACES_CLASSIFICATION.vtk");
 
 		// Write the initial tet mesh (with fields computed on it)
-		gmds::IGMeshIOService ioService_edges = IGMeshIOService(m_meshHex);
+		/*gmds::IGMeshIOService ioService_edges = IGMeshIOService(m_meshHex);
 		gmds::VTKWriter vtkWriter_edges(&ioService_edges);
 		vtkWriter_edges.setCellOptions(gmds::N|gmds::E);
-		vtkWriter_edges.setDataOptions(gmds::N|gmds::E);
-		vtkWriter_edges.write("AeroPipeline3D_Surface_EDGES_CLASSIFICATION.vtk");
+		vtkWriter_edges.setDataOptions(gmds::N|gmds::E);*/
+		//vtkWriter_edges.write("AeroPipeline3D_Surface_EDGES_CLASSIFICATION.vtk");
 	}
 
 	for (auto e_id:m_meshHex->edges())
@@ -3120,5 +3118,87 @@ AeroPipeline_3D::smoothingLinearBlocks(int nb_iteration)
 		}
 
 	}
+}
+/*------------------------------------------------------------------------*/
+Blocking3D*
+AeroPipeline_3D::getBlocking()
+{
+
+	//std::cout<<"Writing blocks for cgns"<<std::endl;
+
+	gmds::Variable<int>* discrI = m_Blocking3D.newVariable<int, gmds::GMDS_REGION>("discrI");
+	gmds::Variable<int>* discrJ = m_Blocking3D.newVariable<int, gmds::GMDS_REGION>("discrJ");
+	gmds::Variable<int>* discrK = m_Blocking3D.newVariable<int, gmds::GMDS_REGION>("discrK");
+
+	gmds::Variable<int>* farfield   = m_Blocking3D.newVariable<int, gmds::GMDS_NODE>("Farfield");
+	gmds::Variable<int>* paroi      = m_Blocking3D.newVariable<int, gmds::GMDS_NODE>("Paroi");
+
+	Variable<int>* var_couche_blocking = m_Blocking3D.getVariable<int, GMDS_NODE>("GMDS_Couche");
+
+	int max_layer = 0;
+
+	for(auto b : m_Blocking3D.allBlocks()){
+		gmds::Variable<int>* internalNodes = m_Blocking3D.newVariable<int, gmds::GMDS_NODE>("block"+std::to_string(b.id()));
+
+		//std::cout<<"Block "<<b.id()<<std::endl;
+
+		int b_discrI = b.getNbDiscretizationI(),b_discrJ = b.getNbDiscretizationJ(), b_discrK = b.getNbDiscretizationK();
+
+		discrI->set(b.id(), b_discrI);
+		discrJ->set(b.id(), b_discrJ);
+		discrK->set(b.id(), b_discrK);
+
+		int iNode = 0;
+		for(int k = 0; k < b_discrK; k++){
+			for(int j = 0; j < b_discrJ; j++){
+				for(int i = 0; i < b_discrI; i++){
+					internalNodes->set(b(i,j,k).id(),iNode+1);
+					iNode++;
+				}
+			}
+		}
+
+		for(int i_b = 0; i_b<8; i_b++){
+			int layer = var_couche_blocking->value(b.getNode(i_b).id());
+			max_layer = layer > max_layer ? layer : max_layer;
+		}
+
+	}
+
+	for(auto f : m_Blocking3D.faces()){
+		Blocking3D::BlockFace b_f = m_Blocking3D.blockFace(f);
+
+		bool isWall = true;
+		bool isFF = true;
+		for(int i_n = 0; i_n<4; i_n++){
+			if(var_couche_blocking->value(b_f.getNode(i_n).id()) != 0) isWall = false;
+			if(var_couche_blocking->value(b_f.getNode(i_n).id()) != max_layer) isFF = false;
+		}
+
+		int bf_discrI = b_f.getNbDiscretizationI(), bf_discrJ = b_f.getNbDiscretizationJ();
+		if(isFF) {
+			for (int j = 0; j < bf_discrJ; j++) {
+				for (int i = 0; i < bf_discrI; i++) {
+					farfield->set(b_f(i, j).id(), 1);
+				}
+			}
+		}else if(isWall){
+			for (int j = 0; j < bf_discrJ; j++) {
+				for (int i = 0; i < bf_discrI; i++) {
+					paroi->set(b_f(i, j).id(), 1);
+				}
+			}
+		}
+	}
+
+	/*gmds::IGMeshIOService ioService(&m_Blocking3D);
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	std::cout<<"start writing"<<std::endl;
+	vtkWriter.write("CGNS_"+m_params.output_file);
+	std::cout<<"end writing"<<std::endl;*/
+	//return "CGNS_"+m_params.output_file;
+	return &m_Blocking3D;
 }
 /*------------------------------------------------------------------------*/

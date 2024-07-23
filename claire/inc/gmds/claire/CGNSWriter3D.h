@@ -9,12 +9,13 @@
 /*----------------------------------------------------------------------------*/
 #include <cgnslib.h>
 /*----------------------------------------------------------------------------*/
+#include "Blocking3D.h"
 #include "LIB_GMDS_BLOCKING_export.h"
-#include "gmds/claire/Blocking3D.h"
+// #include <gmds/claire/Blocking3D.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 
-namespace blocking {
+namespace claire {
 
 class LIB_GMDS_BLOCKING_API CGNSWriter3D
 {

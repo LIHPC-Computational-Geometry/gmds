@@ -612,7 +612,7 @@ void AeroExtrusion_3D::WriteVTKforDebug()
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::R);
 	vtkWriter.setDataOptions(gmds::N|gmds::R);
-	vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
+	//vtkWriter.write("AeroExtrusion_3D_"+std::to_string(m_iteration)+".vtk");
 	m_iteration++;
 }
 /*------------------------------------------------------------------------*/

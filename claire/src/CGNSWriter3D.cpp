@@ -7,12 +7,12 @@
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKReader.h"
 #include <fstream>
-#include <gmds/blocking/CGNSWriter3D.h>
+#include "gmds/claire/CGNSWriter3D.h"
 #include <iomanip>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
-using namespace blocking;
+using namespace claire;
 
 #define Structured CG_Structured
 #define RealDouble CG_RealDouble
@@ -89,7 +89,7 @@ void CGNSWriter3D::writeZones()
 	for (auto bid : m_blocks->regions()) {
 		Region b = m_blocks->get<Region>(bid);
 
-		std::cout << "Writing zone " << b.id()+1 << std::endl;
+		//std::cout << "Writing zone " << b.id()+1 << std::endl;
 
 		// Le nom de la zone correspond au nom du bloc, dans notre cas on l'appel juste
 		//  "Block_<Block_ID>"
@@ -151,7 +151,7 @@ void CGNSWriter3D::writeZones()
 				             << std::setfill('0') << id_voisin+1 << ")";
 				std::string interface_s = interface_ss.str();
 				strcpy(interface, interface_s.c_str());
-				std::cout << "\t -> connection " << interface_s << std::endl;
+				//std::cout << "\t -> connection " << interface_s << std::endl;
 
 				std::stringstream name2_ss;
 				name2_ss << "FLUIDE " << std::setw(5) << std::setfill('0') << id_voisin+1;
@@ -182,7 +182,7 @@ void CGNSWriter3D::writeZones()
 					idinter1 = 1;
 					idmax1 = 2;
 					break;
-				case 1:
+				case 2:
 					pts1[0] = 1;
 					pts1[1] = 1;
 					pts1[2] = 1;
@@ -199,7 +199,7 @@ void CGNSWriter3D::writeZones()
 					idinter1 = 1;
 					idmax1 = 5;
 					break;
-				case 2:
+				case 5:
 					pts1[0] = discrI;
 					pts1[1] = 1;
 					pts1[2] = 1;
@@ -250,7 +250,7 @@ void CGNSWriter3D::writeZones()
 					idinter1 = 3;
 					idmax1 = 7;
 					break;
-				case 5:
+				case 1:
 					pts1[0] = 1;	// X1
 					pts1[1] = 1;	// Y1
 					pts1[2] = discrK;	// Z1
@@ -613,19 +613,19 @@ void CGNSWriter3D::writeBoundaryCondition(int &num_bc, cgsize_t* pts, int id_zon
 /*----------------------------------------------------------------------------*/
 void CGNSWriter3D::write(const std::string &AInFileName, const std::string &AOutFileName, const std::string &AWorkingDir){
 
-	std::cout<<"Start reading"<<std::endl;
-
+	//std::cout<<"Start reading"<<std::endl;
+/*
 	gmds::IGMeshIOService ioService(m_blocks);
 	gmds::VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(gmds::N|gmds::R);
 	vtkReader.setDataOptions(gmds::N|gmds::R);
-	vtkReader.read(AInFileName);
+	vtkReader.read(AInFileName);*/
 
-	std::cout<<"End reading"<<std::endl;
+	//std::cout<<"End reading"<<std::endl;
 
-	MeshDoctor doc(m_blocks);
-	doc.buildFacesAndR2F();
-	doc.buildF2R(m_blocks->getModel());
+	//MeshDoctor doc(m_blocks);
+	//doc.buildFacesAndR2F();
+	//doc.buildF2R(m_blocks->getModel());
 
 	m_block_grid = m_blocks->newVariable<std::vector<TCellID>,GMDS_REGION>("block_grid");
 

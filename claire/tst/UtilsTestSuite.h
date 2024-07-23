@@ -2,7 +2,6 @@
 // Created by rochec on 22/03/2022.
 //
 
-#include <gmds/claire/ComputeBezierCurveCtrlPtstoInterpolateCurve.h>
 #include <gmds/math/Line.h>
 #include <gmds/claire/Utils.h>
 #include <gmds/ig/Mesh.h>
