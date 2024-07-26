@@ -1,6 +1,8 @@
 /*----------------------------------------------------------------------------*/
 #include "gmds/blocking/CurvedBlocking.h"
 /*----------------------------------------------------------------------------*/
+#include <limits>
+/*----------------------------------------------------------------------------*/
 using namespace gmds;
 using namespace gmds::blocking;
 /*----------------------------------------------------------------------------*/
@@ -1000,7 +1002,7 @@ CurvedBlocking::capt_element(const int AnIdElement, const int ADim) {
 
 
     if(ADim == 0){
-        auto paramCut = get_cut_info(AnIdElement);
+		auto paramCut = get_cut_info(m_geom_model->getPoint(AnIdElement)->point());
         cut_sheet(paramCut.first,paramCut.second);
     }
     else{
@@ -1045,31 +1047,6 @@ CurvedBlocking::check_cut_possible(int pointId, std::vector<std::vector<CurvedBl
 
 }
 /*----------------------------------------------------------------------------*/
-
-std::pair<CurvedBlocking::Edge, double>
-CurvedBlocking::get_cut_info(int pointId)
-{
-    std::pair<CurvedBlocking::Edge,double> paramCut;
-
-    //============================================
-    auto noCaptPoint0 = m_geom_model->getPoint(pointId);
-    gmds::math::Point p(noCaptPoint0->X(),noCaptPoint0->Y(),noCaptPoint0->Z());
-
-    auto listEdgesPara = get_all_sheet_edge_sets();
-    std::vector<gmds::blocking::CurvedBlocking::Edge > listEdgesSplitable;
-    unsigned int distMini = 1000;
-    for(auto edges : listEdgesPara){
-        auto projInfo = get_projection_info(p,edges);
-        for(int i =0; i< projInfo.size();i++){
-            if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
-                paramCut.first = edges.at(i);
-                paramCut.second = projInfo[i].second;
-            }
-        }
-    }
-    return paramCut;
-}
-/*----------------------------------------------------------------------------*/
 std::pair<CurvedBlocking::Edge, double>
 CurvedBlocking::get_cut_info(gmds::math::Point APoint)
 {
@@ -1081,19 +1058,17 @@ CurvedBlocking::get_cut_info(gmds::math::Point APoint)
     //============================================
 
     auto listEdgesPara = get_all_sheet_edge_sets();
-    std::vector<gmds::blocking::CurvedBlocking::Edge > listEdgesSplitable;
-    unsigned int distMini = 1000;
+	double distMini = std::numeric_limits<double>::max();
     for(auto edges : listEdgesPara){
         auto projInfo = get_projection_info(APoint,edges);
         for(int i =0; i< projInfo.size();i++){
             if(projInfo[i].second<1 && projInfo[i].second>0 && projInfo[i].first <distMini){
                 paramCut.first = edges.at(i);
                 paramCut.second = projInfo[i].second;
+				distMini = projInfo[i].first;
             }
         }
     }
-
-
     return paramCut;
 }
 
@@ -1231,8 +1206,16 @@ CurvedBlocking::get_projection_info(math::Point &AP, std::vector<CurvedBlocking:
     std::vector<std::pair<double, double> > dist_coord;
     for (auto e: AEdges) {
         std::vector<Node> end_points = get_nodes_of_edge(e);
-        math::Point end0 = end_points[0]->info().point;
-        math::Point end1 = end_points[1]->info().point;
+		math::Point end0;
+		math::Point end1;
+		if( end_points[0]->info().topo_id < end_points[1]->info().topo_id) {
+			end0 = end_points[0]->info().point;
+			end1 = end_points[1]->info().point;
+		}
+		else{
+			end0 = end_points[1]->info().point;
+			end1 = end_points[0]->info().point;
+		}
         math::Vector3d v1 = end1 - end0;
         math::Vector3d v2 = AP - end0;
         double coord = 0.0;
