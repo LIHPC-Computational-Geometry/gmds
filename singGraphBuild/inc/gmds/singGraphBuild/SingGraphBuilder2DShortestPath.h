@@ -42,12 +42,12 @@ class LIB_GMDS_SINGGRAPHBUILD_API SingGraphBuilder2DShortestPath : public Singul
 	bool m_visualizeCost = false;
 	bool m_visualizeShortestPaths = false;
 
-	// @ { Both of those parameters allows to reduce the number of potential path found in dijkstra algo, and thus reduce the difficulty for the GLPK solver.
+	// @ { Both of those parameters allows to reduce the number of potential path found in path algo, and thus reduce the difficulty for the GLPK solver.
 	//     GLPK will struggle due to a very high number of constraints between potential paths (illegal line crossing)
 	//      -> the less path, the less constrain, the less time
 	//		-> with too low parameters, it may however hinder GLPK from finding the best solution, or even only one.
-	unsigned int m_maxNBoundaryTarget = 6;         // dijkstra algorithm will keep the the N best paths ending on boundaries
-	unsigned int m_maxNValidSurfaceTarget = 5;     // dijkstra algorithm will stop after having found N potential VALID surfaces target (valid = without penalty)
+	unsigned int m_maxNBoundaryTarget = 6;         // path algorithm will keep the the N best paths ending on boundaries
+	unsigned int m_maxNValidSurfaceTarget = 5;     // path algorithm will stop after having found N potential VALID surfaces target (valid = without penalty)
 	// @ }
 	unsigned int m_glpkTimeLimit = 30000;     // time limit to solve with glpk, in millisecond
 
