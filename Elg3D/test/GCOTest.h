@@ -18,14 +18,14 @@ double gco_smoothCost_(int p, int q, int label_p, int label_q,void *extraData){
 
 double gco_smoothCost_interface_(int p, int q, int label_p, int label_q,void *extraData){
 
-    gmds::math::Vector n(1., -0.5);
+    gmds::math::Vector n({1., -0.5});
     n.normalize();
 
     std::map<int, gmds::math::Point>* index2pts = reinterpret_cast<std::map<int, gmds::math::Point>* > (extraData);
     gmds::math::Point pt_p = (*index2pts)[p];
     gmds::math::Point pt_q = (*index2pts)[q];
 
-    gmds::math::Vector v(pt_p, pt_q);
+    gmds::math::Vector v(pt_q - pt_p);
     v.normalize();
 
     double dotproduct = n.dot(v);
@@ -53,24 +53,11 @@ class GCOTest : public ::testing::Test
         static void
         SetUpTestCase()
         {
-                // Kokkos::Serial::initialize();
-                // Kokkos::Threads::initialize();
-                Kokkos::InitArguments kargs;
-                kargs.num_threads = 3;
-//                int num_threads = 4;
-//                int use_numa = 1;
-//                int use_core = 1;
-//                Kokkos::OpenMP::initialize(num_threads, use_numa, use_core);
-                Kokkos::initialize(kargs);
         }
 
         static void
         TearDownTestCase()
         {
-                // Kokkos::Serial::finalize();
-                // Kokkos::Threads::finalize();
-//                Kokkos::OpenMP::finalize();
-                Kokkos::finalize();
         }
 };
 /*----------------------------------------------------------------------------*/
