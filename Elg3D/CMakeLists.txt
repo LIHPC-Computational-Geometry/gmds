@@ -35,38 +35,9 @@ endif()
 #==============================================================================
 # GTS
 #==============================================================================
-#include(FindPkgConfig)
 find_package(PkgConfig REQUIRED)
-#pkg_check_modules(glib-2.0 REQUIRED glib-2.0)
-#find_path(GLIB_INCLUDE_DIR glib.h PATH_SUFFIXES glib-2.0)
-#include_directories(${GLIB_INCLUDE_DIR})
-#find_path(GLIBCONFIG_INCLUDE_DIR glibconfig.h PATH_SUFFIXES ../lib/glib-2.0/include)
-#include_directories(${GLIBCONFIG_INCLUDE_DIR})
-
-#pkg_check_modules(gts REQUIRED gts)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GTS_Cflags}")
-#find_path(GTS_INCLUDE_DIR gts.h PATH_SUFFIXES include)
-#include_directories(${GTS_INCLUDE_DIR})
-#find_path(GTS_LIBRARY_DIR libgts.so PATH_SUFFIXES lib)
-#link_directories(${GTS_LIBRARY_DIR})
-
-pkg_search_module(PKG_GTS REQUIRED IMPORTED_TARGET gts)
-
-
-#if(GTS_LIB_PATH)
-#    include_directories(${GTS_INC_PATH})
-#    link_directories(${GTS_LIB_PATH})
-#    add_compile_definitions(ELG3D_WITH_GTS)
-#
-#    include_directories(/home/legoffn/travail/utils/spack_20200612/opt/spack/linux-ubuntu16.04-broadwell/gcc-5.4.0/glib-2.64.3-e2s7xjrjzvokp7qjqhalgs5b3ep3cowf/include/glib-2.0)
-#    include_directories(/home/legoffn/travail/utils/spack_20200612/opt/spack/linux-ubuntu16.04-broadwell/gcc-5.4.0/glib-2.64.3-e2s7xjrjzvokp7qjqhalgs5b3ep3cowf/lib/glib-2.0/include)
-#    link_directories(/home/legoffn/travail/utils/spack_20200612/opt/spack/linux-ubuntu16.04-broadwell/gcc-5.4.0/glib-2.64.3-e2s7xjrjzvokp7qjqhalgs5b3ep3cowf/lib)
-#endif()
-
-#==============================================================================
-# GLIB
-#==============================================================================
-#include_directories(/usr/include/glib-2.0 /usr/lib64/glib-2.0/include)
+pkg_search_module(GLIB2 REQUIRED IMPORTED_TARGET glib-2.0)
+pkg_search_module(GTS REQUIRED IMPORTED_TARGET gts)
 
 #==============================================================================
 # INTERSECT
@@ -199,7 +170,7 @@ target_link_libraries(run_compare3d elg3d kmds Kokkos::kokkoscore)
 target_link_libraries(elg3d
 #	PUBLIC ${LIB_GMDS_MATH} ${LIB_GMDS_IG} ${LIB_GMDS_CAD} ${LIB_GMDS_UTILS} kmds Kokkos::kokkoscore Kokkos::kokkoscontainers GCO  gts glib-2.0
         PUBLIC ${LIB_GMDS_MATH} ${LIB_GMDS_IG} ${LIB_GMDS_CAD}
-        ${LIB_GMDS_CADFAC} ${LIB_GMDS_UTILS} kmds Kokkos::kokkoscore Kokkos::kokkoscontainers GCO PkgConfig::PKG_GTS
+        ${LIB_GMDS_CADFAC} ${LIB_GMDS_UTILS} kmds Kokkos::kokkoscore Kokkos::kokkoscontainers GCO PkgConfig::GTS PkgConfig::GLIB2
 	INTERFACE glpk)
 
 if(ELG3D_WITH_EXODUSII)

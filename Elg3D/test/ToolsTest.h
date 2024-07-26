@@ -67,24 +67,11 @@ class ToolsTest : public ::testing::Test
         static void
         SetUpTestCase()
         {
-                // Kokkos::Serial::initialize();
-                // Kokkos::Threads::initialize();
-                Kokkos::InitArguments kargs;
-                kargs.num_threads = 3;
-//                int num_threads = 4;
-//                int use_numa = 1;
-//                int use_core = 1;
-//                Kokkos::OpenMP::initialize(num_threads, use_numa, use_core);
-                Kokkos::initialize(kargs);
         }
 
         static void
         TearDownTestCase()
         {
-                // Kokkos::Serial::finalize();
-                // Kokkos::Threads::finalize();
-//                Kokkos::OpenMP::finalize();
-                Kokkos::finalize();
         }
 };
 /*----------------------------------------------------------------------------*/

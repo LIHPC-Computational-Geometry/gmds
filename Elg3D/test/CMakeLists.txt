@@ -24,7 +24,7 @@ set(UT_ELG3D_SRC_FILES
 add_executable(UT_elg3d main.cpp ${UT_ELG3D_SRC_FILES})
 
 target_link_libraries(UT_elg3d
-		PUBLIC gmock elg3d kmds Kokkos::kokkoscore GCO INIH
+		PUBLIC elg3d kmds Kokkos::kokkoscore GCO INIH GTest::gtest
 		INTERFACE glpk)
 
 
@@ -43,4 +43,4 @@ add_test (NAME    UT_elg3d
 	  WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
 
-#add_subdirectory(Samples)
+add_subdirectory(Samples)

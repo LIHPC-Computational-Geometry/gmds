@@ -1,6 +1,9 @@
 /*----------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 /*----------------------------------------------------------------------------*/
+// Kokkos headers
+#include <Kokkos_Core.hpp>
+/*----------------------------------------------------------------------------*/
 // Files containing the different test suites to launch
 #include "AssignCellsTest.h"
 #include "BadPillowingTest.h"
@@ -31,11 +34,19 @@
 #include <Eigen/Core>
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {
+
+	Kokkos::InitializationSettings kargs;
+	kargs.set_num_threads(1);
+	Kokkos::initialize(kargs);
+
   ::testing::InitGoogleTest(&argc, argv);
 
   Eigen::initParallel();
 
-  return RUN_ALL_TESTS();
+  int ret = RUN_ALL_TESTS();
+
+  Kokkos::finalize();
+  return ret;
 }
 /*----------------------------------------------------------------------------*/
 

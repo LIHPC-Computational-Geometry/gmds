@@ -27,24 +27,20 @@ protected:
     static void
     SetUpTestCase()
     {
-        // Kokkos::Serial::initialize();
-        // Kokkos::Threads::initialize();
-        Kokkos::InitArguments kargs;
-        kargs.num_threads = 1;
-//                int num_threads = 4;
-//                int use_numa = 1;
-//                int use_core = 1;
-//                Kokkos::OpenMP::initialize(num_threads, use_numa, use_core);
-        Kokkos::initialize(kargs);
+//        // Kokkos::Serial::initialize();
+//        // Kokkos::Threads::initialize();
+//        Kokkos::InitArguments kargs;
+//        kargs.num_threads = 1;
+////                int num_threads = 4;
+////                int use_numa = 1;
+////                int use_core = 1;
+////                Kokkos::OpenMP::initialize(num_threads, use_numa, use_core);
+//        Kokkos::initialize(kargs);
     }
 
     static void
     TearDownTestCase()
     {
-        // Kokkos::Serial::finalize();
-        // Kokkos::Threads::finalize();
-//                Kokkos::OpenMP::finalize();
-        Kokkos::finalize();
     }
 };
 /*----------------------------------------------------------------------------*/
@@ -128,23 +124,23 @@ TEST_F(InterfaceNodesPosSmoothVFTest, smallGraph)
     int nbFixed = 0;
     std::vector<bool> isfixed(nbVert, 0);
     std::vector<int> mat(nbVert, -1);
-    std::vector<gmds::math::Vector> vf_current(nbVert, gmds::math::Vector(fpA,fpB,0.));
-    std::vector<gmds::math::Vector> vf_next(nbVert, gmds::math::Vector(0.,0.,0.));
+    std::vector<gmds::math::Vector> vf_current(nbVert, gmds::math::Vector({fpA,fpB,0.}));
+    std::vector<gmds::math::Vector> vf_next(nbVert, gmds::math::Vector({0.,0.,0.}));
 
     // left
     for(int j=1; j<=nsub; j++) {
         int index = indices[0][j];
-        vf_current[index] = gmds::math::Vector(1.,0.,0.);
+        vf_current[index] = gmds::math::Vector({1.,0.,0.});
     }
     //right
     for(int j=1; j<=nsub; j++) {
         int index = indices[nsub+1][j];
-        vf_current[index] = gmds::math::Vector(0.,1.,0.);
+        vf_current[index] = gmds::math::Vector({0.,1.,0.});
     }
     //top
     for(int i=1; i<=nsub; i++) {
         int index = indices[i][nsub+1];
-        vf_current[index] = gmds::math::Vector(1.,0.,0.);
+        vf_current[index] = gmds::math::Vector({1.,0.,0.});
     }
 
     double threshold = 1.;
@@ -221,7 +217,7 @@ TEST_F(InterfaceNodesPosSmoothVFTest, smallGraph)
                 int p = indices[i][j];
 
                 if (!isfixed[p]) {
-                    vf_current[p] = gmds::math::Vector (fpA_next, fpB_next, 0.);
+                    vf_current[p] = gmds::math::Vector ({fpA_next, fpB_next, 0.});
                 }
             }
         }
