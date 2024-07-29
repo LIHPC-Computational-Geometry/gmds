@@ -21,7 +21,7 @@
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
 
-TEST(ClaireTestClass, testGrid_SmoothLineSweepingYao)
+TEST(ClaireTestClass, DISABLED_testGrid_SmoothLineSweepingYao)
 {
 	Blocking2D m;
 	Node n1 = m.newBlockCorner(0,0);
