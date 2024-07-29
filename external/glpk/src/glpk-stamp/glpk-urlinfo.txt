@@ -1,3 +1,0 @@
-repository='external project URL'
-module='/home/simon/Dev/gmds/external/glpk-4.65.tar.gz'
-tag=''
