@@ -289,18 +289,19 @@ int main(int argc, char* argv[])
     // PERFORM THE MESH SMOOTHING NOW
     //==================================================================
     std::cout<<"> Start smoothing"<<std::endl;
-    smoothy::LaplacianSmoother3C smoother(&linker);
+    smoothy::LaplacianSmoother3C smoother(&m,&linker);
     if(!smoother.isValid())
     {
         std::cout<<"INVALID MODEL"<<std::endl;
         exit(1);
     }
+	 smoother.setNbIterations(nb_iterations);
     std::cout<<"  - start curve smoothing ("<<nb_iterations<<" iterations)"<<std::endl;
-    smoother.smoothCurves(nb_iterations);
+    smoother.smoothCurves();
     std::cout<<"  - start surface smoothing ("<<nb_iterations<<" iterations)"<<std::endl;
-    smoother.smoothSurfaces(nb_iterations);
+    smoother.smoothSurfaces();
     std::cout<<"  - start volume smoothing ("<<nb_iterations<<" iterations)"<<std::endl;
-    smoother.smoothVolumes(nb_iterations);
+    smoother.smoothVolumes();
 
     //==================================================================
     // COMPUTE FINAL QUALITY

@@ -449,15 +449,18 @@ int main(int argc, char* argv[])
 // PERFORM THE BLOCK SMOOTHING NOW
 //==================================================================
     std::cout<<"> Start block smoothing"<<std::endl;
-    smoothy::LaplacianSmoother3C smoother(&linker);
+    smoothy::LaplacianSmoother3C smoother(&blocking, &linker);
     if(!smoother.isValid())
     {
         std::cout<<"INVALID MODEL"<<std::endl;
         exit(1);
     }
     std::cout<<"  - start  smoothing ("<<nb_curve_smooth_iterations<<" iterations)"<<std::endl;
-    smoother.smoothCurves(nb_curve_smooth_iterations);
-    smoother.smoothSurfaces(nb_surface_smooth_iterations);
+	 smoother.setNodesAll();
+	 smoother.setNbIterations(nb_curve_smooth_iterations);
+    smoother.smoothCurves();
+	 smoother.setNbIterations(nb_surface_smooth_iterations);
+	 smoother.smoothSurfaces();
    // std::cout<<"  - start volume smoothing ("<<nb_volume_smooth_iterations<<" iterations)"<<std::endl;
    // smoother.smoothVolumes(nb_volume_smooth_iterations);
 
@@ -516,15 +519,17 @@ int main(int argc, char* argv[])
         if(info.second.dim==2)
             linker_final.linkFaceToSurface(f.id(),info.second.id);
     }
-    smoothy::LaplacianSmoother3C smoother_final(&linker_final);
+    smoothy::LaplacianSmoother3C smoother_final(bm.mesh(),&linker_final);
     if(!smoother_final.isValid())
     {
         std::cout<<"INVALID MODEL"<<std::endl;
         exit(1);
     }
     std::cout<<"  - start smoothing ("<<nb_curve_smooth_iterations<<" iterations)"<<std::endl;
-    smoother_final.smoothCurves(nb_curve_smooth_iterations);
-    smoother_final.smoothSurfaces(nb_surface_smooth_iterations);
+    smoother_final.setNbIterations(nb_curve_smooth_iterations);
+	 smoother_final.smoothCurves();
+	 smoother_final.setNbIterations(nb_surface_smooth_iterations);
+    smoother_final.smoothSurfaces();
     std::cout<<"> Start final mesh writing"<<std::endl;
     IGMeshIOService ioService_mesh(bm.mesh());
     VTKWriter vtkWriter_mesh(&ioService_mesh);

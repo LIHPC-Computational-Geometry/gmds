@@ -315,10 +315,11 @@ TEST(PillowOpClass, test_pillow3D_with_geom)
 
     manager.initAndLinkFrom3DMesh(&m_vol,&linker);
 
-    smoothy::LaplacianSmoother3C smoother(&linker);
-    smoother.smoothCurves(10);
-    smoother.smoothSurfaces(10);
-    smoother.smoothVolumes(10);
+    smoothy::LaplacianSmoother3C smoother(&m_vol, &linker);
+	 smoother.setNbIterations(10);
+    smoother.smoothCurves();
+    smoother.smoothSurfaces();
+    smoother.smoothVolumes();
 
     std::string vtk_file2 = ("hexa_pillow_out.vtk");
     IGMeshIOService ioService(&m_vol);
