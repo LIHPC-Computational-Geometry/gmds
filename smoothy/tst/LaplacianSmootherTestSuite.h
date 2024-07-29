@@ -12,12 +12,13 @@
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKReader.h>
 #include <gmds/io/VTKWriter.h>
-#include <gmds/smoothy/LaplacianSmoother.h>
+#include <gmds/smoothy/LaplacianSmoother3C.h>
+#include <gmds/smoothy/LaplacianSmoother2UC.h>
 #include <unit_test_config.h>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
-TEST(GeomSmootherTestSuite, tet_in_cube)
+TEST(LaplacianSmootherTestSuite, tet_in_cube)
 {
 	// WE WRITE
 	Mesh m_vol(gmds::MeshModel(DIM3 | R | F | E | N | R2N | R2F | R2E | F2N | F2R | F2E | E2F | E2N | N2E | N2R | N2F));
@@ -40,7 +41,7 @@ TEST(GeomSmootherTestSuite, tet_in_cube)
 
 	manager.initAndLinkFrom3DMesh(&m_vol, &linker);
 
-	smoothy::LaplacianSmoother smoother(&m_vol, &linker);
+	smoothy::LaplacianSmoother3C smoother(&m_vol, &linker);
 	smoother.setNbIterations(100);
 	smoother.setNodesAll();
 
@@ -91,7 +92,7 @@ TEST(GeomSmootherTestSuite, tet_in_cube)
 }
 
 /*----------------------------------------------------------------------------*/
-TEST(GeomSmootherTestSuite, test3)
+TEST(LaplacianSmootherTestSuite, test3)
 {
 	Mesh m_vol(gmds::MeshModel(DIM3 | R | F | E | N | R2N | R2F | R2E | F2N | F2R | F2E | E2F | E2N | N2E | N2R | N2F));
 	std::string dir(TEST_SAMPLES_DIR);
@@ -118,7 +119,7 @@ TEST(GeomSmootherTestSuite, test3)
 
 	manager.initAndLinkFrom3DMesh(&m_vol, &linker);
 
-	smoothy::LaplacianSmoother smoother(&m_vol,&linker);
+	smoothy::LaplacianSmoother3C smoother(&m_vol,&linker);
 smoother.setNbIterations(10);
 smoother.setNodesAll();
 	smoother.smoothCurves();
@@ -137,7 +138,7 @@ smoother.setNodesAll();
 }
 
 /*----------------------------------------------------------------------------*/
-TEST(GeomSmootherTestSuite, DISABLED_test_notch_refined)
+TEST(LaplacianSmootherTestSuite, DISABLED_test_notch_refined)
 {
 	std::string dir(TEST_SAMPLES_DIR);
 	std::string file_geom = dir + "/Notch/notch_tet.vtk";
@@ -352,7 +353,7 @@ TEST(GeomSmootherTestSuite, DISABLED_test_notch_refined)
 	//==================================================================
 	// PERFORM THE MESH SMOOTHING NOW
 	//==================================================================
-	smoothy::LaplacianSmoother smoother(&m,&linker);
+	smoothy::LaplacianSmoother3C smoother(&m,&linker);
 	smoother.setNbIterations(nb_iterations);
 	smoother.setNodesAll();
 	smoother.smoothCurves();
@@ -360,4 +361,56 @@ TEST(GeomSmootherTestSuite, DISABLED_test_notch_refined)
 	smoother.smoothVolumes();
 
 	ASSERT_TRUE(true);
+}
+
+/*----------------------------------------------------------------------------*/
+TEST(LaplacianSmootherTestSuite, grid_2D_smooth_UC)
+{
+	// WE WRITE
+	Mesh m(gmds::MeshModel(DIM3 |  F | N | F2N | N2F));
+
+	GridBuilder gb(&m,2);
+
+	gb.execute(4,1.0,4,1.0);
+
+	MeshDoctor doc(&m);
+	doc.updateUpwardConnectivity();
+	smoothy::LaplacianSmoother2UC smoother(&m);
+	smoother.setNbIterations(1);
+
+	// FIRST WE MOVE A SINGLE NODE
+	std::vector<TCellID> to_move;
+	to_move.push_back(5);
+	m.get<Node>(5).setXYZ(0.5,0.5,0);
+
+	smoother.setNodes(to_move);
+	ASSERT_NEAR(m.get<Node>(5).point().X(), 0.5, 0.01);
+	ASSERT_NEAR(m.get<Node>(5).point().Y(), 0.5, 0.01);
+
+	smoother.smooth();
+	ASSERT_NEAR(m.get<Node>(5).point().X(), 1, 0.01);
+	ASSERT_NEAR(m.get<Node>(5).point().Y(), 1, 0.01);
+
+	// Now we move the four inner nodes
+	to_move.push_back(6);
+	to_move.push_back(9);
+	to_move.push_back(10);
+
+	m.get<Node>(5).setXYZ(0.5,0.5,0);
+	m.get<Node>(6).setXYZ(0.5,0.5,0);
+	m.get<Node>(9).setXYZ(0.5,0.5,0);
+	m.get<Node>(10).setXYZ(0.5,0.5,0);
+
+	smoother.setNbIterations(10);
+	smoother.setNodes(to_move);
+	smoother.smooth();
+	ASSERT_NEAR(m.get<Node>(5).point().X(), 1, 0.01);
+	ASSERT_NEAR(m.get<Node>(5).point().Y(), 1, 0.01);
+	ASSERT_NEAR(m.get<Node>(6).point().X(), 1, 0.01);
+	ASSERT_NEAR(m.get<Node>(6).point().Y(), 2, 0.01);
+	ASSERT_NEAR(m.get<Node>(9).point().X(), 2, 0.01);
+	ASSERT_NEAR(m.get<Node>(9).point().Y(), 1, 0.01);
+	ASSERT_NEAR(m.get<Node>(10).point().X(), 2, 0.01);
+	ASSERT_NEAR(m.get<Node>(10).point().Y(), 2, 0.01);
+
 }

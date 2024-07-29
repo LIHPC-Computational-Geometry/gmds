@@ -9,7 +9,8 @@ set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
         inc/gmds/smoothy/AbstractSmoother.h
         inc/gmds/smoothy/AngleBasedQuadSmoother.h
-        inc/gmds/smoothy/LaplacianSmoother.h
+        inc/gmds/smoothy/LaplacianSmoother3C.h
+        inc/gmds/smoothy/LaplacianSmoother2UC.h
         inc/gmds/smoothy/HLBFGSWrapper.h
         inc/gmds/smoothy/EllipticSmoothing.h
         inc/gmds/smoothy/EllipticSmoother2D.h
@@ -18,7 +19,8 @@ set(GMDS_INC
 set(GMDS_SRC
         src/AbstractSmoother.cpp
         src/AngleBasedQuadSmoother.cpp
-        src/LaplacianSmoother.cpp
+        src/LaplacianSmoother3C.cpp
+        src/LaplacianSmoother2UC.cpp
         src/HLBFGSWrapper.cpp
         src/EllipticSmoothing.cpp
         src/EllipticSmoother2D.cpp

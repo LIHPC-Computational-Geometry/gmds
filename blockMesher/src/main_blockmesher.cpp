@@ -1,15 +1,15 @@
 /*----------------------------------------------------------------------------*/
+#include <gmds/cad/GeomCurve.h>
+#include <gmds/cad/GeomPoint.h>
+#include <gmds/cad/GeomSurface.h>
+#include <gmds/cadfac/FACManager.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKReader.h>
 #include <gmds/io/VTKWriter.h>
-#include <gmds/cadfac/FACManager.h>
-#include <gmds/cad/GeomPoint.h>
-#include <gmds/cad/GeomCurve.h>
-#include <gmds/cad/GeomSurface.h>
 #include <gmds/smoothy/AngleBasedQuadSmoother.h>
-#include <gmds/smoothy/LaplacianSmoother.h>
+#include <gmds/smoothy/LaplacianSmoother3C.h>
 /*----------------------------------------------------------------------------*/
 #include <iostream>
 #include <gmds/igalgo/BoundaryOperator.h>
@@ -449,7 +449,7 @@ int main(int argc, char* argv[])
 // PERFORM THE BLOCK SMOOTHING NOW
 //==================================================================
     std::cout<<"> Start block smoothing"<<std::endl;
-    smoothy::LaplacianSmoother smoother(&linker);
+    smoothy::LaplacianSmoother3C smoother(&linker);
     if(!smoother.isValid())
     {
         std::cout<<"INVALID MODEL"<<std::endl;
@@ -516,7 +516,7 @@ int main(int argc, char* argv[])
         if(info.second.dim==2)
             linker_final.linkFaceToSurface(f.id(),info.second.id);
     }
-    smoothy::LaplacianSmoother smoother_final(&linker_final);
+    smoothy::LaplacianSmoother3C smoother_final(&linker_final);
     if(!smoother_final.isValid())
     {
         std::cout<<"INVALID MODEL"<<std::endl;

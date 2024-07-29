@@ -1,15 +1,15 @@
 /*----------------------------------------------------------------------------*/
-#include <gmds/smoothy/LaplacianSmoother.h>
+#include <gmds/smoothy/LaplacianSmoother3C.h>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 using namespace gmds::smoothy;
 using namespace gmds::cad;
 /*----------------------------------------------------------------------------*/
-LaplacianSmoother::LaplacianSmoother(gmds::Mesh *AMesh, cad::GeomMeshLinker *ALinker)
+LaplacianSmoother3C::LaplacianSmoother3C(gmds::Mesh *AMesh, cad::GeomMeshLinker *ALinker)
   : AbstractSmoother(AMesh), SmoothingClassificationService(ALinker) {}
 /*----------------------------------------------------------------------------*/
 bool
-LaplacianSmoother::isValid() const
+LaplacianSmoother3C::isValid() const
 {
 	if(m_mesh!=m_linker->mesh())
 		return false;
@@ -17,7 +17,8 @@ LaplacianSmoother::isValid() const
 	return isValidForClassification();
 }
 /*----------------------------------------------------------------------------*/
-int LaplacianSmoother::smooth()
+int
+LaplacianSmoother3C::smooth()
 {
 	smoothCurves();
 	smoothSurfaces();
@@ -25,7 +26,8 @@ int LaplacianSmoother::smooth()
 	return 1;
 }
 /*----------------------------------------------------------------------------*/
-void LaplacianSmoother::smoothCurves() {
+void
+LaplacianSmoother3C::smoothCurves() {
 
     std::vector<GeomCurve*> curves;
     m_linker->geometry()->getCurves(curves);
@@ -61,7 +63,8 @@ void LaplacianSmoother::smoothCurves() {
 
 }
 /*----------------------------------------------------------------------------*/
-void LaplacianSmoother::smoothSurfaces() {
+void
+LaplacianSmoother3C::smoothSurfaces() {
 
 
     std::vector<GeomSurface*> surfs;
@@ -92,7 +95,8 @@ void LaplacianSmoother::smoothSurfaces() {
     }
 }
 /*----------------------------------------------------------------------------*/
-void LaplacianSmoother::smoothVolumes() {
+void
+LaplacianSmoother3C::smoothVolumes() {
 
     Mesh* m = m_linker->mesh();
 
