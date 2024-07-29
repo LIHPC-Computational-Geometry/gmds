@@ -1,15 +1,15 @@
 /*----------------------------------------------------------------------------*/
+#include <gmds/cad/GeomCurve.h>
+#include <gmds/cad/GeomPoint.h>
+#include <gmds/cad/GeomSurface.h>
+#include <gmds/cadfac/FACManager.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
+#include <gmds/igalgo/BoundaryOperator.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKReader.h>
 #include <gmds/io/VTKWriter.h>
-#include <gmds/cadfac/FACManager.h>
-#include <gmds/cad/GeomPoint.h>
-#include <gmds/cad/GeomCurve.h>
-#include <gmds/cad/GeomSurface.h>
-#include <gmds/smoothy/LaplacianSmoother.h>
-#include <gmds/igalgo/BoundaryOperator.h>
+#include <gmds/smoothy/LaplacianSmoother3C.h>
 /*----------------------------------------------------------------------------*/
 #include "gmds/igalgo/BoundaryOperator2D.h"
 #include <gmds/smoothy/EllipticSmoother2D.h>

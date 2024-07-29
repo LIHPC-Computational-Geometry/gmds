@@ -1,15 +1,15 @@
 /*----------------------------------------------------------------------------*/
-#include <gtest/gtest.h>
+#include <gmds/cadfac/FACManager.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
-#include <gmds/io/VTKWriter.h>
-#include <gmds/sheet/Pillow3D.h>
 #include <gmds/igalgo/GridBuilder.h>
-#include <iostream>
 #include <gmds/io/IGMeshIOService.h>
+#include <gmds/io/VTKWriter.h>
 #include <gmds/sheet/Pillow2D.h>
-#include <gmds/cadfac/FACManager.h>
-#include <gmds/smoothy/LaplacianSmoother.h>
+#include <gmds/sheet/Pillow3D.h>
+#include <gmds/smoothy/LaplacianSmoother3C.h>
+#include <gtest/gtest.h>
+#include <iostream>
 
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -315,10 +315,11 @@ TEST(PillowOpClass, test_pillow3D_with_geom)
 
     manager.initAndLinkFrom3DMesh(&m_vol,&linker);
 
-    smoothy::LaplacianSmoother smoother(&linker);
-    smoother.smoothCurves(10);
-    smoother.smoothSurfaces(10);
-    smoother.smoothVolumes(10);
+    smoothy::LaplacianSmoother3C smoother(&m_vol, &linker);
+	 smoother.setNbIterations(10);
+    smoother.smoothCurves();
+    smoother.smoothSurfaces();
+    smoother.smoothVolumes();
 
     std::string vtk_file2 = ("hexa_pillow_out.vtk");
     IGMeshIOService ioService(&m_vol);

@@ -2,16 +2,15 @@
 // Created by calderans on 06/03/19.
 //
 
-#include <gmds/dualBlocking/DualBlockingSession.h>
 #include <Predicates_psm.h>
+#include <ctime>
+#include <gmds/cad/GeomSurface.h>
+#include <gmds/dualBlocking/DualBlockingSession.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>
-#include <gmds/cad/GeomSurface.h>
-#include <gmds/smoothy/LaplacianSmoother.h>
 #include <gmds/math/Line.h>
-#include <ctime>
 #include <gmds/math/Orientation.h>
-
+#include <gmds/smoothy/LaplacianSmoother3C.h>
 
 using namespace db;
 using namespace gmds;

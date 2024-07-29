@@ -5,22 +5,27 @@ using namespace gmds;
 using namespace gmds::smoothy;
 using namespace gmds::cad;
 /*----------------------------------------------------------------------------*/
-AngleBasedQuadSmoother::AngleBasedQuadSmoother(GeomMeshLinker* ALinker)
-:AbstractSmoother(ALinker)
+AngleBasedQuadSmoother::AngleBasedQuadSmoother(gmds::Mesh *AMesh, cad::GeomMeshLinker *ALinker)
+:AbstractSmoother(AMesh), SmoothingClassificationService(ALinker)
 {}
 /*----------------------------------------------------------------------------*/
-void AngleBasedQuadSmoother::smooth(const int ANbIterations) {
+int AngleBasedQuadSmoother::smooth() {
     //we iteratively smooth curves and surfaces
-    for (auto i = 0; i < ANbIterations; i++) {
+    for (auto i = 0; i < m_nb_iterations; i++) {
         smoothSurfaces();
         smoothCurves();
     }
+	 return 1;
 }
 /*----------------------------------------------------------------------------*/
 bool AngleBasedQuadSmoother::isValid() const {
-    bool model_valid = AbstractSmoother::isValid();
+    bool model_valid = SmoothingClassificationService::isValidForClassification();
     if(!model_valid)
         return false;
+
+	 if(m_linker->mesh()!=m_mesh)
+		  return false;
+
     for(auto f_id:m_linker->mesh()->faces()){
         if(m_linker->mesh()->get<Face>(f_id).type()!=GMDS_QUAD)
             return false;

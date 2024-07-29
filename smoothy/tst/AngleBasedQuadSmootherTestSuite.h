@@ -43,10 +43,11 @@ TEST(AngleBasedQuadSmootherTestSuite, s24_quad_smoother)
 
     manager.initAndLinkFrom3DMesh(&m_vol,&linker);
 
-    smoothy::AngleBasedQuadSmoother smoother(&linker);
+    smoothy::AngleBasedQuadSmoother smoother(&m_vol,&linker);
     ASSERT_TRUE(smoother.isValid());
-
-    smoother.smooth(100);
+	smoother.setNodesAll();
+	smoother.setNbIterations(100);
+    smoother.smooth();
 
 
     std::string vtk_file2 = dir+"/Notch/out.vtk";

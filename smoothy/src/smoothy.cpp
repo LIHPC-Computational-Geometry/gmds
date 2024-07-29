@@ -1,15 +1,15 @@
 /*----------------------------------------------------------------------------*/
+#include <gmds/cad/GeomCurve.h>
+#include <gmds/cad/GeomPoint.h>
+#include <gmds/cad/GeomSurface.h>
+#include <gmds/cadfac/FACManager.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/MeshDoctor.h>
+#include <gmds/igalgo/BoundaryOperator.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKReader.h>
 #include <gmds/io/VTKWriter.h>
-#include <gmds/cadfac/FACManager.h>
-#include <gmds/cad/GeomPoint.h>
-#include <gmds/cad/GeomCurve.h>
-#include <gmds/cad/GeomSurface.h>
-#include <gmds/smoothy/LaplacianSmoother.h>
-#include <gmds/igalgo/BoundaryOperator.h>
+#include <gmds/smoothy/LaplacianSmoother3C.h>
 /*----------------------------------------------------------------------------*/
 #include <iostream>
 
@@ -289,18 +289,19 @@ int main(int argc, char* argv[])
     // PERFORM THE MESH SMOOTHING NOW
     //==================================================================
     std::cout<<"> Start smoothing"<<std::endl;
-    smoothy::LaplacianSmoother smoother(&linker);
+    smoothy::LaplacianSmoother3C smoother(&m,&linker);
     if(!smoother.isValid())
     {
         std::cout<<"INVALID MODEL"<<std::endl;
         exit(1);
     }
+	 smoother.setNbIterations(nb_iterations);
     std::cout<<"  - start curve smoothing ("<<nb_iterations<<" iterations)"<<std::endl;
-    smoother.smoothCurves(nb_iterations);
+    smoother.smoothCurves();
     std::cout<<"  - start surface smoothing ("<<nb_iterations<<" iterations)"<<std::endl;
-    smoother.smoothSurfaces(nb_iterations);
+    smoother.smoothSurfaces();
     std::cout<<"  - start volume smoothing ("<<nb_iterations<<" iterations)"<<std::endl;
-    smoother.smoothVolumes(nb_iterations);
+    smoother.smoothVolumes();
 
     //==================================================================
     // COMPUTE FINAL QUALITY

@@ -15,15 +15,14 @@
 #include <gmds/igalgo/GridBuilder.h>
 
 #include <gmds/blockMesher/BlockMesher.h>
-#include <gmds/cadfac/FACManager.h>
-#include <gmds/cad/GeomPoint.h>
 #include <gmds/cad/GeomCurve.h>
+#include <gmds/cad/GeomPoint.h>
 #include <gmds/cad/GeomSurface.h>
+#include <gmds/cadfac/FACManager.h>
 #include <gmds/igalgo/BoundaryOperator.h>
-#include <gmds/smoothy/LaplacianSmoother.h>
 #include <gmds/rlBlocking/LinkerBlockingGeom.h>
 #include <gmds/rlBlocking/ValidBlocking.h>
-
+#include <gmds/smoothy/LaplacianSmoother3C.h>
 
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>

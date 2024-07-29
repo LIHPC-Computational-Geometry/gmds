@@ -1,20 +1,39 @@
 /*----------------------------------------------------------------------------*/
-#include <gmds/smoothy/LaplacianSmoother.h>
+#include <gmds/smoothy/LaplacianSmoother3C.h>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 using namespace gmds::smoothy;
 using namespace gmds::cad;
 /*----------------------------------------------------------------------------*/
-LaplacianSmoother::LaplacianSmoother(GeomMeshLinker* ALinker)
-: AbstractSmoother(ALinker) {}
+LaplacianSmoother3C::LaplacianSmoother3C(gmds::Mesh *AMesh, cad::GeomMeshLinker *ALinker)
+  : AbstractSmoother(AMesh), SmoothingClassificationService(ALinker) {}
 /*----------------------------------------------------------------------------*/
-void LaplacianSmoother::smoothCurves(const int ANbIterations) {
+bool
+LaplacianSmoother3C::isValid() const
+{
+	if(m_mesh!=m_linker->mesh())
+		return false;
+
+	return isValidForClassification();
+}
+/*----------------------------------------------------------------------------*/
+int
+LaplacianSmoother3C::smooth()
+{
+	smoothCurves();
+	smoothSurfaces();
+	smoothVolumes();
+	return 1;
+}
+/*----------------------------------------------------------------------------*/
+void
+LaplacianSmoother3C::smoothCurves() {
 
     std::vector<GeomCurve*> curves;
     m_linker->geometry()->getCurves(curves);
     Mesh* m = m_linker->mesh();
 
-    for(auto i=0;i<ANbIterations;i++) {
+    for(auto i=0;i<m_nb_iterations;i++) {
         for (auto c:curves) {
 
             //We get all the nodes of the curve
@@ -44,13 +63,14 @@ void LaplacianSmoother::smoothCurves(const int ANbIterations) {
 
 }
 /*----------------------------------------------------------------------------*/
-void LaplacianSmoother::smoothSurfaces(const int ANbIterations) {
+void
+LaplacianSmoother3C::smoothSurfaces() {
 
 
     std::vector<GeomSurface*> surfs;
     m_linker->geometry()->getSurfaces(surfs);
     Mesh* m = m_linker->mesh();
-    for(auto i=0;i<ANbIterations;i++) {
+    for(auto i=0;i<m_nb_iterations;i++) {
         for (auto s:surfs) {
             //We get all the nodes of the surface
             auto ids_of_nodes_on_surf = m_s2n[s->id()];
@@ -75,11 +95,12 @@ void LaplacianSmoother::smoothSurfaces(const int ANbIterations) {
     }
 }
 /*----------------------------------------------------------------------------*/
-void LaplacianSmoother::smoothVolumes(const int ANbIterations) {
+void
+LaplacianSmoother3C::smoothVolumes() {
 
     Mesh* m = m_linker->mesh();
 
-    for(auto i=0;i<ANbIterations;i++) {
+    for(auto i=0;i<m_nb_iterations;i++) {
         for (auto vol_info:m_v2n) {
 
             //We get all the nodes of the first volume (or void)

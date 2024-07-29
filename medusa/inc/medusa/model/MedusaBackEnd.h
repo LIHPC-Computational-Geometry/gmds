@@ -9,10 +9,10 @@
 #include <medusa/model/MedusaGrid.h>
 #include <gmds/dualBlocking/DualBlockingSession.h>
 /*----------------------------------------------------------------------------*/
-#include <gmds/igalgo/BoundaryOperator.h>
-#include <gmds/graph/TopologyGraph.h>
-#include <gmds/frame3d/Params.h>
-#include <gmds/smoothy/LaplacianSmoother.h>
+#	include <gmds/frame3d/Params.h>
+#	include <gmds/graph/TopologyGraph.h>
+#	include <gmds/igalgo/BoundaryOperator.h>
+#	include <gmds/smoothy/LaplacianSmoother3C.h>
 /*----------------------------------------------------------------------------*/
 
 namespace medusa{
