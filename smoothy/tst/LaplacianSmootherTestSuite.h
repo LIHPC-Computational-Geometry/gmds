@@ -378,6 +378,7 @@ TEST(LaplacianSmootherTestSuite, grid_2D_smooth_UC)
 	smoothy::LaplacianSmoother2UC smoother(&m);
 	smoother.setNbIterations(1);
 
+	ASSERT_TRUE(smoother.isValid());
 	// FIRST WE MOVE A SINGLE NODE
 	std::vector<TCellID> to_move;
 	to_move.push_back(5);
