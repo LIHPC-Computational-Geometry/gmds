@@ -6,6 +6,7 @@
 #include <gmds/cad/GeomMeshLinker.h>
 #include <gmds/cadfac/FACManager.h>
 #include <gmds/smoothy/AbstractSmoother.h>
+#include <gmds/smoothy/SmoothingClassificationService.h>
 #include "GMDSSmoothy_export.h"
 /*----------------------------------------------------------------------------*/
 #ifndef GMDS_LAPLACIANSMOOTHER_H
@@ -21,12 +22,14 @@ namespace gmds{
  *         and volumes are smoothed individually.
  */
 /*----------------------------------------------------------------------------*/
-        class GMDSSmoothy_API LaplacianSmoother: public AbstractSmoother{
+        class GMDSSmoothy_API LaplacianSmoother: public AbstractSmoother, SmoothingClassificationService{
         public:
-            LaplacianSmoother(cad::GeomMeshLinker* ALinker);
-            void smoothCurves(const int ANbIterations=1);
-            void smoothSurfaces(const int ANbIterations=1);
-            void smoothVolumes(const int ANbIterations=1);
+            LaplacianSmoother(Mesh* AMesh, cad::GeomMeshLinker* ALinker);
+	         bool isValid() const override;
+	         int smooth() override;
+            void smoothCurves();
+            void smoothSurfaces();
+            void smoothVolumes();
 
         };
 /*----------------------------------------------------------------------------*/

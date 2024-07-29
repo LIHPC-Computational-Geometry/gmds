@@ -1,42 +1,48 @@
 /*----------------------------------------------------------------------------*/
 // GMDS File Headers
 /*----------------------------------------------------------------------------*/
-#include <gmds/smoothy/AbstractSmoother.h>
 #include "GMDSSmoothy_export.h"
+#include <gmds/smoothy/AbstractSmoother.h>
+#include <gmds/smoothy/SmoothingClassificationService.h>
 /*----------------------------------------------------------------------------*/
 #ifndef GMDS_ANGLE_BASED_QUAD_SMOOTHER_H
-#define GMDS_ANGLE_BASED_QUAD_SMOOTHER_H
+#	define GMDS_ANGLE_BASED_QUAD_SMOOTHER_H
 /*----------------------------------------------------------------------------*/
-namespace gmds{
+namespace gmds {
 /*----------------------------------------------------------------------------*/
-    namespace smoothy{
+namespace smoothy {
 /*----------------------------------------------------------------------------*/
 /** \class LaplacianSmoother
- *  \brief This class provides a straightforward implementation of a Laplacian
- *         smoother for meshes classifiend on geometric models. Curves, surfaces
- *         and volumes are smoothed individually.
+ *  \brief This class provides an angle-based smoother fo smoother
+ *  for 2D quad  meshes classified on geometric models.
  */
 /*----------------------------------------------------------------------------*/
-        class GMDSSmoothy_API AngleBasedQuadSmoother: public AbstractSmoother{
-        public:
-            AngleBasedQuadSmoother(cad::GeomMeshLinker* ALinker);
-            void smooth(const int ANbIterations=1);
+class GMDSSmoothy_API AngleBasedQuadSmoother : public AbstractSmoother, SmoothingClassificationService
+{
+ public:
+	AngleBasedQuadSmoother(Mesh* AMesh, cad::GeomMeshLinker *ALinker);
 
+	int smooth() override;
+	/**@brief validation of input
+	 * @return check the linker (cf AbstractSmoother class) and check
+	 *         that we have only quad faces in the mesh.
+	 */
+	bool isValid() const override;
 
-            /**@brief validation of input
-             * @return check the linker (cf AbstractSmoother class) and check
-             *         that we have only quad faces in the mesh.
-             */
-            virtual bool isValid() const;
-
-        private:
-            void smoothCurves();
-            void smoothSurfaces();
-        };
+ private:
+	/**
+	 * Smooth curves only
+	 */
+	void smoothCurves();
+	/**
+	 * Smooth surfaces only
+	 */
+	void smoothSurfaces();
+};
 /*----------------------------------------------------------------------------*/
-    } // end namespace cad
+}     // namespace smoothy
 /*----------------------------------------------------------------------------*/
-} // end namespace gmds
+}     // end namespace gmds
 /*----------------------------------------------------------------------------*/
-#endif //GMDS_ANGLE_BASED_QUAD_SMOOTHER_H
+#endif     // GMDS_ANGLE_BASED_QUAD_SMOOTHER_H
 /*----------------------------------------------------------------------------*/

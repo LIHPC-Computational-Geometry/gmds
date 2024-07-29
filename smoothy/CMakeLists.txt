@@ -13,6 +13,7 @@ set(GMDS_INC
         inc/gmds/smoothy/HLBFGSWrapper.h
         inc/gmds/smoothy/EllipticSmoothing.h
         inc/gmds/smoothy/EllipticSmoother2D.h
+        inc/gmds/smoothy/SmoothingClassificationService.h
         )
 set(GMDS_SRC
         src/AbstractSmoother.cpp
@@ -21,6 +22,7 @@ set(GMDS_SRC
         src/HLBFGSWrapper.cpp
         src/EllipticSmoothing.cpp
         src/EllipticSmoother2D.cpp
+        src/SmoothingClassificationService.cpp
         )
 #==============================================================================
 # HLBFGS include link (old fashion include)
