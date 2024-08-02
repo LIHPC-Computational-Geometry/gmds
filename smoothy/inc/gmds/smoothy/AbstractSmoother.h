@@ -49,7 +49,6 @@ class GMDSSmoothy_API AbstractSmoother
 	 * @param ANbIterations the expected number of iterations
 	 */
 	void setNbIterations(const int ANbIterations);
-	;
 
  protected:
 	/** the mesh we work on*/
