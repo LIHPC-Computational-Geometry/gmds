@@ -10,6 +10,7 @@ set(GMDS_INC
         inc/gmds/smoothy/AbstractSmoother.h
         inc/gmds/smoothy/AngleBasedQuadSmoother.h
         inc/gmds/smoothy/LaplacianSmoother3C.h
+        inc/gmds/smoothy/LaplacianSmoother3UC.h
         inc/gmds/smoothy/LaplacianSmoother2UC.h
         inc/gmds/smoothy/HLBFGSWrapper.h
         inc/gmds/smoothy/EllipticSmoothing.h
@@ -20,6 +21,7 @@ set(GMDS_SRC
         src/AbstractSmoother.cpp
         src/AngleBasedQuadSmoother.cpp
         src/LaplacianSmoother3C.cpp
+        src/LaplacianSmoother3UC.cpp
         src/LaplacianSmoother2UC.cpp
         src/HLBFGSWrapper.cpp
         src/EllipticSmoothing.cpp
