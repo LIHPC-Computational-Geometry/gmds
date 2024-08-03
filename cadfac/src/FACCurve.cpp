@@ -134,6 +134,7 @@ FACCurve::computeTangent(const int AParam) const
 		}
 	throw GMDSException("Error to compute tangent vector on a FAC curve");
 }
+
 /*----------------------------------------------------------------------------*/
 GeomCurve::CurvatureInfo
 FACCurve::getCurvatureInfo() const

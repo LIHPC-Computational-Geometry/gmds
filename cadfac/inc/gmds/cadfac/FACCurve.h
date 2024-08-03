@@ -83,14 +83,14 @@ class GMDSCadFac_API FACCurve : public GeomCurve
 	/*------------------------------------------------------------------------*/
 	/** \brief  Length of the curve
 	 */
-	double length() const;
+	double length() const override;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief Move a point AP near the surface to the closest point on the
 	 * 		   surface.
 	 *  \param AP
 	 */
-	virtual void project(math::Point &AP) const;
+	void project(math::Point &AP) const override;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief Move a point AP near the surface to the closest point on the
@@ -98,7 +98,7 @@ class GMDSCadFac_API FACCurve : public GeomCurve
 	 *  \param AP
 	 *  \param AV the tangent vector
 	 */
-	virtual void project(math::Point &AP, math::Vector3d &AV) const;
+	void project(math::Point &AP, math::Vector3d &AV) const override;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief Get the closest point from AP on the surface
@@ -106,12 +106,12 @@ class GMDSCadFac_API FACCurve : public GeomCurve
 	 *
 	 *  \return the closest point of APoint on the surface
 	 */
-	virtual math::Point closestPoint(const math::Point &AP) const;
+	math::Point closestPoint(const math::Point &AP) const override;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  computes the area of the entity.
 	 */
-	virtual TCoord computeArea() const;
+	TCoord computeArea() const override;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  computes the bounding box
@@ -119,18 +119,18 @@ class GMDSCadFac_API FACCurve : public GeomCurve
 	 *	\param minXYZ The minimum coordinate of the bounding box.
 	 *	\param maxXYZ The maximum coordinate of the bounding box.
 	 */
-	virtual void computeBoundingBox(TCoord minXYZ[3], TCoord maxXYZ[3]) const;
-	virtual std::tuple<TCoord, TCoord, TCoord, TCoord, TCoord, TCoord> BBox() const;
+	void computeBoundingBox(TCoord minXYZ[3], TCoord maxXYZ[3]) const override;
+	std::tuple<TCoord, TCoord, TCoord, TCoord, TCoord, TCoord> BBox() const override;
 
 	/** \brief  Return whether the curve is a loop or not
 	 *  \return a boolean
 	 */
-	virtual bool isALoop() const;
+	bool isALoop() const override;
 
 	/**@brief compute the curvature info of the curve
 	 * @return the curvature type of this
 	 */
-	virtual CurvatureInfo getCurvatureInfo() const;
+	CurvatureInfo getCurvatureInfo() const override;
 
 	/** @brief  Compute the tangent vector at the end point of a curve. The vector is oriented towards the curve
 	 * 			If the curve is a loop, the starting point (param=0) is
@@ -138,13 +138,14 @@ class GMDSCadFac_API FACCurve : public GeomCurve
 	 *  @param[in] AParam parameter equals to 0 or 1
 	 *  @return a unit tangent vector at point of param @p AParam
 	 */
-	virtual math::Vector3d computeTangent(const int AParam) const;
+	math::Vector3d computeTangent(const int AParam) const override;
+
 
 	/** \brief  Compute the dihedral angle (max for each edge of the curve)
 	 *
 	 *  \return the dihedral angle
 	 */
-	TCoord computeDihedralAngle() const;
+	TCoord computeDihedralAngle() const override;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Returns a copy of the internal mesh representation nodes

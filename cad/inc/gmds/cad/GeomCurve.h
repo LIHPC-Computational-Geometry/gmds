@@ -75,7 +75,7 @@ class GMDSCad_API GeomCurve : public GeomEntity
 	 * 		   surface.
 	 *  \param AP
 	 */
-	void project(math::Point &AP) const override = 0;
+	void project(math::Point &AP) const  = 0;
 
 	/** @brief  Return whether the curve is a loop or not
 	 *  @return a boolean

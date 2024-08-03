@@ -1,0 +1,180 @@
+/*----------------------------------------------------------------------------*/
+#include <gmds/mctsblock/BlockingClassifier.h>
+#include <gmds/mctsblock/BlockingState.h>
+#include <gmds/mctsblock/BlockingAction.h>
+#include <gmds/utils/Exception.h>
+/*----------------------------------------------------------------------------*/
+using namespace gmds;
+using namespace gmds::mctsblock;
+/*----------------------------------------------------------------------------*/
+const int BlockingState::m_memory_depth = 4;
+const double BlockingState::m_weight_nodes = 1000;
+const double BlockingState::m_weight_edges = 100;
+const double BlockingState::m_weight_faces = 1;
+/*----------------------------------------------------------------------------*/
+BlockingState::BlockingState(Blocking *AB, int ADepth, std::deque<double> APrevScores)
+  : m_blocking(AB), m_depth(ADepth), m_memory_scores(APrevScores)
+{
+	m_blocking->extract_boundary(m_boundary_node_ids, m_boundary_edge_ids, m_boundary_face_ids);
+	BlockingClassifier(m_blocking).try_and_capture(m_boundary_node_ids,m_boundary_edge_ids, m_boundary_face_ids);
+	updateMemory(computeScore());
+}
+/*----------------------------------------------------------------------------*/
+BlockingState::BlockingState(const gmds::mctsblock::BlockingState &AState) :
+  m_blocking(AState.m_blocking),
+  m_depth(AState.m_depth),
+  m_memory_scores(AState.m_memory_scores),
+  m_boundary_node_ids(AState.m_boundary_node_ids),
+  m_boundary_edge_ids(AState.m_boundary_edge_ids),
+  m_boundary_face_ids(AState.m_boundary_face_ids)
+{
+}
+/*----------------------------------------------------------------------------*/
+std::vector<std::shared_ptr<IAction>>
+BlockingState::get_actions() const
+{
+	auto actions = get_possible_cuts();
+	auto block_removals = get_possible_block_removals();
+	actions.insert(actions.end(),block_removals.begin(),block_removals.end());
+
+	/*TODO Here we could filter equivalent actions!!!
+	 * For edge cut, it means for instance, when a cut on an edge will be
+	 * equivalent to the cut on a parallel edge by propagation*/
+	return actions;
+}
+/*----------------------------------------------------------------------------*/
+bool
+BlockingState::win() const
+{
+	// we win if we don't have anymore classification errors. It means that the
+	// state score, which is the last element of the memory scores, is equal to
+	// 0
+	return (m_memory_scores.back() == 0);
+} /*----------------------------------------------------------------------------*/
+bool
+BlockingState::lost() const
+{
+	// We lost if our score doesn't improve during the last steps.
+
+	// if the memory stack is not full we keep working, so we do not lost
+	if (m_memory_scores.size() < BlockingState::m_memory_depth) return false;     // not lost
+
+	// now we check the value of the current score in comparisons to the
+	return (m_memory_scores[4] >= m_memory_scores[3] ||
+	        m_memory_scores[4] >= m_memory_scores[2] ||
+	        m_memory_scores[4] >= m_memory_scores[1] ||
+	        m_memory_scores[4] >= m_memory_scores[0]);
+}
+/*----------------------------------------------------------------------------*/
+bool
+BlockingState::is_terminal() const
+{
+	return lost() || win();
+}
+/*----------------------------------------------------------------------------*/
+std::string
+BlockingState::write(const std::string &AFileName, const int AStageIndex, const int ANodeId, const int ADepth) const
+{
+	return std::string("");
+}
+/*----------------------------------------------------------------------------*/
+double
+BlockingState::computeScore()
+{
+   auto errors = BlockingClassifier(m_blocking).detect_classification_errors();
+	return m_weight_nodes*errors.non_captured_points.size() + m_weight_edges*errors.non_captured_curves.size();
+}
+/*----------------------------------------------------------------------------*/
+void
+BlockingState::updateMemory(double AScore)
+{
+	// We add a new score in the memory stack
+	// the oldest score is in 0, the newest is in 3
+	if (m_memory_scores.size() == 4) {
+		// the stack is full we remove the first element
+		m_memory_scores.pop_front();
+	}
+	// we add the new score at the back
+	m_memory_scores.push_back(AScore);
+}
+/*----------------------------------------------------------------------------*/
+std::vector<std::shared_ptr<IAction>>
+BlockingState::get_possible_block_removals() const
+{
+	auto nodes = m_blocking->get_all_nodes();
+	std::set<TCellID> blocks_to_keep;
+	for (auto n : nodes) {
+		if (n->info().geom_dim == 0) {
+			// n is classified onto a geom point
+			// if it belongs to a single block, the corresponding block cannot
+			// be removed
+			auto n_blocks = m_blocking->get_blocks_of_node(n);
+			if (n_blocks.size() == 1) {
+				blocks_to_keep.insert(n_blocks[0]->info().topo_id);
+			}
+		}
+	}
+	// all the other blocks can be removed
+	auto all_blocks = m_blocking->get_all_id_blocks();
+	std::vector<std::shared_ptr<IAction> > actions;
+	for (auto b : all_blocks) {
+		//We check if b is a block to keep?
+		if (blocks_to_keep.find(b) == blocks_to_keep.end()){
+			// b is not to keep, we remove it
+			actions.push_back(std::make_shared<BlockRemovalAction>(b));
+		}
+	}
+	return  actions;
+}
+/*----------------------------------------------------------------------------*/
+std::vector<std::shared_ptr<IAction>>
+BlockingState::get_possible_cuts() const
+{
+	std::set<std::pair<TCellID, double>> list_cuts;
+	// We look which geometric points and curves are not yet captured
+	auto non_captured_entities = BlockingClassifier(m_blocking).detect_classification_errors();
+	auto non_captured_points = non_captured_entities.non_captured_points;
+	auto non_captured_curves = non_captured_entities.non_captured_curves;
+
+	for (auto p : non_captured_points) {
+		// the point p is not captured. We look for a cut along a block edge to capture it
+		auto action = m_blocking->get_cut_info(p);
+		auto param_cut = std::get<1>(action);
+		// We only consider cut of edge that occur inside the edge and not on one of
+		// its end points (so for param O or 1)
+		if (param_cut != 0.0 && param_cut != 1.0)
+			list_cuts.insert(std::make_pair(std::get<0>(action)->info().topo_id, std::get<1>(action)));
+		// TODO: verify if we always have a cut that is possible for a point???
+	}
+
+	for (auto c_id : non_captured_curves) {
+		auto c = m_blocking->geom_model()->getCurve(c_id);
+		gmds::TCoord minXYX[3];
+		gmds::TCoord maxXYX[3];
+		c->computeBoundingBox(minXYX, maxXYX);
+
+		math::Point bb_corners[8]={
+		   math::Point(minXYX[0], minXYX[1], minXYX[2]),
+		   math::Point(maxXYX[0], maxXYX[1], maxXYX[2]),
+		   math::Point(minXYX[0], minXYX[1], maxXYX[2]),
+		   math::Point(maxXYX[0], minXYX[1], maxXYX[2]),
+		   math::Point(maxXYX[0], minXYX[1], minXYX[2]),
+		   math::Point(minXYX[0], maxXYX[1], maxXYX[2]),
+		   math::Point(minXYX[0], maxXYX[1], minXYX[2]),
+		   math::Point(maxXYX[0], maxXYX[1], minXYX[2])
+		};
+		for (auto p:bb_corners) {
+			auto cut_info_p = m_blocking->get_cut_info(p);
+			auto param_cut = std::get<1>(cut_info_p);
+			// We only consider cut of edge that occur inside the edge and not on one of
+			// its end points (so for param O or 1)
+			if (param_cut != 0.0 && param_cut != 1.0)
+				list_cuts.insert(std::make_pair(std::get<0>(cut_info_p)->info().topo_id, std::get<1>(cut_info_p)));
+		}
+	}
+	std::vector<std::shared_ptr<IAction> > actions;
+	for(auto cut_info:list_cuts)
+		actions.push_back(std::make_shared<EdgeCutAction>(cut_info.first,cut_info.second));
+
+	return actions;
+}
