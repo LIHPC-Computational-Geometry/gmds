@@ -126,12 +126,42 @@ BlockingClassifier::try_and_classify_nodes(std::set<TCellID> &ANodeIds, const do
 	}
 	return nb_unclassified;
 }
-
+/*----------------------------------------------------------------------------*/
+std::pair<bool, Blocking::Edge>
+BlockingClassifier::find_aligned_edge(cad::GeomPoint *APoint, const math::Vector3d &ATangent, std::set<TCellID> &AEdgeIds)
+{
+	std::vector<Blocking::Edge> candidates;
+	for (auto eid : AEdgeIds) {
+		auto e = m_blocking->get_edge(eid);
+		auto e_nodes = m_blocking->get_nodes_of_edge(e);
+		if ((e_nodes[0]->info().geom_dim == 0 && e_nodes[0]->info().geom_id == APoint->id())
+		    || (e_nodes[1]->info().geom_dim == 0 && e_nodes[1]->info().geom_id == APoint->id())) {
+			candidates.push_back(e);
+		}
+	}
+	// Among the candidates, does one aligned with tangent0?
+	bool found_aligned = false;
+	Blocking::Edge aligned_edge;
+	for (auto i = 0; i < candidates.size() && !found_aligned; i++) {
+		auto c = candidates[i];
+		auto c_nodes = m_blocking->get_nodes_of_edge(c);
+		// We go from 1 to 0
+		auto c_vec = c_nodes[0]->info().point - c_nodes[1]->info().point;
+		if (c_nodes[0]->info().geom_dim == 0 && c_nodes[0]->info().geom_id == APoint->id()) {
+			// means we have to go from 0 to 1
+			c_vec = c_nodes[1]->info().point - c_nodes[0]->info().point;
+		}
+		c_vec.normalize();
+		if (c_vec.dot(ATangent) > 0.7) {
+			found_aligned = true;
+			aligned_edge = c;
+		}
+	}
+	return std::make_pair(found_aligned, aligned_edge);
+}
 /*----------------------------------------------------------------------------*/
 int
-BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds,
-                                    std::set<TCellID> &AEdgeIds,
-                                    std::set<TCellID> &AFaceIds)
+BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds, std::set<TCellID> &AEdgeIds, std::set<TCellID> &AFaceIds)
 {
 	//===================================================================
 	// 1. WE CHECK NODE
@@ -146,71 +176,133 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds,
 	std::vector<cad::GeomCurve *> geom_curves;
 	m_geom_model->getCurves(geom_curves);
 
+	//TODO PROBLEME : les sommets ne sont pas numerotés de 0 à V mais on les numeros du blocking!!!!!
+	//PAS CONTINU
 	Graph g(ANodeIds.size());
-	for(auto i:AEdgeIds){
+	for (auto i : AEdgeIds) {
 		auto ei_nodes = m_blocking->get_nodes_of_edge(m_blocking->get_edge(i));
-		g.addEdge(ei_nodes[0]->info().topo_id,ei_nodes[1]->info().topo_id,1);
+		g.addEdge(ei_nodes[0]->info().topo_id, ei_nodes[1]->info().topo_id, 1);
 	}
 
-	for(auto c:geom_curves){
-		//3 cases based on the number of end points of c (0,1,2)
+	for (auto c : geom_curves) {
+		// 3 cases based on the number of end points of c (0,1,2)
 		auto c_end_points = c->points();
-		if(c_end_points.size()==0){
+		if (c_end_points.size() == 0) {
 			throw GMDSException("Capture of curves with 0 end points is not yet supported");
 		}
-		else if(c_end_points.size()==1){
+		else if (c_end_points.size() == 1) {
 			throw GMDSException("Capture of curves with 1 end point is not yet supported");
 		}
-		if(c_end_points.size()==2){
+		if (c_end_points.size() == 2) {
 			auto end_point_0 = c_end_points[0];
 			auto end_point_1 = c_end_points[1];
-			//We check if those end points are already captured?
-			bool found_n0=false, found_n1=false;
-			Blocking::Node n0,n1;
-			for(auto i=0; i<ANodeIds.size() && !found_n0 & !found_n1;i++){
+			// We check if those end points are already captured?
+			bool found_n0 = false, found_n1 = false;
+			Blocking::Node n0, n1;
+			for (auto i = 0; i < ANodeIds.size() && !found_n0 & !found_n1; i++) {
 				auto ni = m_blocking->get_node(i);
-				if(ni->info().geom_dim==0 && ni->info().geom_id==end_point_0->id()){
-					found_n0=true;
-					n0=ni;
+				if (ni->info().geom_dim == 0 && ni->info().geom_id == end_point_0->id()) {
+					found_n0 = true;
+					n0 = ni;
 				}
-				else if(ni->info().geom_dim==0 && ni->info().geom_id==end_point_1->id()){
-					found_n1=true;
-					n1=ni;
+				else if (ni->info().geom_dim == 0 && ni->info().geom_id == end_point_1->id()) {
+					found_n1 = true;
+					n1 = ni;
 				}
 			}
-			if(found_n0 && found_n1){
+			if (found_n0 && found_n1) {
 				// The two end points of the curve are already capture, we can look for a path going
 				// from n0 ton n1 among the nodes of ANodeIDs
+				// We look for each node, if a block edge is aligned enough with the curve
 
-				// To do that, we first assign a weight to each edge, relatively to the distance
-				// to the curve
-				for(auto eid:AEdgeIds){
-					auto e = m_blocking->get_edge(eid);
-					auto e_nodes = m_blocking->get_nodes_of_edge(e);
-					auto e_middle = 0.5*(e_nodes[0]->info().point + e_nodes[1]->info().point);
-					auto p_on_curve = e_middle;
-					c->project(p_on_curve);
-					g.setWeight(e_nodes[0]->info().topo_id,e_nodes[1]->info().topo_id,e_middle.distance(p_on_curve));
+				// ============ END POINT 0 first =======================
+				auto info0 = find_aligned_edge(end_point_0, c->tangent(0), AEdgeIds);
+				auto info1 = find_aligned_edge(end_point_1, c->tangent(1), AEdgeIds);
+				if (info0.first && info1.first) {
+					// means we found two edge tangential to the curve at its extremities
+					// We can try to capture the curve
+
+					// First case, the two edges have a common node, it is over
+					auto first_edge = info0.second;
+					auto second_edge = info1.second;
+					auto found_common_node = false;
+					Blocking::Node common_node;
+					auto first_nodes = m_blocking->get_nodes_of_edge(first_edge);
+					auto second_nodes = m_blocking->get_nodes_of_edge(second_edge);
+					if ((first_nodes[0] == second_nodes[0]) || first_nodes[0] == second_nodes[1]) {
+						found_common_node = true;
+						common_node = first_nodes[0];
+					}
+					else if ((first_nodes[1] == second_nodes[0]) || first_nodes[1] == second_nodes[1]) {
+						found_common_node = true;
+						common_node = first_nodes[1];
+					}
+					if (found_common_node) {
+						common_node->info().geom_dim = 1;
+						common_node->info().geom_id = c->id();
+						first_edge->info().geom_dim = 1;
+						first_edge->info().geom_id = c->id();
+						second_edge->info().geom_dim = 1;
+						second_edge->info().geom_id = c->id();
+					}
+					else {
+						// We need the shortest path that connect the end points of our two edges
+						auto src_node = first_nodes[0];
+						if (first_nodes[0]->info().geom_dim == 0 && first_nodes[0]->info().geom_id == end_point_0->id()) src_node = first_nodes[1];
+						auto dest_node = second_nodes[0];
+						if (second_nodes[0]->info().geom_dim == 0 && second_nodes[0]->info().geom_id == end_point_1->id()) dest_node = second_nodes[1];
+
+						for (auto eid : AEdgeIds) {
+							auto e = m_blocking->get_edge(eid);
+							if (e == first_edge || e == second_edge) continue;
+							auto e_nodes = m_blocking->get_nodes_of_edge(e);
+							auto e_middle = 0.5 * (e_nodes[0]->info().point + e_nodes[1]->info().point);
+							auto p_on_curve = e_middle;
+							c->project(p_on_curve);
+							g.setWeight(e_nodes[0]->info().topo_id, e_nodes[1]->info().topo_id, e_middle.distance(p_on_curve));
+						}
+						g.computeDijkstra(src_node->info().topo_id);
+						auto sp = g.getShortestPath()[dest_node->info().topo_id];
+						auto spw = g.getShortestPathWeights()[dest_node->info().topo_id];
+						auto average_w = spw / sp.size();
+
+						common_node->info().geom_dim = 1;
+						common_node->info().geom_id = c->id();
+						first_edge->info().geom_dim = 1;
+						first_edge->info().geom_id = c->id();
+						second_edge->info().geom_dim = 1;
+						second_edge->info().geom_id = c->id();
+						for(auto i=0; i<sp.size();i++) {
+							auto n_id = sp[i];
+							m_blocking->get_node(n_id)->info().geom_dim = 1;
+							m_blocking->get_node(n_id)->info().geom_id = c->id();
+							if(i>0){
+								auto m_id = sp[i-1];
+								auto e_mn = m_blocking->get_edge(n_id,m_id);
+								e_mn->info().geom_dim = 1;
+								e_mn->info().geom_id = c->id();
+
+							}
+						}
+					}
 				}
-				g.computeDijkstra(n0->info().topo_id);
-				auto sp = g.getShortestPath();
-				auto spw = g.getShortestPathWeights();
-				//TODO A REPRENDRE ICI POUR CLASSIFIE SUR LA COURBE!!!!!
 			}
- 		}
+		}
 	}
 
 	return 0;
 }
 /*----------------------------------------------------------------------------*/
 bool
-BlockingClassifier::build_edge_path_for_curve(
-   cad::GeomCurve *AC, cad::GeomPoint *AP1, cad::GeomPoint *AP2,
-   Blocking::Node& AN1, Blocking::Node& AN2,
-   std::vector<TCellID>& ANodeIDs,
-   std::vector<TCellID>& AEdgeIDs)
+BlockingClassifier::build_edge_path_for_curve(cad::GeomCurve *AC,
+                                              cad::GeomPoint *AP1,
+                                              cad::GeomPoint *AP2,
+                                              Blocking::Node &AN1,
+                                              Blocking::Node &AN2,
+                                              std::vector<TCellID> &ANodeIDs,
+                                              std::vector<TCellID> &AEdgeIDs)
 {
-return false;
+	return false;
 }
 /*----------------------------------------------------------------------------*/
 void
@@ -522,7 +614,7 @@ BlockingClassifier::classify(const double AMaxDistance, const double APointSnapD
 	//============ (2) We classify edges =================
 	classify_edges(errors);
 
-	errors =detect_classification_errors();
+	errors = detect_classification_errors();
 
 	if (errors.non_captured_points.empty() && errors.non_captured_curves.empty()) {
 
@@ -795,7 +887,6 @@ BlockingClassifier::find_edges_classified_on_curve_without_end_points(cad::GeomC
 	// and must not have  end points
 	assert(AC->points().size() == 0);
 
-
 	// We pick a first edge and we  are going to start from its first node seed and check if the
 	// set of edges that are in AEdgesOnAC discretizes AC. It means, we have to go from seed
 	// to seed using ALL the edges of AEdgesOnAC.
@@ -839,11 +930,10 @@ BlockingClassifier::find_edges_classified_on_curve_without_end_points(cad::GeomC
 			}
 		}
 		if (!found_next_edge) found_error = true;
-		if (next_node ==seed) reach_seed_again = true;
+		if (next_node == seed) reach_seed_again = true;
 	}
 
-	if (reach_seed_again && nb_traversed_edge == AEdgesOnAC.size() && !found_error)
-		return std::make_pair(true, AEdgesOnAC);
+	if (reach_seed_again && nb_traversed_edge == AEdgesOnAC.size() && !found_error) return std::make_pair(true, AEdgesOnAC);
 
 	// it means we have an error
 	return std::make_pair(false, AEdgesOnAC);
@@ -998,88 +1088,88 @@ BlockingClassifier::checkValidity(ClassificationErrors &AErrors)
 /*bool
 BlockingClassifier::check_capt_element(const int AId, const int ADim)
 {
-	bool captPossible = false;
-	auto listEdgesPara = m_blocking->get_all_sheet_edge_sets();
-	auto allEdges = m_blocking->get_all_edges();
-	if (ADim == 0) {
-		if (check_cut_possible(AId, listEdgesPara)) {
-			captPossible = true;
-		}
-	}
-	else {
-		auto theCurve = m_geom_model->getCurve(AId);
-		gmds::TCoord minXYX[3];
-		gmds::TCoord maxXYX[3];
+   bool captPossible = false;
+   auto listEdgesPara = m_blocking->get_all_sheet_edge_sets();
+   auto allEdges = m_blocking->get_all_edges();
+   if (ADim == 0) {
+      if (check_cut_possible(AId, listEdgesPara)) {
+         captPossible = true;
+      }
+   }
+   else {
+      auto theCurve = m_geom_model->getCurve(AId);
+      gmds::TCoord minXYX[3];
+      gmds::TCoord maxXYX[3];
 
-		theCurve->computeBoundingBox(minXYX, maxXYX);
+      theCurve->computeBoundingBox(minXYX, maxXYX);
 
-		gmds::math::Point minPoint(minXYX[0], minXYX[1], minXYX[2]);
-		auto projMinPoint = m_blocking->get_projection_info(minPoint, allEdges);
-		for (int i = 0; i < projMinPoint.size(); i++) {
-			if (projMinPoint[i].second < 1 && projMinPoint[i].second > 0) {
-				captPossible = true;
-				break;
-			}
-		}
+      gmds::math::Point minPoint(minXYX[0], minXYX[1], minXYX[2]);
+      auto projMinPoint = m_blocking->get_projection_info(minPoint, allEdges);
+      for (int i = 0; i < projMinPoint.size(); i++) {
+         if (projMinPoint[i].second < 1 && projMinPoint[i].second > 0) {
+            captPossible = true;
+            break;
+         }
+      }
 
-		gmds::math::Point maxPoint(maxXYX[0], maxXYX[1], maxXYX[2]);
-		auto paramCutMaxPoint = m_blocking->get_cut_info(maxPoint);
-		auto projMaxPoint = m_blocking->get_projection_info(maxPoint, allEdges);
-		for (int i = 0; i < projMaxPoint.size(); i++) {
-			if (projMaxPoint[i].second < 1 && projMaxPoint[i].second > 0) {
-				captPossible = true;
-				break;
-			}
-		}
-	}
-	return captPossible;
+      gmds::math::Point maxPoint(maxXYX[0], maxXYX[1], maxXYX[2]);
+      auto paramCutMaxPoint = m_blocking->get_cut_info(maxPoint);
+      auto projMaxPoint = m_blocking->get_projection_info(maxPoint, allEdges);
+      for (int i = 0; i < projMaxPoint.size(); i++) {
+         if (projMaxPoint[i].second < 1 && projMaxPoint[i].second > 0) {
+            captPossible = true;
+            break;
+         }
+      }
+   }
+   return captPossible;
 }*/
 /*----------------------------------------------------------------------------*/
 /*void
 BlockingClassifier::capt_element(const int AnIdElement, const int ADim)
 {
-	auto listEdgesPara = m_blocking->get_all_sheet_edge_sets();
+   auto listEdgesPara = m_blocking->get_all_sheet_edge_sets();
 
-	if (ADim == 0) {
-		auto paramCut = m_blocking->get_cut_info(AnIdElement);
-		cut_sheet(std::get<0>(paramCut), std::get<1>(paramCut));
-	}
-	else {
-		auto theCurve = m_geom_model->getCurve(AnIdElement);
-		gmds::TCoord minXYX[3];
-		gmds::TCoord maxXYX[3];
+   if (ADim == 0) {
+      auto paramCut = m_blocking->get_cut_info(AnIdElement);
+      cut_sheet(std::get<0>(paramCut), std::get<1>(paramCut));
+   }
+   else {
+      auto theCurve = m_geom_model->getCurve(AnIdElement);
+      gmds::TCoord minXYX[3];
+      gmds::TCoord maxXYX[3];
 
-		theCurve->computeBoundingBox(minXYX, maxXYX);
+      theCurve->computeBoundingBox(minXYX, maxXYX);
 
-		gmds::math::Point minPoint(minXYX[0], minXYX[1], minXYX[2]);
+      gmds::math::Point minPoint(minXYX[0], minXYX[1], minXYX[2]);
 
-		auto paramCutMinPoint = m_blocking->get_cut_info(minPoint);
+      auto paramCutMinPoint = m_blocking->get_cut_info(minPoint);
 
-		gmds::math::Point maxPoint(maxXYX[0], maxXYX[1], maxXYX[2]);
-		auto paramCutMaxPoint = m_blocking->get_cut_info(maxPoint);
-	}
+      gmds::math::Point maxPoint(maxXYX[0], maxXYX[1], maxXYX[2]);
+      auto paramCutMaxPoint = m_blocking->get_cut_info(maxPoint);
+   }
 }*/
 /*----------------------------------------------------------------------------*/
 /*
 bool
 BlockingClassifier::check_cut_possible(int pointId, std::vector<std::vector<Blocking::Edge>> &AllEdges)
 {
-	bool cutPossible = false;
+   bool cutPossible = false;
 
-	//============================================
-	auto noCaptPoint0 = m_geom_model->getPoint(pointId);
-	gmds::math::Point p(noCaptPoint0->X(), noCaptPoint0->Y(), noCaptPoint0->Z());
+   //============================================
+   auto noCaptPoint0 = m_geom_model->getPoint(pointId);
+   gmds::math::Point p(noCaptPoint0->X(), noCaptPoint0->Y(), noCaptPoint0->Z());
 
-	auto listEdgesPara = m_blocking->get_all_sheet_edge_sets();
+   auto listEdgesPara = m_blocking->get_all_sheet_edge_sets();
 
-	for (auto edges : listEdgesPara) {
-		auto projInfo = m_blocking->get_projection_info(p, edges);
-		for (int i = 0; i < projInfo.size(); i++) {
-			if (projInfo[i].second < 1 && projInfo[i].second > 0) {
-				cutPossible = true;
-			}
-		}
-	}
-	return cutPossible;
+   for (auto edges : listEdgesPara) {
+      auto projInfo = m_blocking->get_projection_info(p, edges);
+      for (int i = 0; i < projInfo.size(); i++) {
+         if (projInfo[i].second < 1 && projInfo[i].second > 0) {
+            cutPossible = true;
+         }
+      }
+   }
+   return cutPossible;
 }*/
 /*----------------------------------------------------------------------------*/

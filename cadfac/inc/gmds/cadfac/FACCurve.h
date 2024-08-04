@@ -83,14 +83,14 @@ class GMDSCadFac_API FACCurve : public GeomCurve
 	/*------------------------------------------------------------------------*/
 	/** \brief  Length of the curve
 	 */
-	double length() const override;
+	virtual double length() const override;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief Move a point AP near the surface to the closest point on the
 	 * 		   surface.
 	 *  \param AP
 	 */
-	void project(math::Point &AP) const override;
+	virtual void project(math::Point &AP) const override;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief Move a point AP near the surface to the closest point on the
@@ -98,7 +98,7 @@ class GMDSCadFac_API FACCurve : public GeomCurve
 	 *  \param AP
 	 *  \param AV the tangent vector
 	 */
-	void project(math::Point &AP, math::Vector3d &AV) const override;
+	void project(math::Point &AP, math::Vector3d &AV) const;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief Get the closest point from AP on the surface
@@ -138,14 +138,14 @@ class GMDSCadFac_API FACCurve : public GeomCurve
 	 *  @param[in] AParam parameter equals to 0 or 1
 	 *  @return a unit tangent vector at point of param @p AParam
 	 */
-	math::Vector3d computeTangent(const int AParam) const override;
+	virtual math::Vector3d tangent(const int AParam) const override;
 
 
 	/** \brief  Compute the dihedral angle (max for each edge of the curve)
 	 *
 	 *  \return the dihedral angle
 	 */
-	TCoord computeDihedralAngle() const override;
+	virtual TCoord computeDihedralAngle() const override;
 
 	/*------------------------------------------------------------------------*/
 	/** \brief  Returns a copy of the internal mesh representation nodes
@@ -175,7 +175,7 @@ class GMDSCadFac_API FACCurve : public GeomCurve
 	 */
 	virtual void getTriangulation(std::vector<gmds::math::Segment> &ASeg) const;
 
-	virtual int id() const
+	virtual int id() const override
 	{
 		return m_id;
 	}
@@ -184,17 +184,17 @@ class GMDSCadFac_API FACCurve : public GeomCurve
 	 *  assumption about the ordering
 	 * @return curves that are adjacent to this point
 	 */
-	virtual std::vector<GeomPoint *> &points();
+	virtual std::vector<GeomPoint *> &points() override;
 	/**@brief Accessor to the adjacent surfaces. Warning, there is no
 	 *  assumption about the ordering
 	 * @return surfaces that are adjacent to this point
 	 */
-	virtual std::vector<GeomSurface *> &surfaces();
+	virtual std::vector<GeomSurface *> &surfaces() override;
 	/**@brief Accessor to the adjacent volumes. Warning, there is no
 	 *  assumption about the ordering
 	 * @return volumes that are adjacent to this point
 	 */
-	virtual std::vector<GeomVolume *> &volumes();
+	virtual std::vector<GeomVolume *> &volumes() override;
 
 	/**@brief Reset the global id counter to 1.
 	 */

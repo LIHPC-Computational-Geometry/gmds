@@ -230,6 +230,11 @@ class LIB_GMDS_MCTSBLOCK_API BlockingClassifier
 	                               Blocking::Node& AN1, Blocking::Node& AN2,
 	                               std::vector<TCellID>& ANodeIDs,
 	                               std::vector<TCellID>& AEdgeIDs);
+
+	 std::pair<bool, Blocking::Edge> find_aligned_edge(cad::GeomPoint* APoint,
+											  const math::Vector3d& ATangent,
+											  std::set<TCellID> &AEdgeIds);
+
  private:
 
 	/*** the associated geometric model*/

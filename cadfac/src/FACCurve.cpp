@@ -66,28 +66,29 @@ FACCurve::project(math::Point &AP) const
 }
 /*----------------------------------------------------------------------------*/
 math::Vector3d
-FACCurve::computeTangent(const int AParam) const
+FACCurve::tangent(const int AParam) const
 {
 	int p = AParam;
 	if (p < 0) p = 0;
 	if (p > 1) p = 1;
 
 	if (m_adjacent_points.size() == 0) {
-		// we've got a loop
+		// we've got a loop, no rules, we pick the first edge
 		Edge e = m_support->get<Edge>(m_mesh_edges[0]);
 		std::vector<Node> e_nodes = e.get<Node>();
 		return (e_nodes[1].point() - e_nodes[0].point()).getNormalize();
 	}
 
 	// Not a loop, we have two end points
-	if (m_adjacent_points.size() != 2) throw GMDSException("Error a FAC curve which is not a loop doesn't have two end points");
+	if (m_adjacent_points.size() != 2)
+		throw GMDSException("Error a FAC curve which is not a loop doesn't have two end points");
 
 	FACPoint *end_p0 = static_cast<FACPoint *>(m_adjacent_points[0]);
 	FACPoint *end_p1 = static_cast<FACPoint *>(m_adjacent_points[1]);
 	TCellID end0_node_id = end_p0->getNode().id();
 	TCellID end1_node_id = end_p1->getNode().id();
 
-	// we determinate the end points
+	// we find the end points. Indeed edges are not necessary ordered
 	std::map<TCellID, int> nb_node_occurrences;
 	for (auto e_i : m_mesh_edges) {
 		Edge e = m_support->get<Edge>(e_i);
