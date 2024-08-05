@@ -107,18 +107,18 @@ TEST(TransfiniteInterpolation_3DTest, testUnit_Transfinite2D_imgManuscrit)
 
 	for (auto i=0;i<nb_i;i++)
 	{
-		//double y0 = sin(M_PI*(i*di))/10.0 ;
-		//double y1 = sin(2.0*M_PI*(i*di))/12.0 ;
-		pnts(i,0).setXYZ(i*di, 0.0, 0.0) ;
-		pnts(i,nb_j-1).setXYZ(i*di, 1.0, 0.0) ;
+		double y0 = sin(M_PI*(i*di))/10.0 ;
+		double y1 = sin(2.0*M_PI*(i*di))/12.0 ;
+		pnts(i,0).setXYZ(i*di, y0, 0.0) ;
+		pnts(i,nb_j-1).setXYZ(i*di, 1+y1, 0.0) ;
 	}
 
 	for (auto j=0;j<nb_j;j++)
 	{
-		//double x0 = sin(M_PI*(j*dj))/6.0 ;
-		//double x1 = sin(2.0*M_PI*(j*dj))/8.0 ;
-		pnts(0,j).setXYZ(0.0, j*dj, 0.0) ;
-		pnts(nb_i-1,j).setXYZ(1.0, j*dj, 0.0) ;
+		double x0 = sin(M_PI*(j*dj))/6.0 ;
+		double x1 = sin(2.0*M_PI*(j*dj))/8.0 ;
+		pnts(0,j).setXYZ(x0, j*dj, 0.0) ;
+		pnts(nb_i-1,j).setXYZ(1+x1, j*dj, 0.0) ;
 	}
 
 	// First, we create the file where we are going to store the info
@@ -129,16 +129,34 @@ TEST(TransfiniteInterpolation_3DTest, testUnit_Transfinite2D_imgManuscrit)
 	Mesh m_bnd = Mesh(MeshModel(DIM3 | R | F | E | N | R2N | F2N | E2N | R2F | F2R |
 	                        F2E | E2F | R2E | E2R | N2R | N2F | N2E));
 
+	std::ofstream stream_bnd= std::ofstream("TFI2D_Bnd.table", std::ios::out);
+	stream_bnd.precision(15);
 	for (auto i=0;i<nb_i;i++)
 	{
 		for (auto j=0;j<nb_j;j++)
 		{
 			Node n = m_bnd.newNode(pnts(i,j));
 			//stream << pnts(i,j).X() << " " << pnts(i,j).Y() << "\n";
+			stream_bnd << n.X() << " " << n.Y() << "\n";
 		}
 	}
+	stream_bnd.close();
 
-	//stream.close();
+	std::ofstream stream_param= std::ofstream("TFI2D_ParamSpace.table", std::ios::out);
+	stream_param.precision(15);
+	for (auto i=0;i<nb_i-1;i++)
+	{
+		for (auto j=0;j<nb_j-1;j++)
+		{
+			stream_param << i*di << " " << j*dj << "\n";
+			stream_param << (i+1)*di << " " << j*dj << "\n";
+			stream_param << (i+1)*di << " " << (j+1)*dj << "\n";
+			stream_param << i*di << " " << (j+1)*dj << "\n";
+			stream_param << i*di << " " << j*dj << "\n";
+			stream_param << "\n";
+		}
+	}
+	stream_param.close();
 
 	gmds::IGMeshIOService ioService_bnd(&m_bnd);
 	gmds::VTKWriter vtkWriter_bnd(&ioService_bnd);
@@ -148,6 +166,22 @@ TEST(TransfiniteInterpolation_3DTest, testUnit_Transfinite2D_imgManuscrit)
 
 
 	EXPECT_TRUE(math::TransfiniteInterpolation::computeQuad(pnts));
+
+	std::ofstream stream_physic= std::ofstream("TFI2D_PhysicalSpace.table", std::ios::out);
+	stream_physic.precision(15);
+	for (auto i=0;i<nb_i-1;i++)
+	{
+		for (auto j=0;j<nb_j-1;j++)
+		{
+			stream_physic << pnts(i,j).X() << " " << pnts(i,j).Y() << "\n";
+			stream_physic << pnts(i+1,j).X() << " " << pnts(i+1,j).Y() << "\n";
+			stream_physic << pnts(i+1,j+1).X() << " " << pnts(i+1,j+1).Y() << "\n";
+			stream_physic << pnts(i,j+1).X() << " " << pnts(i,j+1).Y() << "\n";
+			stream_physic << pnts(i,j).X() << " " << pnts(i,j).Y() << "\n";
+			stream_physic << "\n";
+		}
+	}
+	stream_physic.close();
 
 	/*
 	ASSERT_FLOAT_EQ(pnts(0,0).X(), 0.0);

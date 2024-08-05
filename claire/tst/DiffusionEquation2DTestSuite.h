@@ -88,4 +88,9 @@ TEST(DiffusionEquation2DTestClass, DiffusionEquation2D)
 		ASSERT_NEAR( var_ls_test->value(3100), 0.901179, eps );
 	}
 
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::F);
+	vtkWriter.setDataOptions(gmds::N|gmds::F);
+	vtkWriter.write("DiffusionEquation2DTestSuite.vtk");
+
 }

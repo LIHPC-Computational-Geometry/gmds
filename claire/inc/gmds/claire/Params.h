@@ -76,6 +76,8 @@ namespace gmds {
 	     int nbr_couches;
 	     /** Allows or not the insertions on the first layer of blocks */
 	     bool insertions_allowed_on_first_layer=false;
+	     /** Number of iterations smoothing linear blocks */
+	     int nbr_linear_blocks_smoothing=0;
 
 	     /** Max blocks degree */
 	     int max_degree;

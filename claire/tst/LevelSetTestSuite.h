@@ -35,6 +35,7 @@ TEST(LevelSetTestClass, LevelSet_Test_Unit_Carre)
 
 	std::string dir(TEST_SAMPLES_DIR);
 	std::string vtk_file = dir + "/Aero/Poubelle/Carre.vtk";
+	//std::string vtk_file = dir + "/Aero/2D/Apollo_2D_5.vtk";
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);
@@ -958,10 +959,11 @@ TEST(LevelSetTestClass, LevelSet_Apollo_TEST)
 {
 	Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::F | gmds::N | gmds::E | gmds::N2E | gmds::N2F | gmds::F2N | gmds::E2N | gmds::F2E | gmds::E2F));
 	std::string dir(TEST_SAMPLES_DIR);
-	//std::string vtk_file = dir+"/Aero/2D/Apollo_2D_BG.vtk";
-	std::string vtk_file = dir+"/Aero/2D/Orex_2D_Int.vtk";
+	std::string vtk_file = dir+"/Aero/2D/Apollo_2D_BG.vtk";
+	//std::string vtk_file = dir+"/Aero/2D/Orex_2D_Int.vtk";
 
-	std::string output_file = "Orex_2D" ;
+	//std::string output_file = "Orex_2D" ;
+	std::string output_file = "Apollo_2D" ;
 
 	gmds::IGMeshIOService ioService(&m);
 	gmds::VTKReader vtkReader(&ioService);

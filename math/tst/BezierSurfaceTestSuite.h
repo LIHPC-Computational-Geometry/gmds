@@ -4,6 +4,7 @@
 /*----------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 #include <gmds/math/BezierSurface.h>
+#include <fstream>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -124,6 +125,66 @@ TEST(BezierSurfaceClass, testBasic_2)
 		ASSERT_NEAR(pts(40, 40).Y(), 0, pow(10,-6));
 		ASSERT_NEAR(pts(40, 40).Z(), 0, pow(10,-6));
 	}
+
+}
+/*----------------------------------------------------------------------------*/
+TEST(BezierSurfaceClass, testBasic_Manuscrit)
+{
+
+	Array2D<math::Point> ctrl_pts_1(3,3);
+
+	ctrl_pts_1(0,0) = {0,0,0};
+	ctrl_pts_1(0,1) = {0.65,0.35,0};
+	ctrl_pts_1(0,2) = {1,0,0};
+	ctrl_pts_1(1,0) = {0,-0.5,0};
+	ctrl_pts_1(1,1) = {0.5,-0.6,0};
+	ctrl_pts_1(1,2) = {1,-0.5,0};
+	ctrl_pts_1(2,0) = {0,-1,0};
+	ctrl_pts_1(2,1) = {0.65,-0.8,0};
+	ctrl_pts_1(2,2) = {1,-1,0};
+
+	math::BezierSurface bezier_surface_1(ctrl_pts_1);
+
+
+	/*
+	Array2D<math::Point> ctrl_pts_1(3,4);
+	ctrl_pts_1(0,0) = {1,0,0};
+	ctrl_pts_1(0,1) = {1.35,-0.35,0};
+	ctrl_pts_1(0,2) = {1.6,0.1,0};
+	ctrl_pts_1(0,3) = {2.0,0,0};
+
+	ctrl_pts_1(1,0) = {1,-0.5,0};
+	ctrl_pts_1(1,1) = {1.35,-0.75,0};
+	ctrl_pts_1(1,2) = {1.7,-0.6,0};
+	ctrl_pts_1(1,3) = {2,-0.5,0};
+
+	ctrl_pts_1(2,0) = {1,-1,0};
+	ctrl_pts_1(2,1) = {1.35,-1.2,0};
+	ctrl_pts_1(2,2) = {1.7,-1.2,0};
+	ctrl_pts_1(2,3) = {2,-1,0};
+	math::BezierSurface bezier_surface_1(ctrl_pts_1);
+	 */
+
+	int Nx(10);
+	int Ny(10);
+	Array2D<math::Point> pts = bezier_surface_1.getDiscretization(10,10);
+
+	std::ofstream stream= std::ofstream("BezierFace_1.table", std::ios::out);
+	stream.precision(15);
+
+	for (auto i=0;i<Nx;i++)
+	{
+		for (auto j=0;j<Ny;j++)
+		{
+			stream << pts(i,j).X() << " " << pts(i,j).Y() << "\n";
+			stream << pts(i+1,j).X() << " " << pts(i+1,j).Y() << "\n";
+			stream << pts(i+1,j+1).X() << " " << pts(i+1,j+1).Y() << "\n";
+			stream << pts(i,j+1).X() << " " << pts(i,j+1).Y() << "\n";
+			stream << pts(i,j).X() << " " << pts(i,j).Y() << "\n";
+			stream << "\n";
+		}
+	}
+	stream.close();
 
 }
 /*----------------------------------------------------------------------------*/
