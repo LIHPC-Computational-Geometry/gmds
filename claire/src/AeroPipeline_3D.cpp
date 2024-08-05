@@ -125,7 +125,7 @@ AeroPipeline_3D::execute(){
 
 
 	// Smoothing Linear Block Structure
-	int nbr_iter_smoothing(0);
+	int nbr_iter_smoothing(m_params.nbr_linear_blocks_smoothing);
 	for (int i=0;i<nbr_iter_smoothing;i++)
 	{
 		std::map<TCellID, math::Point> new_pos;
@@ -194,21 +194,6 @@ AeroPipeline_3D::execute(){
 		}
 
 	}
-
-	// Convert to CurvedBlocking structure
-	/*
-	gmds::blocking::CurvedBlocking blocking(m_manager) ;
-	blocking.init_from_mesh(*m_meshHex);
-
-	gmds::Mesh m_out(gmds::MeshModel(gmds::DIM3 | gmds::N | gmds::E | gmds::F | gmds::R | gmds::E2N | gmds::F2N | gmds::R2N));
-	blocking.convert_to_mesh(m_out);
-
-	gmds::IGMeshIOService ioService(&m_out);
-	gmds::VTKWriter writer(&ioService);
-	writer.setCellOptions(gmds::N | gmds::R);
-	writer.setDataOptions(gmds::N | gmds::R);
-	writer.write("TEST_CURVED.vtk");
-	 */
 
 	// Init the Blocking3D from the hex mesh
 	std::cout << "-> Init & Curve the Blocking3D structure from the Hex mesh" << std::endl;
@@ -1316,7 +1301,7 @@ AeroPipeline_3D::ComputeVectorFieldForExtrusion()
 
 	if (m_params.vectors_field <= 0 || m_params.vectors_field > 2)
 	{
-		//m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
+		std::cout << "Default vector field: gradient of the combined distance field" << std::endl;
 		LeastSquaresGradientComputation grad3D(m_meshTet,
 		                                       m_meshTet->getVariable<double, GMDS_NODE>("GMDS_Distance"),
 		   												var_VectorsForExtrusion);
@@ -1325,7 +1310,6 @@ AeroPipeline_3D::ComputeVectorFieldForExtrusion()
 
 	else if (m_params.vectors_field == 1)
 	{
-		//m_meshTet->newVariable<math::Vector3d, GMDS_NODE>("GMDS_Gradient");
 		LeastSquaresGradientComputation grad3D(m_meshTet,
 		                                       m_meshTet->getVariable<double, GMDS_NODE>("GMDS_Distance_Int"),
 		   									var_VectorsForExtrusion);

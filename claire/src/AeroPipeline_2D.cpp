@@ -80,6 +80,8 @@ AeroPipeline_2D::execute(){
 	Variable<double>* var_dist_int = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Int");
 	Variable<double>* var_dist_out = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_Out");
 
+
+	// TEST 1: LS as in Ruiz Girones, et al.
 	/*
 	LevelSetCombined lsCombined(m_meshTet, m_Bnd->getMarkParoi(), m_Bnd->getMarkAmont(),
 	                            m_meshTet->getVariable<double,GMDS_NODE>("GMDS_Distance"),
@@ -94,11 +96,14 @@ AeroPipeline_2D::execute(){
 	TInt mark_Paroi = m_Bnd->getMarkParoi();
 
 	/*
-	//Test LS computation by diffusion equation
+	//TEST 2: LS computation by diffusion equation
 	Variable<double>* var_ls_test = m_meshTet->newVariable<double,GMDS_NODE>("GMDS_Distance_TEST");
 	DiffusionEquation2D ls_test(m_meshTet, mark_Paroi, mark_Farfiel, var_ls_test);
 	ls_test.execute();
 	 */
+
+
+	// TEST 3: LS through Euclidean Distance fields
 
 	std::vector<TCellID> nodes_Farfield;
 	std::vector<TCellID> nodes_Paroi;

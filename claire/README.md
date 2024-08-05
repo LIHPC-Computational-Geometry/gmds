@@ -134,7 +134,10 @@ ___
 
 ## Communications linked to this work
 
+### Paper  
 * ["Block-Structured Quad Meshing for Supersonic Flow Simulations" in SIAM IMR 2023 proceedings](https://internationalmeshingroundtable.com/assets/papers/2023/11-Roche-compressed.pdf)
+### Talks  
 * [Talk - SIAM IMR 2023](https://hal-cea.archives-ouvertes.fr/cea-04028060)
-* [Poster - SIAM IMR 2023](https://hal-cea.archives-ouvertes.fr/cea-04028054)
 * [Talk - 3AF 2023](https://www.3af-aerodynamics.com/images/Public/DOCS_CONFERENCE/2023/PRESENTATIONS/DAY%2001/SESSION%201B/AERO2023_38_C.%20ROCHE_PR.pdf)
+### Poster
+* [Poster - SIAM IMR 2023](https://hal-cea.archives-ouvertes.fr/cea-04028054)
