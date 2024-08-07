@@ -7,10 +7,20 @@ set(GMDS_LIB_PREFIX gmds/medialaxis)
 
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
-        inc/gmds/medialaxis/Medialaxis.h
+        inc/gmds/medialaxis/MedialAxis2D.h
+        inc/gmds/medialaxis/MedialAxisMath.h
+        inc/gmds/medialaxis/MedialAxis2DBuilder.h
+        inc/gmds/medialaxis/MedialAxis3D.h
+        inc/gmds/medialaxis/MedialAxis3DBuilder.h
+        inc/gmds/medialaxis/CrossField.h
 )
 set(GMDS_SRC
-        src/Medialaxis.cpp
+        src/MedialAxis2D.cpp
+        src/MedialAxisMath.cpp
+        src/MedialAxis2DBuilder.cpp
+        src/MedialAxis3D.cpp
+        src/MedialAxis3DBuilder.cpp
+        src/CrossField.cpp
 )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
