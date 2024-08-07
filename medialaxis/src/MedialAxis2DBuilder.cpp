@@ -607,7 +607,7 @@ void MedialAxis2DBuilder::placeSingularities()
 
 	// Smooth cos(medial angle)
 	std::cout<<"> Smoothing cosine of the medial angle"<<std::endl;
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 0; i++)
 		m_smoothed_medax->smoothCosMedialAngle();
 
 	// Set the optimal cross flux through curves formed by two adjacent medial radii

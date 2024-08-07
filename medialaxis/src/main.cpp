@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 	//==================================================================
 	std::string file_mesh, file_out, file_ma_out, dim;
 	int nb_iterations=0;
-	if (argc != 6) {
+	if (argc != 5) {
 		std::cout << "Requires three parameters : \n";
 		std::cout << "  - [IN ] tetrahedral mesh (.vtk) that describes the geometry, \n";
 		std::cout << "  - [IN ] the dimension : 2D or 3D, \n";
@@ -88,68 +88,78 @@ int main(int argc, char* argv[])
 
 
 			///////// Test CrossField
-			std::string tri_mesh = std::string (argv[5]);
-			Mesh m2(MeshModel(DIM3 | F | E | N | R |
-			                  F2N | F2E |
-			                  E2F | E2N | N2E | N2F));
 
-			IGMeshIOService ioService2(&m2);
-			VTKReader vtkReader2(&ioService2);
-			vtkReader2.setCellOptions(N| E| F);
-			vtkReader2.read(tri_mesh);
-			MeshDoctor doc2(&m2);
-			doc2.buildEdgesAndX2E();
-			doc2.updateUpwardConnectivity();
-			medialaxis::CrossField cf_test(m2);
-			cf_test.setSingularitiesIndexes(singularPoints,singularityIndexes);
-			std::vector<std::vector<Node>> connexions = cf_test.connectedBoundaryNodes(connectedPoints);
-			cf_test.setBoundariesConnexions(connexions);
-			std::vector<std::vector<Node>> connectedNodes = cf_test.connectedBoundaryNodes(connectedPoints);
-
-			cf_test.buildCrossField();
-
-			VTKWriter vtkWriter2(&ioService2);
-			vtkWriter2.setCellOptions(N| E| F);
-			vtkWriter2.setDataOptions(N| E| F);
-			vtkWriter2.write("tri_out.vtk");
+			//==================================================================
+			// MESH READING
+			//==================================================================
+//			std::string tri_mesh = std::string (argv[5]);
+//			Mesh m2(MeshModel(DIM3 | F | E | N | R |
+//			                  F2N | F2E |
+//			                  E2F | E2N | N2E | N2F));
+//
+//			IGMeshIOService ioService2(&m2);
+//			VTKReader vtkReader2(&ioService2);
+//			vtkReader2.setCellOptions(N| E| F);
+//			vtkReader2.read(tri_mesh);
+//			MeshDoctor doc2(&m2);
+//			doc2.buildEdgesAndX2E();
+//			doc2.updateUpwardConnectivity();
+//
+//			// Cross field
+//			medialaxis::CrossField cf_test(m2);
+//			cf_test.deleteIsolatedPoints();
+//			// Provide the triangular mesh with singularities located with the medial axis
+//			cf_test.setSingularitiesIndexes(singularPoints,singularityIndexes);
+//			// Connect the boundaries using the medial axis
+//			std::vector<std::vector<Node>> connexions = cf_test.connectedBoundaryNodes(connectedPoints);
+//			cf_test.setBoundariesConnexions(connexions);
+//
+//			// Build the cross field
+//			cf_test.buildCrossField();
+//
+//			// Write the cross field
+//			VTKWriter vtkWriter2(&ioService2);
+//			vtkWriter2.setCellOptions(N| E| F);
+//			vtkWriter2.setDataOptions(N| E| F);
+//			vtkWriter2.write("tri_out.vtk");
 
 			/////////
 
 			///////// Test topological representation
-//			smoothed_ma->buildTopoRepNodes();
-//			smoothed_ma->setSectionID();
-//			smoothed_ma->buildTopoRepEdges();
-//			smoothed_ma->setTopoRepConnectivity();
-//
-//			std::cout<<"Test Matrix : "<<std::endl;
-//			Eigen::MatrixXd A = smoothed_ma->constraintMatrix();
-//			int I = A.rows();
-//			int J = A.cols();
-//			for (int i = 0; i < I; i++)
-//			{
-//				for (int j = 0; j < J; j++)
-//					std::cout<<A.coeff(i,j)<<" ";
-//				std::cout<<std::endl;
-//			}
-//			std::cout<<"Test Kernel : "<<std::endl;
-//			Eigen::MatrixXd ker = A.fullPivLu().kernel();
-//			I = ker.rows();
-//			J = ker.cols();
-//			for (int i = 0; i < I; i++)
-//			{
-//				for (int j = 0; j < J; j++)
-//					std::cout<<int(ker.coeff(i,j))<<" ";
-//				std::cout<<std::endl;
-//			}
-//
-//			Eigen::MatrixXd Res = A*ker;
-//			double res = Res.norm();
-//			std::cout<<"||A*ker||="<<res<<std::endl;
-//
-//
-//
-//
-//			smoothed_ma->writeTopoRep("topo_rep.vtk");
+			smoothed_ma->buildTopoRepNodes();
+			smoothed_ma->setSectionID();
+			smoothed_ma->buildTopoRepEdges();
+			smoothed_ma->setTopoRepConnectivity();
+
+			std::cout<<"Test Matrix : "<<std::endl;
+			Eigen::MatrixXd A = smoothed_ma->constraintMatrix();
+			int I = A.rows();
+			int J = A.cols();
+			for (int i = 0; i < I; i++)
+			{
+				for (int j = 0; j < J; j++)
+					std::cout<<A.coeff(i,j)<<" ";
+				std::cout<<std::endl;
+			}
+			std::cout<<"Test Kernel : "<<std::endl;
+			Eigen::MatrixXd ker = A.fullPivLu().kernel();
+			I = ker.rows();
+			J = ker.cols();
+			for (int i = 0; i < I; i++)
+			{
+				for (int j = 0; j < J; j++)
+					std::cout<<int(ker.coeff(i,j))<<" ";
+				std::cout<<std::endl;
+			}
+
+			Eigen::MatrixXd Res = A*ker;
+			double res = Res.norm();
+			std::cout<<"||A*ker||="<<res<<std::endl;
+
+
+
+
+			smoothed_ma->writeTopoRep("topo_rep.vtk");
 
 			////////
 		}

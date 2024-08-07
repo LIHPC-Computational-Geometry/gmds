@@ -34,6 +34,11 @@ class CrossField
 	 */
 	virtual ~CrossField();
 
+	/*-------------------------------------------------------------------------*/
+	/** \brief Clean the provided triangular mesh by deleting the isolated points
+	 */
+	void deleteIsolatedPoints();
+
 	/*----------------------------------------------------------------------------*/
 	/** @brief Find the connected components of the boundary and attach an ID to each of them.
          *  @param AN a reference, updated to the number of connected components

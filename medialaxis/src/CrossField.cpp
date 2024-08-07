@@ -17,6 +17,8 @@ CrossField::CrossField(Mesh &AMesh)
 	m_mesh->newVariable<int,GMDS_NODE>("boundary_connected_component_id");
 	// Edges connecting boundaries
 	m_mesh->newVariable<int,GMDS_EDGE>("connects_boundaries");
+	// Edges belonging to the spanning tree
+	m_mesh->newVariable<int,GMDS_EDGE>("spanning_tree");
 	// Singularities indexes
 	m_mesh->newVariable<double,GMDS_FACE>("singularity_index");
 	// Crosses reference angle
@@ -38,6 +40,23 @@ CrossField::~CrossField()
 	// When we define a destructor as below, it doesn't work. Why?????
 	//if (m_mesh != nullptr)
 		//delete m_mesh;
+}
+
+/*----------------------------------------------------------------------------*/
+void CrossField::deleteIsolatedPoints()
+{
+	std::cout<<"> Deleting isolated nodes from the provided triangular mesh"<<std::endl;
+	int N = 0;
+	for (auto n_id:m_mesh->nodes())
+	{
+		Node n = m_mesh->get<Node>(n_id);
+		if (n.get<Edge>().empty())
+		{
+			m_mesh->deleteNode(n);
+			N += 1;
+		}
+	}
+	std::cout<<N<<" isolated nodes deleted"<<std::endl;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -253,7 +272,7 @@ TCellID  CrossField::locateInMesh(const math::Point AP)
 	for (auto f_id:m_mesh->faces())
 	{
 		Face f = m_mesh->get<Face>(f_id);
-		if (barycentricCoordinates(AP,f)[0] >= -0. && barycentricCoordinates(AP,f)[1] >= -0. && barycentricCoordinates(AP,f)[2] >= -0.)
+		if (barycentricCoordinates(AP,f)[0] >= -10e-6 && barycentricCoordinates(AP,f)[1] >= -10e-6 && barycentricCoordinates(AP,f)[2] >= -10e-6)
 		{
 			Id = f_id;
 			break;
@@ -477,7 +496,6 @@ void CrossField::computeAdjustmentAngles()
 	}
 
 	// Set rows corresponding to paths between connected components of the boundary
-
 	//auto componentsIDs = m_mesh->getVariable<int,GMDS_NODE>("boundary_connected_component_id");
 	auto refAngles = m_mesh->getVariable<double,GMDS_NODE>("cross_reference_angle");
 	int i = 0;
@@ -492,6 +510,7 @@ void CrossField::computeAdjustmentAngles()
 		if (alpha > M_PI/4.)
 			alpha -= M_PI/2.;
 		b[NbCycles + i] = alpha;
+
 		// Get the path between the two nodes and update d0
 		std::vector<Edge> path = findPath(n0,n1);
 		Node a = n1;
@@ -500,12 +519,12 @@ void CrossField::computeAdjustmentAngles()
 			double orient;
 			if (a.id() == e.get<Node>()[0].id())
 			{
-				orient = 1.;
+				orient = -1.;
 				a = e.get<Node>()[1];
 			}
 			else
 			{
-				orient = -1.;
+				orient = 1.;
 				a = e.get<Node>()[0];
 			}
 			d0.insert(NbCycles + i,edge2intEdge->value(e.id())) = orient;
@@ -595,6 +614,7 @@ void CrossField::computeAdjustmentAngles()
 /*----------------------------------------------------------------------------*/
 void CrossField::propagateRefAngleFromBoundary()
 {
+	auto spanningTree = m_mesh->getVariable<int,GMDS_EDGE>("spanning_tree");
 	// ==========================================================
 	// Build a spanning tree of the nodes whith root on the boundary
 	// ==========================================================
@@ -629,6 +649,7 @@ void CrossField::propagateRefAngleFromBoundary()
 					sonsList.push_back(n2.id());
 					currentLeaves.push(n2);
 					alreadyVisited->set(n2.id(),1);
+					spanningTree->set(e.id(),1);
 				}
 			}
 		}
