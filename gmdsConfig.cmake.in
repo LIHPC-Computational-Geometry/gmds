@@ -1,6 +1,10 @@
 include(CMakeFindDependencyMacro)
 find_dependency(Eigen3 REQUIRED NO_MODULE)
 
+if (@WITH_LIMA@) # WITH_LIMA
+    find_dependency(Lima REQUIRED)
+endif()
+
 @PACKAGE_INIT@
 
 set_and_check(GMDS_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
