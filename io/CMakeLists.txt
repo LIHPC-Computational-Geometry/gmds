@@ -73,22 +73,16 @@ generate_export_header(${GMDS_LIB}
 include(GNUInstallDirs)
 
 #LIBRARY TO INSTALL
+target_link_libraries(${GMDS_LIB} PUBLIC
+        ${LIB_GMDS_IG})
+
 if(WITH_LIMA)
     target_link_libraries(${GMDS_LIB} PUBLIC
-            ${LIB_GMDS_IG}
-            ${LIB_GMDS_SOFIANE}
             Lima::Lima)
-elseif(WITH_MESHB)
-        target_link_libraries(${GMDS_LIB} PUBLIC
-                ${LIB_GMDS_IG}
-                ${LIB_GMDS_SOFIANE}
-                PRIVATE
+endif()
+if(WITH_MESHB)
+    target_link_libraries(${GMDS_LIB} PRIVATE
                 ${libMeshb_LIBRARIES})
-else()
-   target_link_libraries(${GMDS_LIB} PUBLIC
-           ${LIB_GMDS_IG}
-           ${LIB_GMDS_IGALGO}
-           ${LIB_GMDS_SOFIANE})
 endif()
 
 
