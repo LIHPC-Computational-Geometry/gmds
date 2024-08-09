@@ -281,7 +281,7 @@ namespace gmds{
             }
             if(!AP.areCoplanar(p0,p1,p2))
             {
-                throw GMDSException("Coplanarity is mandatory to compute barycentric coordinates of a point into a 3D triangle");
+                //throw GMDSException("Coplanarity is mandatory to compute barycentric coordinates of a point into a 3D triangle");
             }
 
             Vector3d v1= p1-p0;
@@ -338,7 +338,7 @@ namespace gmds{
             }
             if(!AP.areCoplanar(p0,p1,p2))
             {
-                throw GMDSException("Coplanarity is mandatory to compute barycentric coordinates of a point into a 3D triangle");
+                //throw GMDSException("Coplanarity is mandatory to compute barycentric coordinates of a point into a 3D triangle");
             }
 
             Vector3d v1= p1-p0;
