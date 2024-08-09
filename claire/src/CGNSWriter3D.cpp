@@ -509,7 +509,7 @@ void CGNSWriter3D::writeZones()
 				pts_bc[4] = discrJ;	// Y2
 				pts_bc[5] = 1;			// Z2
 				break;
-			case 1:
+			case 2:
 				pts_bc[0] = 1;
 				pts_bc[1] = 1;
 				pts_bc[2] = 1;
@@ -518,7 +518,7 @@ void CGNSWriter3D::writeZones()
 				pts_bc[4] = 1;
 				pts_bc[5] = discrK;
 				break;
-			case 2:
+			case 5:
 				pts_bc[0] = discrI;
 				pts_bc[1] = 1;
 				pts_bc[2] = 1;
@@ -545,7 +545,7 @@ void CGNSWriter3D::writeZones()
 				pts_bc[4] = discrJ;
 				pts_bc[5] = discrK;
 				break;
-			case 5:
+			case 1:
 				pts_bc[0] = 1;	// X1
 				pts_bc[1] = 1;	// Y1
 				pts_bc[2] = discrK;	// Z1
