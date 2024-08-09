@@ -110,6 +110,13 @@ public:
      */
     const Point getCenter() const;
 
+	 /*------------------------------------------------------------------------*/
+	 /** \brief  Compute the center of the circumcircle of the tetrahedron
+     *
+     * \return a point
+	  */
+	 const Point getCircumcenter() const;
+
     /*------------------------------------------------------------------------*/
     /** \brief  Compute the signed volume of the tetrahedron
      *

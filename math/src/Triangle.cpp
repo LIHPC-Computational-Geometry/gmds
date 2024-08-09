@@ -94,6 +94,24 @@ Triangle::getCenter() const {
 	return pt;
 }
 /*----------------------------------------------------------------------------*/
+Point Triangle::getCircumcenter() const
+{
+	math::Point A = m_pnts[0];
+	math::Point B = m_pnts[1];
+	math::Point C = m_pnts[2];
+	double xA = A.X();
+	double yA = A.Y();
+	double xB = B.X();
+	double yB = B.Y();
+	double xC = C.X();
+	double yC = C.Y();
+	double S = area();
+	double xO = ((xA*xA+yA*yA)*(yB-yC)-(xB*xB+yB*yB)*(yA-yC)+(xC*xC+yC*yC)*(yA-yB))*(1./(4.*S));
+	double yO = -((xA*xA+yA*yA)*(xB-xC)-(xB*xB+yB*yB)*(xA-xC)+(xC*xC+yC*yC)*(xA-xB))*(1./(4.*S));
+	math::Point Ctr(xO, yO, 0.);
+	return Ctr;
+}
+/*----------------------------------------------------------------------------*/
 double
 Triangle::computeScaledJacobian2D() const
 {

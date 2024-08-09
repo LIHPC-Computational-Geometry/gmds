@@ -337,7 +337,7 @@ void MedialAxis2DBuilder::setMedialRadius()
 		Face Triangle = m_mesh->get<Face>(t_id);
 		std::vector<Node> nf = Triangle.get<Node>();
 		math::Triangle T(nf[0].point(), nf[1].point(), nf[2].point());
-		math::Point MP = circumcenter(T);
+		math::Point MP = T.getCircumcenter();
 		double r = MP.distance(nf[0].point());
 		m_voronoi_medax->setMedialRadius(medial_point->value(Triangle.id()),r);
 	}
@@ -407,7 +407,7 @@ void MedialAxis2DBuilder::buildVoronoiMedialPointsAndEdges()
 		Face f = m_mesh->get<Face>(n_id);
 		std::vector<Node> nf = f.get<Node>();
 		math::Triangle T(nf[0].point(), nf[1].point(), nf[2].point());
-		math::Point MP = circumcenter(T);
+		math::Point MP = T.getCircumcenter();
 		Node n = m_voronoi_medax->newMedPoint(MP);
 		medial_point->set(f.id(), n.id());
 		m_voronoi_medax->setPrimalTriangleID(n.id(),f.id());
@@ -605,9 +605,9 @@ void MedialAxis2DBuilder::placeSingularities()
 	// Set the cosine of medial angle
 	m_smoothed_medax->setCosMedialAngle();
 
-	// Smooth cos(medial angle)
+	// Smooth cos(medial angle) (works approximately)
 	std::cout<<"> Smoothing cosine of the medial angle"<<std::endl;
-	for (int i = 0; i < 0; i++)
+	for (int i = 0; i < 10; i++)
 		m_smoothed_medax->smoothCosMedialAngle();
 
 	// Set the optimal cross flux through curves formed by two adjacent medial radii

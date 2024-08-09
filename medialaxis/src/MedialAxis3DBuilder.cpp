@@ -98,7 +98,7 @@ bool MedialAxis3DBuilder::isDelaunay()
 		Region Tetra = m_mesh->get<Region>(t_id);
 		std::vector<Node> nT = Tetra.get<Node>();
 		math::Tetrahedron T(nT[0].point(), nT[1].point(), nT[2].point(), nT[3].point());
-		math::Point Center = circumcenterTetra(T);
+		math::Point Center = T.getCircumcenter();
 		double Radius = nT[0].point().distance(Center);
 		for (auto n_id:m_mesh->nodes())
 		{
@@ -264,7 +264,7 @@ MedialAxis3DBuilder::tetraFilter(const double &ATol)
 			Region Tetra = m_mesh->get<Region>(n_id);
 			std::vector<Node> nT = Tetra.get<Node>();
 			math::Tetrahedron T(nT[0].point(), nT[1].point(), nT[2].point(), nT[3].point());
-			math::Point Ctr1 = circumcenterTetra(T);
+			math::Point Ctr1 = T.getCircumcenter();
 			for (int m_id = n_id + 1; m_id < m_mesh->getNbTetrahedra(); m_id++)
 			{
 				if (tetras_to_test[m_id] == 1)
@@ -272,7 +272,7 @@ MedialAxis3DBuilder::tetraFilter(const double &ATol)
 					Region Tetra2 = m_mesh->get<Region>(m_id);
 					std::vector<Node> nT2 = Tetra2.get<Node>();
 					math::Tetrahedron T2(nT2[0].point(), nT2[1].point(), nT2[2].point(), nT2[3].point());
-					math::Point Ctr2 = circumcenterTetra(T2);
+					math::Point Ctr2 = T2.getCircumcenter();
 					double dist = Ctr1.distance(Ctr2);
 					if (dist <= ATol)
 					{
@@ -319,7 +319,7 @@ void MedialAxis3DBuilder::buildMedialPoints()
 			Region Tetra = m_mesh->get<Region>(n_id);
 			std::vector<Node> nT = Tetra.get<Node>();
 			math::Tetrahedron T(nT[0].point(), nT[1].point(), nT[2].point(), nT[3].point());
-			math::Point MP = circumcenterTetra(T);
+			math::Point MP = T.getCircumcenter();
 			Node n = m_ma->newMedPoint(MP);
 			Tetra2MP->set(Tetra.id(), n.id());
 		}
@@ -624,7 +624,7 @@ MedialAxis3DBuilder::executeFilter()
 		Region Tetra = m_mesh->get<Region>(n_id);
 		std::vector<Node> nT = Tetra.get<Node>();
 		math::Tetrahedron T(nT[0].point(), nT[1].point(), nT[2].point(), nT[3].point());
-		math::Point MP = circumcenterTetra(T);
+		math::Point MP = T.getCircumcenter();
 		Node n = m_ma->newMedPoint(MP);
 		for (auto id:tetraGroup)
 		{

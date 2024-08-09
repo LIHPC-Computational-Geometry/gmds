@@ -498,12 +498,85 @@ void MedialAxis2D::setCosMedialAngle()
 /*----------------------------------------------------------------------------*/
 void MedialAxis2D::smoothCosMedialAngle()
 {
-	auto cosMedAngle = m_mesh_representation->getVariable<double,GMDS_NODE>("cos_medial_angle");
+	// Test
+	//auto isMarked = m_mesh_representation->newVariable<int,GMDS_NODE>("is_to_smooth");
+
+	// Mark the nodes to smooth (we don't smooth the nodes with too high orthogonality default, IP, EP and local extremum)
+	auto isToSmooth = m_mesh_representation->newMark<Node>();
+	auto orthogonalityDefault = m_mesh_representation->getVariable<double,GMDS_NODE>("medial_radius_orthogonality_default");
 	auto medPointType = m_mesh_representation->getVariable<int,GMDS_NODE>("medial_point_type");
+	auto cosMedAngle = m_mesh_representation->getVariable<double,GMDS_NODE>("cos_medial_angle");
+	for (auto n_id:m_mesh_representation->nodes())
+	{
+		if (medPointType->value(n_id) == 2)
+		{
+			if (orthogonalityDefault->value(n_id) < 0.1)
+			{
+				// Check if it is a local extremum
+				Node n = m_mesh_representation->get<Node>(n_id);
+				std::vector<Node> closeNeighbours;
+				Edge e = n.get<Edge>()[0];
+				Node nxt = n;
+				int N = 10; // Nb of neighbours on each side to check
+				for (int i = 0; i < N; i++)
+				{
+					nxt = getNextPoint(nxt.id(),e.id());
+					if (medPointType->value(nxt.id()) != 2)
+						break;
+					if (orthogonalityDefault->value(n_id) >= 0.1)
+						break;
+					closeNeighbours.push_back(nxt);
+					e = getNextEdge(e.id(),nxt.id());
+				}
+				e = n.get<Edge>()[1];
+				nxt = n;
+				for (int i = 0; i < N; i++)
+				{
+					nxt = getNextPoint(nxt.id(),e.id());
+					if (medPointType->value(nxt.id()) != 2)
+						break;
+					if (orthogonalityDefault->value(n_id) >= 0.1)
+						break;
+					closeNeighbours.push_back(nxt);
+					e = getNextEdge(e.id(),nxt.id());
+				}
+				bool isExtremum = true;
+				if (cosMedAngle->value(n_id) < cosMedAngle->value(closeNeighbours[0].id()))
+				{
+					for (auto n1:closeNeighbours)
+					{
+						if (cosMedAngle->value(n_id) > cosMedAngle->value(n1.id()))
+						{
+							isExtremum = false;
+							break;
+						}
+					}
+				}
+				if (cosMedAngle->value(n_id) > cosMedAngle->value(closeNeighbours[0].id()))
+				{
+					for (auto n1:closeNeighbours)
+					{
+						if (cosMedAngle->value(n_id) < cosMedAngle->value(n1.id()))
+						{
+							isExtremum = false;
+							break;
+						}
+					}
+				}
+				if (!isExtremum)
+				{
+					m_mesh_representation->mark<Node>(n_id,isToSmooth);
+					//isMarked->set(n_id,1);
+				}
+			}
+		}
+	}
+
+	// Smooth
 	for (auto n_id:m_mesh_representation->nodes())
 	{
 		Node n = m_mesh_representation->get<Node>(n_id);
-		if (medPointType->value(n_id) == 2)
+		if (m_mesh_representation->isMarked<Node>(n_id,isToSmooth))
 		{
 			std::vector<Node> neighbours;
 			for (auto e:n.get<Edge>())
@@ -514,11 +587,14 @@ void MedialAxis2D::smoothCosMedialAngle()
 						neighbours.push_back(n2);
 				}
 			}
-			if (neighbours.size() == 2)
+			if (m_mesh_representation->isMarked<Node>(neighbours[0].id(),isToSmooth))
 			{
-				double cosTheta1 = cosMedAngle->value(neighbours[0].id());
-				double cosTheta2 = cosMedAngle->value(neighbours[1].id());
-				cosMedAngle->set(n_id,(cosTheta1+cosTheta2)/2.);
+				if (m_mesh_representation->isMarked<Node>(neighbours[1].id(),isToSmooth))
+				{
+					double cosTheta1 = cosMedAngle->value(neighbours[0].id());
+					double cosTheta2 = cosMedAngle->value(neighbours[1].id());
+					cosMedAngle->set(n_id, (cosTheta1 + cosTheta2) / 2.);
+				}
 			}
 		}
 	}

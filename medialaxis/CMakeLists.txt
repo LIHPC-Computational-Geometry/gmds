@@ -64,7 +64,17 @@ endif(WITH_TEST)
 #==============================================================================
 # EXECUTABLE
 #==============================================================================
-add_executable(medialaxis_exec src/main.cpp)
+add_executable(medialaxis_exec src/main_medax_build.cpp)
 target_link_libraries(medialaxis_exec PRIVATE ${GMDS_LIB})
 target_compile_features(medialaxis_exec PUBLIC cxx_std_14)
 install(TARGETS medialaxis_exec)
+
+add_executable(medialaxis_crossfield_exec src/main_crossfield.cpp)
+target_link_libraries(medialaxis_crossfield_exec PRIVATE ${GMDS_LIB})
+target_compile_features(medialaxis_crossfield_exec PUBLIC cxx_std_14)
+install(TARGETS medialaxis_crossfield_exec)
+
+add_executable(medialaxis_quantization_exec src/main_quantization.cpp)
+target_link_libraries(medialaxis_quantization_exec PRIVATE ${GMDS_LIB})
+target_compile_features(medialaxis_quantization_exec PUBLIC cxx_std_14)
+install(TARGETS medialaxis_quantization_exec)
