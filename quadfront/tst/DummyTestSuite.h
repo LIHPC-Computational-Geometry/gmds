@@ -388,7 +388,7 @@ TEST(DummyTestClass, exemple){
 
 	int pr = 1;
 
-	while (pr <= 1) {
+	while (pr <= 10) {
 		std::vector<std::vector<Edge>> listBoundary;
 		for (auto &l : mesh.m_listFront) {
 			std::vector<Face> listQuad;
@@ -440,6 +440,7 @@ TEST(DummyTestClass, exemple){
 			}
 
 			if (listEdge_bis.size() != 0) {
+
 				std::vector<double> stat = mesh.statFront(listEdge_bis);
 
 				for (auto &ea : listEdge_bis) {
@@ -469,6 +470,26 @@ TEST(DummyTestClass, exemple){
 				mesh.triangleSmoothing(eb);
 			}
 
+			std::vector<Node> listNode;
+
+			for(auto& e : listEdge_bis) {
+				for (auto& n : e.get<Node>()) {
+					std::cout << "listNode : " << listNode.size() << std::endl;
+					if (std::find(listNode.begin(), listNode.end(), n) == listNode.end()) {
+						std::cout <<"ici"<< n << std::endl;
+						mesh.seam(n, listNode);
+					}
+					gmds::IGMeshIOService ioService(mesh.m_mesh);
+					gmds::VTKWriter vtkWriter(&ioService);
+					vtkWriter.setCellOptions(gmds::N | gmds::F | gmds::E);
+					vtkWriter.setDataOptions(gmds::N | gmds::F | gmds::E);
+					vtkWriter.write("/home/pagea/Documents/Travail/data/toto_link3.vtk");
+				}
+			}
+
+			for(auto& ns : listNode){
+				mesh.m_nodeFront.erase(ns);
+			}
 			listBoundary.push_back(listEdge_bis);
 		}
 
@@ -498,23 +519,6 @@ TEST(DummyTestClass, exemple){
 	for(auto& n : mesh.m_nodeFront) {
 		Node node = n.first;
 		std::cout << node << std::endl;
-	}
-
-	std::cout<<"\nseam\n"<<std::endl;
-	std::vector<Node> listNode;
-
-	for(auto& n : mesh.m_nodeFront){
-		std::cout<<"listNode : "<<listNode.size()<<std::endl;
-		if (std::find(listNode.begin(), listNode.end(), n.first) == listNode.end()){
-			Node node = n.first;
-			std::cout << node << std::endl;
-			mesh.seam(node, listNode);
-		}
-		gmds::IGMeshIOService ioService(mesh.m_mesh);
-		gmds::VTKWriter vtkWriter(&ioService);
-		vtkWriter.setCellOptions(gmds::N | gmds::F | gmds::E);
-		vtkWriter.setDataOptions(gmds::N | gmds::F | gmds::E);
-		vtkWriter.write("/home/pagea/Documents/Travail/data/toto_link3.vtk");
 	}
 }
 

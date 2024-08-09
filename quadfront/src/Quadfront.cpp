@@ -650,6 +650,9 @@ Edge Quadfront::sideEdge(Node &Anode, Edge &Aedge)
 		}
 	}
 
+	std::cout << "edge_min1 " << edge_min1.id() << " : " << edge_min1.get<Node>()[0] << " ; " << edge_min1.get<Node>()[1] << " : " << dot_max1 << std::endl;
+	std::cout << "edge_min2 " << edge_min2.id() << " : " << edge_min2.get<Node>()[0] << " ; " << edge_min2.get<Node>()[1] << " : " << dot_max2 << std::endl;
+
 	Edge Aedge2 = std::get<1>(m_nodeFront[Anode]) != Aedge ? std::get<1>(m_nodeFront[Anode]) : std::get<2>(m_nodeFront[Anode]);
 	Edge edge0 = std::get<1>(m_nodeFront[Aedge.getOppositeNode(Anode)]) != Aedge ? std::get<1>(m_nodeFront[Aedge.getOppositeNode(Anode)]) :
 	                                                                                std::get<2>(m_nodeFront[Aedge.getOppositeNode(Anode)]);
@@ -671,7 +674,8 @@ Edge Quadfront::sideEdge(Node &Anode, Edge &Aedge)
 			return sideEdge;
 		}
 	}
-
+	//bool testb = edge_min1.getOppositeNode(Anode) != edge0.getOppositeNode(Aedge.getOppositeNode(Anode));
+	std::cout<<"testb : "<<edge0.id()<<std::endl;
 
 	if (edge_min1.getOppositeNode(Anode) != edge0.getOppositeNode(Aedge.getOppositeNode(Anode)) and
 	    edge_min1.getOppositeNode(Anode) != edge1.getOppositeNode(Aedge2.getOppositeNode(Anode)) and
@@ -681,6 +685,7 @@ Edge Quadfront::sideEdge(Node &Anode, Edge &Aedge)
 		return sideEdge;
 	}
 
+	std::cout<<"ici"<<std::endl;
 
 	if (acos(dot_max2) < M_PI / 6) {
 		Node node_opposit = edge_min2.getOppositeNode(Anode);
@@ -771,6 +776,11 @@ Edge Quadfront::sideEdge(Node &Anode, Edge &Aedge)
 	// SPLIT CASE
 	else {
 		std::cout << "edge_inter : "<<edge_inter.get<Node>()[0]<<" ; "<<edge_inter.get<Node>()[1]<<std::endl;
+		if (m_nodeFront.find(edge_inter.get<Node>()[0]) != m_nodeFront.end() and m_nodeFront.find(edge_inter.get<Node>()[1]) != m_nodeFront.end()){
+			if (std::get<1>(m_nodeFront[edge_inter.get<Node>()[0]]) == edge_inter or std::get<2>(m_nodeFront[edge_inter.get<Node>()[1]]) == edge_inter){
+
+			}
+		}
 		math::Vector3d vNode = intersectionVec2Edge(m_bissectrice, Anode, edge_inter);
 		Node newNode = m_mesh->newNode(vNode.X(), vNode.Y(), vNode.Z());
 
@@ -1146,52 +1156,38 @@ Edge Quadfront::closingSeam(Edge& Aedge0, Edge& Aedge1, Edge& Aedge_triangle0, E
 
 	Edge new_top2 = m_mesh->newEdge(node0, next_Aedge1.getOppositeNode(node1));
 
+	quad1.add<Edge>(Aedge0);
+	//quad1.add<Edge>(side_quad);
+	quad2.add<Edge>(new_top2);
 
-	if (Aedge_triangle1 != next_Aedge1) {
-		quad1.add<Edge>(Aedge0);
-		//quad1.add<Edge>(side_quad);
-		quad2.add<Edge>(new_top2);
+	node0.add<Face>(quad1);
+	node0.add<Face>(quad2);
 
-		node0.add<Face>(quad1);
-		node0.add<Face>(quad2);
+	new_top2.add<Face>(quad2);
+	Aedge0.add<Face>(quad1);
 
-		new_top2.add<Face>(quad2);
-		Aedge0.add<Face>(quad1);
+	triangle1.remove<Node>(node1);
+	triangle1.remove<Edge>(Aedge_triangle1);
+	triangle1.remove<Edge>(next_Aedge1);
 
-		triangle1.remove<Node>(node1);
-		triangle1.remove<Edge>(Aedge_triangle1);
-		triangle1.remove<Edge>(next_Aedge1);
+	triangle1.add<Node>(node0);
+	triangle1.add<Edge>(new_top2);
+	triangle1.add<Edge>(Aedge_triangle0);
 
-		triangle1.add<Node>(node0);
-		triangle1.add<Edge>(new_top2);
-		triangle1.add<Edge>(Aedge_triangle0);
-
-		new_top2.add<Face>(triangle1);
-		Aedge_triangle0.add<Face>(triangle1);
-
-	}
-	else{
-		quad1.add<Edge>(Aedge0);
-		//quad1.add<Edge>(side_quad);
-		quad2.add<Edge>(new_top2);
-
-		node0.add<Face>(quad1);
-		node0.add<Face>(quad2);
-
-		new_top2.add<Face>(quad2);
-		Aedge0.add<Face>(quad1);
-	}
+	new_top2.add<Face>(triangle1);
+	Aedge_triangle0.add<Face>(triangle1);
 
 	removeEdge(Aedge1);
 	removeEdge(side_delete);
 	removeEdge(next_Aedge1);
 	removeEdge(Aedge_triangle1);
 
-	std::cout<<"ici3"<<std::endl;
-
 	for (auto& e_node1 : node1.get<Edge>()){
 		removeEdge(e_node1);
 	}
+
+	Edge quad0_base = get_oppositEdge_Quad(Aedge0, quad0);
+	update_Boundary2(Aedge0, quad0_base);
 
 	return new_top2;
 }
@@ -1360,7 +1356,44 @@ void Quadfront::seam(Node& Anode, std::vector<Node>& listNode){
 		Edge edge_inter = get_opposit2Node(Anode, triangle0);
 		Face triangle1 = edge_inter.get<Face>()[0] != triangle0 ? edge_inter.get<Face>()[0] : edge_inter.get<Face>()[1];
 
+		Edge next_Aedge1 = std::get<1>(m_nodeFront[node1]) == edge1 ? std::get<2>(m_nodeFront[node1]) : std::get<1>(m_nodeFront[node1]);
+		Face triangle_next_Aedge1 = next_Aedge1.get<Face>()[0].nbEdges() == 4 ? next_Aedge1.get<Face>()[1] : next_Aedge1.get<Face>()[0];
+		Edge next_Aedge0 = std::get<1>(m_nodeFront[node0]) == edge0 ? std::get<2>(m_nodeFront[node0]) : std::get<1>(m_nodeFront[node0]);
+		Face triangle_next_Aedge0 = next_Aedge0.get<Face>()[0].nbEdges() == 4 ? next_Aedge0.get<Face>()[1] : next_Aedge0.get<Face>()[0];
+
 		Node node_top = get_opposit2Edge(edge_inter, triangle1);
+
+		if(node_top == next_Aedge0.getOppositeNode(node0)){
+			Edge split_inter = get_opposit2Node(node0, triangle1);
+			Node new_node = m_mesh->newNode(split_inter.center());
+			Face face_opposit = split_inter.get<Face>()[0] == triangle1 ? split_inter.get<Face>()[1] : split_inter.get<Face>()[0];
+			split_operation(new_node, node0, triangle1, face_opposit);
+		}
+		else if (node_top == next_Aedge1.getOppositeNode(node1)){
+			Edge split_inter = get_opposit2Node(node1, triangle1);
+			Node new_node = m_mesh->newNode(split_inter.center());
+			Face face_opposit = split_inter.get<Face>()[0] == triangle1 ? split_inter.get<Face>()[1] : split_inter.get<Face>()[0];
+			split_operation(new_node, node1, triangle1, face_opposit);
+		}
+
+		triangle_next_Aedge1 = next_Aedge1.get<Face>()[0].nbEdges() == 4 ? next_Aedge1.get<Face>()[1] : next_Aedge1.get<Face>()[0];
+		triangle_next_Aedge0 = next_Aedge0.get<Face>()[0].nbEdges() == 4 ? next_Aedge0.get<Face>()[1] : next_Aedge0.get<Face>()[0];
+		triangle1 = edge_inter.get<Face>()[0] != triangle0 ? edge_inter.get<Face>()[0] : edge_inter.get<Face>()[1];
+		node_top = get_opposit2Edge(edge_inter, triangle1);
+
+		if(get_opposit2Edge(next_Aedge0, triangle_next_Aedge0) != node_top){
+			Node next_node = next_Aedge0.getOppositeNode(node0);
+			Edge swap_inter = get_opposit2Node(next_node, triangle_next_Aedge0);
+			Face swap_face = swap_inter.get<Face>()[0] != triangle_next_Aedge0 ? swap_inter.get<Face>()[0] : swap_inter.get<Face>()[1];
+			swap(next_node, triangle_next_Aedge0, swap_face);
+		}
+
+		if(get_opposit2Edge(next_Aedge1, triangle_next_Aedge1) != node_top){
+			Node next_node = next_Aedge1.getOppositeNode(node1);
+			Edge swap_inter = get_opposit2Node(next_node, triangle_next_Aedge1);
+			Face swap_face = swap_inter.get<Face>()[0] != triangle_next_Aedge1 ? swap_inter.get<Face>()[0] : swap_inter.get<Face>()[1];
+			swap(next_node, triangle_next_Aedge1, swap_face);
+		}
 
 		std::vector<Face> listInside;
 		std::vector<Edge> listIntersect = interestionS(node0, node1);
@@ -1369,7 +1402,6 @@ void Quadfront::seam(Node& Anode, std::vector<Node>& listNode){
 
 		Edge edge_top;
 		Edge edge_side;
-
 
 		for (auto& e : node_top.get<Edge>()){
 			if (e.getOppositeNode(node_top) == node0){
@@ -1386,26 +1418,12 @@ void Quadfront::seam(Node& Anode, std::vector<Node>& listNode){
 		node0.X() = midPoint.X();
 		node0.Y() = midPoint.Y();
 
-		gmds::IGMeshIOService ioService(m_mesh);
-		gmds::VTKWriter vtkWriter(&ioService);
-		vtkWriter.setCellOptions(gmds::N | gmds::F | gmds::E);
-		vtkWriter.setDataOptions(gmds::N | gmds::F | gmds::E);
-		vtkWriter.write("/home/pagea/Documents/Travail/data/toto_link3.vtk");
 
 		Edge new_edge = closingSeam(edge0, edge1, edge_side, edge_top);
 
-		std::cout<<"là"<<std::endl;
-
 		listNode.push_back(Anode);
+		listNode.push_back(node0);
 		listNode.push_back(edge1.getOppositeNode(Anode));
-
-		if (std::get<1>(m_nodeFront[node0]) == edge0){
-			std::get<1>(m_nodeFront[node0]) = new_edge;
-		}
-		else{
-			std::get<2>(m_nodeFront[node0]) = new_edge;
-		}
-
 	}
 
 	else if(std::max(edge0.length(), edge1.length())/std::min(edge0.length(), edge1.length()) > 2.5){
