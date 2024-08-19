@@ -13,6 +13,10 @@ if(WITH_LIMA)
 endif()
 add_executable(GMDS_IO_TEST ${TEST_SUITES}
         main_test.cpp)
+
+if(WITH_LIMA)
+    target_compile_definitions(GMDS_IO_TEST PRIVATE WITH_LIMA)
+endif()
 #==============================================================================
 target_link_libraries(GMDS_IO_TEST PUBLIC
         ${GMDS_LIB}
