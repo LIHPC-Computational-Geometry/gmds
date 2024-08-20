@@ -70,9 +70,15 @@ LimaWriter::write(const std::string& AFileName, MeshModel AModel, int ACompact)
 		writeVolumesAttributes();
 
 		m_writer->close ( );
+		delete(m_writer);
+		m_writer = nullptr;
 	}
 	catch(Lima::write_erreur& e) {
 		std::cerr<<"LimaWriterAPI::write error: "<<e.what()<<std::endl;
+		if (m_writer != nullptr) {
+			delete(m_writer);
+			m_writer = nullptr;
+		}
 		throw GMDSException(e.what());
 	}
 }
