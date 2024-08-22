@@ -151,7 +151,9 @@ InterfaceNodesPosSmoothVF_assignORTOOLS_xD(const kmds::GrowingView<kmds::TCellID
 	//  ORTOOLS
 	//  =======================================
 	std::vector<operations_research::MPVariable *> variables;
-	operations_research::MPSolver solver("InterfaceNodesPosSmoothVF", operations_research::MPSolver::SCIP_MIXED_INTEGER_PROGRAMMING);
+	//operations_research::MPSolver solver("InterfaceNodesPosSmoothVF", operations_research::MPSolver::SCIP_MIXED_INTEGER_PROGRAMMING);
+	operations_research::MPSolver solver("InterfaceNodesPosSmoothVF", operations_research::MPSolver::GUROBI_MIXED_INTEGER_PROGRAMMING);
+
 	for (int p = 0; p < nbVert; p++) {     // boule parcourue pour chaque pixel et matériau
 		for (int imat = 0; imat < nbMat; imat++) {
 			std::string col_name =
@@ -261,13 +263,13 @@ InterfaceNodesPosSmoothVF_assignORTOOLS_xD(const kmds::GrowingView<kmds::TCellID
 	std::cout << "col" << solver.NumVariables() << " icol " << icol << std::endl;
 	std::cout << "nnz " << nnz << " innz " << innz << std::endl;
 
-	solver.SetTimeLimit(absl::Milliseconds(600000));// définit une limite de temps de 10 minutes pour la résolution
+	solver.SetTimeLimit(absl::Milliseconds(300000));// définit une limite de temps de 5 minutes pour la résolution
 	operations_research::MPSolver::ResultStatus result_status = solver.Solve(); // lance la résolution et retourne un status du résultat
 	// Check that the problem has an optimal solution.
 	if (result_status != operations_research::MPSolver::OPTIMAL) {//vérifie si le problème a une solution optimale
 		std::cerr << "le problème n'a pas de solution optimal." << std::endl;
 	}
-	std::cout << "Objective value =" << solver.Objective().Value() << std::endl;//affiche la valeur de l'objectif obtenue
+	std::cout << "Objective value pour le  cas 5x5(booléenne)=" << solver.Objective().Value() << std::endl;//affiche la valeur de l'objectif obtenue
 
 	// converit
 	operations_research::MPSolverParameters param;//définit des paramètres supplémentaires pour le solveur et vérifie si le résultat est optimal ou faisable
