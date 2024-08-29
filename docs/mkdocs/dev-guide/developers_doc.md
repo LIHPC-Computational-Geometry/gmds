@@ -43,7 +43,7 @@ are located in this project:
 ```bash
 #==========================================
 # get our recipes
-git clone --branch gmds_temp --depth=1 https://github.com/LIHPC-Computational-Geometry/spack_recipes.git
+git clone --depth=1 https://github.com/LIHPC-Computational-Geometry/spack_recipes.git
 ````
 
 Spack can be configured; you can modify the installation directory to shorten the paths at the cost
@@ -64,8 +64,8 @@ to the spack upstream project
 ```bash
 # to register our recipes; it assumes that spack_recipes and spack are located at
 # the same level. You can use the "spack repo add" commands instead of copying the repos.yaml file
-#spack repo add ./spack_recipes/meshing_repo
-#spack repo add ./spack_recipes/supersede_repo
+#spack repo add ./spack_recipes/meshing
+#spack repo add ./spack_recipes/meshing_supersede
 cp spack_recipes/config/repos.yaml spack/etc/spack/defaults/repos.yaml
 ```
 
