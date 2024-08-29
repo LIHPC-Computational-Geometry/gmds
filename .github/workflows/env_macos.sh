@@ -13,4 +13,4 @@ spack repo add ./spack_recipes/meshing
 spack repo add ./spack_recipes/meshing_supersede
 
 spack external find cmake
-spack install --only dependencies gmds+blocking~cgns
+spack install --only dependencies gmds+blocking~cgns+python
