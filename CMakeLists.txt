@@ -154,8 +154,8 @@ GMDS_ADD_COMPONENT(
         mctsblock                        # src subdirectory name
         GMDSMctsBlock                    # name of the generated library
         "Blocking generation using MCTS"  # description
-        ON                                # is activated
-        ON                                 # must be covered
+        OFF                                # is activated
+        OFF                                 # must be covered
 )
 
 
