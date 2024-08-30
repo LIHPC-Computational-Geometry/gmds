@@ -1,727 +1,459 @@
 /*----------------------------------------------------------------------------*/
-//
-// Created by ledouxf on 1/22/19.
-//
-/*----------------------------------------------------------------------------*/
-#include <gmds/io/LimaWriter.h>
+#include "gmds/io/LimaWriter.h"
+#include "gmds/io/LimaWriterStreamMli2.h"
 /*----------------------------------------------------------------------------*/
 #include <vector>
 /*----------------------------------------------------------------------------*/
-#include <Lima/erreur.h>
-#include <Lima/polyedre.h>
+#include <Lima/lima++.h>
+#include <LimaP/reader.h>
+#include <gmds/ig/Mesh.h>
 /*----------------------------------------------------------------------------*/
-using namespace gmds;
+namespace gmds{
 /*----------------------------------------------------------------------------*/
-LimaWriter::LimaWriter(Mesh& AMesh)
-  : m_mesh(AMesh), m_length_unit(1.), m_writer(nullptr)
+LimaWriter::LimaWriter(gmds::Mesh& AMesh)
+  :m_mesh(AMesh), m_nodes_connection(1), m_length_unit(1.)
 {}
 /*----------------------------------------------------------------------------*/
-LimaWriter::~LimaWriter()= default;
+LimaWriter::~LimaWriter()
+{
+}
 /*----------------------------------------------------------------------------*/
-void
-LimaWriter::setLengthUnit(double AUnit)
+void LimaWriter::setLengthUnit(double AUnit)
 {
 	m_length_unit = AUnit;
 }
 /*----------------------------------------------------------------------------*/
-void
-LimaWriter::activateZlibCompression()
+void LimaWriter::write(const std::string& AFileName, gmds::MeshModel AModel, int ACompact)
 {
-	//WARNING: only available using the hdf145 extension
-	//writer_->activer_compression_zlib();
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::write(const std::string& AFileName, MeshModel AModel, int ACompact)
-{
-	try {
-		m_writer = new Lima::MaliPPWriter2(AFileName, 1);
+	/* Detection du format par le suffixe du nom du fichier. */
+	Lima::format_t format = Lima::SUFFIXE;
+	format = Lima::_Reader::detectFormat(AFileName);
 
-		m_writer->unite_longueur(m_length_unit);
-		Lima::dim_t dim;
-		if(m_mesh.getDim() == 3) {
-			dim = Lima::D3;
-		} else if(m_mesh.getDim() == 2) {
-			dim = Lima::D2;
-		} else {
-			dim = Lima::D1;
-		}
-		m_writer->dimension(dim);
-		m_writer->beginWrite();
-		
-		writeNodes();
-		writeEdges();
-		writeFaces();
-		writeRegions();
-
-		writeClouds();
-		writeLines();
-		writeSurfaces();
-		writeVolumes();
-
-		writeNodesAttributes();
-		writeEdgesAttributes();
-		writeFacesAttributes();
-		writeRegionsAttributes();
-
-		writeCloudsAttributes();
-		writeLinesAttributes();
-		writeSurfacesAttributes();
-		writeVolumesAttributes();
-
-		m_writer->close ( );
-		delete(m_writer);
-		m_writer = nullptr;
-	}
-	catch(Lima::write_erreur& e) {
-		std::cerr<<"LimaWriterAPI::write error: "<<e.what()<<std::endl;
-		if (m_writer != nullptr) {
-			delete(m_writer);
-			m_writer = nullptr;
-		}
-		throw GMDSException(e.what());
-	}
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::checkContinuousNodes(){
-	bool isContiguous = true;
-	TCellID minID = NullID;
-
-	if(m_mesh.getNbNodes() > 0) {
-		Mesh::nodes_iterator it_nodes_id = m_mesh.nodes_begin();
-		TCellID currentID = *it_nodes_id;
-		minID = currentID+1;
-		++it_nodes_id;
-
-		for(; it_nodes_id!=m_mesh.nodes_end(); ++it_nodes_id){
-			if(*it_nodes_id != currentID+1) {
-				isContiguous = false;
-				break;
-			}
-			currentID = *it_nodes_id;
-		}
-	}
-	try {
-		m_writer->writeNodesInfo(isContiguous, m_mesh.getNbNodes(),minID);
-	}
-	catch(Lima::write_erreur& e) {
-		std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-		throw GMDSException(e.what());
-	}
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::checkContinuousEdges(){
-	bool isContiguous = true;
-	TCellID minID = NullID;
-	if(m_mesh.getNbEdges() > 0) {
-		Mesh::edges_iterator it_edges_id = m_mesh.edges_begin();
-		TCellID currentID = *it_edges_id;
-		minID=currentID+1;
-		++it_edges_id;
-
-		for(; it_edges_id !=m_mesh.edges_end(); ++it_edges_id){
-			if(*it_edges_id != currentID+1) {
-				isContiguous = false;
-				break;
-			}
-			currentID = *it_edges_id;
-		}
-	}
-
-	try {
-		m_writer->writeEdgesInfo(isContiguous, m_mesh.getNbEdges(),minID);
-	}
-	catch(Lima::write_erreur& e) {
-		std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-		throw GMDSException(e.what());
-	}
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::checkContinuousFaces(){
-	bool isContiguous = true;
-	TCellID minID = NullID;
-	if(m_mesh.getNbFaces() > 0) {
-		Mesh::faces_iterator it_faces_id = m_mesh.faces_begin();
-		TCellID currentID = *it_faces_id;
-		minID=currentID+1;
-		++it_faces_id;
-
-		for(; it_faces_id !=m_mesh.faces_end(); ++it_faces_id){
-			if(*it_faces_id != currentID+1) {
-				isContiguous = false;
-				break;
-			}
-			currentID = *it_faces_id;
-		}
-	}
-
-	try {
-		m_writer->writeFacesInfo(isContiguous, m_mesh.getNbFaces(),minID);
-	}
-	catch(Lima::write_erreur& e) {
-		std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-		throw GMDSException(e.what());
-	}
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::checkContinuousRegions(){
-	bool isContiguous = true;
-	TCellID minID = NullID;
-	if(m_mesh.getNbRegions() > 0) {
-		Mesh::regions_iterator it_regions_id = m_mesh.regions_begin();
-		TCellID currentID = *it_regions_id;
-		minID=currentID+1;
-		++it_regions_id;
-
-		for(; it_regions_id !=m_mesh.regions_end(); ++it_regions_id){
-			if(*it_regions_id != currentID+1) {
-				isContiguous = false;
-				break;
-			}
-			currentID = *it_regions_id;
-		}
-	}
-	try {
-		m_writer->writeRegionsInfo(isContiguous, m_mesh.getNbRegions(),minID);
-	}
-	catch(Lima::write_erreur& e) {
-		std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-		throw GMDSException(e.what());
-	}
-
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeNodes() {
-	// check whether the ids are contiguous
-	checkContinuousNodes();
-
-	const Lima::id_type LimaWriterAPI_NBNODES_CHUNK = 10000;
-
-	auto* xccords = new double[LimaWriterAPI_NBNODES_CHUNK];
-	auto* yccords = new double[LimaWriterAPI_NBNODES_CHUNK];
-	auto* zccords = new double[LimaWriterAPI_NBNODES_CHUNK];
-	auto* ids = new Lima::id_type[LimaWriterAPI_NBNODES_CHUNK];
-
-	Lima::id_type chunkSize = 0;
-	for(auto n_id:m_mesh.nodes()){
-		Node n = m_mesh.get<Node>(n_id);
-		xccords[chunkSize] = n.X();
-		yccords[chunkSize] = n.Y();
-		zccords[chunkSize] = n.Z();
-		ids[chunkSize] = n.id()+1; // +1 because mli ids begin at 1
-
-		chunkSize++;
-		if(chunkSize==LimaWriterAPI_NBNODES_CHUNK) {
-			try {
-				m_writer->writeNodes(chunkSize,xccords,yccords,zccords,ids);
-			}
-			catch(Lima::write_erreur& e) {
-				std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-				throw GMDSException(e.what());
-			}
-			chunkSize = 0;
-		}
-	}
-
-	if(chunkSize>0) {
-		try {
-			m_writer->writeNodes(chunkSize,xccords,yccords,zccords,ids);
-		}
-		catch(Lima::write_erreur& e) {
-			std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-			throw GMDSException(e.what());
-		}
-	}
-
-	delete[] xccords;
-	delete[] yccords;
-	delete[] zccords;
-	delete[] ids;
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeEdges() {
-	// check whether the ids are contiguous
-	checkContinuousEdges();
-
-	const Lima::id_type LimaWriterAPI_NBEDGES_CHUNK = 10000;
-
-	auto* edge2nodeIDs = new Lima::id_type[2*LimaWriterAPI_NBEDGES_CHUNK];
-	auto* ids= new Lima::id_type[LimaWriterAPI_NBEDGES_CHUNK];
-
-	Lima::id_type chunkSize = 0;
-
-	for(auto e_id:m_mesh.edges())
+	switch(format) {
+	case Lima::SUFFIXE :
+		throw GMDSException("GMDSCEAWriter::write Extension de fichier inconnue\n");
+		break;
+	case Lima::INCONNU :
+		throw GMDSException("GMDSCEAWriter::write Extension de fichier inconnue\n");
+		break;
+	case Lima::MALIPP2 :
 	{
-		Edge e = m_mesh.get<Edge>(e_id);
-		std::vector<TCellID> nodesIDs = e.getAllIDs<Node>();
-		edge2nodeIDs[2*chunkSize  ] = nodesIDs[0]+1;
-		edge2nodeIDs[2*chunkSize+1] = nodesIDs[1]+1;
-		ids[chunkSize] = e.id()+1;
-
-		chunkSize++;
-		if(chunkSize==LimaWriterAPI_NBEDGES_CHUNK) {
-			try {
-				m_writer->writeEdges(chunkSize,edge2nodeIDs,ids);
-			}
-			catch(Lima::write_erreur& e) {
-				std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-				throw GMDSException(e.what());
-			}
-			chunkSize = 0;
-		}
-	}
-
-	if(chunkSize>0) {
 		try {
-			m_writer->writeEdges(chunkSize,edge2nodeIDs,ids);
+			gmds::LimaWriterStreamMli2 w(m_mesh);
+			w.setLengthUnit(m_length_unit);
+			w.write(AFileName,AModel,ACompact);
 		}
-		catch(Lima::write_erreur& e) {
-			std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
+		catch(gmds::GMDSException& e) {
+			std::cerr<<"LimaWriter ERREUR : "<<e.what()<<std::endl;
 			throw GMDSException(e.what());
 		}
 	}
-
-	delete[] edge2nodeIDs;
-	delete[] ids;
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeFaces() {
-	// check whether the ids are contiguous
-	checkContinuousFaces();
-
-	const Lima::id_type LimaWriterAPI_NBFACES_CHUNK = 10000;
-	const Lima::id_type LimaWriterAPI_MAX_NBNODES_PER_FACE = 15; //Lima::MAX_NOEUDS;
-
-	auto* face2nodeIDs = new Lima::id_type[LimaWriterAPI_MAX_NBNODES_PER_FACE*LimaWriterAPI_NBFACES_CHUNK];
-	auto* nbNodesPerFace = new Lima::id_type[LimaWriterAPI_NBFACES_CHUNK];
-	auto* ids = new Lima::id_type[LimaWriterAPI_NBFACES_CHUNK];
-
-	Lima::id_type chunkSize = 0;
-	Lima::id_type currentIndex = 0;
-
-	for(auto f_id:m_mesh.faces()){
-		Face f = m_mesh.get<Face>(f_id);
-		std::vector<TCellID> nodesIDs = f.getAllIDs<Node>();
-		nbNodesPerFace[chunkSize] = nodesIDs.size();
-
-		if(nodesIDs.size() > LimaWriterAPI_MAX_NBNODES_PER_FACE) {
-			throw GMDSException("LimaWriterAPI::writeFaces a face has too many nodes (> 15 == Lima::MAX_NOEUDS).");
-		}
-
-		for(unsigned int nodesID : nodesIDs) {
-			face2nodeIDs[currentIndex] = nodesID+1;
-			currentIndex++;
-		}
-
-		ids[chunkSize] = f.id()+1;
-
-		chunkSize++;
-		if(chunkSize==LimaWriterAPI_NBFACES_CHUNK) {
-			try {
-				m_writer->writeFaces(chunkSize,face2nodeIDs,nbNodesPerFace,ids);
-			}
-			catch(Lima::write_erreur& e) {
-				std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-				throw GMDSException(e.what());
-			}
-			chunkSize = 0;
-			currentIndex = 0;
-		}
-	}
-
-	if(chunkSize>0) {
+	break;
+	default :
+	{
 		try {
-			m_writer->writeFaces(chunkSize,face2nodeIDs,nbNodesPerFace,ids);
+			this->writeClassic(AFileName,AModel,ACompact);
 		}
-		catch(Lima::write_erreur& e) {
-			std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
+		catch(gmds::GMDSException& e) {
+			std::cerr<<"LimaWriter ERREUR : "<<e.what()<<std::endl;
 			throw GMDSException(e.what());
 		}
 	}
-
-	delete[] face2nodeIDs;
-	delete[] nbNodesPerFace;
-	delete[] ids;
+	break;
+	}
 }
 /*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeRegions(){
-	// check whether the ids are contiguous
-	checkContinuousRegions();
+void LimaWriter::writeClassic(const std::string& AFileName, gmds::MeshModel AModel, int ACompact)
+{
+	m_nodes_connection.clear();
 
-	const Lima::id_type LimaWriterAPI_NBREGIONS_CHUNK = 10000;
-	const Lima::id_type LimaWriterAPI_MAX_NBNODES_PER_REGION = 15; //Lima::MAX_NOEUDS;
-
-	auto* region2nodeIDs = new Lima::id_type[LimaWriterAPI_MAX_NBNODES_PER_REGION*LimaWriterAPI_NBREGIONS_CHUNK];
-	auto* regionTypes = new Lima::Polyedre::PolyedreType[LimaWriterAPI_NBREGIONS_CHUNK];
-	auto* ids = new Lima::id_type[LimaWriterAPI_NBREGIONS_CHUNK];
-
-	Lima::id_type chunkSize = 0;
-	Lima::id_type currentIndex = 0;
-
-	for(auto r_id:m_mesh.regions()){
-		Region r = m_mesh.get<Region>(r_id);
-		std::vector<TCellID> nodesIDs = r.getAllIDs<Node>();
-
-		switch(r.type()) {
-		case GMDS_TETRA :
-			regionTypes[chunkSize] = Lima::Polyedre::TETRAEDRE;
-			break;
-		case GMDS_PYRAMID :
-			regionTypes[chunkSize] = Lima::Polyedre::PYRAMIDE;
-			break;
-		case GMDS_PRISM3 :
-			regionTypes[chunkSize] = Lima::Polyedre::PRISME;
-			break;
-		case GMDS_HEX :
-			regionTypes[chunkSize] = Lima::Polyedre::HEXAEDRE;
-			break;
-		default:
-			throw GMDSException("LimaWriterAPI::writeRegions cell type not handled by Lima.");
-		}
-
-		if(nodesIDs.size() > LimaWriterAPI_MAX_NBNODES_PER_REGION) {
-			throw GMDSException("LimaWriterAPI::writeRegions a face has too many nodes (> 15 == Lima::MAX_NOEUDS).");
-		}
-
-		for(unsigned int nodesID : nodesIDs) {
-			region2nodeIDs[currentIndex] = nodesID+1;
-			currentIndex++;
-		}
-
-		ids[chunkSize] = r.id()+1;
-
-		chunkSize++;
-		if(chunkSize==LimaWriterAPI_NBREGIONS_CHUNK) {
-			try {
-				m_writer->writeRegions(chunkSize,region2nodeIDs,regionTypes,ids);
-			}
-			catch(Lima::write_erreur& e) {
-				std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-				throw GMDSException(e.what());
-			}
-			chunkSize = 0;
-			currentIndex = 0;
-		}
+	TCellID max_id = 0;
+	for(auto i: m_mesh.nodes())
+	{
+		gmds::Node n = m_mesh.get<gmds::Node>(i);
+		if(n.id()>max_id)
+			max_id = n.id();
 	}
+	m_nodes_connection.resize(max_id+1);
 
-	if(chunkSize>0) {
-		try {
-			m_writer->writeRegions(chunkSize,region2nodeIDs,regionTypes,ids);
+	Lima::Maillage m;
+	m.unite_longueur(m_length_unit);
+
+	writeNodes(m);
+
+	if (AModel.has(E) && m_mesh.getModel().has(E))
+		writeEdges(m);
+
+	if (AModel.has(F) && m_mesh.getModel().has(F))
+		writeFaces(m);
+
+	if (AModel.has(R) && m_mesh.getModel().has(R))
+		writeRegions(m);
+
+	try{
+		if(m_mesh.getModel().has(DIM2)){
+			m.dimension(Lima::D2);
 		}
-		catch(Lima::write_erreur& e) {
-			std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-			throw GMDSException(e.what());
-		}
+		m.ecrire(AFileName, Lima::SUFFIXE,1,ACompact);
 	}
-
-	delete[] region2nodeIDs;
-	delete[] regionTypes;
-	delete[] ids;
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeClouds() {
-	const Lima::id_type LimaWriterAPI_NBNODES_CHUNK = 10000;
-
-	std::vector<std::string> names;
-	std::vector<Lima::id_type> sizes;
-
-	for(auto i=0; i< m_mesh.getNbGroups<Node>(); i++) {
-		CellGroup<Node>* cl = m_mesh.getGroup<Node>(i);
-		names.push_back(cl->name());
-		sizes.push_back(cl->size());
-	}
-
-	Lima::id_type nbClouds = m_mesh.getNbGroups<Node>();
-
-	try {
-		m_writer->writeNodeSetInfo(nbClouds,names,sizes);
-	}
-	catch(Lima::write_erreur& e) {
-		std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
+	catch(Lima::write_erreur& e)
+	{
+		std::cerr<<"LIMA ERREUR : "<<e.what()
+		          <<"\nCela peut venir d'un chemin incorrect, d'un problème de permissions ou de quota."
+		          <<std::endl;
 		throw GMDSException(e.what());
 	}
+}
+/*----------------------------------------------------------------------------*/
+void LimaWriter::writeNodes(Lima::Maillage& ALimaMesh)
+{
 
-	Lima::id_type ids[LimaWriterAPI_NBNODES_CHUNK];
-	Lima::id_type chunkSize = 0;
+	for(auto i: m_mesh.nodes())
+	{
+		gmds::Node n = m_mesh.get<gmds::Node>(i);
+		Lima::Noeud n2(n.id()+1,n.X(), n.Y(), n.Z());
+		/* we keep the connection between lima node and gmds node through local ids.
+		 */
+		ALimaMesh.ajouter(n2);
+		m_nodes_connection[n.id()] = n2;
 
-	for(auto i=0; i< m_mesh.getNbGroups<Node>(); i++) {
-		CellGroup<Node>* cl = m_mesh.getGroup<Node>(i);
+	}
 
-		std::vector<TCellID> nodeIDs= cl->cells();
+	for(auto it = m_mesh.groups_begin<Node>(); it!=m_mesh.groups_end<Node>(); it++)
+	{
+		Lima::Nuage lima_cl((*it)->name());
+		ALimaMesh.ajouter(lima_cl);
 
-		for(unsigned int nodeID : nodeIDs) {
-			ids[chunkSize] = nodeID+1;
-			chunkSize++;
-
-			if(chunkSize==LimaWriterAPI_NBNODES_CHUNK) {
-				try {
-					m_writer->writeNodeSetData(cl->name(),chunkSize,ids);
-				}
-				catch(Lima::write_erreur& e) {
-					std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-					throw GMDSException(e.what());
-				}
-				chunkSize = 0;
-			}
-		}
-
-		if(chunkSize > 0) {
-			try {
-				m_writer->writeNodeSetData(cl->name(),chunkSize,ids);
-			}
-			catch(Lima::write_erreur& e) {
-				std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-				throw GMDSException(e.what());
-			}
-			chunkSize = 0;
-		}
-
+		auto ids = (*it)->cells();
+		for(unsigned int index =0; index <ids.size(); index++)
+			lima_cl.ajouter(m_nodes_connection[ids[index]]);
 	}
 }
 /*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeLines() {
-	const Lima::id_type LimaWriterAPI_NBEDGES_CHUNK = 10000;
-	std::vector<std::string> names;
-	std::vector<Lima::id_type> sizes;
+void LimaWriter::writeEdges(Lima::Maillage& ALimaMesh)
+{
 
-	for(auto i=0; i< m_mesh.getNbGroups<Edge>(); i++) {
-		CellGroup<Edge>* l = m_mesh.getGroup<Edge>(i);
-		names.push_back(l->name());
-		sizes.push_back(l->size());
+	for(auto i: m_mesh.edges())
+	{
+		gmds::Edge e = m_mesh.get<gmds::Edge>(i);
+		std::vector<TCellID> nodes = e.getIDs<Node>();
+		Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+		Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+		Lima::Bras e2(e.id()+1,n1, n2);
+		ALimaMesh.ajouter(e2);
 	}
 
-	Lima::id_type nbLines = m_mesh.getNbGroups<Edge>();
+	for(auto it = m_mesh.groups_begin<Edge>(); it!=m_mesh.groups_end<Edge>(); it++)
+	{
+		Lima::Ligne lima_li((*it)->name());
+		ALimaMesh.ajouter(lima_li);
 
-	try {
-		m_writer->writeEdgeSetInfo(nbLines,names,sizes);
-	}
-	catch(Lima::write_erreur& e) {
-		std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-		throw GMDSException(e.what());
-	}
-
-	Lima::id_type ids[LimaWriterAPI_NBEDGES_CHUNK];
-	Lima::id_type chunkSize = 0;
-
-	for(auto i=0; i< m_mesh.getNbGroups<Edge>(); i++) {
-		CellGroup<Edge>* l = m_mesh.getGroup<Edge>(i);
-
-		std::vector<TCellID> edgeIDs= l->cells();
-
-		for(unsigned int edgeID : edgeIDs) {
-			ids[chunkSize] = edgeID+1;
-			chunkSize++;
-
-			if(chunkSize==LimaWriterAPI_NBEDGES_CHUNK) {
-				try {
-					m_writer->writeEdgeSetData(l->name(),chunkSize,ids);
-				}
-				catch(Lima::write_erreur& e) {
-					std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-					throw GMDSException(e.what());
-				}
-				chunkSize = 0;
-			}
-		}
-
-		if(chunkSize > 0) {
-			try {
-				m_writer->writeEdgeSetData(l->name(),chunkSize,ids);
-			}
-			catch(Lima::write_erreur& e) {
-				std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-				throw GMDSException(e.what());
-			}
-			chunkSize = 0;
+		auto ids = (*it)->cells();
+		for(unsigned int index=0; index<ids.size();index++){
+			Lima::Bras b = ALimaMesh.bras_id(ids[index]+1);
+			lima_li.ajouter(b);
 		}
 	}
 }
 /*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeSurfaces() {
-	const Lima::id_type LimaWriterAPI_NBFACES_CHUNK = 10000;
-	std::vector<std::string> names;
-	std::vector<Lima::id_type> sizes;
+void LimaWriter::writeFaces(Lima::Maillage& ALimaMesh)
+{
+	for(auto i: m_mesh.faces())
+	{
+		gmds::Face f = m_mesh.get<gmds::Face>(i);
+		std::vector<TCellID> nodes = f.getIDs<Node>();
+		switch(f.type()){
+		case GMDS_QUAD:{
+			Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+			Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+			Lima::Noeud n3 = m_nodes_connection[nodes[2]];
+			Lima::Noeud n4 = m_nodes_connection[nodes[3]];
+			Lima::Polygone f2(f.id()+1,n1, n2,n3,n4);
+			ALimaMesh.ajouter(f2);}
+		break;
+		case GMDS_TRIANGLE:{
+			Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+			Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+			Lima::Noeud n3 = m_nodes_connection[nodes[2]];
 
-	for(auto i=0; i< m_mesh.getNbGroups<Face>(); i++) {
-		CellGroup<Face>* surf = m_mesh.getGroup<Face>(i);
-		names.push_back(surf->name());
-		sizes.push_back(surf->size());
-	}
-
-	Lima::id_type nbSurfaces = m_mesh.getNbGroups<Face>();
-
-	try {
-		m_writer->writeFaceSetInfo(nbSurfaces,names,sizes);
-	}
-	catch(Lima::write_erreur& e) {
-		std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-		throw GMDSException(e.what());
-	}
-
-	Lima::id_type ids[LimaWriterAPI_NBFACES_CHUNK];
-	Lima::id_type nbNodes[LimaWriterAPI_NBFACES_CHUNK];
-	Lima::id_type chunkSize = 0;
-
-	for(auto i=0; i< m_mesh.getNbGroups<Face>(); i++) {
-		CellGroup<Face>* surf = m_mesh.getGroup<Face>(i);
-
-		std::vector<TCellID> faceIDs= surf->cells();
-
-		for(unsigned int & faceID : faceIDs) {
-			ids[chunkSize] = faceID+1;
-			nbNodes[chunkSize] = (m_mesh.get<Face> (faceID)).nbNodes();
-			chunkSize++;
-
-			if(chunkSize==LimaWriterAPI_NBFACES_CHUNK) {
-				try {
-					m_writer->writeFaceSetData(surf->name(),chunkSize,ids,nbNodes);
-				}
-				catch(Lima::write_erreur& e) {
-					std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-					throw GMDSException(e.what());
-				}
-				chunkSize = 0;
+			Lima::Polygone f2(f.id()+1,n1, n2,n3);
+			ALimaMesh.ajouter(f2);}
+		break;
+		case GMDS_POLYGON:{
+			switch(nodes.size()){
+			case 3:
+			{
+				Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+				Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+				Lima::Noeud n3 = m_nodes_connection[nodes[2]];
+				Lima::Polygone f2(f.id()+1,n1, n2, n3);
+				ALimaMesh.ajouter(f2);
 			}
-		}
-
-		if(chunkSize > 0) {
-			try {
-				m_writer->writeFaceSetData(surf->name(),chunkSize,ids,nbNodes);
+			break;
+			case 4:
+			{
+				Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+				Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+				Lima::Noeud n3 = m_nodes_connection[nodes[2]];
+				Lima::Noeud n4 = m_nodes_connection[nodes[3]];
+				Lima::Polygone f2(f.id()+1,n1, n2, n3, n4);
+				ALimaMesh.ajouter(f2);
 			}
-			catch(Lima::write_erreur& e) {
-				std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-				throw GMDSException(e.what());
+			break;
+			case 5:
+			{
+				Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+				Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+				Lima::Noeud n3 = m_nodes_connection[nodes[2]];
+				Lima::Noeud n4 = m_nodes_connection[nodes[3]];
+				Lima::Noeud n5 = m_nodes_connection[nodes[4]];
+				Lima::Polygone f2(f.id()+1,n1, n2, n3, n4, n5);
+				ALimaMesh.ajouter(f2);
 			}
-			chunkSize = 0;
-		}
-
-	}
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeVolumes() {
-	const Lima::id_type LimaWriterAPI_NBREGIONS_CHUNK = 10000;
-	std::vector<std::string> names;
-	std::vector<Lima::id_type> sizes;
-
-	for(auto i=0; i< m_mesh.getNbGroups<Region>(); i++) {
-		CellGroup<Region>* vol = m_mesh.getGroup<Region>(i);
-		names.push_back(vol->name());
-		sizes.push_back(vol->size());
-	}
-
-	Lima::id_type nbVolumes = m_mesh.getNbGroups<Region>();
-
-	try {
-		m_writer->writeRegionSetInfo(nbVolumes,names,sizes);
-	}
-	catch(Lima::write_erreur& e) {
-		std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-		throw GMDSException(e.what());
-	}
-
-	Lima::id_type ids[LimaWriterAPI_NBREGIONS_CHUNK];
-	Lima::Polyedre::PolyedreType types[LimaWriterAPI_NBREGIONS_CHUNK];
-	Lima::id_type chunkSize = 0;
-
-	for(auto i=0; i< m_mesh.getNbGroups<Region>(); i++) {
-		CellGroup<Region>* vol = m_mesh.getGroup<Region>(i);
-
-		std::vector<TCellID> regionIDs= vol->cells();
-
-		for(unsigned int & regionID : regionIDs) {
-			ids[chunkSize] = regionID+1;
-			switch((m_mesh.get<Region>(regionID)).type()) {
-			case GMDS_TETRA :
-				types[chunkSize] = Lima::Polyedre::TETRAEDRE;
-				break;
-			case GMDS_PYRAMID :
-				types[chunkSize] = Lima::Polyedre::PYRAMIDE;
-				break;
-			case GMDS_PRISM3 :
-				types[chunkSize] = Lima::Polyedre::PRISME;
-				break;
-			case GMDS_HEX :
-				types[chunkSize] = Lima::Polyedre::HEXAEDRE;
-				break;
+			break;
+			case 6:
+			{
+				Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+				Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+				Lima::Noeud n3 = m_nodes_connection[nodes[2]];
+				Lima::Noeud n4 = m_nodes_connection[nodes[3]];
+				Lima::Noeud n5 = m_nodes_connection[nodes[4]];
+				Lima::Noeud n6 = m_nodes_connection[nodes[5]];
+				Lima::Polygone f2(f.id()+1,n1, n2, n3, n4, n5, n6);
+				ALimaMesh.ajouter(f2);
+			}
+			break;
 			default:
-				throw GMDSException("LimaWriterAPI::writeRegions cell type not handled by Lima.");
-			}
-			chunkSize++;
+				std::cout<<"Unable to convert a polygon with more than 6 nodes in Lima format"<<std::endl;
+			};
+		}
+		break;
+		default:
+			std::cout<<"Unable to convert this type of cell"<<std::endl;
+		};
 
-			if(chunkSize==LimaWriterAPI_NBREGIONS_CHUNK) {
-				try {
-					m_writer->writeRegionSetData(vol->name(),chunkSize,ids,types);
-				}
-				catch(Lima::write_erreur& e) {
-					std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-					throw GMDSException(e.what());
-				}
-				chunkSize = 0;
+	}
+
+	for(auto it = m_mesh.groups_begin<Face>(); it!=m_mesh.groups_end<Face>(); it++)
+	{
+		Lima::Surface lima_surf((*it)->name());
+		ALimaMesh.ajouter(lima_surf);
+
+		auto ids = (*it)->cells();
+		for(unsigned int face_index=0; face_index<ids.size();face_index++)
+		{
+			Lima::Polygone p = ALimaMesh.polygone_id(ids[face_index]+1);
+			lima_surf.ajouter(p);
+		}
+	}
+
+
+}
+/*----------------------------------------------------------------------------*/
+void LimaWriter::writeRegions(Lima::Maillage& ALimaMesh)
+{
+	for(auto i: m_mesh.regions())
+	{
+		gmds::Region r = m_mesh.get<gmds::Region>(i);
+		std::vector<TCellID> nodes = r.getIDs<Node>();
+		switch(r.type()){
+		case GMDS_TETRA:{
+			Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+			Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+			Lima::Noeud n3 = m_nodes_connection[nodes[2]];
+			Lima::Noeud n4 = m_nodes_connection[nodes[3]];
+
+			Lima::Polyedre f2(r.id()+1,n1,n2,n3,n4);
+			ALimaMesh.ajouter(f2);
+		}
+		break;
+		case GMDS_HEX:{
+
+			Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+			Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+			Lima::Noeud n3 = m_nodes_connection[nodes[2]];
+			Lima::Noeud n4 = m_nodes_connection[nodes[3]];
+			Lima::Noeud n5 = m_nodes_connection[nodes[4]];
+			Lima::Noeud n6 = m_nodes_connection[nodes[5]];
+			Lima::Noeud n7 = m_nodes_connection[nodes[6]];
+			Lima::Noeud n8 = m_nodes_connection[nodes[7]];
+
+
+			Lima::Polyedre f2(r.id()+1,n1,n2,n3,n4,n5,n6,n7,n8);
+			ALimaMesh.ajouter(f2);
+		}
+		break;
+		case GMDS_PYRAMID:{
+
+			Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+			Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+			Lima::Noeud n3 = m_nodes_connection[nodes[2]];
+			Lima::Noeud n4 = m_nodes_connection[nodes[3]];
+			Lima::Noeud n5 = m_nodes_connection[nodes[4]];
+
+
+			Lima::Polyedre f2(r.id()+1,n1,n2,n3,n4,n5);
+			ALimaMesh.ajouter(f2);
+		}
+		break;
+		case GMDS_PRISM3:{
+
+			Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+			Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+			Lima::Noeud n3 = m_nodes_connection[nodes[2]];
+			Lima::Noeud n4 = m_nodes_connection[nodes[3]];
+			Lima::Noeud n5 = m_nodes_connection[nodes[4]];
+			Lima::Noeud n6 = m_nodes_connection[nodes[5]];
+
+			Lima::Polyedre f2(r.id()+1,n1,n2,n3,n4,n5,n6);
+			ALimaMesh.ajouter(f2);
+		}
+		break;
+
+		case GMDS_PRISM5:{
+
+			Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+			Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+			Lima::Noeud n3 = m_nodes_connection[nodes[2]];
+			Lima::Noeud n4 = m_nodes_connection[nodes[3]];
+			Lima::Noeud n5 = m_nodes_connection[nodes[4]];
+			Lima::Noeud n6 = m_nodes_connection[nodes[5]];
+			Lima::Noeud n7 = m_nodes_connection[nodes[6]];
+			Lima::Noeud n8 = m_nodes_connection[nodes[7]];
+			Lima::Noeud n9 = m_nodes_connection[nodes[8]];
+			Lima::Noeud n10= m_nodes_connection[nodes[9]];
+
+			Lima::Polyedre f2(r.id()+1,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10);
+			ALimaMesh.ajouter(f2);
+		}
+		break;
+
+		case GMDS_PRISM6:{
+
+			Lima::Noeud n1 = m_nodes_connection[nodes[0 ]];
+			Lima::Noeud n2 = m_nodes_connection[nodes[1 ]];
+			Lima::Noeud n3 = m_nodes_connection[nodes[2 ]];
+			Lima::Noeud n4 = m_nodes_connection[nodes[3 ]];
+			Lima::Noeud n5 = m_nodes_connection[nodes[4 ]];
+			Lima::Noeud n6 = m_nodes_connection[nodes[5 ]];
+			Lima::Noeud n7 = m_nodes_connection[nodes[6 ]];
+			Lima::Noeud n8 = m_nodes_connection[nodes[7 ]];
+			Lima::Noeud n9 = m_nodes_connection[nodes[8 ]];
+			Lima::Noeud n10= m_nodes_connection[nodes[9 ]];
+			Lima::Noeud n11= m_nodes_connection[nodes[10]];
+			Lima::Noeud n12= m_nodes_connection[nodes[11]];
+
+			Lima::Polyedre f2(r.id()+1,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12);
+			ALimaMesh.ajouter(f2);
+		}
+		break;
+		case GMDS_POLYHEDRA:{
+			switch(nodes.size()){
+			case 4:
+			{
+				Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+				Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+				Lima::Noeud n3 = m_nodes_connection[nodes[2]];
+				Lima::Noeud n4 = m_nodes_connection[nodes[3]];
+				Lima::Polyedre f2(r.id()+1,n1, n2, n3, n4);
+				ALimaMesh.ajouter(f2);
+			}
+			break;
+			case 5:
+			{
+				Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+				Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+				Lima::Noeud n3 = m_nodes_connection[nodes[2]];
+				Lima::Noeud n4 = m_nodes_connection[nodes[3]];
+				Lima::Noeud n5 = m_nodes_connection[nodes[4]];
+				Lima::Polyedre f2(r.id()+1,n1, n2, n3, n4, n5);
+				ALimaMesh.ajouter(f2);
+			}
+			break;
+			case 6:
+			{
+				Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+				Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+				Lima::Noeud n3 = m_nodes_connection[nodes[2]];
+				Lima::Noeud n4 = m_nodes_connection[nodes[3]];
+				Lima::Noeud n5 = m_nodes_connection[nodes[4]];
+				Lima::Noeud n6 = m_nodes_connection[nodes[5]];
+				Lima::Polyedre f2(r.id()+1,n1, n2, n3, n4, n5, n6);
+				ALimaMesh.ajouter(f2);
+			}
+			break;
+			case 8:
+			{
+				Lima::Noeud n1 = m_nodes_connection[nodes[0]];
+				Lima::Noeud n2 = m_nodes_connection[nodes[1]];
+				Lima::Noeud n3 = m_nodes_connection[nodes[2]];
+				Lima::Noeud n4 = m_nodes_connection[nodes[3]];
+				Lima::Noeud n5 = m_nodes_connection[nodes[4]];
+				Lima::Noeud n6 = m_nodes_connection[nodes[5]];
+				Lima::Noeud n7 = m_nodes_connection[nodes[6]];
+				Lima::Noeud n8 = m_nodes_connection[nodes[7]];
+				Lima::Polyedre f2(r.id()+1,n1, n2, n3, n4 , n5 , n6, n7, n8);
+				ALimaMesh.ajouter(f2);
+			}
+			break;
+			case 10:
+			{
+				Lima::Noeud n1 = m_nodes_connection[nodes[0 ]];
+				Lima::Noeud n2 = m_nodes_connection[nodes[1 ]];
+				Lima::Noeud n3 = m_nodes_connection[nodes[2 ]];
+				Lima::Noeud n4 = m_nodes_connection[nodes[3 ]];
+				Lima::Noeud n5 = m_nodes_connection[nodes[4 ]];
+				Lima::Noeud n6 = m_nodes_connection[nodes[5 ]];
+				Lima::Noeud n7 = m_nodes_connection[nodes[6 ]];
+				Lima::Noeud n8 = m_nodes_connection[nodes[7 ]];
+				Lima::Noeud n9 = m_nodes_connection[nodes[8 ]];
+				Lima::Noeud n10= m_nodes_connection[nodes[9 ]];
+				Lima::Polyedre f2(r.id()+1,n1, n2, n3, n4 , n5 , n6, n7, n8, n9, n10);
+				ALimaMesh.ajouter(f2);
+			}
+			break;
+			case 12:
+			{
+				Lima::Noeud n1 = m_nodes_connection[nodes[0 ]];
+				Lima::Noeud n2 = m_nodes_connection[nodes[1 ]];
+				Lima::Noeud n3 = m_nodes_connection[nodes[2 ]];
+				Lima::Noeud n4 = m_nodes_connection[nodes[3 ]];
+				Lima::Noeud n5 = m_nodes_connection[nodes[4 ]];
+				Lima::Noeud n6 = m_nodes_connection[nodes[5 ]];
+				Lima::Noeud n7 = m_nodes_connection[nodes[6 ]];
+				Lima::Noeud n8 = m_nodes_connection[nodes[7 ]];
+				Lima::Noeud n9 = m_nodes_connection[nodes[8 ]];
+				Lima::Noeud n10= m_nodes_connection[nodes[9 ]];
+				Lima::Noeud n11= m_nodes_connection[nodes[10]];
+				Lima::Noeud n12= m_nodes_connection[nodes[11]];
+				Lima::Polyedre f2(r.id()+1,n1, n2, n3, n4 , n5 , n6,
+				                  n7, n8, n9, n10, n11, n12);
+				ALimaMesh.ajouter(f2);
+			}
+			break;
+			default:
+				std::cout<<"Unable to convert a polyhedron with 7, 9 or more than 12 nodes in Lima format"<<std::endl;
 			}
 		}
+		break;
+		default:
+			std::cout<<"Unable to convert a polyhedron with 7, 9 or more than 12 nodes in Lima format"<<std::endl;
+		}
+	}
 
-		if(chunkSize > 0) {
-			try {
-				m_writer->writeRegionSetData(vol->name(),chunkSize,ids,types);
-			}
-			catch(Lima::write_erreur& e) {
-				std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
-				throw GMDSException(e.what());
-			}
-			chunkSize = 0;
+	for(auto it = m_mesh.groups_begin<Region>(); it!=m_mesh.groups_end<Region>(); it++)
+	{
+		Lima::Volume lima_vol((*it)->name());
+		ALimaMesh.ajouter(lima_vol);
+
+		auto ids = (*it)->cells();
+		for(unsigned int region_index=0; region_index<ids.size();region_index++)
+		{
+			Lima::Polyedre p = ALimaMesh.polyedre_id(ids[region_index]+1);
+			lima_vol.ajouter(p);
 		}
 	}
 }
 /*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeNodesAttributes() {
-	m_writer->writeNodeAttributes();
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeEdgesAttributes() {
-	m_writer->writeEdgeAttributes();
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeFacesAttributes(){
-	m_writer->writeFaceAttributes();
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeRegionsAttributes(){
-	m_writer->writeRegionAttributes();
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeCloudsAttributes(){
-	m_writer->writeNodeSetsAttributes();
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeLinesAttributes(){
-	m_writer->writeEdgeSetsAttributes();
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeSurfacesAttributes(){
-	m_writer->writeFaceSetsAttributes();
-}
-/*----------------------------------------------------------------------------*/
-void
-LimaWriter::writeVolumesAttributes(){
-	m_writer->writeRegionSetsAttributes();
 }
 /*----------------------------------------------------------------------------*/

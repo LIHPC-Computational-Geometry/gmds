@@ -53,9 +53,11 @@ endif()
 if(WITH_LIMA)
     find_package(Lima REQUIRED)
     list(APPEND GMDS_INC
+            inc/gmds/io/LimaWriterStreamMli2.h
             inc/gmds/io/LimaWriter.h
             inc/gmds/io/LimaReader.h)
     list(APPEND GMDS_SRC
+            src/LimaWriterStreamMli2.cpp
             src/LimaWriter.cpp
             src/LimaReader.cpp)
 
