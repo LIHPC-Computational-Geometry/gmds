@@ -210,17 +210,17 @@ LimaWriterStreamMli2::writeNodes() {
 		yccords[chunkSize] = n.Y();
 		zccords[chunkSize] = n.Z();
 		ids[chunkSize] = n.id()+1; // +1 because mli ids begin at 1
-
 		chunkSize++;
+
 		if(chunkSize==LimaWriterAPI_NBNODES_CHUNK) {
+			chunkSize = 0;
 			try {
-				m_writer->writeNodes(chunkSize,xccords,yccords,zccords,ids);
+				m_writer->writeNodes(LimaWriterAPI_NBNODES_CHUNK,xccords,yccords,zccords,ids);
 			}
 			catch(Lima::write_erreur& e) {
 				std::cerr<<"LimaWriterStreamMli2::write error: "<<e.what()<<std::endl;
 				throw GMDSException(e.what());
 			}
-			chunkSize = 0;
 		}
 	}
 
@@ -459,14 +459,14 @@ LimaWriterStreamMli2::writeClouds() {
 			chunkSize++;
 
 			if(chunkSize==LimaWriterAPI_NBNODES_CHUNK) {
+				chunkSize = 0;
 				try {
-					m_writer->writeNodeSetData(cl->name(),chunkSize,ids);
+					m_writer->writeNodeSetData(cl->name(),LimaWriterAPI_NBNODES_CHUNK,ids);
 				}
 				catch(Lima::write_erreur& e) {
 					std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
 					throw GMDSException(e.what());
 				}
-				chunkSize = 0;
 			}
 		}
 
@@ -519,14 +519,14 @@ LimaWriterStreamMli2::writeLines() {
 			chunkSize++;
 
 			if(chunkSize==LimaWriterAPI_NBEDGES_CHUNK) {
+				chunkSize = 0;
 				try {
-					m_writer->writeEdgeSetData(l->name(),chunkSize,ids);
+					m_writer->writeEdgeSetData(l->name(),LimaWriterAPI_NBEDGES_CHUNK,ids);
 				}
 				catch(Lima::write_erreur& e) {
 					std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
 					throw GMDSException(e.what());
 				}
-				chunkSize = 0;
 			}
 		}
 
@@ -580,14 +580,14 @@ LimaWriterStreamMli2::writeSurfaces() {
 			chunkSize++;
 
 			if(chunkSize==LimaWriterAPI_NBFACES_CHUNK) {
+				chunkSize = 0;
 				try {
-					m_writer->writeFaceSetData(surf->name(),chunkSize,ids,nbNodes);
+					m_writer->writeFaceSetData(surf->name(),LimaWriterAPI_NBFACES_CHUNK,ids,nbNodes);
 				}
 				catch(Lima::write_erreur& e) {
 					std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
 					throw GMDSException(e.what());
 				}
-				chunkSize = 0;
 			}
 		}
 
@@ -657,14 +657,14 @@ LimaWriterStreamMli2::writeVolumes() {
 			chunkSize++;
 
 			if(chunkSize==LimaWriterAPI_NBREGIONS_CHUNK) {
+				chunkSize = 0;
 				try {
-					m_writer->writeRegionSetData(vol->name(),chunkSize,ids,types);
+					m_writer->writeRegionSetData(vol->name(),LimaWriterAPI_NBREGIONS_CHUNK,ids,types);
 				}
 				catch(Lima::write_erreur& e) {
 					std::cerr<<"LimaWriterAPI error: "<<e.what()<<std::endl;
 					throw GMDSException(e.what());
 				}
-				chunkSize = 0;
 			}
 		}
 
