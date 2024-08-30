@@ -7,6 +7,7 @@
 #include <gmds/mctsblock/Blocking.h>
 #include <iostream>
 #include <queue>
+#include <memory>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -15,7 +16,13 @@ namespace mctsblock {
 class LIB_GMDS_MCTSBLOCK_API BlockingState : public IState
 {
  public:
-	BlockingState(Blocking *AB, int ADepth = 0, std::deque<double> APrevScore = std::deque<double>());
+
+
+	static  double weight_nodes;
+	static  double weight_edges;
+	static  double weight_faces;
+
+	BlockingState(std::shared_ptr<Blocking> AB, int ADepth = 0, std::deque<double> APrevScore = std::deque<double>());
 	BlockingState(const BlockingState &AState);
 
 	std::vector<std::shared_ptr<IAction>> get_actions() const override;
@@ -24,9 +31,10 @@ class LIB_GMDS_MCTSBLOCK_API BlockingState : public IState
 
 	bool win() const override;
 
+		bool lost() const override;
+	   bool  draw() const override;
 	std::string write(const std::string &AFileName, const int AStageIndex, const int ANodeId, const int ADepth) const override;
 
-	bool lost() const;
 
 	/**@brief computes the score of the current blocking and maintain
 	 * the memory stack of scores
@@ -37,9 +45,15 @@ class LIB_GMDS_MCTSBLOCK_API BlockingState : public IState
 
 	void updateMemory(const double AScore);
 
-	Blocking* get_blocking() const {return m_blocking;}
+	std::shared_ptr<Blocking> get_blocking() const {return m_blocking;}
 	int get_depth() const {return m_depth;}
+	/**
+	 * Stack of memorized score. The last score in the stack (back) is the score of the current state
+	 * @return
+	 */
 	std::deque<double>  get_memory() const {return m_memory_scores;}
+
+	double get_expected_optimal_score() const {return m_expected_optimal_score;}
  private:
 
 	/**@brief This method return all the possible cut
@@ -56,12 +70,9 @@ class LIB_GMDS_MCTSBLOCK_API BlockingState : public IState
 	/** the memory depth we store*/
 	static const int m_memory_depth;
 
-	static const double m_weight_nodes;
-	static const double m_weight_edges;
-	static const double m_weight_faces;
-
+	double m_expected_optimal_score;
 	/** the blocking we act on. Note that the geometric model is known by the blocking */
-	Blocking *m_blocking;
+	std::shared_ptr<Blocking> m_blocking;
 
 	std::set<TCellID> m_boundary_node_ids;
 	std::set<TCellID> m_boundary_edge_ids;

@@ -74,16 +74,18 @@ public:
      * @return true if the node has at least one child, false otherwise
      */
     bool has_children() const;
-    /**@brief Among all the children, provide the action that reach it
-     *        based on the exploration/exploitation principle (UCT criterion here)
-       * @return the selected action
-       */
-    MCTSTree*  get_best_uct_child(double AC=1.41) const;
 
     /** total reward of the current node */
-    double cumulative_reward;
+	 double cumulative_reward;
+	 double sq_cumulative_reward;
     /** number of times the node has been explored */
     int number_visits;
+	 /** number of times the has has lead to a win */
+	 int number_win;
+	 /** number of times the has has lead to a draw */
+	 int number_draw;
+	 /** number of times the has has lead to a lost */
+	 int number_lost;
 
 private:
     /**@brief add a child that will be obtained by applying action @p AAction. We do not check if this action

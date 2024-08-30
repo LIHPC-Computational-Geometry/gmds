@@ -29,8 +29,9 @@ void MCTSLoop::run() {
         }
         if (m_selection_mode == MCTSLoop::BEST_SOLUTION)
             current_state = m_agent.get_best_solution();
-        else
-            current_state = m_agent.get_most_visited_child();
+        else {
+			   current_state = m_agent.get_most_visited_child();
+		  }
         if (m_display_info) {
             if (current_state->win()) {
                 std::cout << "\t found a winning solution" << std::endl;

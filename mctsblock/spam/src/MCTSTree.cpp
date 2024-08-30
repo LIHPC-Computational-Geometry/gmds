@@ -13,7 +13,8 @@ MCTSTree::MCTSTree(std::shared_ptr<IState> AState,
                    std::shared_ptr<IAction> AAction,
                    MCTSTree *AParent)
 : m_state(AState), m_action(AAction), m_parent(AParent),
-  cumulative_reward(0), number_visits(0)
+  cumulative_reward(0), number_visits(0), number_win(0),
+  number_draw(0), number_lost(0), sq_cumulative_reward(0)
 {
     static int global_id=0;
     m_id      = global_id++;
@@ -58,6 +59,8 @@ MCTSTree* MCTSTree::get_most_visited_child() const {
 
     // iterate all  children and find most visited
     for(auto c: m_children) {
+		  std::cout<<"Child "<<c<<" from action "<<c->get_action()->get_description()<<" (visits, win, lost, draw, cumul. reward): "<<c->number_visits<<", "<<c->number_win<<", "<<c->number_lost<<", "<<c->number_draw<<", "<<c->cumulative_reward<<std::endl;
+
         if(c->number_visits > most_visits) {
             most_visits = c->number_visits;
             best_node = c;
@@ -65,6 +68,12 @@ MCTSTree* MCTSTree::get_most_visited_child() const {
     }
     if(best_node== nullptr)
         throw std::runtime_error("Error when visiting children");
+	 std::cout<<"--> Best "<<best_node<<" (visits, win, lost, draw, cumul. reward): "
+	           <<best_node->number_visits<<", "
+	           <<best_node->number_win<<", "
+	           <<best_node->number_lost<<", "
+	           <<best_node->number_draw<<", "
+	           <<best_node->cumulative_reward<<std::endl;
 
     return best_node;
 }
@@ -106,31 +115,4 @@ MCTSTree*  MCTSTree::add_child_with_action(std::shared_ptr<IAction> AAction) {
 
     return child_node;
 
-}
-/*---------------------------------------------------------------------------*/
-MCTSTree* MCTSTree::get_best_uct_child(double AC) const {
-    // sanity check
-    if(!is_fully_expanded())
-        throw std::runtime_error("Error: cannot compute the best child for a partially expanded node");
-
-    float best_utc_score = -std::numeric_limits<float>::max();
-    MCTSTree* best_node = nullptr;
-
-    // iterate all immediate children and find best UTC score
-    int num_children = m_children.size();
-    for(auto i = 0; i < num_children; i++) {
-        auto child = m_children[i];
-        float uct_exploitation = (float)child->cumulative_reward / (child->number_visits + FLT_EPSILON);
-        float uct_exploration = sqrt(log((float)this->number_visits + 1) / (child->number_visits + FLT_EPSILON) );
-        float uct_score = uct_exploitation + AC * uct_exploration;
-
-        if(uct_score > best_utc_score) {
-            best_utc_score = uct_score;
-            best_node = child;
-        }
-    }
-    if(best_node== nullptr)
-        throw std::runtime_error("Error when getting the best child of a node");
-
-    return best_node;
 }

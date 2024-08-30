@@ -22,6 +22,14 @@ public:
         OUT_END_ONLY    // output at the end only
     };
 
+
+	 /**@brief Enumerate type for handling output files in debug mode.
+		*/
+	 enum GAME_RESULT{
+			  WIN,
+			  DRAW,
+			  LOST
+		  };
     /**@brief Constructor
      * @param ARewardFunction reward function to evaluate a state
      * @param ASelectFunction function to pick a child node during the selection process
@@ -97,9 +105,9 @@ private:
      * strategy to compute next stages.
      *
      * @param[in] ANode the node we simulate from
-     * @return the reward obtained by the simulation process
+     * @return the reward obtained by the simulation process and the obtained game status (WIN, LOST, DRAW)
      */
-    double simulate(MCTSTree* ANode);
+    std::pair<double, GAME_RESULT> simulate(MCTSTree* ANode);
     /**@brief Creates a new child for @p ANode by applying an untried actions. If there is no action to perform
      * it returns the input node @p ANode
      *
@@ -111,8 +119,9 @@ private:
      *
      * @param[in] ANode the node we start from
      * @param[in] AReward the reward to give to all parents
+     * @param[in] AResult win, draw or lost
      */
-    void back_propagate(MCTSTree* ANode, double AReward);
+    void back_propagate(MCTSTree* ANode, double AReward, GAME_RESULT AResult);
 
     void export_tree();
 private:

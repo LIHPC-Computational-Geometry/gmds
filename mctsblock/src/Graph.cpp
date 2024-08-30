@@ -170,7 +170,8 @@ MinHeap::isInMinHeap(const gmds::TCellID ANodeId)
 /*----------------------------------------------------------------------------*/
 AdjList::AdjList(std::shared_ptr<AdjListNode> h) : head(h) {}
 /*----------------------------------------------------------------------------*/
-AdjListNode::AdjListNode(gmds::TCellID ANodeID, double AWeight, std::shared_ptr<AdjListNode> AN) : dest(ANodeID), weight(AWeight), next(AN) {}
+AdjListNode::AdjListNode(gmds::TCellID ANodeID, double AWeight, std::shared_ptr<AdjListNode> AN)
+  : dest(ANodeID), weight(AWeight), next(AN) {}
 /*----------------------------------------------------------------------------*/
 void
 Graph::newAdjListNode(gmds::TCellID ADest, double AWeight, std::shared_ptr<AdjList> ANode)
@@ -192,15 +193,24 @@ Graph::setWeightOneWay(const gmds::TCellID ASrc, const gmds::TCellID ADest, cons
 void
 Graph::setWeight(const gmds::TCellID AN1, const gmds::TCellID AN2, const double AW)
 {
-	setWeightOneWay(AN1, AN2, AW);
-	setWeightOneWay(AN2, AN1, AW);
+	setWeightOneWay(m_input_to_graph_vertices[AN1], m_input_to_graph_vertices[AN2], AW);
+	setWeightOneWay(m_input_to_graph_vertices[AN2], m_input_to_graph_vertices[AN1], AW);
 }
 /*----------------------------------------------------------------------------*/
-Graph::Graph(const int ANbVertices)
+Graph::Graph(const std::set<TCellID>& ANodeIDs)
 {
-	m_nb_vertices = ANbVertices;
-	m_array.resize(ANbVertices);
-	for (auto i = 0; i < ANbVertices; i++) {
+	m_input_vertices = ANodeIDs;
+	m_nb_vertices = m_input_vertices.size();
+	m_graph_to_input_vertices.resize(m_nb_vertices);
+	auto index=0;
+	for (auto input_id: ANodeIDs){
+		m_graph_to_input_vertices[index]=input_id;
+		m_input_to_graph_vertices[input_id]=index;
+		index++;
+	}
+
+	m_array.resize(m_nb_vertices);
+	for (auto i = 0; i < m_nb_vertices; i++) {
 		m_array[i] = std::make_shared<AdjList>();
 	}
 }
@@ -213,11 +223,11 @@ Graph::addEdge(gmds::TCellID ASrcNode, gmds::TCellID ADestNode, double AWeight)
 	// A new node is added to the adjacency
 	// list of src. The node is
 	// added at the beginning
-	newAdjListNode(ADestNode, AWeight, m_array[ASrcNode]);
+	newAdjListNode(m_input_to_graph_vertices[ADestNode], AWeight, m_array[m_input_to_graph_vertices[ASrcNode]]);
 
 	// Since graph is undirected,
 	// add an edge from dest to src also
-	newAdjListNode(ASrcNode, AWeight, m_array[ADestNode]);
+	newAdjListNode(m_input_to_graph_vertices[ASrcNode], AWeight, m_array[m_input_to_graph_vertices[ADestNode]]);
 }
 /*----------------------------------------------------------------------------*/
 std::vector<std::pair<TCellID, double>>
@@ -235,6 +245,7 @@ Graph::getAdjNodes(const gmds::TCellID ANodeId)
 void
 Graph::computeDijkstra(gmds::TCellID ASrcNode)
 {
+	auto src_node = m_input_to_graph_vertices[ASrcNode];
 	// dist values used to pick
 	// minimum weight edge in cut
 	m_dist.resize(m_nb_vertices);
@@ -250,9 +261,9 @@ Graph::computeDijkstra(gmds::TCellID ASrcNode)
 
 	// Make dist value of src vertex
 	// as 0 so that it is extracted first
-	minHeap.new_node(ASrcNode, m_dist[ASrcNode]);
-	m_dist[ASrcNode] = 0;
-	minHeap.decreaseKey(ASrcNode, m_dist[ASrcNode]);
+	minHeap.new_node(src_node, m_dist[src_node]);
+	m_dist[src_node] = 0;
+	minHeap.decreaseKey(src_node, m_dist[src_node]);
 
 	// Initially size of min heap is equal to V
 	minHeap.size = m_nb_vertices;
@@ -282,7 +293,7 @@ Graph::computeDijkstra(gmds::TCellID ASrcNode)
 			pCrawl = pCrawl->next;
 		}
 	}
-	buildShortestPaths(ASrcNode);
+	buildShortestPaths(src_node);
 }
 /*----------------------------------------------------------------------------*/
 void
@@ -296,7 +307,10 @@ Graph::buildShortestPaths(const gmds::TCellID ASrc)
 		std::vector<TCellID> current_path;
 
 		auto cur = i;
-		while (cur != 0) {
+		//the second condition is here to ensure that we are not trying to
+		//find a path between two unconnected parts of the graph
+
+		while (cur != ASrc && current_path.size()<m_nb_vertices) {
 			current_path.push_back(cur);
 			auto neigh = getAdjNodes(cur);
 			auto cur_dist = m_dist[cur];
@@ -313,12 +327,26 @@ Graph::buildShortestPaths(const gmds::TCellID ASrc)
 std::map<TCellID, std::vector<TCellID>>
 Graph::getShortestPath()
 {
-	return m_shortest_path_nodes;
+	// the shortest paths stored in m_shortest_path_nodes gives vector of ids
+	// that correspond to the graph local numbering. We need to transpose
+	// this numbering onto the input nodes
+	std::map<TCellID, std::vector<TCellID>> paths;
+	for (auto info: m_shortest_path_nodes){
+		std::vector<TCellID> ids;
+		for (auto i : info.second){
+			ids.push_back(m_graph_to_input_vertices[i]);
+		}
+		paths[m_graph_to_input_vertices[info.first]] = ids;
+	}
+	return paths;
 }
 /*----------------------------------------------------------------------------*/
 std::map<TCellID, double>
 Graph::getShortestPathWeights()
 {
-	return m_shortest_path_weight;
+	std::map<TCellID, double> paths;
+	for (auto info: m_shortest_path_weight){
+		paths[m_graph_to_input_vertices[info.first]] = info.second;
+	}
+	return paths;
 }
-/*----------------------------------------------------------------------------*/

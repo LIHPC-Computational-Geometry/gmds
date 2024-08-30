@@ -19,10 +19,18 @@ public:
      */
     virtual bool is_terminal() const = 0;
 
-    /**@brief Indicates if the concrete state is a winning state
+		  /**@brief Indicates if the concrete state is a winning state
+			 * @return true if it is, false otherwise
+			*/
+		  virtual bool win() const = 0;
+		  /**@brief Indicates if the concrete state is a losing state
+			 * @return true if it is, false otherwise
+			*/
+		  virtual bool lost() const = 0;
+	     /**@brief Indicates if the concrete state is a draw state
       * @return true if it is, false otherwise
-      */
-    virtual bool win() const = 0;
+	      */
+	     virtual bool draw() const = 0;
 
     /**@provide a function to write a file that stores the state knowing a file name prefix @p AFileName,
      * the stage index @p AStageIndex, the id, and the depth of the node that knows this state in the

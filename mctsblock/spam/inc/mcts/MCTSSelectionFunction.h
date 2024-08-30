@@ -17,6 +17,16 @@ struct UCBSelectionFunction: public ISelectionFunction
 private:
     double m_c;
 };
+
+/*---------------------------------------------------------------------------*/
+struct SPUCTSelectionFunction: public ISelectionFunction
+{
+	 SPUCTSelectionFunction(const double AC = 1.42, const double AD = 100);
+	 MCTSTree* select(MCTSTree* ANode) const override ;
+  private:
+	 double m_c;
+	 double m_d;
+};
 /*---------------------------------------------------------------------------*/
 #endif //SPAM_MCTSSELECTIONFUNCTIONS_H
 /*---------------------------------------------------------------------------*/

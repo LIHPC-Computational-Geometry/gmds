@@ -18,6 +18,7 @@ struct IAction {
 
     virtual ~IAction() = default;
     virtual bool operator==(const IAction& other) const = 0;
+	 virtual std::string get_description() const = 0;
 };
 /*---------------------------------------------------------------------------*/
 #endif //MATCHING_IACTION_H

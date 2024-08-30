@@ -12,7 +12,7 @@ struct IRewardFunction {
     /**@brief this function must give the expected reward for
      * state @p AState
      * @param AState
-     * @return a double value comprised in [0,1]
+     * @return a double value
      */
     virtual double evaluate(std::shared_ptr<IState> AState) const = 0;
 };

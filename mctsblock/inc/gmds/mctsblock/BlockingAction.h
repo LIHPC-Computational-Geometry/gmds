@@ -25,6 +25,7 @@ class LIB_GMDS_MCTSBLOCK_API EdgeCutAction : public IAction {
 	EdgeCutAction(const TCellID AEdgeId, const double AParam);
 
 	bool operator==(const IAction& other) const override;
+	std::string get_description() const override;
 
  private:
 	/** the id of the edge to cut */
@@ -49,6 +50,7 @@ class LIB_GMDS_MCTSBLOCK_API BlockRemovalAction : public IAction {
 	BlockRemovalAction(const TCellID ABlockID);
 
 	bool operator==(const IAction& other) const override;
+	std::string get_description() const override;
 
  private:
 	/** the id of the block to remove*/
@@ -72,6 +74,7 @@ class LIB_GMDS_MCTSBLOCK_API CaptureAction : public IAction {
 	CaptureAction();
 
 	bool operator==(const IAction& other) const override;
+	std::string get_description() const override;
 
 };
 /*----------------------------------------------------------------------------*/

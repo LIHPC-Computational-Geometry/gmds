@@ -69,7 +69,7 @@ class LIB_GMDS_MCTSBLOCK_API BlockingClassifier
 	 * @param[in] ATolerance maximal distance to allow projections.
 	 * @return the number of unclassified nodes that remain.
 	 */
-	int try_and_classify_nodes(std::set<TCellID> &ANodeIds, const double ATolerance = 0.01);
+	int try_and_classify_nodes(std::set<TCellID> &ANodeIds, const double ATolerance = 0.1);
 
 	/**@brief This methods classify edge eges onto the geometric model. It is designed to be called
 	 * on a boundary edges only
@@ -139,14 +139,6 @@ class LIB_GMDS_MCTSBLOCK_API BlockingClassifier
 	 * @return true and the node classified on @p AP, false otherwise and a random node
 	 */
 	std::pair<bool, Blocking::Node> find_node_classified_on(cad::GeomPoint *AP);
-
-	/**@brief This method check if there exists a series of 1-cells of the blocking
-	 * that is classified on the geometrical curve @c AC, and capture it totally. We make the
-	 * assumption that the curve is a simple connected 1-manifold.
-	 * @param AC a geometrical curve
-	 * @return true and the series of edges classified on @c AC, false otherwise
-	 */
-	std::pair<bool, std::vector<Blocking::Edge>> find_edges_classified_on(cad::GeomCurve *AC);
 
 	/**@brief This method check if a 2-cell of the blocking structure is classified
 	 * on the geometrical curve @s AS.

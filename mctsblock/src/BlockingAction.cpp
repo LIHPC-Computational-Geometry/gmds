@@ -22,10 +22,17 @@ EdgeCutAction::operator==(const IAction &AOther) const
 std::shared_ptr<IState>
 EdgeCutAction::apply_on(std::shared_ptr<IState> AState) const
 {
-	auto s = std::dynamic_pointer_cast<BlockingState>(AState);
-	auto b = s->get_blocking();
-	b->cut_sheet(m_edge_id, m_cut_param);
-	return std::make_shared<BlockingState>(b, s->get_depth()+1, s->get_memory());
+	auto current_state = std::dynamic_pointer_cast<BlockingState>(AState);
+	auto new_blocking = std::make_shared<Blocking>(* current_state->get_blocking());
+	new_blocking->cut_sheet(m_edge_id, m_cut_param);
+	auto next_state =  std::make_shared<BlockingState>(new_blocking, current_state->get_depth()+1, current_state->get_memory());
+	return next_state;
+}
+/*----------------------------------------------------------------------------*/
+std::string
+EdgeCutAction::get_description() const
+{
+	return "Cut edge "+std::to_string(m_edge_id)+" with param "+std::to_string(m_cut_param);
 }
 /*----------------------------------------------------------------------------*/
 /** BLOCK REMOVAL ACTION */
@@ -45,10 +52,17 @@ BlockRemovalAction::operator==(const IAction &AOther) const
 std::shared_ptr<IState>
 BlockRemovalAction::apply_on(std::shared_ptr<IState> AState) const
 {
-		auto s = std::dynamic_pointer_cast<BlockingState>(AState);
-		auto b = s->get_blocking();
-		b->remove_block(m_block_id);
-		return std::make_shared<BlockingState>(b, s->get_depth()+1, s->get_memory());
+	   auto current_state = std::dynamic_pointer_cast<BlockingState>(AState);
+	   auto new_blocking = std::make_shared<Blocking>(* current_state->get_blocking());
+	   new_blocking->remove_block(m_block_id);
+	   auto next_state =  std::make_shared<BlockingState>(new_blocking, current_state->get_depth()+1, current_state->get_memory());
+	   return next_state;
+}
+/*----------------------------------------------------------------------------*/
+std::string
+BlockRemovalAction::get_description() const
+{
+	   return "Remove block "+std::to_string(m_block_id);
 }
 /*----------------------------------------------------------------------------*/
 /** CLASSIFICATION ACTION */
@@ -65,12 +79,23 @@ CaptureAction::operator==(const IAction &AOther) const
 std::shared_ptr<IState>
 CaptureAction::apply_on(std::shared_ptr<IState> AState) const
 {
-	auto s = std::dynamic_pointer_cast<BlockingState>(AState);
-	auto b = s->get_blocking();
+
+
+	auto current_state = std::dynamic_pointer_cast<BlockingState>(AState);
+	auto new_blocking = std::make_shared<Blocking>(* current_state->get_blocking());
 	std::set<TCellID> nids, eids,fids;
-	b->extract_boundary(nids,eids,fids);
-	BlockingClassifier(b).try_and_classify_nodes(nids);
-//	BlockingClassifier(b).try_and_capture_curves(eids);
-	return std::make_shared<BlockingState>(b, s->get_depth()+1, s->get_memory());
+	new_blocking->extract_boundary(nids,eids,fids);
+	//	BlockingClassifier(new_blocking.get()).try_and_classify_nodes(nids);
+	//	BlockingClassifier(b).try_and_capture_curves(eids);
+
+	auto next_state =  std::make_shared<BlockingState>(new_blocking, current_state->get_depth()+1, current_state->get_memory());
+	return next_state;
+}
+
+/*----------------------------------------------------------------------------*/
+std::string
+CaptureAction::get_description() const
+{
+	return "Capture";
 }
 /*----------------------------------------------------------------------------*/

@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 /*---------------------------------------------------------------------------*/
 #include "mcts/MCTSAgent.h"
+#include <chrono>
 /*---------------------------------------------------------------------------*/
 using json = nlohmann::json;
 /*---------------------------------------------------------------------------*/
@@ -42,6 +43,7 @@ std::shared_ptr<IState> MCTSAgent::get_best_solution() {
 /*---------------------------------------------------------------------------*/
 std::shared_ptr<IState> MCTSAgent::get_most_visited_child() {
     const MCTSTree* node = m_tree;
+
     if (!node->is_terminal() && node->has_children()){
         node=node->get_most_visited_child();
     }
@@ -59,25 +61,40 @@ MCTSTree* MCTSAgent::expand(MCTSTree* ANode) {
     throw std::runtime_error("Error: expansion has note been done");
 }
 /*---------------------------------------------------------------------------*/
-double MCTSAgent::simulate(MCTSTree* ANode) {
+std::pair<double,MCTSAgent::GAME_RESULT> MCTSAgent::simulate(MCTSTree* ANode) {
     auto state =ANode->get_state();
 
     if(!ANode->is_terminal()) {
         for (int d = 0; d < m_simulation_depth; d++) {
             if (!state->is_terminal()) {
                 auto a = get_random_action(state);
+				    if(a== nullptr)
+					    exit(55);
+
                 state = a->apply_on(state);
             }
         }
     }
-    return m_reward_function->evaluate(state);
+	 GAME_RESULT result = DRAW;
+	 if(state->win())
+		  result = WIN;
+	 else if (state->lost())
+		  result = LOST;
+    return std::make_pair(m_reward_function->evaluate(state),result);
 }
 /*---------------------------------------------------------------------------*/
-void MCTSAgent::back_propagate(MCTSTree* ANode, double AReward) {
+void MCTSAgent::back_propagate(MCTSTree* ANode, double AReward, MCTSAgent::GAME_RESULT AResult) {
     auto  node = ANode;
     while(node){
-        node->cumulative_reward+=AReward;
+		  node->cumulative_reward+=AReward;
+		  node->sq_cumulative_reward+=AReward*AReward;
         node->number_visits+=1;
+		  if(AResult==WIN)
+			   node->number_win+=1;
+		  else if(AResult==LOST)
+			   node->number_lost+=1;
+		 else
+			   node->number_draw+=1;
         node = node->get_parent();
     }
 }
@@ -85,10 +102,13 @@ void MCTSAgent::back_propagate(MCTSTree* ANode, double AReward) {
 std::shared_ptr<IAction> MCTSAgent::get_random_action(std::shared_ptr<IState> AState) const {
     /** selects an action among the untried ones */
     auto actions = AState->get_actions();
-    //randomly pick an action
+	 if (actions.empty())
+		  return nullptr;
+	 //randomly pick an action
     std::random_device rd;  // a seed source for the random number engine
     std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
     std::uniform_int_distribution<> distrib(0, actions.size()-1);
+	 assert(!actions.empty());
     return actions[distrib(gen)];
 }
 /*---------------------------------------------------------------------------*/
@@ -154,15 +174,35 @@ void MCTSAgent::run(std::shared_ptr<IState> ARootState) {
     auto time0 = std::chrono::steady_clock::now();
     std::chrono::duration<double, std::ratio<1>> elapsed= std::chrono::steady_clock::now()-time0;
 
-    while (i<=m_max_iterations && elapsed.count() <= m_max_seconds){
+	 while (i<=m_max_iterations && elapsed.count() <= m_max_seconds){
+
+		  std::chrono::time_point<std::chrono::system_clock> start_iter, end_select, end_expand, end_reward, end_back;
+
+		  start_iter = std::chrono::system_clock::now();
+
         // 1 SELECTION - we explore/exploit the existing tree to find a node to work on
         auto node = select(m_tree);
-        // 2. EXPAND by adding a single child (if not terminal or not fully expanded)
+		  end_select = std::chrono::system_clock::now();
+		  std::chrono::duration<double> elapsed_seconds = end_select - start_iter;
+		//  std::cout << "\t node selection    : " << elapsed_seconds.count() << "s\n";
+
+		  // 2. EXPAND by adding a single child (if not terminal or not fully expanded)
         node = expand(node);
+		  end_expand = std::chrono::system_clock::now();
+		  elapsed_seconds = end_reward - end_select;
+		//  std::cout << "\t node expansion    : " << elapsed_seconds.count() << "s\n";
+
         // 3. SIMULATE (if not terminal)
-        auto reward = simulate(node);
+        auto [reward, result] = simulate(node);
+		  end_reward = std::chrono::system_clock::now();
+		  elapsed_seconds = end_reward - end_expand;
+	//	  std::cout << "\t node reward       : " << elapsed_seconds.count() << "s\n";
         // 4. BACK PROPAGATION
-        back_propagate(node,reward);
+        back_propagate(node,reward,result);
+		  end_back = std::chrono::system_clock::now();
+		  elapsed_seconds = end_back - end_reward;
+		//  std::cout << "\t node backprogation: " << elapsed_seconds.count() << "s\n";
+
         //increase loop counters
         i++;
         elapsed= std::chrono::steady_clock::now()-time0;
@@ -170,6 +210,7 @@ void MCTSAgent::run(std::shared_ptr<IState> ARootState) {
             if(i%m_debug_frequency==0)
                 export_tree();
         }
+		//  std::cout<<" done"<<std::endl;
     }
     m_nb_iterations=i;
     m_nb_seconds =elapsed.count();

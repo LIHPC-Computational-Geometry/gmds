@@ -774,6 +774,7 @@ Blocking::convert_to_mesh(Mesh &AMesh)
 void
 Blocking::init_from_mesh(Mesh &AMesh)
 {
+
 	MeshModel model = AMesh.getModel();
 	if (!model.has(N) || !model.has(R) || !model.has(R2N)) throw GMDSException("Wrong mesh model for mesh->block->mesh conversion");
 
@@ -866,8 +867,8 @@ Blocking::save_vtk_blocking(const std::string &AFileName)
 	gmds::VTKWriter vtk_writer(&ios);
 	vtk_writer.setCellOptions(gmds::N | gmds::R);
 	vtk_writer.setDataOptions(gmds::N | gmds::R);
-	std::string RegionAFileName = AFileName + "_N2R.vtk";
-	std::string EdgeAFileName = AFileName + "_N2E.vtk";
+	std::string RegionAFileName = "NR_"+AFileName + ".vtk";
+	std::string EdgeAFileName = "NE_"+AFileName + ".vtk";
 	vtk_writer.write(RegionAFileName);
 
 	gmds::IGMeshIOService ios2(&m);
@@ -1049,27 +1050,26 @@ Blocking::get_all_chord_darts(const Face AF, std::vector<Dart3> &ADarts)
 
 /*----------------------------------------------------------------------------*/
 std::tuple<Blocking::Edge, double, double>
-Blocking::get_cut_info(const int APointId)
+Blocking::get_cut_info(const int APointId,
+                       const std::vector<Blocking::Edge> AEdges)
 {
 	auto point_to_capture = m_geom_model->getPoint(APointId);
 	gmds::math::Point p(point_to_capture->X(), point_to_capture->Y(), point_to_capture->Z());
-	return get_cut_info(p);
+	return get_cut_info(p, AEdges);
 }
 /*----------------------------------------------------------------------------*/
 std::tuple<Blocking::Edge, double, double>
-Blocking::get_cut_info(const gmds::math::Point& APoint)
+Blocking::get_cut_info(const gmds::math::Point& APoint,
+                       const std::vector<Blocking::Edge> AEdges)
 {
 	std::tuple<Blocking::Edge, double,double> cut_param;
-	auto sheet_edge_sets = get_all_sheet_edge_sets();
 	unsigned int min_dist = 1000;
 
-	for (auto edges : sheet_edge_sets) {
-		auto proj_info = get_projection_info(APoint, edges);
-		for (int i = 0; i < proj_info.size(); i++) {
-			if (proj_info[i].second < 1 && proj_info[i].second > 0 && proj_info[i].first < min_dist) {
-				cut_param = std::make_tuple(edges.at(i), proj_info[i].second, proj_info[i].first);
-				min_dist = proj_info[i].first;
-			}
+	for (auto e : AEdges) {
+		auto proj_info = get_projection_info(APoint, e);
+		if (proj_info.second < 1 && proj_info.second > 0 && proj_info.first < min_dist) {
+			cut_param = std::make_tuple(e, proj_info.second, proj_info.first);
+			min_dist = proj_info.first;
 		}
 	}
 	return cut_param;
@@ -1201,12 +1201,12 @@ void Blocking::cut_sheet(const TCellID AnEdgeId, const double AParam)
 	}
 }
 /*----------------------------------------------------------------------------*/
-std::vector<std::pair<double, double>>
-Blocking::get_projection_info(const math::Point &AP, std::vector<Blocking::Edge> &AEdges)
+std::pair<double, double>
+Blocking::get_projection_info(const math::Point &AP, Blocking::Edge &AEdge)
 {
-	std::vector<std::pair<double, double>> dist_coord;
-	for (auto e : AEdges) {
-		std::vector<Node> end_points = get_nodes_of_edge(e);
+	std::pair<double, double> dist_coord;
+
+		std::vector<Node> end_points = get_nodes_of_edge(AEdge);
 		math::Point end0 = end_points[0]->info().point;
 		math::Point end1 = end_points[1]->info().point;
 		math::Vector3d v1 = end1 - end0;
@@ -1229,7 +1229,18 @@ Blocking::get_projection_info(const math::Point &AP, std::vector<Blocking::Edge>
 				distance = AP.distance(end0 + coord * v1);
 			}
 		}
-		dist_coord.push_back(std::make_pair(distance, coord));
+
+	return std::make_pair(distance, coord);
+
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<std::pair<double, double>>
+Blocking::get_projection_info(const math::Point &AP, std::vector<Blocking::Edge> &AEdges)
+{
+	std::vector<std::pair<double, double>> dist_coord;
+	for (auto e : AEdges) {
+		dist_coord.push_back(get_projection_info(AP,e));
 	}
 	return dist_coord;
 }

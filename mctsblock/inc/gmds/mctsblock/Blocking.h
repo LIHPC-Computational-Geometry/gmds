@@ -308,6 +308,7 @@ class LIB_GMDS_MCTSBLOCK_API Blocking
 
 	Blocking(const Blocking &ABl);
 
+
 	/** @brief  Destructor
 	 */
 	virtual ~Blocking();
@@ -576,14 +577,16 @@ class LIB_GMDS_MCTSBLOCK_API Blocking
 	 * @return return the parameters for the cut, we get the edge (first), the parameter included in ]0,1[(second),
 	 * and the distance to the edge (third)
 	 */
-	std::tuple<Blocking::Edge, double, double> get_cut_info(const int APointId);
+	std::tuple<Blocking::Edge, double, double> get_cut_info(const int APointId,
+	                                                        const std::vector<Blocking::Edge> AEdges);
 
 	/**\brief return the parameters for doing the cut_sheet. It returns the closest edge, which can remain quite far.
 	 * @param[in] APoint 		A math point
 	 * @return return the parameters for the cut, we get the edge (first) and the parameter included in ]0,1[ (second),
 	 * and the distance to the edge (third)
 	 */
-	std::tuple<Blocking::Edge, double, double> get_cut_info(const gmds::math::Point &APoint);
+	std::tuple<Blocking::Edge, double, double> get_cut_info(const gmds::math::Point &APoint,
+	                                                        const std::vector<Blocking::Edge> AEdges);
 
 	/**@brief Low level operation that @p TDim-sew two darts
 	 * @tparam TDim sewing dimension
@@ -753,6 +756,14 @@ class LIB_GMDS_MCTSBLOCK_API Blocking
 	 * @return for each edge, we get the distance (first) and the coordinate (second)
 	 */
 	std::vector<std::pair<double, double>> get_projection_info(const math::Point &AP, std::vector<Blocking::Edge> &AEdges);
+
+	/**\brief Project a point orthogonally onto a block edge. This method is internal and
+	 * 		 use by get_projection_info
+	 * @param[in] AP 		A Point to project on each edge
+	 * @param[in] AEdge 	An edge
+	 * @return we get the distance (first) and the coordinate (second)
+	 */
+	std::pair<double, double> get_projection_info(const math::Point &AP, Blocking::Edge &AEdge);
 
  private:
 	/**@brief Mark with @p AMark all the darts of orbit <0,1>(@p ADart)

@@ -7,6 +7,7 @@
 #include <gmds/utils/Exception.h>
 /*----------------------------------------------------------------------------*/
 #include <limits.h>
+#include <set>
 #include <map>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
@@ -39,19 +40,20 @@ struct LIB_GMDS_MCTSBLOCK_API AdjList
 class LIB_GMDS_MCTSBLOCK_API Graph
 {
 public:
-  Graph(const int ANbVertices);
+  Graph(const std::set<TCellID>& ANodeIDs);
+  //Be careful, input ids are in the global input space numbering, not the local one
   void addEdge(TCellID ASrcNode, TCellID ADestNode, double AWeight);
 
   // The main function that calculates
   // distances of shortest paths from src to all
   // vertices. It is a O(ELogV) function
   void computeDijkstra(TCellID ASrcNode);
-
-  std::vector<std::pair<TCellID , double> > getAdjNodes(const TCellID  ANodeId);
-	void setWeight(const TCellID AN1, const TCellID AN2, const double AW);
+  //Be careful, input ids are in the global input space numbering, not the local one
+ 	void setWeight(const TCellID AN1, const TCellID AN2, const double AW);
   std::map<TCellID , std::vector<TCellID> > getShortestPath();
   std::map<TCellID , double > getShortestPathWeights();
 private:
+  std::vector<std::pair<TCellID , double> > getAdjNodes(const TCellID  ANodeId);
   void buildShortestPaths(const TCellID ASrc);
   // A utility function to create
   // a new adjacency list node
@@ -60,6 +62,9 @@ private:
 
 private:
   int m_nb_vertices;
+  std::set<TCellID> m_input_vertices;
+  std::vector<TCellID> m_graph_to_input_vertices;
+  std::map<TCellID , TCellID> m_input_to_graph_vertices;
   std::vector<std::shared_ptr<AdjList>> m_array;
 
   std::vector<double> m_dist;
