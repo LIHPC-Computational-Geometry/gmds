@@ -54,7 +54,7 @@ void bind_geometry(py::module &m){
 	py::class_<gmds::cad::FACCurve, gmds::cad::GeomCurve>(m, "FACCurve")
 	   .def("id", &gmds::cad::FACCurve::id)
 	   .def("length", &gmds::cad::FACCurve::length)
-	   .def("tangent", &gmds::cad::FACCurve::computeTangent)
+	   .def("tangent", &gmds::cad::FACCurve::tangent)
 	   .def("closest_point", &gmds::cad::FACCurve::closestPoint)
 	   .def("bbox", &gmds::cad::FACCurve::BBox)
 	   .def("is_loop", &gmds::cad::FACCurve::isALoop)

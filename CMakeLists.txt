@@ -150,6 +150,16 @@ GMDS_ADD_COMPONENT(
 )
 
 GMDS_ADD_COMPONENT(
+        MCTSBLOCK                       # cmake variable
+        mctsblock                        # src subdirectory name
+        GMDSMctsBlock                    # name of the generated library
+        "Blocking generation using MCTS"  # description
+        OFF                                # is activated
+        OFF                                 # must be covered
+)
+
+
+GMDS_ADD_COMPONENT(
         BLOCKING                       # cmake variable
         blocking                        # src subdirectory name
         GMDSBlocking                    # name of the generated library

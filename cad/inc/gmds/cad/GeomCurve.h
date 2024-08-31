@@ -68,14 +68,8 @@ class GMDSCad_API GeomCurve : public GeomEntity
 	 *  @param[in] AParam parameter equals to 0 or 1
 	 *  @return a unit tangent vector at point of param @p AParam
 	 */
-	virtual math::Vector3d computeTangent(const int AParam) const = 0;
+	virtual math::Vector3d tangent(const int AParam) const = 0;
 
-	/*------------------------------------------------------------------------*/
-	/** \brief Move a point AP near the surface to the closest point on the
-	 * 		   surface.
-	 *  \param AP
-	 */
-	void project(math::Point &AP) const override = 0;
 
 	/** @brief  Return whether the curve is a loop or not
 	 *  @return a boolean
