@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*/
-#ifndef GMDS_LIMA_WRITER_API_H
-#define GMDS_LIMA_WRITER_API_H
+#ifndef GMDS_LIMA_WRITER_H
+#define GMDS_LIMA_WRITER_H
 /*----------------------------------------------------------------------------*/
 #include <map>
 #include <sstream>
@@ -9,7 +9,7 @@
 #include <gmds/ig/Mesh.h>
 #include "GMDSIo_export.h"
 /*----------------------------------------------------------------------------*/
-#include <Lima/malipp2.h>
+#include <Lima/lima++.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 
@@ -37,48 +37,20 @@ class GMDSIo_API LimaWriter
 	 */
 	void write(const std::string &AFileName, MeshModel AModel, int ACompact = false);
 
-	/*------------------------------------------------------------------------*/
-	/** \brief  Activate the zlib compression.
-	 */
-	void activateZlibCompression();
-
  private:
-	void writeNodes();
-	void writeEdges();
-	void writeFaces();
-	void writeRegions();
 
-	void writeClouds();
-	void writeLines();
-	void writeSurfaces();
-	void writeVolumes();
+	void writeClassic(const std::string &AFileName, MeshModel AModel, int ACompact = false);
 
-	void writeNodesAttributes();
-	void writeEdgesAttributes();
-	void writeFacesAttributes();
-	void writeRegionsAttributes();
+	void writeNodes(Lima::Maillage& ALimaMesh);
+	void writeEdges(Lima::Maillage& ALimaMesh);
+	void writeFaces(Lima::Maillage& ALimaMesh);
+	void writeRegions(Lima::Maillage& ALimaMesh);
 
-	void writeCloudsAttributes();
-	void writeLinesAttributes();
-	void writeSurfacesAttributes();
-	void writeVolumesAttributes();
+//	void writeClouds();
+//	void writeLines();
+//	void writeSurfaces();
+//	void writeVolumes();
 
-	/**@brief Check if the node ids are continuously ordered and
-	 * initialized the MaliPPWriter2 accordingly.
-	 */
-	void checkContinuousNodes();
-	/**@brief Check if the edge ids are continuously ordered and
-* initialized the MaliPPWriter2 accordingly.
-	 */
-	void checkContinuousEdges();
-	/**@brief Check if the face ids are continuously ordered and
-* initialized the MaliPPWriter2 accordingly.
-	 */
-	void checkContinuousFaces();
-	/**@brief Check if the region ids are continuously ordered and
-	 * initialized the MaliPPWriter2 accordingly.
-	 */
-	void checkContinuousRegions();
  private:
 	/* a mesh */
 	gmds::Mesh &m_mesh;
@@ -86,8 +58,9 @@ class GMDSIo_API LimaWriter
 	/* length unit */
 	double m_length_unit;
 
-	Lima::MaliPPWriter2 *m_writer;
+	/* connection between original nodes ID and lima nodes */
+	std::vector<Lima::Noeud> m_nodes_connection;
 };
 }
 /*----------------------------------------------------------------------------*/
-#endif //GMDS_LIMAWRITER_API_H
+#endif //GMDS_LIMA_WRITER_H
