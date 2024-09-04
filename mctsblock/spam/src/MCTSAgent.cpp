@@ -41,6 +41,15 @@ std::shared_ptr<IState> MCTSAgent::get_best_solution() {
 }
 
 /*---------------------------------------------------------------------------*/
+std::shared_ptr<IState> MCTSAgent::get_best_winning_solution()
+{	 const MCTSTree* node = m_tree;
+	 while (!node->is_terminal() && node->has_children()){
+		  node=node->get_most_winning_child();
+	 }
+	 return node->get_state();
+}
+
+/*---------------------------------------------------------------------------*/
 std::shared_ptr<IState> MCTSAgent::get_most_visited_child() {
     const MCTSTree* node = m_tree;
 
@@ -48,6 +57,16 @@ std::shared_ptr<IState> MCTSAgent::get_most_visited_child() {
         node=node->get_most_visited_child();
     }
     return node->get_state();
+}
+
+/*---------------------------------------------------------------------------*/
+std::shared_ptr<IState> MCTSAgent::get_most_winning_child() {
+	 const MCTSTree* node = m_tree;
+
+	 if (!node->is_terminal() && node->has_children()){
+		  node=node->get_most_winning_child();
+	 }
+	 return node->get_state();
 }
 /*---------------------------------------------------------------------------*/
 MCTSTree* MCTSAgent::expand(MCTSTree* ANode) {
@@ -64,14 +83,25 @@ MCTSTree* MCTSAgent::expand(MCTSTree* ANode) {
 std::pair<double,MCTSAgent::GAME_RESULT> MCTSAgent::simulate(MCTSTree* ANode) {
     auto state =ANode->get_state();
 
-    if(!ANode->is_terminal()) {
-        for (int d = 0; d < m_simulation_depth; d++) {
+	 //we first check that we are not a winner!!
+	 if(state->win())
+		  std::make_pair(m_reward_function->evaluate(state),WIN);
+
+	 bool found_win=false;
+	 bool found_lost =false;
+    if(!state->win() && !ANode->is_terminal()) {
+		  //TODO checker cette boucle.
+        for (int d = 0; d < m_simulation_depth && !found_win && !found_lost; d++) {
             if (!state->is_terminal()) {
                 auto a = get_random_action(state);
 				    if(a== nullptr)
 					    exit(55);
 
                 state = a->apply_on(state);
+				    if (state->win())
+					    found_win=true;
+				    else if (state->lost())
+					    found_lost=true;
             }
         }
     }
