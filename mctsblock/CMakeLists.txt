@@ -1,4 +1,6 @@
 #==============================================================================
+set(MCTS_DATA_DIR "" CACHE INTERNAL "Data directory where are input files")
+#==============================================================================
 # LIBRARY DEFINTION (SOURCE FILES)
 #==============================================================================
 # Nommer tout en GMDS_MODULE_NAME, GMDS_SRC, ... dans les composants
@@ -35,6 +37,10 @@ set(GMDS_SRC
         spam/src/MCTSTree.cpp
         )
 
+configure_file(
+        config.h.in
+        config.h
+        @ONLY)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

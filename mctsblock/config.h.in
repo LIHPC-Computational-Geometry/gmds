@@ -1,0 +1,1 @@
+#cmakedefine MCTS_DATA_DIR "@MCTS_DATA_DIR@"

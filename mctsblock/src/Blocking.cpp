@@ -9,27 +9,7 @@ using namespace gmds::mctsblock;
 Blocking::Blocking(cad::GeomManager *AGeomModel, bool AInitAsBoundingBox) : m_geom_model(AGeomModel), m_counter(0)
 {
 	if (AInitAsBoundingBox) {
-		TCoord min[3] = {MAXFLOAT, MAXFLOAT, MAXFLOAT};
-		TCoord max[3] = {-MAXFLOAT, -MAXFLOAT, -MAXFLOAT};
-		std::vector<cad::GeomVolume *> vols;
-		m_geom_model->getVolumes(vols);
-		for (auto v : vols) {
-			TCoord v_min[3], v_max[3];
-			v->computeBoundingBox(v_min, v_max);
-			for (auto i = 0; i < 3; i++)
-				if (v_min[i] < min[i]) min[i] = v_min[i];
-			for (auto i = 0; i < 3; i++)
-				if (v_max[i] > max[i]) max[i] = v_max[i];
-		}
-		math::Point p1(min[0], min[1], min[2]);
-		math::Point p2(min[0], max[1], min[2]);
-		math::Point p3(max[0], max[1], min[2]);
-		math::Point p4(max[0], min[1], min[2]);
-		math::Point p5(min[0], min[1], max[2]);
-		math::Point p6(min[0], max[1], max[2]);
-		math::Point p7(max[0], max[1], max[2]);
-		math::Point p8(max[0], min[1], max[2]);
-		create_block(p1, p2, p3, p4, p5, p6, p7, p8);
+		init_from_bounding_box();
 	}
 }
 /*----------------------------------------------------------------------------*/
@@ -50,6 +30,30 @@ Blocking::Blocking(const Blocking &ABl) : m_geom_model(ABl.m_geom_model), m_gmap
 	auto listNodes = get_all_nodes();
 	for (auto b : listNodes) {
 		b->info().counter = &m_counter;
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+void Blocking::reset_classification()
+{
+	auto listBlocks = get_all_blocks();
+	for (auto b : listBlocks) {
+		b->info().geom_dim = 4;
+		b->info().geom_id = NullID;
+	}
+	auto listFaces = get_all_faces();
+	for (auto b : listFaces) {
+		b->info().geom_dim = 4;
+		b->info().geom_id = NullID;	}
+	auto listEdges = get_all_edges();
+	for (auto b : listEdges) {
+		b->info().geom_dim = 4;
+		b->info().geom_id = NullID;
+	}
+	auto listNodes = get_all_nodes();
+	for (auto b : listNodes) {
+		b->info().geom_dim = 4;
+		b->info().geom_id = NullID;
 	}
 }
 /*----------------------------------------------------------------------------*/
@@ -305,6 +309,8 @@ Blocking::get_edge(const int AN1, const int AN2)
 		else if (nodes_of_e[0]->info().topo_id == AN2 && nodes_of_e[1]->info().topo_id == AN1)
 			return e;
 	}
+	std::cout<<"AN1="<<AN1<<std::endl;
+	std::cout<<"AN2="<<AN2<<std::endl;
 	throw GMDSException("No edge with given end points");
 }
 /*----------------------------------------------------------------------------*/
@@ -771,6 +777,31 @@ Blocking::convert_to_mesh(Mesh &AMesh)
 }
 
 /*----------------------------------------------------------------------------*/
+void Blocking::init_from_bounding_box()
+{
+	TCoord min[3] = {MAXFLOAT, MAXFLOAT, MAXFLOAT};
+	TCoord max[3] = {-MAXFLOAT, -MAXFLOAT, -MAXFLOAT};
+	std::vector<cad::GeomVolume *> vols;
+	m_geom_model->getVolumes(vols);
+	for (auto v : vols) {
+		TCoord v_min[3], v_max[3];
+		v->computeBoundingBox(v_min, v_max);
+		for (auto i = 0; i < 3; i++)
+			if (v_min[i] < min[i]) min[i] = v_min[i];
+		for (auto i = 0; i < 3; i++)
+			if (v_max[i] > max[i]) max[i] = v_max[i];
+	}
+	math::Point p1(min[0], min[1], min[2]);
+	math::Point p2(min[0], max[1], min[2]);
+	math::Point p3(max[0], max[1], min[2]);
+	math::Point p4(max[0], min[1], min[2]);
+	math::Point p5(min[0], min[1], max[2]);
+	math::Point p6(min[0], max[1], max[2]);
+	math::Point p7(max[0], max[1], max[2]);
+	math::Point p8(max[0], min[1], max[2]);
+	create_block(p1, p2, p3, p4, p5, p6, p7, p8);
+}
+/*----------------------------------------------------------------------------*/
 void
 Blocking::init_from_mesh(Mesh &AMesh)
 {
@@ -861,21 +892,29 @@ Blocking::init_from_mesh(Mesh &AMesh)
 void
 Blocking::save_vtk_blocking(const std::string &AFileName)
 {
-	gmds::Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::N | gmds::E | gmds::F | gmds::R | gmds::E2N | gmds::F2N | gmds::R2N));
+	Mesh m(gmds::MeshModel(gmds::DIM3 | gmds::N | gmds::E | gmds::F | gmds::R | gmds::E2N | gmds::F2N | gmds::R2N));
 	convert_to_mesh(m);
-	gmds::IGMeshIOService ios(&m);
-	gmds::VTKWriter vtk_writer(&ios);
-	vtk_writer.setCellOptions(gmds::N | gmds::R);
-	vtk_writer.setDataOptions(gmds::N | gmds::R);
-	std::string RegionAFileName = "NR_"+AFileName + ".vtk";
-	std::string EdgeAFileName = "NE_"+AFileName + ".vtk";
-	vtk_writer.write(RegionAFileName);
+	IGMeshIOService ios(&m);
 
-	gmds::IGMeshIOService ios2(&m);
-	gmds::VTKWriter vtk_writer2(&ios2);
-	vtk_writer2.setCellOptions(gmds::N | gmds::E);
-	vtk_writer2.setDataOptions(gmds::N | gmds::E);
-	vtk_writer2.write(EdgeAFileName);
+	std::string block_filename = "block_"+AFileName + ".vtk";
+	std::string edge_filename = "edge_"+AFileName + ".vtk";
+	std::string face_filename = "face_"+AFileName + ".vtk";
+
+	VTKWriter writer_block(&ios);
+	writer_block.setCellOptions(N|R);
+	writer_block.setDataOptions(N|R);
+	writer_block.write(block_filename);
+
+	VTKWriter writer_face(&ios);
+	writer_face.setCellOptions(N|F);
+	writer_face.setDataOptions(N|F);
+	writer_face.write(face_filename);
+
+	VTKWriter writer_edge(&ios);
+	writer_edge.setCellOptions(N|E);
+	writer_edge.setDataOptions(N|E);
+	writer_edge.write(edge_filename);
+
 }
 /*----------------------------------------------------------------------------*/
 std::vector<std::vector<Blocking::Edge>>

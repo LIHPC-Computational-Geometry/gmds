@@ -54,7 +54,8 @@ public:
     /**@brief Returns the most visited child of the current root node
      * @return a node, or subtree
      */
-    MCTSTree* get_most_visited_child() const;
+	 MCTSTree* get_most_visited_child() const;
+	 MCTSTree* get_most_winning_child() const;
 
     /**@brief Create a new child that will be obtained by applying an untried action
     * @return a child  node obtained from applying an untried action on the current state

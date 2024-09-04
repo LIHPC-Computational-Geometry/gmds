@@ -50,6 +50,11 @@ public:
   void computeDijkstra(TCellID ASrcNode);
   //Be careful, input ids are in the global input space numbering, not the local one
  	void setWeight(const TCellID AN1, const TCellID AN2, const double AW);
+	/**
+	 *
+	 * @return for each node of the graph D, you get the path from the source node S to D.
+	 * The first item of the vector is D, and the last one S.
+	 */
   std::map<TCellID , std::vector<TCellID> > getShortestPath();
   std::map<TCellID , double > getShortestPathWeights();
 private:

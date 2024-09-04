@@ -2,6 +2,7 @@
 #include <gmds/mctsblock/Graph.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <float.h>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 using namespace gmds::mctsblock;
@@ -255,7 +256,7 @@ Graph::computeDijkstra(gmds::TCellID ASrcNode)
 	// Initialize min heap with all
 	// vertices. dist value of all vertices
 	for (auto v = 0; v < m_nb_vertices; ++v) {
-		m_dist[v] = INT_MAX;
+		m_dist[v] = DBL_MAX;
 		minHeap.new_node(v, m_dist[v]);
 	}
 
@@ -285,7 +286,7 @@ Graph::computeDijkstra(gmds::TCellID ASrcNode)
 
 			// If shortest distance to v is  not finalized yet, and distance to v
 			// through u is less than its  previously calculated distance
-			if (minHeap.isInMinHeap(v) && m_dist[u] != INT_MAX && pCrawl->weight + m_dist[u] < m_dist[v]) {
+			if (minHeap.isInMinHeap(v) && m_dist[u] != DBL_MAX && pCrawl->weight + m_dist[u] < m_dist[v]) {
 				m_dist[v] = m_dist[u] + pCrawl->weight;
 				// update distance value in min heap also
 				minHeap.decreaseKey(v, m_dist[v]);
@@ -315,7 +316,8 @@ Graph::buildShortestPaths(const gmds::TCellID ASrc)
 			auto neigh = getAdjNodes(cur);
 			auto cur_dist = m_dist[cur];
 			for (auto n_info : neigh) {
-				if (n_info.second == cur_dist - m_dist[n_info.first]) cur = n_info.first;
+				if (n_info.second == cur_dist - m_dist[n_info.first])
+					cur = n_info.first;
 			}
 		}
 		current_path.push_back(ASrc);

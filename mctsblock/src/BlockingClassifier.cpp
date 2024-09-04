@@ -27,6 +27,7 @@ BlockingClassifier::detect_classification_errors()
 	m_geom_model->getCurves(geom_curves);
 
 	for (auto p : geom_points) {
+
 		auto [found, n] = find_node_classified_on(p);
 		if (!found) {
 			errors.non_captured_points.push_back(p->id());
@@ -82,21 +83,27 @@ BlockingClassifier::detect_classification_errors()
 
 		if (c_info.first == false) errors.non_captured_curves.push_back(c->id());
 	}
-	/*
+
+	//========================================================================
 	// 3) We check the geometric surfaces
 	std::vector<cad::GeomSurface *> geom_surfaces;
 	m_geom_model->getSurfaces(geom_surfaces);
-	for (auto s : geom_surfaces) {
-	   auto [found, fs] = find_faces_classified_on(s);
-	   // if all points and all curves are not captured, we don't class the faces so, the surfaces are not captured
-	   if (errors.non_captured_points.size() != 0) {
-	      errors.non_captured_surfaces.push_back(s->id());
-	      continue;
-	   }
-	   else if (!found) {
-	      errors.non_captured_surfaces.push_back(s->id());
-	   }
-	}*/
+	if (!errors.non_captured_points.empty() || !errors.non_captured_curves.empty()){
+		//we capture surfaces only if points and curves are captured
+		for(auto s:geom_surfaces)
+			errors.non_captured_surfaces.push_back(s->id());
+	}
+	else{
+		//curves and surfaces are captured, we can try and capture surfaces
+		for (auto s : geom_surfaces) {
+			auto [found, fs] = find_faces_classified_on(s);
+			// if all points and all curves are not captured, we don't class the faces so, the surfaces are not captured
+			if(!found)
+				errors.non_captured_surfaces.push_back(s->id());
+		}
+	}
+
+
 	return errors;
 }
 /*----------------------------------------------------------------------------*/
@@ -131,6 +138,7 @@ BlockingClassifier::try_and_classify_nodes(std::set<TCellID> &ANodeIds, const do
 	m_geom_model->getSurfaces(geom_surfaces);
 
 	int nb_unclassified = 0;
+	double epsilon = 10e-5;
 	// initial projection stage
 	for (auto &current_node_id : ANodeIds) {
 		auto current_node = m_blocking->get_node(current_node_id);
@@ -139,9 +147,6 @@ BlockingClassifier::try_and_classify_nodes(std::set<TCellID> &ANodeIds, const do
 
 		if (current_node->info().geom_dim == 0)
 			continue;
-
-
-
 
 
 		std::vector<cad::GeomEntity *> cells;
@@ -154,21 +159,27 @@ BlockingClassifier::try_and_classify_nodes(std::set<TCellID> &ANodeIds, const do
 		cells.insert(cells.end(), geom_surfaces.begin(), geom_surfaces.end());
 		auto [closest_surf_dist, closest_surf_id, closest_surf_loc] = get_closest_cell(p, cells);
 
-		if (closest_pnt_dist <= closest_curv_dist && closest_pnt_dist <= closest_surf_dist && closest_pnt_dist <= ATolerance) {     // On point
+		if (closest_pnt_dist - closest_curv_dist <= epsilon &&
+		    closest_pnt_dist - closest_surf_dist <= epsilon &&
+		    closest_pnt_dist <= ATolerance) {     // On point
 
 			current_node->info().geom_dim = 0;
 			current_node->info().geom_id = closest_pnt_id;
 			// projection is done next line
 			current_node->info().point = closest_pnt_loc;
 		}
-		else if (closest_curv_dist < closest_pnt_dist && closest_curv_dist <= closest_surf_dist && closest_curv_dist <= ATolerance) {     // On curve
+		else if (closest_curv_dist - closest_pnt_dist  < epsilon &&
+		         closest_curv_dist - closest_surf_dist <= epsilon &&
+		         closest_curv_dist <= ATolerance) {     // On curve
 
 			current_node->info().geom_dim = 1;
 			current_node->info().geom_id = closest_curv_id;
 			// projection is done next line
 			current_node->info().point = closest_curv_loc;
 		}
-		else if (closest_surf_dist < closest_pnt_dist && closest_surf_dist < closest_curv_dist && closest_surf_dist <= ATolerance) {     // On surface
+		else if (closest_surf_dist - closest_pnt_dist  < epsilon &&
+		         closest_surf_dist - closest_curv_dist  < epsilon &&
+		         closest_surf_dist <= ATolerance) {     // On surface
 			current_node->info().geom_dim = 2;
 			current_node->info().geom_id = closest_surf_id;
 			// projection is done next line
@@ -218,7 +229,9 @@ BlockingClassifier::find_aligned_edge(cad::GeomPoint *APoint, const math::Vector
 }
 /*----------------------------------------------------------------------------*/
 int
-BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds, std::set<TCellID> &AEdgeIds, std::set<TCellID> &AFaceIds)
+BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds,
+                                    std::set<TCellID> &AEdgeIds,
+                                    std::set<TCellID> &AFaceIds)
 {
 	//===================================================================
 	// 1. WE CHECK NODE
@@ -233,6 +246,8 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds, std::set<TCellI
 	std::vector<cad::GeomCurve *> geom_curves;
 	m_geom_model->getCurves(geom_curves);
 
+	std::map<TCellID ,bool> is_captured_curves;
+
 	// TODO PROBLEME : les sommets ne sont pas numerotés de 0 à V mais on les numeros du blocking!!!!!
 
 	// PAS CONTINU
@@ -243,6 +258,7 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds, std::set<TCellI
 	}
 
 	for (auto c : geom_curves) {
+		is_captured_curves[c->id()] = false;
 		// 3 cases based on the number of end points of c (0,1,2)
 		auto c_end_points = c->points();
 		if (c_end_points.size() == 0) {
@@ -272,15 +288,7 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds, std::set<TCellI
 				// The two end points of the curve are already captured, we can look for a path going
 				// from n0 ton n1 among the nodes of ANodeIDs
 				// We look for each node, if a block edge is aligned enough with the curve
-				/*		auto edge_case=0;
-				      if(n0->info().geom_dim==0 && n0->info().geom_id==9 &&
-				          n1->info().geom_dim==0 && n1->info().geom_id==14){
-				         edge_case=1;
-				      }
-				      if(n0->info().geom_dim==0 && n0->info().geom_id==14 &&
-				          n1->info().geom_dim==0 && n1->info().geom_id==9){
-				         edge_case=2;
-				      }*/
+
 				// ============ END POINT 0 first =======================
 				auto info0 = find_aligned_edge(end_point_0, c->tangent(0), AEdgeIds);
 				auto info1 = find_aligned_edge(end_point_1, c->tangent(1), AEdgeIds);
@@ -295,6 +303,7 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds, std::set<TCellI
 						// same one, we asssign it to the curve
 						first_edge->info().geom_dim = 1;
 						first_edge->info().geom_id = c->id();
+						is_captured_curves[c->id()]= true;
 					}
 					// second case, the two edges have a common node, it is over
 					else {
@@ -313,10 +322,12 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds, std::set<TCellI
 						if (found_common_node) {
 							common_node->info().geom_dim = 1;
 							common_node->info().geom_id = c->id();
+							c->project(common_node->info().point);
 							first_edge->info().geom_dim = 1;
 							first_edge->info().geom_id = c->id();
 							second_edge->info().geom_dim = 1;
 							second_edge->info().geom_id = c->id();
+							is_captured_curves[c->id()]= true;
 						}
 						else {
 							// We need the shortest path that connect the end points of our two edges
@@ -325,20 +336,22 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds, std::set<TCellI
 							auto dest_node = second_nodes[0];
 							if (second_nodes[0]->info().geom_dim == 0 && second_nodes[0]->info().geom_id == end_point_1->id()) dest_node = second_nodes[1];
 
-							/*   for (auto eid : AEdgeIds) {
+							/* for (auto eid : AEdgeIds) {
 							      auto e = m_blocking->get_edge(eid);
 							      if (e == first_edge || e == second_edge) continue;
 							      auto e_nodes = m_blocking->get_nodes_of_edge(e);
 							      auto e_middle = 0.5 * (e_nodes[0]->info().point + e_nodes[1]->info().point);
 							      auto p_on_curve = e_middle;
 							      c->project(p_on_curve);
-							      g.setWeight(e_nodes[0]->info().topo_id, e_nodes[1]->info().topo_id, e_middle.distance(p_on_curve)+1);
+								   auto wi = e_middle.distance(p_on_curve)+1;
+							    //  g.setWeight(e_nodes[0]->info().topo_id, e_nodes[1]->info().topo_id, wi);
 							   }*/
 							g.computeDijkstra(src_node->info().topo_id);
-							auto sp = g.getShortestPath()[dest_node->info().topo_id];
-							auto spw = g.getShortestPathWeights()[dest_node->info().topo_id];
+							auto all_path = g.getShortestPath();
+							std::vector<TCellID> sp = all_path[dest_node->info().topo_id];
+							double spw = g.getShortestPathWeights()[dest_node->info().topo_id];
 							auto average_w = spw / sp.size();
-							if (average_w < 1000) {     // arbitraty value to avoid to classify wrong paths
+							if (average_w < 1000) {     // arbitrary value to avoid to classify wrong paths
 								first_edge->info().geom_dim = 1;
 								first_edge->info().geom_id = c->id();
 								second_edge->info().geom_dim = 1;
@@ -347,6 +360,8 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds, std::set<TCellI
 									auto n_id = sp[i];
 									m_blocking->get_node(n_id)->info().geom_dim = 1;
 									m_blocking->get_node(n_id)->info().geom_id = c->id();
+									c->project(m_blocking->get_node(n_id)->info().point);
+
 									if (i > 0) {
 										auto m_id = sp[i - 1];
 										auto e_mn = m_blocking->get_edge(n_id, m_id);
@@ -354,7 +369,97 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds, std::set<TCellI
 										e_mn->info().geom_id = c->id();
 									}
 								}
+								is_captured_curves[c->id()]= true;
 							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+	//===================================================================
+	// 2. WE WORK ON SURFACES
+	//===================================================================
+	//We try and capture surfaces only if all the curves are captured. It makes
+	// the surface capture algorithm easier to write
+	bool found_one_uncaptured_curve = false;
+
+	for(auto c :geom_curves){
+		if (!is_captured_curves[c->id()])
+			found_one_uncaptured_curve = true;
+	}
+	if(!found_one_uncaptured_curve){
+		//we can try and capture surfaces so
+		//we store in a map the color of boundary block faces
+		auto map_faces_colored = blocking_color_faces();
+
+		auto geom_surfaces = m_geom_model->getSurfaces();
+		// We class the faces with a surface
+		for (auto s : geom_surfaces) {
+
+			auto s_points = s->points();
+			auto s_curves = s->curves();
+			int color_of_this_surface = -1;
+
+			for (auto f : map_faces_colored) {
+				int nb_edges_on_curve = 0;
+				int nb_nodes_on_point = 0;
+
+				auto nodes_f = m_blocking->get_nodes_of_face(f.first);
+				auto edges_f = m_blocking->get_edges_of_face(f.first);
+				// We check if the face has 1 node classified on a point and 2 edges class on curves
+				for (auto n : nodes_f) {
+					if (n->info().geom_dim == 0) {
+						for (auto p : s_points) {
+							if (p->id() == n->info().geom_id) {
+								nb_nodes_on_point++;
+							}
+						}
+					}
+				}
+				for (auto e : edges_f) {
+					if (e->info().geom_dim == 1 ) {
+						for (auto c : s_curves) {
+							if (c->id() == e->info().geom_id) {
+								nb_edges_on_curve++;
+							}
+						}
+					}
+				}
+
+				if (nb_nodes_on_point >= 1 && nb_edges_on_curve >= 2) {
+					color_of_this_surface = f.second;
+				}
+			}
+			for (auto f : map_faces_colored) {
+				// We do nothing if the color of the face is 0, and any edges is class on a curve,
+				// because the face is not on the boundary, but its poss
+				if (f.second == 0) {
+					f.first->info().geom_id = -1;
+					f.first->info().geom_dim = 4;
+				}
+				else if (f.second == color_of_this_surface) {
+						f.first->info().geom_id = s->id();
+						f.first->info().geom_dim = s->dim();
+
+					// We classify the element of the face not class on the surface
+					auto nodes_f = m_blocking->get_nodes_of_face(f.first);
+					auto edges_f = m_blocking->get_edges_of_face(f.first);
+					// First, the nodes
+					for (auto n : nodes_f) {
+						if (n->info().geom_dim == 4) {
+							n->info().geom_dim = s->dim();
+							n->info().geom_id = s->id();
+							s->project(n->info().point);
+						}
+					}
+					// And the edges
+					for (auto e : edges_f) {
+						if (e->info().geom_dim == 4) {
+							e->info().geom_dim = s->dim();
+							e->info().geom_id = s->id();
 						}
 					}
 				}
@@ -940,7 +1045,7 @@ BlockingClassifier::find_faces_classified_on(cad::GeomSurface *AS)
 	auto curvesOfS = AS->curves();
 	std::set<int> listCurvesCapt;
 
-	if (facesOnSurface.size() == 0) {
+	if (facesOnSurface.empty()) {
 		return {false, facesOnSurface};
 	}
 
