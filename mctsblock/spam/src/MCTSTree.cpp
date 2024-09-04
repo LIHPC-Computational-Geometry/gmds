@@ -59,6 +59,7 @@ MCTSTree* MCTSTree::get_most_visited_child() const {
 
     // iterate all  children and find most visited
     for(auto c: m_children) {
+
 		  std::cout<<"Child "<<c<<" from action "<<c->get_action()->get_description()<<" (visits, win, lost, draw, cumul. reward): "<<c->number_visits<<", "<<c->number_win<<", "<<c->number_lost<<", "<<c->number_draw<<", "<<c->cumulative_reward<<std::endl;
 
         if(c->number_visits > most_visits) {
@@ -76,6 +77,43 @@ MCTSTree* MCTSTree::get_most_visited_child() const {
 	           <<best_node->cumulative_reward<<std::endl;
 
     return best_node;
+}
+
+/*---------------------------------------------------------------------------*/
+MCTSTree* MCTSTree::get_most_winning_child() const {
+	 int most_wins = -1;
+	 MCTSTree* best_node = nullptr;
+
+	 // iterate all  children and find most visited
+	 for(auto c: m_children) {
+		  std::cout<<"Child "<<c<<" from action "<<c->get_action()->get_description()<<" (visits, win, lost, draw, cumul. reward): "<<c->number_visits<<", "<<c->number_win<<", "<<c->number_lost<<", "<<c->number_draw<<", "<<c->cumulative_reward<<std::endl;
+
+		  if(c->number_win > most_wins) {
+			   most_wins = c->number_win;
+			   best_node = c;
+		  }
+	 }
+	 if (most_wins==0){
+		  //look for draws
+		  most_wins=-1;
+		  // iterate all  children and find most visited
+		  for(auto c: m_children) {
+			   if(c->number_draw > most_wins) {
+				   most_wins = c->number_draw;
+				   best_node = c;
+			   }
+		  }
+	 }
+	 if(best_node== nullptr)
+		  throw std::runtime_error("Error when visiting children");
+	 std::cout<<"--> Best "<<best_node<<" (visits, win, lost, draw, cumul. reward): "
+	           <<best_node->number_visits<<", "
+	           <<best_node->number_win<<", "
+	           <<best_node->number_lost<<", "
+	           <<best_node->number_draw<<", "
+	           <<best_node->cumulative_reward<<std::endl;
+
+	 return best_node;
 }
 /*---------------------------------------------------------------------------*/
 MCTSTree* MCTSTree::get_child(const int AI) const {

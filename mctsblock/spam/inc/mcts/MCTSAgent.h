@@ -30,6 +30,7 @@ public:
 			  DRAW,
 			  LOST
 		  };
+
     /**@brief Constructor
      * @param ARewardFunction reward function to evaluate a state
      * @param ASelectFunction function to pick a child node during the selection process
@@ -71,6 +72,7 @@ public:
      * @return the "best" solution
      */
     std::shared_ptr<IState> get_best_solution();
+	 std::shared_ptr<IState> get_best_winning_solution();
 
 
     /**@brief Returns the best child of the root. We consider
@@ -78,7 +80,8 @@ public:
      *
      * @return the "best" root child
      */
-    std::shared_ptr<IState> get_most_visited_child();
+	 std::shared_ptr<IState> get_most_visited_child();
+	 std::shared_ptr<IState> get_most_winning_child();
     /**@brief provides the number of iterations done by the algorithm
      */
     int get_nb_iterations() const {return m_nb_iterations;}

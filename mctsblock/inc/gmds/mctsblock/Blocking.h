@@ -343,6 +343,11 @@ class LIB_GMDS_MCTSBLOCK_API Blocking
 	 * @param[out] AFaceIds ids of boundary faces
 	 */
 	void extract_boundary(std::set<TCellID> &ANodeIds, std::set<TCellID> &AEdgeIds, std::set<TCellID> &AFaceIds);
+
+	/**@brief This method reset all the nodes, edges and faces classification data to geom dim -1, geom id 4
+	 */
+	void reset_classification();
+
 	/** Return the info for the node of id @p ANodeId
 	 * @param[in] ANodeId topological node id
 	 * @return a tuple where the first parameter is the geom_dim, the second its geom_id, and the third is location
@@ -731,6 +736,10 @@ class LIB_GMDS_MCTSBLOCK_API Blocking
 	 */
 	void init_from_mesh(Mesh &ACellMesh);
 
+
+	/**@brief intiialize the block structure from the bounding box of the geom model
+	 */
+	void init_from_bounding_box();
 	/**@brief Convert the block structure into a gmds cellular mesh. The provided
 	 * 		 mesh @p ACellMesh must have the following characteristics:
 	 * 		 - DIM3, N, E, F, R, R2N, F2N, E2N

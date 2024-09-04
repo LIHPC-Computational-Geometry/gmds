@@ -8,19 +8,21 @@ using namespace gmds;
 using namespace gmds::mctsblock;
 /*----------------------------------------------------------------------------*/
 const int BlockingState::m_memory_depth = 4;
-double BlockingState::weight_nodes = 1000;
+double BlockingState::weight_nodes = 10000;
 double BlockingState::weight_edges = 100;
 double BlockingState::weight_faces = 1;
 /*----------------------------------------------------------------------------*/
 BlockingState::BlockingState(std::shared_ptr<Blocking> AB, int ADepth, std::deque<double> APrevScores)
   : m_blocking(AB), m_depth(ADepth), m_memory_scores(APrevScores)
 {
+//	m_blocking->reset_classification();
 	m_blocking->extract_boundary(m_boundary_node_ids, m_boundary_edge_ids, m_boundary_face_ids);
 	BlockingClassifier(m_blocking.get()).try_and_capture(m_boundary_node_ids,m_boundary_edge_ids, m_boundary_face_ids);
 	updateMemory(computeScore());
 
-	m_expected_optimal_score = weight_nodes*m_blocking->geom_model()->getNbPoints() +
-	                           weight_edges*m_blocking->geom_model()->getNbCurves();
+	m_expected_optimal_score = weight_nodes * m_blocking->geom_model()->getNbPoints()
+	                           + weight_edges * m_blocking->geom_model()->getNbCurves()
+	                           + weight_faces * m_blocking->geom_model()->getNbSurfaces();
 }
 /*----------------------------------------------------------------------------*/
 BlockingState::BlockingState(const gmds::mctsblock::BlockingState &AState) :
@@ -52,12 +54,6 @@ BlockingState::win() const
 	/* we win if we don't have anymore classification errors. It means that the
 	   state score, which is the last element of the memory scores, is equal to
 	   0.*/
-	if(m_memory_scores.back() == m_expected_optimal_score){
-		std::cout<<"--> winning state (B,F,E,N): "<<m_blocking->get_nb_cells<3>()<<", "
-		          <<m_blocking->get_nb_cells<2>()<<", "
-		          <<m_blocking->get_nb_cells<1>()<<", "
-		          <<m_blocking->get_nb_cells<0>()<<std::endl;
-	}
 	return (m_memory_scores.back() == m_expected_optimal_score);
 } /*----------------------------------------------------------------------------*/
 bool
@@ -67,6 +63,8 @@ BlockingState::lost() const
 	if (!win() 	&& this->get_actions().empty())
 		return true;
 
+	return false;
+/*
 	// We lost if our score doesn't improve during the last steps.
 	// if the memory stack is not full we keep working, so we do not lost
 	if (m_memory_scores.size() < BlockingState::m_memory_depth) return false;     // not lost
@@ -75,7 +73,7 @@ BlockingState::lost() const
 	return (m_memory_scores[4] >= m_memory_scores[3] ||
 	        m_memory_scores[4] >= m_memory_scores[2] ||
 	        m_memory_scores[4] >= m_memory_scores[1] ||
-	        m_memory_scores[4] >= m_memory_scores[0]);
+	        m_memory_scores[4] >= m_memory_scores[0]);*/
 }
 /*----------------------------------------------------------------------------*/
 bool
@@ -100,7 +98,8 @@ BlockingState::computeScore()
    auto errors = BlockingClassifier(m_blocking.get()).detect_classification_errors();
 
 	return weight_nodes*(m_blocking->geom_model()->getNbPoints()-errors.non_captured_points.size())+
-	       weight_edges*(m_blocking->geom_model()->getNbCurves()-errors.non_captured_curves.size());
+	       weight_edges*(m_blocking->geom_model()->getNbCurves()-errors.non_captured_curves.size())+
+	       weight_faces*(m_blocking->geom_model()->getNbSurfaces()-errors.non_captured_surfaces.size());
 }
 /*----------------------------------------------------------------------------*/
 void

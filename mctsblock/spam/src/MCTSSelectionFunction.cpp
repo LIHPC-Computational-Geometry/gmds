@@ -19,17 +19,18 @@ MCTSTree* UCBSelectionFunction::select(MCTSTree *ANode)  const  {
         // iterate all immediate children and find best UTC score
         auto children = ANode->get_children();
         auto num_children = children.size();
-        for(auto i = 0; i < num_children; i++) {
-            auto child = children[i];
-            float uct_exploitation = (float)child->number_win / (child->number_visits + FLT_EPSILON);
-            float uct_exploration = sqrt(log((float)ANode->number_visits + 1) / (child->number_visits + FLT_EPSILON) );
-            float uct_score = uct_exploitation + m_c * uct_exploration;
+	     for(auto i = 0; i < num_children; i++) {
+		      auto child = children[i];
+		      auto np = (double)ANode->number_visits + 1;
+		      auto ni = (double)child->number_visits + FLT_EPSILON;
+		      auto vi =  (double)child->cumulative_reward;
+		      auto utc_score= vi/ni + m_c * sqrt(2*log(np) / ni);
 
-            if(uct_score > best_utc_score) {
-                best_utc_score = uct_score;
-                best_node = child;
-            }
-        }
+		      if(utc_score > best_utc_score) {
+			      best_utc_score = utc_score;
+			      best_node = child;
+		      }
+	     }
         if(best_node== nullptr)
             throw std::runtime_error("Error when getting the best child of a node");
 
@@ -53,13 +54,13 @@ MCTSTree* SPUCTSelectionFunction::select(MCTSTree *ANode)  const  {
 
 	     for(auto i = 0; i < num_children; i++) {
 		      auto child = children[i];
-		      auto tN = (double)ANode->number_visits + 1;
-		      auto tNi = (double)child->number_visits + FLT_EPSILON;
-		      auto w =  (double)child->number_win;
-		      auto utc= w/tNi + m_c * sqrt(log(tN) / tNi);
+		      auto np = (double)ANode->number_visits + 1;
+		      auto ni = (double)child->number_visits + FLT_EPSILON;
+		      auto vi =  (double)child->cumulative_reward;
+		      auto utc= vi/ni + m_c * sqrt(2*log(np) / ni);
 
 		      auto sum_x2 = child->sq_cumulative_reward;
-		      auto utc_single = sqrt((sum_x2 - tNi* pow(w/tNi,2) +m_d) / tNi);
+		      auto utc_single = sqrt((sum_x2 - ni* pow(vi/ni,2) +m_d) / ni);
 		      auto utc_score = utc + utc_single;
 
 		      if(utc_score > best_score) {

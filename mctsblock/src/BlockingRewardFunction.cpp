@@ -11,7 +11,7 @@ double BlockingRewardFunction::evaluate(std::shared_ptr<IState> AState) const {
 	auto memory = state->get_memory();
 	auto reward = 0.0;
 
-/*
+
 	if (state->win()){
 		return 1;
 	}
@@ -19,7 +19,7 @@ double BlockingRewardFunction::evaluate(std::shared_ptr<IState> AState) const {
 		return -1;
 
 	return 0;
-*/
+/*
 	if (state->win()){
 		reward = state->get_expected_optimal_score();
 	}
@@ -30,5 +30,5 @@ double BlockingRewardFunction::evaluate(std::shared_ptr<IState> AState) const {
 	else{
 		reward = *(memory.end()-1) - *(memory.end()-2);
 	}
-	return reward;
+	return reward;*/
 }
