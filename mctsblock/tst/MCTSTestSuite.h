@@ -35,7 +35,7 @@ init_geom(gmds::cad::FACManager &AGeomManager, const std::string& AFileName)
 	doc.updateUpwardConnectivity();
 
 	AGeomManager.initFrom3DMesh(&m_vol);
-	AGeomManager.write_surfaces("geometry")
+	AGeomManager.write_surfaces("geometry");
 }
 /*----------------------------------------------------------------------------*/
 void read_blocks(gmds::Mesh &AMesh, const std::string AFileName)
