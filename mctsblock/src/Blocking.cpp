@@ -404,8 +404,16 @@ Blocking::get_nodes_of_edge(const Blocking::Edge AE)
 	std::vector<Blocking::Node> nodes;
 	nodes.resize(2);
 	Dart3 d = AE->dart();
-	nodes[0] = m_gmap.attribute<0>(d);
-	nodes[1] = m_gmap.attribute<0>(m_gmap.alpha<0>(d));
+	auto d_node = m_gmap.attribute<0>(d);
+	auto d0_node = m_gmap.attribute<0>(m_gmap.alpha<0>(d));
+	if(d_node->info().topo_id< d0_node->info().topo_id) {
+		nodes[0] = d_node;
+		nodes[1] = d0_node;
+	}
+	else{
+		nodes[0] = d0_node;
+		nodes[1] = d_node;
+	}
 	return nodes;
 }
 
@@ -1138,8 +1146,8 @@ void
 Blocking::cut_sheet(const Edge AE, const double AParam)
 {
 	assert(AParam > 0 && AParam < 1);
-	// Note: the parameterization starts from the first node of AE, which is the one containing AE->dart().
-	// As a consequence, our orientation is consistent in the algorithm.
+	// Note: the parameterization starts from the first node of AE, which is the one having the node
+	// of lowest topo id
 
 	// We get a dart per sheet edge
 	std::vector<Dart3> sheet_darts;
