@@ -83,9 +83,14 @@ MCTSTree* MCTSAgent::expand(MCTSTree* ANode) {
 std::pair<double,MCTSAgent::GAME_RESULT> MCTSAgent::simulate(MCTSTree* ANode) {
     auto state =ANode->get_state();
 
+	 bool trace_on = false;
+    if((ANode->get_action()->get_description() == std::string ("Remove block 26"))) {
+		  std::cout<<"POYOP"<<std::endl;
+		  trace_on = true;
+	 }
 	 //we first check that we are not a winner!!
 	 if(state->win())
-		  std::make_pair(m_reward_function->evaluate(state),WIN);
+		  std::make_pair(m_reward_function->evaluate(state), WIN);
 
 	 bool found_win=false;
 	 bool found_lost =false;
@@ -96,7 +101,9 @@ std::pair<double,MCTSAgent::GAME_RESULT> MCTSAgent::simulate(MCTSTree* ANode) {
                 auto a = get_random_action(state);
 				    if(a== nullptr)
 					    exit(55);
-
+				    if(trace_on) {
+					    std::cout<<"d "<<d<<" "<<a->get_description()<<std::endl;
+				    }
                 state = a->apply_on(state);
 				    if (state->win())
 					    found_win=true;
