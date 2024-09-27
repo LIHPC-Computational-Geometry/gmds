@@ -536,6 +536,11 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 	{
 		TCellID newPoint = group2NewMedPoint[groupID];
 		TCellID oldPoint = AGroups[groupID][0].id();
+		for (auto n:AGroups[groupID])
+		{
+			if (m_voronoi_medax->getMedialPointType(n.id()) > 2)
+				oldPoint = n.id();
+		}
 		// The touching points updated as below are not correct for new points that change type, for example passing from type 3 to type 4
 		m_smoothed_medax->setTouchingPoints(newPoint, m_voronoi_medax->getTouchingPoints(oldPoint));
 		m_smoothed_medax->setMedialRadius(newPoint, m_voronoi_medax->getMedialRadius(oldPoint));
@@ -607,7 +612,7 @@ void MedialAxis2DBuilder::placeSingularities()
 
 	// Smooth cos(medial angle) (works approximately)
 	std::cout<<"> Smoothing cosine of the medial angle"<<std::endl;
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 0; i++)
 		m_smoothed_medax->smoothCosMedialAngle();
 
 	// Set the optimal cross flux through curves formed by two adjacent medial radii
@@ -621,6 +626,9 @@ void MedialAxis2DBuilder::placeSingularities()
 
 	// Check singularities
 	m_smoothed_medax->checkSingularities(0.1);
+
+	// Move singularities to intersection points
+	m_smoothed_medax->moveSingularitiesToIPs(5);
 
 	// Write singularities as attributes
 	m_smoothed_medax->setSingularities();

@@ -21,6 +21,12 @@ set(GMDS_SRC
         src/MedialAxis3D.cpp
         src/MedialAxis3DBuilder.cpp
         src/CrossField.cpp
+        src/NonConformalHalfEdge.cpp
+        inc/gmds/medialaxis/NonConformalHalfEdge.h
+        src/QuantizationGraphBuilder.cpp
+        inc/gmds/medialaxis/QuantizationGraphBuilder.h
+        src/QuantizationGraph.cpp
+        inc/gmds/medialaxis/QuantizationGraph.h
 )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
@@ -74,7 +80,12 @@ target_link_libraries(medialaxis_crossfield_exec PRIVATE ${GMDS_LIB})
 target_compile_features(medialaxis_crossfield_exec PUBLIC cxx_std_14)
 install(TARGETS medialaxis_crossfield_exec)
 
-add_executable(medialaxis_quantization_exec src/main_quantization.cpp)
-target_link_libraries(medialaxis_quantization_exec PRIVATE ${GMDS_LIB})
-target_compile_features(medialaxis_quantization_exec PUBLIC cxx_std_14)
-install(TARGETS medialaxis_quantization_exec)
+add_executable(medialaxis_block_decomp_exec src/main_block_decomp.cpp)
+target_link_libraries(medialaxis_block_decomp_exec PRIVATE ${GMDS_LIB})
+target_compile_features(medialaxis_block_decomp_exec PUBLIC cxx_std_14)
+install(TARGETS medialaxis_block_decomp_exec)
+
+add_executable(quantization_exec src/main_quantization.cpp)
+target_link_libraries(quantization_exec PRIVATE ${GMDS_LIB})
+target_compile_features(quantization_exec PUBLIC cxx_std_14)
+install(TARGETS quantization_exec)

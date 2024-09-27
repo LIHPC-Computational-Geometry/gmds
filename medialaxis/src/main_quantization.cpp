@@ -1,3 +1,6 @@
+//
+// Created by chenyt on 26/09/24.
+//
 #include "gmds/ig/MeshDoctor.h"
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKReader.h"
@@ -8,6 +11,9 @@
 #include "gmds/medialaxis/MedialAxis3DBuilder.h"
 #include "gmds/medialaxis/CrossField.h"
 #include "gmds/medialaxis/MedialAxisMath.h"
+#include "gmds/medialaxis/NonConformalHalfEdge.h"
+#include "gmds/medialaxis/QuantizationGraphBuilder.h"
+#include "gmds/medialaxis/QuantizationGraph.h"
 #include <gmds/math/Point.h>
 #include <gmds/math/Tetrahedron.h>
 #include <iostream>
@@ -17,26 +23,23 @@ using namespace math;
 
 int main(int argc, char* argv[])
 {
-	std::cout << "============== Quantization using the medial axis ================" << std::endl;
+	std::cout << "============== Quantization ================" << std::endl;
 
 	//==================================================================
 	// PARAMETERS' PARSING
 	//==================================================================
-	std::string file_mesh, file_out, file_ma_out;
-	int nb_iterations=0;
+	std::string file_mesh, file_out;
 	if (argc != 2) {
 		std::cout << "Requires one parameters : \n";
-		std::cout << "  - [IN ] minimal Delaunay mesh (.vtk) (to build the medial axis) \n"<<std::endl;
+		std::cout << "  - [IN ] a non conformal quad mesh (.vtk) \n"<<std::endl;
 		throw gmds::GMDSException("Wrong number of parameters");
 	}
 
 	file_mesh = std::string (argv[1]);
-	file_out = "out.vtk";
-	file_ma_out = "medax.vtk";
+	file_out = "block_decomp_out.vtk";
 	std::cout << "Parameters " << std::endl;
-	std::cout << "  - Mesh file    : " << file_mesh << std::endl;
-	std::cout << "  - Output minimal Delaunay file  : " << file_out << std::endl;
-	std::cout << "  - Output medial axis file  : " << file_ma_out << std::endl;
+	std::cout << "  - Input block decomposition file    : " << file_mesh << std::endl;
+	std::cout << "  - Output block decomposition file  : " << file_out << std::endl;
 	std::cout << "=======================================" << std::endl;
 
 
@@ -57,57 +60,31 @@ int main(int argc, char* argv[])
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
 
-	std::cout << "NB nodes : " << m.getNbNodes() << std::endl;
+	// Test non conformal edges
+//	Face f = m.get<Face>(6);
+//	Edge e1 = m.get<Edge>(9);
+//	Edge e2 = m.get<Edge>(10);
+//	std::vector<Edge> edges;
+//	edges.push_back(e1);
+//	edges.push_back(e2);
+//	NonConformalHalfEdge he(0,f,edges);
+//	std::vector<NonConformalHalfEdge> half_edges;
+//	half_edges.push_back(he);
+//	std::vector<std::vector<Edge>> G = groupsOfAlignedEdges(f);
+//	for (auto g:G)
+//	{
+//		std::cout<<"Test "<<std::endl;
+//		for (auto e:g)
+//			std::cout<<" "<<e.id()<<" ";
+//		std::cout<<std::endl;
+//	}
 
-	// Create a 2D medial axis
-	medialaxis::MedialAxis2DBuilder mb(m);
-	auto st = mb.execute();
-	if (st == gmds::medialaxis::MedialAxis2DBuilder::SUCCESS)
-	{
-		// Get the medial axis
-		medialaxis::MedialAxis2D* ma = mb.getMedialObject();
-		// Write the medial axis
-		ma->write(file_ma_out);
-		// Get and write the smoothed medial axis
-		medialaxis::MedialAxis2D* smoothed_ma = mb.getSmoothedMedialObject();
-		smoothed_ma->write("smoothed_medax.vtk");
-
-		// Test topological representation
-		smoothed_ma->buildTopoRepNodes();
-		smoothed_ma->setSectionID();
-		smoothed_ma->buildTopoRepEdges();
-		smoothed_ma->setTopoRepConnectivity();
-
-		std::cout<<"Test Matrix : "<<std::endl;
-		Eigen::MatrixXd A = smoothed_ma->constraintMatrix();
-		int I = A.rows();
-		int J = A.cols();
-		for (int i = 0; i < I; i++)
-		{
-			for (int j = 0; j < J; j++)
-				std::cout<<A.coeff(i,j)<<" ";
-			std::cout<<std::endl;
-		}
-		std::cout<<"Test Kernel : "<<std::endl;
-		Eigen::MatrixXd ker = A.fullPivLu().kernel();
-		I = ker.rows();
-		J = ker.cols();
-		for (int i = 0; i < I; i++)
-		{
-			for (int j = 0; j < J; j++)
-				std::cout<<int(ker.coeff(i,j))<<" ";
-			std::cout<<std::endl;
-		}
-
-		Eigen::MatrixXd Res = A*ker;
-		double res = Res.norm();
-		std::cout<<"||A*ker||="<<res<<std::endl;
-
-
-
-
-		smoothed_ma->writeTopoRep("topo_rep.vtk");
-	}
+	// Build a quantization graph
+	QuantizationGraphBuilder qgb(m);
+	qgb.execute();
+	QuantizationGraph* g = qgb.getQuantizationGraph();
+	g->updateConnectivity();
+	g->buildQuantizationSolution();
 
 	// Write the output file
 	VTKWriter vtkWriter(&ioService);
@@ -115,4 +92,3 @@ int main(int argc, char* argv[])
 	vtkWriter.setDataOptions(N| E| F);
 	vtkWriter.write(file_out);
 }
-
