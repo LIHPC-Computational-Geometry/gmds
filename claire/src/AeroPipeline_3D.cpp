@@ -1057,9 +1057,10 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		vtkWriter2.setDataOptions(gmds::N|gmds::F);
 		vtkWriter2.write("AeroPipeline3D_Tetra_SURFACES_CLASSIFICATION.vtk");
 
-		vtkWriter2.setCellOptions(gmds::N|gmds::E);
-		vtkWriter2.setDataOptions(gmds::N|gmds::E);
-		vtkWriter2.write("AeroPipeline3D_Tetra_EDGES_CLASSIFICATION.vtk");
+	   gmds::VTKWriter vtkWriter3(&ioService);
+		vtkWriter3.setCellOptions(gmds::N|gmds::E);
+		vtkWriter3.setDataOptions(gmds::N|gmds::E);
+		vtkWriter3.write("AeroPipeline3D_Tetra_EDGES_CLASSIFICATION.vtk");
 	//}
 
 	// Init the linker for the Blocking
@@ -1262,6 +1263,30 @@ AeroPipeline_3D::SurfaceBlockingClassification()
 		// Link the face to the surface
 		m_linker_HG->linkFaceToSurface(f_id, geom_id);
 	}
+
+	// Project nodes onto geometry
+	/*
+	for (auto n_id:m_meshHex->nodes())
+	{
+		int geom_dim = m_linker_HG->getGeomDim<Node>(n_id);
+		int geom_id = m_linker_HG->getGeomId<Node>(n_id);
+		if (geom_dim == 3)
+		{
+			   cad::GeomSurface* surf = m_manager->getSurface(geom_id) ;
+			   math::Point p = m_meshHex->get<Node>(n_id).point();
+			   surf->project(p);
+			   m_meshHex->get<Node>(n_id).setPoint(p);
+		}
+		cad::GeomCurve* curv_1 = m_manager->getCurve(1);
+		if (n_id == 79 || n_id == 301 || n_id == 299 || n_id == 84 || n_id == 104 || n_id == 117 || n_id == 113
+		    || n_id == 98 || n_id == 274 || n_id == 276 || n_id == 89 || n_id == 79 || n_id == 95 || n_id == 106 || n_id == 110)
+		{
+			   math::Point p = m_meshHex->get<Node>(n_id).point();
+			   curv_1->project(p);
+			   m_meshHex->get<Node>(n_id).setPoint(p);
+		}
+	}
+   */
 
 	// Write the surface blocking to check the classification
 	//if (m_params.with_debug_files)
