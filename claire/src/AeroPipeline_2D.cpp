@@ -935,8 +935,11 @@ AeroPipeline_2D::ConvertisseurMeshToBlocking(){
 	//mfemwriter.execute();
 
 
+	// Temporary test
+	/*
 	BoundaryCurvedBlocking();
 	BlockingDiscretizationFromCurvedBlocking();
+	 */
 
 
 	//
