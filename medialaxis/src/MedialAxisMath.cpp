@@ -3,7 +3,8 @@
 //
 
 #include "gmds/medialaxis/MedialAxisMath.h"
-using namespace gmds;
+#include <algorithm>
+   using namespace gmds;
 
 /*----------------------------------------------------------------------------*/
 // Computes the maximum distance to a sphere 1 of a point of a sphere 2
@@ -281,6 +282,7 @@ std::vector<std::vector<Edge>> groupsOfAlignedEdges(Face &AF)
 		else
 			finished = true;
 	}
+	std::reverse(group0.begin(),group0.end());
 	groups.push_back(group0);
 	// Build the other groups
 	while(!oriented_edges.empty())

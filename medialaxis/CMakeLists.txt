@@ -23,8 +23,8 @@ set(GMDS_SRC
         src/CrossField.cpp
         src/NonConformalHalfEdge.cpp
         inc/gmds/medialaxis/NonConformalHalfEdge.h
-        src/QuantizationGraphBuilder.cpp
-        inc/gmds/medialaxis/QuantizationGraphBuilder.h
+        src/QuantizationSolver.cpp
+        inc/gmds/medialaxis/QuantizationSolver.h
         src/QuantizationGraph.cpp
         inc/gmds/medialaxis/QuantizationGraph.h
 )

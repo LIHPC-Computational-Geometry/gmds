@@ -5,15 +5,15 @@
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKReader.h"
 #include "gmds/io/VTKWriter.h"
+#include "gmds/medialaxis/CrossField.h"
 #include "gmds/medialaxis/MedialAxis2D.h"
 #include "gmds/medialaxis/MedialAxis2DBuilder.h"
 #include "gmds/medialaxis/MedialAxis3D.h"
 #include "gmds/medialaxis/MedialAxis3DBuilder.h"
-#include "gmds/medialaxis/CrossField.h"
 #include "gmds/medialaxis/MedialAxisMath.h"
 #include "gmds/medialaxis/NonConformalHalfEdge.h"
-#include "gmds/medialaxis/QuantizationGraphBuilder.h"
 #include "gmds/medialaxis/QuantizationGraph.h"
+#include "gmds/medialaxis/QuantizationSolver.h"
 #include <gmds/math/Point.h>
 #include <gmds/math/Tetrahedron.h>
 #include <iostream>
@@ -80,15 +80,55 @@ int main(int argc, char* argv[])
 //	}
 
 	// Build a quantization graph
-	QuantizationGraphBuilder qgb(m);
-	qgb.execute();
-	QuantizationGraph* g = qgb.getQuantizationGraph();
+	QuantizationSolver qs(m);
+	qs.buildQuantizationGraph();
+	QuantizationGraph* g = qs.getQuantizationGraph();
 	g->updateConnectivity();
 	g->buildQuantizationSolution();
+	// g->display(); // Display the graph
+	// g->displaySolution(); // Display the quantization solution
+	// std::cout<<"Test "<<qgb.oppositeInQuad(6)<<std::endl;
+	qs.setHalfEdgesLength();
+	qs.buildQuantizedMeshNodesOnEdges();
+	qs.buildQuantizedMeshInternalNodes();
+	qs.buildQuantizedMeshFaces();
+	qs.writeQuantizedMesh("quantized_mesh.vtk");
 
 	// Write the output file
 	VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(N| E| F);
 	vtkWriter.setDataOptions(N| E| F);
 	vtkWriter.write(file_out);
+
+//	// Create a test non-conformal mesh
+//	Mesh m2(MeshModel(DIM3 | F | E | N |
+//	                 F2N | F2E |
+//	                 E2F | E2N | N2E | N2F));
+//
+//	IGMeshIOService ioService2(&m2);
+//	m2.newNode(0.,8.);
+//	m2.newNode(0.,5.);
+//	m2.newNode(0.,3.);
+//	m2.newNode(0.,0.);
+//	m2.newNode(5.,8.);
+//	m2.newNode(5.,6.);
+//	m2.newNode(5.,5.);
+//	m2.newNode(5.,3.);
+//	m2.newNode(9.,3.);
+//	m2.newNode(9.,0.);
+//	m2.newNode(12.,8.);
+//	m2.newNode(12.,6.);
+//	m2.newNode(12.,0.);
+//	m2.newNode(12.,3.);
+//	m2.newFace({0,1,6,5,4});
+//	m2.newFace({1,2,7,6});
+//	m2.newFace({3,9,8,7,2});
+//	m2.newFace({5,11,10,4});
+//	m2.newFace({7,8,13,11,5,6});
+//	m2.newFace({9,12,13,8});
+//	VTKWriter vtkWriter2(&ioService2);
+//	vtkWriter2.setCellOptions(N| E| F);
+//	vtkWriter2.setDataOptions(N| E| F);
+//	vtkWriter2.write("blocks_decomp_test.vtk");
+
 }

@@ -123,6 +123,20 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationGraph
 	 */
 	void buildQuantizationSolution();
 
+	/*-------------------------------------------------------------------------*/
+	/** @brief Display the quantization solution.
+         *  @param
+	 */
+	void displaySolution();
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Get the value of the solution at the given node.
+         *  @param AID a node ID
+	 */
+	int quantizationSolutionValue(TCellID AID);
+
+
+
 };
 /*----------------------------------------------------------------------------*/
 }  // end namespace gmds

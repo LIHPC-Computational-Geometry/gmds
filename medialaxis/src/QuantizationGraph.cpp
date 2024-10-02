@@ -153,6 +153,7 @@ void QuantizationGraph::propagateFromRoot(TCellID AID)
 					if (n3.id() != n2.id() && alreadySeen[n3.id()] == 0)
 					{
 						newPath = path;
+						newPath.erase(newPath.begin()+newPath.size()-1);
 						newPath.push_back(n3.id());
 						newAlreadySeen = alreadySeen;
 						path_to_continue.push(newPath);
@@ -282,16 +283,27 @@ void QuantizationGraph::addOnCycles()
 /*----------------------------------------------------------------------------*/
 void QuantizationGraph::buildQuantizationSolution()
 {
-	std::cout<<" "<<std::endl;
-	std::cout<<"====== Building quantization solution ====="<<std::endl;
+	std::cout << " " << std::endl;
+	std::cout << "====== Building quantization solution =====" << std::endl;
 	propagateFromRoots();
 	addOnCycles();
-	std::cout<<"====== Building quantization solution ====="<<std::endl;
-	std::cout<<" "<<std::endl;
-	// Test
-//	auto sol = m_mesh_representation->getVariable<int,GMDS_NODE>("solution");
-//	for (auto n_id:m_mesh_representation->nodes())
-//		std::cout<<n_id<<" : "<<sol->value(n_id)<<std::endl;
+	std::cout << "===========================================" << std::endl;
+	std::cout << " " << std::endl;
+}
+
+/*----------------------------------------------------------------------------*/
+void QuantizationGraph::displaySolution()
+{
+	auto sol = m_mesh_representation->getVariable<int,GMDS_NODE>("solution");
+	for (auto n_id:m_mesh_representation->nodes())
+		std::cout<<"Length of half edge "<<n_id<<" : "<<sol->value(n_id)<<std::endl;
+}
+
+/*----------------------------------------------------------------------------*/
+int QuantizationGraph::quantizationSolutionValue(gmds::TCellID AID)
+{
+	auto sol = m_mesh_representation->getVariable<int,GMDS_NODE>("solution");
+	return sol->value(AID);
 }
 /*----------------------------------------------------------------------------*/
 }  // end namespace gmds
