@@ -6,6 +6,8 @@
  *      Author: ledouxf
  */
 /*----------------------------------------------------------------------------*/
+#include <gts.h>
+
 #include <gmds/cadfac/FACManager.h>
 #include <gmds/ig/MeshDoctor.h>
 #include <gmds/igalgo/BoundaryOperator.h>
@@ -15,13 +17,15 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/igalgo/BoundaryExtractor2D.h>
 #include <gmds/igalgo/BoundaryExtractor3D.h>
+#include <map>
 #include <set>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
 namespace cad {
 /*----------------------------------------------------------------------------*/
-FACManager::FACManager() : m_mesh(DIM3 | N | E | F | F2N | N2F | E2N | E2F | F2E | N2E)
+FACManager::FACManager() : m_mesh(DIM3 | N | E | F | F2N | N2F | E2N | E2F | F2E | N2E),
+  m_gsurf(nullptr), m_groot(nullptr)
 {
 	FACPoint::resetIdCounter();
 	FACCurve::resetIdCounter();
@@ -43,6 +47,13 @@ FACManager::~FACManager()
 
 	for (unsigned int i = 0; i < m_points.size(); i++)
 		if (m_points[i] != nullptr) delete m_points[i];
+
+	if(m_groot != nullptr) {
+		gts_bb_tree_destroy(m_groot, true);
+	}
+	if(m_gsurf != nullptr) {
+		gts_object_destroy(GTS_OBJECT(m_gsurf));
+	}
 }
 /*----------------------------------------------------------------------------*/
 void
@@ -784,6 +795,12 @@ FACManager::getMeshView()
 	return m_mesh;
 }
 /*----------------------------------------------------------------------------*/
+const Mesh *
+FACManager::getMeshView_ptr() const
+{
+	return &m_mesh;
+}
+/*----------------------------------------------------------------------------*/
 TInt
 FACManager::getNbPoints() const
 {
@@ -1083,6 +1100,45 @@ FACManager::getFACSurface(const gmds::TInt AID)
 		if (s->id() == AID) return s;
 	}
 	return nullptr;
+}
+/*----------------------------------------------------------------------------*/
+void FACManager::buildGTSTree()
+{
+	m_gsurf = gts_surface_new(gts_surface_class(), gts_face_class(), gts_edge_class(), gts_vertex_class());
+	std::cout<<"FACManager::buildGTSTree m_mesh.getNbFaces() "<<m_mesh.getNbFaces()<<std::endl;
+	std::map<gmds::TCellID, GtsVertex*> n2v;
+	for(auto ni: m_mesh.nodes()) {
+		gmds::math::Point pt = m_mesh.get<gmds::Node>(ni).point();
+		GtsVertex* g = gts_vertex_new(gts_vertex_class(), pt.X(), pt.Y(), pt.Z());
+		n2v[ni] = g;
+	}
+	std::map<gmds::TCellID, GtsEdge*> e2e;
+	for(auto ei: m_mesh.edges()) {
+		auto e = m_mesh.get<gmds::Edge>(ei);
+		std::vector<gmds::Node> nodes = e.get<gmds::Node>();
+		GtsEdge * g = gts_edge_new(gts_edge_class(), n2v[nodes[0].id()], n2v[nodes[1].id()]);
+		e2e[ei] = g;
+	}
+	std::map<gmds::TCellID, GtsFace*> f2f;
+	for(auto fi: m_mesh.faces()) {
+		auto f = m_mesh.get<gmds::Face>(fi);
+		std::vector<gmds::Edge> es = f.get<gmds::Edge>();
+		GtsFace * g = gts_face_new(gts_face_class(), e2e[es[0].id()], e2e[es[1].id()], e2e[es[2].id()]);
+		f2f[fi] = g;
+		gts_surface_add_face(m_gsurf, g);
+	}
+	std::cout<<"FACManager::buildGTSTree area "<<gts_surface_area(m_gsurf)<<std::endl;
+	std::cout<<"FACManager::buildGTSTree gts_surface_is_closed gts_surface_is_orientable "<<gts_surface_is_closed(m_gsurf)<<" "<<gts_surface_is_orientable(m_gsurf)<<std::endl;
+	m_groot = gts_bb_tree_surface (m_gsurf);
+}
+/*----------------------------------------------------------------------------*/
+bool FACManager::is_in(gmds::math::Point APt) const
+{
+	GtsPoint* gpt = gts_point_new(gts_point_class(), APt.X(), APt.Y(), APt.Z());
+	gboolean inside = gts_point_is_inside_surface(gpt, m_groot, false);
+	gts_object_destroy(GTS_OBJECT(gpt));
+
+	return (bool)inside;
 }
 /*----------------------------------------------------------------------------*/
 }     // namespace cad
