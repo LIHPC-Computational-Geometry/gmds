@@ -24,7 +24,8 @@ set(GMDS_SRC
 #==============================================================================
 # GTS
 find_package(PkgConfig REQUIRED)
-pkg_search_module(GLIB2 REQUIRED IMPORTED_TARGET glib-2.0)
+pkg_check_modules(PCRE REQUIRED IMPORTED_TARGET libpcre2-8) # required by glib
+pkg_search_module(GLIB2 REQUIRED IMPORTED_TARGET glib-2.0) # required by gts
 pkg_search_module(GTS REQUIRED IMPORTED_TARGET gts)
 #==============================================================================
 
@@ -47,7 +48,8 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_IG_ALGO}
         ${LIB_GMDS_IO}
         ANN
-        PkgConfig::GTS PkgConfig::GLIB2)
+        PRIVATE
+        PkgConfig::GTS PkgConfig::GLIB2 PkgConfig::PCRE)
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_17)
 
