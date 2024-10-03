@@ -161,6 +161,11 @@ public:
          *  \param return the id of the common surface, and -1 if it doesn't exist
          */
 		virtual int getCommonSurface(GeomCurve* AC1, GeomCurve* AC2) const =0;
+
+	   /**@brief Check whether a point is inside the model
+             * @return whether the point is inside the model
+	    */
+	   virtual bool is_in(gmds::math::Point APt) const =0;
 };
 /*----------------------------------------------------------------------------*/
 } // namespace cad

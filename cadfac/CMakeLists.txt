@@ -20,6 +20,14 @@ set(GMDS_SRC
         src/FACSurface.cpp
         src/FACVolume.cpp
         )
+
+#==============================================================================
+# GTS
+find_package(PkgConfig REQUIRED)
+pkg_search_module(GLIB2 REQUIRED IMPORTED_TARGET glib-2.0)
+pkg_search_module(GTS REQUIRED IMPORTED_TARGET gts)
+#==============================================================================
+
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
@@ -38,7 +46,8 @@ target_link_libraries(${GMDS_LIB} PUBLIC
         ${LIB_GMDS_IG}
         ${LIB_GMDS_IG_ALGO}
         ${LIB_GMDS_IO}
-        ANN)
+        ANN
+        PkgConfig::GTS PkgConfig::GLIB2)
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_17)
 

@@ -7,30 +7,38 @@
  */
 /*----------------------------------------------------------------------------*/
 #ifndef GMDS_GEOM_FACETEDGEOMMANAGER_H_
-#	define GMDS_GEOM_FACETEDGEOMMANAGER_H_
+#define GMDS_GEOM_FACETEDGEOMMANAGER_H_
 /*----------------------------------------------------------------------------*/
-#	include <stack>
+#include <stack>
 /*----------------------------------------------------------------------------*/
 // gmds File headers
 /*----------------------------------------------------------------------------*/
-#	include "gmds/utils/CommonTypes.h"
-#	include "gmds/utils/Exception.h"
+#include "gmds/utils/CommonTypes.h"
+#include "gmds/utils/Exception.h"
 
-#	include "gmds/math/Vector.h"
+#include "gmds/math/Vector.h"
 
-#	include "gmds/cad/GeomCurve.h"
-#	include "gmds/cad/GeomManager.h"
-#	include "gmds/cadfac/FACCurve.h"
-#	include "gmds/cadfac/FACPoint.h"
-#	include "gmds/cadfac/FACSurface.h"
-#	include "gmds/cadfac/FACVolume.h"
+#include "gmds/cad/GeomCurve.h"
+#include "gmds/cad/GeomManager.h"
+#include "gmds/cadfac/FACCurve.h"
+#include "gmds/cadfac/FACPoint.h"
+#include "gmds/cadfac/FACSurface.h"
+#include "gmds/cadfac/FACVolume.h"
 
-#	include "GMDSCadFac_export.h"
-#	include "gmds/cad/GeomMeshLinker.h"
-#	include "gmds/ig/Edge.h"
-#	include "gmds/ig/Mesh.h"
-#	include "gmds/ig/MeshDoctor.h"
-#	include "gmds/ig/Node.h"
+#include "GMDSCadFac_export.h"
+#include "gmds/cad/GeomMeshLinker.h"
+#include "gmds/ig/Edge.h"
+#include "gmds/ig/Mesh.h"
+#include "gmds/ig/MeshDoctor.h"
+#include "gmds/ig/Node.h"
+
+/*----------------------------------------------------------------------------*/
+// avoid #include <gts.h> here by using forward declaration for
+// the GTS data structure; also requires GNode of the glib
+struct _GtsSurface;
+typedef _GtsSurface GtsSurface;
+struct _GNode;
+typedef _GNode GNode;
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -217,7 +225,7 @@ class GMDSCadFac_API FACManager : public GeomManager
 	 *  Do not modify the referenced mesh content
 	 */
 	Mesh &getMeshView();
-
+	const Mesh *getMeshView_ptr() const;
 	/*------------------------------------------------------------------------*/
 	/** \brief  Get the curve common to 2 points
 	 *
@@ -249,6 +257,22 @@ class GMDSCadFac_API FACManager : public GeomManager
 	 */
 	FACSurface *getFACSurface(const TInt AID);
 
+	/**@brief Build a gts tree data structure to accelerate information retrieval
+    *        in the volume. It will consider the GTS surface formed of
+    *        the triangular faces of the surfaces adjacent to the volume
+    *
+    *        Warning, we consider that it is made of only one single volume!
+	 */
+	void buildGTSTree();
+
+	/**@brief Check whether a point is inside the model
+	 *        Warning, requires that the search tree was previously built
+	 *
+	 * @param APt a point
+    * @return whether the point is inside the model
+	 */
+	bool is_in(gmds::math::Point APt) const;
+
  private:
 	/*------------------------------------------------------------------------*/
 	/** \brief  Build topological relations between geom entities. Must be done
@@ -271,6 +295,10 @@ class GMDSCadFac_API FACManager : public GeomManager
 	std::map<TInt, TInt> m_map_node_var_to_point;
 	std::map<TInt, TInt> m_map_edge_var_to_curve;
 	std::map<TInt, TInt> m_map_face_var_to_surf;
+
+	// GTS data structure for fast retrieval
+	GtsSurface* m_gsurf;
+	GNode* m_groot;
 };
 /*----------------------------------------------------------------------------*/
 }     // namespace cad

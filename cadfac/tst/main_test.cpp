@@ -4,6 +4,7 @@
 // Files containing the different test suites to launch
 
 #include "FACManagerTestSuite.h"
+#include "FACManagerFastRetrievalTestSuite.h"
 #include "GeomLinkerTestSuite.h"
 #include "GeomTopologyTestSuite.h"
 /*----------------------------------------------------------------------------*/

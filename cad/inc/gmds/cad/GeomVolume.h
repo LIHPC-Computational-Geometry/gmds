@@ -9,8 +9,9 @@
 /*----------------------------------------------------------------------------*/
 // GMDS File Headers
 /*----------------------------------------------------------------------------*/
-#include "gmds/utils/Exception.h"
-#include "gmds/utils/CommonTypes.h"
+#include <gmds/math/Point.h>
+#include <gmds/utils/Exception.h>
+#include <gmds/utils/CommonTypes.h>
 #include "gmds/cad/GeomEntity.h"
 #include "GMDSCad_export.h"
 /*----------------------------------------------------------------------------*/
@@ -79,7 +80,6 @@ namespace gmds{
              * @return surfaces that are adjacent to this point
              */
             virtual std::vector<GeomSurface*>& surfaces()=0;
-
         };
 /*----------------------------------------------------------------------------*/
     } // namespace cad
