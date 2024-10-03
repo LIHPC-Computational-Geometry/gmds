@@ -50,6 +50,9 @@ jobs:
         export mpfr_ROOT=`spack find -p mpfr | awk 'NR==2 {print $2}'`;
         export boost_ROOT=`spack find -p boost | awk 'NR==2 {print $2}'`;
         export eigen_ROOT=`spack find -p eigen | awk 'NR==2 {print $2}'`;
+        export gts_ROOT=`spack find -p gts | awk 'NR==2 {print $2}'`;
+        export glib_ROOT=`spack find -p glib | awk 'NR==2 {print $2}'`;
+        export pcre2_ROOT=`spack find -p pcre2 | awk 'NR==2 {print $2}'`;
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.config }}
         -DWITH_TEST:BOOL=ON
         -DWITH_CGNS:BOOL=OFF
@@ -75,7 +78,7 @@ jobs:
         -DENABLE_QUADFRONT:BOOL=OFF
         -DENABLE_RLBLOCKING:BOOL=OFF
         -DENABLE_SINGGRAPHBUILD:BOOL=ON
-        -DCMAKE_PREFIX_PATH="$lcov_ROOT;$glpk_ROOT;$googletest_ROOT;$pybind11_ROOT;$cgal_ROOT;$gmp_ROOT;$mpfr_ROOT;$boost_ROOT;$eigen_ROOT"
+        -DCMAKE_PREFIX_PATH="$lcov_ROOT;$glpk_ROOT;$googletest_ROOT;$pybind11_ROOT;$cgal_ROOT;$gmp_ROOT;$mpfr_ROOT;$boost_ROOT;$eigen_ROOT;$gts_ROOT;$glib_ROOT;$pcre2_ROOT"
         -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/
 
     - name: Build

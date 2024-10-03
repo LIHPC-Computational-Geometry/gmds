@@ -78,7 +78,7 @@ jobs:
         -DENABLE_QUADFRONT:BOOL=OFF
         -DENABLE_RLBLOCKING:BOOL=OFF
         -DENABLE_SINGGRAPHBUILD:BOOL=ON
-        -DCMAKE_PREFIX_PATH="/spack/opt/spack/lcov;/spack/opt/spack/glpk;/spack/opt/spack/eigen;/spack/opt/spack/googletest;/spack/opt/spack/py-pybind11;/spack/opt/spack/kokkos;/spack/opt/spack/cgal;/spack/opt/spack/gmp;/spack/opt/spack/mpfr;/spack/opt/spack/boost;/spack/opt/spack/cgns"
+        -DCMAKE_PREFIX_PATH="/spack/opt/spack/lcov;/spack/opt/spack/glpk;/spack/opt/spack/eigen;/spack/opt/spack/googletest;/spack/opt/spack/py-pybind11;/spack/opt/spack/kokkos;/spack/opt/spack/cgal;/spack/opt/spack/gmp;/spack/opt/spack/mpfr;/spack/opt/spack/boost;/spack/opt/spack/cgns;/spack/opt/spack/pcre2;/spack/opt/spack/glib;/spack/opt/spack/gts"
         -DCMAKE_INSTALL_PREFIX= ${GITHUB_WORKSPACE}/install
 
     - name: Build
