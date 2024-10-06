@@ -131,6 +131,7 @@ int main(int argc, char* argv[])
 	 // Geometry initialization
 	 cad::FACManager geom_model;
 	 init_geom(geom_model, file_geom);
+	 geom_model.buildGTSTree();
 	 
 	 // We initialize the blocking structure from the geom model
 	 mctsblock::Blocking bl(&geom_model, false);

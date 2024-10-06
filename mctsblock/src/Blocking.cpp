@@ -68,7 +68,7 @@ Blocking::gmap()
 
 /*----------------------------------------------------------------------------*/
 cad::GeomManager *
-Blocking::geom_model()
+Blocking::geom_model() const
 {
 	return m_geom_model;
 }

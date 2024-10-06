@@ -323,7 +323,7 @@ class LIB_GMDS_MCTSBLOCK_API Blocking
 	/**@brief gives access to the associated geom model
 	 * @return the internal geom model
 	 */
-	cad::GeomManager *geom_model();
+	cad::GeomManager *geom_model() const;
 	/**@brief Gives the number of @p TDim-cells in the blocking structure.
 	 * 		 @p TDIM must be comprised in [0,3].
 	 *
