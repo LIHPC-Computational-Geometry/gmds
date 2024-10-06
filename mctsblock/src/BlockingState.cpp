@@ -3,6 +3,9 @@
 #include <gmds/mctsblock/BlockingState.h>
 #include <gmds/mctsblock/BlockingAction.h>
 #include <gmds/utils/Exception.h>
+#include <gmds/cad/GeomManager.h>
+/*----------------------------------------------------------------------------*/
+#include <vector>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 using namespace gmds::mctsblock;
@@ -131,6 +134,19 @@ BlockingState::get_possible_block_removals() const
 			}
 		}
 	}
+
+	// identify blocks with their centroid inside the geometry
+	cad::GeomManager *geom = m_blocking->geom_model();
+
+	auto blocks = m_blocking->get_all_blocks();
+	for (auto b : blocks) {
+		gmds::math::Point pt = m_blocking->get_center_of_block(b);
+		bool is_inside = geom->is_in(pt);
+		if(is_inside) {
+			blocks_to_keep.insert(m_blocking->get_block_id(b));
+		}
+	}
+
 	// all the other blocks can be removed
 	auto all_blocks = m_blocking->get_all_id_blocks();
 	std::vector<std::shared_ptr<IAction> > actions;

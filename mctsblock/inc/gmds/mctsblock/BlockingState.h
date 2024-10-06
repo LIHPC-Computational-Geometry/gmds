@@ -61,8 +61,9 @@ class LIB_GMDS_MCTSBLOCK_API BlockingState : public IState
 	 */
 	std::vector<std::shared_ptr<IAction>> get_possible_cuts() const;
 
-	/**@brief This method return all the possible block erasing. A block can be erase if it doesn't not belong a corner
-	 * that is the only one to capture a point
+	/**@brief This method returns all the possible block erasing. A block can be erased if
+	 *  - it doesn't not belong a corner that is the only one to capture a point.
+	 *  - its centroid is not inside the volume
 	 * @return a vector of block ids. */
 	std::vector<std::shared_ptr<IAction>> get_possible_block_removals() const;
 
