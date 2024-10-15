@@ -52,6 +52,7 @@ TEST(MCTSTestSuite, cube) {
 	gmds::cad::FACManager geom_model;
 	init_geom(geom_model, "cube.vtk");
 	gmds::mctsblock::Blocking bl(&geom_model, true);
+	geom_model.buildGTSTree();
 	auto nb_mcts_iter = 1000;
 	auto nb_loop_iter = 100;
 
@@ -86,6 +87,7 @@ TEST(MCTSTestSuite, cube_minus_edge) {
 	gmds::cad::FACManager geom_model;
 	init_geom(geom_model, "cube_minus_edge.vtk");
 	gmds::mctsblock::Blocking bl(&geom_model, true);
+	geom_model.buildGTSTree();
 
 	auto nb_mcts_iter = 1000;
 	auto nb_loop_iter = 100;
@@ -118,6 +120,7 @@ TEST(MCTSTestSuite, cube_minus_corner) {
 	gmds::cad::FACManager geom_model;
 	init_geom(geom_model, "cube_minus_corner.vtk");
 	gmds::mctsblock::Blocking bl(&geom_model, true);
+	geom_model.buildGTSTree();
 
 	auto nb_mcts_iter = 1000;
 	auto nb_loop_iter = 100;
@@ -140,6 +143,7 @@ TEST(MCTSTestSuite, cube_minus_corner) {
 		auto solution = *std::dynamic_pointer_cast<gmds::mctsblock::BlockingState>(agent.get_best_winning_solution());
 		final_blocking = solution.get_blocking();
 	}
+	bl.save_vtk_blocking("final_blocking");
 
 	ASSERT_EQ(final_blocking->get_nb_cells<3>(),7);
 	ASSERT_TRUE(current_state->win());
@@ -149,6 +153,7 @@ TEST(MCTSTestSuite, cube_minus_two_edges) {
 	gmds::cad::FACManager geom_model;
 	init_geom(geom_model, "cube_minus_two_edges.vtk");
 	gmds::mctsblock::Blocking bl(&geom_model, true);
+	geom_model.buildGTSTree();
 
 	auto nb_mcts_iter = 1000;
 	auto nb_loop_iter = 100;
@@ -179,6 +184,7 @@ TEST(MCTSTestSuite, U_shape) {
 	gmds::cad::FACManager geom_model;
 	init_geom(geom_model, "U_shape.vtk");
 	gmds::mctsblock::Blocking bl(&geom_model, true);
+	geom_model.buildGTSTree();
 
 	auto nb_mcts_iter = 1000;
 	auto nb_loop_iter = 100;
