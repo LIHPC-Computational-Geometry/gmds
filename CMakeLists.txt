@@ -169,9 +169,9 @@ GMDS_ADD_COMPONENT(
 )
 
 GMDS_ADD_COMPONENT(
-        CLAIRE                       # cmake variable
-        claire                        # src subdirectory name
-        GMDSClaire                    # name of the generated library
+        AERO                       # cmake variable
+        aero                        # src subdirectory name
+        GMDSAero                    # name of the generated library
         " "  # description
         ON                                # is activated
         ON                                 # must be covered
