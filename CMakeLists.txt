@@ -248,7 +248,7 @@ GMDS_ADD_COMPONENT(
         padding
         GMDSPadding
         "Smart Padding/Pillowing algorithm"
-        ON
+        OFF
         ON                                # must be covered
 )
 
