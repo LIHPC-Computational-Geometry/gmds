@@ -11,7 +11,7 @@ endif()
 #==============================================================================
 include (cmake/version.cmake)
 
-project(gmds 
+project(gmds
   LANGUAGES C CXX
   VERSION ${GMDS_VERSION})
 #==============================================================================
@@ -164,14 +164,14 @@ GMDS_ADD_COMPONENT(
         blocking                        # src subdirectory name
         GMDSBlocking                    # name of the generated library
         "This module provides a data structure for a blocking representation"  # description
-        OFF                                # is activated
+        ON                                 # is activated
         ON                                 # must be covered
 )
 
 GMDS_ADD_COMPONENT(
-        CLAIRE                       # cmake variable
-        claire                        # src subdirectory name
-        GMDSClaire                    # name of the generated library
+        AERO                       # cmake variable
+        aero                        # src subdirectory name
+        GMDSAero                    # name of the generated library
         " "  # description
         ON                                # is activated
         ON                                 # must be covered
