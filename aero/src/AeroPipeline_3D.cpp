@@ -16,7 +16,7 @@
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>
 #include <gmds/io/VTKReader.h>
-#include <gmds/smoothy/LaplacianSmoother.h>
+#include <gmds/smoothy/LaplacianSmoother3C.h>
 //#include <gmds/blocking/CurvedBlocking.h>
 #include <gmds/math/BezierHex.h>
 #include <gmds/aero/TransfiniteInterpolation_3D.h>
@@ -118,7 +118,7 @@ AeroPipeline_3D::execute(){
 	std::cout << " " << std::endl;
 
 
-	//smoothy::LaplacianSmoother smoother(m_linker_HG);
+	//smoothy::LaplacianSmoother3C smoother(m_linker_HG);
 	//smoother.smoothCurves();
 	//smoother.smoothSurfaces();
 	//smoother.smoothVolumes(2);
