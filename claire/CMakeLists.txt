@@ -7,141 +7,142 @@ set(GMDS_LIB_PREFIX gmds/claire)
 
 set(GMDS_INC
 		${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
-		inc/gmds/claire/Smooth2D.h
-		inc/gmds/claire/Grid_Smooth2D.h
-		inc/gmds/claire/DistanceMap.h
-        inc/gmds/claire/LevelSetCombined.h
-        inc/gmds/claire/GradientComputation_2D.h
-		inc/gmds/claire/GradientComputation_3D.h
-        inc/gmds/claire/LeastSquaresGradientComputation.h
-        inc/gmds/claire/AdvectedPointRK4_2D.h
-        inc/gmds/claire/Params.h
-		inc/gmds/claire/AbstractAeroPipeline.h
-        inc/gmds/claire/AeroPipeline_2D.h
-		inc/gmds/claire/AeroPipeline_3D.h
-		inc/gmds/claire/AbstractLevelSet.h
-		inc/gmds/claire/LevelSetEloi.h
-		inc/gmds/claire/LevelSetExtended.h
-		inc/gmds/claire/AdvectedPointRK4_3D.h
-		inc/gmds/claire/Utils.h
 		inc/gmds/claire/AbstractAeroBoundaries.h
+		inc/gmds/claire/AbstractAeroPipeline.h
+		inc/gmds/claire/AbstractLevelSet.h
+		inc/gmds/claire/AbstractPatternEdge.h
+		inc/gmds/claire/AbstractPatternNode.h
+		inc/gmds/claire/AbstractSmoothLineSweeping_2D.h
+		inc/gmds/claire/AdvectedPointRK4_2D.h
+		inc/gmds/claire/AdvectedPointRK4_3D.h
 		inc/gmds/claire/AeroBoundaries_2D.h
 		inc/gmds/claire/AeroBoundaries_3D.h
-		inc/gmds/claire/AeroMeshQuality.h
-		inc/gmds/claire/AeroExtrusion_2D.h
-		inc/gmds/claire/AeroException.h
-		inc/gmds/claire/Front.h
-		inc/gmds/claire/SmoothingPaving_2D.h
-		inc/gmds/claire/FastLocalize.h
-		inc/gmds/claire/SU2Writer.h
-		inc/gmds/claire/IntervalAssignment_2D.h
-		inc/gmds/claire/AbstractSmoothLineSweeping_2D.h
-		inc/gmds/claire/SmoothLineSweepingYao.h
-		inc/gmds/claire/SmoothLineSweepingOrtho.h
-		inc/gmds/claire/RefinementBeta.h
-		inc/gmds/claire/RefinementBetaBlocking.h
 		inc/gmds/claire/AeroEllipticSmoothing_2D.h
-		inc/gmds/claire/DiffusionEquation2D.h
-		inc/gmds/claire/Front_3D.h
+		inc/gmds/claire/AeroException.h
+		inc/gmds/claire/AeroExtrusion_2D.h
 		inc/gmds/claire/AeroExtrusion_3D.h
-		inc/gmds/claire/FrontEdgesNodesClassification_3D.h
-		inc/gmds/claire/NodeNeighbourhoodOnFront_3D.h
-		inc/gmds/claire/MeshAlignment_2D.h
-		inc/gmds/claire/IntervalAssignment_3D.h
-		inc/gmds/claire/FrontPaths_3D.h
-		inc/gmds/claire/LayerStructureManager_3D.h
-		inc/gmds/claire/AbstractPatternNode.h
-		inc/gmds/claire/PatternNode3Corner.h
-		inc/gmds/claire/AbstractPatternEdge.h
-		inc/gmds/claire/PatternEdgeCorner.h
-		inc/gmds/claire/PatternFace.h
-		inc/gmds/claire/PatternEdgeEnd.h
-		inc/gmds/claire/PatternEdgeReversal.h
-		inc/gmds/claire/PatternNode2Corner1End.h
-		inc/gmds/claire/PatternNode1Corner2End.h
-		inc/gmds/claire/PatternNode3End.h
-		inc/gmds/claire/PatternNode3Corner3End.h
-		inc/gmds/claire/PatternNode2Corner2End.h
-		inc/gmds/claire/PatternNode2Corner1Reversal.h
-		inc/gmds/claire/PatternNode2End1Reversal.h
-		inc/gmds/claire/MFEMMeshWriter.h
-		inc/gmds/claire/ControlPointsSmoothing_2D.h
+		inc/gmds/claire/AeroMeshQuality.h
+		inc/gmds/claire/AeroPipeline_2D.h
+		inc/gmds/claire/AeroPipeline_3D.h
 		inc/gmds/claire/Blocking3D.h
-		inc/gmds/claire/RefinementBetaBlocking3D.h
-		inc/gmds/claire/SU2Writer_3D.h
-		inc/gmds/claire/ComputeBezierDegree_3D.h
 		inc/gmds/claire/ComputeBezierCtrlPtstoInterpolateSurface.h
 		inc/gmds/claire/ComputeBezierCurveCtrlPtstoInterpolateCurve.h
+		inc/gmds/claire/ComputeBezierDegree_3D.h
+		inc/gmds/claire/ControlPointsSmoothing_2D.h
+		inc/gmds/claire/DiffusionEquation2D.h
+		inc/gmds/claire/DistanceMap.h
+		inc/gmds/claire/FastLocalize.h
+		inc/gmds/claire/Front.h
+		inc/gmds/claire/Front_3D.h
+		inc/gmds/claire/FrontEdgesNodesClassification_3D.h
+		inc/gmds/claire/GradientComputation_2D.h
+		inc/gmds/claire/GradientComputation_3D.h
+		inc/gmds/claire/Grid_Smooth2D.h
+		inc/gmds/claire/IntervalAssignment_2D.h
+		inc/gmds/claire/IntervalAssignment_3D.h
+		inc/gmds/claire/LayerStructureManager_3D.h
+		inc/gmds/claire/LeastSquaresGradientComputation.h
+		inc/gmds/claire/LevelSetCombined.h
+		inc/gmds/claire/LevelSetEloi.h
+		inc/gmds/claire/LevelSetExtended.h
+		inc/gmds/claire/MeshAlignment_2D.h
+		inc/gmds/claire/MFEMMeshWriter.h
+		inc/gmds/claire/NodeNeighbourhoodOnFront_3D.h
+		inc/gmds/claire/Params.h
+		inc/gmds/claire/PatternEdgeCorner.h
+		inc/gmds/claire/PatternEdgeEnd.h
+		inc/gmds/claire/PatternEdgeReversal.h
+		inc/gmds/claire/PatternFace.h
+		inc/gmds/claire/PatternNode1Corner2End.h
+		inc/gmds/claire/PatternNode2Corner1End.h
+		inc/gmds/claire/PatternNode2Corner1Reversal.h
+		inc/gmds/claire/PatternNode2Corner2End.h
+		inc/gmds/claire/PatternNode2End1Reversal.h
+		inc/gmds/claire/PatternNode3Corner.h
+		inc/gmds/claire/PatternNode3Corner3End.h
+		inc/gmds/claire/PatternNode3End.h
+		inc/gmds/claire/RefinementBeta.h
 		inc/gmds/claire/RefinementBetaBlock3D.h
+		inc/gmds/claire/RefinementBetaBlocking.h
+		inc/gmds/claire/RefinementBetaBlocking3D.h
+		inc/gmds/claire/Smooth2D.h
+		inc/gmds/claire/SmoothingPaving_2D.h
+		inc/gmds/claire/SmoothLineSweepingOrtho.h
+		inc/gmds/claire/SmoothLineSweepingYao.h
+		inc/gmds/claire/SU2Writer.h
+		inc/gmds/claire/SU2Writer_3D.h
+		inc/gmds/claire/TransfiniteInterpolation_3D.h
+		inc/gmds/claire/Utils.h
+
 		)
 set(GMDS_SRC
-		src/main.cpp
-		src/Smooth2D.cpp
-        src/Grid_Smooth2D.cpp
-		src/DistanceMap.cpp
-        src/LevelSetCombined.cpp
-        src/GradientComputation_2D.cpp
-		src/GradientComputation_3D.cpp
-        src/LeastSquaresGradientComputation.cpp
-        src/AdvectedPointRK4_2D.cpp
-        src/AbstractAeroPipeline.cpp
-        src/AeroPipeline_2D.cpp
-		src/AeroPipeline_3D.cpp
-		src/AbstractLevelSet.cpp
-		src/LevelSetEloi.cpp
-		src/LevelSetExtended.cpp
-		src/AdvectedPointRK4_3D.cpp
-        src/Utils.cpp
 		src/AbstractAeroBoundaries.cpp
+		src/AbstractAeroPipeline.cpp
+		src/AbstractLevelSet.cpp
+		src/AbstractPatternEdge.cpp
+		src/AbstractPatternNode.cpp
+		src/AbstractSmoothLineSweeping_2D.cpp
+		src/AdvectedPointRK4_2D.cpp
+		src/AdvectedPointRK4_3D.cpp
 		src/AeroBoundaries_2D.cpp
 		src/AeroBoundaries_3D.cpp
-		src/AeroMeshQuality.cpp
-		src/AeroExtrusion_2D.cpp
-		src/AeroException.cpp
-		src/Front.cpp
-		src/FastLocalize.cpp
-		src/SmoothingPaving_2D.cpp
-        src/SU2Writer.cpp
-		src/IntervalAssignment_2D.cpp
-		src/AbstractSmoothLineSweeping_2D.cpp
-		src/SmoothLineSweepingYao.cpp
-		src/SmoothLineSweepingOrtho.cpp
-		src/RefinementBeta.cpp
-		src/RefinementBetaBlocking.cpp
 		src/AeroEllipticSmoothing_2D.cpp
-		src/DiffusionEquation2D.cpp
-		src/Front_3D.cpp
+		src/AeroException.cpp
+		src/AeroExtrusion_2D.cpp
 		src/AeroExtrusion_3D.cpp
-		src/FrontEdgesNodesClassification_3D.cpp
-		src/NodeNeighbourhoodOnFront_3D.cpp
-		src/MeshAlignment_2D.cpp
-		src/IntervalAssignment_3D.cpp
-		src/FrontPaths_3D.cpp
-		src/LayerStructureManager_3D.cpp
-		src/AbstractPatternNode.cpp
-		src/PatternNode3Corner.cpp
-		src/AbstractPatternEdge.cpp
-		src/PatternEdgeCorner.cpp
-		src/PatternFace.cpp
-		src/PatternEdgeEnd.cpp
-		src/PatternEdgeReversal.cpp
-		src/PatternNode2Corner1End.cpp
-		src/PatternNode1Corner2End.cpp
-		src/PatternNode3End.cpp
-		src/PatternNode3Corner3End.cpp
-		src/PatternNode2Corner2End.cpp
-		src/PatternNode2Corner1Reversal.cpp
-		src/PatternNode2End1Reversal.cpp
-		src/MFEMMeshWriter.cpp
-		src/ControlPointsSmoothing_2D.cpp
-		src/Blocking3D.cpp inc/gmds/claire/TransfiniteInterpolation_3D.h
-		src/TransfiniteInterpolation_3D.cpp
-		src/RefinementBetaBlocking3D.cpp
-		src/SU2Writer_3D.cpp
-		src/ComputeBezierDegree_3D.cpp
+		src/AeroMeshQuality.cpp
+		src/AeroPipeline_2D.cpp
+		src/AeroPipeline_3D.cpp
+		src/Blocking3D.cpp
 		src/ComputeBezierCtrlPtstoInterpolateSurface.cpp
 		src/ComputeBezierCurveCtrlPtstoInterpolateCurve.cpp
-		src/RefinementBetaBlock3D.cpp)
+		src/ComputeBezierDegree_3D.cpp
+		src/ControlPointsSmoothing_2D.cpp
+		src/DiffusionEquation2D.cpp
+		src/DistanceMap.cpp
+		src/FastLocalize.cpp
+		src/Front.cpp
+		src/Front_3D.cpp
+		src/FrontEdgesNodesClassification_3D.cpp
+		src/GradientComputation_2D.cpp
+		src/GradientComputation_3D.cpp
+		src/Grid_Smooth2D.cpp
+		src/IntervalAssignment_2D.cpp
+		src/IntervalAssignment_3D.cpp
+		src/LeastSquaresGradientComputation.cpp
+		src/LayerStructureManager_3D.cpp
+		src/LevelSetCombined.cpp
+		src/LevelSetEloi.cpp
+		src/LevelSetExtended.cpp
+		src/MeshAlignment_2D.cpp
+		src/MFEMMeshWriter.cpp
+		src/NodeNeighbourhoodOnFront_3D.cpp
+		src/PatternEdgeCorner.cpp
+		src/PatternEdgeEnd.cpp
+		src/PatternEdgeReversal.cpp
+		src/PatternFace.cpp
+		src/PatternNode1Corner2End.cpp
+		src/PatternNode2Corner1End.cpp
+		src/PatternNode2Corner1Reversal.cpp
+		src/PatternNode2Corner2End.cpp
+		src/PatternNode2End1Reversal.cpp
+		src/PatternNode3Corner.cpp
+		src/PatternNode3Corner3End.cpp
+		src/PatternNode3End.cpp
+		src/RefinementBeta.cpp
+		src/RefinementBetaBlock3D.cpp
+		src/RefinementBetaBlocking.cpp
+		src/RefinementBetaBlocking3D.cpp
+		src/Smooth2D.cpp
+		src/SmoothingPaving_2D.cpp
+		src/SmoothLineSweepingOrtho.cpp
+		src/SmoothLineSweepingYao.cpp
+        src/SU2Writer.cpp
+		src/SU2Writer_3D.cpp
+		src/TransfiniteInterpolation_3D.cpp
+		src/Utils.cpp
+		src/main.cpp
+)
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================
