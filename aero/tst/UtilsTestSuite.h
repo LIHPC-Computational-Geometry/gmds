@@ -886,8 +886,8 @@ TEST(AeroTestClass, Test_maxErrorBtwBezierCurveandGeomCurve)
 	// Init the control points of the curve
 	cad::GeomCurve* geom_curve = manager.getCurve(1);
 
-	math::Vector3d t0 = geom_curve->computeTangent(0);
-	math::Vector3d t1 = geom_curve->computeTangent(1);
+	math::Vector3d t0 = geom_curve->tangent(0);
+	math::Vector3d t1 = geom_curve->tangent(1);
 
 	math::Point p0(0.0,0.0,0.0) ;
 	math::Point p1(1.0,0.0,0.0) ;
