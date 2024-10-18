@@ -38,6 +38,7 @@ class LIB_GMDS_MEDIALAXIS_API MedialAxis2DBuilder{
 	/** @brief Constructor.
          *  @param
 	 */
+
 	explicit MedialAxis2DBuilder(Mesh &AMesh);
 
  public:

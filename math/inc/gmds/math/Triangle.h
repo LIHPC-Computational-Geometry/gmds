@@ -117,6 +117,13 @@ public:
          */
         Point getCenter() const;
 
+	     /*------------------------------------------------------------------------*/
+	     /** \brief  Computes the center of the circumcircle triangle
+         *
+         * \return the center of the circumcircle of the triangle
+	      */
+	     Point getCircumcenter() const;
+
 	/*------------------------------------------------------------------------*/ 
 	/** \brief  Compute the scaled jacobian of the quadrilateral
          *

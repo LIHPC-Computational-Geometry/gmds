@@ -86,6 +86,49 @@ const Point& Tetrahedron::getPoint(const TInt& AIndex) const
         return Point(coordX,coordY,coordZ);
     }
     /*----------------------------------------------------------------------------*/
+    const Point Tetrahedron::getCircumcenter() const
+    {
+	    // Get the tetra vertices
+	    math::Point A = m_pnts[0];
+	    math::Point B = m_pnts[1];
+	    math::Point C = m_pnts[2];
+	    math::Point D = m_pnts[3];
+	    // Get the coordinates
+	    double xA = A.X();
+	    double yA = A.Y();
+	    double zA = A.Z();
+	    double xB = B.X();
+	    double yB = B.Y();
+	    double zB = B.Z();
+	    double xC = C.X();
+	    double yC = C.Y();
+	    double zC = C.Z();
+	    double xD = D.X();
+	    double yD = D.Y();
+	    double zD = D.Z();
+	    math::Matrix33 M;
+	    M(0,0) = xB-xA;
+	    M(0,1) = yB-yA;
+	    M(0,2) = zB-zA;
+	    M(1,0) = xC-xB;
+	    M(1,1) = yC-yB;
+	    M(1,2) = zC-zB;
+	    M(2,0) = xD-xA;
+	    M(2,1) = yD-yA
+	       ;
+	    M(2,2) = zD-zA;
+	    double xV = (xB-xA)*(1./2.)*(xA+xB)+(yB-yA)*(1./2.)*(yA+yB)+(zB-zA)*(1./2.)*(zA+zB);
+	    double yV = (xC-xB)*(1./2.)*(xB+xC)+(yC-yB)*(1./2.)*(yB+yC)+(zC-zB)*(1./2.)*(zB+zC);
+	    double zV = (xD-xA)*(1./2.)*(xA+xD)+(yD-yA)*(1./2.)*(yA+yD)+(zD-zA)*(1./2.)*(zA+zD);
+	    math::Vector3d V;
+	    V.set(0, xV);
+	    V.set(1, yV);
+	    V.set(2, zV);
+	    math::Vector3d X = M.solve(V);
+	    math::Point Ctr(X.X(), X.Y(), X.Z());
+	    return Ctr;
+    }
+    /*----------------------------------------------------------------------------*/
      TCoord Tetrahedron::getVolume() const
     {
         math::Vector3d v01=m_pnts[1]-m_pnts[0];
