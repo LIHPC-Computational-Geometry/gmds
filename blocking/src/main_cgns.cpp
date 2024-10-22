@@ -1,7 +1,7 @@
 //
 // Created by calderans on 30/06/23.
 //
-#include <gmds/blocking/CGNSWriter3D.h>
+#include "../../aero/inc/gmds/aero/CGNSWriter3D.h"
 
 using namespace gmds;
 using namespace blocking;
@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 	std::string path(argv[2]);
 	std::string filename(argv[3]);
 
-	CGNSWriter3D writer3D;
+	gmds::aero::CGNSWriter3D writer3D;
 	writer3D.write(param_file,filename,path);
 
 }

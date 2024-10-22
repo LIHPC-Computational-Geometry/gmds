@@ -84,7 +84,7 @@ AbstractAeroPipeline::AbstractAeroPipeline(std::string &Aparams, std::string &Aw
 	p.get("section_Extrusion","y_lim_insertions", m_params.y_lim);
 	p.get("section_Extrusion","z_lim_insertions", m_params.z_lim);
 	p.get("section_Extrusion","insertions_allowed_on_first_layer", m_params.insertions_allowed_on_first_layer);
-	p.get("section_Extrusion","nbr_linear_blocks_smoothing", m_params.nbr_linear_blocks_smoothing);
+	//p.get("section_Extrusion","nbr_linear_blocks_smoothing", m_params.nbr_linear_blocks_smoothing);
 
 	p.get("section_Curved_Blocks","max_degree", m_params.max_degree);
 	p.get("section_Curved_Blocks","max_error", m_params.max_error);
