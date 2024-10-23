@@ -28,6 +28,9 @@ class LIB_GMDS_AERO_API AeroPipeline_3D : public AbstractAeroPipeline {
 	 */
 	AbstractAeroPipeline::STATUS execute() override;
 	/*------------------------------------------------------------------------*/
+	/** \brief Get the 3D blocking structure
+	 */
+	 Blocking3D* getBlocking();
 
  private:
 	/*------------------------------------------------------------------------*/

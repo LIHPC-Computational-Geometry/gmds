@@ -3,16 +3,16 @@
 // Created by calderans on 29/06/2023.
 //
 /*----------------------------------------------------------------------------*/
+#include "gmds/aero/CGNSWriter3D.h"
 #include "gmds/ig/MeshDoctor.h"
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKReader.h"
 #include <fstream>
-#include <gmds/blocking/CGNSWriter3D.h>
 #include <iomanip>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
-using namespace blocking;
+using namespace aero;
 
 #define Structured CG_Structured
 #define RealDouble CG_RealDouble
@@ -21,7 +21,7 @@ using namespace blocking;
 #define Unstructured CG_Unstructured
 #define TRI_3 CG_TRI_3
 /*----------------------------------------------------------------------------*/
-CGNSWriter3D::CGNSWriter3D(Blocking2D *ABlocking)
+CGNSWriter3D::CGNSWriter3D(Blocking3D *ABlocking)
   :m_blocks(ABlocking),m_mesh(nullptr)
 {}
 /*----------------------------------------------------------------------------*/
@@ -182,7 +182,7 @@ void CGNSWriter3D::writeZones()
 					idinter1 = 1;
 					idmax1 = 2;
 					break;
-				case 1:
+				case 2:
 					pts1[0] = 1;
 					pts1[1] = 1;
 					pts1[2] = 1;
@@ -199,7 +199,7 @@ void CGNSWriter3D::writeZones()
 					idinter1 = 1;
 					idmax1 = 5;
 					break;
-				case 2:
+				case 5:
 					pts1[0] = discrI;
 					pts1[1] = 1;
 					pts1[2] = 1;
@@ -250,7 +250,7 @@ void CGNSWriter3D::writeZones()
 					idinter1 = 3;
 					idmax1 = 7;
 					break;
-				case 5:
+				case 1:
 					pts1[0] = 1;	// X1
 					pts1[1] = 1;	// Y1
 					pts1[2] = discrK;	// Z1
@@ -509,7 +509,7 @@ void CGNSWriter3D::writeZones()
 				pts_bc[4] = discrJ;	// Y2
 				pts_bc[5] = 1;			// Z2
 				break;
-			case 1:
+			case 2:
 				pts_bc[0] = 1;
 				pts_bc[1] = 1;
 				pts_bc[2] = 1;
@@ -518,7 +518,7 @@ void CGNSWriter3D::writeZones()
 				pts_bc[4] = 1;
 				pts_bc[5] = discrK;
 				break;
-			case 2:
+			case 5:
 				pts_bc[0] = discrI;
 				pts_bc[1] = 1;
 				pts_bc[2] = 1;
@@ -545,7 +545,7 @@ void CGNSWriter3D::writeZones()
 				pts_bc[4] = discrJ;
 				pts_bc[5] = discrK;
 				break;
-			case 5:
+			case 1:
 				pts_bc[0] = 1;	// X1
 				pts_bc[1] = 1;	// Y1
 				pts_bc[2] = discrK;	// Z1
@@ -612,7 +612,7 @@ void CGNSWriter3D::writeBoundaryCondition(int &num_bc, cgsize_t* pts, int id_zon
 }
 /*----------------------------------------------------------------------------*/
 void CGNSWriter3D::write(const std::string &AInFileName, const std::string &AOutFileName, const std::string &AWorkingDir){
-
+	/*
 	std::cout<<"Start reading"<<std::endl;
 
 	gmds::IGMeshIOService ioService(m_blocks);
@@ -626,7 +626,7 @@ void CGNSWriter3D::write(const std::string &AInFileName, const std::string &AOut
 	MeshDoctor doc(m_blocks);
 	doc.buildFacesAndR2F();
 	doc.buildF2R(m_blocks->getModel());
-
+*/
 	m_block_grid = m_blocks->newVariable<std::vector<TCellID>,GMDS_REGION>("block_grid");
 
 	VarDiscrI = m_blocks->getVariable<int,GMDS_REGION>("discrI");

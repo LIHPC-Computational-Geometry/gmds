@@ -73,8 +73,12 @@ set(GMDS_INC
 		inc/gmds/aero/SU2Writer_3D.h
 		inc/gmds/aero/TransfiniteInterpolation_3D.h
 		inc/gmds/aero/Utils.h
-
 		)
+if(WITH_CGNS)
+	set(GMDS_SRC ${GMDS_SRC} inc/gmds/aero/CGNSWriter3D.h
+	)
+endif()
+
 set(GMDS_SRC
 		src/AbstractAeroBoundaries.cpp
 		src/AbstractAeroPipeline.cpp
@@ -143,6 +147,10 @@ set(GMDS_SRC
 		src/Utils.cpp
 		src/main.cpp
 )
+if(WITH_CGNS)
+	set(GMDS_SRC ${GMDS_SRC} src/CGNSWriter3D.cpp
+	)
+endif()
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})
 #==============================================================================

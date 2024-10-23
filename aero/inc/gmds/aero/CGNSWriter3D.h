@@ -9,14 +9,15 @@
 /*----------------------------------------------------------------------------*/
 #include <cgnslib.h>
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_BLOCKING_export.h"
-#include "gmds/ig/Blocking2D.h"
+#include "Blocking3D.h"
+#include "LIB_GMDS_AERO_export.h"
+// #include "gmds/ig/Blocking2D.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 
-namespace blocking {
+namespace aero {
 
-class LIB_GMDS_BLOCKING_API CGNSWriter3D
+class LIB_GMDS_AERO_API CGNSWriter3D
 {
  public:
 	/** @brief Constructor
@@ -24,7 +25,7 @@ class LIB_GMDS_BLOCKING_API CGNSWriter3D
 		 * @param AMeshService an implementation of an io service to write data
 		 * 						  into a mesh
 	 */
-	CGNSWriter3D(Blocking2D *ABlocking);
+	CGNSWriter3D(Blocking3D *ABlocking);
 
 	CGNSWriter3D(Mesh *AMesh);
 

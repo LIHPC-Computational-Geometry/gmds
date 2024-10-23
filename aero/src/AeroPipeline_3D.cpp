@@ -3131,3 +3131,69 @@ AeroPipeline_3D::smoothingLinearBlocks(int nb_iteration)
 	}
 }
 /*------------------------------------------------------------------------*/
+Blocking3D*
+AeroPipeline_3D::getBlocking()
+{
+	//std::cout<<"Writing blocks for cgns"<<std::endl;
+	gmds::Variable<int>* discrI = m_Blocking3D.newVariable<int, gmds::GMDS_REGION>("discrI");
+	gmds::Variable<int>* discrJ = m_Blocking3D.newVariable<int, gmds::GMDS_REGION>("discrJ");
+	gmds::Variable<int>* discrK = m_Blocking3D.newVariable<int, gmds::GMDS_REGION>("discrK");
+	gmds::Variable<int>* farfield   = m_Blocking3D.newVariable<int, gmds::GMDS_NODE>("Farfield");
+	gmds::Variable<int>* paroi      = m_Blocking3D.newVariable<int, gmds::GMDS_NODE>("Paroi");
+	Variable<int>* var_couche_blocking = m_Blocking3D.getVariable<int, GMDS_NODE>("GMDS_Couche");
+	int max_layer = 0;
+	for(auto b : m_Blocking3D.allBlocks()){
+		gmds::Variable<int>* internalNodes = m_Blocking3D.newVariable<int, gmds::GMDS_NODE>("block"+std::to_string(b.id()));
+		//std::cout<<"Block "<<b.id()<<std::endl;
+		int b_discrI = b.getNbDiscretizationI(),b_discrJ = b.getNbDiscretizationJ(), b_discrK = b.getNbDiscretizationK();
+		discrI->set(b.id(), b_discrI);
+		discrJ->set(b.id(), b_discrJ);
+		discrK->set(b.id(), b_discrK);
+		int iNode = 0;
+		for(int k = 0; k < b_discrK; k++){
+			for(int j = 0; j < b_discrJ; j++){
+				for(int i = 0; i < b_discrI; i++){
+					internalNodes->set(b(i,j,k).id(),iNode+1);
+					iNode++;
+				}
+			}
+		}
+		for(int i_b = 0; i_b<8; i_b++){
+			int layer = var_couche_blocking->value(b.getNode(i_b).id());
+			max_layer = layer > max_layer ? layer : max_layer;
+		}
+	}
+	for(auto f : m_Blocking3D.faces()){
+		Blocking3D::BlockFace b_f = m_Blocking3D.blockFace(f);
+		bool isWall = true;
+		bool isFF = true;
+		for(int i_n = 0; i_n<4; i_n++){
+			if(var_couche_blocking->value(b_f.getNode(i_n).id()) != 0) isWall = false;
+			if(var_couche_blocking->value(b_f.getNode(i_n).id()) != max_layer) isFF = false;
+		}
+		int bf_discrI = b_f.getNbDiscretizationI(), bf_discrJ = b_f.getNbDiscretizationJ();
+		if(isFF) {
+			for (int j = 0; j < bf_discrJ; j++) {
+				for (int i = 0; i < bf_discrI; i++) {
+					farfield->set(b_f(i, j).id(), 1);
+				}
+			}
+		}else if(isWall){
+			for (int j = 0; j < bf_discrJ; j++) {
+				for (int i = 0; i < bf_discrI; i++) {
+					paroi->set(b_f(i, j).id(), 1);
+				}
+			}
+		}
+	}
+	/*gmds::IGMeshIOService ioService(&m_Blocking3D);
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N|gmds::R);
+	vtkWriter.setDataOptions(gmds::N|gmds::R);
+	std::cout<<"start writing"<<std::endl;
+	vtkWriter.write("CGNS_"+m_params.output_file);
+	std::cout<<"end writing"<<std::endl;*/
+	//return "CGNS_"+m_params.output_file;
+	return &m_Blocking3D;
+}
+/*------------------------------------------------------------------------*/
