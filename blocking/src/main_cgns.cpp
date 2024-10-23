@@ -3,8 +3,8 @@
 //
 #include "../../aero/inc/gmds/aero/CGNSWriter3D.h"
 
+
 using namespace gmds;
-using namespace blocking;
 /*----------------------------------------------------------------------------*/
 int main(int argc, char** argv)
 {

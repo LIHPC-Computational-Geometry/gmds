@@ -2,9 +2,8 @@
 // Created by calderans on 30/06/23.
 //
 
+#include <iostream>
 
-using namespace gmds;
-using namespace blocking;
 /*----------------------------------------------------------------------------*/
 int main(int argc, char** argv)
 {
