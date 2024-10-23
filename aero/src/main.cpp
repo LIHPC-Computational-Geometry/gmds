@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 	std::cout << "=== AERO ALGO ====" << std::endl;
 
 	if (argc != 5) {
-		std::cout << "Merci de préciser <repertoire/de/travail> <fichier_param.ini> <fichier_sorti.cgns>" << std::endl;
+		std::cout << "Merci de préciser <repertoire/de/travail> <fichier_param.ini> <fichier_sorti.cgns> <2D/3D>" << std::endl;
 		exit(0);
 	}
 
