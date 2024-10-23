@@ -4,8 +4,6 @@
 //#include "../../aero/inc/gmds/aero/CGNSWriter3D.h"
 #include <iostream>
 
-
-using namespace gmds;
 /*----------------------------------------------------------------------------*/
 int main(int argc, char** argv)
 {
