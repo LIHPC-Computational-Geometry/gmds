@@ -11,4 +11,4 @@ on:
 jobs:
   call:
     name: Call Spack CI
-    uses: LIHPC-Computational-Geometry/spack_recipes/.github/workflows/spack-reusable.yml@main
+    uses: LIHPC-Computational-Geometry/spack_recipes/.github/workflows/spack-reusable.yml@spack_reusable_spack0222
