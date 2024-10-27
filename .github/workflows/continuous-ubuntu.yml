@@ -53,6 +53,7 @@ jobs:
         ls;
         source /spack/share/spack/setup-env.sh;
         spack load py-pytest;
+        spack load pkgconfig;
         cmake /__w/gmds/gmds -DCMAKE_BUILD_TYPE=${{ matrix.config }} 
         -DWITH_CODE_COVERAGE:BOOL=ON
         -DWITH_CGNS:BOOL=OFF
