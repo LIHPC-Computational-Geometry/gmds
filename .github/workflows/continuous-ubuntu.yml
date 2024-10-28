@@ -95,6 +95,8 @@ jobs:
       shell: bash
       run: |
         if ${{ matrix.config == 'Release'}}; then
+            source /spack/share/spack/setup-env.sh
+            spack load py-pytest
             ctest -C ${{ matrix.config }}
         else
             export CODACY_PROJECT_TOKEN=${{ secrets.CODACY_PROJECT_TOKEN }}
