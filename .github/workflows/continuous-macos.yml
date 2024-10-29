@@ -42,6 +42,7 @@ jobs:
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: >
+        export LDFLAGS=-Wl,-ld_classic;
         . ${{github.workspace}}/spack/share/spack/setup-env.sh;
         spack load py-pytest;
         export lcov_ROOT=`spack find -p lcov | awk 'NR==2 {print $2}'`;
@@ -92,7 +93,9 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake --build . --config ${{ matrix.config }}  --parallel 3
+      run: |
+        export LDFLAGS=-Wl,-ld_classic
+        cmake --build . --config ${{ matrix.config }}  --parallel 3
 
     - name: Test
       working-directory: build
