@@ -188,9 +188,13 @@ int main(int argc, char* argv[])
 		  std::cout << "Best solution score: " << solution.computeScore() <<" (optimal: "<<optimal_score<<")"<<std::endl;
 		  solution.get_blocking()->save_vtk_blocking(file_block_out);
 	 }
-	 if(current_state->win())
-		  std::cout<<"\n\t >>>>>> WIN <<<<<<"<<std::endl;
-	 else if(current_state->lost())
-		  std::cout<<"\n\t >>>>>> LOST <<<<<<"<<std::endl;
+	 if(current_state->win()) {
+		 std::cout << "\n\t >>>>>> WIN <<<<<<" << std::endl;
+		 return 1;
+	 }
+	 else if(current_state->lost()) {
+		 std::cout << "\n\t >>>>>> LOST <<<<<<" << std::endl;
+		 return 0;
+	 }
 
 }

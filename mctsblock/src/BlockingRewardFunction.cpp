@@ -11,14 +11,17 @@ double BlockingRewardFunction::evaluate(std::shared_ptr<IState> AState) const {
 	auto memory = state->get_memory();
 	auto reward = 0.0;
 
+	reward = state->computeScore();
 
+/*
 	if (state->win()){
 		return 1;
 	}
 	else if (state->lost())
 		return -1;
+		*/
 
-	return 0;
+	return reward;
 /*
 	if (state->win()){
 		reward = state->get_expected_optimal_score();

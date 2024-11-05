@@ -62,17 +62,27 @@ BlockingState::win() const
 bool
 BlockingState::lost() const
 {
+	bool val = false;
 	//we lost if we don't have actions to perform
 	if (!win() 	&& this->get_actions().empty())
 		return true;
 
 	return false;
+	// We lost if the new score have a worst quality than the previous one
+	/*if (m_memory_scores.size() > 1 && m_memory_scores[m_memory_scores.size()] < m_memory_scores[m_memory_scores.size()-1]) {
+		std::cout << "memo last : " << m_memory_scores[4] << " & memo last -1 :" << m_memory_scores[3] << std::endl;
+		return true;
+	}
+
+
+	else
+		return false;*/
 /*
 	// We lost if our score doesn't improve during the last steps.
 	// if the memory stack is not full we keep working, so we do not lost
 	if (m_memory_scores.size() < BlockingState::m_memory_depth) return false;     // not lost
 
-	// now we check the value of the current score in comparisons to the
+	// now we check the value of the current score in comparisons to the score history
 	return (m_memory_scores[4] >= m_memory_scores[3] ||
 	        m_memory_scores[4] >= m_memory_scores[2] ||
 	        m_memory_scores[4] >= m_memory_scores[1] ||
@@ -112,7 +122,10 @@ BlockingState::updateMemory(double AScore)
 	// the oldest score is in 0, the newest is in 3
 	if (m_memory_scores.size() == 4) {
 		// the stack is full we remove the first element
-		m_memory_scores.pop_front();
+		for (int i = 0 ; i <3;i++){
+			m_memory_scores[i] = m_memory_scores[i+1];
+		}
+		m_memory_scores[4]= AScore;
 	}
 	// we add the new score at the back
 	m_memory_scores.push_back(AScore);
