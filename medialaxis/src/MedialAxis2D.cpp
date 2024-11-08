@@ -2166,6 +2166,7 @@ void MedialAxis2D::buildBlockDecompMedialAndBoundaryNodes()
 		Node med_point = m_mesh_representation->get<Node>(singNode2medPoint->value(n_id));
 		std::vector<int> newNodes;
 		std::vector<math::Point> boundaryTangencyPoints = touchingPoints->value(med_point.id());
+
 		if (nodeType->value(n_id) >= 2)
 		{
 			for (auto p:boundaryTangencyPoints)

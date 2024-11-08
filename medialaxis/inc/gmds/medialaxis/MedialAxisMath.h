@@ -47,4 +47,7 @@ bool isOnSegment(math::Point AP0, math::Point AP1, math::Point AP2);
 
 // Insert a given point in the given set of points.
 std::vector<TCellID> insertPoint(Node AN, std::vector<Node> AV);
+
+// Merge the twp given vectors of points.
+std::vector<math::Point> merge(std::vector<math::Point> AV1, std::vector<math::Point> AV2);
 #endif     // GMDS_MEDIALAXISMATH_H

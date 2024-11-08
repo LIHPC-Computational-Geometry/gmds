@@ -541,8 +541,50 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 			if (m_voronoi_medax->getMedialPointType(n.id()) > 2)
 				oldPoint = n.id();
 		}
-		// The touching points updated as below are not correct for new points that change type, for example passing from type 3 to type 4
-		m_smoothed_medax->setTouchingPoints(newPoint, m_voronoi_medax->getTouchingPoints(oldPoint));
+		// Computing touching points
+		// Nb of intersection points in the group
+		int NbIPs = 0;
+		for (auto node:AGroups[groupID])
+		{
+			if (m_voronoi_medax->getTouchingPoints(node.id()).size() > 2)
+				NbIPs += 1;
+		}
+		if (NbIPs == 0)
+			m_smoothed_medax->setTouchingPoints(newPoint, m_voronoi_medax->getTouchingPoints(oldPoint));
+		if (NbIPs == 1)
+		{
+			for (auto node:AGroups[groupID])
+			{
+				if (m_voronoi_medax->getTouchingPoints(node.id()).size() > 2)
+					{
+						oldPoint = node.id();
+						break;
+					}
+			}
+			m_smoothed_medax->setTouchingPoints(newPoint, m_voronoi_medax->getTouchingPoints(oldPoint));
+		}
+		if (NbIPs >= 2)
+		{
+			TCellID ip1,ip2;
+			for (auto node:AGroups[groupID])
+			{
+				if (m_voronoi_medax->getTouchingPoints(node.id()).size() > 2)
+					{
+						ip1 = node.id();
+						break;
+					}
+			}
+			for (auto node:AGroups[groupID])
+			{
+				if (m_voronoi_medax->getTouchingPoints(node.id()).size() > 2 && node.id() != ip1)
+					{
+						ip2 = node.id();
+						break;
+					}
+			}
+			std::vector<math::Point> merged_tangency_points = merge(m_voronoi_medax->getTouchingPoints(ip1),m_voronoi_medax->getTouchingPoints(ip2));
+			m_smoothed_medax->setTouchingPoints(newPoint,merged_tangency_points);
+		}
 		m_smoothed_medax->setMedialRadius(newPoint, m_voronoi_medax->getMedialRadius(oldPoint));
 		m_smoothed_medax->setMedialRadiusOrthogonalityDefault(newPoint, m_voronoi_medax->getMedialRadiusOrthogonalityDefault(oldPoint));
 	}

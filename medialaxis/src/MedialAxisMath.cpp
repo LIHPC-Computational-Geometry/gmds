@@ -351,3 +351,26 @@ std::vector<TCellID> insertPoint(Node AN, std::vector<Node> AV)
 	}
 	return new_list;
 }
+
+/*----------------------------------------------------------------------------*/
+std::vector<math::Point> merge(std::vector<math::Point> AV1, std::vector<math::Point> AV2)
+{
+	std::vector<math::Point> merged;
+	for (auto point:AV1)
+		merged.push_back(point);
+	for (auto point:AV2)
+	{
+		bool already_seen = false;
+		for (auto point2:AV1)
+		{
+			if (point.distance(point2) < 10e-6)
+			{
+				already_seen = true;
+				break;
+			}
+		}
+		if (!already_seen)
+			merged.push_back(point);
+	}
+	return merged;
+}
