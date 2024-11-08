@@ -1,13 +1,9 @@
-//
-// Created by chenyt on 26/09/24.
-//
-
-#include "gmds/medialaxis/QuantizationSolver.h"
+#include "gmds/medialaxis/BlockStructureSimplifier.h"
 #include <queue>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-QuantizationSolver::QuantizationSolver(gmds::Mesh &AMesh)
+BlockStructureSimplifier::BlockStructureSimplifier(gmds::Mesh &AMesh)
 {
 	// Non conformal quad mesh
 	m_mesh = &AMesh;
@@ -16,21 +12,23 @@ QuantizationSolver::QuantizationSolver(gmds::Mesh &AMesh)
 	m_mesh->newVariable<int,GMDS_EDGE>("edge2halfEdge2");
 	// Mark with 1 the nodes forming a T-junction
 	m_mesh->newVariable<int,GMDS_NODE>("T-junction");
+	// Id of the corresponding confunded nodes group
+	m_mesh->newVariable<int,GMDS_NODE>("groupId");
+	// In the mesh simplifying process, gain of the chosing of the node
+	m_mesh->newVariable<double,GMDS_NODE>("chosing_gain");
 
 	// Quantization graph
 	m_quantization_graph = new QuantizationGraph();
 
-	// Mesh with a singularity dipole added
-	m_fixed_mesh = new Mesh(MeshModel(DIM3 | E | N | F |
+	// Simplified mesh(zero half edges removed)
+	m_simplified_mesh = new Mesh(MeshModel(DIM3 | E | N | F |
 	                                           E2N | N2E | F2N | N2F | F2E | E2F));
-	// Mark with 1 the faces affected by the dipole
-	m_mesh->newVariable<int,GMDS_FACE>("is_affected_by_dipole");
 
 }
 
 /*----------------------------------------------------------------------------*/
 void
-QuantizationSolver::buildHalfEdges()
+BlockStructureSimplifier::buildHalfEdges()
 {
 	std::cout<<"> Building half edges"<<std::endl;
 	auto e2he1 = m_mesh->getVariable<int,GMDS_EDGE>("edge2halfEdge1");
@@ -127,7 +125,7 @@ QuantizationSolver::buildHalfEdges()
 
 /*----------------------------------------------------------------------------*/
 void
-QuantizationSolver::buildQuantizationGraphNodes()
+BlockStructureSimplifier::buildQuantizationGraphNodes()
 {
 	std::cout<<"> Building quantization graph nodes"<<std::endl;
 	for (int i = 0; i < m_half_edges.size(); i++)
@@ -136,7 +134,7 @@ QuantizationSolver::buildQuantizationGraphNodes()
 
 /*----------------------------------------------------------------------------*/
 void
-QuantizationSolver::buildConnectedComponent(int AHalfEdgeID)
+BlockStructureSimplifier::buildConnectedComponent(int AHalfEdgeID)
 {
 	std::cout<<"> Building connected component of half edge "<<AHalfEdgeID<<std::endl;
 	std::queue<int> front;
@@ -163,22 +161,19 @@ QuantizationSolver::buildConnectedComponent(int AHalfEdgeID)
 		}
 		// Build backward edges
 		int nxt = oppositeInQuad(current);
-		if (m_quantization_graph->alreadyVisited(nxt) == 0)
+		NonConformalHalfEdge e2 = m_half_edges[nxt];
+		m_quantization_graph->markAsVisited(nxt);
+		Edge newGraphEdge = m_quantization_graph->newEdge(nxt,current);
+		m_quantization_graph->markAsInQuad(newGraphEdge.id());
+		for (auto opp:e2.opposite())
 		{
-			NonConformalHalfEdge e2 = m_half_edges[nxt];
-			m_quantization_graph->markAsVisited(nxt);
-			Edge newGraphEdge = m_quantization_graph->newEdge(nxt,current);
-			m_quantization_graph->markAsInQuad(newGraphEdge.id());
-			for (auto opp:e2.opposite())
+			if (m_quantization_graph->alreadyVisited(opp) == 0)
 			{
-				if (m_quantization_graph->alreadyVisited(opp) == 0)
+				m_quantization_graph->newEdge(opp,nxt);
+				if (m_quantization_graph->alreadyPushed(opp) == 0)
 				{
-					m_quantization_graph->newEdge(opp,nxt);
-					if (m_quantization_graph->alreadyPushed(opp) == 0)
-					{
-						front.push(opp);
-						m_quantization_graph->markAsPushed(opp);
-					}
+					front.push(opp);
+					m_quantization_graph->markAsPushed(opp);
 				}
 			}
 		}
@@ -188,7 +183,7 @@ QuantizationSolver::buildConnectedComponent(int AHalfEdgeID)
 
 /*----------------------------------------------------------------------------*/
 int
-QuantizationSolver::oppositeInQuad(int AHalfEdgeID)
+BlockStructureSimplifier::oppositeInQuad(int AHalfEdgeID)
 {
 	int opp = m_half_edges[m_half_edges[AHalfEdgeID].next()].next();
 	return opp;
@@ -196,7 +191,7 @@ QuantizationSolver::oppositeInQuad(int AHalfEdgeID)
 
 /*----------------------------------------------------------------------------*/
 void
-QuantizationSolver::buildQuantizationGraph()
+BlockStructureSimplifier::buildQuantizationGraph()
 {
 	std::cout<<" "<<std::endl;
 	std::cout<<"========== Building the quantization graph =========="<<std::endl;
@@ -215,13 +210,13 @@ QuantizationSolver::buildQuantizationGraph()
 
 /*----------------------------------------------------------------------------*/
 QuantizationGraph*
-QuantizationSolver::getQuantizationGraph()
+BlockStructureSimplifier::getQuantizationGraph()
 {
 	return m_quantization_graph;
 }
 
 /*----------------------------------------------------------------------------*/
-void QuantizationSolver::setHalfEdgesLength()
+void BlockStructureSimplifier::setHalfEdgesLength()
 {
 	std::vector<int> v(m_half_edges.size());
 	for (int i = 0; i < m_half_edges.size(); i++)
@@ -230,7 +225,7 @@ void QuantizationSolver::setHalfEdgesLength()
 }
 
 /*----------------------------------------------------------------------------*/
-std::vector<std::vector<TCellID>> QuantizationSolver::sides()
+std::vector<std::vector<TCellID>> BlockStructureSimplifier::sides()
 {
 	auto e2he1 = m_mesh->getVariable<int,GMDS_EDGE>("edge2halfEdge1");
 	std::vector<std::vector<TCellID>> sides;
@@ -279,7 +274,7 @@ std::vector<std::vector<TCellID>> QuantizationSolver::sides()
 }
 
 /*----------------------------------------------------------------------------*/
-void QuantizationSolver::markTJunctions()
+void BlockStructureSimplifier::markTJunctions()
 {
 	auto TJ = m_mesh->getVariable<int,GMDS_NODE>("T-junction");
 	auto e2he1 = m_mesh->getVariable<int,GMDS_EDGE>("edge2halfEdge1");
@@ -312,7 +307,7 @@ void QuantizationSolver::markTJunctions()
 }
 
 /*----------------------------------------------------------------------------*/
-bool QuantizationSolver::isOnBoundary(Node AN)
+bool BlockStructureSimplifier::isOnBoundary(Node AN)
 {
 	bool boo = false;
 	for (auto e:AN.get<Edge>())
@@ -327,7 +322,7 @@ bool QuantizationSolver::isOnBoundary(Node AN)
 }
 
 /*----------------------------------------------------------------------------*/
-std::vector<TCellID> QuantizationSolver::nonZeroHalfEdges()
+std::vector<TCellID> BlockStructureSimplifier::nonZeroHalfEdges()
 {
 	auto e2he1 = m_mesh->getVariable<int,GMDS_EDGE>("edge2halfEdge1");
 	auto e2he2 = m_mesh->getVariable<int,GMDS_EDGE>("edge2halfEdge2");
@@ -403,7 +398,7 @@ std::vector<TCellID> QuantizationSolver::nonZeroHalfEdges()
 }
 
 /*----------------------------------------------------------------------------*/
-std::vector<std::vector<Node>> QuantizationSolver::groupsOfConfundedNodes()
+std::vector<std::vector<Node>> BlockStructureSimplifier::groupsOfConfundedNodes()
 {
 	std::cout<<"> Building groups of confunded nodes"<<std::endl;
 	auto groupId = m_mesh->getVariable<int,GMDS_NODE>("groupId");
@@ -469,7 +464,7 @@ std::vector<std::vector<Node>> QuantizationSolver::groupsOfConfundedNodes()
 }
 
 /*----------------------------------------------------------------------------*/
-bool QuantizationSolver::isABoundaryCorner(Node AN)
+bool BlockStructureSimplifier::isABoundaryCorner(Node AN)
 {
 	if (!isOnBoundary(AN))
 		return false;
@@ -502,21 +497,133 @@ bool QuantizationSolver::isABoundaryCorner(Node AN)
 }
 
 /*----------------------------------------------------------------------------*/
-void QuantizationSolver::addOldNodesOnFixedMesh()
+void BlockStructureSimplifier::computeChosingGains()
 {
-	std::cout<<"> Adding existing nodes on the fixed mesh"<<std::endl;
+	auto cost = m_mesh->getVariable<double,GMDS_NODE>("chosing_gain");
 	for (auto n_id:m_mesh->nodes())
 	{
 		Node n = m_mesh->get<Node>(n_id);
-		m_fixed_mesh->newNode(n.point());
+		if (isABoundaryCorner(n))
+			cost->set(n_id,16.);
+		else
+		{
+			if (isOnBoundary(n))
+				cost->set(n_id,15.);
+			else
+			{
+				if (n.get<Edge>().size() != 4)
+					cost->set(n_id,14.);
+				else
+				{
+					std::vector<Edge> adj_edges = n.get<Edge>();
+					std::vector<Edge> sorted_edges = sortEdges(n,adj_edges);
+					math::Vector u1 = edge2vec(adj_edges[0],n);
+					math::Vector u2 = (-1.)*edge2vec(adj_edges[2],n);
+					math::Vector v1 = edge2vec(adj_edges[1],n);
+					math::Vector v2 = (-1.)*edge2vec(adj_edges[3],n);
+					double c = sqrt(fabs(oriented_angle(u1,u2))*fabs(oriented_angle(u1,u2))+fabs(oriented_angle(v1,v2))*fabs(oriented_angle(v1,v2)));
+					cost->set(n_id,c);
+				}
+			}
+		}
 	}
 }
 
 /*----------------------------------------------------------------------------*/
-void QuantizationSolver::writeFixedMesh(std::basic_string<char> AFileName)
+Node BlockStructureSimplifier::representative(std::vector<Node> AV)
 {
-	std::cout<<"> Writing the fixed mesh"<<std::endl;
-	IGMeshIOService ioService(m_fixed_mesh);
+	auto gain = m_mesh->getVariable<double,GMDS_NODE>("chosing_gain");
+	Node rep;
+	double max_gain = -1.;
+	for (auto n:AV)
+	{
+		if (gain->value(n.id()) > max_gain)
+		{
+			rep = n;
+			max_gain = gain->value(n.id());
+		}
+	}
+	// if (AV.size() == 1)
+	// 	return AV[0];
+	// for (auto n:AV)
+	// {
+	// 	if (isABoundaryCorner(n))
+	// 		return n;
+	// }
+	// for (auto n:AV)
+	// {
+	// 	if (isOnBoundary(n))
+	// 		return n;
+	// }
+	// return AV[0];
+	return rep;
+}
+
+/*----------------------------------------------------------------------------*/
+void BlockStructureSimplifier::buildSimplifiedMesh()
+{
+	std::cout<<"=== Building simplified mesh ==="<<std::endl;
+	auto groupId = m_mesh->getVariable<int,GMDS_NODE>("groupId");
+	// build the nodes
+	std::vector<std::vector<Node>> groups = groupsOfConfundedNodes();
+	std::vector<TCellID> group2newNode;
+	for (auto group:groups)
+	{
+		Node newNode = m_simplified_mesh->newNode(representative(group).point());
+		group2newNode.push_back(newNode.id());
+	}
+	// Build the faces
+	for (auto f_id:m_mesh->faces())
+	{
+		// Check if it has non zero area
+		if (m_half_edges_lengths[4*f_id] > 0 && m_half_edges_lengths[4*f_id+1] > 0)
+		{
+			std::vector<TCellID> nodes;
+			Face f = m_mesh->get<Face>(f_id);
+			std::vector<int> seenGroups;
+			for (auto n:f.get<Node>())
+			{
+				int id = groupId->value(n.id());
+				bool seen = false;
+				for (auto i:seenGroups)
+				{
+					if (id == i)
+					{
+						seen = true;
+						break;
+					}
+				}
+				if (!seen)
+				{
+					nodes.push_back(group2newNode[id]);
+					seenGroups.push_back(id);
+				}
+			}
+			m_simplified_mesh->newFace(nodes);
+		}
+	}
+	std::cout<<"============================"<<std::endl;
+}
+
+/*----------------------------------------------------------------------------*/
+void BlockStructureSimplifier::setSimplifiedMeshConnectivity()
+{
+	MeshDoctor doc(m_simplified_mesh);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+}
+
+/*----------------------------------------------------------------------------*/
+Mesh BlockStructureSimplifier::getSimplifiedMesh()
+{
+	return *m_simplified_mesh;
+}
+
+/*----------------------------------------------------------------------------*/
+void BlockStructureSimplifier::writeSimplifiedMesh(std::basic_string<char> AFileName)
+{
+	std::cout<<"> Writing the simplified mesh"<<std::endl;
+	IGMeshIOService ioService(m_simplified_mesh);
 	VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(N| E| F);
 	vtkWriter.setDataOptions(N| E| F);
@@ -524,348 +631,29 @@ void QuantizationSolver::writeFixedMesh(std::basic_string<char> AFileName)
 }
 
 /*----------------------------------------------------------------------------*/
-void QuantizationSolver::markAffectedFaces(int AId1, int AId2)
+void BlockStructureSimplifier::execute()
 {
-	auto var = m_mesh->getVariable<int,GMDS_FACE>("is_affected_by_dipole");
-	NonConformalHalfEdge he1 = m_half_edges[AId1];
-	NonConformalHalfEdge he2 = m_half_edges[he1.next()];
-	NonConformalHalfEdge he3 = m_half_edges[AId2];
-	NonConformalHalfEdge he4 = m_half_edges[he3.next()];
-	Face f0 = he1.face();
-	var->set(f0.id(),1);
-	for (auto e:he2.edges())
-	{
-		for (auto f:e.get<Face>())
-		{
-			if (f.id() != f0.id())
-				var->set(f.id(),1);
-		}
-	}
-	for (auto e:he4.edges())
-	{
-		for (auto f:e.get<Face>())
-		{
-			if (f.id() != f0.id())
-				var->set(f.id(),1);
-		}
-	}
-}
-
-/*----------------------------------------------------------------------------*/
-void QuantizationSolver::addOldFacesOnFixedMesh()
-{
-	std::cout<<"> Adding existing faces on the fixed mesh"<<std::endl;
-	auto var = m_mesh->getVariable<int,GMDS_FACE>("is_affected_by_dipole");
-	for (auto f_id:m_mesh->faces())
-	{
-		if (var->value(f_id) == 0)
-		{
-			Face f = m_mesh->get<Face>(f_id);
-			std::vector<TCellID> nodesIds;
-			for (auto n:f.get<Node>())
-				nodesIds.push_back(n.id());
-			m_fixed_mesh->newFace(nodesIds);
-		}
-	}
-}
-
-/*----------------------------------------------------------------------------*/
-void QuantizationSolver::buildOppFacesInFixedMesh(int AHalfEdgeId, Node AN1, Node AN2)
-{
-	NonConformalHalfEdge he = m_half_edges[AHalfEdgeId];
-	Face f = he.face();
-
-	// Build the faces containing AN1 and AN2
-	int id1 = -1;
-	// Find the face where AN1 is
-	for (auto edge:he.edges())
-	{
-		if (AN1.id() == edge.get<Node>()[0].id() || AN1.id() == edge.get<Node>()[1].id())
-			break;
-		if (isOnSegment(AN1.point(),edge.get<Node>()[0].point(),edge.get<Node>()[1].point()))
-		{
-			for (auto f2:edge.get<Face>())
-			{
-				if (f2.id() != f.id())
-					{
-						id1 = f2.id();
-						break;
-					}
-			}
-		}
-	}
-
-	int id2 = -1;
-	// Find the face where AN2 is
-	for (auto edge:he.edges())
-	{
-		if (AN2.id() == edge.get<Node>()[0].id() || AN2.id() == edge.get<Node>()[1].id())
-			break;
-		if (isOnSegment(AN2.point(),edge.get<Node>()[0].point(),edge.get<Node>()[1].point()))
-		{
-			for (auto f2:edge.get<Face>())
-			{
-				if (f2.id() != f.id())
-					{
-						id2 = f2.id();
-						break;
-					}
-			}
-		}
-	}
-
-	// Now we build the eventual faces containing the new points
-	if (id1 >= 0 && id1 == id2)
-	{
-		Face f2 = m_mesh->get<Face>(id1);
-		std::vector<TCellID> new_face = insertPoint(AN1,f2.get<Node>());
-		std::vector<Node> nodes;
-		for (auto id:new_face)
-			nodes.push_back(m_fixed_mesh->get<Node>(id));
-		new_face = insertPoint(AN2,nodes);
-		m_fixed_mesh->newFace(new_face);
-	}
-	else
-	{
-		if (id1 >= 0)
-		{
-			Face f2 = m_mesh->get<Face>(id1);
-			std::vector<TCellID> new_face = insertPoint(AN1,f2.get<Node>());
-			m_fixed_mesh->newFace(new_face);
-		}
-		if (id2 >= 0)
-		{
-			Face f2 = m_mesh->get<Face>(id2);
-			std::vector<TCellID> new_face = insertPoint(AN2,f2.get<Node>());
-			m_fixed_mesh->newFace(new_face);
-		}
-	}
-
-	// Build the other faces
-	for (auto edge:he.edges())
-	{
-		for (auto f2:edge.get<Face>())
-		{
-			if (f2.id() != f.id() && f2.id() != id1 &&f2.id() != id2)
-			{
-				std::vector<TCellID> nodes;
-				for (auto n:f2.get<Face>())
-					nodes.push_back(n.id());
-				m_fixed_mesh->newFace(nodes);
-			}
-		}
-	}
-}
-
-/*----------------------------------------------------------------------------*/
-void QuantizationSolver::buildFixedMesh(int AId1, int AId2)
-{
-	std::cout<<" "<<std::endl;
-	std::cout<<"=== Building the fixed mesh ==="<<std::endl;
-
-	addOldNodesOnFixedMesh();
-	markAffectedFaces(AId1, AId2);
-	addOldFacesOnFixedMesh();
-
-	NonConformalHalfEdge he1 = m_half_edges[AId1];
-	NonConformalHalfEdge he2 = m_half_edges[he1.next()];
-	NonConformalHalfEdge he3 = m_half_edges[AId2];
-	NonConformalHalfEdge he4 = m_half_edges[he3.next()];
-
-	// Drawing the singularity dipole
-
-	// Corner nodes
-	Node c1 = m_fixed_mesh->get<Node>(he1.endNode().id());
-	Node c2 = m_fixed_mesh->get<Node>(he2.endNode().id());
-	Node c3 = m_fixed_mesh->get<Node>(he3.endNode().id());
-	Node c4 = m_fixed_mesh->get<Node>(he4.endNode().id());
-
-	// Directions
-	math::Point d1 = c1.point()+(-1.)*c4.point();
-	math::Point d2 = c2.point()+(-1.)*c1.point();
-	math::Point d3 = c3.point()+(-1.)*c2.point();
-	math::Point d4 = c4.point()+(-1.)*c3.point();
-
-	// Nodes on edges
-	// Find their distance to corner nodes
-	double h1,h2,h3,h4;
-	std::vector<Node> nodes_he2 = he2.getOrderedNodes();
-	std::vector<Node> nodes_he4 = he4.getOrderedNodes();
-	if (nodes_he2.size() == 2)
-	{
-		h1 = 1./5.;
-		h2 = 4./5.;
-	}
-	if (nodes_he2.size() >= 3)
-	{
-		if (1./5.+1./10. < nodes_he2[0].point().distance(nodes_he2[1].point())/vec(d2).norm())
-			h1 = 1./5.;
-		else
-			h1 = 0.5*nodes_he2[0].point().distance(nodes_he2[1].point())/vec(d2).norm();
-		if (4./5.-1./10. > nodes_he2[0].point().distance(nodes_he2[nodes_he2.size()-2].point())/vec(d2).norm())
-			h2 = 4./5.;
-		else
-			h2 = 1.-0.5*nodes_he2[nodes_he2.size()-1].point().distance(nodes_he2[nodes_he2.size()-2].point())/vec(d2).norm();
-	}
-	if (nodes_he4.size() == 2)
-	{
-		h3 = 1./5.;
-		h4 = 4./5.;
-	}
-	if (nodes_he4.size() >= 3)
-	{
-		if (1./5.+1./10. < nodes_he4[0].point().distance(nodes_he4[1].point())/vec(d4).norm())
-			h3 = 1./5.;
-		else
-			h3 = 0.5*nodes_he4[0].point().distance(nodes_he4[1].point())/vec(d4).norm();
-		if (4./5.-1./10. > nodes_he4[0].point().distance(nodes_he4[nodes_he4.size()-2].point())/vec(d4).norm())
-			h4 = 4./5.;
-		else
-			h4 = 1.-0.5*nodes_he4[nodes_he4.size()-1].point().distance(nodes_he4[nodes_he4.size()-2].point())/vec(d4).norm();
-	}
-	Node b1 = m_fixed_mesh->newNode(c1.point()+h1*d2);
-	Node b2 = m_fixed_mesh->newNode(c1.point()+h2*d2);
-	Node b3 = m_fixed_mesh->newNode(c3.point()+h3*d4);
-	Node b4 = m_fixed_mesh->newNode(c3.point()+h4*d4);
-	
-	// Build the faces opposite to he2 and he4
-	buildOppFacesInFixedMesh(he2.id(),b1,b2);
-	buildOppFacesInFixedMesh(he4.id(),b3,b4);
-	
-	// Directions
-	math::Point dg = b4.point()+(-1.)*b1.point();
-	math::Point dd = b3.point()+(-1.)*b2.point();
-
-	// Nodes on inner edges
-	Node s1 = m_fixed_mesh->newNode(b1.point()+(1./6.)*dg);
-	Node s4 = m_fixed_mesh->newNode(b2.point()+(1./6.)*dd);
-	Node s5 = m_fixed_mesh->newNode(b2.point()+(5./6.)*dd);
-	Node s8 = m_fixed_mesh->newNode(b1.point()+(5./6.)*dg);
-	Node s2 = m_fixed_mesh->newNode(s1.point()+(1./3.)*s4.point()+(-1./3.)*s1.point());
-	Node s3 = m_fixed_mesh->newNode(s1.point()+(2./3.)*s4.point()+(-2./3.)*s1.point());
-	Node s6 = m_fixed_mesh->newNode(s8.point()+(2./3.)*s5.point()+(-2./3.)*s8.point());
-	Node s7 = m_fixed_mesh->newNode(s8.point()+(1./3.)*s5.point()+(-1./3.)*s8.point());
-
-	// Directions
-	math::Point d5 = s8.point()+(-1.)*s1.point();
-	math::Point d7 = s7.point()+(-1.)*s2.point();
-	math::Point d6 = (1./2.)*(d5+d7);
-	math::Point d8 = s6.point()+(-1.)*s3.point();
-	math::Point d9 = s5.point()+(-1.)*s4.point();
-
-	// Inner nodes
-	Node i1 = m_fixed_mesh->newNode(s1.point()+(1./4.)*d5);
-	Node i2 = m_fixed_mesh->newNode(s2.point()+(1./4.)*d7);
-	Node i3 = m_fixed_mesh->newNode(s1.point()+(2./4.)*d5);
-	Node i4 = m_fixed_mesh->newNode((1./2.)*s1.point()+(1./2.)*s2.point()+(1./2.)*d6);
-	Node i5 = m_fixed_mesh->newNode(s3.point()+(1./2.)*d8);
-	Node i6 = m_fixed_mesh->newNode(s4.point()+(1./2.)*d9);
-	Node i7 = m_fixed_mesh->newNode(s1.point()+(3./4.)*d5);
-	Node i8 = m_fixed_mesh->newNode(s2.point()+(3./4.)*d7);
-
-	// Create new faces
-	std::vector<TCellID> new_face;
-	for (auto node:he1.getOrderedNodes())
-		new_face.push_back(node.id());
-	new_face.push_back(b1.id());
-	new_face.push_back(s1.id());
-	new_face.push_back(i1.id());
-	new_face.push_back(i3.id());
-	new_face.push_back(i7.id());
-	new_face.push_back(s8.id());
-	new_face.push_back(b4.id());
-	m_fixed_mesh->newFace(new_face);
-	
-	new_face.clear();
-	for (auto node:he3.getOrderedNodes())
-		new_face.push_back(node.id());
-	new_face.push_back(b3.id());
-	new_face.push_back(s5.id());
-	new_face.push_back(i6.id());
-	new_face.push_back(s4.id());
-	new_face.push_back(b2.id());
-	m_fixed_mesh->newFace(new_face);
-	
-	new_face.clear();
-	new_face.push_back(b3.id());
-	for (auto node:he4.getOrderedNodes())
-		{
-			if (node.id() != c3.id() && node.id() != c4.id())
-				new_face.push_back(node.id());
-		}
-	new_face.push_back(b4.id());
-	new_face.push_back(s8.id());
-	new_face.push_back(s7.id());
-	new_face.push_back(s6.id());
-	new_face.push_back(s5.id());
-	m_fixed_mesh->newFace(new_face);
-
-	new_face.clear();
-	new_face.push_back(b1.id());
-	for (auto node:he2.getOrderedNodes())
-		{
-			if (node.id() != c1.id() && node.id() != c2.id())
-				new_face.push_back(node.id());
-		}
-	new_face.push_back(b2.id());
-	new_face.push_back(s4.id());
-	new_face.push_back(s3.id());
-	new_face.push_back(s2.id());
-	new_face.push_back(s1.id());
-	m_fixed_mesh->newFace(new_face);
-	
-	m_fixed_mesh->newFace({i7.id(),i8.id(),s7.id(),s8.id()});
-	m_fixed_mesh->newFace({i3.id(),i4.id(),i8.id(),i7.id()});
-	m_fixed_mesh->newFace({i1.id(),i2.id(),i4.id(),i3.id()});
-	m_fixed_mesh->newFace({s1.id(),s2.id(),i2.id(),i1.id()});
-	m_fixed_mesh->newFace({i8.id(),i5.id(),s6.id(),s7.id()});
-	m_fixed_mesh->newFace({i2.id(),i5.id(),i8.id(),i4.id()});
-	m_fixed_mesh->newFace({s2.id(),s3.id(),i5.id(),i2.id()});
-	m_fixed_mesh->newFace({i5.id(),i6.id(),s5.id(),s6.id()});
-	m_fixed_mesh->newFace({s3.id(),s4.id(),i6.id(),i5.id()});
-
-	std::cout<<"==============================="<<std::endl;
-	std::cout<<" "<<std::endl;
-}
-
-/*----------------------------------------------------------------------------*/
-Mesh QuantizationSolver::getFixedMesh()
-{
-	return *m_fixed_mesh;
-}
-
-/*----------------------------------------------------------------------------*/
-void QuantizationSolver::setFixedMeshConnectivity()
-{
-	MeshDoctor doc(m_fixed_mesh);
-	doc.buildEdgesAndX2E();
-	doc.updateUpwardConnectivity();
-}
-
-/*----------------------------------------------------------------------------*/
-std::vector<std::vector<Node>> QuantizationSolver::buildCompleteSolution()
-{
-	std::cout<<" "<<std::endl;
-    std::cout<<"=== Building complete quantization solution ==="<<std::endl;
-
-	buildQuantizationGraph();
+    std::cout<<" "<<std::endl;
+    std::cout<<"=== Building the simplified mesh ==="<<std::endl;
+    
+    buildQuantizationGraph();
 	// Set conditions on sides
-	std::vector<std::vector<TCellID>> sidesSet = sides();
-	m_quantization_graph->nonZeroGroups(sidesSet);
+	std::vector<std::vector<TCellID>> sides2 = sides();
+	m_quantization_graph->nonZeroGroups(sides2);
 	// Set condition to separate singularities
 	markTJunctions();
-	std::vector<TCellID> non_zeros = nonZeroHalfEdges();
-	m_quantization_graph->nonZeroVerticies(non_zeros);
+	std::vector<TCellID> non_zeros2 = nonZeroHalfEdges();
+	m_quantization_graph->nonZeroVerticies(non_zeros2);
 	m_quantization_graph->updateConnectivity();
-	m_quantization_graph->buildCompleteSolution();
+	m_quantization_graph->buildMinimalSolution();
 	m_quantization_graph->roughlyRepairSolution();
-	//m_quantization_graph->display(); // Display the graph
-	//m_quantization_graph->displaySolution(); // Display the quantization solution
-	std::vector<std::vector<Node>> problematicCouples = m_quantization_graph->checkSolutionValidity();
+	//m_quantization_graph->displaySolution();
+	setHalfEdgesLength();
+	computeChosingGains();
+	buildSimplifiedMesh();
 
-	std::cout<<"===================================="<<std::endl;
+    std::cout<<"===================================="<<std::endl;
     std::cout<<" "<<std::endl;
-	return problematicCouples;
 }
 /*----------------------------------------------------------------------------*/
 }  // end namespace gmds

@@ -1,9 +1,5 @@
-//
-// Created by chenyt on 26/09/24.
-//
-
-#ifndef GMDS_QUANTIZATIONSOLVER_H
-#define GMDS_QUANTIZATIONSOLVER_H
+#ifndef GMDS_BLOCKSTRUCTURESIMPLIFIER_H
+#define GMDS_BLOCKSTRUCTURESIMPLIFIER_H
 /*----------------------------------------------------------------------------*/
 #include "LIB_GMDS_MEDIALAXIS_export.h"
 #include "gmds/medialaxis/MedialAxis2D.h"
@@ -19,7 +15,7 @@ namespace gmds{
 /** \class  dummy
  *  \brief  dummy class.
  */
-class LIB_GMDS_MEDIALAXIS_API QuantizationSolver
+class LIB_GMDS_MEDIALAXIS_API BlockStructureSimplifier
 {
  private:
 	// Non conformal quad block decomposition
@@ -30,8 +26,8 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationSolver
 	QuantizationGraph* m_quantization_graph;
 	// Half edges length
 	std::vector<int> m_half_edges_lengths;
-	// Mesh after adding a singularity dipole
-	Mesh* m_fixed_mesh;
+	// Mesh after removing half edges of length zero
+	Mesh* m_simplified_mesh;
 
  public:
 
@@ -39,13 +35,13 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationSolver
 	/** @brief Constructor.
          *  @param AMesh
 	 */
-	explicit QuantizationSolver(Mesh &AMesh);
+	explicit BlockStructureSimplifier(Mesh &AMesh);
 
 	/*-------------------------------------------------------------------------*/
 	/** @brief Default destructor.
          *  @param
 	 */
-	virtual ~QuantizationSolver()=default;
+	virtual ~BlockStructureSimplifier()=default;
 
 	/*-------------------------------------------------------------------------*/
 	/** @brief Getters.
@@ -133,61 +129,48 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationSolver
 	bool isABoundaryCorner(Node AN);
 
 	/*-------------------------------------------------------------------------*/
-	/** @brief Add on the fixed mesh the already existing nodes.
+	/** @brief Compute the disappearance gain for each node.
          *  @param 
 	 */
-	void addOldNodesOnFixedMesh();
+	void computeChosingGains();
 
 	/*-------------------------------------------------------------------------*/
-	/** @brief Write the fixed mesh.
+	/** @brief Return a representative for the given group of confunded nodes.
+         *  @param AV
+	 */
+	Node representative(std::vector<Node> AV);
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Build the simplified mesh.
          *  @param 
 	 */
-	void writeFixedMesh(std::basic_string<char> AFileName);
+	void buildSimplifiedMesh();
 
 	/*-------------------------------------------------------------------------*/
-	/** @brief Mark with 1 the faces affected when adding a singularity dipole in the face deliminted by the two given half edges, 
-	 * ie the face itself and its neighbours not adjacent to AId1 or AId2.
-         *  @param AId1, AId2 two half edges Ids delimiting a quad.
-	 */
-	void markAffectedFaces(int AId1, int AId2);
-
-	/*-------------------------------------------------------------------------*/
-	/** @brief Add on the fixed mesh the already existing faces not affected by the dipole.
+	/** @brief Set the connectivity of the simplified mesh.
          *  @param 
 	 */
-	void addOldFacesOnFixedMesh();
+	void setSimplifiedMeshConnectivity();
 
 	/*-------------------------------------------------------------------------*/
-	/** @brief Build faces of the fixed mesh oppposite to the given half-edge, taking into account eventual new nodes.
-         *  @param AHalfEdgeId, AN1, AN2 a half-edge Id and two nodes of the fixed-mesh belonging to the half-edge.
-	 */
-	void buildOppFacesInFixedMesh(int AHalfEdgeId, Node AN1, Node AN2);
-
-	/*-------------------------------------------------------------------------*/
-	/** @brief Build the fixed mesh, where a singularity dipole has been added and oriented in the face delimited by two half edges whose ids are given.
-         *  @param AId1, AId2 two half-edge ids. The dipole 3-5 is placed in the direction AId1->AId2.
-	 */
-	void buildFixedMesh(int AId1, int AId2);
-
-	/*-------------------------------------------------------------------------*/
-	/** @brief Get the fixed mesh.
+	/** @brief Get the simplified mesh.
          *  @param 
 	 */
-	Mesh getFixedMesh();
+	Mesh getSimplifiedMesh();
 
 	/*-------------------------------------------------------------------------*/
-	/** @brief Set the connectivity of the fixed mesh.
+	/** @brief Write the simplified mesh.
          *  @param 
 	 */
-	void setFixedMeshConnectivity();
+	void writeSimplifiedMesh(std::basic_string<char> AFileName);
 
-	/*-------------------------------------------------------------------------*/
-	/** @brief Build the complete quantization solution.
+    /*-------------------------------------------------------------------------*/
+	/** @brief Execute.
          *  @param 
 	 */
-	std::vector<std::vector<Node>> buildCompleteSolution();
+	void execute();
 };
 /*----------------------------------------------------------------------------*/
 }  // end namespace gmds
 /*----------------------------------------------------------------------------*/
-#endif     // GMDS_QUANTIZATIONSOLVER_H
+#endif     // GMDS_BLOCKSTRUCTURESIMPLIFIER_H

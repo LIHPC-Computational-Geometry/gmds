@@ -1325,6 +1325,7 @@ void MedialAxis2D::buildTopoRepEdges()
 {
 	std::cout<<"> Building edges of the topological representation"<<std::endl;
 	std::cout<<"> WARNING: if the medial axis has only one section which is a cycle, the topo rep is not valid"<<std::endl;
+	auto medPointType = m_mesh_representation->getVariable<int,GMDS_NODE>("medial_point_type");
 	auto cosMedAngle = m_mesh_representation->getVariable<double,GMDS_NODE>("cos_medial_angle");
 	auto sectionType = m_topological_representation->getVariable<int,GMDS_EDGE>("section_type");
 	auto medPoint2singNode = m_mesh_representation->getVariable<int,GMDS_NODE>("med_point_to_sing_node");
@@ -1334,7 +1335,7 @@ void MedialAxis2D::buildTopoRepEdges()
 	auto sectionID = m_mesh_representation->getVariable<int,GMDS_NODE>("section_id");
 	for (auto n_id:m_mesh_representation->nodes())
 	{
-		if (medPoint2singNode->value(n_id) == -1)
+		if (medPoint2singNode->value(n_id) == -1 && medPointType->value(n_id) == 2)
 		{
 			// We build a new section (= new edge of the topo rep)
 			// Type of the section
@@ -1346,7 +1347,7 @@ void MedialAxis2D::buildTopoRepEdges()
 				if (fabs(cosMedAngle->value(n_id)) < sqrt(2.)/2.)
 					type = 1;
 				else
-					type = 2;
+					type = 0;
 			}
 
 			int sectID = sectionID->value(n_id);
@@ -1383,6 +1384,9 @@ void MedialAxis2D::buildTopoRepEdges()
 			TCellID N1 = medPoint2singNode->value(n1.id());
 			TCellID N2 = medPoint2singNode->value(n2.id());
 			Edge newSection = m_topological_representation->newEdge(N1,N2);
+			// All end sections must be of type 1
+			if (medPointType->value(n1.id()) == 1 || medPointType->value(n2.id()) == 1)
+				type = 1;
 			sectionType->set(newSection.id(),type);
 			section2sectionID->set(newSection.id(),sectID);
 			// Wings position
@@ -2602,6 +2606,7 @@ std::vector<Edge> MedialAxis2D::neighbouringEdges(gmds::Edge &AE, gmds::Node &AN
 		neighbours.push_back(sorted_edges[0]);
 		return neighbours;
 	}
+	return neighbours;
 
 }
 

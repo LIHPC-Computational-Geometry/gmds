@@ -41,4 +41,10 @@ std::vector<Edge> orientateEdges(Face &AF);
 
 // Regroup aligned conformal edges of a face
 std::vector<std::vector<Edge>> groupsOfAlignedEdges(Face &AF);
+
+// Check if the first point is on the segment formed by the two last points.
+bool isOnSegment(math::Point AP0, math::Point AP1, math::Point AP2);
+
+// Insert a given point in the given set of points.
+std::vector<TCellID> insertPoint(Node AN, std::vector<Node> AV);
 #endif     // GMDS_MEDIALAXISMATH_H

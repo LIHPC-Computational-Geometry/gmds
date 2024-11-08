@@ -310,3 +310,44 @@ std::vector<std::vector<Edge>> groupsOfAlignedEdges(Face &AF)
 	}
 	return groups;
 }
+
+/*----------------------------------------------------------------------------*/
+bool isOnSegment(math::Point AP0, math::Point AP1, math::Point AP2)
+{
+	math::Point U1 = AP1+(-1.)*AP0;
+	math::Point U2 = AP2+(-1.)*AP0;
+	if (vec(U1).norm() < 10e-6)
+		return true;
+	if (vec(U2).norm() < 10e-6)
+		return true;
+	double alpha = oriented_angle(vec(U1),vec(U2));
+	return (fabs(alpha-M_PI)<10e-6 || fabs(alpha+M_PI)<10e-6);
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<TCellID> insertPoint(Node AN, std::vector<Node> AV)
+{
+	std::vector<TCellID> new_list;
+	math::Point P1,P2;
+	bool added = false;
+	for (int i = 0; i < AV.size(); i++)
+	{
+		if (added)
+			new_list.push_back(AV[i].id());
+		else
+		{
+			P2 = AV[i].point();
+			if (i > 0)
+				P1 = AV[i-1].point();
+			else 
+				P1 = AV[AV.size()-1].point();
+			if (isOnSegment(AN.point(),P1,P2))
+			{
+				new_list.push_back(AN.id());
+				added = true;
+				new_list.push_back(AV[i].id());
+			}				 
+		}
+	}
+	return new_list;
+}

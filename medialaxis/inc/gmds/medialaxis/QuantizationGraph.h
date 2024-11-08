@@ -19,6 +19,14 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationGraph
 	// Mesh representation
 	Mesh* m_mesh_representation;
 
+	// Non zero conditions for the quantization solution :
+
+	// Set of verticies with non zero condition
+	std::vector<TCellID> m_non_zero_verticies;
+
+	// Set of groups of verticies, with condition at least one non zero in each group
+	std::vector<std::vector<TCellID>> m_non_zero_groups;
+
  public:
 
 	/*-------------------------------------------------------------------------*/
@@ -32,6 +40,18 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationGraph
          *  @param
 	 */
 	virtual ~QuantizationGraph()=default;
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Accessor to non zero verticies.
+         *  @param
+	 */
+	void nonZeroVerticies(std::vector<TCellID> AV){m_non_zero_verticies = AV;}
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Accessor to non zero groups.
+         *  @param
+	 */
+	void nonZeroGroups(std::vector<std::vector<TCellID>> AV){m_non_zero_groups = AV;}
 
 	/*-------------------------------------------------------------------------*/
 	/** @brief New node.
@@ -76,6 +96,12 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationGraph
 	void markAsPushed(TCellID AID);
 
 	/*-------------------------------------------------------------------------*/
+	/** @brief  Mark the given edge as being in a quad.
+         *  @param AID an edge ID
+	 */
+	void markAsInQuad(TCellID AID);
+
+	/*-------------------------------------------------------------------------*/
 	/** \brief Update the graph connectivity.
 	      *  @param
 	 */
@@ -106,7 +132,7 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationGraph
 	void propagateFromRoots();
 
 	/*-------------------------------------------------------------------------*/
-	/** \brief Add 1 to the solution at every node of the cycle containing the given node.
+	/** \brief Add 1 to the solstd::vector<TCellID> shortestPath;ution at every node of the cycle containing the given node.
 	      *  @param AID a node ID
 	 */
 	void addOnCycle(TCellID AID);
@@ -118,10 +144,10 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationGraph
 	void addOnCycles();
 
 	/*-------------------------------------------------------------------------*/
-	/** \brief Propagate length from roots.
+	/** \brief Build the complete quantization solution (minimizing the number of zeros).
 	      *  @param
 	 */
-	void buildQuantizationSolution();
+	void buildCompleteSolution();
 
 	/*-------------------------------------------------------------------------*/
 	/** @brief Display the quantization solution.
@@ -134,6 +160,75 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationGraph
          *  @param AID a node ID
 	 */
 	int quantizationSolutionValue(TCellID AID);
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Return the shortest path joining the given node to a sink.
+         *  @param AID a node ID
+	 */
+	std::vector<Node> shortestPathToASink(TCellID AID);
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Return the shortest path joining a source to the given node.
+         *  @param AID a node ID
+	 */
+	std::vector<Node> shortestPathFromASource(TCellID AID);
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Return the shortest cycle containing the given node.
+         *  @param AID a node ID
+	 */
+	std::vector<Node> shortestCycle(TCellID AID);
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Return the shortest elementary path containing the given node.
+         *  @param AID a node ID
+	 */
+	std::vector<Node> shortestElementaryPath(TCellID AID);
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Return a cycle reachable from the given node.
+         *  @param AID a node ID
+	 */
+	std::vector<Node> problematicCycle(TCellID AID);
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Get the edge corresponding to the two given nodes, in the right order.
+         *  @param AN1, AN2 two nodes
+	 */
+	Edge getCorrespondingEdge(Node AN1, Node AN2);
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Return a quad edge approximatively in the middle of the given cycle. 
+         *  @param AV a vector of nodes forming a cycle
+	 */
+	Edge middleQuadEdge(std::vector<Node> AV);
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Increase the quantization solution by 1 on the shortest elementary path containing the given node. The function return true if its succeeded
+	 * increasing the solution, ie if the shortest elementary path containing the given node is not empty.
+         *  @param AID a node ID
+	 */
+	bool increaseSolution(TCellID AID);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Build minimal quantization solution (trying to minimize the number of blocks). The function returns couples of nodes 
+	 * preventing from increasing the solution.
+	      *  @param
+	 */
+	std::vector<std::vector<Node>> buildMinimalSolution();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Check is for all half-edge e, l(e)=l(e.next.next). If not, artificially repair it. WARNING : this  solution doesn't garantee that the new solution is valid.
+	      *  @param
+	 */
+	void roughlyRepairSolution();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Check solution validity. The function returns couples of nodes 
+	 * preventing from increasing the solution, in the cas where the solution is not valid.
+	      *  @param
+	 */
+	std::vector<std::vector<Node>> checkSolutionValidity();
 
 
 
