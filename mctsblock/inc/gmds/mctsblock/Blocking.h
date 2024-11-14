@@ -608,6 +608,10 @@ class LIB_GMDS_MCTSBLOCK_API Blocking
 	 */
 	bool is_valid_topology() const;
 
+	bool is_valid_connected();
+
+
+
 	Counter *getCounter()
 	{
 		return &m_counter;

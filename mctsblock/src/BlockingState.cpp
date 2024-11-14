@@ -16,7 +16,7 @@ double BlockingState::weight_edges = 100;
 double BlockingState::weight_faces = 1;
 /*----------------------------------------------------------------------------*/
 BlockingState::BlockingState(std::shared_ptr<Blocking> AB, int ADepth, std::deque<double> APrevScores)
-  : m_blocking(AB), m_depth(ADepth), m_memory_scores(APrevScores)
+	: m_blocking(AB), m_depth(ADepth), m_memory_scores(APrevScores)
 {
 //	m_blocking->reset_classification();
 	m_blocking->extract_boundary(m_boundary_node_ids, m_boundary_edge_ids, m_boundary_face_ids);
@@ -24,17 +24,17 @@ BlockingState::BlockingState(std::shared_ptr<Blocking> AB, int ADepth, std::dequ
 	updateMemory(computeScore());
 
 	m_expected_optimal_score = weight_nodes * m_blocking->geom_model()->getNbPoints()
-	                           + weight_edges * m_blocking->geom_model()->getNbCurves()
-	                           + weight_faces * m_blocking->geom_model()->getNbSurfaces();
+										+ weight_edges * m_blocking->geom_model()->getNbCurves()
+										+ weight_faces * m_blocking->geom_model()->getNbSurfaces();
 }
 /*----------------------------------------------------------------------------*/
 BlockingState::BlockingState(const gmds::mctsblock::BlockingState &AState) :
-  m_blocking(AState.m_blocking),
-  m_depth(AState.m_depth),
-  m_memory_scores(AState.m_memory_scores),
-  m_boundary_node_ids(AState.m_boundary_node_ids),
-  m_boundary_edge_ids(AState.m_boundary_edge_ids),
-  m_boundary_face_ids(AState.m_boundary_face_ids)
+	m_blocking(AState.m_blocking),
+	m_depth(AState.m_depth),
+	m_memory_scores(AState.m_memory_scores),
+	m_boundary_node_ids(AState.m_boundary_node_ids),
+	m_boundary_edge_ids(AState.m_boundary_edge_ids),
+	m_boundary_face_ids(AState.m_boundary_face_ids)
 {
 }
 /*----------------------------------------------------------------------------*/
@@ -57,14 +57,14 @@ BlockingState::win() const
 	/* we win if we don't have anymore classification errors. It means that the
 	   state score, which is the last element of the memory scores, is equal to
 	   0.*/
-	return (m_memory_scores.back() == m_expected_optimal_score);
+	return (m_memory_scores.back() == m_expected_optimal_score && m_blocking->is_valid_connected());
 } /*----------------------------------------------------------------------------*/
 bool
 BlockingState::lost() const
 {
 	bool val = false;
 	//we lost if we don't have actions to perform
-	if (!win() 	&& this->get_actions().empty())
+	if (!win() 	&& (this->get_actions().empty() || computeMinEdgeLenght()<0.001))
 		return true;
 
 	return false;
@@ -108,11 +108,37 @@ BlockingState::write(const std::string &AFileName, const int AStageIndex, const 
 double
 BlockingState::computeScore()
 {
-   auto errors = BlockingClassifier(m_blocking.get()).detect_classification_errors();
+	double score = computeScoreClassification();
+	return score;
+
+}
+/*----------------------------------------------------------------------------*/
+double
+BlockingState::computeScoreClassification()
+{
+	auto errors = BlockingClassifier(m_blocking.get()).detect_classification_errors();
 
 	return weight_nodes*(m_blocking->geom_model()->getNbPoints()-errors.non_captured_points.size())+
-	       weight_edges*(m_blocking->geom_model()->getNbCurves()-errors.non_captured_curves.size())+
-	       weight_faces*(m_blocking->geom_model()->getNbSurfaces()-errors.non_captured_surfaces.size());
+			 weight_edges*(m_blocking->geom_model()->getNbCurves()-errors.non_captured_curves.size())+
+			 weight_faces*(m_blocking->geom_model()->getNbSurfaces()-errors.non_captured_surfaces.size());
+}
+/*----------------------------------------------------------------------------*/
+double
+BlockingState::computeMinEdgeLenght() const
+{
+	double minusEdge = 1000;
+	auto listEdges= m_blocking->get_all_edges();
+
+	for(auto edge : listEdges){
+		auto pointsCurrentEdge =m_blocking->get_nodes_of_edge(edge);
+		double edgeLength = gmds::math::Segment(pointsCurrentEdge[0]->info().point, pointsCurrentEdge[1]->info().point).computeLength();
+		if(edgeLength<minusEdge){
+			minusEdge=edgeLength;
+		}
+	}
+
+	return minusEdge;
+
 }
 /*----------------------------------------------------------------------------*/
 void
@@ -217,14 +243,14 @@ BlockingState::get_possible_cuts() const
 		c->computeBoundingBox(minXYX, maxXYX);
 
 		math::Point bb_corners[8]={
-		   math::Point(minXYX[0], minXYX[1], minXYX[2]),
-		   math::Point(maxXYX[0], maxXYX[1], maxXYX[2]),
-		   math::Point(minXYX[0], minXYX[1], maxXYX[2]),
-		   math::Point(maxXYX[0], minXYX[1], maxXYX[2]),
-		   math::Point(maxXYX[0], minXYX[1], minXYX[2]),
-		   math::Point(minXYX[0], maxXYX[1], maxXYX[2]),
-		   math::Point(minXYX[0], maxXYX[1], minXYX[2]),
-		   math::Point(maxXYX[0], maxXYX[1], minXYX[2])
+			math::Point(minXYX[0], minXYX[1], minXYX[2]),
+			math::Point(maxXYX[0], maxXYX[1], maxXYX[2]),
+			math::Point(minXYX[0], minXYX[1], maxXYX[2]),
+			math::Point(maxXYX[0], minXYX[1], maxXYX[2]),
+			math::Point(maxXYX[0], minXYX[1], minXYX[2]),
+			math::Point(minXYX[0], maxXYX[1], maxXYX[2]),
+			math::Point(minXYX[0], maxXYX[1], minXYX[2]),
+			math::Point(maxXYX[0], maxXYX[1], minXYX[2])
 		};
 		for (auto p:bb_corners) {
 			auto cut_info_p = m_blocking->get_cut_info(p, all_block_edges);

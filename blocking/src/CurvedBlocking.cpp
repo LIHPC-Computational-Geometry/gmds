@@ -565,6 +565,41 @@ CurvedBlocking::is_valid_topology() const {
 }
 
 /*----------------------------------------------------------------------------*/
+bool
+CurvedBlocking::is_valid_connected()
+{
+	std::vector<Block> blocks;
+	blocks.push_back(get_all_blocks()[0]);
+	std::vector<Block> checked_blocks;
+	auto current_block = blocks.back();
+	while(!blocks.empty()){//current block pas dans list checked_blocks
+		checked_blocks.push_back(current_block);
+		blocks.pop_back();
+		auto faces = get_faces_of_block(current_block);
+		while(!faces.empty()){
+			auto current_face = faces.back();
+			faces.pop_back();
+			auto blocks_current_face = get_blocks_of_face(current_face);
+
+			//si block current face pas dans check blocs : add dans blocks / sinon ignorer
+			for(auto b_curFace : blocks_current_face ){
+				bool in = false;
+				for(auto b : checked_blocks){
+					if(b->info().topo_id == b_curFace->info().topo_id){
+						in = true;
+					}
+				}
+				if(!in){
+					blocks.push_back(b_curFace);
+				}
+			}
+		}
+	}
+
+	if(get_all_blocks().size() == checked_blocks.size()) return true;
+	else return false;
+}
+/*----------------------------------------------------------------------------*/
 std::string
 CurvedBlocking::info() const {
     std::ostringstream mess;

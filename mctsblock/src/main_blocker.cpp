@@ -71,6 +71,7 @@ display_info(std::shared_ptr<mctsblock::BlockingState> state)
 		std::cout << i << " ";
 	std::cout << std::endl;
 	std::cout << "\t score: " << state->computeScore() << std::endl;
+	std::cout << "\t connected: " << state->get_blocking()->is_valid_connected() << std::endl;
 }
 /*----------------------------------------------------------------------------*/
 void
@@ -189,10 +190,12 @@ int main(int argc, char* argv[])
 		  solution.get_blocking()->save_vtk_blocking(file_block_out);
 	 }
 	 if(current_state->win()) {
+		 display_info(current_state);
 		 std::cout << "\n\t >>>>>> WIN <<<<<<" << std::endl;
 		 return 1;
 	 }
 	 else if(current_state->lost()) {
+		 display_info(current_state);
 		 std::cout << "\n\t >>>>>> LOST <<<<<<" << std::endl;
 		 return 0;
 	 }

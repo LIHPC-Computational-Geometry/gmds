@@ -503,6 +503,30 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds,
 							e->info().geom_dim = s->dim();
 							e->info().geom_id = s->id();
 						}
+						if(e->info().geom_dim==3){
+							auto p = m_blocking->get_nodes_of_edge(e);
+							auto curves = m_geom_model->getSurface(s->id())->curves();
+							auto p0 = p[0];
+							auto p1 = p[1];
+							if(p0->info().geom_dim == 1 && p1->info().geom_dim == 1){
+								auto p0CurveId = p0->info().geom_id;
+								auto p1CurveId = p1->info().geom_id;
+								bool p0CurveOfSurf=false;
+								bool p1CurveOfSurf=false;
+								for(auto c : curves){
+									if(c->id() == p0CurveId){
+										p0CurveOfSurf = true;
+									}
+									if(c->id() == p1CurveId){
+										p1CurveOfSurf = true;
+									}
+								}
+								if (p0CurveOfSurf && p1CurveOfSurf){
+									e->info().geom_dim = s->dim();
+									e->info().geom_id = s->id();
+								}
+							}
+						}
 					}
 				}
 			}

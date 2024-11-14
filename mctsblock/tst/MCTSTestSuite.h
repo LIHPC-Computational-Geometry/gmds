@@ -211,6 +211,30 @@ TEST(MCTSTestSuite, U_shape) {
 	ASSERT_TRUE(current_state->win());
 }
 /*----------------------------------------------------------------------------*/
+TEST(MCTSTestSuite, cube_minus_edge_Test){
+	gmds::cad::FACManager geom_model;
+	auto pathInitBlocking = "/home/bourmaudp/Downloads/block_aaa.vtk";
+	init_geom(geom_model, "cube_minus_two_edges.vtk");
+	gmds::mctsblock::Blocking bl(&geom_model, false);
+	gmds::Mesh bl_mesh(gmds::MeshModel(gmds::DIM3 | gmds::R | gmds::F | gmds::E | gmds::N | gmds::R2N | gmds::R2F | gmds::R2E | gmds::F2N | gmds::F2R | gmds::F2E
+	                                 | gmds::E2F | gmds::E2N | gmds::N2E));
+	read_blocks(bl_mesh,pathInitBlocking);
+	bl.init_from_mesh(bl_mesh);
+	geom_model.buildGTSTree();
+
+	auto nb_mcts_iter = 1000;
+	auto nb_loop_iter = 100;
+	gmds::mctsblock::BlockingRewardFunction reward_function;
+	auto init_state = std::make_shared<gmds::mctsblock::BlockingState>(std::make_shared<gmds::mctsblock::Blocking>(bl));
+	auto optimal_score = init_state->get_expected_optimal_score();
+	SPUCTSelectionFunction select_function(1.42, optimal_score);
+
+	MCTSAgent agent(&reward_function, &select_function, nb_mcts_iter, 100, 20);
+	auto current_state = init_state;
+	auto minEdge = current_state->computeMinEdgeLenght();
+	std::cout<<"Minus edge lenght: "<<minEdge<<std::endl;
+}
+/*----------------------------------------------------------------------------*/
 //std::string vtk_file = dir + "XYZ.vtk";
 //std::string vtk_file = dir + "T_shape.vtk";
 //std::string vtk_file = dir + "hole.vtk";

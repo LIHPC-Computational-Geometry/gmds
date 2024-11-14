@@ -2,6 +2,7 @@
 #ifndef GMDS_MCTS_BLOCKING_STATE_H
 #define GMDS_MCTS_BLOCKING_STATE_H
 /*----------------------------------------------------------------------------*/
+#include <gmds/math/Point.h>
 #include "mcts/IState.h"
 #include <LIB_GMDS_MCTSBLOCK_export.h>
 #include <gmds/mctsblock/Blocking.h>
@@ -42,8 +43,19 @@ class LIB_GMDS_MCTSBLOCK_API BlockingState : public IState
 	 * @return
 	 */
 	double computeScore();
-
 	void updateMemory(const double AScore);
+
+	/**@brief computes the score of the classification
+	 *
+	 * @return
+	 */
+	double computeScoreClassification();
+	/**@brief computes the min edge length
+	 *
+	 * @return
+	 */
+	double computeMinEdgeLenght() const;
+
 
 	std::shared_ptr<Blocking> get_blocking() const {return m_blocking;}
 	int get_depth() const {return m_depth;}

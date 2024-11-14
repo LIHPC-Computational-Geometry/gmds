@@ -4,6 +4,7 @@ add_executable(GMDS_MCTSBLOCK_TEST
         BlockingClassifierTestSuite.h
         MCTSTestSuite.h
         GraphTestSuite.h
+        DataMCTSTestSuite.h
         main_test.cpp
         )
 #==============================================================================

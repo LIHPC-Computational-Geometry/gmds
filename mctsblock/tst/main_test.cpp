@@ -5,6 +5,7 @@
 #include "BlockingClassifierTestSuite.h"
 #include "BlockingTestSuite.h"
 #include "MCTSTestSuite.h"
+#include "DataMCTSTestSuite.h"
 #include "GraphTestSuite.h"
 /*----------------------------------------------------------------------------*/
 int main(int argc, char ** argv) {

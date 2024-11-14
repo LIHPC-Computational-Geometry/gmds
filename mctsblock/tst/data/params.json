@@ -2,6 +2,6 @@
   "nb_mcts_iter": 1000,
   "nb_loop_iter": 100,
   "uct_C": 1.42,
-  "simulation_depth": 20,
+  "simulation_depth": 50,
   "max_mcts_iteration_time": 100
 }

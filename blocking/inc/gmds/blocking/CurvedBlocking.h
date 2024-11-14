@@ -706,11 +706,17 @@ class LIB_GMDS_BLOCKING_API CurvedBlocking
 	 */
 	std::string info() const;
 
-	/**@brief Check the topological validity of the block structur
+	/**@brief Check the topological validity of the block structure
 	 *
 	 * @return true if valid, false otherwise
 	 */
 	bool is_valid_topology() const;
+
+	/**@brief Check if the block structure is connected with all the blocks
+	 *
+	 * @return true if valid, false otherwise
+	 */
+	bool is_valid_connected();
 	/**\brief Order the edges of @p AEdges accordingly to their distance to @p AP.
 	 * 		 More specifically, we orthogonnaly project @p AP on each edge of @p AEdges.
 	 * 		 For each edge, we store the distance between @p AP and the edge and the coordinate
