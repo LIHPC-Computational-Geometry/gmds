@@ -76,15 +76,17 @@ int main(int argc, char* argv[])
 		// Build the quantized mesh
 		ConformalMeshBuilder cmb(m,qs.halfEdges(),qs.halfEdgesLengths());
 		cmb.execute();
-		cmb.writeQuantizedMesh("quantized_mesh.vtk");
-
 		Mesh quantized_mesh = cmb.getQuantizedMesh();
 
 	
 		// Now we simplify the quantized mesh, ie we try to minimize the number of blocks
 		BlockStructureSimplifier s(quantized_mesh);
-		s.execute();
-		s.writeSimplifiedMesh("simplified_mesh.vtk");
+		// s.execute();
+		// s.writeSimplifiedMesh("simplified_mesh.vtk");
+		s.markSeparatrices();
+		s.setBlocksIDs();
+
+		cmb.writeQuantizedMesh("quantized_mesh.vtk");
 	}
 	else
 	{

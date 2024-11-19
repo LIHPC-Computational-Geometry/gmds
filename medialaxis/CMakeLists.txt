@@ -18,6 +18,7 @@ set(GMDS_INC
         inc/gmds/medialaxis/QuantizationGraph.h
         inc/gmds/medialaxis/ConformalMeshBuilder.h
         inc/gmds/medialaxis/BlockStructureSimplifier.h
+        inc/gmds/medialaxis/MinDelaunayCleaner.h
 )
 set(GMDS_SRC
         src/MedialAxis2D.cpp
@@ -31,6 +32,7 @@ set(GMDS_SRC
         src/QuantizationGraph.cpp
         src/ConformalMeshBuilder.cpp
         src/BlockStructureSimplifier.cpp
+        src/MinDelaunayCleaner.cpp
 )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})

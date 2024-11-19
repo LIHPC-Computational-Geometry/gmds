@@ -119,14 +119,52 @@ std::vector<Edge> QuantizationGraph::getEnteringEdges(gmds::Node &AN)
 }
 
 /*----------------------------------------------------------------------------*/
+Edge QuantizationGraph::getIntEdge(gmds::Node &AN)
+{
+	auto in_quad = m_mesh_representation->getVariable<int,GMDS_EDGE>("inQuad");
+	Edge int_edge;
+	for (auto e:AN.get<Edge>())
+	{
+		if (in_quad->value(e.id()) == 1)
+		{
+			int_edge = e;
+			break;
+		}
+	}
+	return int_edge;
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<Edge> QuantizationGraph::getExtEdges(gmds::Node &AN)
+{
+	auto in_quad = m_mesh_representation->getVariable<int,GMDS_EDGE>("inQuad");
+	std::vector<Edge> ext_edges;
+	for (auto e:AN.get<Edge>())
+	{
+		if (in_quad->value(e.id()) == 0)
+			ext_edges.push_back(e);
+	}
+	return ext_edges;
+}
+
+/*----------------------------------------------------------------------------*/
+Node QuantizationGraph::getOtherNode(Node AN, Edge AE)
+{
+	if (AN.id() == AE.get<Node>()[0].id())
+		return AE.get<Node>()[1];
+	else 
+		return AE.get<Node>()[0];
+}
+
+/*----------------------------------------------------------------------------*/
 void QuantizationGraph::propagateFromRoot(TCellID AID)
 {
 	std::cout<<"> Propagating solution from root "<<AID<<std::endl;
+	auto sol = m_mesh_representation->getVariable<int,GMDS_NODE>("solution");
 	Node root = m_mesh_representation->get<Node>(AID);
-	// Check if the given node is indeed a root
-	if (getEnteringEdges(root).empty())
+	// Check if the given node is indeed a root, and if its length is 0
+	if (getExtEdges(root).empty() && sol->value(AID) == 0)
 	{
-		auto sol = m_mesh_representation->getVariable<int,GMDS_NODE>("solution");
 		// Build all the paths from the root to a leaf or an already seen node
 		std::vector<std::vector<int>> paths;
 		std::vector<int> path;
@@ -136,150 +174,122 @@ void QuantizationGraph::propagateFromRoot(TCellID AID)
 		std::vector<int> newAlreadySeen(m_mesh_representation->getNbNodes());
 		for (int i = 0; i < m_mesh_representation->getNbNodes(); i++)
 			alreadySeen[i] = 0;
+		alreadySeen[root.id()] = 1;
+		int dir = 1; // Convention : when we continue the path trough an interior edges, we say we go in the positive direction.
 		std::queue<std::vector<int>> path_to_continue;
 		path_to_continue.push(path);
 		std::queue<std::vector<int>> already_seen;
 		already_seen.push(alreadySeen);
+		std::queue<int> direction;
+		direction.push(dir);
 		while (!path_to_continue.empty())
 		{
 			path = path_to_continue.front();
 			path_to_continue.pop();
 			alreadySeen = already_seen.front();
 			already_seen.pop();
-			// Continue the path
-			Node n1,n2,n3;
-			n1 = m_mesh_representation->get<Node>(path[path.size()-1]);
-			while(!getLeavingEdges(n1).empty() && alreadySeen[n1.id()] == 0)
+			dir = direction.front();
+			direction.pop();
+			Node last_node = m_mesh_representation->get<Node>(path[path.size()-1]);
+			if (dir == 1)
 			{
-				alreadySeen[n1.id()] = 1;
-				for (auto e: getLeavingEdges(n1))
+				Edge e = getIntEdge(last_node);
+				Node nxt = getOtherNode(last_node,e);
+				if (alreadySeen[nxt.id()] == 0)
 				{
-					n2 = e.get<Node>()[1];
-					if (alreadySeen[n2.id()] == 0)
-					{
-						path.push_back(n2.id());
-						break;
-					}
+					// We continue the path
+					newPath = path;
+					newPath.push_back(nxt.id());
+					path_to_continue.push(newPath);
+					newAlreadySeen = alreadySeen;
+					newAlreadySeen[nxt.id()] = 1;
+					already_seen.push(newAlreadySeen);
+					direction.push(-1);
 				}
-				for (auto e: getLeavingEdges(n1))
-				{
-					n3 = e.get<Node>()[1];
-					if (n3.id() != n2.id() && alreadySeen[n3.id()] == 0)
-					{
-						newPath = path;
-						newPath.erase(newPath.begin()+newPath.size()-1);
-						newPath.push_back(n3.id());
-						newAlreadySeen = alreadySeen;
-						path_to_continue.push(newPath);
-						already_seen.push(newAlreadySeen);
-					}
-				}
-				n1 = n2;
 			}
-			paths.push_back(path);
+			if (dir == -1)
+			{
+				std::vector<Edge> extEdges = getExtEdges(last_node);
+				if (extEdges.empty())
+				{
+					// Then this path is over, we reached an other root
+					paths.push_back(path);
+				}
+				else
+				{
+					for (auto e:extEdges)
+					{
+						Node nxt = getOtherNode(last_node,e);
+						if (alreadySeen[nxt.id()] == 0)
+						{
+							// We continue the path
+							newPath = path;
+							newPath.push_back(nxt.id());
+							path_to_continue.push(newPath);
+							newAlreadySeen = alreadySeen;
+							newAlreadySeen[nxt.id()] = 1;
+							already_seen.push(newAlreadySeen);
+							direction.push(1);
+						}
+					}
+				}
+			}
 		}
-		// Update the solution
-		for (auto p:paths)
+		// Find which path to increase
+		int pos;
+		int maxNbZeros = 0;
+		for (int i = 0; i < paths.size(); i ++)
 		{
-			Node end = m_mesh_representation->get<Node>(p[p.size()-1]);
-			if (getLeavingEdges(end).empty())
+			int NbZeros = 0;
+			for (auto id:paths[i])
 			{
-				for (auto i:p)
-					sol->set(i,sol->value(i)+1);
+				if (sol->value(id) == 0)
+					NbZeros += 1;
+			}
+			if (NbZeros > maxNbZeros)
+			{
+				pos = i;
+				maxNbZeros = NbZeros;
 			}
 		}
+		// Increase the path with the highest numbre of zeros
+		for (auto i:paths[pos])
+		{
+			sol->set(i,sol->value(i)+1);
+		}
+		// // Update the solution
+		// for (auto p:paths)
+		// {
+		// 	// Check if increasing this path is useful
+		// 	bool increase = false;
+		// 	for (auto i:p)
+		// 	{
+		// 		if (sol->value(i) == 0)
+		// 		{
+		// 			increase = true;
+		// 			break;
+		// 		}
+		// 	}
+		// 	if (increase)
+		// 	{
+		// 		for (auto i:p)
+		// 		{
+		// 			sol->set(i,sol->value(i)+1);
+		// 		}
+		// 	}
+		// }
 	}
 }
 
 /*----------------------------------------------------------------------------*/
 void QuantizationGraph::propagateFromRoots()
 {
+	//auto sol = m_mesh_representation->getVariable<int,GMDS_NODE>("solution");
 	for (auto n_id:m_mesh_representation->nodes())
 	{
 		Node n = m_mesh_representation->get<Node>(n_id);
-		if (getEnteringEdges(n).empty())
+		if (getExtEdges(n).empty())
 			propagateFromRoot(n_id);
-	}
-}
-
-/*----------------------------------------------------------------------------*/
-void QuantizationGraph::addOnCycle(gmds::TCellID AID)
-{
-	std::cout<<"> Adding 1 to the solution to every vertex of the cycle of "<<AID<<std::endl;
-	Node n = m_mesh_representation->get<Node>(AID);
-	auto sol = m_mesh_representation->getVariable<int,GMDS_NODE>("solution");
-	// Build all the paths from the node to a leaf or an already seen node
-	std::vector<std::vector<int>> paths;
-	std::vector<int> path;
-	std::vector<int> newPath;
-	path.push_back(n.id());
-	std::vector<int> alreadySeen(m_mesh_representation->getNbNodes());
-	std::vector<int> newAlreadySeen(m_mesh_representation->getNbNodes());
-	for (int i = 0; i < m_mesh_representation->getNbNodes(); i++)
-		alreadySeen[i] = 0;
-	std::queue<std::vector<int>> path_to_continue;
-	path_to_continue.push(path);
-	std::queue<std::vector<int>> already_seen;
-	already_seen.push(alreadySeen);
-	while (!path_to_continue.empty())
-	{
-		path = path_to_continue.front();
-		path_to_continue.pop();
-		alreadySeen = already_seen.front();
-		already_seen.pop();
-		// Continue the path
-		Node n1,n2,n3;
-		n1 = m_mesh_representation->get<Node>(path[path.size()-1]);
-		while(!getLeavingEdges(n1).empty() && alreadySeen[n1.id()] == 0)
-		{
-			alreadySeen[n1.id()] = 1;
-			bool add = false;
-			for (auto e: getLeavingEdges(n1))
-			{
-				n2 = e.get<Node>()[1];
-				if (alreadySeen[n2.id()] == 0)
-				{
-					path.push_back(n2.id());
-					break;
-				}
-			}
-			for (auto e: getLeavingEdges(n1))
-			{
-				n3 = e.get<Node>()[1];
-				if (n3.id() != n2.id() && alreadySeen[n3.id()] == 0)
-				{
-					newPath = path;
-					newPath.erase(newPath.begin()+newPath.size()-1);
-					newPath.push_back(n3.id());
-					newAlreadySeen = alreadySeen;
-					path_to_continue.push(newPath);
-					already_seen.push(newAlreadySeen);
-				}
-			}
-			n1 = n2;
-		}
-		paths.push_back(path);
-	}
-	// Update the solution
-	for (auto p:paths)
-	{
-		Node end = m_mesh_representation->get<Node>(p[p.size()-1]);
-		bool cycle = false;
-		for (auto e: getLeavingEdges(end))
-		{
-			if (e.get<Node>()[1].id() == n.id())
-			{
-				cycle = true;
-				break;
-			}
-		}
-		if (cycle)
-		{
-			for (auto i:p)
-			{
-				sol->set(i,sol->value(i)+1);
-			}
-		}
 	}
 }
 
@@ -290,7 +300,13 @@ void QuantizationGraph::addOnCycles()
 	for (auto n_id:m_mesh_representation->nodes())
 	{
 		if (sol->value(n_id) == 0)
-			addOnCycle(n_id);
+		{
+			std::cout<<"> Adding 1 to the solution to every vertex of the cycle of "<<n_id<<std::endl;
+			// std::vector<Node> cycle = shortestCycle(n_id);
+			// for (auto n:cycle)
+			// 	sol->set(n.id(),sol->value(n.id())+1);
+			increaseSolution(n_id);
+		}
 	}
 }
 
@@ -321,13 +337,14 @@ int QuantizationGraph::quantizationSolutionValue(gmds::TCellID AID)
 }
 
 /*----------------------------------------------------------------------------*/
-std::vector<Node> QuantizationGraph::shortestPathToASink(gmds::TCellID AID)
+std::vector<Node> QuantizationGraph::shortestHalfPath(gmds::TCellID AID, int ADirection)
 {
 	// Get the node
 	Node n0 = m_mesh_representation->get<Node>(AID);
 	// Initialize queues and paths
 	std::queue<std::vector<Node>> paths;
 	std::queue<std::vector<int>> alreadySeen;
+	std::queue<int> direction;
 	std::vector<Node> path;
 	std::vector<int> already_seen(m_mesh_representation->getNbNodes());
 	for (int i = 0; i < m_mesh_representation->getNbNodes(); i++)
@@ -336,6 +353,8 @@ std::vector<Node> QuantizationGraph::shortestPathToASink(gmds::TCellID AID)
 	already_seen[n0.id()] = 1;
 	paths.push(path);
 	alreadySeen.push(already_seen);
+	int dir = ADirection;
+	direction.push(dir);
 	bool Continue = true;
 	std::vector<Node> shortestPath;
 	std::vector<Edge> leaving_edges;
@@ -350,90 +369,57 @@ std::vector<Node> QuantizationGraph::shortestPathToASink(gmds::TCellID AID)
 		paths.pop();
 		already_seen = alreadySeen.front();
 		alreadySeen.pop();
+		dir = direction.front();
+		direction.pop();
 		// Get the current last node of the path
 		front = path[path.size()-1];
-		leaving_edges = getLeavingEdges(front);
-		if (leaving_edges.empty())
+		if (dir == 1)
 		{
-			// It means we have reached a sink
-			shortestPath = path;
-			Continue = false;
+			Edge nxt_edge = getIntEdge(front);
+			Node n = getOtherNode(front,nxt_edge);
+			if (already_seen[n.id()] == 0)
+			{
+				// We continue the path
+				new_path = path;
+				new_path.push_back(n);
+				paths.push(new_path);
+				new_already_seen = already_seen;
+				new_already_seen[n.id()] = 1;
+				alreadySeen.push(new_already_seen);
+				direction.push(-1);
+			}
 		}
 		else
 		{
-			for (auto e:leaving_edges)
+			leaving_edges = getExtEdges(front);
+			if (leaving_edges.empty())
 			{
-				Node n = e.get<Node>()[1];
-				if (already_seen[n.id()] == 0)
+				// It means we have reached a root
+				shortestPath = path;
+				Continue = false;
+			}
+			else
+			{
+				for (auto e:leaving_edges)
 				{
-					// Then the path continues
-					new_path = path;
-					new_path.push_back(n);
-					paths.push(new_path);
-					new_already_seen = already_seen;
-					new_already_seen[n.id()] = 1;
-					alreadySeen.push(new_already_seen);
+					Node n = getOtherNode(front,e);
+					if (already_seen[n.id()] == 0)
+					{
+						// Then the path continues
+						new_path = path;
+						new_path.push_back(n);
+						paths.push(new_path);
+						new_already_seen = already_seen;
+						new_already_seen[n.id()] = 1;
+						alreadySeen.push(new_already_seen);
+						direction.push(1);
+					}
 				}
 			}
 		}
 	}
-
-	return shortestPath;
-}
-
-/*----------------------------------------------------------------------------*/
-std::vector<Node> QuantizationGraph::shortestPathFromASource(TCellID AID)
-{
-	Node n0 = m_mesh_representation->get<Node>(AID);
-	std::queue<std::vector<Node>> paths;
-	std::queue<std::vector<int>> alreadySeen;
-	std::vector<Node> path;
-	std::vector<int> already_seen(m_mesh_representation->getNbNodes());
-	for (int i = 0; i < m_mesh_representation->getNbNodes(); i++)
-		already_seen[i] = 0;
-	path.push_back(n0);
-	already_seen[n0.id()] = 1;
-	paths.push(path);
-	alreadySeen.push(already_seen);
-	bool Continue = true;
-	std::vector<Node> shortestPath;
-	std::vector<Edge> entering_edges;
-	Node front;
-	std::vector<Node> new_path;
-	std::vector<int> new_already_seen(m_mesh_representation->getNbNodes());
-	while (Continue && !paths.empty())
-	{
-		path = paths.front();
-		paths.pop();
-		already_seen = alreadySeen.front();
-		alreadySeen.pop();
-		front = path[path.size()-1];
-		entering_edges = getEnteringEdges(front);
-		if (entering_edges.empty())
-		{
-			// It means we have reached a source
-			shortestPath = path;
-			Continue = false;
-		}
-		else
-		{
-			for (auto e:entering_edges)
-			{
-				Node n = e.get<Node>()[0];
-				if (already_seen[n.id()] == 0)
-				{
-					// Then the path continues
-					new_path = path;
-					new_path.push_back(n);
-					paths.push(new_path);
-					new_already_seen = already_seen;
-					new_already_seen[n.id()] = 1;
-					alreadySeen.push(new_already_seen);
-				}
-			}
-		}
-	}
-	std::reverse(shortestPath.begin(),shortestPath.end());
+	if (ADirection == -1)
+		std::reverse(shortestPath.begin(),shortestPath.end());
 	return shortestPath;
 }
 
@@ -443,6 +429,7 @@ std::vector<Node> QuantizationGraph::shortestCycle(TCellID AID)
 	Node n0 = m_mesh_representation->get<Node>(AID);
 	std::queue<std::vector<Node>> paths;
 	std::queue<std::vector<int>> alreadySeen;
+	std::queue<int> direction;
 	std::vector<Node> path;
 	std::vector<int> already_seen(m_mesh_representation->getNbNodes());
 	for (int i = 0; i < m_mesh_representation->getNbNodes(); i++)
@@ -451,6 +438,8 @@ std::vector<Node> QuantizationGraph::shortestCycle(TCellID AID)
 	already_seen[n0.id()] = 1;
 	paths.push(path);
 	alreadySeen.push(already_seen);
+	direction.push(1);
+	int dir;
 	bool Continue = true;
 	std::vector<Node> shortestCycle;
 	std::vector<Edge> leaving_edges;
@@ -463,17 +452,20 @@ std::vector<Node> QuantizationGraph::shortestCycle(TCellID AID)
 		paths.pop();
 		already_seen = alreadySeen.front();
 		alreadySeen.pop();
+		dir = direction.front();
+		direction.pop();
 		front = path[path.size()-1];
-		leaving_edges = getLeavingEdges(front);
-		for (auto e:leaving_edges)
+		if (dir == 1)
 		{
-			Node n = e.get<Node>()[1];
+			Edge nxt_edge = getIntEdge(front);
+			Node n = getOtherNode(front,nxt_edge);
 			if (n.id() == n0.id())
 			{
 				Continue = false;
 				shortestCycle = path;
+				break;
 			}
-			else
+			else 
 			{
 				if (already_seen[n.id()] == 0)
 				{
@@ -484,6 +476,35 @@ std::vector<Node> QuantizationGraph::shortestCycle(TCellID AID)
 					new_already_seen = already_seen;
 					new_already_seen[n.id()] = 1;
 					alreadySeen.push(new_already_seen);
+					direction.push(-1);
+				}
+			}
+		}
+		else
+		{
+			leaving_edges = getExtEdges(front);
+			for (auto e:leaving_edges)
+			{
+				Node n = getOtherNode(front,e);
+				if (n.id() == n0.id())
+				{
+					Continue = false;
+					shortestCycle = path;
+					break;
+				}
+				else
+				{
+					if (already_seen[n.id()] == 0)
+					{
+						// Then the path continues
+						new_path = path;
+						new_path.push_back(n);
+						paths.push(new_path);
+						new_already_seen = already_seen;
+						new_already_seen[n.id()] = 1;
+						alreadySeen.push(new_already_seen);
+						direction.push(1);
+					}
 				}
 			}
 		}
@@ -495,18 +516,18 @@ std::vector<Node> QuantizationGraph::shortestCycle(TCellID AID)
 std::vector<Node> QuantizationGraph::shortestElementaryPath(TCellID AID)
 {
 	std::vector<Node> shortestPath;
-	std::vector<Node> node2sink = shortestPathToASink(AID);
-	std::vector<Node> source2node = shortestPathFromASource(AID);
+	std::vector<Node> fromNode = shortestHalfPath(AID,1);
+	std::vector<Node> toNode = shortestHalfPath(AID,-1);
 	std::vector<Node> cycle = shortestCycle(AID);
-	if (node2sink.empty() || source2node.empty())
+	if (fromNode.empty() || toNode.empty())
 		shortestPath = cycle;
 	else
 	{
-		if ((node2sink.size()+source2node.size()-1 <= cycle.size()) || cycle.empty())
+		if ((fromNode.size()+toNode.size()-1 <= cycle.size()) || cycle.empty())
 		{
-			shortestPath = source2node;
-			for (int i = 1; i < node2sink.size(); i++)
-				shortestPath.push_back(node2sink[i]);
+			shortestPath = toNode;
+			for (int i = 1; i < fromNode.size(); i++)
+				shortestPath.push_back(fromNode[i]);
 		}
 		else
 			shortestPath = cycle;
@@ -520,6 +541,7 @@ std::vector<Node> QuantizationGraph::problematicCycle(TCellID AID)
 	Node n0 = m_mesh_representation->get<Node>(AID);
 	std::queue<std::vector<Node>> paths;
 	std::queue<std::vector<int>> alreadySeen;
+	std::queue<int> direction;
 	std::vector<Node> path;
 	std::vector<int> already_seen(m_mesh_representation->getNbNodes());
 	for (int i = 0; i < m_mesh_representation->getNbNodes(); i++)
@@ -527,24 +549,39 @@ std::vector<Node> QuantizationGraph::problematicCycle(TCellID AID)
 	path.push_back(n0);
 	already_seen[n0.id()] = 1;
 	paths.push(path);
+	paths.push(path);
 	alreadySeen.push(already_seen);
+	alreadySeen.push(already_seen);
+	direction.push(1);
+	direction.push(-1);
 	bool Continue = true;
 	std::vector<Node> problematicPath;
 	std::vector<Edge> leaving_edges;
 	Node front,lastNode;
 	std::vector<Node> new_path;
 	std::vector<int> new_already_seen(m_mesh_representation->getNbNodes());
+	int dir;
 	while (Continue && !paths.empty())
 	{
 		path = paths.front();
 		paths.pop();
 		already_seen = alreadySeen.front();
 		alreadySeen.pop();
+		dir = direction.front();
+		direction.pop();
 		front = path[path.size()-1];
-		leaving_edges = getLeavingEdges(front);
+		leaving_edges.clear();
+		if (dir == 1)
+		{
+			leaving_edges.push_back(getIntEdge(front));
+		}
+		else
+		{
+			leaving_edges = getExtEdges(front);
+		}
 		for (auto e:leaving_edges)
 		{
-			Node n = e.get<Node>()[1];
+			Node n = getOtherNode(front,e);
 			if (already_seen[n.id()] == 0)
 			{
 				// Then the path continues
@@ -554,6 +591,7 @@ std::vector<Node> QuantizationGraph::problematicCycle(TCellID AID)
 				new_already_seen = already_seen;
 				new_already_seen[n.id()] = 1;
 				alreadySeen.push(new_already_seen);
+				direction.push(-dir);
 			}
 			else
 			{
@@ -561,6 +599,7 @@ std::vector<Node> QuantizationGraph::problematicCycle(TCellID AID)
 				Continue = false;
 				problematicPath = path;
 				lastNode = n;
+				break;
 			}
 			
 		}
@@ -582,9 +621,9 @@ std::vector<Node> QuantizationGraph::problematicCycle(TCellID AID)
 Edge QuantizationGraph::getCorrespondingEdge(Node AN1, Node AN2)
 {
 	Edge e;
-	for (auto e1:getLeavingEdges(AN1))
+	for (auto e1:AN1.get<Edge>())
 	{
-		if (e1.get<Node>()[1].id() == AN2.id())
+		if (e1.get<Node>()[1].id() == AN2.id() || e1.get<Node>()[0].id() == AN2.id())
 		{
 			e = e1;
 			break;
@@ -594,7 +633,7 @@ Edge QuantizationGraph::getCorrespondingEdge(Node AN1, Node AN2)
 }
 
 /*----------------------------------------------------------------------------*/
-Edge QuantizationGraph::middleQuadEdge(std::vector<Node> AV)
+std::vector<Node> QuantizationGraph::middleQuadEdge(std::vector<Node> AV)
 {
 	auto inQuad = m_mesh_representation->getVariable<int,GMDS_EDGE>("inQuad");
 	int i = int(double(AV.size())/2.);
@@ -606,7 +645,7 @@ Edge QuantizationGraph::middleQuadEdge(std::vector<Node> AV)
 		n2 = AV[0];
 	Edge e = getCorrespondingEdge(n1,n2);
 	if (inQuad->value(e.id()))
-		return e;
+		return {n1,n2};
 	else
 	{
 		n2 = n1;
@@ -614,8 +653,7 @@ Edge QuantizationGraph::middleQuadEdge(std::vector<Node> AV)
 			n1 = AV[i-1];
 		else
 			n1 = AV[AV.size()-1];
-		e = getCorrespondingEdge(n1,n2);
-		return e;
+		return {n1,n2};
 	}
 }
 
@@ -647,8 +685,7 @@ std::vector<std::vector<Node>> QuantizationGraph::buildMinimalSolution()
 			if (!success)
 			{
 				std::vector<Node> probCycle = problematicCycle(n_id);
-				Edge probEdge = middleQuadEdge(probCycle);
-				std::vector<Node> probNodes = {probEdge.get<Node>()[0],probEdge.get<Node>()[1]};
+				std::vector<Node> probNodes = middleQuadEdge(probCycle);
 				problematicCouplesOfNodes.push_back(probNodes);
 			}
 		}	
@@ -674,8 +711,7 @@ std::vector<std::vector<Node>> QuantizationGraph::buildMinimalSolution()
 			if (!success)
 			{
 				std::vector<Node> probCycle = problematicCycle(group[0]);
-				Edge probEdge = middleQuadEdge(probCycle);
-				std::vector<Node> probNodes = {probEdge.get<Node>()[0],probEdge.get<Node>()[1]};
+				std::vector<Node> probNodes = middleQuadEdge(probCycle);
 				problematicCouplesOfNodes.push_back(probNodes);
 			}
 		}
@@ -723,8 +759,7 @@ std::vector<std::vector<Node>> QuantizationGraph::checkSolutionValidity()
 		if (sol->value(n_id) == 0)
 		{
 			std::vector<Node> probCycle = problematicCycle(n_id);
-			Edge probEdge = middleQuadEdge(probCycle);
-			std::vector<Node> probNodes = {probEdge.get<Node>()[0],probEdge.get<Node>()[1]};
+			std::vector<Node> probNodes = middleQuadEdge(probCycle);
 			problematicCouplesOfNodes.push_back(probNodes);
 		}	
 	}
@@ -740,8 +775,7 @@ std::vector<std::vector<Node>> QuantizationGraph::checkSolutionValidity()
 		if (!ok)
 		{
 			std::vector<Node> probCycle = problematicCycle(group[0]);
-			Edge probEdge = middleQuadEdge(probCycle);
-			std::vector<Node> probNodes = {probEdge.get<Node>()[0],probEdge.get<Node>()[1]};
+			std::vector<Node> probNodes = middleQuadEdge(probCycle);
 			problematicCouplesOfNodes.push_back(probNodes);
 		}
 	}

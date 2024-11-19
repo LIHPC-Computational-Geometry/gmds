@@ -16,6 +16,8 @@ QuantizationSolver::QuantizationSolver(gmds::Mesh &AMesh)
 	m_mesh->newVariable<int,GMDS_EDGE>("edge2halfEdge2");
 	// Mark with 1 the nodes forming a T-junction
 	m_mesh->newVariable<int,GMDS_NODE>("T-junction");
+	// Mark with 1 the nodes forming a T-junction (the previous variable is no longer necessary)
+	m_mesh->newVariable<int,GMDS_NODE>("is_a_T-junction");
 
 	// Quantization graph
 	m_quantization_graph = new QuantizationGraph();
@@ -26,6 +28,126 @@ QuantizationSolver::QuantizationSolver(gmds::Mesh &AMesh)
 	// Mark with 1 the faces affected by the dipole
 	m_mesh->newVariable<int,GMDS_FACE>("is_affected_by_dipole");
 
+}
+
+/*----------------------------------------------------------------------------*/
+void QuantizationSolver::findTJunctions()
+{
+	auto tj = m_mesh->getVariable<int,GMDS_NODE>("is_a_T-junction");
+	// Initialize at -1
+	for (auto n_id:m_mesh->nodes())
+		tj->set(n_id,-1);
+	for (auto f_id:m_mesh->faces())
+	{
+		Face f = m_mesh->get<Face>(f_id);
+		std::vector<Node> nodes = f.get<Node>();
+		if (nodes.size() != 4)
+		{
+			// Then this face contains T-junctions
+			int NbTJ = nodes.size() - 4;
+			std::vector<Node> t_junctions;
+			// Find the NbTJ flatest angles
+			while (NbTJ > 0)
+			{
+				int min_pos;
+				double min_value = 100;
+				for (int i = 0; i < nodes.size(); i++)
+				{
+					Node n = nodes[i];
+					// Find the two edges of f containing n
+					Edge e1,e2;
+					for (auto e:f.get<Edge>())
+					{
+						if (n.id() == e.get<Node>()[0].id() || n.id() == e.get<Node>()[1].id())
+						{
+							e1 = e;
+							break;
+						}
+					}
+					for (auto e:f.get<Edge>())
+					{
+						if (e.id() != e1.id() && (n.id() == e.get<Node>()[0].id() || n.id() == e.get<Node>()[1].id()))
+						{
+							e2 = e;
+							break;
+						}
+					}
+					double angle = oriented_angle(edge2vec(e1,n),edge2vec(e2,n));
+					double dist;
+					if (fabs(M_PI-angle) < fabs(M_PI+angle))
+						dist = fabs(M_PI-angle);
+					else
+						dist = fabs(M_PI+angle);
+					if (dist < min_value)
+					{
+						min_pos = i;
+						min_value = dist;
+					}
+				}
+				t_junctions.push_back(nodes[min_pos]);
+				nodes.erase(nodes.begin() + min_pos);
+				NbTJ -= 1;
+			}
+			for (auto n:t_junctions)
+				tj->set(n.id(),f_id);
+		}
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<std::vector<Edge>> QuantizationSolver::alignedEdgesGroups(Face &AF)
+{
+	auto tj = m_mesh->getVariable<int,GMDS_NODE>("is_a_T-junction");
+	std::vector<Edge> ordered_edges = orientateEdges(AF);
+	std::vector<std::vector<Edge>> edges_groups;
+	std::vector<Edge> group;
+	// group of the first element
+	bool finished = false;
+	Edge current_edge = ordered_edges[0];
+	group.push_back(current_edge);
+	ordered_edges.erase(ordered_edges.begin());
+	Edge next_edge;
+	while (!finished)
+	{
+		next_edge = ordered_edges[ordered_edges.size()-1];
+		Node n = getCommonNode(current_edge,next_edge);
+		if (tj->value(n.id()) == AF.id())
+		{
+			group.push_back(next_edge);
+			ordered_edges.erase(ordered_edges.begin()+ordered_edges.size()-1);
+			current_edge = next_edge;
+		}
+		else
+			finished = true;
+	}
+	std::reverse(group.begin(),group.end());
+	edges_groups.push_back(group);
+	// Group of the other elements
+	while (!ordered_edges.empty())
+	{
+		group.clear();
+		current_edge = ordered_edges[0];
+		group.push_back(current_edge);
+		ordered_edges.erase(ordered_edges.begin());
+		finished = false;
+		while (!finished)
+		{
+			next_edge = ordered_edges[0];
+			Node n = getCommonNode(current_edge,next_edge);
+			if (tj->value(n.id()) == AF.id())
+			{
+				group.push_back(next_edge);
+				ordered_edges.erase(ordered_edges.begin());
+				current_edge = next_edge;
+				if (ordered_edges.size() == 0)
+					finished = true;
+			}
+			else
+				finished = true;
+		}
+		edges_groups.push_back(group);
+	}
+	return edges_groups;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -46,7 +168,8 @@ QuantizationSolver::buildHalfEdges()
 	for (auto f_id:m_mesh->faces())
 	{
 		Face f = m_mesh->get<Face>(f_id);
-		std::vector<std::vector<Edge>> edges_groups = groupsOfAlignedEdges(f);
+		//std::vector<std::vector<Edge>> edges_groups = groupsOfAlignedEdges(f);
+		std::vector<std::vector<Edge>> edges_groups = alignedEdgesGroups(f);
 		if (edges_groups.size() != 4)
 			throw GMDSException("buildHalfEdges() : non conformal quads must have 4 non conformal edges");
 		for (auto i = 0; i < 4; i++)
@@ -148,7 +271,7 @@ QuantizationSolver::buildConnectedComponent(int AHalfEdgeID)
 		front.pop();
 		m_quantization_graph->markAsVisited(current);
 		NonConformalHalfEdge e = m_half_edges[current];
-		// Build forwards edges
+		// Build edges linking to opp
 		for (auto opp:e.opposite())
 		{
 			if (m_quantization_graph->alreadyVisited(opp) == 0)
@@ -161,14 +284,16 @@ QuantizationSolver::buildConnectedComponent(int AHalfEdgeID)
 				}
 			}
 		}
-		// Build backward edges
+		
 		int nxt = oppositeInQuad(current);
 		if (m_quantization_graph->alreadyVisited(nxt) == 0)
 		{
+			// Build edge linking to next(next)
 			NonConformalHalfEdge e2 = m_half_edges[nxt];
 			m_quantization_graph->markAsVisited(nxt);
 			Edge newGraphEdge = m_quantization_graph->newEdge(nxt,current);
 			m_quantization_graph->markAsInQuad(newGraphEdge.id());
+			// Build edges linking next(next) to opp(next(next))
 			for (auto opp:e2.opposite())
 			{
 				if (m_quantization_graph->alreadyVisited(opp) == 0)
@@ -200,6 +325,7 @@ QuantizationSolver::buildQuantizationGraph()
 {
 	std::cout<<" "<<std::endl;
 	std::cout<<"========== Building the quantization graph =========="<<std::endl;
+	findTJunctions();
 	buildHalfEdges();
 	buildQuantizationGraphNodes();
 	for (int i = 0; i < m_half_edges.size(); i++)
@@ -858,9 +984,9 @@ std::vector<std::vector<Node>> QuantizationSolver::buildCompleteSolution()
 	m_quantization_graph->nonZeroVerticies(non_zeros);
 	m_quantization_graph->updateConnectivity();
 	m_quantization_graph->buildCompleteSolution();
-	m_quantization_graph->roughlyRepairSolution();
+	//m_quantization_graph->roughlyRepairSolution();
 	//m_quantization_graph->display(); // Display the graph
-	//m_quantization_graph->displaySolution(); // Display the quantization solution
+	m_quantization_graph->displaySolution(); // Display the quantization solution
 	std::vector<std::vector<Node>> problematicCouples = m_quantization_graph->checkSolutionValidity();
 
 	std::cout<<"===================================="<<std::endl;

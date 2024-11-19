@@ -50,4 +50,8 @@ std::vector<TCellID> insertPoint(Node AN, std::vector<Node> AV);
 
 // Merge the twp given vectors of points.
 std::vector<math::Point> merge(std::vector<math::Point> AV1, std::vector<math::Point> AV2);
+
+// Takes a vector of edges and a vector of the same size containing quantities assotiated to each edge. Returns the 
+// vector of the edges sorted with respect to this quantity.
+std::vector<Edge> order(std::vector<Edge> AVE, std::vector<double> AVX);
 #endif     // GMDS_MEDIALAXISMATH_H

@@ -169,6 +169,18 @@ class LIB_GMDS_MEDIALAXIS_API BlockStructureSimplifier
          *  @param 
 	 */
 	void execute();
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Attach 1 to edges belonging to separatricies.
+         *  @param 
+	 */
+	void markSeparatrices();
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Attach to each face the id of the block it belongs to.
+         *  @param 
+	 */
+	void setBlocksIDs();
 };
 /*----------------------------------------------------------------------------*/
 }  // end namespace gmds

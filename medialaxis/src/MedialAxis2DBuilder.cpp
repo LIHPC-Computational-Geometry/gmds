@@ -411,6 +411,12 @@ void MedialAxis2DBuilder::buildVoronoiMedialPointsAndEdges()
 		Node n = m_voronoi_medax->newMedPoint(MP);
 		medial_point->set(f.id(), n.id());
 		m_voronoi_medax->setPrimalTriangleID(n.id(),f.id());
+		// Test of the valdity of the circumcenter
+		// double d1 = MP.distance(nf[0].point());
+		// double d2 = MP.distance(nf[1].point());
+		// double d3 = MP.distance(nf[2].point());
+		// if (fabs(d1-d2)+fabs(d1-d3)+fabs(d3-d2) > 1e-5)
+		// 	std::cout<<"buildVoronoiMedialPointsAndEdges() : WARNING, THE CIRCUMCENTER IS IN THE WRONG PLACE"<<std::endl;
 	}
 	// Create the medial edges
 	for (auto e_id:m_mesh->edges())
@@ -565,24 +571,15 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 		}
 		if (NbIPs >= 2)
 		{
-			TCellID ip1,ip2;
+			std::vector<TCellID> intersection_points;
 			for (auto node:AGroups[groupID])
 			{
 				if (m_voronoi_medax->getTouchingPoints(node.id()).size() > 2)
-					{
-						ip1 = node.id();
-						break;
-					}
+					intersection_points.push_back(node.id());
 			}
-			for (auto node:AGroups[groupID])
-			{
-				if (m_voronoi_medax->getTouchingPoints(node.id()).size() > 2 && node.id() != ip1)
-					{
-						ip2 = node.id();
-						break;
-					}
-			}
-			std::vector<math::Point> merged_tangency_points = merge(m_voronoi_medax->getTouchingPoints(ip1),m_voronoi_medax->getTouchingPoints(ip2));
+			std::vector<math::Point> merged_tangency_points;
+			for (auto id:intersection_points)
+				merged_tangency_points = merge(merged_tangency_points,m_voronoi_medax->getTouchingPoints(id));
 			m_smoothed_medax->setTouchingPoints(newPoint,merged_tangency_points);
 		}
 		m_smoothed_medax->setMedialRadius(newPoint, m_voronoi_medax->getMedialRadius(oldPoint));
@@ -665,6 +662,9 @@ void MedialAxis2DBuilder::placeSingularities()
 
 	// Place singularities
 	m_smoothed_medax->placeSingularities(5.0);
+
+	// Remove singularity dipoles
+	m_smoothed_medax->removeSingularityDipoles();
 
 	// Check singularities
 	m_smoothed_medax->checkSingularities(0.1);

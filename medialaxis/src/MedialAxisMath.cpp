@@ -374,3 +374,28 @@ std::vector<math::Point> merge(std::vector<math::Point> AV1, std::vector<math::P
 	}
 	return merged;
 }
+
+/*----------------------------------------------------------------------------*/
+std::vector<Edge> order(std::vector<Edge> AVE, std::vector<double> AVX)
+{
+	std::vector<Edge> sorted_edges;
+	while (!AVX.empty())
+	{
+		int min_pos;
+		double min_x = 10e6;
+		double x;
+		for (int i = 0 ; i < AVX.size() ; i++)
+		{
+			x = AVX[i];
+			if (x < min_x)
+			{
+				min_x =x;
+				min_pos = i;
+			}
+		}
+		sorted_edges.push_back(AVE[min_pos]);
+		AVX.erase(AVX.begin() + min_pos);
+		AVE.erase(AVE.begin() + min_pos);
+	}
+	return sorted_edges;
+}

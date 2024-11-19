@@ -16,6 +16,10 @@ BlockStructureSimplifier::BlockStructureSimplifier(gmds::Mesh &AMesh)
 	m_mesh->newVariable<int,GMDS_NODE>("groupId");
 	// In the mesh simplifying process, gain of the chosing of the node
 	m_mesh->newVariable<double,GMDS_NODE>("chosing_gain");
+	// Attach 1 to edges belonging to a separatrix
+	m_mesh->newVariable<int,GMDS_EDGE>("belongs_to_a_separatrix");
+	// Id of the block to which the face belongs
+	m_mesh->newVariable<int,GMDS_FACE>("block_id");
 
 	// Quantization graph
 	m_quantization_graph = new QuantizationGraph();
@@ -146,7 +150,7 @@ BlockStructureSimplifier::buildConnectedComponent(int AHalfEdgeID)
 		front.pop();
 		m_quantization_graph->markAsVisited(current);
 		NonConformalHalfEdge e = m_half_edges[current];
-		// Build forwards edges
+		// Build edges linking to opp
 		for (auto opp:e.opposite())
 		{
 			if (m_quantization_graph->alreadyVisited(opp) == 0)
@@ -159,21 +163,26 @@ BlockStructureSimplifier::buildConnectedComponent(int AHalfEdgeID)
 				}
 			}
 		}
-		// Build backward edges
+		
 		int nxt = oppositeInQuad(current);
-		NonConformalHalfEdge e2 = m_half_edges[nxt];
-		m_quantization_graph->markAsVisited(nxt);
-		Edge newGraphEdge = m_quantization_graph->newEdge(nxt,current);
-		m_quantization_graph->markAsInQuad(newGraphEdge.id());
-		for (auto opp:e2.opposite())
+		if (m_quantization_graph->alreadyVisited(nxt) == 0)
 		{
-			if (m_quantization_graph->alreadyVisited(opp) == 0)
+			// Build edge linking to next(next)
+			NonConformalHalfEdge e2 = m_half_edges[nxt];
+			m_quantization_graph->markAsVisited(nxt);
+			Edge newGraphEdge = m_quantization_graph->newEdge(nxt,current);
+			m_quantization_graph->markAsInQuad(newGraphEdge.id());
+			// Build edges linking next(next) to opp(next(next))
+			for (auto opp:e2.opposite())
 			{
-				m_quantization_graph->newEdge(opp,nxt);
-				if (m_quantization_graph->alreadyPushed(opp) == 0)
+				if (m_quantization_graph->alreadyVisited(opp) == 0)
 				{
-					front.push(opp);
-					m_quantization_graph->markAsPushed(opp);
+					m_quantization_graph->newEdge(opp,nxt);
+					if (m_quantization_graph->alreadyPushed(opp) == 0)
+					{
+						front.push(opp);
+						m_quantization_graph->markAsPushed(opp);
+					}
 				}
 			}
 		}
@@ -646,7 +655,7 @@ void BlockStructureSimplifier::execute()
 	m_quantization_graph->nonZeroVerticies(non_zeros2);
 	m_quantization_graph->updateConnectivity();
 	m_quantization_graph->buildMinimalSolution();
-	m_quantization_graph->roughlyRepairSolution();
+	//m_quantization_graph->roughlyRepairSolution();
 	//m_quantization_graph->displaySolution();
 	setHalfEdgesLength();
 	computeChosingGains();
@@ -654,6 +663,105 @@ void BlockStructureSimplifier::execute()
 
     std::cout<<"===================================="<<std::endl;
     std::cout<<" "<<std::endl;
+}
+
+/*----------------------------------------------------------------------------*/
+void BlockStructureSimplifier::markSeparatrices()
+{
+	std::cout<<"> Marking separatricies"<<std::endl;
+	auto sep = m_mesh->getVariable<int,GMDS_EDGE>("belongs_to_a_separatrix");
+	for (auto n_id:m_mesh->nodes())
+	{
+		Node n = m_mesh->get<Node>(n_id);
+		if ((isOnBoundary(n) && n.get<Edge>().size() != 3) || (!isOnBoundary(n) && n.get<Edge>().size() != 4))
+		{
+			// Then it is a singularity
+			std::vector<Edge> adj_edges = n.get<Edge>();
+			for (auto e0:adj_edges)
+			{
+				if (e0.get<Face>().size() == 2)
+				{
+					// Then we trace the separatrix
+					Node prev = n;
+					Node nxt;
+					if (e0.get<Node>()[0].id() == prev.id())
+						nxt = e0.get<Node>()[1];
+					else
+						nxt = e0.get<Node>()[0];
+					sep->set(e0.id(),1);
+					Edge current = e0;
+					while (!isOnBoundary(nxt) && nxt.get<Edge>().size() == 4)
+					{
+						prev = nxt;
+						std::vector<Edge> edges = prev.get<Edge>();
+						std::vector<Edge> sorted_edges = sortEdges(prev,edges);
+						// Find the current edge in the list
+						int pos;
+						for (int i = 0; i < sorted_edges.size(); i++)
+						{
+							if (sorted_edges[i].id() == current.id())
+							{
+								pos = i;
+								break;
+							}
+						}
+						current = sorted_edges[(pos+2)%4];
+						if (current.get<Node>()[0].id() == prev.id())
+							nxt = current.get<Node>()[1];
+						else
+							nxt = current.get<Node>()[0];
+						sep->set(current.id(),1);
+					}
+				}
+			
+			}
+		}
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+void BlockStructureSimplifier::setBlocksIDs()
+{
+	std::cout<<"> Setting blocks IDs"<<std::endl;
+	auto id = m_mesh->getVariable<int,GMDS_FACE>("block_id");
+	auto sep = m_mesh->getVariable<int,GMDS_EDGE>("belongs_to_a_separatrix");
+	auto added = m_mesh->newMark<Face>();
+	int ID = 0;
+	// Initialize Ids to -1
+	for (auto f_id:m_mesh->faces())
+		id->set(f_id,-1);
+	for (auto f_id:m_mesh->faces())
+	{
+		if (id->value(f_id) == -1)
+		{
+			// Then we create a new block
+			Face f = m_mesh->get<Face>(f_id);
+			std::queue<Face> toAdd;
+			toAdd.push(f);
+			m_mesh->mark<Face>(f.id(),added);
+			while(!toAdd.empty())
+			{
+				Face f1 = toAdd.front();
+				toAdd.pop();
+				id->set(f1.id(),ID);
+				for (auto e:f1.get<Edge>())
+				{
+					if (sep->value(e.id()) == 0)
+					{
+						for (auto f2:e.get<Face>())
+						{
+							if (f2.id() != f1.id() && !m_mesh->isMarked<Face>(f2.id(),added))
+							{
+								toAdd.push(f2);
+								m_mesh->mark<Face>(f2.id(),added);
+							}
+						}
+					}
+				}
+			}
+			ID += 1;
+		}
+	}
 }
 /*----------------------------------------------------------------------------*/
 }  // end namespace gmds

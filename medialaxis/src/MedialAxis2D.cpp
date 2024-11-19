@@ -63,6 +63,10 @@ MedialAxis2D::MedialAxis2D(){
 	m_topological_representation->newVariable<int,GMDS_NODE>("node_type");
 	// ID of the section to which the point belongs
 	m_mesh_representation->newVariable<int,GMDS_NODE>("section_id");
+	// ID of the subsection to which the point belongs
+	m_mesh_representation->newVariable<int,GMDS_NODE>("subsection_id");
+	// Type of the subsection to which the point belongs
+	m_mesh_representation->newVariable<int,GMDS_NODE>("medial_section_type");
 	// Section/section ID correspondence
 	m_topological_representation->newVariable<int,GMDS_EDGE>("section_to_section_id");
 	// Correspondence medial point/node of the topological representation
@@ -94,6 +98,9 @@ MedialAxis2D::MedialAxis2D(){
 	m_topological_representation->newVariable<std::vector<int>,GMDS_NODE>("singuNode2BoundNodes");
 	// Going from topo rep singu node to its corresponding block decomp middle nodes
 	m_topological_representation->newVariable<std::vector<int>,GMDS_NODE>("singuNode2MiddleNode");
+	// Directions of the medial section
+	m_topological_representation->newVariable<math::Vector,GMDS_EDGE>("tailDirection");
+	m_topological_representation->newVariable<math::Vector,GMDS_EDGE>("headDirection");
 	// Correspondence section/block decomposition nodes
 	m_topological_representation->newVariable<int,GMDS_EDGE>("tailNode");
 	m_topological_representation->newVariable<int,GMDS_EDGE>("headNode");
@@ -225,6 +232,7 @@ void MedialAxis2D::updateConnectivity()
 /*----------------------------------------------------------------------------*/
 std::vector<std::vector<Node>> MedialAxis2D::medialPointsGroups(const double &ATol)
 {
+	auto medPointType = m_mesh_representation->getVariable<int,GMDS_NODE>("medial_point_type");
 	// Medial point/group correspondence
 	auto medialPoint2Group = m_mesh_representation->getVariable<int,GMDS_NODE>("medialPoint2Group");
 	// Associate to each node the value 1 if already visited
@@ -252,7 +260,9 @@ std::vector<std::vector<Node>> MedialAxis2D::medialPointsGroups(const double &AT
 				medialPoint2Group->set(m.id(),groupID);
 				for (auto e:m.get<Edge>())
 				{
-					if (e.length() < ATol)
+					Node n1 = e.get<Node>()[0];
+					Node n2 = e.get<Node>()[1];
+					if (e.length() < ATol || (medPointType->value(n1.id()) == 3 && medPointType->value(n2.id()) == 3))
 					{
 						for (auto m1:e.get<Node>())
 						{
@@ -855,6 +865,36 @@ void MedialAxis2D::placeSingularities(const double& AMedRadiusFraction)
 }
 
 /*----------------------------------------------------------------------------*/
+void MedialAxis2D::removeSingularityDipoles()
+{
+	std::cout<<"> Removing singularity dipoles"<<std::endl;
+	auto sing = m_mesh_representation-> getVariable<int,GMDS_NODE>("singularity");
+	// Remove dipoles
+	for (auto e_id:m_mesh_representation->edges())
+	{
+		Edge e = m_mesh_representation->get<Edge>(e_id);
+		Node n1 = e.get<Node>()[0];
+		Node n2 = e.get<Node>()[1];
+		if (sing->value(n1.id()) != 0 && sing->value(n1.id()) == -sing->value(n2.id()))
+		{
+			sing->set(n1.id(),0);
+			sing->set(n2.id(),0);
+		}
+	}
+	// Remove double singularities
+	for (auto e_id:m_mesh_representation->edges())
+	{
+		Edge e = m_mesh_representation->get<Edge>(e_id);
+		Node n1 = e.get<Node>()[0];
+		Node n2 = e.get<Node>()[1];
+		if (sing->value(n1.id()) != 0 && sing->value(n1.id()) == sing->value(n2.id()))
+		{
+			sing->set(n2.id(),0);
+		}
+	}
+}
+
+/*----------------------------------------------------------------------------*/
 void MedialAxis2D::checkSingularities(const double &AOrthogonalityDefaultTol)
 {
 	std::cout<<"> Checking singularities"<<std::endl;
@@ -1230,6 +1270,225 @@ MedialAxis2D::write(std::basic_string<char> AFileName)
 }
 
 /*----------------------------------------------------------------------------*/
+void MedialAxis2D::setSectionID()
+{
+	std::cout<<"> Setting sections IDs"<<std::endl;
+	auto medPoint2singNode = m_mesh_representation->getVariable<int,GMDS_NODE>("med_point_to_sing_node");
+	auto sectionID = m_mesh_representation->getVariable<int,GMDS_NODE>("section_id");
+	auto subSectionID = m_mesh_representation->getVariable<int,GMDS_NODE>("subsection_id");
+	auto alreadyVisited = m_mesh_representation->newVariable<int,GMDS_NODE>("already_visited");
+	auto medPointType = m_mesh_representation->getVariable<int,GMDS_NODE>("medial_point_type");
+	auto singNode2medPoint = m_topological_representation->getVariable<int,GMDS_NODE>("sing_node_to_med_point");
+	auto nodeType = m_topological_representation->getVariable<int,GMDS_NODE>("node_type");
+	auto singu = m_mesh_representation->getVariable<int,GMDS_NODE>("singularity");
+	int ID = 0;
+	std::vector<Node> section_start; // Vector storing a starting point for each section
+	std::vector<Edge> section_direction; // Vector storing a starting edge containing the starting point for each section
+	for (auto n_id:m_mesh_representation->nodes())
+	{
+		if ((medPointType->value(n_id) == 2) && (singu->value(n_id) == 0) && (alreadyVisited->value(n_id) == 0))
+		{
+			// We build a new section (= new edge of the topo rep)
+
+			// Find the extreme nodes of the section
+			Node n = m_mesh_representation->get<Node>(n_id);
+			alreadyVisited->set(n_id,1);
+			sectionID->set(n.id(),ID);
+			Node prev, nxt;
+			Edge e;
+			// We go to the left
+			prev = n;
+			e = n.get<Edge>()[0];
+			nxt = getNextPoint(prev.id(),e.id());
+			while ((medPointType->value(nxt.id()) == 2) && (singu->value(nxt.id()) == 0))
+			{
+				alreadyVisited->set(nxt.id(),1);
+				sectionID->set(nxt.id(),ID);
+				e = getNextEdge(e.id(),nxt.id());
+				prev = nxt;
+				nxt = getNextPoint(prev.id(),e.id());
+			}
+			section_start.push_back(nxt);
+			section_direction.push_back(e);
+			//Node n1 = nxt;
+			// We go to the right
+			prev = n;
+			e = n.get<Edge>()[1];
+			nxt = getNextPoint(prev.id(),e.id());
+			while ((medPointType->value(nxt.id()) == 2) && (singu->value(nxt.id()) == 0))
+			{
+				alreadyVisited->set(nxt.id(),1);
+				sectionID->set(nxt.id(),ID);
+				e = getNextEdge(e.id(),nxt.id());
+				prev = nxt;
+				nxt = getNextPoint(prev.id(),e.id());
+			}
+			//Node n2 = nxt;
+			ID += 1;
+		}
+	}
+
+	// // Now we build the subsections, in order to refine the mesh
+	// int subSecID = 0;
+	// for (int id = 0; id < ID; id++)
+	// {
+	// 	// Chose one medial point every 10 points on the section to refine it
+	// 	Node prev = section_start[id];
+	// 	Edge e = section_direction[id];
+	// 	Node nxt = getNextPoint(prev.id(),e.id());
+	// 	int steps = 1;
+	// 	bool Continue = true;
+	// 	while (sectionID->value(nxt.id()) == id && Continue)
+	// 	{
+	// 		e = getNextEdge(e.id(),nxt.id());
+	// 		prev = nxt;
+	// 		if (medPointType->value(prev.id()) == 1)
+	// 			Continue = false;
+	// 		nxt = getNextPoint(prev.id(),e.id());
+	// 		if (steps < 15)
+	// 		{
+	// 			subSectionID->set(prev.id(),subSecID);
+	// 			steps += 1;
+	// 		}
+	// 		else
+	// 		{
+	// 			if (sectionID->value(nxt.id()) == id)
+	// 			{
+	// 				Node newNode = m_topological_representation->newNode(prev.point());
+	// 				medPoint2singNode->set(prev.id(),newNode.id());
+	// 				singNode2medPoint->set(newNode.id(),prev.id());
+	// 				nodeType->set(newNode.id(),2);
+	// 				subSecID += 1;
+	// 				steps = 0;
+	// 			}
+	// 		}
+
+
+	// 	}
+	// }
+	
+
+	std::cout<<"NB sections : "<<ID<<std::endl;
+	m_mesh_representation->deleteVariable(GMDS_NODE,alreadyVisited);
+}
+
+/*----------------------------------------------------------------------------*/
+void MedialAxis2D::computeSectionType()
+{
+	auto sectionID = m_mesh_representation->getVariable<int,GMDS_NODE>("section_id");
+	auto cosMedAngle = m_mesh_representation->getVariable<double,GMDS_NODE>("cos_medial_angle");
+	auto type = m_mesh_representation->getVariable<int,GMDS_NODE>("medial_section_type");
+	// Compute the highest section ID
+	int maxID = 0;
+	for (auto n_id:m_mesh_representation->nodes())
+	{
+		if (sectionID->value(n_id) > maxID)
+			maxID = sectionID->value(n_id);
+	}
+	// Vectors storing the number of medial point of each section for each type
+	std::vector<int> type0(maxID+1);
+	std::vector<int> type1(maxID+1);
+	for (int i = 0; i <= maxID; i++)
+	{
+		type0[i] = 0;
+		type1[i] = 0;
+	}
+	for (auto n_id:m_mesh_representation->nodes())
+	{
+		int id = sectionID->value(n_id);
+		if (cosMedAngle->value(n_id) < -sqrt(2.)/2.)
+			type0[id] = type0[id] + 1;
+		else
+		{
+			if (fabs(cosMedAngle->value(n_id)) < sqrt(2.)/2.)
+				type1[id] = type1[id] + 1;
+			else
+				type0[id] = type0[id] + 1;
+		}
+	}
+	for (auto n_id:m_mesh_representation->nodes())
+	{
+		int id = sectionID->value(n_id);
+		if (type0[id] > type1[id])
+			type->set(n_id,0);
+		else
+			type->set(n_id,1);
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<Node> MedialAxis2D::sectionNodes(int AID)
+{
+	auto sectionID = m_mesh_representation->getVariable<int,GMDS_NODE>("section_id");
+	auto medPointType = m_mesh_representation->getVariable<int,GMDS_NODE>("medial_point_type");
+	auto singu = m_mesh_representation->getVariable<int,GMDS_NODE>("singularity");
+	// Find a node of the section
+	Node n0;
+	for (auto n_id:m_mesh_representation->nodes())
+	{
+		if ((medPointType->value(n_id) == 2) && (singu->value(n_id) == 0) && (sectionID->value(n_id) == AID))
+		{
+			n0 = m_mesh_representation->get<Node>(n_id);
+			break;
+		}
+	}
+	// Build the two halfs of the section
+	std::vector<Node> sec;
+	Node prev, nxt;
+	Edge e;
+	// We go to the left
+	prev = n0;
+	e = n0.get<Edge>()[0];
+	nxt = getNextPoint(prev.id(),e.id());
+	while ((medPointType->value(nxt.id()) == 2) && (singu->value(nxt.id()) == 0))
+	{
+		sec.push_back(prev);
+		e = getNextEdge(e.id(),nxt.id());
+		prev = nxt;
+		nxt = getNextPoint(prev.id(),e.id());
+	}
+	if (!sec.empty())
+		sec.erase(sec.begin());
+	std::reverse(sec.begin(),sec.end());
+	// We go to the right
+	prev = n0;
+	e = n0.get<Edge>()[1];
+	nxt = getNextPoint(prev.id(),e.id());
+	while ((medPointType->value(nxt.id()) == 2) && (singu->value(nxt.id()) == 0))
+	{
+		sec.push_back(prev);
+		e = getNextEdge(e.id(),nxt.id());
+		prev = nxt;
+		nxt = getNextPoint(prev.id(),e.id());
+	}
+	return sec;
+}
+
+/*----------------------------------------------------------------------------*/
+void MedialAxis2D::refineByAddingSingularNodes()
+{
+	std::cout<<"> Refining the future block decomposition by adding singular nodes"<<std::endl;
+	auto sectionID = m_mesh_representation->getVariable<int,GMDS_NODE>("section_id");
+	auto singu = m_mesh_representation->getVariable<int,GMDS_NODE>("singularity");
+	// Compute the highest section ID
+	int maxID = 0;
+	for (auto n_id:m_mesh_representation->nodes())
+	{
+		if (sectionID->value(n_id) > maxID)
+			maxID = sectionID->value(n_id);
+	}
+	std::vector<Node> section;
+	for (int id = 0; id <= maxID; id++)
+	{
+		section = sectionNodes(id);
+		int Nb = section.size();
+		int q = Nb/10;
+		for (int i = 1; i < q; i++)
+			singu->set(section[10*i].id(),10);
+	}
+}
+
+/*----------------------------------------------------------------------------*/
 void MedialAxis2D::buildTopoRepNodes()
 {
 	std::cout<<"> Building nodes of the topological representation"<<std::endl;
@@ -1267,60 +1526,6 @@ void MedialAxis2D::buildTopoRepNodes()
 }
 
 /*----------------------------------------------------------------------------*/
-void MedialAxis2D::setSectionID()
-{
-	std::cout<<"> Setting sections IDs"<<std::endl;
-	auto medPoint2singNode = m_mesh_representation->getVariable<int,GMDS_NODE>("med_point_to_sing_node");
-	auto sectionID = m_mesh_representation->getVariable<int,GMDS_NODE>("section_id");
-	auto alreadyVisited = m_mesh_representation->newVariable<int,GMDS_NODE>("already_visited");
-	int ID = 0;
-	for (auto n_id:m_mesh_representation->nodes())
-	{
-		if ((medPoint2singNode->value(n_id) == -1) && (alreadyVisited->value(n_id) == 0))
-		{
-			// We build a new section (= new edge of the topo rep)
-
-			// Find the extreme nodes of the section
-			Node n = m_mesh_representation->get<Node>(n_id);
-			alreadyVisited->set(n_id,1);
-			sectionID->set(n.id(),ID);
-			Node prev, nxt;
-			Edge e;
-			// We go to the left
-			prev = n;
-			e = n.get<Edge>()[0];
-			nxt = getNextPoint(prev.id(),e.id());
-			while (medPoint2singNode->value(nxt.id()) < 0)
-			{
-				alreadyVisited->set(nxt.id(),1);
-				sectionID->set(nxt.id(),ID);
-				e = getNextEdge(e.id(),nxt.id());
-				prev = nxt;
-				nxt = getNextPoint(prev.id(),e.id());
-			}
-			//Node n1 = nxt;
-			// We go to the right
-			prev = n;
-			e = n.get<Edge>()[1];
-			nxt = getNextPoint(prev.id(),e.id());
-			while (medPoint2singNode->value(nxt.id()) < 0)
-			{
-				alreadyVisited->set(nxt.id(),1);
-				sectionID->set(nxt.id(),ID);
-				e = getNextEdge(e.id(),nxt.id());
-				prev = nxt;
-				nxt = getNextPoint(prev.id(),e.id());
-			}
-			//Node n2 = nxt;
-			ID += 1;
-		}
-	}
-
-	std::cout<<"NB sections : "<<ID<<std::endl;
-	m_mesh_representation->deleteVariable(GMDS_NODE,alreadyVisited);
-}
-
-/*----------------------------------------------------------------------------*/
 void MedialAxis2D::buildTopoRepEdges()
 {
 	std::cout<<"> Building edges of the topological representation"<<std::endl;
@@ -1328,28 +1533,33 @@ void MedialAxis2D::buildTopoRepEdges()
 	auto medPointType = m_mesh_representation->getVariable<int,GMDS_NODE>("medial_point_type");
 	auto cosMedAngle = m_mesh_representation->getVariable<double,GMDS_NODE>("cos_medial_angle");
 	auto sectionType = m_topological_representation->getVariable<int,GMDS_EDGE>("section_type");
+	auto secTypeOnNodes = m_mesh_representation->getVariable<int,GMDS_NODE>("medial_section_type");
 	auto medPoint2singNode = m_mesh_representation->getVariable<int,GMDS_NODE>("med_point_to_sing_node");
 	auto wings = m_topological_representation->getVariable<int,GMDS_EDGE>("wings_position");
 	auto touchingPoints = m_mesh_representation->getVariable<std::vector<math::Point>,GMDS_NODE>("touching_points");
 	auto section2sectionID = m_topological_representation->getVariable<int,GMDS_EDGE>("section_to_section_id");
 	auto sectionID = m_mesh_representation->getVariable<int,GMDS_NODE>("section_id");
+	//auto subSectionID = m_mesh_representation->getVariable<int,GMDS_NODE>("subsection_id");
+	auto tailDir = m_topological_representation->getVariable<math::Vector,GMDS_EDGE>("tailDirection");
+	auto headDir = m_topological_representation->getVariable<math::Vector,GMDS_EDGE>("headDirection");
 	for (auto n_id:m_mesh_representation->nodes())
 	{
 		if (medPoint2singNode->value(n_id) == -1 && medPointType->value(n_id) == 2)
 		{
 			// We build a new section (= new edge of the topo rep)
 			// Type of the section
-			int type;
-			if (cosMedAngle->value(n_id) < -sqrt(2.)/2.)
-				type = 0;
-			else
-			{
-				if (fabs(cosMedAngle->value(n_id)) < sqrt(2.)/2.)
-					type = 1;
-				else
-					type = 0;
-			}
+			int type = secTypeOnNodes->value(n_id);
+			// if (cosMedAngle->value(n_id) < -sqrt(2.)/2.)
+			// 	type = 0;
+			// else
+			// {
+			// 	if (fabs(cosMedAngle->value(n_id)) < sqrt(2.)/2.)
+			// 		type = 1;
+			// 	else
+			// 		type = 0;
+			// }
 
+			//int sectID = subSectionID->value(n_id);
 			int sectID = sectionID->value(n_id);
 
 			// Find the extreme nodes of the section
@@ -1368,6 +1578,8 @@ void MedialAxis2D::buildTopoRepEdges()
 				prev = nxt;
 				nxt = getNextPoint(prev.id(),e.id());
 			}
+			// Tail direction of the section
+			math::Vector tail_dir = edge2vec(e,nxt);
 			Node n1 = nxt;
 			// We go to the right
 			prev = n;
@@ -1380,10 +1592,15 @@ void MedialAxis2D::buildTopoRepEdges()
 				prev = nxt;
 				nxt = getNextPoint(prev.id(),e.id());
 			}
+			// Head direction of the section
+			math::Vector head_dir = edge2vec(e,prev);
 			Node n2 = nxt;
 			TCellID N1 = medPoint2singNode->value(n1.id());
 			TCellID N2 = medPoint2singNode->value(n2.id());
 			Edge newSection = m_topological_representation->newEdge(N1,N2);
+			// Directions of the section
+			tailDir->set(newSection.id(),tail_dir);
+			headDir->set(newSection.id(),head_dir);
 			// All end sections must be of type 1
 			if (medPointType->value(n1.id()) == 1 || medPointType->value(n2.id()) == 1)
 				type = 1;
@@ -1443,268 +1660,6 @@ void MedialAxis2D::setTopoRepConnectivity()
 	std::cout<<"> Setting topological representation connectivity"<<std::endl;
 	MeshDoctor doc(m_topological_representation);
 	doc.updateUpwardConnectivity();
-}
-
-/*----------------------------------------------------------------------------*/
-int MedialAxis2D::NbDoF()
-{
-	auto section2matrix = m_topological_representation->getVariable<int,GMDS_EDGE>("section2matrix");
-	auto type = m_topological_representation->getVariable<int,GMDS_EDGE>("section_type");
-	int N = 0;
-	for (auto e_id:m_topological_representation->edges())
-	{
-		section2matrix->set(e_id,N);
-		if (type->value(e_id) == 0)
-			N += 3;
-		else
-			N += 4;
-	}
-	return N;
-}
-
-/*----------------------------------------------------------------------------*/
-int MedialAxis2D::NbEquations()
-{
-	auto nodeType = m_topological_representation->getVariable<int,GMDS_NODE>("node_type");
-	auto sectionType = m_topological_representation->getVariable<int,GMDS_EDGE>("section_type");
-	int N = 0;
-	for (auto n_id:m_topological_representation->nodes())
-	{
-		N += nodeType->value(n_id);
-		if (nodeType->value(n_id) == 1)
-		{
-			Node n = m_topological_representation->get<Node>(n_id);
-			Edge e = n.get<Edge>()[0];
-			if (sectionType->value(e.id()) == 1)
-				N += wings(n,e);
-			if (sectionType->value(e.id()) == 2)
-				N += 1;
-		}
-	}
-	return N;
-}
-
-/*----------------------------------------------------------------------------*/
-Eigen::MatrixXd MedialAxis2D::constraintMatrix()
-{
-	auto nodeType = m_topological_representation->getVariable<int,GMDS_NODE>("node_type");
-	auto sectionType = m_topological_representation->getVariable<int,GMDS_EDGE>("section_type");
-	auto section2matrix = m_topological_representation->getVariable<int,GMDS_EDGE>("section2matrix");
-	auto singNode2medPoint = m_topological_representation->getVariable<int,GMDS_NODE>("sing_node_to_med_point");
-	auto section2sectionID = m_topological_representation->getVariable<int,GMDS_EDGE>("section_to_section_id");
-	auto sectionID = m_mesh_representation->getVariable<int,GMDS_NODE>("section_id");
-	int nbDoF = NbDoF();
-	int nbEqu = NbEquations();
-	Eigen::MatrixXd A;
-	A.resize(nbEqu,nbDoF);
-	A.setZero();
-
-	int row = 0;
-	int col;
-
-	for (auto n_id:m_topological_representation->nodes())
-	{
-		Node n = m_topological_representation->get<Node>(n_id);
-
-		if (nodeType->value(n_id) == 1)
-		{
-			Edge S = n.get<Edge>()[0];
-			col = section2matrix->value(S.id());
-			if (sectionType->value(S.id()) == 1)
-			{
-				if (wings(n,S) == 1)
-				{
-					A(row,col) = 1.;
-					A(row+1,col+1) = 1.;
-					row += 2;
-				}
-				else
-				{
-					A(row,col) = 1.;
-					A(row,col+1) = -1.;
-					row += 1;
-				}
-			}
-			else
-				std::cout<<"WARNING : there is a section of type 0 or 2 at an end point. This is not implemented yet"<<std::endl;
-		}
-
-		if (nodeType->value(n_id) == 2)
-		{
-			// First section
-			Edge S = n.get<Edge>()[0];
-			int orient = orientation(n,S);
-			orient = (orient + 1)/2;
-			col = section2matrix->value(S.id());
-			if (sectionType->value(S.id()) == 0)
-			{
-				A(row,col + orient + 1) = 1.;
-				A(row + 1,col + 2 - orient) = 1.;
-			}
-			if (sectionType->value(S.id()) == 1)
-			{
-				A(row,col + orient) = 1.;
-				A(row + 1,col + 1 - orient) = 1.;
-				if (wings(n,S) == 0)
-				{
-					A(row,col + orient + 2) = 1.;
-					A(row + 1,col + 3 - orient) = 1.;
-				}
-			}
-			if (sectionType->value(S.id()) == 2)
-				std::cout<<"WARNING : there is a section of type 2. This is not implemented yet"<<std::endl;
-
-			// Second section
-			S = n.get<Edge>()[1];
-			orient = orientation(n,S);
-			orient = (orient + 1)/2;
-			col = section2matrix->value(S.id());
-			if (sectionType->value(S.id()) == 0)
-			{
-				A(row,col - orient + 2) = -1.;
-				A(row + 1,col + 1 + orient) = -1.;
-			}
-			if (sectionType->value(S.id()) == 1)
-			{
-				A(row,col + 1 - orient) = -1.;
-				A(row + 1,col + orient) = -1.;
-				if (wings(n,S) == 0)
-				{
-					A(row,col - orient + 3) = -1.;
-					A(row + 1,col + 2 + orient) = -1.;
-				}
-			}
-			if (sectionType->value(S.id()) == 2)
-				std::cout<<"WARNING : there is a section of type 2. This is not implemented yet"<<std::endl;
-
-			row += 2;
-		}
-
-		if (nodeType->value(n_id) >= 3)
-		{
-			// Order the sections
-			TCellID medPointID = singNode2medPoint->value(n_id);
-			Node medPoint = m_mesh_representation->get<Node>(medPointID);
-			std::vector<Edge> adj_edges = medPoint.get<Edge>();
-			// Compute the angles
-			std::vector<double> angles;
-			for (auto e:adj_edges)
-			{
-				Node n1,n2;
-				if (medPoint.id() == e.get<Node>()[0].id())
-				{
-					n1 = e.get<Node>()[0];
-					n2 = e.get<Node>()[1];
-				}
-				else
-				{
-					n1 = e.get<Node>()[1];
-					n2 = e.get<Node>()[0];
-				}
-				math::Point E = n2.point() + (-1.)*n1.point();
-				double cosTheta = E.X()/vec(E).norm();
-				double sinTheta = E.Y()/vec(E).norm();
-				double theta;
-				if (fabs(cosTheta-1)<10e-6)
-					theta = 0.;
-				else
-				{
-					if (fabs(cosTheta+1)<10e-6)
-						theta = M_PI;
-					else
-						theta = acos(cosTheta);
-				}
-				if (sinTheta < -10e-6)
-					theta = 2.*M_PI - theta;
-				angles.push_back(theta);
-			}
-
-			// Sort the edges
-			std::vector<Edge> sorted_edges;
-			int smallest_angle_index;
-			double min_angle;
-			for (int j = 1; j <= angles.size(); j ++)
-			{
-				// Find the jth smallest angle
-				min_angle = 10.;
-				for (auto i = 0; i < angles.size(); i ++)
-				{
-					if (min_angle > angles[i])
-					{
-						min_angle = angles[i];
-						smallest_angle_index = i;
-					}
-				}
-				angles[smallest_angle_index] = 20.;
-				sorted_edges.push_back(adj_edges[smallest_angle_index]);
-			}
-
-			// Sorted sections
-			std::vector<Edge> sorted_sections;
-			for (auto e:sorted_edges)
-			{
-				// Find the section to which this edge belongs
-				Node medPoint2;
-				if (e.get<Node>()[0].id() == medPoint.id())
-					medPoint2 = e.get<Node>()[1];
-				else
-					medPoint2 = e.get<Node>()[0];
-				int sectID = sectionID->value(medPoint2.id());
-				Edge section;
-				for (auto s:n.get<Edge>())
-				{
-					if (section2sectionID->value(s.id()) == sectID)
-					{
-						section = s;
-						break;
-					}
-				}
-				sorted_sections.push_back(section);
-			}
-
-			// Now that the sections are sorted, write an equation for each pair of consecutive section
-			for (int i = 0; i < sorted_sections.size(); i ++)
-			{
-				Edge S1 = sorted_sections[i];
-				Edge S2;
-				if (i < sorted_sections.size() - 1)
-					S2 = sorted_sections[i+1];
-				else
-					S2 = sorted_sections[0];
-				// First section
-				int orient = orientation(n,S1);
-				orient = (orient + 1)/2;
-				col = section2matrix->value(S1.id());
-				if (sectionType->value(S1.id()) == 0)
-					A(row,col + 1 + orient) = 1.;
-				if (sectionType->value(S1.id()) == 1)
-				{
-					A(row,col + orient) = 1.;
-					if (wings(n,S1) == 0)
-						A(row,col + orient + 2) = 1.;
-				}
-				if (sectionType->value(S1.id()) == 2)
-					std::cout<<"Case section type 2 not implemented yet"<<std::endl;
-				// Second section
-				orient = orientation(n,S2);
-				orient = (orient + 1)/2;
-				col = section2matrix->value(S2.id());
-				if (sectionType->value(S2.id()) == 0)
-					A(row,col + 2 - orient) = -1.;
-				if (sectionType->value(S2.id()) == 1)
-				{
-					A(row,col + 1 - orient) = -1.;
-					if (wings(n,S2) == 0)
-						A(row,col - orient + 3) = -1.;
-				}
-				if (sectionType->value(S2.id()) == 2)
-					std::cout<<"Case section type 2 not implemented yet"<<std::endl;
-				row += 1;
-			}
-		}
-	}
-
-	return A;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1771,382 +1726,6 @@ void MedialAxis2D::browseTopoRep()
 }
 
 /*----------------------------------------------------------------------------*/
-void MedialAxis2D::buildDofGraphNodes()
-{
-	std::cout<<"> Building the quantization degrees of freedom graph nodes"<<std::endl;
-
-	// Initialize the dof/graph correspondence to -1
-	auto LL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2LeftQuadLength");
-	auto RL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2RightQuadLength");
-	auto H = m_topological_representation->getVariable<int,GMDS_EDGE>("section2QuadHeight");
-	auto DLL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2LeftDiagoQuadLength");
-	auto DRL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2RightDiagoQuadLength");
-	for (auto section_id:m_topological_representation->edges())
-	{
-		LL->set(section_id,-1);
-		RL->set(section_id,-1);
-		H->set(section_id,-1);
-		DLL->set(section_id,-1);
-		DRL->set(section_id,-1);
-	}
-
-	auto nodeType = m_topological_representation->getVariable<int,GMDS_NODE>("node_type");
-	auto sectionType = m_topological_representation->getVariable<int,GMDS_EDGE>("section_type");
-
-	Node newNode;
-	for (auto s_id:m_topological_representation->edges())
-	{
-		// Create a node for each dof of the section, depending on its type
-		if (sectionType->value(s_id) == 0)
-		{
-			newNode = m_dof_graph->newNode();
-			LL->set(s_id,newNode.id());
-			newNode = m_dof_graph->newNode();
-			RL->set(s_id,newNode.id());
-			newNode = m_dof_graph->newNode();
-			H->set(s_id,newNode.id());
-		}
-		else
-		{
-			newNode = m_dof_graph->newNode();
-			DLL->set(s_id,newNode.id());
-			newNode = m_dof_graph->newNode();
-			DRL->set(s_id,newNode.id());
-
-			Edge section = m_topological_representation->get<Edge>(s_id);
-			Node n1 = section.get<Node>()[0];
-			Node n2 = section.get<Node>()[1];
-			if (nodeType->value(n1.id()) != 1 && nodeType->value(n2.id()) != 1)
-			{
-				newNode = m_dof_graph->newNode();
-				LL->set(s_id,newNode.id());
-				newNode = m_dof_graph->newNode();
-				RL->set(s_id,newNode.id());
-			}
-		}
-	}
-	std::cout<<"NB dof : "<<m_dof_graph->getNbNodes()<<std::endl;
-}
-
-/*----------------------------------------------------------------------------*/
-void MedialAxis2D::dofEdge00(gmds::Edge &ASection1, gmds::Edge &ASection2, int ASide1, int ASide2)
-{
-	auto LL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2LeftQuadLength");
-	auto RL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2RightQuadLength");
-
-	int dof1_id;
-	if (ASide1 == 0)
-		dof1_id = LL->value(ASection1.id());
-	else
-		dof1_id = RL->value(ASection1.id());
-	int dof2_id;
-	if (ASide2 == 0)
-		dof2_id = LL->value(ASection2.id());
-	else
-		dof2_id = RL->value(ASection2.id());
-	m_dof_graph->newEdge(dof1_id,dof2_id);
-}
-
-/*----------------------------------------------------------------------------*/
-void MedialAxis2D::dofEdges11(gmds::Edge &ASection1, gmds::Edge &ASection2, int ASide1, int ASide2)
-{
-	auto LL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2LeftQuadLength");
-	auto RL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2RightQuadLength");
-	auto DLL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2LeftDiagoQuadLength");
-	auto DRL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2RightDiagoQuadLength");
-
-	int dof11_id;
-	if (ASide1 == 0)
-		dof11_id = LL->value(ASection1.id());
-	else
-		dof11_id = RL->value(ASection1.id());
-
-	int dof12_id;
-	if (ASide1 == 0)
-		dof12_id = DLL->value(ASection1.id());
-	else
-		dof12_id = DRL->value(ASection1.id());
-
-	int dof21_id;
-	if (ASide2 == 0)
-		dof21_id = LL->value(ASection2.id());
-	else
-		dof21_id = RL->value(ASection2.id());
-
-	int dof22_id;
-	if (ASide2 == 0)
-		dof22_id = DLL->value(ASection2.id());
-	else
-		dof22_id = DRL->value(ASection2.id());
-
-	if (dof11_id >= 0 && dof21_id >= 0)
-	{
-		m_dof_graph->newEdge(dof11_id,dof21_id);
-		m_dof_graph->newEdge(dof12_id,dof22_id);
-	}
-
-	if (dof11_id < 0 && dof21_id < 0)
-	{
-		m_dof_graph->newEdge(dof12_id,dof22_id);
-	}
-
-	if (dof11_id < 0 && dof21_id >= 0)
-	{
-		m_dof_graph->newEdge(dof12_id,dof21_id);
-		m_dof_graph->newEdge(dof12_id,dof22_id);
-	}
-
-	if (dof11_id >= 0 && dof21_id < 0)
-	{
-		m_dof_graph->newEdge(dof11_id,dof22_id);
-		m_dof_graph->newEdge(dof12_id,dof22_id);
-	}
-}
-
-/*----------------------------------------------------------------------------*/
-void MedialAxis2D::dofEdges01(gmds::Edge &ASection1, gmds::Edge &ASection2, int ASide1, int ASide2)
-{
-	auto LL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2LeftQuadLength");
-	auto RL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2RightQuadLength");
-	auto DLL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2LeftDiagoQuadLength");
-	auto DRL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2RightDiagoQuadLength");
-
-	int dof11_id;
-	if (ASide1 == 0)
-		dof11_id = LL->value(ASection1.id());
-	else
-		dof11_id = RL->value(ASection1.id());
-
-	int dof21_id;
-	if (ASide2 == 0)
-		dof21_id = LL->value(ASection2.id());
-	else
-		dof21_id = RL->value(ASection2.id());
-
-	int dof22_id;
-	if (ASide2 == 0)
-		dof22_id = DLL->value(ASection2.id());
-	else
-		dof22_id = DRL->value(ASection2.id());
-
-	if (dof21_id >= 0)
-		m_dof_graph->newEdge(dof11_id,dof21_id);
-	Node n = getCommonNode(ASection1,ASection2);
-	if (wings(n,ASection2) == 0)
-		m_dof_graph->newEdge(dof11_id,dof22_id);
-}
-
-/*----------------------------------------------------------------------------*/
-void MedialAxis2D::dofEdges10(gmds::Edge &ASection1, gmds::Edge &ASection2, int ASide1, int ASide2)
-{
-	auto LL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2LeftQuadLength");
-	auto RL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2RightQuadLength");
-	auto DLL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2LeftDiagoQuadLength");
-	auto DRL = m_topological_representation->getVariable<int,GMDS_EDGE>("section2RightDiagoQuadLength");
-
-	int dof11_id;
-	if (ASide1 == 0)
-		dof11_id = LL->value(ASection1.id());
-	else
-		dof11_id = RL->value(ASection1.id());
-
-	int dof12_id;
-	if (ASide1 == 0)
-		dof12_id = DLL->value(ASection1.id());
-	else
-		dof12_id = DRL->value(ASection1.id());
-
-	int dof21_id;
-	if (ASide2 == 0)
-		dof21_id = LL->value(ASection2.id());
-	else
-		dof21_id = RL->value(ASection2.id());
-
-	if (dof11_id >= 0)
-		m_dof_graph->newEdge(dof11_id,dof21_id);
-	Node n = getCommonNode(ASection1,ASection2);
-	if (wings(n,ASection1) == 0)
-		m_dof_graph->newEdge(dof12_id,dof21_id);
-}
-
-/*----------------------------------------------------------------------------*/
-void MedialAxis2D::dofEdges(gmds::Edge &ASection1, gmds::Edge &ASection2)
-{
-	auto sectionType = m_topological_representation->getVariable<int,GMDS_EDGE>("section_type");
-
-	Node n = getCommonNode(ASection1,ASection2);
-
-	if (sectionType->value(ASection1.id()) == 0 && sectionType->value(ASection2.id()) == 0)
-	{
-		if (orientation(n,ASection1) == 1 && orientation(n,ASection2) == 1)
-		{
-			dofEdge00(ASection1,ASection2,0,1);
-		}
-		if (orientation(n,ASection1) == 1 && orientation(n,ASection2) == -1)
-		{
-			dofEdge00(ASection1,ASection2,0,0);
-		}
-		if (orientation(n,ASection1) == -1 && orientation(n,ASection2) == 1)
-		{
-			dofEdge00(ASection1,ASection2,1,1);
-		}
-		if (orientation(n,ASection1) == -1 && orientation(n,ASection2) == -1)
-		{
-			dofEdge00(ASection1,ASection2,1,0);
-		}
-	}
-
-	if (sectionType->value(ASection1.id()) == 0 && sectionType->value(ASection2.id()) == 1)
-	{
-		if (orientation(n,ASection1) == 1 && orientation(n,ASection2) == 1)
-		{
-			dofEdges01(ASection1,ASection2,0,1);
-		}
-		if (orientation(n,ASection1) == 1 && orientation(n,ASection2) == -1)
-		{
-			dofEdges01(ASection1,ASection2,0,0);
-		}
-		if (orientation(n,ASection1) == -1 && orientation(n,ASection2) == 1)
-		{
-			dofEdges01(ASection1,ASection2,1,1);
-		}
-		if (orientation(n,ASection1) == -1 && orientation(n,ASection2) == -1)
-		{
-			dofEdges01(ASection1,ASection2,1,0);
-		}
-	}
-
-	if (sectionType->value(ASection1.id()) == 1 && sectionType->value(ASection2.id()) == 0)
-	{
-		if (orientation(n,ASection1) == 1 && orientation(n,ASection2) == 1)
-		{
-			dofEdges10(ASection1,ASection2,0,1);
-		}
-		if (orientation(n,ASection1) == 1 && orientation(n,ASection2) == -1)
-		{
-			dofEdges10(ASection1,ASection2,0,0);
-		}
-		if (orientation(n,ASection1) == -1 && orientation(n,ASection2) == 1)
-		{
-			dofEdges10(ASection1,ASection2,1,1);
-		}
-		if (orientation(n,ASection1) == -1 && orientation(n,ASection2) == -1)
-		{
-			dofEdges10(ASection1,ASection2,1,0);
-		}
-	}
-
-	if (sectionType->value(ASection1.id()) == 1 && sectionType->value(ASection2.id()) == 1)
-	{
-		if (orientation(n,ASection1) == 1 && orientation(n,ASection2) == 1)
-		{
-			dofEdges11(ASection1,ASection2,0,1);
-		}
-		if (orientation(n,ASection1) == 1 && orientation(n,ASection2) == -1)
-		{
-			dofEdges11(ASection1,ASection2,0,0);
-		}
-		if (orientation(n,ASection1) == -1 && orientation(n,ASection2) == 1)
-		{
-			dofEdges11(ASection1,ASection2,1,1);
-		}
-		if (orientation(n,ASection1) == -1 && orientation(n,ASection2) == -1)
-		{
-			dofEdges11(ASection1,ASection2,1,0);
-		}
-	}
-}
-
-/*----------------------------------------------------------------------------*/
-void MedialAxis2D::buildDofGraphEdges()
-{
-	std::cout<<"> Building the quantization degrees of freedom graph edges"<<std::endl;
-
-	auto nodeType = m_topological_representation->getVariable<int,GMDS_NODE>("node_type");
-	for (auto n_id:m_topological_representation->nodes())
-	{
-		Node n = m_topological_representation->get<Node>(n_id);
-		if (nodeType->value(n_id) == 2)
-		{
-			dofEdges(n.get<Edge>()[0],n.get<Edge>()[1]);
-			dofEdges(n.get<Edge>()[1],n.get<Edge>()[0]);
-		}
-
-		if (nodeType->value(n_id) > 2)
-		{
-			std::vector<Edge> adj_edges = n.get<Edge>();
-			std::vector<Edge> sorted_edges = sortEdges(n,adj_edges);
-			for (int i = 0; i < sorted_edges.size()-1; i++)
-				dofEdges(sorted_edges[i],sorted_edges[i+1]);
-			dofEdges(sorted_edges[sorted_edges.size()-1],sorted_edges[0]);
-		}
-	}
-
-
-	// Display the edges
-	std::cout<<"Dof edges :"<<std::endl;
-	for (auto e_id:m_dof_graph->edges())
-	{
-		Edge e = m_dof_graph->get<Edge>(e_id);
-		std::cout<<"("<<e.get<Node>()[0].id()<<","<<e.get<Node>()[1].id()<<")"<<std::endl;
-	}
-}
-
-/*----------------------------------------------------------------------------*/
-void MedialAxis2D::setDofGraphConnectivity()
-{
-	std::cout<<"> Setting quantization degrees of freedom graph connectivity"<<std::endl;
-	MeshDoctor doc(m_dof_graph);
-	doc.updateUpwardConnectivity();
-}
-
-/*----------------------------------------------------------------------------*/
-void MedialAxis2D::buildQuantizationWithoutCycleSolution()
-{
-	auto sol = m_dof_graph->getVariable<double,GMDS_NODE>("quantization_solution");
-	//auto N = double(NbWells(m_dof_graph));
-	for (auto n_id:m_dof_graph->nodes())
-	{
-		Node n = m_dof_graph->get<Node>(n_id);
-		if (isASource(n))
-		{
-			int NbWells = 0;
-			std::vector<int> visited_dof;
-			visited_dof.push_back(n_id);
-			sol->set(n_id,1.);
-			std::queue<Node> front;
-			front.push(n);
-			while (!front.empty())
-			{
-				Node n1 = front.back();
-				front.pop();
-				propagateValue(n1,*sol);
-				for (auto n2: getNextNodes(n1))
-				{
-					visited_dof.push_back(n2.id());
-					if (!isAWell(n2))
-						front.push(n2);
-					else
-						NbWells += 1;
-				}
-			}
-			// Multiply the value by a power of 2 to have integers
-			for (auto id:visited_dof)
-			{
-				double value = sol->value(id);
-				if (NbWells > 1.)
-					value *= pow(2.,NbWells-1.);
-				sol->set(id,value);
-			}
-		}
-	}
-
-	// Test
-	for (auto n_id:m_dof_graph->nodes())
-		std::cout<<"Quantization solution at dof "<<n_id<<" : "<<sol->value(n_id)<<std::endl;
-}
-
-/*----------------------------------------------------------------------------*/
 void MedialAxis2D::buildBlockDecompMedialAndBoundaryNodes()
 {
 	std::cout<<"> Building medial and boundary nodes of the medial axis based block decomposition"<<std::endl;
@@ -2202,6 +1781,8 @@ void MedialAxis2D::buildSection2MedialAndBoundaryNodesAdjacency()
 	auto sn2mn = m_topological_representation->getVariable<int,GMDS_NODE>("singuNode2MedNode");
 	auto sn2bn = m_topological_representation->getVariable<std::vector<int>,GMDS_NODE>("singuNode2BoundNodes");
 	auto nodeType = m_topological_representation->getVariable<int,GMDS_NODE>("node_type");
+	auto tailDir = m_topological_representation->getVariable<math::Vector,GMDS_EDGE>("tailDirection");
+	auto headDir = m_topological_representation->getVariable<math::Vector,GMDS_EDGE>("headDirection");
 
 	for (auto n_id:m_topological_representation->nodes())
 	{
@@ -2210,7 +1791,6 @@ void MedialAxis2D::buildSection2MedialAndBoundaryNodesAdjacency()
 		std::vector<int> boundary_nodes = sn2bn->value(n_id);
 		for (auto section:n.get<Edge>())
 		{
-
 			if (orientation(n,section) == 1)
 			{
 				TN->set(section.id(),medial_node);
@@ -2230,7 +1810,8 @@ void MedialAxis2D::buildSection2MedialAndBoundaryNodesAdjacency()
 					{
 						Node boundary_node = m_ma_block_decomposition->get<Node>(ind);
 						math::Point R = boundary_node.point()+(-1.)*n.point();
-						double theta = oriented_angle(edge2vec(section,n),vec(R));
+						//double theta = oriented_angle(edge2vec(section,n),vec(R));
+						double theta = oriented_angle(tailDir->value(section.id()),vec(R));
 						if (theta < 0. && theta > max_theta)
 						{
 							max_theta = theta;
@@ -2266,7 +1847,8 @@ void MedialAxis2D::buildSection2MedialAndBoundaryNodesAdjacency()
 					{
 						Node boundary_node = m_ma_block_decomposition->get<Node>(ind);
 						math::Point R = boundary_node.point()+(-1.)*n.point();
-						double theta = oriented_angle(edge2vec(section,n),vec(R));
+						//double theta = oriented_angle(edge2vec(section,n),vec(R));
+						double theta = oriented_angle(-headDir->value(section.id()),vec(R));
 						if (theta < 0. && theta > max_theta)
 						{
 							max_theta = theta;
@@ -2289,6 +1871,7 @@ void MedialAxis2D::buildSection2MedialAndBoundaryNodesAdjacency()
 /*----------------------------------------------------------------------------*/
 void MedialAxis2D::buildMiddleNodes()
 {
+	std::cout<<"> Building middle nodes of the block decomposition"<<std::endl;
 	auto LHMN = m_topological_representation->getVariable<int,GMDS_EDGE>("leftHeadMiddleNode");
 	auto RHMN = m_topological_representation->getVariable<int,GMDS_EDGE>("rightHeadMiddleNode");
 	auto LTMN = m_topological_representation->getVariable<int,GMDS_EDGE>("leftTailMiddleNode");
@@ -2322,7 +1905,8 @@ void MedialAxis2D::buildMiddleNodes()
 				else
 					n = section.get<Node>()[1];
 				// Get the neighbouring sections
-				std::vector<Edge> neighbours = neighbouringEdges(section,n);
+				//std::vector<Edge> neighbours = neighbouringEdges(section,n);
+				std::vector<Edge> neighbours = orderedNeigbourSections(section,n);
 				// Build the medial nodes
 				if (orientation(n,section) == 1)
 				{
@@ -2331,7 +1915,14 @@ void MedialAxis2D::buildMiddleNodes()
 					Node newNode;
 					if (LTMN->value(s_id) < 0)
 					{
-						newNode = m_ma_block_decomposition->newNode((ln.point()+n.point())*(1./2.));
+						// Placement of the new node
+						math::Point dir = ln.point()+(-1.)*n.point();
+						dir = (1./vec(dir).norm())*dir;
+						double l = (1./sqrt(2.))*section.length();
+						if (l > vec((ln.point()+n.point())*(1./2.)+(-1.)*n.point()).norm())
+							l = vec((ln.point()+n.point())*(1./2.)+(-1.)*n.point()).norm();
+						//newNode = m_ma_block_decomposition->newNode((ln.point()+n.point())*(1./2.));
+						newNode = m_ma_block_decomposition->newNode(n.point()+l*dir);
 						LTMN->set(s_id,newNode.id());
 						// Update the neighbour middle node
 						if (neighbours.size() == 1)
@@ -2353,7 +1944,14 @@ void MedialAxis2D::buildMiddleNodes()
 					}
 					if (RTMN->value(s_id) < 0)
 					{
-						newNode = m_ma_block_decomposition->newNode((rn.point()+n.point())*(1./2.));
+						// Placement of the new node
+						math::Point dir = rn.point()+(-1.)*n.point();
+						dir = (1./vec(dir).norm())*dir;
+						double l = (1./sqrt(2.))*section.length();
+						if (l > vec((rn.point()+n.point())*(1./2.)+(-1.)*n.point()).norm())
+							l = vec((rn.point()+n.point())*(1./2.)+(-1.)*n.point()).norm();
+						//newNode = m_ma_block_decomposition->newNode((rn.point()+n.point())*(1./2.));
+						newNode = m_ma_block_decomposition->newNode(n.point()+l*dir);
 						RTMN->set(s_id,newNode.id());
 						// Update the neighbour middle node
 						if (neighbours.size() == 1)
@@ -2382,7 +1980,14 @@ void MedialAxis2D::buildMiddleNodes()
 					Node newNode;
 					if (LHMN->value(s_id) < 0)
 					{
-						newNode = m_ma_block_decomposition->newNode((ln.point()+n.point())*(1./2.));
+						// Placement of the new node
+						math::Point dir = ln.point()+(-1.)*n.point();
+						dir = (1./vec(dir).norm())*dir;
+						double l = (1./sqrt(2.))*section.length();
+						if (l > vec((ln.point()+n.point())*(1./2.)+(-1.)*n.point()).norm())
+							l = vec((ln.point()+n.point())*(1./2.)+(-1.)*n.point()).norm();
+						//newNode = m_ma_block_decomposition->newNode((ln.point()+n.point())*(1./2.));
+						newNode = m_ma_block_decomposition->newNode(n.point()+l*dir);
 						LHMN->set(s_id,newNode.id());
 						// Update the neighbour middle node
 						if (neighbours.size() == 1)
@@ -2404,7 +2009,14 @@ void MedialAxis2D::buildMiddleNodes()
 					}
 					if (RHMN->value(s_id) < 0)
 					{
-						newNode = m_ma_block_decomposition->newNode((rn.point()+n.point())*(1./2.));
+						// Placement of the new node
+						math::Point dir = rn.point()+(-1.)*n.point();
+						dir = (1./vec(dir).norm())*dir;
+						double l = (1./sqrt(2.))*section.length();
+						if (l > vec((rn.point()+n.point())*(1./2.)+(-1.)*n.point()).norm())
+							l = vec((rn.point()+n.point())*(1./2.)+(-1.)*n.point()).norm();
+						//newNode = m_ma_block_decomposition->newNode((rn.point()+n.point())*(1./2.));
+						newNode = m_ma_block_decomposition->newNode(n.point()+l*dir);
 						RHMN->set(s_id,newNode.id());
 						// Update the neighbour middle node
 						if (neighbours.size() == 1)
@@ -2519,16 +2131,47 @@ void MedialAxis2D::buildBlocks()
 
 			else
 			{
-				m_ma_block_decomposition->newQuad(hn,lhmn+ltmn+1,tn,rhmn+rtmn+1);
 				if (wings(section.get<Node>()[0],section) == 1)
 				{
-					m_ma_block_decomposition->newQuad(tn,lhmn,lhbn,ltbn);
-					m_ma_block_decomposition->newQuad(tn,rtbn,rhbn,rhmn);
+					m_ma_block_decomposition->newQuad(hn,lhmn,tn,rhmn);
+					std::vector<TCellID> block;
+					block.push_back(tn);
+					block.push_back(lhmn);
+					block.push_back(lhbn);
+					block.push_back(ltbn);
+					if (ltmn >= 0)
+						block.push_back(ltmn);
+					m_ma_block_decomposition->newFace(block);
+					block.clear();
+					block.push_back(tn);
+					if (rtmn >= 0)
+						block.push_back(rtmn);
+					block.push_back(rtbn);
+					block.push_back(rhbn);
+					block.push_back(rhmn);
+					m_ma_block_decomposition->newFace(block);
 				}
 				else
 				{
-					m_ma_block_decomposition->newQuad(hn,lhbn,ltbn,ltmn);
-					m_ma_block_decomposition->newQuad(hn,rtmn,rtbn,rhbn);
+					m_ma_block_decomposition->newQuad(hn,ltmn,tn,rtmn);
+					std::vector<TCellID> block;
+					block.push_back(hn);
+					if (lhmn >= 0)
+						block.push_back(lhmn);
+					block.push_back(lhbn);
+					block.push_back(ltbn);
+					block.push_back(ltmn);
+					m_ma_block_decomposition->newFace(block);
+					block.clear();
+					block.push_back(hn);
+					block.push_back(rtmn);
+					block.push_back(rtbn);
+					block.push_back(rhbn);
+					if (rhmn >= 0)
+						block.push_back(rhmn);
+					m_ma_block_decomposition->newFace(block);
+					// m_ma_block_decomposition->newQuad(hn,lhbn,ltbn,ltmn);
+					// m_ma_block_decomposition->newQuad(hn,rtmn,rtbn,rhbn);
 				}
 			}
 		}
@@ -2607,6 +2250,72 @@ std::vector<Edge> MedialAxis2D::neighbouringEdges(gmds::Edge &AE, gmds::Node &AN
 		neighbours.push_back(sorted_edges[0]);
 		return neighbours;
 	}
+	return neighbours;
+
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<Edge> MedialAxis2D::orderedNeigbourSections(Edge &ASection, Node &AN)
+{
+	auto tailDir = m_topological_representation->getVariable<math::Vector,GMDS_EDGE>("tailDirection");
+	auto headDir = m_topological_representation->getVariable<math::Vector,GMDS_EDGE>("headDirection");
+	
+	std::vector<Edge> adj_edges = AN.get<Edge>();
+	std::vector<double> angles;
+	math::Vector X;
+	X.setX(1.);
+	X.setY(0.);
+	X.setZ(0.);
+	for (auto s:adj_edges)
+	{
+		double angle;
+		if (orientation(AN,s) == 1)
+			angle = oriented_angle(X,tailDir->value(s.id()));
+		else
+			angle = oriented_angle(X,-headDir->value(s.id()));
+		angles.push_back(angle);
+	}
+	std::vector<Edge> neighbours;
+	std::vector<Edge> sorted_edges = order(adj_edges,angles);
+
+	int pos = -1;
+	for (int i = 0; i < sorted_edges.size(); i++)
+	{
+		if (sorted_edges[i].id() == ASection.id())
+		{
+			pos = i;
+			break;
+		}
+	}
+	if (pos == -1)
+	{
+		std::cout<<"neighbouringEdges() : Warning, the given node doesn't belong to the given edge"<<std::endl;
+		return neighbours;
+	}
+	if (sorted_edges.size() == 2)
+	{
+		neighbours.push_back(sorted_edges[1-pos]);
+		return neighbours;
+	}
+	if (pos > 0 && pos < sorted_edges.size() - 1)
+	{
+		neighbours.push_back(sorted_edges[pos-1]);
+		neighbours.push_back(sorted_edges[pos+1]);
+		return neighbours;
+	}
+	if (pos == 0)
+	{
+		neighbours.push_back(sorted_edges[sorted_edges.size() - 1]);
+		neighbours.push_back(sorted_edges[1]);
+		return neighbours;
+	}
+	if (pos == sorted_edges.size() - 1)
+	{
+		neighbours.push_back(sorted_edges[pos-1]);
+		neighbours.push_back(sorted_edges[0]);
+		return neighbours;
+	}
+
 	return neighbours;
 
 }

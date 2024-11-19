@@ -55,6 +55,18 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationSolver
 	std::vector<int> halfEdgesLengths(){return m_half_edges_lengths;}
 
 	/*-------------------------------------------------------------------------*/
+	/** @brief Find and mark the T-junctions of the input mesh. We associate to each t-junction the id of the face for which it is a non_conformal node. WARNING : GEOMETRY-DEPENDANT
+         *  @param
+	 */
+	void findTJunctions();
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Regroups edges of the given face in groups of aligned edges.
+         *  @param AF a face
+	 */
+	std::vector<std::vector<Edge>> alignedEdgesGroups(Face &AF);
+
+	/*-------------------------------------------------------------------------*/
 	/** @brief Build the half edges.
          *  @param
 	 */

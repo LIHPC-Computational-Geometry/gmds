@@ -229,6 +229,12 @@ class LIB_GMDS_MEDIALAXIS_API MedialAxis2D
 	void placeSingularities(const double& AMedRadiusFraction);
 
 	/*-------------------------------------------------------------------------*/
+	/** \brief Remove singularity dipoles
+	      *  @param
+	 */
+	void removeSingularityDipoles();
+
+	/*-------------------------------------------------------------------------*/
 	/** \brief Check if placed singularities are coherent, ie if the med radius orthogonality default is smaller than a tolerance
 	      *  @param AOrthogonalityDefaultTol A tolerance
 	 */
@@ -302,16 +308,34 @@ class LIB_GMDS_MEDIALAXIS_API MedialAxis2D
 	void write(std::basic_string<char> AFileName);
 
 	/*-------------------------------------------------------------------------*/
-	/** \brief Build the nodes of the topological representation (IP, EP, singularities)
-	      *  @param
-	 */
-	void buildTopoRepNodes();
-
-	/*-------------------------------------------------------------------------*/
 	/** \brief Set the sections IDs
 	      *  @param
 	 */
 	void setSectionID();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Compute the type of the medial sections
+	      *  @param
+	 */
+	void computeSectionType();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Returns the set of nodes forming the input section.
+	      *  @param AID a section ID
+	 */
+	std::vector<Node> sectionNodes(int AID);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Refine the topo rep by adding artificially singular points on the medial axis. YET TO FINALIZE
+	      *  @param
+	 */
+	void refineByAddingSingularNodes();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Build the nodes of the topological representation (IP, EP, singularities)
+	      *  @param
+	 */
+	void buildTopoRepNodes();
 
 	/*-------------------------------------------------------------------------*/
 	/** \brief Build the edges of the topological representation (sections of the medial axis)
@@ -343,24 +367,6 @@ class LIB_GMDS_MEDIALAXIS_API MedialAxis2D
 	  */
 	 void setTopoRepConnectivity();
 
-	 /*-------------------------------------------------------------------------*/
-	 /** \brief Return the number of degrees of freedom for the quantisation, and attach to each section its position in the matrix
-	      *  @param
-	  */
-	 int NbDoF();
-
-	 /*-------------------------------------------------------------------------*/
-	 /** \brief Return the number of quantisation equation (each node bring its type as much equations, plus 1 extra equation for each node of type 1 wrapped by wings)
-	      *  @param
-	  */
-	 int NbEquations();
-
-	 /*-------------------------------------------------------------------------*/
-	 /** \brief Build the constraint matrix of the quantisation system
-	      *  @param
-	  */
-	  Eigen::MatrixXd constraintMatrix();
-
 	  /*-------------------------------------------------------------------------*/
 	  /** \brief  Return the given node's neighbouring node of the topological representation with respect to the given edge
 	      *  @param AN, AE a node and an edge which contains the node
@@ -380,64 +386,6 @@ class LIB_GMDS_MEDIALAXIS_API MedialAxis2D
 	  void browseTopoRep();
 
 	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build the degrees of freedom graph nodes
-	      *  @param
-	   */
-	  void buildDofGraphNodes();
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build the degrees of freedom edge corresponding to the two given sections of type 0 and 0,
-	   * oriented by the two given sides (0 = left, 1 = right)
-	      *  @param ASection1, ASection2, ASide1, ASide2
-	   */
-	  void dofEdge00(Edge &ASection1, Edge &ASection2, int ASide1, int ASide2);
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build the degrees of freedom edges corresponding to the two given sections of type 1 and 1,
-	   * oriented by the two given sides (0 = left, 1 = right)
-	      *  @param ASection1, ASection2, ASide1, ASide2
-	   */
-	  void dofEdges11(Edge &ASection1, Edge &ASection2, int ASide1, int ASide2);
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build the degrees of freedom edges corresponding to the two given sections of type 0 and 1,
-	   * oriented by the two given sides (0 = left, 1 = right)
-	      *  @param ASection1, ASection2, ASide1, ASide2
-	   */
-	  void dofEdges01(Edge &ASection1, Edge &ASection2, int ASide1, int ASide2);
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build the degrees of freedom edges corresponding to the two given sections of type 1 and 0,
-	   * oriented by the two given sides (0 = left, 1 = right)
-	      *  @param ASection1, ASection2, ASide1, ASide2
-	   */
-	  void dofEdges10(Edge &ASection1, Edge &ASection2, int ASide1, int ASide2);
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build the degrees of freedom edges corresponding to the right side of the path formed by the two given edges
-	      *  @param ASection1, ASection2
-	   */
-	  void dofEdges(Edge &ASection1, Edge &ASection2);
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build the degrees of freedom graph edges
-	      *  @param
-	   */
-	  void buildDofGraphEdges();
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief Set the connectivity of the quantization degrees of freedom graph
-	      *  @param
-	   */
-	  void setDofGraphConnectivity();
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief Build a solution to the quantization problem in the case without cycle
-	      *  @param
-	   */
-	  void buildQuantizationWithoutCycleSolution();
-
-	  /*-------------------------------------------------------------------------*/
 	  /** \brief  Build the nodes of the medial axis based block decomposition
 	      *  @param
 	   */
@@ -450,13 +398,13 @@ class LIB_GMDS_MEDIALAXIS_API MedialAxis2D
 	  void writeBlockDecomp(std::basic_string<char> AFileName);
 
 	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build blocks
+	  /** \brief  
 	      *  @param
 	   */
 	  void buildSection2MedialAndBoundaryNodesAdjacency();
 
 	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build middle nodes
+	  /** \brief  Build middle nodes 
 	      *  @param
 	   */
 	  void buildMiddleNodes();
@@ -479,6 +427,13 @@ class LIB_GMDS_MEDIALAXIS_API MedialAxis2D
 	      *  @param AE, AN an edge and a node
 	   */
 	  std::vector<Edge> neighbouringEdges(Edge &AE, Node &AN);
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief Take an section and a node belonging to the edge. Return the section closest to
+	   * the given edge in the list of ordered sections of n.
+	      *  @param ASection, AN a section and a node
+	   */
+	  std::vector<Edge> orderedNeigbourSections(Edge &ASection, Node &AN);
 
  private:
 

@@ -66,6 +66,17 @@ Triangle::~Triangle(){}
         return 0.5 * (v1.cross(v2)).norm();
     }
     /*----------------------------------------------------------------------------*/
+    double Triangle::signedArea() const
+    {
+        Vector3d v1 = m_pnts[1] - m_pnts[0];
+        Vector3d v2 = m_pnts[2] - m_pnts[0];
+        Vector3d cross_prod = v1.cross(v2);
+        if (cross_prod.Z() >= 0)
+          return 0.5 * cross_prod.norm();
+        else
+          return -0.5 * cross_prod.norm();
+    }
+    /*----------------------------------------------------------------------------*/
     double Triangle::angle() const
     {
 	    Vector3d v1 = m_pnts[1] - m_pnts[0];
@@ -105,7 +116,7 @@ Point Triangle::getCircumcenter() const
 	double yB = B.Y();
 	double xC = C.X();
 	double yC = C.Y();
-	double S = area();
+	double S = signedArea();
 	double xO = ((xA*xA+yA*yA)*(yB-yC)-(xB*xB+yB*yB)*(yA-yC)+(xC*xC+yC*yC)*(yA-yB))*(1./(4.*S));
 	double yO = -((xA*xA+yA*yA)*(xB-xC)-(xB*xB+yB*yB)*(xA-xC)+(xC*xC+yC*yC)*(xA-xB))*(1./(4.*S));
 	math::Point Ctr(xO, yO, 0.);

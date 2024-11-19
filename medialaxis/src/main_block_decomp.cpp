@@ -8,6 +8,7 @@
 #include "gmds/medialaxis/MedialAxis3DBuilder.h"
 #include "gmds/medialaxis/CrossField.h"
 #include "gmds/medialaxis/MedialAxisMath.h"
+#include "gmds/medialaxis/MinDelaunayCleaner.h"
 #include <gmds/math/Point.h>
 #include <gmds/math/Tetrahedron.h>
 #include <iostream>
@@ -53,14 +54,24 @@ int main(int argc, char* argv[])
 	VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(N| E| F);
 	vtkReader.read(file_mesh);
+	
 	MeshDoctor doc(&m);
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
 
-	std::cout << "NB nodes : " << m.getNbNodes() << std::endl;
+	MinDelaunayCleaner cleaner(m);
+	cleaner.setFacesTypes();
+	cleaner.markSmallEdges();
+	cleaner.markFacesToDelete();
+	cleaner.buildCleanedMesh();
+	cleaner.setCleanedMeshConnectivity();
+
+	Mesh cleaned_min_del = cleaner.getCleanedMesh();
+
+
 
 	// Create a 2D medial axis
-	medialaxis::MedialAxis2DBuilder mb(m);
+	medialaxis::MedialAxis2DBuilder mb(cleaned_min_del);
 	auto st = mb.execute();
 	if (st == gmds::medialaxis::MedialAxis2DBuilder::SUCCESS)
 	{
@@ -72,16 +83,13 @@ int main(int argc, char* argv[])
 		medialaxis::MedialAxis2D* smoothed_ma = mb.getSmoothedMedialObject();
 		smoothed_ma->write("smoothed_medax.vtk");
 
-		// Test topological representation
-		smoothed_ma->buildTopoRepNodes();
+		// Build a quad block decomposition
 		smoothed_ma->setSectionID();
+		smoothed_ma->computeSectionType();
+		smoothed_ma->refineByAddingSingularNodes();
+		smoothed_ma->buildTopoRepNodes();
 		smoothed_ma->buildTopoRepEdges();
 		smoothed_ma->setTopoRepConnectivity();
-		//smoothed_ma->browseTopoRep();
-		//smoothed_ma->buildDofGraphNodes();
-		//smoothed_ma->buildDofGraphEdges();
-		//smoothed_ma->setDofGraphConnectivity();
-		//smoothed_ma->buildQuantizationWithoutCycleSolution();
 		smoothed_ma->buildBlockDecompMedialAndBoundaryNodes();
 		smoothed_ma->buildSection2MedialAndBoundaryNodesAdjacency();
 		smoothed_ma->buildMiddleNodes();
@@ -89,37 +97,13 @@ int main(int argc, char* argv[])
 		smoothed_ma->writeTopoRep("topo_rep.vtk");
 		smoothed_ma->writeBlockDecomp("block_decomp.vtk");
 
-//		std::cout<<"Test Matrix : "<<std::endl;
-//		Eigen::MatrixXd A = smoothed_ma->constraintMatrix();
-//		int I = A.rows();
-//		int J = A.cols();
-//		for (int i = 0; i < I; i++)
-//		{
-//			for (int j = 0; j < J; j++)
-//				std::cout<<A.coeff(i,j)<<" ";
-//			std::cout<<std::endl;
-//		}
-//		std::cout<<"Test Kernel : "<<std::endl;
-//		Eigen::MatrixXd ker = A.fullPivLu().kernel();
-//		I = ker.rows();
-//		J = ker.cols();
-//		for (int i = 0; i < I; i++)
-//		{
-//			for (int j = 0; j < J; j++)
-//				std::cout<<int(ker.coeff(i,j))<<" ";
-//			std::cout<<std::endl;
-//		}
-//
-//		Eigen::MatrixXd Res = A*ker;
-//		double res = Res.norm();
-//		std::cout<<"||A*ker||="<<res<<std::endl;
-
 	}
 
-	// Write the output file
-	VTKWriter vtkWriter(&ioService);
-	vtkWriter.setCellOptions(N| E| F);
-	vtkWriter.setDataOptions(N| E| F);
-	vtkWriter.write(file_out);
+	// // Write the output file
+	// VTKWriter vtkWriter(&ioService);
+	// vtkWriter.setCellOptions(N| E| F);
+	// vtkWriter.setDataOptions(N| E| F);
+	// vtkWriter.write(file_out);
+	cleaner.writeCleanedMesh("cleaned_min_del.vtk");
 }
 
