@@ -260,9 +260,12 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds,
 	// We get  geometric entities of the model
 	GMap3 *gm = m_blocking->gmap();
 	std::vector<cad::GeomCurve *> geom_curves;
+	std::vector<cad::GeomSurface *> geom_surfaces;
 	m_geom_model->getCurves(geom_curves);
+	m_geom_model->getSurfaces(geom_surfaces);
 
 	std::map<TCellID ,bool> is_captured_curves;
+	std::map<TCellID ,bool> is_captured_surfaces;
 	std::map<unsigned int,std::pair<int,std::vector<TCellID>>> captCurvesMap;
 
 	// TODO PROBLEME : les sommets ne sont pas numerotés de 0 à V mais on les numeros du blocking!!!!!
@@ -380,10 +383,6 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds,
 						}
 					}
 				}
-
-
-
-
 			}
 		}
 	}
@@ -437,7 +436,6 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds,
 		//we store in a map the color of boundary block faces
 		auto map_faces_colored = blocking_color_faces();
 
-		auto geom_surfaces = m_geom_model->getSurfaces();
 		// We class the faces with a surface
 		for (auto s : geom_surfaces) {
 
@@ -499,45 +497,61 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds,
 					}
 					// And the edges
 					for (auto e : edges_f) {
-						if (e->info().geom_dim == 4) {
+						if (e->info().geom_dim == 4 || e->info().geom_dim == 3) {
 							e->info().geom_dim = s->dim();
 							e->info().geom_id = s->id();
 						}
-						if(e->info().geom_dim==3){
-							auto p = m_blocking->get_nodes_of_edge(e);
-							auto curves = m_geom_model->getSurface(s->id())->curves();
-							auto p0 = p[0];
-							auto p1 = p[1];
-							if(p0->info().geom_dim == 1 && p1->info().geom_dim == 1){
-								auto p0CurveId = p0->info().geom_id;
-								auto p1CurveId = p1->info().geom_id;
-								bool p0CurveOfSurf=false;
-								bool p1CurveOfSurf=false;
-								for(auto c : curves){
-									if(c->id() == p0CurveId){
-										p0CurveOfSurf = true;
-									}
-									if(c->id() == p1CurveId){
-										p1CurveOfSurf = true;
-									}
-								}
-								if (p0CurveOfSurf && p1CurveOfSurf){
-									e->info().geom_dim = s->dim();
-									e->info().geom_id = s->id();
-								}
-							}
-						}
 					}
+					is_captured_surfaces[s->id()]= true;
 				}
 			}
 		}
 	}
 
 	//===================================================================
-	// 2. WE WORK ON VOLUMES
+	// 3. WE WORK ON VOLUMES
 	//===================================================================
-	//We try and capture surfaces only if all the curves are captured. It makes
-	// the surface capture algorithm easier to write
+	//We try and capture volumes only if all the surfaces are captured. It makes
+	// the volume capture algorithm easier to write
+	bool found_one_uncaptured_surface = false;
+	auto geom_volumes = m_geom_model->getVolumes();
+
+	for(auto s :geom_surfaces){
+		if (!is_captured_surfaces[s->id()])
+			found_one_uncaptured_surface= true;
+	}
+	if(!found_one_uncaptured_surface) {
+		// Mono volumic classification
+		if (geom_volumes.size() == 1) {
+			auto v = geom_volumes[0];
+			if (m_blocking->is_valid_connected()) {
+				for (auto n : m_blocking->get_all_nodes()) {
+					if (n->info().geom_dim == 4) {
+						n->info().geom_dim = v->dim();
+						n->info().geom_id = v->id();
+					}
+				}
+				for (auto e : m_blocking->get_all_edges()) {
+					if (e->info().geom_dim == 4) {
+						e->info().geom_dim = v->dim();
+						e->info().geom_id = v->id();
+					}
+				}
+				for (auto f : m_blocking->get_all_faces()) {
+					if (f->info().geom_dim == 4) {
+						f->info().geom_dim = v->dim();
+						f->info().geom_id = v->id();
+					}
+				}
+				for (auto b : m_blocking->get_all_blocks()) {
+					if (b->info().geom_id == -1) {
+						b->info().geom_dim = v->dim();
+						b->info().geom_id = v->id();
+					}
+				}
+			}
+		}
+	}
 
 
 	return 0;
