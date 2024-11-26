@@ -544,7 +544,7 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds,
 					}
 				}
 				for (auto b : m_blocking->get_all_blocks()) {
-					if (b->info().geom_id == -1) {
+					if (b->info().geom_dim == 4) {
 						b->info().geom_dim = v->dim();
 						b->info().geom_id = v->id();
 					}

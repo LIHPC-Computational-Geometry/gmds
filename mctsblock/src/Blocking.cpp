@@ -523,7 +523,7 @@ Blocking::create_block(const math::Point &AP1,
 	for (auto it = m_gmap.one_dart_per_incident_cell<2, 3>(d1).begin(), itend = m_gmap.one_dart_per_incident_cell<2, 3>(d1).end(); it != itend; ++it) {
 		m_gmap.set_attribute<2>(it, create_face(4, NullID));
 	}
-	Block b = create_block(3, NullID);
+	Block b = create_block(4, NullID);
 	m_gmap.set_attribute<3>(d1, b);
 	return b;
 }
