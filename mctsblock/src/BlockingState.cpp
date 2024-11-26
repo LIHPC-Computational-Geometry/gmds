@@ -158,7 +158,7 @@ BlockingState::updateMemory(double AScore)
 }
 /*----------------------------------------------------------------------------*/
 std::vector<std::shared_ptr<IAction>>
-BlockingState::get_possible_block_removals() const
+BlockingState::get_possible_block_removals(bool without_blocks_in) const
 {
 	auto nodes = m_blocking->get_all_nodes();
 	std::set<TCellID> blocks_to_keep;
@@ -173,7 +173,7 @@ BlockingState::get_possible_block_removals() const
 			}
 		}
 	}
-
+	std::vector<std::shared_ptr<IAction> > actions;
 	// identify blocks with their centroid inside the geometry
 	cad::GeomManager *geom = m_blocking->geom_model();
 
@@ -181,14 +181,13 @@ BlockingState::get_possible_block_removals() const
 	for (auto b : blocks) {
 		gmds::math::Point pt = m_blocking->get_center_of_block(b);
 		bool is_inside = geom->is_in(pt);
-		if(is_inside) {
+		if(is_inside && without_blocks_in) {
 			blocks_to_keep.insert(m_blocking->get_block_id(b));
 		}
 	}
 
 	// all the other blocks can be removed
 	auto all_blocks = m_blocking->get_all_id_blocks();
-	std::vector<std::shared_ptr<IAction> > actions;
 	for (auto b : all_blocks) {
 		//We check if b is a block to keep?
 		if (blocks_to_keep.find(b) == blocks_to_keep.end()){
@@ -196,6 +195,7 @@ BlockingState::get_possible_block_removals() const
 			actions.push_back(std::make_shared<BlockRemovalAction>(b));
 		}
 	}
+
 	return  actions;
 }
 /*----------------------------------------------------------------------------*/

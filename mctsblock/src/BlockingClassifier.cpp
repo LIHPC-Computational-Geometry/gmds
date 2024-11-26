@@ -533,6 +533,13 @@ BlockingClassifier::try_and_capture(std::set<TCellID> &ANodeIds,
 		}
 	}
 
+	//===================================================================
+	// 2. WE WORK ON VOLUMES
+	//===================================================================
+	//We try and capture surfaces only if all the curves are captured. It makes
+	// the surface capture algorithm easier to write
+
+
 	return 0;
 }
 

@@ -77,7 +77,7 @@ class LIB_GMDS_MCTSBLOCK_API BlockingState : public IState
 	 *  - it doesn't not belong a corner that is the only one to capture a point.
 	 *  - its centroid is not inside the volume
 	 * @return a vector of block ids. */
-	std::vector<std::shared_ptr<IAction>> get_possible_block_removals() const;
+	std::vector<std::shared_ptr<IAction>> get_possible_block_removals(bool without_blocks_in = true) const;
 
  private:
 	/** the memory depth we store*/
