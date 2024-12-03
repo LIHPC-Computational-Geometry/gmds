@@ -14,6 +14,10 @@ QuantizationSolver::QuantizationSolver(gmds::Mesh &AMesh)
 	// Correspondence edge/half edge
 	m_mesh->newVariable<int,GMDS_EDGE>("edge2halfEdge1");
 	m_mesh->newVariable<int,GMDS_EDGE>("edge2halfEdge2");
+	// Correspondance edge/quantization graph edge
+	m_mesh->newVariable<int,GMDS_EDGE>("edge2qgrapheEdge");
+	// Length of the edge after quantization
+	m_mesh->newVariable<int,GMDS_EDGE>("length");
 	// Mark with 1 the nodes forming a T-junction
 	m_mesh->newVariable<int,GMDS_NODE>("T-junction");
 	// Mark with 1 the nodes forming a T-junction (the previous variable is no longer necessary)
@@ -171,7 +175,10 @@ QuantizationSolver::buildHalfEdges()
 		//std::vector<std::vector<Edge>> edges_groups = groupsOfAlignedEdges(f);
 		std::vector<std::vector<Edge>> edges_groups = alignedEdgesGroups(f);
 		if (edges_groups.size() != 4)
-			throw GMDSException("buildHalfEdges() : non conformal quads must have 4 non conformal edges");
+		{
+			std::cout<<"The face "<<f_id<<" has "<<edges_groups.size()<<" groups of aligned edges"<<std::endl;
+			throw GMDSException("buildHalfEdges() : non conformal quads must have 4 non conformal half-edges");
+		}
 		for (auto i = 0; i < 4; i++)
 		{
 			NonConformalHalfEdge new1 = NonConformalHalfEdge(Id+i,f,edges_groups[i]);
@@ -249,12 +256,38 @@ QuantizationSolver::buildHalfEdges()
 }
 
 /*----------------------------------------------------------------------------*/
+Edge QuantizationSolver::getCommonEdge(int AHalfEdgeID1, int AHalfEdgeID2)
+{
+	NonConformalHalfEdge he1 = m_half_edges[AHalfEdgeID1];
+	NonConformalHalfEdge he2 = m_half_edges[AHalfEdgeID2];
+	Edge e;
+	for (auto e1:he1.edges())
+	{
+		for (auto e2:he2.edges())
+		{
+			if (e1.id() == e2.id())
+			{
+				e = e1;
+				return e;
+			}
+		}
+	}
+	throw GMDSException("getCommonEdge() : non conformal the two given half-edges are not opposite"); 
+	return e;
+}
+
+/*----------------------------------------------------------------------------*/
 void
 QuantizationSolver::buildQuantizationGraphNodes()
 {
 	std::cout<<"> Building quantization graph nodes"<<std::endl;
 	for (int i = 0; i < m_half_edges.size(); i++)
-		m_quantization_graph->newNode();
+	{
+		NonConformalHalfEdge he = m_half_edges[i];
+		double len = he.firstNode().point().distance(he.endNode().point());
+		Node n = m_quantization_graph->newNode();
+		m_quantization_graph->setGeometricalLength(n.id(),len);
+	}
 }
 
 /*----------------------------------------------------------------------------*/
@@ -262,6 +295,7 @@ void
 QuantizationSolver::buildConnectedComponent(int AHalfEdgeID)
 {
 	std::cout<<"> Building connected component of half edge "<<AHalfEdgeID<<std::endl;
+	auto e2qge = m_mesh->getVariable<int,GMDS_EDGE>("edge2qgrapheEdge");
 	std::queue<int> front;
 	front.push(AHalfEdgeID);
 	int current;
@@ -276,7 +310,9 @@ QuantizationSolver::buildConnectedComponent(int AHalfEdgeID)
 		{
 			if (m_quantization_graph->alreadyVisited(opp) == 0)
 			{
-				m_quantization_graph->newEdge(current,opp);
+				Edge newGraphEdge = m_quantization_graph->newEdge(current,opp);
+				Edge commonEdge = getCommonEdge(current,opp);
+				e2qge->set(commonEdge.id(),newGraphEdge.id());
 				if (m_quantization_graph->alreadyPushed(oppositeInQuad(opp)) == 0)
 				{
 					front.push(oppositeInQuad(opp));
@@ -298,7 +334,9 @@ QuantizationSolver::buildConnectedComponent(int AHalfEdgeID)
 			{
 				if (m_quantization_graph->alreadyVisited(opp) == 0)
 				{
-					m_quantization_graph->newEdge(opp,nxt);
+					newGraphEdge = m_quantization_graph->newEdge(opp,nxt);
+					Edge commonEdge = getCommonEdge(opp,nxt);
+					e2qge->set(commonEdge.id(),newGraphEdge.id());
 					if (m_quantization_graph->alreadyPushed(opp) == 0)
 					{
 						front.push(opp);
@@ -353,6 +391,23 @@ void QuantizationSolver::setHalfEdgesLength()
 	for (int i = 0; i < m_half_edges.size(); i++)
 		v[i] = m_quantization_graph->quantizationSolutionValue(i);
 	m_half_edges_lengths = v;
+}
+
+/*----------------------------------------------------------------------------*/
+void QuantizationSolver::setEdgesLength()
+{
+	auto l = m_mesh->getVariable<int,GMDS_EDGE>("length");
+	auto e2qge = m_mesh->getVariable<int,GMDS_EDGE>("edge2qgrapheEdge");
+	for (auto e_id:m_mesh->edges())
+		l->set(e_id,m_quantization_graph->fluxValue(e2qge->value(e_id)));
+	for (auto he:m_half_edges)
+	{
+		if (he.opposite().empty())
+		{
+			Edge e = he.edges()[0];
+			l->set(e.id(),m_half_edges_lengths[he.id()]);
+		}
+	}
 }
 
 /*----------------------------------------------------------------------------*/
@@ -969,6 +1024,22 @@ void QuantizationSolver::setFixedMeshConnectivity()
 }
 
 /*----------------------------------------------------------------------------*/
+void QuantizationSolver::forceZeroEdgesToZeroLength()
+{
+	std::cout<<"> Imposing degenerated half edges to be of length 0"<<std::endl;
+	for (int id = 0; id<m_half_edges.size(); id++)
+	{
+		NonConformalHalfEdge he = m_half_edges[id];
+		double l = he.firstNode().point().distance(he.endNode().point());
+		if (l < 1e-6)
+		{
+			m_quantization_graph->markAsZero(id);
+			std::cout<<"Imposing a half edge to 0"<<std::endl;
+		}
+	}
+}
+
+/*----------------------------------------------------------------------------*/
 std::vector<std::vector<Node>> QuantizationSolver::buildCompleteSolution()
 {
 	std::cout<<" "<<std::endl;
@@ -983,11 +1054,12 @@ std::vector<std::vector<Node>> QuantizationSolver::buildCompleteSolution()
 	std::vector<TCellID> non_zeros = nonZeroHalfEdges();
 	m_quantization_graph->nonZeroVerticies(non_zeros);
 	m_quantization_graph->updateConnectivity();
+	//forceZeroEdgesToZeroLength();
 	m_quantization_graph->buildCompleteSolution();
 	//m_quantization_graph->roughlyRepairSolution();
 	//m_quantization_graph->display(); // Display the graph
-	m_quantization_graph->displaySolution(); // Display the quantization solution
-	std::vector<std::vector<Node>> problematicCouples = m_quantization_graph->checkSolutionValidity();
+	//m_quantization_graph->displaySolution(); // Display the quantization solution
+	std::vector<std::vector<Node>> problematicCouples;// = m_quantization_graph->checkSolutionValidity();
 
 	std::cout<<"===================================="<<std::endl;
     std::cout<<" "<<std::endl;

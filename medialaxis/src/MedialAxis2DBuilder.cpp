@@ -23,6 +23,10 @@ MedialAxis2DBuilder::MedialAxis2DBuilder(Mesh &AMesh){
 	m_mesh->newVariable<int,GMDS_EDGE>("intEdge2MedEdge");
 	// Edges classification between boundary (1) and internal (0) edges
 	m_mesh->newVariable<int,GMDS_EDGE>("edge_class");
+	// Mark with 1 edges corresponding to internal constraints
+	m_mesh->newVariable<int,GMDS_EDGE>("internal_constraint");
+	// Mark with 1 nodes belonging to an internal constraint
+	m_mesh->newVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
 	// Edges classification between corner (1) and non corner (0) edges
 	m_mesh->newVariable<int,GMDS_EDGE>("corner");
 	// Faces classification (tangency = discrete number of tangency points of the circumcenter)
@@ -195,6 +199,87 @@ void MedialAxis2DBuilder::setSideId()
 }
 
 /*----------------------------------------------------------------------------*/
+void MedialAxis2DBuilder::markIntConstraints()
+{
+	std::cout<<"> Marking interior constraints"<<std::endl;
+	auto constr = m_mesh->getVariable<int,GMDS_EDGE>("internal_constraint");
+	auto nodes_constr = m_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+	for (auto e_id:m_mesh->edges())
+	{
+		Edge e = m_mesh->get<Edge>(e_id);
+		// Check that it is the smallest edge of all its faces
+		bool isSmall = true;
+		for (auto f:e.get<Face>())
+		{
+			for (auto e1:f.get<Edge>())
+			{
+				if (e1.length() < e.length())
+					isSmall = false;
+			}
+		}
+		if (isInterior(e.get<Node>()[0]) && isInterior(e.get<Node>()[1]) && isSmall)
+			constr->set(e_id,1);
+	}
+	// Look for forgotten edges
+	for (auto e_id:m_mesh->edges())
+	{
+		if (constr->value(e_id) == 1)
+		{
+			Edge e = m_mesh->get<Edge>(e_id);
+			for (auto n:e.get<Node>())
+			{
+				for (auto e1:n.get<Edge>())
+				{
+					if (e1.id() != e.id())
+					{
+						double alpha = oriented_angle(edge2vec(e,n),-edge2vec(e1,n));
+						double r = fabs(e1.length()- e.length())/e.length();
+						if (fabs(alpha) < 1e-4 && r < 1 && constr->value(e1.id()) == 0)
+						{
+							// Then we continue the contraint in the direction given by e1
+							std::queue<Edge> toAdd;
+							toAdd.push(e1);
+							constr->set(e1.id(),1);
+							while (!toAdd.empty())
+							{
+								Edge current = toAdd.front();
+								toAdd.pop();
+								for (auto n1:current.get<Node>())
+								{
+									for (auto e2:n1.get<Edge>())
+									{
+										if (e2.id() != current.id())
+										{
+											alpha = oriented_angle(edge2vec(current,n1),-edge2vec(e2,n1));
+											r = fabs(current.length()- e2.length())/current.length();
+											if (fabs(alpha) < 1e-4 && r < 1 && constr->value(e2.id()) == 0)
+											{
+												toAdd.push(e2);
+												constr->set(e2.id(),1);
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	// Mark nodes belonging to internal constraints
+	for (auto e_id:m_mesh->edges())
+	{
+		if (constr->value(e_id) == 1)
+		{
+			Edge e = m_mesh->get<Edge>(e_id);
+			for (auto n:e.get<Node>())
+				nodes_constr->set(n.id(),1);
+		}
+	}
+}
+
+/*----------------------------------------------------------------------------*/
 void MedialAxis2DBuilder::setMedialRadiiOrthogonalityDefault(const double &ABoundaryCurvatureTol)
 {
 	auto triangle2MP = m_mesh->getVariable<int,GMDS_FACE>("triangle2MP");
@@ -273,57 +358,88 @@ void MedialAxis2DBuilder::setMedialRadiiOrthogonalityDefault(const double &ABoun
 /*----------------------------------------------------------------------------*/
 void MedialAxis2DBuilder::setTouchingPoints()
 {
+	std::cout<<"> Setting tangency points"<<std::endl;
 	auto triangle2MP = m_mesh->getVariable<int,GMDS_FACE>("triangle2MP");
+	auto constr = m_mesh->getVariable<int,GMDS_EDGE>("internal_constraint");
 	for (auto f_id:m_mesh->faces())
 	{
 		Face face = m_mesh->get<Face>(f_id);
 		TCellID medPoint = triangle2MP->value(face.id());
 		std::vector<math::Point> touchingPoints;
+		std::vector<Node> tangentNodes;
 		std::vector<Edge> adj_edges = face.get<Edge>();
 		// Medial point type computation
 		int type = 0;
 		for (auto e:adj_edges)
-			type += e.get<Face>().size() -1;
-		// If it is an end point, it has one touching point, approximated by its triangle's barycenter
+		{
+			if (constr->value(e.id()) == 0)
+			{
+				type += e.get<Face>().size() -1;
+			}
+		}
+		// If it is an end point, it has one touching point
 		if (type == 1)
 		{
-			math::Point P1 = face.get<Node>()[0].point();
-			math::Point P2 = face.get<Node>()[1].point();
-			math::Point P3 = face.get<Node>()[2].point();
-			math::Point P = (P1+P2+P3)*(1./3.);
-			touchingPoints.push_back(P);
+			// Find the 2 edges of the face which are either on the boundary, or on a constraint
+			Edge e1,e2;
+			for (auto e:face.get<Edge>())
+			{
+				if (e.get<Face>().size() == 1 || constr->value(e.id()) == 1)
+				{
+					e1 = e;
+					break;
+				}
+			}
+			for (auto e:face.get<Edge>())
+			{
+				if ((e.get<Face>().size() == 1 || constr->value(e.id()) == 1) && e.id() != e1.id())
+				{
+					e2 = e;
+					break;
+				}
+			}
+			// Find the vertex of the face which is a corner, ie adjacent to only one triangle
+			Node corner = getCommonNode(e1,e2);
+			tangentNodes.push_back(corner);
+			touchingPoints.push_back(corner.point());
 		}
 		// If it is an intersection point, all its triangle points are touching points
 		if (type >= 3)
 		{
 			for (auto P:face.get<Node>())
+			{
+				tangentNodes.push_back(P);
 				touchingPoints.push_back(P.point());
+			}
 		}
 		// If it is a regular point, it has two touching points, approximated by the barycenter of the two
 		// neighbouring points and the remaining point of its triangle
 		if (type == 2)
 		{
-			// Find the only boundary edge of the triangle
+			// Find the only boundary or constraint edge of the triangle
 			Edge e;
 			for (auto edge:face.get<Edge>())
 			{
-				if (edge.get<Face>().size() == 1)
+				if (edge.get<Face>().size() == 1 || constr->value(edge.id()) == 1)
 				{
 					e = edge;
 					break;
 				}
 			}
 			math::Point P1 = (e.get<Node>()[0].point()+e.get<Node>()[1].point())*(1./2.);
+			tangentNodes.push_back(e.get<Node>()[0]);
 			touchingPoints.push_back(P1);
-			math::Point P2;
+			Node P2;
 			for (auto n:face.get<Node>())
 			{
 				if (n.id() != e.get<Node>()[0].id() && n.id() != e.get<Node>()[1].id())
-					P2 = n.point();
+					P2 = n;
 			}
-			touchingPoints.push_back(P2);
+			tangentNodes.push_back(P2);
+			touchingPoints.push_back(P2.point());
 		}
 		m_voronoi_medax->setTouchingPoints(medPoint,touchingPoints);
+		m_voronoi_medax->setTangentNodes(medPoint,tangentNodes);
 	}
 }
 
@@ -402,6 +518,7 @@ void MedialAxis2DBuilder::buildVoronoiMedialPointsAndEdges()
 	// Delaunay triangle / medial point correspondence
 	auto medial_point = m_mesh->getVariable<int,GMDS_FACE>("triangle2MP");
 	auto edge_correspondance = m_mesh->getVariable<int,GMDS_EDGE>("intEdge2MedEdge");
+	auto constr = m_mesh->getVariable<int,GMDS_EDGE>("internal_constraint");
 	// Adding the medial points
 	for (auto n_id:m_mesh->faces()){
 		Face f = m_mesh->get<Face>(n_id);
@@ -411,6 +528,7 @@ void MedialAxis2DBuilder::buildVoronoiMedialPointsAndEdges()
 		Node n = m_voronoi_medax->newMedPoint(MP);
 		medial_point->set(f.id(), n.id());
 		m_voronoi_medax->setPrimalTriangleID(n.id(),f.id());
+		m_voronoi_medax->setDualTriangles(n.id(),{f});
 		// Test of the valdity of the circumcenter
 		// double d1 = MP.distance(nf[0].point());
 		// double d2 = MP.distance(nf[1].point());
@@ -421,16 +539,19 @@ void MedialAxis2DBuilder::buildVoronoiMedialPointsAndEdges()
 	// Create the medial edges
 	for (auto e_id:m_mesh->edges())
 	{
-		Edge e = m_mesh->get<Edge>(e_id);
-		std::vector<Face> adj_faces = e.get<Face>();
-		if (adj_faces.size() == 2)
+		if (constr->value(e_id) == 0)
 		{
-			Face f1 = adj_faces[0];
-			Face f2 = adj_faces[1];
-			TCellID mp_id1 = medial_point->value(f1.id());
-			TCellID mp_id2 = medial_point->value(f2.id());
-			Edge me = m_voronoi_medax->newMedEdge(mp_id1, mp_id2);
-			edge_correspondance->set(e.id(),me.id());
+			Edge e = m_mesh->get<Edge>(e_id);
+			std::vector<Face> adj_faces = e.get<Face>();
+			if (adj_faces.size() == 2)
+			{
+				Face f1 = adj_faces[0];
+				Face f2 = adj_faces[1];
+				TCellID mp_id1 = medial_point->value(f1.id());
+				TCellID mp_id2 = medial_point->value(f2.id());
+				Edge me = m_voronoi_medax->newMedEdge(mp_id1, mp_id2);
+				edge_correspondance->set(e.id(),me.id());
+			}
 		}
 	}
 }
@@ -440,6 +561,9 @@ void MedialAxis2DBuilder::buildVoronoiMedialAxis()
 {
 	std::cout<<" "<<std::endl;
 	std::cout<<"===== Building the Voronoï medial axis ====="<<std::endl;
+	// Mark internal constraints
+	markIntConstraints();
+
 	// Build points and edges
 	buildVoronoiMedialPointsAndEdges();
 
@@ -537,7 +661,7 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 		}
 	}
 
-	// Set the touching points, medial radii and medial radii orthogonality default
+	// Set the touching points, tangent nodes, medial radii and medial radii orthogonality default
 	for (int groupID=0; groupID<AGroups.size(); groupID++)
 	{
 		TCellID newPoint = group2NewMedPoint[groupID];
@@ -556,7 +680,10 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 				NbIPs += 1;
 		}
 		if (NbIPs == 0)
+		{
 			m_smoothed_medax->setTouchingPoints(newPoint, m_voronoi_medax->getTouchingPoints(oldPoint));
+			m_smoothed_medax->setTangentNodes(newPoint, m_voronoi_medax->getTangentNodes(oldPoint));
+		}
 		if (NbIPs == 1)
 		{
 			for (auto node:AGroups[groupID])
@@ -568,6 +695,7 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 					}
 			}
 			m_smoothed_medax->setTouchingPoints(newPoint, m_voronoi_medax->getTouchingPoints(oldPoint));
+			m_smoothed_medax->setTangentNodes(newPoint, m_voronoi_medax->getTangentNodes(oldPoint));
 		}
 		if (NbIPs >= 2)
 		{
@@ -581,7 +709,31 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 			for (auto id:intersection_points)
 				merged_tangency_points = merge(merged_tangency_points,m_voronoi_medax->getTouchingPoints(id));
 			m_smoothed_medax->setTouchingPoints(newPoint,merged_tangency_points);
+			std::vector<Node> merged_tangent_nodes;
+			for (auto id:intersection_points)
+			{
+				for (auto n:m_voronoi_medax->getTangentNodes(id))
+				{
+					bool already_added = false;
+					for (auto n1:merged_tangent_nodes)
+					{
+						if (n1.id() == n.id())
+						{
+							already_added = true;
+							break;
+						}
+					}
+					if (!already_added)
+						merged_tangent_nodes.push_back(n);
+				}
+			}
+			m_smoothed_medax->setTangentNodes(newPoint,merged_tangent_nodes);
 		}
+		// Dual triangles of the new point
+		std::vector<Face> dual_tri;
+		for (auto node:AGroups[groupID])
+			dual_tri.push_back(m_mesh->get<Face>(node.id()));
+		m_smoothed_medax->setDualTriangles(newPoint,dual_tri);
 		m_smoothed_medax->setMedialRadius(newPoint, m_voronoi_medax->getMedialRadius(oldPoint));
 		m_smoothed_medax->setMedialRadiusOrthogonalityDefault(newPoint, m_voronoi_medax->getMedialRadiusOrthogonalityDefault(oldPoint));
 	}
@@ -935,7 +1087,7 @@ MedialAxis2DBuilder::execute()
 	placeSingularities();
 
 	// Connect the connected components of the boundary using the medial axis
-	connectBoundaryConnectedComponents();
+	//connectBoundaryConnectedComponents();
 
 
 	return MedialAxis2DBuilder::SUCCESS;

@@ -19,6 +19,8 @@ set(GMDS_INC
         inc/gmds/medialaxis/ConformalMeshBuilder.h
         inc/gmds/medialaxis/BlockStructureSimplifier.h
         inc/gmds/medialaxis/MinDelaunayCleaner.h
+        inc/gmds/medialaxis/Conformalizer.h
+        inc/gmds/medialaxis/MedaxBasedTMeshBuilder.h
 )
 set(GMDS_SRC
         src/MedialAxis2D.cpp
@@ -33,6 +35,8 @@ set(GMDS_SRC
         src/ConformalMeshBuilder.cpp
         src/BlockStructureSimplifier.cpp
         src/MinDelaunayCleaner.cpp
+        src/Conformalizer.cpp
+        src/MedaxBasedTMeshBuilder.cpp
 )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})

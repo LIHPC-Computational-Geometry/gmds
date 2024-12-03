@@ -123,7 +123,7 @@ void MinDelaunayCleaner::markSmallEdges()
     for (auto e_id:m_mesh->edges())
     {
         Edge e = m_mesh->get<Edge>(e_id);
-        if (e.length() < mean_len)
+        if (e.length() < mean_len/2.)
             is_small->set(e_id,1);
     }
 }

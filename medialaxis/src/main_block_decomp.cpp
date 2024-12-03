@@ -9,6 +9,7 @@
 #include "gmds/medialaxis/CrossField.h"
 #include "gmds/medialaxis/MedialAxisMath.h"
 #include "gmds/medialaxis/MinDelaunayCleaner.h"
+#include "gmds/medialaxis/MedaxBasedTMeshBuilder.h"
 #include <gmds/math/Point.h>
 #include <gmds/math/Tetrahedron.h>
 #include <iostream>
@@ -59,19 +60,20 @@ int main(int argc, char* argv[])
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
 
-	MinDelaunayCleaner cleaner(m);
-	cleaner.setFacesTypes();
-	cleaner.markSmallEdges();
-	cleaner.markFacesToDelete();
-	cleaner.buildCleanedMesh();
-	cleaner.setCleanedMeshConnectivity();
+	// MinDelaunayCleaner cleaner(m);
+	// cleaner.setFacesTypes();
+	// cleaner.markSmallEdges();
+	// cleaner.markFacesToDelete();
+	// cleaner.buildCleanedMesh();
+	// cleaner.setCleanedMeshConnectivity();
 
-	Mesh cleaned_min_del = cleaner.getCleanedMesh();
+	// Mesh cleaned_min_del = cleaner.getCleanedMesh();
 
 
 
 	// Create a 2D medial axis
-	medialaxis::MedialAxis2DBuilder mb(cleaned_min_del);
+	//medialaxis::MedialAxis2DBuilder mb(cleaned_min_del);
+	medialaxis::MedialAxis2DBuilder mb(m);
 	auto st = mb.execute();
 	if (st == gmds::medialaxis::MedialAxis2DBuilder::SUCCESS)
 	{
@@ -83,27 +85,43 @@ int main(int argc, char* argv[])
 		medialaxis::MedialAxis2D* smoothed_ma = mb.getSmoothedMedialObject();
 		smoothed_ma->write("smoothed_medax.vtk");
 
+		Mesh medax = smoothed_ma->getMeshRepresentation();
+		medialaxis::MedaxBasedTMeshBuilder tmb(medax,m);
 		// Build a quad block decomposition
-		smoothed_ma->setSectionID();
-		smoothed_ma->computeSectionType();
-		smoothed_ma->refineByAddingSingularNodes();
-		smoothed_ma->buildTopoRepNodes();
-		smoothed_ma->buildTopoRepEdges();
-		smoothed_ma->setTopoRepConnectivity();
-		smoothed_ma->buildBlockDecompMedialAndBoundaryNodes();
-		smoothed_ma->buildSection2MedialAndBoundaryNodesAdjacency();
-		smoothed_ma->buildMiddleNodes();
-		smoothed_ma->buildBlocks();
-		smoothed_ma->writeTopoRep("topo_rep.vtk");
-		smoothed_ma->writeBlockDecomp("block_decomp.vtk");
+		tmb.setSectionID();
+		tmb.computeSectionType();
+		tmb.refineByAddingSingularNodes();
+		tmb.buildTopoRepNodes();
+		tmb.buildTopoRepEdges();
+		tmb.setTopoRepConnectivity();
+		tmb.markEdgesGeneratingTriangles();
+		tmb.buildTMeshNodesFromMinDelNodes();
+		//tmb.buildBlockDecompMedialAndBoundaryNodes();
+		tmb.buildSection2MedialAndBoundaryNodesAdjacency();
+		tmb.buildMiddleNodes();
+		tmb.buildBlocks();
+		tmb.transformDegenerateQuadsIntoTriangles();
+		tmb.writeTopoRep("topo_rep.vtk");
+		
+		// // Only to have nice pictures
+		tmb.setBlockDecompConnectivity();
+		// tmb.markBlocksSeparatingEdges();
+		// tmb.addBigTJunctions();
+		
+		tmb.transformTrianglesIntoQuads();
+
+		tmb.writeBlockDecomp("block_decomp.vtk");
+
+		tmb.buildFinalTMesh();
+		tmb.writeFinalTMesh("t_mesh.vtk");
 
 	}
 
-	// // Write the output file
-	// VTKWriter vtkWriter(&ioService);
-	// vtkWriter.setCellOptions(N| E| F);
-	// vtkWriter.setDataOptions(N| E| F);
-	// vtkWriter.write(file_out);
-	cleaner.writeCleanedMesh("cleaned_min_del.vtk");
+	// Write the output file
+	VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(N| E| F);
+	vtkWriter.setDataOptions(N| E| F);
+	vtkWriter.write(file_out);
+	// cleaner.writeCleanedMesh("cleaned_min_del.vtk");
 }
 

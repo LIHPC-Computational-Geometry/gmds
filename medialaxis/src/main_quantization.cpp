@@ -16,6 +16,7 @@
 #include "gmds/medialaxis/QuantizationSolver.h"
 #include "gmds/medialaxis/ConformalMeshBuilder.h"
 #include "gmds/medialaxis/BlockStructureSimplifier.h"
+#include "gmds/medialaxis/Conformalizer.h"
 #include <gmds/math/Point.h>
 #include <gmds/math/Tetrahedron.h>
 #include <iostream>
@@ -63,30 +64,34 @@ int main(int argc, char* argv[])
 	doc.updateUpwardConnectivity();
 
 
+
 	// First we quantize the non conformal mesh and build the corresponding conformal mesh
 	QuantizationSolver qs(m);
 	std::vector<std::vector<Node>> problematicCouples = qs.buildCompleteSolution();
-	bool valid = problematicCouples.empty();
+	bool valid = true ;//problematicCouples.empty();
 	if (valid)
 	{
 		// We can build the quantized mesh
 
 		qs.setHalfEdgesLength();
+		qs.setEdgesLength();
 
-		// Build the quantized mesh
-		ConformalMeshBuilder cmb(m,qs.halfEdges(),qs.halfEdgesLengths());
-		cmb.execute();
-		Mesh quantized_mesh = cmb.getQuantizedMesh();
+		// Build the conformal mesh
+		Conformalizer conf(m,qs.halfEdges(),qs.halfEdgesLengths());
+		conf.execute();
+		Mesh conformal_mesh = conf.getConformalMesh();
 
-	
 		// Now we simplify the quantized mesh, ie we try to minimize the number of blocks
-		BlockStructureSimplifier s(quantized_mesh);
+		BlockStructureSimplifier s(conformal_mesh);
 		// s.execute();
 		// s.writeSimplifiedMesh("simplified_mesh.vtk");
 		s.markSeparatrices();
 		s.setBlocksIDs();
 
-		cmb.writeQuantizedMesh("quantized_mesh.vtk");
+		for (int i = 0; i < 100; i++)
+			conf.smooth();
+
+		conf.writeConformalMesh("conformal_mesh.vtk");
 	}
 	else
 	{
@@ -118,13 +123,12 @@ int main(int argc, char* argv[])
 		s.writeSimplifiedMesh("simplified_mesh.vtk");
 	}
 
-	
-
 	// Write the output file
 	VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(N| E| F);
 	vtkWriter.setDataOptions(N| E| F);
 	vtkWriter.write(file_out);
+
 
 	// // Create a test non-conformal mesh
 	// Mesh m2(MeshModel(DIM3 | F | E | N |

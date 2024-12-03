@@ -102,6 +102,18 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationGraph
 	void markAsInQuad(TCellID AID);
 
 	/*-------------------------------------------------------------------------*/
+	/** @brief  Attach to the node the geometrical length of the half edge it represents.
+         *  @param AID, ALength a node ID and a length
+	 */
+	void setGeometricalLength(TCellID AID, double ALength);
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief  Mark the node as zero of the quantization solution.
+         *  @param AID a node ID
+	 */
+	void markAsZero(TCellID AID);
+
+	/*-------------------------------------------------------------------------*/
 	/** \brief Update the graph connectivity.
 	      *  @param
 	 */
@@ -172,6 +184,12 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationGraph
          *  @param AID a node ID
 	 */
 	int quantizationSolutionValue(TCellID AID);
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Get the value of the flux through the given edge.
+         *  @param AID a edge ID
+	 */
+	int fluxValue(TCellID AID);
 
 	/*-------------------------------------------------------------------------*/
 	/** @brief Return the shortest path joining the given node to a root, starting in the given direction (if 1 through the quad, if -1 else). 

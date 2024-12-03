@@ -96,6 +96,11 @@ class LIB_GMDS_MEDIALAXIS_API MedialAxis2DBuilder{
 	void setSideId();
 
 	/*-------------------------------------------------------------------------*/
+	/** \brief Mark with 1 Delaunay edges which correspond to internal constraints
+	 */
+	void markIntConstraints();
+
+	/*-------------------------------------------------------------------------*/
 	/** \brief Compute the inner product between medial radii and the corresponding boundary edges, which should be 0
 	 * 	\param ABoundaryCurvatureTol a maximum distance away from 1 of the norm of the cosine of the boundary curvature angle
 	 */

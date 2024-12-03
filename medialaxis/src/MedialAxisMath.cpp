@@ -346,7 +346,9 @@ std::vector<TCellID> insertPoint(Node AN, std::vector<Node> AV)
 				new_list.push_back(AN.id());
 				added = true;
 				new_list.push_back(AV[i].id());
-			}				 
+			}
+			else
+				new_list.push_back(AV[i].id());				 
 		}
 	}
 	return new_list;
@@ -398,4 +400,86 @@ std::vector<Edge> order(std::vector<Edge> AVE, std::vector<double> AVX)
 		AVE.erase(AVE.begin() + min_pos);
 	}
 	return sorted_edges;
+}
+
+/*----------------------------------------------------------------------------*/
+Edge getEdge(Node &AN1, Node &AN2)
+{
+	Edge e;
+	for (auto e1:AN1.get<Edge>())
+	{
+		for (auto e2:AN2.get<Edge>())
+		{
+			if (e1.id() == e2.id())
+			{
+				e = e1;
+				return e;
+			}
+		}
+	}
+	throw GMDSException("getEdge() : the two given nodes have no edge in common");
+}
+
+/*----------------------------------------------------------------------------*/
+bool isInterior(Node &AN)
+{
+	bool isInt = true;
+	for (auto e:AN.get<Edge>())
+	{
+		if (e.get<Face>().size() == 1)
+		{
+			isInt = false;
+			break;
+		}
+	}
+	return isInt;
+}
+
+/*----------------------------------------------------------------------------*/
+double delimitedArea(std::vector<Edge> AV)
+{
+	double x = 0.;
+	double y = 0.;
+	// Compute the barycenter of the points
+	for (auto e:AV)
+	{
+		for (auto n:e.get<Node>())
+		{
+			x += 1./2.*n.X();
+			y += 1./2.*n.Y();
+		}
+	}
+	x = x/double(AV.size());
+	y = y/double(AV.size());
+	math::Point Bar(x,y,0.);
+	// Compute the area
+	double area = 0.;
+	for (auto e:AV)
+	{
+		math::Triangle T(e.get<Node>()[0].point(),e.get<Node>()[1].point(),Bar);
+		area += T.area();
+	}
+	return area;
+}
+
+/*----------------------------------------------------------------------------*/
+bool touchesBoundary(Edge &AE)
+{
+	return (!isInterior(AE.get<Node>()[0]) || !isInterior(AE.get<Node>()[1]));
+}
+
+/*----------------------------------------------------------------------------*/
+Face getCommonFace(Edge &AE1, Edge &AE2)
+{
+	for (auto f1:AE1.get<Face>())
+	{
+		for (auto f2:AE2.get<Face>())
+		{
+			if (f1.id() == f2.id())
+			{
+				return f1;
+			}
+		}
+	}
+	throw GMDSException("getCommonFace() : the two input edges have no face in common");
 }

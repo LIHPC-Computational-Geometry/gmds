@@ -73,6 +73,12 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationSolver
 	void buildHalfEdges();
 
 	/*-------------------------------------------------------------------------*/
+	/** @brief Returns the common edge of two opposite half-edges.
+         *  @param AHalfEdgeID1, AHalfEdgeID2 two half-edge IDs
+	 */
+	Edge getCommonEdge(int AHalfEdgeID1, int AHalfEdgeID2);
+
+	/*-------------------------------------------------------------------------*/
 	/** @brief Build the quantization graph nodes.
          *  @param
 	 */
@@ -107,6 +113,12 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationSolver
          *  @param
 	 */
 	void setHalfEdgesLength();
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Set edges length.
+         *  @param
+	 */
+	void setEdgesLength();
 
 	/*-------------------------------------------------------------------------*/
 	/** @brief Return the set of sides of the input geometry, each side being a set of half-edge Ids.
@@ -192,6 +204,12 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationSolver
          *  @param 
 	 */
 	void setFixedMeshConnectivity();
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Set the connectivity of the fixed mesh.
+         *  @param 
+	 */
+	void forceZeroEdgesToZeroLength();
 
 	/*-------------------------------------------------------------------------*/
 	/** @brief Build the complete quantization solution.

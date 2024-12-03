@@ -54,4 +54,19 @@ std::vector<math::Point> merge(std::vector<math::Point> AV1, std::vector<math::P
 // Takes a vector of edges and a vector of the same size containing quantities assotiated to each edge. Returns the 
 // vector of the edges sorted with respect to this quantity.
 std::vector<Edge> order(std::vector<Edge> AVE, std::vector<double> AVX);
+
+// Returns, if it exists, the edge corresponding to the two given nodes.
+Edge getEdge(Node &AN1, Node &AN2);
+
+// Returns true if the node is internal.
+bool isInterior(Node &AN);
+
+// Returns the area delimited by the edges containted in the input vector. These edges must sourround a convex region.
+double delimitedArea(std::vector<Edge> AV);
+
+// Returns true if the edge touches the boundary.
+bool touchesBoundary(Edge &AE);
+
+// Returns the common face of the two input edges.
+Face getCommonFace(Edge &AE1, Edge &AE2);
 #endif     // GMDS_MEDIALAXISMATH_H

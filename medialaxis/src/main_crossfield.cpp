@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 
 	// Create a 2D medial axis
 	medialaxis::MedialAxis2DBuilder mb(m);
-	auto st = mb.execute();
+	auto st = mb.execute(); // Warning : to build a cross field with the medial axis, activate the boundary connected components connexion in the execute function
 	if (st == gmds::medialaxis::MedialAxis2DBuilder::SUCCESS)
 	{
 		// Get the medial axis

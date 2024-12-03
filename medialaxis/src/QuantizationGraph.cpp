@@ -18,8 +18,14 @@ QuantizationGraph::QuantizationGraph()
 	m_mesh_representation->newVariable<int,GMDS_NODE>("alreadyPushed");
 	// Mark with 1 graph edges connecting two half-edges belonging to the same quad
 	m_mesh_representation->newVariable<int,GMDS_EDGE>("inQuad");
-	// Quantization solution
+	// Quantization solution on nodes of the graph
 	m_mesh_representation->newVariable<int,GMDS_NODE>("solution");
+	// Geometrical length of the half edge that the node represents
+	m_mesh_representation->newVariable<double,GMDS_NODE>("geometrical_length");
+	// Mark with 1 nodes where the quantization solution must be 0
+	m_mesh_representation->newVariable<int,GMDS_NODE>("forbiden");
+	// Quantization solution on edges of the graph (flux going through the edge)
+	m_mesh_representation->newVariable<int,GMDS_EDGE>("flux");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -79,6 +85,20 @@ void QuantizationGraph::markAsInQuad(TCellID AID)
 {
 	auto inQuad = m_mesh_representation->getVariable<int,GMDS_EDGE>("inQuad");
 	inQuad->set(AID,1);
+}
+
+/*----------------------------------------------------------------------------*/
+void QuantizationGraph::setGeometricalLength(TCellID AID, double ALength)
+{
+	auto gl = m_mesh_representation->getVariable<double,GMDS_NODE>("geometrical_length");
+	gl->set(AID,ALength);
+}
+
+/*----------------------------------------------------------------------------*/
+void QuantizationGraph::markAsZero(TCellID AID)
+{
+	auto forbiden = m_mesh_representation->getVariable<int,GMDS_NODE>("forbiden");
+	forbiden->set(AID,1);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -161,9 +181,12 @@ void QuantizationGraph::propagateFromRoot(TCellID AID)
 {
 	std::cout<<"> Propagating solution from root "<<AID<<std::endl;
 	auto sol = m_mesh_representation->getVariable<int,GMDS_NODE>("solution");
+	auto flux = m_mesh_representation->getVariable<int,GMDS_EDGE>("flux");
+	auto geo_len = m_mesh_representation->getVariable<double,GMDS_NODE>("geometrical_length");
+	auto forbiden = m_mesh_representation->getVariable<int,GMDS_NODE>("forbiden");
 	Node root = m_mesh_representation->get<Node>(AID);
 	// Check if the given node is indeed a root, and if its length is 0
-	if (getExtEdges(root).empty() && sol->value(AID) == 0)
+	if (getExtEdges(root).empty() && sol->value(AID) == 0 && forbiden->value(AID) == 0)
 	{
 		// Build all the paths from the root to a leaf or an already seen node
 		std::vector<std::vector<int>> paths;
@@ -236,27 +259,55 @@ void QuantizationGraph::propagateFromRoot(TCellID AID)
 			}
 		}
 		// Find which path to increase
-		int pos;
+		int pos = -1;
+		double maxMinLength = 0.;
 		int maxNbZeros = 0;
 		for (int i = 0; i < paths.size(); i ++)
 		{
+			double ok = true;
 			int NbZeros = 0;
+			double minLength = 1e6;
 			for (auto id:paths[i])
 			{
 				if (sol->value(id) == 0)
 					NbZeros += 1;
+				if (geo_len->value(id)/double(sol->value(id)) < minLength)
+					minLength = geo_len->value(id)/double(sol->value(id));
+				if (forbiden->value(id) == 1)
+					ok = false;
 			}
-			if (NbZeros > maxNbZeros)
+			if (NbZeros > maxNbZeros && ok)
 			{
 				pos = i;
 				maxNbZeros = NbZeros;
+				maxMinLength = minLength;
+			}
+			if (NbZeros == maxNbZeros && minLength > maxMinLength && ok)
+			{
+				pos = i;
+				maxMinLength = minLength;
 			}
 		}
-		// Increase the path with the highest numbre of zeros
-		for (auto i:paths[pos])
+		// Increase the path with the highest number of zeros
+		if (pos >= 0)
 		{
-			sol->set(i,sol->value(i)+1);
+			for (int i = 0; i < paths[pos].size(); i++)
+			{
+				int id = paths[pos][i];
+				sol->set(id,sol->value(id)+1);
+				if (i < paths[pos].size()-1)
+				{
+					Node n1 = m_mesh_representation->get<Node>(id);
+					Node n2 = m_mesh_representation->get<Node>(paths[pos][i+1]);
+					Edge e = getCorrespondingEdge(n1,n2);
+					flux->set(e.id(),flux->value(e.id())+1);
+				}
+			}
 		}
+		// for (auto i:paths[pos])
+		// {
+		// 	sol->set(i,sol->value(i)+1);
+		// }
 		// // Update the solution
 		// for (auto p:paths)
 		// {
@@ -297,9 +348,10 @@ void QuantizationGraph::propagateFromRoots()
 void QuantizationGraph::addOnCycles()
 {
 	auto sol = m_mesh_representation->getVariable<int,GMDS_NODE>("solution");
+	auto forbiden = m_mesh_representation->getVariable<int,GMDS_NODE>("forbiden");
 	for (auto n_id:m_mesh_representation->nodes())
 	{
-		if (sol->value(n_id) == 0)
+		if (sol->value(n_id) == 0 && forbiden->value(n_id) == 0)
 		{
 			std::cout<<"> Adding 1 to the solution to every vertex of the cycle of "<<n_id<<std::endl;
 			// std::vector<Node> cycle = shortestCycle(n_id);
@@ -337,8 +389,16 @@ int QuantizationGraph::quantizationSolutionValue(gmds::TCellID AID)
 }
 
 /*----------------------------------------------------------------------------*/
+int QuantizationGraph::fluxValue(gmds::TCellID AID)
+{
+	auto flux = m_mesh_representation->getVariable<int,GMDS_EDGE>("flux");
+	return flux->value(AID);
+}
+
+/*----------------------------------------------------------------------------*/
 std::vector<Node> QuantizationGraph::shortestHalfPath(gmds::TCellID AID, int ADirection)
 {
+	auto forbiden = m_mesh_representation->getVariable<int,GMDS_NODE>("forbiden");
 	// Get the node
 	Node n0 = m_mesh_representation->get<Node>(AID);
 	// Initialize queues and paths
@@ -377,7 +437,7 @@ std::vector<Node> QuantizationGraph::shortestHalfPath(gmds::TCellID AID, int ADi
 		{
 			Edge nxt_edge = getIntEdge(front);
 			Node n = getOtherNode(front,nxt_edge);
-			if (already_seen[n.id()] == 0)
+			if (already_seen[n.id()] == 0 && forbiden->value(n.id()) == 0)
 			{
 				// We continue the path
 				new_path = path;
@@ -403,7 +463,7 @@ std::vector<Node> QuantizationGraph::shortestHalfPath(gmds::TCellID AID, int ADi
 				for (auto e:leaving_edges)
 				{
 					Node n = getOtherNode(front,e);
-					if (already_seen[n.id()] == 0)
+					if (already_seen[n.id()] == 0 && forbiden->value(n.id()) == 0)
 					{
 						// Then the path continues
 						new_path = path;
@@ -426,6 +486,7 @@ std::vector<Node> QuantizationGraph::shortestHalfPath(gmds::TCellID AID, int ADi
 /*----------------------------------------------------------------------------*/
 std::vector<Node> QuantizationGraph::shortestCycle(TCellID AID)
 {
+	auto forbiden = m_mesh_representation->getVariable<int,GMDS_NODE>("forbiden");
 	Node n0 = m_mesh_representation->get<Node>(AID);
 	std::queue<std::vector<Node>> paths;
 	std::queue<std::vector<int>> alreadySeen;
@@ -467,7 +528,7 @@ std::vector<Node> QuantizationGraph::shortestCycle(TCellID AID)
 			}
 			else 
 			{
-				if (already_seen[n.id()] == 0)
+				if (already_seen[n.id()] == 0 && forbiden->value(n.id()) == 0)
 				{
 					// Then the path continues
 					new_path = path;
@@ -494,7 +555,7 @@ std::vector<Node> QuantizationGraph::shortestCycle(TCellID AID)
 				}
 				else
 				{
-					if (already_seen[n.id()] == 0)
+					if (already_seen[n.id()] == 0 && forbiden->value(n.id()) == 0)
 					{
 						// Then the path continues
 						new_path = path;
@@ -661,11 +722,42 @@ std::vector<Node> QuantizationGraph::middleQuadEdge(std::vector<Node> AV)
 bool QuantizationGraph::increaseSolution(TCellID AID)
 {
 	auto sol = m_mesh_representation->getVariable<int,GMDS_NODE>("solution");
+	auto flux = m_mesh_representation->getVariable<int,GMDS_EDGE>("flux");
 	std::vector<Node> path = shortestElementaryPath(AID);
 	if (path.empty())
 		return false;
-	for (auto n:path)
-		sol->set(n.id(),sol->value(n.id())+1);
+	for (int i = 0; i < path.size(); i++)
+	{
+		Node n1 = path[i];
+		sol->set(n1.id(),sol->value(n1.id())+1);
+		if (i < path.size()-1)
+		{
+			Node n2 = path[i+1];
+			Edge e = getCorrespondingEdge(n1,n2);
+			flux->set(e.id(),flux->value(e.id())+1);
+		}
+		else
+		{
+			// Check if the path is a cycle
+			Node n2 = path[0];
+			bool areLinked = false;
+			for (auto e:n1.get<Edge>())
+			{
+				if (e.get<Node>()[0].id() == n2.id() || e.get<Node>()[1].id() == n2.id())
+				{
+					areLinked = true;
+					break;
+				}
+			}
+			if (areLinked)
+			{
+				Edge e = getCorrespondingEdge(n1,n2);
+				flux->set(e.id(),flux->value(e.id())+1);
+			}
+		}
+	}
+	// for (auto n:path)
+	// 	sol->set(n.id(),sol->value(n.id())+1);
 	return true;
 }
 
