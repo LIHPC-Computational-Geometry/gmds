@@ -1150,9 +1150,12 @@ Blocking::get_cut_info(const gmds::math::Point& APoint,
                        const std::vector<Blocking::Edge> AEdges)
 {
 	std::tuple<Blocking::Edge, double,double> cut_param;
-	unsigned int min_dist = 1000;
+	double min_dist = 1000;
 
 	for (auto e : AEdges) {
+		std::vector<Node> n = get_nodes_of_edge(e);
+		math::Point p0 = n[0]->info().point;
+		math::Point p1 = n[1]->info().point;
 		auto proj_info = get_projection_info(APoint, e);
 		if (proj_info.second < 1 && proj_info.second > 0 && proj_info.first < min_dist) {
 			cut_param = std::make_tuple(e, proj_info.second, proj_info.first);

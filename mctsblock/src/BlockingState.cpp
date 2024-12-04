@@ -203,7 +203,7 @@ std::vector<std::shared_ptr<IAction>>
 BlockingState::get_possible_cuts() const
 {
 	double epsilon = 1e-2;
-	std::set<std::pair<TCellID, double>> list_cuts;
+	std::set<std::pair<gmds::math::Point,std::pair<TCellID, double>>> list_cuts;
 	// We look which geometric points and curves are not yet captured
 	auto non_captured_entities = BlockingClassifier(m_blocking.get()).detect_classification_errors();
 	auto non_captured_points = non_captured_entities.non_captured_points;
@@ -216,13 +216,15 @@ BlockingState::get_possible_cuts() const
 		auto param_cut = std::get<1>(action);
 		// We only consider cut of edge that occur inside the edge and not on one of
 		// its end points (so for param O or 1)
-		if (epsilon < param_cut  && param_cut < 1.0-epsilon) {
+		if (epsilon < param_cut  && param_cut <1.0-epsilon) {
 			auto e2cut = m_blocking->get_edge(std::get<0>(action)->info().topo_id);
-			list_cuts.insert(std::make_pair(e2cut->info().topo_id, std::get<1>(action)));
-			// TODO: verify if we always have a cut that is possible for a point???
-			// As we cut the edge std::get<0>(action)->info().topo_id, we remove it to avoid multiple actions on the same edge
-			std::vector<Blocking::Edge> edges_to_remove;
-			m_blocking->get_all_sheet_edges(e2cut,edges_to_remove);
+			gmds::math::Point pointCapt = m_blocking->geom_model()->getPoint(p)->point();
+		    list_cuts.insert(std::make_pair(pointCapt,std::make_pair(e2cut->info().topo_id, std::get<1>(action))));
+		    // TODO: verify if we always have a cut that is possible for a point???
+		    // As we cut the edge std::get<0>(action)->info().topo_id, we remove it to avoid multiple actions on the same edge
+		    std::vector<Blocking::Edge> edges_to_remove;
+		    m_blocking->get_all_sheet_edges(e2cut,edges_to_remove);
+
 
 			// Loop through each element to delete
 			for (auto e : edges_to_remove) {
@@ -259,7 +261,7 @@ BlockingState::get_possible_cuts() const
 			// its end points (so for param O or 1)
 			if (epsilon < param_cut  && param_cut < 1.0-epsilon) {
 				auto e2cut = m_blocking->get_edge(std::get<0>(cut_info_p)->info().topo_id);
-				list_cuts.insert(std::make_pair(e2cut->info().topo_id, std::get<1>(cut_info_p)));
+				list_cuts.insert(std::make_pair(p,std::make_pair(e2cut->info().topo_id, std::get<1>(cut_info_p))));
 				// TODO: verify if we always have a cut that is possible for a point???
 				// As we cut the edge std::get<0>(action)->info().topo_id, we remove it to avoid multiple actions on the same edge
 				std::vector<Blocking::Edge> edges_to_remove;
@@ -281,7 +283,7 @@ BlockingState::get_possible_cuts() const
 
 	std::vector<std::shared_ptr<IAction> > actions;
 	for(auto cut_info:list_cuts)
-		actions.push_back(std::make_shared<EdgeCutAction>(cut_info.first,cut_info.second));
+		actions.push_back(std::make_shared<EdgeCutAction>(cut_info.second.first,cut_info.second.second,cut_info.first));
 
 	return actions;
 }

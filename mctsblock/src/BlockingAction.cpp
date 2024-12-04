@@ -8,8 +8,8 @@ using namespace gmds::mctsblock;
 /*----------------------------------------------------------------------------*/
 /** EDGE CUT ACTION */
 /*----------------------------------------------------------------------------*/
-EdgeCutAction::EdgeCutAction(const gmds::TCellID AEdgeId, const double AParam)
-: m_edge_id(AEdgeId), m_cut_param(AParam)
+EdgeCutAction::EdgeCutAction(const gmds::TCellID AEdgeId, const double AParam, const gmds::math::Point APoint)
+   :m_edge_id(AEdgeId), m_cut_param(AParam),m_capt_point(APoint)
 {}
 /*----------------------------------------------------------------------------*/
 bool
@@ -32,7 +32,8 @@ EdgeCutAction::apply_on(std::shared_ptr<IState> AState) const
 std::string
 EdgeCutAction::get_description() const
 {
-	return "Cut edge "+std::to_string(m_edge_id)+" with param "+std::to_string(m_cut_param);
+	return "Cut edge "+std::to_string(m_edge_id)+" with param "+std::to_string(m_cut_param)+", try to capt point XYZ("+std::to_string(m_capt_point.X())+
+	       std::to_string(m_capt_point.Y())+std::to_string(m_capt_point.Z());
 }
 /*----------------------------------------------------------------------------*/
 /** BLOCK REMOVAL ACTION */
@@ -91,6 +92,8 @@ CaptureAction::apply_on(std::shared_ptr<IState> AState) const
 	auto next_state =  std::make_shared<BlockingState>(new_blocking, current_state->get_depth()+1, current_state->get_memory());
 	return next_state;
 }
+
+
 
 /*----------------------------------------------------------------------------*/
 std::string

@@ -5,6 +5,7 @@
 #include <LIB_GMDS_MCTSBLOCK_export.h>
 #include "mcts/IAction.h"
 #include <gmds/utils/CommonTypes.h>
+#include <gmds/math/Point.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -22,7 +23,7 @@ class LIB_GMDS_MCTSBLOCK_API EdgeCutAction : public IAction {
 	 */
 	std::shared_ptr<IState> apply_on(std::shared_ptr<IState> AState) const override;
 
-	EdgeCutAction(const TCellID AEdgeId, const double AParam);
+	EdgeCutAction(const TCellID AEdgeId, const double AParam,const gmds::math::Point APoint);
 
 	bool operator==(const IAction& other) const override;
 	std::string get_description() const override;
@@ -32,6 +33,8 @@ class LIB_GMDS_MCTSBLOCK_API EdgeCutAction : public IAction {
 	TCellID m_edge_id;
 	/** the parameter where the edge is cutted */
 	double m_cut_param;
+	/** the point that we try to capture */
+	gmds::math::Point m_capt_point;
 };
 
 /*----------------------------------------------------------------------------*/
