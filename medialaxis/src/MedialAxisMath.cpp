@@ -483,3 +483,9 @@ Face getCommonFace(Edge &AE1, Edge &AE2)
 	}
 	throw GMDSException("getCommonFace() : the two input edges have no face in common");
 }
+
+/*----------------------------------------------------------------------------*/
+math::Vector projection(math::Vector &AV1, math::Vector &AV2)
+{
+	return (AV1.dot(AV2)/AV1.norm()*(AV1/AV1.norm()));
+}

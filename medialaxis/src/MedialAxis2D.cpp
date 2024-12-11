@@ -211,7 +211,7 @@ std::vector<std::vector<Node>> MedialAxis2D::medialPointsGroups(const double &AT
 				{
 					Node n1 = e.get<Node>()[0];
 					Node n2 = e.get<Node>()[1];
-					if (e.length() < ATol || (medPointType->value(n1.id()) == 3 && medPointType->value(n2.id()) == 3))
+					if (e.length() < ATol)
 					{
 						for (auto m1:e.get<Node>())
 						{
@@ -272,9 +272,51 @@ void MedialAxis2D::refine(const double& ATol)
 		Node n2 = e.get<Node>()[1];
 		math::Point direction = n2.point()+(-1.)*n1.point();
 		direction = direction*(1./vec(direction).norm());
-		if ((e.length() > ATol) && ((touchingPoints->value(n1.id()).size() != 2) && (touchingPoints->value(n2.id()).size() != 2)))
+		if ((touchingPoints->value(n1.id()).size() != 2 && touchingPoints->value(n2.id()).size() != 2))
 		{
-			std::cout<<"Could not refine an edge because it is incident to no regular medial point (medial point type 2)."<<std::endl;
+			if (touchingPoints->value(n1.id()).size() == 1 && touchingPoints->value(n2.id()).size() == 1 && e.length() > ATol)
+				std::cout<<"Could not refine an edge because it is incident to two EPs."<<std::endl;
+			if (touchingPoints->value(n1.id()).size() == 1 && touchingPoints->value(n2.id()).size() > 2 || touchingPoints->value(n1.id()).size() > 2 && touchingPoints->value(n2.id()).size() == 1 && e.length() > ATol)
+				std::cout<<"Could not refine an edge because it is incident to an EP and an IP."<<std::endl;
+			if (touchingPoints->value(n1.id()).size() > 2 && touchingPoints->value(n2.id()).size() > 2)
+			{
+				math::Point M = (1./2.)*(n1.point()+n2.point());
+				Node newPoint = newMedPoint(M);
+				// Update tangency points
+				double max_theta = -10.;
+				double min_theta = 10.;
+				double theta;
+				Node left_node;
+				Node right_node;
+				for (auto n:tangentNodes->value(n1.id()))
+				{
+					theta = oriented_angle(edge2vec(e,n1),vec(n.point()+(-1.)*n1.point()));
+					if (theta > 0. && theta < min_theta)
+					{
+						left_node = n;
+						min_theta = theta;
+					}
+					if (theta < 0. && theta > max_theta)
+					{
+						right_node = n;
+						max_theta = theta;
+					}
+				}
+				std::vector<Node> t;
+				std::vector<math::Point> p;
+				t.push_back(left_node);
+				t.push_back(right_node);
+				p.push_back(left_node.point());
+				p.push_back(right_node.point());
+				tangentNodes->set(newPoint.id(),t);
+				touchingPoints->set(newPoint.id(),p);
+				Edge newEdge1 = newMedEdge(n1.id(),newPoint.id());
+				Edge newEdge2 = newMedEdge(newPoint.id(),n2.id());
+				NbEdgesAdded += 2;
+				NbEdgesDeleted += 1;
+				NbPointsAdded += 1;
+				m_mesh_representation->deleteEdge(e);
+			}
 			continue;
 		}
 		if (e.length() > ATol)
@@ -1025,31 +1067,13 @@ MedialAxis2D::setBranchTypeOnPoints()
 	// WARNING: this function is not optimized, its average complexity is in NbrPoints²/NbrBranches
 	// Requires medial points type set
 	auto branchType = m_mesh_representation->getVariable<int,GMDS_NODE>("point_branch_type");
-	auto medPointType = m_mesh_representation->getVariable<int,GMDS_NODE>("medial_point_type");
+	auto edgeBranchType = m_mesh_representation->getVariable<int,GMDS_EDGE>("edge_branch_type");
 	for (auto n_id:m_mesh_representation->nodes())
 	{
 		Node n = m_mesh_representation->get<Node>(n_id);
 		std::vector<Edge> adj_edges = n.get<Edge>();
-		int size = adj_edges.size();
-		if (size == 3)
-			branchType->set(n.id(),2);
-		if (size == 2)
-		{
-			Edge e1 = adj_edges[0];
-			Node extremPoint1 = getExtremPoint(n.id(),e1.id());
-			Edge e2 = adj_edges[1];
-			Node extremPoint2 = getExtremPoint(n.id(),e2.id());
-			int mpt1 = medPointType->value(extremPoint1.id());
-			int mpt2 = medPointType->value(extremPoint2.id());
-			if ((mpt1 == 1)||(mpt2 == 1))
-				branchType->set(n.id(),1);
-			else
-				branchType->set(n.id(),0);
-		}
-		if (size == 1)
-		{
-			branchType->set(n.id(),1);
-		}
+		if (adj_edges.size() > 0)
+			branchType->set(n_id,edgeBranchType->value(adj_edges[0].id()));
 	}
 }
 

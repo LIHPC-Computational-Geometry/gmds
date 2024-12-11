@@ -91,11 +91,17 @@ MedaxBasedTMeshBuilder::MedaxBasedTMeshBuilder(Mesh &AMedax, Mesh &AMinDel){
 	// Mark with 1 triangle verticies
 	m_t_mesh->newVariable<int,GMDS_NODE>("is_a_triangle_vertex"); 
 	// Mark with 1 triangles
-	m_t_mesh->newVariable<int,GMDS_FACE>("is_a_triangle"); 
+	m_t_mesh->newVariable<int,GMDS_FACE>("is_a_triangle");
+	// Mark with 1 nodes belonging to an internal constraint
+	m_t_mesh->newVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
 
 	// Final T-mesh
 	m_final_t_mesh = new Mesh(MeshModel(DIM3 | F | E | N | F2E |
 	                                                  F2N | E2F | E2N | N2E | N2F));
+	// Mark with 1 edges corresponding to internal constraints
+	m_final_t_mesh->newVariable<int,GMDS_EDGE>("internal_constraint");
+	// Mark with 1 nodes belonging to an internal constraint
+	m_final_t_mesh->newVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -181,7 +187,7 @@ void MedaxBasedTMeshBuilder::setSectionID()
 			prev = n;
 			e = n.get<Edge>()[0];
 			nxt = getNextPoint(prev.id(),e.id());
-			while ((medPointType->value(nxt.id()) == 2) && (singu->value(nxt.id()) == 0))
+			while ((medPointType->value(nxt.id()) == 2) && (singu->value(nxt.id()) == 0) && alreadyVisited->value(nxt.id()) == 0)
 			{
 				alreadyVisited->set(nxt.id(),1);
 				sectionID->set(nxt.id(),ID);
@@ -196,7 +202,7 @@ void MedaxBasedTMeshBuilder::setSectionID()
 			prev = n;
 			e = n.get<Edge>()[1];
 			nxt = getNextPoint(prev.id(),e.id());
-			while ((medPointType->value(nxt.id()) == 2) && (singu->value(nxt.id()) == 0))
+			while ((medPointType->value(nxt.id()) == 2) && (singu->value(nxt.id()) == 0) && alreadyVisited->value(nxt.id()) == 0)
 			{
 				alreadyVisited->set(nxt.id(),1);
 				sectionID->set(nxt.id(),ID);
@@ -304,6 +310,7 @@ std::vector<Node> MedaxBasedTMeshBuilder::sectionNodes(int AID)
 	auto sectionID = m_medax->getVariable<int,GMDS_NODE>("section_id");
 	auto medPointType = m_medax->getVariable<int,GMDS_NODE>("medial_point_type");
 	auto singu = m_medax->getVariable<int,GMDS_NODE>("singularity");
+	auto visited = m_medax->newVariable<int,GMDS_NODE>("visited");
 	// Find a node of the section
 	Node n0;
 	for (auto n_id:m_medax->nodes())
@@ -322,9 +329,11 @@ std::vector<Node> MedaxBasedTMeshBuilder::sectionNodes(int AID)
 	prev = n0;
 	e = n0.get<Edge>()[0];
 	nxt = getNextPoint(prev.id(),e.id());
-	while ((medPointType->value(nxt.id()) == 2) && (singu->value(nxt.id()) == 0))
+	while ((medPointType->value(nxt.id()) == 2) && (singu->value(nxt.id()) == 0) && visited->value(nxt.id()) == 0)
 	{
-		sec.push_back(prev);
+		if (visited->value(prev.id()) == 0)
+			sec.push_back(prev);
+		visited->set(prev.id(),1);
 		e = getNextEdge(e.id(),nxt.id());
 		prev = nxt;
 		nxt = getNextPoint(prev.id(),e.id());
@@ -336,13 +345,16 @@ std::vector<Node> MedaxBasedTMeshBuilder::sectionNodes(int AID)
 	prev = n0;
 	e = n0.get<Edge>()[1];
 	nxt = getNextPoint(prev.id(),e.id());
-	while ((medPointType->value(nxt.id()) == 2) && (singu->value(nxt.id()) == 0))
+	while ((medPointType->value(nxt.id()) == 2) && (singu->value(nxt.id()) == 0) && visited->value(nxt.id()) == 0)
 	{
-		sec.push_back(prev);
+		if (visited->value(prev.id()) == 0)
+			sec.push_back(prev);
+		visited->set(prev.id(),1);
 		e = getNextEdge(e.id(),nxt.id());
 		prev = nxt;
 		nxt = getNextPoint(prev.id(),e.id());
 	}
+	m_medax->deleteVariable(GMDS_NODE,visited);
 	return sec;
 }
 
@@ -364,9 +376,9 @@ void MedaxBasedTMeshBuilder::refineByAddingSingularNodes()
 	{
 		section = sectionNodes(id);
 		int Nb = section.size();
-		int q = Nb/20;
+		int q = Nb/30;
 		for (int i = 1; i < q; i++)
-			singu->set(section[20*i].id(),10);
+			singu->set(section[30*i].id(),10);
 	}
 }
 
@@ -711,6 +723,8 @@ void MedaxBasedTMeshBuilder::buildTMeshNodesFromMinDelNodes()
 	auto sn2mn = m_topological_representation->getVariable<int,GMDS_NODE>("singuNode2MedNode");
 	auto nodeType = m_topological_representation->getVariable<int,GMDS_NODE>("node_type");
 	auto sn2bn = m_topological_representation->getVariable<std::vector<int>,GMDS_NODE>("singuNode2BoundNodes");
+	auto del_nodes_constr = m_min_delaunay->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+	auto tmesh_nodes_constr = m_t_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
 	// Mark nodes of the minimal triangulation appearing in the T-mesh
 	auto appears = m_min_delaunay->newMark<Node>();
 	for (auto n_id:m_topological_representation->nodes())
@@ -731,6 +745,8 @@ void MedaxBasedTMeshBuilder::buildTMeshNodesFromMinDelNodes()
 			Node new_node = m_t_mesh->newNode(n.point());
 			minTriNode2TMeshNode->set(n_id,new_node.id());
 			TMeshNode2MinTriNode->set(new_node.id(),n_id);
+			if (del_nodes_constr->value(n.id()) == 1)
+				tmesh_nodes_constr->set(new_node.id(),1);
 		}
 		else
 		{
@@ -1536,6 +1552,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 	auto tri = m_t_mesh->getVariable<int,GMDS_FACE>("is_a_triangle"); 
 	auto tri_ver = m_t_mesh->getVariable<int,GMDS_NODE>("is_a_triangle_vertex");
 	auto tri_edge = m_t_mesh->newVariable<int,GMDS_EDGE>("belongs_to_triangle");
+	auto tmesh_nodes_constr = m_t_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
 	// Mark with 1 edges belonging to a quad
 	for (auto e_id:m_t_mesh->edges())
 	{
@@ -1601,6 +1618,8 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 					if (i < tri_edges.size()-2)
 					{
 						nxt = m_t_mesh->newNode(n.point());
+						if (tmesh_nodes_constr->value(n.id()) == 1)
+							tmesh_nodes_constr->set(nxt.id(),1);
 					}
 					else
 					{
@@ -1680,6 +1699,8 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 					{
 						Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
 						new_points.push_back(new_node);
+						if (tmesh_nodes_constr->value(n.id()) == 1)
+							tmesh_nodes_constr->set(new_node.id(),1);
 					}
 					for (int i = 0; i < tri_edges.size()-1; i++)
 					{
@@ -1749,6 +1770,8 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 					{
 						Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
 						new_points.push_back(new_node);
+						if (tmesh_nodes_constr->value(n.id()) == 1)
+							tmesh_nodes_constr->set(new_node.id(),1);
 					}
 					for (int i = 0; i < tri_edges1.size()-1; i++)
 					{
@@ -1814,6 +1837,8 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 					{
 						Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
 						new_points.push_back(new_node);
+						if (tmesh_nodes_constr->value(n.id()) == 1)
+							tmesh_nodes_constr->set(new_node.id(),1);
 					}
 					for (int i = 0; i < tri_edges2.size()-1; i++)
 					{
@@ -1951,6 +1976,8 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 				{
 					Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
 					new_points.push_back(new_node);
+					if (tmesh_nodes_constr->value(n.id()) == 1)
+						tmesh_nodes_constr->set(new_node.id(),1);
 				}
 				for (int i = 0; i < tri_edges.size()-1; i++)
 				{
@@ -2368,10 +2395,14 @@ void MedaxBasedTMeshBuilder::setBoundaryConnectedComponents()
 void MedaxBasedTMeshBuilder::buildFinalTMesh()
 {
 	std::cout<<"> Building the final T-mesh"<<std::endl;
+	auto tmesh_nodes_constr = m_t_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+	auto final_tmesh_nodes_constr = m_final_t_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
 	for (auto n_id:m_t_mesh->nodes())
 	{
 		Node n = m_t_mesh->get<Node>(n_id);
 		Node new_node = m_final_t_mesh->newNode(n.point());
+		if (tmesh_nodes_constr->value(n_id) == 1)
+			final_tmesh_nodes_constr->set(new_node.id(),1);
 	}
 	for (auto f_id:m_t_mesh->faces())
 	{
@@ -2394,6 +2425,42 @@ void MedaxBasedTMeshBuilder::writeFinalTMesh(std::basic_string<char> AFileName)
 	vtkWriter.setCellOptions(N| E| F);
 	vtkWriter.setDataOptions(N| E| F);
 	vtkWriter.write(AFileName);
+}
+
+/*----------------------------------------------------------------------------*/
+void MedaxBasedTMeshBuilder::setFinalTMeshConnectivity()
+{
+	std::cout<<"> Setting connectivity of the final T-mesh"<<std::endl;
+	MeshDoctor doc(m_final_t_mesh);
+	doc.buildEdgesAndX2E();
+	doc.updateUpwardConnectivity();
+}
+
+/*----------------------------------------------------------------------------*/
+Mesh MedaxBasedTMeshBuilder::getFinalTMesh()
+{
+	return *m_final_t_mesh;
+}
+
+/*----------------------------------------------------------------------------*/
+void MedaxBasedTMeshBuilder::markInternalConstraintsOnFinalTMesh()
+{
+	std::cout<<"> Marking internal constraints on the final T-mesh"<<std::endl;
+	auto nodes_constr = m_final_t_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+	auto int_constr = m_final_t_mesh->getVariable<int,GMDS_EDGE>("internal_constraint");
+	//auto tmn2mtn = m_t_mesh->getVariable<int,GMDS_NODE>("TMeshNode2MinTriNode"); 
+	for (auto e_id:m_final_t_mesh->edges())
+	{
+		Edge e = m_final_t_mesh->get<Edge>(e_id);
+		Node n1 = e.get<Node>()[0];
+		Node n2 = e.get<Node>()[1];
+		if (nodes_constr->value(n1.id()) == 1 && nodes_constr->value(n2.id()) == 1)
+			int_constr->set(e.id(),1);
+		else if (nodes_constr->value(n1.id()) == 1 && isInterior(n1) && !isInterior(n2))
+			int_constr->set(e.id(),1);	
+		else if (nodes_constr->value(n2.id()) == 1 && isInterior(n2) && !isInterior(n1))
+			int_constr->set(e.id(),1);	
+	}
 }
 /*----------------------------------------------------------------------------*/
 }  // end namespace medialaxis

@@ -246,6 +246,24 @@ class LIB_GMDS_MEDIALAXIS_API MedaxBasedTMeshBuilder
 	  */
 	  void writeFinalTMesh(std::basic_string<char> AFileName);
 
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Set block connectivity of the T-mesh.
+	      *  @param
+	   */
+	  void setFinalTMeshConnectivity();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Set block connectivity of the T-mesh.
+	      *  @param
+	   */
+	  Mesh getFinalTMesh();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Mark the internal constraints on the final T-mesh.
+	      *  @param
+	   */
+	  void markInternalConstraintsOnFinalTMesh();
+
  private:
 
 	// A mesh representation of a medial axis, as built by the class MedialAxisBuilder

@@ -146,6 +146,12 @@ class LIB_GMDS_MEDIALAXIS_API Conformalizer
 	void deleteSuperfluousNodes();
 
 	/*-------------------------------------------------------------------------*/
+	/** @brief Mark edges of the conformal mesh belonging to internal constraints.
+         *  @param
+	 */
+	void markInternalConstraints();
+
+	/*-------------------------------------------------------------------------*/
 	/** @brief Execute the algorithm building the conformal mesh.
          *  @param
 	 */

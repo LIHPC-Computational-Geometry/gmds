@@ -584,19 +584,19 @@ void MedialAxis2DBuilder::buildVoronoiMedialAxis()
 
 	// Set the medial edges type values
 	m_voronoi_medax->setMedialEdgeType();
-
+	
 	// Set the branches IDs on the edges
 	m_voronoi_medax->setBranchIdOnEdges();
-
+	
 	// Set the branches IDs on the points
 	m_voronoi_medax->setBranchIdOnPoints();
-
+	
 	// Set the branches type on the edges
 	m_voronoi_medax->setBranchTypeOnEdges();
-
+	
 	// Set the branches type on the points
 	m_voronoi_medax->setBranchTypeOnPoints();
-
+	
 	std::cout<<"NB medial points : "<<m_voronoi_medax->getNbMedPoints()<<std::endl;
 	std::cout<<"Min medial edge length : "<<m_voronoi_medax->minMedEdgeLength()<<std::endl;
 	std::cout<<"Max medial edge length : "<<m_voronoi_medax->maxMedEdgeLength()<<std::endl;
@@ -607,8 +607,280 @@ void MedialAxis2DBuilder::buildVoronoiMedialAxis()
 }
 
 /*----------------------------------------------------------------------------*/
-void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::vector<Node>> AGroups)
+std::vector<std::vector<Node>> MedialAxis2DBuilder::boundaryArcs(std::vector<Node> ABoundNodes)
 {
+	bool isACircle = true;
+	// Mark the nodes of the set
+	auto set = m_mesh->newVariable<int,GMDS_NODE>("is_part_of_the_set");
+	for (auto n:ABoundNodes)
+	{
+		set->set(n.id(),1);
+	}
+	auto visited = m_mesh->newVariable<int,GMDS_NODE>("visited");
+	std::vector<std::vector<Node>> arcs;
+	std::vector<Node> arc;
+	for (auto n:ABoundNodes)
+	{
+		if (visited->value(n.id()) == 0)
+		{
+			int NbNeighbours = 0;
+			for (auto e:n.get<Edge>())
+			{
+				if (e.get<Face>().size() == 1)
+				{
+					for (auto n1:e.get<Node>())
+					{
+						if (set->value(n1.id()) == 1 && n1.id() != n.id())
+							NbNeighbours += 1;
+					}
+				}
+			}
+			if (NbNeighbours == 1)
+			{
+				// if we are here, it means that the input arc is not a circle
+				isACircle = false;
+				// Then we build a new arc
+				arc.clear();
+				std::queue<Node> toAdd;
+				toAdd.push(n);
+				visited->set(n.id(),1);
+				while (!toAdd.empty())
+				{
+					Node n = toAdd.front();
+					toAdd.pop();
+					arc.push_back(n);
+					for (auto e:n.get<Edge>())
+					{
+						if (e.get<Face>().size() == 1)
+						{
+							for (auto n1:e.get<Node>())
+							{
+								if (set->value(n1.id()) == 1 && visited->value(n1.id()) == 0)
+								{
+									toAdd.push(n1);
+									visited->set(n1.id(),1);
+								}
+							}
+						}
+					}
+				}
+				arcs.push_back(arc);
+			}
+		}
+		
+	}
+
+	if (isACircle)
+	{
+		std::vector<Node> ordered_nodes;
+		std::stack<Node> toAdd;
+		toAdd.push(ABoundNodes[0]);
+		visited->set(ABoundNodes[0].id(),1);
+		while (!toAdd.empty())
+		{
+			Node n = toAdd.top();
+			toAdd.pop();
+			ordered_nodes.push_back(n);
+			for (auto e:n.get<Edge>())
+			{
+				if (e.get<Face>().size() == 1)
+				{
+					for (auto n1:e.get<Node>())
+					{
+						if (set->value(n1.id()) == 1 && visited->value(n1.id()) == 0)
+						{
+							toAdd.push(n1);
+							visited->set(n1.id(),1);
+						}
+					}
+				}
+			}
+		}
+		int half = ordered_nodes.size()/2;
+		int quarter = half/2;
+		arc.clear();
+		for (int i = 0; i <= quarter; i++)
+			arc.push_back(ordered_nodes[i]);
+		arcs.push_back(arc);
+		arc.clear();
+		for (int i = quarter; i <= half; i++)
+			arc.push_back(ordered_nodes[i]);
+		arcs.push_back(arc);
+		arc.clear();
+		for (int i = half; i <= half+quarter; i++)
+			arc.push_back(ordered_nodes[i]);
+		arcs.push_back(arc);
+		arc.clear();
+		for (int i = half+quarter; i < ordered_nodes.size(); i++)
+			arc.push_back(ordered_nodes[i]);
+		arc.push_back(ordered_nodes[0]);
+		arcs.push_back(arc);
+	}
+
+	m_mesh->deleteVariable(GMDS_NODE,set);
+	m_mesh->deleteVariable(GMDS_NODE,visited);
+
+	return arcs;
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<Node> MedialAxis2DBuilder::boundaryArc(std::vector<Node> ABoundNodes)
+{	
+	// Mark the nodes of the set
+	auto set = m_mesh->newVariable<int,GMDS_NODE>("is_part_of_the_set");
+	for (auto n:ABoundNodes)
+	{
+		set->set(n.id(),1);
+	}
+	auto visited = m_mesh->newVariable<int,GMDS_NODE>("visited");
+	// Find an extremal node of the group
+	Node extr;
+	for (auto n:ABoundNodes)
+	{
+		int NbNeighbours = 0;
+		for (auto e:n.get<Edge>())
+		{
+			if (e.get<Face>().size() == 1)
+			{
+				for (auto n1:e.get<Node>())
+				{
+					if (set->value(n1.id()) == 1 && n1.id() != n.id())
+						NbNeighbours += 1;
+				}
+			}
+			
+		}
+		if (NbNeighbours == 1)
+		{
+			extr = n;
+			break;
+		}
+	}
+	// Create the arc
+	std::vector<Node> arc;
+	std::queue<Node> toAdd;
+	toAdd.push(extr);
+	visited->set(extr.id(),1);
+	while (!toAdd.empty())
+	{
+		Node n = toAdd.front();
+		toAdd.pop();
+		arc.push_back(n);
+		for (auto e:n.get<Edge>())
+		{
+			if (e.get<Face>().size() == 1)
+			{
+				for (auto n1:e.get<Node>())
+				{
+					if (set->value(n1.id()) == 1 && visited->value(n1.id()) == 0)
+					{
+						toAdd.push(n1);
+						visited->set(n1.id(),1);
+					}
+				}
+			}
+		}
+	}
+	m_mesh->deleteVariable(GMDS_NODE,set);
+	m_mesh->deleteVariable(GMDS_NODE,visited);
+
+	return arc;
+}
+
+/*----------------------------------------------------------------------------*/
+void MedialAxis2DBuilder::unfoldMedax(Node AN, std::vector<Node> ABoundaryArc)
+{
+	if (ABoundaryArc.size() < 3)
+	{
+		std::vector<Node> t;
+		t.push_back(ABoundaryArc[0]);
+		std::vector<math::Point> p;
+		p.push_back(ABoundaryArc[0].point());
+		m_smoothed_medax->setTouchingPoints(AN.id(),p);
+		m_smoothed_medax->setTangentNodes(AN.id(),t);
+	}
+	else
+	{
+		// Middle position
+		int N = ABoundaryArc.size()/2;
+		int NbNewNodes;
+		if (ABoundaryArc.size()%2 == 0)
+			NbNewNodes = N-1;
+		else
+			NbNewNodes = N;
+		// End node
+		Node end = ABoundaryArc[N];
+		// Direction
+		math::Vector dir = vec(end.point()+(-1.)*AN.point());
+		double r = dir.norm();
+		dir = dir/r;
+		// Step
+		double step = (r*0.9)/double(NbNewNodes);
+		// Create the new nodes and edges
+		Node new_node, prev, boundNode1, boundNode2;
+		std::vector<Node> tangentNodes;
+		std::vector<math::Point> tangentPoints;
+		Edge new_edge;
+		prev = AN;
+		boundNode1 = ABoundaryArc[0];
+		boundNode2 = ABoundaryArc[ABoundaryArc.size()-1];
+		tangentNodes = m_smoothed_medax->getTangentNodes(prev.id());
+		tangentPoints = m_smoothed_medax->getTouchingPoints(prev.id());
+		bool added1 = false;
+		bool added2 = false;
+		for (auto tn:tangentNodes)
+		{
+			if (tn.id() == boundNode1.id())
+				added1 = true;
+			if (tn.id() == boundNode2.id())
+				added2 = true;
+		}
+		if (!added1)
+		{
+			tangentNodes.push_back(boundNode1);
+			tangentPoints.push_back(boundNode1.point());
+		}
+		if (!added2)
+		{
+			tangentNodes.push_back(boundNode2);
+			tangentPoints.push_back(boundNode2.point());
+		}
+		m_smoothed_medax->setTangentNodes(prev.id(),tangentNodes);
+		m_smoothed_medax->setTouchingPoints(prev.id(),tangentPoints);
+		m_smoothed_medax->setMedialRadius(prev.id(),prev.point().distance(boundNode1.point()));
+		for (int i = 1; i < NbNewNodes; i++)
+		{
+			new_node = m_smoothed_medax->newMedPoint(AN.point()+double(i)*step*dir);
+			tangentNodes.clear();
+			tangentPoints.clear();
+			boundNode1 = ABoundaryArc[i];
+			boundNode2 = ABoundaryArc[ABoundaryArc.size()-i];
+			tangentNodes.push_back(boundNode1);
+			tangentNodes.push_back(boundNode2);
+			tangentPoints.push_back(boundNode1.point());
+			tangentPoints.push_back(boundNode2.point());
+			m_smoothed_medax->setTangentNodes(new_node.id(),tangentNodes);
+			m_smoothed_medax->setTouchingPoints(new_node.id(),tangentPoints);
+			m_smoothed_medax->setMedialRadius(new_node.id(),new_node.point().distance(boundNode1.point()));
+			new_edge = m_smoothed_medax->newMedEdge(prev.id(),new_node.id());
+			prev = new_node;
+		}
+		new_node = m_smoothed_medax->newMedPoint(end.point());
+		tangentNodes.clear();
+		tangentPoints.clear();
+		boundNode1 = ABoundaryArc[N];
+		tangentNodes.push_back(boundNode1);
+		tangentPoints.push_back(boundNode1.point());
+		m_smoothed_medax->setTangentNodes(new_node.id(),tangentNodes);
+		m_smoothed_medax->setTouchingPoints(new_node.id(),tangentPoints);
+		m_smoothed_medax->setMedialRadius(new_node.id(),0.);
+		new_edge = m_smoothed_medax->newMedEdge(prev.id(),new_node.id());
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::vector<Node>> AGroups)
+{	
 	std::cout<<" "<<std::endl;
 	std::cout<<"===== Building the smoothed medial axis ====="<<std::endl;
 	// Adjacency between the groups
@@ -649,7 +921,13 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 	// Build the medial points
 	for (int groupID=0; groupID<AGroups.size(); groupID++)
 	{
-		Node newPoint = m_smoothed_medax->newMedPoint(AGroups[groupID][0].point());
+		Node n0 = AGroups[groupID][0];
+		for (auto n:AGroups[groupID])
+		{
+			if (m_voronoi_medax->getMedialPointType(n.id()) > 2)
+				n0 = n;
+		}
+		Node newPoint = m_smoothed_medax->newMedPoint(n0.point());
 		group2NewMedPoint[groupID] = newPoint.id();
 	}
 	// Build the medial edges
@@ -661,7 +939,7 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 		}
 	}
 
-	// Set the touching points, tangent nodes, medial radii and medial radii orthogonality default
+	// Set the touching points, tangent nodes, medial radii and medial radii orthogonality default, potentially unfold medial points corresponding to circles centers
 	for (int groupID=0; groupID<AGroups.size(); groupID++)
 	{
 		TCellID newPoint = group2NewMedPoint[groupID];
@@ -670,21 +948,46 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 		{
 			if (m_voronoi_medax->getMedialPointType(n.id()) > 2)
 				oldPoint = n.id();
+			if (m_voronoi_medax->getMedialPointType(n.id()) == 1)
+				oldPoint = n.id();
 		}
 		// Computing touching points
-		// Nb of intersection points in the group
+		// Nb of intersection points and end points in the group 
 		int NbIPs = 0;
+		int NbEPs = 0;
 		for (auto node:AGroups[groupID])
 		{
 			if (m_voronoi_medax->getTouchingPoints(node.id()).size() > 2)
 				NbIPs += 1;
+			if (m_voronoi_medax->getTouchingPoints(node.id()).size() == 1)
+				NbEPs += 1;
 		}
-		if (NbIPs == 0)
+		if (NbEPs > 0)
+		{
+			// std::vector<Node> arc;
+			// for (auto n:AGroups[groupID])
+			// {
+			// 	for (auto tangentNode:m_mesh->get<Face>(n.id()).get<Node>())
+			// 		arc.push_back(tangentNode);
+			// }
+			// arc = boundaryArc(arc);
+			// unfoldMedax(m_smoothed_medax->getMedPoint(newPoint),arc);
+			std::vector<Node> nodes;
+			for (auto n:AGroups[groupID])
+			{
+				for (auto tangentNode:m_mesh->get<Face>(n.id()).get<Node>())
+					nodes.push_back(tangentNode);
+			}
+			std::vector<std::vector<Node>> arcs = boundaryArcs(nodes);
+			for (auto arc:arcs)
+				unfoldMedax(m_smoothed_medax->getMedPoint(newPoint),arc);
+		}
+		if (NbIPs == 0 && NbEPs == 0)
 		{
 			m_smoothed_medax->setTouchingPoints(newPoint, m_voronoi_medax->getTouchingPoints(oldPoint));
 			m_smoothed_medax->setTangentNodes(newPoint, m_voronoi_medax->getTangentNodes(oldPoint));
 		}
-		if (NbIPs == 1)
+		if (NbIPs == 1 && NbEPs == 0)
 		{
 			for (auto node:AGroups[groupID])
 			{
@@ -697,7 +1000,7 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 			m_smoothed_medax->setTouchingPoints(newPoint, m_voronoi_medax->getTouchingPoints(oldPoint));
 			m_smoothed_medax->setTangentNodes(newPoint, m_voronoi_medax->getTangentNodes(oldPoint));
 		}
-		if (NbIPs >= 2)
+		if (NbIPs >= 2 && NbEPs == 0)
 		{
 			std::vector<TCellID> intersection_points;
 			for (auto node:AGroups[groupID])
@@ -734,8 +1037,11 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 		for (auto node:AGroups[groupID])
 			dual_tri.push_back(m_mesh->get<Face>(node.id()));
 		m_smoothed_medax->setDualTriangles(newPoint,dual_tri);
-		m_smoothed_medax->setMedialRadius(newPoint, m_voronoi_medax->getMedialRadius(oldPoint));
-		m_smoothed_medax->setMedialRadiusOrthogonalityDefault(newPoint, m_voronoi_medax->getMedialRadiusOrthogonalityDefault(oldPoint));
+		if (NbEPs == 0)
+		{
+			m_smoothed_medax->setMedialRadius(newPoint, m_voronoi_medax->getMedialRadius(oldPoint));
+			m_smoothed_medax->setMedialRadiusOrthogonalityDefault(newPoint, m_voronoi_medax->getMedialRadiusOrthogonalityDefault(oldPoint));
+		}
 	}
 
 	// Refining the medial axis
@@ -1077,7 +1383,11 @@ MedialAxis2DBuilder::execute()
 	buildVoronoiMedialAxis();
 
 	// Smoothed medial axis
-	std::vector<std::vector<Node>> groups = m_voronoi_medax->medialPointsGroups(m_voronoi_medax->meanMedEdgeLength()/2.);
+	double tol = 1e-6;
+	double mean_edge_length = m_voronoi_medax->meanMedEdgeLength()/3.;
+	if (tol < mean_edge_length)
+		tol = mean_edge_length;
+	std::vector<std::vector<Node>> groups = m_voronoi_medax->medialPointsGroups(tol);
 	buildSmoothedMedaxFromVoronoi(groups);
 
 	// Identify details on geometry using the (Voronoï) medial axis

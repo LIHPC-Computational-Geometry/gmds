@@ -13,6 +13,11 @@ Conformalizer::Conformalizer(gmds::Mesh &AMesh, std::vector<NonConformalHalfEdge
     m_mesh->newVariable<std::vector<Node>,GMDS_EDGE>("oldEdges2newNodes");
     // Old faces/new nodes correspondance
     m_mesh->newVariable<std::vector<std::vector<int>>,GMDS_FACE>("face2newNodes");
+    // Internal constraints
+    try {m_mesh->getVariable<int,GMDS_EDGE>("internal_constraint");}
+    catch (GMDSException& e){m_mesh->newVariable<int,GMDS_EDGE>("internal_constraint");}
+    try {m_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");}
+    catch (GMDSException& e){m_mesh->newVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");}
 	
 	// Corresponding non-conformal half edges
 	m_half_edges = AHalfEdges;
@@ -26,6 +31,10 @@ Conformalizer::Conformalizer(gmds::Mesh &AMesh, std::vector<NonConformalHalfEdge
     m_conformal_mesh->newVariable<int,GMDS_NODE>("node2group");
     // Node/representative of the group correspondance
     m_conformal_mesh->newVariable<int,GMDS_NODE>("node2representative");
+    // Mark with 1 edges corresponding to internal constraints
+	m_conformal_mesh->newVariable<int,GMDS_EDGE>("internal_constraint");
+	// Mark with 1 nodes belonging to an internal constraint
+	m_conformal_mesh->newVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
 
     // Intermediate mesh                                          
 	m_intermediate_mesh = new Mesh(MeshModel(DIM3 | E | N | F |
@@ -154,6 +163,8 @@ void Conformalizer::addSubdividingNodes()
     auto l = m_mesh->getVariable<int,GMDS_EDGE>("length");
     auto oe2nn = m_mesh->getVariable<std::vector<Node>,GMDS_EDGE>("oldEdges2newNodes");
     auto n2g = m_mesh->getVariable<int,GMDS_NODE>("node2group");
+    auto int_constr = m_mesh->getVariable<int,GMDS_EDGE>("internal_constraint");
+    auto constr_nodes = m_conformal_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
     // Add nodes subdividing edges
     for (auto e_id:m_mesh->edges())
     {
@@ -178,6 +189,17 @@ void Conformalizer::addSubdividingNodes()
             }
             ordered_nodes.push_back(m_conformal_mesh->get<Node>(n2g->value(n2.id())));
             oe2nn->set(e_id,ordered_nodes);
+        }
+    }
+    // Mark the nodes of the conformal mesh belonging to constraints
+    for (auto e_id:m_mesh->edges())
+    {
+        if (int_constr->value(e_id) == 1)
+        {
+            for (auto n:oe2nn->value(e_id))
+            {
+                constr_nodes->set(n.id(),1);
+            }
         }
     }
 }
@@ -310,6 +332,7 @@ void Conformalizer::buildIntermediateNodesGroups()
 void Conformalizer::buildRepresentativeNodes()
 {
     std::cout<<"> Building representative nodes"<<std::endl;
+    auto constr = m_conformal_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
     auto n2r = m_conformal_mesh->getVariable<int,GMDS_NODE>("node2representative");
     for (auto group:m_intermediate_nodes_groups)
     {
@@ -319,10 +342,13 @@ void Conformalizer::buildRepresentativeNodes()
         {
             double x = 0.;
             double y = 0.;
+            bool constrained = false;
             for (auto n_id:group)
             {
                 x += m_conformal_mesh->get<Node>(n_id).X();
                 y += m_conformal_mesh->get<Node>(n_id).Y();
+                if (constr->value(n_id) == 1)
+                    constrained = true;
             }
             x = x/double(group.size());
             y = y/double(group.size());
@@ -331,6 +357,8 @@ void Conformalizer::buildRepresentativeNodes()
             n2r->set(n.id(),n.id());
             for (auto n_id:group)
                 n2r->set(n_id,n.id());
+            if (constrained)
+                constr->set(n.id(),1);
         }
     }
 }
@@ -415,6 +443,26 @@ void Conformalizer::deleteSuperfluousNodes()
 }
 
 /*----------------------------------------------------------------------------*/
+void Conformalizer::markInternalConstraints()
+{
+    std::cout<<"> Marking internal constraints on the conformal mesh"<<std::endl;
+    auto int_constr = m_conformal_mesh->getVariable<int,GMDS_EDGE>("internal_constraint");
+	auto nodes_constr = m_conformal_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+    for (auto e_id:m_conformal_mesh->edges())
+    {
+		Edge e = m_conformal_mesh->get<Edge>(e_id);
+		Node n1 = e.get<Node>()[0];
+		Node n2 = e.get<Node>()[1];
+		if (nodes_constr->value(n1.id()) == 1 && nodes_constr->value(n2.id()) == 1)
+			int_constr->set(e.id(),1);
+		else if (nodes_constr->value(n1.id()) == 1 && isInterior(n1) && !isInterior(n2))
+			int_constr->set(e.id(),1);	
+		else if (nodes_constr->value(n2.id()) == 1 && isInterior(n2) && !isInterior(n1))
+			int_constr->set(e.id(),1);	
+    }
+}
+
+/*----------------------------------------------------------------------------*/
 void Conformalizer::execute()
 {
     std::cout<<" "<<std::endl;
@@ -432,6 +480,7 @@ void Conformalizer::execute()
     buildConformalMeshFaces();
     deleteSuperfluousNodes();
     setConformalMeshConnectivity();
+    markInternalConstraints();
     std::cout<<"========================================================================================"<<std::endl;
     std::cout<<" "<<std::endl;
 }
@@ -440,78 +489,213 @@ void Conformalizer::execute()
 void Conformalizer::smooth()
 {
     std::cout<<"> Smoothing the conformal mesh"<<std::endl;
+    auto nodes_constr = m_conformal_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+    auto int_constr = m_conformal_mesh->getVariable<int,GMDS_EDGE>("internal_constraint");
     for (auto n_id:m_conformal_mesh->nodes())
     {
         Node n = m_conformal_mesh->get<Node>(n_id);
         if (isInterior(n))
         {
-            double x = 0.;
-            double y = 0.;
-            double NbNeighbours = 0.;
-            for (auto e:n.get<Edge>())
+            if (nodes_constr->value(n.id()) == 0)
             {
-                for (auto n1:e.get<Node>())
+                double x = 0.;
+                double y = 0.;
+                double NbNeighbours = 0.;
+                for (auto e:n.get<Edge>())
                 {
-                    if (n1.id() != n.id())
+                    for (auto n1:e.get<Node>())
                     {
-                        x += n1.X();
-                        y += n1.Y();
-                        NbNeighbours += 1.;
+                        if (n1.id() != n.id())
+                        {
+                            x += n1.X();
+                            y += n1.Y();
+                            NbNeighbours += 1.;
+                        }
+                    }
+                }
+                x = x/NbNeighbours;
+                y = y/NbNeighbours;
+                n.setX(x);
+                n.setY(y);
+            }
+            else
+            {
+                int NbConstraintedEdges = 0;
+                for (auto e:n.get<Edge>())
+                {
+                    if (int_constr->value(e.id()) == 1)
+                        NbConstraintedEdges += 1;
+                }
+                if (NbConstraintedEdges == 2)
+                {
+                    // Find the two constrainted edges
+                    Edge e1,e2;
+                    for (auto e:n.get<Edge>())
+                    {
+                        if (int_constr->value(e.id()) == 1)
+                        {
+                            e1 = e;
+                            break;
+                        }
+                    }
+                    for (auto e:n.get<Edge>())
+                    {
+                        if (int_constr->value(e.id()) == 1 && e.id() != e1.id())
+                        {
+                            e2 = e;
+                            break;
+                        }
+                    }
+                    if (e1.length() > 1e-6 && e2.length() > 1e-6)
+                    {
+                        double alpha = oriented_angle(edge2vec(e1,n),-edge2vec(e2,n));
+                        if (fabs(alpha) < 0.2)
+                        {
+                            double x = 0.;
+                            double y = 0.;
+                            // for (auto n1:e1.get<Node>())
+                            // {
+                            //     if (n1.id() != n.id())
+                            //     {
+                            //         x += n1.X();
+                            //         y += n1.Y();
+                            //     }
+                            // }
+                            // for (auto n1:e2.get<Node>())
+                            // {
+                            //     if (n1.id() != n.id())
+                            //     {
+                            //         x += n1.X();
+                            //         y += n1.Y();
+                            //     }
+                            // }
+                            // x = x/2.;
+                            // y = y/2.;
+                            // n.setX(x);
+                            // n.setY(y);
+                            double NbNeighbours = 0.;
+                            for (auto e:n.get<Edge>())
+                            {
+                                for (auto n1:e.get<Node>())
+                                {
+                                    if (n1.id() != n.id())
+                                    {
+                                        x += n1.X();
+                                        y += n1.Y();
+                                        NbNeighbours += 1.;
+                                    }
+                                }
+                            }
+                            x = x/NbNeighbours;
+                            y = y/NbNeighbours;
+                            // Projection on the constraint
+                            math::Point P(x,y,0.);
+                            math::Vector V = vec(P)-vec(n.point());
+                            math::Vector E1 = edge2vec(e1,n);
+                            math::Vector E2 = edge2vec(e2,n);
+                            math::Vector V1 = projection(E1,V);
+                            math::Vector V2 = projection(E2,V);
+                            math::Point P1 = n.point() + V1;
+                            math::Point P2 = n.point() + V2;
+                            if (P.distance(P1) < P.distance(P2))
+                            {
+                                n.setX(P1.X());
+                                n.setY(P1.Y());
+                            }
+                            else
+                            {
+                                n.setX(P2.X());
+                                n.setY(P2.Y());
+                            }
+                        }
                     }
                 }
             }
-            x = x/NbNeighbours;
-            y = y/NbNeighbours;
-            n.setX(x);
-            n.setY(y);
         }
         else
         {
-            // Find the two boundary edges containing n
-            Edge e1,e2;
-            for (auto e:n.get<Edge>())
+            if (nodes_constr->value(n.id()) == 0)
             {
-                if (e.get<Face>().size() == 1)
+                // Find the two boundary edges containing n
+                Edge e1,e2;
+                for (auto e:n.get<Edge>())
                 {
-                    e1 = e;
-                    break;
-                }
-            }
-            for (auto e:n.get<Edge>())
-            {
-                if (e.get<Face>().size() == 1 && e.id() != e1.id())
-                {
-                    e2 = e;
-                    break;
-                }
-            }
-            if (e1.length() > 1e-6 && e2.length() > 1e-6)
-            {
-                double alpha = oriented_angle(edge2vec(e1,n),-edge2vec(e2,n));
-                if (fabs(alpha) < 0.2)
-                {
-                    double x = 0.;
-                    double y = 0.;
-                    for (auto n1:e1.get<Node>())
+                    if (e.get<Face>().size() == 1)
                     {
-                        if (n1.id() != n.id())
+                        e1 = e;
+                        break;
+                    }
+                }
+                for (auto e:n.get<Edge>())
+                {
+                    if (e.get<Face>().size() == 1 && e.id() != e1.id())
+                    {
+                        e2 = e;
+                        break;
+                    }
+                }
+                if (e1.length() > 1e-6 && e2.length() > 1e-6)
+                {
+                    double alpha = oriented_angle(edge2vec(e1,n),-edge2vec(e2,n));
+                    if (fabs(alpha) < 0.2)
+                    {
+                        double x = 0.;
+                        double y = 0.;
+                        // for (auto n1:e1.get<Node>())
+                        // {
+                        //     if (n1.id() != n.id())
+                        //     {
+                        //         x += n1.X();
+                        //         y += n1.Y();
+                        //     }
+                        // }
+                        // for (auto n1:e2.get<Node>())
+                        // {
+                        //     if (n1.id() != n.id())
+                        //     {
+                        //         x += n1.X();
+                        //         y += n1.Y();
+                        //     }
+                        // }
+                        // x = x/2.;
+                        // y = y/2.;
+                        // n.setX(x);
+                        // n.setY(y);
+                        double NbNeighbours = 0.;
+                        for (auto e:n.get<Edge>())
                         {
-                            x += n1.X();
-                            y += n1.Y();
+                            for (auto n1:e.get<Node>())
+                            {
+                                if (n1.id() != n.id())
+                                {
+                                    x += n1.X();
+                                    y += n1.Y();
+                                    NbNeighbours += 1.;
+                                }
+                            }
+                        }
+                        x = x/NbNeighbours;
+                        y = y/NbNeighbours;
+                        // Projection on the boundary
+                        math::Point P(x,y,0.);
+                        math::Vector V = vec(P)-vec(n.point());
+                        math::Vector E1 = edge2vec(e1,n);
+                        math::Vector E2 = edge2vec(e2,n);
+                        math::Vector V1 = projection(E1,V);
+                        math::Vector V2 = projection(E2,V);
+                        math::Point P1 = n.point() + V1;
+                        math::Point P2 = n.point() + V2;
+                        if (P.distance(P1) < P.distance(P2))
+                        {
+                            n.setX(P1.X());
+                            n.setY(P1.Y());
+                        }
+                        else
+                        {
+                            n.setX(P2.X());
+                            n.setY(P2.Y());
                         }
                     }
-                    for (auto n1:e2.get<Node>())
-                    {
-                        if (n1.id() != n.id())
-                        {
-                            x += n1.X();
-                            y += n1.Y();
-                        }
-                    }
-                    x = x/2.;
-                    y = y/2.;
-                    n.setX(x);
-                    n.setY(y);
                 }
             }
         }

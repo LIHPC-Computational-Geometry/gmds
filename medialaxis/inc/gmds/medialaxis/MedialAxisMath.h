@@ -69,4 +69,7 @@ bool touchesBoundary(Edge &AE);
 
 // Returns the common face of the two input edges.
 Face getCommonFace(Edge &AE1, Edge &AE2);
+
+// Returns the projection of the second input vector on the first input vector.
+math::Vector projection(math::Vector &AV1, math::Vector &AV2);
 #endif     // GMDS_MEDIALAXISMATH_H

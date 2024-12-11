@@ -142,6 +142,24 @@ class LIB_GMDS_MEDIALAXIS_API MedialAxis2DBuilder{
 	void buildVoronoiMedialAxis();
 
 	/*-------------------------------------------------------------------------*/
+	/** \brief Takes as input a set of connected nodes forming boundary arcs, and returns the ordered sets.
+	 * 	\param ABoundNodes a set of connected boundary nodes
+	 */
+	std::vector<std::vector<Node>> boundaryArcs(std::vector<Node> ABoundNodes);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Takes as input a set of connected nodes forming a boundary arc, and returns the ordered set. LATER : TO MODIFY TO TAKE INTO ACCOUNT CIRCLE AND SEVERAL ARCS
+	 * 	\param ABoundNodes a set of connected boundary nodes
+	 */
+	std::vector<Node> boundaryArc(std::vector<Node> ABoundNodes);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Unfolds the medial axis at the input medial point
+	 * 	\param AN,ABoundaryArc a medial node and a boundary arc
+	 */
+	void unfoldMedax(Node AN, std::vector<Node> ABoundaryArc);
+
+	/*-------------------------------------------------------------------------*/
 	/** \brief Build the smoothed medial axis from the groups of nodes of the Voronoï medial axis
 	 * 	\param AGroups the set of medial points groups
 	 */

@@ -2,6 +2,7 @@
 #include "gmds/io/IGMeshIOService.h"
 #include "gmds/io/VTKReader.h"
 #include "gmds/io/VTKWriter.h"
+#include "gmds/io/MeshBWriter.h"
 #include "gmds/medialaxis/MedialAxis2D.h"
 #include "gmds/medialaxis/MedialAxis2DBuilder.h"
 #include "gmds/medialaxis/MedialAxis3D.h"
@@ -10,6 +11,10 @@
 #include "gmds/medialaxis/MedialAxisMath.h"
 #include "gmds/medialaxis/MinDelaunayCleaner.h"
 #include "gmds/medialaxis/MedaxBasedTMeshBuilder.h"
+#include "gmds/medialaxis/QuantizationSolver.h"
+#include "gmds/medialaxis/ConformalMeshBuilder.h"
+#include "gmds/medialaxis/BlockStructureSimplifier.h"
+#include "gmds/medialaxis/Conformalizer.h"
 #include <gmds/math/Point.h>
 #include <gmds/math/Tetrahedron.h>
 #include <iostream>
@@ -102,7 +107,7 @@ int main(int argc, char* argv[])
 		tmb.buildBlocks();
 		tmb.transformDegenerateQuadsIntoTriangles();
 		tmb.writeTopoRep("topo_rep.vtk");
-		
+		tmb.writeBlockDecomp("block_decomp.vtk");
 		// // Only to have nice pictures
 		tmb.setBlockDecompConnectivity();
 		// tmb.markBlocksSeparatingEdges();
@@ -113,8 +118,37 @@ int main(int argc, char* argv[])
 		tmb.writeBlockDecomp("block_decomp.vtk");
 
 		tmb.buildFinalTMesh();
-		tmb.writeFinalTMesh("t_mesh.vtk");
+		tmb.setFinalTMeshConnectivity();
+		tmb.markInternalConstraintsOnFinalTMesh();
+		//tmb.writeFinalTMesh("t_mesh.vtk");
+		
+		Mesh t_mesh = tmb.getFinalTMesh();
 
+		// Quantize the T-mesh
+		QuantizationSolver qs(t_mesh);
+		qs.buildCompleteSolution();
+		// We can build the quantized mesh
+
+		qs.setHalfEdgesLength();
+		qs.setEdgesLength();
+
+		// Build the conformal mesh
+		Conformalizer conf(t_mesh,qs.halfEdges(),qs.halfEdgesLengths());
+		conf.execute();
+		Mesh conformal_mesh = conf.getConformalMesh();
+
+		// Now we simplify the quantized mesh, ie we try to minimize the number of blocks
+		BlockStructureSimplifier s(conformal_mesh);
+		// s.execute();
+		// s.writeSimplifiedMesh("simplified_mesh.vtk");
+		s.markSeparatrices();
+		s.setBlocksIDs();
+
+		for (int i = 0; i < 100; i++)
+			conf.smooth();
+
+		tmb.writeFinalTMesh("t_mesh.vtk");
+		conf.writeConformalMesh("conformal_mesh.vtk");
 	}
 
 	// Write the output file
@@ -122,6 +156,7 @@ int main(int argc, char* argv[])
 	vtkWriter.setCellOptions(N| E| F);
 	vtkWriter.setDataOptions(N| E| F);
 	vtkWriter.write(file_out);
+
 	// cleaner.writeCleanedMesh("cleaned_min_del.vtk");
 }
 

@@ -303,44 +303,47 @@ QuantizationSolver::buildConnectedComponent(int AHalfEdgeID)
 	{
 		current = front.front();
 		front.pop();
-		m_quantization_graph->markAsVisited(current);
-		NonConformalHalfEdge e = m_half_edges[current];
-		// Build edges linking to opp
-		for (auto opp:e.opposite())
+		if (m_quantization_graph->alreadyVisited(current) == 0)
 		{
-			if (m_quantization_graph->alreadyVisited(opp) == 0)
-			{
-				Edge newGraphEdge = m_quantization_graph->newEdge(current,opp);
-				Edge commonEdge = getCommonEdge(current,opp);
-				e2qge->set(commonEdge.id(),newGraphEdge.id());
-				if (m_quantization_graph->alreadyPushed(oppositeInQuad(opp)) == 0)
-				{
-					front.push(oppositeInQuad(opp));
-					m_quantization_graph->markAsPushed(oppositeInQuad(opp));
-				}
-			}
-		}
-		
-		int nxt = oppositeInQuad(current);
-		if (m_quantization_graph->alreadyVisited(nxt) == 0)
-		{
-			// Build edge linking to next(next)
-			NonConformalHalfEdge e2 = m_half_edges[nxt];
-			m_quantization_graph->markAsVisited(nxt);
-			Edge newGraphEdge = m_quantization_graph->newEdge(nxt,current);
-			m_quantization_graph->markAsInQuad(newGraphEdge.id());
-			// Build edges linking next(next) to opp(next(next))
-			for (auto opp:e2.opposite())
+			m_quantization_graph->markAsVisited(current);
+			NonConformalHalfEdge e = m_half_edges[current];
+			// Build edges linking to opp
+			for (auto opp:e.opposite())
 			{
 				if (m_quantization_graph->alreadyVisited(opp) == 0)
 				{
-					newGraphEdge = m_quantization_graph->newEdge(opp,nxt);
-					Edge commonEdge = getCommonEdge(opp,nxt);
+					Edge newGraphEdge = m_quantization_graph->newEdge(current,opp);
+					Edge commonEdge = getCommonEdge(current,opp);
 					e2qge->set(commonEdge.id(),newGraphEdge.id());
-					if (m_quantization_graph->alreadyPushed(opp) == 0)
+					if (m_quantization_graph->alreadyPushed(oppositeInQuad(opp)) == 0)
 					{
-						front.push(opp);
-						m_quantization_graph->markAsPushed(opp);
+						front.push(oppositeInQuad(opp));
+						m_quantization_graph->markAsPushed(oppositeInQuad(opp));
+					}
+				}
+			}
+			
+			int nxt = oppositeInQuad(current);
+			if (m_quantization_graph->alreadyVisited(nxt) == 0)
+			{
+				// Build edge linking to next(next)
+				NonConformalHalfEdge e2 = m_half_edges[nxt];
+				m_quantization_graph->markAsVisited(nxt);
+				Edge newGraphEdge = m_quantization_graph->newEdge(nxt,current);
+				m_quantization_graph->markAsInQuad(newGraphEdge.id());
+				// Build edges linking next(next) to opp(next(next))
+				for (auto opp:e2.opposite())
+				{
+					if (m_quantization_graph->alreadyVisited(opp) == 0)
+					{
+						newGraphEdge = m_quantization_graph->newEdge(opp,nxt);
+						Edge commonEdge = getCommonEdge(opp,nxt);
+						e2qge->set(commonEdge.id(),newGraphEdge.id());
+						if (m_quantization_graph->alreadyPushed(opp) == 0)
+						{
+							front.push(opp);
+							m_quantization_graph->markAsPushed(opp);
+						}
 					}
 				}
 			}
