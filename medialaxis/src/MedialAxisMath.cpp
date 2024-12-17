@@ -22,9 +22,9 @@ double maxRange(const math::Point& ACenter1, const double& ARadius1, const math:
 double oriented_angle(const math::Vector &AV1, const math::Vector &AV2)
 {
 	double cos_theta = AV1.dot(AV2)/(AV1.norm()*AV2.norm());
-	if (fabs(cos_theta-1.) < 10e-6)
+	if (fabs(cos_theta-1.) < 1e-10)
 		return 0.;
-	if (fabs(cos_theta+1.) < 10e-6)
+	if (fabs(cos_theta+1.) < 1e-10)
 		return M_PI;
 	math::Vector AV3;
 	AV3.setX(-AV1.Y());
@@ -72,24 +72,45 @@ std::vector<Edge> sortEdges(Node &AN, std::vector<Edge> &AV)
 		double angle = oriented_angle(vec(X), edge2vec(e,AN));
 		angles.push_back(angle);
 	}
-
 	std::vector<Edge> sorted_edges;
-	double prev_min = -10.;
-	for (int i = 1; i <= AV.size(); i++)
+
+
+
+
+	// double prev_min = -10.;
+	// for (int i = 1; i <= AV.size(); i++)
+	// {
+	// 	// Find the ith min
+	// 	double min_angle = 10.;
+	// 	int min_pos;
+	// 	for (int j = 0; j < angles.size(); j++)
+	// 	{
+	// 		if (angles[j] < min_angle && angles[j] > prev_min)
+	// 		{
+	// 			min_angle = angles[j];
+	// 			min_pos = j;
+	// 		}
+	// 	}
+	// 	prev_min = min_angle;
+	// 	sorted_edges.push_back(AV[min_pos]);
+	// }
+	std::vector<Edge> edges = AV;
+	double min_angle;
+	int min_pos;
+	while (!edges.empty())
 	{
-		// Find the ith min
-		double min_angle = 10.;
-		int min_pos;
-		for (int j = 0; j < angles.size(); j++)
+		min_angle = 10.;
+		for (int j = 0; j < edges.size(); j++)
 		{
-			if (angles[j] < min_angle && angles[j] > prev_min)
+			if (angles[j] < min_angle)
 			{
-				min_angle = angles[j];
 				min_pos = j;
+				min_angle = angles[j];
 			}
 		}
-		prev_min = min_angle;
-		sorted_edges.push_back(AV[min_pos]);
+		sorted_edges.push_back(edges[min_pos]);
+		edges.erase(edges.begin()+min_pos);
+		angles.erase(angles.begin()+min_pos);
 	}
 	return sorted_edges;
 }
@@ -182,7 +203,8 @@ std::vector<Edge> orientateEdges(Face &AF)
 			}
 		}
 		angle = oriented_angle(edge2vec(e1,node), edge2vec(e2,node));
-		if (fabs(fabs(angle)-M_PI/2.) < M_PI/4)
+		// if (fabs(fabs(angle)-M_PI/2.) < M_PI/4)
+		if (fabs(fabs(angle)-M_PI) > 1e-3 && fabs(angle) > 1e-3)
 		{
 			n0 = node;
 			break;

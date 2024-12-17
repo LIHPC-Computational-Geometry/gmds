@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-QuantizationSolver::QuantizationSolver(gmds::Mesh &AMesh)
+QuantizationSolver::QuantizationSolver(gmds::Mesh &AMesh, double AMeshSize)
 {
 	// Non conformal quad mesh
 	m_mesh = &AMesh;
@@ -21,7 +21,10 @@ QuantizationSolver::QuantizationSolver(gmds::Mesh &AMesh)
 	// Mark with 1 the nodes forming a T-junction
 	m_mesh->newVariable<int,GMDS_NODE>("T-junction");
 	// Mark with 1 the nodes forming a T-junction (the previous variable is no longer necessary)
-	m_mesh->newVariable<int,GMDS_NODE>("is_a_T-junction");
+	//m_mesh->newVariable<int,GMDS_NODE>("is_a_T-junction");
+
+	// Target mesh size
+	m_mesh_size = AMeshSize;
 
 	// Quantization graph
 	m_quantization_graph = new QuantizationGraph();
@@ -107,6 +110,7 @@ std::vector<std::vector<Edge>> QuantizationSolver::alignedEdgesGroups(Face &AF)
 	std::vector<Edge> group;
 	// group of the first element
 	bool finished = false;
+	Edge e0 = ordered_edges[0];
 	Edge current_edge = ordered_edges[0];
 	group.push_back(current_edge);
 	ordered_edges.erase(ordered_edges.begin());
@@ -125,6 +129,24 @@ std::vector<std::vector<Edge>> QuantizationSolver::alignedEdgesGroups(Face &AF)
 			finished = true;
 	}
 	std::reverse(group.begin(),group.end());
+	if (!ordered_edges.empty())
+	{
+		finished = false;
+		current_edge = e0;
+		while (!finished)
+		{
+			next_edge = ordered_edges[0];
+			Node n = getCommonNode(current_edge,next_edge);
+			if (tj->value(n.id()) == AF.id())
+			{
+				group.push_back(next_edge);
+				ordered_edges.erase(ordered_edges.begin());
+				current_edge = next_edge;
+			}
+			else
+				finished = true;
+		}
+	}
 	edges_groups.push_back(group);
 	// Group of the other elements
 	while (!ordered_edges.empty())
@@ -151,6 +173,7 @@ std::vector<std::vector<Edge>> QuantizationSolver::alignedEdgesGroups(Face &AF)
 		}
 		edges_groups.push_back(group);
 	}
+
 	return edges_groups;
 }
 
@@ -366,7 +389,7 @@ QuantizationSolver::buildQuantizationGraph()
 {
 	std::cout<<" "<<std::endl;
 	std::cout<<"========== Building the quantization graph =========="<<std::endl;
-	findTJunctions();
+	//findTJunctions();
 	buildHalfEdges();
 	buildQuantizationGraphNodes();
 	for (int i = 0; i < m_half_edges.size(); i++)
@@ -1063,9 +1086,11 @@ std::vector<std::vector<Node>> QuantizationSolver::buildCompleteSolution()
 	//m_quantization_graph->display(); // Display the graph
 	//m_quantization_graph->displaySolution(); // Display the quantization solution
 	std::vector<std::vector<Node>> problematicCouples;// = m_quantization_graph->checkSolutionValidity();
+	m_quantization_graph->improveSolution(m_mesh_size);
 
 	std::cout<<"===================================="<<std::endl;
     std::cout<<" "<<std::endl;
+
 	return problematicCouples;
 }
 /*----------------------------------------------------------------------------*/

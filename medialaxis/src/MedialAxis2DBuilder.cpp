@@ -609,6 +609,7 @@ void MedialAxis2DBuilder::buildVoronoiMedialAxis()
 /*----------------------------------------------------------------------------*/
 std::vector<std::vector<Node>> MedialAxis2DBuilder::boundaryArcs(std::vector<Node> ABoundNodes)
 {
+	auto constr = m_mesh->getVariable<int,GMDS_EDGE>("internal_constraint");
 	bool isACircle = true;
 	// Mark the nodes of the set
 	auto set = m_mesh->newVariable<int,GMDS_NODE>("is_part_of_the_set");
@@ -626,7 +627,7 @@ std::vector<std::vector<Node>> MedialAxis2DBuilder::boundaryArcs(std::vector<Nod
 			int NbNeighbours = 0;
 			for (auto e:n.get<Edge>())
 			{
-				if (e.get<Face>().size() == 1)
+				if (e.get<Face>().size() == 1 || constr->value(e.id()) == 1)
 				{
 					for (auto n1:e.get<Node>())
 					{
@@ -651,7 +652,7 @@ std::vector<std::vector<Node>> MedialAxis2DBuilder::boundaryArcs(std::vector<Nod
 					arc.push_back(n);
 					for (auto e:n.get<Edge>())
 					{
-						if (e.get<Face>().size() == 1)
+						if (e.get<Face>().size() == 1 || constr->value(e.id()) == 1)
 						{
 							for (auto n1:e.get<Node>())
 							{
@@ -683,7 +684,7 @@ std::vector<std::vector<Node>> MedialAxis2DBuilder::boundaryArcs(std::vector<Nod
 			ordered_nodes.push_back(n);
 			for (auto e:n.get<Edge>())
 			{
-				if (e.get<Face>().size() == 1)
+				if (e.get<Face>().size() == 1 || constr->value(e.id()) == 1)
 				{
 					for (auto n1:e.get<Node>())
 					{
@@ -1384,7 +1385,7 @@ MedialAxis2DBuilder::execute()
 
 	// Smoothed medial axis
 	double tol = 1e-6;
-	double mean_edge_length = m_voronoi_medax->meanMedEdgeLength()/3.;
+	double mean_edge_length = m_voronoi_medax->meanMedEdgeLength()/10.;
 	if (tol < mean_edge_length)
 		tol = mean_edge_length;
 	std::vector<std::vector<Node>> groups = m_voronoi_medax->medialPointsGroups(tol);

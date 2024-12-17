@@ -70,6 +70,12 @@ class LIB_GMDS_MEDIALAXIS_API MedaxBasedTMeshBuilder
 	void refineByAddingSingularNodes();
 
 	/*-------------------------------------------------------------------------*/
+	/** \brief Refine the topo rep by adding artificially singular points on the medial axis, according to the input mesh size.
+	      *  @param
+	 */
+	void refineByAddingSingularNodes(double AMeshSize);
+
+	/*-------------------------------------------------------------------------*/
 	/** \brief Build the nodes of the topological representation (IP, EP, singularities)
 	      *  @param
 	 */
@@ -179,10 +185,22 @@ class LIB_GMDS_MEDIALAXIS_API MedaxBasedTMeshBuilder
 	  void transformDegenerateQuadsIntoTriangles();
 
 	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Sorts the input fan of edges.
+	      *  @param AFan a vector of edges
+	   */
+	  std::vector<Edge> sortEdgesFan(std::vector<Edge> &AFan);
+
+	  /*-------------------------------------------------------------------------*/
 	  /** \brief  Transforming triangles of the T-mesh into non-degenerate quads.
 	      *  @param
 	   */
 	  void transformTrianglesIntoQuads();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Mark t-junctions.
+	      *  @param
+	   */
+	  void markTJunctions();
 
 	  /*-------------------------------------------------------------------------*/
 	  /** \brief Sort adjacent edges with respect to their angle with the x-axis.

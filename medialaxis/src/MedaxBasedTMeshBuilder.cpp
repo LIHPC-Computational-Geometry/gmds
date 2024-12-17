@@ -88,6 +88,8 @@ MedaxBasedTMeshBuilder::MedaxBasedTMeshBuilder(Mesh &AMedax, Mesh &AMinDel){
 	m_t_mesh->newVariable<int,GMDS_NODE>("TMeshNode2MinTriNode"); 
 	// Mark with 1 T-junctions
 	m_t_mesh->newVariable<int,GMDS_NODE>("is_a_T_junction"); 
+	// Each face's T-junctions
+	m_t_mesh->newVariable<std::vector<TCellID>,GMDS_FACE>("T_junctions"); 
 	// Mark with 1 triangle verticies
 	m_t_mesh->newVariable<int,GMDS_NODE>("is_a_triangle_vertex"); 
 	// Mark with 1 triangles
@@ -102,6 +104,8 @@ MedaxBasedTMeshBuilder::MedaxBasedTMeshBuilder(Mesh &AMedax, Mesh &AMinDel){
 	m_final_t_mesh->newVariable<int,GMDS_EDGE>("internal_constraint");
 	// Mark with 1 nodes belonging to an internal constraint
 	m_final_t_mesh->newVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+	// Mark with 1 T-junctions
+	m_final_t_mesh->newVariable<int,GMDS_NODE>("is_a_T-junction"); 
 }
 
 /*----------------------------------------------------------------------------*/
@@ -379,6 +383,41 @@ void MedaxBasedTMeshBuilder::refineByAddingSingularNodes()
 		int q = Nb/30;
 		for (int i = 1; i < q; i++)
 			singu->set(section[30*i].id(),10);
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+void MedaxBasedTMeshBuilder::refineByAddingSingularNodes(double AMeshSize)
+{
+	std::cout<<"> Refining the future block decomposition by adding singular nodes"<<std::endl;
+	auto sectionID = m_medax->getVariable<int,GMDS_NODE>("section_id");
+	auto singu = m_medax->getVariable<int,GMDS_NODE>("singularity");
+	// Compute the highest section ID
+	int maxID = 0;
+	for (auto n_id:m_medax->nodes())
+	{
+		if (sectionID->value(n_id) > maxID)
+			maxID = sectionID->value(n_id);
+	}
+	std::vector<Node> section;
+	double length;
+	int count;
+	for (int id = 0; id <= maxID; id++)
+	{
+		section = sectionNodes(id);
+		length = 0.;
+		count = 0;
+		for (int i = 1; i < section.size() ; i++)
+		{
+			length += section[i-1].point().distance(section[i].point());
+			count += 1;
+			if (count >= 10 && length >= AMeshSize && i < section.size() - 5)
+			{
+				length = 0.;
+				count = 0.;
+				singu->set(section[i].id(),10);
+			}
+		}
 	}
 }
 
@@ -1142,6 +1181,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 	auto f2st = m_t_mesh->getVariable<int,GMDS_FACE>("face2sectionType");
 	auto section2sectionID = m_topological_representation->getVariable<int,GMDS_EDGE>("section_to_section_id");
 	auto t_junct = m_t_mesh->getVariable<int,GMDS_NODE>("is_a_T_junction"); 
+	auto t_junct_list = m_t_mesh->getVariable<std::vector<TCellID>,GMDS_FACE>("T_junctions"); 
 	auto tri_ver = m_t_mesh->getVariable<int,GMDS_NODE>("is_a_triangle_vertex"); 
 	auto tri = m_t_mesh->getVariable<int,GMDS_FACE>("is_a_triangle"); 
 	auto minTriNode2TMeshNode = m_min_delaunay->getVariable<int,GMDS_NODE>("minTriNode2TMeshNode");
@@ -1165,11 +1205,13 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 			rtmn = RTMN->value(s_id);
 
 			std::vector<TCellID> block1;
+			std::vector<TCellID> t_junctions;
 			block1.push_back(hn);
 			if (lhmn >= 0)
 			{
 				block1.push_back(lhmn);
 				t_junct->set(lhmn,1);
+				t_junctions.push_back(lhmn);
 			}
 			block1.push_back(lhbn);
 			Node n1 = m_min_delaunay->get<Node>(TMeshNode2MinTriNode->value(lhbn));
@@ -1183,6 +1225,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 					{
 						block1.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 						t_junct->set(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()),1);
+						t_junctions.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 					}
 				}
 			}
@@ -1191,6 +1234,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 			{
 				block1.push_back(ltmn);
 				t_junct->set(ltmn,1);
+				t_junctions.push_back(ltmn);
 			}
 			block1.push_back(tn);
 			new_face = m_t_mesh->newFace(block1);
@@ -1202,6 +1246,8 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 				tri->set(new_face.id(),1);
 				tri_ver->set(lhbn,1);
 			}
+			t_junct_list->set(new_face.id(),t_junctions);
+			t_junctions.clear();
 
 			std::vector<TCellID> block2;
 			block2.push_back(tn);
@@ -1209,6 +1255,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 			{
 				block2.push_back(rtmn);
 				t_junct->set(rtmn,1);
+				t_junctions.push_back(rtmn);
 			}
 			block2.push_back(rtbn);
 			n1 = m_min_delaunay->get<Node>(TMeshNode2MinTriNode->value(rtbn));
@@ -1222,6 +1269,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 					{
 						block2.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 						t_junct->set(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()),1);
+						t_junctions.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 					}
 				}
 			}
@@ -1230,6 +1278,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 			{
 				block2.push_back(rhmn);
 				t_junct->set(rhmn,1);
+				t_junctions.push_back(rhmn);
 			}
 			block2.push_back(hn);
 			new_face = m_t_mesh->newFace(block2);
@@ -1241,6 +1290,8 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 				tri->set(new_face.id(),1);
 				tri_ver->set(rtbn,1);
 			}
+			t_junct_list->set(new_face.id(),t_junctions);
+			t_junctions.clear();
 		}
 
 		if (sectionType->value(s_id) == 1)
@@ -1256,6 +1307,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 			ltmn = LTMN->value(s_id);
 			rtmn = RTMN->value(s_id);
 			Edge section = m_topological_representation->get<Edge>(s_id);
+			std::vector<TCellID> t_junctions;
 
 			if (nodeType->value(section.get<Node>()[0].id()) == 1 || nodeType->value(section.get<Node>()[1].id()) == 1)
 			{
@@ -1265,6 +1317,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 				{
 					block.push_back(lhmn);
 					t_junct->set(lhmn,1);
+					t_junctions.push_back(lhmn);
 				}
 				if (lhbn == -1)
 				{
@@ -1279,6 +1332,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 							{
 								block.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 								t_junct->set(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()),1);
+								t_junctions.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 							}
 						}
 					}
@@ -1288,6 +1342,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 				{
 					block.push_back(ltmn);
 					t_junct->set(ltmn,1);
+					t_junctions.push_back(ltmn);
 				}
 				if (ltbn == -1)
 				{
@@ -1302,6 +1357,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 							{
 								block.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 								t_junct->set(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()),1);
+								t_junctions.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 							}
 						}
 					}
@@ -1311,6 +1367,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 				{
 					block.push_back(rtmn);
 					t_junct->set(rtmn,1);
+					t_junctions.push_back(rtmn);
 				}
 				if (rtbn == -1)
 				{
@@ -1325,6 +1382,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 							{
 								block.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 								t_junct->set(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()),1);
+								t_junctions.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 							}
 						}
 					}
@@ -1334,6 +1392,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 				{
 					block.push_back(rhmn);
 					t_junct->set(rhmn,1);
+					t_junctions.push_back(rhmn);
 				}
 				if (rhbn == -1)
 				{
@@ -1348,6 +1407,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 							{
 								block.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 								t_junct->set(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()),1);
+								t_junctions.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 							}
 						}
 					}
@@ -1355,6 +1415,8 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 				new_face = m_t_mesh->newFace(block);
 				f2sid->set(new_face.id(),section2sectionID->value(s_id));
 				f2st->set(new_face.id(),1);
+				t_junct_list->set(new_face.id(),t_junctions);
+				t_junctions.clear();
 			}
 
 			else
@@ -1364,6 +1426,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 					new_face = m_t_mesh->newQuad(hn,lhmn,tn,rhmn);
 					f2sid->set(new_face.id(),section2sectionID->value(s_id));
 					f2st->set(new_face.id(),1);
+
 					std::vector<TCellID> block;
 					block.push_back(tn);
 					block.push_back(lhmn);
@@ -1379,6 +1442,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 							{
 								block.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 								t_junct->set(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()),1);
+								t_junctions.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 							}
 						}
 					}
@@ -1387,6 +1451,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 					{
 						block.push_back(ltmn);
 						t_junct->set(ltmn,1);
+						t_junctions.push_back(ltmn);
 					}
 					new_face = m_t_mesh->newFace(block);
 					f2sid->set(new_face.id(),section2sectionID->value(s_id));
@@ -1397,12 +1462,16 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 						tri->set(new_face.id(),1);
 						tri_ver->set(lhbn,1);
 					}
+					t_junct_list->set(new_face.id(),t_junctions);
+					t_junctions.clear();
 					block.clear();
+
 					block.push_back(tn);
 					if (rtmn >= 0)
 					{
 						block.push_back(rtmn);
 						t_junct->set(rtmn,1);
+						t_junctions.push_back(rtmn);
 					}
 					block.push_back(rtbn);
 					n1 = m_min_delaunay->get<Node>(TMeshNode2MinTriNode->value(rtbn));
@@ -1416,6 +1485,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 							{
 								block.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 								t_junct->set(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()),1);
+								t_junctions.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 							}
 						}
 					}
@@ -1430,6 +1500,8 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 						tri->set(new_face.id(),1);
 						tri_ver->set(rtbn,1);
 					}
+					t_junct_list->set(new_face.id(),t_junctions);
+					t_junctions.clear();
 				}
 				else
 				{
@@ -1442,6 +1514,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 					{
 						block.push_back(lhmn);
 						t_junct->set(lhmn,1);
+						t_junctions.push_back(lhmn);
 					}
 					block.push_back(lhbn);
 					Node n1 = m_min_delaunay->get<Node>(TMeshNode2MinTriNode->value(lhbn));
@@ -1455,6 +1528,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 							{
 								block.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 								t_junct->set(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()),1);
+								t_junctions.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 							}
 						}
 					}
@@ -1469,7 +1543,10 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 						tri->set(new_face.id(),1);
 						tri_ver->set(lhbn,1);
 					}
+					t_junct_list->set(new_face.id(),t_junctions);
+					t_junctions.clear();
 					block.clear();
+
 					block.push_back(hn);
 					block.push_back(rtmn);
 					block.push_back(rtbn);
@@ -1484,6 +1561,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 							{
 								block.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 								t_junct->set(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()),1);
+								t_junctions.push_back(minTriNode2TMeshNode->value(inbetweenBoundNodes[i].id()));
 							}
 						}
 					}
@@ -1492,6 +1570,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 					{
 						block.push_back(rhmn);
 						t_junct->set(rhmn,1);
+						t_junctions.push_back(rhmn);
 					}
 					new_face = m_t_mesh->newFace(block);
 					f2sid->set(new_face.id(),section2sectionID->value(s_id));
@@ -1502,6 +1581,8 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 						tri->set(new_face.id(),1);
 						tri_ver->set(rtbn,1);
 					}
+					t_junct_list->set(new_face.id(),t_junctions);
+					t_junctions.clear();
 					// m_t_mesh->newQuad(hn,lhbn,ltbn,ltmn);
 					// m_t_mesh->newQuad(hn,rtmn,rtbn,rhbn);
 				}
@@ -1515,7 +1596,8 @@ void MedaxBasedTMeshBuilder::transformDegenerateQuadsIntoTriangles()
 {
 	std::cout<<"> Transforming degenerate quads into triangles"<<std::endl;
 	auto tri = m_t_mesh->getVariable<int,GMDS_FACE>("is_a_triangle"); 
-	auto tri_ver = m_t_mesh->getVariable<int,GMDS_NODE>("is_a_triangle_vertex"); 
+	auto tri_ver = m_t_mesh->getVariable<int,GMDS_NODE>("is_a_triangle_vertex");
+	auto t_junct_list = m_t_mesh->getVariable<std::vector<TCellID>,GMDS_FACE>("T_junctions");  
 	for (auto f_id:m_t_mesh->faces())
 	{
 		if (tri->value(f_id) == 1)
@@ -1540,19 +1622,110 @@ void MedaxBasedTMeshBuilder::transformDegenerateQuadsIntoTriangles()
 			}
 			Face new_face = m_t_mesh->newFace(nodes);
 			tri->set(new_face.id(),2);
+			t_junct_list->set(new_face.id(),t_junct_list->value(f_id));
 			m_t_mesh->deleteFace(f_id);
 		}
 	}
 }
 
 /*----------------------------------------------------------------------------*/
-void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
+std::vector<Edge> MedaxBasedTMeshBuilder::sortEdgesFan(std::vector<Edge> &AFan)
 {
+	// DOESN'T WORK
+
+
+	if (AFan.size() <= 1)
+		return AFan;
+	// Mark the edges of the fan
+	auto fan = m_t_mesh->newVariable<int,GMDS_EDGE>("fan");
+	auto neighbours = m_t_mesh->newVariable<std::vector<Edge>,GMDS_EDGE>("neighbours");
+	for (auto e:AFan)
+		fan->set(e.id(),1);
+	// Find each edge's neighbours
+	std::vector<Edge> neighb;
+	for (auto e:AFan)
+	{
+		neighb.clear();
+		for (auto f:e.get<Face>())
+		{
+			for (auto e2:f.get<Edge>())
+			{
+				if (fan->value(e2.id()) == 1 && e2.id() != e.id())
+					neighb.push_back(e2);
+			}
+		}
+		std::cout<<"dnhdfhzs "<<neighb.size()<<" "<<e.id()<<std::endl;
+		neighbours->set(e.id(),neighb);
+	}
+	// Find the two extrem edges of the fan, if they exist (the fan can be a cycle)
+	bool isACycle = true;
+	Edge e1,e2;
+	for (auto e:AFan)
+	{
+		if (neighbours->value(e.id()).size() == 1)
+		{
+			e1 = e;
+			isACycle = false;
+			break;
+		}
+	}
+	for (auto e:AFan)
+	{
+		if (neighbours->value(e.id()).size() == 1 && e.id() != e1.id())
+		{
+			e2 = e;
+			break;
+		}
+	}
+
+	// Decide in which direction to go so that the fan is positively oriented
+	Edge nei_e1 = neighbours->value(e1.id())[0];
+	Node n = getCommonNode(e1,nei_e1);
+	double theta = oriented_angle(edge2vec(e1,n),edge2vec(nei_e1,n));
+	if (theta < 0.)
+	{
+		Edge e3 = e1;
+		e1 = e2;
+		e2 = e3;
+	}
+
+	// Fill the fan from e1 to e2
+	std::vector<Edge> sorted_edges;
+	auto added = m_t_mesh->newVariable<int,GMDS_EDGE>("added");
+	Edge current = e1;
+	bool finished = false;
+	while (!finished)
+	{
+		sorted_edges.push_back(current);
+		added->set(current.id(),1);
+		bool found = false;
+		for (auto e:neighbours->value(current.id()))
+		{
+			if (added->value(e.id()) == 0)
+			{
+				current = e;
+				found = true;
+				break;
+			}
+		}
+		finished = !found;
+	}
+
+	m_t_mesh->deleteVariable(GMDS_EDGE,fan);
+	m_t_mesh->deleteVariable(GMDS_EDGE,neighbours);
+	m_t_mesh->deleteVariable(GMDS_EDGE,added);
+	return sorted_edges;
+}
+
+/*----------------------------------------------------------------------------*/
+void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
+{	
 	std::cout<<"> Transforming triangles into non degenerate quads"<<std::endl;
 	auto tri = m_t_mesh->getVariable<int,GMDS_FACE>("is_a_triangle"); 
 	auto tri_ver = m_t_mesh->getVariable<int,GMDS_NODE>("is_a_triangle_vertex");
 	auto tri_edge = m_t_mesh->newVariable<int,GMDS_EDGE>("belongs_to_triangle");
 	auto tmesh_nodes_constr = m_t_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+	auto t_junct_list = m_t_mesh->getVariable<std::vector<TCellID>,GMDS_FACE>("T_junctions"); 
 	// Mark with 1 edges belonging to a quad
 	for (auto e_id:m_t_mesh->edges())
 	{
@@ -1584,6 +1757,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 			{
 				std::vector<Edge> adj_edges = n.get<Edge>();
 				adj_edges = sortEdges(n,adj_edges);
+				//adj_edges = sortEdgesFan(adj_edges);
 				std::vector<Edge> tri_edges;
 				int regular_edge_pos;
 				Edge regular_edge;
@@ -1638,6 +1812,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 						}
 					}
 					new_face = m_t_mesh->newFace(nodes);
+					t_junct_list->set(new_face.id(),t_junct_list->value(f.id()));
 					m_t_mesh->deleteFace(f.id());
 				}
 			}
@@ -1645,6 +1820,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 			{
 				std::vector<Edge> adj_edges = n.get<Edge>();
 				adj_edges = sortEdges(n,adj_edges);
+				//adj_edges = sortEdgesFan(adj_edges);
 				std::vector<Edge> tri_edges1;
 				std::vector<Edge> tri_edges2;
 				int regular_edge_pos1,regular_edge_pos2;
@@ -1691,13 +1867,15 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 						tri_edges = tri_edges1;
 						e1 = regular_edge1;
 						e2 = regular_edge2;
-					}
+					}	
+
 					int NbNewPoints = tri_edges.size()-1;
 					math::Vector dir = edge2vec(e2,n);
 					std::vector<Node> new_points;
 					for (int i = 0; i < NbNewPoints; i++)
 					{
-						Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
+						//Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
+						Node new_node = m_t_mesh->newNode(n.point());
 						new_points.push_back(new_node);
 						if (tmesh_nodes_constr->value(n.id()) == 1)
 							tmesh_nodes_constr->set(new_node.id(),1);
@@ -1723,6 +1901,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 							}
 						}
 						Face new_face = m_t_mesh->newFace(nodes);
+						t_junct_list->set(new_face.id(),t_junct_list->value(f.id()));
 						m_t_mesh->deleteFace(f.id());
 					}
 					// Change the neigbouring face
@@ -1738,6 +1917,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 						}
 					}
 					Face new_face = m_t_mesh->newFace(nodes);
+					t_junct_list->set(new_face.id(),t_junct_list->value(f.id()));
 					m_t_mesh->deleteFace(f.id());
 					// Change the face behind
 					if (isInterior(n))
@@ -1756,6 +1936,10 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 							}
 						}
 						new_face = m_t_mesh->newFace(nodes);
+						std::vector<TCellID> tjs = t_junct_list->value(f.id());
+						for (auto n1:new_points)
+							tjs.push_back(n1.id());
+						t_junct_list->set(new_face.id(),tjs);
 						m_t_mesh->deleteFace(f.id());
 					}
 				}
@@ -1768,7 +1952,8 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 					std::vector<Node> new_points;
 					for (int i = 0; i < NbNewPoints; i++)
 					{
-						Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
+						//Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
+						Node new_node = m_t_mesh->newNode(n.point());
 						new_points.push_back(new_node);
 						if (tmesh_nodes_constr->value(n.id()) == 1)
 							tmesh_nodes_constr->set(new_node.id(),1);
@@ -1794,6 +1979,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 							}
 						}
 						Face new_face = m_t_mesh->newFace(nodes);
+						t_junct_list->set(new_face.id(),t_junct_list->value(f.id()));
 						m_t_mesh->deleteFace(f.id());
 					}
 					// Change the neigbouring face
@@ -1809,6 +1995,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 						}
 					}
 					Face new_face = m_t_mesh->newFace(nodes);
+					t_junct_list->set(new_face.id(),t_junct_list->value(f.id()));
 					m_t_mesh->deleteFace(f.id());
 					// Change the face behind
 					if (isInterior(n))
@@ -1827,6 +2014,10 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 							}
 						}
 						new_face = m_t_mesh->newFace(nodes);
+						std::vector<TCellID> tjs = t_junct_list->value(f.id());
+						for (auto n1:new_points)
+							tjs.push_back(n1.id());
+						t_junct_list->set(new_face.id(),tjs);
 						m_t_mesh->deleteFace(f.id());
 					}
 					// Deal with the second fan
@@ -1835,7 +2026,8 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 					new_points.clear();
 					for (int i = 0; i < NbNewPoints; i++)
 					{
-						Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
+						//Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
+						Node new_node = m_t_mesh->newNode(n.point());
 						new_points.push_back(new_node);
 						if (tmesh_nodes_constr->value(n.id()) == 1)
 							tmesh_nodes_constr->set(new_node.id(),1);
@@ -1861,6 +2053,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 							}
 						}
 						Face new_face = m_t_mesh->newFace(nodes);
+						t_junct_list->set(new_face.id(),t_junct_list->value(f.id()));
 						m_t_mesh->deleteFace(f.id());
 					}
 					// Change the neigbouring face
@@ -1876,6 +2069,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 						}
 					}
 					new_face = m_t_mesh->newFace(nodes);
+					t_junct_list->set(new_face.id(),t_junct_list->value(f.id()));
 					m_t_mesh->deleteFace(f.id());
 					// Change the face behind
 					if (isInterior(n))
@@ -1894,6 +2088,10 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 							}
 						}
 						new_face = m_t_mesh->newFace(nodes);
+						std::vector<TCellID> tjs = t_junct_list->value(f.id());
+						for (auto n1:new_points)
+							tjs.push_back(n1.id());
+						t_junct_list->set(new_face.id(),tjs);
 						m_t_mesh->deleteFace(f.id());
 					}
 				}
@@ -1902,6 +2100,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 			{
 				std::vector<Edge> adj_edges = n.get<Edge>();
 				adj_edges = sortEdges(n,adj_edges);
+				//adj_edges = sortEdgesFan(adj_edges);
 				std::vector<Edge> tri_edges;
 				int regular_edge_pos1,regular_edge_pos2,regular_edge_pos3;
 				Edge regular_edge1,regular_edge2,regular_edge3;
@@ -1974,7 +2173,8 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 				std::vector<Node> new_points;
 				for (int i = 0; i < NbNewPoints; i++)
 				{
-					Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
+					//Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
+					Node new_node = m_t_mesh->newNode(n.point());
 					new_points.push_back(new_node);
 					if (tmesh_nodes_constr->value(n.id()) == 1)
 						tmesh_nodes_constr->set(new_node.id(),1);
@@ -2000,6 +2200,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 						}
 					}
 					Face new_face = m_t_mesh->newFace(nodes);
+					t_junct_list->set(new_face.id(),t_junct_list->value(f.id()));
 					m_t_mesh->deleteFace(f.id());
 				}
 				// Change the neigbouring face
@@ -2015,6 +2216,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 					}
 				}
 				Face new_face = m_t_mesh->newFace(nodes);
+				t_junct_list->set(new_face.id(),t_junct_list->value(f.id()));
 				m_t_mesh->deleteFace(f.id());
 				// Change the face behind
 				if (isInterior(n))
@@ -2033,10 +2235,32 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 						}
 					}
 					new_face = m_t_mesh->newFace(nodes);
+					std::vector<TCellID> tjs = t_junct_list->value(f.id());
+					for (int i = 0; i < new_points.size(); i++)
+						tjs.push_back(new_points[i].id());
+					t_junct_list->set(new_face.id(),tjs);
 					m_t_mesh->deleteFace(f.id());
 				}
 			}
 		}
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+void MedaxBasedTMeshBuilder::markTJunctions()
+{
+	std::cout<<"> Marking T-junctions on the T-mesh"<<std::endl;
+	auto t_junct = m_t_mesh->getVariable<int,GMDS_NODE>("is_a_T_junction"); 
+	auto t_junct_list = m_t_mesh->getVariable<std::vector<TCellID>,GMDS_FACE>("T_junctions"); 
+	// Initialize at -1
+	for (auto n_id:m_t_mesh->nodes())
+	{
+		t_junct->set(n_id,-1);
+	}
+	for (auto f_id:m_t_mesh->faces())
+	{
+		for (auto n_id:t_junct_list->value(f_id))
+			t_junct->set(n_id,f_id);
 	}
 }
 
@@ -2397,6 +2621,8 @@ void MedaxBasedTMeshBuilder::buildFinalTMesh()
 	std::cout<<"> Building the final T-mesh"<<std::endl;
 	auto tmesh_nodes_constr = m_t_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
 	auto final_tmesh_nodes_constr = m_final_t_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+	auto old_tj = m_t_mesh->getVariable<int,GMDS_NODE>("is_a_T_junction"); 
+	auto new_tj = m_final_t_mesh->getVariable<int,GMDS_NODE>("is_a_T-junction"); 
 	for (auto n_id:m_t_mesh->nodes())
 	{
 		Node n = m_t_mesh->get<Node>(n_id);
@@ -2413,6 +2639,13 @@ void MedaxBasedTMeshBuilder::buildFinalTMesh()
 			nodes.push_back(n.id());
 		}
 		Face new_face = m_final_t_mesh->newFace(nodes);
+		for (auto n:f.get<Node>())
+		{
+			if (old_tj->value(n.id()) == -1)
+				new_tj->set(n.id(),-1);
+			if (old_tj->value(n.id()) == f.id())
+				new_tj->set(n.id(),new_face.id());
+		}
 	}
 }
 

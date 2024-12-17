@@ -24,6 +24,8 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationSolver
  private:
 	// Non conformal quad block decomposition
 	Mesh* m_mesh;
+	// Target mesh size
+	double m_mesh_size;
 	// Corresponding non-conformal half edges
 	std::vector<NonConformalHalfEdge> m_half_edges;
 	// Quantization graph
@@ -39,7 +41,7 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationSolver
 	/** @brief Constructor.
          *  @param AMesh
 	 */
-	explicit QuantizationSolver(Mesh &AMesh);
+	explicit QuantizationSolver(Mesh &AMesh, double AMeshSize);
 
 	/*-------------------------------------------------------------------------*/
 	/** @brief Default destructor.

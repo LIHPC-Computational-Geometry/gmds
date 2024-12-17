@@ -91,11 +91,12 @@ int main(int argc, char* argv[])
 		smoothed_ma->write("smoothed_medax.vtk");
 
 		Mesh medax = smoothed_ma->getMeshRepresentation();
+		double mesh_size = 30.*smoothed_ma->meanMedEdgeLength();
 		medialaxis::MedaxBasedTMeshBuilder tmb(medax,m);
 		// Build a quad block decomposition
 		tmb.setSectionID();
 		tmb.computeSectionType();
-		tmb.refineByAddingSingularNodes();
+		tmb.refineByAddingSingularNodes(mesh_size);
 		tmb.buildTopoRepNodes();
 		tmb.buildTopoRepEdges();
 		tmb.setTopoRepConnectivity();
@@ -107,25 +108,25 @@ int main(int argc, char* argv[])
 		tmb.buildBlocks();
 		tmb.transformDegenerateQuadsIntoTriangles();
 		tmb.writeTopoRep("topo_rep.vtk");
-		tmb.writeBlockDecomp("block_decomp.vtk");
 		// // Only to have nice pictures
 		tmb.setBlockDecompConnectivity();
 		// tmb.markBlocksSeparatingEdges();
 		// tmb.addBigTJunctions();
-		
-		tmb.transformTrianglesIntoQuads();
-
 		tmb.writeBlockDecomp("block_decomp.vtk");
+		tmb.transformTrianglesIntoQuads();
+		tmb.markTJunctions();
+
+		tmb.writeBlockDecomp("block_decomp1.vtk");
 
 		tmb.buildFinalTMesh();
 		tmb.setFinalTMeshConnectivity();
 		tmb.markInternalConstraintsOnFinalTMesh();
-		//tmb.writeFinalTMesh("t_mesh.vtk");
+		tmb.writeFinalTMesh("t_mesh.vtk");
 		
 		Mesh t_mesh = tmb.getFinalTMesh();
 
 		// Quantize the T-mesh
-		QuantizationSolver qs(t_mesh);
+		QuantizationSolver qs(t_mesh, mesh_size);
 		qs.buildCompleteSolution();
 		// We can build the quantized mesh
 
@@ -144,6 +145,7 @@ int main(int argc, char* argv[])
 		s.markSeparatrices();
 		s.setBlocksIDs();
 
+		conf.writeConformalMesh("conformal_mesh_without_smoothing.vtk");
 		for (int i = 0; i < 100; i++)
 			conf.smooth();
 

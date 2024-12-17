@@ -5,6 +5,7 @@
 #include "gmds/medialaxis/QuantizationGraph.h"
 #include "gmds/ig/MeshDoctor.h"
 #include <queue>
+#include <stack>
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -872,6 +873,331 @@ std::vector<std::vector<Node>> QuantizationGraph::checkSolutionValidity()
 		}
 	}
 	return problematicCouplesOfNodes;
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<Node> QuantizationGraph::optimalHalfPath(gmds::TCellID AID, int ADirection)
+{
+	auto forbiden = m_mesh_representation->getVariable<int,GMDS_NODE>("forbiden");
+	auto sol = m_mesh_representation->getVariable<int,GMDS_NODE>("solution");
+	auto geo_len = m_mesh_representation->getVariable<double,GMDS_NODE>("geometrical_length");
+	// Get the node
+	Node n0 = m_mesh_representation->get<Node>(AID);
+	// Initialize stack and paths
+	std::stack<std::vector<Node>> paths;
+	std::stack<std::vector<int>> alreadySeen;
+	std::stack<int> direction;
+	std::vector<Node> path;
+	std::vector<int> already_seen(m_mesh_representation->getNbNodes());
+	for (int i = 0; i < m_mesh_representation->getNbNodes(); i++)
+		already_seen[i] = 0;
+	path.push_back(n0);
+	already_seen[n0.id()] = 1;
+	paths.push(path);
+	alreadySeen.push(already_seen);
+	int dir = ADirection;
+	direction.push(dir);
+	bool Continue = true;
+	std::vector<Node> shortestPath;
+	std::vector<Edge> leaving_edges;
+	Node front;
+	std::vector<Node> new_path;
+	std::vector<int> new_already_seen(m_mesh_representation->getNbNodes());
+	// Build the paths
+	while (Continue && !paths.empty())
+	{
+		// Get the first path to be continued
+		path = paths.top();
+		paths.pop();
+		already_seen = alreadySeen.top();
+		alreadySeen.pop();
+		dir = direction.top();
+		direction.pop();
+		// Get the current last node of the path
+		front = path[path.size()-1];
+		if (dir == 1)
+		{
+			Edge nxt_edge = getIntEdge(front);
+			Node n = getOtherNode(front,nxt_edge);
+			if (already_seen[n.id()] == 0 && forbiden->value(n.id()) == 0)
+			{
+				// We continue the path
+				new_path = path;
+				new_path.push_back(n);
+				paths.push(new_path);
+				new_already_seen = already_seen;
+				new_already_seen[n.id()] = 1;
+				alreadySeen.push(new_already_seen);
+				direction.push(-1);
+			}
+		}
+		else
+		{
+			leaving_edges = getExtEdges(front);
+			if (leaving_edges.empty())
+			{
+				// It means we have reached a root
+				shortestPath = path;
+				Continue = false;
+			}
+			else
+			{
+				// Order the nodes depending on the element size
+				std::vector<Node> ordered_nodes;
+				double max_size;
+				int max_pos;
+				Node node_to_add;
+				while (!leaving_edges.empty())
+				{
+					max_size = -1.;
+					for (int i = 0; i < leaving_edges.size(); i++)
+					{
+						Node n = getOtherNode(front,leaving_edges[i]);
+						if (sol->value(n.id()) == 0)
+						{
+							node_to_add = n;
+							max_pos = i; 
+							break;
+						}
+						else
+						{
+							double size = geo_len->value(n.id())/double(sol->value(n.id()));
+							if (size > max_size)
+							{
+								max_pos = i;
+								node_to_add = n;
+								max_size = size;
+							}
+						}
+					}
+					ordered_nodes.push_back(node_to_add);
+					leaving_edges.erase(leaving_edges.begin()+max_pos);					
+				}
+
+				//for (auto e:leaving_edges)
+				for (auto n:ordered_nodes)
+				{
+					//Node n = getOtherNode(front,e);
+					if (already_seen[n.id()] == 0 && forbiden->value(n.id()) == 0)
+					{
+						// Then the path continues
+						new_path = path;
+						new_path.push_back(n);
+						paths.push(new_path);
+						new_already_seen = already_seen;
+						new_already_seen[n.id()] = 1;
+						alreadySeen.push(new_already_seen);
+						direction.push(1);
+					}
+				}
+			}
+		}
+	}
+	if (ADirection == -1)
+		std::reverse(shortestPath.begin(),shortestPath.end());
+	return shortestPath;
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<Node> QuantizationGraph::optimalCycle(TCellID AID)
+{
+	auto forbiden = m_mesh_representation->getVariable<int,GMDS_NODE>("forbiden");
+	auto sol = m_mesh_representation->getVariable<int,GMDS_NODE>("solution");
+	auto geo_len = m_mesh_representation->getVariable<double,GMDS_NODE>("geometrical_length");
+	Node n0 = m_mesh_representation->get<Node>(AID);
+	std::stack<std::vector<Node>> paths;
+	std::stack<std::vector<int>> alreadySeen;
+	std::stack<int> direction;
+	std::vector<Node> path;
+	std::vector<int> already_seen(m_mesh_representation->getNbNodes());
+	for (int i = 0; i < m_mesh_representation->getNbNodes(); i++)
+		already_seen[i] = 0;
+	path.push_back(n0);
+	already_seen[n0.id()] = 1;
+	paths.push(path);
+	alreadySeen.push(already_seen);
+	direction.push(1);
+	int dir;
+	bool Continue = true;
+	std::vector<Node> shortestCycle;
+	std::vector<Edge> leaving_edges;
+	Node front;
+	std::vector<Node> new_path;
+	std::vector<int> new_already_seen(m_mesh_representation->getNbNodes());
+	while (Continue && !paths.empty())
+	{
+		path = paths.top();
+		paths.pop();
+		already_seen = alreadySeen.top();
+		alreadySeen.pop();
+		dir = direction.top();
+		direction.pop();
+		front = path[path.size()-1];
+		if (dir == 1)
+		{
+			Edge nxt_edge = getIntEdge(front);
+			Node n = getOtherNode(front,nxt_edge);
+			if (n.id() == n0.id())
+			{
+				Continue = false;
+				shortestCycle = path;
+				break;
+			}
+			else 
+			{
+				if (already_seen[n.id()] == 0 && forbiden->value(n.id()) == 0)
+				{
+					// Then the path continues
+					new_path = path;
+					new_path.push_back(n);
+					paths.push(new_path);
+					new_already_seen = already_seen;
+					new_already_seen[n.id()] = 1;
+					alreadySeen.push(new_already_seen);
+					direction.push(-1);
+				}
+			}
+		}
+		else
+		{
+			leaving_edges = getExtEdges(front);
+
+			// Order the nodes depending on the element size
+			std::vector<Node> ordered_nodes;
+			double max_size;
+			int max_pos;
+			Node node_to_add;
+			while (!leaving_edges.empty())
+			{
+				max_size = -1.;
+				for (int i = 0; i < leaving_edges.size(); i++)
+				{
+					Node n = getOtherNode(front,leaving_edges[i]);
+					if (sol->value(n.id()) == 0)
+					{
+						node_to_add = n;
+						max_pos = i; 
+						break;
+					}
+					else
+					{
+						double size = geo_len->value(n.id())/double(sol->value(n.id()));
+						if (size > max_size)
+						{
+							max_pos = i;
+							node_to_add = n;
+							max_size = size;
+						}
+					}
+				}
+				ordered_nodes.push_back(node_to_add);
+				leaving_edges.erase(leaving_edges.begin()+max_pos);					
+			}
+
+			//for (auto e:leaving_edges)
+			for (auto n:ordered_nodes)
+			{
+				//Node n = getOtherNode(front,e);
+				if (n.id() == n0.id())
+				{
+					Continue = false;
+					shortestCycle = path;
+					break;
+				}
+				else
+				{
+					if (already_seen[n.id()] == 0 && forbiden->value(n.id()) == 0)
+					{
+						// Then the path continues
+						new_path = path;
+						new_path.push_back(n);
+						paths.push(new_path);
+						new_already_seen = already_seen;
+						new_already_seen[n.id()] = 1;
+						alreadySeen.push(new_already_seen);
+						direction.push(1);
+					}
+				}
+			}
+		}
+	}
+	return shortestCycle;
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<Node> QuantizationGraph::optimalElementaryPath(TCellID AID)
+{
+	std::vector<Node> optimalPath;
+	std::vector<Node> fromNode = optimalHalfPath(AID,1);
+	std::vector<Node> toNode = optimalHalfPath(AID,-1);
+	std::vector<Node> cycle = optimalCycle(AID);
+	if (fromNode.empty() || toNode.empty())
+		optimalPath = cycle;
+	else
+	{
+		if ((fromNode.size()+toNode.size()-1 <= cycle.size()) || cycle.empty())
+		{
+			optimalPath = toNode;
+			for (int i = 1; i < fromNode.size(); i++)
+				optimalPath.push_back(fromNode[i]);
+		}
+		else
+			optimalPath = cycle;
+	}
+	return optimalPath;
+}
+
+/*----------------------------------------------------------------------------*/
+void QuantizationGraph::improveSolution(double AMeshSize)
+{
+	std::cout<<"> Improving the quantization solution"<<std::endl;
+	auto forbiden = m_mesh_representation->getVariable<int,GMDS_NODE>("forbiden");
+	auto sol = m_mesh_representation->getVariable<int,GMDS_NODE>("solution");
+	auto geo_len = m_mesh_representation->getVariable<double,GMDS_NODE>("geometrical_length");
+	auto flux = m_mesh_representation->getVariable<int,GMDS_EDGE>("flux");
+	for (auto n_id:m_mesh_representation->nodes())
+	{
+		if (forbiden->value(n_id) == 0 && sol->value(n_id) > 0)
+		{
+			double size = geo_len->value(n_id)/double(sol->value(n_id));
+			if (size > 2.*AMeshSize)
+			{
+				int n = int(geo_len->value(n_id)/AMeshSize)-sol->value(n_id);
+				std::vector<Node> cycle = optimalCycle(n_id);
+				for (int i = 0; i < cycle.size(); i++)
+				{
+					Node n1 = cycle[i];
+					sol->set(n1.id(),sol->value(n1.id())+n);
+					if (i < cycle.size()-1)
+					{
+						Node n2 = cycle[i+1];
+						Edge e = getCorrespondingEdge(n1,n2);
+						flux->set(e.id(),flux->value(e.id())+n);
+					}
+					else
+					{
+						// Check if the path is a cycle
+						Node n2 = cycle[0];
+						bool areLinked = false;
+						for (auto e:n1.get<Edge>())
+						{
+							if (e.get<Node>()[0].id() == n2.id() || e.get<Node>()[1].id() == n2.id())
+							{
+								areLinked = true;
+								break;
+							}
+						}
+						if (areLinked)
+						{
+							Edge e = getCorrespondingEdge(n1,n2);
+							flux->set(e.id(),flux->value(e.id())+n);
+						}
+					}
+				}
+			}
+		}
+	}
+	
 }
 
 /*----------------------------------------------------------------------------*/
