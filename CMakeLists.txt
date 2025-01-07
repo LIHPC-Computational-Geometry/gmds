@@ -1,7 +1,7 @@
 #==============================================================================
 # GMDS Project
 #==============================================================================
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.30)
 #==============================================================================
 # Operating System specificities (must be put at first)
 #==============================================================================
@@ -28,7 +28,7 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 
 # the RPATH to be used when installing, but only if it's not a system directory
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
@@ -38,9 +38,9 @@ endif("${isSystemDir}" STREQUAL "-1")
 
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
-#if (NOT DEFINED CMAKE_INSTALL_RPATH_USE_LINK_PATH)
-#  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-#endif()
+if (NOT DEFINED CMAKE_INSTALL_RPATH_USE_LINK_PATH)
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif()
 #==============================================================================
 # Compilation options mainly for testing purpose
 #==============================================================================
