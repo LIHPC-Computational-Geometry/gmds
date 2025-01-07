@@ -50,6 +50,11 @@ class LIB_GMDS_MCTSBLOCK_API BlockingState : public IState
 	 * @return
 	 */
 	double computeScoreClassification();
+	/**@brief computes the score of the blocking quality
+*
+* @return
+  */
+  double computeScoreQuality();
 	/**@brief computes the min edge length
 	 *
 	 * @return

@@ -166,6 +166,7 @@ int main(int argc, char* argv[])
 	 display_info(init_state);
 	 auto nb_loop_iter = params.at("nb_loop_iter");
 
+	 init_state->get_blocking()->save_vtk_blocking("loop_init");
 	 for (auto i = 0; i < nb_loop_iter && !current_state->win() && !current_state->lost(); i++) {
 		  agent.run(current_state);
 		  std::cout << "=======================================" << std::endl;

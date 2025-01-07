@@ -42,6 +42,8 @@ std::vector<std::shared_ptr<IAction>>
 BlockingState::get_actions() const
 {
 	auto actions = get_possible_cuts();
+	// apply the cut on the blocking, dont use the state
+	this->m_blocking;
 	auto block_removals = get_possible_block_removals();
 	actions.insert(actions.end(),block_removals.begin(),block_removals.end());
 
@@ -66,7 +68,6 @@ BlockingState::lost() const
 	//we lost if we don't have actions to perform
 	if (!win() 	&& (this->get_actions().empty() || computeMinEdgeLenght()<0.001))
 		return true;
-
 	return false;
 	// We lost if the new score have a worst quality than the previous one
 	/*if (m_memory_scores.size() > 1 && m_memory_scores[m_memory_scores.size()] < m_memory_scores[m_memory_scores.size()-1]) {
@@ -124,6 +125,13 @@ BlockingState::computeScoreClassification()
 }
 /*----------------------------------------------------------------------------*/
 double
+BlockingState::computeScoreQuality()
+{
+	double quality = 0;
+
+}
+/*----------------------------------------------------------------------------*/
+double
 BlockingState::computeMinEdgeLenght() const
 {
 	double minusEdge = 1000;
@@ -177,6 +185,7 @@ BlockingState::get_possible_block_removals(bool without_blocks_in) const
 	// identify blocks with their centroid inside the geometry
 	cad::GeomManager *geom = m_blocking->geom_model();
 
+	/*
 	auto blocks = m_blocking->get_all_blocks();
 	for (auto b : blocks) {
 		gmds::math::Point pt = m_blocking->get_center_of_block(b);
@@ -184,7 +193,7 @@ BlockingState::get_possible_block_removals(bool without_blocks_in) const
 		if(is_inside && without_blocks_in) {
 			blocks_to_keep.insert(m_blocking->get_block_id(b));
 		}
-	}
+	}*/
 
 	// all the other blocks can be removed
 	auto all_blocks = m_blocking->get_all_id_blocks();
@@ -222,7 +231,7 @@ BlockingState::get_possible_cuts() const
 		    list_cuts.insert(std::make_pair(pointCapt,std::make_pair(e2cut->info().topo_id, std::get<1>(action))));
 		    // TODO: verify if we always have a cut that is possible for a point???
 		    // As we cut the edge std::get<0>(action)->info().topo_id, we remove it to avoid multiple actions on the same edge
-		    std::vector<Blocking::Edge> edges_to_remove;
+		    /*std::vector<Blocking::Edge> edges_to_remove;
 		    m_blocking->get_all_sheet_edges(e2cut,edges_to_remove);
 
 
@@ -234,7 +243,7 @@ BlockingState::get_possible_cuts() const
 				if (it != all_block_edges.end()) {
 					all_block_edges.erase(it);
 				}
-			}
+			}*/
 		}
 	}
 
@@ -264,7 +273,7 @@ BlockingState::get_possible_cuts() const
 				list_cuts.insert(std::make_pair(p,std::make_pair(e2cut->info().topo_id, std::get<1>(cut_info_p))));
 				// TODO: verify if we always have a cut that is possible for a point???
 				// As we cut the edge std::get<0>(action)->info().topo_id, we remove it to avoid multiple actions on the same edge
-				std::vector<Blocking::Edge> edges_to_remove;
+				/*std::vector<Blocking::Edge> edges_to_remove;
 				m_blocking->get_all_sheet_edges(e2cut,edges_to_remove);
 
 				// Loop through each element to delete
@@ -275,7 +284,7 @@ BlockingState::get_possible_cuts() const
 					if (it != all_block_edges.end()) {
 						all_block_edges.erase(it);
 					}
-				}
+				}*/
 			}
 
 		}

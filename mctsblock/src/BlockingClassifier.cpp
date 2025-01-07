@@ -879,7 +879,7 @@ BlockingClassifier::classify(const double AMaxDistance, const double APointSnapD
 	//============ (2) We classify edges =================
 	classify_edges(errors);
 
-	errors = detect_classification_errors();
+	errors =detect_classification_errors();
 
 	if (errors.non_captured_points.empty() && errors.non_captured_curves.empty()) {
 

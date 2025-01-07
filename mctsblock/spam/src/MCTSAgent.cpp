@@ -94,7 +94,9 @@ std::pair<double,MCTSAgent::GAME_RESULT> MCTSAgent::simulate(MCTSTree* ANode) {
         for (int d = 0; d < m_simulation_depth && !found_win &&	  !found_lost; d++) {
             if (!state->is_terminal()) {
                 auto a = get_random_action(state);
-				    if(a== nullptr)
+				    auto lActions = state->get_actions();
+				    auto bAction = get_random_action(state);
+				    if(a== nullptr )
 					    exit(55);
 
                 state = a->apply_on(state);

@@ -60,6 +60,43 @@ void Blocking::reset_classification()
 Blocking::~Blocking() {}
 
 /*----------------------------------------------------------------------------*/
+bool Blocking::operator==(gmds::mctsblock::Blocking &ABlocking)
+{
+	bool sameBlocking=true;
+	if(get_all_blocks().size() != ABlocking.get_all_blocks().size()){
+		sameBlocking = false;
+	}
+	else if(get_all_faces().size() != ABlocking.get_all_faces().size()){
+		sameBlocking = false;
+	}
+	else if(get_all_edges().size() != ABlocking.get_all_edges().size()){
+		sameBlocking = false;
+	}
+	else if(get_all_nodes().size() != ABlocking.get_all_nodes().size()){
+		sameBlocking = false;
+	}
+
+	auto listNodes= get_all_nodes();
+	auto listNodesComparedBlocking = ABlocking.get_all_nodes();
+
+	for(auto n1 : listNodes){
+		bool found = false;
+		for(auto n2 : listNodesComparedBlocking){
+			if(n1->info().point.X() == n2->info().point.X() &&
+			    n1->info().point.Y() == n2->info().point.Y() &&
+			    n1->info().point.Z() == n2->info().point.Z()){
+				found = true;
+				break;
+			}
+		}
+		if(!found){
+			sameBlocking=false;
+			break;
+		}
+	}
+	return sameBlocking;
+}
+/*----------------------------------------------------------------------------*/
 GMap3 *
 Blocking::gmap()
 {
@@ -1291,6 +1328,16 @@ void Blocking::cut_sheet(const TCellID AnEdgeId, const double AParam)
 	}
 }
 /*----------------------------------------------------------------------------*/
+std::vector<std::pair<double, double>>
+Blocking::get_projection_infos(const math::Point &AP, std::vector<Blocking::Edge> &AEdges)
+{
+	std::vector<std::pair<double, double>> dist_coord;
+	for (auto e : AEdges) {
+		dist_coord.push_back(get_projection_info(AP,e));
+	}
+	return dist_coord;
+}
+/*----------------------------------------------------------------------------*/
 std::pair<double, double>
 Blocking::get_projection_info(const math::Point &AP, Blocking::Edge &AEdge)
 {
@@ -1323,18 +1370,6 @@ Blocking::get_projection_info(const math::Point &AP, Blocking::Edge &AEdge)
 	return std::make_pair(distance, coord);
 
 }
-
-/*----------------------------------------------------------------------------*/
-std::vector<std::pair<double, double>>
-Blocking::get_projection_info(const math::Point &AP, std::vector<Blocking::Edge> &AEdges)
-{
-	std::vector<std::pair<double, double>> dist_coord;
-	for (auto e : AEdges) {
-		dist_coord.push_back(get_projection_info(AP,e));
-	}
-	return dist_coord;
-}
-
 /*----------------------------------------------------------------------------*/
 bool
 Blocking::validate_pillowing_surface(std::vector<Face> &AFaces)

@@ -313,6 +313,14 @@ class LIB_GMDS_MCTSBLOCK_API Blocking
 	 */
 	virtual ~Blocking();
 
+
+	/*------------------------------------------------------------------------*/
+	/** \brief Overide operator==. It is topology-based.
+         *
+         * \param ABlocking a blocking
+	 */
+	bool operator==(Blocking& ABlocking);
+
 	/**================================================================
 	 *  QUERIES OPERATIONS
 	 *=================================================================*/
@@ -759,6 +767,14 @@ class LIB_GMDS_MCTSBLOCK_API Blocking
 	void save_vtk_blocking(const std::string &AFileName);
 
  private:
+	/**\brief Project a point orthogonally onto a block edge. This method is internal and
+	 * 		 use by get_projection_info
+	 * @param[in] AP 		A Point to project on each edge
+	 * @param[in] AEdge 	An edge
+	 * @return we get the distance (first) and the coordinate (second)
+	 */
+	std::pair<double, double> get_projection_info(const math::Point &AP, Blocking::Edge &AEdge);
+
 	/**\brief Order the edges of @p AEdges accordingly to their distance to @p AP.
 	 * 		 More specifically, we orthogonaly project @p AP on each edge of @p AEdges.
 	 * 		 For each edge, we store the distance between @p AP and the edge and the coordinate
@@ -768,15 +784,7 @@ class LIB_GMDS_MCTSBLOCK_API Blocking
 	 * @param[in] AEdges 	A set of edges
 	 * @return for each edge, we get the distance (first) and the coordinate (second)
 	 */
-	std::vector<std::pair<double, double>> get_projection_info(const math::Point &AP, std::vector<Blocking::Edge> &AEdges);
-
-	/**\brief Project a point orthogonally onto a block edge. This method is internal and
-	 * 		 use by get_projection_info
-	 * @param[in] AP 		A Point to project on each edge
-	 * @param[in] AEdge 	An edge
-	 * @return we get the distance (first) and the coordinate (second)
-	 */
-	std::pair<double, double> get_projection_info(const math::Point &AP, Blocking::Edge &AEdge);
+	std::vector<std::pair<double, double>> get_projection_infos(const math::Point &AP, std::vector<Blocking::Edge> &AEdges);
 
  private:
 	/**@brief Mark with @p AMark all the darts of orbit <0,1>(@p ADart)
