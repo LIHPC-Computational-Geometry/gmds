@@ -193,12 +193,17 @@ int main(int argc, char* argv[])
 	 if(current_state->win()) {
 		 display_info(current_state);
 		 std::cout << "\n\t >>>>>> WIN <<<<<<" << std::endl;
-		 return 1;
+		 return 2;
 	 }
 	 else if(current_state->lost()) {
 		 display_info(current_state);
 		 std::cout << "\n\t >>>>>> LOST <<<<<<" << std::endl;
 		 return 0;
 	 }
+	else {
+		display_info(current_state);
+		std::cout << "\n\t >>>>>> DRAW <<<<<<" << std::endl;
+		return 1;
+	}
 
 }

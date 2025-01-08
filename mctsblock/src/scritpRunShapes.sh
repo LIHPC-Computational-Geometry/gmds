@@ -6,12 +6,12 @@ OUTPUT_FILE="results.txt"
 
 # Vérification que les fichiers requis existent
 if [[ ! -f "$SHAPES_LIST" ]]; then
-  echo "Le fichier $SHAPES_LIST est introuvable."
+  echo "The file $SHAPES_LIST is not found."
   exit 1
 fi
 
 # Initialisation du fichier de résultats
-echo "Figure, Résultat, Temps (s)" > "$OUTPUT_FILE"
+echo "SHAPE NAME, RESULT, TIME(s)" > "$OUTPUT_FILE"
 
 # Boucle sur chaque nom de figure dans le fichier shapes_list.txt
 while IFS= read -r FIGURE; do
@@ -20,9 +20,9 @@ while IFS= read -r FIGURE; do
 
   # Chemins vers les fichiers JSON et la base de données des figures (modifier si nécessaire)
   JSON_FILE="../../mctsblock/tst/data/params.json"
-  DATABASE_FILE="/home/bourmaudp/Documents/PROJETS/devClass_Edges_Size_Path/blocking-learning-data/input/"+FIGURE+".vtk"
+  DATABASE_FILE="/Users/paulbourmaud/Projects/blocking-learning-data/input/"+FIGURE+".vtk"
 
-  # Mesure du temps d'exécution
+  # Mesure du temps d'exécutiong
   START_TIME=$(date +%s.%N)
 
   # Exécution du programme C++
@@ -35,9 +35,9 @@ while IFS= read -r FIGURE; do
 
   # Traduction du code de retour en texte
   case $RETURN_CODE in
-    0) RESULT="Défaite" ;;
-    1) RESULT="Égalité" ;;
-    2) RESULT="Victoire" ;;
+    0) RESULT="Defeat" ;;
+    1) RESULT="Draw" ;;
+    2) RESULT="Win" ;;
     *) RESULT="Inconnu" ;;
   esac
 
