@@ -766,6 +766,15 @@ class LIB_GMDS_MCTSBLOCK_API Blocking
 	 */
 	void save_vtk_blocking(const std::string &AFileName);
 
+	/**\brief save the gmap in a vtk file where darts and links are written
+	 * as edges (or rather degenerated triangles).
+	 * This method comes with severe limitations, and some hard-coded values are used to build the mesh,
+	 * for example ratios for shrinking entities so as to display them properly.
+	 * @param[in] AFileName	the name for the output file
+	 * @param[in] AToMark	the optionnal mark carried by darts that will be marked in the vtk file
+	 */
+	void save_vtk_darts(const std::string &AFileName, int AToMark=-1);
+
  private:
 	/**\brief Project a point orthogonally onto a block edge. This method is internal and
 	 * 		 use by get_projection_info

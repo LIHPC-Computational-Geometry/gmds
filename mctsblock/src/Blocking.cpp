@@ -2109,3 +2109,325 @@ Blocking::collapse_chord(const Face AF, const Node AN1, const Node AN2)
 	}
 	return true;
 }
+/*----------------------------------------------------------------------------*/
+void
+Blocking::save_vtk_darts(const std::string &AFilename, int AToMark)
+{
+	const double ratio0_ = 0.9;
+	const double ratio1_ = 0.9;
+	const double ratio2_ = 0.9;
+	const double ratio3_ = 0.85;
+	const double display_alpha1_ = 0.1;
+	const double display_alpha2_ = 0.4;
+	const double display_alpha3_ = 0.5;
+
+	GMap3::size_type mark = m_gmap.get_new_mark();
+
+	// In some (all?) cases when in 2d a unique 3d cell exists and all darts self reference themselves by alpha3
+	// check whether we have "real" 3d cells that we need to effectively write
+	bool is2d = true;
+	if(m_gmap.one_dart_per_cell<3>().size() == 1) {
+		int index = 0;
+		for(auto it = m_gmap.darts().begin(); it != m_gmap.darts().end(); ++it) {
+			if(index != m_gmap.darts().index(m_gmap.get_alpha<3>(it))) {
+				is2d = false;
+				break;
+			}
+			index++;
+		}
+	} else {
+		is2d = false;
+	}
+
+	// edges
+	std::map<Dart3, std::pair<gmds::math::Point, gmds::math::Point> > dart_pos;
+	std::map<Dart3, int > dart_node_ids;
+	std::map<Dart3, int > dart_edge_ids;
+	std::map<Dart3, int > dart_face_ids;
+	std::map<Dart3, int > dart_region_ids;
+
+	int index_node=0;
+	for (auto it = m_gmap.one_dart_per_cell<0>().begin(); it != m_gmap.one_dart_per_cell<0>().end(); it++, index_node++) {
+
+		Dart3 d = it;
+		for(GMap3::Dart_of_orbit_range<1,2,3>::iterator
+		        itbis(m_gmap.darts_of_orbit<1,2,3>(d).begin()),
+		     itend(m_gmap.darts_of_orbit<1,2,3>(d).end()); itbis!=itend; ++itbis) {
+
+			GMap3::Dart_handle dbis = itbis;
+			dart_node_ids[dbis] = index_node;
+		}
+	}
+
+	int index_edge=0;
+	for (auto it = m_gmap.one_dart_per_cell<1>().begin(); it != m_gmap.one_dart_per_cell<1>().end(); it++, index_edge++) {
+
+		Dart3 d = it;
+
+		Blocking::Edge e = this->get_edge(m_gmap.attribute<1>(d)->info().topo_id);
+		std::vector<Blocking::Node> cell_nodes = this->get_nodes_of_edge(e);
+		gmds::math::Point barycenter;
+		barycenter = 0.5 * (cell_nodes[0]->info().point + cell_nodes[1]->info().point);
+
+		//		std::vector<Node> cell_nodes = get_nodes_of_edge(it);
+		//		GMap3::Point barycenter = m_gmap.barycenter<1>(d);
+		gmds::math::Point barycenter_gmds(barycenter.X(), barycenter.Y(), barycenter.Z());
+
+		for(GMap3::Dart_of_orbit_range<0,2,3>::iterator
+		        itbis(m_gmap.darts_of_orbit<0,2,3>(d).begin()),
+		     itend(m_gmap.darts_of_orbit<0,2,3>(d).end()); itbis!=itend; ++itbis) {
+
+			GMap3::Dart_handle d0 = itbis;
+
+			if(!m_gmap.is_marked(d0, mark)) {
+				GMap3::Dart_handle d1 = m_gmap.alpha(d0, 0);
+				m_gmap.mark(d0, mark);
+				m_gmap.mark(d1, mark);
+
+				gmds::math::Point pt0_gmds = m_gmap.attribute<0>(d0)->info().point;
+				gmds::math::Point pt1_gmds = m_gmap.attribute<0>(d1)->info().point;
+
+				//				GMap3::Point pt0 = this->lcc()->vertex_attribute(d0)->point();
+				//				GMap3::Point pt1 = this->lcc()->vertex_attribute(d1)->point();
+				//				gmds::math::Point pt0_gmds(pt0.x(), pt0.y(), pt0.z());
+				//				gmds::math::Point pt1_gmds(pt1.x(), pt1.y(), pt1.z());
+
+				dart_pos.emplace(d0, std::pair<gmds::math::Point, gmds::math::Point> (pt0_gmds, pt0_gmds + ratio0_ * (barycenter_gmds - pt0_gmds)));
+				dart_pos.emplace(d1, std::pair<gmds::math::Point, gmds::math::Point> (pt1_gmds, pt1_gmds + ratio0_ * (barycenter_gmds - pt1_gmds)));
+
+				gmds::math::Point e0_0 = (1.- ratio1_) * (barycenter_gmds - dart_pos[d0].first) + dart_pos[d0].first;
+				gmds::math::Point e0_1 = (1.- ratio1_) * (barycenter_gmds - dart_pos[d0].second) + dart_pos[d0].second;
+				gmds::math::Point e1_0 = (1.- ratio1_) * (barycenter_gmds - dart_pos[d1].first) + dart_pos[d1].first;
+				gmds::math::Point e1_1 = (1.- ratio1_) * (barycenter_gmds - dart_pos[d1].second) + dart_pos[d1].second;
+				dart_pos[d0].first = e0_0;
+				dart_pos[d0].second = e0_1;
+				dart_pos[d1].first = e1_0;
+				dart_pos[d1].second = e1_1;
+
+				dart_edge_ids[d0] = index_edge;
+				dart_edge_ids[d1] = index_edge;
+			}
+		}
+	}
+
+	int index_face=0;
+	for (auto it = m_gmap.one_dart_per_cell<2>().begin(); it != m_gmap.one_dart_per_cell<2>().end(); it++, index_face++) {
+		Dart3 d = it;
+
+		if(dart_pos.find(d) == dart_pos.end()) {
+			std::cout<<"a dart from a 2-cell was not previously treated with the 1-cells"<<std::endl;
+		}
+
+
+		Blocking::Face f = this->get_face(m_gmap.attribute<2>(d)->info().topo_id);
+		std::vector<Blocking::Node> cell_nodes = this->get_nodes_of_face(f);
+		gmds::math::Point barycenter;
+		for(auto n: cell_nodes) {
+			barycenter = barycenter + n->info().point;
+		}
+		barycenter = ((double) 1. / (double) cell_nodes.size()) * barycenter;
+		//		GMap3::Point barycenter = lcc()->barycenter<2>(d);
+		gmds::math::Point barycenter_gmds(barycenter.X(), barycenter.Y(), barycenter.Z());
+
+		for(GMap3::Dart_of_orbit_range<0,1,3>::iterator
+		        itbis(m_gmap.darts_of_orbit<0,1,3>(d).begin()),
+		     itend(m_gmap.darts_of_orbit<0,1,3>(d).end()); itbis!=itend; ++itbis) {
+
+			GMap3::Dart_handle dbis = itbis;
+
+			if(dart_pos.find(dbis) == dart_pos.end()) {
+				std::cout<<"a dart from a 2-cell was not previously treated with the 1-cells"<<std::endl;
+			}
+
+			gmds::math::Point e0_0 = (1.- ratio2_) * (barycenter_gmds - dart_pos[dbis].first) + dart_pos[dbis].first;
+			gmds::math::Point e0_1 = (1.- ratio2_) * (barycenter_gmds - dart_pos[dbis].second) + dart_pos[dbis].second;
+			dart_pos[dbis].first = e0_0;
+			dart_pos[dbis].second = e0_1;
+			dart_face_ids[dbis] = index_face;
+		}
+	}
+
+	if(!is2d) {
+
+		int index_region=0;
+		for (auto it = m_gmap.one_dart_per_cell<3>().begin(); it != m_gmap.one_dart_per_cell<3>().end(); it++, index_region++) {
+
+			Dart3 d = it;
+
+			if(dart_pos.find(d) == dart_pos.end()) {
+				std::cout<<"a dart from a 3-cell was not previously treated with the 1-cells"<<std::endl;
+			}
+
+			Blocking::Block b = this->get_block(m_gmap.attribute<3>(d)->info().topo_id);
+			std::vector<Blocking::Node> cell_nodes = this->get_nodes_of_block(b);
+			gmds::math::Point barycenter;
+			for(auto n: cell_nodes) {
+				barycenter = barycenter + n->info().point;
+			}
+			barycenter = ((double) 1. / (double) cell_nodes.size()) * barycenter;
+			//			GMap3::Point barycenter = lcc()->barycenter<3>(d);
+			gmds::math::Point barycenter_gmds(barycenter.X(), barycenter.Y(), barycenter.Z());
+
+			for(GMap3::Dart_of_orbit_range<0,1,2>::iterator
+			        itbis(m_gmap.darts_of_orbit<0,1,2>(d).begin()),
+			     itend(m_gmap.darts_of_orbit<0,1,2>(d).end()); itbis!=itend; ++itbis) {
+
+				GMap3::Dart_handle dbis = itbis;
+
+				if(dart_pos.find(dbis) == dart_pos.end()) {
+					std::cout<<"a dart from a 3-cell was not previously treated with the 1-cells"<<std::endl;
+				}
+
+				gmds::math::Point e0_0 = (1.- ratio3_) * (barycenter_gmds - dart_pos[dbis].first) + dart_pos[dbis].first;
+				gmds::math::Point e0_1 = (1.- ratio3_) * (barycenter_gmds - dart_pos[dbis].second) + dart_pos[dbis].second;
+				dart_pos[dbis].first = e0_0;
+				dart_pos[dbis].second = e0_1;
+
+				dart_region_ids[dbis] = index_region;
+			}
+		}
+	}
+
+	m_gmap.free_mark(mark);
+
+	// fill the gmds mesh
+	// We create triangles because paraview seems to not be able to display edge cell types
+	gmds::MeshModel model(gmds::MeshModel(gmds::DIM3|gmds::N|gmds::F|gmds::F2N));
+	gmds::Mesh m(model);
+
+	gmds::Variable<int>* var_node_type = m.newVariable<int, gmds::GMDS_NODE>("node_type");
+	gmds::Variable<int>* var_edge_type = m.newVariable<int, gmds::GMDS_FACE>("edge_type");
+
+	gmds::Variable<int>* var_edge_marked = m.newVariable<int, gmds::GMDS_FACE>("edge_marked");
+
+	// trying to give an index to the i-cells
+	gmds::Variable<int>* var_index_node_ids = m.newVariable<int, gmds::GMDS_FACE>("index_node_ids");
+	gmds::Variable<int>* var_index_edge_ids = m.newVariable<int, gmds::GMDS_FACE>("index_edge_ids");
+	gmds::Variable<int>* var_index_face_ids = m.newVariable<int, gmds::GMDS_FACE>("index_face_ids");
+	gmds::Variable<int>* var_index_region_ids = m.newVariable<int, gmds::GMDS_FACE>("index_regione_ids");
+
+	for(auto d: dart_pos) {
+		gmds::Node n0 = m.newNode(d.second.first);
+		gmds::Node n1 = m.newNode(d.second.second);
+		gmds::Face f = m.newTriangle(n0, n1, n1);
+		if(AToMark != -1) {
+			if(m_gmap.is_marked(d.first, AToMark)) {
+				(*var_edge_marked)[f.id()] = 1;
+			}
+		}
+		(*var_node_type)[n0.id()] = 1;
+		(*var_node_type)[n1.id()] = 0;
+		(*var_edge_type)[f.id()] = 4;
+
+		(*var_index_node_ids)[f.id()] = dart_node_ids[d.first];
+		(*var_index_edge_ids)[f.id()] = dart_edge_ids[d.first];
+		(*var_index_face_ids)[f.id()] = dart_face_ids[d.first];
+		(*var_index_region_ids)[f.id()] = dart_region_ids[d.first];
+	}
+
+	// now for the alpha links
+	// avoid creating the kinks twice by marking the darts
+	std::set<Dart3> set_alpha0;
+	std::set<Dart3> set_alpha1;
+	std::set<Dart3> set_alpha2;
+	std::set<Dart3> set_alpha3;
+
+	for(auto d: dart_pos) {
+		Dart3 dh = d.first;
+		Dart3 d0 = m_gmap.alpha(dh, 0);
+		Dart3 d1 = m_gmap.alpha(dh, 1);
+		Dart3 d2 = m_gmap.alpha(dh, 2);
+		Dart3 d3 = m_gmap.alpha(dh, 3);
+
+		if(d0 != dh) {
+			if(dart_pos.find(d0) != dart_pos.end()) {
+				if(set_alpha0.find(dh) == set_alpha0.end()) {
+					gmds::Node n0 = m.newNode(d.second.second);
+					gmds::Node n1 = m.newNode(dart_pos[d0].second);
+					gmds::Face f = m.newTriangle(n0, n1, n1);
+					(*var_node_type)[n0.id()] = 0;
+					(*var_node_type)[n1.id()] = 0;
+					(*var_edge_type)[f.id()] = 0;
+
+					set_alpha0.insert(dh);
+					set_alpha0.insert(d0);
+
+					(*var_index_node_ids)[f.id()] = -1;
+					(*var_index_edge_ids)[f.id()] = -1;
+					(*var_index_face_ids)[f.id()] = -1;
+					(*var_index_region_ids)[f.id()] = -1;
+				}
+			}
+		}
+		if(d1 != dh) {
+			if(dart_pos.find(d1) != dart_pos.end()) {
+				if(set_alpha1.find(dh) == set_alpha1.end()) {
+					gmds::Node n0 = m.newNode(d.second.first + display_alpha1_ * (d.second.second - d.second.first));
+					gmds::Node n1 = m.newNode(dart_pos[d1].first + display_alpha1_ * (dart_pos[d1].second - dart_pos[d1].first));
+					gmds::Face f = m.newTriangle(n0, n1, n1);
+					(*var_node_type)[n0.id()] = 0;
+					(*var_node_type)[n1.id()] = 0;
+					(*var_edge_type)[f.id()] = 1;
+
+					set_alpha1.insert(dh);
+					set_alpha1.insert(d1);
+
+					(*var_index_node_ids)[f.id()] = -1;
+					(*var_index_edge_ids)[f.id()] = -1;
+					(*var_index_face_ids)[f.id()] = -1;
+					(*var_index_region_ids)[f.id()] = -1;
+				}
+
+			}
+		}
+		if(d2 != dh) {
+			if(dart_pos.find(d2) != dart_pos.end()) {
+				if(set_alpha2.find(dh) == set_alpha2.end()) {
+					gmds::Node n0 = m.newNode(d.second.first + display_alpha2_ * (d.second.second - d.second.first));
+					gmds::Node n1 = m.newNode(dart_pos[d2].first + display_alpha2_ * (dart_pos[d2].second - dart_pos[d2].first));
+					gmds::Face f = m.newTriangle(n0, n1, n1);
+					(*var_node_type)[n0.id()] = 0;
+					(*var_node_type)[n1.id()] = 0;
+					(*var_edge_type)[f.id()] = 2;
+
+					set_alpha2.insert(dh);
+					set_alpha2.insert(d2);
+
+					(*var_index_node_ids)[f.id()] = -1;
+					(*var_index_edge_ids)[f.id()] = -1;
+					(*var_index_face_ids)[f.id()] = -1;
+					(*var_index_region_ids)[f.id()] = -1;
+				}
+
+			}
+		}
+		if(d3 != dh) {
+			if(dart_pos.find(d3) != dart_pos.end()) {
+				if(set_alpha3.find(dh) == set_alpha3.end()) {
+					gmds::Node n0 = m.newNode(d.second.first + display_alpha3_ * (d.second.second - d.second.first));
+					gmds::Node n1 = m.newNode(dart_pos[d3].first + display_alpha3_ * (dart_pos[d3].second - dart_pos[d3].first));
+					gmds::Face f = m.newTriangle(n0, n1, n1);
+					(*var_node_type)[n0.id()] = 0;
+					(*var_node_type)[n1.id()] = 0;
+					(*var_edge_type)[f.id()] = 3;
+
+					set_alpha3.insert(dh);
+					set_alpha3.insert(d3);
+
+					(*var_index_node_ids)[f.id()] = -1;
+					(*var_index_edge_ids)[f.id()] = -1;
+					(*var_index_face_ids)[f.id()] = -1;
+					(*var_index_region_ids)[f.id()] = -1;
+				}
+
+			}
+		}
+	}
+
+	gmds::IGMeshIOService ioService(&m);
+	gmds::VTKWriter vtkWriter(&ioService);
+	vtkWriter.setCellOptions(gmds::N | gmds::F);
+	vtkWriter.setDataOptions(gmds::N | gmds::F);
+	vtkWriter.write(AFilename);
+}
+/*----------------------------------------------------------------------------*/
