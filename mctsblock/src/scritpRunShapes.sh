@@ -19,14 +19,14 @@ while IFS= read -r FIGURE; do
   [[ -z "$FIGURE" ]] && continue
 
   # Chemins vers les fichiers JSON et la base de données des figures (modifier si nécessaire)
-  JSON_FILE="path/to/json_file.json"
-  DATABASE_FILE="path/to/database.db"
+  JSON_FILE="../../mctsblock/tst/data/params.json"
+  DATABASE_FILE="/home/bourmaudp/Documents/PROJETS/devClass_Edges_Size_Path/blocking-learning-data/input/"+FIGURE+".vtk"
 
   # Mesure du temps d'exécution
   START_TIME=$(date +%s.%N)
 
   # Exécution du programme C++
-  ./main "$JSON_FILE" "$DATABASE_FILE" "$FIGURE"
+  ./main_blocker.cpp "$JSON_FILE" "$DATABASE_FILE" "$FIGURE"
   RETURN_CODE=$?
 
   # Calcul du temps écoulé

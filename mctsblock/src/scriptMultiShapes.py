@@ -1,7 +1,7 @@
 import subprocess
 
 # Lire les noms de formes depuis le fichier shapes.txt
-with open('listShapes.txt', 'r') as file:
+with open('shapes_list.txt', 'r') as file:
     shapes = file.readlines()
 
 # Supprimer les espaces et les sauts de ligne pour chaque forme

@@ -1,0 +1,4 @@
+Figure, Résultat, Temps (s)
+XYZ, Victoire, .006492027
+XXYZ, Victoire, .006048613
+U_shape, Victoire, .006214602
