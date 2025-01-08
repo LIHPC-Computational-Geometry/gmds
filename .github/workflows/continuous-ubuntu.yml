@@ -7,7 +7,7 @@ on:
   pull_request:
     branches: [ main ]
 env:
-  CODECOV_TOKEN: 'a6611bcf-89ee-410d-acfa-d4f130b31365'
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 jobs:
   Continuous:
     name: ${{ matrix.config }}
@@ -99,7 +99,7 @@ jobs:
             spack load py-pytest
             ctest -C ${{ matrix.config }}
         else
-            export CODACY_PROJECT_TOKEN=${{ secrets.CODACY_PROJECT_TOKEN }}
+            export CODACY_API_TOKEN=${{ secrets.CODACY_API_TOKEN }}
             make code_cover_gmds
             #bash <(curl -s https://codecov.io/bash)
             #bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r code_cover_gmds.info
