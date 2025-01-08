@@ -1,49 +1,66 @@
 #!/bin/bash
 
-# Fichiers utilisés
+# Files used
 SHAPES_LIST="shapes_list.txt"
 OUTPUT_FILE="results.txt"
+CPP_FILE="main_blocker.cpp"
+EXECUTABLE="main_blocker"
 
-# Vérification que les fichiers requis existent
-if [[ ! -f "$SHAPES_LIST" ]]; then
-  echo "The file $SHAPES_LIST is not found."
+# Check if the C++ source file exists
+if [[ ! -f "$CPP_FILE" ]]; then
+  echo "The source file $CPP_FILE was not found."
   exit 1
 fi
 
-# Initialisation du fichier de résultats
+# Compile the C++ program
+echo "Compiling $CPP_FILE..."
+g++ -o "$EXECUTABLE" "$CPP_FILE" -std=c++17
+if [[ $? -ne 0 ]]; then
+  echo "Error while compiling $CPP_FILE."
+  exit 1
+fi
+echo "Compilation successful."
+
+# Check if the shapes list file exists
+if [[ ! -f "$SHAPES_LIST" ]]; then
+  echo "The file $SHAPES_LIST was not found."
+  exit 1
+fi
+
+# Initialize the results file
 echo "SHAPE NAME, RESULT, TIME(s)" > "$OUTPUT_FILE"
 
-# Boucle sur chaque nom de figure dans le fichier shapes_list.txt
-while IFS= read -r FIGURE; do
-  # Ignorer les lignes vides
-  [[ -z "$FIGURE" ]] && continue
+# Loop through each shape name in the shapes_list.txt file
+while IFS= read -r SHAPE; do
+  # Skip empty lines
+  [[ -z "$SHAPE" ]] && continue
 
-  # Chemins vers les fichiers JSON et la base de données des figures (modifier si nécessaire)
+  # Paths to the JSON file and the shape database
   JSON_FILE="../../mctsblock/tst/data/params.json"
-  DATABASE_FILE="/Users/paulbourmaud/Projects/blocking-learning-data/input/"+FIGURE+".vtk"
+  DATABASE_FILE="/Users/paulbourmaud/Projects/blocking-learning-data/input/${SHAPE}.vtk"
 
-  # Mesure du temps d'exécutiong
+  # Measure execution time
   START_TIME=$(date +%s.%N)
 
-  # Exécution du programme C++
-  ./main_blocker.cpp "$JSON_FILE" "$DATABASE_FILE" "$FIGURE"
+  # Execute the compiled program
+  ./"$EXECUTABLE" "$JSON_FILE" "$DATABASE_FILE" "$SHAPE"
   RETURN_CODE=$?
 
-  # Calcul du temps écoulé
+  # Calculate elapsed time
   END_TIME=$(date +%s.%N)
   ELAPSED_TIME=$(echo "$END_TIME - $START_TIME" | bc)
 
-  # Traduction du code de retour en texte
+  # Translate the return code into a result
   case $RETURN_CODE in
     0) RESULT="Defeat" ;;
     1) RESULT="Draw" ;;
     2) RESULT="Win" ;;
-    *) RESULT="Inconnu" ;;
+    *) RESULT="Unknown" ;;
   esac
 
-  # Écriture des résultats dans le fichier
-  echo "$FIGURE, $RESULT, $ELAPSED_TIME" >> "$OUTPUT_FILE"
+  # Write the results to the file
+  echo "$SHAPE, $RESULT, $ELAPSED_TIME" >> "$OUTPUT_FILE"
 
 done < "$SHAPES_LIST"
 
-echo "Traitement terminé. Résultats sauvegardés dans $OUTPUT_FILE."
+echo "Processing completed. Results saved in $OUTPUT_FILE."
