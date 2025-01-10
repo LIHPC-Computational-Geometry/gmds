@@ -83,6 +83,7 @@ jobs:
         -DENABLE_SINGGRAPHBUILD:BOOL=ON
         -DCMAKE_PREFIX_PATH="$lcov_ROOT;$glpk_ROOT;$googletest_ROOT;$pybind11_ROOT;$cgal_ROOT;$gmp_ROOT;$mpfr_ROOT;$boost_ROOT;$eigen_ROOT;$gts_ROOT;$glib_ROOT;$pcre2_ROOT"
         -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/
+        -DCMAKE_CXX_COMPILER=g++-12
 
     - name: Build
       # Use a bash shell so we can use the same syntax for environment variable
