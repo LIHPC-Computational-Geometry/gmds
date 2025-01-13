@@ -99,13 +99,13 @@ jobs:
             spack load py-pytest
             ctest -C ${{ matrix.config }}
         else
-            export CODACY_API_TOKEN=${{ secrets.CODACY_API_TOKEN }}
+            export CODACY_PROJECT_TOKEN=${{ secrets.CODACY_API_TOKEN }}
             source /spack/share/spack/setup-env.sh
             spack load lcov
             spack load py-pytest
             make code_cover_gmds
-            #bash <(curl -s https://codecov.io/bash)
-            #bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r code_cover_gmds.info
+            bash <(curl -s https://codecov.io/bash)
+            bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r code_cover_gmds.info
 
         fi
 
