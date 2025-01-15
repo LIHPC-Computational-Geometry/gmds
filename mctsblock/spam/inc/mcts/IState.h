@@ -12,25 +12,30 @@ public:
     /**@brief Get the list of all the actions that can be applied on this state
      * @return a vector of actions to try
      */
-    virtual std::vector<std::shared_ptr<IAction> > get_actions() const = 0;
+    virtual std::vector<std::shared_ptr<IAction> > get_actions_selection()  = 0;
+	/**@brief Get the limited list of  the actions that can be applied on this state.
+	 *Impossible to remove blocks in the geometric volume. Limit the possible cuts.
+	 * @return a vector of actions to try
+	 */
+    virtual std::vector<std::shared_ptr<IAction> > get_actions_simulation()  = 0;
 
     /**@brief Indicates if the concrete state is terminal (win or lost in classical games)
      * @return true if it is terminal, false otherwise
      */
-    virtual bool is_terminal() const = 0;
+    virtual bool is_terminal()  = 0;
 
 		  /**@brief Indicates if the concrete state is a winning state
 			 * @return true if it is, false otherwise
 			*/
-		  virtual bool win() const = 0;
+		  virtual bool win()  = 0;
 		  /**@brief Indicates if the concrete state is a losing state
 			 * @return true if it is, false otherwise
 			*/
-		  virtual bool lost() const = 0;
+		  virtual bool lost()  = 0;
 	     /**@brief Indicates if the concrete state is a draw state
       * @return true if it is, false otherwise
 	      */
-	     virtual bool draw() const = 0;
+	     virtual bool draw()  = 0;
 
     /**@provide a function to write a file that stores the state knowing a file name prefix @p AFileName,
      * the stage index @p AStageIndex, the id, and the depth of the node that knows this state in the

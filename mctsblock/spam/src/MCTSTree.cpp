@@ -19,7 +19,7 @@ MCTSTree::MCTSTree(std::shared_ptr<IState> AState,
     static int global_id=0;
     m_id      = global_id++;
     m_depth   = (m_parent==nullptr)?0:m_parent->m_depth+1;
-    m_actions = m_state->get_actions();
+    m_actions = m_state->get_actions_selection();
 }
 /*---------------------------------------------------------------------------*/
 MCTSTree::~MCTSTree() {

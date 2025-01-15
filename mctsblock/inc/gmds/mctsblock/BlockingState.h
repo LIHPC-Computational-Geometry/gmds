@@ -26,14 +26,17 @@ class LIB_GMDS_MCTSBLOCK_API BlockingState : public IState
 	BlockingState(std::shared_ptr<Blocking> AB, int ADepth = 0, std::deque<double> APrevScore = std::deque<double>());
 	BlockingState(const BlockingState &AState);
 
-	std::vector<std::shared_ptr<IAction>> get_actions() const override;
+	std::vector<std::shared_ptr<IAction>> build_actions_selection() const;
+	std::vector<std::shared_ptr<IAction>> get_actions_selection()  override;
+	std::vector<std::shared_ptr<IAction>> get_actions_simulation()  override;
+	std::vector<std::shared_ptr<IAction>> build_actions_simulation() const;
 
-	bool is_terminal() const override;
+	bool is_terminal()  override;
 
-	bool win() const override;
+	bool win()  override;
 
-		bool lost() const override;
-	   bool  draw() const override;
+		bool lost()  override;
+	   bool  draw()  override;
 	std::string write(const std::string &AFileName, const int AStageIndex, const int ANodeId, const int ADepth) const override;
 
 
@@ -78,11 +81,21 @@ class LIB_GMDS_MCTSBLOCK_API BlockingState : public IState
 	 */
 	std::vector<std::shared_ptr<IAction>> get_possible_cuts() const;
 
+	/**@brief This method return one cut by edge sheet.
+	 * @return a vector with only pair in, the first (pair.first) is the edge, and the second (pair.second) is the param to cut
+	 */
+	std::vector<std::shared_ptr<IAction>> get_possible_cuts_limited() const;
+
+	/**@brief This method returns all the possible block erasing. A block can be erased if
+	 *  - it doesn't not belong a corner that is the only one to capture a point.
+	 * @return a vector of block ids. */
+	std::vector<std::shared_ptr<IAction>> get_possible_block_removals(bool without_blocks_in = true) const;
+
 	/**@brief This method returns all the possible block erasing. A block can be erased if
 	 *  - it doesn't not belong a corner that is the only one to capture a point.
 	 *  - its centroid is not inside the volume
 	 * @return a vector of block ids. */
-	std::vector<std::shared_ptr<IAction>> get_possible_block_removals(bool without_blocks_in = true) const;
+	std::vector<std::shared_ptr<IAction>> get_possible_block_removals_limited(bool without_blocks_in = true) const;
 
  private:
 	/** the memory depth we store*/
@@ -99,6 +112,9 @@ class LIB_GMDS_MCTSBLOCK_API BlockingState : public IState
 	int m_depth;
 	/** we store the score of the current blocking and the m_memory_depth previsious one.*/
 	std::deque<double> m_memory_scores;
+	/** we store the possible actions for the state*/
+	std::vector<std::shared_ptr<IAction>> m_list_actions_selection;
+	std::vector<std::shared_ptr<IAction>> m_list_actions_simulation;
 };
 /*----------------------------------------------------------------------------*/
 }     // namespace mctsblock

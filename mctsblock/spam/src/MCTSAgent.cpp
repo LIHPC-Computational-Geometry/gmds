@@ -43,7 +43,7 @@ std::shared_ptr<IState> MCTSAgent::get_best_solution() {
 /*---------------------------------------------------------------------------*/
 std::shared_ptr<IState> MCTSAgent::get_best_winning_solution()
 {	 const MCTSTree* node = m_tree;
-	 while (!node->is_terminal() && node->has_children()){
+	 while (node != NULL && !node->is_terminal() && node->has_children()){
 		  node=node->get_most_winning_child();
 	 }
 	 return node->get_state();
@@ -85,7 +85,7 @@ std::pair<double,MCTSAgent::GAME_RESULT> MCTSAgent::simulate(MCTSTree* ANode) {
 
 	 //we first check that we are not a winner!!
 	 if(state->win())
-		  std::make_pair(m_reward_function->evaluate(state),WIN);
+		  return std::make_pair(m_reward_function->evaluate(state),WIN);
 
 	 bool found_win=false;
 	 bool found_lost =false;
@@ -94,10 +94,9 @@ std::pair<double,MCTSAgent::GAME_RESULT> MCTSAgent::simulate(MCTSTree* ANode) {
         for (int d = 0; d < m_simulation_depth && !found_win &&	  !found_lost; d++) {
             if (!state->is_terminal()) {
                 auto a = get_random_action(state);
-				    auto lActions = state->get_actions();
-				    auto bAction = get_random_action(state);
 				    if(a== nullptr )
-					    exit(55);
+				    	return std::make_pair(m_reward_function->evaluate(state),LOST);
+				    	//exit(55); //si cela se produit verifier qu'un etat non terminal a bien une list d'action non vide, state.lost() ordre des elements conditionnels
 
                 state = a->apply_on(state);
 				    if (state->win())
@@ -133,7 +132,7 @@ void MCTSAgent::back_propagate(MCTSTree* ANode, double AReward, MCTSAgent::GAME_
 /*---------------------------------------------------------------------------*/
 std::shared_ptr<IAction> MCTSAgent::get_random_action(std::shared_ptr<IState> AState) const {
     /** selects an action among the untried ones */
-    auto actions = AState->get_actions();
+    auto actions = AState->get_actions_simulation();
 	 if (actions.empty())
 		  return nullptr;
 	 //randomly pick an action
@@ -216,24 +215,24 @@ void MCTSAgent::run(std::shared_ptr<IState> ARootState) {
         auto node = select(m_tree);
 		  end_select = std::chrono::system_clock::now();
 		  std::chrono::duration<double> elapsed_seconds = end_select - start_iter;
-		//  std::cout << "\t node selection    : " << elapsed_seconds.count() << "s\n";
+	 	  std::cout << "\t node selection    : " << elapsed_seconds.count() << "s\n";
 
 		  // 2. EXPAND by adding a single child (if not terminal or not fully expanded)
         node = expand(node);
 		  end_expand = std::chrono::system_clock::now();
 		  elapsed_seconds = end_reward - end_select;
-		//  std::cout << "\t node expansion    : " << elapsed_seconds.count() << "s\n";
+		  std::cout << "\t node expansion    : " << elapsed_seconds.count() << "s\n";
 
         // 3. SIMULATE (if not terminal)
         auto [reward, result] = simulate(node);
 		  end_reward = std::chrono::system_clock::now();
 		  elapsed_seconds = end_reward - end_expand;
-	//	  std::cout << "\t node reward       : " << elapsed_seconds.count() << "s\n";
+		  std::cout << "\t node reward       : " << elapsed_seconds.count() << "s\n";
         // 4. BACK PROPAGATION
         back_propagate(node,reward,result);
 		  end_back = std::chrono::system_clock::now();
 		  elapsed_seconds = end_back - end_reward;
-		//  std::cout << "\t node backprogation: " << elapsed_seconds.count() << "s\n";
+		  std::cout << "\t node backprogation: " << elapsed_seconds.count() << "s\n";
 
         //increase loop counters
         i++;
@@ -242,7 +241,7 @@ void MCTSAgent::run(std::shared_ptr<IState> ARootState) {
             if(i%m_debug_frequency==0)
                 export_tree();
         }
-		//  std::cout<<" done"<<std::endl;
+		  std::cout<<" done"<<std::endl;
     }
     m_nb_iterations=i;
     m_nb_seconds =elapsed.count();

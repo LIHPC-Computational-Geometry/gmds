@@ -89,6 +89,9 @@ int main(int argc, char* argv[])
 {
     std::cout << "============== MCTS Blocker ================" << std::endl;
 
+	//Compute the time of execution
+	auto start_time = std::chrono::high_resolution_clock::now();
+
 	//==================================================================
 	// PARAMETERS' PARSING
     std::string file_geom, file_block_out, file_block_in, file_param;
@@ -167,6 +170,8 @@ int main(int argc, char* argv[])
 	 auto nb_loop_iter = params.at("nb_loop_iter");
 
 	 init_state->get_blocking()->save_vtk_blocking("loop_init");
+	auto win = current_state->win();
+	auto lost = current_state->lost();
 	 for (auto i = 0; i < nb_loop_iter && !current_state->win() && !current_state->lost(); i++) {
 		  agent.run(current_state);
 		  std::cout << "=======================================" << std::endl;
@@ -190,19 +195,26 @@ int main(int argc, char* argv[])
 		  std::cout << "Best solution score: " << solution.computeScore() <<" (optimal: "<<optimal_score<<")"<<std::endl;
 		  solution.get_blocking()->save_vtk_blocking(file_block_out);
 	 }
+	// Compute the final time
+	auto end_time = std::chrono::high_resolution_clock::now();
+	auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time);
+
 	 if(current_state->win()) {
 		 display_info(current_state);
 		 std::cout << "\n\t >>>>>> WIN <<<<<<" << std::endl;
+	 	 std::cout << "Total time: " << elapsed_time.count() << " seconds." << std::endl;
 		 return 2;
 	 }
 	 else if(current_state->lost()) {
 		 display_info(current_state);
 		 std::cout << "\n\t >>>>>> LOST <<<<<<" << std::endl;
+	 	 std::cout << "Total time: " << elapsed_time.count() << " seconds." << std::endl;
 		 return 0;
 	 }
 	else {
 		display_info(current_state);
 		std::cout << "\n\t >>>>>> DRAW <<<<<<" << std::endl;
+		std::cout << "Total time: " << elapsed_time.count() << " seconds." << std::endl;
 		return 1;
 	}
 
