@@ -6,6 +6,9 @@
 #include <gmds/io/VTKReader.h>
 #include <gmds/io/IGMeshIOService.h>
 #include <unit_test_config.h>
+
+#include<iostream>
+#include <random>
 /*----------------------------------------------------------------------------*/
 using namespace gmds;
 /*----------------------------------------------------------------------------*/
@@ -17,7 +20,7 @@ TEST(FacManagerFastRetrievalTestSuite, fromSurfMesh)
                                      F2N|F2R|F2E|
                                      E2F|E2N|N2E));
     std::string dir(TEST_SAMPLES_DIR);
-    std::string vtk_file = dir+"/S24_CAD_test.vtk";
+    std::string vtk_file = dir+"/simpleCube.vtk";
 
     gmds::IGMeshIOService ioService(&m_vol);
 
@@ -33,10 +36,21 @@ TEST(FacManagerFastRetrievalTestSuite, fromSurfMesh)
 
     cad::FACManager manager;
     manager.initFrom3DMesh(&m_vol);
-	 manager.buildGTSTree();
+	 manager.buildGTSTree(&m_vol);
 
-    math::Point p0(10.01, -1.2, 80.);
-	 math::Point p1( 9.99, -1.2, 80.);
-	 ASSERT_FALSE(manager.is_in(p0));
-	 ASSERT_TRUE(manager.is_in(p1));
+	 std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<double> dis(-0.1, 1.1);
+
+	 for(int i=0; i<999; i++) {
+		 double x = dis(rd);
+		 double y = dis(rd);
+		 double z = dis(rd);
+		 math::Point p(x, y, z);
+		 if(x<0. || x>1. || y<0. || y>1. || z<0. || z>1.) {
+			 ASSERT_FALSE(manager.is_in(p));
+		 } else {
+			 ASSERT_TRUE(manager.is_in(p));
+		 }
+	 }
 }
