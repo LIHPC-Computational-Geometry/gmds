@@ -168,6 +168,14 @@ namespace gmds{
 
             static Point massCenter(const std::vector<Point>& AT);
 
+	         /*------------------------------------------------------------------------*/
+	         /** \brief  Whetehr this point is located inside the tetrahedron defined by the four points
+	          */
+	         bool is_inside(const math::Point& AP0,
+	                        const math::Point& AP1,
+	                        const math::Point& AP2,
+	                        const math::Point& AP3) const;
+
         protected:
             static void computeBarycentric2D(const math::Point& AT1, const math::Point& AT2,
                                              const math::Point& AT3,	const math::Point& AP,

@@ -14,6 +14,9 @@
 
 #include <gmds/io/IGMeshIOService.h>
 #include <gmds/io/VTKWriter.h>
+
+#include <gmds/math/Point.h>
+#include <gmds/math/Tetrahedron.h>
 /*----------------------------------------------------------------------------*/
 #include <gmds/igalgo/BoundaryExtractor2D.h>
 #include <gmds/igalgo/BoundaryExtractor3D.h>
@@ -25,7 +28,8 @@ namespace gmds {
 namespace cad {
 /*----------------------------------------------------------------------------*/
 FACManager::FACManager() : m_mesh(DIM3 | N | E | F | F2N | N2F | E2N | E2F | F2E | N2E),
-  m_gsurf(nullptr), m_groot(nullptr)
+  m_mesh_is_inside( DIM3 | N | R | R2N ),
+  m_groot(nullptr)
 {
 	FACPoint::resetIdCounter();
 	FACCurve::resetIdCounter();
@@ -50,9 +54,6 @@ FACManager::~FACManager()
 
 	if(m_groot != nullptr) {
 		gts_bb_tree_destroy(m_groot, true);
-	}
-	if(m_gsurf != nullptr) {
-		gts_object_destroy(GTS_OBJECT(m_gsurf));
 	}
 }
 /*----------------------------------------------------------------------------*/
@@ -1102,43 +1103,91 @@ FACManager::getFACSurface(const gmds::TInt AID)
 	return nullptr;
 }
 /*----------------------------------------------------------------------------*/
-void FACManager::buildGTSTree()
+void FACManager::buildGTSTree(const Mesh *AFromMesh)
 {
-	m_gsurf = gts_surface_new(gts_surface_class(), gts_face_class(), gts_edge_class(), gts_vertex_class());
-	std::cout<<"FACManager::buildGTSTree m_mesh.getNbFaces() "<<m_mesh.getNbFaces()<<std::endl;
-	std::map<gmds::TCellID, GtsVertex*> n2v;
-	for(auto ni: m_mesh.nodes()) {
-		gmds::math::Point pt = m_mesh.get<gmds::Node>(ni).point();
-		GtsVertex* g = gts_vertex_new(gts_vertex_class(), pt.X(), pt.Y(), pt.Z());
-		n2v[ni] = g;
+	// copy N and R from AFromMesh to m_mesh_is_inside
+	{
+		std::vector<gmds::Node> nodes;
+		AFromMesh->getAll<gmds::Node>(nodes);
+		std::map<TCellID, TCellID> old_to_new_nodes;
+		for (auto n : nodes) {
+			gmds::Node n_new = m_mesh_is_inside.newNode(n.point());
+			old_to_new_nodes[n.id()] = n_new.id();
+		}
+		std::vector<gmds::Region> cells;
+		AFromMesh->getAll<gmds::Region>(cells);
+		for (auto c : cells) {
+			std::vector<gmds::TCellID> nids = c.getAllIDs<gmds::Node>();
+			m_mesh_is_inside.newTet(old_to_new_nodes[nids[0]], old_to_new_nodes[nids[1]], old_to_new_nodes[nids[2]], old_to_new_nodes[nids[3]]);
+		}
 	}
-	std::map<gmds::TCellID, GtsEdge*> e2e;
-	for(auto ei: m_mesh.edges()) {
-		auto e = m_mesh.get<gmds::Edge>(ei);
-		std::vector<gmds::Node> nodes = e.get<gmds::Node>();
-		GtsEdge * g = gts_edge_new(gts_edge_class(), n2v[nodes[0].id()], n2v[nodes[1].id()]);
-		e2e[ei] = g;
+
+	// prepare the target mesh in the AABBtree
+	// Axis-Aligned Bounding Box tree for the cells
+	// The bounded value is the CellID
+	{
+		GSList *list = NULL;
+
+		std::vector<gmds::Region> cells;
+		m_mesh_is_inside.getAll<gmds::Region>(cells);
+		std::cout<<"cells.size() "<<cells.size()<<std::endl;
+
+		for(auto c: cells) {
+			auto cid = c.id();
+
+			double minXYZ[3];
+			double maxXYZ[3];
+
+			c.computeBoundingBox(minXYZ, maxXYZ);
+
+			gpointer pointer = GINT_TO_POINTER(cid);
+			GtsBBox *bbox = gts_bbox_new(
+			   gts_bbox_class(),
+			   pointer,
+			   minXYZ[0], minXYZ[1], minXYZ[2],
+			   maxXYZ[0], maxXYZ[1], maxXYZ[2]);
+
+			list = g_slist_prepend(list, bbox);
+		}
+		m_groot = gts_bb_tree_new(list);
+
+		g_slist_free(list);
 	}
-	std::map<gmds::TCellID, GtsFace*> f2f;
-	for(auto fi: m_mesh.faces()) {
-		auto f = m_mesh.get<gmds::Face>(fi);
-		std::vector<gmds::Edge> es = f.get<gmds::Edge>();
-		GtsFace * g = gts_face_new(gts_face_class(), e2e[es[0].id()], e2e[es[1].id()], e2e[es[2].id()]);
-		f2f[fi] = g;
-		gts_surface_add_face(m_gsurf, g);
-	}
-	std::cout<<"FACManager::buildGTSTree area "<<gts_surface_area(m_gsurf)<<std::endl;
-	std::cout<<"FACManager::buildGTSTree gts_surface_is_closed gts_surface_is_orientable "<<gts_surface_is_closed(m_gsurf)<<" "<<gts_surface_is_orientable(m_gsurf)<<std::endl;
-	m_groot = gts_bb_tree_surface (m_gsurf);
 }
 /*----------------------------------------------------------------------------*/
 bool FACManager::is_in(gmds::math::Point APt) const
 {
-	GtsPoint* gpt = gts_point_new(gts_point_class(), APt.X(), APt.Y(), APt.Z());
-	gboolean inside = gts_point_is_inside_surface(gpt, m_groot, false);
-	gts_object_destroy(GTS_OBJECT(gpt));
+	gpointer pointer = NULL;
 
-	return (bool)inside;
+	GtsBBox bbox;
+	gts_bbox_set(&bbox,
+	             pointer,
+	             APt.X(), APt.Y(), APt.Z(),
+	             APt.X(), APt.Y(), APt.Z());
+
+	GSList* boxList = gts_bb_tree_overlap(m_groot,&bbox);
+	if(boxList == nullptr) {
+		return false;
+	}
+
+	while (boxList != nullptr) {
+		GtsBBox *box = (GtsBBox *) (boxList->data);
+		gmds::TCellID cid = GPOINTER_TO_INT(box->bounded);
+
+		gmds::Region c = m_mesh_is_inside.get<gmds::Region>(cid);
+		std::vector<gmds::Node> nodes = c.get<gmds::Node>();
+
+		bool is_inside = APt.is_inside(nodes[0].point(), nodes[1].point(), nodes[2].point(), nodes[3].point());
+		if(is_inside) {
+			g_slist_free(boxList);
+			return true;
+		} else {
+			boxList = g_slist_next(boxList);
+		}
+	}
+
+	g_slist_free(boxList);
+	return false;
 }
 /*----------------------------------------------------------------------------*/
 }     // namespace cad

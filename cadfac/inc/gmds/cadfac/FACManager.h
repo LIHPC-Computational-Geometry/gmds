@@ -263,7 +263,7 @@ class GMDSCadFac_API FACManager : public GeomManager
     *
     *        Warning, we consider that it is made of only one single volume!
 	 */
-	void buildGTSTree();
+	void buildGTSTree(const Mesh *AFromMesh);
 
 	/**@brief Check whether a point is inside the model
 	 *        Warning, requires that the search tree was previously built
@@ -296,8 +296,8 @@ class GMDSCadFac_API FACManager : public GeomManager
 	std::map<TInt, TInt> m_map_edge_var_to_curve;
 	std::map<TInt, TInt> m_map_face_var_to_surf;
 
-	// GTS data structure for fast retrieval
-	GtsSurface* m_gsurf;
+	// gmds and GTS data structure for fast retrieval
+	Mesh m_mesh_is_inside;
 	GNode* m_groot;
 };
 /*----------------------------------------------------------------------------*/

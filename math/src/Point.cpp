@@ -7,6 +7,7 @@
  */
 /*----------------------------------------------------------------------------*/
 #include <gmds/math/Point.h>
+#include <gmds/math/Plane.h>
 #include <gmds/math/Matrix.h>
 #include <gmds/math/Numerics.h>
 /*-----------------------------------------------------------------------------*/
@@ -372,7 +373,25 @@ namespace gmds{
                 computeBarycentric2D2ndMethod(a,b,c,p,AX,AY,AZ);
             }
         }
-        
+        /*---------------------------------------------------------------------*/
+        bool Point::is_inside(const math::Point& AP0,
+                       const math::Point& AP1,
+                       const math::Point& AP2,
+                       const math::Point& AP3) const
+        {
+	         gmds::math::Plane pl0(AP0, AP1, AP2);
+	         gmds::math::Plane pl1(AP0, AP3, AP1);
+	         gmds::math::Plane pl2(AP0, AP2, AP3);
+	         gmds::math::Plane pl3(AP1, AP3, AP2);
+
+			  if((!pl0.isStrictlyOnLeft(*this)) &&
+				  (!pl1.isStrictlyOnLeft(*this)) &&
+				  (!pl2.isStrictlyOnLeft(*this)) &&
+				  (!pl3.isStrictlyOnLeft(*this))) {
+				  return true;
+	         }
+			  return false;
+        }
         /*---------------------------------------------------------------------*/
         Point operator*(const TCoord& AK, const Point& AP){
             return Point(AK*AP.m_coord[0], AK*AP.m_coord[1], AK*AP.m_coord[2]);
