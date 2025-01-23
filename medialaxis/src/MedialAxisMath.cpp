@@ -4,6 +4,8 @@
 
 #include "gmds/medialaxis/MedialAxisMath.h"
 #include <algorithm>
+#include <queue>
+#include <time.h> 
    using namespace gmds;
 
 /*----------------------------------------------------------------------------*/
@@ -510,4 +512,53 @@ Face getCommonFace(Edge &AE1, Edge &AE2)
 math::Vector projection(math::Vector &AV1, math::Vector &AV2)
 {
 	return (AV1.dot(AV2)/AV1.norm()*(AV1/AV1.norm()));
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<Node> shortestPathAlongBoundaryOrConstraints(Node &AN1, Node &AN2, Mesh &AMesh)
+{
+	auto constr = AMesh.getVariable<int,GMDS_EDGE>("internal_constraint");
+	auto visited = AMesh.newVariable<int,GMDS_NODE>("visited");
+	std::vector<Node> path;
+	std::vector<Node> new_path;
+	std::vector<Node> shortestPath;
+	path.push_back(AN1);
+	visited->set(AN1.id(),1);
+	std::queue<std::vector<Node>> toBeContinued;
+	toBeContinued.push(path);
+	bool finished = false;
+
+	while (!toBeContinued.empty() && !finished)
+	{
+		path = toBeContinued.front();
+		toBeContinued.pop();
+		Node last_node = path[path.size()-1];
+		if (last_node.id() == AN2.id())
+		{
+			shortestPath = path;
+			finished = true;
+		}
+		else
+		{
+			for (auto e:last_node.get<Edge>())
+			{
+				if (e.get<Face>().size() == 1 || constr->value(e.id()) == 1)
+				{
+					for (auto n:e.get<Node>())
+					{
+						if (visited->value(n.id()) == 0)
+						{
+							new_path = path;
+							new_path.push_back(n);
+							visited->set(n.id(),1);
+							toBeContinued.push(new_path);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	AMesh.deleteVariable(GMDS_NODE,visited);
+	return shortestPath;
 }

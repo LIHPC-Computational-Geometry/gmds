@@ -17,6 +17,7 @@
 #include "gmds/medialaxis/Conformalizer.h"
 #include <gmds/math/Point.h>
 #include <gmds/math/Tetrahedron.h>
+#include <time.h> 
 #include <iostream>
 using namespace gmds;
 using namespace math;
@@ -91,22 +92,34 @@ int main(int argc, char* argv[])
 		smoothed_ma->write("smoothed_medax.vtk");
 
 		Mesh medax = smoothed_ma->getMeshRepresentation();
-		double mesh_size = 30.*smoothed_ma->meanMedEdgeLength();
+		double mesh_size = 50.*smoothed_ma->meanMedEdgeLength();
 		medialaxis::MedaxBasedTMeshBuilder tmb(medax,m);
 		// Build a quad block decomposition
 		tmb.setSectionID();
 		tmb.computeSectionType();
+		//tmb.transformGraySectionsIntoRed();
+		//tmb.setTopMakerColoring();
+		tmb.markRefinableSections();
+		tmb.markForbiddenSingularPointsAndModifyBoundaryPoints();
 		tmb.refineByAddingSingularNodes(mesh_size);
 		tmb.buildTopoRepNodes();
 		tmb.buildTopoRepEdges();
 		tmb.setTopoRepConnectivity();
+		tmb.optimizeMedaxColoring();
 		tmb.markEdgesGeneratingTriangles();
+		tmb.markCornersOnMinDel();
 		tmb.buildTMeshNodesFromMinDelNodes();
 		//tmb.buildBlockDecompMedialAndBoundaryNodes();
 		tmb.buildSection2MedialAndBoundaryNodesAdjacency();
 		tmb.buildMiddleNodes();
 		tmb.buildBlocks();
+
+		// tmb.writeTopoRep("topo_rep_test.vtk");
+		// tmb.writeBlockDecomp("t_mesh_test.vtk");
+		// return 0;
+
 		tmb.transformDegenerateQuadsIntoTriangles();
+		tmb.setTopoRepEdgesColor();
 		tmb.writeTopoRep("topo_rep.vtk");
 		// // Only to have nice pictures
 		tmb.setBlockDecompConnectivity();
@@ -145,9 +158,15 @@ int main(int argc, char* argv[])
 		s.markSeparatrices();
 		s.setBlocksIDs();
 
+		conf.projectOnBoundary(m);
+
 		conf.writeConformalMesh("conformal_mesh_without_smoothing.vtk");
+
+		clock_t t = clock();
 		for (int i = 0; i < 100; i++)
-			conf.smooth();
+			conf.smooth(m);
+		t = clock()-t;
+		std::cout<<"Smoothing time (s) : "<<double(t)/CLOCKS_PER_SEC<<std::endl;
 
 		tmb.writeFinalTMesh("t_mesh.vtk");
 		conf.writeConformalMesh("conformal_mesh.vtk");

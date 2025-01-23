@@ -1,5 +1,6 @@
 #include "gmds/medialaxis/Conformalizer.h"
 #include <queue>
+#include <time.h> 
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
@@ -18,7 +19,13 @@ Conformalizer::Conformalizer(gmds::Mesh &AMesh, std::vector<NonConformalHalfEdge
     catch (GMDSException& e){m_mesh->newVariable<int,GMDS_EDGE>("internal_constraint");}
     try {m_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");}
     catch (GMDSException& e){m_mesh->newVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");}
-	
+    // Correspondance with min tri nodes
+	try {m_mesh->getVariable<int,GMDS_NODE>("TMeshNode2MinTriNode");}
+    catch (GMDSException& e){m_mesh->newVariable<int,GMDS_NODE>("TMeshNode2MinTriNode");}
+    // Corners
+	try {m_mesh->getVariable<int,GMDS_NODE>("corner");}
+    catch (GMDSException& e){m_mesh->newVariable<int,GMDS_NODE>("corner");}
+
 	// Corresponding non-conformal half edges
 	m_half_edges = AHalfEdges;
 	// Half edges length. WARNING : all lengths must be > 0
@@ -35,6 +42,10 @@ Conformalizer::Conformalizer(gmds::Mesh &AMesh, std::vector<NonConformalHalfEdge
 	m_conformal_mesh->newVariable<int,GMDS_EDGE>("internal_constraint");
 	// Mark with 1 nodes belonging to an internal constraint
 	m_conformal_mesh->newVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+    // Boundary & constraint nodes/reference node correspondance
+    m_conformal_mesh->newVariable<int,GMDS_NODE>("Boundary&ConstraintNode2ReferenceNode"); 
+    // Mark with 1 corners of the boundary and internal constraints
+    m_conformal_mesh->newVariable<int,GMDS_NODE>("corner");
 
     // Intermediate mesh                                          
 	m_intermediate_mesh = new Mesh(MeshModel(DIM3 | E | N | F |
@@ -140,19 +151,41 @@ void Conformalizer::buildNonConformalNodesGroups()
 void Conformalizer::addOldNodesOnConformalMesh()
 {
     std::cout<<"> Adding old nodes on the conformal mesh"<<std::endl;
+    auto n2rn = m_conformal_mesh->getVariable<int,GMDS_NODE>("Boundary&ConstraintNode2ReferenceNode"); 
+    auto tmn2mtn = m_mesh->getVariable<int,GMDS_NODE>("TMeshNode2MinTriNode");
+    auto constr = m_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+    auto c1 = m_mesh->getVariable<int,GMDS_NODE>("corner");
+    auto c2 = m_conformal_mesh->getVariable<int,GMDS_NODE>("corner");
     for (auto group:m_non_conformal_nodes_groups)
     {
         double x = 0.;
         double y = 0.;
+        Node rep;
+        bool boundOrConstr = false;
+        bool cor = false;
         for (auto n_id:group)
         {
-            x += m_mesh->get<Node>(n_id).X();
-            y += m_mesh->get<Node>(n_id).Y();
+            Node n = m_mesh->get<Node>(n_id);
+            x += n.X();
+            y += n.Y();
+            if (!isInterior(n) || constr->value(n_id) == 1)
+            {
+                boundOrConstr = true;
+                rep = n;
+            }
+            if (c1->value(n_id) == 1)
+                cor = true;
         }
         x = x/double(group.size());
         y = y/double(group.size());
         math::Point P(x,y,0.);
-        m_conformal_mesh->newNode(P);
+        Node new_node = m_conformal_mesh->newNode(P);
+        if (boundOrConstr)
+            n2rn->set(new_node.id(),tmn2mtn->value(rep.id()));
+        else
+            n2rn->set(new_node.id(),-1);
+        if (cor)
+            c2->set(new_node.id(),1);
     }
 }
 
@@ -165,6 +198,7 @@ void Conformalizer::addSubdividingNodes()
     auto n2g = m_mesh->getVariable<int,GMDS_NODE>("node2group");
     auto int_constr = m_mesh->getVariable<int,GMDS_EDGE>("internal_constraint");
     auto constr_nodes = m_conformal_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+    auto n2rn = m_conformal_mesh->getVariable<int,GMDS_NODE>("Boundary&ConstraintNode2ReferenceNode"); 
     // Add nodes subdividing edges
     for (auto e_id:m_mesh->edges())
     {
@@ -172,6 +206,7 @@ void Conformalizer::addSubdividingNodes()
         Edge e = m_mesh->get<Edge>(e_id);
         Node n1 = e.get<Node>()[0];
         Node n2 = e.get<Node>()[1];
+        bool boundOrConstr = (n2rn->value(n1.id()) >= 0 && n2rn->value(n2.id()) >= 0);
         std::vector<Node> ordered_nodes;
         if (len == 0)
         {
@@ -186,6 +221,10 @@ void Conformalizer::addSubdividingNodes()
             {
                 Node newNode = m_conformal_mesh->newNode(n1.point()+(double(i)/double(len))*dir);
                 ordered_nodes.push_back(newNode);
+                if (boundOrConstr)
+                    n2rn->set(newNode.id(),n2rn->value(n1.id()));
+                else
+                    n2rn->set(newNode.id(),-1);
             }
             ordered_nodes.push_back(m_conformal_mesh->get<Node>(n2g->value(n2.id())));
             oe2nn->set(e_id,ordered_nodes);
@@ -334,6 +373,7 @@ void Conformalizer::buildRepresentativeNodes()
     std::cout<<"> Building representative nodes"<<std::endl;
     auto constr = m_conformal_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
     auto n2r = m_conformal_mesh->getVariable<int,GMDS_NODE>("node2representative");
+    auto n2rn = m_conformal_mesh->getVariable<int,GMDS_NODE>("Boundary&ConstraintNode2ReferenceNode"); 
     for (auto group:m_intermediate_nodes_groups)
     {
         if (group.size() == 1)
@@ -359,6 +399,7 @@ void Conformalizer::buildRepresentativeNodes()
                 n2r->set(n_id,n.id());
             if (constrained)
                 constr->set(n.id(),1);
+            n2rn->set(n.id(),-1);
         }
     }
 }
@@ -369,6 +410,7 @@ void Conformalizer::builIntNodesAndFaces2newNodesConnectivity()
     std::cout<<"> Building nodes of the conformal mesh internal to faces of the non conformal mesh"<<std::endl;
     auto f2nn = m_mesh->getVariable<std::vector<std::vector<int>>,GMDS_FACE>("face2newNodes");
     auto n2r = m_conformal_mesh->getVariable<int,GMDS_NODE>("node2representative");
+    auto n2rn = m_conformal_mesh->getVariable<int,GMDS_NODE>("Boundary&ConstraintNode2ReferenceNode"); 
 	for (auto f_id:m_mesh->faces())
 	{
 		// Get the half edges of the face
@@ -398,6 +440,7 @@ void Conformalizer::builIntNodesAndFaces2newNodesConnectivity()
 				Node n = m_conformal_mesh->newNode(P);
 				row[i] = n.id();
                 n2r->set(n.id(),n.id());
+                n2rn->set(n.id(),-1);
 			}
 			nodesIDs[j] = row;
 		}
@@ -486,11 +529,42 @@ void Conformalizer::execute()
 }
 
 /*----------------------------------------------------------------------------*/
-void Conformalizer::smooth()
+void Conformalizer::projectOnBoundary(Mesh &ARefMesh)
+{
+    std::cout<<"> Projecting on the boundary and the internal constraints"<<std::endl;
+    auto nodes_constr = m_conformal_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+    auto n2rn = m_conformal_mesh->getVariable<int,GMDS_NODE>("Boundary&ConstraintNode2ReferenceNode"); 
+    for (auto n_id:m_conformal_mesh->nodes())
+    {
+        Node n = m_conformal_mesh->get<Node>(n_id);
+        if (!isInterior(n) || nodes_constr->value(n_id) == 1)
+        {
+            double min_dist = 1e6;
+            Node closest;
+            for (auto boundNode_id:ARefMesh.nodes())
+            {
+                Node boundNode = ARefMesh.get<Node>(boundNode_id);
+                if (boundNode.point().distance(n.point()) < min_dist)
+                {
+                    min_dist = boundNode.point().distance(n.point());
+                    closest = boundNode;
+                }
+            }
+            n.setX(closest.X());
+            n.setY(closest.Y());
+            n2rn->set(n.id(),closest.id());
+        }
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+void Conformalizer::smooth(Mesh &ARefMesh)
 {
     std::cout<<"> Smoothing the conformal mesh"<<std::endl;
     auto nodes_constr = m_conformal_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
     auto int_constr = m_conformal_mesh->getVariable<int,GMDS_EDGE>("internal_constraint");
+    auto n2rn = m_conformal_mesh->getVariable<int,GMDS_NODE>("Boundary&ConstraintNode2ReferenceNode"); 
+    auto corner = m_conformal_mesh->getVariable<int,GMDS_NODE>("corner");
     for (auto n_id:m_conformal_mesh->nodes())
     {
         Node n = m_conformal_mesh->get<Node>(n_id);
@@ -526,7 +600,7 @@ void Conformalizer::smooth()
                     if (int_constr->value(e.id()) == 1)
                         NbConstraintedEdges += 1;
                 }
-                if (NbConstraintedEdges == 2)
+                if (NbConstraintedEdges == 2 && corner->value(n_id) == 0)
                 {
                     // Find the two constrainted edges
                     Edge e1,e2;
@@ -546,75 +620,71 @@ void Conformalizer::smooth()
                             break;
                         }
                     }
-                    if (e1.length() > 1e-6 && e2.length() > 1e-6)
+
+
+                    double x = 0.;
+                    double y = 0.;
+                    
+                    double NbNeighbours = 0.;
+                    for (auto e:n.get<Edge>())
                     {
-                        double alpha = oriented_angle(edge2vec(e1,n),-edge2vec(e2,n));
-                        if (fabs(alpha) < 0.2)
+                        for (auto n1:e.get<Node>())
                         {
-                            double x = 0.;
-                            double y = 0.;
-                            // for (auto n1:e1.get<Node>())
-                            // {
-                            //     if (n1.id() != n.id())
-                            //     {
-                            //         x += n1.X();
-                            //         y += n1.Y();
-                            //     }
-                            // }
-                            // for (auto n1:e2.get<Node>())
-                            // {
-                            //     if (n1.id() != n.id())
-                            //     {
-                            //         x += n1.X();
-                            //         y += n1.Y();
-                            //     }
-                            // }
-                            // x = x/2.;
-                            // y = y/2.;
-                            // n.setX(x);
-                            // n.setY(y);
-                            double NbNeighbours = 0.;
-                            for (auto e:n.get<Edge>())
+                            if (n1.id() != n.id())
                             {
-                                for (auto n1:e.get<Node>())
-                                {
-                                    if (n1.id() != n.id())
-                                    {
-                                        x += n1.X();
-                                        y += n1.Y();
-                                        NbNeighbours += 1.;
-                                    }
-                                }
-                            }
-                            x = x/NbNeighbours;
-                            y = y/NbNeighbours;
-                            // Projection on the constraint
-                            math::Point P(x,y,0.);
-                            math::Vector V = vec(P)-vec(n.point());
-                            math::Vector E1 = edge2vec(e1,n);
-                            math::Vector E2 = edge2vec(e2,n);
-                            math::Vector V1 = projection(E1,V);
-                            math::Vector V2 = projection(E2,V);
-                            math::Point P1 = n.point() + V1;
-                            math::Point P2 = n.point() + V2;
-                            if (P.distance(P1) < P.distance(P2))
-                            {
-                                n.setX(P1.X());
-                                n.setY(P1.Y());
-                            }
-                            else
-                            {
-                                n.setX(P2.X());
-                                n.setY(P2.Y());
+                                x += n1.X();
+                                y += n1.Y();
+                                NbNeighbours += 1.;
                             }
                         }
                     }
+                    x = x/NbNeighbours;
+                    y = y/NbNeighbours;
+                    math::Point P(x,y,0.);
+
+                    // Projection on the boundary using the reference mesh
+                    Node n1,n2;
+                    if (e1.get<Node>()[0].id() == n.id())
+                        n1 = e1.get<Node>()[1];
+                    else
+                        n1 = e1.get<Node>()[0];
+                    if (e2.get<Node>()[0].id() == n.id())
+                        n2 = e2.get<Node>()[1];
+                    else
+                        n2 = e2.get<Node>()[0];
+
+                    Node boundNode1 = ARefMesh.get<Node>(n2rn->value(n1.id()));
+                    Node boundNode2 = ARefMesh.get<Node>(n2rn->value(n2.id()));
+                    std::vector<Node> arc = shortestPathAlongBoundaryOrConstraints(boundNode1,boundNode2,ARefMesh);
+                    double min_dist = 1e6;
+                    Node closest;
+                    for (auto boundNode:arc)
+                    {
+                        if (boundNode.point().distance(P) < min_dist)
+                        {
+                            min_dist = boundNode.point().distance(P);
+                            closest = boundNode;
+                        }
+                    }
+                    // for (auto boundNode_id:ARefMesh.nodes())
+                    // {
+                    //     Node boundNode = ARefMesh.get<Node>(boundNode_id);
+                    //     if (boundNode.point().distance(P) < min_dist)
+                    //     {
+                    //         min_dist = boundNode.point().distance(P);
+                    //         closest = boundNode;
+                    //     }
+                    // }
+                    n.setX(closest.X());
+                    n.setY(closest.Y());
+                    n2rn->set(n.id(),closest.id());
                 }
             }
         }
         else
         {
-            if (nodes_constr->value(n.id()) == 0)
+            if (nodes_constr->value(n.id()) == 0 && corner->value(n.id()) == 0) // Prevent the corners from moving
+            //if (nodes_constr->value(n.id()) == 0 ) // Authorize the corners to move
             {
                 // Find the two boundary edges containing n
                 Edge e1,e2;
@@ -634,69 +704,63 @@ void Conformalizer::smooth()
                         break;
                     }
                 }
-                if (e1.length() > 1e-6 && e2.length() > 1e-6)
+
+                double x = 0.;
+                double y = 0.;
+                
+                double NbNeighbours = 0.;
+                for (auto e:n.get<Edge>())
                 {
-                    double alpha = oriented_angle(edge2vec(e1,n),-edge2vec(e2,n));
-                    if (fabs(alpha) < 0.2)
+                    for (auto n1:e.get<Node>())
                     {
-                        double x = 0.;
-                        double y = 0.;
-                        // for (auto n1:e1.get<Node>())
-                        // {
-                        //     if (n1.id() != n.id())
-                        //     {
-                        //         x += n1.X();
-                        //         y += n1.Y();
-                        //     }
-                        // }
-                        // for (auto n1:e2.get<Node>())
-                        // {
-                        //     if (n1.id() != n.id())
-                        //     {
-                        //         x += n1.X();
-                        //         y += n1.Y();
-                        //     }
-                        // }
-                        // x = x/2.;
-                        // y = y/2.;
-                        // n.setX(x);
-                        // n.setY(y);
-                        double NbNeighbours = 0.;
-                        for (auto e:n.get<Edge>())
+                        if (n1.id() != n.id())
                         {
-                            for (auto n1:e.get<Node>())
-                            {
-                                if (n1.id() != n.id())
-                                {
-                                    x += n1.X();
-                                    y += n1.Y();
-                                    NbNeighbours += 1.;
-                                }
-                            }
-                        }
-                        x = x/NbNeighbours;
-                        y = y/NbNeighbours;
-                        // Projection on the boundary
-                        math::Point P(x,y,0.);
-                        math::Vector V = vec(P)-vec(n.point());
-                        math::Vector E1 = edge2vec(e1,n);
-                        math::Vector E2 = edge2vec(e2,n);
-                        math::Vector V1 = projection(E1,V);
-                        math::Vector V2 = projection(E2,V);
-                        math::Point P1 = n.point() + V1;
-                        math::Point P2 = n.point() + V2;
-                        if (P.distance(P1) < P.distance(P2))
-                        {
-                            n.setX(P1.X());
-                            n.setY(P1.Y());
-                        }
-                        else
-                        {
-                            n.setX(P2.X());
-                            n.setY(P2.Y());
+                            x += n1.X();
+                            y += n1.Y();
+                            NbNeighbours += 1.;
                         }
                     }
                 }
+                x = x/NbNeighbours;
+                y = y/NbNeighbours;
+                math::Point P(x,y,0.);
+
+                // Projection on the boundary using the reference mesh
+                Node n1,n2;
+                if (e1.get<Node>()[0].id() == n.id())
+                    n1 = e1.get<Node>()[1];
+                else
+                    n1 = e1.get<Node>()[0];
+                if (e2.get<Node>()[0].id() == n.id())
+                    n2 = e2.get<Node>()[1];
+                else
+                    n2 = e2.get<Node>()[0];
+
+                Node boundNode1 = ARefMesh.get<Node>(n2rn->value(n1.id()));
+                Node boundNode2 = ARefMesh.get<Node>(n2rn->value(n2.id()));
+                std::vector<Node> arc = shortestPathAlongBoundaryOrConstraints(boundNode1,boundNode2,ARefMesh);
+                double min_dist = 1e6;
+                Node closest;
+                for (auto boundNode:arc)
+                {
+                    if (boundNode.point().distance(P) < min_dist)
+                    {
+                        min_dist = boundNode.point().distance(P);
+                        closest = boundNode;
+                    }
+                }
+                // for (auto boundNode_id:ARefMesh.nodes())
+                // {
+                //     Node boundNode = ARefMesh.get<Node>(boundNode_id);
+                //     if (boundNode.point().distance(P) < min_dist)
+                //     {
+                //         min_dist = boundNode.point().distance(P);
+                //         closest = boundNode;
+                //     }
+                // }
+                n.setX(closest.X());
+                n.setY(closest.Y());
+                n2rn->set(n.id(),closest.id());
             }
         }
     }

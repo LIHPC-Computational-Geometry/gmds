@@ -19,6 +19,8 @@ MedaxBasedTMeshBuilder::MedaxBasedTMeshBuilder(Mesh &AMedax, Mesh &AMinDel){
 	m_min_delaunay = &AMinDel;
 	// min tri nodes/T-mesh nodes correspondence
 	m_min_delaunay->newVariable<int,GMDS_NODE>("minTriNode2TMeshNode");
+	// Mark with 1 boundary or constraint corners
+	m_min_delaunay->newVariable<int,GMDS_NODE>("corner");
 
 	// Topological representation
 	m_topological_representation = new Mesh(MeshModel(DIM3 | F | E | N |
@@ -43,6 +45,8 @@ MedaxBasedTMeshBuilder::MedaxBasedTMeshBuilder(Mesh &AMedax, Mesh &AMinDel){
 	m_topological_representation->newVariable<int,GMDS_EDGE>("wings_position");
 	// Position of each section in the vector of degrees of freedom
 	m_topological_representation->newVariable<int,GMDS_EDGE>("section2matrix");
+	// Mark with 1 forbidden singular points
+	m_medax->newVariable<int,GMDS_NODE>("is_a_forbidden_singular_point");
 	
 	// Correspondence degree of freedom/vertex in the dof graph
 	m_topological_representation->newVariable<int,GMDS_EDGE>("section2LeftQuadLength");
@@ -50,6 +54,7 @@ MedaxBasedTMeshBuilder::MedaxBasedTMeshBuilder(Mesh &AMedax, Mesh &AMinDel){
 	m_topological_representation->newVariable<int,GMDS_EDGE>("section2QuadHeight");
 	m_topological_representation->newVariable<int,GMDS_EDGE>("section2LeftDiagoQuadLength");
 	m_topological_representation->newVariable<int,GMDS_EDGE>("section2RightDiagoQuadLength");
+
 	// Topology of a medial axis based block decomposition
 	m_t_mesh = new Mesh(MeshModel(DIM3 | F | E | N | F2E |
 	                                                  F2N | E2F | E2N | N2E | N2F));
@@ -75,6 +80,10 @@ MedaxBasedTMeshBuilder::MedaxBasedTMeshBuilder(Mesh &AMedax, Mesh &AMinDel){
 	m_topological_representation->newVariable<int,GMDS_EDGE>("rightHeadMiddleNode");
 	m_topological_representation->newVariable<int,GMDS_EDGE>("leftTailMiddleNode");
 	m_topological_representation->newVariable<int,GMDS_EDGE>("rightTailMiddleNode");
+	m_topological_representation->newVariable<int,GMDS_EDGE>("farTailNode");
+	m_topological_representation->newVariable<int,GMDS_EDGE>("farHeadNode");
+	// To have nice pictures
+	m_topological_representation->newVariable<int,GMDS_EDGE>("color");
 
 	// Correspondance face/id of the medial section
 	m_t_mesh->newVariable<int,GMDS_FACE>("face2sectionID");
@@ -96,6 +105,8 @@ MedaxBasedTMeshBuilder::MedaxBasedTMeshBuilder(Mesh &AMedax, Mesh &AMinDel){
 	m_t_mesh->newVariable<int,GMDS_FACE>("is_a_triangle");
 	// Mark with 1 nodes belonging to an internal constraint
 	m_t_mesh->newVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+	// Mark with 1 boundary or constraint corners
+	m_t_mesh->newVariable<int,GMDS_NODE>("corner");
 
 	// Final T-mesh
 	m_final_t_mesh = new Mesh(MeshModel(DIM3 | F | E | N | F2E |
@@ -106,6 +117,10 @@ MedaxBasedTMeshBuilder::MedaxBasedTMeshBuilder(Mesh &AMedax, Mesh &AMinDel){
 	m_final_t_mesh->newVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
 	// Mark with 1 T-junctions
 	m_final_t_mesh->newVariable<int,GMDS_NODE>("is_a_T-junction"); 
+	// T-mesh node/min tri node correspondance
+	m_final_t_mesh->newVariable<int,GMDS_NODE>("TMeshNode2MinTriNode"); 
+	// Mark with 1 boundary or constraint corners
+	m_final_t_mesh->newVariable<int,GMDS_NODE>("corner");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -175,6 +190,8 @@ void MedaxBasedTMeshBuilder::setSectionID()
 	int ID = 0;
 	std::vector<Node> section_start; // Vector storing a starting point for each section
 	std::vector<Edge> section_direction; // Vector storing a starting edge containing the starting point for each section
+	std::vector<std::vector<Node>> medial_section_extremal_nodes;
+	std::vector<Node> extremal_nodes;
 	for (auto n_id:m_medax->nodes())
 	{
 		if ((medPointType->value(n_id) == 2) && (singu->value(n_id) == 0) && (alreadyVisited->value(n_id) == 0))
@@ -199,6 +216,7 @@ void MedaxBasedTMeshBuilder::setSectionID()
 				prev = nxt;
 				nxt = getNextPoint(prev.id(),e.id());
 			}
+			extremal_nodes.push_back(nxt);
 			section_start.push_back(nxt);
 			section_direction.push_back(e);
 			//Node n1 = nxt;
@@ -214,7 +232,11 @@ void MedaxBasedTMeshBuilder::setSectionID()
 				prev = nxt;
 				nxt = getNextPoint(prev.id(),e.id());
 			}
+			if (nxt.id() != extremal_nodes[0].id())
+				extremal_nodes.push_back(nxt);
 			//Node n2 = nxt;
+			medial_section_extremal_nodes.push_back(extremal_nodes);
+			extremal_nodes.clear();
 			ID += 1;
 		}
 	}
@@ -259,6 +281,7 @@ void MedaxBasedTMeshBuilder::setSectionID()
 	// }
 	
 	m_nb_medial_sections = ID;
+	m_medial_section_extremal_nodes = medial_section_extremal_nodes;
 	std::cout<<"NB sections : "<<ID<<std::endl;
 	m_medax->deleteVariable(GMDS_NODE,alreadyVisited);
 }
@@ -266,6 +289,7 @@ void MedaxBasedTMeshBuilder::setSectionID()
 /*----------------------------------------------------------------------------*/
 void MedaxBasedTMeshBuilder::computeSectionType()
 {
+	std::cout<<"> Computing types of the medial sections"<<std::endl;
 	auto sectionID = m_medax->getVariable<int,GMDS_NODE>("section_id");
 	auto cosMedAngle = m_medax->getVariable<double,GMDS_NODE>("cos_medial_angle");
 	auto type = m_medax->getVariable<int,GMDS_NODE>("medial_section_type");
@@ -276,20 +300,24 @@ void MedaxBasedTMeshBuilder::computeSectionType()
 		if (sectionID->value(n_id) > maxID)
 			maxID = sectionID->value(n_id);
 	}
+	// Type of each medial section
+	std::vector<int> medial_section_type(maxID+1);
 	// Vectors storing the number of medial point of each section for each type
 	std::vector<int> type0(maxID+1);
 	std::vector<int> type1(maxID+1);
+	std::vector<int> type2(maxID+1);
 	for (int i = 0; i <= maxID; i++)
 	{
 		type0[i] = 0;
 		type1[i] = 0;
+		type2[i] = 0;
 	}
 	for (auto n_id:m_medax->nodes())
 	{
 		int id = sectionID->value(n_id);
 		if (cosMedAngle->value(n_id) < -sqrt(2.)/2.)
 			type0[id] = type0[id] + 1;
-		else
+		else if (cosMedAngle->value(n_id) < sqrt(2.)/2.)
 		{
 			type1[id] = type1[id] + 1;
 			// if (fabs(cosMedAngle->value(n_id)) < sqrt(2.)/2.)
@@ -297,14 +325,76 @@ void MedaxBasedTMeshBuilder::computeSectionType()
 			// else
 			// 	type0[id] = type0[id] + 1;
 		}
+		else
+			type2[id] = type2[id] + 1;
 	}
 	for (auto n_id:m_medax->nodes())
 	{
 		int id = sectionID->value(n_id);
-		if (type0[id] > type1[id])
+		if (type0[id] > type1[id] && type0[id] > type2[id])
+		{
 			type->set(n_id,0);
-		else
+			medial_section_type[id] = 0;
+		}
+		else if (type1[id] > type2[id])
+		{
 			type->set(n_id,1);
+			medial_section_type[id] = 1;
+		}
+		else
+		{
+		 	type->set(n_id,2);
+			medial_section_type[id] = 2;
+		}
+	}
+	m_medial_section_type = medial_section_type;
+}
+
+/*----------------------------------------------------------------------------*/
+void MedaxBasedTMeshBuilder::transformGraySectionsIntoRed()
+{
+	std::cout<<"> Transforming gray sections into red sections"<<std::endl;
+	auto type = m_medax->getVariable<int,GMDS_NODE>("medial_section_type");
+	for (auto n_id:m_medax->nodes())
+	{
+		if (type->value(n_id) == 2)
+			type->set(n_id,1);
+	}
+	for (int i = 0; i < m_medial_section_type.size(); i++)
+	{
+		if (m_medial_section_type[i] == 2)
+			m_medial_section_type[i] = 1;
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+void MedaxBasedTMeshBuilder::setTopMakerColoring()
+{
+	std::cout<<"> Performing the TopMaker coloring"<<std::endl;
+	auto medPointType = m_medax->getVariable<int,GMDS_NODE>("medial_point_type");
+	auto sectionID = m_medax->getVariable<int,GMDS_NODE>("section_id");
+	auto type = m_medax->getVariable<int,GMDS_NODE>("medial_section_type");
+	for (int id = 0; id < m_medial_section_type.size(); id++)
+	{
+		if (m_medial_section_extremal_nodes[id].size() == 2)
+		{
+			Node n1 = m_medial_section_extremal_nodes[id][0];
+			Node n2 = m_medial_section_extremal_nodes[id][1];
+			if (medPointType->value(n1.id()) == 1 || medPointType->value(n2.id()) == 1)
+				m_medial_section_type[id] = 1;
+			else
+				m_medial_section_type[id] = 0;
+		}
+		else
+		{
+			m_medial_section_type[id] = 0;
+		}
+	}
+	for (auto n_id:m_medax->nodes())
+	{
+		int id = sectionID->value(n_id);
+		if (id >= 0)
+			type->set(n_id,m_medial_section_type[id]);
 	}
 }
 
@@ -404,9 +494,13 @@ void MedaxBasedTMeshBuilder::refineByAddingSingularNodes(double AMeshSize)
 	int count;
 	for (int id = 0; id <= maxID; id++)
 	{
+		if (m_is_refinable[id] == 0)
+			continue;
+
 		section = sectionNodes(id);
 		length = 0.;
 		count = 0;
+		
 		for (int i = 1; i < section.size() ; i++)
 		{
 			length += section[i-1].point().distance(section[i].point());
@@ -432,9 +526,15 @@ void MedaxBasedTMeshBuilder::buildTopoRepNodes()
 	auto singNode2medPoint = m_topological_representation->getVariable<int,GMDS_NODE>("sing_node_to_med_point");
 	auto nodeType = m_topological_representation->getVariable<int,GMDS_NODE>("node_type");
 	auto touchingPoints = m_medax->getVariable<std::vector<math::Point>,GMDS_NODE>("touching_points");
+	auto forbidden = m_medax->getVariable<int,GMDS_NODE>("is_a_forbidden_singular_point");
 
 	for (auto n_id:m_medax->nodes())
 	{
+		if (forbidden->value(n_id) == 1)
+		{
+			medPoint2singNode->set(n_id,-1);
+			continue;
+		}
 		if (medPointType->value(n_id) == 2)
 		{
 			if (singu->value(n_id) != 0)
@@ -453,7 +553,8 @@ void MedaxBasedTMeshBuilder::buildTopoRepNodes()
 			if (medPointType->value(n_id) == 1)
 			{
 				Node n = m_medax->get<Node>(n_id);
-				Node newNode = m_topological_representation->newNode(touchingPoints->value(n_id)[0]);
+				Node newNode = m_topological_representation->newNode(n.point());
+				//Node newNode = m_topological_representation->newNode(touchingPoints->value(n_id)[0]);
 				medPoint2singNode->set(n_id,newNode.id());
 				singNode2medPoint->set(newNode.id(),n_id);
 				nodeType->set(newNode.id(),medPointType->value(n_id));
@@ -487,6 +588,7 @@ void MedaxBasedTMeshBuilder::buildTopoRepEdges()
 	//auto subSectionID = m_medax->getVariable<int,GMDS_NODE>("subsection_id");
 	auto tailDir = m_topological_representation->getVariable<math::Vector,GMDS_EDGE>("tailDirection");
 	auto headDir = m_topological_representation->getVariable<math::Vector,GMDS_EDGE>("headDirection");
+	auto forbidden = m_medax->getVariable<int,GMDS_NODE>("is_a_forbidden_singular_point");
 	for (auto n_id:m_medax->nodes())
 	{
 		if (medPoint2singNode->value(n_id) == -1 && medPointType->value(n_id) == 2)
@@ -494,6 +596,8 @@ void MedaxBasedTMeshBuilder::buildTopoRepEdges()
 			// We build a new section (= new edge of the topo rep)
 			// Type of the section
 			int type = secTypeOnNodes->value(n_id);
+			if (type == 2)
+				type = 1;
 			// if (cosMedAngle->value(n_id) < -sqrt(2.)/2.)
 			// 	type = 0;
 			// else
@@ -516,7 +620,7 @@ void MedaxBasedTMeshBuilder::buildTopoRepEdges()
 			prev = n;
 			e = n.get<Edge>()[0];
 			nxt = getNextPoint(prev.id(),e.id());
-			while (medPoint2singNode->value(nxt.id()) < 0)
+			while (medPoint2singNode->value(nxt.id()) < 0 && forbidden->value(nxt.id()) == 0)
 			{
 				medPoint2singNode->set(nxt.id(),-2);
 				e = getNextEdge(e.id(),nxt.id());
@@ -530,7 +634,7 @@ void MedaxBasedTMeshBuilder::buildTopoRepEdges()
 			prev = n;
 			e = n.get<Edge>()[1];
 			nxt = getNextPoint(prev.id(),e.id());
-			while (medPoint2singNode->value(nxt.id()) < 0)
+			while (medPoint2singNode->value(nxt.id()) < 0 && forbidden->value(nxt.id()) == 0)
 			{
 				medPoint2singNode->set(nxt.id(),-2);
 				e = getNextEdge(e.id(),nxt.id());
@@ -540,6 +644,10 @@ void MedaxBasedTMeshBuilder::buildTopoRepEdges()
 			// Head direction of the section
 			math::Vector head_dir = edge2vec(e,prev);
 			Node n2 = nxt;
+
+			if (forbidden->value(n1.id()) == 1 || forbidden->value(n2.id()) == 1)
+				continue;
+
 			TCellID N1 = medPoint2singNode->value(n1.id());
 			TCellID N2 = medPoint2singNode->value(n2.id());
 			Edge newSection = m_topological_representation->newEdge(N1,N2);
@@ -549,7 +657,7 @@ void MedaxBasedTMeshBuilder::buildTopoRepEdges()
 			// All end sections must be of type 1
 			if (medPointType->value(n1.id()) == 1 || medPointType->value(n2.id()) == 1)
 			{
-				if (type != 1)
+				if (type == 0)
 				{
 					type = 1;
 					sectID = m_nb_medial_sections;
@@ -571,6 +679,165 @@ void MedaxBasedTMeshBuilder::buildTopoRepEdges()
 					wings->set(newSection.id(),1);
 			}
 		}
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+void MedaxBasedTMeshBuilder::markRefinableSections()
+{
+	std::cout<<"> Marking refinable medial sections"<<std::endl;
+	auto medPointType = m_medax->getVariable<int,GMDS_NODE>("medial_point_type");
+	std::vector<int> is_refinable(m_medial_section_type.size());
+	for (int id = 0 ; id < m_medial_section_type.size() ; id++)
+	{
+		if (m_medial_section_type[id] != 2)
+		{
+			is_refinable[id] = 1;
+			continue;
+		}
+		Node n1 = m_medial_section_extremal_nodes[id][0];
+		Node n2 = m_medial_section_extremal_nodes[id][1];
+		if (medPointType->value(n1.id()) != 1 && medPointType->value(n2.id()) != 1)
+		{
+			is_refinable[id] = 1;
+			continue;
+		}
+		is_refinable[id] = 0;
+	}
+	m_is_refinable = is_refinable;
+}
+
+/*----------------------------------------------------------------------------*/
+void MedaxBasedTMeshBuilder::markForbiddenSingularPointsAndModifyBoundaryPoints()
+{
+	std::cout<<"> Marking forbidden singular points and modifying boundary points"<<std::endl;
+	auto forbidden = m_medax->getVariable<int,GMDS_NODE>("is_a_forbidden_singular_point");
+	auto medPointType = m_medax->getVariable<int,GMDS_NODE>("medial_point_type");
+	auto boundaryTangentNodes = m_medax->getVariable<std::vector<Node>,GMDS_NODE>("tangent_boundary_nodes");
+	auto touchingPoints = m_medax->getVariable<std::vector<math::Point>,GMDS_NODE>("touching_points");
+	for (int id = 0 ; id < m_medial_section_type.size() ; id++)
+	{
+		if (m_medial_section_type[id] != 2)
+		{
+			continue;
+		}
+		Node n1 = m_medial_section_extremal_nodes[id][0];
+		Node n2 = m_medial_section_extremal_nodes[id][1];
+		Node ep,nm;
+		bool Continue = false;;
+		if (medPointType->value(n1.id()) == 1)
+		{
+			forbidden->set(n1.id(),1);
+			ep = n1;
+			nm = n2;
+			Continue = true;
+		}
+		if (medPointType->value(n2.id()) == 1)
+		{
+			forbidden->set(n2.id(),1);
+			ep = n2;
+			nm = n1;
+			Continue = true;
+		}
+		if (!Continue)
+			continue;
+		// Modify the boundary points
+		std::vector<Node> old_bound_points = boundaryTangentNodes->value(nm.id());
+		std::vector<Node> new_bound_points;
+		// Find the two boundary points closest to ep
+		double min_dist = 1e6;
+		for (auto n:old_bound_points)
+		{
+			if (n.point().distance(ep.point()) < min_dist)
+			{
+				n1 = n;
+				min_dist = n.point().distance(ep.point());
+			}
+		}
+		min_dist = 1e6;
+		for (auto n:old_bound_points)
+		{
+			if (n.id() != n1.id() && n.point().distance(ep.point()) < min_dist)
+			{
+				n2 = n;
+				min_dist = n.point().distance(ep.point());
+			}
+		}
+		bool added = false;
+		for (auto n:old_bound_points)
+		{
+			if (n.id() != n1.id() && n.id() != n2.id())
+			{
+				new_bound_points.push_back(n);
+			}
+			else if (!added)
+			{
+				new_bound_points.push_back(boundaryTangentNodes->value(ep.id())[0]);
+				added = true;
+			}
+		}
+		boundaryTangentNodes->set(nm.id(),new_bound_points);
+		std::vector<math::Point> tp;
+		for (auto n:new_bound_points)
+		{
+			math::Point P = n.point();
+			tp.push_back(P);
+		}	
+		touchingPoints->set(nm.id(),tp);
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+void
+MedaxBasedTMeshBuilder::optimizeMedaxColoring()
+{
+	std::cout<<"> Optimizing the coloring of the medial axis"<<std::endl;
+	auto sectionType = m_topological_representation->getVariable<int,GMDS_EDGE>("section_type");
+	for (auto n_id:m_topological_representation->nodes())
+	{
+		Node n = m_topological_representation->get<Node>(n_id);
+		if (n.get<Edge>().size() != 2)
+			continue;
+		Edge e1 = n.get<Edge>()[0];
+		Edge e2 = n.get<Edge>()[1];
+		if (sectionType->value(e1.id()) == 0 && sectionType->value(e2.id()) == 1)
+		{
+			Node n2 = getNextSingularNode(n,e2);
+			if (n2.get<Edge>().size() == 3)
+				sectionType->set(e2.id(),0);
+		}
+		if (sectionType->value(e1.id()) == 1 && sectionType->value(e2.id()) == 0)
+		{
+			Node n2 = getNextSingularNode(n,e1);
+			if (n2.get<Edge>().size() == 3)
+				sectionType->set(e1.id(),0);
+		}
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+void
+MedaxBasedTMeshBuilder::setTopoRepEdgesColor()
+{
+	std::cout<<"> Setting color of the discretized medial axis"<<std::endl;
+	auto color = m_topological_representation->getVariable<int,GMDS_EDGE>("color");
+	auto type = m_topological_representation->getVariable<int,GMDS_EDGE>("section_type");
+	for (auto e_id:m_topological_representation->edges())
+	{
+		Edge e = m_topological_representation->get<Edge>(e_id);
+		bool end = false;
+		for (auto n:e.get<Node>())
+		{
+			if (n.get<Edge>().size() == 1)
+			{
+				end = true;
+				break;
+			}
+		}
+		if (end)
+			color->set(e_id,2);
+		else
+			color->set(e_id,type->value(e_id));
 	}
 }
 
@@ -752,6 +1019,84 @@ void MedaxBasedTMeshBuilder::markEdgesGeneratingTriangles()
 }
 
 /*----------------------------------------------------------------------------*/
+void MedaxBasedTMeshBuilder::markCornersOnMinDel()
+{
+	auto c = m_min_delaunay->getVariable<int,GMDS_NODE>("corner");
+	auto constr = m_min_delaunay->getVariable<int,GMDS_EDGE>("internal_constraint");
+	auto del_nodes_constr = m_min_delaunay->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+	for (auto n_id:m_min_delaunay->nodes())
+	{
+		Node n = m_min_delaunay->get<Node>(n_id);
+		if (del_nodes_constr->value(n_id) == 1)
+		{
+			if (!isInterior(n))
+			{
+				c->set(n_id,1);
+			}
+			else
+			{
+				int nbConstrEdges = 0;
+				for (auto e:n.get<Edge>())
+				{
+					if (constr->value(e.id()) == 1)
+						nbConstrEdges += 1;
+				}
+				if (nbConstrEdges != 2)
+					c->set(n_id,1);
+				else
+				{
+					// Find the two constrainted edges containing n
+					Edge e1, e2;
+					for (auto e:n.get<Edge>())
+					{
+						if (constr->value(e.id()) == 1)
+						{
+							e1 = e;
+							break;
+						}
+					}
+					for (auto e:n.get<Edge>())
+					{
+						if (constr->value(e.id()) == 1 && e.id() != e1.id())
+						{
+							e2 = e;
+							break;
+						}
+					}
+					double alpha = oriented_angle(edge2vec(e1,n),-edge2vec(e2,n));
+					if (fabs(alpha) > 0.05)
+						c->set(n_id,1);
+				}
+			}
+		}
+		if (!isInterior(n))
+		{
+			// Find the two boundary edges containing n
+			Edge e1, e2;
+			for (auto e:n.get<Edge>())
+			{
+				if (e.get<Face>().size() == 1)
+				{
+					e1 = e;
+					break;
+				}
+			}
+			for (auto e:n.get<Edge>())
+			{
+				if (e.get<Face>().size() == 1 && e.id() != e1.id())
+				{
+					e2 = e;
+					break;
+				}
+			}
+			double alpha = oriented_angle(edge2vec(e1,n),-edge2vec(e2,n));
+			if (fabs(alpha) > 0.05)
+				c->set(n_id,1);
+		}
+	}
+}
+
+/*----------------------------------------------------------------------------*/
 void MedaxBasedTMeshBuilder::buildTMeshNodesFromMinDelNodes()
 {
 	std::cout<<"> Building medial and boundary nodes of the medial axis based T-mesh"<<std::endl;
@@ -764,6 +1109,8 @@ void MedaxBasedTMeshBuilder::buildTMeshNodesFromMinDelNodes()
 	auto sn2bn = m_topological_representation->getVariable<std::vector<int>,GMDS_NODE>("singuNode2BoundNodes");
 	auto del_nodes_constr = m_min_delaunay->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
 	auto tmesh_nodes_constr = m_t_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
+	auto c = m_min_delaunay->getVariable<int,GMDS_NODE>("corner");
+	auto ctm = m_t_mesh->getVariable<int,GMDS_NODE>("corner");
 	// Mark nodes of the minimal triangulation appearing in the T-mesh
 	auto appears = m_min_delaunay->newMark<Node>();
 	for (auto n_id:m_topological_representation->nodes())
@@ -786,6 +1133,7 @@ void MedaxBasedTMeshBuilder::buildTMeshNodesFromMinDelNodes()
 			TMeshNode2MinTriNode->set(new_node.id(),n_id);
 			if (del_nodes_constr->value(n.id()) == 1)
 				tmesh_nodes_constr->set(new_node.id(),1);
+			ctm->set(new_node.id(),c->value(n_id));
 		}
 		else
 		{
@@ -903,6 +1251,11 @@ void MedaxBasedTMeshBuilder::buildSection2MedialAndBoundaryNodesAdjacency()
 	auto nodeType = m_topological_representation->getVariable<int,GMDS_NODE>("node_type");
 	auto tailDir = m_topological_representation->getVariable<math::Vector,GMDS_EDGE>("tailDirection");
 	auto headDir = m_topological_representation->getVariable<math::Vector,GMDS_EDGE>("headDirection");
+	auto FTN = m_topological_representation->getVariable<int,GMDS_EDGE>("farTailNode");
+	auto FHN = m_topological_representation->getVariable<int,GMDS_EDGE>("farHeadNode");
+	auto boundaryTangentNodes = m_medax->getVariable<std::vector<Node>,GMDS_NODE>("tangent_boundary_nodes");
+	auto singNode2medPoint = m_topological_representation->getVariable<int,GMDS_NODE>("sing_node_to_med_point");
+	auto minTriNode2TMeshNode = m_min_delaunay->getVariable<int,GMDS_NODE>("minTriNode2TMeshNode");
 
 	for (auto n_id:m_topological_representation->nodes())
 	{
@@ -918,9 +1271,18 @@ void MedaxBasedTMeshBuilder::buildSection2MedialAndBoundaryNodesAdjacency()
 				{
 					LTBN->set(section.id(),-1);
 					RTBN->set(section.id(),-1);
+					FTN->set(section.id(),-1);
+					FHN->set(section.id(),-1);
 				}
 				if (nodeType->value(n_id) > 1)
 				{
+					if (boundaryTangentNodes->value(singNode2medPoint->value(n_id)).size() == 1)
+					{
+						int far_node_id = minTriNode2TMeshNode->value(boundaryTangentNodes->value(singNode2medPoint->value(n_id))[0].id());
+						FTN->set(section.id(),far_node_id);
+					}
+					else
+						FTN->set(section.id(),-1);
 					// Find the left and right boundary points
 					double max_theta = -10.;
 					double min_theta = 10.;
@@ -955,9 +1317,18 @@ void MedaxBasedTMeshBuilder::buildSection2MedialAndBoundaryNodesAdjacency()
 				{
 					LHBN->set(section.id(),-1);
 					RHBN->set(section.id(),-1);
+					FTN->set(section.id(),-1);
+					FHN->set(section.id(),-1);
 				}
 				if (nodeType->value(n_id) > 1)
 				{
+					if (boundaryTangentNodes->value(singNode2medPoint->value(n_id)).size() == 1)
+					{
+						int far_node_id = minTriNode2TMeshNode->value(boundaryTangentNodes->value(singNode2medPoint->value(n_id))[0].id());
+						FHN->set(section.id(),far_node_id);
+					}
+					else
+						FHN->set(section.id(),-1);
 					// Find the left and right boundary points
 					double max_theta = -10.;
 					double min_theta = 10.;
@@ -1175,6 +1546,8 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 	auto RHMN = m_topological_representation->getVariable<int,GMDS_EDGE>("rightHeadMiddleNode");
 	auto LTMN = m_topological_representation->getVariable<int,GMDS_EDGE>("leftTailMiddleNode");
 	auto RTMN = m_topological_representation->getVariable<int,GMDS_EDGE>("rightTailMiddleNode");
+	auto FTN = m_topological_representation->getVariable<int,GMDS_EDGE>("farTailNode");
+	auto FHN = m_topological_representation->getVariable<int,GMDS_EDGE>("farHeadNode");
 	auto sectionType = m_topological_representation->getVariable<int,GMDS_EDGE>("section_type");
 	auto nodeType = m_topological_representation->getVariable<int,GMDS_NODE>("node_type");
 	auto f2sid = m_t_mesh->getVariable<int,GMDS_FACE>("face2sectionID");
@@ -1187,7 +1560,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 	auto minTriNode2TMeshNode = m_min_delaunay->getVariable<int,GMDS_NODE>("minTriNode2TMeshNode");
 	auto TMeshNode2MinTriNode = m_t_mesh->getVariable<int,GMDS_NODE>("TMeshNode2MinTriNode");
 
-	int tn, hn, ltbn, rtbn, lhbn, rhbn, lhmn, rhmn, ltmn, rtmn;
+	int tn, hn, ltbn, rtbn, lhbn, rhbn, lhmn, rhmn, ltmn, rtmn, ftn, fhn;
 	Face new_face;
 	for (auto s_id:m_topological_representation->edges())
 	{
@@ -1306,10 +1679,77 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 			rhmn = RHMN->value(s_id);
 			ltmn = LTMN->value(s_id);
 			rtmn = RTMN->value(s_id);
+			ftn = FTN->value(s_id);
+			fhn = FHN->value(s_id);
+
 			Edge section = m_topological_representation->get<Edge>(s_id);
 			std::vector<TCellID> t_junctions;
 
-			if (nodeType->value(section.get<Node>()[0].id()) == 1 || nodeType->value(section.get<Node>()[1].id()) == 1)
+			if (ftn >= 0)
+			{
+				std::vector<TCellID> block;
+
+				block.push_back(tn);
+				block.push_back(rhmn);
+				block.push_back(hn);
+				block.push_back(lhmn);
+				new_face = m_t_mesh->newFace(block);
+				block.clear();
+				f2sid->set(new_face.id(),section2sectionID->value(s_id));
+				f2st->set(new_face.id(),1);
+
+				block.push_back(tn);
+				block.push_back(lhmn);
+				block.push_back(lhbn);
+				block.push_back(ftn);
+				new_face = m_t_mesh->newFace(block);
+				block.clear();
+				f2sid->set(new_face.id(),section2sectionID->value(s_id));
+				f2st->set(new_face.id(),1);
+
+				block.push_back(tn);
+				block.push_back(ftn);
+				block.push_back(rhbn);
+				block.push_back(rhmn);
+				new_face = m_t_mesh->newFace(block);
+				f2sid->set(new_face.id(),section2sectionID->value(s_id));
+				f2st->set(new_face.id(),1);
+
+			}
+
+			else if (fhn >= 0)
+			{
+				std::vector<TCellID> block;
+
+				block.push_back(hn);
+				block.push_back(ltmn);
+				block.push_back(tn);
+				block.push_back(rtmn);
+				new_face = m_t_mesh->newFace(block);
+				block.clear();
+				f2sid->set(new_face.id(),section2sectionID->value(s_id));
+				f2st->set(new_face.id(),1);
+
+				block.push_back(hn);
+				block.push_back(rtmn);
+				block.push_back(rtbn);
+				block.push_back(fhn);
+				new_face = m_t_mesh->newFace(block);
+				block.clear();
+				f2sid->set(new_face.id(),section2sectionID->value(s_id));
+				f2st->set(new_face.id(),1);
+
+				block.push_back(hn);
+				block.push_back(fhn);
+				block.push_back(ltbn);
+				block.push_back(ltmn);
+				new_face = m_t_mesh->newFace(block);
+				f2sid->set(new_face.id(),section2sectionID->value(s_id));
+				f2st->set(new_face.id(),1);
+			}
+
+			else if (nodeType->value(section.get<Node>()[0].id()) == 1 || nodeType->value(section.get<Node>()[1].id()) == 1)
+			//if (nodeType->value(section.get<Node>()[0].id()) == 1 || nodeType->value(section.get<Node>()[1].id()) == 1)
 			{
 				std::vector<TCellID> block;
 				block.push_back(hn);
@@ -1419,7 +1859,7 @@ void MedaxBasedTMeshBuilder::buildBlocks()
 				t_junctions.clear();
 			}
 
-			else
+			else 
 			{
 				if (wings(section.get<Node>()[0],section) == 1)
 				{
@@ -1726,6 +2166,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 	auto tri_edge = m_t_mesh->newVariable<int,GMDS_EDGE>("belongs_to_triangle");
 	auto tmesh_nodes_constr = m_t_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
 	auto t_junct_list = m_t_mesh->getVariable<std::vector<TCellID>,GMDS_FACE>("T_junctions"); 
+	auto TMeshNode2MinTriNode = m_t_mesh->getVariable<int,GMDS_NODE>("TMeshNode2MinTriNode");
 	// Mark with 1 edges belonging to a quad
 	for (auto e_id:m_t_mesh->edges())
 	{
@@ -1792,6 +2233,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 					if (i < tri_edges.size()-2)
 					{
 						nxt = m_t_mesh->newNode(n.point());
+						TMeshNode2MinTriNode->set(nxt.id(),TMeshNode2MinTriNode->value(n.id()));
 						if (tmesh_nodes_constr->value(n.id()) == 1)
 							tmesh_nodes_constr->set(nxt.id(),1);
 					}
@@ -1877,6 +2319,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 						//Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
 						Node new_node = m_t_mesh->newNode(n.point());
 						new_points.push_back(new_node);
+						TMeshNode2MinTriNode->set(new_node.id(),TMeshNode2MinTriNode->value(n.id()));
 						if (tmesh_nodes_constr->value(n.id()) == 1)
 							tmesh_nodes_constr->set(new_node.id(),1);
 					}
@@ -1955,6 +2398,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 						//Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
 						Node new_node = m_t_mesh->newNode(n.point());
 						new_points.push_back(new_node);
+						TMeshNode2MinTriNode->set(new_node.id(),TMeshNode2MinTriNode->value(n.id()));
 						if (tmesh_nodes_constr->value(n.id()) == 1)
 							tmesh_nodes_constr->set(new_node.id(),1);
 					}
@@ -2029,6 +2473,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 						//Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
 						Node new_node = m_t_mesh->newNode(n.point());
 						new_points.push_back(new_node);
+						TMeshNode2MinTriNode->set(new_node.id(),TMeshNode2MinTriNode->value(n.id()));
 						if (tmesh_nodes_constr->value(n.id()) == 1)
 							tmesh_nodes_constr->set(new_node.id(),1);
 					}
@@ -2176,6 +2621,7 @@ void MedaxBasedTMeshBuilder::transformTrianglesIntoQuads()
 					//Node new_node = m_t_mesh->newNode(n.point()+(double(i+1)/double(NbNewPoints+1))*dir);
 					Node new_node = m_t_mesh->newNode(n.point());
 					new_points.push_back(new_node);
+					TMeshNode2MinTriNode->set(new_node.id(),TMeshNode2MinTriNode->value(n.id()));
 					if (tmesh_nodes_constr->value(n.id()) == 1)
 						tmesh_nodes_constr->set(new_node.id(),1);
 				}
@@ -2623,12 +3069,18 @@ void MedaxBasedTMeshBuilder::buildFinalTMesh()
 	auto final_tmesh_nodes_constr = m_final_t_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
 	auto old_tj = m_t_mesh->getVariable<int,GMDS_NODE>("is_a_T_junction"); 
 	auto new_tj = m_final_t_mesh->getVariable<int,GMDS_NODE>("is_a_T-junction"); 
+	auto TMeshNode2MinTriNode = m_t_mesh->getVariable<int,GMDS_NODE>("TMeshNode2MinTriNode");
+	auto FinalTMeshNode2MinTriNode = m_final_t_mesh->getVariable<int,GMDS_NODE>("TMeshNode2MinTriNode");
+	auto c1 = m_t_mesh->getVariable<int,GMDS_NODE>("corner");
+	auto c2 = m_final_t_mesh->getVariable<int,GMDS_NODE>("corner");
 	for (auto n_id:m_t_mesh->nodes())
 	{
 		Node n = m_t_mesh->get<Node>(n_id);
 		Node new_node = m_final_t_mesh->newNode(n.point());
+		FinalTMeshNode2MinTriNode->set(new_node.id(),TMeshNode2MinTriNode->value(n_id));
 		if (tmesh_nodes_constr->value(n_id) == 1)
 			final_tmesh_nodes_constr->set(new_node.id(),1);
+		c2->set(new_node.id(),c1->value(n_id));
 	}
 	for (auto f_id:m_t_mesh->faces())
 	{

@@ -158,10 +158,16 @@ class LIB_GMDS_MEDIALAXIS_API Conformalizer
 	void execute();
 
 	/*-------------------------------------------------------------------------*/
-	/** @brief Smooth the conformal mesh.
-         *  @param
+	/** @brief Project the points on the boundary.
+         *  @param ARefMesh a reference mesh.
 	 */
-	void smooth();
+	void projectOnBoundary(Mesh &ARefMesh);
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Smooth the conformal mesh.
+         *  @param ARefMesh a reference mesh, used to project nodes on the boundary during the smoothing.
+	 */
+	void smooth(Mesh &ARefMesh);
 };
 /*----------------------------------------------------------------------------*/
 }  // end namespace gmds

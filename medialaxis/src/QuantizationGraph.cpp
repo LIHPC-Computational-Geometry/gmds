@@ -999,6 +999,20 @@ std::vector<Node> QuantizationGraph::optimalHalfPath(gmds::TCellID AID, int ADir
 }
 
 /*----------------------------------------------------------------------------*/
+std::vector<Node> QuantizationGraph::optimalPath(gmds::TCellID AID)
+{
+	std::vector<Node> p1 = optimalHalfPath(AID,-1);
+	std::vector<Node> p2 = optimalHalfPath(AID,1);
+	if (p1.empty())
+		return p1;
+	if (p2.empty())
+		return p2;
+	for (int i = 1; i < p2.size(); i++)
+		p1.push_back(p2[i]);
+	return p1;
+}
+
+/*----------------------------------------------------------------------------*/
 std::vector<Node> QuantizationGraph::optimalCycle(TCellID AID)
 {
 	auto forbiden = m_mesh_representation->getVariable<int,GMDS_NODE>("forbiden");
@@ -1164,6 +1178,8 @@ void QuantizationGraph::improveSolution(double AMeshSize)
 			{
 				int n = int(geo_len->value(n_id)/AMeshSize)-sol->value(n_id);
 				std::vector<Node> cycle = optimalCycle(n_id);
+				if (cycle.empty())
+					cycle = optimalPath(n_id);
 				for (int i = 0; i < cycle.size(); i++)
 				{
 					Node n1 = cycle[i];

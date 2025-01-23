@@ -72,4 +72,9 @@ Face getCommonFace(Edge &AE1, Edge &AE2);
 
 // Returns the projection of the second input vector on the first input vector.
 math::Vector projection(math::Vector &AV1, math::Vector &AV2);
+
+// Takes as input two nodes of the input minimal triangulation, and returns the nodes forming the shortest path to go from the first to the second.
+std::vector<Node> shortestPathAlongBoundaryOrConstraints(Node &AN1, Node &AN2, Mesh &AMesh);
+
+
 #endif     // GMDS_MEDIALAXISMATH_H

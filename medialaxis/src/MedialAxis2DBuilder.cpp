@@ -816,7 +816,7 @@ void MedialAxis2DBuilder::unfoldMedax(Node AN, std::vector<Node> ABoundaryArc)
 		double r = dir.norm();
 		dir = dir/r;
 		// Step
-		double step = (r*0.9)/double(NbNewNodes);
+		double step = (r*0.75)/double(NbNewNodes);
 		// Create the new nodes and edges
 		Node new_node, prev, boundNode1, boundNode2;
 		std::vector<Node> tangentNodes;
@@ -866,7 +866,8 @@ void MedialAxis2DBuilder::unfoldMedax(Node AN, std::vector<Node> ABoundaryArc)
 			new_edge = m_smoothed_medax->newMedEdge(prev.id(),new_node.id());
 			prev = new_node;
 		}
-		new_node = m_smoothed_medax->newMedPoint(end.point());
+		// new_node = m_smoothed_medax->newMedPoint(end.point());
+		new_node = m_smoothed_medax->newMedPoint(AN.point()+double(NbNewNodes)*step*dir);
 		tangentNodes.clear();
 		tangentPoints.clear();
 		boundNode1 = ABoundaryArc[N];
@@ -874,7 +875,8 @@ void MedialAxis2DBuilder::unfoldMedax(Node AN, std::vector<Node> ABoundaryArc)
 		tangentPoints.push_back(boundNode1.point());
 		m_smoothed_medax->setTangentNodes(new_node.id(),tangentNodes);
 		m_smoothed_medax->setTouchingPoints(new_node.id(),tangentPoints);
-		m_smoothed_medax->setMedialRadius(new_node.id(),0.);
+		// m_smoothed_medax->setMedialRadius(new_node.id(),0.);
+		m_smoothed_medax->setMedialRadius(new_node.id(),new_node.point().distance(end.point()));
 		new_edge = m_smoothed_medax->newMedEdge(prev.id(),new_node.id());
 	}
 }

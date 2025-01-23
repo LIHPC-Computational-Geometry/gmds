@@ -255,10 +255,16 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationGraph
 	std::vector<std::vector<Node>> checkSolutionValidity();
 
 	/*-------------------------------------------------------------------------*/
-	/** \brief Return the optimal (according to the input mesh size) path joining the given node to a root, starting in the given direction (if 1 through the quad, if -1 else). NOT USED
-	      *  @param AID a node ID.
+	/** \brief Return the optimal (according to the input mesh size) path joining the given node to a root, starting in the given direction (if 1 through the quad, if -1 else). 
+	      *  @param AID, ADirection a node ID and a direction.
 	 */
 	std::vector<Node> optimalHalfPath(TCellID AID, int ADirection);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Return the optimal (according to the input mesh size) path joining two roots and containing the given node. 
+	      *  @param AID a node ID.
+	 */
+	std::vector<Node> optimalPath(TCellID AID);
 
 	/*-------------------------------------------------------------------------*/
 	/** \brief Return the optimal (according to the input mesh size) cycle containing the given node. 

@@ -58,6 +58,18 @@ class LIB_GMDS_MEDIALAXIS_API MedaxBasedTMeshBuilder
 	void computeSectionType();
 
 	/*-------------------------------------------------------------------------*/
+	/** \brief Transform the gray sections (sections of type 2) into red sections (sections of type 1)
+	      *  @param
+	 */
+	void transformGraySectionsIntoRed();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Perform the TopMaker coloring
+	      *  @param
+	 */
+	void setTopMakerColoring();
+
+	/*-------------------------------------------------------------------------*/
 	/** \brief Returns the set of nodes forming the input section.
 	      *  @param AID a section ID
 	 */
@@ -86,6 +98,30 @@ class LIB_GMDS_MEDIALAXIS_API MedaxBasedTMeshBuilder
 	      *  @param
 	 */
 	void buildTopoRepEdges();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Mark with 1 refinable sections
+	      *  @param
+	 */
+	void markRefinableSections();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Mark with 1 forbidden singular points and modify boundary points
+	      *  @param
+	 */
+	void markForbiddenSingularPointsAndModifyBoundaryPoints();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Optimize the medial axis coloring by moving separatrices to intersection points
+	      *  @param
+	 */
+	void optimizeMedaxColoring();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief In order to have nice pictures : color of the edges of the discretized medial axis.
+	      *  @param
+	 */
+	void setTopoRepEdgesColor();
 
 	/*-------------------------------------------------------------------------*/
 	/** \brief Write the topological representation
@@ -141,6 +177,12 @@ class LIB_GMDS_MEDIALAXIS_API MedaxBasedTMeshBuilder
 	      *  @param
 	   */
 	  void markEdgesGeneratingTriangles();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Mark the corners on the minimal triangulation.
+	      *  @param
+	   */
+	  void markCornersOnMinDel();
 
 	  /*-------------------------------------------------------------------------*/
 	  /** \brief  Build the nodes of the T-mesh from the nodes of the minimal triangulation.
@@ -294,6 +336,12 @@ class LIB_GMDS_MEDIALAXIS_API MedaxBasedTMeshBuilder
 	Mesh* m_topological_representation;
 	// Nb of sections of the medial axis
 	int m_nb_medial_sections;
+	// Type of each medial section
+	std::vector<int> m_medial_section_type;
+	// Extremal nodes of each medial section
+	std::vector<std::vector<Node>> m_medial_section_extremal_nodes;
+	// Mark with 1 refinable sections
+	std::vector<int> m_is_refinable;
 	// medial axis based T-mesh
 	Mesh* m_t_mesh;
 	// Final T-mesh
