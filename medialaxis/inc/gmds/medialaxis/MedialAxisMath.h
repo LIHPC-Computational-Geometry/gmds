@@ -76,5 +76,8 @@ math::Vector projection(math::Vector &AV1, math::Vector &AV2);
 // Takes as input two nodes of the input minimal triangulation, and returns the nodes forming the shortest path to go from the first to the second.
 std::vector<Node> shortestPathAlongBoundaryOrConstraints(Node &AN1, Node &AN2, Mesh &AMesh);
 
+// Takes a quad and an edge belonging to the face, and return the opposite face
+Edge opp(Face AFace, Edge AEdge);
+
 
 #endif     // GMDS_MEDIALAXISMATH_H

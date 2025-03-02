@@ -200,7 +200,18 @@ QuantizationSolver::buildHalfEdges()
 		if (edges_groups.size() != 4)
 		{
 			std::cout<<"The face "<<f_id<<" has "<<edges_groups.size()<<" groups of aligned edges"<<std::endl;
-			throw GMDSException("buildHalfEdges() : non conformal quads must have 4 non conformal half-edges");
+			// // test
+			// for (auto edge:f.get<Edge>())
+			// 	std::cout<<"test "<<edge.id()<<std::endl;
+
+
+			// for (auto group:edges_groups)
+			// {
+			// 	std::cout<<"Group of edges :"<<std::endl;
+			// 	for (auto edge:group)
+			// 		std::cout<<"> "<<edge.id()<<std::endl;
+			// }
+			throw GMDSException("buildHalfEdges() : non conformal quads must have 4 half edges");
 		}
 		for (auto i = 0; i < 4; i++)
 		{

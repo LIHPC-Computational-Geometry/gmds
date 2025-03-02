@@ -21,6 +21,7 @@ set(GMDS_INC
         inc/gmds/medialaxis/MinDelaunayCleaner.h
         inc/gmds/medialaxis/Conformalizer.h
         inc/gmds/medialaxis/MedaxBasedTMeshBuilder.h
+        inc/gmds/medialaxis/TrianglesRemover.h
 )
 set(GMDS_SRC
         src/MedialAxis2D.cpp
@@ -37,6 +38,7 @@ set(GMDS_SRC
         src/MinDelaunayCleaner.cpp
         src/Conformalizer.cpp
         src/MedaxBasedTMeshBuilder.cpp
+        src/TrianglesRemover.cpp
 )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})

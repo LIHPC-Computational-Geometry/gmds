@@ -70,6 +70,18 @@ class LIB_GMDS_MEDIALAXIS_API MedaxBasedTMeshBuilder
 	void setTopMakerColoring();
 
 	/*-------------------------------------------------------------------------*/
+	/** \brief Returns a vector containing the extrem nodes of the medial branch containing the given node
+	      *  @param
+	 */
+	std::vector<Node> getBranchExtremPoints(Node AN);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Avoid that intersection points are transformed into end points
+	      *  @param
+	 */
+	void avoidIPsBecomingEPs();
+
+	/*-------------------------------------------------------------------------*/
 	/** \brief Returns the set of nodes forming the input section.
 	      *  @param AID a section ID
 	 */
@@ -147,6 +159,18 @@ class LIB_GMDS_MEDIALAXIS_API MedaxBasedTMeshBuilder
 	  */
 	 void setTopoRepConnectivity();
 
+	 /*-------------------------------------------------------------------------*/
+	 /** \brief Computing the distance to the end point for each point of the topological representation belonging to an end branch 
+	      *  @param
+	  */
+	 void computeDistanceToEndPoints();
+
+	 /*-------------------------------------------------------------------------*/
+	 /** \brief Ensure that the end sections of the topo rep are of type 1
+	      *  @param
+	  */
+	 void ensureType1ForTopoRepEndSections();
+
 	  /*-------------------------------------------------------------------------*/
 	  /** \brief  Return the given node's neighbouring node of the topological representation with respect to the given edge
 	      *  @param AN, AE a node and an edge which contains the node
@@ -201,6 +225,12 @@ class LIB_GMDS_MEDIALAXIS_API MedaxBasedTMeshBuilder
 	      *  @param
 	   */
 	  void writeBlockDecomp(std::basic_string<char> AFileName);
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Get the T-mesh.
+	      *  @param
+	   */
+	  Mesh getTMesh();
 
 	  /*-------------------------------------------------------------------------*/
 	  /** \brief  

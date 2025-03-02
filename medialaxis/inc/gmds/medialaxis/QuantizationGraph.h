@@ -27,6 +27,9 @@ class LIB_GMDS_MEDIALAXIS_API QuantizationGraph
 	// Set of groups of verticies, with condition at least one non zero in each group
 	std::vector<std::vector<TCellID>> m_non_zero_groups;
 
+	// Maximal number of iterations to find a path
+	int m_max_it;
+
  public:
 
 	/*-------------------------------------------------------------------------*/

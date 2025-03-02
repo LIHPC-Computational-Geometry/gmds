@@ -157,6 +157,38 @@ namespace gmds {
             }
     }
 /*----------------------------------------------------------------------------*/
+    TCoord
+    Face::signedArea() const {
+            math::Vector3d n;
+            std::vector<Node> nodes = this->get<Node>();
+            auto nb_nodes = nodes.size();
+
+            if (nb_nodes == 3) {
+
+                    Node n1 = nodes[0];
+                    Node n2 = nodes[1];
+                    Node n3 = nodes[2];
+                    math::Triangle t(n1.point(),n2.point(),n3.point());
+                    return t.signedArea();
+
+            } else if (nb_nodes == 4) {
+                    math::Point p1 = nodes[0].point();
+                    math::Point p2 = nodes[1].point();
+                    math::Point p3 = nodes[2].point();
+                    math::Point p4 = nodes[3].point();
+                    math::Point c = center();
+                    math::Triangle t1(p1,p2,c);
+                    math::Triangle t2(p2,p3,c);
+                    math::Triangle t3(p3,p4,c);
+                    math::Triangle t4(p4,p1,c);
+
+                    return t1.signedArea()+t2.signedArea()+t3.signedArea()+t4.signedArea();
+            } else {
+                    throw GMDSException("Not yet implemented!");
+
+            }
+    }
+/*----------------------------------------------------------------------------*/
     math::Point
     Face::center() const
     {

@@ -57,6 +57,10 @@ MedialAxis2D::MedialAxis2D(){
 	m_mesh_representation->newVariable<int,GMDS_NODE>("medialPoint2Group");
 	// List of boundary connected components connected by this medial point
 	m_mesh_representation->newVariable<std::vector<int>,GMDS_NODE>("boundary_connected_components_ids");
+	// Mark with 1 dangles (end points corresponding to boundary circle arcs)
+	m_mesh_representation->newVariable<int,GMDS_NODE>("is_a_dangle");
+	// Mark with 1 medial points belonging to extensions (corresponding to boundary circle arcs)
+	m_mesh_representation->newVariable<int,GMDS_NODE>("is_an_extension");
 }
 MedialAxis2D::~MedialAxis2D()
 {
@@ -246,6 +250,7 @@ void MedialAxis2D::refine(const double& ATol)
 	auto touchingPoints = m_mesh_representation->getVariable<std::vector<math::Point>,GMDS_NODE>("touching_points");
 	auto medRadius = m_mesh_representation->getVariable<double,GMDS_NODE>("medial_radius");
 	auto dualTriangles = m_mesh_representation->getVariable<std::vector<Face>,GMDS_NODE>("dual_triangles");
+	auto iae = m_mesh_representation->getVariable<int,GMDS_NODE>("is_an_extension");
 	std::cout<<"> Refining medial axis"<<std::endl;
 	double min_len = 10e5;
 	double max_len = 0.;
@@ -310,6 +315,8 @@ void MedialAxis2D::refine(const double& ATol)
 				p.push_back(right_node.point());
 				tangentNodes->set(newPoint.id(),t);
 				touchingPoints->set(newPoint.id(),p);
+				if (iae->value(n1.id()) == 1 && iae->value(n2.id()) == 1)
+					iae->set(newPoint.id(),1);
 				Edge newEdge1 = newMedEdge(n1.id(),newPoint.id());
 				Edge newEdge2 = newMedEdge(newPoint.id(),n2.id());
 				NbEdgesAdded += 2;
@@ -364,6 +371,8 @@ void MedialAxis2D::refine(const double& ATol)
 					}
 					medRadius->set(newPoint.id(),newPoint.point().distance(touchingPoints->value(n2.id())[0]));
 				}
+				if (iae->value(n1.id()) == 1 && iae->value(n2.id()) == 1)
+					iae->set(newPoint.id(),1);
 				newMedEdge(previousPoint.id(),newPoint.id());
 				NbEdgesAdded += 1;
 				previousPoint = newPoint;
@@ -681,6 +690,21 @@ void MedialAxis2D::setDualTriangles(const gmds::TCellID &APointID, std::vector<F
 }
 
 /*----------------------------------------------------------------------------*/
+void MedialAxis2D::setDangle(const TCellID &APointID, bool ADangleValue)
+{
+	auto iad = m_mesh_representation->getVariable<int,GMDS_NODE>("is_a_dangle");
+	if (ADangleValue)
+		iad->set(APointID,1);
+}
+
+/*----------------------------------------------------------------------------*/
+void MedialAxis2D::markAsExtension(const TCellID &APointID)
+{
+	auto iae = m_mesh_representation->getVariable<int,GMDS_NODE>("is_an_extension");
+	iae->set(APointID,1);
+}
+
+/*----------------------------------------------------------------------------*/
 std::vector<math::Point> MedialAxis2D::getTouchingPoints(const gmds::TCellID &APointID)
 {
 	auto touchingPoints = m_mesh_representation->getVariable<std::vector<math::Point>,GMDS_NODE>("touching_points");
@@ -701,6 +725,8 @@ void MedialAxis2D::setFluxThroughMedialRadii()
 	auto cosMedAngle = m_mesh_representation->getVariable<double,GMDS_NODE>("cos_medial_angle");
 	auto fluxThroughRadii = m_mesh_representation->getVariable<double,GMDS_NODE>("flux_through_medial_radii");
 	auto medPointType = m_mesh_representation->getVariable<int,GMDS_NODE>("medial_point_type");
+	double epsilon = 0.09; // a small perturbation to avoid proliferation of singularities on branches where theta_M=pi/4 or 3pi/4
+	epsilon = 0.;
 	for (auto n_id:m_mesh_representation->nodes())
 	{
 		int type = medPointType->value(n_id);
@@ -720,11 +746,11 @@ void MedialAxis2D::setFluxThroughMedialRadii()
 					medAngle = acos(cosMedAngle->value(n_id));
 			}
 			// Compute the flux
-			if (medAngle < M_PI/4.)
+			if (medAngle < M_PI/4.+epsilon)
 				flux = -medAngle;
 			else
 			{
-				if (medAngle < 3.*M_PI/4.)
+				if (medAngle < 3.*M_PI/4.+epsilon)
 					flux = M_PI/2.-medAngle;
 				else
 					flux = M_PI-medAngle;

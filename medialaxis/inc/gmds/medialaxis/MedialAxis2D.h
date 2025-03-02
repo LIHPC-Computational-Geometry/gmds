@@ -192,6 +192,18 @@ class LIB_GMDS_MEDIALAXIS_API MedialAxis2D
 	void setDualTriangles(const TCellID &APointID, std::vector<Face> ATriangles);
 
 	/*-------------------------------------------------------------------------*/
+	/** \brief Mark if a medial point is a dangle
+	      *  @param A medial point ID, a boolean
+	 */
+	void setDangle(const TCellID &APointID, bool ADangleValue);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Mark if a medial point belongs to an extension of the medial axis
+	      *  @param A medial point ID
+	 */
+	void markAsExtension(const TCellID &APointID);
+
+	/*-------------------------------------------------------------------------*/
 	/** \brief Get the touching points of a given medial point
 	      *  @param A medial point ID
 	 */

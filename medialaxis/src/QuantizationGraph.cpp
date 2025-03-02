@@ -27,6 +27,9 @@ QuantizationGraph::QuantizationGraph()
 	m_mesh_representation->newVariable<int,GMDS_NODE>("forbiden");
 	// Quantization solution on edges of the graph (flux going through the edge)
 	m_mesh_representation->newVariable<int,GMDS_EDGE>("flux");
+
+	// Max number of iterations
+	m_max_it = 10000;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -206,8 +209,10 @@ void QuantizationGraph::propagateFromRoot(TCellID AID)
 		already_seen.push(alreadySeen);
 		std::queue<int> direction;
 		direction.push(dir);
-		while (!path_to_continue.empty())
+		int it = 0; // Nb of iterations
+		while (!path_to_continue.empty() && paths.size() < 1000 && it < m_max_it)
 		{
+			it += 1;
 			path = path_to_continue.front();
 			path_to_continue.pop();
 			alreadySeen = already_seen.front();
@@ -341,7 +346,10 @@ void QuantizationGraph::propagateFromRoots()
 	{
 		Node n = m_mesh_representation->get<Node>(n_id);
 		if (getExtEdges(n).empty())
+		{
+			//increaseSolution(n_id);
 			propagateFromRoot(n_id);
+		}	
 	}
 }
 
@@ -722,9 +730,11 @@ std::vector<Node> QuantizationGraph::middleQuadEdge(std::vector<Node> AV)
 /*----------------------------------------------------------------------------*/
 bool QuantizationGraph::increaseSolution(TCellID AID)
 {
+	std::cout<<" > Increasing solution at half edge "<<AID<<std::endl;
 	auto sol = m_mesh_representation->getVariable<int,GMDS_NODE>("solution");
 	auto flux = m_mesh_representation->getVariable<int,GMDS_EDGE>("flux");
-	std::vector<Node> path = shortestElementaryPath(AID);
+	//std::vector<Node> path = shortestElementaryPath(AID);
+	std::vector<Node> path = optimalElementaryPath(AID);
 	if (path.empty())
 		return false;
 	for (int i = 0; i < path.size(); i++)
@@ -903,9 +913,11 @@ std::vector<Node> QuantizationGraph::optimalHalfPath(gmds::TCellID AID, int ADir
 	Node front;
 	std::vector<Node> new_path;
 	std::vector<int> new_already_seen(m_mesh_representation->getNbNodes());
+	int it = 0; // Nb of iterations
 	// Build the paths
-	while (Continue && !paths.empty())
+	while (Continue && !paths.empty() && it < m_max_it)
 	{
+		it += 1;
 		// Get the first path to be continued
 		path = paths.top();
 		paths.pop();
@@ -974,6 +986,8 @@ std::vector<Node> QuantizationGraph::optimalHalfPath(gmds::TCellID AID, int ADir
 					leaving_edges.erase(leaving_edges.begin()+max_pos);					
 				}
 
+				std::reverse(ordered_nodes.begin(),ordered_nodes.end());
+
 				//for (auto e:leaving_edges)
 				for (auto n:ordered_nodes)
 				{
@@ -1038,8 +1052,10 @@ std::vector<Node> QuantizationGraph::optimalCycle(TCellID AID)
 	Node front;
 	std::vector<Node> new_path;
 	std::vector<int> new_already_seen(m_mesh_representation->getNbNodes());
-	while (Continue && !paths.empty())
+	int it = 0; // Nb of iterations
+	while (Continue && !paths.empty() && it < m_max_it)
 	{
+		it += 1;
 		path = paths.top();
 		paths.pop();
 		already_seen = alreadySeen.top();
@@ -1107,6 +1123,7 @@ std::vector<Node> QuantizationGraph::optimalCycle(TCellID AID)
 				ordered_nodes.push_back(node_to_add);
 				leaving_edges.erase(leaving_edges.begin()+max_pos);					
 			}
+			std::reverse(ordered_nodes.begin(),ordered_nodes.end());
 
 			//for (auto e:leaving_edges)
 			for (auto n:ordered_nodes)
@@ -1169,44 +1186,95 @@ void QuantizationGraph::improveSolution(double AMeshSize)
 	auto sol = m_mesh_representation->getVariable<int,GMDS_NODE>("solution");
 	auto geo_len = m_mesh_representation->getVariable<double,GMDS_NODE>("geometrical_length");
 	auto flux = m_mesh_representation->getVariable<int,GMDS_EDGE>("flux");
-	for (auto n_id:m_mesh_representation->nodes())
+	// for (auto n_id:m_mesh_representation->nodes())
+	// {
+	// 	if (forbiden->value(n_id) == 0 && sol->value(n_id) > 0)
+	// 	{
+	// 		double size = geo_len->value(n_id)/double(sol->value(n_id));
+	// 		if (size > 2.*AMeshSize)
+	// 		{
+	// 			int n = int(geo_len->value(n_id)/AMeshSize)-sol->value(n_id);
+	// 			std::vector<Node> cycle = optimalCycle(n_id);
+	// 			if (cycle.empty())
+	// 				cycle = optimalPath(n_id);
+	// 			for (int i = 0; i < cycle.size(); i++)
+	// 			{
+	// 				Node n1 = cycle[i];
+	// 				sol->set(n1.id(),sol->value(n1.id())+n);
+	// 				if (i < cycle.size()-1)
+	// 				{
+	// 					Node n2 = cycle[i+1];
+	// 					Edge e = getCorrespondingEdge(n1,n2);
+	// 					flux->set(e.id(),flux->value(e.id())+n);
+	// 				}
+	// 				else
+	// 				{
+	// 					// Check if the path is a cycle
+	// 					Node n2 = cycle[0];
+	// 					bool areLinked = false;
+	// 					for (auto e:n1.get<Edge>())
+	// 					{
+	// 						if (e.get<Node>()[0].id() == n2.id() || e.get<Node>()[1].id() == n2.id())
+	// 						{
+	// 							areLinked = true;
+	// 							break;
+	// 						}
+	// 					}
+	// 					if (areLinked)
+	// 					{
+	// 						Edge e = getCorrespondingEdge(n1,n2);
+	// 						flux->set(e.id(),flux->value(e.id())+n);
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
+	bool Continue = true;
+	while (Continue)
 	{
-		if (forbiden->value(n_id) == 0 && sol->value(n_id) > 0)
+		Continue = false;
+		for (auto n_id:m_mesh_representation->nodes())
 		{
-			double size = geo_len->value(n_id)/double(sol->value(n_id));
-			if (size > 2.*AMeshSize)
+			if (forbiden->value(n_id) == 0 && sol->value(n_id) > 0)
 			{
-				int n = int(geo_len->value(n_id)/AMeshSize)-sol->value(n_id);
-				std::vector<Node> cycle = optimalCycle(n_id);
-				if (cycle.empty())
-					cycle = optimalPath(n_id);
-				for (int i = 0; i < cycle.size(); i++)
+				double size = geo_len->value(n_id)/double(sol->value(n_id));
+				if (size > 2.*AMeshSize)
 				{
-					Node n1 = cycle[i];
-					sol->set(n1.id(),sol->value(n1.id())+n);
-					if (i < cycle.size()-1)
+					int n = int(geo_len->value(n_id)/AMeshSize)-sol->value(n_id);
+					if (n >= 2)
+						Continue = true;
+					std::vector<Node> cycle = optimalCycle(n_id);
+					if (cycle.empty())
+						cycle = optimalPath(n_id);
+					for (int i = 0; i < cycle.size(); i++)
 					{
-						Node n2 = cycle[i+1];
-						Edge e = getCorrespondingEdge(n1,n2);
-						flux->set(e.id(),flux->value(e.id())+n);
-					}
-					else
-					{
-						// Check if the path is a cycle
-						Node n2 = cycle[0];
-						bool areLinked = false;
-						for (auto e:n1.get<Edge>())
+						Node n1 = cycle[i];
+						sol->set(n1.id(),sol->value(n1.id())+1);
+						if (i < cycle.size()-1)
 						{
-							if (e.get<Node>()[0].id() == n2.id() || e.get<Node>()[1].id() == n2.id())
-							{
-								areLinked = true;
-								break;
-							}
-						}
-						if (areLinked)
-						{
+							Node n2 = cycle[i+1];
 							Edge e = getCorrespondingEdge(n1,n2);
-							flux->set(e.id(),flux->value(e.id())+n);
+							flux->set(e.id(),flux->value(e.id())+1);
+						}
+						else
+						{
+							// Check if the path is a cycle
+							Node n2 = cycle[0];
+							bool areLinked = false;
+							for (auto e:n1.get<Edge>())
+							{
+								if (e.get<Node>()[0].id() == n2.id() || e.get<Node>()[1].id() == n2.id())
+								{
+									areLinked = true;
+									break;
+								}
+							}
+							if (areLinked)
+							{
+								Edge e = getCorrespondingEdge(n1,n2);
+								flux->set(e.id(),flux->value(e.id())+1);
+							}
 						}
 					}
 				}

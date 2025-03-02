@@ -39,11 +39,13 @@ class LIB_GMDS_MEDIALAXIS_API MedialAxis2DBuilder{
          *  @param
 	 */
 
-	explicit MedialAxis2DBuilder(Mesh &AMesh);
+	explicit MedialAxis2DBuilder(Mesh &AMesh, std::vector<TCellID> ABoundEdgesIds);
 
  public:
 	// Primal minimal Delaunay mesh
 	Mesh* m_mesh;
+	// List of ids of the boundary edges of the minimal Delaunay mesh
+	std::vector<TCellID> m_boundary_edges_ids;
 	// Dual Voronoï medial axis
 	MedialAxis2D *m_voronoi_medax;
 	// Smoothed medial axis built from the Voronoï one
@@ -157,7 +159,7 @@ class LIB_GMDS_MEDIALAXIS_API MedialAxis2DBuilder{
 	/** \brief Unfolds the medial axis at the input medial point
 	 * 	\param AN,ABoundaryArc a medial node and a boundary arc
 	 */
-	void unfoldMedax(Node AN, std::vector<Node> ABoundaryArc);
+	void unfoldMedax(Node AN, std::vector<Node> ABoundaryArc, bool AIsADangle);
 
 	/*-------------------------------------------------------------------------*/
 	/** \brief Build the smoothed medial axis from the groups of nodes of the Voronoï medial axis

@@ -25,6 +25,17 @@ Conformalizer::Conformalizer(gmds::Mesh &AMesh, std::vector<NonConformalHalfEdge
     // Corners
 	try {m_mesh->getVariable<int,GMDS_NODE>("corner");}
     catch (GMDSException& e){m_mesh->newVariable<int,GMDS_NODE>("corner");}
+    // Triangle fans Ids and angles
+    try {m_mesh->getVariable<int,GMDS_NODE>("fan_id");}
+    catch (GMDSException& e){m_mesh->newVariable<int,GMDS_NODE>("fan_id");}
+    try {m_mesh->getVariable<double,GMDS_NODE>("fan_angle");}
+    catch (GMDSException& e){m_mesh->newVariable<double,GMDS_NODE>("fan_angle");}
+    // Triangles
+    try {m_mesh->getVariable<int,GMDS_FACE>("is_a_triangle");}
+    catch (GMDSException& e){m_mesh->newVariable<int,GMDS_FACE>("is_a_triangle");}
+    // Nodes coming from intersection points of the medial axis
+    try {m_mesh->getVariable<int,GMDS_NODE>("is_an_intersection_point");}
+    catch (GMDSException& e){m_mesh->newVariable<int,GMDS_NODE>("is_an_intersection_point");}
 
 	// Corresponding non-conformal half edges
 	m_half_edges = AHalfEdges;
@@ -46,6 +57,13 @@ Conformalizer::Conformalizer(gmds::Mesh &AMesh, std::vector<NonConformalHalfEdge
     m_conformal_mesh->newVariable<int,GMDS_NODE>("Boundary&ConstraintNode2ReferenceNode"); 
     // Mark with 1 corners of the boundary and internal constraints
     m_conformal_mesh->newVariable<int,GMDS_NODE>("corner");
+    // Triangle fans Ids and angles
+    m_conformal_mesh->newVariable<int,GMDS_NODE>("fan_id");
+    m_conformal_mesh->newVariable<double,GMDS_NODE>("fan_angle");
+    // Mark with 1 degenerate quads
+    m_conformal_mesh->newVariable<int,GMDS_FACE>("is_a_triangle");
+    // Nodes coming from intersection points of the medial axis
+    m_conformal_mesh->newVariable<int,GMDS_NODE>("is_an_intersection_point");
 
     // Intermediate mesh                                          
 	m_intermediate_mesh = new Mesh(MeshModel(DIM3 | E | N | F |
@@ -156,6 +174,12 @@ void Conformalizer::addOldNodesOnConformalMesh()
     auto constr = m_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
     auto c1 = m_mesh->getVariable<int,GMDS_NODE>("corner");
     auto c2 = m_conformal_mesh->getVariable<int,GMDS_NODE>("corner");
+    auto fan_id1 = m_mesh->getVariable<int,GMDS_NODE>("fan_id");
+    auto fan_angle1 = m_mesh->getVariable<double,GMDS_NODE>("fan_angle");
+    auto fan_id2 = m_conformal_mesh->getVariable<int,GMDS_NODE>("fan_id");
+    auto fan_angle2 = m_conformal_mesh->getVariable<double,GMDS_NODE>("fan_angle");
+    auto ip1 = m_mesh->getVariable<int,GMDS_NODE>("is_an_intersection_point");
+    auto ip2 = m_conformal_mesh->getVariable<int,GMDS_NODE>("is_an_intersection_point");
     for (auto group:m_non_conformal_nodes_groups)
     {
         double x = 0.;
@@ -163,6 +187,12 @@ void Conformalizer::addOldNodesOnConformalMesh()
         Node rep;
         bool boundOrConstr = false;
         bool cor = false;
+
+        // Check if there is a corner or a triangle vertex in the group
+        bool tri_ver_or_corner = false;
+        bool is_an_ip = false;
+        Node fixed_node;
+        
         for (auto n_id:group)
         {
             Node n = m_mesh->get<Node>(n_id);
@@ -174,11 +204,27 @@ void Conformalizer::addOldNodesOnConformalMesh()
                 rep = n;
             }
             if (c1->value(n_id) == 1)
+            {
                 cor = true;
+                tri_ver_or_corner = true;
+                fixed_node = n;
+            }
+            if (fan_id1->value(n_id) >= 0)
+            {
+                tri_ver_or_corner = true;
+                fixed_node = n;
+            }
+            if (ip1->value(n_id) == 1)
+                is_an_ip = true;    
         }
         x = x/double(group.size());
         y = y/double(group.size());
         math::Point P(x,y,0.);
+        if (tri_ver_or_corner)
+        {
+            P.setX(fixed_node.X());
+            P.setY(fixed_node.Y());
+        }
         Node new_node = m_conformal_mesh->newNode(P);
         if (boundOrConstr)
             n2rn->set(new_node.id(),tmn2mtn->value(rep.id()));
@@ -186,6 +232,20 @@ void Conformalizer::addOldNodesOnConformalMesh()
             n2rn->set(new_node.id(),-1);
         if (cor)
             c2->set(new_node.id(),1);
+        if (is_an_ip)
+            ip2->set(new_node.id(),1);
+        // Update the fan information about the new point
+        fan_id2->set(new_node.id(),-1);
+        fan_angle2->set(new_node.id(),10.);
+        for (auto n_id:group)
+        {
+            if (fan_id1->value(n_id) >= 0)
+            {
+                fan_id2->set(new_node.id(),fan_id1->value(n_id));
+                fan_angle2->set(new_node.id(),fan_angle1->value(n_id));
+                break;
+            }
+        }
     }
 }
 
@@ -199,6 +259,10 @@ void Conformalizer::addSubdividingNodes()
     auto int_constr = m_mesh->getVariable<int,GMDS_EDGE>("internal_constraint");
     auto constr_nodes = m_conformal_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
     auto n2rn = m_conformal_mesh->getVariable<int,GMDS_NODE>("Boundary&ConstraintNode2ReferenceNode"); 
+    auto fan_id1 = m_mesh->getVariable<int,GMDS_NODE>("fan_id");
+    auto fan_angle1 = m_mesh->getVariable<double,GMDS_NODE>("fan_angle");
+    auto fan_id2 = m_conformal_mesh->getVariable<int,GMDS_NODE>("fan_id");
+    auto fan_angle2 = m_conformal_mesh->getVariable<double,GMDS_NODE>("fan_angle");
     // Add nodes subdividing edges
     for (auto e_id:m_mesh->edges())
     {
@@ -206,6 +270,13 @@ void Conformalizer::addSubdividingNodes()
         Edge e = m_mesh->get<Edge>(e_id);
         Node n1 = e.get<Node>()[0];
         Node n2 = e.get<Node>()[1];
+        int fanId = -1;
+        double fanAngle = 10.;
+        if (fan_id1->value(n1.id()) >= 0 && fan_id1->value(n1.id()) == fan_id1->value(n2.id()))
+        {
+            fanId = fan_id1->value(n1.id());
+            fanAngle = fan_angle1->value(n1.id());
+        }
         bool boundOrConstr = (n2rn->value(n1.id()) >= 0 && n2rn->value(n2.id()) >= 0);
         std::vector<Node> ordered_nodes;
         if (len == 0)
@@ -225,6 +296,9 @@ void Conformalizer::addSubdividingNodes()
                     n2rn->set(newNode.id(),n2rn->value(n1.id()));
                 else
                     n2rn->set(newNode.id(),-1);
+                // Update the fan information
+                fan_id2->set(newNode.id(),fanId);
+                fan_angle2->set(newNode.id(),fanAngle);
             }
             ordered_nodes.push_back(m_conformal_mesh->get<Node>(n2g->value(n2.id())));
             oe2nn->set(e_id,ordered_nodes);
@@ -374,6 +448,8 @@ void Conformalizer::buildRepresentativeNodes()
     auto constr = m_conformal_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
     auto n2r = m_conformal_mesh->getVariable<int,GMDS_NODE>("node2representative");
     auto n2rn = m_conformal_mesh->getVariable<int,GMDS_NODE>("Boundary&ConstraintNode2ReferenceNode"); 
+    auto fan_id2 = m_conformal_mesh->getVariable<int,GMDS_NODE>("fan_id");
+    auto fan_angle2 = m_conformal_mesh->getVariable<double,GMDS_NODE>("fan_angle");
     for (auto group:m_intermediate_nodes_groups)
     {
         if (group.size() == 1)
@@ -400,6 +476,9 @@ void Conformalizer::buildRepresentativeNodes()
             if (constrained)
                 constr->set(n.id(),1);
             n2rn->set(n.id(),-1);
+            // Fan information
+            fan_id2->set(n.id(),-1);
+            fan_angle2->set(n.id(),10.);
         }
     }
 }
@@ -411,6 +490,8 @@ void Conformalizer::builIntNodesAndFaces2newNodesConnectivity()
     auto f2nn = m_mesh->getVariable<std::vector<std::vector<int>>,GMDS_FACE>("face2newNodes");
     auto n2r = m_conformal_mesh->getVariable<int,GMDS_NODE>("node2representative");
     auto n2rn = m_conformal_mesh->getVariable<int,GMDS_NODE>("Boundary&ConstraintNode2ReferenceNode"); 
+    auto fan_id2 = m_conformal_mesh->getVariable<int,GMDS_NODE>("fan_id");
+    auto fan_angle2 = m_conformal_mesh->getVariable<double,GMDS_NODE>("fan_angle");
 	for (auto f_id:m_mesh->faces())
 	{
 		// Get the half edges of the face
@@ -441,6 +522,9 @@ void Conformalizer::builIntNodesAndFaces2newNodesConnectivity()
 				row[i] = n.id();
                 n2r->set(n.id(),n.id());
                 n2rn->set(n.id(),-1);
+                // Fan information
+                fan_id2->set(n.id(),-1);
+                fan_angle2->set(n.id(),10.);
 			}
 			nodesIDs[j] = row;
 		}
@@ -453,6 +537,9 @@ void Conformalizer::buildConformalMeshFaces()
 {
 	std::cout<<"> Building faces of the conformal mesh"<<std::endl;
 	auto f2nn = m_mesh->getVariable<std::vector<std::vector<int>>,GMDS_FACE>("face2newNodes");
+    auto tri1 = m_mesh->getVariable<int,GMDS_FACE>("is_a_triangle");
+    auto tri2 = m_conformal_mesh->getVariable<int,GMDS_FACE>("is_a_triangle");
+    auto fan_id = m_conformal_mesh->getVariable<int,GMDS_NODE>("fan_id");
 	for (auto f_id:m_mesh->faces())
 	{
 		std::vector<std::vector<int>> nodes = f2nn->value(f_id);
@@ -467,10 +554,38 @@ void Conformalizer::buildConformalMeshFaces()
 				i2 = nodes[i+1][j];
 				i3 = nodes[i+1][j+1];
 				i4 = nodes[i][j+1];
-				m_conformal_mesh->newFace({i1,i2,i3,i4});
+				Face new_face = m_conformal_mesh->newFace({i1,i2,i3,i4});
+                if (tri1->value(f_id) == 1)
+                {
+                    if (fan_id->value(i1) >= 0 && fan_id->value(i1) == fan_id->value(i2))
+                        tri2->set(new_face.id(),1);
+                    else if (fan_id->value(i2) >= 0 && fan_id->value(i2) == fan_id->value(i3))
+                        tri2->set(new_face.id(),1);
+                    else if (fan_id->value(i3) >= 0 && fan_id->value(i3) == fan_id->value(i4))
+                        tri2->set(new_face.id(),1);
+                    else if (fan_id->value(i4) >= 0 && fan_id->value(i4) == fan_id->value(i1))
+                        tri2->set(new_face.id(),1);
+                }
 			}
 		}
 	}
+
+    // Make sur all faces are positively oriented
+    std::cout<<"> Orientating the faces positively"<<std::endl;
+    for (auto f_id:m_conformal_mesh->faces())
+    {
+        Face f = m_conformal_mesh->get<Face>(f_id);
+        double oriented_area = f.signedArea();
+        if (oriented_area < 0.)
+        {
+            std::vector<Node> nodes = f.get<Node>();
+            for (auto node:nodes)
+                f.remove<Node>(node);
+            std::reverse(nodes.begin(),nodes.end());
+            for (auto node:nodes)
+                f.add<Node>(node);
+        }
+    }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -565,6 +680,7 @@ void Conformalizer::smooth(Mesh &ARefMesh)
     auto int_constr = m_conformal_mesh->getVariable<int,GMDS_EDGE>("internal_constraint");
     auto n2rn = m_conformal_mesh->getVariable<int,GMDS_NODE>("Boundary&ConstraintNode2ReferenceNode"); 
     auto corner = m_conformal_mesh->getVariable<int,GMDS_NODE>("corner");
+    auto t_mesh_corner = m_mesh->getVariable<int,GMDS_NODE>("corner");
     for (auto n_id:m_conformal_mesh->nodes())
     {
         Node n = m_conformal_mesh->get<Node>(n_id);
@@ -736,6 +852,7 @@ void Conformalizer::smooth(Mesh &ARefMesh)
                 else
                     n2 = e2.get<Node>()[0];
 
+
                 Node boundNode1 = ARefMesh.get<Node>(n2rn->value(n1.id()));
                 Node boundNode2 = ARefMesh.get<Node>(n2rn->value(n2.id()));
                 std::vector<Node> arc = shortestPathAlongBoundaryOrConstraints(boundNode1,boundNode2,ARefMesh);
@@ -764,6 +881,28 @@ void Conformalizer::smooth(Mesh &ARefMesh)
             }
         }
     }
+    // // Project a node on every corner
+    // for (auto n_id:m_mesh->nodes())
+    // {
+    //     if (t_mesh_corner->value(n_id) == 1)
+    //     {
+    //         Node cor = m_mesh->get<Node>(n_id);
+    //         double min_dist = 1e6;
+    //         Node closest_node1,closest_node2;
+    //         for (auto m_id:m_conformal_mesh->nodes())
+    //         {
+    //             Node m = m_conformal_mesh->get<Node>(m_id);
+    //             if (m.point().distance(cor.point()) < min_dist)
+    //             {
+    //                 min_dist = m.point().distance(cor.point());
+    //                 closest_node1 = m;
+    //             }
+    //         }
+    //         closest_node2 = m_conformal_mesh->get<Node>(closest_node1.id());
+    //         closest_node2.setX(cor.X());
+    //         closest_node2.setY(cor.Y());
+    //     }
+    // }
 }
 /*----------------------------------------------------------------------------*/
 }  // end namespace gmds

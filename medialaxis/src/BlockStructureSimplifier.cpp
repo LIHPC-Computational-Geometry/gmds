@@ -20,6 +20,13 @@ BlockStructureSimplifier::BlockStructureSimplifier(gmds::Mesh &AMesh)
 	m_mesh->newVariable<int,GMDS_EDGE>("belongs_to_a_separatrix");
 	// Id of the block to which the face belongs
 	m_mesh->newVariable<int,GMDS_FACE>("block_id");
+	// Nodes coming from intersection points of the medial axis
+    try {m_mesh->getVariable<int,GMDS_NODE>("is_an_intersection_point");}
+    catch (GMDSException& e){m_mesh->newVariable<int,GMDS_NODE>("is_an_intersection_point");}
+	// TopMaker blocks outline
+	m_mesh->newVariable<int,GMDS_EDGE>("TopMaker_block_outline");
+	// Id of the TopMaker block to which the face belongs
+	m_mesh->newVariable<int,GMDS_FACE>("TopMaker_block_id");
 
 	// Quantization graph
 	m_quantization_graph = new QuantizationGraph();
@@ -693,24 +700,64 @@ void BlockStructureSimplifier::markSeparatrices()
 					while (!isOnBoundary(nxt) && nxt.get<Edge>().size() == 4)
 					{
 						prev = nxt;
-						std::vector<Edge> edges = prev.get<Edge>();
-						std::vector<Edge> sorted_edges = sortEdges(prev,edges);
-						// Find the current edge in the list
-						int pos;
-						for (int i = 0; i < sorted_edges.size(); i++)
+						Face f1 = current.get<Face>()[0];
+						Face f2 = current.get<Face>()[1];
+						Face f3,f4;
+						for (auto f:prev.get<Face>())
 						{
-							if (sorted_edges[i].id() == current.id())
+							if (f.id() != f1.id() && f.id() != f2.id())
 							{
-								pos = i;
+								f3 = f;
 								break;
 							}
 						}
-						current = sorted_edges[(pos+2)%4];
-						if (current.get<Node>()[0].id() == prev.id())
+						for (auto f:prev.get<Face>())
+						{
+							if (f.id() != f1.id() && f.id() != f2.id() && f.id() != f3.id())
+							{
+								f4 = f;
+								break;
+							}
+						}
+						bool found = false;
+						for (auto e1:f3.get<Edge>())
+						{
+							for (auto e2:f4.get<Edge>())
+							{
+								if (e1.id() == e2.id())
+								{
+									current = e1;
+									found = true;
+									break;
+								}
+							}
+							if (found)
+								break;
+						}
+						if (prev.id() == current.get<Node>()[0].id())
 							nxt = current.get<Node>()[1];
 						else
 							nxt = current.get<Node>()[0];
 						sep->set(current.id(),1);
+						// prev = nxt;
+						// std::vector<Edge> edges = prev.get<Edge>();
+						// std::vector<Edge> sorted_edges = sortEdges(prev,edges);
+						// // Find the current edge in the list
+						// int pos;
+						// for (int i = 0; i < sorted_edges.size(); i++)
+						// {
+						// 	if (sorted_edges[i].id() == current.id())
+						// 	{
+						// 		pos = i;
+						// 		break;
+						// 	}
+						// }
+						// current = sorted_edges[(pos+2)%4];
+						// if (current.get<Node>()[0].id() == prev.id())
+						// 	nxt = current.get<Node>()[1];
+						// else
+						// 	nxt = current.get<Node>()[0];
+						// sep->set(current.id(),1);
 					}
 				}
 			
@@ -725,6 +772,282 @@ void BlockStructureSimplifier::setBlocksIDs()
 	std::cout<<"> Setting blocks IDs"<<std::endl;
 	auto id = m_mesh->getVariable<int,GMDS_FACE>("block_id");
 	auto sep = m_mesh->getVariable<int,GMDS_EDGE>("belongs_to_a_separatrix");
+	auto added = m_mesh->newMark<Face>();
+	int ID = 0;
+	// Initialize Ids to -1
+	for (auto f_id:m_mesh->faces())
+		id->set(f_id,-1);
+	for (auto f_id:m_mesh->faces())
+	{
+		if (id->value(f_id) == -1)
+		{
+			// Then we create a new block
+			Face f = m_mesh->get<Face>(f_id);
+			std::queue<Face> toAdd;
+			toAdd.push(f);
+			m_mesh->mark<Face>(f.id(),added);
+			while(!toAdd.empty())
+			{
+				Face f1 = toAdd.front();
+				toAdd.pop();
+				id->set(f1.id(),ID);
+				for (auto e:f1.get<Edge>())
+				{
+					if (sep->value(e.id()) == 0)
+					{
+						for (auto f2:e.get<Face>())
+						{
+							if (f2.id() != f1.id() && !m_mesh->isMarked<Face>(f2.id(),added))
+							{
+								toAdd.push(f2);
+								m_mesh->mark<Face>(f2.id(),added);
+							}
+						}
+					}
+				}
+			}
+			ID += 1;
+		}
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+void BlockStructureSimplifier::traceTopMakerBlocksOutlines()
+{
+	std::cout<<"> Tracing outlines of the TopMaker blocks"<<std::endl;
+	auto ip = m_mesh->getVariable<int,GMDS_NODE>("is_an_intersection_point");
+	auto tmbo = m_mesh->getVariable<int,GMDS_EDGE>("TopMaker_block_outline");
+	// Traces coming out of intersection points
+	for (auto n_id:m_mesh->nodes())
+	{
+		if (ip->value(n_id) == 1)
+		{
+			Node n = m_mesh->get<Node>(n_id);
+			std::queue<Edge> to_add;
+			auto visited = m_mesh->newVariable<int,GMDS_EDGE>("visited");
+			for (auto e:n.get<Edge>())
+			{
+				if (e.get<Face>().size() == 2)
+				{
+					to_add.push(e);
+					visited->set(e.id(),1);
+				}
+			}
+			while (!to_add.empty())
+			{
+				Edge e1 = to_add.front();
+				to_add.pop();
+				tmbo->set(e1.id(),1);
+				for (auto n1:e1.get<Node>())
+				{
+					if (isInterior(n1) && n1.get<Edge>().size() == 4)
+					{
+						Face f1 = e1.get<Face>()[0];
+						Face f2 = e1.get<Face>()[1];
+						Face f3,f4;
+						for (auto f:n1.get<Face>())
+						{
+							if (f.id() != f1.id() && f.id() != f2.id())
+							{
+								f3 = f;
+								break;
+							}
+						}
+						for (auto f:n1.get<Face>())
+						{
+							if (f.id() != f1.id() && f.id() != f2.id() && f.id() != f3.id())
+							{
+								f4 = f;
+								break;
+							}
+						}
+						Edge e2;
+						for (auto e3:f3.get<Edge>())
+						{
+							for (auto e4:f4.get<Edge>())
+							{
+								if (e3.id() == e4.id())
+									e2 = e3;
+							}
+						}
+						if (visited->value(e2.id()) == 0)
+						{
+							visited->set(e2.id(),1);
+							to_add.push(e2);
+						}
+					}
+				}
+			}
+			m_mesh->deleteVariable(GMDS_EDGE,visited);
+		}
+	}
+	// Traces coming out of singularities already belonging to an outline
+	for (auto n_id:m_mesh->nodes())
+	{
+		Node n = m_mesh->get<Node>(n_id);
+		if (!isInterior(n) || n.get<Edge>().size() == 4)
+			continue;
+		bool belongs_to_an_outline = false;
+		for (auto e:n.get<Edge>())
+		{
+			if (tmbo->value(e.id()) == 1)
+			{
+				belongs_to_an_outline = true;
+				break;
+			}
+		}
+		if (belongs_to_an_outline)
+		{
+			std::queue<Edge> to_add;
+			auto visited = m_mesh->newVariable<int,GMDS_EDGE>("visited");
+			for (auto e:n.get<Edge>())
+			{
+				if (e.get<Face>().size() == 2)
+				{
+					to_add.push(e);
+					visited->set(e.id(),1);
+				}
+			}
+			while (!to_add.empty())
+			{
+				Edge e1 = to_add.front();
+				to_add.pop();
+				tmbo->set(e1.id(),1);
+				for (auto n1:e1.get<Node>())
+				{
+					if (isInterior(n1) && n1.get<Edge>().size() == 4)
+					{
+						Face f1 = e1.get<Face>()[0];
+						Face f2 = e1.get<Face>()[1];
+						Face f3,f4;
+						for (auto f:n1.get<Face>())
+						{
+							if (f.id() != f1.id() && f.id() != f2.id())
+							{
+								f3 = f;
+								break;
+							}
+						}
+						for (auto f:n1.get<Face>())
+						{
+							if (f.id() != f1.id() && f.id() != f2.id() && f.id() != f3.id())
+							{
+								f4 = f;
+								break;
+							}
+						}
+						Edge e2;
+						for (auto e3:f3.get<Edge>())
+						{
+							for (auto e4:f4.get<Edge>())
+							{
+								if (e3.id() == e4.id())
+									e2 = e3;
+							}
+						}
+						if (visited->value(e2.id()) == 0)
+						{
+							visited->set(e2.id(),1);
+							to_add.push(e2);
+						}
+					}
+				}
+			}
+			m_mesh->deleteVariable(GMDS_EDGE,visited);
+		}
+	}
+	// Traces coming out of the last singularities
+	for (auto n_id:m_mesh->nodes())
+	{
+		Node n = m_mesh->get<Node>(n_id);
+		if (!isInterior(n) || n.get<Edge>().size() == 4)
+			continue;
+		bool already_visited = true;
+		for (auto e:n.get<Edge>())
+		{
+			if (tmbo->value(e.id()) == 0)
+			{
+				already_visited = false;
+				break;
+			}
+		}
+		if (!already_visited)
+		{
+			std::queue<Edge> to_add;
+			auto visited = m_mesh->newVariable<int,GMDS_EDGE>("visited");
+			for (auto e:n.get<Edge>())
+			{
+				if (e.get<Face>().size() == 2)
+				{
+					to_add.push(e);
+					visited->set(e.id(),1);
+				}
+			}
+			while (!to_add.empty())
+			{
+				Edge e1 = to_add.front();
+				to_add.pop();
+				tmbo->set(e1.id(),1);
+				for (auto n1:e1.get<Node>())
+				{
+					bool reached_an_outline = false;
+					for (auto e5:n1.get<Edge>())
+					{
+						if (e5.id() != e1.id() && tmbo->value(e5.id()) == 1)
+						{
+							reached_an_outline = true;
+							break;
+						}
+					}
+					if (isInterior(n1) && n1.get<Edge>().size() == 4 && !reached_an_outline)
+					{
+						Face f1 = e1.get<Face>()[0];
+						Face f2 = e1.get<Face>()[1];
+						Face f3,f4;
+						for (auto f:n1.get<Face>())
+						{
+							if (f.id() != f1.id() && f.id() != f2.id())
+							{
+								f3 = f;
+								break;
+							}
+						}
+						for (auto f:n1.get<Face>())
+						{
+							if (f.id() != f1.id() && f.id() != f2.id() && f.id() != f3.id())
+							{
+								f4 = f;
+								break;
+							}
+						}
+						Edge e2;
+						for (auto e3:f3.get<Edge>())
+						{
+							for (auto e4:f4.get<Edge>())
+							{
+								if (e3.id() == e4.id())
+									e2 = e3;
+							}
+						}
+						if (visited->value(e2.id()) == 0)
+						{
+							visited->set(e2.id(),1);
+							to_add.push(e2);
+						}
+					}
+				}
+			}
+			m_mesh->deleteVariable(GMDS_EDGE,visited);
+		}
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+void BlockStructureSimplifier::setTopMakerBlocksIDs()
+{
+	std::cout<<"> Setting TopMaker blocks IDs"<<std::endl;
+	auto id = m_mesh->getVariable<int,GMDS_FACE>("TopMaker_block_id");
+	auto sep = m_mesh->getVariable<int,GMDS_EDGE>("TopMaker_block_outline");
 	auto added = m_mesh->newMark<Face>();
 	int ID = 0;
 	// Initialize Ids to -1

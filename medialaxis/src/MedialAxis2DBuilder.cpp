@@ -15,8 +15,9 @@ namespace gmds {
 /*----------------------------------------------------------------------------*/
 namespace medialaxis {
 /*----------------------------------------------------------------------------*/
-MedialAxis2DBuilder::MedialAxis2DBuilder(Mesh &AMesh){
+MedialAxis2DBuilder::MedialAxis2DBuilder(Mesh &AMesh, std::vector<TCellID> ABoundEdgesIds){
 	m_mesh = &AMesh;
+	m_boundary_edges_ids = ABoundEdgesIds;
 	// Delaunay triangle / medial point correspondence
 	m_mesh->newVariable<int,GMDS_FACE>("triangle2MP");
 	// Delaunay internal edge / medial edge correspondence
@@ -204,68 +205,82 @@ void MedialAxis2DBuilder::markIntConstraints()
 	std::cout<<"> Marking interior constraints"<<std::endl;
 	auto constr = m_mesh->getVariable<int,GMDS_EDGE>("internal_constraint");
 	auto nodes_constr = m_mesh->getVariable<int,GMDS_NODE>("belong_to_an_internal_constraint");
-	for (auto e_id:m_mesh->edges())
+	// // Mean edge length
+	// double mean_edge_length = 0.;
+
+	// for (auto e_id:m_mesh->edges())
+	// {
+	// 	Edge e = m_mesh->get<Edge>(e_id);
+	// 	mean_edge_length += e.length();
+	// 	// Check that it is the smallest edge of all its faces
+	// 	bool isSmall = true;
+	// 	for (auto f:e.get<Face>())
+	// 	{
+	// 		for (auto e1:f.get<Edge>())
+	// 		{
+	// 			if (e1.length() < e.length())
+	// 				isSmall = false;
+	// 		}
+	// 	}
+	// 	if (isInterior(e.get<Node>()[0]) && isInterior(e.get<Node>()[1]) && isSmall)
+	// 		constr->set(e_id,1);
+	// }
+
+	// mean_edge_length = mean_edge_length/(double(m_mesh->getNbEdges()));
+
+	// // Look for forgotten edges
+	// for (auto e_id:m_mesh->edges())
+	// {
+	// 	if (constr->value(e_id) == 1)
+	// 	{
+	// 		Edge e = m_mesh->get<Edge>(e_id);
+	// 		for (auto n:e.get<Node>())
+	// 		{
+	// 			for (auto e1:n.get<Edge>())
+	// 			{
+	// 				if (e1.id() != e.id())
+	// 				{
+	// 					double alpha = oriented_angle(edge2vec(e,n),-edge2vec(e1,n));
+	// 					double r = fabs(e1.length()- e.length())/e.length();
+	// 					if (fabs(alpha) < 1e-4 && r < 1 && constr->value(e1.id()) == 0)
+	// 					{
+	// 						// Then we continue the contraint in the direction given by e1
+	// 						std::queue<Edge> toAdd;
+	// 						toAdd.push(e1);
+	// 						constr->set(e1.id(),1);
+	// 						while (!toAdd.empty())
+	// 						{
+	// 							Edge current = toAdd.front();
+	// 							toAdd.pop();
+	// 							for (auto n1:current.get<Node>())
+	// 							{
+	// 								for (auto e2:n1.get<Edge>())
+	// 								{
+	// 									if (e2.id() != current.id())
+	// 									{
+	// 										alpha = oriented_angle(edge2vec(current,n1),-edge2vec(e2,n1));
+	// 										r = fabs(current.length()- e2.length())/current.length();
+	// 										if (fabs(alpha) < 1e-4 && r < 1 && constr->value(e2.id()) == 0)
+	// 										{
+	// 											toAdd.push(e2);
+	// 											constr->set(e2.id(),1);
+	// 										}
+	// 									}
+	// 								}
+	// 							}
+	// 						}
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
+	// Mark constrained edges
+	for (auto e_id:m_boundary_edges_ids)
 	{
 		Edge e = m_mesh->get<Edge>(e_id);
-		// Check that it is the smallest edge of all its faces
-		bool isSmall = true;
-		for (auto f:e.get<Face>())
-		{
-			for (auto e1:f.get<Edge>())
-			{
-				if (e1.length() < e.length())
-					isSmall = false;
-			}
-		}
-		if (isInterior(e.get<Node>()[0]) && isInterior(e.get<Node>()[1]) && isSmall)
+		if (e.get<Face>().size() == 2)
 			constr->set(e_id,1);
-	}
-	// Look for forgotten edges
-	for (auto e_id:m_mesh->edges())
-	{
-		if (constr->value(e_id) == 1)
-		{
-			Edge e = m_mesh->get<Edge>(e_id);
-			for (auto n:e.get<Node>())
-			{
-				for (auto e1:n.get<Edge>())
-				{
-					if (e1.id() != e.id())
-					{
-						double alpha = oriented_angle(edge2vec(e,n),-edge2vec(e1,n));
-						double r = fabs(e1.length()- e.length())/e.length();
-						if (fabs(alpha) < 1e-4 && r < 1 && constr->value(e1.id()) == 0)
-						{
-							// Then we continue the contraint in the direction given by e1
-							std::queue<Edge> toAdd;
-							toAdd.push(e1);
-							constr->set(e1.id(),1);
-							while (!toAdd.empty())
-							{
-								Edge current = toAdd.front();
-								toAdd.pop();
-								for (auto n1:current.get<Node>())
-								{
-									for (auto e2:n1.get<Edge>())
-									{
-										if (e2.id() != current.id())
-										{
-											alpha = oriented_angle(edge2vec(current,n1),-edge2vec(e2,n1));
-											r = fabs(current.length()- e2.length())/current.length();
-											if (fabs(alpha) < 1e-4 && r < 1 && constr->value(e2.id()) == 0)
-											{
-												toAdd.push(e2);
-												constr->set(e2.id(),1);
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
 	}
 	// Mark nodes belonging to internal constraints
 	for (auto e_id:m_mesh->edges())
@@ -277,6 +292,69 @@ void MedialAxis2DBuilder::markIntConstraints()
 				nodes_constr->set(n.id(),1);
 		}
 	}
+	// for (auto n_id:m_mesh->nodes())
+	// {
+	// 	Node n = m_mesh->get<Node>(n_id);
+	// 	if (isInterior(n))
+	// 		nodes_constr->set(n_id,1);
+	// }
+	// // Look for more forgotten edges
+	// for (auto n_id:m_mesh->nodes())
+	// {
+	// 	if (nodes_constr->value(n_id) == 1)
+	// 	{
+	// 		Node n = m_mesh->get<Node>(n_id);
+	// 		int NbConstrEdges = 0;
+	// 		for (auto e:n.get<Edge>())
+	// 		{
+	// 			if (constr->value(e.id()) == 1)
+	// 				NbConstrEdges += 1;
+	// 		}
+	// 		if (NbConstrEdges <= 1)
+	// 		{
+	// 			std::vector<Node> potential_neighbours;
+	// 			for (auto e:n.get<Edge>())
+	// 			{
+	// 				for (auto n1:e.get<Node>())
+	// 				{
+	// 					if (n1.id() != n.id() && nodes_constr->value(n1.id()) == 1 && e.length() < mean_edge_length)
+	// 					{
+	// 						int NbConstrEdges1 = 0;
+	// 						for (auto e1:n1.get<Edge>())
+	// 						{
+	// 							if (constr->value(e1.id()) == 1)
+	// 								NbConstrEdges1 += 1;
+	// 						}
+	// 						if (NbConstrEdges1 <= 1)
+	// 						{
+	// 							potential_neighbours.push_back(n1);
+	// 						}
+	// 					}
+	// 				}
+	// 			}
+	// 			if (potential_neighbours.size() > 0)
+	// 			{
+	// 				// Find the closest potential neighbour
+	// 				double min_dist = 1e6;
+	// 				double dist;
+	// 				Node closest;
+	// 				for (auto n1:potential_neighbours)
+	// 				{
+	// 					dist = n1.point().distance(n.point());
+	// 					if (dist < min_dist)
+	// 					{
+	// 						min_dist = dist;
+	// 						closest = n1;
+	// 					}
+	// 				}
+	// 				Edge e1 = getEdge(n,closest);
+	// 				constr->set(e1.id(),1);
+	// 			}
+				
+	// 		}
+
+	// 	}
+	// }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -308,11 +386,13 @@ void MedialAxis2DBuilder::setMedialRadiiOrthogonalityDefault(const double &ABoun
 				}
 			}
 			// Get the alone point of tri and its adjacent boundary edges
+			Node alone_point;
 			std::vector<Edge> adj_bound_edges;
 			for (auto n1:tri.get<Node>())
 			{
 				if (n1.id() != A.id()  && n1.id() != B.id())
 				{
+					alone_point = n1;
 					P2 = n1.point();
 					for (auto e:n1.get<Edge>())
 					{
@@ -326,8 +406,10 @@ void MedialAxis2DBuilder::setMedialRadiiOrthogonalityDefault(const double &ABoun
 			}
 			if (adj_bound_edges.size() != 2)
 				break;
-			E2 = adj_bound_edges[0].get<Node>()[1].point() + (-1.)*adj_bound_edges[0].get<Node>()[0].point();
-			E3 = adj_bound_edges[1].get<Node>()[1].point() + (-1.)*adj_bound_edges[1].get<Node>()[0].point();
+			E2 = edge2vec(adj_bound_edges[0],alone_point).getPoint();
+			E3 = edge2vec(adj_bound_edges[1],alone_point).getPoint();
+			// E2 = adj_bound_edges[0].get<Node>()[1].point() + (-1.)*adj_bound_edges[0].get<Node>()[0].point();
+			// E3 = adj_bound_edges[1].get<Node>()[1].point() + (-1.)*adj_bound_edges[1].get<Node>()[0].point();
 			// Normalized medial radii
 			math::Point R1 = P1 + (-1.)*n.point();
 			R1 = R1*(1./vec(R1).norm());
@@ -348,7 +430,8 @@ void MedialAxis2DBuilder::setMedialRadiiOrthogonalityDefault(const double &ABoun
 				max_ip = ip3;
 			// If the medial point correspond to a concave corner of the geometry (ie E2 and E3 are not aligned)
 			// then the tangency of the medial radius doesn't have sense
-			if (fabs(vec(E2).dot(vec(E3))-1) > ABoundaryCurvatureTol && fabs(vec(E2).dot(vec(E3))+1) > ABoundaryCurvatureTol)
+			//if (fabs(vec(E2).dot(vec(E3))-1) > ABoundaryCurvatureTol && fabs(vec(E2).dot(vec(E3))+1) > ABoundaryCurvatureTol)
+			if (fabs(vec(E2).dot(vec(E3))+1) > ABoundaryCurvatureTol)
 				max_ip = 0.;
 			m_voronoi_medax->setMedialRadiusOrthogonalityDefault(n_id,max_ip);
 		}
@@ -718,6 +801,18 @@ std::vector<std::vector<Node>> MedialAxis2DBuilder::boundaryArcs(std::vector<Nod
 		arcs.push_back(arc);
 	}
 
+	// Add the forgotten arcs
+	for (auto n:ABoundNodes)
+	{
+		if (visited->value(n.id()) == 0)
+		{
+			visited->set(n.id(),1);
+			arc.clear();
+			arc.push_back(n);
+			arcs.push_back(arc);
+		}
+	}
+
 	m_mesh->deleteVariable(GMDS_NODE,set);
 	m_mesh->deleteVariable(GMDS_NODE,visited);
 
@@ -789,16 +884,28 @@ std::vector<Node> MedialAxis2DBuilder::boundaryArc(std::vector<Node> ABoundNodes
 }
 
 /*----------------------------------------------------------------------------*/
-void MedialAxis2DBuilder::unfoldMedax(Node AN, std::vector<Node> ABoundaryArc)
+void MedialAxis2DBuilder::unfoldMedax(Node AN, std::vector<Node> ABoundaryArc, bool AIsADangle)
 {
 	if (ABoundaryArc.size() < 3)
 	{
-		std::vector<Node> t;
-		t.push_back(ABoundaryArc[0]);
+		std::vector<Node> t = m_smoothed_medax->getTangentNodes(AN.id());
+		bool already_here = false;
+		for (auto n:t)
+		{
+			if (n.id() == ABoundaryArc[0].id())
+			{
+				already_here = true;
+				break;
+			}
+		}
+		if (!already_here)
+			t.push_back(ABoundaryArc[0]);
 		std::vector<math::Point> p;
-		p.push_back(ABoundaryArc[0].point());
+		for (auto n:t)
+			p.push_back(n.point());
 		m_smoothed_medax->setTouchingPoints(AN.id(),p);
 		m_smoothed_medax->setTangentNodes(AN.id(),t);
+		m_smoothed_medax->setDangle(AN.id(),AIsADangle);
 	}
 	else
 	{
@@ -863,6 +970,7 @@ void MedialAxis2DBuilder::unfoldMedax(Node AN, std::vector<Node> ABoundaryArc)
 			m_smoothed_medax->setTangentNodes(new_node.id(),tangentNodes);
 			m_smoothed_medax->setTouchingPoints(new_node.id(),tangentPoints);
 			m_smoothed_medax->setMedialRadius(new_node.id(),new_node.point().distance(boundNode1.point()));
+			m_smoothed_medax->markAsExtension(new_node.id());
 			new_edge = m_smoothed_medax->newMedEdge(prev.id(),new_node.id());
 			prev = new_node;
 		}
@@ -877,6 +985,9 @@ void MedialAxis2DBuilder::unfoldMedax(Node AN, std::vector<Node> ABoundaryArc)
 		m_smoothed_medax->setTouchingPoints(new_node.id(),tangentPoints);
 		// m_smoothed_medax->setMedialRadius(new_node.id(),0.);
 		m_smoothed_medax->setMedialRadius(new_node.id(),new_node.point().distance(end.point()));
+		m_smoothed_medax->setDangle(new_node.id(),AIsADangle);
+		if (NbNewNodes > 1)
+			m_smoothed_medax->markAsExtension(new_node.id());
 		new_edge = m_smoothed_medax->newMedEdge(prev.id(),new_node.id());
 	}
 }
@@ -975,6 +1086,7 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 			// }
 			// arc = boundaryArc(arc);
 			// unfoldMedax(m_smoothed_medax->getMedPoint(newPoint),arc);
+			bool isADangle = (NbEPs >= 2);
 			std::vector<Node> nodes;
 			for (auto n:AGroups[groupID])
 			{
@@ -983,7 +1095,7 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 			}
 			std::vector<std::vector<Node>> arcs = boundaryArcs(nodes);
 			for (auto arc:arcs)
-				unfoldMedax(m_smoothed_medax->getMedPoint(newPoint),arc);
+				unfoldMedax(m_smoothed_medax->getMedPoint(newPoint),arc, isADangle);
 		}
 		if (NbIPs == 0 && NbEPs == 0)
 		{

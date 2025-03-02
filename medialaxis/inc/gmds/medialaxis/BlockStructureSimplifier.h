@@ -181,6 +181,18 @@ class LIB_GMDS_MEDIALAXIS_API BlockStructureSimplifier
          *  @param 
 	 */
 	void setBlocksIDs();
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Trace the outlines of the TopMaker blocks.
+         *  @param 
+	 */
+	void traceTopMakerBlocksOutlines();
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Attach to each face the id of the TopMaker block it belongs to.
+         *  @param 
+	 */
+	void setTopMakerBlocksIDs();
 };
 /*----------------------------------------------------------------------------*/
 }  // end namespace gmds

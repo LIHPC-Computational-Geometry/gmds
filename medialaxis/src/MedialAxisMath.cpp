@@ -516,7 +516,7 @@ math::Vector projection(math::Vector &AV1, math::Vector &AV2)
 
 /*----------------------------------------------------------------------------*/
 std::vector<Node> shortestPathAlongBoundaryOrConstraints(Node &AN1, Node &AN2, Mesh &AMesh)
-{
+{	
 	auto constr = AMesh.getVariable<int,GMDS_EDGE>("internal_constraint");
 	auto visited = AMesh.newVariable<int,GMDS_NODE>("visited");
 	std::vector<Node> path;
@@ -561,4 +561,19 @@ std::vector<Node> shortestPathAlongBoundaryOrConstraints(Node &AN1, Node &AN2, M
 
 	AMesh.deleteVariable(GMDS_NODE,visited);
 	return shortestPath;
+}
+
+/*----------------------------------------------------------------------------*/
+Edge opp(Face AFace, Edge AEdge)
+{
+	for (auto e:AFace.get<Edge>())
+	{
+		if (e.get<Node>()[0].id() != AEdge.get<Node>()[0].id() && e.get<Node>()[0].id() != AEdge.get<Node>()[1].id())
+		{
+			if (e.get<Node>()[1].id() != AEdge.get<Node>()[0].id() && e.get<Node>()[1].id() != AEdge.get<Node>()[1].id())
+				return e;
+		}
+	}
+	Edge edge;
+	return edge;
 }
