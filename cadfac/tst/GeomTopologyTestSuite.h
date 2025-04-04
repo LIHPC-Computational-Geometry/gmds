@@ -35,16 +35,32 @@ TEST(GeomTopologyTestSuite, cube_topo)
 // tests on the points
     std::vector<cad::GeomPoint*> pnts;
     manager.getPoints(pnts);
+	 math::Point math_p(pnts[0]->point());
+	 ASSERT_EQ(math_p.X(),0);
+	 ASSERT_EQ(math_p.Y(),0);
+	 ASSERT_EQ(math_p.Z(),0);
     for(auto p:pnts){
+		  ASSERT_EQ(p->dim(), 0);
         ASSERT_EQ(p->volumes().size(),1);
         ASSERT_EQ(p->surfaces().size(),3);
         ASSERT_EQ(p->curves().size(),3);
+
+		  p->setName("Point"+std::to_string(p->id()));
+		  ASSERT_EQ(p->name(), "Point"+std::to_string(p->id()));
+
     }
+	 cad::GeomPoint* last_p = pnts[pnts.size()-1];
+	 last_p->project(math_p);
+
+	 ASSERT_EQ(math_p.X(),last_p->X());
+	 ASSERT_EQ(math_p.Y(),last_p->Y());
+	 ASSERT_EQ(math_p.Z(),last_p->Z());
 //==================================
 // tests on the curves
     std::vector<cad::GeomCurve*> curves;
     manager.getCurves(curves);
     for(auto c:curves){
+		  ASSERT_EQ(c->dim(), 1);
         ASSERT_EQ(c->volumes().size(),1);
         std::vector<cad::GeomSurface*> surfs =c->surfaces();
         std::vector<cad::GeomPoint*> pts =c->points();
@@ -56,6 +72,7 @@ TEST(GeomTopologyTestSuite, cube_topo)
     std::vector<cad::GeomSurface*> surfs;
     manager.getSurfaces(surfs);
     for(auto s:surfs){
+		  ASSERT_EQ(s->dim(), 2);
         ASSERT_EQ(s->volumes().size(),1);
         ASSERT_EQ(s->curves().size(),4);
         ASSERT_EQ(s->points().size(),4);
@@ -64,7 +81,17 @@ TEST(GeomTopologyTestSuite, cube_topo)
 // tests on the volumes
     std::vector<cad::GeomVolume*> vols;
     manager.getVolumes(vols);
+	 cad::GeomVolume* vol(vols[0]);
+	 math::Point p(0,0,0);
+
+	 try{
+		  vol->project(p);
+	 }catch(GMDSException &e){
+		  ASSERT_EQ(e.what(),std::string("GeomVolume::project not implemented"));
+	 }
+
     for(auto v:vols){
+		  ASSERT_EQ(v->dim(), 3);
         ASSERT_EQ(v->surfaces().size(),6);
         ASSERT_EQ(v->curves().size(),12);
         ASSERT_EQ(v->points().size(),8);
