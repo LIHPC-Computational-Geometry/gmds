@@ -9,7 +9,7 @@ Every algorithm is defined in a gmds class whose the naming indicates the type o
 ## How to use a smoothing algorithm? 
 
 Like other meshing algorithms in **gmds**, smoothing algorithms provided an `isValid` method to check if the mesh we work
-on is adapted to the algorithm and a `smooth` method to perform the algorithm. As an example, let us consider the simple 2D laplacian smoother without geometric classification (see the function `grid_2D_smooth_UC` in the test file [LaplacianSmootherTestSuite.h](../../../smoothy/tst/LaplacianSmootherTestSuite.h)). To call this 
+on is adapted to the algorithm and a `smooth` method to perform the algorithm. As an example, let us consider the simple 2D laplacian smoother without geometric classification (see the function `grid_2D_smooth_UC` in the test file [LaplacianSmootherTestSuite.h](../../../core/smoothy/tst/LaplacianSmootherTestSuite.h)). To call this 
 smoothing algorithm, we have a next series of instruction to write:
 
 ```c++
@@ -26,7 +26,7 @@ First, we initialize the *smoother* object as an instance of `LaplacianSmoother2
 We check if the mesh `m` is valid for the algorithm with `smoother.isValid()`and then we indicate the number of iterations (`setNBIterations`) of the algorithm and the nodes to smooth (`setNodes`). The `setNodes` method takes as parameters a vector of node ids.
 
 For an algorithm that use the geometric classification, we also need to provide the linker object as usual. See 
-for instance the test method `tet_in_cube` in the file [LaplacianSmootherTestSuite.h](../../../smoothy/tst/LaplacianSmootherTestSuite.h).
+for instance the test method `tet_in_cube` in the file [LaplacianSmootherTestSuite.h](../../../core/smoothy/tst/LaplacianSmootherTestSuite.h).
 
 ## Elliptic smoothing
 

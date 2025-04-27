@@ -22,9 +22,6 @@ build*/
 # other modifications should be carefully considered.
 # comment when necessary
 external/
-#!external/glpk/src/glpk/w64/glpk_4_65.dll
-#!external/glpk/src/glpk/w64/glpk_4_65.lib
-
 
 # spack files when dev-build
 spack-build*
