@@ -57,7 +57,7 @@ jobs:
         cmake /__w/gmds/gmds -DCMAKE_BUILD_TYPE=${{ matrix.config }} 
         -DWITH_CODE_COVERAGE:BOOL=ON
         -DWITH_CGNS:BOOL=OFF
-        -DWITH_PYTHON_API:BOOL=ON
+        -DWITH_PYTHON_API:BOOL=OFF
         -DWITH_TEST:BOOL=ON
         -DENABLE_BLOCK_MESHER:BOOL=ON
         -DENABLE_BLOCKING:BOOL=ON
