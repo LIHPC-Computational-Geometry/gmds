@@ -174,6 +174,7 @@ std::vector<std::vector<Edge>> QuantizationSolver::alignedEdgesGroups(Face &AF)
 		edges_groups.push_back(group);
 	}
 
+
 	return edges_groups;
 }
 

@@ -725,8 +725,8 @@ void MedialAxis2D::setFluxThroughMedialRadii()
 	auto cosMedAngle = m_mesh_representation->getVariable<double,GMDS_NODE>("cos_medial_angle");
 	auto fluxThroughRadii = m_mesh_representation->getVariable<double,GMDS_NODE>("flux_through_medial_radii");
 	auto medPointType = m_mesh_representation->getVariable<int,GMDS_NODE>("medial_point_type");
-	double epsilon = 0.09; // a small perturbation to avoid proliferation of singularities on branches where theta_M=pi/4 or 3pi/4
-	epsilon = 0.;
+	double epsilon = 0.15; // a small perturbation to avoid proliferation of singularities on branches where theta_M=pi/4 or 3pi/4
+	//epsilon = 0.;
 	for (auto n_id:m_mesh_representation->nodes())
 	{
 		int type = medPointType->value(n_id);

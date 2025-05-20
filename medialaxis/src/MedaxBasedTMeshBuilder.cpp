@@ -915,7 +915,7 @@ void MedaxBasedTMeshBuilder::markForbiddenSingularPointsAndModifyBoundaryPoints(
 		Node n1 = m_medial_section_extremal_nodes[id][0];
 		Node n2 = m_medial_section_extremal_nodes[id][1];
 		Node ep,nm;
-		bool Continue = false;;
+		bool Continue = false;
 		if (medPointType->value(n1.id()) == 1)
 		{
 			forbidden->set(n1.id(),1);

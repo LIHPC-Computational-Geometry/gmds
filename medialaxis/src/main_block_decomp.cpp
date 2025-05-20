@@ -33,13 +33,14 @@ int main(int argc, char* argv[])
 	//==================================================================
 	std::string file_mesh, file_out, file_ma_out;
 	int nb_iterations=0;
-	if (argc != 2) {
+	if (argc != 2) { // POULPE : 3 args
 		std::cout << "Requires one parameters : \n";
 		std::cout << "  - [IN ] minimal Delaunay mesh (.vtk) (to build the medial axis) \n"<<std::endl;
 		throw gmds::GMDSException("Wrong number of parameters");
 	}
 
 	file_mesh = std::string (argv[1]);
+	//std::string file_edges = std::string (argv[2]); // POULPE
 	file_out = "out.vtk";
 	file_ma_out = "medax.vtk";
 	std::cout << "Parameters " << std::endl;
@@ -62,6 +63,49 @@ int main(int argc, char* argv[])
 	VTKReader vtkReader(&ioService);
 	vtkReader.setCellOptions(N| E| F);
 	vtkReader.read(file_mesh);
+
+
+
+	// // POULPE
+	// Mesh me(MeshModel(DIM3 | F | E | N | R |
+	//                  F2N | F2E |
+	//                  E2F | E2N | N2E | N2F));
+
+	// IGMeshIOService ioServicee(&me);
+	// VTKReader vtkReadere(&ioServicee);
+	// vtkReadere.setCellOptions(N| E| F);
+	// vtkReadere.read(file_edges);
+	// std::vector<std::vector<int>> neighbours(m.getNbNodes());
+	// for (auto e_id:me.edges())
+	// {
+	// 	Edge e = me.get<Edge>(e_id);
+	// 	int i1 = e.get<Node>()[0].id();
+	// 	int i2 = e.get<Node>()[1].id();
+	// 	if (i2 < i1)
+	// 	{
+	// 		int k = i1;
+	// 		i1 = i2;
+	// 		i2 = k;
+	// 	}
+	// 	std::vector<int> vect = neighbours[i1];
+	// 	bool already_here = false;
+	// 	for (auto i:vect)
+	// 	{
+	// 		if (i == i2)
+	// 		{
+	// 			already_here = true;
+	// 			break;
+	// 		}
+	// 	}
+	// 	if (!already_here)
+	// 	{
+	// 		vect.push_back(i2);
+	// 		neighbours[i1] = vect;
+	// 		m.newEdge(i1,i2);
+	// 	}
+	// }
+
+
 	
 	// Get the ids of the boundary edges
 	std::vector<TCellID> boundary_edges_ids;
@@ -107,7 +151,7 @@ int main(int argc, char* argv[])
 		smoothed_ma->write("smoothed_medax.vtk");
 
 		Mesh medax = smoothed_ma->getMeshRepresentation();
-		double mesh_size = 80.*smoothed_ma->meanMedEdgeLength();
+		double mesh_size = 60.*smoothed_ma->meanMedEdgeLength();
 		medialaxis::MedaxBasedTMeshBuilder tmb(medax,m);
 		// Build a quad block decomposition
 		tmb.setSectionID();
@@ -210,7 +254,7 @@ int main(int argc, char* argv[])
 		conf.writeConformalMesh("conformal_mesh_without_smoothing.vtk");
 
 
-		bool remove_triangles = true;
+		bool remove_triangles = false;
 		if (remove_triangles)
 		{
 			// for (int i = 0; i < 10; i++)
@@ -280,7 +324,7 @@ int main(int argc, char* argv[])
 		conf.writeConformalMesh("contraintes_nous_not_smoothed.vtk");
 
 		clock_t t = clock();
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < 3; i++)
 			conf.smooth(m);
 		t = clock()-t;
 		std::cout<<"Smoothing time (s) : "<<double(t)/CLOCKS_PER_SEC<<std::endl;

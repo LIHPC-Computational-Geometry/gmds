@@ -644,6 +644,10 @@ void MedialAxis2DBuilder::buildVoronoiMedialAxis()
 {
 	std::cout<<" "<<std::endl;
 	std::cout<<"===== Building the Voronoï medial axis ====="<<std::endl;
+
+	// Mark with 1 boundary edges of the Voronoï
+	classEdges();
+
 	// Mark internal constraints
 	markIntConstraints();
 
@@ -1044,12 +1048,18 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 		Node newPoint = m_smoothed_medax->newMedPoint(n0.point());
 		group2NewMedPoint[groupID] = newPoint.id();
 	}
+	// Valence of the medial point associated to each group
+	std::vector<int> valence(AGroups.size());
+	for (int i = 0; i < valence.size(); i++)
+		valence[i] = 0;
 	// Build the medial edges
 	for (int groupID=0; groupID<AGroups.size(); groupID++)
 	{
 		for (auto groupID2:setsOfNeighbours[groupID])
 		{
 			m_smoothed_medax->newMedEdge(group2NewMedPoint[groupID2],group2NewMedPoint[groupID]);
+			valence[groupID] = valence[groupID] + 1;
+			valence[groupID2] = valence[groupID2] + 1;
 		}
 	}
 
@@ -1123,10 +1133,10 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 				if (m_voronoi_medax->getTouchingPoints(node.id()).size() > 2)
 					intersection_points.push_back(node.id());
 			}
-			std::vector<math::Point> merged_tangency_points;
-			for (auto id:intersection_points)
-				merged_tangency_points = merge(merged_tangency_points,m_voronoi_medax->getTouchingPoints(id));
-			m_smoothed_medax->setTouchingPoints(newPoint,merged_tangency_points);
+			// std::vector<math::Point> merged_tangency_points;
+			// for (auto id:intersection_points)
+			// 	merged_tangency_points = merge(merged_tangency_points,m_voronoi_medax->getTouchingPoints(id));
+			// m_smoothed_medax->setTouchingPoints(newPoint,merged_tangency_points);
 			std::vector<Node> merged_tangent_nodes;
 			for (auto id:intersection_points)
 			{
@@ -1145,7 +1155,37 @@ void MedialAxis2DBuilder::buildSmoothedMedaxFromVoronoi(const std::vector<std::v
 						merged_tangent_nodes.push_back(n);
 				}
 			}
+			// Check if the number of tangency nodes is correct
+			if (merged_tangent_nodes.size() > valence[groupID])
+			{
+				while (merged_tangent_nodes.size() > valence[groupID])
+				{
+					// Remove one of the two closest nodes of the set
+					double min_dist = 1e6;
+					int min_pos;
+					for (int i = 0; i < merged_tangent_nodes.size(); i++)
+					{
+						for (int j = 0; j < merged_tangent_nodes.size(); j++)
+						{
+							if (i != j)
+							{
+								double dist = merged_tangent_nodes[i].point().distance(merged_tangent_nodes[j].point());
+								if (dist < min_dist)
+								{
+									min_dist = dist;
+									min_pos = i;
+								}
+							}
+						}
+					}
+					merged_tangent_nodes.erase(merged_tangent_nodes.begin()+min_pos);
+				}
+			}
 			m_smoothed_medax->setTangentNodes(newPoint,merged_tangent_nodes);
+			std::vector<math::Point> merged_tangency_points;
+			for (auto n:merged_tangent_nodes)
+				merged_tangency_points.push_back(n.point());
+			m_smoothed_medax->setTouchingPoints(newPoint,merged_tangency_points);
 		}
 		// Dual triangles of the new point
 		std::vector<Face> dual_tri;
