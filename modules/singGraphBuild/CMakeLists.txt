@@ -86,9 +86,19 @@ install(TARGETS singGraphBuilder
 
 # PRE_LINK event to copy glpk dll
 if(WIN32)
+    message("glpk_dll: ${PROJECT_SOURCE_DIR}/external/glpk/src/glpk/w64/glpk_4_65.dll")
+    if(EXISTS "${PROJECT_SOURCE_DIR}/external/glpk/src/glpk/w64/glpk_4_65.dll")
+        message(WARNING "GLPK WAS HERE")
+    else ()
+        message(WARNING "GLPK WAS NOT HERE")
+    endif ()
+    add_custom_command(TARGET singGraphBuilder PRE_LINK
+            COMMAND ${CMAKE_COMMAND} -E echo
+            "aaa $<TARGET_FILE_DIR:singGraphBuilder>"
+    )
     add_custom_command(TARGET singGraphBuilder PRE_LINK
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "../../external/glpk/src/glpk/w64/glpk_4_65.dll"
+            "${PROJECT_SOURCE_DIR}/external/glpk/src/glpk/w64/glpk_4_65.dll"
             $<TARGET_FILE_DIR:singGraphBuilder>
     )
 endif ()
