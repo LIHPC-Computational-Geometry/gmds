@@ -414,6 +414,10 @@ class GMDSIg_API Blocking3D : public Mesh
 	std::vector<std::vector<TCellID>> computeAllSheets();
 	/*----------------------------------------------------------------------------*/
 
+	int getEdgeDiscretization(const int AEdge) const{
+		return getNbDiscretization(get<Edge>(AEdge).get<Region>()[0], get<Edge>(AEdge));
+	};
+
  private:
 	/** @brief Give the number of subdivision for edge @p AEdge in region @p ARegion
           *
