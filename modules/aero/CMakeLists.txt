@@ -73,6 +73,7 @@ set(GMDS_INC
         inc/gmds/aero/SU2Writer_3D.h
         inc/gmds/aero/TransfiniteInterpolation_3D.h
         inc/gmds/aero/Utils.h
+		inc/gmds/aero/BLKWriter.h
 		)
 if(WITH_CGNS)
 	set(GMDS_SRC ${GMDS_SRC} inc/gmds/aero/CGNSWriter3D.h
@@ -146,6 +147,7 @@ set(GMDS_SRC
         src/TransfiniteInterpolation_3D.cpp
         src/Utils.cpp
         src/main.cpp
+		src/BLKWriter.cpp
 )
 if(WITH_CGNS)
 	set(GMDS_SRC ${GMDS_SRC} src/CGNSWriter3D.cpp
