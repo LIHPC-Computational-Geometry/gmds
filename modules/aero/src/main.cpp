@@ -41,8 +41,9 @@ int main(int argc, char* argv[])
 
 		if (aero2D_result == AbstractAeroPipeline::SUCCESS) {
 #ifdef USE_CGNS
-			blocking::CGNSWriter writer(algo_aero2D.getBlocking());
-			writer.write(output_file, dir);
+
+			//blocking::CGNSWriter writer(algo_aero2D.getBlocking());
+			//writer.write(output_file, dir);
 #else
 			std::cout << "CGNS export is desactivated" << std::endl;
 #endif
