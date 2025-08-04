@@ -11,10 +11,16 @@ pybind11_add_module(gmds
         src/gmds_facade.cpp
         )
 
+if(ENABLE_BLOCKING)
+    pybind11_add_module(
+            src/binding_blocking.cpp
+    )
+endif ()
+
 target_link_libraries(gmds PRIVATE
         ${LIB_GMDS_IG}
         ${LIB_GMDS_CADFAC}
-        LIB_GMDS_BLOCKING
+        ${LIB_GMDS_BLOCKING}
         ${LIB_GMDS_IO}
         )
 target_compile_definitions(gmds PUBLIC cxx_std_14)
