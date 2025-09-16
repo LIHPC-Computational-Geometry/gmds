@@ -13,4 +13,5 @@ spack repo add ./spack_recipes/meshing_supersede
 
 spack external find cmake
 spack compiler find
-spack install --only dependencies gmds+python~blocking+cgns ^cgns~mpi ^hdf5~mpi
+spack compiler remove apple-clang
+spack install --only dependencies gmds+python~blocking+cgns%gcc ^cgns~mpi ^hdf5~mpi
