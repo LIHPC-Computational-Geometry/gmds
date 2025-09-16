@@ -179,8 +179,12 @@ target_link_libraries(${GMDS_LIB} PUBLIC
 		${LIB_GMDS_BLOCKING}
 		GMDSSmoothy
 		ANN
+		)
+if(WITH_CGNS)
+	target_link_libraries(${GMDS_LIB} PUBLIC
 		cgns::cgns
 		)
+endif ()
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)
 

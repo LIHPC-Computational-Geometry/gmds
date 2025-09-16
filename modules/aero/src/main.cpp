@@ -2,7 +2,7 @@
 // Created by Claire Roche on 21/10/2021.
 /*------------------------------------------------------------------------*/
 #ifdef USE_CGNS
-   #include <gmds/blocking/CGNSWriter.h>
+   //#include <gmds/blocking/CGNSWriter.h>
 	#include <gmds/aero/CGNSWriter3D.h>
 #endif
 #include <gmds/aero/AbstractAeroPipeline.h>
