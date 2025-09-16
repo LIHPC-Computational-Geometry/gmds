@@ -163,6 +163,10 @@ generate_export_header(${GMDS_LIB}
 #==============================================================================
 include(GNUInstallDirs)
 
+if(WITH_CGNS)
+	include (${CMAKE_SOURCE_DIR}/cmake/FindCgns.cmake)
+endif()
+
 #LIBRARY TO INSTALL
 target_link_libraries(${GMDS_LIB} PUBLIC
 		${LIB_GMDS_IG}
@@ -176,6 +180,11 @@ target_link_libraries(${GMDS_LIB} PUBLIC
 		GMDSSmoothy
 		ANN
 		)
+if(WITH_CGNS)
+	target_link_libraries(${GMDS_LIB} PUBLIC
+		cgns::cgns
+		)
+endif ()
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)
 

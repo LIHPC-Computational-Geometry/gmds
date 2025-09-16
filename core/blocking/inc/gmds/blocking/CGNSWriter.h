@@ -9,14 +9,14 @@
 /*----------------------------------------------------------------------------*/
 #include <cgnslib.h>
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_BLOCKING_export.h"
+#include "GMDSBlocking_export.h"
 #include "gmds/ig/Blocking2D.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 
 namespace blocking {
 
-class LIB_GMDS_BLOCKING_API CGNSWriter
+class GMDSBlocking_API CGNSWriter
 {
  public:
 	/** @brief Constructor

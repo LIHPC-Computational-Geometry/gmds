@@ -16,7 +16,6 @@ set(GMDS_INC
         inc/gmds/blocking/SheetCollapse.h)
 
 if(WITH_CGNS)
-    message(TEST)
     set(GMDS_INC ${GMDS_INC} inc/gmds/blocking/CGNSWriter.h
             )
 endif()
