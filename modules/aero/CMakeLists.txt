@@ -75,7 +75,7 @@ set(GMDS_INC
         inc/gmds/aero/Utils.h
 		)
 if(WITH_CGNS)
-	set(GMDS_SRC ${GMDS_SRC} inc/gmds/aero/CGNSWriter3D.h
+	set(GMDS_INC ${GMDS_INC} inc/gmds/aero/CGNSWriter3D.h
 	)
 endif()
 
