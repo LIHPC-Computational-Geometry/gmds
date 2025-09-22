@@ -6,7 +6,7 @@
 #define GMDS_BLOCKING3D_H
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
-#include "GMDSIg_export.h"
+#include "LIB_GMDS_AERO_export.h"
 #include <map>
 #include <gmds/math/DiscretizationScheme1D.h>
 #include <gmds/utils/Array.h>
@@ -50,10 +50,10 @@ namespace gmds {
  *                                3            2
  */
 /*----------------------------------------------------------------------------*/
-class GMDSIg_API Blocking3D : public Mesh
+class LIB_GMDS_AERO_API Blocking3D : public Mesh
 {
  public:
-	class GMDSIg_API Block{
+	class LIB_GMDS_AERO_API Block{
 	 public:
 		friend class Blocking3D;
 		/**
@@ -204,7 +204,7 @@ class GMDSIg_API Blocking3D : public Mesh
 
 	};
 
-	class GMDSIg_API BlockFace{
+	class LIB_GMDS_AERO_API BlockFace{
 	 public:
 		friend class Blocking3D;
 		/**
@@ -266,7 +266,7 @@ class GMDSIg_API Blocking3D : public Mesh
 
 	};
 
-	class GMDSIg_API BlockEdge{
+	class LIB_GMDS_AERO_API BlockEdge{
 	 public:
 		friend class Blocking3D;
 		/**

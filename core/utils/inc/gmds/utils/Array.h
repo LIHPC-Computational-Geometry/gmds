@@ -7,6 +7,7 @@
 #include <vector>
 /*----------------------------------------------------------------------------*/
 #include <gmds/utils/CommonTypes.h>
+#include "GMDSUtils_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -16,7 +17,7 @@ namespace gmds{
      */
     /*----------------------------------------------------------------------------*/
     template<typename  T>
-    class Array2D {
+    class GMDSUtils_API Array2D {
     public:
         /*------------------------------------------------------------------------*/
         /** @brief  Default constructor with @p AI lines and @p AJ columns. A
@@ -110,7 +111,7 @@ namespace gmds{
      */
     /*----------------------------------------------------------------------------*/
     template<typename  T>
-    class  TriArray {
+    class GMDSUtils_API TriArray {
     public:
         /*------------------------------------------------------------------------*/
         /** @brief  Default constructor with @p AN the triangular size
@@ -229,7 +230,7 @@ namespace gmds{
      */
     /*----------------------------------------------------------------------------*/
     template<typename  T>
-    class Array3D {
+    class GMDSUtils_API Array3D {
     public:
         /*------------------------------------------------------------------------*/
         /** @brief  Default constructor with @p AI, @p AJ and @p AK dimension. A
