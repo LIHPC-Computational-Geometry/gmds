@@ -7,6 +7,7 @@ set(GMDS_LIB_PREFIX gmds/utils)
 
 set(GMDS_INC
         ${CMAKE_BINARY_DIR}/exports/${GMDS_LIB}_export.h
+        inc/gmds/utils/Array.h
         inc/gmds/utils/BitVector.h
         inc/gmds/utils/CommonFlags.h
         inc/gmds/utils/CommonTypes.h
@@ -25,7 +26,6 @@ set(GMDS_INC
         inc/gmds/utils/RandomGenerator.h
         )
 set(GMDS_SRC
-        inc/gmds/utils/Array.h
         src/CommonTypes.cpp
         src/Log.cpp
         src/BitVector.cpp
