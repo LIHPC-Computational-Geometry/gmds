@@ -6,7 +6,7 @@
 #define GMDS_ABSTRACTAEROPIPELINE_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/aero/Params.h>
 #include <gmds/aero/AbstractAeroBoundaries.h>
@@ -24,7 +24,7 @@ namespace gmds{
  *  			pour l'aéro. Les classes filles sont pour le
  *  			cas 2D et le cas 3D.
  */
-class LIB_GMDS_AERO_API AbstractAeroPipeline{
+class GMDSAero_API AbstractAeroPipeline{
 
  public:
 	/*--------------------------------------------------------------------*/

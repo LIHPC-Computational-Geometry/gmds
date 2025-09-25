@@ -6,7 +6,7 @@
 #define GMDS_PATTERNEDGECORNER_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/aero/AbstractPatternEdge.h>
 /*----------------------------------------------------------------------------*/
 namespace  gmds {
@@ -14,7 +14,7 @@ namespace  gmds {
 /** \class  PatternEdgeCorner
  *  \brief
  */
-class LIB_GMDS_AERO_API PatternEdgeCorner: public AbstractPatternEdge {
+class GMDSAero_API PatternEdgeCorner: public AbstractPatternEdge {
  public:
 	/*-------------------------------------------------------------------*/
 	/** @brief Constructor.

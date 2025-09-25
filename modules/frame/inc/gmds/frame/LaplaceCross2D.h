@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
 #include <gmds/math/Cross2D.h>
-#include "LIB_GMDS_FRAME_export.h"
+#include "GMDSFrame_export.h"
 //#include <GMDS/Algo/DistanceFieldBuilder2D.h> //?doesnt exist anymore, adapt it!
 /*---------------------------------------------------------------------------*/
 // Usage of the Eigen Template library
@@ -18,7 +18,7 @@
  *  \brief  Compute a 2D cross field on a 2D triangular mesh by solving a
  *          simple Laplace equation via FEM
  */
-class LIB_GMDS_FRAME_API LaplaceCross2D
+class GMDSFrame_API LaplaceCross2D
 {
  public:
 

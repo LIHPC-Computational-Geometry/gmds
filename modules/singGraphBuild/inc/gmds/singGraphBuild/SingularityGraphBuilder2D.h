@@ -21,14 +21,14 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/singGraphBuild/SingularityGraph.h>
 #include <gmds/singGraphBuild/Tools.h>
-#include "LIB_GMDS_SING_GRAPH_BUILD_export.h"
+#include "GMDSSingGraphBuild_export.h"
 /*----------------------------------------------------------------------------*/
 //#include <Tools.h>
 /*----------------------------------------------------------------------------*/
 /** \brief Class providing an algorithm to build a 2D singularity graph from
  *         a triangular mesh and a 2D cross field defined on this mesh
  */
-class LIB_GMDS_SING_GRAPH_BUILD_API SingularityGraphBuilder2D
+class GMDSSingGraphBuild_API SingularityGraphBuilder2D
 {
 public:
 	/*----------------------------------------------------------------------------------------------------*/

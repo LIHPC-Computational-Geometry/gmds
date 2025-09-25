@@ -4,7 +4,7 @@
 /*----------------------------------------------------------------------------*/
 #include <CGAL/Cell_attribute.h>
 #include <CGAL/Generalized_map.h>
-#include <LIB_GMDS_MCTSBLOCK_export.h>
+#include <GMDSMctsBlock_export.h>
 #include <gmds/cad/GeomManager.h>
 #include <gmds/ig/Mesh.h>
 #include <gmds/io/IGMeshIOService.h>
@@ -286,7 +286,7 @@ using Dart3 = GMap3::Dart_handle;
  * 		 as described and provided by CGAL.
  * 		 (see https://doc.cgal.org/latest/Generalized_map/index.html)
  */
-class LIB_GMDS_MCTSBLOCK_API Blocking
+class GMDSMctsBlock_API Blocking
 {
  public:
 	/** Inner type to see i-attributes as the respective block cells whe want

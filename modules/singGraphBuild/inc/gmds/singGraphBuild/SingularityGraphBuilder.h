@@ -18,9 +18,9 @@
 #include <gmds/math/Quaternion.h>
 /*----------------------------------------------------------------------------*/
 #include <gmds/singGraphBuild/SingularityGraph.h>
-#include "LIB_GMDS_SING_GRAPH_BUILD_export.h"
+#include "GMDSSingGraphBuild_export.h"
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_SING_GRAPH_BUILD_API SingularityGraphBuilder
+class GMDSSingGraphBuild_API SingularityGraphBuilder
 {
  public:
   //	static const int mask=DIM3|R|N|F|R2N|F2N|N2F|N2R|R2F|F2R;

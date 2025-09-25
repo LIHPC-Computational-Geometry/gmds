@@ -2,7 +2,7 @@
 #ifndef GMDS_CLAIRE_SMOOTH2D_H
 #define GMDS_CLAIRE_SMOOTH2D_H
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 /*----------------------------------------------------------------------------*/
 #include <string>
@@ -11,7 +11,7 @@
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-    class LIB_GMDS_AERO_API Smooth2D {
+    class GMDSAero_API Smooth2D {
     public:
         /*--------------------------------------------------------------------*/
         /** @enum  Status code for executing algorithms

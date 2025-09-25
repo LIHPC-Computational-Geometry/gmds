@@ -2,7 +2,7 @@
 #ifndef GMDS_CLAIRE_FASTLOCALIZE_H
 #define GMDS_CLAIRE_FASTLOCALIZE_H
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #	include <gmds/ig/Mesh.h>
 /*----------------------------------------------------------------------------*/
 #include <map>
@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API FastLocalize {
+class GMDSAero_API FastLocalize {
  public:
 
 	/*-------------------------------------------------------------------*/

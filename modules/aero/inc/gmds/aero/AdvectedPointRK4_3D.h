@@ -6,7 +6,7 @@
 #define GMDS_ADVECTEDPOINTRK4_3D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/aero/FastLocalize.h>
 #include <string>
@@ -16,7 +16,7 @@
 #include <Eigen/Eigen>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API AdvectedPointRK4_3D
+class GMDSAero_API AdvectedPointRK4_3D
 {
  public:
 	/*--------------------------------------------------------------------*/

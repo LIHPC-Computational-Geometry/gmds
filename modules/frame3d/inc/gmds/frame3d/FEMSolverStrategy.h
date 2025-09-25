@@ -4,7 +4,7 @@
 /*---------------------------------------------------------------------------*/
 // Frame File Headers
 #include "FieldSolverStrategyItf.h"
-#include "LIB_GMDS_FRAME_3D_export.h"
+#include "GMDSFrame3d_export.h"
 /*---------------------------------------------------------------------------*/
 // Eigen File Headers
 #include <Eigen/Sparse>
@@ -15,7 +15,7 @@ namespace gmds{
      *  \brief  Implementation of the FieldSolverStrategyItf interface used by an
      *          FieldGenerator object to build a frame field.
      */
-    class LIB_GMDS_FRAME_3D_API FEMSolverStrategy: public FieldSolverStrategyItf {
+    class GMDSFrame3d_API FEMSolverStrategy: public FieldSolverStrategyItf {
     public:
 
         /*------------------------------------------------------------------------*/

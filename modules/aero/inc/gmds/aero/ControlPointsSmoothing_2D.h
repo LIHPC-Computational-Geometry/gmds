@@ -6,11 +6,11 @@
 #define GMDS_CONTROLPOINTSSMOOTHING_2D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Blocking2D.h>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API ControlPointsSmoothing_2D {
+class GMDSAero_API ControlPointsSmoothing_2D {
  public:
 	/*--------------------------------------------------------------------*/
 	/** @enum  Status code for executing algorithms

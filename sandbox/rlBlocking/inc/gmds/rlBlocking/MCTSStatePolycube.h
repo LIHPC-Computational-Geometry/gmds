@@ -2,7 +2,7 @@
 #ifndef GMDS_MCTSSTATE_POLYCUBE_H
 #define GMDS_MCTSSTATE_POLYCUBE_H
 /*----------------------------------------------------------------------------------------*/
-#include "LIB_GMDS_RLBLOCKING_export.h"
+#include "GMDSRlBlocking_export.h"
 #include <gmds/rlBlocking/MCTSState.h>
 #include <gmds/rlBlocking/MCTSMovePolycube.h>
 #include <gmds/blocking/CurvedBlockingClassifier.h>
@@ -14,7 +14,7 @@ namespace gmds {
  *  @brief  Class that provides the interface to be implemented for performing the
  *  MCST algorithm
  */
-class LIB_GMDS_RLBLOCKING_API MCTSStatePolycube: public MCTSState{
+class GMDSRlBlocking_API MCTSStatePolycube: public MCTSState{
 
  public:
 	/*------------------------------------------------------------------------*/

@@ -6,14 +6,14 @@
 #define GMDS_COMPUTEBEZIERCURVECTRLPTSTOINTERPOLATECURVE_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include "gmds/ig/Mesh.h"
 #include <gmds/cadfac/FACManager.h>
 #include <gmds/utils/Array.h>
 #include <gmds/math/BezierSurface.h>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API ComputeBezierCurveCtrlPtstoInterpolateCurve
+class GMDSAero_API ComputeBezierCurveCtrlPtstoInterpolateCurve
 {
 
  public:

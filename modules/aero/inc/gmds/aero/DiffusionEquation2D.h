@@ -6,7 +6,7 @@
 #define GMDS_DIFFUSIONEQUATION2D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <Eigen/Sparse>
 #include <string>
@@ -14,7 +14,7 @@
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API DiffusionEquation2D
+class GMDSAero_API DiffusionEquation2D
 {
  public:
 	/*--------------------------------------------------------------------*/

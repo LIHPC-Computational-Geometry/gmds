@@ -6,7 +6,7 @@
 #define GMDS_AEROBOUNDARIES_3D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/aero/AbstractAeroBoundaries.h>
 /*----------------------------------------------------------------------------*/
 namespace  gmds {
@@ -14,7 +14,7 @@ namespace  gmds {
 /** \class  AeroBoundaries_3D
  *  \brief  Caractéristiques des frontières du maillage 3D.
  */
-class LIB_GMDS_AERO_API AeroBoundaries_3D: public AbstractAeroBoundaries {
+class GMDSAero_API AeroBoundaries_3D: public AbstractAeroBoundaries {
  public:
 
 	/*------------------------------------------------------------------------*/

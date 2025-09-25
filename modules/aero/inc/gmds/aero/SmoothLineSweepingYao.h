@@ -6,7 +6,7 @@
 #define GMDS_SMOOTHLINESWEEPINGYAO_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/aero/AbstractSmoothLineSweeping_2D.h>
 /*----------------------------------------------------------------------------*/
 namespace  gmds {
@@ -14,7 +14,7 @@ namespace  gmds {
 /** \class  Yao's Line Sweeping algorithm
  *  \brief
  */
-class LIB_GMDS_AERO_API SmoothLineSweepingYao: public AbstractSmoothLineSweeping_2D {
+class GMDSAero_API SmoothLineSweepingYao: public AbstractSmoothLineSweeping_2D {
  public:
 
 	/*------------------------------------------------------------------------*/

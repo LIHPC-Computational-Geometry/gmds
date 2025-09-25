@@ -10,10 +10,10 @@
 #define SINGULARITYLINE_H_
 /*----------------------------------------------------------------------------*/
 #include <gmds/singGraphBuild/SingularityPoint.h>
-#include "LIB_GMDS_SING_GRAPH_BUILD_export.h"
+#include "GMDSSingGraphBuild_export.h"
 /*----------------------------------------------------------------------------*/
 class SingularityPatch;
-class LIB_GMDS_SING_GRAPH_BUILD_API SingularityLine
+class GMDSSingGraphBuild_API SingularityLine
 {
  public:
 

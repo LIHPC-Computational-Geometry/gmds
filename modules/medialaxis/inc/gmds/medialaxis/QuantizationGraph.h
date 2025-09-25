@@ -5,7 +5,7 @@
 #ifndef GMDS_QUANTIZATIONGRAPH_H
 #define GMDS_QUANTIZATIONGRAPH_H
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_MEDIALAXIS_export.h"
+#include "GMDSMedialaxis_export.h"
 #include "gmds/medialaxis/MedialAxisMath.h"
 #include <gmds/ig/Mesh.h>
 /*----------------------------------------------------------------------------*/
@@ -13,7 +13,7 @@ namespace gmds{
 /** \class  dummy
  *  \brief  dummy class.
  */
-class LIB_GMDS_MEDIALAXIS_API QuantizationGraph
+class GMDSMedialaxis_API QuantizationGraph
 {
  private:
 	// Mesh representation

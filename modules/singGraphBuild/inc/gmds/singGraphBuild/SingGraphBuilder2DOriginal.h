@@ -8,13 +8,13 @@
 /*----------------------------------------------------------------------------*/
 #pragma once
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_SING_GRAPH_BUILD_export.h"
+#include "GMDSSingGraphBuild_export.h"
 #include <gmds/singGraphBuild/SingularityGraph.h>
 #include <gmds/singGraphBuild/SingularityGraphBuilder2D.h>
 #include <gmds/singGraphBuild/Tools.h>
 /*----------------------------------------------------------------------------*/
 
-class LIB_GMDS_SING_GRAPH_BUILD_API SingGraphBuilder2DOriginal : public SingularityGraphBuilder2D
+class GMDSSingGraphBuild_API SingGraphBuilder2DOriginal : public SingularityGraphBuilder2D
 {
  private:
 	/** technical container, which is used to store all the free slots during the

@@ -2,7 +2,7 @@
 #ifndef GMDS_MCTS_GRAPH_H
 #define GMDS_MCTS_GRAPH_H
 /*----------------------------------------------------------------------------*/
-#include <LIB_GMDS_MCTSBLOCK_export.h>
+#include <GMDSMctsBlock_export.h>
 #include <gmds/utils/CommonTypes.h>
 #include <gmds/utils/Exception.h>
 /*----------------------------------------------------------------------------*/
@@ -17,7 +17,7 @@ namespace mctsblock {
 /*----------------------------------------------------------------------------*/
 // A structure to represent a
 // node in adjacency list
-struct LIB_GMDS_MCTSBLOCK_API AdjListNode
+struct GMDSMctsBlock_API AdjListNode
 {
   TCellID dest;
   double weight;
@@ -27,7 +27,7 @@ struct LIB_GMDS_MCTSBLOCK_API AdjListNode
 /*----------------------------------------------------------------------------*/
 // A structure to represent
 // an adjacency list
-struct LIB_GMDS_MCTSBLOCK_API AdjList
+struct GMDSMctsBlock_API AdjList
 {
   // Pointer to head node of list
   std::shared_ptr<AdjListNode> head;
@@ -38,7 +38,7 @@ struct LIB_GMDS_MCTSBLOCK_API AdjList
 // A graph is an array of adjacency lists.
 // Size of array will be V (number of
 // vertices in graph)
-class LIB_GMDS_MCTSBLOCK_API Graph
+class GMDSMctsBlock_API Graph
 {
 public:
   Graph(const std::set<TCellID>& ANodeIDs);

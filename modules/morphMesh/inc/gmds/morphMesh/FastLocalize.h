@@ -2,7 +2,7 @@
 #ifndef GMDS_MORPHMESH_FASTLOCALIZE_H
 #define GMDS_MORPHMESH_FASTLOCALIZE_H
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_MORPHMESH_export.h"
+#include "GMDSmorphMesh_export.h"
 #	include <gmds/ig/Mesh.h>
 /*----------------------------------------------------------------------------*/
 #include <map>
@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_MORPHMESH_API FastLocalize {
+class GMDSmorphMesh_API FastLocalize {
  public:
 
 	/*-------------------------------------------------------------------*/

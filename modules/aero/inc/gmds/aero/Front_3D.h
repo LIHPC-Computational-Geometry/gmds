@@ -6,7 +6,7 @@
 #define GMDS_FRONT_3D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/aero/FastLocalize.h>
 /*----------------------------------------------------------------------------*/
@@ -16,7 +16,7 @@ namespace gmds {
      *  \brief A Front 3D is a set of adjacent faces and nodes. This front is
      *  closed.
  */
-class LIB_GMDS_AERO_API Front_3D {
+class GMDSAero_API Front_3D {
  public:
 	/*--------------------------------------------------------------------*/
 	/** @enum  Status code for executing algorithms

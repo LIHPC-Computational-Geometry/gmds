@@ -6,7 +6,7 @@
 #define GMDS_GRADIENTCOMPUTATION_2D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/aero/DistanceMap.h>
 #include <string>
@@ -14,7 +14,7 @@
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API GradientComputation_2D
+class GMDSAero_API GradientComputation_2D
 {
  public:
 	/*--------------------------------------------------------------------*/

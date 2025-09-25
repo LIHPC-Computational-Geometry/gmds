@@ -6,7 +6,7 @@
 #define GMDS_ABSTRACTLEVELSET_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/aero/DistanceMap.h>
 #include <string>
@@ -18,7 +18,7 @@ namespace gmds{
 /** \class  AbstractLevelSet
  *  \brief  Classe abstraite pour l'algorithme de level set.
  */
-class LIB_GMDS_AERO_API AbstractLevelSet{
+class GMDSAero_API AbstractLevelSet{
 
  public:
 	/*--------------------------------------------------------------------*/

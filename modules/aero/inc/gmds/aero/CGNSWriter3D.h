@@ -10,14 +10,14 @@
 #include <cgnslib.h>
 /*----------------------------------------------------------------------------*/
 #include "Blocking3D.h"
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 // #include "gmds/ig/Blocking2D.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 
 namespace aero {
 
-class LIB_GMDS_AERO_API CGNSWriter3D
+class GMDSAero_API CGNSWriter3D
 {
  public:
 	/** @brief Constructor

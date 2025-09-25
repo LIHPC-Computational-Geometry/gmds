@@ -5,7 +5,7 @@
 #ifndef GMDS_CROSSFIELD_H
 #define GMDS_CROSSFIELD_H
 
-#include "LIB_GMDS_MEDIALAXIS_export.h"
+#include "GMDSMedialaxis_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/math/Matrix.h>
 #include <gmds/math/Vector.h>

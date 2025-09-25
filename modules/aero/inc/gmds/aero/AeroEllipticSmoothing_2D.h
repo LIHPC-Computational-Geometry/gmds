@@ -6,14 +6,14 @@
 #define GMDS_AEROELLIPTICSMOOTHING_2D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/cadfac/FACManager.h>
 #include <string>
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API AeroEllipticSmoothing_2D
+class GMDSAero_API AeroEllipticSmoothing_2D
 {
  public:
 	/*--------------------------------------------------------------------*/

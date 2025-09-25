@@ -2,7 +2,7 @@
 #ifndef GMDS_MCTS_BLOCKING_CLASSIFIER_H
 #define GMDS_MCTS_BLOCKING_CLASSIFIER_H
 /*----------------------------------------------------------------------------*/
-#include <LIB_GMDS_MCTSBLOCK_export.h>
+#include <GMDSMctsBlock_export.h>
 #include <gmds/mctsblock/Blocking.h>
 /*----------------------------------------------------------------------------*/
 #include <string>
@@ -38,7 +38,7 @@ struct ClassificationErrors
  * 		 blocking structure onto a geometrical model.
  *
  */
-class LIB_GMDS_MCTSBLOCK_API BlockingClassifier
+class GMDSMctsBlock_API BlockingClassifier
 {
  public:
 	/** @brief Constructor

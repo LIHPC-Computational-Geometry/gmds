@@ -6,12 +6,12 @@
 #define GMDS_MESHALIGNMENT_2D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include "gmds/ig/Mesh.h"
 #include <gmds/aero/FastLocalize.h>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API MeshAlignment_2D
+class GMDSAero_API MeshAlignment_2D
 {
  public:
 	/*--------------------------------------------------------------------*/

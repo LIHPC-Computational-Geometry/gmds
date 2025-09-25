@@ -2,7 +2,7 @@
 #ifndef GMDS_MCTSTREE_H
 #define GMDS_MCTSTREE_H
 /*----------------------------------------------------------------------------------------*/
-#include "LIB_GMDS_RLBLOCKING_export.h"
+#include "GMDSRlBlocking_export.h"
 #include <gmds/rlBlocking/MCTSState.h>
 #include <gmds/rlBlocking/MCTSMove.h>
 #include <iostream>
@@ -14,7 +14,7 @@ namespace gmds {
 /** @class  MCTSNode
  *  @brief  Class that provides ....
  */
-class LIB_GMDS_RLBLOCKING_API MCTSNode {
+class GMDSRlBlocking_API MCTSNode {
 	/** @brief Yes if the node have no childs */
 	bool terminal;
 	/** @brief Number of nodes in the tree from the node.  */
@@ -94,7 +94,7 @@ class LIB_GMDS_RLBLOCKING_API MCTSNode {
 /** @class  MCTSTree
  *  @brief  Class that provides ....
  */
-class LIB_GMDS_RLBLOCKING_API MCTSTree
+class GMDSRlBlocking_API MCTSTree
 {
 	MCTSNode *root;
  public:

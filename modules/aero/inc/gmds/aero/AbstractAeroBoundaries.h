@@ -6,7 +6,7 @@
 #define GMDS_ABSTRACTAEROBOUNDARIES_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <string>
 #include <map>
@@ -20,7 +20,7 @@ namespace gmds{
  *  \brief  Classe abstraite pour les informations relatives aux frontières
  *  dans le cadre de l'aéro.
  */
-class LIB_GMDS_AERO_API AbstractAeroBoundaries{
+class GMDSAero_API AbstractAeroBoundaries{
 
  public:
 	/*--------------------------------------------------------------------*/

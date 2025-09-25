@@ -8,10 +8,10 @@
 /*----------------------------------------------------------------------------*/
 #include "gmds/ig/Mesh.h"
 #include "gmds/cad/GeomMeshLinker.h"
-#include "LIB_GMDS_BLOCK_MESHER_export.h"
+#include "GMDSBlockMesher_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
-    class LIB_GMDS_BLOCK_MESHER_API BlockMesher{
+    class GMDSBlockMesher_API BlockMesher{
 
     public:
         /*--------------------------------------------------------------------*/

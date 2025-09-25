@@ -6,7 +6,7 @@
 #define GMDS_AEROEXTRUSION_2D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include "gmds/ig/Mesh.h"
 #include <gmds/aero/AeroException.h>
 #include <gmds/aero/Front.h>
@@ -18,7 +18,7 @@
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API AeroExtrusion_2D
+class GMDSAero_API AeroExtrusion_2D
 {
  public:
 	/*--------------------------------------------------------------------*/
