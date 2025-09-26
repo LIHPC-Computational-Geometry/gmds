@@ -2,7 +2,7 @@
 #ifndef GMDS_MCTS_BLOCKING_ACTION_H
 #define GMDS_MCTS_BLOCKING_ACTION_H
 /*----------------------------------------------------------------------------*/
-#include <LIB_GMDS_MCTSBLOCK_export.h>
+#include <GMDSMctsBlock_export.h>
 #include "mcts/IAction.h"
 #include <gmds/utils/CommonTypes.h>
 /*----------------------------------------------------------------------------*/
@@ -12,7 +12,7 @@ namespace mctsblock {
 /*----------------------------------------------------------------------------*/
 /**@brief this class encapsulate the action of cutting a block edge
  */
-class LIB_GMDS_MCTSBLOCK_API EdgeCutAction : public IAction {
+class GMDSMctsBlock_API EdgeCutAction : public IAction {
  public:
 	/**@brief Computes the state reach from @p AState by applying the current
      * action
@@ -37,7 +37,7 @@ class LIB_GMDS_MCTSBLOCK_API EdgeCutAction : public IAction {
 /*----------------------------------------------------------------------------*/
 /**@brief this class encapsulate the action of cutting a block edge
  */
-class LIB_GMDS_MCTSBLOCK_API BlockRemovalAction : public IAction {
+class GMDSMctsBlock_API BlockRemovalAction : public IAction {
  public:
 	/**@brief Computes the state reach from @p AState by applying the current
      * action
@@ -61,7 +61,7 @@ class LIB_GMDS_MCTSBLOCK_API BlockRemovalAction : public IAction {
 /**@brief this class encapsulate the action of trying to classify boundary edges
  * and faces
  */
-class LIB_GMDS_MCTSBLOCK_API CaptureAction : public IAction {
+class GMDSMctsBlock_API CaptureAction : public IAction {
  public:
 	/**@brief Computes the state reach from @p AState by applying the current
      * action

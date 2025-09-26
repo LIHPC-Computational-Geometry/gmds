@@ -3,14 +3,14 @@
 #define GMDS_ELLIPTICMORPH_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_MORPHMESH_export.h"
+#include "GMDSmorphMesh_export.h"
 #include "gmds/ig/Mesh.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
 namespace morphmesh {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_MORPHMESH_API EllipticMorph
+class GMDSmorphMesh_API EllipticMorph
 {
 	/*
 	 * Need a parameter file in argument

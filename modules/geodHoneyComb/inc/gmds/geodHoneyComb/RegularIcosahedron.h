@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------------*/
 #include <memory>
 #include <gmds/ig/Mesh.h>
-#include "LIB_GMDS_GEOD_HONEY_COMB_export.h"
+#include "GMDSGeodHoneyComb_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
     /*------------------------------------------------------------------------*/
@@ -18,7 +18,7 @@ namespace gmds{
      *          We build it as a surface mesh made of nodes and triangles and the
      *          N2F and F2N connections.
      */
-    class LIB_GMDS_GEOD_HONEY_COMB_API RegularIcosahedron{
+    class GMDSGeodHoneyComb_API RegularIcosahedron{
     public:
         /** @brief Build a regular icosahedron with radius \p ARadius and \p ACenter
          *

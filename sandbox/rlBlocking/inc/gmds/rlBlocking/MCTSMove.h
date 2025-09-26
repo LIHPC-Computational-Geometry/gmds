@@ -5,7 +5,7 @@
 #ifndef GMDS_MCTSMOVE_H
 #define GMDS_MCTSMOVE_H
 /*----------------------------------------------------------------------------------------*/
-#include "LIB_GMDS_RLBLOCKING_export.h"
+#include "GMDSRlBlocking_export.h"
 #include <string>
 /*----------------------------------------------------------------------------------------*/
 namespace gmds {
@@ -13,7 +13,7 @@ namespace gmds {
 /** @class  MCTSMove
  *  @brief  Structure that provides ....
  */
-struct LIB_GMDS_RLBLOCKING_API MCTSMove {
+struct GMDSRlBlocking_API MCTSMove {
 	/*------------------------------------------------------------------------*/
 	/** @brief  Destructor
 	 */

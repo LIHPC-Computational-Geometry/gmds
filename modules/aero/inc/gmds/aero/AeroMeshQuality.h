@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------------*/
 // gmds file headers
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include "gmds/ig/Mesh.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
@@ -18,7 +18,7 @@ namespace math {
 /** \class Utils
  *  \brief
  **/
-class LIB_GMDS_AERO_API AeroMeshQuality {
+class GMDSAero_API AeroMeshQuality {
  public:
 	/*------------------------------------------------------------------------*/
 	/** \brief  The angles side by side the edge (n0_id, n1_id)

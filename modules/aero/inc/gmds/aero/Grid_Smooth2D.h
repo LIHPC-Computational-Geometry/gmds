@@ -6,7 +6,7 @@
 #define GMDS_GRID_SMOOTH2D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/ig/Blocking2D.h>
 /*----------------------------------------------------------------------------*/
@@ -16,7 +16,7 @@
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API Grid_Smooth2D {
+class GMDSAero_API Grid_Smooth2D {
  public:
 	/*--------------------------------------------------------------------*/
 	/** @enum  Status code for executing algorithms

@@ -7,13 +7,13 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
 #include <gmds/math/Cross2D.h>
-#include "LIB_GMDS_FRAME_export.h"
+#include "GMDSFrame_export.h"
 /*----------------------------------------------------------------------------*/
 /** \class  CrossFieldGeneration2D
  *  \brief  Computes a 2D cross field onto a 2D triangular mesh by solving a
  *          simple Laplace equation via FEM
  */
-class LIB_GMDS_FRAME_API CrossFieldGeneration2D {
+class GMDSFrame_API CrossFieldGeneration2D {
 
   public:
   /*------------------------------------------------------------------------*/

@@ -6,7 +6,7 @@
 #define GMDS_LEASTSQUARESGRADIENTCOMPUTATION_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/aero/DistanceMap.h>
 #include <string>
@@ -15,7 +15,7 @@
 #include <Eigen/Sparse>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API LeastSquaresGradientComputation
+class GMDSAero_API LeastSquaresGradientComputation
 {
  public:
 	/*--------------------------------------------------------------------*/

@@ -13,7 +13,7 @@
 #include <gmds/math/SHarmonicL4.h>
 /*----------------------------------------------------------------------------*/
 #include <gmds/frame3d/Params.h>
-#include "LIB_GMDS_FRAME_3D_export.h"
+#include "GMDSFrame3d_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -22,7 +22,7 @@ namespace gmds{
  *          between them are extracted. The algorithms relies on working in
  *          a parametrization that fits the input frame field as best as possible.
  */
-class LIB_GMDS_FRAME_3D_API PGPComputing{
+class GMDSFrame3d_API PGPComputing{
     
 public:
     /*------------------------------------------------------------------------*/

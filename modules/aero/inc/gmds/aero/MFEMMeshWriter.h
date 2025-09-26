@@ -6,7 +6,7 @@
 #define GMDS_MFEMMESHWRITER_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include "gmds/ig/Mesh.h"
 #include <gmds/cadfac/FACManager.h>
 #include <string>
@@ -14,7 +14,7 @@
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API MFEMMeshWriter
+class GMDSAero_API MFEMMeshWriter
 {
  public:
 	/*--------------------------------------------------------------------*/

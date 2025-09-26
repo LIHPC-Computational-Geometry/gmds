@@ -6,7 +6,7 @@
 #define GMDS_DISTANCEMAP_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <iostream>
 #include <string>
@@ -15,7 +15,7 @@
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API DistanceMap {
+class GMDSAero_API DistanceMap {
  public:
 	/*--------------------------------------------------------------------*/
 	/** @enum  Status code for executing algorithms
@@ -68,7 +68,7 @@ class LIB_GMDS_AERO_API DistanceMap {
 	/*-------------------------------------------------------------------*/
 	/** @brief Surcharge de l'opérateur << pour l'affichaque des maps
 	 */
-	friend LIB_GMDS_AERO_API std::ostream& operator<<(std::ostream&, const DistanceMap&);
+	friend GMDSAero_API std::ostream& operator<<(std::ostream&, const DistanceMap&);
 	/*-------------------------------------------------------------------*/
 	/** @brief Surcharge de l'opérateur ()
 	 */

@@ -6,7 +6,7 @@
 #define GMDS_PATTERNFACE_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/aero/Front_3D.h>
 #include <gmds/aero/LayerStructureManager_3D.h>
@@ -15,7 +15,7 @@
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API PatternFace
+class GMDSAero_API PatternFace
 {
  public:
 	/*--------------------------------------------------------------------*/

@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------------------*/
-class LIB_GMDS_RLBLOCKING_API MCTSAgent
+class GMDSRlBlocking_API MCTSAgent
 {
 	// example of an agent based on the MCTS_tree. One can also use the tree directly.
 	MCTSTree *tree;

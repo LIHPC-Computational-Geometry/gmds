@@ -2,7 +2,7 @@
 #ifndef GMDS_MCTSMOVE_POLYCUBE_H
 #define GMDS_MCTSMOVE_POLYCUBE_H
 /*----------------------------------------------------------------------------------------*/
-#include "LIB_GMDS_RLBLOCKING_export.h"
+#include "GMDSRlBlocking_export.h"
 #include <gmds/rlBlocking/MCTSMove.h>
 #include <gmds/utils/CommonTypes.h>
 #include <deque>
@@ -13,7 +13,7 @@ namespace gmds {
 /** @class  MCTSMove
  *  @brief  Structure that provides ....
  */
-struct LIB_GMDS_RLBLOCKING_API MCTSMovePolycube: public MCTSMove {
+struct GMDSRlBlocking_API MCTSMovePolycube: public MCTSMove {
 	/*------------------------------------------------------------------------*/
 	/** @brief  Destructor
 	 */

@@ -6,7 +6,7 @@
 #define GMDS_PATTERNNODE3CORNER_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/aero/AbstractPatternNode.h>
 /*----------------------------------------------------------------------------*/
 namespace  gmds {
@@ -14,7 +14,7 @@ namespace  gmds {
 /** \class  PatternNode3Corner
  *  \brief
  */
-class LIB_GMDS_AERO_API PatternNode3Corner: public AbstractPatternNode {
+class GMDSAero_API PatternNode3Corner: public AbstractPatternNode {
  public:
 	/*-------------------------------------------------------------------*/
 	/** @brief Constructor.

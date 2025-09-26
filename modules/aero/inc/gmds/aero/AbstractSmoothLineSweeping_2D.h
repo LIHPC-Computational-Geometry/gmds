@@ -6,7 +6,7 @@
 #define GMDS_ABSTRACTSMOOTHLINESWEEPING_2D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Blocking2D.h>
 #include <gmds/math/Point.h>
 #include <gmds/utils/Array.h>
@@ -19,7 +19,7 @@ namespace gmds{
 /** \class  AbstractSmoothLineSweeping_2D
  *  \brief  Classe abstraite pour l'algorithme de lissage.
  */
-class LIB_GMDS_AERO_API AbstractSmoothLineSweeping_2D{
+class GMDSAero_API AbstractSmoothLineSweeping_2D{
 
  public:
 	/*--------------------------------------------------------------------*/

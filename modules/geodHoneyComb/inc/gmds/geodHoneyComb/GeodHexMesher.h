@@ -7,14 +7,14 @@
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
 #include <gmds/math/DiscretizationScheme1D.h>
-#include "LIB_GMDS_GEOD_HONEY_COMB_export.h"
+#include "GMDSGeodHoneyComb_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
     /*------------------------------------------------------------------------*/
     /** @class This class gathers some basic algorithm to build a honeycomb
      *          mesh of a spherical domain
      */
-    class LIB_GMDS_GEOD_HONEY_COMB_API GeodHexMesher{
+    class GMDSGeodHoneyComb_API GeodHexMesher{
     public:
         typedef enum {
             GEOD_SUCCESS,

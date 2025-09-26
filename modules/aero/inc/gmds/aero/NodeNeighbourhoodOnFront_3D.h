@@ -6,12 +6,12 @@
 #define GMDS_NODENEIGHBOURHOODONFRONT_3D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/aero/Front_3D.h>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API NodeNeighbourhoodOnFront_3D
+class GMDSAero_API NodeNeighbourhoodOnFront_3D
 {
 
  public:

@@ -6,7 +6,7 @@
 #define GMDS_REFINEMENTBETABLOCKING_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include "gmds/ig/Mesh.h"
 #include <gmds/ig/Blocking2D.h>
 #include <gmds/aero/Params.h>
@@ -15,7 +15,7 @@
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API RefinementBetaBlocking
+class GMDSAero_API RefinementBetaBlocking
 {
  public:
 	/*--------------------------------------------------------------------*/

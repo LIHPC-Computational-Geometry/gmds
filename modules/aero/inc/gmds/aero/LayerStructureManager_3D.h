@@ -6,13 +6,13 @@
 #define GMDS_LAYERSTRUCTUREMANAGER_3D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include "gmds/ig/Mesh.h"
 #include <gmds/aero/Front_3D.h>
 #include <gmds/aero/Params.h>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API LayerStructureManager_3D
+class GMDSAero_API LayerStructureManager_3D
 {
 
  public:

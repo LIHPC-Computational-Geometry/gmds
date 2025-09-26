@@ -13,7 +13,7 @@
 #include <gmds/math/SHarmonicL4.h>
 /*----------------------------------------------------------------------------*/
 #include <gmds/frame3d/Params.h>
-#include "LIB_GMDS_FRAME_3D_export.h"
+#include "GMDSFrame3d_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -22,7 +22,7 @@ namespace gmds{
  *          that will be used for creating a quasi-structured mesh afterward (
             mostly made of quadrilaterals and hexahedrals)
  */
-class LIB_GMDS_FRAME_3D_API PGPStructPointExtraction{
+class GMDSFrame3d_API PGPStructPointExtraction{
     
 public:
     /*------------------------------------------------------------------------*/

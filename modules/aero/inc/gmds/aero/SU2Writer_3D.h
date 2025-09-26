@@ -6,7 +6,7 @@
 #define GMDS_SU2WRITER_3D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include "gmds/ig/Mesh.h"
 #include <gmds/aero/Front.h>
 #include <gmds/aero/Params.h>
@@ -15,7 +15,7 @@
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API SU2Writer_3D
+class GMDSAero_API SU2Writer_3D
 {
  public:
 	/*--------------------------------------------------------------------*/

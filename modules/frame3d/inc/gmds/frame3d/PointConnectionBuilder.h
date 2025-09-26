@@ -10,7 +10,7 @@
 #include <gmds/math/Chart.h>
 #include <gmds/math/AxisAngleRotation.h>
 #include <gmds/utils/OrientedGraph.h>
-#include "LIB_GMDS_FRAME_3D_export.h"
+#include "GMDSFrame3d_export.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds{
 /*----------------------------------------------------------------------------*/
@@ -21,7 +21,7 @@ namespace gmds{
  *          information indicating for each frame field direction where a point
  *          is connected to.
  */
-class LIB_GMDS_FRAME_3D_API PointConnectionBuilder{
+class GMDSFrame3d_API PointConnectionBuilder{
 
 public:
     /*------------------------------------------------------------------------*/

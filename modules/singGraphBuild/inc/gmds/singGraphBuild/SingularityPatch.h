@@ -10,7 +10,7 @@
 #define SINGULARITYPATCH_H_
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
-#include "LIB_GMDS_SING_GRAPH_BUILD_export.h"
+#include "GMDSSingGraphBuild_export.h"
 /*----------------------------------------------------------------------------*/
 #include <vector>
 /*----------------------------------------------------------------------------*/
@@ -22,7 +22,7 @@ class SingularityPoint;
  *        that is a surface patch bounded by singularity lines connected in
  *        singularity points.
  */
-class LIB_GMDS_SING_GRAPH_BUILD_API SingularityPatch
+class GMDSSingGraphBuild_API SingularityPatch
 {
  public:  
 

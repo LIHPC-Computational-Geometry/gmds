@@ -6,7 +6,7 @@
 #define GMDS_FRONT_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <iostream>
 #include <string>
@@ -15,7 +15,7 @@
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API Front {
+class GMDSAero_API Front {
  public:
 	/*--------------------------------------------------------------------*/
 	/** @enum  Status code for executing algorithms

@@ -6,7 +6,7 @@
 #define GMDS_LEVELSETEXTENDED_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/aero/AbstractLevelSet.h>
 /*----------------------------------------------------------------------------*/
 namespace  gmds {
@@ -14,7 +14,7 @@ namespace  gmds {
 /** \class  LevelSetExtended
  *  \brief
  */
-class LIB_GMDS_AERO_API LevelSetExtended: public AbstractLevelSet {
+class GMDSAero_API LevelSetExtended: public AbstractLevelSet {
  public:
 
 	/*------------------------------------------------------------------------*/

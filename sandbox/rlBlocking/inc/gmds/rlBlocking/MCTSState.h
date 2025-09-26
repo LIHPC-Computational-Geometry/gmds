@@ -5,7 +5,7 @@
 #ifndef GMDS_MCTSSTATE_H
 #define GMDS_MCTSSTATE_H
 /*----------------------------------------------------------------------------------------*/
-#include "LIB_GMDS_RLBLOCKING_export.h"
+#include "GMDSRlBlocking_export.h"
 #include <gmds/rlBlocking/MCTSMove.h>
 #include <iostream>
 /*----------------------------------------------------------------------------------------*/
@@ -17,7 +17,7 @@ namespace gmds {
  *  @brief  Class that provides the interface to be implemented for performing the
  *  MCST algorithm
  */
-class LIB_GMDS_RLBLOCKING_API MCTSState {
+class GMDSRlBlocking_API MCTSState {
  public:
 		/*--------------------------------------------------------------------*/
 		/** @enum  Status code for rollout execution

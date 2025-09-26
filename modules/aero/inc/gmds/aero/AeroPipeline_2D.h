@@ -6,7 +6,7 @@
 #define GMDS_AEROPIPELINE_2D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/aero/AbstractAeroPipeline.h>
 #include <gmds/aero/AeroBoundaries_2D.h>
 #include <gmds/ig/Blocking2D.h>
@@ -17,7 +17,7 @@ namespace  gmds {
 /** \class  AeroPipeline_2D
  *  \brief  Pipeline de génération de maillages 2D pour l'aéro.
  */
-class LIB_GMDS_AERO_API AeroPipeline_2D : public AbstractAeroPipeline {
+class GMDSAero_API AeroPipeline_2D : public AbstractAeroPipeline {
  public:
 
 	/*------------------------------------------------------------------------*/

@@ -1,7 +1,7 @@
 #ifndef GMDS_MILP_MILP_H
 #define GMDS_MILP_MILP_H
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_MILP_export.h"
+#include "GMDSmilp_export.h"
 #include <gmds/ig/Mesh.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds{
@@ -11,7 +11,7 @@ namespace milp{
 /** \class  dummy
  *  \brief  dummy class.
  */
-class LIB_GMDS_MILP_API milp{
+class GMDSmilp_API milp{
 
  public:
 	/*-------------------------------------------------------------------------*/

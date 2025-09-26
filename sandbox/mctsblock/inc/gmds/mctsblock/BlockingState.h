@@ -3,7 +3,7 @@
 #define GMDS_MCTS_BLOCKING_STATE_H
 /*----------------------------------------------------------------------------*/
 #include "mcts/IState.h"
-#include <LIB_GMDS_MCTSBLOCK_export.h>
+#include <GMDSMctsBlock_export.h>
 #include <gmds/mctsblock/Blocking.h>
 #include <iostream>
 #include <queue>
@@ -13,7 +13,7 @@ namespace gmds {
 /*----------------------------------------------------------------------------*/
 namespace mctsblock {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_MCTSBLOCK_API BlockingState : public IState
+class GMDSMctsBlock_API BlockingState : public IState
 {
  public:
 

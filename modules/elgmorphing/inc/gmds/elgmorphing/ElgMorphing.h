@@ -2,7 +2,7 @@
 #define GMDS_ELGMORPHING_ELGMORPHING_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_ELGMORPHING_export.h"
+#include "GMDSelgmorphing_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/math/Point.h>
 #include <set>
@@ -15,7 +15,7 @@ namespace elgmorphing {
 /** \class ElgMorphing
  *  \brief  Class
  */
-class LIB_GMDS_ELGMORPHING_API ElgMorphing{
+class GMDSelgmorphing_API ElgMorphing{
 
  public:
 	/*-------------------------------------------------------------------------*/

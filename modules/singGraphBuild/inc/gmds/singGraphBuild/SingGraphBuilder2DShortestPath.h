@@ -12,7 +12,7 @@
 /*----------------------------------------------------------------------------*/
 #include <glpk.h>
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_SING_GRAPH_BUILD_export.h"
+#include "GMDSSingGraphBuild_export.h"
 #include <gmds/singGraphBuild/SingularityGraph.h>
 #include <gmds/singGraphBuild/SingularityGraphBuilder2D.h>
 /*----------------------------------------------------------------------------*/
@@ -22,7 +22,7 @@ namespace gmds {
 class IllegalLineCrossingFinder;
 class LineIntersectionsDetector;
 
-class LIB_GMDS_SING_GRAPH_BUILD_API SingGraphBuilder2DShortestPath : public SingularityGraphBuilder2D
+class GMDSSingGraphBuild_API SingGraphBuilder2DShortestPath : public SingularityGraphBuilder2D
 {
  public:
 	SingGraphBuilder2DShortestPath(Mesh *AMesh, Variable<math::Cross2D> *AField, const bool ABuildGeomSing = true);

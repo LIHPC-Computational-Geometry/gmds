@@ -6,14 +6,14 @@
 #define GMDS_REFINEMENTBETA_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include "gmds/ig/Mesh.h"
 #include <string>
 #include <map>
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API RefinementBeta
+class GMDSAero_API RefinementBeta
 {
  public:
 	/*--------------------------------------------------------------------*/

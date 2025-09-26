@@ -6,7 +6,7 @@
 #define GMDS_ABSTRACTPATTERNEDGE_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/aero/Front_3D.h>
 #include <gmds/aero/LayerStructureManager_3D.h>
@@ -20,7 +20,7 @@ namespace gmds{
 /** \class  AbstractPatternEdge
  *  \brief
  */
-class LIB_GMDS_AERO_API AbstractPatternEdge{
+class GMDSAero_API AbstractPatternEdge{
 
  public:
 	/*--------------------------------------------------------------------*/

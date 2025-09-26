@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------------*/
 // gmds file headers
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include "gmds/ig/Mesh.h"
 #include "gmds/ig/Blocking2D.h"
 #include <gmds/aero/Blocking3D.h>
@@ -24,7 +24,7 @@ namespace math {
 /** \class Utils
  *  \brief
  **/
-class LIB_GMDS_AERO_API Utils {
+class GMDSAero_API Utils {
  public:
 	/*------------------------------------------------------------------------*/
 	/** \brief  Compute the distance between two nodes given the ids

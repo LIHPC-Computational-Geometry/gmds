@@ -6,14 +6,14 @@
 #define GMDS_LEVELSETCOMBINED_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include "gmds/ig/Mesh.h"
 #include <string>
 #include <map>
 #include <fstream>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API LevelSetCombined
+class GMDSAero_API LevelSetCombined
 {
  public:
 	/*--------------------------------------------------------------------*/

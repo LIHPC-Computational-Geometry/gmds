@@ -10,7 +10,7 @@
 #define SINGULARITYPOINT_H_
 /*----------------------------------------------------------------------------*/
 #include <gmds/ig/Mesh.h>
-#include "LIB_GMDS_SING_GRAPH_BUILD_export.h"
+#include "GMDSSingGraphBuild_export.h"
 /*----------------------------------------------------------------------------*/
 #include <vector>
 /*----------------------------------------------------------------------------*/
@@ -20,7 +20,7 @@ class SingularityLine;
  * \brief Class that describes services and properties shared by
  *        all types of singularity points.
  */
-class LIB_GMDS_SING_GRAPH_BUILD_API SingularityPoint
+class GMDSSingGraphBuild_API SingularityPoint
 {
  public:  
   /*-------------------------------------------------------------------------*/
@@ -259,7 +259,7 @@ class LIB_GMDS_SING_GRAPH_BUILD_API SingularityPoint
  *        can be a singularity point of the frame field or the intersection of
  *        two singularity lines in a stable area.
  */
-class LIB_GMDS_SING_GRAPH_BUILD_API SurfaceSingularityPoint : public SingularityPoint {
+class GMDSSingGraphBuild_API SurfaceSingularityPoint : public SingularityPoint {
  public:
 
   /*------------------------------------------------------------------------*/
@@ -298,7 +298,7 @@ class LIB_GMDS_SING_GRAPH_BUILD_API SurfaceSingularityPoint : public Singularity
  *        curve it lies on in 2 directions + 1 or 2 line inside the
  *        adjacent surfaces.
  */
-class LIB_GMDS_SING_GRAPH_BUILD_API CurveSingularityPoint : public SingularityPoint {
+class GMDSSingGraphBuild_API CurveSingularityPoint : public SingularityPoint {
  public:
 
  CurveSingularityPoint(gmds::Mesh* AOwner, 
@@ -318,7 +318,7 @@ class LIB_GMDS_SING_GRAPH_BUILD_API CurveSingularityPoint : public SingularityPo
  *		  As a consequence, its slots corresponds to the geometrical
  *        curves incident to V or to inner volume sing. line
  */
-class LIB_GMDS_SING_GRAPH_BUILD_API VertexSingularityPoint : public SingularityPoint {
+class GMDSSingGraphBuild_API VertexSingularityPoint : public SingularityPoint {
  public:
 
  VertexSingularityPoint(gmds::Mesh* AOwner, 
@@ -334,7 +334,7 @@ class LIB_GMDS_SING_GRAPH_BUILD_API VertexSingularityPoint : public SingularityP
   gmds::Node getMeshNode();
 };
 /*-----------------------------------------------------------------*/
-class LIB_GMDS_SING_GRAPH_BUILD_API VolumeSingularityPoint : public SingularityPoint {
+class GMDSSingGraphBuild_API VolumeSingularityPoint : public SingularityPoint {
  public:
  VolumeSingularityPoint(gmds::Mesh* AOwner) 
    :SingularityPoint(AOwner,FIELD, VOLUME){ ; }
@@ -351,10 +351,10 @@ class LIB_GMDS_SING_GRAPH_BUILD_API VolumeSingularityPoint : public SingularityP
 
 };
 /*-----------------------------------------------------------------*/
-template<> LIB_GMDS_SING_GRAPH_BUILD_API std::vector<gmds::Node>   SingularityPoint::getMesh<gmds::Node>();
-template<> LIB_GMDS_SING_GRAPH_BUILD_API std::vector<gmds::Edge>   SingularityPoint::getMesh<gmds::Edge>();
-template<> LIB_GMDS_SING_GRAPH_BUILD_API std::vector<gmds::Face>   SingularityPoint::getMesh<gmds::Face>();
-template<> LIB_GMDS_SING_GRAPH_BUILD_API std::vector<gmds::Region> SingularityPoint::getMesh<gmds::Region>();
+template<> GMDSSingGraphBuild_API std::vector<gmds::Node>   SingularityPoint::getMesh<gmds::Node>();
+template<> GMDSSingGraphBuild_API std::vector<gmds::Edge>   SingularityPoint::getMesh<gmds::Edge>();
+template<> GMDSSingGraphBuild_API std::vector<gmds::Face>   SingularityPoint::getMesh<gmds::Face>();
+template<> GMDSSingGraphBuild_API std::vector<gmds::Region> SingularityPoint::getMesh<gmds::Region>();
 /*-----------------------------------------------------------------*/
 #endif /* SINGULARITYPOINT_H_ */
 /*-----------------------------------------------------------------*/

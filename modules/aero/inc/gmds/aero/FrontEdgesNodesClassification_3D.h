@@ -6,14 +6,14 @@
 #define GMDS_FRONTEDGESNODESCLASSIFICATION_3D_H
 
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_AERO_export.h"
+#include "GMDSAero_export.h"
 #include <gmds/ig/Mesh.h>
 #include <gmds/aero/Front_3D.h>
 #include <gmds/aero/FastLocalize.h>
 #include <gmds/aero/Params.h>
 namespace gmds {
 /*----------------------------------------------------------------------------*/
-class LIB_GMDS_AERO_API FrontEdgesNodesClassification_3D
+class GMDSAero_API FrontEdgesNodesClassification_3D
 {
 
  public:
