@@ -5,7 +5,7 @@
         "name": "ci",
         "cacheVariables": {
           "WITH_LIMA": "ON",
-          "Lima_ROOT": "$env{INSTALL_DIR}/lima"
+          "Lima_ROOT": "$env{INSTALL_DIR}/lima",
 	  "WITH_CGNS": "ON",
           "Cgns_ROOT": "$env{INSTALL_DIR}/CGNS-4.3.0"
         }
