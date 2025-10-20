@@ -14,12 +14,15 @@ using namespace gmds;
 /*----------------------------------------------------------------------------*/
 using namespace aero;
 
-#define Structured CG_Structured
-#define RealDouble CG_RealDouble
-#define BCTypeUserDefined CG_BCTypeUserDefined
-#define PointRange CG_PointRange
-#define Unstructured CG_Unstructured
-#define TRI_3 CG_TRI_3
+// this handles CGNS built without CGNS_ENABLE_SCOPING
+#if CG_BUILD_SCOPE == 0
+#  define CG_Structured Structured
+#  define CG_RealDouble RealDouble
+#  define CG_BCTypeUserDefined BCTypeUserDefined
+#  define CG_PointRange PointRange
+#  define CG_Unstructured Unstructured
+#  define CG_TRI_3 TRI_3
+#endif
 /*----------------------------------------------------------------------------*/
 CGNSWriter3D::CGNSWriter3D(Blocking3D *ABlocking)
   :m_blocks(ABlocking),m_mesh(nullptr)
@@ -106,7 +109,7 @@ void CGNSWriter3D::writeZones()
 		// Ici on va remplir les infos sur le nombre de sommets, mailles etc du bloc
 		cgsize_t zone_size[9] = {discrI, discrJ, discrK, discrI - 1, discrJ - 1, discrK - 1,0,0,0};
 
-		cg_zone_write(m_indexFile, m_indexBase, zonename, zone_size, Structured, &m_indexZone);
+		cg_zone_write(m_indexFile, m_indexBase, zonename, zone_size, CG_Structured, &m_indexZone);
 
 		int size = discrI * discrJ * discrK;
 		auto x_coords = new double[size];
@@ -133,9 +136,9 @@ void CGNSWriter3D::writeZones()
 		char coord_nameZ[32];
 		strcpy(coord_nameZ, "CoordinateZ");
 
-		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, RealDouble, coord_nameX, x_coords, &index_coord);
-		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, RealDouble, coord_nameY, y_coords, &index_coord);
-		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, RealDouble, coord_nameZ, z_coords, &index_coord);
+		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, CG_RealDouble, coord_nameX, x_coords, &index_coord);
+		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, CG_RealDouble, coord_nameY, y_coords, &index_coord);
+		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, CG_RealDouble, coord_nameZ, z_coords, &index_coord);
 
 
 		//Writing Boundary Condition
@@ -597,7 +600,7 @@ void CGNSWriter3D::writeBoundaryCondition(int &num_bc, cgsize_t* pts, int id_zon
 	std::string bctype_s = bctype_ss.str();
 	strcpy(bc_name,bctype_s.c_str());
 
-	if(cg_boco_write(m_indexFile,m_indexBase,id_zone,bc_name,BCTypeUserDefined,PointRange,2,pts,&num_bc)
+	if(cg_boco_write(m_indexFile,m_indexBase,id_zone,bc_name,CG_BCTypeUserDefined,CG_PointRange,2,pts,&num_bc)
 	    != CG_OK) {
 		std::cout<<cg_get_error()<<std::endl;
 	}
