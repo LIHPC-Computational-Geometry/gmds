@@ -83,11 +83,23 @@ void CGNSWriter3D::writeZones()
 	int index_tf = 0;
 	int id_bc = 0;
 
-	Variable<int>* farfield = m_blocks->getVariable<int,GMDS_NODE>("Farfield");
-	Variable<int>* paroi = m_blocks->getVariable<int,GMDS_NODE>("Paroi");
-	Variable<int>* out = m_blocks->getOrCreateVariable<int,GMDS_NODE>("Sortie");
-	Variable<int>* solid = m_blocks->getOrCreateVariable<int,GMDS_REGION>("Solide");
+	std::vector<Variable<int>*> bc_vars;
+	std::vector<Variable<int>*> zone_vars;
 
+	std::cout<<"Boundary Conditions names : ";
+	for(auto var : m_blocks->getAllVariables(GMDS_FACE)){
+		if(var->getName() != "mark"){
+			bc_vars.push_back(m_blocks->getVariable<int,GMDS_FACE>(var->getName()));
+			std::cout<<var->getName()<<" ";
+		}
+	}
+	std::cout<<std::endl;
+	for(auto var : m_blocks->getAllVariables(GMDS_REGION)){
+		if(var->getName() != "discrI" && var->getName() != "discrJ" && var->getName() != "discrK"
+		    && var->getName() != "block_grid" && var->getName() != "mark"){
+			zone_vars.push_back(m_blocks->getVariable<int,GMDS_REGION>(var->getName()));
+		}
+	}
 
 	for (auto bid : m_blocks->regions()) {
 		Region b = m_blocks->get<Region>(bid);
@@ -96,8 +108,13 @@ void CGNSWriter3D::writeZones()
 
 		// Le nom de la zone correspond au nom du bloc, dans notre cas on l'appel juste
 		//  "Block_<Block_ID>"
+		std::string zone_type;
+		for(auto var : zone_vars){
+			if(var->value(b.id()) == 1)
+				zone_type = var->getName();
+		}
 		std::stringstream ss;
-		ss << (solid->value(b.id()) == 1 ? "SOLIDE" : "FLUIDE ") << std::setw(5) << std::setfill('0') << b.id()+1;     // Pour le moment on utilise les faces du mesh comme bloc
+		ss << zone_type << " " << std::setw(5) << std::setfill('0') << b.id()+1;     // Pour le moment on utilise les faces du mesh comme bloc
 		std::string name = ss.str();
 		char zonename[32];
 		strcpy(zonename, name.c_str());
@@ -140,9 +157,10 @@ void CGNSWriter3D::writeZones()
 		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, CG_RealDouble, coord_nameY, y_coords, &index_coord);
 		cg_coord_write(m_indexFile, m_indexBase, m_indexZone, CG_RealDouble, coord_nameZ, z_coords, &index_coord);
 
-
 		//Writing Boundary Condition
 		for(int iFace = 0; iFace<6; iFace++){
+			std::cout<<"Write connection "<<iFace<<" du bloc "<<b.id()<<std::endl;
+
 			Face face = b.get<Face>()[iFace];
 
 			if(face.get<Region>().size() == 2){
@@ -150,14 +168,19 @@ void CGNSWriter3D::writeZones()
 
 				char interface[33];
 				std::stringstream interface_ss;
-				interface_ss << "S" << std::setw(5) << std::setfill('0') << face.id()+1 << " (F" << std::setw(5) << std::setfill('0') << b.id()+1 << " & F" << std::setw(5)
+				interface_ss << "F" << std::setw(5) << std::setfill('0') << face.id()+1 << " (B" << std::setw(5) << std::setfill('0') << b.id()+1 << " & B" << std::setw(5)
 				             << std::setfill('0') << id_voisin+1 << ")";
 				std::string interface_s = interface_ss.str();
 				strcpy(interface, interface_s.c_str());
 				std::cout << "\t -> connection " << interface_s << std::endl;
 
+				std::string zone_type2;
+				for(auto var : zone_vars){
+					if(var->value(id_voisin) == 1)
+						zone_type2 = var->getName();
+				}
 				std::stringstream name2_ss;
-				name2_ss << "FLUIDE " << std::setw(5) << std::setfill('0') << id_voisin+1;
+				name2_ss << zone_type2 << std::setw(5) << std::setfill('0') << id_voisin+1;
 				std::string name2 = name2_ss.str();     // Pour le moment on utilise les faces du mesh comme bloc
 				char zonename2[32];
 				strcpy(zonename2, name2.c_str());
@@ -478,28 +501,12 @@ void CGNSWriter3D::writeZones()
 				}
 			}
 
-
 			cgsize_t pts_bc[12];
 
-			int type_bc = 0;
-			int cpt_ff = 0;
-			int cpt_par = 0;
-			int cpt_axis = 0;
-			int cpt_out = 0;
-			for(auto n : face.getIDs<Node>()){
-				if(farfield->value(n) == 1) cpt_ff++;
-				if(paroi->value(n) == 1) cpt_par++;
-				if (axis->value(n) == 1) cpt_axis++;
-				if (out->value(n) == 1) cpt_out++;
-			}
-			if(cpt_ff == 4){
-				type_bc = 1;
-			}else if(cpt_par == 4){
-				type_bc = 2;
-			}else if(cpt_axis == 4){
-				type_bc = 3;
-			}else if(cpt_out == 4){
-				type_bc = 4;
+			int type_bc = -1;
+			for(int ivar = 0; ivar < bc_vars.size(); ivar++){
+				if(bc_vars[ivar]->value(face.id()) == 1)
+					type_bc = ivar;
 			}
 
 			switch (iFace) {
@@ -561,21 +568,7 @@ void CGNSWriter3D::writeZones()
 			}
 
 			std::string bcType_s;
-			if (type_bc == 1) {
-				bcType_s = "FARFIELD";
-			}
-			else if (type_bc == 2) {
-				bcType_s = "PAROI";
-			}
-			else if (type_bc == 3) {
-				bcType_s = "SYMETRIE";
-			}
-			else if (type_bc == 4) {
-				bcType_s = "SORTIE";
-			}
-			else{
-				bcType_s = "ORFN";
-			}
+			bcType_s = bc_vars[type_bc]->getName();
 
 			// Family name
 			char bc_type[32];
@@ -626,9 +619,9 @@ void CGNSWriter3D::write(const std::string &AInFileName, const std::string &AOut
 
 	std::cout<<"End reading"<<std::endl;
 */
-	MeshDoctor doc(m_blocks);
-	doc.buildFacesAndR2F();
-	doc.buildF2R(m_blocks->getModel());
+	//MeshDoctor doc(m_blocks);
+	//doc.buildFacesAndR2F();
+	//doc.buildF2R(m_blocks->getModel());
 
 	m_block_grid = m_blocks->newVariable<std::vector<TCellID>,GMDS_REGION>("block_grid");
 
