@@ -2,8 +2,8 @@
 // Created by calderans on 29/06/23.
 //
 
-#ifndef GMDS_CGNSWRITER3D_H
-#define GMDS_CGNSWRITER3D_H
+#ifndef GMDS_CGNSWRITERND_H
+#define GMDS_CGNSWRITERND_H
 /*----------------------------------------------------------------------------*/
 #include <sstream>
 /*----------------------------------------------------------------------------*/
@@ -17,7 +17,7 @@ namespace gmds {
 
 namespace aero {
 
-class GMDSAero_API CGNSWriter3D
+class GMDSAero_API CGNSWriterND
 {
  public:
 	/** @brief Constructor
@@ -25,20 +25,17 @@ class GMDSAero_API CGNSWriter3D
 		 * @param AMeshService an implementation of an io service to write data
 		 * 						  into a mesh
 	 */
-	CGNSWriter3D(Blocking3D *ABlocking);
+	CGNSWriterND(Blocking3D *ABlocking, int ADim);
 
-	CGNSWriter3D(Mesh *AMesh);
+	CGNSWriterND(Mesh *AMesh, int ADim);
 
-	CGNSWriter3D();
+	CGNSWriterND();
 
 	/*------------------------------------------------------------------------*/
 	/** \brief Destructor. */
-	virtual ~CGNSWriter3D();
+	virtual ~CGNSWriterND();
 
 	void write(const std::string &AInFileName, const std::string &AOutFileName, const std::string &AWorkingDir);
-
-	void writeBoundaryCondition(int &id_bc, cgsize_t *pts, int id_zone, char ABCtype[32], int AEdgeID) const;
-
 
  protected:
 	void initialize(const std::string &AOutFileName, const std::string &dir);
@@ -51,7 +48,11 @@ class GMDSAero_API CGNSWriter3D
 
 	void _getIndicesIdAndVal(const int *ipnts1, const int *ipnts2, bool *filtre, int &ind, int &val);
 
+	void writeConnections3D(const Region& Ablock, int iFace, int& index_tf, const std::vector<Variable<int>*>& zone_vars);
+	void writeConnections2D(const Face& Ablock, int iEdge, int& index_tf, const std::vector<Variable<int>*>& zone_vars);
 
+	void writeBoundaryCondition3D(int &num_bc, const Region& Ablock, int iFace, const std::vector<Variable<int>*>& bc_vars) const;
+	void writeBoundaryCondition2D(int &num_bc, const Face& Ablock, int iEdge, const std::vector<Variable<int>*>& bc_vars) const;
 
  protected:
 	Mesh *m_blocks;
@@ -61,8 +62,6 @@ class GMDSAero_API CGNSWriter3D
 	Variable<int>* VarDiscrI;
 	Variable<int>* VarDiscrJ;
 	Variable<int>* VarDiscrK;
-
-	Variable<int>* axis;
 
 	int m_cellDim;
 	int m_physdim;
@@ -78,4 +77,4 @@ class GMDSAero_API CGNSWriter3D
 /*----------------------------------------------------------------------------*/
 }// namespace gmds
 /*----------------------------------------------------------------------------*/
-#endif     // GMDS_CGNSWRITER3D_H
+#endif     // GMDS_CGNSWRITERND_H

@@ -75,7 +75,7 @@ set(GMDS_INC
         inc/gmds/aero/Utils.h
 		)
 if(WITH_CGNS)
-	set(GMDS_INC ${GMDS_INC} inc/gmds/aero/CGNSWriter3D.h
+	set(GMDS_INC ${GMDS_INC} inc/gmds/aero/CGNSWriterND.h
 	)
 endif()
 
@@ -148,7 +148,7 @@ set(GMDS_SRC
         src/main.cpp
 )
 if(WITH_CGNS)
-	set(GMDS_SRC ${GMDS_SRC} src/CGNSWriter3D.cpp
+	set(GMDS_SRC ${GMDS_SRC} src/CGNSWriterND.cpp
 	)
 endif()
 #==============================================================================
@@ -185,6 +185,7 @@ if(WITH_CGNS)
 		cgns::cgns
 		)
 endif ()
+
 
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)
 
