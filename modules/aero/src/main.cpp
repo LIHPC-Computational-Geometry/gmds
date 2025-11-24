@@ -3,7 +3,7 @@
 /*------------------------------------------------------------------------*/
 #ifdef USE_CGNS
    //#include <gmds/blocking/CGNSWriter.h>
-	#include <gmds/aero/CGNSWriter3D.h>
+	#include <gmds/aero/CGNSWriterND.h>
 #endif
 #include <gmds/aero/AbstractAeroPipeline.h>
 #include <gmds/aero/AeroPipeline_2D.h>
@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 
 		if (aero_result == AbstractAeroPipeline::SUCCESS) {
 #ifdef USE_CGNS
-			gmds::aero::CGNSWriter3D writer(algo_aero3D.getBlocking());
+			gmds::aero::CGNSWriterND writer(algo_aero3D.getBlocking(), 3);
 			writer.write("", output_file, dir);
 #else
 			std::cout << "CGNS export is desactivated" << std::endl;

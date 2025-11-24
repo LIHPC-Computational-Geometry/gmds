@@ -75,7 +75,7 @@ set(GMDS_INC
         inc/gmds/aero/Utils.h
 		)
 if(WITH_CGNS)
-	set(GMDS_INC ${GMDS_INC} inc/gmds/aero/CGNSWriter3D.h
+	set(GMDS_INC ${GMDS_INC} inc/gmds/aero/CGNSWriterND.h
 	)
 endif()
 
@@ -148,7 +148,7 @@ set(GMDS_SRC
         src/main.cpp
 )
 if(WITH_CGNS)
-	set(GMDS_SRC ${GMDS_SRC} src/CGNSWriter3D.cpp
+	set(GMDS_SRC ${GMDS_SRC} src/CGNSWriterND.cpp
 	)
 endif()
 #==============================================================================
@@ -186,6 +186,7 @@ if(WITH_CGNS)
 		)
 endif ()
 
+
 target_compile_features(${GMDS_LIB} PUBLIC cxx_std_14)
 
 # INCLUDE TO INSTALL
@@ -210,11 +211,13 @@ endif(WITH_TEST)
 #==============================================================================
 # EXECUTABLE
 #==============================================================================
-add_executable(Aero src/main.cpp)
-target_link_libraries(Aero PRIVATE ${GMDS_LIB})
-target_compile_features(Aero PUBLIC cxx_std_14)
-install(TARGETS Aero)
+if(WITH_CGNS)
+	add_executable(Aero src/main.cpp)
+	target_link_libraries(Aero PRIVATE ${GMDS_LIB})
+	target_compile_features(Aero PUBLIC cxx_std_14)
+	install(TARGETS Aero)
 
-add_executable(aero_dev src/main_dev.cpp)
-target_link_libraries(aero_dev PRIVATE ${GMDS_LIB})
-target_compile_features(aero_dev PUBLIC cxx_std_14)
+	add_executable(aero_dev src/main_dev.cpp)
+	target_link_libraries(aero_dev PRIVATE ${GMDS_LIB})
+	target_compile_features(aero_dev PUBLIC cxx_std_14)
+endif ()
