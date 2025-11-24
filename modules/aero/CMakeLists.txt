@@ -211,11 +211,13 @@ endif(WITH_TEST)
 #==============================================================================
 # EXECUTABLE
 #==============================================================================
-add_executable(Aero src/main.cpp)
-target_link_libraries(Aero PRIVATE ${GMDS_LIB})
-target_compile_features(Aero PUBLIC cxx_std_14)
-install(TARGETS Aero)
+if(WITH_CGNS)
+	add_executable(Aero src/main.cpp)
+	target_link_libraries(Aero PRIVATE ${GMDS_LIB})
+	target_compile_features(Aero PUBLIC cxx_std_14)
+	install(TARGETS Aero)
 
-add_executable(aero_dev src/main_dev.cpp)
-target_link_libraries(aero_dev PRIVATE ${GMDS_LIB})
-target_compile_features(aero_dev PUBLIC cxx_std_14)
+	add_executable(aero_dev src/main_dev.cpp)
+	target_link_libraries(aero_dev PRIVATE ${GMDS_LIB})
+	target_compile_features(aero_dev PUBLIC cxx_std_14)
+endif ()
