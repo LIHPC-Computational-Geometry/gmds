@@ -234,7 +234,7 @@ CGNSWriterND::writeZones()
 	}
 }
 void
-CGNSWriterND::writeConnections3D(const Region& Ablock, int iFace, int& index_tf, const std::vector<Variable<int>*>& zone_vars){
+CGNSWriterND::writeConnections3D(const Region& Ablock, int iFace, int& index_tf, const std::vector<Variable<int>*>& zone_vars) const{
 	Face face = Ablock.get<Face>()[iFace];
 
 	if(face.get<Region>().size() == 2) {
