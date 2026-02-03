@@ -1,7 +1,3 @@
-//
-// Created by calderans on 29/06/23.
-//
-
 #ifndef GMDS_CGNSWRITERND_H
 #define GMDS_CGNSWRITERND_H
 /*----------------------------------------------------------------------------*/
@@ -11,7 +7,6 @@
 /*----------------------------------------------------------------------------*/
 #include "Blocking3D.h"
 #include "GMDSAero_export.h"
-// #include "gmds/ig/Blocking2D.h"
 /*----------------------------------------------------------------------------*/
 namespace gmds {
 
@@ -22,11 +17,16 @@ class GMDSAero_API CGNSWriterND
  public:
 	/** @brief Constructor
 		 *
-		 * @param AMeshService an implementation of an io service to write data
-		 * 						  into a mesh
+		 * @param ABlocking a block structure to export
+		 * @param ADim the dimension to export to, 2D or 3D supported
 	 */
 	CGNSWriterND(Blocking3D *ABlocking, int ADim);
 
+	/** @brief Constructor
+			 *
+			 * @param AMesh a mesh to export
+			 * @param ADim the dimension to export to, 2D or 3D supported
+		 */
 	CGNSWriterND(Mesh *AMesh, int ADim);
 
 	CGNSWriterND();
@@ -49,7 +49,7 @@ class GMDSAero_API CGNSWriterND
 	void _getIndicesIdAndVal(const int *ipnts1, const int *ipnts2, bool *filtre, int &ind, int &val);
 
 	void writeConnections3D(const Region& Ablock, int iFace, int& index_tf, const std::vector<Variable<int>*>& zone_vars);
-	void writeConnections2D(const Face& Ablock, int iEdge, int& index_tf, const std::vector<Variable<int>*>& zone_vars);
+	void writeConnections2D(const Face& Ablock, int iEdge, int& index_tf, const std::vector<Variable<int>*>& zone_vars) const;
 
 	void writeBoundaryCondition3D(int &num_bc, const Region& Ablock, int iFace, const std::vector<Variable<int>*>& bc_vars) const;
 	void writeBoundaryCondition2D(int &num_bc, const Face& Ablock, int iEdge, const std::vector<Variable<int>*>& bc_vars) const;
