@@ -4,8 +4,8 @@
 //
 /*----------------------------------------------------------------------------*/
 #include "gmds/aero/CGNSWriterND.h"
-#include "gmds/ig/MeshDoctor.h"
-#include "gmds/io/IGMeshIOService.h"
+//#include "gmds/ig/MeshDoctor.h"
+//#include "gmds/io/IGMeshIOService.h"
 //#include "gmds/io/VTKReader.h"
 #include <fstream>
 #include <iomanip>
@@ -64,9 +64,9 @@ CGNSWriterND::initialize(const std::string &AOutFileName, const std::string &dir
 		std::cout<<"Section error : "<<cg_get_error()<<std::endl;
 	}
 
-	char basename[AOutFileName.length()];
-	strcpy(basename, AOutFileName.c_str());
+	char basename[AOutFileName.length()+1];
 
+	strcpy(basename, AOutFileName.c_str());
 
 	cg_base_write(m_indexFile,basename,m_cellDim,m_physdim,&m_indexBase);
 
@@ -167,6 +167,9 @@ CGNSWriterND::writeZones()
 			zone_size[7] = 0;
 			zone_size[8] = 0;
 		}
+		else {
+			throw GMDSException("Dimension "+std::to_string(m_cellDim)+"D not supported in CGNS writer.");
+		}
 
 		if(cg_zone_write(m_indexFile, m_indexBase, zonename, zone_size, CG_Structured, &m_indexZone) != CG_OK) {
 			std::cout << cg_get_error() << std::endl;
@@ -234,7 +237,7 @@ CGNSWriterND::writeZones()
 	}
 }
 void
-CGNSWriterND::writeConnections3D(const Region& Ablock, int iFace, int& index_tf, const std::vector<Variable<int>*>& zone_vars){
+CGNSWriterND::writeConnections3D(const Region& Ablock, int iFace, int& index_tf, const std::vector<Variable<int>*>& zone_vars) const{
 	Face face = Ablock.get<Face>()[iFace];
 
 	if(face.get<Region>().size() == 2) {
@@ -578,7 +581,8 @@ CGNSWriterND::writeConnections3D(const Region& Ablock, int iFace, int& index_tf,
 }
 /*----------------------------------------------------------------------------*/
 void
-CGNSWriterND::writeConnections2D(const Face& Ablock, int iEdge, int& index_tf, const std::vector<Variable<int>*>& zone_vars){
+CGNSWriterND::writeConnections2D(const Face& Ablock, int iEdge, int& index_tf, const std::vector<Variable<int>*>& zone_vars) const
+{
 
 	Edge edge = Ablock.get<Edge>()[iEdge];
 
@@ -844,7 +848,7 @@ CGNSWriterND::writeBoundaryCondition2D(int &num_bc, const Face& Ablock, int iEdg
 			type_bc = ivar;
 	}
 
-	if(type_bc == -1) {
+	if(type_bc != -1) {
 
 		switch (iEdge) {
 		case 0:
