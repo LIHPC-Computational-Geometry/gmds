@@ -167,6 +167,9 @@ CGNSWriterND::writeZones()
 			zone_size[7] = 0;
 			zone_size[8] = 0;
 		}
+		else {
+			throw GMDSException("Dimension "+std::to_string(m_cellDim)+"D not supported in CGNS writer.");
+		}
 
 		if(cg_zone_write(m_indexFile, m_indexBase, zonename, zone_size, CG_Structured, &m_indexZone) != CG_OK) {
 			std::cout << cg_get_error() << std::endl;

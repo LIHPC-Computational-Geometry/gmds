@@ -46,7 +46,7 @@ class GMDSAero_API CGNSWriterND
 
 	void finalize(const std::string &AWorkingDir) const;
 
-	void _getIndicesIdAndVal(const int *ipnts1, const int *ipnts2, bool *filtre, int &ind, int &val);
+	static void _getIndicesIdAndVal(const int *ipnts1, const int *ipnts2, bool *filtre, int &ind, int &val);
 
 	void writeConnections3D(const Region& Ablock, int iFace, int& index_tf, const std::vector<Variable<int>*>& zone_vars) const;
 	void writeConnections2D(const Face& Ablock, int iEdge, int& index_tf, const std::vector<Variable<int>*>& zone_vars) const;
