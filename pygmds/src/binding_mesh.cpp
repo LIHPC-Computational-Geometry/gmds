@@ -2,6 +2,8 @@
 #include "gmds/ig/Mesh.h"
 #include "gmds/ig/MeshDoctor.h"
 #include "gmds/io/IGMeshIOService.h"
+#include "gmds/io/LimaReader.h"
+#include "gmds/io/LimaWriter.h"
 #include "gmds/io/VTKReader.h"
 #include "gmds/io/VTKWriter.h"
 #include "gmds/utils/CommonTypes.h"
@@ -83,4 +85,12 @@ bind_mesh(py::module &m)
 	   .def("write", &gmds::VTKWriter::write)
 	   .def("set_cell_options", &gmds::VTKWriter::setCellOptions)
 	   .def("set_data_options", &gmds::VTKWriter::setDataOptions);
+
+        py::class_<gmds::LimaReader>(m, "LimaReader")
+           .def(py::init<gmds::Mesh &>())
+           .def("read", &gmds::LimaReader::read);
+
+        py::class_<gmds::LimaWriter>(m, "LimaWriter")
+           .def(py::init<gmds::Mesh &>())
+           .def("write", &gmds::LimaWriter::write);
 }
