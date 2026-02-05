@@ -1,6 +1,6 @@
 #==============================================================================
 add_library(ANN STATIC
-        include/ANN/ANN.h
+	include/ANN/ANN.h
         include/ANN/ANNperf.h
         include/ANN/ANNx.h
         src/ANN.cpp
@@ -28,6 +28,8 @@ add_library(ANN STATIC
         src/pr_queue_k.h
         )
 
+set_target_properties(ANN PROPERTIES PUBLIC_HEADER "include/ANN/ANN.h;include/ANN/ANNperf.h;include/ANN/ANNx.h")
+
 #==============================================================================
 # TARGET DEFINITION
 #==============================================================================
@@ -42,4 +44,5 @@ install(TARGETS ANN
         EXPORT GMDS_SUITE
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
         INCLUDES DESTINATION include
+	PUBLIC_HEADER DESTINATION include/ANN
         )
