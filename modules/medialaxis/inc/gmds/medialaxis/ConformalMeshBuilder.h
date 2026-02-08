@@ -1,7 +1,7 @@
 #ifndef GMDS_CONFORMALMESHBUILDER_H
 #define GMDS_CONFORMALMESHBUILDER_H
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_MEDIALAXIS_export.h"
+#include "GMDSMedialaxis_export.h"
 #include "gmds/medialaxis/NonConformalHalfEdge.h"
 #include "gmds/medialaxis/MedialAxisMath.h"
 #include "gmds/io/IGMeshIOService.h"
@@ -13,7 +13,7 @@ namespace gmds{
 /** \class  dummy
  *  \brief  dummy class.
  */
-class LIB_GMDS_MEDIALAXIS_API ConformalMeshBuilder
+class GMDSMedialaxis_API ConformalMeshBuilder
 {
  private:
 	// Non conformal quad block decomposition

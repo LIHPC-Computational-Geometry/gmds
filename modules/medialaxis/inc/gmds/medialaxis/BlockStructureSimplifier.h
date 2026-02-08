@@ -1,7 +1,7 @@
 #ifndef GMDS_BLOCKSTRUCTURESIMPLIFIER_H
 #define GMDS_BLOCKSTRUCTURESIMPLIFIER_H
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_MEDIALAXIS_export.h"
+#include "GMDSMedialaxis_export.h"
 #include "gmds/medialaxis/MedialAxis2D.h"
 #include "gmds/medialaxis/NonConformalHalfEdge.h"
 #include "gmds/medialaxis/MedialAxisMath.h"
@@ -15,7 +15,7 @@ namespace gmds{
 /** \class  dummy
  *  \brief  dummy class.
  */
-class LIB_GMDS_MEDIALAXIS_API BlockStructureSimplifier
+class GMDSMedialaxis_API BlockStructureSimplifier
 {
  private:
 	// Non conformal quad block decomposition

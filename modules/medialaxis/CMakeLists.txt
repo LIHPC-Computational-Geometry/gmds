@@ -2,7 +2,7 @@
 # LIBRARY DEFINITION (SOURCE FILES)
 #==============================================================================
 # Explicitly used the name given in this preamble
-set(GMDS_LIB ${LIB_GMDS_MEDIALAXIS})
+set(GMDS_LIB ${LIB_GMDS_MEDIAL_AXIS})
 set(GMDS_LIB_PREFIX gmds/medialaxis)
 
 set(GMDS_INC

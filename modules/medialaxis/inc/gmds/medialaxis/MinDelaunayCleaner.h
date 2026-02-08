@@ -1,7 +1,7 @@
 #ifndef GMDS_MINDELAUNAYCLEANER_H
 #define GMDS_MINDELAUNAYCLEANER_H
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_MEDIALAXIS_export.h"
+#include "GMDSMedialaxis_export.h"
 #include "gmds/medialaxis/MedialAxis2D.h"
 #include "gmds/medialaxis/NonConformalHalfEdge.h"
 #include "gmds/medialaxis/MedialAxisMath.h"
@@ -15,7 +15,7 @@ namespace gmds{
 /** \class  dummy
  *  \brief  dummy class.
  */
-class LIB_GMDS_MEDIALAXIS_API MinDelaunayCleaner
+class GMDSMedialaxis_API MinDelaunayCleaner
 {
  private:
 	// Minimal Delaunay triangulation to clean

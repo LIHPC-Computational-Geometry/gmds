@@ -3,7 +3,7 @@
 #ifndef GMDS_TRIANGLESREMOVER_H
 #define GMDS_TRIANGLESREMOVER_H
 /*----------------------------------------------------------------------------*/
-#include "LIB_GMDS_MEDIALAXIS_export.h"
+#include "GMDSMedialaxis_export.h"
 #include "gmds/medialaxis/NonConformalHalfEdge.h"
 #include "gmds/medialaxis/MedialAxisMath.h"
 #include "gmds/io/IGMeshIOService.h"
@@ -15,7 +15,7 @@ namespace gmds{
 /** \class  dummy
  *  \brief  dummy class.
  */
-class LIB_GMDS_MEDIALAXIS_API TrianglesRemover
+class GMDSMedialaxis_API TrianglesRemover
 {
  private:
 	// Degenerated quad mesh to fix
