@@ -5,7 +5,7 @@
 #ifndef GMDS_MEDIALAXIS3DBUILDER_H
 #define GMDS_MEDIALAXIS3DBUILDER_H
 /*----------------------------------------------------------------------------*/
-#include "GMDSMedialaxis_export.h"
+#include "LIB_GMDS_MEDIALAXIS_export.h"
 #include "gmds/medialaxis/MedialAxis3D.h"
 #include <gmds/ig/Mesh.h>
 /*----------------------------------------------------------------------------*/
@@ -16,7 +16,7 @@ namespace medialaxis{
 /** \class  dummy
  *  \brief  dummy class.
  */
-class GMDSMedialaxis_API MedialAxis3DBuilder{
+class LIB_GMDS_MEDIALAXIS_API MedialAxis3DBuilder{
 
  public:
 	/*------------------------------------------------------------------------*/

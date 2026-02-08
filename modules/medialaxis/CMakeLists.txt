@@ -13,6 +13,15 @@ set(GMDS_INC
         inc/gmds/medialaxis/MedialAxis3D.h
         inc/gmds/medialaxis/MedialAxis3DBuilder.h
         inc/gmds/medialaxis/CrossField.h
+        inc/gmds/medialaxis/NonConformalHalfEdge.h
+        inc/gmds/medialaxis/QuantizationSolver.h
+        inc/gmds/medialaxis/QuantizationGraph.h
+        inc/gmds/medialaxis/ConformalMeshBuilder.h
+        inc/gmds/medialaxis/BlockStructureSimplifier.h
+        inc/gmds/medialaxis/MinDelaunayCleaner.h
+        inc/gmds/medialaxis/Conformalizer.h
+        inc/gmds/medialaxis/MedaxBasedTMeshBuilder.h
+        inc/gmds/medialaxis/TrianglesRemover.h
 )
 set(GMDS_SRC
         src/MedialAxis2D.cpp
@@ -22,11 +31,14 @@ set(GMDS_SRC
         src/MedialAxis3DBuilder.cpp
         src/CrossField.cpp
         src/NonConformalHalfEdge.cpp
-        inc/gmds/medialaxis/NonConformalHalfEdge.h
-        src/QuantizationSolver.cpp
-        inc/gmds/medialaxis/QuantizationSolver.h
+        src/QuantizationSolver.cpp 
         src/QuantizationGraph.cpp
-        inc/gmds/medialaxis/QuantizationGraph.h
+        src/ConformalMeshBuilder.cpp
+        src/BlockStructureSimplifier.cpp
+        src/MinDelaunayCleaner.cpp
+        src/Conformalizer.cpp
+        src/MedaxBasedTMeshBuilder.cpp
+        src/TrianglesRemover.cpp
 )
 #==============================================================================
 add_library(${GMDS_LIB} ${GMDS_INC} ${GMDS_SRC})

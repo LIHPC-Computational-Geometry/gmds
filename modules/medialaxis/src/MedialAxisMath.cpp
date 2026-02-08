@@ -4,6 +4,8 @@
 
 #include "gmds/medialaxis/MedialAxisMath.h"
 #include <algorithm>
+#include <queue>
+#include <time.h> 
    using namespace gmds;
 
 /*----------------------------------------------------------------------------*/
@@ -22,9 +24,9 @@ double maxRange(const math::Point& ACenter1, const double& ARadius1, const math:
 double oriented_angle(const math::Vector &AV1, const math::Vector &AV2)
 {
 	double cos_theta = AV1.dot(AV2)/(AV1.norm()*AV2.norm());
-	if (fabs(cos_theta-1.) < 10e-6)
+	if (fabs(cos_theta-1.) < 1e-10)
 		return 0.;
-	if (fabs(cos_theta+1.) < 10e-6)
+	if (fabs(cos_theta+1.) < 1e-10)
 		return M_PI;
 	math::Vector AV3;
 	AV3.setX(-AV1.Y());
@@ -72,24 +74,45 @@ std::vector<Edge> sortEdges(Node &AN, std::vector<Edge> &AV)
 		double angle = oriented_angle(vec(X), edge2vec(e,AN));
 		angles.push_back(angle);
 	}
-
 	std::vector<Edge> sorted_edges;
-	double prev_min = -10.;
-	for (int i = 1; i <= AV.size(); i++)
+
+
+
+
+	// double prev_min = -10.;
+	// for (int i = 1; i <= AV.size(); i++)
+	// {
+	// 	// Find the ith min
+	// 	double min_angle = 10.;
+	// 	int min_pos;
+	// 	for (int j = 0; j < angles.size(); j++)
+	// 	{
+	// 		if (angles[j] < min_angle && angles[j] > prev_min)
+	// 		{
+	// 			min_angle = angles[j];
+	// 			min_pos = j;
+	// 		}
+	// 	}
+	// 	prev_min = min_angle;
+	// 	sorted_edges.push_back(AV[min_pos]);
+	// }
+	std::vector<Edge> edges = AV;
+	double min_angle;
+	int min_pos;
+	while (!edges.empty())
 	{
-		// Find the ith min
-		double min_angle = 10.;
-		int min_pos;
-		for (int j = 0; j < angles.size(); j++)
+		min_angle = 10.;
+		for (int j = 0; j < edges.size(); j++)
 		{
-			if (angles[j] < min_angle && angles[j] > prev_min)
+			if (angles[j] < min_angle)
 			{
-				min_angle = angles[j];
 				min_pos = j;
+				min_angle = angles[j];
 			}
 		}
-		prev_min = min_angle;
-		sorted_edges.push_back(AV[min_pos]);
+		sorted_edges.push_back(edges[min_pos]);
+		edges.erase(edges.begin()+min_pos);
+		angles.erase(angles.begin()+min_pos);
 	}
 	return sorted_edges;
 }
@@ -182,7 +205,8 @@ std::vector<Edge> orientateEdges(Face &AF)
 			}
 		}
 		angle = oriented_angle(edge2vec(e1,node), edge2vec(e2,node));
-		if (fabs(fabs(angle)-M_PI/2.) < M_PI/4)
+		// if (fabs(fabs(angle)-M_PI/2.) < M_PI/4)
+		if (fabs(fabs(angle)-M_PI) > 1e-3 && fabs(angle) > 1e-3)
 		{
 			n0 = node;
 			break;
@@ -309,4 +333,247 @@ std::vector<std::vector<Edge>> groupsOfAlignedEdges(Face &AF)
 		groups.push_back(newGroup);
 	}
 	return groups;
+}
+
+/*----------------------------------------------------------------------------*/
+bool isOnSegment(math::Point AP0, math::Point AP1, math::Point AP2)
+{
+	math::Point U1 = AP1+(-1.)*AP0;
+	math::Point U2 = AP2+(-1.)*AP0;
+	if (vec(U1).norm() < 10e-6)
+		return true;
+	if (vec(U2).norm() < 10e-6)
+		return true;
+	double alpha = oriented_angle(vec(U1),vec(U2));
+	return (fabs(alpha-M_PI)<10e-6 || fabs(alpha+M_PI)<10e-6);
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<TCellID> insertPoint(Node AN, std::vector<Node> AV)
+{
+	std::vector<TCellID> new_list;
+	math::Point P1,P2;
+	bool added = false;
+	for (int i = 0; i < AV.size(); i++)
+	{
+		if (added)
+			new_list.push_back(AV[i].id());
+		else
+		{
+			P2 = AV[i].point();
+			if (i > 0)
+				P1 = AV[i-1].point();
+			else 
+				P1 = AV[AV.size()-1].point();
+			if (isOnSegment(AN.point(),P1,P2))
+			{
+				new_list.push_back(AN.id());
+				added = true;
+				new_list.push_back(AV[i].id());
+			}
+			else
+				new_list.push_back(AV[i].id());				 
+		}
+	}
+	return new_list;
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<math::Point> merge(std::vector<math::Point> AV1, std::vector<math::Point> AV2)
+{
+	std::vector<math::Point> merged;
+	for (auto point:AV1)
+		merged.push_back(point);
+	for (auto point:AV2)
+	{
+		bool already_seen = false;
+		for (auto point2:AV1)
+		{
+			if (point.distance(point2) < 10e-6)
+			{
+				already_seen = true;
+				break;
+			}
+		}
+		if (!already_seen)
+			merged.push_back(point);
+	}
+	return merged;
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<Edge> order(std::vector<Edge> AVE, std::vector<double> AVX)
+{
+	std::vector<Edge> sorted_edges;
+	while (!AVX.empty())
+	{
+		int min_pos;
+		double min_x = 10e6;
+		double x;
+		for (int i = 0 ; i < AVX.size() ; i++)
+		{
+			x = AVX[i];
+			if (x < min_x)
+			{
+				min_x =x;
+				min_pos = i;
+			}
+		}
+		sorted_edges.push_back(AVE[min_pos]);
+		AVX.erase(AVX.begin() + min_pos);
+		AVE.erase(AVE.begin() + min_pos);
+	}
+	return sorted_edges;
+}
+
+/*----------------------------------------------------------------------------*/
+Edge getEdge(Node &AN1, Node &AN2)
+{
+	Edge e;
+	for (auto e1:AN1.get<Edge>())
+	{
+		for (auto e2:AN2.get<Edge>())
+		{
+			if (e1.id() == e2.id())
+			{
+				e = e1;
+				return e;
+			}
+		}
+	}
+	throw GMDSException("getEdge() : the two given nodes have no edge in common");
+}
+
+/*----------------------------------------------------------------------------*/
+bool isInterior(Node &AN)
+{
+	bool isInt = true;
+	for (auto e:AN.get<Edge>())
+	{
+		if (e.get<Face>().size() == 1)
+		{
+			isInt = false;
+			break;
+		}
+	}
+	return isInt;
+}
+
+/*----------------------------------------------------------------------------*/
+double delimitedArea(std::vector<Edge> AV)
+{
+	double x = 0.;
+	double y = 0.;
+	// Compute the barycenter of the points
+	for (auto e:AV)
+	{
+		for (auto n:e.get<Node>())
+		{
+			x += 1./2.*n.X();
+			y += 1./2.*n.Y();
+		}
+	}
+	x = x/double(AV.size());
+	y = y/double(AV.size());
+	math::Point Bar(x,y,0.);
+	// Compute the area
+	double area = 0.;
+	for (auto e:AV)
+	{
+		math::Triangle T(e.get<Node>()[0].point(),e.get<Node>()[1].point(),Bar);
+		area += T.area();
+	}
+	return area;
+}
+
+/*----------------------------------------------------------------------------*/
+bool touchesBoundary(Edge &AE)
+{
+	return (!isInterior(AE.get<Node>()[0]) || !isInterior(AE.get<Node>()[1]));
+}
+
+/*----------------------------------------------------------------------------*/
+Face getCommonFace(Edge &AE1, Edge &AE2)
+{
+	for (auto f1:AE1.get<Face>())
+	{
+		for (auto f2:AE2.get<Face>())
+		{
+			if (f1.id() == f2.id())
+			{
+				return f1;
+			}
+		}
+	}
+	throw GMDSException("getCommonFace() : the two input edges have no face in common");
+}
+
+/*----------------------------------------------------------------------------*/
+math::Vector projection(math::Vector &AV1, math::Vector &AV2)
+{
+	return (AV1.dot(AV2)/AV1.norm()*(AV1/AV1.norm()));
+}
+
+/*----------------------------------------------------------------------------*/
+std::vector<Node> shortestPathAlongBoundaryOrConstraints(Node &AN1, Node &AN2, Mesh &AMesh)
+{	
+	auto constr = AMesh.getVariable<int,GMDS_EDGE>("internal_constraint");
+	auto visited = AMesh.newVariable<int,GMDS_NODE>("visited");
+	std::vector<Node> path;
+	std::vector<Node> new_path;
+	std::vector<Node> shortestPath;
+	path.push_back(AN1);
+	visited->set(AN1.id(),1);
+	std::queue<std::vector<Node>> toBeContinued;
+	toBeContinued.push(path);
+	bool finished = false;
+
+	while (!toBeContinued.empty() && !finished)
+	{
+		path = toBeContinued.front();
+		toBeContinued.pop();
+		Node last_node = path[path.size()-1];
+		if (last_node.id() == AN2.id())
+		{
+			shortestPath = path;
+			finished = true;
+		}
+		else
+		{
+			for (auto e:last_node.get<Edge>())
+			{
+				if (e.get<Face>().size() == 1 || constr->value(e.id()) == 1)
+				{
+					for (auto n:e.get<Node>())
+					{
+						if (visited->value(n.id()) == 0)
+						{
+							new_path = path;
+							new_path.push_back(n);
+							visited->set(n.id(),1);
+							toBeContinued.push(new_path);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	AMesh.deleteVariable(GMDS_NODE,visited);
+	return shortestPath;
+}
+
+/*----------------------------------------------------------------------------*/
+Edge opp(Face AFace, Edge AEdge)
+{
+	for (auto e:AFace.get<Edge>())
+	{
+		if (e.get<Node>()[0].id() != AEdge.get<Node>()[0].id() && e.get<Node>()[0].id() != AEdge.get<Node>()[1].id())
+		{
+			if (e.get<Node>()[1].id() != AEdge.get<Node>()[0].id() && e.get<Node>()[1].id() != AEdge.get<Node>()[1].id())
+				return e;
+		}
+	}
+	Edge edge;
+	return edge;
 }

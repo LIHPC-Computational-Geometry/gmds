@@ -1,7 +1,7 @@
 #ifndef GMDS_MEDIALAXIS_MEDIALAXIS_H
 #define GMDS_MEDIALAXIS_MEDIALAXIS_H
 /*----------------------------------------------------------------------------*/
-#include "GMDSMedialaxis_export.h"
+#include "LIB_GMDS_MEDIALAXIS_export.h"
 #include <gmds/ig/Mesh.h>
 /*----------------------------------------------------------------------------*/
 namespace gmds{
@@ -11,7 +11,7 @@ namespace medialaxis{
 /** \class  dummy
  *  \brief  dummy class.
  */
-class GMDSMedialaxis_API MedialAxis2D
+class LIB_GMDS_MEDIALAXIS_API MedialAxis2D
 {
 
  public:
@@ -26,6 +26,12 @@ class GMDSMedialaxis_API MedialAxis2D
          *  @param
 	 */
 	virtual ~MedialAxis2D();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Add a medial point.
+	      *  @param a point.
+	 */
+	Mesh getMeshRepresentation();
 
 	/*-------------------------------------------------------------------------*/
 	/** \brief Add a medial point.
@@ -174,10 +180,40 @@ class GMDSMedialaxis_API MedialAxis2D
 	void setTouchingPoints(const TCellID &APointID, std::vector<math::Point> APoints);
 
 	/*-------------------------------------------------------------------------*/
+	/** \brief Attach to a medial point its corresponding tengancy nodes
+	      *  @param A medial point ID, a vector of nodes
+	 */
+	void setTangentNodes(const TCellID &APointID, std::vector<Node> ANodes);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Attach to a medial point its corresponding dual triangles
+	      *  @param A medial point ID, a vector of faces
+	 */
+	void setDualTriangles(const TCellID &APointID, std::vector<Face> ATriangles);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Mark if a medial point is a dangle
+	      *  @param A medial point ID, a boolean
+	 */
+	void setDangle(const TCellID &APointID, bool ADangleValue);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Mark if a medial point belongs to an extension of the medial axis
+	      *  @param A medial point ID
+	 */
+	void markAsExtension(const TCellID &APointID);
+
+	/*-------------------------------------------------------------------------*/
 	/** \brief Get the touching points of a given medial point
 	      *  @param A medial point ID
 	 */
 	std::vector<math::Point> getTouchingPoints(const TCellID &APointID);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Get the tengancy nodes of a given medial point
+	      *  @param A medial point ID
+	 */
+	std::vector<Node> getTangentNodes(const TCellID &APointID);
 
 	/*-------------------------------------------------------------------------*/
 	/** \brief Set the optimal change in angle of a cross following the curve formed by two adjacent medial radii
@@ -227,6 +263,12 @@ class GMDSMedialaxis_API MedialAxis2D
 	      *  @param AMedRadiusFraction a medial radius fraction
 	 */
 	void placeSingularities(const double& AMedRadiusFraction);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Remove singularity dipoles
+	      *  @param
+	 */
+	void removeSingularityDipoles();
 
 	/*-------------------------------------------------------------------------*/
 	/** \brief Check if placed singularities are coherent, ie if the med radius orthogonality default is smaller than a tolerance
@@ -301,185 +343,6 @@ class GMDSMedialaxis_API MedialAxis2D
 	 */
 	void write(std::basic_string<char> AFileName);
 
-	/*-------------------------------------------------------------------------*/
-	/** \brief Build the nodes of the topological representation (IP, EP, singularities)
-	      *  @param
-	 */
-	void buildTopoRepNodes();
-
-	/*-------------------------------------------------------------------------*/
-	/** \brief Set the sections IDs
-	      *  @param
-	 */
-	void setSectionID();
-
-	/*-------------------------------------------------------------------------*/
-	/** \brief Build the edges of the topological representation (sections of the medial axis)
-	      *  @param
-	 */
-	void buildTopoRepEdges();
-
-	/*-------------------------------------------------------------------------*/
-	/** \brief Write the topological representation
-	      *  @param
-	 */
-	void writeTopoRep(std::basic_string<char> AFileName);
-
-	/*-------------------------------------------------------------------------*/
-	/** \brief Return 1 if the wings of the section wrap around the point, 0 if not
-	      *  @param AN, AE a node and an edge of the topological representation
-	 */
-	 int wings(Node &AN, Edge &AE);
-
-	 /*-------------------------------------------------------------------------*/
-	 /** \brief Return 1 if the node is the basis of the edge, -1 if it is the end, 0 if non of them
-	      *  @param AN, AE a node and an edge of the topological representation
-	  */
-	 int orientation(Node &AN, Edge &AE);
-
-	 /*-------------------------------------------------------------------------*/
-	 /** \brief Set the connectivity of the topological representation
-	      *  @param
-	  */
-	 void setTopoRepConnectivity();
-
-	 /*-------------------------------------------------------------------------*/
-	 /** \brief Return the number of degrees of freedom for the quantisation, and attach to each section its position in the matrix
-	      *  @param
-	  */
-	 int NbDoF();
-
-	 /*-------------------------------------------------------------------------*/
-	 /** \brief Return the number of quantisation equation (each node bring its type as much equations, plus 1 extra equation for each node of type 1 wrapped by wings)
-	      *  @param
-	  */
-	 int NbEquations();
-
-	 /*-------------------------------------------------------------------------*/
-	 /** \brief Build the constraint matrix of the quantisation system
-	      *  @param
-	  */
-	  Eigen::MatrixXd constraintMatrix();
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Return the given node's neighbouring node of the topological representation with respect to the given edge
-	      *  @param AN, AE a node and an edge which contains the node
-	   */
-	  Node getNextSingularNode(Node &AN, Edge &AE);
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Return the given edge's neighbouring edge of the topological representation with respect to the given node
-	      *  @param AE, AN an edge and a node contained by th edge
-	   */
-	  Edge getNextMedialSection(Edge &AE, Node &AN);
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Wander around the medial axis topological representation
-	      *  @param
-	   */
-	  void browseTopoRep();
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build the degrees of freedom graph nodes
-	      *  @param
-	   */
-	  void buildDofGraphNodes();
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build the degrees of freedom edge corresponding to the two given sections of type 0 and 0,
-	   * oriented by the two given sides (0 = left, 1 = right)
-	      *  @param ASection1, ASection2, ASide1, ASide2
-	   */
-	  void dofEdge00(Edge &ASection1, Edge &ASection2, int ASide1, int ASide2);
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build the degrees of freedom edges corresponding to the two given sections of type 1 and 1,
-	   * oriented by the two given sides (0 = left, 1 = right)
-	      *  @param ASection1, ASection2, ASide1, ASide2
-	   */
-	  void dofEdges11(Edge &ASection1, Edge &ASection2, int ASide1, int ASide2);
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build the degrees of freedom edges corresponding to the two given sections of type 0 and 1,
-	   * oriented by the two given sides (0 = left, 1 = right)
-	      *  @param ASection1, ASection2, ASide1, ASide2
-	   */
-	  void dofEdges01(Edge &ASection1, Edge &ASection2, int ASide1, int ASide2);
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build the degrees of freedom edges corresponding to the two given sections of type 1 and 0,
-	   * oriented by the two given sides (0 = left, 1 = right)
-	      *  @param ASection1, ASection2, ASide1, ASide2
-	   */
-	  void dofEdges10(Edge &ASection1, Edge &ASection2, int ASide1, int ASide2);
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build the degrees of freedom edges corresponding to the right side of the path formed by the two given edges
-	      *  @param ASection1, ASection2
-	   */
-	  void dofEdges(Edge &ASection1, Edge &ASection2);
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build the degrees of freedom graph edges
-	      *  @param
-	   */
-	  void buildDofGraphEdges();
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief Set the connectivity of the quantization degrees of freedom graph
-	      *  @param
-	   */
-	  void setDofGraphConnectivity();
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief Build a solution to the quantization problem in the case without cycle
-	      *  @param
-	   */
-	  void buildQuantizationWithoutCycleSolution();
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build the nodes of the medial axis based block decomposition
-	      *  @param
-	   */
-	  void buildBlockDecompMedialAndBoundaryNodes();
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Write the block decomposition
-	      *  @param
-	   */
-	  void writeBlockDecomp(std::basic_string<char> AFileName);
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build blocks
-	      *  @param
-	   */
-	  void buildSection2MedialAndBoundaryNodesAdjacency();
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build middle nodes
-	      *  @param
-	   */
-	  void buildMiddleNodes();
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief  Build blocks
-	      *  @param
-	   */
-	  void buildBlocks();
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief Sort adjacent edges with respect to their angle with the x-axis.
-	      *  @param AN a node
-	   */
-	  std::vector<Edge> sortedAdjacentEdges(Node &AN);
-
-	  /*-------------------------------------------------------------------------*/
-	  /** \brief Take an edge and a node belonging to the edge. Return the edges closest to
-	   * the given edge in the list of sorted edges of n.
-	      *  @param AE, AN an edge and a node
-	   */
-	  std::vector<Edge> neighbouringEdges(Edge &AE, Node &AN);
-
  private:
 
 	// Geometrical representation of the medial axis
@@ -488,13 +351,6 @@ class GMDSMedialaxis_API MedialAxis2D
 	// Singularities identified on the medial axis
 	std::vector<Node> m_singular_nodes;
 	std::vector<double> m_singularity_indexes;
-
-	// Topological representation of the medial axis (used for quantization)
-	Mesh* m_topological_representation;
-	// Quantization degrees of freedom graph
-	Mesh* m_dof_graph;
-	// Topology of a medial axis based block decomposition
-	Mesh* m_ma_block_decomposition;
 };
 /*----------------------------------------------------------------------------*/
 }  // end namespace medialaxis

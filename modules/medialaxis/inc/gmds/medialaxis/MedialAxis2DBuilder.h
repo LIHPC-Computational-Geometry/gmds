@@ -5,7 +5,7 @@
 #ifndef GMDS_MEDIALAXIS2DBUILDER_H
 #define GMDS_MEDIALAXIS2DBUILDER_H
 /*----------------------------------------------------------------------------*/
-#include "GMDSMedialaxis_export.h"
+#include "LIB_GMDS_MEDIALAXIS_export.h"
 #include "gmds/medialaxis/MedialAxis2D.h"
 #include <gmds/ig/Mesh.h>
 /*----------------------------------------------------------------------------*/
@@ -16,7 +16,7 @@ namespace medialaxis{
 /** \class  dummy
  *  \brief  dummy class.
  */
-class GMDSMedialaxis_API MedialAxis2DBuilder{
+class LIB_GMDS_MEDIALAXIS_API MedialAxis2DBuilder{
 
  public:
 	/*------------------------------------------------------------------------*/
@@ -39,11 +39,13 @@ class GMDSMedialaxis_API MedialAxis2DBuilder{
          *  @param
 	 */
 
-	explicit MedialAxis2DBuilder(Mesh &AMesh);
+	explicit MedialAxis2DBuilder(Mesh &AMesh, std::vector<TCellID> ABoundEdgesIds);
 
  public:
 	// Primal minimal Delaunay mesh
 	Mesh* m_mesh;
+	// List of ids of the boundary edges of the minimal Delaunay mesh
+	std::vector<TCellID> m_boundary_edges_ids;
 	// Dual Voronoï medial axis
 	MedialAxis2D *m_voronoi_medax;
 	// Smoothed medial axis built from the Voronoï one
@@ -96,6 +98,11 @@ class GMDSMedialaxis_API MedialAxis2DBuilder{
 	void setSideId();
 
 	/*-------------------------------------------------------------------------*/
+	/** \brief Mark with 1 Delaunay edges which correspond to internal constraints
+	 */
+	void markIntConstraints();
+
+	/*-------------------------------------------------------------------------*/
 	/** \brief Compute the inner product between medial radii and the corresponding boundary edges, which should be 0
 	 * 	\param ABoundaryCurvatureTol a maximum distance away from 1 of the norm of the cosine of the boundary curvature angle
 	 */
@@ -135,6 +142,24 @@ class GMDSMedialaxis_API MedialAxis2DBuilder{
 	/** \brief Build the Voronoï medial axis and set all its attributes
 	 */
 	void buildVoronoiMedialAxis();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Takes as input a set of connected nodes forming boundary arcs, and returns the ordered sets.
+	 * 	\param ABoundNodes a set of connected boundary nodes
+	 */
+	std::vector<std::vector<Node>> boundaryArcs(std::vector<Node> ABoundNodes);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Takes as input a set of connected nodes forming a boundary arc, and returns the ordered set. LATER : TO MODIFY TO TAKE INTO ACCOUNT CIRCLE AND SEVERAL ARCS
+	 * 	\param ABoundNodes a set of connected boundary nodes
+	 */
+	std::vector<Node> boundaryArc(std::vector<Node> ABoundNodes);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Unfolds the medial axis at the input medial point
+	 * 	\param AN,ABoundaryArc a medial node and a boundary arc
+	 */
+	void unfoldMedax(Node AN, std::vector<Node> ABoundaryArc, bool AIsADangle);
 
 	/*-------------------------------------------------------------------------*/
 	/** \brief Build the smoothed medial axis from the groups of nodes of the Voronoï medial axis

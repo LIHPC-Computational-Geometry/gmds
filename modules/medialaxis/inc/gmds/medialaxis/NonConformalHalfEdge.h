@@ -5,7 +5,7 @@
 #ifndef GMDS_NONCONFORMALHALFEDGE_H
 #define GMDS_NONCONFORMALHALFEDGE_H
 /*----------------------------------------------------------------------------*/
-#include "GMDSMedialaxis_export.h"
+#include "LIB_GMDS_MEDIALAXIS_export.h"
 #include "gmds/medialaxis/MedialAxis2D.h"
 #include "gmds/medialaxis/MedialAxisMath.h"
 #include <gmds/ig/Mesh.h>
@@ -15,7 +15,7 @@ namespace gmds{
 /** \class  dummy
  *  \brief  dummy class.
  */
-class GMDSMedialaxis_API NonConformalHalfEdge
+class LIB_GMDS_MEDIALAXIS_API NonConformalHalfEdge
 {
  private:
 	// ID
