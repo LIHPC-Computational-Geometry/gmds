@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 #==============================================================================
 
+find_package(Python COMPONENTS Interpreter Development)
 find_package(pybind11 REQUIRED)
 
 SET(PYBIND11_SRC
