@@ -1,0 +1,388 @@
+#ifndef GMDS_MEDIALAXIS_MEDAXBASEDTMESHBUILDER_H
+#define GMDS_MEDIALAXIS_MEDAXBASEDTMESHBUILDER_H
+/*----------------------------------------------------------------------------*/
+#include "GMDSMedialaxis_export.h"
+#include <gmds/ig/Mesh.h>
+/*----------------------------------------------------------------------------*/
+namespace gmds{
+/*----------------------------------------------------------------------------*/
+namespace medialaxis{
+/*----------------------------------------------------------------------------*/
+/** \class  dummy
+ *  \brief  dummy class.
+ */
+class GMDSMedialaxis_API MedaxBasedTMeshBuilder
+{
+
+ public:
+	/*-------------------------------------------------------------------------*/
+	/** @brief Constructor.
+         *  @param
+	 */
+	explicit MedaxBasedTMeshBuilder(Mesh &AMedax, Mesh &AMinDel);
+
+	/*-------------------------------------------------------------------------*/
+	/** @brief Default destructor.
+         *  @param
+	 */
+	virtual ~MedaxBasedTMeshBuilder()=default;
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Get a point's adjacent point with respect to one of its edges
+	      *  @param A medial point id and a medial edge id.
+	 */
+	Node getNextPoint(const TCellID &APointID, const TCellID &AEdgeID);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Get an edge's adjacent edge with respect to one of its points
+	      *  @param A medial edge id and a medial point id.
+	 */
+	Edge getNextEdge(const TCellID &AEdgeID, const TCellID &APointID);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Get the extremal point of a node's branch in the direction given by one of its adjacent edges
+	      *  @param A medial point id and a medial edge id.
+	 */
+	Node getExtremPoint(const TCellID &APointID, const TCellID &AEdgeID);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Set the sections IDs
+	      *  @param
+	 */
+	void setSectionID();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Compute the type of the medial sections
+	      *  @param
+	 */
+	void computeSectionType();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Transform the gray sections (sections of type 2) into red sections (sections of type 1)
+	      *  @param
+	 */
+	void transformGraySectionsIntoRed();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Perform the TopMaker coloring
+	      *  @param
+	 */
+	void setTopMakerColoring();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Returns a vector containing the extrem nodes of the medial branch containing the given node
+	      *  @param
+	 */
+	std::vector<Node> getBranchExtremPoints(Node AN);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Avoid that intersection points are transformed into end points
+	      *  @param
+	 */
+	void avoidIPsBecomingEPs();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Returns the set of nodes forming the input section.
+	      *  @param AID a section ID
+	 */
+	std::vector<Node> sectionNodes(int AID);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Refine the topo rep by adding artificially singular points on the medial axis. YET TO FINALIZE
+	      *  @param
+	 */
+	void refineByAddingSingularNodes();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Refine the topo rep by adding artificially singular points on the medial axis, according to the input mesh size.
+	      *  @param
+	 */
+	void refineByAddingSingularNodes(double AMeshSize);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Build the nodes of the topological representation (IP, EP, singularities)
+	      *  @param
+	 */
+	void buildTopoRepNodes();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Build the edges of the topological representation (sections of the medial axis)
+	      *  @param
+	 */
+	void buildTopoRepEdges();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Mark with 1 refinable sections
+	      *  @param
+	 */
+	void markRefinableSections();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Mark with 1 forbidden singular points and modify boundary points
+	      *  @param
+	 */
+	void markForbiddenSingularPointsAndModifyBoundaryPoints();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Optimize the medial axis coloring by moving separatrices to intersection points
+	      *  @param
+	 */
+	void optimizeMedaxColoring();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief In order to have nice pictures : color of the edges of the discretized medial axis.
+	      *  @param
+	 */
+	void setTopoRepEdgesColor();
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Write the topological representation
+	      *  @param
+	 */
+	void writeTopoRep(std::basic_string<char> AFileName);
+
+	/*-------------------------------------------------------------------------*/
+	/** \brief Return 1 if the wings of the section wrap around the point, 0 if not
+	      *  @param AN, AE a node and an edge of the topological representation
+	 */
+	 int wings(Node &AN, Edge &AE);
+
+	 /*-------------------------------------------------------------------------*/
+	 /** \brief Return 1 if the node is the basis of the edge, -1 if it is the end, 0 if non of them
+	      *  @param AN, AE a node and an edge of the topological representation
+	  */
+	 int orientation(Node &AN, Edge &AE);
+
+	 /*-------------------------------------------------------------------------*/
+	 /** \brief Set the connectivity of the topological representation
+	      *  @param
+	  */
+	 void setTopoRepConnectivity();
+
+	 /*-------------------------------------------------------------------------*/
+	 /** \brief Computing the distance to the end point for each point of the topological representation belonging to an end branch 
+	      *  @param
+	  */
+	 void computeDistanceToEndPoints();
+
+	 /*-------------------------------------------------------------------------*/
+	 /** \brief Ensure that the end sections of the topo rep are of type 1
+	      *  @param
+	  */
+	 void ensureType1ForTopoRepEndSections();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Return the given node's neighbouring node of the topological representation with respect to the given edge
+	      *  @param AN, AE a node and an edge which contains the node
+	   */
+	  Node getNextSingularNode(Node &AN, Edge &AE);
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Return the given edge's neighbouring edge of the topological representation with respect to the given node
+	      *  @param AE, AN an edge and a node contained by th edge
+	   */
+	  Edge getNextMedialSection(Edge &AE, Node &AN);
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Wander around the medial axis topological representation
+	      *  @param
+	   */
+	  void browseTopoRep();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Takes as input two nodes of the minimal triangulation, and returns the nodes forming the shortest path to go from the first to the second, 
+	   * following the boundary or the constraints.
+	      *  @param
+	   */
+	  std::vector<Node> shortestPathAlongBoundaryOrConstraints(Node &AN1, Node &AN2);
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Mark with 1 edges of the topological represetnation that generate triangles.
+	      *  @param
+	   */
+	  void markEdgesGeneratingTriangles();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Mark the corners on the minimal triangulation.
+	      *  @param
+	   */
+	  void markCornersOnMinDel();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Build the nodes of the T-mesh from the nodes of the minimal triangulation.
+	      *  @param
+	   */
+	  void buildTMeshNodesFromMinDelNodes();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Build the nodes of the medial axis based block decomposition
+	      *  @param
+	   */
+	  void buildBlockDecompMedialAndBoundaryNodes();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Write the block decomposition
+	      *  @param
+	   */
+	  void writeBlockDecomp(std::basic_string<char> AFileName);
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Get the T-mesh.
+	      *  @param
+	   */
+	  Mesh getTMesh();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  
+	      *  @param
+	   */
+	  void buildSection2MedialAndBoundaryNodesAdjacency();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Build middle nodes 
+	      *  @param
+	   */
+	  void buildMiddleNodes();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Build blocks
+	      *  @param
+	   */
+	  void buildBlocks();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Transforms the degenerate quads of the T-mesh into triangles.
+	      *  @param
+	   */
+	  void transformDegenerateQuadsIntoTriangles();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Sorts the input fan of edges.
+	      *  @param AFan a vector of edges
+	   */
+	  std::vector<Edge> sortEdgesFan(std::vector<Edge> &AFan);
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Transforming triangles of the T-mesh into non-degenerate quads.
+	      *  @param
+	   */
+	  void transformTrianglesIntoQuads();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Mark t-junctions.
+	      *  @param
+	   */
+	  void markTJunctions();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief Sort adjacent edges with respect to their angle with the x-axis.
+	      *  @param AN a node
+	   */
+	  std::vector<Edge> sortedAdjacentEdges(Node &AN);
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief Take an edge and a node belonging to the edge. Return the edges closest to
+	   * the given edge in the list of sorted edges of n.
+	      *  @param AE, AN an edge and a node
+	   */
+	  std::vector<Edge> neighbouringEdges(Edge &AE, Node &AN);
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief Take an section and a node belonging to the edge. Return the section closest to
+	   * the given edge in the list of ordered sections of n.
+	      *  @param ASection, AN a section and a node
+	   */
+	  std::vector<Edge> orderedNeigbourSections(Edge &ASection, Node &AN);
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Set block decomposition connectivity
+	      *  @param
+	   */
+	  void setBlockDecompConnectivity();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Mark with 1 edges separating different blocks
+	      *  @param
+	   */
+	  void markBlocksSeparatingEdges();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Add big T-junctions (to have nice pictures)
+	      *  @param
+	   */
+	  void addBigTJunctions();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Modify faces touching a constraint to ensure good connectivity  TO MODIFY
+	      *  @param
+	   */
+	  void ensureConnectivityThroughConstraints();
+
+	  /*----------------------------------------------------------------------------*/
+	  /** @brief Find the connected components of the boundary and attach an ID to each of them.
+	 	  *  @param
+	  */
+	  void setBoundaryConnectedComponents();
+
+	  /*----------------------------------------------------------------------------*/
+	  /** @brief Build the final T-mesh.
+	 	  *  @param
+	  */
+	  void buildFinalTMesh();
+
+	  /*----------------------------------------------------------------------------*/
+	  /** @brief Write the final T-mesh.
+	 	  *  @param
+	  */
+	  void writeFinalTMesh(std::basic_string<char> AFileName);
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Set block connectivity of the T-mesh.
+	      *  @param
+	   */
+	  void setFinalTMeshConnectivity();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Set block connectivity of the T-mesh.
+	      *  @param
+	   */
+	  Mesh getFinalTMesh();
+
+	  /*-------------------------------------------------------------------------*/
+	  /** \brief  Mark the internal constraints on the final T-mesh.
+	      *  @param
+	   */
+	  void markInternalConstraintsOnFinalTMesh();
+
+ private:
+
+	// A mesh representation of a medial axis, as built by the class MedialAxisBuilder
+	Mesh* m_medax;
+
+	// The minimal Delaunay triangulation from which the medial axis was created
+	Mesh* m_min_delaunay;
+
+	// Topological representation of the medial axis (used to build the quad)
+	Mesh* m_topological_representation;
+	// Nb of sections of the medial axis
+	int m_nb_medial_sections;
+	// Type of each medial section
+	std::vector<int> m_medial_section_type;
+	// Extremal nodes of each medial section
+	std::vector<std::vector<Node>> m_medial_section_extremal_nodes;
+	// Mark with 1 refinable sections
+	std::vector<int> m_is_refinable;
+	// medial axis based T-mesh
+	Mesh* m_t_mesh;
+	// Final T-mesh
+	Mesh* m_final_t_mesh;
+
+	// Connected components of the T-mesh
+	std::vector<std::vector<Edge>> m_boundary_connected_components;
+};
+/*----------------------------------------------------------------------------*/
+}  // end namespace medialaxis
+/*----------------------------------------------------------------------------*/
+}  // end namespace gmds
+/*----------------------------------------------------------------------------*/
+#endif  // GMDS_MEDIALAXIS_MEDAXBASEDTMESHBUILDER_H

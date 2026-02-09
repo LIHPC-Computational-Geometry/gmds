@@ -41,4 +41,43 @@ std::vector<Edge> orientateEdges(Face &AF);
 
 // Regroup aligned conformal edges of a face
 std::vector<std::vector<Edge>> groupsOfAlignedEdges(Face &AF);
+
+// Check if the first point is on the segment formed by the two last points.
+bool isOnSegment(math::Point AP0, math::Point AP1, math::Point AP2);
+
+// Insert a given point in the given set of points.
+std::vector<TCellID> insertPoint(Node AN, std::vector<Node> AV);
+
+// Merge the twp given vectors of points.
+std::vector<math::Point> merge(std::vector<math::Point> AV1, std::vector<math::Point> AV2);
+
+// Takes a vector of edges and a vector of the same size containing quantities assotiated to each edge. Returns the 
+// vector of the edges sorted with respect to this quantity.
+std::vector<Edge> order(std::vector<Edge> AVE, std::vector<double> AVX);
+
+// Returns, if it exists, the edge corresponding to the two given nodes.
+Edge getEdge(Node &AN1, Node &AN2);
+
+// Returns true if the node is internal.
+bool isInterior(Node &AN);
+
+// Returns the area delimited by the edges containted in the input vector. These edges must sourround a convex region.
+double delimitedArea(std::vector<Edge> AV);
+
+// Returns true if the edge touches the boundary.
+bool touchesBoundary(Edge &AE);
+
+// Returns the common face of the two input edges.
+Face getCommonFace(Edge &AE1, Edge &AE2);
+
+// Returns the projection of the second input vector on the first input vector.
+math::Vector projection(math::Vector &AV1, math::Vector &AV2);
+
+// Takes as input two nodes of the input minimal triangulation, and returns the nodes forming the shortest path to go from the first to the second.
+std::vector<Node> shortestPathAlongBoundaryOrConstraints(Node &AN1, Node &AN2, Mesh &AMesh);
+
+// Takes a quad and an edge belonging to the face, and return the opposite face
+Edge opp(Face AFace, Edge AEdge);
+
+
 #endif     // GMDS_MEDIALAXISMATH_H

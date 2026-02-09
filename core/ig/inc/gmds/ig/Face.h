@@ -117,6 +117,13 @@ namespace gmds{
 		TCoord area() const;
 
 		/*------------------------------------------------------------------------*/
+                /** \brief Compute the signed area of the face
+		 * 
+		 * \return the signed area of the face
+                 */
+		TCoord signedArea() const;
+
+		/*------------------------------------------------------------------------*/
 	        /** \brief  Compute the scaled jacobian of the face
         	 *
 	         * \return the scaled jacobian

@@ -14,6 +14,9 @@
 #include "gmds/medialaxis/NonConformalHalfEdge.h"
 #include "gmds/medialaxis/QuantizationGraph.h"
 #include "gmds/medialaxis/QuantizationSolver.h"
+#include "gmds/medialaxis/ConformalMeshBuilder.h"
+#include "gmds/medialaxis/BlockStructureSimplifier.h"
+#include "gmds/medialaxis/Conformalizer.h"
 #include <gmds/math/Point.h>
 #include <gmds/math/Tetrahedron.h>
 #include <iostream>
@@ -60,39 +63,65 @@ int main(int argc, char* argv[])
 	doc.buildEdgesAndX2E();
 	doc.updateUpwardConnectivity();
 
-	// Test non conformal edges
-//	Face f = m.get<Face>(6);
-//	Edge e1 = m.get<Edge>(9);
-//	Edge e2 = m.get<Edge>(10);
-//	std::vector<Edge> edges;
-//	edges.push_back(e1);
-//	edges.push_back(e2);
-//	NonConformalHalfEdge he(0,f,edges);
-//	std::vector<NonConformalHalfEdge> half_edges;
-//	half_edges.push_back(he);
-//	std::vector<std::vector<Edge>> G = groupsOfAlignedEdges(f);
-//	for (auto g:G)
-//	{
-//		std::cout<<"Test "<<std::endl;
-//		for (auto e:g)
-//			std::cout<<" "<<e.id()<<" ";
-//		std::cout<<std::endl;
-//	}
 
-	// Build a quantization graph
+
+	// First we quantize the non conformal mesh and build the corresponding conformal mesh
 	QuantizationSolver qs(m);
-	qs.buildQuantizationGraph();
-	QuantizationGraph* g = qs.getQuantizationGraph();
-	g->updateConnectivity();
-	g->buildQuantizationSolution();
-	// g->display(); // Display the graph
-	// g->displaySolution(); // Display the quantization solution
-	// std::cout<<"Test "<<qgb.oppositeInQuad(6)<<std::endl;
-	qs.setHalfEdgesLength();
-	qs.buildQuantizedMeshNodesOnEdges();
-	qs.buildQuantizedMeshInternalNodes();
-	qs.buildQuantizedMeshFaces();
-	qs.writeQuantizedMesh("quantized_mesh.vtk");
+	std::vector<std::vector<Node>> problematicCouples = qs.buildCompleteSolution();
+	bool valid = true ;//problematicCouples.empty();
+	if (valid)
+	{
+		// We can build the quantized mesh
+
+		qs.setHalfEdgesLength();
+		qs.setEdgesLength();
+
+		// Build the conformal mesh
+		Conformalizer conf(m,qs.halfEdges(),qs.halfEdgesLengths());
+		conf.execute();
+		Mesh conformal_mesh = conf.getConformalMesh();
+
+		// Now we simplify the quantized mesh, ie we try to minimize the number of blocks
+		BlockStructureSimplifier s(conformal_mesh);
+		// s.execute();
+		// s.writeSimplifiedMesh("simplified_mesh.vtk");
+		s.markSeparatrices();
+		s.setBlocksIDs();
+
+		for (int i = 0; i < 100; i++)
+			conf.smooth();
+
+		conf.writeConformalMesh("conformal_mesh.vtk");
+	}
+	else
+	{
+		//We need to add a singularity dipole
+
+		qs.buildFixedMesh(problematicCouples[0][0].id(),problematicCouples[0][1].id());
+		qs.writeFixedMesh("fixed_mesh.vtk");
+		qs.setFixedMeshConnectivity();
+		Mesh fixed_mesh = qs.getFixedMesh();
+
+		// Now we quantized the fixed mesh
+
+		QuantizationSolver qs3(fixed_mesh);
+		qs3.buildCompleteSolution();
+
+		qs3.setHalfEdgesLength();
+
+		// Build the quantized mesh
+		ConformalMeshBuilder cmb(fixed_mesh,qs3.halfEdges(),qs3.halfEdgesLengths());
+		cmb.execute();
+		cmb.writeQuantizedMesh("quantized_mesh.vtk");
+		
+		Mesh quantized_mesh = cmb.getQuantizedMesh();
+
+	
+		// Now we simplify the quantized mesh, ie we try to minimize the number of blocks
+		BlockStructureSimplifier s(quantized_mesh);
+		s.execute();
+		s.writeSimplifiedMesh("simplified_mesh.vtk");
+	}
 
 	// Write the output file
 	VTKWriter vtkWriter(&ioService);
@@ -100,35 +129,43 @@ int main(int argc, char* argv[])
 	vtkWriter.setDataOptions(N| E| F);
 	vtkWriter.write(file_out);
 
-//	// Create a test non-conformal mesh
-//	Mesh m2(MeshModel(DIM3 | F | E | N |
-//	                 F2N | F2E |
-//	                 E2F | E2N | N2E | N2F));
-//
-//	IGMeshIOService ioService2(&m2);
-//	m2.newNode(0.,0.);
-//	m2.newNode(2.,0.);
-//	m2.newNode(4.,0.);
-//	m2.newNode(0.,1.);
-//	m2.newNode(1.,1.);
-//	m2.newNode(2.,1.);
-//	m2.newNode(3.,1.);
-//	m2.newNode(4.,1.);
-//	m2.newNode(0.,2.);
-//	m2.newNode(1.,2.);
-//	m2.newNode(3.,2.);
-//	m2.newNode(4.,2.);
-//	m2.newNode(0.,3.);
-//	m2.newNode(4.,3.);
-//	m2.newFace({0,1,5,4,3});
-//	m2.newFace({1,2,7,6,5});
-//	m2.newFace({3,4,9,8});
-//	m2.newFace({4,5,6,10,9});
-//	m2.newFace({6,7,11,10});
-//	m2.newFace({8,9,10,11,13,12});
-//	VTKWriter vtkWriter2(&ioService2);
-//	vtkWriter2.setCellOptions(N| E| F);
-//	vtkWriter2.setDataOptions(N| E| F);
-//	vtkWriter2.write("blocks_decomp_test.vtk");
+
+	// // Create a test non-conformal mesh
+	// Mesh m2(MeshModel(DIM3 | F | E | N |
+	//                  F2N | F2E |
+	//                  E2F | E2N | N2E | N2F));
+
+	// IGMeshIOService ioService2(&m2);
+
+	// m2.newNode(0.,0.);
+	// m2.newNode(12.,0.);
+	// m2.newNode(2.,1.);
+	// m2.newNode(4.,2.);
+	// m2.newNode(10.,2.);
+	// m2.newNode(0.,5.);
+	// m2.newNode(2.,5.);
+	// m2.newNode(4.,5.);
+	// m2.newNode(10.,7.);
+	// m2.newNode(12.,7.);
+	// m2.newNode(14.,7.);
+	// m2.newNode(4.,10.);
+	// m2.newNode(10.,10.);
+	// m2.newNode(12.,11.);
+	// m2.newNode(2.,12.);
+	// m2.newNode(14.,12.);
+
+	// m2.newFace({0,1,4,3,2});
+	// m2.newFace({0,2,6,5});
+	// m2.newFace({2,3,7,6});
+	// m2.newFace({4,1,9,8});
+	// m2.newFace({6,7,11,14});
+	// m2.newFace({8,9,13,12});
+	// m2.newFace({9,10,15,13});
+	// m2.newFace({11,12,13,15,14});
+	
+	// VTKWriter vtkWriter2(&ioService2);
+	// vtkWriter2.setCellOptions(N| E| F);
+	// vtkWriter2.setDataOptions(N| E| F);
+	// vtkWriter2.write("blocks_decomp_test.vtk");
 
 }

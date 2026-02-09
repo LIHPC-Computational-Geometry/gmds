@@ -84,6 +84,11 @@ public:
     double area() const;
 
     /*------------------------------------------------------------------------*/
+    /** \brief  Computes the signed area of the triangle (works for triangles in the plane)
+     */
+    double signedArea() const;
+
+    /*------------------------------------------------------------------------*/
     /** \brief  Computes the angle (in rad) of the triangle, as seen by its first vertex
      */
     double angle() const;
