@@ -29,3 +29,5 @@ spack-configure*
 
 # add it just in case because someone happened to pushed it once
 spack/
+
+CMakeUserPresets.json
