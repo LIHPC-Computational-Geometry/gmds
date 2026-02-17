@@ -49,11 +49,11 @@ FrontEdgesNodesClassification_3D::execute()
 {
 	FrontEdgesClassification();	// Fill the variable m_EdgesClassification
 
-	gmds::IGMeshIOService ioService(m_mesh);
+	/*gmds::IGMeshIOService ioService(m_mesh);
 	gmds::VTKWriter vtkWriter(&ioService);
 	vtkWriter.setCellOptions(gmds::N|gmds::E);
 	vtkWriter.setDataOptions(gmds::N|gmds::E);
-	vtkWriter.write("AeroEdgesClassification_3D_"+std::to_string(m_Front->getFrontID())+".vtk");
+	vtkWriter.write("AeroEdgesClassification_3D_"+std::to_string(m_Front->getFrontID())+".vtk");*/
 
 
 	FrontNodesClassification();	// Fill the variable m_NbrFeatureEdgesAroundNode

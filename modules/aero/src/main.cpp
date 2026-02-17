@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 		if (aero_result == AbstractAeroPipeline::SUCCESS) {
 #ifdef USE_CGNS
 			gmds::aero::CGNSWriterND writer(algo_aero3D.getBlocking(), 3);
-			writer.write("", output_file, dir);
+			writer.write("", "test_3D.cgns", dir);
 #else
 			std::cout << "CGNS export is desactivated" << std::endl;
 #endif
