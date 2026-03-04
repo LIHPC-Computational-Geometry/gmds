@@ -1,0 +1,1458 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../../user-guide/singgraphbuild/">
+      
+      
+        <link rel="next" href="../unit_test/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
+    
+    
+      
+        <title>How to develop a gmds module - GMDS</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bcfcd587.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#developer-documentation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="GMDS" class="md-header__button md-logo" aria-label="GMDS" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GMDS
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              How to develop a gmds module
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/LIHPC-Computational-Geometry/gmds" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    gmds/gmds
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="GMDS" class="md-nav__button md-logo" aria-label="GMDS" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    GMDS
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/LIHPC-Computational-Geometry/gmds" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    gmds/gmds
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    User Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/users_doc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How to use gmds
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Core modules
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            Core modules
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/cad/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    cad 
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/cadfac/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    cadfac 
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/ig/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ig
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/igalgo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    igalgo 
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/io/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    io 
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    quality 
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/math/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    math 
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/smoothy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    smoothy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/utils/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    utils
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Optional modules
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            Optional modules
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/blocking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Blocking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/elg3d/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Elg3D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/elgmorphing.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    elgmorphing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/frame/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Frame
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/frame3d/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Frame3d
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/geodhoneycomb/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    GeodHoneyComb
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/hybridmeshadapt/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    HybridMeshAdapt
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/kmds/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    kmds
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/padding/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    padding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/polyblock/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    polyblock
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/sheet/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    sheet
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/singgraphbuild/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SingGraphBuild
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Developer Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Developer Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    How to develop a gmds module
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    How to develop a gmds module
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#setting-your-development-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setting your development environment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting your development environment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installation-of-dependencies-with-spack" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation of dependencies with spack
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuring-the-ide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuring the IDE
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creation-of-an-optional-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creation of an optional module
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creation of an optional module">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-to-writeupdate-a-cmakeliststxt-file-for-a-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to write/update a CMakeLists.txt file for a module
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-create-a-new-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to create a new module
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-create-an-executable-in-a-gmds-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to create an executable in a GMDS module
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../unit_test/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Test-driven development
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../python-binding/pygmds/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python binding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#setting-your-development-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setting your development environment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting your development environment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installation-of-dependencies-with-spack" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation of dependencies with spack
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuring-the-ide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuring the IDE
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creation-of-an-optional-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creation of an optional module
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creation of an optional module">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-to-writeupdate-a-cmakeliststxt-file-for-a-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to write/update a CMakeLists.txt file for a module
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-create-a-new-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to create a new module
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-create-an-executable-in-a-gmds-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to create an executable in a GMDS module
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="developer-documentation">Developer documentation</h1>
+<h2 id="setting-your-development-environment">Setting your development environment</h2>
+<p>gmds depends on many external components. In order to compile gmds they need to be installed properly in
+order to be used with CMake.</p>
+<p>Some are optional depending on the gmds functionalities we want to activate;
+they include for example:
+- <code>lcov</code> is used to perform code coverage locally to your computer;
+- <code>py-pybind11</code> is mandatory for the python API;
+- <code>glpk</code> is a linear programming solver that we used in some of our <em>gmds</em> basic components;
+- <code>googletest</code> is used for our testing infrastructure;
+- <code>cgal</code> is required for the blocking component.</p>
+<p>On linux systems and macOS we suggest using <a href="https://spack.io/">spack</a> for installing the dependencies. 
+We use this system for our CI workflows. In a nutshell, spack allows you to install a set of libraries in a 
+specific directory. You can see it as an equivalent of <em>Python environment</em>. In our context,
+we will simply install the set of dependencies we need and use them in our CMake build system. As an example,
+let's take a look at how to install the basic set of gmds components, plus the blocking component with the Python API and 
+with the CGNS writer.</p>
+<h3 id="installation-of-dependencies-with-spack">Installation of dependencies with spack</h3>
+<p>The following procedure can be found in the <a href="https://github.com/LIHPC-Computational-Geometry/spack_recipes/blob/main/build_spack_gmds.sh">build_spack_gmds.sh</a>
+script. You can run the following commands from an empty directory; you will end up with three directories <code>spack, spack_recipes and gmds</code>.
+Spack's <a href="https://spack.readthedocs.io/en/v0.20.3/getting_started.html">prerequisites</a> for the version of your choice 
+should be installed.</p>
+<p>We download a spack release; optionally you can remove the configuration files 
+stored in the <code>.spack</code> directory located in your home if you have previously used spack and want a fresh start:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">#==========================================</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="c1"># First get a spack release</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>git<span class="w"> </span>clone<span class="w"> </span>--depth<span class="o">=</span><span class="m">1</span><span class="w"> </span>-b<span class="w"> </span>v0.20.3<span class="w">  </span>https://github.com/spack/spack.git
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1">#==========================================</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># can be mandatory if you have already used spack on your computer</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># delete the .spack directory in the home of the user in order to </span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># have a fresh start</span>
+</span></code></pre></div></p>
+<p>The way to build software in spack is described in what is called <code>recipes</code>, and ours 
+are located in this project:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">#==========================================</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># get our recipes</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>git<span class="w"> </span>clone<span class="w"> </span>--depth<span class="o">=</span><span class="m">1</span><span class="w"> </span>https://github.com/LIHPC-Computational-Geometry/spack_recipes.git
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="sb">````</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>Spack<span class="w"> </span>can<span class="w"> </span>be<span class="w"> </span>configured<span class="p">;</span><span class="w"> </span>you<span class="w"> </span>can<span class="w"> </span>modify<span class="w"> </span>the<span class="w"> </span>installation<span class="w"> </span>directory<span class="w"> </span>to<span class="w"> </span>shorten<span class="w"> </span>the<span class="w"> </span>paths<span class="w"> </span>at<span class="w"> </span>the<span class="w"> </span>cost
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>of<span class="w"> </span>disabling<span class="w"> </span>the<span class="w"> </span>possibility<span class="w"> </span>to<span class="w"> </span>have<span class="w"> </span>several<span class="w"> </span>installations<span class="w"> </span>of<span class="w"> </span>a<span class="w"> </span>same<span class="w"> </span>package<span class="w"> </span>with<span class="w"> </span>differing
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>options/versions<span class="w"> </span><span class="o">(</span><span class="k">if</span><span class="w"> </span>choosing<span class="w"> </span>that<span class="w"> </span>any<span class="w"> </span>library<span class="w"> </span><span class="sb">`</span>toto<span class="sb">`</span><span class="w"> </span>installed<span class="w"> </span>with<span class="w"> </span>spack<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>located<span class="w"> </span><span class="k">in</span><span class="w">  </span><span class="sb">`</span>absolute_path/spack/opt/spack/toto/<span class="sb">`</span>.<span class="o">)</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="sb">```</span>bash
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># Optional: modifying the install_tree variable to make it shorter and more human readable;</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># the HASH part in install directory names is removed which can lead to collisions.</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="c1"># The spack/etc/spack/defaults/config.yaml file can be modified by hand</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="c1"># - in spack version 0.20</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1">#sed -i &#39;s#&quot;{architecture}/{compiler.name}-{compiler.version}/{name}-{version}-{hash}&quot;#&quot;{name}&quot;#g&#39; spack/etc/spack/defaults/config.yaml</span>
+</span></code></pre></div></p>
+<p>Spack comes with builtin recipes; still we have to register additional ones: 
+- recipes for our own software, in particular gmds itself;
+- superseded recipes that replace the builtin ones; we aim to keep this number low and directly contribute 
+to the spack upstream project
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># to register our recipes; it assumes that spack_recipes and spack are located at</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1"># the same level. You can use the &quot;spack repo add&quot; commands instead of copying the repos.yaml file</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1">#spack repo add ./spack_recipes/meshing</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1">#spack repo add ./spack_recipes/meshing_supersede</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>cp<span class="w"> </span>spack_recipes/config/repos.yaml<span class="w"> </span>spack/etc/spack/defaults/repos.yaml
+</span></code></pre></div></p>
+<p>We will start using spack itself
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">#==========================================</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1"># configure spack using spack commands; it modifies the .spack directory in the user home</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="nb">source</span><span class="w"> </span>spack/share/spack/setup-env.sh
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>spack<span class="w"> </span>clean<span class="w"> </span>-a
+</span></code></pre></div></p>
+<p>First register cmake (<code>cmake</code> should be available in your <code>PATH</code>, 
+for example by installing the system package)
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># registering cmake</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>spack<span class="w"> </span>external<span class="w"> </span>find<span class="w"> </span>cmake
+</span></code></pre></div></p>
+<p>And then compilers; you need a compiler that handles both C and CXX. Check that the highest version of the
+compiler returned by <code>spack compiler list</code> does indeed provide both, using the command <code>spack compiler info gcc</code>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># registering compilers</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>spack<span class="w"> </span>compiler<span class="w"> </span>find
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># spack uses the highest version of the compiler found by default; if it is incomplete,</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># for example the C compiler is installed but not the CXX one the installations will fail.</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1"># Compilers found can be investigated by (see `spack help compiler` commands)</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>spack<span class="w"> </span>compiler<span class="w"> </span>list
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1">#spack compiler info gcc</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="c1"># An undesirable version can be removed by editing ~/.spack/linux/compilers.yaml or using</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="c1">#spack compiler remove gcc@12</span>
+</span></code></pre></div></p>
+<p>Now we get gmds:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># install for dev purposes</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="c1"># choose one URL depending on your authentication on github</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1"># web URL</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/LIHPC-Computational-Geometry/gmds.git
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="c1"># SSH key</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:LIHPC-Computational-Geometry/gmds.git
+</span></code></pre></div></p>
+<p>And we build gmds from the sources we just cloned, including all the necessary dependencies.
+The options given as parameters in this example are :
+- <code>~python~blocking~cgns</code> deactivates the corresponding variants, which will result in
+a lighter gmds with less dependencies
+- <code>dev_path</code> the path where the gmds sources are located
+- <code>build_type</code> the build type, <code>Debug</code> being most likely what one will need when developing</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># you will probably want build_type=Debug or RelWithDebInfo.</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="c1"># Choose the variants you need, you can check them using `spack info gmds`.</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1"># The dev_path option does not seem to handle relative paths.</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1"># +mpi should actually be ok, but currently the default openmpi install fails</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1"># It is activated by default in the hdf5 and cgns recipes, so choose not to use it if necessary</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1">#spack install gmds+python+blocking+cgns dev_path=$PWD/gmds build_type=Debug ^cgns~mpi ^hdf5~mpi</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>spack<span class="w"> </span>install<span class="w"> </span>gmds~python~blocking~cgns<span class="w"> </span><span class="nv">dev_path</span><span class="o">=</span><span class="nv">$PWD</span>/gmds<span class="w"> </span><span class="nv">build_type</span><span class="o">=</span>Debug
+</span></code></pre></div>
+<h3 id="configuring-the-ide">Configuring the IDE</h3>
+<p>Now in order to develop we need to configure an IDE. This can be done in two ways:
+1. Extracting the options from spack. Files named <code>gmds/spack-*</code> or <code>gmds/Buildxxx/spack-*</code> were created in the gmds directory; we can extract the necessary 
+data to configure an IDE, in particular the <code>CMAKE_PREFIX_PATH</code> and the cmake options given to gmds.
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># to configure an IDE</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># spack created files and directories named gmds/spack-* in the gmds source tree, where the necessary</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="c1"># options are set up</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># get the CMAKE_PREFIX_PATH with &#39;;&#39; as separators</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>cat<span class="w"> </span>gmds/spack-build-env.txt<span class="w">  </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>CMAKE_PREFIX_PATH<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span>-F<span class="w"> </span><span class="s2">&quot;=&quot;</span><span class="w"> </span><span class="o">{</span><span class="s1">&#39;print $2&#39;</span><span class="o">}</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span>-F<span class="w"> </span><span class="s2">&quot;;&quot;</span><span class="w"> </span><span class="o">{</span><span class="s1">&#39;print $1&#39;</span><span class="o">}</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sed<span class="w"> </span><span class="s1">&#39;s/:/;/g&#39;</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="c1"># get the cmake options that were explicitly set by spack; add -DWITH_TEST:BOOL=ON</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="c1"># to activate the tests</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>cat<span class="w"> </span>gmds/spack-configure-args.txt
+</span></code></pre></div></p>
+<ol>
+<li>Specifying the options by hand; note that you can proceed this way whatever the method used to install
+the dependencies:
+<div class="language-cmake highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="err">-DWITH_PYTHON_API:BOOL=ON</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="err">-DENABLE_BLOCKING:BOOL=ON</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="err">-DWITH_CGNS:BOOL=ON</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="err">-DWITH_TEST:BOOL=ON</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="err">-DCMAKE_PREFIX_PATH=/absolute_path/spack/opt/spack/googletest;/absolute_path/spack/opt/spack/py-pybind11;/absolute_path/spack/opt/spack/cgal;/absolute_path/spack/opt/spack/gmp;/absolute_path/spack/opt/spack/mpfr;/absolute_path/spack/opt/spack/boost;/absolute_path/spack/opt/spack/glpk;/absolute_path/spack/opt/spack/cgns</span>
+</span></code></pre></div></li>
+</ol>
+<h2 id="creation-of-an-optional-module">Creation of an optional module</h2>
+<p>Once a component is created, we use a <a href="git_workflow.md">github workflow</a> in order to structure the code development.
+We also intensively use <a href="../unit_test/">unit tests</a> to valid our codes and also to perform code coverage when we merge developments.</p>
+<p>The creation of a new GMDS component requires to follow the guideline given below.</p>
+<h3 id="how-to-writeupdate-a-cmakeliststxt-file-for-a-module">How to write/update a CMakeLists.txt file for a module</h3>
+<p>Be careful, each time you add a new header file in the <strong>inc</strong> subdirectory or a source file in the <em><em>src</em> subdirectory, a reference to this file must be added in the </em>CMakeLists.txt* file.</p>
+<h3 id="how-to-create-a-new-module">How to create a new module</h3>
+<p>GMDS is structured as a set of libraries, each library being defined in a module. We follow the strict rule of "one module gives one library". In order to define a new module, and so library you have to follow the next series of actions. Let us consider that we want to define a new module named <em>xxx</em></p>
+<ol>
+<li>
+<p>At the root directory of <strong>gmds</strong>, add a directory, named by your module name (always start with a small letter). Let us call it <strong>xxx</strong>;</p>
+</li>
+<li>
+<p>At the root directory of <strong>gmds</strong>, open the file <em>CMakeLists.txt</em> and add the following command in the section entitle <em>OPTIONAL COMPONENTS</em></p>
+</li>
+</ol>
+<p><div class="language-cmake highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nb">GMDS_ADD_COMPONENT</span><span class="p">(</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">        </span><span class="s">XXX</span><span class="w">                               </span><span class="c"># cmake variable</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">        </span><span class="s">xxx</span><span class="w">                               </span><span class="c"># src subdirectory name</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">        </span><span class="s">GMDSXxx</span><span class="w">                           </span><span class="c"># name of the generated library</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">        </span><span class="s2">&quot;description of the component&quot;</span><span class="w">  </span><span class="c"># description</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">        </span><span class="s">ON</span><span class="w">                                  </span><span class="c"># is activated</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">        </span><span class="s">ON</span><span class="w">                                 </span><span class="c"># must be covered</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="p">)</span>
+</span></code></pre></div>
+<strong>GMDS_ADD_COMPONENT</strong> is a CMake macro for GMDS.
+- The first parameter of the macro is the CMake variable that will be used for this component.
+- The source code of the component must be in the subdirectory given as the second parameter.
+- The third parameter is the name given at the component library when it will be installed. In the project and everywhere in another "CMakeLists.txt" file, the library will be accessible via the marco <em>${LIB_GMDS_XXX}$</em>
+- The fourth parameter is a Boolean flag indicating that the component must be built (ON) or not (OFF)
+- The fifth parameter is also a Boolean flag used to know if the module must be covered by the code coverage procedure that we use when a "push"-like command is performed.</p>
+<ol>
+<li>
+<p>Get into the <strong>xxx</strong> subdirectory and create 3 subdirectories named <strong>inc</strong>, <strong>src</strong> and <strong>tst</strong> and a <em>CMakeLists.txt</em> file. In the <strong>inc</strong> subdirectory create a subdirectory <strong>gmds</strong> that includes subdirectory <strong>xxx* to achieve the following structure </strong>xxx/inc/gmds/xxx/**</p>
+</li>
+<li>
+<p>Fill the *CMakeLists.txt" file as follows:</p>
+</li>
+</ol>
+<div class="language-cmake highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c">#==============================================================================</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="c"># LIBRARY DEFINITION (SOURCE FILES)</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="c">#==============================================================================</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c"># Explicitly used the name given in this preamble</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="nb">set</span><span class="p">(</span><span class="s">GMDS_LIB</span><span class="w"> </span><span class="o">${</span><span class="nv">LIB_GMDS_XXX</span><span class="o">}</span><span class="p">)</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="nb">set</span><span class="p">(</span><span class="s">GMDS_LIB_PREFIX</span><span class="w"> </span><span class="s">gmds/xxx</span><span class="p">)</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="nb">set</span><span class="p">(</span><span class="s">GMDS_INC</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">        </span><span class="s">inc/gmds/xxx/Class1.h</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">        </span><span class="s">inc/gmds/xxx/Class2.h</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">        </span><span class="p">)</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="nb">set</span><span class="p">(</span><span class="s">GMDS_SRC</span>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">        </span><span class="s">src/Class1.cpp</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">        </span><span class="s">src/Class2.cpp</span>
+</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">        </span><span class="p">)</span>
+</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="c">#==============================================================================</span>
+</span><span id="__span-11-17"><a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="nb">add_library</span><span class="p">(</span><span class="o">${</span><span class="nv">GMDS_LIB</span><span class="o">}</span><span class="w"> </span><span class="o">${</span><span class="nv">GMDS_INC</span><span class="o">}</span><span class="w"> </span><span class="o">${</span><span class="nv">GMDS_SRC</span><span class="o">}</span><span class="p">)</span>
+</span><span id="__span-11-18"><a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="c">#==============================================================================</span>
+</span><span id="__span-11-19"><a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="c"># TARGET DEFINITION</span>
+</span><span id="__span-11-20"><a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="c">#==============================================================================</span>
+</span><span id="__span-11-21"><a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span class="nb">include</span><span class="p">(</span><span class="s">GNUInstallDirs</span><span class="p">)</span>
+</span><span id="__span-11-22"><a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a><span class="c">#LIBRARY TO INSTALL</span>
+</span><span id="__span-11-23"><a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a><span class="nb">target_link_libraries</span><span class="p">(</span><span class="o">${</span><span class="nv">GMDS_LIB</span><span class="o">}</span><span class="w"> </span><span class="s">PUBLIC</span>
+</span><span id="__span-11-24"><a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a><span class="w">        </span><span class="o">${</span><span class="nv">LIB_GMDS_CAD</span><span class="o">}</span>
+</span><span id="__span-11-25"><a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a><span class="w">        </span><span class="o">${</span><span class="nv">LIB_GMDS_IG</span><span class="o">}</span><span class="p">)</span>
+</span><span id="__span-11-26"><a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a>
+</span><span id="__span-11-27"><a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a><span class="c">#==============================================================================</span>
+</span><span id="__span-11-28"><a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a><span class="c"># NOTHING TO UPDATE BELOW</span>
+</span><span id="__span-11-29"><a id="__codelineno-11-29" name="__codelineno-11-29" href="#__codelineno-11-29"></a><span class="c">#==============================================================================</span>
+</span><span id="__span-11-30"><a id="__codelineno-11-30" name="__codelineno-11-30" href="#__codelineno-11-30"></a>
+</span><span id="__span-11-31"><a id="__codelineno-11-31" name="__codelineno-11-31" href="#__codelineno-11-31"></a><span class="nb">target_compile_features</span><span class="p">(</span><span class="o">${</span><span class="nv">GMDS_LIB</span><span class="o">}</span><span class="w"> </span><span class="s">PUBLIC</span><span class="w"> </span><span class="s">cxx_std_14</span><span class="p">)</span>
+</span><span id="__span-11-32"><a id="__codelineno-11-32" name="__codelineno-11-32" href="#__codelineno-11-32"></a>
+</span><span id="__span-11-33"><a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a><span class="c"># INCLUDE TO INSTALL</span>
+</span><span id="__span-11-34"><a id="__codelineno-11-34" name="__codelineno-11-34" href="#__codelineno-11-34"></a><span class="nb">target_include_directories</span><span class="p">(</span><span class="o">${</span><span class="nv">GMDS_LIB</span><span class="o">}</span><span class="w"> </span><span class="s">PUBLIC</span>
+</span><span id="__span-11-35"><a id="__codelineno-11-35" name="__codelineno-11-35" href="#__codelineno-11-35"></a><span class="w">        </span><span class="o">$&lt;</span><span class="nv">BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc</span><span class="o">&gt;</span>
+</span><span id="__span-11-36"><a id="__codelineno-11-36" name="__codelineno-11-36" href="#__codelineno-11-36"></a><span class="w">        </span><span class="o">$&lt;</span><span class="nv">INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include</span><span class="o">&gt;</span>
+</span><span id="__span-11-37"><a id="__codelineno-11-37" name="__codelineno-11-37" href="#__codelineno-11-37"></a><span class="w">        </span><span class="p">)</span>
+</span><span id="__span-11-38"><a id="__codelineno-11-38" name="__codelineno-11-38" href="#__codelineno-11-38"></a><span class="nb">set_target_properties</span><span class="p">(</span><span class="o">${</span><span class="nv">GMDS_LIB</span><span class="o">}</span><span class="w"> </span><span class="s">PROPERTIES</span><span class="w"> </span><span class="s">PUBLIC_HEADER</span><span class="w"> </span><span class="s2">&quot;${GMDS_INC}&quot;</span><span class="p">)</span>
+</span><span id="__span-11-39"><a id="__codelineno-11-39" name="__codelineno-11-39" href="#__codelineno-11-39"></a>
+</span><span id="__span-11-40"><a id="__codelineno-11-40" name="__codelineno-11-40" href="#__codelineno-11-40"></a><span class="nb">install</span><span class="p">(</span><span class="s">TARGETS</span><span class="w"> </span><span class="o">${</span><span class="nv">GMDS_LIB</span><span class="o">}</span>
+</span><span id="__span-11-41"><a id="__codelineno-11-41" name="__codelineno-11-41" href="#__codelineno-11-41"></a><span class="w">        </span><span class="s">EXPORT</span><span class="w"> </span><span class="s">GMDS_SUITE</span>
+</span><span id="__span-11-42"><a id="__codelineno-11-42" name="__codelineno-11-42" href="#__codelineno-11-42"></a><span class="w">        </span><span class="s">PUBLIC_HEADER</span><span class="w"> </span><span class="s">DESTINATION</span><span class="w"> </span><span class="o">${</span><span class="nv">CMAKE_INSTALL_INCLUDEDIR</span><span class="o">}</span><span class="s">/</span><span class="o">${</span><span class="nv">GMDS_LIB_PREFIX</span><span class="o">}</span>
+</span><span id="__span-11-43"><a id="__codelineno-11-43" name="__codelineno-11-43" href="#__codelineno-11-43"></a><span class="w">        </span><span class="s">LIBRARY</span><span class="w"> </span><span class="s">DESTINATION</span><span class="w"> </span><span class="o">${</span><span class="nv">CMAKE_INSTALL_LIBDIR</span><span class="o">}</span><span class="s">/cmake/gmds</span>
+</span><span id="__span-11-44"><a id="__codelineno-11-44" name="__codelineno-11-44" href="#__codelineno-11-44"></a><span class="w">        </span><span class="s">ARCHIVE</span><span class="w"> </span><span class="s">DESTINATION</span><span class="w"> </span><span class="o">${</span><span class="nv">CMAKE_INSTALL_LIBDIR</span><span class="o">}</span><span class="s">/cmake/gmds</span><span class="p">)</span>
+</span><span id="__span-11-45"><a id="__codelineno-11-45" name="__codelineno-11-45" href="#__codelineno-11-45"></a>
+</span><span id="__span-11-46"><a id="__codelineno-11-46" name="__codelineno-11-46" href="#__codelineno-11-46"></a><span class="c">#==============================================================================</span>
+</span><span id="__span-11-47"><a id="__codelineno-11-47" name="__codelineno-11-47" href="#__codelineno-11-47"></a><span class="nb">if</span><span class="p">(</span><span class="s">WITH_TEST</span><span class="p">)</span>
+</span><span id="__span-11-48"><a id="__codelineno-11-48" name="__codelineno-11-48" href="#__codelineno-11-48"></a><span class="c">#    add_subdirectory(tst)</span>
+</span><span id="__span-11-49"><a id="__codelineno-11-49" name="__codelineno-11-49" href="#__codelineno-11-49"></a><span class="nb">endif</span><span class="p">(</span><span class="s">WITH_TEST</span><span class="p">)</span>
+</span><span id="__span-11-50"><a id="__codelineno-11-50" name="__codelineno-11-50" href="#__codelineno-11-50"></a><span class="c">#==============================================================================</span>
+</span></code></pre></div>
+<p>This file deserves a few comments:
+- You must set the two first variables using the name of your component (XXX) and the name of the subdirectory (xxx).
+- Each time you create a new class, the corresponding header and src files must be added to the lists <em>GMDS_INC</em> and <em>GMDS_SRC</em> respectively.
+- Note that the <em>inc</em> subdirectory is always structured with two subdirectories, i.e. <em>inc/gmds/xxx/</em> for getting a homogeneous way of accessing to gmds header files.
+- The command <strong>target_link_libraries(${GMDS_LIB} PUBLIC ....)</strong> is very important. It is where you give the dependency of your module to other GDMS module or to external libraries.
+- The remainder of the CMakefiles.txt should not be edited. It is used to generate libraries and to define the install procedure</p>
+<h3 id="how-to-create-an-executable-in-a-gmds-module">How to create an executable in a GMDS module</h3>
+<p>A GMDS module is associated to a library, but an executable can also be produced.
+Considering the module <em>XXX</em>, you can do so it by adding the next lines at the end 
+of the <em>CMakeLists.txt</em> file. </p>
+<div class="language-cmake highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c">#==============================================================================</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="c"># EXECUTABLE</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="c">#==============================================================================</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="nb">add_executable</span><span class="p">(</span><span class="s">xxx</span><span class="w"> </span><span class="s">src/main.cpp</span><span class="p">)</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">xxx</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="o">${</span><span class="nv">GMDS_LIB</span><span class="o">}</span><span class="p">)</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="nb">target_compile_features</span><span class="p">(</span><span class="s">xxx</span><span class="w"> </span><span class="s">PUBLIC</span><span class="w"> </span><span class="s">cxx_std_14</span><span class="p">)</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="nb">install</span><span class="p">(</span><span class="s">TARGETS</span><span class="w"> </span><span class="s">xxx</span><span class="p">)</span>
+</span></code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.top"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.1e8ae164.min.js"></script>
+      
+    
+  </body>
+</html>
