@@ -227,7 +227,7 @@ namespace gmds{
         size_8 = 8,
     }TabSize;
     /*----------------------------------------------------------------------------*/
-    template<int N> struct TabCellID {
+    template<int N> struct GMDSUtils_API TabCellID {
     private:
         TCellID val[N];
         
