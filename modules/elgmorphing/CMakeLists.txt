@@ -2,7 +2,7 @@
 # LIBRARY DEFINTION (SOURCE FILES)
 #==============================================================================
 # Nommer tout en GMDS_MODULE_NAME, GMDS_SRC, ... dans les composants
-set(GMDS_LIB ${LIB_GMDS_ELGMORPHING})
+set(GMDS_LIB ${LIB_GMDS_ELG_MORPHING})
 set(GMDS_LIB_PREFIX gmds/elgmorphing)
 
 set(GMDS_INC
@@ -60,3 +60,8 @@ add_executable(elgmorphing src/main.cpp)
 target_link_libraries(elgmorphing PRIVATE ${GMDS_LIB})
 target_compile_features(elgmorphing PUBLIC cxx_std_14)
 install(TARGETS elgmorphing)
+
+add_executable(smooth src/main_smooth.cpp)
+target_link_libraries(smooth PRIVATE ${GMDS_LIB})
+target_compile_features(smooth PUBLIC cxx_std_14)
+install(TARGETS smooth)
