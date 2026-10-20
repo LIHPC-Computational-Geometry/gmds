@@ -14,7 +14,6 @@
 #include "ExtractGeomTest.h"
 #include "FracPresEnforcementTest.h"
 #include "FracPresTest.h"
-#include "GCOTest.h"
 #include "InihTest.h"
 #include "InitDataTest.h"
 #include "InterfaceNodesPosTest.h"

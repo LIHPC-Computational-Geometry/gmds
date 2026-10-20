@@ -11,7 +11,6 @@ set(UT_ELG3D_SRC_FILES
         ExtractGeomTest.h
         FracPresTest.h
         FracPresEnforcementTest.h
-        GCOTest.h
         InihTest.h
         InitDataTest.h
         InterfaceNodesPosSmoothVFTest.h
@@ -24,7 +23,7 @@ set(UT_ELG3D_SRC_FILES
 add_executable(UT_elg3d main.cpp ${UT_ELG3D_SRC_FILES})
 
 target_link_libraries(UT_elg3d
-		PUBLIC elg3d kmds Kokkos::kokkoscore GCO INIH GTest::gtest
+		PUBLIC elg3d kmds Kokkos::kokkoscore INIH GTest::gtest
 		INTERFACE glpk)
 
 

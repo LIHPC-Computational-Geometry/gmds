@@ -303,19 +303,6 @@ namespace elg3d {
 
 
     void
-    InterfaceNodesPosSmoothVF_assignGraphCut_xD(const kmds::GrowingView<kmds::TCellID> *ACellsIDs_source,
-                                                const kmds::GrowingView<kmds::TCellID> *ACellsIDs_target,
-                                                const FracPres *Afp_source,
-                                                MaterialAssignment *Ama_target,
-                                                const kmds::Variable<kmds::TCellID> *AVarSubCells2oldCells,
-                                                const kmds::Variable<kmds::TCellID> *AVarOldCells2firstSubCells,
-                                                const kmds::Variable<bool> *AVarMixedCells_source,
-                                                const kmds::Variable<kmds::TCellID> *AVarCells2vertices,
-                                                const kmds::Graph *AGraph,
-                                                const kmds::Variable<gmds::math::Point> *AVarMidPoints_target,
-                                                const int ANbSubPixels);
-
-    void
     InterfaceNodesPosSmoothVF_assignSimulatedAnnealing_xD(const kmds::GrowingView<kmds::TCellID> *ACellsIDs_source,
                                                           const kmds::GrowingView<kmds::TCellID> *ACellsIDs_target,
                                                           const FracPres *Afp_source,
