@@ -246,30 +246,6 @@ int main(int argc, char* argv[]) {
             );
 
             break;
-        case 3 : {
-            kmds::Variable<gmds::math::Point> *varMidPoints_target =
-                    mesh_target.createVariable<gmds::math::Point>(kmds::NullID, kmds::KMDS_REGION, "midpoints_target");
-
-            elg3d::Tools_computeMidPointVar_3D(&cellsIDs_target,
-                                               &mesh_target,
-                                               varMidPoints_target);
-
-            elg3d::InterfaceNodesPosSmoothVF_assignGraphCut_xD(&cellsIDs_source,
-                                                               &cellsIDs_target,
-                                                               &fp_source,
-                                                               &ma_target,
-                                                               varSubCells2oldCells,
-                                                               varOldCells2firstSubCells,
-                                                               varMixedCells_source,
-                                                               varCells2vertices,
-                                                               &graph,
-                                                               varMidPoints_target,
-                                                               nbSubPixels
-            );
-
-            mesh_target.deleteVariable(kmds::KMDS_REGION, "midpoints_target");
-        }
-            break;
         case 4 : {
             kmds::Variable<gmds::math::Point> *varMidPoints_target =
                     mesh_target.createVariable<gmds::math::Point>(kmds::NullID, kmds::KMDS_REGION, "midpoints_target");

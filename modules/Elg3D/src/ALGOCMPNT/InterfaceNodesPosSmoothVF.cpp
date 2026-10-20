@@ -20,8 +20,6 @@
 #include <Kokkos_UnorderedMap.hpp>
 
 #include <glpk.h>
-
-#include <GCoptimization.h>
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 // GMDS File Headers
@@ -41,27 +39,6 @@
 #include "ELG3D/ALGOCMPNT/Tools.h"
 /*----------------------------------------------------------------------------*/
 namespace elg3d {
-
-    double InterfaceNodesPosSmoothVF_gco_smoothCost_interface(int p, int q, int label_p, int label_q,void *extraData){
-
-        gmds::math::Vector3d n({1., -0.5, 0.});
-        n.normalize();
-
-        std::map<int, gmds::math::Point>* index2pts = reinterpret_cast<std::map<int, gmds::math::Point>* > (extraData);
-        gmds::math::Point pt_p = (*index2pts)[p];
-        gmds::math::Point pt_q = (*index2pts)[q];
-
-        gmds::math::Vector3d v(pt_q - pt_p);
-        v.normalize();
-
-        double dotproduct = n.dot(v);
-
-        if (label_q == label_p){
-            return 0.;
-        } else{
-            return 1 - std::fabs(dotproduct);
-        }
-    }
 
     /*----------------------------------------------------------------------------*/
     void
@@ -4439,149 +4416,6 @@ namespace elg3d {
 
     /*----------------------------------------------------------------------------*/
     void
-    InterfaceNodesPosSmoothVF_assignGraphCut_xD(const kmds::GrowingView<kmds::TCellID> *ACellsIDs_source,
-                                                const kmds::GrowingView<kmds::TCellID> *ACellsIDs_target,
-                                                const FracPres *Afp_source,
-                                                MaterialAssignment *Ama_target,
-                                                const kmds::Variable<kmds::TCellID> *AVarSubCells2oldCells,
-                                                const kmds::Variable<kmds::TCellID> *AVarOldCells2firstSubCells,
-                                                const kmds::Variable<bool> *AVarMixedCells_source,
-                                                const kmds::Variable<kmds::TCellID> *AVarCells2vertices,
-                                                const kmds::Graph *AGraph,
-                                                const kmds::Variable<gmds::math::Point> *AVarMidPoints_target,
-                                                const int ANbSubPixels) {
-        // =======================================
-        // initialize vf
-
-        const int nbVert = AGraph->getNbVec();
-        const int nbMat = Afp_source->getNbMaterials();
-
-        const int nbCells_target = ACellsIDs_target->getNbElems();
-
-
-        // fill known coordinates of pixels issued from pure source cells
-        std::vector<std::map<kmds::TCellID, gmds::math::Point> > pts_mats(nbMat);
-        std::map<int, gmds::math::Point> pts_all;
-
-        for (int i = 0; i < nbCells_target; i++) {
-            kmds::TCellID cid = ACellsIDs_target->get(i);
-
-            kmds::TCellID vert = (*AVarCells2vertices)[cid];
-            if (vert != kmds::NullID) {
-                kmds::TCellID cid_old = (*AVarSubCells2oldCells)[cid];
-                if(!(*AVarMixedCells_source)[cid_old]) {
-                    int imat = Afp_source->getMaxMatFracPresIndex(cid_old);
-
-                    pts_mats[imat].emplace(vert, (*AVarMidPoints_target)[cid]);
-                    pts_all.emplace(vert, (*AVarMidPoints_target)[cid]);
-                }
-            }
-        }
-
-
-        GCoptimizationGeneralGraph graphCut(nbVert, nbMat);
-
-        std::vector<double> dataCost(nbVert*nbMat, 1000.);
-
-
-        // set data cost for pixels issued from pure source cells
-        for(int imat=0; imat<pts_mats.size(); imat++) {
-            for(auto pts: pts_mats[imat]) {
-                kmds::TCellID ivert = pts.first;
-                dataCost[ivert * nbMat + imat] = 0.;
-            }
-        }
-
-        // set data cost for the other pixels
-        for(int ic=0; ic<ACellsIDs_source->getNbElems(); ic++) {
-            kmds::TCellID cid_source = ACellsIDs_source->get(ic);
-
-            if((*AVarMixedCells_source)[cid_source]) {
-
-                kmds::TCellID subID_0 = (*AVarOldCells2firstSubCells)[cid_source];
-
-                for(int isub=0; isub<ANbSubPixels; isub++) {
-
-                    kmds::TCellID cid = subID_0 + isub;
-
-                    kmds::TCellID vert = (*AVarCells2vertices)[cid];
-
-                    gmds::math::Point pt_current = (*AVarMidPoints_target)[cid];
-
-                    pts_all.emplace(vert, pt_current);
-
-                    for(int imat=0; imat<nbMat; imat++) {
-
-                        double fpmat = Afp_source->getFracPres(imat, cid_source);
-
-                        double mindist = HUGE_VALF;
-
-                        for(auto pts: pts_mats[imat]) {
-                            gmds::math::Point pt_dist = pts.second;
-
-                            double dist = pt_current.distance(pt_dist);
-                            if(dist < mindist) {
-                                mindist = dist;
-                            }
-                        }
-
-                        if(mindist != HUGE_VALF) {
-                            dataCost[vert * nbMat + imat] = (1. - fpmat) * mindist;
-                        } else {
-                            kmds::KException("InterfaceNodesPosSmoothVF_assignGraphCut_xD : no pixel issued from pure source cell was found for this material.");
-                        }
-                    }
-
-                }
-            }
-        }
-
-        // fill the neighbors in the graphcut data structure
-        for(int ivert=0; ivert<nbVert; ivert++) {
-
-            Kokkos::View<kmds::TCellID *> neighbors;
-            int nb = AGraph->getNeighbors(ivert, neighbors);
-
-            for(int in=0; in<nb; in++) {
-                graphCut.setNeighbors(ivert, neighbors(in));
-//                graphCut.setNeighbors(neighbors(in), ivert);
-            }
-        }
-
-        graphCut.setDataCost(dataCost.data());
-
-        graphCut.setSmoothCost(&InterfaceNodesPosSmoothVF_gco_smoothCost_interface, &pts_all);
-
-        try { //graphCut.expansion(300);
-            graphCut.swap();
-        } catch (const GCException& e) {std::cout << e.message << '\n'; }
-
-
-        // retrieve material assignment from the graphcut data structure
-        for(int ic=0; ic<ACellsIDs_source->getNbElems(); ic++) {
-            kmds::TCellID cid_source = ACellsIDs_source->get(ic);
-
-            if ((*AVarMixedCells_source)[cid_source]) {
-
-                kmds::TCellID subID_0 = (*AVarOldCells2firstSubCells)[cid_source];
-
-                for (int isub = 0; isub < ANbSubPixels; isub++) {
-
-                    kmds::TCellID cid = subID_0 + isub;
-
-                    kmds::TCellID vert = (*AVarCells2vertices)[cid];
-
-
-                    int mat = graphCut.whatLabel(vert);
-                    Ama_target->setMaterial(mat, cid);
-                }
-            }
-        }
-
-    }
-
-    /*----------------------------------------------------------------------------*/
-    void
     InterfaceNodesPosSmoothVF_assignSimulatedAnnealing_xD(const kmds::GrowingView<kmds::TCellID> *ACellsIDs_source,
                                                           const kmds::GrowingView<kmds::TCellID> *ACellsIDs_target,
                                                           const FracPres *Afp_source,
@@ -4784,7 +4618,7 @@ namespace elg3d {
         }
 
 
-        // retrieve material assignment from the graphcut data structure
+        // retrieve material assignment
         for(int ic=0; ic<ACellsIDs_source->getNbElems(); ic++) {
             kmds::TCellID cid_source = ACellsIDs_source->get(ic);
 
@@ -5017,7 +4851,7 @@ namespace elg3d {
         }
 
 
-        // retrieve material assignment from the graphcut data structure
+        // retrieve material assignment
         for(int ic=0; ic<ACellsIDs_source->getNbElems(); ic++) {
             kmds::TCellID cid_source = ACellsIDs_source->get(ic);
 
