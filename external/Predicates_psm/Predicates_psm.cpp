@@ -65,6 +65,7 @@
 #define __GEOGRAM_BASIC_MEMORY__
 
 #include <vector>
+#include <limits>
 #include <string.h>
 #include <stdlib.h>
 
@@ -276,9 +277,8 @@ namespace GEO {
             }
 
             pointer allocate(
-                size_type n, ::std::allocator<void>::const_pointer hint = 0
+                size_type n
             ) {
-                geo_argused(hint);
                 pointer result = static_cast<pointer>(
                     aligned_malloc(sizeof(T) * n, ALIGN)
                 );
@@ -291,8 +291,7 @@ namespace GEO {
             }
 
             size_type max_size() const {
-                ::std::allocator<char> a;
-                return a.max_size() / sizeof(T);
+                return std::numeric_limits<size_type>::max() / sizeof(T);
             }
 
             void construct(pointer p, const_reference val) {
