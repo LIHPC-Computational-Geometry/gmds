@@ -84,11 +84,6 @@ template<int TDim, class TType> struct VectorND
 	/** alias on the vector dimension */
 	static const int dimension = TDim;
 
-		/*-----------------------------------------------------------*/
-		/** \brief Default constructor (all component are zero)
-		 */
-		VectorND()=default;
-
 	/*-----------------------------------------------------------*/
 	/** \brief Gets read-write access to the vector data
 	 *

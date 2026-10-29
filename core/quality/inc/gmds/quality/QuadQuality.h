@@ -15,8 +15,6 @@ namespace quality {
  */
 struct GMDSQuality_API QuadQuality
 {
-	QuadQuality() = default;
-
 	math::Vector3d p[4];
 
 	static QuadQuality build(const math::Point& AP0, const math::Point& AP1,

@@ -26,7 +26,6 @@ struct GMDSQuality_API HexQuality
  	 *    P0------P1
  	 *
 	 */
-	HexQuality() = default;
 
 	math::Vector3d p[8];
 

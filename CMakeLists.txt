@@ -14,6 +14,10 @@ include (cmake/version.cmake)
 project(gmds
   LANGUAGES C CXX
   VERSION ${GMDS_VERSION})
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 #==============================================================================
 # RPATH handling according to :
 # https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling
